@@ -36,7 +36,7 @@ namespace {
 
 // Helper function to retrieve the url from IShellItem interface passed in.
 // Returns S_OK on success.
-HRESULT GetUrlFromShellItem(IShellItem* shell_item, string16* url) {
+HRESULT GetUrlFromShellItem(IShellItem* shell_item, base::string16* url) {
   DCHECK(shell_item);
   DCHECK(url);
   // First attempt to get the url from the underlying IDataObject if any. This
@@ -329,12 +329,12 @@ STDMETHODIMP CommandExecuteImpl::Execute() {
   BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
   bool is_per_user_install = InstallUtil::IsPerUserInstall(
       chrome_exe_.value().c_str());
-  string16 app_id = ShellUtil::GetBrowserModelId(
+  base::string16 app_id = ShellUtil::GetBrowserModelId(
       distribution, is_per_user_install);
 
   DWORD pid = 0;
   if (launch_scheme_ == INTERNET_SCHEME_FILE &&
-      display_name_.find(installer::kChromeExe) != string16::npos) {
+      display_name_.find(installer::kChromeExe) != base::string16::npos) {
     AtlTrace("Activating for file\n");
     hr = activation_manager->ActivateApplication(app_id.c_str(),
                                                  verb_.c_str(),
@@ -415,7 +415,7 @@ bool CommandExecuteImpl::FindChromeExe(base::FilePath* chrome_exe) {
 }
 
 bool CommandExecuteImpl::GetLaunchScheme(
-    string16* display_name, INTERNET_SCHEME* scheme) {
+    base::string16* display_name, INTERNET_SCHEME* scheme) {
   if (!item_array_)
     return false;
 
@@ -465,7 +465,7 @@ bool CommandExecuteImpl::GetLaunchScheme(
 
 HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
   AtlTrace("In %hs\n", __FUNCTION__);
-  string16 display_name = display_name_;
+  base::string16 display_name = display_name_;
 
   switch (launch_scheme_) {
     case INTERNET_SCHEME_FILE:
@@ -473,7 +473,7 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
       // should honor it. For e.g. If the user clicks on a html file when
       // chrome is the default we should treat it as a parameter to be passed
       // to chrome.
-      if (display_name.find(installer::kChromeExe) != string16::npos)
+      if (display_name.find(installer::kChromeExe) != base::string16::npos)
         display_name.clear();
       break;
 
@@ -484,7 +484,7 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
   CommandLine chrome(
       delegate_execute::MakeChromeCommandLine(chrome_exe_, parameters_,
                                               display_name));
-  string16 command_line(chrome.GetCommandLineString());
+  base::string16 command_line(chrome.GetCommandLineString());
 
   AtlTrace("Formatted command line is %ls\n", command_line.c_str());
 

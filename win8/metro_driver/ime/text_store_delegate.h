@@ -30,13 +30,13 @@ class TextStoreDelegate {
   // Called when on-going composition is updated. An empty |text| represents
   // that the composition is canceled.
   virtual void OnCompositionChanged(
-      const string16& text,
+      const base::string16& text,
       int32 selection_start,
       int32 selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines) = 0;
 
   // Called when |text| is committed.
-  virtual void OnTextCommitted(const string16& text) = 0;
+  virtual void OnTextCommitted(const base::string16& text) = 0;
 
   // Called when an IME requests the caret position. Objects that implement
   // this method must return the caret position in screen coordinates.

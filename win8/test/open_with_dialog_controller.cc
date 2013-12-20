@@ -31,9 +31,9 @@ const wchar_t kShellFlyoutClassName[] = L"Shell_Flyout";
 void OnMakeDefaultComplete(
     const base::Closure& closure,
     HRESULT* result_out,
-    std::vector<string16>* choices_out,
+    std::vector<base::string16>* choices_out,
     HRESULT hr,
-    std::vector<string16> choices) {
+    std::vector<base::string16> choices) {
   *result_out = hr;
   *choices_out = choices;
   closure.Run();
@@ -53,8 +53,8 @@ class OpenWithDialogController::Context {
   void Orphan();
 
   void Begin(HWND parent_window,
-             const string16& url_protocol,
-             const string16& program_name,
+             const base::string16& url_protocol,
+             const base::string16& program_name,
              const OpenWithDialogController::SetDefaultCallback& callback);
 
  private:
@@ -75,20 +75,20 @@ class OpenWithDialogController::Context {
 
   void OnTimeout();
   void OnInitialized(HRESULT result);
-  void OnAutomationResult(HRESULT result, std::vector<string16> choices);
+  void OnAutomationResult(HRESULT result, std::vector<base::string16> choices);
   void OnOpenWithComplete(HRESULT result);
 
   base::ThreadChecker thread_checker_;
   State state_;
   internal::UIAutomationClient automation_client_;
   HWND parent_window_;
-  string16 file_name_;
-  string16 file_type_class_;
+  base::string16 file_name_;
+  base::string16 file_type_class_;
   int open_as_info_flags_;
   OpenWithDialogController::SetDefaultCallback callback_;
   HRESULT open_with_result_;
   HRESULT automation_result_;
-  std::vector<string16> automation_choices_;
+  std::vector<base::string16> automation_choices_;
   base::WeakPtrFactory<Context> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(OpenWithDialogController::Context);
 };
@@ -124,8 +124,8 @@ void OpenWithDialogController::Context::Orphan() {
 
 void OpenWithDialogController::Context::Begin(
     HWND parent_window,
-    const string16& url_protocol,
-    const string16& program_name,
+    const base::string16& url_protocol,
+    const base::string16& program_name,
     const OpenWithDialogController::SetDefaultCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -191,7 +191,7 @@ void OpenWithDialogController::Context::OnInitialized(HRESULT result) {
 
 void OpenWithDialogController::Context::OnAutomationResult(
     HRESULT result,
-    std::vector<string16> choices) {
+    std::vector<base::string16> choices) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(automation_result_, E_FAIL);
 
@@ -244,8 +244,8 @@ OpenWithDialogController::~OpenWithDialogController() {
 
 void OpenWithDialogController::Begin(
     HWND parent_window,
-    const string16& url_protocol,
-    const string16& program,
+    const base::string16& url_protocol,
+    const base::string16& program,
     const SetDefaultCallback& callback) {
   DCHECK_EQ(context_.get(), static_cast<Context*>(NULL));
   if (base::win::GetVersion() < base::win::VERSION_WIN8) {
@@ -254,7 +254,7 @@ void OpenWithDialogController::Begin(
     // to this thread's task runner to call it.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(callback, E_FAIL, std::vector<string16>()));
+        base::Bind(callback, E_FAIL, std::vector<base::string16>()));
     return;
   }
 
@@ -264,9 +264,9 @@ void OpenWithDialogController::Begin(
 
 HRESULT OpenWithDialogController::RunSynchronously(
     HWND parent_window,
-    const string16& protocol,
-    const string16& program,
-    std::vector<string16>* choices) {
+    const base::string16& protocol,
+    const base::string16& program,
+    std::vector<base::string16>* choices) {
   DCHECK_EQ(base::MessageLoop::current(),
             static_cast<base::MessageLoop*>(NULL));
   if (base::win::GetVersion() < base::win::VERSION_WIN8) {

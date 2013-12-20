@@ -155,8 +155,8 @@ struct Globals {
   HANDLE host_thread;
   ChromeAppView* view;
   WNDPROC g_core_proc;
-  string16 navigation_url;
-  string16 search_string;
+  base::string16 navigation_url;
+  base::string16 search_string;
   winapp::Activation::ApplicationExecutionState previous_state;
   winapp::Activation::ActivationKind initial_activation_kind;
   bool is_initial_activation;
@@ -164,7 +164,7 @@ struct Globals {
   // to be initiated from that thread, notably spawning file pickers.
   base::MessageLoopProxy* appview_msg_loop;
   winapp::Core::ICoreApplicationExit* app_exit;
-  string16 metro_command_line_switches;
+  base::string16 metro_command_line_switches;
 };
 
 extern Globals globals;

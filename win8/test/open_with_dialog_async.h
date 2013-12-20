@@ -25,8 +25,8 @@ typedef base::Callback<void(HRESULT)> OpenWithDialogCallback;
 // the dedicated thread will be leaked if the calling thread's message loop goes
 // away before the interaction completes.
 void OpenWithDialogAsync(HWND parent_window,
-                         const string16& file_name,
-                         const string16& file_type_class,
+                         const base::string16& file_name,
+                         const base::string16& file_type_class,
                          int open_as_info_flags,
                          const OpenWithDialogCallback& callback);
 

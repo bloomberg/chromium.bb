@@ -261,7 +261,7 @@ class ATL_NO_VTABLE TextStore
   //  Example: "aoi" is committed, and "umi" is under composition.
   //    |string_buffer_|: "aoiumi"
   //    |committed_size_|: 3
-  string16 string_buffer_;
+  base::string16 string_buffer_;
   uint32 committed_size_;
 
   //  |selection_start_| and |selection_end_| indicates the selection range.

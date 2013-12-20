@@ -27,8 +27,8 @@ namespace {
 struct OpenWithContext {
   OpenWithContext(
       HWND parent_window_in,
-      const string16& file_name_in,
-      const string16& file_type_class_in,
+      const base::string16& file_name_in,
+      const base::string16& file_type_class_in,
       int open_as_info_flags_in,
       const scoped_refptr<base::SingleThreadTaskRunner>& client_runner_in,
       const OpenWithDialogCallback& callback_in);
@@ -36,8 +36,8 @@ struct OpenWithContext {
 
   base::Thread thread;
   HWND parent_window;
-  string16 file_name;
-  string16 file_type_class;
+  base::string16 file_name;
+  base::string16 file_type_class;
   int open_as_info_flags;
   scoped_refptr<base::SingleThreadTaskRunner> client_runner;
   OpenWithDialogCallback callback;
@@ -45,8 +45,8 @@ struct OpenWithContext {
 
 OpenWithContext::OpenWithContext(
     HWND parent_window_in,
-    const string16& file_name_in,
-    const string16& file_type_class_in,
+    const base::string16& file_name_in,
+    const base::string16& file_type_class_in,
     int open_as_info_flags_in,
     const scoped_refptr<base::SingleThreadTaskRunner>& client_runner_in,
     const OpenWithDialogCallback& callback_in)
@@ -104,8 +104,8 @@ void OpenWithDialogTask(OpenWithContext* context) {
 
 void OpenWithDialogAsync(
     HWND parent_window,
-    const string16& file_name,
-    const string16& file_type_class,
+    const base::string16& file_name,
+    const base::string16& file_type_class,
     int open_as_info_flags,
     const OpenWithDialogCallback& callback) {
   DCHECK_GE(base::win::GetVersion(), base::win::VERSION_VISTA);

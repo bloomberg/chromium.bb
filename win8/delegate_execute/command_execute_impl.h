@@ -88,7 +88,7 @@ class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
 
   static bool path_provider_initialized_;
 
-  bool GetLaunchScheme(string16* display_name, INTERNET_SCHEME* scheme);
+  bool GetLaunchScheme(base::string16* display_name, INTERNET_SCHEME* scheme);
   HRESULT LaunchDesktopChrome();
   // Returns the launch mode, i.e. desktop launch/metro launch, etc.
   EC_HOST_UI_MODE GetLaunchMode();
@@ -97,8 +97,8 @@ class ATL_NO_VTABLE DECLSPEC_UUID("071BB5F2-85A4-424F-BFE7-5F1609BE4C2C")
   CommandLine parameters_;
   base::FilePath chrome_exe_;
   STARTUPINFO start_info_;
-  string16 verb_;
-  string16 display_name_;
+  base::string16 verb_;
+  base::string16 display_name_;
   INTERNET_SCHEME launch_scheme_;
 
   base::IntegrityLevel integrity_level_;

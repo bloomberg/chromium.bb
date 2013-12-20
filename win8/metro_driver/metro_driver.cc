@@ -30,10 +30,10 @@ LONG WINAPI ErrorReportingHandler(EXCEPTION_POINTERS* ex_info) {
   DWORD code = ex_info->ExceptionRecord->ExceptionCode;
   ULONG_PTR* info = ex_info->ExceptionRecord->ExceptionInformation;
   if (code == EXCEPTION_RO_ORIGINATEERROR) {
-    string16 msg(reinterpret_cast<wchar_t*>(info[2]), info[1]);
+    base::string16 msg(reinterpret_cast<wchar_t*>(info[2]), info[1]);
     LOG(ERROR) << "VEH: Metro error 0x" << std::hex << info[0] << ": " << msg;
   } else if (code == EXCEPTION_RO_TRANSFORMERROR) {
-    string16 msg(reinterpret_cast<wchar_t*>(info[3]), info[2]);
+    base::string16 msg(reinterpret_cast<wchar_t*>(info[3]), info[2]);
     LOG(ERROR) << "VEH: Metro old error 0x" << std::hex << info[0]
                << " new error 0x" << info[1] << ": " << msg;
   }

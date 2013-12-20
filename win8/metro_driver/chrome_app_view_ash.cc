@@ -195,7 +195,7 @@ class ChromeChannelListener : public IPC::Listener {
   }
 
   void OnOpenURLOnDesktop(const base::FilePath& shortcut,
-                          const string16& url) {
+                          const base::string16& url) {
     ui_proxy_->PostTask(FROM_HERE,
         base::Bind(&ChromeAppViewAsh::OnOpenURLOnDesktop,
         base::Unretained(app_view_),
@@ -209,8 +209,8 @@ class ChromeChannelListener : public IPC::Listener {
                                    reinterpret_cast<HCURSOR>(cursor)));
   }
 
-  void OnDisplayFileOpenDialog(const string16& title,
-                               const string16& filter,
+  void OnDisplayFileOpenDialog(const base::string16& title,
+                               const base::string16& filter,
                                const base::FilePath& default_path,
                                bool allow_multiple_files) {
     ui_proxy_->PostTask(FROM_HERE,
@@ -231,7 +231,7 @@ class ChromeChannelListener : public IPC::Listener {
                    params));
   }
 
-  void OnDisplayFolderPicker(const string16& title) {
+  void OnDisplayFolderPicker(const base::string16& title) {
     ui_proxy_->PostTask(
         FROM_HERE,
         base::Bind(&ChromeAppViewAsh::OnDisplayFolderPicker,
@@ -327,7 +327,8 @@ bool LaunchChromeBrowserProcess(const wchar_t* additional_parameters,
         DVLOG(1) << "Activate: ActivationKind_Launch";
         mswrw::HString launch_args_str;
         launch_args->get_Arguments(launch_args_str.GetAddressOf());
-        string16 actual_launch_args(MakeStdWString(launch_args_str.Get()));
+        base::string16 actual_launch_args(
+            MakeStdWString(launch_args_str.Get()));
         if (actual_launch_args == win8::kMetroViewerConnectVerb) {
           DVLOG(1) << __FUNCTION__ << "Not launching chrome server";
           return true;
@@ -342,7 +343,7 @@ bool LaunchChromeBrowserProcess(const wchar_t* additional_parameters,
   if (!PathService::Get(base::FILE_EXE, &chrome_exe_path))
     return false;
 
-  string16 parameters = L"--silent-launch --viewer-connect ";
+  base::string16 parameters = L"--silent-launch --viewer-connect ";
   if (additional_parameters)
     parameters += additional_parameters;
 
@@ -758,7 +759,7 @@ void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path,
 }
 
 void ChromeAppViewAsh::OnOpenURLOnDesktop(const base::FilePath& shortcut,
-    const string16& url) {
+                                          const base::string16& url) {
   base::FilePath::StringType file = shortcut.value();
   SHELLEXECUTEINFO sei = { sizeof(sei) };
   sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
@@ -774,8 +775,8 @@ void ChromeAppViewAsh::OnSetCursor(HCURSOR cursor) {
 }
 
 void ChromeAppViewAsh::OnDisplayFileOpenDialog(
-    const string16& title,
-    const string16& filter,
+    const base::string16& title,
+    const base::string16& filter,
     const base::FilePath& default_path,
     bool allow_multiple_files) {
   DVLOG(1) << __FUNCTION__;
@@ -804,7 +805,7 @@ void ChromeAppViewAsh::OnDisplayFileSaveAsDialog(
   file_picker_->Run();
 }
 
-void ChromeAppViewAsh::OnDisplayFolderPicker(const string16& title) {
+void ChromeAppViewAsh::OnDisplayFolderPicker(const base::string16& title) {
   DVLOG(1) << __FUNCTION__;
   // The FolderPickerSession instance is deleted when we receive a
   // callback from the FolderPickerSession class about the completion of the
@@ -919,7 +920,7 @@ void ChromeAppViewAsh::OnInputSourceChanged() {
 }
 
 void ChromeAppViewAsh::OnCompositionChanged(
-    const string16& text,
+    const base::string16& text,
     int32 selection_start,
     int32 selection_end,
     const std::vector<metro_viewer::UnderlineInfo>& underlines) {
@@ -927,7 +928,7 @@ void ChromeAppViewAsh::OnCompositionChanged(
       text, selection_start, selection_end, underlines));
 }
 
-void ChromeAppViewAsh::OnTextCommitted(const string16& text) {
+void ChromeAppViewAsh::OnTextCommitted(const base::string16& text) {
   ui_channel_->Send(new MetroViewerHostMsg_ImeTextCommitted(text));
 }
 
@@ -1230,7 +1231,7 @@ HRESULT ChromeAppViewAsh::HandleSearchRequest(
 
   mswrw::HString search_string;
   CheckHR(search_args->get_QueryText(search_string.GetAddressOf()));
-  string16 search_text(MakeStdWString(search_string.Get()));
+  base::string16 search_text(MakeStdWString(search_string.Get()));
 
   ui_loop_.PostTask(FROM_HERE,
                     base::Bind(&ChromeAppViewAsh::OnSearchRequest,
@@ -1255,7 +1256,7 @@ HRESULT ChromeAppViewAsh::HandleProtocolRequest(
   protocol_args->get_Uri(&uri);
   mswrw::HString url;
   uri->get_AbsoluteUri(url.GetAddressOf());
-  string16 actual_url(MakeStdWString(url.Get()));
+  base::string16 actual_url(MakeStdWString(url.Get()));
   DVLOG(1) << "Received url request: " << actual_url;
 
   ui_loop_.PostTask(FROM_HERE,
@@ -1276,12 +1277,12 @@ HRESULT ChromeAppViewAsh::OnEdgeGestureCompleted(
   return S_OK;
 }
 
-void ChromeAppViewAsh::OnSearchRequest(const string16& search_string) {
+void ChromeAppViewAsh::OnSearchRequest(const base::string16& search_string) {
   DCHECK(ui_channel_);
   ui_channel_->Send(new MetroViewerHostMsg_SearchRequest(search_string));
 }
 
-void ChromeAppViewAsh::OnNavigateToUrl(const string16& url) {
+void ChromeAppViewAsh::OnNavigateToUrl(const base::string16& url) {
   DCHECK(ui_channel_);
  ui_channel_->Send(new MetroViewerHostMsg_OpenURL(url));
 }

@@ -14,9 +14,9 @@
 
 void CheckHR(HRESULT hr, const char* str = nullptr);
 
-HSTRING MakeHString(const string16& str);
+HSTRING MakeHString(const base::string16& str);
 
-string16 MakeStdWString(HSTRING hstring);
+base::string16 MakeStdWString(HSTRING hstring);
 
 namespace winrt_utils {
 
@@ -53,7 +53,7 @@ HRESULT CompareProperties(
 // shortcut's command line. This is intended for scenarios where those shortcut
 // parameters are ordinarily ignored (i.e. metro apps on win8). Returns an
 // empty string on failure.
-string16 ReadArgumentsFromPinnedTaskbarShortcut();
+base::string16 ReadArgumentsFromPinnedTaskbarShortcut();
 
 }  // namespace winrt_utils
 

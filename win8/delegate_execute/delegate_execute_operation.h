@@ -49,11 +49,11 @@ class DelegateExecuteOperation {
     return operation_type_;
   }
 
-  const string16& relaunch_flags() const {
+  const base::string16& relaunch_flags() const {
     return relaunch_flags_;
   }
 
-  const string16& mutex() const {
+  const base::string16& mutex() const {
     return mutex_;
   }
 
@@ -66,9 +66,9 @@ class DelegateExecuteOperation {
 
  private:
   OperationType operation_type_;
-  string16 relaunch_flags_;
+  base::string16 relaunch_flags_;
   base::FilePath relaunch_shortcut_;
-  string16 mutex_;
+  base::string16 mutex_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateExecuteOperation);
 };

@@ -21,11 +21,11 @@ CommandLine CommandLineFromParameters(const wchar_t* params);
 // from |params| plus an optional |argument|.
 CommandLine MakeChromeCommandLine(const base::FilePath& chrome_exe,
                                   const CommandLine& params,
-                                  const string16& argument);
+                                  const base::string16& argument);
 
 // Returns a properly quoted command-line string less the program (argv[0])
 // containing |switch|.
-string16 ParametersFromSwitch(const char* a_switch);
+base::string16 ParametersFromSwitch(const char* a_switch);
 
 }  // namespace delegate_execute
 

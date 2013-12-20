@@ -1088,8 +1088,8 @@ HRESULT ChromeAppView::OnShareDataRequested(
     return E_FAIL;
   }
 
-  string16 current_title(current_tab_info.title);
-  string16 current_url(current_tab_info.url);
+  base::string16 current_title(current_tab_info.title);
+  base::string16 current_url(current_tab_info.url);
 
   LocalFree(current_tab_info.title);
   LocalFree(current_tab_info.url);

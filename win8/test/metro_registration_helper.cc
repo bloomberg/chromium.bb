@@ -98,7 +98,7 @@ bool IsTestDefaultForProtocol(const wchar_t* protocol) {
     return false;
   }
 
-  return string16(win8::test::kDefaultTestProgId).compare(current_app) == 0;
+  return !base::string16(win8::test::kDefaultTestProgId).compare(current_app);
 }
 
 }  // namespace

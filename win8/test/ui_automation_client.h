@@ -36,7 +36,8 @@ class UIAutomationClient {
   // If the HRESULT argument indicates success, the desired item in the window
   // was invoked.  Otherwise, the string vector (if not empty) contains the list
   // of possible items in the window.
-  typedef base::Callback<void(HRESULT, std::vector<string16>)> ResultCallback;
+  typedef base::Callback<void(HRESULT, std::vector<base::string16>)>
+      ResultCallback;
 
   UIAutomationClient();
   ~UIAutomationClient();
@@ -46,7 +47,7 @@ class UIAutomationClient {
   // Otherwise, |result_callback| will be invoked once |item_name| has been
   // invoked.
   void Begin(const wchar_t* class_name,
-             const string16& item_name,
+             const base::string16& item_name,
              const InitializedCallback& init_callback,
              const ResultCallback& result_callback);
 

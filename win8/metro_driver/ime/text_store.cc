@@ -267,7 +267,7 @@ STDMETHODIMP TextStore::GetText(LONG acp_start,
   acp_end = std::min(acp_end, acp_start + static_cast<LONG>(text_buffer_size));
   *text_buffer_copied = acp_end - acp_start;
 
-  const string16& result =
+  const base::string16& result =
       string_buffer_.substr(acp_start, *text_buffer_copied);
   for (size_t i = 0; i < result.size(); ++i)
     text_buffer[i] = result[i];
@@ -414,7 +414,7 @@ STDMETHODIMP TextStore::InsertTextAtSelection(DWORD flags,
 
   DCHECK_LE(start_pos, end_pos);
   string_buffer_ = string_buffer_.substr(0, start_pos) +
-                   string16(text_buffer, text_buffer + text_buffer_size) +
+                   base::string16(text_buffer, text_buffer + text_buffer_size) +
                    string_buffer_.substr(end_pos);
   if (acp_start)
     *acp_start = start_pos;
@@ -525,10 +525,10 @@ STDMETHODIMP TextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   // TextStoreDelegate::ConfirmComposition() or
   // TextStoreDelegate::SetComposition().
   const uint32 new_committed_size = committed_size_;
-  const string16& new_committed_string =
+  const base::string16& new_committed_string =
       string_buffer_.substr(last_committed_size,
                             new_committed_size - last_committed_size);
-  const string16& composition_string =
+  const base::string16& composition_string =
       string_buffer_.substr(new_committed_size);
 
   // If there is new committed string, calls
@@ -857,7 +857,8 @@ bool TextStore::ConfirmComposition() {
   // This logic is based on the observation about how to emulate
   // ImmNotifyIME(NI_COMPOSITIONSTR, CPS_COMPLETE, 0) by CUAS.
 
-  const string16& composition_text = string_buffer_.substr(committed_size_);
+  const base::string16& composition_text =
+      string_buffer_.substr(committed_size_);
   if (!composition_text.empty())
     delegate_->OnTextCommitted(composition_text);
 

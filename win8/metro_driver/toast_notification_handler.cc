@@ -64,7 +64,7 @@ HRESULT GetTextNodeRoot(
 // The index parameter identifies which text node we append to.
 HRESULT CreateTextNode(winxml::Dom::IXmlDocument* xml_doc,
                        int index,
-                       const string16& text_string) {
+                       const base::string16& text_string) {
   DCHECK(xml_doc);
 
   mswr::ComPtr<winxml::Dom::IXmlElement> document_element;
@@ -206,7 +206,8 @@ void ToastNotificationHandler::DisplayNotification(
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   bool is_per_user_install = InstallUtil::IsPerUserInstall(
       chrome_path.value().c_str());
-  string16 appid = ShellUtil::GetBrowserModelId(dist, is_per_user_install);
+  base::string16 appid =
+      ShellUtil::GetBrowserModelId(dist, is_per_user_install);
   DVLOG(1) << "Chrome Appid is " << appid.c_str();
 
   mswrw::HString app_user_model_id;

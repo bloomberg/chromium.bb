@@ -374,7 +374,7 @@ class TextServiceImpl : public TextService,
   }
 
   virtual void OnCompositionChanged(
-      const string16& text,
+      const base::string16& text,
       int32 selection_start,
       int32 selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines) OVERRIDE {
@@ -386,7 +386,7 @@ class TextServiceImpl : public TextService,
                                     underlines);
   }
 
-  virtual void OnTextCommitted(const string16& text) OVERRIDE {
+  virtual void OnTextCommitted(const base::string16& text) OVERRIDE {
     if (!delegate_)
       return;
     delegate_->OnTextCommitted(text);

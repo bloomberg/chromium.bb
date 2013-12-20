@@ -66,12 +66,12 @@ class MetroViewerProcessHost : public IPC::Listener,
 
   // Called over IPC by the viewer process to request that the url passed in be
   // opened.
-  virtual void OnOpenURL(const string16& url) = 0;
+  virtual void OnOpenURL(const base::string16& url) = 0;
 
   // Called over IPC by the viewer process to request that the search string
   // passed in is passed to the default search provider and a URL navigation be
   // performed.
-  virtual void OnHandleSearchRequest(const string16& search_string) = 0;
+  virtual void OnHandleSearchRequest(const base::string16& search_string) = 0;
 
   // Called over IPC by the viewer process when the window size has changed.
   virtual void OnWindowSizeChanged(uint32 width, uint32 height) = 0;

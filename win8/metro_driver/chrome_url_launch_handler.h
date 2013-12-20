@@ -37,7 +37,7 @@ class ChromeUrlLaunchHandler {
       winapp::Search::ISearchPane* search_pane,
       winapp::Search::ISearchPaneQuerySubmittedEventArgs* args);
 
-  string16 GetUrlFromLaunchArgs(const string16& launch_args);
+  base::string16 GetUrlFromLaunchArgs(const base::string16& launch_args);
 
   // Invoked when a url is navigated from a metro app or in the metro
   // shelf.

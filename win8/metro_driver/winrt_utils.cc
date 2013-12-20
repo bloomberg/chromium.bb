@@ -23,7 +23,7 @@ void CheckHR(HRESULT hr, const char* message) {
   }
 }
 
-HSTRING MakeHString(const string16& str) {
+HSTRING MakeHString(const base::string16& str) {
   HSTRING hstr;
   if (FAILED(::WindowsCreateString(str.c_str(), static_cast<UINT32>(str.size()),
                                    &hstr))) {
@@ -32,13 +32,13 @@ HSTRING MakeHString(const string16& str) {
   return hstr;
 }
 
-string16 MakeStdWString(HSTRING hstring) {
+base::string16 MakeStdWString(HSTRING hstring) {
   const wchar_t* str;
   UINT32 size = 0;
   str = ::WindowsGetStringRawBuffer(hstring, &size);
   if (!size)
-    return string16();
-  return string16(str, size);
+    return base::string16();
+  return base::string16(str, size);
 }
 
 namespace {
@@ -170,7 +170,7 @@ HRESULT CompareProperties(winfoundtn::IPropertyValue* lhs,
 }
 
 bool GetArgumentsFromShortcut(const base::FilePath& shortcut,
-                              string16* arguments) {
+                              base::string16* arguments) {
   HRESULT result;
   base::win::ScopedComPtr<IShellLink> i_shell_link;
   bool is_resolved = false;
@@ -200,7 +200,7 @@ bool GetArgumentsFromShortcut(const base::FilePath& shortcut,
   return is_resolved;
 }
 
-string16 ReadArgumentsFromPinnedTaskbarShortcut() {
+base::string16 ReadArgumentsFromPinnedTaskbarShortcut() {
   wchar_t path_buffer[MAX_PATH] = {};
 
   if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL,
@@ -214,7 +214,7 @@ string16 ReadArgumentsFromPinnedTaskbarShortcut() {
         BrowserDistribution::SHORTCUT_CHROME) + installer::kLnkExt;
     shortcut = shortcut.Append(link_name);
 
-    string16 arguments;
+    base::string16 arguments;
     if (GetArgumentsFromShortcut(shortcut, &arguments)) {
       return arguments;
     }

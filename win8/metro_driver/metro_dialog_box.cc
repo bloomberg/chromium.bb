@@ -141,7 +141,7 @@ HRESULT STDMETHODCALLTYPE MetroDialogBox::Invoke(
   mswrw::HString label;
   command->get_Label(label.GetAddressOf());
 
-  string16 button_label = MakeStdWString(label.Get());
+  base::string16 button_label = MakeStdWString(label.Get());
   DVLOG(1) << "Clicked button label is : " << button_label;
   if (button_label == dialog_box_info_.button1_label) {
     DVLOG(1) << "Button1 clicked";

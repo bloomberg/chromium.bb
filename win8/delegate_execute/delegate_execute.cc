@@ -47,7 +47,7 @@ class DelegateExecuteModule
 
   HRESULT PreMessageLoop(int nShowCmd) {
     HRESULT hr = S_OK;
-    string16 clsid_string;
+    base::string16 clsid_string;
     GUID clsid;
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     if (!dist->GetCommandExecuteImplClsid(&clsid_string))
@@ -121,7 +121,7 @@ int RelaunchChrome(const DelegateExecuteOperation& operation) {
 
   base::win::ScopedCOMInitializer com_initializer;
 
-  string16 relaunch_flags(operation.relaunch_flags());
+  base::string16 relaunch_flags(operation.relaunch_flags());
   SHELLEXECUTEINFO sei = { sizeof(sei) };
   sei.fMask = SEE_MASK_FLAG_LOG_USAGE;
   sei.nShow = SW_SHOWNORMAL;

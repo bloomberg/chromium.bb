@@ -40,8 +40,8 @@ class UIAutomationClient::Context {
   // posting |init_callback|.
   void Initialize(
       scoped_refptr<base::SingleThreadTaskRunner> client_runner,
-      string16 class_name,
-      string16 item_name,
+      base::string16 class_name,
+      base::string16 item_name,
       UIAutomationClient::InitializedCallback init_callback,
       UIAutomationClient::ResultCallback result_callback);
 
@@ -69,7 +69,7 @@ class UIAutomationClient::Context {
       const base::win::ScopedComPtr<IUIAutomationElement>& element);
   HRESULT GetInvokableItems(
       const base::win::ScopedComPtr<IUIAutomationElement>& element,
-      std::vector<string16>* choices);
+      std::vector<base::string16>* choices);
   void CloseWindow(const base::win::ScopedComPtr<IUIAutomationElement>& window);
 
   base::ThreadChecker thread_checker_;
@@ -78,10 +78,10 @@ class UIAutomationClient::Context {
   scoped_refptr<base::SingleThreadTaskRunner> client_runner_;
 
   // The class name of the window for which the client waits.
-  string16 class_name_;
+  base::string16 class_name_;
 
   // The name of the item to invoke.
-  string16 item_name_;
+  base::string16 item_name_;
 
   // The consumer's result callback.
   ResultCallback result_callback_;
@@ -180,8 +180,8 @@ UIAutomationClient::Context::~Context() {
 
 void UIAutomationClient::Context::Initialize(
     scoped_refptr<base::SingleThreadTaskRunner> client_runner,
-    string16 class_name,
-    string16 item_name,
+    base::string16 class_name,
+    base::string16 item_name,
     UIAutomationClient::InitializedCallback init_callback,
     UIAutomationClient::ResultCallback result_callback) {
   // This and all other methods must be called on the automation thread.
@@ -325,7 +325,7 @@ void UIAutomationClient::Context::HandleWindowOpen(
     return;
   }
 
-  string16 class_name(V_BSTR(&var));
+  base::string16 class_name(V_BSTR(&var));
 
   // Window class names are atoms, which are case-insensitive.
   if (class_name.size() == class_name_.size() &&
@@ -345,7 +345,7 @@ void UIAutomationClient::Context::ProcessWindow(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   HRESULT result = S_OK;
-  std::vector<string16> choices;
+  std::vector<base::string16> choices;
   result = InvokeDesiredItem(window);
   if (FAILED(result)) {
     GetInvokableItems(window, &choices);
@@ -457,7 +457,7 @@ HRESULT UIAutomationClient::Context::InvokeDesiredItem(
 // Populates |choices| with the names of all invokable children of |element|.
 HRESULT UIAutomationClient::Context::GetInvokableItems(
     const base::win::ScopedComPtr<IUIAutomationElement>& element,
-    std::vector<string16>* choices) {
+    std::vector<base::string16>* choices) {
   DCHECK(choices);
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -545,7 +545,7 @@ HRESULT UIAutomationClient::Context::GetInvokableItems(
       LOG(ERROR) << __FUNCTION__ " name is not a BSTR: " << V_VT(&var);
       continue;
     }
-    choices->push_back(string16(V_BSTR(&var)));
+    choices->push_back(base::string16(V_BSTR(&var)));
     var.Reset();
   }
 
@@ -602,7 +602,7 @@ UIAutomationClient::~UIAutomationClient() {
 }
 
 void UIAutomationClient::Begin(const wchar_t* class_name,
-                               const string16& item_name,
+                               const base::string16& item_name,
                                const InitializedCallback& init_callback,
                                const ResultCallback& result_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -617,7 +617,7 @@ void UIAutomationClient::Begin(const wchar_t* class_name,
       base::Bind(&UIAutomationClient::Context::Initialize,
                  context_,
                  base::ThreadTaskRunnerHandle::Get(),
-                 string16(class_name),
+                 base::string16(class_name),
                  item_name,
                  init_callback,
                  result_callback));

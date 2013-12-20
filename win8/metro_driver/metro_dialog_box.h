@@ -16,10 +16,10 @@
 class MetroDialogBox : public winui::Popups::IUICommandInvokedHandler {
  public:
   struct DialogBoxInfo {
-    string16 title;
-    string16 content;
-    string16 button1_label;
-    string16 button2_label;
+    base::string16 title;
+    base::string16 content;
+    base::string16 button1_label;
+    base::string16 button2_label;
     base::win::MetroDialogButtonPressedHandler button1_handler;
     base::win::MetroDialogButtonPressedHandler button2_handler;
   };

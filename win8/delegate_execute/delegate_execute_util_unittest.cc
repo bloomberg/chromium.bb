@@ -42,38 +42,41 @@ TEST(DelegateExecuteUtil, MakeChromeCommandLineTest) {
 
   // Empty params and argument contains only the exe.
   cl = delegate_execute::MakeChromeCommandLine(
-      this_exe, delegate_execute::CommandLineFromParameters(NULL), string16());
+      this_exe,
+      delegate_execute::CommandLineFromParameters(NULL),
+      base::string16());
   EXPECT_EQ(1, cl.argv().size());
   EXPECT_EQ(this_exe.value(), cl.GetProgram().value());
 
   // Empty params with arg contains the arg.
   cl = delegate_execute::MakeChromeCommandLine(
       this_exe, delegate_execute::CommandLineFromParameters(NULL),
-      string16(kSomeArgument));
+      base::string16(kSomeArgument));
   EXPECT_EQ(2, cl.argv().size());
   EXPECT_EQ(this_exe.value(), cl.GetProgram().value());
   EXPECT_EQ(1, cl.GetArgs().size());
-  EXPECT_EQ(string16(kSomeArgument), cl.GetArgs()[0]);
+  EXPECT_EQ(base::string16(kSomeArgument), cl.GetArgs()[0]);
 
   // Params with switchs and args plus arg contains the arg.
   cl = delegate_execute::MakeChromeCommandLine(
       this_exe, delegate_execute::CommandLineFromParameters(
           base::StringPrintf(L"--%ls -- %ls", ASCIIToWide(kSomeSwitch).c_str(),
                              kOtherArgument).c_str()),
-      string16(kSomeArgument));
+      base::string16(kSomeArgument));
   EXPECT_EQ(5, cl.argv().size());
   EXPECT_EQ(this_exe.value(), cl.GetProgram().value());
   EXPECT_TRUE(cl.HasSwitch(kSomeSwitch));
   CommandLine::StringVector args(cl.GetArgs());
   EXPECT_EQ(2, args.size());
+  EXPECT_NE(
+      args.end(),
+      std::find(args.begin(), args.end(), base::string16(kOtherArgument)));
   EXPECT_NE(args.end(),
-            std::find(args.begin(), args.end(), string16(kOtherArgument)));
-  EXPECT_NE(args.end(),
-            std::find(args.begin(), args.end(), string16(kSomeArgument)));
+            std::find(args.begin(), args.end(), base::string16(kSomeArgument)));
 }
 
 TEST(DelegateExecuteUtil, ParametersFromSwitchTest) {
-  EXPECT_EQ(string16(), delegate_execute::ParametersFromSwitch(NULL));
-  EXPECT_EQ(string16(L"--some-switch"),
+  EXPECT_EQ(base::string16(), delegate_execute::ParametersFromSwitch(NULL));
+  EXPECT_EQ(base::string16(L"--some-switch"),
             delegate_execute::ParametersFromSwitch(kSomeSwitch));
 }

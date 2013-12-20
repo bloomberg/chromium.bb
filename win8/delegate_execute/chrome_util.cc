@@ -45,10 +45,10 @@ const wchar_t kRegPathChromeClientBase[] =
 // use by a browser process.
 // TODO(grt): Move this somewhere central so it can be used by both this
 // IsBrowserRunning (below) and IsBrowserAlreadyRunning (browser_util_win.cc).
-string16 GetEventName(const base::FilePath& chrome_exe) {
+base::string16 GetEventName(const base::FilePath& chrome_exe) {
   static wchar_t const kEventPrefix[] = L"Global\\";
   const size_t prefix_len = arraysize(kEventPrefix) - 1;
-  string16 name;
+  base::string16 name;
   name.reserve(prefix_len + chrome_exe.value().size());
   name.assign(kEventPrefix, prefix_len);
   name.append(chrome_exe.value());
@@ -80,10 +80,10 @@ bool NewChromeExeExists(const base::FilePath& chrome_exe) {
   return base::PathExists(new_chrome_exe);
 }
 
-bool GetUpdateCommand(bool is_per_user, string16* update_command) {
+bool GetUpdateCommand(bool is_per_user, base::string16* update_command) {
   const HKEY root = is_per_user ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  string16 reg_path_chrome_client = kRegPathChromeClientBase;
+  base::string16 reg_path_chrome_client = kRegPathChromeClientBase;
   reg_path_chrome_client.append(dist->GetAppGuid());
   base::win::RegKey key(root, reg_path_chrome_client.c_str(), KEY_QUERY_VALUE);
 
@@ -107,7 +107,7 @@ void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
 
   if (InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
     // Read the update command from the registry.
-    string16 update_command;
+    base::string16 update_command;
     if (!GetUpdateCommand(true, &update_command)) {
       AtlTrace("%hs. Failed to read update command from registry.\n",
                __FUNCTION__);

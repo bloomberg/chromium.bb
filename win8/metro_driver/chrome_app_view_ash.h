@@ -66,15 +66,16 @@ class ChromeAppViewAsh
   static HRESULT Unsnap();
 
   void OnActivateDesktop(const base::FilePath& file_path, bool ash_exit);
-  void OnOpenURLOnDesktop(const base::FilePath& shortcut, const string16& url);
+  void OnOpenURLOnDesktop(const base::FilePath& shortcut,
+                          const base::string16& url);
   void OnSetCursor(HCURSOR cursor);
-  void OnDisplayFileOpenDialog(const string16& title,
-                               const string16& filter,
+  void OnDisplayFileOpenDialog(const base::string16& title,
+                               const base::string16& filter,
                                const base::FilePath& default_path,
                                bool allow_multiple_files);
   void OnDisplayFileSaveAsDialog(
       const MetroViewerHostMsg_SaveAsDialogParams& params);
-  void OnDisplayFolderPicker(const string16& title);
+  void OnDisplayFolderPicker(const base::string16& title);
   void OnSetCursorPos(int x, int y);
 
   // This function is invoked when the open file operation completes. The
@@ -117,11 +118,11 @@ class ChromeAppViewAsh
 
   // TextServiceDelegate overrides.
   virtual void OnCompositionChanged(
-      const string16& text,
+      const base::string16& text,
       int32 selection_start,
       int32 selection_end,
       const std::vector<metro_viewer::UnderlineInfo>& underlines) OVERRIDE;
-  virtual void OnTextCommitted(const string16& text) OVERRIDE;
+  virtual void OnTextCommitted(const base::string16& text) OVERRIDE;
 
   // Convenience for sending a MetroViewerHostMsg_MouseButton with the specified
   // parameters.
@@ -181,8 +182,8 @@ class ChromeAppViewAsh
 
   // Tasks posted to the UI thread to initiate the search/url navigation
   // requests.
-  void OnSearchRequest(const string16& search_string);
-  void OnNavigateToUrl(const string16& url);
+  void OnSearchRequest(const base::string16& search_string);
+  void OnNavigateToUrl(const base::string16& url);
 
   HRESULT OnSizeChanged(winui::Core::ICoreWindow* sender,
                         winui::Core::IWindowSizeChangedEventArgs* args);

@@ -72,7 +72,7 @@ void ChromeUrlLaunchHandler::HandleSearchRequest(T* args) {
   DVLOG(1) << __FUNCTION__;
   mswrw::HString search_string;
   args->get_QueryText(search_string.GetAddressOf());
-  string16 search_text(MakeStdWString(search_string.Get()));
+  base::string16 search_text(MakeStdWString(search_string.Get()));
   globals.search_string = search_text;
   DVLOG(1) << search_text.c_str();
   // If this is the initial activation then we wait for Chrome to initiate the
@@ -88,7 +88,7 @@ void ChromeUrlLaunchHandler::HandleProtocolLaunch(
   args->get_Uri(&uri);
   mswrw::HString url;
   uri->get_AbsoluteUri(url.GetAddressOf());
-  string16 actual_url(MakeStdWString(url.Get()));
+  base::string16 actual_url(MakeStdWString(url.Get()));
   globals.navigation_url = actual_url;
 
   // If this is the initial activation then we wait for Chrome to initiate the
@@ -100,27 +100,27 @@ void ChromeUrlLaunchHandler::HandleProtocolLaunch(
 // |launch_args| is an encoded command line, minus the executable name. To
 // find the URL to launch the first argument is used. If any other parameters
 // are encoded in |launch_args| they are ignored.
-string16 ChromeUrlLaunchHandler::GetUrlFromLaunchArgs(
-    const string16& launch_args) {
+base::string16 ChromeUrlLaunchHandler::GetUrlFromLaunchArgs(
+    const base::string16& launch_args) {
   if (launch_args == L"opennewwindow") {
     VLOG(1) << "Returning new tab url";
     return L"chrome://newtab";
   }
-  string16 dummy_command_line(L"dummy.exe ");
+  base::string16 dummy_command_line(L"dummy.exe ");
   dummy_command_line.append(launch_args);
   CommandLine command_line = CommandLine::FromString(dummy_command_line);
   CommandLine::StringVector args = command_line.GetArgs();
   if (args.size() > 0)
     return args[0];
 
-  return string16();
+  return base::string16();
 }
 
 void ChromeUrlLaunchHandler::HandleLaunch(
     winapp::Activation::ILaunchActivatedEventArgs* args) {
   mswrw::HString launch_args;
   args->get_Arguments(launch_args.GetAddressOf());
-  string16 actual_launch_args(MakeStdWString(launch_args.Get()));
+  base::string16 actual_launch_args(MakeStdWString(launch_args.Get()));
   globals.navigation_url = GetUrlFromLaunchArgs(actual_launch_args);
   DVLOG(1) << __FUNCTION__ << ", launch_args=" << actual_launch_args
            << ", url=" << globals.navigation_url

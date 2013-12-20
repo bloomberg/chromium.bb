@@ -28,7 +28,7 @@ class StringVectorImpl : public mswr::RuntimeClass<StringVectorItf> {
     std::for_each(strings_.begin(), strings_.end(), ::WindowsDeleteString);
   }
 
-  HRESULT RuntimeClassInitialize(const std::vector<string16>& list) {
+  HRESULT RuntimeClassInitialize(const std::vector<base::string16>& list) {
     for (size_t i = 0; i < list.size(); ++i)
       strings_.push_back(MakeHString(list[i]));
 
@@ -82,8 +82,8 @@ class StringVectorImpl : public mswr::RuntimeClass<StringVectorItf> {
 }  // namespace
 
 FilePickerSessionBase::FilePickerSessionBase(ChromeAppViewAsh* app_view,
-                                             const string16& title,
-                                             const string16& filter,
+                                             const base::string16& title,
+                                             const base::string16& filter,
                                              const base::FilePath& default_path)
     : app_view_(app_view),
       title_(title),
@@ -117,8 +117,8 @@ bool FilePickerSessionBase::DoFilePicker() {
 
 OpenFilePickerSession::OpenFilePickerSession(
     ChromeAppViewAsh* app_view,
-    const string16& title,
-    const string16& filter,
+    const base::string16& title,
+    const base::string16& filter,
     const base::FilePath& default_path,
     bool allow_multi_select)
     : FilePickerSessionBase(app_view, title, filter, default_path),
@@ -165,7 +165,7 @@ HRESULT OpenFilePickerSession::MultiPickerDone(MultiFileAsyncOp* async,
     HRESULT hr = async->GetResults(files.GetAddressOf());
 
     if (files) {
-      string16 result;
+      base::string16 result;
       if (SUCCEEDED(hr))
         hr = ComposeMultiFileResult(files.Get(), &result);
 
@@ -243,7 +243,7 @@ HRESULT OpenFilePickerSession::StartFilePicker() {
         break;
 
       // There can be a single extension, or a list of semicolon-separated ones.
-      std::vector<string16> extensions_win32_style;
+      std::vector<base::string16> extensions_win32_style;
       size_t extension_count = Tokenize(walk, L";", &extensions_win32_style);
       DCHECK_EQ(extension_count, extensions_win32_style.size());
 
@@ -256,9 +256,10 @@ HRESULT OpenFilePickerSession::StartFilePicker() {
           hr = extension.Set(L"*");
         } else {
           // Metro wants suffixes only, not patterns.
-          string16 ext = base::FilePath(extensions_win32_style[i]).Extension();
+          base::string16 ext =
+              base::FilePath(extensions_win32_style[i]).Extension();
           if ((ext.size() < 2) ||
-              (ext.find_first_of(L"*?") != string16::npos)) {
+              (ext.find_first_of(L"*?") != base::string16::npos)) {
             continue;
           }
           hr = extension.Set(ext.c_str());
@@ -309,7 +310,7 @@ HRESULT OpenFilePickerSession::StartFilePicker() {
 }
 
 HRESULT OpenFilePickerSession::ComposeMultiFileResult(
-    StorageFileVectorCollection* files, string16* result) {
+    StorageFileVectorCollection* files, base::string16* result) {
   DCHECK(files != NULL);
   DCHECK(result != NULL);
 
@@ -424,17 +425,18 @@ HRESULT SaveFilePickerSession::StartFilePicker() {
         break;
 
       // There can be a single extension, or a list of semicolon-separated ones.
-      std::vector<string16> extensions_win32_style;
+      std::vector<base::string16> extensions_win32_style;
       size_t extension_count = Tokenize(walk, L";", &extensions_win32_style);
       DCHECK_EQ(extension_count, extensions_win32_style.size());
 
       // Metro wants suffixes only, not patterns.  Also, metro does not support
       // the all files ("*") pattern in the save picker.
-      std::vector<string16> extensions;
+      std::vector<base::string16> extensions;
       for (size_t i = 0; i < extensions_win32_style.size(); ++i) {
-        string16 ext = base::FilePath(extensions_win32_style[i]).Extension();
+        base::string16 ext =
+            base::FilePath(extensions_win32_style[i]).Extension();
         if ((ext.size() < 2) ||
-            (ext.find_first_of(L"*?") != string16::npos))
+            (ext.find_first_of(L"*?") != base::string16::npos))
           continue;
         extensions.push_back(ext);
       }
@@ -479,7 +481,7 @@ HRESULT SaveFilePickerSession::StartFilePicker() {
 
     mswr::ComPtr<StringVectorItf> list;
     hr = mswr::MakeAndInitialize<StringVectorImpl>(
-        list.GetAddressOf(), std::vector<string16>(1, L".dat"));
+        list.GetAddressOf(), std::vector<base::string16>(1, L".dat"));
     if (FAILED(hr))
       return hr;
 
@@ -491,7 +493,7 @@ HRESULT SaveFilePickerSession::StartFilePicker() {
   }
 
   if (!default_path_.empty()) {
-    string16 file_part = default_path_.BaseName().value();
+    base::string16 file_part = default_path_.BaseName().value();
     // If the suggested_name is a root directory, then don't set it as the
     // suggested name.
     if (file_part.size() == 1 && file_part[0] == L'\\')
@@ -534,7 +536,7 @@ HRESULT SaveFilePickerSession::FilePickerDone(SaveFileAsyncOp* async,
         hr = storage_item->get_Path(file_path.GetAddressOf());
 
       if (SUCCEEDED(hr)) {
-        string16 path_str = MakeStdWString(file_path.Get());
+        base::string16 path_str = MakeStdWString(file_path.Get());
         result_ = path_str;
         success_ = true;
       }
@@ -549,7 +551,7 @@ HRESULT SaveFilePickerSession::FilePickerDone(SaveFileAsyncOp* async,
 }
 
 FolderPickerSession::FolderPickerSession(ChromeAppViewAsh* app_view,
-                                         const string16& title)
+                                         const base::string16& title)
     : FilePickerSessionBase(app_view, title, L"", base::FilePath()) {}
 
 HRESULT FolderPickerSession::StartFilePicker() {
@@ -603,7 +605,7 @@ HRESULT FolderPickerSession::FolderPickerDone(FolderPickerAsyncOp* async,
         hr = storage_item->get_Path(file_path.GetAddressOf());
 
       if (SUCCEEDED(hr)) {
-        string16 path_str = MakeStdWString(file_path.Get());
+        base::string16 path_str = MakeStdWString(file_path.Get());
         result_ = path_str;
         success_ = true;
       }

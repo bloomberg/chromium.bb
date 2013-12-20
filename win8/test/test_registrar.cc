@@ -92,18 +92,18 @@ class TestDelegateExecuteModule
                               command_line.GetSwitchValueNative(
                                   win8::test::kTestProgId).c_str());
 
-    string16 exe_path(
+    base::string16 exe_path(
         command_line.GetSwitchValueNative(win8::test::kTestExePath));
 
-    string16 exe_open_command(base::StringPrintf(L"\"%ls\" -- %%*",
-                                                 exe_path.c_str()));
+    base::string16 exe_open_command(
+        base::StringPrintf(L"\"%ls\" -- %%*", exe_path.c_str()));
     registrar->AddReplacement(L"EXE_OPEN_COMMAND", exe_open_command.c_str());
 
-    string16 exe_icon(base::StringPrintf(L"%ls,0", exe_path.c_str()));
+    base::string16 exe_icon(base::StringPrintf(L"%ls,0", exe_path.c_str()));
     registrar->AddReplacement(L"EXE_ICON", exe_icon.c_str());
 
-    string16 prog_id_open_command(base::StringPrintf(L"\"%ls\" -- \"%%1\"",
-                                                     exe_path.c_str()));
+    base::string16 prog_id_open_command(
+        base::StringPrintf(L"\"%ls\" -- \"%%1\"", exe_path.c_str()));
     registrar->AddReplacement(L"PROG_ID_OPEN_COMMAND",
                               prog_id_open_command.c_str());
 

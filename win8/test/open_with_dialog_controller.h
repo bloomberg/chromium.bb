@@ -24,8 +24,8 @@ class OpenWithDialogController {
   // interaction. If the HRESULT indicates success, the interaction completed
   // successfully. Otherwise, the vector of strings may contain the list of
   // possible choices if the desired program could not be selected.
-  typedef base::Callback<void(HRESULT,
-                              std::vector<string16>)> SetDefaultCallback;
+  typedef base::Callback<void(HRESULT, std::vector<base::string16>)>
+      SetDefaultCallback;
 
   OpenWithDialogController();
   ~OpenWithDialogController();
@@ -38,8 +38,8 @@ class OpenWithDialogController {
   // since |program| will not show up verbatim in the dialog (e.g., in EN-US, it
   // will be prefixed by "Keep using ").
   void Begin(HWND parent_window,
-             const string16& url_protocol,
-             const string16& program,
+             const base::string16& url_protocol,
+             const base::string16& program,
              const SetDefaultCallback& callback);
 
   // Sychronously drives the dialog by running a message loop. Do not by any
@@ -47,9 +47,9 @@ class OpenWithDialogController {
   // on success. Otherwise, |choices| may contain the list of possible choices
   // if the desired program could not be selected.
   HRESULT RunSynchronously(HWND parent_window,
-                           const string16& url_protocol,
-                           const string16& program,
-                           std::vector<string16>* choices);
+                           const base::string16& url_protocol,
+                           const base::string16& program,
+                           std::vector<base::string16>* choices);
 
  private:
   class Context;

@@ -70,12 +70,12 @@ scoped_ptr<google_breakpad::ExceptionHandler> InitializeCrashReporting() {
   wchar_t temp_path[MAX_PATH + 1] = {0};
   DWORD path_len = ::GetTempPath(MAX_PATH, temp_path);
 
-  string16 pipe_name;
+  base::string16 pipe_name;
   pipe_name = kGoogleUpdatePipeName;
   if (IsRunningSystemInstall()) {
     pipe_name += kSystemPrincipalSid;
   } else {
-    string16 user_sid;
+    base::string16 user_sid;
     if (base::win::GetUserSidString(&user_sid)) {
       pipe_name += user_sid;
     } else {
