@@ -966,7 +966,7 @@
       'caption': '''Set disk cache size in bytes''',
       'desc': '''Configures the cache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached files on the disk.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--disk-cache-size' flag or not.
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--disk-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.
 
       If the value of this policy is 0, the default cache size will be used but the user will not be able to change it.
 
@@ -987,7 +987,7 @@
       'caption': '''Set media disk cache size in bytes''',
       'desc': '''Configures the cache size that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use for storing cached media files on the disk.
 
-      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--media-cache-size' flag or not.
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided cache size regardless whether the user has specified the '--media-cache-size' flag or not. The value specified in this policy is not a hard boundary but rather a suggestion to the caching system, any value below a few megabytes is too small and will be rounded up to a sane minimum.
 
       If the value of this policy is 0, the default cache size will be used but the user will not be able to change it.
 
