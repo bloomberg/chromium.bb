@@ -47,6 +47,10 @@ class ManagePasswordsBubbleUIController
   // the state to know that we do not need to pop up the bubble again.
   void OnBubbleShown();
 
+  // Called by the view code to delete or add a password form to the
+  // PasswordStore.
+  void OnCredentialAction(autofill::PasswordForm password_form, bool remove);
+
   bool manage_passwords_icon_to_be_shown() const {
     return manage_passwords_icon_to_be_shown_;
   }
@@ -61,10 +65,6 @@ class ManagePasswordsBubbleUIController
 
   void unset_manage_passwords_bubble_needs_showing() {
     manage_passwords_bubble_needs_showing_ = false;
-  }
-
-  void unset_password_to_be_saved() {
-    password_to_be_saved_ = false;
   }
 
   const autofill::PasswordForm pending_credentials() const {

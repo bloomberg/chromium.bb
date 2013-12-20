@@ -47,8 +47,25 @@ void ManagePasswordsBubbleUIController::OnBubbleShown() {
   unset_manage_passwords_bubble_needs_showing();
 }
 
+void ManagePasswordsBubbleUIController::OnCredentialAction(
+    autofill::PasswordForm password_form,
+    bool remove) {
+  if (!web_contents())
+    return;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
+      profile, Profile::EXPLICIT_ACCESS).get();
+  DCHECK(password_store);
+  if (remove)
+    password_store->RemoveLogin(password_form);
+  else
+    password_store->AddLogin(password_form);
+}
+
 void ManagePasswordsBubbleUIController::SavePassword() {
   GetPasswordStore(web_contents())->AddLogin(pending_credentials_);
+  password_to_be_saved_ = false;
 }
 
 void ManagePasswordsBubbleUIController::DidNavigateMainFrame(

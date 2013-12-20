@@ -19,8 +19,7 @@ using autofill::PasswordFormMap;
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      web_contents_(web_contents) {
+    : web_contents_(web_contents) {
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
 
@@ -51,8 +50,6 @@ void ManagePasswordsBubbleModel::OnSaveClicked() {
   ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
       ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
   manage_passwords_bubble_ui_controller->SavePassword();
-  manage_passwords_bubble_ui_controller->unset_password_to_be_saved();
-  manage_passwords_bubble_state_ = MANAGE_PASSWORDS;
 }
 
 void ManagePasswordsBubbleModel::OnManageLinkClicked() {
@@ -60,24 +57,11 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
                               chrome::kPasswordManagerSubPage);
 }
 
-void ManagePasswordsBubbleModel::OnPasswordAction(
+void ManagePasswordsBubbleModel::OnCredentialAction(
     autofill::PasswordForm password_form,
     bool remove) {
-  if (!web_contents_)
-    return;
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  PasswordStore* password_store = PasswordStoreFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS).get();
-  DCHECK(password_store);
-  if (remove)
-    password_store->RemoveLogin(password_form);
-  else
-    password_store->AddLogin(password_form);
-}
-
-void ManagePasswordsBubbleModel::WebContentsDestroyed(
-    content::WebContents* web_contents) {
-  // The WebContents have been destroyed.
-  web_contents_ = NULL;
+  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
+  manage_passwords_bubble_ui_controller->OnCredentialAction(password_form,
+                                                            remove);
 }

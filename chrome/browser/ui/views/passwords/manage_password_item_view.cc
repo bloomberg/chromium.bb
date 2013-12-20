@@ -108,14 +108,14 @@ void ManagePasswordItemView::Refresh() {
     label_2_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     label_2_->SetEnabled(true);
     delete_button_->SetVisible(false);
-    manage_passwords_bubble_model_->OnPasswordAction(password_form_, true);
+    manage_passwords_bubble_model_->OnCredentialAction(password_form_, true);
   } else {
     label_1_->SetText(password_form_.username_value);
     label_2_->SetText(GetPasswordDisplayString(password_form_.password_value));
     label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     label_2_->SetEnabled(false);
     delete_button_->SetVisible(true);
-    manage_passwords_bubble_model_->OnPasswordAction(password_form_, false);
+    manage_passwords_bubble_model_->OnCredentialAction(password_form_, false);
   }
 }
 

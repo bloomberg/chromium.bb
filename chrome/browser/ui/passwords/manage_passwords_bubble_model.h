@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 
 #include "components/autofill/core/common/password_form.h"
-#include "content/public/browser/web_contents_observer.h"
 
 class ManagePasswordsIconController;
 
@@ -16,7 +15,7 @@ class WebContents;
 
 // This model provides data for the ManagePasswordsBubble and controls the
 // password management actions.
-class ManagePasswordsBubbleModel : public content::WebContentsObserver {
+class ManagePasswordsBubbleModel {
  public:
   explicit ManagePasswordsBubbleModel(content::WebContents* web_contents);
   virtual ~ManagePasswordsBubbleModel();
@@ -37,7 +36,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
 
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
-  void OnPasswordAction(autofill::PasswordForm password_form, bool remove);
+  void OnCredentialAction(autofill::PasswordForm password_form, bool remove);
 
   ManagePasswordsBubbleState manage_passwords_bubble_state() {
     return manage_passwords_bubble_state_;
@@ -51,10 +50,6 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   const base::string16& manage_link() { return manage_link_; }
 
  private:
-  // content::WebContentsObserver
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
-
   content::WebContents* web_contents_;
   ManagePasswordsBubbleState manage_passwords_bubble_state_;
   base::string16 title_;
