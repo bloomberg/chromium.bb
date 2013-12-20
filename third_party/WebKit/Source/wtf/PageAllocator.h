@@ -69,11 +69,16 @@ WTF_EXPORT void* allocPages(void* addr, size_t len, size_t align);
 // addr and len must match a previous call to allocPages().
 WTF_EXPORT void freePages(void* addr, size_t len);
 
-// Mark one or more system pages as being inaccessible. This is not reversible.
-// Subsequently accessing any address in the range will fault, the addresses
-// will not be re-used by future allocations.
+// Mark one or more system pages as being inaccessible.
+// Subsequently accessing any address in the range will fault, and the
+// addresses will not be re-used by future allocations.
 // len must be a multiple of kSystemPageSize bytes.
 WTF_EXPORT void setSystemPagesInaccessible(void* addr, size_t len);
+
+// Mark one or more system pages as being accessible.
+// The pages will be readable and writeable.
+// len must be a multiple of kSystemPageSize bytes.
+WTF_EXPORT void setSystemPagesAccessible(void* addr, size_t len);
 
 // Decommit one or more system pages. Decommitted means that the physical memory
 // is released to the system, but the virtual address space remains reserved.

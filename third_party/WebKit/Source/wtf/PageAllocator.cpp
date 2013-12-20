@@ -265,6 +265,18 @@ void setSystemPagesInaccessible(void* addr, size_t len)
 #endif
 }
 
+void setSystemPagesAccessible(void* addr, size_t len)
+{
+    ASSERT(!(len & kSystemPageOffsetMask));
+#if OS(POSIX)
+    int ret = mprotect(addr, len, PROT_READ | PROT_WRITE);
+    RELEASE_ASSERT(!ret);
+#else
+    void* ret = VirtualAlloc(addr, len, MEM_COMMIT, PAGE_READWRITE);
+    RELEASE_ASSERT(ret);
+#endif
+}
+
 void decommitSystemPages(void* addr, size_t len)
 {
     ASSERT(!(len & kSystemPageOffsetMask));
