@@ -8,9 +8,8 @@
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
-#include <openssl/sha.h>
-#include <openssl/evp.h>
 #include <openssl/rand.h>
+#include <openssl/sha.h>
 
 #include "base/logging.h"
 #include "content/renderer/webcrypto/webcrypto_util.h"
