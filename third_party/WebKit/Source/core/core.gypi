@@ -3241,6 +3241,7 @@
             'css/CSSValueTestHelper.h',
             'dom/DocumentMarkerControllerTest.cpp',
             'editing/TextIteratorTest.cpp',
+            'dom/DOMImplementationTest.cpp',
             'dom/MainThreadTaskRunnerTest.cpp',
             'fetch/ImageResourceTest.cpp',
             'fetch/MemoryCacheTest.cpp',

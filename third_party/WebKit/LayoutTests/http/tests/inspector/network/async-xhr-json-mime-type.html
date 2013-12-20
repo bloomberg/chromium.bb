@@ -3,35 +3,80 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
+function loadIframe(contentType)
+{
+    iframe = document.createElement("iframe");
+    iframe.src = "resources/json.php?type=" + contentType;
+    document.body.appendChild(iframe);
+}
+
 function test()
 {
     InspectorTest.recordNetwork();
-    InspectorTest.makeSimpleXHR("GET", "resources/json.php", true, step2);
 
-    function step2()
+    var networkPanel = WebInspector.showPanel("network");
+
+    function lastRequest()
     {
-        var request1 = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 1];
-        InspectorTest.addResult(request1.url);
-        InspectorTest.addResult("resource.type: " + request1.type);
-        InspectorTest.addResult("resource.content before requesting content: " + request1.content);
-        InspectorTest.assertTrue(!request1.failed, "Resource loading failed.");
-        request1.requestContent(step3);
+        return networkPanel.requests[networkPanel.requests.length - 1];
     }
 
-    function step3()
+    function reportRequest(request)
     {
-        var request1 = WebInspector.panel("network").requests[WebInspector.panel("network").requests.length - 1];
-        InspectorTest.addResult("resource.content after requesting content: " + request1.content);
-
-        InspectorTest.completeTest();
+        InspectorTest.addResult("request.url: " + request.url);
+        InspectorTest.addResult("request.type: " + request.type);
+        InspectorTest.addResult("request.mimeType: " + request.mimeType);
     }
+
+    function testType(contentType, callback)
+    {
+        var encodedContentType = encodeURIComponent(contentType);
+        function step2()
+        {
+            var request = lastRequest();
+            reportRequest(request)
+            request.requestContent(step3);
+        }
+        function step3()
+        {
+            var request = lastRequest();
+            InspectorTest.addResult("request.content: " + request.content);
+
+            InspectorTest.addConsoleSniffer(step4);
+            InspectorTest.evaluateInPage("loadIframe('" + encodedContentType + "')");
+        }
+        function step4()
+        {
+            var request = lastRequest();
+            reportRequest(request);
+            request.requestContent(step5);
+        }
+        function step5()
+        {
+            var request = lastRequest();
+            InspectorTest.addResult("request.content: " + request.content);
+
+            callback();
+        }
+        InspectorTest.makeSimpleXHR("GET", "resources/json.php?type=" + encodedContentType, true, step2);
+    }
+    InspectorTest.runTestSuite([
+        function test1(next)
+        {
+            testType("application/json", next);
+        },
+        function test2(next)
+        {
+            testType("application/vnd.document+json", next);
+        },
+    ]);
 }
 </script>
 </head>
 <body onload="runTest()">
- <p>
- Tests XHR network resource content for asynchronous requests with application/json mime type.
-<a href="https://bugs.webkit.org/show_bug.cgi?id=80684">Bug 80684</a>
+<p>
+ Tests that the content of resources with JSON MIME types can be accessed.<br/>
+ When loaded by asynchronous XHR requests (<a href="https://bugs.webkit.org/show_bug.cgi?id=80684">Bug 80684</a>) or within iframes/documents.
 </p>
 </body>
 </html>

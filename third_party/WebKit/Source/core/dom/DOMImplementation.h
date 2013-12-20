@@ -67,6 +67,7 @@ public:
 
     static bool isXMLMIMEType(const String& MIMEType);
     static bool isTextMIMEType(const String& MIMEType);
+    static bool isJSONMIMEType(const String& MIMEType);
 
 private:
     explicit DOMImplementation(Document&);

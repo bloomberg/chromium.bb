@@ -1,5 +1,4 @@
 <?php
-    header("Content-Type: application/json");
+header("Content-Type: " . (isset($_GET["type"]) ? $_GET["type"] : "application/json"));
 ?>
 {"number": "42"}
-

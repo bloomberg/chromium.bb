@@ -31,6 +31,7 @@
 
 #include "core/dom/DOMImplementation.h"
 #include "core/fetch/Resource.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceResponse.h"
 
@@ -157,15 +158,21 @@ void NetworkResourcesData::resourceCreated(const String& requestId, const String
 static PassOwnPtr<TextResourceDecoder> createOtherResourceTextDecoder(const String& mimeType, const String& textEncodingName)
 {
     OwnPtr<TextResourceDecoder> decoder;
-    if (!textEncodingName.isEmpty())
+    if (!textEncodingName.isEmpty()) {
         decoder = TextResourceDecoder::create("text/plain", textEncodingName);
-    else if (DOMImplementation::isXMLMIMEType(mimeType.lower())) {
-        decoder = TextResourceDecoder::create("application/xml");
-        decoder->useLenientXMLDecoding();
-    } else if (equalIgnoringCase(mimeType, "text/html"))
-        decoder = TextResourceDecoder::create("text/html", "UTF-8");
-    else if (mimeType == "text/plain")
-        decoder = TextResourceDecoder::create("text/plain", "ISO-8859-1");
+    } else {
+        String mimeTypeLower = mimeType.lower();
+        if (DOMImplementation::isXMLMIMEType(mimeTypeLower)) {
+            decoder = TextResourceDecoder::create("application/xml");
+            decoder->useLenientXMLDecoding();
+        } else if (equalIgnoringCase(mimeType, "text/html")) {
+            decoder = TextResourceDecoder::create("text/html", "UTF-8");
+        } else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeTypeLower) || DOMImplementation::isJSONMIMEType(mimeTypeLower)) {
+            decoder = TextResourceDecoder::create("text/plain", "UTF-8");
+        } else if (DOMImplementation::isTextMIMEType(mimeTypeLower)) {
+            decoder = TextResourceDecoder::create("text/plain", "ISO-8859-1");
+        }
+    }
     return decoder.release();
 }
 

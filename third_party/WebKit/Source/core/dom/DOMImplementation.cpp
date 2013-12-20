@@ -294,15 +294,36 @@ bool DOMImplementation::isXMLMIMEType(const String& mimeType)
     return true;
 }
 
+bool DOMImplementation::isJSONMIMEType(const String& mimeType)
+{
+    if (mimeType.startsWith("application/json", false))
+        return true;
+    if (mimeType.startsWith("application/", false)) {
+        size_t subtype = mimeType.find("+json", 12, false);
+        if (subtype != kNotFound) {
+            // Just check that a parameter wasn't matched.
+            size_t parameterMarker = mimeType.find(";");
+            if (parameterMarker == kNotFound) {
+                unsigned endSubtype = static_cast<unsigned>(subtype) + 5;
+                return endSubtype == mimeType.length() || isASCIISpace(mimeType[endSubtype]);
+            }
+            return parameterMarker > subtype;
+        }
+    }
+    return false;
+}
+
+static bool isTextPlainType(const String& mimeType)
+{
+    return mimeType.startsWith("text/", false)
+        && !(equalIgnoringCase(mimeType, "text/html")
+            || equalIgnoringCase(mimeType, "text/xml")
+            || equalIgnoringCase(mimeType, "text/xsl"));
+}
+
 bool DOMImplementation::isTextMIMEType(const String& mimeType)
 {
-    if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType)
-        || mimeType == "application/json" // Render JSON as text/plain.
-        || (mimeType.startsWith("text/") && mimeType != "text/html"
-            && mimeType != "text/xml" && mimeType != "text/xsl"))
-        return true;
-
-    return false;
+    return MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType) || isJSONMIMEType(mimeType) || isTextPlainType(mimeType);
 }
 
 PassRefPtr<HTMLDocument> DOMImplementation::createHTMLDocument(const String& title)
