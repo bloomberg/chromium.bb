@@ -120,11 +120,15 @@ class BrowserTestBase : public testing::Test {
 
   // Call this before SetUp() to use real GL contexts in Compositor for the
   // test.
-  void UseRealGLContexts() { allow_test_contexts_ = false; }
+  void UseRealGLContexts();
 
   // Call this before SetUp() to use real GL drivers instead of OSMesa for the
   // test.
-  void UseRealGLBindings() { allow_osmesa_ = false; }
+  void UseRealGLBindings();
+
+  // Call this before SetUp() to not use GL, but use software compositing
+  // instead.
+  void UseSoftwareCompositing();
 
  private:
   void ProxyRunTestOnMainThreadLoop();
@@ -145,6 +149,9 @@ class BrowserTestBase : public testing::Test {
   // When false, the GL backend will use a real GPU. When true, it uses OSMesa
   // to run GL on the CPU in a way that works across all platforms.
   bool allow_osmesa_;
+
+  // When true, do compositing with the software backend instead of using GL.
+  bool use_software_compositing_;
 
 #if defined(OS_POSIX)
   bool handle_sigterm_;

@@ -120,7 +120,8 @@ extern int BrowserMain(const MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase()
     : allow_test_contexts_(true),
-      allow_osmesa_(true) {
+      allow_osmesa_(true),
+      use_software_compositing_(false) {
 #if defined(OS_MACOSX)
   base::mac::SetOverrideAmIBundled(true);
   base::PowerMonitorDeviceSource::AllocateSystemIOPorts();
@@ -153,6 +154,15 @@ void BrowserTestBase::SetUp() {
   // GPU blacklisting decisions were made.
   command_line->AppendSwitch(switches::kLogGpuControlListDecisions);
 
+  if (use_software_compositing_) {
+    command_line->AppendSwitch(switches::kDisableGpu);
+    command_line->AppendSwitch(switches::kEnableSoftwareCompositing);
+#if defined(USE_AURA)
+    command_line->AppendSwitch(switches::kUIEnableSoftwareCompositing);
+    command_line->AppendSwitch(switches::kUIDisableThreadedCompositing);
+#endif
+  }
+
 #if defined(OS_CHROMEOS)
   // If the test is running on the chromeos envrionment (such as
   // device or vm bots), always use real contexts.
@@ -166,7 +176,7 @@ void BrowserTestBase::SetUp() {
 
   // Use test contexts for browser tests unless they override and force us to
   // use a real context.
-  if (allow_test_contexts_) {
+  if (allow_test_contexts_ && !use_software_compositing_) {
     content::ImageTransportFactory::InitializeForUnitTests(
         scoped_ptr<ui::ContextFactory>(new ui::TestContextFactory));
   }
@@ -204,7 +214,7 @@ void BrowserTestBase::SetUp() {
         "kUseGL should not be used with tests. Try kUseGpuInTests instead.";
   }
 
-  if (allow_osmesa_) {
+  if (allow_osmesa_ && !use_software_compositing_) {
     command_line->AppendSwitchASCII(
         switches::kUseGL, gfx::kGLImplementationOSMesaName);
   }
@@ -272,6 +282,24 @@ void BrowserTestBase::PostTaskToInProcessRendererAndWait(
       FROM_HERE,
       base::Bind(&RunTaskOnRendererThread, task, runner->QuitClosure()));
   runner->Run();
+}
+
+void BrowserTestBase::UseRealGLContexts() { allow_test_contexts_ = false; }
+
+void BrowserTestBase::UseRealGLBindings() {
+  DCHECK(!use_software_compositing_)
+      << "Can't use GL with software compositing";
+  allow_osmesa_ = false;
+}
+
+void BrowserTestBase::UseSoftwareCompositing() {
+#if !defined(USE_AURA) && !defined(OS_MACOSX)
+  // TODO(danakj): Remove when GTK linux is no more.
+  NOTREACHED();
+#endif
+
+  DCHECK(allow_osmesa_) << "Can't use GL with software compositing";
+  use_software_compositing_ = true;
 }
 
 }  // namespace content
