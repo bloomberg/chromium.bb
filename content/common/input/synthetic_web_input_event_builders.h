@@ -42,8 +42,10 @@ class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
   static blink::WebGestureEvent Build(
       blink::WebInputEvent::Type type,
       blink::WebGestureEvent::SourceDevice sourceDevice);
+  static blink::WebGestureEvent BuildScrollBegin(float dx_hint,
+                                                  float dy_hint);
   static blink::WebGestureEvent BuildScrollUpdate(float dx,
-                                                   float dY,
+                                                   float dy,
                                                    int modifiers);
   static blink::WebGestureEvent BuildPinchUpdate(float scale,
                                                   float anchor_x,

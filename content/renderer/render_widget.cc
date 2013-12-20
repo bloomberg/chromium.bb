@@ -2798,17 +2798,22 @@ void RenderWidget::setTouchAction(
   if (!handling_touchstart_event_)
     return;
 
-  content::TouchAction content_touch_action;
-  switch(web_touch_action) {
-    case blink::WebTouchActionNone:
-      content_touch_action = content::TOUCH_ACTION_NONE;
-      break;
-    case blink::WebTouchActionAuto:
-      content_touch_action = content::TOUCH_ACTION_AUTO;
-      break;
-    default:
-      NOTREACHED();
-  }
+   // Verify the same values are used by the types so we can cast between them.
+   COMPILE_ASSERT(static_cast<blink::WebTouchAction>(TOUCH_ACTION_AUTO) ==
+                      blink::WebTouchActionAuto,
+                  enum_values_must_match_for_touch_action);
+   COMPILE_ASSERT(static_cast<blink::WebTouchAction>(TOUCH_ACTION_NONE) ==
+                      blink::WebTouchActionNone,
+                  enum_values_must_match_for_touch_action);
+   COMPILE_ASSERT(static_cast<blink::WebTouchAction>(TOUCH_ACTION_PAN_X) ==
+                      blink::WebTouchActionPanX,
+                  enum_values_must_match_for_touch_action);
+   COMPILE_ASSERT(static_cast<blink::WebTouchAction>(TOUCH_ACTION_PAN_Y) ==
+                      blink::WebTouchActionPanY,
+                  enum_values_must_match_for_touch_action);
+
+   content::TouchAction content_touch_action =
+       static_cast<content::TouchAction>(web_touch_action);
   Send(new InputHostMsg_SetTouchAction(routing_id_, content_touch_action));
 }
 

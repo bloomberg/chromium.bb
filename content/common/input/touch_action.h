@@ -11,13 +11,19 @@ namespace content {
 // (panning and zooming) are currently permitted via touch input.
 // See http://www.w3.org/TR/pointerevents/#the-touch-action-css-property.
 enum TouchAction {
-  // No scrolling or zooming allowed.
-  TOUCH_ACTION_NONE,
-
   // All actions are pemitted (the default).
-  TOUCH_ACTION_AUTO,
+  TOUCH_ACTION_AUTO = 0,
 
-  TOUCH_ACTION_MAX = TOUCH_ACTION_AUTO
+  // No scrolling or zooming allowed.
+  TOUCH_ACTION_NONE = 1 << 0,
+
+  TOUCH_ACTION_PAN_X = 1 << 1,
+
+  TOUCH_ACTION_PAN_Y = 1 << 2,
+
+  TOUCH_ACTION_PAN_X_Y = TOUCH_ACTION_PAN_X | TOUCH_ACTION_PAN_Y,
+
+  TOUCH_ACTION_MAX = (1 << 3) - 1
 };
 
 }  // namespace content

@@ -17,84 +17,340 @@ namespace content {
 TEST(TouchActionFilterTest, SimpleFilter) {
   TouchActionFilter filter;
 
-  const WebGestureEvent scroll_begin = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureScrollBegin, WebGestureEvent::Touchscreen);
-  const WebGestureEvent scroll_update =
-      SyntheticWebGestureEventBuilder::BuildScrollUpdate(0, 10, 0);
-  const WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
+  WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3);
+  const float kDeltaX = 5;
+  const float kDeltaY = 10;
+  WebGestureEvent scroll_update =
+      SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDeltaX, kDeltaY, 0);
+  WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
-  const WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
+  WebGestureEvent tap = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::GestureTap, WebGestureEvent::Touchscreen);
 
   // No events filtered by default.
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_begin));
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_end));
-  EXPECT_FALSE(filter.FilterGestureEvent(tap));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_EQ(kDeltaX, scroll_update.data.scrollUpdate.deltaX);
+  EXPECT_EQ(kDeltaY, scroll_update.data.scrollUpdate.deltaY);
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap));
 
   // TOUCH_ACTION_AUTO doesn't cause any filtering.
   filter.OnSetTouchAction(TOUCH_ACTION_AUTO);
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_begin));
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_EQ(kDeltaX, scroll_update.data.scrollUpdate.deltaX);
+  EXPECT_EQ(kDeltaY, scroll_update.data.scrollUpdate.deltaY);
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
 
   // TOUCH_ACTION_NONE filters out all scroll events, but no other events.
   filter.OnSetTouchAction(TOUCH_ACTION_NONE);
-  EXPECT_FALSE(filter.FilterGestureEvent(tap));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_begin));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&tap));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_EQ(kDeltaX, scroll_update.data.scrollUpdate.deltaX);
+  EXPECT_EQ(kDeltaY, scroll_update.data.scrollUpdate.deltaY);
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
 
   // After the end of a gesture the state is reset.
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_begin));
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
 
   // Setting touch action doesn't impact any in-progress gestures.
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
   filter.OnSetTouchAction(TOUCH_ACTION_NONE);
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
 
   // And the state is still cleared for the next gesture.
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_begin));
-  EXPECT_FALSE(filter.FilterGestureEvent(scroll_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
 
   // Changing the touch action during a gesture has no effect.
   filter.OnSetTouchAction(TOUCH_ACTION_NONE);
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
   filter.OnSetTouchAction(TOUCH_ACTION_AUTO);
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_end));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_EQ(kDeltaX, scroll_update.data.scrollUpdate.deltaX);
+  EXPECT_EQ(kDeltaY, scroll_update.data.scrollUpdate.deltaY);
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
+}
+
+TEST(TouchActionFilterTest, Fling) {
+  TouchActionFilter filter;
+
+  WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3);
+  WebGestureEvent scroll_update =
+      SyntheticWebGestureEventBuilder::BuildScrollUpdate(5, 10, 0);
+  const float kFlingX = 7;
+  const float kFlingY = -4;
+  WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
+      kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+  WebGestureEvent pad_fling = SyntheticWebGestureEventBuilder::BuildFling(
+      kFlingX, kFlingY, WebGestureEvent::Touchpad);
+
+  // TOUCH_ACTION_NONE filters out fling events.
+  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&fling_start));
+  EXPECT_EQ(kFlingX, fling_start.data.flingStart.velocityX);
+  EXPECT_EQ(kFlingY, fling_start.data.flingStart.velocityY);
+
+  // After a fling the state is reset.
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
+
+  // touchpad flings aren't filtered and don't reset state.
+  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pad_fling));
+  EXPECT_TRUE(filter.FilterGestureEvent(&fling_start));
+}
+
+TEST(TouchActionFilterTest, PanX) {
+  TouchActionFilter filter;
+  const float kDX = 5;
+  const float kDY = 10;
+  const float kFlingX = 7;
+  const float kFlingY = -4;
+  WebGestureEvent scrollEnd = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+
+  {
+    // Scrolls with no direction hint are permitted in the X axis.
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_X);
+
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(0, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDX, kDY, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_EQ(kDX, scroll_update.data.scrollUpdate.deltaX);
+    EXPECT_EQ(0, scroll_update.data.scrollUpdate.deltaY);
+
+    EXPECT_FALSE(filter.FilterGestureEvent(&scrollEnd));
+  }
+
+  {
+    // Scrolls hinted mostly in the X axis are permitted in that axis.
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_X);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(-7, 6);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDX, kDY, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_EQ(kDX, scroll_update.data.scrollUpdate.deltaX);
+    EXPECT_EQ(0, scroll_update.data.scrollUpdate.deltaY);
+
+    WebGestureEvent scroll_update2 =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(-4, -2, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update2));
+    EXPECT_EQ(-4, scroll_update2.data.scrollUpdate.deltaX);
+    EXPECT_EQ(0, scroll_update2.data.scrollUpdate.deltaY);
+
+    WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
+        kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+    EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
+    EXPECT_EQ(kFlingX, fling_start.data.flingStart.velocityX);
+    EXPECT_EQ(0, fling_start.data.flingStart.velocityY);
+  }
+
+  {
+    // Scrolls hinted mostly in the Y direction are suppressed entirely.
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_X);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(-7, 8);
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDX, kDY, 0);
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_EQ(kDX, scroll_update.data.scrollUpdate.deltaX);
+    EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
+
+    EXPECT_TRUE(filter.FilterGestureEvent(&scrollEnd));
+  }
+}
+
+TEST(TouchActionFilterTest, PanY) {
+  TouchActionFilter filter;
+  const float kDX = 5;
+  const float kDY = 10;
+  const float kFlingX = 7;
+  const float kFlingY = -4;
+  WebGestureEvent scrollEnd = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+
+  {
+    // Scrolls with no direction hint are permitted in the Y axis.
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_Y);
+
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(0, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDX, kDY, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_EQ(0, scroll_update.data.scrollUpdate.deltaX);
+    EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
+
+    EXPECT_FALSE(filter.FilterGestureEvent(&scrollEnd));
+  }
+
+  {
+    // Scrolls hinted mostly in the Y axis are permitted in that axis.
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_Y);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(-6, 7);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDX, kDY, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_EQ(0, scroll_update.data.scrollUpdate.deltaX);
+    EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
+
+    WebGestureEvent scroll_update2 =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(-4, -2, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update2));
+    EXPECT_EQ(0, scroll_update2.data.scrollUpdate.deltaX);
+    EXPECT_EQ(-2, scroll_update2.data.scrollUpdate.deltaY);
+
+    WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
+        kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+    EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
+    EXPECT_EQ(0, fling_start.data.flingStart.velocityX);
+    EXPECT_EQ(kFlingY, fling_start.data.flingStart.velocityY);
+  }
+
+  {
+    // Scrolls hinted mostly in the X direction are suppressed entirely.
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_Y);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(-8, 7);
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDX, kDY, 0);
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_EQ(kDX, scroll_update.data.scrollUpdate.deltaX);
+    EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
+
+    EXPECT_TRUE(filter.FilterGestureEvent(&scrollEnd));
+  }
+}
+
+TEST(TouchActionFilterTest, PanXY) {
+  TouchActionFilter filter;
+  const float kDX = 5;
+  const float kDY = 10;
+  const float kFlingX = 7;
+  const float kFlingY = -4;
+
+  {
+    // Scrolls hinted in the X axis are permitted and unmodified.
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_X_Y);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(-7, 6);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDX, kDY, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_EQ(kDX, scroll_update.data.scrollUpdate.deltaX);
+    EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
+
+    WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
+        kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+    EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
+    EXPECT_EQ(kFlingX, fling_start.data.flingStart.velocityX);
+    EXPECT_EQ(kFlingY, fling_start.data.flingStart.velocityY);
+  }
+
+  {
+    // Scrolls hinted in the Y axis are permitted and unmodified.
+    filter.OnSetTouchAction(TOUCH_ACTION_PAN_X_Y);
+    WebGestureEvent scroll_begin =
+        SyntheticWebGestureEventBuilder::BuildScrollBegin(-6, 7);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+
+    WebGestureEvent scroll_update =
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDX, kDY, 0);
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_update));
+    EXPECT_EQ(kDX, scroll_update.data.scrollUpdate.deltaX);
+    EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
+
+    WebGestureEvent fling_start = SyntheticWebGestureEventBuilder::BuildFling(
+        kFlingX, kFlingY, WebGestureEvent::Touchscreen);
+    EXPECT_FALSE(filter.FilterGestureEvent(&fling_start));
+    EXPECT_EQ(kFlingX, fling_start.data.flingStart.velocityX);
+    EXPECT_EQ(kFlingY, fling_start.data.flingStart.velocityY);
+  }
+}
+
+TEST(TouchActionFilterTest, Intersect) {
+  EXPECT_EQ(TOUCH_ACTION_NONE,
+      TouchActionFilter::Intersect(TOUCH_ACTION_NONE, TOUCH_ACTION_AUTO));
+  EXPECT_EQ(TOUCH_ACTION_NONE,
+      TouchActionFilter::Intersect(TOUCH_ACTION_AUTO, TOUCH_ACTION_NONE));
+  EXPECT_EQ(TOUCH_ACTION_PAN_X,
+      TouchActionFilter::Intersect(TOUCH_ACTION_AUTO, TOUCH_ACTION_PAN_X));
+  EXPECT_EQ(TOUCH_ACTION_PAN_Y,
+      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_Y, TOUCH_ACTION_AUTO));
+  EXPECT_EQ(TOUCH_ACTION_AUTO,
+      TouchActionFilter::Intersect(TOUCH_ACTION_AUTO, TOUCH_ACTION_AUTO));
+  EXPECT_EQ(TOUCH_ACTION_PAN_X,
+      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_X_Y, TOUCH_ACTION_PAN_X));
+  EXPECT_EQ(TOUCH_ACTION_PAN_Y,
+      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_Y, TOUCH_ACTION_PAN_X_Y));
+  EXPECT_EQ(TOUCH_ACTION_PAN_X_Y,
+      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_X_Y, TOUCH_ACTION_AUTO));
+  EXPECT_EQ(TOUCH_ACTION_NONE,
+      TouchActionFilter::Intersect(TOUCH_ACTION_PAN_X, TOUCH_ACTION_PAN_Y));
 }
 
 TEST(TouchActionFilterTest, MultiTouch) {
   TouchActionFilter filter;
 
-  const WebGestureEvent scroll_begin = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::GestureScrollBegin, WebGestureEvent::Touchscreen);
-  const WebGestureEvent scroll_update =
-      SyntheticWebGestureEventBuilder::BuildScrollUpdate(0, 10, 0);
-  const WebGestureEvent scrollEnd = SyntheticWebGestureEventBuilder::Build(
+  WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3);
+  const float kDeltaX = 5;
+  const float kDeltaY = 10;
+  WebGestureEvent scroll_update =
+      SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDeltaX, kDeltaY, 0);
+  WebGestureEvent scrollEnd = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
 
   // For multiple points, the intersection is what matters.
   filter.OnSetTouchAction(TOUCH_ACTION_NONE);
   filter.OnSetTouchAction(TOUCH_ACTION_AUTO);
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_begin));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_TRUE(filter.FilterGestureEvent(scrollEnd));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_EQ(kDeltaX, scroll_update.data.scrollUpdate.deltaX);
+  EXPECT_EQ(kDeltaY, scroll_update.data.scrollUpdate.deltaY);
+  EXPECT_TRUE(filter.FilterGestureEvent(&scrollEnd));
 
-  filter.OnSetTouchAction(TOUCH_ACTION_AUTO);
-  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
-  filter.OnSetTouchAction(TOUCH_ACTION_AUTO);
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_begin));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_TRUE(filter.FilterGestureEvent(scroll_update));
-  EXPECT_TRUE(filter.FilterGestureEvent(scrollEnd));
+  // Intersection of PAN_X and PAN_Y is NONE.
+  filter.OnSetTouchAction(TOUCH_ACTION_PAN_X);
+  filter.OnSetTouchAction(TOUCH_ACTION_PAN_Y);
+  filter.OnSetTouchAction(TOUCH_ACTION_PAN_X_Y);
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scrollEnd));
 }
 
 }  // namespace content

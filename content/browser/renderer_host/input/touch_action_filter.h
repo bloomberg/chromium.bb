@@ -25,13 +25,19 @@ public:
 
   // Returns true if the supplied gesture event should be dropped based on
   // the current touch-action state.
-  bool FilterGestureEvent(const blink::WebGestureEvent& gesture_event);
+  bool FilterGestureEvent(blink::WebGestureEvent* gesture_event);
 
   // Called when a set-touch-action message is received from the renderer
   // for a touch start event that is currently in flight.
   void OnSetTouchAction(content::TouchAction touch_action);
 
+  // Return the intersection of two TouchAction values.
+  static TouchAction Intersect(TouchAction ta1, TouchAction ta2);
+
 private:
+  bool ShouldSuppressScroll(const blink::WebGestureEvent& gesture_event);
+  bool FilterGestureEnd();
+
   // Whether GestureScroll events should be discarded due to touch-action.
   bool drop_scroll_gesture_events_;
 

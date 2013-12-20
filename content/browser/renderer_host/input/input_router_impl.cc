@@ -197,8 +197,9 @@ void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
 }
 
 void InputRouterImpl::SendGestureEvent(
-    const GestureEventWithLatencyInfo& gesture_event) {
-  if (touch_action_filter_.FilterGestureEvent(gesture_event.event))
+    const GestureEventWithLatencyInfo& original_gesture_event) {
+  GestureEventWithLatencyInfo gesture_event(original_gesture_event);
+  if (touch_action_filter_.FilterGestureEvent(&gesture_event.event))
     return;
 
   touch_event_queue_->OnGestureScrollEvent(gesture_event);

@@ -89,6 +89,16 @@ WebGestureEvent SyntheticWebGestureEventBuilder::Build(
   return result;
 }
 
+WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollBegin(
+    float dx_hint,
+    float dy_hint) {
+  WebGestureEvent result = Build(WebInputEvent::GestureScrollBegin,
+                                 WebGestureEvent::Touchscreen);
+  result.data.scrollBegin.deltaXHint = dx_hint;
+  result.data.scrollBegin.deltaYHint = dy_hint;
+  return result;
+}
+
 WebGestureEvent SyntheticWebGestureEventBuilder::BuildScrollUpdate(
     float dx,
     float dy,
