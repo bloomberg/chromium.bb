@@ -544,8 +544,8 @@ class ProjectMappingTest(cros_test_lib.TestCase):
 
   def testSplitEbuildPath(self):
     """Test if we can split an ebuild path into its components."""
-    ebuild_path = 'chromeos-base/power_manager/power_manager-9999.ebuild'
-    components = ['chromeos-base', 'power_manager', 'power_manager-9999']
+    ebuild_path = 'chromeos-base/platform2/platform2-9999.ebuild'
+    components = ['chromeos-base', 'platform2', 'platform2-9999']
     for path in (ebuild_path, './' + ebuild_path, 'foo.bar/' + ebuild_path):
       self.assertEquals(components, portage_utilities.SplitEbuildPath(path))
 
@@ -572,14 +572,14 @@ class ProjectMappingTest(cros_test_lib.TestCase):
 
   def testFindWorkonProjects(self):
     """Test if we can find the list of workon projects."""
-    power_manager = 'chromeos-base/power_manager'
-    power_manager_project = 'chromiumos/platform/power_manager'
+    ply_image = 'media-gfx/ply-image'
+    ply_image_project = 'chromiumos/third_party/ply-image'
     kernel = 'sys-kernel/chromeos-kernel'
     kernel_project = 'chromiumos/third_party/kernel'
     matches = [
-      ([power_manager], set([power_manager_project])),
+      ([ply_image], set([ply_image_project])),
       ([kernel], set([kernel_project])),
-      ([power_manager, kernel], set([power_manager_project, kernel_project]))
+      ([ply_image, kernel], set([ply_image_project, kernel_project]))
     ]
     if portage_utilities.FindOverlays(constants.BOTH_OVERLAYS):
       for packages, projects in matches:
