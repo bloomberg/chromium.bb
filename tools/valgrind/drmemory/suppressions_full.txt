@@ -1363,3 +1363,10 @@ net.dll!net::ProxyScriptDecider::*
 UNINITIALIZED READ
 name=bug_329590
 net.dll!net::NetworkChangeNotifierWin::NetworkChangeNotifierWin
+
+UNINITIALIZED READ
+name=bug_330105
+*!testing::internal::CmpHelperEQ<int,int>
+*!testing::internal::EqHelper<0>::Compare<int,int>
+*!extensions::BlacklistTest_GetBlacklistStates_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>
