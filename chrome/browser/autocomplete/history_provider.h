@@ -18,16 +18,6 @@ class HistoryProvider : public AutocompleteProvider {
  public:
   virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
 
- protected:
-  HistoryProvider(AutocompleteProviderListener* listener,
-                  Profile* profile,
-                  AutocompleteProvider::Type type);
-  virtual ~HistoryProvider();
-
-  // Finds and removes the match from the current collection of matches and
-  // backing data.
-  void DeleteMatchFromMatches(const AutocompleteMatch& match);
-
   // Fixes up user URL input to make it more possible to match against.  Among
   // many other things, this takes care of the following:
   // * Prepending file:// to file URLs
@@ -41,6 +31,16 @@ class HistoryProvider : public AutocompleteProvider {
   // Returns false if the fixup attempt resulted in an empty string (which
   // providers generally can't do anything with).
   static bool FixupUserInput(AutocompleteInput* input);
+
+ protected:
+  HistoryProvider(AutocompleteProviderListener* listener,
+                  Profile* profile,
+                  AutocompleteProvider::Type type);
+  virtual ~HistoryProvider();
+
+  // Finds and removes the match from the current collection of matches and
+  // backing data.
+  void DeleteMatchFromMatches(const AutocompleteMatch& match);
 
   // Trims "http:" and up to two subsequent slashes from |url|.  Returns the
   // number of characters that were trimmed.

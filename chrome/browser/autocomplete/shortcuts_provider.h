@@ -11,6 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 
 class Profile;
@@ -50,16 +51,18 @@ class ShortcutsProvider
   // Performs the autocomplete matching and scoring.
   void GetMatches(const AutocompleteInput& input);
 
-  // Returns an AutocompleteMatch corresponding to |shortcut|.  Assigns it
-  // |relevance| score in the process, and highlights the description
-  // and contents against |term_string|, which should be the lower-cased
-  // version of the user's input.  If |prevent_inline_autocomplete|, no
+  // Returns an AutocompleteMatch corresponding to |shortcut|. Assigns it
+  // |relevance| score in the process, and highlights the description and
+  // contents against |term_string|, which should be the lower-cased version
+  // of the user's input.  |term_string| and |fixed_up_term_string| are used
+  // to decide what can be inlined. If |prevent_inline_autocomplete|, no
   // matches with inline completions will be allowed to be the default match.
   AutocompleteMatch ShortcutToACMatch(
       const history::ShortcutsBackend::Shortcut& shortcut,
       int relevance,
       const base::string16& term_string,
-      bool prevent_inline_autocomplete);
+      const base::string16& fixed_up_term_string,
+      const bool prevent_inline_autocomplete);
 
   // Returns a map mapping characters to groups of words from |text| that start
   // with those characters, ordered lexicographically descending so that longer
@@ -104,8 +107,20 @@ class ShortcutsProvider
       const history::ShortcutsBackend::Shortcut& shortcut,
       int max_relevance);
 
+  // Like URLPrefix::BestURLPrefix() except also handles the prefix of
+  // "www.".  This is needed because sometimes the string we're matching
+  // against here (which comes from |fill_into_edit|) can start with
+  // "www." without having a protocol at the beginning.  Because "www."
+  // is not on the default prefix list, we test for it explicitly here
+  // and use that match if the default list didn't have a match or the
+  // default list's match was shorter than it could've been.
+  const URLPrefix* BestURLPrefixWithWWWCase(
+      const base::string16& text,
+      const base::string16& prefix_suffix) const;
+
   std::string languages_;
   bool initialized_;
+  URLPrefix www_prefix_;
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_SHORTCUTS_PROVIDER_H_
