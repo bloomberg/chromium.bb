@@ -34,7 +34,7 @@ FARPROC GetNtDllExportByName(const char* export_name) {
   return ::GetProcAddress(ntdll, export_name);
 }
 
-bool DllMatch(const string16& module_name) {
+bool DllMatch(const base::string16& module_name) {
   for (int i = 0; i < blacklist::g_troublesome_dlls_cur_index; ++i) {
     if (module_name == blacklist::g_troublesome_dlls[i])
       return true;
@@ -46,7 +46,7 @@ bool DllMatch(const string16& module_name) {
 // code in sandbox_nt_util.cc. See if they can be unified.
 
 // Native reimplementation of PSAPIs GetMappedFileName.
-string16 GetBackingModuleFilePath(PVOID address) {
+base::string16 GetBackingModuleFilePath(PVOID address) {
   DCHECK_NT(g_nt_query_virtual_memory_func);
 
   // We'll start with something close to max_path characters for the name.
@@ -77,11 +77,11 @@ string16 GetBackingModuleFilePath(PVOID address) {
 
     UNICODE_STRING* section_string =
         reinterpret_cast<UNICODE_STRING*>(section_name);
-    return string16(section_string->Buffer,
-                        section_string->Length / sizeof(wchar_t));
+    return base::string16(section_string->Buffer,
+                          section_string->Length / sizeof(wchar_t));
   }
 
-  return string16();
+  return base::string16();
 }
 
 bool IsModuleValidImageSection(HANDLE section,
@@ -108,12 +108,12 @@ bool IsModuleValidImageSection(HANDLE section,
   return true;
 }
 
-string16 ExtractLoadedModuleName(const string16& module_path) {
+base::string16 ExtractLoadedModuleName(const base::string16& module_path) {
   if (module_path.empty() || module_path[module_path.size() - 1] == L'\\')
-    return string16();
+    return base::string16();
 
   size_t sep = module_path.find_last_of(L'\\');
-  if (sep == string16::npos)
+  if (sep == base::string16::npos)
     return module_path;
   else
     return module_path.substr(sep+1);
@@ -154,11 +154,11 @@ void SafeGetImageInfo(const base::win::PEImage& pe,
   }
 }
 
-string16 GetImageInfoFromLoadedModule(HMODULE module, uint32* flags) {
+base::string16 GetImageInfoFromLoadedModule(HMODULE module, uint32* flags) {
   std::string out_name;
   base::win::PEImage pe(module);
   SafeGetImageInfo(pe, &out_name, flags);
-  return string16(out_name.begin(), out_name.end());
+  return base::string16(out_name.begin(), out_name.end());
 }
 
 }  // namespace
@@ -204,9 +204,9 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
   if (module) {
     UINT image_flags;
 
-    string16 module_name(GetImageInfoFromLoadedModule(
+    base::string16 module_name(GetImageInfoFromLoadedModule(
         reinterpret_cast<HMODULE>(*base), &image_flags));
-    string16 file_name(GetBackingModuleFilePath(*base));
+    base::string16 file_name(GetBackingModuleFilePath(*base));
 
     if (module_name.empty() && (image_flags & sandbox::MODULE_HAS_CODE)) {
       // If the module has no exports we retrieve the module name from the

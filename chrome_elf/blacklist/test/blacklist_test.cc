@@ -72,7 +72,7 @@ TEST_F(BlacklistTest, AddAndRemoveModules) {
   EXPECT_TRUE(blacklist::RemoveDllFromBlacklist(L"foo.dll"));
   EXPECT_FALSE(blacklist::RemoveDllFromBlacklist(L"foo.dll"));
 
-  std::vector<string16> added_dlls;
+  std::vector<base::string16> added_dlls;
   added_dlls.reserve(blacklist::kTroublesomeDllsMaxCount);
   for (int i = 0; i < blacklist::kTroublesomeDllsMaxCount; ++i) {
     added_dlls.push_back(base::IntToString16(i) + L".dll");
