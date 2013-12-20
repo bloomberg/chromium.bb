@@ -66,7 +66,7 @@ RMQStoreTest::~RMQStoreTest() {
 
 scoped_ptr<RMQStore> RMQStoreTest::BuildRMQStore() {
   return scoped_ptr<RMQStore>(new RMQStore(temp_directory_.path(),
-                              message_loop_.message_loop_proxy()));
+                                           message_loop_.message_loop_proxy()));
 }
 
 std::string RMQStoreTest::GetNextPersistentId() {
@@ -98,10 +98,12 @@ TEST_F(RMQStoreTest, LoadNew) {
                              &load_result));
   PumpLoop();
 
-  ASSERT_EQ(0U, load_result.device_android_id);
-  ASSERT_EQ(0U, load_result.device_security_token);
-  ASSERT_TRUE(load_result.incoming_messages.empty());
-  ASSERT_TRUE(load_result.outgoing_messages.empty());
+  EXPECT_EQ(0U, load_result.device_android_id);
+  EXPECT_EQ(0U, load_result.device_security_token);
+  EXPECT_TRUE(load_result.incoming_messages.empty());
+  EXPECT_TRUE(load_result.outgoing_messages.empty());
+  EXPECT_EQ(1LL, load_result.next_serial_number);
+  EXPECT_TRUE(load_result.user_serial_numbers.empty());
 }
 
 TEST_F(RMQStoreTest, DeviceCredentials) {
@@ -296,6 +298,65 @@ TEST_F(RMQStoreTest, IncomingAndOutgoingMessages) {
 
   ASSERT_TRUE(load_result.incoming_messages.empty());
   ASSERT_TRUE(load_result.outgoing_messages.empty());
+}
+
+TEST_F(RMQStoreTest, NextSerialNumber) {
+  const int64 kNextSerialNumber = 77LL;
+  scoped_ptr<RMQStore> rmq_store(BuildRMQStore());
+  RMQStore::LoadResult load_result;
+  rmq_store->Load(base::Bind(&RMQStoreTest::LoadCallback,
+                             base::Unretained(this),
+                             &load_result));
+  PumpLoop();
+
+  rmq_store->SetNextSerialNumber(kNextSerialNumber,
+                                 base::Bind(&RMQStoreTest::UpdateCallback,
+                                            base::Unretained(this)));
+  PumpLoop();
+
+  rmq_store = BuildRMQStore().Pass();
+  rmq_store->Load(base::Bind(&RMQStoreTest::LoadCallback,
+                             base::Unretained(this),
+                             &load_result));
+  PumpLoop();
+
+  EXPECT_EQ(kNextSerialNumber, load_result.next_serial_number);
+}
+
+TEST_F(RMQStoreTest, UserSerialNumberMappings) {
+  scoped_ptr<RMQStore> rmq_store(BuildRMQStore());
+  RMQStore::LoadResult load_result;
+  rmq_store->Load(base::Bind(&RMQStoreTest::LoadCallback,
+                             base::Unretained(this),
+                             &load_result));
+  PumpLoop();
+
+  std::string username1 = "username1";
+  int64 serial_number1 = 34LL;
+  rmq_store->AddUserSerialNumber(username1, serial_number1,
+                                 base::Bind(&RMQStoreTest::UpdateCallback,
+                                            base::Unretained(this)));
+
+  std::string username2 = "username2";
+  int64 serial_number2 = 56LL;
+  rmq_store->AddUserSerialNumber(username2, serial_number2,
+                                 base::Bind(&RMQStoreTest::UpdateCallback,
+                                            base::Unretained(this)));
+  PumpLoop();
+
+  rmq_store = BuildRMQStore().Pass();
+  rmq_store->Load(base::Bind(&RMQStoreTest::LoadCallback,
+                             base::Unretained(this),
+                             &load_result));
+  PumpLoop();
+
+  ASSERT_EQ(2u, load_result.user_serial_numbers.size());
+  ASSERT_NE(load_result.user_serial_numbers.end(),
+            load_result.user_serial_numbers.find(username1));
+  EXPECT_EQ(serial_number1, load_result.user_serial_numbers[username1]);
+  ASSERT_NE(load_result.user_serial_numbers.end(),
+            load_result.user_serial_numbers.find(username2));
+  EXPECT_EQ(serial_number2, load_result.user_serial_numbers[username2]);
 }
 
 }  // namespace

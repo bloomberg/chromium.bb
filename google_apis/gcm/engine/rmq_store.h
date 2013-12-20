@@ -45,6 +45,8 @@ class GCM_EXPORT RMQStore {
     std::vector<std::string> incoming_messages;
     std::map<std::string, google::protobuf::MessageLite*>
         outgoing_messages;
+    int64 next_serial_number;
+    std::map<std::string, int64> user_serial_numbers;
   };
 
   typedef std::vector<std::string> PersistentIdList;
@@ -86,6 +88,15 @@ class GCM_EXPORT RMQStore {
   void RemoveOutgoingMessage(const std::string& persistent_id,
                              const UpdateCallback& callback);
   void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
+                              const UpdateCallback& callback);
+
+  // User serial number handling.
+  void SetNextSerialNumber(int64 next_serial_number,
+                           const UpdateCallback& callback);
+  void AddUserSerialNumber(const std::string& username,
+                           int64 serial_number,
+                           const UpdateCallback& callback);
+  void RemoveUserSerialNumber(const std::string& username,
                               const UpdateCallback& callback);
 
  private:

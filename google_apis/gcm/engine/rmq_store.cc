@@ -36,12 +36,23 @@ const char kIncomingMsgKeyStart[] = "incoming1-";
 // Key guaranteed to be higher than all incoming message keys.
 // Used for limiting iteration.
 const char kIncomingMsgKeyEnd[] = "incoming2-";
+// Key for next serial number assigned to the user.
+const char kNextSerialNumberKey[] = "next_serial_number_key";
 // Lowest lexicographically ordered outgoing message key.
 // Used for prefixing outgoing messages.
 const char kOutgoingMsgKeyStart[] = "outgoing1-";
 // Key guaranteed to be higher than all outgoing message keys.
 // Used for limiting iteration.
 const char kOutgoingMsgKeyEnd[] = "outgoing2-";
+// Lowest lexicographically ordered username.
+// Used for prefixing username to serial number mappings.
+const char kUserSerialNumberKeyStart[] = "user1-";
+// Key guaranteed to be higher than all usernames.
+// Used for limiting iteration.
+const char kUserSerialNumberKeyEnd[] = "user2-";
+
+// Value indicating that serial number was not assigned.
+const int64 kSerialNumberMissing = -1LL;
 
 std::string MakeIncomingKey(const std::string& persistent_id) {
   return kIncomingMsgKeyStart + persistent_id;
@@ -51,8 +62,16 @@ std::string MakeOutgoingKey(const std::string& persistent_id) {
   return kOutgoingMsgKeyStart + persistent_id;
 }
 
+std::string MakeUserSerialNumberKey(const std::string& username) {
+  return kUserSerialNumberKeyStart + username;
+}
+
 std::string ParseOutgoingKey(const std::string& key) {
   return key.substr(arraysize(kOutgoingMsgKeyStart) - 1);
+}
+
+std::string ParseUsername(const std::string& key) {
+  return key.substr(arraysize(kUserSerialNumberKeyStart) - 1);
 }
 
 leveldb::Slice MakeSlice(const base::StringPiece& s) {
@@ -81,6 +100,12 @@ class RMQStore::Backend : public base::RefCountedThreadSafe<RMQStore::Backend> {
                           const UpdateCallback& callback);
   void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
                               const UpdateCallback& callback);
+  void AddUserSerialNumber(const std::string& username,
+                           int64 serial_number,
+                           const UpdateCallback& callback);
+  void RemoveUserSerialNumber(const std::string& username,
+                              const UpdateCallback& callback);
+  void SetNextSerialNumber(int64 serial_number, const UpdateCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<Backend>;
@@ -90,6 +115,9 @@ class RMQStore::Backend : public base::RefCountedThreadSafe<RMQStore::Backend> {
   bool LoadIncomingMessages(std::vector<std::string>* incoming_messages);
   bool LoadOutgoingMessages(
       std::map<std::string, google::protobuf::MessageLite*>* outgoing_messages);
+  bool LoadNextSerialNumber(int64* next_serial_number);
+  bool LoadUserSerialNumberMap(
+      std::map<std::string, int64>* user_serial_number_map);
 
   const base::FilePath path_;
   scoped_refptr<base::SequencedTaskRunner> foreground_task_runner_;
@@ -128,7 +156,9 @@ void RMQStore::Backend::Load(const LoadCallback& callback) {
   if (!LoadDeviceCredentials(&result.device_android_id,
                              &result.device_security_token) ||
       !LoadIncomingMessages(&result.incoming_messages) ||
-      !LoadOutgoingMessages(&result.outgoing_messages)) {
+      !LoadOutgoingMessages(&result.outgoing_messages) ||
+      !LoadNextSerialNumber(&result.next_serial_number) ||
+      !LoadUserSerialNumberMap(&result.user_serial_numbers)) {
     result.device_android_id = 0;
     result.device_security_token = 0;
     result.incoming_messages.clear();
@@ -289,6 +319,58 @@ void RMQStore::Backend::RemoveOutgoingMessages(
                                     base::Bind(callback, false));
 }
 
+void RMQStore::Backend::AddUserSerialNumber(const std::string& username,
+                                            int64 serial_number,
+                                            const UpdateCallback& callback) {
+  DVLOG(1) << "Saving username to serial number mapping for user: " << username;
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+
+  const leveldb::Status status =
+      db_->Put(write_options,
+               MakeSlice(MakeUserSerialNumberKey(username)),
+               MakeSlice(base::Int64ToString(serial_number)));
+  if (status.ok()) {
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
+    return;
+  }
+  LOG(ERROR) << "LevelDB put failed: " << status.ToString();
+  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+}
+
+void RMQStore::Backend::RemoveUserSerialNumber(const std::string& username,
+                                               const UpdateCallback& callback) {
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+
+  leveldb::Status status = db_->Delete(write_options, MakeSlice(username));
+  if (status.ok()) {
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
+    return;
+  }
+  LOG(ERROR) << "LevelDB remove failed: " << status.ToString();
+  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+}
+
+void RMQStore::Backend::SetNextSerialNumber(int64 next_serial_number,
+                                            const UpdateCallback& callback) {
+  DVLOG(1) << "Updating the value of next user serial number to: "
+           << next_serial_number;
+  leveldb::WriteOptions write_options;
+  write_options.sync = true;
+
+  const leveldb::Status status =
+      db_->Put(write_options,
+               MakeSlice(kNextSerialNumberKey),
+               MakeSlice(base::Int64ToString(next_serial_number)));
+  if (status.ok()) {
+    foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, true));
+    return;
+  }
+  LOG(ERROR) << "LevelDB put failed: " << status.ToString();
+  foreground_task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+}
+
 bool RMQStore::Backend::LoadDeviceCredentials(uint64* android_id,
                                               uint64* security_token) {
   leveldb::ReadOptions read_options;
@@ -382,18 +464,71 @@ bool RMQStore::Backend::LoadOutgoingMessages(
   return true;
 }
 
+bool RMQStore::Backend::LoadNextSerialNumber(int64* next_serial_number) {
+  leveldb::ReadOptions read_options;
+  read_options.verify_checksums = true;
+
+  std::string result;
+  leveldb::Status status = db_->Get(read_options,
+                                    MakeSlice(kNextSerialNumberKey),
+                                    &result);
+  if (status.ok()) {
+    if (!base::StringToInt64(result, next_serial_number)) {
+      LOG(ERROR) << "Failed to restore the next serial number.";
+      return false;
+    }
+    return true;
+  }
+
+  if (status.IsNotFound()) {
+    DVLOG(1) << "No next serial number found.";
+    return true;
+  }
+
+  LOG(ERROR) << "Error when reading the next serial number.";
+  return false;
+}
+
+bool RMQStore::Backend::LoadUserSerialNumberMap(
+    std::map<std::string, int64>* user_serial_number_map) {
+  leveldb::ReadOptions read_options;
+  read_options.verify_checksums = true;
+
+  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  for (iter->Seek(MakeSlice(kUserSerialNumberKeyStart));
+       iter->Valid() && iter->key().ToString() < kUserSerialNumberKeyEnd;
+       iter->Next()) {
+    std::string username = ParseUsername(iter->key().ToString());
+    if (username.empty()) {
+      LOG(ERROR) << "Error reading username. It should not be empty.";
+      return false;
+    }
+    std::string serial_number_string = iter->value().ToString();
+    int64 serial_number = kSerialNumberMissing;
+    if (!base::StringToInt64(serial_number_string, &serial_number)) {
+      LOG(ERROR) << "Error reading user serial number for user: " << username;
+      return false;
+    }
+
+    (*user_serial_number_map)[username] = serial_number;
+  }
+
+  return true;
+}
+
 RMQStore::LoadResult::LoadResult()
     : success(false),
       device_android_id(0),
-      device_security_token(0) {
+      device_security_token(0),
+      next_serial_number(1LL) {
 }
 RMQStore::LoadResult::~LoadResult() {}
 
 RMQStore::RMQStore(
     const base::FilePath& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-  : backend_(new Backend(path, base::MessageLoopProxy::current())),
-    blocking_task_runner_(blocking_task_runner) {
+    : backend_(new Backend(path, base::MessageLoopProxy::current())),
+      blocking_task_runner_(blocking_task_runner) {
 }
 
 RMQStore::~RMQStore() {
@@ -485,6 +620,38 @@ void RMQStore::RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
       base::Bind(&RMQStore::Backend::RemoveOutgoingMessages,
                  backend_,
                  persistent_ids,
+                 callback));
+}
+
+void RMQStore::SetNextSerialNumber(int64 next_serial_number,
+                                   const UpdateCallback& callback) {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RMQStore::Backend::SetNextSerialNumber,
+                 backend_,
+                 next_serial_number,
+                 callback));
+}
+
+void RMQStore::AddUserSerialNumber(const std::string& username,
+                                   int64 serial_number,
+                                   const UpdateCallback& callback) {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RMQStore::Backend::AddUserSerialNumber,
+                 backend_,
+                 username,
+                 serial_number,
+                 callback));
+}
+
+void RMQStore::RemoveUserSerialNumber(const std::string& username,
+                                      const UpdateCallback& callback) {
+  blocking_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RMQStore::Backend::RemoveUserSerialNumber,
+                 backend_,
+                 username,
                  callback));
 }
 
