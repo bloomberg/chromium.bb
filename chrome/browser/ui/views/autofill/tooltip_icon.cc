@@ -52,7 +52,8 @@ class TooltipBubble : public InfoBubble {
 TooltipIcon::TooltipIcon(const base::string16& tooltip)
     : tooltip_(tooltip),
       mouse_inside_(false),
-      bubble_(NULL) {
+      bubble_(NULL),
+      observer_(this) {
   ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
   SetFocusable(true);
 }
@@ -95,7 +96,8 @@ void TooltipIcon::OnFocus() {
 }
 
 void TooltipIcon::OnBlur() {
-  HideBubble();
+  if (!mouse_inside_)
+    HideBubble();
 }
 
 void TooltipIcon::MouseMovedOutOfHost() {
@@ -105,7 +107,8 @@ void TooltipIcon::MouseMovedOutOfHost() {
   }
 
   mouse_inside_ = false;
-  HideBubble();
+  if (!HasFocus())
+    HideBubble();
 }
 
 void TooltipIcon::ChangeImageTo(int idr) {
@@ -125,6 +128,7 @@ void TooltipIcon::ShowBubble() {
   bubble_->set_use_focusless(mouse_inside_ || HasFocus());
 
   bubble_->Show();
+  observer_.Add(bubble_->GetWidget());
 
   if (mouse_inside_) {
     views::View* frame = bubble_->GetWidget()->non_client_view()->frame_view();
@@ -136,13 +140,15 @@ void TooltipIcon::ShowBubble() {
 }
 
 void TooltipIcon::HideBubble() {
-  if (HasFocus() || mouse_inside_ || !bubble_)
-    return;
+  if (bubble_)
+    bubble_->Hide();
+}
+
+void TooltipIcon::OnWidgetDestroyed(views::Widget* widget) {
+  observer_.Remove(widget);
 
   ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
-
   mouse_watcher_.reset();
-  bubble_->Hide();
   bubble_ = NULL;
 }
 

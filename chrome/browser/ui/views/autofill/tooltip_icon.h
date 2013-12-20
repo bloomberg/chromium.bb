@@ -8,10 +8,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/mouse_watcher.h"
+#include "ui/views/widget/widget_observer.h"
 
 namespace autofill {
 
@@ -19,7 +21,8 @@ class InfoBubble;
 
 // A tooltip icon that shows a bubble on hover. Looks like (?).
 class TooltipIcon : public views::ImageView,
-                    public views::MouseWatcherListener {
+                    public views::MouseWatcherListener,
+                    public views::WidgetObserver {
  public:
   static const char kViewClassName[];
 
@@ -37,6 +40,9 @@ class TooltipIcon : public views::ImageView,
 
   // views::MouseWatcherListener:
   virtual void MouseMovedOutOfHost() OVERRIDE;
+
+  // views::WidgetObserver:
+  virtual void OnWidgetDestroyed(views::Widget* widget) OVERRIDE;
 
  private:
   // Changes this view's image to the resource indicated by |idr|.
@@ -63,6 +69,8 @@ class TooltipIcon : public views::ImageView,
 
   // A watcher that keeps |bubble_| open if the user's mouse enters it.
   scoped_ptr<views::MouseWatcher> mouse_watcher_;
+
+  ScopedObserver<views::Widget, TooltipIcon> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipIcon);
 };
