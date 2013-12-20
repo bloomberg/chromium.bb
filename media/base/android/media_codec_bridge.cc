@@ -636,6 +636,8 @@ VideoCodecBridge* VideoCodecBridge::CreateDecoder(const VideoCodec& codec,
 
   scoped_ptr<VideoCodecBridge> bridge(
       new VideoCodecBridge(mime, is_secure, MEDIA_CODEC_DECODER));
+  if (!bridge->media_codec())
+    return NULL;
 
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
   ScopedJavaLocalRef<jobject> j_format(
@@ -667,6 +669,8 @@ VideoCodecBridge* VideoCodecBridge::CreateEncoder(const VideoCodec& codec,
 
   scoped_ptr<VideoCodecBridge> bridge(
       new VideoCodecBridge(mime, false, MEDIA_CODEC_ENCODER));
+  if (!bridge->media_codec())
+    return NULL;
 
   ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, mime);
   ScopedJavaLocalRef<jobject> j_format(
