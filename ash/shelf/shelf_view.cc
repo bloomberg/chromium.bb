@@ -1827,16 +1827,11 @@ void ShelfView::ShowContextMenuForView(views::View* source,
                                        const gfx::Point& point,
                                        ui::MenuSourceType source_type) {
   int view_index = view_model_->GetIndexOfView(source);
-  // TODO(simon.hong81): Create LauncherContextMenu for applist in its
-  // ShelfItemDelegate.
-  if (view_index != -1 && model_->items()[view_index].type == TYPE_APP_LIST) {
-    view_index = -1;
-  }
-
   if (view_index == -1) {
     Shell::GetInstance()->ShowContextMenu(point, source_type);
     return;
   }
+
   scoped_ptr<ui::MenuModel> menu_model;
   ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
       model_->items()[view_index].id);
