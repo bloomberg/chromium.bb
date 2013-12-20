@@ -220,6 +220,8 @@ class PackageBuilder(object):
     """
     order = []
     order_set = set()
+    if self._options.ignore_dependencies:
+      return targets
     def Add(target, target_path):
       if target in order_set:
         return
@@ -310,6 +312,10 @@ class PackageBuilder(object):
         '--emit-signatures', dest='emit_signatures',
         help='Write human readable build signature for each step to FILE.',
         metavar='FILE')
+    parser.add_option(
+        '-i', '--ignore-dependencies', dest='ignore_dependencies',
+        default=False, action='store_true',
+        help='Ignore target dependencies and build only the specified target.')
     options, targets = parser.parse_args(args)
     if options.trybot and options.buildbot:
       print >>sys.stderr, (
@@ -319,10 +325,14 @@ class PackageBuilder(object):
       options.verbose = True
       options.sync_sources = True
       options.clobber = True
+    self._options = options
     if not targets:
+      if self._options.ignore_dependencies:
+        print >>sys.stderr, (
+            'ERROR: A target must be specified if ignoring target dependencies')
+        sys.exit(1)
       targets = sorted(packages.keys())
     targets = self.BuildOrder(targets)
-    self._options = options
     self._targets = targets
 
   def CreateStorage(self):
