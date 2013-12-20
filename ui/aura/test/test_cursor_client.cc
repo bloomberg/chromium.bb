@@ -13,6 +13,7 @@ TestCursorClient::TestCursorClient(aura::Window* root_window)
     : visible_(true),
       mouse_events_enabled_(true),
       cursor_lock_count_(0),
+      calls_to_set_cursor_(0),
       root_window_(root_window) {
   client::SetCursorClient(root_window, this);
 }
@@ -22,6 +23,7 @@ TestCursorClient::~TestCursorClient() {
 }
 
 void TestCursorClient::SetCursor(gfx::NativeCursor cursor) {
+  calls_to_set_cursor_++;
 }
 
 gfx::NativeCursor TestCursorClient::GetCursor() const {

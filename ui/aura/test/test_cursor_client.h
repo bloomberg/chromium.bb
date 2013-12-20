@@ -18,6 +18,10 @@ class TestCursorClient : public aura::client::CursorClient {
   explicit TestCursorClient(aura::Window* root_window);
   virtual ~TestCursorClient();
 
+  // Used to track the number of times SetCursor() was called.
+  int calls_to_set_cursor() const { return calls_to_set_cursor_; }
+  void reset_calls_to_set_cursor() { calls_to_set_cursor_ = 0; }
+
   // Overridden from aura::client::CursorClient:
   virtual void SetCursor(gfx::NativeCursor cursor) OVERRIDE;
   virtual gfx::NativeCursor GetCursor() const OVERRIDE;
@@ -44,6 +48,7 @@ class TestCursorClient : public aura::client::CursorClient {
   bool visible_;
   bool mouse_events_enabled_;
   int cursor_lock_count_;
+  int calls_to_set_cursor_;
   ObserverList<aura::client::CursorClientObserver> observers_;
   aura::Window* root_window_;
 

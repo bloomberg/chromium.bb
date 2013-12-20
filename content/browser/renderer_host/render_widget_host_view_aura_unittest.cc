@@ -678,6 +678,51 @@ TEST_F(RenderWidgetHostViewAuraTest, CursorVisibilityChange) {
   cursor_client.RemoveObserver(view_);
 }
 
+TEST_F(RenderWidgetHostViewAuraTest, UpdateCursorIfOverSelf) {
+  view_->InitAsChild(NULL);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(),
+      parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+
+  // Note that all coordinates in this test are screen coordinates.
+  view_->SetBounds(gfx::Rect(60, 60, 100, 100));
+  view_->Show();
+
+  aura::test::TestCursorClient cursor_client(
+      parent_view_->GetNativeView()->GetRootWindow());
+
+  // Cursor is in the middle of the window.
+  cursor_client.reset_calls_to_set_cursor();
+  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(110, 110));
+  view_->UpdateCursorIfOverSelf();
+  EXPECT_EQ(1, cursor_client.calls_to_set_cursor());
+
+  // Cursor is near the top of the window.
+  cursor_client.reset_calls_to_set_cursor();
+  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(80, 65));
+  view_->UpdateCursorIfOverSelf();
+  EXPECT_EQ(1, cursor_client.calls_to_set_cursor());
+
+  // Cursor is near the bottom of the window.
+  cursor_client.reset_calls_to_set_cursor();
+  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(159, 159));
+  view_->UpdateCursorIfOverSelf();
+  EXPECT_EQ(1, cursor_client.calls_to_set_cursor());
+
+  // Cursor is above the window.
+  cursor_client.reset_calls_to_set_cursor();
+  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(67, 59));
+  view_->UpdateCursorIfOverSelf();
+  EXPECT_EQ(0, cursor_client.calls_to_set_cursor());
+
+  // Cursor is below the window.
+  cursor_client.reset_calls_to_set_cursor();
+  aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(161, 161));
+  view_->UpdateCursorIfOverSelf();
+  EXPECT_EQ(0, cursor_client.calls_to_set_cursor());
+}
+
 scoped_ptr<cc::CompositorFrame> MakeGLFrame(float scale_factor,
                                             gfx::Size size,
                                             gfx::Rect damage) {

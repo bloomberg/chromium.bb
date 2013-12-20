@@ -3272,20 +3272,15 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
   if (!root_window)
     return;
 
-  gfx::Rect screen_rect = GetViewBounds();
-  gfx::Point local_point = screen_point;
-  local_point.Offset(-screen_rect.x(), -screen_rect.y());
+  gfx::Point root_window_point = screen_point;
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root_window);
+  if (screen_position_client) {
+    screen_position_client->ConvertPointFromScreen(
+        root_window, &root_window_point);
+  }
 
-#if defined(OS_WIN)
-  // If there's another toplevel window above us at this point (for example a
-  // menu), we don't want to update the cursor.
-  POINT windows_point = { screen_point.x(), screen_point.y() };
-  aura::WindowEventDispatcher* dispatcher = root_window->GetDispatcher();
-  if (dispatcher->host()->GetAcceleratedWidget() !=
-          ::WindowFromPoint(windows_point))
-    return;
-#endif
-  if (root_window->GetEventHandlerForPoint(local_point) != window_)
+  if (root_window->GetEventHandlerForPoint(root_window_point) != window_)
     return;
 
   gfx::NativeCursor cursor = current_cursor_.GetNativeCursor();
