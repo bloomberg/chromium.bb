@@ -1902,6 +1902,30 @@
           },
           'includes': [ '../build/java_apk.gypi' ],
         },  # end of target 'remoting_apk'
+        {
+          # remoting_apk creates a .jar file as a side effect. Any Java targets
+          # that need that .jar in their classpath should depend on this target.
+          'target_name': 'remoting_apk_java',
+          'type': 'none',
+          'dependencies': [
+            'remoting_apk',
+          ],
+          'includes': [ '../build/apk_fake_jar.gypi' ],
+        },  # end of target 'remoting_apk_java'
+        {
+          'target_name': 'remoting_test_apk',
+          'type': 'none',
+          'dependencies': [
+            '../base/base.gyp:base_java_test_support',
+            'remoting_apk_java',
+          ],
+          'variables': {
+            'apk_name': 'ChromotingTest',
+            'java_in_dir': 'android/javatests',
+            'is_test_apk': 1,
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },  # end of target 'remoting_test_apk'
       ],  # end of 'targets'
     }],  # 'OS=="android"'
 
