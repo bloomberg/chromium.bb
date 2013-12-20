@@ -175,6 +175,16 @@ void FFTFrame::multiply(const FFTFrame& frame)
     VectorMath::vsmul(imagP1, 1, &scale, imagP1, 1, halfSize);
 }
 
+#if OS(WIN)
+// On Windows, the following pragmas are equivalent to compiling the code with /fp:fast. The
+// following code does not need precise FP semantics, and speed is critical here. See
+// crbug.com/316740 and crrev.com/116823002.
+#pragma float_control(except, off, push)
+#pragma float_control(precise, off, push)
+#pragma fp_contract(on)
+#pragma fenv_access(off)
+#endif
+
 void FFTFrame::doFFT(const float* data)
 {
     // Copy since processing is in-place.
@@ -190,12 +200,14 @@ void FFTFrame::doFFT(const float* data)
     // FIXME: see above comment in multiply() about scaling.
     const float scale = 2.0f;
 
+    float* real = m_realData.data();
+    float* imag = m_imagData.data();
     for (int i = 0; i < len; ++i) {
         int baseComplexIndex = 2 * i;
         // m_realData[0] is the DC component and m_imagData[0] is the nyquist component
         // since the interleaved complex data is packed.
-        m_realData[i] = scale * p[baseComplexIndex];
-        m_imagData[i] = scale * p[baseComplexIndex + 1];
+        real[i] = scale * p[baseComplexIndex];
+        imag[i] = scale * p[baseComplexIndex + 1];
     }
 }
 
@@ -227,10 +239,13 @@ float* FFTFrame::getUpToDateComplexData()
     // FIXME: if we can't completely get rid of this method, SSE
     // optimization could be considered if it shows up hot on profiles.
     int len = m_FFTSize / 2;
+    const float* real = m_realData.data();
+    const float* imag = m_imagData.data();
+    float* c = m_complexData.data();
     for (int i = 0; i < len; ++i) {
         int baseComplexIndex = 2 * i;
-        m_complexData[baseComplexIndex] = m_realData[i];
-        m_complexData[baseComplexIndex + 1] = m_imagData[i];
+        c[baseComplexIndex] = real[i];
+        c[baseComplexIndex + 1] = imag[i];
     }
     return const_cast<float*>(m_complexData.data());
 }
