@@ -15,8 +15,8 @@
 
 #include "nacl_io/fifo_char.h"
 #include "nacl_io/fifo_null.h"
-#include "nacl_io/fifo_packet.h"
-#include "nacl_io/packet.h"
+#include "nacl_io/socket/fifo_packet.h"
+#include "nacl_io/socket/packet.h"
 
 #include "ppapi_simple/ps.h"
 

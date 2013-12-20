@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "nacl_io/error.h"
+#include "nacl_io/filesystem.h"
 #include "nacl_io/kernel_handle.h"
-#include "nacl_io/mount.h"
-#include "nacl_io/mount_node.h"
+#include "nacl_io/node.h"
 #include "nacl_io/path.h"
 
 #include "sdk_util/macros.h"
@@ -37,31 +37,31 @@ class KernelObject {
     int flags;
   };
   typedef std::vector<Descriptor_t> HandleMap_t;
-  typedef std::map<std::string, ScopedMount> MountMap_t;
+  typedef std::map<std::string, ScopedFilesystem> FsMap_t;
 
   KernelObject();
   virtual ~KernelObject();
 
-  // Attach the given Mount object at the specified path.
-  Error AttachMountAtPath(const ScopedMount& mnt, const std::string& path);
+  // Attach the given Filesystem object at the specified path.
+  Error AttachFsAtPath(const ScopedFilesystem& fs, const std::string& path);
 
-  // Unmap the Mount object from the specified path and release it.
-  Error DetachMountAtPath(const std::string& path);
+  // Unmap the Filesystem object from the specified path and release it.
+  Error DetachFsAtPath(const std::string& path);
 
-  // Find the mount for the given path, and acquires it and return a
-  // path relative to the mount.
-  // Assumes |out_mount| and |rel_path| are non-NULL.
-  Error AcquireMountAndRelPath(const std::string& path,
-                               ScopedMount* out_mount,
-                               Path* rel_path);
+  // Find the filesystem for the given path, and acquires it and return a
+  // path relative to the filesystem.
+  // Assumes |out_fs| and |rel_path| are non-NULL.
+  Error AcquireFsAndRelPath(const std::string& path,
+                            ScopedFilesystem* out_fs,
+                            Path* rel_path);
 
-  // Find the mount and node for the given path, acquiring/creating it as
+  // Find the filesystem and node for the given path, acquiring/creating it as
   // specified by the |oflags|.
-  // Assumes |out_mount| and |out_node| are non-NULL.
-  Error AcquireMountAndNode(const std::string& path,
-                            int oflags,
-                            ScopedMount* out_mount,
-                            ScopedMountNode* out_node);
+  // Assumes |out_fs| and |out_node| are non-NULL.
+  Error AcquireFsAndNode(const std::string& path,
+                         int oflags,
+                         ScopedFilesystem* out_fs,
+                         ScopedNode* out_node);
 
   // Get FD-specific flags (currently only FD_CLOEXEC is supported).
   Error GetFDFlags(int fd, int* out_flags);
@@ -73,7 +73,7 @@ class KernelObject {
   Error AcquireHandle(int fd, ScopedKernelHandle* out_handle);
 
   // Allocate a new fd and assign the handle to it, while
-  // ref counting the handle and associated mount.
+  // ref counting the handle and associated filesystem.
   // Assumes |handle| is non-NULL;
   int AllocateFD(const ScopedKernelHandle& handle);
 
@@ -88,17 +88,17 @@ class KernelObject {
   // Returns parts of the absolute path for the given relative path
   Path GetAbsParts(const std::string& path);
 
-private:
+ private:
   std::string cwd_;
   std::vector<int> free_fds_;
   HandleMap_t handle_map_;
-  MountMap_t mounts_;
+  FsMap_t filesystems_;
 
   // Lock to protect free_fds_ and handle_map_.
   sdk_util::SimpleLock handle_lock_;
 
-  // Lock to protect handle_map_.
-  sdk_util::SimpleLock mount_lock_;
+  // Lock to protect filesystems_.
+  sdk_util::SimpleLock fs_lock_;
 
   // Lock to protect cwd_.
   sdk_util::SimpleLock cwd_lock_;

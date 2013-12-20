@@ -16,7 +16,7 @@ EXTERN_C_BEGIN
  * Initialize nacl_io.
  *
  * NOTE: If you initialize nacl_io with this constructor, you cannot
- * use any mounts that require PPAPI; e.g. persistent storage, etc.
+ * use any filesystems that require PPAPI; e.g. persistent storage, etc.
  */
 void nacl_io_init();
 
@@ -38,9 +38,7 @@ void nacl_io_init();
  *   |get_interface| can be retrieved via
  *       pp::Module::Get()->get_browser_interface()
  */
-void nacl_io_init_ppapi(PP_Instance instance,
-                        PPB_GetInterface get_interface);
-
+void nacl_io_init_ppapi(PP_Instance instance, PPB_GetInterface get_interface);
 
 /**
  * Mount a new filesystem type.
@@ -72,7 +70,7 @@ void nacl_io_init_ppapi(PP_Instance instance,
  *     data: Unused.
  *
  *   "html5fs": A filesystem that uses PPAPI FileSystem interface, which can be
- *              read in JavaScript via the HTML5 FileSystem API. This mount
+ *              read in JavaScript via the HTML5 FileSystem API. This filesystem
  *              provides the use of persistent storage. Please read the
  *              documentation in ppapi/c/ppb_file_system.h for more information.
  *     source: Unused.
@@ -118,7 +116,7 @@ void nacl_io_init_ppapi(PP_Instance instance,
  */
 
 /**
- * Register a new mount type, using a FUSE interface to implement it.
+ * Register a new filesystem type, using a FUSE interface to implement it.
  *
  * Example:
  *   int my_open(const char* path, struct fuse_file_info*) {
@@ -140,44 +138,44 @@ void nacl_io_init_ppapi(PP_Instance instance,
  *
  *   ...
  *
- *   const char mount_type[] = "my_mount";
- *   int result = nacl_io_register_mount_type(mount_type, &my_fuse_ops);
+ *   const char fs_type[] = "my_fs";
+ *   int result = nacl_io_register_fs_type(fs_type, &my_fuse_ops);
  *   if (!result) {
- *     fprintf(stderr, "Error registering mount type %s.\n", mount_type);
+ *     fprintf(stderr, "Error registering filesystem type %s.\n", fs_type);
  *     exit(1);
  *   }
  *
  *   ...
  *
- *   int result = mount("", "/mnt/foo", mount_type, 0, NULL);
+ *   int result = mount("", "/fs/foo", fs_type, 0, NULL);
  *   if (!result) {
- *     fprintf(stderr, "Error mounting %s.\n", mount_type);
+ *     fprintf(stderr, "Error mounting %s.\n", fs_type);
  *     exit(1);
  *   }
  *
  * See fuse.h for more information about the FUSE interface.
  * Also see fuse.sourceforge.net for more information about FUSE in general.
  *
- * @param[in] mount_type The name of the new mount type.
+ * @param[in] fs_type The name of the new filesystem type.
  * @param[in] fuse_ops A pointer to the FUSE interface that will be used to
- *     implement this mount type. This pointer must be valid for the lifetime
- *     of all mounts and nodes that are created with it.
+ *     implement this filesystem type. This pointer must be valid for the
+ *     lifetime of all filesystems and nodes that are created with it.
  * @return 0 on success, -1 on failure (with errno set).
  */
 struct fuse_operations;
-int nacl_io_register_mount_type(const char* mount_type,
-                                struct fuse_operations* fuse_ops);
+int nacl_io_register_fs_type(const char* fs_type,
+                             struct fuse_operations* fuse_ops);
 
 /**
- * Unregister a mount type, previously registered by
- * nacl_io_register_mount_type().
+ * Unregister a filesystem type, previously registered by
+ * nacl_io_register_fs_type().
  *
- * @param[in] mount_type The name of the mount type; the same identifier that
- *     was passed to nacl_io_register_mount_type().
+ * @param[in] fs_type The name of the filesystem type; the same identifier that
+ *     was passed to nacl_io_register_fs_type().
  * @return 0 on success, -1 on failure (with errno set).
  */
-int nacl_io_unregister_mount_type(const char* mount_type);
+int nacl_io_unregister_fs_type(const char* fs_type);
 
 EXTERN_C_END
 
-#endif  /* LIBRARIES_NACL_IO_NACL_IO_H_ */
+#endif /* LIBRARIES_NACL_IO_NACL_IO_H_ */

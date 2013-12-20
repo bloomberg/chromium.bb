@@ -16,11 +16,10 @@ void nacl_io_init_ppapi(PP_Instance instance,
   ki_init_ppapi(NULL, instance, get_interface);
 }
 
-int nacl_io_register_mount_type(const char* mount_type,
-                                fuse_operations* fuse_ops) {
-  return ki_register_mount_type(mount_type, fuse_ops);
+int nacl_io_register_fs_type(const char* fs_type, fuse_operations* fuse_ops) {
+  return ki_register_fs_type(fs_type, fuse_ops);
 }
 
-int nacl_io_unregister_mount_type(const char* mount_type) {
-  return ki_unregister_mount_type(mount_type);
+int nacl_io_unregister_fs_type(const char* fs_type) {
+  return ki_unregister_fs_type(fs_type);
 }

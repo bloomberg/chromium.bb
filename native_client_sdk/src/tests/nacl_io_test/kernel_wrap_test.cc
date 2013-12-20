@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "kernel_proxy_mock.h"
+#include "mock_kernel_proxy.h"
 #include "nacl_io/kernel_intercept.h"
 #include "nacl_io/kernel_wrap.h"
 #include "nacl_io/osmman.h"
@@ -123,7 +123,7 @@ class KernelWrapTest : public ::testing::Test {
 
   virtual void TearDown() { ki_uninit(); }
 
-  KernelProxyMock mock;
+  MockKernelProxy mock;
 };
 
 }  // namespace

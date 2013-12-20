@@ -9,14 +9,14 @@
 #include <string>
 
 #include "nacl_io/event_emitter.h"
+#include "nacl_io/fs_factory.h"
 #include "nacl_io/host_resolver.h"
 #include "nacl_io/kernel_object.h"
-#include "nacl_io/mount_factory.h"
-#include "nacl_io/mount_stream.h"
 #include "nacl_io/ossignal.h"
 #include "nacl_io/ossocket.h"
 #include "nacl_io/ostypes.h"
 #include "nacl_io/osutime.h"
+#include "nacl_io/stream/stream_fs.h"
 
 struct fuse_operations;
 struct timeval;
@@ -27,33 +27,33 @@ class PepperInterface;
 
 
 // KernelProxy provide one-to-one mapping for libc kernel calls.  Calls to the
-// proxy will result in IO access to the provided Mount and MountNode objects.
+// proxy will result in IO access to the provided Filesystem and Node objects.
 //
 // NOTE: The KernelProxy does not directly take any kernel locks, all locking
-// is done by the parent class KernelObject.  Instead, KernelProxy is
-// responsible for taking the locks of the KernelHandle, and MountNode objects.
-// For this reason, a KernelObject call should not be done while holding
-// a handle or node lock.  In addition, to ensure locking order,
-// a KernelHandle lock must never be taken after taking the associated
-// MountNode's lock.
+// is done by the parent class KernelObject. Instead, KernelProxy is
+// responsible for taking the locks of the KernelHandle, and Node objects. For
+// this reason, a KernelObject call should not be done while holding a handle
+// or node lock. In addition, to ensure locking order, a KernelHandle lock
+// must never be taken after taking the associated Node's lock.
 //
 // NOTE: The KernelProxy is the only class that should be setting errno. All
 // other classes should return Error (as defined by nacl_io/error.h).
 class KernelProxy : protected KernelObject {
  public:
-  typedef std::map<std::string, MountFactory*> MountFactoryMap_t;
+  typedef std::map<std::string, FsFactory*> FsFactoryMap_t;
 
   KernelProxy();
   virtual ~KernelProxy();
 
   // Takes ownership of |ppapi|.
-  // |ppapi| may be NULL. If so, no mount that uses pepper calls can be mounted.
+  // |ppapi| may be NULL. If so, no filesystem that uses pepper calls can be
+  // mounted.
   virtual Error Init(PepperInterface* ppapi);
 
-  // Register/Unregister a new mount type. See the documentation in nacl_io.h
-  // for more info.
-  bool RegisterMountType(const char* mount_type, fuse_operations* fuse_ops);
-  bool UnregisterMountType(const char* mount_type);
+  // Register/Unregister a new filesystem type. See the documentation in
+  // nacl_io.h for more info.
+  bool RegisterFsType(const char* fs_type, fuse_operations* fuse_ops);
+  bool UnregisterFsType(const char* fs_type);
 
   virtual int pipe(int pipefds[2]);
 
@@ -66,7 +66,7 @@ class KernelProxy : protected KernelObject {
   virtual int dup(int fd);
   virtual int dup2(int fd, int newfd);
 
-  // Path related System calls handled by KernelProxy (not mount-specific)
+  // Path related System calls handled by KernelProxy (not filesystem-specific)
   virtual int chdir(const char* path);
   virtual char* getcwd(char* buf, size_t size);
   virtual char* getwd(char* buf);
@@ -83,20 +83,20 @@ class KernelProxy : protected KernelObject {
   virtual int lchown(const char* path, uid_t owner, gid_t group);
   virtual int utime(const char* filename, const struct utimbuf* times);
 
-  // System calls that take a path as an argument:
-  // The kernel proxy will look for the Node associated to the path. To
-  // find the node, the kernel proxy calls the corresponding mount's GetNode()
-  // method. The corresponding  method will be called. If the node
-  // cannot be found, errno is set and -1 is returned.
+  // System calls that take a path as an argument: The kernel proxy will look
+  // for the Node associated to the path. To find the node, the kernel proxy
+  // calls the corresponding filesystem's GetNode() method. The corresponding
+  // method will be called. If the node cannot be found, errno is set and -1 is
+  // returned.
   virtual int chmod(const char *path, mode_t mode);
   virtual int mkdir(const char *path, mode_t mode);
   virtual int rmdir(const char *path);
   virtual int stat(const char *path, struct stat *buf);
 
   // System calls that take a file descriptor as an argument:
-  // The kernel proxy will determine to which mount the file
+  // The kernel proxy will determine to which filesystem the file
   // descriptor's corresponding file handle belongs.  The
-  // associated mount's function will be called.
+  // associated filesystem's function will be called.
   virtual ssize_t read(int fd, void *buf, size_t nbyte);
   virtual ssize_t write(int fd, const void *buf, size_t nbyte);
 
@@ -111,20 +111,20 @@ class KernelProxy : protected KernelObject {
   virtual int isatty(int fd);
   virtual int ioctl(int fd, int request, va_list args);
 
-  // lseek() relies on the mount's Stat() to determine whether or not the
+  // lseek() relies on the filesystem's Stat() to determine whether or not the
   // file handle corresponding to fd is a directory
   virtual off_t lseek(int fd, off_t offset, int whence);
 
-  // remove() uses the mount's GetNode() and Stat() to determine whether or
-  // not the path corresponds to a directory or a file.  The mount's Rmdir()
-  // or Unlink() is called accordingly.
+  // remove() uses the filesystem's GetNode() and Stat() to determine whether
+  // or not the path corresponds to a directory or a file. The filesystem's
+  // Rmdir() or Unlink() is called accordingly.
   virtual int remove(const char* path);
-  // unlink() is a simple wrapper around the mount's Unlink function.
+  // unlink() is a simple wrapper around the filesystem's Unlink function.
   virtual int unlink(const char* path);
   virtual int truncate(const char* path, off_t len);
   virtual int lstat(const char* path, struct stat* buf);
   virtual int rename(const char* path, const char* newpath);
-  // access() uses the Mount's Stat().
+  // access() uses the Filesystem's Stat().
   virtual int access(const char* path, int amode);
   virtual int readlink(const char *path, char *buf, size_t count);
   virtual int utimes(const char *filename, const struct timeval times[2]);
@@ -197,8 +197,8 @@ class KernelProxy : protected KernelObject {
 #endif  // PROVIDES_SOCKET_API
 
  protected:
-  MountFactoryMap_t factories_;
-  sdk_util::ScopedRef<MountStream> stream_mount_;
+  FsFactoryMap_t factories_;
+  sdk_util::ScopedRef<StreamFs> stream_mount_;
   int dev_;
   PepperInterface* ppapi_;
   static KernelProxy *s_instance_;
