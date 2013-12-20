@@ -1199,6 +1199,7 @@ def _CheckForString16(input_api, output_api):
           r'^apps[\\\/]',
           r'^ash[\\\/]',
           r'^chrome[\\\/]',
+          r'^chrome_frame[\\\/]',
           r'^chromeos[\\\/]',
           r'^components[\\\/]',
           r'^content[\\\/]',
@@ -1212,6 +1213,7 @@ def _CheckForString16(input_api, output_api):
           r'^tools[\\\/]',
           r'^ui[\\\/]',
           r'^webkit[\\\/]',
+          r'^win8[\\\/]',
       ),
       black_list=(_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST))
