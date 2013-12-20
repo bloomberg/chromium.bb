@@ -2379,7 +2379,7 @@ newlib-install() {
 
   # Newlib installs files into usr/${NEWLIB_TARGET}/*
   # Get rid of the ${NEWLIB_TARGET}/ prefix.
-  pushd "${NEWLIB_INSTALL_DIR}"
+  spushd "${NEWLIB_INSTALL_DIR}"
   mkdir -p lib include
   mv -f ${NEWLIB_TARGET}/lib/* lib
   rm -rf  include/sys include/machine
@@ -2388,25 +2388,15 @@ newlib-install() {
   rmdir ${NEWLIB_TARGET}/include
   rmdir ${NEWLIB_TARGET}
 
-  pushd "${NEWLIB_INSTALL_DIR}"
-  # NOTE: we provide a new pthread.h via extra-sdk
-  rm include/pthread.h
-  popd
-
-
-  if [[ ${arch} != "portable" ]]; then
-    # Do not populate the sdk directory for flavored bitcode
-    return
-  fi
-
-  # Clang claims posix thread model, not single as llvm-gcc does.
-  # It means that libstdcpp needs pthread.h to be in place.
-  # This should go away when we properly import pthread.h with
-  # the other newlib headers. This hack is tracked by
-  # http://code.google.com/p/nativeclient/issues/detail?id=2333
-  StepBanner "NEWLIB" "Copying pthreads headers ahead of time "\
-  "(HACK. See http://code.google.com/p/nativeclient/issues/detail?id=2333)"
-  sdk-headers newlib
+  cp "${NACL_ROOT}/src/untrusted/pthread/pthread.h" \
+    "${NACL_ROOT}/src/untrusted/pthread/semaphore.h" \
+    include
+  # Copy the nacl_random.h header, which is needed by the libc++ build. It
+  # uses the IRT so should be safe to include in the toolchain tarball.
+  mkdir include/nacl
+  cp "${NACL_ROOT}/src/untrusted/nacl/nacl_random.h" \
+    include/nacl
+  spopd
 }
 
 libs-support() {

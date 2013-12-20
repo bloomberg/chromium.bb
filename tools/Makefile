@@ -581,7 +581,10 @@ BUILD/stamp-$(CROSSARCH)-newlib: | SRC/newlib BUILD newlib-libc-script
 	  $(MAKE) && \
 	  $(MAKE) DESTDIR=$(DESTDIR) install
 ifeq ($(CANNED_REVISION), no)
-	rm $(DESTDIR)$(PREFIX)/$(CROSSARCH)/include/pthread.h
+# The buildbot script that creates the source tarball adds all the headers to
+# the tarball itself (see buildbot/buildbot_linux-glibc-makefile.sh)
+	cp -f $(addprefix ../src/untrusted/pthread/, pthread.h semaphore.h) \
+	  $(DESTDIR)$(PREFIX)/$(CROSSARCH)/include
 endif
 	for bits in 32 64; do \
 	  mv $(DESTDIR)$(PREFIX)/$(CROSSARCH)/lib$$bits/libc.a \

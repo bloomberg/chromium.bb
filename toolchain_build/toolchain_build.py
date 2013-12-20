@@ -10,11 +10,15 @@ The real entry plumbing is in toolchain_main.py.
 
 import fnmatch
 import platform
+import os
 import re
 import sys
 
 import command
 import toolchain_main
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
 GIT_REVISIONS = {
     'binutils': '38dbda270a4248ab5b7facc012b9c8d8527f6fb2',
@@ -661,17 +665,25 @@ def TargetLibs(host, target):
       ]
 
   newlib_post_install = [
-      command.Remove(NewlibFile('include', 'pthread.h')),
       command.Rename(NewlibFile('lib', 'libc.a'),
                      NewlibFile('lib', 'libcrt_common.a')),
       command.WriteData(NewlibLibcScript(target),
                         NewlibFile('lib', 'libc.a')),
+      ] + [
+      command.Copy(
+          command.path.join('%(pthread_headers)s', header),
+          NewlibFile('include', header))
+      for header in ('pthread.h', 'semaphore.h')
       ]
+
 
   libs = {
       'newlib_' + target: {
           'type': 'build',
           'dependencies': ['newlib'] + lib_deps,
+          'inputs': { 'pthread_headers':
+                      os.path.join(NACL_DIR, 'src', 'untrusted',
+                                   'pthread') },
           'commands': (ConfigureTargetPrep(target) +
                        TargetCommands(host, target, [
                            ConfigureCommand('newlib') +
