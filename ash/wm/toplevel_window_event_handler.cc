@@ -72,15 +72,8 @@ class ToplevelWindowEventHandler::ScopedWindowResizer
                                        wm::WindowShowType type) OVERRIDE;
 
  private:
-  void AddHandlers(aura::Window* container);
-  void RemoveHandlers();
-
   ToplevelWindowEventHandler* handler_;
   scoped_ptr<WindowResizer> resizer_;
-
-  // If not NULL, this is an additional container that the dragged window has
-  // moved to which ScopedWindowResizer has temporarily added observers on.
-  aura::Window* target_container_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowResizer);
 };
@@ -89,8 +82,7 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
     ToplevelWindowEventHandler* handler,
     WindowResizer* resizer)
     : handler_(handler),
-      resizer_(resizer),
-      target_container_(NULL) {
+      resizer_(resizer) {
   if (resizer_) {
     resizer_->GetTarget()->AddObserver(this);
     wm::GetWindowState(resizer_->GetTarget())->AddObserver(this);
@@ -98,7 +90,6 @@ ToplevelWindowEventHandler::ScopedWindowResizer::ScopedWindowResizer(
 }
 
 ToplevelWindowEventHandler::ScopedWindowResizer::~ScopedWindowResizer() {
-  RemoveHandlers();
   if (resizer_) {
     resizer_->GetTarget()->RemoveObserver(this);
     wm::GetWindowState(resizer_->GetTarget())->RemoveObserver(this);
@@ -110,12 +101,10 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
   if (params.receiver != resizer_->GetTarget())
     return;
   wm::WindowState* state = wm::GetWindowState(params.receiver);
-  if (state->continue_drag_after_reparent()) {
+  if (state->continue_drag_after_reparent())
     state->set_continue_drag_after_reparent(false);
-    AddHandlers(params.new_parent);
-  } else {
+  else
     handler_->CompleteDrag(DRAG_COMPLETE, 0);
-  }
 }
 
 void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowShowTypeChanged(
@@ -132,37 +121,14 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
   handler_->ResizerWindowDestroyed();
 }
 
-void ToplevelWindowEventHandler::ScopedWindowResizer::AddHandlers(
-    aura::Window* container) {
-  RemoveHandlers();
-  if (!handler_->owner()->Contains(container)) {
-    container->AddPreTargetHandler(handler_);
-    container->AddPostTargetHandler(handler_);
-    target_container_ = container;
-  }
-}
-
-void ToplevelWindowEventHandler::ScopedWindowResizer::RemoveHandlers() {
-  if (target_container_) {
-    target_container_->RemovePreTargetHandler(handler_);
-    target_container_->RemovePostTargetHandler(handler_);
-    target_container_ = NULL;
-  }
-}
-
-
 // ToplevelWindowEventHandler --------------------------------------------------
 
-ToplevelWindowEventHandler::ToplevelWindowEventHandler(aura::Window* owner)
-    : owner_(owner),
-      in_move_loop_(false),
+ToplevelWindowEventHandler::ToplevelWindowEventHandler()
+    : in_move_loop_(false),
       move_cancelled_(false),
       in_gesture_drag_(false),
       destroyed_(NULL) {
-  aura::client::SetWindowMoveClient(owner, this);
   Shell::GetInstance()->display_controller()->AddObserver(this);
-  owner->AddPreTargetHandler(this);
-  owner->AddPostTargetHandler(this);
 }
 
 ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {
@@ -433,11 +399,10 @@ void ToplevelWindowEventHandler::HandleMousePressed(
         ConvertPointToParent(target, event->location()));
     CreateScopedWindowResizer(target, location_in_parent, component,
                               aura::client::WINDOW_MOVE_SOURCE_MOUSE);
+    event->StopPropagation();
   } else {
     window_resizer_.reset();
   }
-  if (WindowResizer::GetBoundsChangeForWindowComponent(component) != 0)
-    event->StopPropagation();
 }
 
 void ToplevelWindowEventHandler::HandleMouseReleased(

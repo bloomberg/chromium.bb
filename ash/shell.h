@@ -105,6 +105,7 @@ class StickyKeysController;
 class SystemTray;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
+class ToplevelWindowEventHandler;
 class UserActivityDetector;
 class UserWallpaperDelegate;
 class VideoDetector;
@@ -654,6 +655,9 @@ class ASH_EXPORT Shell
 
   // An event filter for logging keyboard-related metrics.
   scoped_ptr<internal::KeyboardUMAEventFilter> keyboard_metrics_filter_;
+
+  // An event filter which handles moving and resizing windows.
+  scoped_ptr<ToplevelWindowEventHandler> toplevel_window_event_handler_;
 
   // An event filter which handles system level gestures
   scoped_ptr<internal::SystemGestureEventFilter> system_gesture_filter_;

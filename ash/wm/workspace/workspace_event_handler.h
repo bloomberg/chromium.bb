@@ -5,12 +5,8 @@
 #ifndef ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_H_
 #define ASH_WM_WORKSPACE_WORKSPACE_EVENT_HANDLER_H_
 
-#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/workspace/multi_window_resize_controller.h"
-
-namespace aura {
-class Window;
-}
+#include "ui/events/event_handler.h"
 
 namespace ash {
 namespace wm {
@@ -21,12 +17,12 @@ namespace internal {
 
 class WorkspaceEventHandlerTestHelper;
 
-class WorkspaceEventHandler : public ToplevelWindowEventHandler {
+class WorkspaceEventHandler : public ui::EventHandler {
  public:
-  explicit WorkspaceEventHandler(aura::Window* owner);
+  WorkspaceEventHandler();
   virtual ~WorkspaceEventHandler();
 
-  // Overridden from ToplevelWindowEventHandler:
+  // ui::EventHandler:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 

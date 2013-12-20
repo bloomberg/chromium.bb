@@ -41,7 +41,6 @@
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_background_controller.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
-#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -733,8 +732,6 @@ void RootWindowController::InitLayoutManagers() {
   docked_layout_manager_ =
       new internal::DockedWindowLayoutManager(docked_container,
                                               workspace_controller());
-  docked_container_handler_.reset(
-      new ToplevelWindowEventHandler(docked_container));
   docked_container->SetLayoutManager(docked_layout_manager_);
 
   // Create Panel layout manager
@@ -742,9 +739,9 @@ void RootWindowController::InitLayoutManagers() {
       internal::kShellWindowId_PanelContainer);
   panel_layout_manager_ =
       new internal::PanelLayoutManager(panel_container);
-  panel_container_handler_.reset(
-      new PanelWindowEventHandler(panel_container));
   panel_container->SetLayoutManager(panel_layout_manager_);
+  panel_container_handler_.reset(new PanelWindowEventHandler);
+  panel_container->AddPreTargetHandler(panel_container_handler_.get());
 }
 
 void RootWindowController::InitTouchHuds() {
@@ -832,8 +829,6 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_AlwaysOnTopContainer,
       "AlwaysOnTopContainer",
       non_lock_screen_containers);
-  always_on_top_container_handler_.reset(
-      new ToplevelWindowEventHandler(always_on_top_container));
   views::corewm::SetChildWindowVisibilityChangesAnimated(
       always_on_top_container);
   SetUsesScreenCoordinates(always_on_top_container);
@@ -875,8 +870,6 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_SystemModalContainer,
       "SystemModalContainer",
       non_lock_screen_containers);
-  modal_container_handler_.reset(
-      new ToplevelWindowEventHandler(modal_container));
   modal_container->SetLayoutManager(
       new SystemModalContainerLayoutManager(modal_container));
   views::corewm::SetChildWindowVisibilityChangesAnimated(modal_container);
@@ -905,8 +898,6 @@ void RootWindowController::CreateContainersInRootWindow(
       kShellWindowId_LockSystemModalContainer,
       "LockSystemModalContainer",
       lock_screen_containers);
-  lock_modal_container_handler_.reset(
-      new ToplevelWindowEventHandler(lock_modal_container));
   lock_modal_container->SetLayoutManager(
       new SystemModalContainerLayoutManager(lock_modal_container));
   views::corewm::SetChildWindowVisibilityChangesAnimated(lock_modal_container);
