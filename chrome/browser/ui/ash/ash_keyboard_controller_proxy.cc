@@ -173,7 +173,6 @@ void AshKeyboardControllerProxy::ShowKeyboardContainer(
     settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
     container->SetTransform(gfx::Transform());
-    container->layer()->SetOpacity(1.0);
   }
 
   // TODO(bshe): Add animation observer and do the workspace resizing after
@@ -201,7 +200,6 @@ void AshKeyboardControllerProxy::HideKeyboardContainer(
   gfx::Transform transform;
   transform.Translate(0, GetKeyboardWindow()->bounds().height());
   container->SetTransform(transform);
-  container->layer()->SetOpacity(0.0);
   KeyboardControllerProxy::HideKeyboardContainer(container);
 }
 
