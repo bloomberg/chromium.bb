@@ -183,26 +183,32 @@ class RemoteAccess(object):
       cros_build_lib.Die('Reboot has not completed after %s seconds; giving up.'
                          % (REBOOT_MAX_WAIT,))
 
-  def Rsync(self, src, dest, inplace=False, verbose=False, debug_level=None,
-            sudo=False):
-    """Rsync a directory to the remote device.
+  def Rsync(self, src, dest, to_local=False, follow_symlinks=False,
+            inplace=False, verbose=False, sudo=False, **kwargs):
+    """Rsync a path to the remote device.
+
+    Rsync a path to the remote device. If |to_local| is set True, it
+    rsyncs the path from the remote device to the local machine.
 
     Args:
       src: The local src directory.
       dest: The remote dest directory.
+      to_local: If set, rsync remote path to local path.
+      follow_symlinks: If set, transform symlinks into referent
+        path. Otherwise, copy symlinks as symlinks.
       inplace: If set, cause rsync to overwrite the dest files in place.  This
-               conserves space, but has some side effects - see rsync man page.
+        conserves space, but has some side effects - see rsync man page.
       verbose: If set, print more verbose output during rsync file transfer.
-      debug_level: See cros_build_lib.RunCommand documentation.
       sudo: If set, invoke the command via sudo.
+      **kwargs: See cros_build_lib.RunCommand documentation.
     """
-    if not debug_level:
-      debug_level = self.debug_level
+    kwargs.setdefault('debug_level', self.debug_level)
 
     ssh_cmd = ' '.join(self._GetSSHCmd())
-    rsync_cmd = ['rsync', '--recursive', '--links', '--perms', '--verbose',
+    rsync_cmd = ['rsync', '--recursive', '--perms', '--verbose',
                  '--times', '--compress', '--omit-dir-times',
                  '--exclude', '.svn']
+    rsync_cmd.append('--copy-links' if follow_symlinks else '--links')
     # In cases where the developer sets up a ssh daemon manually on a device
     # with a dev image, the ssh login $PATH can be incorrect, and the target
     # rsync will not be found.  So we try to provide the right $PATH here.
@@ -211,12 +217,22 @@ class RemoteAccess(object):
       rsync_cmd.append('--progress')
     if inplace:
       rsync_cmd.append('--inplace')
-    rsync_cmd += ['--rsh', ssh_cmd, src,
-                  '[%s]:%s' % (self.target_ssh_url, dest)]
+
+    if to_local:
+      rsync_cmd += ['--rsh', ssh_cmd,
+                    '[%s]:%s' % (self.target_ssh_url, src), dest]
+    else:
+      rsync_cmd += ['--rsh', ssh_cmd, src,
+                    '[%s]:%s' % (self.target_ssh_url, dest)]
+
     rc_func = cros_build_lib.RunCommand
     if sudo:
       rc_func = cros_build_lib.SudoRunCommand
-    return rc_func(rsync_cmd, debug_level=debug_level, print_cmd=verbose)
+    return rc_func(rsync_cmd, print_cmd=verbose, **kwargs)
+
+  def RsyncToLocal(self, *args, **kwargs):
+    """Rsync a path from the remote device to the local machine."""
+    return self.Rsync(*args, to_local=kwargs.pop('to_local', True), **kwargs)
 
   def Scp(self, src, dest, recursive=False, verbose=False, debug_level=None,
           sudo=False):
