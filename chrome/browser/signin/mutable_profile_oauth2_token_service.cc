@@ -7,7 +7,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/token_web_data.h"
 #include "components/webdata/common/web_data_service_base.h"
+#include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/google_service_auth_error.h"
+#include "net/url_request/url_request_context_getter.h"
 
 #if defined(ENABLE_MANAGED_USERS)
 #include "chrome/browser/managed_mode/managed_user_constants.h"
@@ -34,6 +37,39 @@ std::string RemoveAccountIdPrefix(const std::string& prefixed_account_id) {
   return prefixed_account_id.substr(kAccountIdPrefixLength);
 }
 
+// This class sends a request to GAIA to revoke the given refresh token from
+// the server.  This is a best effort attempt only.  This class deletes itself
+// when done sucessfully or otherwise.
+class RevokeServerRefreshToken : public GaiaAuthConsumer {
+ public:
+  RevokeServerRefreshToken(const std::string& account_id,
+                           net::URLRequestContextGetter* request_context);
+  virtual ~RevokeServerRefreshToken();
+
+ private:
+  // GaiaAuthConsumer overrides:
+  virtual void OnOAuth2RevokeTokenCompleted() OVERRIDE;
+
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  GaiaAuthFetcher fetcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(RevokeServerRefreshToken);
+};
+
+RevokeServerRefreshToken::RevokeServerRefreshToken(
+    const std::string& refresh_token,
+    net::URLRequestContextGetter* request_context)
+    : request_context_(request_context),
+      fetcher_(this, GaiaConstants::kChromeSource, request_context) {
+  fetcher_.StartRevokeOAuth2Token(refresh_token);
+}
+
+RevokeServerRefreshToken::~RevokeServerRefreshToken() {}
+
+void RevokeServerRefreshToken::OnOAuth2RevokeTokenCompleted() {
+  delete this;
+}
+
 }  // namespace
 
 MutableProfileOAuth2TokenService::MutableProfileOAuth2TokenService()
@@ -52,6 +88,11 @@ void MutableProfileOAuth2TokenService::Shutdown() {
     web_data_service_request_  = 0;
   }
   ProfileOAuth2TokenService::Shutdown();
+}
+
+net::URLRequestContextGetter*
+MutableProfileOAuth2TokenService::GetRequestContext() {
+  return profile()->GetRequestContext();
 }
 
 void MutableProfileOAuth2TokenService::LoadCredentials() {
@@ -167,4 +208,10 @@ MutableProfileOAuth2TokenService::GetAccountIdForMigratingRefreshToken() {
 #endif
 
   return GetPrimaryAccountId();
+}
+
+void MutableProfileOAuth2TokenService::RevokeCredentialsOnServer(
+    const std::string& refresh_token) {
+  // RevokeServerRefreshToken deletes itself when done.
+  new RevokeServerRefreshToken(refresh_token, GetRequestContext());
 }

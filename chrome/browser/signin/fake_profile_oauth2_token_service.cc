@@ -140,16 +140,6 @@ std::string FakeProfileOAuth2TokenService::GetRefreshToken(
       std::string();
 }
 
-net::URLRequestContextGetter*
-FakeProfileOAuth2TokenService::GetRequestContext() {
-  return NULL;
-}
-
-void FakeProfileOAuth2TokenService::RevokeCredentialsOnServer(
-    const std::string& refresh_token) {
-  // Don't try to contact server in tests.
-}
-
 std::vector<FakeProfileOAuth2TokenService::PendingRequest>
 FakeProfileOAuth2TokenService::GetPendingRequests() {
   std::vector<PendingRequest> valid_requests;

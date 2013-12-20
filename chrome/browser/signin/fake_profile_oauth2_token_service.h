@@ -124,11 +124,6 @@ class FakeProfileOAuth2TokenService
 
   virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
 
-  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
-
-  virtual void RevokeCredentialsOnServer(
-      const std::string& refresh_token) OVERRIDE;
-
  private:
   // Helper function to complete pending requests - if |all_scopes| is true,
   // then all pending requests are completed, otherwise, only those requests

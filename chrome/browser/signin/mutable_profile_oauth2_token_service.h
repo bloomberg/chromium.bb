@@ -26,6 +26,9 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   MutableProfileOAuth2TokenService();
   virtual ~MutableProfileOAuth2TokenService();
 
+  // OAuth2TokenService implementation.
+  virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceTest,
                            TokenServiceUpdateClearsCache);
@@ -56,6 +59,10 @@ class MutableProfileOAuth2TokenService : public ProfileOAuth2TokenService,
   // testing purposes, or other cases, when accessing the DB is not desired.
   virtual void ClearPersistedCredentials(
       const std::string& account_id) OVERRIDE;
+
+  // Revokes the refresh token on the server.
+  virtual void RevokeCredentialsOnServer(
+        const std::string& refresh_token) OVERRIDE;
 
   // Handle to the request reading tokens from database.
   WebDataServiceBase::Handle web_data_service_request_;

@@ -23,47 +23,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/url_request/url_request_context_getter.h"
 
-namespace {
-
-// This class sends a request to GAIA to revoke the given refresh token from
-// the server.  This is a best effort attempt only.  This class deletes itself
-// when done sucessfully or otherwise.
-class RevokeServerRefreshToken : public GaiaAuthConsumer {
- public:
-  RevokeServerRefreshToken(const std::string& account_id,
-                           net::URLRequestContextGetter* request_context);
-  virtual ~RevokeServerRefreshToken();
-
- private:
-  // GaiaAuthConsumer overrides:
-  virtual void OnOAuth2RevokeTokenCompleted() OVERRIDE;
-
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-  scoped_ptr<GaiaAuthFetcher> fetcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(RevokeServerRefreshToken);
-};
-
-RevokeServerRefreshToken::RevokeServerRefreshToken(
-    const std::string& refresh_token,
-    net::URLRequestContextGetter* request_context)
-    : request_context_(request_context) {
-  fetcher_.reset(
-      new GaiaAuthFetcher(this,
-                          GaiaConstants::kChromeSource,
-                          request_context_.get()));
-  fetcher_->StartRevokeOAuth2Token(refresh_token);
-}
-
-RevokeServerRefreshToken::~RevokeServerRefreshToken() {}
-
-void RevokeServerRefreshToken::OnOAuth2RevokeTokenCompleted() {
-  delete this;
-}
-
-}  // namespace
-
-
 ProfileOAuth2TokenService::AccountInfo::AccountInfo(
     ProfileOAuth2TokenService* token_service,
     const std::string& account_id,
@@ -136,7 +95,7 @@ std::string ProfileOAuth2TokenService::GetRefreshToken(
 }
 
 net::URLRequestContextGetter* ProfileOAuth2TokenService::GetRequestContext() {
-  return profile_->GetRequestContext();
+  return NULL;
 }
 
 void ProfileOAuth2TokenService::UpdateAuthError(
@@ -261,6 +220,5 @@ void ProfileOAuth2TokenService::LoadCredentials() {
 
 void ProfileOAuth2TokenService::RevokeCredentialsOnServer(
     const std::string& refresh_token) {
-  // RevokeServerRefreshToken deletes itself when done.
-  new RevokeServerRefreshToken(refresh_token, GetRequestContext());
+  // Empty implementation by default.
 }

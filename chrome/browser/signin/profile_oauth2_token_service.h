@@ -151,6 +151,9 @@ class ProfileOAuth2TokenService : public OAuth2TokenService,
                            PersistenceLoadCredentials);
 
   // Revokes the refresh token on the server.
+  //
+  // Note: Empty implementation as all credentials logic is being migrated to
+  // MutableProfileOAuth2TokenService.
   virtual void RevokeCredentialsOnServer(const std::string& refresh_token);
 
   // The profile with which this instance was initialized, or NULL.
