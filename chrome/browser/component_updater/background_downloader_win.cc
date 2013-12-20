@@ -389,6 +389,10 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
 
   DCHECK(!timer_);
 
+  is_completed_ = false;
+  download_start_time_ = base::Time::Now();
+  job_stuck_begin_time_ = download_start_time_;
+
   HRESULT hr = QueueBitsJob(url);
   if (FAILED(hr)) {
     EndDownload(hr);
@@ -402,9 +406,6 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
                 base::TimeDelta::FromSeconds(kJobPollingIntervalSec),
                 this,
                 &BackgroundDownloader::OnDownloading);
-
-  download_start_time_ = base::Time::Now();
-  job_stuck_begin_time_ = download_start_time_;
 }
 
 // Called any time the timer fires.
