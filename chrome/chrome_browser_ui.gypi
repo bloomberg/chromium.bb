@@ -2796,6 +2796,7 @@
             'browser/ui/startup/default_browser_prompt.cc',
             'browser/ui/startup/default_browser_prompt.h',
             'browser/ui/views/app_list/linux/app_list_service_linux.cc',
+            'browser/ui/views/chrome_views_delegate_aura.cc',
             'browser/ui/views/frame/browser_desktop_root_window_host_x11.cc',
             'browser/ui/views/frame/browser_desktop_root_window_host_x11.h',
             'browser/ui/views/frame/desktop_browser_frame_aura.cc',
