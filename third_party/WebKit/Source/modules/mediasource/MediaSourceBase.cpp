@@ -255,7 +255,8 @@ void MediaSourceBase::openIfInEndedState()
 
 bool MediaSourceBase::hasPendingActivity() const
 {
-    return m_webMediaSource || m_asyncEventQueue->hasPendingEvents()
+    return m_attachedElement || m_webMediaSource
+        || m_asyncEventQueue->hasPendingEvents()
         || ActiveDOMObject::hasPendingActivity();
 }
 
