@@ -370,18 +370,22 @@ canvas {
 #effects li div.preview-canvas-padder {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  bottom: -50px;
+  bottom: 0;
   display: -webkit-box;
-  left: -50px;
+  left: 0;
   position: absolute;
-  right: -50px;
-  top: -50px;
+  right: 0;
+  top: 0;
 }
 
 #effects li canvas {
-  display: -webkit-box;
+  height: 257px;  /* Forces hardware accelerated 2d canvas. */
   opacity: 1;
+  position: absolute;
+  right: 0;
+  top: 0;
   transition: opacity 200ms;
+  width: 257px;
 }
 
 #effects li span {
