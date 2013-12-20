@@ -128,7 +128,7 @@ EXTRA_HOSTS_MAP = {
     }
 
 # The list of targets to build toolchains for.
-TARGET_LIST = ['arm']
+TARGET_LIST = ['arm', 'i686']
 
 # These are extra arguments to pass gcc's configure that vary by target.
 TARGET_GCC_CONFIG = {
@@ -271,6 +271,10 @@ GROUP ( libcrt_common.a libnacl.a )
     format_list = ['elf32-littlearm-nacl',
                    'elf32-bigarm-nacl',
                    'elf32-littlearm-nacl']
+  elif arch == 'i686':
+    format_list = 'elf32-i386-nacl'
+  elif arch == 'x86_64':
+    format_list = 'elf32-x86_64-nacl'
   else:
     raise Exception('TODO(mcgrathr): OUTPUT_FORMAT for %s' % arch)
   return template % ', '.join(['"' + fmt + '"' for fmt in format_list])
@@ -601,11 +605,10 @@ def HostTools(host, target):
 # configure defaults to -g -O2 but passing an explicit option overrides that.
 # So we have to list -g -O2 explicitly since we need to add -mtp=soft.
 def CommonTargetCflags(target):
+  options = ['-g', '-O2']
   if target == 'arm':
-    tls_option = '-mtp=soft'
-  else:
-    tls_option = '-mtls-use-call'
-  return ['-g', '-O2', tls_option]
+    options.append('-mtp=soft')
+  return options
 
 
 def NewlibTargetCflags(target):
