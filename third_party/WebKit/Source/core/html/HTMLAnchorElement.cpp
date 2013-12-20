@@ -30,6 +30,8 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -40,8 +42,6 @@
 #include "core/loader/PingLoader.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/RenderImage.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/PlatformMouseEvent.h"
@@ -152,16 +152,13 @@ bool HTMLAnchorElement::isMouseFocusable() const
 
 bool HTMLAnchorElement::isKeyboardFocusable() const
 {
+    ASSERT(document().isActive());
+
     if (isFocusable() && Element::supportsFocus())
         return HTMLElement::isKeyboardFocusable();
 
-    if (isLink()) {
-        Page* page = document().page();
-        if (!page)
-            return false;
-        if (!page->chrome().client().tabsToLinks())
-            return false;
-    }
+    if (isLink() && !document().frameHost()->chrome().client().tabsToLinks())
+        return false;
     return HTMLElement::isKeyboardFocusable();
 }
 

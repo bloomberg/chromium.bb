@@ -40,11 +40,11 @@
 #include "core/css/MediaQuery.h"
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
-#include "core/page/Page.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -365,7 +365,7 @@ static bool deviceHeightMediaFeatureEval(CSSValue* value, RenderStyle* style, Fr
             return false;
         int height = static_cast<int>(screenRect(frame->view()).height());
         if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
-            height = lroundf(height * frame->page()->deviceScaleFactor());
+            height = lroundf(height * frame->host()->deviceScaleFactor());
         return compareValue(height, length, op);
     }
     // ({,min-,max-}device-height)
@@ -381,7 +381,7 @@ static bool deviceWidthMediaFeatureEval(CSSValue* value, RenderStyle* style, Fra
             return false;
         int width = static_cast<int>(screenRect(frame->view()).width());
         if (frame->settings()->reportScreenSizeInPhysicalPixelsQuirk())
-            width = lroundf(width * frame->page()->deviceScaleFactor());
+            width = lroundf(width * frame->host()->deviceScaleFactor());
         return compareValue(width, length, op);
     }
     // ({,min-,max-}device-width)

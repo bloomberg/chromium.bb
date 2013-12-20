@@ -34,22 +34,22 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/events/BeforeTextInsertedEvent.h"
-#include "core/events/KeyboardEvent.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/events/TextEvent.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
+#include "core/events/BeforeTextInsertedEvent.h"
+#include "core/events/KeyboardEvent.h"
+#include "core/events/TextEvent.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/Settings.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
-#include "core/frame/Frame.h"
-#include "core/frame/Settings.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
 #include "core/rendering/RenderDetailsMarker.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
@@ -72,18 +72,19 @@ private:
 
     virtual void defaultEventHandler(Event* event) OVERRIDE
     {
+        ASSERT(document().isActive());
         if (event->type() != EventTypeNames::click)
             return;
         HTMLInputElement* host = hostInput();
-        if (host && !host->isDisabledOrReadOnly() && document().page()) {
-            document().page()->chrome().openTextDataListChooser(*host);
+        if (host && !host->isDisabledOrReadOnly()) {
+            document().frameHost()->chrome().openTextDataListChooser(*host);
             event->setDefaultHandled();
         }
     }
 
     virtual bool willRespondToMouseClickEvents() OVERRIDE
     {
-        return hostInput() && !hostInput()->isDisabledOrReadOnly() && document().page();
+        return hostInput() && !hostInput()->isDisabledOrReadOnly() && document().isActive();
     }
 
 public:

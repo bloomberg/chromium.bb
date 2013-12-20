@@ -30,8 +30,8 @@
 #define PageConsole_h
 
 #include "bindings/v8/ScriptState.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/frame/ConsoleTypes.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 

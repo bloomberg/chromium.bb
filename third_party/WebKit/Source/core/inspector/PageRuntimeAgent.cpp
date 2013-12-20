@@ -33,14 +33,14 @@
 
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/frame/Frame.h"
+#include "core/frame/PageConsole.h"
 #include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/frame/PageConsole.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 using WebCore::TypeBuilder::Runtime::ExecutionContextDescription;

@@ -36,7 +36,6 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/DocumentFragment.h"
-#include "core/events/Event.h"
 #include "core/editing/CreateLinkCommand.h"
 #include "core/editing/FormatBlockCommand.h"
 #include "core/editing/IndentOutdentCommand.h"
@@ -46,16 +45,17 @@
 #include "core/editing/TypingCommand.h"
 #include "core/editing/UnlinkCommand.h"
 #include "core/editing/markup.h"
+#include "core/events/Event.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLFontElement.h"
 #include "core/html/HTMLHRElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
-#include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/platform/Pasteboard.h"
 #include "core/rendering/RenderBox.h"
 #include "platform/KillRing.h"
@@ -954,10 +954,10 @@ static bool executePasteAndMatchStyle(Frame& frame, Event*, EditorCommandSource,
 
 static bool executePrint(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    Page* page = frame.page();
-    if (!page)
+    FrameHost* host = frame.host();
+    if (!host)
         return false;
-    page->chrome().print(&frame);
+    host->chrome().print(&frame);
     return true;
 }
 

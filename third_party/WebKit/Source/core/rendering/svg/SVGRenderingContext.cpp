@@ -27,8 +27,8 @@
 #include "core/rendering/svg/SVGRenderingContext.h"
 
 #include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
-#include "core/page/Page.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/RenderSVGImage.h"
 #include "core/rendering/svg/RenderSVGResource.h"
@@ -202,13 +202,11 @@ float SVGRenderingContext::calculateScreenFontSizeScalingFactor(const RenderObje
 void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(const RenderObject* renderer, AffineTransform& absoluteTransform)
 {
     ASSERT(renderer);
-    absoluteTransform = currentContentTransformation();
-
-    float deviceScaleFactor = 1;
-    if (Page* page = renderer->document().page())
-        deviceScaleFactor = page->deviceScaleFactor();
+    // We're about to possibly clear renderer, so save the deviceScaleFactor now.
+    float deviceScaleFactor = renderer->document().frameHost()->deviceScaleFactor();
 
     // Walk up the render tree, accumulating SVG transforms.
+    absoluteTransform = currentContentTransformation();
     while (renderer) {
         absoluteTransform = renderer->localToParentTransform() * absoluteTransform;
         if (renderer->isSVGRoot())
@@ -233,8 +231,7 @@ void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(con
         layer = layer->parent();
     }
 
-    if (deviceScaleFactor != 1)
-        absoluteTransform.scale(deviceScaleFactor);
+    absoluteTransform.scale(deviceScaleFactor);
 }
 
 void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* item, const AffineTransform& subtreeContentTransformation)

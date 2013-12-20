@@ -34,13 +34,13 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
+#include "core/frame/Frame.h"
+#include "core/frame/PageConsole.h"
 #include "core/inspector/InspectorOverlay.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/loader/DocumentLoader.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "core/frame/PageConsole.h"
 
 namespace WebCore {
 

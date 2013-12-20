@@ -36,12 +36,12 @@
 #include "CSSValueKeywords.h"
 #include "InputTypeNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -63,15 +63,15 @@ bool PasswordInputType::isPasswordGenerationEnabled() const
 {
     if (isPasswordGenerationDecorationEnabled())
         return true;
-    if (Page* page = element().document().page())
-        return page->chrome().client().isPasswordGenerationEnabled();
+    if (FrameHost* host = element().document().frameHost())
+        return host->chrome().client().isPasswordGenerationEnabled();
     return false;
 }
 
 bool PasswordInputType::isPasswordGenerationDecorationEnabled() const
 {
-    if (Page* page = element().document().page())
-        return page->settings().passwordGenerationDecorationEnabled();
+    if (Settings* settings = element().document().settings())
+        return settings->passwordGenerationDecorationEnabled();
     return false;
 }
 

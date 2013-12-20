@@ -24,7 +24,7 @@
 
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/page/Page.h"
+#include "core/frame/FrameHost.h"
 
 namespace WebCore {
 
@@ -46,9 +46,12 @@ StyleResolverState::StyleResolverState(Document& document, Element* element, Ren
     else if (!parentStyle && m_elementContext.parentNode())
         m_parentStyle = m_elementContext.parentNode()->renderStyle();
 
-    // FIXME: How can we not have a page here?
-    if (Page* page = document.page())
-        m_elementStyleResources.setDeviceScaleFactor(page->deviceScaleFactor());
+    // FIXME: Animation unitests will start animations on non-active documents!
+    // http://crbug.com/330095
+    // ASSERT(document.isActive());
+    if (!document.isActive())
+        return;
+    m_elementStyleResources.setDeviceScaleFactor(document.frameHost()->deviceScaleFactor());
 }
 
 } // namespace WebCore

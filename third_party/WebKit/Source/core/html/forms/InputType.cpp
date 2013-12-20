@@ -35,6 +35,7 @@
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/fileapi/FileList.h"
+#include "core/frame/FrameHost.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/ButtonInputType.h"
@@ -62,7 +63,6 @@
 #include "core/html/forms/WeekInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/HTMLShadowElement.h"
-#include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextBreakIterator.h"
@@ -452,8 +452,8 @@ void InputType::dispatchSimulatedClickIfActive(KeyboardEvent* event) const
 
 Chrome* InputType::chrome() const
 {
-    if (Page* page = element().document().page())
-        return &page->chrome();
+    if (FrameHost* host = element().document().frameHost())
+        return &host->chrome();
     return 0;
 }
 

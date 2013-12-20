@@ -53,6 +53,7 @@ void RenderSVGResourcePattern::removeClientFromCache(RenderObject* client, bool 
 
 PatternData* RenderSVGResourcePattern::buildPattern(RenderObject* object, unsigned short resourceMode)
 {
+    ASSERT(object);
     PatternData* currentData = m_patternMap.get(object);
     if (currentData && currentData->pattern)
         return currentData;

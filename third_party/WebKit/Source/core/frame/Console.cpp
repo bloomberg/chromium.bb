@@ -31,19 +31,18 @@
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/frame/ConsoleTypes.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/PageConsole.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/frame/Frame.h"
-#include "core/page/Page.h"
-#include "core/frame/PageConsole.h"
 #include "core/timing/MemoryInfo.h"
+#include "platform/TraceEvent.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
-
-#include "platform/TraceEvent.h"
 
 namespace WebCore {
 
@@ -66,15 +65,15 @@ ExecutionContext* Console::context()
 
 void Console::reportMessageToClient(MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
 {
-    if (!m_frame || !m_frame->page() || !callStack.get())
+    if (!m_frame || !m_frame->host() || !callStack.get())
         return;
 
     String stackTrace;
-    if (m_frame->page()->chrome().client().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
+    if (m_frame->host()->chrome().client().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
         RefPtr<ScriptCallStack> fullStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
         stackTrace = PageConsole::formatStackTraceString(message, fullStack);
     }
-    m_frame->page()->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
+    m_frame->host()->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, level, message, callStack->at(0).lineNumber(), callStack->at(0).sourceURL(), stackTrace);
 }
 
 PassRefPtr<MemoryInfo> Console::memory() const

@@ -52,7 +52,9 @@
 #include "core/events/TouchEvent.h"
 #include "core/fileapi/FileList.h"
 #include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLFormElement.h"
@@ -65,10 +67,8 @@
 #include "core/html/forms/SearchInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
-#include "core/frame/UseCounter.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateTimeChooser.h"
@@ -351,23 +351,28 @@ void HTMLInputElement::updateFocusAppearance(bool restorePreviousSelection)
 
 void HTMLInputElement::beginEditing()
 {
+    ASSERT(document().isActive());
+    if (!document().isActive())
+        return;
+
     if (!isTextField())
         return;
 
-    if (Frame* frame = document().frame())
-        frame->spellChecker().didBeginEditing(this);
+    document().frame()->spellChecker().didBeginEditing(this);
 }
 
 void HTMLInputElement::endEditing()
 {
+    ASSERT(document().isActive());
+    if (!document().isActive())
+        return;
+
     if (!isTextField())
         return;
 
-    if (Frame* frame = document().frame()) {
-        frame->spellChecker().didEndEditingOnTextField(this);
-        if (Page* page = frame->page())
-            page->chrome().client().didEndEditingOnTextField(*this);
-    }
+    Frame* frame = document().frame();
+    frame->spellChecker().didEndEditingOnTextField(this);
+    frame->host()->chrome().client().didEndEditingOnTextField(*this);
 }
 
 bool HTMLInputElement::shouldUseInputMethod()

@@ -112,7 +112,7 @@ enum PageshowEventPersistence {
 
         unsigned pendingUnloadEventListeners() const;
 
-        static FloatRect adjustWindowRect(Page*, const FloatRect& pendingChanges);
+        static FloatRect adjustWindowRect(Frame*, const FloatRect& pendingChanges);
 
         bool allowPopUp(); // Call on first window, not target window.
         static bool allowPopUp(Frame* firstFrame);

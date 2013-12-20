@@ -31,7 +31,7 @@
 
 #include "core/page/Chrome.h"
 #include "core/frame/Frame.h"
-#include "core/page/Page.h"
+#include "core/frame/FrameHost.h"
 
 namespace WebCore {
 
@@ -44,23 +44,24 @@ BarProp::BarProp(Frame* frame, Type type)
 
 bool BarProp::visible() const
 {
+    ASSERT(m_frame);
     if (!m_frame)
         return false;
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return false;
 
     switch (m_type) {
     case Locationbar:
     case Personalbar:
     case Toolbar:
-        return page->chrome().toolbarsVisible();
+        return host->chrome().toolbarsVisible();
     case Menubar:
-        return page->chrome().menubarVisible();
+        return host->chrome().menubarVisible();
     case Scrollbars:
-        return page->chrome().scrollbarsVisible();
+        return host->chrome().scrollbarsVisible();
     case Statusbar:
-        return page->chrome().statusbarVisible();
+        return host->chrome().statusbarVisible();
     }
 
     ASSERT_NOT_REACHED();

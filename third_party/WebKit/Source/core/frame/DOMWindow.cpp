@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/frame/DOMWindow.h"
 
-#include <algorithm>
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
@@ -67,6 +66,7 @@
 #include "core/frame/History.h"
 #include "core/frame/Location.h"
 #include "core/frame/Navigator.h"
+#include "core/frame/PageConsole.h"
 #include "core/frame/Screen.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -85,7 +85,6 @@
 #include "core/page/EventHandler.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/frame/PageConsole.h"
 #include "core/page/PageGroup.h"
 #include "core/page/WindowFeatures.h"
 #include "core/page/WindowFocusAllowedIndicator.h"
@@ -105,6 +104,7 @@
 #include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
+#include <algorithm>
 
 using std::min;
 using std::max;
@@ -252,12 +252,14 @@ unsigned DOMWindow::pendingUnloadEventListeners() const
 // 3) Constrains the window rect to within the top and left boundaries of the available screen rect.
 // 4) Constrains the window rect to within the bottom and right boundaries of the available screen rect.
 // 5) Translate the window rect coordinates to be within the coordinate space of the screen.
-FloatRect DOMWindow::adjustWindowRect(Page* page, const FloatRect& pendingChanges)
+FloatRect DOMWindow::adjustWindowRect(Frame* frame, const FloatRect& pendingChanges)
 {
-    ASSERT(page);
+    ASSERT(frame);
+    FrameHost* host = frame->host();
+    ASSERT(host);
 
-    FloatRect screen = screenAvailableRect(page->mainFrame()->view());
-    FloatRect window = page->chrome().windowRect();
+    FloatRect screen = screenAvailableRect(frame->view());
+    FloatRect window = host->chrome().windowRect();
 
     // Make sure we're in a valid state before adjusting dimensions.
     ASSERT(std::isfinite(screen.x()));
@@ -279,7 +281,7 @@ FloatRect DOMWindow::adjustWindowRect(Page* page, const FloatRect& pendingChange
     if (!std::isnan(pendingChanges.height()))
         window.setHeight(pendingChanges.height());
 
-    FloatSize minimumSize = page->chrome().client().minimumWindowSize();
+    FloatSize minimumSize = host->chrome().client().minimumWindowSize();
     // Let size 0 pass through, since that indicates default size, not minimum size.
     if (window.width())
         window.setWidth(min(max(minimumSize.width(), window.width()), screen.width()));
@@ -313,20 +315,20 @@ bool DOMWindow::canShowModalDialog(const Frame* frame)
 {
     if (!frame)
         return false;
-    Page* page = frame->page();
-    if (!page)
+    FrameHost* host = frame->host();
+    if (!host)
         return false;
-    return page->chrome().canRunModal();
+    return host->chrome().canRunModal();
 }
 
 bool DOMWindow::canShowModalDialogNow(const Frame* frame)
 {
     if (!frame)
         return false;
-    Page* page = frame->page();
-    if (!page)
+    FrameHost* host = frame->host();
+    if (!host)
         return false;
-    return page->chrome().canRunModalNow();
+    return host->chrome().canRunModalNow();
 }
 
 DOMWindow::DOMWindow(Frame* frame)
@@ -409,9 +411,9 @@ PassRefPtr<Document> DOMWindow::installNewDocument(const String& mimeType, const
     m_frame->selection().updateSecureKeyboardEntryIfActive();
 
     if (m_frame->isMainFrame()) {
-        m_frame->page()->mainFrame()->notifyChromeClientWheelEventHandlerCountChanged();
+        m_frame->notifyChromeClientWheelEventHandlerCountChanged();
         if (m_document->hasTouchEventHandlers())
-            m_frame->page()->chrome().client().needTouchEvents(true);
+            m_frame->host()->chrome().client().needTouchEvents(true);
     }
 
     return m_document;
@@ -820,11 +822,9 @@ Storage* DOMWindow::localStorage(ExceptionState& exceptionState) const
         return m_localStorage.get();
     }
 
+    // FIXME: Seems this check should be much higher?
     FrameHost* host = document->frameHost();
-    if (!host)
-        return 0;
-
-    if (!host->settings().localStorageEnabled())
+    if (!host || !host->settings().localStorageEnabled())
         return 0;
 
     OwnPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
@@ -1231,12 +1231,12 @@ void DOMWindow::setStatus(const String& string)
     if (!m_frame)
         return;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return;
 
     ASSERT(m_frame->document()); // Client calls shouldn't be made when the frame is in inconsistent state.
-    page->chrome().setStatusbarText(m_frame, m_status);
+    host->chrome().setStatusbarText(m_frame, m_status);
 }
 
 void DOMWindow::setDefaultStatus(const String& string)
@@ -1246,12 +1246,12 @@ void DOMWindow::setDefaultStatus(const String& string)
     if (!m_frame)
         return;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return;
 
     ASSERT(m_frame->document()); // Client calls shouldn't be made when the frame is in inconsistent state.
-    page->chrome().setStatusbarText(m_frame, m_defaultStatus);
+    host->chrome().setStatusbarText(m_frame, m_defaultStatus);
 }
 
 DOMWindow* DOMWindow::self() const
@@ -1414,75 +1414,62 @@ void DOMWindow::scrollTo(int x, int y) const
 
 void DOMWindow::moveBy(float x, float y) const
 {
-    if (!m_frame)
+    if (!m_frame || !m_frame->isMainFrame())
         return;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return;
 
-    if (m_frame != page->mainFrame())
-        return;
-
-    FloatRect fr = page->chrome().windowRect();
-    FloatRect update = fr;
-    update.move(x, y);
+    FloatRect windowRect = host->chrome().windowRect();
+    windowRect.move(x, y);
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    page->chrome().setWindowRect(adjustWindowRect(page, update));
+    host->chrome().setWindowRect(adjustWindowRect(m_frame, windowRect));
 }
 
 void DOMWindow::moveTo(float x, float y) const
 {
-    if (!m_frame)
+    if (!m_frame || !m_frame->isMainFrame())
         return;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return;
 
-    if (m_frame != page->mainFrame())
-        return;
-
-    FloatRect update = page->chrome().windowRect();
-    update.setLocation(FloatPoint(x, y));
+    FloatRect windowRect = host->chrome().windowRect();
+    windowRect.setLocation(FloatPoint(x, y));
     // Security check (the spec talks about UniversalBrowserWrite to disable this check...)
-    page->chrome().setWindowRect(adjustWindowRect(page, update));
+    host->chrome().setWindowRect(adjustWindowRect(m_frame, windowRect));
 }
 
 void DOMWindow::resizeBy(float x, float y) const
 {
-    if (!m_frame)
+    if (!m_frame || !m_frame->isMainFrame())
         return;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return;
 
-    if (m_frame != page->mainFrame())
-        return;
-
-    FloatRect fr = page->chrome().windowRect();
+    FloatRect fr = host->chrome().windowRect();
     FloatSize dest = fr.size() + FloatSize(x, y);
     FloatRect update(fr.location(), dest);
-    page->chrome().setWindowRect(adjustWindowRect(page, update));
+    host->chrome().setWindowRect(adjustWindowRect(m_frame, update));
 }
 
 void DOMWindow::resizeTo(float width, float height) const
 {
-    if (!m_frame)
+    if (!m_frame || !m_frame->isMainFrame())
         return;
 
-    Page* page = m_frame->page();
-    if (!page)
+    FrameHost* host = m_frame->host();
+    if (!host)
         return;
 
-    if (m_frame != page->mainFrame())
-        return;
-
-    FloatRect fr = page->chrome().windowRect();
+    FloatRect fr = host->chrome().windowRect();
     FloatSize dest = FloatSize(width, height);
     FloatRect update(fr.location(), dest);
-    page->chrome().setWindowRect(adjustWindowRect(page, update));
+    host->chrome().setWindowRect(adjustWindowRect(m_frame, update));
 }
 
 int DOMWindow::requestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback> callback)
@@ -1854,7 +1841,7 @@ void DOMWindow::showModalDialog(const String& urlString, const String& dialogFea
     if (!dialogFrame)
         return;
     UserGestureIndicatorDisabler disabler;
-    dialogFrame->page()->chrome().runModal();
+    dialogFrame->host()->chrome().runModal();
 }
 
 DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)

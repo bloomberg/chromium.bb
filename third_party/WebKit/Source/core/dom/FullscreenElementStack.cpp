@@ -31,12 +31,12 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
-#include "core/frame/Frame.h"
-#include "core/page/Page.h"
-#include "core/frame/Settings.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "platform/UserGestureIndicator.h"
 
@@ -240,7 +240,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
         // 5. Return, and run the remaining steps asynchronously.
         // 6. Optionally, perform some animation.
         m_areKeysEnabledInFullScreen = flags & Element::ALLOW_KEYBOARD_INPUT;
-        document()->page()->chrome().client().enterFullScreenForElement(element);
+        document()->frameHost()->chrome().client().enterFullScreenForElement(element);
 
         // 7. Optionally, display a message indicating how the user can exit displaying the context object fullscreen.
         return;
@@ -274,6 +274,7 @@ void FullscreenElementStack::webkitExitFullscreen()
 
     // 1. Let doc be the context object. (i.e. "this")
     Document* currentDoc = document();
+    ASSERT(currentDoc->isActive());
 
     // 2. If doc's fullscreen element stack is empty, terminate these steps.
     if (m_fullScreenElementStack.isEmpty())
@@ -325,18 +326,17 @@ void FullscreenElementStack::webkitExitFullscreen()
     // 6. Return, and run the remaining steps asynchronously.
     // 7. Optionally, perform some animation.
 
-    if (!document()->page())
-        return;
+    FrameHost* host = document()->frameHost();
 
     // Only exit out of full screen window mode if there are no remaining elements in the
     // full screen stack.
     if (!newTop) {
-        document()->page()->chrome().client().exitFullScreenForElement(m_fullScreenElement.get());
+        host->chrome().client().exitFullScreenForElement(m_fullScreenElement.get());
         return;
     }
 
     // Otherwise, notify the chrome of the new full screen element.
-    document()->page()->chrome().client().enterFullScreenForElement(newTop);
+    host->chrome().client().enterFullScreenForElement(newTop);
 }
 
 bool FullscreenElementStack::webkitFullscreenEnabled(Document* document)
@@ -351,15 +351,11 @@ bool FullscreenElementStack::webkitFullscreenEnabled(Document* document)
 
 void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* element)
 {
+    ASSERT(element);
     if (!document()->isActive())
         return;
 
-    ASSERT(element);
-
-    // Protect against being called after the document has been removed from the page.
-    if (!document()->settings())
-        return;
-
+    ASSERT(document()->settings()); // If we're active we must have settings.
     ASSERT(document()->settings()->fullScreenEnabled());
 
     if (m_fullScreenRenderer)

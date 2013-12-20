@@ -32,13 +32,13 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/NodeRenderStyle.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameHost.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/page/Chrome.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
-#include "core/page/Page.h"
 #include "core/rendering/RenderBR.h"
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderTheme.h"
@@ -315,7 +315,7 @@ void RenderMenuList::showPopup()
     if (m_popupIsVisible)
         return;
 
-    if (document().page()->chrome().hasOpenedPopup())
+    if (document().frameHost()->chrome().hasOpenedPopup())
         return;
 
     // Create m_innerBlock here so it ends up as the first child.
@@ -323,7 +323,7 @@ void RenderMenuList::showPopup()
     // inside the showPopup call and it would fail.
     createInnerBlock();
     if (!m_popup)
-        m_popup = document().page()->chrome().createPopupMenu(*document().frame(), this);
+        m_popup = document().frameHost()->chrome().createPopupMenu(*document().frame(), this);
     m_popupIsVisible = true;
 
     FloatQuad quad(localToAbsoluteQuad(FloatQuad(borderBoundingBox())));
