@@ -45,6 +45,7 @@
 #include "content/common/sandbox_win.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "sandbox/win/src/sandbox_policy.h"
+#include "ui/gfx/switches.h"
 #include "ui/surface/accelerated_surface_win.h"
 #endif
 
@@ -1144,6 +1145,9 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
 #endif
 #if defined(USE_OZONE)
     switches::kOzonePlatform,
+#endif
+#if defined(OS_WIN) && defined(USE_AURA)
+    switches::kHighDPISupport,
 #endif
   };
   cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,

@@ -892,10 +892,6 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
     const std::string locale =
         local_state_->GetString(prefs::kApplicationLocale);
 
-#if defined(OS_WIN)
-    gfx::EnableHighDPISupport();
-#endif
-
     // On a POSIX OS other than ChromeOS, the parameter that is passed to the
     // method InitSharedInstance is ignored.
 

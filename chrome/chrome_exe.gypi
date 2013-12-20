@@ -64,6 +64,9 @@
             # We still want the _win entry point for sandbox, etc.
             'app/chrome_exe_main_aura.cc',
           ],
+          'dependencies': [
+            '../ui/gfx/gfx.gyp:gfx',
+          ],
         }],
         ['OS == "android"', {
           # Don't put the 'chrome' target in 'all' on android

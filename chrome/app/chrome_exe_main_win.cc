@@ -26,6 +26,7 @@
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/sandbox_factory.h"
+#include "ui/gfx/win/dpi.h"
 
 namespace {
 
@@ -124,6 +125,8 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
   CommandLine::Init(0, NULL);
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
+
+  gfx::EnableHighDPISupport();
 
   if (AttemptFastNotify(*CommandLine::ForCurrentProcess()))
     return 0;
