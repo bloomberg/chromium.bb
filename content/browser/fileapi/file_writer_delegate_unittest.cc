@@ -82,7 +82,7 @@ class FileWriterDelegateTest : public PlatformTest {
 
   int64 usage() {
     return file_system_context_->GetQuotaUtil(kFileSystemType)
-        ->GetOriginUsageOnFileThread(
+        ->GetOriginUsageOnFileTaskRunner(
               file_system_context_.get(), kOrigin, kFileSystemType);
   }
 

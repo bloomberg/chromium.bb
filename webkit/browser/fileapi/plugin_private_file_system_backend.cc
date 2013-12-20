@@ -66,7 +66,7 @@ const base::FilePath::CharType* kFileSystemDirectory =
 const base::FilePath::CharType* kPluginPrivateDirectory =
     FILE_PATH_LITERAL("Plugins");
 
-base::PlatformFileError OpenFileSystemOnFileThread(
+base::PlatformFileError OpenFileSystemOnFileTaskRunner(
     ObfuscatedFileUtil* file_util,
     PluginPrivateFileSystemBackend::FileSystemIDToPluginMap* plugin_map,
     const GURL& origin_url,
@@ -130,7 +130,7 @@ void PluginPrivateFileSystemBackend::OpenPrivateFileSystem(
   PostTaskAndReplyWithResult(
       file_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&OpenFileSystemOnFileThread,
+      base::Bind(&OpenFileSystemOnFileTaskRunner,
                  obfuscated_file_util(), plugin_map_,
                  origin_url, filesystem_id, plugin_id, mode),
       callback);
@@ -201,7 +201,7 @@ FileSystemQuotaUtil* PluginPrivateFileSystemBackend::GetQuotaUtil() {
 }
 
 base::PlatformFileError
-PluginPrivateFileSystemBackend::DeleteOriginDataOnFileThread(
+PluginPrivateFileSystemBackend::DeleteOriginDataOnFileTaskRunner(
     FileSystemContext* context,
     quota::QuotaManagerProxy* proxy,
     const GURL& origin_url,
@@ -215,7 +215,7 @@ PluginPrivateFileSystemBackend::DeleteOriginDataOnFileThread(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-void PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileThread(
+void PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(
     FileSystemType type,
     std::set<GURL>* origins) {
   if (!CanHandleType(type))
@@ -227,7 +227,7 @@ void PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileThread(
     origins->insert(origin);
 }
 
-void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileThread(
+void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
     FileSystemType type,
     const std::string& host,
     std::set<GURL>* origins) {
@@ -242,7 +242,7 @@ void PluginPrivateFileSystemBackend::GetOriginsForHostOnFileThread(
   }
 }
 
-int64 PluginPrivateFileSystemBackend::GetOriginUsageOnFileThread(
+int64 PluginPrivateFileSystemBackend::GetOriginUsageOnFileTaskRunner(
     FileSystemContext* context,
     const GURL& origin_url,
     FileSystemType type) {

@@ -61,7 +61,7 @@ class TestFileSystemBackend::QuotaUtil
   virtual ~QuotaUtil() {}
 
   // FileSystemQuotaUtil overrides.
-  virtual base::PlatformFileError DeleteOriginDataOnFileThread(
+  virtual base::PlatformFileError DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
@@ -78,20 +78,20 @@ class TestFileSystemBackend::QuotaUtil
     return scoped_refptr<QuotaReservation>();
   }
 
-  virtual void GetOriginsForTypeOnFileThread(
+  virtual void GetOriginsForTypeOnFileTaskRunner(
       FileSystemType type,
       std::set<GURL>* origins) OVERRIDE {
     NOTREACHED();
   }
 
-  virtual void GetOriginsForHostOnFileThread(
+  virtual void GetOriginsForHostOnFileTaskRunner(
       FileSystemType type,
       const std::string& host,
       std::set<GURL>* origins) OVERRIDE {
     NOTREACHED();
   }
 
-  virtual int64 GetOriginUsageOnFileThread(
+  virtual int64 GetOriginUsageOnFileTaskRunner(
       FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE {

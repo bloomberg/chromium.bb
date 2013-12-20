@@ -136,13 +136,13 @@ void BrowsingDataFileSystemHelperImpl::FetchFileSystemInfoInFileThread() {
       filesystem_context_->GetQuotaUtil(type);
     DCHECK(quota_util);
     std::set<GURL> origins;
-    quota_util->GetOriginsForTypeOnFileThread(type, &origins);
+    quota_util->GetOriginsForTypeOnFileTaskRunner(type, &origins);
     for (std::set<GURL>::iterator iter = origins.begin();
         iter != origins.end(); ++iter) {
       const GURL& current = *iter;
       if (!BrowsingDataHelper::HasWebScheme(current))
         continue;  // Non-websafe state is not considered browsing data.
-      int64 usage = quota_util->GetOriginUsageOnFileThread(
+      int64 usage = quota_util->GetOriginUsageOnFileTaskRunner(
           filesystem_context_.get(), current, type);
       OriginInfoMap::iterator inserted =
           file_system_info_map.insert(
@@ -172,7 +172,7 @@ void BrowsingDataFileSystemHelperImpl::NotifyOnUIThread() {
 void BrowsingDataFileSystemHelperImpl::DeleteFileSystemOriginInFileThread(
     const GURL& origin) {
   DCHECK(file_task_runner()->RunsTasksOnCurrentThread());
-  filesystem_context_->DeleteDataForOriginOnFileThread(origin);
+  filesystem_context_->DeleteDataForOriginOnFileTaskRunner(origin);
 }
 
 }  // namespace

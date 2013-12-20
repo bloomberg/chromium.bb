@@ -30,7 +30,7 @@ namespace fileapi {
 
 namespace {
 
-void GetOriginsForTypeOnFileThread(
+void GetOriginsForTypeOnFileTaskRunner(
     FileSystemContext* context,
     StorageType storage_type,
     std::set<GURL>* origins_ptr) {
@@ -40,10 +40,10 @@ void GetOriginsForTypeOnFileThread(
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
-  quota_util->GetOriginsForTypeOnFileThread(type, origins_ptr);
+  quota_util->GetOriginsForTypeOnFileTaskRunner(type, origins_ptr);
 }
 
-void GetOriginsForHostOnFileThread(
+void GetOriginsForHostOnFileTaskRunner(
     FileSystemContext* context,
     StorageType storage_type,
     const std::string& host,
@@ -54,7 +54,7 @@ void GetOriginsForHostOnFileThread(
   FileSystemQuotaUtil* quota_util = context->GetQuotaUtil(type);
   if (!quota_util)
     return;
-  quota_util->GetOriginsForHostOnFileThread(type, host, origins_ptr);
+  quota_util->GetOriginsForHostOnFileTaskRunner(type, host, origins_ptr);
 }
 
 void DidGetOrigins(
@@ -63,7 +63,7 @@ void DidGetOrigins(
   callback.Run(*origins_ptr);
 }
 
-quota::QuotaStatusCode DeleteOriginOnFileThread(
+quota::QuotaStatusCode DeleteOriginOnFileTaskRunner(
     FileSystemContext* context,
     const GURL& origin,
     FileSystemType type) {
@@ -71,7 +71,7 @@ quota::QuotaStatusCode DeleteOriginOnFileThread(
   if (!provider || !provider->GetQuotaUtil())
     return quota::kQuotaErrorNotSupported;
   base::PlatformFileError result =
-      provider->GetQuotaUtil()->DeleteOriginDataOnFileThread(
+      provider->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
           context, context->quota_manager_proxy(), origin, type);
   if (result == base::PLATFORM_FILE_OK)
     return quota::kQuotaStatusOk;
@@ -122,7 +122,7 @@ void FileSystemQuotaClient::GetOriginUsage(
       file_task_runner(),
       FROM_HERE,
       // It is safe to pass Unretained(quota_util) since context owns it.
-      base::Bind(&FileSystemQuotaUtil::GetOriginUsageOnFileThread,
+      base::Bind(&FileSystemQuotaUtil::GetOriginUsageOnFileTaskRunner,
                  base::Unretained(quota_util),
                  file_system_context_,
                  origin_url,
@@ -145,7 +145,7 @@ void FileSystemQuotaClient::GetOriginsForType(
   std::set<GURL>* origins_ptr = new std::set<GURL>();
   file_task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetOriginsForTypeOnFileThread,
+      base::Bind(&GetOriginsForTypeOnFileTaskRunner,
                  file_system_context_,
                  storage_type,
                  base::Unretained(origins_ptr)),
@@ -170,7 +170,7 @@ void FileSystemQuotaClient::GetOriginsForHost(
   std::set<GURL>* origins_ptr = new std::set<GURL>();
   file_task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetOriginsForHostOnFileThread,
+      base::Bind(&GetOriginsForHostOnFileTaskRunner,
                  file_system_context_,
                  storage_type,
                  host,
@@ -190,7 +190,7 @@ void FileSystemQuotaClient::DeleteOriginData(
   base::PostTaskAndReplyWithResult(
       file_task_runner(),
       FROM_HERE,
-      base::Bind(&DeleteOriginOnFileThread,
+      base::Bind(&DeleteOriginOnFileTaskRunner,
                  file_system_context_,
                  origin,
                  fs_type),

@@ -91,7 +91,8 @@ FileSystemURL SandboxFileSystemTestHelper::CreateURL(
 
 int64 SandboxFileSystemTestHelper::GetCachedOriginUsage() const {
   return file_system_context_->GetQuotaUtil(type_)
-      ->GetOriginUsageOnFileThread(file_system_context_.get(), origin_, type_);
+      ->GetOriginUsageOnFileTaskRunner(
+          file_system_context_.get(), origin_, type_);
 }
 
 int64 SandboxFileSystemTestHelper::ComputeCurrentOriginUsage() {

@@ -122,19 +122,19 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
       FileSystemType type) const;
 
   // FileSystemQuotaUtil overrides.
-  virtual base::PlatformFileError DeleteOriginDataOnFileThread(
+  virtual base::PlatformFileError DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;
-  virtual void GetOriginsForTypeOnFileThread(
+  virtual void GetOriginsForTypeOnFileTaskRunner(
       FileSystemType type,
       std::set<GURL>* origins) OVERRIDE;
-  virtual void GetOriginsForHostOnFileThread(
+  virtual void GetOriginsForHostOnFileTaskRunner(
       FileSystemType type,
       const std::string& host,
       std::set<GURL>* origins) OVERRIDE;
-  virtual int64 GetOriginUsageOnFileThread(
+  virtual int64 GetOriginUsageOnFileTaskRunner(
       FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;

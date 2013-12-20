@@ -38,21 +38,23 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemQuotaUtil {
 
   // Deletes the data on the origin and reports the amount of deleted data
   // to the quota manager via |proxy|.
-  virtual base::PlatformFileError DeleteOriginDataOnFileThread(
+  virtual base::PlatformFileError DeleteOriginDataOnFileTaskRunner(
       FileSystemContext* context,
       quota::QuotaManagerProxy* proxy,
       const GURL& origin_url,
       FileSystemType type) = 0;
 
-  virtual void GetOriginsForTypeOnFileThread(fileapi::FileSystemType type,
-                                             std::set<GURL>* origins) = 0;
+  virtual void GetOriginsForTypeOnFileTaskRunner(
+      fileapi::FileSystemType type,
+      std::set<GURL>* origins) = 0;
 
-  virtual void GetOriginsForHostOnFileThread(fileapi::FileSystemType type,
-                                             const std::string& host,
-                                             std::set<GURL>* origins) = 0;
+  virtual void GetOriginsForHostOnFileTaskRunner(
+      fileapi::FileSystemType type,
+      const std::string& host,
+      std::set<GURL>* origins) = 0;
 
   // Returns the amount of data used for the origin for usage tracking.
-  virtual int64 GetOriginUsageOnFileThread(
+  virtual int64 GetOriginUsageOnFileTaskRunner(
       fileapi::FileSystemContext* file_system_context,
       const GURL& origin_url,
       fileapi::FileSystemType type) = 0;

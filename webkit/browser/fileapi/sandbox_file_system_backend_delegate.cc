@@ -107,7 +107,7 @@ class ObfuscatedOriginEnumerator
   scoped_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enum_;
 };
 
-void OpenFileSystemOnFileThread(
+void OpenFileSystemOnFileTaskRunner(
     ObfuscatedFileUtil* file_util,
     const GURL& origin_url,
     FileSystemType type,
@@ -260,7 +260,7 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
   base::PlatformFileError* error_ptr = new base::PlatformFileError;
   file_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&OpenFileSystemOnFileThread,
+      base::Bind(&OpenFileSystemOnFileTaskRunner,
                  obfuscated_file_util(), origin_url, type, mode,
                  base::Unretained(error_ptr)),
       base::Bind(&DidOpenFileSystem,
@@ -323,12 +323,13 @@ SandboxFileSystemBackendDelegate::CreateFileStreamWriter(
 }
 
 base::PlatformFileError
-SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileThread(
+SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileTaskRunner(
     FileSystemContext* file_system_context,
     quota::QuotaManagerProxy* proxy,
     const GURL& origin_url,
     FileSystemType type) {
-  int64 usage = GetOriginUsageOnFileThread(
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  int64 usage = GetOriginUsageOnFileTaskRunner(
       file_system_context, origin_url, type);
   usage_cache()->CloseCacheFiles();
   bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
@@ -346,8 +347,9 @@ SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileThread(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileThread(
+void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileTaskRunner(
     FileSystemType type, std::set<GURL>* origins) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origins);
   scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
   GURL origin;
@@ -367,9 +369,10 @@ void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileThread(
   }
 }
 
-void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileThread(
+void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileTaskRunner(
     FileSystemType type, const std::string& host,
     std::set<GURL>* origins) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origins);
   scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
   GURL origin;
@@ -380,10 +383,12 @@ void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileThread(
   }
 }
 
-int64 SandboxFileSystemBackendDelegate::GetOriginUsageOnFileThread(
+int64 SandboxFileSystemBackendDelegate::GetOriginUsageOnFileTaskRunner(
     FileSystemContext* file_system_context,
     const GURL& origin_url,
     FileSystemType type) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+
   // Don't use usage cache and return recalculated usage for sticky invalidated
   // origins.
   if (ContainsKey(sticky_dirty_origins_, std::make_pair(origin_url, type)))

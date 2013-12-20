@@ -169,7 +169,7 @@ FileSystemContext::FileSystemContext(
   url_crackers_.push_back(IsolatedContext::GetInstance());
 }
 
-bool FileSystemContext::DeleteDataForOriginOnFileThread(
+bool FileSystemContext::DeleteDataForOriginOnFileTaskRunner(
     const GURL& origin_url) {
   DCHECK(default_file_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(origin_url == origin_url.GetOrigin());
@@ -181,7 +181,7 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
     FileSystemBackend* backend = iter->second;
     if (!backend->GetQuotaUtil())
       continue;
-    if (backend->GetQuotaUtil()->DeleteOriginDataOnFileThread(
+    if (backend->GetQuotaUtil()->DeleteOriginDataOnFileTaskRunner(
             this, quota_manager_proxy(), origin_url, iter->first)
             != base::PLATFORM_FILE_OK) {
       // Continue the loop, but record the failure.
@@ -367,7 +367,7 @@ void FileSystemContext::DeleteFileSystem(
       default_file_task_runner(),
       FROM_HERE,
       // It is safe to pass Unretained(quota_util) since context owns it.
-      base::Bind(&FileSystemQuotaUtil::DeleteOriginDataOnFileThread,
+      base::Bind(&FileSystemQuotaUtil::DeleteOriginDataOnFileTaskRunner,
                  base::Unretained(backend->GetQuotaUtil()),
                  make_scoped_refptr(this),
                  base::Unretained(quota_manager_proxy()),
