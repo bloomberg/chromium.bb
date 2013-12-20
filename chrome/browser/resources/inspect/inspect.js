@@ -40,7 +40,7 @@ function onload() {
 }
 
 function onHashChange() {
-  var hash = window.location.hash.slice(1);
+  var hash = window.location.hash.slice(1).toLowerCase();
   if (!selectTab(hash))
     selectTab('devices');
 }
