@@ -45,8 +45,8 @@ class RuleRetrieverTest : public testing::Test {
 
   virtual ~RuleRetrieverTest() {}
 
-  RuleRetriever::Callback* BuildCallback() {
-    return i18n::addressinput::BuildCallback(
+  scoped_ptr<RuleRetriever::Callback> BuildCallback() {
+    return ::i18n::addressinput::BuildCallback(
         this, &RuleRetrieverTest::OnRuleReady);
   }
 
@@ -68,8 +68,7 @@ class RuleRetrieverTest : public testing::Test {
 TEST_F(RuleRetrieverTest, ExistingRule) {
   static const char kExistingKey[] = "data/CA";
 
-  scoped_ptr<RuleRetriever::Callback> callback(BuildCallback());
-  rule_retriever_.RetrieveRule(kExistingKey, *callback);
+  rule_retriever_.RetrieveRule(kExistingKey, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kExistingKey, key_);
@@ -79,8 +78,7 @@ TEST_F(RuleRetrieverTest, ExistingRule) {
 TEST_F(RuleRetrieverTest, MissingRule) {
   static const char kMissingKey[] = "junk";
 
-  scoped_ptr<RuleRetriever::Callback> callback(BuildCallback());
-  rule_retriever_.RetrieveRule(kMissingKey, *callback);
+  rule_retriever_.RetrieveRule(kMissingKey, BuildCallback());
 
   EXPECT_TRUE(success_);  // The server returns "{}" for bad keys.
   EXPECT_EQ(kMissingKey, key_);

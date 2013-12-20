@@ -41,8 +41,8 @@ class ValidatingStorageTest : public testing::Test  {
 
   virtual ~ValidatingStorageTest() {}
 
-  Storage::Callback* BuildCallback() {
-    return i18n::addressinput::BuildCallback(
+  scoped_ptr<Storage::Callback> BuildCallback() {
+    return ::i18n::addressinput::BuildCallback(
         this, &ValidatingStorageTest::OnDataReady);
   }
 
@@ -64,9 +64,7 @@ class ValidatingStorageTest : public testing::Test  {
 
 TEST_F(ValidatingStorageTest, Basic) {
   storage_.Put("key", "value");
-
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
-  storage_.Get("key", *callback);
+  storage_.Get("key", BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ("key", key_);
@@ -75,9 +73,7 @@ TEST_F(ValidatingStorageTest, Basic) {
 
 TEST_F(ValidatingStorageTest, EmptyData) {
   storage_.Put("key", std::string());
-
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
-  storage_.Get("key", *callback);
+  storage_.Get("key", BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ("key", key_);
@@ -85,8 +81,7 @@ TEST_F(ValidatingStorageTest, EmptyData) {
 }
 
 TEST_F(ValidatingStorageTest, MissingKey) {
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
-  storage_.Get("key", *callback);
+  storage_.Get("key", BuildCallback());
 
   EXPECT_FALSE(success_);
   EXPECT_EQ("key", key_);
@@ -96,9 +91,7 @@ TEST_F(ValidatingStorageTest, MissingKey) {
 TEST_F(ValidatingStorageTest, GarbageData) {
   storage_.Put("key", "value");
   wrapped_storage_->Put("key", "garbage");
-
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
-  storage_.Get("key", *callback);
+  storage_.Get("key", BuildCallback());
 
   EXPECT_FALSE(success_);
   EXPECT_EQ("key", key_);

@@ -29,11 +29,11 @@ void FakeStorage::Put(const std::string& key, const std::string& data) {
 }
 
 void FakeStorage::Get(const std::string& key,
-                      const Callback& data_ready) const {
+                      scoped_ptr<Callback> data_ready) const {
   std::map<std::string, std::string>::const_iterator data_it = data_.find(key);
   bool success = data_it != data_.end();
   std::string data = success ? data_it->second : std::string();
-  data_ready(success, key, data);
+  (*data_ready)(success, key, data);
 }
 
 }  // namespace addressinput

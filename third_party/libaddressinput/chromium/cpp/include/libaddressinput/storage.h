@@ -19,6 +19,7 @@
 #define I18N_ADDRESSINPUT_STORAGE_H_
 
 #include <libaddressinput/callback.h>
+#include <libaddressinput/util/scoped_ptr.h>
 
 #include <string>
 
@@ -33,10 +34,10 @@ namespace addressinput {
 //      }
 //
 //      virtual void Get(const std::string& key,
-//                       const Callback& data_ready) const {
+//                       scoped_ptr<Callback> data_ready) const {
 //        bool success = ...
 //        std::string data = ...
-//        data_ready(success, key, data);
+//        (*data_ready)(success, key, data);
 //      }
 //    };
 class Storage {
@@ -50,7 +51,7 @@ class Storage {
 
   // Retrieves the data for |key| and invokes the |data_ready| callback.
   virtual void Get(const std::string& key,
-                   const Callback& data_ready) const = 0;
+                   scoped_ptr<Callback> data_ready) const = 0;
 };
 
 }  // namespace addressinput

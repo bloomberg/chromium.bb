@@ -49,8 +49,8 @@ class RetrieverTest : public testing::Test {
 
   virtual ~RetrieverTest() {}
 
-  Retriever::Callback* BuildCallback() {
-    return i18n::addressinput::BuildCallback(
+  scoped_ptr<Retriever::Callback> BuildCallback() {
+    return ::i18n::addressinput::BuildCallback(
         this, &RetrieverTest::OnDataReady);
   }
 
@@ -70,8 +70,7 @@ class RetrieverTest : public testing::Test {
 };
 
 TEST_F(RetrieverTest, RetrieveData) {
-  scoped_ptr<Retriever::Callback> callback(BuildCallback());
-  retriever_.Retrieve(kKey, *callback);
+  retriever_.Retrieve(kKey, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kKey, key_);
@@ -80,11 +79,8 @@ TEST_F(RetrieverTest, RetrieveData) {
 }
 
 TEST_F(RetrieverTest, ReadDataFromStorage) {
-  scoped_ptr<Retriever::Callback> callback1(BuildCallback());
-  retriever_.Retrieve(kKey, *callback1);
-
-  scoped_ptr<Retriever::Callback> callback2(BuildCallback());
-  retriever_.Retrieve(kKey, *callback2);
+  retriever_.Retrieve(kKey, BuildCallback());
+  retriever_.Retrieve(kKey, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kKey, key_);
@@ -95,8 +91,7 @@ TEST_F(RetrieverTest, ReadDataFromStorage) {
 TEST_F(RetrieverTest, MissingKeyReturnsEmptyData) {
   static const char kMissingKey[] = "junk";
 
-  scoped_ptr<Retriever::Callback> callback(BuildCallback());
-  retriever_.Retrieve(kMissingKey, *callback);
+  retriever_.Retrieve(kKey, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kMissingKey, key_);
@@ -111,8 +106,8 @@ class FaultyDownloader : public Downloader {
 
   // Downloader implementation.
   virtual void Download(const std::string& url,
-                        const Callback& downloaded) const {
-    downloaded(false, url, "garbage");
+                        scoped_ptr<Callback> downloaded) const {
+    (*downloaded)(false, url, "garbage");
   }
 };
 
@@ -120,9 +115,7 @@ TEST_F(RetrieverTest, FaultyDownloader) {
   Retriever bad_retriever(FakeDownloader::kFakeDataUrl,
                           scoped_ptr<const Downloader>(new FaultyDownloader),
                           scoped_ptr<Storage>(new FakeStorage));
-
-  scoped_ptr<Retriever::Callback> callback(BuildCallback());
-  bad_retriever.Retrieve(kKey, *callback);
+  bad_retriever.Retrieve(kKey, BuildCallback());
 
   EXPECT_FALSE(success_);
   EXPECT_EQ(kKey, key_);

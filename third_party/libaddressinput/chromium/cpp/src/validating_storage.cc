@@ -37,11 +37,10 @@ namespace {
 class Helper {
  public:
   Helper(const std::string& key,
-         const Storage::Callback& data_ready,
+         scoped_ptr<Storage::Callback> data_ready,
          const Storage& wrapped_storage)
-      : data_ready_(data_ready),
-        wrapped_data_ready_(BuildCallback(this, &Helper::OnWrappedDataReady)) {
-    wrapped_storage.Get(key, *wrapped_data_ready_);
+      : data_ready_(data_ready.Pass()) {
+    wrapped_storage.Get(key, BuildCallback(this, &Helper::OnWrappedDataReady));
   }
 
  private:
@@ -54,15 +53,18 @@ class Helper {
     if (!success ||
         !ValidatingUtil::UnwrapTimestamp(&data, time(NULL)) ||
         !ValidatingUtil::UnwrapChecksum(&data)) {
-      data_ready_(false, key, std::string());
+      // TODO(estade): Pretty unsafe. |this| owns |data_ready_|, but
+      // |data_ready_->instance_| might be stale.
+      (*data_ready_)(false, key, std::string());
     } else {
-      data_ready_(true, key, data);
+      (*data_ready_)(true, key, data);
     }
+    // TODO(estade): |this| will leak if the callback is never run. Make this
+    // safer.
     delete this;
   }
 
-  const Storage::Callback& data_ready_;
-  scoped_ptr<Storage::Callback> wrapped_data_ready_;
+  scoped_ptr<Storage::Callback> data_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
@@ -81,8 +83,8 @@ void ValidatingStorage::Put(const std::string& key, const std::string& data) {
 }
 
 void ValidatingStorage::Get(const std::string& key,
-                            const Callback& data_ready) const {
-  new Helper(key, data_ready, *wrapped_storage_);
+                            scoped_ptr<Callback> data_ready) const {
+  new Helper(key, data_ready.Pass(), *wrapped_storage_);
 }
 
 }  // namespace addressinput

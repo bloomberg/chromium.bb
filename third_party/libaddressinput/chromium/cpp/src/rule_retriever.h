@@ -32,9 +32,8 @@ class Rule;
 // Retrieves validation rules. Sample usage:
 //    const Retriever* retriever = ...
 //    RuleRetriever rules(retriever);
-//    scoped_ptr<RuleRetriever::Callback> rule_ready(BuildCallback(
-//        this, &MyClass::OnRuleReady));
-//    rules.RetrieveRule("data/CA/AB--fr", *rule_ready);
+//    rules.RetrieveRule("data/CA/AB--fr",
+//                       BuildCallback(this, &MyClass::OnRuleReady));
 class RuleRetriever {
  public:
   typedef i18n::addressinput::Callback<std::string, Rule> Callback;
@@ -43,7 +42,8 @@ class RuleRetriever {
   ~RuleRetriever();
 
   // Retrieves the rule for |key| and invokes the |rule_ready| callback.
-  void RetrieveRule(const std::string& key, const Callback& rule_ready) const;
+  void RetrieveRule(const std::string& key, scoped_ptr<Callback> rule_ready)
+      const;
 
  private:
   scoped_ptr<const Retriever> data_retriever_;

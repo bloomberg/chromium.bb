@@ -30,11 +30,9 @@ namespace addressinput {
 
 // Wraps Storage to add checksum and timestamp to stored data. Sample usage:
 //    Storage file_storage = ...;
-//    scoped_ptr<Storage> storage(new ValidatingStorage(file_storage));
+//    scoped_ptr<Storage> storage(new ValidatingStorage(file_storage.Pass()));
 //    storage->Put("key", "data");
-//    scoped_ptr<Storage::Callback> data_ready(BuildCallback(
-//        this, &MyClass::OnDataReady));
-//    storage->Get("key", *data_ready);
+//    storage->Get("key", BuildCallback(this, &MyClass::OnDataReady));
 class ValidatingStorage : public Storage {
  public:
   explicit ValidatingStorage(scoped_ptr<Storage> storage);
@@ -42,7 +40,8 @@ class ValidatingStorage : public Storage {
 
   // Storage implementation.
   virtual void Put(const std::string& key, const std::string& data);
-  virtual void Get(const std::string& key, const Callback& data_ready) const;
+  virtual void Get(const std::string& key, scoped_ptr<Callback> data_ready)
+      const;
 
  private:
   // The storage being wrapped.

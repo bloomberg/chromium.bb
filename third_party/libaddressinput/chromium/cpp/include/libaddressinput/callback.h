@@ -11,16 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-// An object to store a pointer to a method in an object with the following
-// signature:
-//
-//    void Observer::ObserveEvent(bool success,
-//                                const Key& key,
-//                                const Data& data);
 
 #ifndef I18N_ADDRESSINPUT_CALLBACK_H_
 #define I18N_ADDRESSINPUT_CALLBACK_H_
+
+#include <libaddressinput/util/scoped_ptr.h>
 
 #include <cassert>
 #include <cstddef>
@@ -31,7 +26,7 @@ namespace addressinput {
 // Stores a pointer to a method in an object. Sample usage:
 //    class MyClass {
 //     public:
-//      typedef Callback<MyType, MyDataType> MyCallback;
+//      typedef Callback<MyKeyType, MyDataType> MyCallback;
 //
 //      void GetDataAsynchronously() {
 //        scoped_ptr<MyCallback> callback(BuildCallback(
@@ -48,52 +43,52 @@ namespace addressinput {
 //        ...
 //      }
 //    };
-template <typename Key, typename Data>
+template <typename Param1, typename Param2>
 class Callback {
  public:
   virtual ~Callback() {}
 
   virtual void operator()(bool success,
-                          const Key& key,
-                          const Data& data) const = 0;
+                          const Param1& param1,
+                          const Param2& param2) const = 0;
 };
 
 namespace {
 
-template <typename Observer, typename Key, typename Data>
-class CallbackImpl : public Callback<Key, Data> {
+template <typename BaseType, typename Param1, typename Param2>
+class CallbackImpl : public Callback<Param1, Param2> {
  public:
-  typedef void (Observer::*ObserveEvent)(bool, const Key&, const Data&);
+  typedef void (BaseType::*Method)(bool, const Param1&, const Param2&);
 
-  CallbackImpl(Observer* observer, ObserveEvent observe_event)
-      : observer_(observer),
-        observe_event_(observe_event) {
-    assert(observer_ != NULL);
-    assert(observe_event_ != NULL);
+  CallbackImpl(BaseType* instance, Method method)
+      : instance_(instance),
+        method_(method) {
+    assert(instance_ != NULL);
+    assert(method_ != NULL);
   }
 
   virtual ~CallbackImpl() {}
 
   virtual void operator()(bool success,
-                          const Key& key,
-                          const Data& data) const {
-    (observer_->*observe_event_)(success, key, data);
+                          const Param1& param1,
+                          const Param2& param2) const {
+    (instance_->*method_)(success, param1, param2);
   }
 
  private:
-  Observer* observer_;
-  ObserveEvent observe_event_;
+  BaseType* instance_;
+  Method method_;
 };
 
 }  // namespace
 
-// Returns a callback to |observer->observe_event| method. The caller owns the
-// result.
-template <typename Observer, typename Key, typename Data>
-Callback<Key, Data>* BuildCallback(
-    Observer* observer,
-    void (Observer::*observe_event)(bool, const Key&, const Data&)) {
-  return new CallbackImpl<Observer, Key, Data>(observer, observe_event);
+// Returns a callback to |instance->method|.
+template <typename BaseType, typename Param1, typename Param2>
+scoped_ptr<Callback<Param1, Param2> > BuildCallback(
+    BaseType* instance,
+    void (BaseType::*method)(bool, const Param1&, const Param2&)) {
+  return scoped_ptr<Callback<Param1, Param2> >(
+      new CallbackImpl<BaseType, Param1, Param2>(instance, method));
 }
 
 }  // namespace addressinput

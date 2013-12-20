@@ -33,20 +33,18 @@ namespace {
 
 class Helper {
  public:
-  // Does not take ownership of its parameters.
+  // Does not take ownership of |storage|.
   Helper(const std::string& key,
-         const Retriever::Callback& retrieved,
+         scoped_ptr<Retriever::Callback> retrieved,
          const LookupKeyUtil& lookup_key_util,
          const Downloader& downloader,
          Storage* storage)
-      : retrieved_(retrieved),
+      : retrieved_(retrieved.Pass()),
         lookup_key_util_(lookup_key_util),
         downloader_(downloader),
-        storage_(storage),
-        downloaded_(BuildCallback(this, &Helper::OnDownloaded)),
-        data_ready_(BuildCallback(this, &Helper::OnDataReady)) {
+        storage_(storage) {
     assert(storage_ != NULL);
-    storage_->Get(key, *data_ready_);
+    storage_->Get(key, BuildCallback(this, &Helper::OnDataReady));
   }
 
  private:
@@ -56,11 +54,11 @@ class Helper {
                    const std::string& key,
                    const std::string& data) {
     if (success) {
-      retrieved_(success, key, data);
+      (*retrieved_)(success, key, data);
       delete this;
     } else {
       downloader_.Download(lookup_key_util_.GetUrlForKey(key),
-                           *downloaded_);
+                           BuildCallback(this, &Helper::OnDownloaded));
     }
   }
 
@@ -69,18 +67,17 @@ class Helper {
                     const std::string& data) {
     const std::string& key = lookup_key_util_.GetKeyForUrl(url);
     if (success) {
+      // TODO(estade): this is really dangerous; storage_ is not owned.
       storage_->Put(key, data);
     }
-    retrieved_(success, key, success ? data : std::string());
+    (*retrieved_)(success, key, success ? data : std::string());
     delete this;
   }
 
-  const Retriever::Callback& retrieved_;
+  scoped_ptr<Retriever::Callback> retrieved_;
   const LookupKeyUtil& lookup_key_util_;
   const Downloader& downloader_;
   Storage* storage_;
-  scoped_ptr<Downloader::Callback> downloaded_;
-  scoped_ptr<Storage::Callback> data_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
@@ -100,8 +97,12 @@ Retriever::Retriever(const std::string& validation_data_url,
 Retriever::~Retriever() {}
 
 void Retriever::Retrieve(const std::string& key,
-                         const Callback& retrieved) const {
-  new Helper(key, retrieved, lookup_key_util_, *downloader_, storage_.get());
+                         scoped_ptr<Callback> retrieved) const {
+  new Helper(key,
+             retrieved.Pass(),
+             lookup_key_util_,
+             *downloader_,
+             storage_.get());
 }
 
 }  // namespace addressinput

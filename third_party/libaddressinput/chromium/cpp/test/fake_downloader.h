@@ -28,14 +28,13 @@ namespace addressinput {
 // "Downloads" serialized validation rules from a test data file. Sample usage:
 //    class MyClass {
 //     public:
-//      MyClass() : downloader_(),
-//                  callback_(BuildCallback(this, &MyClass::OnDownloaded)) {}
+//      MyClass() {}
 //
 //      ~MyClass() {}
 //
 //      void GetData(const std::string& key) {
 //        downloader_.Download(std::string(FakeDownloader::kFakeDataUrl) + key,
-//                             *callback_);
+//                             BuildCallback(this, &MyClass::OnDownloaded));
 //      }
 //
 //     private:
@@ -46,7 +45,6 @@ namespace addressinput {
 //      }
 //
 //      FakeDownloader downloader_;
-//      scoped_ptr<Downloader::Callback> callback_;
 //
 //      DISALLOW_COPY_AND_ASSIGN(MyClass);
 //    };
@@ -60,7 +58,7 @@ class FakeDownloader : public Downloader {
 
   // Downloader implementation.
   virtual void Download(const std::string& url,
-                        const Callback& downloaded) const;
+                        scoped_ptr<Callback> downloaded) const;
 };
 
 }  // namespace addressinput

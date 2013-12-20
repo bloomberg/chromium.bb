@@ -29,8 +29,7 @@ namespace addressinput {
 // Stores data in memory. Sample usage:
 //    class MyClass {
 //     public:
-//      MyClass() : storage_(),
-//                  callback(BuildCallback(this, &MyClass::OnDataReady)) {}
+//      MyClass() {}
 //
 //      ~MyClass() {}
 //
@@ -39,7 +38,7 @@ namespace addressinput {
 //      }
 //
 //      void Read() {
-//        storage_.Get("key", *callback_);
+//        storage_.Get("key", BuildCallback(this, &Myclass:OnDataReady));
 //      }
 //
 //     private:
@@ -50,7 +49,6 @@ namespace addressinput {
 //      }
 //
 //      FakeStorage storage_;
-//      scoped_ptr<Storage::Callback> callback_;
 //
 //      DISALLOW_COPY_AND_ASSIGN(MyClass);
 //    };
@@ -61,7 +59,8 @@ class FakeStorage : public Storage {
 
   // Storage implementation.
   virtual void Put(const std::string& key, const std::string& data);
-  virtual void Get(const std::string& key, const Callback& data_ready) const;
+  virtual void Get(const std::string& key, scoped_ptr<Callback> data_ready)
+      const;
 
  private:
   std::map<std::string, std::string> data_;

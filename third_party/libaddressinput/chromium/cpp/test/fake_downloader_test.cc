@@ -24,11 +24,10 @@
 
 #include "region_data_constants.h"
 
-namespace {
+namespace i18n {
+namespace addressinput {
 
-using i18n::addressinput::Downloader;
-using i18n::addressinput::FakeDownloader;
-using i18n::addressinput::RegionDataConstants;
+namespace {
 
 // Tests for FakeDownloader object.
 class FakeDownloaderTest : public testing::TestWithParam<std::string> {
@@ -36,8 +35,8 @@ class FakeDownloaderTest : public testing::TestWithParam<std::string> {
   FakeDownloaderTest() : downloader_(), success_(false), url_(), data_() {}
   virtual ~FakeDownloaderTest() {}
 
-  Downloader::Callback* BuildCallback() {
-    return i18n::addressinput::BuildCallback(
+  scoped_ptr<Downloader::Callback> BuildCallback() {
+    return ::i18n::addressinput::BuildCallback(
         this, &FakeDownloaderTest::OnDownloaded);
   }
 
@@ -87,8 +86,7 @@ testing::AssertionResult DataIsValid(const std::string& data,
 TEST_P(FakeDownloaderTest, FakeDownloaderHasValidDataForRegion) {
   std::string key = "data/" + GetParam();
   std::string url = std::string(FakeDownloader::kFakeDataUrl) + key;
-  scoped_ptr<Downloader::Callback> callback(BuildCallback());
-  downloader_.Download(url, *callback);
+  downloader_.Download(url, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(url, url_);
@@ -105,8 +103,7 @@ TEST_F(FakeDownloaderTest, DownloadExistingData) {
   static const std::string kKey = "data";
   static const std::string kUrl =
       std::string(FakeDownloader::kFakeDataUrl) + kKey;
-  scoped_ptr<Downloader::Callback> callback(BuildCallback());
-  downloader_.Download(kUrl, *callback);
+  downloader_.Download(kUrl, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kUrl, url_);
@@ -117,8 +114,7 @@ TEST_F(FakeDownloaderTest, DownloadExistingData) {
 TEST_F(FakeDownloaderTest, DownloadMissingKeyReturnsEmptyDictionary) {
   static const std::string kJunkUrl =
       std::string(FakeDownloader::kFakeDataUrl) + "junk";
-  scoped_ptr<Downloader::Callback> callback(BuildCallback());
-  downloader_.Download(kJunkUrl, *callback);
+  downloader_.Download(kJunkUrl, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kJunkUrl, url_);
@@ -128,8 +124,7 @@ TEST_F(FakeDownloaderTest, DownloadMissingKeyReturnsEmptyDictionary) {
 // Verifies that downloading an empty key will return "{}".
 TEST_F(FakeDownloaderTest, DownloadEmptyKeyReturnsEmptyDictionary) {
   static const std::string kPrefixOnlyUrl = FakeDownloader::kFakeDataUrl;
-  scoped_ptr<Downloader::Callback> callback(BuildCallback());
-  downloader_.Download(kPrefixOnlyUrl, *callback);
+  downloader_.Download(kPrefixOnlyUrl, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kPrefixOnlyUrl, url_);
@@ -139,8 +134,7 @@ TEST_F(FakeDownloaderTest, DownloadEmptyKeyReturnsEmptyDictionary) {
 // Verifies that downloading a real URL fails.
 TEST_F(FakeDownloaderTest, DownloadRealUrlFals) {
   static const std::string kRealUrl = "http://www.google.com/";
-  scoped_ptr<Downloader::Callback> callback(BuildCallback());
-  downloader_.Download(kRealUrl, *callback);
+  downloader_.Download(kRealUrl, BuildCallback());
 
   EXPECT_FALSE(success_);
   EXPECT_EQ(kRealUrl, url_);
@@ -148,3 +142,6 @@ TEST_F(FakeDownloaderTest, DownloadRealUrlFals) {
 }
 
 }  // namespace
+
+}  // namespace addressinput
+}  // namespace i18n

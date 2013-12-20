@@ -22,10 +22,10 @@
 
 #include <gtest/gtest.h>
 
-namespace {
+namespace i18n {
+namespace addressinput {
 
-using i18n::addressinput::FakeStorage;
-using i18n::addressinput::Storage;
+namespace {
 
 // Tests for FakeStorage object.
 class FakeStorageTest : public testing::Test {
@@ -33,8 +33,8 @@ class FakeStorageTest : public testing::Test {
   FakeStorageTest() : storage_(), success_(false), key_(), data_() {}
   virtual ~FakeStorageTest() {}
 
-  Storage::Callback* BuildCallback() {
-    return i18n::addressinput::BuildCallback(
+  scoped_ptr<Storage::Callback> BuildCallback() {
+    return ::i18n::addressinput::BuildCallback(
         this, &FakeStorageTest::OnDataReady);
   }
 
@@ -54,8 +54,7 @@ class FakeStorageTest : public testing::Test {
 };
 
 TEST_F(FakeStorageTest, GetWithoutPutReturnsEmptyData) {
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
-  storage_.Get("key", *callback);
+  storage_.Get("key", BuildCallback());
 
   EXPECT_FALSE(success_);
   EXPECT_EQ("key", key_);
@@ -64,9 +63,7 @@ TEST_F(FakeStorageTest, GetWithoutPutReturnsEmptyData) {
 
 TEST_F(FakeStorageTest, GetReturnsWhatWasPut) {
   storage_.Put("key", "value");
-
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
-  storage_.Get("key", *callback);
+  storage_.Get("key", BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ("key", key_);
@@ -76,9 +73,7 @@ TEST_F(FakeStorageTest, GetReturnsWhatWasPut) {
 TEST_F(FakeStorageTest, SecondPutOverwritesData) {
   storage_.Put("key", "bad-value");
   storage_.Put("key", "good-value");
-
-  scoped_ptr<Storage::Callback> callback(BuildCallback());
-  storage_.Get("key", *callback);
+  storage_.Get("key", BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ("key", key_);
@@ -86,3 +81,6 @@ TEST_F(FakeStorageTest, SecondPutOverwritesData) {
 }
 
 }  // namespace
+
+}  // namespace addressinput
+}  // namespace i18n

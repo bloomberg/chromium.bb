@@ -19,6 +19,7 @@
 #define I18N_ADDRESSINPUT_DOWNLOADER_H_
 
 #include <libaddressinput/callback.h>
+#include <libaddressinput/util/scoped_ptr.h>
 
 #include <string>
 
@@ -29,10 +30,10 @@ namespace addressinput {
 //    class MyDownloader : public Downloader {
 //     public:
 //      virtual void Download(const std::string& url,
-//                            const Callback& downloaded) const {
+//                            scoped_ptr<Callback> downloaded) const {
 //        bool success = ...
 //        std::string data = ...
-//        downloaded(success, url, data);
+//        (*downloaded)(success, url, data);
 //      }
 //    };
 class Downloader {
@@ -43,7 +44,7 @@ class Downloader {
 
   // Downloads |url| and invokes the |downloaded| callback.
   virtual void Download(const std::string& url,
-                        const Callback& downloaded) const = 0;
+                        scoped_ptr<Callback> downloaded) const = 0;
 };
 
 }  // namespace addressinput

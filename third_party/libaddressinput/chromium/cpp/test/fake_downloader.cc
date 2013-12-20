@@ -72,7 +72,7 @@ FakeDownloader::FakeDownloader() {}
 FakeDownloader::~FakeDownloader() {}
 
 void FakeDownloader::Download(const std::string& url,
-                              const Callback& downloaded) const {
+                              scoped_ptr<Callback> downloaded) const {
   std::map<std::string, std::string>::const_iterator data_it =
       GetData().find(url);
   bool success = data_it != GetData().end();
@@ -85,7 +85,7 @@ void FakeDownloader::Download(const std::string& url,
     success = true;
     data = "{}";
   }
-  downloaded(success, url, data);
+  (*downloaded)(success, url, data);
 }
 
 }  // namespace addressinput

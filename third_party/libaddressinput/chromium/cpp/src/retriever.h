@@ -36,9 +36,8 @@ class Storage;
 //    Downloader* downloader = ...;
 //    Retriever retriever("https://i18napis.appspot.com/ssl-address/",
 //                        downloader, storage);
-//    scoped_ptr<Retriever::Callback> retrieved(BuildCallback(
-//        this, &MyClass::OnDataRetrieved));
-//    retriever.Retrieve("data/CA/AB--fr", *retrieved);
+//    retriever.Retrieve("data/CA/AB--fr",
+//                       BuildCallback(this, &MyClass::OnDataRetrieved));
 class Retriever {
  public:
   typedef i18n::addressinput::Callback<std::string, std::string> Callback;
@@ -51,7 +50,7 @@ class Retriever {
   // Retrieves the data for |key| and invokes the |retrieved| callback. Checks
   // for the data in storage first. If storage does not have the data for |key|,
   // then downloads the data and places it in storage.
-  void Retrieve(const std::string& key, const Callback& retrieved) const;
+  void Retrieve(const std::string& key, scoped_ptr<Callback> retrieved) const;
 
  private:
   const LookupKeyUtil lookup_key_util_;

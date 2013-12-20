@@ -33,11 +33,10 @@ namespace {
 class Helper {
  public:
   Helper(const std::string& key,
-         const RuleRetriever::Callback& rule_ready,
+         scoped_ptr<RuleRetriever::Callback> rule_ready,
          const Retriever& data_retriever)
-      : rule_ready_(rule_ready),
-        data_retrieved_(BuildCallback(this, &Helper::OnDataRetrieved)) {
-    data_retriever.Retrieve(key, *data_retrieved_);
+      : rule_ready_(rule_ready.Pass()) {
+    data_retriever.Retrieve(key, BuildCallback(this, &Helper::OnDataRetrieved));
   }
 
  private:
@@ -48,16 +47,15 @@ class Helper {
                        const std::string& data) {
     Rule rule;
     if (!success) {
-      rule_ready_(false, key, rule);
+      (*rule_ready_)(false, key, rule);
     } else {
       success = rule.ParseSerializedRule(data);
-      rule_ready_(success, key, rule);
+      (*rule_ready_)(success, key, rule);
     }
     delete this;
   }
 
-  const RuleRetriever::Callback& rule_ready_;
-  scoped_ptr<Retriever::Callback> data_retrieved_;
+  scoped_ptr<RuleRetriever::Callback> rule_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
@@ -72,8 +70,8 @@ RuleRetriever::RuleRetriever(scoped_ptr<const Retriever> retriever)
 RuleRetriever::~RuleRetriever() {}
 
 void RuleRetriever::RetrieveRule(const std::string& key,
-                                 const Callback& rule_ready) const {
-  new Helper(key, rule_ready, *data_retriever_);
+                                 scoped_ptr<Callback> rule_ready) const {
+  new Helper(key, rule_ready.Pass(), *data_retriever_);
 }
 
 }  // namespace addressinput
