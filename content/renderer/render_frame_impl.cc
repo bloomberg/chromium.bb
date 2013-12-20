@@ -956,19 +956,11 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebFrame* frame) {
 void RenderFrameImpl::willRequestAfterPreconnect(
     blink::WebFrame* frame,
     blink::WebURLRequest& request) {
-  blink::WebReferrerPolicy referrer_policy = blink::WebReferrerPolicyDefault;
+  blink::WebReferrerPolicy referrer_policy = frame->document().referrerPolicy();
+  // FIXME(kohei): This will never be set.
   WebString custom_user_agent;
 
-  if (request.extraData()) {
-    // This will only be called before willSendRequest, so only ExtraData
-    // members we have to copy here is on WebURLRequestExtraDataImpl.
-    webkit_glue::WebURLRequestExtraDataImpl* old_extra_data =
-        static_cast<webkit_glue::WebURLRequestExtraDataImpl*>(
-            request.extraData());
-
-    referrer_policy = old_extra_data->referrer_policy();
-    custom_user_agent = old_extra_data->custom_user_agent();
-  }
+  DCHECK(!request.extraData());
 
   bool was_after_preconnect_request = true;
   // The args after |was_after_preconnect_request| are not used, and set to
