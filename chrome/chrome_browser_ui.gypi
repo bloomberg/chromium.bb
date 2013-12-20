@@ -2802,8 +2802,6 @@
             'browser/ui/views/frame/global_menu_bar_registrar_x11.h',
             'browser/ui/views/frame/native_browser_frame_factory_auralinux.cc',
             'browser/ui/views/frame/native_browser_frame_factory_desktop_ash.cc',
-            'browser/ui/views/frame/opaque_browser_frame_view_linux.h',
-            'browser/ui/views/frame/opaque_browser_frame_view_linux.cc',
             'browser/ui/views/screen_capture_notification_ui_views.cc',
             'browser/ui/webui/help/version_updater_basic.cc',
             'browser/ui/webui/help/version_updater_basic.h',
@@ -2811,6 +2809,9 @@
             'browser/ui/webui/signin/user_manager_screen_handler.cc',
             'browser/ui/webui/signin/user_manager_ui.h',
             'browser/ui/webui/signin/user_manager_ui.cc',
+          ],
+          'sources/': [ 
+            ['exclude', '^browser/ui/views/frame/opaque_browser_frame_view*'],
           ],
         }],
         ['use_cups==1', {

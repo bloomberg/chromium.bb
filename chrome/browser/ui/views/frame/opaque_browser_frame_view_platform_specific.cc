@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 
 // static
 OpaqueBrowserFrameViewPlatformSpecific*
