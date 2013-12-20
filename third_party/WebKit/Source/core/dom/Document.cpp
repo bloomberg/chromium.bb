@@ -1313,6 +1313,9 @@ void Document::setTitle(const String& title)
         }
     }
 
+    if (m_titleElement)
+        m_titleElement->removeChildren();
+
     updateTitle(title);
 
     if (m_titleElement && isHTMLTitleElement(m_titleElement.get()))
