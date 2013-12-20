@@ -44,7 +44,6 @@ class ImageTransportSurfaceAndroid
   virtual bool SwapBuffers() OVERRIDE;
   virtual std::string GetExtensions() OVERRIDE;
   virtual bool OnMakeCurrent(gfx::GLContext* context) OVERRIDE;
-  virtual void SetFrontbufferAllocation(bool allocated) OVERRIDE;
   virtual void WakeUpGpu() OVERRIDE;
 
  protected:
@@ -55,7 +54,6 @@ class ImageTransportSurfaceAndroid
   void DoWakeUpGpu();
 
   uint32 parent_client_id_;
-  bool frontbuffer_suggested_allocation_;
   base::TimeTicks begin_wake_up_time_;
 };
 
@@ -82,8 +80,7 @@ ImageTransportSurfaceAndroid::ImageTransportSurfaceAndroid(
     gfx::GLSurface* surface,
     uint32 parent_client_id)
     : PassThroughImageTransportSurface(manager, stub, surface, true),
-      parent_client_id_(parent_client_id),
-      frontbuffer_suggested_allocation_(true) {}
+      parent_client_id_(parent_client_id) {}
 
 ImageTransportSurfaceAndroid::~ImageTransportSurfaceAndroid() {}
 
@@ -110,15 +107,6 @@ std::string ImageTransportSurfaceAndroid::GetExtensions() {
   extensions += extensions.empty() ? "" : " ";
   extensions += "GL_CHROMIUM_front_buffer_cached ";
   return extensions;
-}
-
-void ImageTransportSurfaceAndroid::SetFrontbufferAllocation(bool allocation) {
-  if (frontbuffer_suggested_allocation_ == allocation)
-    return;
-  frontbuffer_suggested_allocation_ = allocation;
-  // TODO(sievers): This races with CompositorFrame messages.
-  if (!allocation)
-    GetHelper()->SendAcceleratedSurfaceRelease();
 }
 
 bool ImageTransportSurfaceAndroid::OnMakeCurrent(gfx::GLContext* context) {

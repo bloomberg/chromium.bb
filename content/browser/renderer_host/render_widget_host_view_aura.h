@@ -373,6 +373,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Exposed for tests.
   aura::Window* window() { return window_; }
   gfx::Size current_frame_size() const { return current_frame_size_; }
+  void LockResources();
+  void UnlockResources();
 
   // Overridden from ui::CompositorObserver:
   virtual void OnCompositingDidCommit(ui::Compositor* compositor) OVERRIDE;
@@ -396,6 +398,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, OutputSurfaceIdChange);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
                            DiscardDelegatedFrames);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest,
+                           DiscardDelegatedFramesWithLocking);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewAuraTest, SoftwareDPIChange);
 
   class WindowObserver;

@@ -3471,6 +3471,16 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
     input_method->SetFocusedTextInputClient(NULL);
 }
 
+void RenderWidgetHostViewAura::LockResources() {
+  DCHECK(frame_provider_);
+  delegated_frame_evictor_->LockFrame();
+}
+
+void RenderWidgetHostViewAura::UnlockResources() {
+  DCHECK(frame_provider_);
+  delegated_frame_evictor_->UnlockFrame();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostView, public:
 

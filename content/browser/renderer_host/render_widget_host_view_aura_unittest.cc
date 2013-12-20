@@ -1080,6 +1080,67 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   }
 }
 
+TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
+  size_t max_renderer_frames =
+      RendererFrameManager::GetInstance()->max_number_of_saved_frames();
+  ASSERT_LE(2u, max_renderer_frames);
+  size_t renderer_count = max_renderer_frames + 1;
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size = view_rect.size();
+
+  scoped_ptr<RenderWidgetHostImpl * []> hosts(
+      new RenderWidgetHostImpl* [renderer_count]);
+  scoped_ptr<FakeRenderWidgetHostViewAura * []> views(
+      new FakeRenderWidgetHostViewAura* [renderer_count]);
+
+  // Create a bunch of renderers.
+  for (size_t i = 0; i < renderer_count; ++i) {
+    hosts[i] = new RenderWidgetHostImpl(
+        &delegate_, process_host_, MSG_ROUTING_NONE, false);
+    hosts[i]->Init();
+    hosts[i]->OnMessageReceived(
+        ViewHostMsg_DidActivateAcceleratedCompositing(0, true));
+    views[i] = new FakeRenderWidgetHostViewAura(hosts[i]);
+    views[i]->InitAsChild(NULL);
+    aura::client::ParentWindowWithContext(
+        views[i]->GetNativeView(),
+        parent_view_->GetNativeView()->GetRootWindow(),
+        gfx::Rect());
+    views[i]->SetSize(view_rect.size());
+  }
+
+  // Make each renderer visible and swap a frame on it. No eviction should
+  // occur because all frames are visible.
+  for (size_t i = 0; i < renderer_count; ++i) {
+    views[i]->WasShown();
+    views[i]->OnSwapCompositorFrame(
+        1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+    EXPECT_TRUE(views[i]->frame_provider_);
+  }
+
+  // If we hide [0], then [0] should be evicted.
+  views[0]->WasHidden();
+  EXPECT_FALSE(views[0]->frame_provider_);
+
+  // If we lock [0] before hiding it, then [0] should not be evicted.
+  views[0]->WasShown();
+  views[0]->OnSwapCompositorFrame(
+        1, MakeDelegatedFrame(1.f, frame_size, view_rect));
+  EXPECT_TRUE(views[0]->frame_provider_);
+  views[0]->LockResources();
+  views[0]->WasHidden();
+  EXPECT_TRUE(views[0]->frame_provider_);
+
+  // If we unlock [0] now, then [0] should be evicted.
+  views[0]->UnlockResources();
+  EXPECT_FALSE(views[0]->frame_provider_);
+
+  for (size_t i = 0; i < renderer_count; ++i) {
+    views[i]->Destroy();
+    delete hosts[i];
+  }
+}
+
 TEST_F(RenderWidgetHostViewAuraTest, SoftwareDPIChange) {
   gfx::Rect view_rect(100, 100);
   gfx::Size frame_size(100, 100);

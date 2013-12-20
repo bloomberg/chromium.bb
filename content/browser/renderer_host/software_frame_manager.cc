@@ -150,7 +150,11 @@ void SoftwareFrameManager::SwapToNewFrameComplete(bool visible) {
 
 void SoftwareFrameManager::SetVisibility(bool visible) {
   if (HasCurrentFrame()) {
-    RendererFrameManager::GetInstance()->SetFrameVisibility(this, visible);
+    if (visible) {
+      RendererFrameManager::GetInstance()->LockFrame(this);
+    } else {
+      RendererFrameManager::GetInstance()->UnlockFrame(this);
+    }
   }
 }
 

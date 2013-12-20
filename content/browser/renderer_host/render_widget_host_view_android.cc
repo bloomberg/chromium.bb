@@ -124,7 +124,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       accelerated_surface_route_id_(0),
       using_synchronous_compositor_(SynchronousCompositorImpl::FromID(
                                         widget_host->GetProcess()->GetID(),
-                                        widget_host->GetRoutingID()) != NULL) {
+                                        widget_host->GetRoutingID()) != NULL),
+      frame_evictor_(new DelegatedFrameEvictor(this)) {
   if (!UsingDelegatedRenderer()) {
     texture_layer_ = cc::TextureLayer::Create(NULL);
     layer_ = texture_layer_;
@@ -359,6 +360,7 @@ void RenderWidgetHostViewAndroid::Show() {
   are_layers_attached_ = true;
   AttachLayers();
 
+  frame_evictor_->SetVisible(true);
   WasShown();
 }
 
@@ -369,6 +371,7 @@ void RenderWidgetHostViewAndroid::Hide() {
   are_layers_attached_ = false;
   RemoveLayers();
 
+  frame_evictor_->SetVisible(false);
   WasHidden();
 }
 
@@ -377,6 +380,18 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
   // ContentViewCore.  It being NULL means that it is not attached
   // to the View system yet, so we treat this RWHVA as hidden.
   return are_layers_attached_ && content_view_core_;
+}
+
+void RenderWidgetHostViewAndroid::LockResources() {
+  DCHECK(HasValidFrame());
+  DCHECK(host_);
+  DCHECK(!host_->is_hidden());
+  frame_evictor_->LockFrame();
+}
+
+void RenderWidgetHostViewAndroid::UnlockResources() {
+  DCHECK(HasValidFrame());
+  frame_evictor_->UnlockFrame();
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
@@ -788,6 +803,7 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   }
 
   BuffersSwapped(frame->gl_frame_data->mailbox, output_surface_id, callback);
+  frame_evictor_->SwappedFrame(!host_->is_hidden());
 }
 
 void RenderWidgetHostViewAndroid::SynchronousFrameMetadata(
@@ -940,7 +956,10 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceSuspend() {
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
-  // This tells us we should free the frontbuffer.
+  NOTREACHED();
+}
+
+void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
   if (texture_id_in_layer_) {
     texture_layer_->SetTextureId(0);
     texture_layer_->SetIsDrawable(false);
@@ -952,6 +971,7 @@ void RenderWidgetHostViewAndroid::AcceleratedSurfaceRelease() {
   }
   if (delegated_renderer_layer_.get())
     DestroyDelegatedContent();
+  frame_evictor_->DiscardedFrame();
 }
 
 bool RenderWidgetHostViewAndroid::HasAcceleratedSurface(

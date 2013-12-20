@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
 
+#include "base/logging.h"
+
 namespace content {
 
 DelegatedFrameEvictor::DelegatedFrameEvictor(
@@ -23,8 +25,23 @@ void DelegatedFrameEvictor::DiscardedFrame() {
 }
 
 void DelegatedFrameEvictor::SetVisible(bool visible) {
-  if (has_frame_)
-    RendererFrameManager::GetInstance()->SetFrameVisibility(this, visible);
+  if (has_frame_) {
+    if (visible) {
+      RendererFrameManager::GetInstance()->LockFrame(this);
+    } else {
+      RendererFrameManager::GetInstance()->UnlockFrame(this);
+    }
+  }
+}
+
+void DelegatedFrameEvictor::LockFrame() {
+  DCHECK(has_frame_);
+  RendererFrameManager::GetInstance()->LockFrame(this);
+}
+
+void DelegatedFrameEvictor::UnlockFrame() {
+  DCHECK(has_frame_);
+  RendererFrameManager::GetInstance()->UnlockFrame(this);
 }
 
 void DelegatedFrameEvictor::EvictCurrentFrame() {

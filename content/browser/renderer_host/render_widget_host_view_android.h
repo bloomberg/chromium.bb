@@ -18,6 +18,7 @@
 #include "cc/layers/texture_layer_client.h"
 #include "cc/output/begin_frame_args.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -63,7 +64,8 @@ class RenderWidgetHostViewAndroid
       public BrowserAccessibilityDelegate,
       public cc::DelegatedFrameResourceCollectionClient,
       public ImageTransportFactoryAndroidObserver,
-      public ui::WindowAndroidObserver {
+      public ui::WindowAndroidObserver,
+      public DelegatedFrameEvictorClient {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -196,6 +198,9 @@ class RenderWidgetHostViewAndroid
   // ImageTransportFactoryAndroidObserver implementation.
   virtual void OnLostResources() OVERRIDE;
 
+  // DelegatedFrameEvictor implementation
+  virtual void EvictDelegatedFrame() OVERRIDE;
+
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
   SkColor GetCachedBackgroundColor() const;
@@ -210,6 +215,9 @@ class RenderWidgetHostViewAndroid
   void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
   void OnSetNeedsBeginFrame(bool enabled);
+
+  void LockResources();
+  void UnlockResources();
 
   int GetNativeImeAdapter();
 
@@ -339,6 +347,8 @@ class RenderWidgetHostViewAndroid
   gfx::Size default_size_;
 
   const bool using_synchronous_compositor_;
+
+  scoped_ptr<DelegatedFrameEvictor> frame_evictor_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

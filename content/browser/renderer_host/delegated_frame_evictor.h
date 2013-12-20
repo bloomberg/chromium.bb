@@ -25,6 +25,8 @@ class CONTENT_EXPORT DelegatedFrameEvictor : public RendererFrameManagerClient {
   void SwappedFrame(bool visible);
   void DiscardedFrame();
   void SetVisible(bool visible);
+  void LockFrame();
+  void UnlockFrame();
 
  private:
   // RendererFrameManagerClient implementation.
