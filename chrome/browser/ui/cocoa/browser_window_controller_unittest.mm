@@ -70,10 +70,6 @@ using ::testing::Return;
   return [findBarCocoaController_ view];
 }
 
-- (NSSplitView*)devToolsView {
-  return static_cast<NSSplitView*>([devToolsController_ view]);
-}
-
 - (BOOL)bookmarkBarVisible {
   return [bookmarkBarController_ isVisible];
 }
@@ -631,24 +627,6 @@ TEST_F(BrowserWindowControllerTest, TestFindBarOnTop) {
 
   EXPECT_GT(findBar_index, toolbar_index);
   EXPECT_GT(findBar_index, bookmark_index);
-}
-
-// Tests that status bubble's base frame does move when devTools are docked.
-TEST_F(BrowserWindowControllerTest, TestStatusBubblePositioning) {
-  ASSERT_EQ(1U, [[[controller_ devToolsView] subviews] count]);
-
-  NSPoint bubbleOrigin = [controller_ statusBubbleBaseFrame].origin;
-
-  // Add a fake subview to devToolsView to emulate docked devTools.
-  base::scoped_nsobject<NSView> view(
-      [[NSView alloc] initWithFrame:NSMakeRect(0, 0, 10, 10)]);
-  [[controller_ devToolsView] addSubview:view];
-  [[controller_ devToolsView] adjustSubviews];
-
-  NSPoint bubbleOriginWithDevTools = [controller_ statusBubbleBaseFrame].origin;
-
-  // Make sure that status bubble frame is moved.
-  EXPECT_FALSE(NSEqualPoints(bubbleOrigin, bubbleOriginWithDevTools));
 }
 
 TEST_F(BrowserWindowControllerTest, TestSigninMenuItemNoErrors) {

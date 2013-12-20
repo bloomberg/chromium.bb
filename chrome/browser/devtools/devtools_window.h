@@ -21,6 +21,8 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "ui/gfx/insets.h"
+#include "ui/gfx/size.h"
 
 class Browser;
 class BrowserWindow;
@@ -96,8 +98,6 @@ class DevToolsWindow : private content::NotificationObserver,
   static void InspectElement(
       content::RenderViewHost* inspected_rvh, int x, int y);
 
-  static int GetMinimumWidth();
-  static int GetMinimumHeight();
   static int GetMinimizedHeight();
 
   // content::DevToolsFrontendHostDelegate:
@@ -110,23 +110,14 @@ class DevToolsWindow : private content::NotificationObserver,
   content::RenderViewHost* GetRenderViewHost();
   content::DevToolsClientHost* GetDevToolsClientHostForTest();
 
-  // Returns preferred devtools window width for given |container_width|. It
-  // tries to use the saved window width, or, if none exists, 1/3 of the
-  // container width, then clamps to try and ensure both devtools and content
-  // are at least somewhat visible.
-  // Called only for the case when devtools window is docked to the side.
-  int GetWidth(int container_width);
+  // Inspected WebContents is placed over DevTools WebContents in docked mode.
+  // The following methods return the insets of inspected WebContents
+  // relative to DevTools WebContents.
+  gfx::Insets GetContentsInsets() const;
 
-  // Returns preferred devtools window height for given |container_height|.
-  // Uses the same logic as GetWidth.
-  // Called only for the case when devtools window is docked to bottom.
-  int GetHeight(int container_height);
-
-  // Stores preferred devtools window width for this instance.
-  void SetWidth(int width);
-
-  // Stores preferred devtools window height for this instance.
-  void SetHeight(int height);
+  // Minimum size of the docked DevTools WebContents. This includes
+  // the overlaying inspected WebContents size.
+  gfx::Size GetMinimumSize() const;
 
   void Show(const DevToolsToggleAction& action);
 
@@ -208,6 +199,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
  private:
   friend class DevToolsControllerTest;
+  friend class BrowserWindowControllerTest;
 
   DevToolsWindow(Profile* profile,
                  const GURL& frontend_url,
@@ -279,7 +271,8 @@ class DevToolsWindow : private content::NotificationObserver,
   virtual void ActivateWindow() OVERRIDE;
   virtual void ActivateContents(content::WebContents* contents) OVERRIDE;
   virtual void CloseWindow() OVERRIDE;
-  virtual void SetWindowBounds(int x, int y, int width, int height) OVERRIDE;
+  virtual void SetContentsInsets(
+      int left, int top, int right, int bottom) OVERRIDE;
   virtual void MoveWindow(int x, int y) OVERRIDE;
   virtual void SetDockSide(const std::string& side) OVERRIDE;
   virtual void OpenInNewTab(const std::string& url) OVERRIDE;
@@ -347,6 +340,7 @@ class DevToolsWindow : private content::NotificationObserver,
   Profile* profile_;
   content::WebContents* web_contents_;
   Browser* browser_;
+  // TODO(dgozman): move dock side knowledge entirely to frontend.
   DevToolsDockSide dock_side_;
   bool is_loaded_;
   DevToolsToggleAction action_on_load_;
@@ -359,8 +353,7 @@ class DevToolsWindow : private content::NotificationObserver,
       scoped_refptr<DevToolsFileSystemIndexer::FileSystemIndexingJob> >
       IndexingJobsMap;
   IndexingJobsMap indexing_jobs_;
-  int width_;
-  int height_;
+  gfx::Insets contents_insets_;
   DevToolsDockSide dock_side_before_minimized_;
   // True if we're in the process of handling a beforeunload event originating
   // from the inspected webcontents, see InterceptPageBeforeUnload for details.

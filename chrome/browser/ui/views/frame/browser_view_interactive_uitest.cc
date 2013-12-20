@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/search/instant_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
-#include "chrome/browser/ui/views/frame/contents_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
