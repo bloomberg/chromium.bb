@@ -162,11 +162,15 @@ void GypBinaryTargetWriter::WriteVCConfiguration(int indent) {
   Indent(indent) << "'configurations': {\n";
 
   Indent(indent + kExtraIndent) << "'Debug': {\n";
+  Indent(indent + kExtraIndent * 2) <<
+      "'msvs_configuration_platform': 'Win32',\n";
   Flags debug_flags(FlagsFromTarget(group_.debug->item()->AsTarget()));
   WriteVCFlags(debug_flags, indent + kExtraIndent * 2);
   Indent(indent + kExtraIndent) << "},\n";
 
   Indent(indent + kExtraIndent) << "'Release': {\n";
+  Indent(indent + kExtraIndent * 2) <<
+      "'msvs_configuration_platform': 'Win32',\n";
   Flags release_flags(FlagsFromTarget(group_.release->item()->AsTarget()));
   WriteVCFlags(release_flags, indent + kExtraIndent * 2);
   Indent(indent + kExtraIndent) << "},\n";
@@ -175,6 +179,8 @@ void GypBinaryTargetWriter::WriteVCConfiguration(int indent) {
   // confused, but we ca leave them empty if there's no 64-bit target.
   Indent(indent + kExtraIndent) << "'Debug_x64': {\n";
   if (group_.debug64) {
+    Indent(indent + kExtraIndent * 2) <<
+        "'msvs_configuration_platform': 'x64',\n";
     Flags flags(FlagsFromTarget(group_.debug64->item()->AsTarget()));
     WriteVCFlags(flags, indent + kExtraIndent * 2);
   }
@@ -182,6 +188,8 @@ void GypBinaryTargetWriter::WriteVCConfiguration(int indent) {
 
   Indent(indent + kExtraIndent) << "'Release_x64': {\n";
   if (group_.release64) {
+    Indent(indent + kExtraIndent * 2) <<
+        "'msvs_configuration_platform': 'x64',\n";
     Flags flags(FlagsFromTarget(group_.release64->item()->AsTarget()));
     WriteVCFlags(flags, indent + kExtraIndent * 2);
   }
