@@ -28,8 +28,6 @@
         'base/test/ui_controls_internal_win.h',
         'base/test/ui_controls_mac.mm',
         'base/test/ui_controls_win.cc',
-        'gfx/test/color_util.cc',
-        'gfx/test/color_util.h',
       ],
       'include_dirs': [
         '../',
@@ -91,6 +89,7 @@
         'base/strings/ui_strings.gyp:ui_strings',
         'events/events.gyp:events_base',
         'gfx/gfx.gyp:gfx_geometry_unittests',
+        'gfx/gfx.gyp:gfx_test_support',
         'resources/ui_resources.gyp:ui_resources',
         'run_ui_unittests',
         'shell_dialogs/shell_dialogs.gyp:shell_dialogs',

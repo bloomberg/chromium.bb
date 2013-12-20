@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_COLOR_UTIL_H_
-#define CC_TEST_COLOR_UTIL_H_
+#ifndef UI_GFX_TEST_COLOR_UTIL_H_
+#define UI_GFX_TEST_COLOR_UTIL_H_
 
 #include <iosfwd>
 #include <string>
@@ -23,4 +23,4 @@ namespace gfx {
 
 }  // namespace gfx
 
-#endif  // CC_TEST_COLOR_UTIL_H_
+#endif  // UI_GFX_TEST_COLOR_UTIL_H_

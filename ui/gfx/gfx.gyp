@@ -440,7 +440,19 @@
           ],
         }],
       ],
-    }
+    },
+    {
+      'target_name': 'gfx_test_support',
+      'type': 'static_library',
+      'sources': [
+        'test/color_util.cc',
+        'test/color_util.h',
+      ],
+      'dependencies': [
+        '../../skia/skia.gyp:skia',
+        '../../testing/gtest.gyp:gtest',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="android"' , {

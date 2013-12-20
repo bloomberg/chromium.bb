@@ -339,8 +339,8 @@
         '../third_party/mesa/mesa.gyp:osmesa',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../ui/gfx/gfx.gyp:gfx_test_support',
         '../ui/gl/gl.gyp:gl',
-        '../ui/ui_unittests.gyp:ui_test_support',
       ],
       'sources': [
         '<@(cc_tests_support_files)',
