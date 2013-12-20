@@ -20,9 +20,6 @@ include_rules = [
   "+ui/aura",
   "+ui/views",
 
-  # For WebTestRunner library
-  "+third_party/WebKit/public/testing",
-
   "+components/breakpad",
 ]
 

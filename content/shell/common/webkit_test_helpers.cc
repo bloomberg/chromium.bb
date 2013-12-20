@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/common/shell_switches.h"
-#include "third_party/WebKit/public/testing/WebPreferences.h"
+#include "content/shell/common/test_runner/WebPreferences.h"
 #include "webkit/common/webpreferences.h"
 
 namespace content {

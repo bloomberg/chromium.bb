@@ -28,6 +28,13 @@ _EXCLUDED_PATHS = (
     r"^gpu[\\\/]config[\\\/].*_list_json\.cc$",
 )
 
+# TestRunner library is temporarily excluded from pan-project checks until
+# it's transitioned to chromium coding style.
+_TESTRUNNER_PATHS = (
+    r"^content[\\\/]shell[\\\/]renderer[\\\/]test_runner[\\\/].*",
+    r"^content[\\\/]shell[\\\/]common[\\\/]test_runner[\\\/].*",
+)
+
 # Fragment of a regular expression that matches C++ and Objective-C++
 # implementation files.
 _IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
@@ -999,7 +1006,8 @@ def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
   results.extend(input_api.canned_checks.PanProjectChecks(
-      input_api, output_api, excluded_paths=_EXCLUDED_PATHS))
+      input_api, output_api,
+      excluded_paths=_EXCLUDED_PATHS + _TESTRUNNER_PATHS))
   results.extend(_CheckAuthorizedAuthor(input_api, output_api))
   results.extend(
       _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))

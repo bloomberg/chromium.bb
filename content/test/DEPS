@@ -3,7 +3,6 @@ include_rules = [
   "+content",
   "+media/audio", # For AudioParameters in WebRTC tests.
   "+media/base",  # For ChannelLayout in WebRTC tests.
-  "+third_party/WebKit/public/testing",
   "+ui/base/resource/data_pack.h",
   "+ui/base/resource/resource_bundle.h",
   "!v8/include/v8.h",

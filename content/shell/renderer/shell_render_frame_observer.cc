@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/renderer/shell_render_process_observer.h"
-#include "third_party/WebKit/public/testing/WebTestInterfaces.h"
-#include "third_party/WebKit/public/testing/WebTestRunner.h"
+#include "content/shell/renderer/test_runner/WebTestInterfaces.h"
+#include "content/shell/renderer/test_runner/WebTestRunner.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
 namespace content {

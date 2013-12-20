@@ -11,12 +11,12 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/shell/renderer/test_runner/WebFrameTestProxy.h"
+#include "content/shell/renderer/test_runner/WebTestProxy.h"
 #include "content/test/test_media_stream_client.h"
 #include "third_party/WebKit/public/platform/WebDeviceMotionData.h"
 #include "third_party/WebKit/public/platform/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
-#include "third_party/WebKit/public/testing/WebFrameTestProxy.h"
-#include "third_party/WebKit/public/testing/WebTestProxy.h"
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 #include "content/browser/web_contents/web_contents_drag_win.h"

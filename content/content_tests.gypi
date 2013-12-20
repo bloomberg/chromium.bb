@@ -40,7 +40,6 @@
         'public/test/download_test_observer.h',
         'public/test/fake_speech_recognition_manager.cc',
         'public/test/fake_speech_recognition_manager.h',
-        'public/test/layouttest_support.h',
         'public/test/mock_download_item.cc',
         'public/test/mock_download_item.h',
         'public/test/mock_download_manager.cc',
@@ -113,7 +112,6 @@
         'gpu/gpu_idirect3d9_mock_win.h',
         'test/content_test_suite.cc',
         'test/content_test_suite.h',
-        'test/layouttest_support.cc',
         'test/mock_google_streaming_server.cc',
         'test/mock_google_streaming_server.h',
         'test/mock_keyboard.cc',
@@ -226,7 +224,6 @@
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
             '../third_party/WebKit/public/blink.gyp:blink',
-            '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_runner',
             '../ui/surface/surface.gyp:surface',
             '../webkit/child/webkit_child.gyp:webkit_child',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
@@ -1214,6 +1211,8 @@
           'type': 'static_library',
           'dependencies': [
             'test_support_content',
+            # TODO(jochen): remove this.
+            '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_support',
           ],
           'include_dirs': [
             '..',

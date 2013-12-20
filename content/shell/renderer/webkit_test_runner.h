@@ -13,8 +13,8 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
 #include "content/shell/common/shell_test_configuration.h"
-#include "third_party/WebKit/public/testing/WebPreferences.h"
-#include "third_party/WebKit/public/testing/WebTestDelegate.h"
+#include "content/shell/common/test_runner/WebPreferences.h"
+#include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "v8/include/v8.h"
 
 class SkCanvas;
