@@ -89,6 +89,14 @@ deps = {
   "src/third_party/WebKit":
     Var("webkit_trunk") + "@" + Var("webkit_revision"),
 
+  "src/third_party/WebKit/LayoutTests/w3c/web-platform-tests":
+    Var("chromium_git") +
+    "/external/w3c/web-platform-tests.git@35a9c0f1348052303a03523781c26ca98572ffa7",
+
+  "src/third_party/WebKit/LayoutTests/w3c/csswg-test":
+    Var("chromium_git") +
+    "/external/w3c/csswg-test.git@8c415e3215a203fa3a22dbdd1799279fdf44c81e",
+
   "src/third_party/icu":
     "/trunk/deps/third_party/icu46@241739",
 
