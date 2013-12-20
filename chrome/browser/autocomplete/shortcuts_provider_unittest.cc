@@ -156,17 +156,6 @@ struct TestShortcutInfo {
     "https://www.google.com/search?q=www.word", "www.word", "0,0",
     "Google Search", "0,4", content::PAGE_TRANSITION_GENERATED,
     AutocompleteMatchType::SEARCH_HISTORY, "", 1, 100 },
-  { "BD85DBA2-8C29-49F9-84AE-48E1E90880F5", "about:o", "chrome://omnibox",
-    "chrome://omnibox/", "about:omnibox", "0,3,10,1", "", "",
-    content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::NAVSUGGEST, "",
-    1, 100 },
-  { "BD85DBA2-8C29-49F9-84AE-48E1E90880F6", "www/real sp",
-    "http://www/real space/long-url-with-space.html",
-    "http://www/real%20space/long-url-with-space.html",
-    "www/real space/long-url-with-space.html", "0,3,11,1",
-    "Page With Space; Input with Space", "0,0",
-    content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL, "",
-    1, 100 },
 };
 
 }  // namespace
@@ -441,43 +430,6 @@ TEST_F(ShortcutsProviderTest, SimpleSingleMatch) {
   expected_urls.push_back(
       ExpectedURLAndAllowedToBeDefault(expected_url, false));
   RunTest(text, false, expected_urls, expected_url, base::string16());
-}
-
-// These tests are like those in SimpleSingleMatch but more complex,
-// involving URLs that need to be fixed up to match properly.
-TEST_F(ShortcutsProviderTest, TrickySingleMatch) {
-  // Test that about: URLs are fixed up/transformed to chrome:// URLs.
-  base::string16 text(ASCIIToUTF16("about:o"));
-  std::string expected_url("chrome://omnibox/");
-  ExpectedURLs expected_urls;
-  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(expected_url, true));
-  RunTest(text, false, expected_urls, expected_url, ASCIIToUTF16("mnibox"));
-
-  // Same test with prevent inline autocomplete.
-  expected_urls.clear();
-  expected_urls.push_back(
-      ExpectedURLAndAllowedToBeDefault(expected_url, false));
-  // The match will have an |inline_autocompletion| set, but the value will not
-  // be used because |allowed_to_be_default_match| will be false.
-  RunTest(text, true, expected_urls, expected_url, ASCIIToUTF16("mnibox"));
-
-  // Test that an input with a space can match URLs with a (escaped) space.
-  // This would fail if we didn't try to lookup the un-fixed-up string.
-  text = ASCIIToUTF16("www/real sp");
-  expected_url = "http://www/real%20space/long-url-with-space.html";
-  expected_urls.clear();
-  expected_urls.push_back(ExpectedURLAndAllowedToBeDefault(expected_url, true));
-  RunTest(text, false, expected_urls, expected_url,
-          ASCIIToUTF16("ace/long-url-with-space.html"));
-
-  // Same test with prevent inline autocomplete.
-  expected_urls.clear();
-  expected_urls.push_back(
-      ExpectedURLAndAllowedToBeDefault(expected_url, false));
-  // The match will have an |inline_autocompletion| set, but the value will not
-  // be used because |allowed_to_be_default_match| will be false.
-  RunTest(text, true, expected_urls, expected_url,
-          ASCIIToUTF16("ace/long-url-with-space.html"));
 }
 
 TEST_F(ShortcutsProviderTest, MultiMatch) {

@@ -40,6 +40,29 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
   DeleteMatchFromMatches(match);
 }
 
+HistoryProvider::~HistoryProvider() {}
+
+void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
+  bool found = false;
+  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
+    if (i->destination_url == match.destination_url && i->type == match.type) {
+      found = true;
+      if (i->is_history_what_you_typed_match || i->starred) {
+        // We can't get rid of What-You-Typed or Bookmarked matches,
+        // but we can make them look like they have no backing data.
+        i->deletable = false;
+        i->description.clear();
+        i->description_class.clear();
+      } else {
+        matches_.erase(i);
+      }
+      break;
+    }
+  }
+  DCHECK(found) << "Asked to delete a URL that isn't in our set of matches";
+  listener_->OnProviderUpdate(true);
+}
+
 // static
 bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
   const base::string16& input_text = input->text();
@@ -111,29 +134,6 @@ bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
   return !output.empty();
 }
 
-HistoryProvider::~HistoryProvider() {}
-
-void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
-  bool found = false;
-  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
-    if (i->destination_url == match.destination_url && i->type == match.type) {
-      found = true;
-      if (i->is_history_what_you_typed_match || i->starred) {
-        // We can't get rid of What-You-Typed or Bookmarked matches,
-        // but we can make them look like they have no backing data.
-        i->deletable = false;
-        i->description.clear();
-        i->description_class.clear();
-      } else {
-        matches_.erase(i);
-      }
-      break;
-    }
-  }
-  DCHECK(found) << "Asked to delete a URL that isn't in our set of matches";
-  listener_->OnProviderUpdate(true);
-}
-
 // static
 size_t HistoryProvider::TrimHttpPrefix(base::string16* url) {
   // Find any "http:".
@@ -191,3 +191,4 @@ ACMatchClassifications HistoryProvider::SpansFromTermMatch(
 
   return spans;
 }
+
