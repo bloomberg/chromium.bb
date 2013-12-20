@@ -16,7 +16,6 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/api_resource.h"
 #include "chrome/browser/extensions/api/api_resource_manager.h"
-#include "chrome/browser/extensions/api/cast_channel/cast_channel.pb.h"
 #include "chrome/common/extensions/api/cast_channel.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
@@ -28,7 +27,6 @@ namespace net {
 class AddressList;
 class CertVerifier;
 class SSLClientSocket;
-class StreamSocket;
 class TCPClientSocket;
 class TransportSecurityState;
 }
@@ -37,12 +35,11 @@ namespace extensions {
 namespace api {
 namespace cast_channel {
 
-// Size (in bytes) of the largest allowed message payload on the wire (without
+class CastMessage;
+
+// Size, in bytes, of the largest allowed message payload on the wire (without
 // the header).
 extern const uint32 kMaxMessageSize;
-
-// Size (in bytes) of the message header.
-extern const uint32 kMessageHeaderSize;
 
 // This class implements a channel between Chrome and a Cast device using a TCP
 // socket. The channel may be unauthenticated (cast://) or authenticated
@@ -57,11 +54,9 @@ class CastSocket : public ApiResource,
   class Delegate {
    public:
     // An error occurred on the channel.
-    // It is fine to delete the socket in this callback.
     virtual void OnError(const CastSocket* socket,
                          ChannelError error) = 0;
-    // A message was received on the channel.
-    // Do NOT delete the socket in this callback.
+    // A string message was received on the channel.
     virtual void OnMessage(const CastSocket* socket,
                            const MessageInfo& message) = 0;
    protected:
@@ -91,35 +86,46 @@ class CastSocket : public ApiResource,
   // Returns the state of the channel.
   ReadyState ready_state() const { return ready_state_; }
 
-  // Returns the last error that occurred on this channel, or
-  // CHANNEL_ERROR_NONE if no error has occurred.
+  // Returns the last error that occurred on this channel, or CHANNEL_ERROR_NONE
+  // if no error has occurred.
   ChannelError error_state() const { return error_state_; }
 
   // Connects the channel to the peer. If successful, the channel will be in
   // READY_STATE_OPEN.
-  // It is fine to delete the CastSocket object in |callback|.
   virtual void Connect(const net::CompletionCallback& callback);
 
   // Sends a message over a connected channel. The channel must be in
   // READY_STATE_OPEN.
-  //
-  // Note that if an error occurs the following happens:
-  // 1. Completion callbacks for all pending writes are invoked with error.
-  // 2. Delegate::OnError is called once.
-  // 3. Castsocket is closed.
-  //
-  // DO NOT delete the CastSocket object in write completion callback.
-  // But it is fine to delete the socket in Delegate::OnError
   virtual void SendMessage(const MessageInfo& message,
                            const net::CompletionCallback& callback);
 
   // Closes the channel. On completion, the channel will be in
   // READY_STATE_CLOSED.
-  // It is fine to delete the CastSocket object in |callback|.
   virtual void Close(const net::CompletionCallback& callback);
 
   // Fills |channel_info| with the status of this channel.
   virtual void FillChannelInfo(ChannelInfo* channel_info) const;
+
+ protected:
+  // Creates an instance of TCPClientSocket.
+  virtual scoped_ptr<net::TCPClientSocket> CreateTcpSocket();
+  // Creates an instance of SSLClientSocket.
+  virtual scoped_ptr<net::SSLClientSocket> CreateSslSocket();
+  // Extracts peer certificate from SSLClientSocket instance when the socket
+  // is in cert error state.
+  // Returns whether certificate is successfully extracted.
+  virtual bool ExtractPeerCert(std::string* cert);
+  // Sends a challenge request to the receiver.
+  virtual int SendAuthChallenge();
+  // Reads auth challenge reply from the receiver.
+  virtual int ReadAuthChallengeReply();
+  // Verifies whether the challenge reply received from the peer is valid:
+  // 1. Signature in the reply is valid.
+  // 2. Certificate is rooted to a trusted CA.
+  virtual bool VerifyChallengeReply();
+
+  // Returns whether we are executing in a valid thread.
+  virtual bool CalledOnValidThread() const;
 
  private:
   friend class ApiResourceManager<CastSocket>;
@@ -141,40 +147,6 @@ class CastSocket : public ApiResource,
     CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE,
   };
 
-  // Internal write states.
-  enum WriteState {
-    WRITE_STATE_NONE,
-    WRITE_STATE_WRITE,
-    WRITE_STATE_WRITE_COMPLETE,
-    WRITE_STATE_DO_CALLBACK,
-    WRITE_STATE_ERROR,
-  };
-
-  // Internal read states.
-  enum ReadState {
-    READ_STATE_NONE,
-    READ_STATE_READ,
-    READ_STATE_READ_COMPLETE,
-    READ_STATE_DO_CALLBACK,
-    READ_STATE_ERROR,
-  };
-
-  // Creates an instance of TCPClientSocket.
-  virtual scoped_ptr<net::TCPClientSocket> CreateTcpSocket();
-  // Creates an instance of SSLClientSocket with the given underlying |socket|.
-  virtual scoped_ptr<net::SSLClientSocket> CreateSslSocket(
-      scoped_ptr<net::StreamSocket> socket);
-  // Returns IPEndPoint for the URL to connect to.
-  const net::IPEndPoint& ip_endpoint() const { return ip_endpoint_; }
-  // Extracts peer certificate from SSLClientSocket instance when the socket
-  // is in cert error state.
-  // Returns whether certificate is successfully extracted.
-  virtual bool ExtractPeerCert(std::string* cert);
-  // Verifies whether the challenge reply received from the peer is valid:
-  // 1. Signature in the reply is valid.
-  // 2. Certificate is rooted to a trusted CA.
-  virtual bool VerifyChallengeReply();
-
   /////////////////////////////////////////////////////////////////////////////
   // Following methods work together to implement the following flow:
   // 1. Create a new TCP socket and connect to it
@@ -185,11 +157,11 @@ class CastSocket : public ApiResource,
   // 5. If SSL socket is connected successfully, and if protocol is casts://
   //    then issue an auth challenge request.
   // 6. Validate the auth challenge response.
-  //
+
   // Main method that performs connection state transitions.
-  void DoConnectLoop(int result);
+  int DoConnectLoop(int result);
   // Each of the below Do* method is executed in the corresponding
-  // connection state. For example when connection state is TCP_CONNECT
+  // connection state. For e.g. when connection state is TCP_CONNECT
   // DoTcpConnect is called, and so on.
   int DoTcpConnect();
   int DoTcpConnectComplete(int result);
@@ -200,59 +172,48 @@ class CastSocket : public ApiResource,
   int DoAuthChallengeReplyComplete(int result);
   /////////////////////////////////////////////////////////////////////////////
 
-  /////////////////////////////////////////////////////////////////////////////
-  // Following methods work together to implement write flow.
-  //
-  // Main method that performs write flow state transitions.
-  void DoWriteLoop(int result);
-  // Each of the below Do* method is executed in the corresponding
-  // write state. For example when write state is WRITE_STATE_WRITE_COMPLETE
-  // DowriteComplete is called, and so on.
-  int DoWrite();
-  int DoWriteComplete(int result);
-  int DoWriteCallback();
-  int DoWriteError(int result);
-  /////////////////////////////////////////////////////////////////////////////
+  // Callback method for callbacks from underlying sockets.
+  void OnConnectComplete(int result);
 
-  /////////////////////////////////////////////////////////////////////////////
-  // Following methods work together to implement read flow.
-  //
-  // Main method that performs write flow state transitions.
-  void DoReadLoop(int result);
-  // Each of the below Do* method is executed in the corresponding
-  // write state. For example when write state is READ_STATE_READ_COMPLETE
-  // DoReadComplete is called, and so on.
-  int DoRead();
-  int DoReadComplete(int result);
-  int DoReadCallback();
-  int DoReadError(int result);
-  /////////////////////////////////////////////////////////////////////////////
+  // Callback method when a challenge request is sent or a reply is received.
+  void OnChallengeEvent(int result);
 
   // Runs the external connection callback and resets it.
   void DoConnectCallback(int result);
+
   // Verifies that the URL is a valid cast:// or casts:// URL and sets url_ to
   // the result.
   bool ParseChannelUrl(const GURL& url);
-  // Adds |message| to the write queue and starts the write loop if needed.
-  void SendCastMessageInternal(const CastMessage& message,
-                               const net::CompletionCallback& callback);
-  void PostTaskToStartConnectLoop(int result);
-  void PostTaskToStartReadLoop();
-  void StartReadLoop();
-  // Parses the contents of header_read_buffer_ and sets current_message_size_
-  // to the size of the body of the message.
+
+  // Sends the given |message| and invokes the given callback when done.
+  int SendMessageInternal(const CastMessage& message,
+                          const net::CompletionCallback& callback);
+
+  // Writes data to the socket from the WriteRequest at the head of the queue.
+  // Calls OnWriteData() on completion.
+  int WriteData();
+  void OnWriteData(int result);
+
+  // Reads data from the socket into one of the read buffers. Calls
+  // OnReadData() on completion.
+  int ReadData();
+  void OnReadData(int result);
+
+  // Processes the contents of header_read_buffer_ and returns true on success.
   bool ProcessHeader();
-  // Parses the contents of body_read_buffer_ and sets current_message_ to
-  // the message received.
+  // Processes the contents of body_read_buffer_ and returns true on success.
   bool ProcessBody();
-  // Closes socket, updating the error state and signaling the delegate that
-  // |error| has occurred.
-  void CloseWithError(ChannelError error);
+  // Parses the message held in body_read_buffer_ and notifies |delegate_| if a
+  // message was extracted from the buffer.  Returns true on success.
+  bool ParseMessageFromBody();
+
   // Serializes the content of message_proto (with a header) to |message_data|.
   static bool Serialize(const CastMessage& message_proto,
                         std::string* message_data);
 
-  virtual bool CalledOnValidThread() const;
+  // Closes the socket and sets |error_state_|. Also signals |error| via
+  // |delegate_|.
+  void CloseWithError(ChannelError error);
 
   base::ThreadChecker thread_checker_;
 
@@ -263,27 +224,36 @@ class CastSocket : public ApiResource,
   GURL url_;
   // Delegate to inform of incoming messages and errors.
   Delegate* delegate_;
-  // True if receiver authentication should be performed.
+  // True if we should perform receiver authentication.
   bool auth_required_;
   // The IP endpoint of the peer.
   net::IPEndPoint ip_endpoint_;
+  // The last error encountered by the channel.
+  ChannelError error_state_;
+  // The current status of the channel.
+  ReadyState ready_state_;
+
+  // True when there is a write callback pending.
+  bool write_callback_pending_;
+  // True when there is a read callback pending.
+  bool read_callback_pending_;
 
   // IOBuffer for reading the message header.
   scoped_refptr<net::GrowableIOBuffer> header_read_buffer_;
   // IOBuffer for reading the message body.
   scoped_refptr<net::GrowableIOBuffer> body_read_buffer_;
-  // IOBuffer to currently read into.
+  // IOBuffer we are currently reading into.
   scoped_refptr<net::GrowableIOBuffer> current_read_buffer_;
   // The number of bytes in the current message body.
   uint32 current_message_size_;
-  // Last message received on the socket.
-  CastMessage current_message_;
 
   // The NetLog for this service.
   net::NetLog* net_log_;
   // The NetLog source for this service.
   net::NetLog::Source net_log_source_;
 
+  // Next connection state to transition to.
+  ConnectionState next_state_;
   // Owned ptr to the underlying TCP socket.
   scoped_ptr<net::TCPClientSocket> tcp_socket_;
   // Owned ptr to the underlying SSL socket.
@@ -298,17 +268,6 @@ class CastSocket : public ApiResource,
 
   // Callback invoked when the socket is connected.
   net::CompletionCallback connect_callback_;
-
-  // Connection flow state machine state.
-  ConnectionState connect_state_;
-  // Write flow state machine state.
-  WriteState write_state_;
-  // Read flow state machine state.
-  ReadState read_state_;
-  // The last error encountered by the channel.
-  ChannelError error_state_;
-  // The current status of the channel.
-  ReadyState ready_state_;
 
   // Message header struct. If fields are added, be sure to update
   // kMessageHeaderSize in the .cc.
@@ -342,10 +301,12 @@ class CastSocket : public ApiResource,
   // being written.
   std::queue<WriteRequest> write_queue_;
 
+  // Used to protect against DoConnectLoop() re-entrancy.
+  bool in_connect_loop_;
+
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestCastURLs);
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestRead);
   FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestReadMany);
-  FRIEND_TEST_ALL_PREFIXES(CastSocketTest, TestFullSecureConnectionFlowAsync);
   DISALLOW_COPY_AND_ASSIGN(CastSocket);
 };
 
