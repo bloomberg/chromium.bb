@@ -27,10 +27,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os.path
 import sys
 
-from in_file import InFile
 import in_generator
 from name_utilities import lower_first
 import template_expander
