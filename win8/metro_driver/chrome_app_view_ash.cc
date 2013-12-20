@@ -752,6 +752,9 @@ void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path,
     ::TerminateProcess(sei.hProcess, 0);
     ::CloseHandle(sei.hProcess);
   }
+
+  if (ash_exit)
+    ui_channel_->Close();
 }
 
 void ChromeAppViewAsh::OnOpenURLOnDesktop(const base::FilePath& shortcut,
