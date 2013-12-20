@@ -121,6 +121,7 @@ def GetArgsStringForGN(supplemental_files):
       ('branding', 'Chrome', 'is_chrome_branded=true'),
       ('buildtype', 'Official', 'is_official_build=true'),
       ('component', 'shared_library', 'is_component_build=true'),
+      ('clang', '1', 'is_clang=true'),
   ]
   for i in remap_cases:
     if i[0] in vars_dict and vars_dict[i[0]] == i[1]:

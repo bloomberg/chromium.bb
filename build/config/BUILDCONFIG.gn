@@ -102,7 +102,9 @@ if (os == "win") {
   is_nacl = false
   is_posix = true
   is_win = false
-  is_clang = true  # Always use clang on Mac.
+  if (!is_clang) {
+    is_clang = true  # Always use clang on Mac.
+  }
 } else if (os == "android") {
   is_android = false
   is_chromeos = false
