@@ -252,8 +252,10 @@ int SparseControl::StartIO(SparseOperation op, int64 offset, net::IOBuffer* buf,
     return net::ERR_INVALID_ARGUMENT;
 
   // We only support up to 64 GB.
-  if (offset + buf_len >= 0x1000000000LL || offset + buf_len < 0)
+  if (static_cast<uint64>(offset) + static_cast<unsigned int>(buf_len) >=
+      GG_UINT64_C(0x1000000000)) {
     return net::ERR_CACHE_OPERATION_NOT_SUPPORTED;
+  }
 
   DCHECK(!user_buf_.get());
   DCHECK(user_callback_.is_null());
