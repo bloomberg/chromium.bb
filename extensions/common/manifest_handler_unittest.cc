@@ -83,7 +83,7 @@ class ManifestHandlerTest : public testing::Test {
         : name_(name), keys_(keys), prereqs_(prereqs), watcher_(watcher) {
     }
 
-    virtual bool Parse(Extension* extension, string16* error) OVERRIDE {
+    virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE {
       watcher_->Record(name_);
       return true;
     }
@@ -111,7 +111,7 @@ class ManifestHandlerTest : public testing::Test {
                                ParsingWatcher* watcher)
         : TestManifestHandler(name, keys, prereqs, watcher) {
     }
-    virtual bool Parse(Extension* extension, string16* error) OVERRIDE {
+    virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE {
       *error = ASCIIToUTF16(name_);
       return false;
     }
@@ -141,7 +141,7 @@ class ManifestHandlerTest : public testing::Test {
           keys_(keys) {
     }
 
-    virtual bool Parse(Extension* extension, string16* error) OVERRIDE {
+    virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE {
       return true;
     }
 

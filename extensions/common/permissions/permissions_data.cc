@@ -95,7 +95,7 @@ bool ParseHelper(Extension* extension,
                  const char* key,
                  APIPermissionSet* api_permissions,
                  URLPatternSet* host_permissions,
-                 string16* error) {
+                 base::string16* error) {
   if (!extension->manifest()->HasKey(key))
     return true;
 
@@ -429,11 +429,11 @@ PermissionMessages PermissionsData::GetPermissionMessages(
 }
 
 // static
-std::vector<string16> PermissionsData::GetPermissionMessageStrings(
+std::vector<base::string16> PermissionsData::GetPermissionMessageStrings(
     const Extension* extension) {
   base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
   if (ShouldSkipPermissionWarnings(extension)) {
-    return std::vector<string16>();
+    return std::vector<base::string16>();
   } else {
     return PermissionMessageProvider::Get()->GetWarningMessages(
         GetActivePermissions(extension), extension->GetType());
@@ -441,11 +441,11 @@ std::vector<string16> PermissionsData::GetPermissionMessageStrings(
 }
 
 // static
-std::vector<string16> PermissionsData::GetPermissionMessageDetailsStrings(
+std::vector<base::string16> PermissionsData::GetPermissionMessageDetailsStrings(
     const Extension* extension) {
   base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
   if (ShouldSkipPermissionWarnings(extension)) {
-    return std::vector<string16>();
+    return std::vector<base::string16>();
   } else {
     return PermissionMessageProvider::Get()->GetWarningMessagesDetails(
         GetActivePermissions(extension), extension->GetType());
@@ -561,7 +561,8 @@ bool PermissionsData::CanCaptureVisiblePage(const Extension* extension,
   return false;
 }
 
-bool PermissionsData::ParsePermissions(Extension* extension, string16* error) {
+bool PermissionsData::ParsePermissions(Extension* extension,
+                                       base::string16* error) {
   initial_required_permissions_.reset(new InitialPermissions);
   if (!ParseHelper(extension,
                    keys::kPermissions,

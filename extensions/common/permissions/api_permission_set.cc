@@ -23,7 +23,7 @@ bool CreateAPIPermission(
     const base::Value* permission_value,
     APIPermissionSet::ParseSource source,
     APIPermissionSet* api_permissions,
-    string16* error,
+    base::string16* error,
     std::vector<std::string>* unhandled_permissions) {
 
   const APIPermissionInfo* permission_info =
@@ -66,7 +66,7 @@ bool ParseChildPermissions(const std::string& base_name,
                            const base::Value* permission_value,
                            APIPermissionSet::ParseSource source,
                            APIPermissionSet* api_permissions,
-                           string16* error,
+                           base::string16* error,
                            std::vector<std::string>* unhandled_permissions) {
   if (permission_value) {
     const base::ListValue* permissions;
@@ -124,7 +124,7 @@ bool APIPermissionSet::ParseFromJSON(
     const base::ListValue* permissions,
     APIPermissionSet::ParseSource source,
     APIPermissionSet* api_permissions,
-    string16* error,
+    base::string16* error,
     std::vector<std::string>* unhandled_permissions) {
   for (size_t i = 0; i < permissions->GetSize(); ++i) {
     std::string permission_str;

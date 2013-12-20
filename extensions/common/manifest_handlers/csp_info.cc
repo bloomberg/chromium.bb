@@ -77,7 +77,7 @@ CSPHandler::CSPHandler(bool is_platform_app)
 CSPHandler::~CSPHandler() {
 }
 
-bool CSPHandler::Parse(Extension* extension, string16* error) {
+bool CSPHandler::Parse(Extension* extension, base::string16* error) {
   const std::string key = Keys()[0];
   if (!extension->manifest()->HasPath(key)) {
     if (extension->manifest_version() >= 2) {

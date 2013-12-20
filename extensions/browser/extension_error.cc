@@ -10,7 +10,6 @@
 #include "extensions/common/constants.h"
 #include "url/gurl.h"
 
-using base::string16;
 using base::DictionaryValue;
 
 namespace extensions {
@@ -30,8 +29,8 @@ ExtensionError::ExtensionError(Type type,
                                const std::string& extension_id,
                                bool from_incognito,
                                logging::LogSeverity level,
-                               const string16& source,
-                               const string16& message)
+                               const base::string16& source,
+                               const base::string16& message)
     : type_(type),
       extension_id_(extension_id),
       from_incognito_(from_incognito),
@@ -84,9 +83,9 @@ const char ManifestError::kManifestKeyKey[] = "manifestKey";
 const char ManifestError::kManifestSpecificKey[] = "manifestSpecific";
 
 ManifestError::ManifestError(const std::string& extension_id,
-                             const string16& message,
-                             const string16& manifest_key,
-                             const string16& manifest_specific)
+                             const base::string16& message,
+                             const base::string16& manifest_key,
+                             const base::string16& manifest_specific)
     : ExtensionError(ExtensionError::MANIFEST_ERROR,
                      extension_id,
                      false,  // extensions can't be installed while incognito.
@@ -135,8 +134,8 @@ const char RuntimeError::kRenderViewIdKey[] = "renderViewId";
 
 RuntimeError::RuntimeError(const std::string& extension_id,
                            bool from_incognito,
-                           const string16& source,
-                           const string16& message,
+                           const base::string16& source,
+                           const base::string16& message,
                            const StackTrace& stack_trace,
                            const GURL& context_url,
                            logging::LogSeverity level,

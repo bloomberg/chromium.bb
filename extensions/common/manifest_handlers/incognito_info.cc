@@ -34,7 +34,7 @@ IncognitoHandler::IncognitoHandler() {
 IncognitoHandler::~IncognitoHandler() {
 }
 
-bool IncognitoHandler::Parse(Extension* extension, string16* error) {
+bool IncognitoHandler::Parse(Extension* extension, base::string16* error) {
   if (!extension->manifest()->HasKey(keys::kIncognito)) {
     // Extensions and Chrome apps default to spanning mode.
     // Hosted and legacy packaged apps default to split mode.

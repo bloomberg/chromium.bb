@@ -59,7 +59,8 @@ class DictionaryBuilder {
   DictionaryBuilder& Set(const std::string& path, int in_value);
   DictionaryBuilder& Set(const std::string& path, double in_value);
   DictionaryBuilder& Set(const std::string& path, const std::string& in_value);
-  DictionaryBuilder& Set(const std::string& path, const string16& in_value);
+  DictionaryBuilder& Set(const std::string& path,
+                         const base::string16& in_value);
   DictionaryBuilder& Set(const std::string& path, DictionaryBuilder& in_value);
   DictionaryBuilder& Set(const std::string& path, ListBuilder& in_value);
 
@@ -87,7 +88,7 @@ class ListBuilder {
   ListBuilder& Append(int in_value);
   ListBuilder& Append(double in_value);
   ListBuilder& Append(const std::string& in_value);
-  ListBuilder& Append(const string16& in_value);
+  ListBuilder& Append(const base::string16& in_value);
   ListBuilder& Append(DictionaryBuilder& in_value);
   ListBuilder& Append(ListBuilder& in_value);
 

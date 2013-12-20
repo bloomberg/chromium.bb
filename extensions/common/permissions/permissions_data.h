@@ -141,13 +141,13 @@ class PermissionsData {
   // Returns the full list of permission messages that the given |extension|
   // should display at install time. The messages are returned as strings
   // for convenience.
-  static std::vector<string16> GetPermissionMessageStrings(
+  static std::vector<base::string16> GetPermissionMessageStrings(
       const Extension* extension);
 
   // Returns the full list of permission details for messages that the given
   // |extension| should display at install time. The messages are returned as
   // strings for convenience.
-  static std::vector<string16> GetPermissionMessageDetailsStrings(
+  static std::vector<base::string16> GetPermissionMessageDetailsStrings(
       const Extension* extension);
 
   // Returns true if the given |extension| can execute script on a page. If a
@@ -179,7 +179,7 @@ class PermissionsData {
                                     std::string* error);
 
   // Parse the permissions of a given extension in the initialization process.
-  bool ParsePermissions(Extension* extension, string16* error);
+  bool ParsePermissions(Extension* extension, base::string16* error);
 
   // Ensure manifest handlers provide their custom manifest permissions.
   void InitializeManifestPermissions(Extension* extension);

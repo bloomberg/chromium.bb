@@ -10,13 +10,15 @@ namespace extensions {
 //
 
 PermissionMessage::PermissionMessage(
-    PermissionMessage::ID id, const string16& message)
+    PermissionMessage::ID id, const base::string16& message)
   : id_(id),
     message_(message) {
 }
 
 PermissionMessage::PermissionMessage(
-    PermissionMessage::ID id, const string16& message, const string16& details)
+    PermissionMessage::ID id,
+    const base::string16& message,
+    const base::string16& details)
   : id_(id),
     message_(message),
     details_(details) {

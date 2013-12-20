@@ -44,7 +44,7 @@ KioskModeHandler::KioskModeHandler() {
 KioskModeHandler::~KioskModeHandler() {
 }
 
-bool KioskModeHandler::Parse(Extension* extension, string16* error) {
+bool KioskModeHandler::Parse(Extension* extension, base::string16* error) {
   const Manifest* manifest = extension->manifest();
   DCHECK(manifest->HasKey(keys::kKioskEnabled) ||
          manifest->HasKey(keys::kKioskOnly));

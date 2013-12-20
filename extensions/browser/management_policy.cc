@@ -25,24 +25,25 @@ ManagementPolicy::~ManagementPolicy() {
 }
 
 bool ManagementPolicy::Provider::UserMayLoad(const Extension* extension,
-                                             string16* error) const {
+                                             base::string16* error) const {
   return true;
 }
 
 bool ManagementPolicy::Provider::UserMayModifySettings(
-    const Extension* extension, string16* error) const {
+    const Extension* extension, base::string16* error) const {
   return true;
 }
 
 bool ManagementPolicy::Provider::MustRemainEnabled(const Extension* extension,
-                                                   string16* error) const {
+                                                   base::string16* error)
+    const {
   return false;
 }
 
 bool ManagementPolicy::Provider::MustRemainDisabled(
     const Extension* extension,
     Extension::DisableReason* reason,
-    string16* error) const {
+    base::string16* error) const {
   return false;
 }
 
@@ -55,26 +56,26 @@ void ManagementPolicy::UnregisterProvider(Provider* provider) {
 }
 
 bool ManagementPolicy::UserMayLoad(const Extension* extension,
-                                   string16* error) const {
+                                   base::string16* error) const {
   return ApplyToProviderList(&Provider::UserMayLoad, "Installation",
                              true, extension, error);
 }
 
 bool ManagementPolicy::UserMayModifySettings(const Extension* extension,
-                                             string16* error) const {
+                                             base::string16* error) const {
   return ApplyToProviderList(&Provider::UserMayModifySettings, "Modification",
                              true, extension, error);
 }
 
 bool ManagementPolicy::MustRemainEnabled(const Extension* extension,
-                                         string16* error) const {
+                                         base::string16* error) const {
   return ApplyToProviderList(&Provider::MustRemainEnabled, "Disabling",
                              false, extension, error);
 }
 
 bool ManagementPolicy::MustRemainDisabled(const Extension* extension,
                                           Extension::DisableReason* reason,
-                                          string16* error) const {
+                                          base::string16* error) const {
   for (ProviderList::const_iterator it = providers_.begin();
        it != providers_.end(); ++it)
     if ((*it)->MustRemainDisabled(extension, reason, error))
@@ -95,7 +96,7 @@ bool ManagementPolicy::ApplyToProviderList(ProviderFunction function,
                                            const char* debug_operation_name,
                                            bool normal_result,
                                            const Extension* extension,
-                                           string16* error) const {
+                                           base::string16* error) const {
   for (ProviderList::const_iterator it = providers_.begin();
        it != providers_.end(); ++it) {
     const Provider* provider = *it;

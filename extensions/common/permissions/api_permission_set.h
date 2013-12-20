@@ -54,7 +54,7 @@ class APIPermissionSet : public BaseSetOperators<APIPermissionSet> {
       const base::ListValue* permissions,
       ParseSource source,
       APIPermissionSet* api_permissions,
-      string16* error,
+      base::string16* error,
       std::vector<std::string>* unhandled_permissions);
 
   void AddImpliedPermissions();

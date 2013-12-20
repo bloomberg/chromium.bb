@@ -26,15 +26,15 @@ bool UserMayLoad(const base::ListValue* blacklist,
                  const base::DictionaryValue* forcelist,
                  const base::ListValue* allowed_types,
                  const Extension* extension,
-                 string16* error);
+                 base::string16* error);
 
 // Returns false if the extension is required to remain running. In practice
 // this enforces the admin policy forcelist.
-bool UserMayModifySettings(const Extension* extension, string16* error);
+bool UserMayModifySettings(const Extension* extension, base::string16* error);
 
 // Returns false if the extension is required to remain running. In practice
 // this enforces the admin policy forcelist.
-bool MustRemainEnabled(const Extension* extension, string16* error);
+bool MustRemainEnabled(const Extension* extension, base::string16* error);
 
 }  // namespace
 }  // namespace

@@ -36,26 +36,26 @@ std::string ErrorUtils::FormatErrorMessage(const std::string& format,
   return ret_val;
 }
 
-string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
-                                             const std::string& s1) {
+base::string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
+                                                   const std::string& s1) {
   std::string ret_val = format;
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
   return UTF8ToUTF16(ret_val);
 }
 
-string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
-                                             const std::string& s1,
-                                             const std::string& s2) {
+base::string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
+                                                   const std::string& s1,
+                                                   const std::string& s2) {
   std::string ret_val = format;
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s2);
   return UTF8ToUTF16(ret_val);
 }
 
-string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
-                                             const std::string& s1,
-                                             const std::string& s2,
-                                             const std::string& s3) {
+base::string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
+                                                   const std::string& s1,
+                                                   const std::string& s2,
+                                                   const std::string& s3) {
   std::string ret_val = format;
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s2);

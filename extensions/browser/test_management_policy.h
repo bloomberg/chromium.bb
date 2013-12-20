@@ -38,17 +38,17 @@ class TestManagementPolicyProvider : public ManagementPolicy::Provider {
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
 
   virtual bool UserMayLoad(const Extension* extension,
-                           string16* error) const OVERRIDE;
+                           base::string16* error) const OVERRIDE;
 
   virtual bool UserMayModifySettings(const Extension* extension,
-                                     string16* error) const OVERRIDE;
+                                     base::string16* error) const OVERRIDE;
 
   virtual bool MustRemainEnabled(const Extension* extension,
-                                 string16* error) const OVERRIDE;
+                                 base::string16* error) const OVERRIDE;
 
   virtual bool MustRemainDisabled(const Extension* extension,
                                   Extension::DisableReason* reason,
-                                  string16* error) const OVERRIDE;
+                                  base::string16* error) const OVERRIDE;
 
  private:
   bool may_load_;
@@ -57,7 +57,7 @@ class TestManagementPolicyProvider : public ManagementPolicy::Provider {
   bool must_remain_disabled_;
   Extension::DisableReason disable_reason_;
 
-  string16 error_message_;
+  base::string16 error_message_;
 };
 
 }  // namespace extensions

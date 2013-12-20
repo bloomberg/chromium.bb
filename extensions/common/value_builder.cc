@@ -34,7 +34,7 @@ DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
-                                          const string16& in_value) {
+                                          const base::string16& in_value) {
   dict_->SetWithoutPathExpansion(path, new base::StringValue(in_value));
   return *this;
 }
@@ -79,7 +79,7 @@ ListBuilder& ListBuilder::Append(const std::string& in_value) {
   return *this;
 }
 
-ListBuilder& ListBuilder::Append(const string16& in_value) {
+ListBuilder& ListBuilder::Append(const base::string16& in_value) {
   list_->Append(new base::StringValue(in_value));
   return *this;
 }

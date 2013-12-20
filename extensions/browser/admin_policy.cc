@@ -13,7 +13,7 @@
 namespace {
 
 bool ManagementPolicyImpl(const extensions::Extension* extension,
-                          string16* error,
+                          base::string16* error,
                           bool modifiable_value) {
   bool modifiable =
       extension->location() != extensions::Manifest::COMPONENT &&
@@ -30,7 +30,8 @@ bool ManagementPolicyImpl(const extensions::Extension* extension,
   return !modifiable_value;
 }
 
-bool ReturnLoadError(const extensions::Extension* extension, string16* error) {
+bool ReturnLoadError(const extensions::Extension* extension,
+                     base::string16* error) {
   if (error) {
     *error = l10n_util::GetStringFUTF16(
           IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED,
@@ -55,7 +56,7 @@ bool UserMayLoad(const base::ListValue* blacklist,
                  const base::DictionaryValue* forcelist,
                  const base::ListValue* allowed_types,
                  const Extension* extension,
-                 string16* error) {
+                 base::string16* error) {
   // Component extensions are always allowed.
   if (extension->location() == Manifest::COMPONENT)
     return true;
@@ -109,11 +110,11 @@ bool UserMayLoad(const base::ListValue* blacklist,
   return true;
 }
 
-bool UserMayModifySettings(const Extension* extension, string16* error) {
+bool UserMayModifySettings(const Extension* extension, base::string16* error) {
   return ManagementPolicyImpl(extension, error, true);
 }
 
-bool MustRemainEnabled(const Extension* extension, string16* error) {
+bool MustRemainEnabled(const Extension* extension, base::string16* error) {
   return ManagementPolicyImpl(extension, error, false);
 }
 

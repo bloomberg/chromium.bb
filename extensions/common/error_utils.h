@@ -26,17 +26,17 @@ class ErrorUtils {
                                         const std::string& s2,
                                         const std::string& s3);
 
-  static string16 FormatErrorMessageUTF16(const std::string& format,
-                                          const std::string& s1);
+  static base::string16 FormatErrorMessageUTF16(const std::string& format,
+                                                const std::string& s1);
 
-  static string16 FormatErrorMessageUTF16(const std::string& format,
-                                          const std::string& s1,
-                                          const std::string& s2);
+  static base::string16 FormatErrorMessageUTF16(const std::string& format,
+                                                const std::string& s1,
+                                                const std::string& s2);
 
-  static string16 FormatErrorMessageUTF16(const std::string& format,
-                                          const std::string& s1,
-                                          const std::string& s2,
-                                          const std::string& s3);
+  static base::string16 FormatErrorMessageUTF16(const std::string& format,
+                                                const std::string& s1,
+                                                const std::string& s2,
+                                                const std::string& s3);
 };
 
 }  // namespace extensions

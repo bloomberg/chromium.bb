@@ -24,7 +24,7 @@ bool CreateManifestPermission(
     const std::string& permission_name,
     const base::Value* permission_value,
     ManifestPermissionSet* manifest_permissions,
-    string16* error,
+    base::string16* error,
     std::vector<std::string>* unhandled_permissions) {
 
   scoped_ptr<ManifestPermission> permission(
@@ -60,7 +60,7 @@ namespace extensions {
 bool ManifestPermissionSet::ParseFromJSON(
     const base::ListValue* permissions,
     ManifestPermissionSet* manifest_permissions,
-    string16* error,
+    base::string16* error,
     std::vector<std::string>* unhandled_permissions) {
   for (size_t i = 0; i < permissions->GetSize(); ++i) {
     std::string permission_name;

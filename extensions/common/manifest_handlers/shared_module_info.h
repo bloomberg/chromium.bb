@@ -19,7 +19,7 @@ class SharedModuleInfo : public Extension::ManifestData {
   SharedModuleInfo();
   virtual ~SharedModuleInfo();
 
-  bool Parse(const Extension* extension, string16* error);
+  bool Parse(const Extension* extension, base::string16* error);
 
   struct ImportInfo {
     std::string extension_id;
@@ -57,7 +57,7 @@ class SharedModuleHandler : public ManifestHandler {
   SharedModuleHandler();
   virtual ~SharedModuleHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
   virtual bool Validate(const Extension* extension,
                         std::string* error,
                         std::vector<InstallWarning>* warnings) const OVERRIDE;

@@ -38,7 +38,7 @@ class ManifestPermissionSet : public BaseSetOperators<ManifestPermissionSet> {
   static bool ParseFromJSON(
       const base::ListValue* permissions,
       ManifestPermissionSet* manifest_permissions,
-      string16* error,
+      base::string16* error,
       std::vector<std::string>* unhandled_permissions);
 };
 

@@ -64,7 +64,7 @@ TEST_F(ExtensionAdminPolicyTest, BlacklistedByDefault) {
 TEST_F(ExtensionAdminPolicyTest, UserMayLoadRequired) {
   CreateExtension(Manifest::COMPONENT);
   EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(), NULL));
-  string16 error;
+  base::string16 error;
   EXPECT_TRUE(ap::UserMayLoad(NULL, NULL, NULL, NULL, extension_.get(),
                               &error));
   EXPECT_TRUE(error.empty());
@@ -87,7 +87,7 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadNoBlacklist) {
   base::ListValue blacklist;
   EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                               NULL));
-  string16 error;
+  base::string16 error;
   EXPECT_TRUE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                               &error));
   EXPECT_TRUE(error.empty());
@@ -106,7 +106,7 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadWhitelisted) {
   blacklist.Append(new base::StringValue(extension_->id()));
   EXPECT_TRUE(ap::UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(),
                               NULL));
-  string16 error;
+  base::string16 error;
   EXPECT_TRUE(ap::UserMayLoad(NULL, &whitelist, NULL, NULL, extension_.get(),
                               &error));
   EXPECT_TRUE(error.empty());
@@ -121,7 +121,7 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadBlacklisted) {
   blacklist.Append(new base::StringValue("*"));
   EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                                NULL));
-  string16 error;
+  base::string16 error;
   EXPECT_FALSE(ap::UserMayLoad(&blacklist, NULL, NULL, NULL, extension_.get(),
                                &error));
   EXPECT_FALSE(error.empty());
@@ -170,7 +170,7 @@ TEST_F(ExtensionAdminPolicyTest, UserMayLoadAllowedTypes) {
 TEST_F(ExtensionAdminPolicyTest, UserMayModifySettings) {
   CreateExtension(Manifest::INTERNAL);
   EXPECT_TRUE(ap::UserMayModifySettings(extension_.get(), NULL));
-  string16 error;
+  base::string16 error;
   EXPECT_TRUE(ap::UserMayModifySettings(extension_.get(), &error));
   EXPECT_TRUE(error.empty());
 
@@ -184,7 +184,7 @@ TEST_F(ExtensionAdminPolicyTest, UserMayModifySettings) {
 TEST_F(ExtensionAdminPolicyTest, MustRemainEnabled) {
   CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD);
   EXPECT_TRUE(ap::MustRemainEnabled(extension_.get(), NULL));
-  string16 error;
+  base::string16 error;
   EXPECT_TRUE(ap::MustRemainEnabled(extension_.get(), &error));
   EXPECT_FALSE(error.empty());
 

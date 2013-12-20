@@ -61,7 +61,7 @@ SandboxedPageHandler::SandboxedPageHandler() {
 SandboxedPageHandler::~SandboxedPageHandler() {
 }
 
-bool SandboxedPageHandler::Parse(Extension* extension, string16* error) {
+bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<SandboxedPageInfo> sandboxed_info(new SandboxedPageInfo);
 
   const base::ListValue* list_value = NULL;

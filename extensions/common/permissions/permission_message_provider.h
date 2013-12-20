@@ -33,14 +33,14 @@ class PermissionMessageProvider {
 
   // Gets the localized permission messages that represent this set (represented
   // as strings). The set of permission messages shown varies by extension type.
-  virtual std::vector<string16> GetWarningMessages(
+  virtual std::vector<base::string16> GetWarningMessages(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const = 0;
 
   // Gets the localized permission details for messages that represent this set
   // (represented as strings). The set of permission messages shown varies by
   // extension type.
-  virtual std::vector<string16> GetWarningMessagesDetails(
+  virtual std::vector<base::string16> GetWarningMessagesDetails(
       const PermissionSet* permissions,
       Manifest::Type extension_type) const = 0;
 

@@ -31,7 +31,7 @@ class OfflineEnabledHandler : public ManifestHandler {
   OfflineEnabledHandler();
   virtual ~OfflineEnabledHandler();
 
-  virtual bool Parse(Extension* extension, string16* error) OVERRIDE;
+  virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE;
   virtual bool AlwaysParseForType(Manifest::Type type) const OVERRIDE;
 
  private:

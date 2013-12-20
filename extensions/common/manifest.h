@@ -149,7 +149,7 @@ class Manifest {
   bool GetBoolean(const std::string& path, bool* out_value) const;
   bool GetInteger(const std::string& path, int* out_value) const;
   bool GetString(const std::string& path, std::string* out_value) const;
-  bool GetString(const std::string& path, string16* out_value) const;
+  bool GetString(const std::string& path, base::string16* out_value) const;
   bool GetDictionary(const std::string& path,
                      const base::DictionaryValue** out_value) const;
   bool GetList(const std::string& path,

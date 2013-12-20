@@ -105,7 +105,8 @@ const std::vector<SharedModuleInfo::ImportInfo>& SharedModuleInfo::GetImports(
   return GetSharedModuleInfo(extension).imports_;
 }
 
-bool SharedModuleInfo::Parse(const Extension* extension, string16* error) {
+bool SharedModuleInfo::Parse(const Extension* extension,
+                             base::string16* error) {
   bool has_import = extension->manifest()->HasKey(keys::kImport);
   bool has_export = extension->manifest()->HasKey(keys::kExport);
   if (!has_import && !has_export)
@@ -193,7 +194,7 @@ SharedModuleHandler::SharedModuleHandler() {
 SharedModuleHandler::~SharedModuleHandler() {
 }
 
-bool SharedModuleHandler::Parse(Extension* extension, string16* error) {
+bool SharedModuleHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<SharedModuleInfo> info(new SharedModuleInfo);
   if (!info->Parse(extension, error))
     return false;

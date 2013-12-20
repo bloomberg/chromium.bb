@@ -153,7 +153,7 @@ TEST(ExtensionPermissionsTest, SocketPermissions) {
 TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-apis.json");
-  std::vector<string16> warnings =
+  std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(6u, warnings.size());
   EXPECT_EQ("Access your data on api.flickr.com",
@@ -169,9 +169,9 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyAPIPermissions) {
 TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHostsPermissions) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "more-than-3-hosts.json");
-  std::vector<string16> warnings =
+  std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
-  std::vector<string16> warnings_details =
+  std::vector<base::string16> warnings_details =
       PermissionsData::GetPermissionMessageDetailsStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   ASSERT_EQ(1u, warnings_details.size());
@@ -186,7 +186,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_LocationApiPermission) {
                            "location-api.json",
                            Manifest::COMPONENT,
                            Extension::NO_FLAGS);
-  std::vector<string16> warnings =
+  std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Detect your physical location", UTF16ToUTF8(warnings[0]));
@@ -195,7 +195,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_LocationApiPermission) {
 TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHosts) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "many-hosts.json");
-  std::vector<string16> warnings =
+  std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Access your data on encrypted.google.com and www.google.com",
@@ -205,7 +205,7 @@ TEST(ExtensionPermissionsTest, GetPermissionMessages_ManyHosts) {
 TEST(ExtensionPermissionsTest, GetPermissionMessages_Plugins) {
   scoped_refptr<Extension> extension;
   extension = LoadManifest("permissions", "plugins.json");
-  std::vector<string16> warnings =
+  std::vector<base::string16> warnings =
       PermissionsData::GetPermissionMessageStrings(extension.get());
 // We don't parse the plugins key on Chrome OS, so it should not ask for any
 // permissions.

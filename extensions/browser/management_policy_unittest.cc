@@ -63,7 +63,7 @@ TEST_F(ManagementPolicyTest, RegisterAndUnregister) {
 
 TEST_F(ManagementPolicyTest, UserMayLoad) {
   // No providers registered.
-  string16 error;
+  base::string16 error;
   // The extension and location are irrelevant to the
   // TestManagementPolicyProviders.
   EXPECT_TRUE(policy_.UserMayLoad(NULL, &error));
@@ -92,7 +92,7 @@ TEST_F(ManagementPolicyTest, UserMayLoad) {
 }
 TEST_F(ManagementPolicyTest, UserMayModifySettings) {
   // No providers registered.
-  string16 error;
+  base::string16 error;
   EXPECT_TRUE(policy_.UserMayModifySettings(NULL, &error));
   EXPECT_TRUE(error.empty());
 
@@ -120,7 +120,7 @@ TEST_F(ManagementPolicyTest, UserMayModifySettings) {
 
 TEST_F(ManagementPolicyTest, MustRemainEnabled) {
   // No providers registered.
-  string16 error;
+  base::string16 error;
   EXPECT_FALSE(policy_.MustRemainEnabled(NULL, &error));
   EXPECT_TRUE(error.empty());
 
@@ -148,7 +148,7 @@ TEST_F(ManagementPolicyTest, MustRemainEnabled) {
 
 TEST_F(ManagementPolicyTest, MustRemainDisabled) {
   // No providers registered.
-  string16 error;
+  base::string16 error;
   EXPECT_FALSE(policy_.MustRemainDisabled(NULL, NULL, &error));
   EXPECT_TRUE(error.empty());
 
@@ -180,8 +180,8 @@ TEST_F(ManagementPolicyTest, MustRemainDisabled) {
 TEST_F(ManagementPolicyTest, ErrorHandling) {
   // The error parameter should be unchanged if no restriction was found.
   std::string original_error = "Ceci est en effet une erreur.";
-  string16 original_error16 = UTF8ToUTF16(original_error);
-  string16 error = original_error16;
+  base::string16 original_error16 = UTF8ToUTF16(original_error);
+  base::string16 error = original_error16;
   EXPECT_TRUE(policy_.UserMayLoad(NULL, &error));
   EXPECT_EQ(original_error, UTF16ToUTF8(error));
   EXPECT_TRUE(policy_.UserMayModifySettings(NULL, &error));
