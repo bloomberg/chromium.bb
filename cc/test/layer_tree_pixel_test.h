@@ -15,6 +15,10 @@
 
 class SkBitmap;
 
+namespace gpu {
+class GLInProcessContext;
+}
+
 namespace cc {
 class CopyOutputRequest;
 class CopyOutputResult;
@@ -79,11 +83,10 @@ class LayerTreePixelTest : public LayerTreeTest {
       TextureMailbox* texture_mailbox,
       scoped_ptr<SingleReleaseCallback>* release_callback);
 
-  void ReleaseTextureMailbox(
-      scoped_ptr<blink::WebGraphicsContext3D> context3d,
-      uint32 texture,
-      uint32 sync_point,
-      bool lost_resource);
+  void ReleaseTextureMailbox(scoped_ptr<gpu::GLInProcessContext> context,
+                             uint32 texture,
+                             uint32 sync_point,
+                             bool lost_resource);
 
   // Common CSS colors defined for tests to use.
   enum Colors {

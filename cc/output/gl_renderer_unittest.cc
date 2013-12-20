@@ -1842,15 +1842,15 @@ class GLRendererTestSyncPoint : public GLRendererPixelTest {
 TEST_F(GLRendererTestSyncPoint, SignalSyncPointOnLostContext) {
   int sync_point_callback_count = 0;
   int other_callback_count = 0;
-  blink::WebGraphicsContext3D* context3d =
-      output_surface_->context_provider()->Context3d();
+  gpu::gles2::GLES2Interface* gl =
+      output_surface_->context_provider()->ContextGL();
   gpu::ContextSupport* context_support =
       output_surface_->context_provider()->ContextSupport();
 
-  uint32 sync_point = context3d->insertSyncPoint();
+  uint32 sync_point = gl->InsertSyncPointCHROMIUM();
 
-  context3d->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                                 GL_INNOCENT_CONTEXT_RESET_ARB);
+  gl->LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                          GL_INNOCENT_CONTEXT_RESET_ARB);
 
   context_support->SignalSyncPoint(
       sync_point, base::Bind(&SyncPointCallback, &sync_point_callback_count));
@@ -1858,7 +1858,7 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPointOnLostContext) {
   EXPECT_EQ(0, other_callback_count);
 
   // Make the sync point happen.
-  context3d->finish();
+  gl->Finish();
   // Post a task after the sync point.
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&OtherCallback, &other_callback_count));
@@ -1874,12 +1874,12 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPoint) {
   int sync_point_callback_count = 0;
   int other_callback_count = 0;
 
-  blink::WebGraphicsContext3D* context3d =
-      output_surface_->context_provider()->Context3d();
+  gpu::gles2::GLES2Interface* gl =
+      output_surface_->context_provider()->ContextGL();
   gpu::ContextSupport* context_support =
       output_surface_->context_provider()->ContextSupport();
 
-  uint32 sync_point = context3d->insertSyncPoint();
+  uint32 sync_point = gl->InsertSyncPointCHROMIUM();
 
   context_support->SignalSyncPoint(
       sync_point, base::Bind(&SyncPointCallback, &sync_point_callback_count));
@@ -1887,7 +1887,7 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPoint) {
   EXPECT_EQ(0, other_callback_count);
 
   // Make the sync point happen.
-  context3d->finish();
+  gl->Finish();
   // Post a task after the sync point.
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&OtherCallback, &other_callback_count));

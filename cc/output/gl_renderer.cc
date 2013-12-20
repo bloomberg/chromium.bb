@@ -179,7 +179,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       highp_threshold_min_(highp_threshold_min),
       highp_threshold_cache_(0),
       on_demand_tile_raster_resource_id_(0) {
-  DCHECK(context_);
+  DCHECK(gl_);
   DCHECK(context_support_);
 
   ContextProvider::Capabilities context_caps =
@@ -525,7 +525,7 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
 
   // Flush the GL context so rendering results from this context are
   // visible in the compositor's context.
-  offscreen_contexts->Context3d()->flush();
+  offscreen_contexts->ContextGL()->Flush();
 
   return device.accessBitmap(false);
 }
@@ -650,7 +650,7 @@ static SkBitmap ApplyBlendModeWithBackdrop(
 
   // Flush the GL context so rendering results from this context are
   // visible in the compositor's context.
-  offscreen_contexts->Context3d()->flush();
+  offscreen_contexts->ContextGL()->Flush();
 
   return device.accessBitmap(false);
 }

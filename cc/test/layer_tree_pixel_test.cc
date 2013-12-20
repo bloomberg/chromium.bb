@@ -17,10 +17,13 @@
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/pixel_test_software_output_device.h"
 #include "cc/test/pixel_test_utils.h"
+#include "cc/test/test_in_process_context_provider.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ui/gl/gl_implementation.h"
-#include "webkit/common/gpu/context_provider_in_process.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
+
+using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
@@ -54,9 +57,8 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
     case GL_WITH_BITMAP: {
       CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
 
-      using webkit::gpu::ContextProviderInProcess;
-      output_surface = make_scoped_ptr(new PixelTestOutputSurface(
-          ContextProviderInProcess::CreateOffscreen()));
+      output_surface = make_scoped_ptr(
+          new PixelTestOutputSurface(new TestInProcessContextProvider));
       break;
     }
   }
@@ -66,10 +68,7 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
 }
 
 scoped_refptr<ContextProvider> LayerTreePixelTest::OffscreenContextProvider() {
-  scoped_refptr<webkit::gpu::ContextProviderInProcess> provider =
-      webkit::gpu::ContextProviderInProcess::CreateOffscreen();
-  CHECK(provider.get());
-  return provider;
+  return scoped_refptr<ContextProvider>(new TestInProcessContextProvider);
 }
 
 void LayerTreePixelTest::CommitCompleteOnThread(LayerTreeHostImpl* impl) {
@@ -234,49 +233,41 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
   if (!texture_mailbox.IsTexture())
     return scoped_ptr<SkBitmap>();
 
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<blink::WebGraphicsContext3D> context3d(
-      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-          blink::WebGraphicsContext3D::Attributes()));
-
-  EXPECT_TRUE(context3d->makeContextCurrent());
+  scoped_ptr<gpu::GLInProcessContext> context = CreateTestInProcessContext();
+  GLES2Interface* gl = context->GetImplementation();
 
   if (texture_mailbox.sync_point())
-    context3d->waitSyncPoint(texture_mailbox.sync_point());
+    gl->WaitSyncPointCHROMIUM(texture_mailbox.sync_point());
 
-  unsigned texture_id = context3d->createTexture();
-  context3d->bindTexture(GL_TEXTURE_2D, texture_id);
-  context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  context3d->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  context3d->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  context3d->consumeTextureCHROMIUM(texture_mailbox.target(),
-                                    texture_mailbox.data());
-  context3d->bindTexture(GL_TEXTURE_2D, 0);
+  GLuint texture_id = 0;
+  gl->GenTextures(1, &texture_id);
+  gl->BindTexture(GL_TEXTURE_2D, texture_id);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  gl->ConsumeTextureCHROMIUM(texture_mailbox.target(), texture_mailbox.data());
+  gl->BindTexture(GL_TEXTURE_2D, 0);
 
-  unsigned fbo = context3d->createFramebuffer();
-  context3d->bindFramebuffer(GL_FRAMEBUFFER, fbo);
-  context3d->framebufferTexture2D(GL_FRAMEBUFFER,
-                                  GL_COLOR_ATTACHMENT0,
-                                  GL_TEXTURE_2D,
-                                  texture_id,
-                                  0);
+  GLuint fbo = 0;
+  gl->GenFramebuffers(1, &fbo);
+  gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
+  gl->FramebufferTexture2D(
+      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id, 0);
   EXPECT_EQ(static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE),
-            context3d->checkFramebufferStatus(GL_FRAMEBUFFER));
+            gl->CheckFramebufferStatus(GL_FRAMEBUFFER));
 
   scoped_ptr<uint8[]> pixels(new uint8[size.GetArea() * 4]);
-  context3d->readPixels(0,
-                        0,
-                        size.width(),
-                        size.height(),
-                        GL_RGBA,
-                        GL_UNSIGNED_BYTE,
-                        pixels.get());
+  gl->ReadPixels(0,
+                 0,
+                 size.width(),
+                 size.height(),
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 pixels.get());
 
-  context3d->deleteFramebuffer(fbo);
-  context3d->deleteTexture(texture_id);
+  gl->DeleteFramebuffers(1, &fbo);
+  gl->DeleteTextures(1, &texture_id);
 
   scoped_ptr<SkBitmap> bitmap(new SkBitmap);
   bitmap->setConfig(SkBitmap::kARGB_8888_Config,
@@ -305,13 +296,14 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
 }
 
 void LayerTreePixelTest::ReleaseTextureMailbox(
-    scoped_ptr<blink::WebGraphicsContext3D> context3d,
+    scoped_ptr<gpu::GLInProcessContext> context,
     uint32 texture,
     uint32 sync_point,
     bool lost_resource) {
+  GLES2Interface* gl = context->GetImplementation();
   if (sync_point)
-    context3d->waitSyncPoint(sync_point);
-  context3d->deleteTexture(texture);
+    gl->WaitSyncPointCHROMIUM(sync_point);
+  gl->DeleteTextures(1, &texture);
   pending_texture_mailbox_callbacks_--;
   TryEndTest();
 }
@@ -325,21 +317,16 @@ void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
 
   CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
 
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<blink::WebGraphicsContext3D> context3d(
-      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-          blink::WebGraphicsContext3D::Attributes()));
+  scoped_ptr<gpu::GLInProcessContext> context = CreateTestInProcessContext();
+  GLES2Interface* gl = context->GetImplementation();
 
-  EXPECT_TRUE(context3d->makeContextCurrent());
-
-  unsigned texture_id = context3d->createTexture();
-  context3d->bindTexture(GL_TEXTURE_2D, texture_id);
-  context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  context3d->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  context3d->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  context3d->texParameteri(
-      GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  GLuint texture_id = 0;
+  gl->GenTextures(1, &texture_id);
+  gl->BindTexture(GL_TEXTURE_2D, texture_id);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   DCHECK_EQ(SkBitmap::kARGB_8888_Config, bitmap.getConfig());
 
@@ -364,28 +351,28 @@ void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
       }
     }
 
-    context3d->texImage2D(GL_TEXTURE_2D,
-                          0,
-                          GL_RGBA,
-                          bitmap.width(),
-                          bitmap.height(),
-                          0,
-                          GL_RGBA,
-                          GL_UNSIGNED_BYTE,
-                          gl_pixels.get());
+    gl->TexImage2D(GL_TEXTURE_2D,
+                   0,
+                   GL_RGBA,
+                   bitmap.width(),
+                   bitmap.height(),
+                   0,
+                   GL_RGBA,
+                   GL_UNSIGNED_BYTE,
+                   gl_pixels.get());
   }
 
   gpu::Mailbox mailbox;
-  context3d->genMailboxCHROMIUM(mailbox.name);
-  context3d->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
-  context3d->bindTexture(GL_TEXTURE_2D, 0);
-  uint32 sync_point = context3d->insertSyncPoint();
+  gl->GenMailboxCHROMIUM(mailbox.name);
+  gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  gl->BindTexture(GL_TEXTURE_2D, 0);
+  uint32 sync_point = gl->InsertSyncPointCHROMIUM();
 
   *texture_mailbox = TextureMailbox(mailbox, sync_point);
   *release_callback = SingleReleaseCallback::Create(
       base::Bind(&LayerTreePixelTest::ReleaseTextureMailbox,
                  base::Unretained(this),
-                 base::Passed(&context3d),
+                 base::Passed(&context),
                  texture_id));
 }
 

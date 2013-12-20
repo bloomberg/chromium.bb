@@ -1,5 +1,7 @@
 include_rules = [
+  "+gpu/command_buffer/client/gl_in_process_context.h",
+  "+gpu/command_buffer/client/gles2_implementation.h",
   "+gpu/command_buffer/client/gles2_interface_stub.h",
-  # TODO(jamesr): Remove once cc depends on GLES2Interface instead of WGC3D
-  "+webkit/common/gpu",
+  "+gpu/command_buffer/client/gles2_lib.h",
+  "+gpu/skia_bindings/gl_bindings_skia_cmd_buffer.h",
 ]
