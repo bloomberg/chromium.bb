@@ -1315,6 +1315,7 @@
         'browser/net/dns_probe_browsertest.cc',
         'browser/net/ftp_browsertest.cc',
         'browser/net/load_timing_browsertest.cc',
+        'browser/net/nss_context_chromeos_browsertest.cc',
         'browser/net/predictor_browsertest.cc',
         'browser/net/proxy_browsertest.cc',
         'browser/net/websocket_browsertest.cc',
@@ -1751,6 +1752,7 @@
           ],
           'sources!': [
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
+            'browser/net/nss_context_chromeos_browsertest.cc',
             'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
             'browser/ui/ash/caps_lock_delegate_chromeos_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',

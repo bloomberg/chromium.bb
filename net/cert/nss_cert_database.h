@@ -16,7 +16,9 @@
 #include "net/cert/cert_type.h"
 #include "net/cert/x509_certificate.h"
 
-template <typename T> struct DefaultSingletonTraits;
+namespace base {
+template <typename T> struct DefaultLazyInstanceTraits;
+}
 template <class ObserverType> class ObserverListThreadSafe;
 
 namespace net {
@@ -89,17 +91,18 @@ class NET_EXPORT NSSCertDatabase {
     DISTRUSTED_OBJ_SIGN   = 1 << 5,
   };
 
+  // DEPRECATED: See http://crbug.com/329735.
   static NSSCertDatabase* GetInstance();
 
   // Get a list of unique certificates in the certificate database (one
   // instance of all certificates).
-  void ListCerts(CertificateList* certs);
+  virtual void ListCerts(CertificateList* certs);
 
   // Get the default slot for public key data.
-  crypto::ScopedPK11Slot GetPublicSlot() const;
+  virtual crypto::ScopedPK11Slot GetPublicSlot() const;
 
   // Get the default slot for private key or mixed private/public key data.
-  crypto::ScopedPK11Slot GetPrivateSlot() const;
+  virtual crypto::ScopedPK11Slot GetPrivateSlot() const;
 
   // Get the default module for public key data.
   // The returned pointer must be stored in a scoped_refptr<CryptoModule>.
@@ -116,7 +119,7 @@ class NET_EXPORT NSSCertDatabase {
   // Get all modules.
   // If |need_rw| is true, only writable modules will be returned.
   // TODO(mattm): come up with better alternative to CryptoModuleList.
-  void ListModules(CryptoModuleList* modules, bool need_rw) const;
+  virtual void ListModules(CryptoModuleList* modules, bool need_rw) const;
 
   // Import certificates and private keys from PKCS #12 blob into the module.
   // If |is_extractable| is false, mark the private key as being unextractable
@@ -196,17 +199,22 @@ class NET_EXPORT NSSCertDatabase {
   // Registers |observer| to receive notifications of certificate changes.  The
   // thread on which this is called is the thread on which |observer| will be
   // called back with notifications.
+  // NOTE: CertDatabase::AddObserver should be preferred. Observers registered
+  // here will only recieve notifications generated directly through the
+  // NSSCertDatabase, but not those from the CertDatabase. The CertDatabase
+  // observers will recieve both.
   void AddObserver(Observer* observer);
 
   // Unregisters |observer| from receiving notifications.  This must be called
   // on the same thread on which AddObserver() was called.
   void RemoveObserver(Observer* observer);
 
- private:
-  friend struct DefaultSingletonTraits<NSSCertDatabase>;
-
+ protected:
   NSSCertDatabase();
-  ~NSSCertDatabase();
+  virtual ~NSSCertDatabase();
+
+ private:
+  friend struct base::DefaultLazyInstanceTraits<NSSCertDatabase>;
 
   // Broadcasts notifications to all registered observers.
   void NotifyObserversOfCertAdded(const X509Certificate* cert);

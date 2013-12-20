@@ -23,13 +23,9 @@ namespace net {
 // the given CertDatabase.
 class CertDatabase::Notifier : public NSSCertDatabase::Observer {
  public:
-  explicit Notifier(CertDatabase* cert_db) : cert_db_(cert_db) {
-    NSSCertDatabase::GetInstance()->AddObserver(this);
-  }
+  explicit Notifier(CertDatabase* cert_db) : cert_db_(cert_db) {}
 
-  virtual ~Notifier() {
-    NSSCertDatabase::GetInstance()->RemoveObserver(this);
-  }
+  virtual ~Notifier() {}
 
   // NSSCertDatabase::Observer implementation:
   virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE {
@@ -51,10 +47,9 @@ class CertDatabase::Notifier : public NSSCertDatabase::Observer {
 };
 
 CertDatabase::CertDatabase()
-    : observer_list_(new ObserverListThreadSafe<Observer>) {
-  // Observe NSSCertDatabase events and forward them to observers of
-  // CertDatabase. This also makes sure that NSS has been initialized.
-  notifier_.reset(new Notifier(this));
+    : observer_list_(new ObserverListThreadSafe<Observer>),
+      notifier_(new Notifier(this)) {
+  crypto::EnsureNSSInit();
 }
 
 CertDatabase::~CertDatabase() {}
@@ -107,6 +102,10 @@ int CertDatabase::AddUserCert(X509Certificate* cert_obj) {
 
   NotifyObserversOfCertAdded(cert_obj);
   return OK;
+}
+
+void CertDatabase::ObserveNSSCertDatabase(NSSCertDatabase* source) {
+  source->AddObserver(this->notifier_.get());
 }
 
 }  // namespace net
