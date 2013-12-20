@@ -177,7 +177,7 @@ bool CreateWebURLRequest(PP_Instance instance,
   if (data->has_custom_user_agent) {
     bool was_after_preconnect_request = false;
     dest->setExtraData(new webkit_glue::WebURLRequestExtraDataImpl(
-        blink::WebReferrerPolicyDefault,  // Ignored.
+        frame->document().referrerPolicy(),
         WebString::fromUTF8(data->custom_user_agent),
         was_after_preconnect_request));
   }
