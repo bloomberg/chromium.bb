@@ -174,10 +174,10 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
         } else if (mode == ManagedTileState::TileVersion::PICTURE_PILE_MODE) {
           color = DebugColors::PictureTileBorderColor();
           width = DebugColors::PictureTileBorderWidth(layer_tree_impl());
-        } else if (iter.priority().resolution == HIGH_RESOLUTION) {
+        } else if (iter->priority(ACTIVE_TREE).resolution == HIGH_RESOLUTION) {
           color = DebugColors::HighResTileBorderColor();
           width = DebugColors::HighResTileBorderWidth(layer_tree_impl());
-        } else if (iter.priority().resolution == LOW_RESOLUTION) {
+        } else if (iter->priority(ACTIVE_TREE).resolution == LOW_RESOLUTION) {
           color = DebugColors::LowResTileBorderColor();
           width = DebugColors::LowResTileBorderWidth(layer_tree_impl());
         } else if (iter->contents_scale() > contents_scale_x()) {
@@ -488,14 +488,6 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       flags);
 }
 
-scoped_refptr<TileBundle> PictureLayerImpl::CreateTileBundle(int offset_x,
-                                                             int offset_y,
-                                                             int width,
-                                                             int height) {
-  return layer_tree_impl()->tile_manager()->CreateTileBundle(
-      offset_x, offset_y, width, height);
-}
-
 void PictureLayerImpl::UpdatePile(Tile* tile) {
   tile->set_picture_pile(pile_);
 }
@@ -734,7 +726,7 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
       // This iteration is over the visible content rect which is potentially
       // less conservative than projecting the viewport into the layer.
       // Ignore tiles that are know to be outside the viewport.
-      if (iter.priority().distance_to_visible_in_pixels != 0)
+      if (iter->priority(PENDING_TREE).distance_to_visible_in_pixels != 0)
         continue;
 
       missing_region.Subtract(iter.geometry_rect());
@@ -803,7 +795,7 @@ bool PictureLayerImpl::MarkVisibleTilesAsRequired(
     // This iteration is over the visible content rect which is potentially
     // less conservative than projecting the viewport into the layer.
     // Ignore tiles that are know to be outside the viewport.
-    if (iter.priority().distance_to_visible_in_pixels != 0)
+    if (tile->priority(PENDING_TREE).distance_to_visible_in_pixels != 0)
       continue;
 
     // If the missing region doesn't cover it, this tile is fully
@@ -815,8 +807,7 @@ bool PictureLayerImpl::MarkVisibleTilesAsRequired(
     // that it is outside the visible tile rect) or this tile is shared between
     // with the twin, then this tile isn't required to prevent flashing.
     if (optional_twin_tiling) {
-      Tile* twin_tile =
-          optional_twin_tiling->TileAt(ACTIVE_TREE, iter.i(), iter.j());
+      Tile* twin_tile = optional_twin_tiling->TileAt(iter.i(), iter.j());
       if (!twin_tile || twin_tile == tile) {
         twin_had_missing_tile = true;
         continue;

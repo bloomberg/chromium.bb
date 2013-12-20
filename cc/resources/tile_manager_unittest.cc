@@ -67,7 +67,6 @@ class TileManagerTest : public testing::TestWithParam<bool> {
   }
 
   virtual void TearDown() OVERRIDE {
-    bundles_.clear();
     tile_manager_.reset(NULL);
     picture_pile_ = NULL;
 
@@ -88,14 +87,9 @@ class TileManagerTest : public testing::TestWithParam<bool> {
                                                            0,
                                                            0,
                                                            Tile::USE_LCD_TEXT);
-      scoped_refptr<TileBundle> bundle =
-          tile_manager_->CreateTileBundle(0, 0, 1, 1);
-      bundle->SetPriority(ACTIVE_TREE, active_priority);
-      bundle->SetPriority(PENDING_TREE, pending_priority);
-      bundle->AddTileAt(ACTIVE_TREE, 0, 0, tile);
-      bundle->AddTileAt(PENDING_TREE, 0, 0, tile);
+      tile->SetPriority(ACTIVE_TREE, active_priority);
+      tile->SetPriority(PENDING_TREE, pending_priority);
       tiles.push_back(tile);
-      bundles_.push_back(bundle);
     }
     return tiles;
   }
@@ -148,7 +142,6 @@ class TileManagerTest : public testing::TestWithParam<bool> {
   scoped_ptr<ResourceProvider> resource_provider_;
   TileMemoryLimitPolicy memory_limit_policy_;
   int max_memory_tiles_;
-  std::vector<scoped_refptr<TileBundle> > bundles_;
 };
 
 TEST_P(TileManagerTest, EnoughMemoryAllowAnything) {
@@ -535,4 +528,3 @@ INSTANTIATE_TEST_CASE_P(TileManagerTests,
 
 }  // namespace
 }  // namespace cc
-

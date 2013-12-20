@@ -93,9 +93,9 @@ class PictureLayerImplTest : public testing::Test {
 
   void CreateHighLowResAndSetAllTilesVisible() {
     // Active layer must get updated first so pending layer can share from it.
-    active_layer_->CreateDefaultTilingsAndTiles(ACTIVE_TREE);
+    active_layer_->CreateDefaultTilingsAndTiles();
     active_layer_->SetAllTilesVisible();
-    pending_layer_->CreateDefaultTilingsAndTiles(PENDING_TREE);
+    pending_layer_->CreateDefaultTilingsAndTiles();
     pending_layer_->SetAllTilesVisible();
   }
 
@@ -103,16 +103,11 @@ class PictureLayerImplTest : public testing::Test {
     active_layer_->AddTiling(2.3f);
     active_layer_->AddTiling(1.0f);
     active_layer_->AddTiling(0.5f);
-    for (size_t i = 0; i < active_layer_->tilings()->num_tilings(); ++i) {
-      active_layer_->tilings()->tiling_at(i)->CreateTilesForTesting(
-          ACTIVE_TREE);
-    }
+    for (size_t i = 0; i < active_layer_->tilings()->num_tilings(); ++i)
+      active_layer_->tilings()->tiling_at(i)->CreateAllTilesForTesting();
     pending_layer_->set_invalidation(invalidation);
-    for (size_t i = 0; i < pending_layer_->tilings()->num_tilings(); ++i) {
-      pending_layer_->tilings()
-          ->tiling_at(i)
-          ->CreateTilesForTesting(PENDING_TREE);
-    }
+    for (size_t i = 0; i < pending_layer_->tilings()->num_tilings(); ++i)
+      pending_layer_->tilings()->tiling_at(i)->CreateAllTilesForTesting();
   }
 
   void SetupPendingTree(
@@ -174,14 +169,14 @@ class PictureLayerImplTest : public testing::Test {
   }
 
   void AssertAllTilesRequired(PictureLayerTiling* tiling) {
-    std::vector<Tile*> tiles = tiling->TilesForTesting(PENDING_TREE);
+    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
     for (size_t i = 0; i < tiles.size(); ++i)
       EXPECT_TRUE(tiles[i]->required_for_activation()) << "i: " << i;
     EXPECT_GT(tiles.size(), 0u);
   }
 
   void AssertNoTilesRequired(PictureLayerTiling* tiling) {
-    std::vector<Tile*> tiles = tiling->TilesForTesting(PENDING_TREE);
+    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
     for (size_t i = 0; i < tiles.size(); ++i)
       EXPECT_FALSE(tiles[i]->required_for_activation()) << "i: " << i;
     EXPECT_GT(tiles.size(), 0u);
@@ -1222,6 +1217,7 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
        ++iter) {
     if (!*iter)
       continue;
+    Tile* tile = *iter;
     TilePriority priority;
     priority.resolution = HIGH_RESOLUTION;
     if (++tile_count % 2) {
@@ -1231,7 +1227,7 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
       priority.time_to_visible_in_seconds = 1.f;
       priority.distance_to_visible_in_pixels = 1.f;
     }
-    iter.SetPriorityForTesting(priority);
+    tile->SetPriority(PENDING_TREE, priority);
   }
 
   pending_layer_->MarkVisibleResourcesAsRequired();
@@ -1248,7 +1244,7 @@ TEST_F(PictureLayerImplTest, MarkRequiredOffscreenTiles) {
     if (!*iter)
       continue;
     const Tile* tile = *iter;
-    if (iter.priority().distance_to_visible_in_pixels == 0.f) {
+    if (tile->priority(PENDING_TREE).distance_to_visible_in_pixels == 0.f) {
       EXPECT_TRUE(tile->required_for_activation());
       num_visible++;
     } else {
@@ -1319,8 +1315,7 @@ TEST_F(PictureLayerImplTest, NothingRequiredIfActiveMissingTiles) {
   // Active layer has tilings, but no tiles due to missing recordings.
   EXPECT_TRUE(active_layer_->CanHaveTilings());
   EXPECT_EQ(active_layer_->tilings()->num_tilings(), 2u);
-  EXPECT_EQ(active_layer_->HighResTiling()->TilesForTesting(ACTIVE_TREE).size(),
-            0u);
+  EXPECT_EQ(active_layer_->HighResTiling()->AllTilesForTesting().size(), 0u);
 
   // Since the active layer has no tiles at all, the pending layer doesn't
   // need content in order to activate.  This is attempting to simulate

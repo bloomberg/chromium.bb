@@ -56,7 +56,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   void set_fixed_tile_size(gfx::Size size) { fixed_tile_size_ = size; }
 
-  void CreateDefaultTilingsAndTiles(WhichTree tree);
+  void CreateDefaultTilingsAndTiles();
   void SetAllTilesVisible();
   void SetAllTilesReady();
   void SetAllTilesReadyInTiling(PictureLayerTiling* tiling);

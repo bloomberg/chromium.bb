@@ -16,16 +16,13 @@ namespace cc {
 
 class FakePictureLayerTilingClient : public PictureLayerTilingClient {
  public:
-  explicit FakePictureLayerTilingClient(TileManager* tile_manager);
+  FakePictureLayerTilingClient();
+  explicit FakePictureLayerTilingClient(ResourceProvider* resource_provider);
   virtual ~FakePictureLayerTilingClient();
 
   // PictureLayerTilingClient implementation.
   virtual scoped_refptr<Tile> CreateTile(
       PictureLayerTiling* tiling, gfx::Rect rect) OVERRIDE;
-  virtual scoped_refptr<TileBundle> CreateTileBundle(int offset_x,
-                                                     int offset_y,
-                                                     int width,
-                                                     int height) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE {}
   virtual gfx::Size CalculateTileSize(
       gfx::Size content_bounds) const OVERRIDE;
@@ -45,19 +42,18 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   void set_invalidation(const Region& region) { invalidation_ = region; }
 
   TileManager* tile_manager() const {
-    return tile_manager_;
+    return tile_manager_.get();
   }
 
  protected:
-  TileManager* tile_manager_;
+  FakeTileManagerClient tile_manager_client_;
+  scoped_ptr<TileManager> tile_manager_;
   scoped_refptr<PicturePileImpl> pile_;
   gfx::Size tile_size_;
   PictureLayerTiling* twin_tiling_;
   gfx::Rect text_rect_;
   bool allow_create_tile_;
   Region invalidation_;
-  bool is_active_;
-  bool is_pending_;
 };
 
 }  // namespace cc

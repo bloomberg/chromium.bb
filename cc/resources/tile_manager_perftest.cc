@@ -7,7 +7,6 @@
 #include "cc/resources/tile_priority.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
@@ -27,8 +26,8 @@ static const int kTimeCheckInterval = 10;
 
 class TileManagerPerfTest : public testing::Test {
  public:
-  typedef std::vector<std::pair<scoped_refptr<TileBundle>, ManagedTileBin> >
-      TileBundleBinVector;
+  typedef std::vector<std::pair<scoped_refptr<Tile>, ManagedTileBin> >
+      TileBinVector;
 
   TileManagerPerfTest()
       : timer_(kWarmupRuns,
@@ -48,8 +47,6 @@ class TileManagerPerfTest : public testing::Test {
                             resource_provider_.get(),
                             raster_task_limit_bytes));
     picture_pile_ = FakePicturePileImpl::CreatePile();
-    picture_layer_tiling_client_ =
-        make_scoped_ptr(new FakePictureLayerTilingClient(tile_manager_.get()));
   }
 
   GlobalStateThatImpactsTilePriority GlobalStateForTest() {
@@ -65,7 +62,6 @@ class TileManagerPerfTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    picture_layer_tiling_client_.reset(NULL);
     tile_manager_.reset(NULL);
     picture_pile_ = NULL;
   }
@@ -110,38 +106,30 @@ class TileManagerPerfTest : public testing::Test {
     }
   }
 
-  void CreateBinTileBundles(int count,
-                            ManagedTileBin bin,
-                            TileBundleBinVector* bundles) {
+  void CreateBinTiles(int count, ManagedTileBin bin, TileBinVector* tiles) {
     for (int i = 0; i < count; ++i) {
-      scoped_refptr<TileBundle> bundle =
-          picture_layer_tiling_client_->CreateTileBundle(0, 0, 2, 2);
-      bundle->SetPriority(ACTIVE_TREE, GetTilePriorityFromBin(bin));
-      bundle->SetPriority(PENDING_TREE, GetTilePriorityFromBin(bin));
-      for (int j = 0; j < 4; ++j) {
-        scoped_refptr<Tile> tile =
-            tile_manager_->CreateTile(picture_pile_.get(),
-                                      settings_.default_tile_size,
-                                      gfx::Rect(),
-                                      gfx::Rect(),
-                                      1.0,
-                                      0,
-                                      0,
-                                      Tile::USE_LCD_TEXT);
-        bundle->AddTileAt(ACTIVE_TREE, j % 2, j / 2, tile);
-        bundle->AddTileAt(PENDING_TREE, j % 2, j / 2, tile);
-      }
-      bundles->push_back(std::make_pair(bundle, bin));
+      scoped_refptr<Tile> tile =
+          tile_manager_->CreateTile(picture_pile_.get(),
+                                    settings_.default_tile_size,
+                                    gfx::Rect(),
+                                    gfx::Rect(),
+                                    1.0,
+                                    0,
+                                    0,
+                                    Tile::USE_LCD_TEXT);
+      tile->SetPriority(ACTIVE_TREE, GetTilePriorityFromBin(bin));
+      tile->SetPriority(PENDING_TREE, GetTilePriorityFromBin(bin));
+      tiles->push_back(std::make_pair(tile, bin));
     }
   }
 
-  void CreateBundles(int count, TileBundleBinVector* bundles) {
+  void CreateTiles(int count, TileBinVector* tiles) {
     // Roughly an equal amount of all bins.
     int count_per_bin = count / NUM_BINS;
-    CreateBinTileBundles(count_per_bin, NOW_BIN, bundles);
-    CreateBinTileBundles(count_per_bin, SOON_BIN, bundles);
-    CreateBinTileBundles(count_per_bin, EVENTUALLY_BIN, bundles);
-    CreateBinTileBundles(count - 3 * count_per_bin, NEVER_BIN, bundles);
+    CreateBinTiles(count_per_bin, NOW_BIN, tiles);
+    CreateBinTiles(count_per_bin, SOON_BIN, tiles);
+    CreateBinTiles(count_per_bin, EVENTUALLY_BIN, tiles);
+    CreateBinTiles(count - 3 * count_per_bin, NEVER_BIN, tiles);
   }
 
   void RunManageTilesTest(const std::string& test_name,
@@ -150,21 +138,19 @@ class TileManagerPerfTest : public testing::Test {
     DCHECK_GE(tile_count, 100u);
     DCHECK_GE(priority_change_percent, 0);
     DCHECK_LE(priority_change_percent, 100);
-    TileBundleBinVector bundles;
-
-    unsigned bundle_count = tile_count / 4;
-    CreateBundles(bundle_count, &bundles);
+    TileBinVector tiles;
+    CreateTiles(tile_count, &tiles);
     timer_.Reset();
     do {
       if (priority_change_percent > 0) {
         for (unsigned i = 0;
-             i < bundle_count;
+             i < tile_count;
              i += 100 / priority_change_percent) {
-          TileBundle* bundle = bundles[i].first.get();
-          ManagedTileBin bin = GetNextBin(bundles[i].second);
-          bundle->SetPriority(ACTIVE_TREE, GetTilePriorityFromBin(bin));
-          bundle->SetPriority(PENDING_TREE, GetTilePriorityFromBin(bin));
-          bundles[i].second = bin;
+          Tile* tile = tiles[i].first.get();
+          ManagedTileBin bin = GetNextBin(tiles[i].second);
+          tile->SetPriority(ACTIVE_TREE, GetTilePriorityFromBin(bin));
+          tile->SetPriority(PENDING_TREE, GetTilePriorityFromBin(bin));
+          tiles[i].second = bin;
         }
       }
 
@@ -179,7 +165,6 @@ class TileManagerPerfTest : public testing::Test {
 
  private:
   FakeTileManagerClient tile_manager_client_;
-  scoped_ptr<FakePictureLayerTilingClient> picture_layer_tiling_client_;
   LayerTreeSettings settings_;
   scoped_ptr<FakeTileManager> tile_manager_;
   scoped_refptr<FakePicturePileImpl> picture_pile_;

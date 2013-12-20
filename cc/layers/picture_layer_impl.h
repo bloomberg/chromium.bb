@@ -55,10 +55,6 @@ class CC_EXPORT PictureLayerImpl
   // PictureLayerTilingClient overrides.
   virtual scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
                                          gfx::Rect content_rect) OVERRIDE;
-  virtual scoped_refptr<TileBundle> CreateTileBundle(int offset_x,
-                                                     int offset_y,
-                                                     int width,
-                                                     int height) OVERRIDE;
   virtual void UpdatePile(Tile* tile) OVERRIDE;
   virtual gfx::Size CalculateTileSize(
       gfx::Size content_bounds) const OVERRIDE;

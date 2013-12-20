@@ -12,7 +12,6 @@
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
-#include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/size_conversions.h"
@@ -21,9 +20,7 @@ namespace cc {
 namespace {
 
 TEST(PictureLayerTilingSetTest, NoResources) {
-  FakeTileManagerClient tile_manager_client;
-  FakeTileManager tile_manager(&tile_manager_client);
-  FakePictureLayerTilingClient client(&tile_manager);
+  FakePictureLayerTilingClient client;
   gfx::Size layer_bounds(1000, 800);
   PictureLayerTilingSet set(&client, layer_bounds);
   client.SetTileSize(gfx::Size(256, 256));
@@ -71,10 +68,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     scoped_ptr<ResourceProvider> resource_provider =
         ResourceProvider::Create(output_surface.get(), NULL, 0, false, 1);
 
-    FakeTileManagerClient tile_manager_client;
-    FakeTileManager tile_manager(&tile_manager_client, resource_provider.get());
-
-    FakePictureLayerTilingClient client(&tile_manager);
+    FakePictureLayerTilingClient client(resource_provider.get());
     client.SetTileSize(gfx::Size(256, 256));
     gfx::Size layer_bounds(1000, 800);
     PictureLayerTilingSet set(&client, layer_bounds);
@@ -156,24 +150,10 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
       : tile_size_(gfx::Size(10, 10)),
         source_bounds_(gfx::Size(30, 20)),
         target_bounds_(gfx::Size(30, 30)) {
-    output_surface_ = FakeOutputSurface::Create3d();
-    CHECK(output_surface_->BindToClient(&output_surface_client_));
-    resource_provider_ =
-        ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
-    tile_manager_ = make_scoped_ptr(
-        new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
-    source_client_ =
-        make_scoped_ptr(new FakePictureLayerTilingClient(tile_manager_.get()));
-    target_client_ =
-        make_scoped_ptr(new FakePictureLayerTilingClient(tile_manager_.get()));
-
-    source_client_->SetTileSize(tile_size_);
-    target_client_->SetTileSize(tile_size_);
-
-    source_.reset(
-        new PictureLayerTilingSet(source_client_.get(), source_bounds_));
-    target_.reset(
-        new PictureLayerTilingSet(target_client_.get(), target_bounds_));
+    source_client_.SetTileSize(tile_size_);
+    target_client_.SetTileSize(tile_size_);
+    source_.reset(new PictureLayerTilingSet(&source_client_, source_bounds_));
+    target_.reset(new PictureLayerTilingSet(&target_client_, target_bounds_));
   }
 
   // Sync from source to target.
@@ -181,9 +161,9 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
                    const Region& invalidation,
                    float minimum_scale) {
     for (size_t i = 0; i < source_->num_tilings(); ++i)
-      source_->tiling_at(i)->CreateTilesForTesting(ACTIVE_TREE);
+      source_->tiling_at(i)->CreateAllTilesForTesting();
     for (size_t i = 0; i < target_->num_tilings(); ++i)
-      target_->tiling_at(i)->CreateTilesForTesting(PENDING_TREE);
+      target_->tiling_at(i)->CreateAllTilesForTesting();
 
     target_->SyncTilings(
         *source_.get(), new_bounds, invalidation, minimum_scale);
@@ -215,8 +195,8 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
                 target_tiling->contents_scale());
     }
 
-    EXPECT_EQ(source_->client(), source_client_.get());
-    EXPECT_EQ(target_->client(), target_client_.get());
+    EXPECT_EQ(source_->client(), &source_client_);
+    EXPECT_EQ(target_->client(), &target_client_);
     ValidateTargetTilingSet();
   }
 
@@ -232,7 +212,7 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     }
 
     for (size_t i = 0; i < target_->num_tilings(); ++i)
-      ValidateTiling(target_->tiling_at(i), target_client_->pile());
+      ValidateTiling(target_->tiling_at(i), target_client_.pile());
   }
 
   void ValidateTiling(const PictureLayerTiling* tiling,
@@ -242,7 +222,7 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     else if (!tiling->live_tiles_rect().IsEmpty())
       EXPECT_TRUE(tiling->ContentRect().Contains(tiling->live_tiles_rect()));
 
-    std::vector<Tile*> tiles = tiling->TilesForTesting(PENDING_TREE);
+    std::vector<Tile*> tiles = tiling->AllTilesForTesting();
     for (size_t i = 0; i < tiles.size(); ++i) {
       const Tile* tile = tiles[i];
       ASSERT_TRUE(!!tile);
@@ -259,19 +239,13 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     }
   }
 
-  scoped_ptr<FakeOutputSurface> output_surface_;
-  FakeOutputSurfaceClient output_surface_client_;
-
   gfx::Size tile_size_;
-  scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<FakeTileManager> tile_manager_;
-  FakeTileManagerClient tile_manager_client_;
 
-  scoped_ptr<FakePictureLayerTilingClient> source_client_;
+  FakePictureLayerTilingClient source_client_;
   gfx::Size source_bounds_;
   scoped_ptr<PictureLayerTilingSet> source_;
 
-  scoped_ptr<FakePictureLayerTilingClient> target_client_;
+  FakePictureLayerTilingClient target_client_;
   gfx::Size target_bounds_;
   scoped_ptr<PictureLayerTilingSet> target_;
 };
@@ -374,7 +348,7 @@ TEST_F(PictureLayerTilingSetSyncTest, MinimumScale) {
 TEST_F(PictureLayerTilingSetSyncTest, Invalidation) {
   source_->AddTiling(2.f);
   target_->AddTiling(2.f);
-  target_->tiling_at(0)->CreateTilesForTesting(PENDING_TREE);
+  target_->tiling_at(0)->CreateAllTilesForTesting();
 
   Region layer_invalidation;
   layer_invalidation.Union(gfx::Rect(0, 0, 1, 1));
@@ -418,7 +392,7 @@ TEST_F(PictureLayerTilingSetSyncTest, TileSizeChange) {
       target_->tiling_at(0)->AllTilesForTesting();
   EXPECT_GT(original_tiles.size(), 0u);
   gfx::Size new_tile_size(100, 100);
-  target_client_->SetTileSize(new_tile_size);
+  target_client_.SetTileSize(new_tile_size);
   EXPECT_NE(target_->tiling_at(0)->tile_size().ToString(),
             new_tile_size.ToString());
 

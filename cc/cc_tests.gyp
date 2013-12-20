@@ -68,7 +68,6 @@
       'resources/resource_update_controller_unittest.cc',
       'resources/scoped_resource_unittest.cc',
       'resources/texture_mailbox_deleter_unittest.cc',
-      'resources/tile_bundle_unittest.cc',
       'resources/tile_manager_unittest.cc',
       'resources/tile_priority_unittest.cc',
       'resources/video_resource_updater_unittest.cc',

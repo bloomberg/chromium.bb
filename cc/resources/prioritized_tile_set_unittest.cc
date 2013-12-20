@@ -8,7 +8,6 @@
 #include "cc/resources/managed_tile_state.h"
 #include "cc/resources/prioritized_tile_set.h"
 #include "cc/resources/tile.h"
-#include "cc/resources/tile_bundle.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_pile_impl.h"
@@ -79,18 +78,6 @@ class PrioritizedTileSetTest : public testing::Test {
                                      Tile::USE_LCD_TEXT);
   }
 
-  scoped_refptr<Tile> CreateTileWithPriority(
-      const TilePriority& priority) {
-    scoped_refptr<TileBundle> bundle =
-        tile_manager_->CreateTileBundle(0, 0, 1, 1);
-    scoped_refptr<Tile> tile = CreateTile();
-    bundle->AddTileAt(ACTIVE_TREE, 0, 0, tile);
-    bundle->AddTileAt(PENDING_TREE, 0, 0, tile);
-    bundle->SetPriority(ACTIVE_TREE, priority);
-    bundle->SetPriority(PENDING_TREE, priority);
-    return tile;
-  }
-
  private:
   LayerTreeSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
@@ -136,7 +123,9 @@ TEST_F(PrioritizedTileSetTest, NowAndReadyToDrawBin) {
   std::vector<scoped_refptr<Tile> > tiles;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
       set.InsertTile(tile, NOW_AND_READY_TO_DRAW_BIN);
     }
@@ -166,7 +155,9 @@ TEST_F(PrioritizedTileSetTest, NowBin) {
   std::vector<scoped_refptr<Tile> > tiles;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
       set.InsertTile(tile, NOW_BIN);
     }
@@ -198,7 +189,9 @@ TEST_F(PrioritizedTileSetTest, SoonBin) {
   std::vector<scoped_refptr<Tile> > tiles;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
       set.InsertTile(tile, SOON_BIN);
     }
@@ -231,7 +224,9 @@ TEST_F(PrioritizedTileSetTest, SoonBinNoPriority) {
   std::vector<scoped_refptr<Tile> > tiles;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
       set.InsertTile(tile, SOON_BIN);
     }
@@ -260,7 +255,9 @@ TEST_F(PrioritizedTileSetTest, EventuallyAndActiveBin) {
   std::vector<scoped_refptr<Tile> > tiles;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
       set.InsertTile(tile, EVENTUALLY_AND_ACTIVE_BIN);
     }
@@ -292,7 +289,9 @@ TEST_F(PrioritizedTileSetTest, EventuallyBin) {
   std::vector<scoped_refptr<Tile> > tiles;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
       set.InsertTile(tile, EVENTUALLY_BIN);
     }
@@ -324,7 +323,9 @@ TEST_F(PrioritizedTileSetTest, AtLastAndActiveBin) {
   std::vector<scoped_refptr<Tile> > tiles;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
       set.InsertTile(tile, AT_LAST_AND_ACTIVE_BIN);
     }
@@ -356,7 +357,9 @@ TEST_F(PrioritizedTileSetTest, AtLastBin) {
   std::vector<scoped_refptr<Tile> > tiles;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
       tiles.push_back(tile);
       set.InsertTile(tile, AT_LAST_BIN);
     }
@@ -436,7 +439,9 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBin) {
   PrioritizedTileSet set;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
 
       now_and_ready_to_draw_bins.push_back(tile);
       now_bins.push_back(tile);
@@ -545,7 +550,9 @@ TEST_F(PrioritizedTileSetTest, ManyTilesForEachBinDisablePriority) {
   PrioritizedTileSet set;
   for (int priority = 0; priority < 4; ++priority) {
     for (int i = 0; i < 5; ++i) {
-      scoped_refptr<Tile> tile = CreateTileWithPriority(priorities[priority]);
+      scoped_refptr<Tile> tile = CreateTile();
+      tile->SetPriority(ACTIVE_TREE, priorities[priority]);
+      tile->SetPriority(PENDING_TREE, priorities[priority]);
 
       now_and_ready_to_draw_bins.push_back(tile);
       now_bins.push_back(tile);

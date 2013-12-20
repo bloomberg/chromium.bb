@@ -10,8 +10,6 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
-#include "cc/test/fake_tile_manager.h"
-#include "cc/test/fake_tile_manager_client.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/test/mock_quad_culler.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -34,9 +32,7 @@ class TestablePictureImageLayerImpl : public PictureImageLayerImpl {
 class PictureImageLayerImplTest : public testing::Test {
  public:
   PictureImageLayerImplTest()
-      : host_impl_(ImplSidePaintingSettings(), &proxy_),
-        tile_manager_(&tile_manager_client_),
-        tiling_client_(&tile_manager_) {
+      : host_impl_(ImplSidePaintingSettings(), &proxy_) {
     tiling_client_.SetTileSize(ImplSidePaintingSettings().default_tile_size);
     host_impl_.CreatePendingTree();
     host_impl_.InitializeRenderer(CreateFakeOutputSurface());
@@ -72,8 +68,6 @@ class PictureImageLayerImplTest : public testing::Test {
  protected:
   FakeImplProxy proxy_;
   FakeLayerTreeHostImpl host_impl_;
-  FakeTileManagerClient tile_manager_client_;
-  FakeTileManager tile_manager_;
   FakePictureLayerTilingClient tiling_client_;
 };
 

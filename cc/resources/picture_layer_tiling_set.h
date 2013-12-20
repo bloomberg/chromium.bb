@@ -95,8 +95,6 @@ class CC_EXPORT PictureLayerTilingSet {
     Tile* operator->() const;
     Tile* operator*() const;
 
-    TilePriority priority();
-
     CoverageIterator& operator++();
     operator bool() const;
 

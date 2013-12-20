@@ -17,29 +17,6 @@
 
 namespace cc {
 
-namespace {
-
-const int kTileBundleWidth = 2;
-const int kTileBundleHeight = 2;
-
-std::pair<int, int> ComputeTileBundleIndex(int i, int j) {
-  return std::make_pair(i / kTileBundleWidth, j / kTileBundleHeight);
-}
-
-gfx::Size ComputeBundleTextureSize(gfx::Size tile_size,
-                                   const TilingData& tiling_data) {
-  int border_texels = tiling_data.border_texels();
-
-  int inner_tile_width = tile_size.width() - 2 * border_texels;
-  int bundle_width = inner_tile_width * kTileBundleWidth + 2 * border_texels;
-
-  int inner_tile_height = tile_size.height() - 2 * border_texels;
-  int bundle_height = inner_tile_height * kTileBundleHeight + 2 * border_texels;
-  return gfx::Size(bundle_width, bundle_height);
-}
-
-}  // namespace
-
 scoped_ptr<PictureLayerTiling> PictureLayerTiling::Create(
     float contents_scale,
     gfx::Size layer_bounds,
@@ -57,8 +34,6 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
       resolution_(NON_IDEAL_RESOLUTION),
       client_(client),
       tiling_data_(gfx::Size(), gfx::Size(), true),
-      bundle_tiling_data_(gfx::Size(), gfx::Size(), true),
-      current_tree_(PENDING_TREE),
       last_impl_frame_time_in_seconds_(0.0) {
   gfx::Size content_bounds =
       gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale));
@@ -72,13 +47,9 @@ PictureLayerTiling::PictureLayerTiling(float contents_scale,
 
   tiling_data_.SetTotalSize(content_bounds);
   tiling_data_.SetMaxTextureSize(tile_size);
-  bundle_tiling_data_.SetTotalSize(content_bounds);
-  bundle_tiling_data_.SetMaxTextureSize(
-      ComputeBundleTextureSize(tile_size, tiling_data_));
 }
 
 PictureLayerTiling::~PictureLayerTiling() {
-  SetLiveTilesRect(gfx::Rect());
 }
 
 void PictureLayerTiling::SetClient(PictureLayerTilingClient* client) {
@@ -93,103 +64,41 @@ gfx::SizeF PictureLayerTiling::ContentSizeF() const {
   return gfx::ScaleSize(layer_bounds_, contents_scale_);
 }
 
-TileBundle* PictureLayerTiling::CreateBundleForTileAt(
-    int i,
-    int j,
-    const PictureLayerTiling* twin_tiling) {
-  TileBundleMapKey key = ComputeTileBundleIndex(i, j);
-  DCHECK(tile_bundles_.find(key) == tile_bundles_.end());
-
-  scoped_refptr<TileBundle> candidate_bundle = NULL;
-
-  // Always try to get the twin bundle first. TileBundles are always shared
-  // between trees.
-  if (twin_tiling &&
-      tiling_data_.max_texture_size() ==
-      twin_tiling->tiling_data_.max_texture_size()) {
-    candidate_bundle = twin_tiling->TileBundleAt(key.first, key.second);
-  }
-
-  // If we couldn't get a tile bundle, create a new one.
-  if (!candidate_bundle) {
-    candidate_bundle = client_->CreateTileBundle(key.first * kTileBundleWidth,
-                                                 key.second * kTileBundleHeight,
-                                                 kTileBundleWidth,
-                                                 kTileBundleHeight);
-  }
-  candidate_bundle->SwapTilesIfRequired();
-  tile_bundles_[key] = candidate_bundle;
-  return candidate_bundle.get();
-}
-
-TileBundle* PictureLayerTiling::TileBundleContainingTileAt(int i, int j) const {
-  TileBundleMapKey key = ComputeTileBundleIndex(i, j);
-  return TileBundleAt(key.first, key.second);
-}
-
-TileBundle* PictureLayerTiling::TileBundleAt(int i, int j) const {
-  TileBundleMapKey key(i, j);
-  TileBundleMap::const_iterator it = tile_bundles_.find(key);
-  if (it == tile_bundles_.end())
+Tile* PictureLayerTiling::TileAt(int i, int j) const {
+  TileMap::const_iterator iter = tiles_.find(TileMapKey(i, j));
+  if (iter == tiles_.end())
     return NULL;
-  it->second->SwapTilesIfRequired();
-  return it->second.get();
+  return iter->second.get();
 }
 
-Tile* PictureLayerTiling::TileAt(WhichTree tree, int i, int j) const {
-  TileBundle* bundle = TileBundleContainingTileAt(i, j);
-  if (!bundle)
-    return NULL;
-  return bundle->TileAt(tree, i, j);
-}
-
-void PictureLayerTiling::CreateTile(WhichTree tree,
-                                    int i,
+void PictureLayerTiling::CreateTile(int i,
                                     int j,
                                     const PictureLayerTiling* twin_tiling) {
-  TileBundle* bundle = TileBundleContainingTileAt(i, j);
-  if (!bundle)
-    bundle = CreateBundleForTileAt(i, j, twin_tiling);
+  TileMapKey key(i, j);
+  DCHECK(tiles_.find(key) == tiles_.end());
 
   gfx::Rect paint_rect = tiling_data_.TileBoundsWithBorder(i, j);
   gfx::Rect tile_rect = paint_rect;
   tile_rect.set_size(tiling_data_.max_texture_size());
 
   // Check our twin for a valid tile.
-  WhichTree twin_tree = (tree == ACTIVE_TREE) ? PENDING_TREE : ACTIVE_TREE;
-  if (Tile* candidate_tile = bundle->TileAt(twin_tree, i, j)) {
-    gfx::Rect rect =
-        gfx::ScaleToEnclosingRect(paint_rect, 1.0f / contents_scale_);
-    if (!client_->GetInvalidation()->Intersects(rect)) {
-      bundle->AddTileAt(tree, i, j, candidate_tile);
-      return;
+  if (twin_tiling &&
+      tiling_data_.max_texture_size() ==
+      twin_tiling->tiling_data_.max_texture_size()) {
+    if (Tile* candidate_tile = twin_tiling->TileAt(i, j)) {
+      gfx::Rect rect =
+          gfx::ScaleToEnclosingRect(paint_rect, 1.0f / contents_scale_);
+      if (!client_->GetInvalidation()->Intersects(rect)) {
+        tiles_[key] = candidate_tile;
+        return;
+      }
     }
   }
 
   // Create a new tile because our twin didn't have a valid one.
   scoped_refptr<Tile> tile = client_->CreateTile(this, tile_rect);
   if (tile.get())
-    bundle->AddTileAt(tree, i, j, tile);
-}
-
-bool PictureLayerTiling::RemoveTile(WhichTree tree, int i, int j) {
-  TileBundleMapKey key = ComputeTileBundleIndex(i, j);
-  TileBundleMap::iterator it = tile_bundles_.find(key);
-  if (it == tile_bundles_.end())
-    return false;
-
-  it->second->SwapTilesIfRequired();
-  return it->second->RemoveTileAt(tree, i, j);
-}
-
-void PictureLayerTiling::RemoveBundleContainingTileAtIfEmpty(int i, int j) {
-  TileBundleMapKey key = ComputeTileBundleIndex(i, j);
-  TileBundleMap::iterator it = tile_bundles_.find(key);
-  if (it == tile_bundles_.end())
-    return;
-
-  if (it->second->IsEmpty())
-    tile_bundles_.erase(it);
+    tiles_[key] = tile;
 }
 
 Region PictureLayerTiling::OpaqueRegionInContentRect(
@@ -200,30 +109,19 @@ Region PictureLayerTiling::OpaqueRegionInContentRect(
 }
 
 void PictureLayerTiling::SetCanUseLCDText(bool can_use_lcd_text) {
-  // TODO(vmpstr): This can be done per bundle with results used
-  // in tile manager.
-  for (TileBundleMap::iterator it = tile_bundles_.begin();
-       it != tile_bundles_.end();
-       ++it) {
-    for (TileBundle::Iterator tile_it(it->second, current_tree_);
-         tile_it;
-         ++tile_it)
-      tile_it->set_can_use_lcd_text(can_use_lcd_text);
-  }
+  for (TileMap::iterator it = tiles_.begin(); it != tiles_.end(); ++it)
+    it->second->set_can_use_lcd_text(can_use_lcd_text);
 }
 
 void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
-  DCHECK(current_tree_ == PENDING_TREE);
-
   const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
   for (TilingData::Iterator iter(&tiling_data_, live_tiles_rect_); iter;
        ++iter) {
-    int tile_x = iter.index_x();
-    int tile_y = iter.index_y();
-    Tile* tile = TileAt(PENDING_TREE, tile_x, tile_y);
-    if (tile)
+    TileMapKey key = iter.index();
+    TileMap::iterator find = tiles_.find(key);
+    if (find != tiles_.end())
       continue;
-    CreateTile(PENDING_TREE, tile_x, tile_y, twin_tiling);
+    CreateTile(key.first, key.second, twin_tiling);
   }
 }
 
@@ -231,7 +129,6 @@ void PictureLayerTiling::SetLayerBounds(gfx::Size layer_bounds) {
   if (layer_bounds_ == layer_bounds)
     return;
 
-  DCHECK(current_tree_ == PENDING_TREE);
   DCHECK(!layer_bounds.IsEmpty());
 
   gfx::Size old_layer_bounds = layer_bounds_;
@@ -244,9 +141,6 @@ void PictureLayerTiling::SetLayerBounds(gfx::Size layer_bounds) {
   if (tile_size != tiling_data_.max_texture_size()) {
     tiling_data_.SetTotalSize(content_bounds);
     tiling_data_.SetMaxTextureSize(tile_size);
-    bundle_tiling_data_.SetTotalSize(content_bounds);
-    bundle_tiling_data_.SetMaxTextureSize(
-        ComputeBundleTextureSize(tile_size, tiling_data_));
     Reset();
     return;
   }
@@ -256,7 +150,6 @@ void PictureLayerTiling::SetLayerBounds(gfx::Size layer_bounds) {
   bounded_live_tiles_rect.Intersect(gfx::Rect(content_bounds));
   SetLiveTilesRect(bounded_live_tiles_rect);
   tiling_data_.SetTotalSize(content_bounds);
-  bundle_tiling_data_.SetTotalSize(content_bounds);
 
   // Create tiles for newly exposed areas.
   Region layer_region((gfx::Rect(layer_bounds_)));
@@ -265,9 +158,7 @@ void PictureLayerTiling::SetLayerBounds(gfx::Size layer_bounds) {
 }
 
 void PictureLayerTiling::Invalidate(const Region& layer_region) {
-  DCHECK(current_tree_ == PENDING_TREE);
-
-  std::vector<std::pair<int, int> > new_tile_keys;
+  std::vector<TileMapKey> new_tile_keys;
   for (Region::Iterator iter(layer_region); iter.has_rect(); iter.next()) {
     gfx::Rect layer_rect = iter.rect();
     gfx::Rect content_rect =
@@ -276,23 +167,18 @@ void PictureLayerTiling::Invalidate(const Region& layer_region) {
     if (content_rect.IsEmpty())
       continue;
     for (TilingData::Iterator iter(&tiling_data_, content_rect); iter; ++iter) {
-      int tile_x = iter.index_x();
-      int tile_y = iter.index_y();
-
-      // If there is no bundle for the given tile, we can skip.
-      bool deleted = RemoveTile(PENDING_TREE, tile_x, tile_y);
-      if (deleted)
-        new_tile_keys.push_back(std::make_pair(tile_x, tile_y));
+      TileMapKey key(iter.index());
+      TileMap::iterator find = tiles_.find(key);
+      if (find == tiles_.end())
+        continue;
+      tiles_.erase(find);
+      new_tile_keys.push_back(key);
     }
   }
 
   const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
-  for (size_t i = 0; i < new_tile_keys.size(); ++i) {
-    CreateTile(PENDING_TREE,
-               new_tile_keys[i].first,
-               new_tile_keys[i].second,
-               twin_tiling);
-  }
+  for (size_t i = 0; i < new_tile_keys.size(); ++i)
+    CreateTile(new_tile_keys[i].first, new_tile_keys[i].second, twin_tiling);
 }
 
 PictureLayerTiling::CoverageIterator::CoverageIterator()
@@ -319,8 +205,7 @@ PictureLayerTiling::CoverageIterator::CoverageIterator(
       left_(0),
       top_(0),
       right_(-1),
-      bottom_(-1),
-      tree_(tiling->current_tree_) {
+      bottom_(-1) {
   DCHECK(tiling_);
   if (dest_rect_.IsEmpty())
     return;
@@ -375,7 +260,7 @@ PictureLayerTiling::CoverageIterator::operator++() {
     }
   }
 
-  current_tile_ = tiling_->TileAt(tree_, tile_i_, tile_j_);
+  current_tile_ = tiling_->TileAt(tile_i_, tile_j_);
 
   // Calculate the current geometry rect.  Due to floating point rounding
   // and ToEnclosingRect, tiles might overlap in destination space on the
@@ -431,19 +316,6 @@ PictureLayerTiling::CoverageIterator::full_tile_geometry_rect() const {
   return rect;
 }
 
-TilePriority PictureLayerTiling::CoverageIterator::priority() {
-  TileBundle* bundle = tiling_->TileBundleContainingTileAt(tile_i_, tile_j_);
-  if (bundle)
-    return bundle->GetPriority(tree_);
-  return TilePriority();
-}
-
-void PictureLayerTiling::CoverageIterator::SetPriorityForTesting(
-    const TilePriority& priority) {
-  TileBundle* bundle = tiling_->TileBundleContainingTileAt(tile_i_, tile_j_);
-  bundle->SetPriority(tree_, priority);
-}
-
 gfx::RectF PictureLayerTiling::CoverageIterator::texture_rect() const {
   gfx::PointF tex_origin =
       tiling_->tiling_data_.TileBoundsWithBorder(tile_i_, tile_j_).origin();
@@ -464,7 +336,7 @@ gfx::Size PictureLayerTiling::CoverageIterator::texture_size() const {
 
 void PictureLayerTiling::Reset() {
   live_tiles_rect_ = gfx::Rect();
-  tile_bundles_.clear();
+  tiles_.clear();
 }
 
 void PictureLayerTiling::UpdateTilePriorities(
@@ -480,10 +352,6 @@ void PictureLayerTiling::UpdateTilePriorities(
     const gfx::Transform& current_screen_transform,
     double current_frame_time_in_seconds,
     size_t max_tiles_for_interest_area) {
-  if (!has_ever_been_updated())
-    current_tree_ = tree;
-
-  DCHECK_EQ(tree, current_tree_);
   if (!NeedsUpdateForFrameAtTime(current_frame_time_in_seconds)) {
     // This should never be zero for the purposes of has_ever_been_updated().
     DCHECK_NE(current_frame_time_in_seconds, 0.0);
@@ -539,22 +407,23 @@ void PictureLayerTiling::UpdateTilePriorities(
         last_screen_transform.matrix().get(0, 3),
         last_screen_transform.matrix().get(1, 3));
 
-    for (TilingData::Iterator iter(&bundle_tiling_data_, interest_rect);
+    for (TilingData::Iterator iter(&tiling_data_, interest_rect);
          iter; ++iter) {
-      int bundle_x = iter.index_x();
-      int bundle_y = iter.index_y();
-      TileBundle* bundle = TileBundleAt(bundle_x, bundle_y);
-      if (!bundle)
+      TileMap::iterator find = tiles_.find(iter.index());
+      if (find == tiles_.end())
         continue;
+      Tile* tile = find->second.get();
 
-      gfx::Rect bundle_bounds =
-          bundle_tiling_data_.TileBounds(bundle_x, bundle_y);
-      gfx::RectF current_screen_rect =
-          gfx::ScaleRect(bundle_bounds, current_scale, current_scale) +
-          current_offset;
-      gfx::RectF last_screen_rect =
-          gfx::ScaleRect(bundle_bounds, last_scale, last_scale) +
-          last_offset;
+      gfx::Rect tile_bounds =
+          tiling_data_.TileBounds(iter.index_x(), iter.index_y());
+      gfx::RectF current_screen_rect = gfx::ScaleRect(
+          tile_bounds,
+          current_scale,
+          current_scale) + current_offset;
+      gfx::RectF last_screen_rect = gfx::ScaleRect(
+          tile_bounds,
+          last_scale,
+          last_scale) + last_offset;
 
       float distance_to_visible_in_pixels =
           current_screen_rect.ManhattanInternalDistance(view_rect);
@@ -566,8 +435,7 @@ void PictureLayerTiling::UpdateTilePriorities(
           resolution_,
           time_to_visible_in_seconds,
           distance_to_visible_in_pixels);
-
-      bundle->SetPriority(tree, priority);
+      tile->SetPriority(tree, priority);
     }
   } else if (!last_screen_transform.HasPerspective() &&
              !current_screen_transform.HasPerspective()) {
@@ -587,57 +455,55 @@ void PictureLayerTiling::UpdateTilePriorities(
         last_screen_transform.matrix().get(0, 3),
         last_screen_transform.matrix().get(1, 3));
 
-    float current_bundle_width =
-        bundle_tiling_data_.TileSizeX(0) * current_scale;
-    float last_bundle_width =
-        bundle_tiling_data_.TileSizeX(0) * last_scale;
-    float current_bundle_height =
-        bundle_tiling_data_.TileSizeY(0) * current_scale;
-    float last_bundle_height =
-        bundle_tiling_data_.TileSizeY(0) * last_scale;
+    float current_tile_width = tiling_data_.TileSizeX(0) * current_scale;
+    float last_tile_width = tiling_data_.TileSizeX(0) * last_scale;
+    float current_tile_height = tiling_data_.TileSizeY(0) * current_scale;
+    float last_tile_height = tiling_data_.TileSizeY(0) * last_scale;
 
     // Apply screen space transform to local basis vectors (tile_width, 0) and
     // (0, tile_height); the math simplifies and can be initialized directly.
     gfx::Vector2dF current_horizontal(
-        current_screen_transform.matrix().get(0, 0) * current_bundle_width,
-        current_screen_transform.matrix().get(1, 0) * current_bundle_width);
+        current_screen_transform.matrix().get(0, 0) * current_tile_width,
+        current_screen_transform.matrix().get(1, 0) * current_tile_width);
     gfx::Vector2dF current_vertical(
-        current_screen_transform.matrix().get(0, 1) * current_bundle_height,
-        current_screen_transform.matrix().get(1, 1) * current_bundle_height);
+        current_screen_transform.matrix().get(0, 1) * current_tile_height,
+        current_screen_transform.matrix().get(1, 1) * current_tile_height);
 
     gfx::Vector2dF last_horizontal(
-        last_screen_transform.matrix().get(0, 0) * last_bundle_width,
-        last_screen_transform.matrix().get(1, 0) * last_bundle_width);
+        last_screen_transform.matrix().get(0, 0) * last_tile_width,
+        last_screen_transform.matrix().get(1, 0) * last_tile_width);
     gfx::Vector2dF last_vertical(
-        last_screen_transform.matrix().get(0, 1) * last_bundle_height,
-        last_screen_transform.matrix().get(1, 1) * last_bundle_height);
+        last_screen_transform.matrix().get(0, 1) * last_tile_height,
+        last_screen_transform.matrix().get(1, 1) * last_tile_height);
 
-    for (TilingData::Iterator iter(&bundle_tiling_data_, interest_rect);
+    for (TilingData::Iterator iter(&tiling_data_, interest_rect);
          iter; ++iter) {
-      int bundle_x = iter.index_x();
-      int bundle_y = iter.index_y();
-      TileBundle* bundle = TileBundleAt(bundle_x, bundle_y);
-      if (!bundle)
+      TileMap::iterator find = tiles_.find(iter.index());
+      if (find == tiles_.end())
         continue;
 
-      gfx::PointF current_bundle_origin = current_screen_space_origin +
-              ScaleVector2d(current_horizontal, bundle_x) +
-              ScaleVector2d(current_vertical, bundle_y);
-      gfx::PointF last_bundle_origin = last_screen_space_origin +
-              ScaleVector2d(last_horizontal, bundle_x) +
-              ScaleVector2d(last_vertical, bundle_y);
+      Tile* tile = find->second.get();
+
+      int i = iter.index_x();
+      int j = iter.index_y();
+      gfx::PointF current_tile_origin = current_screen_space_origin +
+              ScaleVector2d(current_horizontal, i) +
+              ScaleVector2d(current_vertical, j);
+      gfx::PointF last_tile_origin = last_screen_space_origin +
+              ScaleVector2d(last_horizontal, i) +
+              ScaleVector2d(last_vertical, j);
 
       gfx::RectF current_screen_rect = gfx::QuadF(
-          current_bundle_origin,
-          current_bundle_origin + current_horizontal,
-          current_bundle_origin + current_horizontal + current_vertical,
-          current_bundle_origin + current_vertical).BoundingBox();
+          current_tile_origin,
+          current_tile_origin + current_horizontal,
+          current_tile_origin + current_horizontal + current_vertical,
+          current_tile_origin + current_vertical).BoundingBox();
 
       gfx::RectF last_screen_rect = gfx::QuadF(
-          last_bundle_origin,
-          last_bundle_origin + last_horizontal,
-          last_bundle_origin + last_horizontal + last_vertical,
-          last_bundle_origin + last_vertical).BoundingBox();
+          last_tile_origin,
+          last_tile_origin + last_horizontal,
+          last_tile_origin + last_horizontal + last_vertical,
+          last_tile_origin + last_vertical).BoundingBox();
 
       float distance_to_visible_in_pixels =
           current_screen_rect.ManhattanInternalDistance(view_rect);
@@ -649,28 +515,26 @@ void PictureLayerTiling::UpdateTilePriorities(
           resolution_,
           time_to_visible_in_seconds,
           distance_to_visible_in_pixels);
-
-      bundle->SetPriority(tree, priority);
+      tile->SetPriority(tree, priority);
     }
   } else {
-    for (TilingData::Iterator iter(&bundle_tiling_data_, interest_rect);
+    for (TilingData::Iterator iter(&tiling_data_, interest_rect);
          iter; ++iter) {
-      int bundle_x = iter.index_x();
-      int bundle_y = iter.index_y();
-      TileBundle* bundle = TileBundleAt(bundle_x, bundle_y);
-      if (!bundle)
+      TileMap::iterator find = tiles_.find(iter.index());
+      if (find == tiles_.end())
         continue;
+      Tile* tile = find->second.get();
 
-      gfx::Rect bundle_bounds =
-          bundle_tiling_data_.TileBounds(bundle_x, bundle_y);
+      gfx::Rect tile_bounds =
+          tiling_data_.TileBounds(iter.index_x(), iter.index_y());
       gfx::RectF current_layer_content_rect = gfx::ScaleRect(
-          bundle_bounds,
+          tile_bounds,
           current_scale,
           current_scale);
       gfx::RectF current_screen_rect = MathUtil::MapClippedRect(
           current_screen_transform, current_layer_content_rect);
       gfx::RectF last_layer_content_rect = gfx::ScaleRect(
-          bundle_bounds,
+          tile_bounds,
           last_scale,
           last_scale);
       gfx::RectF last_screen_rect  = MathUtil::MapClippedRect(
@@ -687,15 +551,15 @@ void PictureLayerTiling::UpdateTilePriorities(
           resolution_,
           time_to_visible_in_seconds,
           distance_to_visible_in_pixels);
-
-      bundle->SetPriority(tree, priority);
+      tile->SetPriority(tree, priority);
     }
   }
 
   last_impl_frame_time_in_seconds_ = current_frame_time_in_seconds;
 }
 
-void PictureLayerTiling::SetLiveTilesRect(gfx::Rect new_live_tiles_rect) {
+void PictureLayerTiling::SetLiveTilesRect(
+    gfx::Rect new_live_tiles_rect) {
   DCHECK(new_live_tiles_rect.IsEmpty() ||
          ContentRect().Contains(new_live_tiles_rect));
   if (live_tiles_rect_ == new_live_tiles_rect)
@@ -707,18 +571,12 @@ void PictureLayerTiling::SetLiveTilesRect(gfx::Rect new_live_tiles_rect) {
                                            new_live_tiles_rect);
        iter;
        ++iter) {
-    int tile_x = iter.index_x();
-    int tile_y = iter.index_y();
-
+    TileMapKey key(iter.index());
+    TileMap::iterator found = tiles_.find(key);
     // If the tile was outside of the recorded region, it won't exist even
     // though it was in the live rect.
-    RemoveTile(current_tree_, tile_x, tile_y);
-    RemoveBundleContainingTileAtIfEmpty(tile_x, tile_y);
-  }
-
-  if (new_live_tiles_rect.IsEmpty()) {
-    live_tiles_rect_ = new_live_tiles_rect;
-    return;
+    if (found != tiles_.end())
+      tiles_.erase(found);
   }
 
   const PictureLayerTiling* twin_tiling = client_->GetTwinTiling(this);
@@ -729,7 +587,8 @@ void PictureLayerTiling::SetLiveTilesRect(gfx::Rect new_live_tiles_rect) {
                                            live_tiles_rect_);
        iter;
        ++iter) {
-    CreateTile(current_tree_, iter.index_x(), iter.index_y(), twin_tiling);
+    TileMapKey key(iter.index());
+    CreateTile(key.first, key.second, twin_tiling);
   }
 
   live_tiles_rect_ = new_live_tiles_rect;
@@ -740,52 +599,35 @@ void PictureLayerTiling::DidBecomeRecycled() {
   // still in the tree. Calling this first on an active tiling that is becoming
   // recycled takes care of tiles that are no longer in the active tree (eg.
   // due to a pending invalidation).
-  for (TileBundleMap::const_iterator it = tile_bundles_.begin();
-       it != tile_bundles_.end();
-       ++it) {
-    it->second->DidBecomeRecycled();
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    it->second->SetPriority(ACTIVE_TREE, TilePriority());
   }
-  // Note that recycled tree would not be accessed, and the next tree
-  // stage after recycled in pending, so we can just set the state to
-  // pending here.
-  current_tree_ = PENDING_TREE;
 }
 
 void PictureLayerTiling::DidBecomeActive() {
-  for (TileBundleMap::const_iterator it = tile_bundles_.begin();
-       it != tile_bundles_.end();
-       ++it) {
-    it->second->DidBecomeActive();
-    for (TileBundle::Iterator tile_it(it->second.get(), ACTIVE_TREE);
-         tile_it;
-         ++tile_it) {
-      // Tile holds a ref onto a picture pile. If the tile never gets
-      // invalidated and recreated, then that picture pile ref could exist
-      // indefinitely.  To prevent this, ask the client to update the pile to
-      // its own ref.  This will cause PicturePileImpls and their clones to get
-      // deleted once the corresponding PictureLayerImpl and any in flight
-      // raster jobs go out of scope.
-      client_->UpdatePile(*tile_it);
-    }
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    it->second->SetPriority(ACTIVE_TREE, it->second->priority(PENDING_TREE));
+    it->second->SetPriority(PENDING_TREE, TilePriority());
+
+    // Tile holds a ref onto a picture pile. If the tile never gets invalidated
+    // and recreated, then that picture pile ref could exist indefinitely.  To
+    // prevent this, ask the client to update the pile to its own ref.  This
+    // will cause PicturePileImpls and their clones to get deleted once the
+    // corresponding PictureLayerImpl and any in flight raster jobs go out of
+    // scope.
+    client_->UpdatePile(it->second.get());
   }
-  current_tree_ = ACTIVE_TREE;
 }
 
 void PictureLayerTiling::UpdateTilesToCurrentPile() {
-  for (TileBundleMap::const_iterator it = tile_bundles_.begin();
-       it != tile_bundles_.end();
-       ++it) {
-    for (TileBundle::Iterator tile_it(it->second.get(), PENDING_TREE);
-         tile_it;
-         ++tile_it) {
-      client_->UpdatePile(*tile_it);
-    }
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    client_->UpdatePile(it->second.get());
   }
 }
 
 scoped_ptr<base::Value> PictureLayerTiling::AsValue() const {
   scoped_ptr<base::DictionaryValue> state(new base::DictionaryValue());
-  state->SetInteger("num_tile_bundles", tile_bundles_.size());
+  state->SetInteger("num_tiles", tiles_.size());
   state->SetDouble("content_scale", contents_scale_);
   state->Set("content_bounds",
              MathUtil::AsValue(ContentRect().size()).release());
@@ -794,11 +636,9 @@ scoped_ptr<base::Value> PictureLayerTiling::AsValue() const {
 
 size_t PictureLayerTiling::GPUMemoryUsageInBytes() const {
   size_t amount = 0;
-  for (TileBundleMap::const_iterator it = tile_bundles_.begin();
-       it != tile_bundles_.end();
-       ++it) {
-    for (TileBundle::Iterator tile_it(it->second.get()); tile_it; ++tile_it)
-      amount += tile_it->GPUMemoryUsageInBytes();
+  for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it) {
+    const Tile* tile = it->second.get();
+    amount += tile->GPUMemoryUsageInBytes();
   }
   return amount;
 }

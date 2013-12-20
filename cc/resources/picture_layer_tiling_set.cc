@@ -212,12 +212,6 @@ Tile* PictureLayerTilingSet::CoverageIterator::operator*() const {
   return *tiling_iter_;
 }
 
-TilePriority PictureLayerTilingSet::CoverageIterator::priority() {
-  if (!tiling_iter_)
-    return TilePriority();
-  return tiling_iter_.priority();
-}
-
 PictureLayerTiling* PictureLayerTilingSet::CoverageIterator::CurrentTiling() {
   if (current_tiling_ < 0)
     return NULL;
