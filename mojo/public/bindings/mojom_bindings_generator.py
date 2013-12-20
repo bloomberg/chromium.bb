@@ -13,7 +13,6 @@ from parse import mojo_parser
 from parse import mojo_translate
 from generators import mojom_data
 from generators import mojom_jinja_generator
-from generators import mojom_jinja_generator
 
 
 def Main():
