@@ -146,8 +146,14 @@ class NfcNdefMessage {
   const RecordList& records() const { return records_; }
 
   // Adds the NDEF record |record| to the sequence of records that this
-  // NdefMessage contains.
+  // NfcNdefMessage contains. This method simply adds the record to this message
+  // and does NOT take ownership of it.
   void AddRecord(NfcNdefRecord* record);
+
+  // Removes the NDEF record |record| from this message. Returns true, if the
+  // record was removed, otherwise returns false if |record| was not contained
+  // in this message.
+  bool RemoveRecord(NfcNdefRecord* record);
 
  private:
   // The NDEF records that are contained by this message.

@@ -60,8 +60,6 @@ class NfcAdapterChromeOS : public device::NfcAdapter,
   // NfcDeviceClient::Observer overrides.
   virtual void DeviceAdded(const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void DeviceRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
-  virtual void DevicePropertyChanged(const dbus::ObjectPath& object_path,
-                                     const std::string& property_name) OVERRIDE;
 
   // NfcTagClient::Observer overrides.
   virtual void TagAdded(const dbus::ObjectPath& object_path) OVERRIDE;

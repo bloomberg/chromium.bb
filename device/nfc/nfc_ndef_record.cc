@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/logging.h"
+#include "url/gurl.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -16,6 +17,23 @@ namespace device {
 namespace {
 
 typedef std::map<std::string, base::Value::Type> FieldValueMap;
+
+bool ValidateURI(const DictionaryValue* data) {
+  std::string uri;
+  if (!data->GetString(NfcNdefRecord::kFieldURI, &uri)) {
+    VLOG(1) << "No URI entry in data.";
+    return false;
+  }
+  DCHECK(!uri.empty());
+
+  // Use GURL to check validity.
+  GURL url(uri);
+  if (!url.is_valid()) {
+    LOG(ERROR) << "Invalid URI given: " << uri;
+    return false;
+  }
+  return true;
+}
 
 bool CheckFieldsAreValid(
     const FieldValueMap& required_fields,
@@ -47,6 +65,12 @@ bool CheckFieldsAreValid(
               << field_iter->second;
       return false;
     }
+    // Make sure that the value is non-empty, if the value is a string.
+    std::string string_value;
+    if (iter.value().GetAsString(&string_value) && string_value.empty()) {
+      VLOG(1) << "Empty value given for field of type string: " << iter.key();
+      return false;
+    }
   }
   // Check for required fields.
   if (required_count != required_fields.size()) {
@@ -63,12 +87,22 @@ bool HandleTypeText(const DictionaryValue* data) {
   VLOG(1) << "Populating record with type \"Text\".";
   FieldValueMap required_fields;
   required_fields[NfcNdefRecord::kFieldText] = base::Value::TYPE_STRING;
+  required_fields[NfcNdefRecord::kFieldEncoding] = base::Value::TYPE_STRING;
+  required_fields[NfcNdefRecord::kFieldLanguageCode] = base::Value::TYPE_STRING;
   FieldValueMap optional_fields;
-  optional_fields[NfcNdefRecord::kFieldEncoding] = base::Value::TYPE_STRING;
-  optional_fields[NfcNdefRecord::kFieldLanguageCode] = base::Value::TYPE_STRING;
   if (!CheckFieldsAreValid(required_fields, optional_fields, data)) {
     VLOG(1) << "Failed to populate record.";
     return false;
+  }
+
+  // Verify that the "Encoding" property has valid values.
+  std::string encoding;
+  if (!data->GetString(NfcNdefRecord::kFieldEncoding, &encoding)) {
+    if (encoding != NfcNdefRecord::kEncodingUtf8 ||
+        encoding != NfcNdefRecord::kEncodingUtf16) {
+      VLOG(1) << "Invalid \"Encoding\" value:" << encoding;
+      return false;
+    }
   }
   return true;
 }
@@ -113,7 +147,7 @@ bool HandleTypeSmartPoster(const DictionaryValue* data) {
       }
     }
   }
-  return true;
+  return ValidateURI(data);
 }
 
 // Verifies that the contents of |data| conform to the fields of NDEF type
@@ -125,11 +159,13 @@ bool HandleTypeUri(const DictionaryValue* data) {
   FieldValueMap optional_fields;
   optional_fields[NfcNdefRecord::kFieldMimeType] = base::Value::TYPE_STRING;
   optional_fields[NfcNdefRecord::kFieldTargetSize] = base::Value::TYPE_DOUBLE;
+
+  // Allow passing TargetSize as an integer, but convert it to a double.
   if (!CheckFieldsAreValid(required_fields, optional_fields, data)) {
     VLOG(1) << "Failed to populate record.";
     return false;
   }
-  return true;
+  return ValidateURI(data);
 }
 
 }  // namespace
@@ -208,6 +244,17 @@ NfcNdefMessage::~NfcNdefMessage() {
 
 void NfcNdefMessage::AddRecord(NfcNdefRecord* record) {
   records_.push_back(record);
+}
+
+bool NfcNdefMessage::RemoveRecord(NfcNdefRecord* record) {
+  for (RecordList::iterator iter = records_.begin();
+       iter != records_.end(); ++iter) {
+    if (*iter == record) {
+      records_.erase(iter);
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace device

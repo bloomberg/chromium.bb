@@ -65,6 +65,11 @@ class CHROMEOS_EXPORT NfcDeviceClient : public DBusClient {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
+  // Returns the list of device object paths associated with the given adapter
+  // identified by the D-Bus object path |adapter_path|.
+  virtual std::vector<dbus::ObjectPath> GetDevicesForAdapter(
+      const dbus::ObjectPath& adapter_path) = 0;
+
   // Obtain the properties for the NFC device with object path |object_path|;
   // any values should be copied if needed.
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;

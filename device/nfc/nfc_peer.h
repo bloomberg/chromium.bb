@@ -37,12 +37,12 @@ class NfcPeer {
    public:
     virtual ~Observer() {}
 
-    // This method will be called when an NDEF message |message| from the peer
+    // This method will be called when an NDEF record |record| from the peer
     // device |peer| is received. Users can use this method to be notified of
     // new records on the device and when the initial set of records are
-    // received from it, if any.
-    virtual void RecordsReceived(NfcPeer* peer,
-                                 const NfcNdefMessage& message) {}
+    // received from it, if any. All records received from |peer| can be
+    // accessed by calling |peer->GetNdefMessage()|.
+    virtual void RecordsReceived(NfcPeer* peer, const NfcNdefRecord* record) {}
   };
 
   // The ErrorCallback is used by methods to asynchronously report errors.
@@ -64,12 +64,12 @@ class NfcPeer {
   // this only means that no records have yet been received from the device.
   // Users should use this method in conjunction with the Observer methods
   // to be notified when the records are ready.
-  virtual NfcNdefMessage GetNdefMessage() const = 0;
+  virtual const NfcNdefMessage& GetNdefMessage() const = 0;
 
   // Sends the NDEF records contained in |message| to the peer device. On
   // success, |callback| will be invoked. On failure, |error_callback| will be
   // invoked.
-  virtual void PushNdef(NfcNdefMessage* message,
+  virtual void PushNdef(const NfcNdefMessage& message,
                         const base::Closure& callback,
                         const ErrorCallback& error_callback) = 0;
 

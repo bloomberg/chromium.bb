@@ -9,11 +9,17 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "device/nfc/nfc_peer.h"
+#include "device/nfc/nfc_peer_chromeos.h"
 #include "device/nfc/nfc_tag.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
+namespace {
+
+typedef std::vector<dbus::ObjectPath> ObjectPathVector;
+
+}  // namespace
 
 NfcAdapterChromeOS::NfcAdapterChromeOS()
     : weak_ptr_factory_(this) {
@@ -21,7 +27,7 @@ NfcAdapterChromeOS::NfcAdapterChromeOS()
   DBusThreadManager::Get()->GetNfcDeviceClient()->AddObserver(this);
   DBusThreadManager::Get()->GetNfcTagClient()->AddObserver(this);
 
-  const std::vector<dbus::ObjectPath>& object_paths =
+  const ObjectPathVector& object_paths =
       DBusThreadManager::Get()->GetNfcAdapterClient()->GetAdapters();
   if (!object_paths.empty()) {
     VLOG(1) << object_paths.size() << " NFC adapter(s) available.";
@@ -126,9 +132,9 @@ void NfcAdapterChromeOS::AdapterRemoved(const dbus::ObjectPath& object_path) {
 
   // There may still be other adapters present on the system. Set the next
   // available adapter as the current one.
-  const std::vector<dbus::ObjectPath>& object_paths =
+  const ObjectPathVector& object_paths =
       DBusThreadManager::Get()->GetNfcAdapterClient()->GetAdapters();
-  for (std::vector<dbus::ObjectPath>::const_iterator iter =
+  for (ObjectPathVector::const_iterator iter =
           object_paths.begin();
        iter != object_paths.end(); ++iter) {
     // The removed object will still be available until the call to
@@ -155,19 +161,54 @@ void NfcAdapterChromeOS::AdapterPropertyChanged(
 }
 
 void NfcAdapterChromeOS::DeviceAdded(const dbus::ObjectPath& object_path) {
+  if (!IsPresent())
+    return;
+
+  if (peers_.find(object_path.value()) != peers_.end()) {
+    VLOG(1) << "Peer object for device \"" << object_path.value()
+            << "\" already exists.";
+    return;
+  }
+
   VLOG(1) << "NFC device found: " << object_path.value();
-  // TODO(armansito): Implement device logic.
+
+  // Check to see if the device belongs to this adapter.
+  const ObjectPathVector& devices =
+      DBusThreadManager::Get()->GetNfcDeviceClient()->
+          GetDevicesForAdapter(object_path_);
+  bool device_found = false;
+  for (ObjectPathVector::const_iterator iter = devices.begin();
+       iter != devices.end(); ++iter) {
+    if (*iter == object_path) {
+      device_found = true;
+      break;
+    }
+  }
+  if (!device_found) {
+    VLOG(1) << "Found peer device does not belong to the current adapter.";
+    return;
+  }
+
+  // Create the peer object.
+  NfcPeerChromeOS* peer_chromeos = new NfcPeerChromeOS(object_path);
+  peers_[object_path.value()] = peer_chromeos;
+  FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_,
+                    PeerFound(this, peer_chromeos));
 }
 
 void NfcAdapterChromeOS::DeviceRemoved(const dbus::ObjectPath& object_path) {
   VLOG(1) << "NFC device lost: " << object_path.value();
-  // TODO(armansito): Implement device logic.
-}
+  PeersMap::iterator iter = peers_.find(object_path.value());
+  if (iter == peers_.end()) {
+    VLOG(1) << "Removed peer device does not belong to the current adapter.";
+    return;
+  }
 
-void NfcAdapterChromeOS::DevicePropertyChanged(
-    const dbus::ObjectPath& object_path,
-    const std::string& property_name) {
-  // TODO(armansito): Implement device logic.
+  // Remove the peer.
+  device::NfcPeer* peer = iter->second;
+  peers_.erase(iter);
+  FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_, PeerLost(this, peer));
+  delete peer;
 }
 
 void NfcAdapterChromeOS::TagAdded(const dbus::ObjectPath& object_path) {
@@ -200,9 +241,23 @@ void NfcAdapterChromeOS::SetAdapter(const dbus::ObjectPath& object_path) {
   if (properties->polling.value())
     PollingChanged(true);
 
-  // TODO(armansito): Create device::NfcPeer and device::NfcTag instances for
-  // all peers and tags that exist, once they have been implemented for
-  // ChromeOS.
+  // Create peer objects for peers that were added before the adapter was set.
+  const ObjectPathVector& devices =
+      DBusThreadManager::Get()->GetNfcDeviceClient()->
+          GetDevicesForAdapter(object_path_);
+  for (ObjectPathVector::const_iterator iter = devices.begin();
+       iter != devices.end(); ++iter) {
+    const dbus::ObjectPath& object_path = *iter;
+    if (peers_.find(object_path.value()) != peers_.end())
+      continue;
+    NfcPeerChromeOS* peer_chromeos = new NfcPeerChromeOS(object_path);
+    peers_[object_path.value()] = peer_chromeos;
+    FOR_EACH_OBSERVER(NfcAdapter::Observer, observers_,
+                      PeerFound(this, peer_chromeos));
+  }
+
+  // TODO(armansito): Create device::NfcTag instances for all tags that exist,
+  // once they have been implemented for ChromeOS.
 }
 
 void NfcAdapterChromeOS::RemoveAdapter() {

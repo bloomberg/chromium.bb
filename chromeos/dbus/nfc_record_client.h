@@ -60,7 +60,7 @@ class CHROMEOS_EXPORT NfcRecordClient : public DBusClient {
     // the object or not. This is not a mandatory field and is only valid for
     // Smart Posters carrying a URI record.
     // Read-only.
-    dbus::Property<std::string> size;
+    dbus::Property<uint32> size;
 
     // The suggested course of action. This one is only valid for Smart Posters
     // and is a suggestion only. It can be ignored, and the possible values are
@@ -109,6 +109,11 @@ class CHROMEOS_EXPORT NfcRecordClient : public DBusClient {
   // issuing the event.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+
+  // Returns the list of record object paths associated with the given device
+  // identified by the D-Bus object path |device_path|.
+  virtual std::vector<dbus::ObjectPath> GetRecordsForDevice(
+      const dbus::ObjectPath& device_path) = 0;
 
   // Obtain the properties for the NFC record with object path |object_path|;
   // any values should be copied if needed.

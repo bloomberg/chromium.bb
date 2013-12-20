@@ -60,6 +60,16 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
   }
 
   // NfcDeviceClient override.
+  virtual std::vector<dbus::ObjectPath> GetDevicesForAdapter(
+      const dbus::ObjectPath& adapter_path) OVERRIDE {
+    DBusObjectMap* object_map =
+        adapters_to_object_maps_.GetObjectMap(adapter_path);
+    if (!object_map)
+      return std::vector<dbus::ObjectPath>();
+    return object_map->GetObjectPaths();
+  }
+
+  // NfcDeviceClient override.
   virtual Properties* GetProperties(
       const dbus::ObjectPath& object_path) OVERRIDE {
     return static_cast<Properties*>(

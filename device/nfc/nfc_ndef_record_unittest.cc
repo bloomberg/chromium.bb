@@ -21,7 +21,7 @@ const char kTestLanguageCode[] = "test-language-code";
 const char kTestMimeType[] = "test-mime-type";
 const uint32 kTestTargetSize = 0;
 const char kTestText[] = "test-text";
-const char kTestURI[] = "test-uri";
+const char kTestURI[] = "test://uri";
 
 }  // namespace
 
@@ -33,35 +33,32 @@ TEST(NfcNdefRecordTest, PopulateTextRecord) {
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeText, &data));
   EXPECT_FALSE(record->IsPopulated());
 
-  // Text field with incorrect entry. Should fail.
+  // Text field with incorrect type. Should fail.
   data.SetInteger(NfcNdefRecord::kFieldText, 0);
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeText, &data));
   EXPECT_FALSE(record->IsPopulated());
 
-  // Text field with correct entry. Should succeed.
+  // Text field with correct type but missing encoding and language.
+  // Should fail.
   data.SetString(NfcNdefRecord::kFieldText, kTestText);
-  EXPECT_TRUE(record->Populate(NfcNdefRecord::kTypeText, &data));
-  EXPECT_TRUE(record->IsPopulated());
-  EXPECT_EQ(NfcNdefRecord::kTypeText, record->type());
+  EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeText, &data));
+  EXPECT_FALSE(record->IsPopulated());
 
   // Populating a successfully populated record should fail.
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeText, &data));
 
-  // Recycle the record.
-  record.reset(new NfcNdefRecord());
-  EXPECT_FALSE(record->IsPopulated());
-
-  // Incorrect optional fields. Should fail.
+  // Incorrect type for language code.
   data.SetInteger(NfcNdefRecord::kFieldLanguageCode, 0);
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeText, &data));
   EXPECT_FALSE(record->IsPopulated());
 
+  // Correct type for language code, invalid encoding.
   data.SetString(NfcNdefRecord::kFieldLanguageCode, kTestLanguageCode);
   data.SetInteger(NfcNdefRecord::kFieldEncoding, 0);
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeText, &data));
   EXPECT_FALSE(record->IsPopulated());
 
-  // Optional fields are correct. Should succeed.
+  // All entries valid. Should succeed.
   data.SetString(NfcNdefRecord::kFieldEncoding, kTestEncoding);
   EXPECT_TRUE(record->Populate(NfcNdefRecord::kTypeText, &data));
   EXPECT_TRUE(record->IsPopulated());
@@ -88,12 +85,16 @@ TEST(NfcNdefRecordTest, PopulateUriRecord) {
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeURI, &data));
   EXPECT_FALSE(record->IsPopulated());
 
-  // URI field with incorrect entry. Should fail.
+  // URI field with incorrect type. Should fail.
   data.SetInteger(NfcNdefRecord::kFieldURI, 0);
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeURI, &data));
   EXPECT_FALSE(record->IsPopulated());
 
-  // URI field with correct entry. Should succeed.
+  // URI field with correct type but invalid format.
+  data.SetString(NfcNdefRecord::kFieldURI, "test.uri");
+  EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeURI, &data));
+  EXPECT_FALSE(record->IsPopulated());
+
   data.SetString(NfcNdefRecord::kFieldURI, kTestURI);
   EXPECT_TRUE(record->Populate(NfcNdefRecord::kTypeURI, &data));
   EXPECT_TRUE(record->IsPopulated());
@@ -203,8 +204,10 @@ TEST(NfcNdefRecordTest, PopulateSmartPoster) {
   EXPECT_FALSE(record->Populate(NfcNdefRecord::kTypeSmartPoster, &data));
   EXPECT_FALSE(record->IsPopulated());
 
-  // Title value with valid "text" field.
+  // Title value with valid entries.
   title_value->SetString(NfcNdefRecord::kFieldText, kTestText);
+  title_value->SetString(NfcNdefRecord::kFieldLanguageCode, kTestLanguageCode);
+  title_value->SetString(NfcNdefRecord::kFieldEncoding, kTestEncoding);
 
   EXPECT_TRUE(record->Populate(NfcNdefRecord::kTypeSmartPoster, &data));
   EXPECT_TRUE(record->IsPopulated());
@@ -233,6 +236,12 @@ TEST(NfcNdefRecordTest, PopulateSmartPoster) {
   EXPECT_TRUE(const_dictionary_value->GetString(
       NfcNdefRecord::kFieldText, &string_value));
   EXPECT_EQ(kTestText, string_value);
+  EXPECT_TRUE(const_dictionary_value->GetString(
+      NfcNdefRecord::kFieldLanguageCode, &string_value));
+  EXPECT_EQ(kTestLanguageCode, string_value);
+  EXPECT_TRUE(const_dictionary_value->GetString(
+      NfcNdefRecord::kFieldEncoding, &string_value));
+  EXPECT_EQ(kTestEncoding, string_value);
 }
 
 }  // namespace device

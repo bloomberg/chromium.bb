@@ -221,11 +221,10 @@ DBusObjectMap::ObjectPropertyPair DBusObjectMap::GetObjectPropertyPair(
 }
 
 void DBusObjectMap::CleanUpObjectPropertyPair(const ObjectPropertyPair& pair) {
-  dbus::ObjectProxy* object_proxy = pair.first;
+  // Don't remove the object proxy. There is a bug in dbus::Bus that causes a
+  // crash when object proxies are removed, due to the proxy objects not being
+  // properly reference counted. (See crbug.com/170182 and crbug.com/328264).
   NfcPropertySet* properties = pair.second;
-  bus_->RemoveObjectProxy(service_name_,
-                          object_proxy->object_path(),
-                          base::Bind(&base::DoNothing));
   delete properties;
 }
 
@@ -260,8 +259,8 @@ void ObjectProxyTree::RemoveObjectMap(const dbus::ObjectPath& object_path) {
   if (iter == paths_to_object_maps_.end())
     return;
   DBusObjectMap* object_map = iter->second;
-  delete object_map;
   paths_to_object_maps_.erase(iter);
+  delete object_map;
 }
 
 DBusObjectMap* ObjectProxyTree::GetObjectMap(

@@ -42,6 +42,9 @@ class NfcPropertySet : public dbus::PropertySet {
                    SetCallback callback) OVERRIDE;
   virtual void ChangedReceived(dbus::Signal* signal) OVERRIDE;
 
+ protected:
+  const base::Closure& on_get_all_callback() { return on_get_all_callback_; }
+
  private:
   // Optional callback used to notify clients when all properties were received
   // after a call to GetAll.

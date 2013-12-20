@@ -12,6 +12,7 @@
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../url/url.gyp:url_lib',
       ],
       'sources': [
         'nfc_adapter.cc',
@@ -22,8 +23,12 @@
         'nfc_adapter_factory.h',
         'nfc_ndef_record.cc',
         'nfc_ndef_record.h',
+        'nfc_ndef_record_utils_chromeos.cc',
+        'nfc_ndef_record_utils_chromeos.h',
         'nfc_peer.cc',
         'nfc_peer.h',
+        'nfc_peer_chromeos.cc',
+        'nfc_peer_chromeos.h',
         'nfc_tag.cc',
         'nfc_tag.h',
         'nfc_tag_technology.cc',
