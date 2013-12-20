@@ -119,6 +119,8 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('arm-sysroot')
   # Data is not part of open source chromium, but are included on some bots.
   excluded_dirs_list.append('data')
+  # This is not part of open source chromium, but are included on some bots.
+  excluded_dirs_list.append('skia/tools/clusterfuzz-data')
 
   args = ['android_webview/tools/find_copyrights.pl',
           '.'
