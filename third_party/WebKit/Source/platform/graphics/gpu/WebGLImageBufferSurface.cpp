@@ -34,6 +34,7 @@
 
 #include "platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "platform/graphics/skia/GaneshUtils.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace WebCore {
 
@@ -46,12 +47,28 @@ WebGLImageBufferSurface::WebGLImageBufferSurface(const IntSize& size, OpacityMod
     ensureTextureBackedSkBitmap(gr, m_bitmap, size, kDefault_GrSurfaceOrigin, kRGBA_8888_GrPixelConfig);
 }
 
+WebGLImageBufferSurface::~WebGLImageBufferSurface()
+{
+}
+
 Platform3DObject WebGLImageBufferSurface::getBackingTexture() const
 {
     GrTexture* texture = m_bitmap.getTexture();
     if (!texture)
         return 0;
     return texture->getTextureHandle();
+}
+
+void WebGLImageBufferSurface::invalidateCachedBitmap()
+{
+    m_cachedBitmap.reset();
+}
+
+void WebGLImageBufferSurface::updateCachedBitmapIfNeeded()
+{
+    if (m_cachedBitmap.isNull() && m_bitmap.pixelRef()) {
+        (m_bitmap.pixelRef())->readPixels(&m_cachedBitmap);
+    }
 }
 
 } // namespace WebCore

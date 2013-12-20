@@ -171,7 +171,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
     Platform3DObject tex = m_surface->getBackingTexture();
     if (!context3D || !tex)
         return false;
-
+    m_surface->invalidateCachedBitmap();
     return drawingBuffer->copyToPlatformTexture(*(context3D.get()), tex, GL_RGBA,
         GL_UNSIGNED_BYTE, 0, true, false);
 }
@@ -182,8 +182,16 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
     if (!isValid())
         return;
 
-    const SkBitmap& bitmap = m_surface->bitmap();
+    SkBitmap bitmap = m_surface->bitmap();
+    // For ImageBufferSurface that enables cachedBitmap, Use the cached Bitmap for CPU side usage
+    // if it is available, otherwise generate and use it.
+    if (!context->isAccelerated() && m_surface->isAccelerated() && m_surface->cachedBitmapEnabled() && m_surface->isValid()) {
+        m_surface->updateCachedBitmapIfNeeded();
+        bitmap = m_surface->cachedBitmap();
+    }
+
     RefPtr<Image> image = BitmapImage::create(NativeImageSkia::create(drawNeedsCopy(m_context.get(), context) ? deepSkBitmapCopy(bitmap) : bitmap));
+
     context->drawImage(image.get(), destRect, srcRect, op, blendMode, DoNotRespectImageOrientation, useLowQualityScale);
 }
 

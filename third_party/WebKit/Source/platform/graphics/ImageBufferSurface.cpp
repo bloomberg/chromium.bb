@@ -56,5 +56,10 @@ const SkBitmap& ImageBufferSurface::bitmap() const
     return canvas()->getTopDevice()->accessBitmap(false);
 }
 
+const SkBitmap& ImageBufferSurface::cachedBitmap() const
+{
+    DEFINE_STATIC_LOCAL(SkBitmap, nullBitmap, ());
+    return nullBitmap;
+}
 
 } // namespace WebCore

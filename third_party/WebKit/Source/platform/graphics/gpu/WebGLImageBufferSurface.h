@@ -41,16 +41,23 @@ class PLATFORM_EXPORT WebGLImageBufferSurface : public ImageBufferSurface {
     WTF_MAKE_NONCOPYABLE(WebGLImageBufferSurface); WTF_MAKE_FAST_ALLOCATED;
 public:
     WebGLImageBufferSurface(const IntSize&, OpacityMode = NonOpaque);
-    virtual ~WebGLImageBufferSurface() { }
+    virtual ~WebGLImageBufferSurface();
 
     virtual SkCanvas* canvas() const OVERRIDE { return 0; }
     virtual const SkBitmap& bitmap() const OVERRIDE { return m_bitmap; }
     virtual bool isValid() const OVERRIDE { return m_bitmap.pixelRef(); }
     virtual bool isAccelerated() const OVERRIDE { return true; }
     virtual Platform3DObject getBackingTexture() const OVERRIDE;
+    virtual bool cachedBitmapEnabled() const OVERRIDE { return true; }
+    virtual const SkBitmap& cachedBitmap() const OVERRIDE { return m_cachedBitmap; }
+    virtual void invalidateCachedBitmap() OVERRIDE;
+    virtual void updateCachedBitmapIfNeeded() OVERRIDE;
 
 private:
     SkBitmap m_bitmap;
+    // This raw-pixel based SkBitmap works as a cache at CPU side to avoid heavy cost
+    // on readback from GPU side to CPU side in some cases.
+    SkBitmap m_cachedBitmap;
 };
 
 
