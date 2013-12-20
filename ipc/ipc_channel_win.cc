@@ -183,7 +183,7 @@ bool Channel::ChannelImpl::DidEmptyInputBuffers() {
 }
 
 // static
-const string16 Channel::ChannelImpl::PipeName(
+const base::string16 Channel::ChannelImpl::PipeName(
     const std::string& channel_id, int32* secret) {
   std::string name("\\\\.\\pipe\\chrome.");
 
@@ -204,7 +204,7 @@ const string16 Channel::ChannelImpl::PipeName(
 bool Channel::ChannelImpl::CreatePipe(const IPC::ChannelHandle &channel_handle,
                                       Mode mode) {
   DCHECK_EQ(INVALID_HANDLE_VALUE, pipe_);
-  string16 pipe_name;
+  base::string16 pipe_name;
   // If we already have a valid pipe for channel just copy it.
   if (channel_handle.pipe.handle) {
     DCHECK(channel_handle.name.empty());

@@ -43,8 +43,8 @@ class Channel::ChannelImpl : public internal::ChannelReader,
   bool DidEmptyInputBuffers() OVERRIDE;
   virtual void HandleInternalMessage(const Message& msg) OVERRIDE;
 
-  static const string16 PipeName(const std::string& channel_id,
-                                 int32* secret);
+  static const base::string16 PipeName(const std::string& channel_id,
+                                       int32* secret);
   bool CreatePipe(const IPC::ChannelHandle &channel_handle, Mode mode);
 
   bool ProcessConnection();
