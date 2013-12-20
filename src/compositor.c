@@ -3734,6 +3734,9 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	wl_list_for_each_safe(output, next, &ec->output_list, link)
 		output->destroy(output);
 
+	if (ec->renderer)
+		ec->renderer->destroy(ec);
+
 	weston_binding_list_destroy_all(&ec->key_binding_list);
 	weston_binding_list_destroy_all(&ec->button_binding_list);
 	weston_binding_list_destroy_all(&ec->touch_binding_list);

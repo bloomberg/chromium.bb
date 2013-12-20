@@ -2336,8 +2336,6 @@ drm_destroy(struct weston_compositor *ec)
 
 	destroy_sprites(d);
 
-	ec->renderer->destroy(ec);
-
 	weston_compositor_shutdown(ec);
 
 	if (d->gbm)

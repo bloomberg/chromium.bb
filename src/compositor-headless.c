@@ -141,8 +141,6 @@ headless_destroy(struct weston_compositor *ec)
 {
 	struct headless_compositor *c = (struct headless_compositor *) ec;
 
-	ec->renderer->destroy(ec);
-
 	weston_seat_release(&c->fake_seat);
 	weston_compositor_shutdown(ec);
 

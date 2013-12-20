@@ -797,8 +797,6 @@ fbdev_compositor_destroy(struct weston_compositor *base)
 
 	udev_input_destroy(&compositor->input);
 
-	compositor->base.renderer->destroy(&compositor->base);
-
 	/* Destroy the output. */
 	weston_compositor_shutdown(&compositor->base);
 

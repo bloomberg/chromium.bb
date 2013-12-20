@@ -422,8 +422,6 @@ rpi_compositor_destroy(struct weston_compositor *base)
 
 	udev_input_destroy(&compositor->input);
 
-	compositor->base.renderer->destroy(&compositor->base);
-
 	/* destroys outputs, too */
 	weston_compositor_shutdown(&compositor->base);
 
