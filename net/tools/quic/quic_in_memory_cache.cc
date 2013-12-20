@@ -214,6 +214,9 @@ QuicInMemoryCache::~QuicInMemoryCache() {
 
 string QuicInMemoryCache::GetKey(const BalsaHeaders& request_headers) const {
   StringPiece uri = request_headers.request_uri();
+  if (uri.size() == 0) {
+    return "";
+  }
   StringPiece host;
   if (uri[0] == '/') {
     host = request_headers.GetHeader("host");

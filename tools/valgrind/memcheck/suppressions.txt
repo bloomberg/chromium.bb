@@ -6313,13 +6313,6 @@
    fun:_ZN3net18ProxyScriptDecider*
 }
 {
-   bug_329951
-   Memcheck:Uninitialized
-   fun:_ZNK3net5tools17QuicInMemoryCache6GetKeyERKNS_12BalsaHeadersE
-   ...
-   fun:_ZN3net5tools4test12_GLOBAL__N_151QuicSpdyServerStreamTest_TestSendErrorResponse_Test8TestBodyEv
-}
-{
    bug_329960
    Memcheck:Leak
    fun:_Znw*
