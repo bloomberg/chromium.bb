@@ -257,10 +257,10 @@ class SingleTestRunner(object):
         failures = []
         found_a_pass = False
         text = driver_output.text or ''
-        lines = text.splitlines()
+        lines = text.strip().splitlines()
         if not lines or lines[0] != 'This is a testharness.js-based test.':
             return False, []
-        if lines[-2:] != ['Harness: the test ran to completion.', '']:
+        if lines[-1] != 'Harness: the test ran to completion.':
             return True, [test_failures.FailureTestHarnessAssertion()]
 
         for line in lines:

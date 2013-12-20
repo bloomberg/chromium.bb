@@ -1211,6 +1211,7 @@ class Port(object):
     def _port_specific_expectations_files(self):
         paths = []
         paths.append(self.path_from_chromium_base('skia', 'skia_test_expectations.txt'))
+        paths.append(self.path_from_chromium_base('webkit', 'tools', 'layout_tests', 'test_expectations_w3c.txt'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'))
         paths.append(self._filesystem.join(self.layout_tests_dir(), 'SlowTests'))

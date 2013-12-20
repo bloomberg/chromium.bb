@@ -182,9 +182,9 @@ class TestImporter(object):
 
         webkit_finder = WebKitFinder(self.filesystem)
         self._webkit_root = webkit_finder.webkit_base()
-        self.repo_dir = repo_dir
+        self.repo_dir = self.filesystem.abspath(repo_dir)
 
-        self.destination_directory = webkit_finder.path_from_webkit_base("LayoutTests", options.destination)
+        self.destination_directory = webkit_finder.path_from_webkit_base("LayoutTests", options.destination, self.filesystem.basename(self.repo_dir))
 
         self.changeset = CHANGESET_NOT_AVAILABLE
         self.test_status = TEST_STATUS_UNKNOWN
@@ -192,6 +192,7 @@ class TestImporter(object):
         self.import_list = []
 
     def do_import(self):
+        _log.info("Importing %s into %s", self.repo_dir, self.destination_directory)
         self.find_importable_tests(self.source_directory)
         self.load_changeset()
         self.import_tests()
@@ -215,9 +216,10 @@ class TestImporter(object):
             # FIXME: skip 'incoming' tests for now, but we should rework the 'test_status' concept and
             # support reading them as well.
             DIRS_TO_SKIP = ('.git', '.hg', 'data', 'archive', 'incoming')
-            for d in DIRS_TO_SKIP:
-                if d in dirs:
-                    dirs.remove(d)
+            if dirs:
+                for d in DIRS_TO_SKIP:
+                    if d in dirs:
+                        dirs.remove(d)
 
             copy_list = []
 
@@ -231,6 +233,10 @@ class TestImporter(object):
 
                 mimetype = mimetypes.guess_type(fullpath)
                 if not 'html' in str(mimetype[0]) and not 'xml' in str(mimetype[0]):
+                    copy_list.append({'src': fullpath, 'dest': filename})
+                    continue
+
+                if root.endswith('resources'):
                     copy_list.append({'src': fullpath, 'dest': filename})
                     continue
 
