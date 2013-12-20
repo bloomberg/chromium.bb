@@ -138,8 +138,7 @@ IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
                 IndexedDBDatabaseMetadata::NO_INT_VERSION,
                 kInvalidId),
       identifier_(unique_identifier),
-      factory_(factory),
-      running_version_change_transaction_(NULL) {
+      factory_(factory) {
   DCHECK(!metadata_.name.empty());
 }
 
@@ -1258,14 +1257,6 @@ void IndexedDBDatabase::VersionChangeOperation(
       old_version, connection.Pass(), metadata(), data_loss, data_loss_message);
 }
 
-void IndexedDBDatabase::TransactionStarted(IndexedDBTransaction* transaction) {
-
-  if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
-    DCHECK(!running_version_change_transaction_);
-    running_version_change_transaction_ = transaction;
-  }
-}
-
 void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
                                             bool committed) {
   DCHECK(transactions_.find(transaction->id()) != transactions_.end());
@@ -1273,9 +1264,6 @@ void IndexedDBDatabase::TransactionFinished(IndexedDBTransaction* transaction,
   transactions_.erase(transaction->id());
 
   if (transaction->mode() == indexed_db::TRANSACTION_VERSION_CHANGE) {
-    DCHECK_EQ(transaction, running_version_change_transaction_);
-    running_version_change_transaction_ = NULL;
-
     if (pending_second_half_open_) {
       if (committed) {
         DCHECK_EQ(pending_second_half_open_->version(), metadata_.int_version);
@@ -1404,7 +1392,7 @@ void IndexedDBDatabase::TransactionCreated(IndexedDBTransaction* transaction) {
 
 bool IndexedDBDatabase::IsOpenConnectionBlocked() const {
   return !pending_delete_calls_.empty() ||
-         running_version_change_transaction_ ||
+         transaction_coordinator_.IsRunningVersionChangeTransaction() ||
          pending_run_version_change_transaction_call_;
 }
 

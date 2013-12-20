@@ -119,7 +119,6 @@ class CONTENT_EXPORT IndexedDBDatabase
   }
 
   void TransactionCreated(IndexedDBTransaction* transaction);
-  void TransactionStarted(IndexedDBTransaction* transaction);
   void TransactionFinished(IndexedDBTransaction* transaction, bool committed);
 
   // Called by transactions to report failure committing to the backing store.
@@ -292,7 +291,6 @@ class CONTENT_EXPORT IndexedDBDatabase
   scoped_refptr<IndexedDBFactory> factory_;
 
   IndexedDBTransactionCoordinator transaction_coordinator_;
-  IndexedDBTransaction* running_version_change_transaction_;
 
   typedef std::map<int64, IndexedDBTransaction*> TransactionMap;
   TransactionMap transactions_;

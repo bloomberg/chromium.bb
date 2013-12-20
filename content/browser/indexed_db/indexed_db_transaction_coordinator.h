@@ -25,7 +25,9 @@ class IndexedDBTransactionCoordinator {
 
   // Called by transactions as they start and finish.
   void DidCreateTransaction(scoped_refptr<IndexedDBTransaction> transaction);
-  void DidFinishTransaction(scoped_refptr<IndexedDBTransaction> transaction);
+  void DidFinishTransaction(IndexedDBTransaction* transaction);
+
+  bool IsRunningVersionChangeTransaction() const;
 
 #ifndef NDEBUG
   bool IsActive(IndexedDBTransaction* transaction);

@@ -28,7 +28,7 @@ void IndexedDBTransactionCoordinator::DidCreateTransaction(
 }
 
 void IndexedDBTransactionCoordinator::DidFinishTransaction(
-    scoped_refptr<IndexedDBTransaction> transaction) {
+    IndexedDBTransaction* transaction) {
   if (queued_transactions_.count(transaction)) {
     DCHECK(!started_transactions_.count(transaction));
     queued_transactions_.erase(transaction);
@@ -38,6 +38,13 @@ void IndexedDBTransactionCoordinator::DidFinishTransaction(
   }
 
   ProcessQueuedTransactions();
+}
+
+bool IndexedDBTransactionCoordinator::IsRunningVersionChangeTransaction()
+    const {
+  return !started_transactions_.empty() &&
+         (*started_transactions_.begin())->mode() ==
+             indexed_db::TRANSACTION_VERSION_CHANGE;
 }
 
 #ifndef NDEBUG
@@ -77,9 +84,7 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
   if (queued_transactions_.empty())
     return;
 
-  DCHECK(started_transactions_.empty() ||
-         (*started_transactions_.begin())->mode() !=
-             indexed_db::TRANSACTION_VERSION_CHANGE);
+  DCHECK(!IsRunningVersionChangeTransaction());
 
   // The locked_scope set accumulates the ids of object stores in the scope of
   // running read/write transactions. Other read-write transactions with

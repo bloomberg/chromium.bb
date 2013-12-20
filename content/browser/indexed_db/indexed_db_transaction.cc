@@ -154,7 +154,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
 
   // Run the abort tasks, if any.
   while (!abort_task_stack_.empty())
-    abort_task_stack_.pop().Run(0);
+    abort_task_stack_.pop().Run(NULL);
 
   preemptive_task_queue_.clear();
   task_queue_.clear();
@@ -202,7 +202,6 @@ void IndexedDBTransaction::Start() {
   // TransactionCoordinator has started this transaction.
   DCHECK_EQ(CREATED, state_);
   state_ = STARTED;
-  database_->TransactionStarted(this);
   diagnostics_.start_time = base::Time::Now();
 
   if (!used_)
@@ -258,7 +257,7 @@ void IndexedDBTransaction::Commit() {
     database_->TransactionFinished(this, true);
   } else {
     while (!abort_task_stack_.empty())
-      abort_task_stack_.pop().Run(0);
+      abort_task_stack_.pop().Run(NULL);
 
     callbacks_->OnAbort(
         id_,
