@@ -103,6 +103,7 @@
           'tc_lib_dir_irt64': '<(SHARED_INTERMEDIATE_DIR)/tc_irt/lib64',
           'tc_include_dir_newlib': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/include',
           'tc_include_dir_glibc': '<(SHARED_INTERMEDIATE_DIR)/tc_glibc/include',
+          'extra_deps': [],
           'extra_deps_newlib64': [],
           'extra_deps_newlib32': [],
           'extra_deps_glibc64': [],
@@ -148,6 +149,7 @@
           'enable_x86_32': 0,
           'enable_x86_64': 0,
           'enable_arm': 1,
+          'extra_deps': [],
           'extra_deps_newlib_arm': [],
           'native_sources': [],
           'tc_lib_dir_newlib_arm': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libarm',
@@ -193,6 +195,7 @@
           'enable_x86_32': 0,
           'enable_x86_64': 0,
           'enable_arm': 0,
+          'extra_deps': [],
           'extra_deps_newlib_mips': [],
           'native_sources': [],
           'tc_lib_dir_newlib_mips': '<(SHARED_INTERMEDIATE_DIR)/tc_newlib/libmips',
@@ -238,6 +241,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
@@ -281,6 +285,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
@@ -324,6 +329,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
@@ -368,6 +374,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
                     '^(source_list_newlib64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
@@ -412,6 +419,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
@@ -455,6 +463,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
@@ -498,6 +507,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
@@ -541,6 +551,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
                     '^(source_list_newlib32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_newlib/stamp.prep',
@@ -590,6 +601,7 @@
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
@@ -633,6 +645,7 @@
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
@@ -676,6 +689,7 @@
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
@@ -719,6 +733,7 @@
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
                    '^(source_list_newlib_arm)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_arm_newlib/stamp.prep',
@@ -764,6 +779,7 @@
                 'inputs': [
                   '<(DEPTH)/native_client/build/build_nexe.py',
                   '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                  '>@(extra_deps)',
                   '>@(extra_deps_newlib_arm)',
                   '^(source_list_newlib_arm)',
                   '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep'
@@ -813,6 +829,7 @@
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources) >(native_sources))',
+                   '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
@@ -856,6 +873,7 @@
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
@@ -899,6 +917,7 @@
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
@@ -942,6 +961,7 @@
                 'inputs': [
                    '<(DEPTH)/native_client/build/build_nexe.py',
                    '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                   '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
                    '^(source_list_newlib_mips)',
                    '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
@@ -991,6 +1011,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
@@ -1034,6 +1055,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
@@ -1077,6 +1099,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
@@ -1120,6 +1143,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
@@ -1163,6 +1187,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
                     '^(source_list_glibc64)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
@@ -1206,6 +1231,7 @@
                  'inputs': [
                     '<(DEPTH)/native_client/build/build_nexe.py',
                     '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+                    '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
                     '^(source_list_glibc32)',
                     '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_glibc/stamp.prep',
@@ -1296,6 +1322,7 @@
             'inputs': [
               '<(DEPTH)/native_client/build/build_nexe.py',
               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+              '>@(extra_deps)',
               '>@(extra_deps_pnacl_newlib)',
               '^(source_list_pnacl_newlib)',
               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
@@ -1415,6 +1442,7 @@
             'inputs': [
               '<(DEPTH)/native_client/build/build_nexe.py',
               '>!@pymod_do_main(>(get_sources) >(sources) >(_sources))',
+              '>@(extra_deps)',
               '>@(extra_deps_pnacl_newlib)',
               '^(source_list_pnacl_newlib)',
               '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/stamp.prep',
