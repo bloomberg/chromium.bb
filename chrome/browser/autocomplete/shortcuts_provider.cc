@@ -21,6 +21,7 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
 #include "chrome/browser/autocomplete/autocomplete_result.h"
+#include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_service.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "url/url_parse.h"
@@ -43,6 +45,26 @@ class DestinationURLEqualsURL {
  private:
   const GURL url_;
 };
+
+// Like URLPrefix::BestURLPrefix() except also handles the prefix of
+// "www.".  This is needed because sometimes the string we're matching
+// against here (which comes from |fill_into_edit|) can start with
+// "www." without having a protocol at the beginning.  Because "www."
+// is not on the default prefix list, we test for it explicitly here
+// and use that match if the default list didn't have a match or the
+// default list's match was shorter than it could've been.
+const URLPrefix* BestURLPrefixWithWWWCase(
+    const base::string16& text,
+    const base::string16& prefix_suffix) {
+  CR_DEFINE_STATIC_LOCAL(URLPrefix, www_prefix, (ASCIIToUTF16("www."), 1));
+  const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(text, prefix_suffix);
+  if ((best_prefix == NULL) ||
+      (best_prefix->num_components < www_prefix.num_components)) {
+    if (URLPrefix::PrefixMatch(www_prefix, text, prefix_suffix))
+      best_prefix = &www_prefix;
+  }
+  return best_prefix;
+}
 
 }  // namespace
 
@@ -134,6 +156,11 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
   base::string16 term_string(base::i18n::ToLower(input.text()));
   DCHECK(!term_string.empty());
 
+  base::string16 fixed_up_term_string(term_string);
+  AutocompleteInput fixed_up_input(input);
+  if (FixupUserInput(&fixed_up_input))
+    fixed_up_term_string = fixed_up_input.text();
+
   int max_relevance;
   if (!OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
       input.current_page_classification(), &max_relevance))
@@ -147,7 +174,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     int relevance = CalculateScore(term_string, it->second, max_relevance);
     if (relevance) {
       matches_.push_back(ShortcutToACMatch(
-          it->second, relevance, term_string,
+          it->second, relevance, term_string, fixed_up_term_string,
           input.prevent_inline_autocomplete()));
     }
   }
@@ -183,7 +210,8 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     const history::ShortcutsBackend::Shortcut& shortcut,
     int relevance,
     const base::string16& term_string,
-    bool prevent_inline_autocomplete) {
+    const base::string16& fixed_up_term_string,
+    const bool prevent_inline_autocomplete) {
   DCHECK(!term_string.empty());
   AutocompleteMatch match(shortcut.match_core.ToMatch());
   match.provider = this;
@@ -211,21 +239,21 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     }
   } else {
     const URLPrefix* best_prefix =
-        URLPrefix::BestURLPrefix(match.fill_into_edit, term_string);
-    URLPrefix www_prefix(ASCIIToUTF16("www."), 1);
-    if ((best_prefix == NULL) ||
-        (best_prefix->num_components < www_prefix.num_components)) {
-      // Sometimes |fill_into_edit| can start with "www." without having a
-      // protocol at the beginning.  Because "www." is not on the default
-      // prefix list, we test for it explicitly here and use that match if
-      // the default list didn't have a match or the default list's match
-      // was shorter than it could've been.
-      if (URLPrefix::PrefixMatch(www_prefix, match.fill_into_edit, term_string))
-        best_prefix = &www_prefix;
+        BestURLPrefixWithWWWCase(match.fill_into_edit, term_string);
+    const base::string16* matching_string = &term_string;
+    // If we failed to find a best_prefix initially, try again using a
+    // fixed-up version of the user input.  This is especially useful to
+    // get about: URLs to inline against chrome:// shortcuts.  (about:
+    // URLs are fixed up to the chrome:// scheme.)
+    if ((best_prefix == NULL) && !fixed_up_term_string.empty() &&
+        (fixed_up_term_string != term_string)) {
+        best_prefix = BestURLPrefixWithWWWCase(
+            match.fill_into_edit, fixed_up_term_string);
+        matching_string = &fixed_up_term_string;
     }
     if (best_prefix != NULL) {
       match.inline_autocompletion = match.fill_into_edit.substr(
-          best_prefix->prefix.length() + term_string.length());
+          best_prefix->prefix.length() + matching_string->length());
       match.allowed_to_be_default_match =
           !prevent_inline_autocomplete || match.inline_autocompletion.empty();
     }

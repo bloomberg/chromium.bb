@@ -11,6 +11,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 
 class Profile;
@@ -50,16 +51,18 @@ class ShortcutsProvider
   // Performs the autocomplete matching and scoring.
   void GetMatches(const AutocompleteInput& input);
 
-  // Returns an AutocompleteMatch corresponding to |shortcut|.  Assigns it
-  // |relevance| score in the process, and highlights the description
-  // and contents against |term_string|, which should be the lower-cased
-  // version of the user's input.  If |prevent_inline_autocomplete|, no
+  // Returns an AutocompleteMatch corresponding to |shortcut|. Assigns it
+  // |relevance| score in the process, and highlights the description and
+  // contents against |term_string|, which should be the lower-cased version
+  // of the user's input.  |term_string| and |fixed_up_term_string| are used
+  // to decide what can be inlined. If |prevent_inline_autocomplete|, no
   // matches with inline completions will be allowed to be the default match.
   AutocompleteMatch ShortcutToACMatch(
       const history::ShortcutsBackend::Shortcut& shortcut,
       int relevance,
       const base::string16& term_string,
-      bool prevent_inline_autocomplete);
+      const base::string16& fixed_up_term_string,
+      const bool prevent_inline_autocomplete);
 
   // Returns a map mapping characters to groups of words from |text| that start
   // with those characters, ordered lexicographically descending so that longer

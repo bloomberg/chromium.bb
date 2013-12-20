@@ -246,6 +246,26 @@ class AutocompleteProvider
   // profile's bookmark bar model.
   void UpdateStarredStateOfMatches();
 
+  // Fixes up user URL input to make it more possible to match against.  Among
+  // many other things, this takes care of the following:
+  // * Prepending file:// to file URLs
+  // * Converting drive letters in file URLs to uppercase
+  // * Converting case-insensitive parts of URLs (like the scheme and domain)
+  //   to lowercase
+  // * Convert spaces to %20s
+  // Note that we don't do this in AutocompleteInput's constructor, because if
+  // e.g. we convert a Unicode hostname to punycode, other providers will show
+  // output that surprises the user ("Search Google for xn--6ca.com").
+  // Returns false if the fixup attempt resulted in an empty string (which
+  // providers generally can't do anything with).
+  static bool FixupUserInput(AutocompleteInput* input);
+
+  // Trims "http:" and up to two subsequent slashes from |url|.  Returns the
+  // number of characters that were trimmed.
+  // NOTE: For a view-source: URL, this will trim from after "view-source:" and
+  // return 0.
+  static size_t TrimHttpPrefix(base::string16* url);
+
   // The profile associated with the AutocompleteProvider.  Reference is not
   // owned by us.
   Profile* profile_;
