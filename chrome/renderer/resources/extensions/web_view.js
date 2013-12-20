@@ -934,19 +934,29 @@ function registerBrowserPluginElement() {
     internal.handleBrowserPluginAttributeMutation_(name, newValue);
   };
 
-  proto.enteredViewCallback = function() {
+  proto.attachedCallback = function() {
     // Load the plugin immediately.
     var unused = this.nonExistentAttribute;
   };
+
+  // TODO(dominicc): Remove this line once Custom Elements renames
+  // enteredViewCallback to attachedCallback
+  proto.enteredViewCallback = proto.attachedCallback;
 
   WebViewInternal.BrowserPlugin =
       DocumentNatives.RegisterElement('browser-plugin', {extends: 'object',
                                                          prototype: proto});
 
   delete proto.createdCallback;
+  delete proto.attachedCallback;
+  delete proto.detachedCallback;
+  delete proto.attributeChangedCallback;
+
+  // TODO(dominicc): Remove these lines once Custom Elements renames
+  // enteredView, leftView callbacks to attached, detached
+  // respectively.
   delete proto.enteredViewCallback;
   delete proto.leftViewCallback;
-  delete proto.attributeChangedCallback;
 }
 
 // Registers <webview> custom element.
@@ -1015,9 +1025,15 @@ function registerWebViewElement() {
   // Delete the callbacks so developers cannot call them and produce unexpected
   // behavior.
   delete proto.createdCallback;
+  delete proto.attachedCallback;
+  delete proto.detachedCallback;
+  delete proto.attributeChangedCallback;
+
+  // TODO(dominicc): Remove these lines once Custom Elements renames
+  // enteredView, leftView callbacks to attached, detached
+  // respectively.
   delete proto.enteredViewCallback;
   delete proto.leftViewCallback;
-  delete proto.attributeChangedCallback;
 }
 
 var useCapture = true;
