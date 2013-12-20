@@ -126,15 +126,22 @@ static const size_t kAllocationGranularityMask = kAllocationGranularity - 1;
 static const size_t kBucketShift = (kAllocationGranularity == 8) ? 3 : 2;
 
 // Underlying partition storage pages are a power-of-two size. It is typical
-// for a partition page to be based on multiple system pages. We rarely deal
-// with system pages. Most references to "page" refer to partition pages. We
-// do also have the concept of "super pages" -- these are the underlying
-// system allocations we make. Super pages contain multiple partition pages
-// inside them.
+// for a partition page to be based on multiple system pages. Most references to
+// "page" refer to partition pages.
+// We also have the concept of "super pages" -- these are the underlying system // allocations we make. Super pages contain multiple partition pages inside them
+// and include space for a small amount of metadata per partition page.
+// Inside super pages, we store "slot spans". A slot span is a continguous range
+// of one or more partition pages that stores allocations of the same size.
+// Slot span sizes are adjusted depending on the allocation size, to make sure
+// the packing does not lead to unused (wasted) space at the end of the last
+// system page of the span. For our current max slot span size of 64k and other
+// constant values, we pack _all_ partitionAllocGeneric() sizes perfectly up
+// against the end of a system page.
 static const size_t kPartitionPageShift = 14; // 16KB
 static const size_t kPartitionPageSize = 1 << kPartitionPageShift;
 static const size_t kPartitionPageOffsetMask = kPartitionPageSize - 1;
 static const size_t kPartitionPageBaseMask = ~kPartitionPageOffsetMask;
+static const size_t kMaxPartitionPagesPerSlotSpan = 4;
 
 // To avoid fragmentation via never-used freelist entries, we hand out partition
 // freelist sections gradually, in units of the dominant system page size.
@@ -143,6 +150,7 @@ static const size_t kPartitionPageBaseMask = ~kPartitionPageOffsetMask;
 // pointers will fault and dirty a private page, which is very wasteful if we
 // never actually store objects there.
 static const size_t kNumSystemPagesPerPartitionPage = kPartitionPageSize / kSystemPageSize;
+static const size_t kMaxSystemPagesPerSlotSpan = kNumSystemPagesPerPartitionPage * kMaxPartitionPagesPerSlotSpan;
 
 // We reserve virtual address space in 2MB chunks (aligned to 2MB as well).
 // These chunks are called "super pages". We do this so that we can store
@@ -165,7 +173,7 @@ static const size_t kPageMetadataSize = 1 << kPageMetadataShift;
 // at index 1 for the least-significant-bit.
 // In terms of allocation sizes, order 0 covers 0, order 1 covers 1, order 2
 // covers 2->3, order 3 covers 4->7, order 4 covers 8->15.
-static const size_t kGenericMaxBucketedOrder = 12; // Largest bucketed order is 1<<(12-1) (storing 2KB -> almost 4KB))
+static const size_t kGenericMaxBucketedOrder = 15; // Largest bucketed order is 1<<(15-1) (storing 16KB -> almost 32KB))
 static const size_t kGenericMinBucketedOrder = 4; // 8 bytes.
 static const size_t kGenericNumBucketedOrders = (kGenericMaxBucketedOrder - kGenericMinBucketedOrder) + 1;
 static const size_t kGenericNumBucketsPerOrderBits = 3; // Eight buckets per order (for the higher orders), e.g. order 8 is 128, 144, 160, ..., 240
@@ -221,15 +229,18 @@ struct PartitionPage {
     } u;
     PartitionPage* activePageNext;
     PartitionBucket* bucket;
-    int numAllocatedSlots; // Deliberately signed, -1 for free page, -n for full pages.
-    unsigned numUnprovisionedSlots;
+    int16_t numAllocatedSlots; // Deliberately signed, -1 for free page, -n for full pages.
+    uint16_t numUnprovisionedSlots;
+    uint16_t pageOffset;
+    uint16_t flags;
 };
+static uint16_t kPartitionPageFlagFree = 1;
 
 struct PartitionBucket {
     PartitionPage* activePagesHead; // Accessed most in hot path => goes first.
     PartitionPage* freePagesHead;
     uint16_t slotSize;
-    uint16_t numSystemPagesPerPartitionPage;
+    uint16_t numSystemPagesPerSlotSpan;
     uint32_t numFullPages;
 #ifndef NDEBUG
     PartitionRootBase* root;
@@ -402,14 +413,9 @@ ALWAYS_INLINE PartitionPage* partitionPointerToPageNoAlignmentCheck(void* ptr)
     ASSERT(partitionPageIndex);
     ASSERT(partitionPageIndex < kNumPartitionPagesPerSuperPage - 1);
     PartitionPage* page = reinterpret_cast<PartitionPage*>(partitionSuperPageToMetadataArea(superPagePtr) + (partitionPageIndex << kPageMetadataShift));
-    return page;
-}
-
-ALWAYS_INLINE PartitionPage* partitionPointerToPage(void* ptr)
-{
-    PartitionPage* page = partitionPointerToPageNoAlignmentCheck(ptr);
-    // Checks that the pointer is a multiple of bucket size.
-    ASSERT(!((reinterpret_cast<uintptr_t>(ptr) & kPartitionPageOffsetMask) % page->bucket->slotSize));
+    // Many partition pages can share the same page object. Adjust for that.
+    size_t delta = page->pageOffset << kPageMetadataShift;
+    page = reinterpret_cast<PartitionPage*>(reinterpret_cast<char*>(page) - delta);
     return page;
 }
 
@@ -426,6 +432,14 @@ ALWAYS_INLINE void* partitionPageToPointer(PartitionPage* page)
     uintptr_t superPageBase = (pointerAsUint & kSuperPageBaseMask);
     void* ret = reinterpret_cast<void*>(superPageBase + (partitionPageIndex << kPartitionPageShift));
     return ret;
+}
+
+ALWAYS_INLINE PartitionPage* partitionPointerToPage(void* ptr)
+{
+    PartitionPage* page = partitionPointerToPageNoAlignmentCheck(ptr);
+    // Checks that the pointer is a multiple of bucket size.
+    ASSERT(!((reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(partitionPageToPointer(page))) % page->bucket->slotSize));
+    return page;
 }
 
 ALWAYS_INLINE bool partitionPointerIsValid(PartitionRootBase* root, void* ptr)
@@ -456,7 +470,7 @@ ALWAYS_INLINE bool partitionPointerIsValid(PartitionRootBase* root, void* ptr)
 
 ALWAYS_INLINE bool partitionPageIsFree(PartitionPage* page)
 {
-    return (page->numAllocatedSlots == -1);
+    return (page->flags & kPartitionPageFlagFree);
 }
 
 ALWAYS_INLINE PartitionFreelistEntry* partitionPageFreelistHead(PartitionPage* page)
