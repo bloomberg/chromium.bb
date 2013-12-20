@@ -190,7 +190,8 @@ void OpenItem(Profile* profile, const base::FilePath& full_path) {
 void OpenExternal(Profile* profile, const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH &&
+      !url.SchemeIsHTTPOrHTTPS())
     chrome::ActivateDesktopHelper(chrome::ASH_KEEP_RUNNING);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
