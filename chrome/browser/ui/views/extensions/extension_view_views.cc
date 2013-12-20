@@ -38,12 +38,38 @@ ExtensionViewViews::~ExtensionViewViews() {
   CleanUp();
 }
 
-const extensions::Extension* ExtensionViewViews::extension() const {
-  return host_->extension();
+gfx::Size ExtensionViewViews::GetMinimumSize() {
+  // If the minimum size has never been set, returns the preferred size (same
+  // behavior as views::View).
+  return (minimum_size_ == gfx::Size()) ? GetPreferredSize() : minimum_size_;
 }
 
-content::RenderViewHost* ExtensionViewViews::render_view_host() const {
-  return host_->render_view_host();
+void ExtensionViewViews::SetVisible(bool is_visible) {
+  if (is_visible != visible()) {
+    NativeViewHost::SetVisible(is_visible);
+
+    // Also tell RenderWidgetHostView the new visibility. Despite its name, it
+    // is not part of the View hierarchy and does not know about the change
+    // unless we tell it.
+    content::RenderWidgetHostView* host_view = render_view_host()->GetView();
+    if (host_view) {
+      if (is_visible)
+        host_view->Show();
+      else
+        host_view->Hide();
+    }
+  }
+}
+
+gfx::NativeCursor ExtensionViewViews::GetCursor(const ui::MouseEvent& event) {
+  return gfx::kNullCursor;
+}
+
+void ExtensionViewViews::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  NativeViewHost::ViewHierarchyChanged(details);
+  if (details.is_add && GetWidget() && !initialized_)
+    CreateWidgetHostView();
 }
 
 void ExtensionViewViews::DidStopLoading() {
@@ -58,24 +84,57 @@ void ExtensionViewViews::SetIsClipped(bool is_clipped) {
   }
 }
 
-gfx::NativeCursor ExtensionViewViews::GetCursor(const ui::MouseEvent& event) {
-  return gfx::kNullCursor;
+void ExtensionViewViews::ResizeDueToAutoResize(const gfx::Size& new_size) {
+  // Don't actually do anything with this information until we have been shown.
+  // Size changes will not be honored by lower layers while we are hidden.
+  if (!visible()) {
+    pending_preferred_size_ = new_size;
+    return;
+  }
+
+  if (new_size != GetPreferredSize())
+    SetPreferredSize(new_size);
 }
 
-void ExtensionViewViews::SetVisible(bool is_visible) {
-  if (is_visible != visible()) {
-    NativeViewHost::SetVisible(is_visible);
-
-    // Also tell RenderWidgetHostView the new visibility. Despite its name, it
-    // is not part of the View hierarchy and does not know about the change
-    // unless we tell it.
-    if (render_view_host()->GetView()) {
-      if (is_visible)
-        render_view_host()->GetView()->Show();
-      else
-        render_view_host()->GetView()->Hide();
-    }
+void ExtensionViewViews::RenderViewCreated() {
+  extensions::ViewType host_type = host_->extension_host_type();
+  if (host_type == extensions::VIEW_TYPE_EXTENSION_POPUP) {
+    render_view_host()->EnableAutoResize(
+        gfx::Size(ExtensionPopup::kMinWidth, ExtensionPopup::kMinHeight),
+        gfx::Size(ExtensionPopup::kMaxWidth, ExtensionPopup::kMaxHeight));
   }
+}
+
+void ExtensionViewViews::HandleKeyboardEvent(
+    const content::NativeWebKeyboardEvent& event) {
+  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
+                                                        GetFocusManager());
+}
+
+bool ExtensionViewViews::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
+  // Let the tab key event be processed by the renderer (instead of moving the
+  // focus to the next focusable view). Also handle Backspace, since otherwise
+  // (on Windows at least), pressing Backspace, when focus is on a text field
+  // within the ExtensionViewViews, will navigate the page back instead of
+  // erasing a character.
+  return (e.key_code() == ui::VKEY_TAB || e.key_code() == ui::VKEY_BACK);
+}
+
+void ExtensionViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Propagate the new size to RenderWidgetHostView.
+  // We can't send size zero because RenderWidget DCHECKs that.
+  if (render_view_host()->GetView() && !bounds().IsEmpty())
+    render_view_host()->GetView()->SetSize(size());
+}
+
+void ExtensionViewViews::PreferredSizeChanged() {
+  View::PreferredSizeChanged();
+  if (container_)
+    container_->OnExtensionSizeChanged(this);
+}
+
+void ExtensionViewViews::OnFocus() {
+  host()->host_contents()->GetView()->Focus();
 }
 
 void ExtensionViewViews::CreateWidgetHostView() {
@@ -98,90 +157,10 @@ void ExtensionViewViews::ShowIfCompletelyLoaded() {
   }
 }
 
-void ExtensionViewViews::SetMinimumSize(const gfx::Size& size) {
-  minimum_size_ = size;
-}
-
-gfx::Size ExtensionViewViews::GetMinimumSize() {
-  // If the minimum size has never been set, returns the preferred size (same
-  // behavior as views::View).
-  return (minimum_size_ == gfx::Size()) ? GetPreferredSize() : minimum_size_;
-}
-
 void ExtensionViewViews::CleanUp() {
   if (!initialized_)
     return;
   if (native_view())
     Detach();
   initialized_ = false;
-}
-
-void ExtensionViewViews::ResizeDueToAutoResize(const gfx::Size& new_size) {
-  // Don't actually do anything with this information until we have been shown.
-  // Size changes will not be honored by lower layers while we are hidden.
-  if (!visible()) {
-    pending_preferred_size_ = new_size;
-    return;
-  }
-
-  gfx::Size preferred_size = GetPreferredSize();
-  if (new_size != preferred_size)
-    SetPreferredSize(new_size);
-}
-
-void ExtensionViewViews::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  NativeViewHost::ViewHierarchyChanged(details);
-  if (details.is_add && GetWidget() && !initialized_)
-    CreateWidgetHostView();
-}
-
-bool ExtensionViewViews::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
-  // Let the tab key event be processed by the renderer (instead of moving the
-  // focus to the next focusable view). Also handle Backspace, since otherwise
-  // (on Windows at least), pressing Backspace, when focus is on a text field
-  // within the ExtensionViewViews, will navigate the page back instead of
-  // erasing a character.
-  return (e.key_code() == ui::VKEY_TAB || e.key_code() == ui::VKEY_BACK);
-}
-
-void ExtensionViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  // Propagate the new size to RenderWidgetHostView.
-  // We can't send size zero because RenderWidget DCHECKs that.
-  if (render_view_host()->GetView() && !bounds().IsEmpty()) {
-    render_view_host()->GetView()->SetSize(size());
-
-    if (container_)
-      container_->OnViewWasResized();
-  }
-}
-
-void ExtensionViewViews::PreferredSizeChanged() {
-  View::PreferredSizeChanged();
-  if (container_)
-    container_->OnExtensionSizeChanged(this);
-}
-
-void ExtensionViewViews::OnFocus() {
-  host()->host_contents()->GetView()->Focus();
-}
-
-void ExtensionViewViews::RenderViewCreated() {
-  extensions::ViewType host_type = host_->extension_host_type();
-  if (host_type == extensions::VIEW_TYPE_EXTENSION_POPUP) {
-    gfx::Size min_size(ExtensionPopup::kMinWidth,
-                       ExtensionPopup::kMinHeight);
-    gfx::Size max_size(ExtensionPopup::kMaxWidth,
-                       ExtensionPopup::kMaxHeight);
-    render_view_host()->EnableAutoResize(min_size, max_size);
-  }
-
-  if (container_)
-    container_->OnViewWasResized();
-}
-
-void ExtensionViewViews::HandleKeyboardEvent(
-    const content::NativeWebKeyboardEvent& event) {
-  unhandled_keyboard_event_handler_.HandleKeyboardEvent(event,
-                                                        GetFocusManager());
 }

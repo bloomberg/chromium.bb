@@ -80,7 +80,7 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
   set_margins(gfx::Insets(margin, margin, margin, margin));
   SetLayoutManager(new views::FillLayout());
   AddChildView(host->view());
-  host->view()->SetContainer(this);
+  host->view()->set_container(this);
   // Use OnNativeFocusChange to check for child window activation on deactivate.
   set_close_on_deactivate(false);
   // Make the bubble move with its anchor (during inspection, etc.).
