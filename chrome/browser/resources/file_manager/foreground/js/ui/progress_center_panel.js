@@ -73,8 +73,6 @@ var ProgressCenterPanel = function(element) {
 ProgressCenterPanel.updateItemElement_ = function(element, item) {
   // Sets element attributes.
   element.setAttribute('data-progress-id', item.id);
-  element.setAttribute('data-progress-max', item.progressMax);
-  element.setAttribute('data-progress-value', item.progressValue);
   element.classList.toggle('error', item.state === ProgressItemState.ERROR);
   element.classList.toggle('cancelable', item.cancelable);
 
@@ -82,8 +80,9 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
   // set) and the progress rate increases, we use transition animation.
   var previousWidthRate =
       parseInt(element.querySelector('.progress-track').style.width);
+  var targetWidthRate = item.progressRateInPercent;
   var animation = !isNaN(previousWidthRate) &&
-      previousWidthRate < item.progressRateInPercent;
+      previousWidthRate < targetWidthRate;
   if (item.state === ProgressItemState.COMPLETED && animation) {
     // The attribute pre-complete means that the actual operation is already
     // done but the UI transition of progress bar is not complete.
@@ -94,12 +93,16 @@ ProgressCenterPanel.updateItemElement_ = function(element, item) {
 
   // To commit the property change and to trigger the transition even if the
   // change is done synchronously, assign the width value asynchronously.
-  setTimeout(function() {
+  var updateTrackWidth = function() {
     var track = element.querySelector('.progress-track');
     track.classList.toggle('animated', animation);
-    track.style.width = item.progressRateInPercent + '%';
+    track.style.width = targetWidthRate + '%';
     track.hidden = false;
-  }, 0);
+  };
+  if (animation)
+    setTimeout(updateTrackWidth);
+  else
+    updateTrackWidth();
 };
 
 /**
