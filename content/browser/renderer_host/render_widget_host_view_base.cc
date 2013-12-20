@@ -292,7 +292,8 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
 
       // Note: System will own the hrgn after we call SetWindowRgn,
       // so we don't need to call DeleteObject(hrgn)
-      ::SetWindowRgn(window, hrgn, !move.clip_rect.IsEmpty());
+      ::SetWindowRgn(window, hrgn,
+                     !move.clip_rect.IsEmpty() && (flags & SWP_NOREDRAW) == 0);
 
 #if defined(USE_AURA)
       // When using the software compositor, if the clipping rectangle is empty
