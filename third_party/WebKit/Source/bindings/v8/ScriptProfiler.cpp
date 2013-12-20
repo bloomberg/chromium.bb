@@ -105,23 +105,9 @@ ScriptObject ScriptProfiler::objectByHeapObjectId(unsigned id)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
-    if (!profiler)
-        return ScriptObject();
-    // As ids are unique, it doesn't matter which HeapSnapshot owns HeapGraphNode.
-    // We need to find first HeapSnapshot containing a node with the specified id.
-    const v8::HeapGraphNode* node = 0;
-    for (int i = 0, l = profiler->GetSnapshotCount(); i < l; ++i) {
-        const v8::HeapSnapshot* snapshot = profiler->GetHeapSnapshot(i);
-        node = snapshot->GetNodeById(id);
-        if (node)
-            break;
-    }
-    if (!node)
-        return ScriptObject();
-
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Value> value = node->GetHeapValue();
-    if (!value->IsObject())
+    v8::Handle<v8::Value> value = profiler->FindObjectById(id);
+    if (value.IsEmpty() || !value->IsObject())
         return ScriptObject();
 
     v8::Handle<v8::Object> object = value.As<v8::Object>();
@@ -144,6 +130,13 @@ unsigned ScriptProfiler::getHeapObjectId(const ScriptValue& value)
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
     v8::SnapshotObjectId id = profiler->GetObjectId(value.v8Value());
     return id;
+}
+
+void ScriptProfiler::clearHeapObjectIds()
+{
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
+    profiler->ClearObjectIds();
 }
 
 namespace {

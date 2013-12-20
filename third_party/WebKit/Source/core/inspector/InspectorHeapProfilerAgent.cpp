@@ -217,6 +217,7 @@ void InspectorHeapProfilerAgent::enable(ErrorString*)
 void InspectorHeapProfilerAgent::disable(ErrorString* error)
 {
     stopTrackingHeapObjectsInternal();
+    ScriptProfiler::clearHeapObjectIds();
     m_state->setBoolean(HeapProfilerAgentState::heapProfilerEnabled, false);
 }
 
