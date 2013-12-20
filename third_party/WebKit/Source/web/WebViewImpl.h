@@ -298,6 +298,7 @@ public:
                                     unsigned inactiveForegroundColor);
     virtual void performCustomContextMenuAction(unsigned action);
     virtual void showContextMenu();
+    virtual WebString getSmartClipData(WebRect);
     virtual void addPageOverlay(WebPageOverlay*, int /* zOrder */);
     virtual void removePageOverlay(WebPageOverlay*);
     virtual void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&);

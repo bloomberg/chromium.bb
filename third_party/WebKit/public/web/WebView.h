@@ -428,6 +428,11 @@ public:
     virtual void showContextMenu() = 0;
 
 
+    // SmartClip support ---------------------------------------------------
+
+    virtual WebString getSmartClipData(WebRect) = 0;
+
+
     // Popup menu ----------------------------------------------------------
 
     // Sets whether select popup menus should be rendered by the browser.
