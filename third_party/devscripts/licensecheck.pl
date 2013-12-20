@@ -491,9 +491,11 @@ sub parselicense($) {
 	$license = "MIT/X11 (BSD like) $license";
     } elsif ($licensetext =~ /Permission is hereby granted, without written agreement and without license or royalty fees, to use, copy, modify, and distribute this software and its documentation for any purpose/) {
 	$license = "MIT/X11 (BSD like) $license";
+    } elsif ($licensetext  =~ /MIT .* License/) {
+	$license = "MIT/X11 (BSD like) $license";
     }
 
-    if ($licensetext  =~ /This file is distributed under the University of Illinois Open Source License/){
+    if ($licensetext  =~ /the University of Illinois Open Source License/){
 	$license = "University of Illinois/NCSA Open Source License (BSD like) $license";
     }
 

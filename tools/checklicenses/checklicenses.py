@@ -91,6 +91,8 @@ WHITELISTED_LICENSES = [
     'zlib/libpng',
     'SGI Free Software License B',
     'University of Illinois/NCSA Open Source License (BSD like)',
+    ('University of Illinois/NCSA Open Source License (BSD like) '
+     'MIT/X11 (BSD like)'),
 ]
 
 
