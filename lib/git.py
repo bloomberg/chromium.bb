@@ -769,7 +769,7 @@ def RunGit(git_repo, cmd, retry=True, **kwargs):
         and exc.result and exc.result.error and
         GIT_TRANSIENT_ERRORS_RE.search(exc.result.error)):
       cros_build_lib.Warning('git reported transient error (cmd=%s); retrying',
-                             ' '.join(map(repr, cmd)), exc_info=True)
+                             cros_build_lib.CmdToStr(cmd), exc_info=True)
       return True
     return False
 

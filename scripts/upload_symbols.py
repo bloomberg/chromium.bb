@@ -130,7 +130,7 @@ def TestingSymUpload(sym_file, upload_url):
   # Randomly fail 80% of the time (the retry logic makes this 80%/3 per file).
   returncode = random.randint(1, 100) <= 80
   cros_build_lib.Debug('would run (and return %i): %s', returncode,
-                       ' '.join(map(repr, cmd)))
+                       cros_build_lib.CmdToStr(cmd))
   if returncode:
     output = 'Failed to send the symbol file.'
   else:

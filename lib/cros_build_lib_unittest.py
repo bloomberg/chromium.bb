@@ -34,6 +34,27 @@ from chromite.lib import signals as cros_signals
 # pylint: disable=W0212,R0904
 
 
+class CmdToStrTest(cros_test_lib.TestCase):
+  """Test the CmdToStr function."""
+
+  def testCmdToStr(self):
+    # Dict of expected output strings to input lists.
+    tests = {
+        "'a' 'b'": ['a', 'b'],
+        "'a b' 'c'": ['a b', "c"],
+        '\'a\' "b\'c"': ['a', 'b\'c'],
+        '\'a\' "/\'$b" \'a b c\' "xy\'z"':
+            [unicode('a'), "/'$b", 'a b c', "xy'z"],
+        '': [],
+    }
+
+    for test_output, test_input in tests.iteritems():
+      result = cros_build_lib.CmdToStr(test_input)
+      msg = ('Expected CmdToStr to translate %r to %r, but got %r' %
+             (test_input, test_output, result))
+      self.assertEqual(test_output, result, msg)
+
+
 class RunCommandMock(partial_mock.PartialCmdMock):
   """Provides a context where all RunCommand invocations low-level mocked."""
 

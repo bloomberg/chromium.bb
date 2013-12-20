@@ -628,7 +628,7 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
          '--timeout_mins', str(timeout_mins)]
   if debug:
     cros_build_lib.Info('RunHWTestSuite would run: %s',
-                        ' '.join(map(repr, cmd)))
+                        cros_build_lib.CmdToStr(cmd))
   else:
     result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
     if result.returncode:
@@ -662,7 +662,8 @@ def AbortHWTests(substr, debug, suite=''):
          '-i', substr,
          '-s', suite]
   if debug:
-    cros_build_lib.Info('AbortHWTests would run: %s', ' '.join(map(repr, cmd)))
+    cros_build_lib.Info('AbortHWTests would run: %s',
+                        cros_build_lib.CmdToStr(cmd))
     return
 
   # Mark the substr/suite as aborted in Google Storage.

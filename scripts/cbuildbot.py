@@ -764,8 +764,8 @@ def _RunBuildStagesWrapper(options, build_config):
 
     return False
 
-  cros_build_lib.Info("cbuildbot was executed with args %s"
-                      % ' '.join(map(repr, sys.argv)))
+  cros_build_lib.Info('cbuildbot was executed with args %s' %
+                      cros_build_lib.CmdToStr(sys.argv))
 
   chrome_rev = build_config['chrome_rev']
   if options.chrome_rev:

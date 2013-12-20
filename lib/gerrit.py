@@ -43,7 +43,8 @@ class GerritHelper(object):
   SORTKEY = '_sortkey'
 
   def __init__(self, host, remote, print_cmd=True):
-    """
+    """Initialize.
+
     Args:
       host: Hostname (without protocol prefix) of the gerrit server.
       remote: The symbolic name of a known remote git host,
@@ -124,17 +125,19 @@ class GerritHelper(object):
       if result:
         return result.output.split()[0]
     except cros_build_lib.RunCommandError:
-      logging.error('Command "%s" failed.', ' '.join(map(repr, cmd)),
+      logging.error('Command "%s" failed.', cros_build_lib.CmdToStr(cmd),
                     exc_info=True)
 
   def QuerySingleRecord(self, change=None, **kwargs):
     """Free-form query of a gerrit change that expects a single result.
 
     Args:
-      dryrun: Don't query the gerrit server; just return None.
-      must_match: Raise an exception if the query comes back empty.  If this
-          is False, an unsatisfied query will return None.
-      Refer to Query() docstring for remaining arguments.
+      change: A gerrit change number.
+      **kwargs:
+        dryrun: Don't query the gerrit server; just return None.
+        must_match: Raise an exception if the query comes back empty.  If this
+            is False, an unsatisfied query will return None.
+        Refer to Query() docstring for remaining arguments.
 
     Returns:
       If kwargs['raw'] == True, return a python dict representing the

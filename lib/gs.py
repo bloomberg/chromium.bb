@@ -489,7 +489,7 @@ class GSContext(object):
 
     if self.dry_run:
       logging.debug("%s: would've run: %s", self.__class__.__name__,
-                    ' '.join(map(repr, cmd)))
+                    cros_build_lib.CmdToStr(cmd))
     else:
       return cros_build_lib.GenericRetry(self._RetryFilter,
                                          retries, cros_build_lib.RunCommand,

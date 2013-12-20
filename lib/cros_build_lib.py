@@ -38,6 +38,31 @@ STRICT_SUDO = False
 logger = logging.getLogger('chromite')
 
 
+def CmdToStr(cmd):
+  """Translate a command list into a space-separated string.
+
+  The resulting string should be suitable for logging messages and for
+  pasting into a terminal to run.  Command arguments are surrounded by
+  quotes to keep them grouped, even if an argument has spaces in it.
+
+  Examples:
+    ['a', 'b'] ==> "'a' 'b'"
+    ['a b', 'c'] ==> "'a b' 'c'"
+    ['a', 'b\'c'] ==> '\'a\' "b\'c"'
+    [u'a', "/'$b"] ==> '\'a\' "/\'$b"'
+    [] ==> ''
+    See unittest for additional (tested) examples.
+
+  Args:
+    cmd: List of command arguments.
+
+  Returns:
+    String representing full command.
+  """
+  # Use str before repr to translate unicode strings to regular strings.
+  return ' '.join(repr(str(arg)) for arg in cmd)
+
+
 class CommandResult(object):
   """An object to store various attributes of a child process."""
 
@@ -46,6 +71,11 @@ class CommandResult(object):
     self.error = error
     self.output = output
     self.returncode = returncode
+
+  @property
+  def cmdstr(self):
+    """Return self.cmd as a space-separated string, useful for log messages."""
+    return CmdToStr(self.cmd)
 
 
 class RunCommandError(Exception):
@@ -391,13 +421,10 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 
   # Print out the command before running.
   if print_cmd or log_output:
-    # Note we reformat the argument into a form that can be directly
-    # copy/pasted into a term- thus the map(repr, cmd) bit needs to stay.
     if cwd:
-      logger.log(debug_level, 'RunCommand: %s in %s',
-                 ' '.join(map(repr, cmd)), cwd)
+      logger.log(debug_level, 'RunCommand: %s in %s', CmdToStr(cmd), cwd)
     else:
-      logger.log(debug_level, 'RunCommand: %s', ' '.join(map(repr, cmd)))
+      logger.log(debug_level, 'RunCommand: %s', CmdToStr(cmd))
 
   cmd_result.cmd = cmd
 
@@ -452,7 +479,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 
     if not error_code_ok and proc.returncode:
       msg = ('Failed command "%s", cwd=%s, extra env=%r'
-             % (' '.join(map(repr, cmd)), cwd, extra_env))
+             % (CmdToStr(cmd), cwd, extra_env))
       if error_message:
         msg += '\n%s' % error_message
       raise RunCommandError(msg, cmd_result)
