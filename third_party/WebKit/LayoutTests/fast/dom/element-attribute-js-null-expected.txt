@@ -7,7 +7,7 @@ TEST SUCCEEDED: The value was the empty string. [tested Node.textContent]
 TEST SUCCEEDED: The value was the string 'null'. [tested Element.id]
 TEST SUCCEEDED: The value was the string 'null'. [tested Element.className]
 TEST SUCCEEDED: The value was the empty string. [tested Element.innerHTML]
-TEST SUCCEEDED: Exception (NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed.) was thrown as expected. [tested Element.outerHTML]
+TEST SUCCEEDED: Exception (NoModificationAllowedError: Failed to set the 'outerHTML' property on 'Element': This element has no parent node.) was thrown as expected. [tested Element.outerHTML]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.accessKey]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.title]

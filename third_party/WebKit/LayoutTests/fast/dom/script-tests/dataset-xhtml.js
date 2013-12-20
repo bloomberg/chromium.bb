@@ -48,8 +48,8 @@ shouldBeTrue("testSet('\xE0', 'data-\xE0')");
 debug("");
 
 shouldThrow("testSet('-foo', 'dummy')", '"SyntaxError: Failed to set the \'-foo\' property on \'DOMStringMap\': \'-foo\' is not a valid property name."');
-shouldThrow("testSet('foo\x20', 'dummy')", "'InvalidCharacterError: The string contains invalid characters.'");
-shouldThrow("testSet('foo\uF900', 'dummy')", "'InvalidCharacterError: The string contains invalid characters.'");
+shouldThrow("testSet('foo\x20', 'dummy')", '"InvalidCharacterError: \'data-foo\x20\' is not a valid attribute name."');
+shouldThrow("testSet('foo\uF900', 'dummy')", '"InvalidCharacterError: \'data-foo\uF900\' is not a valid attribute name."');
 debug("");
 
 function testDelete(attr, prop)

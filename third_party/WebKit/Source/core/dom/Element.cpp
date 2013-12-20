@@ -899,7 +899,7 @@ const AtomicString& Element::getAttributeNS(const AtomicString& namespaceURI, co
 void Element::setAttribute(const AtomicString& localName, const AtomicString& value, ExceptionState& exceptionState)
 {
     if (!Document::isValidName(localName)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+        exceptionState.throwDOMException(InvalidCharacterError, "'" + localName + "' is not a valid attribute name.");
         return;
     }
 
@@ -1771,7 +1771,7 @@ PassRefPtr<ShadowRoot> Element::createShadowRoot(ExceptionState& exceptionState)
     // subtrees won't work well in that element. Until they are fixed, we disable
     // adding author shadow root for them.
     if (!areAuthorShadowsAllowed()) {
-        exceptionState.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+        exceptionState.throwDOMException(HierarchyRequestError, "Author-created shadow roots are disabled for this element.");
         return 0;
     }
     return PassRefPtr<ShadowRoot>(ensureShadow().addShadowRoot(*this, ShadowRoot::AuthorShadowRoot));
@@ -1973,7 +1973,7 @@ const Vector<RefPtr<Attr> >& Element::attrNodeList()
 PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& exceptionState)
 {
     if (!attrNode) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The node provided is invalid.");
         return 0;
     }
 
@@ -1984,7 +1984,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& excep
     // InUseAttributeError: Raised if node is an Attr that is already an attribute of another Element object.
     // The DOM user must explicitly clone Attr nodes to re-use them in other elements.
     if (attrNode->ownerElement()) {
-        exceptionState.throwUninformativeAndGenericDOMException(InUseAttributeError);
+        exceptionState.throwDOMException(InUseAttributeError, "The node provided is an attribute node that is already an attribute of another Element; attribute nodes must be explicitly cloned.");
         return 0;
     }
 
@@ -2016,11 +2016,11 @@ PassRefPtr<Attr> Element::setAttributeNodeNS(Attr* attr, ExceptionState& excepti
 PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& exceptionState)
 {
     if (!attr) {
-        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwDOMException(TypeMismatchError, "The node provided is invalid.");
         return 0;
     }
     if (attr->ownerElement() != this) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwDOMException(NotFoundError, "The node provided is owned by another element.");
         return 0;
     }
 
@@ -2030,7 +2030,7 @@ PassRefPtr<Attr> Element::removeAttributeNode(Attr* attr, ExceptionState& except
 
     size_t index = elementData()->getAttrIndex(attr);
     if (index == kNotFound) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotFoundError);
+        exceptionState.throwDOMException(NotFoundError, "The attribute was not found on this element.");
         return 0;
     }
 
@@ -2049,7 +2049,7 @@ bool Element::parseAttributeName(QualifiedName& out, const AtomicString& namespa
     QualifiedName qName(prefix, localName, namespaceURI);
 
     if (!Document::hasValidNamespaceForAttributes(qName)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
+        exceptionState.throwDOMException(NamespaceError, "'" + namespaceURI + "' is an invalid namespace for attributes.");
         return false;
     }
 
@@ -2296,10 +2296,15 @@ void Element::setInnerHTML(const String& html, ExceptionState& exceptionState)
 void Element::setOuterHTML(const String& html, ExceptionState& exceptionState)
 {
     Node* p = parentNode();
-    if (!p || !p->isElementNode()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NoModificationAllowedError);
+    if (!p) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "This element has no parent node.");
         return;
     }
+    if (!p->isElementNode()) {
+        exceptionState.throwDOMException(NoModificationAllowedError, "This element's parent is of type '" + p->nodeName() + "', which is not an element node.");
+        return;
+    }
+
     RefPtr<Element> parent = toElement(p);
     RefPtr<Node> prev = previousSibling();
     RefPtr<Node> next = nextSibling();
@@ -2801,7 +2806,7 @@ RenderObject* Element::pseudoElementRenderer(PseudoId pseudoId) const
 bool Element::webkitMatchesSelector(const String& selector, ExceptionState& exceptionState)
 {
     if (selector.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The selector provided is empty.");
         return false;
     }
 
