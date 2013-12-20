@@ -123,7 +123,7 @@ class FakeFileSystem : public FileSystemInterface {
   virtual void GetCacheEntry(
       const base::FilePath& drive_file_path,
       const GetCacheEntryCallback& callback) OVERRIDE;
-  virtual void Reload(const FileOperationCallback& callback) OVERRIDE;
+  virtual void Reset(const FileOperationCallback& callback) OVERRIDE;
 
  private:
   // Helper of GetResourceEntryById.

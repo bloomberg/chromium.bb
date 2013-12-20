@@ -6,7 +6,7 @@
 
 #include "base/prefs/testing_pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/change_list_processor.h"
+#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
@@ -119,8 +119,7 @@ void OperationTestBase::SetUp() {
       metadata_.get(),
       scheduler_.get(),
       fake_drive_service_.get()));
-  change_list_loader_->LoadIfNeeded(
-      internal::DirectoryFetchInfo(),
+  change_list_loader_->LoadForTesting(
       google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   ASSERT_EQ(FILE_ERROR_OK, error);

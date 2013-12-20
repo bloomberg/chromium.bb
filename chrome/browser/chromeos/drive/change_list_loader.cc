@@ -360,24 +360,40 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
   }
 }
 
-void ChangeListLoader::LoadIfNeeded(
-    const DirectoryFetchInfo& directory_fetch_info,
+void ChangeListLoader::LoadDirectoryIfNeeded(
+    const base::FilePath& directory_path,
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // If the resource metadata has been already loaded, for normal change list
-  // fetch (= empty directory_fetch_info), we have nothing to do. For "fast
-  // fetch", we need to schedule a fetching if a refresh is currently
-  // running, because we don't want to wait a possibly large delta change
-  // list to arrive.
-  if (loaded_ && (directory_fetch_info.empty() || !IsRefreshing())) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, FILE_ERROR_OK));
+  // If the resource metadata has been already loaded and not refreshing, it
+  // means the local metadata is up to date.
+  if (loaded_ && !IsRefreshing()) {
+    callback.Run(FILE_ERROR_OK);
     return;
   }
-  Load(directory_fetch_info, callback);
+
+  ResourceEntry* entry = new ResourceEntry;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::GetResourceEntryByPath,
+                 base::Unretained(resource_metadata_),
+                 directory_path,
+                 entry),
+      base::Bind(&ChangeListLoader::LoadDirectoryIfNeededAfterGetEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_path,
+                 callback,
+                 true,  // should_try_loading_parent
+                 base::Owned(entry)));
+}
+
+void ChangeListLoader::LoadForTesting(const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  Load(DirectoryFetchInfo(), callback);
 }
 
 void ChangeListLoader::GetAboutResource(
@@ -396,6 +412,76 @@ void ChangeListLoader::GetAboutResource(
   } else {
     UpdateAboutResource(callback);
   }
+}
+
+void ChangeListLoader::LoadDirectoryIfNeededAfterGetEntry(
+    const base::FilePath& directory_path,
+    const FileOperationCallback& callback,
+    bool should_try_loading_parent,
+    const ResourceEntry* entry,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error == FILE_ERROR_NOT_FOUND &&
+      should_try_loading_parent &&
+      util::GetDriveGrandRootPath().IsParent(directory_path)) {
+    // This entry may be found after loading the parent.
+    LoadDirectoryIfNeeded(
+        directory_path.DirName(),
+        base::Bind(&ChangeListLoader::LoadDirectoryIfNeededAfterLoadParent,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   directory_path,
+                   callback));
+    return;
+  }
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  if (!entry->file_info().is_directory()) {
+    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
+    return;
+  }
+
+  // drive/other does not exist on the server.
+  if (entry->local_id() == util::kDriveOtherDirLocalId) {
+    callback.Run(FILE_ERROR_OK);
+    return;
+  }
+
+  Load(DirectoryFetchInfo(entry->resource_id(),
+                          entry->directory_specific_info().changestamp()),
+       callback);
+}
+
+void ChangeListLoader::LoadDirectoryIfNeededAfterLoadParent(
+    const base::FilePath& directory_path,
+    const FileOperationCallback& callback,
+    FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  ResourceEntry* entry = new ResourceEntry;
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&ResourceMetadata::GetResourceEntryByPath,
+                 base::Unretained(resource_metadata_),
+                 directory_path,
+                 entry),
+      base::Bind(&ChangeListLoader::LoadDirectoryIfNeededAfterGetEntry,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_path,
+                 callback,
+                 false,  // should_try_loading_parent
+                 base::Owned(entry)));
 }
 
 void ChangeListLoader::Load(const DirectoryFetchInfo& directory_fetch_info,

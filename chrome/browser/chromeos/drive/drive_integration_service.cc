@@ -391,8 +391,8 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
   state_ = REMOUNTING;
   // Reloads the Drive app registry.
   drive_app_registry_->Update();
-  // Reloading the file system clears resource metadata and cache.
-  file_system_->Reload(base::Bind(
+  // Resetting the file system clears resource metadata and cache.
+  file_system_->Reset(base::Bind(
       &DriveIntegrationService::AddBackDriveMountPoint,
       weak_ptr_factory_.GetWeakPtr(),
       callback));
@@ -407,7 +407,7 @@ void DriveIntegrationService::AddBackDriveMountPoint(
   state_ = error == FILE_ERROR_OK ? INITIALIZED : NOT_INITIALIZED;
 
   if (error != FILE_ERROR_OK || !enabled_) {
-    // Failed to reload, or Drive was disabled during the reloading.
+    // Failed to reset, or Drive was disabled during the reset.
     callback.Run(false);
     return;
   }

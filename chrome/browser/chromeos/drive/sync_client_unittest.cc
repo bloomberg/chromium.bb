@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
-#include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
@@ -192,8 +191,7 @@ class SyncClientTest : public testing::Test {
         metadata_.get(),
         scheduler_.get(),
         drive_service_.get());
-    change_list_loader.LoadIfNeeded(
-        DirectoryFetchInfo(),
+    change_list_loader.LoadForTesting(
         google_apis::test_util::CreateCopyResultCallback(&error));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(FILE_ERROR_OK, error);

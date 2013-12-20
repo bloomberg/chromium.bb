@@ -428,8 +428,8 @@ class FileSystemInterface {
   virtual void GetCacheEntry(const base::FilePath& drive_file_path,
                              const GetCacheEntryCallback& callback) = 0;
 
-  // Reloads the resource metadata from the server.
-  virtual void Reload(const FileOperationCallback& callback) = 0;
+  // Resets local data.
+  virtual void Reset(const FileOperationCallback& callback) = 0;
 };
 
 }  // namespace drive

@@ -45,10 +45,6 @@ class ChangeListProcessor;
 class DirectoryFetchInfo;
 class ResourceMetadata;
 
-// Callback run as a response to SearchFromServer.
-typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
-                            FileError error)> LoadChangeListCallback;
-
 // ChangeListLoader is used to load the change list, the full resource list,
 // and directory contents, from WAPI (codename for Documents List API)
 // or Google Drive API.  The class also updates the resource metadata with
@@ -85,19 +81,22 @@ class ChangeListLoader {
   // runs, i.e. it may NOT be called if the checking is ignored.
   void CheckForUpdates(const FileOperationCallback& callback);
 
-  // Starts the change list loading first from the cache. If loading from the
-  // cache is successful, runs |callback| immediately and starts checking
-  // server for updates in background. If loading from the cache is
-  // unsuccessful, starts loading from the server, and runs |callback| to tell
-  // the result to the caller when it is finished.
+  // Starts the change list loading if needed. If the locally stored metadata is
+  // available, runs |callback| immediately and starts checking server for
+  // updates in background. If the locally stored metadata is not available,
+  // starts loading from the server, and runs |callback| to tell the result to
+  // the caller when it is finished.
   //
-  // If |directory_fetch_info| is not empty, the directory will be fetched
-  // first from the server, so the UI can show the directory contents
-  // instantly before the entire change list loading is complete.
+  // The specified directory will be fetched first from the server, so the UI
+  // can show the directory contents instantly before the entire change list
+  // loading is complete.
   //
   // |callback| must not be null.
-  void LoadIfNeeded(const DirectoryFetchInfo& directory_fetch_info,
-                    const FileOperationCallback& callback);
+  void LoadDirectoryIfNeeded(const base::FilePath& directory_path,
+                             const FileOperationCallback& callback);
+
+  // Calls Load() with an empty DirectoryFetchInfo(). Only for testing purposes.
+  void LoadForTesting(const FileOperationCallback& callback);
 
   // Gets the about resource from the cache or the server. If the cache is
   // availlavle, just runs |callback| with the cached about resource. If not,
@@ -105,6 +104,17 @@ class ChangeListLoader {
   void GetAboutResource(const google_apis::AboutResourceCallback& callback);
 
  private:
+  // Part of LoadDirectoryIfNeeded().
+  void LoadDirectoryIfNeededAfterGetEntry(const base::FilePath& directory_path,
+                                          const FileOperationCallback& callback,
+                                          bool should_try_loading_parent,
+                                          const ResourceEntry* entry,
+                                          FileError error);
+  void LoadDirectoryIfNeededAfterLoadParent(
+      const base::FilePath& directory_path,
+      const FileOperationCallback& callback,
+      FileError error);
+
   // Starts the resource metadata loading and calls |callback| when it's
   // done. |directory_fetch_info| is used for fast fetch. If there is already
   // a loading job in-flight for |directory_fetch_info|, just append the

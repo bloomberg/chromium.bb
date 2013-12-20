@@ -152,7 +152,7 @@ class FileSystem : public FileSystemInterface,
   virtual void GetCacheEntry(
       const base::FilePath& drive_file_path,
       const GetCacheEntryCallback& callback) OVERRIDE;
-  virtual void Reload(const FileOperationCallback& callback) OVERRIDE;
+  virtual void Reset(const FileOperationCallback& callback) OVERRIDE;
 
   // file_system::OperationObserver overrides.
   virtual void OnDirectoryChangedByOperation(
@@ -175,12 +175,8 @@ class FileSystem : public FileSystemInterface,
   internal::SyncClient* sync_client_for_testing() { return sync_client_.get(); }
 
  private:
-  // Part of Reload(). This is called after the cache and the resource metadata
-  // is cleared, and triggers full feed fetching.
-  void ReloadAfterReset(const FileOperationCallback& callback, FileError error);
-
-  // Used for initialization and Reload(). (Re-)initializes sub components that
-  // need to be recreated during the reload of resource metadata and the cache.
+  // Used for initialization and Reset(). (Re-)initializes sub components that
+  // need to be recreated during the reset of resource metadata and the cache.
   void ResetComponents();
 
   // Part of CreateDirectory(). Called after ChangeListLoader::LoadIfNeeded()
@@ -219,16 +215,6 @@ class FileSystem : public FileSystemInterface,
   void GetResourceEntryAfterLoad(const base::FilePath& file_path,
                                  const GetResourceEntryCallback& callback,
                                  FileError error);
-
-  // Loads the entry info of the children of |directory_path| to resource
-  // metadata. |callback| must not be null.
-  void LoadDirectoryIfNeeded(const base::FilePath& directory_path,
-                             const FileOperationCallback& callback);
-  void LoadDirectoryIfNeededAfterGetEntry(
-      const base::FilePath& directory_path,
-      const FileOperationCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntry> entry);
 
   // Part of ReadDirectory()
   // 1) Called when LoadDirectoryIfNeeded() is complete.

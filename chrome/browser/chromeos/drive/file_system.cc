@@ -9,7 +9,6 @@
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
-#include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
 #include "chrome/browser/chromeos/drive/file_system/copy_operation.h"
@@ -231,7 +230,7 @@ FileSystem::~FileSystem() {
   change_list_loader_->RemoveObserver(this);
 }
 
-void FileSystem::Reload(const FileOperationCallback& callback) {
+void FileSystem::Reset(const FileOperationCallback& callback) {
   // Discard the current loader and operation objects and renew them. This is to
   // avoid that changes initiated before the metadata reset is applied after the
   // reset, which may cause an inconsistent state.
@@ -243,24 +242,7 @@ void FileSystem::Reload(const FileOperationCallback& callback) {
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&ResetOnBlockingPool, resource_metadata_, cache_),
-      base::Bind(&FileSystem::ReloadAfterReset,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-void FileSystem::ReloadAfterReset(const FileOperationCallback& callback,
-                                  FileError error) {
-  if (error != FILE_ERROR_OK) {
-    LOG(ERROR) << "Failed to reload Drive file system: "
-               << FileErrorToString(error);
-    callback.Run(error);
-    return;
-  }
-
-  change_list_loader_->LoadIfNeeded(
-      internal::DirectoryFetchInfo(),
-      base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr()));
-  callback.Run(error);
+      callback);
 }
 
 void FileSystem::ResetComponents() {
@@ -417,7 +399,7 @@ void FileSystem::CreateDirectory(
   DCHECK(!callback.is_null());
 
   // Ensure its parent directory is loaded to the local metadata.
-  LoadDirectoryIfNeeded(
+  change_list_loader_->LoadDirectoryIfNeeded(
       directory_path.DirName(),
       base::Bind(&FileSystem::CreateDirectoryAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -433,15 +415,11 @@ void FileSystem::CreateDirectoryAfterLoad(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  switch (load_error) {
-    case FILE_ERROR_OK:
-    case FILE_ERROR_NOT_FOUND:
-      create_directory_operation_->CreateDirectory(
-          directory_path, is_exclusive, is_recursive, callback);
-      break;
-    default:
-      callback.Run(load_error);
-  }
+  DVLOG_IF(1, load_error != FILE_ERROR_OK) << "LoadDirectoryIfNeeded failed. "
+                                           << FileErrorToString(load_error);
+
+  create_directory_operation_->CreateDirectory(
+      directory_path, is_exclusive, is_recursive, callback);
 }
 
 void FileSystem::CreateFile(const base::FilePath& file_path,
@@ -606,20 +584,13 @@ void FileSystem::GetResourceEntryAfterGetEntry(
   if (error == FILE_ERROR_NOT_FOUND) {
     // If the information about the path is not in the local ResourceMetadata,
     // try fetching information of the directory and retry.
-    //
-    // Note: this forms mutual recursion between GetResourceEntry and
-    // LoadDirectoryIfNeeded, because directory loading requires the existence
-    // of directory entry itself. The recursion terminates because we always go
-    // up the hierarchy by .DirName() bounded under the Drive root path.
-    if (util::GetDriveGrandRootPath().IsParent(file_path)) {
-      LoadDirectoryIfNeeded(
-          file_path.DirName(),
-          base::Bind(&FileSystem::GetResourceEntryAfterLoad,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     file_path,
-                     callback));
-      return;
-    }
+    change_list_loader_->LoadDirectoryIfNeeded(
+        file_path.DirName(),
+        base::Bind(&FileSystem::GetResourceEntryAfterLoad,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   file_path,
+                   callback));
+    return;
   }
 
   callback.Run(error, entry.Pass());
@@ -632,10 +603,8 @@ void FileSystem::GetResourceEntryAfterLoad(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error, scoped_ptr<ResourceEntry>());
-    return;
-  }
+  DVLOG_IF(1, error != FILE_ERROR_OK) << "LoadDirectoryIfNeeded failed. "
+                                      << FileErrorToString(error);
 
   scoped_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
@@ -656,57 +625,12 @@ void FileSystem::ReadDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  LoadDirectoryIfNeeded(
+  change_list_loader_->LoadDirectoryIfNeeded(
       directory_path,
       base::Bind(&FileSystem::ReadDirectoryAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_path,
                  callback));
-}
-
-void FileSystem::LoadDirectoryIfNeeded(const base::FilePath& directory_path,
-                                       const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  GetResourceEntry(
-      directory_path,
-      base::Bind(&FileSystem::LoadDirectoryIfNeededAfterGetEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_path,
-                 callback));
-}
-
-void FileSystem::LoadDirectoryIfNeededAfterGetEntry(
-    const base::FilePath& directory_path,
-    const FileOperationCallback& callback,
-    FileError error,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  if (!entry->file_info().is_directory()) {
-    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
-    return;
-  }
-
-  // drive/other does not exist on the server.
-  if (entry->local_id() == util::kDriveOtherDirLocalId) {
-    callback.Run(FILE_ERROR_OK);
-    return;
-  }
-
-  // Pass the directory fetch info so we can fetch the contents of the
-  // directory before loading change lists.
-  internal::DirectoryFetchInfo directory_fetch_info(
-      entry->resource_id(),
-      entry->directory_specific_info().changestamp());
-  change_list_loader_->LoadIfNeeded(directory_fetch_info, callback);
 }
 
 void FileSystem::ReadDirectoryAfterLoad(
@@ -716,7 +640,7 @@ void FileSystem::ReadDirectoryAfterLoad(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  DVLOG_IF(1, error != FILE_ERROR_OK) << "LoadIfNeeded failed. "
+  DVLOG_IF(1, error != FILE_ERROR_OK) << "LoadDirectoryIfNeeded failed. "
                                       << FileErrorToString(error);
 
   resource_metadata_->ReadDirectoryByPathOnUIThread(

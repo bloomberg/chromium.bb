@@ -8,8 +8,8 @@
 #include <set>
 
 #include "base/files/scoped_temp_dir.h"
-#include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -28,6 +28,7 @@ class FakeFreeDiskSpaceGetter;
 class JobScheduler;
 
 namespace internal {
+class ChangeListLoader;
 class FileCache;
 class ResourceMetadata;
 class ResourceMetadataStorage;

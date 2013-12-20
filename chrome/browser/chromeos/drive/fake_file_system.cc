@@ -222,7 +222,7 @@ void FakeFileSystem::GetCacheEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::Reload(const FileOperationCallback& callback) {
+void FakeFileSystem::Reset(const FileOperationCallback& callback) {
 }
 
 // Implementation of GetFileContent.
