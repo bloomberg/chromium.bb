@@ -125,18 +125,18 @@ HWND CreateUACForegroundWindow() {
 
 }  // namespace
 
-string16 InstallUtil::GetActiveSetupPath(BrowserDistribution* dist) {
+base::string16 InstallUtil::GetActiveSetupPath(BrowserDistribution* dist) {
   static const wchar_t kInstalledComponentsPath[] =
       L"Software\\Microsoft\\Active Setup\\Installed Components\\";
   return kInstalledComponentsPath + dist->GetActiveSetupGuid();
 }
 
 void InstallUtil::TriggerActiveSetupCommand() {
-  string16 active_setup_reg(
+  base::string16 active_setup_reg(
       GetActiveSetupPath(BrowserDistribution::GetDistribution()));
   base::win::RegKey active_setup_key(
       HKEY_LOCAL_MACHINE, active_setup_reg.c_str(), KEY_QUERY_VALUE);
-  string16 cmd_str;
+  base::string16 cmd_str;
   LONG read_status = active_setup_key.ReadValue(L"StubPath", &cmd_str);
   if (read_status != ERROR_SUCCESS) {
     LOG(ERROR) << active_setup_reg << ", " << read_status;
@@ -221,7 +221,7 @@ void InstallUtil::GetChromeVersion(BrowserDistribution* dist,
   LONG result = key.Open(reg_root, dist->GetVersionKey().c_str(),
                          KEY_QUERY_VALUE);
 
-  string16 version_str;
+  base::string16 version_str;
   if (result == ERROR_SUCCESS)
     result = key.ReadValue(google_update::kRegVersionField, &version_str);
 
@@ -246,7 +246,7 @@ void InstallUtil::GetCriticalUpdateVersion(BrowserDistribution* dist,
   LONG result =
       key.Open(reg_root, dist->GetVersionKey().c_str(), KEY_QUERY_VALUE);
 
-  string16 version_str;
+  base::string16 version_str;
   if (result == ERROR_SUCCESS)
     result = key.ReadValue(google_update::kRegCriticalVersionField,
                            &version_str);
@@ -273,12 +273,13 @@ bool InstallUtil::IsOSSupported() {
        (base::win::OSInfo::GetInstance()->service_pack().major >= 2));
 }
 
-void InstallUtil::AddInstallerResultItems(bool system_install,
-                                          const string16& state_key,
-                                          installer::InstallStatus status,
-                                          int string_resource_id,
-                                          const string16* const launch_cmd,
-                                          WorkItemList* install_list) {
+void InstallUtil::AddInstallerResultItems(
+    bool system_install,
+    const base::string16& state_key,
+    installer::InstallStatus status,
+    int string_resource_id,
+    const base::string16* const launch_cmd,
+    WorkItemList* install_list) {
   DCHECK(install_list);
   const HKEY root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   DWORD installer_result = (GetInstallReturnCode(status) == 0) ? 0 : 1;
@@ -290,7 +291,7 @@ void InstallUtil::AddInstallerResultItems(bool system_install,
                                        installer::kInstallerError,
                                        static_cast<DWORD>(status), true);
   if (string_resource_id != 0) {
-    string16 msg = installer::GetLocalizedString(string_resource_id);
+    base::string16 msg = installer::GetLocalizedString(string_resource_id);
     install_list->AddSetRegValueWorkItem(root, state_key,
         installer::kInstallerResultUIString, msg, true);
   }
@@ -301,7 +302,7 @@ void InstallUtil::AddInstallerResultItems(bool system_install,
 }
 
 void InstallUtil::UpdateInstallerStage(bool system_install,
-                                       const string16& state_key_path,
+                                       const base::string16& state_key_path,
                                        installer::InstallerStage stage) {
   DCHECK_LE(static_cast<installer::InstallerStage>(0), stage);
   DCHECK_GT(installer::NUM_STAGES, stage);
@@ -367,7 +368,7 @@ bool CheckIsChromeSxSProcess() {
   // Also return true if we are running from Chrome SxS installed path.
   base::FilePath exe_dir;
   PathService::Get(base::DIR_EXE, &exe_dir);
-  string16 chrome_sxs_dir(installer::kGoogleChromeInstallSubDir2);
+  base::string16 chrome_sxs_dir(installer::kGoogleChromeInstallSubDir2);
   chrome_sxs_dir.append(installer::kSxSSuffix);
 
   // This is SxS if current EXE is in or under (possibly multiple levels under)
@@ -439,7 +440,7 @@ bool InstallUtil::GetSentinelFilePath(const base::FilePath::CharType* file,
 // in case of failure. It returns true if deletion is successful (or the key did
 // not exist), otherwise false.
 bool InstallUtil::DeleteRegistryKey(HKEY root_key,
-                                    const string16& key_path) {
+                                    const base::string16& key_path) {
   VLOG(1) << "Deleting registry key " << key_path;
   LONG result = ::SHDeleteKey(root_key, key_path.c_str());
   if (result != ERROR_SUCCESS && result != ERROR_FILE_NOT_FOUND) {
@@ -454,8 +455,8 @@ bool InstallUtil::DeleteRegistryKey(HKEY root_key,
 // in case of failure. It returns true if deletion is successful (or the key did
 // not exist), otherwise false.
 bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
-                                      const string16& key_path,
-                                      const string16& value_name) {
+                                      const base::string16& key_path,
+                                      const base::string16& value_name) {
   RegKey key;
   LONG result = key.Open(reg_root, key_path.c_str(), KEY_SET_VALUE);
   if (result == ERROR_SUCCESS)
@@ -471,14 +472,14 @@ bool InstallUtil::DeleteRegistryValue(HKEY reg_root,
 // static
 InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryKeyIf(
     HKEY root_key,
-    const string16& key_to_delete_path,
-    const string16& key_to_test_path,
+    const base::string16& key_to_delete_path,
+    const base::string16& key_to_test_path,
     const wchar_t* value_name,
     const RegistryValuePredicate& predicate) {
   DCHECK(root_key);
   ConditionalDeleteResult delete_result = NOT_FOUND;
   RegKey key;
-  string16 actual_value;
+  base::string16 actual_value;
   if (key.Open(root_key, key_to_test_path.c_str(),
                KEY_QUERY_VALUE) == ERROR_SUCCESS &&
       key.ReadValue(value_name, &actual_value) == ERROR_SUCCESS &&
@@ -500,7 +501,7 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryValueIf(
   DCHECK(key_path);
   ConditionalDeleteResult delete_result = NOT_FOUND;
   RegKey key;
-  string16 actual_value;
+  base::string16 actual_value;
   if (key.Open(root_key, key_path,
                KEY_QUERY_VALUE | KEY_SET_VALUE) == ERROR_SUCCESS &&
       key.ReadValue(value_name, &actual_value) == ERROR_SUCCESS &&
@@ -517,7 +518,7 @@ InstallUtil::ConditionalDeleteResult InstallUtil::DeleteRegistryValueIf(
   return delete_result;
 }
 
-bool InstallUtil::ValueEquals::Evaluate(const string16& value) const {
+bool InstallUtil::ValueEquals::Evaluate(const base::string16& value) const {
   return value == value_to_match_;
 }
 
@@ -536,14 +537,14 @@ int InstallUtil::GetInstallReturnCode(installer::InstallStatus status) {
 }
 
 // static
-void InstallUtil::MakeUninstallCommand(const string16& program,
-                                       const string16& arguments,
+void InstallUtil::MakeUninstallCommand(const base::string16& program,
+                                       const base::string16& arguments,
                                        CommandLine* command_line) {
   *command_line = CommandLine::FromString(L"\"" + program + L"\" " + arguments);
 }
 
 // static
-string16 InstallUtil::GetCurrentDate() {
+base::string16 InstallUtil::GetCurrentDate() {
   static const wchar_t kDateFormat[] = L"yyyyMMdd";
   wchar_t date_str[arraysize(kDateFormat)] = {0};
   int len = GetDateFormatW(LOCALE_INVARIANT, 0, NULL, kDateFormat,
@@ -554,7 +555,7 @@ string16 InstallUtil::GetCurrentDate() {
     PLOG(DFATAL) << "GetDateFormat";
   }
 
-  return string16(date_str, len);
+  return base::string16(date_str, len);
 }
 
 // Open |path| with minimal access to obtain information about it, returning
@@ -596,7 +597,7 @@ InstallUtil::ProgramCompare::ProgramCompare(const base::FilePath& path_to_match)
 InstallUtil::ProgramCompare::~ProgramCompare() {
 }
 
-bool InstallUtil::ProgramCompare::Evaluate(const string16& value) const {
+bool InstallUtil::ProgramCompare::Evaluate(const base::string16& value) const {
   // Suss out the exe portion of the value, which is expected to be a command
   // line kinda (or exactly) like:
   // "c:\foo\bar\chrome.exe" -- "%1"

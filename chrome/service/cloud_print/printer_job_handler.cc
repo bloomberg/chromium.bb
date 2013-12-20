@@ -773,7 +773,7 @@ void PrinterJobHandler::DoPrint(const JobDetails& job_details,
   DCHECK(job_spooler_.get());
   if (!job_spooler_.get())
     return;
-  string16 document_name =
+  base::string16 document_name =
       printing::SimplifyDocumentTitle(UTF8ToUTF16(job_details.job_title_));
   if (document_name.empty()) {
     document_name = printing::SimplifyDocumentTitle(

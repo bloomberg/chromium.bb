@@ -52,7 +52,7 @@ class TestingProfileManager {
   TestingProfile* CreateTestingProfile(
       const std::string& profile_name,
       scoped_ptr<PrefServiceSyncable> prefs,
-      const string16& user_name,
+      const base::string16& user_name,
       int avatar_id,
       const std::string& managed_user_id,
       const TestingProfile::TestingFactories& factories);

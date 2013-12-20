@@ -77,14 +77,14 @@ void SafariImporter::StartImport(const importer::SourceProfile& source_profile,
 }
 
 void SafariImporter::ImportBookmarks() {
-  string16 toolbar_name =
+  base::string16 toolbar_name =
       bridge_->GetLocalizedString(IDS_BOOKMARK_BAR_FOLDER_NAME);
   std::vector<ImportedBookmarkEntry> bookmarks;
   ParseBookmarks(toolbar_name, &bookmarks);
 
   // Write bookmarks into profile.
   if (!bookmarks.empty() && !cancelled()) {
-    const string16& first_folder_name =
+    const base::string16& first_folder_name =
         bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_SAFARI);
     bridge_->AddBookmarks(bookmarks, first_folder_name);
   }
@@ -166,9 +166,9 @@ void SafariImporter::LoadFaviconData(
 
 void SafariImporter::RecursiveReadBookmarksFolder(
     NSDictionary* bookmark_folder,
-    const std::vector<string16>& parent_path_elements,
+    const std::vector<base::string16>& parent_path_elements,
     bool is_in_toolbar,
-    const string16& toolbar_name,
+    const base::string16& toolbar_name,
     std::vector<ImportedBookmarkEntry>* out_bookmarks) {
   DCHECK(bookmark_folder);
 
@@ -210,7 +210,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
     return;
   }
 
-  std::vector<string16> path_elements(parent_path_elements);
+  std::vector<base::string16> path_elements(parent_path_elements);
   // Create a folder for the toolbar, but not for the bookmarks menu.
   if (path_elements.empty() && [title isEqualToString:@"BookmarksBar"]) {
     is_in_toolbar = true;
@@ -263,7 +263,7 @@ void SafariImporter::RecursiveReadBookmarksFolder(
 }
 
 void SafariImporter::ParseBookmarks(
-    const string16& toolbar_name,
+    const base::string16& toolbar_name,
     std::vector<ImportedBookmarkEntry>* bookmarks) {
   DCHECK(bookmarks);
 
@@ -282,7 +282,7 @@ void SafariImporter::ParseBookmarks(
     return;
 
   // Recursively read in bookmarks.
-  std::vector<string16> parent_path_elements;
+  std::vector<base::string16> parent_path_elements;
   RecursiveReadBookmarksFolder(bookmarks_dict, parent_path_elements, false,
                                toolbar_name, bookmarks);
 }

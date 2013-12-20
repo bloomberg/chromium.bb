@@ -43,7 +43,7 @@ class FFUnitTestDecryptorProxy {
   // This match the parallel functions in NSSDecryptor.
   bool DecryptorInit(const base::FilePath& dll_path,
                      const base::FilePath& db_path);
-  string16 Decrypt(const std::string& crypt);
+  base::string16 Decrypt(const std::string& crypt);
 
  private:
 #if defined(OS_MACOSX)
@@ -81,7 +81,7 @@ bool FFUnitTestDecryptorProxy::DecryptorInit(const base::FilePath& dll_path,
   return decryptor_.Init(dll_path, db_path);
 }
 
-string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
+base::string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
   return decryptor_.Decrypt(crypt);
 }
 #endif  // !OS_MACOSX

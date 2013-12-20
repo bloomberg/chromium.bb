@@ -46,14 +46,14 @@ const int kAppLauncherIconIndex = 5;
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
 // the locale, we use US English.
-string16 LocalizeUrl(const wchar_t* url) {
-  string16 language;
+base::string16 LocalizeUrl(const wchar_t* url) {
+  base::string16 language;
   if (!GoogleUpdateSettings::GetLanguage(&language))
     language = L"en-US";  // Default to US English.
   return ReplaceStringPlaceholders(url, language.c_str(), NULL);
 }
 
-string16 GetUninstallSurveyUrl() {
+base::string16 GetUninstallSurveyUrl() {
   const wchar_t kSurveyUrl[] = L"http://www.google.com/support/chrome/bin/"
                                L"request.py?hl=$1&contact_type=uninstall";
   return LocalizeUrl(kSurveyUrl);
@@ -69,7 +69,7 @@ GoogleChromeDistribution::GoogleChromeDistribution()
 void GoogleChromeDistribution::DoPostUninstallOperations(
     const Version& version,
     const base::FilePath& local_data_path,
-    const string16& distribution_data) {
+    const base::string16& distribution_data) {
   // Send the Chrome version and OS version as params to the form.
   // It would be nice to send the locale, too, but I don't see an
   // easy way to get that in the existing code. It's something we
@@ -77,11 +77,11 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   // We depend on installed_version.GetString() not having spaces or other
   // characters that need escaping: 0.2.13.4. Should that change, we will
   // need to escape the string before using it in a URL.
-  const string16 kVersionParam = L"crversion";
-  const string16 kOSParam = L"os";
+  const base::string16 kVersionParam = L"crversion";
+  const base::string16 kOSParam = L"os";
   base::win::OSInfo::VersionNumber version_number =
       base::win::OSInfo::GetInstance()->version_number();
-  string16 os_version = base::StringPrintf(L"%d.%d.%d",
+  base::string16 os_version = base::StringPrintf(L"%d.%d.%d",
       version_number.major, version_number.minor, version_number.build);
 
   base::FilePath iexplore;
@@ -91,11 +91,11 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   iexplore = iexplore.AppendASCII("Internet Explorer");
   iexplore = iexplore.AppendASCII("iexplore.exe");
 
-  string16 command = iexplore.value() + L" " + GetUninstallSurveyUrl() +
+  base::string16 command = iexplore.value() + L" " + GetUninstallSurveyUrl() +
       L"&" + kVersionParam + L"=" + UTF8ToWide(version.GetString()) + L"&" +
       kOSParam + L"=" + os_version;
 
-  string16 uninstall_metrics;
+  base::string16 uninstall_metrics;
   if (installer::ExtractUninstallMetricsFromFile(local_data_path,
                                                  &uninstall_metrics)) {
     // The user has opted into anonymous usage data collection, so append
@@ -115,22 +115,23 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   installer::WMIProcess::Launch(command, &pid);
 }
 
-string16 GoogleChromeDistribution::GetActiveSetupGuid() {
+base::string16 GoogleChromeDistribution::GetActiveSetupGuid() {
   return product_guid();
 }
 
-string16 GoogleChromeDistribution::GetAppGuid() {
+base::string16 GoogleChromeDistribution::GetAppGuid() {
   return product_guid();
 }
 
-string16 GoogleChromeDistribution::GetBaseAppName() {
+base::string16 GoogleChromeDistribution::GetBaseAppName() {
   // I'd really like to return L ## PRODUCT_FULLNAME_STRING; but that's no good
   // since it'd be "Chromium" in a non-Chrome build, which isn't at all what I
   // want.  Sigh.
   return L"Google Chrome";
 }
 
-string16 GoogleChromeDistribution::GetShortcutName(ShortcutType shortcut_type) {
+base::string16 GoogleChromeDistribution::GetShortcutName(
+    ShortcutType shortcut_type) {
   int string_id = IDS_PRODUCT_NAME_BASE;
   switch (shortcut_type) {
     case SHORTCUT_CHROME_ALTERNATE:
@@ -154,33 +155,33 @@ int GoogleChromeDistribution::GetIconIndex(ShortcutType shortcut_type) {
   return 0;
 }
 
-string16 GoogleChromeDistribution::GetBaseAppId() {
+base::string16 GoogleChromeDistribution::GetBaseAppId() {
   return kBrowserAppId;
 }
 
-string16 GoogleChromeDistribution::GetBrowserProgIdPrefix() {
+base::string16 GoogleChromeDistribution::GetBrowserProgIdPrefix() {
   return kBrowserProgIdPrefix;
 }
 
-string16 GoogleChromeDistribution::GetBrowserProgIdDesc() {
+base::string16 GoogleChromeDistribution::GetBrowserProgIdDesc() {
   return kBrowserProgIdDesc;
 }
 
-string16 GoogleChromeDistribution::GetInstallSubDir() {
-  string16 sub_dir(installer::kGoogleChromeInstallSubDir1);
+base::string16 GoogleChromeDistribution::GetInstallSubDir() {
+  base::string16 sub_dir(installer::kGoogleChromeInstallSubDir1);
   sub_dir.append(L"\\");
   sub_dir.append(installer::kGoogleChromeInstallSubDir2);
   return sub_dir;
 }
 
-string16 GoogleChromeDistribution::GetPublisherName() {
-  const string16& publisher_name =
+base::string16 GoogleChromeDistribution::GetPublisherName() {
+  const base::string16& publisher_name =
       installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
   return publisher_name;
 }
 
-string16 GoogleChromeDistribution::GetAppDescription() {
-  const string16& app_description =
+base::string16 GoogleChromeDistribution::GetAppDescription() {
+  const base::string16& app_description =
       installer::GetLocalizedString(IDS_SHORTCUT_TOOLTIP_BASE);
   return app_description;
 }
@@ -189,15 +190,15 @@ std::string GoogleChromeDistribution::GetSafeBrowsingName() {
   return "googlechrome";
 }
 
-string16 GoogleChromeDistribution::GetStateKey() {
-  string16 key(google_update::kRegPathClientState);
+base::string16 GoogleChromeDistribution::GetStateKey() {
+  base::string16 key(google_update::kRegPathClientState);
   key.append(L"\\");
   key.append(product_guid());
   return key;
 }
 
-string16 GoogleChromeDistribution::GetStateMediumKey() {
-  string16 key(google_update::kRegPathClientStateMedium);
+base::string16 GoogleChromeDistribution::GetStateMediumKey() {
+  base::string16 key(google_update::kRegPathClientStateMedium);
   key.append(L"\\");
   key.append(product_guid());
   return key;
@@ -211,14 +212,14 @@ std::string GoogleChromeDistribution::GetHttpPipeliningTestServer() const {
   return chrome_common_net::kPipelineTestServerBaseUrl;
 }
 
-string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
-  string16 sub_key(google_update::kRegPathClientState);
+base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
+  base::string16 sub_key(google_update::kRegPathClientState);
   sub_key.append(L"\\");
   sub_key.append(product_guid());
 
   base::win::RegKey client_state_key(root_key, sub_key.c_str(), KEY_READ);
-  string16 result;
-  string16 brand_value;
+  base::string16 result;
+  base::string16 brand_value;
   if (client_state_key.ReadValue(google_update::kRegRLZBrandField,
                                  &brand_value) == ERROR_SUCCESS) {
     result = google_update::kRegRLZBrandField;
@@ -227,7 +228,7 @@ string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
     result.append(L"&");
   }
 
-  string16 client_value;
+  base::string16 client_value;
   if (client_state_key.ReadValue(google_update::kRegClientField,
                                  &client_value) == ERROR_SUCCESS) {
     result.append(google_update::kRegClientField);
@@ -236,7 +237,7 @@ string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
     result.append(L"&");
   }
 
-  string16 ap_value;
+  base::string16 ap_value;
   // If we fail to read the ap key, send up "&ap=" anyway to indicate
   // that this was probably a stable channel release.
   client_state_key.ReadValue(google_update::kRegApField, &ap_value);
@@ -247,30 +248,30 @@ string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   return result;
 }
 
-string16 GoogleChromeDistribution::GetUninstallLinkName() {
-  const string16& link_name =
+base::string16 GoogleChromeDistribution::GetUninstallLinkName() {
+  const base::string16& link_name =
       installer::GetLocalizedString(IDS_UNINSTALL_CHROME_BASE);
   return link_name;
 }
 
-string16 GoogleChromeDistribution::GetUninstallRegPath() {
+base::string16 GoogleChromeDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
          L"Google Chrome";
 }
 
-string16 GoogleChromeDistribution::GetVersionKey() {
-  string16 key(google_update::kRegPathClients);
+base::string16 GoogleChromeDistribution::GetVersionKey() {
+  base::string16 key(google_update::kRegPathClients);
   key.append(L"\\");
   key.append(product_guid());
   return key;
 }
 
-string16 GoogleChromeDistribution::GetIconFilename() {
+base::string16 GoogleChromeDistribution::GetIconFilename() {
   return installer::kChromeExe;
 }
 
 bool GoogleChromeDistribution::GetCommandExecuteImplClsid(
-    string16* handler_class_uuid) {
+    base::string16* handler_class_uuid) {
   if (handler_class_uuid)
     *handler_class_uuid = kCommandExecuteImplUuid;
   return true;

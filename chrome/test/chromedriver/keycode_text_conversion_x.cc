@@ -224,7 +224,7 @@ bool ConvertKeyCodeToText(
   if (!character)
     *text = std::string();
   else
-    *text = UTF16ToUTF8(string16(1, character));
+    *text = UTF16ToUTF8(base::string16(1, character));
   return true;
 }
 
@@ -233,7 +233,7 @@ bool ConvertCharToKeyCode(
     ui::KeyboardCode* key_code,
     int* necessary_modifiers,
     std::string* error_msg) {
-  std::string key_string(UTF16ToUTF8(string16(1, key)));
+  std::string key_string(UTF16ToUTF8(base::string16(1, key)));
   bool found = false;
   ui::KeyboardCode test_code;
   int test_modifiers;

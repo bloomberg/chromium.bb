@@ -27,7 +27,9 @@ class NSSDecryptor {
   bool Init(const base::FilePath& dll_path, const base::FilePath& db_path) {
     return false;
   }
-  string16 Decrypt(const std::string& crypt) const { return string16(); }
+  base::string16 Decrypt(const std::string& crypt) const {
+    return base::string16();
+  }
   void ParseSignons(const std::string& content,
                     std::vector<autofill::PasswordForm>* forms) {}
   bool ReadAndParseSignons(const base::FilePath& sqlite_file,

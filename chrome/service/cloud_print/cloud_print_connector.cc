@@ -589,7 +589,7 @@ void CloudPrintConnector::OnReceivePrinterCaps(
     LOG(ERROR) << "CP_CONNECTOR: Failed to get printer info"
                << ", printer name: " << printer_name;
     // This printer failed to register, notify the server of this failure.
-    string16 printer_name_utf16 = UTF8ToUTF16(printer_name);
+    base::string16 printer_name_utf16 = UTF8ToUTF16(printer_name);
     std::string status_message = l10n_util::GetStringFUTF8(
         IDS_CLOUD_PRINT_REGISTER_PRINTER_FAILED,
         printer_name_utf16,

@@ -142,26 +142,27 @@ BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
 
 void BrowserDistribution::DoPostUninstallOperations(
     const Version& version, const base::FilePath& local_data_path,
-    const string16& distribution_data) {
+    const base::string16& distribution_data) {
 }
 
-string16 BrowserDistribution::GetActiveSetupGuid() {
+base::string16 BrowserDistribution::GetActiveSetupGuid() {
   return kChromiumActiveSetupGuid;
 }
 
-string16 BrowserDistribution::GetAppGuid() {
+base::string16 BrowserDistribution::GetAppGuid() {
   return L"";
 }
 
-string16 BrowserDistribution::GetBaseAppName() {
+base::string16 BrowserDistribution::GetBaseAppName() {
   return L"Chromium";
 }
 
-string16 BrowserDistribution::GetDisplayName() {
+base::string16 BrowserDistribution::GetDisplayName() {
   return GetShortcutName(SHORTCUT_CHROME);
 }
 
-string16 BrowserDistribution::GetShortcutName(ShortcutType shortcut_type) {
+base::string16 BrowserDistribution::GetShortcutName(
+    ShortcutType shortcut_type) {
   switch (shortcut_type) {
     case SHORTCUT_CHROME_ALTERNATE:
       // TODO(calamity): Change IDS_OEM_MAIN_SHORTCUT_NAME in
@@ -185,11 +186,11 @@ int BrowserDistribution::GetIconIndex(ShortcutType shortcut_type) {
   return 0;
 }
 
-string16 BrowserDistribution::GetIconFilename() {
+base::string16 BrowserDistribution::GetIconFilename() {
   return installer::kChromeExe;
 }
 
-string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
+base::string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
     Subfolder subfolder_type) {
   switch (subfolder_type) {
     case SUBFOLDER_APPS:
@@ -200,36 +201,36 @@ string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
   }
 }
 
-string16 BrowserDistribution::GetBaseAppId() {
+base::string16 BrowserDistribution::GetBaseAppId() {
   return L"Chromium";
 }
 
-string16 BrowserDistribution::GetBrowserProgIdPrefix() {
+base::string16 BrowserDistribution::GetBrowserProgIdPrefix() {
   // This used to be "ChromiumHTML", but was forced to become "ChromiumHTM"
   // because of http://crbug.com/153349.  See the declaration of this function
   // in the header file for more details.
   return L"ChromiumHTM";
 }
 
-string16 BrowserDistribution::GetBrowserProgIdDesc() {
+base::string16 BrowserDistribution::GetBrowserProgIdDesc() {
   return L"Chromium HTML Document";
 }
 
 
-string16 BrowserDistribution::GetInstallSubDir() {
+base::string16 BrowserDistribution::GetInstallSubDir() {
   return L"Chromium";
 }
 
-string16 BrowserDistribution::GetPublisherName() {
+base::string16 BrowserDistribution::GetPublisherName() {
   return L"Chromium";
 }
 
-string16 BrowserDistribution::GetAppDescription() {
+base::string16 BrowserDistribution::GetAppDescription() {
   return L"Browse the web";
 }
 
-string16 BrowserDistribution::GetLongAppDescription() {
-  const string16& app_description =
+base::string16 BrowserDistribution::GetLongAppDescription() {
+  const base::string16& app_description =
       installer::GetLocalizedString(IDS_PRODUCT_DESCRIPTION_BASE);
   return app_description;
 }
@@ -238,11 +239,11 @@ std::string BrowserDistribution::GetSafeBrowsingName() {
   return "chromium";
 }
 
-string16 BrowserDistribution::GetStateKey() {
+base::string16 BrowserDistribution::GetStateKey() {
   return L"Software\\Chromium";
 }
 
-string16 BrowserDistribution::GetStateMediumKey() {
+base::string16 BrowserDistribution::GetStateMediumKey() {
   return L"Software\\Chromium";
 }
 
@@ -254,19 +255,19 @@ std::string BrowserDistribution::GetHttpPipeliningTestServer() const {
   return "";
 }
 
-string16 BrowserDistribution::GetDistributionData(HKEY root_key) {
+base::string16 BrowserDistribution::GetDistributionData(HKEY root_key) {
   return L"";
 }
 
-string16 BrowserDistribution::GetUninstallLinkName() {
+base::string16 BrowserDistribution::GetUninstallLinkName() {
   return L"Uninstall Chromium";
 }
 
-string16 BrowserDistribution::GetUninstallRegPath() {
+base::string16 BrowserDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Chromium";
 }
 
-string16 BrowserDistribution::GetVersionKey() {
+base::string16 BrowserDistribution::GetVersionKey() {
   return L"Software\\Chromium";
 }
 
@@ -279,12 +280,12 @@ bool BrowserDistribution::CanCreateDesktopShortcuts() {
   return true;
 }
 
-bool BrowserDistribution::GetChromeChannel(string16* channel) {
+bool BrowserDistribution::GetChromeChannel(base::string16* channel) {
   return false;
 }
 
 bool BrowserDistribution::GetCommandExecuteImplClsid(
-    string16* handler_class_uuid) {
+    base::string16* handler_class_uuid) {
   if (handler_class_uuid)
     *handler_class_uuid = kCommandExecuteImplUuid;
   return true;

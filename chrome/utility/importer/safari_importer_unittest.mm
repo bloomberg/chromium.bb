@@ -82,8 +82,8 @@ TEST_F(SafariImporterTest, BookmarkImport) {
     bool in_toolbar;
     GURL url;
     // We store the path with levels of nesting delimited by forward slashes.
-    string16 path;
-    string16 title;
+    base::string16 path;
+    base::string16 title;
   } kImportedBookmarksData[] = {
     {
       true,
@@ -112,19 +112,19 @@ TEST_F(SafariImporterTest, BookmarkImport) {
     {
       false,
       GURL("http://www.reddit.com/"),
-      string16(),
+      base::string16(),
       ASCIIToUTF16("reddit.com: what's new online!")
     },
     {
       false,
       GURL(),
-      string16(),
+      base::string16(),
       ASCIIToUTF16("Empty Folder")
     },
     {
       false,
       GURL("http://www.webkit.org/blog/"),
-      string16(),
+      base::string16(),
       ASCIIToUTF16("Surfin' Safari - The WebKit Blog")
     },
   };
@@ -140,7 +140,7 @@ TEST_F(SafariImporterTest, BookmarkImport) {
     EXPECT_EQ(kImportedBookmarksData[i].in_toolbar, entry.in_toolbar);
     EXPECT_EQ(kImportedBookmarksData[i].url, entry.url);
 
-    std::vector<string16> path;
+    std::vector<base::string16> path;
     Tokenize(kImportedBookmarksData[i].path, ASCIIToUTF16("/"), &path);
     ASSERT_EQ(path.size(), entry.path.size());
     for (size_t j = 0; j < path.size(); ++j) {

@@ -95,7 +95,7 @@ class InstallationValidator {
   typedef void (*CommandValidatorFn)(const ProductContext& ctx,
                                      const AppCommand& app_cmd,
                                      bool* is_valid);
-  typedef std::map<string16, CommandValidatorFn> CommandExpectations;
+  typedef std::map<base::string16, CommandValidatorFn> CommandExpectations;
 
   // An interface to product-specific validation rules.
   class ProductRules {
@@ -187,11 +187,12 @@ class InstallationValidator {
   // Helper to validate the values of bool elements in AppCommand, and to output
   // error messages. |flag_expect| is a bit mask specifying the expected
   // presence/absence of bool variables.
-  static void ValidateAppCommandFlags(const ProductContext& ctx,
-                                      const AppCommand& app_cmd,
-                                      const std::set<string16>& flags_expected,
-                                      const string16& name,
-                                      bool* is_valid);
+  static void ValidateAppCommandFlags(
+      const ProductContext& ctx,
+      const AppCommand& app_cmd,
+      const std::set<base::string16>& flags_expected,
+      const base::string16& name,
+      bool* is_valid);
   static void ValidateInstallCommand(const ProductContext& ctx,
                                      const AppCommand& app_cmd,
                                      const wchar_t* expected_command,
@@ -227,16 +228,16 @@ class InstallationValidator {
                                bool* is_valid);
   static void ValidateSetupPath(const ProductContext& ctx,
                                 const base::FilePath& setup_exe,
-                                const string16& purpose,
+                                const base::string16& purpose,
                                 bool* is_valid);
   static void ValidateCommandExpectations(const ProductContext& ctx,
                                           const CommandLine& command,
                                           const SwitchExpectations& expected,
-                                          const string16& source,
+                                          const base::string16& source,
                                           bool* is_valid);
   static void ValidateUninstallCommand(const ProductContext& ctx,
                                        const CommandLine& command,
-                                       const string16& source,
+                                       const base::string16& source,
                                        bool* is_valid);
   static void ValidateRenameCommand(const ProductContext& ctx,
                                     bool* is_valid);

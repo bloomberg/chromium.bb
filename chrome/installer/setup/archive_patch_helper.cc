@@ -40,7 +40,7 @@ bool ArchivePatchHelper::Uncompress(base::FilePath* last_uncompressed_file) {
   DCHECK(!base::PathExists(target_));
 
   // UnPackArchive takes care of logging.
-  string16 output_file;
+  base::string16 output_file;
   int32 lzma_result = LzmaUtil::UnPackArchive(compressed_archive_.value(),
                                               working_directory_.value(),
                                               &output_file);

@@ -256,7 +256,7 @@ int main(int argc, char* const argv[]) {
 
     base::Time::Exploded exploded_time;
     base::Time::Now().LocalExplode(&exploded_time);
-    std::vector<string16> replacements;
+    std::vector<base::string16> replacements;
     replacements.push_back(base::IntToString16(exploded_time.year));
     NSString* copyright = base::SysUTF16ToNSString(
         ReplaceStringPlaceholders(base::SysNSStringToUTF16(copyright_format),

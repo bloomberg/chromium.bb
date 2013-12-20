@@ -21,34 +21,34 @@ GoogleChromeBinariesDistribution::GoogleChromeBinariesDistribution()
     : ChromiumBinariesDistribution() {
 }
 
-string16 GoogleChromeBinariesDistribution::GetAppGuid() {
+base::string16 GoogleChromeBinariesDistribution::GetAppGuid() {
   return kChromeBinariesGuid;
 }
 
-string16 GoogleChromeBinariesDistribution::GetDisplayName() {
+base::string16 GoogleChromeBinariesDistribution::GetDisplayName() {
   return kChromeBinariesName;
 }
 
-string16 GoogleChromeBinariesDistribution::GetShortcutName(
+base::string16 GoogleChromeBinariesDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 GoogleChromeBinariesDistribution::GetStateKey() {
-  return string16(google_update::kRegPathClientState)
+base::string16 GoogleChromeBinariesDistribution::GetStateKey() {
+  return base::string16(google_update::kRegPathClientState)
       .append(1, L'\\')
       .append(kChromeBinariesGuid);
 }
 
-string16 GoogleChromeBinariesDistribution::GetStateMediumKey() {
-  return string16(google_update::kRegPathClientStateMedium)
+base::string16 GoogleChromeBinariesDistribution::GetStateMediumKey() {
+  return base::string16(google_update::kRegPathClientStateMedium)
       .append(1, L'\\')
       .append(kChromeBinariesGuid);
 }
 
-string16 GoogleChromeBinariesDistribution::GetVersionKey() {
-  return string16(google_update::kRegPathClients)
+base::string16 GoogleChromeBinariesDistribution::GetVersionKey() {
+  return base::string16(google_update::kRegPathClients)
       .append(1, L'\\')
       .append(kChromeBinariesGuid);
 }

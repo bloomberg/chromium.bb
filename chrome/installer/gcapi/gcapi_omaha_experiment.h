@@ -14,8 +14,8 @@ extern const wchar_t kRelaunchLabel[];
 
 // Returns the full experiment label to be used by |label| (which is one of the
 // labels declared above) for |brand_code|.
-string16 GetGCAPIExperimentLabel(const wchar_t* brand_code,
-                                 const string16& label);
+base::string16 GetGCAPIExperimentLabel(const wchar_t* brand_code,
+                                       const base::string16& label);
 
 }  // namespace gcapi_internals
 

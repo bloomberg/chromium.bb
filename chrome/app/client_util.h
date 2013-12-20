@@ -17,11 +17,11 @@ namespace sandbox {
 }
 
 // Gets the path of the current exe with a trailing backslash.
-string16 GetExecutablePath();
+base::string16 GetExecutablePath();
 
 // Returns the version in the current module's version resource or the empty
 // string if none found.
-string16 GetCurrentModuleVersion();
+base::string16 GetCurrentModuleVersion();
 
 // Implements the common aspects of loading chrome.dll for both chrome and
 // chromium scenarios, which are in charge of implementing two abstract
@@ -45,21 +45,21 @@ class MainDllLoader {
   // Called after chrome.dll has been loaded but before the entry point
   // is invoked. Derived classes can implement custom actions here.
   // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual void OnBeforeLaunch(const string16& dll_path) {}
+  virtual void OnBeforeLaunch(const base::string16& dll_path) {}
 
   // Called after the chrome.dll entry point returns and before terminating
   // this process. The return value will be used as the process return code.
   // |dll_path| refers to the path of the Chrome dll being loaded.
-  virtual int OnBeforeExit(int return_code, const string16& dll_path) {
+  virtual int OnBeforeExit(int return_code, const base::string16& dll_path) {
     return return_code;
   }
 
  protected:
   // Derived classes must return the relative registry path that holds the
   // most current version of chrome.dll.
-  virtual string16 GetRegistryPath() = 0;
+  virtual base::string16 GetRegistryPath() = 0;
 
-  HMODULE Load(string16* out_version, string16* out_file);
+  HMODULE Load(base::string16* out_version, base::string16* out_file);
 
  private:
   // Chrome.dll handle.

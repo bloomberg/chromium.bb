@@ -41,7 +41,8 @@ class GCAPIReactivationTest : public ::testing::Test {
     return SetLastRunTimeString(hive, base::Int64ToString16(last_run_time));
   }
 
-  bool SetLastRunTimeString(HKEY hive, const string16& last_run_time_string) {
+  bool SetLastRunTimeString(HKEY hive,
+                            const base::string16& last_run_time_string) {
     const wchar_t* base_path =
         (hive == HKEY_LOCAL_MACHINE) ?
             google_update::kRegPathClientStateMedium :
@@ -58,7 +59,7 @@ class GCAPIReactivationTest : public ::testing::Test {
   }
 
   bool HasExperimentLabels(HKEY hive) {
-    string16 client_state_path(google_update::kRegPathClientState);
+    base::string16 client_state_path(google_update::kRegPathClientState);
     client_state_path.push_back(L'\\');
     client_state_path.append(google_update::kChromeUpgradeCode);
 

@@ -16,7 +16,8 @@
 namespace installer {
 
 void ChromeFrameOperations::ReadOptions(const MasterPreferences& prefs,
-                                        std::set<string16>* options) const {
+                                        std::set<base::string16>* options)
+    const {
   DCHECK(options);
 
   static const struct PrefToOption {
@@ -36,7 +37,8 @@ void ChromeFrameOperations::ReadOptions(const MasterPreferences& prefs,
 }
 
 void ChromeFrameOperations::ReadOptions(const CommandLine& uninstall_command,
-                                        std::set<string16>* options) const {
+                                        std::set<base::string16>* options)
+    const {
   DCHECK(options);
 
   static const struct FlagToOption {
@@ -54,7 +56,7 @@ void ChromeFrameOperations::ReadOptions(const CommandLine& uninstall_command,
 }
 
 void ChromeFrameOperations::AddKeyFiles(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     std::vector<base::FilePath>* key_files) const {
   DCHECK(key_files);
   key_files->push_back(base::FilePath(installer::kChromeFrameDll));
@@ -62,14 +64,14 @@ void ChromeFrameOperations::AddKeyFiles(
 }
 
 void ChromeFrameOperations::AddComDllList(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     std::vector<base::FilePath>* com_dll_list) const {
   DCHECK(com_dll_list);
   com_dll_list->push_back(base::FilePath(installer::kChromeFrameDll));
 }
 
 void ChromeFrameOperations::AppendProductFlags(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
@@ -82,8 +84,9 @@ void ChromeFrameOperations::AppendProductFlags(
   cmd_line->AppendSwitch(switches::kChromeFrame);
 }
 
-void ChromeFrameOperations::AppendRenameFlags(const std::set<string16>& options,
-                                              CommandLine* cmd_line) const {
+void ChromeFrameOperations::AppendRenameFlags(
+    const std::set<base::string16>& options,
+    CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
 
@@ -96,9 +99,10 @@ void ChromeFrameOperations::AppendRenameFlags(const std::set<string16>& options,
     cmd_line->AppendSwitch(switches::kChromeFrame);
 }
 
-bool ChromeFrameOperations::SetChannelFlags(const std::set<string16>& options,
-                                            bool set,
-                                            ChannelInfo* channel_info) const {
+bool ChromeFrameOperations::SetChannelFlags(
+    const std::set<base::string16>& options,
+    bool set,
+    ChannelInfo* channel_info) const {
 #if defined(GOOGLE_CHROME_BUILD)
   DCHECK(channel_info);
   bool modified = channel_info->SetChromeFrame(set);
@@ -113,7 +117,7 @@ bool ChromeFrameOperations::SetChannelFlags(const std::set<string16>& options,
 }
 
 bool ChromeFrameOperations::ShouldCreateUninstallEntry(
-    const std::set<string16>& options) const {
+    const std::set<base::string16>& options) const {
   return true;
 }
 
@@ -126,7 +130,7 @@ void ChromeFrameOperations::AddDefaultShortcutProperties(
 
 void ChromeFrameOperations::LaunchUserExperiment(
     const base::FilePath& setup_path,
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     InstallStatus status,
     bool system_level) const {
   // No experiments yet.  If adding some in the future, need to have

@@ -36,13 +36,13 @@ void TestShellTab::Destroy(JNIEnv* env, jobject obj) {
 }
 
 void TestShellTab::OnReceivedHttpAuthRequest(jobject auth_handler,
-                                             const string16& host,
-                                             const string16& realm) {
+                                             const base::string16& host,
+                                             const base::string16& realm) {
   NOTIMPLEMENTED();
 }
 
 void TestShellTab::AddShortcutToBookmark(
-    const GURL& url, const string16& title, const SkBitmap& skbitmap,
+    const GURL& url, const base::string16& title, const SkBitmap& skbitmap,
     int r_value, int g_value, int b_value) {
   NOTIMPLEMENTED();
 }

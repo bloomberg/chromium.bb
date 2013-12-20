@@ -34,7 +34,7 @@ const char* const kMonths[] =
 
 }
 
-string16 BuildExperimentDateString(const base::Time& current_time) {
+base::string16 BuildExperimentDateString(const base::Time& current_time) {
   // The Google Update experiment_labels timestamp format is:
   // "DAY, DD0 MON YYYY HH0:MI0:SE0 TZ"
   //  DAY = 3 character day of week,

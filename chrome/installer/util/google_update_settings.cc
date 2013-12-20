@@ -133,14 +133,14 @@ bool RemoveGoogleUpdateStrKey(const wchar_t* const name) {
 
 bool GetChromeChannelInternal(bool system_install,
                               bool add_multi_modifier,
-                              string16* channel) {
+                              base::string16* channel) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (dist->GetChromeChannel(channel)) {
     return true;
   }
 
   HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  string16 reg_path = dist->GetStateKey();
+  base::string16 reg_path = dist->GetStateKey();
   RegKey key(root_key, reg_path.c_str(), KEY_READ);
 
   installer::ChannelInfo channel_info;
@@ -404,8 +404,9 @@ std::wstring GoogleUpdateSettings::GetChromeChannel(bool system_install) {
   return channel;
 }
 
-bool GoogleUpdateSettings::GetChromeChannelAndModifiers(bool system_install,
-                                                        string16* channel) {
+bool GoogleUpdateSettings::GetChromeChannelAndModifiers(
+    bool system_install,
+    base::string16* channel) {
   return GetChromeChannelInternal(system_install, true, channel);
 }
 
@@ -570,9 +571,10 @@ GoogleUpdateSettings::UpdatePolicy GoogleUpdateSettings::GetAppUpdatePolicy(
   return update_policy;
 }
 
-string16 GoogleUpdateSettings::GetUninstallCommandLine(bool system_install) {
+base::string16 GoogleUpdateSettings::GetUninstallCommandLine(
+    bool system_install) {
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  string16 cmd_line;
+  base::string16 cmd_line;
   RegKey update_key;
 
   if (update_key.Open(root_key, google_update::kRegPathGoogleUpdate,
@@ -585,7 +587,7 @@ string16 GoogleUpdateSettings::GetUninstallCommandLine(bool system_install) {
 
 Version GoogleUpdateSettings::GetGoogleUpdateVersion(bool system_install) {
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  string16 version;
+  base::string16 version;
   RegKey key;
 
   if (key.Open(root_key,
@@ -642,14 +644,14 @@ bool GoogleUpdateSettings::GetUpdateDetailForApp(bool system_install,
   bool product_found = false;
 
   const HKEY root_key = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  string16 clientstate_reg_path(google_update::kRegPathClientState);
+  base::string16 clientstate_reg_path(google_update::kRegPathClientState);
   clientstate_reg_path.append(L"\\");
   clientstate_reg_path.append(app_guid);
 
   RegKey clientstate;
   if (clientstate.Open(root_key, clientstate_reg_path.c_str(),
                        KEY_QUERY_VALUE) == ERROR_SUCCESS) {
-    string16 version;
+    base::string16 version;
     DWORD dword_value;
     if ((clientstate.ReadValueDW(google_update::kRegLastCheckSuccessField,
                                  &dword_value) == ERROR_SUCCESS) &&
@@ -700,7 +702,7 @@ bool GoogleUpdateSettings::GetUpdateDetail(bool system_install,
 
 bool GoogleUpdateSettings::SetExperimentLabels(
     bool system_install,
-    const string16& experiment_labels) {
+    const base::string16& experiment_labels) {
   HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
   // Use the browser distribution and install level to write to the correct
@@ -708,7 +710,7 @@ bool GoogleUpdateSettings::SetExperimentLabels(
   bool success = false;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (dist->ShouldSetExperimentLabels()) {
-    string16 client_state_path(
+    base::string16 client_state_path(
         system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
     RegKey client_state(
         reg_root, client_state_path.c_str(), KEY_SET_VALUE);
@@ -726,7 +728,7 @@ bool GoogleUpdateSettings::SetExperimentLabels(
 
 bool GoogleUpdateSettings::ReadExperimentLabels(
     bool system_install,
-    string16* experiment_labels) {
+    base::string16* experiment_labels) {
   HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
   // If this distribution does not set the experiment labels, don't bother
@@ -735,7 +737,7 @@ bool GoogleUpdateSettings::ReadExperimentLabels(
   if (!dist->ShouldSetExperimentLabels())
     return false;
 
-  string16 client_state_path(
+  base::string16 client_state_path(
       system_install ? dist->GetStateMediumKey() : dist->GetStateKey());
 
   RegKey client_state;

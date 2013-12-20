@@ -32,11 +32,11 @@ GoogleChromeSxSDistribution::GoogleChromeSxSDistribution()
   GoogleChromeDistribution::set_product_guid(kChromeSxSGuid);
 }
 
-string16 GoogleChromeSxSDistribution::GetBaseAppName() {
+base::string16 GoogleChromeSxSDistribution::GetBaseAppName() {
   return L"Google Chrome Canary";
 }
 
-string16 GoogleChromeSxSDistribution::GetShortcutName(
+base::string16 GoogleChromeSxSDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
   switch (shortcut_type) {
     case SHORTCUT_CHROME_ALTERNATE:
@@ -53,7 +53,7 @@ string16 GoogleChromeSxSDistribution::GetShortcutName(
   }
 }
 
-string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
+base::string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
     Subfolder subfolder_type) {
   switch (subfolder_type) {
     case SUBFOLDER_APPS:
@@ -65,24 +65,24 @@ string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
   }
 }
 
-string16 GoogleChromeSxSDistribution::GetBaseAppId() {
+base::string16 GoogleChromeSxSDistribution::GetBaseAppId() {
   return kBrowserAppId;
 }
 
-string16 GoogleChromeSxSDistribution::GetBrowserProgIdPrefix() {
+base::string16 GoogleChromeSxSDistribution::GetBrowserProgIdPrefix() {
   return kBrowserProgIdPrefix;
 }
 
-string16 GoogleChromeSxSDistribution::GetBrowserProgIdDesc() {
+base::string16 GoogleChromeSxSDistribution::GetBrowserProgIdDesc() {
   return kBrowserProgIdDesc;
 }
 
-string16 GoogleChromeSxSDistribution::GetInstallSubDir() {
+base::string16 GoogleChromeSxSDistribution::GetInstallSubDir() {
   return GoogleChromeDistribution::GetInstallSubDir().append(
       installer::kSxSSuffix);
 }
 
-string16 GoogleChromeSxSDistribution::GetUninstallRegPath() {
+base::string16 GoogleChromeSxSDistribution::GetUninstallRegPath() {
   return GoogleChromeDistribution::GetUninstallRegPath().append(
       installer::kSxSSuffix);
 }
@@ -100,13 +100,13 @@ int GoogleChromeSxSDistribution::GetIconIndex(ShortcutType shortcut_type) {
   return kSxSIconIndex;
 }
 
-bool GoogleChromeSxSDistribution::GetChromeChannel(string16* channel) {
+bool GoogleChromeSxSDistribution::GetChromeChannel(base::string16* channel) {
   *channel = kChannelName;
   return true;
 }
 
 bool GoogleChromeSxSDistribution::GetCommandExecuteImplClsid(
-    string16* handler_class_uuid) {
+    base::string16* handler_class_uuid) {
   if (handler_class_uuid)
     *handler_class_uuid = kCommandExecuteImplUuid;
   return true;
@@ -124,6 +124,6 @@ bool GoogleChromeSxSDistribution::HasUserExperiments() {
   return true;
 }
 
-string16 GoogleChromeSxSDistribution::ChannelName() {
+base::string16 GoogleChromeSxSDistribution::ChannelName() {
   return kChannelName;
 }

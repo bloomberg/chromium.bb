@@ -31,7 +31,7 @@ AppCommand::AppCommand()
       is_run_as_user_(false) {
 }
 
-AppCommand::AppCommand(const string16& command_line)
+AppCommand::AppCommand(const base::string16& command_line)
     : command_line_(command_line),
       sends_pings_(false),
       is_web_accessible_(false),
@@ -46,7 +46,7 @@ bool AppCommand::Initialize(const base::win::RegKey& key) {
   }
 
   LONG result = ERROR_SUCCESS;
-  string16 cmd_line;
+  base::string16 cmd_line;
 
   result = key.ReadValue(google_update::kRegCommandLineField, &cmd_line);
   if (result != ERROR_SUCCESS) {
@@ -68,7 +68,7 @@ bool AppCommand::Initialize(const base::win::RegKey& key) {
 }
 
 void AppCommand::AddWorkItems(HKEY predefined_root,
-                              const string16& command_path,
+                              const base::string16& command_path,
                               WorkItemList* item_list) const {
   item_list->AddCreateRegKeyWorkItem(predefined_root, command_path)
       ->set_log_message("creating AppCommand registry key");

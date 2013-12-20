@@ -52,7 +52,7 @@ enum InstallShortcutLevel {
 // Escape |att_value| as per the XML AttValue production
 // (http://www.w3.org/TR/2008/REC-xml-20081126/#NT-AttValue) for a value in
 // single quotes.
-void EscapeXmlAttributeValueInSingleQuotes(string16* att_value);
+void EscapeXmlAttributeValueInSingleQuotes(base::string16* att_value);
 
 // Creates VisualElementsManifest.xml beside chrome.exe in |src_path| if
 // |src_path|\VisualElements exists.

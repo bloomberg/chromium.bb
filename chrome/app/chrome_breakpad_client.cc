@@ -267,7 +267,7 @@ bool ChromeBreakpadClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
 // point, we read the corresponding registry key directly. The return status
 // indicates whether policy data was successfully read. If it is true,
 // |breakpad_enabled| contains the value set by policy.
-  string16 key_name = UTF8ToUTF16(policy::key::kMetricsReportingEnabled);
+  base::string16 key_name = UTF8ToUTF16(policy::key::kMetricsReportingEnabled);
   DWORD value = 0;
   base::win::RegKey hklm_policy_key(HKEY_LOCAL_MACHINE,
                                     policy::kRegistryChromePolicyKey, KEY_READ);

@@ -18,31 +18,31 @@ class ChromeBinariesOperations : public ProductOperations {
   ChromeBinariesOperations() {}
 
   virtual void ReadOptions(const MasterPreferences& prefs,
-                           std::set<string16>* options) const OVERRIDE;
+                           std::set<base::string16>* options) const OVERRIDE;
 
   virtual void ReadOptions(const CommandLine& uninstall_command,
-                           std::set<string16>* options) const OVERRIDE;
+                           std::set<base::string16>* options) const OVERRIDE;
 
   virtual void AddKeyFiles(
-      const std::set<string16>& options,
+      const std::set<base::string16>& options,
       std::vector<base::FilePath>* key_files) const OVERRIDE;
 
   virtual void AddComDllList(
-      const std::set<string16>& options,
+      const std::set<base::string16>& options,
       std::vector<base::FilePath>* com_dll_list) const OVERRIDE;
 
-  virtual void AppendProductFlags(const std::set<string16>& options,
+  virtual void AppendProductFlags(const std::set<base::string16>& options,
                                   CommandLine* cmd_line) const OVERRIDE;
 
-  virtual void AppendRenameFlags(const std::set<string16>& options,
+  virtual void AppendRenameFlags(const std::set<base::string16>& options,
                                  CommandLine* cmd_line) const OVERRIDE;
 
-  virtual bool SetChannelFlags(const std::set<string16>& options,
+  virtual bool SetChannelFlags(const std::set<base::string16>& options,
                                bool set,
                                ChannelInfo* channel_info) const OVERRIDE;
 
   virtual bool ShouldCreateUninstallEntry(
-      const std::set<string16>& options) const OVERRIDE;
+      const std::set<base::string16>& options) const OVERRIDE;
 
   virtual void AddDefaultShortcutProperties(
       BrowserDistribution* dist,
@@ -50,7 +50,7 @@ class ChromeBinariesOperations : public ProductOperations {
       ShellUtil::ShortcutProperties* properties) const OVERRIDE;
 
   virtual void LaunchUserExperiment(const base::FilePath& setup_path,
-                                    const std::set<string16>& options,
+                                    const std::set<base::string16>& options,
                                     InstallStatus status,
                                     bool system_level) const OVERRIDE;
 

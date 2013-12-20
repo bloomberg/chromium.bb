@@ -15,7 +15,7 @@
 
 namespace {
 
-void CheckEvents(const string16& keys,
+void CheckEvents(const base::string16& keys,
                  KeyEvent expected_events[],
                  bool release_modifiers,
                  size_t expected_size,
@@ -40,7 +40,7 @@ void CheckEvents(const string16& keys,
   EXPECT_EQ(expected_modifiers, modifiers);
 }
 
-void CheckEventsReleaseModifiers(const string16& keys,
+void CheckEventsReleaseModifiers(const base::string16& keys,
                                  KeyEvent expected_events[],
                                  size_t expected_size) {
   CheckEvents(keys, expected_events, true /* release_modifier */,
@@ -135,7 +135,7 @@ TEST(KeyConverter, WebDriverSpecialChar) {
       CreateKeyDownEvent(ui::VKEY_SPACE, 0),
       CreateCharEvent(" ", " ", 0),
       CreateKeyUpEvent(ui::VKEY_SPACE, 0)};
-  string16 keys;
+  base::string16 keys;
   keys.push_back(static_cast<char16>(0xE00DU));
   CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
@@ -144,7 +144,7 @@ TEST(KeyConverter, WebDriverSpecialNonCharKey) {
   KeyEvent event_array[] = {
       CreateKeyDownEvent(ui::VKEY_F1, 0),
       CreateKeyUpEvent(ui::VKEY_F1, 0)};
-  string16 keys;
+  base::string16 keys;
   keys.push_back(static_cast<char16>(0xE031U));
   CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
@@ -208,7 +208,7 @@ TEST(KeyConverter, UppercaseCharUsesShiftOnlyIfNecessary) {
       CreateCharEvent("c", "C", kShiftKeyModifierMask),
       CreateKeyUpEvent(ui::VKEY_C, kShiftKeyModifierMask),
       CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
-  string16 keys;
+  base::string16 keys;
   keys.push_back(static_cast<char16>(0xE008U));
   keys.append(UTF8ToUTF16("aBc"));
   CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
@@ -224,7 +224,7 @@ TEST(KeyConverter, ToggleModifiers) {
       CreateKeyUpEvent(ui::VKEY_MENU, 0),
       CreateKeyDownEvent(ui::VKEY_COMMAND, kMetaKeyModifierMask),
       CreateKeyUpEvent(ui::VKEY_COMMAND, 0)};
-  string16 keys;
+  base::string16 keys;
   keys.push_back(static_cast<char16>(0xE008U));
   keys.push_back(static_cast<char16>(0xE008U));
   keys.push_back(static_cast<char16>(0xE009U));
@@ -276,7 +276,7 @@ TEST(KeyConverter, MAYBE_AllShorthandKeys) {
 #endif
 
 TEST(KeyConverter, MAYBE_AllEnglishKeyboardSymbols) {
-  string16 keys;
+  base::string16 keys;
   const ui::KeyboardCode kSymbolKeyCodes[] = {
       ui::VKEY_OEM_3,
       ui::VKEY_OEM_MINUS,
@@ -344,7 +344,7 @@ TEST(KeyConverter, MAYBE_AllSpecialWebDriverKeysOnEnglishKeyboard) {
   for (size_t i = 0; i <= 0x3D; ++i) {
     if (i > 0x29 && i < 0x31)
       continue;
-    string16 keys;
+    base::string16 keys;
     int modifiers = 0;
     keys.push_back(0xE000U + i);
     std::list<KeyEvent> events;
@@ -385,7 +385,7 @@ TEST(KeyConverter, ModifiersState) {
       CreateKeyDownEvent(ui::VKEY_CONTROL, control_key_modifier),
       CreateKeyDownEvent(ui::VKEY_MENU, alt_key_modifier),
       CreateKeyDownEvent(ui::VKEY_COMMAND, meta_key_modifier)};
-  string16 keys;
+  base::string16 keys;
   keys.push_back(static_cast<char16>(0xE008U));
   keys.push_back(static_cast<char16>(0xE009U));
   keys.push_back(static_cast<char16>(0xE00AU));
@@ -402,7 +402,7 @@ TEST(KeyConverter, ReleaseModifiers) {
           kShiftKeyModifierMask | kControlKeyModifierMask),
       CreateKeyUpEvent(ui::VKEY_SHIFT, 0),
       CreateKeyUpEvent(ui::VKEY_CONTROL, 0)};
-  string16 keys;
+  base::string16 keys;
   keys.push_back(static_cast<char16>(0xE008U));
   keys.push_back(static_cast<char16>(0xE009U));
 

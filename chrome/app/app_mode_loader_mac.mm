@@ -63,7 +63,7 @@ void LoadFramework(void** cr_dylib, app_mode::ChromeAppModeInfo* info) {
   }
 
   // ** 2: Read information from the Chrome bundle.
-  string16 raw_version_str;
+  base::string16 raw_version_str;
   base::FilePath version_path;
   base::FilePath framework_shlib_path;
   if (!app_mode::GetChromeBundleInfo(cr_bundle_path, &raw_version_str,

@@ -50,14 +50,14 @@ const wchar_t kToastExpBaseGroup[] =           L"80";
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
 // the locale, we use US English.
-string16 LocalizeUrl(const wchar_t* url) {
-  string16 language;
+base::string16 LocalizeUrl(const wchar_t* url) {
+  base::string16 language;
   if (!GoogleUpdateSettings::GetLanguage(&language))
     language = L"en-US";  // Default to US English.
   return ReplaceStringPlaceholders(url, language.c_str(), NULL);
 }
 
-string16 GetWelcomeBackUrl() {
+base::string16 GetWelcomeBackUrl() {
   const wchar_t kWelcomeUrl[] = L"http://www.google.com/chrome/intl/$1/"
                                 L"welcomeback-new.html";
   return LocalizeUrl(kWelcomeUrl);
@@ -159,7 +159,7 @@ bool FixDACLsForExecute(const base::FilePath& exe) {
   if (!::ConvertSecurityDescriptorToStringSecurityDescriptorW(sd,
       SDDL_REVISION_1, DACL_SECURITY_INFORMATION, &sddl, NULL))
     return false;
-  string16 new_sddl(sddl);
+  base::string16 new_sddl(sddl);
   ::LocalFree(sddl);
   sd = NULL;
   // See MSDN for the  security descriptor definition language (SDDL) syntax,
@@ -168,12 +168,12 @@ bool FixDACLsForExecute(const base::FilePath& exe) {
   const wchar_t kAllowACE[] = L"(A;;GRGX;;;AU)";
   // We should check that there are no special ACES for the group we
   // are interested, which is nt\authenticated_users.
-  if (string16::npos != new_sddl.find(L";AU)"))
+  if (base::string16::npos != new_sddl.find(L";AU)"))
     return false;
   // Specific ACEs (not inherited) need to go to the front. It is ok if we
   // are the very first one.
   size_t pos_insert = new_sddl.find(L"(");
-  if (string16::npos == pos_insert)
+  if (base::string16::npos == pos_insert)
     return false;
   // All good, time to change the dacl.
   new_sddl.insert(pos_insert, kAllowACE);
@@ -244,7 +244,7 @@ bool LaunchSetupAsConsoleUser(CommandLine* cmd_line) {
 // command line, but HKCU otherwise. |experiment_group| is the value to write
 // and |last_write| is used when writing to HKLM to determine whether to close
 // the handle when done.
-void SetClient(const string16& experiment_group, bool last_write) {
+void SetClient(const base::string16& experiment_group, bool last_write) {
   static int reg_key_handle = -1;
   if (reg_key_handle == -1) {
     // If a specific Toast Results key handle (presumably to our HKLM key) was
@@ -330,12 +330,12 @@ bool CreateExperimentDetails(int flavor, ExperimentDetails* experiment) {
     }
   };
 
-  string16 locale;
+  base::string16 locale;
   GoogleUpdateSettings::GetLanguage(&locale);
   if (locale.empty() || (locale == ASCIIToWide("en")))
     locale = ASCIIToWide("en-US");
 
-  string16 brand;
+  base::string16 brand;
   if (!GoogleUpdateSettings::GetBrand(&brand))
     brand = ASCIIToWide("");  // Could still be viable for catch-all rules.
 
@@ -344,11 +344,11 @@ bool CreateExperimentDetails(int flavor, ExperimentDetails* experiment) {
         kExperiments[i].locale != ASCIIToWide("*"))
       continue;
 
-    std::vector<string16> brand_codes;
+    std::vector<base::string16> brand_codes;
     base::SplitString(kExperiments[i].brands, L',', &brand_codes);
     if (brand_codes.empty())
       return false;
-    for (std::vector<string16>::iterator it = brand_codes.begin();
+    for (std::vector<base::string16>::iterator it = brand_codes.begin();
          it != brand_codes.end(); ++it) {
       if (*it != brand && *it != L"*")
         continue;
@@ -409,15 +409,15 @@ void LaunchBrowserUserExperiment(const CommandLine& base_cmd_line,
     return;
   }
   int flavor = experiment.flavor;
-  string16 base_group = experiment.prefix;
+  base::string16 base_group = experiment.prefix;
 
-  string16 brand;
+  base::string16 brand;
   if (GoogleUpdateSettings::GetBrand(&brand) && (brand == L"CHXX")) {
     // Testing only: the user automatically qualifies for the experiment.
     VLOG(1) << "Experiment qualification bypass";
   } else {
     // Check that the user was not already drafted in this experiment.
-    string16 client;
+    base::string16 client;
     GoogleUpdateSettings::GetClient(&client);
     if (client.size() > 2) {
       if (base_group == client.substr(0, 2)) {
@@ -483,7 +483,7 @@ void LaunchBrowserUserExperiment(const CommandLine& base_cmd_line,
 // User qualifies for the experiment. To test, use --try-chrome-again=|flavor|
 // as a parameter to chrome.exe.
 void InactiveUserToastExperiment(int flavor,
-                                 const string16& experiment_group,
+                                 const base::string16& experiment_group,
                                  const Product& product,
                                  const base::FilePath& application_path) {
   // Add the 'welcome back' url for chrome to show.
@@ -491,13 +491,13 @@ void InactiveUserToastExperiment(int flavor,
   options.AppendSwitchNative(::switches::kTryChromeAgain,
       base::IntToString16(flavor));
   // Prepend the url with a space.
-  string16 url(GetWelcomeBackUrl());
+  base::string16 url(GetWelcomeBackUrl());
   options.AppendArg("--");
   options.AppendArgNative(url);
   // The command line should now have the url added as:
   // "chrome.exe -- <url>"
-  DCHECK_NE(string16::npos,
-      options.GetCommandLineString().find(L" -- " + url));
+  DCHECK_NE(base::string16::npos,
+            options.GetCommandLineString().find(L" -- " + url));
 
   // Launch chrome now. It will show the toast UI.
   int32 exit_code = 0;

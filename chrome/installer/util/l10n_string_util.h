@@ -22,7 +22,7 @@ namespace installer {
 class TranslationDelegate {
  public:
   virtual ~TranslationDelegate();
-  virtual string16 GetLocalizedString(int installer_string_id) = 0;
+  virtual base::string16 GetLocalizedString(int installer_string_id) = 0;
 };
 
 // If we're in Chrome, the installer strings aren't in the binary, but are in

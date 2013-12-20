@@ -87,7 +87,7 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
     base::MessageLoop::current()->Quit();
   }
 
-  void OnDecryptedTextResonse(const string16& decrypted_text) {
+  void OnDecryptedTextResonse(const base::string16& decrypted_text) {
     DCHECK(!got_result);
     result_string = decrypted_text;
     got_result = true;
@@ -116,7 +116,7 @@ class FFDecryptorServerChannelListener : public IPC::Listener {
   }
 
   // Results of IPC calls.
-  string16 result_string;
+  base::string16 result_string;
   bool result_bool;
   // True if IPC call succeeded and data in above variables is valid.
   bool got_result;
@@ -206,14 +206,14 @@ bool FFUnitTestDecryptorProxy::DecryptorInit(const base::FilePath& dll_path,
   return false;
 }
 
-string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
+base::string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
   channel_->Send(new Msg_Decrypt(crypt));
   bool ok = WaitForClientResponse();
   if (ok && listener_->got_result) {
     listener_->got_result = false;
     return listener_->result_string;
   }
-  return string16();
+  return base::string16();
 }
 
 //---------------------------- Child Process -----------------------
@@ -235,7 +235,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
   }
 
   void OnDecrypt(std::string crypt) {
-    string16 unencrypted_str = decryptor_.Decrypt(crypt);
+    base::string16 unencrypted_str = decryptor_.Decrypt(crypt);
     sender_->Send(new Msg_Decryptor_Response(unencrypted_str));
   }
 

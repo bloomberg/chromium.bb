@@ -680,7 +680,7 @@ void InstallerState::GetExistingExeVersions(
     scoped_ptr<FileVersionInfo> file_version_info(
         FileVersionInfo::CreateFileVersionInfo(chrome_exe));
     if (file_version_info) {
-      string16 version_string = file_version_info->file_version();
+      base::string16 version_string = file_version_info->file_version();
       if (!version_string.empty() && IsStringASCII(version_string))
         existing_versions->insert(WideToASCII(version_string));
     }

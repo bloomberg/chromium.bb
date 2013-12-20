@@ -25,7 +25,7 @@ class DuplicateTreeDetectorTest : public testing::Test {
 
   // Simple function to dump some text into a new file.
   void CreateTextFile(const std::string& filename,
-                      const string16& contents) {
+                      const base::string16& contents) {
     std::wofstream file;
     file.open(filename.c_str());
     ASSERT_TRUE(file.is_open());

@@ -264,7 +264,7 @@ installer::InstallStatus RenameChromeExecutables(
   // products we're operating on (which including the multi-install binaries).
   const Products& products = installer_state->products();
   HKEY reg_root = installer_state->root_key();
-  string16 version_key;
+  base::string16 version_key;
   for (Products::const_iterator it = products.begin(); it < products.end();
        ++it) {
     version_key = (*it)->distribution()->GetVersionKey();
@@ -861,9 +861,9 @@ installer::InstallStatus InstallProducts(
   return install_status;
 }
 
-installer::InstallStatus ShowEULADialog(const string16& inner_frame) {
+installer::InstallStatus ShowEULADialog(const base::string16& inner_frame) {
   VLOG(1) << "About to show EULA";
-  string16 eula_path = installer::GetLocalizedEulaResource();
+  base::string16 eula_path = installer::GetLocalizedEulaResource();
   if (eula_path.empty()) {
     LOG(ERROR) << "No EULA path available";
     return installer::EULA_REJECTED;
@@ -904,9 +904,8 @@ void ActivateMetroChrome() {
   GetModuleFileName(NULL, exe_path, arraysize(exe_path));
   bool is_per_user_install = InstallUtil::IsPerUserInstall(exe_path);
 
-  string16 app_model_id =
-      ShellUtil::GetBrowserModelId(BrowserDistribution::GetDistribution(),
-                                   is_per_user_install);
+  base::string16 app_model_id = ShellUtil::GetBrowserModelId(
+      BrowserDistribution::GetDistribution(), is_per_user_install);
 
   base::win::ScopedComPtr<IApplicationActivationManager> activator;
   HRESULT hr = activator.CreateInstance(CLSID_ApplicationActivationManager);
@@ -941,9 +940,9 @@ installer::InstallStatus RegisterDevChrome(
     static const wchar_t kPleaseUninstallYourChromeMessage[] =
         L"You already have a full-installation (non-dev) of %1ls, please "
         L"uninstall it first using Add/Remove Programs in the control panel.";
-    string16 name(chrome_dist->GetDisplayName());
-    string16 message(base::StringPrintf(kPleaseUninstallYourChromeMessage,
-                                        name.c_str()));
+    base::string16 name(chrome_dist->GetDisplayName());
+    base::string16 message(
+        base::StringPrintf(kPleaseUninstallYourChromeMessage, name.c_str()));
 
     LOG(ERROR) << "Aborting operation: another installation of " << name
                << " was found, as a last resort (if the product is not present "
@@ -1048,7 +1047,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
   } else if (cmd_line.HasSwitch(installer::switches::kShowEula)) {
     // Check if we need to show the EULA. If it is passed as a command line
     // then the dialog is shown and regardless of the outcome setup exits here.
-    string16 inner_frame =
+    base::string16 inner_frame =
         cmd_line.GetSwitchValueNative(installer::switches::kShowEula);
     *exit_code = ShowEULADialog(inner_frame);
 
@@ -1104,16 +1103,16 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       // These options should only be used when setup.exe is launched with admin
       // rights. We do not make any user specific changes with this option.
       DCHECK(IsUserAnAdmin());
-      string16 chrome_exe(cmd_line.GetSwitchValueNative(
+      base::string16 chrome_exe(cmd_line.GetSwitchValueNative(
           installer::switches::kRegisterChromeBrowser));
-      string16 suffix;
+      base::string16 suffix;
       if (cmd_line.HasSwitch(
           installer::switches::kRegisterChromeBrowserSuffix)) {
         suffix = cmd_line.GetSwitchValueNative(
             installer::switches::kRegisterChromeBrowserSuffix);
       }
       if (cmd_line.HasSwitch(installer::switches::kRegisterURLProtocol)) {
-        string16 protocol = cmd_line.GetSwitchValueNative(
+        base::string16 protocol = cmd_line.GetSwitchValueNative(
             installer::switches::kRegisterURLProtocol);
         // ShellUtil::RegisterChromeForProtocol performs all registration
         // done by ShellUtil::RegisterChromeBrowser, as well as registering
@@ -1141,7 +1140,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     // Here we delete Chrome browser registration. This option should only
     // be used when setup.exe is launched with admin rights. We do not
     // make any user specific changes in this option.
-    string16 suffix;
+    base::string16 suffix;
     if (cmd_line.HasSwitch(
             installer::switches::kRegisterChromeBrowserSuffix)) {
       suffix = cmd_line.GetSwitchValueNative(
@@ -1278,8 +1277,8 @@ bool ShowRebootDialog() {
 // Returns the Custom information for the client identified by the exe path
 // passed in. This information is used for crash reporting.
 google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* exe_path) {
-  string16 product;
-  string16 version;
+  base::string16 product;
+  base::string16 version;
   scoped_ptr<FileVersionInfo> version_info(
       FileVersionInfo::CreateFileVersionInfo(base::FilePath(exe_path)));
   if (version_info.get()) {
@@ -1324,7 +1323,7 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
   // Build the pipe name. It can be either:
   // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
   // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
-  string16 user_sid = kSystemPrincipalSid;
+  base::string16 user_sid = kSystemPrincipalSid;
 
   if (!system_install) {
     if (!base::win::GetUserSidString(&user_sid)) {
@@ -1332,7 +1331,7 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
     }
   }
 
-  string16 pipe_name = kGoogleUpdatePipeName;
+  base::string16 pipe_name = kGoogleUpdatePipeName;
   pipe_name += user_sid;
 
   google_breakpad::ExceptionHandler* breakpad =
@@ -1599,8 +1598,8 @@ InstallStatus InstallProductsHelper(
           prefs, *installer_version);
 
       int install_msg_base = IDS_INSTALL_FAILED_BASE;
-      string16 chrome_exe;
-      string16 quoted_chrome_exe;
+      base::string16 chrome_exe;
+      base::string16 quoted_chrome_exe;
       if (install_status == SAME_VERSION_REPAIR_FAILED) {
         if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
           install_msg_base = IDS_SAME_VERSION_REPAIR_FAILED_CF_BASE;
@@ -1659,7 +1658,7 @@ InstallStatus InstallProductsHelper(
         const Product* chrome = installer_state.FindProduct(
             BrowserDistribution::CHROME_BROWSER);
         if (chrome != NULL) {
-          DCHECK_NE(chrome_exe, string16());
+          DCHECK_NE(chrome_exe, base::string16());
           RemoveChromeLegacyRegistryKeys(chrome->distribution(), chrome_exe);
         }
       }

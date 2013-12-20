@@ -23,7 +23,7 @@ namespace {
 // Returns true if at least one uninstall metric was found in
 // uninstall_metrics_dict, false otherwise.
 bool BuildUninstallMetricsString(
-    const DictionaryValue* uninstall_metrics_dict, string16* metrics) {
+    const DictionaryValue* uninstall_metrics_dict, base::string16* metrics) {
   DCHECK(NULL != metrics);
   bool has_values = false;
 
@@ -45,7 +45,7 @@ bool BuildUninstallMetricsString(
 }  // namespace
 
 bool ExtractUninstallMetrics(const DictionaryValue& root,
-                             string16* uninstall_metrics_string) {
+                             base::string16* uninstall_metrics_string) {
   // Make sure that the user wants us reporting metrics. If not, don't
   // add our uninstall metrics.
   bool metrics_reporting_enabled = false;
@@ -71,7 +71,7 @@ bool ExtractUninstallMetrics(const DictionaryValue& root,
 }
 
 bool ExtractUninstallMetricsFromFile(const base::FilePath& file_path,
-                                     string16* uninstall_metrics_string) {
+                                     base::string16* uninstall_metrics_string) {
   JSONFileValueSerializer json_serializer(file_path);
 
   std::string json_error_string;

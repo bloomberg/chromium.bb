@@ -158,7 +158,7 @@ void BrowserWithTestWindowTest::NavigateAndCommitActiveTab(const GURL& url) {
 void BrowserWithTestWindowTest::NavigateAndCommitActiveTabWithTitle(
     Browser* navigating_browser,
     const GURL& url,
-    const string16& title) {
+    const base::string16& title) {
   NavigationController* controller = &navigating_browser->tab_strip_model()->
       GetActiveWebContents()->GetController();
   NavigateAndCommit(controller, url);

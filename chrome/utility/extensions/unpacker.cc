@@ -289,7 +289,7 @@ bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
   scoped_ptr<base::DictionaryValue> root(static_cast<base::DictionaryValue*>(
       serializer.Deserialize(NULL, &error)));
   if (!root.get()) {
-    string16 messages_file = message_path.LossyDisplayName();
+    base::string16 messages_file = message_path.LossyDisplayName();
     if (error.empty()) {
       // If file is missing, Deserialize will fail with empty error.
       SetError(base::StringPrintf("%s %s", errors::kLocalesMessagesFileMissing,
@@ -323,7 +323,7 @@ void Unpacker::SetError(const std::string &error) {
   SetUTF16Error(UTF8ToUTF16(error));
 }
 
-void Unpacker::SetUTF16Error(const string16 &error) {
+void Unpacker::SetUTF16Error(const base::string16& error) {
   error_message_ = error;
 }
 

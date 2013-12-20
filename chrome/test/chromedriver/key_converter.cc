@@ -139,7 +139,7 @@ bool KeyCodeFromSpecialWebDriverKey(char16 key, ui::KeyboardCode* key_code) {
 bool KeyCodeFromShorthandKey(char16 key_utf16,
                              ui::KeyboardCode* key_code,
                              bool* client_should_skip) {
-  string16 key_str_utf16;
+  base::string16 key_str_utf16;
   key_str_utf16.push_back(key_utf16);
   std::string key_str_utf8 = UTF16ToUTF8(key_str_utf16);
   if (key_str_utf8.length() != 1)
@@ -186,13 +186,13 @@ KeyEvent CreateCharEvent(const std::string& unmodified_text,
                   ui::VKEY_UNKNOWN);
 }
 
-Status ConvertKeysToKeyEvents(const string16& client_keys,
+Status ConvertKeysToKeyEvents(const base::string16& client_keys,
                               bool release_modifiers,
                               int* modifiers,
                               std::list<KeyEvent>* client_key_events) {
   std::list<KeyEvent> key_events;
 
-  string16 keys = client_keys;
+  base::string16 keys = client_keys;
   // Add an implicit NULL character to the end of the input to depress all
   // modifiers.
   if (release_modifiers)

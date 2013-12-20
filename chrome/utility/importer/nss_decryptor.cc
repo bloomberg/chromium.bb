@@ -61,10 +61,10 @@
 *
 * ***** END LICENSE BLOCK ***** */
 
-string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
+base::string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
   // Do nothing if NSS is not loaded.
   if (!is_nss_initialized_)
-    return string16();
+    return base::string16();
 
   // The old style password is encoded in base64. They are identified
   // by a leading '~'. Otherwise, we should decrypt the text.
@@ -76,7 +76,7 @@ string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
     SECStatus result = PK11_Authenticate(slot, PR_TRUE, NULL);
     if (result != SECSuccess) {
       FreeSlot(slot);
-      return string16();
+      return base::string16();
     }
 
     SECItem request;

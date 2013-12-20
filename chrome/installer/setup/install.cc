@@ -131,7 +131,7 @@ void ExecuteAndLogShortcutOperation(
 }
 
 void AddChromeToMediaPlayerList() {
-  string16 reg_path(installer::kMediaPlayerRegPath);
+  base::string16 reg_path(installer::kMediaPlayerRegPath);
   // registry paths can also be appended like file system path
   reg_path.push_back(base::FilePath::kSeparators[0]);
   reg_path.append(installer::kChromeExe);
@@ -297,7 +297,7 @@ installer::InstallShortcutOperation GetAppLauncherShortcutOperation(
 
 namespace installer {
 
-void EscapeXmlAttributeValueInSingleQuotes(string16* att_value) {
+void EscapeXmlAttributeValueInSingleQuotes(base::string16* att_value) {
   base::ReplaceChars(*att_value, L"&", L"&amp;", att_value);
   base::ReplaceChars(*att_value, L"'", L"&apos;", att_value);
   base::ReplaceChars(*att_value, L"<", L"&lt;", att_value);
@@ -306,7 +306,7 @@ void EscapeXmlAttributeValueInSingleQuotes(string16* att_value) {
 bool CreateVisualElementsManifest(const base::FilePath& src_path,
                                   const Version& version) {
   // Construct the relative path to the versioned VisualElements directory.
-  string16 elements_dir(ASCIIToUTF16(version.GetString()));
+  base::string16 elements_dir(ASCIIToUTF16(version.GetString()));
   elements_dir.push_back(base::FilePath::kSeparators[0]);
   elements_dir.append(installer::kVisualElements);
 
@@ -334,19 +334,18 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
         "  </VisualElements>\r\n"
         "</Application>";
 
-    const string16 manifest_template(ASCIIToUTF16(kManifestTemplate));
+    const base::string16 manifest_template(ASCIIToUTF16(kManifestTemplate));
 
     BrowserDistribution* dist = BrowserDistribution::GetSpecificDistribution(
         BrowserDistribution::CHROME_BROWSER);
     // TODO(grt): http://crbug.com/75152 Write a reference to a localized
     // resource for |display_name|.
-    string16 display_name(dist->GetDisplayName());
+    base::string16 display_name(dist->GetDisplayName());
     EscapeXmlAttributeValueInSingleQuotes(&display_name);
 
     // Fill the manifest with the desired values.
-    string16 manifest16(base::StringPrintf(manifest_template.c_str(),
-                                           display_name.c_str(),
-                                           elements_dir.c_str()));
+    base::string16 manifest16(base::StringPrintf(
+        manifest_template.c_str(), display_name.c_str(), elements_dir.c_str()));
 
     // Write the manifest to |src_path|.
     const std::string manifest(UTF16ToUTF8(manifest16));
@@ -484,7 +483,7 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
   // Make Chrome the default browser if desired when possible. Otherwise, only
   // register it with Windows.
   BrowserDistribution* dist = product.distribution();
-  const string16 chrome_exe(
+  const base::string16 chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe).value());
   VLOG(1) << "Registering Chrome as browser: " << chrome_exe;
   if (make_chrome_default && ShellUtil::CanMakeChromeDefaultUnattended()) {
@@ -493,7 +492,7 @@ void RegisterChromeOnMachine(const InstallerState& installer_state,
       level = level | ShellUtil::SYSTEM_LEVEL;
     ShellUtil::MakeChromeDefault(dist, level, chrome_exe, true);
   } else {
-    ShellUtil::RegisterChromeBrowser(dist, chrome_exe, string16(), false);
+    ShellUtil::RegisterChromeBrowser(dist, chrome_exe, base::string16(), false);
   }
 }
 

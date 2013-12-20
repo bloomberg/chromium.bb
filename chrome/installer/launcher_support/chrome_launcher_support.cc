@@ -50,10 +50,10 @@ const wchar_t kUninstallStringField[] = L"UninstallString";
 bool GetClientStateValue(InstallationLevel level,
                          const wchar_t* app_guid,
                          const wchar_t* value_name,
-                         string16* value) {
+                         base::string16* value) {
   HKEY root_key = (level == USER_LEVEL_INSTALLATION) ?
       HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-  string16 subkey(kGoogleRegClientStateKey);
+  base::string16 subkey(kGoogleRegClientStateKey);
   subkey.append(1, L'\\').append(app_guid);
   base::win::RegKey reg_key;
   // Google Update always uses 32bit hive.
@@ -71,7 +71,7 @@ bool GetClientStateValue(InstallationLevel level,
 bool IsProductInstalled(InstallationLevel level, const wchar_t* app_guid) {
   HKEY root_key = (level == USER_LEVEL_INSTALLATION) ?
       HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-  string16 subkey(kGoogleRegClientsKey);
+  base::string16 subkey(kGoogleRegClientsKey);
   subkey.append(1, L'\\').append(app_guid);
   base::win::RegKey reg_key;
   // Google Update always uses 32bit hive.
@@ -81,7 +81,7 @@ bool IsProductInstalled(InstallationLevel level, const wchar_t* app_guid) {
 }
 
 bool IsAppLauncherEnabledAtLevel(InstallationLevel level) {
-  string16 uninstall_arguments;
+  base::string16 uninstall_arguments;
   if (GetClientStateValue(level,
                           kAppHostAppId,
                           kUninstallArgumentsField,
@@ -98,7 +98,7 @@ bool IsAppLauncherEnabledAtLevel(InstallationLevel level) {
 // an error occurs or the product is not installed at the specified level.
 base::FilePath GetSetupExeFromRegistry(InstallationLevel level,
                                        const wchar_t* app_guid) {
-  string16 uninstall;
+  base::string16 uninstall;
   if (GetClientStateValue(level, app_guid, kUninstallStringField, &uninstall)) {
     base::FilePath setup_exe_path(uninstall);
     if (base::PathExists(setup_exe_path))
@@ -135,7 +135,7 @@ void UninstallLegacyAppLauncher(InstallationLevel level) {
   base::FilePath setup_exe(GetSetupExeFromRegistry(level, kAppHostAppId));
   if (setup_exe.empty())
     return;
-  string16 uninstall_arguments;
+  base::string16 uninstall_arguments;
   if (GetClientStateValue(level,
                           kAppHostAppId,
                           kUninstallArgumentsField,

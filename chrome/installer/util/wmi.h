@@ -78,7 +78,7 @@ class WMIProcess {
 class WMIComputerSystem {
  public:
   // Returns a human readable string for the model/make of this computer.
-  static string16 GetModel();
+  static base::string16 GetModel();
 };
 
 }  // namespace installer

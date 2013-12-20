@@ -126,7 +126,7 @@ class NSSDecryptor {
 
   // Decrypts Firefox stored passwords. Before using this method,
   // make sure Init() returns true.
-  string16 Decrypt(const std::string& crypt) const;
+  base::string16 Decrypt(const std::string& crypt) const;
 
   // Parses the Firefox password file content, decrypts the
   // username/password and reads other related information.

@@ -55,14 +55,14 @@ inline int RandomInt(int min, int max) {
 }
 
 // Return a string of |count| lowercase random characters.
-string16 RandomChars(int count) {
-  string16 str;
+base::string16 RandomChars(int count) {
+  base::string16 str;
   for (int i = 0; i < count; ++i)
     str += L'a' + rand() % 26;
   return str;
 }
 
-string16 RandomWord() {
+base::string16 RandomWord() {
   // TODO(evanm): should we instead use the markov chain based
   // version of this that I already wrote?
 
@@ -78,8 +78,8 @@ string16 RandomWord() {
 }
 
 // Return a string of |count| random words.
-string16 RandomWords(int count) {
-  string16 str;
+base::string16 RandomWords(int count) {
+  base::string16 str;
   for (int i = 0; i < count; ++i) {
     if (!str.empty())
       str += L' ';
@@ -95,7 +95,7 @@ GURL ConstructRandomURL() {
 }
 
 // Return a random page title-looking string.
-string16 ConstructRandomTitle() {
+base::string16 ConstructRandomTitle() {
   return RandomWords(RandomInt(3, 15));
 }
 

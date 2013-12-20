@@ -29,7 +29,7 @@ namespace installer {
 
 // Constructs a date string in the format understood by Google Update for the
 // |current_time| plus one year.
-string16 BuildExperimentDateString(const base::Time& current_time);
+base::string16 BuildExperimentDateString(const base::Time& current_time);
 
 }  // namespace installer
 

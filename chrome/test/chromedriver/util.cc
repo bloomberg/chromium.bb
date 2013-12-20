@@ -29,10 +29,10 @@ std::string GenerateId() {
 
 namespace {
 
-Status FlattenStringArray(const base::ListValue* src, string16* dest) {
-  string16 keys;
+Status FlattenStringArray(const base::ListValue* src, base::string16* dest) {
+  base::string16 keys;
   for (size_t i = 0; i < src->GetSize(); ++i) {
-    string16 keys_list_part;
+    base::string16 keys_list_part;
     if (!src->GetString(i, &keys_list_part))
       return Status(kUnknownError, "keys should be a string");
     for (size_t j = 0; j < keys_list_part.size(); ++j) {
@@ -54,7 +54,7 @@ Status SendKeysOnWindow(
     const base::ListValue* key_list,
     bool release_modifiers,
     int* sticky_modifiers) {
-  string16 keys;
+  base::string16 keys;
   Status status = FlattenStringArray(key_list, &keys);
   if (status.IsError())
     return status;

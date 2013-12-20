@@ -42,11 +42,11 @@ class TestShellTab : public TabAndroid {
   // TabAndroid Methods
   // --------------------------------------------------------------------------
   virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
-                                         const string16& host,
-                                         const string16& realm) OVERRIDE;
+                                         const base::string16& host,
+                                         const base::string16& realm) OVERRIDE;
 
   virtual void AddShortcutToBookmark(const GURL& url,
-                                     const string16& title,
+                                     const base::string16& title,
                                      const SkBitmap& skbitmap,
                                      int r_value,
                                      int g_value,

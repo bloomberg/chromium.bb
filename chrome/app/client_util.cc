@@ -114,7 +114,7 @@ size_t InitPreReadPercentage() {
 
   // We limit experiment populations to 1% of the Stable and 10% of each of
   // the other channels.
-  const string16 channel(GoogleUpdateSettings::GetChromeChannel(
+  const base::string16 channel(GoogleUpdateSettings::GetChromeChannel(
       GoogleUpdateSettings::IsSystemInstall()));
   double threshold = (channel == installer::kChromeChannelStable) ? 0.01 : 0.10;
 
@@ -148,7 +148,7 @@ size_t InitPreReadPercentage() {
 // Expects that |dir| has a trailing backslash. |dir| is modified so it
 // contains the full path that was tried. Caller must check for the return
 // value not being null to determine if this path contains a valid dll.
-HMODULE LoadChromeWithDirectory(string16* dir) {
+HMODULE LoadChromeWithDirectory(base::string16* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
 #if !defined(CHROME_MULTIPLE_DLL)
@@ -176,36 +176,36 @@ HMODULE LoadChromeWithDirectory(string16* dir) {
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }
 
-void RecordDidRun(const string16& dll_path) {
+void RecordDidRun(const base::string16& dll_path) {
   bool system_level = !InstallUtil::IsPerUserInstall(dll_path.c_str());
   GoogleUpdateSettings::UpdateDidRunState(true, system_level);
 }
 
-void ClearDidRun(const string16& dll_path) {
+void ClearDidRun(const base::string16& dll_path) {
   bool system_level = !InstallUtil::IsPerUserInstall(dll_path.c_str());
   GoogleUpdateSettings::UpdateDidRunState(false, system_level);
 }
 
 }  // namespace
 
-string16 GetExecutablePath() {
+base::string16 GetExecutablePath() {
   wchar_t path[MAX_PATH];
   ::GetModuleFileNameW(NULL, path, MAX_PATH);
   if (!::PathRemoveFileSpecW(path))
-    return string16();
-  string16 exe_path(path);
+    return base::string16();
+  base::string16 exe_path(path);
   return exe_path.append(1, L'\\');
 }
 
-string16 GetCurrentModuleVersion() {
+base::string16 GetCurrentModuleVersion() {
   scoped_ptr<FileVersionInfo> file_version_info(
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
   if (file_version_info.get()) {
-    string16 version_string(file_version_info->file_version());
+    base::string16 version_string(file_version_info->file_version());
     if (Version(WideToASCII(version_string)).IsValid())
       return version_string;
   }
-  return string16();
+  return base::string16();
 }
 
 //=============================================================================
@@ -225,14 +225,15 @@ MainDllLoader::~MainDllLoader() {
 // If that fails then finally we look at the version resource in the current
 // module. This is the expected path for chrome.exe browser instances in an
 // installed build.
-HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
+HMODULE MainDllLoader::Load(base::string16* out_version,
+                            base::string16* out_file) {
   const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  const string16 dir(GetExecutablePath());
+  const base::string16 dir(GetExecutablePath());
   *out_file = dir;
   HMODULE dll = LoadChromeWithDirectory(out_file);
   if (!dll) {
     // Loading from same directory (for developers) failed.
-    string16 version_string;
+    base::string16 version_string;
     if (cmd_line.HasSwitch(switches::kChromeVersion)) {
       // This is used to support Chrome Frame, see http://crbug.com/88589.
       version_string = cmd_line.GetSwitchValueNative(switches::kChromeVersion);
@@ -274,8 +275,8 @@ HMODULE MainDllLoader::Load(string16* out_version, string16* out_file) {
 // add custom code in the OnBeforeLaunch callback.
 int MainDllLoader::Launch(HINSTANCE instance,
                           sandbox::SandboxInterfaceInfo* sbox_info) {
-  string16 version;
-  string16 file;
+  base::string16 version;
+  base::string16 file;
   dll_ = Load(&version, &file);
   if (!dll_)
     return chrome::RESULT_CODE_MISSING_DATA;
@@ -318,18 +319,18 @@ void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
 
 class ChromeDllLoader : public MainDllLoader {
  public:
-  virtual string16 GetRegistryPath() {
-    string16 key(google_update::kRegPathClients);
+  virtual base::string16 GetRegistryPath() {
+    base::string16 key(google_update::kRegPathClients);
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     key.append(L"\\").append(dist->GetAppGuid());
     return key;
   }
 
-  virtual void OnBeforeLaunch(const string16& dll_path) {
+  virtual void OnBeforeLaunch(const base::string16& dll_path) {
     RecordDidRun(dll_path);
   }
 
-  virtual int OnBeforeExit(int return_code, const string16& dll_path) {
+  virtual int OnBeforeExit(int return_code, const base::string16& dll_path) {
     // NORMAL_EXIT_CANCEL is used for experiments when the user cancels
     // so we need to reset the did_run signal so omaha does not count
     // this run as active usage.
@@ -344,7 +345,7 @@ class ChromeDllLoader : public MainDllLoader {
 
 class ChromiumDllLoader : public MainDllLoader {
  public:
-  virtual string16 GetRegistryPath() {
+  virtual base::string16 GetRegistryPath() {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     return dist->GetVersionKey();
   }

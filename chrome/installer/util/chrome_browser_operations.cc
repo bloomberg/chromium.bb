@@ -22,7 +22,8 @@
 namespace installer {
 
 void ChromeBrowserOperations::ReadOptions(const MasterPreferences& prefs,
-                                          std::set<string16>* options) const {
+                                          std::set<base::string16>* options)
+    const {
   DCHECK(options);
 
   bool pref_value;
@@ -34,7 +35,8 @@ void ChromeBrowserOperations::ReadOptions(const MasterPreferences& prefs,
 }
 
 void ChromeBrowserOperations::ReadOptions(const CommandLine& uninstall_command,
-                                          std::set<string16>* options) const {
+                                          std::set<base::string16>* options)
+    const {
   DCHECK(options);
 
   if (uninstall_command.HasSwitch(switches::kMultiInstall))
@@ -42,19 +44,19 @@ void ChromeBrowserOperations::ReadOptions(const CommandLine& uninstall_command,
 }
 
 void ChromeBrowserOperations::AddKeyFiles(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     std::vector<base::FilePath>* key_files) const {
   DCHECK(key_files);
   key_files->push_back(base::FilePath(installer::kChromeDll));
 }
 
 void ChromeBrowserOperations::AddComDllList(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     std::vector<base::FilePath>* com_dll_list) const {
 }
 
 void ChromeBrowserOperations::AppendProductFlags(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
@@ -69,7 +71,7 @@ void ChromeBrowserOperations::AppendProductFlags(
 }
 
 void ChromeBrowserOperations::AppendRenameFlags(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
 
@@ -80,9 +82,10 @@ void ChromeBrowserOperations::AppendRenameFlags(
   }
 }
 
-bool ChromeBrowserOperations::SetChannelFlags(const std::set<string16>& options,
-                                              bool set,
-                                              ChannelInfo* channel_info) const {
+bool ChromeBrowserOperations::SetChannelFlags(
+    const std::set<base::string16>& options,
+    bool set,
+    ChannelInfo* channel_info) const {
 #if defined(GOOGLE_CHROME_BUILD)
   DCHECK(channel_info);
   return channel_info->SetChrome(set);
@@ -92,7 +95,7 @@ bool ChromeBrowserOperations::SetChannelFlags(const std::set<string16>& options,
 }
 
 bool ChromeBrowserOperations::ShouldCreateUninstallEntry(
-    const std::set<string16>& options) const {
+    const std::set<base::string16>& options) const {
   return true;
 }
 
@@ -137,7 +140,7 @@ void ChromeBrowserOperations::AddDefaultShortcutProperties(
 
 void ChromeBrowserOperations::LaunchUserExperiment(
     const base::FilePath& setup_path,
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     InstallStatus status,
     bool system_level) const {
   CommandLine base_command(setup_path);

@@ -113,7 +113,7 @@ class ShellUtilShortcutTest : public testing::Test {
         return;
     }
 
-    string16 shortcut_name;
+    base::string16 shortcut_name;
     if (properties.has_shortcut_name()) {
       shortcut_name = properties.shortcut_name;
     } else {
@@ -135,7 +135,7 @@ class ShellUtilShortcutTest : public testing::Test {
     if (properties.has_arguments())
       expected_properties.set_arguments(properties.arguments);
     else
-      expected_properties.set_arguments(string16());
+      expected_properties.set_arguments(base::string16());
 
     if (properties.has_description())
       expected_properties.set_description(properties.description);
@@ -204,7 +204,7 @@ TEST_F(ShellUtilShortcutTest, GetShortcutPath) {
   ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist_,
                              ShellUtil::SYSTEM_LEVEL, &path);
   EXPECT_EQ(fake_default_user_quick_launch_.path(), path);
-  string16 start_menu_subfolder =
+  base::string16 start_menu_subfolder =
       dist_->GetStartMenuShortcutSubfolder(
           BrowserDistribution::SUBFOLDER_CHROME);
   ShellUtil::GetShortcutPath(ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR,
@@ -316,7 +316,7 @@ TEST_F(ShellUtilShortcutTest, CreateIfNoSystemLevel) {
 }
 
 TEST_F(ShellUtilShortcutTest, CreateIfNoSystemLevelWithSystemLevelPresent) {
-  string16 shortcut_name(
+  base::string16 shortcut_name(
       dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
       installer::kLnkExt);
 
@@ -345,7 +345,7 @@ TEST_F(ShellUtilShortcutTest, CreateIfNoSystemLevelStartMenu) {
 }
 
 TEST_F(ShellUtilShortcutTest, CreateAlwaysUserWithSystemLevelPresent) {
-  string16 shortcut_name(
+  base::string16 shortcut_name(
       dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
       installer::kLnkExt);
 
@@ -369,7 +369,7 @@ TEST_F(ShellUtilShortcutTest, RemoveChromeShortcut) {
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
 
-  string16 shortcut_name(
+  base::string16 shortcut_name(
       dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
       installer::kLnkExt);
   base::FilePath shortcut_path(fake_user_desktop_.path().Append(shortcut_name));
@@ -388,7 +388,7 @@ TEST_F(ShellUtilShortcutTest, RemoveSystemLevelChromeShortcut) {
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
 
-  string16 shortcut_name(
+  base::string16 shortcut_name(
       dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
       installer::kLnkExt);
   base::FilePath shortcut_path(
@@ -410,8 +410,8 @@ TEST_F(ShellUtilShortcutTest, RemoveMultipleChromeShortcuts) {
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
-  string16 shortcut1_name(
-      string16(kShortcutName1).append(installer::kLnkExt));
+  base::string16 shortcut1_name(
+      base::string16(kShortcutName1).append(installer::kLnkExt));
   base::FilePath shortcut1_path(
       fake_user_desktop_.path().Append(shortcut1_name));
   ASSERT_TRUE(base::PathExists(shortcut1_path));
@@ -421,7 +421,8 @@ TEST_F(ShellUtilShortcutTest, RemoveMultipleChromeShortcuts) {
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
-  string16 shortcut2_name(string16(kShortcutName2).append(installer::kLnkExt));
+  base::string16 shortcut2_name(
+      base::string16(kShortcutName2).append(installer::kLnkExt));
   base::FilePath shortcut2_path(
       fake_user_desktop_.path().Append(shortcut2_name));
   ASSERT_TRUE(base::PathExists(shortcut2_path));
@@ -439,7 +440,7 @@ TEST_F(ShellUtilShortcutTest, UpdateChromeShortcutsWithArgs) {
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
 
-  string16 shortcut_name(
+  base::string16 shortcut_name(
       dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
       installer::kLnkExt);
   base::FilePath shortcut_path(fake_user_desktop_.path().Append(shortcut_name));
@@ -465,7 +466,7 @@ TEST_F(ShellUtilShortcutTest, UpdateSystemLevelChromeShortcutsWithArgs) {
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
 
-  string16 shortcut_name(
+  base::string16 shortcut_name(
       dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
       installer::kLnkExt);
   base::FilePath shortcut_path(
@@ -496,19 +497,21 @@ TEST_F(ShellUtilShortcutTest, UpdateMultipleChromeShortcutsWithArgs) {
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
-  string16 shortcut1_name(string16(kShortcutName1).append(installer::kLnkExt));
+  base::string16 shortcut1_name(
+      base::string16(kShortcutName1).append(installer::kLnkExt));
   base::FilePath shortcut1_path(
       fake_user_desktop_.path().Append(shortcut1_name));
   ShellUtil::ShortcutProperties expected_properties1(test_properties_);
 
   // Setup shortcut 2, which has non-empty arguments.
-  string16 shortcut2_args = L"--profile-directory=\"Profile 2\"";
+  base::string16 shortcut2_args = L"--profile-directory=\"Profile 2\"";
   test_properties_.set_shortcut_name(kShortcutName2);
   test_properties_.set_arguments(shortcut2_args);
   ASSERT_TRUE(ShellUtil::CreateOrUpdateShortcut(
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
-  string16 shortcut2_name(string16(kShortcutName2).append(installer::kLnkExt));
+  base::string16 shortcut2_name(
+      base::string16(kShortcutName2).append(installer::kLnkExt));
   base::FilePath shortcut2_path(
       fake_user_desktop_.path().Append(shortcut2_name));
   ASSERT_TRUE(base::PathExists(shortcut2_path));
@@ -597,7 +600,7 @@ TEST_F(ShellUtilShortcutTest,
                   dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
 
-  string16 shortcut_name(
+  base::string16 shortcut_name(
       dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
       installer::kLnkExt);
   base::FilePath shortcut_path(
@@ -626,7 +629,7 @@ TEST_F(ShellUtilShortcutTest, DontRemoveChromeShortcutIfPointsToAnotherChrome) {
                   ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_, test_properties_,
                   ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
 
-  string16 shortcut_name(
+  base::string16 shortcut_name(
       dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
       installer::kLnkExt);
   base::FilePath shortcut_path(fake_user_desktop_.path().Append(shortcut_name));
@@ -643,17 +646,17 @@ TEST_F(ShellUtilShortcutTest, DontRemoveChromeShortcutIfPointsToAnotherChrome) {
 }
 
 TEST(ShellUtilTest, BuildAppModelIdBasic) {
-  std::vector<string16> components;
+  std::vector<base::string16> components;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  const string16 base_app_id(dist->GetBaseAppId());
+  const base::string16 base_app_id(dist->GetBaseAppId());
   components.push_back(base_app_id);
   ASSERT_EQ(base_app_id, ShellUtil::BuildAppModelId(components));
 }
 
 TEST(ShellUtilTest, BuildAppModelIdManySmall) {
-  std::vector<string16> components;
+  std::vector<base::string16> components;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  const string16 suffixed_app_id(dist->GetBaseAppId().append(L".gab"));
+  const base::string16 suffixed_app_id(dist->GetBaseAppId().append(L".gab"));
   components.push_back(suffixed_app_id);
   components.push_back(L"Default");
   components.push_back(L"Test");
@@ -662,8 +665,8 @@ TEST(ShellUtilTest, BuildAppModelIdManySmall) {
 }
 
 TEST(ShellUtilTest, BuildAppModelIdLongUsernameNormalProfile) {
-  std::vector<string16> components;
-  const string16 long_appname(
+  std::vector<base::string16> components;
+  const base::string16 long_appname(
       L"Chrome.a_user_who_has_a_crazy_long_name_with_some_weird@symbols_in_it_"
       L"that_goes_over_64_characters");
   components.push_back(long_appname);
@@ -673,21 +676,22 @@ TEST(ShellUtilTest, BuildAppModelIdLongUsernameNormalProfile) {
 }
 
 TEST(ShellUtilTest, BuildAppModelIdLongEverything) {
-  std::vector<string16> components;
-  const string16 long_appname(
-      L"Chrome.a_user_who_has_a_crazy_long_name_with_some_weird@symbols_in_it_"
-      L"that_goes_over_64_characters");
+  std::vector<base::string16> components;
+  const base::string16 long_appname(L"Chrome.a_user_who_has_a_crazy_long_name_"
+                                    L"with_some_weird@symbols_in_"
+                                    L"it_" L"that_goes_over_64_characters");
   components.push_back(long_appname);
   components.push_back(
       L"A_crazy_profile_name_not_even_sure_whether_that_is_possible");
-  const string16 constructed_app_id(ShellUtil::BuildAppModelId(components));
+  const base::string16 constructed_app_id(
+      ShellUtil::BuildAppModelId(components));
   ASSERT_LE(constructed_app_id.length(), installer::kMaxAppModelIdLength);
   ASSERT_EQ(L"Chrome.a_user_wer_64_characters.A_crazy_profilethat_is_possible",
             constructed_app_id);
 }
 
 TEST(ShellUtilTest, GetUserSpecificRegistrySuffix) {
-  string16 suffix;
+  base::string16 suffix;
   ASSERT_TRUE(ShellUtil::GetUserSpecificRegistrySuffix(&suffix));
   ASSERT_TRUE(StartsWith(suffix, L".", true));
   ASSERT_EQ(27, suffix.length());
@@ -696,7 +700,7 @@ TEST(ShellUtilTest, GetUserSpecificRegistrySuffix) {
 }
 
 TEST(ShellUtilTest, GetOldUserSpecificRegistrySuffix) {
-  string16 suffix;
+  base::string16 suffix;
   ASSERT_TRUE(ShellUtil::GetOldUserSpecificRegistrySuffix(&suffix));
   ASSERT_TRUE(StartsWith(suffix, L".", true));
 
@@ -711,7 +715,7 @@ TEST(ShellUtilTest, ByteArrayToBase32) {
   // Tests from http://tools.ietf.org/html/rfc4648#section-10.
   const unsigned char test_array[] = { 'f', 'o', 'o', 'b', 'a', 'r' };
 
-  const string16 expected[] = { L"", L"MY", L"MZXQ", L"MZXW6", L"MZXW6YQ",
+  const base::string16 expected[] = { L"", L"MY", L"MZXQ", L"MZXW6", L"MZXW6YQ",
                                 L"MZXW6YTB", L"MZXW6YTBOI"};
 
   // Run the tests, with one more letter in the input every pass.

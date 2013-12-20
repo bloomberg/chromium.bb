@@ -81,7 +81,7 @@ struct FirefoxImporter::BookmarkItem {
   int parent;
   int id;
   GURL url;
-  string16 title;
+  base::string16 title;
   BookmarkItemType type;
   std::string keyword;
   base::Time date_added;
@@ -258,7 +258,7 @@ void FirefoxImporter::ImportBookmarks() {
       continue;
 
     // Find the bookmark path by tracing their links to parent folders.
-    std::vector<string16> path;
+    std::vector<base::string16> path;
     BookmarkItem* child = item;
     bool found_path = false;
     bool is_in_toolbar = false;
@@ -321,7 +321,7 @@ void FirefoxImporter::ImportBookmarks() {
 
   // Write into profile.
   if (!bookmarks.empty() && !cancelled()) {
-    const string16& first_folder_name =
+    const base::string16& first_folder_name =
         bridge_->GetLocalizedString(IDS_BOOKMARK_GROUP_FROM_FIREFOX);
     bridge_->AddBookmarks(bookmarks, first_folder_name);
   }

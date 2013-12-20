@@ -315,7 +315,7 @@ void Switches::SetSwitch(const std::string& name, const std::string& value) {
 #endif
 }
 
-void Switches::SetSwitch(const std::string& name, const string16& value) {
+void Switches::SetSwitch(const std::string& name, const base::string16& value) {
 #if defined(OS_WIN)
   switch_map_[name] = value;
 #else

@@ -175,7 +175,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         hr = E_FAIL;
         DOCINFO di = {0};
         di.cbSize = sizeof(DOCINFO);
-        string16 doc_name = UTF8ToUTF16(job_title);
+        base::string16 doc_name = UTF8ToUTF16(job_title);
         DCHECK(printing::SimplifyDocumentTitle(doc_name) == doc_name);
         di.lpszDocName = doc_name.c_str();
         job_id_ = StartDoc(dc, &di);

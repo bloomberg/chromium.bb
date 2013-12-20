@@ -46,7 +46,7 @@ class Unpacker {
   // success.
   bool DumpMessageCatalogsToFile();
 
-  const string16& error_message() { return error_message_; }
+  const base::string16& error_message() { return error_message_; }
   base::DictionaryValue* parsed_manifest() {
     return parsed_manifest_.get();
   }
@@ -70,7 +70,7 @@ class Unpacker {
 
   // Set the error message.
   void SetError(const std::string& error);
-  void SetUTF16Error(const string16& error);
+  void SetUTF16Error(const base::string16& error);
 
   // The extension to unpack.
   base::FilePath extension_path_;
@@ -100,7 +100,7 @@ class Unpacker {
   scoped_ptr<base::DictionaryValue> parsed_catalogs_;
 
   // The last error message that was set.  Empty if there were no errors.
-  string16 error_message_;
+  base::string16 error_message_;
 
   DISALLOW_COPY_AND_ASSIGN(Unpacker);
 };

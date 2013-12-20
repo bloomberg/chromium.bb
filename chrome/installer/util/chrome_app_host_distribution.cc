@@ -30,58 +30,58 @@ ChromeAppHostDistribution::ChromeAppHostDistribution()
     : BrowserDistribution(CHROME_APP_HOST) {
 }
 
-string16 ChromeAppHostDistribution::GetAppGuid() {
+base::string16 ChromeAppHostDistribution::GetAppGuid() {
   return kChromeAppHostGuid;
 }
 
-string16 ChromeAppHostDistribution::GetBaseAppName() {
+base::string16 ChromeAppHostDistribution::GetBaseAppName() {
   return L"Google Chrome App Launcher";
 }
 
-string16 ChromeAppHostDistribution::GetBrowserProgIdPrefix() {
+base::string16 ChromeAppHostDistribution::GetBrowserProgIdPrefix() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromeAppHostDistribution::GetBrowserProgIdDesc() {
+base::string16 ChromeAppHostDistribution::GetBrowserProgIdDesc() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromeAppHostDistribution::GetDisplayName() {
+base::string16 ChromeAppHostDistribution::GetDisplayName() {
   return GetShortcutName(SHORTCUT_APP_LAUNCHER);
 }
 
-string16 ChromeAppHostDistribution::GetShortcutName(
+base::string16 ChromeAppHostDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
   DCHECK_EQ(shortcut_type, SHORTCUT_APP_LAUNCHER);
   return installer::GetLocalizedString(IDS_PRODUCT_APP_LAUNCHER_NAME_BASE);
 }
 
-string16 ChromeAppHostDistribution::GetBaseAppId() {
+base::string16 ChromeAppHostDistribution::GetBaseAppId() {
   // Should be same as AppListController::GetAppModelId().
   return L"ChromeAppList";
 }
 
-string16 ChromeAppHostDistribution::GetInstallSubDir() {
+base::string16 ChromeAppHostDistribution::GetInstallSubDir() {
   return BrowserDistribution::GetSpecificDistribution(
       BrowserDistribution::CHROME_BINARIES)->GetInstallSubDir();
 }
 
-string16 ChromeAppHostDistribution::GetPublisherName() {
-  const string16& publisher_name =
+base::string16 ChromeAppHostDistribution::GetPublisherName() {
+  const base::string16& publisher_name =
       installer::GetLocalizedString(IDS_ABOUT_VERSION_COMPANY_NAME_BASE);
   return publisher_name;
 }
 
-string16 ChromeAppHostDistribution::GetAppDescription() {
-  const string16& app_description =
+base::string16 ChromeAppHostDistribution::GetAppDescription() {
+  const base::string16& app_description =
       installer::GetLocalizedString(IDS_APP_LAUNCHER_SHORTCUT_TOOLTIP_BASE);
   return app_description;
 }
 
-string16 ChromeAppHostDistribution::GetLongAppDescription() {
-  const string16& app_description =
+base::string16 ChromeAppHostDistribution::GetLongAppDescription() {
+  const base::string16& app_description =
       installer::GetLocalizedString(IDS_APP_LAUNCHER_PRODUCT_DESCRIPTION_BASE);
   return app_description;
 }
@@ -90,15 +90,15 @@ std::string ChromeAppHostDistribution::GetSafeBrowsingName() {
   return "googlechromeapphost";
 }
 
-string16 ChromeAppHostDistribution::GetStateKey() {
-  string16 key(google_update::kRegPathClientState);
+base::string16 ChromeAppHostDistribution::GetStateKey() {
+  base::string16 key(google_update::kRegPathClientState);
   key.append(L"\\");
   key.append(kChromeAppHostGuid);
   return key;
 }
 
-string16 ChromeAppHostDistribution::GetStateMediumKey() {
-  string16 key(google_update::kRegPathClientStateMedium);
+base::string16 ChromeAppHostDistribution::GetStateMediumKey() {
+  base::string16 key(google_update::kRegPathClientStateMedium);
   key.append(L"\\");
   key.append(kChromeAppHostGuid);
   return key;
@@ -112,19 +112,19 @@ std::string ChromeAppHostDistribution::GetHttpPipeliningTestServer() const {
   return chrome_common_net::kPipelineTestServerBaseUrl;
 }
 
-string16 ChromeAppHostDistribution::GetUninstallLinkName() {
-  const string16& link_name =
+base::string16 ChromeAppHostDistribution::GetUninstallLinkName() {
+  const base::string16& link_name =
       installer::GetLocalizedString(IDS_UNINSTALL_APP_LAUNCHER_BASE);
   return link_name;
 }
 
-string16 ChromeAppHostDistribution::GetUninstallRegPath() {
+base::string16 ChromeAppHostDistribution::GetUninstallRegPath() {
   return L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
          L"Google Chrome App Launcher";
 }
 
-string16 ChromeAppHostDistribution::GetVersionKey() {
-  string16 key(google_update::kRegPathClients);
+base::string16 ChromeAppHostDistribution::GetVersionKey() {
+  base::string16 key(google_update::kRegPathClients);
   key.append(L"\\");
   key.append(kChromeAppHostGuid);
   return key;
@@ -139,12 +139,12 @@ bool ChromeAppHostDistribution::CanCreateDesktopShortcuts() {
   return true;
 }
 
-string16 ChromeAppHostDistribution::GetIconFilename() {
+base::string16 ChromeAppHostDistribution::GetIconFilename() {
   return installer::kChromeAppHostExe;
 }
 
 bool ChromeAppHostDistribution::GetCommandExecuteImplClsid(
-    string16* handler_class_uuid) {
+    base::string16* handler_class_uuid) {
   return false;
 }
 

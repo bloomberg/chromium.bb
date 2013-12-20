@@ -138,13 +138,14 @@ class WebUIBrowserTest : public InProcessBrowserTest {
 
  private:
   // Builds a string containing all added javascript libraries.
-  void BuildJavascriptLibraries(string16* content);
+  void BuildJavascriptLibraries(base::string16* content);
 
   // Builds a string with a call to the runTest JS function, passing the
   // given |is_async|, |test_name| and its |args|.
-  string16 BuildRunTestJSCall(bool is_async,
-                              const std::string& test_name,
-                              const WebUIBrowserTest::ConstValueVector& args);
+  base::string16 BuildRunTestJSCall(
+      bool is_async,
+      const std::string& test_name,
+      const WebUIBrowserTest::ConstValueVector& args);
 
   // Loads all libraries added with AddLibrary(), and calls |function_name| with
   // |function_arguments|. When |is_test| is true, the framework wraps

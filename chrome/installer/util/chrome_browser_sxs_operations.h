@@ -16,10 +16,10 @@ class ChromeBrowserSxSOperations : public ChromeBrowserOperations {
  public:
   ChromeBrowserSxSOperations() {}
 
-  virtual void AppendProductFlags(const std::set<string16>& options,
+  virtual void AppendProductFlags(const std::set<base::string16>& options,
                                   CommandLine* cmd_line) const OVERRIDE;
 
-  virtual void AppendRenameFlags(const std::set<string16>& options,
+  virtual void AppendRenameFlags(const std::set<base::string16>& options,
                                  CommandLine* cmd_line) const OVERRIDE;
 
  private:

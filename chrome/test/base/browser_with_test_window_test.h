@@ -122,10 +122,9 @@ class BrowserWithTestWindowTest : public testing::Test {
   void NavigateAndCommitActiveTab(const GURL& url);
 
   // Set the |title| of the current tab.
-  void NavigateAndCommitActiveTabWithTitle(
-      Browser* browser,
-      const GURL& url,
-      const string16& title);
+  void NavigateAndCommitActiveTabWithTitle(Browser* browser,
+                                           const GURL& url,
+                                           const base::string16& title);
 
   // Destroys the browser, window, and profile created by this class. This is
   // invoked from the destructor.

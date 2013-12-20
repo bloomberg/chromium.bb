@@ -50,8 +50,8 @@ base::FilePath GetGoogleUpdateSetupExe(bool system_install) {
 
   if (update_key.Open(root_key, kRegPathGoogleUpdate, KEY_QUERY_VALUE) ==
           ERROR_SUCCESS) {
-    string16 path_str;
-    string16 version_str;
+    base::string16 path_str;
+    base::string16 version_str;
     if ((update_key.ReadValue(kRegPathField, &path_str) == ERROR_SUCCESS) &&
         (update_key.ReadValue(kRegGoogleUpdateVersion, &version_str) ==
              ERROR_SUCCESS)) {
@@ -65,7 +65,7 @@ base::FilePath GetGoogleUpdateSetupExe(bool system_install) {
 // If Google Update is present at system-level, sets |cmd_string| to the command
 // line to install Google Update at user-level and returns true.
 // Otherwise, clears |cmd_string| and returns false.
-bool GetUserLevelGoogleUpdateInstallCommandLine(string16* cmd_string) {
+bool GetUserLevelGoogleUpdateInstallCommandLine(base::string16* cmd_string) {
   cmd_string->clear();
   base::FilePath google_update_setup(
       GetGoogleUpdateSetupExe(true));  // system-level.
@@ -90,7 +90,7 @@ bool GetUserLevelGoogleUpdateInstallCommandLine(string16* cmd_string) {
 // |timeout| to be base::TimeDelta::FromMilliseconds(INFINITE).
 // Returns true if this executes successfully.
 // Returns false if command execution fails to execute, or times out.
-bool LaunchProcessAndWaitWithTimeout(const string16& cmd_string,
+bool LaunchProcessAndWaitWithTimeout(const base::string16& cmd_string,
                                      base::TimeDelta timeout) {
   bool success = false;
   base::win::ScopedHandle process;
@@ -180,7 +180,7 @@ bool EnsureUserLevelGoogleUpdatePresent() {
   if (IsGoogleUpdatePresent(false)) {
     success = true;
   } else {
-    string16 cmd_string;
+    base::string16 cmd_string;
     if (!GetUserLevelGoogleUpdateInstallCommandLine(&cmd_string)) {
       LOG(ERROR) << "Cannot find Google Update at system-level.";
       // Ideally we should return false. However, this case should not be
@@ -198,7 +198,7 @@ bool EnsureUserLevelGoogleUpdatePresent() {
 
 bool UninstallGoogleUpdate(bool system_install) {
   bool success = false;
-  string16 cmd_string(
+  base::string16 cmd_string(
       GoogleUpdateSettings::GetUninstallCommandLine(system_install));
   if (cmd_string.empty()) {
     success = true;  // Nothing to; vacuous success.

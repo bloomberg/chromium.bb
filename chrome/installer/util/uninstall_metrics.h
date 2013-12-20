@@ -16,7 +16,7 @@ namespace installer {
 
 // Extracts uninstall metrics from the given JSON value.
 bool ExtractUninstallMetrics(const base::DictionaryValue& root,
-                             string16* uninstall_metrics);
+                             base::string16* uninstall_metrics);
 
 // Extracts uninstall metrics from the JSON file located at file_path.
 // Returns them in a form suitable for appending to a url that already
@@ -24,7 +24,7 @@ bool ExtractUninstallMetrics(const base::DictionaryValue& root,
 // Returns true if uninstall_metrics has been successfully populated with
 // the uninstall metrics, false otherwise.
 bool ExtractUninstallMetricsFromFile(const base::FilePath& file_path,
-                                     string16* uninstall_metrics);
+                                     base::string16* uninstall_metrics);
 
 }  // namespace installer
 

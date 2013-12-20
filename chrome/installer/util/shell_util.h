@@ -98,7 +98,7 @@ class ShellUtil {
     // Sets the arguments to be passed to |target| when launching from this
     // shortcut.
     // The length of this string must be less than MAX_PATH.
-    void set_arguments(const string16& arguments_in) {
+    void set_arguments(const base::string16& arguments_in) {
       // Size restriction as per MSDN at
       // http://msdn.microsoft.com/library/windows/desktop/bb774954.aspx.
       DCHECK(arguments_in.length() < MAX_PATH);
@@ -108,7 +108,7 @@ class ShellUtil {
 
     // Sets the localized description of the shortcut.
     // The length of this string must be less than MAX_PATH.
-    void set_description(const string16& description_in) {
+    void set_description(const base::string16& description_in) {
       // Size restriction as per MSDN at
       // http://msdn.microsoft.com/library/windows/desktop/bb774955.aspx.
       DCHECK(description_in.length() < MAX_PATH);
@@ -125,7 +125,7 @@ class ShellUtil {
     }
 
     // Sets the app model id for the shortcut (Win7+).
-    void set_app_id(const string16& app_id_in) {
+    void set_app_id(const base::string16& app_id_in) {
       app_id = app_id_in;
       options |= PROPERTIES_APP_ID;
     }
@@ -133,7 +133,7 @@ class ShellUtil {
     // Forces the shortcut's name to |shortcut_name_in|.
     // Default: the current distribution's GetShortcutName(SHORTCUT_CHROME).
     // The ".lnk" extension will automatically be added to this name.
-    void set_shortcut_name(const string16& shortcut_name_in) {
+    void set_shortcut_name(const base::string16& shortcut_name_in) {
       shortcut_name = shortcut_name_in;
       options |= PROPERTIES_SHORTCUT_NAME;
     }
@@ -187,12 +187,12 @@ class ShellUtil {
     ShellChange level;
 
     base::FilePath target;
-    string16 arguments;
-    string16 description;
+    base::string16 arguments;
+    base::string16 description;
     base::FilePath icon;
     int icon_index;
-    string16 app_id;
-    string16 shortcut_name;
+    base::string16 app_id;
+    base::string16 shortcut_name;
     bool dual_mode;
     bool pin_to_taskbar;
     // Bitfield made of IndividualProperties. Properties set in |options| will
@@ -297,8 +297,8 @@ class ShellUtil {
   // Note: This only checks one deterministic key in HKLM for |chrome_exe| and
   // doesn't otherwise validate a full Chrome install in HKLM.
   static bool QuickIsChromeRegisteredInHKLM(BrowserDistribution* dist,
-                                            const string16& chrome_exe,
-                                            const string16& suffix);
+                                            const base::string16& chrome_exe,
+                                            const base::string16& suffix);
 
   // Returns true if the current Windows version supports the presence of
   // shortcuts at |location|.
@@ -330,18 +330,20 @@ class ShellUtil {
 
   // Returns the string "|icon_path|,|icon_index|" (see, for example,
   // http://msdn.microsoft.com/library/windows/desktop/dd391573.aspx).
-  static string16 FormatIconLocation(const string16& icon_path, int icon_index);
+  static base::string16 FormatIconLocation(const base::string16& icon_path,
+                                           int icon_index);
 
   // This method returns the command to open URLs/files using chrome. Typically
   // this command is written to the registry under shell\open\command key.
   // |chrome_exe|: the full path to chrome.exe
-  static string16 GetChromeShellOpenCmd(const string16& chrome_exe);
+  static base::string16 GetChromeShellOpenCmd(const base::string16& chrome_exe);
 
   // This method returns the command to be called by the DelegateExecute verb
   // handler to launch chrome on Windows 8. Typically this command is written to
   // the registry under the HKCR\Chrome\.exe\shell\(open|run)\command key.
   // |chrome_exe|: the full path to chrome.exe
-  static string16 GetChromeDelegateCommand(const string16& chrome_exe);
+  static base::string16 GetChromeDelegateCommand(
+      const base::string16& chrome_exe);
 
   // Gets a mapping of all registered browser names (excluding browsers in the
   // |dist| distribution) and their reinstall command (which usually sets
@@ -349,8 +351,9 @@ class ShellUtil {
   // Given browsers can be registered in HKCU (as of Win7) and/or in HKLM, this
   // method looks in both and gives precedence to values in HKCU as per the msdn
   // standard: http://goo.gl/xjczJ.
-  static void GetRegisteredBrowsers(BrowserDistribution* dist,
-                                    std::map<string16, string16>* browsers);
+  static void GetRegisteredBrowsers(
+      BrowserDistribution* dist,
+      std::map<base::string16, base::string16>* browsers);
 
   // Returns the suffix this user's Chrome install is registered with.
   // Always returns the empty string on system-level installs.
@@ -368,30 +371,32 @@ class ShellUtil {
   // rules).
   //
   // |chrome_exe| The path to the currently installed (or running) chrome.exe.
-  static string16 GetCurrentInstallationSuffix(BrowserDistribution* dist,
-                                               const string16& chrome_exe);
+  static base::string16 GetCurrentInstallationSuffix(
+      BrowserDistribution* dist,
+      const base::string16& chrome_exe);
 
   // Returns the application name of the program under |dist|.
   // This application name will be suffixed as is appropriate for the current
   // install.
   // This is the name that is registered with Default Programs on Windows and
   // that should thus be used to "make chrome default" and such.
-  static string16 GetApplicationName(BrowserDistribution* dist,
-                                     const string16& chrome_exe);
+  static base::string16 GetApplicationName(BrowserDistribution* dist,
+                                           const base::string16& chrome_exe);
 
   // Returns the AppUserModelId for |dist|. This identifier is unconditionally
   // suffixed with a unique id for this user on user-level installs (in contrast
   // to other registration entries which are suffixed as described in
   // GetCurrentInstallationSuffix() above).
-  static string16 GetBrowserModelId(BrowserDistribution* dist,
-                                    bool is_per_user_install);
+  static base::string16 GetBrowserModelId(BrowserDistribution* dist,
+                                          bool is_per_user_install);
 
   // Returns an AppUserModelId composed of each member of |components| separated
   // by dots.
   // The returned appid is guaranteed to be no longer than
   // chrome::kMaxAppModelIdLength (some of the components might have been
   // shortened to enforce this).
-  static string16 BuildAppModelId(const std::vector<string16>& components);
+  static base::string16 BuildAppModelId(
+      const std::vector<base::string16>& components);
 
   // Returns true if Chrome can make itself the default browser without relying
   // on the Windows shell to prompt the user. This is the case for versions of
@@ -403,7 +408,7 @@ class ShellUtil {
 
   // Returns the DefaultState of Chrome for |protocol|.
   static DefaultState GetChromeDefaultProtocolClientState(
-      const string16& protocol);
+      const base::string16& protocol);
 
   // Make Chrome the default browser. This function works by going through
   // the url protocols and file associations that are related to general
@@ -425,7 +430,7 @@ class ShellUtil {
   //                       Chrome registration.
   static bool MakeChromeDefault(BrowserDistribution* dist,
                                 int shell_change,
-                                const string16& chrome_exe,
+                                const base::string16& chrome_exe,
                                 bool elevate_if_not_admin);
 
   // Shows and waits for the Windows 8 "How do you want to open webpages?"
@@ -436,14 +441,14 @@ class ShellUtil {
   // |dist| gives the type of browser distribution currently in use.
   // |chrome_exe| The chrome.exe path to register as default browser.
   static bool ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
-                                            const string16& chrome_exe);
+                                            const base::string16& chrome_exe);
 
   // Make Chrome the default application for a protocol.
   // chrome_exe: The chrome.exe path to register as default browser.
   // protocol: The protocol to register as the default handler for.
   static bool MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
-                                              const string16& chrome_exe,
-                                              const string16& protocol);
+                                              const base::string16& chrome_exe,
+                                              const base::string16& protocol);
 
   // Shows and waits for the Windows 8 "How do you want to open links of this
   // type?" dialog if Chrome is not already the default |protocol|
@@ -455,8 +460,8 @@ class ShellUtil {
   // |protocol| is the protocol being registered.
   static bool ShowMakeChromeDefaultProtocolClientSystemUI(
       BrowserDistribution* dist,
-      const string16& chrome_exe,
-      const string16& protocol);
+      const base::string16& chrome_exe,
+      const base::string16& protocol);
 
   // Registers Chrome as a potential default browser and handler for filetypes
   // and protocols.
@@ -484,8 +489,8 @@ class ShellUtil {
   //
   // Returns true if Chrome is successfully registered (or already registered).
   static bool RegisterChromeBrowser(BrowserDistribution* dist,
-                                    const string16& chrome_exe,
-                                    const string16& unique_suffix,
+                                    const base::string16& chrome_exe,
+                                    const base::string16& unique_suffix,
                                     bool elevate_if_not_admin);
 
   // This method declares to Windows that Chrome is capable of handling the
@@ -506,9 +511,9 @@ class ShellUtil {
   // |elevate_if_not_admin| if true will make this method try alternate methods
   // as described above.
   static bool RegisterChromeForProtocol(BrowserDistribution* dist,
-                                        const string16& chrome_exe,
-                                        const string16& unique_suffix,
-                                        const string16& protocol,
+                                        const base::string16& chrome_exe,
+                                        const base::string16& unique_suffix,
+                                        const base::string16& protocol,
                                         bool elevate_if_not_admin);
 
   // Removes installed shortcut(s) at |location|.
@@ -550,7 +555,7 @@ class ShellUtil {
   // Returns true unless the OS call to retrieve the username fails.
   // NOTE: Only the installer should use this suffix directly. Other callers
   // should call GetCurrentInstallationSuffix().
-  static bool GetUserSpecificRegistrySuffix(string16* suffix);
+  static bool GetUserSpecificRegistrySuffix(base::string16* suffix);
 
   // Sets |suffix| to this user's username preceded by a dot. This suffix should
   // only be used to support legacy installs that used this suffixing
@@ -558,14 +563,14 @@ class ShellUtil {
   // Returns true unless the OS call to retrieve the username fails.
   // NOTE: Only the installer should use this suffix directly. Other callers
   // should call GetCurrentInstallationSuffix().
-  static bool GetOldUserSpecificRegistrySuffix(string16* suffix);
+  static bool GetOldUserSpecificRegistrySuffix(base::string16* suffix);
 
   // Returns the base32 encoding (using the [A-Z2-7] alphabet) of |bytes|.
   // |size| is the length of |bytes|.
   // Note: This method does not suffix the output with '=' signs as technically
   // required by the base32 standard for inputs that aren't a multiple of 5
   // bytes.
-  static string16 ByteArrayToBase32(const uint8* bytes, size_t size);
+  static base::string16 ByteArrayToBase32(const uint8* bytes, size_t size);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellUtil);

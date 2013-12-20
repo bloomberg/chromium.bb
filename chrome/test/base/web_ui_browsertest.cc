@@ -461,7 +461,7 @@ GURL WebUIBrowserTest::WebUITestDataPathToURL(
   return net::FilePathToFileURL(test_path);
 }
 
-void WebUIBrowserTest::BuildJavascriptLibraries(string16* content) {
+void WebUIBrowserTest::BuildJavascriptLibraries(base::string16* content) {
   ASSERT_TRUE(content != NULL);
   std::string utf8_content;
   std::vector<base::FilePath>::iterator user_libraries_iterator;
@@ -490,7 +490,7 @@ void WebUIBrowserTest::BuildJavascriptLibraries(string16* content) {
   content->append(UTF8ToUTF16(utf8_content));
 }
 
-string16 WebUIBrowserTest::BuildRunTestJSCall(
+base::string16 WebUIBrowserTest::BuildRunTestJSCall(
     bool is_async,
     const std::string& function_name,
     const WebUIBrowserTest::ConstValueVector& test_func_args) {
@@ -518,12 +518,12 @@ bool WebUIBrowserTest::RunJavascriptUsingHandler(
     bool is_async,
     RenderViewHost* preload_host) {
 
-  string16 content;
+  base::string16 content;
   if (!libraries_preloaded_)
     BuildJavascriptLibraries(&content);
 
   if (!function_name.empty()) {
-    string16 called_function;
+    base::string16 called_function;
     if (is_test) {
       called_function =
           BuildRunTestJSCall(is_async, function_name, function_arguments);

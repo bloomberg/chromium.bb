@@ -177,7 +177,7 @@ bool TabProxy::ExecuteAndExtractString(const std::wstring& frame_xpath,
   Value* value = NULL;
   bool succeeded = static_cast<ListValue*>(root.get())->Get(0, &value);
   if (succeeded) {
-    string16 read_value;
+    base::string16 read_value;
     succeeded = value->GetAsString(&read_value);
     if (succeeded) {
       // TODO(viettrungluu): remove conversion. (But should |jscript| be UTF-8?)

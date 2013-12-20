@@ -117,10 +117,10 @@ class InstallShortcutTest : public testing::Test {
         new base::ScopedPathOverride(base::DIR_COMMON_START_MENU,
                                      fake_common_start_menu_.path()));
 
-    string16 shortcut_name(
+    base::string16 shortcut_name(
         dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
         installer::kLnkExt);
-    string16 alternate_shortcut_name(
+    base::string16 alternate_shortcut_name(
         dist_->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME_ALTERNATE) +
         installer::kLnkExt);
 
@@ -426,7 +426,7 @@ TEST_F(InstallShortcutTest, CreateIfNoSystemLevelSomeSystemShortcutsExist) {
 }
 
 TEST(EscapeXmlAttributeValueTest, EscapeCrazyValue) {
-  string16 val(L"This has 'crazy' \"chars\" && < and > signs.");
+  base::string16 val(L"This has 'crazy' \"chars\" && < and > signs.");
   static const wchar_t kExpectedEscapedVal[] =
       L"This has &apos;crazy&apos; \"chars\" &amp;&amp; &lt; and > signs.";
   installer::EscapeXmlAttributeValueInSingleQuotes(&val);
@@ -434,7 +434,7 @@ TEST(EscapeXmlAttributeValueTest, EscapeCrazyValue) {
 }
 
 TEST(EscapeXmlAttributeValueTest, DontEscapeNormalValue) {
-  string16 val(L"Google Chrome");
+  base::string16 val(L"Google Chrome");
   static const wchar_t kExpectedEscapedVal[] = L"Google Chrome";
   installer::EscapeXmlAttributeValueInSingleQuotes(&val);
   ASSERT_STREQ(kExpectedEscapedVal, val.c_str());

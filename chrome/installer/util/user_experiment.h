@@ -33,8 +33,8 @@ enum ToastUiFlags {
 // experiments we show toasts to the user if they are inactive for a certain
 // amount of time.
 struct ExperimentDetails {
-  string16 prefix;      // The experiment code prefix for this experiment,
-                        // also known as the 'TV' part in 'TV80'.
+  base::string16 prefix;  // The experiment code prefix for this experiment,
+                          // also known as the 'TV' part in 'TV80'.
   int flavor;           // The flavor index for this experiment.
   int heading;          // The heading resource ID to use for this experiment.
   int flags;            // See ToastUIFlags above.
@@ -59,7 +59,7 @@ void LaunchBrowserUserExperiment(const CommandLine& base_command,
 // The user has qualified for the inactive user toast experiment and this
 // function just performs it.
 void InactiveUserToastExperiment(int flavor,
-                                 const string16& experiment_group,
+                                 const base::string16& experiment_group,
                                  const Product& product,
                                  const base::FilePath& application_path);
 

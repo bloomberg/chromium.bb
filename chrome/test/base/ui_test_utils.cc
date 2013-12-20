@@ -138,7 +138,7 @@ Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
 
 }  // namespace
 
-bool GetCurrentTabTitle(const Browser* browser, string16* title) {
+bool GetCurrentTabTitle(const Browser* browser, base::string16* title) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
@@ -333,8 +333,11 @@ AppModalDialog* WaitForAppModalDialog() {
   return content::Source<AppModalDialog>(observer.source()).ptr();
 }
 
-int FindInPage(WebContents* tab, const string16& search_string,
-               bool forward, bool match_case, int* ordinal,
+int FindInPage(WebContents* tab,
+               const base::string16& search_string,
+               bool forward,
+               bool match_case,
+               int* ordinal,
                gfx::Rect* selection_rect) {
   FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(tab);
   find_tab_helper->StartFinding(search_string, forward, match_case);
@@ -523,7 +526,7 @@ HistoryEnumerator::HistoryEnumerator(Profile* profile) {
   HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, Profile::EXPLICIT_ACCESS);
   hs->QueryHistory(
-      string16(),
+      base::string16(),
       history::QueryOptions(),
       &consumer_,
       base::Bind(&HistoryEnumerator::HistoryQueryComplete,

@@ -19,7 +19,8 @@
 namespace installer {
 
 void ChromeAppHostOperations::ReadOptions(const MasterPreferences& prefs,
-                                          std::set<string16>* options) const {
+                                          std::set<base::string16>* options)
+    const {
   DCHECK(options);
 
   bool pref_value;
@@ -30,7 +31,8 @@ void ChromeAppHostOperations::ReadOptions(const MasterPreferences& prefs,
 }
 
 void ChromeAppHostOperations::ReadOptions(const CommandLine& uninstall_command,
-                                          std::set<string16>* options) const {
+                                          std::set<base::string16>* options)
+    const {
   DCHECK(options);
 
   if (uninstall_command.HasSwitch(switches::kMultiInstall))
@@ -38,17 +40,17 @@ void ChromeAppHostOperations::ReadOptions(const CommandLine& uninstall_command,
 }
 
 void ChromeAppHostOperations::AddKeyFiles(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     std::vector<base::FilePath>* key_files) const {
 }
 
 void ChromeAppHostOperations::AddComDllList(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     std::vector<base::FilePath>* com_dll_list) const {
 }
 
 void ChromeAppHostOperations::AppendProductFlags(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
@@ -65,7 +67,7 @@ void ChromeAppHostOperations::AppendProductFlags(
 }
 
 void ChromeAppHostOperations::AppendRenameFlags(
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     CommandLine* cmd_line) const {
   DCHECK(cmd_line);
   bool is_multi_install = options.find(kOptionMultiInstall) != options.end();
@@ -78,9 +80,10 @@ void ChromeAppHostOperations::AppendRenameFlags(
     cmd_line->AppendSwitch(switches::kMultiInstall);
 }
 
-bool ChromeAppHostOperations::SetChannelFlags(const std::set<string16>& options,
-                                              bool set,
-                                              ChannelInfo* channel_info) const {
+bool ChromeAppHostOperations::SetChannelFlags(
+    const std::set<base::string16>& options,
+    bool set,
+    ChannelInfo* channel_info) const {
 #if defined(GOOGLE_CHROME_BUILD)
   DCHECK(channel_info);
   return channel_info->SetAppLauncher(set);
@@ -90,7 +93,7 @@ bool ChromeAppHostOperations::SetChannelFlags(const std::set<string16>& options,
 }
 
 bool ChromeAppHostOperations::ShouldCreateUninstallEntry(
-    const std::set<string16>& options) const {
+    const std::set<base::string16>& options) const {
   return true;
 }
 
@@ -112,7 +115,7 @@ void ChromeAppHostOperations::AddDefaultShortcutProperties(
         dist->GetIconIndex(BrowserDistribution::SHORTCUT_APP_LAUNCHER));
 
   if (!properties->has_app_id()) {
-    std::vector<string16> components;
+    std::vector<base::string16> components;
     components.push_back(dist->GetBaseAppId());
     properties->set_app_id(ShellUtil::BuildAppModelId(components));
   }
@@ -120,7 +123,7 @@ void ChromeAppHostOperations::AddDefaultShortcutProperties(
 
 void ChromeAppHostOperations::LaunchUserExperiment(
     const base::FilePath& setup_path,
-    const std::set<string16>& options,
+    const std::set<base::string16>& options,
     InstallStatus status,
     bool system_level) const {
   // No experiments yet.  If adding some in the future, need to have

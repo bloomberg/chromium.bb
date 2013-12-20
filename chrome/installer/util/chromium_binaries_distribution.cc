@@ -20,57 +20,57 @@ ChromiumBinariesDistribution::ChromiumBinariesDistribution()
           BrowserDistribution::GetSpecificDistribution(CHROME_BROWSER)) {
 }
 
-string16 ChromiumBinariesDistribution::GetAppGuid() {
-  return string16();
+base::string16 ChromiumBinariesDistribution::GetAppGuid() {
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetBaseAppName() {
+base::string16 ChromiumBinariesDistribution::GetBaseAppName() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetBrowserProgIdPrefix() {
+base::string16 ChromiumBinariesDistribution::GetBrowserProgIdPrefix() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetBrowserProgIdDesc() {
+base::string16 ChromiumBinariesDistribution::GetBrowserProgIdDesc() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetDisplayName() {
+base::string16 ChromiumBinariesDistribution::GetDisplayName() {
   return kChromiumBinariesName;
 }
 
-string16 ChromiumBinariesDistribution::GetShortcutName(
+base::string16 ChromiumBinariesDistribution::GetShortcutName(
     ShortcutType shortcut_type) {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetBaseAppId() {
+base::string16 ChromiumBinariesDistribution::GetBaseAppId() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetInstallSubDir() {
+base::string16 ChromiumBinariesDistribution::GetInstallSubDir() {
   return browser_distribution_->GetInstallSubDir();
 }
 
-string16 ChromiumBinariesDistribution::GetPublisherName() {
+base::string16 ChromiumBinariesDistribution::GetPublisherName() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetAppDescription() {
+base::string16 ChromiumBinariesDistribution::GetAppDescription() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetLongAppDescription() {
+base::string16 ChromiumBinariesDistribution::GetLongAppDescription() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 std::string ChromiumBinariesDistribution::GetSafeBrowsingName() {
@@ -78,26 +78,26 @@ std::string ChromiumBinariesDistribution::GetSafeBrowsingName() {
   return std::string();
 }
 
-string16 ChromiumBinariesDistribution::GetStateKey() {
-  return string16(L"Software\\").append(kChromiumBinariesName);
+base::string16 ChromiumBinariesDistribution::GetStateKey() {
+  return base::string16(L"Software\\").append(kChromiumBinariesName);
 }
 
-string16 ChromiumBinariesDistribution::GetStateMediumKey() {
-  return string16(L"Software\\").append(kChromiumBinariesName);
+base::string16 ChromiumBinariesDistribution::GetStateMediumKey() {
+  return base::string16(L"Software\\").append(kChromiumBinariesName);
 }
 
-string16 ChromiumBinariesDistribution::GetUninstallLinkName() {
+base::string16 ChromiumBinariesDistribution::GetUninstallLinkName() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetUninstallRegPath() {
+base::string16 ChromiumBinariesDistribution::GetUninstallRegPath() {
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
-string16 ChromiumBinariesDistribution::GetVersionKey() {
-  return string16(L"Software\\").append(kChromiumBinariesName);
+base::string16 ChromiumBinariesDistribution::GetVersionKey() {
+  return base::string16(L"Software\\").append(kChromiumBinariesName);
 }
 
 BrowserDistribution::DefaultBrowserControlPolicy
@@ -110,12 +110,12 @@ int ChromiumBinariesDistribution::GetIconIndex(ShortcutType shortcut_type) {
   return 0;
 }
 
-bool ChromiumBinariesDistribution::GetChromeChannel(string16* channel) {
+bool ChromiumBinariesDistribution::GetChromeChannel(base::string16* channel) {
   NOTREACHED();
   return false;
 }
 
 bool ChromiumBinariesDistribution::GetCommandExecuteImplClsid(
-    string16* handler_class_uuid) {
+    base::string16* handler_class_uuid) {
   return false;
 }

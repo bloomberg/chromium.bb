@@ -27,7 +27,7 @@ int GetCurrentRlzWeek(const base::Time& current_time) {
 }
 
 bool SetExperimentLabel(const wchar_t* brand_code,
-                        const string16& label,
+                        const base::string16& label,
                         int shell_mode) {
   if (!brand_code) {
     return false;
@@ -35,22 +35,22 @@ bool SetExperimentLabel(const wchar_t* brand_code,
 
   const bool system_level = shell_mode == GCAPI_INVOKED_UAC_ELEVATION;
 
-  string16 original_labels;
+  base::string16 original_labels;
   if (!GoogleUpdateSettings::ReadExperimentLabels(system_level,
                                                   &original_labels)) {
     return false;
   }
 
   // Split the original labels by the label separator.
-  std::vector<string16> entries;
+  std::vector<base::string16> entries;
   base::SplitStringUsingSubstr(
       original_labels,
       ASCIIToUTF16(google_update::kExperimentLabelSep),
       &entries);
 
   // Keep all labels, but the one we want to add/replace.
-  string16 new_labels;
-  for (std::vector<string16>::const_iterator it = entries.begin();
+  base::string16 new_labels;
+  for (std::vector<base::string16>::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
     if (!it->empty() && !StartsWith(*it, label + L"=", true)) {
       new_labels += *it;
@@ -72,8 +72,8 @@ namespace gcapi_internals {
 const wchar_t kReactivationLabel[] = L"reacbrand";
 const wchar_t kRelaunchLabel[] = L"relaunchbrand";
 
-string16 GetGCAPIExperimentLabel(const wchar_t* brand_code,
-                                 const string16& label) {
+base::string16 GetGCAPIExperimentLabel(const wchar_t* brand_code,
+                                       const base::string16& label) {
   // Keeps a fixed time state for this GCAPI instance; this makes tests reliable
   // when crossing time boundaries on the system clock and doesn't otherwise
   // affect results of this short lived binary.
@@ -83,7 +83,7 @@ string16 GetGCAPIExperimentLabel(const wchar_t* brand_code,
 
   base::Time instance_time = base::Time::FromTimeT(instance_time_value);
 
-  string16 gcapi_experiment_label;
+  base::string16 gcapi_experiment_label;
   base::SStringPrintf(&gcapi_experiment_label,
                       L"%ls=%ls_%d|%ls",
                       label.c_str(),

@@ -101,16 +101,16 @@ bool IsChromeMetroSupported() {
 // Returns the current (or installed) browser's ProgId (e.g.
 // "ChromeHTML|suffix|").
 // |suffix| can be the empty string.
-string16 GetBrowserProgId(const string16& suffix) {
+base::string16 GetBrowserProgId(const base::string16& suffix) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  string16 chrome_html(dist->GetBrowserProgIdPrefix());
+  base::string16 chrome_html(dist->GetBrowserProgIdPrefix());
   chrome_html.append(suffix);
 
   // ProgIds cannot be longer than 39 characters.
   // Ref: http://msdn.microsoft.com/en-us/library/aa911706.aspx.
   // Make all new registrations comply with this requirement (existing
   // registrations must be preserved).
-  string16 new_style_suffix;
+  base::string16 new_style_suffix;
   if (ShellUtil::GetUserSpecificRegistrySuffix(&new_style_suffix) &&
       suffix == new_style_suffix && chrome_html.length() > 39) {
     NOTREACHED();
@@ -134,16 +134,16 @@ class UserSpecificRegistrySuffix {
 
   // Sets |suffix| to the pre-computed suffix cached in this object.
   // Returns true unless the initialization originally failed.
-  bool GetSuffix(string16* suffix);
+  bool GetSuffix(base::string16* suffix);
 
  private:
-  string16 suffix_;
+  base::string16 suffix_;
 
   DISALLOW_COPY_AND_ASSIGN(UserSpecificRegistrySuffix);
 };  // class UserSpecificRegistrySuffix
 
 UserSpecificRegistrySuffix::UserSpecificRegistrySuffix() {
-  string16 user_sid;
+  base::string16 user_sid;
   if (!base::win::GetUserSidString(&user_sid)) {
     NOTREACHED();
     return;
@@ -152,7 +152,7 @@ UserSpecificRegistrySuffix::UserSpecificRegistrySuffix() {
   base::MD5Digest md5_digest;
   std::string user_sid_ascii(UTF16ToASCII(user_sid));
   base::MD5Sum(user_sid_ascii.c_str(), user_sid_ascii.length(), &md5_digest);
-  const string16 base32_md5(
+  const base::string16 base32_md5(
       ShellUtil::ByteArrayToBase32(md5_digest.a, arraysize(md5_digest.a)));
   // The value returned by the base32 algorithm above must never change and
   // must always be 26 characters long (i.e. if someone ever moves this to
@@ -165,7 +165,7 @@ UserSpecificRegistrySuffix::UserSpecificRegistrySuffix() {
   suffix_.append(base32_md5);
 }
 
-bool UserSpecificRegistrySuffix::GetSuffix(string16* suffix) {
+bool UserSpecificRegistrySuffix::GetSuffix(base::string16* suffix) {
   if (suffix_.empty()) {
     NOTREACHED();
     return false;
@@ -195,10 +195,10 @@ class RegistryEntry {
   // to make Chrome their default browser, which isn't polite.  |suffix| is the
   // user-specific registration suffix; see GetUserSpecificDefaultBrowserSuffix
   // in shell_util.h for details.
-  static string16 GetBrowserClientKey(BrowserDistribution* dist,
-                                      const string16& suffix) {
+  static base::string16 GetBrowserClientKey(BrowserDistribution* dist,
+                                            const base::string16& suffix) {
     DCHECK(suffix.empty() || suffix[0] == L'.');
-    return string16(ShellUtil::kRegStartMenuInternet)
+    return base::string16(ShellUtil::kRegStartMenuInternet)
         .append(1, L'\\')
         .append(dist->GetBaseAppName())
         .append(suffix);
@@ -207,8 +207,8 @@ class RegistryEntry {
   // Returns the Windows Default Programs capabilities key for Chrome.  For
   // example:
   // "Software\Clients\StartMenuInternet\Chromium[.user]\Capabilities".
-  static string16 GetCapabilitiesKey(BrowserDistribution* dist,
-                                     const string16& suffix) {
+  static base::string16 GetCapabilitiesKey(BrowserDistribution* dist,
+                                           const base::string16& suffix) {
     return GetBrowserClientKey(dist, suffix).append(L"\\Capabilities");
   }
 
@@ -216,28 +216,29 @@ class RegistryEntry {
   // are needed to register this installation's ProgId and AppId.
   // These entries need to be registered in HKLM prior to Win8.
   static void GetProgIdEntries(BrowserDistribution* dist,
-                               const string16& chrome_exe,
-                               const string16& suffix,
+                               const base::string16& chrome_exe,
+                               const base::string16& suffix,
                                ScopedVector<RegistryEntry>* entries) {
-    string16 icon_path(
+    base::string16 icon_path(
         ShellUtil::FormatIconLocation(
             chrome_exe,
             dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME)));
-    string16 open_cmd(ShellUtil::GetChromeShellOpenCmd(chrome_exe));
-    string16 delegate_command(ShellUtil::GetChromeDelegateCommand(chrome_exe));
+    base::string16 open_cmd(ShellUtil::GetChromeShellOpenCmd(chrome_exe));
+    base::string16 delegate_command(
+        ShellUtil::GetChromeDelegateCommand(chrome_exe));
     // For user-level installs: entries for the app id and DelegateExecute verb
     // handler will be in HKCU; thus we do not need a suffix on those entries.
-    string16 app_id(
+    base::string16 app_id(
         ShellUtil::GetBrowserModelId(
             dist, InstallUtil::IsPerUserInstall(chrome_exe.c_str())));
-    string16 delegate_guid;
+    base::string16 delegate_guid;
     bool set_delegate_execute =
         IsChromeMetroSupported() &&
         dist->GetCommandExecuteImplClsid(&delegate_guid);
 
     // DelegateExecute ProgId. Needed for Chrome Metro in Windows 8.
     if (set_delegate_execute) {
-      string16 model_id_shell(ShellUtil::kRegClasses);
+      base::string16 model_id_shell(ShellUtil::kRegClasses);
       model_id_shell.push_back(base::FilePath::kSeparators[0]);
       model_id_shell.append(app_id);
       model_id_shell.append(ShellUtil::kRegExePath);
@@ -261,7 +262,7 @@ class RegistryEntry {
           { ShellUtil::kRegVerbOpenNewWindow, IDS_SHORTCUT_NEW_WINDOW_BASE },
       };
       for (size_t i = 0; i < arraysize(verbs); ++i) {
-        string16 sub_path(model_id_shell);
+        base::string16 sub_path(model_id_shell);
         sub_path.push_back(base::FilePath::kSeparators[0]);
         sub_path.append(verbs[i].verb);
 
@@ -269,7 +270,8 @@ class RegistryEntry {
         if (verbs[i].name_id != -1) {
           // TODO(grt): http://crbug.com/75152 Write a reference to a localized
           // resource.
-          string16 verb_name(installer::GetLocalizedString(verbs[i].name_id));
+          base::string16 verb_name(
+              installer::GetLocalizedString(verbs[i].name_id));
           entries->push_back(new RegistryEntry(sub_path, verb_name.c_str()));
         }
         entries->push_back(new RegistryEntry(
@@ -286,7 +288,7 @@ class RegistryEntry {
     }
 
     // File association ProgId
-    string16 chrome_html_prog_id(ShellUtil::kRegClasses);
+    base::string16 chrome_html_prog_id(ShellUtil::kRegClasses);
     chrome_html_prog_id.push_back(base::FilePath::kSeparators[0]);
     chrome_html_prog_id.append(GetBrowserProgId(suffix));
     entries->push_back(new RegistryEntry(
@@ -310,8 +312,8 @@ class RegistryEntry {
           chrome_html_prog_id, ShellUtil::kRegAppUserModelId, app_id));
 
       // Add \Software\Classes\ChromeHTML\Application entries
-      string16 chrome_application(chrome_html_prog_id +
-                                  ShellUtil::kRegApplication);
+      base::string16 chrome_application(chrome_html_prog_id +
+                                        ShellUtil::kRegApplication);
       entries->push_back(new RegistryEntry(
           chrome_application, ShellUtil::kRegAppUserModelId, app_id));
       entries->push_back(new RegistryEntry(
@@ -334,8 +336,8 @@ class RegistryEntry {
   // capability of handling a protocol on Windows.
   static void GetProtocolCapabilityEntries(
       BrowserDistribution* dist,
-      const string16& suffix,
-      const string16& protocol,
+      const base::string16& suffix,
+      const base::string16& protocol,
       ScopedVector<RegistryEntry>* entries) {
     entries->push_back(new RegistryEntry(
         GetCapabilitiesKey(dist, suffix).append(L"\\URLAssociations"),
@@ -349,17 +351,17 @@ class RegistryEntry {
   // If |suffix| is not empty, these entries are guaranteed to be unique on this
   // machine.
   static void GetShellIntegrationEntries(BrowserDistribution* dist,
-                                         const string16& chrome_exe,
-                                         const string16& suffix,
+                                         const base::string16& chrome_exe,
+                                         const base::string16& suffix,
                                          ScopedVector<RegistryEntry>* entries) {
-    const string16 icon_path(
+    const base::string16 icon_path(
         ShellUtil::FormatIconLocation(
             chrome_exe,
             dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME)));
-    const string16 quoted_exe_path(L"\"" + chrome_exe + L"\"");
+    const base::string16 quoted_exe_path(L"\"" + chrome_exe + L"\"");
 
     // Register for the Start Menu "Internet" link (pre-Win7).
-    const string16 start_menu_entry(GetBrowserClientKey(dist, suffix));
+    const base::string16 start_menu_entry(GetBrowserClientKey(dist, suffix));
     // Register Chrome's display name.
     // TODO(grt): http://crbug.com/75152 Also set LocalizedString; see
     // http://msdn.microsoft.com/en-us/library/windows/desktop/cc144109(v=VS.85).aspx#registering_the_display_name
@@ -373,7 +375,7 @@ class RegistryEntry {
         start_menu_entry + ShellUtil::kRegDefaultIcon, icon_path));
 
     // Register installation information.
-    string16 install_info(start_menu_entry + L"\\InstallInfo");
+    base::string16 install_info(start_menu_entry + L"\\InstallInfo");
     // Note: not using CommandLine since it has ambiguous rules for quoting
     // strings.
     entries->push_back(new RegistryEntry(install_info, kReinstallCommand,
@@ -385,9 +387,9 @@ class RegistryEntry {
     entries->push_back(new RegistryEntry(install_info, L"IconsVisible", 1));
 
     // Register with Default Programs.
-    const string16 reg_app_name(dist->GetBaseAppName().append(suffix));
+    const base::string16 reg_app_name(dist->GetBaseAppName().append(suffix));
     // Tell Windows where to find Chrome's Default Programs info.
-    const string16 capabilities(GetCapabilitiesKey(dist, suffix));
+    const base::string16 capabilities(GetCapabilitiesKey(dist, suffix));
     entries->push_back(new RegistryEntry(ShellUtil::kRegRegisteredApplications,
         reg_app_name, capabilities));
     // Write out Chrome's Default Programs info.
@@ -405,7 +407,7 @@ class RegistryEntry {
     entries->push_back(new RegistryEntry(capabilities + L"\\Startmenu",
         L"StartMenuInternet", reg_app_name));
 
-    const string16 html_prog_id(GetBrowserProgId(suffix));
+    const base::string16 html_prog_id(GetBrowserProgId(suffix));
     for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; i++) {
       entries->push_back(new RegistryEntry(
           capabilities + L"\\FileAssociations",
@@ -427,37 +429,38 @@ class RegistryEntry {
   //  - File Associations
   //    http://msdn.microsoft.com/en-us/library/bb166549
   // These entries need to be registered in HKLM prior to Win8.
-  static void GetAppRegistrationEntries(const string16& chrome_exe,
-                                        const string16& suffix,
+  static void GetAppRegistrationEntries(const base::string16& chrome_exe,
+                                        const base::string16& suffix,
                                         ScopedVector<RegistryEntry>* entries) {
     const base::FilePath chrome_path(chrome_exe);
-    string16 app_path_key(ShellUtil::kAppPathsRegistryKey);
+    base::string16 app_path_key(ShellUtil::kAppPathsRegistryKey);
     app_path_key.push_back(base::FilePath::kSeparators[0]);
     app_path_key.append(chrome_path.BaseName().value());
     entries->push_back(new RegistryEntry(app_path_key, chrome_exe));
     entries->push_back(new RegistryEntry(app_path_key,
         ShellUtil::kAppPathsRegistryPathName, chrome_path.DirName().value()));
 
-    const string16 html_prog_id(GetBrowserProgId(suffix));
+    const base::string16 html_prog_id(GetBrowserProgId(suffix));
     for (int i = 0; ShellUtil::kPotentialFileAssociations[i] != NULL; i++) {
-      string16 key(ShellUtil::kRegClasses);
+      base::string16 key(ShellUtil::kRegClasses);
       key.push_back(base::FilePath::kSeparators[0]);
       key.append(ShellUtil::kPotentialFileAssociations[i]);
       key.push_back(base::FilePath::kSeparators[0]);
       key.append(ShellUtil::kRegOpenWithProgids);
-      entries->push_back(new RegistryEntry(key, html_prog_id, string16()));
+      entries->push_back(
+          new RegistryEntry(key, html_prog_id, base::string16()));
     }
   }
 
   // This method returns a list of all the user level registry entries that
   // are needed to make Chromium the default handler for a protocol on XP.
   static void GetXPStyleUserProtocolEntries(
-      const string16& protocol,
-      const string16& chrome_icon,
-      const string16& chrome_open,
+      const base::string16& protocol,
+      const base::string16& chrome_icon,
+      const base::string16& chrome_open,
       ScopedVector<RegistryEntry>* entries) {
     // Protocols associations.
-    string16 url_key(ShellUtil::kRegClasses);
+    base::string16 url_key(ShellUtil::kRegClasses);
     url_key.push_back(base::FilePath::kSeparators[0]);
     url_key.append(protocol);
 
@@ -468,19 +471,19 @@ class RegistryEntry {
         ShellUtil::kRegUrlProtocol, L""));
 
     // <root hkey>\Software\Classes\<protocol>\DefaultIcon
-    string16 icon_key = url_key + ShellUtil::kRegDefaultIcon;
+    base::string16 icon_key = url_key + ShellUtil::kRegDefaultIcon;
     entries->push_back(new RegistryEntry(icon_key, chrome_icon));
 
     // <root hkey>\Software\Classes\<protocol>\shell\open\command
-    string16 shell_key = url_key + ShellUtil::kRegShellOpen;
+    base::string16 shell_key = url_key + ShellUtil::kRegShellOpen;
     entries->push_back(new RegistryEntry(shell_key, chrome_open));
 
     // <root hkey>\Software\Classes\<protocol>\shell\open\ddeexec
-    string16 dde_key = url_key + L"\\shell\\open\\ddeexec";
+    base::string16 dde_key = url_key + L"\\shell\\open\\ddeexec";
     entries->push_back(new RegistryEntry(dde_key, L""));
 
     // <root hkey>\Software\Classes\<protocol>\shell\@
-    string16 protocol_shell_key = url_key + ShellUtil::kRegShellPath;
+    base::string16 protocol_shell_key = url_key + ShellUtil::kRegShellPath;
     entries->push_back(new RegistryEntry(protocol_shell_key, L"open"));
   }
 
@@ -491,21 +494,21 @@ class RegistryEntry {
   // values.
   static void GetXPStyleDefaultBrowserUserEntries(
       BrowserDistribution* dist,
-      const string16& chrome_exe,
-      const string16& suffix,
+      const base::string16& chrome_exe,
+      const base::string16& suffix,
       ScopedVector<RegistryEntry>* entries) {
     // File extension associations.
-    string16 html_prog_id(GetBrowserProgId(suffix));
+    base::string16 html_prog_id(GetBrowserProgId(suffix));
     for (int i = 0; ShellUtil::kDefaultFileAssociations[i] != NULL; i++) {
-      string16 ext_key(ShellUtil::kRegClasses);
+      base::string16 ext_key(ShellUtil::kRegClasses);
       ext_key.push_back(base::FilePath::kSeparators[0]);
       ext_key.append(ShellUtil::kDefaultFileAssociations[i]);
       entries->push_back(new RegistryEntry(ext_key, html_prog_id));
     }
 
     // Protocols associations.
-    string16 chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
-    string16 chrome_icon =
+    base::string16 chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
+    base::string16 chrome_icon =
         ShellUtil::FormatIconLocation(
             chrome_exe,
             dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME));
@@ -515,8 +518,8 @@ class RegistryEntry {
     }
 
     // start->Internet shortcut.
-    string16 start_menu(ShellUtil::kRegStartMenuInternet);
-    string16 app_name = dist->GetBaseAppName() + suffix;
+    base::string16 start_menu(ShellUtil::kRegStartMenuInternet);
+    base::string16 app_name = dist->GetBaseAppName() + suffix;
     entries->push_back(new RegistryEntry(start_menu, app_name));
   }
 
@@ -566,29 +569,29 @@ class RegistryEntry {
   };
 
   // Create a object that represent default value of a key
-  RegistryEntry(const string16& key_path, const string16& value)
+  RegistryEntry(const base::string16& key_path, const base::string16& value)
       : key_path_(key_path), name_(),
         is_string_(true), value_(value), int_value_(0) {
   }
 
   // Create a object that represent a key of type REG_SZ
-  RegistryEntry(const string16& key_path, const string16& name,
-                const string16& value)
+  RegistryEntry(const base::string16& key_path, const base::string16& name,
+                const base::string16& value)
       : key_path_(key_path), name_(name),
         is_string_(true), value_(value), int_value_(0) {
   }
 
   // Create a object that represent a key of integer type
-  RegistryEntry(const string16& key_path, const string16& name,
+  RegistryEntry(const base::string16& key_path, const base::string16& name,
                 DWORD value)
       : key_path_(key_path), name_(name),
         is_string_(false), value_(), int_value_(value) {
   }
 
-  string16 key_path_;  // key path for the registry entry
-  string16 name_;      // name of the registry entry
+  base::string16 key_path_;  // key path for the registry entry
+  base::string16 name_;      // name of the registry entry
   bool is_string_;     // true if current registry entry is of type REG_SZ
-  string16 value_;     // string value (useful if is_string_ = true)
+  base::string16 value_;     // string value (useful if is_string_ = true)
   DWORD int_value_;    // integer value (useful if is_string_ = false)
 
   // Helper function for ExistsInRegistry().
@@ -599,7 +602,7 @@ class RegistryEntry {
     bool found = false;
     bool correct_value = false;
     if (is_string_) {
-      string16 read_value;
+      base::string16 read_value;
       found = key.ReadValue(name_.c_str(), &read_value) == ERROR_SUCCESS;
       correct_value = read_value.size() == value_.size() &&
           std::equal(value_.begin(), value_.end(), read_value.begin(),
@@ -660,8 +663,8 @@ bool AreEntriesRegistered(const ScopedVector<RegistryEntry>& entries,
 // true for affected users (i.e. who have all the registrations, but over both
 // registry roots).
 bool IsChromeRegistered(BrowserDistribution* dist,
-                        const string16& chrome_exe,
-                        const string16& suffix,
+                        const base::string16& chrome_exe,
+                        const base::string16& suffix,
                         uint32 look_for_in) {
   ScopedVector<RegistryEntry> entries;
   RegistryEntry::GetProgIdEntries(dist, chrome_exe, suffix, &entries);
@@ -674,8 +677,8 @@ bool IsChromeRegistered(BrowserDistribution* dist,
 // for the requested protocol. It just checks the one value required for this.
 // See RegistryEntry::ExistsInRegistry for the behavior of |look_for_in|.
 bool IsChromeRegisteredForProtocol(BrowserDistribution* dist,
-                                   const string16& suffix,
-                                   const string16& protocol,
+                                   const base::string16& suffix,
+                                   const base::string16& protocol,
                                    uint32 look_for_in) {
   ScopedVector<RegistryEntry> entries;
   RegistryEntry::GetProtocolCapabilityEntries(dist, suffix, protocol, &entries);
@@ -689,9 +692,9 @@ bool IsChromeRegisteredForProtocol(BrowserDistribution* dist,
 // If protocol is non-empty we will also register Chrome as being capable of
 // handling the protocol.
 bool ElevateAndRegisterChrome(BrowserDistribution* dist,
-                              const string16& chrome_exe,
-                              const string16& suffix,
-                              const string16& protocol) {
+                              const base::string16& chrome_exe,
+                              const base::string16& suffix,
+                              const base::string16& protocol) {
   // Only user-level installs prior to Windows 8 should need to elevate to
   // register.
   DCHECK(InstallUtil::IsPerUserInstall(chrome_exe.c_str()));
@@ -702,7 +705,7 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
     HKEY reg_root = InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ?
         HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
     RegKey key(reg_root, dist->GetUninstallRegPath().c_str(), KEY_READ);
-    string16 uninstall_string;
+    base::string16 uninstall_string;
     key.ReadValue(installer::kUninstallStringField, &uninstall_string);
     CommandLine command_line = CommandLine::FromString(uninstall_string);
     exe_path = command_line.GetProgram();
@@ -758,7 +761,7 @@ bool LaunchSelectDefaultProtocolHandlerDialog(const wchar_t* protocol) {
 // Launches the Windows 7 and Windows 8 application association dialog, which
 // is the only documented way to make a browser the default browser on
 // Windows 8.
-bool LaunchApplicationAssociationDialog(const string16& app_id) {
+bool LaunchApplicationAssociationDialog(const base::string16& app_id) {
   base::win::ScopedComPtr<IApplicationAssociationRegistrationUI> aarui;
   HRESULT hr = aarui.CreateInstance(CLSID_ApplicationAssociationRegistrationUI);
   if (FAILED(hr))
@@ -779,11 +782,11 @@ bool LaunchApplicationAssociationDialog(const string16& app_id) {
 // how Chrome is registered, not to know whether the registration is complete
 // at install-time (IsChromeRegistered() can be used for that).
 bool QuickIsChromeRegistered(BrowserDistribution* dist,
-                             const string16& chrome_exe,
-                             const string16& suffix,
+                             const base::string16& chrome_exe,
+                             const base::string16& suffix,
                              RegistrationConfirmationLevel confirmation_level) {
   // Get the appropriate key to look for based on the level desired.
-  string16 reg_key;
+  base::string16 reg_key;
   switch (confirmation_level) {
     case CONFIRM_PROGID_REGISTRATION:
       // Software\Classes\ChromeHTML|suffix|
@@ -810,7 +813,7 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
       (confirmation_level == CONFIRM_SHELL_REGISTRATION &&
        base::win::GetVersion() >= base::win::VERSION_WIN8)) {
     const RegKey key_hkcu(HKEY_CURRENT_USER, reg_key.c_str(), KEY_QUERY_VALUE);
-    string16 hkcu_value;
+    base::string16 hkcu_value;
     // If |reg_key| is present in HKCU, assert that it points to |chrome_exe|.
     // Otherwise, fall back on an HKLM lookup below.
     if (key_hkcu.ReadValue(L"", &hkcu_value) == ERROR_SUCCESS) {
@@ -821,7 +824,7 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
 
   // Assert that |reg_key| points to |chrome_exe| in HKLM.
   const RegKey key_hklm(HKEY_LOCAL_MACHINE, reg_key.c_str(), KEY_QUERY_VALUE);
-  string16 hklm_value;
+  base::string16 hklm_value;
   if (key_hklm.ReadValue(L"", &hklm_value) == ERROR_SUCCESS) {
     return InstallUtil::ProgramCompare(
         base::FilePath(chrome_exe)).Evaluate(hklm_value);
@@ -840,10 +843,10 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
 // with other Chrome user-level installs.
 // Returns true unless one of the underlying calls fails.
 bool GetInstallationSpecificSuffix(BrowserDistribution* dist,
-                                   const string16& chrome_exe,
-                                   string16* suffix) {
+                                   const base::string16& chrome_exe,
+                                   base::string16* suffix) {
   if (!InstallUtil::IsPerUserInstall(chrome_exe.c_str()) ||
-      QuickIsChromeRegistered(dist, chrome_exe, string16(),
+      QuickIsChromeRegistered(dist, chrome_exe, base::string16(),
                               CONFIRM_SHELL_REGISTRATION)) {
     // No suffix on system-level installs and user-level installs already
     // registered with no suffix.
@@ -878,7 +881,7 @@ HKEY DetermineRegistrationRoot(bool is_per_user) {
 // Software\Classes\http key directly, we have to do this on Vista+ as well.
 bool RegisterChromeAsDefaultXPStyle(BrowserDistribution* dist,
                                     int shell_change,
-                                    const string16& chrome_exe) {
+                                    const base::string16& chrome_exe) {
   bool ret = true;
   ScopedVector<RegistryEntry> entries;
   RegistryEntry::GetXPStyleDefaultBrowserUserEntries(
@@ -906,12 +909,14 @@ bool RegisterChromeAsDefaultXPStyle(BrowserDistribution* dist,
 // required on Vista+ but since some applications still read these registry
 // keys directly, we have to do this on Vista+ as well.
 // See http://msdn.microsoft.com/library/aa767914.aspx for more details.
-bool RegisterChromeAsDefaultProtocolClientXPStyle(BrowserDistribution* dist,
-                                                  const string16& chrome_exe,
-                                                  const string16& protocol) {
+bool RegisterChromeAsDefaultProtocolClientXPStyle(
+    BrowserDistribution* dist,
+    const base::string16& chrome_exe,
+    const base::string16& protocol) {
   ScopedVector<RegistryEntry> entries;
-  const string16 chrome_open(ShellUtil::GetChromeShellOpenCmd(chrome_exe));
-  const string16 chrome_icon(
+  const base::string16 chrome_open(
+      ShellUtil::GetChromeShellOpenCmd(chrome_exe));
+  const base::string16 chrome_icon(
       ShellUtil::FormatIconLocation(
           chrome_exe,
           dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME)));
@@ -929,11 +934,11 @@ bool RegisterChromeAsDefaultProtocolClientXPStyle(BrowserDistribution* dist,
 // Returns |properties.shortcut_name| if the property is set, otherwise it
 // returns dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME). In any
 // case, it makes sure the return value is suffixed with ".lnk".
-string16 ExtractShortcutNameFromProperties(
+base::string16 ExtractShortcutNameFromProperties(
     BrowserDistribution* dist,
     const ShellUtil::ShortcutProperties& properties) {
   DCHECK(dist);
-  string16 shortcut_name;
+  base::string16 shortcut_name;
   if (properties.has_shortcut_name()) {
     shortcut_name = properties.shortcut_name;
   } else {
@@ -1000,15 +1005,14 @@ base::win::ShortcutProperties TranslateShortcutProperties(
 
 // Cleans up an old verb (run) we used to register in
 // <root>\Software\Classes\Chrome<.suffix>\.exe\shell\run on Windows 8.
-void RemoveRunVerbOnWindows8(
-    BrowserDistribution* dist,
-    const string16& chrome_exe) {
+void RemoveRunVerbOnWindows8(BrowserDistribution* dist,
+                             const base::string16& chrome_exe) {
   if (IsChromeMetroSupported()) {
     bool is_per_user_install =InstallUtil::IsPerUserInstall(chrome_exe.c_str());
     HKEY root_key = DetermineRegistrationRoot(is_per_user_install);
     // There's no need to rollback, so forgo the usual work item lists and just
     // remove the key from the registry.
-    string16 run_verb_key(ShellUtil::kRegClasses);
+    base::string16 run_verb_key(ShellUtil::kRegClasses);
     run_verb_key.push_back(base::FilePath::kSeparators[0]);
     run_verb_key.append(ShellUtil::GetBrowserModelId(
         dist, is_per_user_install));
@@ -1022,9 +1026,9 @@ void RemoveRunVerbOnWindows8(
 
 // Gets the short (8.3) form of |path|, putting the result in |short_path| and
 // returning true on success.  |short_path| is not modified on failure.
-bool ShortNameFromPath(const base::FilePath& path, string16* short_path) {
+bool ShortNameFromPath(const base::FilePath& path, base::string16* short_path) {
   DCHECK(short_path);
-  string16 result(MAX_PATH, L'\0');
+  base::string16 result(MAX_PATH, L'\0');
   DWORD short_length = GetShortPathName(path.value().c_str(), &result[0],
                                         result.size());
   if (short_length == 0 || short_length > result.size()) {
@@ -1058,7 +1062,7 @@ ShellUtil::DefaultState ProbeCurrentDefaultHandlers(
     NOTREACHED();
     return ShellUtil::UNKNOWN_DEFAULT;
   }
-  string16 prog_id(dist->GetBrowserProgIdPrefix());
+  base::string16 prog_id(dist->GetBrowserProgIdPrefix());
   prog_id += ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe.value());
 
   for (size_t i = 0; i < num_protocols; ++i) {
@@ -1089,7 +1093,8 @@ ShellUtil::DefaultState ProbeAppIsDefaultHandlers(
     NOTREACHED();
     return ShellUtil::UNKNOWN_DEFAULT;
   }
-  string16 app_name(ShellUtil::GetApplicationName(dist, chrome_exe.value()));
+  base::string16 app_name(
+      ShellUtil::GetApplicationName(dist, chrome_exe.value()));
 
   BOOL result;
   for (size_t i = 0; i < num_protocols; ++i) {
@@ -1116,16 +1121,16 @@ ShellUtil::DefaultState ProbeOpenCommandHandlers(
   }
 
   // Get its short (8.3) form.
-  string16 short_app_path;
+  base::string16 short_app_path;
   if (!ShortNameFromPath(app_path, &short_app_path))
     return ShellUtil::UNKNOWN_DEFAULT;
 
   const HKEY root_key = HKEY_CLASSES_ROOT;
-  string16 key_path;
+  base::string16 key_path;
   base::win::RegKey key;
-  string16 value;
+  base::string16 value;
   CommandLine command_line(CommandLine::NO_PROGRAM);
-  string16 short_path;
+  base::string16 short_path;
 
   for (size_t i = 0; i < num_protocols; ++i) {
     // Get the command line from HKCU\<protocol>\shell\open\command.
@@ -1199,7 +1204,7 @@ bool GetAppShortcutsFolder(BrowserDistribution* dist,
 // Shortcut filters for BatchShortcutAction().
 
 typedef base::Callback<bool(const base::FilePath& /*shortcut_path*/,
-                            const string16& /*args*/)>
+                            const base::string16& /*args*/)>
     ShortcutFilterCallback;
 
 // FilterTargetEq is a shortcut filter that matches only shortcuts that have a
@@ -1212,7 +1217,8 @@ class FilterTargetEq {
   // Returns true if filter rules are satisfied, i.e.:
   // - |target_path|'s target == |desired_target_compare_|, and
   // - |args| is non-empty (if |require_args_| == true).
-  bool Match(const base::FilePath& target_path, const string16& args) const;
+  bool Match(const base::FilePath& target_path,
+             const base::string16& args) const;
 
   // A convenience routine to create a callback to call Match().
   // The callback is only valid during the lifetime of the FilterTargetEq
@@ -1231,7 +1237,7 @@ FilterTargetEq::FilterTargetEq(const base::FilePath& desired_target_exe,
       require_args_(require_args) {}
 
 bool FilterTargetEq::Match(const base::FilePath& target_path,
-                           const string16& args) const {
+                           const base::string16& args) const {
   if (!desired_target_compare_.EvaluatePath(target_path))
     return false;
   if (require_args_ && args.empty())
@@ -1290,9 +1296,9 @@ bool BatchShortcutAction(const ShortcutFilterCallback& shortcut_filter,
   bool success = true;
   base::FileEnumerator enumerator(
       shortcut_folder, false, base::FileEnumerator::FILES,
-      string16(L"*") + installer::kLnkExt);
+      base::string16(L"*") + installer::kLnkExt);
   base::FilePath target_path;
-  string16 args;
+  base::string16 args;
   for (base::FilePath shortcut_path = enumerator.Next();
        !shortcut_path.empty();
        shortcut_path = enumerator.Next()) {
@@ -1380,8 +1386,8 @@ const wchar_t* ShellUtil::kRegDelegateExecute = L"DelegateExecute";
 const wchar_t* ShellUtil::kRegOpenWithProgids = L"OpenWithProgids";
 
 bool ShellUtil::QuickIsChromeRegisteredInHKLM(BrowserDistribution* dist,
-                                              const string16& chrome_exe,
-                                              const string16& suffix) {
+                                              const base::string16& chrome_exe,
+                                              const base::string16& suffix) {
   return QuickIsChromeRegistered(dist, chrome_exe, suffix,
                                  CONFIRM_SHELL_REGISTRATION_IN_HKLM);
 }
@@ -1488,7 +1494,8 @@ bool ShellUtil::CreateOrUpdateShortcut(
     return false;
   }
 
-  string16 shortcut_name(ExtractShortcutNameFromProperties(dist, properties));
+  base::string16 shortcut_name(
+      ExtractShortcutNameFromProperties(dist, properties));
   system_shortcut_path = system_shortcut_path.Append(shortcut_name);
 
   base::FilePath* chosen_path;
@@ -1550,33 +1557,35 @@ bool ShellUtil::CreateOrUpdateShortcut(
   return ret;
 }
 
-string16 ShellUtil::FormatIconLocation(const string16& icon_path,
-                                       int icon_index) {
-  string16 icon_string(icon_path);
+base::string16 ShellUtil::FormatIconLocation(const base::string16& icon_path,
+                                             int icon_index) {
+  base::string16 icon_string(icon_path);
   icon_string.append(L",");
   icon_string.append(base::IntToString16(icon_index));
   return icon_string;
 }
 
-string16 ShellUtil::GetChromeShellOpenCmd(const string16& chrome_exe) {
+base::string16 ShellUtil::GetChromeShellOpenCmd(
+    const base::string16& chrome_exe) {
   return L"\"" + chrome_exe + L"\" -- \"%1\"";
 }
 
-string16 ShellUtil::GetChromeDelegateCommand(const string16& chrome_exe) {
+base::string16 ShellUtil::GetChromeDelegateCommand(
+    const base::string16& chrome_exe) {
   return L"\"" + chrome_exe + L"\" -- %*";
 }
 
 void ShellUtil::GetRegisteredBrowsers(
     BrowserDistribution* dist,
-    std::map<string16, string16>* browsers) {
+    std::map<base::string16, base::string16>* browsers) {
   DCHECK(dist);
   DCHECK(browsers);
 
-  const string16 base_key(ShellUtil::kRegStartMenuInternet);
-  string16 client_path;
+  const base::string16 base_key(ShellUtil::kRegStartMenuInternet);
+  base::string16 client_path;
   RegKey key;
-  string16 name;
-  string16 command;
+  base::string16 name;
+  base::string16 command;
 
   // HKCU has precedence over HKLM for these registrations: http://goo.gl/xjczJ.
   // Look in HKCU second to override any identical values found in HKLM.
@@ -1591,7 +1600,7 @@ void ShellUtil::GetRegisteredBrowsers(
                    KEY_QUERY_VALUE) != ERROR_SUCCESS ||
           key.ReadValue(NULL, &name) != ERROR_SUCCESS ||
           name.empty() ||
-          name.find(dist->GetBaseAppName()) != string16::npos) {
+          name.find(dist->GetBaseAppName()) != base::string16::npos) {
         continue;
       }
       // Read the browser's reinstall command.
@@ -1605,8 +1614,9 @@ void ShellUtil::GetRegisteredBrowsers(
   }
 }
 
-string16 ShellUtil::GetCurrentInstallationSuffix(BrowserDistribution* dist,
-                                                 const string16& chrome_exe) {
+base::string16 ShellUtil::GetCurrentInstallationSuffix(
+    BrowserDistribution* dist,
+    const base::string16& chrome_exe) {
   // This method is somewhat the opposite of GetInstallationSpecificSuffix().
   // In this case we are not trying to determine the current suffix for the
   // upcoming installation (i.e. not trying to stick to a currently bad
@@ -1616,7 +1626,7 @@ string16 ShellUtil::GetCurrentInstallationSuffix(BrowserDistribution* dist,
   //   1) Base 32 encoding of the md5 hash of the user's sid (new-style).
   //   2) Username (old-style).
   //   3) Unsuffixed (even worse).
-  string16 tested_suffix;
+  base::string16 tested_suffix;
   if (InstallUtil::IsPerUserInstall(chrome_exe.c_str()) &&
       (!GetUserSpecificRegistrySuffix(&tested_suffix) ||
        !QuickIsChromeRegistered(dist, chrome_exe, tested_suffix,
@@ -1634,17 +1644,17 @@ string16 ShellUtil::GetCurrentInstallationSuffix(BrowserDistribution* dist,
   return tested_suffix;
 }
 
-string16 ShellUtil::GetApplicationName(BrowserDistribution* dist,
-                                       const string16& chrome_exe) {
-  string16 app_name = dist->GetBaseAppName();
+base::string16 ShellUtil::GetApplicationName(BrowserDistribution* dist,
+                                             const base::string16& chrome_exe) {
+  base::string16 app_name = dist->GetBaseAppName();
   app_name += GetCurrentInstallationSuffix(dist, chrome_exe);
   return app_name;
 }
 
-string16 ShellUtil::GetBrowserModelId(BrowserDistribution* dist,
-                                      bool is_per_user_install) {
-  string16 app_id(dist->GetBaseAppId());
-  string16 suffix;
+base::string16 ShellUtil::GetBrowserModelId(BrowserDistribution* dist,
+                                            bool is_per_user_install) {
+  base::string16 app_id(dist->GetBaseAppId());
+  base::string16 suffix;
 
   // TODO(robertshield): Temporary hack to make the kRegisterChromeBrowserSuffix
   // apply to all registry values computed down in these murky depths.
@@ -1659,12 +1669,12 @@ string16 ShellUtil::GetBrowserModelId(BrowserDistribution* dist,
   // There is only one component (i.e. the suffixed appid) in this case, but it
   // is still necessary to go through the appid constructor to make sure the
   // returned appid is truncated if necessary.
-  std::vector<string16> components(1, app_id.append(suffix));
+  std::vector<base::string16> components(1, app_id.append(suffix));
   return BuildAppModelId(components);
 }
 
-string16 ShellUtil::BuildAppModelId(
-    const std::vector<string16>& components) {
+base::string16 ShellUtil::BuildAppModelId(
+    const std::vector<base::string16>& components) {
   DCHECK_GT(components.size(), 0U);
 
   // Find the maximum numbers of characters allowed in each component
@@ -1680,14 +1690,14 @@ string16 ShellUtil::BuildAppModelId(
     return (*components.begin()).substr(0, installer::kMaxAppModelIdLength);
   }
 
-  string16 app_id;
+  base::string16 app_id;
   app_id.reserve(installer::kMaxAppModelIdLength);
-  for (std::vector<string16>::const_iterator it = components.begin();
+  for (std::vector<base::string16>::const_iterator it = components.begin();
        it != components.end(); ++it) {
     if (it != components.begin())
       app_id.push_back(L'.');
 
-    const string16& component = *it;
+    const base::string16& component = *it;
     DCHECK(!component.empty());
     if (component.length() > max_component_length) {
       // Append a shortened version of this component. Cut in the middle to try
@@ -1696,7 +1706,7 @@ string16 ShellUtil::BuildAppModelId(
       app_id.append(component.c_str(), 0, max_component_length / 2);
       app_id.append(component.c_str(),
                     component.length() - ((max_component_length + 1) / 2),
-                    string16::npos);
+                    base::string16::npos);
     } else {
       app_id.append(component);
     }
@@ -1726,7 +1736,7 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultState() {
 }
 
 ShellUtil::DefaultState ShellUtil::GetChromeDefaultProtocolClientState(
-    const string16& protocol) {
+    const base::string16& protocol) {
   BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
   if (distribution->GetDefaultBrowserControlPolicy() ==
       BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
@@ -1747,7 +1757,7 @@ bool ShellUtil::CanMakeChromeDefaultUnattended() {
 
 bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
                                   int shell_change,
-                                  const string16& chrome_exe,
+                                  const base::string16& chrome_exe,
                                   bool elevate_if_not_admin) {
   DCHECK(!(shell_change & ShellUtil::SYSTEM_LEVEL) || IsUserAnAdmin());
 
@@ -1765,14 +1775,14 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   }
 
   if (!ShellUtil::RegisterChromeBrowser(
-          dist, chrome_exe, string16(), elevate_if_not_admin)) {
+           dist, chrome_exe, base::string16(), elevate_if_not_admin)) {
     return false;
   }
 
   bool ret = true;
   // First use the new "recommended" way on Vista to make Chrome default
   // browser.
-  string16 app_name = GetApplicationName(dist, chrome_exe);
+  base::string16 app_name = GetApplicationName(dist, chrome_exe);
 
   if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
     // On Windows Vista and Win7 we still can set ourselves via the
@@ -1815,15 +1825,16 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   return ret;
 }
 
-bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
-                                              const string16& chrome_exe) {
+bool ShellUtil::ShowMakeChromeDefaultSystemUI(
+    BrowserDistribution* dist,
+    const base::string16& chrome_exe) {
   DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
   if (dist->GetDefaultBrowserControlPolicy() !=
       BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
     return false;
   }
 
-  if (!RegisterChromeBrowser(dist, chrome_exe, string16(), true))
+  if (!RegisterChromeBrowser(dist, chrome_exe, base::string16(), true))
       return false;
 
   bool succeeded = true;
@@ -1843,15 +1854,17 @@ bool ShellUtil::ShowMakeChromeDefaultSystemUI(BrowserDistribution* dist,
   return succeeded;
 }
 
-bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
-                                                const string16& chrome_exe,
-                                                const string16& protocol) {
+bool ShellUtil::MakeChromeDefaultProtocolClient(
+    BrowserDistribution* dist,
+    const base::string16& chrome_exe,
+    const base::string16& protocol) {
   if (dist->GetDefaultBrowserControlPolicy() !=
       BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
     return false;
   }
 
-  if (!RegisterChromeForProtocol(dist, chrome_exe, string16(), protocol, true))
+  if (!RegisterChromeForProtocol(
+           dist, chrome_exe, base::string16(), protocol, true))
     return false;
 
   // Windows 8 does not permit making a browser default just like that.
@@ -1870,7 +1883,7 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
     HRESULT hr = pAAR.CreateInstance(CLSID_ApplicationAssociationRegistration,
       NULL, CLSCTX_INPROC);
     if (SUCCEEDED(hr)) {
-      string16 app_name = GetApplicationName(dist, chrome_exe);
+      base::string16 app_name = GetApplicationName(dist, chrome_exe);
       hr = pAAR->SetAppAsDefault(app_name.c_str(), protocol.c_str(),
                                  AT_URLPROTOCOL);
     }
@@ -1892,15 +1905,16 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(BrowserDistribution* dist,
 
 bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
     BrowserDistribution* dist,
-    const string16& chrome_exe,
-    const string16& protocol) {
+    const base::string16& chrome_exe,
+    const base::string16& protocol) {
   DCHECK_GE(base::win::GetVersion(), base::win::VERSION_WIN8);
   if (dist->GetDefaultBrowserControlPolicy() !=
       BrowserDistribution::DEFAULT_BROWSER_FULL_CONTROL) {
     return false;
   }
 
-  if (!RegisterChromeForProtocol(dist, chrome_exe, string16(), protocol, true))
+  if (!RegisterChromeForProtocol(
+           dist, chrome_exe, base::string16(), protocol, true))
     return false;
 
   bool succeeded = true;
@@ -1923,8 +1937,8 @@ bool ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
 }
 
 bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
-                                      const string16& chrome_exe,
-                                      const string16& unique_suffix,
+                                      const base::string16& chrome_exe,
+                                      const base::string16& unique_suffix,
                                       bool elevate_if_not_admin) {
   if (dist->GetDefaultBrowserControlPolicy() ==
       BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
@@ -1933,7 +1947,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
 
   CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  string16 suffix;
+  base::string16 suffix;
   if (!unique_suffix.empty()) {
     suffix = unique_suffix;
   } else if (command_line.HasSwitch(
@@ -1986,7 +2000,8 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
     // If we got to this point then all we can do is create ProgId and basic app
     // registrations under HKCU.
     ScopedVector<RegistryEntry> entries;
-    RegistryEntry::GetProgIdEntries(dist, chrome_exe, string16(), &entries);
+    RegistryEntry::GetProgIdEntries(
+        dist, chrome_exe, base::string16(), &entries);
     // Prefer to use |suffix|; unless Chrome's ProgIds are already registered
     // with no suffix (as per the old registration style): in which case some
     // other registry entries could refer to them and since we were not able to
@@ -2004,7 +2019,7 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
       // thus needs to be done after the above check for the unsuffixed
       // registration).
       entries.clear();
-      RegistryEntry::GetAppRegistrationEntries(chrome_exe, string16(),
+      RegistryEntry::GetAppRegistrationEntries(chrome_exe, base::string16(),
                                                &entries);
       result = AddRegistryEntries(HKEY_CURRENT_USER, entries);
     }
@@ -2014,16 +2029,16 @@ bool ShellUtil::RegisterChromeBrowser(BrowserDistribution* dist,
 }
 
 bool ShellUtil::RegisterChromeForProtocol(BrowserDistribution* dist,
-                                          const string16& chrome_exe,
-                                          const string16& unique_suffix,
-                                          const string16& protocol,
+                                          const base::string16& chrome_exe,
+                                          const base::string16& unique_suffix,
+                                          const base::string16& protocol,
                                           bool elevate_if_not_admin) {
   if (dist->GetDefaultBrowserControlPolicy() ==
       BrowserDistribution::DEFAULT_BROWSER_UNSUPPORTED) {
     return false;
   }
 
-  string16 suffix;
+  base::string16 suffix;
   if (!unique_suffix.empty()) {
     suffix = unique_suffix;
   } else if (!GetInstallationSpecificSuffix(dist, chrome_exe, &suffix)) {
@@ -2107,14 +2122,14 @@ bool ShellUtil::UpdateShortcutsWithArgs(
                              shortcut_operation, location, dist, level);
 }
 
-bool ShellUtil::GetUserSpecificRegistrySuffix(string16* suffix) {
+bool ShellUtil::GetUserSpecificRegistrySuffix(base::string16* suffix) {
   // Use a thread-safe cache for the user's suffix.
   static base::LazyInstance<UserSpecificRegistrySuffix>::Leaky suffix_instance =
       LAZY_INSTANCE_INITIALIZER;
   return suffix_instance.Get().GetSuffix(suffix);
 }
 
-bool ShellUtil::GetOldUserSpecificRegistrySuffix(string16* suffix) {
+bool ShellUtil::GetOldUserSpecificRegistrySuffix(base::string16* suffix) {
   wchar_t user_name[256];
   DWORD size = arraysize(user_name);
   if (::GetUserName(user_name, &size) == 0 || size < 1) {
@@ -2127,14 +2142,14 @@ bool ShellUtil::GetOldUserSpecificRegistrySuffix(string16* suffix) {
   return true;
 }
 
-string16 ShellUtil::ByteArrayToBase32(const uint8* bytes, size_t size) {
+base::string16 ShellUtil::ByteArrayToBase32(const uint8* bytes, size_t size) {
   static const char kEncoding[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
   // Eliminate special cases first.
   if (size == 0) {
-    return string16();
+    return base::string16();
   } else if (size == 1) {
-    string16 ret;
+    base::string16 ret;
     ret.push_back(kEncoding[(bytes[0] & 0xf8) >> 3]);
     ret.push_back(kEncoding[(bytes[0] & 0x07) << 2]);
     return ret;
@@ -2142,14 +2157,14 @@ string16 ShellUtil::ByteArrayToBase32(const uint8* bytes, size_t size) {
     // If |size| is too big, the calculation of |encoded_length| below will
     // overflow.
     NOTREACHED();
-    return string16();
+    return base::string16();
   }
 
   // Overestimate the number of bits in the string by 4 so that dividing by 5
   // is the equivalent of rounding up the actual number of bits divided by 5.
   const size_t encoded_length = (size * 8 + 4) / 5;
 
-  string16 ret;
+  base::string16 ret;
   ret.reserve(encoded_length);
 
   // A bit stream which will be read from the left and appended to from the
