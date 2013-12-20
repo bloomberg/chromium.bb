@@ -81,11 +81,11 @@ void WebRTCInternalsMessageHandler::OnDOMLoadDone(
 
   if (WebRTCInternals::GetInstance()->aec_dump_enabled()) {
     std::vector<const base::Value*> args_vector;
-    string16 script = WebUI::GetJavascriptCall("setAecRecordingEnabled",
-                                               args_vector);
+    base::string16 script = WebUI::GetJavascriptCall("setAecRecordingEnabled",
+                                                     args_vector);
     RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
     if (host)
-      host->ExecuteJavascriptInWebFrame(string16(), script);
+      host->ExecuteJavascriptInWebFrame(base::string16(), script);
   }
 }
 

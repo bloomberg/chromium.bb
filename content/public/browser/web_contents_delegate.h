@@ -455,8 +455,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // has failed. There can only be one message per |web_contents| at a time.
   virtual void ShowValidationMessage(WebContents* web_contents,
                                      const gfx::Rect& anchor_in_root_view,
-                                     const string16& main_text,
-                                     const string16& sub_text) {}
+                                     const base::string16& main_text,
+                                     const base::string16& sub_text) {}
 
   // Notification that the delegate should hide any showing form validation
   // message.

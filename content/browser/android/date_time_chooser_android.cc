@@ -23,8 +23,8 @@ using base::android::ConvertUTF16ToJavaString;
 
 namespace {
 
-string16 SanitizeSuggestionString(const string16& string) {
-  string16 trimmed = string.substr(0, 255);
+base::string16 SanitizeSuggestionString(const base::string16& string) {
+  base::string16 trimmed = string.substr(0, 255);
   icu::UnicodeString sanitized;
   base::i18n::UTF16CharIterator sanitized_iterator(&trimmed);
   while (!sanitized_iterator.end()) {
@@ -33,8 +33,8 @@ string16 SanitizeSuggestionString(const string16& string) {
       sanitized.append(c);
     sanitized_iterator.Advance();
   }
-  return string16(sanitized.getBuffer(),
-                  static_cast<size_t>(sanitized.length()));
+  return base::string16(sanitized.getBuffer(),
+                        static_cast<size_t>(sanitized.length()));
 }
 
 }  // namespace

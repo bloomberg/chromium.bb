@@ -706,8 +706,8 @@ class CONTENT_EXPORT WebContentsImpl
                            bool has_audio,
                            bool is_playing);
   void OnShowValidationMessage(const gfx::Rect& anchor_in_root_view,
-                               const string16& main_text,
-                               const string16& sub_text);
+                               const base::string16& main_text,
+                               const base::string16& sub_text);
   void OnHideValidationMessage();
   void OnMoveValidationMessage(const gfx::Rect& anchor_in_root_view);
 

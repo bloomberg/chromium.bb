@@ -953,7 +953,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
   {
     ExecuteSyncJSFunction(guest_rvh,
                           "document.getElementById('input1').focus();");
-    string16 expected_title = UTF8ToUTF16("InputTest123");
+    base::string16 expected_title = UTF8ToUTF16("InputTest123");
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
     embedder_rvh->Send(
@@ -967,7 +967,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
   }
   // A composition is committed via IME.
   {
-    string16 expected_title = UTF8ToUTF16("InputTest456");
+    base::string16 expected_title = UTF8ToUTF16("InputTest456");
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
     embedder_rvh->Send(
@@ -984,7 +984,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
   {
     ExecuteSyncJSFunction(guest_rvh,
                           "document.getElementById('input1').value = '';");
-    string16 composition = UTF8ToUTF16("InputTest789");
+    base::string16 composition = UTF8ToUTF16("InputTest789");
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         composition);
     embedder_rvh->Send(
@@ -1016,7 +1016,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
                           "i.value = 'InputTestABC';"
                           "i.selectionStart=6;"
                           "i.selectionEnd=6;");
-    string16 expected_value = UTF8ToUTF16("InputABC");
+    base::string16 expected_value = UTF8ToUTF16("InputABC");
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_value);
     // Delete 'Test' in 'InputTestABC', as the caret is after 'T':
