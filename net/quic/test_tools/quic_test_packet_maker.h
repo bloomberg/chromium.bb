@@ -1,0 +1,92 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Provides a simple interface for QUIC tests to create a variety of packets.
+
+#ifndef NET_QUIC_TEST_TOOLS_QUIC_TEST_PACKET_MAKER_H_
+#define NET_QUIC_TEST_TOOLS_QUIC_TEST_PACKET_MAKER_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "net/base/request_priority.h"
+#include "net/quic/quic_protocol.h"
+#include "net/quic/quic_spdy_compressor.h"
+#include "net/quic/test_tools/mock_random.h"
+#include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_protocol.h"
+
+namespace net {
+namespace test {
+
+class QuicTestPacketMaker {
+ public:
+  QuicTestPacketMaker(QuicVersion version, QuicGuid guid);
+  ~QuicTestPacketMaker();
+
+  scoped_ptr<QuicEncryptedPacket> MakeRstPacket(
+      QuicPacketSequenceNumber num,
+      bool include_version,
+      QuicStreamId stream_id,
+      QuicRstStreamErrorCode error_code);
+  scoped_ptr<QuicEncryptedPacket> MakeConnectionClosePacket(
+      QuicPacketSequenceNumber num);
+  scoped_ptr<QuicEncryptedPacket> MakeAckPacket(
+      QuicPacketSequenceNumber sequence_number,
+      QuicPacketSequenceNumber largest_received,
+      QuicPacketSequenceNumber least_unacked,
+      bool send_feedback);
+  scoped_ptr<QuicEncryptedPacket> MakeDataPacket(
+      QuicPacketSequenceNumber sequence_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      QuicStreamOffset offset,
+      base::StringPiece data);
+  scoped_ptr<QuicEncryptedPacket> MakeRequestHeadersPacket(
+      QuicPacketSequenceNumber sequence_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      const SpdyHeaderBlock& headers);
+  scoped_ptr<QuicEncryptedPacket> MakeResponseHeadersPacket(
+      QuicPacketSequenceNumber sequence_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin,
+      const SpdyHeaderBlock& headers);
+
+  SpdyHeaderBlock GetRequestHeaders(const std::string& method,
+                                    const std::string& scheme,
+                                    const std::string& path);
+  std::string GetRequestString(const std::string& method,
+                               const std::string& scheme,
+                               const std::string& path);
+  SpdyHeaderBlock GetResponseHeaders(const std::string& status);
+  std::string GetResponseString(const std::string& status,
+                                const std::string& body);
+
+ private:
+  scoped_ptr<QuicEncryptedPacket> MakePacket(
+      const QuicPacketHeader& header,
+      const QuicFrame& frame);
+
+  void InitializeHeader(QuicPacketSequenceNumber sequence_number,
+                        bool should_include_version);
+
+  std::string SerializeHeaderBlock(const SpdyHeaderBlock& headers);
+
+  QuicVersion version_;
+  QuicGuid guid_;
+  SpdyFramer spdy_request_framer_;
+  SpdyFramer spdy_response_framer_;
+  MockRandom random_generator_;
+  QuicPacketHeader header_;
+  QuicSpdyCompressor compressor_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicTestPacketMaker);
+};
+
+}  // namespace test
+}  // namespace net
+
+#endif  // NET_QUIC_TEST_TOOLS_QUIC_TEST_PACKET_MAKER_H_

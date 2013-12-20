@@ -252,7 +252,8 @@ enum QuicVersion {
 //
 // IMPORTANT: if you are addding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
-static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_12};
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_13,
+                                                     QUIC_VERSION_12};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 

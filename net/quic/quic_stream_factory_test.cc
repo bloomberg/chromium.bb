@@ -18,6 +18,7 @@
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
 #include "net/quic/test_tools/mock_random.h"
+#include "net/quic/test_tools/quic_test_packet_maker.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -66,15 +67,17 @@ class QuicStreamFactoryPeer {
   }
 };
 
-class QuicStreamFactoryTest : public ::testing::Test {
+class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
  protected:
   QuicStreamFactoryTest()
       : random_generator_(0),
+        maker_(GetParam(), 0),
         clock_(new MockClock()),
         factory_(&host_resolver_, &socket_factory_,
                  base::WeakPtr<HttpServerProperties>(),
                  &crypto_client_stream_factory_,
-                 &random_generator_, clock_, kDefaultMaxPacketSize),
+                 &random_generator_, clock_, kDefaultMaxPacketSize,
+                 SupportedVersions(GetParam())),
         host_port_proxy_pair_(HostPortPair(kDefaultServerHostName,
                                            kDefaultServerPort),
                               ProxyServer::Direct()),
@@ -83,84 +86,6 @@ class QuicStreamFactoryTest : public ::testing::Test {
     factory_.set_require_confirmation(false);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRstPacket(
-      QuicPacketSequenceNumber num,
-      QuicStreamId stream_id) {
-    QuicPacketHeader header;
-    header.public_header.guid = random_generator_.RandUint64();
-    header.public_header.reset_flag = false;
-    header.public_header.version_flag = true;
-    header.packet_sequence_number = num;
-    header.public_header.sequence_number_length = PACKET_1BYTE_SEQUENCE_NUMBER;
-    header.entropy_flag = false;
-    header.fec_flag = false;
-    header.fec_group = 0;
-
-    QuicRstStreamFrame rst(stream_id, QUIC_STREAM_CANCELLED);
-    return scoped_ptr<QuicEncryptedPacket>(
-        ConstructPacket(header, QuicFrame(&rst)));
-  }
-
-  scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
-      QuicPacketSequenceNumber largest_received,
-      QuicPacketSequenceNumber least_unacked) {
-    QuicPacketHeader header;
-    header.public_header.guid = random_generator_.RandUint64();
-    header.public_header.reset_flag = false;
-    header.public_header.version_flag = false;
-    header.packet_sequence_number = 2;
-    header.entropy_flag = false;
-    header.fec_flag = false;
-    header.fec_group = 0;
-
-    QuicAckFrame ack(largest_received, QuicTime::Zero(), least_unacked);
-    QuicCongestionFeedbackFrame feedback;
-    feedback.type = kTCP;
-    feedback.tcp.accumulated_number_of_lost_packets = 0;
-    feedback.tcp.receive_window = 16000;
-
-    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
-    QuicFrames frames;
-    frames.push_back(QuicFrame(&ack));
-    frames.push_back(QuicFrame(&feedback));
-    scoped_ptr<QuicPacket> packet(
-        framer.BuildUnsizedDataPacket(header, frames).packet);
-    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
-        ENCRYPTION_NONE, header.packet_sequence_number, *packet));
-  }
-
-  // Returns a newly created packet to send congestion feedback data.
-  scoped_ptr<QuicEncryptedPacket> ConstructFeedbackPacket(
-      QuicPacketSequenceNumber sequence_number) {
-    QuicPacketHeader header;
-    header.public_header.guid = random_generator_.RandUint64();
-    header.public_header.reset_flag = false;
-    header.public_header.version_flag = false;
-    header.packet_sequence_number = sequence_number;
-    header.entropy_flag = false;
-    header.fec_flag = false;
-    header.fec_group = 0;
-
-    QuicCongestionFeedbackFrame frame;
-    frame.type = kTCP;
-    frame.tcp.accumulated_number_of_lost_packets = 0;
-    frame.tcp.receive_window = 16000;
-
-    return scoped_ptr<QuicEncryptedPacket>(
-        ConstructPacket(header, QuicFrame(&frame)));
-  }
-
-  scoped_ptr<QuicEncryptedPacket> ConstructPacket(
-      const QuicPacketHeader& header,
-      const QuicFrame& frame) {
-    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
-    QuicFrames frames;
-    frames.push_back(frame);
-    scoped_ptr<QuicPacket> packet(
-        framer.BuildUnsizedDataPacket(header, frames).packet);
-    return scoped_ptr<QuicEncryptedPacket>(framer.EncryptPacket(
-        ENCRYPTION_NONE, header.packet_sequence_number, *packet));
-  }
 
   int GetSourcePortForNewSession(const HostPortProxyPair& destination) {
     // Should only be called if there is no active session for this destination.
@@ -210,6 +135,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
   DeterministicMockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockRandom random_generator_;
+  QuicTestPacketMaker maker_;
   MockClock* clock_;  // Owned by factory_.
   QuicStreamFactory factory_;
   HostPortProxyPair host_port_proxy_pair_;
@@ -219,12 +145,15 @@ class QuicStreamFactoryTest : public ::testing::Test {
   TestCompletionCallback callback_;
 };
 
-TEST_F(QuicStreamFactoryTest, CreateIfSessionExists) {
+INSTANTIATE_TEST_CASE_P(Version, QuicStreamFactoryTest,
+                        ::testing::ValuesIn(QuicSupportedVersions()));
+
+TEST_P(QuicStreamFactoryTest, CreateIfSessionExists) {
   EXPECT_EQ(NULL, factory_.CreateIfSessionExists(host_port_proxy_pair_,
                                                  net_log_).get());
 }
 
-TEST_F(QuicStreamFactoryTest, Create) {
+TEST_P(QuicStreamFactoryTest, Create) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
@@ -258,7 +187,7 @@ TEST_F(QuicStreamFactoryTest, Create) {
   EXPECT_TRUE(socket_data.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, Goaway) {
+TEST_P(QuicStreamFactoryTest, Goaway) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
@@ -315,11 +244,13 @@ TEST_F(QuicStreamFactoryTest, Goaway) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, MaxOpenStream) {
+TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
-  scoped_ptr<QuicEncryptedPacket> rst(ConstructRstPacket(1, 3));
+  QuicStreamId stream_id = GetParam() > QUIC_VERSION_12 ? 5 : 3;
+  scoped_ptr<QuicEncryptedPacket> rst(
+      maker_.MakeRstPacket(1, true, stream_id, QUIC_STREAM_CANCELLED));
   MockWrite writes[] = {
     MockWrite(ASYNC, rst->data(), rst->length(), 1),
   };
@@ -371,7 +302,7 @@ TEST_F(QuicStreamFactoryTest, MaxOpenStream) {
   STLDeleteElements(&streams);
 }
 
-TEST_F(QuicStreamFactoryTest, ResolutionErrorInCreate) {
+TEST_P(QuicStreamFactoryTest, ResolutionErrorInCreate) {
   DeterministicSocketData socket_data(NULL, 0, NULL, 0);
   socket_factory_.AddSocketDataProvider(&socket_data);
 
@@ -388,7 +319,7 @@ TEST_F(QuicStreamFactoryTest, ResolutionErrorInCreate) {
   EXPECT_TRUE(socket_data.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, ConnectErrorInCreate) {
+TEST_P(QuicStreamFactoryTest, ConnectErrorInCreate) {
   MockConnect connect(SYNCHRONOUS, ERR_ADDRESS_IN_USE);
   DeterministicSocketData socket_data(NULL, 0, NULL, 0);
   socket_data.set_connect_data(connect);
@@ -406,7 +337,7 @@ TEST_F(QuicStreamFactoryTest, ConnectErrorInCreate) {
   EXPECT_TRUE(socket_data.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, CancelCreate) {
+TEST_P(QuicStreamFactoryTest, CancelCreate) {
   MockRead reads[] = {
     MockRead(ASYNC, OK, 0)  // EOF
   };
@@ -432,7 +363,7 @@ TEST_F(QuicStreamFactoryTest, CancelCreate) {
   EXPECT_TRUE(socket_data.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
+TEST_P(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
   // Sequentially connect to the default host, then another host, and then the
   // default host.  Verify that the default host gets a consistent ephemeral
   // port, that is different from the other host's connection.
@@ -448,7 +379,7 @@ TEST_F(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
   EXPECT_EQ(original_port, GetSourcePortForNewSession(host_port_proxy_pair_));
 }
 
-TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
+TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
@@ -498,7 +429,7 @@ TEST_F(QuicStreamFactoryTest, CloseAllSessions) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
+TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
@@ -549,7 +480,7 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, OnCertAdded) {
+TEST_P(QuicStreamFactoryTest, OnCertAdded) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
@@ -600,7 +531,7 @@ TEST_F(QuicStreamFactoryTest, OnCertAdded) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, OnCACertChanged) {
+TEST_P(QuicStreamFactoryTest, OnCACertChanged) {
   MockRead reads[] = {
     MockRead(ASYNC, 0, 0)  // EOF
   };
@@ -651,7 +582,7 @@ TEST_F(QuicStreamFactoryTest, OnCACertChanged) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
-TEST_F(QuicStreamFactoryTest, SharedCryptoConfig) {
+TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
   vector<string> cannoncial_suffixes;
   cannoncial_suffixes.push_back(string(".c.youtube.com"));
   cannoncial_suffixes.push_back(string(".googlevideo.com"));
@@ -692,7 +623,7 @@ TEST_F(QuicStreamFactoryTest, SharedCryptoConfig) {
   }
 }
 
-TEST_F(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
+TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
   vector<string> cannoncial_suffixes;
   cannoncial_suffixes.push_back(string(".c.youtube.com"));
   cannoncial_suffixes.push_back(string(".googlevideo.com"));

@@ -87,6 +87,7 @@ HttpNetworkSession::Params::Params()
       quic_max_packet_length(kDefaultMaxPacketSize),
       enable_user_alternate_protocol_ports(false),
       quic_crypto_client_stream_factory(NULL) {
+  quic_supported_versions.push_back(QUIC_VERSION_12);
 }
 
 HttpNetworkSession::Params::~Params() {}
@@ -115,7 +116,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                                QuicRandom::GetInstance(),
                            params.quic_clock ? params. quic_clock :
                                new QuicClock(),
-                           params.quic_max_packet_length),
+                           params.quic_max_packet_length,
+                           params.quic_supported_versions),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,
                          params.http_server_properties,

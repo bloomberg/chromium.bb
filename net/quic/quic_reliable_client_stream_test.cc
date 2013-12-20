@@ -37,10 +37,11 @@ class MockDelegate : public QuicReliableClientStream::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
-class QuicReliableClientStreamTest : public ::testing::Test {
+class QuicReliableClientStreamTest
+    : public ::testing::TestWithParam<QuicVersion> {
  public:
   QuicReliableClientStreamTest()
-      : session_(new MockConnection(false)),
+      : session_(new MockConnection(false, SupportedVersions(GetParam()))),
         stream_(kStreamId, &session_, BoundNetLog()) {
     stream_.SetDelegate(&delegate_);
   }
@@ -82,24 +83,35 @@ class QuicReliableClientStreamTest : public ::testing::Test {
   SpdyHeaderBlock headers_;
 };
 
-TEST_F(QuicReliableClientStreamTest, OnFinRead) {
+INSTANTIATE_TEST_CASE_P(Version, QuicReliableClientStreamTest,
+                        ::testing::ValuesIn(QuicSupportedVersions()));
+
+TEST_P(QuicReliableClientStreamTest, OnFinRead) {
   InitializeHeaders();
-  QuicSpdyCompressor compressor;
-  string compressed_headers = compressor.CompressHeaders(headers_);
-  QuicStreamFrame frame1(kStreamId, false, 0, MakeIOVector(compressed_headers));
   string uncompressed_headers =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
   EXPECT_CALL(delegate_, OnDataReceived(StrEq(uncompressed_headers.data()),
                                         uncompressed_headers.size()));
-  stream_.OnStreamFrame(frame1);
+  QuicStreamOffset offset = 0;
+  if (GetParam() > QUIC_VERSION_12) {
+    stream_.OnStreamHeaders(uncompressed_headers);
+    stream_.OnStreamHeadersComplete(false, uncompressed_headers.length());
+  } else {
+    QuicSpdyCompressor compressor;
+    string compressed_headers = compressor.CompressHeaders(headers_);
+    QuicStreamFrame frame1(kStreamId, false, 0,
+                           MakeIOVector(compressed_headers));
+    stream_.OnStreamFrame(frame1);
+    offset = compressed_headers.length();
+  }
 
   IOVector iov;
-  QuicStreamFrame frame2(kStreamId, true, compressed_headers.length(), iov);
+  QuicStreamFrame frame2(kStreamId, true, offset, iov);
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
   stream_.OnStreamFrame(frame2);
 }
 
-TEST_F(QuicReliableClientStreamTest, ProcessData) {
+TEST_P(QuicReliableClientStreamTest, ProcessData) {
   const char data[] = "hello world!";
   EXPECT_CALL(delegate_, OnDataReceived(StrEq(data), arraysize(data)));
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
@@ -107,7 +119,7 @@ TEST_F(QuicReliableClientStreamTest, ProcessData) {
   EXPECT_EQ(arraysize(data), stream_.ProcessData(data, arraysize(data)));
 }
 
-TEST_F(QuicReliableClientStreamTest, ProcessDataWithError) {
+TEST_P(QuicReliableClientStreamTest, ProcessDataWithError) {
   const char data[] = "hello world!";
   EXPECT_CALL(delegate_,
               OnDataReceived(StrEq(data),
@@ -118,14 +130,14 @@ TEST_F(QuicReliableClientStreamTest, ProcessDataWithError) {
   EXPECT_EQ(0u, stream_.ProcessData(data, arraysize(data)));
 }
 
-TEST_F(QuicReliableClientStreamTest, OnError) {
+TEST_P(QuicReliableClientStreamTest, OnError) {
   EXPECT_CALL(delegate_, OnError(ERR_INTERNET_DISCONNECTED));
 
   stream_.OnError(ERR_INTERNET_DISCONNECTED);
   EXPECT_FALSE(stream_.GetDelegate());
 }
 
-TEST_F(QuicReliableClientStreamTest, WriteStreamData) {
+TEST_P(QuicReliableClientStreamTest, WriteStreamData) {
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 
   const char kData1[] = "hello world";
@@ -139,7 +151,7 @@ TEST_F(QuicReliableClientStreamTest, WriteStreamData) {
                                         true, callback.callback()));
 }
 
-TEST_F(QuicReliableClientStreamTest, WriteStreamDataAsync) {
+TEST_P(QuicReliableClientStreamTest, WriteStreamDataAsync) {
   EXPECT_CALL(delegate_, HasSendHeadersComplete());
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 

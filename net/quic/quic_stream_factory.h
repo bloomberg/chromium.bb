@@ -89,7 +89,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicRandom* random_generator,
       QuicClock* clock,
-      size_t max_packet_length);
+      size_t max_packet_length,
+      const QuicVersionVector& supported_versions);
   virtual ~QuicStreamFactory();
 
   // Creates a new QuicHttpStream to |host_port_proxy_pair| which will be
@@ -228,7 +229,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   JobRequestsMap job_requests_map_;
   RequestMap active_requests_;
 
-  base::WeakPtrFactory<QuicStreamFactory> weak_factory_;
+  QuicVersionVector supported_versions_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value is
   // used to help seed a pseudo-random number generator (PortSuggester) so that
@@ -237,6 +238,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // (probablistically) prevent two profiles from colliding in their ephemeral
   // port requests.
   uint64 port_seed_;
+
+  base::WeakPtrFactory<QuicStreamFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamFactory);
 };

@@ -256,7 +256,8 @@ QuicStreamFactory::QuicStreamFactory(
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
     QuicClock* clock,
-    size_t max_packet_length)
+    size_t max_packet_length,
+    const QuicVersionVector& supported_versions)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
@@ -265,8 +266,9 @@ QuicStreamFactory::QuicStreamFactory(
       random_generator_(random_generator),
       clock_(clock),
       max_packet_length_(max_packet_length),
-      weak_factory_(this),
-      port_seed_(random_generator_->RandUint64()) {
+      supported_versions_(supported_versions),
+      port_seed_(random_generator_->RandUint64()),
+      weak_factory_(this) {
   config_.SetDefaults();
   config_.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(30),
@@ -495,7 +497,7 @@ int QuicStreamFactory::CreateSession(
 
   QuicConnection* connection = new QuicConnection(guid, addr, helper_.get(),
                                                   writer.get(), false,
-                                                  QuicSupportedVersions());
+                                                  supported_versions_);
   writer->SetConnection(connection);
   connection->options()->max_packet_length = max_packet_length_;
 

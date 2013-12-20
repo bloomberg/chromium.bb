@@ -1843,6 +1843,8 @@
         'quic/test_tools/quic_sent_packet_manager_peer.h',
         'quic/test_tools/quic_session_peer.cc',
         'quic/test_tools/quic_session_peer.h',
+        'quic/test_tools/quic_test_packet_maker.cc',
+        'quic/test_tools/quic_test_packet_maker.h',
         'quic/test_tools/quic_test_utils.cc',
         'quic/test_tools/quic_test_utils.h',
         'quic/test_tools/quic_test_writer.cc',

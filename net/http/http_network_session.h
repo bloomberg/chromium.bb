@@ -94,6 +94,7 @@ class NET_EXPORT HttpNetworkSession
     size_t quic_max_packet_length;
     bool enable_user_alternate_protocol_ports;
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
+    QuicVersionVector quic_supported_versions;
   };
 
   enum SocketPoolType {
