@@ -1811,10 +1811,12 @@ _arm_release.add_config('peach_pit-release',
 
 _arm_release.add_config('nyan-release',
   boards=['nyan'],
+  hw_tests=[],
 )
 
 _arm_release.add_config('peach_pi-release',
   boards=['peach_pi'],
+  hw_tests=[],
 )
 
 # Factory and Firmware releases much inherit from these classes.  Modifications
