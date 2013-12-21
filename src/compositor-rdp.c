@@ -596,8 +596,11 @@ rdp_peer_context_free(freerdp_peer* client, RdpPeerContext* context)
 			wl_event_source_remove(context->events[i]);
 	}
 
-	if(context->item.flags & RDP_PEER_ACTIVATED)
+	if(context->item.flags & RDP_PEER_ACTIVATED) {
+		weston_seat_release_keyboard(&context->item.seat);
+		weston_seat_release_pointer(&context->item.seat);
 		weston_seat_release(&context->item.seat);
+	}
 	Stream_Free(context->encode_stream, TRUE);
 	nsc_context_free(context->nsc_context);
 	rfx_context_free(context->rfx_context);
