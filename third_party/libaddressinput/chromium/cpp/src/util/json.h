@@ -15,6 +15,8 @@
 #ifndef I18N_ADDRESSINPUT_UTIL_JSON_H_
 #define I18N_ADDRESSINPUT_UTIL_JSON_H_
 
+#include <libaddressinput/util/scoped_ptr.h>
+
 #include <string>
 
 namespace i18n {
@@ -30,8 +32,8 @@ class Json {
  public:
   virtual ~Json();
 
-  // Returns a new instanec of |Json| object. The caller owns the result.
-  static Json* Build();
+  // Returns a new instance of |Json| object.
+  static scoped_ptr<Json> Build();
 
   // Parses the |json| string and returns true if |json| is valid and it is an
   // object.

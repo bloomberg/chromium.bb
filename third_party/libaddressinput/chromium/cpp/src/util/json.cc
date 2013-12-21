@@ -71,8 +71,8 @@ class Rapidjson : public Json {
 Json::~Json() {}
 
 // static
-Json* Json::Build() {
-  return new Rapidjson;
+scoped_ptr<Json> Json::Build() {
+  return scoped_ptr<Json>(new Rapidjson);
 }
 
 Json::Json() {}

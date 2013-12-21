@@ -56,8 +56,8 @@ class ChromeJson : public Json {
 Json::~Json() {}
 
 // static
-Json* Json::Build() {
-  return new ChromeJson;
+scoped_ptr<Json> Json::Build() {
+  return scoped_ptr<Json>(new ChromeJson);
 }
 
 Json::Json() {}

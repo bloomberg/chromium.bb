@@ -20,9 +20,10 @@
 
 #include <gtest/gtest.h>
 
-namespace {
+namespace i18n {
+namespace addressinput {
 
-using i18n::addressinput::Json;
+namespace {
 
 // Tests for Json object.
 class JsonTest : public testing::Test {
@@ -109,3 +110,6 @@ TEST_F(JsonTest, NumberIsNotValid) {
 }
 
 }  // namespace
+
+}  // namespace addressinput
+}  // namespace i18n
