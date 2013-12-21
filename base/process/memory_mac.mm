@@ -117,10 +117,23 @@ void CrMallocErrorBreak() {
 
   // Out of memory is certainly not heap corruption, and not necessarily
   // something for which the process should be terminated. Leave that decision
-  // to the OOM killer.  The EBADF case comes up because the malloc library
-  // attempts to log to ASL (syslog) before calling this code, which fails
-  // accessing a Unix-domain socket because of sandboxing.
-  if (errno == ENOMEM || (errno == EBADF && g_unchecked_alloc.Get().Get()))
+  // to the OOM killer.
+  if (errno == ENOMEM)
+    return;
+
+  // The malloc library attempts to log to ASL (syslog) before calling this
+  // code, which fails accessing a Unix-domain socket when sandboxed.  The
+  // failed socket results in writing to a -1 fd, leaving EBADF in errno.  If
+  // UncheckedMalloc() is on the stack, for large allocations (15k and up) only
+  // an OOM failure leads here.  Smaller allocations could also arrive here due
+  // to freelist corruption, but there is no way to distinguish that from OOM at
+  // this point.
+  //
+  // NOTE(shess): I hypothesize that EPERM case in 10.9 is the same root cause
+  // as EBADF.  Unfortunately, 10.9's opensource releases don't include malloc
+  // source code at this time.
+  // <http://crbug.com/312234>
+  if (g_unchecked_alloc.Get().Get() && (errno == EBADF || errno == EPERM))
     return;
 
   // A unit test checks this error message, so it needs to be in release builds.
