@@ -46,7 +46,8 @@ void ResetProfileSettingsHandler::InitializePage() {
   web_ui()->CallJavascriptFunction(
       "ResetProfileSettingsOverlay.setResettingState",
       base::FundamentalValue(resetter_->IsActive()));
-  if (automatic_profile_resetter_->ShouldShowResetBanner())
+  if (automatic_profile_resetter_ &&
+      automatic_profile_resetter_->ShouldShowResetBanner())
     web_ui()->CallJavascriptFunction("ResetProfileSettingsBanner.show");
 }
 
@@ -155,7 +156,8 @@ void ResetProfileSettingsHandler::OnShowResetProfileDialog(const ListValue*) {
 
 void ResetProfileSettingsHandler::OnDismissedResetProfileSettingsBanner(
     const base::ListValue* args) {
-  automatic_profile_resetter_->NotifyDidCloseWebUIResetBanner();
+  if (automatic_profile_resetter_)
+    automatic_profile_resetter_->NotifyDidCloseWebUIResetBanner();
 }
 
 void ResetProfileSettingsHandler::OnSettingsFetched() {
