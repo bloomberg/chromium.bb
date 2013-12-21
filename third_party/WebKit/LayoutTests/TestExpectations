@@ -280,7 +280,7 @@ crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetime
 crbug.com/314947 [ Mavericks ] fast/forms/datetimelocal-multiple-fields/datetimelocal-multiple-fields-value-set-empty.html [ Failure ]
 crbug.com/314947 [ Mavericks ] http/tests/images/drag-image-to-desktop.html [ Failure ]
 crbug.com/314947 [ Mavericks ] http/tests/xmlhttprequest/origin-exact-matching.html [ Failure ]
-crbug.com/314947 [ Mavericks ] printing/return-from-printing-mode.html [ ImageOnlyFailure ] 
+crbug.com/314947 [ Mavericks ] printing/return-from-printing-mode.html [ ImageOnlyFailure ]
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
@@ -751,6 +751,7 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/clusters-suffic
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-wide-in-narrow.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/cluster-with-wide-lca.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/font-scale-factor.html [ ImageOnlyFailure ]
+crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/forum-comments-autosizing.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-numbered-with-autosizing.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-with-images-and-forms-autosizing.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/list-marker-with-links-autosizing.html [ ImageOnlyFailure ]
