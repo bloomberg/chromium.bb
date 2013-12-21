@@ -42,7 +42,6 @@ class GCM_EXPORT MCSClient {
  public:
   enum State {
     UNINITIALIZED,    // Uninitialized.
-    LOADING,          // Waiting for RMQ load to finish.
     LOADED,           // RMQ Load finished, waiting to connect.
     CONNECTING,       // Connection in progress.
     CONNECTED,        // Connected and running.
@@ -65,9 +64,7 @@ class GCM_EXPORT MCSClient {
   typedef base::Callback<void(const std::string& message_id)>
       OnMessageSentCallback;
 
-  MCSClient(const base::FilePath& rmq_path,
-            ConnectionFactory* connection_factory,
-            scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  MCSClient(ConnectionFactory* connection_factory, RMQStore* rmq_store);
   virtual ~MCSClient();
 
   // Initialize the client. Will load any previous id/token information as well
@@ -81,7 +78,8 @@ class GCM_EXPORT MCSClient {
   // |initialization_callback| will be invoked with |success == false|.
   void Initialize(const InitializationCompleteCallback& initialization_callback,
                   const OnMessageReceivedCallback& message_received_callback,
-                  const OnMessageSentCallback& message_sent_callback);
+                  const OnMessageSentCallback& message_sent_callback,
+                  const RMQStore::LoadResult& load_result);
 
   // Logs the client into the server. Client must be initialized.
   // |android_id| and |security_token| are optional if this is not a new
@@ -122,8 +120,7 @@ class GCM_EXPORT MCSClient {
   // Send a heartbeat to the MCS server.
   void SendHeartbeat();
 
-  // RMQ Store callbacks.
-  void OnRMQLoadFinished(const RMQStore::LoadResult& result);
+  // RMQ Store callback.
   void OnRMQUpdateFinished(bool success);
 
   // Attempt to send a message.
@@ -209,17 +206,14 @@ class GCM_EXPORT MCSClient {
   // acknowledged on the next login attempt.
   PersistentIdList restored_unackeds_server_ids_;
 
-  // The reliable message queue persistent store.
-  RMQStore rmq_store_;
+  // The reliable message queue persistent store. Owned by the caller.
+  RMQStore* rmq_store_;
 
   // ----- Heartbeats -----
   // The current heartbeat interval.
   base::TimeDelta heartbeat_interval_;
   // Timer for triggering heartbeats.
   base::Timer heartbeat_timer_;
-
-  // The task runner for blocking tasks (i.e. persisting RMQ state to disk).
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   base::WeakPtrFactory<MCSClient> weak_ptr_factory_;
 

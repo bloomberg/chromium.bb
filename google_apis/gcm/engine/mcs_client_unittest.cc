@@ -47,10 +47,9 @@ MCSMessage BuildDataMessage(const std::string& from,
 // MCSClient with overriden exposed persistent id logic.
 class TestMCSClient : public MCSClient {
  public:
-  TestMCSClient(const base::FilePath& rmq_path,
-                ConnectionFactory* connection_factory,
-                scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : MCSClient(rmq_path, connection_factory, blocking_task_runner),
+  TestMCSClient(ConnectionFactory* connection_factory,
+                RMQStore* rmq_store)
+    : MCSClient(connection_factory, rmq_store),
       next_id_(0) {
   }
 
@@ -96,6 +95,7 @@ class MCSClientTest : public testing::Test {
   base::ScopedTempDir temp_directory_;
   base::MessageLoop message_loop_;
   scoped_ptr<base::RunLoop> run_loop_;
+  scoped_ptr<RMQStore> rmq_store_;
 
   FakeConnectionFactory connection_factory_;
   scoped_ptr<TestMCSClient> mcs_client_;
@@ -123,19 +123,21 @@ MCSClientTest::MCSClientTest()
 MCSClientTest::~MCSClientTest() {}
 
 void MCSClientTest::BuildMCSClient() {
-  mcs_client_.reset(
-      new TestMCSClient(temp_directory_.path(),
-                        &connection_factory_,
-                        message_loop_.message_loop_proxy()));
+  rmq_store_.reset(new RMQStore(temp_directory_.path(),
+                                message_loop_.message_loop_proxy()));
+  mcs_client_.reset(new TestMCSClient(&connection_factory_, rmq_store_.get()));
 }
 
 void MCSClientTest::InitializeClient() {
-  mcs_client_->Initialize(base::Bind(&MCSClientTest::InitializationCallback,
-                                     base::Unretained(this)),
-                          base::Bind(&MCSClientTest::MessageReceivedCallback,
-                                     base::Unretained(this)),
-                          base::Bind(&MCSClientTest::MessageSentCallback,
-                                     base::Unretained(this)));
+  rmq_store_->Load(
+      base::Bind(&MCSClient::Initialize,
+                 base::Unretained(mcs_client_.get()),
+                 base::Bind(&MCSClientTest::InitializationCallback,
+                            base::Unretained(this)),
+                 base::Bind(&MCSClientTest::MessageReceivedCallback,
+                            base::Unretained(this)),
+                 base::Bind(&MCSClientTest::MessageSentCallback,
+                            base::Unretained(this))));
   run_loop_->Run();
   run_loop_.reset(new base::RunLoop());
 }

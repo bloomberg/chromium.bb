@@ -195,6 +195,7 @@ class MCSProbe {
   scoped_refptr<net::HttpNetworkSession> network_session_;
   scoped_ptr<net::ProxyService> proxy_service_;
 
+  scoped_ptr<RMQStore> rmq_store_;
   scoped_ptr<MCSClient> mcs_client_;
 
   scoped_ptr<ConnectionFactoryImpl> connection_factory_;
@@ -249,14 +250,16 @@ void MCSProbe::Start() {
                                     server_host_, server_port_).ToString()),
                                 network_session_,
                                 &net_log_));
-  mcs_client_.reset(new MCSClient(rmq_path_,
-                                  connection_factory_.get(),
-                                  file_thread_.message_loop_proxy()));
+  rmq_store_.reset(new RMQStore(rmq_path_, file_thread_.message_loop_proxy()));
+  mcs_client_.reset(new MCSClient(connection_factory_.get(),
+                                  rmq_store_.get()));
   run_loop_.reset(new base::RunLoop());
-  mcs_client_->Initialize(base::Bind(&MCSProbe::InitializationCallback,
-                                     base::Unretained(this)),
-                          base::Bind(&MessageReceivedCallback),
-                          base::Bind(&MessageSentCallback));
+  rmq_store_->Load(base::Bind(&MCSClient::Initialize,
+                              base::Unretained(mcs_client_.get()),
+                              base::Bind(&MCSProbe::InitializationCallback,
+                                         base::Unretained(this)),
+                              base::Bind(&MessageReceivedCallback),
+                              base::Bind(&MessageSentCallback)));
   run_loop_->Run();
 }
 
