@@ -6,7 +6,6 @@
   'target_defaults': {
     'variables': {
       'base_target': 0,
-      'base_i18n_target': 0,
     },
     'target_conditions': [
       # This part is shared between the targets defined below.
@@ -292,8 +291,6 @@
           'mac/scoped_sending_event.h',
           'mac/scoped_sending_event.mm',
           'mac/sdk_forward_declarations.h',
-          'md5.cc',
-          'md5.h',
           'memory/aligned_memory.cc',
           'memory/aligned_memory.h',
           'memory/discardable_memory.h',
@@ -775,6 +772,8 @@
                'third_party/dynamic_annotations/dynamic_annotations.c',
             ],
             'sources/': [
+              # Metrics won't work in the NaCl sandbox.
+              ['exclude', '^metrics/'],
               ['include', '^threading/platform_thread_linux\\.cc$'],
             ],
           }],
@@ -950,44 +949,6 @@
           }],
         ],
       }],
-      ['base_i18n_target==1', {
-        'defines': [
-          'BASE_I18N_IMPLEMENTATION',
-        ],
-        'sources': [
-          'i18n/base_i18n_export.h',
-          'i18n/bidi_line_iterator.cc',
-          'i18n/bidi_line_iterator.h',
-          'i18n/break_iterator.cc',
-          'i18n/break_iterator.h',
-          'i18n/char_iterator.cc',
-          'i18n/char_iterator.h',
-          'i18n/case_conversion.cc',
-          'i18n/case_conversion.h',
-          'i18n/file_util_icu.cc',
-          'i18n/file_util_icu.h',
-          'i18n/i18n_constants.cc',
-          'i18n/i18n_constants.h',
-          'i18n/icu_encoding_detection.cc',
-          'i18n/icu_encoding_detection.h',
-          'i18n/icu_string_conversions.cc',
-          'i18n/icu_string_conversions.h',
-          'i18n/icu_util.cc',
-          'i18n/icu_util.h',
-          'i18n/number_formatting.cc',
-          'i18n/number_formatting.h',
-          'i18n/rtl.cc',
-          'i18n/rtl.h',
-          'i18n/string_compare.cc',
-          'i18n/string_compare.h',
-          'i18n/string_search.cc',
-          'i18n/string_search.h',
-          'i18n/time_formatting.cc',
-          'i18n/time_formatting.h',
-          'i18n/timezone.cc',
-          'i18n/timezone.h',
-        ],
-      }]
     ],
   },
 }

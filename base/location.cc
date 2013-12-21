@@ -92,9 +92,10 @@ __declspec(noinline)
 BASE_EXPORT const void* GetProgramCounter() {
 #if defined(COMPILER_MSVC)
   return _ReturnAddress();
-#elif defined(COMPILER_GCC) && !defined(OS_NACL)
+#elif defined(COMPILER_GCC)
   return __builtin_extract_return_addr(__builtin_return_address(0));
 #endif  // COMPILER_GCC
+
   return NULL;
 }
 

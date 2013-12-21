@@ -20,27 +20,59 @@
 #include <arpa/inet.h>
 #endif
 
+// Include headers to provide byteswap for all platforms.
+#if defined(COMPILER_MSVC)
+#include <stdlib.h>
+#elif defined(OS_MACOSX)
+#include <libkern/OSByteOrder.h>
+#elif defined(OS_BSD)
+#include <sys/endian.h>
+#else
+#include <byteswap.h>
+#endif
+
+
 namespace base {
 
 // Returns a value with all bytes in |x| swapped, i.e. reverses the endianness.
 inline uint16 ByteSwap(uint16 x) {
-  return ((x & 0x00ff) << 8) | ((x & 0xff00) >> 8);
+#if defined(COMPILER_MSVC)
+  return _byteswap_ushort(x);
+#elif defined(OS_MACOSX)
+  return OSSwapInt16(x);
+#elif defined(OS_OPENBSD)
+  return swap16(x);
+#elif defined(OS_FREEBSD)
+  return bswap16(x);
+#else
+  return bswap_16(x);
+#endif
 }
-
 inline uint32 ByteSwap(uint32 x) {
-  return ((x & 0x000000fful) << 24) | ((x & 0x0000ff00ul) << 8) |
-      ((x & 0x00ff0000ul) >> 8) | ((x & 0xff000000ul) >> 24);
+#if defined(COMPILER_MSVC)
+  return _byteswap_ulong(x);
+#elif defined(OS_MACOSX)
+  return OSSwapInt32(x);
+#elif defined(OS_OPENBSD)
+  return swap32(x);
+#elif defined(OS_FREEBSD)
+  return bswap32(x);
+#else
+  return bswap_32(x);
+#endif
 }
-
 inline uint64 ByteSwap(uint64 x) {
-  return ((x & 0x00000000000000ffull) << 56) |
-      ((x & 0x000000000000ff00ull) << 40) |
-      ((x & 0x0000000000ff0000ull) << 24) |
-      ((x & 0x00000000ff000000ull) << 8) |
-      ((x & 0x000000ff00000000ull) >> 8) |
-      ((x & 0x0000ff0000000000ull) >> 24) |
-      ((x & 0x00ff000000000000ull) >> 40) |
-      ((x & 0xff00000000000000ull) >> 56);
+#if defined(COMPILER_MSVC)
+  return _byteswap_uint64(x);
+#elif defined(OS_MACOSX)
+  return OSSwapInt64(x);
+#elif defined(OS_OPENBSD)
+  return swap64(x);
+#elif defined(OS_FREEBSD)
+  return bswap64(x);
+#else
+  return bswap_64(x);
+#endif
 }
 
 // Converts the bytes in |x| from host order (endianness) to little endian, and
