@@ -494,7 +494,7 @@ class AndroidCommands(object):
       self._adb.SendCommand('wait-for-device')
       new_adb_pids = self.ExtractPid('adbd')
       if new_adb_pids == adb_pids:
-        logging.error('adbd on the device may not have been restarted.')
+        logging.warning('adbd on the device may not have been restarted.')
     except Exception as e:
       logging.error('Exception when trying to kill adbd on the device [%s]', e)
 
@@ -514,7 +514,7 @@ class AndroidCommands(object):
     ret = cmd_helper.RunCmd(adb_cmd)
     retry = 0
     while retry < 3:
-      ret = cmd_helper.RunCmd(['pgrep', 'adb'])
+      ret, _ = cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb'])
       if ret != 0:
         # pgrep didn't find adb, kill-server succeeded.
         return 0
@@ -525,10 +525,10 @@ class AndroidCommands(object):
   def StartAdbServer(self):
     """Start adb server."""
     adb_cmd = ['taskset', '-c', '0', constants.GetAdbPath(), 'start-server']
-    ret = cmd_helper.RunCmd(adb_cmd)
+    ret, _ = cmd_helper.GetCmdStatusAndOutput(adb_cmd)
     retry = 0
     while retry < 3:
-      ret = cmd_helper.RunCmd(['pgrep', 'adb'])
+      ret, _ = cmd_helper.GetCmdStatusAndOutput(['pgrep', 'adb'])
       if ret == 0:
         # pgrep found adb, start-server succeeded.
         # Waiting for device to reconnect before returning success.
