@@ -24,7 +24,6 @@
 #include "ui/views/painter.h"
 
 namespace ash {
-
 namespace internal {
 
 namespace {
@@ -64,6 +63,21 @@ class LogoutButton : public views::LabelButton {
   DISALLOW_COPY_AND_ASSIGN(LogoutButton);
 };
 
+class LogoutConfirmationDialogDelegate
+    : public LogoutConfirmationDialogView::Delegate {
+
+ public:
+  LogoutConfirmationDialogDelegate() {}
+  virtual ~LogoutConfirmationDialogDelegate() {}
+
+  virtual void LogoutCurrentUser() OVERRIDE;
+  virtual base::TimeTicks GetCurrentTime() const OVERRIDE;
+  virtual void ShowDialog(views::DialogDelegate* dialog) OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LogoutConfirmationDialogDelegate);
+};
+
 }  // namespace
 
 LogoutButton::LogoutButton(views::ButtonListener* listener)
@@ -94,20 +108,62 @@ LogoutButton::LogoutButton(views::ButtonListener* listener)
 LogoutButton::~LogoutButton() {
 }
 
+void LogoutConfirmationDialogDelegate::LogoutCurrentUser() {
+  Shell::GetInstance()->system_tray_delegate()->SignOut();
+}
+
+base::TimeTicks LogoutConfirmationDialogDelegate::GetCurrentTime() const {
+  return base::TimeTicks::Now();
+}
+
+void LogoutConfirmationDialogDelegate::ShowDialog(
+    views::DialogDelegate *dialog) {
+  views::DialogDelegate::CreateDialogWidget(
+      dialog, ash::Shell::GetPrimaryRootWindow(), NULL);
+  dialog->GetWidget()->Show();
+}
+
 LogoutButtonTray::LogoutButtonTray(StatusAreaWidget* status_area_widget)
     : TrayBackgroundView(status_area_widget),
       button_(NULL),
       login_status_(user::LOGGED_IN_NONE),
-      show_logout_button_in_tray_(false) {
+      show_logout_button_in_tray_(false),
+      confirmation_dialog_(NULL),
+      confirmation_delegate_(new LogoutConfirmationDialogDelegate) {
   button_ = new LogoutButton(this);
   tray_container()->AddChildView(button_);
   tray_container()->set_border(NULL);
-  Shell::GetInstance()->system_tray_notifier()->AddLogoutButtonObserver(this);
+  // The Shell may not exist in some unit tests.
+  if (Shell::HasInstance()) {
+    Shell::GetInstance()->system_tray_notifier()->
+        AddLogoutButtonObserver(this);
+  }
 }
 
 LogoutButtonTray::~LogoutButtonTray() {
-  Shell::GetInstance()->system_tray_notifier()->
-      RemoveLogoutButtonObserver(this);
+  EnsureConfirmationDialogIsClosed();
+  // The Shell may not exist in some unit tests.
+  if (Shell::HasInstance()) {
+    Shell::GetInstance()->system_tray_notifier()->
+        RemoveLogoutButtonObserver(this);
+  }
+}
+
+bool LogoutButtonTray::IsConfirmationDialogShowing() const {
+  return confirmation_dialog_ != NULL;
+}
+
+void LogoutButtonTray::EnsureConfirmationDialogIsShowing() {
+  if (!confirmation_dialog_) {
+    confirmation_dialog_ = new LogoutConfirmationDialogView(
+        this, confirmation_delegate_.get());
+    confirmation_dialog_->Show(dialog_duration_);
+  }
+}
+
+void LogoutButtonTray::EnsureConfirmationDialogIsClosed() {
+  if (confirmation_dialog_)
+    confirmation_dialog_->Close();
 }
 
 void LogoutButtonTray::SetShelfAlignment(ShelfAlignment alignment) {
@@ -132,10 +188,20 @@ void LogoutButtonTray::OnShowLogoutButtonInTrayChanged(bool show) {
   UpdateVisibility();
 }
 
+void LogoutButtonTray::OnLogoutDialogDurationChanged(base::TimeDelta duration) {
+  dialog_duration_ = duration;
+  if (confirmation_dialog_)
+    confirmation_dialog_->UpdateDialogDuration(dialog_duration_);
+}
+
 void LogoutButtonTray::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   DCHECK_EQ(sender, button_);
-  Shell::GetInstance()->system_tray_delegate()->SignOut();
+  // Sign out immediately if |dialog_duration_| is non-positive.
+  if (dialog_duration_ <= base::TimeDelta())
+    confirmation_delegate_->LogoutCurrentUser();
+  else
+    EnsureConfirmationDialogIsShowing();
 }
 
 void LogoutButtonTray::UpdateAfterLoginStatusChange(
@@ -148,10 +214,21 @@ void LogoutButtonTray::UpdateAfterLoginStatusChange(
   UpdateVisibility();
 }
 
+void LogoutButtonTray::ReleaseConfirmationDialog() {
+  confirmation_dialog_ = NULL;
+}
+
+void LogoutButtonTray::SetDelegateForTest(
+    scoped_ptr<LogoutConfirmationDialogView::Delegate> delegate) {
+  confirmation_delegate_ = delegate.Pass();
+}
+
 void LogoutButtonTray::UpdateVisibility() {
   SetVisible(show_logout_button_in_tray_ &&
              login_status_ != user::LOGGED_IN_NONE &&
              login_status_ != user::LOGGED_IN_LOCKED);
+  if (!show_logout_button_in_tray_)
+    EnsureConfirmationDialogIsClosed();
 }
 
 }  // namespace internal

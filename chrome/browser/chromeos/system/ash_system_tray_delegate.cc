@@ -909,6 +909,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         base::Bind(&SystemTrayDelegate::UpdateShowLogoutButtonInTray,
                    base::Unretained(this)));
     user_pref_registrar_->Add(
+        prefs::kLogoutDialogDurationMs,
+        base::Bind(&SystemTrayDelegate::UpdateLogoutDialogDuration,
+                   base::Unretained(this)));
+    user_pref_registrar_->Add(
         prefs::kLargeCursorEnabled,
         base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
                    base::Unretained(this),
@@ -930,6 +934,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     UpdateClockType();
     UpdateShowLogoutButtonInTray();
+    UpdateLogoutDialogDuration();
     UpdatePerformanceTracing();
     search_key_mapped_to_ =
         profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
@@ -999,6 +1004,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     GetSystemTrayNotifier()->NotifyShowLoginButtonChanged(
         user_pref_registrar_->prefs()->GetBoolean(
             prefs::kShowLogoutButtonInTray));
+  }
+
+  void UpdateLogoutDialogDuration() {
+    const int duration_ms = user_pref_registrar_->prefs()->GetInteger(
+        prefs::kLogoutDialogDurationMs);
+    GetSystemTrayNotifier()->NotifyLogoutDialogDurationChanged(
+        base::TimeDelta::FromMilliseconds(duration_ms));
   }
 
   void UpdateSessionStartTime() {

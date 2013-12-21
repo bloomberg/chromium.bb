@@ -2467,15 +2467,20 @@ const char kShelfAutoHideBehaviorLocal[] = "auto_hide_behavior_local";
 // index is also stored in the |kPinnedLauncherApp| pref. It may causes
 // creating two chrome icons.
 const char kShelfChromeIconIndex[] = "shelf_chrome_icon_index";
-
-const char kPinnedLauncherApps[] = "pinned_launcher_apps";
-// Boolean value indicating whether to show a logout button in the ash tray.
-const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 // Dictionary value that holds per-display preference of shelf alignment and
 // auto-hide behavior. Key of the dictionary is the id of the display, and
 // its value is a dictionary whose keys are kShelfAlignment and
 // kShelfAutoHideBehavior.
 const char kShelfPreferences[] = "shelf_preferences";
+
+// Integer value in milliseconds indicating the length of time for which a
+// confirmation dialog should be shown when the user presses the logout button.
+// A value of 0 indicates that logout should happen immediately, without showing
+// a confirmation dialog.
+const char kLogoutDialogDurationMs[] = "logout_dialog_duration_ms";
+const char kPinnedLauncherApps[] = "pinned_launcher_apps";
+// Boolean value indicating whether to show a logout button in the ash tray.
+const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 #endif
 
 #if defined(USE_AURA)

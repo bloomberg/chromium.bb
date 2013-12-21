@@ -5,16 +5,24 @@
 #ifndef ASH_SYSTEM_LOGOUT_BUTTON_LOGOUT_BUTTON_OBSERVER_H_
 #define ASH_SYSTEM_LOGOUT_BUTTON_LOGOUT_BUTTON_OBSERVER_H_
 
+#include "ash/ash_export.h"
+#include "base/time/time.h"
+
 namespace ash {
 
-// Observer for the value of the kShowLogoutButtonInTray pref that determines
-// whether a logout button should be shown in the system tray during a session.
-class LogoutButtonObserver {
+class ASH_EXPORT LogoutButtonObserver {
  public:
   virtual ~LogoutButtonObserver() {}
 
-  // Called when the value of the kShowLogoutButtonInTray pref changes.
+  // Called when the value of the kShowLogoutButtonInTray pref changes, which
+  // determines whether a logout button should be shown in the system tray
+  // during a session.
   virtual void OnShowLogoutButtonInTrayChanged(bool show) = 0;
+
+  // Called when the value of the kLogoutDialogDurationMs pref changes.
+  // |duration| is the duration for which the logout confirmation dialog is
+  // shown after the user has pressed the logout button.
+  virtual void OnLogoutDialogDurationChanged(base::TimeDelta duration) = 0;
 };
 
 }  // namespace ash
