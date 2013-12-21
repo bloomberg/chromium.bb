@@ -1608,17 +1608,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Unmounts device.
-   * @param {string} path Path to a volume to unmount.
-   */
-  FileManager.prototype.unmountVolume = function(path) {
-    var onError = function(error) {
-      this.alert.showHtml('', str('UNMOUNT_FAILED'));
-    };
-    this.volumeManager_.unmount(path, function() {}, onError.bind(this));
-  };
-
-  /**
    * @private
    */
   FileManager.prototype.refreshCurrentDirectoryMetadata_ = function() {

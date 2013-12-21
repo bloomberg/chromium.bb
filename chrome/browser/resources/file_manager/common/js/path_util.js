@@ -468,5 +468,35 @@ function EntryLocation(volumeInfo, rootType, isRootEntry) {
    */
   this.isRootEntry = isRootEntry;
 
+  /**
+   * Whether the location obtained from the fake entry correspond to special
+   * searches.
+   * @type {boolean}
+   */
+  this.isSpecialSearchRoot =
+      this.rootType === RootType.DRIVE_OFFLINE ||
+      this.rootType === RootType.DRIVE_SHARED_WITH_ME ||
+      this.rootType === RootType.DRIVE_RECENT;
+
+  /**
+   * Whether the location is under Google Drive or a special search root which
+   * represents a special search from Google Drive.
+   * @type {boolean}
+   */
+  this.isDriveBased =
+      this.rootType === RootType.DRIVE ||
+      this.rootType === RootType.DRIVE_SHARED_WITH_ME ||
+      this.rootType === RootType.DRIVE_RECENT ||
+      this.rootType === RootType.DRIVE_OFFLINE;
+
+  /**
+   * Whether the given path can be a target path of folder shortcut.
+   * @type {boolean}
+   */
+  this.isEligibleForFolderShortcut =
+      !this.isSpecialSearchRoot &&
+      !this.isRootEntry &&
+      this.isDriveBased;
+
   Object.freeze(this);
 }
