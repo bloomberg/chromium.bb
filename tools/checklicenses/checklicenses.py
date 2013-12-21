@@ -391,6 +391,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'tools/symsrc/pefile.py': [
         'UNKNOWN',
     ],
+    'tools/telemetry/third_party/pyserial': [
+        # https://sourceforge.net/p/pyserial/feature-requests/35/
+        'UNKNOWN',
+    ],
     'v8/test/cctest': [  # http://crbug.com/98597
         'UNKNOWN',
     ],
