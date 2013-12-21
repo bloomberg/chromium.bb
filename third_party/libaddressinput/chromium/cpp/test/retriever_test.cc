@@ -91,7 +91,7 @@ TEST_F(RetrieverTest, ReadDataFromStorage) {
 TEST_F(RetrieverTest, MissingKeyReturnsEmptyData) {
   static const char kMissingKey[] = "junk";
 
-  retriever_.Retrieve(kKey, BuildCallback());
+  retriever_.Retrieve(kMissingKey, BuildCallback());
 
   EXPECT_TRUE(success_);
   EXPECT_EQ(kMissingKey, key_);
