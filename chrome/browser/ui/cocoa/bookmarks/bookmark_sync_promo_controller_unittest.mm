@@ -7,7 +7,10 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -15,7 +18,17 @@
 
 namespace {
 
-typedef BrowserWithTestWindowTest BookmarkSyncPromoControllerTest;
+class BookmarkSyncPromoControllerTest : public BrowserWithTestWindowTest {
+ public:
+  virtual void SetUp() {
+    BrowserWithTestWindowTest::SetUp();
+    ASSERT_TRUE(profile());
+    // Adds TestExtensionSystem, since signin uses the gaia auth extension.
+    static_cast<extensions::TestExtensionSystem*>(
+        extensions::ExtensionSystem::Get(profile()))->CreateExtensionService(
+            CommandLine::ForCurrentProcess(), base::FilePath(), false);
+  }
+};
 
 TEST_F(BookmarkSyncPromoControllerTest, SignInLink) {
   int starting_tab_count = browser()->tab_strip_model()->count();

@@ -176,8 +176,6 @@ class OneClickSigninHelper
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadBadURL);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
-                           CanOfferOnIOThreadReferrer);
-  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadDisabled);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadSignedIn);
@@ -209,7 +207,6 @@ class OneClickSigninHelper
   // origin of |url| is a valid Gaia sign in origin.  This function is meant
   // to called only from the IO thread.
   static Offer CanOfferOnIOThreadImpl(const GURL& url,
-                                      const std::string& referrer,
                                       base::SupportsUserData* request,
                                       ProfileIOData* io_data);
 
