@@ -1474,6 +1474,49 @@ SSL_InvalidateSession(PRFileDesc *fd)
     return rv;
 }
 
+static void
+ssl3_CacheSessionUnlocked(sslSocket *ss)
+{
+    PORT_Assert(!ss->sec.isServer);
+
+    if (ss->ssl3.hs.cacheSID) {
+	ss->sec.cache(ss->sec.ci.sid);
+	ss->ssl3.hs.cacheSID = PR_FALSE;
+    }
+}
+
+SECStatus
+SSL_CacheSession(PRFileDesc *fd)
+{
+    sslSocket *   ss = ssl_FindSocket(fd);
+    SECStatus     rv = SECFailure;
+
+    if (ss) {
+	ssl_Get1stHandshakeLock(ss);
+	ssl_GetSSL3HandshakeLock(ss);
+
+	ssl3_CacheSessionUnlocked(ss);
+	rv = SECSuccess;
+
+	ssl_ReleaseSSL3HandshakeLock(ss);
+	ssl_Release1stHandshakeLock(ss);
+    }
+    return rv;
+}
+
+SECStatus
+SSL_CacheSessionUnlocked(PRFileDesc *fd)
+{
+    sslSocket *   ss = ssl_FindSocket(fd);
+    SECStatus     rv = SECFailure;
+
+    if (ss) {
+	ssl3_CacheSessionUnlocked(ss);
+	rv = SECSuccess;
+    }
+    return rv;
+}
+
 SECItem *
 SSL_GetSessionID(PRFileDesc *fd)
 {
