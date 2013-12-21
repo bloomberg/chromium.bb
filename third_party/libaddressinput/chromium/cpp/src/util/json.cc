@@ -41,19 +41,19 @@ class Rapidjson : public Json {
     return valid_;
   }
 
-  virtual bool HasStringValueForKey(const std::string& key) const {
+  virtual bool GetStringValueForKey(const std::string& key,
+                                    std::string* value) const {
     assert(valid_);
     const rapidjson::Value::Member* member = document_->FindMember(key.c_str());
-    return member != NULL && member->value.IsString();
-  }
+    if (member == NULL || !member->value.IsString()) {
+      return false;
+    }
 
-  virtual std::string GetStringValueForKey(const std::string& key) const {
-    assert(valid_);
-    const rapidjson::Value::Member* member = document_->FindMember(key.c_str());
-    assert(member != NULL);
-    assert(member->value.IsString());
-    return std::string(member->value.GetString(),
-                       member->value.GetStringLength());
+    if (value) {
+      value->assign(member->value.GetString(), member->value.GetStringLength());
+    }
+
+    return true;
   }
 
  protected:

@@ -125,34 +125,34 @@ bool Rule::ParseSerializedRule(const std::string& serialized_rule) {
     return false;
   }
 
-  if (json->HasStringValueForKey(kFormatKey)) {
-    ParseAddressFieldsFormat(json->GetStringValueForKey(kFormatKey), &format_);
+  std::string format;
+  if (json->GetStringValueForKey(kFormatKey, &format)) {
+    ParseAddressFieldsFormat(format, &format_);
   }
 
-  if (json->HasStringValueForKey(kSubKeysKey)) {
-    SplitString(
-        json->GetStringValueForKey(kSubKeysKey), kSeparator, &sub_keys_);
+  std::string subkeys;
+  if (json->GetStringValueForKey(kSubKeysKey, &subkeys)) {
+    SplitString(subkeys, kSeparator, &sub_keys_);
   }
 
-  if (json->HasStringValueForKey(kLanguagesKey)) {
-    SplitString(
-        json->GetStringValueForKey(kLanguagesKey), kSeparator, &languages_);
+  std::string languages;
+  if (json->GetStringValueForKey(kLanguagesKey, &languages)) {
+    SplitString(languages, kSeparator, &languages_);
   }
 
-  if (json->HasStringValueForKey(kLanguageKey)) {
-    language_ = json->GetStringValueForKey(kLanguageKey);
-  }
+  json->GetStringValueForKey(kLanguageKey, &language_);
 
-  if (json->HasStringValueForKey(kAdminAreaNameTypeKey)) {
+  std::string area_name_type;
+  if (json->GetStringValueForKey(kAdminAreaNameTypeKey, &area_name_type)) {
     admin_area_name_message_id_ =
-        GetMessageIdFromName(json->GetStringValueForKey(kAdminAreaNameTypeKey),
-                             GetAdminAreaMessageIds());
+        GetMessageIdFromName(area_name_type, GetAdminAreaMessageIds());
   }
 
-  if (json->HasStringValueForKey(kPostalCodeNameTypeKey)) {
+  std::string postal_code_name_type;
+  if (json->GetStringValueForKey(kPostalCodeNameTypeKey,
+                                 &postal_code_name_type)) {
     postal_code_name_message_id_ =
-        GetMessageIdFromName(json->GetStringValueForKey(kPostalCodeNameTypeKey),
-                             GetPostalCodeMessageIds());
+        GetMessageIdFromName(postal_code_name_type, GetPostalCodeMessageIds());
   }
 
   return true;

@@ -21,7 +21,7 @@ class ChromeJson : public Json {
 
   virtual ~ChromeJson() {}
 
-  virtual bool ParseObject(const std::string& json) {
+  virtual bool ParseObject(const std::string& json) OVERRIDE {
     dict_.reset();
 
     // |json| is converted to a |c_str()| here because rapidjson and other parts
@@ -33,16 +33,9 @@ class ChromeJson : public Json {
     return !!dict_;
   }
 
-  virtual bool HasStringValueForKey(const std::string& key) const {
-    base::Value* val = NULL;
-    dict_->GetWithoutPathExpansion(key, &val);
-    return val && val->IsType(base::Value::TYPE_STRING);
-  }
-
-  virtual std::string GetStringValueForKey(const std::string& key) const {
-    std::string result;
-    dict_->GetStringWithoutPathExpansion(key, &result);
-    return result;
+  virtual bool GetStringValueForKey(const std::string& key, std::string* value)
+      const OVERRIDE {
+    return dict_->GetStringWithoutPathExpansion(key, value);
   }
 
  private:

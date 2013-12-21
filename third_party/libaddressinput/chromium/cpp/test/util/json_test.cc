@@ -41,8 +41,8 @@ TEST_F(JsonTest, EmptyStringIsNotValid) {
 
 TEST_F(JsonTest, EmptyDictionaryContainsNoKeys) {
   ASSERT_TRUE(json_->ParseObject("{}"));
-  EXPECT_FALSE(json_->HasStringValueForKey("key"));
-  EXPECT_FALSE(json_->HasStringValueForKey(std::string()));
+  EXPECT_FALSE(json_->GetStringValueForKey("key", NULL));
+  EXPECT_FALSE(json_->GetStringValueForKey(std::string(), NULL));
 }
 
 TEST_F(JsonTest, InvalidJsonIsNotValid) {
@@ -51,31 +51,35 @@ TEST_F(JsonTest, InvalidJsonIsNotValid) {
 
 TEST_F(JsonTest, OneKeyIsValid) {
   ASSERT_TRUE(json_->ParseObject("{\"key\": \"value\"}"));
-  ASSERT_TRUE(json_->HasStringValueForKey("key"));
-  EXPECT_EQ("value", json_->GetStringValueForKey("key"));
+  std::string value;
+  ASSERT_TRUE(json_->GetStringValueForKey("key", &value));
+  EXPECT_EQ("value", value);
 }
 
 TEST_F(JsonTest, EmptyStringKeyIsNotInObject) {
   ASSERT_TRUE(json_->ParseObject("{\"key\": \"value\"}"));
-  EXPECT_FALSE(json_->HasStringValueForKey(std::string()));
+  EXPECT_FALSE(json_->GetStringValueForKey(std::string(), NULL));
 }
 
 TEST_F(JsonTest, EmptyKeyIsValid) {
   ASSERT_TRUE(json_->ParseObject("{\"\": \"value\"}"));
-  ASSERT_TRUE(json_->HasStringValueForKey(std::string()));
-  EXPECT_EQ("value", json_->GetStringValueForKey(std::string()));
+  std::string value;
+  EXPECT_TRUE(json_->GetStringValueForKey(std::string(), &value));
+  EXPECT_EQ("value", value);
 }
 
 TEST_F(JsonTest, EmptyValueIsValid) {
   ASSERT_TRUE(json_->ParseObject("{\"key\": \"\"}"));
-  ASSERT_TRUE(json_->HasStringValueForKey("key"));
-  EXPECT_TRUE(json_->GetStringValueForKey("key").empty());
+  std::string value;
+  EXPECT_TRUE(json_->GetStringValueForKey("key", &value));
+  EXPECT_EQ(std::string(), value);
 }
 
 TEST_F(JsonTest, Utf8EncodingIsValid) {
   ASSERT_TRUE(json_->ParseObject("{\"key\": \"Ü\"}"));
-  ASSERT_TRUE(json_->HasStringValueForKey("key"));
-  EXPECT_EQ("Ü", json_->GetStringValueForKey("key"));
+  std::string value;
+  EXPECT_TRUE(json_->GetStringValueForKey("key", &value));
+  EXPECT_EQ("Ü", value);
 }
 
 TEST_F(JsonTest, InvalidUtf8IsNotValid) {
@@ -90,11 +94,12 @@ TEST_F(JsonTest, NullInMiddleIsNotValid) {
 TEST_F(JsonTest, TwoKeysAreValid) {
   ASSERT_TRUE(
       json_->ParseObject("{\"key1\": \"value1\", \"key2\": \"value2\"}"));
-  ASSERT_TRUE(json_->HasStringValueForKey("key1"));
-  EXPECT_EQ("value1", json_->GetStringValueForKey("key1"));
+  std::string value;
+  EXPECT_TRUE(json_->GetStringValueForKey("key1", &value));
+  EXPECT_EQ("value1", value);
 
-  ASSERT_TRUE(json_->HasStringValueForKey("key2"));
-  EXPECT_EQ("value2", json_->GetStringValueForKey("key2"));
+  EXPECT_TRUE(json_->GetStringValueForKey("key2", &value));
+  EXPECT_EQ("value2", value);
 }
 
 TEST_F(JsonTest, ListIsNotValid) {
