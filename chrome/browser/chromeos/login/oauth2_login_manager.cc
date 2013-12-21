@@ -101,12 +101,12 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
   } else {
     LOG(WARNING) << "Loading OAuth2 refresh token from database.";
 
-    // Flag user with unknown token status in case there are no saved tokens
+    // Flag user with invalid token status in case there are no saved tokens
     // and OnRefreshTokenAvailable is not called. Flagging it here would
     // cause user to go through Gaia in next login to obtain a new refresh
     // token.
     UserManager::Get()->SaveUserOAuthStatus(primary_account_id,
-                                            User::OAUTH_TOKEN_STATUS_UNKNOWN);
+                                            User::OAUTH2_TOKEN_STATUS_INVALID);
 
     token_service->LoadCredentials();
   }
@@ -138,13 +138,9 @@ void OAuth2LoginManager::OnRefreshTokenAvailable(
     LOG(WARNING) << "Logged in as managed user, skip token validation.";
     return;
   }
-  // Only restore session cookies for the primary account in the profile.
-  if (GetTokenService()->GetPrimaryAccountId() == account_id) {
-    // Token is loaded. Undo the flagging before token loading.
-    UserManager::Get()->SaveUserOAuthStatus(account_id,
-                                            User::OAUTH2_TOKEN_STATUS_VALID);
+  // Do only restore session cookies if called for the primary user.
+  if (GetTokenService()->GetPrimaryAccountId() == account_id)
     RestoreSessionCookies();
-  }
 }
 
 ProfileOAuth2TokenService* OAuth2LoginManager::GetTokenService() {
