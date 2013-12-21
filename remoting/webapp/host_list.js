@@ -211,6 +211,12 @@ remoting.HostList.prototype.parseHostListResponse_ = function(onDone, xhr) {
               return 1;
             } else if (b.status < a.status) {
               return -1;
+            } else if (a.hostName.toLocaleLowerCase() <
+                       b.hostName.toLocaleLowerCase()) {
+              return -1;
+            } else if (a.hostName.toLocaleLowerCase() >
+                       b.hostName.toLocaleLowerCase()) {
+              return 1;
             }
             return 0;
           };
