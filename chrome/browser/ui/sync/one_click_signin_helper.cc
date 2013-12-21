@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -97,7 +96,6 @@ struct StartSyncArgs {
                 const std::string& session_index,
                 const std::string& email,
                 const std::string& password,
-                const std::string& oauth_code,
                 content::WebContents* web_contents,
                 bool untrusted_confirmation_required,
                 signin::Source source,
@@ -109,7 +107,6 @@ struct StartSyncArgs {
   std::string session_index;
   std::string email;
   std::string password;
-  std::string oauth_code;
 
   // Web contents in which the sync setup page should be displayed,
   // if necessary. Can be NULL.
@@ -126,7 +123,6 @@ StartSyncArgs::StartSyncArgs(Profile* profile,
                              const std::string& session_index,
                              const std::string& email,
                              const std::string& password,
-                             const std::string& oauth_code,
                              content::WebContents* web_contents,
                              bool untrusted_confirmation_required,
                              signin::Source source,
@@ -137,7 +133,6 @@ StartSyncArgs::StartSyncArgs(Profile* profile,
       session_index(session_index),
       email(email),
       password(password),
-      oauth_code(oauth_code),
       web_contents(web_contents),
       source(source),
       callback(callback) {
@@ -381,7 +376,7 @@ void StartSync(const StartSyncArgs& args,
   // The starter deletes itself once its done.
   new OneClickSigninSyncStarter(args.profile, args.browser, args.session_index,
                                 args.email, args.password,
-                                args.oauth_code, start_mode,
+                                "" /* oauth_code */, start_mode,
                                 args.web_contents,
                                 args.confirmation_required,
                                 args.callback);
@@ -412,40 +407,31 @@ void StartExplicitSync(const StartSyncArgs& args,
                        content::WebContents* contents,
                        OneClickSigninSyncStarter::StartSyncMode start_mode,
                        ConfirmEmailDialogDelegate::Action action) {
-  bool enable_inline = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInlineSignin);
   if (action == ConfirmEmailDialogDelegate::START_SYNC) {
     StartSync(args, start_mode);
-    if (!enable_inline) {
-      // Redirect/tab closing for inline flow is handled by the sync callback.
-      OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(
-          contents, args.source);
-    }
+    OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(
+        contents, args.source);
   } else {
     // Perform a redirection to the NTP/Apps page to hide the blank page when
     // the action is CLOSE or CREATE_NEW_USER. The redirection is useful when
     // the action is CREATE_NEW_USER because the "Create new user" page might
     // be opened in a different tab that is already showing settings.
-    if (enable_inline) {
-      // Redirect/tab closing for inline flow is handled by the sync callback.
-      args.callback.Run(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
-    } else {
-      // Don't redirect when the visible URL is not a blank page: if the
-      // source is SOURCE_WEBSTORE_INSTALL, |contents| might be showing an app
-      // page that shouldn't be hidden.
-      //
-      // If redirecting, don't do so immediately, otherwise there may be 2
-      // nested navigations and a crash would occur (crbug.com/293261).  Post
-      // the task to the current thread instead.
-      if (signin::IsContinueUrlForWebBasedSigninFlow(
-              contents->GetVisibleURL())) {
-        base::MessageLoopProxy::current()->PostNonNestableTask(
-            FROM_HERE,
-            base::Bind(RedirectToNtpOrAppsPageWithIds,
-                       contents->GetRenderProcessHost()->GetID(),
-                       contents->GetRoutingID(),
-                       args.source));
-      }
+    //
+    // Don't redirect when the visible URL is not a blank page: if the
+    // source is SOURCE_WEBSTORE_INSTALL, |contents| might be showing an app
+    // page that shouldn't be hidden.
+    //
+    // If redirecting, don't do so immediately, otherwise there may be 2 nested
+    // navigations and a crash would occur (crbug.com/293261).  Post the task
+    // to the current thread instead.
+    if (signin::IsContinueUrlForWebBasedSigninFlow(
+            contents->GetVisibleURL())) {
+      base::MessageLoopProxy::current()->PostNonNestableTask(
+          FROM_HERE,
+          base::Bind(RedirectToNtpOrAppsPageWithIds,
+                     contents->GetRenderProcessHost()->GetID(),
+                     contents->GetRoutingID(),
+                     args.source));
     }
     if (action == ConfirmEmailDialogDelegate::CREATE_NEW_USER) {
       chrome::ShowSettingsSubPage(args.browser,
@@ -1051,49 +1037,6 @@ void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
 }
 
 // static
-bool OneClickSigninHelper::HandleCrossAccountError(
-    content::WebContents* contents,
-    const std::string& session_index,
-    const std::string& email,
-    const std::string& password,
-    const std::string& oauth_code,
-    OneClickSigninHelper::AutoAccept auto_accept,
-    signin::Source source,
-    OneClickSigninSyncStarter::StartSyncMode start_mode,
-    OneClickSigninSyncStarter::Callback sync_callback) {
-  Profile* profile =
-      Profile::FromBrowserContext(contents->GetBrowserContext());
-  std::string last_email =
-      profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
-
-  if (!last_email.empty() && !gaia::AreEmailsSame(last_email, email)) {
-    // If the new email address is different from the email address that
-    // just signed in, show a confirmation dialog.
-
-    // No need to display a second confirmation so pass false below.
-    // TODO(atwilson): Move this into OneClickSigninSyncStarter.
-    // The tab modal dialog always executes its callback before |contents|
-    // is deleted.
-    Browser* browser = chrome::FindBrowserWithWebContents(contents);
-    ConfirmEmailDialogDelegate::AskForConfirmation(
-        contents,
-        last_email,
-        email,
-        base::Bind(
-            &StartExplicitSync,
-            StartSyncArgs(profile, browser, auto_accept,
-                          session_index, email, password, oauth_code, contents,
-                          false /* confirmation_required */, source,
-                          sync_callback),
-            contents,
-            start_mode));
-    return true;
-  }
-
-  return false;
-}
-
-// static
 void OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(
     content::WebContents* contents, signin::Source source) {
   if (source != signin::SOURCE_SETTINGS &&
@@ -1350,7 +1293,6 @@ void OneClickSigninHelper::DidStopLoading(
         StartSync(
             StartSyncArgs(profile, browser, auto_accept_,
                           session_index_, email_, password_,
-                          "" /* oauth_code */,
                           NULL /* don't force to show sync setup in same tab */,
                           true /* confirmation_required */, source_,
                           CreateSyncStarterCallback()),
@@ -1367,7 +1309,6 @@ void OneClickSigninHelper::DidStopLoading(
         StartSync(
             StartSyncArgs(profile, browser, auto_accept_,
                           session_index_, email_, password_,
-                          "" /* oauth_code */,
                           NULL  /* don't force sync setup in same tab */,
                           true  /* confirmation_required */, source_,
                           CreateSyncStarterCallback()),
@@ -1403,14 +1344,34 @@ void OneClickSigninHelper::DidStopLoading(
                   OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST :
               OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS;
 
-      if (!HandleCrossAccountError(contents, session_index_, email_, password_,
-              "" /* oauth_code */, auto_accept_, source_, start_mode,
-              CreateSyncStarterCallback())) {
+      std::string last_email =
+          profile->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
+
+      if (!last_email.empty() && !gaia::AreEmailsSame(last_email, email_)) {
+        // If the new email address is different from the email address that
+        // just signed in, show a confirmation dialog.
+
+        // No need to display a second confirmation so pass false below.
+        // TODO(atwilson): Move this into OneClickSigninSyncStarter.
+        // The tab modal dialog always executes its callback before |contents|
+        // is deleted.
+        ConfirmEmailDialogDelegate::AskForConfirmation(
+            contents,
+            last_email,
+            email_,
+            base::Bind(
+                &StartExplicitSync,
+                StartSyncArgs(profile, browser, auto_accept_,
+                              session_index_, email_, password_, contents,
+                              false /* confirmation_required */, source_,
+                              CreateSyncStarterCallback()),
+                contents,
+                start_mode));
+      } else {
         if (!do_not_start_sync_for_testing_) {
           StartSync(
               StartSyncArgs(profile, browser, auto_accept_,
-                            session_index_, email_, password_,
-                            "" /* oauth_code */, contents,
+                            session_index_, email_, password_, contents,
                             untrusted_confirmation_required_, source_,
                             CreateSyncStarterCallback()),
               start_mode);

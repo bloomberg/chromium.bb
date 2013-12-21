@@ -299,28 +299,16 @@ class InlineLoginUIHandler : public GaiaAuthConsumer,
           choose_what_to_sync_?
               OneClickSigninSyncStarter::NO_CONFIRMATION :
               OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-      OneClickSigninSyncStarter::Callback sync_callback = base::Bind(
-          &InlineLoginUIHandler::SyncStarterCallback,
-          weak_factory_.GetWeakPtr());
-
-      bool cross_account_error_handled =
-          OneClickSigninHelper::HandleCrossAccountError(
-              contents, "" /* session_index, not used */,
-              email_, password_, oauth_code,
-              OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
-              source, start_mode, sync_callback);
-
-      if (!cross_account_error_handled) {
-        // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
-        // OneClickSigninSyncStarter will delete itself once the job is done.
-        new OneClickSigninSyncStarter(
-            profile_, NULL, "" /* session_index, not used */,
-            email_, password_, oauth_code,
-            start_mode,
-            contents,
-            confirmation_required,
-            sync_callback);
-      }
+      // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
+      // OneClickSigninSyncStarter will delete itself once the job is done.
+      new OneClickSigninSyncStarter(
+          profile_, NULL, "" /* session_index, not used */,
+          email_, password_, oauth_code,
+          start_mode,
+          contents,
+          confirmation_required,
+          base::Bind(&InlineLoginUIHandler::SyncStarterCallback,
+                      weak_factory_.GetWeakPtr()));
     }
 
     email_.clear();
@@ -358,18 +346,17 @@ class InlineLoginUIHandler : public GaiaAuthConsumer,
   void SyncStarterCallback(OneClickSigninSyncStarter::SyncSetupResult result) {
     content::WebContents* contents = web_ui()->GetWebContents();
     const GURL& current_url = contents->GetURL();
-
-    if (signin::IsAutoCloseEnabledInURL(current_url)) {
+    bool auto_close = signin::IsAutoCloseEnabledInURL(current_url);
+    signin::Source source = signin::GetSourceForPromoURL(current_url);
+    if (auto_close) {
       base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
             &InlineLoginUIHandler::CloseTab, weak_factory_.GetWeakPtr()));
-    } else {
-      signin::Source source = signin::GetSourceForPromoURL(current_url);
-      DCHECK(source != signin::SOURCE_UNKNOWN);
-      OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(
-          contents, source);
+      return;
     }
+
+    OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(contents, source);
   }
 
   void CloseTab() {
