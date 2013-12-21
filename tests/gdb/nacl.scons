@@ -132,8 +132,11 @@ node = env.CommandTest(
     command=['${PYTHON}', env.File('call_from_gdb.py'),
              '--nexe', gdb_test_guest,
              '--nexe_args', TempFileArguments()] + test_args)
-
-env.AddNodeToTestSuite(node, test_suites, 'run_gdb_call_from_gdb_test')
+# This fails on MIPS, since GDB for MIPS executes inferior calls on stack
+# (call dummy location in MIPS GDB is set as ON_STACK method). Since the stack
+# is not executable under NaCl, this makes inferior call impossible to execute.
+env.AddNodeToTestSuite(node, test_suites, 'run_gdb_call_from_gdb_test',
+                       is_broken=env.Bit('target_mips32'))
 env.TestBindsFixedTcpPort(node)
 
 node = env.CommandTest(
@@ -143,12 +146,14 @@ node = env.CommandTest(
              '--nexe', gdb_test_guest,
              '--nexe_args', TempFileArguments()] + test_args)
 
-# This fails on ARM+PNaCl because it is reading
+# This fails on ARM/MIPS+PNaCl because it is reading
 # local_var before it has been initialised.
 # TODO(mseaborn): Investigate and enable this test.
 # http://code.google.com/p/nativeclient/issues/detail?id=3252
+is_broken = ((env.Bit('bitcode') and env.Bit('target_arm')) or
+             env.Bit('target_mips32'))
 env.AddNodeToTestSuite(node, test_suites, 'run_gdb_change_variable_test',
-                       is_broken=env.Bit('bitcode') and env.Bit('target_arm'))
+                       is_broken=is_broken)
 env.TestBindsFixedTcpPort(node)
 
 if not env.Bit('nacl_static_link'):
