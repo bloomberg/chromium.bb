@@ -302,8 +302,10 @@ v8.log
 /third_party/webrtc
 /third_party/webrtc/internal
 /third_party/webrtc/modules/video_coding/codecs/vp8_internal
-/third_party/widevine/cdm/binaries
-/third_party/widevine/cdm/symbols
+/third_party/widevine/cdm/chromeos
+/third_party/widevine/cdm/linux
+/third_party/widevine/cdm/mac
+/third_party/widevine/cdm/win
 /third_party/win_toolchain/.timestamps
 /third_party/win_toolchain/files
 /third_party/wix

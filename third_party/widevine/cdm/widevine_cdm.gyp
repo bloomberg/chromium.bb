@@ -11,31 +11,31 @@
         'conditions': [
           [ 'chromeos == 1', {
             'widevine_cdm_version_h_file%':
-                'symbols/chromeos/<(target_arch)/widevine_cdm_version.h',
+                'chromeos/<(target_arch)/widevine_cdm_version.h',
             'widevine_cdm_binary_files%': [
-              'binaries/chromeos/<(target_arch)/libwidevinecdm.so',
+              'chromeos/<(target_arch)/libwidevinecdm.so',
             ],
           }],
           [ 'OS == "linux" and chromeos == 0', {
             'widevine_cdm_version_h_file%':
-                'symbols/linux/<(target_arch)/widevine_cdm_version.h',
+                'linux/<(target_arch)/widevine_cdm_version.h',
             'widevine_cdm_binary_files%': [
-              'binaries/linux/<(target_arch)/libwidevinecdm.so',
+              'linux/<(target_arch)/libwidevinecdm.so',
             ],
           }],
           [ 'OS == "mac"', {
             'widevine_cdm_version_h_file%':
-                'symbols/mac/<(target_arch)/widevine_cdm_version.h',
+                'mac/<(target_arch)/widevine_cdm_version.h',
             'widevine_cdm_binary_files%': [
-              'binaries/mac/<(target_arch)/libwidevinecdm.dylib',
+              'mac/<(target_arch)/libwidevinecdm.dylib',
             ],
           }],
           [ 'OS == "win"', {
             'widevine_cdm_version_h_file%':
-                'symbols/win/<(target_arch)/widevine_cdm_version.h',
+                'win/<(target_arch)/widevine_cdm_version.h',
             'widevine_cdm_binary_files%': [
-              'binaries/win/<(target_arch)/widevinecdm.dll',
-              'binaries/win/<(target_arch)/widevinecdm.dll.lib',
+              'win/<(target_arch)/widevinecdm.dll',
+              'win/<(target_arch)/widevinecdm.dll.lib',
             ],
           }],
         ],
