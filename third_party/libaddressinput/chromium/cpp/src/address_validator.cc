@@ -22,7 +22,6 @@
 #include <string>
 
 #include "retriever.h"
-#include "rule_retriever.h"
 #include "validating_storage.h"
 
 namespace i18n {
@@ -31,11 +30,10 @@ namespace addressinput {
 AddressValidator::AddressValidator(scoped_ptr<const Downloader> downloader,
                                    scoped_ptr<Storage> storage,
                                    LoadRulesDelegate* load_rules_delegate)
-    : rule_retriever_(new RuleRetriever(
-          scoped_ptr<const Retriever>(new Retriever(
-              VALIDATION_DATA_URL,
-              downloader.Pass(),
-              scoped_ptr<Storage>(new ValidatingStorage(storage.Pass())))))),
+    : retriever_(new Retriever(
+          VALIDATION_DATA_URL,
+          downloader.Pass(),
+          scoped_ptr<Storage>(new ValidatingStorage(storage.Pass())))),
       load_rules_delegate_(load_rules_delegate) {}
 
 AddressValidator::~AddressValidator() {}

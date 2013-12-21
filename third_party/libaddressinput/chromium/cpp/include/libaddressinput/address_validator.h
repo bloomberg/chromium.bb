@@ -30,7 +30,7 @@ namespace addressinput {
 class Downloader;
 class LoadRulesDelegate;
 class Localization;
-class RuleRetriever;
+class Retriever;
 class Storage;
 struct AddressData;
 
@@ -113,7 +113,7 @@ class AddressValidator {
                          const Localization& localization,
                          AddressProblems* problems) const;
  private:
-  scoped_ptr<RuleRetriever> rule_retriever_;
+  scoped_ptr<Retriever> retriever_;
   LoadRulesDelegate* load_rules_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(AddressValidator);
