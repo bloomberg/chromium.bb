@@ -164,12 +164,9 @@ class MIDIManagerWin::InDeviceInfo {
   HMIDIIN midi_handle() const {
     return midi_handle_;
   }
-  const base::TimeDelta& start_time_offset() const {
-    return start_time_offset_;
-  }
 
   static scoped_ptr<InDeviceInfo> Create(MIDIManagerWin* manager,
-                                       UINT device_id) {
+                                         UINT device_id) {
     scoped_ptr<InDeviceInfo> obj(new InDeviceInfo(manager));
     if (!obj->Initialize(device_id))
       obj.reset();
@@ -235,7 +232,7 @@ class MIDIManagerWin::InDeviceInfo {
       return false;
     }
     started_ = true;
-    start_time_offset_ = base::TimeTicks::Now() - base::TimeTicks();
+    start_time_ = base::TimeTicks::Now();
     return true;
   }
 
@@ -246,7 +243,7 @@ class MIDIManagerWin::InDeviceInfo {
       DLOG_IF(ERROR, result != MMSYSERR_NOERROR)
           << "Failed to stop input port: " << GetInErrorMessage(result);
       started_ = false;
-      start_time_offset_ = base::TimeDelta();
+      start_time_ = base::TimeTicks();
     }
     if (midi_handle_) {
       // midiInReset flushes pending messages. We ignore these messages.
@@ -282,11 +279,11 @@ class MIDIManagerWin::InDeviceInfo {
         self->OnShortMessageReceived(static_cast<uint8>(param1 & 0xff),
                                      static_cast<uint8>((param1 >> 8) & 0xff),
                                      static_cast<uint8>((param1 >> 16) & 0xff),
-                                     self->TickToTimeDelta(param2));
+                                     param2);
         return;
       case MIM_LONGDATA:
         self->OnLongMessageReceived(reinterpret_cast<MIDIHDR*>(param1),
-                                    self->TickToTimeDelta(param2));
+                                    param2);
         return;
       case MIM_CLOSE:
         // TODO(yukawa): Implement crbug.com/279097.
@@ -297,7 +294,7 @@ class MIDIManagerWin::InDeviceInfo {
   void OnShortMessageReceived(uint8 status_byte,
                               uint8 first_data_byte,
                               uint8 second_data_byte,
-                              base::TimeDelta timestamp) {
+                              DWORD elapsed_ms) {
     if (device_to_be_closed())
       return;
     const size_t len = GetMIDIMessageLength(status_byte);
@@ -305,10 +302,10 @@ class MIDIManagerWin::InDeviceInfo {
       return;
     const uint8 kData[] = { status_byte, first_data_byte, second_data_byte };
     DCHECK_LE(len, arraysize(kData));
-    manager_->ReceiveMIDIData(port_index(), kData, len, timestamp.InSecondsF());
+    OnMessageReceived(kData, len, elapsed_ms);
   }
 
-  void OnLongMessageReceived(MIDIHDR* header, base::TimeDelta timestamp) {
+  void OnLongMessageReceived(MIDIHDR* header, DWORD elapsed_ms) {
     if (header != midi_header_.get())
       return;
     MMRESULT result = MMSYSERR_NOERROR;
@@ -324,27 +321,36 @@ class MIDIManagerWin::InDeviceInfo {
       return;
     }
     if (header->dwBytesRecorded > 0 && port_index() != kInvalidPortIndex) {
-      manager_->ReceiveMIDIData(port_index_,
-                                reinterpret_cast<const uint8*>(header->lpData),
-                                header->dwBytesRecorded,
-                                timestamp.InSecondsF());
+      OnMessageReceived(reinterpret_cast<const uint8*>(header->lpData),
+                        header->dwBytesRecorded,
+                        elapsed_ms);
     }
-    result = midiInAddBuffer(midi_handle(), header, sizeof(*header));
+    result = midiInAddBuffer(midi_handle_, header, sizeof(*header));
     DLOG_IF(ERROR, result != MMSYSERR_NOERROR)
         << "Failed to attach input port: " << GetInErrorMessage(result);
   }
 
-  base::TimeDelta TickToTimeDelta(DWORD tick) const {
-    const base::TimeDelta delta =
-        base::TimeDelta::FromMicroseconds(static_cast<uint32>(tick));
-    return start_time_offset_ + delta;
+  void OnMessageReceived(const uint8* data, size_t length, DWORD elapsed_ms) {
+    // MIM_DATA/MIM_LONGDATA message treats the time when midiInStart() is
+    // called as the origin of |elapsed_ms|.
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd757284.aspx
+    // http://msdn.microsoft.com/en-us/library/windows/desktop/dd757286.aspx
+    const base::TimeTicks event_time =
+        start_time_ + base::TimeDelta::FromMilliseconds(elapsed_ms);
+    // MIDIManager::ReceiveMIDIData() expects |timestamp| as the elapsed seconds
+    // from base::TimeTicks::Now().
+    // TODO(yukawa): Update MIDIManager::ReceiveMIDIData() so that it can
+    // receive |event_time| directly if the precision of base::TimeTicks is
+    // sufficient.
+    const double timestamp = (event_time - base::TimeTicks()).InSecondsF();
+    manager_->ReceiveMIDIData(port_index_, data, length, timestamp);
   }
 
   MIDIManagerWin* manager_;
   int port_index_;
   HMIDIIN midi_handle_;
   ScopedMIDIHDR midi_header_;
-  base::TimeDelta start_time_offset_;
+  base::TimeTicks start_time_;
   bool started_;
   bool device_to_be_closed_;
   DISALLOW_COPY_AND_ASSIGN(MIDIManagerWin::InDeviceInfo);
