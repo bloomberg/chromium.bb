@@ -532,18 +532,11 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_EQ(std::string(), tls_channel_id);
 }
 
-// Flaky on Linux. http://crbug.com/315264
-#if defined(OS_LINUX)
-#define MAYBE_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage \
-    DISABLED_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage
-#else
-#define MAYBE_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage \
-    WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage
-#endif
+// Flaky on Linux and Windows. http://crbug.com/315264
 // Tests a web connectable extension that receives TLS channel id, but
 // immediately closes its background page upon receipt of a message.
 IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
-    MAYBE_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage) {
+    DISABLED_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage) {
   InitializeTestServer();
 
   const Extension* chromium_connectable =
