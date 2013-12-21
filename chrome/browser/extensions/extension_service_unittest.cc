@@ -2158,7 +2158,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   // updating the browser to a version which recognizes a new API permission).
   SetPref(extension_id, "granted_permissions.api",
           new ListValue(), "granted_permissions.api");
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
 
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
   extension = service_->disabled_extensions()->begin()->get();
@@ -2201,7 +2201,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   SetPrefStringSet(
       extension_id, "granted_permissions.scriptable_host", host_permissions);
 
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
 
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
   extension = service_->disabled_extensions()->begin()->get();
@@ -2538,7 +2538,7 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionCanChangeID) {
   loaded_.clear();
 
   // Reload the extensions.
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
   const Extension* extension = service_->GetExtensionById(unpacked, false);
   EXPECT_EQ(unpacked, extension->id());
   ASSERT_EQ(1u, loaded_.size());
@@ -2837,7 +2837,7 @@ TEST_F(ExtensionServiceTest, FromWebStore) {
   ASSERT_TRUE(ValidateBooleanPref(good_crx, "from_webstore", true));
 
   // Reload so extension gets reinitialized with new value.
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
   extension = service_->GetExtensionById(id, false);
   ASSERT_TRUE(extension->from_webstore());
 
@@ -3913,18 +3913,39 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
   InitializeEmptyExtensionService();
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
-  EXPECT_FALSE(service_->extensions()->is_empty());
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
   EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
-  EXPECT_TRUE(service_->disabled_extensions()->is_empty());
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+  EXPECT_EQ(0u, service_->terminated_extensions()->size());
+  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
 
   // Disable it.
   service_->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
 
-  EXPECT_TRUE(service_->extensions()->is_empty());
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
   EXPECT_FALSE(service_->GetExtensionById(good_crx, false));
-  EXPECT_FALSE(service_->disabled_extensions()->is_empty());
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(1u, service_->disabled_extensions()->size());
+  EXPECT_EQ(0u, service_->terminated_extensions()->size());
+  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
+}
+
+TEST_F(ExtensionServiceTest, TerminateExtension) {
+  InitializeEmptyExtensionService();
+
+  InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
+  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+  EXPECT_EQ(0u, service_->terminated_extensions()->size());
+  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
+
+  TerminateExtension(good_crx);
+
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(0u, service_->disabled_extensions()->size());
+  EXPECT_EQ(1u, service_->terminated_extensions()->size());
+  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
 }
 
 TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
@@ -3939,7 +3960,11 @@ TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
 
   EXPECT_FALSE(service_->GetTerminatedExtension(good_crx));
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
-  EXPECT_FALSE(service_->disabled_extensions()->is_empty());
+
+  EXPECT_EQ(0u, service_->extensions()->size());
+  EXPECT_EQ(1u, service_->disabled_extensions()->size());
+  EXPECT_EQ(0u, service_->terminated_extensions()->size());
+  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
 }
 
 // Tests disabling all extensions (simulating --disable-extensions flag).
@@ -3954,7 +3979,7 @@ TEST_F(ExtensionServiceTest, DisableAllExtensions) {
 
   // Disable extensions.
   service_->set_extensions_enabled(false);
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
 
   // There shouldn't be extensions in either list.
   EXPECT_EQ(0u, service_->extensions()->size());
@@ -3962,7 +3987,7 @@ TEST_F(ExtensionServiceTest, DisableAllExtensions) {
 
   // This shouldn't do anything when all extensions are disabled.
   service_->EnableExtension(good_crx);
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
 
   // There still shouldn't be extensions in either list.
   EXPECT_EQ(0u, service_->extensions()->size());
@@ -3970,7 +3995,7 @@ TEST_F(ExtensionServiceTest, DisableAllExtensions) {
 
   // And then re-enable the extensions.
   service_->set_extensions_enabled(true);
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
 
   EXPECT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
@@ -3990,7 +4015,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
   EXPECT_EQ(0u, service_->extensions()->size());
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
 
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
 
   // The creation flags should not change when reloading the extension.
   const Extension* extension = service_->GetExtensionById(good_crx, true);
@@ -4011,7 +4036,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
   // EnableExtension() call above inserted into it and
   // UnloadAllExtensions() doesn't send out notifications.
   loaded_.clear();
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
 
   // Extension counts shouldn't change.
   EXPECT_EQ(1u, service_->extensions()->size());
@@ -4553,7 +4578,7 @@ void ExtensionServiceTest::TestExternalProvider(
   // Reload extensions without changing anything. The extension should be
   // loaded again.
   loaded_.clear();
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(0u, GetErrors().size());
   ASSERT_EQ(1u, loaded_.size());
@@ -4751,7 +4776,7 @@ TEST_F(ExtensionServiceTest, ExternalUninstall) {
 
   // Verify that it's not the disabled extensions flag causing it not to load.
   set_extensions_enabled(true);
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
   base::RunLoop().RunUntilIdle();
 
   ASSERT_EQ(0u, GetErrors().size());
@@ -5211,7 +5236,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensions) {
   // Reload all extensions, and make sure it comes back.
   std::string extension_id = (*service_->extensions()->begin())->id();
   loaded_.clear();
-  service_->ReloadExtensions();
+  service_->ReloadExtensionsForTest();
   ASSERT_EQ(1u, service_->extensions()->size());
   EXPECT_EQ(extension_id, (*service_->extensions()->begin())->id());
 }

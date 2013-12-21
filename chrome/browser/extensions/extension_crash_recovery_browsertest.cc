@@ -534,7 +534,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_EQ(crash_size_before + 1,
             GetExtensionService()->terminated_extensions()->size());
 
-  GetExtensionService()->UnloadAllExtensions();
+  GetExtensionService()->UnloadAllExtensionsForTest();
   ASSERT_EQ(crash_size_before,
             GetExtensionService()->terminated_extensions()->size());
 }

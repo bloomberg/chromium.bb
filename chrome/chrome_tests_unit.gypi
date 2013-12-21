@@ -529,6 +529,7 @@
         '../extensions/browser/admin_policy_unittest.cc',
         '../extensions/browser/event_listener_map_unittest.cc',
         '../extensions/browser/event_router_unittest.cc',
+        '../extensions/browser/extension_registry_unittest.cc',
         '../extensions/browser/file_highlighter_unittest.cc',
         '../extensions/browser/file_reader_unittest.cc',
         '../extensions/browser/info_map_unittest.cc',

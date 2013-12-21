@@ -169,6 +169,8 @@
         'browser/extension_error.h',
         'browser/extension_function.cc',
         'browser/extension_function.h',
+        'browser/extension_registry.cc',
+        'browser/extension_registry.h',
         'browser/extensions_browser_client.cc',
         'browser/extensions_browser_client.h',
         'browser/external_provider_interface.h',

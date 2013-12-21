@@ -1,0 +1,94 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef EXTENSIONS_BROWSER_EXTENSION_REGISTRY_H_
+#define EXTENSIONS_BROWSER_EXTENSION_REGISTRY_H_
+
+#include <string>
+
+#include "base/memory/ref_counted.h"
+#include "extensions/common/extension_set.h"
+
+namespace extensions {
+class Extension;
+
+// ExtensionRegistry holds sets of the installed extensions for a given
+// BrowserContext.
+// TODO(jamescook): Convert this to a BrowserContextKeyedService.
+class ExtensionRegistry {
+ public:
+  ExtensionRegistry();
+  ~ExtensionRegistry();
+
+  // NOTE: These sets are *eventually* mututally exclusive, but an extension can
+  // appear in two sets for short periods of time.
+  const ExtensionSet& enabled_extensions() const {
+    return enabled_extensions_;
+  }
+  const ExtensionSet& disabled_extensions() const {
+    return disabled_extensions_;
+  }
+  const ExtensionSet& terminated_extensions() const {
+    return terminated_extensions_;
+  }
+  const ExtensionSet& blacklisted_extensions() const {
+    return blacklisted_extensions_;
+  }
+
+  // Adds the specified extension to the enabled set. The registry becomes an
+  // owner. Any previous extension with the same ID is removed.
+  // Returns true if there is no previous extension.
+  // NOTE: You probably want to use ExtensionService instead of calling this
+  // method directly.
+  bool AddEnabled(const scoped_refptr<const Extension>& extension);
+
+  // Removes the specified extension from the enabled set.
+  // Returns true if the set contained the specified extension.
+  // NOTE: You probably want to use ExtensionService instead of calling this
+  // method directly.
+  bool RemoveEnabled(const std::string& id);
+
+  // As above, but for the disabled set.
+  bool AddDisabled(const scoped_refptr<const Extension>& extension);
+  bool RemoveDisabled(const std::string& id);
+
+  // As above, but for the terminated set.
+  bool AddTerminated(const scoped_refptr<const Extension>& extension);
+  bool RemoveTerminated(const std::string& id);
+
+  // As above, but for the blacklisted set.
+  bool AddBlacklisted(const scoped_refptr<const Extension>& extension);
+  bool RemoveBlacklisted(const std::string& id);
+
+  // Removes all extensions from all sets.
+  void ClearAll();
+
+  // Sets a callback to run when the disabled extension set is modified.
+  // TODO(jamescook): This is too specific for a generic registry; find some
+  // other way to do this.
+  void SetDisabledModificationCallback(
+      const ExtensionSet::ModificationCallback& callback);
+
+ private:
+  // Extensions that are installed, enabled and not terminated.
+  ExtensionSet enabled_extensions_;
+
+  // Extensions that are installed and disabled.
+  ExtensionSet disabled_extensions_;
+
+  // Extensions that are installed and terminated.
+  ExtensionSet terminated_extensions_;
+
+  // Extensions that are installed and blacklisted. Generally these shouldn't be
+  // considered as installed by the extension platform: we only keep them around
+  // so that if extensions are blacklisted by mistake they can easily be
+  // un-blacklisted.
+  ExtensionSet blacklisted_extensions_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionRegistry);
+};
+
+}  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_EXTENSION_REGISTRY_H_

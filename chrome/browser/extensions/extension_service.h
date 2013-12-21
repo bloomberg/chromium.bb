@@ -55,6 +55,7 @@ class ComponentLoader;
 class ContentSettingsStore;
 class CrxInstaller;
 class ExtensionActionStorageManager;
+class ExtensionRegistry;
 class ExtensionSystem;
 class ExtensionUpdater;
 class PendingExtensionManager;
@@ -325,12 +326,11 @@ class ExtensionService
   virtual void RemoveComponentExtension(const std::string& extension_id)
       OVERRIDE;
 
-  // Unload all extensions. This is currently only called on shutdown, and
-  // does not send notifications.
-  void UnloadAllExtensions();
+  // Unload all extensions. Does not send notifications.
+  void UnloadAllExtensionsForTest();
 
-  // Called only by testing.
-  void ReloadExtensions();
+  // Reloads all extensions. Does not notify that extensions are ready.
+  void ReloadExtensionsForTest();
 
   // Scan the extension directory and clean up the cruft.
   void GarbageCollectExtensions();
@@ -718,6 +718,9 @@ class ExtensionService
   }
   bool installs_delayed_for_gc() const { return installs_delayed_for_gc_; }
 
+  // Used only by test code.
+  void UnloadAllExtensionsInternal();
+
   // The normal profile associated with this ExtensionService.
   Profile* profile_;
 
@@ -736,23 +739,12 @@ class ExtensionService
   // The ExtensionSyncService that is used by this ExtensionService.
   ExtensionSyncService* extension_sync_service_;
 
-  // The current list of installed extensions.
-  extensions::ExtensionSet extensions_;
-
-  // The list of installed extensions that have been disabled.
-  extensions::ExtensionSet disabled_extensions_;
-
-  // The list of installed extensions that have been terminated.
-  extensions::ExtensionSet terminated_extensions_;
-
-  // The list of installed extensions that have been blacklisted. Generally
-  // these shouldn't be considered as installed by the extension platform: we
-  // only keep them around so that if extensions are blacklisted by mistake
-  // they can easily be un-blacklisted.
-  extensions::ExtensionSet blacklisted_extensions_;
+  // TODO(jamescook): Convert this to a BrowserContextKeyedService.
+  scoped_ptr<extensions::ExtensionRegistry> registry_;
 
   // The list of extension installs delayed for various reasons.  The reason
-  // for delayed install is stored in ExtensionPrefs.
+  // for delayed install is stored in ExtensionPrefs. These are not part of
+  // ExtensionRegistry because they are not yet installed.
   extensions::ExtensionSet delayed_installs_;
 
   // Hold the set of pending extensions.
