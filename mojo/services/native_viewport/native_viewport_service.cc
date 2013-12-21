@@ -90,11 +90,12 @@ class NativeViewportService::NativeViewportImpl
     if (waiting_for_event_ack_ && IsRateLimitedEventType(ui_event))
       return false;
 
+    pending_event_timestamp_ = ui_event->time_stamp().ToInternalValue();
     AllocationScope scope;
 
     Event::Builder event;
     event.set_action(ui_event->type());
-    event.set_time_stamp(ui_event->time_stamp().ToInternalValue());
+    event.set_time_stamp(pending_event_timestamp_);
 
     if (ui_event->IsMouseEvent() || ui_event->IsTouchEvent()) {
       ui::LocatedEvent* located_event =

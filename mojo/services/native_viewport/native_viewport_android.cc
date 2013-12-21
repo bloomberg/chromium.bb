@@ -65,7 +65,7 @@ void NativeViewportAndroid::SurfaceCreated(JNIEnv* env,
 }
 
 void NativeViewportAndroid::SurfaceDestroyed(JNIEnv* env, jobject obj) {
-  DCHECK(!window_);
+  DCHECK(window_);
   ReleaseWindow();
 }
 
