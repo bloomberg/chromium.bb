@@ -17,7 +17,7 @@ namespace {
 class TestRunnerDelegate : public gin::FileRunnerDelegate {
  public:
   TestRunnerDelegate() {
-    AddBuiltinModule(Core::kModuleName, Core::GetTemplate);
+    AddBuiltinModule(Core::kModuleName, Core::GetModule);
   }
 
  private:

@@ -43,9 +43,8 @@ class GIN_EXPORT ModuleRegistry : public ContextSupplement {
                               v8::Handle<v8::ObjectTemplate> templ);
 
   // The caller must have already entered our context.
-  void AddBuiltinModule(v8::Isolate* isolate,
-                        const std::string& id,
-                        v8::Handle<v8::ObjectTemplate> templ);
+  void AddBuiltinModule(v8::Isolate* isolate, const std::string& id,
+                        v8::Handle<v8::Value> module);
 
   // The caller must have already entered our context.
   void AddPendingModule(v8::Isolate* isolate,

@@ -14,8 +14,7 @@
 
 namespace gin {
 
-typedef v8::Local<v8::ObjectTemplate> (*ModuleTemplateGetter)(
-    v8::Isolate* isolate);
+typedef v8::Local<v8::Value> (*ModuleGetter)(v8::Isolate* isolate);
 
 // Emebedders that use AMD modules will probably want to use a RunnerDelegate
 // that inherits from ModuleRunnerDelegate. ModuleRunnerDelegate lets embedders
@@ -26,18 +25,13 @@ class GIN_EXPORT ModuleRunnerDelegate : public RunnerDelegate {
       const std::vector<base::FilePath>& search_paths);
   virtual ~ModuleRunnerDelegate();
 
-  // Lets you register a built-in module. Built-in modules are instantiated by
-  // creating a new instance of a v8::ObjectTemplate rather than by executing
-  // code. This function takes a ModuleTemplateGetter rather than a
-  // v8::ObjectTemplate directly so that embedders can create object templates
-  // lazily.
-  void AddBuiltinModule(const std::string& id, ModuleTemplateGetter templ);
+  void AddBuiltinModule(const std::string& id, ModuleGetter getter);
 
  protected:
   void AttemptToLoadMoreModules(Runner* runner);
 
  private:
-  typedef std::map<std::string, ModuleTemplateGetter> BuiltinModuleMap;
+  typedef std::map<std::string, ModuleGetter> BuiltinModuleMap;
 
   // From RunnerDelegate:
   virtual v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(

@@ -29,7 +29,7 @@ WrapperInfo g_wrapper_info = { kEmbedderNativeGin };
 
 const char Console::kModuleName[] = "console";
 
-v8::Local<ObjectTemplate> Console::GetTemplate(v8::Isolate* isolate) {
+v8::Local<v8::Value> Console::GetModule(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
   v8::Local<ObjectTemplate> templ = data->GetObjectTemplate(&g_wrapper_info);
   if (templ.IsEmpty()) {
@@ -38,7 +38,7 @@ v8::Local<ObjectTemplate> Console::GetTemplate(v8::Isolate* isolate) {
         .Build();
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
-  return templ;
+  return templ->NewInstance();
 }
 
 }  // namespace gin

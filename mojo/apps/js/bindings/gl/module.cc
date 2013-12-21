@@ -31,7 +31,7 @@ gin::Handle<Context> CreateContext(const gin::Arguments& args, uint64_t encoded,
 
 }  // namespace
 
-v8::Local<v8::ObjectTemplate> GetModuleTemplate(v8::Isolate* isolate) {
+v8::Local<v8::Value> GetModule(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
   v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(&kWrapperInfo);
 
@@ -42,7 +42,7 @@ v8::Local<v8::ObjectTemplate> GetModuleTemplate(v8::Isolate* isolate) {
     data->SetObjectTemplate(&kWrapperInfo, templ);
   }
 
-  return templ;
+  return templ->NewInstance();
 }
 
 }  // namespace gl

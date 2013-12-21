@@ -44,6 +44,8 @@
         'modules/module_registry.h',
         'modules/module_runner_delegate.cc',
         'modules/module_runner_delegate.h',
+        'modules/timer.cc',
+        'modules/timer.h',
         'object_template_builder.cc',
         'object_template_builder.h',
         'per_context_data.cc',
@@ -112,6 +114,7 @@
       ],
       'sources': [
         'converter_unittest.cc',
+        'modules/timer_unittest.cc',
         'test/run_all_unittests.cc',
         'test/run_js_tests.cc',
         'runner_unittest.cc',

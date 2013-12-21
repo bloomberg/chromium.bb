@@ -31,8 +31,8 @@ std::vector<base::FilePath> GetModuleSearchPaths() {
 
 FileRunnerDelegate::FileRunnerDelegate()
     : ModuleRunnerDelegate(GetModuleSearchPaths()) {
-  AddBuiltinModule(Console::kModuleName, Console::GetTemplate);
-  AddBuiltinModule(GTest::kModuleName, GTest::GetTemplate);
+  AddBuiltinModule(Console::kModuleName, Console::GetModule);
+  AddBuiltinModule(GTest::kModuleName, GTest::GetModule);
 }
 
 FileRunnerDelegate::~FileRunnerDelegate() {

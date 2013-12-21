@@ -45,11 +45,11 @@ void StartCallback(base::WeakPtr<gin::Runner> runner,
 
 MojoRunnerDelegate::MojoRunnerDelegate()
     : ModuleRunnerDelegate(GetModuleSearchPaths()) {
-  AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetTemplate);
-  AddBuiltinModule(js::Core::kModuleName, js::Core::GetTemplate);
-  AddBuiltinModule(js::Support::kModuleName, js::Support::GetTemplate);
-  AddBuiltinModule(mojo::js::gl::kModuleName, mojo::js::gl::GetModuleTemplate);
-  AddBuiltinModule(Threading::kModuleName, Threading::GetTemplate);
+  AddBuiltinModule(gin::Console::kModuleName, gin::Console::GetModule);
+  AddBuiltinModule(js::Core::kModuleName, js::Core::GetModule);
+  AddBuiltinModule(js::Support::kModuleName, js::Support::GetModule);
+  AddBuiltinModule(mojo::js::gl::kModuleName, mojo::js::gl::GetModule);
+  AddBuiltinModule(Threading::kModuleName, Threading::GetModule);
 }
 
 MojoRunnerDelegate::~MojoRunnerDelegate() {

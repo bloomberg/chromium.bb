@@ -13,7 +13,7 @@ namespace js {
 class Core {
  public:
   static const char kModuleName[];
-  static v8::Local<v8::ObjectTemplate> GetTemplate(v8::Isolate* isolate);
+  static v8::Local<v8::Value> GetModule(v8::Isolate* isolate);
 };
 
 }  // namespace js

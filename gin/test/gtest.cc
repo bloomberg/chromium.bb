@@ -43,7 +43,7 @@ WrapperInfo g_wrapper_info = { kEmbedderNativeGin };
 
 const char GTest::kModuleName[] = "gtest";
 
-v8::Local<v8::ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
+v8::Local<v8::Value> GTest::GetModule(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
   v8::Local<v8::ObjectTemplate> templ =
       data->GetObjectTemplate(&g_wrapper_info);
@@ -56,7 +56,7 @@ v8::Local<v8::ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
         .Build();
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
-  return templ;
+  return templ->NewInstance();
 }
 
 }  // namespace gin

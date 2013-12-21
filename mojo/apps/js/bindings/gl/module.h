@@ -13,7 +13,7 @@ namespace js {
 namespace gl {
 
 extern const char* kModuleName;
-v8::Local<v8::ObjectTemplate> GetModuleTemplate(v8::Isolate* isolate);
+v8::Local<v8::Value> GetModule(v8::Isolate* isolate);
 
 }  // namespace gl
 }  // namespace js

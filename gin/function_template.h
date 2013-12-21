@@ -270,6 +270,13 @@ inline bool GetNextArgument(Arguments* args, int create_flags, bool is_first,
   return true;
 }
 
+// It's common for clients to just need the isolate, so we make that easy.
+inline bool GetNextArgument(Arguments* args, int create_flags,
+                            bool is_first, v8::Isolate** result) {
+  *result = args->isolate();
+  return true;
+}
+
 
 // DispatchToCallback converts all the JavaScript arguments to C++ types and
 // invokes the base::Callback.

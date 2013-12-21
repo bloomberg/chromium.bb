@@ -37,6 +37,7 @@ void RunnerDelegate::DidRunScript(Runner* runner) {
 }
 
 void RunnerDelegate::UnhandledException(Runner* runner, TryCatch& try_catch) {
+  CHECK(false) << try_catch.GetStackTrace();
 }
 
 Runner::Runner(RunnerDelegate* delegate, Isolate* isolate)
@@ -77,8 +78,9 @@ void Runner::Run(v8::Handle<Script> script) {
   script->Run();
 
   delegate_->DidRunScript(this);
-  if (try_catch.HasCaught())
+  if (try_catch.HasCaught()) {
     delegate_->UnhandledException(this, try_catch);
+  }
 }
 
 v8::Handle<v8::Value> Runner::Call(v8::Handle<v8::Function> function,

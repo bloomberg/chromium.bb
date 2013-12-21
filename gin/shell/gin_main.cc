@@ -40,7 +40,7 @@ std::vector<base::FilePath> GetModuleSearchPaths() {
 class ShellRunnerDelegate : public ModuleRunnerDelegate {
  public:
   ShellRunnerDelegate() : ModuleRunnerDelegate(GetModuleSearchPaths()) {
-    AddBuiltinModule(Console::kModuleName, Console::GetTemplate);
+    AddBuiltinModule(Console::kModuleName, Console::GetModule);
   }
 
   virtual void UnhandledException(Runner* runner,

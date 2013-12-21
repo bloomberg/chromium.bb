@@ -18,8 +18,8 @@ ModuleRunnerDelegate::~ModuleRunnerDelegate() {
 }
 
 void ModuleRunnerDelegate::AddBuiltinModule(const std::string& id,
-                                            ModuleTemplateGetter templ) {
-  builtin_modules_[id] = templ;
+                                            ModuleGetter getter) {
+  builtin_modules_[id] = getter;
 }
 
 void ModuleRunnerDelegate::AttemptToLoadMoreModules(Runner* runner) {
