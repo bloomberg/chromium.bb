@@ -11240,7 +11240,7 @@ ssl3_FinishHandshake(sslSocket * ss)
     /* The first handshake is now completed. */
     ss->handshake           = NULL;
 
-    if (ss->ssl3.hs.cacheSID && ss->sec.isServer) {
+    if (ss->ssl3.hs.cacheSID) {
 	(*ss->sec.cache)(ss->sec.ci.sid);
 	ss->ssl3.hs.cacheSID = PR_FALSE;
     }

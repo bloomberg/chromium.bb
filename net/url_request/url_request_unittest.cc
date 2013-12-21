@@ -44,7 +44,6 @@
 #include "net/base/upload_data_stream.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/cert/ev_root_ca_metadata.h"
-#include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store_test_helpers.h"
@@ -6495,104 +6494,6 @@ TEST_F(HTTPSRequestTest, SSLSessionCacheShardTest) {
     std::vector<std::string> lines;
     base::SplitString(d.data_received(), '\n', &lines);
     ASSERT_EQ(3u, lines.size());
-
-    std::string session_id;
-    for (size_t i = 0; i < 2; i++) {
-      std::vector<std::string> parts;
-      base::SplitString(lines[i], '\t', &parts);
-      ASSERT_EQ(2u, parts.size());
-      EXPECT_EQ("insert", parts[0]);
-      if (i == 0) {
-        session_id = parts[1];
-      } else {
-        EXPECT_NE(session_id, parts[1]);
-      }
-    }
-  }
-}
-
-class HTTPSSessionTest : public testing::Test {
- public:
-  HTTPSSessionTest() : default_context_(true) {
-    cert_verifier_.set_default_result(net::OK);
-
-    default_context_.set_network_delegate(&default_network_delegate_);
-    default_context_.set_cert_verifier(&cert_verifier_);
-    default_context_.Init();
-  }
-  virtual ~HTTPSSessionTest() {}
-
- protected:
-  MockCertVerifier cert_verifier_;
-  TestNetworkDelegate default_network_delegate_;  // Must outlive URLRequest.
-  TestURLRequestContext default_context_;
-};
-
-// Tests that session resumption is not attempted if an invalid certificate
-// is presented.
-TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
-  SpawnedTestServer::SSLOptions ssl_options;
-  ssl_options.record_resume = true;
-  SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS,
-      ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-  ASSERT_TRUE(test_server.Start());
-
-  SSLClientSocket::ClearSessionCache();
-
-  // Simulate the certificate being expired and attempt a connection.
-  cert_verifier_.set_default_result(net::ERR_CERT_DATE_INVALID);
-  {
-    TestDelegate d;
-    URLRequest r(test_server.GetURL("ssl-session-cache"),
-                 DEFAULT_PRIORITY,
-                 &d,
-                 &default_context_);
-
-    r.Start();
-    EXPECT_TRUE(r.is_pending());
-
-    base::RunLoop().Run();
-
-    EXPECT_EQ(1, d.response_started_count());
-  }
-
-  reinterpret_cast<HttpCache*>(default_context_.http_transaction_factory())->
-    CloseAllConnections();
-
-  // Now change the certificate to be acceptable (so that the response is
-  // loaded), and ensure that no session id is presented to the peer.
-  cert_verifier_.set_default_result(net::OK);
-  {
-    TestDelegate d;
-    URLRequest r(test_server.GetURL("ssl-session-cache"),
-                 DEFAULT_PRIORITY,
-                 &d,
-                 &default_context_);
-
-    r.Start();
-    EXPECT_TRUE(r.is_pending());
-
-    base::RunLoop().Run();
-
-    // The response will look like;
-    //   insert abc
-    //   insert xyz
-    //
-    // With a newline at the end which makes the split think that there are
-    // three lines.
-    //
-    // If a session was presented (eg: a bug), then the response would look
-    // like;
-    //   insert abc
-    //   lookup abc
-    //   insert xyz
-
-    EXPECT_EQ(1, d.response_started_count());
-    std::vector<std::string> lines;
-    base::SplitString(d.data_received(), '\n', &lines);
-    ASSERT_EQ(3u, lines.size()) << d.data_received();
 
     std::string session_id;
     for (size_t i = 0; i < 2; i++) {
