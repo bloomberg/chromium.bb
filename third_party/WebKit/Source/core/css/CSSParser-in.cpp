@@ -75,6 +75,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/parser/CSSParserIdioms.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/PageConsole.h"
@@ -396,7 +397,7 @@ static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId, bool& acce
 }
 
 template <typename CharacterType>
-static inline bool parseSimpleLength(const CharacterType* characters, unsigned& length, CSSPrimitiveValue::UnitTypes& unit, double& number)
+static inline bool parseSimpleLength(const CharacterType* characters, unsigned length, CSSPrimitiveValue::UnitTypes& unit, double& number)
 {
     if (length > 2 && (characters[length - 2] | 0x20) == 'p' && (characters[length - 1] | 0x20) == 'x') {
         length -= 2;
@@ -980,71 +981,116 @@ static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyI
     return true;
 }
 
-template <typename CharacterType>
-static bool parseTransformTranslateArguments(CSSTransformValue* transformValue, CharacterType* characters, unsigned length, unsigned start, unsigned expectedCount)
+template <typename CharType>
+static bool parseTransformTranslateArguments(CharType*& pos, CharType* end, unsigned expectedCount, CSSTransformValue* transformValue)
 {
     while (expectedCount) {
-        size_t end = WTF::find(characters, length, expectedCount == 1 ? ')' : ',', start);
-        if (end == kNotFound || (expectedCount == 1 && end != length - 1))
+        size_t delimiter = WTF::find(pos, end - pos, expectedCount == 1 ? ')' : ',');
+        if (delimiter == kNotFound)
             return false;
-        unsigned argumentLength = end - start;
+        unsigned argumentLength = static_cast<unsigned>(delimiter);
         CSSPrimitiveValue::UnitTypes unit = CSSPrimitiveValue::CSS_NUMBER;
         double number;
-        if (!parseSimpleLength(characters + start, argumentLength, unit, number))
+        if (!parseSimpleLength(pos, argumentLength, unit, number))
             return false;
         if (unit != CSSPrimitiveValue::CSS_PX && (number || unit != CSSPrimitiveValue::CSS_NUMBER))
             return false;
         transformValue->append(cssValuePool().createValue(number, CSSPrimitiveValue::CSS_PX));
-        start = end + 1;
+        pos += argumentLength + 1;
         --expectedCount;
     }
     return true;
 }
 
-static bool parseTranslateTransformValue(MutableStylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
+template <typename CharType>
+static PassRefPtr<CSSTransformValue> parseTranslateTransformValue(CharType*& pos, CharType* end)
 {
-    if (propertyID != CSSPropertyWebkitTransform)
-        return false;
-    static const unsigned shortestValidTransformStringLength = 12;
-    static const unsigned likelyMultipartTransformStringLengthCutoff = 32;
-    if (string.length() < shortestValidTransformStringLength || string.length() > likelyMultipartTransformStringLengthCutoff)
-        return false;
-    if (!string.startsWith("translate", false))
-        return false;
-    UChar c9 = toASCIILower(string[9]);
-    UChar c10 = toASCIILower(string[10]);
+    static const int shortestValidTransformStringLength = 12;
+
+    if (end - pos < shortestValidTransformStringLength)
+        return 0;
+
+    if ((pos[0] != 't' && pos[0] != 'T')
+        || (pos[1] != 'r' && pos[1] != 'R')
+        || (pos[2] != 'a' && pos[2] != 'A')
+        || (pos[3] != 'n' && pos[3] != 'N')
+        || (pos[4] != 's' && pos[4] != 'S')
+        || (pos[5] != 'l' && pos[5] != 'L')
+        || (pos[6] != 'a' && pos[6] != 'A')
+        || (pos[7] != 't' && pos[7] != 'T')
+        || (pos[8] != 'e' && pos[8] != 'E'))
+        return 0;
 
     CSSTransformValue::TransformOperationType transformType;
     unsigned expectedArgumentCount = 1;
     unsigned argumentStart = 11;
-    if (c9 == 'x' && c10 == '(')
+    if ((pos[9] == 'x' || pos[9] == 'X') && pos[10] == '(') {
         transformType = CSSTransformValue::TranslateXTransformOperation;
-    else if (c9 == 'y' && c10 == '(')
+    } else if ((pos[9] == 'y' || pos[9] == 'Y') && pos[10] == '(') {
         transformType = CSSTransformValue::TranslateYTransformOperation;
-    else if (c9 == 'z' && c10 == '(')
+    } else if ((pos[9] == 'z' || pos[9] == 'Z') && pos[10] == '(') {
         transformType = CSSTransformValue::TranslateZTransformOperation;
-    else if (c9 == '(') {
+    } else if (pos[9] == '(') {
         transformType = CSSTransformValue::TranslateTransformOperation;
         expectedArgumentCount = 2;
         argumentStart = 10;
-    } else if (c9 == '3' && c10 == 'd' && string[11] == '(') {
+    } else if (pos[9] == '3' && (pos[10] == 'd' || pos[10] == 'D') && pos[11] == '(') {
         transformType = CSSTransformValue::Translate3DTransformOperation;
         expectedArgumentCount = 3;
         argumentStart = 12;
-    } else
-        return false;
+    } else {
+        return 0;
+    }
+    pos += argumentStart;
 
     RefPtr<CSSTransformValue> transformValue = CSSTransformValue::create(transformType);
-    bool success;
-    if (string.is8Bit())
-        success = parseTransformTranslateArguments(transformValue.get(), string.characters8(), string.length(), argumentStart, expectedArgumentCount);
-    else
-        success = parseTransformTranslateArguments(transformValue.get(), string.characters16(), string.length(), argumentStart, expectedArgumentCount);
-    if (!success)
+    if (!parseTransformTranslateArguments(pos, end, expectedArgumentCount, transformValue.get()))
+        return 0;
+    return transformValue.release();
+}
+
+template <typename CharType>
+static PassRefPtr<CSSValueList> parseTranslateTransformList(CharType*& pos, CharType* end)
+{
+    RefPtr<CSSValueList> transformList;
+    while (pos < end) {
+        while (isCSSSpace(*pos) && pos < end)
+            ++pos;
+        RefPtr<CSSTransformValue> transformValue = parseTranslateTransformValue(pos, end);
+        if (!transformValue)
+            return 0;
+        if (!transformList)
+            transformList = CSSValueList::createSpaceSeparated();
+        transformList->append(transformValue.release());
+        if (pos < end) {
+            if (isCSSSpace(*pos))
+                return 0;
+        }
+    }
+    return transformList.release();
+}
+
+static bool parseTranslateTransform(MutableStylePropertySet* properties, CSSPropertyID propertyID, const String& string, bool important)
+{
+    if (propertyID != CSSPropertyWebkitTransform)
         return false;
-    RefPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();
-    result->append(transformValue.release());
-    properties->addParsedProperty(CSSProperty(CSSPropertyWebkitTransform, result.release(), important));
+    if (string.isEmpty())
+        return false;
+    RefPtr<CSSValueList> transformList;
+    if (string.is8Bit()) {
+        const LChar* pos = string.characters8();
+        const LChar* end = pos + string.length();
+        transformList = parseTranslateTransformList(pos, end);
+        if (!transformList)
+            return false;
+    } else {
+        const UChar* pos = string.characters16();
+        const UChar* end = pos + string.length();
+        transformList = parseTranslateTransformList(pos, end);
+        if (!transformList)
+            return false;
+    }
+    properties->addParsedProperty(CSSProperty(CSSPropertyWebkitTransform, transformList.release(), important));
     return true;
 }
 
@@ -1096,7 +1142,7 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID p
 
     if (parseKeywordValue(declaration, propertyID, string, important, context))
         return true;
-    if (parseTranslateTransformValue(declaration, propertyID, string, important))
+    if (parseTranslateTransform(declaration, propertyID, string, important))
         return true;
 
     CSSParser parser(context);
