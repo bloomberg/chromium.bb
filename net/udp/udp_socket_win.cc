@@ -339,7 +339,7 @@ int UDPSocketWin::InternalConnect(const IPEndPoint& address) {
   // else connect() does the DatagramSocket::DEFAULT_BIND
 
   if (rv < 0) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketRandomBindErrorCode", rv);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketRandomBindErrorCode", -rv);
     Close();
     return rv;
   }
@@ -670,7 +670,12 @@ int UDPSocketWin::DoBind(const IPEndPoint& address) {
   int last_error = WSAGetLastError();
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketBindErrorFromWinOS", last_error);
   // Map some codes that are special to bind() separately.
-  if (last_error == WSAEACCES || last_error == WSAEINVAL)
+  // * WSAEACCES: If a port is already bound to a socket, WSAEACCES may be
+  //   returned instead of WSAEADDRINUSE, depending on whether the socket
+  //   option SO_REUSEADDR or SO_EXCLUSIVEADDRUSE is set and whether the
+  //   conflicting socket is owned by a different user account. See the MSDN
+  //   page "Using SO_REUSEADDR and SO_EXCLUSIVEADDRUSE" for the gory details.
+  if (last_error == WSAEACCES || last_error == WSAEADDRNOTAVAIL)
     return ERR_ADDRESS_IN_USE;
   return MapSystemError(last_error);
 }

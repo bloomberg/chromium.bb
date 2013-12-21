@@ -271,7 +271,7 @@ int UDPSocketLibevent::InternalConnect(const IPEndPoint& address) {
   // else connect() does the DatagramSocket::DEFAULT_BIND
 
   if (rv < 0) {
-    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketRandomBindErrorCode", rv);
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketRandomBindErrorCode", -rv);
     Close();
     return rv;
   }
@@ -612,6 +612,13 @@ int UDPSocketLibevent::DoBind(const IPEndPoint& address) {
     return OK;
   int last_error = errno;
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketBindErrorFromPosix", last_error);
+#if defined(OS_CHROMEOS)
+  if (last_error == EINVAL)
+    return ERR_ADDRESS_IN_USE;
+#elif defined(OS_MACOSX)
+  if (last_error == EADDRNOTAVAIL)
+    return ERR_ADDRESS_IN_USE;
+#endif
   return MapSystemError(last_error);
 }
 
