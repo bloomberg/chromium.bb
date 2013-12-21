@@ -59,4 +59,15 @@ os.environ.update(old_env)
 test.build(gypfile)
 test.must_contain_all_lines(test.stdout(), ['my_cc.py', 'my_cxx.py', 'BAR'])
 
+# Check that CC_host overrides make_global_settings
+old_env = dict(os.environ)
+os.environ['CC_host'] = '%s %s/my_cc.py SECRET' % (replacements['PYTHON'],
+                                                   replacements['PWD'])
+test.run_gyp(gypfile)
+os.environ.clear()
+os.environ.update(old_env)
+
+test.build(gypfile)
+test.must_contain_all_lines(test.stdout(), ['SECRET', 'my_cxx.py', 'BAR'])
+
 test.pass_test()

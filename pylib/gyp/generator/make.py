@@ -2050,8 +2050,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
       make_global_settings += (
           'ifneq (,$(filter $(origin %s), undefined default))\n' % key)
       # Let gyp-time envvars win over global settings.
-      if key in os.environ:
-        value = os.environ[key]
+      env_key = key.replace('.', '_')  # CC.host -> CC_host
+      if env_key in os.environ:
+        value = os.environ[env_key]
       make_global_settings += '  %s = %s\n' % (key, value)
       make_global_settings += 'endif\n'
     else:
