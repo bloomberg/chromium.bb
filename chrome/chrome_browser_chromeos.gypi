@@ -85,6 +85,7 @@
         '../third_party/re2/re2.gyp:re2',
         '../third_party/zlib/zlib.gyp:zlib',
         '../ui/base/strings/ui_strings.gyp:ui_strings',
+        '../ui/events/events.gyp:dom4_keycode_converter',
         '../ui/resources/ui_resources.gyp:ui_resources',
         '../ui/surface/surface.gyp:surface',
         '../ui/ui.gyp:ui',
