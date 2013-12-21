@@ -293,21 +293,21 @@ var SourceEntry = (function() {
       return this.isError_;
     },
 
-    getStartTime: function() {
-      var startTicks = this.entries_[0].time;
-      return timeutil.convertTimeTicksToTime(startTicks);
+    /**
+     * Returns time ticks of first event.
+     */
+    getStartTicks: function() {
+      return this.entries_[0].time;
     },
 
     /**
      * Returns time of last event if inactive.  Returns current time otherwise.
+     * Returned time is a "time ticks" value.
      */
-    getEndTime: function() {
-      if (!this.isInactive_) {
-        return timeutil.getCurrentTime();
-      } else {
-        var endTicks = this.entries_[this.entries_.length - 1].time;
-        return timeutil.convertTimeTicksToTime(endTicks);
-      }
+    getEndTicks: function() {
+      if (!this.isInactive_)
+        return timeutil.getCurrentTimeTicks();
+      return this.entries_[this.entries_.length - 1].time;
     },
 
     /**
@@ -316,8 +316,8 @@ var SourceEntry = (function() {
      * last event.
      */
     getDuration: function() {
-      var startTime = this.getStartTime();
-      var endTime = this.getEndTime();
+      var startTime = this.getStartTicks();
+      var endTime = this.getEndTicks();
       return endTime - startTime;
     },
 
@@ -326,11 +326,23 @@ var SourceEntry = (function() {
      * of |parent|.
      */
     printAsText: function(parent) {
-      // The date will be undefined if not viewing a loaded log file.
-      printLogEntriesAsText(this.entries_, parent,
-                            SourceTracker.getInstance().getPrivacyStripping(),
-                            Constants.clientInfo.numericDate);
-    }
+      var tablePrinter = this.createTablePrinter();
+
+      // Format the table for fixed-width text.
+      tablePrinter.toText(0, parent);
+    },
+
+    /**
+     * Creates a table printer for the SourceEntry.
+     */
+    createTablePrinter: function() {
+      return createLogEntryTablePrinter(
+          this.entries_,
+          SourceTracker.getInstance().getPrivacyStripping(),
+          SourceTracker.getInstance().getUseRelativeTimes() ?
+              timeutil.getBaseTime() : 0,
+          Constants.clientInfo.numericDate);
+    },
   };
 
   return SourceEntry;

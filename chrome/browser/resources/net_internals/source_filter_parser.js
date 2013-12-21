@@ -204,11 +204,8 @@ var SourceFilterParser = (function() {
       if (description.indexOf(text) != -1 || type.indexOf(text) != -1) {
         match = true;
       } else {
-        if (!tablePrinter) {
-          tablePrinter = createLogEntryTablePrinter(
-              sourceEntry.getLogEntries(),
-              SourceTracker.getInstance().getPrivacyStripping());
-        }
+        if (!tablePrinter)
+          tablePrinter = sourceEntry.createTablePrinter();
         match = tablePrinter.search(text);
       }
       if (negated)

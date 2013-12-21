@@ -133,9 +133,16 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   function runTestCase(testCase) {
     div.innerHTML = '';
     timeutil.setTimeTickOffset(testCase.tickOffset);
-    printLogEntriesAsText(testCase.logEntries, div,
-                          testCase.privacyStripping,
-                          testCase.logCreationTime);
+
+    var baseTime = 0;
+    if (typeof testCase.baseTimeTicks != 'undefined')
+      baseTime = timeutil.convertTimeTicksToTime(testCase.baseTimeTicks);
+
+    var tablePrinter =
+        createLogEntryTablePrinter(testCase.logEntries,
+                                   testCase.privacyStripping,
+                                   baseTime, testCase.logCreationTime);
+    tablePrinter.toText(0, div);
 
     // Strip any trailing newlines, since the whitespace when using innerText
     // can be a bit unpredictable.
@@ -166,6 +173,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   runTestCase(painterTestMissingCustomParameter());
   runTestCase(painterTestSSLVersionFallback());
   runTestCase(painterTestInProgressURLRequest());
+  runTestCase(painterTestBaseTime());
 
   testDone();
 });
@@ -2009,6 +2017,54 @@ function painterTestInProgressURLRequest() {
 't=1338864774145 [st=151]   -HTTP_STREAM_REQUEST\n' +
 't=1338864774151 [st=157]   -URL_REQUEST_START_JOB\n' +
 't=1338864774369 [st=375] -REQUEST_ALIVE';
+
+  return testCase;
+}
+
+/**
+  * Tests the formatting using a non-zero base time.  Also has no final event,
+  * to make sure logCreationTime is handled correctly.
+  */
+function painterTestBaseTime() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098446';
+  testCase.logCreationTime = 1338864774783;
+  testCase.baseTimeTicks = '953675546';
+
+  testCase.logEntries = [
+    {
+      'phase': EventPhase.PHASE_BEGIN,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675548',
+      'type': EventType.REQUEST_ALIVE
+    },
+    {
+      'phase': EventPhase.PHASE_BEGIN,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675698',
+      'type': EventType.HTTP_STREAM_REQUEST
+    },
+    {
+      'phase': EventPhase.PHASE_END,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675699',
+      'type': EventType.HTTP_STREAM_REQUEST
+    },
+  ];
+
+  testCase.expectedText =
+'t=  2 [st=  0] +REQUEST_ALIVE  [dt=789+]\n' +
+'t=152 [st=150]    HTTP_STREAM_REQUEST  [dt=1]\n' +
+'t=791 [st=789]';
 
   return testCase;
 }

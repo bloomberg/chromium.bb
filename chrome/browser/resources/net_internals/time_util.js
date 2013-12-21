@@ -12,6 +12,11 @@ var timeutil = (function() {
   var timeTickOffset = 0;
 
   /**
+   * The time of the first observed event.  Used for more friendly time display.
+   */
+  var baseTime = 0;
+
+  /**
    * Sets the offset used to convert tick counts to dates.
    */
   function setTimeTickOffset(offset) {
@@ -50,6 +55,61 @@ var timeutil = (function() {
    */
   function getCurrentTime() {
     return Date.now();
+  }
+
+  /**
+   * Returns the curent time in time ticks.
+   *
+   * @return {number} Current time, in TimeTicks.
+   */
+  function getCurrentTimeTicks() {
+    return getCurrentTime() - timeTickOffset;
+  }
+
+  /**
+   * Sets the base time more friendly display.
+   *
+   * @param {string} firstEventTime The time of the first event, as a Javascript
+   *     numeric time.  Other times can be displayed relative to this time.
+   */
+  function setBaseTime(firstEventTime) {
+    baseTime = firstEventTime;
+  }
+
+  /**
+   * Sets the base time more friendly display.
+   *
+   * @return {number} Time set by setBaseTime, or 0 if no time has been set.
+   */
+  function getBaseTime() {
+    return baseTime;
+  }
+
+  /**
+   * Clears the base time, so isBaseTimeSet() returns 0.
+   */
+  function clearBaseTime() {
+    baseTime = 0;
+  }
+
+  /**
+   * Returns true if the base time has been initialized.
+   *
+   * @return {bool} True if the base time is set.
+   */
+  function isBaseTimeSet() {
+    return baseTime != 0;
+  }
+
+  /**
+   * Takes in a "time ticks" and returns it as a time since the base time, in
+   * milliseconds.
+   *
+   * @param {string} timeTicks A time represented in "time ticks".
+   * @return {number} Milliseconds since the base time.
+   */
+  function convertTimeTicksToRelativeTime(timeTicks) {
+    return convertTimeTicksToTime(timeTicks) - baseTime;
   }
 
   /**
@@ -102,7 +162,13 @@ var timeutil = (function() {
     convertTimeTicksToTime: convertTimeTicksToTime,
     convertTimeTicksToDate: convertTimeTicksToDate,
     getCurrentTime: getCurrentTime,
+    getCurrentTimeTicks: getCurrentTimeTicks,
+    setBaseTime: setBaseTime,
+    getBaseTime: getBaseTime,
+    clearBaseTime: clearBaseTime,
+    isBaseTimeSet: isBaseTimeSet,
+    convertTimeTicksToRelativeTime: convertTimeTicksToRelativeTime,
     addNodeWithDate: addNodeWithDate,
-    dateToString: dateToString
+    dateToString: dateToString,
   };
 })();

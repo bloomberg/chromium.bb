@@ -44,6 +44,7 @@ var EventsTracker = (function() {
      * Deletes all the tracked events, and notifies any observers.
      */
     deleteAllLogEntries: function() {
+      timeutil.clearBaseTime();
       this.capturedEvents_ = [];
       for (var i = 0; i < this.observers_.length; ++i)
         this.observers_[i].onAllLogEntriesDeleted();
@@ -59,6 +60,14 @@ var EventsTracker = (function() {
       // events for those requests.
       if (Constants == null)
         return;
+      // This can happen when loading logs with no events.
+      if (!logEntries.length)
+        return;
+
+      if (!timeutil.isBaseTimeSet()) {
+        timeutil.setBaseTime(
+            timeutil.convertTimeTicksToTime(logEntries[0].time));
+      }
 
       this.capturedEvents_ = this.capturedEvents_.concat(logEntries);
       for (var i = 0; i < this.observers_.length; ++i) {

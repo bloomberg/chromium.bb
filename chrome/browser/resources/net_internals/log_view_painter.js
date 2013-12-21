@@ -4,7 +4,6 @@
 
 // TODO(eroman): put these methods into a namespace.
 
-var printLogEntriesAsText;
 var createLogEntryTablePrinter;
 var proxySettingsToString;
 var stripCookiesAndLoginInfo;
@@ -22,22 +21,11 @@ function canCollapseBeginWithEnd(beginEntry) {
 }
 
 /**
- * Adds a child pre element to the end of |parent|, and writes the
- * formatted contents of |logEntries| to it.
- */
-printLogEntriesAsText = function(logEntries, parent, privacyStripping,
-                                 logCreationTime) {
-  var tablePrinter = createLogEntryTablePrinter(logEntries, privacyStripping,
-                                                logCreationTime);
-
-  // Format the table for fixed-width text.
-  tablePrinter.toText(0, parent);
-}
-/**
- * Creates a TablePrinter for use by the above two functions.
+ * Creates a TablePrinter for use by the above two functions.  baseTime is
+ * the time relative to which other times are displayed.
  */
 createLogEntryTablePrinter = function(logEntries, privacyStripping,
-                                      logCreationTime) {
+                                      baseTime, logCreationTime) {
   var entries = LogGroupEntry.createArrayFrom(logEntries);
   var tablePrinter = new TablePrinter();
   var parameterOutputter = new ParameterOutputter(tablePrinter);
@@ -54,7 +42,7 @@ createLogEntryTablePrinter = function(logEntries, privacyStripping,
     // both have extra parameters.
     if (!entry.isEnd() || !canCollapseBeginWithEnd(entry.begin)) {
       var entryTime = timeutil.convertTimeTicksToTime(entry.orig.time);
-      addRowWithTime(tablePrinter, entryTime, startTime);
+      addRowWithTime(tablePrinter, entryTime - baseTime, startTime - baseTime);
 
       for (var j = entry.getDepth(); j > 0; --j)
         tablePrinter.addCell('  ');
@@ -92,8 +80,11 @@ createLogEntryTablePrinter = function(logEntries, privacyStripping,
   // If the last entry has a non-zero depth or is a begin event, the source is
   // still active.
   var isSourceActive = lastEntry.getDepth() != 0 || lastEntry.isBegin();
-  if (logCreationTime != undefined && isSourceActive)
-    addRowWithTime(tablePrinter, logCreationTime, startTime);
+  if (logCreationTime != undefined && isSourceActive) {
+    addRowWithTime(tablePrinter,
+                   logCreationTime - baseTime,
+                   startTime - baseTime);
+  }
 
   return tablePrinter;
 }
@@ -101,12 +92,12 @@ createLogEntryTablePrinter = function(logEntries, privacyStripping,
 /**
  * Adds a new row to the given TablePrinter, and adds five cells containing
  * information about the time an event occured.
- * Format is '[t=<UTC time in ms>] [st=<ms since the source started>]'.
+ * Format is '[t=<time of the event in ms>] [st=<ms since the source started>]'.
  * @param {TablePrinter} tablePrinter The table printer to add the cells to.
- * @param {number} eventTime The time the event occured, as a UTC time in
- *     milliseconds.
+ * @param {number} eventTime The time the event occured, in milliseconds,
+ *     relative to some base time.
  * @param {number} startTime The time the first event for the source occured,
- *     as a UTC time in milliseconds.
+ *     relative to the same base time as eventTime.
  */
 function addRowWithTime(tablePrinter, eventTime, startTime) {
   tablePrinter.addRow();

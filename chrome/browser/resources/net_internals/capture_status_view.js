@@ -73,6 +73,9 @@ var CaptureStatusView = (function() {
         g_browser.sendClearAllCache();
       } else if (action == 'flush-sockets') {
         g_browser.sendFlushSocketPools();
+      } else if (action == 'switch-time-format') {
+        var tracker = SourceTracker.getInstance();
+        tracker.setUseRelativeTimes(!tracker.getUseRelativeTimes());
       } else {
         throw Error('Unrecognized action: ' + action);
       }

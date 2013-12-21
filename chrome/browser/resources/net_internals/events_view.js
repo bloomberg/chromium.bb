@@ -150,6 +150,13 @@ var EventsView = (function() {
       this.invalidateDetailsView_();
     },
 
+    /**
+     * Updates text in the details view when time display mode is toggled.
+     */
+    onUseRelativeTimesChanged: function() {
+      this.invalidateDetailsView_();
+    },
+
     comparisonFuncWithReversing_: function(a, b) {
       var result = this.comparisonFunction_(a, b);
       if (this.doSortBackwards_)
@@ -506,7 +513,7 @@ var EventsView = (function() {
     if (source1.isInactive() && !source2.isInactive())
       return 1;
     if (source1.isInactive()) {
-      var deltaEndTime = source1.getEndTime() - source2.getEndTime();
+      var deltaEndTime = source1.getEndTicks() - source2.getEndTicks();
       if (deltaEndTime != 0) {
         // The one that ended most recently (Highest end time) should be sorted
         // first.

@@ -77,12 +77,6 @@ var WaterfallView = (function() {
      * Updates pre-existing WaterfallRows that correspond to updated sources.
      */
     onSourceEntriesUpdated: function(sourceEntries) {
-      if (this.startTime_ == null && sourceEntries.length > 0) {
-        var logEntries = sourceEntries[0].getLogEntries();
-        this.startTime_ = timeutil.convertTimeTicksToTime(logEntries[0].time);
-        // Initial scale factor.
-        this.scaleFactor_ = 0.1;
-      }
       for (var i = 0; i < sourceEntries.length; ++i) {
         var sourceEntry = sourceEntries[i];
         var id = sourceEntry.getSourceId();
@@ -113,10 +107,6 @@ var WaterfallView = (function() {
       return this.scaleFactor_;
     },
 
-    getStartTime: function() {
-      return this.startTime_;
-    },
-
     setGeometry: function(left, top, width, height) {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
       this.scrollInfoTable_();
@@ -137,8 +127,7 @@ var WaterfallView = (function() {
       this.sourceIdToRowMap_ = {};
       $(WaterfallView.BAR_TBODY_ID).innerHTML = '';
       $(WaterfallView.INFO_TBODY_ID).innerHTML = '';
-      this.startTime_ = null;
-      this.scaleFactor_ = null;
+      this.scaleFactor_ = 0.1;
     },
 
     /**
@@ -156,7 +145,7 @@ var WaterfallView = (function() {
       } else {
         for (var id in this.sourceIdToRowMap_) {
           var row = this.sourceIdToRowMap_[id];
-          var rowDuration = row.getEndTime() - this.startTime_;
+          var rowDuration = row.getEndTicks();
           if (totalDuration < rowDuration && !row.hide) {
             totalDuration = rowDuration;
           }

@@ -23,6 +23,10 @@ var SourceTracker = (function() {
     // all pages.
     this.privacyStripping_ = true;
 
+    // True when times should be displayed as milliseconds since the first
+    // event, as opposed to milliseconds since January 1, 1970.
+    this.useRelativeTimes_ = true;
+
     this.clearEntries_();
 
     EventsTracker.getInstance().addLogEntryObserver(this);
@@ -148,6 +152,26 @@ var SourceTracker = (function() {
      */
     getPrivacyStripping: function() {
       return this.privacyStripping_;
+    },
+
+    /**
+     * Sets the value of |useRelativeTimes_| and informs log observers
+     * of the change.
+     */
+    setUseRelativeTimes: function(useRelativeTimes) {
+      this.useRelativeTimes_ = useRelativeTimes;
+      for (var i = 0; i < this.sourceEntryObservers_.length; ++i) {
+        if (this.sourceEntryObservers_[i].onUseRelativeTimesChanged)
+          this.sourceEntryObservers_[i].onUseRelativeTimesChanged();
+      }
+    },
+
+    /**
+     * Returns true if times should be displayed as milliseconds since the first
+     * event.
+     */
+    getUseRelativeTimes: function() {
+      return this.useRelativeTimes_;
     },
 
     /**

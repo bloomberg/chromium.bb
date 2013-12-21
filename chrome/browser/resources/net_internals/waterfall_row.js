@@ -7,7 +7,8 @@ var WaterfallRow = (function() {
 
   /**
    * A WaterfallRow represents the row corresponding to a single SourceEntry
-   * displayed by the EventsWaterfallView.
+   * displayed by the EventsWaterfallView.  All times are relative to the
+   * "base time" (Time of first event from any source).
    *
    * @constructor
    */
@@ -49,12 +50,10 @@ var WaterfallRow = (function() {
           WaterfallRow.findUrlRequestEvents(this.sourceEntry_);
 
       // Creates the spacing in the beginning to show start time.
-      var startTime = this.parentView_.getStartTime();
-      var sourceEntryStartTime = this.getStartTime();
-      var delay = sourceEntryStartTime - startTime;
+      var sourceStartTicks = this.getStartTicks();
       var frontNode = addNode(this.rowCell_, 'div');
       frontNode.classList.add('waterfall-view-padding');
-      setNodeWidth(frontNode, delay * scale);
+      setNodeWidth(frontNode, sourceStartTicks * scale);
 
       var barCell = addNode(this.rowCell_, 'div');
       barCell.classList.add('waterfall-view-bar');
@@ -63,15 +62,17 @@ var WaterfallRow = (function() {
         barCell.classList.add('error');
       }
 
-      var currentEnd = sourceEntryStartTime;
+      var currentEnd = sourceStartTicks;
 
       for (var i = 0; i < matchingEventPairs.length; ++i) {
         var event = matchingEventPairs[i];
-        var startTicks = event.startEntry.time;
-        var endTicks = event.endEntry.time;
+        var startTicks =
+            timeutil.convertTimeTicksToRelativeTime(event.startEntry.time);
+        var endTicks =
+            timeutil.convertTimeTicksToRelativeTime(event.endEntry.time);
         event.eventType = event.startEntry.type;
-        event.startTime = timeutil.convertTimeTicksToTime(startTicks);
-        event.endTime = timeutil.convertTimeTicksToTime(endTicks);
+        event.startTime = startTicks;
+        event.endTime = endTicks;
         event.eventDuration = event.endTime - event.startTime;
 
         // Handles the spaces between events.
@@ -89,19 +90,22 @@ var WaterfallRow = (function() {
       }
 
       // Creates a bar for the part after the last event.
-      if (this.getEndTime() > currentEnd) {
-        var endDuration = (this.getEndTime() - currentEnd);
+      var endTime = this.getEndTicks();
+      if (endTime > currentEnd) {
+        var endDuration = endTime - currentEnd;
         var endNode = this.createNode_(
             barCell, endDuration, this.sourceTypeString_, 'source');
       }
     },
 
-    getStartTime: function() {
-      return this.sourceEntry_.getStartTime();
+    getStartTicks: function() {
+      return timeutil.convertTimeTicksToRelativeTime(
+                 this.sourceEntry_.getStartTicks());
     },
 
-    getEndTime: function() {
-      return this.sourceEntry_.getEndTime();
+    getEndTicks: function() {
+      return timeutil.convertTimeTicksToRelativeTime(
+                 this.sourceEntry_.getEndTicks());
     },
 
     clearPopup_: function(parentNode) {
@@ -109,8 +113,6 @@ var WaterfallRow = (function() {
     },
 
     createPopup_: function(parentNode, event, eventType, duration, mouse) {
-      var tableStart = this.parentView_.getStartTime();
-
       var newPopup = addNode(parentNode, 'div');
       newPopup.classList.add('waterfall-view-popup');
 
@@ -123,25 +125,22 @@ var WaterfallRow = (function() {
       this.createPopupItem_(
           popupList, 'Has Error', this.sourceEntry_.isError());
 
-      this.createPopupItem_(
-          popupList, 'Event Type', eventType);
+      this.createPopupItem_(popupList, 'Event Type', eventType);
 
       if (event != 'source') {
         this.createPopupItem_(
-          popupList, 'Event Duration', duration.toFixed(0) + 'ms');
+            popupList, 'Event Duration', duration.toFixed(0) + 'ms');
         this.createPopupItem_(
-            popupList, 'Event Start Time', event.startTime - tableStart + 'ms');
+            popupList, 'Event Start Time', event.startTime + 'ms');
         this.createPopupItem_(
-            popupList, 'Event End Time', event.endTime - tableStart + 'ms');
+            popupList, 'Event End Time', event.endTime + 'ms');
       }
-      this.createPopupItem_(
-            popupList, 'Source Duration',
-            this.getEndTime() - this.getStartTime() + 'ms');
-      this.createPopupItem_(
-          popupList, 'Source Start Time',
-          this.getStartTime() - tableStart + 'ms');
-      this.createPopupItem_(
-          popupList, 'Source End Time', this.getEndTime() - tableStart + 'ms');
+      this.createPopupItem_(popupList, 'Source Duration',
+                            this.getEndTicks() - this.getStartTicks() + 'ms');
+      this.createPopupItem_(popupList, 'Source Start Time',
+                            this.getStartTicks() + 'ms');
+      this.createPopupItem_(popupList, 'Source End Time',
+                            this.getEndTicks() + 'ms');
       this.createPopupItem_(
           popupList, 'Source ID', this.sourceEntry_.getSourceId());
       var urlListItem = this.createPopupItem_(
