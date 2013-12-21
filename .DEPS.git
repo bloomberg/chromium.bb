@@ -40,7 +40,7 @@ deps = {
     'src/third_party/WebKit/LayoutTests/w3c/csswg-test':
         Var('git_url') + '/external/w3c/csswg-test.git@8c415e3215a203fa3a22dbdd1799279fdf44c81e',
     'src/third_party/WebKit/LayoutTests/w3c/web-platform-tests':
-        Var('git_url') + '/external/w3c/web-platform-tests.git@df1312de13d23522bf042a0f7d7e2a2ea0d827e3',
+        Var('git_url') + '/external/w3c/web-platform-tests.git@ac4322a338be82b3d8b722917d6d3d057c0a3f6a',
     'src/third_party/angle':
         Var('git_url') + '/angle/angle.git@95fa672f26db492aee2076b0acb524149d52c68f',
     'src/third_party/bidichecker':
