@@ -133,7 +133,7 @@ gfx::Size InfoBubble::GetPreferredSize() {
   return gfx::Size(pref_width, GetHeightForWidth(pref_width));
 }
 
-void InfoBubble::OnWidgetClosing(views::Widget* widget) {
+void InfoBubble::OnWidgetDestroyed(views::Widget* widget) {
   if (widget == widget_)
     widget_ = NULL;
 }
