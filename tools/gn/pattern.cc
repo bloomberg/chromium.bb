@@ -188,6 +188,10 @@ PatternList::PatternList() {
 PatternList::~PatternList() {
 }
 
+void PatternList::Append(const Pattern& pattern) {
+  patterns_.push_back(pattern);
+}
+
 void PatternList::SetFromValue(const Value& v, Err* err) {
   patterns_.clear();
 

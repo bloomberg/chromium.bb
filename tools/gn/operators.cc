@@ -23,17 +23,20 @@ void AppendFilteredSourcesToValue(const Scope* scope,
                                   Value* dest) {
   const PatternList* filter = scope->GetSourcesAssignmentFilter();
 
-  const std::vector<Value>& source_list = source.list_value();
-
   if (source.type() == Value::STRING) {
     if (!filter || filter->is_empty() ||
         !filter->MatchesValue(source))
       dest->list_value().push_back(source);
     return;
   }
+  if (source.type() != Value::LIST) {
+    // Any non-list and non-string being added to a list can just get appended,
+    // we're not going to filter it.
+    dest->list_value().push_back(source);
+    return;
+  }
 
-  // Otherwise source is a list.
-  DCHECK(source.type() == Value::LIST);
+  const std::vector<Value>& source_list = source.list_value();
   if (!filter || filter->is_empty()) {
     // No filter, append everything.
     for (size_t i = 0; i < source_list.size(); i++)

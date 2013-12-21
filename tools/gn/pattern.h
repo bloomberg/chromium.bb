@@ -74,6 +74,8 @@ class PatternList {
 
   bool is_empty() const { return patterns_.empty(); }
 
+  void Append(const Pattern& pattern);
+
   // Initializes the pattern list from a give list of pattern strings. Sets
   // |*err| on failure.
   void SetFromValue(const Value& v, Err* err);
