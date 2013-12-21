@@ -807,7 +807,7 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PrintWebViewHelper::OnPrintForPrintPreview(
-    const DictionaryValue& job_settings) {
+    const base::DictionaryValue& job_settings) {
   DCHECK(is_preview_enabled_);
   // If still not finished with earlier print request simply ignore.
   if (prep_frame_view_)

@@ -40,7 +40,7 @@ class PaintMessageHandler
   virtual void RegisterMessages() OVERRIDE;
 
  private:
-  void DidPaint(const ListValue* args);
+  void DidPaint(const base::ListValue* args);
 
   views::Widget* widget_;
 
@@ -53,7 +53,7 @@ void PaintMessageHandler::RegisterMessages() {
       base::Bind(&PaintMessageHandler::DidPaint, base::Unretained(this)));
 }
 
-void PaintMessageHandler::DidPaint(const ListValue* args) {
+void PaintMessageHandler::DidPaint(const base::ListValue* args) {
   // Show the widget after the web content has been painted.
   widget_->Show();
 }

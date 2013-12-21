@@ -84,7 +84,7 @@ void AppWindowContents::LoadContents(int32 creator_process_id) {
 void AppWindowContents::NativeWindowChanged(
     NativeAppWindow* native_app_window) {
   base::ListValue args;
-  DictionaryValue* dictionary = new DictionaryValue();
+  base::DictionaryValue* dictionary = new base::DictionaryValue();
   args.Append(dictionary);
 
   gfx::Rect bounds = host_->GetClientBounds();

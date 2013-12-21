@@ -195,7 +195,7 @@ FilterOperations FilterOperations::Blend(const FilterOperations& from,
 }
 
 scoped_ptr<base::Value> FilterOperations::AsValue() const {
-  scoped_ptr<base::ListValue> value(new ListValue);
+  scoped_ptr<base::ListValue> value(new base::ListValue);
   for (size_t i = 0; i < operations_.size(); ++i)
     value->Append(operations_[i].AsValue().release());
   return value.PassAs<base::Value>();

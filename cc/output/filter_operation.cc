@@ -219,7 +219,7 @@ FilterOperation FilterOperation::Blend(const FilterOperation* from,
 }
 
 scoped_ptr<base::Value> FilterOperation::AsValue() const {
-  scoped_ptr<base::DictionaryValue> value(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   value->SetInteger("type", type_);
   switch (type_) {
     case FilterOperation::GRAYSCALE:
@@ -240,7 +240,7 @@ scoped_ptr<base::Value> FilterOperation::AsValue() const {
       value->SetInteger("color", drop_shadow_color_);
       break;
     case FilterOperation::COLOR_MATRIX: {
-      scoped_ptr<ListValue> matrix(new ListValue);
+      scoped_ptr<base::ListValue> matrix(new base::ListValue);
       for (size_t i = 0; i < arraysize(matrix_); ++i)
         matrix->AppendDouble(matrix_[i]);
       value->Set("matrix", matrix.release());

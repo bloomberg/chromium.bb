@@ -56,12 +56,12 @@ void AddSavedFileEntry(ExtensionPrefs* prefs,
                        const SavedFileEntry& file_entry) {
   ExtensionPrefs::ScopedDictionaryUpdate update(
       prefs, extension_id, kFileEntries);
-  DictionaryValue* file_entries = update.Get();
+  base::DictionaryValue* file_entries = update.Get();
   if (!file_entries)
     file_entries = update.Create();
   DCHECK(!file_entries->GetDictionaryWithoutPathExpansion(file_entry.id, NULL));
 
-  DictionaryValue* file_entry_dict = new DictionaryValue();
+  base::DictionaryValue* file_entry_dict = new base::DictionaryValue();
   file_entry_dict->Set(kFileEntryPath, CreateFilePathValue(file_entry.path));
   file_entry_dict->SetBoolean(kFileEntryIsDirectory, file_entry.is_directory);
   file_entry_dict->SetInteger(kFileEntrySequenceNumber,
@@ -75,9 +75,9 @@ void UpdateSavedFileEntry(ExtensionPrefs* prefs,
                           const SavedFileEntry& file_entry) {
   ExtensionPrefs::ScopedDictionaryUpdate update(
       prefs, extension_id, kFileEntries);
-  DictionaryValue* file_entries = update.Get();
+  base::DictionaryValue* file_entries = update.Get();
   DCHECK(file_entries);
-  DictionaryValue* file_entry_dict = NULL;
+  base::DictionaryValue* file_entry_dict = NULL;
   file_entries->GetDictionaryWithoutPathExpansion(file_entry.id,
                                                   &file_entry_dict);
   DCHECK(file_entry_dict);
@@ -91,7 +91,7 @@ void RemoveSavedFileEntry(ExtensionPrefs* prefs,
                           const std::string& file_entry_id) {
   ExtensionPrefs::ScopedDictionaryUpdate update(
       prefs, extension_id, kFileEntries);
-  DictionaryValue* file_entries = update.Get();
+  base::DictionaryValue* file_entries = update.Get();
   if (!file_entries)
     file_entries = update.Create();
   file_entries->RemoveWithoutPathExpansion(file_entry_id, NULL);
@@ -108,13 +108,13 @@ std::vector<SavedFileEntry> GetSavedFileEntries(
     ExtensionPrefs* prefs,
     const std::string& extension_id) {
   std::vector<SavedFileEntry> result;
-  const DictionaryValue* file_entries = NULL;
+  const base::DictionaryValue* file_entries = NULL;
   if (!prefs->ReadPrefAsDictionary(extension_id, kFileEntries, &file_entries))
     return result;
 
-  for (DictionaryValue::Iterator it(*file_entries); !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(*file_entries); !it.IsAtEnd();
        it.Advance()) {
-    const DictionaryValue* file_entry = NULL;
+    const base::DictionaryValue* file_entry = NULL;
     if (!it.value().GetAsDictionary(&file_entry))
       continue;
     const base::Value* path_value;

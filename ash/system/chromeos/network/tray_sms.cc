@@ -376,7 +376,7 @@ bool TraySms::GetLatestMessage(size_t* index,
                                std::string* text) {
   if (messages_.empty())
     return false;
-  DictionaryValue* message;
+  base::DictionaryValue* message;
   size_t message_index = messages_.GetSize() - 1;
   if (!messages_.GetDictionary(message_index, &message))
     return false;

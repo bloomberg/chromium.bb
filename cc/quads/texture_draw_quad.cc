@@ -90,7 +90,7 @@ void TextureDrawQuad::ExtendValue(base::DictionaryValue* value) const {
   value->Set("uv_top_left", MathUtil::AsValue(uv_top_left).release());
   value->Set("uv_bottom_right", MathUtil::AsValue(uv_bottom_right).release());
   value->SetInteger("background_color", background_color);
-  scoped_ptr<ListValue> vertex_opacity_value(new ListValue);
+  scoped_ptr<base::ListValue> vertex_opacity_value(new base::ListValue);
   for (size_t i = 0; i < 4; ++i)
     vertex_opacity_value->AppendDouble(vertex_opacity[i]);
   value->Set("vertex_opacity", vertex_opacity_value.release());

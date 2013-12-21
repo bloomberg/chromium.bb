@@ -12,12 +12,12 @@ AwPrefStore::AwPrefStore() {}
 AwPrefStore::~AwPrefStore() {}
 
 bool AwPrefStore::GetValue(const std::string& key,
-                                const Value** value) const {
+                           const base::Value** value) const {
   return prefs_.GetValue(key, value);
 }
 
 bool AwPrefStore::GetMutableValue(const std::string& key,
-                                       Value** value) {
+                                  base::Value** value) {
   return prefs_.GetValue(key, value);
 }
 
@@ -37,13 +37,13 @@ bool AwPrefStore::IsInitializationComplete() const {
   return true;
 }
 
-void AwPrefStore::SetValue(const std::string& key, Value* value) {
+void AwPrefStore::SetValue(const std::string& key, base::Value* value) {
   DCHECK(value);
   if (prefs_.SetValue(key, value))
       ReportValueChanged(key);
 }
 
-void AwPrefStore::SetValueSilently(const std::string& key, Value* value) {
+void AwPrefStore::SetValueSilently(const std::string& key, base::Value* value) {
   prefs_.SetValue(key, value);
 }
 
