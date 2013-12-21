@@ -536,6 +536,7 @@ const char kNotificationWelcomeLearnMoreURL[] =
 const char* const kChromeHostURLs[] = {
   kChromeUICacheHost,
   kChromeUIChromeURLsHost,
+  kChromeUIComponentsHost,
   kChromeUICrashesHost,
   kChromeUICreditsHost,
 #if defined(ENABLE_MDNS)
@@ -575,7 +576,6 @@ const char* const kChromeHostURLs[] = {
   kChromeUIFlashHost,
   kChromeUIInspectHost,
   kChromeUIPluginsHost,
-  kChromeUIComponentsHost,
   kChromeUISettingsHost,
 #endif
 #if defined(OS_WIN)
