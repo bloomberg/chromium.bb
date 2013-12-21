@@ -2132,10 +2132,15 @@ def CMDtry(parser, args):
         '\nWARNING Mismatch between local config and server. Did a previous '
         'upload fail?\ngit-cl try always uses latest patchset from rietveld. '
         'Continuing using\npatchset %s.\n' % patchset)
-
-  cl.RpcServer().trigger_try_jobs(
-      cl.GetIssue(), patchset, options.name, options.clobber, options.revision,
-      builders_and_tests)
+  try:
+    cl.RpcServer().trigger_try_jobs(
+        cl.GetIssue(), patchset, options.name, options.clobber,
+        options.revision, builders_and_tests)
+  except urllib2.HTTPError, e:
+    if e.code == 404:
+      print('404 from rietveld; '
+            'did you mean to use "git try" instead of "git cl try"?')
+      return 1
   print('Tried jobs on:')
   length = max(len(builder) for builder in builders_and_tests)
   for builder in sorted(builders_and_tests):
