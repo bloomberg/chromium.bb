@@ -1016,6 +1016,7 @@ chrome_info_no_pdf = chrome_info.derive(
 )
 
 chrome_perf = chrome_info.derive(
+  description='Chrome Performance test bot',
   vm_tests=None,
   upload_hw_test_artifacts=True,
   hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
@@ -1158,7 +1159,7 @@ incremental.add_config('x86-generic-asan',
 chromium_info.add_config('x86-generic-tot-asan-informational',
   asan,
   boards=['x86-generic'],
-  description='Build with Address Sanitizer (Clang) on TOT',
+  description='Full build with Address Sanitizer (Clang) on TOT',
 )
 
 incremental.add_config('amd64-generic-asan',
@@ -1254,7 +1255,8 @@ internal_pre_cq.add_group(constants.PRE_CQ_BUILDER_NAME,
 internal_paladin.add_config('pre-cq-launcher',
   boards=[],
   build_type=constants.PRE_CQ_LAUNCHER_TYPE,
-  description='Launcher for Pre-CQ builders.',
+  description='Launcher for Pre-CQ builders',
+  trybot_list=False,
 )
 
 internal_paladin.add_config(constants.BRANCH_UTIL_CONFIG,
@@ -1266,7 +1268,7 @@ internal_paladin.add_config(constants.BRANCH_UTIL_CONFIG,
   # for all stages, rather than the chromite in the branch buildroot.
   postsync_reexec=False,
   build_type=constants.CREATE_BRANCH_TYPE,
-  description='Used for creating/deleting branches.',
+  description='Used for creating/deleting branches (TPMs only)',
 )
 
 # Internal incremental builders don't use official chrome because we want
@@ -1309,10 +1311,12 @@ internal_paladin.add_config('master-paladin',
   boards=[],
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
+  description='Commit Queue master (all others are slaves)',
   paladin_builder_name='Commit Queue Master',
   health_threshold=3,
   health_alert_recipients=['chromeos-build-alerts@google.com'],
-  sanity_check_slaves=['link-tot-paladin']
+  sanity_check_slaves=['link-tot-paladin'],
+  trybot_list=False,
 )
 
 ### Other paladins (CQ builders).
