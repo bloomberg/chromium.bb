@@ -34,6 +34,7 @@ class ScopedChangeDirectory(object):
   def __enter__(self):
     self.old_path = os.getcwd()
     os.chdir(self.path)
+    return self
 
   def __exit__(self, exc_type, exc_value, traceback):
     os.chdir(self.old_path)
@@ -119,7 +120,7 @@ def download_build_install(parsed_arguments):
   if not os.path.exists(library_directory):
     os.makedirs(library_directory)
 
-  with ScopedChangeDirectory(library_directory):
+  with ScopedChangeDirectory(library_directory) as cd_library:
     shell_call('apt-get source %s' % parsed_arguments.library,
         parsed_arguments.verbose)
     # There should be exactly one subdirectory after downloading a package.
@@ -128,7 +129,10 @@ def download_build_install(parsed_arguments):
       raise (Exception('There was not one directory after downloading '
           'a package %s' % parsed_arguments.library))
     with ScopedChangeDirectory(subdirectories[0]):
-      # Now we are in the package directory.
+      # Here we are in the package directory.
+      if parsed_arguments.run_before_build:
+        shell_call('%s/%s' % (os.path.relpath(cd_library.old_path),
+            parsed_arguments.run_before_build), parsed_arguments.verbose)
       configure_command = './configure %s --prefix=%s' % (
           parsed_arguments.custom_configure_flags, install_prefix)
       try:
@@ -169,6 +173,9 @@ def main():
   argument_parser.add_argument('--check-build-deps', action='store_true')
   argument_parser.add_argument('--c-compiler')
   argument_parser.add_argument('--cxx-compiler')
+  # This should be a shell script to run before building specific libraries
+  # e.g. extracting archives with sources, patching makefiles, etc.
+  argument_parser.add_argument('--run-before-build', default='')
 
   # Ignore all empty arguments because in several cases gyp passes them to the
   # script, but ArgumentParser treats them as positional arguments instead of
