@@ -10,7 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -23,17 +23,17 @@ void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   int render_process_id;
-  int render_view_id;
-  if (!ResourceRequestInfo::ForRequest(request_)->GetAssociatedRenderView(
-          &render_process_id,  &render_view_id)) {
+  int render_frame_id;
+  if (!ResourceRequestInfo::ForRequest(request_)->GetAssociatedRenderFrame(
+          &render_process_id,  &render_frame_id)) {
     NOTREACHED();
   }
 
   WebContents* web_contents = NULL;
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(render_process_id, render_view_id);
-  if (render_view_host)
-    web_contents = WebContents::FromRenderViewHost(render_view_host);
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (render_frame_host)
+    web_contents = WebContents::FromRenderFrameHost(render_frame_host);
   DCHECK(web_contents);
 
   gfx::NativeWindow parent_window =
