@@ -60,7 +60,7 @@ void SpellCheckClient::checkTextOfParagraph(const WebString& text, WebTextChecki
     vector<WebTextCheckingResult> results;
     if (mask & WebTextCheckingTypeSpelling) {
         size_t offset = 0;
-        string16 data = text;
+        base::string16 data = text;
         while (offset < data.length()) {
             int misspelledPosition = 0;
             int misspelledLength = 0;
@@ -109,7 +109,7 @@ void SpellCheckClient::finishLastTextCheck()
         return;
     vector<WebTextCheckingResult> results;
     int offset = 0;
-    string16 text = m_lastRequestedTextCheckString;
+    base::string16 text = m_lastRequestedTextCheckString;
     if (!m_spellcheck.isMultiWordMisspelling(WebString(text), &results)) {
         while (text.length()) {
             int misspelledPosition = 0;

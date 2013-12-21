@@ -42,9 +42,9 @@ bool MockSpellCheck::spellCheckWord(const WebString& text, int* misspelledOffset
     *misspelledOffset = 0;
     *misspelledLength = 0;
 
-    // Convert to a string16 because we store string16 instances in
+    // Convert to a base::string16 because we store base::string16 instances in
     // m_misspelledWords and WebString has no find().
-    string16 stringText = text;
+    base::string16 stringText = text;
     int skippedLength = 0;
 
     while (!stringText.empty()) {
@@ -55,13 +55,13 @@ bool MockSpellCheck::spellCheckWord(const WebString& text, int* misspelledOffset
         // (This is a simple version of our SpellCheckWordIterator class.)
         // If the given string doesn't include any ASCII characters, we can treat the
         // string as valid one.
-        string16::iterator firstChar = find_if(stringText.begin(), stringText.end(), isASCIIAlpha);
+        base::string16::iterator firstChar = find_if(stringText.begin(), stringText.end(), isASCIIAlpha);
         if (firstChar == stringText.end())
             return true;
         int wordOffset = distance(stringText.begin(), firstChar);
         int maxWordLength = static_cast<int>(stringText.length()) - wordOffset;
         int wordLength;
-        string16 word;
+        base::string16 word;
 
         // Look up our misspelled-word table to check if the extracted word is a
         // known misspelled word, and return the offset and the length of the
@@ -81,7 +81,7 @@ bool MockSpellCheck::spellCheckWord(const WebString& text, int* misspelledOffset
         if (*misspelledLength > 0)
             break;
 
-        string16::iterator lastChar = find_if(stringText.begin() + wordOffset, stringText.end(), isNotASCIIAlpha);
+        base::string16::iterator lastChar = find_if(stringText.begin() + wordOffset, stringText.end(), isNotASCIIAlpha);
         if (lastChar == stringText.end())
             wordLength = static_cast<int>(stringText.length()) - wordOffset;
         else
@@ -170,7 +170,7 @@ bool MockSpellCheck::initializeIfNeeded()
 
     m_misspelledWords.clear();
     for (size_t i = 0; i < arraysize(misspelledWords); ++i)
-        m_misspelledWords.push_back(string16(misspelledWords[i], misspelledWords[i] + strlen(misspelledWords[i])));
+        m_misspelledWords.push_back(base::string16(misspelledWords[i], misspelledWords[i] + strlen(misspelledWords[i])));
 
     // Mark as initialized to prevent this object from being initialized twice
     // or more.

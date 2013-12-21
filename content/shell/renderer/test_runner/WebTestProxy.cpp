@@ -297,8 +297,8 @@ struct ToLower {
 // Returns True if item1 < item2.
 bool HistoryItemCompareLess(const WebHistoryItem& item1, const WebHistoryItem& item2)
 {
-    string16 target1 = item1.target();
-    string16 target2 = item2.target();
+    base::string16 target1 = item1.target();
+    base::string16 target2 = item2.target();
     std::transform(target1.begin(), target1.end(), target1.begin(), ToLower());
     std::transform(target2.begin(), target2.end(), target2.begin(), ToLower());
     return target1 < target2;

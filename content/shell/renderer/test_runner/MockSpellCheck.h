@@ -56,7 +56,7 @@ private:
     bool initializeIfNeeded();
 
     // A table that consists of misspelled words.
-    std::vector<string16> m_misspelledWords;
+    std::vector<base::string16> m_misspelledWords;
 
     // A flag representing whether or not this object is initialized.
     bool m_initialized;

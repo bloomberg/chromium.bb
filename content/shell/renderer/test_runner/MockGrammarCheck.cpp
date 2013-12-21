@@ -19,7 +19,7 @@ namespace WebTestRunner {
 bool MockGrammarCheck::checkGrammarOfString(const WebString& text, vector<WebTextCheckingResult>* results)
 {
     BLINK_ASSERT(results);
-    string16 stringText = text;
+    base::string16 stringText = text;
     if (find_if(stringText.begin(), stringText.end(), isASCIIAlpha) == stringText.end())
         return true;
 
@@ -46,8 +46,8 @@ bool MockGrammarCheck::checkGrammarOfString(const WebString& text, vector<WebTex
     };
     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(grammarErrors); ++i) {
         size_t offset = 0;
-        string16 error(grammarErrors[i].text, grammarErrors[i].text + strlen(grammarErrors[i].text));
-        while ((offset = stringText.find(error, offset)) != string16::npos) {
+        base::string16 error(grammarErrors[i].text, grammarErrors[i].text + strlen(grammarErrors[i].text));
+        while ((offset = stringText.find(error, offset)) != base::string16::npos) {
             results->push_back(WebTextCheckingResult(WebTextDecorationTypeGrammar, offset + grammarErrors[i].location, grammarErrors[i].length));
             offset += grammarErrors[i].length;
         }
