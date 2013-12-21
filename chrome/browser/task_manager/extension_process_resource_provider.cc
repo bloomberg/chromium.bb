@@ -315,7 +315,7 @@ void ExtensionProcessResourceProvider::AddToTaskManager(
 
   ExtensionProcessResource* resource =
       new ExtensionProcessResource(render_view_host);
-  DCHECK(resources_.find(render_view_host) == resources_.end());
+  CHECK(resources_.find(render_view_host) == resources_.end());
   resources_[render_view_host] = resource;
   task_manager_->AddResource(resource);
 }
