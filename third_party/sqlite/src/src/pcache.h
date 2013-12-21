@@ -137,7 +137,9 @@ void sqlite3PcacheIterateDirty(PCache *pCache, void (*xIter)(PgHdr *));
 ** of the suggested cache-sizes.
 */
 void sqlite3PcacheSetCachesize(PCache *, int);
+#ifdef SQLITE_TEST
 int sqlite3PcacheGetCachesize(PCache *);
+#endif
 
 #ifdef SQLITE_ENABLE_MEMORY_MANAGEMENT
 /* Try to return memory used by the pcache module to the main memory heap */

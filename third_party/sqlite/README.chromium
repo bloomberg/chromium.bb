@@ -59,7 +59,6 @@ applied to a vanilla SQLite (of the version we currently have) to get, in
 principle, exactly what is checked in:
 
 misc.patch
-preload-cache.patch
 safe-tolower.patch
 fts2.patch
 fts3.patch
@@ -81,7 +80,6 @@ So, e.g. you could do this to apply all our patches to vanilla SQLite:
 
 cd sqlite-$LATEST
 patch -p0 < ../sqlite/misc.patch
-patch -p0 < ../sqlite/preload-cache.patch
 patch -p0 < ../sqlite/fts2.patch
 patch -p0 < ../sqlite/fts3.patch
 patch -p0 < ../sqlite/fts3_85522.patch
@@ -167,11 +165,6 @@ Changes from Chrome:
    our ICU data.  shell.c has been modifed to call into these files.
  - fts2_icu.c and fts3_icu.c have a critical bug. U8_NEXT is used over
    a UTF-16 string. It's rep$ by U16_NEXT (jungshik)
- - Added a new function sqlite3_preload we use to prime the database cache. It
-   allows much faster performance by reading the file in one contiguous
-   operation rather than bringing it in organically, which involves a lot of
-   seeking. This change also required sqlite3PcacheGetCachesize to be compiled
-   even outside SQLITE_TEST.
  - Added a new function chromium_sqlite3_initialize_win_sqlite3_file()
    at the end of os_win.c. It allows the Windows-specific Chromium VFS
    to reuse most of the win32 SQLite VFS.

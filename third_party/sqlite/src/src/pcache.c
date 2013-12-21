@@ -553,12 +553,14 @@ int sqlite3PcachePagecount(PCache *pCache){
   return nPage;
 }
 
+#ifdef SQLITE_TEST
 /*
 ** Get the suggested cache-size value.
 */
 int sqlite3PcacheGetCachesize(PCache *pCache){
   return pCache->nMax;
 }
+#endif
 
 /*
 ** Set the suggested cache-size value.

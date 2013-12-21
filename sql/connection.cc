@@ -125,6 +125,22 @@ void InitializeSqlite() {
   sqlite3_initialize();
 }
 
+// Helper to get the sqlite3_file* associated with the "main" database.
+int GetSqlite3File(sqlite3* db, sqlite3_file** file) {
+  *file = NULL;
+  int rc = sqlite3_file_control(db, NULL, SQLITE_FCNTL_FILE_POINTER, file);
+  if (rc != SQLITE_OK)
+    return rc;
+
+  // TODO(shess): NULL in file->pMethods has been observed on android_dbg
+  // content_unittests, even though it should not be possible.
+  // http://crbug.com/329982
+  if (!*file || !(*file)->pMethods)
+    return SQLITE_ERROR;
+
+  return rc;
+}
+
 }  // namespace
 
 namespace sql {
@@ -302,20 +318,33 @@ void Connection::Preload() {
     return;
   }
 
-  // A statement must be open for the preload command to work. If the meta
-  // table doesn't exist, it probably means this is a new database and there
-  // is nothing to preload (so it's OK we do nothing).
-  if (!DoesTableExist("meta"))
-    return;
-  Statement dummy(GetUniqueStatement("SELECT * FROM meta"));
-  if (!dummy.Step())
+  // Use local settings if provided, otherwise use documented defaults.  The
+  // actual results could be fetching via PRAGMA calls.
+  const int page_size = page_size_ ? page_size_ : 1024;
+  sqlite3_int64 preload_size = page_size * (cache_size_ ? cache_size_ : 2000);
+  if (preload_size < 1)
     return;
 
-#if !defined(USE_SYSTEM_SQLITE)
-  // This function is only defined in Chromium's version of sqlite.
-  // Do not call it when using system sqlite.
-  sqlite3_preload(db_);
-#endif
+  sqlite3_file* file = NULL;
+  int rc = GetSqlite3File(db_, &file);
+  if (rc != SQLITE_OK)
+    return;
+
+  sqlite3_int64 file_size = 0;
+  rc = file->pMethods->xFileSize(file, &file_size);
+  if (rc != SQLITE_OK)
+    return;
+
+  // Don't preload more than the file contains.
+  if (preload_size > file_size)
+    preload_size = file_size;
+
+  scoped_ptr<char[]> buf(new char[page_size]);
+  for (sqlite3_int64 pos = 0; pos < file_size; pos += page_size) {
+    rc = file->pMethods->xRead(file, buf.get(), page_size, pos);
+    if (rc != SQLITE_OK)
+      return;
+  }
 }
 
 void Connection::TrimMemory(bool aggressively) {
@@ -429,12 +458,9 @@ bool Connection::Raze() {
   // the get-go?
   if (rc == SQLITE_NOTADB || rc == SQLITE_IOERR_SHORT_READ) {
     sqlite3_file* file = NULL;
-    rc = sqlite3_file_control(db_, "main", SQLITE_FCNTL_FILE_POINTER, &file);
+    rc = GetSqlite3File(db_, &file);
     if (rc != SQLITE_OK) {
       DLOG(FATAL) << "Failure getting file handle.";
-      return false;
-    } else if (!file) {
-      DLOG(FATAL) << "File handle is empty.";
       return false;
     }
 
