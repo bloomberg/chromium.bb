@@ -19,6 +19,7 @@ void DesktopMediaPickerCocoa::Show(gfx::NativeWindow context,
                                    const DoneCallback& done_callback) {
   controller_.reset(
       [[DesktopMediaPickerController alloc] initWithMediaList:media_list.Pass()
+                                                       parent:parent
                                                      callback:done_callback
                                                       appName:app_name]);
   [controller_ showWindow:nil];

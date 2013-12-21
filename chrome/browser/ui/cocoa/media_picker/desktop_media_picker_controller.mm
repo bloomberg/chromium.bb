@@ -55,6 +55,7 @@ const int kExcessButtonPadding = 6;
 @implementation DesktopMediaPickerController
 
 - (id)initWithMediaList:(scoped_ptr<DesktopMediaList>)media_list
+                 parent:(NSWindow*)parent
                callback:(const DesktopMediaPicker::DoneCallback&)callback
                 appName:(const base::string16&)appName {
   const NSUInteger kStyleMask =
@@ -66,6 +67,7 @@ const int kExcessButtonPadding = 6;
                                       defer:NO]);
 
   if ((self = [super initWithWindow:window])) {
+    [parent addChildWindow:window ordered:NSWindowAbove];
     [window setDelegate:self];
     [self initializeContentsWithAppName:appName];
     media_list_ = media_list.Pass();
