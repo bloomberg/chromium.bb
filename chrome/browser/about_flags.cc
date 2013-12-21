@@ -445,15 +445,6 @@ const Experiment kExperiments[] = {
          switches::kEnableUniversalAcceleratedOverflowScroll,
          switches::kDisableUniversalAcceleratedOverflowScroll)
   },
-  {
-    "enable-layer-squashing",
-    IDS_FLAGS_LAYER_SQUASHING_NAME,
-    IDS_FLAGS_LAYER_SQUASHING_DESCRIPTION,
-    kOsAll,
-    ENABLE_DISABLE_VALUE_TYPE(
-        switches::kEnableLayerSquashing,
-        switches::kDisableLayerSquashing)
-  },
 #if defined(OS_WIN)
   {
     "enable-direct-write",

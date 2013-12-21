@@ -5582,13 +5582,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FORCE_UNIVERSAL_ACCELERATED_OVERFLOW_SCROLL_MODE_DESCRIPTION" desc="Description of the 'Universal accelerated overflow scroll mode' lab.">
         Puts scrolling content in composited layers, even in those cases where promoting the overflow scrolling element to a stacking context and a containing block would have broken stacking or clipping.
       </message>
-      <message name="IDS_FLAGS_LAYER_SQUASHING_NAME" desc="Name of the 'Layer squashing' lab.">
-        Layer squashing
-      </message>
-      <message name="IDS_FLAGS_LAYER_SQUASHING_DESCRIPTION" desc="Description of the 'layer squashing' lab.">
-        Layers that overlap other composited content need to be composited as well, to ensure correct paint order. This feature enables Blink to paint multiple RenderLayer
-        subtrees into one composited layer so that we may be able to avoid unnecessarily large number of composited layers.
-      </message>
       <message name="IDS_FLAGS_ENABLE_DIRECT_WRITE_NAME" desc="Name of the 'Enable DirectWrite' lab.">
         Enable DirectWrite
       </message>
