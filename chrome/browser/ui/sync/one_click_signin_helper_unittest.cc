@@ -51,6 +51,15 @@ using ::testing::Return;
 
 namespace {
 
+// Explicit URLs are sign in URLs created by chrome for specific sign in access
+// points.  Implicit URLs are those to sign for some Google service, like gmail
+// or drive.  In former case, with a valid URL, we don't want to offer the
+// interstitial.  In all other cases we do.
+
+const char kImplicitURLString[] =
+    "https://accounts.google.com/ServiceLogin"
+    "?service=foo&continue=http://foo.google.com";
+
 class SigninManagerMock : public FakeSigninManager {
  public:
   explicit SigninManagerMock(Profile* profile) : FakeSigninManager(profile) {
@@ -739,20 +748,20 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThread) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadIncognito) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(true));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoIOData) {
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, NULL));
+                valid_gaia_url_, std::string(), &request_, NULL));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadBadURL) {
@@ -760,12 +769,52 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadBadURL) {
   EXPECT_EQ(
       OneClickSigninHelper::IGNORE_REQUEST,
       OneClickSigninHelper::CanOfferOnIOThreadImpl(
-          GURL("https://foo.com/"), &request_, io_data.get()));
+          GURL("https://foo.com/"), std::string(), &request_, io_data.get()));
   EXPECT_EQ(OneClickSigninHelper::IGNORE_REQUEST,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
                 GURL("http://accounts.google.com/"),
+                std::string(),
                 &request_,
                 io_data.get()));
+}
+
+TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadReferrer) {
+  scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
+  std::string continue_url(signin::GetPromoURL(
+      signin::SOURCE_START_PAGE, false).spec());
+
+  EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThreadImpl(
+                valid_gaia_url_, continue_url, &request_, io_data.get()));
+
+  EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThreadImpl(
+                valid_gaia_url_, kImplicitURLString, &request_, io_data.get()));
+
+  std::string bad_url_1 = continue_url;
+  const std::string service_name = "chromiumsync";
+  bad_url_1.replace(bad_url_1.find(service_name), service_name.length(),
+                    "foo");
+
+  EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThreadImpl(
+                valid_gaia_url_, bad_url_1, &request_, io_data.get()));
+
+  std::string bad_url_2 = continue_url;
+  const std::string source_num = "%3D0";
+  bad_url_2.replace(bad_url_1.find(source_num), source_num.length(), "%3D10");
+
+  EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThreadImpl(
+                valid_gaia_url_, bad_url_2, &request_, io_data.get()));
+
+  std::string bad_url_3 = continue_url;
+  const std::string source = "source%3D0";
+  bad_url_3.erase(bad_url_1.find(source), source.length());
+
+  EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
+            OneClickSigninHelper::CanOfferOnIOThreadImpl(
+                valid_gaia_url_, bad_url_3, &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabled) {
@@ -773,7 +822,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabled) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadSignedIn) {
@@ -783,7 +832,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadSignedIn) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailNotAllowed) {
@@ -791,7 +840,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailNotAllowed) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_,  &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
@@ -804,7 +853,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadWithRejectedEmail) {
@@ -812,7 +861,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadWithRejectedEmail) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoSigninCookies) {
@@ -820,14 +869,14 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadNoSigninCookies) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 }
 
 TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 
   // Simulate a policy disabling signin by writing kSigninAllowed directly.
   // We should not offer to sign in the browser.
@@ -835,7 +884,7 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
       prefs::kSigninAllowed, base::Value::CreateBooleanValue(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 
   // Reset the preference.
   profile()->GetTestingPrefService()->SetManagedPref(
@@ -847,5 +896,5 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadDisabledByPolicy) {
       prefs::kSyncManaged, base::Value::CreateBooleanValue(true));
   EXPECT_EQ(OneClickSigninHelper::CAN_OFFER,
             OneClickSigninHelper::CanOfferOnIOThreadImpl(
-                valid_gaia_url_, &request_, io_data.get()));
+                valid_gaia_url_, std::string(), &request_, io_data.get()));
 }

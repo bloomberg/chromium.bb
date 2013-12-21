@@ -14822,11 +14822,11 @@ Do you accept?
     <message name="IDS_FLAGS_ENABLE_NEW_PROFILE_MANAGEMENT_DESCRIPTION" desc="Description for the flag to enable the new profile management">
       Enables the new profile management system, including profile sign-out and the new avatar menu UI.
     </message>
-    <message name="IDS_FLAGS_ENABLE_WEB_BASED_SIGNIN_NAME" desc="Title for the flag to enable web-based signin flows.">
-      Enable pure web-based signin flows
+    <message name="IDS_FLAGS_ENABLE_INLINE_SIGNIN_NAME" desc="Title for the flag to enable inline signin flows.">
+      Enable inline signin flows
     </message>
-    <message name="IDS_FLAGS_ENABLE_WEB_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag to enable web-based signin flows">
-      When enabled, will use a pure web-based sign in flow on first run/NTP/wrench menu/settings page. Otherwise use a native flow with embedded webview.
+    <message name="IDS_FLAGS_ENABLE_INLINE_SIGNIN_DESCRIPTION" desc="Description for the flag to enable inline signin flows">
+      Enables inline sign flows, still using the existing full-page template for Google signin.
     </message>
     <message name="IDS_FLAGS_ENABLE_GOOGLE_PROFILE_INFO_NAME" desc="Title for the flag to enable the google profile information">
       Enable Google profile name and icon

@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -55,10 +56,10 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/browser_thread.h"
@@ -411,7 +412,8 @@ void StartExplicitSync(const StartSyncArgs& args,
                        content::WebContents* contents,
                        OneClickSigninSyncStarter::StartSyncMode start_mode,
                        ConfirmEmailDialogDelegate::Action action) {
-  bool enable_inline = switches::IsEnableInlineSignin();
+  bool enable_inline = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableInlineSignin);
   if (action == ConfirmEmailDialogDelegate::START_SYNC) {
     StartSync(args, start_mode);
     if (!enable_inline) {
@@ -777,12 +779,14 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
 OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThread(
     net::URLRequest* request,
     ProfileIOData* io_data) {
-  return CanOfferOnIOThreadImpl(request->url(), request, io_data);
+  return CanOfferOnIOThreadImpl(request->url(), request->referrer(),
+                                request, io_data);
 }
 
 // static
 OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
     const GURL& url,
+    const std::string& referrer,
     base::SupportsUserData* request,
     ProfileIOData* io_data) {
   if (!gaia::IsGaiaSignonRealm(url.GetOrigin()))
@@ -1165,6 +1169,8 @@ void OneClickSigninHelper::DidStartNavigationToPendingEntry(
   // clear the internal state.  This is needed to detect navigations in the
   // middle of the sign in process that may redirect back to the sign in
   // process (see crbug.com/181163 for details).
+  const GURL continue_url = signin::GetNextPageURLForPromoURL(
+      signin::GetPromoURL(signin::SOURCE_START_PAGE, false));
   GURL::Replacements replacements;
   replacements.ClearQuery();
 

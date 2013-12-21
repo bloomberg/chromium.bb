@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/signin_header_helper.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -72,10 +73,10 @@ void AppendMirrorRequestHeaderIfPossible(
   // available.
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
   GURL origin(url.GetOrigin());
-  bool is_gaia_origin = switches::IsEnableInlineSignin() &&
+  bool is_gaia_signin = !switches::IsEnableInlineSignin() &&
       switches::IsNewProfileManagement() &&
       gaia::IsGaiaSignonRealm(origin);
-  if (!is_gaia_origin && !IsDriveOrigin(origin))
+  if (!is_gaia_signin && !IsDriveOrigin(origin))
     return;
 
   ExtensionRendererState* renderer_state =

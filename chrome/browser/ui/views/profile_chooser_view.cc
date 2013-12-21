@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/views/user_manager_view.h"
+#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -568,7 +569,12 @@ void ProfileChooserView::LinkClicked(views::Link* sender, int event_flags) {
     profiles::LockProfile(browser_->profile());
   } else {
     DCHECK(sender == signin_current_profile_link_);
-    ShowView(GAIA_SIGNIN_VIEW, avatar_menu_.get());
+    if (switches::IsEnableInlineSignin()) {
+      ShowView(GAIA_SIGNIN_VIEW, avatar_menu_.get());
+    } else {
+      GURL page = signin::GetPromoURL(signin::SOURCE_MENU, false);
+      chrome::ShowSingletonTab(browser_, page);
+    }
   }
 }
 

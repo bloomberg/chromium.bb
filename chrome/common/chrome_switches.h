@@ -185,7 +185,7 @@ extern const char kEnableFastUnload[];
 extern const char kEnableFileCookies[];
 extern const char kEnableGoogleNowIntegration[];
 extern const char kEnableHttp2Draft04[];
-extern const char kEnableWebBasedSignin[];
+extern const char kEnableInlineSignin[];
 extern const char kEnableIPPooling[];
 extern const char kEnableIPv6[];
 extern const char kEnableLinkableEphemeralApps[];

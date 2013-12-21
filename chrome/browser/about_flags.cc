@@ -1689,11 +1689,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kNewProfileManagement)
   },
   {
-    "enable-web-based-signin",
-    IDS_FLAGS_ENABLE_WEB_BASED_SIGNIN_NAME,
-    IDS_FLAGS_ENABLE_WEB_BASED_SIGNIN_DESCRIPTION,
+    "enable-inline-signin",
+    IDS_FLAGS_ENABLE_INLINE_SIGNIN_NAME,
+    IDS_FLAGS_ENABLE_INLINE_SIGNIN_DESCRIPTION,
     kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(switches::kEnableWebBasedSignin)
+    SINGLE_VALUE_TYPE(switches::kEnableInlineSignin)
   },
   {
     "enable-google-profile-info",

@@ -648,9 +648,8 @@ const char kEnableGoogleNowIntegration[]    = "enable-google-now-integration";
 // Enable HTTP/2 draft 04. This is a temporary testing flag.
 const char kEnableHttp2Draft04[]            = "enable-http2-draft-04";
 
-// Enables the pure web-based flow for sign in on first run/NTP/wrench menu/
-// settings page.
-const char kEnableWebBasedSignin[]            = "enable-web-based-signin";
+// Enables the inline sign in flow on Chrome desktop.
+const char kEnableInlineSignin[]            = "enable-inline-signin";
 
 // Enables IPv6 support, even if probes suggest that it may not be fully
 // supported. Some probes may require internet connections, and this flag will
