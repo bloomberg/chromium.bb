@@ -248,8 +248,11 @@ ExtensionHost* ProcessManager::CreateBackgroundHost(const Extension* extension,
                                                     const GURL& url) {
   // Hosted apps are taken care of from BackgroundContentsService. Ignore them
   // here.
-  if (extension->is_hosted_app())
+  if (extension->is_hosted_app() ||
+      !ExtensionsBrowserClient::Get()->
+          IsBackgroundPageAllowed(GetBrowserContext())) {
     return NULL;
+  }
 
   // Don't create multiple background hosts for an extension.
   if (ExtensionHost* host = GetBackgroundHostForExtension(extension->id()))
@@ -693,8 +696,11 @@ void ProcessManager::OnDevToolsStateChanged(
 }
 
 void ProcessManager::CreateBackgroundHostsForProfileStartup() {
-  if (startup_background_hosts_created_)
+  if (startup_background_hosts_created_ ||
+      !ExtensionsBrowserClient::Get()->
+          IsBackgroundPageAllowed(GetBrowserContext())) {
     return;
+  }
 
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
       GetBrowserContext())->extension_service();

@@ -1076,9 +1076,10 @@ bool ProfileManager::ShouldGoOffTheRecord(Profile* profile) {
   bool go_off_the_record = false;
 #if defined(OS_CHROMEOS)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (profile->GetPath().BaseName().value() == chrome::kInitialProfile &&
-      (!command_line.HasSwitch(switches::kTestType) ||
-       command_line.HasSwitch(chromeos::switches::kLoginProfile))) {
+  if (command_line.HasSwitch(chromeos::switches::kGuestSession) ||
+      (profile->GetPath().BaseName().value() == chrome::kInitialProfile &&
+       (!command_line.HasSwitch(switches::kTestType) ||
+       command_line.HasSwitch(chromeos::switches::kLoginProfile)))) {
     go_off_the_record = true;
   }
 #endif

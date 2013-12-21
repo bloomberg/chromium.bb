@@ -91,6 +91,11 @@ bool ShellExtensionsBrowserClient::DeferLoadingBackgroundHosts(
   return false;
 }
 
+bool ShellExtensionsBrowserClient::IsBackgroundPageAllowed(
+    BrowserContext* context) const {
+  return true;
+}
+
 bool ShellExtensionsBrowserClient::DidVersionUpdate(BrowserContext* context) {
   // TODO(jamescook): We might want to tell extensions when app_shell updates.
   return false;

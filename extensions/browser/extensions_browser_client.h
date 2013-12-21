@@ -68,6 +68,9 @@ class ExtensionsBrowserClient {
   virtual bool DeferLoadingBackgroundHosts(
       content::BrowserContext* context) const = 0;
 
+  virtual bool IsBackgroundPageAllowed(
+      content::BrowserContext* context) const = 0;
+
   // Returns true if the client version has updated since the last run. Called
   // once each time the extensions system is loaded per browser_context. The
   // implementation may wish to use the BrowserContext to record the current

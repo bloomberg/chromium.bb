@@ -18,6 +18,10 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_switches.h"
+#endif
+
 namespace extensions {
 
 ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {}
@@ -87,6 +91,21 @@ bool ChromeExtensionsBrowserClient::DeferLoadingBackgroundHosts(
   return chrome::GetTotalBrowserCountForProfile(profile) == 0 &&
          CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowAppList);
 #endif
+}
+
+bool ChromeExtensionsBrowserClient::IsBackgroundPageAllowed(
+    content::BrowserContext* context) const {
+#if defined(OS_CHROMEOS)
+  // Returns true if current session is Chrome OS Guest mode session and current
+  // browser context is *not* off-the-record. Such context is artificial and
+  // background page shouldn't be created in it.
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(chromeos::switches::kGuestSession) &&
+      !context->IsOffTheRecord()) {
+    return false;
+  }
+#endif
+  return true;
 }
 
 bool ChromeExtensionsBrowserClient::DidVersionUpdate(
