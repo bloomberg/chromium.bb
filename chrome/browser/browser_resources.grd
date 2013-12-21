@@ -200,8 +200,10 @@
         <include name="IDR_PLUGINS_HTML" file="resources\plugins.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_PLUGINS_JS" file="resources\plugins.js" type="BINDATA" />
       </if>
-      <include name="IDR_COMPONENTS_HTML" file="resources\components.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_COMPONENTS_JS" file="resources\components.js" type="BINDATA" />
+      <if expr="not is_android or pp_ifdef('google_tv')">
+        <include name="IDR_COMPONENTS_HTML" file="resources\components.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+        <include name="IDR_COMPONENTS_JS" file="resources\components.js" type="BINDATA" />
+      </if>
       <if expr="pp_ifdef('enable_plugins')">
         <include name="IDR_PDF_MANIFEST" file="resources\pdf\manifest.json" type="BINDATA" />
       </if>

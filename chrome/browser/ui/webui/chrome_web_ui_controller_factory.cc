@@ -244,8 +244,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ExternalWebDialogUI>;
   if (url.host() == chrome::kChromeUICloudPrintSetupHost)
     return &NewWebUI<WebDialogUI>;
-  if (url.host() == chrome::kChromeUIComponentsHost)
-    return &NewWebUI<ComponentsUI>;
   if (url.spec() == chrome::kChromeUIConstrainedHTMLTestURL)
     return &NewWebUI<ConstrainedWebDialogUI>;
   if (url.host() == chrome::kChromeUICrashesHost)
@@ -353,6 +351,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Android does not support plugins for now.
   if (url.host() == chrome::kChromeUIPluginsHost)
     return &NewWebUI<PluginsUI>;
+  // Android does not support components for now.
+  if (url.host() == chrome::kChromeUIComponentsHost)
+    return &NewWebUI<ComponentsUI>;
   // Settings are implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUISettingsFrameHost)
     return &NewWebUI<options::OptionsUI>;
@@ -617,10 +618,6 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (!content::HasWebUIScheme(page_url))
     return NULL;
 
-  if (page_url.host() == chrome::kChromeUIComponentsHost)
-    return ComponentsUI::GetFaviconResourceBytes(scale_factor);
-  return NULL;
-
 #if defined(OS_WIN)
   if (page_url.host() == chrome::kChromeUIConflictsHost)
     return ConflictsUI::GetFaviconResourceBytes(scale_factor);
@@ -663,5 +660,10 @@ base::RefCountedMemory* ChromeWebUIControllerFactory::GetFaviconResourceBytes(
   if (page_url.host() == chrome::kChromeUIPluginsHost)
     return PluginsUI::GetFaviconResourceBytes(scale_factor);
 
+  // Android doesn't use the components pages.
+  if (page_url.host() == chrome::kChromeUIComponentsHost)
+    return ComponentsUI::GetFaviconResourceBytes(scale_factor);
 #endif
+
+  return NULL;
 }
