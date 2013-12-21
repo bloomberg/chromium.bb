@@ -80,10 +80,10 @@ void SSLClientAuthHandler::DidGetClientCerts() {
   }
 
   int render_process_host_id;
-  int render_view_host_id;
-  if (!ResourceRequestInfo::ForRequest(request_)->GetAssociatedRenderView(
+  int render_frame_host_id;
+  if (!ResourceRequestInfo::ForRequest(request_)->GetAssociatedRenderFrame(
           &render_process_host_id,
-          &render_view_host_id))
+          &render_frame_host_id))
     NOTREACHED();
 
   // If the RVH does not exist by the time this task gets run, then the task
@@ -94,7 +94,7 @@ void SSLClientAuthHandler::DidGetClientCerts() {
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &SSLClientAuthHandler::DoSelectCertificate, this,
-          render_process_host_id, render_view_host_id));
+          render_process_host_id, render_frame_host_id));
 }
 
 void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
@@ -113,10 +113,10 @@ void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
 }
 
 void SSLClientAuthHandler::DoSelectCertificate(
-    int render_process_host_id, int render_view_host_id) {
+    int render_process_host_id, int render_frame_host_id) {
   GetContentClient()->browser()->SelectClientCertificate(
       render_process_host_id,
-      render_view_host_id,
+      render_frame_host_id,
       http_network_session_,
       cert_request_info_.get(),
       base::Bind(&SSLClientAuthHandler::CertificateSelected, this));

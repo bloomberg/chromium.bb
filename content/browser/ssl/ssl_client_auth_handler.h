@@ -66,7 +66,7 @@ class CONTENT_EXPORT SSLClientAuthHandler
 
   // Selects a client certificate on the UI thread.
   void DoSelectCertificate(int render_process_host_id,
-                           int render_view_host_id);
+                           int render_frame_host_id);
 
   // The net::URLRequest that triggered this client auth.
   net::URLRequest* request_;

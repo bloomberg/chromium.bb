@@ -114,6 +114,7 @@
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -1803,12 +1804,18 @@ void ChromeContentBrowserClient::AllowCertificateError(
 
 void ChromeContentBrowserClient::SelectClientCertificate(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const net::HttpNetworkSession* network_session,
     net::SSLCertRequestInfo* cert_request_info,
     const base::Callback<void(net::X509Certificate*)>& callback) {
-  WebContents* tab = tab_util::GetWebContentsByID(
-      render_process_id, render_view_id);
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      render_process_id, render_frame_id);
+  if (!rfh) {
+    NOTREACHED();
+    return;
+  }
+
+  WebContents* tab = WebContents::FromRenderFrameHost(rfh);
   if (!tab) {
     NOTREACHED();
     return;
