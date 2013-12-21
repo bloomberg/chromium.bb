@@ -283,6 +283,11 @@ void DrawingBuffer::initialize(const IntSize& size)
 
     m_context->getIntegerv(GL_MAX_TEXTURE_SIZE, &m_maxTextureSize);
 
+    int maxSampleCount = 0;
+    if (multisample())
+        m_context->getIntegerv(Extensions3D::MAX_SAMPLES, &maxSampleCount);
+    m_sampleCount = std::min(4, maxSampleCount);
+
     m_fbo = m_context->createFramebuffer();
 
     m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -509,7 +514,7 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
     m_context->bindTexture(GL_TEXTURE_2D, 0);
 
     if (!multisample())
-        resizeDepthStencil(size, 0);
+        resizeDepthStencil(size);
     if (m_context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         return false;
 
@@ -519,21 +524,16 @@ bool DrawingBuffer::resizeFramebuffer(const IntSize& size)
 bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
 {
     if (multisample()) {
-        int maxSampleCount = 0;
-
-        m_context->getIntegerv(Extensions3D::MAX_SAMPLES, &maxSampleCount);
-        int sampleCount = std::min(4, maxSampleCount);
-
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
 
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_multisampleColorBuffer);
-        m_context->extensions()->renderbufferStorageMultisample(GL_RENDERBUFFER, sampleCount, m_internalRenderbufferFormat, size.width(), size.height());
+        m_context->extensions()->renderbufferStorageMultisample(GL_RENDERBUFFER, m_sampleCount, m_internalRenderbufferFormat, size.width(), size.height());
 
         if (m_context->getError() == GL_OUT_OF_MEMORY)
             return false;
 
         m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleColorBuffer);
-        resizeDepthStencil(size, sampleCount);
+        resizeDepthStencil(size);
         if (m_context->checkFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
             return false;
     }
@@ -541,14 +541,14 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
     return true;
 }
 
-void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
+void DrawingBuffer::resizeDepthStencil(const IntSize& size)
 {
     if (m_attributes.depth && m_attributes.stencil && m_packedDepthStencilExtensionSupported) {
         if (!m_depthStencilBuffer)
             m_depthStencilBuffer = m_context->createRenderbuffer();
         m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
         if (multisample())
-            m_context->extensions()->renderbufferStorageMultisample(GL_RENDERBUFFER, sampleCount, Extensions3D::DEPTH24_STENCIL8, size.width(), size.height());
+            m_context->extensions()->renderbufferStorageMultisample(GL_RENDERBUFFER, m_sampleCount, Extensions3D::DEPTH24_STENCIL8, size.width(), size.height());
         else
             m_context->renderbufferStorage(GL_RENDERBUFFER, Extensions3D::DEPTH24_STENCIL8, size.width(), size.height());
         m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_depthStencilBuffer);
@@ -559,7 +559,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
                 m_depthBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_depthBuffer);
             if (multisample())
-                m_context->extensions()->renderbufferStorageMultisample(GL_RENDERBUFFER, sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
+                m_context->extensions()->renderbufferStorageMultisample(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH_COMPONENT16, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, size.width(), size.height());
             m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, m_depthBuffer);
@@ -569,7 +569,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
                 m_stencilBuffer = m_context->createRenderbuffer();
             m_context->bindRenderbuffer(GL_RENDERBUFFER, m_stencilBuffer);
             if (multisample())
-                m_context->extensions()->renderbufferStorageMultisample(GL_RENDERBUFFER, sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
+                m_context->extensions()->renderbufferStorageMultisample(GL_RENDERBUFFER, m_sampleCount, GL_STENCIL_INDEX8, size.width(), size.height());
             else
                 m_context->renderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, size.width(), size.height());
             m_context->framebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_stencilBuffer);

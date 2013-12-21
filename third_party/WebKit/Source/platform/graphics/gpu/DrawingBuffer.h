@@ -146,7 +146,7 @@ private:
     void createSecondaryBuffers();
     bool resizeFramebuffer(const IntSize&);
     bool resizeMultisampleFramebuffer(const IntSize&);
-    void resizeDepthStencil(const IntSize&, int sampleCount);
+    void resizeDepthStencil(const IntSize&);
 
     // Bind to the m_framebufferBinding if it's not 0.
     void restoreFramebufferBinding();
@@ -202,6 +202,7 @@ private:
     unsigned m_colorFormat;
     unsigned m_internalRenderbufferFormat;
     int m_maxTextureSize;
+    int m_sampleCount;
 
     OwnPtr<blink::WebExternalTextureLayer> m_layer;
 
