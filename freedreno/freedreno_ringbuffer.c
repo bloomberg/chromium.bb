@@ -56,6 +56,16 @@ void fd_ringbuffer_del(struct fd_ringbuffer *ring)
 	ring->funcs->destroy(ring);
 }
 
+/* ringbuffers which are IB targets should set the toplevel rb (ie.
+ * the IB source) as it's parent before emitting reloc's, to ensure
+ * the bookkeeping works out properly.
+ */
+void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
+		struct fd_ringbuffer *parent)
+{
+	ring->parent = parent;
+}
+
 void fd_ringbuffer_reset(struct fd_ringbuffer *ring)
 {
 	uint32_t *start = ring->start;

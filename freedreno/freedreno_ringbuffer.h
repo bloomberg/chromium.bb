@@ -46,11 +46,14 @@ struct fd_ringbuffer {
 	struct fd_pipe *pipe;
 	struct fd_ringbuffer_funcs *funcs;
 	uint32_t last_timestamp;
+	struct fd_ringbuffer *parent;
 };
 
 struct fd_ringbuffer * fd_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size);
 void fd_ringbuffer_del(struct fd_ringbuffer *ring);
+void fd_ringbuffer_set_parent(struct fd_ringbuffer *ring,
+		struct fd_ringbuffer *parent);
 void fd_ringbuffer_reset(struct fd_ringbuffer *ring);
 int fd_ringbuffer_flush(struct fd_ringbuffer *ring);
 uint32_t fd_ringbuffer_timestamp(struct fd_ringbuffer *ring);
