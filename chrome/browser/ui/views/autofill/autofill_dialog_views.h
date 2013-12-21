@@ -574,13 +574,11 @@ class AutofillDialogViews : public AutofillDialogView,
   void ContentsPreferredSizeChanged();
   void DoContentsPreferredSizeChanged();
 
-  // Gets the textfield view that is shown for the given DetailInput model, or
-  // NULL.
-  views::Textfield* TextfieldForInput(const DetailInput& input);
+  // Gets the textfield view that is shown for the given |type| or NULL.
+  views::Textfield* TextfieldForType(ServerFieldType type);
 
-  // Gets the combobox view that is shown for the given DetailInput model, or
-  // NULL.
-  views::Combobox* ComboboxForInput(const DetailInput& input);
+  // Gets the combobox view that is shown for the given |type|, or NULL.
+  views::Combobox* ComboboxForType(ServerFieldType type);
 
   // Called when the details container changes in size or position.
   void DetailsContainerBoundsChanged();

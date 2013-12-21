@@ -1363,9 +1363,9 @@ base::string16 AutofillDialogViews::GetCvc() {
 
 bool AutofillDialogViews::HitTestInput(const DetailInput& input,
                                        const gfx::Point& screen_point) {
-  views::View* view = TextfieldForInput(input);
+  views::View* view = TextfieldForType(input.type);
   if (!view)
-    view = ComboboxForInput(input);
+    view = ComboboxForType(input.type);
 
   if (view) {
     gfx::Point target_point(screen_point);
@@ -1450,11 +1450,11 @@ void AutofillDialogViews::CancelForTesting() {
 
 base::string16 AutofillDialogViews::GetTextContentsOfInput(
     const DetailInput& input) {
-  views::Textfield* textfield = TextfieldForInput(input);
+  views::Textfield* textfield = TextfieldForType(input.type);
   if (textfield)
     return textfield->text();
 
-  views::Combobox* combobox = ComboboxForInput(input);
+  views::Combobox* combobox = ComboboxForType(input.type);
   if (combobox)
     return combobox->model()->GetItemAt(combobox->selected_index());
 
@@ -1465,13 +1465,13 @@ base::string16 AutofillDialogViews::GetTextContentsOfInput(
 void AutofillDialogViews::SetTextContentsOfInput(
     const DetailInput& input,
     const base::string16& contents) {
-  views::Textfield* textfield = TextfieldForInput(input);
+  views::Textfield* textfield = TextfieldForType(input.type);
   if (textfield) {
     textfield->SetText(contents);
     return;
   }
 
-  views::Combobox* combobox = ComboboxForInput(input);
+  views::Combobox* combobox = ComboboxForType(input.type);
   if (combobox) {
     SelectComboboxValueOrSetToDefault(combobox, input.initial_value);
     return;
@@ -1488,7 +1488,7 @@ void AutofillDialogViews::SetTextContentsOfSuggestionInput(
 }
 
 void AutofillDialogViews::ActivateInput(const DetailInput& input) {
-  TextfieldEditedOrActivated(TextfieldForInput(input), false);
+  TextfieldEditedOrActivated(TextfieldForType(input.type), false);
 }
 
 gfx::Size AutofillDialogViews::GetSize() const {
@@ -2378,13 +2378,12 @@ AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForView(
   return NULL;
 }
 
-views::Textfield* AutofillDialogViews::TextfieldForInput(
-    const DetailInput& input) {
+views::Textfield* AutofillDialogViews::TextfieldForType(
+    ServerFieldType type) {
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     const DetailsGroup& group = iter->second;
-    TextfieldMap::const_iterator text_mapping =
-        group.textfields.find(input.type);
+    TextfieldMap::const_iterator text_mapping = group.textfields.find(type);
     if (text_mapping != group.textfields.end())
       return text_mapping->second;
   }
@@ -2392,13 +2391,12 @@ views::Textfield* AutofillDialogViews::TextfieldForInput(
   return NULL;
 }
 
-views::Combobox* AutofillDialogViews::ComboboxForInput(
-    const DetailInput& input) {
+views::Combobox* AutofillDialogViews::ComboboxForType(
+    ServerFieldType type) {
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     const DetailsGroup& group = iter->second;
-    ComboboxMap::const_iterator combo_mapping =
-        group.comboboxes.find(input.type);
+    ComboboxMap::const_iterator combo_mapping = group.comboboxes.find(type);
     if (combo_mapping != group.comboboxes.end())
       return combo_mapping->second;
   }
