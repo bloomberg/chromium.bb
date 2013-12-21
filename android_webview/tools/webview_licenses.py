@@ -50,6 +50,7 @@ def GetIncompatibleDirectories():
     'Microsoft Permissive License',
     'Public Domain',
     'SGI Free Software License B',
+    'University of Illinois\/NCSA Open Source',
     'X11',
   ]
   regex = '^(%s)$' % '|'.join(whitelist)
