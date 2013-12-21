@@ -12,11 +12,11 @@ namespace mojo {
 // Implementors of the core APIs can use this interface to install their
 // implementation into the mojo_system dynamic library. Mojo clients should not
 // call these functions directly.
-class MOJO_SYSTEM_EXPORT CorePrivate {
+class MOJO_SYSTEM_EXPORT Core {
  public:
-  virtual ~CorePrivate();
+  virtual ~Core();
 
-  static void Init(CorePrivate* core);
+  static void Init(Core* core);
 
   virtual MojoTimeTicks GetTimeTicksNow() = 0;
   virtual MojoResult Close(MojoHandle handle) = 0;

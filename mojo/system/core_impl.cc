@@ -87,7 +87,7 @@ CoreImpl::HandleTableEntry::~HandleTableEntry() {
 
 // static
 void CoreImpl::Init() {
-  CorePrivate::Init(new CoreImpl());
+  Core::Init(new CoreImpl());
 }
 
 MojoTimeTicks CoreImpl::GetTimeTicksNow() {

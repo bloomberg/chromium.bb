@@ -66,7 +66,10 @@ class NativeViewportService::NativeViewportImpl
   void CreateGLES2ContextIfNeeded() {
     if (widget_ == gfx::kNullAcceleratedWidget || !gles2_)
       return;
-    gles2_->CreateContext(widget_, native_viewport_->GetSize());
+    gfx::Size size = native_viewport_->GetSize();
+    if (size.width() == 0 || size.height() == 0)
+      return;
+    gles2_->CreateContext(widget_, size);
   }
 
   virtual bool OnEvent(ui::Event* ui_event) MOJO_OVERRIDE {
@@ -121,6 +124,7 @@ class NativeViewportService::NativeViewportImpl
   }
 
   virtual void OnResized(const gfx::Size& size) MOJO_OVERRIDE {
+    CreateGLES2ContextIfNeeded();
   }
 
   virtual void OnDestroyed() MOJO_OVERRIDE {

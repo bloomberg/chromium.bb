@@ -46,7 +46,7 @@
     },
     {
       'target_name': 'mojo_native_viewport_service',
-      'type': 'shared_library',
+      'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/events/events.gyp:events',

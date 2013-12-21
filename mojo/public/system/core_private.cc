@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-static mojo::CorePrivate* g_core = NULL;
+static mojo::Core* g_core = NULL;
 
 extern "C" {
 
@@ -125,10 +125,10 @@ MojoResult MojoEndReadData(MojoHandle data_pipe_consumer_handle,
 
 namespace mojo {
 
-CorePrivate::~CorePrivate() {
+Core::~Core() {
 }
 
-void CorePrivate::Init(CorePrivate* core) {
+void Core::Init(Core* core) {
   assert(!g_core);
   g_core = core;
 }

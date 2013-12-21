@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#if defined(COMPONENT_BUILD)
+
 #if defined(WIN32)
 
 #if defined(MOJO_GLES2_IMPLEMENTATION)
@@ -26,6 +28,10 @@
 #endif
 
 #endif  // defined(WIN32)
+
+#else  // !defined(COMPONENT_BUILD)
+#define MOJO_GLES2_EXPORT
+#endif
 
 #ifdef __cplusplus
 extern "C" {
