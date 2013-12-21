@@ -217,6 +217,7 @@ class DocStringChecker(BaseChecker):
     # XXX: Should we verify arg order matches doc order ?
     # XXX: Should we check indentation of wrapped docs ?
     # XXX: Should we check amount of space after the : ?
+    missing_args = []
     for arg in node.args.args:
       # Ignore class related args.
       if arg.name in ('cls', 'self'):
@@ -225,15 +226,15 @@ class DocStringChecker(BaseChecker):
       if arg.name.startswith('_'):
         continue
 
-      margs = {'arg': arg.name}
       for l in arg_lines:
         if l.lstrip().startswith('%s:' % arg.name):
           break
       else:
-        break
-    else:
-      return
-    self.add_message('C9010', node=node, line=node.fromlineno, args=margs)
+        missing_args.append(arg.name)
+
+    if missing_args:
+      margs = {'arg': '|, |'.join(missing_args)}
+      self.add_message('C9010', node=node, line=node.fromlineno, args=margs)
 
   def _check_func_signature(self, node):
     """Require *args to be named args, and **kwargs kwargs"""
