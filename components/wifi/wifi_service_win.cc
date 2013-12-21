@@ -165,7 +165,7 @@ const char kKeyTypePassphrase[] = "passPhrase";
 namespace wifi {
 
 // Implementation of WiFiService for Windows.
-class WiFiServiceImpl : public WiFiService, base::NonThreadSafe {
+class WiFiServiceImpl : public WiFiService {
  public:
   WiFiServiceImpl();
   virtual ~WiFiServiceImpl();
