@@ -1,3 +1,6 @@
+# This is pulled in via an entry in DEPS
+LayoutTests/w3c
+
 *.Makefile
 *.mk
 *.mode*
