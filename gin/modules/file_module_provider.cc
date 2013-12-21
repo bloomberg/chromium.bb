@@ -37,10 +37,7 @@ void AttempToLoadModule(const base::WeakPtr<Runner>& runner,
       continue;
 
     Runner::Scope scope(runner.get());
-    v8::Handle<v8::Script> script = v8::Script::New(
-        StringToV8(runner->isolate(), source),
-        StringToV8(runner->isolate(), id));
-    runner->Run(script);
+    runner->Run(source, id);
     return;
   }
 }

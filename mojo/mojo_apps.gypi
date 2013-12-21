@@ -35,8 +35,6 @@
         'apps/js/bindings/gl/context.h',
         'apps/js/bindings/gl/module.cc',
         'apps/js/bindings/gl/module.h',
-        'apps/js/bindings/gl/opaque.cc',
-        'apps/js/bindings/gl/opaque.h',
         'apps/js/bindings/handle.cc',
         'apps/js/bindings/handle.h',
         'apps/js/bindings/support.cc',

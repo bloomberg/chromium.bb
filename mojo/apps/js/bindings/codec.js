@@ -44,12 +44,6 @@ define(function() {
            (memory[pointer + 3] << 24);
   }
 
-  function load64(memory, pointer) {
-    var low = load32(memory, pointer);
-    var high = load32(memory, pointer + 4);
-    return low + high * 0x10000;
-  }
-
   var kAlignment = 8;
 
   function align(size) {
@@ -98,6 +92,9 @@ define(function() {
     this.handles = handles;
     this.base = base;
     this.next = base;
+    this.viewU32 = new Uint32Array(
+        this.memory.buffer, 0,
+        Math.floor(this.memory.length / Uint32Array.BYTES_PER_ELEMENT));
   }
 
   Decoder.prototype.skip = function(offset) {
@@ -111,15 +108,15 @@ define(function() {
   };
 
   Decoder.prototype.read32 = function() {
-    var result = load32(this.memory, this.next);
-    this.next += 4;
+    var result = this.viewU32[this.next / this.viewU32.BYTES_PER_ELEMENT];
+    this.next += this.viewU32.BYTES_PER_ELEMENT;
     return result;
   };
 
   Decoder.prototype.read64 = function() {
-    var result = load64(this.memory, this.next);
-    this.next += 8;
-    return result;
+    var low = this.read32();
+    var high = this.read32();
+    return low + high * 0x100000000;
   };
 
   Decoder.prototype.decodePointer = function() {

@@ -59,8 +59,15 @@ Runner::~Runner() {
 }
 
 void Runner::Run(const std::string& source, const std::string& resource_name) {
-  Run(Script::New(StringToV8(isolate(), source),
-                  StringToV8(isolate(), resource_name)));
+  TryCatch try_catch;
+  v8::Handle<Script> script = Script::New(StringToV8(isolate(), source),
+                                          StringToV8(isolate(), resource_name));
+  if (try_catch.HasCaught()) {
+    delegate_->UnhandledException(this, try_catch);
+    return;
+  }
+
+  Run(script);
 }
 
 void Runner::Run(v8::Handle<Script> script) {
@@ -84,8 +91,9 @@ v8::Handle<v8::Value> Runner::Call(v8::Handle<v8::Function> function,
   v8::Handle<v8::Value> result = function->Call(receiver, argc, argv);
 
   delegate_->DidRunScript(this);
-  if (try_catch.HasCaught())
+  if (try_catch.HasCaught()) {
     delegate_->UnhandledException(this, try_catch);
+  }
 
   return result;
 }

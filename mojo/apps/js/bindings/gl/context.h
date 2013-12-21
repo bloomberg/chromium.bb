@@ -10,18 +10,16 @@
 #include "gin/handle.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
-#include "mojo/apps/js/bindings/gl/opaque.h"
 #include "v8/include/v8.h"
 
 namespace gin {
 class Arguments;
+class ArrayBufferView;
 }
 
 namespace mojo {
 namespace js {
 namespace gl {
-
-typedef Opaque Shader;
 
 // Context implements WebGLRenderingContext.
 class Context : public gin::Wrappable<Context> {
@@ -30,12 +28,23 @@ class Context : public gin::Wrappable<Context> {
 
   static gin::Handle<Context> Create(v8::Isolate* isolate, uint64_t encoded,
                                      int width, int height);
-  static gin::Handle<Shader> CreateShader(const gin::Arguments& arguments,
-                                          GLenum type);
-  static void ShaderSource(gin::Handle<Shader> shader,
-                           const std::string& source);
-  static void CompileShader(const gin::Arguments& arguments,
-                            gin::Handle<Shader> shader);
+
+  static void BufferData(GLenum target, const gin::ArrayBufferView& buffer,
+                         GLenum usage);
+  static void CompileShader(const gin::Arguments& args, GLuint shader);
+  static GLuint CreateBuffer();
+  static void DrawElements(GLenum mode, GLsizei count, GLenum type,
+                           uint64_t indices);
+  static GLint GetAttribLocation(GLuint program, const std::string& name);
+  static std::string GetProgramInfoLog(GLuint program);
+  static std::string GetShaderInfoLog(GLuint shader);
+  static GLint GetUniformLocation(GLuint program, const std::string& name);
+  static void ShaderSource(GLuint shader, const std::string& source);
+  static void UniformMatrix4fv(GLint location, GLboolean transpose,
+                               const gin::ArrayBufferView& buffer);
+  static void VertexAttribPointer(GLuint index, GLint size, GLenum type,
+                                  GLboolean normalized, GLsizei stride,
+                                  uint64_t offset);
 
  private:
   virtual gin::ObjectTemplateBuilder GetObjectTemplateBuilder(

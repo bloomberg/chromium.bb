@@ -62,6 +62,7 @@ struct CallbackParamTraits<const T*> {
 class GIN_EXPORT CallbackHolderBase : public Wrappable<CallbackHolderBase> {
  public:
   static WrapperInfo kWrapperInfo;
+
  protected:
   virtual ~CallbackHolderBase() {}
 };
@@ -86,8 +87,67 @@ class CallbackHolder : public CallbackHolderBase {
 // expression to foo. As a result, we must specialize the case of Callbacks that
 // have the void return type.
 template<typename R, typename P1 = void, typename P2 = void,
-    typename P3 = void, typename P4 = void>
+    typename P3 = void, typename P4 = void, typename P5 = void,
+    typename P6 = void>
 struct Invoker {
+  inline static void Go(
+      Arguments* args,
+      const base::Callback<R(P1, P2, P3, P4, P5, P6)>& callback,
+      const P1& a1,
+      const P2& a2,
+      const P3& a3,
+      const P4& a4,
+      const P5& a5,
+      const P6& a6) {
+    args->Return(callback.Run(a1, a2, a3, a4, a5, a6));
+  }
+};
+template<typename P1, typename P2, typename P3, typename P4, typename P5,
+    typename P6>
+struct Invoker<void, P1, P2, P3, P4, P5, P6> {
+  inline static void Go(
+      Arguments* args,
+      const base::Callback<void(P1, P2, P3, P4, P5, P6)>& callback,
+      const P1& a1,
+      const P2& a2,
+      const P3& a3,
+      const P4& a4,
+      const P5& a5,
+      const P6& a6) {
+    callback.Run(a1, a2, a3, a4, a5, a6);
+  }
+};
+
+template<typename R, typename P1, typename P2, typename P3, typename P4,
+    typename P5>
+struct Invoker<R, P1, P2, P3, P4, P5, void> {
+  inline static void Go(
+      Arguments* args,
+      const base::Callback<R(P1, P2, P3, P4, P5)>& callback,
+      const P1& a1,
+      const P2& a2,
+      const P3& a3,
+      const P4& a4,
+      const P5& a5) {
+    args->Return(callback.Run(a1, a2, a3, a4, a5));
+  }
+};
+template<typename P1, typename P2, typename P3, typename P4, typename P5>
+struct Invoker<void, P1, P2, P3, P4, P5, void> {
+  inline static void Go(
+      Arguments* args,
+      const base::Callback<void(P1, P2, P3, P4, P5)>& callback,
+      const P1& a1,
+      const P2& a2,
+      const P3& a3,
+      const P4& a4,
+      const P5& a5) {
+    callback.Run(a1, a2, a3, a4, a5);
+  }
+};
+
+template<typename R, typename P1, typename P2, typename P3, typename P4>
+struct Invoker<R, P1, P2, P3, P4, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<R(P1, P2, P3, P4)>& callback,
@@ -99,7 +159,7 @@ struct Invoker {
   }
 };
 template<typename P1, typename P2, typename P3, typename P4>
-struct Invoker<void, P1, P2, P3, P4> {
+struct Invoker<void, P1, P2, P3, P4, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<void(P1, P2, P3, P4)>& callback,
@@ -112,7 +172,7 @@ struct Invoker<void, P1, P2, P3, P4> {
 };
 
 template<typename R, typename P1, typename P2, typename P3>
-struct Invoker<R, P1, P2, P3, void> {
+struct Invoker<R, P1, P2, P3, void, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<R(P1, P2, P3)>& callback,
@@ -123,7 +183,7 @@ struct Invoker<R, P1, P2, P3, void> {
   }
 };
 template<typename P1, typename P2, typename P3>
-struct Invoker<void, P1, P2, P3, void> {
+struct Invoker<void, P1, P2, P3, void, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<void(P1, P2, P3)>& callback,
@@ -135,7 +195,7 @@ struct Invoker<void, P1, P2, P3, void> {
 };
 
 template<typename R, typename P1, typename P2>
-struct Invoker<R, P1, P2, void, void> {
+struct Invoker<R, P1, P2, void, void, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<R(P1, P2)>& callback,
@@ -145,7 +205,7 @@ struct Invoker<R, P1, P2, void, void> {
   }
 };
 template<typename P1, typename P2>
-struct Invoker<void, P1, P2, void, void> {
+struct Invoker<void, P1, P2, void, void, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<void(P1, P2)>& callback,
@@ -156,7 +216,7 @@ struct Invoker<void, P1, P2, void, void> {
 };
 
 template<typename R, typename P1>
-struct Invoker<R, P1, void, void, void> {
+struct Invoker<R, P1, void, void, void, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<R(P1)>& callback,
@@ -165,7 +225,7 @@ struct Invoker<R, P1, void, void, void> {
   }
 };
 template<typename P1>
-struct Invoker<void, P1, void, void, void> {
+struct Invoker<void, P1, void, void, void, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<void(P1)>& callback,
@@ -175,7 +235,7 @@ struct Invoker<void, P1, void, void, void> {
 };
 
 template<typename R>
-struct Invoker<R, void, void, void, void> {
+struct Invoker<R, void, void, void, void, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<R()>& callback) {
@@ -183,7 +243,7 @@ struct Invoker<R, void, void, void, void> {
   }
 };
 template<>
-struct Invoker<void, void, void, void, void> {
+struct Invoker<void, void, void, void, void, void, void> {
   inline static void Go(
       Arguments* args,
       const base::Callback<void()>& callback) {
@@ -325,6 +385,70 @@ struct Dispatcher<R(P1, P2, P3, P4)> {
     }
 
     Invoker<R, P1, P2, P3, P4>::Go(&args, holder->callback, a1, a2, a3, a4);
+  }
+};
+
+template<typename R, typename P1, typename P2, typename P3, typename P4,
+    typename P5>
+struct Dispatcher<R(P1, P2, P3, P4, P5)> {
+  static void DispatchToCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& info) {
+    Arguments args(info);
+    CallbackHolderBase* holder_base = NULL;
+    CHECK(args.GetData(&holder_base));
+
+    typedef CallbackHolder<R(P1, P2, P3, P4, P5)> HolderT;
+    HolderT* holder = static_cast<HolderT*>(holder_base);
+
+    typename CallbackParamTraits<P1>::LocalType a1;
+    typename CallbackParamTraits<P2>::LocalType a2;
+    typename CallbackParamTraits<P3>::LocalType a3;
+    typename CallbackParamTraits<P4>::LocalType a4;
+    typename CallbackParamTraits<P5>::LocalType a5;
+    if (!GetNextArgument(&args, holder->flags, true, &a1) ||
+        !GetNextArgument(&args, holder->flags, false, &a2) ||
+        !GetNextArgument(&args, holder->flags, false, &a3) ||
+        !GetNextArgument(&args, holder->flags, false, &a4) ||
+        !GetNextArgument(&args, holder->flags, false, &a5)) {
+      args.ThrowError();
+      return;
+    }
+
+    Invoker<R, P1, P2, P3, P4, P5>::Go(&args, holder->callback, a1, a2, a3, a4,
+        a5);
+  }
+};
+
+template<typename R, typename P1, typename P2, typename P3, typename P4,
+    typename P5, typename P6>
+struct Dispatcher<R(P1, P2, P3, P4, P5, P6)> {
+  static void DispatchToCallback(
+      const v8::FunctionCallbackInfo<v8::Value>& info) {
+    Arguments args(info);
+    CallbackHolderBase* holder_base = NULL;
+    CHECK(args.GetData(&holder_base));
+
+    typedef CallbackHolder<R(P1, P2, P3, P4, P5, P6)> HolderT;
+    HolderT* holder = static_cast<HolderT*>(holder_base);
+
+    typename CallbackParamTraits<P1>::LocalType a1;
+    typename CallbackParamTraits<P2>::LocalType a2;
+    typename CallbackParamTraits<P3>::LocalType a3;
+    typename CallbackParamTraits<P4>::LocalType a4;
+    typename CallbackParamTraits<P5>::LocalType a5;
+    typename CallbackParamTraits<P6>::LocalType a6;
+    if (!GetNextArgument(&args, holder->flags, true, &a1) ||
+        !GetNextArgument(&args, holder->flags, false, &a2) ||
+        !GetNextArgument(&args, holder->flags, false, &a3) ||
+        !GetNextArgument(&args, holder->flags, false, &a4) ||
+        !GetNextArgument(&args, holder->flags, false, &a5) ||
+        !GetNextArgument(&args, holder->flags, false, &a6)) {
+      args.ThrowError();
+      return;
+    }
+
+    Invoker<R, P1, P2, P3, P4, P5, P6>::Go(&args, holder->callback, a1, a2, a3,
+        a4, a5, a6);
   }
 };
 

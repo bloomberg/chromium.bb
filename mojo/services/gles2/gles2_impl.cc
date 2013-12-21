@@ -4,6 +4,7 @@
 
 #include "mojo/services/gles2/gles2_impl.h"
 
+#include <stdio.h>
 #include "base/bind.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"

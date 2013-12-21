@@ -79,6 +79,18 @@ bool Converter<uint64_t>::FromV8(Isolate* isolate, Handle<Value> val,
   return true;
 }
 
+Handle<Value> Converter<float>::ToV8(Isolate* isolate, float val) {
+  return Number::New(isolate, val).As<Value>();
+}
+
+bool Converter<float>::FromV8(Isolate* isolate, Handle<Value> val,
+                              float* out) {
+  if (!val->IsNumber())
+    return false;
+  *out = static_cast<float>(val->NumberValue());
+  return true;
+}
+
 Handle<Value> Converter<double>::ToV8(Isolate* isolate, double val) {
   return Number::New(isolate, val).As<Value>();
 }
