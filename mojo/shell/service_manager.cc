@@ -104,10 +104,12 @@ class ServiceManager::DynamicLoader : public ServiceManager::Loader {
     virtual void Run() OVERRIDE {
       base::ScopedClosureRunner app_deleter(
           base::Bind(base::IgnoreResult(&base::DeleteFile), app_path_, false));
+      std::string load_error;
       base::ScopedNativeLibrary app_library(
-          base::LoadNativeLibrary(app_path_, NULL));
+          base::LoadNativeLibrary(app_path_, &load_error));
       if (!app_library.is_valid()) {
         LOG(ERROR) << "Failed to load library: " << app_path_.value().c_str();
+        LOG(ERROR) << "error: " << load_error;
         return;
       }
 
