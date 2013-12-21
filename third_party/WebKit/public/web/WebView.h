@@ -400,26 +400,6 @@ public:
     virtual WebAXObject accessibilityObject() = 0;
 
 
-    // Autofill  -----------------------------------------------------------
-
-    // Notifies the WebView that Autofill suggestions are available for a node.
-    // |itemIDs| is a vector of IDs for the menu items. A positive itemID is a
-    // unique ID for the Autofill entries. Other MenuItemIDs are defined in
-    // WebAutofillClient.h
-    virtual void applyAutofillSuggestions(
-        const WebNode&,
-        const WebVector<WebString>& names,
-        const WebVector<WebString>& labels,
-        const WebVector<WebString>& icons,
-        const WebVector<int>& itemIDs,
-        int separatorIndex = -1) = 0;
-
-    // Hides any popup (suggestions, selects...) that might be showing.
-    virtual void hidePopups() = 0;
-
-    virtual void selectAutofillSuggestionAtIndex(unsigned listIndex) = 0;
-
-
     // Context menu --------------------------------------------------------
 
     virtual void performCustomContextMenuAction(unsigned action) = 0;
@@ -437,6 +417,9 @@ public:
 
     // Sets whether select popup menus should be rendered by the browser.
     BLINK_EXPORT static void setUseExternalPopupMenus(bool);
+
+    // Hides any popup (suggestions, selects...) that might be showing.
+    virtual void hidePopups() = 0;
 
 
     // Visited link state --------------------------------------------------

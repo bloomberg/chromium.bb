@@ -81,7 +81,6 @@ class RenderLayerCompositor;
 
 namespace blink {
 class AutocompletePopupMenuClient;
-class AutofillPopupMenuClient;
 class ContextFeaturesClientImpl;
 class ContextMenuClientImpl;
 class GeolocationClientProxy;
@@ -283,15 +282,6 @@ public:
     virtual void setRootLayerTransform(const WebSize& offset, float scale);
     virtual WebDevToolsAgent* devToolsAgent();
     virtual WebAXObject accessibilityObject();
-    virtual void applyAutofillSuggestions(
-        const WebNode&,
-        const WebVector<WebString>& names,
-        const WebVector<WebString>& labels,
-        const WebVector<WebString>& icons,
-        const WebVector<int>& itemIDs,
-        int separatorIndex);
-    virtual void hidePopups();
-    virtual void selectAutofillSuggestionAtIndex(unsigned listIndex);
     virtual void setSelectionColors(unsigned activeBackgroundColor,
                                     unsigned activeForegroundColor,
                                     unsigned inactiveBackgroundColor,
@@ -299,6 +289,7 @@ public:
     virtual void performCustomContextMenuAction(unsigned action);
     virtual void showContextMenu();
     virtual WebString getSmartClipData(WebRect);
+    virtual void hidePopups();
     virtual void addPageOverlay(WebPageOverlay*, int /* zOrder */);
     virtual void removePageOverlay(WebPageOverlay*);
     virtual void transferActiveWheelFlingAnimation(const WebActiveWheelFlingParameters&);
@@ -440,11 +431,6 @@ public:
         const WebImage& dragImage,
         const WebPoint& dragImageOffset);
 
-    void autofillPopupDidHide()
-    {
-        m_autofillPopupShowing = false;
-    }
-
     // Returns the provider of desktop notifications.
     NotificationPresenterImpl* notificationPresenterImpl();
 
@@ -458,8 +444,6 @@ public:
     // PagePopupDriver functions.
     virtual WebCore::PagePopup* openPagePopup(WebCore::PagePopupClient*, const WebCore::IntRect& originBoundsInRootView) OVERRIDE;
     virtual void closePagePopup(WebCore::PagePopup*) OVERRIDE;
-
-    void hideAutofillPopup();
 
     // Creates a Helper Plugin of |pluginType| for |hostDocument|.
     WebHelperPluginImpl* createHelperPlugin(const String& pluginType, const WebDocument& hostDocument);
@@ -577,14 +561,6 @@ private:
 
     // Returns true if the event was actually processed.
     bool keyEventDefault(const WebKeyboardEvent&);
-
-    // Returns true if the autocomple has consumed the event.
-    bool autocompleteHandleKeyEvent(const WebKeyboardEvent&);
-
-    // Repaints the Autofill popup. Should be called when the suggestions
-    // have changed. Note that this should only be called when the Autofill
-    // popup is showing.
-    void refreshAutofillPopup();
 
     bool confirmComposition(const WebString& text, ConfirmCompositionBehavior);
 
@@ -731,15 +707,6 @@ private:
 
     // Context-based feature switches.
     OwnPtr<ContextFeaturesClientImpl> m_featureSwitchClient;
-
-    // Whether an Autofill popup is currently showing.
-    bool m_autofillPopupShowing;
-
-    // The Autofill popup client.
-    OwnPtr<AutofillPopupMenuClient> m_autofillPopupClient;
-
-    // The Autofill popup.
-    RefPtr<WebCore::PopupContainer> m_autofillPopup;
 
     // The popup associated with a select element.
     RefPtr<WebCore::PopupContainer> m_selectPopup;

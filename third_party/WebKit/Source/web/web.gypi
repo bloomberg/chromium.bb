@@ -6,8 +6,6 @@
       'AssertMatchingEnums.cpp',
       'AssociatedURLLoader.cpp',
       'AssociatedURLLoader.h',
-      'AutofillPopupMenuClient.cpp',
-      'AutofillPopupMenuClient.h',
       'BackForwardClientImpl.cpp',
       'BackForwardClientImpl.h',
       'ChromeClientImpl.cpp',

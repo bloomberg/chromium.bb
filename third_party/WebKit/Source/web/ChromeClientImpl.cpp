@@ -675,22 +675,6 @@ void ChromeClientImpl::popupOpened(PopupContainer* popupContainer,
                                    const IntRect& bounds,
                                    bool handleExternally)
 {
-    // For Autofill popups, if the popup will not be fully visible, we shouldn't
-    // show it at all. Among other things, this prevents users from being able
-    // to interact via the keyboard with an invisible popup.
-    if (popupContainer->popupType() == PopupContainer::Suggestion) {
-        FrameView* view = m_webView->page()->mainFrame()->view();
-        IntRect visibleRect = view->visibleContentRect(ScrollableArea::IncludeScrollbars);
-        // |bounds| is in screen coordinates, so make sure to convert it to
-        // content coordinates prior to comparing to |visibleRect|.
-        IntRect screenRect = bounds;
-        screenRect.setLocation(view->screenToContents(bounds.location()));
-        if (!visibleRect.contains(screenRect)) {
-            m_webView->hideAutofillPopup();
-            return;
-        }
-    }
-
     if (!m_webView->client())
         return;
 
@@ -1023,12 +1007,6 @@ void ChromeClientImpl::didEndEditingOnTextField(HTMLInputElement& inputElement)
 {
     if (m_webView->autofillClient())
         m_webView->autofillClient()->textFieldDidEndEditing(WebInputElement(&inputElement));
-
-    // Notification that focus was lost. Be careful with this, it's also sent
-    // when the page is being closed.
-
-    // Hide any showing popup.
-    m_webView->hideAutofillPopup();
 }
 
 void ChromeClientImpl::openTextDataListChooser(HTMLInputElement& input)
