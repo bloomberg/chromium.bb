@@ -161,6 +161,11 @@ base::string16 GetImageInfoFromLoadedModule(HMODULE module, uint32* flags) {
   return base::string16(out_name.begin(), out_name.end());
 }
 
+bool IsSameAsCurrentProcess(HANDLE process) {
+  return  (NtCurrentProcess == process) ||
+          (::GetProcessId(process) == ::GetCurrentProcessId());
+}
+
 }  // namespace
 
 namespace blacklist {
@@ -195,7 +200,7 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI BlNtMapViewOfSection(
                                        commit_size, offset, view_size, inherit,
                                        allocation_type, protect);
 
-  if (!NT_SUCCESS(ret) || !sandbox::IsSameProcess(process) ||
+  if (!NT_SUCCESS(ret) || !IsSameAsCurrentProcess(process) ||
       !IsModuleValidImageSection(section, base, offset, view_size)) {
     return ret;
   }
