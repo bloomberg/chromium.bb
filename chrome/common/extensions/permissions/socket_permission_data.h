@@ -11,6 +11,7 @@
 #include "ipc/ipc_param_traits.h"
 
 template <class T> struct FuzzTraits;
+template <class T> struct GenerateTraits;
 
 namespace extensions {
 
@@ -67,6 +68,7 @@ class SocketPermissionData {
   // Friend so ParamTraits can serialize us.
   friend struct IPC::ParamTraits<SocketPermissionData>;
   friend struct FuzzTraits<SocketPermissionData>;
+  friend struct GenerateTraits<SocketPermissionData>;
 
   SocketPermissionEntry& entry();
 

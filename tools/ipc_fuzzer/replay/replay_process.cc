@@ -80,7 +80,8 @@ void ReplayProcess::SendNextMessage() {
   messages_[message_index_++] = NULL;
 
   if (!channel_->Send(message)) {
-    LOG(ERROR) << "ChannelProxy::Send() failed";
+    LOG(ERROR) << "ChannelProxy::Send() failed after "
+               << message_index_ << " messages";
     base::MessageLoop::current()->Quit();
   }
 }
@@ -99,7 +100,8 @@ bool ReplayProcess::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void ReplayProcess::OnChannelError() {
-  LOG(ERROR) << "Channel error, quitting";
+  LOG(ERROR) << "Channel error, quitting after "
+             << message_index_ << " messages";
   base::MessageLoop::current()->Quit();
 }
 

@@ -22,7 +22,7 @@
         'replay_process.h',
       ],
       'include_dirs': [
-        '../..',
+        '../../..',
       ],
     },
   ],

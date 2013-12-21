@@ -27,7 +27,7 @@
         'message_names.h',
       ],
       'include_dirs': [
-        '../..',
+        '../../..',
       ],
     },
   ],
