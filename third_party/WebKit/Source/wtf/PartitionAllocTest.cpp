@@ -772,6 +772,22 @@ TEST(WTF_PartitionAllocDeathTest, LargeAllocs)
     EXPECT_DEATH(partitionAllocGeneric(genericAllocator.root(), static_cast<size_t>(-1)), "");
     // And the smallest allocation we expect to die.
     EXPECT_DEATH(partitionAllocGeneric(genericAllocator.root(), static_cast<size_t>(INT_MAX) + 1), "");
+
+    TestShutdown();
+}
+
+// Check that our immediate double-free detection works.
+TEST(WTF_PartitionAllocDeathTest, DoubleFree)
+{
+    TestSetup();
+
+    void* ptr = partitionAllocGeneric(genericAllocator.root(), kTestAllocSize);
+    EXPECT_TRUE(ptr);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    EXPECT_DEATH(partitionFreeGeneric(genericAllocator.root(), ptr), "");
+
+    TestShutdown();
 }
 
 // Tests that the countLeadingZeros() functions work to our satisfaction.
