@@ -185,6 +185,8 @@ CK_MECHANISM_TYPE WebCryptoAlgorithmToGenMechanism(
     const blink::WebCryptoAlgorithm& algorithm) {
   switch (algorithm.id()) {
     case blink::WebCryptoAlgorithmIdAesCbc:
+    case blink::WebCryptoAlgorithmIdAesGcm:
+    case blink::WebCryptoAlgorithmIdAesKw:
       return CKM_AES_KEY_GEN;
     case blink::WebCryptoAlgorithmIdHmac:
       return WebCryptoHashToHMACMechanism(algorithm.hmacKeyParams()->hash());
@@ -644,10 +646,14 @@ bool WebCryptoImpl::GenerateKeyInternal(
   }
 
   switch (algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdAesCbc: {
+    case blink::WebCryptoAlgorithmIdAesCbc:
+    case blink::WebCryptoAlgorithmIdAesGcm:
+    case blink::WebCryptoAlgorithmIdAesKw: {
       const blink::WebCryptoAesKeyGenParams* params =
           algorithm.aesKeyGenParams();
       DCHECK(params);
+      // Ensure the key length is a multiple of 8 bits. Let NSS verify further
+      // algorithm-specific length restrictions.
       if (params->lengthBits() % 8)
         return false;
       keylen_bytes = params->lengthBits() / 8;

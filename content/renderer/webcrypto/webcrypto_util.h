@@ -84,16 +84,6 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
     const std::vector<uint8>& additional_data,
     uint8 tag_length_bytes);
 
-// Creates an AES-CBC algorithm whose parameters struct is compatible with key
-// generation.
-CONTENT_EXPORT blink::WebCryptoAlgorithm CreateAesCbcKeyGenAlgorithm(
-    unsigned short key_length_bits);
-
-// Creates an AES-GCM algorithm whose parameters struct is compatible with key
-// generation.
-blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(
-    unsigned short key_length_bits);
-
 // Returns the internal block size for SHA-*
 unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id);
 

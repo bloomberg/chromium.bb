@@ -15,13 +15,6 @@ namespace webcrypto {
 
 namespace {
 
-blink::WebCryptoAlgorithm CreateAesKeyGenAlgorithm(
-    blink::WebCryptoAlgorithmId aes_alg_id,
-    unsigned short length) {
-  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
-      aes_alg_id, new blink::WebCryptoAesKeyGenParams(length));
-}
-
 bool IsHashAlgorithm(blink::WebCryptoAlgorithmId alg_id) {
   return alg_id == blink::WebCryptoAlgorithmIdSha1 ||
          alg_id == blink::WebCryptoAlgorithmIdSha224 ||
@@ -158,18 +151,6 @@ blink::WebCryptoAlgorithm CreateAesGcmAlgorithm(
                                        additional_data.size(),
                                        tag_length_bytes != 0,
                                        tag_length_bytes));
-}
-
-blink::WebCryptoAlgorithm CreateAesCbcKeyGenAlgorithm(
-    unsigned short key_length_bits) {
-  return CreateAesKeyGenAlgorithm(blink::WebCryptoAlgorithmIdAesCbc,
-                                  key_length_bits);
-}
-
-blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(
-    unsigned short key_length_bits) {
-  return CreateAesKeyGenAlgorithm(blink::WebCryptoAlgorithmIdAesGcm,
-                                  key_length_bits);
 }
 
 unsigned int ShaBlockSizeBytes(blink::WebCryptoAlgorithmId hash_id) {

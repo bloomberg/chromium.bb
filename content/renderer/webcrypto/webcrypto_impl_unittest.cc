@@ -102,6 +102,31 @@ bool CopiesExist(std::vector<blink::WebArrayBuffer> bufs) {
   return false;
 }
 
+blink::WebCryptoAlgorithm CreateAesKeyGenAlgorithm(
+    blink::WebCryptoAlgorithmId aes_alg_id,
+    unsigned short length) {
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      aes_alg_id, new blink::WebCryptoAesKeyGenParams(length));
+}
+
+blink::WebCryptoAlgorithm CreateAesCbcKeyGenAlgorithm(
+    unsigned short key_length_bits) {
+  return CreateAesKeyGenAlgorithm(blink::WebCryptoAlgorithmIdAesCbc,
+                                  key_length_bits);
+}
+
+blink::WebCryptoAlgorithm CreateAesGcmKeyGenAlgorithm(
+    unsigned short key_length_bits) {
+  return CreateAesKeyGenAlgorithm(blink::WebCryptoAlgorithmIdAesGcm,
+                                  key_length_bits);
+}
+
+blink::WebCryptoAlgorithm CreateAesKwKeyGenAlgorithm(
+    unsigned short key_length_bits) {
+  return CreateAesKeyGenAlgorithm(blink::WebCryptoAlgorithmIdAesKw,
+                                  key_length_bits);
+}
+
 }  // namespace
 
 class WebCryptoImplTest : public testing::Test {
@@ -742,32 +767,48 @@ TEST_F(WebCryptoImplTest, MAYBE(AesCbcSampleSets)) {
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyAes)) {
-  // Generate a small sample of AES keys.
+  // Check key generation for each of AES-CBC, AES-GCM, and AES-KW, and for each
+  // allowed key length.
+  std::vector<blink::WebCryptoAlgorithm> algorithm;
+  const unsigned short kKeyLength[] = {128, 192, 256};
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kKeyLength); ++i) {
+    algorithm.push_back(CreateAesCbcKeyGenAlgorithm(kKeyLength[i]));
+    algorithm.push_back(CreateAesGcmKeyGenAlgorithm(kKeyLength[i]));
+    algorithm.push_back(CreateAesKwKeyGenAlgorithm(kKeyLength[i]));
+  }
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   std::vector<blink::WebArrayBuffer> keys;
   blink::WebArrayBuffer key_bytes;
-  for (int i = 0; i < 16; ++i) {
-    blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-    ASSERT_TRUE(
-        GenerateKeyInternal(webcrypto::CreateAesCbcKeyGenAlgorithm(128), &key));
-    EXPECT_TRUE(key.handle());
-    EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
-    ASSERT_TRUE(
-        ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &key_bytes));
-    keys.push_back(key_bytes);
+  for (size_t i = 0; i < algorithm.size(); ++i) {
+    SCOPED_TRACE(i);
+    // Generate a small sample of keys.
+    keys.clear();
+    for (int j = 0; j < 16; ++j) {
+      ASSERT_TRUE(GenerateKeyInternal(algorithm[i], &key));
+      EXPECT_TRUE(key.handle());
+      EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+      ASSERT_TRUE(
+          ExportKeyInternal(blink::WebCryptoKeyFormatRaw, key, &key_bytes));
+      keys.push_back(key_bytes);
+    }
+    // Ensure all entries in the key sample set are unique. This is a simplistic
+    // estimate of whether the generated keys appear random.
+    EXPECT_FALSE(CopiesExist(keys));
   }
-  // Ensure all entries in the key sample set are unique. This is a simplistic
-  // estimate of whether the generated keys appear random.
-  EXPECT_FALSE(CopiesExist(keys));
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyAesBadLength)) {
+  const unsigned short kKeyLen[] = {0, 127, 257};
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
-  EXPECT_FALSE(
-      GenerateKeyInternal(webcrypto::CreateAesCbcKeyGenAlgorithm(0), &key));
-  EXPECT_FALSE(
-      GenerateKeyInternal(webcrypto::CreateAesCbcKeyGenAlgorithm(0), &key));
-  EXPECT_FALSE(
-      GenerateKeyInternal(webcrypto::CreateAesCbcKeyGenAlgorithm(129), &key));
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kKeyLen); ++i) {
+    SCOPED_TRACE(i);
+    EXPECT_FALSE(GenerateKeyInternal(
+        CreateAesCbcKeyGenAlgorithm(kKeyLen[i]), &key));
+    EXPECT_FALSE(GenerateKeyInternal(
+        CreateAesGcmKeyGenAlgorithm(kKeyLen[i]), &key));
+    EXPECT_FALSE(GenerateKeyInternal(
+        CreateAesKwKeyGenAlgorithm(kKeyLen[i]), &key));
+  }
 }
 
 TEST_F(WebCryptoImplTest, MAYBE(GenerateKeyHmac)) {
