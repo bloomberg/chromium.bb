@@ -26,6 +26,7 @@ class TransientWindowStackingClientTest : public aura::test::AuraTestBase {
   }
 
   virtual void TearDown() OVERRIDE {
+    delete aura::client::GetWindowStackingClient();
     aura::client::SetWindowStackingClient(NULL);
     AuraTestBase::TearDown();
   }
