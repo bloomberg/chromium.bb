@@ -430,7 +430,8 @@ static bool IsKnownUser(const std::string& account_id) {
   return chromeos::UserManager::Get()->IsKnownUser(account_id);
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_LoginScreen) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
@@ -455,7 +456,8 @@ static bool DisplayNameMatches(const std::string& account_id,
   return true;
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -464,7 +466,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
       base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_PolicyDownload) {
   UploadDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -523,7 +526,8 @@ static bool IsSessionStarted() {
   return chromeos::UserManager::Get()->IsSessionStarted();
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_StartSession) {
   // Specify startup pages.
   device_local_account_policy_.payload().mutable_restoreonstartup()->set_value(
       SessionStartupPref::kPrefValueURLs);
@@ -581,7 +585,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_FullscreenDisallowed) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -636,7 +641,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
   EXPECT_FALSE(browser_window->IsFullscreen());
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExtensionsUncached) {
   // Make it possible to force-install a hosted app and an extension.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   TestingUpdateManifestProvider testing_update_manifest_provider(
@@ -734,7 +740,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
       kAccountId1, kGoodExtensionID, kGoodExtensionVersion)));
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExtensionsCached) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Pre-populate the device local account's extension cache with a hosted app
@@ -827,7 +834,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   EXPECT_FALSE(PathExists(cached_extension));
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExternalData) {
   // chromeos::UserImageManagerImpl requests an external data fetch whenever the
   // key::kUserAvatarImage policy is set. Since this test wants to verify that
   // the underlying policy subsystem will start a fetch without this request as
@@ -952,7 +960,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   EXPECT_EQ(kExternalData, *fetched_external_data);
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_UserAvatarImage) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   UploadDeviceLocalAccountPolicy();
@@ -1034,7 +1043,8 @@ class TermsOfServiceTest : public DeviceLocalAccountTest,
                            public testing::WithParamInterface<bool> {
 };
 
-IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, DISABLED_TermsOfServiceScreen) {
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(

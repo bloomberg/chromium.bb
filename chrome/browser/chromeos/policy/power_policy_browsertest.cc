@@ -327,7 +327,9 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetDevicePolicy) {
 }
 
 // Verifies that user policy is applied during a session.
-IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest,
+                       DISABLED_SetUserPolicy) {
   pm::PowerManagementPolicy power_management_policy =
       power_manager_client_->get_policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
