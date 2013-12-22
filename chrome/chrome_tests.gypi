@@ -500,6 +500,9 @@
                   'UseLibraryDependencyInputs': "true",
                 }],
               ],
+              # interactive_ui_tests is is frequently failing to link with
+              # OoM. Hopefully this will buy some time. http://crbug.com/330432
+              'GenerateDebugInformation': 'false',
             },
           },
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
