@@ -969,8 +969,6 @@
                   'dependencies': [
                     '../chrome/chrome.gyp:crash_service_win64',
                     '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-                    # Omitting tests from Win64 to speed up cycle times.
-                    '../chrome/chrome.gyp:interactive_ui_tests',
                   ],
                 }],
                 ['component != "shared_library" and wix_exists == "True" and \
