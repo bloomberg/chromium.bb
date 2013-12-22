@@ -585,19 +585,6 @@ Press Shift + Alt to switch.
         Press Control Shift Q twice to quit.
       </message>
 
-      <message name="IDS_ASH_LOGOUT_CONFIRMATION_TITLE" desc="Dialog title for the logout confirmation dialog.">
-        Exiting Session
-      </message>
-      <message name="IDS_ASH_LOGOUT_CONFIRMATION_WARNING" desc="The text for the logout confirmation dialog.">
-        You will automatically be signed out in <ph name="LOGOUT_TIME_LEFT">$1<ex>5 seconds</ex></ph>.
-      </message>
-      <message name="IDS_ASH_LOGOUT_CONFIRMATION_WARNING_NOW" desc="The text for the logout confirmation dialog with no time left.">
-        You will be signed out now.
-      </message>
-      <message name="IDS_ASH_LOGOUT_CONFIRMATION_BUTTON" desc="The text for okay button of the logout confirmation dialog.">
-        Sign out now
-      </message>
-
       <!-- ChromeOS-specific strings -->
       <if expr="pp_ifdef('chromeos')">
         <part file="ash_chromeos_strings.grdp" />

@@ -22,7 +22,6 @@
 #include "ash/system/user/update_observer.h"
 #include "ash/system/user/user_observer.h"
 #include "base/observer_list.h"
-#include "base/time/time.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
@@ -104,7 +103,6 @@ public:
   void NotifyDriveJobUpdated(const DriveOperationStatus& status);
   void NotifyRefreshIME(bool show_message);
   void NotifyShowLoginButtonChanged(bool show_login_button);
-  void NotifyLogoutDialogDurationChanged(base::TimeDelta duration);
   void NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
                            const std::string& cur_locale,
                            const std::string& from_locale,

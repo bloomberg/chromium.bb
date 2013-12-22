@@ -852,11 +852,9 @@ extern const char kShelfAlignmentLocal[];
 extern const char kShelfAutoHideBehavior[];
 extern const char kShelfAutoHideBehaviorLocal[];
 extern const char kShelfChromeIconIndex[];
-extern const char kShelfPreferences[];
-
-extern const char kLogoutDialogDurationMs[];
 extern const char kPinnedLauncherApps[];
 extern const char kShowLogoutButtonInTray[];
+extern const char kShelfPreferences[];
 #endif
 
 #if defined(USE_AURA)

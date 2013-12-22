@@ -68,16 +68,12 @@ void RegisterChromeLauncherUserPrefs(
       prefs::kShelfAlignmentLocal,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      prefs::kShelfPreferences,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterIntegerPref(
-      prefs::kLogoutDialogDurationMs,
-      20000,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kShowLogoutButtonInTray,
       false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kShelfPreferences,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
