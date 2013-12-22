@@ -215,7 +215,7 @@ void ChromeShellDelegate::Observe(int type,
             dummy,
             chrome::startup::IS_NOT_FIRST_RUN);
         startup_impl.Launch(
-            ProfileManager::GetActiveUserProfile(),
+            ProfileManager::GetActiveUserProfileOrOffTheRecord(),
             std::vector<GURL>(),
             true,
             chrome::HOST_DESKTOP_TYPE_ASH);
@@ -228,7 +228,7 @@ void ChromeShellDelegate::Observe(int type,
         }
 
         chrome::ScopedTabbedBrowserDisplayer displayer(
-            ProfileManager::GetActiveUserProfile(),
+            ProfileManager::GetActiveUserProfileOrOffTheRecord(),
             chrome::HOST_DESKTOP_TYPE_ASH);
         chrome::AddTabAt(displayer.browser(), GURL(), -1, true);
       }

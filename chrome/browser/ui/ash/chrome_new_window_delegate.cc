@@ -85,13 +85,13 @@ void ChromeNewWindowDelegate::NewTab() {
   }
 
   chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile(),
+      ProfileManager::GetActiveUserProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::NewTab(displayer.browser());
 }
 
 void ChromeNewWindowDelegate::NewWindow(bool is_incognito) {
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile = ProfileManager::GetActiveUserProfileOrOffTheRecord();
   chrome::NewEmptyWindow(
       is_incognito ? profile->GetOffTheRecordProfile() : profile,
       chrome::HOST_DESKTOP_TYPE_ASH);
@@ -106,7 +106,7 @@ void ChromeNewWindowDelegate::RestoreTab() {
   Browser* browser = GetBrowserForActiveWindow();
   Profile* profile = browser ? browser->profile() : NULL;
   if (!profile)
-    profile = ProfileManager::GetActiveUserProfile();
+    profile = ProfileManager::GetActiveUserProfileOrOffTheRecord();
   if (profile->IsOffTheRecord())
     return;
   TabRestoreService* service =

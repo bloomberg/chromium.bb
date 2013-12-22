@@ -43,7 +43,7 @@ namespace {
 const int kNotificationCountPrefDefault = -1;
 
 bool GetBooleanPref(const char* pref_name) {
-  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  Profile* profile = ProfileManager::GetPrimaryUserProfileOrOffTheRecord();
   PrefService* prefs = profile->GetPrefs();
   return prefs->GetBoolean(pref_name);
 }
@@ -54,7 +54,7 @@ int GetIntegerLocalPref(const char* pref_name) {
 }
 
 void SetBooleanPref(const char* pref_name, bool value) {
-  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  Profile* profile = ProfileManager::GetPrimaryUserProfileOrOffTheRecord();
   PrefService* prefs = profile->GetPrefs();
   prefs->SetBoolean(pref_name, value);
 }
@@ -125,7 +125,7 @@ void NotificationClicked(const std::string& service_path,
     ash::network_connect::ShowNetworkSettings(service_path);
 
   chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetPrimaryUserProfile(),
+      ProfileManager::GetPrimaryUserProfileOrOffTheRecord(),
       chrome::HOST_DESKTOP_TYPE_ASH);
   chrome::ShowSingletonTab(displayer.browser(), GURL(info_url));
 }

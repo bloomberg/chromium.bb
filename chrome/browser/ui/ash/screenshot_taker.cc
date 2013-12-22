@@ -312,7 +312,7 @@ bool GrabWindowSnapshot(aura::Window* window,
 
 bool ShouldUse24HourClock() {
 #if defined(OS_CHROMEOS)
-  Profile* profile = ProfileManager::GetActiveUserProfile();
+  Profile* profile = ProfileManager::GetActiveUserProfileOrOffTheRecord();
   if (profile) {
     return profile->GetPrefs()->GetBoolean(prefs::kUse24HourClock);
   }
@@ -358,7 +358,7 @@ bool GetScreenshotDirectory(base::FilePath* directory) {
 
   if (is_logged_in) {
     DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
-        ProfileManager::GetActiveUserProfile());
+        ProfileManager::GetActiveUserProfileOrOffTheRecord());
     *directory = download_prefs->DownloadPath();
   } else  {
     if (!base::GetTempDir(directory)) {
@@ -581,7 +581,7 @@ bool ScreenshotTaker::HasObserver(ScreenshotTakerObserver* observer) const {
 Profile* ScreenshotTaker::GetProfile() {
   if (profile_for_test_)
     return profile_for_test_;
-  return ProfileManager::GetActiveUserProfile();
+  return ProfileManager::GetActiveUserProfileOrOffTheRecord();
 }
 
 void ScreenshotTaker::SetScreenshotDirectoryForTest(

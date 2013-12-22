@@ -193,7 +193,7 @@ Profile* GetCurrentProfileOnChromeOS(std::string* error_message) {
     }
     return Profile::FromWebUI(web_ui);
   } else {
-    return ProfileManager::GetActiveUserProfile();
+    return ProfileManager::GetActiveUserProfileOrOffTheRecord();
   }
   return NULL;
 }

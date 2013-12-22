@@ -338,7 +338,7 @@ void DownloadAndVerifyFile(
 
 int CountScreenshots() {
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
-      ProfileManager::GetActiveUserProfile());
+      ProfileManager::GetActiveUserProfileOrOffTheRecord());
   base::FileEnumerator enumerator(download_prefs->DownloadPath(),
                                   false, base::FileEnumerator::FILES,
                                   "Screenshot*");

@@ -97,7 +97,7 @@ content::BrowserContext* ChromeShellDelegate::GetActiveBrowserContext() {
 #if defined(OS_CHROMEOS)
   DCHECK(chromeos::UserManager::Get()->GetLoggedInUsers().size());
 #endif
-  return ProfileManager::GetActiveUserProfile();
+  return ProfileManager::GetActiveUserProfileOrOffTheRecord();
 }
 
 app_list::AppListViewDelegate*
