@@ -425,25 +425,42 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPage* page
     size_t size = bucket->slotSize;
     char* base = reinterpret_cast<char*>(partitionPageToPointer(page));
     char* returnObject = base + (size * page->numAllocatedSlots);
-    char* nextFreeObject = returnObject + size;
-    char* subPageLimit = reinterpret_cast<char*>((reinterpret_cast<uintptr_t>(returnObject) + kSystemPageSize) & kSystemPageBaseMask);
+    char* firstFreelistPointer = returnObject + size;
+    char* firstFreelistPointerExtent = firstFreelistPointer + sizeof(PartitionFreelistEntry*);
+    // Our goal is to fault as few system pages as possible. We calculate the
+    // page containing the "end" of the returned slot, and then allow freelist
+    // pointers to be written up to the end of that page.
+    char* subPageLimit = reinterpret_cast<char*>((reinterpret_cast<uintptr_t>(firstFreelistPointer) + kSystemPageOffsetMask) & kSystemPageBaseMask);
+    char* slotsLimit = returnObject + (size * page->numUnprovisionedSlots);
+    char* freelistLimit = subPageLimit;
+    if (UNLIKELY(slotsLimit < freelistLimit))
+        freelistLimit = slotsLimit;
 
     size_t numNewFreelistEntries = 0;
-    if (LIKELY(subPageLimit > nextFreeObject))
-        numNewFreelistEntries = (subPageLimit - nextFreeObject) / size;
+    if (LIKELY(firstFreelistPointerExtent <= freelistLimit)) {
+        // Only consider used space in the slot span. If we consider wasted
+        // space, we may get an off-by-one when a freelist pointer fits in the
+        // wasted space, but a slot does not.
+        // We know we can fit at least one freelist pointer.
+        numNewFreelistEntries = 1;
+        // Any further entries require space for the whole slot span.
+        numNewFreelistEntries += (freelistLimit - firstFreelistPointerExtent) / size;
+    }
 
     // We always return an object slot -- that's the +1 below.
     // We do not neccessarily create any new freelist entries, because we cross sub page boundaries frequently for large bucket sizes.
+    ASSERT(numNewFreelistEntries + 1 <= numSlots);
     numSlots -= (numNewFreelistEntries + 1);
     page->numUnprovisionedSlots = numSlots;
     page->numAllocatedSlots++;
 
     if (LIKELY(numNewFreelistEntries)) {
-        PartitionFreelistEntry* entry = reinterpret_cast<PartitionFreelistEntry*>(nextFreeObject);
+        char* freelistPointer = firstFreelistPointer;
+        PartitionFreelistEntry* entry = reinterpret_cast<PartitionFreelistEntry*>(freelistPointer);
         partitionPageSetFreelistHead(page, entry);
         while (--numNewFreelistEntries) {
-            nextFreeObject += size;
-            PartitionFreelistEntry* nextEntry = reinterpret_cast<PartitionFreelistEntry*>(nextFreeObject);
+            freelistPointer += size;
+            PartitionFreelistEntry* nextEntry = reinterpret_cast<PartitionFreelistEntry*>(freelistPointer);
             entry->next = partitionFreelistMask(nextEntry);
             entry = nextEntry;
         }

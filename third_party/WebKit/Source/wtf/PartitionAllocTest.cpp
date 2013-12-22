@@ -545,25 +545,32 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     EXPECT_TRUE(ptr);
 
     WTF::PartitionPage* page = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr));
-    // The freelist should be empty as only one slot could be allocated without
-    // touching more system pages.
-    EXPECT_EQ(0, partitionPageFreelistHead(page));
+    size_t totalSlots = (page->bucket->numSystemPagesPerSlotSpan * WTF::kSystemPageSize) / (bigSize + kExtraAllocSize);
+    EXPECT_EQ(4u, totalSlots);
+    // The freelist should have one entry, because we were able to exactly fit
+    // one object slot and one freelist pointer (the null that the head points
+    // to) into a system page.
+    EXPECT_TRUE(partitionPageFreelistHead(page));
     EXPECT_EQ(1, page->numAllocatedSlots);
+    EXPECT_EQ(2, page->numUnprovisionedSlots);
 
     void* ptr2 = partitionAlloc(allocator.root(), bigSize);
     EXPECT_TRUE(ptr2);
-    EXPECT_EQ(0, partitionPageFreelistHead(page));
+    EXPECT_FALSE(partitionPageFreelistHead(page));
     EXPECT_EQ(2, page->numAllocatedSlots);
+    EXPECT_EQ(2, page->numUnprovisionedSlots);
 
     void* ptr3 = partitionAlloc(allocator.root(), bigSize);
     EXPECT_TRUE(ptr3);
-    EXPECT_EQ(0, partitionPageFreelistHead(page));
+    EXPECT_TRUE(partitionPageFreelistHead(page));
     EXPECT_EQ(3, page->numAllocatedSlots);
+    EXPECT_EQ(0, page->numUnprovisionedSlots);
 
     void* ptr4 = partitionAlloc(allocator.root(), bigSize);
     EXPECT_TRUE(ptr4);
-    EXPECT_EQ(0, partitionPageFreelistHead(page));
+    EXPECT_FALSE(partitionPageFreelistHead(page));
     EXPECT_EQ(4, page->numAllocatedSlots);
+    EXPECT_EQ(0, page->numUnprovisionedSlots);
 
     void* ptr5 = partitionAlloc(allocator.root(), bigSize);
     EXPECT_TRUE(ptr5);
@@ -588,7 +595,7 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     EXPECT_EQ(0, page2->numAllocatedSlots);
 
     // And test a couple of sizes that do not cross kSystemPageSize with a single allocation.
-    size_t mediumSize = WTF::kSystemPageSize / 2;
+    size_t mediumSize = (WTF::kSystemPageSize / 2) - kExtraAllocSize;
     bucketIdx = (mediumSize + kExtraAllocSize) >> WTF::kBucketShift;
     bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->freePagesHead);
@@ -597,13 +604,14 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     EXPECT_TRUE(ptr);
     page = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr));
     EXPECT_EQ(1, page->numAllocatedSlots);
-    size_t totalSlots = (page->bucket->numSystemPagesPerSlotSpan * WTF::kSystemPageSize) / (mediumSize + kExtraAllocSize);
+    totalSlots = (page->bucket->numSystemPagesPerSlotSpan * WTF::kSystemPageSize) / (mediumSize + kExtraAllocSize);
     size_t firstPageSlots = WTF::kSystemPageSize / (mediumSize + kExtraAllocSize);
+    EXPECT_EQ(2u, firstPageSlots);
     EXPECT_EQ(totalSlots - firstPageSlots, page->numUnprovisionedSlots);
 
     partitionFree(ptr);
 
-    size_t smallSize = WTF::kSystemPageSize / 4;
+    size_t smallSize = (WTF::kSystemPageSize / 4) - kExtraAllocSize;
     bucketIdx = (smallSize + kExtraAllocSize) >> WTF::kBucketShift;
     bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->freePagesHead);
@@ -620,7 +628,7 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     EXPECT_TRUE(partitionPageFreelistHead(page));
     EXPECT_EQ(0, page->numAllocatedSlots);
 
-    size_t verySmallSize = WTF::kAllocationGranularity;
+    size_t verySmallSize = (WTF::kAllocationGranularity * 2) - kExtraAllocSize;
     bucketIdx = (verySmallSize + kExtraAllocSize) >> WTF::kBucketShift;
     bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->freePagesHead);
@@ -636,6 +644,29 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     partitionFree(ptr);
     EXPECT_TRUE(partitionPageFreelistHead(page));
     EXPECT_EQ(0, page->numAllocatedSlots);
+
+    // And try an allocation size (against the generic allocator) that is
+    // larger than a system page.
+    size_t pageAndAHalfSize = (WTF::kSystemPageSize + (WTF::kSystemPageSize / 2)) - kExtraAllocSize;
+    ptr = partitionAllocGeneric(genericAllocator.root(), pageAndAHalfSize);
+    EXPECT_TRUE(ptr);
+    page = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr));
+    EXPECT_EQ(1, page->numAllocatedSlots);
+    EXPECT_TRUE(partitionPageFreelistHead(page));
+    totalSlots = (page->bucket->numSystemPagesPerSlotSpan * WTF::kSystemPageSize) / (pageAndAHalfSize + kExtraAllocSize);
+    EXPECT_EQ(totalSlots - 2, page->numUnprovisionedSlots);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
+
+    // And then make sure than exactly the page size only faults one page.
+    size_t pageSize = WTF::kSystemPageSize - kExtraAllocSize;
+    ptr = partitionAllocGeneric(genericAllocator.root(), pageSize);
+    EXPECT_TRUE(ptr);
+    page = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr));
+    EXPECT_EQ(1, page->numAllocatedSlots);
+    EXPECT_FALSE(partitionPageFreelistHead(page));
+    totalSlots = (page->bucket->numSystemPagesPerSlotSpan * WTF::kSystemPageSize) / (pageSize + kExtraAllocSize);
+    EXPECT_EQ(totalSlots - 1, page->numUnprovisionedSlots);
+    partitionFreeGeneric(genericAllocator.root(), ptr);
 
     TestShutdown();
 }
