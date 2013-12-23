@@ -111,12 +111,11 @@ void SendNativeCommandShift(int key_code) {
 }
 #endif
 
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-// The feature is only fully implemented on Windows and Linux, other platforms
-// coming.
-#define MAYBE_GlobalCommand GlobalCommand
-#else
+#if defined(OS_CHROMEOS)
+// Fully implemented everywhere except Chrome OS.
 #define MAYBE_GlobalCommand DISABLED_GlobalCommand
+#else
+#define MAYBE_GlobalCommand GlobalCommand
 #endif
 
 // Test the basics of global commands and make sure they work when Chrome
