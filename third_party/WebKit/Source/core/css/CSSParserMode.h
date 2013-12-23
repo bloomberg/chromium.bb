@@ -37,7 +37,7 @@ namespace WebCore {
 
 class Document;
 
-// Must not grow beyond 3 bytes, due to packing in StylePropertySet.
+// Must not grow beyond 3 bits, due to packing in StylePropertySet.
 enum CSSParserMode {
     HTMLStandardMode,
     HTMLQuirksMode,

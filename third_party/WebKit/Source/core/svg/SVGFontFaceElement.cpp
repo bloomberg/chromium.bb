@@ -28,7 +28,6 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "core/css/CSSFontFaceSrcValue.h"
-#include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/StylePropertySet.h"

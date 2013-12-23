@@ -34,7 +34,6 @@
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSMediaRule.h"
-#include "core/css/CSSParser.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
