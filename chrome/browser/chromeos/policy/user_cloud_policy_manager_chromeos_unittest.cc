@@ -58,7 +58,6 @@ namespace policy {
 namespace {
 
 const char kOAuthTokenCookie[] = "oauth_token=1234";
-const char kTestAccountId[] = "user@gmail.com";
 
 const char kOAuth2TokenPairData[] =
     "{"
@@ -533,9 +532,10 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
     static_cast<FakeProfileOAuth2TokenService*>(
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile_));
   ASSERT_TRUE(token_service);
-  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(kTestAccountId));
-  token_service->IssueRefreshToken(kTestAccountId);
-  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(kTestAccountId));
+  const std::string account_id = token_service->GetPrimaryAccountId();
+  EXPECT_FALSE(token_service->RefreshTokenIsAvailable(account_id));
+  token_service->UpdateCredentials(account_id, "refresh_token");
+  EXPECT_TRUE(token_service->RefreshTokenIsAvailable(account_id));
 
   // That should have notified the manager, which now issues the request for the
   // policy oauth token.
