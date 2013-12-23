@@ -316,7 +316,9 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest,
 }
 
 // Verifies that device policy is ignored during a session.
-IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetDevicePolicy) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest,
+                       DISABLED_SetDevicePolicy) {
   pm::PowerManagementPolicy power_management_policy =
       power_manager_client_->get_policy();
 
