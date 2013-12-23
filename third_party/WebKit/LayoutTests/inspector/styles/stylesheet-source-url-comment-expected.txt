@@ -5,13 +5,10 @@ Running: testSourceURLCommentInInlineScript
 
 Running: testSourceURLComment
 body { color: black; }
-/*# sourceURL=css/addedInlineStylesheet.css */
 
 Running: testDeprecatedSourceURLComment
 body { color: black; }
-/*@ sourceURL=css/addedInlineStylesheetDeprecated.css */
 
 Running: testNonRelativeURL
 body { color: red; }
-/*# sourceURL=/css/nonRelativeInlineStylesheet.css */
 
