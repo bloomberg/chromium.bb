@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -151,9 +152,14 @@ class WebsiteSettingsPopupView
   // provided by the website. If the site does not provide a certificate then
   // |certificate_dialog_link_| is NULL.
   views::Link* certificate_dialog_link_;
+
   // The id of the certificate provided by the site. If the site does not
   // provide a certificate then |cert_id_| is 0.
   int cert_id_;
+  // The IDs and validation status of Signed Certificate TImestamps provided
+  // by the site. Empty if no SCTs accompany the certificate.
+  content::SignedCertificateTimestampIDStatusList
+      signed_certificate_timestamp_ids_;
 
   // The link to open the help center page that contains more information about
   // the connection status icons.

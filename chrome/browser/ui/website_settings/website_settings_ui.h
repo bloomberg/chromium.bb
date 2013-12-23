@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"
+#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "ui/gfx/native_widget_types.h"
 
 
@@ -74,6 +75,7 @@ class WebsiteSettingsUI {
   // connection.
   struct IdentityInfo {
     IdentityInfo();
+    ~IdentityInfo();
 
     // The site's identity.
     std::string site_identity;
@@ -86,6 +88,9 @@ class WebsiteSettingsUI {
     std::string identity_status_description;
     // The ID is the server certificate of a secure connection or 0.
     int cert_id;
+    // Signed Certificate Timestamp ids and status
+    content::SignedCertificateTimestampIDStatusList
+        signed_certificate_timestamp_ids;
     // Status of the site's connection.
     WebsiteSettings::SiteConnectionStatus connection_status;
     // Textual description of the site's connection status that is displayed to

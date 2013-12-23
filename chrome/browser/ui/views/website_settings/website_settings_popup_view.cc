@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 
+#include <algorithm>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -161,7 +163,7 @@ PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  column_set->AddPaddingColumn(1,0);
+  column_set->AddPaddingColumn(1, 0);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
@@ -521,15 +523,22 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
   base::string16 headline;
   if (identity_info.cert_id) {
     cert_id_ = identity_info.cert_id;
+    signed_certificate_timestamp_ids_.assign(
+        identity_info.signed_certificate_timestamp_ids.begin(),
+        identity_info.signed_certificate_timestamp_ids.end());
+
     certificate_dialog_link_ = new views::Link(
         l10n_util::GetStringUTF16(IDS_PAGEINFO_CERT_INFO_BUTTON));
     certificate_dialog_link_->set_listener(this);
+
+    // XXX(eranm): Wire the SCT Viewer here.
+
     headline = UTF8ToUTF16(identity_info.site_identity);
   }
   ResetConnectionSection(
       identity_info_content_,
       WebsiteSettingsUI::GetIdentityIcon(identity_info.identity_status),
-      base::string16(), // The identity section has no headline.
+      base::string16(),  // The identity section has no headline.
       UTF8ToUTF16(identity_info.identity_status_description),
       certificate_dialog_link_);
 

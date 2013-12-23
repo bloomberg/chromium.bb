@@ -86,6 +86,8 @@ WebsiteSettingsUI::IdentityInfo::IdentityInfo()
       connection_status(WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN) {
 }
 
+WebsiteSettingsUI::IdentityInfo::~IdentityInfo() {}
+
 base::string16 WebsiteSettingsUI::IdentityInfo::GetIdentityStatusText() const {
   if (identity_status == WebsiteSettings::SITE_IDENTITY_STATUS_CERT ||
       identity_status ==  WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
