@@ -312,15 +312,15 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const ErrorConsole::ErrorList& errors =
         error_console->GetErrorsForExtension(extension->id());
     if (!errors.empty()) {
-      scoped_ptr<ListValue> manifest_errors(new ListValue);
-      scoped_ptr<ListValue> runtime_errors(new ListValue);
+      scoped_ptr<base::ListValue> manifest_errors(new base::ListValue);
+      scoped_ptr<base::ListValue> runtime_errors(new base::ListValue);
       for (ErrorConsole::ErrorList::const_iterator iter = errors.begin();
            iter != errors.end(); ++iter) {
         if ((*iter)->type() == ExtensionError::MANIFEST_ERROR) {
           manifest_errors->Append((*iter)->ToValue().release());
         } else {  // Handle runtime error.
           const RuntimeError* error = static_cast<const RuntimeError*>(*iter);
-          scoped_ptr<DictionaryValue> value = error->ToValue();
+          scoped_ptr<base::DictionaryValue> value = error->ToValue();
           bool can_inspect =
               !(deleting_rwh_id_ == error->render_view_id() &&
                 deleting_rph_id_ == error->render_process_id()) &&

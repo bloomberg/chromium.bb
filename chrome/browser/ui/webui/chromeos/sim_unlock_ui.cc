@@ -225,12 +225,12 @@ class SimUnlockHandler : public WebUIMessageHandler,
   void HandleEnterCode(SimUnlockCode code_type, const std::string& code);
 
   // Handlers for JS WebUI messages.
-  void HandleCancel(const ListValue* args);
-  void HandleChangePinCode(const ListValue* args);
-  void HandleEnterPinCode(const ListValue* args);
-  void HandleEnterPukCode(const ListValue* args);
-  void HandleProceedToPukInput(const ListValue* args);
-  void HandleSimStatusInitialize(const ListValue* args);
+  void HandleCancel(const base::ListValue* args);
+  void HandleChangePinCode(const base::ListValue* args);
+  void HandleEnterPinCode(const base::ListValue* args);
+  void HandleEnterPukCode(const base::ListValue* args);
+  void HandleProceedToPukInput(const base::ListValue* args);
+  void HandleSimStatusInitialize(const base::ListValue* args);
 
   // Initialize current SIM card status, passes that to page.
   void InitializeSimStatus();
@@ -292,7 +292,7 @@ void SimUnlockUIHTMLSource::StartDataRequest(
     int render_process_id,
     int render_frame_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  DictionaryValue strings;
+  base::DictionaryValue strings;
   strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_ENTER_PIN_TITLE));
   strings.SetString("ok", l10n_util::GetStringUTF16(IDS_OK));
@@ -620,7 +620,7 @@ void SimUnlockHandler::NotifyOnRequirePinChangeEnded(bool new_value) {
       content::Details<bool>(&new_value));
 }
 
-void SimUnlockHandler::HandleCancel(const ListValue* args) {
+void SimUnlockHandler::HandleCancel(const base::ListValue* args) {
   const size_t kEnterCodeParamCount = 0;
   if (args->GetSize() != kEnterCodeParamCount) {
     NOTREACHED();
@@ -631,7 +631,7 @@ void SimUnlockHandler::HandleCancel(const ListValue* args) {
       base::Bind(&TaskProxy::HandleCancel, task.get()));
 }
 
-void SimUnlockHandler::HandleChangePinCode(const ListValue* args) {
+void SimUnlockHandler::HandleChangePinCode(const base::ListValue* args) {
   const size_t kChangePinParamCount = 2;
   std::string pin;
   std::string new_pin;
@@ -652,7 +652,7 @@ void SimUnlockHandler::HandleEnterCode(SimUnlockCode code_type,
       base::Bind(&TaskProxy::HandleEnterCode, task.get()));
 }
 
-void SimUnlockHandler::HandleEnterPinCode(const ListValue* args) {
+void SimUnlockHandler::HandleEnterPinCode(const base::ListValue* args) {
   const size_t kEnterPinParamCount = 1;
   std::string pin;
   if (args->GetSize() != kEnterPinParamCount || !args->GetString(0, &pin)) {
@@ -662,7 +662,7 @@ void SimUnlockHandler::HandleEnterPinCode(const ListValue* args) {
   HandleEnterCode(CODE_PIN, pin);
 }
 
-void SimUnlockHandler::HandleEnterPukCode(const ListValue* args) {
+void SimUnlockHandler::HandleEnterPukCode(const base::ListValue* args) {
   const size_t kEnterPukParamCount = 2;
   std::string puk;
   std::string new_pin;
@@ -676,7 +676,7 @@ void SimUnlockHandler::HandleEnterPukCode(const ListValue* args) {
   HandleEnterCode(CODE_PUK, puk);
 }
 
-void SimUnlockHandler::HandleProceedToPukInput(const ListValue* args) {
+void SimUnlockHandler::HandleProceedToPukInput(const base::ListValue* args) {
   const size_t kProceedToPukInputParamCount = 0;
   if (args->GetSize() != kProceedToPukInputParamCount) {
     NOTREACHED();
@@ -687,7 +687,7 @@ void SimUnlockHandler::HandleProceedToPukInput(const ListValue* args) {
       base::Bind(&TaskProxy::HandleProceedToPukInput, task.get()));
 }
 
-void SimUnlockHandler::HandleSimStatusInitialize(const ListValue* args) {
+void SimUnlockHandler::HandleSimStatusInitialize(const base::ListValue* args) {
   const size_t kSimStatusInitializeParamCount = 1;
   double mode;
   if (args->GetSize() != kSimStatusInitializeParamCount ||
@@ -812,7 +812,7 @@ void SimUnlockHandler::ProcessSimCardState(
 
 void SimUnlockHandler::UpdatePage(const DeviceState* cellular,
                                   const std::string& error_msg) {
-  DictionaryValue sim_dict;
+  base::DictionaryValue sim_dict;
   if (cellular)
     sim_dict.SetInteger(kTriesLeft, cellular->sim_retries_left());
   sim_dict.SetInteger(kState, state_);

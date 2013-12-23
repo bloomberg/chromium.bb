@@ -293,7 +293,7 @@ void LocalDiscoveryUIHandler::OnPrivetRegisterError(
     const std::string& action,
     PrivetRegisterOperation::FailureReason reason,
     int printer_http_code,
-    const DictionaryValue* json) {
+    const base::DictionaryValue* json) {
   std::string error;
 
   if (reason == PrivetRegisterOperation::FAILURE_JSON_ERROR &&
@@ -556,7 +556,8 @@ void LocalDiscoveryUIHandler::OnCloudPrintPrefsChanged() {
     SetupCloudPrintConnectorSection();
 }
 
-void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
+void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(
+    const base::ListValue* args) {
   content::RecordAction(
       content::UserMetricsAction("Options_EnableCloudPrintProxy"));
   // Open the connector enable page in the current tab.
@@ -569,7 +570,7 @@ void LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog(const ListValue* args) {
 }
 
 void LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector(
-    const ListValue* args) {
+    const base::ListValue* args) {
   content::RecordAction(
       content::UserMetricsAction("Options_DisableCloudPrintProxy"));
   CloudPrintProxyServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()))->
@@ -608,7 +609,7 @@ void LocalDiscoveryUIHandler::SetupCloudPrintConnectorSection() {
         l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
         UTF8ToUTF16(email));
   }
-  StringValue label(label_str);
+  base::StringValue label(label_str);
 
   web_ui()->CallJavascriptFunction(
       "local_discovery.setupCloudPrintConnectorSection", disabled, label,

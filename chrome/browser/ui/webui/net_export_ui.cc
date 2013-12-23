@@ -59,10 +59,10 @@ class NetExportMessageHandler
   virtual void RegisterMessages() OVERRIDE;
 
   // Messages.
-  void OnGetExportNetLogInfo(const ListValue* list);
-  void OnStartNetLog(const ListValue* list);
-  void OnStopNetLog(const ListValue* list);
-  void OnSendNetLog(const ListValue* list);
+  void OnGetExportNetLogInfo(const base::ListValue* list);
+  void OnStartNetLog(const base::ListValue* list);
+  void OnStopNetLog(const base::ListValue* list);
+  void OnSendNetLog(const base::ListValue* list);
 
  private:
   // Calls NetLogTempFile's ProcessCommand with DO_START and DO_STOP commands.
@@ -84,7 +84,7 @@ class NetExportMessageHandler
 
   // Call NetExportView.onExportNetLogInfoChanged JavsScript function in the
   // renderer, passing in |arg|. Takes ownership of |arg|.
-  void OnExportNetLogInfoChanged(Value* arg);
+  void OnExportNetLogInfoChanged(base::Value* arg);
 
   // Cache of g_browser_process->net_log()->net_log_temp_file().
   NetLogTempFile* net_log_temp_file_;
@@ -130,7 +130,8 @@ void NetExportMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void NetExportMessageHandler::OnGetExportNetLogInfo(const ListValue* list) {
+void NetExportMessageHandler::OnGetExportNetLogInfo(
+    const base::ListValue* list) {
   BrowserThread::PostTask(
       BrowserThread::FILE_USER_BLOCKING,
       FROM_HERE,
@@ -139,19 +140,19 @@ void NetExportMessageHandler::OnGetExportNetLogInfo(const ListValue* list) {
                  net_log_temp_file_));
 }
 
-void NetExportMessageHandler::OnStartNetLog(const ListValue* list) {
+void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
   ProcessNetLogCommand(weak_ptr_factory_.GetWeakPtr(),
                        net_log_temp_file_,
                        NetLogTempFile::DO_START);
 }
 
-void NetExportMessageHandler::OnStopNetLog(const ListValue* list) {
+void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
   ProcessNetLogCommand(weak_ptr_factory_.GetWeakPtr(),
                        net_log_temp_file_,
                        NetLogTempFile::DO_STOP);
 }
 
-void NetExportMessageHandler::OnSendNetLog(const ListValue* list) {
+void NetExportMessageHandler::OnSendNetLog(const base::ListValue* list) {
   content::BrowserThread::PostTaskAndReplyWithResult(
     content::BrowserThread::FILE_USER_BLOCKING,
         FROM_HERE,
@@ -195,7 +196,7 @@ void NetExportMessageHandler::SendExportNetLogInfo(
     base::WeakPtr<NetExportMessageHandler> net_export_message_handler,
     NetLogTempFile* net_log_temp_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
-  Value* value = net_log_temp_file->GetState();
+  base::Value* value = net_log_temp_file->GetState();
   if (!BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NetExportMessageHandler::OnExportNetLogInfoChanged,
@@ -225,8 +226,8 @@ void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
 #endif
 }
 
-void NetExportMessageHandler::OnExportNetLogInfoChanged(Value* arg) {
-  scoped_ptr<Value> value(arg);
+void NetExportMessageHandler::OnExportNetLogInfoChanged(base::Value* arg) {
+  scoped_ptr<base::Value> value(arg);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   web_ui()->CallJavascriptFunction(
       "NetExportView.getInstance().onExportNetLogInfoChanged", *arg);

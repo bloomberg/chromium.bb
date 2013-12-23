@@ -287,7 +287,7 @@ BrowsingHistoryHandler::HistoryEntry::~HistoryEntry() {
 }
 
 void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
-    DictionaryValue* result) const {
+    base::DictionaryValue* result) const {
   result->SetString("url", url.spec());
 
   bool using_url_as_the_title = false;
@@ -310,11 +310,11 @@ void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
   result->SetString("title", title_to_set);
 }
 
-scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
+scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
     BookmarkModel* bookmark_model,
     ManagedUserService* managed_user_service,
     const ProfileSyncService* sync_service) const {
-  scoped_ptr<DictionaryValue> result(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   SetUrlAndTitle(result.get());
 
   base::string16 domain = net::IDNToUnicode(url.host(), accept_languages);
@@ -327,7 +327,7 @@ scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   result->SetDouble("time", time.ToJsTime());
 
   // Pass the timestamps in a list.
-  scoped_ptr<ListValue> timestamps(new ListValue);
+  scoped_ptr<base::ListValue> timestamps(new base::ListValue);
   for (std::set<int64>::const_iterator it = all_timestamps.begin();
        it != all_timestamps.end(); ++it) {
     timestamps->AppendDouble(base::Time::FromInternalValue(*it).ToJsTime());
@@ -417,9 +417,10 @@ void BrowsingHistoryHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(const ListValue* value,
-                                                        int index,
-                                                        int* out_int) {
+bool BrowsingHistoryHandler::ExtractIntegerValueAtIndex(
+    const base::ListValue* value,
+    int index,
+    int* out_int) {
   double double_value;
   if (value->GetDouble(index, &double_value)) {
     *out_int = static_cast<int>(double_value);
@@ -479,7 +480,7 @@ void BrowsingHistoryHandler::QueryHistory(
   }
 }
 
-void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
+void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {
   history::QueryOptions options;
 
   // Parse the arguments from JavaScript. There are five required arguments:
@@ -526,7 +527,7 @@ void BrowsingHistoryHandler::HandleQueryHistory(const ListValue* args) {
   QueryHistory(search_text, options);
 }
 
-void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
+void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (delete_task_tracker_.HasTrackedTasks() ||
       !profile->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory)) {
@@ -544,10 +545,11 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
   expire_list.reserve(args->GetSize());
 
   DCHECK(urls_to_be_deleted_.empty());
-  for (ListValue::const_iterator it = args->begin(); it != args->end(); ++it) {
-    DictionaryValue* deletion = NULL;
+  for (base::ListValue::const_iterator it = args->begin();
+       it != args->end(); ++it) {
+    base::DictionaryValue* deletion = NULL;
     base::string16 url;
-    ListValue* timestamps = NULL;
+    base::ListValue* timestamps = NULL;
 
     // Each argument is a dictionary with properties "url" and "timestamps".
     if (!((*it)->GetAsDictionary(&deletion) &&
@@ -567,7 +569,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
 
     double timestamp;
     history::ExpireHistoryArgs* expire_args = NULL;
-    for (ListValue::const_iterator ts_iterator = timestamps->begin();
+    for (base::ListValue::const_iterator ts_iterator = timestamps->begin();
          ts_iterator != timestamps->end(); ++ts_iterator) {
       if (!(*ts_iterator)->GetAsDouble(&timestamp)) {
         NOTREACHED() << "Unable to extract visit timestamp.";
@@ -630,7 +632,8 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const ListValue* args) {
 #endif
 }
 
-void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
+void BrowsingHistoryHandler::HandleClearBrowsingData(
+    const base::ListValue* args) {
 #if defined(OS_ANDROID)
   Profile* profile = Profile::FromWebUI(web_ui());
   const TabModel* tab_model =
@@ -646,7 +649,7 @@ void BrowsingHistoryHandler::HandleClearBrowsingData(const ListValue* args) {
 #endif
 }
 
-void BrowsingHistoryHandler::HandleRemoveBookmark(const ListValue* args) {
+void BrowsingHistoryHandler::HandleRemoveBookmark(const base::ListValue* args) {
   base::string16 url = ExtractStringValue(args);
   Profile* profile = Profile::FromWebUI(web_ui());
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile);
@@ -731,7 +734,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
   }
 
   // Convert the result vector into a ListValue.
-  ListValue results_value;
+  base::ListValue results_value;
   for (std::vector<BrowsingHistoryHandler::HistoryEntry>::iterator it =
            query_results_.begin(); it != query_results_.end(); ++it) {
     scoped_ptr<base::Value> value(
@@ -795,7 +798,7 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
     const history::QueryOptions& options,
     base::TimeTicks start_time,
     history::WebHistoryService::Request* request,
-    const DictionaryValue* results_value) {
+    const base::DictionaryValue* results_value) {
   base::TimeDelta delta = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES("WebHistory.ResponseTime", delta);
   const std::string accept_languages = GetAcceptLanguages();
@@ -812,14 +815,14 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
       NUM_WEB_HISTORY_QUERY_BUCKETS);
 
   DCHECK_EQ(0U, web_history_query_results_.size());
-  const ListValue* events = NULL;
+  const base::ListValue* events = NULL;
   if (results_value && results_value->GetList("event", &events)) {
     web_history_query_results_.reserve(events->GetSize());
     for (unsigned int i = 0; i < events->GetSize(); ++i) {
-      const DictionaryValue* event = NULL;
-      const DictionaryValue* result = NULL;
-      const ListValue* results = NULL;
-      const ListValue* ids = NULL;
+      const base::DictionaryValue* event = NULL;
+      const base::DictionaryValue* result = NULL;
+      const base::ListValue* results = NULL;
+      const base::ListValue* ids = NULL;
       base::string16 url;
       base::string16 title;
       base::Time visit_time;
@@ -839,7 +842,7 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
       // Extract the timestamps of all the visits to this URL.
       // They are referred to as "IDs" by the server.
       for (int j = 0; j < static_cast<int>(ids->GetSize()); ++j) {
-        const DictionaryValue* id = NULL;
+        const base::DictionaryValue* id = NULL;
         std::string timestamp_string;
         int64 timestamp_usec;
 

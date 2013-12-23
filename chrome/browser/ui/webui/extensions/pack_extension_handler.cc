@@ -68,8 +68,8 @@ void PackExtensionHandler::RegisterMessages() {
 
 void PackExtensionHandler::OnPackSuccess(const base::FilePath& crx_file,
                                          const base::FilePath& pem_file) {
-  ListValue arguments;
-  arguments.Append(Value::CreateStringValue(
+  base::ListValue arguments;
+  arguments.Append(base::Value::CreateStringValue(
       UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(
           crx_file, pem_file))));
   web_ui()->CallJavascriptFunction(
@@ -94,8 +94,8 @@ void PackExtensionHandler::OnPackFailure(const std::string& error,
 
 void PackExtensionHandler::FileSelected(const base::FilePath& path, int index,
                                         void* params) {
-  ListValue results;
-  results.Append(Value::CreateStringValue(path.value()));
+  base::ListValue results;
+  results.Append(base::Value::CreateStringValue(path.value()));
   web_ui()->CallJavascriptFunction("window.handleFilePathSelected", results);
 }
 
@@ -104,7 +104,7 @@ void PackExtensionHandler::MultiFilesSelected(
   NOTREACHED();
 }
 
-void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
+void PackExtensionHandler::HandlePackMessage(const base::ListValue* args) {
   DCHECK_EQ(3U, args->GetSize());
 
   double flags_double = 0.0;
@@ -149,7 +149,7 @@ void PackExtensionHandler::HandlePackMessage(const ListValue* args) {
 }
 
 void PackExtensionHandler::HandleSelectFilePathMessage(
-    const ListValue* args) {
+    const base::ListValue* args) {
   DCHECK_EQ(2U, args->GetSize());
 
   std::string select_type;
@@ -200,8 +200,8 @@ void PackExtensionHandler::HandleSelectFilePathMessage(
 }
 
 void PackExtensionHandler::ShowAlert(const std::string& message) {
-  ListValue arguments;
-  arguments.Append(Value::CreateStringValue(message));
+  base::ListValue arguments;
+  arguments.Append(base::Value::CreateStringValue(message));
   web_ui()->CallJavascriptFunction(
       "extensions.PackExtensionOverlay.showError", arguments);
 }

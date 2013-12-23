@@ -69,9 +69,9 @@ class SlowHandler : public WebUIMessageHandler {
   void UpdatePage();
 
   // Handlers for JS WebUI messages.
-  void HandleDisable(const ListValue* args);
-  void HandleEnable(const ListValue* args);
-  void LoadComplete(const ListValue* args);
+  void HandleDisable(const base::ListValue* args);
+  void HandleEnable(const base::ListValue* args);
+  void LoadComplete(const base::ListValue* args);
 
   Profile* profile_;
   scoped_ptr<PrefChangeRegistrar> user_pref_registrar_;
@@ -102,17 +102,17 @@ void SlowHandler::RegisterMessages() {
                                        base::Unretained(this)));
 }
 
-void SlowHandler::HandleDisable(const ListValue* args) {
+void SlowHandler::HandleDisable(const base::ListValue* args) {
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetBoolean(prefs::kPerformanceTracingEnabled, false);
 }
 
-void SlowHandler::HandleEnable(const ListValue* args) {
+void SlowHandler::HandleEnable(const base::ListValue* args) {
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetBoolean(prefs::kPerformanceTracingEnabled, true);
 }
 
-void SlowHandler::LoadComplete(const ListValue* args) {
+void SlowHandler::LoadComplete(const base::ListValue* args) {
   UpdatePage();
 }
 

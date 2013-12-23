@@ -96,7 +96,7 @@ void BaseScreenHandler::ShowScreen(const char* screen_name,
                                    const base::DictionaryValue* data) {
   if (!web_ui())
     return;
-  DictionaryValue screen_params;
+  base::DictionaryValue screen_params;
   screen_params.SetString("id", screen_name);
   if (data)
     screen_params.SetWithoutPathExpansion("data", data->DeepCopy());

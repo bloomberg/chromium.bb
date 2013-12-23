@@ -43,12 +43,12 @@ void MetricsHandler::RegisterMessages() {
       base::Bind(&MetricsHandler::HandleLogMouseover, base::Unretained(this)));
 }
 
-void MetricsHandler::HandleRecordAction(const ListValue* args) {
+void MetricsHandler::HandleRecordAction(const base::ListValue* args) {
   std::string string_action = UTF16ToUTF8(ExtractStringValue(args));
   content::RecordComputedAction(string_action);
 }
 
-void MetricsHandler::HandleRecordInHistogram(const ListValue* args) {
+void MetricsHandler::HandleRecordInHistogram(const base::ListValue* args) {
   std::string histogram_name;
   double value;
   double boundary_value;
@@ -82,7 +82,7 @@ void MetricsHandler::HandleRecordInHistogram(const ListValue* args) {
   counter->Add(int_value);
 }
 
-void MetricsHandler::HandleLogEventTime(const ListValue* args) {
+void MetricsHandler::HandleLogEventTime(const base::ListValue* args) {
   std::string event_name = UTF16ToUTF8(ExtractStringValue(args));
   WebContents* tab = web_ui()->GetWebContents();
 
@@ -115,7 +115,7 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
       content::Details<MetricEventDurationDetails>(&details));
 }
 
-void MetricsHandler::HandleLogMouseover(const ListValue* args) {
+void MetricsHandler::HandleLogMouseover(const base::ListValue* args) {
   NTPUserDataLogger::GetOrCreateFromWebContents(
       web_ui()->GetWebContents())->LogEvent(NTP_MOUSEOVER);
 }

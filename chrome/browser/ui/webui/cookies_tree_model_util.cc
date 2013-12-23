@@ -291,7 +291,7 @@ void CookiesTreeModelUtil::GetChildNodeList(const CookieTreeNode* parent,
                                             int count,
                                             base::ListValue* nodes) {
   for (int i = 0; i < count; ++i) {
-    scoped_ptr<base::DictionaryValue> dict(new DictionaryValue);
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
     const CookieTreeNode* child = parent->GetChild(start + i);
     if (GetCookieTreeNodeDictionary(*child, dict.get()))
       nodes->Append(dict.release());

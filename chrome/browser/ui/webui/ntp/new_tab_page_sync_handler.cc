@@ -77,7 +77,7 @@ void NewTabPageSyncHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void NewTabPageSyncHandler::HandleGetSyncMessage(const ListValue* args) {
+void NewTabPageSyncHandler::HandleGetSyncMessage(const base::ListValue* args) {
   waiting_for_initial_page_load_ = false;
   BuildAndSendSyncStatus();
 }
@@ -123,7 +123,7 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
                         UTF16ToUTF8(status_msg), UTF16ToUTF8(link_text));
 }
 
-void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
+void NewTabPageSyncHandler::HandleSyncLinkClicked(const base::ListValue* args) {
   DCHECK(!waiting_for_initial_page_load_);
   if (!sync_service_ || !sync_service_->IsSyncEnabled())
     return;
@@ -136,7 +136,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const ListValue* args) {
   if (sync_service_->HasSyncSetupCompleted()) {
     base::string16 user = UTF8ToUTF16(SigninManagerFactory::GetForProfile(
         Profile::FromWebUI(web_ui()))->GetAuthenticatedUsername());
-    DictionaryValue value;
+    base::DictionaryValue value;
     value.SetString("syncEnabledMessage",
                     l10n_util::GetStringFUTF16(IDS_SYNC_NTP_SYNCED_TO,
                     user));
@@ -163,7 +163,7 @@ void NewTabPageSyncHandler::OnSigninAllowedPrefChange() {
 void NewTabPageSyncHandler::SendSyncMessageToPage(
     MessageType type, std::string msg,
     std::string linktext) {
-  DictionaryValue value;
+  base::DictionaryValue value;
   std::string user;
   std::string title;
   std::string linkurl;

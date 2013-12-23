@@ -147,7 +147,7 @@ class ExtensionSettingsHandler
   void HandleInspectMessage(const base::ListValue* args);
 
   // Callback for "launch" message.
-  void HandleLaunchMessage(const ListValue* args);
+  void HandleLaunchMessage(const base::ListValue* args);
 
   // Callback for "reload" message.
   void HandleReloadMessage(const base::ListValue* args);

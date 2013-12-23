@@ -75,7 +75,7 @@ void ConstrainedWebDialogUI::RenderViewCreated(
   dialog_delegate->OnDialogShown(web_ui(), render_view_host);
 }
 
-void ConstrainedWebDialogUI::OnDialogCloseMessage(const ListValue* args) {
+void ConstrainedWebDialogUI::OnDialogCloseMessage(const base::ListValue* args) {
   ConstrainedWebDialogDelegate* delegate = GetConstrainedDelegate();
   if (!delegate)
     return;

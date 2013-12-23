@@ -121,11 +121,11 @@ void NTPLoginHandler::Observe(int type,
   }
 }
 
-void NTPLoginHandler::HandleInitializeSyncLogin(const ListValue* args) {
+void NTPLoginHandler::HandleInitializeSyncLogin(const base::ListValue* args) {
   UpdateLogin();
 }
 
-void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
+void NTPLoginHandler::HandleShowSyncLoginUI(const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string username = profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername);
@@ -180,7 +180,7 @@ void NTPLoginHandler::RecordInHistogram(int type) {
   }
 }
 
-void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
+void NTPLoginHandler::HandleLoginMessageSeen(const base::ListValue* args) {
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kSignInPromoShowNTPBubble, false);
   NewTabUI* ntp_ui = NewTabUI::FromWebUIController(web_ui()->GetController());
@@ -189,7 +189,7 @@ void NTPLoginHandler::HandleLoginMessageSeen(const ListValue* args) {
     ntp_ui->set_showing_sync_bubble(true);
 }
 
-void NTPLoginHandler::HandleShowAdvancedLoginUI(const ListValue* args) {
+void NTPLoginHandler::HandleShowAdvancedLoginUI(const base::ListValue* args) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   if (browser)
@@ -247,9 +247,9 @@ void NTPLoginHandler::UpdateLogin() {
 #endif
   }
 
-  StringValue header_value(header);
-  StringValue sub_header_value(sub_header);
-  StringValue icon_url_value(icon_url);
+  base::StringValue header_value(header);
+  base::StringValue sub_header_value(sub_header);
+  base::StringValue icon_url_value(icon_url);
   base::FundamentalValue is_user_signed_in(!username.empty());
   web_ui()->CallJavascriptFunction("ntp.updateLogin",
       header_value, sub_header_value, icon_url_value, is_user_signed_in);
@@ -269,7 +269,7 @@ bool NTPLoginHandler::ShouldShow(Profile* profile) {
 
 // static
 void NTPLoginHandler::GetLocalizedValues(Profile* profile,
-                                         DictionaryValue* values) {
+                                         base::DictionaryValue* values) {
   PrefService* prefs = profile->GetPrefs();
   bool hide_sync = !prefs->GetBoolean(prefs::kSignInPromoShowNTPBubble);
 

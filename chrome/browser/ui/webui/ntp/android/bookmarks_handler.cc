@@ -142,7 +142,7 @@ void BookmarksHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void BookmarksHandler::HandleGetBookmarks(const ListValue* args) {
+void BookmarksHandler::HandleGetBookmarks(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   bookmark_data_requested_ = true;
@@ -156,7 +156,7 @@ void BookmarksHandler::HandleGetBookmarks(const ListValue* args) {
     QueryInitialBookmarks();
 }
 
-void BookmarksHandler::HandleDeleteBookmark(const ListValue* args) {
+void BookmarksHandler::HandleDeleteBookmark(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!AreModelsLoaded())
     return;
@@ -183,7 +183,7 @@ void BookmarksHandler::HandleDeleteBookmark(const ListValue* args) {
   bookmark_model_->Remove(parent_node, parent_node->GetIndexOf(node));
 }
 
-void BookmarksHandler::HandleEditBookmark(const ListValue* args) {
+void BookmarksHandler::HandleEditBookmark(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!AreModelsLoaded())
     return;
@@ -225,7 +225,7 @@ bool BookmarksHandler::AreModelsLoaded() const {
   return partner_bookmarks_shim_ && partner_bookmarks_shim_->IsLoaded();
 }
 
-void BookmarksHandler::NotifyModelChanged(const DictionaryValue& status) {
+void BookmarksHandler::NotifyModelChanged(const base::DictionaryValue& status) {
   DCHECK(AreModelsLoaded());
 
   if (bookmark_data_requested_ && !extensive_changes_)
@@ -243,13 +243,14 @@ std::string BookmarksHandler::GetBookmarkIdForNtp(const BookmarkNode* node) {
   return prefix + Int64ToString(node->id());
 }
 
-void BookmarksHandler::SetParentInBookmarksResult(const BookmarkNode* parent,
-                                                  DictionaryValue* result) {
+void BookmarksHandler::SetParentInBookmarksResult(
+    const BookmarkNode* parent,
+    base::DictionaryValue* result) {
   result->SetString(kParentIdParam, GetBookmarkIdForNtp(parent));
 }
 
 void BookmarksHandler::PopulateBookmark(const BookmarkNode* node,
-                                        ListValue* result) {
+                                        base::ListValue* result) {
   if (!result)
     return;
 
@@ -257,7 +258,7 @@ void BookmarksHandler::PopulateBookmark(const BookmarkNode* node,
   if (!IsReachable(node))
     return;
 
-  DictionaryValue* filler_value = new DictionaryValue();
+  base::DictionaryValue* filler_value = new base::DictionaryValue();
   filler_value->SetString("title", GetTitle(node));
   filler_value->SetBoolean("editable", IsEditable(node));
   if (node->is_url()) {
@@ -273,12 +274,12 @@ void BookmarksHandler::PopulateBookmark(const BookmarkNode* node,
 
 void BookmarksHandler::PopulateBookmarksInFolder(
     const BookmarkNode* folder,
-    DictionaryValue* result) {
+    base::DictionaryValue* result) {
   DCHECK(AreModelsLoaded());
   if (!IsReachable(folder))
     return;
 
-  ListValue* bookmarks = new ListValue();
+  base::ListValue* bookmarks = new base::ListValue();
 
   // If this is the Mobile bookmarks folder then add the "Managed bookmarks"
   // folder first, so that it's the first entry.
@@ -300,11 +301,11 @@ void BookmarksHandler::PopulateBookmarksInFolder(
                      bookmarks);
   }
 
-  ListValue* folder_hierarchy = new ListValue();
+  base::ListValue* folder_hierarchy = new base::ListValue();
   const BookmarkNode* parent = GetParentOf(folder);
 
   while (parent != NULL) {
-    DictionaryValue* hierarchy_entry = new DictionaryValue();
+    base::DictionaryValue* hierarchy_entry = new base::DictionaryValue();
     if (IsRoot(parent))
       hierarchy_entry->SetBoolean("root", true);
 
@@ -324,7 +325,7 @@ void BookmarksHandler::PopulateBookmarksInFolder(
 void BookmarksHandler::QueryBookmarkFolder(const BookmarkNode* node) {
   DCHECK(AreModelsLoaded());
   if (node->is_folder() && IsReachable(node)) {
-    DictionaryValue result;
+    base::DictionaryValue result;
     PopulateBookmarksInFolder(node, &result);
     SendResult(result);
   } else {
@@ -336,12 +337,12 @@ void BookmarksHandler::QueryBookmarkFolder(const BookmarkNode* node) {
 
 void BookmarksHandler::QueryInitialBookmarks() {
   DCHECK(AreModelsLoaded());
-  DictionaryValue result;
+  base::DictionaryValue result;
   PopulateBookmarksInFolder(bookmark_model_->mobile_node(), &result);
   SendResult(result);
 }
 
-void BookmarksHandler::SendResult(const DictionaryValue& result) {
+void BookmarksHandler::SendResult(const base::DictionaryValue& result) {
   web_ui()->CallJavascriptFunction("ntp.bookmarks", result);
 }
 
@@ -386,7 +387,7 @@ void BookmarksHandler::BookmarkNodeRemoved(BookmarkModel* model,
   if (!AreModelsLoaded())
     return;
 
-  DictionaryValue result;
+  base::DictionaryValue result;
   SetParentInBookmarksResult(parent, &result);
   result.SetString(kNodeIdParam, Int64ToString(node->id()));
   NotifyModelChanged(result);
@@ -405,7 +406,7 @@ void BookmarksHandler::BookmarkNodeAdded(
   if (!AreModelsLoaded())
     return;
 
-  DictionaryValue result;
+  base::DictionaryValue result;
   SetParentInBookmarksResult(parent, &result);
   NotifyModelChanged(result);
 }
@@ -416,7 +417,7 @@ void BookmarksHandler::BookmarkNodeChanged(BookmarkModel* model,
     return;
 
   DCHECK(!partner_bookmarks_shim_->IsPartnerBookmark(node));
-  DictionaryValue result;
+  base::DictionaryValue result;
   SetParentInBookmarksResult(node->parent(), &result);
   result.SetString(kNodeIdParam, Int64ToString(node->id()));
   NotifyModelChanged(result);
@@ -431,7 +432,7 @@ void BookmarksHandler::BookmarkModelChanged() {
 }
 
 void BookmarksHandler::HandleCreateHomeScreenBookmarkShortcut(
-    const ListValue* args) {
+    const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!AreModelsLoaded())
     return;

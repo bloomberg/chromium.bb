@@ -29,12 +29,12 @@ void NewTabPageReadyHandler::RegisterMessages() {
 }
 
 void NewTabPageReadyHandler::HandleNewTabPageTitleLoaded(
-    const ListValue* args) {
+    const base::ListValue* args) {
   web_ui()->OverrideTitle(base::string16());
 }
 
 void NewTabPageReadyHandler::HandleNewTabPageReady(
-    const ListValue* args) {
+    const base::ListValue* args) {
   TabAndroid* tab = TabAndroid::FromWebContents(web_ui()->GetWebContents());
   if (!tab)
     return;
@@ -42,7 +42,7 @@ void NewTabPageReadyHandler::HandleNewTabPageReady(
 }
 
 void NewTabPageReadyHandler::HandleNewTabPageUnexpectedNavigation(
-    const ListValue* args) {
+    const base::ListValue* args) {
   // NTP reached an unexpected state trying to send finish loading notification
   // a second time.  The notification should be sent only when page is
   // completely done loading. This could otherwise create a race condition in

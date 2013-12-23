@@ -252,7 +252,7 @@ class SigninScreenHandler
   // Updates current UI of the signin screen according to |ui_state|
   // argument.  Optionally it can pass screen initialization data via
   // |params| argument.
-  void UpdateUIState(UIState ui_state, DictionaryValue* params);
+  void UpdateUIState(UIState ui_state, base::DictionaryValue* params);
 
   void UpdateStateInternal(ErrorScreenActor::ErrorReason reason,
                            bool force_update);
@@ -367,7 +367,7 @@ class SigninScreenHandler
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(User* user,
                                  bool is_owner,
-                                 DictionaryValue* user_dict);
+                                 base::DictionaryValue* user_dict);
 
   // Sends user list to account picker.
   void SendUserList(bool animated);

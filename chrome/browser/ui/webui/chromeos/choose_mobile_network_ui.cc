@@ -106,12 +106,12 @@ class ChooseMobileNetworkHandler
 
  private:
   // Handlers for JS WebUI messages.
-  void HandleCancel(const ListValue* args);
-  void HandleConnect(const ListValue* args);
-  void HandlePageReady(const ListValue* args);
+  void HandleCancel(const base::ListValue* args);
+  void HandleConnect(const base::ListValue* args);
+  void HandlePageReady(const base::ListValue* args);
 
   std::string device_path_;
-  ListValue networks_list_;
+  base::ListValue networks_list_;
   bool is_page_ready_;
   bool has_pending_results_;
 
@@ -183,7 +183,7 @@ void ChooseMobileNetworkHandler::DeviceListChanged() {
     // Register API doesn't allow technology to be specified so just show unique
     // network in UI.
     if (network_ids.insert(it->network_id).second) {
-      DictionaryValue* network = new DictionaryValue();
+      base::DictionaryValue* network = new base::DictionaryValue();
       network->SetString(kNetworkIdProperty, it->network_id);
       if (!it->long_name.empty())
         network->SetString(kOperatorNameProperty, it->long_name);
@@ -205,7 +205,7 @@ void ChooseMobileNetworkHandler::DeviceListChanged() {
   }
 }
 
-void ChooseMobileNetworkHandler::HandleCancel(const ListValue* args) {
+void ChooseMobileNetworkHandler::HandleCancel(const base::ListValue* args) {
   const size_t kConnectParamCount = 0;
   if (args->GetSize() != kConnectParamCount) {
     NOTREACHED();
@@ -221,7 +221,7 @@ void ChooseMobileNetworkHandler::HandleCancel(const ListValue* args) {
                  "Register in automatic mode."));
 }
 
-void ChooseMobileNetworkHandler::HandleConnect(const ListValue* args) {
+void ChooseMobileNetworkHandler::HandleConnect(const base::ListValue* args) {
   std::string network_id;
   const size_t kConnectParamCount = 1;
   if (args->GetSize() != kConnectParamCount ||
@@ -238,7 +238,7 @@ void ChooseMobileNetworkHandler::HandleConnect(const ListValue* args) {
                  std::string("Register to network: ") + network_id));
 }
 
-void ChooseMobileNetworkHandler::HandlePageReady(const ListValue* args) {
+void ChooseMobileNetworkHandler::HandlePageReady(const base::ListValue* args) {
   const size_t kConnectParamCount = 0;
   if (args->GetSize() != kConnectParamCount) {
     NOTREACHED();

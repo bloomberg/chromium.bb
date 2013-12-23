@@ -82,7 +82,7 @@ class CrashesDOMHandler : public WebUIMessageHandler,
 
  private:
   // Asynchronously fetches the list of crashes. Called from JS.
-  void HandleRequestCrashes(const ListValue* args);
+  void HandleRequestCrashes(const base::ListValue* args);
 
   // Sends the recent crashes list JS.
   void UpdateUI();
@@ -110,7 +110,7 @@ void CrashesDOMHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void CrashesDOMHandler::HandleRequestCrashes(const ListValue* args) {
+void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {
   if (first_load_) {
     first_load_ = false;
     if (list_available_)
@@ -129,7 +129,7 @@ void CrashesDOMHandler::OnUploadListAvailable() {
 
 void CrashesDOMHandler::UpdateUI() {
   bool crash_reporting_enabled = CrashesUI::CrashReportingUIEnabled();
-  ListValue crash_list;
+  base::ListValue crash_list;
 
   if (crash_reporting_enabled) {
     std::vector<CrashUploadList::UploadInfo> crashes;
@@ -137,7 +137,7 @@ void CrashesDOMHandler::UpdateUI() {
 
     for (std::vector<CrashUploadList::UploadInfo>::iterator i = crashes.begin();
          i != crashes.end(); ++i) {
-      DictionaryValue* crash = new DictionaryValue();
+      base::DictionaryValue* crash = new base::DictionaryValue();
       crash->SetString("id", i->id);
       crash->SetString("time", base::TimeFormatFriendlyDateAndTime(i->time));
       crash_list.Append(crash);

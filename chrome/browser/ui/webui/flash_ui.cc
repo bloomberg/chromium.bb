@@ -96,7 +96,7 @@ class FlashDOMHandler : public WebUIMessageHandler,
   virtual void OnGpuInfoUpdate() OVERRIDE;
 
   // Callback for the "requestFlashInfo" message.
-  void HandleRequestFlashInfo(const ListValue* args);
+  void HandleRequestFlashInfo(const base::ListValue* args);
 
   // Callback for the Flash plugin information.
   void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
@@ -180,22 +180,22 @@ void FlashDOMHandler::OnUploadListAvailable() {
   MaybeRespondToPage();
 }
 
-void AddPair(ListValue* list,
+void AddPair(base::ListValue* list,
              const base::string16& key,
              const base::string16& value) {
-  DictionaryValue* results = new DictionaryValue();
+  base::DictionaryValue* results = new base::DictionaryValue();
   results->SetString("key", key);
   results->SetString("value", value);
   list->Append(results);
 }
 
-void AddPair(ListValue* list,
+void AddPair(base::ListValue* list,
              const base::string16& key,
              const std::string& value) {
   AddPair(list, key, ASCIIToUTF16(value));
 }
 
-void FlashDOMHandler::HandleRequestFlashInfo(const ListValue* args) {
+void FlashDOMHandler::HandleRequestFlashInfo(const base::ListValue* args) {
   page_has_requested_data_ = true;
   MaybeRespondToPage();
 }
@@ -238,7 +238,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   // Obtain the Chrome version info.
   chrome::VersionInfo version_info;
 
-  ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
 
   // Chrome version information.
   AddPair(list,
@@ -370,7 +370,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   AddPair(list, ASCIIToUTF16("GL_VERSION"), gpu_info.gl_version_string);
   AddPair(list, ASCIIToUTF16("GL_EXTENSIONS"), gpu_info.gl_extensions);
 
-  DictionaryValue flashInfo;
+  base::DictionaryValue flashInfo;
   flashInfo.Set("flashInfo", list);
   web_ui()->CallJavascriptFunction("returnFlashInfo", flashInfo);
 }

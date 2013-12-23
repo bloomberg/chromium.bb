@@ -186,7 +186,7 @@ void NetworkScreenHandler::OnLanguageChangedCallback(
 
   NetworkScreenHandler* const self = context->handler_.get();
 
-  DictionaryValue localized_strings;
+  base::DictionaryValue localized_strings;
   static_cast<OobeUI*>(self->web_ui()->GetController())
       ->GetLocalizedStrings(&localized_strings);
   self->core_oobe_actor_->ReloadContent(localized_strings);
@@ -232,17 +232,17 @@ void NetworkScreenHandler::OnSystemTimezoneChanged() {
 }
 
 // static
-ListValue* NetworkScreenHandler::GetLanguageList() {
+base::ListValue* NetworkScreenHandler::GetLanguageList() {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   // GetSupportedInputMethods() never returns NULL.
   scoped_ptr<input_method::InputMethodDescriptors> descriptors(
       manager->GetSupportedInputMethods());
-  ListValue* languages_list =
+  base::ListValue* languages_list =
       options::CrosLanguageOptionsHandler::GetUILanguageList(*descriptors);
   for (size_t i = 0; i < languages_list->GetSize(); ++i) {
-    DictionaryValue* language_info = NULL;
+    base::DictionaryValue* language_info = NULL;
     if (!languages_list->GetDictionary(i, &language_info))
       NOTREACHED();
 
@@ -266,8 +266,8 @@ ListValue* NetworkScreenHandler::GetLanguageList() {
 }
 
 // static
-ListValue* NetworkScreenHandler::GetInputMethods() {
-  ListValue* input_methods_list = new ListValue;
+base::ListValue* NetworkScreenHandler::GetInputMethods() {
+  base::ListValue* input_methods_list = new base::ListValue;
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
@@ -276,7 +276,7 @@ ListValue* NetworkScreenHandler::GetInputMethods() {
   std::string current_input_method_id = manager->GetCurrentInputMethod().id();
   for (size_t i = 0; i < input_methods->size(); ++i) {
     const std::string ime_id = input_methods->at(i).id();
-    DictionaryValue* input_method = new DictionaryValue;
+    base::DictionaryValue* input_method = new base::DictionaryValue;
     input_method->SetString("value", ime_id);
     input_method->SetString(
         "title",

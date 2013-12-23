@@ -238,7 +238,7 @@ void NewTabUI::EmitNtpStatistics() {
 }
 
 void NewTabUI::OnShowBookmarkBarChanged() {
-  StringValue attached(
+  base::StringValue attached(
       GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
           "true" : "false");
   web_ui()->CallJavascriptFunction("ntp.setBookmarkBarAttached", attached);
@@ -288,7 +288,7 @@ bool NewTabUI::IsDiscoveryInNTPEnabled() {
 }
 
 // static
-void NewTabUI::SetUrlTitleAndDirection(DictionaryValue* dictionary,
+void NewTabUI::SetUrlTitleAndDirection(base::DictionaryValue* dictionary,
                                        const base::string16& title,
                                        const GURL& gurl) {
   dictionary->SetString("url", gurl.spec());

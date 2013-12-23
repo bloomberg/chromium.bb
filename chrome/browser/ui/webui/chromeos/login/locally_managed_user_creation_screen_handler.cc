@@ -185,8 +185,8 @@ void LocallyManagedUserCreationScreenHandler::RegisterMessages() {
 void LocallyManagedUserCreationScreenHandler::PrepareToShow() {}
 
 void LocallyManagedUserCreationScreenHandler::Show() {
-  scoped_ptr<DictionaryValue> data(new base::DictionaryValue());
-  scoped_ptr<ListValue> users_list(new base::ListValue());
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  scoped_ptr<base::ListValue> users_list(new base::ListValue());
   const UserList& users = UserManager::Get()->GetUsers();
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
@@ -195,7 +195,7 @@ void LocallyManagedUserCreationScreenHandler::Show() {
     if ((*it)->GetType() != User::USER_TYPE_REGULAR)
       continue;
     bool is_owner = ((*it)->email() == owner);
-    DictionaryValue* user_dict = new DictionaryValue();
+    base::DictionaryValue* user_dict = new base::DictionaryValue();
     SigninScreenHandler::FillUserDictionary(*it, is_owner, user_dict);
     users_list->Append(user_dict);
   }

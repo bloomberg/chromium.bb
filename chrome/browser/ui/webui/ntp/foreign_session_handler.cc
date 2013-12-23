@@ -122,7 +122,7 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
 // static
 bool ForeignSessionHandler::SessionTabToValue(
     const SessionTab& tab,
-    DictionaryValue* dictionary) {
+    base::DictionaryValue* dictionary) {
   if (tab.navigations.empty())
     return false;
 
@@ -192,7 +192,7 @@ void ForeignSessionHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  ListValue list_value;
+  base::ListValue list_value;
 
   switch (type) {
     case chrome::NOTIFICATION_FOREIGN_SESSION_DISABLED:
@@ -226,11 +226,12 @@ base::string16 ForeignSessionHandler::FormatSessionTime(
       now < time ? base::TimeDelta() : now - time);
 }
 
-void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
+void ForeignSessionHandler::HandleGetForeignSessions(
+    const base::ListValue* args) {
   OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate(web_ui());
   std::vector<const SyncedSession*> sessions;
 
-  ListValue session_list;
+  base::ListValue session_list;
   if (open_tabs && open_tabs->GetAllForeignSessions(&sessions)) {
     // Sort sessions from most recent to least recent.
     std::sort(sessions.begin(), sessions.end(), SortSessionsByRecency);
@@ -240,8 +241,8 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
     // and only add back sessions that are still current.
     DictionaryPrefUpdate pref_update(Profile::FromWebUI(web_ui())->GetPrefs(),
                                      prefs::kNtpCollapsedForeignSessions);
-    DictionaryValue* current_collapsed_sessions = pref_update.Get();
-    scoped_ptr<DictionaryValue> collapsed_sessions(
+    base::DictionaryValue* current_collapsed_sessions = pref_update.Get();
+    scoped_ptr<base::DictionaryValue> collapsed_sessions(
         current_collapsed_sessions->DeepCopy());
     current_collapsed_sessions->Clear();
 
@@ -249,7 +250,8 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
     for (size_t i = 0; i < sessions.size() && i < kMaxSessionsToShow; ++i) {
       const SyncedSession* session = sessions[i];
       const std::string& session_tag = session->session_tag;
-      scoped_ptr<DictionaryValue> session_data(new DictionaryValue());
+      scoped_ptr<base::DictionaryValue> session_data(
+          new base::DictionaryValue());
       session_data->SetString("tag", session_tag);
       session_data->SetString("name", session->session_name);
       session_data->SetString("deviceType", session->DeviceTypeAsString());
@@ -261,11 +263,12 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
       if (is_collapsed)
         current_collapsed_sessions->SetBoolean(session_tag, true);
 
-      scoped_ptr<ListValue> window_list(new ListValue());
+      scoped_ptr<base::ListValue> window_list(new base::ListValue());
       for (SyncedSession::SyncedWindowMap::const_iterator it =
            session->windows.begin(); it != session->windows.end(); ++it) {
         SessionWindow* window = it->second;
-        scoped_ptr<DictionaryValue> window_data(new DictionaryValue());
+        scoped_ptr<base::DictionaryValue> window_data(
+            new base::DictionaryValue());
         if (SessionWindowToValue(*window, window_data.get()))
           window_list->Append(window_data.release());
       }
@@ -280,7 +283,8 @@ void ForeignSessionHandler::HandleGetForeignSessions(const ListValue* args) {
                                    tab_sync_enabled);
 }
 
-void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
+void ForeignSessionHandler::HandleOpenForeignSession(
+    const base::ListValue* args) {
   size_t num_args = args->GetSize();
   // Expect either 1 or 8 args. For restoring an entire session, only
   // one argument is required -- the session tag. To restore a tab,
@@ -327,7 +331,8 @@ void ForeignSessionHandler::HandleOpenForeignSession(const ListValue* args) {
   }
 }
 
-void ForeignSessionHandler::HandleDeleteForeignSession(const ListValue* args) {
+void ForeignSessionHandler::HandleDeleteForeignSession(
+    const base::ListValue* args) {
   if (args->GetSize() != 1U) {
     LOG(ERROR) << "Wrong number of args to deleteForeignSession";
     return;
@@ -346,7 +351,7 @@ void ForeignSessionHandler::HandleDeleteForeignSession(const ListValue* args) {
 }
 
 void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
-    const ListValue* args) {
+    const base::ListValue* args) {
   if (args->GetSize() != 2U) {
     LOG(ERROR) << "Wrong number of args to setForeignSessionCollapsed";
     return;
@@ -377,16 +382,16 @@ void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
 
 bool ForeignSessionHandler::SessionWindowToValue(
     const SessionWindow& window,
-    DictionaryValue* dictionary) {
+    base::DictionaryValue* dictionary) {
   if (window.tabs.empty()) {
     NOTREACHED();
     return false;
   }
-  scoped_ptr<ListValue> tab_values(new ListValue());
+  scoped_ptr<base::ListValue> tab_values(new base::ListValue());
   // Calculate the last |modification_time| for all entries within a window.
   base::Time modification_time = window.timestamp;
   for (size_t i = 0; i < window.tabs.size(); ++i) {
-    scoped_ptr<DictionaryValue> tab_value(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> tab_value(new base::DictionaryValue());
     if (SessionTabToValue(*window.tabs[i], tab_value.get())) {
       modification_time = std::max(modification_time,
                                    window.tabs[i]->timestamp);

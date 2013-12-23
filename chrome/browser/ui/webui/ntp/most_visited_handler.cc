@@ -132,7 +132,7 @@ void MostVisitedHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
+void MostVisitedHandler::HandleGetMostVisited(const base::ListValue* args) {
   if (!got_first_most_visited_request_) {
     // If our initial data is already here, return it.
     SendPagesValue();
@@ -145,7 +145,7 @@ void MostVisitedHandler::HandleGetMostVisited(const ListValue* args) {
 void MostVisitedHandler::SendPagesValue() {
   if (pages_value_) {
     Profile* profile = Profile::FromWebUI(web_ui());
-    const DictionaryValue* url_blacklist =
+    const base::DictionaryValue* url_blacklist =
         profile->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
     bool has_blacklisted_urls = !url_blacklist->empty();
     history::TopSites* ts = profile->GetTopSites();
@@ -172,15 +172,16 @@ void MostVisitedHandler::StartQueryForMostVisited() {
   }
 }
 
-void MostVisitedHandler::HandleBlacklistUrl(const ListValue* args) {
+void MostVisitedHandler::HandleBlacklistUrl(const base::ListValue* args) {
   std::string url = UTF16ToUTF8(ExtractStringValue(args));
   BlacklistUrl(GURL(url));
 }
 
-void MostVisitedHandler::HandleRemoveUrlsFromBlacklist(const ListValue* args) {
+void MostVisitedHandler::HandleRemoveUrlsFromBlacklist(
+    const base::ListValue* args) {
   DCHECK(args->GetSize() != 0);
 
-  for (ListValue::const_iterator iter = args->begin();
+  for (base::ListValue::const_iterator iter = args->begin();
        iter != args->end(); ++iter) {
     std::string url;
     bool r = (*iter)->GetAsString(&url);
@@ -195,7 +196,7 @@ void MostVisitedHandler::HandleRemoveUrlsFromBlacklist(const ListValue* args) {
   }
 }
 
-void MostVisitedHandler::HandleClearBlacklist(const ListValue* args) {
+void MostVisitedHandler::HandleClearBlacklist(const base::ListValue* args) {
   content::RecordAction(UserMetricsAction("MostVisited_BlacklistCleared"));
 
   history::TopSites* ts = Profile::FromWebUI(web_ui())->GetTopSites();
@@ -224,14 +225,14 @@ void MostVisitedHandler::HandleMostVisitedSelected(
 
 void MostVisitedHandler::SetPagesValueFromTopSites(
     const history::MostVisitedURLList& data) {
-  pages_value_.reset(new ListValue);
+  pages_value_.reset(new base::ListValue);
 
   history::MostVisitedURLList top_sites(data);
   history::MostVisitedTilesExperiment::MaybeShuffle(&top_sites);
 
   for (size_t i = 0; i < top_sites.size(); i++) {
     const history::MostVisitedURL& url = top_sites[i];
-    DictionaryValue* page_value = new DictionaryValue();
+    base::DictionaryValue* page_value = new base::DictionaryValue();
     if (url.url.is_empty()) {
       page_value->SetBoolean("filler", true);
       pages_value_->Append(page_value);

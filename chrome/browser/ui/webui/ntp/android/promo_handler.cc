@@ -215,7 +215,7 @@ void PromoHandler::HandleRecordImpression(const base::ListValue* args) {
 }
 
 void PromoHandler::InjectPromoDecorations() {
-  DictionaryValue result;
+  base::DictionaryValue result;
   if (FetchPromotion(&result))
     web_ui()->CallJavascriptFunction("ntp.setPromotions", result);
   else
@@ -240,7 +240,7 @@ void PromoHandler::RecordPromotionImpression(const std::string& id) {
     NOTREACHED() << "Unknown promotion impression: " << id;
 }
 
-bool PromoHandler::FetchPromotion(DictionaryValue* result) {
+bool PromoHandler::FetchPromotion(base::DictionaryValue* result) {
   DCHECK(result != NULL);
   if (!CanShowNotificationPromo())
     return false;
@@ -319,7 +319,7 @@ void PromoHandler::CheckDesktopSessions() {
 
   // Let's see if there are no desktop sessions.
   std::vector<const browser_sync::SyncedSession*> sessions;
-  ListValue session_list;
+  base::ListValue session_list;
   if (!open_tabs->GetAllForeignSessions(&sessions))
     return;
 

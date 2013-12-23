@@ -32,10 +32,10 @@ class InstallExtensionHandler : public content::WebUIMessageHandler {
   // needed so that we can capture the file being dragged. If we wait until
   // we receive a drop notification, the drop data in the browser process will
   // have already been destroyed.
-  void HandleStartDragMessage(const ListValue* args);
+  void HandleStartDragMessage(const base::ListValue* args);
 
   // Handles a notification from the JavaScript that a drag has stopped.
-  void HandleStopDragMessage(const ListValue* args);
+  void HandleStopDragMessage(const base::ListValue* args);
 
   // Handles a notification from the JavaScript to install the file currently
   // being dragged.
@@ -43,11 +43,11 @@ class InstallExtensionHandler : public content::WebUIMessageHandler {
   // IMPORTANT: We purposefully do not allow the JavaScript to specify the file
   // to be installed as a precaution against the extension management page
   // getting XSS'd.
-  void HandleInstallMessage(const ListValue* args);
+  void HandleInstallMessage(const base::ListValue* args);
 
   // Handles a notification from the JavaScript to install the directory
   // currently being dragged.
-  void HandleInstallDirectoryMessage(const ListValue* args);
+  void HandleInstallDirectoryMessage(const base::ListValue* args);
 
   // The path to the file that will be installed when HandleInstallMessage() is
   // called.

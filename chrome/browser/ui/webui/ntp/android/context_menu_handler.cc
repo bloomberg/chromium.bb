@@ -46,8 +46,8 @@ void ContextMenuHandler::OnItemSelected(int item_id) {
 }
 
 void ContextMenuHandler::GetIncognitoDisabled(
-    const ListValue* args) {
-  DictionaryValue value;
+    const base::ListValue* args) {
+  base::DictionaryValue value;
 
   const PrefService* pref = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext())->GetPrefs();
@@ -62,7 +62,7 @@ void ContextMenuHandler::GetIncognitoDisabled(
 }
 
 void ContextMenuHandler::HandleShowContextMenu(
-    const ListValue* menu_list_values) {
+    const base::ListValue* menu_list_values) {
   if (menu_list_values->empty()) {
     LOG(WARNING) << "Ignoring request for empty context menu.";
     return;
@@ -74,9 +74,9 @@ void ContextMenuHandler::HandleShowContextMenu(
   // title.
   content::ContextMenuParams menu;
   for (size_t i = 0; i < menu_list_values->GetSize(); ++i) {
-    ListValue* item_list_value = NULL;
+    base::ListValue* item_list_value = NULL;
     bool valid_value = menu_list_values->GetList(
-        i, const_cast<const ListValue**>(&item_list_value));
+        i, const_cast<const base::ListValue**>(&item_list_value));
     if (!valid_value) {
       LOG(ERROR) << "Invalid context menu request: menu item info " << i <<
           " is not a list.";
@@ -85,7 +85,7 @@ void ContextMenuHandler::HandleShowContextMenu(
 
     int id;
     if (!ExtractIntegerValue(item_list_value, &id)) {
-      Value* value = NULL;
+      base::Value* value = NULL;
       item_list_value->Get(0, &value);
       LOG(ERROR) << "Invalid context menu request:  menu item " << i <<
           " expected int value for first parameter (got " <<
@@ -96,7 +96,7 @@ void ContextMenuHandler::HandleShowContextMenu(
     content::MenuItem menu_item;
     menu_item.action = id;
     if (!item_list_value->GetString(1, &(menu_item.label))) {
-      Value* value = NULL;
+      base::Value* value = NULL;
       item_list_value->Get(1, &value);
       LOG(ERROR) << "Invalid context menu request:  menu item " << i <<
           " expected string value for second parameter (got " <<
@@ -116,15 +116,15 @@ void ContextMenuHandler::HandleShowContextMenu(
   }
 }
 
-void ContextMenuHandler::HandleOpenInNewTab(const ListValue* args) {
+void ContextMenuHandler::HandleOpenInNewTab(const base::ListValue* args) {
   OpenUrl(args, NEW_FOREGROUND_TAB);
 }
 
-void ContextMenuHandler::HandleOpenInIncognitoTab(const ListValue* args) {
+void ContextMenuHandler::HandleOpenInIncognitoTab(const base::ListValue* args) {
   OpenUrl(args, OFF_THE_RECORD);
 }
 
-void ContextMenuHandler::OpenUrl(const ListValue* args,
+void ContextMenuHandler::OpenUrl(const base::ListValue* args,
                                  WindowOpenDisposition disposition) {
   base::string16 url = ExtractStringValue(args);
   if (!url.empty()) {

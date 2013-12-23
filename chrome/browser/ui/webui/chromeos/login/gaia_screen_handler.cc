@@ -25,7 +25,7 @@ const char kJsScreenPath[] = "login.GaiaSigninScreen";
 
 // Updates params dictionary passed to the auth extension with related
 // preferences from CrosSettings.
-void UpdateAuthParamsFromSettings(DictionaryValue* params,
+void UpdateAuthParamsFromSettings(base::DictionaryValue* params,
                                   const CrosSettings* cros_settings) {
   bool allow_new_user = true;
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
@@ -36,7 +36,7 @@ void UpdateAuthParamsFromSettings(DictionaryValue* params,
   params->SetBoolean("guestSignin", allow_guest);
 }
 
-void UpdateAuthParams(DictionaryValue* params, bool has_users) {
+void UpdateAuthParams(base::DictionaryValue* params, bool has_users) {
   UpdateAuthParamsFromSettings(params, CrosSettings::Get());
 
   // Allow locally managed user creation only if:
@@ -94,7 +94,7 @@ GaiaScreenHandler::~GaiaScreenHandler() {}
 void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
   LOG(WARNING) << "LoadGaia() call.";
 
-  DictionaryValue params;
+  base::DictionaryValue params;
 
   params.SetBoolean("forceReload", context.force_reload);
   params.SetBoolean("isLocal", context.is_local);
@@ -141,7 +141,7 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
 }
 
 void GaiaScreenHandler::UpdateGaia(const GaiaContext& context) {
-  DictionaryValue params;
+  base::DictionaryValue params;
   UpdateAuthParams(&params, context.has_users);
   CallJS("updateAuthExtension", params);
 }

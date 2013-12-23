@@ -55,15 +55,15 @@ class InspectMessageHandler : public WebUIMessageHandler {
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
-  void HandleInitUICommand(const ListValue* args);
-  void HandleInspectCommand(const ListValue* args);
-  void HandleActivateCommand(const ListValue* args);
-  void HandleCloseCommand(const ListValue* args);
-  void HandleReloadCommand(const ListValue* args);
-  void HandleOpenCommand(const ListValue* args);
+  void HandleInitUICommand(const base::ListValue* args);
+  void HandleInspectCommand(const base::ListValue* args);
+  void HandleActivateCommand(const base::ListValue* args);
+  void HandleCloseCommand(const base::ListValue* args);
+  void HandleReloadCommand(const base::ListValue* args);
+  void HandleOpenCommand(const base::ListValue* args);
   void HandleBooleanPrefChanged(const char* pref_name,
-                                const ListValue* args);
-  void HandlePortForwardingConfigCommand(const ListValue* args);
+                                const base::ListValue* args);
+  void HandlePortForwardingConfigCommand(const base::ListValue* args);
 
   InspectUI* inspect_ui_;
 
@@ -102,11 +102,11 @@ void InspectMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void InspectMessageHandler::HandleInitUICommand(const ListValue*) {
+void InspectMessageHandler::HandleInitUICommand(const base::ListValue*) {
   inspect_ui_->InitUI();
 }
 
-static bool ParseStringArgs(const ListValue* args,
+static bool ParseStringArgs(const base::ListValue* args,
                             std::string* arg0,
                             std::string* arg1,
                             std::string* arg2 = 0) {
@@ -116,35 +116,35 @@ static bool ParseStringArgs(const ListValue* args,
          (!arg2 || (arg_size > 2 && args->GetString(2, arg2)));
 }
 
-void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
+void InspectMessageHandler::HandleInspectCommand(const base::ListValue* args) {
   std::string source;
   std::string id;
   if (ParseStringArgs(args, &source, &id))
     inspect_ui_->Inspect(source, id);
 }
 
-void InspectMessageHandler::HandleActivateCommand(const ListValue* args) {
+void InspectMessageHandler::HandleActivateCommand(const base::ListValue* args) {
   std::string source;
   std::string id;
   if (ParseStringArgs(args, &source, &id))
     inspect_ui_->Activate(source, id);
 }
 
-void InspectMessageHandler::HandleCloseCommand(const ListValue* args) {
+void InspectMessageHandler::HandleCloseCommand(const base::ListValue* args) {
   std::string source;
   std::string id;
   if (ParseStringArgs(args, &source, &id))
     inspect_ui_->Close(source, id);
 }
 
-void InspectMessageHandler::HandleReloadCommand(const ListValue* args) {
+void InspectMessageHandler::HandleReloadCommand(const base::ListValue* args) {
   std::string source;
   std::string id;
   if (ParseStringArgs(args, &source, &id))
     inspect_ui_->Reload(source, id);
 }
 
-void InspectMessageHandler::HandleOpenCommand(const ListValue* args) {
+void InspectMessageHandler::HandleOpenCommand(const base::ListValue* args) {
   std::string source_id;
   std::string browser_id;
   std::string url;
@@ -154,7 +154,7 @@ void InspectMessageHandler::HandleOpenCommand(const ListValue* args) {
 
 void InspectMessageHandler::HandleBooleanPrefChanged(
     const char* pref_name,
-    const ListValue* args) {
+    const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile)
     return;
@@ -165,12 +165,12 @@ void InspectMessageHandler::HandleBooleanPrefChanged(
 }
 
 void InspectMessageHandler::HandlePortForwardingConfigCommand(
-    const ListValue* args) {
+    const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (!profile)
     return;
 
-  const DictionaryValue* dict_src;
+  const base::DictionaryValue* dict_src;
   if (args->GetSize() == 1 && args->GetDictionary(0, &dict_src))
     profile->GetPrefs()->Set(prefs::kDevToolsPortForwardingConfig, *dict_src);
 }
@@ -304,7 +304,8 @@ content::WebUIDataSource* InspectUI::CreateInspectUIHTMLSource() {
 }
 
 void InspectUI::UpdateDiscoverUsbDevicesEnabled() {
-  const Value* value = GetPrefValue(prefs::kDevToolsDiscoverUsbDevicesEnabled);
+  const base::Value* value =
+      GetPrefValue(prefs::kDevToolsDiscoverUsbDevicesEnabled);
   web_ui()->CallJavascriptFunction("updateDiscoverUsbDevicesEnabled", *value);
 
   // Configure adb bridge.

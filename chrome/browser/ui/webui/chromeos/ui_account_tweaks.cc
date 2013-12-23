@@ -37,7 +37,7 @@ void AddAccountUITweaksLocalizedValues(
 void AddAccountUITweaksLocalizedValues(
     content::WebUIDataSource* source) {
   DCHECK(source);
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   AddAccountUITweaksLocalizedValues(&dict);
   source->AddLocalizedStrings(dict);
 }

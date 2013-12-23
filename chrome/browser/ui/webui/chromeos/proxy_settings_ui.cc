@@ -30,7 +30,7 @@ namespace {
 
 class ProxySettingsHTMLSource : public content::URLDataSource {
  public:
-  explicit ProxySettingsHTMLSource(DictionaryValue* localized_strings);
+  explicit ProxySettingsHTMLSource(base::DictionaryValue* localized_strings);
 
   // content::URLDataSource implementation.
   virtual std::string GetSource() const OVERRIDE;
@@ -50,13 +50,13 @@ class ProxySettingsHTMLSource : public content::URLDataSource {
   virtual ~ProxySettingsHTMLSource() {}
 
  private:
-  scoped_ptr<DictionaryValue> localized_strings_;
+  scoped_ptr<base::DictionaryValue> localized_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxySettingsHTMLSource);
 };
 
 ProxySettingsHTMLSource::ProxySettingsHTMLSource(
-    DictionaryValue* localized_strings)
+    base::DictionaryValue* localized_strings)
     : localized_strings_(localized_strings) {
 }
 
@@ -90,7 +90,7 @@ ProxySettingsUI::ProxySettingsUI(content::WebUI* web_ui)
       proxy_handler_(new options::ProxyHandler()),
       core_handler_(new options::CoreChromeOSOptionsHandler()) {
   // |localized_strings| will be owned by ProxySettingsHTMLSource.
-  DictionaryValue* localized_strings = new DictionaryValue();
+  base::DictionaryValue* localized_strings = new base::DictionaryValue();
 
   core_handler_->set_handlers_host(this);
   core_handler_->GetLocalizedValues(localized_strings);

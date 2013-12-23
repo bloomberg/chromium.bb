@@ -236,13 +236,13 @@ void MemoryInternalsProxy::RequestRendererDetails() {
 }
 
 void MemoryInternalsProxy::OnProcessAvailable(const ProcessData& browser) {
-  base::ListValue* process_info = new ListValue();
-  base::ListValue* extension_info = new ListValue();
+  base::ListValue* process_info = new base::ListValue();
+  base::ListValue* extension_info = new base::ListValue();
   information_->Set("processes", process_info);
   information_->Set("extensions", extension_info);
   for (PMIIterator iter = browser.processes.begin();
        iter != browser.processes.end(); ++iter) {
-    base::DictionaryValue* process = new DictionaryValue();
+    base::DictionaryValue* process = new base::DictionaryValue();
     if (iter->renderer_type == ProcessMemoryInformation::RENDERER_EXTENSION)
       extension_info->Append(process);
     else
@@ -255,7 +255,7 @@ void MemoryInternalsProxy::OnProcessAvailable(const ProcessData& browser) {
                            iter->process_type, iter->renderer_type));
     process->SetInteger("memory_private", iter->working_set.priv);
 
-    base::ListValue* titles = new ListValue();
+    base::ListValue* titles = new base::ListValue();
     process->Set("titles", titles);
     for (size_t i = 0; i < iter->titles.size(); ++i)
       titles->AppendString(iter->titles[i]);

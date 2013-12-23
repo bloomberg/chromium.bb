@@ -90,7 +90,7 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
 
   // Certificate information. The keys in this dictionary's general key
   // correspond to the IDs in the Html page.
-  DictionaryValue cert_info;
+  base::DictionaryValue cert_info;
   net::X509Certificate::OSCertHandle cert_hnd = cert_->os_cert_handle();
 
   // Get the certificate chain.
@@ -158,12 +158,12 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
       x509_certificate_model::HashCertSHA1(cert_hnd));
 
   // Certificate hierarchy is constructed from bottom up.
-  ListValue* children = NULL;
+  base::ListValue* children = NULL;
   int index = 0;
   for (net::X509Certificate::OSCertHandles::const_iterator i =
       cert_chain.begin(); i != cert_chain.end(); ++i, ++index) {
-    DictionaryValue* cert_node = new DictionaryValue();
-    ListValue cert_details;
+    base::DictionaryValue* cert_node = new base::DictionaryValue();
+    base::ListValue cert_details;
     cert_node->SetString("label", x509_certificate_model::GetTitle(*i).c_str());
     cert_node->SetDouble("payload.index", index);
     // Add the child from the previous iteration.
@@ -171,7 +171,7 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
       cert_node->Set("children", children);
 
     // Add this node to the children list for the next iteration.
-    children = new ListValue();
+    children = new base::ListValue();
     children->Append(cert_node);
   }
   // Set the last node as the top of the certificate hierarchy.
@@ -243,23 +243,23 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
 
   net::X509Certificate::OSCertHandle cert = cert_chain_[cert_index];
 
-  ListValue root_list;
-  DictionaryValue* node_details;
-  DictionaryValue* alt_node_details;
-  ListValue* cert_sub_fields;
-  root_list.Append(node_details = new DictionaryValue());
+  base::ListValue root_list;
+  base::DictionaryValue* node_details;
+  base::DictionaryValue* alt_node_details;
+  base::ListValue* cert_sub_fields;
+  root_list.Append(node_details = new base::DictionaryValue());
   node_details->SetString("label", x509_certificate_model::GetTitle(cert));
 
-  ListValue* cert_fields;
-  node_details->Set("children", cert_fields = new ListValue());
-  cert_fields->Append(node_details = new DictionaryValue());
+  base::ListValue* cert_fields;
+  node_details->Set("children", cert_fields = new base::ListValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
 
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_CERTIFICATE));
-  node_details->Set("children", cert_fields = new ListValue());
+  node_details->Set("children", cert_fields = new base::ListValue());
 
   // Main certificate fields.
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_VERSION));
   std::string version = x509_certificate_model::GetVersion(cert);
@@ -268,35 +268,35 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
         l10n_util::GetStringFUTF8(IDS_CERT_DETAILS_VERSION_FORMAT,
                                   UTF8ToUTF16(version)));
 
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SERIAL_NUMBER));
   node_details->SetString("payload.val",
       x509_certificate_model::GetSerialNumberHexified(cert,
           l10n_util::GetStringUTF8(IDS_CERT_INFO_FIELD_NOT_PRESENT)));
 
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_CERTIFICATE_SIG_ALG));
   node_details->SetString("payload.val",
       x509_certificate_model::ProcessSecAlgorithmSignature(cert));
 
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_ISSUER));
   node_details->SetString("payload.val",
       x509_certificate_model::GetIssuerName(cert));
 
   // Validity period.
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_VALIDITY));
 
-  node_details->Set("children", cert_sub_fields = new ListValue());
-  cert_sub_fields->Append(node_details = new DictionaryValue());
+  node_details->Set("children", cert_sub_fields = new base::ListValue());
+  cert_sub_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_NOT_BEFORE));
-  cert_sub_fields->Append(alt_node_details = new DictionaryValue());
+  cert_sub_fields->Append(alt_node_details = new base::DictionaryValue());
   alt_node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_NOT_AFTER));
   base::Time issued, expires;
@@ -307,24 +307,24 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
         UTF16ToUTF8(base::TimeFormatShortDateAndTime(expires)));
   }
 
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SUBJECT));
   node_details->SetString("payload.val",
       x509_certificate_model::GetSubjectName(cert));
 
   // Subject key information.
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SUBJECT_KEY_INFO));
 
-  node_details->Set("children", cert_sub_fields = new ListValue());
-  cert_sub_fields->Append(node_details = new DictionaryValue());
+  node_details->Set("children", cert_sub_fields = new base::ListValue());
+  cert_sub_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SUBJECT_KEY_ALG));
   node_details->SetString("payload.val",
       x509_certificate_model::ProcessSecAlgorithmSubjectPublicKey(cert));
-  cert_sub_fields->Append(node_details = new DictionaryValue());
+  cert_sub_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SUBJECT_KEY));
   node_details->SetString("payload.val",
@@ -338,42 +338,42 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
       cert, &extensions);
 
   if (!extensions.empty()) {
-    cert_fields->Append(node_details = new DictionaryValue());
+    cert_fields->Append(node_details = new base::DictionaryValue());
     node_details->SetString("label",
         l10n_util::GetStringUTF8(IDS_CERT_DETAILS_EXTENSIONS));
 
-    node_details->Set("children", cert_sub_fields = new ListValue());
+    node_details->Set("children", cert_sub_fields = new base::ListValue());
     for (x509_certificate_model::Extensions::const_iterator i =
          extensions.begin(); i != extensions.end(); ++i) {
-      cert_sub_fields->Append(node_details = new DictionaryValue());
+      cert_sub_fields->Append(node_details = new base::DictionaryValue());
       node_details->SetString("label", i->name);
       node_details->SetString("payload.val", i->value);
     }
   }
 
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_CERTIFICATE_SIG_ALG));
   node_details->SetString("payload.val",
       x509_certificate_model::ProcessSecAlgorithmSignatureWrap(cert));
 
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_CERTIFICATE_SIG_VALUE));
   node_details->SetString("payload.val",
       x509_certificate_model::ProcessRawBitsSignatureWrap(cert));
 
-  cert_fields->Append(node_details = new DictionaryValue());
+  cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_INFO_FINGERPRINTS_GROUP));
-  node_details->Set("children", cert_sub_fields = new ListValue());
+  node_details->Set("children", cert_sub_fields = new base::ListValue());
 
-  cert_sub_fields->Append(node_details = new DictionaryValue());
+  cert_sub_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_INFO_SHA256_FINGERPRINT_LABEL));
   node_details->SetString("payload.val",
       x509_certificate_model::HashCertSHA256(cert));
-  cert_sub_fields->Append(node_details = new DictionaryValue());
+  cert_sub_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
       l10n_util::GetStringUTF8(IDS_CERT_INFO_SHA1_FINGERPRINT_LABEL));
   node_details->SetString("payload.val",

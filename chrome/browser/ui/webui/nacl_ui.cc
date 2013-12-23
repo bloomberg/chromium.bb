@@ -81,7 +81,7 @@ class NaClDomHandler : public WebUIMessageHandler {
 
  private:
   // Callback for the "requestNaClInfo" message.
-  void HandleRequestNaClInfo(const ListValue* args);
+  void HandleRequestNaClInfo(const base::ListValue* args);
 
   // Callback for the NaCl plugin information.
   void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
@@ -96,23 +96,23 @@ class NaClDomHandler : public WebUIMessageHandler {
 
   // Helper for MaybeRespondToPage -- called after enough information
   // is gathered.
-  void PopulatePageInformation(DictionaryValue* naclInfo);
+  void PopulatePageInformation(base::DictionaryValue* naclInfo);
 
   // Returns whether the specified plugin is enabled.
   bool isPluginEnabled(size_t plugin_index);
 
   // Adds information regarding the operating system and chrome version to list.
-  void AddOperatingSystemInfo(ListValue* list);
+  void AddOperatingSystemInfo(base::ListValue* list);
 
   // Adds the list of plugins for NaCl to list.
-  void AddPluginList(ListValue* list);
+  void AddPluginList(base::ListValue* list);
 
   // Adds the information relevant to PNaCl (e.g., enablement, paths, version)
   // to the list.
-  void AddPnaclInfo(ListValue* list);
+  void AddPnaclInfo(base::ListValue* list);
 
   // Adds the information relevant to NaCl to list.
-  void AddNaClInfo(ListValue* list);
+  void AddNaClInfo(base::ListValue* list);
 
   // Whether the page has requested data.
   bool page_has_requested_data_;
@@ -154,17 +154,17 @@ void NaClDomHandler::RegisterMessages() {
 
 // Helper functions for collecting a list of key-value pairs that will
 // be displayed.
-void AddPair(ListValue* list,
+void AddPair(base::ListValue* list,
              const base::string16& key,
              const base::string16& value) {
-  DictionaryValue* results = new DictionaryValue();
+  base::DictionaryValue* results = new base::DictionaryValue();
   results->SetString("key", key);
   results->SetString("value", value);
   list->Append(results);
 }
 
 // Generate an empty data-pair which acts as a line break.
-void AddLineBreak(ListValue* list) {
+void AddLineBreak(base::ListValue* list) {
   AddPair(list, ASCIIToUTF16(""), ASCIIToUTF16(""));
 }
 
@@ -178,7 +178,7 @@ bool NaClDomHandler::isPluginEnabled(size_t plugin_index) {
           plugin_prefs->IsPluginEnabled(info_array[plugin_index]));
 }
 
-void NaClDomHandler::AddOperatingSystemInfo(ListValue* list) {
+void NaClDomHandler::AddOperatingSystemInfo(base::ListValue* list) {
   // Obtain the Chrome version info.
   chrome::VersionInfo version_info;
   AddPair(list,
@@ -214,7 +214,7 @@ void NaClDomHandler::AddOperatingSystemInfo(ListValue* list) {
   AddLineBreak(list);
 }
 
-void NaClDomHandler::AddPluginList(ListValue* list) {
+void NaClDomHandler::AddPluginList(base::ListValue* list) {
   // Obtain the version of the NaCl plugin.
   std::vector<content::WebPluginInfo> info_array;
   PluginService::GetInstance()->GetPluginInfoArray(
@@ -247,7 +247,7 @@ void NaClDomHandler::AddPluginList(ListValue* list) {
   AddLineBreak(list);
 }
 
-void NaClDomHandler::AddPnaclInfo(ListValue* list) {
+void NaClDomHandler::AddPnaclInfo(base::ListValue* list) {
   // Display whether PNaCl is enabled.
   base::string16 pnacl_enabled_string = ASCIIToUTF16("Enabled");
   if (!isPluginEnabled(0)) {
@@ -278,7 +278,7 @@ void NaClDomHandler::AddPnaclInfo(ListValue* list) {
   AddLineBreak(list);
 }
 
-void NaClDomHandler::AddNaClInfo(ListValue* list) {
+void NaClDomHandler::AddNaClInfo(base::ListValue* list) {
   base::string16 nacl_enabled_string = ASCIIToUTF16("Disabled");
   if (isPluginEnabled(0) &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
@@ -290,7 +290,7 @@ void NaClDomHandler::AddNaClInfo(ListValue* list) {
   AddLineBreak(list);
 }
 
-void NaClDomHandler::HandleRequestNaClInfo(const ListValue* args) {
+void NaClDomHandler::HandleRequestNaClInfo(const base::ListValue* args) {
   page_has_requested_data_ = true;
   // Force re-validation of PNaCl's path in the next call to
   // MaybeRespondToPage(), in case PNaCl went from not-installed
@@ -305,10 +305,10 @@ void NaClDomHandler::OnGotPlugins(
   MaybeRespondToPage();
 }
 
-void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
+void NaClDomHandler::PopulatePageInformation(base::DictionaryValue* naclInfo) {
   DCHECK(pnacl_path_validated_);
   // Store Key-Value pairs of about-information.
-  scoped_ptr<ListValue> list(new ListValue());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
   // Display the operating system and chrome version information.
   AddOperatingSystemInfo(list.get());
   // Display the list of plugins serving NaCl.
@@ -372,7 +372,7 @@ void NaClDomHandler::MaybeRespondToPage() {
     return;
   }
 
-  DictionaryValue naclInfo;
+  base::DictionaryValue naclInfo;
   PopulatePageInformation(&naclInfo);
   web_ui()->CallJavascriptFunction("nacl.returnNaClInfo", naclInfo);
 }

@@ -81,7 +81,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   // (in GetLocalizedValues) and should have more legible names.
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
-  DictionaryValue localized_strings;
+  base::DictionaryValue localized_strings;
   localized_strings.SetBoolean("hasattribution", false);
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));

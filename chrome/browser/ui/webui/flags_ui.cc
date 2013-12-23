@@ -118,16 +118,16 @@ class FlagsDOMHandler : public WebUIMessageHandler {
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "requestFlagsExperiments" message.
-  void HandleRequestFlagsExperiments(const ListValue* args);
+  void HandleRequestFlagsExperiments(const base::ListValue* args);
 
   // Callback for the "enableFlagsExperiment" message.
-  void HandleEnableFlagsExperimentMessage(const ListValue* args);
+  void HandleEnableFlagsExperimentMessage(const base::ListValue* args);
 
   // Callback for the "restartBrowser" message. Restores all tabs on restart.
-  void HandleRestartBrowser(const ListValue* args);
+  void HandleRestartBrowser(const base::ListValue* args);
 
   // Callback for the "resetAllFlags" message.
-  void HandleResetAllFlags(const ListValue* args);
+  void HandleResetAllFlags(const base::ListValue* args);
 
  private:
   scoped_ptr<about_flags::FlagsStorage> flags_storage_;
@@ -161,17 +161,18 @@ void FlagsDOMHandler::Init(about_flags::FlagsStorage* flags_storage,
     HandleRequestFlagsExperiments(NULL);
 }
 
-void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
+void FlagsDOMHandler::HandleRequestFlagsExperiments(
+    const base::ListValue* args) {
   flags_experiments_requested_ = true;
   // Bail out if the handler hasn't been initialized yet. The request will be
   // handled after the initialization.
   if (!flags_storage_)
     return;
 
-  DictionaryValue results;
+  base::DictionaryValue results;
 
-  scoped_ptr<ListValue> supported_experiments(new ListValue);
-  scoped_ptr<ListValue> unsupported_experiments(new ListValue);
+  scoped_ptr<base::ListValue> supported_experiments(new base::ListValue);
+  scoped_ptr<base::ListValue> unsupported_experiments(new base::ListValue);
   about_flags::GetFlagsExperimentsData(flags_storage_.get(),
                                        access_,
                                        supported_experiments.get(),
@@ -197,7 +198,7 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(const ListValue* args) {
 }
 
 void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
-    const ListValue* args) {
+    const base::ListValue* args) {
   DCHECK(flags_storage_);
   DCHECK_EQ(2u, args->GetSize());
   if (args->GetSize() != 2)
@@ -215,7 +216,7 @@ void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
       enable_str == "true");
 }
 
-void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
+void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
   DCHECK(flags_storage_);
 #if !defined(OS_CHROMEOS)
   chrome::AttemptRestart();
@@ -237,7 +238,7 @@ void FlagsDOMHandler::HandleRestartBrowser(const ListValue* args) {
 #endif
 }
 
-void FlagsDOMHandler::HandleResetAllFlags(const ListValue* args) {
+void FlagsDOMHandler::HandleResetAllFlags(const base::ListValue* args) {
   DCHECK(flags_storage_);
   about_flags::ResetAllFlags(flags_storage_.get());
 }

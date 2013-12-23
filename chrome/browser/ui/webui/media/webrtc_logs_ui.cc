@@ -81,7 +81,7 @@ class WebRtcLogsDOMHandler : public WebUIMessageHandler,
 
  private:
   // Asynchronously fetches the list of upload WebRTC logs. Called from JS.
-  void HandleRequestWebRtcLogs(const ListValue* args);
+  void HandleRequestWebRtcLogs(const base::ListValue* args);
 
   // Sends the recently uploaded logs list JS.
   void UpdateUI();
@@ -116,7 +116,8 @@ void WebRtcLogsDOMHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void WebRtcLogsDOMHandler::HandleRequestWebRtcLogs(const ListValue* args) {
+void WebRtcLogsDOMHandler::HandleRequestWebRtcLogs(
+    const base::ListValue* args) {
   if (list_available_)
     UpdateUI();
   else
@@ -133,10 +134,10 @@ void WebRtcLogsDOMHandler::UpdateUI() {
   std::vector<WebRtcLogUploadList::UploadInfo> uploads;
   upload_list_->GetUploads(50, &uploads);
 
-  ListValue upload_list;
+  base::ListValue upload_list;
   for (std::vector<WebRtcLogUploadList::UploadInfo>::iterator i =
        uploads.begin(); i != uploads.end(); ++i) {
-    DictionaryValue* upload = new DictionaryValue();
+    base::DictionaryValue* upload = new base::DictionaryValue();
     upload->SetString("id", i->id);
     upload->SetString("time", base::TimeFormatFriendlyDateAndTime(i->time));
     upload_list.Append(upload);

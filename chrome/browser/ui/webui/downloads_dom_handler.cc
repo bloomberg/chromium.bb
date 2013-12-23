@@ -112,14 +112,14 @@ const char* GetDangerTypeString(content::DownloadDangerType danger_type) {
 // Returns a JSON dictionary containing some of the attributes of |download|.
 // The JSON dictionary will also have a field "id" set to |id|, and a field
 // "otr" set to |incognito|.
-DictionaryValue* CreateDownloadItemValue(
+base::DictionaryValue* CreateDownloadItemValue(
     content::DownloadItem* download_item,
     bool incognito) {
   // TODO(asanka): Move towards using download_model here for getting status and
   // progress. The difference currently only matters to Drive downloads and
   // those don't show up on the downloads page, but should.
   DownloadItemModel download_model(download_item);
-  DictionaryValue* file_value = new DictionaryValue();
+  base::DictionaryValue* file_value = new base::DictionaryValue();
 
   file_value->SetInteger(
       "started", static_cast<int>(download_item->GetStartTime().ToTimeT()));

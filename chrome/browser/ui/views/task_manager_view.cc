@@ -576,7 +576,7 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
     if (g_browser_process->local_state()) {
       DictionaryPrefUpdate update(g_browser_process->local_state(),
                                   GetWindowName().c_str());
-      DictionaryValue* window_preferences = update.Get();
+      base::DictionaryValue* window_preferences = update.Get();
       window_preferences->SetBoolean("always_on_top", is_always_on_top_);
     }
     return true;
@@ -724,7 +724,7 @@ bool TaskManagerView::GetSavedAlwaysOnTopState(bool* always_on_top) const {
   if (!g_browser_process->local_state())
     return false;
 
-  const DictionaryValue* dictionary =
+  const base::DictionaryValue* dictionary =
       g_browser_process->local_state()->GetDictionary(GetWindowName().c_str());
   return dictionary &&
       dictionary->GetBoolean("always_on_top", always_on_top) && always_on_top;

@@ -388,7 +388,7 @@ void EnrollmentScreenHandler::OnTokenFetched(
 }
 
 void EnrollmentScreenHandler::DoShow() {
-  DictionaryValue screen_data;
+  base::DictionaryValue screen_data;
   screen_data.SetString("signin_url", kGaiaExtStartPage);
   screen_data.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
   screen_data.SetBoolean("is_auto_enrollment", is_auto_enrollment_);

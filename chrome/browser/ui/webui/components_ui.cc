@@ -69,10 +69,10 @@ class ComponentsDOMHandler : public WebUIMessageHandler {
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "requestComponentsData" message.
-  void HandleRequestComponentsData(const ListValue* args);
+  void HandleRequestComponentsData(const base::ListValue* args);
 
   // Callback for the "checkUpdate" message.
-  void HandleCheckUpdate(const ListValue* args);
+  void HandleCheckUpdate(const base::ListValue* args);
 
  private:
   void LoadComponents();
@@ -95,7 +95,8 @@ void ComponentsDOMHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ComponentsDOMHandler::HandleRequestComponentsData(const ListValue* args) {
+void ComponentsDOMHandler::HandleRequestComponentsData(
+    const base::ListValue* args) {
   LoadComponents();
 }
 
@@ -103,7 +104,7 @@ void ComponentsDOMHandler::HandleRequestComponentsData(const ListValue* args) {
 // TODO(shrikant): We need to make this button available based on current
 // state e.g. If component state is currently updating then we need to disable
 // button. (https://code.google.com/p/chromium/issues/detail?id=272540)
-void ComponentsDOMHandler::HandleCheckUpdate(const ListValue* args) {
+void ComponentsDOMHandler::HandleCheckUpdate(const base::ListValue* args) {
   if (args->GetSize() != 1) {
     NOTREACHED();
     return;
@@ -124,11 +125,11 @@ void ComponentsDOMHandler::LoadComponents() {
   cus->GetComponents(&components);
 
   // Construct DictionaryValues to return to UI.
-  ListValue* component_list = new ListValue();
+  base::ListValue* component_list = new base::ListValue();
   for (size_t j = 0; j < components.size(); ++j) {
     const CrxComponentInfo& component = components[j];
 
-    DictionaryValue* component_entry = new DictionaryValue();
+    base::DictionaryValue* component_entry = new base::DictionaryValue();
     component_entry->SetString("id", component.id);
     component_entry->SetString("name", component.name);
     component_entry->SetString("version", component.version);
@@ -136,7 +137,7 @@ void ComponentsDOMHandler::LoadComponents() {
     component_list->Append(component_entry);
   }
 
-  DictionaryValue results;
+  base::DictionaryValue results;
   results.Set("components", component_list);
   web_ui()->CallJavascriptFunction("returnComponentsData", results);
 }

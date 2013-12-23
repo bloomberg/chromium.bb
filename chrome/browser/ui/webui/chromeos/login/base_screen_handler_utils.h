@@ -26,45 +26,45 @@ struct UnwrapConstRef<const T&> {
 };
 
 template<typename T>
-inline bool ParseValue(const Value* value, T* out_value);
+inline bool ParseValue(const base::Value* value, T* out_value);
 
 template<>
-inline bool ParseValue<bool>(const Value* value, bool* out_value) {
+inline bool ParseValue<bool>(const base::Value* value, bool* out_value) {
   return value->GetAsBoolean(out_value);
 }
 
 template<>
-inline bool ParseValue<int>(const Value* value, int* out_value) {
+inline bool ParseValue<int>(const base::Value* value, int* out_value) {
   return value->GetAsInteger(out_value);
 }
 
 template<>
-inline bool ParseValue<double>(const Value* value, double* out_value) {
+inline bool ParseValue<double>(const base::Value* value, double* out_value) {
   return value->GetAsDouble(out_value);
 }
 
 template<>
-inline bool ParseValue<std::string>(const Value* value,
+inline bool ParseValue<std::string>(const base::Value* value,
                                     std::string* out_value) {
   return value->GetAsString(out_value);
 }
 
 template<>
-inline bool ParseValue<base::string16>(const Value* value,
+inline bool ParseValue<base::string16>(const base::Value* value,
                                        base::string16* out_value) {
   return value->GetAsString(out_value);
 }
 
 template<>
 inline bool ParseValue<const base::DictionaryValue*>(
-    const Value* value,
+    const base::Value* value,
     const base::DictionaryValue** out_value) {
   return value->GetAsDictionary(out_value);
 }
 
 template<typename T>
 inline bool GetArg(const base::ListValue* args, size_t index, T* out_value) {
-  const Value* value;
+  const base::Value* value;
   if (!args->Get(index, &value))
     return false;
   return ParseValue(value, out_value);

@@ -47,10 +47,10 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     virtual ~HistoryEntry();
 
     // Formats this entry's URL and title and adds them to |result|.
-    void SetUrlAndTitle(DictionaryValue* result) const;
+    void SetUrlAndTitle(base::DictionaryValue* result) const;
 
     // Converts the entry to a DictionaryValue to be owned by the caller.
-    scoped_ptr<DictionaryValue> ToValue(
+    scoped_ptr<base::DictionaryValue> ToValue(
         BookmarkModel* bookmark_model,
         ManagedUserService* managed_user_service,
         const ProfileSyncService* sync_service) const;

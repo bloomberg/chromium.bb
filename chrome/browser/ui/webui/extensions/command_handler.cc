@@ -74,13 +74,13 @@ void CommandHandler::Observe(
 }
 
 void CommandHandler::UpdateCommandDataOnPage() {
-  DictionaryValue results;
+  base::DictionaryValue results;
   GetAllCommands(&results);
   web_ui()->CallJavascriptFunction(
       "extensions.ExtensionCommandsOverlay.returnExtensionsData", results);
 }
 
-void CommandHandler::HandleRequestExtensionsData(const ListValue* args) {
+void CommandHandler::HandleRequestExtensionsData(const base::ListValue* args) {
   UpdateCommandDataOnPage();
 }
 
@@ -121,14 +121,15 @@ void CommandHandler::HandleSetCommandScope(
     UpdateCommandDataOnPage();
 }
 
-void CommandHandler::HandleSetShortcutHandlingSuspended(const ListValue* args) {
+void CommandHandler::HandleSetShortcutHandlingSuspended(
+    const base::ListValue* args) {
   bool suspended;
   if (args->GetBoolean(0, &suspended))
     ExtensionKeybindingRegistry::SetShortcutHandlingSuspended(suspended);
 }
 
 void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
-  ListValue* results = new ListValue;
+  base::ListValue* results = new base::ListValue;
 
   Profile* profile = Profile::FromWebUI(web_ui());
   CommandService* command_service = CommandService::Get(profile);
@@ -137,12 +138,12 @@ void CommandHandler::GetAllCommands(base::DictionaryValue* commands) {
       extension_service()->extensions();
   for (ExtensionSet::const_iterator extension = extensions->begin();
        extension != extensions->end(); ++extension) {
-    scoped_ptr<DictionaryValue> extension_dict(new DictionaryValue);
+    scoped_ptr<base::DictionaryValue> extension_dict(new base::DictionaryValue);
     extension_dict->SetString("name", (*extension)->name());
     extension_dict->SetString("id", (*extension)->id());
 
     // Add the keybindings to a list structure.
-    scoped_ptr<ListValue> extensions_list(new ListValue());
+    scoped_ptr<base::ListValue> extensions_list(new base::ListValue());
 
     bool active = false;
 

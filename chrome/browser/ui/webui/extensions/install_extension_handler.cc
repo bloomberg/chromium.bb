@@ -60,7 +60,8 @@ void InstallExtensionHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void InstallExtensionHandler::HandleStartDragMessage(const ListValue* args) {
+void InstallExtensionHandler::HandleStartDragMessage(
+    const base::ListValue* args) {
   content::DropData* drop_data =
       web_ui()->GetWebContents()->GetView()->GetDropData();
   if (!drop_data) {
@@ -82,12 +83,14 @@ void InstallExtensionHandler::HandleStartDragMessage(const ListValue* args) {
       file_info.display_name.empty() ? file_info.path : file_info.display_name;
 }
 
-void InstallExtensionHandler::HandleStopDragMessage(const ListValue* args) {
+void InstallExtensionHandler::HandleStopDragMessage(
+    const base::ListValue* args) {
   file_to_install_.clear();
   file_display_name_.clear();
 }
 
-void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
+void InstallExtensionHandler::HandleInstallMessage(
+    const base::ListValue* args) {
   if (file_to_install_.empty()) {
     LOG(ERROR) << "No file captured to install.";
     return;
@@ -124,7 +127,7 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
 }
 
 void InstallExtensionHandler::HandleInstallDirectoryMessage(
-    const ListValue* args) {
+    const base::ListValue* args) {
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
   UnpackedInstaller::Create(

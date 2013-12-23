@@ -515,14 +515,14 @@ void SigninScreenHandler::ShowImpl() {
     input_method::InputMethodManager::Get()->GetXKeyboard()->
         SetCapsLockEnabled(false);
 
-    DictionaryValue params;
+    base::DictionaryValue params;
     params.SetBoolean("disableAddUser", AllWhitelistedUsersPresent());
     UpdateUIState(UI_STATE_ACCOUNT_PICKER, &params);
   }
 }
 
 void SigninScreenHandler::UpdateUIState(UIState ui_state,
-                                        DictionaryValue* params) {
+                                        base::DictionaryValue* params) {
   switch (ui_state) {
     case UI_STATE_GAIA_SIGNIN:
       ui_state_ = UI_STATE_GAIA_SIGNIN;
@@ -707,7 +707,7 @@ void SigninScreenHandler::SetupAndShowOfflineMessage(
   error_screen_actor_->AllowOfflineLogin(offline_login_allowed);
 
   if (GetCurrentScreen() != OobeUI::SCREEN_ERROR_MESSAGE) {
-    DictionaryValue params;
+    base::DictionaryValue params;
     const std::string network_type = network_state_informer_->network_type();
     params.SetString("lastNetworkType", network_type);
     error_screen_actor_->SetUIState(ErrorScreen::UI_STATE_SIGNIN);
@@ -1138,7 +1138,7 @@ void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
     LOG(ERROR) << "Managed users not allowed.";
     return;
   }
-  scoped_ptr<DictionaryValue> params(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> params(new base::DictionaryValue());
   LoginDisplayHostImpl::default_host()->
       StartWizard(WizardController::kLocallyManagedUserCreationScreenName,
       params.Pass());
@@ -1242,7 +1242,7 @@ void SigninScreenHandler::HandleLaunchHelpApp(double help_topic_id) {
 
 void SigninScreenHandler::FillUserDictionary(User* user,
                                              bool is_owner,
-                                             DictionaryValue* user_dict) {
+                                             base::DictionaryValue* user_dict) {
   const std::string& email = user->email();
   bool is_public_account =
       user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
@@ -1289,7 +1289,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
   size_t max_non_owner_users = kMaxUsers - 1;
   size_t non_owner_count = 0;
 
-  ListValue users_list;
+  base::ListValue users_list;
   const UserList& users = delegate_->GetUsers();
 
   // TODO(nkostylev): Show optional intro dialog about multi-profiles feature
@@ -1309,7 +1309,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
     bool is_owner = (email == owner);
 
     if (non_owner_count < max_non_owner_users || is_owner) {
-      DictionaryValue* user_dict = new DictionaryValue();
+      base::DictionaryValue* user_dict = new base::DictionaryValue();
       FillUserDictionary(*it, is_owner, user_dict);
       bool is_public_account =
           ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT);

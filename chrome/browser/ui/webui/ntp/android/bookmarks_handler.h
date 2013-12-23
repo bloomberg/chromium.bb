@@ -58,11 +58,11 @@ class BookmarksHandler : public content::WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for the "getBookmarks" message.
-  void HandleGetBookmarks(const ListValue* args);
+  void HandleGetBookmarks(const base::ListValue* args);
   // Callback for the "deleteBookmark" message.
-  void HandleDeleteBookmark(const ListValue* args);
+  void HandleDeleteBookmark(const base::ListValue* args);
   // Callback for the "editBookmark" message.
-  void HandleEditBookmark(const ListValue* args);
+  void HandleEditBookmark(const base::ListValue* args);
   // Callback for the "createHomeScreenBookmarkShortcut" message.  Used when
   // creating a shortcut on the home screen that should open the bookmark
   // specified in |args|.
@@ -114,7 +114,7 @@ class BookmarksHandler : public content::WebUIMessageHandler,
   bool AreModelsLoaded() const;
 
   // Notify the UI that a change occurred to the bookmark model.
-  void NotifyModelChanged(const DictionaryValue& status);
+  void NotifyModelChanged(const base::DictionaryValue& status);
 
   // Generates the string encoded ID to be used by the NTP.
   std::string GetBookmarkIdForNtp(const BookmarkNode* node);
@@ -122,16 +122,16 @@ class BookmarksHandler : public content::WebUIMessageHandler,
   // Sets the necessary parent information in the response object to be sent
   // to the UI renderer.
   void SetParentInBookmarksResult(const BookmarkNode* parent,
-                                  DictionaryValue* result);
+                                  base::DictionaryValue* result);
 
   // Convert the given bookmark |node| into a dictionary format to be returned
   // to JavaScript.
-  void PopulateBookmark(const BookmarkNode* node, ListValue* result);
+  void PopulateBookmark(const BookmarkNode* node, base::ListValue* result);
 
   // Given a bookmark folder node, |folder|, populate the |result| with the
   // structured JavaScript-formatted data regarding the folder.
   void PopulateBookmarksInFolder(const BookmarkNode* folder,
-                                 DictionaryValue* result);
+                                 base::DictionaryValue* result);
 
   // Sends all bookmarks and sub folders in the given folder back to the NTP.
   void QueryBookmarkFolder(const BookmarkNode* node);
@@ -141,7 +141,7 @@ class BookmarksHandler : public content::WebUIMessageHandler,
   void QueryInitialBookmarks();
 
   // Sends the result back to Javascript
-  void SendResult(const DictionaryValue& result);
+  void SendResult(const base::DictionaryValue& result);
 
   // Called once the favicon is loaded during creation of the bookmark shortcuts
   // and is available for use.

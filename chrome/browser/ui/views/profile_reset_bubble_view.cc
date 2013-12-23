@@ -85,7 +85,7 @@ class FeedbackView : public views::View {
   // |feedback| ListValue which contains a list of key/value pairs stored in
   // DictionaryValues. The key is to be displayed right aligned on the left, and
   // the value as a left aligned multiline text on the right.
-  void SetupLayoutManager(const ListValue& feedback) {
+  void SetupLayoutManager(const base::ListValue& feedback) {
     RemoveAllChildViews(true);
     set_background(views::Background::CreateSolidBackground(
         kLightGrayBackgroundColor));
@@ -101,7 +101,7 @@ class FeedbackView : public views::View {
     cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                   GridLayout::FIXED, kFeedbackViewColumnWidth, 0);
     for (size_t i = 0; i < feedback.GetSize(); ++i) {
-      const DictionaryValue* dictionary = NULL;
+      const base::DictionaryValue* dictionary = NULL;
       if (!feedback.GetDictionary(i, &dictionary) || !dictionary)
         continue;
 
@@ -348,7 +348,7 @@ void ProfileResetBubbleView::SetupLayoutManager(bool report_checked) {
   layout->AddView(controls_.help_button);
 
   if (show_help_pane_) {
-    scoped_ptr<ListValue> feedback(GetReadableFeedback(profile_));
+    scoped_ptr<base::ListValue> feedback(GetReadableFeedback(profile_));
     if (feedback.get()) {
       // We need a single row to add the scroll view containing the feedback.
       const int kReportDetailsColumnSetId = 5;

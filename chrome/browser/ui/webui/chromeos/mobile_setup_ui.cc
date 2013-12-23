@@ -85,14 +85,15 @@ void DataRequestFailed(
 }
 
 // Converts the network properties into a JS object.
-void GetDeviceInfo(const DictionaryValue& properties, DictionaryValue* value) {
+void GetDeviceInfo(const base::DictionaryValue& properties,
+                   base::DictionaryValue* value) {
   std::string name;
   properties.GetStringWithoutPathExpansion(shill::kNameProperty, &name);
   bool activate_over_non_cellular_networks = false;
   properties.GetBooleanWithoutPathExpansion(
       shill::kActivateOverNonCellularNetworkProperty,
       &activate_over_non_cellular_networks);
-  const DictionaryValue* payment_dict;
+  const base::DictionaryValue* payment_dict;
   std::string payment_url, post_method, post_data;
   if (properties.GetDictionaryWithoutPathExpansion(
           shill::kPaymentPortalProperty, &payment_dict)) {
@@ -131,7 +132,7 @@ void GetDeviceInfo(const DictionaryValue& properties, DictionaryValue* value) {
 
 void SetActivationStateAndError(MobileActivator::PlanActivationState state,
                                 const std::string& error_description,
-                                DictionaryValue* value) {
+                                base::DictionaryValue* value) {
   value->SetInteger("state", state);
   if (!error_description.empty())
     value->SetString("error", error_description);
@@ -223,10 +224,10 @@ class MobileSetupHandler
       scoped_ptr<base::DictionaryValue> error_data);
 
   // Handlers for JS WebUI messages.
-  void HandleSetTransactionStatus(const ListValue* args);
-  void HandleStartActivation(const ListValue* args);
-  void HandlePaymentPortalLoad(const ListValue* args);
-  void HandleGetDeviceInfo(const ListValue* args);
+  void HandleSetTransactionStatus(const base::ListValue* args);
+  void HandleStartActivation(const base::ListValue* args);
+  void HandlePaymentPortalLoad(const base::ListValue* args);
+  void HandleGetDeviceInfo(const base::ListValue* args);
 
   // NetworkStateHandlerObserver implementation.
   virtual void NetworkConnectionStateChanged(
@@ -287,7 +288,7 @@ void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
     const content::URLDataSource::GotDataCallback& callback,
     const std::string& service_path,
     const base::DictionaryValue& properties) {
-  const DictionaryValue* payment_dict;
+  const base::DictionaryValue* payment_dict;
   std::string name, usage_url, activation_state, payment_url;
   if (!properties.GetStringWithoutPathExpansion(
           shill::kNameProperty, &name) ||
@@ -310,7 +311,7 @@ void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
   }
 
   NET_LOG_EVENT("Starting mobile setup", service_path);
-  DictionaryValue strings;
+  base::DictionaryValue strings;
 
   strings.SetString("connecting_header",
                     l10n_util::GetStringFUTF16(IDS_MOBILE_CONNECTING_HEADER,
@@ -395,7 +396,7 @@ void MobileSetupHandler::OnActivationStateChanged(
     return;
 
   if (!network) {
-    DictionaryValue device_dict;
+    base::DictionaryValue device_dict;
     SetActivationStateAndError(state, error_description, &device_dict);
     web_ui()->CallJavascriptFunction(kJsDeviceStatusChangedCallback,
                                      device_dict);
@@ -419,7 +420,7 @@ void MobileSetupHandler::GetPropertiesAndCallStatusChanged(
     const std::string& error_description,
     const std::string& service_path,
     const base::DictionaryValue& properties) {
-  DictionaryValue device_dict;
+  base::DictionaryValue device_dict;
   GetDeviceInfo(properties, &device_dict);
   SetActivationStateAndError(state, error_description, &device_dict);
   web_ui()->CallJavascriptFunction(kJsDeviceStatusChangedCallback, device_dict);
@@ -440,7 +441,7 @@ void MobileSetupHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
+void MobileSetupHandler::HandleStartActivation(const base::ListValue* args) {
   DCHECK_EQ(TYPE_UNDETERMINED, type_);
 
   if (!web_ui())
@@ -457,7 +458,8 @@ void MobileSetupHandler::HandleStartActivation(const ListValue* args) {
   MobileActivator::GetInstance()->InitiateActivation(path.substr(1));
 }
 
-void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
+void MobileSetupHandler::HandleSetTransactionStatus(
+    const base::ListValue* args) {
   DCHECK_EQ(TYPE_ACTIVATION, type_);
   if (!web_ui())
     return;
@@ -474,7 +476,7 @@ void MobileSetupHandler::HandleSetTransactionStatus(const ListValue* args) {
       LowerCaseEqualsASCII(status, kJsApiResultOK));
 }
 
-void MobileSetupHandler::HandlePaymentPortalLoad(const ListValue* args) {
+void MobileSetupHandler::HandlePaymentPortalLoad(const base::ListValue* args) {
   // Only activation flow webui is interested in these events.
   if (type_ != TYPE_ACTIVATION || !web_ui())
     return;
@@ -491,7 +493,7 @@ void MobileSetupHandler::HandlePaymentPortalLoad(const ListValue* args) {
       LowerCaseEqualsASCII(result, kJsApiResultOK));
 }
 
-void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
+void MobileSetupHandler::HandleGetDeviceInfo(const base::ListValue* args) {
   DCHECK_NE(TYPE_ACTIVATION, type_);
   if (!web_ui())
     return;
@@ -544,7 +546,7 @@ void MobileSetupHandler::HandleGetDeviceInfo(const ListValue* args) {
 void MobileSetupHandler::GetPropertiesAndCallGetDeviceInfo(
     const std::string& service_path,
     const base::DictionaryValue& properties) {
-  DictionaryValue device_info;
+  base::DictionaryValue device_info;
   GetDeviceInfo(properties, &device_info);
   web_ui()->CallJavascriptFunction(kJsGetDeviceInfoCallback, device_info);
 }
@@ -557,7 +559,7 @@ void MobileSetupHandler::GetPropertiesFailure(
   NET_LOG_ERROR("MobileActivator GetProperties Failed: " + error_name,
                 service_path);
   // Invoke |callback_name| with an empty dictionary.
-  DictionaryValue device_dict;
+  base::DictionaryValue device_dict;
   web_ui()->CallJavascriptFunction(callback_name, device_dict);
 }
 

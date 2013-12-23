@@ -16,7 +16,7 @@ namespace chromeos {
 
 ChargerReplacementUI::ChargerReplacementUI(content::WebUI* web_ui)
     : WebDialogUI(web_ui) {
-  DictionaryValue localized_strings;
+  base::DictionaryValue localized_strings;
   ChargerReplacementHandler::GetLocalizedValues(&localized_strings);
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIChargerReplacementHost);

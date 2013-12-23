@@ -64,7 +64,7 @@ void ExtensionInfoUI::AddExtensionDataToSource(
   if (!extension)
     return;
 
-  DictionaryValue extension_data;
+  base::DictionaryValue extension_data;
   GetExtensionBasicInfo(extension, true, &extension_data);
   source_->AddLocalizedStrings(extension_data);
 

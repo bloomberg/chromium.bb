@@ -120,14 +120,15 @@ class WebUIHandler
 
   // BurnController::Delegate override.
   virtual void OnFail(int error_message_id) OVERRIDE {
-    StringValue error_message(l10n_util::GetStringUTF16(error_message_id));
+    base::StringValue error_message(
+        l10n_util::GetStringUTF16(error_message_id));
     web_ui()->CallJavascriptFunction("browserBridge.reportFail", error_message);
   }
 
   // BurnController::Delegate override.
   virtual void OnDeviceAdded(const disks::DiskMountManager::Disk& disk)
       OVERRIDE {
-    DictionaryValue disk_value;
+    base::DictionaryValue disk_value;
     CreateDiskValue(disk, &disk_value);
     web_ui()->CallJavascriptFunction("browserBridge.deviceAdded", disk_value);
   }
@@ -135,7 +136,7 @@ class WebUIHandler
   // BurnController::Delegate override.
   virtual void OnDeviceRemoved(const disks::DiskMountManager::Disk& disk)
       OVERRIDE {
-    StringValue device_path_value(disk.device_path());
+    base::StringValue device_path_value(disk.device_path());
     web_ui()->CallJavascriptFunction("browserBridge.deviceRemoved",
                                      device_path_value);
   }
@@ -144,7 +145,7 @@ class WebUIHandler
   virtual void OnDeviceTooSmall(int64 device_size) OVERRIDE {
     base::string16 size;
     GetDataSizeText(device_size, &size);
-    StringValue device_size_text(size);
+    base::StringValue device_size_text(size);
     web_ui()->CallJavascriptFunction("browserBridge.reportDeviceTooSmall",
                                      device_size_text);
   }
@@ -184,7 +185,7 @@ class WebUIHandler
 
  private:
   void CreateDiskValue(const disks::DiskMountManager::Disk& disk,
-                       DictionaryValue* disk_value) {
+                       base::DictionaryValue* disk_value) {
     base::string16 label = ASCIIToUTF16(disk.drive_label());
     base::i18n::AdjustStringForLocaleDirection(&label);
     disk_value->SetString(std::string(kPropertyLabel), label);
@@ -195,12 +196,12 @@ class WebUIHandler
   }
 
   // Callback for the "getDevices" message.
-  void HandleGetDevices(const ListValue* args) {
+  void HandleGetDevices(const base::ListValue* args) {
     const std::vector<disks::DiskMountManager::Disk> disks
         = burn_controller_->GetBurnableDevices();
-    ListValue results_value;
+    base::ListValue results_value;
     for (size_t i = 0; i != disks.size(); ++i) {
-      DictionaryValue* disk_value = new DictionaryValue();
+      base::DictionaryValue* disk_value = new base::DictionaryValue();
       CreateDiskValue(disks[i], disk_value);
       results_value.Append(disk_value);
     }
@@ -209,19 +210,19 @@ class WebUIHandler
   }
 
   // Callback for the webuiInitialized message.
-  void HandleWebUIInitialized(const ListValue* args) {
+  void HandleWebUIInitialized(const base::ListValue* args) {
     burn_controller_->Init();
   }
 
   // Callback for the "cancelBurnImage" message.
-  void HandleCancelBurnImage(const ListValue* args) {
+  void HandleCancelBurnImage(const base::ListValue* args) {
     burn_controller_->CancelBurnImage();
   }
 
   // Callback for the "burnImage" message.
   // It may be called with NULL if there is a handler that has started burning,
   // and thus set the target paths.
-  void HandleBurnImage(const ListValue* args) {
+  void HandleBurnImage(const base::ListValue* args) {
     base::FilePath target_device_path;
     ExtractTargetedDevicePath(*args, 0, &target_device_path);
 
@@ -236,7 +237,7 @@ class WebUIHandler
                           int64 amount_finished,
                           int64 amount_total,
                           const base::string16& time_remaining_text) {
-    DictionaryValue progress;
+    base::DictionaryValue progress;
     int progress_message_id = 0;
     switch (progress_type) {
       case DOWNLOADING:
@@ -288,13 +289,13 @@ class WebUIHandler
   }
 
   // device_path has to be previously created.
-  void ExtractTargetedDevicePath(const ListValue& list_value,
+  void ExtractTargetedDevicePath(const base::ListValue& list_value,
                                  int index,
                                  base::FilePath* device_path) {
-    const Value* list_member;
+    const base::Value* list_member;
     std::string image_dest;
     if (list_value.Get(index, &list_member) &&
-        list_member->GetType() == Value::TYPE_STRING &&
+        list_member->GetType() == base::Value::TYPE_STRING &&
         list_member->GetAsString(&image_dest)) {
       *device_path = base::FilePath(image_dest);
     } else {

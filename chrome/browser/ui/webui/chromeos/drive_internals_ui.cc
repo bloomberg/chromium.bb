@@ -67,7 +67,7 @@ void GetGCacheContents(const base::FilePath& root_path,
   DCHECK(gcache_summary);
 
   // Use this map to sort the result list by the path.
-  std::map<base::FilePath, DictionaryValue*> files;
+  std::map<base::FilePath, base::DictionaryValue*> files;
 
   const int options = (base::FileEnumerator::FILES |
                        base::FileEnumerator::DIRECTORIES |
@@ -102,7 +102,7 @@ void GetGCacheContents(const base::FilePath& root_path,
   }
 
   // Convert |files| into |gcache_contents|.
-  for (std::map<base::FilePath, DictionaryValue*>::const_iterator
+  for (std::map<base::FilePath, base::DictionaryValue*>::const_iterator
            iter = files.begin(); iter != files.end(); ++iter) {
     gcache_contents->Append(iter->second);
   }
@@ -460,7 +460,7 @@ void DriveInternalsWebUIHandler::UpdateDriveRelatedFlagsSection() {
     std::string value = "(not set)";
     if (CommandLine::ForCurrentProcess()->HasSwitch(key))
       value = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(key);
-    base::DictionaryValue* flag = new DictionaryValue;
+    base::DictionaryValue* flag = new base::DictionaryValue;
     flag->SetString("key", key);
     flag->SetString("value", value.empty() ? "(set)" : value);
     flags.Append(flag);
@@ -487,7 +487,7 @@ void DriveInternalsWebUIHandler::UpdateDriveRelatedPreferencesSection() {
     // As of now, all preferences are boolean.
     const std::string value =
         (pref_service->GetBoolean(key.c_str()) ? "true" : "false");
-    base::DictionaryValue* preference = new DictionaryValue;
+    base::DictionaryValue* preference = new base::DictionaryValue;
     preference->SetString("key", key);
     preference->SetString("value", value);
     preferences.Append(preference);
@@ -662,7 +662,7 @@ void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(
   for (size_t i = 0; i < info_list.size(); ++i) {
     const drive::JobInfo& info = info_list[i];
 
-    base::DictionaryValue* dict = new DictionaryValue;
+    base::DictionaryValue* dict = new base::DictionaryValue;
     dict->SetInteger("id", info.job_id);
     dict->SetString("type", drive::JobTypeToString(info.job_type));
     dict->SetString("file_path", info.file_path.AsUTF8Unsafe());
@@ -681,8 +681,8 @@ void DriveInternalsWebUIHandler::UpdateGCacheContentsSection() {
   // Start updating the GCache contents section.
   Profile* profile = Profile::FromWebUI(web_ui());
   const base::FilePath root_path = drive::util::GetCacheRootPath(profile);
-  base::ListValue* gcache_contents = new ListValue;
-  base::DictionaryValue* gcache_summary = new DictionaryValue;
+  base::ListValue* gcache_contents = new base::ListValue;
+  base::DictionaryValue* gcache_summary = new base::DictionaryValue;
   BrowserThread::PostBlockingPoolTaskAndReply(
       FROM_HERE,
       base::Bind(&GetGCacheContents,
@@ -729,7 +729,7 @@ void DriveInternalsWebUIHandler::UpdateLocalStorageUsageSection() {
   // Propagate the amount of local free space in bytes.
   base::FilePath home_path;
   if (PathService::Get(base::DIR_HOME, &home_path)) {
-    base::DictionaryValue* local_storage_summary = new DictionaryValue;
+    base::DictionaryValue* local_storage_summary = new base::DictionaryValue;
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&GetFreeDiskSpace, home_path, local_storage_summary),
@@ -766,7 +766,7 @@ void DriveInternalsWebUIHandler::UpdateEventLogSection() {
 
     std::string severity = SeverityToString(log[i].severity);
 
-    base::DictionaryValue* dict = new DictionaryValue;
+    base::DictionaryValue* dict = new base::DictionaryValue;
     dict->SetString("key",
         google_apis::util::FormatTimeAsStringLocaltime(log[i].when));
     dict->SetString("value", "[" + severity + "] " + log[i].what);

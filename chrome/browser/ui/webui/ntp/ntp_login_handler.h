@@ -34,7 +34,8 @@ class NTPLoginHandler : public content::WebUIMessageHandler,
   static bool ShouldShow(Profile* profile);
 
   // Registers values (strings etc.) for the page.
-  static void GetLocalizedValues(Profile* profile, DictionaryValue* values);
+  static void GetLocalizedValues(Profile* profile,
+                                 base::DictionaryValue* values);
 
  private:
   // User actions while on the NTP when clicking on or viewing the sync promo.
@@ -46,24 +47,24 @@ class NTPLoginHandler : public content::WebUIMessageHandler,
 
   // Called from JS when the NTP is loaded. |args| is the list of arguments
   // passed from JS and should be an empty list.
-  void HandleInitializeSyncLogin(const ListValue* args);
+  void HandleInitializeSyncLogin(const base::ListValue* args);
 
   // Called from JS when the user clicks the login container. It shows the
   // appropriate UI based on the current sync state. |args| is the list of
   // arguments passed from JS and should be an empty list.
-  void HandleShowSyncLoginUI(const ListValue* args);
+  void HandleShowSyncLoginUI(const base::ListValue* args);
 
   // Records actions in SyncPromo.NTPPromo histogram.
   void RecordInHistogram(int type);
 
   // Called from JS when the sync promo NTP bubble has been displayed. |args| is
   // the list of arguments passed from JS and should be an empty list.
-  void HandleLoginMessageSeen(const ListValue* args);
+  void HandleLoginMessageSeen(const base::ListValue* args);
 
   // Called from JS when the user clicks on the advanced link the sync promo NTP
   // bubble. Use use this to navigate to the sync settings page. |args| is the
   // list of arguments passed from JS and should be an empty list.
-  void HandleShowAdvancedLoginUI(const ListValue* args);
+  void HandleShowAdvancedLoginUI(const base::ListValue* args);
 
   // Internal helper method
   void UpdateLogin();

@@ -46,7 +46,7 @@ void ScreenManagerHandler::HandleButtonPressed(const std::string& screen_name,
 
 void ScreenManagerHandler::HandleContextChanged(
     const std::string& screen_name,
-    const DictionaryValue* diff) {
+    const base::DictionaryValue* diff) {
   if (delegate_)
     delegate_->OnContextChanged(screen_name, diff);
 }

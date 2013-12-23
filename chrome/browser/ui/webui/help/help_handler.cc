@@ -316,7 +316,7 @@ void HelpHandler::Observe(int type, const content::NotificationSource& source,
   }
 }
 
-void HelpHandler::OnPageLoaded(const ListValue* args) {
+void HelpHandler::OnPageLoaded(const base::ListValue* args) {
 #if defined(OS_CHROMEOS)
   // Version information is loaded from a callback
   loader_.GetVersion(
@@ -359,17 +359,17 @@ void HelpHandler::OnPageLoaded(const ListValue* args) {
 }
 
 #if defined(OS_MACOSX)
-void HelpHandler::PromoteUpdater(const ListValue* args) {
+void HelpHandler::PromoteUpdater(const base::ListValue* args) {
   version_updater_->PromoteUpdater();
 }
 #endif
 
-void HelpHandler::RelaunchNow(const ListValue* args) {
+void HelpHandler::RelaunchNow(const base::ListValue* args) {
   DCHECK(args->empty());
   version_updater_->RelaunchBrowser();
 }
 
-void HelpHandler::OpenFeedbackDialog(const ListValue* args) {
+void HelpHandler::OpenFeedbackDialog(const base::ListValue* args) {
   DCHECK(args->empty());
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
@@ -385,7 +385,7 @@ void HelpHandler::OpenHelpPage(const base::ListValue* args) {
 
 #if defined(OS_CHROMEOS)
 
-void HelpHandler::SetChannel(const ListValue* args) {
+void HelpHandler::SetChannel(const base::ListValue* args) {
   DCHECK(args->GetSize() == 2);
 
   if (!CanChangeChannel()) {
@@ -409,7 +409,7 @@ void HelpHandler::SetChannel(const ListValue* args) {
   }
 }
 
-void HelpHandler::RelaunchAndPowerwash(const ListValue* args) {
+void HelpHandler::RelaunchAndPowerwash(const base::ListValue* args) {
   DCHECK(args->empty());
 
   if (IsEnterpriseManaged())

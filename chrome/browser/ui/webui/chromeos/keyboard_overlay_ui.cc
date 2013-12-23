@@ -286,14 +286,14 @@ class KeyboardOverlayHandler
  private:
   // Called when the page requires the input method ID corresponding to the
   // current input method or keyboard layout during initialization.
-  void GetInputMethodId(const ListValue* args);
+  void GetInputMethodId(const base::ListValue* args);
 
   // Called when the page requres the information of modifier key remapping
   // during the initialization.
-  void GetLabelMap(const ListValue* args);
+  void GetLabelMap(const base::ListValue* args);
 
   // Called when the learn more link is clicked.
-  void OpenLearnMorePage(const ListValue* args);
+  void OpenLearnMorePage(const base::ListValue* args);
 
   Profile* profile_;
 
@@ -324,16 +324,16 @@ void KeyboardOverlayHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void KeyboardOverlayHandler::GetInputMethodId(const ListValue* args) {
+void KeyboardOverlayHandler::GetInputMethodId(const base::ListValue* args) {
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
   const chromeos::input_method::InputMethodDescriptor& descriptor =
       manager->GetCurrentInputMethod();
-  StringValue param(descriptor.id());
+  base::StringValue param(descriptor.id());
   web_ui()->CallJavascriptFunction("initKeyboardOverlayId", param);
 }
 
-void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
+void KeyboardOverlayHandler::GetLabelMap(const base::ListValue* args) {
   DCHECK(profile_);
   PrefService* pref_service = profile_->GetPrefs();
   typedef std::map<ModifierKey, ModifierKey> ModifierMap;
@@ -347,7 +347,7 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
   // TODO(mazda): Support prefs::kLanguageRemapCapsLockKeyTo once Caps Lock is
   // added to the overlay UI.
 
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   for (ModifierMap::const_iterator i = modifier_map.begin();
        i != modifier_map.end(); ++i) {
     dict.SetString(ModifierKeyToLabel(i->first), ModifierKeyToLabel(i->second));
@@ -356,7 +356,7 @@ void KeyboardOverlayHandler::GetLabelMap(const ListValue* args) {
   web_ui()->CallJavascriptFunction("initIdentifierMap", dict);
 }
 
-void KeyboardOverlayHandler::OpenLearnMorePage(const ListValue* args) {
+void KeyboardOverlayHandler::OpenLearnMorePage(const base::ListValue* args) {
   web_ui()->GetWebContents()->GetDelegate()->OpenURLFromTab(
       web_ui()->GetWebContents(),
       content::OpenURLParams(GURL(kLearnMoreURL),

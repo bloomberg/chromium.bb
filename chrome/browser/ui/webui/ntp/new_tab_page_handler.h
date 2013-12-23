@@ -28,7 +28,8 @@ class NewTabPageHandler : public content::WebUIMessageHandler,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Registers values (strings etc.) for the page.
-  static void GetLocalizedValues(Profile* profile, DictionaryValue* values);
+  static void GetLocalizedValues(Profile* profile,
+      base::DictionaryValue* values);
 
  private:
   virtual ~NewTabPageHandler();
@@ -37,25 +38,25 @@ class NewTabPageHandler : public content::WebUIMessageHandler,
   virtual void RegisterMessages() OVERRIDE;
 
   // Callback for "notificationPromoClosed". No arguments.
-  void HandleNotificationPromoClosed(const ListValue* args);
+  void HandleNotificationPromoClosed(const base::ListValue* args);
 
   // Callback for "notificationPromoViewed". No arguments.
-  void HandleNotificationPromoViewed(const ListValue* args);
+  void HandleNotificationPromoViewed(const base::ListValue* args);
 
   // Callback for "notificationPromoLinkClicked". No arguments.
-  void HandleNotificationPromoLinkClicked(const ListValue* args);
+  void HandleNotificationPromoLinkClicked(const base::ListValue* args);
 
   // Callback for "bubblePromoClosed". No arguments.
-  void HandleBubblePromoClosed(const ListValue* args);
+  void HandleBubblePromoClosed(const base::ListValue* args);
 
   // Callback for "bubblePromoViewed". No arguments.
-  void HandleBubblePromoViewed(const ListValue* args);
+  void HandleBubblePromoViewed(const base::ListValue* args);
 
   // Callback for "bubblePromoLinkClicked". No arguments.
-  void HandleBubblePromoLinkClicked(const ListValue* args);
+  void HandleBubblePromoLinkClicked(const base::ListValue* args);
 
   // Callback for "pageSelected".
-  void HandlePageSelected(const ListValue* args);
+  void HandlePageSelected(const base::ListValue* args);
 
   // Callback for "logTimeToClick".
   void HandleLogTimeToClick(const base::ListValue* args);

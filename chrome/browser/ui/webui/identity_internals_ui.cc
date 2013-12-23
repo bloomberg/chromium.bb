@@ -63,7 +63,7 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Gets a list of scopes specified in |token_cache_key| and returns a pointer
   // to a ListValue containing the scopes. The caller gets ownership of the
   // returned object.
-  ListValue* GetScopes(
+  base::ListValue* GetScopes(
       const extensions::ExtensionTokenKey& token_cache_key);
 
   // Gets a localized status of the access token in |token_cache_value|.
@@ -79,19 +79,19 @@ class IdentityInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // DictionaryValue object with corresponding information in a localized and
   // readable form and returns a pointer to created object. Caller gets the
   // ownership of the returned object.
-  DictionaryValue* GetInfoForToken(
+  base::DictionaryValue* GetInfoForToken(
       const extensions::ExtensionTokenKey& token_cache_key,
       const extensions::IdentityTokenCacheValue& token_cache_value);
 
   // Gets all of the tokens stored in IdentityAPI token cache and returns them
   // to the caller using Javascript callback function
   // |identity_internals.returnTokens()|.
-  void GetInfoForAllTokens(const ListValue* args);
+  void GetInfoForAllTokens(const base::ListValue* args);
 
   // Initiates revoking of the token, based on the extension ID and token
   // passed as entries in the |args| list. Updates the caller of completion
   // using Javascript callback function |identity_internals.tokenRevokeDone()|.
-  void RevokeToken(const ListValue* args);
+  void RevokeToken(const base::ListValue* args);
 
   // A vector of token revokers that are currently revoking tokens.
   ScopedVector<IdentityInternalsTokenRevoker> token_revokers_;
@@ -145,7 +145,7 @@ void IdentityInternalsUIMessageHandler::OnTokenRevokerDone(
           token_revoker->extension_id(), token_revoker->access_token());
 
   // Update view about the token being removed.
-  ListValue result;
+  base::ListValue result;
   result.AppendString(token_revoker->access_token());
   web_ui()->CallJavascriptFunction("identity_internals.tokenRevokeDone",
                                    result);
@@ -168,9 +168,9 @@ const std::string IdentityInternalsUIMessageHandler::GetExtensionName(
   return extension->name();
 }
 
-ListValue* IdentityInternalsUIMessageHandler::GetScopes(
+base::ListValue* IdentityInternalsUIMessageHandler::GetScopes(
     const extensions::ExtensionTokenKey& token_cache_key) {
-  ListValue* scopes_value = new ListValue();
+  base::ListValue* scopes_value = new base::ListValue();
   for (std::set<std::string>::const_iterator
            iter = token_cache_key.scopes.begin();
        iter != token_cache_key.scopes.end(); ++iter) {
@@ -201,10 +201,10 @@ const std::string IdentityInternalsUIMessageHandler::GetExpirationTime(
       token_cache_value.expiration_time()));
 }
 
-DictionaryValue* IdentityInternalsUIMessageHandler::GetInfoForToken(
+base::DictionaryValue* IdentityInternalsUIMessageHandler::GetInfoForToken(
     const extensions::ExtensionTokenKey& token_cache_key,
     const extensions::IdentityTokenCacheValue& token_cache_value) {
-  DictionaryValue* token_data = new DictionaryValue();
+  base::DictionaryValue* token_data = new base::DictionaryValue();
   token_data->SetString(kExtensionId, token_cache_key.extension_id);
   token_data->SetString(kExtensionName, GetExtensionName(token_cache_key));
   token_data->Set(kScopes, GetScopes(token_cache_key));
@@ -216,8 +216,8 @@ DictionaryValue* IdentityInternalsUIMessageHandler::GetInfoForToken(
 }
 
 void IdentityInternalsUIMessageHandler::GetInfoForAllTokens(
-    const ListValue* args) {
-  ListValue results;
+    const base::ListValue* args) {
+  base::ListValue results;
   extensions::IdentityAPI::CachedTokens tokens =
       extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
           Profile::FromWebUI(web_ui()))->GetAllCachedTokens();
@@ -238,7 +238,8 @@ void IdentityInternalsUIMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void IdentityInternalsUIMessageHandler::RevokeToken(const ListValue* args) {
+void IdentityInternalsUIMessageHandler::RevokeToken(
+    const base::ListValue* args) {
   std::string extension_id;
   std::string access_token;
   args->GetString(kRevokeTokenExtensionOffset, &extension_id);

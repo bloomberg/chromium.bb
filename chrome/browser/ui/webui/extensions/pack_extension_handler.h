@@ -49,14 +49,14 @@ class PackExtensionHandler : public content::WebUIMessageHandler,
   virtual void FileSelectionCanceled(void* params) OVERRIDE {}
 
   // JavaScript callback to start packing an extension.
-  void HandlePackMessage(const ListValue* args);
+  void HandlePackMessage(const base::ListValue* args);
 
   // JavaScript callback to show a file browse dialog.
   // |args[0]| must be a string that specifies the file dialog type: file or
   // folder.
   // |args[1]| must be a string that specifies the operation to perform: load
   // or pem.
-  void HandleSelectFilePathMessage(const ListValue* args);
+  void HandleSelectFilePathMessage(const base::ListValue* args);
 
   // A function to ask the page to show an alert.
   void ShowAlert(const std::string& message);
