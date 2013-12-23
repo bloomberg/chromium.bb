@@ -5,7 +5,10 @@
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 
 #include "base/basictypes.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/extensions/test_extension_service.h"
+#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -18,6 +21,8 @@
 class BookmarkBubbleSignInDelegateTest : public BrowserWithTestWindowTest {
  public:
   BookmarkBubbleSignInDelegateTest() {}
+
+  virtual void SetUp() OVERRIDE;
 
  protected:
   class Window : public TestBrowserWindow {
@@ -45,6 +50,14 @@ class BookmarkBubbleSignInDelegateTest : public BrowserWithTestWindowTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(BookmarkBubbleSignInDelegateTest);
 };
+
+void BookmarkBubbleSignInDelegateTest::SetUp() {
+  BrowserWithTestWindowTest::SetUp();
+  // Adds TestExtensionSystem, since signin uses the gaia auth extension.
+  static_cast<extensions::TestExtensionSystem*>(
+      extensions::ExtensionSystem::Get(profile()))->CreateExtensionService(
+          CommandLine::ForCurrentProcess(), base::FilePath(), false);
+}
 
 TEST_F(BookmarkBubbleSignInDelegateTest, OnSignInLinkClicked) {
   int starting_tab_count = browser()->tab_strip_model()->count();

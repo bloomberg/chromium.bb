@@ -10,8 +10,8 @@
 namespace switches {
 
 bool IsEnableInlineSignin() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInlineSignin);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebBasedSignin);
 }
 
 bool IsGoogleProfileInfo() {

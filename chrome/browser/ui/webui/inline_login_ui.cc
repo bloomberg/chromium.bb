@@ -6,7 +6,6 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/profile_management_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -137,50 +135,47 @@ class InlineLoginUIHandler : public GaiaAuthConsumer,
     GaiaUrls* gaiaUrls = GaiaUrls::GetInstance();
     params.SetString("gaiaUrl", gaiaUrls->gaia_url().spec());
 
-    bool enable_inline = switches::IsEnableInlineSignin();
-    params.SetInteger("authMode",
-        enable_inline ? kInlineAuthMode : kDefaultAuthMode);
 
-    // Set parameters specific for inline signin flow.
-#if !defined(OS_CHROMEOS)
-    if (enable_inline) {
+#if defined(OS_CHROMEOS)
+    params.SetInteger("authMode", kDefaultAuthMode);
+#else
+    params.SetInteger("authMode", kInlineAuthMode);
 
-      const GURL& current_url = web_ui()->GetWebContents()->GetURL();
-      signin::Source source = signin::GetSourceForPromoURL(current_url);
-      DCHECK(source != signin::SOURCE_UNKNOWN);
-      if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
-          source == signin::SOURCE_AVATAR_BUBBLE_SIGN_IN) {
-        // Drop the leading slash in the path.
-        params.SetString("gaiaPath",
-            gaiaUrls->embedded_signin_url().path().substr(1));
-      }
-
-      params.SetString("service", "chromiumsync");
-      params.SetString("continueUrl",
-          signin::GetLandingURL("source", static_cast<int>(source)).spec());
-
-      std::string email;
-      net::GetValueForKeyInQuery(current_url, "Email", &email);
-      if (!email.empty())
-        params.SetString("email", email);
-
-      std::string frame_url;
-      net::GetValueForKeyInQuery(current_url, "frameUrl", &frame_url);
-      if (!frame_url.empty())
-        params.SetString("frameUrl", frame_url);
-
-      std::string is_constrained;
-      net::GetValueForKeyInQuery(current_url, "constrained", &is_constrained);
-      if (!is_constrained.empty())
-        params.SetString("constrained", is_constrained);
-
-      net::GetValueForKeyInQuery(current_url, "partitionId", &partition_id_);
-      if (partition_id_.empty()) {
-        partition_id_ =
-            "gaia-webview-" + base::IntToString(next_partition_id.GetNext());
-      }
-      params.SetString("partitionId", partition_id_);
+    const GURL& current_url = web_ui()->GetWebContents()->GetURL();
+    signin::Source source = signin::GetSourceForPromoURL(current_url);
+    DCHECK(source != signin::SOURCE_UNKNOWN);
+    if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
+        source == signin::SOURCE_AVATAR_BUBBLE_SIGN_IN) {
+      // Drop the leading slash in the path.
+      params.SetString("gaiaPath",
+          gaiaUrls->embedded_signin_url().path().substr(1));
     }
+
+    params.SetString("service", "chromiumsync");
+    params.SetString("continueUrl",
+        signin::GetLandingURL("source", static_cast<int>(source)).spec());
+
+    std::string email;
+    net::GetValueForKeyInQuery(current_url, "Email", &email);
+    if (!email.empty())
+      params.SetString("email", email);
+
+    std::string frame_url;
+    net::GetValueForKeyInQuery(current_url, "frameUrl", &frame_url);
+    if (!frame_url.empty())
+      params.SetString("frameUrl", frame_url);
+
+    std::string is_constrained;
+    net::GetValueForKeyInQuery(current_url, "constrained", &is_constrained);
+    if (!is_constrained.empty())
+      params.SetString("constrained", is_constrained);
+
+    net::GetValueForKeyInQuery(current_url, "partitionId", &partition_id_);
+    if (partition_id_.empty()) {
+      partition_id_ =
+          "gaia-webview-" + base::IntToString(next_partition_id.GetNext());
+    }
+    params.SetString("partitionId", partition_id_);
 #endif // OS_CHROMEOS
 
     web_ui()->CallJavascriptFunction("inline.login.loadAuthExtension", params);
@@ -299,16 +294,28 @@ class InlineLoginUIHandler : public GaiaAuthConsumer,
           choose_what_to_sync_?
               OneClickSigninSyncStarter::NO_CONFIRMATION :
               OneClickSigninSyncStarter::CONFIRM_AFTER_SIGNIN;
-      // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
-      // OneClickSigninSyncStarter will delete itself once the job is done.
-      new OneClickSigninSyncStarter(
-          profile_, NULL, "" /* session_index, not used */,
-          email_, password_, oauth_code,
-          start_mode,
-          contents,
-          confirmation_required,
-          base::Bind(&InlineLoginUIHandler::SyncStarterCallback,
-                      weak_factory_.GetWeakPtr()));
+      OneClickSigninSyncStarter::Callback sync_callback = base::Bind(
+          &InlineLoginUIHandler::SyncStarterCallback,
+          weak_factory_.GetWeakPtr());
+
+      bool cross_account_error_handled =
+          OneClickSigninHelper::HandleCrossAccountError(
+              contents, "" /* session_index, not used */,
+              email_, password_, oauth_code,
+              OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT,
+              source, start_mode, sync_callback);
+
+      if (!cross_account_error_handled) {
+        // Call OneClickSigninSyncStarter to exchange oauth code for tokens.
+        // OneClickSigninSyncStarter will delete itself once the job is done.
+        new OneClickSigninSyncStarter(
+            profile_, NULL, "" /* session_index, not used */,
+            email_, password_, oauth_code,
+            start_mode,
+            contents,
+            confirmation_required,
+            sync_callback);
+      }
     }
 
     email_.clear();
@@ -346,17 +353,18 @@ class InlineLoginUIHandler : public GaiaAuthConsumer,
   void SyncStarterCallback(OneClickSigninSyncStarter::SyncSetupResult result) {
     content::WebContents* contents = web_ui()->GetWebContents();
     const GURL& current_url = contents->GetURL();
-    bool auto_close = signin::IsAutoCloseEnabledInURL(current_url);
-    signin::Source source = signin::GetSourceForPromoURL(current_url);
-    if (auto_close) {
+
+    if (signin::IsAutoCloseEnabledInURL(current_url)) {
       base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(
             &InlineLoginUIHandler::CloseTab, weak_factory_.GetWeakPtr()));
-      return;
+    } else {
+      signin::Source source = signin::GetSourceForPromoURL(current_url);
+      DCHECK(source != signin::SOURCE_UNKNOWN);
+      OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(
+          contents, source);
     }
-
-    OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(contents, source);
   }
 
   void CloseTab() {

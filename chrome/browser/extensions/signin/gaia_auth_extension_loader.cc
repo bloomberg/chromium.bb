@@ -11,7 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
 
@@ -52,8 +51,7 @@ void LoadGaiaAuthExtension(Profile* profile) {
   else if (command_line->HasSwitch(chromeos::switches::kEnableSamlSignin))
     manifest_resource_id = IDR_GAIA_AUTH_SAML_MANIFEST;
 #else
-  if (switches::IsEnableInlineSignin())
-    manifest_resource_id = IDR_GAIA_AUTH_INLINE_MANIFEST;
+  manifest_resource_id = IDR_GAIA_AUTH_INLINE_MANIFEST;
 #endif
 
   component_loader->Add(manifest_resource_id,

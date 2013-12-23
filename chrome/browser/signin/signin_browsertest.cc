@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -50,6 +51,9 @@ class SigninBrowserTest : public InProcessBrowserTest {
         "MAP * " + https_server_->host_port_pair().ToString() +
             ",EXCLUDE localhost");
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+    // All tests in this file are for the web based sign in flows.
+    // TODO(guohui): adds new tests for inline sign in flows.
+    command_line->AppendSwitch(switches::kEnableWebBasedSignin);
   }
 
   virtual void SetUp() OVERRIDE {
