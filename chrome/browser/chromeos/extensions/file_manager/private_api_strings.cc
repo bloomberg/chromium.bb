@@ -65,7 +65,7 @@ FileBrowserPrivateGetStringsFunction::~FileBrowserPrivateGetStringsFunction() {
 }
 
 bool FileBrowserPrivateGetStringsFunction::RunImpl() {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
 
 #define SET_STRING(id, idr) \

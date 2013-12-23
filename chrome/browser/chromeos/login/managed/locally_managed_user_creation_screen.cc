@@ -210,7 +210,7 @@ void LocallyManagedUserCreationScreen::ImportManagedUser(
   DCHECK(controller_.get());
   DCHECK(existing_users_.get());
   VLOG(1) << "Importing user " << user_id;
-  DictionaryValue* user_info;
+  base::DictionaryValue* user_info;
   if (!existing_users_->GetDictionary(user_id, &user_info)) {
     LOG(ERROR) << "Can not import non-existing user " << user_id;
     return;
@@ -254,7 +254,7 @@ void LocallyManagedUserCreationScreen::ImportManagedUserWithPassword(
   DCHECK(controller_.get());
   DCHECK(existing_users_.get());
   VLOG(1) << "Importing user " << user_id;
-  DictionaryValue* user_info;
+  base::DictionaryValue* user_info;
   if (!existing_users_->GetDictionary(user_id, &user_info)) {
     LOG(ERROR) << "Can not import non-existing user " << user_id;
     return;

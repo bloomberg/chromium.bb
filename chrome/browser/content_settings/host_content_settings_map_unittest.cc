@@ -316,7 +316,7 @@ TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
   PrefService* prefs = profile.GetPrefs();
 
   // Make a copy of the default pref value so we can reset it later.
-  scoped_ptr<Value> default_value(prefs->FindPreference(
+  scoped_ptr<base::Value> default_value(prefs->FindPreference(
       prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
 
   GURL host("http://example.com");
@@ -328,7 +328,7 @@ TEST_F(HostContentSettingsMapTest, ObserveDefaultPref) {
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Make a copy of the pref's new value so we can reset it later.
-  scoped_ptr<Value> new_value(prefs->FindPreference(
+  scoped_ptr<base::Value> new_value(prefs->FindPreference(
       prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
 
   // Clearing the backing pref should also clear the internal cache.
@@ -352,7 +352,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
   PrefService* prefs = profile.GetPrefs();
 
   // Make a copy of the default pref value so we can reset it later.
-  scoped_ptr<Value> default_value(prefs->FindPreference(
+  scoped_ptr<base::Value> default_value(prefs->FindPreference(
       prefs::kContentSettingsPatternPairs)->GetValue()->DeepCopy());
 
   ContentSettingsPattern pattern =
@@ -374,7 +374,7 @@ TEST_F(HostContentSettingsMapTest, ObserveExceptionPref) {
                 host, host, CONTENT_SETTINGS_TYPE_IMAGES, std::string()));
 
   // Make a copy of the pref's new value so we can reset it later.
-  scoped_ptr<Value> new_value(prefs->FindPreference(
+  scoped_ptr<base::Value> new_value(prefs->FindPreference(
       prefs::kContentSettingsPatternPairs)->GetValue()->DeepCopy());
 
   // Clearing the backing pref should also clear the internal cache.
@@ -671,19 +671,19 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
   // Set utf-8 data.
   {
     DictionaryPrefUpdate update(prefs, prefs::kContentSettingsPatternPairs);
-    DictionaryValue* all_settings_dictionary = update.Get();
+    base::DictionaryValue* all_settings_dictionary = update.Get();
     ASSERT_TRUE(NULL != all_settings_dictionary);
 
-    DictionaryValue* dummy_payload = new DictionaryValue;
+    base::DictionaryValue* dummy_payload = new base::DictionaryValue;
     dummy_payload->SetInteger("images", CONTENT_SETTING_ALLOW);
     all_settings_dictionary->SetWithoutPathExpansion("[*.]\xC4\x87ira.com,*",
                                                      dummy_payload);
   }
   profile.GetHostContentSettingsMap();
 
-  const DictionaryValue* all_settings_dictionary =
+  const base::DictionaryValue* all_settings_dictionary =
       prefs->GetDictionary(prefs::kContentSettingsPatternPairs);
-  const DictionaryValue* result = NULL;
+  const base::DictionaryValue* result = NULL;
   EXPECT_FALSE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       "[*.]\xC4\x87ira.com,*", &result));
   EXPECT_TRUE(all_settings_dictionary->GetDictionaryWithoutPathExpansion(
@@ -695,19 +695,19 @@ TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {
 TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeAndPunycode) {
   TestingProfile profile;
 
-  scoped_ptr<Value> value(base::JSONReader::Read(
+  scoped_ptr<base::Value> value(base::JSONReader::Read(
       "{\"[*.]\\xC4\\x87ira.com,*\":{\"images\":1}}"));
   profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *value);
 
   // Set punycode equivalent, with different setting.
-  scoped_ptr<Value> puny_value(base::JSONReader::Read(
+  scoped_ptr<base::Value> puny_value(base::JSONReader::Read(
       "{\"[*.]xn--ira-ppa.com,*\":{\"images\":2}}"));
   profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *puny_value);
 
   // Initialize the content map.
   profile.GetHostContentSettingsMap();
 
-  const DictionaryValue* content_setting_prefs =
+  const base::DictionaryValue* content_setting_prefs =
       profile.GetPrefs()->GetDictionary(prefs::kContentSettingsPatternPairs);
   std::string prefs_as_json;
   base::JSONWriter::Write(content_setting_prefs, &prefs_as_json);
@@ -729,7 +729,7 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
 
   // Set managed-default-content-setting through the coresponding preferences.
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_JAVASCRIPT, NULL));
@@ -742,7 +742,7 @@ TEST_F(HostContentSettingsMapTest, ManagedDefaultContentSetting) {
 
   // Set preference to manage the default-content-setting for Plugins.
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
@@ -782,7 +782,7 @@ TEST_F(HostContentSettingsMapTest,
 
   // Set managed-default-content-setting for content-settings-type JavaScript.
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+                        base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
@@ -822,7 +822,7 @@ TEST_F(HostContentSettingsMapTest,
 
   // Set managed-default-content-settings-preferences.
   prefs->SetManagedPref(prefs::kManagedDefaultJavaScriptSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string()));
@@ -851,7 +851,7 @@ TEST_F(HostContentSettingsMapTest, OverwrittenDefaultContentSetting) {
 
   // Set preference to manage the default-content-setting for Cookies.
   prefs->SetManagedPref(prefs::kManagedDefaultCookiesSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+                        base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_COOKIES, NULL));
@@ -873,7 +873,7 @@ TEST_F(HostContentSettingsMapTest, SettingDefaultContentSettingsWhenManaged) {
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+                        base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_PLUGINS, NULL));
@@ -948,13 +948,13 @@ TEST_F(HostContentSettingsMapTest, MigrateClearOnExit) {
 
   prefs->SetBoolean(prefs::kClearSiteDataOnExit, true);
 
-  scoped_ptr<Value> patterns(base::JSONReader::Read(
+  scoped_ptr<base::Value> patterns(base::JSONReader::Read(
       "{\"[*.]example.com,*\":{\"cookies\": 1},"
       " \"[*.]other.com,*\":{\"cookies\": 2},"
       " \"[*.]third.com,*\":{\"cookies\": 4}}"));
   profile.GetPrefs()->Set(prefs::kContentSettingsPatternPairs, *patterns);
 
-  scoped_ptr<Value> defaults(base::JSONReader::Read("{\"cookies\": 1}"));
+  scoped_ptr<base::Value> defaults(base::JSONReader::Read("{\"cookies\": 1}"));
   profile.GetPrefs()->Set(prefs::kDefaultContentSettings, *defaults);
 
   HostContentSettingsMap* host_content_settings_map =

@@ -37,7 +37,7 @@ bool GetInputMethodFunction::RunImpl() {
       chromeos::input_method::InputMethodManager::Get();
   const std::string input_method = InputMethodAPI::GetInputMethodForXkb(
       manager->GetCurrentInputMethod().id());
-  SetResult(Value::CreateStringValue(input_method));
+  SetResult(base::Value::CreateStringValue(input_method));
   return true;
 #endif
 }

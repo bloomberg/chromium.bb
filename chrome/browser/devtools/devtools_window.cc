@@ -250,9 +250,9 @@ std::string SkColorToRGBAString(SkColor color) {
       base::DoubleToString(SkColorGetA(color) / 255.0) + ")";
 }
 
-DictionaryValue* CreateFileSystemValue(
+base::DictionaryValue* CreateFileSystemValue(
     DevToolsFileHelper::FileSystem file_system) {
-  DictionaryValue* file_system_value = new DictionaryValue();
+  base::DictionaryValue* file_system_value = new base::DictionaryValue();
   file_system_value->SetString("fileSystemName", file_system.file_system_name);
   file_system_value->SetString("rootURL", file_system.root_url);
   file_system_value->SetString("fileSystemPath", file_system.file_system_path);
@@ -1125,7 +1125,7 @@ void DevToolsWindow::AddFileSystem() {
 void DevToolsWindow::RemoveFileSystem(const std::string& file_system_path) {
   CHECK(web_contents_->GetURL().SchemeIs(chrome::kChromeDevToolsScheme));
   file_helper_->RemoveFileSystem(file_system_path);
-  StringValue file_system_path_value(file_system_path);
+  base::StringValue file_system_path_value(file_system_path);
   CallClientFunction("InspectorFrontendAPI.fileSystemRemoved",
                      &file_system_path_value, NULL, NULL);
 }
@@ -1193,25 +1193,25 @@ void DevToolsWindow::SearchInPath(int request_id,
 }
 
 void DevToolsWindow::FileSavedAs(const std::string& url) {
-  StringValue url_value(url);
+  base::StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.savedURL", &url_value, NULL, NULL);
 }
 
 void DevToolsWindow::CanceledFileSaveAs(const std::string& url) {
-  StringValue url_value(url);
+  base::StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.canceledSaveURL",
                      &url_value, NULL, NULL);
 }
 
 void DevToolsWindow::AppendedTo(const std::string& url) {
-  StringValue url_value(url);
+  base::StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.appendedToURL", &url_value, NULL,
                      NULL);
 }
 
 void DevToolsWindow::FileSystemsLoaded(
     const std::vector<DevToolsFileHelper::FileSystem>& file_systems) {
-  ListValue file_systems_value;
+  base::ListValue file_systems_value;
   for (size_t i = 0; i < file_systems.size(); ++i)
     file_systems_value.Append(CreateFileSystemValue(file_systems[i]));
   CallClientFunction("InspectorFrontendAPI.fileSystemsLoaded",
@@ -1235,7 +1235,7 @@ void DevToolsWindow::IndexingTotalWorkCalculated(
     int total_work) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
-  StringValue file_system_path_value(file_system_path);
+  base::StringValue file_system_path_value(file_system_path);
   base::FundamentalValue total_work_value(total_work);
   CallClientFunction("InspectorFrontendAPI.indexingTotalWorkCalculated",
                      &request_id_value, &file_system_path_value,
@@ -1247,7 +1247,7 @@ void DevToolsWindow::IndexingWorked(int request_id,
                                     int worked) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
-  StringValue file_system_path_value(file_system_path);
+  base::StringValue file_system_path_value(file_system_path);
   base::FundamentalValue worked_value(worked);
   CallClientFunction("InspectorFrontendAPI.indexingWorked", &request_id_value,
                      &file_system_path_value, &worked_value);
@@ -1258,7 +1258,7 @@ void DevToolsWindow::IndexingDone(int request_id,
   indexing_jobs_.erase(request_id);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FundamentalValue request_id_value(request_id);
-  StringValue file_system_path_value(file_system_path);
+  base::StringValue file_system_path_value(file_system_path);
   CallClientFunction("InspectorFrontendAPI.indexingDone", &request_id_value,
                      &file_system_path_value, NULL);
 }
@@ -1268,13 +1268,13 @@ void DevToolsWindow::SearchCompleted(
     const std::string& file_system_path,
     const std::vector<std::string>& file_paths) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ListValue file_paths_value;
+  base::ListValue file_paths_value;
   for (std::vector<std::string>::const_iterator it(file_paths.begin());
        it != file_paths.end(); ++it) {
     file_paths_value.AppendString(*it);
   }
   base::FundamentalValue request_id_value(request_id);
-  StringValue file_system_path_value(file_system_path);
+  base::StringValue file_system_path_value(file_system_path);
   CallClientFunction("InspectorFrontendAPI.searchCompleted", &request_id_value,
                      &file_system_path_value, &file_paths_value);
 }
@@ -1292,10 +1292,10 @@ void DevToolsWindow::ShowDevToolsConfirmInfoBar(
 void DevToolsWindow::CreateDevToolsBrowser() {
   std::string wp_key = GetDevToolsWindowPlacementPrefKey();
   PrefService* prefs = profile_->GetPrefs();
-  const DictionaryValue* wp_pref = prefs->GetDictionary(wp_key.c_str());
+  const base::DictionaryValue* wp_pref = prefs->GetDictionary(wp_key.c_str());
   if (!wp_pref || wp_pref->empty()) {
     DictionaryPrefUpdate update(prefs, wp_key.c_str());
-    DictionaryValue* defaults = update.Get();
+    base::DictionaryValue* defaults = update.Get();
     defaults->SetInteger("left", 100);
     defaults->SetInteger("top", 100);
     defaults->SetInteger("right", 740);
@@ -1433,17 +1433,17 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
     return;
   const extensions::ExtensionSet* extensions = extension_service->extensions();
 
-  ListValue results;
+  base::ListValue results;
   for (extensions::ExtensionSet::const_iterator extension(extensions->begin());
        extension != extensions->end(); ++extension) {
     if (extensions::ManifestURL::GetDevToolsPage(extension->get()).is_empty())
       continue;
-    DictionaryValue* extension_info = new DictionaryValue();
+    base::DictionaryValue* extension_info = new base::DictionaryValue();
     extension_info->Set(
         "startPage",
-        new StringValue(
+        new base::StringValue(
             extensions::ManifestURL::GetDevToolsPage(extension->get()).spec()));
-    extension_info->Set("name", new StringValue((*extension)->name()));
+    extension_info->Set("name", new base::StringValue((*extension)->name()));
     extension_info->Set(
         "exposeExperimentalAPIs",
         new base::FundamentalValue((*extension)->HasAPIPermission(
@@ -1454,9 +1454,9 @@ void DevToolsWindow::AddDevToolsExtensionsToClient() {
 }
 
 void DevToolsWindow::CallClientFunction(const std::string& function_name,
-                                        const Value* arg1,
-                                        const Value* arg2,
-                                        const Value* arg3) {
+                                        const base::Value* arg1,
+                                        const base::Value* arg2,
+                                        const base::Value* arg3) {
   std::string params;
   if (arg1) {
     std::string json;

@@ -395,13 +395,13 @@ void FileBrowserPrivateSearchDriveFunction::OnSearch(
 
   DCHECK(results.get());
 
-  base::ListValue* entries = new ListValue();
+  base::ListValue* entries = new base::ListValue();
 
   // Convert Drive files to something File API stack can understand.
   fileapi::FileSystemInfo info =
       fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
   for (size_t i = 0; i < results->size(); ++i) {
-    DictionaryValue* entry = new DictionaryValue();
+    base::DictionaryValue* entry = new base::DictionaryValue();
     entry->SetString("fileSystemName", info.name);
     entry->SetString("fileSystemRoot", info.root_url.spec());
     entry->SetString("fileFullPath", "/" + results->at(i).path.value());
@@ -409,7 +409,7 @@ void FileBrowserPrivateSearchDriveFunction::OnSearch(
     entries->Append(entry);
   }
 
-  base::DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->Set("entries", entries);
   result->SetString("nextFeed", next_link.spec());
 
@@ -476,7 +476,7 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
 
   DCHECK(results.get());
 
-  base::ListValue* results_list = new ListValue();
+  base::ListValue* results_list = new base::ListValue();
 
   // Convert Drive files to something File API stack can understand.  See
   // file_browser_handler_custom_bindings.cc and
@@ -485,10 +485,10 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
   fileapi::FileSystemInfo info =
       fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
   for (size_t i = 0; i < results->size(); ++i) {
-    DictionaryValue* result_dict = new DictionaryValue();
+    base::DictionaryValue* result_dict = new base::DictionaryValue();
 
     // FileEntry fields.
-    DictionaryValue* entry = new DictionaryValue();
+    base::DictionaryValue* entry = new base::DictionaryValue();
     entry->SetString("fileSystemName", info.name);
     entry->SetString("fileSystemRoot", info.root_url.spec());
     entry->SetString("fileFullPath", "/" + results->at(i).path.value());

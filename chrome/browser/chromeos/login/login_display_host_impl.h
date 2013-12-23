@@ -70,7 +70,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
       const GetAutoEnrollmentCheckResultCallback& callback) OVERRIDE;
   virtual void StartWizard(
       const std::string& first_screen_name,
-      scoped_ptr<DictionaryValue> screen_parameters) OVERRIDE;
+      scoped_ptr<base::DictionaryValue> screen_parameters) OVERRIDE;
   virtual WizardController* GetWizardController() OVERRIDE;
   virtual AppLaunchController* GetAppLaunchController() OVERRIDE;
   virtual void StartUserAdding(
@@ -258,7 +258,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   // Stored parameters for StartWizard, required to restore in case of crash.
   std::string wizard_first_screen_name_;
-  scoped_ptr<DictionaryValue> wizard_screen_parameters_;
+  scoped_ptr<base::DictionaryValue> wizard_screen_parameters_;
 
   // Old value of the ash::internal::kIgnoreSoloWindowFramePainterPolicy
   // property of the root window for |login_window_|.

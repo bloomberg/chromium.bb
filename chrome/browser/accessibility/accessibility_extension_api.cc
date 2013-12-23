@@ -31,12 +31,12 @@ namespace experimental_accessibility =
 // Returns the AccessibilityControlInfo serialized into a JSON string,
 // consisting of an array of a single object of type AccessibilityObject,
 // as defined in the accessibility extension api's json schema.
-scoped_ptr<ListValue> ControlInfoToEventArguments(
+scoped_ptr<base::ListValue> ControlInfoToEventArguments(
     const AccessibilityEventInfo* info) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   info->SerializeToDict(dict);
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(dict);
   return args.Pass();
 }
@@ -127,7 +127,7 @@ void ExtensionAccessibilityEventRouter::HandleControlEvent(
 
 void ExtensionAccessibilityEventRouter::OnWindowOpened(
     const AccessibilityWindowInfo* info) {
-  scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
+  scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
                 experimental_accessibility::OnWindowOpened::kEventName,
                 args.Pass());
@@ -137,7 +137,7 @@ void ExtensionAccessibilityEventRouter::OnControlFocused(
     const AccessibilityControlInfo* info) {
   last_focused_control_dict_.Clear();
   info->SerializeToDict(&last_focused_control_dict_);
-  scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
+  scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
                 experimental_accessibility::OnControlFocused::kEventName,
                 args.Pass());
@@ -145,7 +145,7 @@ void ExtensionAccessibilityEventRouter::OnControlFocused(
 
 void ExtensionAccessibilityEventRouter::OnControlAction(
     const AccessibilityControlInfo* info) {
-  scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
+  scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
                 experimental_accessibility::OnControlAction::kEventName,
                 args.Pass());
@@ -153,7 +153,7 @@ void ExtensionAccessibilityEventRouter::OnControlAction(
 
 void ExtensionAccessibilityEventRouter::OnTextChanged(
     const AccessibilityControlInfo* info) {
-  scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
+  scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
                 experimental_accessibility::OnTextChanged::kEventName,
                 args.Pass());
@@ -161,7 +161,7 @@ void ExtensionAccessibilityEventRouter::OnTextChanged(
 
 void ExtensionAccessibilityEventRouter::OnMenuOpened(
     const AccessibilityMenuInfo* info) {
-  scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
+  scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
                 experimental_accessibility::OnMenuOpened::kEventName,
                 args.Pass());
@@ -169,7 +169,7 @@ void ExtensionAccessibilityEventRouter::OnMenuOpened(
 
 void ExtensionAccessibilityEventRouter::OnMenuClosed(
     const AccessibilityMenuInfo* info) {
-  scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
+  scoped_ptr<base::ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(),
                 experimental_accessibility::OnMenuClosed::kEventName,
                 args.Pass());
@@ -242,12 +242,12 @@ bool AccessibilityGetFocusedControlFunction::RunImpl() {
   // events yet, so return null instead.
   ExtensionAccessibilityEventRouter *accessibility_event_router =
       ExtensionAccessibilityEventRouter::GetInstance();
-  DictionaryValue *last_focused_control_dict =
+  base::DictionaryValue *last_focused_control_dict =
       accessibility_event_router->last_focused_control_dict();
   if (last_focused_control_dict->size()) {
     SetResult(last_focused_control_dict->DeepCopyWithoutEmptyChildren());
   } else {
-    SetResult(Value::CreateNullValue());
+    SetResult(base::Value::CreateNullValue());
   }
   return true;
 }
@@ -272,7 +272,7 @@ bool AccessibilityGetAlertsForTabFunction::RunImpl() {
     return false;
   }
 
-  ListValue* alerts_value = new ListValue;
+  base::ListValue* alerts_value = new base::ListValue;
 
   InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
@@ -280,7 +280,7 @@ bool AccessibilityGetAlertsForTabFunction::RunImpl() {
     ConfirmInfoBarDelegate* confirm_infobar_delegate =
         infobar_service->infobar_at(i)->delegate()->AsConfirmInfoBarDelegate();
     if (confirm_infobar_delegate) {
-      DictionaryValue* alert_value = new DictionaryValue;
+      base::DictionaryValue* alert_value = new base::DictionaryValue;
       const base::string16 message_text =
           confirm_infobar_delegate->GetMessageText();
       alert_value->SetString(keys::kMessageKey, message_text);

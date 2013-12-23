@@ -68,20 +68,20 @@ class ScreenContext : public base::NonThreadSafe {
   // Stores all changes since the last call to the
   // GetChangesAndReset() in |diff|.  All previous contents of |diff|
   // will be thrown away.
-  void GetChangesAndReset(DictionaryValue* diff);
+  void GetChangesAndReset(base::DictionaryValue* diff);
 
   // Applies changes from |diff| to the context. All keys from |diff|
   // are stored in |keys|.
-  void ApplyChanges(const DictionaryValue& diff,
+  void ApplyChanges(const base::DictionaryValue& diff,
                     std::vector<std::string>* keys);
 
  private:
-  bool Set(const KeyType& key, Value* value);
+  bool Set(const KeyType& key, base::Value* value);
 
   template<typename T>
   T Get(const KeyType& key) {
     DCHECK(CalledOnValidThread());
-    const Value* value;
+    const base::Value* value;
     bool has_key = storage_.Get(key, &value);
     DCHECK(has_key);
     T result;
@@ -101,10 +101,10 @@ class ScreenContext : public base::NonThreadSafe {
   }
 
   // Contains current state of <key, value> map.
-  DictionaryValue storage_;
+  base::DictionaryValue storage_;
 
   // Contains all pending changes.
-  DictionaryValue changes_;
+  base::DictionaryValue changes_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenContext);
 };

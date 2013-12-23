@@ -122,7 +122,7 @@ TEST_F(PrefProviderTest, Observer) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
 
   pref_content_settings_provider.ShutdownOnUIThread();
 }
@@ -171,7 +171,7 @@ TEST_F(PrefProviderTest, Incognito) {
       pattern,
       CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
 
   GURL host("http://example.com/");
   // The value should of course be visible in the regular PrefProvider.
@@ -226,7 +226,8 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
                              primary_pattern,
                              CONTENT_SETTINGS_TYPE_IMAGES,
                              std::string(),
-                             Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                             base::Value::CreateIntegerValue(
+                                 CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&provider,
                               primary_url,
@@ -234,7 +235,7 @@ TEST_F(PrefProviderTest, GetContentSettingsValue) {
                               CONTENT_SETTINGS_TYPE_IMAGES,
                               std::string(),
                               false));
-  scoped_ptr<Value> value_ptr(
+  scoped_ptr<base::Value> value_ptr(
       GetContentSettingValue(&provider,
                              primary_url,
                              primary_url,
@@ -288,7 +289,7 @@ TEST_F(PrefProviderTest, Patterns) {
       pattern1,
       CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&pref_content_settings_provider,
                               host1,
@@ -316,7 +317,7 @@ TEST_F(PrefProviderTest, Patterns) {
       pattern2,
       CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&pref_content_settings_provider,
                               host3,
@@ -337,7 +338,7 @@ TEST_F(PrefProviderTest, Patterns) {
       pattern3,
       CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&pref_content_settings_provider,
                               host4,
@@ -370,7 +371,7 @@ TEST_F(PrefProviderTest, ResourceIdentifier) {
       pattern,
       CONTENT_SETTINGS_TYPE_PLUGINS,
       resource1,
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(
                 &pref_content_settings_provider,
@@ -407,7 +408,7 @@ TEST_F(PrefProviderTest, AutoSubmitCertificateContentSetting) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetContentSetting(
                 &provider,
@@ -434,7 +435,7 @@ TEST_F(PrefProviderTest, Deadlock) {
   {
     DictionaryPrefUpdate update(&prefs,
                                 prefs::kContentSettingsPatternPairs);
-    DictionaryValue* mutable_settings = update.Get();
+    base::DictionaryValue* mutable_settings = update.Get();
     mutable_settings->SetWithoutPathExpansion("www.example.com,*",
                                               new base::DictionaryValue());
   }

@@ -37,7 +37,7 @@ void DownloadDirPolicyHandler::ApplyPolicySettings(
   if (expanded_value.empty())
     expanded_value = DownloadPrefs::GetDefaultDownloadDirectory().value();
   prefs->SetValue(prefs::kDownloadDefaultDirectory,
-                  Value::CreateStringValue(expanded_value));
+                  base::Value::CreateStringValue(expanded_value));
   prefs->SetValue(prefs::kPromptForDownload,
-                  Value::CreateBooleanValue(false));
+                  base::Value::CreateBooleanValue(false));
 }

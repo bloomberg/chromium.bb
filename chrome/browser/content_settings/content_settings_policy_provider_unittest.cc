@@ -61,7 +61,7 @@ TEST_F(PolicyProviderTest, DefaultGeolocationContentSetting) {
 
   // Change the managed value of the default geolocation setting
   prefs->SetManagedPref(prefs::kManagedDefaultGeolocationSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
 
   rule_iterator.reset(
       provider.GetRuleIterator(
@@ -85,7 +85,7 @@ TEST_F(PolicyProviderTest, ManagedDefaultContentSettings) {
   PolicyProvider provider(prefs);
 
   prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
 
   scoped_ptr<RuleIterator> rule_iterator(
       provider.GetRuleIterator(
@@ -121,7 +121,7 @@ TEST_F(PolicyProviderTest, ObserveManagedSettingsChange) {
 
   // Set the managed default-content-setting.
   prefs->SetManagedPref(prefs::kManagedDefaultImagesSetting,
-                        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+                        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   ::testing::Mock::VerifyAndClearExpectations(&mock_observer);
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(_,
@@ -137,8 +137,8 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
-  ListValue* value = new ListValue();
-  value->Append(Value::CreateStringValue("[*.]google.com"));
+  base::ListValue* value = new base::ListValue();
+  value->Append(base::Value::CreateStringValue("[*.]google.com"));
   prefs->SetManagedPref(prefs::kManagedImagesBlockedForUrls,
                         value);
 
@@ -171,7 +171,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
                               CONTENT_SETTINGS_TYPE_IMAGES,
                               std::string(),
                               false));
-  scoped_ptr<Value> value_ptr(
+  scoped_ptr<base::Value> value_ptr(
       GetContentSettingValue(&provider,
                              google_url,
                              google_url,
@@ -187,7 +187,7 @@ TEST_F(PolicyProviderTest, GettingManagedContentSettings) {
   // enforced via policies and not set by the user or extension. So a call to
   // SetWebsiteSetting does nothing.
   scoped_ptr<base::Value> value_block(
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   bool owned = provider.SetWebsiteSetting(yt_url_pattern,
                                           yt_url_pattern,
                                           CONTENT_SETTINGS_TYPE_COOKIES,
@@ -209,8 +209,8 @@ TEST_F(PolicyProviderTest, ResourceIdentifier) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
 
-  ListValue* value = new ListValue();
-  value->Append(Value::CreateStringValue("[*.]google.com"));
+  base::ListValue* value = new base::ListValue();
+  value->Append(base::Value::CreateStringValue("[*.]google.com"));
   prefs->SetManagedPref(prefs::kManagedPluginsAllowedForUrls,
                         value);
 
@@ -262,8 +262,8 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
   // certificates.
   std::string pattern_str("\"pattern\":\"[*.]google.com\"");
   std::string filter_str("\"filter\":{\"ISSUER\":{\"CN\":\"issuer name\"}}");
-  ListValue* value = new ListValue();
-  value->Append(Value::CreateStringValue(
+  base::ListValue* value = new base::ListValue();
+  value->Append(base::Value::CreateStringValue(
       "{" + pattern_str + "," + filter_str + "}"));
   prefs->SetManagedPref(prefs::kManagedAutoSelectCertificateForUrls,
                         value);
@@ -276,7 +276,7 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
                              CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
                              std::string(),
                              false));
-  scoped_ptr<Value> cert_filter(
+  scoped_ptr<base::Value> cert_filter(
       GetContentSettingValue(&provider,
                              google_url,
                              google_url,
@@ -284,9 +284,9 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
                              std::string(),
                              false));
 
-  ASSERT_EQ(Value::TYPE_DICTIONARY, cert_filter->GetType());
-  DictionaryValue* dict_value =
-      static_cast<DictionaryValue*>(cert_filter.get());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, cert_filter->GetType());
+  base::DictionaryValue* dict_value =
+      static_cast<base::DictionaryValue*>(cert_filter.get());
   std::string actual_common_name;
   ASSERT_TRUE(dict_value->GetString("ISSUER.CN", &actual_common_name));
   EXPECT_EQ("issuer name", actual_common_name);

@@ -30,7 +30,7 @@ class ExtensionAccessibilityEventRouter {
 
   // Get the dict representing the last control that received an
   // OnControlFocus event.
-  DictionaryValue* last_focused_control_dict() {
+  base::DictionaryValue* last_focused_control_dict() {
     return &last_focused_control_dict_;
   }
 
@@ -85,7 +85,7 @@ class ExtensionAccessibilityEventRouter {
                      const char* event_name,
                      scoped_ptr<base::ListValue> event_args);
 
-  DictionaryValue last_focused_control_dict_;
+  base::DictionaryValue last_focused_control_dict_;
 
   bool enabled_;
 

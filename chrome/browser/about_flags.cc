@@ -79,7 +79,7 @@ const unsigned kOsDesktop = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
 // Adds a |StringValue| to |list| for each platform where |bitmask| indicates
 // whether the experiment is available on that platform.
-void AddOsStrings(unsigned bitmask, ListValue* list) {
+void AddOsStrings(unsigned bitmask, base::ListValue* list) {
   struct {
     unsigned bit;
     const char* const name;
@@ -93,7 +93,7 @@ void AddOsStrings(unsigned bitmask, ListValue* list) {
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kBitsToOs); ++i)
     if (bitmask & kBitsToOs[i].bit)
-      list->Append(new StringValue(kBitsToOs[i].name));
+      list->Append(new base::StringValue(kBitsToOs[i].name));
 }
 
 // Convert switch constants to proper CommandLine::StringType strings.
@@ -2091,13 +2091,14 @@ void GetSanitizedEnabledFlagsForCurrentPlatform(
 }
 
 // Returns the Value representing the choice data in the specified experiment.
-Value* CreateChoiceData(const Experiment& experiment,
-                        const std::set<std::string>& enabled_experiments) {
+base::Value* CreateChoiceData(
+    const Experiment& experiment,
+    const std::set<std::string>& enabled_experiments) {
   DCHECK(experiment.type == Experiment::MULTI_VALUE ||
          experiment.type == Experiment::ENABLE_DISABLE_VALUE);
-  ListValue* result = new ListValue;
+  base::ListValue* result = new base::ListValue;
   for (int i = 0; i < experiment.num_choices; ++i) {
-    DictionaryValue* value = new DictionaryValue;
+    base::DictionaryValue* value = new base::DictionaryValue;
     const std::string name = experiment.NameForChoice(i);
     value->SetString("internal_name", name);
     value->SetString("description", experiment.DescriptionForChoice(i));
@@ -2171,7 +2172,7 @@ void GetFlagsExperimentsData(FlagsStorage* flags_storage,
     if (SkipConditionalExperiment(experiment))
       continue;
 
-    DictionaryValue* data = new DictionaryValue();
+    base::DictionaryValue* data = new base::DictionaryValue();
     data->SetString("internal_name", experiment.internal_name);
     data->SetString("name",
                     l10n_util::GetStringUTF16(experiment.visible_name_id));
@@ -2179,7 +2180,7 @@ void GetFlagsExperimentsData(FlagsStorage* flags_storage,
                     l10n_util::GetStringUTF16(
                         experiment.visible_description_id));
 
-    ListValue* supported_platforms = new ListValue();
+    base::ListValue* supported_platforms = new base::ListValue();
     AddOsStrings(experiment.supported_platforms, supported_platforms);
     data->Set("supported_platforms", supported_platforms);
 

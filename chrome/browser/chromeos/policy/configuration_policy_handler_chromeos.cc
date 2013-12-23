@@ -66,7 +66,7 @@ bool GetSubkeyString(const base::DictionaryValue& dict,
 }  // namespace
 
 ExternalDataPolicyHandler::ExternalDataPolicyHandler(const char* policy_name)
-    : TypeCheckingPolicyHandler(policy_name, Value::TYPE_DICTIONARY) {
+    : TypeCheckingPolicyHandler(policy_name, base::Value::TYPE_DICTIONARY) {
 }
 
 ExternalDataPolicyHandler::~ExternalDataPolicyHandler() {
@@ -82,7 +82,7 @@ bool ExternalDataPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   if (!value)
     return true;
 
-  const DictionaryValue* dict = NULL;
+  const base::DictionaryValue* dict = NULL;
   value->GetAsDictionary(&dict);
   if (!dict) {
     NOTREACHED();

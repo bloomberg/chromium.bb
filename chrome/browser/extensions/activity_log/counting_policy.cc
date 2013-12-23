@@ -490,11 +490,11 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
                    query.ColumnString(3));
 
     if (query.ColumnType(4) != sql::COLUMN_TYPE_NULL) {
-      scoped_ptr<Value> parsed_value(
+      scoped_ptr<base::Value> parsed_value(
           base::JSONReader::Read(query.ColumnString(4)));
-      if (parsed_value && parsed_value->IsType(Value::TYPE_LIST)) {
-        action->set_args(
-            make_scoped_ptr(static_cast<ListValue*>(parsed_value.release())));
+      if (parsed_value && parsed_value->IsType(base::Value::TYPE_LIST)) {
+        action->set_args(make_scoped_ptr(
+            static_cast<base::ListValue*>(parsed_value.release())));
       }
     }
 
@@ -503,11 +503,11 @@ scoped_ptr<Action::ActionVector> CountingPolicy::DoReadFilteredData(
     action->ParseArgUrl(query.ColumnString(7));
 
     if (query.ColumnType(8) != sql::COLUMN_TYPE_NULL) {
-      scoped_ptr<Value> parsed_value(
+      scoped_ptr<base::Value> parsed_value(
           base::JSONReader::Read(query.ColumnString(8)));
-      if (parsed_value && parsed_value->IsType(Value::TYPE_DICTIONARY)) {
+      if (parsed_value && parsed_value->IsType(base::Value::TYPE_DICTIONARY)) {
         action->set_other(make_scoped_ptr(
-            static_cast<DictionaryValue*>(parsed_value.release())));
+            static_cast<base::DictionaryValue*>(parsed_value.release())));
       }
     }
     action->set_count(query.ColumnInt(9));

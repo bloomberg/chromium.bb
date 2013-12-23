@@ -280,7 +280,7 @@ void DeleteCookie(const GURL& url,
 }
 
 void GetCookiesJSON(AutomationProvider* provider,
-                    DictionaryValue* args,
+                    base::DictionaryValue* args,
                     IPC::Message* reply_message) {
   AutomationJSONReply reply(provider, reply_message);
   std::string url;
@@ -304,10 +304,10 @@ void GetCookiesJSON(AutomationProvider* provider,
   }
   event.Wait();
 
-  ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < cookie_list.size(); ++i) {
     const net::CanonicalCookie& cookie = cookie_list[i];
-    DictionaryValue* cookie_dict = new DictionaryValue();
+    base::DictionaryValue* cookie_dict = new base::DictionaryValue();
     cookie_dict->SetString("name", cookie.Name());
     cookie_dict->SetString("value", cookie.Value());
     cookie_dict->SetString("path", cookie.Path());
@@ -322,13 +322,13 @@ void GetCookiesJSON(AutomationProvider* provider,
     }
     list->Append(cookie_dict);
   }
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.Set("cookies", list);
   reply.SendSuccess(&dict);
 }
 
 void DeleteCookieJSON(AutomationProvider* provider,
-                      DictionaryValue* args,
+                      base::DictionaryValue* args,
                       IPC::Message* reply_message) {
   AutomationJSONReply reply(provider, reply_message);
   std::string url, name;
@@ -358,7 +358,7 @@ void DeleteCookieJSON(AutomationProvider* provider,
 }
 
 void SetCookieJSON(AutomationProvider* provider,
-                   DictionaryValue* args,
+                   base::DictionaryValue* args,
                    IPC::Message* reply_message) {
   AutomationJSONReply reply(provider, reply_message);
   std::string url;
@@ -366,7 +366,7 @@ void SetCookieJSON(AutomationProvider* provider,
     reply.SendError("'url' missing or invalid");
     return;
   }
-  DictionaryValue* cookie_dict;
+  base::DictionaryValue* cookie_dict;
   if (!args->GetDictionary("cookie", &cookie_dict)) {
     reply.SendError("'cookie' missing or invalid");
     return;

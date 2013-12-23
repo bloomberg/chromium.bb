@@ -346,7 +346,7 @@ void ExtensionActionAPI::DispatchOldPageActionEvent(
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::StringValue(page_action_id));
 
-  DictionaryValue* data = new DictionaryValue();
+  base::DictionaryValue* data = new base::DictionaryValue();
   data->Set(page_actions_keys::kTabIdKey, new base::FundamentalValue(tab_id));
   data->Set(page_actions_keys::kTabUrlKey, new base::StringValue(url));
   data->Set(page_actions_keys::kButtonKey,
@@ -379,8 +379,8 @@ void ExtensionActionAPI::ExtensionActionExecuted(
 
   if (event_name) {
     scoped_ptr<base::ListValue> args(new base::ListValue());
-    DictionaryValue* tab_value = extensions::ExtensionTabUtil::CreateTabValue(
-        web_contents);
+    base::DictionaryValue* tab_value =
+        extensions::ExtensionTabUtil::CreateTabValue(web_contents);
     args->Append(tab_value);
 
     DispatchEventToExtension(profile,
@@ -558,21 +558,21 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
     return true;
 
   switch (first_arg->GetType()) {
-    case Value::TYPE_INTEGER:
+    case base::Value::TYPE_INTEGER:
       CHECK(first_arg->GetAsInteger(&tab_id_));
       break;
 
-    case Value::TYPE_DICTIONARY: {
+    case base::Value::TYPE_DICTIONARY: {
       // Found the details argument.
       details_ = static_cast<base::DictionaryValue*>(first_arg);
       // Still need to check for the tabId within details.
       base::Value* tab_id_value = NULL;
       if (details_->Get("tabId", &tab_id_value)) {
         switch (tab_id_value->GetType()) {
-          case Value::TYPE_NULL:
+          case base::Value::TYPE_NULL:
             // OK; tabId is optional, leave it default.
             return true;
-          case Value::TYPE_INTEGER:
+          case base::Value::TYPE_INTEGER:
             CHECK(tab_id_value->GetAsInteger(&tab_id_));
             return true;
           default:
@@ -584,7 +584,7 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
       break;
     }
 
-    case Value::TYPE_NULL:
+    case base::Value::TYPE_NULL:
       // The tabId might be an optional argument.
       break;
 
@@ -763,10 +763,10 @@ bool ExtensionActionSetBadgeTextFunction::RunExtensionAction() {
 
 bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
   EXTENSION_FUNCTION_VALIDATE(details_);
-  Value* color_value = NULL;
+  base::Value* color_value = NULL;
   EXTENSION_FUNCTION_VALIDATE(details_->Get("color", &color_value));
   SkColor color = 0;
-  if (color_value->IsType(Value::TYPE_LIST)) {
+  if (color_value->IsType(base::Value::TYPE_LIST)) {
     base::ListValue* list = NULL;
     EXTENSION_FUNCTION_VALIDATE(details_->GetList("color", &list));
     EXTENSION_FUNCTION_VALIDATE(list->GetSize() == 4);
@@ -778,7 +778,7 @@ bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
 
     color = SkColorSetARGB(color_array[3], color_array[0],
                            color_array[1], color_array[2]);
-  } else if (color_value->IsType(Value::TYPE_STRING)) {
+  } else if (color_value->IsType(base::Value::TYPE_STRING)) {
     std::string color_string;
     EXTENSION_FUNCTION_VALIDATE(details_->GetString("color", &color_string));
     if (!ParseCSSColorString(color_string, &color))
@@ -906,7 +906,7 @@ PageActionsFunction::~PageActionsFunction() {
 bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   std::string extension_action_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &extension_action_id));
-  DictionaryValue* action = NULL;
+  base::DictionaryValue* action = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &action));
 
   int tab_id;

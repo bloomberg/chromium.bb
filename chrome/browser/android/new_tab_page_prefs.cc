@@ -73,7 +73,7 @@ void NewTabPagePrefs::SetSyncPromoCollapsed(JNIEnv* env,
 jboolean NewTabPagePrefs::GetForeignSessionCollapsed(JNIEnv* env,
                                                      jobject obj,
                                                      jstring session_tag) {
-  const DictionaryValue* dict = profile_->GetPrefs()->GetDictionary(
+  const base::DictionaryValue* dict = profile_->GetPrefs()->GetDictionary(
       prefs::kNtpCollapsedForeignSessions);
   return dict && dict->HasKey(ConvertJavaStringToUTF8(env, session_tag));
 }

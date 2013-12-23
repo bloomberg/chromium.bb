@@ -89,16 +89,16 @@ bool CustomizationDocument::LoadManifestFromString(
     const std::string& manifest) {
   int error_code = 0;
   std::string error;
-  scoped_ptr<Value> root(base::JSONReader::ReadAndReturnError(manifest,
+  scoped_ptr<base::Value> root(base::JSONReader::ReadAndReturnError(manifest,
       base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error));
   if (error_code != base::JSONReader::JSON_NO_ERROR)
     LOG(ERROR) << error;
   DCHECK(root.get() != NULL);
   if (root.get() == NULL)
     return false;
-  DCHECK(root->GetType() == Value::TYPE_DICTIONARY);
-  if (root->GetType() == Value::TYPE_DICTIONARY) {
-    root_.reset(static_cast<DictionaryValue*>(root.release()));
+  DCHECK(root->GetType() == base::Value::TYPE_DICTIONARY);
+  if (root->GetType() == base::Value::TYPE_DICTIONARY) {
+    root_.reset(static_cast<base::DictionaryValue*>(root.release()));
     std::string result;
     if (root_->GetString(kVersionAttr, &result) &&
         result == accepted_version_)
@@ -114,19 +114,19 @@ std::string CustomizationDocument::GetLocaleSpecificString(
     const std::string& locale,
     const std::string& dictionary_name,
     const std::string& entry_name) const {
-  DictionaryValue* dictionary_content = NULL;
+  base::DictionaryValue* dictionary_content = NULL;
   if (!root_.get() ||
       !root_->GetDictionary(dictionary_name, &dictionary_content))
     return std::string();
 
-  DictionaryValue* locale_dictionary = NULL;
+  base::DictionaryValue* locale_dictionary = NULL;
   if (dictionary_content->GetDictionary(locale, &locale_dictionary)) {
     std::string result;
     if (locale_dictionary->GetString(entry_name, &result))
       return result;
   }
 
-  DictionaryValue* default_dictionary = NULL;
+  base::DictionaryValue* default_dictionary = NULL;
   if (dictionary_content->GetDictionary(kDefaultAttr, &default_dictionary)) {
     std::string result;
     if (default_dictionary->GetString(entry_name, &result))
@@ -175,10 +175,10 @@ void StartupCustomizationDocument::Init(
     std::string hwid;
     if (statistics_provider->GetMachineStatistic(
             chromeos::system::kHardwareClassKey, &hwid)) {
-      ListValue* hwid_list = NULL;
+      base::ListValue* hwid_list = NULL;
       if (root_->GetList(kHwidMapAttr, &hwid_list)) {
         for (size_t i = 0; i < hwid_list->GetSize(); ++i) {
-          DictionaryValue* hwid_dictionary = NULL;
+          base::DictionaryValue* hwid_dictionary = NULL;
           std::string hwid_mask;
           if (hwid_list->GetDictionary(i, &hwid_dictionary) &&
               hwid_dictionary->GetString(kHwidMaskAttr, &hwid_mask)) {

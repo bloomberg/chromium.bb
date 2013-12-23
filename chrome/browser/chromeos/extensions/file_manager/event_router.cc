@@ -465,7 +465,7 @@ void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
   BroadcastEvent(
       profile_,
       extensions::event_names::kOnFileBrowserDriveConnectionStatusChanged,
-      make_scoped_ptr(new ListValue));
+      make_scoped_ptr(new base::ListValue));
 }
 
 void EventRouter::OnFileManagerPrefsChanged() {
@@ -478,7 +478,7 @@ void EventRouter::OnFileManagerPrefsChanged() {
   BroadcastEvent(
       profile_,
       extensions::event_names::kOnFileBrowserPreferencesChanged,
-      make_scoped_ptr(new ListValue));
+      make_scoped_ptr(new base::ListValue));
 }
 
 void EventRouter::OnJobAdded(const drive::JobInfo& job_info) {
@@ -551,7 +551,7 @@ void EventRouter::SendDriveFileTransferEvent(bool always) {
     event_list->Append(job_info_dict.release());
   }
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(event_list.release());
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::event_names::kOnFileTransfersUpdated, args.Pass()));
@@ -572,7 +572,7 @@ void EventRouter::OnRefreshTokenInvalid() {
   BroadcastEvent(
       profile_,
       extensions::event_names::kOnFileBrowserDriveConnectionStatusChanged,
-      make_scoped_ptr(new ListValue));
+      make_scoped_ptr(new base::ListValue));
 }
 
 void EventRouter::HandleFileWatchNotification(const base::FilePath& local_path,
@@ -601,14 +601,14 @@ void EventRouter::DispatchDirectoryChangeEvent(
 
     GURL target_origin_url(extensions::Extension::GetBaseURLFromExtensionId(
         extension_id));
-    scoped_ptr<ListValue> args(new ListValue());
-    DictionaryValue* watch_info = new DictionaryValue();
+    scoped_ptr<base::ListValue> args(new base::ListValue());
+    base::DictionaryValue* watch_info = new base::DictionaryValue();
     args->Append(watch_info);
 
     // This will be replaced with a real Entry in custom bindings.
     fileapi::FileSystemInfo info =
         fileapi::GetFileSystemInfoForChromeOS(target_origin_url.GetOrigin());
-    DictionaryValue* entry = new DictionaryValue();
+    base::DictionaryValue* entry = new base::DictionaryValue();
     entry->SetString("fileSystemName", info.name);
     entry->SetString("fileSystemRoot", info.root_url.spec());
     entry->SetString("fileFullPath", "/" + virtual_path.value());

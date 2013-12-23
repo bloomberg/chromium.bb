@@ -23,16 +23,16 @@ class AutomationEventQueue {
   // AutomationEvent stores return data dictionay for a single event.
   class AutomationEvent {
    public:
-    AutomationEvent(int observer_id, DictionaryValue* event_value);
+    AutomationEvent(int observer_id, base::DictionaryValue* event_value);
     virtual ~AutomationEvent() {}
 
     int GetId() const { return observer_id_; }
-    DictionaryValue* GetValue() { return event_value_.get(); }
-    DictionaryValue* ReleaseValue() { return event_value_.release(); }
+    base::DictionaryValue* GetValue() { return event_value_.get(); }
+    base::DictionaryValue* ReleaseValue() { return event_value_.release(); }
 
    private:
     int observer_id_;
-    scoped_ptr<DictionaryValue> event_value_;
+    scoped_ptr<base::DictionaryValue> event_value_;
   };
 
   void GetNextEvent(AutomationJSONReply* reply,

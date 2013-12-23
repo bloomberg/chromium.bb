@@ -27,10 +27,10 @@ AutomationEventObserver::AutomationEventObserver(
 
 AutomationEventObserver::~AutomationEventObserver() {}
 
-void AutomationEventObserver::NotifyEvent(DictionaryValue* value) {
+void AutomationEventObserver::NotifyEvent(base::DictionaryValue* value) {
   if (event_queue_) {
     if (!value)
-      value = new DictionaryValue;
+      value = new base::DictionaryValue;
     value->SetInteger("observer_id", GetId());
     event_queue_->NotifyEvent(
         new AutomationEventQueue::AutomationEvent(
@@ -94,7 +94,7 @@ void DomEventObserver::Observe(
          automation_id_ == -1) &&
         (event_name_.length() == 0 ||
          event_name_.compare(dom_op_details->json) == 0)) {
-      DictionaryValue* dict = new DictionaryValue;
+      base::DictionaryValue* dict = new base::DictionaryValue;
       dict->SetString("type", "raised_event");
       dict->SetString("name", dom_op_details->json);
       NotifyEvent(dict);

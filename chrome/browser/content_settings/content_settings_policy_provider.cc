@@ -411,7 +411,7 @@ void PolicyProvider::UpdateManagedDefaultSetting(
         ContentSettingsPattern::Wildcard(),
         content_type,
         std::string(),
-        Value::CreateIntegerValue(setting));
+        base::Value::CreateIntegerValue(setting));
   }
 }
 
@@ -431,7 +431,7 @@ bool PolicyProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    Value* value) {
+    base::Value* value) {
   return false;
 }
 

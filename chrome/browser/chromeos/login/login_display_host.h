@@ -81,7 +81,7 @@ class LoginDisplayHost {
   // Takes ownership of |screen_parameters|, which can also be NULL.
   virtual void StartWizard(
       const std::string& first_screen_name,
-      scoped_ptr<DictionaryValue> screen_parameters) = 0;
+      scoped_ptr<base::DictionaryValue> screen_parameters) = 0;
 
   // Returns current WizardController, if it exists.
   // Result should not be stored.

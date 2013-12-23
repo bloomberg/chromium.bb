@@ -58,13 +58,13 @@ ChromeosInfoPrivateGetFunction::~ChromeosInfoPrivateGetFunction() {
 }
 
 bool ChromeosInfoPrivateGetFunction::RunImpl() {
-  ListValue* list = NULL;
+  base::ListValue* list = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &list));
-  scoped_ptr<DictionaryValue> result(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   for (size_t i = 0; i < list->GetSize(); ++i) {
     std::string property_name;
     EXTENSION_FUNCTION_VALIDATE(list->GetString(i, &property_name));
-    Value* value = GetValue(property_name);
+    base::Value* value = GetValue(property_name);
     if (value)
       result->Set(property_name, value);
   }
@@ -95,7 +95,7 @@ base::Value* ChromeosInfoPrivateGetFunction::GetValue(
   } else if (property_name == kPropertyBoard) {
     return new base::StringValue(base::SysInfo::GetLsbReleaseBoard());
   } else if (property_name == kPropertyOwner) {
-    return Value::CreateBooleanValue(
+    return base::Value::CreateBooleanValue(
         chromeos::UserManager::Get()->IsCurrentUserOwner());
   } else if (property_name == kPropertyTimezone) {
     return chromeos::CrosSettings::Get()->GetPref(

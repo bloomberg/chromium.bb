@@ -145,7 +145,7 @@ void MultiProfileUserController::RemoveCachedValues(
 
 std::string MultiProfileUserController::GetCachedValue(
     const std::string& user_email) const {
-  const DictionaryValue* dict =
+  const base::DictionaryValue* dict =
       local_state_->GetDictionary(prefs::kCachedMultiProfileUserBehavior);
   std::string value;
   if (dict && dict->GetStringWithoutPathExpansion(user_email, &value))

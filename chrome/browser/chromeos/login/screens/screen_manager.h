@@ -95,7 +95,7 @@ class ScreenManager : public ScreenManagerHandler::Delegate {
   virtual void OnButtonPressed(const std::string& screen_name,
                                const std::string& button_id) OVERRIDE;
   virtual void OnContextChanged(const std::string& screen_name,
-                                const DictionaryValue* diff) OVERRIDE;
+                                const base::DictionaryValue* diff) OVERRIDE;
 
   typedef std::map<std::string, linked_ptr<BaseScreen> > ScreenMap;
 

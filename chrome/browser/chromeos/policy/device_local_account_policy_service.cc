@@ -166,7 +166,7 @@ void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
 
 void DeviceLocalAccountPolicyBroker::UpdateRefreshDelay() {
   if (core_.refresh_scheduler()) {
-    const Value* policy_value =
+    const base::Value* policy_value =
         store_->policy_map().GetValue(key::kPolicyRefreshRate);
     int delay = 0;
     if (policy_value && policy_value->GetAsInteger(&delay))

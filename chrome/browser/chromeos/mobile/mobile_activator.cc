@@ -122,24 +122,26 @@ bool CellularConfigDocument::LoadFromFile(const base::FilePath& config_path) {
   if (!base::ReadFileToString(config_path, &config))
     return false;
 
-  scoped_ptr<Value> root(
+  scoped_ptr<base::Value> root(
       base::JSONReader::Read(config, base::JSON_ALLOW_TRAILING_COMMAS));
   DCHECK(root.get() != NULL);
-  if (!root.get() || root->GetType() != Value::TYPE_DICTIONARY) {
+  if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY) {
     LOG(WARNING) << "Bad cellular config file";
     return false;
   }
 
-  DictionaryValue* root_dict = static_cast<DictionaryValue*>(root.get());
+  base::DictionaryValue* root_dict =
+      static_cast<base::DictionaryValue*>(root.get());
   if (!root_dict->GetString(kVersionField, &version_)) {
     LOG(WARNING) << "Cellular config file missing version";
     return false;
   }
   ErrorMap error_map;
-  DictionaryValue* errors = NULL;
+  base::DictionaryValue* errors = NULL;
   if (!root_dict->GetDictionary(kErrorsField, &errors))
     return false;
-  for (DictionaryValue::Iterator it(*errors); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*errors);
+      !it.IsAtEnd(); it.Advance()) {
     std::string value;
     if (!it.value().GetAsString(&value)) {
       LOG(WARNING) << "Bad cellular config error value";
@@ -286,7 +288,7 @@ void MobileActivator::GetPropertiesAndContinueActivation(
                   service_path);
     return;  // Edge case; abort.
   }
-  const DictionaryValue* payment_dict;
+  const base::DictionaryValue* payment_dict;
   std::string usage_url, payment_url;
   if (!properties.GetStringWithoutPathExpansion(
           shill::kUsageURLProperty, &usage_url) ||
@@ -304,7 +306,7 @@ void MobileActivator::GetPropertiesAndContinueActivation(
   DisableCertRevocationChecking();
 
   // We want shill to connect us after activations, so enable autoconnect.
-  DictionaryValue auto_connect_property;
+  base::DictionaryValue auto_connect_property;
   auto_connect_property.SetBoolean(shill::kAutoConnectProperty, true);
   NetworkHandler::Get()->network_configuration_handler()->SetProperties(
       service_path_,

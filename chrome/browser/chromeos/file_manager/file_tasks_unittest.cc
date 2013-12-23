@@ -46,8 +46,8 @@ void RegisterDefaultTaskPreferences(TestingPrefServiceSimple* pref_service) {
 // Updates the default task preferences per the given dictionary values. Used
 // for testing ChooseAndSetDefaultTask.
 void UpdateDefaultTaskPreferences(TestingPrefServiceSimple* pref_service,
-                                  const DictionaryValue& mime_types,
-                                  const DictionaryValue& suffixes) {
+                                  const base::DictionaryValue& mime_types,
+                                  const base::DictionaryValue& suffixes) {
   DCHECK(pref_service);
 
   pref_service->Set(prefs::kDefaultTasksByMimeType, mime_types);
@@ -289,8 +289,8 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_MultipleTasks) {
   EXPECT_FALSE(tasks[1].is_default());
 
   // Set Text.app as default for "text/plain" in the preferences.
-  DictionaryValue empty;
-  DictionaryValue mime_types;
+  base::DictionaryValue empty;
+  base::DictionaryValue mime_types;
   mime_types.SetStringWithoutPathExpansion(
       "text/plain",
       TaskDescriptorToId(text_app_task));
@@ -311,7 +311,7 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_MultipleTasks) {
   EXPECT_FALSE(tasks[1].is_default());
 
   // Set Nice.app as default for ".txt" in the preferences.
-  DictionaryValue suffixes;
+  base::DictionaryValue suffixes;
   suffixes.SetStringWithoutPathExpansion(
       ".txt",
       TaskDescriptorToId(nice_app_task));

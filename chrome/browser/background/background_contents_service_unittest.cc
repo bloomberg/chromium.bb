@@ -31,16 +31,16 @@ class BackgroundContentsServiceTest : public testing::Test {
     command_line_.reset(new CommandLine(CommandLine::NO_PROGRAM));
   }
 
-  const DictionaryValue* GetPrefs(Profile* profile) {
+  const base::DictionaryValue* GetPrefs(Profile* profile) {
     return profile->GetPrefs()->GetDictionary(
         prefs::kRegisteredBackgroundContents);
   }
 
   // Returns the stored pref URL for the passed app id.
   std::string GetPrefURLForApp(Profile* profile, const base::string16& appid) {
-    const DictionaryValue* pref = GetPrefs(profile);
+    const base::DictionaryValue* pref = GetPrefs(profile);
     EXPECT_TRUE(pref->HasKey(UTF16ToUTF8(appid)));
-    const DictionaryValue* value;
+    const base::DictionaryValue* value;
     pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &value);
     std::string url;
     value->GetString("url", &url);

@@ -169,7 +169,7 @@ void UserImageSyncObserver::UpdateSyncedImageFromLocal() {
   if (GetSyncedImageIndex(&synced_index) && (synced_index == local_index))
     return;
   DictionaryPrefUpdate update(prefs_, kUserImageInfo);
-  DictionaryValue* dict = update.Get();
+  base::DictionaryValue* dict = update.Get();
   dict->SetInteger(kImageIndex, local_index);
   LOG(INFO) << "Saved avatar index " << local_index << " to sync.";
 }
@@ -191,7 +191,7 @@ void UserImageSyncObserver::UpdateLocalImageFromSynced() {
 
 bool UserImageSyncObserver::GetSyncedImageIndex(int* index) {
   *index = User::kInvalidImageIndex;
-  const DictionaryValue* dict = prefs_->GetDictionary(kUserImageInfo);
+  const base::DictionaryValue* dict = prefs_->GetDictionary(kUserImageInfo);
   return dict && dict->GetInteger(kImageIndex, index);
 }
 

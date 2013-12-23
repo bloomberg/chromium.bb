@@ -27,7 +27,7 @@ AutomationEventQueue::~AutomationEventQueue() {
 }
 
 AutomationEventQueue::AutomationEvent::AutomationEvent(
-    int observer_id, DictionaryValue* event_value)
+    int observer_id, base::DictionaryValue* event_value)
     : observer_id_(observer_id), event_value_(event_value) {}
 
 void AutomationEventQueue::GetNextEvent(AutomationJSONReply* reply,

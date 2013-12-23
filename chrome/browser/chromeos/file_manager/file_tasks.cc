@@ -183,7 +183,7 @@ std::string GetDefaultTaskIdFromPrefs(const PrefService& pref_service,
       << " and suffix: " << suffix;
   std::string task_id;
   if (!mime_type.empty()) {
-    const DictionaryValue* mime_task_prefs =
+    const base::DictionaryValue* mime_task_prefs =
         pref_service.GetDictionary(prefs::kDefaultTasksByMimeType);
     DCHECK(mime_task_prefs);
     LOG_IF(ERROR, !mime_task_prefs) << "Unable to open MIME type prefs";
@@ -194,7 +194,7 @@ std::string GetDefaultTaskIdFromPrefs(const PrefService& pref_service,
     }
   }
 
-  const DictionaryValue* suffix_task_prefs =
+  const base::DictionaryValue* suffix_task_prefs =
       pref_service.GetDictionary(prefs::kDefaultTasksBySuffix);
   DCHECK(suffix_task_prefs);
   LOG_IF(ERROR, !suffix_task_prefs) << "Unable to open suffix prefs";

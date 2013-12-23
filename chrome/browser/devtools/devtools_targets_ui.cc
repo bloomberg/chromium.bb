@@ -134,9 +134,9 @@ void RenderViewHostTargetsUIHandler::Observe(
 }
 
 void RenderViewHostTargetsUIHandler::UpdateTargets() {
-  scoped_ptr<ListValue> list_value(new ListValue());
+  scoped_ptr<base::ListValue> list_value(new base::ListValue());
 
-  std::map<WebContents*, DictionaryValue*> web_contents_to_descriptor_;
+  std::map<WebContents*, base::DictionaryValue*> web_contents_to_descriptor_;
   std::vector<DevToolsTargetImpl*> guest_targets;
 
   DevToolsTargetImpl::List targets =
@@ -158,7 +158,7 @@ void RenderViewHostTargetsUIHandler::UpdateTargets() {
     if (rvh->GetProcess()->IsGuest()) {
       guest_targets.push_back(target_ptr);
     } else {
-      DictionaryValue* descriptor = Serialize(*target_ptr);
+      base::DictionaryValue* descriptor = Serialize(*target_ptr);
       list_value->Append(descriptor);
       web_contents_to_descriptor_[web_contents] = descriptor;
     }
@@ -172,10 +172,10 @@ void RenderViewHostTargetsUIHandler::UpdateTargets() {
         WebContents::FromRenderViewHost(guest->GetRenderViewHost());
     WebContents* embedder = guest_web_contents->GetEmbedderWebContents();
     if (embedder && web_contents_to_descriptor_.count(embedder) > 0) {
-      DictionaryValue* parent = web_contents_to_descriptor_[embedder];
-      ListValue* guests = NULL;
+      base::DictionaryValue* parent = web_contents_to_descriptor_[embedder];
+      base::ListValue* guests = NULL;
       if (!parent->GetList(kGuestList, &guests)) {
-        guests = new ListValue();
+        guests = new base::ListValue();
         parent->Set(kGuestList, guests);
       }
       guests->Append(Serialize(*guest));
@@ -308,7 +308,7 @@ void WorkerTargetsUIHandler::BrowserChildProcessHostDisconnected(
 void WorkerTargetsUIHandler::UpdateTargets(
     const DevToolsTargetImpl::List& targets) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<ListValue> list_value(new ListValue());
+  scoped_ptr<base::ListValue> list_value(new base::ListValue());
   STLDeleteValues(&targets_);
   for (DevToolsTargetImpl::List::const_iterator it = targets.begin();
       it != targets.end(); ++it) {
@@ -378,11 +378,11 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
   remote_browsers_.clear();
   STLDeleteValues(&targets_);
 
-  scoped_ptr<ListValue> device_list(new ListValue());
+  scoped_ptr<base::ListValue> device_list(new base::ListValue());
   for (DevToolsAdbBridge::RemoteDevices::iterator dit = devices->begin();
        dit != devices->end(); ++dit) {
     DevToolsAdbBridge::RemoteDevice* device = dit->get();
-    DictionaryValue* device_data = new DictionaryValue();
+    base::DictionaryValue* device_data = new base::DictionaryValue();
     device_data->SetString(kAdbModelField, device->GetModel());
     device_data->SetString(kAdbSerialField, device->GetSerial());
     device_data->SetBoolean(kAdbConnectedField, device->IsConnected());
@@ -390,14 +390,14 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
         "device:%s",
         device->GetSerial().c_str());
     device_data->SetString(kTargetIdField, device_id);
-    ListValue* browser_list = new ListValue();
+    base::ListValue* browser_list = new base::ListValue();
     device_data->Set(kAdbBrowsersList, browser_list);
 
     DevToolsAdbBridge::RemoteBrowsers& browsers = device->browsers();
     for (DevToolsAdbBridge::RemoteBrowsers::iterator bit =
         browsers.begin(); bit != browsers.end(); ++bit) {
       DevToolsAdbBridge::RemoteBrowser* browser = bit->get();
-      DictionaryValue* browser_data = new DictionaryValue();
+      base::DictionaryValue* browser_data = new base::DictionaryValue();
       browser_data->SetString(kAdbBrowserNameField, browser->display_name());
       browser_data->SetString(kAdbBrowserVersionField, browser->version());
       DevToolsAdbBridge::RemoteBrowser::ParsedVersion parsed =
@@ -414,14 +414,14 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
       browser_data->SetString(kTargetIdField, browser_id);
       browser_data->SetString(kTargetSourceField, source_id());
       remote_browsers_[browser_id] = browser;
-      ListValue* page_list = new ListValue();
+      base::ListValue* page_list = new base::ListValue();
       browser_data->Set(kAdbPagesList, page_list);
 
       DevToolsTargetImpl::List pages = browser->CreatePageTargets();
       for (DevToolsTargetImpl::List::iterator it =
           pages.begin(); it != pages.end(); ++it) {
         DevToolsTargetImpl* target =  *it;
-        DictionaryValue* target_data = Serialize(*target);
+        base::DictionaryValue* target_data = Serialize(*target);
         target_data->SetBoolean(
             kAdbAttachedForeignField,
             target->IsAttached() &&
@@ -442,7 +442,7 @@ void AdbTargetsUIHandler::RemoteDevicesChanged(
       PortForwardingController::DevicesStatus::iterator sit =
           port_forwarding_status.find(device->GetSerial());
       if (sit != port_forwarding_status.end()) {
-        DictionaryValue* port_status_dict = new DictionaryValue();
+        base::DictionaryValue* port_status_dict = new base::DictionaryValue();
         typedef PortForwardingController::PortStatusMap StatusMap;
         const StatusMap& port_status = sit->second;
         for (StatusMap::const_iterator it = port_status.begin();
@@ -518,7 +518,7 @@ void DevToolsTargetsUIHandler::Reload(const std::string& target_id) {
 base::DictionaryValue*
 DevToolsTargetsUIHandler::Serialize(
     const DevToolsTargetImpl& target) {
-  DictionaryValue* target_data = new DictionaryValue();
+  base::DictionaryValue* target_data = new base::DictionaryValue();
   target_data->SetString(kTargetSourceField, source_id_);
   target_data->SetString(kTargetIdField, target.GetId());
   target_data->SetString(kTargetTypeField, target.GetType());
@@ -531,7 +531,7 @@ DevToolsTargetsUIHandler::Serialize(
 }
 
 void DevToolsTargetsUIHandler::SendSerializedTargets(
-    scoped_ptr<ListValue> list) {
+    scoped_ptr<base::ListValue> list) {
   callback_.Run(source_id_, list.Pass());
 }
 

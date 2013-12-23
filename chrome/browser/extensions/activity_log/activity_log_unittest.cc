@@ -111,7 +111,7 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
 
   static void RetrieveActions_ArgUrlExtraction(
       scoped_ptr<std::vector<scoped_refptr<Action> > > i) {
-    const DictionaryValue* other = NULL;
+    const base::DictionaryValue* other = NULL;
     int dom_verb = -1;
 
     ASSERT_EQ(4U, i->size());

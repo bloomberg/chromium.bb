@@ -106,7 +106,7 @@ scoped_ptr<base::DictionaryValue> ConvertOncProxySettingsToProxyConfig(
     const base::DictionaryValue& onc_proxy_settings) {
   std::string type;
   onc_proxy_settings.GetStringWithoutPathExpansion(::onc::proxy::kType, &type);
-  scoped_ptr<DictionaryValue> proxy_dict;
+  scoped_ptr<base::DictionaryValue> proxy_dict;
 
   if (type == ::onc::proxy::kDirect) {
     proxy_dict.reset(ProxyConfigDictionary::CreateDirect());

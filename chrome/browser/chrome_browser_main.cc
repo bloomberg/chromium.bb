@@ -336,7 +336,7 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
     // profile.
     ListPrefUpdate update(g_browser_process->local_state(),
                           prefs::kProfilesLastActive);
-    ListValue* profile_list = update.Get();
+    base::ListValue* profile_list = update.Get();
     profile_list->Clear();
   }
 

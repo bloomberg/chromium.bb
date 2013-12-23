@@ -55,7 +55,7 @@ class ConflictingDllsTest : public DiagnosticsTest {
     EnumerateModulesModel* model = EnumerateModulesModel::GetInstance();
     model->set_limited_mode(true);
     model->ScanNow();
-    scoped_ptr<ListValue> list(model->GetModuleList());
+    scoped_ptr<base::ListValue> list(model->GetModuleList());
     if (!model->confirmed_bad_modules_detected() &&
         !model->suspected_bad_modules_detected()) {
       RecordSuccess("No conflicting modules found");
@@ -63,7 +63,7 @@ class ConflictingDllsTest : public DiagnosticsTest {
     }
 
     std::string failures = "Possibly conflicting modules:";
-    DictionaryValue* dictionary;
+    base::DictionaryValue* dictionary;
     for (size_t i = 0; i < list->GetSize(); ++i) {
       if (!list->GetDictionary(i, &dictionary))
         RecordFailure(DIAG_RECON_DICTIONARY_LOOKUP_FAILED,
@@ -212,7 +212,8 @@ class JSONTest : public DiagnosticsTest {
     JSONStringValueSerializer json(json_data);
     int error_code = base::JSONReader::JSON_NO_ERROR;
     std::string error_message;
-    scoped_ptr<Value> json_root(json.Deserialize(&error_code, &error_message));
+    scoped_ptr<base::Value> json_root(
+        json.Deserialize(&error_code, &error_message));
     if (base::JSONReader::JSON_NO_ERROR != error_code) {
       if (error_message.empty()) {
         error_message = "Parse error " + base::IntToString(error_code);

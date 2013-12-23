@@ -323,9 +323,9 @@ class SafeManifestJSONParser : public UtilityProcessHostClient {
 
   void OnJSONParseSucceeded(const base::ListValue& wrapper) {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    const Value* value = NULL;
+    const base::Value* value = NULL;
     CHECK(wrapper.Get(0, &value));
-    if (value->IsType(Value::TYPE_DICTIONARY))
+    if (value->IsType(base::Value::TYPE_DICTIONARY))
       parsed_manifest_.reset(
           static_cast<const base::DictionaryValue*>(value)->DeepCopy());
     else

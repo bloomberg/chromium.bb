@@ -29,7 +29,7 @@ AutomationJSONReply::~AutomationJSONReply() {
   DCHECK(!message_) << "JSON automation request not replied!";
 }
 
-void AutomationJSONReply::SendSuccess(const Value* value) {
+void AutomationJSONReply::SendSuccess(const base::Value* value) {
   DCHECK(message_) << "Resending reply for JSON automation request";
   std::string json_string = "{}";
   if (value)
@@ -54,7 +54,7 @@ void AutomationJSONReply::SendError(const std::string& error_message) {
 }
 
 bool GetBrowserFromJSONArgs(
-    DictionaryValue* args,
+    base::DictionaryValue* args,
     Browser** browser,
     std::string* error) {
   int browser_index;
@@ -71,7 +71,7 @@ bool GetBrowserFromJSONArgs(
 }
 
 bool GetTabFromJSONArgs(
-    DictionaryValue* args,
+    base::DictionaryValue* args,
     WebContents** tab,
     std::string* error) {
   int browser_index, tab_index;
@@ -92,7 +92,7 @@ bool GetTabFromJSONArgs(
 }
 
 bool GetBrowserAndTabFromJSONArgs(
-    DictionaryValue* args,
+    base::DictionaryValue* args,
     Browser** browser,
     WebContents** tab,
     std::string* error) {
@@ -101,7 +101,7 @@ bool GetBrowserAndTabFromJSONArgs(
 }
 
 bool GetRenderViewFromJSONArgs(
-    DictionaryValue* args,
+    base::DictionaryValue* args,
     Profile* profile,
     content::RenderViewHost** rvh,
     std::string* error) {

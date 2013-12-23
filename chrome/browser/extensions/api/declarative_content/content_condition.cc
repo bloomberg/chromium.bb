@@ -94,7 +94,7 @@ scoped_ptr<ContentCondition> ContentCondition::Create(
   for (base::DictionaryValue::Iterator iter(*condition_dict);
        !iter.IsAtEnd(); iter.Advance()) {
     const std::string& condition_attribute_name = iter.key();
-    const Value& condition_attribute_value = iter.value();
+    const base::Value& condition_attribute_value = iter.value();
     if (condition_attribute_name == keys::kInstanceType) {
       // Skip this.
     } else if (condition_attribute_name == keys::kPageUrl) {

@@ -138,7 +138,7 @@ WebRequestConditionAttributeResourceType::Create(
     std::string* error,
     bool* bad_message) {
   DCHECK(instance_type == keys::kResourceTypeKey);
-  const ListValue* value_as_list = NULL;
+  const base::ListValue* value_as_list = NULL;
   if (!value->GetAsList(&value_as_list)) {
     *error = ErrorUtils::FormatErrorMessage(kInvalidValue,
                                             keys::kResourceTypeKey);
@@ -224,13 +224,13 @@ WebRequestConditionAttributeContentType::Create(
       bool* bad_message) {
   DCHECK(name == keys::kContentTypeKey || name == keys::kExcludeContentTypeKey);
 
-  const ListValue* value_as_list = NULL;
+  const base::ListValue* value_as_list = NULL;
   if (!value->GetAsList(&value_as_list)) {
     *error = ErrorUtils::FormatErrorMessage(kInvalidValue, name);
     return scoped_refptr<const WebRequestConditionAttribute>(NULL);
   }
   std::vector<std::string> content_types;
-  for (ListValue::const_iterator it = value_as_list->begin();
+  for (base::ListValue::const_iterator it = value_as_list->begin();
        it != value_as_list->end(); ++it) {
     std::string content_type;
     if (!(*it)->GetAsString(&content_type)) {
@@ -314,7 +314,7 @@ class HeaderMatcher {
 
     // |data| is the pattern to be matched in the position given by |type|.
     // Note that |data| must point to a StringValue object.
-    static scoped_ptr<StringMatchTest> Create(const Value* data,
+    static scoped_ptr<StringMatchTest> Create(const base::Value* data,
                                               MatchType type,
                                               bool case_sensitive);
     ~StringMatchTest();
@@ -374,9 +374,9 @@ HeaderMatcher::~HeaderMatcher() {}
 scoped_ptr<const HeaderMatcher> HeaderMatcher::Create(
     const base::ListValue* tests) {
   ScopedVector<const HeaderMatchTest> header_tests;
-  for (ListValue::const_iterator it = tests->begin();
+  for (base::ListValue::const_iterator it = tests->begin();
        it != tests->end(); ++it) {
-    const DictionaryValue* tests = NULL;
+    const base::DictionaryValue* tests = NULL;
     if (!(*it)->GetAsDictionary(&tests))
       return scoped_ptr<const HeaderMatcher>();
 
@@ -406,7 +406,7 @@ HeaderMatcher::HeaderMatcher(ScopedVector<const HeaderMatchTest>* tests)
 
 // static
 scoped_ptr<HeaderMatcher::StringMatchTest>
-HeaderMatcher::StringMatchTest::Create(const Value* data,
+HeaderMatcher::StringMatchTest::Create(const base::Value* data,
                                        MatchType type,
                                        bool case_sensitive) {
   std::string str;
@@ -463,7 +463,8 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
   ScopedVector<const StringMatchTest> name_match;
   ScopedVector<const StringMatchTest> value_match;
 
-  for (DictionaryValue::Iterator it(*tests); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*tests);
+       !it.IsAtEnd(); it.Advance()) {
     bool is_name = false;  // Is this test for header name?
     StringMatchTest::MatchType match_type;
     if (it.key() == keys::kNamePrefixKey) {
@@ -490,22 +491,22 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
       NOTREACHED();  // JSON schema type checking should prevent this.
       return scoped_ptr<const HeaderMatchTest>();
     }
-    const Value* content = &it.value();
+    const base::Value* content = &it.value();
 
     ScopedVector<const StringMatchTest>* tests =
         is_name ? &name_match : &value_match;
     switch (content->GetType()) {
-      case Value::TYPE_LIST: {
-        const ListValue* list = NULL;
+      case base::Value::TYPE_LIST: {
+        const base::ListValue* list = NULL;
         CHECK(content->GetAsList(&list));
-        for (ListValue::const_iterator it = list->begin();
+        for (base::ListValue::const_iterator it = list->begin();
              it != list->end(); ++it) {
           tests->push_back(
               StringMatchTest::Create(*it, match_type, !is_name).release());
         }
         break;
       }
-      case Value::TYPE_STRING: {
+      case base::Value::TYPE_STRING: {
         tests->push_back(
             StringMatchTest::Create(content, match_type, !is_name).release());
         break;
@@ -556,7 +557,7 @@ scoped_ptr<const HeaderMatcher> PrepareHeaderMatcher(
     const std::string& name,
     const base::Value* value,
     std::string* error) {
-  const ListValue* value_as_list = NULL;
+  const base::ListValue* value_as_list = NULL;
   if (!value->GetAsList(&value_as_list)) {
     *error = ErrorUtils::FormatErrorMessage(kInvalidValue, name);
     return scoped_ptr<const HeaderMatcher>();
@@ -795,14 +796,15 @@ namespace {
 // Reads strings stored in |value|, which is expected to be a ListValue, and
 // sets corresponding bits (see RequestStage) in |out_stages|. Returns true on
 // success, false otherwise.
-bool ParseListOfStages(const Value& value, int* out_stages) {
-  const ListValue* list = NULL;
+bool ParseListOfStages(const base::Value& value, int* out_stages) {
+  const base::ListValue* list = NULL;
   if (!value.GetAsList(&list))
     return false;
 
   int stages = 0;
   std::string stage_name;
-  for (ListValue::const_iterator it = list->begin(); it != list->end(); ++it) {
+  for (base::ListValue::const_iterator it = list->begin();
+       it != list->end(); ++it) {
     if (!((*it)->GetAsString(&stage_name)))
       return false;
     if (stage_name == keys::kOnBeforeRequestEnum) {
@@ -828,7 +830,7 @@ bool ParseListOfStages(const Value& value, int* out_stages) {
 // static
 scoped_refptr<const WebRequestConditionAttribute>
 WebRequestConditionAttributeStages::Create(const std::string& name,
-                                           const Value* value,
+                                           const base::Value* value,
                                            std::string* error,
                                            bool* bad_message) {
   DCHECK(name == keys::kStagesKey);

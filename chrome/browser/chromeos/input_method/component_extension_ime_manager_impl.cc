@@ -135,11 +135,11 @@ bool ComponentExtensionIMEManagerImpl::Unload(const std::string& extension_id,
   return true;
 }
 
-scoped_ptr<DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
+scoped_ptr<base::DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
     const base::FilePath& file_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   std::string error;
-  scoped_ptr<DictionaryValue> manifest(
+  scoped_ptr<base::DictionaryValue> manifest(
       extension_file_util::LoadManifest(file_path, &error));
   if (!manifest.get())
     LOG(ERROR) << "Failed at getting manifest";
@@ -176,7 +176,7 @@ bool ComponentExtensionIMEManagerImpl::IsInitialized() {
 
 // static
 bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
-    const DictionaryValue& dict,
+    const base::DictionaryValue& dict,
     ComponentExtensionEngine* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   DCHECK(out);
@@ -210,7 +210,7 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
   DCHECK(!languages.empty());
   out->language_codes.assign(languages.begin(), languages.end());
 
-  const ListValue* layouts = NULL;
+  const base::ListValue* layouts = NULL;
   if (!dict.GetList(extensions::manifest_keys::kLayouts, &layouts))
     return false;
 
@@ -224,7 +224,7 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
 
 // static
 bool ComponentExtensionIMEManagerImpl::ReadExtensionInfo(
-    const DictionaryValue& manifest,
+    const base::DictionaryValue& manifest,
     const std::string& extension_id,
     ComponentExtensionIME* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
@@ -274,7 +274,8 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
     if (!base::ReadFileToString(manifest_path, &component_ime.manifest))
       continue;
 
-    scoped_ptr<DictionaryValue> manifest = GetManifest(component_ime.path);
+    scoped_ptr<base::DictionaryValue> manifest =
+        GetManifest(component_ime.path);
     if (!manifest.get())
       continue;
 
@@ -284,13 +285,13 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
       continue;
     component_ime.id = whitelisted_component_extension[i].id;
 
-    const ListValue* component_list;
+    const base::ListValue* component_list;
     if (!manifest->GetList(extensions::manifest_keys::kInputComponents,
                            &component_list))
       continue;
 
     for (size_t i = 0; i < component_list->GetSize(); ++i) {
-      const DictionaryValue* dictionary;
+      const base::DictionaryValue* dictionary;
       if (!component_list->GetDictionary(i, &dictionary))
         continue;
 

@@ -603,7 +603,7 @@ void ExistingUserController::SetDisplayEmail(const std::string& email) {
 }
 
 void ExistingUserController::ShowWrongHWIDScreen() {
-  scoped_ptr<DictionaryValue> params;
+  scoped_ptr<base::DictionaryValue> params;
   host_->StartWizard(WizardController::kWrongHWIDScreenName, params.Pass());
   login_display_->OnFadeOut();
 }
@@ -642,9 +642,9 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
 
 void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
                                                   const std::string& user) {
-  scoped_ptr<DictionaryValue> params;
+  scoped_ptr<base::DictionaryValue> params;
   if (is_auto_enrollment) {
-    params.reset(new DictionaryValue());
+    params.reset(new base::DictionaryValue());
     params->SetBoolean("is_auto_enrollment", true);
     params->SetString("user", user);
   }
@@ -654,19 +654,19 @@ void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
 }
 
 void ExistingUserController::ShowResetScreen() {
-  scoped_ptr<DictionaryValue> params;
+  scoped_ptr<base::DictionaryValue> params;
   host_->StartWizard(WizardController::kResetScreenName, params.Pass());
   login_display_->OnFadeOut();
 }
 
 void ExistingUserController::ShowKioskEnableScreen() {
-  scoped_ptr<DictionaryValue> params;
+  scoped_ptr<base::DictionaryValue> params;
   host_->StartWizard(WizardController::kKioskEnableScreenName, params.Pass());
   login_display_->OnFadeOut();
 }
 
 void ExistingUserController::ShowKioskAutolaunchScreen() {
-  scoped_ptr<DictionaryValue> params;
+  scoped_ptr<base::DictionaryValue> params;
   host_->StartWizard(WizardController::kKioskAutolaunchScreenName,
                      params.Pass());
   login_display_->OnFadeOut();
@@ -929,7 +929,7 @@ void ExistingUserController::DeviceSettingsChanged() {
 }
 
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
-  scoped_ptr<DictionaryValue> params;
+  scoped_ptr<base::DictionaryValue> params;
   host_->StartWizard(screen_name, params.Pass());
 }
 

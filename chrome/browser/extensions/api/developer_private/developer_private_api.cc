@@ -238,7 +238,7 @@ void DeveloperPrivateEventRouter::Observe(
   if (extension)
     event_data.item_id = extension->id();
 
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(event_data.ToValue().release());
 
   event_name = developer_private::OnItemStateChanged::kEventName;

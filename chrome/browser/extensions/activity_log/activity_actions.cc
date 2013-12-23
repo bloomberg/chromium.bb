@@ -75,13 +75,13 @@ scoped_refptr<Action> Action::Clone() const {
   return clone;
 }
 
-void Action::set_args(scoped_ptr<ListValue> args) {
+void Action::set_args(scoped_ptr<base::ListValue> args) {
   args_.reset(args.release());
 }
 
-ListValue* Action::mutable_args() {
+base::ListValue* Action::mutable_args() {
   if (!args_.get()) {
-    args_.reset(new ListValue());
+    args_.reset(new base::ListValue());
   }
   return args_.get();
 }
@@ -94,13 +94,13 @@ void Action::set_arg_url(const GURL& arg_url) {
   arg_url_ = arg_url;
 }
 
-void Action::set_other(scoped_ptr<DictionaryValue> other) {
+void Action::set_other(scoped_ptr<base::DictionaryValue> other) {
   other_.reset(other.release());
 }
 
-DictionaryValue* Action::mutable_other() {
+base::DictionaryValue* Action::mutable_other() {
   if (!other_.get()) {
-    other_.reset(new DictionaryValue());
+    other_.reset(new base::DictionaryValue());
   }
   return other_.get();
 }
@@ -184,7 +184,7 @@ scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
                                                 &prerender)) {
       other_field->prerender.reset(new bool(prerender));
     }
-    const DictionaryValue* web_request;
+    const base::DictionaryValue* web_request;
     if (other()->GetDictionaryWithoutPathExpansion(constants::kActionWebRequest,
                                                    &web_request)) {
       other_field->web_request.reset(new std::string(
@@ -270,7 +270,7 @@ std::string Action::PrintForDebug() const {
       result += " PAGE_URL=" + page_url_.spec();
   }
   if (!page_title_.empty()) {
-    StringValue title(page_title_);
+    base::StringValue title(page_title_);
     result += " PAGE_TITLE=" + Serialize(&title);
   }
   if (arg_url_.is_valid()) {

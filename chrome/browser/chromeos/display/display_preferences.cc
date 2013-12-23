@@ -84,7 +84,8 @@ void LoadDisplayLayouts() {
 
   const base::DictionaryValue* layouts = local_state->GetDictionary(
       prefs::kSecondaryDisplays);
-  for (DictionaryValue::Iterator it(*layouts); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*layouts);
+       !it.IsAtEnd(); it.Advance()) {
     ash::DisplayLayout layout;
     if (!ash::DisplayLayout::ConvertFromValue(it.value(), &layout)) {
       LOG(WARNING) << "Invalid preference value for " << it.key();
@@ -111,7 +112,8 @@ void LoadDisplayProperties() {
   PrefService* local_state = g_browser_process->local_state();
   const base::DictionaryValue* properties = local_state->GetDictionary(
       prefs::kDisplayProperties);
-  for (DictionaryValue::Iterator it(*properties); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*properties);
+       !it.IsAtEnd(); it.Advance()) {
     const base::DictionaryValue* dict_value = NULL;
     if (!it.value().GetAsDictionary(&dict_value) || dict_value == NULL)
       continue;

@@ -286,7 +286,7 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
     ExtensionPrefsScope scope) {
   for (base::ListValue::const_iterator it = list->begin();
        it != list->end(); ++it) {
-    if ((*it)->GetType() != Value::TYPE_DICTIONARY) {
+    if ((*it)->GetType() != base::Value::TYPE_DICTIONARY) {
       NOTREACHED();
       continue;
     }

@@ -185,11 +185,11 @@ DevToolsFileHelper::FileSystem CreateFileSystemStruct(
 }
 
 set<std::string> GetAddedFileSystemPaths(Profile* profile) {
-  const DictionaryValue* file_systems_paths_value =
+  const base::DictionaryValue* file_systems_paths_value =
       profile->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
   set<std::string> result;
-  for (DictionaryValue::Iterator it(*file_systems_paths_value); !it.IsAtEnd();
-       it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*file_systems_paths_value);
+       !it.IsAtEnd(); it.Advance()) {
     result.insert(it.key());
   }
   return result;
@@ -229,11 +229,11 @@ void DevToolsFileHelper::Save(const std::string& url,
     return;
   }
 
-  const DictionaryValue* file_map =
+  const base::DictionaryValue* file_map =
       profile_->GetPrefs()->GetDictionary(prefs::kDevToolsEditedFiles);
   base::FilePath initial_path;
 
-  const Value* path_value;
+  const base::Value* path_value;
   if (file_map->Get(base::MD5String(url), &path_value))
     base::GetValueAsFilePath(*path_value, &initial_path);
 
@@ -289,7 +289,7 @@ void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
 
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsEditedFiles);
-  DictionaryValue* files_map = update.Get();
+  base::DictionaryValue* files_map = update.Get();
   files_map->SetWithoutPathExpansion(base::MD5String(url),
                                      base::CreateFilePathValue(path));
   callback.Run();
@@ -343,7 +343,7 @@ void DevToolsFileHelper::InnerAddFileSystem(
     const base::FilePath& path) {
   std::string file_system_path = path.AsUTF8Unsafe();
 
-  const DictionaryValue* file_systems_paths_value =
+  const base::DictionaryValue* file_systems_paths_value =
       profile_->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
   if (file_systems_paths_value->HasKey(file_system_path)) {
     callback.Run(FileSystem());
@@ -377,9 +377,9 @@ void DevToolsFileHelper::AddUserConfirmedFileSystem(
 
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsFileSystemPaths);
-  DictionaryValue* file_systems_paths_value = update.Get();
-  file_systems_paths_value->SetWithoutPathExpansion(file_system_path,
-                                                    Value::CreateNullValue());
+  base::DictionaryValue* file_systems_paths_value = update.Get();
+  file_systems_paths_value->SetWithoutPathExpansion(
+      file_system_path, base::Value::CreateNullValue());
 
   FileSystem filesystem = CreateFileSystemStruct(web_contents_,
                                                  file_system_id,
@@ -417,7 +417,7 @@ void DevToolsFileHelper::RemoveFileSystem(const std::string& file_system_path) {
 
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsFileSystemPaths);
-  DictionaryValue* file_systems_paths_value = update.Get();
+  base::DictionaryValue* file_systems_paths_value = update.Get();
   file_systems_paths_value->RemoveWithoutPathExpansion(file_system_path, NULL);
 }
 

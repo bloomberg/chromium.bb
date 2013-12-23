@@ -58,7 +58,8 @@ AccessibilityControlInfo::AccessibilityControlInfo(
 AccessibilityControlInfo::~AccessibilityControlInfo() {
 }
 
-void AccessibilityControlInfo::SerializeToDict(DictionaryValue *dict) const {
+void AccessibilityControlInfo::SerializeToDict(
+    base::DictionaryValue *dict) const {
   dict->SetString(keys::kNameKey, name_);
   dict->SetString(keys::kTypeKey, type());
   if (!context_.empty())
@@ -115,7 +116,7 @@ const char* AccessibilityRadioButtonInfo::type() const {
 }
 
 void AccessibilityRadioButtonInfo::SerializeToDict(
-    DictionaryValue *dict) const {
+    base::DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetBoolean(keys::kCheckedKey, checked_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
@@ -135,7 +136,8 @@ const char* AccessibilityCheckboxInfo::type() const {
   return keys::kTypeCheckbox;
 }
 
-void AccessibilityCheckboxInfo::SerializeToDict(DictionaryValue *dict) const {
+void AccessibilityCheckboxInfo::SerializeToDict(
+    base::DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetBoolean(keys::kCheckedKey, checked_);
 }
@@ -155,7 +157,7 @@ const char* AccessibilityTabInfo::type() const {
   return keys::kTypeTab;
 }
 
-void AccessibilityTabInfo::SerializeToDict(DictionaryValue *dict) const {
+void AccessibilityTabInfo::SerializeToDict(base::DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetInteger(keys::kItemIndexKey, tab_index_);
   dict->SetInteger(keys::kItemCountKey, tab_count_);
@@ -178,7 +180,8 @@ const char* AccessibilityComboBoxInfo::type() const {
   return keys::kTypeComboBox;
 }
 
-void AccessibilityComboBoxInfo::SerializeToDict(DictionaryValue *dict) const {
+void AccessibilityComboBoxInfo::SerializeToDict(
+    base::DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetString(keys::kValueKey, value_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
@@ -200,7 +203,8 @@ const char* AccessibilityTextBoxInfo::type() const {
   return keys::kTypeTextBox;
 }
 
-void AccessibilityTextBoxInfo::SerializeToDict(DictionaryValue *dict) const {
+void AccessibilityTextBoxInfo::SerializeToDict(
+    base::DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetString(keys::kValueKey, value_);
   dict->SetBoolean(keys::kPasswordKey, password_);
@@ -225,7 +229,8 @@ const char* AccessibilityListBoxInfo::type() const {
   return keys::kTypeListBox;
 }
 
-void AccessibilityListBoxInfo::SerializeToDict(DictionaryValue *dict) const {
+void AccessibilityListBoxInfo::SerializeToDict(
+    base::DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetString(keys::kValueKey, value_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
@@ -258,7 +263,8 @@ const char* AccessibilityMenuItemInfo::type() const {
   return keys::kTypeMenuItem;
 }
 
-void AccessibilityMenuItemInfo::SerializeToDict(DictionaryValue *dict) const {
+void AccessibilityMenuItemInfo::SerializeToDict(
+    base::DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetBoolean(keys::kHasSubmenuKey, has_submenu_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
@@ -295,7 +301,8 @@ const char* AccessibilityTreeItemInfo::type() const {
   return keys::kTypeTreeItem;
 }
 
-void AccessibilityTreeItemInfo::SerializeToDict(DictionaryValue *dict) const {
+void AccessibilityTreeItemInfo::SerializeToDict(
+    base::DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetInteger(keys::kItemDepthKey, item_depth_);
   dict->SetInteger(keys::kItemIndexKey, item_index_);
@@ -317,7 +324,8 @@ const char* AccessibilitySliderInfo::type() const {
   return keys::kTypeSlider;
 }
 
-void AccessibilitySliderInfo::SerializeToDict(DictionaryValue *dict) const {
+void AccessibilitySliderInfo::SerializeToDict(
+    base::DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetString(keys::kStringValueKey, value_);
 }

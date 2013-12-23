@@ -22,14 +22,14 @@ OwnerFlagsStorage::OwnerFlagsStorage(PrefService *prefs,
       cros_settings_(cros_settings) {
   // Make this code more unit test friendly.
   if (g_browser_process->local_state()) {
-    const ListValue* legacy_experiments =
+    const base::ListValue* legacy_experiments =
         g_browser_process->local_state()->GetList(
             prefs::kEnabledLabsExperiments);
     if (!legacy_experiments->empty()) {
       // If there are any flags set in local state migrate them to the owner's
       // prefs and device settings.
       std::set<std::string> flags;
-      for (ListValue::const_iterator it = legacy_experiments->begin();
+      for (base::ListValue::const_iterator it = legacy_experiments->begin();
            it != legacy_experiments->end(); ++it) {
         std::string experiment_name;
         if (!(*it)->GetAsString(&experiment_name)) {

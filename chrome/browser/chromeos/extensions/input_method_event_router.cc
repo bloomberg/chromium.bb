@@ -36,8 +36,8 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   if (!router->HasEventListener(extensions::event_names::kOnInputMethodChanged))
     return;
 
-  scoped_ptr<ListValue> args(new ListValue());
-  StringValue *input_method_name = new StringValue(
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  base::StringValue *input_method_name = new base::StringValue(
       extensions::InputMethodAPI::GetInputMethodForXkb(
           manager->GetCurrentInputMethod().id()));
   args->Append(input_method_name);

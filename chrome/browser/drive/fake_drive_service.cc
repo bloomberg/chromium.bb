@@ -126,15 +126,15 @@ void EntryActionCallbackAdapter(
   callback.Run(error);
 }
 
-void ClearPropatiesForPermanentDelete(DictionaryValue* entry) {
-  scoped_ptr<DictionaryValue> new_entry(new DictionaryValue);
+void ClearPropatiesForPermanentDelete(base::DictionaryValue* entry) {
+  scoped_ptr<base::DictionaryValue> new_entry(new base::DictionaryValue);
   const char* kPreservedProperties[] = {
     "docs$removed", "docs$changestamp", "gd$resourceId", "id", "updated"
   };
 
   for (size_t i = 0; i < arraysize(kPreservedProperties); ++i) {
     const char* key = kPreservedProperties[i];
-    scoped_ptr<Value> value;
+    scoped_ptr<base::Value> value;
     if (entry->Remove(key, &value))
       new_entry->Set(key, value.release());
   }
@@ -199,7 +199,7 @@ FakeDriveService::~FakeDriveService() {
 bool FakeDriveService::LoadResourceListForWapi(
     const std::string& relative_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  scoped_ptr<Value> raw_value = test_util::LoadJSONFile(relative_path);
+  scoped_ptr<base::Value> raw_value = test_util::LoadJSONFile(relative_path);
   base::DictionaryValue* as_dict = NULL;
   scoped_ptr<base::Value> feed;
   base::DictionaryValue* feed_as_dict = NULL;
@@ -606,7 +606,7 @@ CancelCallback FakeDriveService::DeleteResource(
           return CancelCallback();
         }
 
-        entry->Set("docs$removed", new DictionaryValue);
+        entry->Set("docs$removed", new base::DictionaryValue);
         AddNewChangestamp(entry);
         ClearPropatiesForPermanentDelete(entry);
         base::MessageLoop::current()->PostTask(
@@ -646,7 +646,7 @@ CancelCallback FakeDriveService::TrashResource(
         if (entry->HasKey("gd$deleted") || entry->HasKey("docs$removed")) {
           error = HTTP_NOT_FOUND;
         } else {
-          entry->Set("gd$deleted", new DictionaryValue);
+          entry->Set("gd$deleted", new base::DictionaryValue);
           AddNewChangestamp(entry);
           error = HTTP_SUCCESS;
         }
@@ -775,7 +775,7 @@ CancelCallback FakeDriveService::CopyResource(
           entry->GetString("gd$resourceId.$t", &current_resource_id) &&
           resource_id == current_resource_id) {
         // Make a copy and set the new resource ID and the new title.
-        scoped_ptr<DictionaryValue> copied_entry(entry->DeepCopy());
+        scoped_ptr<base::DictionaryValue> copied_entry(entry->DeepCopy());
         copied_entry->SetString("gd$resourceId.$t",
                                 resource_id + "_copied");
         copied_entry->SetString("title.$t", new_title);
@@ -1097,7 +1097,7 @@ CancelCallback FakeDriveService::InitiateUploadExistingFile(
     return CancelCallback();
   }
 
-  DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
   if (!entry) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -1205,7 +1205,7 @@ CancelCallback FakeDriveService::ResumeUpload(
   if (session->resource_id.empty()) {
     DCHECK(!session->parent_resource_id.empty());
     DCHECK(!session->title.empty());
-    const DictionaryValue* new_entry = AddNewEntry(
+    const base::DictionaryValue* new_entry = AddNewEntry(
         session->content_type,
         content_data,
         session->parent_resource_id,
@@ -1222,7 +1222,7 @@ CancelCallback FakeDriveService::ResumeUpload(
     return CancelCallback();
   }
 
-  DictionaryValue* entry = FindEntryByResourceId(session->resource_id);
+  base::DictionaryValue* entry = FindEntryByResourceId(session->resource_id);
   if (!entry) {
     completion_callback.Run(HTTP_NOT_FOUND, scoped_ptr<ResourceEntry>());
     return CancelCallback();
@@ -1563,7 +1563,7 @@ const base::DictionaryValue* FakeDriveService::AddNewEntry(
 
   // If there are no entries, prepare an empty entry to add.
   if (!resource_list_value_->HasKey("entry"))
-    resource_list_value_->Set("entry", new ListValue);
+    resource_list_value_->Set("entry", new base::ListValue);
 
   base::DictionaryValue* raw_new_entry = new_entry.release();
   base::ListValue* entries = NULL;

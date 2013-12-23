@@ -56,8 +56,8 @@ class DeviceOAuth2TokenService::ValidatingConsumer
   // gaia::GaiaOAuthClient::Delegate implementation.
   virtual void OnRefreshTokenResponse(const std::string& access_token,
                                       int expires_in_seconds) OVERRIDE;
-  virtual void OnGetTokenInfoResponse(scoped_ptr<DictionaryValue> token_info)
-      OVERRIDE;
+  virtual void OnGetTokenInfoResponse(
+      scoped_ptr<base::DictionaryValue> token_info) OVERRIDE;
   virtual void OnOAuthError() OVERRIDE;
   virtual void OnNetworkError(int response_code) OVERRIDE;
 
@@ -127,7 +127,7 @@ void DeviceOAuth2TokenService::ValidatingConsumer::OnRefreshTokenResponse(
 }
 
 void DeviceOAuth2TokenService::ValidatingConsumer::OnGetTokenInfoResponse(
-    scoped_ptr<DictionaryValue> token_info) {
+    scoped_ptr<base::DictionaryValue> token_info) {
   std::string gaia_robot_id;
   token_info->GetString("email", &gaia_robot_id);
 

@@ -72,9 +72,9 @@ class Action : public base::RefCountedThreadSafe<Action> {
   // mutable_args() returns a pointer to the list stored in the Action which
   // can be modified in place; if the list was null an empty list is created
   // first.
-  const ListValue* args() const { return args_.get(); }
-  void set_args(scoped_ptr<ListValue> args);
-  ListValue* mutable_args();
+  const base::ListValue* args() const { return args_.get(); }
+  void set_args(scoped_ptr<base::ListValue> args);
+  base::ListValue* mutable_args();
 
   // The URL of the page which was modified or accessed.
   const GURL& page_url() const { return page_url_; }
@@ -96,9 +96,9 @@ class Action : public base::RefCountedThreadSafe<Action> {
   void set_arg_incognito(bool incognito) { arg_incognito_ = incognito; }
 
   // A dictionary where any additional data can be stored.
-  const DictionaryValue* other() const { return other_.get(); }
-  void set_other(scoped_ptr<DictionaryValue> other);
-  DictionaryValue* mutable_other();
+  const base::DictionaryValue* other() const { return other_.get(); }
+  void set_other(scoped_ptr<base::DictionaryValue> other);
+  base::DictionaryValue* mutable_other();
 
   // Helper methods for serializing and deserializing URLs into strings.  If
   // the URL is marked as incognito, then the string is prefixed with
@@ -129,13 +129,13 @@ class Action : public base::RefCountedThreadSafe<Action> {
   base::Time time_;
   ActionType action_type_;
   std::string api_name_;
-  scoped_ptr<ListValue> args_;
+  scoped_ptr<base::ListValue> args_;
   GURL page_url_;
   std::string page_title_;
   bool page_incognito_;
   GURL arg_url_;
   bool arg_incognito_;
-  scoped_ptr<DictionaryValue> other_;
+  scoped_ptr<base::DictionaryValue> other_;
   int count_;
 
   DISALLOW_COPY_AND_ASSIGN(Action);

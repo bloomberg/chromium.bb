@@ -447,7 +447,7 @@ void UserImageManagerImpl::Job::UpdateLocalState() {
   entry->Set(kImagePathNodeName, new base::StringValue(image_path_.value()));
   entry->Set(kImageIndexNodeName, new base::FundamentalValue(image_index_));
   if (!image_url_.is_empty())
-    entry->Set(kImageURLNodeName, new StringValue(image_url_.spec()));
+    entry->Set(kImageURLNodeName, new base::StringValue(image_url_.spec()));
   DictionaryPrefUpdate update(g_browser_process->local_state(),
                               kUserImageProperties);
   update->SetWithoutPathExpansion(user_id_, entry.release());
@@ -490,9 +490,9 @@ UserImageManagerImpl::~UserImageManagerImpl() {
 
 void UserImageManagerImpl::LoadUserImages(const UserList& users) {
   PrefService* local_state = g_browser_process->local_state();
-  const DictionaryValue* prefs_images_unsafe =
+  const base::DictionaryValue* prefs_images_unsafe =
       local_state->GetDictionary(kUserImages);
-  const DictionaryValue* prefs_images =
+  const base::DictionaryValue* prefs_images =
       local_state->GetDictionary(kUserImageProperties);
   if (!prefs_images && !prefs_images_unsafe)
     return;
@@ -579,7 +579,7 @@ void UserImageManagerImpl::UserLoggedIn(const std::string& user_id,
 
     if (!IsUserImageManaged(user_id) &&
         ContainsKey(users_to_migrate_, user_id)) {
-      const DictionaryValue* prefs_images_unsafe =
+      const base::DictionaryValue* prefs_images_unsafe =
           g_browser_process->local_state()->GetDictionary(kUserImages);
       const base::DictionaryValue* image_properties = NULL;
       if (prefs_images_unsafe->GetDictionaryWithoutPathExpansion(
@@ -977,7 +977,7 @@ void UserImageManagerImpl::OnJobDone(const std::string& user_id) {
   // Migration completed for |user_id|.
   users_to_migrate_.erase(user_id);
 
-  const DictionaryValue* prefs_images_unsafe =
+  const base::DictionaryValue* prefs_images_unsafe =
       g_browser_process->local_state()->GetDictionary(kUserImages);
   const base::DictionaryValue* image_properties = NULL;
   if (!prefs_images_unsafe->GetDictionaryWithoutPathExpansion(

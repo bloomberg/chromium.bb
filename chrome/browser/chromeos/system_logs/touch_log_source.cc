@@ -19,7 +19,7 @@ namespace {
 const char kHUDLogDataKey[] = "hud_log";
 
 void GetTouchLogs(system_logs::SystemLogsResponse* response) {
-  scoped_ptr<DictionaryValue> dictionary =
+  scoped_ptr<base::DictionaryValue> dictionary =
       ash::internal::TouchHudDebug::GetAllAsDictionary();
   if (!dictionary->empty()) {
     std::string touch_log;

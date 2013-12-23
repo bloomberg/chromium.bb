@@ -310,7 +310,7 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
   fileapi::FileSystemInfo info =
       fileapi::GetFileSystemInfoForChromeOS(source_url_.GetOrigin());
 
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
   dict->SetString("name", info.name);
   dict->SetString("root_url", info.root_url.spec());
@@ -322,7 +322,7 @@ bool FileBrowserPrivateRequestFileSystemFunction::RunImpl() {
 void FileWatchFunctionBase::Respond(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  SetResult(Value::CreateBooleanValue(success));
+  SetResult(base::Value::CreateBooleanValue(success));
   SendResponse(success);
 }
 
@@ -555,7 +555,7 @@ void FileBrowserPrivateStartCopyFunction::RunAfterStartCopy(
     int operation_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  SetResult(Value::CreateIntegerValue(operation_id));
+  SetResult(base::Value::CreateIntegerValue(operation_id));
   SendResponse(true);
 }
 

@@ -382,7 +382,7 @@ bool SetFontPrefExtensionFunction::RunImpl() {
   base::DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
 
-  Value* value;
+  base::Value* value;
   EXTENSION_FUNCTION_VALIDATE(details->Get(GetKey(), &value));
 
   PreferenceAPI::Get(GetProfile())

@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, SelectionFailed) {
           browser())));
 
   EXPECT_FALSE(utils::GetBoolean(result.get(), "success"));
-  DictionaryValue* entry_info;
+  base::DictionaryValue* entry_info;
   EXPECT_FALSE(result->GetDictionary("entry", &entry_info));
 }
 
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(FileBrowserHandlerExtensionTest, SuggestedFullPath) {
           browser())));
 
   EXPECT_FALSE(utils::GetBoolean(result.get(), "success"));
-  DictionaryValue* entry_info;
+  base::DictionaryValue* entry_info;
   EXPECT_FALSE(result->GetDictionary("entry", &entry_info));
 }
 

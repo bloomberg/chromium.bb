@@ -118,7 +118,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   void SetDeviceRefreshTokenInLocalState(const std::string& refresh_token) {
     scoped_testing_local_state_.Get()->SetManagedPref(
         prefs::kDeviceRobotAnyApiRefreshToken,
-        Value::CreateStringValue(refresh_token));
+        base::Value::CreateStringValue(refresh_token));
   }
 
   std::string GetValidTokenInfoResponse(const std::string email) {

@@ -730,7 +730,7 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
       }
     }
 
-    scoped_ptr<Value> data(DeserializeJsonData(json_data));
+    scoped_ptr<base::Value> data(DeserializeJsonData(json_data));
     results_updated = data.get() && ParseSuggestResults(data.get(), is_keyword);
   }
 
@@ -1073,7 +1073,8 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
   return fetcher;
 }
 
-scoped_ptr<Value> SearchProvider::DeserializeJsonData(std::string json_data) {
+scoped_ptr<base::Value> SearchProvider::DeserializeJsonData(
+    std::string json_data) {
   // The JSON response should be an array.
   for (size_t response_start_index = json_data.find("["), i = 0;
        response_start_index != std::string::npos && i < 5;
@@ -1085,17 +1086,18 @@ scoped_ptr<Value> SearchProvider::DeserializeJsonData(std::string json_data) {
     JSONStringValueSerializer deserializer(json_data);
     deserializer.set_allow_trailing_comma(true);
     int error_code = 0;
-    scoped_ptr<Value> data(deserializer.Deserialize(&error_code, NULL));
+    scoped_ptr<base::Value> data(deserializer.Deserialize(&error_code, NULL));
     if (error_code == 0)
       return data.Pass();
   }
-  return scoped_ptr<Value>();
+  return scoped_ptr<base::Value>();
 }
 
-bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
+bool SearchProvider::ParseSuggestResults(base::Value* root_val,
+                                         bool is_keyword) {
   base::string16 query;
-  ListValue* root_list = NULL;
-  ListValue* results_list = NULL;
+  base::ListValue* root_list = NULL;
+  base::ListValue* results_list = NULL;
   const base::string16& input_text =
       is_keyword ? keyword_input_.text() : input_.text();
   if (!root_val->GetAsList(&root_list) || !root_list->GetString(0, &query) ||
@@ -1103,7 +1105,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     return false;
 
   // 3rd element: Description list.
-  ListValue* descriptions = NULL;
+  base::ListValue* descriptions = NULL;
   root_list->GetList(2, &descriptions);
 
   // 4th element: Disregard the query URL list for now.
@@ -1113,10 +1115,10 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
   results->verbatim_relevance = -1;
 
   // 5th element: Optional key-value pairs from the Suggest server.
-  ListValue* types = NULL;
-  ListValue* relevances = NULL;
-  ListValue* suggestion_details = NULL;
-  DictionaryValue* extras = NULL;
+  base::ListValue* types = NULL;
+  base::ListValue* relevances = NULL;
+  base::ListValue* suggestion_details = NULL;
+  base::DictionaryValue* extras = NULL;
   int prefetch_index = -1;
   if (root_list->GetDictionary(4, &extras)) {
     extras->GetList("google:suggesttype", &types);
@@ -1135,7 +1137,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     field_trial_triggered_ |= triggered;
     field_trial_triggered_in_session_ |= triggered;
 
-    DictionaryValue* client_data = NULL;
+    base::DictionaryValue* client_data = NULL;
     if (extras->GetDictionary("google:clientdata", &client_data) && client_data)
       client_data->GetInteger("phi", &prefetch_index);
 
@@ -1182,7 +1184,7 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     } else {
       AutocompleteMatchType::Type match_type = GetAutocompleteMatchType(type);
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
-      DictionaryValue* suggestion_detail = NULL;
+      base::DictionaryValue* suggestion_detail = NULL;
       base::string16 match_contents = suggestion;
       base::string16 annotation;
       std::string suggest_query_params;

@@ -380,18 +380,18 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   SetupHandlerHostFileAccessPermissions(
       file_list, extension_.get(), handler_pid);
 
-  scoped_ptr<ListValue> event_args(new ListValue());
+  scoped_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->Append(new base::StringValue(action_id_));
-  DictionaryValue* details = new DictionaryValue();
+  base::DictionaryValue* details = new base::DictionaryValue();
   event_args->Append(details);
   // Get file definitions. These will be replaced with Entry instances by
   // dispatchEvent() method from event_binding.js.
-  ListValue* file_entries = new ListValue();
+  base::ListValue* file_entries = new base::ListValue();
   details->Set("entries", file_entries);
   for (FileDefinitionList::const_iterator iter = file_list.begin();
        iter != file_list.end();
        ++iter) {
-    DictionaryValue* file_def = new DictionaryValue();
+    base::DictionaryValue* file_def = new base::DictionaryValue();
     file_entries->Append(file_def);
     file_def->SetString("fileSystemName", file_system_name);
     file_def->SetString("fileSystemRoot", file_system_root.spec());

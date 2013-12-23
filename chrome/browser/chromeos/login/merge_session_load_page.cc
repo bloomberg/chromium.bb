@@ -77,7 +77,7 @@ void MergeSessionLoadPage::Show() {
 }
 
 std::string MergeSessionLoadPage::GetHTMLContents() {
-  DictionaryValue strings;
+  base::DictionaryValue strings;
   strings.SetString("title", web_contents_->GetTitle());
   // Set the timeout to show the page.
   strings.SetInteger("show_delay_time", kShowDelayTimeMS);

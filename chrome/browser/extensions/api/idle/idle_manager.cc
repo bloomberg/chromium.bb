@@ -189,7 +189,7 @@ void IdleManager::SetThreshold(const std::string& extension_id,
 }
 
 // static
-StringValue* IdleManager::CreateIdleValue(IdleState idle_state) {
+base::StringValue* IdleManager::CreateIdleValue(IdleState idle_state) {
   const char* description;
 
   if (idle_state == IDLE_STATE_ACTIVE) {
@@ -200,7 +200,7 @@ StringValue* IdleManager::CreateIdleValue(IdleState idle_state) {
     description = keys::kStateLocked;
   }
 
-  return new StringValue(description);
+  return new base::StringValue(description);
 }
 
 void IdleManager::SetEventDelegateForTest(

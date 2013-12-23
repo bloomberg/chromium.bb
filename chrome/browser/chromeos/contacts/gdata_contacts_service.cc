@@ -156,7 +156,7 @@ std::string PrettyPrintValue(const base::Value& value) {
 
 // Assigns the value at |path| within |dict| to |out|, returning false if the
 // path wasn't present.  Unicode byte order marks are removed from the string.
-bool GetCleanedString(const DictionaryValue& dict,
+bool GetCleanedString(const base::DictionaryValue& dict,
                       const std::string& path,
                       std::string* out) {
   if (!dict.GetString(path, out))
@@ -170,7 +170,7 @@ bool GetCleanedString(const DictionaryValue& dict,
 
 // Returns whether an address is primary, given a dictionary representing a
 // single address.
-bool IsAddressPrimary(const DictionaryValue& address_dict) {
+bool IsAddressPrimary(const base::DictionaryValue& address_dict) {
   std::string primary;
   address_dict.GetString(kAddressPrimaryField, &primary);
   return primary == kAddressPrimaryTrueValue;
@@ -178,7 +178,7 @@ bool IsAddressPrimary(const DictionaryValue& address_dict) {
 
 // Initializes an AddressType message given a dictionary representing a single
 // address.
-void InitAddressType(const DictionaryValue& address_dict,
+void InitAddressType(const base::DictionaryValue& address_dict,
                      Contact_AddressType* type) {
   DCHECK(type);
   type->Clear();
@@ -200,7 +200,7 @@ void InitAddressType(const DictionaryValue& address_dict,
 // Maps the protocol from a dictionary representing a contact's IM address to a
 // contacts::Contact_InstantMessagingAddress_Protocol value.
 contacts::Contact_InstantMessagingAddress_Protocol
-GetInstantMessagingProtocol(const DictionaryValue& im_dict) {
+GetInstantMessagingProtocol(const base::DictionaryValue& im_dict) {
   std::string protocol;
   im_dict.GetString(kInstantMessagingProtocolField, &protocol);
   if (protocol == kInstantMessagingProtocolAimValue)
@@ -225,13 +225,13 @@ GetInstantMessagingProtocol(const DictionaryValue& im_dict) {
 
 // Gets the photo URL from a contact's dictionary (within the "entry" list).
 // Returns an empty string if no photo was found.
-std::string GetPhotoUrl(const DictionaryValue& dict) {
-  const ListValue* link_list = NULL;
+std::string GetPhotoUrl(const base::DictionaryValue& dict) {
+  const base::ListValue* link_list = NULL;
   if (!dict.GetList(kLinkField, &link_list))
     return std::string();
 
   for (size_t i = 0; i < link_list->GetSize(); ++i) {
-    const DictionaryValue* link_dict = NULL;
+    const base::DictionaryValue* link_dict = NULL;
     if (!link_list->GetDictionary(i, &link_dict))
       continue;
 
@@ -286,10 +286,10 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
   GetCleanedString(dict, kNamePrefixField, contact->mutable_name_prefix());
   GetCleanedString(dict, kNameSuffixField, contact->mutable_name_suffix());
 
-  const ListValue* email_list = NULL;
+  const base::ListValue* email_list = NULL;
   if (dict.GetList(kEmailField, &email_list)) {
     for (size_t i = 0; i < email_list->GetSize(); ++i) {
-      const DictionaryValue* email_dict = NULL;
+      const base::DictionaryValue* email_dict = NULL;
       if (!email_list->GetDictionary(i, &email_dict))
         return false;
 
@@ -304,10 +304,10 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
     }
   }
 
-  const ListValue* phone_list = NULL;
+  const base::ListValue* phone_list = NULL;
   if (dict.GetList(kPhoneField, &phone_list)) {
     for (size_t i = 0; i < phone_list->GetSize(); ++i) {
-      const DictionaryValue* phone_dict = NULL;
+      const base::DictionaryValue* phone_dict = NULL;
       if (!phone_list->GetDictionary(i, &phone_dict))
         return false;
 
@@ -322,10 +322,10 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
     }
   }
 
-  const ListValue* address_list = NULL;
+  const base::ListValue* address_list = NULL;
   if (dict.GetList(kPostalAddressField, &address_list)) {
     for (size_t i = 0; i < address_list->GetSize(); ++i) {
-      const DictionaryValue* address_dict = NULL;
+      const base::DictionaryValue* address_dict = NULL;
       if (!address_list->GetDictionary(i, &address_dict))
         return false;
 
@@ -341,10 +341,10 @@ bool FillContactFromDictionary(const base::DictionaryValue& dict,
     }
   }
 
-  const ListValue* im_list = NULL;
+  const base::ListValue* im_list = NULL;
   if (dict.GetList(kInstantMessagingField, &im_list)) {
     for (size_t i = 0; i < im_list->GetSize(); ++i) {
-      const DictionaryValue* im_dict = NULL;
+      const base::DictionaryValue* im_dict = NULL;
       if (!im_list->GetDictionary(i, &im_dict))
         return false;
 
@@ -624,25 +624,25 @@ class GDataContactsService::DownloadContactsRequest {
   // Returns true on success.
   bool ProcessContactsFeedData(const base::Value& feed_data) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    const DictionaryValue* toplevel_dict = NULL;
+    const base::DictionaryValue* toplevel_dict = NULL;
     if (!feed_data.GetAsDictionary(&toplevel_dict)) {
       LOG(WARNING) << "Top-level object is not a dictionary";
       return false;
     }
 
-    const DictionaryValue* feed_dict = NULL;
+    const base::DictionaryValue* feed_dict = NULL;
     if (!toplevel_dict->GetDictionary(kFeedField, &feed_dict)) {
       LOG(WARNING) << "Feed dictionary missing";
       return false;
     }
 
     // Check the category field to confirm that this is actually a contact feed.
-    const ListValue* category_list = NULL;
+    const base::ListValue* category_list = NULL;
     if (!feed_dict->GetList(kCategoryField, &category_list)) {
       LOG(WARNING) << "Category list missing";
       return false;
     }
-    const DictionaryValue* category_dict = NULL;
+    const base::DictionaryValue* category_dict = NULL;
     if (category_list->GetSize() != 1 ||
         !category_list->GetDictionary(0, &category_dict)) {
       LOG(WARNING) << "Unable to get dictionary from category list of size "
@@ -661,16 +661,16 @@ class GDataContactsService::DownloadContactsRequest {
 
     // A missing entry list means no entries (maybe we're doing an incremental
     // update and nothing has changed).
-    const ListValue* entry_list = NULL;
+    const base::ListValue* entry_list = NULL;
     if (!feed_dict->GetList(kEntryField, &entry_list))
       return true;
 
     contacts_needing_photo_downloads_.reserve(entry_list->GetSize());
 
-    for (ListValue::const_iterator entry_it = entry_list->begin();
+    for (base::ListValue::const_iterator entry_it = entry_list->begin();
          entry_it != entry_list->end(); ++entry_it) {
       const size_t index = (entry_it - entry_list->begin());
-      const DictionaryValue* contact_dict = NULL;
+      const base::DictionaryValue* contact_dict = NULL;
       if (!(*entry_it)->GetAsDictionary(&contact_dict)) {
         LOG(WARNING) << "Entry " << index << " isn't a dictionary";
         return false;

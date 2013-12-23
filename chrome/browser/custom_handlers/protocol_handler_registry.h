@@ -277,11 +277,11 @@ class ProtocolHandlerRegistry : public BrowserContextKeyedService {
 
   // Returns a JSON list of protocol handlers. The caller is responsible for
   // deleting this Value.
-  Value* EncodeRegisteredHandlers();
+  base::Value* EncodeRegisteredHandlers();
 
   // Returns a JSON list of ignored protocol handlers. The caller is
   // responsible for deleting this Value.
-  Value* EncodeIgnoredHandlers();
+  base::Value* EncodeIgnoredHandlers();
 
   // Sends a notification of the given type to the NotificationService.
   void NotifyChanged();
@@ -291,7 +291,7 @@ class ProtocolHandlerRegistry : public BrowserContextKeyedService {
 
   // Get the DictionaryValues stored under the given pref name that are valid
   // ProtocolHandler values.
-  std::vector<const DictionaryValue*> GetHandlersFromPref(
+  std::vector<const base::DictionaryValue*> GetHandlersFromPref(
       const char* pref_name) const;
 
   // Ignores future requests to register the given protocol handler.

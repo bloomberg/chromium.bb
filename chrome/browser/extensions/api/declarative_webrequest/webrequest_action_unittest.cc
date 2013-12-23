@@ -41,15 +41,15 @@ namespace {
 const char kUnknownActionType[] = "unknownType";
 
 scoped_ptr<WebRequestActionSet> CreateSetOfActions(const char* json) {
-  scoped_ptr<Value> parsed_value(base::test::ParseJson(json));
-  const ListValue* parsed_list;
+  scoped_ptr<base::Value> parsed_value(base::test::ParseJson(json));
+  const base::ListValue* parsed_list;
   CHECK(parsed_value->GetAsList(&parsed_list));
 
   WebRequestActionSet::AnyVector actions;
-  for (ListValue::const_iterator it = parsed_list->begin();
+  for (base::ListValue::const_iterator it = parsed_list->begin();
        it != parsed_list->end();
        ++it) {
-    const DictionaryValue* dict;
+    const base::DictionaryValue* dict;
     CHECK((*it)->GetAsDictionary(&dict));
     actions.push_back(linked_ptr<base::Value>(dict->DeepCopy()));
   }
@@ -230,10 +230,10 @@ TEST(WebRequestActionTest, CreateActionSet) {
   EXPECT_TRUE(result->actions().empty());
   EXPECT_EQ(std::numeric_limits<int>::min(), result->GetMinimumPriority());
 
-  DictionaryValue correct_action;
+  base::DictionaryValue correct_action;
   correct_action.SetString(keys::kInstanceTypeKey, keys::kIgnoreRulesType);
   correct_action.SetInteger(keys::kLowerPriorityThanKey, 10);
-  DictionaryValue incorrect_action;
+  base::DictionaryValue incorrect_action;
   incorrect_action.SetString(keys::kInstanceTypeKey, kUnknownActionType);
 
   // Test success.

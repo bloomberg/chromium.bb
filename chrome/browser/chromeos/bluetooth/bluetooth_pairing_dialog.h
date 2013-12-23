@@ -46,7 +46,7 @@ class BluetoothPairingDialog : public ui::WebDialogDelegate {
 
  private:
   gfx::NativeWindow parent_window_;
-  DictionaryValue device_data_;
+  base::DictionaryValue device_data_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothPairingDialog);
 };

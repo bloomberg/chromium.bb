@@ -54,20 +54,20 @@ class ComponentExtensionIMEManagerImpl
 
   // Reads manifest.json file in |file_path|. This function must be called on
   // file thread.
-  static scoped_ptr<DictionaryValue> GetManifest(
+  static scoped_ptr<base::DictionaryValue> GetManifest(
       const base::FilePath& file_path);
 
   // Reads extension information: description, option page. This function
   // returns true on success, otherwise returns false. This function must be
   // called on file thread.
-  static bool ReadExtensionInfo(const DictionaryValue& manifest,
+  static bool ReadExtensionInfo(const base::DictionaryValue& manifest,
                                 const std::string& extension_id,
                                 ComponentExtensionIME* out);
 
   // Reads each engine component in |dict|. |dict| is given by GetList with
   // kInputComponents key from manifest. This function returns true on success,
   // otherwise retrun false. This function must be called on FILE thread.
-  static bool ReadEngineComponent(const DictionaryValue& dict,
+  static bool ReadEngineComponent(const base::DictionaryValue& dict,
                                   ComponentExtensionEngine* out);
 
   // True if initialized.

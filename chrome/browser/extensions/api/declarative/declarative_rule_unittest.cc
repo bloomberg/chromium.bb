@@ -27,7 +27,7 @@ linked_ptr<T> ScopedToLinkedPtr(scoped_ptr<T> ptr) {
   return linked_ptr<T>(ptr.release());
 }
 
-scoped_ptr<DictionaryValue> SimpleManifest() {
+scoped_ptr<base::DictionaryValue> SimpleManifest() {
   return DictionaryBuilder()
       .Set("name", "extension")
       .Set("manifest_version", 2)

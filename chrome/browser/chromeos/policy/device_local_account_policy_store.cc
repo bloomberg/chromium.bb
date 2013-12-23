@@ -95,21 +95,21 @@ void DeviceLocalAccountPolicyStore::UpdatePolicy(
   policy_map_.Set(key::kShelfAutoHideBehavior,
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
-                  Value::CreateStringValue("Never"),
+                  base::Value::CreateStringValue("Never"),
                   NULL);
   // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
   // red logout button is shown in the ash system tray.
   policy_map_.Set(key::kShowLogoutButtonInTray,
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
-                  Value::CreateBooleanValue(true),
+                  base::Value::CreateBooleanValue(true),
                   NULL);
   // Force the |FullscreenAllowed| policy to |false|, ensuring that the ash
   // shelf cannot be hidden by entering fullscreen mode.
   policy_map_.Set(key::kFullscreenAllowed,
                   POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER,
-                  Value::CreateBooleanValue(false),
+                  base::Value::CreateBooleanValue(false),
                   NULL);
 
   status_ = STATUS_OK;

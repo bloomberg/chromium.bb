@@ -59,7 +59,7 @@ bool InternalExtensionProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    Value* value) {
+    base::Value* value) {
   return false;
 }
 
@@ -155,7 +155,7 @@ void InternalExtensionProvider::SetContentSettingForExtensionAndResource(
                           secondary_pattern,
                           CONTENT_SETTINGS_TYPE_PLUGINS,
                           resource,
-                          Value::CreateIntegerValue(setting));
+                          base::Value::CreateIntegerValue(setting));
     }
   }
   NotifyObservers(primary_pattern,

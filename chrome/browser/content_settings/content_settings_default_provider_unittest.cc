@@ -49,7 +49,7 @@ TEST_F(DefaultProviderTest, DefaultValues) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&provider_,
                               GURL(),
@@ -70,7 +70,7 @@ TEST_F(DefaultProviderTest, DefaultValues) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&provider_,
                               GURL(),
@@ -101,7 +101,7 @@ TEST_F(DefaultProviderTest, IgnoreNonDefaultSettings) {
                               std::string(),
                               false));
   scoped_ptr<base::Value> value(
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   bool owned = provider_.SetWebsiteSetting(
       ContentSettingsPattern::FromURL(primary_url),
       ContentSettingsPattern::FromURL(secondary_url),
@@ -129,7 +129,7 @@ TEST_F(DefaultProviderTest, Observer) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_IMAGES,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
 
   EXPECT_CALL(mock_observer,
               OnContentSettingChanged(
@@ -139,7 +139,7 @@ TEST_F(DefaultProviderTest, Observer) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_GEOLOCATION,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
 }
 
 
@@ -147,7 +147,7 @@ TEST_F(DefaultProviderTest, ObserveDefaultPref) {
   PrefService* prefs = profile_.GetPrefs();
 
   // Make a copy of the default pref value so we can reset it later.
-  scoped_ptr<Value> default_value(prefs->FindPreference(
+  scoped_ptr<base::Value> default_value(prefs->FindPreference(
       prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
 
   provider_.SetWebsiteSetting(
@@ -155,7 +155,7 @@ TEST_F(DefaultProviderTest, ObserveDefaultPref) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&provider_,
                               GURL(),
@@ -165,7 +165,7 @@ TEST_F(DefaultProviderTest, ObserveDefaultPref) {
                               false));
 
   // Make a copy of the pref's new value so we can reset it later.
-  scoped_ptr<Value> new_value(prefs->FindPreference(
+  scoped_ptr<base::Value> new_value(prefs->FindPreference(
       prefs::kDefaultContentSettings)->GetValue()->DeepCopy());
 
   // Clearing the backing pref should also clear the internal cache.
@@ -213,7 +213,7 @@ TEST_F(DefaultProviderTest, OffTheRecord) {
       ContentSettingsPattern::Wildcard(),
       CONTENT_SETTINGS_TYPE_COOKIES,
       std::string(),
-      Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             GetContentSetting(&provider_,
                               GURL(),
@@ -232,7 +232,7 @@ TEST_F(DefaultProviderTest, OffTheRecord) {
 
   // Changing content settings on the incognito provider should be ignored.
   scoped_ptr<base::Value> value(
-      Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
+      base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW));
   bool owned = otr_provider.SetWebsiteSetting(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::Wildcard(),

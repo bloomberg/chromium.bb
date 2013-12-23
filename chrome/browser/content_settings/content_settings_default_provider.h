@@ -45,7 +45,7 @@ class DefaultProvider : public ObservableProvider {
       const ContentSettingsPattern& secondary_pattern,
       ContentSettingsType content_type,
       const ResourceIdentifier& resource_identifier,
-      Value* value) OVERRIDE;
+      base::Value* value) OVERRIDE;
 
   virtual void ClearAllContentSettingsRules(
       ContentSettingsType content_type) OVERRIDE;

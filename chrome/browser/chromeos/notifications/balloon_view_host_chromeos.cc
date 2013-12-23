@@ -41,7 +41,7 @@ bool BalloonViewHost::HandleContextMenu(
 void BalloonViewHost::WebUISend(WebContents* tab,
                                 const GURL& source_url,
                                 const std::string& name,
-                                const ListValue& args) {
+                                const base::ListValue& args) {
   // Look up the callback for this message.
   MessageCallbackMap::const_iterator callback =
       message_callbacks_.find(name);

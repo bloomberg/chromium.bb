@@ -36,7 +36,7 @@ bool CustomExtensionProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    Value* value) {
+    base::Value* value) {
   return false;
 }
 

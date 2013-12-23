@@ -116,7 +116,7 @@ void OnRemoveUserComplete(const std::string& user_email,
 // Helper function that copies users from |users_list| to |users_vector| and
 // |users_set|. Duplicates and users already present in |existing_users| are
 // skipped.
-void ParseUserList(const ListValue& users_list,
+void ParseUserList(const base::ListValue& users_list,
                    const std::set<std::string>& existing_users,
                    std::vector<std::string>* users_vector,
                    std::set<std::string>* users_set) {
@@ -625,7 +625,7 @@ User::OAuthTokenStatus UserManagerImpl::LoadUserOAuthStatus(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   PrefService* local_state = g_browser_process->local_state();
-  const DictionaryValue* prefs_oauth_status =
+  const base::DictionaryValue* prefs_oauth_status =
       local_state->GetDictionary(kUserOAuthTokenStatus);
   int oauth_token_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
   if (prefs_oauth_status &&
@@ -1026,14 +1026,15 @@ void UserManagerImpl::EnsureUsersLoaded() {
     supervised_user_manager_->RollbackUserCreationTransaction();
 
   PrefService* local_state = g_browser_process->local_state();
-  const ListValue* prefs_regular_users = local_state->GetList(kRegularUsers);
-  const ListValue* prefs_public_accounts =
+  const base::ListValue* prefs_regular_users =
+      local_state->GetList(kRegularUsers);
+  const base::ListValue* prefs_public_accounts =
       local_state->GetList(kPublicAccounts);
-  const DictionaryValue* prefs_display_names =
+  const base::DictionaryValue* prefs_display_names =
       local_state->GetDictionary(kUserDisplayName);
-  const DictionaryValue* prefs_given_names =
+  const base::DictionaryValue* prefs_given_names =
       local_state->GetDictionary(kUserGivenName);
-  const DictionaryValue* prefs_display_emails =
+  const base::DictionaryValue* prefs_display_emails =
       local_state->GetDictionary(kUserDisplayEmail);
 
   // Load regular users and locally managed users.
@@ -1153,7 +1154,7 @@ const User* UserManagerImpl::FindUserInList(const std::string& user_id) const {
 
 const bool UserManagerImpl::UserExistsInList(const std::string& user_id) const {
   PrefService* local_state = g_browser_process->local_state();
-  const ListValue* user_list = local_state->GetList(kRegularUsers);
+  const base::ListValue* user_list = local_state->GetList(kRegularUsers);
   for (size_t i = 0; i < user_list->GetSize(); ++i) {
     std::string email;
     if (user_list->GetString(i, &email) && (user_id == email))

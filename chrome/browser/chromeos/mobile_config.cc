@@ -63,13 +63,13 @@ namespace chromeos {
 
 // MobileConfig::CarrierDeal implementation. -----------------------------------
 
-MobileConfig::CarrierDeal::CarrierDeal(const DictionaryValue* deal_dict)
+MobileConfig::CarrierDeal::CarrierDeal(const base::DictionaryValue* deal_dict)
     : notification_count_(0),
       localized_strings_(NULL) {
   deal_dict->GetString(kDealIdAttr, &deal_id_);
 
   // Extract list of deal locales.
-  const ListValue* locale_list = NULL;
+  const base::ListValue* locale_list = NULL;
   if (deal_dict->GetList(kDealLocalesAttr, &locale_list)) {
     for (size_t i = 0; i < locale_list->GetSize(); ++i) {
       std::string locale;
@@ -95,7 +95,7 @@ std::string MobileConfig::CarrierDeal::GetLocalizedString(
     const std::string& locale, const std::string& id) const {
   std::string result;
   if (localized_strings_) {
-    const DictionaryValue* locale_dict = NULL;
+    const base::DictionaryValue* locale_dict = NULL;
     if (localized_strings_->GetDictionary(locale, &locale_dict) &&
         locale_dict->GetString(id, &result)) {
       return result;
@@ -109,7 +109,7 @@ std::string MobileConfig::CarrierDeal::GetLocalizedString(
 
 // MobileConfig::Carrier implementation. ---------------------------------------
 
-MobileConfig::Carrier::Carrier(const DictionaryValue* carrier_dict,
+MobileConfig::Carrier::Carrier(const base::DictionaryValue* carrier_dict,
                                const std::string& initial_locale)
     : show_portal_button_(false) {
   InitFromDictionary(carrier_dict, initial_locale);
@@ -158,10 +158,10 @@ void MobileConfig::Carrier::InitFromDictionary(
   }
 
   // Extract list of external IDs for this carrier.
-  const ListValue* id_list = NULL;
+  const base::ListValue* id_list = NULL;
   if (carrier_dict->GetList(kCarrierIdsAttr, &id_list)) {
     for (size_t i = 0; i < id_list->GetSize(); ++i) {
-      const DictionaryValue* id_dict = NULL;
+      const base::DictionaryValue* id_dict = NULL;
       std::string external_id;
       if (id_list->GetDictionary(i, &id_dict) &&
           id_dict->GetString(kCarrierIdAttr, &external_id)) {
@@ -171,10 +171,10 @@ void MobileConfig::Carrier::InitFromDictionary(
   }
 
   // Extract list of deals for this carrier.
-  const ListValue* deals_list = NULL;
+  const base::ListValue* deals_list = NULL;
   if (carrier_dict->GetList(kDealsAttr, &deals_list)) {
     for (size_t i = 0; i < deals_list->GetSize(); ++i) {
-      const DictionaryValue* deal_dict = NULL;
+      const base::DictionaryValue* deal_dict = NULL;
       if (deals_list->GetDictionary(i, &deal_dict)) {
         scoped_ptr<CarrierDeal> deal(new CarrierDeal(deal_dict));
         // Filter out deals by initial_locale right away.
@@ -197,7 +197,7 @@ void MobileConfig::Carrier::RemoveDeals() {
 
 // MobileConfig::LocaleConfig implementation. ----------------------------------
 
-MobileConfig::LocaleConfig::LocaleConfig(DictionaryValue* locale_dict) {
+MobileConfig::LocaleConfig::LocaleConfig(base::DictionaryValue* locale_dict) {
   InitFromDictionary(locale_dict);
 }
 
@@ -254,11 +254,11 @@ bool MobileConfig::LoadManifestFromString(const std::string& manifest) {
   }
 
   // Other parts are optional and are the same among global/local config.
-  DictionaryValue* carriers = NULL;
+  base::DictionaryValue* carriers = NULL;
   if (root_.get() && root_->GetDictionary(kCarriersAttr, &carriers)) {
-    for (DictionaryValue::Iterator iter(*carriers); !iter.IsAtEnd();
+    for (base::DictionaryValue::Iterator iter(*carriers); !iter.IsAtEnd();
          iter.Advance()) {
-      const DictionaryValue* carrier_dict = NULL;
+      const base::DictionaryValue* carrier_dict = NULL;
       if (iter.value().GetAsDictionary(&carrier_dict)) {
         const std::string& internal_id = iter.key();
         Carriers::iterator inner_iter = carriers_.find(internal_id);
@@ -285,10 +285,10 @@ bool MobileConfig::LoadManifestFromString(const std::string& manifest) {
     }
   }
 
-  DictionaryValue* initial_locales = NULL;
+  base::DictionaryValue* initial_locales = NULL;
   if (root_.get() && root_->GetDictionary(kInitialLocalesAttr,
                                           &initial_locales)) {
-    DictionaryValue* locale_config_dict = NULL;
+    base::DictionaryValue* locale_config_dict = NULL;
     // Search for a config based on current initial locale.
     if (initial_locales->GetDictionary(initial_locale_,
                                        &locale_config_dict)) {

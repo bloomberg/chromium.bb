@@ -182,7 +182,7 @@ void ShowLoginWizardFinish(
     const std::string& first_screen_name,
     const chromeos::StartupCustomizationDocument* startup_manifest,
     chromeos::LoginDisplayHost* display_host) {
-  scoped_ptr<DictionaryValue> params;
+  scoped_ptr<base::DictionaryValue> params;
   display_host->StartWizard(first_screen_name, params.Pass());
 
   chromeos::DBusThreadManager::Get()->
@@ -486,7 +486,7 @@ void LoginDisplayHostImpl::GetAutoEnrollmentCheckResult(
 
 void LoginDisplayHostImpl::StartWizard(
     const std::string& first_screen_name,
-    scoped_ptr<DictionaryValue> screen_parameters) {
+    scoped_ptr<base::DictionaryValue> screen_parameters) {
   startup_sound_honors_spoken_feedback_ = false;
   TryToPlayStartupSound();
 
@@ -1123,7 +1123,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
       !g_browser_process->browser_policy_connector()->IsEnterpriseManaged();
   if (should_show_enrollment_screen) {
     display_host->StartWizard(chromeos::WizardController::kEnrollmentScreenName,
-                              scoped_ptr<DictionaryValue>());
+                              scoped_ptr<base::DictionaryValue>());
     return;
   }
 

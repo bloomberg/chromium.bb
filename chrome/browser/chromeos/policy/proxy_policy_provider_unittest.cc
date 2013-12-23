@@ -54,7 +54,7 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
       .Set("policy",
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           Value::CreateStringValue("value"),
+           base::Value::CreateStringValue("value"),
            NULL);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
 
@@ -68,7 +68,7 @@ TEST_F(ProxyPolicyProviderTest, Delegate) {
       .Set("policy",
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           Value::CreateStringValue("new value"),
+           base::Value::CreateStringValue("new value"),
            NULL);
   mock_provider_.UpdatePolicy(CopyBundle(bundle));
   Mock::VerifyAndClearExpectations(&observer_);

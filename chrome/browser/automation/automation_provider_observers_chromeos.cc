@@ -66,7 +66,7 @@ LoginObserver::~LoginObserver() {
 }
 
 void LoginObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
   return_value->SetString("error_string", error.GetErrorString());
   AutomationJSONReply(automation_.get(), reply_message_.release())
       .SendSuccess(return_value.get());
@@ -119,7 +119,7 @@ void WizardControllerObserver::Observe(
 }
 
 void WizardControllerObserver::SendReply(const std::string& screen_name) {
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
   return_value->SetString("next_screen", screen_name);
   AutomationJSONReply(automation_.get(), reply_message_.release())
       .SendSuccess(return_value.get());
@@ -170,7 +170,7 @@ ScreenUnlockObserver::~ScreenUnlockObserver() {
 
 void ScreenUnlockObserver::OnLoginFailure(const chromeos::LoginFailure& error) {
   if (automation_) {
-    scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+    scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
     return_value->SetString("error_string", error.GetErrorString());
     AutomationJSONReply(automation_.get(), reply_message_.release())
         .SendSuccess(return_value.get());

@@ -66,7 +66,7 @@ DevToolsProtocol::Response::Response(int id, int error_code)
 DevToolsProtocol::Notification* DevToolsProtocol::ParseNotification(
     const std::string& json) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(json));
-  if (!value || !value->IsType(Value::TYPE_DICTIONARY))
+  if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
     return NULL;
 
   scoped_ptr<base::DictionaryValue> dict(
@@ -84,7 +84,7 @@ DevToolsProtocol::Notification* DevToolsProtocol::ParseNotification(
 DevToolsProtocol::Response* DevToolsProtocol::ParseResponse(
     const std::string& json) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(json));
-  if (!value || !value->IsType(Value::TYPE_DICTIONARY))
+  if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
     return NULL;
 
   scoped_ptr<base::DictionaryValue> dict(

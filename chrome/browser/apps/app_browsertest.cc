@@ -1026,7 +1026,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
 
   DictionaryPrefUpdate update(extension_prefs->pref_service(),
                               prefs::kExtensionsPref);
-  DictionaryValue* dict = update.Get();
+  base::DictionaryValue* dict = update.Get();
   std::string key(extension->id());
   key += ".manifest.version";
   dict->SetString(key, "1");

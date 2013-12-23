@@ -183,7 +183,7 @@ std::string SupervisedUserManagerImpl::GetUserSyncId(const std::string& user_id)
 base::string16 SupervisedUserManagerImpl::GetManagerDisplayName(
     const std::string& user_id) const {
   PrefService* local_state = g_browser_process->local_state();
-  const DictionaryValue* manager_names =
+  const base::DictionaryValue* manager_names =
       local_state->GetDictionary(kManagedUserManagerNames);
   base::string16 result;
   if (manager_names->GetStringWithoutPathExpansion(user_id, &result) &&
@@ -395,12 +395,12 @@ void SupervisedUserManagerImpl::UpdateManagerName(const std::string& manager_id,
     const base::string16& new_display_name) {
   PrefService* local_state = g_browser_process->local_state();
 
-  const DictionaryValue* manager_ids =
+  const base::DictionaryValue* manager_ids =
       local_state->GetDictionary(kManagedUserManagers);
 
   DictionaryPrefUpdate manager_name_update(local_state,
                                            kManagedUserManagerNames);
-  for (DictionaryValue::Iterator it(*manager_ids); !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(*manager_ids); !it.IsAtEnd();
       it.Advance()) {
     std::string user_id;
     bool has_manager_id = it.value().GetAsString(&user_id);

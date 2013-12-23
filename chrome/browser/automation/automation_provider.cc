@@ -217,7 +217,7 @@ int AutomationProvider::GetIndexForNavigationController(
 }
 
 // TODO(phajdan.jr): move to TestingAutomationProvider.
-DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
+base::DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
     const DownloadItem* download, bool incognito) {
   const char *download_state_string = NULL;
   switch (download->GetState()) {
@@ -280,7 +280,7 @@ DictionaryValue* AutomationProvider::GetDictionaryFromDownloadItem(
   if (!download_danger_type_string)
     download_danger_type_string = "UNKNOWN";
 
-  DictionaryValue* dl_item_value = new DictionaryValue;
+  base::DictionaryValue* dl_item_value = new base::DictionaryValue;
   dl_item_value->SetInteger("id", static_cast<int>(download->GetId()));
   dl_item_value->SetString("url", download->GetURL().spec());
   dl_item_value->SetString("referrer_url", download->GetReferrerUrl().spec());

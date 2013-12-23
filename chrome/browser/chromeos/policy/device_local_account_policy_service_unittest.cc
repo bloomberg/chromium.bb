@@ -144,24 +144,24 @@ void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
   expected_policy_map_.Set(key::kShelfAutoHideBehavior,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER,
-                           Value::CreateStringValue("Never"),
+                           base::Value::CreateStringValue("Never"),
                            NULL);
   expected_policy_map_.Set(key::kShowLogoutButtonInTray,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER,
-                           Value::CreateBooleanValue(true),
+                           base::Value::CreateBooleanValue(true),
                            NULL);
   expected_policy_map_.Set(key::kFullscreenAllowed,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER,
-                           Value::CreateBooleanValue(false),
+                           base::Value::CreateBooleanValue(false),
                            NULL);
 
   // Explicitly set value.
   expected_policy_map_.Set(key::kDisableSpdy,
                            POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER,
-                           Value::CreateBooleanValue(true),
+                           base::Value::CreateBooleanValue(true),
                            NULL);
 
   device_local_account_policy_.payload().mutable_disablespdy()->set_value(
@@ -861,7 +861,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
       .Set(key::kDisableSpdy,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_USER,
-           Value::CreateBooleanValue(false),
+           base::Value::CreateBooleanValue(false),
            NULL);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));
 

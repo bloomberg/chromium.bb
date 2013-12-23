@@ -13,7 +13,7 @@ namespace extensions {
 
 static void BroadcastEvent(Profile* profile, const std::string& event_name) {
   if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
-    scoped_ptr<ListValue> args(new ListValue());
+    scoped_ptr<base::ListValue> args(new base::ListValue());
     scoped_ptr<extensions::Event> event(new extensions::Event(
         event_name, args.Pass()));
     extensions::ExtensionSystem::Get(profile)->event_router()->

@@ -132,7 +132,7 @@ bool EPKPChallengeKeyBase::IsEnterpriseDevice() const {
 bool EPKPChallengeKeyBase::IsExtensionWhitelisted() const {
   const base::ListValue* list =
       GetProfile()->GetPrefs()->GetList(prefs::kAttestationExtensionWhitelist);
-  StringValue value(extension_->id());
+  base::StringValue value(extension_->id());
   return list->Find(value) != list->end();
 }
 

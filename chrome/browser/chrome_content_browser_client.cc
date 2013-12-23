@@ -1827,7 +1827,7 @@ void ChromeContentBrowserClient::SelectClientCertificate(
       << cert_request_info->host_and_port.ToString();
 
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
-  scoped_ptr<Value> filter(
+  scoped_ptr<base::Value> filter(
       profile->GetHostContentSettingsMap()->GetWebsiteSetting(
           requesting_url,
           requesting_url,
@@ -1836,9 +1836,9 @@ void ChromeContentBrowserClient::SelectClientCertificate(
 
   if (filter.get()) {
     // Try to automatically select a client certificate.
-    if (filter->IsType(Value::TYPE_DICTIONARY)) {
-      DictionaryValue* filter_dict =
-          static_cast<DictionaryValue*>(filter.get());
+    if (filter->IsType(base::Value::TYPE_DICTIONARY)) {
+      base::DictionaryValue* filter_dict =
+          static_cast<base::DictionaryValue*>(filter.get());
 
       const std::vector<scoped_refptr<net::X509Certificate> >&
           all_client_certs = cert_request_info->client_certs;
@@ -2211,10 +2211,11 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       prefs->GetBoolean(prefs::kWebKitDomPasteEnabled);
   web_prefs->shrinks_standalone_images_to_fit =
       prefs->GetBoolean(prefs::kWebKitShrinksStandaloneImagesToFit);
-  const DictionaryValue* inspector_settings =
+  const base::DictionaryValue* inspector_settings =
       prefs->GetDictionary(prefs::kWebKitInspectorSettings);
   if (inspector_settings) {
-    for (DictionaryValue::Iterator iter(*inspector_settings); !iter.IsAtEnd();
+    for (base::DictionaryValue::Iterator iter(*inspector_settings);
+         !iter.IsAtEnd();
          iter.Advance()) {
       std::string value;
       if (iter.value().GetAsString(&value)) {
@@ -2325,9 +2326,9 @@ void ChromeContentBrowserClient::UpdateInspectorSetting(
   DictionaryPrefUpdate update(
       Profile::FromBrowserContext(browser_context)->GetPrefs(),
       prefs::kWebKitInspectorSettings);
-  DictionaryValue* inspector_settings = update.Get();
-  inspector_settings->SetWithoutPathExpansion(key,
-                                              Value::CreateStringValue(value));
+  base::DictionaryValue* inspector_settings = update.Get();
+  inspector_settings->SetWithoutPathExpansion(
+      key, base::Value::CreateStringValue(value));
 }
 
 void ChromeContentBrowserClient::BrowserURLHandlerCreated(

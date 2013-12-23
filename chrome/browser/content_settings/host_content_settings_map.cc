@@ -254,7 +254,7 @@ void HostContentSettingsMap::SetDefaultContentSetting(
 
   base::Value* value = NULL;
   if (setting != CONTENT_SETTING_DEFAULT)
-    value = Value::CreateIntegerValue(setting);
+    value = base::Value::CreateIntegerValue(setting);
   SetWebsiteSetting(
       ContentSettingsPattern::Wildcard(),
       ContentSettingsPattern::Wildcard(),
@@ -297,7 +297,7 @@ void HostContentSettingsMap::SetContentSetting(
   DCHECK(!ContentTypeHasCompoundValue(content_type));
   base::Value* value = NULL;
   if (setting != CONTENT_SETTING_DEFAULT)
-    value = Value::CreateIntegerValue(setting);
+    value = base::Value::CreateIntegerValue(setting);
   SetWebsiteSetting(primary_pattern,
                     secondary_pattern,
                     content_type,
@@ -476,7 +476,8 @@ void HostContentSettingsMap::MigrateObsoleteClearOnExitPref() {
                       it->secondary_pattern,
                       CONTENT_SETTINGS_TYPE_COOKIES,
                       std::string(),
-                      Value::CreateIntegerValue(CONTENT_SETTING_SESSION_ONLY));
+                      base::Value::CreateIntegerValue(
+                          CONTENT_SETTING_SESSION_ONLY));
   }
 
   prefs_->SetBoolean(prefs::kContentSettingsClearOnExitMigrated, true);
@@ -572,7 +573,7 @@ base::Value* HostContentSettingsMap::GetWebsiteSetting(
       info->primary_pattern = ContentSettingsPattern::Wildcard();
       info->secondary_pattern = ContentSettingsPattern::Wildcard();
     }
-    return Value::CreateIntegerValue(CONTENT_SETTING_ALLOW);
+    return base::Value::CreateIntegerValue(CONTENT_SETTING_ALLOW);
   }
 
   ContentSettingsPattern* primary_pattern = NULL;

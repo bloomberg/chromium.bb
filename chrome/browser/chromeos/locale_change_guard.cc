@@ -90,7 +90,8 @@ void LocaleChangeGuard::RevertLocaleChange() {
   chrome::AttemptUserExit();
 }
 
-void LocaleChangeGuard::RevertLocaleChangeCallback(const ListValue* list) {
+void LocaleChangeGuard::RevertLocaleChangeCallback(
+    const base::ListValue* list) {
   RevertLocaleChange();
 }
 

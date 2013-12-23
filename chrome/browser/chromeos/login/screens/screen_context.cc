@@ -87,14 +87,14 @@ bool ScreenContext::HasChanges() const {
   return !changes_.empty();
 }
 
-void ScreenContext::GetChangesAndReset(DictionaryValue* diff) {
+void ScreenContext::GetChangesAndReset(base::DictionaryValue* diff) {
   DCHECK(CalledOnValidThread());
   DCHECK(diff);
   changes_.Swap(diff);
   changes_.Clear();
 }
 
-void ScreenContext::ApplyChanges(const DictionaryValue& diff,
+void ScreenContext::ApplyChanges(const base::DictionaryValue& diff,
                                  std::vector<std::string>* keys) {
   DCHECK(CalledOnValidThread());
   DCHECK(!HasChanges());
@@ -110,12 +110,12 @@ void ScreenContext::ApplyChanges(const DictionaryValue& diff,
   changes_.Clear();
 }
 
-bool ScreenContext::Set(const KeyType& key, Value* value) {
+bool ScreenContext::Set(const KeyType& key, base::Value* value) {
   DCHECK(CalledOnValidThread());
   DCHECK(value);
-  scoped_ptr<Value> new_value(value);
+  scoped_ptr<base::Value> new_value(value);
 
-  Value* current_value;
+  base::Value* current_value;
   bool in_storage = storage_.Get(key, &current_value);
 
   // Don't do anything if |storage_| already contains <|key|, |new_value|> pair.

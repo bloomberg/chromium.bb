@@ -113,10 +113,10 @@ void ActivityLogPolicy::Util::StripPrivacySensitiveFields(
   // Clear WebRequest details; only keep a record of which types of
   // modifications were performed.
   if (action->action_type() == Action::ACTION_WEB_REQUEST) {
-    DictionaryValue* details = NULL;
+    base::DictionaryValue* details = NULL;
     if (action->mutable_other()->GetDictionary(constants::kActionWebRequest,
                                                &details)) {
-      DictionaryValue::Iterator details_iterator(*details);
+      base::DictionaryValue::Iterator details_iterator(*details);
       while (!details_iterator.IsAtEnd()) {
         details->SetBoolean(details_iterator.key(), true);
         details_iterator.Advance();
@@ -131,7 +131,7 @@ void ActivityLogPolicy::Util::StripArguments(const ApiSet& api_whitelist,
   if (api_whitelist.find(
           std::make_pair(action->action_type(), action->api_name())) ==
       api_whitelist.end()) {
-    action->set_args(scoped_ptr<ListValue>());
+    action->set_args(scoped_ptr<base::ListValue>());
   }
 }
 

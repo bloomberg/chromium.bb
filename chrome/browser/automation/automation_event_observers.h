@@ -25,7 +25,7 @@ class AutomationEventObserver {
   virtual ~AutomationEventObserver();
 
   virtual void Init(int observer_id);
-  void NotifyEvent(DictionaryValue* value);
+  void NotifyEvent(base::DictionaryValue* value);
   int GetId() const;
 
  protected:

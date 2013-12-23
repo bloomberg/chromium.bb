@@ -213,8 +213,8 @@ jboolean ForeignSessionHelper::GetForeignSessions(JNIEnv* env,
   // and only add back sessions that are still current.
   DictionaryPrefUpdate pref_update(profile_->GetPrefs(),
                                    prefs::kNtpCollapsedForeignSessions);
-  DictionaryValue* pref_collapsed_sessions = pref_update.Get();
-  scoped_ptr<DictionaryValue> collapsed_sessions(
+  base::DictionaryValue* pref_collapsed_sessions = pref_update.Get();
+  scoped_ptr<base::DictionaryValue> collapsed_sessions(
       pref_collapsed_sessions->DeepCopy());
   pref_collapsed_sessions->Clear();
 

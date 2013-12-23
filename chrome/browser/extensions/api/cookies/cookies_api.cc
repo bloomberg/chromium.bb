@@ -256,7 +256,7 @@ void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
 
   // The cookie doesn't exist; return null.
   if (it == cookie_list.end())
-    SetResult(Value::CreateNullValue());
+    SetResult(base::Value::CreateNullValue());
 
   bool rv = BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

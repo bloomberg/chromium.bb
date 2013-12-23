@@ -498,14 +498,15 @@ void BackgroundContentsService::LoadBackgroundContentsFromPrefs(
     Profile* profile) {
   if (!prefs_)
     return;
-  const DictionaryValue* contents =
+  const base::DictionaryValue* contents =
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   if (!contents)
     return;
   ExtensionService* extensions_service =
           extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(extensions_service);
-  for (DictionaryValue::Iterator it(*contents); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*contents);
+       !it.IsAtEnd(); it.Advance()) {
     // Check to make sure that the parent extension is still enabled.
     const Extension* extension = extensions_service->
         GetExtensionById(it.key(), false);
@@ -551,7 +552,7 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
   // Now look in the prefs.
   if (!prefs_)
     return;
-  const DictionaryValue* contents =
+  const base::DictionaryValue* contents =
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   if (!contents)
     return;
@@ -561,12 +562,12 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
 void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
     Profile* profile,
     const std::string& extension_id,
-    const DictionaryValue* contents) {
+    const base::DictionaryValue* contents) {
   ExtensionService* extensions_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   DCHECK(extensions_service);
 
-  const DictionaryValue* dict;
+  const base::DictionaryValue* dict;
   if (!contents->GetDictionaryWithoutPathExpansion(extension_id, &dict) ||
       dict == NULL)
     return;
@@ -665,14 +666,14 @@ void BackgroundContentsService::RegisterBackgroundContents(
   // TODO(atwilson): Verify that this is the desired behavior based on developer
   // feedback (http://crbug.com/47118).
   DictionaryPrefUpdate update(prefs_, prefs::kRegisteredBackgroundContents);
-  DictionaryValue* pref = update.Get();
+  base::DictionaryValue* pref = update.Get();
   const base::string16& appid = GetParentApplicationId(background_contents);
-  DictionaryValue* current;
+  base::DictionaryValue* current;
   if (pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &current))
     return;
 
   // No entry for this application yet, so add one.
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString(kUrlKey, background_contents->GetURL().spec());
   dict->SetString(kFrameNameKey, contents_map_[appid].frame_name);
   pref->SetWithoutPathExpansion(UTF16ToUTF8(appid), dict);
@@ -683,7 +684,7 @@ bool BackgroundContentsService::HasRegisteredBackgroundContents(
   if (!prefs_)
     return false;
   std::string app = UTF16ToUTF8(app_id);
-  const DictionaryValue* contents =
+  const base::DictionaryValue* contents =
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   return contents->HasKey(app);
 }

@@ -29,7 +29,7 @@
 namespace extensions {
 namespace {
 
-ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
+base::ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
   extensions::URLPatternSet pattern_set;
   if (effective_perm) {
     pattern_set =
@@ -38,22 +38,22 @@ ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
     pattern_set = ext->GetActivePermissions()->explicit_hosts();
   }
 
-  ListValue* permissions = new ListValue;
+  base::ListValue* permissions = new base::ListValue;
   for (extensions::URLPatternSet::const_iterator perm = pattern_set.begin();
        perm != pattern_set.end(); ++perm) {
-    permissions->Append(new StringValue(perm->GetAsString()));
+    permissions->Append(new base::StringValue(perm->GetAsString()));
   }
 
   return permissions;
 }
 
-ListValue* GetAPIPermissions(const Extension* ext) {
-  ListValue* permissions = new ListValue;
+base::ListValue* GetAPIPermissions(const Extension* ext) {
+  base::ListValue* permissions = new base::ListValue;
   std::set<std::string> perm_list =
       ext->GetActivePermissions()->GetAPIsAsStrings();
   for (std::set<std::string>::const_iterator perm = perm_list.begin();
        perm != perm_list.end(); ++perm) {
-    permissions->Append(new StringValue(perm->c_str()));
+    permissions->Append(new base::StringValue(perm->c_str()));
   }
   return permissions;
 }
@@ -158,7 +158,7 @@ bool AutotestPrivateGetExtensionsInfoFunction::RunImpl() {
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(GetProfile());
 
-  ListValue* extensions_values = new ListValue;
+  base::ListValue* extensions_values = new base::ListValue;
   ExtensionList all;
   all.insert(all.end(),
              extensions->begin(),
@@ -170,7 +170,7 @@ bool AutotestPrivateGetExtensionsInfoFunction::RunImpl() {
        it != all.end(); ++it) {
     const Extension* extension = it->get();
     std::string id = extension->id();
-    DictionaryValue* extension_value = new DictionaryValue;
+    base::DictionaryValue* extension_value = new base::DictionaryValue;
     extension_value->SetString("id", id);
     extension_value->SetString("version", extension->VersionString());
     extension_value->SetString("name", extension->name());
@@ -205,7 +205,7 @@ bool AutotestPrivateGetExtensionsInfoFunction::RunImpl() {
     extensions_values->Append(extension_value);
   }
 
-  DictionaryValue* return_value(new DictionaryValue);
+  base::DictionaryValue* return_value(new base::DictionaryValue);
   return_value->Set("extensions", extensions_values);
   SetResult(return_value);
   return true;

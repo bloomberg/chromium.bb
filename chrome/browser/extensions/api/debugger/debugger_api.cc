@@ -421,8 +421,8 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
   if (!extensions::ExtensionSystem::Get(profile_)->event_router())
     return;
 
-  scoped_ptr<Value> result(base::JSONReader::Read(message));
-  if (!result->IsType(Value::TYPE_DICTIONARY))
+  scoped_ptr<base::Value> result(base::JSONReader::Read(message));
+  if (!result->IsType(base::Value::TYPE_DICTIONARY))
     return;
   base::DictionaryValue* dictionary =
       static_cast<base::DictionaryValue*>(result.get());
@@ -438,7 +438,8 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     if (dictionary->GetDictionary("params", &params_value))
       params.additional_properties.Swap(params_value);
 
-    scoped_ptr<ListValue> args(OnEvent::Create(debuggee_, method_name, params));
+    scoped_ptr<base::ListValue> args(
+        OnEvent::Create(debuggee_, method_name, params));
     scoped_ptr<extensions::Event> event(new extensions::Event(
         OnEvent::kEventName, args.Pass()));
     event->restrict_to_browser_context = profile_;
@@ -634,7 +635,7 @@ bool DebuggerSendCommandFunction::RunImpl() {
 
 void DebuggerSendCommandFunction::SendResponseBody(
     base::DictionaryValue* response) {
-  Value* error_body;
+  base::Value* error_body;
   if (response->Get("error", &error_body)) {
     base::JSONWriter::Write(error_body, &error_);
     SendResponse(false);

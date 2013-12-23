@@ -246,7 +246,7 @@ void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
       if (action->args()->GetString(url_index, &url_string) &&
           ResolveUrl(action->page_url(), url_string, &arg_url)) {
         action->mutable_args()->Set(url_index,
-                                    new StringValue(kArgUrlPlaceholder));
+                                    new base::StringValue(kArgUrlPlaceholder));
       }
       break;
     }
@@ -257,7 +257,7 @@ void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
       // if we can find a dictionary in the argument list, the dictionary
       // contains the specified key, and the corresponding value resolves to a
       // valid URL.
-      DictionaryValue* dict = NULL;
+      base::DictionaryValue* dict = NULL;
       std::string url_string;
       if (action->mutable_args()->GetDictionary(url_index, &dict) &&
           dict->GetString(api_info->arg_url_dict_path, &url_string) &&
@@ -277,8 +277,8 @@ void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
         // Single tab ID to translate.
         GetUrlForTabId(tab_id, profile, &arg_url, &arg_incognito);
         if (arg_url.is_valid()) {
-          action->mutable_args()->Set(url_index,
-                                      new StringValue(kArgUrlPlaceholder));
+          action->mutable_args()->Set(
+              url_index, new base::StringValue(kArgUrlPlaceholder));
         }
       } else if (action->mutable_args()->GetList(url_index, &tab_list)) {
         // A list of possible IDs to translate.  Work through in reverse order
@@ -292,8 +292,10 @@ void ExtractUrls(scoped_refptr<Action> action, Profile* profile) {
             extracted_index = i;
           }
         }
-        if (extracted_index >= 0)
-          tab_list->Set(extracted_index, new StringValue(kArgUrlPlaceholder));
+        if (extracted_index >= 0) {
+          tab_list->Set(
+              extracted_index, new base::StringValue(kArgUrlPlaceholder));
+        }
       }
       break;
     }
@@ -551,7 +553,7 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
   if (action->action_type() == Action::ACTION_DOM_ACCESS &&
       StartsWithASCII(action->api_name(), kDomXhrPrefix, true) &&
       action->other()) {
-    DictionaryValue* other = action->mutable_other();
+    base::DictionaryValue* other = action->mutable_other();
     int dom_verb = -1;
     if (other->GetInteger(constants::kActionDomVerb, &dom_verb) &&
         dom_verb == DomActionType::METHOD) {

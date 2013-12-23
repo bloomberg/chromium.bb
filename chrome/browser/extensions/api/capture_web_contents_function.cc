@@ -151,7 +151,7 @@ void CaptureWebContentsFunction::OnCaptureSuccess(const SkBitmap& bitmap) {
   base::Base64Encode(stream_as_string, &base64_result);
   base64_result.insert(0, base::StringPrintf("data:%s;base64,",
                                              mime_type.c_str()));
-  SetResult(new StringValue(base64_result));
+  SetResult(new base::StringValue(base64_result));
   SendResponse(true);
 }
 

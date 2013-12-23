@@ -158,7 +158,7 @@ class OAuth2Test : public OobeBaseTest {
   User::OAuthTokenStatus GetOAuthStatusFromLocalState(
       const std::string& user_id) const {
     PrefService* local_state = g_browser_process->local_state();
-    const DictionaryValue* prefs_oauth_status =
+    const base::DictionaryValue* prefs_oauth_status =
         local_state->GetDictionary("OAuthTokenStatus");
     int oauth_token_status = User::OAUTH_TOKEN_STATUS_UNKNOWN;
     if (prefs_oauth_status &&

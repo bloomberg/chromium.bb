@@ -70,7 +70,7 @@ TEST_F(ScreenContextTest, Changes) {
   ASSERT_EQ(2, context().GetInteger("key0"));
   ASSERT_TRUE(context().HasChanges());
 
-  DictionaryValue changes;
+  base::DictionaryValue changes;
   context().GetChangesAndReset(&changes);
   ASSERT_FALSE(context().HasChanges());
 
@@ -99,7 +99,7 @@ TEST_F(ScreenContextTest, ComplexChanges) {
   ASSERT_TRUE(context().HasChanges());
 
   // Get all changes and verify them.
-  DictionaryValue changes;
+  base::DictionaryValue changes;
   context().GetChangesAndReset(&changes);
   ASSERT_FALSE(context().HasChanges());
   ASSERT_EQ(3u, changes.size());
@@ -134,7 +134,7 @@ TEST_F(ScreenContextTest, ComplexChanges) {
 TEST_F(ScreenContextTest, ApplyChanges) {
   ASSERT_FALSE(context().HasChanges());
 
-  DictionaryValue changes;
+  base::DictionaryValue changes;
   changes.SetString("key0", "value0");
   changes.SetInteger("key1", 1);
   changes.SetBoolean("key2", true);

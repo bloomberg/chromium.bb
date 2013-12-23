@@ -35,13 +35,14 @@ BookmarkExpandedStateTracker::GetExpandedNodes() {
   if (!pref_service_)
     return nodes;
 
-  const ListValue* value =
+  const base::ListValue* value =
       pref_service_->GetList(prefs::kBookmarkEditorExpandedNodes);
   if (!value)
     return nodes;
 
   bool changed = false;
-  for (ListValue::const_iterator i = value->begin(); i != value->end(); ++i) {
+  for (base::ListValue::const_iterator i = value->begin();
+       i != value->end(); ++i) {
     std::string value;
     int64 node_id;
     const BookmarkNode* node;
@@ -97,10 +98,10 @@ void BookmarkExpandedStateTracker::UpdatePrefs(const Nodes& nodes) {
   if (!pref_service_)
     return;
 
-  ListValue values;
+  base::ListValue values;
   for (Nodes::const_iterator i = nodes.begin(); i != nodes.end(); ++i) {
     values.Set(values.GetSize(),
-               new StringValue(base::Int64ToString((*i)->id())));
+               new base::StringValue(base::Int64ToString((*i)->id())));
   }
 
   pref_service_->Set(prefs::kBookmarkEditorExpandedNodes, values);

@@ -13,7 +13,7 @@
 #include "ui/base/webui/web_ui_util.h"
 
 bool FirstRunPrivateGetLocalizedStringsFunction::RunImpl() {
-  DictionaryValue* localized_strings = new DictionaryValue();
+  base::DictionaryValue* localized_strings = new base::DictionaryValue();
   chromeos::User* user =
       chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
   if (!user->given_name().empty()) {

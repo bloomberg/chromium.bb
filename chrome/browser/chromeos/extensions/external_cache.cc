@@ -197,7 +197,7 @@ bool ExternalCache::IsExtensionPending(const std::string& id) {
 
 bool ExternalCache::GetExtensionExistingVersion(const std::string& id,
                                                 std::string* version) {
-  DictionaryValue* extension_dictionary = NULL;
+  base::DictionaryValue* extension_dictionary = NULL;
   if (cached_extensions_->GetDictionary(id, &extension_dictionary)) {
     if (extension_dictionary->GetString(
             extensions::ExternalProviderImpl::kExternalVersion, version)) {

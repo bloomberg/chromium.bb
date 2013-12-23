@@ -154,7 +154,7 @@ scoped_ptr<WebRequestCondition> WebRequestCondition::Create(
   for (base::DictionaryValue::Iterator iter(*condition_dict);
        !iter.IsAtEnd(); iter.Advance()) {
     const std::string& condition_attribute_name = iter.key();
-    const Value& condition_attribute_value = iter.value();
+    const base::Value& condition_attribute_value = iter.value();
     const bool name_is_url = condition_attribute_name == keys::kUrlKey;
     if (condition_attribute_name == keys::kInstanceTypeKey) {
       // Skip this.

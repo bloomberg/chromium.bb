@@ -857,7 +857,7 @@ void EnumerateModulesModel::ScanNow() {
   module_enumerator_->ScanNow(&enumerated_modules_, limited_mode_);
 }
 
-ListValue* EnumerateModulesModel::GetModuleList() const {
+base::ListValue* EnumerateModulesModel::GetModuleList() const {
   if (scanning_)
     return NULL;
 
@@ -868,12 +868,12 @@ ListValue* EnumerateModulesModel::GetModuleList() const {
     return NULL;
   }
 
-  ListValue* list = new ListValue();
+  base::ListValue* list = new base::ListValue();
 
   for (ModuleEnumerator::ModulesVector::const_iterator module =
            enumerated_modules_.begin();
        module != enumerated_modules_.end(); ++module) {
-    DictionaryValue* data = new DictionaryValue();
+    base::DictionaryValue* data = new base::DictionaryValue();
     data->SetInteger("type", module->type);
     base::string16 type_string;
     if ((module->type & ModuleEnumerator::LOADED_MODULE) == 0) {

@@ -304,7 +304,7 @@ class ProxyConfigServiceImplTest : public testing::Test {
     DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface()->
         SetServiceProperty(network->path(),
                            shill::kProxyConfigProperty,
-                           StringValue(proxy_config));
+                           base::StringValue(proxy_config));
   }
 
   // Synchronously gets the latest proxy config.

@@ -99,7 +99,7 @@ void DefaultProvider::RegisterProfilePrefs(
   // prefs::kDefaultContentSettings via pyauto.
   // TODO(markusheintz): Write pyauto hooks for the content settings map as
   // content settings should be read from the host content settings map.
-  DictionaryValue* default_content_settings = new DictionaryValue();
+  base::DictionaryValue* default_content_settings = new base::DictionaryValue();
   registry->RegisterDictionaryPref(
       prefs::kDefaultContentSettings,
       default_content_settings,
@@ -180,7 +180,7 @@ bool DefaultProvider::SetWebsiteSetting(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    Value* in_value) {
+    base::Value* in_value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(prefs_);
 
@@ -207,14 +207,14 @@ bool DefaultProvider::SetWebsiteSetting(
     // upper layers may call |GetAllContentSettingRules| which acquires |lock_|
     // again.
     DictionaryPrefUpdate update(prefs_, prefs::kDefaultContentSettings);
-    DictionaryValue* default_settings_dictionary = update.Get();
+    base::DictionaryValue* default_settings_dictionary = update.Get();
     base::AutoLock lock(lock_);
     if (value.get() == NULL ||
         ValueToContentSetting(value.get()) == kDefaultSettings[content_type]) {
       // If |value| is NULL we need to reset the default setting the the
       // hardcoded default.
       default_settings_[content_type].reset(
-          Value::CreateIntegerValue(kDefaultSettings[content_type]));
+          base::Value::CreateIntegerValue(kDefaultSettings[content_type]));
 
       // Remove the corresponding pref entry since the hardcoded default value
       // is used.
@@ -287,7 +287,7 @@ void DefaultProvider::OnPreferenceChanged(const std::string& name) {
 
 void DefaultProvider::ReadDefaultSettings(bool overwrite) {
   base::AutoLock lock(lock_);
-  const DictionaryValue* default_settings_dictionary =
+  const base::DictionaryValue* default_settings_dictionary =
       prefs_->GetDictionary(prefs::kDefaultContentSettings);
 
   if (overwrite)
@@ -306,14 +306,15 @@ void DefaultProvider::ForceDefaultsToBeExplicit() {
     if (!default_settings_[type].get() &&
         kDefaultSettings[i] != CONTENT_SETTING_DEFAULT) {
       default_settings_[type].reset(
-          Value::CreateIntegerValue(kDefaultSettings[i]));
+          base::Value::CreateIntegerValue(kDefaultSettings[i]));
     }
   }
 }
 
 void DefaultProvider::GetSettingsFromDictionary(
-    const DictionaryValue* dictionary) {
-  for (DictionaryValue::Iterator i(*dictionary); !i.IsAtEnd(); i.Advance()) {
+    const base::DictionaryValue* dictionary) {
+  for (base::DictionaryValue::Iterator i(*dictionary);
+       !i.IsAtEnd(); i.Advance()) {
     const std::string& content_type(i.key());
     for (size_t type = 0; type < CONTENT_SETTINGS_NUM_TYPES; ++type) {
       if (content_type == GetTypeName(ContentSettingsType(type))) {
@@ -321,7 +322,7 @@ void DefaultProvider::GetSettingsFromDictionary(
         bool is_integer = i.value().GetAsInteger(&int_value);
         DCHECK(is_integer);
         default_settings_[ContentSettingsType(type)].reset(
-            Value::CreateIntegerValue(int_value));
+            base::Value::CreateIntegerValue(int_value));
         break;
       }
     }
@@ -331,7 +332,7 @@ void DefaultProvider::GetSettingsFromDictionary(
           default_settings_[CONTENT_SETTINGS_TYPE_COOKIES].get()) ==
               CONTENT_SETTING_ASK) {
     default_settings_[CONTENT_SETTINGS_TYPE_COOKIES].reset(
-        Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
+        base::Value::CreateIntegerValue(CONTENT_SETTING_BLOCK));
   }
 }
 

@@ -56,7 +56,7 @@ void LoadCallback(const base::FilePath& path,
   bool bookmark_file_exists = base::PathExists(path);
   if (bookmark_file_exists) {
     JSONFileValueSerializer serializer(path);
-    scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));
+    scoped_ptr<base::Value> root(serializer.Deserialize(NULL, NULL));
 
     if (root.get()) {
       // Building the index can take a while, so we do it on the background
@@ -157,7 +157,7 @@ void BookmarkStorage::BookmarkModelDeleted() {
 
 bool BookmarkStorage::SerializeData(std::string* output) {
   BookmarkCodec codec;
-  scoped_ptr<Value> value(codec.Encode(model_));
+  scoped_ptr<base::Value> value(codec.Encode(model_));
   JSONStringValueSerializer serializer(output);
   serializer.set_pretty_print(true);
   return serializer.Serialize(*(value.get()));

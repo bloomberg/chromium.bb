@@ -855,8 +855,9 @@ bool WallpaperManager::GetUserWallpaperInfo(const std::string& email,
     return true;
   }
 
-  const DictionaryValue* user_wallpapers = g_browser_process->local_state()->
-      GetDictionary(prefs::kUsersWallpaperInfo);
+  const base::DictionaryValue* user_wallpapers =
+      g_browser_process->local_state()->
+          GetDictionary(prefs::kUsersWallpaperInfo);
   const base::DictionaryValue* wallpaper_info_dict;
   if (user_wallpapers->GetDictionaryWithoutPathExpansion(
           email, &wallpaper_info_dict)) {

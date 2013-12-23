@@ -268,7 +268,8 @@ void SetProxyPrefValue(const std::string& path,
   } else if (path == kProxyIgnoreList) {
     net::ProxyBypassRules bypass_rules;
     if (in_value->GetType() == base::Value::TYPE_LIST) {
-      const ListValue* list_value = static_cast<const ListValue*>(in_value);
+      const base::ListValue* list_value =
+          static_cast<const base::ListValue*>(in_value);
       for (size_t x = 0; x < list_value->GetSize(); x++) {
         std::string val;
         if (list_value->GetString(x, &val))
@@ -350,7 +351,7 @@ bool GetProxyPrefValue(const UIProxyConfigService& config_service,
   } else if (path == kProxySocksPort) {
     data = CreateServerPortValue(config.socks_proxy);
   } else if (path == kProxyIgnoreList) {
-    ListValue* list =  new ListValue();
+    base::ListValue* list =  new base::ListValue();
     net::ProxyBypassRules::RuleList bypass_rules = config.bypass_rules.rules();
     for (size_t x = 0; x < bypass_rules.size(); x++)
       list->Append(new base::StringValue(bypass_rules[x]->ToString()));
@@ -361,7 +362,7 @@ bool GetProxyPrefValue(const UIProxyConfigService& config_service,
   }
 
   // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
-  DictionaryValue* dict = new DictionaryValue;
+  base::DictionaryValue* dict = new base::DictionaryValue;
   if (!data)
     data = new base::StringValue("");
   dict->Set("value", data);

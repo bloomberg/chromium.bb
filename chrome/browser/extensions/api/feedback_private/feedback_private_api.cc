@@ -98,7 +98,7 @@ void FeedbackPrivateAPI::RequestFeedback(
 base::Closure* FeedbackPrivateGetStringsFunction::test_callback_ = NULL;
 
 bool FeedbackPrivateGetStringsFunction::RunImpl() {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
 
 #define SET_STRING(id, idr) \

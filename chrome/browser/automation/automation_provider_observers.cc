@@ -181,24 +181,24 @@ void InitialLoadObserver::Observe(int type,
     ConditionMet();
 }
 
-DictionaryValue* InitialLoadObserver::GetTimingInformation() const {
-  ListValue* items = new ListValue;
+base::DictionaryValue* InitialLoadObserver::GetTimingInformation() const {
+  base::ListValue* items = new base::ListValue;
   for (TabTimeMap::const_iterator it = loading_tabs_.begin();
        it != loading_tabs_.end();
        ++it) {
-    DictionaryValue* item = new DictionaryValue;
+    base::DictionaryValue* item = new base::DictionaryValue;
     base::TimeDelta delta_start = it->second.start_time() - init_time_;
 
     item->SetDouble("load_start_ms", delta_start.InMillisecondsF());
     if (it->second.stop_time().is_null()) {
-      item->Set("load_stop_ms", Value::CreateNullValue());
+      item->Set("load_stop_ms", base::Value::CreateNullValue());
     } else {
       base::TimeDelta delta_stop = it->second.stop_time() - init_time_;
       item->SetDouble("load_stop_ms", delta_stop.InMillisecondsF());
     }
     items->Append(item);
   }
-  DictionaryValue* return_value = new DictionaryValue;
+  base::DictionaryValue* return_value = new base::DictionaryValue;
   return_value->Set("tabs", items);
   return return_value;
 }
@@ -329,7 +329,7 @@ void NavigationNotificationObserver::ConditionMet(
   if (automation_.get()) {
     if (use_json_interface_) {
       if (navigation_result == AUTOMATION_MSG_NAVIGATION_SUCCESS) {
-        DictionaryValue dict;
+        base::DictionaryValue dict;
         dict.SetInteger("result", navigation_result);
         AutomationJSONReply(automation_.get(), reply_message_.release())
             .SendSuccess(&dict);
@@ -539,7 +539,8 @@ void ExtensionUninstallObserver::Observe(
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
       if (id_ == content::Details<extensions::Extension>(details).ptr()->id()) {
-        scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+        scoped_ptr<base::DictionaryValue> return_value(
+            new base::DictionaryValue);
         return_value->SetBoolean("success", true);
         AutomationJSONReply(automation_.get(), reply_message_.release())
             .SendSuccess(return_value.get());
@@ -553,7 +554,8 @@ void ExtensionUninstallObserver::Observe(
       const extensions::Extension* extension =
           content::Details<extensions::Extension>(details).ptr();
       if (id_ == extension->id()) {
-        scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+        scoped_ptr<base::DictionaryValue> return_value(
+            new base::DictionaryValue);
         return_value->SetBoolean("success", false);
         AutomationJSONReply(automation_.get(), reply_message_.release())
             .SendSuccess(return_value.get());
@@ -640,7 +642,7 @@ void ExtensionReadyNotificationObserver::Observe(
 
   AutomationJSONReply reply(automation_.get(), reply_message_.release());
   if (extension_) {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.SetString("id", extension_->id());
     reply.SendSuccess(&dict);
   } else {
@@ -1051,7 +1053,7 @@ void FindInPageNotificationObserver::Observe(
   // This message comes to us before the final update is sent.
   if (find_details->request_id() == kFindInPageRequestId) {
     if (reply_with_json_) {
-      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+      scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
       return_value->SetInteger("match_count",
           find_details->number_of_matches());
       gfx::Rect rect = find_details->selection_rect();
@@ -1132,7 +1134,7 @@ void DomOperationMessageSender::OnDomOperationCompleted(
     const std::string& json) {
   if (automation_.get()) {
     if (use_json_interface_) {
-      DictionaryValue dict;
+      base::DictionaryValue dict;
       dict.SetString("result", json);
       AutomationJSONReply(automation_.get(), reply_message_.release())
           .SendSuccess(&dict);
@@ -1293,7 +1295,7 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadUpdated(
   download->RemoveObserver(this);
 
   if (provider_.get()) {
-    scoped_ptr<DictionaryValue> return_value(
+    scoped_ptr<base::DictionaryValue> return_value(
         provider_->GetDictionaryFromDownloadItem(download, incognito_));
     AutomationJSONReply(provider_.get(), reply_message_.release())
         .SendSuccess(return_value.get());
@@ -1306,7 +1308,7 @@ void AutomationProviderDownloadUpdatedObserver::OnDownloadOpened(
   download->RemoveObserver(this);
 
   if (provider_.get()) {
-    scoped_ptr<DictionaryValue> return_value(
+    scoped_ptr<base::DictionaryValue> return_value(
         provider_->GetDictionaryFromDownloadItem(download, incognito_));
     AutomationJSONReply(provider_.get(), reply_message_.release())
         .SendSuccess(return_value.get());
@@ -1348,11 +1350,11 @@ AllDownloadsCompleteObserver::AllDownloadsCompleteObserver(
     AutomationProvider* provider,
     IPC::Message* reply_message,
     DownloadManager* download_manager,
-    ListValue* pre_download_ids)
+    base::ListValue* pre_download_ids)
     : provider_(provider->AsWeakPtr()),
       reply_message_(reply_message),
       download_manager_(download_manager) {
-  for (ListValue::iterator it = pre_download_ids->begin();
+  for (base::ListValue::iterator it = pre_download_ids->begin();
        it != pre_download_ids->end(); ++it) {
     int val = 0;
     if ((*it)->GetAsInteger(&val)) {
@@ -1463,11 +1465,11 @@ void AutomationProviderHistoryObserver::HistoryQueryComplete(
     return;
   }
 
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
 
-  ListValue* history_list = new ListValue;
+  base::ListValue* history_list = new base::ListValue;
   for (size_t i = 0; i < results->size(); ++i) {
-    DictionaryValue* page_value = new DictionaryValue;
+    base::DictionaryValue* page_value = new base::DictionaryValue;
     history::URLResult const &page = (*results)[i];
     page_value->SetString("title", page.title());
     page_value->SetString("url", page.url().spec());
@@ -1535,12 +1537,12 @@ void AutomationProviderGetPasswordsObserver::OnPasswordStoreRequestDone(
     return;
   }
 
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
 
-  ListValue* passwords = new ListValue;
+  base::ListValue* passwords = new base::ListValue;
   for (std::vector<autofill::PasswordForm*>::const_iterator it =
            result.begin(); it != result.end(); ++it) {
-    DictionaryValue* password_val = new DictionaryValue;
+    base::DictionaryValue* password_val = new base::DictionaryValue;
     autofill::PasswordForm* password_form = *it;
     password_val->SetString("username_value", password_form->username_value);
     password_val->SetString("password_value", password_form->password_value);
@@ -1641,7 +1643,7 @@ void PasswordStoreLoginsChangedObserver::IndicateDone() {
       AutomationJSONReply(automation_.get(), reply_message_.release())
           .SendSuccess(NULL);
     } else {
-      scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+      scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
       return_value->SetBoolean(result_key_, true);
       AutomationJSONReply(automation_.get(), reply_message_.release())
           .SendSuccess(return_value.get());
@@ -1724,16 +1726,16 @@ namespace {
 // Returns a vector of dictionaries containing information about installed apps,
 // as identified from a given list of extensions.  The caller takes ownership
 // of the created vector.
-std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
+std::vector<base::DictionaryValue*>* GetAppInfoFromExtensions(
     const extensions::ExtensionSet* extensions,
     ExtensionService* ext_service) {
-  std::vector<DictionaryValue*>* apps_list =
-      new std::vector<DictionaryValue*>();
+  std::vector<base::DictionaryValue*>* apps_list =
+      new std::vector<base::DictionaryValue*>();
   for (extensions::ExtensionSet::const_iterator ext = extensions->begin();
        ext != extensions->end(); ++ext) {
     // Only return information about extensions that are actually apps.
     if ((*ext)->is_app()) {
-      DictionaryValue* app_info = new DictionaryValue();
+      base::DictionaryValue* app_info = new base::DictionaryValue();
       AppLauncherHandler::CreateAppInfo(ext->get(), ext_service, app_info);
       app_info->SetBoolean(
           "is_component_extension",
@@ -1771,7 +1773,7 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       request_(0),
-      ntp_info_(new DictionaryValue) {
+      ntp_info_(new base::DictionaryValue) {
   top_sites_ = automation_->profile()->GetTopSites();
   if (!top_sites_) {
     AutomationJSONReply(automation_.get(), reply_message_.release())
@@ -1795,11 +1797,11 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
     return;
   }
   // Process enabled extensions.
-  ListValue* apps_list = new ListValue();
+  base::ListValue* apps_list = new base::ListValue();
   const extensions::ExtensionSet* extensions = ext_service->extensions();
-  std::vector<DictionaryValue*>* enabled_apps = GetAppInfoFromExtensions(
+  std::vector<base::DictionaryValue*>* enabled_apps = GetAppInfoFromExtensions(
       extensions, ext_service);
-  for (std::vector<DictionaryValue*>::const_iterator app =
+  for (std::vector<base::DictionaryValue*>::const_iterator app =
        enabled_apps->begin(); app != enabled_apps->end(); ++app) {
     (*app)->SetBoolean("is_disabled", false);
     apps_list->Append(*app);
@@ -1808,9 +1810,9 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   // Process disabled extensions.
   const extensions::ExtensionSet* disabled_extensions =
       ext_service->disabled_extensions();
-  std::vector<DictionaryValue*>* disabled_apps = GetAppInfoFromExtensions(
+  std::vector<base::DictionaryValue*>* disabled_apps = GetAppInfoFromExtensions(
       disabled_extensions, ext_service);
-  for (std::vector<DictionaryValue*>::const_iterator app =
+  for (std::vector<base::DictionaryValue*>::const_iterator app =
        disabled_apps->begin(); app != disabled_apps->end(); ++app) {
     (*app)->SetBoolean("is_disabled", true);
     apps_list->Append(*app);
@@ -1819,9 +1821,9 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   // Process terminated extensions.
   const extensions::ExtensionSet* terminated_extensions =
       ext_service->terminated_extensions();
-  std::vector<DictionaryValue*>* terminated_apps = GetAppInfoFromExtensions(
-      terminated_extensions, ext_service);
-  for (std::vector<DictionaryValue*>::const_iterator app =
+  std::vector<base::DictionaryValue*>* terminated_apps =
+      GetAppInfoFromExtensions(terminated_extensions, ext_service);
+  for (std::vector<base::DictionaryValue*>::const_iterator app =
        terminated_apps->begin(); app != terminated_apps->end(); ++app) {
     (*app)->SetBoolean("is_disabled", true);
     apps_list->Append(*app);
@@ -1830,16 +1832,16 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   ntp_info_->Set("apps", apps_list);
 
   // Get the info that would be displayed in the recently closed section.
-  ListValue* recently_closed_list = new ListValue;
+  base::ListValue* recently_closed_list = new base::ListValue;
   RecentlyClosedTabsHandler::CreateRecentlyClosedValues(service->entries(),
                                                         recently_closed_list);
   ntp_info_->Set("recently_closed", recently_closed_list);
 
   // Add default site URLs.
-  ListValue* default_sites_list = new ListValue;
+  base::ListValue* default_sites_list = new base::ListValue;
   history::MostVisitedURLList urls = top_sites_->GetPrepopulatePages();
   for (size_t i = 0; i < urls.size(); ++i) {
-    default_sites_list->Append(Value::CreateStringValue(
+    default_sites_list->Append(base::Value::CreateStringValue(
         urls[i].url.possibly_invalid_spec()));
   }
   ntp_info_->Set("default_sites", default_sites_list);
@@ -1883,12 +1885,12 @@ void NTPInfoObserver::OnTopSitesReceived(
     return;
   }
 
-  ListValue* list_value = new ListValue;
+  base::ListValue* list_value = new base::ListValue;
   for (size_t i = 0; i < visited_list.size(); ++i) {
     const history::MostVisitedURL& visited = visited_list[i];
     if (visited.url.spec().empty())
       break;  // This is the signal that there are no more real visited sites.
-    DictionaryValue* dict = new DictionaryValue;
+    base::DictionaryValue* dict = new base::DictionaryValue;
     dict->SetString("url", visited.url.spec());
     dict->SetString("title", visited.title);
     list_value->Append(dict);
@@ -1995,7 +1997,7 @@ void GetAllNotificationsObserver::Observe(
 
 base::DictionaryValue* GetAllNotificationsObserver::NotificationToJson(
     const Notification* note) {
-  DictionaryValue* dict = new base::DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("content_url", note->content_url().spec());
   dict->SetString("origin_url", note->origin_url().spec());
   dict->SetString("display_source", note->display_source());
@@ -2008,8 +2010,8 @@ void GetAllNotificationsObserver::SendMessage() {
       BalloonNotificationUIManager::GetInstanceForTesting();
   const BalloonCollection::Balloons& balloons =
       manager->balloon_collection()->GetActiveBalloons();
-  DictionaryValue return_value;
-  ListValue* list = new ListValue;
+  base::DictionaryValue return_value;
+  base::ListValue* list = new base::ListValue;
   return_value.Set("notifications", list);
   BalloonCollection::Balloons::const_iterator balloon_iter;
   for (balloon_iter = balloons.begin(); balloon_iter != balloons.end();
@@ -2293,31 +2295,31 @@ ProcessInfoObserver::ProcessInfoObserver(
 ProcessInfoObserver::~ProcessInfoObserver() {}
 
 void ProcessInfoObserver::OnDetailsAvailable() {
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
-  ListValue* browser_proc_list = new ListValue();
+  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
+  base::ListValue* browser_proc_list = new base::ListValue();
   const std::vector<ProcessData>& all_processes = processes();
   for (size_t index = 0; index < all_processes.size(); ++index) {
-    DictionaryValue* browser_data = new DictionaryValue();
+    base::DictionaryValue* browser_data = new base::DictionaryValue();
     browser_data->SetString("name", all_processes[index].name);
     browser_data->SetString("process_name", all_processes[index].process_name);
 
-    ListValue* proc_list = new ListValue();
+    base::ListValue* proc_list = new base::ListValue();
     for (ProcessMemoryInformationList::const_iterator iterator =
              all_processes[index].processes.begin();
          iterator != all_processes[index].processes.end(); ++iterator) {
-      DictionaryValue* proc_data = new DictionaryValue();
+      base::DictionaryValue* proc_data = new base::DictionaryValue();
 
       proc_data->SetInteger("pid", iterator->pid);
 
       // Working set (resident) memory usage, in KBytes.
-      DictionaryValue* working_set = new DictionaryValue();
+      base::DictionaryValue* working_set = new base::DictionaryValue();
       working_set->SetInteger("priv", iterator->working_set.priv);
       working_set->SetInteger("shareable", iterator->working_set.shareable);
       working_set->SetInteger("shared", iterator->working_set.shared);
       proc_data->Set("working_set_mem", working_set);
 
       // Committed (resident + paged) memory usage, in KBytes.
-      DictionaryValue* committed = new DictionaryValue();
+      base::DictionaryValue* committed = new base::DictionaryValue();
       committed->SetInteger("priv", iterator->committed.priv);
       committed->SetInteger("mapped", iterator->committed.mapped);
       committed->SetInteger("image", iterator->committed.image);
@@ -2348,10 +2350,12 @@ void ProcessInfoObserver::OnDetailsAvailable() {
       proc_data->SetString("renderer_type", renderer_type);
 
       // Titles associated with this process.
-      ListValue* titles = new ListValue();
+      base::ListValue* titles = new base::ListValue();
       for (size_t title_index = 0; title_index < iterator->titles.size();
-           ++title_index)
-        titles->Append(Value::CreateStringValue(iterator->titles[title_index]));
+           ++title_index) {
+        titles->Append(
+            base::Value::CreateStringValue(iterator->titles[title_index]));
+      }
       proc_data->Set("titles", titles);
 
       proc_list->Append(proc_data);
@@ -2398,7 +2402,7 @@ void V8HeapStatsObserver::Observe(
   ChromeRenderMessageFilter::V8HeapStatsDetails* v8_heap_details =
       content::Details<ChromeRenderMessageFilter::V8HeapStatsDetails>(details)
           .ptr();
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
   return_value->SetInteger("renderer_id", updated_renderer_id);
   return_value->SetInteger("v8_memory_allocated",
                            v8_heap_details->v8_memory_allocated());
@@ -2448,7 +2452,7 @@ void FPSObserver::Observe(
   if (routing_id_ != fps_details->routing_id())
     return;
 
-  scoped_ptr<DictionaryValue> return_value(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> return_value(new base::DictionaryValue);
   return_value->SetInteger("renderer_id", updated_renderer_id);
   return_value->SetInteger("routing_id", fps_details->routing_id());
   return_value->SetDouble("fps", fps_details->fps());

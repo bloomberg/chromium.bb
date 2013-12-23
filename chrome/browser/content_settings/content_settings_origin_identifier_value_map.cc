@@ -120,7 +120,7 @@ OriginIdentifierValueMap::OriginIdentifierValueMap() {}
 
 OriginIdentifierValueMap::~OriginIdentifierValueMap() {}
 
-Value* OriginIdentifierValueMap::GetValue(
+base::Value* OriginIdentifierValueMap::GetValue(
     const GURL& primary_url,
     const GURL& secondary_url,
     ContentSettingsType content_type,
@@ -148,7 +148,7 @@ void OriginIdentifierValueMap::SetValue(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
-    Value* value) {
+    base::Value* value) {
   DCHECK(primary_pattern.IsValid());
   DCHECK(secondary_pattern.IsValid());
   DCHECK(value);

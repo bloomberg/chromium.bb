@@ -233,7 +233,7 @@ void WindowStateManager::OnWindowDestroyed(aura::Window* window) {
 }  // namespace
 
 bool WallpaperPrivateGetStringsFunction::RunImpl() {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   SetResult(dict);
 
 #define SET_STRING(id, idr) \
@@ -842,7 +842,7 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
 
 void WallpaperPrivateGetOfflineWallpaperListFunction::OnComplete(
     const std::vector<std::string>& file_list) {
-  ListValue* results = new ListValue();
+  base::ListValue* results = new base::ListValue();
   results->AppendStrings(file_list);
   SetResult(results);
   SendResponse(true);

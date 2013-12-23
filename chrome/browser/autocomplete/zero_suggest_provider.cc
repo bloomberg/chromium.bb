@@ -133,7 +133,8 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
       source->GetStatus().is_success() && source->GetResponseCode() == 200;
 
   if (request_succeeded) {
-    scoped_ptr<Value> data(SearchProvider::DeserializeJsonData(json_data));
+    scoped_ptr<base::Value> data(
+        SearchProvider::DeserializeJsonData(json_data));
     if (data.get())
       ParseSuggestResults(*data.get());
   }
@@ -196,14 +197,14 @@ ZeroSuggestProvider::~ZeroSuggestProvider() {
 }
 
 void ZeroSuggestProvider::FillResults(
-    const Value& root_val,
+    const base::Value& root_val,
     int* verbatim_relevance,
     SearchProvider::SuggestResults* suggest_results,
     SearchProvider::NavigationResults* navigation_results) {
   base::string16 query;
-  const ListValue* root_list = NULL;
-  const ListValue* results = NULL;
-  const ListValue* relevances = NULL;
+  const base::ListValue* root_list = NULL;
+  const base::ListValue* results = NULL;
+  const base::ListValue* relevances = NULL;
   // The response includes the query, which should be empty for ZeroSuggest
   // responses.
   if (!root_val.GetAsList(&root_list) || !root_list->GetString(0, &query) ||
@@ -211,7 +212,7 @@ void ZeroSuggestProvider::FillResults(
     return;
 
   // 3rd element: Description list.
-  const ListValue* descriptions = NULL;
+  const base::ListValue* descriptions = NULL;
   root_list->GetList(2, &descriptions);
 
   // 4th element: Disregard the query URL list for now.
@@ -220,8 +221,8 @@ void ZeroSuggestProvider::FillResults(
   *verbatim_relevance = kDefaultVerbatimZeroSuggestRelevance;
 
   // 5th element: Optional key-value pairs from the Suggest server.
-  const ListValue* types = NULL;
-  const DictionaryValue* extras = NULL;
+  const base::ListValue* types = NULL;
+  const base::DictionaryValue* extras = NULL;
   if (root_list->GetDictionary(4, &extras)) {
     extras->GetList("google:suggesttype", &types);
 
@@ -374,7 +375,7 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
   LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_SENT);
 }
 
-void ZeroSuggestProvider::ParseSuggestResults(const Value& root_val) {
+void ZeroSuggestProvider::ParseSuggestResults(const base::Value& root_val) {
   SearchProvider::SuggestResults suggest_results;
   FillResults(root_val, &verbatim_relevance_,
               &suggest_results, &navigation_results_);
