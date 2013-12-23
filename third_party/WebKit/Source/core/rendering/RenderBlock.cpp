@@ -727,7 +727,7 @@ void RenderBlock::addChildIgnoringAnonymousColumnBlocks(RenderObject* newChild, 
                 || beforeChildAnonymousContainer->isRenderFullScreenPlaceholder()
                 ) {
                 // Insert the child into the anonymous block box instead of here.
-                if (newChild->isInline() || beforeChild->parent()->firstChild() != beforeChild)
+                if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned() || beforeChild->parent()->firstChild() != beforeChild)
                     beforeChild->parent()->addChild(newChild, beforeChild);
                 else
                     addChild(newChild, beforeChild->parent());
