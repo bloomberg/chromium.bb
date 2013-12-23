@@ -25,19 +25,6 @@ using base::win::ScopedCoMem;
 
 namespace media {
 
-// Compare two sets of audio parameters and return true if they are equal.
-// Note that bits_per_sample() is excluded from this comparison since Core
-// Audio can deal with most bit depths. As an example, if the native/mixing
-// bit depth is 32 bits (default), opening at 16 or 24 still works fine and
-// the audio engine will do the required conversion for us. Channel count is
-// excluded since Open() will fail anyways and it doesn't impact buffering.
-static bool CompareAudioParametersNoBitDepthOrChannels(
-    const media::AudioParameters& a, const media::AudioParameters& b) {
-  return (a.format() == b.format() &&
-          a.sample_rate() == b.sample_rate() &&
-          a.frames_per_buffer() == b.frames_per_buffer());
-}
-
 // static
 AUDCLNT_SHAREMODE WASAPIAudioOutputStream::GetShareMode() {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
@@ -73,7 +60,6 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
       manager_(manager),
       format_(),
       opened_(false),
-      audio_parameters_are_valid_(false),
       volume_(1.0),
       packet_size_frames_(0),
       packet_size_bytes_(0),
@@ -88,23 +74,6 @@ WASAPIAudioOutputStream::WASAPIAudioOutputStream(AudioManagerWin* manager,
   VLOG(1) << "WASAPIAudioOutputStream::WASAPIAudioOutputStream()";
   VLOG_IF(1, share_mode_ == AUDCLNT_SHAREMODE_EXCLUSIVE)
       << "Core Audio (WASAPI) EXCLUSIVE MODE is enabled.";
-
-  if (share_mode_ == AUDCLNT_SHAREMODE_SHARED) {
-    // Verify that the input audio parameters are identical (bit depth and
-    // channel count are excluded) to the preferred (native) audio parameters.
-    // Open() will fail if this is not the case.
-    AudioParameters preferred_params;
-    HRESULT hr = device_id_.empty() ?
-        CoreAudioUtil::GetPreferredAudioParameters(eRender, device_role,
-                                                   &preferred_params) :
-        CoreAudioUtil::GetPreferredAudioParameters(device_id_,
-                                                   &preferred_params);
-    audio_parameters_are_valid_ = SUCCEEDED(hr) &&
-        CompareAudioParametersNoBitDepthOrChannels(params, preferred_params);
-    LOG_IF(WARNING, !audio_parameters_are_valid_)
-        << "Input and preferred parameters are not identical. "
-        << "Device id: " << device_id_;
-  }
 
   // Load the Avrt DLL if not already loaded. Required to support MMCSS.
   bool avrt_init = avrt::Initialize();
@@ -159,15 +128,6 @@ bool WASAPIAudioOutputStream::Open() {
   if (opened_)
     return true;
 
-  // Audio parameters must be identical to the preferred set of parameters
-  // if shared mode (default) is utilized.
-  if (share_mode_ == AUDCLNT_SHAREMODE_SHARED) {
-    if (!audio_parameters_are_valid_) {
-      LOG(ERROR) << "Audio parameters are not valid.";
-      return false;
-    }
-  }
-
   // Create an IAudioClient interface for the default rendering IMMDevice.
   ScopedComPtr<IAudioClient> audio_client;
   if (device_id_.empty()) {
@@ -186,6 +146,7 @@ bool WASAPIAudioOutputStream::Open() {
   if (!CoreAudioUtil::IsFormatSupported(audio_client,
                                         share_mode_,
                                         &format_)) {
+    LOG(ERROR) << "Audio parameters are not supported.";
     return false;
   }
 
@@ -201,10 +162,13 @@ bool WASAPIAudioOutputStream::Open() {
 
     // We know from experience that the best possible callback sequence is
     // achieved when the packet size (given by the native device period)
-    // is an even multiple of the endpoint buffer size.
+    // is an even divisor of the endpoint buffer size.
     // Examples: 48kHz => 960 % 480, 44.1kHz => 896 % 448 or 882 % 441.
     if (endpoint_buffer_size_frames_ % packet_size_frames_ != 0) {
-      LOG(ERROR) << "Bailing out due to non-perfect timing.";
+      LOG(ERROR)
+          << "Bailing out due to non-perfect timing.  Buffer size of "
+          << packet_size_frames_ << " is not an even divisor of "
+          << endpoint_buffer_size_frames_;
       return false;
     }
   } else {

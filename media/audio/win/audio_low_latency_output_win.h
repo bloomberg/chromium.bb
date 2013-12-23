@@ -190,11 +190,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Set to true when stream is successfully opened.
   bool opened_;
 
-  // We check if the input audio parameters are identical (bit depth is
-  // excluded) to the preferred (native) audio parameters during construction.
-  // Open() will fail if |audio_parameters_are_valid_| is false.
-  bool audio_parameters_are_valid_;
-
   // Volume level from 0 to 1.
   float volume_;
 
