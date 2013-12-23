@@ -25,7 +25,7 @@ void GenericHandler::RegisterMessages() {
       base::Bind(&GenericHandler::HandleNavigateToUrl, base::Unretained(this)));
 }
 
-void GenericHandler::HandleNavigateToUrl(const ListValue* args) {
+void GenericHandler::HandleNavigateToUrl(const base::ListValue* args) {
   std::string url_string;
   std::string target_string;
   double button;

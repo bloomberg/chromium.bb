@@ -77,7 +77,7 @@ CHROMEOS_EXPORT int32 NetmaskToPrefixLength(const std::string& netmask);
 // CellularScanResult in |scan_results|. Returns false if parsing fails,
 // in which case the contents of |scan_results| will be undefined.
 CHROMEOS_EXPORT bool ParseCellularScanResults(
-    const ListValue& list, std::vector<CellularScanResult>* scan_results);
+    const base::ListValue& list, std::vector<CellularScanResult>* scan_results);
 
 }  // namespace network_util
 }  // namespace chromeos

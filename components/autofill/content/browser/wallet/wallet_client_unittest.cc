@@ -842,14 +842,15 @@ class WalletClientTest : public testing::Test {
 
  private:
   std::string GetData(const std::string& upload_data) {
-    scoped_ptr<Value> root(base::JSONReader::Read(upload_data));
+    scoped_ptr<base::Value> root(base::JSONReader::Read(upload_data));
 
     // If this is not a JSON dictionary, return plain text.
-    if (!root || !root->IsType(Value::TYPE_DICTIONARY))
+    if (!root || !root->IsType(base::Value::TYPE_DICTIONARY))
       return upload_data;
 
     // Remove api_key entry (to prevent accidental leak), return JSON as text.
-    DictionaryValue* dict = static_cast<DictionaryValue*>(root.get());
+    base::DictionaryValue* dict =
+        static_cast<base::DictionaryValue*>(root.get());
     dict->Remove("api_key", NULL);
     std::string clean_upload_data;
     base::JSONWriter::Write(dict, &clean_upload_data);

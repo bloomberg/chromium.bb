@@ -31,7 +31,7 @@ struct POLICY_EXPORT PolicyToPreferenceMapEntry {
 // their corresponding preferences, and to check whether the policies are valid.
 class POLICY_EXPORT ConfigurationPolicyHandler {
  public:
-  static std::string ValueTypeToString(Value::Type type);
+  static std::string ValueTypeToString(base::Value::Type type);
 
   ConfigurationPolicyHandler();
   virtual ~ConfigurationPolicyHandler();
@@ -76,7 +76,7 @@ class POLICY_EXPORT TypeCheckingPolicyHandler
   // Runs policy checks and returns the policy value if successful.
   bool CheckAndGetValue(const PolicyMap& policies,
                         PolicyErrorMap* errors,
-                        const Value** value);
+                        const base::Value** value);
 
  private:
   // The name of the policy.

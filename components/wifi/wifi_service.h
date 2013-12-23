@@ -45,7 +45,7 @@ class WIFI_EXPORT WiFiService {
   // Get Properties of network identified by |network_guid|. Populates
   // |properties| on success, |error| on failure.
   virtual void GetProperties(const std::string& network_guid,
-                             DictionaryValue* properties,
+                             base::DictionaryValue* properties,
                              std::string* error) = 0;
 
   // Gets the merged properties of the network with id |network_guid| from the
@@ -53,7 +53,7 @@ class WIFI_EXPORT WiFiService {
   // the currently active settings. Populates |managed_properties| on success,
   // |error| on failure.
   virtual void GetManagedProperties(const std::string& network_guid,
-                                    DictionaryValue* managed_properties,
+                                    base::DictionaryValue* managed_properties,
                                     std::string* error) = 0;
 
   // Get the cached read-only properties of the network with id |network_guid|.
@@ -62,7 +62,7 @@ class WIFI_EXPORT WiFiService {
   // returns a subset of the properties returned by |GetProperties|. Populates
   // |properties| on success, |error| on failure.
   virtual void GetState(const std::string& network_guid,
-                        DictionaryValue* properties,
+                        base::DictionaryValue* properties,
                         std::string* error) = 0;
 
   // Set Properties of network identified by |network_guid|. Populates |error|
@@ -83,7 +83,7 @@ class WIFI_EXPORT WiFiService {
   // Get list of visible networks of |network_type| (one of onc::network_type).
   // Populates |network_list| on success.
   virtual void GetVisibleNetworks(const std::string& network_type,
-                                  ListValue* network_list) = 0;
+                                  base::ListValue* network_list) = 0;
 
   // Request network scan. Send |NetworkListChanged| event on completion.
   virtual void RequestNetworkScan() = 0;

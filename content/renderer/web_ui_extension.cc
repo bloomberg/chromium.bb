@@ -120,9 +120,9 @@ void WebUIExtensionWrapper::Send(
 
   // If they've provided an optional message parameter, convert that into a
   // Value to send to the browser process.
-  scoped_ptr<ListValue> content;
+  scoped_ptr<base::ListValue> content;
   if (args[1]->IsUndefined()) {
-    content.reset(new ListValue());
+    content.reset(new base::ListValue());
   } else {
     if (!args[1]->IsObject())
       return;

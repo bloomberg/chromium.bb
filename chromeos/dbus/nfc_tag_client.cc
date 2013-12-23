@@ -102,7 +102,7 @@ class NfcTagClientImpl : public NfcTagClient,
     dbus::MessageWriter array_writer(NULL);
     dbus::MessageWriter dict_entry_writer(NULL);
     writer.OpenArray("{sv}", &array_writer);
-    for (DictionaryValue::Iterator iter(attributes);
+    for (base::DictionaryValue::Iterator iter(attributes);
          !iter.IsAtEnd(); iter.Advance()) {
       array_writer.OpenDictEntry(&dict_entry_writer);
       dict_entry_writer.AppendString(iter.key());

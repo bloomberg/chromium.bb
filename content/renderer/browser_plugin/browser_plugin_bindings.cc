@@ -249,7 +249,7 @@ class BrowserPluginBindingAttach: public BrowserPluginMethodBinding {
     if (!value)
       return false;
 
-    if (!value->IsType(Value::TYPE_DICTIONARY))
+    if (!value->IsType(base::Value::TYPE_DICTIONARY))
       return false;
 
     scoped_ptr<base::DictionaryValue> extra_params(

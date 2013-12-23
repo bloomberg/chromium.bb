@@ -334,7 +334,7 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   scoped_ptr<base::DictionaryValue> gpu_info_val(GpuInfoAsDictionaryValue());
 
   // Add in blacklisting features
-  base::DictionaryValue* feature_status = new DictionaryValue;
+  base::DictionaryValue* feature_status = new base::DictionaryValue;
   feature_status->Set("featureStatus", GetFeatureStatus());
   feature_status->Set("problems", GetProblems());
   feature_status->Set("workarounds", GetDriverBugWorkarounds());

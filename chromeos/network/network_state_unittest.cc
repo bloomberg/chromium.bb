@@ -37,7 +37,7 @@ class TestStringValue : public base::Value {
     return new TestStringValue(value_);
   }
 
-  virtual bool Equals(const Value* other) const OVERRIDE {
+  virtual bool Equals(const base::Value* other) const OVERRIDE {
     if (other->GetType() != GetType())
       return false;
     std::string lhs, rhs;

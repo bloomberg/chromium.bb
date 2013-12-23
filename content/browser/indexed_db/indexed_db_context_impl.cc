@@ -162,19 +162,19 @@ static bool HostNameComparator(const GURL& i, const GURL& j) {
   return i.host() < j.host();
 }
 
-ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
+base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   std::vector<GURL> origins = GetAllOrigins();
 
   std::sort(origins.begin(), origins.end(), HostNameComparator);
 
-  scoped_ptr<ListValue> list(new ListValue());
+  scoped_ptr<base::ListValue> list(new base::ListValue());
   for (std::vector<GURL>::const_iterator iter = origins.begin();
        iter != origins.end();
        ++iter) {
     const GURL& origin_url = *iter;
 
-    scoped_ptr<DictionaryValue> info(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> info(new base::DictionaryValue());
     info->SetString("url", origin_url.spec());
     info->SetString("size", ui::FormatBytes(GetOriginDiskUsage(origin_url)));
     info->SetDouble("last_modified",
@@ -190,14 +190,14 @@ ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
       std::vector<IndexedDBDatabase*> databases =
           factory_->GetOpenDatabasesForOrigin(origin_url);
       // TODO(jsbell): Sort by name?
-      scoped_ptr<ListValue> database_list(new ListValue());
+      scoped_ptr<base::ListValue> database_list(new base::ListValue());
 
       for (std::vector<IndexedDBDatabase*>::iterator it = databases.begin();
            it != databases.end();
            ++it) {
 
         const IndexedDBDatabase* db = *it;
-        scoped_ptr<DictionaryValue> db_info(new DictionaryValue());
+        scoped_ptr<base::DictionaryValue> db_info(new base::DictionaryValue());
 
         db_info->SetString("name", db->name());
         db_info->SetDouble("pending_opens", db->PendingOpenCount());
@@ -208,7 +208,7 @@ ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
                            db->ConnectionCount() - db->PendingUpgradeCount() -
                                db->RunningUpgradeCount());
 
-        scoped_ptr<ListValue> transaction_list(new ListValue());
+        scoped_ptr<base::ListValue> transaction_list(new base::ListValue());
         std::vector<const IndexedDBTransaction*> transactions =
             db->transaction_coordinator().GetTransactions();
         for (std::vector<const IndexedDBTransaction*>::iterator trans_it =
@@ -217,7 +217,8 @@ ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
              ++trans_it) {
 
           const IndexedDBTransaction* transaction = *trans_it;
-          scoped_ptr<DictionaryValue> transaction_info(new DictionaryValue());
+          scoped_ptr<base::DictionaryValue> transaction_info(
+              new base::DictionaryValue());
 
           const char* kModes[] = { "readonly", "readwrite", "versionchange" };
           transaction_info->SetString("mode", kModes[transaction->mode()]);
@@ -257,7 +258,7 @@ ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
           transaction_info->SetDouble(
               "tasks_completed", transaction->diagnostics().tasks_completed);
 
-          scoped_ptr<ListValue> scope(new ListValue());
+          scoped_ptr<base::ListValue> scope(new base::ListValue());
           for (std::set<int64>::const_iterator scope_it =
                    transaction->scope().begin();
                scope_it != transaction->scope().end();

@@ -135,9 +135,9 @@ bool ServiceState::IsValid() const {
 }
 
 std::string ServiceState::ToString() {
-  scoped_ptr<base::DictionaryValue> services(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> services(new base::DictionaryValue());
 
-  scoped_ptr<base::DictionaryValue> cloud_print(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> cloud_print(new base::DictionaryValue());
   cloud_print->SetBoolean(kEnabledOptionName, true);
 
   SetNotEmptyJsonString(cloud_print.get(), kEmailOptionName, email_);

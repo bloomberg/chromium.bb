@@ -11,7 +11,7 @@
 
 namespace content {
 
-bool WebUIMessageHandler::ExtractIntegerValue(const ListValue* value,
+bool WebUIMessageHandler::ExtractIntegerValue(const base::ListValue* value,
                                               int* out_int) {
   std::string string_value;
   if (value->GetString(0, &string_value))
@@ -25,7 +25,7 @@ bool WebUIMessageHandler::ExtractIntegerValue(const ListValue* value,
   return false;
 }
 
-bool WebUIMessageHandler::ExtractDoubleValue(const ListValue* value,
+bool WebUIMessageHandler::ExtractDoubleValue(const base::ListValue* value,
                                              double* out_value) {
   std::string string_value;
   if (value->GetString(0, &string_value))
@@ -36,7 +36,8 @@ bool WebUIMessageHandler::ExtractDoubleValue(const ListValue* value,
   return false;
 }
 
-base::string16 WebUIMessageHandler::ExtractStringValue(const ListValue* value) {
+base::string16 WebUIMessageHandler::ExtractStringValue(
+    const base::ListValue* value) {
   base::string16 string16_value;
   if (value->GetString(0, &string16_value))
     return string16_value;

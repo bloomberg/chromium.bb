@@ -8,8 +8,8 @@
 
 namespace content {
 
-scoped_ptr<ListValue> GetFontList_SlowBlocking() {
-  return scoped_ptr<ListValue>(new ListValue);
+scoped_ptr<base::ListValue> GetFontList_SlowBlocking() {
+  return scoped_ptr<base::ListValue>(new base::ListValue);
 }
 
 }  // namespace content

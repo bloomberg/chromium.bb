@@ -578,7 +578,7 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
       base::test::ParseJson("{ \"bar\": null }").get(), actual_object.get()));
 
   // Everything is null because JSON stringification preserves array length.
-  scoped_ptr<Value> actual_array(converter.FromV8Value(array, context));
+  scoped_ptr<base::Value> actual_array(converter.FromV8Value(array, context));
   EXPECT_TRUE(base::Value::Equals(
       base::test::ParseJson("[ null, null, null ]").get(), actual_array.get()));
 }
@@ -691,7 +691,7 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
 
   // The leaf node shouldn't have any properties.
   base::DictionaryValue empty;
-  EXPECT_TRUE(Value::Equals(&empty, current)) << *current;
+  EXPECT_TRUE(base::Value::Equals(&empty, current)) << *current;
 }
 
 }  // namespace content

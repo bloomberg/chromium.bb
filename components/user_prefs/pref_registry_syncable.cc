@@ -23,28 +23,28 @@ base::Value* CreateLocaleDefaultValue(base::Value::Type type,
   const std::string resource_string = l10n_util::GetStringUTF8(message_id);
   DCHECK(!resource_string.empty());
   switch (type) {
-    case Value::TYPE_BOOLEAN: {
+    case base::Value::TYPE_BOOLEAN: {
       if ("true" == resource_string)
-        return Value::CreateBooleanValue(true);
+        return base::Value::CreateBooleanValue(true);
       if ("false" == resource_string)
-        return Value::CreateBooleanValue(false);
+        return base::Value::CreateBooleanValue(false);
       break;
     }
 
-    case Value::TYPE_INTEGER: {
+    case base::Value::TYPE_INTEGER: {
       int val;
       base::StringToInt(resource_string, &val);
-      return Value::CreateIntegerValue(val);
+      return base::Value::CreateIntegerValue(val);
     }
 
-    case Value::TYPE_DOUBLE: {
+    case base::Value::TYPE_DOUBLE: {
       double val;
       base::StringToDouble(resource_string, &val);
-      return Value::CreateDoubleValue(val);
+      return base::Value::CreateDoubleValue(val);
     }
 
-    case Value::TYPE_STRING: {
-      return Value::CreateStringValue(resource_string);
+    case base::Value::TYPE_STRING: {
+      return base::Value::CreateStringValue(resource_string);
     }
 
     default: {
@@ -53,7 +53,7 @@ base::Value* CreateLocaleDefaultValue(base::Value::Type type,
     }
   }
   NOTREACHED();
-  return Value::CreateNullValue();
+  return base::Value::CreateNullValue();
 }
 
 }  // namespace
@@ -78,7 +78,7 @@ void PrefRegistrySyncable::RegisterBooleanPref(const char* path,
                                                bool default_value,
                                                PrefSyncStatus sync_status) {
   RegisterSyncablePreference(path,
-                             Value::CreateBooleanValue(default_value),
+                             base::Value::CreateBooleanValue(default_value),
                              sync_status);
 }
 
@@ -86,7 +86,7 @@ void PrefRegistrySyncable::RegisterIntegerPref(const char* path,
                                                int default_value,
                                                PrefSyncStatus sync_status) {
   RegisterSyncablePreference(path,
-                             Value::CreateIntegerValue(default_value),
+                             base::Value::CreateIntegerValue(default_value),
                              sync_status);
 }
 
@@ -94,7 +94,7 @@ void PrefRegistrySyncable::RegisterDoublePref(const char* path,
                                               double default_value,
                                               PrefSyncStatus sync_status) {
   RegisterSyncablePreference(path,
-                             Value::CreateDoubleValue(default_value),
+                             base::Value::CreateDoubleValue(default_value),
                              sync_status);
 }
 
@@ -102,7 +102,7 @@ void PrefRegistrySyncable::RegisterStringPref(const char* path,
                                               const std::string& default_value,
                                               PrefSyncStatus sync_status) {
   RegisterSyncablePreference(path,
-                             Value::CreateStringValue(default_value),
+                             base::Value::CreateStringValue(default_value),
                              sync_status);
 }
 
@@ -111,29 +111,30 @@ void PrefRegistrySyncable::RegisterFilePathPref(
     const base::FilePath& default_value,
     PrefSyncStatus sync_status) {
   RegisterSyncablePreference(path,
-                             Value::CreateStringValue(default_value.value()),
+                             base::Value::CreateStringValue(
+                                 default_value.value()),
                              sync_status);
 }
 
 void PrefRegistrySyncable::RegisterListPref(const char* path,
                                             PrefSyncStatus sync_status) {
-  RegisterSyncablePreference(path, new ListValue(), sync_status);
+  RegisterSyncablePreference(path, new base::ListValue(), sync_status);
 }
 
 void PrefRegistrySyncable::RegisterListPref(const char* path,
-                                            ListValue* default_value,
+                                            base::ListValue* default_value,
                                             PrefSyncStatus sync_status) {
   RegisterSyncablePreference(path, default_value, sync_status);
 }
 
 void PrefRegistrySyncable::RegisterDictionaryPref(const char* path,
                                                   PrefSyncStatus sync_status) {
-  RegisterSyncablePreference(path, new DictionaryValue(), sync_status);
+  RegisterSyncablePreference(path, new base::DictionaryValue(), sync_status);
 }
 
 void PrefRegistrySyncable::RegisterDictionaryPref(
     const char* path,
-    DictionaryValue* default_value,
+    base::DictionaryValue* default_value,
     PrefSyncStatus sync_status) {
   RegisterSyncablePreference(path, default_value, sync_status);
 }
@@ -144,7 +145,8 @@ void PrefRegistrySyncable::RegisterLocalizedBooleanPref(
     PrefSyncStatus sync_status) {
   RegisterSyncablePreference(
       path,
-      CreateLocaleDefaultValue(Value::TYPE_BOOLEAN, locale_default_message_id),
+      CreateLocaleDefaultValue(base::Value::TYPE_BOOLEAN,
+                               locale_default_message_id),
       sync_status);
 }
 
@@ -154,7 +156,8 @@ void PrefRegistrySyncable::RegisterLocalizedIntegerPref(
     PrefSyncStatus sync_status) {
   RegisterSyncablePreference(
       path,
-      CreateLocaleDefaultValue(Value::TYPE_INTEGER, locale_default_message_id),
+      CreateLocaleDefaultValue(base::Value::TYPE_INTEGER,
+                               locale_default_message_id),
       sync_status);
 }
 
@@ -164,7 +167,8 @@ void PrefRegistrySyncable::RegisterLocalizedDoublePref(
     PrefSyncStatus sync_status) {
   RegisterSyncablePreference(
       path,
-      CreateLocaleDefaultValue(Value::TYPE_DOUBLE, locale_default_message_id),
+      CreateLocaleDefaultValue(base::Value::TYPE_DOUBLE,
+                               locale_default_message_id),
       sync_status);
 }
 
@@ -174,7 +178,8 @@ void PrefRegistrySyncable::RegisterLocalizedStringPref(
     PrefSyncStatus sync_status) {
   RegisterSyncablePreference(
       path,
-      CreateLocaleDefaultValue(Value::TYPE_STRING, locale_default_message_id),
+      CreateLocaleDefaultValue(base::Value::TYPE_STRING,
+                               locale_default_message_id),
       sync_status);
 }
 
@@ -184,7 +189,7 @@ void PrefRegistrySyncable::RegisterInt64Pref(
     PrefSyncStatus sync_status) {
   RegisterSyncablePreference(
       path,
-      Value::CreateStringValue(base::Int64ToString(default_value)),
+      base::Value::CreateStringValue(base::Int64ToString(default_value)),
       sync_status);
 }
 
@@ -194,7 +199,7 @@ void PrefRegistrySyncable::RegisterUint64Pref(
     PrefSyncStatus sync_status) {
   RegisterSyncablePreference(
       path,
-      Value::CreateStringValue(base::Uint64ToString(default_value)),
+      base::Value::CreateStringValue(base::Uint64ToString(default_value)),
       sync_status);
 }
 

@@ -367,7 +367,7 @@ RendererOverridesHandler::PageGetNavigationHistory(
       result->SetInteger(
           devtools::Page::getNavigationHistory::kResponseCurrentIndex,
           controller.GetCurrentEntryIndex());
-      ListValue* entries = new ListValue();
+      base::ListValue* entries = new base::ListValue();
       for (int i = 0; i != controller.GetEntryCount(); ++i) {
         const NavigationEntry* entry = controller.GetEntryAtIndex(i);
         base::DictionaryValue* entry_value = new base::DictionaryValue();

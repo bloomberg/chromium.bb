@@ -87,7 +87,7 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
     const base::FilePath& context_path) {
   DCHECK(context->TaskRunner()->RunsTasksOnCurrentThread());
 
-  scoped_ptr<ListValue> info_list(static_cast<IndexedDBContextImpl*>(
+  scoped_ptr<base::ListValue> info_list(static_cast<IndexedDBContextImpl*>(
       context.get())->GetAllOriginsDetails());
 
   BrowserThread::PostTask(BrowserThread::UI,
@@ -98,7 +98,7 @@ void IndexedDBInternalsUI::GetAllOriginsOnIndexedDBThread(
                                      context_path));
 }
 
-void IndexedDBInternalsUI::OnOriginsReady(scoped_ptr<ListValue> origins,
+void IndexedDBInternalsUI::OnOriginsReady(scoped_ptr<base::ListValue> origins,
                                           const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   web_ui()->CallJavascriptFunction(

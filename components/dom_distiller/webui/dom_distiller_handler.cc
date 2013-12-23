@@ -36,7 +36,7 @@ void DomDistillerHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void DomDistillerHandler::HandleAddArticle(const ListValue* args) {
+void DomDistillerHandler::HandleAddArticle(const base::ListValue* args) {
   std::string url;
   args->GetString(0, &url);
   GURL gurl(url);
@@ -50,14 +50,14 @@ void DomDistillerHandler::HandleAddArticle(const ListValue* args) {
   }
 }
 
-void DomDistillerHandler::HandleSelectArticle(const ListValue* args) {
+void DomDistillerHandler::HandleSelectArticle(const base::ListValue* args) {
   std::string entry_id;
   args->GetString(0, &entry_id);
 
   // TODO(nyquist): Do something here.
 }
 
-void DomDistillerHandler::HandleRequestEntries(const ListValue* args) {
+void DomDistillerHandler::HandleRequestEntries(const base::ListValue* args) {
   base::ListValue entries;
   const std::vector<ArticleEntry>& entries_specifics = service_->GetEntries();
   for (std::vector<ArticleEntry>::const_iterator it = entries_specifics.begin();

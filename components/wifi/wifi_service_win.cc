@@ -177,15 +177,15 @@ class WiFiServiceImpl : public WiFiService {
   virtual void UnInitialize() OVERRIDE;
 
   virtual void GetProperties(const std::string& network_guid,
-                             DictionaryValue* properties,
+                             base::DictionaryValue* properties,
                              std::string* error) OVERRIDE;
 
   virtual void GetManagedProperties(const std::string& network_guid,
-                                    DictionaryValue* managed_properties,
+                                    base::DictionaryValue* managed_properties,
                                     std::string* error) OVERRIDE;
 
   virtual void GetState(const std::string& network_guid,
-                        DictionaryValue* properties,
+                        base::DictionaryValue* properties,
                         std::string* error) OVERRIDE;
 
   virtual void SetProperties(const std::string& network_guid,
@@ -198,7 +198,7 @@ class WiFiServiceImpl : public WiFiService {
                              std::string* error) OVERRIDE;
 
   virtual void GetVisibleNetworks(const std::string& network_type,
-                                   ListValue* network_list) OVERRIDE;
+                                   base::ListValue* network_list) OVERRIDE;
 
   virtual void RequestNetworkScan() OVERRIDE;
 
@@ -401,7 +401,7 @@ class WiFiServiceImpl : public WiFiService {
   GUID interface_guid_;
   // Temporary storage of network properties indexed by |network_guid|. Persist
   // only in memory.
-  DictionaryValue connect_properties_;
+  base::DictionaryValue connect_properties_;
   // Preserved WLAN profile xml.
   std::map<std::string, std::string> saved_profiles_xml_;
   // Observer to get notified when network(s) have changed (e.g. connect).
@@ -457,7 +457,7 @@ void WiFiServiceImpl::UnInitialize() {
 }
 
 void WiFiServiceImpl::GetProperties(const std::string& network_guid,
-                                    DictionaryValue* properties,
+                                    base::DictionaryValue* properties,
                                     std::string* error) {
   DWORD error_code = EnsureInitialized();
   if (error_code == ERROR_SUCCESS) {
@@ -479,14 +479,15 @@ void WiFiServiceImpl::GetProperties(const std::string& network_guid,
   CheckError(error_code, kWiFiServiceError, error);
 }
 
-void WiFiServiceImpl::GetManagedProperties(const std::string& network_guid,
-                                           DictionaryValue* managed_properties,
-                                           std::string* error) {
+void WiFiServiceImpl::GetManagedProperties(
+    const std::string& network_guid,
+    base::DictionaryValue* managed_properties,
+    std::string* error) {
   CheckError(ERROR_CALL_NOT_IMPLEMENTED, kWiFiServiceError, error);
 }
 
 void WiFiServiceImpl::GetState(const std::string& network_guid,
-                               DictionaryValue* properties,
+                               base::DictionaryValue* properties,
                                std::string* error) {
   CheckError(ERROR_CALL_NOT_IMPLEMENTED, kWiFiServiceError, error);
 }
@@ -550,7 +551,7 @@ void WiFiServiceImpl::CreateNetwork(
 }
 
 void WiFiServiceImpl::GetVisibleNetworks(const std::string& network_type,
-                                         ListValue* network_list) {
+                                         base::ListValue* network_list) {
   if (!network_type.empty() &&
       network_type != onc::network_type::kAllTypes &&
       network_type != onc::network_type::kWiFi) {
@@ -566,7 +567,7 @@ void WiFiServiceImpl::GetVisibleNetworks(const std::string& network_type,
       for (WiFiService::NetworkList::const_iterator it = networks.begin();
            it != networks.end();
            ++it) {
-        scoped_ptr<DictionaryValue> network(it->ToValue(true));
+        scoped_ptr<base::DictionaryValue> network(it->ToValue(true));
         network_list->Append(network.release());
       }
     }
@@ -1261,8 +1262,8 @@ WiFiService::Frequency WiFiServiceImpl::GetConnectedFrequency(
 WiFiService::Frequency WiFiServiceImpl::GetFrequencyToConnect(
     const std::string& network_guid) const {
   // Check whether desired frequency is set in |connect_properties_|.
-  const DictionaryValue* properties;
-  const DictionaryValue* wifi;
+  const base::DictionaryValue* properties;
+  const base::DictionaryValue* wifi;
   int frequency;
   if (connect_properties_.GetDictionaryWithoutPathExpansion(
           network_guid, &properties) &&

@@ -23,19 +23,19 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   scoped_refptr<URLMatcherConditionSet> result;
 
   // Invalid key: {"invalid": "foobar"}
-  DictionaryValue invalid_condition;
+  base::DictionaryValue invalid_condition;
   invalid_condition.SetString("invalid", "foobar");
 
   // Invalid value type: {"hostSuffix": []}
-  DictionaryValue invalid_condition2;
-  invalid_condition2.Set(keys::kHostSuffixKey, new ListValue);
+  base::DictionaryValue invalid_condition2;
+  invalid_condition2.Set(keys::kHostSuffixKey, new base::ListValue);
 
   // Invalid regex value: {"urlMatches": "*"}
-  DictionaryValue invalid_condition3;
+  base::DictionaryValue invalid_condition3;
   invalid_condition3.SetString(keys::kURLMatchesKey, "*");
 
   // Invalid regex value: {"originAndPathMatches": "*"}
-  DictionaryValue invalid_condition4;
+  base::DictionaryValue invalid_condition4;
   invalid_condition4.SetString(keys::kOriginAndPathMatchesKey, "*");
 
   // Valid values:
@@ -47,17 +47,17 @@ TEST(URLMatcherFactoryTest, CreateFromURLFilterDictionary) {
   // }
 
   // Port range: Allow 80;1000-1010.
-  ListValue* port_range = new ListValue();
-  port_range->Append(Value::CreateIntegerValue(1000));
-  port_range->Append(Value::CreateIntegerValue(1010));
-  ListValue* port_ranges = new ListValue();
-  port_ranges->Append(Value::CreateIntegerValue(80));
+  base::ListValue* port_range = new base::ListValue();
+  port_range->Append(base::Value::CreateIntegerValue(1000));
+  port_range->Append(base::Value::CreateIntegerValue(1010));
+  base::ListValue* port_ranges = new base::ListValue();
+  port_ranges->Append(base::Value::CreateIntegerValue(80));
   port_ranges->Append(port_range);
 
-  ListValue* scheme_list = new ListValue();
-  scheme_list->Append(Value::CreateStringValue("http"));
+  base::ListValue* scheme_list = new base::ListValue();
+  scheme_list->Append(base::Value::CreateStringValue("http"));
 
-  DictionaryValue valid_condition;
+  base::DictionaryValue valid_condition;
   valid_condition.SetString(keys::kHostSuffixKey, "example.com");
   valid_condition.SetString(keys::kHostPrefixKey, "www");
   valid_condition.Set(keys::kPortsKey, port_ranges);
@@ -120,28 +120,28 @@ TEST(URLMatcherFactoryTest, UpperCase) {
   scoped_refptr<URLMatcherConditionSet> result;
 
   // {"hostContains": "exaMple"}
-  DictionaryValue invalid_condition1;
+  base::DictionaryValue invalid_condition1;
   invalid_condition1.SetString(keys::kHostContainsKey, "exaMple");
 
   // {"hostSuffix": ".Com"}
-  DictionaryValue invalid_condition2;
+  base::DictionaryValue invalid_condition2;
   invalid_condition2.SetString(keys::kHostSuffixKey, ".Com");
 
   // {"hostPrefix": "WWw."}
-  DictionaryValue invalid_condition3;
+  base::DictionaryValue invalid_condition3;
   invalid_condition3.SetString(keys::kHostPrefixKey, "WWw.");
 
   // {"hostEquals": "WWW.example.Com"}
-  DictionaryValue invalid_condition4;
+  base::DictionaryValue invalid_condition4;
   invalid_condition4.SetString(keys::kHostEqualsKey, "WWW.example.Com");
 
   // {"scheme": ["HTTP"]}
-  ListValue* scheme_list = new ListValue();
-  scheme_list->Append(Value::CreateStringValue("HTTP"));
-  DictionaryValue invalid_condition5;
+  base::ListValue* scheme_list = new base::ListValue();
+  scheme_list->Append(base::Value::CreateStringValue("HTTP"));
+  base::DictionaryValue invalid_condition5;
   invalid_condition5.Set(keys::kSchemesKey, scheme_list);
 
-  const DictionaryValue* invalid_conditions[] = {
+  const base::DictionaryValue* invalid_conditions[] = {
     &invalid_condition1,
     &invalid_condition2,
     &invalid_condition3,
@@ -227,10 +227,10 @@ void UrlConditionCaseTest::Test() const {
 void UrlConditionCaseTest::CheckCondition(
     const std::string& value,
     UrlConditionCaseTest::ResultType expected_result) const {
-  DictionaryValue condition;
+  base::DictionaryValue condition;
   if (use_list_of_strings_) {
-    ListValue* list = new ListValue();
-    list->Append(Value::CreateStringValue(value));
+    base::ListValue* list = new base::ListValue();
+    list->Append(base::Value::CreateStringValue(value));
     condition.SetWithoutPathExpansion(condition_key_, list);
   } else {
     condition.SetStringWithoutPathExpansion(condition_key_, value);

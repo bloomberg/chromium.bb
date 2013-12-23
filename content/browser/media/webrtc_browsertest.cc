@@ -134,8 +134,9 @@ class WebrtcBrowserTest: public ContentBrowserTest {
     double timestamp_ns = 0.0;
     double previous_timestamp_ns = 0.0;
     std::string samples_interarrival_ns;
-    for (ListValue::iterator it = values->begin(); it != values->end(); ++it) {
-      const DictionaryValue* dict;
+    for (base::ListValue::iterator it = values->begin();
+         it != values->end(); ++it) {
+      const base::DictionaryValue* dict;
       EXPECT_TRUE((*it)->GetAsDictionary(&dict));
 
       if (dict->GetInteger("dur", &duration_ns))
@@ -187,8 +188,9 @@ class WebrtcBrowserTest: public ContentBrowserTest {
     base::ListValue* values;
     ASSERT_TRUE(value->GetAsList(&values));
 
-    for (ListValue::iterator it = values->begin(); it != values->end(); ++it) {
-      const DictionaryValue* dict;
+    for (base::ListValue::iterator it = values->begin();
+         it != values->end(); ++it) {
+      const base::DictionaryValue* dict;
       std::string kind;
       std::string id;
       ASSERT_TRUE((*it)->GetAsDictionary(&dict));

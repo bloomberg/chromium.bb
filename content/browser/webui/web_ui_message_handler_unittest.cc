@@ -12,7 +12,7 @@
 namespace content {
 
 TEST(WebUIMessageHandlerTest, ExtractIntegerValue) {
-  ListValue list;
+  base::ListValue list;
   int value, zero_value = 0, neg_value = -1234, pos_value = 1234;
   base::string16 zero_string(UTF8ToUTF16("0"));
   base::string16 neg_string(UTF8ToUTF16("-1234"));

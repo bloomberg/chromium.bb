@@ -275,11 +275,11 @@ base::DictionaryValue* DevToolsProtocol::ParseMessage(
     std::string* error_response) {
   int parse_error_code;
   std::string error_message;
-  scoped_ptr<Value> message(
+  scoped_ptr<base::Value> message(
       base::JSONReader::ReadAndReturnError(
           json, 0, &parse_error_code, &error_message));
 
-  if (!message || !message->IsType(Value::TYPE_DICTIONARY)) {
+  if (!message || !message->IsType(base::Value::TYPE_DICTIONARY)) {
     scoped_refptr<Response> response =
         new Response(0, kErrorParseError, error_message);
     if (error_response)

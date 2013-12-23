@@ -113,8 +113,8 @@ class GLHelperTest : public testing::Test {
     run_loop.Run();
     json_data.append("]");
 
-    scoped_ptr<Value> trace_data(base::JSONReader::Read(json_data));
-    ListValue* list;
+    scoped_ptr<base::Value> trace_data(base::JSONReader::Read(json_data));
+    base::ListValue* list;
     CHECK(trace_data->GetAsList(&list));
     for (size_t i = 0; i < list->GetSize(); i++) {
       base::Value *item = NULL;

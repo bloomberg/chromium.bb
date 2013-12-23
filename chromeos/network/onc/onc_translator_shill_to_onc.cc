@@ -316,7 +316,7 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
     const base::ListValue& list) {
   const OncFieldSignature* field_signature =
       GetFieldSignature(*onc_signature_, onc_field_name);
-  if (field_signature->value_signature->onc_type != Value::TYPE_LIST) {
+  if (field_signature->value_signature->onc_type != base::Value::TYPE_LIST) {
     LOG(ERROR) << "ONC Field name: '" << onc_field_name << "' has type '"
                << field_signature->value_signature->onc_type
                << "', expected: base::Value::TYPE_LIST.";

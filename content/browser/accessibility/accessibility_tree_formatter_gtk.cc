@@ -27,7 +27,7 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
   dict->SetString("description", atk_object_get_description(atk_object));
   AtkStateSet* state_set =
       atk_object_ref_state_set(atk_object);
-  ListValue* states = new base::ListValue;
+  base::ListValue* states = new base::ListValue;
   for (int i = ATK_STATE_INVALID; i < ATK_STATE_LAST_DEFINED; i++) {
     AtkStateType state_type = static_cast<AtkStateType>(i);
     if (atk_state_set_contains_state(state_set, state_type))

@@ -20,7 +20,7 @@ base::DictionaryValue* GetShellConstants() {
   base::DictionaryValue* constants_dict = net::NetLogLogger::GetConstants();
 
   // Add a dictionary with client information
-  base::DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
 
   dict->SetString("name", "content_shell");
   dict->SetString("command_line",

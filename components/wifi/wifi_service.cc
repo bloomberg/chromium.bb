@@ -54,7 +54,7 @@ scoped_ptr<base::DictionaryValue> WiFiService::NetworkProperties::ToValue(
   } else {
     // Add properites from json extra if present.
     if (!json_extra.empty()) {
-      Value* value_extra = base::JSONReader::Read(json_extra);
+      base::Value* value_extra = base::JSONReader::Read(json_extra);
       value->Set(type, value_extra);
     }
   }

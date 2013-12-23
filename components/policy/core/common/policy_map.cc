@@ -48,7 +48,7 @@ bool PolicyMap::Entry::has_higher_priority_than(
 bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
   return level == other.level &&
          scope == other.scope &&
-         Value::Equals(value, other.value) &&
+         base::Value::Equals(value, other.value) &&
          ExternalDataFetcher::Equals(external_data_fetcher,
                                      other.external_data_fetcher);
 }
@@ -65,7 +65,7 @@ const PolicyMap::Entry* PolicyMap::Get(const std::string& policy) const {
   return entry == map_.end() ? NULL : &entry->second;
 }
 
-const Value* PolicyMap::GetValue(const std::string& policy) const {
+const base::Value* PolicyMap::GetValue(const std::string& policy) const {
   PolicyMapType::const_iterator entry = map_.find(policy);
   return entry == map_.end() ? NULL : entry->second.value;
 }
@@ -73,7 +73,7 @@ const Value* PolicyMap::GetValue(const std::string& policy) const {
 void PolicyMap::Set(const std::string& policy,
                     PolicyLevel level,
                     PolicyScope scope,
-                    Value* value,
+                    base::Value* value,
                     ExternalDataFetcher* external_data_fetcher) {
   Entry& entry = map_[policy];
   entry.DeleteOwnedMembers();
@@ -124,11 +124,13 @@ void PolicyMap::MergeFrom(const PolicyMap& other) {
 }
 
 void PolicyMap::LoadFrom(
-    const DictionaryValue* policies,
+    const base::DictionaryValue* policies,
     PolicyLevel level,
     PolicyScope scope) {
-  for (DictionaryValue::Iterator it(*policies); !it.IsAtEnd(); it.Advance())
+  for (base::DictionaryValue::Iterator it(*policies);
+       !it.IsAtEnd(); it.Advance()) {
     Set(it.key(), level, scope, it.value().DeepCopy(), NULL);
+  }
 }
 
 void PolicyMap::GetDifferingKeys(const PolicyMap& other,

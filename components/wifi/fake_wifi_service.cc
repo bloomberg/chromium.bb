@@ -88,7 +88,7 @@ class FakeWiFiService : public WiFiService {
   virtual void UnInitialize() OVERRIDE {}
 
   virtual void GetProperties(const std::string& network_guid,
-                              DictionaryValue* properties,
+                              base::DictionaryValue* properties,
                               std::string* error) OVERRIDE {
     NetworkList::iterator network_properties = FindNetwork(network_guid);
     if (network_properties != networks_.end()) {
@@ -99,7 +99,7 @@ class FakeWiFiService : public WiFiService {
   }
 
   virtual void GetManagedProperties(const std::string& network_guid,
-                                    DictionaryValue* managed_properties,
+                                    base::DictionaryValue* managed_properties,
                                     std::string* error) OVERRIDE {
     const std::string network_properties =
         "{"
@@ -152,14 +152,14 @@ class FakeWiFiService : public WiFiService {
         "    }"
         "  }"
         "}";
-    scoped_ptr<DictionaryValue> properties_value(
-        reinterpret_cast<DictionaryValue*>(
+    scoped_ptr<base::DictionaryValue> properties_value(
+        reinterpret_cast<base::DictionaryValue*>(
             base::JSONReader::Read(network_properties)));
     managed_properties->MergeDictionary(properties_value.get());
   }
 
   virtual void GetState(const std::string& network_guid,
-                        DictionaryValue* properties,
+                        base::DictionaryValue* properties,
                         std::string* error) OVERRIDE {
     NetworkList::iterator network_properties = FindNetwork(network_guid);
     if (network_properties == networks_.end()) {
@@ -178,8 +178,8 @@ class FakeWiFiService : public WiFiService {
         "    \"SignalStrength\": 80"
         "  }"
         "}";
-    scoped_ptr<DictionaryValue> properties_value(
-        reinterpret_cast<DictionaryValue*>(
+    scoped_ptr<base::DictionaryValue> properties_value(
+        reinterpret_cast<base::DictionaryValue*>(
             base::JSONReader::Read(network_state)));
     properties->MergeDictionary(properties_value.get());
   }
@@ -209,14 +209,14 @@ class FakeWiFiService : public WiFiService {
   }
 
   virtual void GetVisibleNetworks(const std::string& network_type,
-                                  ListValue* network_list) OVERRIDE {
+                                  base::ListValue* network_list) OVERRIDE {
     for (WiFiService::NetworkList::const_iterator it = networks_.begin();
          it != networks_.end();
          ++it) {
       if (network_type.empty() ||
           network_type == onc::network_type::kAllTypes ||
           it->type == network_type) {
-        scoped_ptr<DictionaryValue> network(it->ToValue(true));
+        scoped_ptr<base::DictionaryValue> network(it->ToValue(true));
         network_list->Append(network.release());
       }
     }

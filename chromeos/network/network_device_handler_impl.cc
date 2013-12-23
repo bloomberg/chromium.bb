@@ -69,7 +69,7 @@ void RefreshIPConfigsCallback(
     const network_handler::ErrorCallback& error_callback,
     const std::string& device_path,
     const base::DictionaryValue& properties) {
-  const ListValue* ip_configs;
+  const base::ListValue* ip_configs;
   if (!properties.GetListWithoutPathExpansion(
           shill::kIPConfigsProperty, &ip_configs)) {
     NET_LOG_ERROR("RequestRefreshIPConfigs Failed", device_path);

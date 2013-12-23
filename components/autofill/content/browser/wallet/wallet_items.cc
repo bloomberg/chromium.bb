@@ -155,7 +155,7 @@ scoped_ptr<WalletItems::MaskedInstrument>
     return scoped_ptr<MaskedInstrument>();
   }
 
-  const DictionaryValue* address_dict;
+  const base::DictionaryValue* address_dict;
   if (!dictionary.GetDictionary("billing_address", &address_dict)) {
     DLOG(ERROR) << "Response from Google wallet missing address";
     return scoped_ptr<MaskedInstrument>();
@@ -168,7 +168,7 @@ scoped_ptr<WalletItems::MaskedInstrument>
   }
 
   std::vector<base::string16> supported_currencies;
-  const ListValue* supported_currency_list;
+  const base::ListValue* supported_currency_list;
   if (dictionary.GetList("supported_currency", &supported_currency_list)) {
     for (size_t i = 0; i < supported_currency_list->GetSize(); ++i) {
       base::string16 currency;
@@ -437,7 +437,7 @@ WalletItems::~WalletItems() {}
 scoped_ptr<WalletItems>
     WalletItems::CreateWalletItems(const base::DictionaryValue& dictionary) {
   std::vector<RequiredAction> required_action;
-  const ListValue* required_action_list;
+  const base::ListValue* required_action_list;
   if (dictionary.GetList("required_action", &required_action_list)) {
     for (size_t i = 0; i < required_action_list->GetSize(); ++i) {
       std::string action_string;
@@ -501,10 +501,10 @@ scoped_ptr<WalletItems>
     DVLOG(1) << "Response from Google wallet missing GAIA accounts";
   }
 
-  const ListValue* legal_docs;
+  const base::ListValue* legal_docs;
   if (dictionary.GetList("required_legal_document", &legal_docs)) {
     for (size_t i = 0; i < legal_docs->GetSize(); ++i) {
-      const DictionaryValue* legal_doc_dict;
+      const base::DictionaryValue* legal_doc_dict;
       if (legal_docs->GetDictionary(i, &legal_doc_dict)) {
         scoped_ptr<LegalDocument> legal_doc(
             LegalDocument::CreateLegalDocument(*legal_doc_dict));
@@ -524,10 +524,10 @@ scoped_ptr<WalletItems>
     DVLOG(1) << "Response from Google wallet missing legal docs";
   }
 
-  const ListValue* instruments;
+  const base::ListValue* instruments;
   if (dictionary.GetList("instrument", &instruments)) {
     for (size_t i = 0; i < instruments->GetSize(); ++i) {
-      const DictionaryValue* instrument_dict;
+      const base::DictionaryValue* instrument_dict;
       if (instruments->GetDictionary(i, &instrument_dict)) {
         scoped_ptr<MaskedInstrument> instrument(
             MaskedInstrument::CreateMaskedInstrument(*instrument_dict));
@@ -539,10 +539,10 @@ scoped_ptr<WalletItems>
     DVLOG(1) << "Response from Google wallet missing instruments";
   }
 
-  const ListValue* addresses;
+  const base::ListValue* addresses;
   if (dictionary.GetList("address", &addresses)) {
     for (size_t i = 0; i < addresses->GetSize(); ++i) {
-      const DictionaryValue* address_dict;
+      const base::DictionaryValue* address_dict;
       if (addresses->GetDictionary(i, &address_dict)) {
         scoped_ptr<Address> address(
             Address::CreateAddressWithID(*address_dict));

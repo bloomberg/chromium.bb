@@ -68,7 +68,7 @@ void AccessibilityTreeFormatter::Initialize() {
 }
 
 void AccessibilityTreeFormatter::AddProperties(
-    const BrowserAccessibility& node, DictionaryValue* dict) {
+    const BrowserAccessibility& node, base::DictionaryValue* dict) {
   const BrowserAccessibilityAndroid* android_node =
       static_cast<const BrowserAccessibilityAndroid*>(&node);
 
@@ -116,7 +116,7 @@ void AccessibilityTreeFormatter::AddProperties(
 }
 
 base::string16 AccessibilityTreeFormatter::ToString(
-    const DictionaryValue& dict,
+    const base::DictionaryValue& dict,
     const base::string16& indent) {
   base::string16 line;
 

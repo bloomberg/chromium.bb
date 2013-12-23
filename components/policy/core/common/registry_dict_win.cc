@@ -70,7 +70,7 @@ scoped_ptr<base::Value> ConvertValue(const base::Value& value,
       if (value.GetAsInteger(&int_value) ||
           (value.GetAsString(&string_value) &&
            base::StringToInt(string_value, &int_value))) {
-        return make_scoped_ptr(Value::CreateBooleanValue(int_value != 0));
+        return make_scoped_ptr(base::Value::CreateBooleanValue(int_value != 0));
       }
       break;
     }
@@ -198,7 +198,7 @@ void RegistryDict::SetValue(const std::string& name,
     return;
   }
 
-  Value*& entry = values_[name];
+  base::Value*& entry = values_[name];
   delete entry;
   entry = dict.release();
 }

@@ -78,7 +78,8 @@ class POLICY_EXPORT PolicyService {
 // PolicyMap for the given policy namespace.
 class POLICY_EXPORT PolicyChangeRegistrar : public PolicyService::Observer {
  public:
-  typedef base::Callback<void(const Value*, const Value*)> UpdateCallback;
+  typedef base::Callback<void(const base::Value*,
+                              const base::Value*)> UpdateCallback;
 
   // Observes updates to the given (domain, component_id) namespace in the given
   // |policy_service|, and notifies |observer| whenever any of the registered

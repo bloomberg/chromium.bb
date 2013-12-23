@@ -321,7 +321,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
     scope.reset(new v8::Context::Scope(val->CreationContext()));
 
   if (strategy_) {
-    Value* out = NULL;
+    base::Value* out = NULL;
     if (strategy_->FromV8Array(val, &out, isolate))
       return out;
   }
@@ -391,7 +391,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
     scope.reset(new v8::Context::Scope(val->CreationContext()));
 
   if (strategy_) {
-    Value* out = NULL;
+    base::Value* out = NULL;
     if (strategy_->FromV8Object(val, &out, isolate))
       return out;
   }

@@ -118,7 +118,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
   wifi_service->Initialize(NULL);
 
   if (parsed_command_line.HasSwitch("list")) {
-    ListValue network_list;
+    base::ListValue network_list;
     wifi_service->GetVisibleNetworks(std::string(), &network_list);
     VLOG(0) << network_list;
     return true;
@@ -126,7 +126,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
 
   if (parsed_command_line.HasSwitch("get_properties")) {
     if (network_guid.length() > 0) {
-      DictionaryValue properties;
+      base::DictionaryValue properties;
       std::string error;
       wifi_service->GetProperties(network_guid, &properties, &error);
       VLOG(0) << error << ":\n" << properties;
@@ -135,7 +135,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
   }
 
   // Optional properties (frequency, password) to use for connect or create.
-  scoped_ptr<DictionaryValue> properties(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue());
 
   if (!frequency.empty()) {
     int value = 0;

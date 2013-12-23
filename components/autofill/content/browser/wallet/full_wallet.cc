@@ -44,8 +44,8 @@ FullWallet::~FullWallet() {}
 
 // static
 scoped_ptr<FullWallet>
-    FullWallet::CreateFullWallet(const DictionaryValue& dictionary) {
-  const ListValue* required_actions_list;
+    FullWallet::CreateFullWallet(const base::DictionaryValue& dictionary) {
+  const base::ListValue* required_actions_list;
   std::vector<RequiredAction> required_actions;
   if (dictionary.GetList("required_action", &required_actions_list)) {
     for (size_t i = 0; i < required_actions_list->GetSize(); ++i) {
@@ -97,7 +97,7 @@ scoped_ptr<FullWallet>
     return scoped_ptr<FullWallet>();
   }
 
-  const DictionaryValue* billing_address_dict;
+  const base::DictionaryValue* billing_address_dict;
   if (!dictionary.GetDictionary("billing_address", &billing_address_dict)) {
     DLOG(ERROR) << "Response from Google wallet missing billing address";
     return scoped_ptr<FullWallet>();
@@ -110,7 +110,7 @@ scoped_ptr<FullWallet>
     return scoped_ptr<FullWallet>();
   }
 
-  const DictionaryValue* shipping_address_dict;
+  const base::DictionaryValue* shipping_address_dict;
   scoped_ptr<Address> shipping_address;
   if (dictionary.GetDictionary("shipping_address", &shipping_address_dict)) {
     shipping_address =

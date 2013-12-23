@@ -160,7 +160,7 @@ static base::DictionaryValue* GetDictValueStats(
   if (report.values.empty())
     return NULL;
 
-  DictionaryValue* dict = new base::DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetDouble("timestamp", report.timestamp);
 
   base::ListValue* values = new base::ListValue();

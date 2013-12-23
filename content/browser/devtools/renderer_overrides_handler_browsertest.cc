@@ -18,14 +18,15 @@ class RendererOverridesHandlerTest : public ContentBrowserTest {
  protected:
   scoped_refptr<DevToolsProtocol::Response> SendCommand(
       const std::string& method,
-      DictionaryValue* params) {
+      base::DictionaryValue* params) {
     scoped_ptr<RendererOverridesHandler> handler(CreateHandler());
     scoped_refptr<DevToolsProtocol::Command> command(
         DevToolsProtocol::CreateCommand(1, method, params));
     return handler->HandleCommand(command);
   }
 
-  void SendAsyncCommand(const std::string& method, DictionaryValue* params) {
+  void SendAsyncCommand(const std::string& method,
+                        base::DictionaryValue* params) {
     scoped_ptr<RendererOverridesHandler> handler(CreateHandler());
     scoped_refptr<DevToolsProtocol::Command> command(
         DevToolsProtocol::CreateCommand(1, method, params));
@@ -84,7 +85,7 @@ class RendererOverridesHandlerTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(RendererOverridesHandlerTest, QueryUsageAndQuota) {
-  DictionaryValue* params = new DictionaryValue();
+  base::DictionaryValue* params = new base::DictionaryValue();
   params->SetString("securityOrigin", "http://example.com");
   SendAsyncCommand("Page.queryUsageAndQuota", params);
 

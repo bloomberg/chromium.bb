@@ -43,7 +43,7 @@ class POLICY_EXPORT ConfigurationPolicyPrefStore
   virtual bool HasObservers() const OVERRIDE;
   virtual bool IsInitializationComplete() const OVERRIDE;
   virtual bool GetValue(const std::string& key,
-                        const Value** result) const OVERRIDE;
+                        const base::Value** result) const OVERRIDE;
 
   // PolicyService::Observer methods:
   virtual void OnPolicyUpdated(const PolicyNamespace& ns,

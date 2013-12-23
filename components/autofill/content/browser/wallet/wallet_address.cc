@@ -51,7 +51,7 @@ Address* CreateAddressInternal(const base::DictionaryValue& dictionary,
 
   base::string16 address_line_1;
   base::string16 address_line_2;
-  const ListValue* address_line_list;
+  const base::ListValue* address_line_list;
   if (dictionary.GetList("postal_address.address_line", &address_line_list)) {
     if (!address_line_list->GetString(0, &address_line_1))
       DVLOG(1) << "Response from Google Wallet missing address line 1";

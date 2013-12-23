@@ -78,7 +78,7 @@ GURL CreateUpdateUrl(const std::string& device_id) {
 
 std::string LocalSettingsToJson(const LocalSettings& settings) {
   base::DictionaryValue dictionary;
-  scoped_ptr<base::DictionaryValue> current(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> current(new base::DictionaryValue);
 
   // TODO(maksymb): Formalize text as constants.
   current->SetBoolean("local_discovery", settings.local_discovery);

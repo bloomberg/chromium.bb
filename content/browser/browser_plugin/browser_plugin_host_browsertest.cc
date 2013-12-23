@@ -275,7 +275,7 @@ class BrowserPluginHostTest : public ContentBrowserTest {
   bool IsAttributeNull(RenderViewHost* rvh, const std::string& attribute) {
     scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(rvh,
         "document.getElementById('plugin').getAttribute('" + attribute + "');");
-    return value->GetType() == Value::TYPE_NULL;
+    return value->GetType() == base::Value::TYPE_NULL;
   }
 
   // Removes all attributes in the comma-delimited string |attributes|.

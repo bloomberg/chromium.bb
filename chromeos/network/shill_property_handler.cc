@@ -299,7 +299,7 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
       UpdateObserved(ManagedState::MANAGED_TYPE_NETWORK, *vlist);
     }
   } else if (key == shill::kServiceCompleteListProperty) {
-    const ListValue* vlist = GetListValue(key, value);
+    const base::ListValue* vlist = GetListValue(key, value);
     if (vlist) {
       listener_->UpdateManagedList(ManagedState::MANAGED_TYPE_FAVORITE, *vlist);
       UpdateProperties(ManagedState::MANAGED_TYPE_FAVORITE, *vlist);

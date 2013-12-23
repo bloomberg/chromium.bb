@@ -104,7 +104,7 @@ TEST_F(NetworkUtilTest, PrefixLengthToNetmask) {
 }
 
 TEST_F(NetworkUtilTest, ParseScanResults) {
-  ListValue list;
+  base::ListValue list;
   std::vector<CellularScanResult> scan_results;
 
   // Empty list value.
@@ -116,20 +116,20 @@ TEST_F(NetworkUtilTest, ParseScanResults) {
 
   // Scan result has no network id.
   list.Clear();
-  DictionaryValue* dict_value = new DictionaryValue();
+  base::DictionaryValue* dict_value = new base::DictionaryValue();
   dict_value->SetString(shill::kStatusProperty, "available");
   list.Append(dict_value);
   EXPECT_TRUE(ParseCellularScanResults(list, &scan_results));
   EXPECT_TRUE(scan_results.empty());
 
   // Mixed parse results.
-  dict_value = new DictionaryValue();
+  dict_value = new base::DictionaryValue();
   dict_value->SetString(shill::kNetworkIdProperty, "000001");
   dict_value->SetString(shill::kStatusProperty, "unknown");
   dict_value->SetString(shill::kTechnologyProperty, "GSM");
   list.Append(dict_value);
 
-  dict_value = new DictionaryValue();
+  dict_value = new base::DictionaryValue();
   dict_value->SetString(shill::kNetworkIdProperty, "000002");
   dict_value->SetString(shill::kStatusProperty, "available");
   dict_value->SetString(shill::kLongNameProperty, "Long Name");

@@ -69,10 +69,10 @@ void DevToolsTracingHandler::ReadRecordingResult(
   if (trace_data->data().size()) {
     scoped_ptr<base::Value> trace_value(base::JSONReader::Read(
         trace_data->data()));
-    DictionaryValue* dictionary = NULL;
+    base::DictionaryValue* dictionary = NULL;
     bool ok = trace_value->GetAsDictionary(&dictionary);
     DCHECK(ok);
-    ListValue* list = NULL;
+    base::ListValue* list = NULL;
     ok = dictionary->GetList("traceEvents", &list);
     DCHECK(ok);
     std::string buffer;

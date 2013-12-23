@@ -162,12 +162,12 @@ class WalletAddressTest : public testing::Test {
   WalletAddressTest() {}
  protected:
   void SetUpDictionary(const std::string& json) {
-    scoped_ptr<Value> value(base::JSONReader::Read(json));
+    scoped_ptr<base::Value> value(base::JSONReader::Read(json));
     DCHECK(value.get());
-    DCHECK(value->IsType(Value::TYPE_DICTIONARY));
-    dict_.reset(static_cast<DictionaryValue*>(value.release()));
+    DCHECK(value->IsType(base::Value::TYPE_DICTIONARY));
+    dict_.reset(static_cast<base::DictionaryValue*>(value.release()));
   }
-  scoped_ptr<const DictionaryValue> dict_;
+  scoped_ptr<const base::DictionaryValue> dict_;
 };
 
 TEST_F(WalletAddressTest, AddressEqualsIgnoreID) {

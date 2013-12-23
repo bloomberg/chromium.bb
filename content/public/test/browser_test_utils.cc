@@ -82,7 +82,7 @@ class DOMOperationObserver : public NotificationObserver,
 bool ExecuteScriptHelper(RenderViewHost* render_view_host,
                          const std::string& frame_xpath,
                          const std::string& original_script,
-                         scoped_ptr<Value>* result) WARN_UNUSED_RESULT;
+                         scoped_ptr<base::Value>* result) WARN_UNUSED_RESULT;
 
 // Executes the passed |original_script| in the frame pointed to by
 // |frame_xpath|.  If |result| is not NULL, stores the value that the evaluation
@@ -90,7 +90,7 @@ bool ExecuteScriptHelper(RenderViewHost* render_view_host,
 bool ExecuteScriptHelper(RenderViewHost* render_view_host,
                          const std::string& frame_xpath,
                          const std::string& original_script,
-                         scoped_ptr<Value>* result) {
+                         scoped_ptr<base::Value>* result) {
   // TODO(jcampan): we should make the domAutomationController not require an
   //                automation id.
   std::string script =
@@ -415,7 +415,7 @@ bool ExecuteScriptInFrameAndExtractInt(
     const std::string& script,
     int* result) {
   DCHECK(result);
-  scoped_ptr<Value> value;
+  scoped_ptr<base::Value> value;
   if (!ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
                            &value) || !value.get())
     return false;
@@ -429,7 +429,7 @@ bool ExecuteScriptInFrameAndExtractBool(
     const std::string& script,
     bool* result) {
   DCHECK(result);
-  scoped_ptr<Value> value;
+  scoped_ptr<base::Value> value;
   if (!ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
                            &value) || !value.get())
     return false;
@@ -443,7 +443,7 @@ bool ExecuteScriptInFrameAndExtractString(
     const std::string& script,
     std::string* result) {
   DCHECK(result);
-  scoped_ptr<Value> value;
+  scoped_ptr<base::Value> value;
   if (!ExecuteScriptHelper(adapter.render_view_host(), frame_xpath, script,
                            &value) || !value.get())
     return false;

@@ -355,12 +355,12 @@ class FullWalletTest : public testing::Test {
   FullWalletTest() {}
  protected:
   void SetUpDictionary(const std::string& json) {
-    scoped_ptr<Value> value(base::JSONReader::Read(json));
+    scoped_ptr<base::Value> value(base::JSONReader::Read(json));
     ASSERT_TRUE(value.get());
-    ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
-    dict.reset(static_cast<DictionaryValue*>(value.release()));
+    ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
+    dict.reset(static_cast<base::DictionaryValue*>(value.release()));
   }
-  scoped_ptr<DictionaryValue> dict;
+  scoped_ptr<base::DictionaryValue> dict;
 };
 
 TEST_F(FullWalletTest, CreateFullWalletMissingExpirationMonth) {

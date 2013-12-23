@@ -24,7 +24,8 @@ namespace policy {
 // ConfigurationPolicyHandler implementation -----------------------------------
 
 // static
-std::string ConfigurationPolicyHandler::ValueTypeToString(Value::Type type) {
+std::string ConfigurationPolicyHandler::ValueTypeToString(
+    base::Value::Type type) {
   static const char* strings[] = {
     "null",
     "boolean",
@@ -53,7 +54,7 @@ void ConfigurationPolicyHandler::PrepareForDisplaying(
 
 TypeCheckingPolicyHandler::TypeCheckingPolicyHandler(
     const char* policy_name,
-    Value::Type value_type)
+    base::Value::Type value_type)
     : policy_name_(policy_name),
       value_type_(value_type) {
 }
@@ -67,13 +68,13 @@ const char* TypeCheckingPolicyHandler::policy_name() const {
 
 bool TypeCheckingPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
                                                     PolicyErrorMap* errors) {
-  const Value* value = NULL;
+  const base::Value* value = NULL;
   return CheckAndGetValue(policies, errors, &value);
 }
 
 bool TypeCheckingPolicyHandler::CheckAndGetValue(const PolicyMap& policies,
                                                  PolicyErrorMap* errors,
-                                                 const Value** value) {
+                                                 const base::Value** value) {
   *value = policies.GetValue(policy_name_);
   if (*value && !(*value)->IsType(value_type_)) {
     errors->AddError(policy_name_,
@@ -278,7 +279,7 @@ void IntPercentageToDoublePolicyHandler::ApplyPolicySettings(
 SimplePolicyHandler::SimplePolicyHandler(
     const char* policy_name,
     const char* pref_path,
-    Value::Type value_type)
+    base::Value::Type value_type)
     : TypeCheckingPolicyHandler(policy_name, value_type),
       pref_path_(pref_path) {
 }
@@ -290,7 +291,7 @@ void SimplePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                               PrefValueMap* prefs) {
   if (!pref_path_)
     return;
-  const Value* value = policies.GetValue(policy_name());
+  const base::Value* value = policies.GetValue(policy_name());
   if (value)
     prefs->SetValue(pref_path_, value->DeepCopy());
 }

@@ -47,7 +47,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   const std::string& iccid() const { return iccid_; }
   const std::string& mdn() const { return mdn_; }
   const CellularScanResults& scan_results() const { return scan_results_; }
-  const DictionaryValue& properties() const { return properties_; }
+  const base::DictionaryValue& properties() const { return properties_; }
 
   // Ethernet specific accessors
   bool eap_authentication_completed() const {
@@ -83,7 +83,7 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
 
   // Keep all Device properties in a dictionary. Devices are limited and should
   // change rarely if ever, so the overhead for this is small.
-  DictionaryValue properties_;
+  base::DictionaryValue properties_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceState);
 };

@@ -114,7 +114,7 @@ URLMatcherFactory::CreateFromURLFilterDictionary(
   for (base::DictionaryValue::Iterator iter(*url_filter_dict);
        !iter.IsAtEnd(); iter.Advance()) {
     const std::string& condition_attribute_name = iter.key();
-    const Value& condition_attribute_value = iter.value();
+    const base::Value& condition_attribute_value = iter.value();
     if (IsURLMatcherConditionAttribute(condition_attribute_name)) {
       // Handle {host, path, ...}{Prefix, Suffix, Contains, Equals}.
       URLMatcherCondition url_matcher_condition =
@@ -245,9 +245,9 @@ scoped_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
     return scoped_ptr<URLMatcherPortFilter>();
   }
 
-  for (ListValue::const_iterator i = value_list->begin();
+  for (base::ListValue::const_iterator i = value_list->begin();
        i != value_list->end(); ++i) {
-    Value* entry = *i;
+    base::Value* entry = *i;
     int port = 0;
     base::ListValue* range = NULL;
     if (entry->GetAsInteger(&port)) {
