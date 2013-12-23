@@ -7,6 +7,7 @@
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/rect.h"
@@ -80,6 +81,15 @@ bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
                         const gfx::Rect& snapshot_bounds) {
   return GrabViewSnapshot(GTK_WIDGET(window_handle), png_representation,
       snapshot_bounds);
+}
+
+SNAPSHOT_EXPORT void GrapWindowSnapshotAsync(
+    gfx::NativeWindow window,
+    const gfx::Rect& snapshot_bounds,
+    const gfx::Size& target_size,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    GrapWindowSnapshotAsyncCallback callback) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace ui

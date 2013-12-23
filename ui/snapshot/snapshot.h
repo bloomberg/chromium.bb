@@ -7,18 +7,28 @@
 
 #include <vector>
 
+#include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/snapshot/snapshot_export.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace gfx {
 class Rect;
+class Image;
+class Size;
 }
 
 namespace ui {
 
-// Grabs a snapshot of the window/view. No security checks are done.
-// This is intended to be used for debugging purposes where no BrowserProcess
-// instance is available (ie. tests). DO NOT use in a result of user action.
+// Grabs a snapshot of the window/view. No security checks are done. This is
+// intended to be used for debugging purposes where no BrowserProcess instance
+// is available (ie. tests). This function is synchronous, so it should NOT be
+// used in a result of user action. Use asynchronous GrapWindowSnapshotAsync()
+// instead.
 SNAPSHOT_EXPORT bool GrabWindowSnapshot(
     gfx::NativeWindow window,
     std::vector<unsigned char>* png_representation,
@@ -28,6 +38,17 @@ SNAPSHOT_EXPORT bool GrabViewSnapshot(
     gfx::NativeView view,
     std::vector<unsigned char>* png_representation,
     const gfx::Rect& snapshot_bounds);
+
+// GrapWindowSnapshotAsync() copies snapshot of |source_rect| from window and
+// scales it to |target_size| asynchronously.
+typedef base::Callback<void(const gfx::Image& snapshot)>
+    GrapWindowSnapshotAsyncCallback;
+SNAPSHOT_EXPORT void GrapWindowSnapshotAsync(
+    gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
+    const gfx::Size& target_size,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    const GrapWindowSnapshotAsyncCallback& callback);
 
 }  // namespace ui
 

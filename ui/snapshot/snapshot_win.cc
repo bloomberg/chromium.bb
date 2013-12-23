@@ -4,6 +4,7 @@
 
 #include "ui/snapshot/snapshot_win.h"
 
+#include "base/callback.h"
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
@@ -103,6 +104,7 @@ bool GrabHwndSnapshot(HWND window_handle,
 }  // namespace internal
 
 #if !defined(USE_AURA)
+
 bool GrabViewSnapshot(gfx::NativeView view_handle,
                       std::vector<unsigned char>* png_representation,
                       const gfx::Rect& snapshot_bounds) {
@@ -116,6 +118,16 @@ bool GrabWindowSnapshot(gfx::NativeWindow window_handle,
   return internal::GrabHwndSnapshot(window_handle, snapshot_bounds,
                                     png_representation);
 }
+
+SNAPSHOT_EXPORT void GrapWindowSnapshotAsync(
+    gfx::NativeWindow window,
+    const gfx::Rect& snapshot_bounds,
+    const gfx::Size& target_size,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    GrapWindowSnapshotAsyncCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 #endif  // !defined(USE_AURA)
 
 }  // namespace ui
