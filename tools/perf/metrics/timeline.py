@@ -97,7 +97,6 @@ class LoadTimesTimelineMetric(TimelineMetric):
 # Since we can't isolate renderer threads in single-process mode, we
 # always sum renderer-process threads' times. We also sum all io-threads
 # for simplicity.
-MatchBySubString = ["IOThread", "CompositorRasterWorker"]
 TimelineThreadCategories =  {
   "Chrome_InProcGpuThread": "GPU",
   "CrGPUMain"             : "GPU",
@@ -109,6 +108,12 @@ TimelineThreadCategories =  {
   "IOThread"              : "IO",
   "CompositorRasterWorker": "raster"
 }
+MatchBySubString = ["IOThread", "CompositorRasterWorker"]
+FastPath = ["GPU",
+            "browser_main",
+            "browser_compositor",
+            "renderer_compositor",
+            "IO"]
 
 def ThreadTimePercentageName(category):
   return "thread_" + category + "_clock_time_percentage"
@@ -122,12 +127,12 @@ class ThreadTimesTimelineMetric(TimelineMetric):
 
   def AddResults(self, tab, results):
     # Default each category to zero for consistant results.
-    category_clock_times = collections.defaultdict(float)
-    category_cpu_times = collections.defaultdict(float)
+    clock_times = collections.defaultdict(float)
+    cpu_times = collections.defaultdict(float)
 
     for category in TimelineThreadCategories.values():
-      category_clock_times[category] = 0
-      category_cpu_times[category] = 0
+      clock_times[category] = 0
+      cpu_times[category] = 0
 
     # Add up thread time for all threads we care about.
     for thread in self._model.GetAllThreads():
@@ -147,15 +152,21 @@ class ThreadTimesTimelineMetric(TimelineMetric):
       for event in thread.toplevel_slices:
         if not event.duration:
           continue
-        category_clock_times[thread_category] += event.duration
+        clock_times[thread_category] += event.duration
         if not event.thread_duration == None:
-          category_cpu_times[thread_category] += event.thread_duration
+          cpu_times[thread_category] += event.thread_duration
         else:
           have_thread_durations = False
 
       # Only report thread-duration if we have it for all events.
       if not have_thread_durations:
-        category_cpu_times[thread_category] = 0
+        cpu_times[thread_category] = 0
+
+    # Report the total critical-path CPU usage.
+    total_clock = sum([clock_times[category] for category in FastPath])
+    total_cpu = sum([cpu_times[category] for category in FastPath])
+    clock_times["total_fast_path"] = total_clock
+    cpu_times["total_fast_path"] = total_cpu
 
     # Now report each category. We report the percentage of time that
     # the thread is running rather than absolute time, to represent how
@@ -163,13 +174,15 @@ class ThreadTimesTimelineMetric(TimelineMetric):
     # is changed due to scheduling changes (eg. more frames produced
     # in the same time period). It would be nice if we could correct
     # for that somehow.
-    for category, category_time in category_clock_times.iteritems():
+    for category, category_time in clock_times.iteritems():
       report_name = ThreadTimePercentageName(category)
       time_as_percentage = (category_time / self._model.bounds.bounds) * 100
       results.Add(report_name, '%', time_as_percentage)
 
     # Do the same for CPU (scheduled) time.
-    for category, category_time in category_cpu_times.iteritems():
+    for category, category_time in cpu_times.iteritems():
       report_name = ThreadCPUTimePercentageName(category)
       time_as_percentage = (category_time / self._model.bounds.bounds) * 100
       results.Add(report_name, '%', time_as_percentage)
+
+
