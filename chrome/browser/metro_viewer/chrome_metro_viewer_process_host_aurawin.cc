@@ -55,7 +55,7 @@ void CloseOpenAshBrowsers() {
 
 void OpenURL(const GURL& url) {
   chrome::NavigateParams params(
-      ProfileManager::GetActiveUserProfileOrOffTheRecord(),
+      ProfileManager::GetActiveUserProfile(),
       GURL(url),
       content::PAGE_TRANSITION_TYPED);
   params.disposition = NEW_FOREGROUND_TAB;
@@ -140,7 +140,7 @@ void ChromeMetroViewerProcessHost::OnOpenURL(const base::string16& url) {
 void ChromeMetroViewerProcessHost::OnHandleSearchRequest(
     const base::string16& search_string) {
   GURL url(GetDefaultSearchURLForSearchTerms(
-      ProfileManager::GetActiveUserProfileOrOffTheRecord(), search_string));
+      ProfileManager::GetActiveUserProfile(), search_string));
   if (url.is_valid())
     OpenURL(url);
 }

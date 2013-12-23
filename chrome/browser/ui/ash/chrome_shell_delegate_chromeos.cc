@@ -143,7 +143,7 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
 
   virtual void TriggerAccessibilityAlert(
       ash::AccessibilityAlert alert) OVERRIDE {
-    Profile* profile = ProfileManager::GetActiveUserProfileOrOffTheRecord();
+    Profile* profile = ProfileManager::GetActiveUserProfile();
     if (profile) {
       switch (alert) {
         case ash::A11Y_ALERT_WINDOW_NEEDED: {
@@ -178,19 +178,19 @@ class MediaDelegateImpl : public ash::MediaDelegate {
 
   virtual void HandleMediaNextTrack() OVERRIDE {
     extensions::MediaPlayerAPI::Get(
-        ProfileManager::GetActiveUserProfileOrOffTheRecord())->
+        ProfileManager::GetActiveUserProfile())->
             media_player_event_router()->NotifyNextTrack();
   }
 
   virtual void HandleMediaPlayPause() OVERRIDE {
     extensions::MediaPlayerAPI::Get(
-        ProfileManager::GetActiveUserProfileOrOffTheRecord())->
+        ProfileManager::GetActiveUserProfile())->
             media_player_event_router()->NotifyTogglePlayState();
   }
 
   virtual void HandleMediaPrevTrack() OVERRIDE {
     extensions::MediaPlayerAPI::Get(
-        ProfileManager::GetActiveUserProfileOrOffTheRecord())->
+        ProfileManager::GetActiveUserProfile())->
             media_player_event_router()->NotifyPrevTrack();
   }
 

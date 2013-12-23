@@ -287,7 +287,7 @@ bool CreateDialog(const std::string& service_path,
 
   Browser* browser = chrome::FindBrowserWithWindow(owning_window);
   Profile* profile = browser ? browser->profile() :
-      ProfileManager::GetPrimaryUserProfileOrOffTheRecord();
+      ProfileManager::GetPrimaryUserProfile();
   DialogEnrollmentDelegate* enrollment =
       new DialogEnrollmentDelegate(owning_window, network->name(), profile);
   return enrollment->Enroll(certificate_pattern.enrollment_uri_list(),

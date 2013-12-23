@@ -46,7 +46,7 @@ gfx::NativeWindow GetParentForUnhostedDialog() {
     return chromeos::LoginDisplayHostImpl::default_host()->GetNativeWindow();
   } else {
     Browser* browser = chrome::FindTabbedBrowser(
-        ProfileManager::GetPrimaryUserProfileOrOffTheRecord(),
+        ProfileManager::GetPrimaryUserProfile(),
         true,
         chrome::HOST_DESKTOP_TYPE_ASH);
     if (browser)

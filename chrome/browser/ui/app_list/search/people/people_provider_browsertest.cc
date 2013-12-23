@@ -174,7 +174,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
                    base::Unretained(this)));
 
     people_provider_.reset(new PeopleProvider(
-        ProfileManager::GetActiveUserProfileOrOffTheRecord()));
+        ProfileManager::GetActiveUserProfile()));
 
     people_provider_->SetupForTest(
         base::Bind(&PeopleProviderTest::OnSearchResultsFetched,
