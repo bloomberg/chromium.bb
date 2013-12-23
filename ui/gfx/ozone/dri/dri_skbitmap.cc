@@ -31,7 +31,8 @@ void DestroyDumbBuffer(int fd, uint32_t handle) {
 // pixel memory.
 class DriSkPixelRef : public SkPixelRef {
  public:
-  DriSkPixelRef(void* pixels,
+  DriSkPixelRef(const SkImageInfo& info,
+                void* pixels,
                 SkColorTable* color_table_,
                 size_t size,
                 int fd,
@@ -66,12 +67,14 @@ class DriSkPixelRef : public SkPixelRef {
 // DriSkPixelRef implementation
 
 DriSkPixelRef::DriSkPixelRef(
+    const SkImageInfo& info,
     void* pixels,
     SkColorTable* color_table,
     size_t size,
     int fd,
     uint32_t handle)
-  : pixels_(pixels),
+  : SkPixelRef(info),
+    pixels_(pixels),
     color_table_(color_table),
     size_(size),
     fd_(fd),
@@ -158,7 +161,15 @@ bool DriAllocator::AllocatePixels(DriSkBitmap* bitmap,
     return false;
   }
 
+  SkImageInfo info;
+  if (!bitmap->asImageInfo(&info)) {
+    DLOG(ERROR) << "Cannot get skia image info";
+    DestroyDumbBuffer(bitmap->get_fd(), bitmap->get_handle());
+    return false;
+  }
+
   bitmap->setPixelRef(new DriSkPixelRef(
+      info,
       pixels,
       color_table,
       bitmap->getSize(),
