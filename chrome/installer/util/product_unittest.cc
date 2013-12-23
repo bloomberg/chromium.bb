@@ -108,7 +108,7 @@ TEST_F(ProductTest, MAYBE_ProductInstallBasic) {
     ASSERT_TRUE(version_key.Valid());
 
     const char kCurrentVersion[] = "1.2.3.4";
-    Version current_version(kCurrentVersion);
+    base::Version current_version(kCurrentVersion);
     version_key.WriteValue(google_update::kRegVersionField,
                            UTF8ToWide(current_version.GetString()).c_str());
 

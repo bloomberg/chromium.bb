@@ -55,7 +55,7 @@ class BrowserDistribution {
   Type GetType() const { return type_; }
 
   virtual void DoPostUninstallOperations(
-      const Version& version,
+      const base::Version& version,
       const base::FilePath& local_data_path,
       const base::string16& distribution_data);
 

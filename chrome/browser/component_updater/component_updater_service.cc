@@ -73,8 +73,8 @@ static std::string HexStringToID(const std::string& hexstr) {
 }
 
 // Returns true if the |proposed| version is newer than |current| version.
-bool IsVersionNewer(const Version& current, const std::string& proposed) {
-  Version proposed_ver(proposed);
+bool IsVersionNewer(const base::Version& current, const std::string& proposed) {
+  base::Version proposed_ver(proposed);
   return proposed_ver.IsValid() && current.CompareTo(proposed_ver) < 0;
 }
 
@@ -329,7 +329,7 @@ class CrxUpdateService : public ComponentUpdateService {
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  const Version chrome_version_;
+  const base::Version chrome_version_;
 
   bool running_;
 
@@ -738,7 +738,7 @@ void CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
   item->crx_urls.clear();
   item->crx_diffurls.clear();
   item->previous_version = item->component.version;
-  item->next_version = Version();
+  item->next_version = base::Version();
   item->previous_fp = item->component.fingerprint;
   item->next_fp.clear();
   item->diff_update_failed = false;
@@ -849,7 +849,7 @@ void CrxUpdateService::OnParseUpdateResponseSucceeded(
     }
 
     // Parse the members of the result and queue an upgrade for this component.
-    crx->next_version = Version(it->manifest.version);
+    crx->next_version = base::Version(it->manifest.version);
 
     typedef component_updater::
         UpdateResponse::Result::Manifest::Package Package;

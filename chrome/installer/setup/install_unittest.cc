@@ -38,7 +38,7 @@ class CreateVisualElementsManifestTest : public testing::Test {
     // Create a temp directory for testing.
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
 
-    version_ = Version("0.0.0.0");
+    version_ = base::Version("0.0.0.0");
 
     version_dir_ = test_dir_.path().AppendASCII(version_.GetString());
     ASSERT_TRUE(base::CreateDirectory(version_dir_));
@@ -56,7 +56,7 @@ class CreateVisualElementsManifestTest : public testing::Test {
   base::ScopedTempDir test_dir_;
 
   // A dummy version number used to create the version directory.
-  Version version_;
+  base::Version version_;
 
   // The path to |test_dir_|\|version_|.
   base::FilePath version_dir_;

@@ -41,9 +41,9 @@ TEST(PluginMetadataTest, SecurityStatus) {
   EXPECT_EQ(kRequiresAuthorization,
             GetSecurityStatus(&plugin_metadata, "1.2.3"));
 
-  plugin_metadata.AddVersion(Version("9.4.1"), kRequiresAuthorization);
-  plugin_metadata.AddVersion(Version("10"), kOutOfDate);
-  plugin_metadata.AddVersion(Version("10.2.1"), kUpToDate);
+  plugin_metadata.AddVersion(base::Version("9.4.1"), kRequiresAuthorization);
+  plugin_metadata.AddVersion(base::Version("10"), kOutOfDate);
+  plugin_metadata.AddVersion(base::Version("10.2.1"), kUpToDate);
 
   // Invalid version.
   EXPECT_EQ(kOutOfDate, GetSecurityStatus(&plugin_metadata, "foo"));

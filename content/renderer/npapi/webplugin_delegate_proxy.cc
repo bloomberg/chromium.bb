@@ -23,7 +23,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/version.h"
 #include "content/child/child_process.h"
 #include "content/child/npapi/npobject_proxy.h"
 #include "content/child/npapi/npobject_stub.h"

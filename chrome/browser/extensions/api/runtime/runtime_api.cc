@@ -215,7 +215,7 @@ void RuntimeAPI::OnExtensionLoaded(const Extension* extension) {
       base::Bind(&RuntimeEventRouter::DispatchOnInstalledEvent,
                  browser_context_,
                  extension->id(),
-                 Version(),
+                 base::Version(),
                  true));
 }
 
@@ -224,7 +224,7 @@ void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
       browser_context_)->extension_service();
   const Extension* old = service->GetExtensionById(extension->id(), true);
-  Version old_version;
+  base::Version old_version;
   if (old)
     old_version = *old->version();
 
@@ -269,7 +269,7 @@ void RuntimeEventRouter::DispatchOnStartupEvent(
 void RuntimeEventRouter::DispatchOnInstalledEvent(
     content::BrowserContext* context,
     const std::string& extension_id,
-    const Version& old_version,
+    const base::Version& old_version,
     bool chrome_updated) {
   if (!ExtensionsBrowserClient::Get()->IsValidContext(context))
     return;
@@ -477,9 +477,10 @@ void RuntimeRequestUpdateCheckFunction::Observe(
     return;
 
   DCHECK(type == chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND);
-  typedef const std::pair<std::string, Version> UpdateDetails;
+  typedef const std::pair<std::string, base::Version> UpdateDetails;
   const std::string& id = content::Details<UpdateDetails>(details)->first;
-  const Version& version = content::Details<UpdateDetails>(details)->second;
+  const base::Version& version =
+      content::Details<UpdateDetails>(details)->second;
   if (id == extension_id()) {
     ReplyUpdateFound(version.GetString());
   }

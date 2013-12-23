@@ -1831,7 +1831,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
 void ExtensionService::AddComponentExtension(const Extension* extension) {
   const std::string old_version_string(
       extension_prefs_->GetVersionString(extension->id()));
-  const Version old_version(old_version_string);
+  const base::Version old_version(old_version_string);
 
   VLOG(1) << "AddComponentExtension " << extension->name();
   if (!old_version.IsValid() || !old_version.Equals(*extension->version())) {
@@ -2007,7 +2007,7 @@ ExtensionService::ImportStatus ExtensionService::CheckImports(
         SharedModuleInfo::GetImports(extension);
     std::vector<SharedModuleInfo::ImportInfo>::const_iterator i;
     for (i = imports.begin(); i != imports.end(); ++i) {
-      Version version_required(i->minimum_version);
+      base::Version version_required(i->minimum_version);
       const Extension* imported_module =
           GetExtensionById(i->extension_id, true);
       if (!imported_module) {
@@ -2404,7 +2404,7 @@ bool ExtensionService::ShouldBlockUrlInBrowserTab(GURL* url) {
 
 bool ExtensionService::OnExternalExtensionFileFound(
          const std::string& id,
-         const Version* version,
+         const base::Version* version,
          const base::FilePath& path,
          Manifest::Location location,
          int creation_flags,

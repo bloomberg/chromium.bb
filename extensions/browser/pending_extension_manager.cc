@@ -22,7 +22,7 @@ bool AlwaysInstall(const extensions::Extension* extension) {
   return true;
 }
 
-std::string GetVersionString(const Version& version) {
+std::string GetVersionString(const base::Version& version) {
   return version.IsValid() ? version.GetString() : "invalid";
 }
 
@@ -109,7 +109,7 @@ bool PendingExtensionManager::AddFromSync(
   const Manifest::Location kSyncLocation = Manifest::INTERNAL;
   const bool kMarkAcknowledged = false;
 
-  return AddExtensionImpl(id, update_url, Version(), should_allow_install,
+  return AddExtensionImpl(id, update_url, base::Version(), should_allow_install,
                           kIsFromSync, install_silently, kSyncLocation,
                           Extension::NO_FLAGS, kMarkAcknowledged);
 }
@@ -131,7 +131,7 @@ bool PendingExtensionManager::AddFromExtensionImport(
   const Manifest::Location kManifestLocation = Manifest::INTERNAL;
   const bool kMarkAcknowledged = false;
 
-  return AddExtensionImpl(id, update_url, Version(), should_allow_install,
+  return AddExtensionImpl(id, update_url, base::Version(), should_allow_install,
                           kIsFromSync, kInstallSilently, kManifestLocation,
                           Extension::NO_FLAGS, kMarkAcknowledged);
 }
@@ -164,7 +164,7 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
     }
   }
 
-  return AddExtensionImpl(id, update_url, Version(), &AlwaysInstall,
+  return AddExtensionImpl(id, update_url, base::Version(), &AlwaysInstall,
                           kIsFromSync, kInstallSilently,
                           location, creation_flags, mark_acknowledged);
 }
@@ -173,7 +173,7 @@ bool PendingExtensionManager::AddFromExternalUpdateUrl(
 bool PendingExtensionManager::AddFromExternalFile(
     const std::string& id,
     Manifest::Location install_source,
-    const Version& version,
+    const base::Version& version,
     int creation_flags,
     bool mark_acknowledged) {
   // TODO(skerner): AddFromSync() checks to see if the extension is
@@ -218,7 +218,7 @@ void PendingExtensionManager::GetPendingIdsForUpdateCheck(
 bool PendingExtensionManager::AddExtensionImpl(
     const std::string& id,
     const GURL& update_url,
-    const Version& version,
+    const base::Version& version,
     PendingExtensionInfo::ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     bool install_silently,

@@ -136,7 +136,7 @@ BrowserDistribution* BrowserDistribution::GetSpecificDistribution(
 }
 
 void BrowserDistribution::DoPostUninstallOperations(
-    const Version& version, const base::FilePath& local_data_path,
+    const base::Version& version, const base::FilePath& local_data_path,
     const base::string16& distribution_data) {
 }
 

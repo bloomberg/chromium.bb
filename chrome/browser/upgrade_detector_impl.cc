@@ -218,8 +218,8 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
     base::WeakPtr<UpgradeDetectorImpl> upgrade_detector) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
-  Version installed_version;
-  Version critical_update;
+  base::Version installed_version;
+  base::Version critical_update;
 
 #if defined(OS_WIN)
   // Get the version of the currently *installed* instance of Chrome,
@@ -238,7 +238,7 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
   }
 #elif defined(OS_MACOSX)
   installed_version =
-      Version(UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));
+      base::Version(UTF16ToASCII(keystone_glue::CurrentlyInstalledVersion()));
 #elif defined(OS_POSIX)
   // POSIX but not Mac OS X: Linux, etc.
   CommandLine command_line(*CommandLine::ForCurrentProcess());
@@ -249,7 +249,7 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
     return;
   }
 
-  installed_version = Version(reply);
+  installed_version = base::Version(reply);
 #endif
 
   // Get the version of the currently *running* instance of Chrome.
@@ -258,7 +258,7 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
     NOTREACHED() << "Failed to get current file version";
     return;
   }
-  Version running_version(version_info.Version());
+  base::Version running_version(version_info.Version());
   if (!running_version.IsValid()) {
     NOTREACHED();
     return;

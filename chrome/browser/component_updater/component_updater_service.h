@@ -100,7 +100,7 @@ struct CrxComponent {
   std::vector<uint8> pk_hash;
   ComponentInstaller* installer;
   ComponentObserver* observer;
-  Version version;
+  base::Version version;
   std::string fingerprint;
   std::string name;
   CrxComponent();

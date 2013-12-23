@@ -12,7 +12,6 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/version.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"

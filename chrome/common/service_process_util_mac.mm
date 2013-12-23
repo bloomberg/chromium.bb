@@ -203,7 +203,7 @@ bool CheckServiceProcessReady() {
   if (!GetServiceProcessData(&version, &pid)) {
     return false;
   }
-  Version service_version(version);
+  base::Version service_version(version);
   bool ready = true;
   if (!service_version.IsValid()) {
     ready = false;
@@ -216,7 +216,7 @@ bool CheckServiceProcessReady() {
       ready = true;
     }
     else {
-      Version running_version(version_info.Version());
+      base::Version running_version(version_info.Version());
       if (!running_version.IsValid()) {
         // Our own version is invalid. This is an error case. Pretend that we
         // are out of date.

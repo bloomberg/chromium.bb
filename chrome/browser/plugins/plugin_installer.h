@@ -7,7 +7,6 @@
 
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "base/version.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "content/public/browser/download_item.h"
 #include "net/base/net_errors.h"

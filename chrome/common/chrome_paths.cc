@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/version.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/widevine_cdm_constants.h"

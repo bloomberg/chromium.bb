@@ -590,7 +590,7 @@ bool Extension::LoadVersion(base::string16* error) {
     *error = ASCIIToUTF16(errors::kInvalidVersion);
     return false;
   }
-  version_.reset(new Version(version_str));
+  version_.reset(new base::Version(version_str));
   if (!version_->IsValid() || version_->components().size() > 4) {
     *error = ASCIIToUTF16(errors::kInvalidVersion);
     return false;

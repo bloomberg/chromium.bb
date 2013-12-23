@@ -306,9 +306,9 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
   // the directory where chrome is installed.
   if (!version_info) {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    Version ver_system;
+    base::Version ver_system;
     InstallUtil::GetChromeVersion(dist, true, &ver_system);
-    Version ver_user;
+    base::Version ver_user;
     InstallUtil::GetChromeVersion(dist, false, &ver_system);
     ASSERT_TRUE(ver_system.IsValid() || ver_user.IsValid());
 

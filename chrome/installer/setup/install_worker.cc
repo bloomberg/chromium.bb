@@ -113,8 +113,8 @@ void GetIELowRightsElevationPolicyKeyPath(ElevationPolicyId policy,
 // products managed by a given package.
 // |old_version| can be NULL to indicate no Chrome is currently installed.
 void AddRegisterComDllWorkItemsForPackage(const InstallerState& installer_state,
-                                          const Version* old_version,
-                                          const Version& new_version,
+                                          const base::Version* old_version,
+                                          const base::Version& new_version,
                                           WorkItemList* work_item_list) {
   // First collect the list of DLLs to be registered from each product.
   std::vector<base::FilePath> com_dll_list;
@@ -156,7 +156,7 @@ void AddInstallerCopyTasks(const InstallerState& installer_state,
                            const base::FilePath& setup_path,
                            const base::FilePath& archive_path,
                            const base::FilePath& temp_path,
-                           const Version& new_version,
+                           const base::Version& new_version,
                            WorkItemList* install_list) {
   DCHECK(install_list);
   base::FilePath installer_dir(
@@ -229,7 +229,7 @@ base::string16 GetRegCommandKey(BrowserDistribution* dist,
 //  4. The command is run as the user.
 void AddCommandWithParameterWorkItems(const InstallerState& installer_state,
                                       const InstallationState& machine_state,
-                                      const Version& new_version,
+                                      const base::Version& new_version,
                                       const Product& product,
                                       const wchar_t* command_key,
                                       const wchar_t* app,
@@ -261,7 +261,7 @@ void AddCommandWithParameterWorkItems(const InstallerState& installer_state,
 
 void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
                                    const InstallationState& machine_state,
-                                   const Version& new_version,
+                                   const base::Version& new_version,
                                    const Product& product,
                                    WorkItemList* work_item_list) {
   DCHECK(product.is_chrome_app_host());
@@ -275,7 +275,7 @@ void AddInstallAppCommandWorkItems(const InstallerState& installer_state,
 void AddInstallExtensionCommandWorkItem(const InstallerState& installer_state,
                                         const InstallationState& machine_state,
                                         const base::FilePath& setup_path,
-                                        const Version& new_version,
+                                        const base::Version& new_version,
                                         const Product& product,
                                         WorkItemList* work_item_list) {
   DCHECK(product.is_chrome());
@@ -295,7 +295,7 @@ CommandLine GetGenericQuickEnableCommand(
     const InstallerState& installer_state,
     const InstallationState& machine_state,
     const base::FilePath& setup_path,
-    const Version& new_version) {
+    const base::Version& new_version) {
   // Only valid for multi-install operations.
   DCHECK(installer_state.is_multi_install());
   // Only valid when Chrome Binaries aren't being uninstalled.
@@ -340,7 +340,7 @@ void AddQuickEnableApplicationLauncherWorkItems(
     const InstallerState& installer_state,
     const InstallationState& machine_state,
     const base::FilePath& setup_path,
-    const Version& new_version,
+    const base::Version& new_version,
     WorkItemList* work_item_list) {
   DCHECK(work_item_list);
 
@@ -375,7 +375,7 @@ void AddQuickEnableApplicationLauncherWorkItems(
 void AddProductSpecificWorkItems(const InstallationState& original_state,
                                  const InstallerState& installer_state,
                                  const base::FilePath& setup_path,
-                                 const Version& new_version,
+                                 const base::Version& new_version,
                                  WorkItemList* list) {
   const Products& products = installer_state.products();
   for (Products::const_iterator it = products.begin(); it < products.end();
@@ -456,8 +456,8 @@ void AddChromeWorkItems(const InstallationState& original_state,
                         const base::FilePath& archive_path,
                         const base::FilePath& src_path,
                         const base::FilePath& temp_path,
-                        const Version* current_version,
-                        const Version& new_version,
+                        const base::Version* current_version,
+                        const base::Version& new_version,
                         WorkItemList* install_list) {
   const base::FilePath& target_path = installer_state.target_path();
 
@@ -660,7 +660,7 @@ void CleanupBadCanaryDelegateExecuteRegistration(
 // state key if running under an MSI installer.
 void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                    const base::FilePath& setup_path,
-                                   const Version& new_version,
+                                   const base::Version& new_version,
                                    const Product& product,
                                    WorkItemList* install_list) {
   HKEY reg_root = installer_state.root_key();
@@ -758,7 +758,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
 // product version as the last step.
 void AddVersionKeyWorkItems(HKEY root,
                             BrowserDistribution* dist,
-                            const Version& new_version,
+                            const base::Version& new_version,
                             bool add_language_identifier,
                             WorkItemList* list) {
   // Create Version key for each distribution (if not already present) and set
@@ -1004,8 +1004,8 @@ void AddUsageStatsWorkItems(const InstallationState& original_state,
 
 bool AppendPostInstallTasks(const InstallerState& installer_state,
                             const base::FilePath& setup_path,
-                            const Version* current_version,
-                            const Version& new_version,
+                            const base::Version* current_version,
+                            const base::Version& new_version,
                             const base::FilePath& temp_path,
                             WorkItemList* post_install_task_list) {
   DCHECK(post_install_task_list);
@@ -1027,7 +1027,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
 
     // |critical_version| will be valid only if this in-use update includes a
     // version considered critical relative to the version being updated.
-    Version critical_version(installer_state.DetermineCriticalVersion(
+    base::Version critical_version(installer_state.DetermineCriticalVersion(
         current_version, new_version));
     base::FilePath installer_path(
         installer_state.GetInstallerDirectory(new_version).Append(
@@ -1131,8 +1131,8 @@ void AddInstallWorkItems(const InstallationState& original_state,
                          const base::FilePath& archive_path,
                          const base::FilePath& src_path,
                          const base::FilePath& temp_path,
-                         const Version* current_version,
-                         const Version& new_version,
+                         const base::Version* current_version,
+                         const base::Version& new_version,
                          WorkItemList* install_list) {
   DCHECK(install_list);
 
@@ -1260,7 +1260,7 @@ void AddSetMsiMarkerWorkItem(const InstallerState& installer_state,
 
 void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
                                  const base::FilePath& target_path,
-                                 const Version& new_version,
+                                 const base::Version& new_version,
                                  const Product& product,
                                  WorkItemList* list) {
   base::string16 handler_class_uuid;
@@ -1322,7 +1322,7 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
 
 void AddActiveSetupWorkItems(const InstallerState& installer_state,
                              const base::FilePath& setup_path,
-                             const Version& new_version,
+                             const base::Version& new_version,
                              const Product& product,
                              WorkItemList* list) {
   DCHECK(installer_state.operation() != InstallerState::UNINSTALL);
@@ -1418,7 +1418,7 @@ void RefreshElevationPolicy() {
 
 void AddOsUpgradeWorkItems(const InstallerState& installer_state,
                            const base::FilePath& setup_path,
-                           const Version& new_version,
+                           const base::Version& new_version,
                            const Product& product,
                            WorkItemList* install_list) {
   const HKEY root_key = installer_state.root_key();
@@ -1451,7 +1451,7 @@ void AddOsUpgradeWorkItems(const InstallerState& installer_state,
 
 void AddQueryEULAAcceptanceWorkItems(const InstallerState& installer_state,
                                      const base::FilePath& setup_path,
-                                     const Version& new_version,
+                                     const base::Version& new_version,
                                      const Product& product,
                                      WorkItemList* work_item_list) {
   const HKEY root_key = installer_state.root_key();
