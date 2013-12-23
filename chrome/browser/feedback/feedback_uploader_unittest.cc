@@ -104,7 +104,8 @@ TEST_F(FeedbackUploaderTest, QueueMultiple) {
   EXPECT_EQ(dispatched_reports_[3], kReportFour);
 }
 
-TEST_F(FeedbackUploaderTest, QueueMultipleWithFailures) {
+// crbug.com/330547
+TEST_F(FeedbackUploaderTest, DISABLED_QueueMultipleWithFailures) {
   dispatched_reports_.clear();
   QueueReport(kReportOne);
   QueueReport(kReportTwo);
