@@ -1246,6 +1246,9 @@ const char kPurgeMemoryButton[]             = "purge-memory-button";
 // Specifies the maximum length for a QUIC packet.
 const char kQuicMaxPacketLength[]           = "quic-max-packet-length";
 
+// Specifies the version of QUIC to use.
+const char kQuicVersion[]                   = "quic-version";
+
 // Chrome supports a playback and record mode.  Record mode saves *everything*
 // to the cache.  Playback mode reads data exclusively from the cache.  This
 // allows us to record a session into the cache and then replay it at will.

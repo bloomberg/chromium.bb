@@ -168,6 +168,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_https;
     Optional<size_t> quic_max_packet_length;
+    Optional<net::QuicVersionVector> quic_supported_versions;
     Optional<net::HostPortPair> origin_to_force_quic_on;
     bool enable_user_alternate_protocol_ports;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
@@ -280,6 +281,9 @@ class IOThread : public content::BrowserThreadDelegate {
   // parsing any of the options, or if the default value should be used.
   size_t GetQuicMaxPacketLength(const CommandLine& command_line,
                                 base::StringPiece quic_trial_group);
+
+  // Returns the quic versions specified by any flags in |command_line|.
+  net::QuicVersion GetQuicVersion(const CommandLine& command_line);
 
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.

@@ -65,6 +65,7 @@
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
+#include "net/quic/quic_protocol.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/default_server_bound_cert_store.h"
@@ -981,6 +982,8 @@ void IOThread::InitializeNetworkSessionParams(
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
   globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);
   globals_->quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
+  globals_->quic_supported_versions.CopyToIfSet(
+      &params->quic_supported_versions);
   globals_->origin_to_force_quic_on.CopyToIfSet(
       &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
@@ -1073,6 +1076,13 @@ void IOThread::ConfigureQuic(const CommandLine& command_line) {
     globals_->quic_max_packet_length.set(max_packet_length);
   }
 
+  net::QuicVersion version = GetQuicVersion(command_line);
+  if (version != net::QUIC_VERSION_UNSUPPORTED) {
+    net::QuicVersionVector supported_versions;
+    supported_versions.push_back(version);
+    globals_->quic_supported_versions.set(supported_versions);
+  }
+
   if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
     net::HostPortPair quic_origin =
         net::HostPortPair::FromString(
@@ -1137,4 +1147,20 @@ size_t IOThread::GetQuicMaxPacketLength(const CommandLine& command_line,
     return 0;
   }
   return value;
+}
+
+net::QuicVersion IOThread::GetQuicVersion(const CommandLine& command_line) {
+  if (!command_line.HasSwitch(switches::kQuicVersion)) {
+    return net::QUIC_VERSION_UNSUPPORTED;
+  }
+  net::QuicVersionVector supported_versions = net::QuicSupportedVersions();
+  std::string version_flag =
+      command_line.GetSwitchValueASCII(switches::kQuicVersion);
+  for (size_t i = 0; i < supported_versions.size(); ++i) {
+    net::QuicVersion version = supported_versions[i];
+    if (net::QuicVersionToString(version) == version_flag) {
+      return version;
+    }
+  }
+  return net::QUIC_VERSION_UNSUPPORTED;
 }
