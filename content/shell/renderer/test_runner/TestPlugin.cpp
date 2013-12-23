@@ -4,6 +4,7 @@
 
 #include "content/shell/renderer/test_runner/TestPlugin.h"
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTestDelegate.h"
 #include "third_party/WebKit/public/platform/Platform.h"
@@ -141,15 +142,15 @@ TestPlugin::TestPlugin(WebFrame* frame, const WebPluginParams& params, WebTestDe
     , m_printUserGestureStatus(false)
     , m_canProcessDrag(false)
 {
-    static const WebString kAttributePrimitive = WebString::fromUTF8("primitive");
-    static const WebString kAttributeBackgroundColor = WebString::fromUTF8("background-color");
-    static const WebString kAttributePrimitiveColor = WebString::fromUTF8("primitive-color");
-    static const WebString kAttributeOpacity = WebString::fromUTF8("opacity");
-    static const WebString kAttributeAcceptsTouch = WebString::fromUTF8("accepts-touch");
-    static const WebString kAttributeReRequestTouchEvents = WebString::fromUTF8("re-request-touch");
-    static const WebString kAttributePrintEventDetails = WebString::fromUTF8("print-event-details");
-    static const WebString kAttributeCanProcessDrag = WebString::fromUTF8("can-process-drag");
-    static const WebString kAttributePrintUserGestureStatus = WebString::fromUTF8("print-user-gesture-status");
+    const CR_DEFINE_STATIC_LOCAL(WebString, kAttributePrimitive, ("primitive"));
+    const CR_DEFINE_STATIC_LOCAL(WebString, kAttributeBackgroundColor, ("background-color"));
+    const CR_DEFINE_STATIC_LOCAL(WebString, kAttributePrimitiveColor, ("primitive-color"));
+    const CR_DEFINE_STATIC_LOCAL(WebString, kAttributeOpacity, ("opacity"));
+    const CR_DEFINE_STATIC_LOCAL(WebString, kAttributeAcceptsTouch, ("accepts-touch"));
+    const CR_DEFINE_STATIC_LOCAL(WebString, kAttributeReRequestTouchEvents, ("re-request-touch"));
+    const CR_DEFINE_STATIC_LOCAL(WebString, kAttributePrintEventDetails, ("print-event-details"));
+    const CR_DEFINE_STATIC_LOCAL(WebString, kAttributeCanProcessDrag, ("can-process-drag"));
+    const CR_DEFINE_STATIC_LOCAL(WebString, kAttributePrintUserGestureStatus, ("print-user-gesture-status"));
 
     BLINK_ASSERT(params.attributeNames.size() == params.attributeValues.size());
     size_t size = params.attributeNames.size();
@@ -270,8 +271,8 @@ void TestPlugin::mailboxReleased(const blink::WebExternalTextureMailbox&)
 
 TestPlugin::Primitive TestPlugin::parsePrimitive(const WebString& string)
 {
-    static const WebString kPrimitiveNone = WebString::fromUTF8("none");
-    static const WebString kPrimitiveTriangle = WebString::fromUTF8("triangle");
+    const CR_DEFINE_STATIC_LOCAL(WebString, kPrimitiveNone, ("none"));
+    const CR_DEFINE_STATIC_LOCAL(WebString, kPrimitiveTriangle, ("triangle"));
 
     Primitive primitive = PrimitiveNone;
     if (string == kPrimitiveNone)
@@ -308,7 +309,7 @@ float TestPlugin::parseOpacity(const WebString& string)
 
 bool TestPlugin::parseBoolean(const WebString& string)
 {
-    static const WebString kPrimitiveTrue = WebString::fromUTF8("true");
+    const CR_DEFINE_STATIC_LOCAL(WebString, kPrimitiveTrue, ("true"));
     return string == kPrimitiveTrue;
 }
 
@@ -553,7 +554,7 @@ TestPlugin* TestPlugin::create(WebFrame* frame, const WebPluginParams& params, W
 
 const WebString& TestPlugin::mimeType()
 {
-    static const WebString kMimeType = WebString::fromUTF8("application/x-webkit-test-webplugin");
+    const CR_DEFINE_STATIC_LOCAL(WebString, kMimeType, ("application/x-webkit-test-webplugin"));
     return kMimeType;
 }
 
