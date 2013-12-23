@@ -30,6 +30,7 @@
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/web/WebScopedMicrotaskSuppression.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
+#include "third_party/WebKit/public/web/WebScopedWindowFocusAllowedIndicator.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "v8/include/v8.h"
 
@@ -339,8 +340,11 @@ void MessagingBindings::DeliverMessage(
     const Message& message,
     content::RenderView* restrict_to_render_view) {
   scoped_ptr<blink::WebScopedUserGesture> web_user_gesture;
-  if (message.user_gesture)
+  scoped_ptr<blink::WebScopedWindowFocusAllowedIndicator> allow_window_focus;
+  if (message.user_gesture) {
     web_user_gesture.reset(new blink::WebScopedUserGesture);
+    allow_window_focus.reset(new blink::WebScopedWindowFocusAllowedIndicator);
+  }
 
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
