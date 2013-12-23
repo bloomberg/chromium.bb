@@ -88,12 +88,13 @@ enum InstallStatus {
                                // binaries will be uninstalled if they are not
                                // in use.
   UNUSED_BINARIES_UNINSTALLED,  // 52. The binaries were uninstalled.
+  UNSUPPORTED_OPTION,          // 53. An unsupported legacy option was given.
   // Friendly reminder: note the COMPILE_ASSERT below.
 };
 
 
 // Existing InstallStatus values must not change.  Always add to the end.
-COMPILE_ASSERT(installer::UNUSED_BINARIES_UNINSTALLED == 52,
+COMPILE_ASSERT(installer::UNSUPPORTED_OPTION == 53,
                dont_change_enum);
 
 // The type of an update archive.
@@ -160,7 +161,6 @@ extern const char kInstallArchive[];
 extern const char kInstallerData[];
 extern const char kLogFile[];
 extern const char kMakeChromeDefault[];
-extern const char kMigrateChromeFrame[];
 extern const char kMsi[];
 extern const char kMultiInstall[];
 extern const char kNewSetupExe[];

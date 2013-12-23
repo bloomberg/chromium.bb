@@ -506,17 +506,15 @@ InstallStatus InstallOrUpdateProduct(
     const base::FilePath& prefs_path,
     const MasterPreferences& prefs,
     const Version& new_version) {
+  DCHECK(!installer_state.products().empty());
+
   // TODO(robertshield): Removing the pending on-reboot moves should be done
   // elsewhere.
-  // TODO(erikwright): Understand why this is Chrome Frame only and whether
-  // it also applies to App Host. Shouldn't it apply to any multi-install too?
-  const Products& products = installer_state.products();
-  DCHECK(products.size());
-  if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
-    // Make sure that we don't end up deleting installed files on next reboot.
-    if (!RemoveFromMovesPendingReboot(installer_state.target_path()))
-      LOG(ERROR) << "Error accessing pending moves value.";
-  }
+  // Remove any scheduled MOVEFILE_DELAY_UNTIL_REBOOT entries in the target of
+  // this installation. These may have been added during a previous uninstall of
+  // the same version.
+  LOG_IF(ERROR, !RemoveFromMovesPendingReboot(installer_state.target_path()))
+      << "Error accessing pending moves value.";
 
   // Create VisualElementManifest.xml in |src_path| (if required) so that it
   // looks as if it had been extracted from the archive when calling

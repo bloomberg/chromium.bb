@@ -114,20 +114,16 @@ void EndInstallerLogging() {
 base::FilePath GetLogFilePath(const installer::MasterPreferences& prefs) {
   std::string path;
   prefs.GetString(installer::master_preferences::kLogFile, &path);
-  if (!path.empty()) {
+  if (!path.empty())
     return base::FilePath(UTF8ToWide(path));
-  }
 
-  std::wstring log_filename = prefs.install_chrome_frame() ?
-      L"chrome_frame_installer.log" : L"chrome_installer.log";
+  static const base::FilePath::CharType kLogFilename[] =
+      FILE_PATH_LITERAL("chrome_installer.log");
 
-  base::FilePath log_path;
-  if (PathService::Get(base::DIR_TEMP, &log_path)) {
-    log_path = log_path.Append(log_filename);
-    return log_path;
-  } else {
-    return base::FilePath(log_filename);
-  }
+  // Fallback to current directory if getting the temp directory fails.
+  base::FilePath tmp_path;
+  ignore_result(PathService::Get(base::DIR_TEMP, &tmp_path));
+  return tmp_path.Append(kLogFilename);
 }
 
 }  // namespace installer

@@ -485,3 +485,12 @@ TEST_F(MigrateMultiToSingleTest, ChromeFrame) {
                                   BrowserDistribution::CHROME_BINARIES));
   EXPECT_EQ(L"2.0-dev-multi", binaries.channel().value());
 }
+
+TEST(SetupUtilTest, ContainsUnsupportedSwitch) {
+  EXPECT_FALSE(installer::ContainsUnsupportedSwitch(
+      CommandLine::FromString(L"foo.exe")));
+  EXPECT_FALSE(installer::ContainsUnsupportedSwitch(
+      CommandLine::FromString(L"foo.exe --multi-install --chrome")));
+  EXPECT_TRUE(installer::ContainsUnsupportedSwitch(
+      CommandLine::FromString(L"foo.exe --chrome-frame")));
+}

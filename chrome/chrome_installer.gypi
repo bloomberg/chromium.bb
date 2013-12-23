@@ -273,8 +273,6 @@
             'installer/mini_installer/chrome.release',
             'installer/setup/archive_patch_helper.cc',
             'installer/setup/archive_patch_helper.h',
-            'installer/setup/cf_migration.cc',
-            'installer/setup/cf_migration.h',
             'installer/setup/install.cc',
             'installer/setup/install.h',
             'installer/setup/install_worker.cc',

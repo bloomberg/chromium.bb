@@ -12,7 +12,6 @@ namespace master_preferences {
   // TODO(huangs): Remove by M27.
   const char kChromeAppHostDeprecated[] = "app_host";
   const char kChromeAppLauncher[] = "app_launcher";
-  const char kChromeFrame[] = "chrome_frame";
   const char kChromeShortcutIconIndex[] = "chrome_shortcut_icon_index";
   const char kCreateAllShortcuts[] = "create_all_shortcuts";
   const char kDisableLogging[] = "disable_logging";

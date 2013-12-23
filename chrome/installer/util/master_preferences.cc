@@ -75,7 +75,6 @@ MasterPreferences::MasterPreferences() : distribution_(NULL),
                                          preferences_read_from_file_(false),
                                          chrome_(true),
                                          chrome_app_launcher_(false),
-                                         chrome_frame_(false),
                                          multi_install_(false) {
   InitializeFromCommandLine(*CommandLine::ForCurrentProcess());
 }
@@ -85,7 +84,6 @@ MasterPreferences::MasterPreferences(const CommandLine& cmd_line)
       preferences_read_from_file_(false),
       chrome_(true),
       chrome_app_launcher_(false),
-      chrome_frame_(false),
       multi_install_(false) {
   InitializeFromCommandLine(cmd_line);
 }
@@ -95,7 +93,6 @@ MasterPreferences::MasterPreferences(const base::FilePath& prefs_path)
       preferences_read_from_file_(false),
       chrome_(true),
       chrome_app_launcher_(false),
-      chrome_frame_(false),
       multi_install_(false) {
   std::string json_data;
   // Failure to read the file is ignored as |json_data| will be the empty string
@@ -114,7 +111,6 @@ MasterPreferences::MasterPreferences(const std::string& prefs)
       preferences_read_from_file_(false),
       chrome_(true),
       chrome_app_launcher_(false),
-      chrome_frame_(false),
       multi_install_(false) {
   InitializeFromString(prefs);
 }
@@ -149,8 +145,6 @@ void MasterPreferences::InitializeFromCommandLine(const CommandLine& cmd_line) {
       installer::master_preferences::kChromeAppLauncher },
     { installer::switches::kChrome,
       installer::master_preferences::kChrome },
-    { installer::switches::kChromeFrame,
-      installer::master_preferences::kChromeFrame },
     { installer::switches::kDisableLogging,
       installer::master_preferences::kDisableLogging },
     { installer::switches::kMsi,
@@ -231,12 +225,10 @@ bool MasterPreferences::InitializeFromString(const std::string& json_data) {
 void MasterPreferences::InitializeProductFlags() {
   // Make sure we start out with the correct defaults.
   multi_install_ = false;
-  chrome_frame_ = false;
   chrome_app_launcher_ = false;
   chrome_ = true;
 
   GetBool(installer::master_preferences::kMultiInstall, &multi_install_);
-  GetBool(installer::master_preferences::kChromeFrame, &chrome_frame_);
 
   GetBool(installer::master_preferences::kChromeAppLauncher,
           &chrome_app_launcher_);
@@ -250,17 +242,12 @@ void MasterPreferences::InitializeProductFlags() {
   // When multi-install is specified, the checks are pretty simple (in theory):
   // In order to be installed/uninstalled, each product must have its switch
   // present on the command line.
-  // Before multi-install was introduced however, we only supported installing
-  // two products, Chrome and Chrome Frame.  For the time being we need to
-  // continue to support this mode where multi-install is not set.
-  // So, when multi-install is not set, we continue to support mutually
-  // exclusive installation of Chrome and Chrome Frame.
+  // When multi-install is not set, operate on Chrome.
   if (multi_install_) {
     if (!GetBool(installer::master_preferences::kChrome, &chrome_))
       chrome_ = false;
   } else {
-    // If chrome-frame is on the command line however, we only install CF.
-    chrome_ = !chrome_frame_;
+    chrome_ = true;
   }
 }
 

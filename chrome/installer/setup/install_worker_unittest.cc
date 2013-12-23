@@ -530,19 +530,6 @@ TEST_P(OldIELowRightsTests, AddDeleteOldIELowRightsPolicyWorkItems) {
                                          &work_item_list);
 }
 
-TEST_P(OldIELowRightsTests, AddCopyIELowRightsPolicyWorkItems) {
-  StrictMock<MockWorkItemList> work_item_list;
-
-  // The old elevation policy key should only be copied when there's no old
-  // value.
-  EXPECT_CALL(work_item_list,
-              AddCopyRegKeyWorkItem(root_key_, StrEq(elevation_key),
-                                    StrEq(old_elevation_key),
-                                    Eq(WorkItem::IF_NOT_PRESENT))).Times(1);
-
-  AddCopyIELowRightsPolicyWorkItems(*installer_state_.get(), &work_item_list);
-}
-
 INSTANTIATE_TEST_CASE_P(Variations, OldIELowRightsTests,
                         Combine(Bool(), Bool()));
 

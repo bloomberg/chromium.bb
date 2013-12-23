@@ -83,8 +83,6 @@ void BuildSingleChromeState(const base::FilePath& target_dir,
   installer_state->set_target_path(target_dir);
   EXPECT_TRUE(installer_state->FindProduct(BrowserDistribution::CHROME_BROWSER)
       != NULL);
-  EXPECT_TRUE(installer_state->FindProduct(BrowserDistribution::CHROME_FRAME)
-      == NULL);
 }
 
 wchar_t text_content_1[] = L"delete me";
@@ -630,13 +628,11 @@ TEST_F(InstallerStateTest, InitializeTwice) {
   EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_BROWSER);
   EXPECT_TRUE(installer_state.multi_package_binaries_distribution());
   EXPECT_TRUE(installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER));
-  EXPECT_FALSE(installer_state.FindProduct(BrowserDistribution::CHROME_FRAME));
 
-  // Now initialize it to install system-level single Chrome Frame.
+  // Now initialize it to install system-level single Chrome.
   {
     CommandLine cmd_line(
-        CommandLine::FromString(L"setup.exe --system-level --chrome-frame "
-                                L"--verbose-logging"));
+        CommandLine::FromString(L"setup.exe --system-level --verbose-logging"));
     MasterPreferences prefs(cmd_line);
     installer_state.Initialize(cmd_line, prefs, machine_state);
   }
@@ -648,18 +644,14 @@ TEST_F(InstallerStateTest, InitializeTwice) {
             installer_state.operation());
   EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
                      BrowserDistribution::GetSpecificDistribution(
-                         BrowserDistribution::CHROME_FRAME)->
+                         BrowserDistribution::CHROME_BROWSER)->
                          GetInstallSubDir().c_str()));
   EXPECT_TRUE(installer_state.verbose_logging());
-  // state_key and type are wrong in unittests since it is set based on the
-  // current process's BrowserDistribution.
-  // EXPECT_EQ(installer_state.state_key(),
-  //           BrowserDistribution::GetSpecificDistribution(
-  //               BrowserDistribution::CHROME_FRAME)->GetStateKey());
-  // EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_FRAME);
-  EXPECT_FALSE(
-      installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER));
-  EXPECT_TRUE(installer_state.FindProduct(BrowserDistribution::CHROME_FRAME));
+  EXPECT_EQ(installer_state.state_key(),
+            BrowserDistribution::GetSpecificDistribution(
+                BrowserDistribution::CHROME_BROWSER)->GetStateKey());
+  EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_BROWSER);
+  EXPECT_TRUE(installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER));
 }
 
 // A fixture for testing InstallerState::DetermineCriticalVersion.  Individual

@@ -59,12 +59,7 @@ bool IsChromeFrameModule() {
 BrowserDistribution::Type GetCurrentDistributionType() {
   // TODO(erikwright): If the app host is installed, but not Chrome, perhaps
   // this should return CHROME_APP_HOST.
-  static BrowserDistribution::Type type =
-      (MasterPreferences::ForCurrentProcess().install_chrome_frame() ||
-       IsChromeFrameModule()) ?
-          BrowserDistribution::CHROME_FRAME :
-          BrowserDistribution::CHROME_BROWSER;
-  return type;
+  return BrowserDistribution::CHROME_BROWSER;
 }
 
 }  // end namespace

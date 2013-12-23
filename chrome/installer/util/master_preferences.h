@@ -172,10 +172,6 @@ class MasterPreferences {
     return chrome_app_launcher_;
   }
 
-  bool install_chrome_frame() const {
-    return chrome_frame_;
-  }
-
   bool is_multi_install() const {
     return multi_install_;
   }
@@ -210,7 +206,6 @@ class MasterPreferences {
   bool preferences_read_from_file_;
   bool chrome_;
   bool chrome_app_launcher_;
-  bool chrome_frame_;
   bool multi_install_;
 
  private:

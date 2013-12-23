@@ -429,6 +429,26 @@ bool IsUninstallSuccess(InstallStatus install_status) {
           install_status == UNINSTALL_REQUIRES_REBOOT);
 }
 
+bool ContainsUnsupportedSwitch(const CommandLine& cmd_line) {
+  static const char* const kLegacySwitches[] = {
+    // Chrome Frame ready-mode.
+    "ready-mode",
+    "ready-mode-opt-in",
+    "ready-mode-temp-opt-out",
+    "ready-mode-end-temp-opt-out",
+    // Chrome Frame quick-enable.
+    "quick-enable-cf",
+    // Installation of Chrome Frame.
+    "chrome-frame",
+    "migrate-chrome-frame",
+  };
+  for (size_t i = 0; i < arraysize(kLegacySwitches); ++i) {
+    if (cmd_line.HasSwitch(kLegacySwitches[i]))
+      return true;
+  }
+  return false;
+}
+
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)
     : is_enabled_(false) {
   HANDLE temp_handle;

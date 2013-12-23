@@ -30,42 +30,34 @@
 
 namespace installer {
 
-bool InstallerState::IsMultiInstallUpdate(const MasterPreferences& prefs,
+bool InstallerState::IsMultiInstallUpdate(
+    const MasterPreferences& prefs,
     const InstallationState& machine_state) {
-  // First, is the package present?
-  const ProductState* package =
+  // First, are the binaries present?
+  const ProductState* binaries =
       machine_state.GetProductState(level_ == SYSTEM_LEVEL,
                                     BrowserDistribution::CHROME_BINARIES);
-  if (package == NULL) {
-    // The multi-install package has not been installed, so it certainly isn't
-    // being updated.
+  if (binaries == NULL) {
+    // The multi-install binaries have not been installed, so they certainly
+    // aren't being updated.
     return false;
   }
 
-  BrowserDistribution::Type types[2];
-  size_t num_types = 0;
-  if (prefs.install_chrome())
-    types[num_types++] = BrowserDistribution::CHROME_BROWSER;
-  if (prefs.install_chrome_frame())
-    types[num_types++] = BrowserDistribution::CHROME_FRAME;
-
-  for (const BrowserDistribution::Type* scan = &types[0],
-           *end = &types[num_types]; scan != end; ++scan) {
+  if (prefs.install_chrome()) {
     const ProductState* product =
-        machine_state.GetProductState(level_ == SYSTEM_LEVEL, *scan);
+        machine_state.GetProductState(level_ == SYSTEM_LEVEL,
+                                      BrowserDistribution::CHROME_BROWSER);
     if (product == NULL) {
-      VLOG(2) << "It seems that distribution type " << *scan
-              << " is being installed for the first time.";
+      VLOG(2) << "It seems that chrome is being installed for the first time.";
       return false;
     }
-    if (!product->channel().Equals(package->channel())) {
-      VLOG(2) << "It seems that distribution type " << *scan
-              << " is being over installed.";
+    if (!product->channel().Equals(binaries->channel())) {
+      VLOG(2) << "It seems that chrome is being over installed.";
       return false;
     }
   }
 
-  VLOG(2) << "It seems that the package is being updated.";
+  VLOG(2) << "It seems that the binaries are being updated.";
 
   return true;
 }
@@ -127,12 +119,6 @@ void InstallerState::Initialize(const CommandLine& command_line,
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
             << " distribution: " << p->distribution()->GetDisplayName();
   }
-  if (prefs.install_chrome_frame()) {
-    Product* p = AddProductFromPreferences(
-        BrowserDistribution::CHROME_FRAME, prefs, machine_state);
-    VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-            << " distribution: " << p->distribution()->GetDisplayName();
-  }
 
   if (prefs.install_chrome_app_launcher()) {
     Product* p = AddProductFromPreferences(
@@ -159,11 +145,8 @@ void InstallerState::Initialize(const CommandLine& command_line,
       }
     }
 
-    // Chrome/Chrome Frame multi need Binaries at their own level.
+    // Chrome multi needs Binaries at its own level.
     if (FindProduct(BrowserDistribution::CHROME_BROWSER))
-      need_binaries = true;
-
-    if (FindProduct(BrowserDistribution::CHROME_FRAME))
       need_binaries = true;
 
     if (need_binaries && !FindProduct(BrowserDistribution::CHROME_BINARIES)) {
@@ -290,16 +273,13 @@ void InstallerState::Initialize(const CommandLine& command_line,
     operation_ = MULTI_INSTALL;
   }
 
-  // Initial, over, and un-installs will take place under one of the
-  // product app guids (Chrome, Chrome Frame, App Host, or Binaries, in order of
-  // preference).
+  // Initial, over, and un-installs will take place under one of the product app
+  // guids (Chrome, App Host, or Binaries, in order of preference).
   if (operand == NULL) {
     BrowserDistribution::Type operand_distribution_type =
         BrowserDistribution::CHROME_BINARIES;
     if (prefs.install_chrome())
       operand_distribution_type = BrowserDistribution::CHROME_BROWSER;
-    else if (prefs.install_chrome_frame())
-      operand_distribution_type = BrowserDistribution::CHROME_FRAME;
     else if (prefs.install_chrome_app_launcher())
       operand_distribution_type = BrowserDistribution::CHROME_APP_HOST;
 

@@ -300,55 +300,30 @@ TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
 }
 
 TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
-  std::wstringstream chrome_cmd, cf_cmd;
+  std::wstringstream chrome_cmd;
   chrome_cmd << "setup.exe";
-  cf_cmd << "setup.exe --" << installer::switches::kChromeFrame;
 
   CommandLine chrome_install(CommandLine::FromString(chrome_cmd.str()));
-  CommandLine cf_install(CommandLine::FromString(cf_cmd.str()));
 
   installer::MasterPreferences pref_chrome(chrome_install);
-  installer::MasterPreferences pref_cf(cf_install);
 
   EXPECT_FALSE(pref_chrome.is_multi_install());
   EXPECT_TRUE(pref_chrome.install_chrome());
-  EXPECT_FALSE(pref_chrome.install_chrome_frame());
-
-  EXPECT_FALSE(pref_cf.is_multi_install());
-  EXPECT_FALSE(pref_cf.install_chrome());
-  EXPECT_TRUE(pref_cf.install_chrome_frame());
 }
 
 TEST_F(MasterPreferencesTest, TestMultiInstallConfig) {
   using installer::switches::kMultiInstall;
   using installer::switches::kChrome;
-  using installer::switches::kChromeFrame;
 
   std::wstringstream chrome_cmd, cf_cmd, chrome_cf_cmd;
   chrome_cmd << "setup.exe --" << kMultiInstall << " --" << kChrome;
-  cf_cmd << "setup.exe --" << kMultiInstall << " --" << kChromeFrame;
-  chrome_cf_cmd << "setup.exe --" << kMultiInstall << " --" << kChrome <<
-      " --" << kChromeFrame;
 
   CommandLine chrome_install(CommandLine::FromString(chrome_cmd.str()));
-  CommandLine cf_install(CommandLine::FromString(cf_cmd.str()));
-  CommandLine chrome_cf_install(CommandLine::FromString(chrome_cf_cmd.str()));
 
   installer::MasterPreferences pref_chrome(chrome_install);
-  installer::MasterPreferences pref_cf(cf_install);
-  installer::MasterPreferences pref_chrome_cf(chrome_cf_install);
 
   EXPECT_TRUE(pref_chrome.is_multi_install());
   EXPECT_TRUE(pref_chrome.install_chrome());
-  EXPECT_FALSE(pref_chrome.install_chrome_frame());
-
-  EXPECT_TRUE(pref_cf.is_multi_install());
-  EXPECT_FALSE(pref_cf.install_chrome());
-  EXPECT_TRUE(pref_cf.install_chrome_frame());
-
-  EXPECT_TRUE(pref_chrome_cf.is_multi_install());
-  EXPECT_TRUE(pref_chrome_cf.install_chrome());
-  EXPECT_TRUE(pref_chrome_cf.install_chrome_frame());
 }
 
 TEST_F(MasterPreferencesTest, EnforceLegacyCreateAllShortcutsFalse) {

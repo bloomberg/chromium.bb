@@ -482,6 +482,7 @@ void AddChromeWorkItems(const InstallationState& original_state,
 
   install_list->AddDeleteTreeWorkItem(new_chrome_exe, temp_path);
 
+  // TODO(grt): Remove this check in M35.
   if (installer_state.IsChromeFrameRunning(original_state)) {
     VLOG(1) << "Chrome Frame in use. Copying to new_chrome.exe";
     install_list->AddCopyTreeWorkItem(
@@ -918,8 +919,7 @@ void AddGoogleUpdateWorkItems(const InstallationState& original_state,
   }
 
   // Creating the ClientState key for binaries, if we're migrating to multi then
-  // copy over Chrome's brand code if it has one. Chrome Frame currently never
-  // has a brand code.
+  // copy over Chrome's brand code if it has one.
   if (installer_state.state_type() != BrowserDistribution::CHROME_BINARIES) {
     const ProductState* chrome_product_state =
         original_state.GetNonVersionedProductState(
@@ -1074,11 +1074,6 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
       }
     }
 
-    if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
-      AddCopyIELowRightsPolicyWorkItems(installer_state,
-                                        in_use_update_work_items.get());
-    }
-
     post_install_task_list->AddWorkItem(in_use_update_work_items.release());
   }
 
@@ -1099,11 +1094,6 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
           google_update::kRegCriticalVersionField);
       regular_update_work_items->AddDeleteRegValueWorkItem(root, version_key,
           google_update::kRegRenameCmdField);
-    }
-
-    if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
-      AddDeleteOldIELowRightsPolicyWorkItems(installer_state,
-                                             regular_update_work_items.get());
     }
 
     post_install_task_list->AddWorkItem(regular_update_work_items.release());
@@ -1153,7 +1143,6 @@ void AddInstallWorkItems(const InstallationState& original_state,
   install_list->AddCreateDirWorkItem(target_path);
 
   if (installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER) ||
-      installer_state.FindProduct(BrowserDistribution::CHROME_FRAME) ||
       installer_state.FindProduct(BrowserDistribution::CHROME_BINARIES)) {
     AddChromeWorkItems(original_state,
                        installer_state,
@@ -1388,27 +1377,6 @@ void AddDeleteOldIELowRightsPolicyWorkItems(
   install_list->AddDeleteRegKeyWorkItem(installer_state.root_key(), key_path);
 }
 
-// Adds work items to copy the chrome_launcher IE low rights elevation policy
-// from the primary policy GUID to the "old" policy GUID.  Take care not to
-// perform the copy if there is already an old policy present, as the ones under
-// the main kElevationPolicyGuid would then correspond to an intermediate
-// version (current_version < pv < new_version).
-void AddCopyIELowRightsPolicyWorkItems(const InstallerState& installer_state,
-                                       WorkItemList* install_list) {
-  DCHECK(install_list);
-
-  base::string16 current_key_path;
-  base::string16 old_key_path;
-
-  GetIELowRightsElevationPolicyKeyPath(CURRENT_ELEVATION_POLICY,
-                                       &current_key_path);
-  GetIELowRightsElevationPolicyKeyPath(OLD_ELEVATION_POLICY, &old_key_path);
-  // Do not clobber existing old policies.
-  install_list->AddCopyRegKeyWorkItem(installer_state.root_key(),
-                                      current_key_path, old_key_path,
-                                      WorkItem::IF_NOT_PRESENT);
-}
-
 void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
                                      const Product& product,
                                      CommandLine* uninstall_cmd) {
@@ -1418,13 +1386,8 @@ void AppendUninstallCommandLineFlags(const InstallerState& installer_state,
 
   // Append the product-specific uninstall flags.
   product.AppendProductFlags(uninstall_cmd);
-  if (installer_state.is_msi()) {
+  if (installer_state.is_msi())
     uninstall_cmd->AppendSwitch(installer::switches::kMsi);
-    // See comment in uninstall.cc where we check for the kDeleteProfile switch.
-    if (product.is_chrome_frame()) {
-      uninstall_cmd->AppendSwitch(installer::switches::kDeleteProfile);
-    }
-  }
   if (installer_state.system_install())
     uninstall_cmd->AppendSwitch(installer::switches::kSystemLevel);
   if (installer_state.verbose_logging())

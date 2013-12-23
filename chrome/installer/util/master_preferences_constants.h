@@ -26,8 +26,6 @@ extern const char kChrome[];
 extern const char kChromeAppHostDeprecated[];  // TODO(huangs): Remove by M27.
 // Boolean. This is to be a Chrome App Launcher install.
 extern const char kChromeAppLauncher[];
-// Boolean. This is to be a Chrome Frame install.
-extern const char kChromeFrame[];
 // Integer. Icon index from chrome.exe to use for shortcuts.
 extern const char kChromeShortcutIconIndex[];
 // Boolean. This is a legacy preference and should no longer be used; it is

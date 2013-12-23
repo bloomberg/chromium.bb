@@ -36,7 +36,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/setup/archive_patch_helper.h"
-#include "chrome/installer/setup/cf_migration.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/setup_constants.h"
@@ -250,12 +249,6 @@ installer::InstallStatus RenameChromeExecutables(
                                     temp_path.path().value(),
                                     WorkItem::ALWAYS_MOVE);
   install_list->AddDeleteTreeWorkItem(chrome_new_exe, temp_path.path());
-  // Delete an elevation policy associated with the old version, should one
-  // exist.
-  if (installer_state->FindProduct(BrowserDistribution::CHROME_FRAME)) {
-    installer::AddDeleteOldIELowRightsPolicyWorkItems(*installer_state,
-                                                      install_list.get());
-  }
   // old_chrome.exe is still in use in most cases, so ignore failures here.
   install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())->
       set_ignore_failure(true);
@@ -366,8 +359,6 @@ bool CheckGroupPolicySettings(const InstallationState& original_state,
 }
 
 // If only the binaries are being updated, fail.
-// If Chrome Frame is being installed by itself in multi-mode:
-//   - If a non-multi Chrome Frame installation is present, fail.
 // If any product is being installed in single-mode that already exists in
 // multi-mode, fail.
 bool CheckMultiInstallConditions(const InstallationState& original_state,
@@ -385,11 +376,6 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
         installer_state->FindProduct(BrowserDistribution::CHROME_APP_HOST);
     const Product* binaries =
         installer_state->FindProduct(BrowserDistribution::CHROME_BINARIES);
-    const Product* chrome_frame =
-        installer_state->FindProduct(BrowserDistribution::CHROME_FRAME);
-    const ProductState* cf_state =
-        original_state.GetProductState(system_level,
-                                       BrowserDistribution::CHROME_FRAME);
     const ProductState* chrome_state =
         original_state.GetProductState(system_level,
                                        BrowserDistribution::CHROME_BROWSER);
@@ -416,7 +402,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
       // If this is not an app host install and the binaries are not already
       // present, the installation will fail later due to a lack of products to
       // install.
-      if (app_host && !chrome && !chrome_frame && !cf_state && !chrome_state) {
+      if (app_host && !chrome && !chrome_state) {
         DCHECK(!system_level);
         // App Host may use Chrome/Chrome binaries at system-level.
         if (original_state.GetProductState(
@@ -453,17 +439,6 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
       multi_chrome->SetOption(installer::kOptionMultiInstall, true);
       chrome = installer_state->AddProduct(&multi_chrome);
       VLOG(1) << "Upgrading existing Chrome browser in multi-install mode.";
-    }
-
-    // Fail if we're installing Chrome Frame when a single-install of it is
-    // already installed.
-    if (chrome_frame && cf_state && !cf_state->is_multi_install()) {
-      LOG(ERROR) << "Cannot migrate existing Chrome Frame installation to "
-                 << "multi-install.";
-      *status = installer::NON_MULTI_INSTALLATION_EXISTS;
-      installer_state->WriteInstallerResult(*status,
-          IDS_INSTALL_NON_MULTI_INSTALLATION_EXISTS_BASE, NULL);
-      return false;
     }
   } else {
     // This is a non-multi installation.
@@ -1231,8 +1206,6 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
     } else {
       *exit_code = installer::PATCH_INVALID_ARGUMENTS;
     }
-  } else if (cmd_line.HasSwitch(installer::switches::kMigrateChromeFrame)) {
-    *exit_code = MigrateChromeFrame(original_state, installer_state);
   } else {
     handled = false;
   }
@@ -1544,7 +1517,6 @@ InstallStatus InstallProductsHelper(
       COMPILE_ASSERT(BrowserDistribution::NUM_TYPES == 4,
                      add_support_for_new_products_here_);
       const uint32 kBrowserBit = 1 << BrowserDistribution::CHROME_BROWSER;
-      const uint32 kGCFBit = 1 << BrowserDistribution::CHROME_FRAME;
       const uint32 kAppHostBit = 1 << BrowserDistribution::CHROME_APP_HOST;
       int message_id = 0;
 
@@ -1553,12 +1525,6 @@ InstallStatus InstallProductsHelper(
       switch (higher_products) {
         case kBrowserBit:
           message_id = IDS_INSTALL_HIGHER_VERSION_BASE;
-          break;
-        case kGCFBit:
-          message_id = IDS_INSTALL_HIGHER_VERSION_CF_BASE;
-          break;
-        case kGCFBit | kBrowserBit:
-          message_id = IDS_INSTALL_HIGHER_VERSION_CB_CF_BASE;
           break;
         default:
           message_id = IDS_INSTALL_HIGHER_VERSION_APP_LAUNCHER_BASE;
@@ -1601,11 +1567,7 @@ InstallStatus InstallProductsHelper(
       base::string16 chrome_exe;
       base::string16 quoted_chrome_exe;
       if (install_status == SAME_VERSION_REPAIR_FAILED) {
-        if (installer_state.FindProduct(BrowserDistribution::CHROME_FRAME)) {
-          install_msg_base = IDS_SAME_VERSION_REPAIR_FAILED_CF_BASE;
-        } else {
-          install_msg_base = IDS_SAME_VERSION_REPAIR_FAILED_BASE;
-        }
+        install_msg_base = IDS_SAME_VERSION_REPAIR_FAILED_BASE;
       } else if (install_status != INSTALL_FAILED) {
         if (installer_state.target_path().empty()) {
           // If we failed to construct install path, it means the OS call to
@@ -1775,6 +1737,10 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     }
   }
 
+  // Some command line options are no longer supported and must error out.
+  if (installer::ContainsUnsupportedSwitch(cmd_line))
+    return installer::UNSUPPORTED_OPTION;
+
   int exit_code = 0;
   if (HandleNonInstallCmdLineOptions(
           original_state, cmd_line, &installer_state, &exit_code)) {
@@ -1831,32 +1797,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
          !InstallationValidator::ValidateInstallationType(system_install,
                                                           &installation_type));
 
-  const Product* cf_install =
-      installer_state.FindProduct(BrowserDistribution::CHROME_FRAME);
-  if (cf_install &&
-      !cmd_line.HasSwitch(installer::switches::kForceUninstall)) {
-    if (install_status == installer::UNINSTALL_REQUIRES_REBOOT) {
-      ShowRebootDialog();
-    } else if (is_uninstall) {
-      // Only show the message box if Chrome Frame was the only product being
-      // uninstalled.
-      const Products& products = installer_state.products();
-      int num_products = 0;
-      for (Products::const_iterator it = products.begin(); it < products.end();
-           ++it) {
-        if (!(*it)->is_chrome_binaries())
-          ++num_products;
-      }
-      if (num_products == 1U) {
-        ::MessageBoxW(NULL,
-                      installer::GetLocalizedString(
-                          IDS_UNINSTALL_COMPLETE_BASE).c_str(),
-                      cf_install->distribution()->GetDisplayName().c_str(),
-                      MB_OK);
-      }
-    }
-  }
-
   int return_code = 0;
   // MSI demands that custom actions always return 0 (ERROR_SUCCESS) or it will
   // rollback the action. If we're uninstalling we want to avoid this, so always
@@ -1866,25 +1806,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     // to pass through, since this is only returned on uninstall which is
     // never invoked directly by Google Update.
     return_code = InstallUtil::GetInstallReturnCode(install_status);
-  }
-
-  // Reinitialize original_state to make sure it reflects the now-current
-  // state of the system.
-  original_state.Initialize();
-
-  // If multi Chrome Frame was just updated, migrate the installation to a SxS
-  // install. Do this right before quitting.
-  const ProductState* chrome_frame_state =
-      original_state.GetProductState(system_install,
-                                     BrowserDistribution::CHROME_FRAME);
-  if ((install_status == installer::NEW_VERSION_UPDATED ||
-       install_status == installer::IN_USE_UPDATED) &&
-      chrome_frame_state &&
-      installer_state.operation() == InstallerState::MULTI_UPDATE) {
-    // Call the newly updated setup.exe with kUncompressedArchive and
-    // kMigrateChromeFrame to perform the migration.
-    LaunchChromeFrameMigrationProcess(*chrome_frame_state, cmd_line,
-                                      installer_directory, system_install);
   }
 
   VLOG(1) << "Installation complete, returning: " << return_code;
