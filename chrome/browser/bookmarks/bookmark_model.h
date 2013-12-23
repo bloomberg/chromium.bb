@@ -475,6 +475,9 @@ class BookmarkModel : public content::NotificationObserver,
   // type specifies how the node should be removed.
   void RemoveAndDeleteNode(BookmarkNode* delete_me);
 
+  // Remove |node| from |nodes_ordered_by_url_set_|.
+  void RemoveNodeFromURLSet(BookmarkNode* node);
+
   // Notifies the history backend about urls of removed bookmarks.
   void NotifyHistoryAboutRemovedBookmarks(
       const std::set<GURL>& removed_bookmark_urls) const;

@@ -451,15 +451,7 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
 
   {
     base::AutoLock url_lock(url_lock_);
-    NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(
-        mutable_node);
-    DCHECK(i != nodes_ordered_by_url_set_.end());
-    // i points to the first node with the URL, advance until we find the
-    // node we're removing.
-    while (*i != node)
-      ++i;
-    nodes_ordered_by_url_set_.erase(i);
-
+    RemoveNodeFromURLSet(mutable_node);
     mutable_node->set_url(url);
     nodes_ordered_by_url_set_.insert(mutable_node);
   }
@@ -783,17 +775,8 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
 
   url_lock_.AssertAcquired();
   if (node->is_url()) {
-    // NOTE: this is called in such a way that url_lock_ is already held. As
-    // such, this doesn't explicitly grab the lock.
-    NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(node);
-    DCHECK(i != nodes_ordered_by_url_set_.end());
-    // i points to the first node with the URL, advance until we find the
-    // node we're removing.
-    while (*i != node)
-      ++i;
-    nodes_ordered_by_url_set_.erase(i);
+    RemoveNodeFromURLSet(node);
     removed_urls->insert(node->url());
-
     index_->Remove(node);
   }
 
@@ -875,6 +858,18 @@ void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     BookmarkNodeRemoved(this, parent, index, node.get()));
+}
+
+void BookmarkModel::RemoveNodeFromURLSet(BookmarkNode* node) {
+  // NOTE: this is called in such a way that url_lock_ is already held. As
+  // such, this doesn't explicitly grab the lock.
+  NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(node);
+  DCHECK(i != nodes_ordered_by_url_set_.end());
+  // i points to the first node with the URL, advance until we find the
+  // node we're removing.
+  while (*i != node)
+    ++i;
+  nodes_ordered_by_url_set_.erase(i);
 }
 
 void BookmarkModel::RemoveNodeAndGetRemovedUrls(BookmarkNode* node,
