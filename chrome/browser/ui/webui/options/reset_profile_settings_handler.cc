@@ -60,7 +60,7 @@ void ResetProfileSettingsHandler::Uninitialize() {
 }
 
 void ResetProfileSettingsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
@@ -95,7 +95,7 @@ void ResetProfileSettingsHandler::RegisterMessages() {
 }
 
 void ResetProfileSettingsHandler::HandleResetProfileSettings(
-    const ListValue* value) {
+    const base::ListValue* value) {
   bool send_settings = false;
   if (!value->GetBoolean(0, &send_settings))
     NOTREACHED();
@@ -134,8 +134,9 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
       true /*performed_reset*/);
 }
 
-void ResetProfileSettingsHandler::OnShowResetProfileDialog(const ListValue*) {
-  DictionaryValue flashInfo;
+void ResetProfileSettingsHandler::OnShowResetProfileDialog(
+    const base::ListValue*) {
+  base::DictionaryValue flashInfo;
   flashInfo.Set("feedbackInfo", GetReadableFeedback(
       Profile::FromWebUI(web_ui())));
   web_ui()->CallJavascriptFunction(

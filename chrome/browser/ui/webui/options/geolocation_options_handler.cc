@@ -16,7 +16,7 @@ GeolocationOptionsHandler::GeolocationOptionsHandler() {}
 GeolocationOptionsHandler::~GeolocationOptionsHandler() {}
 
 void GeolocationOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
 }
 
 void GeolocationOptionsHandler::InitializePage() {

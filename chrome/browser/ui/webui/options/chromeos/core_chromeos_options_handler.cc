@@ -54,7 +54,7 @@ bool IsLoggedInOwner(const std::string& username) {
 base::DictionaryValue* CreateUserInfo(const std::string& username,
                                       const std::string& display_email,
                                       const std::string& display_name) {
-  base::DictionaryValue* user_dict = new DictionaryValue;
+  base::DictionaryValue* user_dict = new base::DictionaryValue;
   user_dict->SetString("username", username);
   user_dict->SetString("name", display_email);
   user_dict->SetString("email", display_name);
@@ -145,7 +145,7 @@ base::Value* CoreChromeOSOptionsHandler::FetchPref(
 
   // Decorate pref value as CoreOptionsHandler::CreateValueForPref() does.
   // TODO(estade): seems that this should replicate CreateValueForPref less.
-  DictionaryValue* dict = new DictionaryValue;
+  base::DictionaryValue* dict = new base::DictionaryValue;
   if (pref_name == kAccountsPrefUsers)
     dict->Set("value", CreateUsersWhitelist(pref_value));
   else
@@ -208,7 +208,7 @@ void CoreChromeOSOptionsHandler::StopObservingPref(const std::string& path) {
 }
 
 void CoreChromeOSOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   CoreOptionsHandler::GetLocalizedValues(localized_strings);
 

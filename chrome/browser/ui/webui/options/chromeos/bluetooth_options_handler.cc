@@ -74,7 +74,7 @@ BluetoothOptionsHandler::~BluetoothOptionsHandler() {
 }
 
 void BluetoothOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
@@ -218,7 +218,7 @@ void BluetoothOptionsHandler::InitializeAdapter(
 }
 
 void BluetoothOptionsHandler::EnableChangeCallback(
-    const ListValue* args) {
+    const base::ListValue* args) {
   bool bluetooth_enabled;
   args->GetBoolean(0, &bluetooth_enabled);
 
@@ -234,7 +234,7 @@ void BluetoothOptionsHandler::EnableChangeError() {
 }
 
 void BluetoothOptionsHandler::FindDevicesCallback(
-    const ListValue* args) {
+    const base::ListValue* args) {
   if (!discovering_) {
     discovering_ = true;
     adapter_->StartDiscovering(
@@ -250,7 +250,7 @@ void BluetoothOptionsHandler::FindDevicesError() {
 }
 
 void BluetoothOptionsHandler::UpdateDeviceCallback(
-    const ListValue* args) {
+    const base::ListValue* args) {
   std::string address;
   args->GetString(kUpdateDeviceAddressIndex, &address);
 
@@ -400,7 +400,7 @@ void BluetoothOptionsHandler::ForgetError(const std::string& address) {
 }
 
 void BluetoothOptionsHandler::StopDiscoveryCallback(
-    const ListValue* args) {
+    const base::ListValue* args) {
   if (discovering_) {
     adapter_->StopDiscovering(
         base::Bind(&base::DoNothing),
@@ -416,7 +416,7 @@ void BluetoothOptionsHandler::StopDiscoveryError() {
 }
 
 void BluetoothOptionsHandler::GetPairedDevicesCallback(
-    const ListValue* args) {
+    const base::ListValue* args) {
   device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
 
   for (device::BluetoothAdapter::DeviceList::iterator iter = devices.begin();
@@ -471,20 +471,20 @@ void BluetoothOptionsHandler::SendDeviceNotification(
 }
 
 void BluetoothOptionsHandler::RequestPinCode(device::BluetoothDevice* device) {
-  DictionaryValue params;
+  base::DictionaryValue params;
   params.SetString("pairing", kEnterPinCode);
   SendDeviceNotification(device, &params);
 }
 
 void BluetoothOptionsHandler::RequestPasskey(device::BluetoothDevice* device) {
-  DictionaryValue params;
+  base::DictionaryValue params;
   params.SetString("pairing", kEnterPasskey);
   SendDeviceNotification(device, &params);
 }
 
 void BluetoothOptionsHandler::DisplayPinCode(device::BluetoothDevice* device,
                                              const std::string& pincode) {
-  DictionaryValue params;
+  base::DictionaryValue params;
   params.SetString("pairing", kRemotePinCode);
   params.SetString("pincode", pincode);
   SendDeviceNotification(device, &params);
@@ -492,7 +492,7 @@ void BluetoothOptionsHandler::DisplayPinCode(device::BluetoothDevice* device,
 
 void BluetoothOptionsHandler::DisplayPasskey(device::BluetoothDevice* device,
                                              uint32 passkey) {
-  DictionaryValue params;
+  base::DictionaryValue params;
   params.SetString("pairing", kRemotePasskey);
   params.SetInteger("passkey", passkey);
   SendDeviceNotification(device, &params);
@@ -500,14 +500,14 @@ void BluetoothOptionsHandler::DisplayPasskey(device::BluetoothDevice* device,
 
 void BluetoothOptionsHandler::KeysEntered(device::BluetoothDevice* device,
                                           uint32 entered) {
-  DictionaryValue params;
+  base::DictionaryValue params;
   params.SetInteger("entered", entered);
   SendDeviceNotification(device, &params);
 }
 
 void BluetoothOptionsHandler::ConfirmPasskey(device::BluetoothDevice* device,
                                              uint32 passkey) {
-  DictionaryValue params;
+  base::DictionaryValue params;
   params.SetString("pairing", kConfirmPasskey);
   params.SetInteger("passkey", passkey);
   SendDeviceNotification(device, &params);
@@ -573,7 +573,7 @@ void BluetoothOptionsHandler::DeviceRemoved(device::BluetoothAdapter* adapter,
 void BluetoothOptionsHandler::DeviceConnecting(
     device::BluetoothDevice* device) {
   DCHECK(device);
-  DictionaryValue params;
+  base::DictionaryValue params;
   params.SetString("pairing", kStartConnecting);
   SendDeviceNotification(device, &params);
 }

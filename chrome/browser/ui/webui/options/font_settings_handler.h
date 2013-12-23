@@ -27,7 +27,8 @@ class FontSettingsHandler : public OptionsPageUIHandler {
   virtual ~FontSettingsHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
 
@@ -40,7 +41,7 @@ class FontSettingsHandler : public OptionsPageUIHandler {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  void HandleFetchFontsData(const ListValue* args);
+  void HandleFetchFontsData(const base::ListValue* args);
 
   void FontsListHasLoaded(scoped_ptr<base::ListValue> list);
 

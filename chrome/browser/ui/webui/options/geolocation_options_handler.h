@@ -17,7 +17,8 @@ class GeolocationOptionsHandler : public OptionsPageUIHandler {
   virtual ~GeolocationOptionsHandler();
 
   // OptionsPageUIHandler implementation
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializePage() OVERRIDE;
 
  private:

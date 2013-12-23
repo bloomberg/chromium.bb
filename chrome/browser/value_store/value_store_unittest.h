@@ -36,9 +36,9 @@ class ValueStoreTest : public testing::TestWithParam<ValueStoreTestParam> {
   std::string key2_;
   std::string key3_;
 
-  scoped_ptr<Value> val1_;
-  scoped_ptr<Value> val2_;
-  scoped_ptr<Value> val3_;
+  scoped_ptr<base::Value> val1_;
+  scoped_ptr<base::Value> val2_;
+  scoped_ptr<base::Value> val3_;
 
   std::vector<std::string> empty_list_;
   std::vector<std::string> list1_;
@@ -56,11 +56,11 @@ class ValueStoreTest : public testing::TestWithParam<ValueStoreTestParam> {
   std::set<std::string> set13_;
   std::set<std::string> set123_;
 
-  scoped_ptr<DictionaryValue> empty_dict_;
-  scoped_ptr<DictionaryValue> dict1_;
-  scoped_ptr<DictionaryValue> dict3_;
-  scoped_ptr<DictionaryValue> dict12_;
-  scoped_ptr<DictionaryValue> dict123_;
+  scoped_ptr<base::DictionaryValue> empty_dict_;
+  scoped_ptr<base::DictionaryValue> dict1_;
+  scoped_ptr<base::DictionaryValue> dict3_;
+  scoped_ptr<base::DictionaryValue> dict12_;
+  scoped_ptr<base::DictionaryValue> dict123_;
 
  private:
   base::ScopedTempDir temp_dir_;

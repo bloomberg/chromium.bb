@@ -61,7 +61,7 @@ void VersionHandler::RegisterMessages() {
       base::Unretained(this)));
 }
 
-void VersionHandler::HandleRequestVersionInfo(const ListValue* args) {
+void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {
 #if defined(ENABLE_PLUGINS)
   // The Flash version information is needed in the response, so make sure
   // the plugins are loaded.
@@ -104,10 +104,10 @@ void VersionHandler::HandleRequestVersionInfo(const ListValue* args) {
   chrome_variations::GetFieldTrialActiveGroupIdsAsStrings(&variations);
 #endif
 
-  ListValue variations_list;
+  base::ListValue variations_list;
   for (std::vector<std::string>::const_iterator it = variations.begin();
       it != variations.end(); ++it) {
-    variations_list.Append(Value::CreateStringValue(*it));
+    variations_list.Append(base::Value::CreateStringValue(*it));
   }
 
   // In release mode, this will return an empty list to clear the section.
@@ -118,8 +118,8 @@ void VersionHandler::OnGotFilePaths(base::string16* executable_path_data,
                                     base::string16* profile_path_data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  StringValue exec_path(*executable_path_data);
-  StringValue profile_path(*profile_path_data);
+  base::StringValue exec_path(*executable_path_data);
+  base::StringValue profile_path(*profile_path_data);
   web_ui()->CallJavascriptFunction("returnFilePaths", exec_path, profile_path);
 }
 
@@ -143,7 +143,7 @@ void VersionHandler::OnGotPlugins(
     }
   }
 
-  StringValue arg(flash_version);
+  base::StringValue arg(flash_version);
   web_ui()->CallJavascriptFunction("returnFlashVersion", arg);
 }
 #endif  // defined(ENABLE_PLUGINS)

@@ -96,10 +96,11 @@ SyncInternalsUI::~SyncInternalsUI() {
   }
 }
 
-bool SyncInternalsUI::OverrideHandleWebUIMessage(const GURL& source_url,
-                                                 const std::string& name,
-                                                 const ListValue& content) {
-  scoped_ptr<ListValue> content_copy(content.DeepCopy());
+bool SyncInternalsUI::OverrideHandleWebUIMessage(
+    const GURL& source_url,
+    const std::string& name,
+    const base::ListValue& content) {
+  scoped_ptr<base::ListValue> content_copy(content.DeepCopy());
   JsArgList args(content_copy.get());
   VLOG(1) << "Received message: " << name << " with args "
           << args.ToString();
@@ -110,7 +111,7 @@ bool SyncInternalsUI::OverrideHandleWebUIMessage(const GURL& source_url,
   } else if (name == "getAboutInfo") {
     // We handle this case directly because it needs to work even if
     // the sync service doesn't exist.
-    ListValue return_args;
+    base::ListValue return_args;
     Profile* profile = Profile::FromWebUI(web_ui());
     ProfileSyncService* service = GetProfileSyncService(profile);
     return_args.Append(
@@ -134,7 +135,7 @@ void SyncInternalsUI::HandleJsEvent(
   VLOG(1) << "Handling event: " << name << " with details "
           << details.ToString();
   const std::string& event_handler = "chrome.sync." + name + ".fire";
-  std::vector<const Value*> arg_list(1, &details.Get());
+  std::vector<const base::Value*> arg_list(1, &details.Get());
   web_ui()->CallJavascriptFunction(event_handler, arg_list);
 }
 
@@ -143,6 +144,7 @@ void SyncInternalsUI::HandleJsReply(
   VLOG(1) << "Handling reply for " << name << " message with args "
           << args.ToString();
   const std::string& reply_handler = "chrome.sync." + name + ".handleReply";
-  std::vector<const Value*> arg_list(args.Get().begin(), args.Get().end());
+  std::vector<const base::Value*> arg_list(
+      args.Get().begin(), args.Get().end());
   web_ui()->CallJavascriptFunction(reply_handler, arg_list);
 }

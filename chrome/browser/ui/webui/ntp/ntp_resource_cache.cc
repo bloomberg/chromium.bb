@@ -290,7 +290,7 @@ void NTPResourceCache::OnPreferenceChanged() {
 }
 
 void NTPResourceCache::CreateNewTabIncognitoHTML() {
-  DictionaryValue localized_strings;
+  base::DictionaryValue localized_strings;
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   int new_tab_message_ids = IDS_NEW_TAB_OTR_MESSAGE;
@@ -347,7 +347,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
 }
 
 void NTPResourceCache::CreateNewTabGuestHTML() {
-  DictionaryValue localized_strings;
+  base::DictionaryValue localized_strings;
   localized_strings.SetString("title",
       l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
   const char* new_tab_link = kLearnMoreGuestSessionUrl;
@@ -373,7 +373,7 @@ void NTPResourceCache::CreateNewTabHTML() {
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
   PrefService* prefs = profile_->GetPrefs();
-  DictionaryValue load_time_data;
+  base::DictionaryValue load_time_data;
   load_time_data.SetBoolean("bookmarkbarattached",
       prefs->GetBoolean(prefs::kShowBookmarkBar));
   load_time_data.SetBoolean("hasattribution",

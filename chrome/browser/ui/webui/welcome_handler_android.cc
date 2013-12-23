@@ -41,15 +41,16 @@ void WelcomeHandler::RegisterMessages() {
     observer_manager_.Add(sync_service_);
 }
 
-void WelcomeHandler::HandleUpdateSyncFooterVisibility(const ListValue* args) {
+void WelcomeHandler::HandleUpdateSyncFooterVisibility(
+    const base::ListValue* args) {
   UpdateSyncFooterVisibility(true);
 }
 
-void WelcomeHandler::HandleShowSyncSettings(const ListValue* args) {
+void WelcomeHandler::HandleShowSyncSettings(const base::ListValue* args) {
   chrome::android::ChromiumApplication::ShowSyncSettings();
 }
 
-void WelcomeHandler::HandleShowTermsOfService(const ListValue* args) {
+void WelcomeHandler::HandleShowTermsOfService(const base::ListValue* args) {
   chrome::android::ChromiumApplication::ShowTermsOfServiceDialog();
 }
 

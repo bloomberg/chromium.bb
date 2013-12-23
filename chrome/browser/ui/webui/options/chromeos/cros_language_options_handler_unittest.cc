@@ -55,13 +55,13 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
 
 TEST_F(CrosLanguageOptionsHandlerTest, GetInputMethodList) {
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
-  scoped_ptr<ListValue> list(
+  scoped_ptr<base::ListValue> list(
       chromeos::options::CrosLanguageOptionsHandler::GetInputMethodList(
           descriptors));
   ASSERT_EQ(4U, list->GetSize());
 
-  DictionaryValue* entry = NULL;
-  DictionaryValue *language_code_set = NULL;
+  base::DictionaryValue* entry = NULL;
+  base::DictionaryValue *language_code_set = NULL;
   std::string input_method_id;
   std::string display_name;
   std::string language_code;
@@ -108,7 +108,7 @@ TEST_F(CrosLanguageOptionsHandlerTest, GetInputMethodList) {
 
 TEST_F(CrosLanguageOptionsHandlerTest, GetUILanguageList) {
   InputMethodDescriptors descriptors = CreateInputMethodDescriptors();
-  scoped_ptr<ListValue> list(
+  scoped_ptr<base::ListValue> list(
       chromeos::options::CrosLanguageOptionsHandler::GetUILanguageList(
           descriptors));
 

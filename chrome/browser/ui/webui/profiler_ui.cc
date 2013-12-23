@@ -121,8 +121,8 @@ class ProfilerMessageHandler : public WebUIMessageHandler {
   virtual void RegisterMessages() OVERRIDE;
 
   // Messages.
-  void OnGetData(const ListValue* list);
-  void OnResetData(const ListValue* list);
+  void OnGetData(const base::ListValue* list);
+  void OnResetData(const base::ListValue* list);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProfilerMessageHandler);
@@ -138,12 +138,12 @@ void ProfilerMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ProfilerMessageHandler::OnGetData(const ListValue* list) {
+void ProfilerMessageHandler::OnGetData(const base::ListValue* list) {
   ProfilerUI* profiler_ui = static_cast<ProfilerUI*>(web_ui()->GetController());
   profiler_ui->GetData();
 }
 
-void ProfilerMessageHandler::OnResetData(const ListValue* list) {
+void ProfilerMessageHandler::OnResetData(const base::ListValue* list) {
   tracked_objects::ThreadData::ResetAllThreadData();
 }
 
@@ -175,7 +175,7 @@ void ProfilerUI::ReceivedProfilerData(
     const tracked_objects::ProcessDataSnapshot& profiler_data,
     int process_type) {
   // Serialize the data to JSON.
-  DictionaryValue json_data;
+  base::DictionaryValue json_data;
   task_profiler::TaskProfilerDataSerializer::ToValue(profiler_data,
                                                      process_type,
                                                      &json_data);

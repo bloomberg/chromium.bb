@@ -29,7 +29,8 @@ class StartupPagesHandler : public OptionsPageUIHandler,
   virtual ~StartupPagesHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
@@ -45,31 +46,31 @@ class StartupPagesHandler : public OptionsPageUIHandler,
 
  private:
   // Saves the changes that have been made. Called from WebUI.
-  void CommitChanges(const ListValue* args);
+  void CommitChanges(const base::ListValue* args);
 
   // Cancels the changes that have been made. Called from WebUI.
-  void CancelChanges(const ListValue* args);
+  void CancelChanges(const base::ListValue* args);
 
   // Removes the startup page at the given indexes. Called from WebUI.
-  void RemoveStartupPages(const ListValue* args);
+  void RemoveStartupPages(const base::ListValue* args);
 
   // Adds a startup page with the given URL after the given index.
   // Called from WebUI.
-  void AddStartupPage(const ListValue* args);
+  void AddStartupPage(const base::ListValue* args);
 
   // Changes the startup page at the given index to the given URL.
   // Called from WebUI.
-  void EditStartupPage(const ListValue* args);
+  void EditStartupPage(const base::ListValue* args);
 
   // Sets the startup page set to the current pages. Called from WebUI.
-  void SetStartupPagesToCurrentPages(const ListValue* args);
+  void SetStartupPagesToCurrentPages(const base::ListValue* args);
 
   // Writes the current set of startup pages to prefs. Called from WebUI.
-  void DragDropStartupPage(const ListValue* args);
+  void DragDropStartupPage(const base::ListValue* args);
 
   // Gets autocomplete suggestions asychronously for the given string.
   // Called from WebUI.
-  void RequestAutocompleteSuggestions(const ListValue* args);
+  void RequestAutocompleteSuggestions(const base::ListValue* args);
 
   // Loads the current set of custom startup pages and reports it to the WebUI.
   void UpdateStartupPages();

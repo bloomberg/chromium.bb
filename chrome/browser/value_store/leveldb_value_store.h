@@ -39,9 +39,9 @@ class LeveldbValueStore : public ValueStore {
   virtual WriteResult Set(
       WriteOptions options,
       const std::string& key,
-      const Value& value) OVERRIDE;
+      const base::Value& value) OVERRIDE;
   virtual WriteResult Set(
-      WriteOptions options, const DictionaryValue& values) OVERRIDE;
+      WriteOptions options, const base::DictionaryValue& values) OVERRIDE;
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
   virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
   virtual WriteResult Clear() OVERRIDE;
@@ -55,7 +55,7 @@ class LeveldbValueStore : public ValueStore {
       leveldb::ReadOptions options,
       const std::string& key,
       // Will be reset() with the result, if any.
-      scoped_ptr<Value>* setting);
+      scoped_ptr<base::Value>* setting);
 
   // Adds a setting to a WriteBatch, and logs the change in |changes|. For use
   // with WriteToDb.

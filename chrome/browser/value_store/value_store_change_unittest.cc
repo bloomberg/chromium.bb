@@ -19,22 +19,22 @@ using extensions::ListBuilder;
 namespace {
 
 TEST(ValueStoreChangeTest, NullOldValue) {
-  ValueStoreChange change("key", NULL, Value::CreateStringValue("value"));
+  ValueStoreChange change("key", NULL, base::Value::CreateStringValue("value"));
 
   EXPECT_EQ("key", change.key());
   EXPECT_EQ(NULL, change.old_value());
   {
-    scoped_ptr<Value> expected(Value::CreateStringValue("value"));
+    scoped_ptr<base::Value> expected(base::Value::CreateStringValue("value"));
     EXPECT_TRUE(change.new_value()->Equals(expected.get()));
   }
 }
 
 TEST(ValueStoreChangeTest, NullNewValue) {
-  ValueStoreChange change("key", Value::CreateStringValue("value"), NULL);
+  ValueStoreChange change("key", base::Value::CreateStringValue("value"), NULL);
 
   EXPECT_EQ("key", change.key());
   {
-    scoped_ptr<Value> expected(Value::CreateStringValue("value"));
+    scoped_ptr<base::Value> expected(base::Value::CreateStringValue("value"));
     EXPECT_TRUE(change.old_value()->Equals(expected.get()));
   }
   EXPECT_EQ(NULL, change.new_value());
@@ -42,23 +42,25 @@ TEST(ValueStoreChangeTest, NullNewValue) {
 
 TEST(ValueStoreChangeTest, NonNullValues) {
   ValueStoreChange change("key",
-                          Value::CreateStringValue("old_value"),
-                          Value::CreateStringValue("new_value"));
+                          base::Value::CreateStringValue("old_value"),
+                          base::Value::CreateStringValue("new_value"));
 
   EXPECT_EQ("key", change.key());
   {
-    scoped_ptr<Value> expected(Value::CreateStringValue("old_value"));
+    scoped_ptr<base::Value> expected(
+        base::Value::CreateStringValue("old_value"));
     EXPECT_TRUE(change.old_value()->Equals(expected.get()));
   }
   {
-    scoped_ptr<Value> expected(Value::CreateStringValue("new_value"));
+    scoped_ptr<base::Value> expected(
+        base::Value::CreateStringValue("new_value"));
     EXPECT_TRUE(change.new_value()->Equals(expected.get()));
   }
 }
 
 TEST(ValueStoreChangeTest, ToJson) {
   // Create a mildly complicated structure that has dots in it.
-  scoped_ptr<DictionaryValue> value = DictionaryBuilder()
+  scoped_ptr<base::DictionaryValue> value = DictionaryBuilder()
       .Set("key", "value")
       .Set("key.with.dots", "value.with.dots")
       .Set("tricked", DictionaryBuilder()
@@ -73,14 +75,14 @@ TEST(ValueStoreChangeTest, ToJson) {
       ValueStoreChange("key.with.dots", value->DeepCopy(), value->DeepCopy()));
 
   std::string json = ValueStoreChange::ToJson(change_list);
-  scoped_ptr<Value> from_json(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> from_json(base::JSONReader::Read(json));
   ASSERT_TRUE(from_json.get());
 
   DictionaryBuilder v1(*value);
   DictionaryBuilder v2(*value);
   DictionaryBuilder v3(*value);
   DictionaryBuilder v4(*value);
-  scoped_ptr<DictionaryValue> expected_from_json = DictionaryBuilder()
+  scoped_ptr<base::DictionaryValue> expected_from_json = DictionaryBuilder()
       .Set("key", DictionaryBuilder()
           .Set("oldValue", v1)
           .Set("newValue", v2))

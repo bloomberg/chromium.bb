@@ -53,10 +53,10 @@ int SuggestionsSourceDiscovery::GetItemCount() {
   return items_.size();
 }
 
-DictionaryValue* SuggestionsSourceDiscovery::PopItem() {
+base::DictionaryValue* SuggestionsSourceDiscovery::PopItem() {
   if (items_.empty())
     return NULL;
-  DictionaryValue* item = items_.front();
+  base::DictionaryValue* item = items_.front();
   items_.pop_front();
   return item;
 }
@@ -71,7 +71,7 @@ void SuggestionsSourceDiscovery::FetchItems(Profile* profile) {
   items_.clear();
   for (SuggestedLinkList::const_iterator it = list->begin();
        it != list->end(); ++it) {
-    DictionaryValue* page_value = new DictionaryValue();
+    base::DictionaryValue* page_value = new base::DictionaryValue();
     NewTabUI::SetUrlTitleAndDirection(page_value,
                                       ASCIIToUTF16((*it)->link_text()),
                                       GURL((*it)->link_url()));

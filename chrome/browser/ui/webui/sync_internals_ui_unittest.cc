@@ -119,16 +119,16 @@ TEST_F(SyncInternalsUITestWithService, HandleJsReply) {
       ExecuteJavascript(
           ASCIIToUTF16("chrome.sync.testMessage.handleReply(5,true);")));
 
-  ListValue args;
-  args.Append(Value::CreateIntegerValue(5));
-  args.Append(Value::CreateBooleanValue(true));
+  base::ListValue args;
+  args.Append(base::Value::CreateIntegerValue(5));
+  args.Append(base::Value::CreateBooleanValue(true));
   sync_internals_ui_->HandleJsReply("testMessage", JsArgList(&args));
 }
 
 TEST_F(SyncInternalsUITestWithService, OnWebUISendBasic) {
   const std::string& name = "testName";
-  ListValue args;
-  args.Append(Value::CreateIntegerValue(10));
+  base::ListValue args;
+  args.Append(base::Value::CreateIntegerValue(10));
 
   EXPECT_CALL(mock_js_controller_,
               ProcessJsMessage(name, HasArgsAsList(args), _));
@@ -185,17 +185,17 @@ TEST_F(SyncInternalsUITestWithoutService, HandleJsReply) {
       ExecuteJavascript(
           ASCIIToUTF16("chrome.sync.testMessage.handleReply(5,true);")));
 
-  ListValue args;
-  args.Append(Value::CreateIntegerValue(5));
-  args.Append(Value::CreateBooleanValue(true));
+  base::ListValue args;
+  args.Append(base::Value::CreateIntegerValue(5));
+  args.Append(base::Value::CreateBooleanValue(true));
   sync_internals_ui_->HandleJsReply(
       "testMessage", JsArgList(&args));
 }
 
 TEST_F(SyncInternalsUITestWithoutService, OnWebUISendBasic) {
   const std::string& name = "testName";
-  ListValue args;
-  args.Append(Value::CreateIntegerValue(5));
+  base::ListValue args;
+  args.Append(base::Value::CreateIntegerValue(5));
 
   // Should drop the message.
   sync_internals_ui_->OverrideHandleWebUIMessage(GURL(), name, args);
@@ -209,7 +209,7 @@ TEST_F(SyncInternalsUITestWithoutService, OnWebUISendGetAboutInfo) {
   EXPECT_CALL(*web_ui_,
               ExecuteJavascript(ASCIIToUTF16(kAboutInfoCall)));
 
-  ListValue args;
+  base::ListValue args;
   sync_internals_ui_->OverrideHandleWebUIMessage(
       GURL(), "getAboutInfo", args);
 }

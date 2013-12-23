@@ -24,7 +24,8 @@ MediaDevicesSelectionHandler::~MediaDevicesSelectionHandler() {
   MediaCaptureDevicesDispatcher::GetInstance()->RemoveObserver(this);
 }
 
-void MediaDevicesSelectionHandler::GetLocalizedValues(DictionaryValue* values) {
+void MediaDevicesSelectionHandler::GetLocalizedValues(
+    base::DictionaryValue* values) {
   DCHECK(values);
 
   static OptionsStringResource resources[] = {
@@ -61,7 +62,7 @@ void MediaDevicesSelectionHandler::OnUpdateVideoDevices(
 }
 
 void MediaDevicesSelectionHandler::SetDefaultCaptureDevice(
-    const ListValue* args) {
+    const base::ListValue* args) {
   DCHECK_EQ(2U, args->GetSize());
   std::string type, device;
   if (!(args->GetString(0, &type) && args->GetString(1, &device))) {
@@ -102,9 +103,9 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
 
   // Build the list of devices to send to JS.
   std::string default_id;
-  ListValue device_list;
+  base::ListValue device_list;
   for (size_t i = 0; i < devices.size(); ++i) {
-    DictionaryValue* entry = new DictionaryValue();
+    base::DictionaryValue* entry = new base::DictionaryValue();
     entry->SetString("name", devices[i].name);
     entry->SetString("id",  devices[i].id);
     device_list.Append(entry);
@@ -117,8 +118,8 @@ void MediaDevicesSelectionHandler::UpdateDevicesMenu(
   if (!devices.empty() && default_id.empty())
     default_id = devices[0].id;
 
-  StringValue default_value(default_id);
-  StringValue type_value(device_type);
+  base::StringValue default_value(default_id);
+  base::StringValue type_value(device_type);
   web_ui()->CallJavascriptFunction("ContentSettings.updateDevicesMenu",
                                    type_value,
                                    device_list,

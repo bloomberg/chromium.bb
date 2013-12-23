@@ -61,7 +61,7 @@ void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
     if (!extension)
       continue;
 
-    base::DictionaryValue* dict = new DictionaryValue;
+    base::DictionaryValue* dict = new base::DictionaryValue;
     dict->SetString("extensionID", extension_id);
     dict->SetString("extensionName", extension->name());
     dict->SetString("status", itr->second);

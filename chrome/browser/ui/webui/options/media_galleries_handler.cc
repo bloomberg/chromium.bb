@@ -36,7 +36,7 @@ MediaGalleriesHandler::~MediaGalleriesHandler() {
     preferences->RemoveGalleryChangeObserver(this);
 }
 
-void MediaGalleriesHandler::GetLocalizedValues(DictionaryValue* values) {
+void MediaGalleriesHandler::GetLocalizedValues(base::DictionaryValue* values) {
   DCHECK(values);
 
   static OptionsStringResource resources[] = {
@@ -84,7 +84,7 @@ void MediaGalleriesHandler::OnGalleryInfoUpdated(
 void MediaGalleriesHandler::OnGalleriesChanged(
     MediaGalleriesPreferences* pref) {
   DCHECK(pref->IsInitialized());
-  ListValue list;
+  base::ListValue list;
   const MediaGalleriesPrefInfoMap& galleries = pref->known_galleries();
   for (MediaGalleriesPrefInfoMap::const_iterator iter = galleries.begin();
        iter != galleries.end(); ++iter) {
@@ -92,7 +92,7 @@ void MediaGalleriesHandler::OnGalleriesChanged(
     if (gallery.type == MediaGalleryPrefInfo::kBlackListed)
       continue;
 
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetString("displayName", gallery.GetGalleryDisplayName());
     dict->SetString("path", gallery.AbsolutePath().LossyDisplayName());
     dict->SetString("id", base::Uint64ToString(gallery.pref_id));

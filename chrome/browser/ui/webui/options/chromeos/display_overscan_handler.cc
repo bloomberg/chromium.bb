@@ -38,7 +38,7 @@ DisplayOverscanHandler::~DisplayOverscanHandler() {
 }
 
 void DisplayOverscanHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   RegisterTitle(localized_strings, "displayOverscanPage",
                 IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_TAB_TITLE);
   localized_strings->SetString("shrinkAndExpand", l10n_util::GetStringUTF16(

@@ -25,7 +25,7 @@ class UberUI : public content::WebUIController {
   // WebUIController implementation.
   virtual bool OverrideHandleWebUIMessage(const GURL& source_url,
                                           const std::string& message,
-                                          const ListValue& args) OVERRIDE;
+                                          const base::ListValue& args) OVERRIDE;
 
   // We forward these to |sub_uis_|.
   virtual void RenderViewCreated(

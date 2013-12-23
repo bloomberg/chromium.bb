@@ -116,7 +116,7 @@ class SetAsDefaultBrowserHandler
 
  private:
   // Handler for the 'Next' (or 'make Chrome the Metro browser') button.
-  void HandleLaunchSetDefaultBrowserFlow(const ListValue* args);
+  void HandleLaunchSetDefaultBrowserFlow(const base::ListValue* args);
 
   // Close this web ui.
   void ConcludeInteraction(MakeChromeDefaultResult interaction_result);
@@ -182,7 +182,7 @@ bool SetAsDefaultBrowserHandler::IsInteractiveSetDefaultPermitted() {
 }
 
 void SetAsDefaultBrowserHandler::HandleLaunchSetDefaultBrowserFlow(
-    const ListValue* args) {
+    const base::ListValue* args) {
   set_default_returned_ = false;
   set_default_result_ = false;
   default_browser_worker_->StartSetAsDefault();

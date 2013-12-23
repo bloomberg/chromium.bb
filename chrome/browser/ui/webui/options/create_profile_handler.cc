@@ -54,7 +54,7 @@ void CreateProfileHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void CreateProfileHandler::CreateProfile(const ListValue* args) {
+void CreateProfileHandler::CreateProfile(const base::ListValue* args) {
   // This handler could have been called in managed mode, for example because
   // the user fiddled with the web inspector. Silently return in this case.
   Profile* current_profile = Profile::FromWebUI(web_ui());
@@ -249,7 +249,7 @@ void CreateProfileHandler::CreateShortcutAndShowSuccess(
   DCHECK_EQ(profile_path_being_created_.value(), profile->GetPath().value());
   profile_path_being_created_.clear();
   DCHECK_NE(NO_CREATION_IN_PROGRESS, profile_creation_type_);
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetString("name",
                  profile->GetPrefs()->GetString(prefs::kProfileName));
   dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
@@ -294,7 +294,8 @@ void CreateProfileHandler::ShowProfileCreationWarning(
                                    base::StringValue(warning));
 }
 
-void CreateProfileHandler::HandleCancelProfileCreation(const ListValue* args) {
+void CreateProfileHandler::HandleCancelProfileCreation(
+    const base::ListValue* args) {
   CancelProfileRegistration(true);
 }
 
@@ -417,7 +418,7 @@ bool CreateProfileHandler::IsValidExistingManagedUserId(
   }
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  const DictionaryValue* dict =
+  const base::DictionaryValue* dict =
       ManagedUserSyncServiceFactory::GetForProfile(profile)->GetManagedUsers();
   if (!dict->HasKey(existing_managed_user_id))
     return false;

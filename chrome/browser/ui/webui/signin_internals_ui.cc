@@ -52,9 +52,10 @@ SignInInternalsUI::~SignInInternalsUI() {
   }
 }
 
-bool SignInInternalsUI::OverrideHandleWebUIMessage(const GURL& source_url,
-                                                   const std::string& name,
-                                                   const ListValue& content) {
+bool SignInInternalsUI::OverrideHandleWebUIMessage(
+    const GURL& source_url,
+    const std::string& name,
+    const base::ListValue& content) {
   if (name == "getSigninInfo") {
     Profile* profile = Profile::FromWebUI(web_ui());
     if (!profile)
@@ -78,7 +79,8 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(const GURL& source_url,
   return false;
 }
 
-void SignInInternalsUI::OnSigninStateChanged(scoped_ptr<DictionaryValue> info) {
+void SignInInternalsUI::OnSigninStateChanged(
+    scoped_ptr<base::DictionaryValue> info) {
   const std::string& event_handler = "chrome.signin.onSigninInfoChanged.fire";
   web_ui()->CallJavascriptFunction(event_handler, *info);
 }

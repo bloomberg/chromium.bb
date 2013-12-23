@@ -123,7 +123,7 @@ void SearchEngineManagerHandler::OnModelChanged() {
       default_engine);
 
   // Build the first list (default search engine options).
-  ListValue defaults_list;
+  base::ListValue defaults_list;
   int last_default_engine_index =
       list_controller_->table_model()->last_search_engine_index();
   for (int i = 0; i < last_default_engine_index; ++i) {
@@ -133,7 +133,7 @@ void SearchEngineManagerHandler::OnModelChanged() {
   }
 
   // Build the second list (other search templates).
-  ListValue others_list;
+  base::ListValue others_list;
   int last_other_engine_index =
       list_controller_->table_model()->last_other_engine_index();
   if (last_default_engine_index < 0)
@@ -143,7 +143,7 @@ void SearchEngineManagerHandler::OnModelChanged() {
   }
 
   // Build the extension keywords list.
-  ListValue keyword_list;
+  base::ListValue keyword_list;
   if (last_other_engine_index < 0)
     last_other_engine_index = 0;
   int engine_count = list_controller_->table_model()->RowCount();
@@ -196,7 +196,7 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
     std::string extension_id = template_url->GetExtensionId();
     ExtensionService* extension_service = extensions::ExtensionSystem::Get(
         Profile::FromWebUI(web_ui()))->extension_service();
-    scoped_ptr<DictionaryValue> dictionary =
+    scoped_ptr<base::DictionaryValue> dictionary =
         extension_service->GetExtensionInfo(extension_id);
     if (!dictionary->empty())
       dict->Set("extension", dictionary.release());
@@ -204,7 +204,8 @@ base::DictionaryValue* SearchEngineManagerHandler::CreateDictionaryForEngine(
   return dict;
 }
 
-void SearchEngineManagerHandler::SetDefaultSearchEngine(const ListValue* args) {
+void SearchEngineManagerHandler::SetDefaultSearchEngine(
+    const base::ListValue* args) {
   int index;
   if (!ExtractIntegerValue(args, &index)) {
     NOTREACHED();
@@ -216,7 +217,8 @@ void SearchEngineManagerHandler::SetDefaultSearchEngine(const ListValue* args) {
   list_controller_->MakeDefaultTemplateURL(index);
 }
 
-void SearchEngineManagerHandler::RemoveSearchEngine(const ListValue* args) {
+void SearchEngineManagerHandler::RemoveSearchEngine(
+    const base::ListValue* args) {
   int index;
   if (!ExtractIntegerValue(args, &index)) {
     NOTREACHED();
@@ -229,7 +231,7 @@ void SearchEngineManagerHandler::RemoveSearchEngine(const ListValue* args) {
     list_controller_->RemoveTemplateURL(index);
 }
 
-void SearchEngineManagerHandler::EditSearchEngine(const ListValue* args) {
+void SearchEngineManagerHandler::EditSearchEngine(const base::ListValue* args) {
   int index;
   if (!ExtractIntegerValue(args, &index)) {
     NOTREACHED();
@@ -259,7 +261,7 @@ void SearchEngineManagerHandler::OnEditedKeyword(
 }
 
 void SearchEngineManagerHandler::CheckSearchEngineInfoValidity(
-    const ListValue* args)
+    const base::ListValue* args)
 {
   if (!edit_controller_.get())
     return;
@@ -279,19 +281,19 @@ void SearchEngineManagerHandler::CheckSearchEngineInfoValidity(
   validity.SetBoolean("name", edit_controller_->IsTitleValid(name));
   validity.SetBoolean("keyword", edit_controller_->IsKeywordValid(keyword));
   validity.SetBoolean("url", edit_controller_->IsURLValid(url));
-  StringValue indexValue(modelIndex);
+  base::StringValue indexValue(modelIndex);
   web_ui()->CallJavascriptFunction("SearchEngineManager.validityCheckCallback",
                                    validity, indexValue);
 }
 
-void SearchEngineManagerHandler::EditCancelled(const ListValue* args) {
+void SearchEngineManagerHandler::EditCancelled(const base::ListValue* args) {
   if (!edit_controller_.get())
     return;
   edit_controller_->CleanUpCancelledAdd();
   edit_controller_.reset();
 }
 
-void SearchEngineManagerHandler::EditCompleted(const ListValue* args) {
+void SearchEngineManagerHandler::EditCompleted(const base::ListValue* args) {
   if (!edit_controller_.get())
     return;
   base::string16 name;

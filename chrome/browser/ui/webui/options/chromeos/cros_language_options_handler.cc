@@ -64,7 +64,7 @@ CrosLanguageOptionsHandler::~CrosLanguageOptionsHandler() {
 }
 
 void CrosLanguageOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   ::options::LanguageOptionsHandlerCommon::GetLocalizedValues(
       localized_strings);
 
@@ -127,7 +127,7 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
     // If component extension IME manager is not ready for use, it will be
     // added in |InitializePage()|.
     localized_strings->Set("componentExtensionImeList",
-                           new ListValue());
+                           new base::ListValue());
   }
 }
 
@@ -148,12 +148,12 @@ void CrosLanguageOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
+base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     const input_method::InputMethodDescriptors& descriptors) {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
 
-  ListValue* input_method_list = new ListValue();
+  base::ListValue* input_method_list = new base::ListValue();
 
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor =
@@ -161,13 +161,13 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
     const std::string display_name =
         manager->GetInputMethodUtil()->GetInputMethodDisplayNameFromId(
             descriptor.id());
-    DictionaryValue* dictionary = new DictionaryValue();
+    base::DictionaryValue* dictionary = new base::DictionaryValue();
     dictionary->SetString("id", descriptor.id());
     dictionary->SetString("displayName", display_name);
 
     // One input method can be associated with multiple languages, hence
     // we use a dictionary here.
-    DictionaryValue* languages = new DictionaryValue();
+    base::DictionaryValue* languages = new base::DictionaryValue();
     for (size_t i = 0; i < descriptor.language_codes().size(); ++i) {
       languages->SetBoolean(descriptor.language_codes().at(i), true);
     }
@@ -180,7 +180,7 @@ ListValue* CrosLanguageOptionsHandler::GetInputMethodList(
 }
 
 // static
-ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
+base::ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
     const input_method::InputMethodDescriptors& descriptors,
     const std::vector<std::string>& base_language_codes) {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
@@ -253,7 +253,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
   l10n_util::SortStrings16(app_locale, &display_names);
 
   // Build the language list from the language map.
-  ListValue* language_list = new ListValue();
+  base::ListValue* language_list = new base::ListValue();
   for (size_t i = 0; i < display_names.size(); ++i) {
     // Sets the directionality of the display language name.
     base::string16 display_name(display_names[i]);
@@ -264,7 +264,7 @@ ListValue* CrosLanguageOptionsHandler::GetLanguageListInternal(
     std::string directionality = has_rtl_chars ? "rtl" : "ltr";
 
     const LanguagePair& pair = language_map[display_names[i]];
-    DictionaryValue* dictionary = new DictionaryValue();
+    base::DictionaryValue* dictionary = new base::DictionaryValue();
     dictionary->SetString("code", pair.first);
     dictionary->SetString("displayName", display_names[i]);
     dictionary->SetString("textDirection", directionality);
@@ -295,14 +295,15 @@ base::ListValue* CrosLanguageOptionsHandler::GetUILanguageList(
 base::ListValue*
     CrosLanguageOptionsHandler::ConvertInputMethodDescriptosToIMEList(
         const input_method::InputMethodDescriptors& descriptors) {
-  scoped_ptr<ListValue> ime_ids_list(new ListValue());
+  scoped_ptr<base::ListValue> ime_ids_list(new base::ListValue());
   for (size_t i = 0; i < descriptors.size(); ++i) {
     const input_method::InputMethodDescriptor& descriptor = descriptors[i];
-    scoped_ptr<DictionaryValue> dictionary(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue());
     dictionary->SetString("id", descriptor.id());
     dictionary->SetString("displayName", descriptor.name());
     dictionary->SetString("optionsPage", descriptor.options_page_url().spec());
-    scoped_ptr<DictionaryValue> language_codes(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> language_codes(
+        new base::DictionaryValue());
     for (size_t i = 0; i < descriptor.language_codes().size(); ++i)
       language_codes->SetBoolean(descriptor.language_codes().at(i), true);
     dictionary->Set("languageCodeSet", language_codes.release());
@@ -321,13 +322,13 @@ void CrosLanguageOptionsHandler::SetApplicationLocale(
       language_code, Profile::APP_LOCALE_CHANGED_VIA_SETTINGS);
 }
 
-void CrosLanguageOptionsHandler::RestartCallback(const ListValue* args) {
+void CrosLanguageOptionsHandler::RestartCallback(const base::ListValue* args) {
   content::RecordAction(UserMetricsAction("LanguageOptions_SignOut"));
   chrome::AttemptUserExit();
 }
 
 void CrosLanguageOptionsHandler::InputMethodDisableCallback(
-    const ListValue* args) {
+    const base::ListValue* args) {
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "LanguageOptions_DisableInputMethod_%s", input_method_id.c_str());
@@ -335,7 +336,7 @@ void CrosLanguageOptionsHandler::InputMethodDisableCallback(
 }
 
 void CrosLanguageOptionsHandler::InputMethodEnableCallback(
-    const ListValue* args) {
+    const base::ListValue* args) {
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "LanguageOptions_EnableInputMethod_%s", input_method_id.c_str());
@@ -343,7 +344,7 @@ void CrosLanguageOptionsHandler::InputMethodEnableCallback(
 }
 
 void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
-    const ListValue* args) {
+    const base::ListValue* args) {
   const std::string input_method_id = UTF16ToASCII(ExtractStringValue(args));
   const std::string action = base::StringPrintf(
       "InputMethodOptions_Open_%s", input_method_id.c_str());
@@ -377,7 +378,7 @@ void CrosLanguageOptionsHandler::OnInitialized() {
           ->GetComponentExtensionIMEManager();
 
   DCHECK(manager->IsInitialized());
-  scoped_ptr<ListValue> ime_list(
+  scoped_ptr<base::ListValue> ime_list(
       ConvertInputMethodDescriptosToIMEList(
           manager->GetAllIMEAsInputMethodDescriptor()));
   web_ui()->CallJavascriptFunction(
@@ -400,7 +401,7 @@ void CrosLanguageOptionsHandler::InitializePage() {
     return;
   }
 
-  scoped_ptr<ListValue> ime_list(
+  scoped_ptr<base::ListValue> ime_list(
       ConvertInputMethodDescriptosToIMEList(
           component_extension_manager->GetAllIMEAsInputMethodDescriptor()));
   web_ui()->CallJavascriptFunction(

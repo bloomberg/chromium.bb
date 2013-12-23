@@ -23,7 +23,8 @@ PointerHandler::PointerHandler()
 PointerHandler::~PointerHandler() {
 }
 
-void PointerHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
+void PointerHandler::GetLocalizedValues(
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {

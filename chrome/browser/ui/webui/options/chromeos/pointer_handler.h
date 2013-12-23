@@ -23,7 +23,8 @@ class PointerHandler
   virtual ~PointerHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
 
  private:
   // PointerDeviceObserver implementation.

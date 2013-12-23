@@ -118,7 +118,7 @@ void SyncFileSystemInternalsHandler::GetLog(
     if (log_entry->id <= last_log_id_sent)
       continue;
 
-    base::DictionaryValue* dict = new DictionaryValue;
+    base::DictionaryValue* dict = new base::DictionaryValue;
     dict->SetInteger("id", log_entry->id);
     dict->SetString("time",
         google_apis::util::FormatTimeAsStringLocaltime(log_entry->when));

@@ -49,7 +49,8 @@ KeyboardHandler::KeyboardHandler() {
 KeyboardHandler::~KeyboardHandler() {
 }
 
-void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
+void KeyboardHandler::GetLocalizedValues(
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   localized_strings->SetString("keyboardOverlayTitle",
@@ -80,7 +81,7 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
           IDS_OPTIONS_SETTINGS_CHANGE_LANGUAGE_AND_INPUT_SETTINGS));
 
   for (size_t i = 0; i < arraysize(kDataValuesNames); ++i) {
-    ListValue* list_value = new ListValue();
+    base::ListValue* list_value = new base::ListValue();
     for (size_t j = 0; j < arraysize(kModifierKeysSelectItems); ++j) {
       const input_method::ModifierKey value =
           kModifierKeysSelectItems[j].value;
@@ -91,7 +92,7 @@ void KeyboardHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
           value == input_method::kCapsLockKey) {
         continue;
       }
-      ListValue* option = new ListValue();
+      base::ListValue* option = new base::ListValue();
       option->Append(new base::FundamentalValue(value));
       option->Append(new base::StringValue(l10n_util::GetStringUTF16(
           message_id)));

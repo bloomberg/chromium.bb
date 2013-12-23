@@ -117,7 +117,7 @@ void SuggestionsCombiner::FillPageValues() {
   }
 
   // Fill in extra items, prioritizing the first source.
-  DictionaryValue* item;
+  base::DictionaryValue* item;
   // Rather than updating |next_item_index_for_source| we keep track of the
   // number of extra items that were added and offset indices by that much.
   size_t extra_items_added = 0;

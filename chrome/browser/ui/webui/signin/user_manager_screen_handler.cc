@@ -229,7 +229,7 @@ void UserManagerScreenHandler::HandleAuthenticatedLaunchUser(
 
 void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
   DCHECK(args);
-  const Value* profile_path_value;
+  const base::Value* profile_path_value;
   if (!args->Get(0, &profile_path_value))
     return;
 
@@ -375,7 +375,7 @@ void UserManagerScreenHandler::GetLocalizedValues(
  }
 
 void UserManagerScreenHandler::SendUserList() {
-  ListValue users_list;
+  base::ListValue users_list;
   base::FilePath active_profile_path =
       web_ui()->GetWebContents()->GetBrowserContext()->GetPath();
   const ProfileInfoCache& info_cache =
@@ -385,7 +385,7 @@ void UserManagerScreenHandler::SendUserList() {
   // certain actions (i.e. delete another user).
   bool active_user_is_managed = Profile::FromWebUI(web_ui())->IsManaged();
   for (size_t i = 0; i < info_cache.GetNumberOfProfiles(); ++i) {
-    DictionaryValue* profile_value = new DictionaryValue();
+    base::DictionaryValue* profile_value = new base::DictionaryValue();
 
     base::FilePath profile_path = info_cache.GetPathOfProfileAtIndex(i);
     bool is_active_user = (profile_path == active_profile_path);

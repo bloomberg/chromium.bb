@@ -19,7 +19,8 @@ class KeyboardHandler : public ::options::OptionsPageUIHandler {
   virtual ~KeyboardHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializePage() OVERRIDE;
 
  private:

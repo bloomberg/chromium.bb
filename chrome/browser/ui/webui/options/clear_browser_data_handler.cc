@@ -66,14 +66,14 @@ void ClearBrowserDataHandler::UpdateInfoBannerVisibility() {
   bool visible = (base::Time::Now() - lastClearBrowsingDataTime) <=
       base::TimeDelta::FromHours(kHoursPerDay);
 
-  ListValue args;
-  args.Append(Value::CreateBooleanValue(visible));
+  base::ListValue args;
+  args.Append(base::Value::CreateBooleanValue(visible));
   web_ui()->CallJavascriptFunction(
       "ClearBrowserDataOverlay.setBannerVisibility", args);
 }
 
 void ClearBrowserDataHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
@@ -109,7 +109,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
           IDS_CLEAR_BROWSING_DATA_INFO_BAR_TEXT,
           acc.GetShortcutText()));
 
-  ListValue* time_list = new ListValue;
+  base::ListValue* time_list = new base::ListValue;
   for (int i = 0; i < 5; i++) {
     base::string16 label_string;
     switch (i) {
@@ -129,7 +129,7 @@ void ClearBrowserDataHandler::GetLocalizedValues(
         label_string = l10n_util::GetStringUTF16(IDS_CLEAR_DATA_EVERYTHING);
         break;
     }
-    ListValue* option = new ListValue();
+    base::ListValue* option = new base::ListValue();
     option->Append(new base::FundamentalValue(i));
     option->Append(new base::StringValue(label_string));
     time_list->Append(option);
@@ -146,7 +146,8 @@ void ClearBrowserDataHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void ClearBrowserDataHandler::HandleClearBrowserData(const ListValue* value) {
+void ClearBrowserDataHandler::HandleClearBrowserData(
+    const base::ListValue* value) {
   DCHECK(!remover_);
 
   Profile* profile = Profile::FromWebUI(web_ui());

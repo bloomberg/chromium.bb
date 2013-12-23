@@ -61,12 +61,12 @@ using testing::_;
 namespace base {
 
 // Helper for using EXPECT_EQ() with base::Value.
-bool operator==(const Value& first, const Value& second) {
+bool operator==(const base::Value& first, const base::Value& second) {
   return first.Equals(&second);
 }
 
 // Helper for pretty-printing the contents of base::Value in case of failures.
-void PrintTo(const Value& value, std::ostream* stream) {
+void PrintTo(const base::Value& value, std::ostream* stream) {
   std::string json;
   JSONWriter::Write(&value, &json);
   *stream << json;

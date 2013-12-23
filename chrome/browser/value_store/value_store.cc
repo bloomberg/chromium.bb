@@ -17,8 +17,8 @@ ValueStore::Error::~Error() {}
 
 // Implementation of ReadResultType.
 
-ValueStore::ReadResultType::ReadResultType(scoped_ptr<DictionaryValue> settings)
-    : settings_(settings.Pass()) {
+ValueStore::ReadResultType::ReadResultType(
+    scoped_ptr<base::DictionaryValue> settings) : settings_(settings.Pass()) {
   CHECK(settings_);
 }
 

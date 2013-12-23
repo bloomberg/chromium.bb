@@ -25,7 +25,7 @@
 namespace {
 
 void TabToValue(const TabRestoreService::Tab& tab,
-                DictionaryValue* dictionary) {
+                base::DictionaryValue* dictionary) {
   const sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(tab.current_navigation_index);
   NewTabUI::SetUrlTitleAndDirection(dictionary, current_navigation.title(),
@@ -35,12 +35,12 @@ void TabToValue(const TabRestoreService::Tab& tab,
 }
 
 void WindowToValue(const TabRestoreService::Window& window,
-                   DictionaryValue* dictionary) {
+                   base::DictionaryValue* dictionary) {
   DCHECK(!window.tabs.empty());
 
-  scoped_ptr<ListValue> tab_values(new ListValue());
+  scoped_ptr<base::ListValue> tab_values(new base::ListValue());
   for (size_t i = 0; i < window.tabs.size(); ++i) {
-    DictionaryValue* tab_value = new DictionaryValue();
+    base::DictionaryValue* tab_value = new base::DictionaryValue();
     TabToValue(window.tabs[i], tab_value);
     tab_values->Append(tab_value);
   }
@@ -69,7 +69,7 @@ RecentlyClosedTabsHandler::~RecentlyClosedTabsHandler() {
     tab_restore_service_->RemoveObserver(this);
 }
 
-void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
+void RecentlyClosedTabsHandler::HandleReopenTab(const base::ListValue* args) {
   if (!tab_restore_service_)
     return;
 
@@ -119,14 +119,14 @@ void RecentlyClosedTabsHandler::HandleReopenTab(const ListValue* args) {
 }
 
 void RecentlyClosedTabsHandler::HandleClearRecentlyClosed(
-    const ListValue* args) {
+    const base::ListValue* args) {
   EnsureTabRestoreService();
   if (tab_restore_service_)
     tab_restore_service_->ClearEntries();
 }
 
 void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
-    const ListValue* args) {
+    const base::ListValue* args) {
   EnsureTabRestoreService();
   if (tab_restore_service_)
     TabRestoreServiceChanged(tab_restore_service_);
@@ -134,7 +134,7 @@ void RecentlyClosedTabsHandler::HandleGetRecentlyClosedTabs(
 
 void RecentlyClosedTabsHandler::TabRestoreServiceChanged(
     TabRestoreService* service) {
-  ListValue list_value;
+  base::ListValue list_value;
   TabRestoreService::Entries entries = service->entries();
   CreateRecentlyClosedValues(entries, &list_value);
 
@@ -148,7 +148,8 @@ void RecentlyClosedTabsHandler::TabRestoreServiceDestroyed(
 
 // static
 void RecentlyClosedTabsHandler::CreateRecentlyClosedValues(
-    const TabRestoreService::Entries& entries, ListValue* entry_list_value) {
+    const TabRestoreService::Entries& entries,
+    base::ListValue* entry_list_value) {
   const int max_count = 10;
   int added_count = 0;
   // We filter the list of recently closed to only show 'interesting' entries,
@@ -157,7 +158,7 @@ void RecentlyClosedTabsHandler::CreateRecentlyClosedValues(
   for (TabRestoreService::Entries::const_iterator it = entries.begin();
        it != entries.end() && added_count < max_count; ++it) {
     TabRestoreService::Entry* entry = *it;
-    scoped_ptr<DictionaryValue> entry_dict(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> entry_dict(new base::DictionaryValue());
     if (entry->type == TabRestoreService::TAB) {
       TabToValue(*static_cast<TabRestoreService::Tab*>(entry),
                  entry_dict.get());

@@ -153,12 +153,12 @@ ContentSetting ContentSettingFromString(const std::string& name) {
 // Create a DictionaryValue* that will act as a data source for a single row
 // in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
 // Ownership of the pointer is passed to the caller.
-DictionaryValue* GetExceptionForPage(
+base::DictionaryValue* GetExceptionForPage(
     const ContentSettingsPattern& pattern,
     const ContentSettingsPattern& secondary_pattern,
     const ContentSetting& setting,
     const std::string& provider_name) {
-  DictionaryValue* exception = new DictionaryValue();
+  base::DictionaryValue* exception = new base::DictionaryValue();
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kEmbeddingOrigin,
                        secondary_pattern == ContentSettingsPattern::Wildcard()
@@ -172,11 +172,11 @@ DictionaryValue* GetExceptionForPage(
 // Create a DictionaryValue* that will act as a data source for a single row
 // in the Geolocation exceptions table. Ownership of the pointer is passed to
 // the caller.
-DictionaryValue* GetGeolocationExceptionForPage(
+base::DictionaryValue* GetGeolocationExceptionForPage(
     const ContentSettingsPattern& origin,
     const ContentSettingsPattern& embedding_origin,
     ContentSetting setting) {
-  DictionaryValue* exception = new DictionaryValue();
+  base::DictionaryValue* exception = new base::DictionaryValue();
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kOrigin, origin.ToString());
   exception->SetString(kEmbeddingOrigin, embedding_origin.ToString());
@@ -186,11 +186,11 @@ DictionaryValue* GetGeolocationExceptionForPage(
 // Create a DictionaryValue* that will act as a data source for a single row
 // in the desktop notifications exceptions table. Ownership of the pointer is
 // passed to the caller.
-DictionaryValue* GetNotificationExceptionForPage(
+base::DictionaryValue* GetNotificationExceptionForPage(
     const ContentSettingsPattern& pattern,
     ContentSetting setting,
     const std::string& provider_name) {
-  DictionaryValue* exception = new DictionaryValue();
+  base::DictionaryValue* exception = new base::DictionaryValue();
   exception->SetString(kSetting, ContentSettingToString(setting));
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kSource, provider_name);
@@ -208,8 +208,8 @@ bool HostedAppHasPermission(
 // Add an "Allow"-entry to the list of |exceptions| for a |url_pattern| from
 // the web extent of a hosted |app|.
 void AddExceptionForHostedApp(const std::string& url_pattern,
-    const extensions::Extension& app, ListValue* exceptions) {
-  DictionaryValue* exception = new DictionaryValue();
+    const extensions::Extension& app, base::ListValue* exceptions) {
+  base::DictionaryValue* exception = new base::DictionaryValue();
   exception->SetString(kSetting, ContentSettingToString(CONTENT_SETTING_ALLOW));
   exception->SetString(kOrigin, url_pattern);
   exception->SetString(kEmbeddingOrigin, url_pattern);
@@ -222,7 +222,7 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
 // Asks the |profile| for hosted apps which have the |permission| set, and
 // adds their web extent and launch URL to the |exceptions| list.
 void AddExceptionsGrantedByHostedApps(
-    Profile* profile, AppFilter app_filter, ListValue* exceptions) {
+    Profile* profile, AppFilter app_filter, base::ListValue* exceptions) {
   const ExtensionService* extension_service = profile->GetExtensionService();
   // After ExtensionSystem::Init has been called at the browser's start,
   // GetExtensionService() should not return NULL, so this is safe:
@@ -277,7 +277,7 @@ ContentSettingsHandler::~ContentSettingsHandler() {
 }
 
 void ContentSettingsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
@@ -572,7 +572,7 @@ void ContentSettingsHandler::OnGetPermissionSettingsCompleted(
 
 void ContentSettingsHandler::UpdateSettingDefaultFromModel(
     ContentSettingsType type) {
-  DictionaryValue filter_settings;
+  base::DictionaryValue filter_settings;
   std::string provider_id;
   filter_settings.SetString(ContentSettingsTypeToGroupName(type) + ".value",
                             GetSettingDefaultFromModel(type, &provider_id));
@@ -598,7 +598,7 @@ void ContentSettingsHandler::UpdateMediaSettingsView() {
   media_settings_.default_setting_initialized = true;
   UpdateFlashMediaLinksVisibility();
 
-  DictionaryValue media_ui_settings;
+  base::DictionaryValue media_ui_settings;
   media_ui_settings.SetBoolean("cameraDisabled", video_disabled);
   media_ui_settings.SetBoolean("micDisabled", audio_disabled);
 
@@ -616,7 +616,7 @@ void ContentSettingsHandler::UpdateMediaSettingsView() {
 
   // In case only audio is enabled change the text appropriately.
   if (video_disabled && !audio_disabled) {
-    DictionaryValue media_ui_settings;
+    base::DictionaryValue media_ui_settings;
     media_ui_settings.SetString("askText", "mediaStreamAudioAsk");
     media_ui_settings.SetString("blockText", "mediaStreamAudioBlock");
     media_ui_settings.SetBoolean("showBubble", true);
@@ -630,7 +630,7 @@ void ContentSettingsHandler::UpdateMediaSettingsView() {
   if (audio_disabled && video_disabled) {
     // Fake policy controlled default because the user can not change anything
     // until both audio and video are blocked.
-    DictionaryValue filter_settings;
+    base::DictionaryValue filter_settings;
     std::string group_name =
         ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_MEDIASTREAM);
     filter_settings.SetString(group_name + ".value",
@@ -776,7 +776,7 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
         [i->secondary_pattern] = i->setting;
   }
 
-  ListValue exceptions;
+  base::ListValue exceptions;
   AddExceptionsGrantedByHostedApps(
       profile,
       HostedAppHasPermission<APIPermission::kGeolocation>,
@@ -810,7 +810,7 @@ void ContentSettingsHandler::UpdateGeolocationExceptionsView() {
     }
   }
 
-  StringValue type_string(
+  base::StringValue type_string(
       ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_GEOLOCATION));
   web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
                                    type_string, exceptions);
@@ -828,7 +828,7 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
   ContentSettingsForOneType settings;
   service->GetNotificationsSettings(&settings);
 
-  ListValue exceptions;
+  base::ListValue exceptions;
   AddExceptionsGrantedByHostedApps(profile,
       HostedAppHasPermission<APIPermission::kNotification>,
       &exceptions);
@@ -849,7 +849,7 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
                                         i->source));
   }
 
-  StringValue type_string(
+  base::StringValue type_string(
       ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_NOTIFICATIONS));
   web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
                                    type_string, exceptions);
@@ -860,13 +860,13 @@ void ContentSettingsHandler::UpdateNotificationExceptionsView() {
 }
 
 void ContentSettingsHandler::UpdateMediaExceptionsView() {
-  ListValue media_exceptions;
+  base::ListValue media_exceptions;
   GetExceptionsFromHostContentSettingsMap(
       GetContentSettingsMap(),
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
       &media_exceptions);
 
-  ListValue video_exceptions;
+  base::ListValue video_exceptions;
   GetExceptionsFromHostContentSettingsMap(
       GetContentSettingsMap(),
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
@@ -874,9 +874,9 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
 
   // Merge the |video_exceptions| list to |media_exceptions| list.
   std::map<std::string, base::DictionaryValue*> entries_map;
-  for (ListValue::const_iterator media_entry(media_exceptions.begin());
+  for (base::ListValue::const_iterator media_entry(media_exceptions.begin());
        media_entry != media_exceptions.end(); ++media_entry) {
-    DictionaryValue* media_dict = NULL;
+    base::DictionaryValue* media_dict = NULL;
     if (!(*media_entry)->GetAsDictionary(&media_dict))
       NOTREACHED();
 
@@ -888,9 +888,9 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
     entries_map[media_origin] = media_dict;
   }
 
-  for (ListValue::iterator video_entry = video_exceptions.begin();
+  for (base::ListValue::iterator video_entry = video_exceptions.begin();
        video_entry != video_exceptions.end(); ++video_entry) {
-    DictionaryValue* video_dict = NULL;
+    base::DictionaryValue* video_dict = NULL;
     if (!(*video_entry)->GetAsDictionary(&video_dict))
       NOTREACHED();
 
@@ -902,7 +902,7 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
     std::map<std::string, base::DictionaryValue*>::iterator iter =
         entries_map.find(video_origin);
     if (iter == entries_map.end()) {
-      DictionaryValue* exception = new DictionaryValue();
+      base::DictionaryValue* exception = new base::DictionaryValue();
       exception->SetString(kOrigin, video_origin);
       exception->SetString(kSetting,
                            ContentSettingToString(CONTENT_SETTING_ASK));
@@ -919,9 +919,9 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
   }
 
   media_settings_.exceptions.clear();
-  for (ListValue::const_iterator media_entry = media_exceptions.begin();
+  for (base::ListValue::const_iterator media_entry = media_exceptions.begin();
        media_entry != media_exceptions.end(); ++media_entry) {
-    DictionaryValue* media_dict = NULL;
+    base::DictionaryValue* media_dict = NULL;
     bool result = (*media_entry)->GetAsDictionary(&media_dict);
     DCHECK(result);
 
@@ -941,7 +941,7 @@ void ContentSettingsHandler::UpdateMediaExceptionsView() {
   media_settings_.exceptions_initialized = true;
   UpdateFlashMediaLinksVisibility();
 
-  StringValue type_string(
+  base::StringValue type_string(
        ContentSettingsTypeToGroupName(CONTENT_SETTINGS_TYPE_MEDIASTREAM));
   web_ui()->CallJavascriptFunction("ContentSettings.setExceptions",
                                    type_string, media_exceptions);
@@ -963,10 +963,10 @@ void ContentSettingsHandler::UpdateMIDISysExExceptionsView() {
 
 void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
     ContentSettingsType type) {
-  ListValue exceptions;
+  base::ListValue exceptions;
   GetExceptionsFromHostContentSettingsMap(
       GetContentSettingsMap(), type, &exceptions);
-  StringValue type_string(ContentSettingsTypeToGroupName(type));
+  base::StringValue type_string(ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunction("ContentSettings.setExceptions", type_string,
                                    exceptions);
 
@@ -993,9 +993,9 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
   const HostContentSettingsMap* otr_settings_map = GetOTRContentSettingsMap();
   if (!otr_settings_map)
     return;
-  ListValue exceptions;
+  base::ListValue exceptions;
   GetExceptionsFromHostContentSettingsMap(otr_settings_map, type, &exceptions);
-  StringValue type_string(ContentSettingsTypeToGroupName(type));
+  base::StringValue type_string(ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunction("ContentSettings.setOTRExceptions",
                                    type_string, exceptions);
 }
@@ -1003,7 +1003,7 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
 void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
     const HostContentSettingsMap* map,
     ContentSettingsType type,
-    ListValue* exceptions) {
+    base::ListValue* exceptions) {
   ContentSettingsForOneType entries;
   map->GetSettingsForOneType(type, std::string(), &entries);
   // Group settings by primary_pattern.
@@ -1029,7 +1029,7 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
 
   // Keep the exceptions sorted by provider so they will be displayed in
   // precedence order.
-  std::vector<std::vector<Value*> > all_provider_exceptions;
+  std::vector<std::vector<base::Value*> > all_provider_exceptions;
   all_provider_exceptions.resize(HostContentSettingsMap::NUM_PROVIDER_TYPES);
 
   for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
@@ -1047,8 +1047,9 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
       parent = one_settings.find(ContentSettingsPattern::Wildcard());
 
     const std::string& source = i->first.second;
-    std::vector<Value*>* this_provider_exceptions = &all_provider_exceptions.at(
-        HostContentSettingsMap::GetProviderTypeFromSource(source));
+    std::vector<base::Value*>* this_provider_exceptions =
+        &all_provider_exceptions.at(
+            HostContentSettingsMap::GetProviderTypeFromSource(source));
 
     // Add the "parent" entry for the non-embedded setting.
     ContentSetting parent_setting =
@@ -1084,7 +1085,7 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
 }
 
 void ContentSettingsHandler::RemoveNotificationException(
-    const ListValue* args, size_t arg_index) {
+    const base::ListValue* args, size_t arg_index) {
   Profile* profile = Profile::FromWebUI(web_ui());
   std::string origin;
   std::string setting;
@@ -1101,7 +1102,7 @@ void ContentSettingsHandler::RemoveNotificationException(
 }
 
 void ContentSettingsHandler::RemoveMediaException(
-    const ListValue* args, size_t arg_index) {
+    const base::ListValue* args, size_t arg_index) {
   std::string mode;
   bool rv = args->GetString(arg_index++, &mode);
   DCHECK(rv);
@@ -1128,7 +1129,7 @@ void ContentSettingsHandler::RemoveMediaException(
 }
 
 void ContentSettingsHandler::RemoveExceptionFromHostContentSettingsMap(
-    const ListValue* args, size_t arg_index,
+    const base::ListValue* args, size_t arg_index,
     ContentSettingsType type) {
   std::string mode;
   bool rv = args->GetString(arg_index++, &mode);
@@ -1201,7 +1202,7 @@ void ContentSettingsHandler::ApplyWhitelist(ContentSettingsType content_type,
                     kDefaultWhitelistVersion);
 }
 
-void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
+void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
   DCHECK_EQ(2U, args->GetSize());
   std::string group, setting;
   if (!(args->GetString(0, &group) &&
@@ -1279,7 +1280,7 @@ void ContentSettingsHandler::SetContentFilter(const ListValue* args) {
   }
 }
 
-void ContentSettingsHandler::RemoveException(const ListValue* args) {
+void ContentSettingsHandler::RemoveException(const base::ListValue* args) {
   size_t arg_i = 0;
   std::string type_string;
   CHECK(args->GetString(arg_i++, &type_string));
@@ -1298,7 +1299,7 @@ void ContentSettingsHandler::RemoveException(const ListValue* args) {
   }
 }
 
-void ContentSettingsHandler::SetException(const ListValue* args) {
+void ContentSettingsHandler::SetException(const base::ListValue* args) {
   size_t arg_i = 0;
   std::string type_string;
   CHECK(args->GetString(arg_i++, &type_string));
@@ -1334,7 +1335,7 @@ void ContentSettingsHandler::SetException(const ListValue* args) {
 }
 
 void ContentSettingsHandler::CheckExceptionPatternValidity(
-    const ListValue* args) {
+    const base::ListValue* args) {
   size_t arg_i = 0;
   std::string type_string;
   CHECK(args->GetString(arg_i++, &type_string));

@@ -123,7 +123,7 @@ void ManagedUserImportHandler::RequestManagedUserImportUpdate(
 }
 
 void ManagedUserImportHandler::SendExistingManagedUsers(
-    const DictionaryValue* dict) {
+    const base::DictionaryValue* dict) {
   DCHECK(dict);
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -131,9 +131,9 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
   for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i)
     managed_user_ids.insert(cache.GetManagedUserIdOfProfileAtIndex(i));
 
-  ListValue managed_users;
-  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    const DictionaryValue* value = NULL;
+  base::ListValue managed_users;
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+    const base::DictionaryValue* value = NULL;
     bool success = it.value().GetAsDictionary(&value);
     DCHECK(success);
     std::string name;
@@ -141,7 +141,7 @@ void ManagedUserImportHandler::SendExistingManagedUsers(
     std::string avatar_str;
     value->GetString(ManagedUserSyncService::kChromeAvatar, &avatar_str);
 
-    DictionaryValue* managed_user = new DictionaryValue;
+    base::DictionaryValue* managed_user = new base::DictionaryValue;
     managed_user->SetString("id", it.key());
     managed_user->SetString("name", name);
 

@@ -165,7 +165,7 @@ void UberUI::RenderViewReused(RenderViewHost* render_view_host) {
 
 bool UberUI::OverrideHandleWebUIMessage(const GURL& source_url,
                                         const std::string& message,
-                                        const ListValue& args) {
+                                        const base::ListValue& args) {
   // Find the appropriate subpage and forward the message.
   SubpageMap::iterator subpage = sub_uis_.find(source_url.GetOrigin().spec());
   if (subpage == sub_uis_.end()) {

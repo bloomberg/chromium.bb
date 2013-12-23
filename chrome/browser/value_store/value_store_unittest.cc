@@ -15,7 +15,7 @@ namespace {
 const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 
 // Gets the pretty-printed JSON for a value.
-std::string GetJSON(const Value& value) {
+std::string GetJSON(const base::Value& value) {
   std::string json;
   base::JSONWriter::WriteWithOptions(&value,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
@@ -27,8 +27,9 @@ std::string GetJSON(const Value& value) {
 
 // Compares two possibly NULL values for equality, filling |error| with an
 // appropriate error message if they're different.
-bool ValuesEqual(
-    const Value* expected, const Value* actual, std::string* error) {
+bool ValuesEqual(const base::Value* expected,
+                 const base::Value* actual,
+                 std::string* error) {
   if (expected == actual) {
     return true;
   }
@@ -52,7 +53,7 @@ bool ValuesEqual(
 // settings.
 testing::AssertionResult SettingsEq(
     const char* _1, const char* _2,
-    const DictionaryValue& expected,
+    const base::DictionaryValue& expected,
     ValueStore::ReadResult actual_result) {
   if (actual_result->HasError()) {
     return testing::AssertionFailure() <<
@@ -126,16 +127,16 @@ ValueStoreTest::ValueStoreTest()
     : key1_("foo"),
       key2_("bar"),
       key3_("baz"),
-      empty_dict_(new DictionaryValue()),
-      dict1_(new DictionaryValue()),
-      dict3_(new DictionaryValue()),
-      dict12_(new DictionaryValue()),
-      dict123_(new DictionaryValue()),
+      empty_dict_(new base::DictionaryValue()),
+      dict1_(new base::DictionaryValue()),
+      dict3_(new base::DictionaryValue()),
+      dict12_(new base::DictionaryValue()),
+      dict123_(new base::DictionaryValue()),
       ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
       file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {
-  val1_.reset(Value::CreateStringValue(key1_ + "Value"));
-  val2_.reset(Value::CreateStringValue(key2_ + "Value"));
-  val3_.reset(Value::CreateStringValue(key3_ + "Value"));
+  val1_.reset(base::Value::CreateStringValue(key1_ + "Value"));
+  val2_.reset(base::Value::CreateStringValue(key2_ + "Value"));
+  val3_.reset(base::Value::CreateStringValue(key3_ + "Value"));
 
   list1_.push_back(key1_);
   list2_.push_back(key2_);
@@ -320,10 +321,10 @@ TEST_P(ValueStoreTest, ClearWhenNotEmpty) {
 // indexing into a dictionary.
 TEST_P(ValueStoreTest, DotsInKeyNames) {
   std::string dot_key("foo.bar");
-  StringValue dot_value("baz.qux");
+  base::StringValue dot_value("baz.qux");
   std::vector<std::string> dot_list;
   dot_list.push_back(dot_key);
-  DictionaryValue dot_dict;
+  base::DictionaryValue dot_dict;
   dot_dict.SetWithoutPathExpansion(dot_key, dot_value.DeepCopy());
 
   EXPECT_PRED_FORMAT2(SettingsEq, *empty_dict_, storage_->Get(dot_key));
@@ -370,8 +371,8 @@ TEST_P(ValueStoreTest, DotsInKeyNames) {
 }
 
 TEST_P(ValueStoreTest, DotsInKeyNamesWithDicts) {
-  DictionaryValue outer_dict;
-  DictionaryValue* inner_dict = new DictionaryValue();
+  base::DictionaryValue outer_dict;
+  base::DictionaryValue* inner_dict = new base::DictionaryValue();
   outer_dict.Set("foo", inner_dict);
   inner_dict->SetString("bar", "baz");
 
@@ -393,7 +394,7 @@ TEST_P(ValueStoreTest, ComplexChangedKeysScenarios) {
   //   - Removing over missing and present keys, combinations.
   //   - Clearing.
   std::vector<std::string> complex_list;
-  DictionaryValue complex_changed_dict;
+  base::DictionaryValue complex_changed_dict;
 
   storage_->Set(DEFAULTS, key1_, *val1_);
   EXPECT_PRED_FORMAT2(ChangesEq,
@@ -439,7 +440,7 @@ TEST_P(ValueStoreTest, ComplexChangedKeysScenarios) {
     EXPECT_PRED_FORMAT2(ChangesEq, changes, storage_->Set(DEFAULTS, *dict123_));
   }
   {
-    DictionaryValue to_set;
+    base::DictionaryValue to_set;
     to_set.Set(key1_, val2_->DeepCopy());
     to_set.Set(key2_, val2_->DeepCopy());
     to_set.Set("asdf", val1_->DeepCopy());

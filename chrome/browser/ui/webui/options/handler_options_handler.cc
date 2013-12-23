@@ -27,7 +27,7 @@ HandlerOptionsHandler::~HandlerOptionsHandler() {
 }
 
 void HandlerOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
@@ -81,10 +81,10 @@ ProtocolHandlerRegistry* HandlerOptionsHandler::GetProtocolHandlerRegistry() {
 
 static void GetHandlersAsListValue(
     const ProtocolHandlerRegistry::ProtocolHandlerList& handlers,
-    ListValue* handler_list) {
+    base::ListValue* handler_list) {
   ProtocolHandlerRegistry::ProtocolHandlerList::const_iterator handler;
   for (handler = handlers.begin(); handler != handlers.end(); ++handler) {
-    ListValue* handlerValue = new ListValue();
+    base::ListValue* handlerValue = new base::ListValue();
     handlerValue->Append(new base::StringValue(handler->protocol()));
     handlerValue->Append(new base::StringValue(handler->url().spec()));
     handlerValue->Append(new base::StringValue(handler->title()));
@@ -94,18 +94,18 @@ static void GetHandlersAsListValue(
 
 void HandlerOptionsHandler::GetHandlersForProtocol(
     const std::string& protocol,
-    DictionaryValue* handlers_value) {
+    base::DictionaryValue* handlers_value) {
   ProtocolHandlerRegistry* registry = GetProtocolHandlerRegistry();
   handlers_value->SetString("protocol", protocol);
   handlers_value->SetInteger("default_handler",
       registry->GetHandlerIndex(protocol));
 
-  ListValue* handlers_list = new ListValue();
+  base::ListValue* handlers_list = new base::ListValue();
   GetHandlersAsListValue(registry->GetHandlersFor(protocol), handlers_list);
   handlers_value->Set("handlers", handlers_list);
 }
 
-void HandlerOptionsHandler::GetIgnoredHandlers(ListValue* handlers) {
+void HandlerOptionsHandler::GetIgnoredHandlers(base::ListValue* handlers) {
   ProtocolHandlerRegistry* registry = GetProtocolHandlerRegistry();
   ProtocolHandlerRegistry::ProtocolHandlerList ignored_handlers =
       registry->GetIgnoredHandlers();
@@ -117,23 +117,23 @@ void HandlerOptionsHandler::UpdateHandlerList() {
   std::vector<std::string> protocols;
   registry->GetRegisteredProtocols(&protocols);
 
-  ListValue handlers;
+  base::ListValue handlers;
   for (std::vector<std::string>::iterator protocol = protocols.begin();
        protocol != protocols.end(); protocol++) {
-    DictionaryValue* handler_value = new DictionaryValue();
+    base::DictionaryValue* handler_value = new base::DictionaryValue();
     GetHandlersForProtocol(*protocol, handler_value);
     handlers.Append(handler_value);
   }
 
-  scoped_ptr<ListValue> ignored_handlers(new ListValue());
+  scoped_ptr<base::ListValue> ignored_handlers(new base::ListValue());
   GetIgnoredHandlers(ignored_handlers.get());
   web_ui()->CallJavascriptFunction("HandlerOptions.setHandlers", handlers);
   web_ui()->CallJavascriptFunction("HandlerOptions.setIgnoredHandlers",
                                    *ignored_handlers);
 }
 
-void HandlerOptionsHandler::RemoveHandler(const ListValue* args) {
-  const ListValue* list;
+void HandlerOptionsHandler::RemoveHandler(const base::ListValue* args) {
+  const base::ListValue* list;
   if (!args->GetList(0, &list)) {
     NOTREACHED();
     return;
@@ -147,8 +147,8 @@ void HandlerOptionsHandler::RemoveHandler(const ListValue* args) {
   // then.
 }
 
-void HandlerOptionsHandler::RemoveIgnoredHandler(const ListValue* args) {
-  const ListValue* list;
+void HandlerOptionsHandler::RemoveIgnoredHandler(const base::ListValue* args) {
+  const base::ListValue* list;
   if (!args->GetList(0, &list)) {
     NOTREACHED();
     return;
@@ -158,7 +158,7 @@ void HandlerOptionsHandler::RemoveIgnoredHandler(const ListValue* args) {
   GetProtocolHandlerRegistry()->RemoveIgnoredHandler(handler);
 }
 
-void HandlerOptionsHandler::SetHandlersEnabled(const ListValue* args) {
+void HandlerOptionsHandler::SetHandlersEnabled(const base::ListValue* args) {
   bool enabled = true;
   CHECK(args->GetBoolean(0, &enabled));
   if (enabled)
@@ -167,16 +167,16 @@ void HandlerOptionsHandler::SetHandlersEnabled(const ListValue* args) {
     GetProtocolHandlerRegistry()->Disable();
 }
 
-void HandlerOptionsHandler::ClearDefault(const ListValue* args) {
-  const Value* value;
+void HandlerOptionsHandler::ClearDefault(const base::ListValue* args) {
+  const base::Value* value;
   CHECK(args->Get(0, &value));
   std::string protocol_to_clear;
   CHECK(value->GetAsString(&protocol_to_clear));
   GetProtocolHandlerRegistry()->ClearDefault(protocol_to_clear);
 }
 
-void HandlerOptionsHandler::SetDefault(const ListValue* args) {
-  const ListValue* list;
+void HandlerOptionsHandler::SetDefault(const base::ListValue* args) {
+  const base::ListValue* list;
   CHECK(args->GetList(0, &list));
   const ProtocolHandler& handler(ParseHandlerFromArgs(list));
   CHECK(!handler.IsEmpty());
@@ -184,7 +184,7 @@ void HandlerOptionsHandler::SetDefault(const ListValue* args) {
 }
 
 ProtocolHandler HandlerOptionsHandler::ParseHandlerFromArgs(
-    const ListValue* args) const {
+    const base::ListValue* args) const {
   base::string16 protocol;
   base::string16 url;
   base::string16 title;

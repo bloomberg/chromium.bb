@@ -31,7 +31,7 @@ ProxyHandler::~ProxyHandler() {
 }
 
 void ProxyHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   // Proxy page - ChromeOS

@@ -48,11 +48,11 @@ int SuggestionsSourceTopSites::GetItemCount() {
   return items_.size();
 }
 
-DictionaryValue* SuggestionsSourceTopSites::PopItem() {
+base::DictionaryValue* SuggestionsSourceTopSites::PopItem() {
   if (items_.empty())
     return NULL;
 
-  DictionaryValue* item = items_.front();
+  base::DictionaryValue* item = items_.front();
   items_.pop_front();
   return item;
 }
@@ -91,7 +91,7 @@ void SuggestionsSourceTopSites::OnSuggestionsUrlsAvailable(
     if (suggested_url.url.is_empty())
       continue;
 
-    DictionaryValue* page_value = new DictionaryValue();
+    base::DictionaryValue* page_value = new base::DictionaryValue();
     NewTabUI::SetUrlTitleAndDirection(page_value,
                                       suggested_url.title,
                                       suggested_url.url);

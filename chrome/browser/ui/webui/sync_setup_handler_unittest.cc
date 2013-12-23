@@ -68,12 +68,12 @@ enum EncryptAllConfig {
 // Create a json-format string with the key/value pairs appropriate for a call
 // to HandleConfigure(). If |extra_values| is non-null, then the values from
 // the passed dictionary are added to the json.
-std::string GetConfiguration(const DictionaryValue* extra_values,
+std::string GetConfiguration(const base::DictionaryValue* extra_values,
                              SyncAllDataConfig sync_all,
                              syncer::ModelTypeSet types,
                              const std::string& passphrase,
                              EncryptAllConfig encrypt_all) {
-  DictionaryValue result;
+  base::DictionaryValue result;
   if (extra_values)
     result.MergeDictionary(extra_values);
   result.SetBoolean("syncAllDataTypes", sync_all == SYNC_ALL_DATA);
@@ -100,7 +100,7 @@ std::string GetConfiguration(const DictionaryValue* extra_values,
 // Checks whether the passed |dictionary| contains a |key| with the given
 // |expected_value|. If |omit_if_false| is true, then the value should only
 // be present if |expected_value| is true.
-void CheckBool(const DictionaryValue* dictionary,
+void CheckBool(const base::DictionaryValue* dictionary,
                const std::string& key,
                bool expected_value,
                bool omit_if_false) {
@@ -116,7 +116,7 @@ void CheckBool(const DictionaryValue* dictionary,
   }
 }
 
-void CheckBool(const DictionaryValue* dictionary,
+void CheckBool(const base::DictionaryValue* dictionary,
                const std::string& key,
                bool expected_value) {
   return CheckBool(dictionary, key, expected_value, false);
@@ -125,7 +125,7 @@ void CheckBool(const DictionaryValue* dictionary,
 // Checks to make sure that the values stored in |dictionary| match the values
 // expected by the showSyncSetupPage() JS function for a given set of data
 // types.
-void CheckConfigDataTypeArguments(DictionaryValue* dictionary,
+void CheckConfigDataTypeArguments(base::DictionaryValue* dictionary,
                                   SyncAllDataConfig config,
                                   syncer::ModelTypeSet types) {
   CheckBool(dictionary, "syncAllDataTypes", config == SYNC_ALL_DATA);
@@ -234,8 +234,8 @@ class TestWebUI : public content::WebUI {
    public:
     CallData() : arg1(NULL), arg2(NULL) {}
     std::string function_name;
-    Value* arg1;
-    Value* arg2;
+    base::Value* arg1;
+    base::Value* arg2;
   };
   const std::vector<CallData>& call_data() { return call_data_; }
  private:
@@ -507,7 +507,7 @@ TEST_F(SyncSetupHandlerTest,
   EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data1.function_name);
   ASSERT_TRUE(data1.arg1->GetAsString(&page));
   EXPECT_EQ(page, "configure");
-  DictionaryValue* dictionary;
+  base::DictionaryValue* dictionary;
   ASSERT_TRUE(data1.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "passphraseFailed", false);
   CheckBool(dictionary, "showSyncEverythingPage", false);
@@ -641,8 +641,8 @@ TEST_F(SyncSetupHandlerNonCrosTest, GaiaErrorInitializingSync) {
 TEST_F(SyncSetupHandlerTest, TestSyncEverything) {
   std::string args = GetConfiguration(
       NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
-  ListValue list_args;
-  list_args.Append(new StringValue(args));
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -659,8 +659,8 @@ TEST_F(SyncSetupHandlerTest, TestSyncEverything) {
 TEST_F(SyncSetupHandlerTest, TestSyncNothing) {
   std::string args = GetConfiguration(
       NULL, SYNC_NOTHING, GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
-  ListValue list_args;
-  list_args.Append(new StringValue(args));
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue(args));
   EXPECT_CALL(*mock_pss_, DisableForUser());
   SetupInitializedProfileSyncService();
   handler_->HandleConfigure(&list_args);
@@ -674,8 +674,8 @@ TEST_F(SyncSetupHandlerTest, TestSyncNothing) {
 TEST_F(SyncSetupHandlerTest, TurnOnEncryptAll) {
   std::string args = GetConfiguration(
       NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(), ENCRYPT_ALL_DATA);
-  ListValue list_args;
-  list_args.Append(new StringValue(args));
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -693,8 +693,8 @@ TEST_F(SyncSetupHandlerTest, TurnOnEncryptAll) {
 TEST_F(SyncSetupHandlerTest, TestPassphraseStillRequired) {
   std::string args = GetConfiguration(
       NULL, SYNC_ALL_DATA, GetAllTypes(), std::string(), ENCRYPT_PASSWORDS);
-  ListValue list_args;
-  list_args.Append(new StringValue(args));
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -712,15 +712,15 @@ TEST_F(SyncSetupHandlerTest, TestPassphraseStillRequired) {
 }
 
 TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetBoolean("isGooglePassphrase", true);
   std::string args = GetConfiguration(&dict,
                                       SYNC_ALL_DATA,
                                       GetAllTypes(),
                                       "gaiaPassphrase",
                                       ENCRYPT_PASSWORDS);
-  ListValue list_args;
-  list_args.Append(new StringValue(args));
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue(args));
   // Act as if an encryption passphrase is required the first time, then never
   // again after that.
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired()).WillOnce(Return(true));
@@ -739,15 +739,15 @@ TEST_F(SyncSetupHandlerTest, SuccessfullySetPassphrase) {
 }
 
 TEST_F(SyncSetupHandlerTest, SelectCustomEncryption) {
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetBoolean("isGooglePassphrase", false);
   std::string args = GetConfiguration(&dict,
                                       SYNC_ALL_DATA,
                                       GetAllTypes(),
                                       "custom_passphrase",
                                       ENCRYPT_PASSWORDS);
-  ListValue list_args;
-  list_args.Append(new StringValue(args));
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -766,15 +766,15 @@ TEST_F(SyncSetupHandlerTest, SelectCustomEncryption) {
 }
 
 TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
-  DictionaryValue dict;
+  base::DictionaryValue dict;
   dict.SetBoolean("isGooglePassphrase", true);
   std::string args = GetConfiguration(&dict,
                                       SYNC_ALL_DATA,
                                       GetAllTypes(),
                                       "invalid_passphrase",
                                       ENCRYPT_PASSWORDS);
-  ListValue list_args;
-  list_args.Append(new StringValue(args));
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -795,7 +795,7 @@ TEST_F(SyncSetupHandlerTest, UnsuccessfullySetPassphrase) {
   // Make sure we display an error message to the user due to the failed
   // passphrase.
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
-  DictionaryValue* dictionary;
+  base::DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "passphraseFailed", true);
 }
@@ -813,8 +813,8 @@ TEST_F(SyncSetupHandlerTest, TestSyncIndividualTypes) {
                                         type_to_set,
                                         std::string(),
                                         ENCRYPT_PASSWORDS);
-    ListValue list_args;
-    list_args.Append(new StringValue(args));
+    base::ListValue list_args;
+    list_args.Append(new base::StringValue(args));
     EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -836,8 +836,8 @@ TEST_F(SyncSetupHandlerTest, TestSyncAllManually) {
                                       GetAllTypes(),
                                       std::string(),
                                       ENCRYPT_PASSWORDS);
-  ListValue list_args;
-  list_args.Append(new StringValue(args));
+  base::ListValue list_args;
+  list_args.Append(new base::StringValue(args));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequiredForDecryption())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsPassphraseRequired())
@@ -919,7 +919,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncEverything) {
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
-  DictionaryValue* dictionary;
+  base::DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "showSyncEverythingPage", false);
   CheckBool(dictionary, "syncAllDataTypes", true);
@@ -953,7 +953,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
-  DictionaryValue* dictionary;
+  base::DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC, GetAllTypes());
 }
@@ -983,7 +983,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     LoginUIServiceFactory::GetForProfile(profile_.get())->LoginUIClosed(
         handler_.get());
     const TestWebUI::CallData& data = web_ui_.call_data()[0];
-    DictionaryValue* dictionary;
+    base::DictionaryValue* dictionary;
     ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
     CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC, types);
     Mock::VerifyAndClearExpectations(mock_pss_);
@@ -1005,7 +1005,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupGaiaPassphraseRequired) {
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
-  DictionaryValue* dictionary;
+  base::DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "showPassphrase", true);
   CheckBool(dictionary, "usePassphrase", false);
@@ -1027,7 +1027,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
-  DictionaryValue* dictionary;
+  base::DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "showPassphrase", true);
   CheckBool(dictionary, "usePassphrase", true);
@@ -1049,7 +1049,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupEncryptAll) {
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
-  DictionaryValue* dictionary;
+  base::DictionaryValue* dictionary;
   ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
   CheckBool(dictionary, "encryptAllData", true);
 }

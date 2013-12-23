@@ -10,10 +10,10 @@
 // static
 std::string ValueStoreChange::ToJson(
     const ValueStoreChangeList& changes) {
-  DictionaryValue changes_value;
+  base::DictionaryValue changes_value;
   for (ValueStoreChangeList::const_iterator it = changes.begin();
       it != changes.end(); ++it) {
-    DictionaryValue* change_value = new DictionaryValue();
+    base::DictionaryValue* change_value = new base::DictionaryValue();
     if (it->old_value()) {
       change_value->Set("oldValue", it->old_value()->DeepCopy());
     }
@@ -28,7 +28,7 @@ std::string ValueStoreChange::ToJson(
 }
 
 ValueStoreChange::ValueStoreChange(
-    const std::string& key, Value* old_value, Value* new_value)
+    const std::string& key, base::Value* old_value, base::Value* new_value)
     : inner_(new Inner(key, old_value, new_value)) {}
 
 ValueStoreChange::~ValueStoreChange() {}
@@ -38,12 +38,12 @@ const std::string& ValueStoreChange::key() const {
   return inner_->key_;
 }
 
-const Value* ValueStoreChange::old_value() const {
+const base::Value* ValueStoreChange::old_value() const {
   DCHECK(inner_.get());
   return inner_->old_value_.get();
 }
 
-const Value* ValueStoreChange::new_value() const {
+const base::Value* ValueStoreChange::new_value() const {
   DCHECK(inner_.get());
   return inner_->new_value_.get();
 }

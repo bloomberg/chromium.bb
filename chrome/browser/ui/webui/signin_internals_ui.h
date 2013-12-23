@@ -26,7 +26,8 @@ class SignInInternalsUI : public content::WebUIController,
                                           const base::ListValue& args) OVERRIDE;
 
   // AboutSigninInternals::Observer::OnSigninStateChanged implementation.
-  virtual void OnSigninStateChanged(scoped_ptr<DictionaryValue> info) OVERRIDE;
+  virtual void OnSigninStateChanged(
+      scoped_ptr<base::DictionaryValue> info) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignInInternalsUI);

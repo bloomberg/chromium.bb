@@ -108,7 +108,7 @@ void TaskManagerHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-static int parseIndex(const Value* value) {
+static int parseIndex(const base::Value* value) {
   int index = -1;
   base::string16 base::string16_index;
   double double_index;
@@ -123,8 +123,9 @@ static int parseIndex(const Value* value) {
   return index;
 }
 
-void TaskManagerHandler::HandleKillProcesses(const ListValue* unique_ids) {
-  for (ListValue::const_iterator i = unique_ids->begin();
+void TaskManagerHandler::HandleKillProcesses(
+    const base::ListValue* unique_ids) {
+  for (base::ListValue::const_iterator i = unique_ids->begin();
        i != unique_ids->end(); ++i) {
     int unique_id = parseIndex(*i);
     int resource_index = model_->GetResourceIndexByUniqueId(unique_id);
@@ -135,8 +136,8 @@ void TaskManagerHandler::HandleKillProcesses(const ListValue* unique_ids) {
   }
 }
 
-void TaskManagerHandler::HandleActivatePage(const ListValue* unique_ids) {
-  for (ListValue::const_iterator i = unique_ids->begin();
+void TaskManagerHandler::HandleActivatePage(const base::ListValue* unique_ids) {
+  for (base::ListValue::const_iterator i = unique_ids->begin();
        i != unique_ids->end(); ++i) {
     int unique_id = parseIndex(*i);
     int resource_index = model_->GetResourceIndexByUniqueId(unique_id);
@@ -148,8 +149,8 @@ void TaskManagerHandler::HandleActivatePage(const ListValue* unique_ids) {
   }
 }
 
-void TaskManagerHandler::HandleInspect(const ListValue* unique_ids) {
-  for (ListValue::const_iterator i = unique_ids->begin();
+void TaskManagerHandler::HandleInspect(const base::ListValue* unique_ids) {
+  for (base::ListValue::const_iterator i = unique_ids->begin();
        i != unique_ids->end(); ++i) {
     int unique_id = parseIndex(*i);
     int resource_index = model_->GetResourceIndexByUniqueId(unique_id);
@@ -162,7 +163,7 @@ void TaskManagerHandler::HandleInspect(const ListValue* unique_ids) {
   }
 }
 
-void TaskManagerHandler::DisableTaskManager(const ListValue* indexes) {
+void TaskManagerHandler::DisableTaskManager(const base::ListValue* indexes) {
   if (!is_enabled_)
     return;
 
@@ -171,7 +172,7 @@ void TaskManagerHandler::DisableTaskManager(const ListValue* indexes) {
   model_->RemoveObserver(this);
 }
 
-void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
+void TaskManagerHandler::EnableTaskManager(const base::ListValue* indexes) {
   if (is_enabled_)
     return;
 
@@ -183,7 +184,7 @@ void TaskManagerHandler::EnableTaskManager(const ListValue* indexes) {
   model_->StartUpdating();
 }
 
-void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
+void TaskManagerHandler::OpenAboutMemory(const base::ListValue* indexes) {
   content::RenderViewHost* rvh =
       web_ui()->GetWebContents()->GetRenderViewHost();
   if (rvh) {
@@ -197,7 +198,7 @@ void TaskManagerHandler::OpenAboutMemory(const ListValue* indexes) {
   task_manager_->OpenAboutMemory(chrome::GetActiveDesktop());
 }
 
-void TaskManagerHandler::HandleSetUpdateColumn(const ListValue* args) {
+void TaskManagerHandler::HandleSetUpdateColumn(const base::ListValue* args) {
   DCHECK_EQ(2U, args->GetSize());
 
   bool ret = true;
@@ -248,7 +249,7 @@ void TaskManagerHandler::OnReadyPeriodicalUpdate() {
 
 base::DictionaryValue* TaskManagerHandler::CreateTaskGroupValue(
     int group_index) {
-  DictionaryValue* val = new DictionaryValue();
+  base::DictionaryValue* val = new base::DictionaryValue();
 
   if (group_index >= model_->GroupCount())
      return val;
@@ -281,8 +282,8 @@ base::DictionaryValue* TaskManagerHandler::CreateTaskGroupValue(
 void TaskManagerHandler::CreateGroupColumnList(const std::string& column_name,
                                                const int index,
                                                const int length,
-                                               DictionaryValue* val) {
-  ListValue* list = new ListValue();
+                                               base::DictionaryValue* val) {
+  base::ListValue* list = new base::ListValue();
   for (int i = index; i < (index + length); ++i) {
     list->Append(CreateColumnValue(column_name, i));
   }
@@ -293,91 +294,93 @@ base::Value* TaskManagerHandler::CreateColumnValue(
     const std::string& column_name,
     const int i) {
   if (column_name == "uniqueId")
-    return Value::CreateIntegerValue(model_->GetResourceUniqueId(i));
+    return base::Value::CreateIntegerValue(model_->GetResourceUniqueId(i));
   if (column_name == "type") {
-    return Value::CreateStringValue(
+    return base::Value::CreateStringValue(
         TaskManager::Resource::GetResourceTypeAsString(
         model_->GetResourceType(i)));
   }
   if (column_name == "processId")
-    return Value::CreateStringValue(model_->GetResourceProcessId(i));
+    return base::Value::CreateStringValue(model_->GetResourceProcessId(i));
   if (column_name == "processIdValue")
-    return Value::CreateIntegerValue(model_->GetProcessId(i));
+    return base::Value::CreateIntegerValue(model_->GetProcessId(i));
   if (column_name == "cpuUsage")
-    return Value::CreateStringValue(model_->GetResourceCPUUsage(i));
+    return base::Value::CreateStringValue(model_->GetResourceCPUUsage(i));
   if (column_name == "cpuUsageValue")
-    return Value::CreateDoubleValue(model_->GetCPUUsage(i));
+    return base::Value::CreateDoubleValue(model_->GetCPUUsage(i));
   if (column_name == "privateMemory")
-    return Value::CreateStringValue(model_->GetResourcePrivateMemory(i));
+    return base::Value::CreateStringValue(model_->GetResourcePrivateMemory(i));
   if (column_name == "privateMemoryValue") {
     size_t private_memory;
     model_->GetPrivateMemory(i, &private_memory);
-    return Value::CreateDoubleValue(private_memory);
+    return base::Value::CreateDoubleValue(private_memory);
   }
   if (column_name == "sharedMemory")
-    return Value::CreateStringValue(model_->GetResourceSharedMemory(i));
+    return base::Value::CreateStringValue(model_->GetResourceSharedMemory(i));
   if (column_name == "sharedMemoryValue") {
     size_t shared_memory;
     model_->GetSharedMemory(i, &shared_memory);
-    return Value::CreateDoubleValue(shared_memory);
+    return base::Value::CreateDoubleValue(shared_memory);
   }
   if (column_name == "physicalMemory")
-    return Value::CreateStringValue(model_->GetResourcePhysicalMemory(i));
+    return base::Value::CreateStringValue(model_->GetResourcePhysicalMemory(i));
   if (column_name == "physicalMemoryValue") {
     size_t physical_memory;
     model_->GetPhysicalMemory(i, &physical_memory);
-    return Value::CreateDoubleValue(physical_memory);
+    return base::Value::CreateDoubleValue(physical_memory);
   }
   if (column_name == "icon") {
     ui::ScaleFactor icon_scale_factor = web_ui()->GetDeviceScaleFactor();
     const gfx::ImageSkia& image = model_->GetResourceIcon(i);
     const gfx::ImageSkiaRep image_rep =
         image.GetRepresentation(icon_scale_factor);
-    return Value::CreateStringValue(
+    return base::Value::CreateStringValue(
         webui::GetBitmapDataUrl(image_rep.sk_bitmap()));
   }
   if (column_name == "title")
-    return Value::CreateStringValue(model_->GetResourceTitle(i));
+    return base::Value::CreateStringValue(model_->GetResourceTitle(i));
   if (column_name == "profileName")
-    return Value::CreateStringValue(model_->GetResourceProfileName(i));
+    return base::Value::CreateStringValue(model_->GetResourceProfileName(i));
   if (column_name == "networkUsage")
-    return Value::CreateStringValue(model_->GetResourceNetworkUsage(i));
+    return base::Value::CreateStringValue(model_->GetResourceNetworkUsage(i));
   if (column_name == "networkUsageValue")
-    return Value::CreateDoubleValue(model_->GetNetworkUsage(i));
+    return base::Value::CreateDoubleValue(model_->GetNetworkUsage(i));
   if (column_name == "webCoreImageCacheSize") {
-    return Value::CreateStringValue(
+    return base::Value::CreateStringValue(
         model_->GetResourceWebCoreImageCacheSize(i));
   }
   if (column_name == "webCoreImageCacheSizeValue") {
     blink::WebCache::ResourceTypeStats resource_stats;
     model_->GetWebCoreCacheStats(i, &resource_stats);
-    return Value::CreateDoubleValue(resource_stats.images.size);
+    return base::Value::CreateDoubleValue(resource_stats.images.size);
   }
   if (column_name == "webCoreScriptsCacheSize") {
-    return Value::CreateStringValue(
+    return base::Value::CreateStringValue(
         model_->GetResourceWebCoreScriptsCacheSize(i));
   }
   if (column_name == "webCoreScriptsCacheSizeValue") {
     blink::WebCache::ResourceTypeStats resource_stats;
     model_->GetWebCoreCacheStats(i, &resource_stats);
-    return Value::CreateDoubleValue(resource_stats.scripts.size);
+    return base::Value::CreateDoubleValue(resource_stats.scripts.size);
   }
-  if (column_name == "webCoreCSSCacheSize")
-    return Value::CreateStringValue(model_->GetResourceWebCoreCSSCacheSize(i));
+  if (column_name == "webCoreCSSCacheSize") {
+    return base::Value::CreateStringValue(
+        model_->GetResourceWebCoreCSSCacheSize(i));
+  }
   if (column_name == "webCoreCSSCacheSizeValue") {
     blink::WebCache::ResourceTypeStats resource_stats;
     model_->GetWebCoreCacheStats(i, &resource_stats);
-    return Value::CreateDoubleValue(resource_stats.cssStyleSheets.size);
+    return base::Value::CreateDoubleValue(resource_stats.cssStyleSheets.size);
   }
   if (column_name == "fps")
-    return Value::CreateStringValue(model_->GetResourceFPS(i));
+    return base::Value::CreateStringValue(model_->GetResourceFPS(i));
   if (column_name == "fpsValue") {
     float fps;
     model_->GetFPS(i, &fps);
-    return Value::CreateDoubleValue(fps);
+    return base::Value::CreateDoubleValue(fps);
   }
   if (column_name == "videoMemory")
-    return Value::CreateStringValue(model_->GetResourceVideoMemory(i));
+    return base::Value::CreateStringValue(model_->GetResourceVideoMemory(i));
   if (column_name == "videoMemoryValue") {
     size_t video_memory;
     bool has_duplicates;
@@ -386,32 +389,36 @@ base::Value* TaskManagerHandler::CreateColumnValue(
       value = static_cast<double>(video_memory);
     else
       value = 0;
-    return Value::CreateDoubleValue(value);
+    return base::Value::CreateDoubleValue(value);
   }
-  if (column_name == "sqliteMemoryUsed")
-    return Value::CreateStringValue(model_->GetResourceSqliteMemoryUsed(i));
+  if (column_name == "sqliteMemoryUsed") {
+    return base::Value::CreateStringValue(
+        model_->GetResourceSqliteMemoryUsed(i));
+  }
   if (column_name == "sqliteMemoryUsedValue") {
     size_t sqlite_memory;
     model_->GetSqliteMemoryUsedBytes(i, &sqlite_memory);
-    return Value::CreateDoubleValue(sqlite_memory);
+    return base::Value::CreateDoubleValue(sqlite_memory);
   }
-  if (column_name == "goatsTeleported")
-    return Value::CreateStringValue(model_->GetResourceGoatsTeleported(i));
+  if (column_name == "goatsTeleported") {
+    return base::Value::CreateStringValue(
+        model_->GetResourceGoatsTeleported(i));
+  }
   if (column_name == "goatsTeleportedValue")
-    return Value::CreateIntegerValue(model_->GetGoatsTeleported(i));
+    return base::Value::CreateIntegerValue(model_->GetGoatsTeleported(i));
   if (column_name == "v8MemoryAllocatedSize") {
-    return Value::CreateStringValue(
+    return base::Value::CreateStringValue(
         model_->GetResourceV8MemoryAllocatedSize(i));
   }
   if (column_name == "v8MemoryAllocatedSizeValue") {
     size_t v8_memory;
     model_->GetV8Memory(i, &v8_memory);
-    return Value::CreateDoubleValue(v8_memory);
+    return base::Value::CreateDoubleValue(v8_memory);
   }
   if (column_name == "canInspect")
-    return Value::CreateBooleanValue(model_->CanInspect(i));
+    return base::Value::CreateBooleanValue(model_->CanInspect(i));
   if (column_name == "canActivate")
-    return Value::CreateBooleanValue(model_->CanActivate(i));
+    return base::Value::CreateBooleanValue(model_->CanActivate(i));
 
   NOTREACHED();
   return NULL;

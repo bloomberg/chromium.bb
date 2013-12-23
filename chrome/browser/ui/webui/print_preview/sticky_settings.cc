@@ -34,7 +34,7 @@ void StickySettings::StoreSavePath(const base::FilePath& path) {
 void StickySettings::SaveInPrefs(PrefService* prefs) {
   DCHECK(prefs);
   if (prefs) {
-    scoped_ptr<DictionaryValue> value(new DictionaryValue);
+    scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
     if (save_path_.get())
       value->SetString(printing::kSettingSavePath, save_path_->value());
     if (printer_app_state_.get())
@@ -47,7 +47,7 @@ void StickySettings::SaveInPrefs(PrefService* prefs) {
 void StickySettings::RestoreFromPrefs(PrefService* prefs) {
   DCHECK(prefs);
   if (prefs) {
-    const DictionaryValue* value =
+    const base::DictionaryValue* value =
         prefs->GetDictionary(prefs::kPrintPreviewStickySettings);
 
     base::FilePath::StringType save_path;

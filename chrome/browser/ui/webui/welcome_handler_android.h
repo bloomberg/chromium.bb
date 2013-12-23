@@ -26,15 +26,15 @@ class WelcomeHandler : public content::WebUIMessageHandler,
 
   // Callback for the "updateSyncFooterVisibility" message. This makes the sync
   // footer in the page visible if sync is enabled.
-  void HandleUpdateSyncFooterVisibility(const ListValue* args);
+  void HandleUpdateSyncFooterVisibility(const base::ListValue* args);
 
   // Callback for the "showSyncSettings" message. This opens the sync settings
   // menu fragment.
-  void HandleShowSyncSettings(const ListValue* args);
+  void HandleShowSyncSettings(const base::ListValue* args);
 
   // Callback for the "showTermsOfService" message. This opens the terms of
   // service popup.
-  void HandleShowTermsOfService(const ListValue* args);
+  void HandleShowTermsOfService(const base::ListValue* args);
 
   // ProfileSyncServiceObserver implementation
   virtual void OnStateChanged() OVERRIDE;

@@ -62,7 +62,7 @@ void ManagedUserCreateConfirmHandler::RegisterMessages() {
 void ManagedUserCreateConfirmHandler::SwitchToProfile(
       const base::ListValue* args) {
   DCHECK(args);
-  const Value* file_path_value;
+  const base::Value* file_path_value;
   if (!args->Get(0, &file_path_value))
     return;
 

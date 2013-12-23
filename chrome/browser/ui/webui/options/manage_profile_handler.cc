@@ -53,9 +53,9 @@ const char kManageProfileIconGridName[] = "manage-profile-icon-grid";
 
 // Given |args| from the WebUI, parses value 0 as a FilePath |profile_file_path|
 // and returns true on success.
-bool GetProfilePathFromArgs(const ListValue* args,
+bool GetProfilePathFromArgs(const base::ListValue* args,
                             base::FilePath* profile_file_path) {
-  const Value* file_path_value;
+  const base::Value* file_path_value;
   if (!args->Get(0, &file_path_value))
     return false;
   return base::GetValueAsFilePath(*file_path_value, profile_file_path);
@@ -76,7 +76,7 @@ ManageProfileHandler::~ManageProfileHandler() {
 }
 
 void ManageProfileHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
@@ -200,19 +200,21 @@ void ManageProfileHandler::OnStateChanged() {
   RequestCreateProfileUpdate(NULL);
 }
 
-void ManageProfileHandler::RequestDefaultProfileIcons(const ListValue* args) {
+void ManageProfileHandler::RequestDefaultProfileIcons(
+    const base::ListValue* args) {
   base::StringValue create_value(kCreateProfileIconGridName);
   base::StringValue manage_value(kManageProfileIconGridName);
   SendProfileIcons(manage_value);
   SendProfileIcons(create_value);
 }
 
-void ManageProfileHandler::RequestNewProfileDefaults(const ListValue* args) {
+void ManageProfileHandler::RequestNewProfileDefaults(
+    const base::ListValue* args) {
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   const size_t icon_index = cache.ChooseAvatarIconIndexForNewProfile();
 
-  DictionaryValue profile_info;
+  base::DictionaryValue profile_info;
   profile_info.SetString("name", cache.ChooseNameForNewProfile(icon_index));
   profile_info.SetString("iconURL", cache.GetDefaultAvatarIconUrl(icon_index));
 
@@ -222,7 +224,7 @@ void ManageProfileHandler::RequestNewProfileDefaults(const ListValue* args) {
 
 void ManageProfileHandler::SendProfileIcons(
     const base::StringValue& icon_grid) {
-  ListValue image_url_list;
+  base::ListValue image_url_list;
 
   // First add the GAIA picture if it's available.
   const ProfileInfoCache& cache =
@@ -253,7 +255,7 @@ void ManageProfileHandler::SendProfileIcons(
 void ManageProfileHandler::SendProfileNames() {
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  DictionaryValue profile_name_dict;
+  base::DictionaryValue profile_name_dict;
   for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i)
     profile_name_dict.SetBoolean(UTF16ToUTF8(cache.GetNameOfProfileAtIndex(i)),
                                  true);
@@ -262,7 +264,7 @@ void ManageProfileHandler::SendProfileNames() {
                                    profile_name_dict);
 }
 
-void ManageProfileHandler::SetProfileIconAndName(const ListValue* args) {
+void ManageProfileHandler::SetProfileIconAndName(const base::ListValue* args) {
   DCHECK(args);
 
   base::FilePath profile_file_path;
@@ -318,11 +320,11 @@ void ManageProfileHandler::SetProfileIconAndName(const ListValue* args) {
 }
 
 #if defined(ENABLE_SETTINGS_APP)
-void ManageProfileHandler::SwitchAppListProfile(const ListValue* args) {
+void ManageProfileHandler::SwitchAppListProfile(const base::ListValue* args) {
   DCHECK(args);
   DCHECK(profiles::IsMultipleProfilesEnabled());
 
-  const Value* file_path_value;
+  const base::Value* file_path_value;
   base::FilePath profile_file_path;
   if (!args->Get(0, &file_path_value) ||
       !base::GetValueAsFilePath(*file_path_value, &profile_file_path))
@@ -369,12 +371,13 @@ void ManageProfileHandler::ProfileIconSelectionChanged(
   if (gaia_name.empty())
     return;
 
-  StringValue gaia_name_value(gaia_name);
+  base::StringValue gaia_name_value(gaia_name);
   web_ui()->CallJavascriptFunction("ManageProfileOverlay.setProfileName",
                                    gaia_name_value);
 }
 
-void ManageProfileHandler::RequestHasProfileShortcuts(const ListValue* args) {
+void ManageProfileHandler::RequestHasProfileShortcuts(
+    const base::ListValue* args) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(ProfileShortcutManager::IsFeatureEnabled());
 

@@ -23,7 +23,8 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   virtual ~PasswordManagerHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
@@ -43,19 +44,19 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
  private:
   // Clears and then populates the list of passwords and password exceptions.
   // Called when the JS PasswordManager object is initialized.
-  void HandleUpdatePasswordLists(const ListValue* args);
+  void HandleUpdatePasswordLists(const base::ListValue* args);
 
   // Removes a saved password entry.
   // |value| the entry index to be removed.
-  void HandleRemoveSavedPassword(const ListValue* args);
+  void HandleRemoveSavedPassword(const base::ListValue* args);
 
   // Removes a saved password exception.
   // |value| the entry index to be removed.
-  void HandleRemovePasswordException(const ListValue* args);
+  void HandleRemovePasswordException(const base::ListValue* args);
 
   // Requests the plain text password for an entry to be revealed.
   // |index| The index of the entry.
-  void HandleRequestShowPassword(const ListValue* args);
+  void HandleRequestShowPassword(const base::ListValue* args);
 
   // User pref for storing accept languages.
   std::string languages_;

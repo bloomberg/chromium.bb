@@ -37,9 +37,9 @@ class TestingValueStore : public ValueStore {
   virtual WriteResult Set(
       WriteOptions options,
       const std::string& key,
-      const Value& value) OVERRIDE;
+      const base::Value& value) OVERRIDE;
   virtual WriteResult Set(
-      WriteOptions options, const DictionaryValue& values) OVERRIDE;
+      WriteOptions options, const base::DictionaryValue& values) OVERRIDE;
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
   virtual WriteResult Remove(const std::vector<std::string>& keys) OVERRIDE;
   virtual WriteResult Clear() OVERRIDE;
@@ -47,7 +47,7 @@ class TestingValueStore : public ValueStore {
  private:
   scoped_ptr<ValueStore::Error> TestingError();
 
-  DictionaryValue storage_;
+  base::DictionaryValue storage_;
   int read_count_;
   int write_count_;
   ErrorCode error_code_;

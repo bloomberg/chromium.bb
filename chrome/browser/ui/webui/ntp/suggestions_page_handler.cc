@@ -112,7 +112,7 @@ void SuggestionsHandler::RegisterMessages() {
                  base::Unretained(this)));
 }
 
-void SuggestionsHandler::HandleGetSuggestions(const ListValue* args) {
+void SuggestionsHandler::HandleGetSuggestions(const base::ListValue* args) {
   if (!got_first_suggestions_request_) {
     // If it's the first request we get, return the prefetched data.
     SendPagesValue();
@@ -140,17 +140,18 @@ void SuggestionsHandler::SendPagesValue() {
   }
 }
 
-void SuggestionsHandler::HandleBlacklistURL(const ListValue* args) {
+void SuggestionsHandler::HandleBlacklistURL(const base::ListValue* args) {
   std::string url = UTF16ToUTF8(ExtractStringValue(args));
   BlacklistURL(GURL(url));
 }
 
-void SuggestionsHandler::HandleRemoveURLsFromBlacklist(const ListValue* args) {
+void SuggestionsHandler::HandleRemoveURLsFromBlacklist(
+    const base::ListValue* args) {
   DCHECK_GT(args->GetSize(), 0U);
   // TODO(georgey) remove URLs from blacklist.
 }
 
-void SuggestionsHandler::HandleClearBlacklist(const ListValue* args) {
+void SuggestionsHandler::HandleClearBlacklist(const base::ListValue* args) {
   // TODO(georgey) clear blacklist.
 }
 

@@ -91,12 +91,12 @@ ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
   if (open_error)
     return MakeReadResult(open_error.Pass());
 
-  scoped_ptr<Value> setting;
+  scoped_ptr<base::Value> setting;
   scoped_ptr<Error> error = ReadFromDb(leveldb::ReadOptions(), key, &setting);
   if (error)
     return MakeReadResult(error.Pass());
 
-  DictionaryValue* settings = new DictionaryValue();
+  base::DictionaryValue* settings = new base::DictionaryValue();
   if (setting)
     settings->SetWithoutPathExpansion(key, setting.release());
   return MakeReadResult(make_scoped_ptr(settings));
@@ -111,7 +111,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
     return MakeReadResult(open_error.Pass());
 
   leveldb::ReadOptions options;
-  scoped_ptr<DictionaryValue> settings(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
 
   // All interaction with the db is done on the same thread, so snapshotting
   // isn't strictly necessary.  This is just defensive.
@@ -119,7 +119,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
   options.snapshot = snapshot.get();
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
-    scoped_ptr<Value> setting;
+    scoped_ptr<base::Value> setting;
     scoped_ptr<Error> error = ReadFromDb(options, *it, &setting);
     if (error)
       return MakeReadResult(error.Pass());
@@ -141,14 +141,14 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
   leveldb::ReadOptions options = leveldb::ReadOptions();
   // All interaction with the db is done on the same thread, so snapshotting
   // isn't strictly necessary.  This is just defensive.
-  scoped_ptr<DictionaryValue> settings(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
 
   ScopedSnapshot snapshot(db_.get());
   options.snapshot = snapshot.get();
   scoped_ptr<leveldb::Iterator> it(db_->NewIterator(options));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
-    Value* value = json_reader.ReadToValue(it->value().ToString());
+    base::Value* value = json_reader.ReadToValue(it->value().ToString());
     if (!value) {
       return MakeReadResult(
           Error::Create(CORRUPTION, kInvalidJson, util::NewKey(key)));
@@ -168,7 +168,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
 }
 
 ValueStore::WriteResult LeveldbValueStore::Set(
-    WriteOptions options, const std::string& key, const Value& value) {
+    WriteOptions options, const std::string& key, const base::Value& value) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<Error> open_error = EnsureDbIsOpen();
@@ -188,7 +188,7 @@ ValueStore::WriteResult LeveldbValueStore::Set(
 }
 
 ValueStore::WriteResult LeveldbValueStore::Set(
-    WriteOptions options, const DictionaryValue& settings) {
+    WriteOptions options, const base::DictionaryValue& settings) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   scoped_ptr<Error> open_error = EnsureDbIsOpen();
@@ -198,7 +198,8 @@ ValueStore::WriteResult LeveldbValueStore::Set(
   leveldb::WriteBatch batch;
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
-  for (DictionaryValue::Iterator it(settings); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(settings);
+       !it.IsAtEnd(); it.Advance()) {
     scoped_ptr<Error> batch_error =
         AddToBatch(options, it.key(), it.value(), &batch, changes.get());
     if (batch_error)
@@ -228,7 +229,7 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
 
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
-    scoped_ptr<Value> old_value;
+    scoped_ptr<base::Value> old_value;
     scoped_ptr<Error> read_error =
         ReadFromDb(leveldb::ReadOptions(), *it, &old_value);
     if (read_error)
@@ -257,7 +258,7 @@ ValueStore::WriteResult LeveldbValueStore::Clear() {
 
   base::DictionaryValue& whole_db = read_result->settings();
   while (!whole_db.empty()) {
-    std::string next_key = DictionaryValue::Iterator(whole_db).key();
+    std::string next_key = base::DictionaryValue::Iterator(whole_db).key();
     scoped_ptr<base::Value> next_value;
     whole_db.RemoveWithoutPathExpansion(next_key, &next_value);
     changes->push_back(
@@ -292,7 +293,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::EnsureDbIsOpen() {
 scoped_ptr<ValueStore::Error> LeveldbValueStore::ReadFromDb(
     leveldb::ReadOptions options,
     const std::string& key,
-    scoped_ptr<Value>* setting) {
+    scoped_ptr<base::Value>* setting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   DCHECK(setting);
 
@@ -308,7 +309,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::ReadFromDb(
   if (!s.ok())
     return ToValueStoreError(s, util::NewKey(key));
 
-  Value* value = base::JSONReader().ReadToValue(value_as_json);
+  base::Value* value = base::JSONReader().ReadToValue(value_as_json);
   if (!value)
     return Error::Create(CORRUPTION, kInvalidJson, util::NewKey(key));
 
@@ -325,7 +326,7 @@ scoped_ptr<ValueStore::Error> LeveldbValueStore::AddToBatch(
   bool write_new_value = true;
 
   if (!(options & NO_GENERATE_CHANGES)) {
-    scoped_ptr<Value> old_value;
+    scoped_ptr<base::Value> old_value;
     scoped_ptr<Error> read_error =
         ReadFromDb(leveldb::ReadOptions(), key, &old_value);
     if (read_error)

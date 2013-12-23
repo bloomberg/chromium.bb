@@ -123,7 +123,7 @@ void SystemInfoUIHTMLSource::SysInfoComplete(
 }
 
 void SystemInfoUIHTMLSource::RequestComplete() {
-  DictionaryValue strings;
+  base::DictionaryValue strings;
   strings.SetString("title", l10n_util::GetStringUTF16(IDS_ABOUT_SYS_TITLE));
   strings.SetString("description",
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_DESC));
@@ -144,12 +144,12 @@ void SystemInfoUIHTMLSource::RequestComplete() {
                     l10n_util::GetStringUTF16(IDS_ABOUT_SYS_PARSE_ERROR));
   webui::SetFontAndTextDirection(&strings);
   if (response_.get()) {
-    ListValue* details = new ListValue();
+    base::ListValue* details = new base::ListValue();
     strings.Set("details", details);
     for (SystemLogsResponse::const_iterator it = response_->begin();
          it != response_->end();
          ++it) {
-      DictionaryValue* val = new DictionaryValue;
+      base::DictionaryValue* val = new base::DictionaryValue;
       val->SetString("statName", it->first);
       val->SetString("statValue", it->second);
       details->Append(val);

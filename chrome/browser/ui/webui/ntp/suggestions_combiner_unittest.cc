@@ -166,7 +166,7 @@ class SuggestionsSourceStub : public SuggestionsSource {
   virtual base::DictionaryValue* PopItem() OVERRIDE {
     if (items_.empty())
       return NULL;
-    DictionaryValue* item = items_.front();
+    base::DictionaryValue* item = items_.front();
     items_.pop_front();
     return item;
   }
@@ -182,7 +182,7 @@ class SuggestionsSourceStub : public SuggestionsSource {
   // Adds a fake suggestion. This suggestion is a DictionaryValue with a single
   // "title" field containing |title|.
   void AddSuggestion(const std::string& title) {
-    DictionaryValue* item = new DictionaryValue();
+    base::DictionaryValue* item = new base::DictionaryValue();
     item->SetString("title", title);
     items_.push_back(item);
   }

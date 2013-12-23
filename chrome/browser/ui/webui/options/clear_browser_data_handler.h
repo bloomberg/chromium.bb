@@ -19,7 +19,8 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   virtual ~ClearBrowserDataHandler();
 
   // OptionsPageUIHandler implementation.
-  virtual void GetLocalizedValues(DictionaryValue* localized_strings) OVERRIDE;
+  virtual void GetLocalizedValues(
+      base::DictionaryValue* localized_strings) OVERRIDE;
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
 
@@ -30,7 +31,7 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
 
  private:
   // Javascript callback to start clearing data.
-  void HandleClearBrowserData(const ListValue* value);
+  void HandleClearBrowserData(const base::ListValue* value);
 
   // BrowsingDataRemover::Observer implementation.
   // Closes the dialog once all requested data has been removed.

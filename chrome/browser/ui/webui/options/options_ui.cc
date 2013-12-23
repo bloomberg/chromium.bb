@@ -113,7 +113,7 @@ namespace options {
 class OptionsUIHTMLSource : public content::URLDataSource {
  public:
   // The constructor takes over ownership of |localized_strings|.
-  explicit OptionsUIHTMLSource(DictionaryValue* localized_strings);
+  explicit OptionsUIHTMLSource(base::DictionaryValue* localized_strings);
 
   // content::URLDataSource implementation.
   virtual std::string GetSource() const OVERRIDE;
@@ -129,12 +129,13 @@ class OptionsUIHTMLSource : public content::URLDataSource {
   virtual ~OptionsUIHTMLSource();
 
   // Localized strings collection.
-  scoped_ptr<DictionaryValue> localized_strings_;
+  scoped_ptr<base::DictionaryValue> localized_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsUIHTMLSource);
 };
 
-OptionsUIHTMLSource::OptionsUIHTMLSource(DictionaryValue* localized_strings) {
+OptionsUIHTMLSource::OptionsUIHTMLSource(
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   localized_strings_.reset(localized_strings);
 }
@@ -203,7 +204,7 @@ bool OptionsPageUIHandler::IsEnabled() {
 
 // static
 void OptionsPageUIHandler::RegisterStrings(
-    DictionaryValue* localized_strings,
+    base::DictionaryValue* localized_strings,
     const OptionsStringResource* resources,
     size_t length) {
   for (size_t i = 0; i < length; ++i) {
@@ -219,9 +220,10 @@ void OptionsPageUIHandler::RegisterStrings(
   }
 }
 
-void OptionsPageUIHandler::RegisterTitle(DictionaryValue* localized_strings,
-                                         const std::string& variable_name,
-                                         int title_id) {
+void OptionsPageUIHandler::RegisterTitle(
+    base::DictionaryValue* localized_strings,
+    const std::string& variable_name,
+    int title_id) {
   localized_strings->SetString(variable_name,
       l10n_util::GetStringUTF16(title_id));
   localized_strings->SetString(variable_name + "TabTitle",
@@ -240,9 +242,9 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
     : WebUIController(web_ui),
       WebContentsObserver(web_ui->GetWebContents()),
       initialized_handlers_(false) {
-  DictionaryValue* localized_strings = new DictionaryValue();
+  base::DictionaryValue* localized_strings = new base::DictionaryValue();
   localized_strings->Set(OptionsPageUIHandler::kSettingsAppKey,
-                         new DictionaryValue());
+                         new base::DictionaryValue());
 
   CoreOptionsHandler* core_handler;
 #if defined(OS_CHROMEOS)
@@ -426,8 +428,9 @@ void OptionsUI::InitializeHandlers() {
       "BrowserOptions.notifyInitializationComplete");
 }
 
-void OptionsUI::AddOptionsPageUIHandler(DictionaryValue* localized_strings,
-                                        OptionsPageUIHandler* handler_raw) {
+void OptionsUI::AddOptionsPageUIHandler(
+    base::DictionaryValue* localized_strings,
+    OptionsPageUIHandler* handler_raw) {
   scoped_ptr<OptionsPageUIHandler> handler(handler_raw);
   DCHECK(handler.get());
   // Add only if handler's service is enabled.

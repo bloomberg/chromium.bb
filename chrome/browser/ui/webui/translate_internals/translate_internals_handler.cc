@@ -170,14 +170,14 @@ void TranslateInternalsHandler::SendSupportedLanguagesToJs() {
   base::Time last_updated =
       TranslateManager::GetSupportedLanguagesLastUpdated();
 
-  ListValue* languages_list = new ListValue();
-  ListValue* alpha_languages_list = new ListValue();
+  base::ListValue* languages_list = new base::ListValue();
+  base::ListValue* alpha_languages_list = new base::ListValue();
   for (std::vector<std::string>::iterator it = languages.begin();
        it != languages.end(); ++it) {
     const std::string& lang = *it;
-    languages_list->Append(new StringValue(lang));
+    languages_list->Append(new base::StringValue(lang));
     if (TranslateManager::IsAlphaLanguage(lang))
-      alpha_languages_list->Append(new StringValue(lang));
+      alpha_languages_list->Append(new base::StringValue(lang));
   }
 
   dict.Set("languages", languages_list);

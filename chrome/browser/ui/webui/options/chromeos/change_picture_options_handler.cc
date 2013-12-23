@@ -92,7 +92,7 @@ ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {
 }
 
 void ChangePictureOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   localized_strings->SetString("changePicturePage",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TITLE));
@@ -155,7 +155,8 @@ void ChangePictureOptionsHandler::SendDefaultImages() {
                                    image_urls);
 }
 
-void ChangePictureOptionsHandler::HandleChooseFile(const ListValue* args) {
+void ChangePictureOptionsHandler::HandleChooseFile(
+    const base::ListValue* args) {
   DCHECK(args && args->empty());
   select_file_dialog_ = ui::SelectFileDialog::Create(
       this, new ChromeSelectFilePolicy(web_ui()->GetWebContents()));
@@ -286,7 +287,8 @@ void ChangePictureOptionsHandler::SendOldImage(const std::string& image_url) {
   web_ui()->CallJavascriptFunction("ChangePictureOptions.setOldImage", url);
 }
 
-void ChangePictureOptionsHandler::HandleSelectImage(const ListValue* args) {
+void ChangePictureOptionsHandler::HandleSelectImage(
+    const base::ListValue* args) {
   std::string image_url;
   std::string image_type;
   if (!args ||

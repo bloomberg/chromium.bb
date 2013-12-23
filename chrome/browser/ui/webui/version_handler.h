@@ -24,7 +24,7 @@ class VersionHandler : public content::WebUIMessageHandler {
   // Callback for the "requestVersionInfo" message. This asynchronously requests
   // the flash version and eventually returns it to the front end along with the
   // list of variations using OnGotPlugins.
-  virtual void HandleRequestVersionInfo(const ListValue* args);
+  virtual void HandleRequestVersionInfo(const base::ListValue* args);
 
  private:
   // Callback which handles returning the executable and profile paths to the

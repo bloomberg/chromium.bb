@@ -71,8 +71,8 @@ void LanguageDictionaryOverlayHandler::OnCustomDictionaryLoaded() {
 
 void LanguageDictionaryOverlayHandler::OnCustomDictionaryChanged(
     const SpellcheckCustomDictionary::Change& dictionary_change) {
-  ListValue add_words;
-  ListValue remove_words;
+  base::ListValue add_words;
+  base::ListValue remove_words;
   add_words.AppendStrings(dictionary_change.to_add());
   remove_words.AppendStrings(dictionary_change.to_remove());
   web_ui()->CallJavascriptFunction("EditDictionaryOverlay.updateWords",
@@ -91,7 +91,7 @@ void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
     dictionary_->AddObserver(this);
   }
 
-  ListValue list_value;
+  base::ListValue list_value;
   const chrome::spellcheck_common::WordSet& words = dictionary_->GetWords();
   for (chrome::spellcheck_common::WordSet::const_iterator it = words.begin();
        it != words.end(); ++it) {
@@ -101,12 +101,13 @@ void LanguageDictionaryOverlayHandler::ResetDictionaryWords() {
                                    list_value);
 }
 
-void LanguageDictionaryOverlayHandler::RefreshWords(const ListValue* args) {
+void LanguageDictionaryOverlayHandler::RefreshWords(
+    const base::ListValue* args) {
   overlay_initialized_ = true;
   ResetDictionaryWords();
 }
 
-void LanguageDictionaryOverlayHandler::AddWord(const ListValue* args) {
+void LanguageDictionaryOverlayHandler::AddWord(const base::ListValue* args) {
   std::string new_word;
   if (!args->GetString(0, &new_word) || new_word.empty() || !dictionary_) {
     NOTREACHED();
@@ -115,7 +116,7 @@ void LanguageDictionaryOverlayHandler::AddWord(const ListValue* args) {
   dictionary_->AddWord(new_word);
 }
 
-void LanguageDictionaryOverlayHandler::RemoveWord(const ListValue* args) {
+void LanguageDictionaryOverlayHandler::RemoveWord(const base::ListValue* args) {
   std::string old_word;
   if (!args->GetString(0, &old_word) || old_word.empty() || !dictionary_) {
     NOTREACHED();

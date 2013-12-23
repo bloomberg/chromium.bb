@@ -85,7 +85,7 @@ class TaskManagerDialogImpl : public WebDialogDelegate {
 #if !defined(TOOLKIT_VIEWS)
     // If dialog's bounds are previously saved, use them.
     if (g_browser_process->local_state()) {
-      const DictionaryValue* placement_pref =
+      const base::DictionaryValue* placement_pref =
           g_browser_process->local_state()->GetDictionary(
           prefs::kTaskManagerWindowPlacement);
       int width, height;
@@ -128,7 +128,7 @@ class TaskManagerDialogImpl : public WebDialogDelegate {
     if (g_browser_process->local_state()) {
       DictionaryPrefUpdate update(g_browser_process->local_state(),
                                   prefs::kTaskManagerWindowPlacement);
-      DictionaryValue* placement_pref = update.Get();
+      base::DictionaryValue* placement_pref = update.Get();
       placement_pref->SetInteger("width", dialog_size.width());
       placement_pref->SetInteger("height", dialog_size.height());
     }

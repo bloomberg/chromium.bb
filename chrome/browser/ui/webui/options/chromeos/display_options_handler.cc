@@ -71,7 +71,7 @@ DisplayOptionsHandler::~DisplayOptionsHandler() {
 }
 
 void DisplayOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
   RegisterTitle(localized_strings, "displayOptionsPage",
                 IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_TAB_TITLE);

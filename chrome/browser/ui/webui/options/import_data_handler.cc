@@ -46,7 +46,8 @@ ImportDataHandler::~ImportDataHandler() {
     select_file_dialog_->ListenerDestroyed();
 }
 
-void ImportDataHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
+void ImportDataHandler::GetLocalizedValues(
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
@@ -112,7 +113,7 @@ void ImportDataHandler::StartImport(
                                     source_profile.importer_type);
 }
 
-void ImportDataHandler::ImportData(const ListValue* args) {
+void ImportDataHandler::ImportData(const base::ListValue* args) {
   std::string string_value;
 
   int browser_index;
@@ -157,13 +158,13 @@ void ImportDataHandler::InitializePage() {
   if (!importer_list_->source_profiles_loaded())
     return;
 
-  ListValue browser_profiles;
+  base::ListValue browser_profiles;
   for (size_t i = 0; i < importer_list_->count(); ++i) {
     const importer::SourceProfile& source_profile =
         importer_list_->GetSourceProfileAt(i);
     uint16 browser_services = source_profile.services_supported;
 
-    DictionaryValue* browser_profile = new DictionaryValue();
+    base::DictionaryValue* browser_profile = new base::DictionaryValue();
     browser_profile->SetString("name", source_profile.importer_name);
     browser_profile->SetInteger("index", i);
     browser_profile->SetBoolean("history",

@@ -52,7 +52,7 @@ class DefaultStateProvider : public WindowSizer::StateProvider {
       return false;
 
     std::string window_name(chrome::GetWindowPlacementKey(browser_));
-    const DictionaryValue* wp_pref =
+    const base::DictionaryValue* wp_pref =
         browser_->profile()->GetPrefs()->GetDictionary(window_name.c_str());
     int top = 0, left = 0, bottom = 0, right = 0;
     bool maximized = false;

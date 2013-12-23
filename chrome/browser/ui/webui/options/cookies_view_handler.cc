@@ -44,7 +44,7 @@ CookiesViewHandler::~CookiesViewHandler() {
 }
 
 void CookiesViewHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
 
   static OptionsStringResource resources[] = {
@@ -135,12 +135,12 @@ void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,
   CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
   CookieTreeNode* parent_node = tree_model->AsNode(parent);
 
-  ListValue* children = new ListValue;
+  base::ListValue* children = new base::ListValue;
   model_util_->GetChildNodeList(parent_node, start, count, children);
 
-  ListValue args;
+  base::ListValue args;
   args.Append(parent == tree_model->GetRoot() ?
-      Value::CreateNullValue() :
+      base::Value::CreateNullValue() :
       new base::StringValue(model_util_->GetTreeNodeId(parent_node)));
   args.Append(new base::FundamentalValue(start));
   args.Append(children);
@@ -157,9 +157,9 @@ void CookiesViewHandler::TreeNodesRemoved(ui::TreeModel* model,
 
   CookiesTreeModel* tree_model = static_cast<CookiesTreeModel*>(model);
 
-  ListValue args;
+  base::ListValue args;
   args.Append(parent == tree_model->GetRoot() ?
-      Value::CreateNullValue() :
+      base::Value::CreateNullValue() :
       new base::StringValue(model_util_->GetTreeNodeId(
           tree_model->AsNode(parent))));
   args.Append(new base::FundamentalValue(start));
@@ -207,7 +207,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
   }
 }
 
-void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
+void CookiesViewHandler::UpdateSearchResults(const base::ListValue* args) {
   base::string16 query;
   if (!args->GetString(0, &query))
     return;
@@ -217,12 +217,12 @@ void CookiesViewHandler::UpdateSearchResults(const ListValue* args) {
   cookies_tree_model_->UpdateSearchResults(query);
 }
 
-void CookiesViewHandler::RemoveAll(const ListValue* args) {
+void CookiesViewHandler::RemoveAll(const base::ListValue* args) {
   EnsureCookiesTreeModelCreated();
   cookies_tree_model_->DeleteAllStoredObjects();
 }
 
-void CookiesViewHandler::Remove(const ListValue* args) {
+void CookiesViewHandler::Remove(const base::ListValue* args) {
   std::string node_path;
   if (!args->GetString(0, &node_path))
     return;
@@ -235,7 +235,7 @@ void CookiesViewHandler::Remove(const ListValue* args) {
     cookies_tree_model_->DeleteCookieNode(const_cast<CookieTreeNode*>(node));
 }
 
-void CookiesViewHandler::LoadChildren(const ListValue* args) {
+void CookiesViewHandler::LoadChildren(const base::ListValue* args) {
   std::string node_path;
   if (!args->GetString(0, &node_path))
     return;
@@ -249,13 +249,13 @@ void CookiesViewHandler::LoadChildren(const ListValue* args) {
 }
 
 void CookiesViewHandler::SendChildren(const CookieTreeNode* parent) {
-  ListValue* children = new ListValue;
+  base::ListValue* children = new base::ListValue;
   model_util_->GetChildNodeList(parent, 0, parent->child_count(),
       children);
 
-  ListValue args;
+  base::ListValue args;
   args.Append(parent == cookies_tree_model_->GetRoot() ?
-      Value::CreateNullValue() :
+      base::Value::CreateNullValue() :
       new base::StringValue(model_util_->GetTreeNodeId(parent)));
   args.Append(children);
 

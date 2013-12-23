@@ -46,10 +46,10 @@ ValueStore::ReadResult TestingValueStore::Get(
   if (error_code_ != OK)
     return MakeReadResult(TestingError());
 
-  DictionaryValue* settings = new DictionaryValue();
+  base::DictionaryValue* settings = new base::DictionaryValue();
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
-    Value* value = NULL;
+    base::Value* value = NULL;
     if (storage_.GetWithoutPathExpansion(*it, &value)) {
       settings->SetWithoutPathExpansion(*it, value->DeepCopy());
     }
@@ -65,21 +65,22 @@ ValueStore::ReadResult TestingValueStore::Get() {
 }
 
 ValueStore::WriteResult TestingValueStore::Set(
-    WriteOptions options, const std::string& key, const Value& value) {
-  DictionaryValue settings;
+    WriteOptions options, const std::string& key, const base::Value& value) {
+  base::DictionaryValue settings;
   settings.SetWithoutPathExpansion(key, value.DeepCopy());
   return Set(options, settings);
 }
 
 ValueStore::WriteResult TestingValueStore::Set(
-    WriteOptions options, const DictionaryValue& settings) {
+    WriteOptions options, const base::DictionaryValue& settings) {
   write_count_++;
   if (error_code_ != OK)
     return MakeWriteResult(TestingError());
 
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
-  for (DictionaryValue::Iterator it(settings); !it.IsAtEnd(); it.Advance()) {
-    Value* old_value = NULL;
+  for (base::DictionaryValue::Iterator it(settings);
+       !it.IsAtEnd(); it.Advance()) {
+    base::Value* old_value = NULL;
     if (!storage_.GetWithoutPathExpansion(it.key(), &old_value) ||
         !old_value->Equals(&it.value())) {
       changes->push_back(
@@ -106,7 +107,7 @@ ValueStore::WriteResult TestingValueStore::Remove(
   scoped_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
   for (std::vector<std::string>::const_iterator it = keys.begin();
       it != keys.end(); ++it) {
-    scoped_ptr<Value> old_value;
+    scoped_ptr<base::Value> old_value;
     if (storage_.RemoveWithoutPathExpansion(*it, &old_value)) {
       changes->push_back(ValueStoreChange(*it, old_value.release(), NULL));
     }
@@ -116,7 +117,8 @@ ValueStore::WriteResult TestingValueStore::Remove(
 
 ValueStore::WriteResult TestingValueStore::Clear() {
   std::vector<std::string> keys;
-  for (DictionaryValue::Iterator it(storage_); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(storage_);
+       !it.IsAtEnd(); it.Advance()) {
     keys.push_back(it.key());
   }
   return Remove(keys);

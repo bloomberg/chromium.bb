@@ -190,7 +190,7 @@ const int kPrivetPrinterSearchDurationSeconds = 3;
 
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
-DictionaryValue* GetSettingsDictionary(const ListValue* args) {
+base::DictionaryValue* GetSettingsDictionary(const base::ListValue* args) {
   std::string json_str;
   if (!args->GetString(0, &json_str)) {
     NOTREACHED() << "Could not read JSON argument";
@@ -200,9 +200,10 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
     NOTREACHED() << "Empty print job settings";
     return NULL;
   }
-  scoped_ptr<DictionaryValue> settings(static_cast<DictionaryValue*>(
-      base::JSONReader::Read(json_str)));
-  if (!settings.get() || !settings->IsType(Value::TYPE_DICTIONARY)) {
+  scoped_ptr<base::DictionaryValue> settings(
+      static_cast<base::DictionaryValue*>(
+          base::JSONReader::Read(json_str)));
+  if (!settings.get() || !settings->IsType(base::Value::TYPE_DICTIONARY)) {
     NOTREACHED() << "Print job settings must be a dictionary.";
     return NULL;
   }
@@ -216,7 +217,7 @@ DictionaryValue* GetSettingsDictionary(const ListValue* args) {
 }
 
 // Track the popularity of print settings and report the stats.
-void ReportPrintSettingsStats(const DictionaryValue& settings) {
+void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
   ReportPrintSettingHistogram(TOTAL);
 
   bool landscape = false;
@@ -566,7 +567,7 @@ WebContents* PrintPreviewHandler::preview_web_contents() const {
   return web_ui()->GetWebContents();
 }
 
-void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandleGetPrinters(const base::ListValue* /*args*/) {
   base::ListValue* results = new base::ListValue;
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
@@ -616,9 +617,9 @@ void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
 #endif
 }
 
-void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
+void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   DCHECK_EQ(3U, args->GetSize());
-  scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
+  scoped_ptr<base::DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
   int request_id = -1;
@@ -688,7 +689,7 @@ void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
   rvh->Send(new PrintMsg_PrintPreview(rvh->GetRoutingID(), *settings));
 }
 
-void PrintPreviewHandler::HandlePrint(const ListValue* args) {
+void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
   ReportStats();
 
   // Record the number of times the user requests to regenerate preview data
@@ -702,7 +703,7 @@ void PrintPreviewHandler::HandlePrint(const ListValue* args) {
     rvh->Send(new PrintMsg_ResetScriptedPrintCount(rvh->GetRoutingID()));
   }
 
-  scoped_ptr<DictionaryValue> settings(GetSettingsDictionary(args));
+  scoped_ptr<base::DictionaryValue> settings(GetSettingsDictionary(args));
   if (!settings.get())
     return;
 
@@ -844,14 +845,14 @@ void PrintPreviewHandler::PrintToPdf() {
   }
 }
 
-void PrintPreviewHandler::HandleHidePreview(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandleHidePreview(const base::ListValue* /*args*/) {
   PrintPreviewUI* print_preview_ui = static_cast<PrintPreviewUI*>(
       web_ui()->GetController());
   print_preview_ui->OnHidePreviewDialog();
 }
 
 void PrintPreviewHandler::HandleCancelPendingPrintRequest(
-    const ListValue* /*args*/) {
+    const base::ListValue* /*args*/) {
   WebContents* initiator = GetInitiator();
   if (initiator)
     ClearInitiatorDetails();
@@ -861,7 +862,7 @@ void PrintPreviewHandler::HandleCancelPendingPrintRequest(
   chrome::ShowPrintErrorDialog(parent);
 }
 
-void PrintPreviewHandler::HandleSaveAppState(const ListValue* args) {
+void PrintPreviewHandler::HandleSaveAppState(const base::ListValue* args) {
   std::string data_to_save;
   printing::StickySettings* sticky_settings = GetStickySettings();
   if (args->GetString(0, &data_to_save) && !data_to_save.empty())
@@ -870,7 +871,8 @@ void PrintPreviewHandler::HandleSaveAppState(const ListValue* args) {
       preview_web_contents()->GetBrowserContext())->GetPrefs());
 }
 
-void PrintPreviewHandler::HandleGetPrinterCapabilities(const ListValue* args) {
+void PrintPreviewHandler::HandleGetPrinterCapabilities(
+    const base::ListValue* args) {
   std::string printer_name;
   bool ret = args->GetString(0, &printer_name);
   if (!ret || printer_name.empty())
@@ -895,7 +897,7 @@ void PrintPreviewHandler::OnSigninComplete() {
     print_preview_ui->OnReloadPrintersList();
 }
 
-void PrintPreviewHandler::HandleSignin(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandleSignin(const base::ListValue* /*args*/) {
   gfx::NativeWindow modal_parent = platform_util::GetTopLevel(
       preview_web_contents()->GetView()->GetNativeView());
   print_dialog_cloud::CreateCloudPrintSigninDialog(
@@ -943,7 +945,8 @@ void PrintPreviewHandler::PrintWithCloudPrintDialog() {
   ClosePreviewDialog();
 }
 
-void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandleManageCloudPrint(
+    const base::ListValue* /*args*/) {
   ++manage_cloud_printers_dialog_request_count_;
   Profile* profile = Profile::FromBrowserContext(
       preview_web_contents()->GetBrowserContext());
@@ -956,7 +959,8 @@ void PrintPreviewHandler::HandleManageCloudPrint(const ListValue* /*args*/) {
           false));
 }
 
-void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandleShowSystemDialog(
+    const base::ListValue* /*args*/) {
   ReportStats();
   ReportUserActionHistogram(FALLBACK_TO_ADVANCED_SETTINGS_DIALOG);
 
@@ -975,7 +979,8 @@ void PrintPreviewHandler::HandleShowSystemDialog(const ListValue* /*args*/) {
   print_preview_ui->OnCancelPendingPreviewRequest();
 }
 
-void PrintPreviewHandler::HandleManagePrinters(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandleManagePrinters(
+    const base::ListValue* /*args*/) {
   ++manage_printers_dialog_request_count_;
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
 }
@@ -991,7 +996,8 @@ void PrintPreviewHandler::HandlePrintWithCloudPrintDialog(
   PrintWithCloudPrintDialog();
 }
 
-void PrintPreviewHandler::HandleClosePreviewDialog(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandleClosePreviewDialog(
+    const base::ListValue* /*args*/) {
   ReportStats();
   ReportUserActionHistogram(CANCEL);
 
@@ -1024,7 +1030,8 @@ void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
   settings->SetInteger(kMeasurementSystem, system);
 }
 
-void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
+void PrintPreviewHandler::HandleGetInitialSettings(
+    const base::ListValue* /*args*/) {
   // Send before SendInitialSettings to allow cloud printer auto select.
   SendCloudPrintEnabled();
   BrowserThread::PostTaskAndReplyWithResult(
@@ -1034,7 +1041,7 @@ void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
                  weak_factory_.GetWeakPtr()));
 }
 
-void PrintPreviewHandler::HandleReportUiEvent(const ListValue* args) {
+void PrintPreviewHandler::HandleReportUiEvent(const base::ListValue* args) {
   int event_group, event_number;
   if (!args->GetInteger(0, &event_group) || !args->GetInteger(1, &event_number))
     return;
@@ -1066,7 +1073,7 @@ void PrintPreviewHandler::HandleReportUiEvent(const ListValue* args) {
   }
 }
 
-void PrintPreviewHandler::HandleForceOpenNewTab(const ListValue* args) {
+void PrintPreviewHandler::HandleForceOpenNewTab(const base::ListValue* args) {
   std::string url;
   if (!args->GetString(0, &url))
     return;
@@ -1125,12 +1132,13 @@ void PrintPreviewHandler::ClosePreviewDialog() {
 void PrintPreviewHandler::SendAccessToken(const std::string& type,
                                           const std::string& access_token) {
   VLOG(1) << "Get getAccessToken finished";
-  web_ui()->CallJavascriptFunction("onDidGetAccessToken", StringValue(type),
-                                   StringValue(access_token));
+  web_ui()->CallJavascriptFunction("onDidGetAccessToken",
+                                   base::StringValue(type),
+                                   base::StringValue(access_token));
 }
 
 void PrintPreviewHandler::SendPrinterCapabilities(
-    const DictionaryValue* settings_info) {
+    const base::DictionaryValue* settings_info) {
   VLOG(1) << "Get printer capabilities finished";
 
 #if defined(USE_CUPS)
@@ -1175,7 +1183,7 @@ void PrintPreviewHandler::SendCloudPrintJob(const base::RefCountedBytes* data) {
                        data->size());
   std::string base64_data;
   base::Base64Encode(raw_data, &base64_data);
-  StringValue data_value(base64_data);
+  base::StringValue data_value(base64_data);
 
   web_ui()->CallJavascriptFunction("printToCloud", data_value);
 }

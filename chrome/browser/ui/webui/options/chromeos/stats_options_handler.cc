@@ -21,7 +21,7 @@ StatsOptionsHandler::StatsOptionsHandler() {
 
 // OptionsPageUIHandler implementation.
 void StatsOptionsHandler::GetLocalizedValues(
-    DictionaryValue* localized_strings) {
+    base::DictionaryValue* localized_strings) {
 }
 
 // WebUIMessageHandler implementation.
@@ -32,7 +32,7 @@ void StatsOptionsHandler::RegisterMessages() {
 }
 
 void StatsOptionsHandler::HandleMetricsReportingCheckbox(
-    const ListValue* args) {
+    const base::ListValue* args) {
 #if defined(GOOGLE_CHROME_BUILD)
   const std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
   const bool enabled = (checked_str == "true");
