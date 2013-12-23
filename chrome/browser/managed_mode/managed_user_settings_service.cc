@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/prefs/json_pref_store.h"
+#include "base/prefs/pref_filter.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
@@ -59,7 +60,8 @@ void ManagedUserSettingsService::Init(
     bool load_synchronously) {
   base::FilePath path =
       profile_path.Append(chrome::kManagedUserSettingsFilename);
-  PersistentPrefStore* store = new JsonPrefStore(path, sequenced_task_runner);
+  PersistentPrefStore* store = new JsonPrefStore(
+      path, sequenced_task_runner, scoped_ptr<PrefFilter>());
   Init(store);
   if (load_synchronously)
     store_->ReadPrefs();

@@ -17,6 +17,8 @@
 #include "base/prefs/pref_value_store.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
+#include "chrome/browser/prefs/pref_hash_filter.h"
+#include "chrome/browser/prefs/pref_hash_store.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_factory.h"
@@ -80,6 +82,7 @@ void PrepareBuilder(
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     ManagedUserSettingsService* managed_user_settings,
+    scoped_ptr<PrefHashStore> pref_hash_store,
     const scoped_refptr<PrefStore>& extension_prefs,
     bool async) {
 #if defined(OS_LINUX)
@@ -122,8 +125,14 @@ void PrepareBuilder(
       make_scoped_refptr(
           new CommandLinePrefStore(CommandLine::ForCurrentProcess())));
   factory->set_read_error_callback(base::Bind(&HandleReadError));
+  scoped_ptr<PrefFilter> pref_filter;
+  if (pref_hash_store)
+    pref_filter.reset(new PrefHashFilter(pref_hash_store.Pass()));
   factory->set_user_prefs(
-      new JsonPrefStore(pref_filename, pref_io_task_runner));
+      new JsonPrefStore(
+          pref_filename,
+          pref_io_task_runner,
+          pref_filter.Pass()));
 }
 
 }  // namespace
@@ -142,6 +151,7 @@ scoped_ptr<PrefService> CreateLocalState(
                  pref_io_task_runner,
                  policy_service,
                  NULL,
+                 scoped_ptr<PrefHashStore>(),
                  NULL,
                  async);
   return factory.Create(pref_registry.get());
@@ -152,6 +162,7 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     ManagedUserSettingsService* managed_user_settings,
+    scoped_ptr<PrefHashStore> pref_hash_store,
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async) {
@@ -162,6 +173,7 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
                  pref_io_task_runner,
                  policy_service,
                  managed_user_settings,
+                 pref_hash_store.Pass(),
                  extension_prefs,
                  async);
   return factory.CreateSyncable(pref_registry.get());

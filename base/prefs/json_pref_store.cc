@@ -13,6 +13,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/prefs/pref_filter.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
@@ -151,12 +152,14 @@ scoped_refptr<base::SequencedTaskRunner> JsonPrefStore::GetTaskRunnerForFile(
 }
 
 JsonPrefStore::JsonPrefStore(const base::FilePath& filename,
-                             base::SequencedTaskRunner* sequenced_task_runner)
+                             base::SequencedTaskRunner* sequenced_task_runner,
+                             scoped_ptr<PrefFilter> pref_filter)
     : path_(filename),
       sequenced_task_runner_(sequenced_task_runner),
       prefs_(new base::DictionaryValue()),
       read_only_(false),
       writer_(filename, sequenced_task_runner),
+      pref_filter_(pref_filter.Pass()),
       initialized_(false),
       read_error_(PREF_READ_ERROR_OTHER) {}
 
@@ -264,7 +267,14 @@ void JsonPrefStore::CommitPendingWrite() {
 }
 
 void JsonPrefStore::ReportValueChanged(const std::string& key) {
+  if (pref_filter_) {
+    const base::Value* tmp = NULL;
+    prefs_->Get(key, &tmp);
+    pref_filter_->FilterUpdate(key, tmp);
+  }
+
   FOR_EACH_OBSERVER(PrefStore::Observer, observers_, OnPrefValueChanged(key));
+
   if (!read_only_)
     writer_.ScheduleWrite(this);
 }
@@ -295,6 +305,8 @@ void JsonPrefStore::OnFileRead(base::Value* value_owned,
     case PREF_READ_ERROR_NONE:
       DCHECK(value.get());
       prefs_.reset(static_cast<base::DictionaryValue*>(value.release()));
+      if (pref_filter_)
+        pref_filter_->FilterOnLoad(prefs_.get());
       break;
     case PREF_READ_ERROR_NO_FILE:
       // If the file just doesn't exist, maybe this is first run.  In any case

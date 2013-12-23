@@ -22,11 +22,6 @@ class PrefRegistrySimple;
 // PrefMetricsService is responsible for recording prefs-related UMA stats.
 class PrefMetricsService : public BrowserContextKeyedService {
  public:
-  enum HashedPrefStyle {
-    HASHED_PREF_STYLE_NEW,
-    HASHED_PREF_STYLE_DEPRECATED,
-  };
-
   explicit PrefMetricsService(Profile* profile);
   virtual ~PrefMetricsService();
 
@@ -49,22 +44,15 @@ class PrefMetricsService : public BrowserContextKeyedService {
         content::BrowserContext* context) const OVERRIDE;
   };
 
-  // Registers preferences in local state.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
  private:
   friend class PrefMetricsServiceTest;
 
   // Function to log a Value to a histogram
-  typedef base::Callback<void(const std::string&, const Value*)>
+  typedef base::Callback<void(const std::string&, const base::Value*)>
       LogHistogramValueCallback;
 
   // For unit testing only.
-  PrefMetricsService(Profile* profile,
-                     PrefService* local_settings,
-                     const std::string& device_id,
-                     const char** tracked_pref_paths,
-                     int tracked_pref_path_count);
+  PrefMetricsService(Profile* profile, PrefService* local_settings);
 
   // Record prefs state on browser context creation.
   void RecordLaunchPrefs();
@@ -85,46 +73,16 @@ class PrefMetricsService : public BrowserContextKeyedService {
 
   // Callback for a boolean pref change histogram.
   void LogBooleanPrefChange(const std::string& histogram_name,
-                            const Value* value);
+                            const base::Value* value);
 
   // Callback for an integer pref change histogram.
   void LogIntegerPrefChange(int boundary_value,
                             const std::string& histogram_name,
-                            const Value* value);
-
-  // Callback to receive a unique device_id.
-  void GetDeviceIdCallback(const std::string& device_id);
-
-  // Checks the tracked preferences against their last known values and reports
-  // any discrepancies. This must be called after |device_id| has been set.
-  void CheckTrackedPreferences();
-
-  // Updates the hash of the tracked preference in local state. This must be
-  // called after |device_id| has been set.
-  void UpdateTrackedPreference(const char* path);
-
-  // Computes an MD5 hash for the given preference value. |value| can be
-  // NULL which will result in the unique hash representing NULL for the pref
-  // at |path|.
-  std::string GetHashedPrefValue(
-      const char* path,
-      const base::Value* value,
-      HashedPrefStyle desired_style);
-
-  void InitializePrefObservers();
+                            const base::Value* value);
 
   Profile* profile_;
   PrefService* prefs_;
   PrefService* local_state_;
-  std::string profile_name_;
-  std::string pref_hash_seed_;
-  std::string device_id_;
-  const char** tracked_pref_paths_;
-  const int tracked_pref_path_count_;
-
-  // TODO(gab): preprocessor define this member out on builds that don't use
-  // DCHECKs (http://crbug.com/322713).
-  bool checked_tracked_prefs_;
 
   PrefChangeRegistrar pref_registrar_;
   scoped_ptr<SyncedPrefChangeRegistrar> synced_pref_change_registrar_;
