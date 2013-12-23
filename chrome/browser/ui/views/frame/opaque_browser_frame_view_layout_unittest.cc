@@ -384,6 +384,27 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, WithoutCaptionButtons) {
   EXPECT_EQ("6,4 17x17", layout_manager_->IconBounds().ToString());
 }
 
+TEST_F(OpaqueBrowserFrameViewLayoutTest, MaximizedWithoutCaptionButtons) {
+  // Tests the layout of a maximized chrome window with no caption buttons.
+  delegate_->SetWindowState(TestLayoutDelegate::STATE_MAXIMIZED);
+  delegate_->SetShouldShowCaptionButtons(false);
+  root_view_->Layout();
+
+  EXPECT_EQ("0,0 0x0", maximize_button_->bounds().ToString());
+  EXPECT_EQ("0,0 0x0", minimize_button_->bounds().ToString());
+  EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
+  EXPECT_EQ("0,0 0x0", close_button_->bounds().ToString());
+
+  EXPECT_EQ("-5,-3 500x29",
+            layout_manager_->GetBoundsForTabStrip(
+                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
+  EXPECT_EQ("251x61", layout_manager_->GetMinimumSize(kWidth).ToString());
+
+  // In the maximized case, OpaqueBrowserFrameView::NonClientHitTest() uses
+  // this rect, extended to the top left corner of the window.
+  EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
+}
+
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WithWindowTitleAndIcon) {
   // Tests the layout of pop up windows.
   delegate_->SetWindowTitle(ASCIIToUTF16("Window Title"));

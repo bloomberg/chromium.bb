@@ -68,6 +68,11 @@ const int kNewTabCaptionRestoredSpacing = 5;
 // looking too cluttered.
 const int kNewTabCaptionMaximizedSpacing = 16;
 
+// If there are no caption buttons to the right of the New Tab button, we
+// reserve a small 5px gap, regardless of whether the window is maximized. This
+// overrides the two previous constants.
+const int kNewTabNoCaptionButtonsSpacing = 5;
+
 // The top 3 px of the tabstrip is shadow; in maximized mode we push this off
 // the top of the screen so the tabs appear flush against the screen edge.
 const int kTabstripTopShadowThickness = 3;
@@ -143,8 +148,7 @@ gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
   if (delegate_->GetAdditionalReservedSpaceInTabStrip())
     available_width -= delegate_->GetAdditionalReservedSpaceInTabStrip();
 
-  const int caption_spacing = delegate_->IsMaximized() ?
-      kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing;
+  const int caption_spacing = NewTabCaptionSpacing();
   const int tabstrip_width = available_width - caption_spacing;
   gfx::Rect bounds(leading_button_start_, GetTabStripInsetsTop(false),
                    std::max(0, tabstrip_width),
@@ -176,8 +180,7 @@ gfx::Size OpaqueBrowserFrameViewLayout::GetMinimumSize(
   if (delegate_->IsTabStripVisible()) {
     gfx::Size preferred_size = delegate_->GetTabstripPreferredSize();
     const int min_tabstrip_width = preferred_size.width();
-    const int caption_spacing = delegate_->IsMaximized() ?
-        kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing;
+    const int caption_spacing = NewTabCaptionSpacing();
     min_size.Enlarge(min_tabstrip_width + caption_spacing, 0);
   }
 
@@ -264,6 +267,13 @@ bool OpaqueBrowserFrameViewLayout::ShouldAvatarBeOnRight() const {
   // The avatar should be shown either on the end of the left or the beginning
   // of the right depending on which side has fewer buttons.
   return trailing_buttons_.size() < leading_buttons_.size();
+}
+
+int OpaqueBrowserFrameViewLayout::NewTabCaptionSpacing() const {
+  return has_trailing_buttons_
+             ? (delegate_->IsMaximized() ? kNewTabCaptionMaximizedSpacing
+                                         : kNewTabCaptionRestoredSpacing)
+             : kNewTabNoCaptionButtonsSpacing;
 }
 
 void OpaqueBrowserFrameViewLayout::LayoutWindowControls(views::View* host) {
