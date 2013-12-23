@@ -487,7 +487,8 @@ static bool IsNotKnownUser(const std::string& account_id) {
   return !IsKnownUser(account_id);
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DevicePolicyChange) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DevicePolicyChange) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
