@@ -288,7 +288,9 @@ void PowerPolicyInSessionBrowserTest::SetUpOnMainThread() {
 }
 
 // Verifies that device policy is applied on the login screen.
-IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest, SetDevicePolicy) {
+// http://crbug.com/330454
+IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest,
+                       DISABLED_SetDevicePolicy) {
   pm::PowerManagementPolicy power_management_policy =
       power_manager_client_->get_policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
