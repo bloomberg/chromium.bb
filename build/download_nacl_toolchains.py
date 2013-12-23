@@ -12,6 +12,7 @@ import sys
 def Main(args):
   # Exit early if disable_nacl=1.
   if 'disable_nacl=1' in os.environ.get('GYP_DEFINES', ''):
+    print 'NACL is disabled. Skipping NativeClient toolchain download.'
     return 0
   script_dir = os.path.dirname(os.path.abspath(__file__))
   src_dir = os.path.dirname(script_dir)
