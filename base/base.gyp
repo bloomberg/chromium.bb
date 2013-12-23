@@ -352,6 +352,7 @@
         'prefs/persistent_pref_store.h',
         'prefs/pref_change_registrar.cc',
         'prefs/pref_change_registrar.h',
+        'prefs/pref_filter.h',
         'prefs/pref_member.cc',
         'prefs/pref_member.h',
         'prefs/pref_notifier.h',

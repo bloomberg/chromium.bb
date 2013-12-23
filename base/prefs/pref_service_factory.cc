@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/json_pref_store.h"
+#include "base/prefs/pref_filter.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/pref_service.h"
 
@@ -37,7 +38,8 @@ PrefServiceFactory::~PrefServiceFactory() {}
 void PrefServiceFactory::SetUserPrefsFile(
     const base::FilePath& prefs_file,
     base::SequencedTaskRunner* task_runner) {
-  user_prefs_ = new JsonPrefStore(prefs_file, task_runner);
+  user_prefs_ = new JsonPrefStore(
+      prefs_file, task_runner, scoped_ptr<PrefFilter>());
 }
 
 scoped_ptr<PrefService> PrefServiceFactory::Create(

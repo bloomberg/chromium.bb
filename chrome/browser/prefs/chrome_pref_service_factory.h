@@ -22,6 +22,7 @@ class PrefRegistrySyncable;
 }
 
 class ManagedUserSettingsService;
+class PrefHashStore;
 class PrefRegistry;
 class PrefService;
 class PrefServiceSyncable;
@@ -56,6 +57,7 @@ scoped_ptr<PrefServiceSyncable> CreateProfilePrefs(
     base::SequencedTaskRunner* pref_io_task_runner,
     policy::PolicyService* policy_service,
     ManagedUserSettingsService* managed_user_settings,
+    scoped_ptr<PrefHashStore> pref_hash_store,
     const scoped_refptr<PrefStore>& extension_prefs,
     const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry,
     bool async);

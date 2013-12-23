@@ -5,12 +5,15 @@
 #include "chrome/service/service_process_prefs.h"
 
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/prefs/pref_filter.h"
 #include "base/values.h"
 
 ServiceProcessPrefs::ServiceProcessPrefs(
     const base::FilePath& pref_filename,
     base::SequencedTaskRunner* task_runner)
-    : prefs_(new JsonPrefStore(pref_filename, task_runner)) {
+    : prefs_(new JsonPrefStore(pref_filename,
+                               task_runner,
+                               scoped_ptr<PrefFilter>())) {
 }
 
 ServiceProcessPrefs::~ServiceProcessPrefs() {}
