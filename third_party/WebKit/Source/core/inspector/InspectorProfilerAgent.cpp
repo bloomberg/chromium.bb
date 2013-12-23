@@ -139,8 +139,6 @@ void InspectorProfilerAgent::consoleProfileEnd(const String& title)
     if (!profile)
         return;
     RefPtr<TypeBuilder::Debugger::Location> location = currentDebugLocation();
-    if (!m_keepAliveProfile)
-        m_keepAliveProfile = profile;
     m_frontend->consoleProfileFinished(id, location, createCPUProfile(*profile), resolvedTitle.isNull() ? 0 : &resolvedTitle);
 }
 
@@ -158,11 +156,10 @@ void InspectorProfilerAgent::doEnable()
 void InspectorProfilerAgent::disable(ErrorString*)
 {
     for (Vector<ProfileDescriptor>::reverse_iterator it = m_startedProfiles.rbegin(); it != m_startedProfiles.rend(); ++it)
-        m_keepAliveProfile = ScriptProfiler::stop(it->m_id);
+        ScriptProfiler::stop(it->m_id);
     m_startedProfiles.clear();
     stop(0, 0);
 
-    m_keepAliveProfile.clear();
     m_instrumentingAgents->setInspectorProfilerAgent(0);
     m_state->setBoolean(ProfilerAgentState::profilerEnabled, false);
 }
@@ -240,13 +237,10 @@ void InspectorProfilerAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::
         m_overlay->finishedRecordingProfile();
     RefPtr<ScriptProfile> scriptProfile = ScriptProfiler::stop(m_frontendInitiatedProfileId);
     m_frontendInitiatedProfileId = String();
-    if (scriptProfile && profile) {
+    if (scriptProfile && profile)
         *profile = createCPUProfile(*scriptProfile);
-        if (!m_keepAliveProfile)
-            m_keepAliveProfile = scriptProfile;
-    } else if (errorString) {
+    else if (errorString)
         *errorString = "Profile wasn't found";
-    }
     m_state->setBoolean(ProfilerAgentState::userInitiatedProfiling, false);
 }
 

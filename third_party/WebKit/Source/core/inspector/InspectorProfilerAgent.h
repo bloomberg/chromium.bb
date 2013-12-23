@@ -83,9 +83,6 @@ private:
 
     InjectedScriptManager* m_injectedScriptManager;
     InspectorFrontend::Profiler* m_frontend;
-    // This is a temporary workaround to make sure v8 doesn't stop profiling when
-    // last finished profile is deleted (we keep at least one finished profile alive).
-    RefPtr<ScriptProfile> m_keepAliveProfile;
     bool m_recordingCPUProfile;
     class ProfileDescriptor;
     Vector<ProfileDescriptor> m_startedProfiles;
