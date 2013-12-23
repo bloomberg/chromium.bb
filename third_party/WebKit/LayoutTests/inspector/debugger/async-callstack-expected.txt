@@ -37,7 +37,7 @@ Call stack:
 
 Call stack:
     0) imageErrorHandler (async-callstack.html:71)
-    1) onerror (async-callstack.html:124)
+    1) onerror (async-callstack.html:93)
 
 Call stack:
     0) imageErrorHandler (async-callstack.html:71)

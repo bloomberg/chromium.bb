@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2010 Apple Inc. All rights reserved.
- * Copyright (C) 2010-2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -743,6 +743,12 @@ void InspectorDebuggerAgent::didHandleEvent()
     if (m_asyncCallStackTracker.isEnabled())
         m_asyncCallStackTracker.didFireAsyncCall();
     cancelPauseOnNextStatement();
+}
+
+void InspectorDebuggerAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderClient*, const AtomicString&, const KURL&, bool async, PassRefPtr<FormData>, const HTTPHeaderMap&, bool)
+{
+    if (m_asyncCallStackTracker.isEnabled() && async)
+        m_asyncCallStackTracker.willLoadXHR(xhr, scriptDebugServer().currentCallFrames());
 }
 
 void InspectorDebuggerAgent::pause(ErrorString*)

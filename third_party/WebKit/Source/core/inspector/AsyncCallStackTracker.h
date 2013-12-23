@@ -44,6 +44,7 @@ namespace WebCore {
 class EventListener;
 class EventTarget;
 class ExecutionContext;
+class XMLHttpRequest;
 
 class AsyncCallStackTracker {
     WTF_MAKE_NONCOPYABLE(AsyncCallStackTracker);
@@ -90,12 +91,17 @@ public:
     void didRemoveAllEventListeners(EventTarget*);
     void willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
 
+    void willLoadXHR(XMLHttpRequest*, const ScriptValue& callFrames);
+
     void didFireAsyncCall();
     void clear();
 
 private:
+    void willHandleXHREvent(XMLHttpRequest*, EventTarget*, const AtomicString& eventType);
+
     PassRefPtr<AsyncCallChain> createAsyncCallChain(const String& description, const ScriptValue& callFrames);
     void setCurrentAsyncCallChain(PassRefPtr<AsyncCallChain>);
+    void clearCurrentAsyncCallChain();
     static void ensureMaxAsyncCallChainDepth(AsyncCallChain*, unsigned);
     static bool validateCallFrames(const ScriptValue& callFrames);
 

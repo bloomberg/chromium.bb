@@ -50,16 +50,21 @@ namespace WebCore {
 class Document;
 class EventListener;
 class EventTarget;
+class FormData;
+class HTTPHeaderMap;
 class InjectedScriptManager;
 class InspectorFrontend;
 class InstrumentingAgents;
 class JSONObject;
+class KURL;
 class ScriptArguments;
 class ScriptCallStack;
 class ScriptDebugServer;
 class ScriptRegexp;
 class ScriptSourceCode;
 class ScriptValue;
+class ThreadableLoaderClient;
+class XMLHttpRequest;
 
 typedef String ErrorString;
 
@@ -145,6 +150,7 @@ public:
     void didRemoveAllEventListeners(EventTarget*);
     void willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
     void didHandleEvent();
+    void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     virtual void scriptExecutionBlockedByCSP(const String& directiveText);

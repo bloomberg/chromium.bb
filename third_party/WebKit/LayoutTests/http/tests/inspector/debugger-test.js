@@ -83,6 +83,38 @@ InspectorTest.runTestFunctionAndWaitUntilPaused = function(callback)
     InspectorTest.waitUntilPaused(callback);
 };
 
+InspectorTest.runAsyncCallStacksTest = function(totalDebuggerStatements, maxAsyncCallStackDepth)
+{
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
+    }
+
+    var step = 0;
+    var callStacksOutput = [];
+    function didPaused(callFrames, reason, breakpointIds, asyncStackTrace)
+    {
+        ++step;
+        callStacksOutput.push(InspectorTest.captureStackTraceIntoString(callFrames, asyncStackTrace) + "\n");
+        if (step < totalDebuggerStatements) {
+            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPaused));
+        } else {
+            InspectorTest.addResult("Captured call stacks in no particular order:");
+            callStacksOutput.sort();
+            InspectorTest.addResults(callStacksOutput);
+            InspectorTest.completeDebuggerTest();
+        }
+    }
+};
+
 InspectorTest.waitUntilPausedNextTime = function(callback)
 {
     InspectorTest._waitUntilPausedCallback = InspectorTest.safeWrap(callback);
@@ -122,6 +154,12 @@ InspectorTest.resumeExecution = function(callback)
 
 InspectorTest.captureStackTrace = function(callFrames, asyncStackTrace, options)
 {
+    InspectorTest.addResult(InspectorTest.captureStackTraceIntoString(callFrames, asyncStackTrace, options));
+};
+
+InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace, options)
+{
+    var results = [];
     options = options || {};
 
     function printCallFrames(callFrames)
@@ -139,22 +177,23 @@ InspectorTest.captureStackTrace = function(callFrames, asyncStackTrace, options)
                 lineNumber = "(line number)";
             }
             var s = "    " + i + ") " + frame.functionName + " (" + url + (options.dropLineNumbers ? "" : ":" + lineNumber) + ")";
-            InspectorTest.addResult(s);
+            results.push(s);
             if (options.printReturnValue && frame.returnValue)
-                InspectorTest.addResult("       <return>: " + frame.returnValue.description);
+                results.push("       <return>: " + frame.returnValue.description);
         }
     }
 
-    InspectorTest.addResult("Call stack:");
+    results.push("Call stack:");
     printCallFrames(callFrames);
 
     while (asyncStackTrace) {
-        InspectorTest.addResult("    [" + (asyncStackTrace.description || "Async Call") + "]");
+        results.push("    [" + (asyncStackTrace.description || "Async Call") + "]");
         printCallFrames(asyncStackTrace.callFrames);
-        if (asyncStackTrace.callFrames[0].functionName === "testFunction")
+        if (asyncStackTrace.callFrames.peekLast().functionName === "testFunction")
             break;
         asyncStackTrace = asyncStackTrace.asyncStackTrace;
     }
+    return results.join("\n");
 };
 
 InspectorTest.dumpSourceFrameContents = function(sourceFrame)

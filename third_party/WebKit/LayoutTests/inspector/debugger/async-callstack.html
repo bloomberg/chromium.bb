@@ -80,38 +80,7 @@ var test = function()
 {
     var totalDebuggerStatements = 10;
     var maxAsyncCallStackDepth = 4;
-
-    InspectorTest.setQuiet(true);
-    InspectorTest.startDebuggerTest(step1);
-
-    function step1()
-    {
-        DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
-    }
-
-    function step2()
-    {
-        InspectorTest.runTestFunctionAndWaitUntilPaused(didPaused);
-    }
-
-    var step = 0;
-    var callStacksOutput = [];
-    function didPaused(callFrames, reason, breakpointIds, asyncStackTrace)
-    {
-        ++step;
-        InspectorTest.beginResultBufferring();
-        InspectorTest.captureStackTrace(callFrames, asyncStackTrace);
-        callStacksOutput.push(InspectorTest.endResultBufferring());
-
-        if (step < totalDebuggerStatements) {
-            InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPaused));
-        } else {
-            InspectorTest.addResult("Captured call stacks in no particular order:");
-            callStacksOutput.sort();
-            InspectorTest.addResults(callStacksOutput);
-            InspectorTest.completeDebuggerTest();
-        }
-    }
+    InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
 }
 
 </script>

@@ -315,7 +315,7 @@ interface InspectorInstrumentation {
     [Resource]
     void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
 
-    [Resource]
+    [Debugger, Resource]
     void willLoadXHR(ExecutionContext*, XMLHttpRequest* xhr, ThreadableLoaderClient* client, const AtomicString& method, const KURL& url, bool async, PassRefPtr<FormData>, const HTTPHeaderMap& headers, bool includeCredentials);
 
     [Resource]

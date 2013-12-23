@@ -101,10 +101,6 @@ InspectorTest.check = function(passCondition, failureText)
 
 InspectorTest.addResult = function(text)
 {
-    if (InspectorTest._resultBufferring) {
-        InspectorTest._resultBufferringContent += text + "\n";
-        return;
-    }
     results.push(text);
     if (resultsSynchronized)
         InspectorTest.Output.addResult(text);
@@ -114,20 +110,6 @@ InspectorTest.addResult = function(text)
             InspectorTest.Output.addResult(results[i]);
         resultsSynchronized = true;
     }
-}
-
-InspectorTest.beginResultBufferring = function()
-{
-    InspectorTest._resultBufferring = true;
-    InspectorTest._resultBufferringContent = "";
-}
-
-InspectorTest.endResultBufferring = function()
-{
-    var result = InspectorTest._resultBufferringContent || "";
-    delete InspectorTest._resultBufferring;
-    delete InspectorTest._resultBufferringContent;
-    return result;
 }
 
 InspectorTest.addResults = function(textArray)
