@@ -32,6 +32,9 @@ namespace WebCore {
 
 namespace {
 
+// Allow up to 128 non-accounted discardable entries. Non-accounted entries are
+// entries that do not contribute to the memory usage of the cache.
+static const size_t maxNonAccountedDiscardableEntries = 128;
 // 32MB memory limit for cache.
 static const size_t defaultCacheLimitInBytes = 32768 * 1024;
 static ImageDecodingStore* s_instance = 0;
@@ -46,7 +49,8 @@ static void setInstance(ImageDecodingStore* imageDecodingStore)
 } // namespace
 
 ImageDecodingStore::ImageDecodingStore()
-    : m_cacheLimitInBytes(defaultCacheLimitInBytes)
+    : m_discardableEntriesCount(0)
+    , m_cacheLimitInBytes(defaultCacheLimitInBytes)
     , m_memoryUsageInBytes(0)
 {
 }
@@ -345,10 +349,12 @@ bool ImageDecodingStore::lockCacheEntryInternal(ImageCacheEntry* cacheEntry, con
 template<class T, class U, class V>
 void ImageDecodingStore::insertCacheInternal(PassOwnPtr<T> cacheEntry, U* cacheMap, V* identifierMap)
 {
-    // Usage of discardable memory is not counted because we want to use more
-    // than the cache limit allows. Cache limit only applies to non-discardable
-    // objects.
-    if (!cacheEntry->isDiscardable())
+    if (cacheEntry->isDiscardable()) {
+        ++m_discardableEntriesCount;
+        if (m_discardableEntriesCount <= maxNonAccountedDiscardableEntries)
+            cacheEntry->disableAccounting();
+    }
+    if (cacheEntry->isAccountingEnabled())
         incrementMemoryUsage(cacheEntry->memoryUsageInBytes());
 
     // m_orderedCacheList is used to support LRU operations to reorder cache
@@ -368,7 +374,11 @@ void ImageDecodingStore::insertCacheInternal(PassOwnPtr<T> cacheEntry, U* cacheM
 template<class T, class U, class V>
 void ImageDecodingStore::removeFromCacheInternal(const T* cacheEntry, U* cacheMap, V* identifierMap, Vector<OwnPtr<CacheEntry> >* deletionList)
 {
-    if (!cacheEntry->isDiscardable())
+    if (cacheEntry->isDiscardable()) {
+        ASSERT(m_discardableEntriesCount > 0);
+        --m_discardableEntriesCount;
+    }
+    if (cacheEntry->isAccountingEnabled())
         decrementMemoryUsage(cacheEntry->memoryUsageInBytes());
 
     // Remove entry from identifier map.

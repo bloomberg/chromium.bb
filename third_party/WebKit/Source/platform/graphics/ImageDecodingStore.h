@@ -161,6 +161,7 @@ private:
             : m_generator(generator)
             , m_useCount(useCount)
             , m_isDiscardable(isDiscardable)
+            , m_isAccountingEnabled(true)
             , m_prev(0)
             , m_next(0)
         {
@@ -177,6 +178,9 @@ private:
         void decrementUseCount() { --m_useCount; ASSERT(m_useCount >= 0); }
         bool isDiscardable() const { return m_isDiscardable; }
 
+        void disableAccounting() { m_isAccountingEnabled = false; }
+        bool isAccountingEnabled() const { return m_isAccountingEnabled; }
+
         // FIXME: getSafeSize() returns size in bytes truncated to a 32-bits integer.
         //        Find a way to get the size in 64-bits.
         virtual size_t memoryUsageInBytes() const = 0;
@@ -186,6 +190,7 @@ private:
         const ImageFrameGenerator* m_generator;
         int m_useCount;
         bool m_isDiscardable;
+        bool m_isAccountingEnabled;
 
     private:
         CacheEntry* m_prev;
@@ -316,6 +321,7 @@ private:
     typedef HashMap<const ImageFrameGenerator*, DecoderCacheKeySet> DecoderCacheKeyMap;
     DecoderCacheKeyMap m_decoderCacheKeyMap;
 
+    size_t m_discardableEntriesCount;
     size_t m_cacheLimitInBytes;
     size_t m_memoryUsageInBytes;
 
