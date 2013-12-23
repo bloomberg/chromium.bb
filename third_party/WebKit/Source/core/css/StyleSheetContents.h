@@ -86,7 +86,6 @@ public:
     bool hasFailedOrCanceledSubresources() const;
 
     KURL completeURL(const String& url) const;
-    void addSubresourceStyleURLs(ListHashSet<KURL>&);
 
     void setHasSyntacticallyValidCSSHeader(bool b) { m_hasSyntacticallyValidCSSHeader = b; }
     bool hasSyntacticallyValidCSSHeader() const { return m_hasSyntacticallyValidCSSHeader; }

@@ -415,31 +415,6 @@ KURL StyleSheetContents::completeURL(const String& url) const
     return CSSParser::completeURL(m_parserContext, url);
 }
 
-void StyleSheetContents::addSubresourceStyleURLs(ListHashSet<KURL>& urls)
-{
-    Deque<StyleSheetContents*> styleSheetQueue;
-    styleSheetQueue.append(this);
-
-    while (!styleSheetQueue.isEmpty()) {
-        StyleSheetContents* styleSheet = styleSheetQueue.takeFirst();
-
-        for (unsigned i = 0; i < styleSheet->m_importRules.size(); ++i) {
-            StyleRuleImport* importRule = styleSheet->m_importRules[i].get();
-            if (importRule->styleSheet()) {
-                styleSheetQueue.append(importRule->styleSheet());
-                addSubresourceURL(urls, importRule->styleSheet()->baseURL());
-            }
-        }
-        for (unsigned i = 0; i < styleSheet->m_childRules.size(); ++i) {
-            StyleRuleBase* rule = styleSheet->m_childRules[i].get();
-            if (rule->isStyleRule())
-                toStyleRule(rule)->properties()->addSubresourceStyleURLs(urls, this);
-            else if (rule->isFontFaceRule())
-                toStyleRuleFontFace(rule)->properties()->addSubresourceStyleURLs(urls, this);
-        }
-    }
-}
-
 static bool childRulesHaveFailedOrCanceledSubresources(const Vector<RefPtr<StyleRuleBase> >& rules)
 {
     for (unsigned i = 0; i < rules.size(); ++i) {

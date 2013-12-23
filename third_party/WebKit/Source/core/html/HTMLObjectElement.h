@@ -85,8 +85,6 @@ private:
 
     virtual RenderWidget* existingRenderWidget() const OVERRIDE;
 
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
-
     virtual void updateWidgetInternal() OVERRIDE;
     void updateDocNamedItem();
 

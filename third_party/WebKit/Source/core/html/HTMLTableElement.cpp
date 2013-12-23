@@ -573,11 +573,4 @@ const AtomicString& HTMLTableElement::summary() const
     return getAttribute(summaryAttr);
 }
 
-void HTMLTableElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    HTMLElement::addSubresourceAttributeURLs(urls);
-
-    addSubresourceURL(urls, document().completeURL(getAttribute(backgroundAttr)));
-}
-
 }

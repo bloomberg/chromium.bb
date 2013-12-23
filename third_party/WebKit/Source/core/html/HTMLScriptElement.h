@@ -55,8 +55,6 @@ private:
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
-
     virtual String sourceAttributeValue() const;
     virtual String charsetAttributeValue() const;
     virtual String typeAttributeValue() const;

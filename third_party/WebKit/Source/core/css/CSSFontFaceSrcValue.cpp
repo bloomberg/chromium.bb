@@ -81,12 +81,6 @@ String CSSFontFaceSrcValue::customCSSText() const
     return result.toString();
 }
 
-void CSSFontFaceSrcValue::addSubresourceStyleURLs(ListHashSet<KURL>& urls, const StyleSheetContents* styleSheet) const
-{
-    if (!isLocal())
-        addSubresourceURL(urls, styleSheet->completeURL(m_resource));
-}
-
 bool CSSFontFaceSrcValue::hasFailedOrCanceledSubresources() const
 {
     if (!m_fetched)

@@ -46,12 +46,6 @@ String CSSReflectValue::customSerializeResolvingVariables(const HashMap<AtomicSt
     return m_direction->customSerializeResolvingVariables(variables) + ' ' + m_offset->customSerializeResolvingVariables(variables);
 }
 
-void CSSReflectValue::addSubresourceStyleURLs(ListHashSet<KURL>& urls, const StyleSheetContents* styleSheet) const
-{
-    if (m_mask)
-        m_mask->addSubresourceStyleURLs(urls, styleSheet);
-}
-
 bool CSSReflectValue::equals(const CSSReflectValue& other) const
 {
     return m_direction == other.m_direction

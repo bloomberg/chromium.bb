@@ -777,8 +777,6 @@ protected:
 
     virtual void didMoveToNewDocument(Document& oldDocument);
 
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
-
     static void reattachWhitespaceSiblings(Text* start);
 
     void willBeDeletedFromDocument();
@@ -854,13 +852,6 @@ private:
         NodeRareDataBase* m_rareData;
     } m_data;
 };
-
-// Used in Node::addSubresourceAttributeURLs() and in addSubresourceStyleURLs()
-inline void addSubresourceURL(ListHashSet<KURL>& urls, const KURL& url)
-{
-    if (!url.isNull())
-        urls.add(url);
-}
 
 inline void Node::setParentOrShadowHostNode(ContainerNode* parent)
 {

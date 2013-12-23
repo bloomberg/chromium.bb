@@ -288,11 +288,4 @@ int HTMLBodyElement::scrollWidth()
     return view ? adjustForZoom(view->contentsWidth(), &document) : 0;
 }
 
-void HTMLBodyElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    HTMLElement::addSubresourceAttributeURLs(urls);
-
-    addSubresourceURL(urls, document().completeURL(getAttribute(backgroundAttr)));
-}
-
 } // namespace WebCore

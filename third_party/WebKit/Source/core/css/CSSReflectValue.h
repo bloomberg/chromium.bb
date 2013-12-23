@@ -49,8 +49,6 @@ public:
     String customCSSText() const;
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
 
-    void addSubresourceStyleURLs(ListHashSet<KURL>&, const StyleSheetContents*) const;
-
     bool equals(const CSSReflectValue&) const;
 
 private:

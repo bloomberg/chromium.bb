@@ -65,8 +65,6 @@ public:
 
     String customCSSText() const;
 
-    void addSubresourceStyleURLs(ListHashSet<KURL>&, const StyleSheetContents*) const;
-
     bool hasFailedOrCanceledSubresources() const;
 
     FontResource* fetch(Document*);

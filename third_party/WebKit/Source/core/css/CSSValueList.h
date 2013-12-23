@@ -64,8 +64,6 @@ public:
     bool equals(const CSSValue&) const;
     String customSerializeResolvingVariables(const HashMap<AtomicString, String>&) const;
 
-    void addSubresourceStyleURLs(ListHashSet<KURL>&, const StyleSheetContents*) const;
-
     bool hasFailedOrCanceledSubresources() const;
 
     PassRefPtr<CSSValueList> cloneForCSSOM() const;

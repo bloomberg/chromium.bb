@@ -66,8 +66,6 @@ private:
 
     virtual int scrollHeight();
     virtual int scrollWidth();
-
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLBodyElement, hasTagName(HTMLNames::bodyTag));

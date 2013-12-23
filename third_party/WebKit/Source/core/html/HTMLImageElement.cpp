@@ -358,15 +358,6 @@ bool HTMLImageElement::complete() const
     return m_imageLoader.imageComplete();
 }
 
-void HTMLImageElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    HTMLElement::addSubresourceAttributeURLs(urls);
-
-    addSubresourceURL(urls, src());
-    // FIXME: What about when the usemap attribute begins with "#"?
-    addSubresourceURL(urls, document().completeURL(getAttribute(usemapAttr)));
-}
-
 void HTMLImageElement::didMoveToNewDocument(Document& oldDocument)
 {
     m_imageLoader.elementDidMoveToNewDocument();

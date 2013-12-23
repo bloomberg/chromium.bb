@@ -193,13 +193,6 @@ const AtomicString HTMLEmbedElement::imageSourceURL() const
     return getAttribute(srcAttr);
 }
 
-void HTMLEmbedElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    HTMLPlugInElement::addSubresourceAttributeURLs(urls);
-
-    addSubresourceURL(urls, document().completeURL(getAttribute(srcAttr)));
-}
-
 bool HTMLEmbedElement::isInteractiveContent() const
 {
     return true;

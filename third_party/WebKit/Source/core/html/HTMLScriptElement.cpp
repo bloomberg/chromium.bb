@@ -112,13 +112,6 @@ KURL HTMLScriptElement::src() const
     return document().completeURL(sourceAttributeValue());
 }
 
-void HTMLScriptElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    HTMLElement::addSubresourceAttributeURLs(urls);
-
-    addSubresourceURL(urls, src());
-}
-
 String HTMLScriptElement::sourceAttributeValue() const
 {
     return getAttribute(srcAttr).string();

@@ -116,8 +116,6 @@ public:
 
     PassRefPtr<CSSValue> cloneForCSSOM() const;
 
-    void addSubresourceStyleURLs(ListHashSet<KURL>&, const StyleSheetContents*) const;
-
     bool hasFailedOrCanceledSubresources() const;
 
     bool equals(const CSSValue&) const;

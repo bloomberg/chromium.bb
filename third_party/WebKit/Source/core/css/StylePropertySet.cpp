@@ -388,13 +388,6 @@ void MutableStylePropertySet::mergeAndOverrideOnConflict(const StylePropertySet*
     }
 }
 
-void StylePropertySet::addSubresourceStyleURLs(ListHashSet<KURL>& urls, StyleSheetContents* contextStyleSheet) const
-{
-    unsigned size = propertyCount();
-    for (unsigned i = 0; i < size; ++i)
-        propertyAt(i).value()->addSubresourceStyleURLs(urls, contextStyleSheet);
-}
-
 bool StylePropertySet::hasFailedOrCanceledSubresources() const
 {
     unsigned size = propertyCount();

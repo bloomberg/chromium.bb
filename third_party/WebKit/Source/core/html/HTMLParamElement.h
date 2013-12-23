@@ -40,8 +40,6 @@ private:
     explicit HTMLParamElement(Document&);
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 };
 
 DEFINE_NODE_TYPE_CASTS(HTMLParamElement, hasTagName(HTMLNames::paramTag));

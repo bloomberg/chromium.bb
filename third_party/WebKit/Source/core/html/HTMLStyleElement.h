@@ -83,8 +83,6 @@ private:
     virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred);
     virtual void startLoadingDynamicSheet() { StyleElement::startLoadingDynamicSheet(document()); }
 
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
-
     virtual const AtomicString& media() const;
     virtual const AtomicString& type() const;
 

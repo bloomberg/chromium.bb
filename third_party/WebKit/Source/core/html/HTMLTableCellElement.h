@@ -59,8 +59,6 @@ private:
     virtual const StylePropertySet* additionalPresentationAttributeStyle() OVERRIDE;
 
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
-
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 };
 
 inline bool isHTMLTableCellElement(const Node& node)

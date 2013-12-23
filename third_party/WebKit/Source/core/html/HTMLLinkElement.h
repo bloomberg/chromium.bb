@@ -176,7 +176,6 @@ private:
     virtual bool sheetLoaded() OVERRIDE;
     virtual void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred) OVERRIDE;
     virtual void startLoadingDynamicSheet() OVERRIDE;
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const OVERRIDE;
     virtual void finishParsingChildren();
 
     // From LinkLoaderClient

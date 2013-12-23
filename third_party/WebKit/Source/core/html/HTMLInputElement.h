@@ -337,8 +337,6 @@ private:
     virtual bool isInRange() const;
     virtual bool isOutOfRange() const;
 
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
-
     bool isTextType() const;
     bool tooLong(const String&, NeedsToCheckDirtyFlag) const;
 

@@ -339,25 +339,6 @@ String HTMLLinkElement::iconSizes() const
     return m_sizes->toString();
 }
 
-void HTMLLinkElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    HTMLElement::addSubresourceAttributeURLs(urls);
-
-    // Favicons are handled by a special case in LegacyWebArchive::create()
-    if (m_relAttribute.iconType() != InvalidIcon)
-        return;
-
-    if (!m_relAttribute.isStyleSheet())
-        return;
-
-    // Append the URL of this link element.
-    addSubresourceURL(urls, href());
-
-    // Walk the URLs linked by the linked-to stylesheet.
-    if (CSSStyleSheet* styleSheet = const_cast<HTMLLinkElement*>(this)->sheet())
-        styleSheet->contents()->addSubresourceStyleURLs(urls);
-}
-
 DOMSettableTokenList* HTMLLinkElement::sizes() const
 {
     return m_sizes.get();

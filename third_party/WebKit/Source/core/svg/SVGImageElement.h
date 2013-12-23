@@ -58,7 +58,6 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*);
 
     virtual const AtomicString imageSourceURL() const OVERRIDE;
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 
     virtual bool haveLoadedRequiredResources();
 

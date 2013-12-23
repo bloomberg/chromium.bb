@@ -1442,13 +1442,6 @@ void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
     HTMLTextFormControlElement::didMoveToNewDocument(oldDocument);
 }
 
-void HTMLInputElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    HTMLTextFormControlElement::addSubresourceAttributeURLs(urls);
-
-    addSubresourceURL(urls, src());
-}
-
 bool HTMLInputElement::recalcWillValidate() const
 {
     return m_inputType->supportsValidation() && HTMLTextFormControlElement::recalcWillValidate();

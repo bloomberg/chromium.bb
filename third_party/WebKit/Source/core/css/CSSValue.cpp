@@ -106,21 +106,6 @@ CSSValue::Type CSSValue::cssValueType() const
     return CSS_CUSTOM;
 }
 
-void CSSValue::addSubresourceStyleURLs(ListHashSet<KURL>& urls, const StyleSheetContents* styleSheet) const
-{
-    // This should get called for internal instances only.
-    ASSERT(!isCSSOMSafe());
-
-    if (isPrimitiveValue())
-        toCSSPrimitiveValue(this)->addSubresourceStyleURLs(urls, styleSheet);
-    else if (isValueList())
-        toCSSValueList(this)->addSubresourceStyleURLs(urls, styleSheet);
-    else if (classType() == FontFaceSrcClass)
-        toCSSFontFaceSrcValue(this)->addSubresourceStyleURLs(urls, styleSheet);
-    else if (classType() == ReflectClass)
-        toCSSReflectValue(this)->addSubresourceStyleURLs(urls, styleSheet);
-}
-
 bool CSSValue::hasFailedOrCanceledSubresources() const
 {
     // This should get called for internal instances only.

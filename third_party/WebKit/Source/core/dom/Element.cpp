@@ -3575,13 +3575,6 @@ void Element::removeAllInlineStyleProperties()
     inlineStyleChanged();
 }
 
-void Element::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    ASSERT(isStyledElement());
-    if (const StylePropertySet* inlineStyle = elementData() ? elementData()->inlineStyle() : 0)
-        inlineStyle->addSubresourceStyleURLs(urls, document().elementSheet()->contents());
-}
-
 void Element::updatePresentationAttributeStyle()
 {
     // ShareableElementData doesn't store presentation attribute style, so make sure we have a UniqueElementData.

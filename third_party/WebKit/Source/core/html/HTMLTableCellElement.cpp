@@ -160,13 +160,6 @@ const AtomicString& HTMLTableCellElement::scope() const
     return getAttribute(scopeAttr);
 }
 
-void HTMLTableCellElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    HTMLTablePartElement::addSubresourceAttributeURLs(urls);
-
-    addSubresourceURL(urls, document().completeURL(getAttribute(backgroundAttr)));
-}
-
 HTMLTableCellElement* HTMLTableCellElement::cellAbove() const
 {
     RenderObject* cellRenderer = renderer();

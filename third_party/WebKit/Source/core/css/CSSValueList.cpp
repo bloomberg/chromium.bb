@@ -169,13 +169,6 @@ String CSSValueList::customSerializeResolvingVariables(const HashMap<AtomicStrin
     return result.toString();
 }
 
-void CSSValueList::addSubresourceStyleURLs(ListHashSet<KURL>& urls, const StyleSheetContents* styleSheet) const
-{
-    size_t size = m_values.size();
-    for (size_t i = 0; i < size; ++i)
-        m_values[i]->addSubresourceStyleURLs(urls, styleSheet);
-}
-
 bool CSSValueList::hasFailedOrCanceledSubresources() const
 {
     for (unsigned i = 0; i < m_values.size(); ++i) {

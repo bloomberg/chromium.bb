@@ -104,8 +104,6 @@ private:
 
     virtual bool draggable() const;
 
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
-
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual bool shouldRegisterAsNamedItem() const OVERRIDE { return true; }

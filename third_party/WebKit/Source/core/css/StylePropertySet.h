@@ -101,8 +101,6 @@ public:
 
     CSSParserMode cssParserMode() const { return static_cast<CSSParserMode>(m_cssParserMode); }
 
-    void addSubresourceStyleURLs(ListHashSet<KURL>&, StyleSheetContents* contextStyleSheet) const;
-
     PassRefPtr<MutableStylePropertySet> mutableCopy() const;
     PassRefPtr<ImmutableStylePropertySet> immutableCopyIfNeeded() const;
 

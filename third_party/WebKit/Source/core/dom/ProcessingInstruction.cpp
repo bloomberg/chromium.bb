@@ -221,14 +221,6 @@ void ProcessingInstruction::setCSSStyleSheet(PassRefPtr<CSSStyleSheet> sheet)
     sheet->setDisabled(m_alternate);
 }
 
-void ProcessingInstruction::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
-{
-    if (!sheet())
-        return;
-
-    addSubresourceURL(urls, sheet()->baseURL());
-}
-
 Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(ContainerNode* insertionPoint)
 {
     CharacterData::insertedInto(insertionPoint);

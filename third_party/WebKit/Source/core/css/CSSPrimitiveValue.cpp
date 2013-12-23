@@ -1127,12 +1127,6 @@ bool CSSPrimitiveValue::hasVariableReference() const
     return isVariableName();
 }
 
-void CSSPrimitiveValue::addSubresourceStyleURLs(ListHashSet<KURL>& urls, const StyleSheetContents* styleSheet) const
-{
-    if (m_primitiveUnitType == CSS_URI)
-        addSubresourceURL(urls, styleSheet->completeURL(m_value.string));
-}
-
 Length CSSPrimitiveValue::viewportPercentageLength()
 {
     ASSERT(isViewportPercentageLength());

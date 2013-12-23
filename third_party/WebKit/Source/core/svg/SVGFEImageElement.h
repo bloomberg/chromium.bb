@@ -53,7 +53,6 @@ private:
     virtual void svgAttributeChanged(const QualifiedName&);
     virtual void notifyFinished(Resource*);
 
-    virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
     virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*);
 
     void clearResourceReferences();
