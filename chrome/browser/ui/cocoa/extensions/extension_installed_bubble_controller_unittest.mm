@@ -86,20 +86,20 @@ class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
     PathService::Get(chrome::DIR_TEST_DATA, &path);
     path = path.AppendASCII("extensions").AppendASCII("dummy");
 
-    DictionaryValue extension_input_value;
+    base::DictionaryValue extension_input_value;
     extension_input_value.SetString(keys::kVersion, "1.0.0.0");
     if (type == extension_installed_bubble::kPageAction) {
       extension_input_value.SetString(keys::kName, "page action extension");
-      DictionaryValue* action = new DictionaryValue;
+      base::DictionaryValue* action = new base::DictionaryValue;
       action->SetString(keys::kPageActionId, "ExtensionActionId");
       action->SetString(keys::kPageActionDefaultTitle, "ExtensionActionTitle");
       action->SetString(keys::kPageActionDefaultIcon, "image1.png");
-      ListValue* action_list = new ListValue;
+      base::ListValue* action_list = new base::ListValue;
       action_list->Append(action);
       extension_input_value.Set(keys::kPageActions, action_list);
     } else if (type == extension_installed_bubble::kBrowserAction) {
       extension_input_value.SetString(keys::kName, "browser action extension");
-      DictionaryValue* browser_action = new DictionaryValue;
+      base::DictionaryValue* browser_action = new base::DictionaryValue;
       // An empty dictionary is enough to create a Browser Action.
       extension_input_value.Set(keys::kBrowserAction, browser_action);
     } else if (type == extension_installed_bubble::kApp) {

@@ -121,15 +121,18 @@ namespace internal_cloud_print_helpers {
 // parameters.
 bool GetPageSetupParameters(const std::string& json,
                             PrintMsg_Print_Params& parameters) {
-  scoped_ptr<Value> parsed_value(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> parsed_value(base::JSONReader::Read(json));
   DLOG_IF(ERROR, (!parsed_value.get() ||
-                  !parsed_value->IsType(Value::TYPE_DICTIONARY)))
+                  !parsed_value->IsType(base::Value::TYPE_DICTIONARY)))
       << "PageSetup call didn't have expected contents";
-  if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
+  if (!parsed_value.get() ||
+      !parsed_value->IsType(base::Value::TYPE_DICTIONARY)) {
     return false;
+  }
 
   bool result = true;
-  DictionaryValue* params = static_cast<DictionaryValue*>(parsed_value.get());
+  base::DictionaryValue* params =
+      static_cast<base::DictionaryValue*>(parsed_value.get());
   result &= params->GetDouble("dpi", &parameters.dpi);
   result &= params->GetDouble("min_shrink", &parameters.min_shrink);
   result &= params->GetDouble("max_shrink", &parameters.max_shrink);
@@ -151,7 +154,9 @@ base::string16 GetSwitchValueString16(const CommandLine& command_line,
 }
 
 void CloudPrintDataSenderHelper::CallJavascriptFunction(
-    const std::string& function_name, const Value& arg1, const Value& arg2) {
+    const std::string& function_name,
+    const base::Value& arg1,
+    const base::Value& arg2) {
   web_ui_->CallJavascriptFunction(function_name, arg1, arg2);
 }
 
@@ -334,7 +339,7 @@ void CloudPrintFlowHandler::Observe(
   }
 }
 
-void CloudPrintFlowHandler::HandleShowDebugger(const ListValue* args) {
+void CloudPrintFlowHandler::HandleShowDebugger(const base::ListValue* args) {
   ShowDebugger();
 }
 
@@ -359,7 +364,7 @@ CloudPrintFlowHandler::CreateCloudPrintDataSender() {
   return sender;
 }
 
-void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
+void CloudPrintFlowHandler::HandleSendPrintData(const base::ListValue* args) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // This will cancel any ReadPrintDataFile() or SendPrintDataFile()
   // requests in flight (this is anticipation of when setting page
@@ -374,7 +379,8 @@ void CloudPrintFlowHandler::HandleSendPrintData(const ListValue* args) {
   }
 }
 
-void CloudPrintFlowHandler::HandleSetPageParameters(const ListValue* args) {
+void CloudPrintFlowHandler::HandleSetPageParameters(
+    const base::ListValue* args) {
   std::string json;
   bool ret = args->GetString(0, &json);
   if (!ret || json.empty()) {

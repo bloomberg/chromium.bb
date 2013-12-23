@@ -1871,7 +1871,7 @@ void BrowserWindowGtk::SaveWindowPosition() {
   std::string window_name = chrome::GetWindowPlacementKey(browser_.get());
   DictionaryPrefUpdate update(browser_->profile()->GetPrefs(),
                               window_name.c_str());
-  DictionaryValue* window_preferences = update.Get();
+  base::DictionaryValue* window_preferences = update.Get();
   // Note that we store left/top for consistency with Windows, but that we
   // *don't* obey them; we only use them for computing width/height.  See
   // comments in SetGeometryHints().

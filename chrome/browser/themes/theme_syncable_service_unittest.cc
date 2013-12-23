@@ -148,9 +148,9 @@ scoped_refptr<extensions::Extension> MakeThemeExtension(
     const string& name,
     extensions::Manifest::Location location,
     const string& update_url) {
-  DictionaryValue source;
+  base::DictionaryValue source;
   source.SetString(extensions::manifest_keys::kName, name);
-  source.Set(extensions::manifest_keys::kTheme, new DictionaryValue());
+  source.Set(extensions::manifest_keys::kTheme, new base::DictionaryValue());
   source.SetString(extensions::manifest_keys::kUpdateURL, update_url);
   source.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
   string error;

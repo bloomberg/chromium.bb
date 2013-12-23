@@ -338,7 +338,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   } else {
     SettingInfo info;
     HostContentSettingsMap* map = profile()->GetHostContentSettingsMap();
-    scoped_ptr<Value> value(map->GetWebsiteSetting(
+    scoped_ptr<base::Value> value(map->GetWebsiteSetting(
         url, url, content_type(), std::string(), &info));
     setting = content_settings::ValueToContentSetting(value.get());
     setting_source = info.source;

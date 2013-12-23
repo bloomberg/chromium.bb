@@ -1883,7 +1883,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
         trackers_by_parent_and_title_, tracker_id, std::back_inserter(stack));
 
     FileTracker* tracker = tracker_by_id_[tracker_id];
-    base::DictionaryValue* file = new DictionaryValue;
+    base::DictionaryValue* file = new base::DictionaryValue;
 
     base::FilePath path = BuildDisplayPathForTracker(*tracker);
     file->SetString("path", path.AsUTF8Unsafe());
@@ -1893,7 +1893,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
                       FileKindToString(tracker->synced_details().file_kind()));
     }
 
-    base::DictionaryValue* details = new DictionaryValue;
+    base::DictionaryValue* details = new base::DictionaryValue;
     details->SetString("file_id", tracker->file_id());
     if (tracker->has_synced_details() &&
         tracker->synced_details().file_kind() == FILE_KIND_FILE)
@@ -1929,7 +1929,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
   scoped_ptr<base::ListValue> trackers(new base::ListValue);
 
   // Append the first element for metadata.
-  base::DictionaryValue* metadata = new DictionaryValue;
+  base::DictionaryValue* metadata = new base::DictionaryValue;
   const char *trackerKeys[] = {
     "tracker_id", "path", "file_id", "tracker_kind", "app_id",
     "active", "dirty", "folder_listing",
@@ -1937,7 +1937,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
   };
   std::vector<std::string> key_strings(
       trackerKeys, trackerKeys + ARRAYSIZE_UNSAFE(trackerKeys));
-  base::ListValue* keys = new ListValue;
+  base::ListValue* keys = new base::ListValue;
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Trackers");
   metadata->Set("keys", keys);
@@ -1947,7 +1947,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpTrackers() {
   for (TrackerByID::const_iterator itr = tracker_by_id_.begin();
        itr != tracker_by_id_.end(); ++itr) {
     const FileTracker& tracker = *itr->second;
-    base::DictionaryValue* dict = new DictionaryValue;
+    base::DictionaryValue* dict = new base::DictionaryValue;
     base::FilePath path = BuildDisplayPathForTracker(tracker);
     dict->SetString("tracker_id", base::Int64ToString(tracker.tracker_id()));
     dict->SetString("path", path.AsUTF8Unsafe());
@@ -1982,14 +1982,14 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
   scoped_ptr<base::ListValue> files(new base::ListValue);
 
   // Append the first element for metadata.
-  base::DictionaryValue* metadata = new DictionaryValue;
+  base::DictionaryValue* metadata = new base::DictionaryValue;
   const char *fileKeys[] = {
     "file_id", "title", "type", "md5", "etag", "missing",
     "change_id", "parents"
   };
   std::vector<std::string> key_strings(
       fileKeys, fileKeys + ARRAYSIZE_UNSAFE(fileKeys));
-  base::ListValue* keys = new ListValue;
+  base::ListValue* keys = new base::ListValue;
   keys->AppendStrings(key_strings);
   metadata->SetString("title", "Metadata");
   metadata->Set("keys", keys);
@@ -2000,7 +2000,7 @@ scoped_ptr<base::ListValue> MetadataDatabase::DumpMetadata() {
        itr != file_by_id_.end(); ++itr) {
     const FileMetadata& file = *itr->second;
 
-    base::DictionaryValue* dict = new DictionaryValue;
+    base::DictionaryValue* dict = new base::DictionaryValue;
     dict->SetString("file_id", file.file_id());
     if (file.has_details()) {
       const FileDetails& details = file.details();

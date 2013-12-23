@@ -99,7 +99,7 @@ TEST_F(BrowserWindowControllerTest, TestSaveWindowPosition) {
   ASSERT_TRUE(prefs != NULL);
 
   // Check to make sure there is no existing pref for window placement.
-  const DictionaryValue* browser_window_placement =
+  const base::DictionaryValue* browser_window_placement =
       prefs->GetDictionary(prefs::kBrowserWindowPlacement);
   ASSERT_TRUE(browser_window_placement);
   EXPECT_TRUE(browser_window_placement->empty());

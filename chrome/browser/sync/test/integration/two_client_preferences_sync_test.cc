@@ -226,9 +226,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest,
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(IntegerPrefMatches(prefs::kRestoreOnStartup));
 
-  ListValue urls;
-  urls.Append(Value::CreateStringValue("http://www.google.com/"));
-  urls.Append(Value::CreateStringValue("http://www.flickr.com/"));
+  base::ListValue urls;
+  urls.Append(base::Value::CreateStringValue("http://www.google.com/"));
+  urls.Append(base::Value::CreateStringValue("http://www.flickr.com/"));
   ChangeIntegerPref(0, prefs::kRestoreOnStartup, 4);
   ChangeListPref(0, prefs::kURLsToRestoreOnStartup, urls);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));

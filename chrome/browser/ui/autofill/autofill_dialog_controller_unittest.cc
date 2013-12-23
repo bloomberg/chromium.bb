@@ -1203,7 +1203,7 @@ TEST_F(AutofillDialogControllerTest, AcceptLegalDocuments) {
     // Now try it all over again with the location disclosure already accepted.
     // Nothing should change.
     Reset();
-    ListValue preexisting_list;
+    base::ListValue preexisting_list;
     preexisting_list.AppendString(kFakeEmail);
     g_browser_process->local_state()->Set(
         ::prefs::kAutofillDialogWalletLocationAcceptance,
@@ -1230,7 +1230,7 @@ TEST_F(AutofillDialogControllerTest, RejectLegalDocuments) {
     // Now try it all over again with the location disclosure already accepted.
     // Nothing should change.
     Reset();
-    ListValue preexisting_list;
+    base::ListValue preexisting_list;
     preexisting_list.AppendString(kFakeEmail);
     g_browser_process->local_state()->Set(
         ::prefs::kAutofillDialogWalletLocationAcceptance,
@@ -1249,7 +1249,7 @@ TEST_F(AutofillDialogControllerTest, AcceptLocationDisclosure) {
   EXPECT_TRUE(controller()->LegalDocumentLinks().empty());
   controller()->OnAccept();
 
-  const ListValue* list = g_browser_process->local_state()->GetList(
+  const base::ListValue* list = g_browser_process->local_state()->GetList(
       ::prefs::kAutofillDialogWalletLocationAcceptance);
   ASSERT_EQ(1U, list->GetSize());
   std::string accepted_username;
@@ -1264,7 +1264,7 @@ TEST_F(AutofillDialogControllerTest, AcceptLocationDisclosure) {
   ASSERT_TRUE(list->empty());
 
   std::string kOtherUsername("spouse@example.com");
-  ListValue preexisting_list;
+  base::ListValue preexisting_list;
   preexisting_list.AppendString(kOtherUsername);
   g_browser_process->local_state()->Set(
       ::prefs::kAutofillDialogWalletLocationAcceptance,

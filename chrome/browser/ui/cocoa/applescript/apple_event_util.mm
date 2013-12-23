@@ -64,7 +64,8 @@ NSAppleEventDescriptor* ValueToAppleEventDescriptor(const base::Value* value) {
       descriptor = [NSAppleEventDescriptor recordDescriptor];
       NSAppleEventDescriptor* userRecord = [NSAppleEventDescriptor
           listDescriptor];
-      for (DictionaryValue::Iterator iter(*dictionary_value); !iter.IsAtEnd();
+      for (base::DictionaryValue::Iterator iter(*dictionary_value);
+           !iter.IsAtEnd();
            iter.Advance()) {
         [userRecord insertDescriptor:[NSAppleEventDescriptor
             descriptorWithString:base::SysUTF8ToNSString(iter.key())]

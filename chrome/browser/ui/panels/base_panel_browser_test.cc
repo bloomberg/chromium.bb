@@ -554,12 +554,12 @@ NativePanelTesting* BasePanelBrowserTest::CreateNativePanelTesting(
 scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
     const base::FilePath::StringType& path,
     extensions::Manifest::Location location,
-    const DictionaryValue& extra_value) {
+    const base::DictionaryValue& extra_value) {
   extensions::ExtensionPrefs* extension_prefs =
       extensions::ExtensionPrefs::Get(browser()->profile());
   base::FilePath full_path = extension_prefs->install_directory().Append(path);
 
-  scoped_ptr<DictionaryValue> input_value(extra_value.DeepCopy());
+  scoped_ptr<base::DictionaryValue> input_value(extra_value.DeepCopy());
   input_value->SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
   input_value->SetString(extensions::manifest_keys::kName, "Sample Extension");
 

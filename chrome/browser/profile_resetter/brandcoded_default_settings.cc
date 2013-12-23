@@ -35,8 +35,8 @@ BrandcodedDefaultSettings::BrandcodedDefaultSettings(const std::string& prefs) {
 BrandcodedDefaultSettings::~BrandcodedDefaultSettings() {
 }
 
-scoped_ptr<ListValue> BrandcodedDefaultSettings::GetSearchProviderOverrides(
-    ) const {
+scoped_ptr<base::ListValue>
+BrandcodedDefaultSettings::GetSearchProviderOverrides() const {
   return ExtractList(prefs::kSearchProviderOverrides);
 }
 
@@ -68,7 +68,7 @@ bool BrandcodedDefaultSettings::GetExtensions(
       master_dictionary_->GetDictionary(
           installer::master_preferences::kExtensionsBlock,
           &extensions)) {
-    for (DictionaryValue::Iterator extension_id(*extensions);
+    for (base::DictionaryValue::Iterator extension_id(*extensions);
          !extension_id.IsAtEnd(); extension_id.Advance()) {
       if (extensions::Extension::IdIsValid(extension_id.key()))
         extension_ids->push_back(extension_id.key());
@@ -85,18 +85,18 @@ bool BrandcodedDefaultSettings::GetRestoreOnStartup(
                                         restore_on_startup);
 }
 
-scoped_ptr<ListValue> BrandcodedDefaultSettings::GetUrlsToRestoreOnStartup(
-    ) const {
+scoped_ptr<base::ListValue>
+BrandcodedDefaultSettings::GetUrlsToRestoreOnStartup() const {
   return ExtractList(prefs::kURLsToRestoreOnStartup);
 }
 
-scoped_ptr<ListValue> BrandcodedDefaultSettings::ExtractList(
+scoped_ptr<base::ListValue> BrandcodedDefaultSettings::ExtractList(
     const char* pref_name) const {
   const base::ListValue* value = NULL;
   if (master_dictionary_ &&
       master_dictionary_->GetList(pref_name, &value) &&
       !value->empty()) {
-    return scoped_ptr<ListValue>(value->DeepCopy());
+    return scoped_ptr<base::ListValue>(value->DeepCopy());
   }
-  return scoped_ptr<ListValue>();
+  return scoped_ptr<base::ListValue>();
 }

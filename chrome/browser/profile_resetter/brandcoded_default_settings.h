@@ -25,7 +25,7 @@ class BrandcodedDefaultSettings {
   // provided for given setting.
   // After the call return_value contains a list of default engines.
   // |return_value[0]| is default one.
-  scoped_ptr<ListValue> GetSearchProviderOverrides() const;
+  scoped_ptr<base::ListValue> GetSearchProviderOverrides() const;
 
   bool GetHomepage(std::string* homepage) const;
   bool GetHomepageIsNewTab(bool* homepage_is_ntp) const;
@@ -35,10 +35,10 @@ class BrandcodedDefaultSettings {
   bool GetExtensions(std::vector<std::string>* extension_ids) const;
 
   bool GetRestoreOnStartup(int* restore_on_startup) const;
-  scoped_ptr<ListValue> GetUrlsToRestoreOnStartup() const;
+  scoped_ptr<base::ListValue> GetUrlsToRestoreOnStartup() const;
 
  private:
-  scoped_ptr<ListValue> ExtractList(const char* pref_name) const;
+  scoped_ptr<base::ListValue> ExtractList(const char* pref_name) const;
 
   scoped_ptr<base::DictionaryValue> master_dictionary_;
 

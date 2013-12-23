@@ -905,7 +905,7 @@ size_t ProfileSyncServiceHarness::GetNumDatatypes() const {
 }
 
 std::string ProfileSyncServiceHarness::GetServiceStatus() {
-  scoped_ptr<DictionaryValue> value(
+  scoped_ptr<base::DictionaryValue> value(
       sync_ui_util::ConstructAboutInformation(service()));
   std::string service_status;
   base::JSONWriter::WriteWithOptions(value.get(),

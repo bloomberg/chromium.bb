@@ -162,7 +162,7 @@ void PeopleProvider::ProcessPeopleSearchResults(
   }
 
   ClearResults();
-  for (ListValue::const_iterator it = item_list->begin();
+  for (base::ListValue::const_iterator it = item_list->begin();
        it != item_list->end();
        ++it) {
     const base::DictionaryValue* dict;

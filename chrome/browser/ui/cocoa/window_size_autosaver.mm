@@ -54,7 +54,7 @@ const int kMinWindowHeight = 17;
 
 - (void)save:(NSNotification*)notification {
   DictionaryPrefUpdate update(prefService_, path_);
-  DictionaryValue* windowPrefs = update.Get();
+  base::DictionaryValue* windowPrefs = update.Get();
   NSRect frame = [window_ frame];
   if ([window_ styleMask] & NSResizableWindowMask) {
     // Save the origin of the window.
@@ -74,7 +74,7 @@ const int kMinWindowHeight = 17;
 
 - (void)restore {
   // Get the positioning information.
-  const DictionaryValue* windowPrefs = prefService_->GetDictionary(path_);
+  const base::DictionaryValue* windowPrefs = prefService_->GetDictionary(path_);
   if ([window_ styleMask] & NSResizableWindowMask) {
     int x1, x2, y1, y2;
     if (!windowPrefs->GetInteger("left", &x1) ||
@@ -86,7 +86,7 @@ const int kMinWindowHeight = 17;
     if (x2 - x1 < kMinWindowWidth || y2 - y1 < kMinWindowHeight) {
       // Windows should never be very small.
       DictionaryPrefUpdate update(prefService_, path_);
-      DictionaryValue* mutableWindowPrefs = update.Get();
+      base::DictionaryValue* mutableWindowPrefs = update.Get();
       mutableWindowPrefs->Remove("left", NULL);
       mutableWindowPrefs->Remove("right", NULL);
       mutableWindowPrefs->Remove("top", NULL);

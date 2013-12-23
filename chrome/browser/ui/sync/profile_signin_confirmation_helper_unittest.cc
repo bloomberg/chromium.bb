@@ -96,7 +96,7 @@ const base::FilePath::CharType kExtensionFilePath[] =
 static scoped_refptr<extensions::Extension> CreateExtension(
     const std::string& name,
     const std::string& id) {
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
   manifest.SetString(extensions::manifest_keys::kName, name);
   std::string error;

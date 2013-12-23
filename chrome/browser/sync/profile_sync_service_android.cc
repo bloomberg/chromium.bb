@@ -457,7 +457,7 @@ ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::GetAboutInfoForTest(
     JNIEnv* env, jobject) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<DictionaryValue> about_info =
+  scoped_ptr<base::DictionaryValue> about_info =
       sync_ui_util::ConstructAboutInformation(sync_service_);
   std::string about_info_json;
   base::JSONWriter::Write(about_info.get(), &about_info_json);

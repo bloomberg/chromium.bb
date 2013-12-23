@@ -25,8 +25,8 @@ IN_PROC_BROWSER_TEST_F(MultipleClientPreferencesSyncTest, Sanity) {
   DisableVerifier();
 
   for (int i = 0; i < num_clients(); ++i) {
-    ListValue urls;
-    urls.Append(Value::CreateStringValue(
+    base::ListValue urls;
+    urls.Append(base::Value::CreateStringValue(
         base::StringPrintf("http://www.google.com/%d", i)));
     ChangeListPref(i, prefs::kURLsToRestoreOnStartup, urls);
   }

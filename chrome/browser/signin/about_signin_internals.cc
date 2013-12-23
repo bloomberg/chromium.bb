@@ -128,7 +128,7 @@ void AboutSigninInternals::NotifyObservers() {
                     OnSigninStateChanged(signin_status_.ToValue()));
 }
 
-scoped_ptr<DictionaryValue> AboutSigninInternals::GetSigninStatus() {
+scoped_ptr<base::DictionaryValue> AboutSigninInternals::GetSigninStatus() {
   return signin_status_.ToValue().Pass();
 }
 

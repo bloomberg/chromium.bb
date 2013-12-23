@@ -79,7 +79,7 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
 
   DCHECK(prefs->FindPreference(window_name.c_str()));
   DictionaryPrefUpdate update(prefs, window_name.c_str());
-  DictionaryValue* window_preferences = update.Get();
+  base::DictionaryValue* window_preferences = update.Get();
   window_preferences->SetInteger("left", bounds.x());
   window_preferences->SetInteger("top", bounds.y());
   window_preferences->SetInteger("right", bounds.right());
@@ -104,7 +104,8 @@ bool ChromeViewsDelegate::GetSavedWindowPlacement(
     return false;
 
   DCHECK(prefs->FindPreference(window_name.c_str()));
-  const DictionaryValue* dictionary = prefs->GetDictionary(window_name.c_str());
+  const base::DictionaryValue* dictionary =
+      prefs->GetDictionary(window_name.c_str());
   int left, top, right, bottom;
   if (!dictionary || !dictionary->GetInteger("left", &left) ||
       !dictionary->GetInteger("top", &top) ||

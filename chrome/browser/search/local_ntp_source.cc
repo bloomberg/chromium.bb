@@ -81,7 +81,7 @@ void AddString(base::DictionaryValue* dictionary,
 }
 
 // Populates |translated_strings| dictionary for the local NTP.
-scoped_ptr<DictionaryValue> GetTranslatedStrings() {
+scoped_ptr<base::DictionaryValue> GetTranslatedStrings() {
   scoped_ptr<base::DictionaryValue> translated_strings(
       new base::DictionaryValue());
 

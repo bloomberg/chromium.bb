@@ -976,7 +976,7 @@ IN_PROC_BROWSER_TEST_F(StackedPanelBrowserTest,
   PanelManager* panel_manager = PanelManager::GetInstance();
 
   // Create 2 test extensions.
-  DictionaryValue empty_value;
+  base::DictionaryValue empty_value;
   scoped_refptr<extensions::Extension> extension1 =
       CreateExtension(FILE_PATH_LITERAL("TestExtension1"),
                       extensions::Manifest::INTERNAL, empty_value);

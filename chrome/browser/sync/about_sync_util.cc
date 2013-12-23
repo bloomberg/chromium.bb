@@ -27,10 +27,10 @@ namespace {
 // Creates a 'section' for display on about:sync, consisting of a title and a
 // list of fields.  Returns a pointer to the new section.  Note that
 // |parent_list|, not the caller, owns the newly added section.
-ListValue* AddSection(ListValue* parent_list,
-                      const std::string& title) {
-  DictionaryValue* section = new DictionaryValue();
-  ListValue* section_contents = new ListValue();
+base::ListValue* AddSection(base::ListValue* parent_list,
+                            const std::string& title) {
+  base::DictionaryValue* section = new base::DictionaryValue();
+  base::ListValue* section_contents = new base::ListValue();
   section->SetString("title", title);
   section->Set("data", section_contents);
   section->SetBoolean("is_sensitive", false);
@@ -40,10 +40,10 @@ ListValue* AddSection(ListValue* parent_list,
 
 // Same as AddSection, but for data that should be elided when dumped into text
 // form and posted in a public forum (e.g. unique identifiers).
-ListValue* AddSensitiveSection(ListValue* parent_list,
-                               const std::string& title) {
-  DictionaryValue* section = new DictionaryValue();
-  ListValue* section_contents = new ListValue();
+base::ListValue* AddSensitiveSection(base::ListValue* parent_list,
+                                     const std::string& title) {
+  base::DictionaryValue* section = new base::DictionaryValue();
+  base::ListValue* section_contents = new base::ListValue();
   section->SetString("title", title);
   section->Set("data", section_contents);
   section->SetBoolean("is_sensitive", true);
@@ -60,17 +60,18 @@ ListValue* AddSensitiveSection(ListValue* parent_list,
 
 class StringSyncStat {
  public:
-  StringSyncStat(ListValue* section, const std::string& key);
+  StringSyncStat(base::ListValue* section, const std::string& key);
   void SetValue(const std::string& value);
   void SetValue(const base::string16& value);
 
  private:
   // Owned by the |section| passed in during construction.
-  DictionaryValue* stat_;
+  base::DictionaryValue* stat_;
 };
 
-StringSyncStat::StringSyncStat(ListValue* section, const std::string& key) {
-  stat_ = new DictionaryValue();
+StringSyncStat::StringSyncStat(base::ListValue* section,
+                               const std::string& key) {
+  stat_ = new base::DictionaryValue();
   stat_->SetString("stat_name", key);
   stat_->SetString("stat_value", "Uninitialized");
   stat_->SetBoolean("is_valid", false);
@@ -89,16 +90,16 @@ void StringSyncStat::SetValue(const base::string16& value) {
 
 class BoolSyncStat {
  public:
-  BoolSyncStat(ListValue* section, const std::string& key);
+  BoolSyncStat(base::ListValue* section, const std::string& key);
   void SetValue(bool value);
 
  private:
   // Owned by the |section| passed in during construction.
-  DictionaryValue* stat_;
+  base::DictionaryValue* stat_;
 };
 
-BoolSyncStat::BoolSyncStat(ListValue* section, const std::string& key) {
-  stat_ = new DictionaryValue();
+BoolSyncStat::BoolSyncStat(base::ListValue* section, const std::string& key) {
+  stat_ = new base::DictionaryValue();
   stat_->SetString("stat_name", key);
   stat_->SetBoolean("stat_value", false);
   stat_->SetBoolean("is_valid", false);
@@ -112,16 +113,16 @@ void BoolSyncStat::SetValue(bool value) {
 
 class IntSyncStat {
  public:
-  IntSyncStat(ListValue* section, const std::string& key);
+  IntSyncStat(base::ListValue* section, const std::string& key);
   void SetValue(int value);
 
  private:
   // Owned by the |section| passed in during construction.
-  DictionaryValue* stat_;
+  base::DictionaryValue* stat_;
 };
 
-IntSyncStat::IntSyncStat(ListValue* section, const std::string& key) {
-  stat_ = new DictionaryValue();
+IntSyncStat::IntSyncStat(base::ListValue* section, const std::string& key) {
+  stat_ = new base::DictionaryValue();
   stat_->SetString("stat_name", key);
   stat_->SetInteger("stat_value", 0);
   stat_->SetBoolean("is_valid", false);
@@ -207,27 +208,30 @@ namespace sync_ui_util {
 // its contents.  Most of the message consists of simple fields in about:sync
 // which are grouped into sections and populated with the help of the SyncStat
 // classes defined above.
-scoped_ptr<DictionaryValue> ConstructAboutInformation(
+scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
     ProfileSyncService* service) {
-  scoped_ptr<DictionaryValue> about_info(new DictionaryValue());
-  ListValue* stats_list = new ListValue();  // 'details': A list of sections.
+  scoped_ptr<base::DictionaryValue> about_info(new base::DictionaryValue());
+
+  // 'details': A list of sections.
+  base::ListValue* stats_list = new base::ListValue();
 
   // The following lines define the sections and their fields.  For each field,
   // a class is instantiated, which allows us to reference the fields in
   // 'setter' code later on in this function.
-  ListValue* section_summary = AddSection(stats_list, "Summary");
+  base::ListValue* section_summary = AddSection(stats_list, "Summary");
   StringSyncStat summary_string(section_summary, "Summary");
 
-  ListValue* section_version = AddSection(stats_list, "Version Info");
+  base::ListValue* section_version = AddSection(stats_list, "Version Info");
   StringSyncStat client_version(section_version, "Client Version");
   StringSyncStat server_url(section_version, "Server URL");
 
-  ListValue* section_identity = AddSensitiveSection(stats_list, kIdentityTitle);
+  base::ListValue* section_identity =
+      AddSensitiveSection(stats_list, kIdentityTitle);
   StringSyncStat sync_id(section_identity, "Sync Client ID");
   StringSyncStat invalidator_id(section_identity, "Invalidator Client ID");
   StringSyncStat username(section_identity, "Username");
 
-  ListValue* section_credentials = AddSection(stats_list, "Credentials");
+  base::ListValue* section_credentials = AddSection(stats_list, "Credentials");
   StringSyncStat request_token_time(section_credentials, "Requested Token");
   StringSyncStat receive_token_time(section_credentials, "Received Token");
   StringSyncStat token_request_status(section_credentials,
@@ -235,7 +239,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   StringSyncStat next_token_request(section_credentials,
                                     "Next Token Request");
 
-  ListValue* section_local = AddSection(stats_list, "Local State");
+  base::ListValue* section_local = AddSection(stats_list, "Local State");
   StringSyncStat server_connection(section_local,
                                    "Server Connection");
   StringSyncStat last_synced(section_local, "Last Synced");
@@ -246,13 +250,13 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   BoolSyncStat is_syncing(section_local, "Syncing");
   BoolSyncStat is_token_available(section_local, "Sync Token Available");
 
-  ListValue* section_network = AddSection(stats_list, "Network");
+  base::ListValue* section_network = AddSection(stats_list, "Network");
   BoolSyncStat is_throttled(section_network, "Throttled");
   StringSyncStat retry_time(section_network, "Retry time (maybe stale)");
   BoolSyncStat are_notifications_enabled(section_network,
                                          "Notifications Enabled");
 
-  ListValue* section_encryption = AddSection(stats_list, "Encryption");
+  base::ListValue* section_encryption = AddSection(stats_list, "Encryption");
   BoolSyncStat is_using_explicit_passphrase(section_encryption,
                                             "Explicit Passphrase");
   BoolSyncStat is_passphrase_required(section_encryption,
@@ -270,14 +274,14 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   StringSyncStat passphrase_time(section_encryption,
                                  "Passphrase Time");
 
-  ListValue* section_last_session = AddSection(
+  base::ListValue* section_last_session = AddSection(
       stats_list, "Status from Last Completed Session");
   StringSyncStat session_source(section_last_session, "Sync Source");
   StringSyncStat get_key_result(section_last_session, "GetKey Step Result");
   StringSyncStat download_result(section_last_session, "Download Step Result");
   StringSyncStat commit_result(section_last_session, "Commit Step Result");
 
-  ListValue* section_counters = AddSection(stats_list, "Running Totals");
+  base::ListValue* section_counters = AddSection(stats_list, "Running Totals");
   IntSyncStat notifications_received(section_counters,
                                      "Notifications Received");
   IntSyncStat empty_get_updates(section_counters, "Cycles Without Updates");
@@ -298,7 +302,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   IntSyncStat conflicts_resolved_server_wins(section_counters,
                                       "Conflicts Resolved: Server Wins");
 
-  ListValue *section_this_cycle = AddSection(stats_list,
+  base::ListValue *section_this_cycle = AddSection(stats_list,
                                              "Transient Counters (this cycle)");
   IntSyncStat encryption_conflicts(section_this_cycle, "Encryption Conflicts");
   IntSyncStat hierarchy_conflicts(section_this_cycle, "Hierarchy Conflicts");
@@ -306,13 +310,13 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   IntSyncStat committed_items(section_this_cycle, "Committed Items");
   IntSyncStat updates_remaining(section_this_cycle, "Updates Remaining");
 
-  ListValue* section_that_cycle = AddSection(
+  base::ListValue* section_that_cycle = AddSection(
       stats_list, "Transient Counters (last cycle of last completed session)");
   IntSyncStat updates_downloaded(section_that_cycle, "Updates Downloaded");
   IntSyncStat committed_count(section_that_cycle, "Committed Count");
   IntSyncStat entries(section_that_cycle, "Entries");
 
-  ListValue* section_nudge_info = AddSection(
+  base::ListValue* section_nudge_info = AddSection(
       stats_list, "Nudge Source Counters");
   IntSyncStat nudge_source_notification(
       section_nudge_info, "Server Invalidations");
@@ -474,7 +478,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   // NOTE: We won't bother showing any of the following values unless
   // actionable_error_detected is set.
 
-  ListValue* actionable_error = new ListValue();
+  base::ListValue* actionable_error = new base::ListValue();
   about_info->Set("actionable_error", actionable_error);
 
   StringSyncStat error_type(actionable_error, "Error Type");

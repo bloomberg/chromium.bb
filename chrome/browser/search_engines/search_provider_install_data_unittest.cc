@@ -175,16 +175,16 @@ void SearchProviderInstallDataTest::SimulateDefaultSearchIsManaged(
   TestingPrefServiceSyncable* service =
       util_.profile()->GetTestingPrefService();
   service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
-                          Value::CreateBooleanValue(true));
+                          base::Value::CreateBooleanValue(true));
   service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,
-                          Value::CreateStringValue(url));
+                          base::Value::CreateStringValue(url));
   service->SetManagedPref(prefs::kDefaultSearchProviderName,
-                          Value::CreateStringValue("managed"));
+                          base::Value::CreateStringValue("managed"));
   // Clear the IDs that are not specified via policy.
   service->SetManagedPref(prefs::kDefaultSearchProviderID,
-                          new StringValue(std::string()));
+                          new base::StringValue(std::string()));
   service->SetManagedPref(prefs::kDefaultSearchProviderPrepopulateID,
-                          new StringValue(std::string()));
+                          new base::StringValue(std::string()));
   util_.model()->Observe(chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
                          content::NotificationService::AllSources(),
                          content::NotificationService::NoDetails());

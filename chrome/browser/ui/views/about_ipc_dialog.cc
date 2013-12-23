@@ -128,7 +128,7 @@ void CloseDialog() {
   PrefService* prefs = current_profile->GetPrefs();
   if (!prefs->FindPreference(prefs::kIpcDisabledMessages))
     return;
-  ListValue* list = prefs->GetMutableList(prefs::kIpcDisabledMessages);
+  base::ListValue* list = prefs->GetMutableList(prefs::kIpcDisabledMessages);
   list->Clear();
   for (std::set<int>::const_iterator itr = disabled_messages_.begin();
        itr != disabled_messages_.end();

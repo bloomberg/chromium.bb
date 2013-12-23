@@ -146,27 +146,27 @@ void TemplateURLServiceTestUtilBase::SetManagedDefaultSearchPreferences(
     const std::string& search_terms_replacement_key) {
   TestingPrefServiceSyncable* pref_service = profile()->GetTestingPrefService();
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderEnabled,
-                               Value::CreateBooleanValue(enabled));
+                               base::Value::CreateBooleanValue(enabled));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderName,
-                               Value::CreateStringValue(name));
+                               base::Value::CreateStringValue(name));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderKeyword,
-                               Value::CreateStringValue(keyword));
+                               base::Value::CreateStringValue(keyword));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderSearchURL,
-                               Value::CreateStringValue(search_url));
+                               base::Value::CreateStringValue(search_url));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderSuggestURL,
-                               Value::CreateStringValue(suggest_url));
+                               base::Value::CreateStringValue(suggest_url));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderIconURL,
-                               Value::CreateStringValue(icon_url));
+                               base::Value::CreateStringValue(icon_url));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderEncodings,
-                               Value::CreateStringValue(encodings));
+                               base::Value::CreateStringValue(encodings));
   scoped_ptr<base::ListValue> alternate_url_list(new base::ListValue());
   if (!alternate_url.empty())
-    alternate_url_list->Append(Value::CreateStringValue(alternate_url));
+    alternate_url_list->Append(base::Value::CreateStringValue(alternate_url));
   pref_service->SetManagedPref(prefs::kDefaultSearchProviderAlternateURLs,
                                alternate_url_list.release());
   pref_service->SetManagedPref(
       prefs::kDefaultSearchProviderSearchTermsReplacementKey,
-      Value::CreateStringValue(search_terms_replacement_key));
+      base::Value::CreateStringValue(search_terms_replacement_key));
   model()->Observe(chrome::NOTIFICATION_DEFAULT_SEARCH_POLICY_CHANGED,
                    content::NotificationService::AllSources(),
                    content::NotificationService::NoDetails());

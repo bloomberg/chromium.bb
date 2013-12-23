@@ -78,7 +78,7 @@ Utterance::Utterance(Profile* profile)
       can_enqueue_(false),
       char_index_(0),
       finished_(false) {
-  options_.reset(new DictionaryValue());
+  options_.reset(new base::DictionaryValue());
 }
 
 Utterance::~Utterance() {
@@ -103,7 +103,7 @@ void Utterance::Finish() {
   finished_ = true;
 }
 
-void Utterance::set_options(const Value* options) {
+void Utterance::set_options(const base::Value* options) {
   options_.reset(options->DeepCopy());
 }
 

@@ -528,7 +528,7 @@ void TaskManagerGtk::SetInitialDialogSize() {
                    G_CALLBACK(OnTreeViewRealizeThunk), this);
   // If we previously saved the dialog's bounds, use them.
   if (g_browser_process->local_state()) {
-    const DictionaryValue* placement_pref =
+    const base::DictionaryValue* placement_pref =
         g_browser_process->local_state()->GetDictionary(
             prefs::kTaskManagerWindowPlacement);
     int top = 0, left = 0, bottom = 1, right = 1;
@@ -813,7 +813,7 @@ void TaskManagerGtk::OnResponse(GtkWidget* dialog, int response_id) {
 
       DictionaryPrefUpdate update(g_browser_process->local_state(),
                                   prefs::kTaskManagerWindowPlacement);
-      DictionaryValue* placement_pref = update.Get();
+      base::DictionaryValue* placement_pref = update.Get();
       // Note that we store left/top for consistency with Windows, but that we
       // *don't* restore them.
       placement_pref->SetInteger("left", dialog_bounds.x());

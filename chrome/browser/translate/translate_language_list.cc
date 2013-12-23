@@ -148,18 +148,18 @@ void SetSupportedLanguages(const std::string& language_list,
   std::string languages_json = language_list.substr(
       kLanguageListCallbackNameLength,
       language_list.size() - kLanguageListCallbackNameLength - 1);
-  scoped_ptr<Value> json_value(
+  scoped_ptr<base::Value> json_value(
       base::JSONReader::Read(languages_json, base::JSON_ALLOW_TRAILING_COMMAS));
-  if (json_value == NULL || !json_value->IsType(Value::TYPE_DICTIONARY)) {
+  if (json_value == NULL || !json_value->IsType(base::Value::TYPE_DICTIONARY)) {
     NOTREACHED();
     return;
   }
   // The first level dictionary contains three sub-dict, first for source
   // languages and second for target languages, we want to use the target
   // languages. The last is for alpha languages.
-  DictionaryValue* language_dict =
-      static_cast<DictionaryValue*>(json_value.get());
-  DictionaryValue* target_languages = NULL;
+  base::DictionaryValue* language_dict =
+      static_cast<base::DictionaryValue*>(json_value.get());
+  base::DictionaryValue* target_languages = NULL;
   if (!language_dict->GetDictionary(TranslateLanguageList::kTargetLanguagesKey,
                                     &target_languages) ||
       target_languages == NULL) {
@@ -173,7 +173,7 @@ void SetSupportedLanguages(const std::string& language_list,
   target_language_set->clear();
   std::string message;
   // ... and replace it with the values we just fetched from the server.
-  for (DictionaryValue::Iterator iter(*target_languages);
+  for (base::DictionaryValue::Iterator iter(*target_languages);
        !iter.IsAtEnd();
        iter.Advance()) {
     const std::string& lang = iter.key();
@@ -190,7 +190,7 @@ void SetSupportedLanguages(const std::string& language_list,
   NotifyEvent(__LINE__, message);
 
   // Get the alpha languages. The "al" parameter could be abandoned.
-  DictionaryValue* alpha_languages = NULL;
+  base::DictionaryValue* alpha_languages = NULL;
   if (!language_dict->GetDictionary(TranslateLanguageList::kAlphaLanguagesKey,
                                     &alpha_languages) ||
       alpha_languages == NULL) {
@@ -200,7 +200,7 @@ void SetSupportedLanguages(const std::string& language_list,
   // We assume that the alpha languages are included in the above target
   // languages, and don't use UMA or NotifyEvent.
   alpha_language_set->clear();
-  for (DictionaryValue::Iterator iter(*alpha_languages);
+  for (base::DictionaryValue::Iterator iter(*alpha_languages);
        !iter.IsAtEnd(); iter.Advance()) {
     const std::string& lang = iter.key();
     if (!l10n_util::IsLocaleNameTranslated(lang.c_str(), locale))

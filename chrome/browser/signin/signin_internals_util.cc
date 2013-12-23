@@ -41,8 +41,8 @@ TokenInfo::TokenInfo() {
 TokenInfo::~TokenInfo() {
 }
 
-DictionaryValue* TokenInfo::ToValue() {
-  scoped_ptr<DictionaryValue> token_info(new DictionaryValue());
+base::DictionaryValue* TokenInfo::ToValue() {
+  scoped_ptr<base::DictionaryValue> token_info(new base::DictionaryValue());
   token_info->SetString("service", service);
   token_info->SetString("token", truncated_token);
   token_info->SetString("status", status);
@@ -97,9 +97,10 @@ std::string TokenPrefPath(const std::string& token_name) {
 
 namespace {
 
-ListValue* AddSection(ListValue* parent_list, const std::string& title) {
-  scoped_ptr<DictionaryValue> section(new DictionaryValue());
-  ListValue* section_contents = new ListValue();
+base::ListValue* AddSection(base::ListValue* parent_list,
+                            const std::string& title) {
+  scoped_ptr<base::DictionaryValue> section(new base::DictionaryValue());
+  base::ListValue* section_contents = new base::ListValue();
 
   section->SetString("title", title);
   section->Set("data", section_contents);
@@ -107,10 +108,10 @@ ListValue* AddSection(ListValue* parent_list, const std::string& title) {
   return section_contents;
 }
 
-void AddSectionEntry(ListValue* section_list,
+void AddSectionEntry(base::ListValue* section_list,
                      const std::string& field_name,
                      const std::string& field_val) {
-  scoped_ptr<DictionaryValue> entry(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue());
   entry->SetString("label", field_name);
   entry->SetString("value", field_val);
   section_list->Append(entry.release());
@@ -192,13 +193,13 @@ TimedSigninStatusValue SigninStatusFieldToLabel(
 
 } //  namespace
 
-scoped_ptr<DictionaryValue> SigninStatus::ToValue() {
-  scoped_ptr<DictionaryValue> signin_status(new DictionaryValue());
-  ListValue* signin_info = new ListValue();
+scoped_ptr<base::DictionaryValue> SigninStatus::ToValue() {
+  scoped_ptr<base::DictionaryValue> signin_status(new base::DictionaryValue());
+  base::ListValue* signin_info = new base::ListValue();
   signin_status->Set("signin_info", signin_info);
 
   // A summary of signin related info first.
-  ListValue* basic_info = AddSection(signin_info, "Basic Information");
+  base::ListValue* basic_info = AddSection(signin_info, "Basic Information");
   const std::string signin_status_string =
       untimed_signin_fields[USERNAME - UNTIMED_FIELDS_BEGIN].empty() ?
       "Not Signed In" : "Signed In";
@@ -214,7 +215,8 @@ scoped_ptr<DictionaryValue> SigninStatus::ToValue() {
       untimed_signin_fields[USERNAME - UNTIMED_FIELDS_BEGIN]);
 
   // Time and status information of the possible sign in types.
-  ListValue* detailed_info = AddSection(signin_info, "Last Signin Details");
+  base::ListValue* detailed_info =
+      AddSection(signin_info, "Last Signin Details");
   for (int i = TIMED_FIELDS_BEGIN; i < TIMED_FIELDS_END; ++i) {
     const std::string value_field =
         SigninStatusFieldToLabel(static_cast<TimedSigninStatusField>(i)).first;
@@ -228,12 +230,12 @@ scoped_ptr<DictionaryValue> SigninStatus::ToValue() {
   }
 
   // Token information for all services.
-  ListValue* token_info = new ListValue();
-  ListValue* token_details = AddSection(token_info, "Token Details");
+  base::ListValue* token_info = new base::ListValue();
+  base::ListValue* token_details = AddSection(token_info, "Token Details");
   signin_status->Set("token_info", token_info);
   for (std::map<std::string, TokenInfo>::iterator it = token_info_map.begin();
        it != token_info_map.end(); ++it) {
-    DictionaryValue* token_info = it->second.ToValue();
+    base::DictionaryValue* token_info = it->second.ToValue();
     token_details->Append(token_info);
   }
 

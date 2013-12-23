@@ -1378,7 +1378,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
 IN_PROC_BROWSER_TEST_F(PanelBrowserTest,
                        NonExtensionDomainPanelsCloseOnUninstall) {
   // Create a test extension.
-  DictionaryValue empty_value;
+  base::DictionaryValue empty_value;
   scoped_refptr<extensions::Extension> extension =
       CreateExtension(FILE_PATH_LITERAL("TestExtension"),
                       extensions::Manifest::INTERNAL, empty_value);

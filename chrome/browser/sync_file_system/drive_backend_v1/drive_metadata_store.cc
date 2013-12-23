@@ -781,12 +781,12 @@ scoped_ptr<base::ListValue> DriveMetadataStore::DumpFiles(const GURL& origin) {
     // Convert Drive specific metadata to Common File metadata object.
     const DriveMetadata& metadata = itr->second;
 
-    base::DictionaryValue* file = new DictionaryValue;
+    base::DictionaryValue* file = new base::DictionaryValue;
     file->SetString("path", itr->first.AsUTF8Unsafe());
     file->SetString("title", itr->first.BaseName().AsUTF8Unsafe());
     file->SetString("type", DriveTypeToString(metadata.type()));
 
-    base::DictionaryValue* details = new DictionaryValue;
+    base::DictionaryValue* details = new base::DictionaryValue;
     details->SetString("resource_id", metadata.resource_id());
     details->SetString("md5", metadata.md5_checksum());
     details->SetString("dirty", metadata.to_be_fetched() ? "true" : "false");

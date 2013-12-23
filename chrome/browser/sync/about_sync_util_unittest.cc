@@ -41,7 +41,8 @@ TEST(SyncUIUtilTestAbout, ConstructAboutInformationWithUnrecoverableErrorTest) {
   EXPECT_CALL(service, GetLastSyncedTimeString())
               .WillOnce(Return(str));
 
-  scoped_ptr<DictionaryValue> strings(ConstructAboutInformation(&service));
+  scoped_ptr<base::DictionaryValue> strings(
+      ConstructAboutInformation(&service));
 
   EXPECT_TRUE(strings->HasKey("unrecoverable_error_detected"));
 }

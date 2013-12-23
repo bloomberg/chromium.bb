@@ -189,7 +189,7 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
-      Value::CreateBooleanValue(false));
+      base::Value::CreateBooleanValue(false));
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
   ExpectDataTypeManagerCreation();
@@ -221,7 +221,7 @@ TEST_F(ProfileSyncServiceTest, SetupInProgress) {
 TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
-      Value::CreateBooleanValue(true));
+      base::Value::CreateBooleanValue(true));
   IssueTestTokens();
   CreateService(ProfileSyncService::AUTO_START);
   Initialize();
@@ -243,7 +243,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
 
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
-      Value::CreateBooleanValue(true));
+      base::Value::CreateBooleanValue(true));
 
   EXPECT_TRUE(service()->IsManaged());
   EXPECT_FALSE(service()->sync_initialized());

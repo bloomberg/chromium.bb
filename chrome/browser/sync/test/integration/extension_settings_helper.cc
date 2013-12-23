@@ -28,7 +28,7 @@ namespace extension_settings_helper {
 
 namespace {
 
-std::string ToJson(const Value& value) {
+std::string ToJson(const base::Value& value) {
   std::string json;
   base::JSONWriter::WriteWithOptions(&value,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
@@ -36,7 +36,7 @@ std::string ToJson(const Value& value) {
   return json;
 }
 
-void GetAllSettingsOnFileThread(DictionaryValue* out,
+void GetAllSettingsOnFileThread(base::DictionaryValue* out,
                                 base::WaitableEvent* signal,
                                 ValueStore* storage) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -44,10 +44,10 @@ void GetAllSettingsOnFileThread(DictionaryValue* out,
   signal->Signal();
 }
 
-scoped_ptr<DictionaryValue> GetAllSettings(
+scoped_ptr<base::DictionaryValue> GetAllSettings(
     Profile* profile, const std::string& id) {
   base::WaitableEvent signal(false, false);
-  scoped_ptr<DictionaryValue> settings(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
   profile->GetExtensionService()->settings_frontend()->RunWithStorage(
       id,
       extensions::settings_namespace::SYNC,
@@ -69,8 +69,10 @@ bool AreSettingsSame(Profile* expected_profile, Profile* actual_profile) {
   for (extensions::ExtensionSet::const_iterator it = extensions->begin();
       it != extensions->end(); ++it) {
     const std::string& id = (*it)->id();
-    scoped_ptr<DictionaryValue> expected(GetAllSettings(expected_profile, id));
-    scoped_ptr<DictionaryValue> actual(GetAllSettings(actual_profile, id));
+    scoped_ptr<base::DictionaryValue> expected(
+        GetAllSettings(expected_profile, id));
+    scoped_ptr<base::DictionaryValue> actual(
+        GetAllSettings(actual_profile, id));
     if (!expected->Equals(actual.get())) {
       ADD_FAILURE() <<
           "Expected " << ToJson(*expected) << " got " << ToJson(*actual);
@@ -81,7 +83,7 @@ bool AreSettingsSame(Profile* expected_profile, Profile* actual_profile) {
 }
 
 void SetSettingsOnFileThread(
-    const DictionaryValue* settings,
+    const base::DictionaryValue* settings,
     base::WaitableEvent* signal,
     ValueStore* storage) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
@@ -92,7 +94,9 @@ void SetSettingsOnFileThread(
 }  // namespace
 
 void SetExtensionSettings(
-    Profile* profile, const std::string& id, const DictionaryValue& settings) {
+    Profile* profile,
+    const std::string& id,
+    const base::DictionaryValue& settings) {
   base::WaitableEvent signal(false, false);
   profile->GetExtensionService()->settings_frontend()->RunWithStorage(
       id,
@@ -102,7 +106,7 @@ void SetExtensionSettings(
 }
 
 void SetExtensionSettingsForAllProfiles(
-    const std::string& id, const DictionaryValue& settings) {
+    const std::string& id, const base::DictionaryValue& settings) {
   for (int i = 0; i < test()->num_clients(); ++i)
     SetExtensionSettings(test()->GetProfile(i), id, settings);
   SetExtensionSettings(test()->verifier(), id, settings);

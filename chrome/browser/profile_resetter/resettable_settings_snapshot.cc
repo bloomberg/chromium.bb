@@ -37,10 +37,10 @@ const char kStartupTypePath[] = "startup_type";
 const char kStartupURLPath[] = "startup_urls";
 
 template <class StringType>
-void AddPair(ListValue* list,
+void AddPair(base::ListValue* list,
              const base::string16& key,
              const StringType& value) {
-  DictionaryValue* results = new DictionaryValue();
+  base::DictionaryValue* results = new base::DictionaryValue();
   results->SetString("key", key);
   results->SetString("value", value);
   list->Append(results);
@@ -113,10 +113,10 @@ int ResettableSettingsSnapshot::FindDifferentFields(
 
 std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
                                     int field_mask) {
-  DictionaryValue dict;
+  base::DictionaryValue dict;
 
   if (field_mask & ResettableSettingsSnapshot::STARTUP_MODE) {
-    ListValue* list = new ListValue;
+    base::ListValue* list = new base::ListValue;
     const std::vector<GURL>& urls = snapshot.startup_urls();
     for (std::vector<GURL>::const_iterator i = urls.begin();
          i != urls.end(); ++i)
@@ -134,7 +134,7 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
     dict.SetString(kDefaultSearchEnginePath, snapshot.dse_url());
 
   if (field_mask & ResettableSettingsSnapshot::EXTENSIONS) {
-    ListValue* list = new ListValue;
+    base::ListValue* list = new base::ListValue;
     const ResettableSettingsSnapshot::ExtensionList& extensions =
         snapshot.enabled_extensions();
     for (ResettableSettingsSnapshot::ExtensionList::const_iterator i =
@@ -180,9 +180,9 @@ void SendSettingsFeedback(const std::string& report,
   feedback_util::SendReport(feedback_data);
 }
 
-ListValue* GetReadableFeedback(Profile* profile) {
+base::ListValue* GetReadableFeedback(Profile* profile) {
   DCHECK(profile);
-  ListValue* list = new ListValue;
+  base::ListValue* list = new base::ListValue;
   AddPair(list, l10n_util::GetStringUTF16(IDS_RESET_PROFILE_SETTINGS_LOCALE),
           g_browser_process->GetApplicationLocale());
   AddPair(list,

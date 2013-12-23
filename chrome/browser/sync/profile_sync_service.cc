@@ -1840,8 +1840,8 @@ void ProfileSyncService::GetModelSafeRoutingInfo(
   }
 }
 
-Value* ProfileSyncService::GetTypeStatusMap() const {
-  scoped_ptr<ListValue> result(new ListValue());
+base::Value* ProfileSyncService::GetTypeStatusMap() const {
+  scoped_ptr<base::ListValue> result(new base::ListValue());
 
   if (!backend_.get() || !backend_initialized_) {
     return result.release();
@@ -1866,7 +1866,8 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
   SyncBackendHost::Status detailed_status = backend_->GetDetailedStatus();
   ModelTypeSet &throttled_types(detailed_status.throttled_types);
   ModelTypeSet registered = GetRegisteredDataTypes();
-  scoped_ptr<DictionaryValue> type_status_header(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> type_status_header(
+      new base::DictionaryValue());
 
   type_status_header->SetString("name", "Model Type");
   type_status_header->SetString("status", "header");
@@ -1875,11 +1876,11 @@ Value* ProfileSyncService::GetTypeStatusMap() const {
   type_status_header->SetString("num_live", "Live Entries");
   result->Append(type_status_header.release());
 
-  scoped_ptr<DictionaryValue> type_status;
+  scoped_ptr<base::DictionaryValue> type_status;
   for (ModelTypeSet::Iterator it = registered.First(); it.Good(); it.Inc()) {
     ModelType type = it.Get();
 
-    type_status.reset(new DictionaryValue());
+    type_status.reset(new base::DictionaryValue());
     type_status->SetString("name", ModelTypeToString(type));
 
     if (error_map.find(type) != error_map.end()) {

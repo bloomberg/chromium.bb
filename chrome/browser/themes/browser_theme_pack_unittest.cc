@@ -94,45 +94,46 @@ class BrowserThemePackTest : public ::testing::Test {
   }
 
   void LoadColorJSON(const std::string& json) {
-    scoped_ptr<Value> value(base::JSONReader::Read(json));
-    ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
-    LoadColorDictionary(static_cast<DictionaryValue*>(value.get()));
+    scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+    ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
+    LoadColorDictionary(static_cast<base::DictionaryValue*>(value.get()));
   }
 
-  void LoadColorDictionary(DictionaryValue* value) {
+  void LoadColorDictionary(base::DictionaryValue* value) {
     theme_pack_->BuildColorsFromJSON(value);
   }
 
   void LoadTintJSON(const std::string& json) {
-    scoped_ptr<Value> value(base::JSONReader::Read(json));
-    ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
-    LoadTintDictionary(static_cast<DictionaryValue*>(value.get()));
+    scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+    ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
+    LoadTintDictionary(static_cast<base::DictionaryValue*>(value.get()));
   }
 
-  void LoadTintDictionary(DictionaryValue* value) {
+  void LoadTintDictionary(base::DictionaryValue* value) {
     theme_pack_->BuildTintsFromJSON(value);
   }
 
   void LoadDisplayPropertiesJSON(const std::string& json) {
-    scoped_ptr<Value> value(base::JSONReader::Read(json));
-    ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
-    LoadDisplayPropertiesDictionary(static_cast<DictionaryValue*>(value.get()));
+    scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+    ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
+    LoadDisplayPropertiesDictionary(
+        static_cast<base::DictionaryValue*>(value.get()));
   }
 
-  void LoadDisplayPropertiesDictionary(DictionaryValue* value) {
+  void LoadDisplayPropertiesDictionary(base::DictionaryValue* value) {
     theme_pack_->BuildDisplayPropertiesFromJSON(value);
   }
 
   void ParseImageNamesJSON(const std::string& json,
                            TestFilePathMap* out_file_paths) {
-    scoped_ptr<Value> value(base::JSONReader::Read(json));
-    ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
-    ParseImageNamesDictionary(static_cast<DictionaryValue*>(value.get()),
+    scoped_ptr<base::Value> value(base::JSONReader::Read(json));
+    ASSERT_TRUE(value->IsType(base::Value::TYPE_DICTIONARY));
+    ParseImageNamesDictionary(static_cast<base::DictionaryValue*>(value.get()),
                               out_file_paths);
   }
 
   void ParseImageNamesDictionary(
-      DictionaryValue* value,
+      base::DictionaryValue* value,
       TestFilePathMap* out_file_paths) {
     theme_pack_->ParseImageNamesFromJSON(value, base::FilePath(),
                                          out_file_paths);
@@ -154,8 +155,9 @@ class BrowserThemePackTest : public ::testing::Test {
         extension_path.AppendASCII("manifest.json");
     std::string error;
     JSONFileValueSerializer serializer(manifest_path);
-    scoped_ptr<DictionaryValue> valid_value(
-        static_cast<DictionaryValue*>(serializer.Deserialize(NULL, &error)));
+    scoped_ptr<base::DictionaryValue> valid_value(
+        static_cast<base::DictionaryValue*>(
+            serializer.Deserialize(NULL, &error)));
     EXPECT_EQ("", error);
     ASSERT_TRUE(valid_value.get());
     scoped_refptr<Extension> extension(

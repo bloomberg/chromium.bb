@@ -137,8 +137,8 @@ class MockCloudPrintDataSenderHelper : public CloudPrintDataSenderHelper {
   // of expects/results.
   MockCloudPrintDataSenderHelper() : CloudPrintDataSenderHelper(NULL) {}
   MOCK_METHOD3(CallJavascriptFunction, void(const std::string&,
-                                            const Value& arg1,
-                                            const Value& arg2));
+                                            const base::Value& arg1,
+                                            const base::Value& arg2));
 };
 
 class CloudPrintURLTest : public testing::Test {
@@ -235,7 +235,7 @@ class CloudPrintDataSenderTest : public testing::Test {
 };
 
 TEST_F(CloudPrintDataSenderTest, CanSend) {
-  StringValue mock_job_title(kMockJobTitle);
+  base::StringValue mock_job_title(kMockJobTitle);
   EXPECT_CALL(*mock_helper_,
               CallJavascriptFunction(_, _, StringValueEq(&mock_job_title))).
       WillOnce(Return());

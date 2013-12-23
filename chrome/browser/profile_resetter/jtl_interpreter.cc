@@ -36,8 +36,8 @@ class ExecutionContext {
   // sentence is evaluated on.
   ExecutionContext(const jtl_foundation::Hasher* hasher,
                    const std::vector<Operation*>& sentence,
-                   const DictionaryValue* input,
-                   DictionaryValue* working_memory)
+                   const base::DictionaryValue* input,
+                   base::DictionaryValue* working_memory)
       : hasher_(hasher),
         sentence_(sentence),
         next_instruction_index_(0u),
@@ -69,7 +69,7 @@ class ExecutionContext {
 
   // Calculates the |hash| of a string, integer or double |value|, and returns
   // true. Returns false otherwise.
-  bool GetValueHash(const Value& value, std::string* hash) {
+  bool GetValueHash(const base::Value& value, std::string* hash) {
     DCHECK(hash);
     std::string value_as_string;
     int tmp_int = 0;
@@ -84,9 +84,9 @@ class ExecutionContext {
     return true;
   }
 
-  const Value* current_node() const { return stack_.back(); }
-  std::vector<const Value*>* stack() { return &stack_; }
-  DictionaryValue* working_memory() { return working_memory_; }
+  const base::Value* current_node() const { return stack_.back(); }
+  std::vector<const base::Value*>* stack() { return &stack_; }
+  base::DictionaryValue* working_memory() { return working_memory_; }
   bool error() const { return error_; }
 
  private:
@@ -99,9 +99,9 @@ class ExecutionContext {
   // A stack of Values, indicating a navigation path from the root node of
   // |input| (see constructor) to the current node on which the
   // sentence_[next_instruction_index_] is evaluated.
-  std::vector<const Value*> stack_;
+  std::vector<const base::Value*> stack_;
   // Memory into which values can be stored by the program.
-  DictionaryValue* working_memory_;
+  base::DictionaryValue* working_memory_;
   // Whether a runtime error occurred.
   bool error_;
   DISALLOW_COPY_AND_ASSIGN(ExecutionContext);
@@ -113,7 +113,7 @@ class NavigateOperation : public Operation {
       : hashed_key_(hashed_key) {}
   virtual ~NavigateOperation() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
-    const DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = NULL;
     if (!context->current_node()->GetAsDictionary(&dict)) {
       // Just ignore this node gracefully as this navigation is a dead end.
       // If this NavigateOperation occurred after a NavigateAny operation, those
@@ -121,7 +121,7 @@ class NavigateOperation : public Operation {
       // sentence on other nodes.
       return true;
     }
-    for (DictionaryValue::Iterator i(*dict); !i.IsAtEnd(); i.Advance()) {
+    for (base::DictionaryValue::Iterator i(*dict); !i.IsAtEnd(); i.Advance()) {
       if (context->GetHash(i.key()) != hashed_key_)
         continue;
       context->stack()->push_back(&i.value());
@@ -143,10 +143,11 @@ class NavigateAnyOperation : public Operation {
   NavigateAnyOperation() {}
   virtual ~NavigateAnyOperation() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
-    const DictionaryValue* dict = NULL;
-    const ListValue* list = NULL;
+    const base::DictionaryValue* dict = NULL;
+    const base::ListValue* list = NULL;
     if (context->current_node()->GetAsDictionary(&dict)) {
-      for (DictionaryValue::Iterator i(*dict); !i.IsAtEnd(); i.Advance()) {
+      for (base::DictionaryValue::Iterator i(*dict);
+           !i.IsAtEnd(); i.Advance()) {
         context->stack()->push_back(&i.value());
         bool continue_traversal = context->ContinueExecution();
         context->stack()->pop_back();
@@ -154,7 +155,8 @@ class NavigateAnyOperation : public Operation {
           return false;
       }
     } else if (context->current_node()->GetAsList(&list)) {
-      for (ListValue::const_iterator i = list->begin(); i != list->end(); ++i) {
+      for (base::ListValue::const_iterator i = list->begin();
+           i != list->end(); ++i) {
         context->stack()->push_back(*i);
         bool continue_traversal = context->ContinueExecution();
         context->stack()->pop_back();
@@ -176,7 +178,7 @@ class NavigateBackOperation : public Operation {
   NavigateBackOperation() {}
   virtual ~NavigateBackOperation() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
-    const Value* current_node = context->current_node();
+    const base::Value* current_node = context->current_node();
     context->stack()->pop_back();
     bool continue_traversal = context->ContinueExecution();
     context->stack()->push_back(current_node);
@@ -189,7 +191,7 @@ class NavigateBackOperation : public Operation {
 
 class StoreValue : public Operation {
  public:
-  StoreValue(const std::string& hashed_name, scoped_ptr<Value> value)
+  StoreValue(const std::string& hashed_name, scoped_ptr<base::Value> value)
       : hashed_name_(hashed_name),
         value_(value.Pass()) {
     DCHECK(IsStringUTF8(hashed_name));
@@ -203,15 +205,15 @@ class StoreValue : public Operation {
 
  private:
   std::string hashed_name_;
-  scoped_ptr<Value> value_;
+  scoped_ptr<base::Value> value_;
   DISALLOW_COPY_AND_ASSIGN(StoreValue);
 };
 
 class CompareStoredValue : public Operation {
  public:
   CompareStoredValue(const std::string& hashed_name,
-                     scoped_ptr<Value> value,
-                     scoped_ptr<Value> default_value)
+                     scoped_ptr<base::Value> value,
+                     scoped_ptr<base::Value> default_value)
       : hashed_name_(hashed_name),
         value_(value.Pass()),
         default_value_(default_value.Pass()) {
@@ -221,7 +223,7 @@ class CompareStoredValue : public Operation {
   }
   virtual ~CompareStoredValue() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
-    const Value* actual_value = NULL;
+    const base::Value* actual_value = NULL;
     if (!context->working_memory()->Get(hashed_name_, &actual_value))
       actual_value = default_value_.get();
     if (!value_->Equals(actual_value))
@@ -231,8 +233,8 @@ class CompareStoredValue : public Operation {
 
  private:
   std::string hashed_name_;
-  scoped_ptr<Value> value_;
-  scoped_ptr<Value> default_value_;
+  scoped_ptr<base::Value> value_;
+  scoped_ptr<base::Value> default_value_;
   DISALLOW_COPY_AND_ASSIGN(CompareStoredValue);
 };
 
@@ -281,7 +283,7 @@ class StoreNodeEffectiveSLD : public Operation {
         !GetEffectiveSLD(possibly_invalid_url, &effective_sld))
       return true;
     context->working_memory()->Set(
-        hashed_name_, new StringValue(context->GetHash(effective_sld)));
+        hashed_name_, new base::StringValue(context->GetHash(effective_sld)));
     return context->ContinueExecution();
   }
 
@@ -379,7 +381,7 @@ class CompareNodeToStored : public Operation {
       : hashed_name_(hashed_name) {}
   virtual ~CompareNodeToStored() {}
   virtual bool Execute(ExecutionContext* context) OVERRIDE {
-    const Value* stored_value = NULL;
+    const base::Value* stored_value = NULL;
     if (!context->working_memory()->Get(hashed_name_, &stored_value))
       return true;
     if (ExpectedTypeIsBooleanNotHashable) {
@@ -490,7 +492,7 @@ class Parser {
             return false;
           operators.push_back(new StoreValue(
               hashed_name,
-              scoped_ptr<Value>(new base::FundamentalValue(value))));
+              scoped_ptr<base::Value>(new base::FundamentalValue(value))));
           break;
         }
         case jtl_foundation::COMPARE_STORED_BOOL: {
@@ -505,8 +507,9 @@ class Parser {
             return false;
           operators.push_back(new CompareStoredValue(
               hashed_name,
-              scoped_ptr<Value>(new base::FundamentalValue(value)),
-              scoped_ptr<Value>(new base::FundamentalValue(default_value))));
+              scoped_ptr<base::Value>(new base::FundamentalValue(value)),
+              scoped_ptr<base::Value>(
+                  new base::FundamentalValue(default_value))));
           break;
         }
         case jtl_foundation::STORE_HASH: {
@@ -518,7 +521,7 @@ class Parser {
             return false;
           operators.push_back(new StoreValue(
               hashed_name,
-              scoped_ptr<Value>(new base::StringValue(hashed_value))));
+              scoped_ptr<base::Value>(new base::StringValue(hashed_value))));
           break;
         }
         case jtl_foundation::COMPARE_STORED_HASH: {
@@ -533,8 +536,9 @@ class Parser {
             return false;
           operators.push_back(new CompareStoredValue(
               hashed_name,
-              scoped_ptr<Value>(new base::StringValue(hashed_value)),
-              scoped_ptr<Value>(new base::StringValue(hashed_default_value))));
+              scoped_ptr<base::Value>(new base::StringValue(hashed_value)),
+              scoped_ptr<base::Value>(
+                  new base::StringValue(hashed_default_value))));
           break;
         }
         case jtl_foundation::STORE_NODE_BOOL: {
@@ -688,13 +692,13 @@ class Parser {
 JtlInterpreter::JtlInterpreter(
     const std::string& hasher_seed,
     const std::string& program,
-    const DictionaryValue* input)
+    const base::DictionaryValue* input)
     : hasher_seed_(hasher_seed),
       program_(program),
       input_(input),
-      working_memory_(new DictionaryValue),
+      working_memory_(new base::DictionaryValue),
       result_(OK) {
-  DCHECK(input->IsType(Value::TYPE_DICTIONARY));
+  DCHECK(input->IsType(base::Value::TYPE_DICTIONARY));
 }
 
 JtlInterpreter::~JtlInterpreter() {}

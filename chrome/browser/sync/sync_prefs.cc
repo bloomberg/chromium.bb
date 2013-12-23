@@ -371,7 +371,7 @@ void SyncPrefs::AcknowledgeSyncedTypes(syncer::ModelTypeSet types) {
             syncer::ModelTypeSetFromValue(
                 *pref_service_->GetList(prefs::kSyncAcknowledgedSyncTypes)));
 
-  scoped_ptr<ListValue> value(
+  scoped_ptr<base::ListValue> value(
       syncer::ModelTypeSetToValue(acknowledged_types));
   pref_service_->Set(prefs::kSyncAcknowledgedSyncTypes, *value);
 }

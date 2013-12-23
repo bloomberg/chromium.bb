@@ -73,7 +73,7 @@ struct TokenInfo {
   TokenInfo();
   ~TokenInfo();
 
-  DictionaryValue* ToValue();
+  base::DictionaryValue* ToValue();
 };
 
 // Associates a service name with its token information.
@@ -115,7 +115,7 @@ struct SigninStatus {
   //     [ List of {"name": "foo-name", "token" : "foo-token",
   //                 "status": "foo_stat", "time" : "foo_time"} elems]
   //  }
-  scoped_ptr<DictionaryValue> ToValue();
+  scoped_ptr<base::DictionaryValue> ToValue();
 };
 
 // An Observer class for authentication and token diagnostic information.

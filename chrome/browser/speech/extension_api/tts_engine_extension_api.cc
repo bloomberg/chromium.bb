@@ -133,12 +133,12 @@ void ExtensionTtsEngineSpeak(Utterance* utterance, const VoiceData& voice) {
   // utterance now.
   bool sends_end_event = voice.events.find(TTS_EVENT_END) != voice.events.end();
 
-  scoped_ptr<ListValue> args(new ListValue());
-  args->Set(0, Value::CreateStringValue(utterance->text()));
+  scoped_ptr<base::ListValue> args(new base::ListValue());
+  args->Set(0, base::Value::CreateStringValue(utterance->text()));
 
   // Pass through most options to the speech engine, but remove some
   // that are handled internally.
-  scoped_ptr<DictionaryValue> options(static_cast<DictionaryValue*>(
+  scoped_ptr<base::DictionaryValue> options(static_cast<base::DictionaryValue*>(
       utterance->options()->DeepCopy()));
   if (options->HasKey(constants::kRequiredEventTypesKey))
     options->Remove(constants::kRequiredEventTypesKey, NULL);
@@ -162,7 +162,7 @@ void ExtensionTtsEngineSpeak(Utterance* utterance, const VoiceData& voice) {
     options->SetString(constants::kLangKey, voice.lang);
 
   args->Set(1, options.release());
-  args->Set(2, Value::CreateIntegerValue(utterance->id()));
+  args->Set(2, base::Value::CreateIntegerValue(utterance->id()));
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnSpeak, args.Pass()));
@@ -172,7 +172,7 @@ void ExtensionTtsEngineSpeak(Utterance* utterance, const VoiceData& voice) {
 }
 
 void ExtensionTtsEngineStop(Utterance* utterance) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnStop, args.Pass()));
   event->restrict_to_browser_context = utterance->profile();
@@ -181,7 +181,7 @@ void ExtensionTtsEngineStop(Utterance* utterance) {
 }
 
 void ExtensionTtsEnginePause(Utterance* utterance) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnPause, args.Pass()));
   Profile* profile = utterance->profile();
@@ -193,7 +193,7 @@ void ExtensionTtsEnginePause(Utterance* utterance) {
 }
 
 void ExtensionTtsEngineResume(Utterance* utterance) {
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   scoped_ptr<extensions::Event> event(new extensions::Event(
       tts_engine_events::kOnResume, args.Pass()));
   Profile* profile = utterance->profile();
@@ -208,7 +208,7 @@ bool ExtensionTtsEngineSendTtsEventFunction::RunImpl() {
   int utterance_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &utterance_id));
 
-  DictionaryValue* event;
+  base::DictionaryValue* event;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &event));
 
   std::string event_type;

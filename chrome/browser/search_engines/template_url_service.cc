@@ -1626,7 +1626,7 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
   std::string keyword;
   std::string id_string;
   std::string prepopulate_id;
-  ListValue alternate_urls;
+  base::ListValue alternate_urls;
   std::string search_terms_replacement_key;
   if (t_url) {
     DCHECK_EQ(TemplateURL::NORMAL, t_url->GetType());
@@ -1735,7 +1735,7 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
   std::string id_string = prefs->GetString(prefs::kDefaultSearchProviderID);
   std::string prepopulate_id =
       prefs->GetString(prefs::kDefaultSearchProviderPrepopulateID);
-  const ListValue* alternate_urls =
+  const base::ListValue* alternate_urls =
       prefs->GetList(prefs::kDefaultSearchProviderAlternateURLs);
   std::string search_terms_replacement_key = prefs->GetString(
       prefs::kDefaultSearchProviderSearchTermsReplacementKey);

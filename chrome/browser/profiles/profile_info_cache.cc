@@ -180,9 +180,10 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
       user_data_dir_(user_data_dir) {
   // Populate the cache
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
-  DictionaryValue* cache = update.Get();
-  for (DictionaryValue::Iterator it(*cache); !it.IsAtEnd(); it.Advance()) {
-    DictionaryValue* info = NULL;
+  base::DictionaryValue* cache = update.Get();
+  for (base::DictionaryValue::Iterator it(*cache);
+       !it.IsAtEnd(); it.Advance()) {
+    base::DictionaryValue* info = NULL;
     cache->GetDictionaryWithoutPathExpansion(it.key(), &info);
     base::string16 name;
     info->GetString(kNameKey, &name);
@@ -209,9 +210,9 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
                                          const std::string& managed_user_id) {
   std::string key = CacheKeyFromProfilePath(profile_path);
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
-  DictionaryValue* cache = update.Get();
+  base::DictionaryValue* cache = update.Get();
 
-  scoped_ptr<DictionaryValue> info(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> info(new base::DictionaryValue);
   info->SetString(kNameKey, name);
   info->SetString(kUserNameKey, username);
   info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
@@ -255,7 +256,7 @@ void ProfileInfoCache::DeleteProfileFromCache(
                     OnProfileWillBeRemoved(profile_path));
 
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
-  DictionaryValue* cache = update.Get();
+  base::DictionaryValue* cache = update.Get();
   std::string key = CacheKeyFromProfilePath(profile_path);
   cache->Remove(key, NULL);
   sorted_keys_.erase(std::find(sorted_keys_.begin(), sorted_keys_.end(), key));
@@ -477,7 +478,8 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
 
 void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
                                                const base::string16& name) {
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   base::string16 current_name;
   info->GetString(kNameKey, &current_name);
   if (name == current_name)
@@ -503,7 +505,8 @@ void ProfileInfoCache::SetShortcutNameOfProfileAtIndex(
     const base::string16& shortcut_name) {
   if (shortcut_name == GetShortcutNameOfProfileAtIndex(index))
     return;
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kShortcutNameKey, shortcut_name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -515,7 +518,8 @@ void ProfileInfoCache::SetUserNameOfProfileAtIndex(
   if (user_name == GetUserNameOfProfileAtIndex(index))
     return;
 
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kUserNameKey, user_name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -523,7 +527,8 @@ void ProfileInfoCache::SetUserNameOfProfileAtIndex(
 
 void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
                                                      size_t icon_index) {
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(icon_index));
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -536,7 +541,8 @@ void ProfileInfoCache::SetAvatarIconOfProfileAtIndex(size_t index,
 
 void ProfileInfoCache::SetManagedUserIdOfProfileAtIndex(size_t index,
                                                         const std::string& id) {
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kManagedUserId, id);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -545,7 +551,8 @@ void ProfileInfoCache::SetManagedUserIdOfProfileAtIndex(size_t index,
 void ProfileInfoCache::SetLocalAuthCredentialsOfProfileAtIndex(
     size_t index,
     const std::string& credentials) {
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kAuthCredentialsKey, credentials);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -556,7 +563,8 @@ void ProfileInfoCache::SetBackgroundStatusOfProfileAtIndex(
     bool running_background_apps) {
   if (GetBackgroundStatusOfProfileAtIndex(index) == running_background_apps)
     return;
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kBackgroundAppsKey, running_background_apps);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -568,7 +576,8 @@ void ProfileInfoCache::SetGAIANameOfProfileAtIndex(size_t index,
     return;
 
   base::string16 old_display_name = GetNameOfProfileAtIndex(index);
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kGAIANameKey, name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -589,7 +598,8 @@ void ProfileInfoCache::SetGAIAGivenNameOfProfileAtIndex(
   if (name == GetGAIAGivenNameOfProfileAtIndex(index))
     return;
 
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kGAIAGivenNameKey, name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -601,7 +611,8 @@ void ProfileInfoCache::SetIsUsingGAIANameOfProfileAtIndex(size_t index,
     return;
 
   base::string16 old_display_name = GetNameOfProfileAtIndex(index);
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kUseGAIANameKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -660,7 +671,8 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
     }
   }
 
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetString(kGAIAPictureFileNameKey, new_file_name);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -672,7 +684,8 @@ void ProfileInfoCache::SetGAIAPictureOfProfileAtIndex(size_t index,
 
 void ProfileInfoCache::SetIsUsingGAIAPictureOfProfileAtIndex(size_t index,
                                                              bool value) {
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kUseGAIAPictureKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -689,7 +702,8 @@ void ProfileInfoCache::SetProfileSigninRequiredAtIndex(size_t index,
   if (value == ProfileIsSigninRequiredAtIndex(index))
     return;
 
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kSigninRequiredKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -699,7 +713,8 @@ void ProfileInfoCache::SetProfileIsEphemeralAtIndex(size_t index, bool value) {
   if (value == ProfileIsEphemeralAtIndex(index))
     return;
 
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kProfileIsEphemeral, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -742,7 +757,8 @@ bool ProfileInfoCache::GetHasMigratedToGAIAInfoOfProfileAtIndex(
 
 void ProfileInfoCache::SetHasMigratedToGAIAInfoOfProfileAtIndex(
     size_t index, bool value) {
-  scoped_ptr<DictionaryValue> info(GetInfoForProfileAtIndex(index)->DeepCopy());
+  scoped_ptr<base::DictionaryValue> info(
+      GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kHasMigratedToGAIAInfoKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
@@ -840,20 +856,20 @@ bool ProfileInfoCache::IsDefaultAvatarIconUrl(const std::string& url,
   return false;
 }
 
-const DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
+const base::DictionaryValue* ProfileInfoCache::GetInfoForProfileAtIndex(
     size_t index) const {
   DCHECK_LT(index, GetNumberOfProfiles());
-  const DictionaryValue* cache =
+  const base::DictionaryValue* cache =
       prefs_->GetDictionary(prefs::kProfileInfoCache);
-  const DictionaryValue* info = NULL;
+  const base::DictionaryValue* info = NULL;
   cache->GetDictionaryWithoutPathExpansion(sorted_keys_[index], &info);
   return info;
 }
 
 void ProfileInfoCache::SetInfoForProfileAtIndex(size_t index,
-                                                DictionaryValue* info) {
+                                                base::DictionaryValue* info) {
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
-  DictionaryValue* cache = update.Get();
+  base::DictionaryValue* cache = update.Get();
   cache->SetWithoutPathExpansion(sorted_keys_[index], info);
 
   content::NotificationService::current()->Notify(
@@ -908,7 +924,7 @@ void ProfileInfoCache::UpdateSortForProfileIndex(size_t index) {
 std::vector<base::string16> ProfileInfoCache::GetProfileNames() {
   std::vector<base::string16> names;
   PrefService* local_state = g_browser_process->local_state();
-  const DictionaryValue* cache = local_state->GetDictionary(
+  const base::DictionaryValue* cache = local_state->GetDictionary(
       prefs::kProfileInfoCache);
   base::string16 name;
   for (base::DictionaryValue::Iterator it(*cache); !it.IsAtEnd();

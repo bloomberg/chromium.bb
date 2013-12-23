@@ -708,7 +708,7 @@ void ProfileManager::Observe(
     PrefService* local_state = g_browser_process->local_state();
     DCHECK(local_state);
     ListPrefUpdate update(local_state, prefs::kProfilesLastActive);
-    ListValue* profile_list = update.Get();
+    base::ListValue* profile_list = update.Get();
 
     profile_list->Clear();
 
@@ -724,7 +724,7 @@ void ProfileManager::Observe(
       if (!(*it)->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles) &&
           profile_paths.find(profile_path) == profile_paths.end()) {
         profile_paths.insert(profile_path);
-        profile_list->Append(new StringValue(profile_path));
+        profile_list->Append(new base::StringValue(profile_path));
       }
     }
   }

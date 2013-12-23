@@ -54,7 +54,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_FailsTypeCheck) {
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_POLICY_TYPE_ERROR,
                 ASCIIToUTF16(ConfigurationPolicyHandler::ValueTypeToString(
-                    Value::TYPE_INTEGER))),
+                    base::Value::TYPE_INTEGER))),
             errors().begin()->second);
 }
 

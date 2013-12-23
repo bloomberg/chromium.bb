@@ -173,7 +173,7 @@ class PDFUnsupportedFeatureInterstitial
  protected:
   // InterstitialPageDelegate implementation.
   virtual std::string GetHTMLContents() OVERRIDE {
-    DictionaryValue strings;
+    base::DictionaryValue strings;
     strings.SetString(
         "title",
         l10n_util::GetStringUTF16(IDS_READER_OUT_OF_DATE_BLOCKING_PAGE_TITLE));

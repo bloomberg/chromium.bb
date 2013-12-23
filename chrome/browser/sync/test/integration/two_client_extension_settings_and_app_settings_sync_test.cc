@@ -30,26 +30,26 @@ void MutateSomeSettings(
     const std::string& extension2) {
   {
     // Write to extension0 from profile 0 but not profile 1.
-    DictionaryValue settings;
+    base::DictionaryValue settings;
     settings.SetString("asdf", base::StringPrintf("asdfasdf-%d", seed));
     SetExtensionSettings(test()->verifier(),    extension0, settings);
     SetExtensionSettings(test()->GetProfile(0), extension0, settings);
   }
   {
     // Write the same data to extension1 from both profiles.
-    DictionaryValue settings;
+    base::DictionaryValue settings;
     settings.SetString("asdf", base::StringPrintf("asdfasdf-%d", seed));
     settings.SetString("qwer", base::StringPrintf("qwerqwer-%d", seed));
     SetExtensionSettingsForAllProfiles(extension1, settings);
   }
   {
     // Write different data to extension2 from each profile.
-    DictionaryValue settings0;
+    base::DictionaryValue settings0;
     settings0.SetString("zxcv", base::StringPrintf("zxcvzxcv-%d", seed));
     SetExtensionSettings(test()->verifier(),    extension2, settings0);
     SetExtensionSettings(test()->GetProfile(0), extension2, settings0);
 
-    DictionaryValue settings1;
+    base::DictionaryValue settings1;
     settings1.SetString("1324", base::StringPrintf("12341234-%d", seed));
     settings1.SetString("5687", base::StringPrintf("56785678-%d", seed));
     SetExtensionSettings(test()->verifier(),    extension2, settings1);
@@ -79,12 +79,12 @@ testing::AssertionResult StartWithSameSettingsTest(
     // Leave extension0 empty.
   }
   {
-    DictionaryValue settings;
+    base::DictionaryValue settings;
     settings.SetString("foo", "bar");
     SetExtensionSettingsForAllProfiles(extension1, settings);
   }
   {
-    DictionaryValue settings;
+    base::DictionaryValue settings;
     settings.SetString("foo", "bar");
     settings.SetString("baz", "qux");
     SetExtensionSettingsForAllProfiles(extension2, settings);
@@ -129,13 +129,13 @@ testing::AssertionResult StartWithDifferentSettingsTest(
     // results, so test (empty, empty).
   }
   {
-    DictionaryValue settings;
+    base::DictionaryValue settings;
     settings.SetString("foo", "bar");
     SetExtensionSettings(test()->verifier(), extension1, settings);
     SetExtensionSettings(test()->GetProfile(0), extension1, settings);
   }
   {
-    DictionaryValue settings;
+    base::DictionaryValue settings;
     settings.SetString("foo", "bar");
     settings.SetString("baz", "qux");
     SetExtensionSettings(test()->verifier(), extension2, settings);

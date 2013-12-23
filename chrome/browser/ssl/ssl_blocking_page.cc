@@ -196,7 +196,7 @@ SSLBlockingPage::~SSLBlockingPage() {
 }
 
 std::string SSLBlockingPage::GetHTMLContents() {
-  DictionaryValue strings;
+  base::DictionaryValue strings;
   int resource_id;
   if (overridable_ && !strict_enforcement_) {
     // Let's build the overridable error page.
@@ -416,7 +416,7 @@ void SSLBlockingPage::NotifyAllowCertificate() {
 
 // static
 void SSLBlockingPage::SetExtraInfo(
-    DictionaryValue* strings,
+    base::DictionaryValue* strings,
     const std::vector<base::string16>& extra_info) {
   DCHECK_LT(extra_info.size(), 5U);  // We allow 5 paragraphs max.
   const char* keys[5] = {

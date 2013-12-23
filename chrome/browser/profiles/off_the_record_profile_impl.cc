@@ -188,7 +188,7 @@ void OffTheRecordProfileImpl::UseSystemProxy() {
   const char kProxyBypassList[] = "bypass_list";
   const char kProxyPacUrl[] = "pac_url";
   DictionaryPrefUpdate update(prefs_, prefs::kProxy);
-  DictionaryValue* dict = update.Get();
+  base::DictionaryValue* dict = update.Get();
   dict->SetString(kProxyMode, ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
   dict->SetString(kProxyPacUrl, "");
   dict->SetString(kProxyServer, "");

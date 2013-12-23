@@ -24,59 +24,59 @@ namespace policy {
 const PolicyToPreferenceMapEntry kDefaultSearchPolicyMap[] = {
   { key::kDefaultSearchProviderEnabled,
     prefs::kDefaultSearchProviderEnabled,
-    Value::TYPE_BOOLEAN },
+    base::Value::TYPE_BOOLEAN },
   { key::kDefaultSearchProviderName,
     prefs::kDefaultSearchProviderName,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderKeyword,
     prefs::kDefaultSearchProviderKeyword,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderSearchURL,
     prefs::kDefaultSearchProviderSearchURL,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderSuggestURL,
     prefs::kDefaultSearchProviderSuggestURL,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderInstantURL,
     prefs::kDefaultSearchProviderInstantURL,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderIconURL,
     prefs::kDefaultSearchProviderIconURL,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderEncodings,
     prefs::kDefaultSearchProviderEncodings,
-    Value::TYPE_LIST },
+    base::Value::TYPE_LIST },
   { key::kDefaultSearchProviderAlternateURLs,
     prefs::kDefaultSearchProviderAlternateURLs,
-    Value::TYPE_LIST },
+    base::Value::TYPE_LIST },
   { key::kDefaultSearchProviderSearchTermsReplacementKey,
     prefs::kDefaultSearchProviderSearchTermsReplacementKey,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderImageURL,
     prefs::kDefaultSearchProviderImageURL,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderNewTabURL,
     prefs::kDefaultSearchProviderNewTabURL,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderSearchURLPostParams,
     prefs::kDefaultSearchProviderSearchURLPostParams,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderSuggestURLPostParams,
     prefs::kDefaultSearchProviderSuggestURLPostParams,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderInstantURLPostParams,
     prefs::kDefaultSearchProviderInstantURLPostParams,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
   { key::kDefaultSearchProviderImageURLPostParams,
     prefs::kDefaultSearchProviderImageURLPostParams,
-    Value::TYPE_STRING },
+    base::Value::TYPE_STRING },
 };
 
 // DefaultSearchEncodingsPolicyHandler implementation --------------------------
 
 DefaultSearchEncodingsPolicyHandler::DefaultSearchEncodingsPolicyHandler()
     : TypeCheckingPolicyHandler(key::kDefaultSearchProviderEncodings,
-                                Value::TYPE_LIST) {}
+                                base::Value::TYPE_LIST) {}
 
 DefaultSearchEncodingsPolicyHandler::~DefaultSearchEncodingsPolicyHandler() {
 }
@@ -86,13 +86,13 @@ void DefaultSearchEncodingsPolicyHandler::ApplyPolicySettings(
   // The DefaultSearchProviderEncodings policy has type list, but the related
   // preference has type string. Convert one into the other here, using
   // ';' as a separator.
-  const Value* value = policies.GetValue(policy_name());
-  const ListValue* list;
+  const base::Value* value = policies.GetValue(policy_name());
+  const base::ListValue* list;
   if (!value || !value->GetAsList(&list))
     return;
 
-  ListValue::const_iterator iter(list->begin());
-  ListValue::const_iterator end(list->end());
+  base::ListValue::const_iterator iter(list->begin());
+  base::ListValue::const_iterator end(list->end());
   std::vector<std::string> string_parts;
   for (; iter != end; ++iter) {
     std::string s;
@@ -102,7 +102,7 @@ void DefaultSearchEncodingsPolicyHandler::ApplyPolicySettings(
   }
   std::string encodings = JoinString(string_parts, ';');
   prefs->SetValue(prefs::kDefaultSearchProviderEncodings,
-                  Value::CreateStringValue(encodings));
+                  base::Value::CreateStringValue(encodings));
 }
 
 
@@ -147,7 +147,7 @@ bool DefaultSearchPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
     return true;
   }
 
-  const Value* url;
+  const base::Value* url;
   std::string dummy;
   if (DefaultSearchURLIsValid(policies, &url, &dummy) ||
       !AnyDefaultSearchPoliciesSpecified(policies))
@@ -172,7 +172,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetString(prefs::kDefaultSearchProviderInstantURL, std::string());
     prefs->SetString(prefs::kDefaultSearchProviderNewTabURL, std::string());
     prefs->SetValue(prefs::kDefaultSearchProviderAlternateURLs,
-                    new ListValue());
+                    new base::ListValue());
     prefs->SetString(
         prefs::kDefaultSearchProviderSearchTermsReplacementKey, std::string());
     prefs->SetString(prefs::kDefaultSearchProviderImageURL, std::string());
@@ -188,7 +188,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     // The search URL is required.  The other entries are optional.  Just make
     // sure that they are all specified via policy, so that the regular prefs
     // aren't used.
-    const Value* dummy;
+    const base::Value* dummy;
     std::string url;
     if (DefaultSearchURLIsValid(policies, &dummy, &url)) {
 
@@ -281,7 +281,7 @@ bool DefaultSearchPolicyHandler::AnyDefaultSearchPoliciesSpecified(
 
 bool DefaultSearchPolicyHandler::DefaultSearchProviderIsDisabled(
     const PolicyMap& policies) {
-  const Value* provider_enabled =
+  const base::Value* provider_enabled =
       policies.GetValue(key::kDefaultSearchProviderEnabled);
   bool enabled = true;
   return provider_enabled && provider_enabled->GetAsBoolean(&enabled) &&
@@ -290,7 +290,7 @@ bool DefaultSearchPolicyHandler::DefaultSearchProviderIsDisabled(
 
 bool DefaultSearchPolicyHandler::DefaultSearchURLIsValid(
     const PolicyMap& policies,
-    const Value** url_value,
+    const base::Value** url_value,
     std::string* url_string) {
   *url_value = policies.GetValue(key::kDefaultSearchProviderSearchURL);
   if (!*url_value || !(*url_value)->GetAsString(url_string) ||
@@ -317,7 +317,7 @@ void DefaultSearchPolicyHandler::EnsureListPrefExists(
   base::Value* value;
   base::ListValue* list_value;
   if (!prefs->GetValue(path, &value) || !value->GetAsList(&list_value))
-    prefs->SetValue(path, new ListValue());
+    prefs->SetValue(path, new base::ListValue());
 }
 
 }  // namespace policy

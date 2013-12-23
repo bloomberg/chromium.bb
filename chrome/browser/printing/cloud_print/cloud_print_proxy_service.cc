@@ -144,7 +144,7 @@ void CloudPrintProxyService::GetPrintersAvalibleForRegistration(
   if (!list_path.empty()) {
     std::string printers_json;
     base::ReadFileToString(list_path, &printers_json);
-    scoped_ptr<Value> value(base::JSONReader::Read(printers_json));
+    scoped_ptr<base::Value> value(base::JSONReader::Read(printers_json));
     base::ListValue* list = NULL;
     if (value && value->GetAsList(&list) && list) {
       for (size_t i = 0; i < list->GetSize(); ++i) {

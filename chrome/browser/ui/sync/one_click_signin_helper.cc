@@ -758,7 +758,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
 
     // If email was already rejected by this profile for one-click sign-in.
     if (can_offer_for == CAN_OFFER_FOR_INTERSTITAL_ONLY) {
-      const ListValue* rejected_emails = profile->GetPrefs()->GetList(
+      const base::ListValue* rejected_emails = profile->GetPrefs()->GetList(
           prefs::kReverseAutologinRejectedEmailList);
       if (!rejected_emails->empty()) {
         base::ListValue::const_iterator iter = rejected_emails->Find(

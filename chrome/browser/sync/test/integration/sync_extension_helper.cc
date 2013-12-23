@@ -274,7 +274,7 @@ std::string NameToPublicKey(const std::string& name) {
 scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
                                          const std::string& name,
                                          Manifest::Type type) {
-  DictionaryValue source;
+  base::DictionaryValue source;
   source.SetString(extensions::manifest_keys::kName, name);
   const std::string& public_key = NameToPublicKey(name);
   source.SetString(extensions::manifest_keys::kPublicKey, public_key);
@@ -284,19 +284,20 @@ scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
       // Do nothing.
       break;
     case Manifest::TYPE_THEME:
-      source.Set(extensions::manifest_keys::kTheme, new DictionaryValue());
+      source.Set(extensions::manifest_keys::kTheme,
+                 new base::DictionaryValue());
       break;
     case Manifest::TYPE_HOSTED_APP:
     case Manifest::TYPE_LEGACY_PACKAGED_APP:
-      source.Set(extensions::manifest_keys::kApp, new DictionaryValue());
+      source.Set(extensions::manifest_keys::kApp, new base::DictionaryValue());
       source.SetString(extensions::manifest_keys::kLaunchWebURL,
                        "http://www.example.com");
       break;
     case Manifest::TYPE_PLATFORM_APP: {
-      source.Set(extensions::manifest_keys::kApp, new DictionaryValue());
+      source.Set(extensions::manifest_keys::kApp, new base::DictionaryValue());
       source.Set(extensions::manifest_keys::kPlatformAppBackground,
-                 new DictionaryValue());
-      ListValue* scripts = new ListValue();
+                 new base::DictionaryValue());
+      base::ListValue* scripts = new base::ListValue();
       scripts->AppendString("main.js");
       source.Set(extensions::manifest_keys::kPlatformAppBackgroundScripts,
                  scripts);

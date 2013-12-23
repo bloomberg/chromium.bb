@@ -27,49 +27,54 @@ namespace {
 
 // Re-serializes the |location| into |dictionary|.
 void LocationSnapshotToValue(const LocationSnapshot& location,
-                             DictionaryValue* dictionary) {
-  dictionary->Set("file_name", Value::CreateStringValue(location.file_name));
+                             base::DictionaryValue* dictionary) {
+  dictionary->Set("file_name",
+                  base::Value::CreateStringValue(location.file_name));
   // Note: This function name is not escaped, and templates have less-than
   // characters, which means this is not suitable for display as HTML unless
   // properly escaped.
   dictionary->Set("function_name",
-                  Value::CreateStringValue(location.function_name));
+                  base::Value::CreateStringValue(location.function_name));
   dictionary->Set("line_number",
-                  Value::CreateIntegerValue(location.line_number));
+                  base::Value::CreateIntegerValue(location.line_number));
 }
 
 // Re-serializes the |birth| into |dictionary|.  Prepends the |prefix| to the
 // "thread" and "location" key names in the dictionary.
 void BirthOnThreadSnapshotToValue(const BirthOnThreadSnapshot& birth,
                                   const std::string& prefix,
-                                  DictionaryValue* dictionary) {
+                                  base::DictionaryValue* dictionary) {
   DCHECK(!prefix.empty());
 
-  scoped_ptr<DictionaryValue> location_value(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> location_value(new base::DictionaryValue);
   LocationSnapshotToValue(birth.location, location_value.get());
   dictionary->Set(prefix + "_location", location_value.release());
 
   dictionary->Set(prefix + "_thread",
-                  Value::CreateStringValue(birth.thread_name));
+                  base::Value::CreateStringValue(birth.thread_name));
 }
 
 // Re-serializes the |death_data| into |dictionary|.
 void DeathDataSnapshotToValue(const DeathDataSnapshot& death_data,
                               base::DictionaryValue* dictionary) {
   dictionary->Set("count",
-                  Value::CreateIntegerValue(death_data.count));
+                  base::Value::CreateIntegerValue(death_data.count));
   dictionary->Set("run_ms",
-                  Value::CreateIntegerValue(death_data.run_duration_sum));
+                  base::Value::CreateIntegerValue(death_data.run_duration_sum));
   dictionary->Set("run_ms_max",
-                  Value::CreateIntegerValue(death_data.run_duration_max));
+                  base::Value::CreateIntegerValue(death_data.run_duration_max));
   dictionary->Set("run_ms_sample",
-                  Value::CreateIntegerValue(death_data.run_duration_sample));
+                  base::Value::CreateIntegerValue(
+                      death_data.run_duration_sample));
   dictionary->Set("queue_ms",
-                  Value::CreateIntegerValue(death_data.queue_duration_sum));
+                  base::Value::CreateIntegerValue(
+                      death_data.queue_duration_sum));
   dictionary->Set("queue_ms_max",
-                  Value::CreateIntegerValue(death_data.queue_duration_max));
+                  base::Value::CreateIntegerValue(
+                      death_data.queue_duration_max));
   dictionary->Set("queue_ms_sample",
-                  Value::CreateIntegerValue(death_data.queue_duration_sample));
+                  base::Value::CreateIntegerValue(
+                      death_data.queue_duration_sample));
 
 }
 
@@ -78,12 +83,12 @@ void TaskSnapshotToValue(const TaskSnapshot& snapshot,
                          base::DictionaryValue* dictionary) {
   BirthOnThreadSnapshotToValue(snapshot.birth, "birth", dictionary);
 
-  scoped_ptr<DictionaryValue> death_data(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> death_data(new base::DictionaryValue);
   DeathDataSnapshotToValue(snapshot.death_data, death_data.get());
   dictionary->Set("death_data", death_data.release());
 
   dictionary->Set("death_thread",
-                  Value::CreateStringValue(snapshot.death_thread_name));
+                  base::Value::CreateStringValue(snapshot.death_thread_name));
 
 }
 
@@ -100,7 +105,7 @@ void TaskProfilerDataSerializer::ToValue(
   for (std::vector<TaskSnapshot>::const_iterator it =
            process_data.tasks.begin();
        it != process_data.tasks.end(); ++it) {
-    scoped_ptr<DictionaryValue> snapshot(new DictionaryValue);
+    scoped_ptr<base::DictionaryValue> snapshot(new base::DictionaryValue);
     TaskSnapshotToValue(*it, snapshot.get());
     tasks_list->Append(snapshot.release());
   }
@@ -128,11 +133,11 @@ bool TaskProfilerDataSerializer::WriteToFile(const base::FilePath& path) {
   JSONStringValueSerializer serializer(&output);
   serializer.set_pretty_print(true);
 
-  scoped_ptr<base::DictionaryValue> root(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> root(new base::DictionaryValue());
 
-  base::ListValue* snapshot_list = new ListValue();
-  base::DictionaryValue* shutdown_snapshot = new DictionaryValue();
-  base::ListValue* per_process_data = new ListValue();
+  base::ListValue* snapshot_list = new base::ListValue();
+  base::DictionaryValue* shutdown_snapshot = new base::DictionaryValue();
+  base::ListValue* per_process_data = new base::ListValue();
 
   root->SetInteger("version", 1);
   root->SetString("userAgent", content::GetUserAgent(GURL()));

@@ -115,7 +115,8 @@ void PrintJobWorker::GetSettings(
   }
 }
 
-void PrintJobWorker::SetSettings(const DictionaryValue* const new_settings) {
+void PrintJobWorker::SetSettings(
+    const base::DictionaryValue* const new_settings) {
   DCHECK_EQ(message_loop(), base::MessageLoop::current());
 
   BrowserThread::PostTask(
@@ -126,13 +127,13 @@ void PrintJobWorker::SetSettings(const DictionaryValue* const new_settings) {
 }
 
 void PrintJobWorker::UpdatePrintSettings(
-    const DictionaryValue* const new_settings) {
+    const base::DictionaryValue* const new_settings) {
   // Create new PageRanges based on |new_settings|.
   PageRanges new_ranges;
-  const ListValue* page_range_array;
+  const base::ListValue* page_range_array;
   if (new_settings->GetList(kSettingPageRange, &page_range_array)) {
     for (size_t index = 0; index < page_range_array->GetSize(); ++index) {
-      const DictionaryValue* dict;
+      const base::DictionaryValue* dict;
       if (!page_range_array->GetDictionary(index, &dict))
         continue;
 

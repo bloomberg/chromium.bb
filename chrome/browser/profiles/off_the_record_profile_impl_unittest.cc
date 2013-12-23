@@ -55,12 +55,12 @@ class TestingProfileWithHostZoomMap : public TestingProfile {
 
     double level = change.zoom_level;
     DictionaryPrefUpdate update(prefs_.get(), prefs::kPerHostZoomLevels);
-    DictionaryValue* host_zoom_dictionary = update.Get();
+    base::DictionaryValue* host_zoom_dictionary = update.Get();
     if (level == host_zoom_map->GetDefaultZoomLevel()) {
       host_zoom_dictionary->RemoveWithoutPathExpansion(change.host, NULL);
     } else {
       host_zoom_dictionary->SetWithoutPathExpansion(
-          change.host, Value::CreateDoubleValue(level));
+          change.host, base::Value::CreateDoubleValue(level));
     }
   }
 

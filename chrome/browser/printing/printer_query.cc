@@ -94,7 +94,7 @@ void PrinterQuery::GetSettings(
                  margin_type));
 }
 
-void PrinterQuery::SetSettings(const DictionaryValue& new_settings,
+void PrinterQuery::SetSettings(const base::DictionaryValue& new_settings,
                                const base::Closure& callback) {
   StartWorker(callback);
 

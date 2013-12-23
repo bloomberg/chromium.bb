@@ -55,7 +55,7 @@ class TestSpellingURLFetcher : public net::TestURLFetcher {
     EXPECT_EQ("application/json", upload_content_type);
 
     // Parse the JSON to be sent to the service, and verify its parameters.
-    scoped_ptr<DictionaryValue> value(static_cast<DictionaryValue*>(
+    scoped_ptr<base::DictionaryValue> value(static_cast<base::DictionaryValue*>(
         base::JSONReader::Read(upload_content,
                                base::JSON_ALLOW_TRAILING_COMMAS)));
     ASSERT_TRUE(!!value.get());

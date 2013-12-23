@@ -43,7 +43,7 @@ std::string GetTargetValue(const base::DictionaryValue& dict,
   if (!dict.GetList(list_key, &list) || !list)
     return std::string();
 
-  ListValue::const_iterator it = list->begin();
+  base::ListValue::const_iterator it = list->begin();
   if (it == list->end())
     return std::string();
 

@@ -1783,7 +1783,7 @@ TEST_F(TabStripModelTest, Apps) {
   base::FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
 
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("name", "hi!");
   manifest.SetString("version", "1");
   manifest.SetString("app.launch.web_url", "http://www.google.com");

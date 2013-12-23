@@ -139,7 +139,7 @@ void BuildSubTreesFromPreferences(
   base::DictionaryValue* is_user_controlled_tree = new base::DictionaryValue;
   for (std::vector<std::string>::const_iterator it = pref_names.begin();
        it != pref_names.end(); ++it) {
-    scoped_ptr<Value> pref_value_owned;
+    scoped_ptr<base::Value> pref_value_owned;
     if (pref_name_to_value_map->RemoveWithoutPathExpansion(*it,
                                                            &pref_value_owned)) {
       value_tree->Set(*it, pref_value_owned.release());

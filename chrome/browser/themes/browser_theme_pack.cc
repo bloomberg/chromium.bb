@@ -965,9 +965,9 @@ void BrowserThemePack::BuildTintsFromJSON(
 
   // Parse the incoming data from |tints_value| into an intermediary structure.
   std::map<int, color_utils::HSL> temp_tints;
-  for (DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*tints_value); !iter.IsAtEnd();
        iter.Advance()) {
-    const ListValue* tint_list;
+    const base::ListValue* tint_list;
     if (iter.value().GetAsList(&tint_list) &&
         (tint_list->GetSize() == 3)) {
       color_utils::HSL hsl = { -1, -1, -1 };
@@ -1022,9 +1022,9 @@ void BrowserThemePack::ReadColorsFromJSON(
     const base::DictionaryValue* colors_value,
     std::map<int, SkColor>* temp_colors) {
   // Parse the incoming data from |colors_value| into an intermediary structure.
-  for (DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*colors_value); !iter.IsAtEnd();
        iter.Advance()) {
-    const ListValue* color_list;
+    const base::ListValue* color_list;
     if (iter.value().GetAsList(&color_list) &&
         ((color_list->GetSize() == 3) || (color_list->GetSize() == 4))) {
       SkColor color = SK_ColorWHITE;
@@ -1125,7 +1125,7 @@ void BrowserThemePack::BuildDisplayPropertiesFromJSON(
     return;
 
   std::map<int, int> temp_properties;
-  for (DictionaryValue::Iterator iter(*display_properties_value);
+  for (base::DictionaryValue::Iterator iter(*display_properties_value);
        !iter.IsAtEnd(); iter.Advance()) {
     int property_id = GetIntForString(iter.key(), kDisplayProperties,
                                       kDisplayPropertiesSize);
@@ -1172,18 +1172,18 @@ void BrowserThemePack::ParseImageNamesFromJSON(
   if (!images_value)
     return;
 
-  for (DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
        iter.Advance()) {
-    if (iter.value().IsType(Value::TYPE_DICTIONARY)) {
-      const DictionaryValue* inner_value = NULL;
+    if (iter.value().IsType(base::Value::TYPE_DICTIONARY)) {
+      const base::DictionaryValue* inner_value = NULL;
       if (iter.value().GetAsDictionary(&inner_value)) {
-        for (DictionaryValue::Iterator inner_iter(*inner_value);
+        for (base::DictionaryValue::Iterator inner_iter(*inner_value);
              !inner_iter.IsAtEnd();
              inner_iter.Advance()) {
           std::string name;
           ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE;
           if (GetScaleFactorFromManifestKey(inner_iter.key(), &scale_factor) &&
-              inner_iter.value().IsType(Value::TYPE_STRING) &&
+              inner_iter.value().IsType(base::Value::TYPE_STRING) &&
               inner_iter.value().GetAsString(&name)) {
             AddFileAtScaleToMap(iter.key(),
                                 scale_factor,
@@ -1192,7 +1192,7 @@ void BrowserThemePack::ParseImageNamesFromJSON(
           }
         }
       }
-    } else if (iter.value().IsType(Value::TYPE_STRING)) {
+    } else if (iter.value().IsType(base::Value::TYPE_STRING)) {
       std::string name;
       if (iter.value().GetAsString(&name)) {
         AddFileAtScaleToMap(iter.key(),

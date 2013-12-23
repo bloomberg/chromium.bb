@@ -1083,7 +1083,7 @@ TemplateURL* MakePrepopulatedTemplateURL(
     const base::StringPiece& image_url_post_params,
     const base::StringPiece& favicon_url,
     const base::StringPiece& encoding,
-    const ListValue& alternate_urls,
+    const base::ListValue& alternate_urls,
     const base::StringPiece& search_terms_replacement_key,
     int id) {
 
@@ -1122,14 +1122,14 @@ ScopedVector<TemplateURL> GetPrepopulatedTemplateFromPrefs(Profile* profile) {
   if (!profile)
     return t_urls.Pass();
 
-  const ListValue* list =
+  const base::ListValue* list =
       profile->GetPrefs()->GetList(prefs::kSearchProviderOverrides);
   if (!list)
     return t_urls.Pass();
 
   size_t num_engines = list->GetSize();
   for (size_t i = 0; i != num_engines; ++i) {
-    const DictionaryValue* engine;
+    const base::DictionaryValue* engine;
     base::string16 name;
     base::string16 keyword;
     std::string search_url;
@@ -1154,8 +1154,8 @@ ScopedVector<TemplateURL> GetPrepopulatedTemplateFromPrefs(Profile* profile) {
       std::string suggest_url_post_params;
       std::string instant_url_post_params;
       std::string image_url_post_params;
-      ListValue empty_list;
-      const ListValue* alternate_urls = &empty_list;
+      base::ListValue empty_list;
+      const base::ListValue* alternate_urls = &empty_list;
       std::string search_terms_replacement_key;
       engine->GetString("suggest_url", &suggest_url);
       engine->GetString("instant_url", &instant_url);
@@ -1184,7 +1184,7 @@ TemplateURL* MakePrepopulatedTemplateURLFromPrepopulateEngine(
     Profile* profile,
     const PrepopulatedEngine& engine) {
 
-  ListValue alternate_urls;
+  base::ListValue alternate_urls;
   if (engine.alternate_urls) {
     for (size_t i = 0; i < engine.alternate_urls_size; ++i)
       alternate_urls.AppendString(std::string(engine.alternate_urls[i]));

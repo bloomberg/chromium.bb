@@ -237,12 +237,13 @@ scoped_refptr<Extension> CreateExtension(const base::string16& name,
                                          Manifest::Location location,
                                          extensions::Manifest::Type type,
                                          bool installed_by_default) {
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
   manifest.SetString(extensions::manifest_keys::kName, name);
   switch (type) {
     case extensions::Manifest::TYPE_THEME:
-      manifest.Set(extensions::manifest_keys::kTheme, new DictionaryValue);
+      manifest.Set(extensions::manifest_keys::kTheme,
+                   new base::DictionaryValue);
       break;
     case extensions::Manifest::TYPE_HOSTED_APP:
       manifest.SetString(extensions::manifest_keys::kLaunchWebURL,
@@ -790,12 +791,12 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
     base::DictionaryValue* dict =
         static_cast<base::DictionaryValue*>(root.get());
 
-    ListValue* startup_urls = NULL;
+    base::ListValue* startup_urls = NULL;
     int startup_type = 0;
     std::string homepage;
     bool homepage_is_ntp = true;
     std::string default_search_engine;
-    ListValue* extensions;
+    base::ListValue* extensions;
 
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_MODE),
               dict->GetList("startup_urls", &startup_urls));
@@ -840,7 +841,7 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
   scoped_ptr<base::ListValue> list(GetReadableFeedback(profile()));
   ASSERT_TRUE(list);
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    DictionaryValue* dict = NULL;
+    base::DictionaryValue* dict = NULL;
     ASSERT_TRUE(list->GetDictionary(i, &dict));
     std::string value;
     ASSERT_TRUE(dict->GetString("key", &value));

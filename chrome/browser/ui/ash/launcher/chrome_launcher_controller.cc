@@ -1906,7 +1906,7 @@ ChromeLauncherController::GetListOfPinnedAppsAndBrowser() {
       pinned_apps.push_back(extension_misc::kChromeAppId);
       chrome_icon_added = true;
     }
-    const DictionaryValue* app = NULL;
+    const base::DictionaryValue* app = NULL;
     std::string app_id;
     if (pinned_apps_pref->GetDictionary(index, &app) &&
         app->GetString(ash::kPinnedAppsPrefAppIDPath, &app_id) &&

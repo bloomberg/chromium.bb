@@ -80,7 +80,7 @@ void WebserviceCache::OnCacheLoaded(scoped_ptr<base::DictionaryValue>) {
     return;
 
   std::vector<std::string> cleanup_keys;
-  for (DictionaryValue::Iterator it(*data_store_->cached_dict());
+  for (base::DictionaryValue::Iterator it(*data_store_->cached_dict());
       !it.IsAtEnd();
       it.Advance()) {
     const base::DictionaryValue* payload_dict;

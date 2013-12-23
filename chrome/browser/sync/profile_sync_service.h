@@ -551,7 +551,7 @@ class ProfileSyncService
   // This function is used by sync_ui_util.cc to help populate the about:sync
   // page.  It returns a ListValue rather than a DictionaryValue in part to make
   // it easier to iterate over its elements when constructing that page.
-  Value* GetTypeStatusMap() const;
+  base::Value* GetTypeStatusMap() const;
 
   // Overridden by tests.
   // TODO(zea): Remove these and have the dtc's call directly into the SBH.

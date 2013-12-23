@@ -93,9 +93,9 @@ PanelExtensionWindowController::CreateWindowValueWithTabs(
   base::DictionaryValue* result = CreateWindowValue();
 
   DCHECK(IsVisibleToExtension(extension));
-  DictionaryValue* tab_value = CreateTabValue(extension, 0);
+  base::DictionaryValue* tab_value = CreateTabValue(extension, 0);
   if (tab_value) {
-    base::ListValue* tab_list = new ListValue();
+    base::ListValue* tab_list = new base::ListValue();
     tab_list->Append(tab_value);
     result->Set(extensions::tabs_constants::kTabsKey, tab_list);
   }
@@ -112,7 +112,7 @@ base::DictionaryValue* PanelExtensionWindowController::CreateTabValue(
     return NULL;
 
   DCHECK(IsVisibleToExtension(extension));
-  DictionaryValue* tab_value = new DictionaryValue();
+  base::DictionaryValue* tab_value = new base::DictionaryValue();
   tab_value->SetInteger(extensions::tabs_constants::kIdKey,
                         SessionID::IdForTab(web_contents));
   tab_value->SetInteger(extensions::tabs_constants::kIndexKey, 0);

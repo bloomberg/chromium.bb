@@ -50,7 +50,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
   ASSERT_TRUE(pref != NULL);
 
   // Check to make sure there is no existing pref for window placement.
-  const DictionaryValue* placement = pref->GetDictionary(path_);
+  const base::DictionaryValue* placement = pref->GetDictionary(path_);
   ASSERT_TRUE(placement);
   EXPECT_TRUE(placement->empty());
 
@@ -101,7 +101,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesPos) {
   // ...and it should be in the profile, too.
   EXPECT_TRUE(pref->GetDictionary(path_) != NULL);
   int x, y;
-  const DictionaryValue* windowPref = pref->GetDictionary(path_);
+  const base::DictionaryValue* windowPref = pref->GetDictionary(path_);
   EXPECT_FALSE(windowPref->GetInteger("left", &x));
   EXPECT_FALSE(windowPref->GetInteger("right", &x));
   EXPECT_FALSE(windowPref->GetInteger("top", &x));
@@ -117,7 +117,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
   ASSERT_TRUE(pref != NULL);
 
   // Check to make sure there is no existing pref for window placement.
-  const DictionaryValue* placement = pref->GetDictionary(path_);
+  const base::DictionaryValue* placement = pref->GetDictionary(path_);
   ASSERT_TRUE(placement);
   EXPECT_TRUE(placement->empty());
 
@@ -160,7 +160,7 @@ TEST_F(WindowSizeAutosaverTest, RestoresAndSavesRect) {
   // ...and it should be in the profile, too.
   EXPECT_TRUE(pref->GetDictionary(path_) != NULL);
   int x1, y1, x2, y2;
-  const DictionaryValue* windowPref = pref->GetDictionary(path_);
+  const base::DictionaryValue* windowPref = pref->GetDictionary(path_);
   EXPECT_FALSE(windowPref->GetInteger("x", &x1));
   EXPECT_FALSE(windowPref->GetInteger("y", &x1));
   ASSERT_TRUE(windowPref->GetInteger("left", &x1));
@@ -179,7 +179,7 @@ TEST_F(WindowSizeAutosaverTest, DoesNotRestoreButClearsEmptyRect) {
   ASSERT_TRUE(pref != NULL);
 
   DictionaryPrefUpdate update(pref, path_);
-  DictionaryValue* windowPref = update.Get();
+  base::DictionaryValue* windowPref = update.Get();
   windowPref->SetInteger("left", 50);
   windowPref->SetInteger("right", 50);
   windowPref->SetInteger("top", 60);

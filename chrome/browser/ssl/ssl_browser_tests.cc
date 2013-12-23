@@ -701,7 +701,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_TestWSSClientCert) {
   // cert selection.
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   DCHECK(profile);
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("ISSUER.CN", "pywebsocket");
   profile->GetHostContentSettingsMap()->SetWebsiteSetting(
       ContentSettingsPattern::FromURL(url),

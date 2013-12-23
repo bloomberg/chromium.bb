@@ -47,11 +47,11 @@ std::string EncodeUint32(uint32 value) {
     const char* escaped_json = escaped_json_param; \
     std::string json; \
     base::ReplaceChars(escaped_json, "'", "\"", &json); \
-    scoped_ptr<Value> json_value(ParseJson(json)); \
+    scoped_ptr<base::Value> json_value(ParseJson(json)); \
     JtlInterpreter interpreter( \
         seed, \
         program_param, \
-        static_cast<const DictionaryValue*>(json_value.get())); \
+        static_cast<const base::DictionaryValue*>(json_value.get())); \
     interpreter.Execute()
 
 using base::test::ParseJson;

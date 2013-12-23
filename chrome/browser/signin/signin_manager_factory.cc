@@ -80,7 +80,7 @@ void SigninManagerFactory::RegisterProfilePrefs(
       true,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList,
-                             new ListValue,
+                             new base::ListValue,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   chrome::RegisterLocalAuthPrefs(registry);
 }

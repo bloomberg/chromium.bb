@@ -114,7 +114,7 @@ void WebstoreProvider::ProcessWebstoreSearchResults(
   }
 
   bool first_result = true;
-  for (ListValue::const_iterator it = result_list->begin();
+  for (base::ListValue::const_iterator it = result_list->begin();
        it != result_list->end();
        ++it) {
     const base::DictionaryValue* dict;

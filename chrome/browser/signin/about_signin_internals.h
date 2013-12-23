@@ -29,7 +29,8 @@ class AboutSigninInternals
    public:
     // |info| will contain the dictionary of signin_status_ values as indicated
     // in the comments for GetSigninStatus() below.
-    virtual void OnSigninStateChanged(scoped_ptr<DictionaryValue> info) = 0;
+    virtual void OnSigninStateChanged(
+        scoped_ptr<base::DictionaryValue> info) = 0;
   };
 
   AboutSigninInternals();
@@ -71,7 +72,7 @@ class AboutSigninInternals
   //     [ List of {"name": "foo-name", "token" : "foo-token",
   //                 "status": "foo_stat", "time" : "foo_time"} elems]
   //  }
-  scoped_ptr<DictionaryValue> GetSigninStatus();
+  scoped_ptr<base::DictionaryValue> GetSigninStatus();
 
   // Returns the time of the last fetch/refresh for the token specified by
   // |token_name|. See signin_internals_util::kTokenPrefsArray for valid token

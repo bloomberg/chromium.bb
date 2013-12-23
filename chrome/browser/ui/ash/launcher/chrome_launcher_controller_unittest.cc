@@ -284,7 +284,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
           new ash::ShelfItemDelegateManager(model_.get());
     }
 
-    DictionaryValue manifest;
+    base::DictionaryValue manifest;
     manifest.SetString(extensions::manifest_keys::kName,
                        "launcher controller test extension");
     manifest.SetString(extensions::manifest_keys::kVersion, "1");
@@ -309,7 +309,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                                     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                                     &error);
     // Fake gmail extension.
-    DictionaryValue manifest_gmail;
+    base::DictionaryValue manifest_gmail;
     manifest_gmail.SetString(extensions::manifest_keys::kName,
                              "Gmail launcher controller test extension");
     manifest_gmail.SetString(extensions::manifest_keys::kVersion, "1");
@@ -317,8 +317,8 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                              "for testing pinned Gmail");
     manifest_gmail.SetString(extensions::manifest_keys::kLaunchWebURL,
                              kGmailLaunchURL);
-    ListValue* list = new ListValue();
-    list->Append(Value::CreateStringValue("*://mail.google.com/mail/ca"));
+    base::ListValue* list = new base::ListValue();
+    list->Append(base::Value::CreateStringValue("*://mail.google.com/mail/ca"));
     manifest_gmail.Set(extensions::manifest_keys::kWebURLs, list);
 
     extension3_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
@@ -455,7 +455,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   void InsertPrefValue(base::ListValue* pref_value,
                        int index,
                        const std::string& extension_id) {
-    base::DictionaryValue* entry = new DictionaryValue();
+    base::DictionaryValue* entry = new base::DictionaryValue();
     entry->SetString(ash::kPinnedAppsPrefAppIDPath, extension_id);
     pref_value->Insert(index, entry);
   }

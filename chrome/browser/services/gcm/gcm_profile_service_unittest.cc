@@ -194,11 +194,11 @@ class GCMProfileServiceTest : public testing::Test,
     base::FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
 
-    DictionaryValue manifest;
+    base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kVersion, "1.0.0.0");
     manifest.SetString(manifest_keys::kName, kTestExtensionName);
-    ListValue* permission_list = new ListValue;
-    permission_list->Append(Value::CreateStringValue("gcm"));
+    base::ListValue* permission_list = new base::ListValue;
+    permission_list->Append(base::Value::CreateStringValue("gcm"));
     manifest.Set(manifest_keys::kPermissions, permission_list);
 
     // TODO(jianli): Once the GCM API enters stable, remove |channel|.

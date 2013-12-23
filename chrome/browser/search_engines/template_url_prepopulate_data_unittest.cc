@@ -105,9 +105,9 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     Value::CreateIntegerValue(1));
-  ListValue* overrides = new ListValue;
-  scoped_ptr<DictionaryValue> entry(new DictionaryValue);
+                     base::Value::CreateIntegerValue(1));
+  base::ListValue* overrides = new base::ListValue;
+  scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
   // Set only the minimal required settings for a search provider configuration.
   entry->SetString("name", "foo");
   entry->SetString("keyword", "fook");
@@ -141,11 +141,11 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
   // Test the optional settings too.
   entry->SetString("suggest_url", "http://foo.com/suggest?q={searchTerms}");
   entry->SetString("instant_url", "http://foo.com/instant?q={searchTerms}");
-  ListValue* alternate_urls = new ListValue;
+  base::ListValue* alternate_urls = new base::ListValue;
   alternate_urls->AppendString("http://foo.com/alternate?q={searchTerms}");
   entry->Set("alternate_urls", alternate_urls);
   entry->SetString("search_terms_replacement_key", "espv");
-  overrides = new ListValue;
+  overrides = new base::ListValue;
   overrides->Append(entry->DeepCopy());
   prefs->SetUserPref(prefs::kSearchProviderOverrides, overrides);
 
@@ -169,7 +169,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrefs) {
 
   // Test that subsequent providers are loaded even if an intermediate
   // provider has an incomplete configuration.
-  overrides = new ListValue;
+  overrides = new base::ListValue;
   overrides->Append(entry->DeepCopy());
   entry->SetInteger("id", 1002);
   entry->SetString("name", "bar");
@@ -192,9 +192,9 @@ TEST(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   TestingProfile profile;
   TestingPrefServiceSyncable* prefs = profile.GetTestingPrefService();
   prefs->SetUserPref(prefs::kSearchProviderOverridesVersion,
-                     Value::CreateIntegerValue(1));
-  ListValue* overrides = new ListValue;
-  DictionaryValue* entry(new DictionaryValue);
+                     base::Value::CreateIntegerValue(1));
+  base::ListValue* overrides = new base::ListValue;
+  base::DictionaryValue* entry(new base::DictionaryValue);
   // Set only the minimal required settings for a search provider configuration.
   entry->SetString("name", "foo");
   entry->SetString("keyword", "fook");

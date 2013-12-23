@@ -123,7 +123,7 @@ const CGFloat kLocBarBottomInset = 1;
   DictionaryPrefUpdate update(
       prefs,
       chrome::GetWindowPlacementKey(browser_.get()).c_str());
-  DictionaryValue* windowPreferences = update.Get();
+  base::DictionaryValue* windowPreferences = update.Get();
   windowPreferences->SetInteger("left", bounds.x());
   windowPreferences->SetInteger("top", bounds.y());
   windowPreferences->SetInteger("right", bounds.right());
