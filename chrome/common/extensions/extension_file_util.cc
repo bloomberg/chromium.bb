@@ -484,7 +484,7 @@ bool CheckForIllegalFilenames(const base::FilePath& extension_path,
       *error = base::StringPrintf(
           "Cannot load extension with file or directory name %s. "
           "Filenames starting with \"_\" are reserved for use by the system.",
-          filename.c_str());
+          file.BaseName().AsUTF8Unsafe().c_str());
       return false;
     }
   }
