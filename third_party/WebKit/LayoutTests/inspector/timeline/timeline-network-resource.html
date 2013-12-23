@@ -20,7 +20,7 @@ function test()
 
     WebInspector.showPanel("timeline");
     var model = WebInspector.panels.timeline._model;
-    var presentationModel = WebInspector.panels.timeline._presentationModel;
+    var presentationModel = InspectorTest.timelinePresentationModel();
     presentationModel.setGlueRecords(true);
 
     InspectorTest.startTimeline(step1);

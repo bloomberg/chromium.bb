@@ -30,6 +30,11 @@ InspectorTest.timelinePropertyFormatters = {
     thread: "formatAsTypeName"
 };
 
+InspectorTest.timelinePresentationModel = function()
+{
+    return WebInspector.panels.timeline._currentView._presentationModel;
+}
+
 InspectorTest.startTimeline = function(callback)
 {
     InspectorTest._timelineRecords = [];
@@ -123,7 +128,7 @@ InspectorTest.printTimelineRecords = function(typeName, formatter)
 
 InspectorTest.printTimestampRecords = function(typeName, formatter)
 {
-    InspectorTest.innerPrintTimelineRecords(WebInspector.panels.timeline._presentationModel.eventDividerRecords().select("_record"), typeName, formatter);
+    InspectorTest.innerPrintTimelineRecords(InspectorTest.timelinePresentationModel().eventDividerRecords().select("_record"), typeName, formatter);
 };
 
 InspectorTest.innerPrintTimelineRecords = function(records, typeName, formatter)
@@ -195,7 +200,7 @@ InspectorTest.findPresentationRecord = function(type)
         result = record;
         return true;
     }
-    var records = WebInspector.panel("timeline")._rootRecord().children;
+    var records = WebInspector.panel("timeline")._currentView._rootRecord().children;
     WebInspector.TimelinePresentationModel.forAllRecords(records, findByType);
     return result;
 }

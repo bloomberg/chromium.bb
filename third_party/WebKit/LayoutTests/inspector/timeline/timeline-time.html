@@ -74,7 +74,7 @@ function test()
 
     InspectorTest.loadTimelineRecords(records);
 
-    var rootRecord = WebInspector.panels.timeline._presentationModel.rootRecord();
+    var rootRecord = InspectorTest.timelinePresentationModel().rootRecord();
     InspectorTest.dumpTimelineRecord(rootRecord);
     InspectorTest.completeTest();
 }
