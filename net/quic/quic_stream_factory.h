@@ -158,6 +158,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::set<HostPortProxyPair> AliasSet;
   typedef std::map<QuicClientSession*, AliasSet> SessionAliasMap;
   typedef std::set<QuicClientSession*> SessionSet;
+  typedef std::map<IPEndPoint, SessionSet> IPAliasMap;
   typedef std::map<HostPortProxyPair, QuicCryptoClientConfig*> CryptoConfigMap;
   typedef std::map<HostPortPair, HostPortProxyPair> CanonicalHostMap;
   typedef std::map<HostPortProxyPair, Job*> JobMap;
@@ -165,6 +166,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::set<QuicStreamRequest*> RequestSet;
   typedef std::map<Job*, RequestSet> JobRequestsMap;
 
+  bool OnResolution(const HostPortProxyPair& host_port_proxy_pair,
+                    const AddressList& address_list);
   void OnJobComplete(Job* job, int rv);
   bool HasActiveSession(const HostPortProxyPair& host_port_proxy_pair);
   bool HasActiveJob(const HostPortProxyPair& host_port_proxy_pair);
@@ -205,7 +208,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Contains non-owning pointers to currently active session
   // (not going away session, once they're implemented).
   SessionMap active_sessions_;
+  // Map from session to set of aliases that this session is known by.
   SessionAliasMap session_aliases_;
+  // Map from IP address to sessions which are connected to this address.
+  IPAliasMap ip_aliases_;
 
   // Contains owning pointers to QuicCryptoClientConfig. QuicCryptoClientConfig
   // contains configuration and cached state about servers.

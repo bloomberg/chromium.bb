@@ -15,6 +15,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/completion_callback.h"
+#include "net/proxy/proxy_server.h"
 #include "net/quic/quic_connection_logger.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_reliable_client_stream.h"
@@ -143,7 +144,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // that this session has been closed, which will delete the session.
   void CloseSessionOnError(int error);
 
-  base::Value* GetInfoAsValue(const HostPortPair& pair) const;
+  base::Value* GetInfoAsValue(const std::set<HostPortProxyPair>& aliases) const;
 
   const BoundNetLog& net_log() const { return net_log_; }
 
@@ -153,6 +154,11 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // crypto stream. If the handshake has completed then this is one greater
   // than the number of round-trips needed for the handshake.
   int GetNumSentClientHellos() const;
+
+  // Returns true if |hostname| may be pooled onto this session.  If this
+  // is a secure QUIC session, then |hostname| must match the certificate
+  // presented during the handshake.
+  bool CanPool(const std::string& hostname) const;
 
  protected:
   // QuicSession methods:

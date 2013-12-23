@@ -277,6 +277,21 @@ int QuicClientSession::GetNumSentClientHellos() const {
   return crypto_stream_->num_sent_client_hellos();
 }
 
+bool QuicClientSession::CanPool(const std::string& hostname) const {
+  // TODO(rch): When QUIC supports channel ID or client certificates, this
+  // logic will need to be revised.
+  DCHECK(connection()->connected());
+  SSLInfo ssl_info;
+  bool unused = false;
+  DCHECK(crypto_stream_);
+  if (!crypto_stream_->GetSSLInfo(&ssl_info) || !ssl_info.cert) {
+    // We can always pool with insecure QUIC sessions.
+    return true;
+  }
+  // Only pool secure QUIC sessions if the cert matches the new hostname.
+  return ssl_info.cert->VerifyNameMatch(hostname, &unused);
+}
+
 QuicDataStream* QuicClientSession::CreateIncomingDataStream(
     QuicStreamId id) {
   DLOG(ERROR) << "Server push not supported";
@@ -451,15 +466,25 @@ void QuicClientSession::CloseAllObservers(int net_error) {
   }
 }
 
-base::Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
+base::Value* QuicClientSession::GetInfoAsValue(
+    const std::set<HostPortProxyPair>& aliases) const {
   base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetString("host_port_pair", pair.ToString());
+  // TODO(rch): remove "host_port_pair" when Chrome 34 is stable.
+  dict->SetString("host_port_pair", aliases.begin()->first.ToString());
   dict->SetString("version", QuicVersionToString(connection()->version()));
   dict->SetInteger("open_streams", GetNumOpenStreams());
   dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
   dict->SetString("guid", base::Uint64ToString(guid()));
   dict->SetBoolean("connected", connection()->connected());
+
+  base::ListValue* alias_list = new base::ListValue();
+  for (std::set<HostPortProxyPair>::const_iterator it = aliases.begin();
+       it != aliases.end(); it++) {
+    alias_list->Append(new base::StringValue(it->first.ToString()));
+  }
+  dict->Set("aliases", alias_list);
+
   return dict;
 }
 

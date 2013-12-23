@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "net/base/test_data_directory.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
@@ -21,6 +22,7 @@
 #include "net/quic/test_tools/quic_test_packet_maker.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/socket/socket_test_util.h"
+#include "net/test/cert_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -185,6 +187,216 @@ TEST_P(QuicStreamFactoryTest, Create) {
 
   EXPECT_TRUE(socket_data.at_read_eof());
   EXPECT_TRUE(socket_data.at_write_eof());
+}
+
+TEST_P(QuicStreamFactoryTest, Pooling) {
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  HostPortProxyPair server2 = HostPortProxyPair(
+      HostPortPair("mail.google.com", kDefaultServerPort),
+      host_port_proxy_pair_.second);
+
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(
+      kDefaultServerHostName, "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(
+      "mail.google.com", "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(OK, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_.get(), net_log_,
+                                            callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  TestCompletionCallback callback;
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(OK, request2.Request(server2, is_https_,
+                                 cert_verifier_.get(), net_log_,
+                                 callback.callback()));
+  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_EQ(
+      QuicStreamFactoryPeer::GetActiveSession(&factory_, host_port_proxy_pair_),
+      QuicStreamFactoryPeer::GetActiveSession(&factory_, server2));
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+}
+
+TEST_P(QuicStreamFactoryTest, NoPoolingAfterGoAway) {
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data1.StopAfter(1);
+  socket_data2.StopAfter(1);
+
+  HostPortProxyPair server2 = HostPortProxyPair(
+      HostPortPair("mail.google.com", kDefaultServerPort),
+      host_port_proxy_pair_.second);
+
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(
+      kDefaultServerHostName, "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(
+      "mail.google.com", "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(OK, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_.get(), net_log_,
+                                            callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  TestCompletionCallback callback;
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(OK, request2.Request(server2, is_https_,
+                                 cert_verifier_.get(), net_log_,
+                                 callback.callback()));
+  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+  EXPECT_TRUE(stream2.get());
+
+  factory_.OnSessionGoingAway(
+      QuicStreamFactoryPeer::GetActiveSession(&factory_,
+                                              host_port_proxy_pair_));
+  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(&factory_,
+                                                       host_port_proxy_pair_));
+  EXPECT_FALSE(QuicStreamFactoryPeer::HasActiveSession(&factory_, server2));
+
+  TestCompletionCallback callback3;
+  QuicStreamRequest request3(&factory_);
+  EXPECT_EQ(OK, request3.Request(server2, is_https_,
+                                 cert_verifier_.get(), net_log_,
+                                 callback3.callback()));
+  scoped_ptr<QuicHttpStream> stream3 = request3.ReleaseStream();
+  EXPECT_TRUE(stream3.get());
+
+  EXPECT_TRUE(QuicStreamFactoryPeer::HasActiveSession(&factory_, server2));
+
+  EXPECT_TRUE(socket_data1.at_read_eof());
+  EXPECT_TRUE(socket_data1.at_write_eof());
+  EXPECT_TRUE(socket_data2.at_read_eof());
+  EXPECT_TRUE(socket_data2.at_write_eof());
+}
+
+TEST_P(QuicStreamFactoryTest, HttpsPooling) {
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  HostPortProxyPair server1(HostPortPair("www.example.org", 443),
+                            ProxyServer::Direct());
+  HostPortProxyPair server2(HostPortPair("mail.example.org", 443),
+                            ProxyServer::Direct());
+
+  // Load a cert that is valid for:
+  //   www.example.org (server1)
+  //   mail.example.org (server2)
+  //   www.example.com
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  SSLInfo ssl_info;
+  ssl_info.cert = test_cert.get();
+  crypto_client_stream_factory_.set_ssl_info(&ssl_info);
+
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(
+      server1.first.host(), "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(
+      server2.first.host(), "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  is_https_ = true;
+  EXPECT_EQ(OK, request.Request(server1, is_https_, cert_verifier_.get(),
+                                net_log_, callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  TestCompletionCallback callback;
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(OK, request2.Request(server2, is_https_, cert_verifier_.get(),
+                                net_log_, callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_EQ(QuicStreamFactoryPeer::GetActiveSession(&factory_, server1),
+            QuicStreamFactoryPeer::GetActiveSession(&factory_, server2));
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+}
+
+TEST_P(QuicStreamFactoryTest, NoHttpsPoolingWithCertMismatch) {
+  MockRead reads[] = {
+    MockRead(ASYNC, OK, 0)  // EOF
+  };
+  DeterministicSocketData socket_data1(reads, arraysize(reads), NULL, 0);
+  DeterministicSocketData socket_data2(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data1);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data1.StopAfter(1);
+  socket_data2.StopAfter(1);
+
+  HostPortProxyPair server1(HostPortPair("www.example.org", 443),
+                            ProxyServer::Direct());
+  HostPortProxyPair server2(HostPortPair("mail.google.com", 443),
+                            ProxyServer::Direct());
+
+  // Load a cert that is valid for:
+  //   www.example.org (server1)
+  //   mail.example.org
+  //   www.example.com
+  // But is not valid for mail.google.com (server2).
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> test_cert(
+      ImportCertFromFile(certs_dir, "spdy_pooling.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), test_cert);
+  SSLInfo ssl_info;
+  ssl_info.cert = test_cert.get();
+  crypto_client_stream_factory_.set_ssl_info(&ssl_info);
+
+  host_resolver_.set_synchronous_mode(true);
+  host_resolver_.rules()->AddIPLiteralRule(
+      server1.first.host(), "192.168.0.1", "");
+  host_resolver_.rules()->AddIPLiteralRule(
+      server2.first.host(), "192.168.0.1", "");
+
+  QuicStreamRequest request(&factory_);
+  is_https_ = true;
+  EXPECT_EQ(OK, request.Request(server1, is_https_, cert_verifier_.get(),
+                                net_log_, callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  TestCompletionCallback callback;
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(OK, request2.Request(server2, is_https_, cert_verifier_.get(),
+                                net_log_, callback_.callback()));
+  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_NE(QuicStreamFactoryPeer::GetActiveSession(&factory_, server1),
+            QuicStreamFactoryPeer::GetActiveSession(&factory_, server2));
+
+  EXPECT_TRUE(socket_data1.at_read_eof());
+  EXPECT_TRUE(socket_data1.at_write_eof());
+  EXPECT_TRUE(socket_data2.at_read_eof());
+  EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
 TEST_P(QuicStreamFactoryTest, Goaway) {

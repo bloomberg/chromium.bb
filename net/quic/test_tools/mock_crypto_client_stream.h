@@ -37,7 +37,8 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
       const string& server_hostname,
       QuicSession* session,
       QuicCryptoClientConfig* crypto_config,
-      HandshakeMode handshake_mode);
+      HandshakeMode handshake_mode,
+      const SSLInfo* ssl_info);
   virtual ~MockCryptoClientStream();
 
   // CryptoFramerVisitorInterface implementation.
@@ -47,6 +48,8 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
   // QuicCryptoClientStream implementation.
   virtual bool CryptoConnect() OVERRIDE;
 
+  virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
+
   // Invokes the sessions's CryptoHandshakeEvent method with the specified
   // event.
   void SendOnCryptoHandshakeEvent(QuicSession::CryptoHandshakeEvent event);
@@ -55,6 +58,8 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
 
  private:
   void SetConfigNegotiated();
+
+  const SSLInfo* ssl_info_;
 };
 
 }  // namespace net

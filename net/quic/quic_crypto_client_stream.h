@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   int num_sent_client_hellos() const;
 
   // Gets the SSL connection information.
-  bool GetSSLInfo(SSLInfo* ssl_info);
+  virtual bool GetSSLInfo(SSLInfo* ssl_info);
 
  private:
   // ProofVerifierCallbackImpl is passed as the callback method to VerifyProof.

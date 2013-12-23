@@ -169,6 +169,13 @@ int QuicStreamFactory::Job::DoResolveHostComplete(int rv) {
     return rv;
 
   DCHECK(!factory_->HasActiveSession(host_port_proxy_pair_));
+
+  // Inform the factory of this resolution, which will set up
+  // a session alias, if possible.
+  if (factory_->OnResolution(host_port_proxy_pair_, address_list_)) {
+    return OK;
+  }
+
   io_state_ = STATE_CONNECT;
   return OK;
 }
@@ -189,6 +196,7 @@ int QuicStreamRequest::Request(
     const CompletionCallback& callback) {
   DCHECK(!stream_);
   DCHECK(callback_.is_null());
+  DCHECK(factory_);
   int rv = factory_->Create(host_port_proxy_pair, is_https, cert_verifier,
                             net_log, this);
   if (rv == ERR_IO_PENDING) {
@@ -244,6 +252,15 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
     return rv;
 
   DCHECK(!factory_->HasActiveSession(host_port_proxy_pair_));
+  // There may well now be an active session for this IP.  If so, use the
+  // existing session instead.
+  AddressList address(session_->connection()->peer_address());
+  if (factory_->OnResolution(host_port_proxy_pair_, address)) {
+    session_->connection()->SendConnectionClose(QUIC_NO_ERROR);
+    session_ = NULL;
+    return OK;
+  }
+
   factory_->ActivateSession(host_port_proxy_pair_, session_);
 
   return OK;
@@ -319,6 +336,29 @@ int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
   return rv;
 }
 
+bool QuicStreamFactory::OnResolution(
+    const HostPortProxyPair& host_port_proxy_pair,
+    const AddressList& address_list) {
+  DCHECK(!HasActiveSession(host_port_proxy_pair));
+  for (size_t i = 0; i < address_list.size(); ++i) {
+    const IPEndPoint& address = address_list[i];
+    if (!ContainsKey(ip_aliases_, address))
+      continue;
+
+    const SessionSet& sessions = ip_aliases_[address];
+    for (SessionSet::const_iterator i = sessions.begin();
+         i != sessions.end(); ++i) {
+      QuicClientSession* session = *i;
+      if (!session->CanPool(host_port_proxy_pair.first.host()))
+        continue;
+      active_sessions_[host_port_proxy_pair] = session;
+      session_aliases_[session].insert(host_port_proxy_pair);
+      return true;
+    }
+  }
+  return false;
+}
+
 void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   if (rv == OK) {
     require_confirmation_ = false;
@@ -381,6 +421,11 @@ void QuicStreamFactory::OnSessionGoingAway(QuicClientSession* session) {
       http_server_properties_->SetBrokenAlternateProtocol(it->first);
     }
   }
+  IPEndPoint peer_address = session->connection()->peer_address();
+  ip_aliases_[peer_address].erase(session);
+  if (ip_aliases_[peer_address].empty()) {
+    ip_aliases_.erase(peer_address);
+  }
   session_aliases_.erase(session);
 }
 
@@ -418,9 +463,12 @@ base::Value* QuicStreamFactory::QuicStreamFactoryInfoToValue() const {
   for (SessionMap::const_iterator it = active_sessions_.begin();
        it != active_sessions_.end(); ++it) {
     const HostPortProxyPair& pair = it->first;
-    const QuicClientSession* session = it->second;
-
-    list->Append(session->GetInfoAsValue(pair.first));
+    QuicClientSession* session = it->second;
+    const AliasSet& aliases = session_aliases_.find(session)->second;
+    if (pair.first.Equals(aliases.begin()->first) &&
+        pair.second == aliases.begin()->second) {
+      list->Append(session->GetInfoAsValue(aliases));
+    }
   }
   return list;
 }
@@ -528,6 +576,9 @@ void QuicStreamFactory::ActivateSession(
   DCHECK(!HasActiveSession(host_port_proxy_pair));
   active_sessions_[host_port_proxy_pair] = session;
   session_aliases_[session].insert(host_port_proxy_pair);
+  DCHECK(!ContainsKey(ip_aliases_[session->connection()->peer_address()],
+                      session));
+  ip_aliases_[session->connection()->peer_address()].insert(session);
 }
 
 QuicCryptoClientConfig* QuicStreamFactory::GetOrCreateCryptoConfig(

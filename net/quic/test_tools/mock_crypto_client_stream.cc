@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/quic/test_tools/mock_crypto_client_stream.h"
+#include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -11,9 +12,11 @@ MockCryptoClientStream::MockCryptoClientStream(
     const string& server_hostname,
     QuicSession* session,
     QuicCryptoClientConfig* crypto_config,
-    HandshakeMode handshake_mode)
-  : QuicCryptoClientStream(server_hostname, session, crypto_config),
-    handshake_mode_(handshake_mode) {
+    HandshakeMode handshake_mode,
+    const SSLInfo* ssl_info)
+    : QuicCryptoClientStream(server_hostname, session, crypto_config),
+      handshake_mode_(handshake_mode),
+      ssl_info_(ssl_info) {
 }
 
 MockCryptoClientStream::~MockCryptoClientStream() {
@@ -48,6 +51,15 @@ bool MockCryptoClientStream::CryptoConnect() {
       break;
     }
   }
+  return true;
+}
+
+bool MockCryptoClientStream::GetSSLInfo(SSLInfo* ssl_info) {
+  ssl_info->Reset();
+  if (!ssl_info_) {
+    return false;
+  }
+  *ssl_info = *ssl_info_;
   return true;
 }
 
