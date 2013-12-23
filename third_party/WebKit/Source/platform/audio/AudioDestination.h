@@ -29,33 +29,43 @@
 #ifndef AudioDestination_h
 #define AudioDestination_h
 
-#include "platform/PlatformExport.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+#include "platform/audio/AudioBus.h"
+#include "platform/audio/AudioIOCallback.h"
+#include "platform/audio/AudioSourceProvider.h"
+#include "public/platform/WebAudioDevice.h"
+#include "public/platform/WebVector.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class AudioIOCallback;
+class AudioFIFO;
+class AudioPullFIFO;
 
-// AudioDestination is an abstraction for audio hardware I/O.
-// The audio hardware periodically calls the AudioIOCallback render() method asking it to render/output the next render quantum of audio.
-// It optionally will pass in local/live audio input when it calls render().
+// An AudioDestination using Chromium's audio system
 
-class PLATFORM_EXPORT AudioDestination {
+class PLATFORM_EXPORT AudioDestination : public blink::WebAudioDevice::RenderCallback, public AudioSourceProvider {
+    WTF_MAKE_NONCOPYABLE(AudioDestination);
 public:
+    AudioDestination(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate);
+    virtual ~AudioDestination();
+
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
     // Port-specific device identification information for live/local input streams can be passed in the inputDeviceId.
     static PassOwnPtr<AudioDestination> create(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate);
 
-    virtual ~AudioDestination() { }
+    virtual void start();
+    virtual void stop();
+    bool isPlaying() { return m_isPlaying; }
 
-    virtual void start() = 0;
-    virtual void stop() = 0;
-    virtual bool isPlaying() = 0;
+    float sampleRate() const { return m_sampleRate; }
 
-    // Sample-rate conversion may happen in AudioDestination to the hardware sample-rate
-    virtual float sampleRate() const = 0;
+    // blink::WebAudioDevice::RenderCallback
+    virtual void render(const blink::WebVector<float*>& sourceData, const blink::WebVector<float*>& audioData, size_t numberOfFrames);
+
+    // WebCore::AudioSourceProvider
+    virtual void provideInput(AudioBus*, size_t framesToProcess);
+
     static float hardwareSampleRate();
 
     // maxChannelCount() returns the total number of output channels of the audio hardware.
@@ -65,6 +75,19 @@ public:
     // be a value: 1 <= numberOfOutputChannels <= maxChannelCount(),
     // or if maxChannelCount() equals 0, then numberOfOutputChannels must be 2.
     static unsigned long maxChannelCount();
+
+private:
+    AudioIOCallback& m_callback;
+    unsigned m_numberOfOutputChannels;
+    RefPtr<AudioBus> m_inputBus;
+    RefPtr<AudioBus> m_renderBus;
+    float m_sampleRate;
+    bool m_isPlaying;
+    OwnPtr<blink::WebAudioDevice> m_audioDevice;
+    size_t m_callbackBufferSize;
+
+    OwnPtr<AudioFIFO> m_inputFifo;
+    OwnPtr<AudioPullFIFO> m_fifo;
 };
 
 } // namespace WebCore

@@ -30,7 +30,7 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "platform/audio/chromium/AudioDestinationChromium.h"
+#include "platform/audio/AudioDestination.h"
 
 #include "platform/audio/AudioFIFO.h"
 #include "platform/audio/AudioPullFIFO.h"
@@ -47,10 +47,10 @@ const size_t fifoSize = 8192;
 // Factory method: Chromium-implementation
 PassOwnPtr<AudioDestination> AudioDestination::create(AudioIOCallback& callback, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate)
 {
-    return adoptPtr(new AudioDestinationChromium(callback, inputDeviceId, numberOfInputChannels, numberOfOutputChannels, sampleRate));
+    return adoptPtr(new AudioDestination(callback, inputDeviceId, numberOfInputChannels, numberOfOutputChannels, sampleRate));
 }
 
-AudioDestinationChromium::AudioDestinationChromium(AudioIOCallback& callback, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate)
+AudioDestination::AudioDestination(AudioIOCallback& callback, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate)
     : m_callback(callback)
     , m_numberOfOutputChannels(numberOfOutputChannels)
     , m_inputBus(AudioBus::create(numberOfInputChannels, renderBufferSize))
@@ -104,12 +104,12 @@ AudioDestinationChromium::AudioDestinationChromium(AudioIOCallback& callback, co
     }
 }
 
-AudioDestinationChromium::~AudioDestinationChromium()
+AudioDestination::~AudioDestination()
 {
     stop();
 }
 
-void AudioDestinationChromium::start()
+void AudioDestination::start()
 {
     if (!m_isPlaying && m_audioDevice) {
         m_audioDevice->start();
@@ -117,7 +117,7 @@ void AudioDestinationChromium::start()
     }
 }
 
-void AudioDestinationChromium::stop()
+void AudioDestination::stop()
 {
     if (m_isPlaying && m_audioDevice) {
         m_audioDevice->stop();
@@ -135,7 +135,7 @@ unsigned long AudioDestination::maxChannelCount()
     return static_cast<float>(blink::Platform::current()->audioHardwareOutputChannels());
 }
 
-void AudioDestinationChromium::render(const blink::WebVector<float*>& sourceData, const blink::WebVector<float*>& audioData, size_t numberOfFrames)
+void AudioDestination::render(const blink::WebVector<float*>& sourceData, const blink::WebVector<float*>& audioData, size_t numberOfFrames)
 {
     bool isNumberOfChannelsGood = audioData.size() == m_numberOfOutputChannels;
     if (!isNumberOfChannelsGood) {
@@ -164,7 +164,7 @@ void AudioDestinationChromium::render(const blink::WebVector<float*>& sourceData
     m_fifo->consume(m_renderBus.get(), numberOfFrames);
 }
 
-void AudioDestinationChromium::provideInput(AudioBus* bus, size_t framesToProcess)
+void AudioDestination::provideInput(AudioBus* bus, size_t framesToProcess)
 {
     AudioBus* sourceBus = 0;
     if (m_inputFifo->framesInFifo() >= framesToProcess) {

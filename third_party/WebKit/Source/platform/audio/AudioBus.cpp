@@ -32,14 +32,17 @@
 
 #include "platform/audio/AudioBus.h"
 
+#include "platform/audio/AudioFileReader.h"
 #include "platform/audio/DenormalDisabler.h"
+#include "platform/audio/SincResampler.h"
+#include "platform/audio/VectorMath.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebAudioBus.h"
+#include "wtf/OwnPtr.h"
 
 #include <assert.h>
 #include <math.h>
 #include <algorithm>
-#include "platform/audio/SincResampler.h"
-#include "platform/audio/VectorMath.h"
-#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -630,6 +633,47 @@ void AudioBus::clearSilentFlag()
 {
     for (size_t i = 0; i < m_channels.size(); ++i)
         m_channels[i]->clearSilentFlag();
+}
+
+PassRefPtr<AudioBus> decodeAudioFileData(const char* data, size_t size, double sampleRate)
+{
+    blink::WebAudioBus webAudioBus;
+    if (blink::Platform::current()->loadAudioResource(&webAudioBus, data, size, sampleRate))
+        return webAudioBus.release();
+    return 0;
+}
+
+PassRefPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float sampleRate)
+{
+    const blink::WebData& resource = blink::Platform::current()->loadResource(name);
+    if (resource.isEmpty())
+        return 0;
+
+    // FIXME: the sampleRate parameter is ignored. It should be removed from the API.
+    RefPtr<AudioBus> audioBus = decodeAudioFileData(resource.data(), resource.size(), sampleRate);
+
+    if (!audioBus.get())
+        return 0;
+
+    // If the bus is already at the requested sample-rate then return as is.
+    if (audioBus->sampleRate() == sampleRate)
+        return audioBus;
+
+    return AudioBus::createBySampleRateConverting(audioBus.get(), false, sampleRate);
+}
+
+PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
+{
+    // FIXME: the sampleRate parameter is ignored. It should be removed from the API.
+    RefPtr<AudioBus> audioBus = decodeAudioFileData(static_cast<const char*>(data), dataSize, sampleRate);
+    if (!audioBus.get())
+        return 0;
+
+    // If the bus needs no conversion then return as is.
+    if ((!mixToMono || audioBus->numberOfChannels() == 1) && audioBus->sampleRate() == sampleRate)
+        return audioBus;
+
+    return AudioBus::createBySampleRateConverting(audioBus.get(), mixToMono, sampleRate);
 }
 
 } // WebCore
