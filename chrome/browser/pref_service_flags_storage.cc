@@ -17,10 +17,10 @@ PrefServiceFlagsStorage::PrefServiceFlagsStorage(
 PrefServiceFlagsStorage::~PrefServiceFlagsStorage() {}
 
 std::set<std::string> PrefServiceFlagsStorage::GetFlags() {
-  const ListValue* enabled_experiments = prefs_->GetList(
+  const base::ListValue* enabled_experiments = prefs_->GetList(
       prefs::kEnabledLabsExperiments);
   std::set<std::string> flags;
-  for (ListValue::const_iterator it = enabled_experiments->begin();
+  for (base::ListValue::const_iterator it = enabled_experiments->begin();
        it != enabled_experiments->end();
        ++it) {
     std::string experiment_name;
@@ -35,12 +35,12 @@ std::set<std::string> PrefServiceFlagsStorage::GetFlags() {
 
 bool PrefServiceFlagsStorage::SetFlags(const std::set<std::string>& flags) {
   ListPrefUpdate update(prefs_, prefs::kEnabledLabsExperiments);
-  ListValue* experiments_list = update.Get();
+  base::ListValue* experiments_list = update.Get();
 
   experiments_list->Clear();
   for (std::set<std::string>::const_iterator it = flags.begin();
        it != flags.end(); ++it) {
-    experiments_list->Append(new StringValue(*it));
+    experiments_list->Append(new base::StringValue(*it));
   }
 
   return true;

@@ -182,13 +182,14 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
   GURL allowed_url("http://www.example.com/files/simple.html");
 
   // Set the host as allowed.
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetBooleanWithoutPathExpansion(allowed_url.host(), true);
   ManagedUserSettingsService* managed_user_settings_service =
       ManagedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
   managed_user_settings_service->SetLocalSettingForTesting(
-      managed_users::kContentPackManualBehaviorHosts, dict.PassAs<Value>());
+      managed_users::kContentPackManualBehaviorHosts,
+      dict.PassAs<base::Value>());
   EXPECT_EQ(
       ManagedUserService::MANUAL_ALLOW,
       managed_user_service_->GetManualBehaviorForHost(allowed_url.host()));
@@ -246,13 +247,14 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest, Unblock) {
       content::NotificationService::AllSources());
 
   // Set the host as allowed.
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetBooleanWithoutPathExpansion(test_url.host(), true);
   ManagedUserSettingsService* managed_user_settings_service =
       ManagedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
   managed_user_settings_service->SetLocalSettingForTesting(
-      managed_users::kContentPackManualBehaviorHosts, dict.PassAs<Value>());
+      managed_users::kContentPackManualBehaviorHosts,
+      dict.PassAs<base::Value>());
   EXPECT_EQ(
       ManagedUserService::MANUAL_ALLOW,
       managed_user_service_->GetManualBehaviorForHost(test_url.host()));

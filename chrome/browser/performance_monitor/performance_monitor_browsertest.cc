@@ -85,7 +85,7 @@ struct ExtensionBasicInfo {
 // Compare the fields of |extension| to those in |value|; this is a check to
 // make sure the extension data was recorded properly in the event.
 void ValidateExtensionInfo(const ExtensionBasicInfo extension,
-                           const DictionaryValue* value) {
+                           const base::DictionaryValue* value) {
   std::string extension_description;
   std::string extension_id;
   std::string extension_name;

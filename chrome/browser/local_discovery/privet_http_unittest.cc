@@ -354,7 +354,7 @@ class MockRegisterDelegate : public PrivetRegisterOperation::Delegate {
       const std::string& action,
       PrivetRegisterOperation::FailureReason reason,
       int printer_http_code,
-      const DictionaryValue* json) OVERRIDE {
+      const base::DictionaryValue* json) OVERRIDE {
     // TODO(noamsml): Save and test for JSON?
     OnPrivetRegisterErrorInternal(action, reason, printer_http_code);
   }

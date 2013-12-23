@@ -62,12 +62,12 @@ class TokenLoadingJob : public base::RefCountedThreadSafe<TokenLoadingJob> {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DictionaryPrefUpdate update(g_browser_process->local_state(),
                                 prefs::kGeolocationAccessToken);
-    DictionaryValue* token_dictionary = update.Get();
+    base::DictionaryValue* token_dictionary = update.Get();
 
     std::vector<std::string> providers_to_remove;
     // The dictionary value could be NULL if the pref has never been set.
     if (token_dictionary != NULL) {
-      for (DictionaryValue::Iterator it(*token_dictionary); !it.IsAtEnd();
+      for (base::DictionaryValue::Iterator it(*token_dictionary); !it.IsAtEnd();
            it.Advance()) {
         GURL url(it.key());
         if (!url.is_valid())
@@ -117,9 +117,9 @@ static void SetAccessTokenOnUIThread(const GURL& server_url,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DictionaryPrefUpdate update(g_browser_process->local_state(),
                               prefs::kGeolocationAccessToken);
-  DictionaryValue* access_token_dictionary = update.Get();
+  base::DictionaryValue* access_token_dictionary = update.Get();
   access_token_dictionary->SetWithoutPathExpansion(
-      server_url.spec(), Value::CreateStringValue(token));
+      server_url.spec(), base::Value::CreateStringValue(token));
 }
 
 void ChromeAccessTokenStore::SaveAccessToken(

@@ -442,7 +442,7 @@ UrlList Predictor::GetPredictedUrlListAtStartup(
   // This may catch secondary hostnames, pulled in by the homepages.  It will
   // also catch more of the "primary" home pages, since that was (presumably)
   // rendered first (and will be rendered first this time too).
-  const ListValue* startup_list =
+  const base::ListValue* startup_list =
       user_prefs->GetList(prefs::kDnsPrefetchingStartupList);
 
   if (startup_list) {
@@ -745,11 +745,11 @@ void Predictor::SerializeReferrers(base::ListValue* referral_list) {
   for (Referrers::const_iterator it = referrers_.begin();
        it != referrers_.end(); ++it) {
     // Serialize the list of subresource names.
-    Value* subresource_list(it->second.Serialize());
+    base::Value* subresource_list(it->second.Serialize());
 
     // Create a list for each referer.
-    ListValue* motivator(new ListValue);
-    motivator->Append(new StringValue(it->first.spec()));
+    base::ListValue* motivator(new base::ListValue);
+    motivator->Append(new base::StringValue(it->first.spec()));
     motivator->Append(subresource_list);
 
     referral_list->Append(motivator);
@@ -774,7 +774,7 @@ void Predictor::DeserializeReferrers(const base::ListValue& referral_list) {
         return;
       }
 
-      const Value* subresource_list;
+      const base::Value* subresource_list;
       if (!motivator->Get(1, &subresource_list)) {
         NOTREACHED();
         return;
@@ -1364,7 +1364,7 @@ void Predictor::InitialObserver::GetInitialDnsResolutionList(
        it != first_navigations_.end();
        ++it) {
     DCHECK(it->first == Predictor::CanonicalizeUrl(it->first));
-    startup_list->Append(new StringValue(it->first.spec()));
+    startup_list->Append(new base::StringValue(it->first.spec()));
   }
 }
 

@@ -354,11 +354,12 @@ void SandboxedUnpacker::StartProcessOnIOThread(
 }
 
 void SandboxedUnpacker::OnUnpackExtensionSucceeded(
-    const DictionaryValue& manifest) {
+    const base::DictionaryValue& manifest) {
   CHECK(unpacker_io_task_runner_->RunsTasksOnCurrentThread());
   got_response_ = true;
 
-  scoped_ptr<DictionaryValue> final_manifest(RewriteManifestFile(manifest));
+  scoped_ptr<base::DictionaryValue> final_manifest(
+      RewriteManifestFile(manifest));
   if (!final_manifest)
     return;
 
@@ -589,7 +590,7 @@ void SandboxedUnpacker::ReportFailure(FailureReason reason,
 }
 
 void SandboxedUnpacker::ReportSuccess(
-    const DictionaryValue& original_manifest,
+    const base::DictionaryValue& original_manifest,
     const SkBitmap& install_icon) {
   UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccess", 1);
 
@@ -603,12 +604,12 @@ void SandboxedUnpacker::ReportSuccess(
   extension_ = NULL;
 }
 
-DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
-    const DictionaryValue& manifest) {
+base::DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
+    const base::DictionaryValue& manifest) {
   // Add the public key extracted earlier to the parsed manifest and overwrite
   // the original manifest. We do this to ensure the manifest doesn't contain an
   // exploitable bug that could be used to compromise the browser.
-  scoped_ptr<DictionaryValue> final_manifest(manifest.DeepCopy());
+  scoped_ptr<base::DictionaryValue> final_manifest(manifest.DeepCopy());
   final_manifest->SetString(manifest_keys::kPublicKey, public_key_);
 
   std::string manifest_json;
@@ -755,7 +756,7 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
 }
 
 bool SandboxedUnpacker::RewriteCatalogFiles() {
-  DictionaryValue catalogs;
+  base::DictionaryValue catalogs;
   if (!ReadMessageCatalogsFromFile(temp_dir_.path(), &catalogs)) {
     // Could not read catalog data from disk.
     ReportFailure(
@@ -767,8 +768,9 @@ bool SandboxedUnpacker::RewriteCatalogFiles() {
   }
 
   // Write our parsed catalogs back to disk.
-  for (DictionaryValue::Iterator it(catalogs); !it.IsAtEnd(); it.Advance()) {
-    const DictionaryValue* catalog = NULL;
+  for (base::DictionaryValue::Iterator it(catalogs);
+       !it.IsAtEnd(); it.Advance()) {
+    const base::DictionaryValue* catalog = NULL;
     if (!it.value().GetAsDictionary(&catalog)) {
       // Invalid catalog data.
       ReportFailure(

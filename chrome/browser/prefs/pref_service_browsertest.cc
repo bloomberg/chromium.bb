@@ -128,12 +128,13 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsLoaded, Test) {
   // The window should open with the new reference profile, with window
   // placement values stored in the user data directory.
   JSONFileValueSerializer deserializer(tmp_pref_file_);
-  scoped_ptr<Value> root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
 
   ASSERT_TRUE(root.get());
-  ASSERT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
+  ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
 
-  DictionaryValue* root_dict = static_cast<DictionaryValue*>(root.get());
+  base::DictionaryValue* root_dict =
+      static_cast<base::DictionaryValue*>(root.get());
 
   // Retrieve the screen rect for the launched window
   gfx::Rect bounds = browser()->window()->GetRestoredBounds();
@@ -188,10 +189,10 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsMigrated, Test) {
   // placement values stored in Local State.
 
   JSONFileValueSerializer deserializer(tmp_pref_file_);
-  scoped_ptr<Value> root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
 
   ASSERT_TRUE(root.get());
-  ASSERT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
+  ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
 
   // Retrieve the screen rect for the launched window
   gfx::Rect bounds = browser()->window()->GetRestoredBounds();
@@ -199,7 +200,8 @@ IN_PROC_BROWSER_TEST_F(PreservedWindowPlacementIsMigrated, Test) {
   // Values from old reference profile in Local State should have been
   // correctly migrated to the user's Preferences -- if so, the window
   // should be set to values taken from the user's Local State.
-  DictionaryValue* root_dict = static_cast<DictionaryValue*>(root.get());
+  base::DictionaryValue* root_dict =
+      static_cast<base::DictionaryValue*>(root.get());
 
   // Retrieve the expected rect values from User Preferences, where they
   // should have been migrated from Local State.

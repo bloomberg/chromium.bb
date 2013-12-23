@@ -79,7 +79,7 @@ void PluginsResourceService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kPluginsResourceCacheUpdate, "0");
 }
 
-void PluginsResourceService::Unpack(const DictionaryValue& parsed_json) {
+void PluginsResourceService::Unpack(const base::DictionaryValue& parsed_json) {
   prefs_->Set(prefs::kPluginsMetadata, parsed_json);
   PluginFinder::GetInstance()->ReinitializePlugins(&parsed_json);
 }

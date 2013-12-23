@@ -212,15 +212,15 @@ const base::Value* ProxyPolicyHandler::GetProxyPolicyValue(
     const PolicyMap& policies, const char* policy_name) {
   // See note on the ProxyPolicyHandler implementation above.
   const base::Value* value = policies.GetValue(key::kProxySettings);
-  const DictionaryValue* settings;
+  const base::DictionaryValue* settings;
   if (!value || !value->GetAsDictionary(&settings))
     return NULL;
 
   const base::Value* policy_value = NULL;
   std::string tmp;
   if (!settings->Get(policy_name, &policy_value) ||
-      policy_value->IsType(Value::TYPE_NULL) ||
-      (policy_value->IsType(Value::TYPE_STRING) &&
+      policy_value->IsType(base::Value::TYPE_NULL) ||
+      (policy_value->IsType(base::Value::TYPE_STRING) &&
        policy_value->GetAsString(&tmp) &&
        tmp.empty())) {
     return NULL;
@@ -250,7 +250,7 @@ bool ProxyPolicyHandler::CheckProxyModeAndServerMode(const PolicyMap& policies,
       errors->AddError(key::kProxySettings,
                        key::kProxyMode,
                        IDS_POLICY_TYPE_ERROR,
-                       ValueTypeToString(Value::TYPE_BOOLEAN));
+                       ValueTypeToString(base::Value::TYPE_BOOLEAN));
       return false;
     }
 
@@ -279,7 +279,7 @@ bool ProxyPolicyHandler::CheckProxyModeAndServerMode(const PolicyMap& policies,
       errors->AddError(key::kProxySettings,
                        key::kProxyServerMode,
                        IDS_POLICY_TYPE_ERROR,
-                       ValueTypeToString(Value::TYPE_INTEGER));
+                       ValueTypeToString(base::Value::TYPE_INTEGER));
       return false;
     }
 

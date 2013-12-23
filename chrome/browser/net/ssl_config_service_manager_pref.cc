@@ -27,11 +27,11 @@ namespace {
 
 // Converts a ListValue of StringValues into a vector of strings. Any Values
 // which cannot be converted will be skipped.
-std::vector<std::string> ListValueToStringVector(const ListValue* value) {
+std::vector<std::string> ListValueToStringVector(const base::ListValue* value) {
   std::vector<std::string> results;
   results.reserve(value->GetSize());
   std::string s;
-  for (ListValue::const_iterator it = value->begin(); it != value->end();
+  for (base::ListValue::const_iterator it = value->begin(); it != value->end();
        ++it) {
     if (!(*it)->GetAsString(&s))
       continue;
@@ -311,7 +311,8 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
 
 void SSLConfigServiceManagerPref::OnDisabledCipherSuitesChange(
     PrefService* local_state) {
-  const ListValue* value = local_state->GetList(prefs::kCipherSuiteBlacklist);
+  const base::ListValue* value =
+      local_state->GetList(prefs::kCipherSuiteBlacklist);
   disabled_cipher_suites_ = ParseCipherSuites(ListValueToStringVector(value));
 }
 

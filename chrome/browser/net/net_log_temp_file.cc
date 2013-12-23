@@ -42,7 +42,7 @@ void NetLogTempFile::ProcessCommand(Command command) {
   }
 }
 
-DictionaryValue* NetLogTempFile::GetState() {
+base::DictionaryValue* NetLogTempFile::GetState() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE_USER_BLOCKING));
   base::DictionaryValue* dict = new base::DictionaryValue;
 

@@ -154,7 +154,8 @@ void PrefMetricsService::RecordLaunchPrefs() {
   UMA_HISTOGRAM_ENUMERATION("Settings.StartupPageLoadSettings",
                             restore_on_startup, kSessionStartupPrefValueMax);
   if (restore_on_startup == SessionStartupPref::kPrefValueURLs) {
-    const ListValue* url_list = prefs_->GetList(prefs::kURLsToRestoreOnStartup);
+    const base::ListValue* url_list =
+        prefs_->GetList(prefs::kURLsToRestoreOnStartup);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Settings.StartupPageLoadURLs",
                                 url_list->GetSize(), 1, 50, 20);
     // Similarly, check startup pages for known search engine TLD+1s.
@@ -234,7 +235,7 @@ void PrefMetricsService::OnPrefChanged(
 };
 
 void PrefMetricsService::LogBooleanPrefChange(const std::string& histogram_name,
-                                              const Value* value) {
+                                              const base::Value* value) {
   bool boolean_value = false;
   if (!value->GetAsBoolean(&boolean_value))
     return;
@@ -245,7 +246,7 @@ void PrefMetricsService::LogBooleanPrefChange(const std::string& histogram_name,
 
 void PrefMetricsService::LogIntegerPrefChange(int boundary_value,
                                               const std::string& histogram_name,
-                                              const Value* value) {
+                                              const base::Value* value) {
   int integer_value = 0;
   if (!value->GetAsInteger(&integer_value))
     return;

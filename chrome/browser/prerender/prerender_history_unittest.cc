@@ -11,7 +11,7 @@ namespace prerender {
 
 namespace {
 
-bool ListEntryMatches(ListValue* list,
+bool ListEntryMatches(base::ListValue* list,
                       size_t index,
                       const char* expected_url,
                       FinalStatus expected_final_status,
@@ -19,7 +19,7 @@ bool ListEntryMatches(ListValue* list,
                       const std::string& expected_end_time) {
   if (index >= list->GetSize())
     return false;
-  DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = NULL;
   if (!list->GetDictionary(index, &dict))
     return false;
   if (dict->size() != 4u)
@@ -48,8 +48,8 @@ bool ListEntryMatches(ListValue* list,
 }
 
 TEST(PrerenderHistoryTest, GetAsValue)  {
-  scoped_ptr<Value> entry_value;
-  ListValue* entry_list = NULL;
+  scoped_ptr<base::Value> entry_value;
+  base::ListValue* entry_list = NULL;
 
   // Create a history with only 2 values.
   PrerenderHistory history(2);

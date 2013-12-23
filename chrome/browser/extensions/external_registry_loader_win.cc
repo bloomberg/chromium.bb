@@ -54,7 +54,7 @@ void ExternalRegistryLoader::StartLoading() {
 void ExternalRegistryLoader::LoadOnFileThread() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::TimeTicks start_time = base::TimeTicks::Now();
-  scoped_ptr<DictionaryValue> prefs(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
 
   // A map of IDs, to weed out duplicates between HKCU and HKLM.
   std::set<base::string16> keys;

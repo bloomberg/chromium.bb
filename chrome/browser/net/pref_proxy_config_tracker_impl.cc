@@ -202,14 +202,16 @@ net::ProxyConfigService::ConfigAvailability
 
 // static
 void PrefProxyConfigTrackerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
-  DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
+  base::DictionaryValue* default_settings =
+      ProxyConfigDictionary::CreateSystem();
   registry->RegisterDictionaryPref(prefs::kProxy, default_settings);
 }
 
 // static
 void PrefProxyConfigTrackerImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* pref_service) {
-  DictionaryValue* default_settings = ProxyConfigDictionary::CreateSystem();
+  base::DictionaryValue* default_settings =
+      ProxyConfigDictionary::CreateSystem();
   pref_service->RegisterDictionaryPref(
       prefs::kProxy,
       default_settings,
@@ -230,7 +232,8 @@ ProxyPrefs::ConfigState PrefProxyConfigTrackerImpl::ReadPrefConfig(
       pref_service->FindPreference(prefs::kProxy);
   DCHECK(pref);
 
-  const DictionaryValue* dict = pref_service->GetDictionary(prefs::kProxy);
+  const base::DictionaryValue* dict =
+      pref_service->GetDictionary(prefs::kProxy);
   DCHECK(dict);
   ProxyConfigDictionary proxy_dict(dict);
 

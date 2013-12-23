@@ -88,7 +88,7 @@ class PrivetRegisterOperation {
                                        const std::string& action,
                                        FailureReason reason,
                                        int printer_http_code,
-                                       const DictionaryValue* json) = 0;
+                                       const base::DictionaryValue* json) = 0;
 
     // Called when the registration is done.
     virtual void OnPrivetRegisterDone(PrivetRegisterOperation* operation,

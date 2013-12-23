@@ -120,15 +120,15 @@ class ProxyPolicyTest : public testing::Test {
 TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
   command_line_.AppendSwitchASCII(switches::kProxyBypassList, "123");
   command_line_.AppendSwitchASCII(switches::kProxyServer, "789");
-  Value* mode_name = Value::CreateStringValue(
+  base::Value* mode_name = base::Value::CreateStringValue(
       ProxyPrefs::kFixedServersProxyModeName);
   PolicyMap policy;
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
              mode_name, NULL);
   policy.Set(key::kProxyBypassList, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             Value::CreateStringValue("abc"), NULL);
+             base::Value::CreateStringValue("abc"), NULL);
   policy.Set(key::kProxyServer, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             Value::CreateStringValue("ghi"), NULL);
+             base::Value::CreateStringValue("ghi"), NULL);
   provider_.UpdateChromePolicy(policy);
 
   // First verify that command-line options are set correctly when
@@ -154,7 +154,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineOptions) {
 TEST_F(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
   command_line_.AppendSwitchASCII(switches::kProxyBypassList, "123");
   command_line_.AppendSwitchASCII(switches::kProxyServer, "789");
-  Value* mode_name = Value::CreateStringValue(
+  base::Value* mode_name = base::Value::CreateStringValue(
       ProxyPrefs::kAutoDetectProxyModeName);
   PolicyMap policy;
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -181,7 +181,7 @@ TEST_F(ProxyPolicyTest, OverridesUnrelatedCommandLineOptions) {
 
 TEST_F(ProxyPolicyTest, OverridesCommandLineNoProxy) {
   command_line_.AppendSwitch(switches::kNoProxyServer);
-  Value* mode_name = Value::CreateStringValue(
+  base::Value* mode_name = base::Value::CreateStringValue(
       ProxyPrefs::kAutoDetectProxyModeName);
   PolicyMap policy;
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -204,7 +204,7 @@ TEST_F(ProxyPolicyTest, OverridesCommandLineNoProxy) {
 
 TEST_F(ProxyPolicyTest, OverridesCommandLineAutoDetect) {
   command_line_.AppendSwitch(switches::kProxyAutoDetect);
-  Value* mode_name = Value::CreateStringValue(
+  base::Value* mode_name = base::Value::CreateStringValue(
       ProxyPrefs::kDirectProxyModeName);
   PolicyMap policy;
   policy.Set(key::kProxyMode, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,

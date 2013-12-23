@@ -24,7 +24,7 @@ const char kInvalidatorMaxInvalidationVersions[] =
 
 
 bool ValueToUnackedInvalidationStorageMap(
-    const ListValue& value,
+    const base::ListValue& value,
     syncer::UnackedInvalidationsMap* map) {
   for (size_t i = 0; i != value.GetSize(); ++i) {
     invalidation::ObjectId invalid_id;

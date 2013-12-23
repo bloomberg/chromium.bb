@@ -53,16 +53,16 @@ static base::string16 GetGroupName(const content::WebPluginInfo& plugin) {
 }
 
 void LoadMimeTypes(bool matching_mime_types,
-                   const DictionaryValue* plugin_dict,
+                   const base::DictionaryValue* plugin_dict,
                    PluginMetadata* plugin) {
-  const ListValue* mime_types = NULL;
+  const base::ListValue* mime_types = NULL;
   std::string list_key =
       matching_mime_types ? "matching_mime_types" : "mime_types";
   if (!plugin_dict->GetList(list_key, &mime_types))
     return;
 
   bool success = false;
-  for (ListValue::const_iterator mime_type_it = mime_types->begin();
+  for (base::ListValue::const_iterator mime_type_it = mime_types->begin();
        mime_type_it != mime_types->end(); ++mime_type_it) {
     std::string mime_type_str;
     success = (*mime_type_it)->GetAsString(&mime_type_str);
@@ -77,7 +77,7 @@ void LoadMimeTypes(bool matching_mime_types,
 
 PluginMetadata* CreatePluginMetadata(
     const std::string& identifier,
-    const DictionaryValue* plugin_dict) {
+    const base::DictionaryValue* plugin_dict) {
   std::string url;
   bool success = plugin_dict->GetString("url", &url);
   std::string help_url;
@@ -100,11 +100,11 @@ PluginMetadata* CreatePluginMetadata(
                                               GURL(help_url),
                                               group_name_matcher,
                                               language_str);
-  const ListValue* versions = NULL;
+  const base::ListValue* versions = NULL;
   if (plugin_dict->GetList("versions", &versions)) {
-    for (ListValue::const_iterator it = versions->begin();
+    for (base::ListValue::const_iterator it = versions->begin();
          it != versions->end(); ++it) {
-      DictionaryValue* version_dict = NULL;
+      base::DictionaryValue* version_dict = NULL;
       if (!(*it)->GetAsDictionary(&version_dict)) {
         NOTREACHED();
         continue;
@@ -150,13 +150,13 @@ void PluginFinder::Init() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Load the built-in plug-in list first. If we have a newer version stored
   // locally or download one, we will replace this one with it.
-  scoped_ptr<DictionaryValue> plugin_list(LoadBuiltInPluginList());
+  scoped_ptr<base::DictionaryValue> plugin_list(LoadBuiltInPluginList());
   DCHECK(plugin_list);
   ReinitializePlugins(plugin_list.get());
 }
 
 // static
-DictionaryValue* PluginFinder::LoadBuiltInPluginList() {
+base::DictionaryValue* PluginFinder::LoadBuiltInPluginList() {
   base::StringPiece json_resource(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_PLUGIN_DB_JSON));
@@ -243,9 +243,9 @@ void PluginFinder::ReinitializePlugins(
   STLDeleteValues(&identifier_plugin_);
   identifier_plugin_.clear();
 
-  for (DictionaryValue::Iterator plugin_it(*plugin_list);
+  for (base::DictionaryValue::Iterator plugin_it(*plugin_list);
       !plugin_it.IsAtEnd(); plugin_it.Advance()) {
-    const DictionaryValue* plugin = NULL;
+    const base::DictionaryValue* plugin = NULL;
     const std::string& identifier = plugin_it.key();
     if (plugin_list->GetDictionaryWithoutPathExpansion(identifier, &plugin)) {
       DCHECK(!identifier_plugin_[identifier]);

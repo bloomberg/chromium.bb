@@ -71,7 +71,7 @@ void URLBlacklistPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   if (url_blacklist) {
     for (base::ListValue::const_iterator entry(url_blacklist->begin());
          entry != url_blacklist->end(); ++entry) {
-      if ((*entry)->IsType(Value::TYPE_STRING))
+      if ((*entry)->IsType(base::Value::TYPE_STRING))
         merged_url_blacklist->Append((*entry)->DeepCopy());
     }
   }

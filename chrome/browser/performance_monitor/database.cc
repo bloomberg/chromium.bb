@@ -57,12 +57,12 @@ double StringToDouble(const std::string& s) {
 // Returns an event from the given JSON string; the scoped_ptr will be NULL if
 // we are unable to properly parse the JSON.
 scoped_ptr<Event> EventFromJSON(const std::string& data) {
-  Value* value = base::JSONReader::Read(data);
-  DictionaryValue* dict = NULL;
+  base::Value* value = base::JSONReader::Read(data);
+  base::DictionaryValue* dict = NULL;
   if (!value || !value->GetAsDictionary(&dict))
     return scoped_ptr<Event>();
 
-  return Event::FromValue(scoped_ptr<DictionaryValue>(dict));
+  return Event::FromValue(scoped_ptr<base::DictionaryValue>(dict));
 }
 
 }  // namespace

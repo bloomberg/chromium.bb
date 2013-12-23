@@ -37,9 +37,9 @@ TEST(ChromePrefServiceTest, UpdateCommandLinePrefStore) {
   const PrefService::Preference* pref =
       prefs.FindPreference(prefs::kCloudPrintProxyEnabled);
   ASSERT_TRUE(pref);
-  const Value* value = pref->GetValue();
+  const base::Value* value = pref->GetValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
+  EXPECT_EQ(base::Value::TYPE_BOOLEAN, value->GetType());
   bool actual_bool_value = true;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_FALSE(actual_bool_value);
@@ -54,7 +54,7 @@ TEST(ChromePrefServiceTest, UpdateCommandLinePrefStore) {
   ASSERT_TRUE(pref);
   value = pref->GetValue();
   ASSERT_TRUE(value);
-  EXPECT_EQ(Value::TYPE_BOOLEAN, value->GetType());
+  EXPECT_EQ(base::Value::TYPE_BOOLEAN, value->GetType());
   actual_bool_value = false;
   EXPECT_TRUE(value->GetAsBoolean(&actual_bool_value));
   EXPECT_TRUE(actual_bool_value);
@@ -101,18 +101,18 @@ class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
         profile()->GetTestingPrefService();
 #if defined(TOOLKIT_GTK)
     pref_services->SetUserPref(prefs::kUsesSystemTheme,
-                               Value::CreateBooleanValue(false));
+                               base::Value::CreateBooleanValue(false));
 #endif
     pref_services->SetUserPref(prefs::kDefaultCharset,
-                               Value::CreateStringValue("utf8"));
+                               base::Value::CreateStringValue("utf8"));
     pref_services->SetUserPref(prefs::kWebKitDefaultFontSize,
-                               Value::CreateIntegerValue(20));
+                               base::Value::CreateIntegerValue(20));
     pref_services->SetUserPref(prefs::kWebKitTextAreasAreResizable,
-                               Value::CreateBooleanValue(false));
+                               base::Value::CreateBooleanValue(false));
     pref_services->SetUserPref(prefs::kWebKitUsesUniversalDetector,
-                               Value::CreateBooleanValue(true));
+                               base::Value::CreateBooleanValue(true));
     pref_services->SetUserPref("webkit.webprefs.foo",
-                               Value::CreateStringValue("bar"));
+                               base::Value::CreateStringValue("bar"));
   }
 };
 

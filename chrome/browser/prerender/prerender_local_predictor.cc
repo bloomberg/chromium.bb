@@ -640,17 +640,17 @@ void PrerenderLocalPredictor::DoPrerenderServiceCheck(
       }
     }
   */
-  DictionaryValue json_data;
-  DictionaryValue* req = new DictionaryValue();
+  base::DictionaryValue json_data;
+  base::DictionaryValue* req = new base::DictionaryValue();
   req->SetInteger("version", 1);
   req->SetInteger("behavior_id", GetPrerenderServiceBehaviorID());
   if (ShouldQueryPrerenderServiceForCurrentURL() &&
       info->source_url_.url_lookup_success) {
-    ListValue* browse_history = new ListValue();
-    DictionaryValue* browse_item = new DictionaryValue();
+    base::ListValue* browse_history = new base::ListValue();
+    base::DictionaryValue* browse_item = new base::DictionaryValue();
     browse_item->SetString("url", info->source_url_.url.spec());
     browse_history->Append(browse_item);
-    DictionaryValue* hint_request = new DictionaryValue();
+    base::DictionaryValue* hint_request = new base::DictionaryValue();
     hint_request->Set("browse_history", browse_history);
     req->Set("hint_request", hint_request);
   }
@@ -661,16 +661,17 @@ void PrerenderLocalPredictor::DoPrerenderServiceCheck(
   }
   if (ShouldQueryPrerenderServiceForCandidateURLs() &&
       num_candidate_urls > 0) {
-    ListValue* candidates = new ListValue();
-    DictionaryValue* candidate;
+    base::ListValue* candidates = new base::ListValue();
+    base::DictionaryValue* candidate;
     for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
       if (info->candidate_urls_[i].url_lookup_success) {
-        candidate = new DictionaryValue();
+        candidate = new base::DictionaryValue();
         candidate->SetString("url", info->candidate_urls_[i].url.spec());
         candidates->Append(candidate);
       }
     }
-    DictionaryValue* candidate_check_request = new DictionaryValue();
+    base::DictionaryValue* candidate_check_request =
+        new base::DictionaryValue();
     candidate_check_request->Set("candidates", candidates);
     req->Set("candidate_check_request", candidate_check_request);
   }
@@ -715,7 +716,7 @@ void PrerenderLocalPredictor::MaybeCancelURLFetcher(net::URLFetcher* fetcher) {
 }
 
 bool PrerenderLocalPredictor::ApplyParsedPrerenderServiceResponse(
-    DictionaryValue* dict,
+    base::DictionaryValue* dict,
     CandidatePrerenderInfo* info,
     bool* hinting_timed_out,
     bool* hinting_url_lookup_timed_out,
@@ -756,7 +757,7 @@ bool PrerenderLocalPredictor::ApplyParsedPrerenderServiceResponse(
       }
     }
   */
-  ListValue* list = NULL;
+  base::ListValue* list = NULL;
   int int_value;
   if (!dict->GetInteger("prerender_response.behavior_id", &int_value) ||
       int_value != GetPrerenderServiceBehaviorID()) {
@@ -772,7 +773,7 @@ bool PrerenderLocalPredictor::ApplyParsedPrerenderServiceResponse(
     }
   } else {
     for (size_t i = 0; i < list->GetSize(); i++) {
-      DictionaryValue* d;
+      base::DictionaryValue* d;
       if (!list->GetDictionary(i, &d))
         return false;
       string url_string;
@@ -821,7 +822,7 @@ bool PrerenderLocalPredictor::ApplyParsedPrerenderServiceResponse(
       return false;
     } else {
       for (int i = 0; i < static_cast<int>(list->GetSize()); i++) {
-        DictionaryValue* d;
+        base::DictionaryValue* d;
         if (!list->GetDictionary(i, &d))
           return false;
         string url;
@@ -873,16 +874,16 @@ void PrerenderLocalPredictor::OnURLFetchComplete(
                    base::Time::Now() - info->start_time_);
   string result;
   fetcher->GetResponseAsString(&result);
-  scoped_ptr<Value> root;
+  scoped_ptr<base::Value> root;
   root.reset(base::JSONReader::Read(result));
   bool hinting_timed_out = false;
   bool hinting_url_lookup_timed_out = false;
   bool candidate_url_lookup_timed_out = false;
-  if (!root.get() || !root->IsType(Value::TYPE_DICTIONARY)) {
+  if (!root.get() || !root->IsType(base::Value::TYPE_DICTIONARY)) {
     RecordEvent(EVENT_PRERENDER_SERVICE_PARSE_ERROR_INCORRECT_JSON);
   } else {
     if (ApplyParsedPrerenderServiceResponse(
-            static_cast<DictionaryValue*>(root.get()),
+            static_cast<base::DictionaryValue*>(root.get()),
             info.get(),
             &hinting_timed_out,
             &hinting_url_lookup_timed_out,

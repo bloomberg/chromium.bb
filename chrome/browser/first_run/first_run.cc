@@ -162,7 +162,7 @@ void DoDelayedInstallExtensions() {
 
 void DoDelayedInstallExtensionsIfNeeded(
     installer::MasterPreferences* install_prefs) {
-  DictionaryValue* extensions = 0;
+  base::DictionaryValue* extensions = 0;
   if (install_prefs->GetExtensionsBlock(&extensions)) {
     VLOG(1) << "Extensions block found in master preferences";
     DoDelayedInstallExtensions();

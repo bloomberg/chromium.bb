@@ -325,7 +325,7 @@ void TopSitesImpl::SyncWithHistory() {
 }
 
 bool TopSitesImpl::HasBlacklistedItems() const {
-  const DictionaryValue* blacklist =
+  const base::DictionaryValue* blacklist =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   return blacklist && !blacklist->empty();
 }
@@ -333,11 +333,11 @@ bool TopSitesImpl::HasBlacklistedItems() const {
 void TopSitesImpl::AddBlacklistedURL(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  Value* dummy = Value::CreateNullValue();
+  base::Value* dummy = base::Value::CreateNullValue();
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kNtpMostVisitedURLsBlacklist);
-    DictionaryValue* blacklist = update.Get();
+    base::DictionaryValue* blacklist = update.Get();
     blacklist->SetWithoutPathExpansion(GetURLHash(url), dummy);
   }
 
@@ -350,7 +350,7 @@ void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kNtpMostVisitedURLsBlacklist);
-    DictionaryValue* blacklist = update.Get();
+    base::DictionaryValue* blacklist = update.Get();
     blacklist->RemoveWithoutPathExpansion(GetURLHash(url), NULL);
   }
   ResetThreadSafeCache();
@@ -359,7 +359,7 @@ void TopSitesImpl::RemoveBlacklistedURL(const GURL& url) {
 
 bool TopSitesImpl::IsBlacklisted(const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  const DictionaryValue* blacklist =
+  const base::DictionaryValue* blacklist =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   return blacklist && blacklist->HasKey(GetURLHash(url));
 }
@@ -369,7 +369,7 @@ void TopSitesImpl::ClearBlacklistedURLs() {
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kNtpMostVisitedURLsBlacklist);
-    DictionaryValue* blacklist = update.Get();
+    base::DictionaryValue* blacklist = update.Get();
     blacklist->Clear();
   }
   ResetThreadSafeCache();
@@ -696,7 +696,7 @@ void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
                                   MostVisitedURLList* out) {
   // Log the number of times ApplyBlacklist is called so we can compute the
   // average number of blacklisted items per user.
-  const DictionaryValue* blacklist =
+  const base::DictionaryValue* blacklist =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   UMA_HISTOGRAM_BOOLEAN("TopSites.NumberOfApplyBlacklist", true);
   UMA_HISTOGRAM_COUNTS_100("TopSites.NumberOfBlacklistedItems",
@@ -841,7 +841,7 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites) {
 int TopSitesImpl::num_results_to_request_from_history() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const DictionaryValue* blacklist =
+  const base::DictionaryValue* blacklist =
       profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
   return kNonForcedTopSitesNumber + (blacklist ? blacklist->size() : 0);
 }

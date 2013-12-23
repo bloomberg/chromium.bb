@@ -54,24 +54,25 @@ class ExtensionUITest : public testing::Test {
     message_loop_.RunUntilIdle();
   }
 
-  static DictionaryValue* DeserializeJSONTestData(const base::FilePath& path,
+  static base::DictionaryValue* DeserializeJSONTestData(
+      const base::FilePath& path,
       std::string *error) {
-    Value* value;
+    base::Value* value;
 
     JSONFileValueSerializer serializer(path);
     value = serializer.Deserialize(NULL, error);
 
-    return static_cast<DictionaryValue*>(value);
+    return static_cast<base::DictionaryValue*>(value);
   }
 
-  DictionaryValue* CreateExtensionDetailViewFromPath(
+  base::DictionaryValue* CreateExtensionDetailViewFromPath(
       const base::FilePath& extension_path,
       const std::vector<ExtensionPage>& pages,
       Manifest::Location location) {
     std::string error;
 
     base::FilePath manifest_path = extension_path.Append(kManifestFilename);
-    scoped_ptr<DictionaryValue> extension_data(DeserializeJSONTestData(
+    scoped_ptr<base::DictionaryValue> extension_data(DeserializeJSONTestData(
         manifest_path, &error));
     EXPECT_EQ("", error);
 
@@ -90,12 +91,12 @@ class ExtensionUITest : public testing::Test {
       const base::FilePath& expected_output_path) {
     std::string error;
 
-    scoped_ptr<DictionaryValue> expected_output_data(DeserializeJSONTestData(
-        expected_output_path, &error));
+    scoped_ptr<base::DictionaryValue> expected_output_data(
+        DeserializeJSONTestData(expected_output_path, &error));
     EXPECT_EQ("", error);
 
     // Produce test output.
-    scoped_ptr<DictionaryValue> actual_output_data(
+    scoped_ptr<base::DictionaryValue> actual_output_data(
         CreateExtensionDetailViewFromPath(
             extension_path, pages, Manifest::INVALID_LOCATION));
 
@@ -104,10 +105,10 @@ class ExtensionUITest : public testing::Test {
     std::string paths_details = " - expected (" +
         expected_output_path.MaybeAsASCII() + ") vs. actual (" +
         extension_path.MaybeAsASCII() + ")";
-    for (DictionaryValue::Iterator field(*expected_output_data);
+    for (base::DictionaryValue::Iterator field(*expected_output_data);
          !field.IsAtEnd(); field.Advance()) {
-      const Value* expected_value = &field.value();
-      Value* actual_value = NULL;
+      const base::Value* expected_value = &field.value();
+      base::Value* actual_value = NULL;
       EXPECT_TRUE(actual_output_data->Get(field.key(), &actual_value)) <<
           field.key() + " is missing" + paths_details;
       EXPECT_TRUE(expected_value->Equals(actual_value)) << field.key() +
@@ -206,7 +207,7 @@ TEST_F(ExtensionUITest, LocationLoadPropagation) {
 
   std::vector<ExtensionPage> pages;
 
-  scoped_ptr<DictionaryValue> extension_details(
+  scoped_ptr<base::DictionaryValue> extension_details(
       CreateExtensionDetailViewFromPath(
           extension_path, pages, Manifest::UNPACKED));
 
@@ -238,7 +239,7 @@ TEST_F(ExtensionUITest, LocationExternalPrefPropagation) {
 
   std::vector<ExtensionPage> pages;
 
-  scoped_ptr<DictionaryValue> extension_details(
+  scoped_ptr<base::DictionaryValue> extension_details(
       CreateExtensionDetailViewFromPath(
           extension_path, pages, Manifest::EXTERNAL_PREF));
 
@@ -267,7 +268,7 @@ TEST_F(ExtensionUITest, PathPropagation) {
 
   std::vector<ExtensionPage> pages;
 
-  scoped_ptr<DictionaryValue> extension_details(
+  scoped_ptr<base::DictionaryValue> extension_details(
       CreateExtensionDetailViewFromPath(
           extension_path, pages, Manifest::UNPACKED));
 

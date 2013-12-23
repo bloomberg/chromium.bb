@@ -206,12 +206,12 @@ class RequestImpl : public WebHistoryService::Request,
 // Extracts a JSON-encoded HTTP response into a DictionaryValue.
 // If |request|'s HTTP response code indicates failure, or if the response
 // body is not JSON, a null pointer is returned.
-scoped_ptr<DictionaryValue> ReadResponse(RequestImpl* request) {
-  scoped_ptr<DictionaryValue> result;
+scoped_ptr<base::DictionaryValue> ReadResponse(RequestImpl* request) {
+  scoped_ptr<base::DictionaryValue> result;
   if (request->response_code() == net::HTTP_OK) {
-    Value* value = base::JSONReader::Read(request->response_body());
+    base::Value* value = base::JSONReader::Read(request->response_body());
     if (value && value->IsType(base::Value::TYPE_DICTIONARY))
-      result.reset(static_cast<DictionaryValue*>(value));
+      result.reset(static_cast<base::DictionaryValue*>(value));
     else
       DLOG(WARNING) << "Non-JSON response received from history server.";
   }
@@ -269,11 +269,11 @@ GURL GetQueryUrl(const base::string16& text_query,
 // Creates a DictionaryValue to hold the parameters for a deletion.
 // Ownership is passed to the caller.
 // |url| may be empty, indicating a time-range deletion.
-DictionaryValue* CreateDeletion(
+base::DictionaryValue* CreateDeletion(
     const std::string& min_time,
     const std::string& max_time,
     const GURL& url) {
-  DictionaryValue* deletion = new DictionaryValue;
+  base::DictionaryValue* deletion = new base::DictionaryValue;
   deletion->SetString("type", "CHROME_HISTORY");
   if (url.is_valid())
     deletion->SetString("url", url.spec());
@@ -316,8 +316,8 @@ scoped_ptr<WebHistoryService::Request> WebHistoryService::QueryHistory(
 scoped_ptr<WebHistoryService::Request> WebHistoryService::ExpireHistory(
     const std::vector<ExpireHistoryArgs>& expire_list,
     const ExpireWebHistoryCallback& callback) {
-  DictionaryValue delete_request;
-  scoped_ptr<ListValue> deletions(new ListValue);
+  base::DictionaryValue delete_request;
+  scoped_ptr<base::ListValue> deletions(new base::ListValue);
   base::Time now = base::Time::Now();
 
   for (std::vector<ExpireHistoryArgs>::const_iterator it = expire_list.begin();
@@ -380,7 +380,7 @@ void WebHistoryService::QueryHistoryCompletionCallback(
     const WebHistoryService::QueryWebHistoryCallback& callback,
     WebHistoryService::Request* request,
     bool success) {
-  scoped_ptr<DictionaryValue> response_value;
+  scoped_ptr<base::DictionaryValue> response_value;
   if (success)
     response_value = ReadResponse(static_cast<RequestImpl*>(request));
   callback.Run(request, response_value.get());
@@ -390,7 +390,7 @@ void WebHistoryService::ExpireHistoryCompletionCallback(
     const WebHistoryService::ExpireWebHistoryCallback& callback,
     WebHistoryService::Request* request,
     bool success) {
-  scoped_ptr<DictionaryValue> response_value;
+  scoped_ptr<base::DictionaryValue> response_value;
   if (success) {
     response_value = ReadResponse(static_cast<RequestImpl*>(request));
     if (response_value)

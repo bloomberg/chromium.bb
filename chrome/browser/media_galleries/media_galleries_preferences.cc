@@ -94,7 +94,7 @@ int NumberExtensionsUsingMediaGalleries(Profile* profile) {
   return count;
 }
 
-bool GetPrefId(const DictionaryValue& dict, MediaGalleryPrefId* value) {
+bool GetPrefId(const base::DictionaryValue& dict, MediaGalleryPrefId* value) {
   std::string string_id;
   if (!dict.GetString(kMediaGalleriesPrefIdKey, &string_id) ||
       !base::StringToUint64(string_id, value)) {
@@ -104,7 +104,8 @@ bool GetPrefId(const DictionaryValue& dict, MediaGalleryPrefId* value) {
   return true;
 }
 
-bool GetType(const DictionaryValue& dict, MediaGalleryPrefInfo::Type* type) {
+bool GetType(const base::DictionaryValue& dict,
+             MediaGalleryPrefInfo::Type* type) {
   std::string string_type;
   if (!dict.GetString(kMediaGalleriesTypeKey, &string_type))
     return false;
@@ -126,7 +127,7 @@ bool GetType(const DictionaryValue& dict, MediaGalleryPrefInfo::Type* type) {
 }
 
 bool PopulateGalleryPrefInfoFromDictionary(
-    const DictionaryValue& dict, MediaGalleryPrefInfo* out_gallery_info) {
+    const base::DictionaryValue& dict, MediaGalleryPrefInfo* out_gallery_info) {
   MediaGalleryPrefId pref_id;
   base::string16 display_name;
   std::string device_id;
@@ -175,9 +176,9 @@ bool PopulateGalleryPrefInfoFromDictionary(
   return true;
 }
 
-DictionaryValue* CreateGalleryPrefInfoDictionary(
+base::DictionaryValue* CreateGalleryPrefInfoDictionary(
     const MediaGalleryPrefInfo& gallery) {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString(kMediaGalleriesPrefIdKey,
                   base::Uint64ToString(gallery.pref_id));
   if (!gallery.volume_metadata_valid)
@@ -233,7 +234,7 @@ bool HasAutoDetectedGalleryPermission(const extensions::Extension& extension) {
 // Retrieves the MediaGalleryPermission from the given dictionary; DCHECKs on
 // failure.
 bool GetMediaGalleryPermissionFromDictionary(
-    const DictionaryValue* dict,
+    const base::DictionaryValue* dict,
     MediaGalleryPermission* out_permission) {
   std::string string_id;
   if (dict->GetString(kMediaGalleryIdKey, &string_id) &&
@@ -511,10 +512,11 @@ bool MediaGalleriesPreferences::UpdateDeviceIDForSingletonType(
   PrefService* prefs = profile_->GetPrefs();
   scoped_ptr<ListPrefUpdate> update(new ListPrefUpdate(
       prefs, prefs::kMediaGalleriesRememberedGalleries));
-  ListValue* list = update->Get();
-  for (ListValue::iterator iter = list->begin(); iter != list->end(); ++iter) {
+  base::ListValue* list = update->Get();
+  for (base::ListValue::iterator iter = list->begin();
+       iter != list->end(); ++iter) {
     // All of these calls should succeed, but preferences file can be corrupt.
-    DictionaryValue* dict;
+    base::DictionaryValue* dict;
     if (!(*iter)->GetAsDictionary(&dict))
       continue;
     std::string this_device_id;
@@ -575,12 +577,12 @@ void MediaGalleriesPreferences::InitFromPrefs() {
   device_map_.clear();
 
   PrefService* prefs = profile_->GetPrefs();
-  const ListValue* list = prefs->GetList(
+  const base::ListValue* list = prefs->GetList(
       prefs::kMediaGalleriesRememberedGalleries);
   if (list) {
-    for (ListValue::const_iterator it = list->begin();
+    for (base::ListValue::const_iterator it = list->begin();
          it != list->end(); ++it) {
-      const DictionaryValue* dict = NULL;
+      const base::DictionaryValue* dict = NULL;
       if (!(*it)->GetAsDictionary(&dict))
         continue;
 
@@ -757,12 +759,12 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
     PrefService* prefs = profile_->GetPrefs();
     scoped_ptr<ListPrefUpdate> update(
         new ListPrefUpdate(prefs, prefs::kMediaGalleriesRememberedGalleries));
-    ListValue* list = update->Get();
+    base::ListValue* list = update->Get();
 
-    for (ListValue::const_iterator list_iter = list->begin();
+    for (base::ListValue::const_iterator list_iter = list->begin();
          list_iter != list->end();
          ++list_iter) {
-      DictionaryValue* dict;
+      base::DictionaryValue* dict;
       MediaGalleryPrefId iter_id;
       if ((*list_iter)->GetAsDictionary(&dict) &&
           GetPrefId(*dict, &iter_id) &&
@@ -822,7 +824,7 @@ MediaGalleryPrefId MediaGalleriesPreferences::AddGalleryInternal(
 
   {
     ListPrefUpdate update(prefs, prefs::kMediaGalleriesRememberedGalleries);
-    ListValue* list = update.Get();
+    base::ListValue* list = update.Get();
     list->Append(CreateGalleryPrefInfoDictionary(gallery_info));
   }
   InitFromPrefs();
@@ -859,13 +861,14 @@ void MediaGalleriesPreferences::ForgetGalleryById(MediaGalleryPrefId pref_id) {
   PrefService* prefs = profile_->GetPrefs();
   scoped_ptr<ListPrefUpdate> update(new ListPrefUpdate(
       prefs, prefs::kMediaGalleriesRememberedGalleries));
-  ListValue* list = update->Get();
+  base::ListValue* list = update->Get();
 
   if (!ContainsKey(known_galleries_, pref_id))
     return;
 
-  for (ListValue::iterator iter = list->begin(); iter != list->end(); ++iter) {
-    DictionaryValue* dict;
+  for (base::ListValue::iterator iter = list->begin();
+       iter != list->end(); ++iter) {
+    base::DictionaryValue* dict;
     MediaGalleryPrefId iter_id;
     if ((*iter)->GetAsDictionary(&dict) && GetPrefId(*dict, &iter_id) &&
         pref_id == iter_id) {
@@ -994,14 +997,14 @@ bool MediaGalleriesPreferences::SetGalleryPermissionInPrefs(
   ExtensionPrefs::ScopedListUpdate update(GetExtensionPrefs(),
                                           extension_id,
                                           kMediaGalleriesPermissions);
-  ListValue* permissions = update.Get();
+  base::ListValue* permissions = update.Get();
   if (!permissions) {
     permissions = update.Create();
   } else {
     // If the gallery is already in the list, update the permission...
-    for (ListValue::iterator iter = permissions->begin();
+    for (base::ListValue::iterator iter = permissions->begin();
          iter != permissions->end(); ++iter) {
-      DictionaryValue* dict = NULL;
+      base::DictionaryValue* dict = NULL;
       if (!(*iter)->GetAsDictionary(&dict))
         continue;
       MediaGalleryPermission perm;
@@ -1018,7 +1021,7 @@ bool MediaGalleriesPreferences::SetGalleryPermissionInPrefs(
     }
   }
   // ...Otherwise, add a new entry for the gallery.
-  DictionaryValue* dict = new DictionaryValue;
+  base::DictionaryValue* dict = new base::DictionaryValue;
   dict->SetString(kMediaGalleryIdKey, base::Uint64ToString(gallery_id));
   dict->SetBoolean(kMediaGalleryHasPermissionKey, has_access);
   permissions->Append(dict);
@@ -1032,13 +1035,13 @@ bool MediaGalleriesPreferences::UnsetGalleryPermissionInPrefs(
   ExtensionPrefs::ScopedListUpdate update(GetExtensionPrefs(),
                                           extension_id,
                                           kMediaGalleriesPermissions);
-  ListValue* permissions = update.Get();
+  base::ListValue* permissions = update.Get();
   if (!permissions)
     return false;
 
-  for (ListValue::iterator iter = permissions->begin();
+  for (base::ListValue::iterator iter = permissions->begin();
        iter != permissions->end(); ++iter) {
-    const DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = NULL;
     if (!(*iter)->GetAsDictionary(&dict))
       continue;
     MediaGalleryPermission perm;
@@ -1057,16 +1060,16 @@ MediaGalleriesPreferences::GetGalleryPermissionsFromPrefs(
     const std::string& extension_id) const {
   DCHECK(IsInitialized());
   std::vector<MediaGalleryPermission> result;
-  const ListValue* permissions;
+  const base::ListValue* permissions;
   if (!GetExtensionPrefs()->ReadPrefAsList(extension_id,
                                            kMediaGalleriesPermissions,
                                            &permissions)) {
     return result;
   }
 
-  for (ListValue::const_iterator iter = permissions->begin();
+  for (base::ListValue::const_iterator iter = permissions->begin();
        iter != permissions->end(); ++iter) {
-    DictionaryValue* dict = NULL;
+    base::DictionaryValue* dict = NULL;
     if (!(*iter)->GetAsDictionary(&dict))
       continue;
     MediaGalleryPermission perm;
@@ -1082,12 +1085,12 @@ void MediaGalleriesPreferences::RemoveGalleryPermissionsFromPrefs(
     MediaGalleryPrefId gallery_id) {
   DCHECK(IsInitialized());
   ExtensionPrefs* prefs = GetExtensionPrefs();
-  const DictionaryValue* extensions =
+  const base::DictionaryValue* extensions =
       prefs->pref_service()->GetDictionary(prefs::kExtensionsPref);
   if (!extensions)
     return;
 
-  for (DictionaryValue::Iterator iter(*extensions); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*extensions); !iter.IsAtEnd();
        iter.Advance()) {
     if (!extensions::Extension::IdIsValid(iter.key())) {
       NOTREACHED();

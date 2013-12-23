@@ -56,7 +56,7 @@ void ExternalPolicyLoader::Observe(
 }
 
 void ExternalPolicyLoader::StartLoading() {
-  const DictionaryValue* forcelist =
+  const base::DictionaryValue* forcelist =
       profile_->GetPrefs()->GetDictionary(prefs::kExtensionInstallForceList);
   prefs_.reset(forcelist ? forcelist->DeepCopy() : NULL);
   LoadFinished();

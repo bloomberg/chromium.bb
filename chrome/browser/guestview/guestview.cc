@@ -32,7 +32,7 @@ static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
 }  // namespace
 
 GuestView::Event::Event(const std::string& name,
-                        scoped_ptr<DictionaryValue> args)
+                        scoped_ptr<base::DictionaryValue> args)
     : name_(name),
       args_(args.Pass()) {
 }
@@ -40,7 +40,7 @@ GuestView::Event::Event(const std::string& name,
 GuestView::Event::~Event() {
 }
 
-scoped_ptr<DictionaryValue> GuestView::Event::GetArguments() {
+scoped_ptr<base::DictionaryValue> GuestView::Event::GetArguments() {
   return args_.Pass();
 }
 
@@ -195,7 +195,7 @@ void GuestView::DispatchEvent(Event* event) {
   extensions::EventFilteringInfo info;
   info.SetURL(GURL());
   info.SetInstanceID(guest_instance_id_);
-  scoped_ptr<ListValue> args(new ListValue());
+  scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(event->GetArguments().release());
 
   extensions::EventRouter::DispatchEvent(

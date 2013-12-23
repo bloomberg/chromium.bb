@@ -135,7 +135,7 @@ class WebstoreStandaloneInstaller
   }
   Profile* profile() const { return profile_; }
   const std::string& id() const { return id_; }
-  const DictionaryValue* manifest() const { return manifest_.get(); }
+  const base::DictionaryValue* manifest() const { return manifest_.get(); }
 
  private:
   friend class base::RefCountedThreadSafe<WebstoreStandaloneInstaller>;
@@ -206,8 +206,8 @@ class WebstoreStandaloneInstaller
   std::string localized_user_count_;
   double average_rating_;
   int rating_count_;
-  scoped_ptr<DictionaryValue> webstore_data_;
-  scoped_ptr<DictionaryValue> manifest_;
+  scoped_ptr<base::DictionaryValue> webstore_data_;
+  scoped_ptr<base::DictionaryValue> manifest_;
   SkBitmap icon_;
 
   // Created by ShowInstallUI() when a prompt is shown (if

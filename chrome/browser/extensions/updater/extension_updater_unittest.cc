@@ -259,7 +259,7 @@ class MockService : public TestExtensionService {
                             const std::string* update_url,
                             Manifest::Location location) {
     for (int i = 1; i <= count; i++) {
-      DictionaryValue manifest;
+      base::DictionaryValue manifest;
       manifest.SetString(manifest_keys::kVersion,
                          base::StringPrintf("%d.0.0.0", i));
       manifest.SetString(manifest_keys::kName,

@@ -31,10 +31,11 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
   }
 
   void VerifyProxyMode(ProxyPrefs::ProxyMode expected_mode) {
-    const Value* value = NULL;
+    const base::Value* value = NULL;
     ASSERT_TRUE(GetValue(prefs::kProxy, &value));
-    ASSERT_EQ(Value::TYPE_DICTIONARY, value->GetType());
-    ProxyConfigDictionary dict(static_cast<const DictionaryValue*>(value));
+    ASSERT_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
+    ProxyConfigDictionary dict(
+        static_cast<const base::DictionaryValue*>(value));
     ProxyPrefs::ProxyMode actual_mode;
     ASSERT_TRUE(dict.GetMode(&actual_mode));
     EXPECT_EQ(expected_mode, actual_mode);
@@ -42,14 +43,15 @@ class TestCommandLinePrefStore : public CommandLinePrefStore {
 
   void VerifySSLCipherSuites(const char* const* ciphers,
                              size_t cipher_count) {
-    const Value* value = NULL;
+    const base::Value* value = NULL;
     ASSERT_TRUE(GetValue(prefs::kCipherSuiteBlacklist, &value));
-    ASSERT_EQ(Value::TYPE_LIST, value->GetType());
-    const ListValue* list_value = static_cast<const ListValue*>(value);
+    ASSERT_EQ(base::Value::TYPE_LIST, value->GetType());
+    const base::ListValue* list_value =
+        static_cast<const base::ListValue*>(value);
     ASSERT_EQ(cipher_count, list_value->GetSize());
 
     std::string cipher_string;
-    for (ListValue::const_iterator it = list_value->begin();
+    for (base::ListValue::const_iterator it = list_value->begin();
          it != list_value->end(); ++it, ++ciphers) {
       ASSERT_TRUE((*it)->GetAsString(&cipher_string));
       EXPECT_EQ(*ciphers, cipher_string);
@@ -66,7 +68,7 @@ TEST(CommandLinePrefStoreTest, SimpleStringPref) {
   cl.AppendSwitchASCII(switches::kLang, "hi-MOM");
   scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
 
-  const Value* actual = NULL;
+  const base::Value* actual = NULL;
   EXPECT_TRUE(store->GetValue(prefs::kApplicationLocale, &actual));
   std::string result;
   EXPECT_TRUE(actual->GetAsString(&result));
@@ -90,7 +92,7 @@ TEST(CommandLinePrefStoreTest, NoPrefs) {
   cl.AppendSwitchASCII(unknown_bool, "a value");
   scoped_refptr<CommandLinePrefStore> store = new CommandLinePrefStore(&cl);
 
-  const Value* actual = NULL;
+  const base::Value* actual = NULL;
   EXPECT_FALSE(store->GetValue(unknown_bool, &actual));
   EXPECT_FALSE(store->GetValue(unknown_string, &actual));
 }
@@ -105,16 +107,16 @@ TEST(CommandLinePrefStoreTest, MultipleSwitches) {
   scoped_refptr<TestCommandLinePrefStore> store =
       new TestCommandLinePrefStore(&cl);
 
-  const Value* actual = NULL;
+  const base::Value* actual = NULL;
   EXPECT_FALSE(store->GetValue(unknown_bool, &actual));
   EXPECT_FALSE(store->GetValue(unknown_string, &actual));
 
   store->VerifyProxyMode(ProxyPrefs::MODE_FIXED_SERVERS);
 
-  const Value* value = NULL;
+  const base::Value* value = NULL;
   ASSERT_TRUE(store->GetValue(prefs::kProxy, &value));
-  ASSERT_EQ(Value::TYPE_DICTIONARY, value->GetType());
-  ProxyConfigDictionary dict(static_cast<const DictionaryValue*>(value));
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
+  ProxyConfigDictionary dict(static_cast<const base::DictionaryValue*>(value));
 
   std::string string_result;
 

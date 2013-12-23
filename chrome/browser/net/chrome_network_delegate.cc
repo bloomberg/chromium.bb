@@ -410,13 +410,13 @@ void ChromeNetworkDelegate::AllowAccessToAllFiles() {
 }
 
 // static
-Value* ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue() {
+base::Value* ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* prefs = g_browser_process->local_state();
   int64 total_received = prefs->GetInt64(prefs::kHttpReceivedContentLength);
   int64 total_original = prefs->GetInt64(prefs::kHttpOriginalContentLength);
 
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   // Use strings to avoid overflow.  base::Value only supports 32-bit integers.
   dict->SetString("historic_received_content_length",
                   base::Int64ToString(total_received));
@@ -425,8 +425,8 @@ Value* ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue() {
   return dict;
 }
 
-Value* ChromeNetworkDelegate::SessionNetworkStatsInfoToValue() const {
-  DictionaryValue* dict = new DictionaryValue();
+base::Value* ChromeNetworkDelegate::SessionNetworkStatsInfoToValue() const {
+  base::DictionaryValue* dict = new base::DictionaryValue();
   // Use strings to avoid overflow.  base::Value only supports 32-bit integers.
   dict->SetString("session_received_content_length",
                   base::Int64ToString(received_content_length_));

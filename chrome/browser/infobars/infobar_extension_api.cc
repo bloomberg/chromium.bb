@@ -21,7 +21,7 @@
 
 
 bool InfobarsShowFunction::RunImpl() {
-  DictionaryValue* args;
+  base::DictionaryValue* args;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &args));
 
   const char kTabId[] = "tabId";

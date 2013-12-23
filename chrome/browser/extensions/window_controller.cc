@@ -30,7 +30,7 @@ Browser* WindowController::GetBrowser() const {
 namespace keys = tabs_constants;
 
 base::DictionaryValue* WindowController::CreateWindowValue() const {
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
 
   result->SetInteger(keys::kIdKey, GetWindowId());
   result->SetString(keys::kWindowTypeKey, GetWindowTypeText());

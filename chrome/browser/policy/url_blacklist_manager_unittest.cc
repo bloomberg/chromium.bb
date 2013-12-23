@@ -183,10 +183,10 @@ TEST_P(URLBlacklistFilterToComponentsTest, FilterToComponents) {
 }
 
 TEST_F(URLBlacklistManagerTest, SingleUpdateForTwoPrefChanges) {
-  ListValue* blacklist = new ListValue;
-  blacklist->Append(new StringValue("*.google.com"));
-  ListValue* whitelist = new ListValue;
-  whitelist->Append(new StringValue("mail.google.com"));
+  base::ListValue* blacklist = new base::ListValue;
+  blacklist->Append(new base::StringValue("*.google.com"));
+  base::ListValue* whitelist = new base::ListValue;
+  whitelist->Append(new base::StringValue("mail.google.com"));
   pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist, blacklist);
   pref_service_.SetManagedPref(policy_prefs::kUrlBlacklist, whitelist);
   loop_.RunUntilIdle();

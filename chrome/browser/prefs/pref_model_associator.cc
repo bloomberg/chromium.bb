@@ -101,7 +101,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
     const std::string& pref_name,
     syncer::SyncChangeList* sync_changes,
     SyncDataMap* migrated_preference_list) {
-  const Value* user_pref_value = pref_service_->GetUserPrefValue(
+  const base::Value* user_pref_value = pref_service_->GetUserPrefValue(
       pref_name.c_str());
   VLOG(1) << "Associating preference " << pref_name;
 
@@ -112,7 +112,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
             preference.name() ==
                 GetOldMigratedPreferenceName(pref_name.c_str())));
     base::JSONReader reader;
-    scoped_ptr<Value> sync_value(reader.ReadToValue(preference.value()));
+    scoped_ptr<base::Value> sync_value(reader.ReadToValue(preference.value()));
     if (!sync_value.get()) {
       LOG(ERROR) << "Failed to deserialize preference value: "
                  << reader.GetErrorMessage();
@@ -122,13 +122,13 @@ void PrefModelAssociator::InitPrefAndAssociate(
     if (user_pref_value) {
       DVLOG(1) << "Found user pref value for " << pref_name;
       // We have both server and local values. Merge them.
-      scoped_ptr<Value> new_value(
+      scoped_ptr<base::Value> new_value(
           MergePreference(pref_name, *user_pref_value, *sync_value));
 
       // Update the local preference based on what we got from the
       // sync server. Note: this only updates the user value store, which is
       // ignored if the preference is policy controlled.
-      if (new_value->IsType(Value::TYPE_NULL)) {
+      if (new_value->IsType(base::Value::TYPE_NULL)) {
         LOG(WARNING) << "Sync has null value for pref " << pref_name.c_str();
         pref_service_->ClearPref(pref_name.c_str());
       } else if (!new_value->IsType(user_pref_value->GetType())) {
@@ -185,7 +185,7 @@ void PrefModelAssociator::InitPrefAndAssociate(
                                sync_data));
         }
       }
-    } else if (!sync_value->IsType(Value::TYPE_NULL)) {
+    } else if (!sync_value->IsType(base::Value::TYPE_NULL)) {
       // Only a server value exists. Just set the local user value.
       pref_service_->Set(pref_name.c_str(), *sync_value);
     } else {
@@ -311,31 +311,32 @@ void PrefModelAssociator::StopSyncing(syncer::ModelType type) {
   pref_service_->OnIsSyncingChanged();
 }
 
-scoped_ptr<Value> PrefModelAssociator::MergePreference(
+scoped_ptr<base::Value> PrefModelAssociator::MergePreference(
     const std::string& name,
-    const Value& local_value,
-    const Value& server_value) {
+    const base::Value& local_value,
+    const base::Value& server_value) {
   // This function special cases preferences individually, so don't attempt
   // to merge for all migrated values.
   if (name == prefs::kURLsToRestoreOnStartup ||
       name == prefs::kURLsToRestoreOnStartupOld) {
-    return scoped_ptr<Value>(MergeListValues(local_value, server_value)).Pass();
+    return scoped_ptr<base::Value>(
+        MergeListValues(local_value, server_value)).Pass();
   }
 
   if (name == prefs::kContentSettingsPatternPairs) {
-    return scoped_ptr<Value>(
+    return scoped_ptr<base::Value>(
         MergeDictionaryValues(local_value, server_value)).Pass();
   }
 
   // If this is not a specially handled preference, server wins.
-  return scoped_ptr<Value>(server_value.DeepCopy()).Pass();
+  return scoped_ptr<base::Value>(server_value.DeepCopy()).Pass();
 }
 
 bool PrefModelAssociator::CreatePrefSyncData(
     const std::string& name,
-    const Value& value,
+    const base::Value& value,
     syncer::SyncData* sync_data) const {
-  if (value.IsType(Value::TYPE_NULL)) {
+  if (value.IsType(base::Value::TYPE_NULL)) {
     LOG(ERROR) << "Attempting to sync a null pref value for " << name;
     return false;
   }
@@ -359,50 +360,53 @@ bool PrefModelAssociator::CreatePrefSyncData(
   return true;
 }
 
-Value* PrefModelAssociator::MergeListValues(const Value& from_value,
-                                            const Value& to_value) {
-  if (from_value.GetType() == Value::TYPE_NULL)
+base::Value* PrefModelAssociator::MergeListValues(const base::Value& from_value,
+                                                  const base::Value& to_value) {
+  if (from_value.GetType() == base::Value::TYPE_NULL)
     return to_value.DeepCopy();
-  if (to_value.GetType() == Value::TYPE_NULL)
+  if (to_value.GetType() == base::Value::TYPE_NULL)
     return from_value.DeepCopy();
 
-  DCHECK(from_value.GetType() == Value::TYPE_LIST);
-  DCHECK(to_value.GetType() == Value::TYPE_LIST);
-  const ListValue& from_list_value = static_cast<const ListValue&>(from_value);
-  const ListValue& to_list_value = static_cast<const ListValue&>(to_value);
-  ListValue* result = to_list_value.DeepCopy();
+  DCHECK(from_value.GetType() == base::Value::TYPE_LIST);
+  DCHECK(to_value.GetType() == base::Value::TYPE_LIST);
+  const base::ListValue& from_list_value =
+      static_cast<const base::ListValue&>(from_value);
+  const base::ListValue& to_list_value =
+      static_cast<const base::ListValue&>(to_value);
+  base::ListValue* result = to_list_value.DeepCopy();
 
-  for (ListValue::const_iterator i = from_list_value.begin();
+  for (base::ListValue::const_iterator i = from_list_value.begin();
        i != from_list_value.end(); ++i) {
-    Value* value = (*i)->DeepCopy();
+    base::Value* value = (*i)->DeepCopy();
     result->AppendIfNotPresent(value);
   }
   return result;
 }
 
-Value* PrefModelAssociator::MergeDictionaryValues(
-    const Value& from_value,
-    const Value& to_value) {
-  if (from_value.GetType() == Value::TYPE_NULL)
+base::Value* PrefModelAssociator::MergeDictionaryValues(
+    const base::Value& from_value,
+    const base::Value& to_value) {
+  if (from_value.GetType() == base::Value::TYPE_NULL)
     return to_value.DeepCopy();
-  if (to_value.GetType() == Value::TYPE_NULL)
+  if (to_value.GetType() == base::Value::TYPE_NULL)
     return from_value.DeepCopy();
 
-  DCHECK_EQ(from_value.GetType(), Value::TYPE_DICTIONARY);
-  DCHECK_EQ(to_value.GetType(), Value::TYPE_DICTIONARY);
-  const DictionaryValue& from_dict_value =
-      static_cast<const DictionaryValue&>(from_value);
-  const DictionaryValue& to_dict_value =
-      static_cast<const DictionaryValue&>(to_value);
-  DictionaryValue* result = to_dict_value.DeepCopy();
+  DCHECK_EQ(from_value.GetType(), base::Value::TYPE_DICTIONARY);
+  DCHECK_EQ(to_value.GetType(), base::Value::TYPE_DICTIONARY);
+  const base::DictionaryValue& from_dict_value =
+      static_cast<const base::DictionaryValue&>(from_value);
+  const base::DictionaryValue& to_dict_value =
+      static_cast<const base::DictionaryValue&>(to_value);
+  base::DictionaryValue* result = to_dict_value.DeepCopy();
 
-  for (DictionaryValue::Iterator it(from_dict_value); !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(from_dict_value); !it.IsAtEnd();
        it.Advance()) {
-    const Value* from_value = &it.value();
-    Value* to_key_value;
+    const base::Value* from_value = &it.value();
+    base::Value* to_key_value;
     if (result->GetWithoutPathExpansion(it.key(), &to_key_value)) {
-      if (to_key_value->GetType() == Value::TYPE_DICTIONARY) {
-        Value* merged_value = MergeDictionaryValues(*from_value, *to_key_value);
+      if (to_key_value->GetType() == base::Value::TYPE_DICTIONARY) {
+        base::Value* merged_value =
+            MergeDictionaryValues(*from_value, *to_key_value);
         result->SetWithoutPathExpansion(it.key(), merged_value);
       }
       // Note that for all other types we want to preserve the "to"
@@ -471,8 +475,8 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
     const sync_pb::PreferenceSpecifics& pref_specifics =
         GetSpecifics(iter->sync_data());
 
-    scoped_ptr<Value> value(ReadPreferenceSpecifics(pref_specifics,
-                                                    &name));
+    scoped_ptr<base::Value> value(ReadPreferenceSpecifics(pref_specifics,
+                                                          &name));
 
     if (iter->change_type() == syncer::SyncChange::ACTION_DELETE) {
       // We never delete preferences.
@@ -521,11 +525,11 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
   return syncer::SyncError();
 }
 
-Value* PrefModelAssociator::ReadPreferenceSpecifics(
+base::Value* PrefModelAssociator::ReadPreferenceSpecifics(
     const sync_pb::PreferenceSpecifics& preference,
     std::string* name) {
   base::JSONReader reader;
-  scoped_ptr<Value> value(reader.ReadToValue(preference.value()));
+  scoped_ptr<base::Value> value(reader.ReadToValue(preference.value()));
   if (!value.get()) {
     std::string err = "Failed to deserialize preference value: " +
         reader.GetErrorMessage();

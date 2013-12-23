@@ -61,7 +61,7 @@ void NetworkTimeService::Shutdown() {
     // mapping is accurate.
     base::Time local_now = base::Time::Now();
     base::Time network_now = GetNetworkTime(local_now);
-    DictionaryValue time_mapping;
+    base::DictionaryValue time_mapping;
     time_mapping.SetDouble("local", local_now.ToJsTime());
     time_mapping.SetDouble("network", network_now.ToJsTime());
     profile_->GetPrefs()->Set(prefs::kNetworkTimeMapping, time_mapping);

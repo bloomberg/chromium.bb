@@ -123,7 +123,7 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
     }
 
     base::FilePath::StringType external_crx;
-    const Value* external_version_value = NULL;
+    const base::Value* external_version_value = NULL;
     std::string external_version;
     std::string external_update_url;
 
@@ -131,7 +131,7 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
 
     bool has_external_version = false;
     if (extension->Get(kExternalVersion, &external_version_value)) {
-      if (external_version_value->IsType(Value::TYPE_STRING)) {
+      if (external_version_value->IsType(base::Value::TYPE_STRING)) {
         external_version_value->GetAsString(&external_version);
         has_external_version = true;
       } else {

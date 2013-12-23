@@ -90,10 +90,10 @@ scoped_ptr<base::Value> MenuItemsToValue(const MenuItem::List& items) {
   scoped_ptr<base::ListValue> list(new base::ListValue());
   for (size_t i = 0; i < items.size(); ++i)
     list->Append(items[i]->ToValue().release());
-  return scoped_ptr<Value>(list.release());
+  return scoped_ptr<base::Value>(list.release());
 }
 
-bool GetStringList(const DictionaryValue& dict,
+bool GetStringList(const base::DictionaryValue& dict,
                    const std::string& key,
                    std::vector<std::string>* out) {
   if (!dict.HasKey(key))
@@ -191,8 +191,8 @@ void MenuItem::AddChild(MenuItem* item) {
   children_.push_back(item);
 }
 
-scoped_ptr<DictionaryValue> MenuItem::ToValue() const {
-  scoped_ptr<DictionaryValue> value(new DictionaryValue);
+scoped_ptr<base::DictionaryValue> MenuItem::ToValue() const {
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
   // Should only be called for extensions with event pages, which only have
   // string IDs for items.
   DCHECK_EQ(0, id_.uid);
@@ -217,7 +217,7 @@ scoped_ptr<DictionaryValue> MenuItem::ToValue() const {
 
 // static
 MenuItem* MenuItem::Populate(const std::string& extension_id,
-                             const DictionaryValue& value,
+                             const base::DictionaryValue& value,
                              std::string* error) {
   bool incognito = false;
   if (!value.GetBoolean(kIncognitoKey, &incognito))
@@ -242,7 +242,7 @@ MenuItem* MenuItem::Populate(const std::string& extension_id,
   if (!value.GetBoolean(kEnabledKey, &enabled))
     return NULL;
   ContextList contexts;
-  const Value* contexts_value = NULL;
+  const base::Value* contexts_value = NULL;
   if (!value.Get(kContextsKey, &contexts_value))
     return NULL;
   if (!contexts.Populate(*contexts_value))
@@ -588,7 +588,7 @@ void MenuManager::RadioItemSelected(MenuItem* item) {
   }
 }
 
-static void AddURLProperty(DictionaryValue* dictionary,
+static void AddURLProperty(base::DictionaryValue* dictionary,
                            const std::string& key, const GURL& url) {
   if (!url.is_empty())
     dictionary->SetString(key, url.possibly_invalid_spec());
@@ -618,7 +618,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
 
-  DictionaryValue* properties = new DictionaryValue();
+  base::DictionaryValue* properties = new base::DictionaryValue();
   SetIdKeyValue(properties, "menuItemId", item->id());
   if (item->parent_id())
     SetIdKeyValue(properties, "parentMenuItemId", *item->parent_id());
@@ -655,7 +655,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
     if (web_contents) {
       args->Append(ExtensionTabUtil::CreateTabValue(web_contents));
     } else {
-      args->Append(new DictionaryValue());
+      args->Append(new base::DictionaryValue());
     }
   }
 

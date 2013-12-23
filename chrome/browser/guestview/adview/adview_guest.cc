@@ -49,7 +49,7 @@ void AdViewGuest::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     content::PageTransition transition_type,
     content::RenderViewHost* render_view_host) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
   DispatchEvent(new GuestView::Event(adview::kEventLoadCommit, args.Pass()));
@@ -67,7 +67,7 @@ void AdViewGuest::DidFailProvisionalLoad(
   std::string error_type;
   base::RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
 
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
   args->SetString(guestview::kUrl, validated_url.spec());
   args->SetString(guestview::kReason, error_type);

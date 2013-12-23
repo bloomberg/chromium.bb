@@ -46,7 +46,7 @@ enum FlippedIndexes {
 // Creates a DictionaryValue using |url| and appends to |list|.
 void AppendURLToListValue(const std::string& url_string,
                           base::ListValue* list) {
-  DictionaryValue* page_value = new DictionaryValue();
+  base::DictionaryValue* page_value = new base::DictionaryValue();
   page_value->SetString("url", url_string);
   list->Append(page_value);
 }
@@ -160,7 +160,7 @@ TEST_F(MostVisitedTilesExperimentTest,
   // Test the method when there are not enough URLs to force removal.
   MostVisitedTilesExperiment::RemovePageValuesMatchingOpenTabs(
       open_urls, &pages_value);
-  DictionaryValue gmail_value;
+  base::DictionaryValue gmail_value;
   gmail_value.SetString("url", kGmailURL);
   // Ensure the open url has not been removed from |pages_value|.
   EXPECT_NE(pages_value.end(), pages_value.Find(gmail_value));
@@ -196,7 +196,7 @@ TEST_F(MostVisitedTilesExperimentTest, RemovePageValuesMatchingOpenTabs) {
   MostVisitedTilesExperiment::RemovePageValuesMatchingOpenTabs(
       open_urls, &pages_value);
   // Ensure the open url has been removed from |pages_value|.
-  DictionaryValue gmail_value;
+  base::DictionaryValue gmail_value;
   gmail_value.SetString("url", kGmailURL);
   EXPECT_EQ(pages_value.end(), pages_value.Find(gmail_value));
 

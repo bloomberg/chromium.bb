@@ -185,7 +185,7 @@ bool ExtensionWebUI::HandleChromeURLOverride(
 
   size_t i = 0;
   while (i < url_list->GetSize()) {
-    const Value* val = NULL;
+    const base::Value* val = NULL;
     url_list->Get(i, &val);
 
     // Verify that the override value is good.  If not, unregister it and find
@@ -311,7 +311,7 @@ void ExtensionWebUI::RegisterChromeURLOverrides(
     }
     // Insert the override at the front of the list.  Last registered override
     // wins.
-    page_overrides->Insert(0, new StringValue(iter->second.spec()));
+    page_overrides->Insert(0, new base::StringValue(iter->second.spec()));
   }
 }
 
@@ -319,7 +319,7 @@ void ExtensionWebUI::RegisterChromeURLOverrides(
 void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
                                                   Profile* profile,
                                                   base::ListValue* list,
-                                                  const Value* override) {
+                                                  const base::Value* override) {
   size_t index = 0;
   bool found = list->Remove(*override, &index);
   if (found && index == 0) {
@@ -334,7 +334,7 @@ void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
 // static
 void ExtensionWebUI::UnregisterChromeURLOverride(const std::string& page,
                                                  Profile* profile,
-                                                 const Value* override) {
+                                                 const base::Value* override) {
   if (!override)
     return;
   PrefService* prefs = profile->GetPrefs();
@@ -367,7 +367,7 @@ void ExtensionWebUI::UnregisterChromeURLOverrides(
       NOTREACHED();
       continue;
     } else {
-      StringValue override(iter->second.spec());
+      base::StringValue override(iter->second.spec());
       UnregisterAndReplaceOverride(iter->first, profile,
                                    page_overrides, &override);
     }

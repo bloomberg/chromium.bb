@@ -105,7 +105,7 @@ InstallVerifier::InstallVerifier(ExtensionPrefs* prefs,
 InstallVerifier::~InstallVerifier() {}
 
 void InstallVerifier::Init() {
-  const DictionaryValue* pref = prefs_->GetInstallSignature();
+  const base::DictionaryValue* pref = prefs_->GetInstallSignature();
   if (pref) {
     scoped_ptr<InstallSignature> signature_from_prefs =
         InstallSignature::FromValue(*pref);
@@ -332,7 +332,7 @@ void InstallVerifier::SaveToPrefs() {
     DVLOG(1) << "SaveToPrefs - saving NULL";
     prefs_->SetInstallSignature(NULL);
   } else {
-    DictionaryValue pref;
+    base::DictionaryValue pref;
     signature_->ToValue(&pref);
     if (VLOG_IS_ON(1)) {
       DVLOG(1) << "SaveToPrefs - saving";

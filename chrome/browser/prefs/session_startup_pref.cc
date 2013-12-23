@@ -113,12 +113,12 @@ void SessionStartupPref::SetStartupPref(PrefService* prefs,
     // user changes the startup type pref.
     // Ownership of the ListValue retains with the pref service.
     ListPrefUpdate update(prefs, prefs::kURLsToRestoreOnStartup);
-    ListValue* url_pref_list = update.Get();
+    base::ListValue* url_pref_list = update.Get();
     DCHECK(url_pref_list);
     url_pref_list->Clear();
     for (size_t i = 0; i < pref.urls.size(); ++i) {
       url_pref_list->Set(static_cast<int>(i),
-                         new StringValue(pref.urls[i].spec()));
+                         new base::StringValue(pref.urls[i].spec()));
     }
   }
 }
@@ -141,7 +141,8 @@ SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
 
   // Always load the urls, even if the pref type isn't URLS. This way the
   // preferences panels can show the user their last choice.
-  const ListValue* url_list = prefs->GetList(prefs::kURLsToRestoreOnStartup);
+  const base::ListValue* url_list =
+      prefs->GetList(prefs::kURLsToRestoreOnStartup);
   URLListToPref(url_list, &pref);
 
   return pref;

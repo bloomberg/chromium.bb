@@ -73,7 +73,7 @@ enum ExternalItemState {
   EXTERNAL_ITEM_MAX_ITEMS = 8
 };
 
-bool IsManifestCorrupt(const DictionaryValue* manifest) {
+bool IsManifestCorrupt(const base::DictionaryValue* manifest) {
   if (!manifest)
     return false;
 
@@ -81,8 +81,8 @@ bool IsManifestCorrupt(const DictionaryValue* manifest) {
   // file, one particularly bad case resulting in having both a background page
   // and background scripts values. In those situations we want to reload the
   // manifest from the extension to fix this.
-  const Value* background_page;
-  const Value* background_scripts;
+  const base::Value* background_page;
+  const base::Value* background_scripts;
   return manifest->Get(manifest_keys::kBackgroundPage, &background_page) &&
       manifest->Get(manifest_keys::kBackgroundScripts, &background_scripts);
 }
@@ -225,7 +225,7 @@ void InstalledLoader::LoadAllExtensions() {
       }
 
       extensions_info->at(i)->extension_manifest.reset(
-          static_cast<DictionaryValue*>(
+          static_cast<base::DictionaryValue*>(
               extension->manifest()->value()->DeepCopy()));
       should_write_prefs = true;
     }

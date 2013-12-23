@@ -53,7 +53,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
   TestingPrefServiceSimple local_state;
   SSLConfigServiceManager::RegisterPrefs(local_state.registry());
   local_state.SetUserPref(prefs::kEnableOriginBoundCerts,
-                          Value::CreateBooleanValue(false));
+                          base::Value::CreateBooleanValue(false));
 
   scoped_ptr<SSLConfigServiceManager> config_manager(
       SSLConfigServiceManager::CreateDefaultManager(&local_state));
@@ -66,7 +66,7 @@ TEST_F(SSLConfigServiceManagerPrefTest, ChannelIDWithoutUserPrefs) {
   EXPECT_FALSE(config.channel_id_enabled);
 
   local_state.SetUserPref(prefs::kEnableOriginBoundCerts,
-                          Value::CreateBooleanValue(true));
+                          base::Value::CreateBooleanValue(true));
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the
   // preferences changed.
   message_loop_.RunUntilIdle();
@@ -90,9 +90,9 @@ TEST_F(SSLConfigServiceManagerPrefTest, GoodDisabledCipherSuites) {
   config_service->GetSSLConfig(&old_config);
   EXPECT_TRUE(old_config.disabled_cipher_suites.empty());
 
-  ListValue* list_value = new ListValue();
-  list_value->Append(Value::CreateStringValue("0x0004"));
-  list_value->Append(Value::CreateStringValue("0x0005"));
+  base::ListValue* list_value = new base::ListValue();
+  list_value->Append(base::Value::CreateStringValue("0x0004"));
+  list_value->Append(base::Value::CreateStringValue("0x0005"));
   local_state.SetUserPref(prefs::kCipherSuiteBlacklist, list_value);
 
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the
@@ -125,11 +125,12 @@ TEST_F(SSLConfigServiceManagerPrefTest, BadDisabledCipherSuites) {
   config_service->GetSSLConfig(&old_config);
   EXPECT_TRUE(old_config.disabled_cipher_suites.empty());
 
-  ListValue* list_value = new ListValue();
-  list_value->Append(Value::CreateStringValue("0x0004"));
-  list_value->Append(Value::CreateStringValue("TLS_NOT_WITH_A_CIPHER_SUITE"));
-  list_value->Append(Value::CreateStringValue("0x0005"));
-  list_value->Append(Value::CreateStringValue("0xBEEFY"));
+  base::ListValue* list_value = new base::ListValue();
+  list_value->Append(base::Value::CreateStringValue("0x0004"));
+  list_value->Append(
+      base::Value::CreateStringValue("TLS_NOT_WITH_A_CIPHER_SUITE"));
+  list_value->Append(base::Value::CreateStringValue("0x0005"));
+  list_value->Append(base::Value::CreateStringValue("0xBEEFY"));
   local_state.SetUserPref(prefs::kCipherSuiteBlacklist, list_value);
 
   // Pump the message loop to notify the SSLConfigServiceManagerPref that the

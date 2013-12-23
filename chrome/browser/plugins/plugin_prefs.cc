@@ -290,13 +290,13 @@ bool PluginPrefs::IsStringMatchedInSet(
 }
 
 /* static */
-void PluginPrefs::ListValueToStringSet(const ListValue* src,
+void PluginPrefs::ListValueToStringSet(const base::ListValue* src,
                                        std::set<base::string16>* dest) {
   DCHECK(src);
   DCHECK(dest);
   dest->clear();
-  ListValue::const_iterator end(src->end());
-  for (ListValue::const_iterator current(src->begin());
+  base::ListValue::const_iterator end(src->end());
+  for (base::ListValue::const_iterator current(src->begin());
        current != end; ++current) {
     base::string16 plugin_name;
     if ((*current)->GetAsString(&plugin_name)) {
@@ -346,13 +346,13 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
 
   {  // Scoped update of prefs::kPluginsPluginsList.
     ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
-    ListValue* saved_plugins_list = update.Get();
+    base::ListValue* saved_plugins_list = update.Get();
     if (saved_plugins_list && !saved_plugins_list->empty()) {
       // The following four variables are only valid when
       // |migrate_to_pepper_flash| is set to true.
       base::FilePath npapi_flash;
       base::FilePath pepper_flash;
-      DictionaryValue* pepper_flash_node = NULL;
+      base::DictionaryValue* pepper_flash_node = NULL;
       bool npapi_flash_enabled = false;
       if (migrate_to_pepper_flash) {
         PathService::Get(chrome::FILE_FLASH_PLUGIN, &npapi_flash);
@@ -360,18 +360,19 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
       }
 
       // Used when |remove_component_pepper_flash_settings| is set to true.
-      ListValue::iterator component_pepper_flash_node =
+      base::ListValue::iterator component_pepper_flash_node =
           saved_plugins_list->end();
 
-      for (ListValue::iterator it = saved_plugins_list->begin();
+      for (base::ListValue::iterator it = saved_plugins_list->begin();
            it != saved_plugins_list->end();
            ++it) {
-        if (!(*it)->IsType(Value::TYPE_DICTIONARY)) {
+        if (!(*it)->IsType(base::Value::TYPE_DICTIONARY)) {
           LOG(WARNING) << "Invalid entry in " << prefs::kPluginsPluginsList;
           continue;  // Oops, don't know what to do with this item.
         }
 
-        DictionaryValue* plugin = static_cast<DictionaryValue*>(*it);
+        base::DictionaryValue* plugin =
+            static_cast<base::DictionaryValue*>(*it);
         base::string16 group_name;
         bool enabled;
         if (!plugin->GetBoolean("enabled", &enabled))
@@ -530,7 +531,7 @@ void PluginPrefs::OnUpdatePreferences(
 
   PluginFinder* finder = PluginFinder::GetInstance();
   ListPrefUpdate update(prefs_, prefs::kPluginsPluginsList);
-  ListValue* plugins_list = update.Get();
+  base::ListValue* plugins_list = update.Get();
   plugins_list->Clear();
 
   base::FilePath internal_dir;
@@ -542,7 +543,7 @@ void PluginPrefs::OnUpdatePreferences(
   // Add the plugin files.
   std::set<base::string16> group_names;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    DictionaryValue* summary = new DictionaryValue();
+    base::DictionaryValue* summary = new base::DictionaryValue();
     summary->SetString("path", plugins[i].path.value());
     summary->SetString("name", plugins[i].name);
     summary->SetString("version", plugins[i].version);
@@ -560,7 +561,7 @@ void PluginPrefs::OnUpdatePreferences(
   // Add the plug-in groups.
   for (std::set<base::string16>::const_iterator it = group_names.begin();
       it != group_names.end(); ++it) {
-    DictionaryValue* summary = new DictionaryValue();
+    base::DictionaryValue* summary = new base::DictionaryValue();
     summary->SetString("name", *it);
     bool enabled = true;
     std::map<base::string16, bool>::iterator gstate_it =

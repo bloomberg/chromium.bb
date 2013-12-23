@@ -1084,11 +1084,12 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   // Returns length of |prerender_manager_|'s history, or -1 on failure.
   int GetHistoryLength() const {
-    scoped_ptr<DictionaryValue> prerender_dict(
-        static_cast<DictionaryValue*>(GetPrerenderManager()->GetAsValue()));
+    scoped_ptr<base::DictionaryValue> prerender_dict(
+        static_cast<base::DictionaryValue*>(
+            GetPrerenderManager()->GetAsValue()));
     if (!prerender_dict.get())
       return -1;
-    ListValue* history_list;
+    base::ListValue* history_list;
     if (!prerender_dict->GetList("history", &history_list))
       return -1;
     return static_cast<int>(history_list->GetSize());

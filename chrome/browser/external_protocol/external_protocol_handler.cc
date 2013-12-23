@@ -148,7 +148,8 @@ class ExternalDefaultProtocolObserver
 }  // namespace
 
 // static
-void ExternalProtocolHandler::PrepopulateDictionary(DictionaryValue* win_pref) {
+void ExternalProtocolHandler::PrepopulateDictionary(
+    base::DictionaryValue* win_pref) {
   static bool is_warm = false;
   if (is_warm)
     return;

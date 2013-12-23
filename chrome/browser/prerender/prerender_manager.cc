@@ -1023,9 +1023,9 @@ bool PrerenderManager::DoesSubresourceURLHaveValidScheme(const GURL& url) {
   return DoesURLHaveValidScheme(url) || url == GURL(content::kAboutBlankURL);
 }
 
-DictionaryValue* PrerenderManager::GetAsValue() const {
+base::DictionaryValue* PrerenderManager::GetAsValue() const {
   DCHECK(CalledOnValidThread());
-  DictionaryValue* dict_value = new DictionaryValue();
+  base::DictionaryValue* dict_value = new base::DictionaryValue();
   dict_value->Set("history", prerender_history_->GetEntriesAsValue());
   dict_value->Set("active", GetActivePrerendersAsValue());
   dict_value->SetBoolean("enabled", enabled_);
@@ -1662,12 +1662,12 @@ void PrerenderManager::AddToHistory(PrerenderContents* contents) {
   prerender_history_->AddEntry(entry);
 }
 
-Value* PrerenderManager::GetActivePrerendersAsValue() const {
-  ListValue* list_value = new ListValue();
+base::Value* PrerenderManager::GetActivePrerendersAsValue() const {
+  base::ListValue* list_value = new base::ListValue();
   for (ScopedVector<PrerenderData>::const_iterator it =
            active_prerenders_.begin();
        it != active_prerenders_.end(); ++it) {
-    if (Value* prerender_value = (*it)->contents()->GetAsValue())
+    if (base::Value* prerender_value = (*it)->contents()->GetAsValue())
       list_value->Append(prerender_value);
   }
   return list_value;

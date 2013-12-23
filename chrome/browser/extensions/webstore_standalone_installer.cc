@@ -107,7 +107,7 @@ void WebstoreStandaloneInstaller::OnWebstoreRequestFailure() {
 }
 
 void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
-    scoped_ptr<DictionaryValue> webstore_data) {
+    scoped_ptr<base::DictionaryValue> webstore_data) {
   if (!CheckRequestorAlive()) {
     CompleteInstall(std::string());
     return;

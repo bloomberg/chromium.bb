@@ -100,7 +100,7 @@ ManagedModeInterstitial::ManagedModeInterstitial(
 ManagedModeInterstitial::~ManagedModeInterstitial() {}
 
 std::string ManagedModeInterstitial::GetHTMLContents() {
-  DictionaryValue strings;
+  base::DictionaryValue strings;
   strings.SetString("blockPageTitle",
                     l10n_util::GetStringUTF16(IDS_BLOCK_INTERSTITIAL_TITLE));
 

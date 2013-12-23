@@ -455,19 +455,19 @@ void ManagedUserService::AddAccessRequest(const GURL& url) {
   std::string key = ManagedUserSettingsService::MakeSplitSettingKey(
       kManagedUserAccessRequestKeyPrefix, output);
 
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 
   // TODO(sergiu): Use sane time here when it's ready.
   dict->SetDouble(kManagedUserAccessRequestTime, base::Time::Now().ToJsTime());
 
   dict->SetString(kManagedUserName, profile_->GetProfileName());
 
-  GetSettingsService()->UploadItem(key, dict.PassAs<Value>());
+  GetSettingsService()->UploadItem(key, dict.PassAs<base::Value>());
 }
 
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForHost(
     const std::string& hostname) {
-  const DictionaryValue* dict =
+  const base::DictionaryValue* dict =
       profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualHosts);
   bool allow = false;
   if (!dict->GetBooleanWithoutPathExpansion(hostname, &allow))
@@ -478,7 +478,7 @@ ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForHost(
 
 ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForURL(
     const GURL& url) {
-  const DictionaryValue* dict =
+  const base::DictionaryValue* dict =
       profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualURLs);
   GURL normalized_url = ManagedModeURLFilter::Normalize(url);
   bool allow = false;
@@ -490,9 +490,9 @@ ManagedUserService::ManualBehavior ManagedUserService::GetManualBehaviorForURL(
 
 void ManagedUserService::GetManualExceptionsForHost(const std::string& host,
                                                     std::vector<GURL>* urls) {
-  const DictionaryValue* dict =
+  const base::DictionaryValue* dict =
       profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualURLs);
-  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     GURL url(it.key());
     if (url.host() == host)
       urls->push_back(url);
@@ -633,11 +633,11 @@ void ManagedUserService::OnManagedUserRegistered(
 }
 
 void ManagedUserService::UpdateManualHosts() {
-  const DictionaryValue* dict =
+  const base::DictionaryValue* dict =
       profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualHosts);
   scoped_ptr<std::map<std::string, bool> > host_map(
       new std::map<std::string, bool>());
-  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     bool allow = false;
     bool result = it.value().GetAsBoolean(&allow);
     DCHECK(result);
@@ -647,10 +647,10 @@ void ManagedUserService::UpdateManualHosts() {
 }
 
 void ManagedUserService::UpdateManualURLs() {
-  const DictionaryValue* dict =
+  const base::DictionaryValue* dict =
       profile_->GetPrefs()->GetDictionary(prefs::kManagedModeManualURLs);
   scoped_ptr<std::map<GURL, bool> > url_map(new std::map<GURL, bool>());
-  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     bool allow = false;
     bool result = it.value().GetAsBoolean(&allow);
     DCHECK(result);
@@ -675,10 +675,10 @@ void ManagedUserService::RecordProfileAndBrowserEventsHelper(
       key_prefix,
       base::Int64ToString(base::TimeTicks::Now().ToInternalValue()));
 
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
 
   // TODO(bauerb): Use sane time when ready.
   dict->SetDouble(kEventTimestamp, base::Time::Now().ToJsTime());
 
-  GetSettingsService()->UploadItem(key, dict.PassAs<Value>());
+  GetSettingsService()->UploadItem(key, dict.PassAs<base::Value>());
 }

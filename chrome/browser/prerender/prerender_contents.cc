@@ -730,10 +730,10 @@ void PrerenderContents::CommitHistory(WebContents* tab) {
     history_tab_helper->UpdateHistoryForNavigation(add_page_vector_[i]);
 }
 
-Value* PrerenderContents::GetAsValue() const {
+base::Value* PrerenderContents::GetAsValue() const {
   if (!prerender_contents_.get())
     return NULL;
-  DictionaryValue* dict_value = new DictionaryValue();
+  base::DictionaryValue* dict_value = new base::DictionaryValue();
   dict_value->SetString("url", prerender_url_.spec());
   base::TimeTicks current_time = base::TimeTicks::Now();
   base::TimeDelta duration = current_time - load_start_time_;

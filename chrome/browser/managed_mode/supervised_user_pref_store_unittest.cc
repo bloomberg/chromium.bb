@@ -25,7 +25,7 @@ class SupervisedUserPrefStoreFixture : public PrefStore::Observer {
       ManagedUserSettingsService* settings_service);
   virtual ~SupervisedUserPrefStoreFixture();
 
-  DictionaryValue* changed_prefs() {
+  base::DictionaryValue* changed_prefs() {
     return &changed_prefs_;
   }
 
@@ -39,7 +39,7 @@ class SupervisedUserPrefStoreFixture : public PrefStore::Observer {
 
 private:
   scoped_refptr<SupervisedUserPrefStore> pref_store_;
-  DictionaryValue changed_prefs_;
+  base::DictionaryValue changed_prefs_;
   bool initialization_completed_;
 };
 
@@ -56,7 +56,7 @@ SupervisedUserPrefStoreFixture::~SupervisedUserPrefStoreFixture() {
 
 void SupervisedUserPrefStoreFixture::OnPrefValueChanged(
     const std::string& key) {
-  const Value* value = NULL;
+  const base::Value* value = NULL;
   ASSERT_TRUE(pref_store_->GetValue(key, &value));
   changed_prefs_.Set(key, value->DeepCopy());
 }
@@ -108,7 +108,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   EXPECT_FALSE(allow_deleting_browser_history);
 
   // kManagedModeManualHosts does not have a hardcoded value.
-  DictionaryValue* manual_hosts = NULL;
+  base::DictionaryValue* manual_hosts = NULL;
   EXPECT_FALSE(fixture.changed_prefs()->GetDictionary(
       prefs::kManagedModeManualHosts, &manual_hosts));
 
@@ -124,12 +124,12 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   EXPECT_EQ(0u, fixture.changed_prefs()->size());
 
   // kManagedModeManualHosts can be configured by the custodian.
-  scoped_ptr<DictionaryValue> dict(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetBoolean("example.com", true);
   dict->SetBoolean("moose.org", false);
   service_.SetLocalSettingForTesting(
       managed_users::kContentPackManualBehaviorHosts,
-      scoped_ptr<Value>(dict->DeepCopy()));
+      scoped_ptr<base::Value>(dict->DeepCopy()));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
   ASSERT_TRUE(fixture.changed_prefs()->GetDictionary(
       prefs::kManagedModeManualHosts, &manual_hosts));
@@ -140,7 +140,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   fixture.changed_prefs()->Clear();
   service_.SetLocalSettingForTesting(
       managed_users::kForceSafeSearch,
-      scoped_ptr<Value>(new base::FundamentalValue(false)));
+      scoped_ptr<base::Value>(new base::FundamentalValue(false)));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
   EXPECT_TRUE(fixture.changed_prefs()->GetBoolean(prefs::kForceSafeSearch,
                                                   &force_safesearch));

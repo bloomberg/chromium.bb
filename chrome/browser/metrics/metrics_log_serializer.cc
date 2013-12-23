@@ -93,7 +93,7 @@ void MetricsLogSerializer::DeserializeLogs(
   else
     pref = prefs::kMetricsOngoingLogs;
 
-  const ListValue* unsent_logs = local_state->GetList(pref);
+  const base::ListValue* unsent_logs = local_state->GetList(pref);
   ReadLogsFromPrefList(*unsent_logs, logs);
 }
 
@@ -131,7 +131,7 @@ void MetricsLogSerializer::WriteLogsToPrefList(
     return;
 
   // Store size at the beginning of the list.
-  list->Append(Value::CreateIntegerValue(local_list.size() - start));
+  list->Append(base::Value::CreateIntegerValue(local_list.size() - start));
 
   base::MD5Context ctx;
   base::MD5Init(&ctx);
@@ -143,19 +143,19 @@ void MetricsLogSerializer::WriteLogsToPrefList(
     // take a valid UTF8 string.
     base::Base64Encode(it->log_text(), &encoded_log);
     base::MD5Update(&ctx, encoded_log);
-    list->Append(Value::CreateStringValue(encoded_log));
+    list->Append(base::Value::CreateStringValue(encoded_log));
   }
 
   // Append hash to the end of the list.
   base::MD5Digest digest;
   base::MD5Final(&digest, &ctx);
-  list->Append(Value::CreateStringValue(base::MD5DigestToBase16(digest)));
+  list->Append(base::Value::CreateStringValue(base::MD5DigestToBase16(digest)));
   DCHECK(list->GetSize() >= 3);  // Minimum of 3 elements (size, data, hash).
 }
 
 // static
 MetricsLogSerializer::LogReadStatus MetricsLogSerializer::ReadLogsFromPrefList(
-    const ListValue& list,
+    const base::ListValue& list,
     std::vector<MetricsLogManager::SerializedLog>* local_list) {
   if (list.GetSize() == 0)
     return MakeRecallStatusHistogram(LIST_EMPTY);
@@ -184,7 +184,7 @@ MetricsLogSerializer::LogReadStatus MetricsLogSerializer::ReadLogsFromPrefList(
   base::MD5Init(&ctx);
   std::string encoded_log;
   size_t local_index = 0;
-  for (ListValue::const_iterator it = list.begin() + 1;
+  for (base::ListValue::const_iterator it = list.begin() + 1;
        it != list.end() - 1;  // Last element is the checksum.
        ++it, ++local_index) {
     bool valid = (*it)->GetAsString(&encoded_log);

@@ -29,16 +29,16 @@ class GuestView : public content::BrowserPluginGuestDelegate {
 
   class Event {
    public:
-     Event(const std::string& name, scoped_ptr<DictionaryValue> args);
+     Event(const std::string& name, scoped_ptr<base::DictionaryValue> args);
      ~Event();
 
     const std::string& name() const { return name_; }
 
-    scoped_ptr<DictionaryValue> GetArguments();
+    scoped_ptr<base::DictionaryValue> GetArguments();
 
    private:
     const std::string name_;
-    scoped_ptr<DictionaryValue> args_;
+    scoped_ptr<base::DictionaryValue> args_;
   };
 
   static Type GetViewTypeFromString(const std::string& api_type);

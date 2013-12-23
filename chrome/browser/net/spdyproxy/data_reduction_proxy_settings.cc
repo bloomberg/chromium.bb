@@ -87,7 +87,7 @@ const char kEnabled[] = "Enabled";
 //             http_auth_handler_spdyproxy.
 const char kAuthenticationRealmName[] = "SpdyProxy";
 
-int64 GetInt64PrefValue(const ListValue& list_value, size_t index) {
+int64 GetInt64PrefValue(const base::ListValue& list_value, size_t index) {
   int64 val = 0;
   std::string pref_value;
   bool rv = list_value.GetString(index, &pref_value);
@@ -564,7 +564,7 @@ void DataReductionProxySettings::RecordDataReductionInit() {
 DataReductionProxySettings::ContentLengthList
 DataReductionProxySettings::GetDailyContentLengths(const char* pref_name) {
   DataReductionProxySettings::ContentLengthList content_lengths;
-  const ListValue* list_value = GetLocalStatePrefs()->GetList(pref_name);
+  const base::ListValue* list_value = GetLocalStatePrefs()->GetList(pref_name);
   if (list_value->GetSize() == spdyproxy::kNumDaysInHistory) {
     for (size_t i = 0; i < spdyproxy::kNumDaysInHistory; ++i) {
       content_lengths.push_back(GetInt64PrefValue(*list_value, i));
@@ -587,9 +587,9 @@ void DataReductionProxySettings::GetContentLengths(
     return;
   }
 
-  const ListValue* original_list =
+  const base::ListValue* original_list =
       local_state->GetList(prefs::kDailyHttpOriginalContentLength);
-  const ListValue* received_list =
+  const base::ListValue* received_list =
       local_state->GetList(prefs::kDailyHttpReceivedContentLength);
 
   if (original_list->GetSize() != spdyproxy::kNumDaysInHistory ||

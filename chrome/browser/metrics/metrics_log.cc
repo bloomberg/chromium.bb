@@ -529,7 +529,7 @@ bool MetricsLog::HasStabilityMetrics() const {
 
 void MetricsLog::WritePluginStabilityElements(PrefService* pref) {
   // Now log plugin stability info.
-  const ListValue* plugin_stats_list = pref->GetList(
+  const base::ListValue* plugin_stats_list = pref->GetList(
       prefs::kStabilityPluginStats);
   if (!plugin_stats_list)
     return;
@@ -537,13 +537,14 @@ void MetricsLog::WritePluginStabilityElements(PrefService* pref) {
 #if defined(ENABLE_PLUGINS)
   SystemProfileProto::Stability* stability =
       uma_proto()->mutable_system_profile()->mutable_stability();
-  for (ListValue::const_iterator iter = plugin_stats_list->begin();
+  for (base::ListValue::const_iterator iter = plugin_stats_list->begin();
        iter != plugin_stats_list->end(); ++iter) {
-    if (!(*iter)->IsType(Value::TYPE_DICTIONARY)) {
+    if (!(*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
       NOTREACHED();
       continue;
     }
-    DictionaryValue* plugin_dict = static_cast<DictionaryValue*>(*iter);
+    base::DictionaryValue* plugin_dict =
+        static_cast<base::DictionaryValue*>(*iter);
 
     // Note that this search is potentially a quadratic operation, but given the
     // low number of plugins installed on a "reasonable" setup, this should be

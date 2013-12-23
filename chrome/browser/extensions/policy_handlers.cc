@@ -239,7 +239,7 @@ void ExtensionURLPatternListPolicyHandler::ApplyPolicySettings(
     PrefValueMap* prefs) {
   if (!pref_path_)
     return;
-  const Value* value = policies.GetValue(policy_name());
+  const base::Value* value = policies.GetValue(policy_name());
   if (value)
     prefs->SetValue(pref_path_, value->DeepCopy());
 }

@@ -181,11 +181,11 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
   const char kAvatar4[] = "";
   {
     DictionaryPrefUpdate update(prefs(), prefs::kManagedUsers);
-    DictionaryValue* managed_users = update.Get();
-    DictionaryValue* dict = new DictionaryValue;
+    base::DictionaryValue* managed_users = update.Get();
+    base::DictionaryValue* dict = new base::DictionaryValue;
     dict->SetString(kNameKey, kName1);
     managed_users->Set(kUserId1, dict);
-    dict = new DictionaryValue;
+    dict = new base::DictionaryValue;
     dict->SetString(kNameKey, kName2);
     dict->SetBoolean(kAcknowledgedKey, true);
     managed_users->Set(kUserId2, dict);
@@ -212,13 +212,13 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
   EXPECT_EQ(2, result.num_items_before_association());
   EXPECT_EQ(4, result.num_items_after_association());
 
-  const DictionaryValue* managed_users = service()->GetManagedUsers();
+  const base::DictionaryValue* managed_users = service()->GetManagedUsers();
   EXPECT_EQ(4u, managed_users->size());
   EXPECT_TRUE(async_managed_users);
   EXPECT_TRUE(managed_users->Equals(async_managed_users));
 
   {
-    const DictionaryValue* managed_user = NULL;
+    const base::DictionaryValue* managed_user = NULL;
     ASSERT_TRUE(managed_users->GetDictionary(kUserId2, &managed_user));
     ASSERT_TRUE(managed_user);
     std::string name;
@@ -232,7 +232,7 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
     EXPECT_EQ(kAvatar2, avatar);
   }
   {
-    const DictionaryValue* managed_user = NULL;
+    const base::DictionaryValue* managed_user = NULL;
     ASSERT_TRUE(managed_users->GetDictionary(kUserId3, &managed_user));
     ASSERT_TRUE(managed_user);
     std::string name;
@@ -246,7 +246,7 @@ TEST_F(ManagedUserSyncServiceTest, MergeExisting) {
     EXPECT_EQ(kAvatar3, avatar);
   }
   {
-    const DictionaryValue* managed_user = NULL;
+    const base::DictionaryValue* managed_user = NULL;
     ASSERT_TRUE(managed_users->GetDictionary(kUserId4, &managed_user));
     ASSERT_TRUE(managed_user);
     std::string name;

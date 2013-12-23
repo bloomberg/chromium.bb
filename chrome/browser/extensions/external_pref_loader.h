@@ -63,14 +63,14 @@ class ExternalPrefLoader : public ExternalLoader {
   // regarding which extensions to install. |prefs| will be modified to
   // receive the extracted extension information.
   // Must be called from the File thread.
-  void ReadExternalExtensionPrefFile(DictionaryValue * prefs);
+  void ReadExternalExtensionPrefFile(base::DictionaryValue* prefs);
 
   // Extracts the information contained in standalone external extension
   // json files (<extension id>.json) regarding what external extensions
   // to install. |prefs| will be modified to receive the extracted extension
   // information.
   // Must be called from the File thread.
-  void ReadStandaloneExtensionPrefFiles(DictionaryValue * prefs);
+  void ReadStandaloneExtensionPrefFiles(base::DictionaryValue* prefs);
 
   // The path (coresponding to |base_path_id_| containing the json files
   // describing which extensions to load.
@@ -97,7 +97,7 @@ class ExternalTestingLoader : public ExternalLoader {
   virtual ~ExternalTestingLoader();
 
   base::FilePath fake_base_path_;
-  scoped_ptr<DictionaryValue> testing_prefs_;
+  scoped_ptr<base::DictionaryValue> testing_prefs_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTestingLoader);
 };

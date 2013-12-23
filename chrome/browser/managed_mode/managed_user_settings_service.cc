@@ -49,7 +49,7 @@ bool SettingShouldApplyToPrefs(const std::string& name) {
 }  // namespace
 
 ManagedUserSettingsService::ManagedUserSettingsService()
-    : active_(false), local_settings_(new DictionaryValue) {}
+    : active_(false), local_settings_(new base::DictionaryValue) {}
 
 ManagedUserSettingsService::~ManagedUserSettingsService() {}
 
@@ -105,11 +105,11 @@ std::string ManagedUserSettingsService::MakeSplitSettingKey(
 }
 
 void ManagedUserSettingsService::UploadItem(const std::string& key,
-                                                scoped_ptr<Value> value) {
+                                                scoped_ptr<base::Value> value) {
   DCHECK(!SettingShouldApplyToPrefs(key));
 
   std::string key_suffix = key;
-  DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = NULL;
   if (sync_processor_) {
     content::RecordAction(UserMetricsAction("ManagedUsers_UploadItem_Syncing"));
     dict = GetDictionaryAndSplitKey(&key_suffix);
@@ -134,7 +134,7 @@ void ManagedUserSettingsService::UploadItem(const std::string& key,
 
 void ManagedUserSettingsService::SetLocalSettingForTesting(
     const std::string& key,
-    scoped_ptr<Value> value) {
+    scoped_ptr<base::Value> value) {
   if (value)
     local_settings_->SetWithoutPathExpansion(key, value.release());
   else
@@ -146,7 +146,7 @@ void ManagedUserSettingsService::SetLocalSettingForTesting(
 // static
 SyncData ManagedUserSettingsService::CreateSyncDataForSetting(
     const std::string& name,
-    const Value& value) {
+    const base::Value& value) {
   std::string json_value;
   base::JSONWriter::Write(&value, &json_value);
   ::sync_pb::EntitySpecifics specifics;
@@ -175,9 +175,10 @@ SyncMergeResult ManagedUserSettingsService::MergeDataAndStartSyncing(
     DCHECK_EQ(MANAGED_USER_SETTINGS, it->GetDataType());
     const ::sync_pb::ManagedUserSettingSpecifics& managed_user_setting =
         it->GetSpecifics().managed_user_setting();
-    scoped_ptr<Value> value(JSONReader::Read(managed_user_setting.value()));
+    scoped_ptr<base::Value> value(
+        JSONReader::Read(managed_user_setting.value()));
     std::string name_suffix = managed_user_setting.name();
-    DictionaryValue* dict = GetDictionaryAndSplitKey(&name_suffix);
+    base::DictionaryValue* dict = GetDictionaryAndSplitKey(&name_suffix);
     dict->SetWithoutPathExpansion(name_suffix, value.release());
   }
   store_->ReportValueChanged(kAtomicSettings);
@@ -187,11 +188,11 @@ SyncMergeResult ManagedUserSettingsService::MergeDataAndStartSyncing(
   // Upload all the queued up items (either with an ADD or an UPDATE action,
   // depending on whether they already exist) and move them to split settings.
   SyncChangeList change_list;
-  DictionaryValue* queued_items = GetQueuedItems();
-  for (DictionaryValue::Iterator it(*queued_items); !it.IsAtEnd();
+  base::DictionaryValue* queued_items = GetQueuedItems();
+  for (base::DictionaryValue::Iterator it(*queued_items); !it.IsAtEnd();
        it.Advance()) {
     std::string key_suffix = it.key();
-    DictionaryValue* dict = GetDictionaryAndSplitKey(&key_suffix);
+    base::DictionaryValue* dict = GetDictionaryAndSplitKey(&key_suffix);
     SyncData data = CreateSyncDataForSetting(it.key(), it.value());
     SyncChange::SyncChangeType change_type =
         dict->HasKey(key_suffix) ? SyncChange::ACTION_UPDATE
@@ -223,15 +224,16 @@ SyncDataList ManagedUserSettingsService::GetAllSyncData(
     ModelType type) const {
   DCHECK_EQ(syncer::MANAGED_USER_SETTINGS, type);
   SyncDataList data;
-  for (DictionaryValue::Iterator it(*GetAtomicSettings()); !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(*GetAtomicSettings()); !it.IsAtEnd();
        it.Advance()) {
     data.push_back(CreateSyncDataForSetting(it.key(), it.value()));
   }
-  for (DictionaryValue::Iterator it(*GetSplitSettings()); !it.IsAtEnd();
+  for (base::DictionaryValue::Iterator it(*GetSplitSettings()); !it.IsAtEnd();
        it.Advance()) {
-    const DictionaryValue* dict = NULL;
+    const base::DictionaryValue* dict = NULL;
     it.value().GetAsDictionary(&dict);
-    for (DictionaryValue::Iterator jt(*dict); !jt.IsAtEnd(); jt.Advance()) {
+    for (base::DictionaryValue::Iterator jt(*dict);
+         !jt.IsAtEnd(); jt.Advance()) {
       data.push_back(CreateSyncDataForSetting(
           MakeSplitSettingKey(it.key(), jt.key()), jt.value()));
     }
@@ -250,11 +252,12 @@ SyncError ManagedUserSettingsService::ProcessSyncChanges(
     const ::sync_pb::ManagedUserSettingSpecifics& managed_user_setting =
         data.GetSpecifics().managed_user_setting();
     std::string key = managed_user_setting.name();
-    DictionaryValue* dict = GetDictionaryAndSplitKey(&key);
+    base::DictionaryValue* dict = GetDictionaryAndSplitKey(&key);
     switch (it->change_type()) {
       case SyncChange::ACTION_ADD:
       case SyncChange::ACTION_UPDATE: {
-        scoped_ptr<Value> value(JSONReader::Read(managed_user_setting.value()));
+        scoped_ptr<base::Value> value(
+            JSONReader::Read(managed_user_setting.value()));
         if (dict->HasKey(key)) {
           DLOG_IF(WARNING, it->change_type() == SyncChange::ACTION_ADD)
               << "Value for key " << key << " already exists";
@@ -293,10 +296,10 @@ void ManagedUserSettingsService::OnInitializationCompleted(bool success) {
   InformSubscribers();
 }
 
-DictionaryValue* ManagedUserSettingsService::GetOrCreateDictionary(
+base::DictionaryValue* ManagedUserSettingsService::GetOrCreateDictionary(
     const std::string& key) const {
-  Value* value = NULL;
-  DictionaryValue* dict = NULL;
+  base::Value* value = NULL;
+  base::DictionaryValue* dict = NULL;
   if (store_->GetMutableValue(key, &value)) {
     bool success = value->GetAsDictionary(&dict);
     DCHECK(success);
@@ -308,29 +311,29 @@ DictionaryValue* ManagedUserSettingsService::GetOrCreateDictionary(
   return dict;
 }
 
-DictionaryValue* ManagedUserSettingsService::GetAtomicSettings() const {
+base::DictionaryValue* ManagedUserSettingsService::GetAtomicSettings() const {
   return GetOrCreateDictionary(kAtomicSettings);
 }
 
-DictionaryValue* ManagedUserSettingsService::GetSplitSettings() const {
+base::DictionaryValue* ManagedUserSettingsService::GetSplitSettings() const {
   return GetOrCreateDictionary(kSplitSettings);
 }
 
-DictionaryValue* ManagedUserSettingsService::GetQueuedItems() const {
+base::DictionaryValue* ManagedUserSettingsService::GetQueuedItems() const {
   return GetOrCreateDictionary(kQueuedItems);
 }
 
-DictionaryValue* ManagedUserSettingsService::GetDictionaryAndSplitKey(
+base::DictionaryValue* ManagedUserSettingsService::GetDictionaryAndSplitKey(
     std::string* key) const {
   size_t pos = key->find_first_of(kSplitSettingKeySeparator);
   if (pos == std::string::npos)
     return GetAtomicSettings();
 
-  DictionaryValue* split_settings = GetSplitSettings();
+  base::DictionaryValue* split_settings = GetSplitSettings();
   std::string prefix = key->substr(0, pos);
-  DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = NULL;
   if (!split_settings->GetDictionary(prefix, &dict)) {
-    dict = new DictionaryValue;
+    dict = new base::DictionaryValue;
     DCHECK(!split_settings->HasKey(prefix));
     split_settings->Set(prefix, dict);
   }
@@ -338,15 +341,15 @@ DictionaryValue* ManagedUserSettingsService::GetDictionaryAndSplitKey(
   return dict;
 }
 
-scoped_ptr<DictionaryValue> ManagedUserSettingsService::GetSettings() {
+scoped_ptr<base::DictionaryValue> ManagedUserSettingsService::GetSettings() {
   DCHECK(IsReady());
   if (!active_)
     return scoped_ptr<base::DictionaryValue>();
 
-  scoped_ptr<DictionaryValue> settings(local_settings_->DeepCopy());
+  scoped_ptr<base::DictionaryValue> settings(local_settings_->DeepCopy());
 
-  DictionaryValue* atomic_settings = GetAtomicSettings();
-  for (DictionaryValue::Iterator it(*atomic_settings); !it.IsAtEnd();
+  base::DictionaryValue* atomic_settings = GetAtomicSettings();
+  for (base::DictionaryValue::Iterator it(*atomic_settings); !it.IsAtEnd();
        it.Advance()) {
     if (!SettingShouldApplyToPrefs(it.key()))
       continue;
@@ -354,8 +357,8 @@ scoped_ptr<DictionaryValue> ManagedUserSettingsService::GetSettings() {
     settings->Set(it.key(), it.value().DeepCopy());
   }
 
-  DictionaryValue* split_settings = GetSplitSettings();
-  for (DictionaryValue::Iterator it(*split_settings); !it.IsAtEnd();
+  base::DictionaryValue* split_settings = GetSplitSettings();
+  for (base::DictionaryValue::Iterator it(*split_settings); !it.IsAtEnd();
        it.Advance()) {
     if (!SettingShouldApplyToPrefs(it.key()))
       continue;

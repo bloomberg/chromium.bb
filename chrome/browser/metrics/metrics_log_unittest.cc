@@ -382,7 +382,7 @@ TEST_F(MetricsLogTest, Plugins) {
   EXPECT_FALSE(system_profile.plugin(1).is_pepper());
 
   // Now set some plugin stability stats for p2 and verify they're recorded.
-  scoped_ptr<base::DictionaryValue> plugin_dict(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> plugin_dict(new base::DictionaryValue);
   plugin_dict->SetString(prefs::kStabilityPluginName, "p2");
   plugin_dict->SetInteger(prefs::kStabilityPluginLaunches, 1);
   plugin_dict->SetInteger(prefs::kStabilityPluginCrashes, 2);

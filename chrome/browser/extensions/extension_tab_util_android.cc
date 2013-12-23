@@ -8,8 +8,6 @@
 #include "chrome/browser/sessions/session_id.h"
 #include "url/gurl.h"
 
-using base::DictionaryValue;
-using base::ListValue;
 using content::WebContents;
 
 namespace extensions {
@@ -39,23 +37,24 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
 }
 
 // static
-DictionaryValue* ExtensionTabUtil::CreateTabValue(const WebContents* contents,
-                                                  TabStripModel* tab_strip,
-                                                  int tab_index,
-                                                  const Extension* extension) {
+base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
+    const WebContents* contents,
+    TabStripModel* tab_strip,
+    int tab_index,
+    const Extension* extension) {
   NOTIMPLEMENTED();
   return NULL;
 }
 
 // static
-ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser,
-                                           const Extension* extension) {
+base::ListValue* ExtensionTabUtil::CreateTabList(const Browser* browser,
+                                                 const Extension* extension) {
   NOTIMPLEMENTED();
   return NULL;
 }
 
 // static
-DictionaryValue* ExtensionTabUtil::CreateTabValue(
+base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index) {

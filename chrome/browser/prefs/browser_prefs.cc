@@ -459,7 +459,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // key) go here.
   registry->RegisterDictionaryPref(
       kBackupPref,
-      new DictionaryValue(),
+      new base::DictionaryValue(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #if !defined(OS_ANDROID)
   registry->RegisterStringPref(

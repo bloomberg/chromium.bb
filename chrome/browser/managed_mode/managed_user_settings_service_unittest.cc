@@ -135,7 +135,7 @@ class ManagedUserSettingsServiceTest : public ::testing::Test {
       EXPECT_TRUE(split_items_.GetWithoutPathExpansion(key, &expected_value));
     }
 
-    scoped_ptr<Value> value(
+    scoped_ptr<base::Value> value(
         base::JSONReader::Read(managed_user_setting.value()));
     EXPECT_TRUE(expected_value->Equals(value.get()));
   }

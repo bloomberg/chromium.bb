@@ -62,8 +62,8 @@ SyncData CreateLocalSyncData(const std::string& id,
 }
 
 SyncData CreateSyncDataFromDictionaryEntry(
-    const DictionaryValue::Iterator& it) {
-  const DictionaryValue* dict = NULL;
+    const base::DictionaryValue::Iterator& it) {
+  const base::DictionaryValue* dict = NULL;
   bool success = it.value().GetAsDictionary(&dict);
   DCHECK(success);
   bool acknowledged = false;
@@ -157,8 +157,8 @@ void ManagedUserSyncService::AddManagedUser(const std::string& id,
                                             const std::string& master_key,
                                             int avatar_index) {
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
-  DictionaryValue* dict = update.Get();
-  DictionaryValue* value = new DictionaryValue;
+  base::DictionaryValue* dict = update.Get();
+  base::DictionaryValue* value = new base::DictionaryValue;
   value->SetString(kName, name);
   value->SetString(kMasterKey, master_key);
   std::string chrome_avatar;
@@ -206,7 +206,7 @@ void ManagedUserSyncService::DeleteManagedUser(const std::string& id) {
   DCHECK(!sync_error.IsSet());
 }
 
-const DictionaryValue* ManagedUserSyncService::GetManagedUsers() {
+const base::DictionaryValue* ManagedUserSyncService::GetManagedUsers() {
   DCHECK(sync_processor_);
   return prefs_->GetDictionary(prefs::kManagedUsers);
 }
@@ -215,9 +215,9 @@ bool ManagedUserSyncService::UpdateManagedUserAvatarIfNeeded(
     const std::string& id,
     int avatar_index) {
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
-  DictionaryValue* dict = update.Get();
+  base::DictionaryValue* dict = update.Get();
   DCHECK(dict->HasKey(id));
-  DictionaryValue* value = NULL;
+  base::DictionaryValue* value = NULL;
   bool success = dict->GetDictionaryWithoutPathExpansion(id, &value);
   DCHECK(success);
 
@@ -300,7 +300,7 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
   SyncMergeResult result(MANAGED_USERS);
 
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
-  DictionaryValue* dict = update.Get();
+  base::DictionaryValue* dict = update.Get();
   result.set_num_items_before_association(dict->size());
   std::set<std::string> seen_ids;
   int num_items_added = 0;
@@ -310,7 +310,7 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
     DCHECK_EQ(MANAGED_USERS, it->GetDataType());
     const ManagedUserSpecifics& managed_user =
         it->GetSpecifics().managed_user();
-    DictionaryValue* value = new DictionaryValue();
+    base::DictionaryValue* value = new base::DictionaryValue();
     value->SetString(kName, managed_user.name());
     value->SetBoolean(kAcknowledged, managed_user.acknowledged());
     value->SetString(kMasterKey, managed_user.master_key());
@@ -324,7 +324,7 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
     seen_ids.insert(managed_user.id());
   }
 
-  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     if (seen_ids.find(it.key()) != seen_ids.end())
       continue;
 
@@ -355,8 +355,8 @@ SyncDataList ManagedUserSyncService::GetAllSyncData(
     ModelType type) const {
   SyncDataList data;
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
-  DictionaryValue* dict = update.Get();
-  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance())
+  base::DictionaryValue* dict = update.Get();
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance())
     data.push_back(CreateSyncDataFromDictionaryEntry(it));
 
   return data;
@@ -367,7 +367,7 @@ SyncError ManagedUserSyncService::ProcessSyncChanges(
     const SyncChangeList& change_list) {
   SyncError error;
   DictionaryPrefUpdate update(prefs_, prefs::kManagedUsers);
-  DictionaryValue* dict = update.Get();
+  base::DictionaryValue* dict = update.Get();
   for (SyncChangeList::const_iterator it = change_list.begin();
        it != change_list.end(); ++it) {
     SyncData data = it->sync_data();
@@ -379,7 +379,7 @@ SyncError ManagedUserSyncService::ProcessSyncChanges(
       case SyncChange::ACTION_UPDATE: {
         // Every item we get from the server should be acknowledged.
         DCHECK(managed_user.acknowledged());
-        const DictionaryValue* old_value = NULL;
+        const base::DictionaryValue* old_value = NULL;
         dict->GetDictionaryWithoutPathExpansion(managed_user.id(), &old_value);
 
         // For an update action, the managed user should already exist, for an
@@ -393,7 +393,7 @@ SyncError ManagedUserSyncService::ProcessSyncChanges(
         if (old_value && !old_value->HasKey(kAcknowledged))
           NotifyManagedUserAcknowledged(managed_user.id());
 
-        DictionaryValue* value = new DictionaryValue;
+        base::DictionaryValue* value = new base::DictionaryValue;
         value->SetString(kName, managed_user.name());
         value->SetBoolean(kAcknowledged, managed_user.acknowledged());
         value->SetString(kMasterKey, managed_user.master_key());
@@ -436,7 +436,7 @@ void ManagedUserSyncService::NotifyManagedUsersSyncingStopped() {
 }
 
 void ManagedUserSyncService::DispatchCallbacks() {
-  const DictionaryValue* managed_users =
+  const base::DictionaryValue* managed_users =
       prefs_->GetDictionary(prefs::kManagedUsers);
   for (std::vector<ManagedUsersCallback>::iterator it = callbacks_.begin();
        it != callbacks_.end(); ++it) {

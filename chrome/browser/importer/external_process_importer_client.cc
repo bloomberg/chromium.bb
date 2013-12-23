@@ -297,7 +297,7 @@ void ExternalProcessImporterClient::StartProcessOnIOThread(
 
   // Dictionary of all localized strings that could be needed by the importer
   // in the external process.
-  DictionaryValue localized_strings;
+  base::DictionaryValue localized_strings;
   localized_strings.SetString(
       base::IntToString(IDS_BOOKMARK_GROUP),
       l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP));

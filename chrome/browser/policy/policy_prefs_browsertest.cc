@@ -468,7 +468,8 @@ class PolicyPrefsTest : public InProcessBrowserTest {
   void SetProviderPolicy(const base::DictionaryValue& policies,
                          PolicyLevel level) {
     PolicyMap policy_map;
-    for (DictionaryValue::Iterator it(policies); !it.IsAtEnd(); it.Advance()) {
+    for (base::DictionaryValue::Iterator it(policies);
+         !it.IsAtEnd(); it.Advance()) {
       const PolicyDetails* policy_details = GetChromePolicyDetails(it.key());
       ASSERT_TRUE(policy_details);
       policy_map.Set(

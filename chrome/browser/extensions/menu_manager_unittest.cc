@@ -603,7 +603,7 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
 
   ASSERT_EQ(2u, list->GetSize());
 
-  DictionaryValue* info;
+  base::DictionaryValue* info;
   ASSERT_TRUE(list->GetDictionary(0, &info));
 
   int tmp_id = 0;

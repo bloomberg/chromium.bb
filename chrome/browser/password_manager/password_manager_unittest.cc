@@ -477,10 +477,10 @@ TEST_F(PasswordManagerTest, SavingDependsOnManagerEnabledPreference) {
   // preference.
   TestingPrefServiceSyncable* prefService = profile()->GetTestingPrefService();
   prefService->SetUserPref(prefs::kPasswordManagerEnabled,
-                           Value::CreateBooleanValue(true));
+                           base::Value::CreateBooleanValue(true));
   EXPECT_TRUE(manager()->IsSavingEnabled());
   prefService->SetUserPref(prefs::kPasswordManagerEnabled,
-                           Value::CreateBooleanValue(false));
+                           base::Value::CreateBooleanValue(false));
   EXPECT_FALSE(manager()->IsSavingEnabled());
 }
 
@@ -492,7 +492,7 @@ TEST_F(PasswordManagerTest, FillPasswordsOnDisabledManager) {
   result.push_back(existing);
   TestingPrefServiceSyncable* prefService = profile()->GetTestingPrefService();
   prefService->SetUserPref(prefs::kPasswordManagerEnabled,
-                           Value::CreateBooleanValue(false));
+                           base::Value::CreateBooleanValue(false));
   EXPECT_CALL(delegate_, FillPasswordForm(_));
   EXPECT_CALL(*store_.get(),
               GetLogins(_, testing::Eq(PasswordStore::DISALLOW_PROMPT), _))

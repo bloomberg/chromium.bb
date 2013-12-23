@@ -1888,17 +1888,18 @@ MetricsService::ChildProcessStats& MetricsService::GetChildProcessStats(
 
 void MetricsService::RecordPluginChanges(PrefService* pref) {
   ListPrefUpdate update(pref, prefs::kStabilityPluginStats);
-  ListValue* plugins = update.Get();
+  base::ListValue* plugins = update.Get();
   DCHECK(plugins);
 
-  for (ListValue::iterator value_iter = plugins->begin();
+  for (base::ListValue::iterator value_iter = plugins->begin();
        value_iter != plugins->end(); ++value_iter) {
-    if (!(*value_iter)->IsType(Value::TYPE_DICTIONARY)) {
+    if (!(*value_iter)->IsType(base::Value::TYPE_DICTIONARY)) {
       NOTREACHED();
       continue;
     }
 
-    DictionaryValue* plugin_dict = static_cast<DictionaryValue*>(*value_iter);
+    base::DictionaryValue* plugin_dict =
+        static_cast<base::DictionaryValue*>(*value_iter);
     std::string plugin_name;
     plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
     if (plugin_name.empty()) {
@@ -1958,7 +1959,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
     // TODO(viettrungluu): remove conversion
     std::string plugin_name = UTF16ToUTF8(cache_iter->first);
 
-    DictionaryValue* plugin_dict = new DictionaryValue;
+    base::DictionaryValue* plugin_dict = new base::DictionaryValue;
 
     plugin_dict->SetString(prefs::kStabilityPluginName, plugin_name);
     plugin_dict->SetInteger(prefs::kStabilityPluginLaunches,

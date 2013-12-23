@@ -17,7 +17,8 @@ struct ProxyConfigHolder {
 };
 
 TEST(ProxyConfigDictionaryTest, CreateDirect) {
-  scoped_ptr<DictionaryValue> dict_value(ProxyConfigDictionary::CreateDirect());
+  scoped_ptr<base::DictionaryValue> dict_value(
+      ProxyConfigDictionary::CreateDirect());
   ProxyConfigDictionary dict(dict_value.get());
   ProxyConfigHolder h;
 
@@ -29,7 +30,7 @@ TEST(ProxyConfigDictionaryTest, CreateDirect) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreateAutoDetect) {
-  scoped_ptr<DictionaryValue> dict_value(
+  scoped_ptr<base::DictionaryValue> dict_value(
       ProxyConfigDictionary::CreateAutoDetect());
   ProxyConfigDictionary dict(dict_value.get());
   ProxyConfigHolder h;
@@ -42,7 +43,7 @@ TEST(ProxyConfigDictionaryTest, CreateAutoDetect) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreatePacScript) {
-  scoped_ptr<DictionaryValue> dict_value(
+  scoped_ptr<base::DictionaryValue> dict_value(
       ProxyConfigDictionary::CreatePacScript("pac", false));
   ProxyConfigDictionary dict(dict_value.get());
   ProxyConfigHolder h;
@@ -56,7 +57,7 @@ TEST(ProxyConfigDictionaryTest, CreatePacScript) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreateFixedServers) {
-  scoped_ptr<DictionaryValue> dict_value(
+  scoped_ptr<base::DictionaryValue> dict_value(
       ProxyConfigDictionary::CreateFixedServers("http://1.2.3.4",
                                                 "http://foo"));
   ProxyConfigDictionary dict(dict_value.get());
@@ -72,7 +73,8 @@ TEST(ProxyConfigDictionaryTest, CreateFixedServers) {
 }
 
 TEST(ProxyConfigDictionaryTest, CreateSystem) {
-  scoped_ptr<DictionaryValue> dict_value(ProxyConfigDictionary::CreateSystem());
+  scoped_ptr<base::DictionaryValue> dict_value(
+      ProxyConfigDictionary::CreateSystem());
   ProxyConfigDictionary dict(dict_value.get());
   ProxyConfigHolder h;
 

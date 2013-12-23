@@ -242,8 +242,9 @@ void GaiaOAuthFetcher::ParseUserInfoResponse(const std::string& data,
                                              std::string* email_result) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(data));
   if (value->GetType() == base::Value::TYPE_DICTIONARY) {
-    Value* email_value;
-    DictionaryValue* dict = static_cast<DictionaryValue*>(value.get());
+    base::Value* email_value;
+    base::DictionaryValue* dict =
+        static_cast<base::DictionaryValue*>(value.get());
     if (dict->Get("email", &email_value)) {
       if (email_value->GetType() == base::Value::TYPE_STRING) {
         email_value->GetAsString(email_result);

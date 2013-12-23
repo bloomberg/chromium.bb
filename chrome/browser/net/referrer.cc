@@ -120,10 +120,11 @@ bool ReferrerValue::Trim(double reduce_rate, double threshold) {
 }
 
 
-void Referrer::Deserialize(const Value& value) {
-  if (value.GetType() != Value::TYPE_LIST)
+void Referrer::Deserialize(const base::Value& value) {
+  if (value.GetType() != base::Value::TYPE_LIST)
     return;
-  const ListValue* subresource_list(static_cast<const ListValue*>(&value));
+  const base::ListValue* subresource_list(
+      static_cast<const base::ListValue*>(&value));
   size_t index = 0;  // Bounds checking is done by subresource_list->Get*().
   while (true) {
     std::string url_spec;
@@ -144,7 +145,7 @@ void Referrer::Deserialize(const Value& value) {
   }
 }
 
-Value* Referrer::Serialize() const {
+base::Value* Referrer::Serialize() const {
   base::ListValue* subresource_list(new base::ListValue);
   for (const_iterator it = begin(); it != end(); ++it) {
     base::StringValue* url_spec(new base::StringValue(it->first.spec()));

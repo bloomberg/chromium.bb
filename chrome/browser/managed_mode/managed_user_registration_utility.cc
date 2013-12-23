@@ -201,7 +201,8 @@ void ManagedUserRegistrationUtilityImpl::Register(
   callback_ = callback;
   pending_managed_user_id_ = managed_user_id;
 
-  const DictionaryValue* dict = prefs_->GetDictionary(prefs::kManagedUsers);
+  const base::DictionaryValue* dict =
+      prefs_->GetDictionary(prefs::kManagedUsers);
   is_existing_managed_user_ = dict->HasKey(managed_user_id);
   if (!is_existing_managed_user_) {
     managed_user_sync_service_->AddManagedUser(pending_managed_user_id_,

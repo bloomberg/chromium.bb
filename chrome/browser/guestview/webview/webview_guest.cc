@@ -272,7 +272,7 @@ void WebViewGuest::AddMessageToConsole(int32 level,
                                        const base::string16& message,
                                        int32 line_no,
                                        const base::string16& source_id) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   // Log levels are from base/logging.h: LogSeverity.
   args->SetInteger(webview::kLevel, level);
   args->SetString(webview::kMessage, message);
@@ -283,7 +283,7 @@ void WebViewGuest::AddMessageToConsole(int32 level,
 }
 
 void WebViewGuest::Close() {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   DispatchEvent(new GuestView::Event(webview::kEventClose, args.Pass()));
 }
 
@@ -313,7 +313,7 @@ void WebViewGuest::EmbedderDestroyed() {
 }
 
 void WebViewGuest::GuestProcessGone(base::TerminationStatus status) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
                    web_contents()->GetRenderProcessHost()->GetID());
   args->SetString(webview::kReason, TerminationStatusToString(status));
@@ -374,7 +374,7 @@ bool WebViewGuest::IsOverridingUserAgent() const {
 }
 
 void WebViewGuest::LoadProgressed(double progress) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, web_contents()->GetURL().spec());
   args->SetDouble(webview::kProgress, progress);
   DispatchEvent(new GuestView::Event(webview::kEventLoadProgress, args.Pass()));
@@ -383,7 +383,7 @@ void WebViewGuest::LoadProgressed(double progress) {
 void WebViewGuest::LoadAbort(bool is_top_level,
                              const GURL& url,
                              const std::string& error_type) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetBoolean(guestview::kIsTopLevel, is_top_level);
   args->SetString(guestview::kUrl, url.possibly_invalid_spec());
   args->SetString(guestview::kReason, error_type);
@@ -393,14 +393,14 @@ void WebViewGuest::LoadAbort(bool is_top_level,
 // TODO(fsamuel): Find a reliable way to test the 'responsive' and
 // 'unresponsive' events.
 void WebViewGuest::RendererResponsive() {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
       guest_web_contents()->GetRenderProcessHost()->GetID());
   DispatchEvent(new GuestView::Event(webview::kEventResponsive, args.Pass()));
 }
 
 void WebViewGuest::RendererUnresponsive() {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kProcessId,
       guest_web_contents()->GetRenderProcessHost()->GetID());
   DispatchEvent(new GuestView::Event(webview::kEventUnresponsive, args.Pass()));
@@ -570,7 +570,7 @@ void WebViewGuest::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     content::PageTransition transition_type,
     content::RenderViewHost* render_view_host) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, url.spec());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
   args->SetInteger(webview::kInternalCurrentEntryIndex,
@@ -604,14 +604,14 @@ void WebViewGuest::DidStartProvisionalLoadForFrame(
     bool is_error_page,
     bool is_iframe_srcdoc,
     content::RenderViewHost* render_view_host) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guestview::kUrl, validated_url.spec());
   args->SetBoolean(guestview::kIsTopLevel, is_main_frame);
   DispatchEvent(new GuestView::Event(webview::kEventLoadStart, args.Pass()));
 }
 
 void WebViewGuest::DidStopLoading(content::RenderViewHost* render_view_host) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   DispatchEvent(new GuestView::Event(webview::kEventLoadStop, args.Pass()));
 }
 
@@ -636,14 +636,14 @@ void WebViewGuest::UserAgentOverrideSet(const std::string& user_agent) {
 }
 
 void WebViewGuest::LoadHandlerCalled() {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   DispatchEvent(new GuestView::Event(webview::kEventContentLoad, args.Pass()));
 }
 
 void WebViewGuest::LoadRedirect(const GURL& old_url,
                                 const GURL& new_url,
                                 bool is_top_level) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetBoolean(guestview::kIsTopLevel, is_top_level);
   args->SetString(webview::kNewURL, new_url.spec());
   args->SetString(webview::kOldURL, old_url.spec());
@@ -715,7 +715,7 @@ GURL WebViewGuest::ResolveURL(const std::string& src) {
 
 void WebViewGuest::SizeChanged(const gfx::Size& old_size,
                                const gfx::Size& new_size) {
-  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetInteger(webview::kOldHeight, old_size.height());
   args->SetInteger(webview::kOldWidth, old_size.width());
   args->SetInteger(webview::kNewHeight, new_size.height());

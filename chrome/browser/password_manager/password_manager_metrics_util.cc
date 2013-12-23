@@ -57,7 +57,7 @@ const size_t kNumDomains = arraysize(kDomainMapping);
 size_t GetGroupIndex(size_t domain_index, PrefService* pref_service) {
   DCHECK_LT(domain_index, kNumDomains);
 
-  const ListValue* group_indices =
+  const base::ListValue* group_indices =
       pref_service->GetList(prefs::kPasswordManagerGroupsForDomains);
   int result = 0;
   if (!group_indices->GetInteger(domain_index, &result)) {

@@ -42,7 +42,8 @@ class DataReductionProxySettingsAndroidTest
 
   void CheckProxyPacPref(const std::string& expected_pac_url,
                          const std::string& expected_mode) {
-    const DictionaryValue* dict = pref_service_.GetDictionary(prefs::kProxy);
+    const base::DictionaryValue* dict =
+        pref_service_.GetDictionary(prefs::kProxy);
     std::string mode;
     std::string pac_url;
     dict->GetString("mode", &mode);

@@ -187,9 +187,9 @@ class ManagedUserServiceExtensionTestBase : public ExtensionServiceTestBase {
   }
 
   scoped_refptr<extensions::Extension> MakeThemeExtension() {
-    scoped_ptr<DictionaryValue> source(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> source(new base::DictionaryValue());
     source->SetString(extensions::manifest_keys::kName, "Theme");
-    source->Set(extensions::manifest_keys::kTheme, new DictionaryValue());
+    source->Set(extensions::manifest_keys::kTheme, new base::DictionaryValue());
     source->SetString(extensions::manifest_keys::kVersion, "1.0");
     extensions::ExtensionBuilder builder;
     scoped_refptr<extensions::Extension> extension =
@@ -198,7 +198,7 @@ class ManagedUserServiceExtensionTestBase : public ExtensionServiceTestBase {
   }
 
   scoped_refptr<extensions::Extension> MakeExtension() {
-    scoped_ptr<DictionaryValue> manifest = extensions::DictionaryBuilder()
+    scoped_ptr<base::DictionaryValue> manifest = extensions::DictionaryBuilder()
       .Set(extensions::manifest_keys::kName, "Extension")
       .Set(extensions::manifest_keys::kVersion, "1.0")
       .Build();

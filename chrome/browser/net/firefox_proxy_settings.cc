@@ -65,7 +65,8 @@ FirefoxProxySettings::SOCKSVersion IntToSOCKSVersion(int type) {
 // |prefs| is not filled).
 // Note: for strings, only valid UTF-8 string values are supported. If a
 // key/pair is not valid UTF-8, it is ignored and will not appear in |prefs|.
-bool ParsePrefFile(const base::FilePath& pref_file, DictionaryValue* prefs) {
+bool ParsePrefFile(const base::FilePath& pref_file,
+                   base::DictionaryValue* prefs) {
   // The string that is before a pref key.
   const std::string kUserPrefString = "user_pref(\"";
   std::string contents;
@@ -245,7 +246,7 @@ bool FirefoxProxySettings::ToProxyConfig(net::ProxyConfig* config) {
 // static
 bool FirefoxProxySettings::GetSettingsFromFile(const base::FilePath& pref_file,
                                                FirefoxProxySettings* settings) {
-  DictionaryValue dictionary;
+  base::DictionaryValue dictionary;
   if (!ParsePrefFile(pref_file, &dictionary))
     return false;
 

@@ -83,8 +83,9 @@ void DataReductionProxySettingsTestBase::SetUp() {
   ListPrefUpdate received_update(&pref_service_,
                                  prefs::kDailyHttpReceivedContentLength);
   for (int64 i = 0; i < spdyproxy::kNumDaysInHistory; i++) {
-    original_update->Insert(0, new StringValue(base::Int64ToString(2 * i)));
-    received_update->Insert(0, new StringValue(base::Int64ToString(i)));
+    original_update->Insert(0,
+                            new base::StringValue(base::Int64ToString(2 * i)));
+    received_update->Insert(0, new base::StringValue(base::Int64ToString(i)));
   }
   last_update_time_ = base::Time::Now().LocalMidnight();
   pref_service_.SetInt64(
@@ -154,7 +155,8 @@ DataReductionProxySettingsTestBase::SetProbeResult<
 void DataReductionProxySettingsTestBase::CheckProxyPref(
     const std::string& expected_servers,
     const std::string& expected_mode) {
-  const DictionaryValue* dict = pref_service_.GetDictionary(prefs::kProxy);
+  const base::DictionaryValue* dict =
+      pref_service_.GetDictionary(prefs::kProxy);
   std::string mode;
   std::string server;
   dict->GetString("mode", &mode);

@@ -46,10 +46,10 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
       const PrivetURLFetcher::TokenCallback& callback) {
   }
 
-  const DictionaryValue* saved_value() { return saved_value_.get(); }
+  const base::DictionaryValue* saved_value() { return saved_value_.get(); }
 
  private:
-  scoped_ptr<DictionaryValue> saved_value_;
+  scoped_ptr<base::DictionaryValue> saved_value_;
 };
 
 class PrivetURLFetcherTest : public ::testing::Test {

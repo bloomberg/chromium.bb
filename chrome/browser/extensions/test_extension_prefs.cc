@@ -123,14 +123,14 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {
-  DictionaryValue dictionary;
+  base::DictionaryValue dictionary;
   dictionary.SetString(manifest_keys::kName, name);
   dictionary.SetString(manifest_keys::kVersion, "0.1");
   return AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddApp(std::string name) {
-  DictionaryValue dictionary;
+  base::DictionaryValue dictionary;
   dictionary.SetString(manifest_keys::kName, name);
   dictionary.SetString(manifest_keys::kVersion, "0.1");
   dictionary.SetString(manifest_keys::kApp, "true");
@@ -140,13 +140,13 @@ scoped_refptr<Extension> TestExtensionPrefs::AddApp(std::string name) {
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
-    const DictionaryValue& manifest, Manifest::Location location) {
+    const base::DictionaryValue& manifest, Manifest::Location location) {
   return AddExtensionWithManifestAndFlags(manifest, location,
                                           Extension::NO_FLAGS);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
-    const DictionaryValue& manifest,
+    const base::DictionaryValue& manifest,
     Manifest::Location location,
     int extra_flags) {
   std::string name;

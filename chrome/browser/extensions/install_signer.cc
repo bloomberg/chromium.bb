@@ -155,7 +155,7 @@ scoped_ptr<InstallSignature> InstallSignature::FromValue(
     return result.Pass();
   }
 
-  for (ListValue::const_iterator i = ids->begin(); i != ids->end(); ++i) {
+  for (base::ListValue::const_iterator i = ids->begin(); i != ids->end(); ++i) {
     std::string id;
     if (!(*i)->GetAsString(&id)) {
       result.reset();
@@ -289,7 +289,7 @@ void InstallSigner::GetSignature(const SignatureCallback& callback) {
   base::DictionaryValue dictionary;
   dictionary.SetInteger(kProtocolVersionKey, 1);
   dictionary.SetString(kHashKey, hash_base64);
-  scoped_ptr<ListValue> id_list(new ListValue);
+  scoped_ptr<base::ListValue> id_list(new base::ListValue);
   for (ExtensionIdSet::const_iterator i = ids_.begin(); i != ids_.end(); ++i) {
     id_list->AppendString(*i);
   }
