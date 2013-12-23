@@ -76,6 +76,8 @@ class ServiceManager::DynamicLoader : public ServiceManager::Loader {
         std::string lib(url.ExtractFileName() + ".dll");
 #elif defined(OS_LINUX)
         std::string lib("lib" + url.ExtractFileName() + ".so");
+#elif defined(OS_MACOSX)
+        std::string lib("lib" + url.ExtractFileName() + ".dylib");
 #else
         std::string lib;
         NOTREACHED() << "dynamic loading of services not supported";
