@@ -39,7 +39,6 @@ void ResetProfileSettingsHandler::InitializeHandler() {
   resetter_.reset(new ProfileResetter(profile));
   automatic_profile_resetter_ =
       AutomaticProfileResetterFactory::GetForBrowserContext(profile);
-  DCHECK(automatic_profile_resetter_);
 }
 
 void ResetProfileSettingsHandler::InitializePage() {
@@ -52,8 +51,7 @@ void ResetProfileSettingsHandler::InitializePage() {
 }
 
 void ResetProfileSettingsHandler::Uninitialize() {
-  if (has_shown_confirmation_dialog_) {
-    DCHECK(automatic_profile_resetter_);
+  if (has_shown_confirmation_dialog_ && automatic_profile_resetter_) {
     automatic_profile_resetter_->NotifyDidCloseWebUIResetDialog(
         false /*performed_reset*/);
   }
@@ -113,7 +111,6 @@ void ResetProfileSettingsHandler::HandleResetProfileSettings(
 }
 
 void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
-  DCHECK(automatic_profile_resetter_);
   web_ui()->CallJavascriptFunction("ResetProfileSettingsOverlay.doneResetting");
   if (setting_snapshot_) {
     Profile* profile = Profile::FromWebUI(web_ui());
@@ -123,15 +120,17 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
       setting_snapshot_->Subtract(current_snapshot);
       std::string report = SerializeSettingsReport(*setting_snapshot_,
                                                    difference);
-      bool is_reset_prompt_active =
+      bool is_reset_prompt_active = automatic_profile_resetter_ &&
           automatic_profile_resetter_->IsResetPromptFlowActive();
       SendSettingsFeedback(report, profile, is_reset_prompt_active ?
           PROFILE_RESET_PROMPT : PROFILE_RESET_WEBUI);
     }
     setting_snapshot_.reset();
   }
-  automatic_profile_resetter_->NotifyDidCloseWebUIResetDialog(
-      true /*performed_reset*/);
+  if (automatic_profile_resetter_) {
+    automatic_profile_resetter_->NotifyDidCloseWebUIResetDialog(
+        true /*performed_reset*/);
+  }
 }
 
 void ResetProfileSettingsHandler::OnShowResetProfileDialog(
@@ -143,7 +142,8 @@ void ResetProfileSettingsHandler::OnShowResetProfileDialog(
       "ResetProfileSettingsOverlay.setFeedbackInfo",
       flashInfo);
 
-  automatic_profile_resetter_->NotifyDidOpenWebUIResetDialog();
+  if (automatic_profile_resetter_)
+    automatic_profile_resetter_->NotifyDidOpenWebUIResetDialog();
   has_shown_confirmation_dialog_ = true;
 
   if (brandcode_.empty())

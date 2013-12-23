@@ -60,7 +60,8 @@ class ResetProfileSettingsHandler
   // gave his consent to upload broken settings to Google for analysis.
   void ResetProfile(bool send_settings);
 
-  // Destroyed with the Profile, thus it should outlive us.
+  // Destroyed with the Profile, thus it should outlive us. This will be NULL if
+  // the underlying profile is off-the-record (e.g. in Guest mode on Chrome OS).
   AutomaticProfileResetter* automatic_profile_resetter_;
 
   // Records whether or not the Profile Reset confirmation dialog was opened at
