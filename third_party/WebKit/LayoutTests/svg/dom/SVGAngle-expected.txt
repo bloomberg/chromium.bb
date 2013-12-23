@@ -11,12 +11,12 @@ PASS angle.value is 0
 PASS angle.valueInSpecifiedUnits is 0
 
 Check invalid arguments for 'convertToSpecifiedUnits'
-PASS angle.convertToSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_UNKNOWN) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.convertToSpecifiedUnits(-1) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.convertToSpecifiedUnits(5) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.convertToSpecifiedUnits('aString') threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.convertToSpecifiedUnits(angle) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.convertToSpecifiedUnits(svgElement) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS angle.convertToSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_UNKNOWN) threw exception NotSupportedError: Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': Cannot convert to unknown or invalid units (0)..
+PASS angle.convertToSpecifiedUnits(-1) threw exception NotSupportedError: Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': Cannot convert to unknown or invalid units (65535)..
+PASS angle.convertToSpecifiedUnits(5) threw exception NotSupportedError: Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': Cannot convert to unknown or invalid units (5)..
+PASS angle.convertToSpecifiedUnits('aString') threw exception NotSupportedError: Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': Cannot convert to unknown or invalid units (0)..
+PASS angle.convertToSpecifiedUnits(angle) threw exception NotSupportedError: Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': Cannot convert to unknown or invalid units (0)..
+PASS angle.convertToSpecifiedUnits(svgElement) threw exception NotSupportedError: Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': Cannot convert to unknown or invalid units (0)..
 PASS angle.convertToSpecifiedUnits() threw exception TypeError: Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': 1 argument required, but only 0 present..
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
 
@@ -43,9 +43,9 @@ PASS angle.valueInSpecifiedUnits is 0
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
 
 Check invalid arguments for 'newValueSpecifiedUnits'
-PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_UNKNOWN, 50) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.newValueSpecifiedUnits(-1, 50) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.newValueSpecifiedUnits(5, 50) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_UNKNOWN, 50) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': Cannot set value with unknown or invalid units (0)..
+PASS angle.newValueSpecifiedUnits(-1, 50) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': Cannot set value with unknown or invalid units (65535)..
+PASS angle.newValueSpecifiedUnits(5, 50) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': Cannot set value with unknown or invalid units (5)..
 PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': 2 arguments required, but only 1 present..
 PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, 'aString') is undefined.
 PASS angle.value is NaN
@@ -55,12 +55,12 @@ PASS angle.value is NaN
 PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG, svgElement) is undefined.
 PASS angle.value is NaN
 PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_DEG) threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': 2 arguments required, but only 1 present..
-PASS angle.newValueSpecifiedUnits('aString', 4) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.newValueSpecifiedUnits(angle, 4) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.newValueSpecifiedUnits(svgElement, 4) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.newValueSpecifiedUnits('aString', 'aString') threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.newValueSpecifiedUnits(angle, angle) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
-PASS angle.newValueSpecifiedUnits(svgElement, svgElement) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS angle.newValueSpecifiedUnits('aString', 4) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': Cannot set value with unknown or invalid units (0)..
+PASS angle.newValueSpecifiedUnits(angle, 4) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': Cannot set value with unknown or invalid units (0)..
+PASS angle.newValueSpecifiedUnits(svgElement, 4) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': Cannot set value with unknown or invalid units (0)..
+PASS angle.newValueSpecifiedUnits('aString', 'aString') threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': Cannot set value with unknown or invalid units (0)..
+PASS angle.newValueSpecifiedUnits(angle, angle) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': Cannot set value with unknown or invalid units (0)..
+PASS angle.newValueSpecifiedUnits(svgElement, svgElement) threw exception NotSupportedError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': Cannot set value with unknown or invalid units (0)..
 PASS angle.newValueSpecifiedUnits() threw exception TypeError: Failed to execute 'newValueSpecifiedUnits' on 'SVGAngle': 2 arguments required, but only 0 present..
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_DEG
 
@@ -91,27 +91,27 @@ PASS angle.newValueSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_UNSPECIFIED, 0) is unde
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
 
 Check setting invalid 'valueAsString' arguments
-PASS angle.valueAsString = '10px' threw exception SyntaxError: An invalid or illegal string was specified..
+PASS angle.valueAsString = '10px' threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGAngle': The value provided ('10px') is invalid..
 PASS angle.valueAsString is "0"
 PASS angle.value is 0
 PASS angle.valueInSpecifiedUnits is 0
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
-PASS angle.valueAsString = '10x' threw exception SyntaxError: An invalid or illegal string was specified..
+PASS angle.valueAsString = '10x' threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGAngle': The value provided ('10x') is invalid..
 PASS angle.valueAsString is "0"
 PASS angle.value is 0
 PASS angle.valueInSpecifiedUnits is 0
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
-PASS angle.valueAsString = '5graD' threw exception SyntaxError: An invalid or illegal string was specified..
+PASS angle.valueAsString = '5graD' threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGAngle': The value provided ('5graD') is invalid..
 PASS angle.valueAsString is "0"
 PASS angle.value is 0
 PASS angle.valueInSpecifiedUnits is 0
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
-PASS angle.valueAsString = '5Rad' threw exception SyntaxError: An invalid or illegal string was specified..
+PASS angle.valueAsString = '5Rad' threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGAngle': The value provided ('5Rad') is invalid..
 PASS angle.valueAsString is "0"
 PASS angle.value is 0
 PASS angle.valueInSpecifiedUnits is 0
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_UNSPECIFIED
-PASS angle.valueAsString = ',5 rad' threw exception SyntaxError: An invalid or illegal string was specified..
+PASS angle.valueAsString = ',5 rad' threw exception SyntaxError: Failed to set the 'valueAsString' property on 'SVGAngle': The value provided (',5 rad') is invalid..
 PASS angle.valueAsString is "0"
 PASS angle.value is 0
 PASS angle.valueInSpecifiedUnits is 0
@@ -174,7 +174,7 @@ PASS angle.valueAsString is "3.14159rad"
 PASS angle.unitType is SVGAngle.SVG_ANGLETYPE_RAD
 
 Now try converting the RAD value into an unknown value, that should fail and throw
-PASS angle.convertToSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_UNKNOWN) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
+PASS angle.convertToSpecifiedUnits(SVGAngle.SVG_ANGLETYPE_UNKNOWN) threw exception NotSupportedError: Failed to execute 'convertToSpecifiedUnits' on 'SVGAngle': Cannot convert to unknown or invalid units (0)..
 PASS angle.value.toFixed(1) is "180.0"
 PASS angle.valueInSpecifiedUnits.toFixed(5) is "3.14159"
 PASS angle.valueAsString is "3.14159rad"

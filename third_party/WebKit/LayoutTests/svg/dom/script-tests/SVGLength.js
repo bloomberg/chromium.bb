@@ -60,4 +60,24 @@ shouldBe("length.value", "2");
 shouldBe("length.valueInSpecifiedUnits", "2");
 shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
 
+debug("");
+debug("Check setting invalid 'valueAsString' arguments");
+shouldThrow("length.valueAsString = '10deg'");
+shouldBeEqualToString("length.valueAsString", "2px");
+shouldBe("length.value", "2");
+shouldBe("length.valueInSpecifiedUnits", "2");
+shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
+
+shouldThrow("length.valueAsString = '1pX'");
+shouldBeEqualToString("length.valueAsString", "2px");
+shouldBe("length.value", "2");
+shouldBe("length.valueInSpecifiedUnits", "2");
+shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
+
+shouldThrow("length.valueAsString = ',5 em'");
+shouldBeEqualToString("length.valueAsString", "2px");
+shouldBe("length.value", "2");
+shouldBe("length.valueInSpecifiedUnits", "2");
+shouldBe("length.unitType", "SVGLength.SVG_LENGTHTYPE_PX");
+
 successfullyParsed = true;

@@ -163,7 +163,7 @@ void SVGAngle::setValueAsString(const String& value, ExceptionState& exceptionSt
     bool success = value.is8Bit() ? parseValue<LChar>(value, valueInSpecifiedUnits, unitType)
                                   : parseValue<UChar>(value, valueInSpecifiedUnits, unitType);
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid.");
         return;
     }
 
@@ -174,7 +174,7 @@ void SVGAngle::setValueAsString(const String& value, ExceptionState& exceptionSt
 void SVGAngle::newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits, ExceptionState& exceptionState)
 {
     if (unitType == SVG_ANGLETYPE_UNKNOWN || unitType > SVG_ANGLETYPE_GRAD) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "Cannot set value with unknown or invalid units (" + String::number(unitType) + ").");
         return;
     }
 
@@ -186,8 +186,12 @@ void SVGAngle::newValueSpecifiedUnits(unsigned short unitType, float valueInSpec
 
 void SVGAngle::convertToSpecifiedUnits(unsigned short unitType, ExceptionState& exceptionState)
 {
-    if (unitType == SVG_ANGLETYPE_UNKNOWN || m_unitType == SVG_ANGLETYPE_UNKNOWN || unitType > SVG_ANGLETYPE_GRAD) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+    if (unitType == SVG_ANGLETYPE_UNKNOWN || unitType > SVG_ANGLETYPE_GRAD) {
+        exceptionState.throwDOMException(NotSupportedError, "Cannot convert to unknown or invalid units (" + String::number(unitType) + ").");
+        return;
+    }
+    if (m_unitType == SVG_ANGLETYPE_UNKNOWN) {
+        exceptionState.throwDOMException(NotSupportedError, "Cannot convert from unknown or invalid units.");
         return;
     }
 

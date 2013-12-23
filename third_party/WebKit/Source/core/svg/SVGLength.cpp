@@ -257,7 +257,7 @@ void SVGLength::setValueAsString(const String& string, ExceptionState& exception
         parseValueInternal<UChar>(string, convertedNumber, type);
 
     if (!success) {
-        exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + string + "') is invalid.");
         return;
     }
 
@@ -273,7 +273,7 @@ String SVGLength::valueAsString() const
 void SVGLength::newValueSpecifiedUnits(unsigned short type, float value, ExceptionState& exceptionState)
 {
     if (type == LengthTypeUnknown || type > LengthTypePC) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "Cannot set value with unknown or invalid units (" + String::number(type) + ").");
         return;
     }
 
@@ -284,7 +284,7 @@ void SVGLength::newValueSpecifiedUnits(unsigned short type, float value, Excepti
 void SVGLength::convertToSpecifiedUnits(unsigned short type, const SVGLengthContext& context, ExceptionState& exceptionState)
 {
     if (type == LengthTypeUnknown || type > LengthTypePC) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "Cannot convert to unknown or invalid units (" + String::number(type) + ").");
         return;
     }
 
