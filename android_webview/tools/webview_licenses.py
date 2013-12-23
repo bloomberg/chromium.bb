@@ -49,6 +49,7 @@ def GetIncompatibleDirectories():
     'Microsoft Limited Public License',
     'Microsoft Permissive License',
     'Public Domain',
+    'Python',
     'SGI Free Software License B',
     'University of Illinois\/NCSA Open Source',
     'X11',
