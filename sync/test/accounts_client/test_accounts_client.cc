@@ -95,7 +95,7 @@ bool TestAccountsClient::ClaimAccount(AccountSession* session) {
     return false;
   }
 
-  scoped_ptr<Value> value(base::JSONReader::Read(response));
+  scoped_ptr<base::Value> value(base::JSONReader::Read(response));
   base::DictionaryValue* dict_value;
   if (value != NULL && value->GetAsDictionary(&dict_value) &&
       dict_value != NULL) {

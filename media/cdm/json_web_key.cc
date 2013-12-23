@@ -81,7 +81,7 @@ std::string GenerateJWKSet(const uint8* key, int key_length,
 
 // Processes a JSON Web Key to extract the key id and key value. Sets |jwk_key|
 // to the id/value pair and returns true on success.
-static bool ConvertJwkToKeyPair(const DictionaryValue& jwk,
+static bool ConvertJwkToKeyPair(const base::DictionaryValue& jwk,
                                 KeyIdAndKeyPair* jwk_key) {
   // Have found a JWK, start by checking that it is a symmetric key.
   std::string type;
@@ -124,13 +124,14 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set, KeyIdAndKeyPairs* keys) {
   if (!IsStringASCII(jwk_set))
     return false;
 
-  scoped_ptr<Value> root(base::JSONReader().ReadToValue(jwk_set));
-  if (!root.get() || root->GetType() != Value::TYPE_DICTIONARY)
+  scoped_ptr<base::Value> root(base::JSONReader().ReadToValue(jwk_set));
+  if (!root.get() || root->GetType() != base::Value::TYPE_DICTIONARY)
     return false;
 
   // Locate the set from the dictionary.
-  DictionaryValue* dictionary = static_cast<DictionaryValue*>(root.get());
-  ListValue* list_val = NULL;
+  base::DictionaryValue* dictionary =
+      static_cast<base::DictionaryValue*>(root.get());
+  base::ListValue* list_val = NULL;
   if (!dictionary->GetList(kKeysTag, &list_val)) {
     DVLOG(1) << "Missing '" << kKeysTag
              << "' parameter or not a list in JWK Set";
@@ -141,7 +142,7 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set, KeyIdAndKeyPairs* keys) {
   // success.
   KeyIdAndKeyPairs local_keys;
   for (size_t i = 0; i < list_val->GetSize(); ++i) {
-    DictionaryValue* jwk = NULL;
+    base::DictionaryValue* jwk = NULL;
     if (!list_val->GetDictionary(i, &jwk)) {
       DVLOG(1) << "Unable to access '" << kKeysTag << "'[" << i
                << "] in JWK Set";

@@ -20,7 +20,7 @@ class GoogleServiceAuthErrorTest : public testing::Test {};
 
 void TestSimpleState(GoogleServiceAuthError::State state) {
   GoogleServiceAuthError error(state);
-  scoped_ptr<DictionaryValue> value(error.ToValue());
+  scoped_ptr<base::DictionaryValue> value(error.ToValue());
   EXPECT_EQ(1u, value->size());
   std::string state_str;
   EXPECT_TRUE(value->GetString("state", &state_str));
@@ -38,7 +38,7 @@ TEST_F(GoogleServiceAuthErrorTest, SimpleToValue) {
 
 TEST_F(GoogleServiceAuthErrorTest, None) {
   GoogleServiceAuthError error(GoogleServiceAuthError::AuthErrorNone());
-  scoped_ptr<DictionaryValue> value(error.ToValue());
+  scoped_ptr<base::DictionaryValue> value(error.ToValue());
   EXPECT_EQ(1u, value->size());
   ExpectDictStringValue("NONE", *value, "state");
 }
@@ -46,7 +46,7 @@ TEST_F(GoogleServiceAuthErrorTest, None) {
 TEST_F(GoogleServiceAuthErrorTest, ConnectionFailed) {
   GoogleServiceAuthError error(
       GoogleServiceAuthError::FromConnectionError(net::OK));
-  scoped_ptr<DictionaryValue> value(error.ToValue());
+  scoped_ptr<base::DictionaryValue> value(error.ToValue());
   EXPECT_EQ(2u, value->size());
   ExpectDictStringValue("CONNECTION_FAILED", *value, "state");
   ExpectDictStringValue("net::OK", *value, "networkError");

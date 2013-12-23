@@ -106,7 +106,7 @@ void CapturingNetLog::Observer::OnAddEntry(const net::NetLog::Entry& entry) {
   // Using Dictionaries instead of Values makes checking values a little
   // simpler.
   base::DictionaryValue* param_dict = NULL;
-  Value* param_value = entry.ParametersToValue();
+  base::Value* param_value = entry.ParametersToValue();
   if (param_value && !param_value->GetAsDictionary(&param_dict))
     delete param_value;
 

@@ -374,12 +374,12 @@ struct EventListenerInfo {
 struct EventDispatchInfo {
   EventDispatchInfo(const std::string& extension_id,
                     const std::string& event_name,
-                    scoped_ptr<ListValue> event_args);
+                    scoped_ptr<base::ListValue> event_args);
   ~EventDispatchInfo();
 
   const std::string extension_id;
   const std::string event_name;
-  scoped_ptr<ListValue> event_args;
+  scoped_ptr<base::ListValue> event_args;
 };
 
 }  // namespace extensions

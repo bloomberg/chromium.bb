@@ -31,7 +31,7 @@ TEST_F(ModelTypeTest, ModelTypeToValue) {
 TEST_F(ModelTypeTest, ModelTypeFromValue) {
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     ModelType model_type = ModelTypeFromInt(i);
-    scoped_ptr<StringValue> value(ModelTypeToValue(model_type));
+    scoped_ptr<base::StringValue> value(ModelTypeToValue(model_type));
     EXPECT_EQ(model_type, ModelTypeFromValue(*value));
   }
 }

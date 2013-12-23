@@ -126,7 +126,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
   }
 
   // Returns NULL if the policy dictionary couldn't be read.
-  scoped_ptr<DictionaryValue> Load() {
+  scoped_ptr<base::DictionaryValue> Load() {
     DCHECK(OnPolicyWatcherThread());
     // Enumerate the files and sort them lexicographically.
     std::set<base::FilePath> files;
@@ -137,26 +137,26 @@ class PolicyWatcherLinux : public PolicyWatcher {
       files.insert(config_file_path);
 
     // Start with an empty dictionary and merge the files' contents.
-    scoped_ptr<DictionaryValue> policy(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> policy(new base::DictionaryValue());
     for (std::set<base::FilePath>::iterator config_file_iter = files.begin();
          config_file_iter != files.end(); ++config_file_iter) {
       JSONFileValueSerializer deserializer(*config_file_iter);
       deserializer.set_allow_trailing_comma(true);
       int error_code = 0;
       std::string error_msg;
-      scoped_ptr<Value> value(
+      scoped_ptr<base::Value> value(
           deserializer.Deserialize(&error_code, &error_msg));
       if (!value.get()) {
         LOG(WARNING) << "Failed to read configuration file "
                      << config_file_iter->value() << ": " << error_msg;
-        return scoped_ptr<DictionaryValue>();
+        return scoped_ptr<base::DictionaryValue>();
       }
-      if (!value->IsType(Value::TYPE_DICTIONARY)) {
+      if (!value->IsType(base::Value::TYPE_DICTIONARY)) {
         LOG(WARNING) << "Expected JSON dictionary in configuration file "
                      << config_file_iter->value();
-        return scoped_ptr<DictionaryValue>();
+        return scoped_ptr<base::DictionaryValue>();
       }
-      policy->MergeDictionary(static_cast<DictionaryValue*>(value.get()));
+      policy->MergeDictionary(static_cast<base::DictionaryValue*>(value.get()));
     }
 
     return policy.Pass();
@@ -179,7 +179,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
     }
 
     // Load the policy definitions.
-    scoped_ptr<DictionaryValue> new_policy = Load();
+    scoped_ptr<base::DictionaryValue> new_policy = Load();
     if (new_policy.get()) {
       UpdatePolicies(new_policy.get());
       ScheduleFallbackReloadTask();

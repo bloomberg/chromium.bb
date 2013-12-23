@@ -256,7 +256,7 @@ void PairingRegistry::SanitizePairings(const GetAllPairingsCallback& callback,
 
   scoped_ptr<base::ListValue> sanitized_pairings(new base::ListValue());
   for (size_t i = 0; i < pairings->GetSize(); ++i) {
-    DictionaryValue* pairing_json;
+    base::DictionaryValue* pairing_json;
     if (!pairings->GetDictionary(i, &pairing_json)) {
       LOG(WARNING) << "A pairing entry is not a dictionary.";
       continue;

@@ -27,7 +27,7 @@ void FileNetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
   const char* source = NetLog::SourceTypeToString(entry.source().type);
   const char* type = NetLog::EventTypeToString(entry.type());
 
-  scoped_ptr<Value> param_value(entry.ParametersToValue());
+  scoped_ptr<base::Value> param_value(entry.ParametersToValue());
   std::string params;
   if (param_value.get() != NULL) {
     JSONStringValueSerializer serializer(&params);

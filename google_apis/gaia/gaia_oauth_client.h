@@ -49,7 +49,7 @@ class GaiaOAuthClient {
     virtual void OnGetUserIdResponse(const std::string& user_id) {}
     // Invoked on a successful response to the GetTokenInfo request.
     virtual void OnGetTokenInfoResponse(
-        scoped_ptr<DictionaryValue> token_info) {}
+        scoped_ptr<base::DictionaryValue> token_info) {}
     // Invoked when there is an OAuth error with one of the requests.
     virtual void OnOAuthError() = 0;
     // Invoked when there is a network error or upon receiving an invalid

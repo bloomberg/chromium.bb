@@ -102,7 +102,7 @@ void WebDialogUI::RenderViewCreated(RenderViewHost* render_view_host) {
     delegate->OnDialogShown(web_ui(), render_view_host);
 }
 
-void WebDialogUI::OnDialogClosed(const ListValue* args) {
+void WebDialogUI::OnDialogClosed(const base::ListValue* args) {
   WebDialogDelegate* delegate = GetDelegate(web_ui()->GetWebContents());
   if (delegate) {
     std::string json_retval;

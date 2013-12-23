@@ -199,15 +199,15 @@ class MockGaiaOAuthClientDelegate : public gaia::GaiaOAuthClient::Delegate {
   // override the problematic method to call through to it.
   // https://groups.google.com/a/chromium.org/d/msg/chromium-dev/01sDxsJ1OYw/I_S0xCBRF2oJ
   MOCK_METHOD1(OnGetTokenInfoResponsePtr,
-               void(const DictionaryValue* token_info));
-  virtual void OnGetTokenInfoResponse(scoped_ptr<DictionaryValue> token_info)
-      OVERRIDE {
+               void(const base::DictionaryValue* token_info));
+  virtual void OnGetTokenInfoResponse(
+      scoped_ptr<base::DictionaryValue> token_info) OVERRIDE {
     token_info_.reset(token_info.release());
     OnGetTokenInfoResponsePtr(token_info_.get());
   }
 
  private:
-  scoped_ptr<DictionaryValue> token_info_;
+  scoped_ptr<base::DictionaryValue> token_info_;
   DISALLOW_COPY_AND_ASSIGN(MockGaiaOAuthClientDelegate);
 };
 
@@ -328,7 +328,7 @@ TEST_F(GaiaOAuthClientTest, GetUserId) {
 }
 
 TEST_F(GaiaOAuthClientTest, GetTokenInfo) {
-  const DictionaryValue* captured_result;
+  const base::DictionaryValue* captured_result;
 
   MockGaiaOAuthClientDelegate delegate;
   EXPECT_CALL(delegate, OnGetTokenInfoResponsePtr(_))

@@ -38,7 +38,7 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name) {
   base::FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
 
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString(keys::kVersion, "1.0.0.0");
   manifest.SetString(keys::kName, name);
 
@@ -61,7 +61,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
   path = path.AppendASCII("extensions").AppendASCII(dir).AppendASCII(test_file);
 
   JSONFileValueSerializer serializer(path);
-  scoped_ptr<Value> result(serializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> result(serializer.Deserialize(NULL, NULL));
   if (!result)
     return NULL;
 
@@ -69,7 +69,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
   scoped_refptr<Extension> extension =
       Extension::Create(path,
                         Manifest::INVALID_LOCATION,
-                        *static_cast<DictionaryValue*>(result.get()),
+                        *static_cast<base::DictionaryValue*>(result.get()),
                         Extension::NO_FLAGS,
                         &error);
   EXPECT_TRUE(extension.get()) << error;

@@ -48,14 +48,15 @@ std::string JsonHostConfig::GetSerializedData() {
 }
 
 bool JsonHostConfig::SetSerializedData(const std::string& config) {
-  scoped_ptr<Value> value(
+  scoped_ptr<base::Value> value(
       base::JSONReader::Read(config, base::JSON_ALLOW_TRAILING_COMMAS));
-  if (value.get() == NULL || !value->IsType(Value::TYPE_DICTIONARY)) {
+  if (value.get() == NULL || !value->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(WARNING) << "Failed to parse " << filename_.value();
     return false;
   }
 
-  DictionaryValue* dictionary = static_cast<DictionaryValue*>(value.release());
+  base::DictionaryValue* dictionary =
+      static_cast<base::DictionaryValue*>(value.release());
   values_.reset(dictionary);
   return true;
 }

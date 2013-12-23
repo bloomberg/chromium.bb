@@ -32,7 +32,7 @@ class GpuControlListEntryTest : public testing::Test {
       const std::string& json, bool supports_feature_type_all) {
     scoped_ptr<base::Value> root;
     root.reset(base::JSONReader::Read(json));
-    DictionaryValue* value = NULL;
+    base::DictionaryValue* value = NULL;
     if (root.get() == NULL || !root->GetAsDictionary(&value))
       return NULL;
 

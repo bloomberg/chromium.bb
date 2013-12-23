@@ -52,7 +52,7 @@ void NetLogLogger::OnAddEntry(const net::NetLog::Entry& entry) {
   // Add a comma and newline for every event but the first.  Newlines are needed
   // so can load partial log files by just ignoring the last line.  For this to
   // work, lines cannot be pretty printed.
-  scoped_ptr<Value> value(entry.ToValue());
+  scoped_ptr<base::Value> value(entry.ToValue());
   std::string json;
   base::JSONWriter::Write(value.get(), &json);
   fprintf(file_.get(), "%s%s",
@@ -62,7 +62,7 @@ void NetLogLogger::OnAddEntry(const net::NetLog::Entry& entry) {
 }
 
 base::DictionaryValue* NetLogLogger::GetConstants() {
-  DictionaryValue* constants_dict = new DictionaryValue();
+  base::DictionaryValue* constants_dict = new base::DictionaryValue();
 
   // Version of the file format.
   constants_dict->SetInteger("logFormatVersion", kLogFormatVersion);
@@ -74,7 +74,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // Add a dictionary with information about the relationship between load flag
   // enums and their symbolic names.
   {
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
 
 #define LOAD_FLAG(label, value) \
     dict->SetInteger(# label, static_cast<int>(value));
@@ -87,7 +87,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // Add a dictionary with information about the relationship between load state
   // enums and their symbolic names.
   {
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
 
 #define LOAD_STATE(label) \
     dict->SetInteger(# label, net::LOAD_STATE_ ## label);
@@ -100,7 +100,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // Add information on the relationship between net error codes and their
   // symbolic names.
   {
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
 
 #define NET_ERROR(label, value) \
     dict->SetInteger(# label, static_cast<int>(value));
@@ -113,7 +113,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // Add information on the relationship between QUIC error codes and their
   // symbolic names.
   {
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
 
     for (net::QuicErrorCode error = net::QUIC_NO_ERROR;
          error < net::QUIC_LAST_ERROR;
@@ -128,7 +128,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // Add information on the relationship between QUIC RST_STREAM error codes
   // and their symbolic names.
   {
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
 
     for (net::QuicRstStreamErrorCode error = net::QUIC_STREAM_NO_ERROR;
          error < net::QUIC_STREAM_LAST_ERROR;
@@ -143,7 +143,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // Information about the relationship between event phase enums and their
   // symbolic names.
   {
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
 
     dict->SetInteger("PHASE_BEGIN", net::NetLog::PHASE_BEGIN);
     dict->SetInteger("PHASE_END", net::NetLog::PHASE_END);
@@ -159,7 +159,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // Information about the relationship between LogLevel enums and their
   // symbolic names.
   {
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
 
     dict->SetInteger("LOG_ALL", net::NetLog::LOG_ALL);
     dict->SetInteger("LOG_ALL_BUT_BYTES", net::NetLog::LOG_ALL_BUT_BYTES);
@@ -171,7 +171,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
   // Information about the relationship between address family enums and
   // their symbolic names.
   {
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
 
     dict->SetInteger("ADDRESS_FAMILY_UNSPECIFIED",
                      net::ADDRESS_FAMILY_UNSPECIFIED);
@@ -209,7 +209,7 @@ base::DictionaryValue* NetLogLogger::GetConstants() {
 
   // "clientInfo" key is required for some NetLogLogger log readers.
   // Provide a default empty value for compatibility.
-  constants_dict->Set("clientInfo", new DictionaryValue());
+  constants_dict->Set("clientInfo", new base::DictionaryValue());
 
   return constants_dict;
 }

@@ -66,7 +66,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
   }
 
   static std::string CreateResponse(const std::string& scope) {
-    DictionaryValue response_dict;
+    base::DictionaryValue response_dict;
     response_dict.SetString("access_token", kSharedSecret);
     response_dict.SetString("token_type", "shared_secret");
     response_dict.SetString("scope", scope);
@@ -76,7 +76,7 @@ class TokenValidatorFactoryImplTest : public testing::Test {
   }
 
   static std::string CreateErrorResponse(const std::string& error) {
-    DictionaryValue response_dict;
+    base::DictionaryValue response_dict;
     response_dict.SetString("error", error);
     std::string response;
     base::JSONWriter::Write(&response_dict, &response);

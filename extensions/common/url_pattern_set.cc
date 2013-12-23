@@ -183,10 +183,10 @@ bool URLPatternSet::OverlapsWith(const URLPatternSet& other) const {
 }
 
 scoped_ptr<base::ListValue> URLPatternSet::ToValue() const {
-  scoped_ptr<ListValue> value(new ListValue);
+  scoped_ptr<base::ListValue> value(new base::ListValue);
   for (URLPatternSet::const_iterator i = patterns_.begin();
        i != patterns_.end(); ++i)
-    value->AppendIfNotPresent(Value::CreateStringValue(i->GetAsString()));
+    value->AppendIfNotPresent(base::Value::CreateStringValue(i->GetAsString()));
   return value.Pass();
 }
 

@@ -145,11 +145,11 @@ void ServiceClient::Core::HandleResponse(const net::URLFetcher* source) {
         {
           std::string data;
           source->GetResponseAsString(&data);
-          scoped_ptr<Value> message_value(base::JSONReader::Read(data));
-          DictionaryValue *dict;
+          scoped_ptr<base::Value> message_value(base::JSONReader::Read(data));
+          base::DictionaryValue *dict;
           std::string code;
           if (message_value.get() &&
-              message_value->IsType(Value::TYPE_DICTIONARY) &&
+              message_value->IsType(base::Value::TYPE_DICTIONARY) &&
               message_value->GetAsDictionary(&dict) &&
               dict->GetString("data.authorizationCode", &code)) {
             delegate_->OnHostRegistered(code);

@@ -62,10 +62,10 @@ TEST(TestAccountsClientTest, ClaimAccountSuccess) {
   NoNetworkTestAccountsClient client(kServer, kAccountSpace, usernames);
 
   base::DictionaryValue success_dict;
-  success_dict.Set("username", new StringValue(kUsername));
-  success_dict.Set("account_space", new StringValue(kAccountSpace));
-  success_dict.Set("session_id", new StringValue(kSessionId));
-  success_dict.Set("expiration_time", new StringValue(kExpirationTime));
+  success_dict.Set("username", new base::StringValue(kUsername));
+  success_dict.Set("account_space", new base::StringValue(kAccountSpace));
+  success_dict.Set("session_id", new base::StringValue(kSessionId));
+  success_dict.Set("expiration_time", new base::StringValue(kExpirationTime));
 
   string success_response;
   base::JSONWriter::Write(&success_dict, &success_response);

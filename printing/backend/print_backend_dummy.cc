@@ -14,7 +14,7 @@
 namespace printing {
 
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(
-    const DictionaryValue* print_backend_settings) {
+    const base::DictionaryValue* print_backend_settings) {
   NOTREACHED();
   return NULL;
 }

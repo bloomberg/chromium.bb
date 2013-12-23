@@ -131,7 +131,7 @@ class TokenValidatorImpl
 
     // Decode the JSON data from the response.
     scoped_ptr<base::Value> value(base::JSONReader::Read(data));
-    DictionaryValue* dict;
+    base::DictionaryValue* dict;
     if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY ||
         !value->GetAsDictionary(&dict)) {
       LOG(ERROR) << "Invalid token validation response: '" << data << "'";

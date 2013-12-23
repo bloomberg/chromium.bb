@@ -194,7 +194,7 @@ class PolicyWatcherWin :
   void Reload() {
     DCHECK(OnPolicyWatcherThread());
     SetupWatches();
-    scoped_ptr<DictionaryValue> new_policy(Load());
+    scoped_ptr<base::DictionaryValue> new_policy(Load());
     UpdatePolicies(new_policy.get());
   }
 

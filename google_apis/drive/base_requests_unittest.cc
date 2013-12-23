@@ -115,7 +115,7 @@ TEST_F(BaseRequestsTest, ParseValidJson) {
             base::Bind(test_util::CreateCopyResultCallback(&json)));
   base::RunLoop().RunUntilIdle();
 
-  DictionaryValue* root_dict = NULL;
+  base::DictionaryValue* root_dict = NULL;
   ASSERT_TRUE(json);
   ASSERT_TRUE(json->GetAsDictionary(&root_dict));
 

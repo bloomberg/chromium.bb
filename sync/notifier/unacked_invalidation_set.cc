@@ -123,7 +123,7 @@ scoped_ptr<base::DictionaryValue> UnackedInvalidationSet::ToValue() const {
   value->SetString(kSourceKey, base::IntToString(object_id_.source()));
   value->SetString(kNameKey, object_id_.name());
 
-  scoped_ptr<base::ListValue> list_value(new ListValue);
+  scoped_ptr<base::ListValue> list_value(new base::ListValue);
   for (InvalidationsSet::const_iterator it = invalidations_.begin();
        it != invalidations_.end(); ++it) {
     list_value->Append(it->ToValue().release());

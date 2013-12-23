@@ -361,11 +361,11 @@ LoadStateWithParam URLRequest::GetLoadState() const {
 }
 
 base::Value* URLRequest::GetStateAsValue() const {
-  DictionaryValue* dict = new DictionaryValue();
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("url", original_url().possibly_invalid_spec());
 
   if (url_chain_.size() > 1) {
-    ListValue* list = new ListValue();
+    base::ListValue* list = new base::ListValue();
     for (std::vector<GURL>::const_iterator url = url_chain_.begin();
          url != url_chain_.end(); ++url) {
       list->AppendString(url->possibly_invalid_spec());

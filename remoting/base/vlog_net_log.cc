@@ -33,7 +33,7 @@ VlogNetLog::Observer::~Observer() {
 
 void VlogNetLog::Observer::OnAddEntry(const net::NetLog::Entry& entry) {
   if (VLOG_IS_ON(4)) {
-    scoped_ptr<Value> value(entry.ToValue());
+    scoped_ptr<base::Value> value(entry.ToValue());
     std::string json;
     base::JSONWriter::Write(value.get(), &json);
     VLOG(4) << json;

@@ -58,7 +58,7 @@ bool ReadTestCase(const char* filename,
     return false;
   }
 
-  scoped_ptr<Value> value(base::JSONReader::Read(json));
+  scoped_ptr<base::Value> value(base::JSONReader::Read(json));
   if (!value.get()) {
     LOG(ERROR) << filename << ": couldn't parse JSON.";
     return false;

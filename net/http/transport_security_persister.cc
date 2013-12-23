@@ -26,14 +26,15 @@ using net::TransportSecurityState;
 
 namespace {
 
-ListValue* SPKIHashesToListValue(const HashValueVector& hashes) {
-  ListValue* pins = new ListValue;
+base::ListValue* SPKIHashesToListValue(const HashValueVector& hashes) {
+  base::ListValue* pins = new base::ListValue;
   for (size_t i = 0; i != hashes.size(); i++)
-    pins->Append(new StringValue(hashes[i].ToString()));
+    pins->Append(new base::StringValue(hashes[i].ToString()));
   return pins;
 }
 
-void SPKIHashesFromListValue(const ListValue& pins, HashValueVector* hashes) {
+void SPKIHashesFromListValue(const base::ListValue& pins,
+                             HashValueVector* hashes) {
   size_t num_pins = pins.GetSize();
   for (size_t i = 0; i < num_pins; ++i) {
     std::string type_and_base64;
@@ -137,7 +138,7 @@ void TransportSecurityPersister::StateIsDirty(
 bool TransportSecurityPersister::SerializeData(std::string* output) {
   DCHECK(foreground_runner_->RunsTasksOnCurrentThread());
 
-  DictionaryValue toplevel;
+  base::DictionaryValue toplevel;
   base::Time now = base::Time::Now();
   TransportSecurityState::Iterator state(*transport_security_state_);
   for (; state.HasNext(); state.Advance()) {
@@ -145,7 +146,7 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
     const TransportSecurityState::DomainState& domain_state =
         state.domain_state();
 
-    DictionaryValue* serialized = new DictionaryValue;
+    base::DictionaryValue* serialized = new base::DictionaryValue;
     serialized->SetBoolean(kStsIncludeSubdomains,
                            domain_state.sts_include_subdomains);
     serialized->SetBoolean(kPkpIncludeSubdomains,
@@ -198,16 +199,17 @@ bool TransportSecurityPersister::LoadEntries(const std::string& serialized,
 bool TransportSecurityPersister::Deserialize(const std::string& serialized,
                                              bool* dirty,
                                              TransportSecurityState* state) {
-  scoped_ptr<Value> value(base::JSONReader::Read(serialized));
-  DictionaryValue* dict_value = NULL;
+  scoped_ptr<base::Value> value(base::JSONReader::Read(serialized));
+  base::DictionaryValue* dict_value = NULL;
   if (!value.get() || !value->GetAsDictionary(&dict_value))
     return false;
 
   const base::Time current_time(base::Time::Now());
   bool dirtied = false;
 
-  for (DictionaryValue::Iterator i(*dict_value); !i.IsAtEnd(); i.Advance()) {
-    const DictionaryValue* parsed = NULL;
+  for (base::DictionaryValue::Iterator i(*dict_value);
+       !i.IsAtEnd(); i.Advance()) {
+    const base::DictionaryValue* parsed = NULL;
     if (!i.value().GetAsDictionary(&parsed)) {
       LOG(WARNING) << "Could not parse entry " << i.key() << "; skipping entry";
       continue;
@@ -247,7 +249,7 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
     parsed->GetDouble(kDynamicSPKIHashesExpiry,
                       &dynamic_spki_hashes_expiry);
 
-    const ListValue* pins_list = NULL;
+    const base::ListValue* pins_list = NULL;
     // preloaded_spki_hashes is a legacy synonym for static_spki_hashes.
     if (parsed->GetList(kStaticSPKIHashes, &pins_list))
       SPKIHashesFromListValue(*pins_list, &domain_state.static_spki_hashes);

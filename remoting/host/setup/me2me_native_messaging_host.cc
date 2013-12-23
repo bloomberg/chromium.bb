@@ -400,7 +400,7 @@ void Me2MeNativeMessagingHost::SendConfigResponse(
   if (config) {
     response->Set("config", config.release());
   } else {
-    response->Set("config", Value::CreateNullValue());
+    response->Set("config", base::Value::CreateNullValue());
   }
   channel_->SendMessage(response.Pass());
 }

@@ -86,7 +86,7 @@ const Invalidation& SingleObjectInvalidationSet::back() const {
 }
 
 scoped_ptr<base::ListValue> SingleObjectInvalidationSet::ToValue() const {
-  scoped_ptr<base::ListValue> value(new ListValue);
+  scoped_ptr<base::ListValue> value(new base::ListValue);
   for (InvalidationsSet::const_iterator it = invalidations_.begin();
        it != invalidations_.end(); ++it) {
     value->Append(it->ToValue().release());

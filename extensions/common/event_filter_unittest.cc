@@ -10,6 +10,10 @@
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::DictionaryValue;
+using base::ListValue;
+using base::Value;
+
 namespace extensions {
 
 class EventFilterUnittest : public testing::Test {

@@ -117,7 +117,7 @@ class NullEncryptor : public Encryptor {
   }
 };
 
-std::string ValueToString(const Value& value) {
+std::string ValueToString(const base::Value& value) {
   std::string str;
   base::JSONWriter::Write(&value, &str);
   return str;

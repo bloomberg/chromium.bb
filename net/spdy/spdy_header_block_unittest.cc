@@ -18,7 +18,7 @@ TEST(SpdyHeaderBlockTest, ToNetLogParamAndBackAgain) {
   headers["A"] = "a";
   headers["B"] = "b";
 
-  scoped_ptr<Value> event_param(
+  scoped_ptr<base::Value> event_param(
       SpdyHeaderBlockNetLogCallback(&headers, NetLog::LOG_ALL_BUT_BYTES));
 
   SpdyHeaderBlock headers2;
