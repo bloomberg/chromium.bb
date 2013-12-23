@@ -62,7 +62,7 @@ class CloudPrintConnector
       (CloudPrintConnector::*ResponseHandler)(
           const net::URLFetcher* source,
           const GURL& url,
-          DictionaryValue* json_data,
+          base::DictionaryValue* json_data,
           bool succeeded);
 
   enum PendingTaskType {
@@ -107,25 +107,25 @@ class CloudPrintConnector
   CloudPrintURLFetcher::ResponseAction HandlePrinterListResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      DictionaryValue* json_data,
+      base::DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandlePrinterListResponseSettingsUpdate(
       const net::URLFetcher* source,
       const GURL& url,
-      DictionaryValue* json_data,
+      base::DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandlePrinterDeleteResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      DictionaryValue* json_data,
+      base::DictionaryValue* json_data,
       bool succeeded);
 
   CloudPrintURLFetcher::ResponseAction HandleRegisterPrinterResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      DictionaryValue* json_data,
+      base::DictionaryValue* json_data,
       bool succeeded);
   // End response handlers
 
@@ -147,9 +147,9 @@ class CloudPrintConnector
   bool RemovePrinterFromList(const std::string& printer_name,
                              printing::PrinterList* printer_list);
 
-  void InitJobHandlerForPrinter(DictionaryValue* printer_data);
+  void InitJobHandlerForPrinter(base::DictionaryValue* printer_data);
 
-  void UpdateSettingsFromPrintersList(DictionaryValue* json_data);
+  void UpdateSettingsFromPrintersList(base::DictionaryValue* json_data);
 
   void AddPendingAvailableTask();
   void AddPendingDeleteTask(const std::string& id);

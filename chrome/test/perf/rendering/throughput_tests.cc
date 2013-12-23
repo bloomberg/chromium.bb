@@ -85,13 +85,13 @@ class ThroughputTest : public BrowserPerfTest {
     scoped_ptr<base::Value> root;
     root.reset(base::JSONReader::Read(json));
 
-    ListValue* root_list = NULL;
+    base::ListValue* root_list = NULL;
     if (!root.get() || !root->GetAsList(&root_list)) {
       LOG(ERROR) << "JSON missing root list element";
       return false;
     }
 
-    DictionaryValue* item = NULL;
+    base::DictionaryValue* item = NULL;
     if (!root_list->GetDictionary(index, &item)) {
       LOG(ERROR) << "index " << index << " not found in JSON";
       return false;
@@ -123,10 +123,10 @@ class ThroughputTest : public BrowserPerfTest {
     if (item->GetInteger("run_time", &num))
       run_time_ms_ = num * 1000;
 
-    DictionaryValue* pixel = NULL;
+    base::DictionaryValue* pixel = NULL;
     if (item->GetDictionary("wait_pixel", &pixel)) {
       int x, y, r, g, b;
-      ListValue* color;
+      base::ListValue* color;
       if (pixel->GetInteger("x", &x) &&
           pixel->GetInteger("y", &y) &&
           pixel->GetString("op", &str) &&

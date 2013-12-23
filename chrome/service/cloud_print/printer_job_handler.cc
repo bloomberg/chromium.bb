@@ -157,7 +157,7 @@ CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawData(
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleJSONData(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   DCHECK(next_json_data_handler_);
   return (this->*next_json_data_handler_)(source, url, json_data, succeeded);
@@ -282,7 +282,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandlePrinterUpdateResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling printer update response"
           << ", printer id: " << printer_info_cloud_.printer_id;
@@ -298,7 +298,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleJobMetadataResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling job metadata response"
           << ", printer id: " << printer_info_cloud_.printer_id;
@@ -401,7 +401,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleInProgressStatusUpdateResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling success status update response"
           << ", printer id: " << printer_info_cloud_.printer_id;
@@ -414,7 +414,7 @@ CloudPrintURLFetcher::ResponseAction
 PrinterJobHandler::HandleFailureStatusUpdateResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handling failure status update response"
           << ", printer id: " << printer_info_cloud_.printer_id;

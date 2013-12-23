@@ -23,7 +23,7 @@ typedef TestMessageHandler::MessageResponse MessageResponse;
 
 MessageResponse StructuredMessageHandler::HandleMessage(
     const std::string& json) {
-  scoped_ptr<Value> value;
+  scoped_ptr<base::Value> value;
   base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
   // Automation messages are stringified before they are sent because the
   // automation channel cannot handle arbitrary objects.  This means we
@@ -42,7 +42,7 @@ MessageResponse StructuredMessageHandler::HandleMessage(
     return InternalError("Could not parse message JSON: " + temp +
                          " because " + reader.GetErrorMessage());
 
-  DictionaryValue* msg;
+  base::DictionaryValue* msg;
   if (!value->GetAsDictionary(&msg))
     return InternalError("Message was not an object: " + temp);
 
@@ -77,7 +77,7 @@ void LoadTestMessageHandler::Log(const std::string& type,
 
 MessageResponse LoadTestMessageHandler::HandleStructuredMessage(
    const std::string& type,
-   DictionaryValue* msg) {
+   base::DictionaryValue* msg) {
   if (type == "Log") {
     std::string message;
     if (!msg->GetString("message", &message))
@@ -133,7 +133,7 @@ void NaClIntegrationMessageHandler::Log(const std::string& message) {
 
 MessageResponse NaClIntegrationMessageHandler::HandleStructuredMessage(
     const std::string& type,
-    DictionaryValue* msg) {
+    base::DictionaryValue* msg) {
   if (type == "TestLog") {
     std::string message;
     if (!msg->GetString("message", &message))

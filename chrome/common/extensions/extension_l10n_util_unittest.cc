@@ -494,16 +494,16 @@ TEST(ExtensionL10nUtil, LocalizeManifestWithNameDescriptionCommandDescription) {
   base::DictionaryValue manifest;
   manifest.SetString(keys::kName, "__MSG_name__");
   manifest.SetString(keys::kDescription, "__MSG_description__");
-  base::DictionaryValue* commands = new DictionaryValue();
+  base::DictionaryValue* commands = new base::DictionaryValue();
   std::string commands_title(keys::kCommands);
   manifest.Set(commands_title, commands);
 
-  base::DictionaryValue* first_command = new DictionaryValue();
+  base::DictionaryValue* first_command = new base::DictionaryValue();
   commands->Set("first_command", first_command);
   first_command->SetString(keys::kDescription,
                            "__MSG_first_command_description__");
 
-  base::DictionaryValue* second_command = new DictionaryValue();
+  base::DictionaryValue* second_command = new base::DictionaryValue();
   commands->Set("second_command", second_command);
   second_command->SetString(keys::kDescription,
                             "__MSG_second_command_description__");

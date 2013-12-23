@@ -163,7 +163,7 @@ void PromoResourceService::PromoResourceStateChange() {
                   content::NotificationService::NoDetails());
 }
 
-void PromoResourceService::Unpack(const DictionaryValue& parsed_json) {
+void PromoResourceService::Unpack(const base::DictionaryValue& parsed_json) {
   for (size_t i = 0; i < arraysize(kValidPromoTypes); ++i) {
     NotificationPromo notification_promo;
     notification_promo.InitFromJson(parsed_json, kValidPromoTypes[i]);

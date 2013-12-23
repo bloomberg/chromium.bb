@@ -58,7 +58,7 @@ void APIActivityLogger::LogInternal(
     ActivityLogConverterStrategy strategy;
     converter->SetFunctionAllowed(true);
     converter->SetStrategy(&strategy);
-    scoped_ptr<ListValue> arg_list(new ListValue());
+    scoped_ptr<base::ListValue> arg_list(new base::ListValue());
     for (size_t i = 0; i < arg_array->Length(); ++i) {
       arg_list->Set(i,
                     converter->FromV8Value(arg_array->Get(i),

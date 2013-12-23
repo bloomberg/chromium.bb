@@ -148,7 +148,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     }
 
     if (module_value->HasKey(keys::kShortcutKey)) {
-      const DictionaryValue* shortcut_value = NULL;
+      const base::DictionaryValue* shortcut_value = NULL;
       if (!module_value->GetDictionary(keys::kShortcutKey,
           &shortcut_value)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(

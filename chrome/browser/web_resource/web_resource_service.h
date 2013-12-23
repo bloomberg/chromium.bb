@@ -46,7 +46,8 @@ class WebResourceService
   void StartAfterDelay();
 
   // JSONAsynchronousUnpackerDelegate methods.
-  virtual void OnUnpackFinished(const DictionaryValue& parsed_json) OVERRIDE;
+  virtual void OnUnpackFinished(
+      const base::DictionaryValue& parsed_json) OVERRIDE;
   virtual void OnUnpackError(const std::string& error_message) OVERRIDE;
 
  protected:

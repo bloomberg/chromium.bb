@@ -251,7 +251,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
   if (js) {
     for (size_t script_index = 0; script_index < js->GetSize();
          ++script_index) {
-      const Value* value;
+      const base::Value* value;
       std::string relative;
       if (!js->Get(script_index, &value) || !value->GetAsString(&relative)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -270,7 +270,7 @@ bool LoadUserScriptFromDictionary(const base::DictionaryValue* content_script,
   if (css) {
     for (size_t script_index = 0; script_index < css->GetSize();
          ++script_index) {
-      const Value* value;
+      const base::Value* value;
       std::string relative;
       if (!css->Get(script_index, &value) || !value->GetAsString(&relative)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(

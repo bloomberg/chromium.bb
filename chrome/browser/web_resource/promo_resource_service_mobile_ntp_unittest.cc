@@ -46,9 +46,9 @@ class NotificationPromoMobileNtpTest {
             const std::string& promo_action_type,
             const std::string& promo_action_arg0,
             const std::string& promo_action_arg1) {
-    Value* value(base::JSONReader::Read(json));
+    base::Value* value(base::JSONReader::Read(json));
     ASSERT_TRUE(value);
-    DictionaryValue* dict = NULL;
+    base::DictionaryValue* dict = NULL;
     value->GetAsDictionary(&dict);
     ASSERT_TRUE(dict);
     test_json_.reset(dict);
@@ -122,7 +122,7 @@ class NotificationPromoMobileNtpTest {
  private:
   NotificationPromoMobileNtp mobile_promo_;
   bool received_notification_;
-  scoped_ptr<DictionaryValue> test_json_;
+  scoped_ptr<base::DictionaryValue> test_json_;
 
   std::string promo_text_;
   std::string promo_text_long_;

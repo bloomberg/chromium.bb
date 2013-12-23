@@ -89,7 +89,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
   // The |default_icon| value can be either dictionary {icon size -> icon path}
   // or non empty string value.
   if (dict->HasKey(keys::kPageActionDefaultIcon)) {
-    const DictionaryValue* icons_value = NULL;
+    const base::DictionaryValue* icons_value = NULL;
     std::string default_icon;
     if (dict->GetDictionary(keys::kPageActionDefaultIcon, &icons_value)) {
       if (!manifest_handler_helpers::LoadIconsFromDictionary(
@@ -144,7 +144,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
   }
 
   if (popup_key) {
-    const DictionaryValue* popup = NULL;
+    const base::DictionaryValue* popup = NULL;
     std::string url_str;
 
     if (dict->GetString(popup_key, &url_str)) {

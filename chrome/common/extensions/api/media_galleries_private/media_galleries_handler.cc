@@ -35,7 +35,7 @@ MediaGalleriesHandlerInfo::~MediaGalleriesHandlerInfo() {
 
 MediaGalleriesHandler* LoadMediaGalleriesHandler(
     const std::string& extension_id,
-    const DictionaryValue* media_galleries_handler,
+    const base::DictionaryValue* media_galleries_handler,
     base::string16* error) {
   scoped_ptr<MediaGalleriesHandler> result(new MediaGalleriesHandler());
   result->set_extension_id(extension_id);
@@ -84,13 +84,14 @@ bool LoadMediaGalleriesHandlers(
   for (base::ListValue::const_iterator iter = extension_actions->begin();
        iter != extension_actions->end();
        ++iter) {
-    if (!(*iter)->IsType(Value::TYPE_DICTIONARY)) {
+    if (!(*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
       *error = ASCIIToUTF16(errors::kInvalidMediaGalleriesHandler);
       return false;
     }
     scoped_ptr<MediaGalleriesHandler> action(
         LoadMediaGalleriesHandler(
-            extension_id, reinterpret_cast<DictionaryValue*>(*iter), error));
+            extension_id,
+            reinterpret_cast<base::DictionaryValue*>(*iter), error));
     if (!action)
       return false;  // Failed to parse media galleries action definition.
     result->push_back(linked_ptr<MediaGalleriesHandler>(action.release()));

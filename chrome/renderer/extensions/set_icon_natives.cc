@@ -35,7 +35,7 @@ SetIconNatives::SetIconNatives(Dispatcher* dispatcher,
 
 bool SetIconNatives::ConvertImageDataToBitmapValue(
     const v8::Local<v8::Object> image_data,
-    Value** bitmap_value) {
+    base::Value** bitmap_value) {
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
   v8::Local<v8::Object> data =
       image_data->Get(v8::String::NewFromUtf8(isolate, "data"))->ToObject();
@@ -117,7 +117,7 @@ bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
     v8::Local<v8::Object> image_data = image_data_set
         ->Get(v8::String::NewFromUtf8(args.GetIsolate(), kImageSizeKeys[i]))
         ->ToObject();
-    Value* image_data_bitmap = NULL;
+    base::Value* image_data_bitmap = NULL;
     if (!ConvertImageDataToBitmapValue(image_data, &image_data_bitmap))
       return false;
     bitmap_set_value->Set(kImageSizeKeys[i], image_data_bitmap);
@@ -145,7 +145,7 @@ void SetIconNatives::SetIconCommon(
                          args.GetIsolate(), "tabId"))->Int32Value());
   }
 
-  ListValue list_value;
+  base::ListValue list_value;
   list_value.Append(dict);
 
   std::string name = *v8::String::Utf8Value(args[0]);

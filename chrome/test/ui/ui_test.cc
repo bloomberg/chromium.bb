@@ -529,26 +529,28 @@ bool UITest::GetBrowserProcessCount(int* count) {
   return true;
 }
 
-static DictionaryValue* LoadDictionaryValueFromPath(
+static base::DictionaryValue* LoadDictionaryValueFromPath(
     const base::FilePath& path) {
   if (path.empty())
     return NULL;
 
   JSONFileValueSerializer serializer(path);
-  scoped_ptr<Value> root_value(serializer.Deserialize(NULL, NULL));
-  if (!root_value.get() || root_value->GetType() != Value::TYPE_DICTIONARY)
+  scoped_ptr<base::Value> root_value(serializer.Deserialize(NULL, NULL));
+  if (!root_value.get() ||
+      root_value->GetType() != base::Value::TYPE_DICTIONARY) {
     return NULL;
+  }
 
-  return static_cast<DictionaryValue*>(root_value.release());
+  return static_cast<base::DictionaryValue*>(root_value.release());
 }
 
-DictionaryValue* UITest::GetLocalState() {
+base::DictionaryValue* UITest::GetLocalState() {
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   return LoadDictionaryValueFromPath(local_state_path);
 }
 
-DictionaryValue* UITest::GetDefaultProfilePreferences() {
+base::DictionaryValue* UITest::GetDefaultProfilePreferences() {
   base::FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.AppendASCII(TestingProfile::kTestUserProfileDir);
@@ -669,7 +671,7 @@ void UITest::TerminateBrowser() {
   launcher_->TerminateBrowser();
 
   // Make sure the UMA metrics say we didn't crash.
-  scoped_ptr<DictionaryValue> local_prefs(GetLocalState());
+  scoped_ptr<base::DictionaryValue> local_prefs(GetLocalState());
   bool exited_cleanly;
   ASSERT_TRUE(local_prefs.get());
   ASSERT_TRUE(local_prefs->GetBoolean(prefs::kStabilityExitedCleanly,
@@ -683,7 +685,8 @@ void UITest::TerminateBrowser() {
   ASSERT_TRUE(session_end_completed);
 
   // Make sure session restore says we didn't crash.
-  scoped_ptr<DictionaryValue> profile_prefs(GetDefaultProfilePreferences());
+  scoped_ptr<base::DictionaryValue> profile_prefs(
+      GetDefaultProfilePreferences());
   ASSERT_TRUE(profile_prefs.get());
   std::string exit_type;
   ASSERT_TRUE(profile_prefs->GetString(prefs::kSessionExitedCleanly,

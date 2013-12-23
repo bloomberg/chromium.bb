@@ -92,7 +92,7 @@ class InstructionSet {
 
   JtlCompiler::CompileError::ErrorCode TranscodeInstruction(
       const std::string& name,
-      const ListValue& arguments,
+      const base::ListValue& arguments,
       bool ends_sentence,
       const jtl::Hasher& hasher,
       ByteCodeWriter* target) const {
@@ -224,7 +224,7 @@ bool JtlCompiler::Compile(const std::string& source_code,
   JtlParser parser(compacted_source_code, newline_indices);
   while (!parser.HasFinished()) {
     std::string operation_name;
-    ListValue arguments;
+    base::ListValue arguments;
     bool ends_sentence = false;
     if (!parser.ParseNextOperation(
              &operation_name, &arguments, &ends_sentence)) {

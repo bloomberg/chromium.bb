@@ -169,13 +169,13 @@ bool TabProxy::NavigateToURLAsync(const GURL& url) {
 bool TabProxy::ExecuteAndExtractString(const std::wstring& frame_xpath,
                                        const std::wstring& jscript,
                                        std::wstring* string_value) {
-  scoped_ptr<Value> root(ExecuteAndExtractValue(frame_xpath, jscript));
+  scoped_ptr<base::Value> root(ExecuteAndExtractValue(frame_xpath, jscript));
   if (root == NULL)
     return false;
 
-  DCHECK(root->IsType(Value::TYPE_LIST));
-  Value* value = NULL;
-  bool succeeded = static_cast<ListValue*>(root.get())->Get(0, &value);
+  DCHECK(root->IsType(base::Value::TYPE_LIST));
+  base::Value* value = NULL;
+  bool succeeded = static_cast<base::ListValue*>(root.get())->Get(0, &value);
   if (succeeded) {
     base::string16 read_value;
     succeeded = value->GetAsString(&read_value);
@@ -190,14 +190,14 @@ bool TabProxy::ExecuteAndExtractString(const std::wstring& frame_xpath,
 bool TabProxy::ExecuteAndExtractBool(const std::wstring& frame_xpath,
                                      const std::wstring& jscript,
                                      bool* bool_value) {
-  scoped_ptr<Value> root(ExecuteAndExtractValue(frame_xpath, jscript));
+  scoped_ptr<base::Value> root(ExecuteAndExtractValue(frame_xpath, jscript));
   if (root == NULL)
     return false;
 
   bool read_value = false;
-  DCHECK(root->IsType(Value::TYPE_LIST));
-  Value* value = NULL;
-  bool succeeded = static_cast<ListValue*>(root.get())->Get(0, &value);
+  DCHECK(root->IsType(base::Value::TYPE_LIST));
+  base::Value* value = NULL;
+  bool succeeded = static_cast<base::ListValue*>(root.get())->Get(0, &value);
   if (succeeded) {
     succeeded = value->GetAsBoolean(&read_value);
     if (succeeded) {
@@ -210,14 +210,14 @@ bool TabProxy::ExecuteAndExtractBool(const std::wstring& frame_xpath,
 bool TabProxy::ExecuteAndExtractInt(const std::wstring& frame_xpath,
                                     const std::wstring& jscript,
                                     int* int_value) {
-  scoped_ptr<Value> root(ExecuteAndExtractValue(frame_xpath, jscript));
+  scoped_ptr<base::Value> root(ExecuteAndExtractValue(frame_xpath, jscript));
   if (root == NULL)
     return false;
 
   int read_value = 0;
-  DCHECK(root->IsType(Value::TYPE_LIST));
-  Value* value = NULL;
-  bool succeeded = static_cast<ListValue*>(root.get())->Get(0, &value);
+  DCHECK(root->IsType(base::Value::TYPE_LIST));
+  base::Value* value = NULL;
+  bool succeeded = static_cast<base::ListValue*>(root.get())->Get(0, &value);
   if (succeeded) {
     succeeded = value->GetAsInteger(&read_value);
     if (succeeded) {
@@ -227,8 +227,8 @@ bool TabProxy::ExecuteAndExtractInt(const std::wstring& frame_xpath,
   return succeeded;
 }
 
-Value* TabProxy::ExecuteAndExtractValue(const std::wstring& frame_xpath,
-                                        const std::wstring& jscript) {
+base::Value* TabProxy::ExecuteAndExtractValue(const std::wstring& frame_xpath,
+                                              const std::wstring& jscript) {
   if (!is_valid())
     return NULL;
 

@@ -66,7 +66,7 @@ class JSONAsynchronousUnpackerImpl
   }
 
   void OnUnpackWebResourceSucceeded(
-      const DictionaryValue& parsed_json) {
+      const base::DictionaryValue& parsed_json) {
     if (delegate_)
       delegate_->OnUnpackFinished(parsed_json);
     Cleanup();

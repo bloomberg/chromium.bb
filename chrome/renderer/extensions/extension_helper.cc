@@ -304,7 +304,7 @@ void ExtensionHelper::OnExecuteCode(
   WebView* webview = render_view()->GetWebView();
   WebFrame* main_frame = webview->mainFrame();
   if (!main_frame) {
-    ListValue val;
+    base::ListValue val;
     Send(new ExtensionHostMsg_ExecuteCodeFinished(routing_id(),
                                                   params.request_id,
                                                   "No main frame",

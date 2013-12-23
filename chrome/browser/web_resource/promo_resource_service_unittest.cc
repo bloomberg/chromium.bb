@@ -97,10 +97,10 @@ class NotificationPromoTest {
 
     std::string json_with_end_date(
         ReplaceStringPlaceholders(json, replacements, NULL));
-    Value* value(base::JSONReader::Read(json_with_end_date));
+    base::Value* value(base::JSONReader::Read(json_with_end_date));
     ASSERT_TRUE(value);
 
-    DictionaryValue* dict = NULL;
+    base::DictionaryValue* dict = NULL;
     value->GetAsDictionary(&dict);
     ASSERT_TRUE(dict);
     test_json_.reset(dict);
@@ -339,7 +339,7 @@ class NotificationPromoTest {
  private:
   NotificationPromo notification_promo_;
   bool received_notification_;
-  scoped_ptr<DictionaryValue> test_json_;
+  scoped_ptr<base::DictionaryValue> test_json_;
 
   NotificationPromo::PromoType promo_type_;
   std::string promo_text_;

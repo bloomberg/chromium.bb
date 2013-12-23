@@ -37,12 +37,13 @@ class SettingsOverridePermissionTest : public ExtensionManifestTest {
     if (flags & kHomepage)
       settings_override->SetString("homepage", "http://www.google.com");
     if (flags & kStartupPages) {
-      scoped_ptr<ListValue> startup_pages(new ListValue);
+      scoped_ptr<base::ListValue> startup_pages(new base::ListValue);
       startup_pages->AppendString("http://startup.com/startup.html");
       settings_override->Set("startup_pages", startup_pages.release());
     }
     if (flags & kSearchProvider) {
-      scoped_ptr<DictionaryValue> search_provider(new DictionaryValue);
+      scoped_ptr<base::DictionaryValue> search_provider(
+          new base::DictionaryValue);
       search_provider->SetString("search_url", "http://google.com/search.html");
       search_provider->SetString("name", "test");
       search_provider->SetString("keyword", "lock");

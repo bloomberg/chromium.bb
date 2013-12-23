@@ -180,7 +180,7 @@ CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleRawData(
 CloudPrintURLFetcher::ResponseAction CloudPrintConnector::HandleJSONData(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   if (!IsRunning())  // Orphant response. Connector has been stopped already.
     return CloudPrintURLFetcher::STOP_PROCESSING;
@@ -204,7 +204,7 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterListResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   DCHECK(succeeded);
   if (!succeeded)
@@ -233,11 +233,11 @@ CloudPrintConnector::HandlePrinterListResponse(
   }
 
   // Go through the list of the cloud printers and init print job handlers.
-  ListValue* printer_list = NULL;
+  base::ListValue* printer_list = NULL;
   // There may be no "printers" value in the JSON
   if (json_data->GetList(kPrinterListValue, &printer_list) && printer_list) {
     for (size_t index = 0; index < printer_list->GetSize(); index++) {
-      DictionaryValue* printer_data = NULL;
+      base::DictionaryValue* printer_data = NULL;
       if (printer_list->GetDictionary(index, &printer_data)) {
         std::string printer_name;
         printer_data->GetString(kNameValue, &printer_name);
@@ -285,7 +285,7 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterListResponseSettingsUpdate(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   DCHECK(succeeded);
   if (!succeeded)
@@ -299,7 +299,7 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandlePrinterDeleteResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handler printer delete response"
           << ", succeeded: " << succeeded
@@ -312,16 +312,16 @@ CloudPrintURLFetcher::ResponseAction
 CloudPrintConnector::HandleRegisterPrinterResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    DictionaryValue* json_data,
+    base::DictionaryValue* json_data,
     bool succeeded) {
   VLOG(1) << "CP_CONNECTOR: Handler printer register response"
           << ", succeeded: " << succeeded
           << ", url: " << url;
   if (succeeded) {
-    ListValue* printer_list = NULL;
+    base::ListValue* printer_list = NULL;
     // There should be a "printers" value in the JSON
     if (json_data->GetList(kPrinterListValue, &printer_list)) {
-      DictionaryValue* printer_data = NULL;
+      base::DictionaryValue* printer_data = NULL;
       if (printer_list->GetDictionary(0, &printer_data))
         InitJobHandlerForPrinter(printer_data);
     }
@@ -386,7 +386,7 @@ bool CloudPrintConnector::RemovePrinterFromList(
 }
 
 void CloudPrintConnector::InitJobHandlerForPrinter(
-    DictionaryValue* printer_data) {
+    base::DictionaryValue* printer_data) {
   DCHECK(printer_data);
   PrinterJobHandler::PrinterInfoFromCloud printer_info_cloud;
   printer_data->GetString(kIdValue, &printer_info_cloud.printer_id);
@@ -410,7 +410,7 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
   }
   printer_data->GetString(kPrinterCapsHashValue,
       &printer_info_cloud.caps_hash);
-  ListValue* tags_list = NULL;
+  base::ListValue* tags_list = NULL;
   if (printer_data->GetList(kTagsValue, &tags_list) && tags_list) {
     for (size_t index = 0; index < tags_list->GetSize(); index++) {
       std::string tag;
@@ -441,13 +441,13 @@ void CloudPrintConnector::InitJobHandlerForPrinter(
 }
 
 void CloudPrintConnector::UpdateSettingsFromPrintersList(
-    DictionaryValue* json_data) {
-  ListValue* printer_list = NULL;
+    base::DictionaryValue* json_data) {
+  base::ListValue* printer_list = NULL;
   int min_xmpp_timeout = std::numeric_limits<int>::max();
   // There may be no "printers" value in the JSON
   if (json_data->GetList(kPrinterListValue, &printer_list) && printer_list) {
     for (size_t index = 0; index < printer_list->GetSize(); index++) {
-      DictionaryValue* printer_data = NULL;
+      base::DictionaryValue* printer_data = NULL;
       if (printer_list->GetDictionary(index, &printer_data)) {
         int xmpp_timeout = 0;
         if (printer_data->GetInteger(kLocalSettingsPendingXmppValue,

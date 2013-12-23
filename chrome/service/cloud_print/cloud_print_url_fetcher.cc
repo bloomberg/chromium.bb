@@ -200,7 +200,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
       // response, we will retry (to handle the case where we got redirected
       // to a non-cloudprint-server URL eg. for authentication).
       bool succeeded = false;
-      scoped_ptr<DictionaryValue> response_dict =
+      scoped_ptr<base::DictionaryValue> response_dict =
           ParseResponseJSON(data, &succeeded);
 
       if (response_dict) {

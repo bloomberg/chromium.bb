@@ -147,7 +147,7 @@ base::Value* DeepCopyAndResolveStrings(
       return copy;
     }
 
-    case Value::TYPE_DICTIONARY: {
+    case base::Value::TYPE_DICTIONARY: {
       const base::DictionaryValue* dict =
           static_cast<const base::DictionaryValue*>(node);
       base::DictionaryValue* copy = new base::DictionaryValue;
@@ -161,7 +161,7 @@ base::Value* DeepCopyAndResolveStrings(
       return copy;
     }
 
-    case Value::TYPE_STRING: {
+    case base::Value::TYPE_STRING: {
       std::string value;
       bool rv = node->GetAsString(&value);
       DCHECK(rv);
@@ -206,23 +206,23 @@ NotificationPromo::NotificationPromo()
 
 NotificationPromo::~NotificationPromo() {}
 
-void NotificationPromo::InitFromJson(const DictionaryValue& json,
+void NotificationPromo::InitFromJson(const base::DictionaryValue& json,
                                      PromoType promo_type) {
   promo_type_ = promo_type;
-  const ListValue* promo_list = NULL;
+  const base::ListValue* promo_list = NULL;
   DVLOG(1) << "InitFromJson " << PromoTypeToString(promo_type_);
   if (!json.GetList(PromoTypeToString(promo_type_), &promo_list))
     return;
 
   // No support for multiple promos yet. Only consider the first one.
-  const DictionaryValue* promo = NULL;
+  const base::DictionaryValue* promo = NULL;
   if (!promo_list->GetDictionary(0, &promo))
     return;
 
   // Date.
-  const ListValue* date_list = NULL;
+  const base::ListValue* date_list = NULL;
   if (promo->GetList("date", &date_list)) {
-    const DictionaryValue* date;
+    const base::DictionaryValue* date;
     if (date_list->GetDictionary(0, &date)) {
       std::string time_str;
       base::Time time;
@@ -242,7 +242,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json,
   }
 
   // Grouping.
-  const DictionaryValue* grouping = NULL;
+  const base::DictionaryValue* grouping = NULL;
   if (promo->GetDictionary("grouping", &grouping)) {
     grouping->GetInteger("buckets", &num_groups_);
     grouping->GetInteger("segment", &initial_segment_);
@@ -258,11 +258,11 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json,
   }
 
   // Strings.
-  const DictionaryValue* strings = NULL;
+  const base::DictionaryValue* strings = NULL;
   promo->GetDictionary("strings", &strings);
 
   // Payload.
-  const DictionaryValue* payload = NULL;
+  const base::DictionaryValue* payload = NULL;
   if (promo->GetDictionary("payload", &payload)) {
     base::Value* ppcopy = DeepCopyAndResolveStrings(payload, strings);
     DCHECK(ppcopy && ppcopy->IsType(base::Value::TYPE_DICTIONARY));
@@ -274,7 +274,7 @@ void NotificationPromo::InitFromJson(const DictionaryValue& json,
     // For compatibility with the legacy desktop version,
     // if no |payload.promo_message_short| is specified,
     // the first string in |strings| is used.
-    DictionaryValue::Iterator iter(*strings);
+    base::DictionaryValue::Iterator iter(*strings);
     iter.value().GetAsString(&promo_text_);
   }
   DVLOG(1) << "promo_text_=" << promo_text_;

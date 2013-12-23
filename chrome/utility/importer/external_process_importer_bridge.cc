@@ -29,7 +29,7 @@ const int kNumFaviconsToSend = 100;
 }
 
 ExternalProcessImporterBridge::ExternalProcessImporterBridge(
-    const DictionaryValue& localized_strings,
+    const base::DictionaryValue& localized_strings,
     IPC::Sender* sender,
     base::TaskRunner* task_runner)
     : sender_(sender),

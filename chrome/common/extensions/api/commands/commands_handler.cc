@@ -80,11 +80,11 @@ bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
 
   int command_index = 0;
   int keybindings_found = 0;
-  for (DictionaryValue::Iterator iter(*dict); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*dict); !iter.IsAtEnd();
        iter.Advance()) {
     ++command_index;
 
-    const DictionaryValue* command = NULL;
+    const base::DictionaryValue* command = NULL;
     if (!iter.value().GetAsDictionary(&command)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
           manifest_errors::kInvalidKeyBindingDictionary,

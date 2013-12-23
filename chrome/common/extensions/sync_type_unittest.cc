@@ -62,8 +62,8 @@ class ExtensionSyncTypeTest : public testing::Test {
       }
     }
     if (has_plugin_permission) {
-      ListValue* plugins = new ListValue();
-      plugins->Set(0, new StringValue("plugin"));
+      base::ListValue* plugins = new base::ListValue();
+      plugins->Set(0, new base::StringValue("plugin"));
       source.Set(keys::kPermissions, plugins);
     }
 

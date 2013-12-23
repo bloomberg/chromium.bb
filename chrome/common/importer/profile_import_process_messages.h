@@ -262,7 +262,7 @@ struct ParamTraits<importer::ImporterIE7PasswordInfo> {
 IPC_MESSAGE_CONTROL3(ProfileImportProcessMsg_StartImport,
                      importer::SourceProfile,
                      int                     /* Bitmask of items to import. */,
-                     DictionaryValue         /* Localized strings. */)
+                     base::DictionaryValue   /* Localized strings. */)
 
 IPC_MESSAGE_CONTROL0(ProfileImportProcessMsg_CancelImport)
 

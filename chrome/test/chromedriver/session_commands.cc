@@ -197,7 +197,8 @@ Status ExecuteGetCurrentWindowHandle(
   if (status.IsError())
     return status;
 
-  value->reset(new StringValue(WebViewIdToWindowHandle(web_view->GetId())));
+  value->reset(
+      new base::StringValue(WebViewIdToWindowHandle(web_view->GetId())));
   return Status(kOk);
 }
 

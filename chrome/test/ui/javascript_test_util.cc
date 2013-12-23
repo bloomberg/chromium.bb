@@ -16,7 +16,7 @@ bool JsonDictionaryToMap(const std::string& json,
                          std::map<std::string, std::string>* results) {
   DCHECK(results != NULL);
   JSONStringValueSerializer deserializer(json);
-  scoped_ptr<Value> root(deserializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> root(deserializer.Deserialize(NULL, NULL));
 
   // Note that we don't use ASSERT_TRUE here (and in some other places) as it
   // doesn't work inside a function with a return type other than void.
@@ -24,13 +24,13 @@ bool JsonDictionaryToMap(const std::string& json,
   if (!root.get())
     return false;
 
-  EXPECT_TRUE(root->IsType(Value::TYPE_DICTIONARY));
-  if (!root->IsType(Value::TYPE_DICTIONARY))
+  EXPECT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY));
+  if (!root->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 
-  DictionaryValue* dict = static_cast<DictionaryValue*>(root.get());
+  base::DictionaryValue* dict = static_cast<base::DictionaryValue*>(root.get());
 
-  for (DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
     double double_result;
     std::string result;
     if (it.value().GetAsString(&result)) {

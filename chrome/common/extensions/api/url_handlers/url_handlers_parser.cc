@@ -89,7 +89,7 @@ UrlHandlersParser::~UrlHandlersParser() {
 }
 
 bool ParseUrlHandler(const std::string& handler_id,
-                     const DictionaryValue& handler_info,
+                     const base::DictionaryValue& handler_info,
                      std::vector<UrlHandlerInfo>* url_handlers,
                      base::string16* error) {
   DCHECK(error);
@@ -102,7 +102,7 @@ bool ParseUrlHandler(const std::string& handler_id,
     return false;
   }
 
-  const ListValue* manif_patterns = NULL;
+  const base::ListValue* manif_patterns = NULL;
   if (!handler_info.GetList(mkeys::kMatches, &manif_patterns) ||
       manif_patterns->GetSize() == 0) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
@@ -110,7 +110,7 @@ bool ParseUrlHandler(const std::string& handler_id,
     return false;
   }
 
-  for (ListValue::const_iterator it = manif_patterns->begin();
+  for (base::ListValue::const_iterator it = manif_patterns->begin();
        it != manif_patterns->end(); ++it) {
     std::string str_pattern;
     (*it)->GetAsString(&str_pattern);
@@ -134,7 +134,7 @@ bool ParseUrlHandler(const std::string& handler_id,
 
 bool UrlHandlersParser::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<UrlHandlers> info(new UrlHandlers);
-  const DictionaryValue* all_handlers = NULL;
+  const base::DictionaryValue* all_handlers = NULL;
   if (!extension->manifest()->GetDictionary(
         mkeys::kUrlHandlers, &all_handlers)) {
     *error = ASCIIToUTF16(merrors::kInvalidURLHandlers);
@@ -143,10 +143,10 @@ bool UrlHandlersParser::Parse(Extension* extension, base::string16* error) {
 
   DCHECK(extension->is_platform_app());
 
-  for (DictionaryValue::Iterator iter(*all_handlers); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*all_handlers); !iter.IsAtEnd();
        iter.Advance()) {
     // A URL handler entry is a title and a list of URL patterns to handle.
-    const DictionaryValue* handler = NULL;
+    const base::DictionaryValue* handler = NULL;
     if (!iter.value().GetAsDictionary(&handler)) {
       *error = ASCIIToUTF16(merrors::kInvalidURLHandlerPatternElement);
       return false;

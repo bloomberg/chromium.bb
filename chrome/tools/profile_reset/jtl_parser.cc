@@ -147,7 +147,7 @@ bool JtlParser::ParseNextOperation(std::string* name,
           new base::FundamentalValue(boolean_value == kTrueKeyword));
     } else {
       // |string_value| might be empty for an empty string
-      argument_list->Append(new StringValue(string_value));
+      argument_list->Append(new base::StringValue(string_value));
     }
   }
   return true;

@@ -44,7 +44,8 @@ WebResourceService::~WebResourceService() {
     EndFetch();
 }
 
-void WebResourceService::OnUnpackFinished(const DictionaryValue& parsed_json) {
+void WebResourceService::OnUnpackFinished(
+    const base::DictionaryValue& parsed_json) {
   Unpack(parsed_json);
   EndFetch();
 }

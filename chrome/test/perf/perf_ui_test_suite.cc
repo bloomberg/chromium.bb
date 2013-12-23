@@ -139,8 +139,9 @@ void PerfUITestSuite::BuildCachedThemePakIn(
   std::string error;
   JSONFileValueSerializer serializer(
       extension_base.AppendASCII("manifest.json"));
-  scoped_ptr<DictionaryValue> valid_value(static_cast<DictionaryValue*>(
-      serializer.Deserialize(&error_code, &error)));
+  scoped_ptr<base::DictionaryValue> valid_value(
+      static_cast<base::DictionaryValue*>(
+          serializer.Deserialize(&error_code, &error)));
   if (error_code != 0 || !valid_value)
     LOG(FATAL) << "Error parsing theme manifest: " << error;
 

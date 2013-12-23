@@ -26,7 +26,7 @@ class SetIconNatives : public ChromeV8Extension {
 
  private:
   bool ConvertImageDataToBitmapValue(const v8::Local<v8::Object> image_data,
-                                     Value** bitmap_value);
+                                     base::Value** bitmap_value);
   bool ConvertImageDataSetToBitmapValueSet(
       const v8::FunctionCallbackInfo<v8::Value>& args,
       base::DictionaryValue* bitmap_value);

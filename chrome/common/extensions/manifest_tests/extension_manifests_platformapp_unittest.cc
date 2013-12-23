@@ -117,7 +117,7 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
   scoped_ptr<base::DictionaryValue> manifest(
       LoadManifest("init_valid_platform_app.json", &error));
 
-  std::vector<linked_ptr<DictionaryValue> > manifests;
+  std::vector<linked_ptr<base::DictionaryValue> > manifests;
   // Create each manifest.
   for (size_t i = 0; i < arraysize(kPlatformAppExperimentalApis); ++i) {
     const char* api_name = kPlatformAppExperimentalApis[i];

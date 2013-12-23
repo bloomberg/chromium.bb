@@ -23,7 +23,7 @@
 namespace {
 
 // Retrieves the file system path of the profile name.
-base::FilePath GetProfilePath(const DictionaryValue& root,
+base::FilePath GetProfilePath(const base::DictionaryValue& root,
                               const std::string& profile_name) {
   base::string16 path16;
   std::string is_relative;
@@ -47,7 +47,7 @@ base::FilePath GetProfilePath(const DictionaryValue& root,
 }
 
 // Checks if the named profile is the default profile.
-bool IsDefaultProfile(const DictionaryValue& root,
+bool IsDefaultProfile(const base::DictionaryValue& root,
                       const std::string& profile_name) {
   std::string is_default;
   root.GetStringASCII(profile_name + ".Default", &is_default);
@@ -66,7 +66,7 @@ base::FilePath GetFirefoxProfilePath() {
 }
 
 base::FilePath GetFirefoxProfilePathFromDictionary(
-    const DictionaryValue& root) {
+    const base::DictionaryValue& root) {
   std::vector<std::string> profiles;
   for (int i = 0; ; ++i) {
     std::string current_profile = base::StringPrintf("Profile%d", i);

@@ -16,7 +16,7 @@ class JSONAsynchronousUnpackerDelegate {
 
   // This will be called when the response is parsed properly. |parsed_json|
   // contains the decoded information.
-  virtual void OnUnpackFinished(const DictionaryValue& parsed_json) = 0;
+  virtual void OnUnpackFinished(const base::DictionaryValue& parsed_json) = 0;
 
   // This will be called if there is an error while parsing the data.
   virtual void OnUnpackError(const std::string& error_message) = 0;

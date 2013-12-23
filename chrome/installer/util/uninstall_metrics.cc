@@ -23,11 +23,13 @@ namespace {
 // Returns true if at least one uninstall metric was found in
 // uninstall_metrics_dict, false otherwise.
 bool BuildUninstallMetricsString(
-    const DictionaryValue* uninstall_metrics_dict, base::string16* metrics) {
+    const base::DictionaryValue* uninstall_metrics_dict,
+    base::string16* metrics) {
   DCHECK(NULL != metrics);
   bool has_values = false;
 
-  for (DictionaryValue::Iterator iter(*uninstall_metrics_dict); !iter.IsAtEnd();
+  for (base::DictionaryValue::Iterator iter(*uninstall_metrics_dict);
+       !iter.IsAtEnd();
        iter.Advance()) {
     has_values = true;
     metrics->append(L"&");
@@ -44,7 +46,7 @@ bool BuildUninstallMetricsString(
 
 }  // namespace
 
-bool ExtractUninstallMetrics(const DictionaryValue& root,
+bool ExtractUninstallMetrics(const base::DictionaryValue& root,
                              base::string16* uninstall_metrics_string) {
   // Make sure that the user wants us reporting metrics. If not, don't
   // add our uninstall metrics.
@@ -55,7 +57,7 @@ bool ExtractUninstallMetrics(const DictionaryValue& root,
     return false;
   }
 
-  const DictionaryValue* uninstall_metrics_dict = NULL;
+  const base::DictionaryValue* uninstall_metrics_dict = NULL;
   if (!root.HasKey(installer::kUninstallMetricsName) ||
       !root.GetDictionary(installer::kUninstallMetricsName,
                           &uninstall_metrics_dict)) {
@@ -75,16 +77,17 @@ bool ExtractUninstallMetricsFromFile(const base::FilePath& file_path,
   JSONFileValueSerializer json_serializer(file_path);
 
   std::string json_error_string;
-  scoped_ptr<Value> root(json_serializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> root(json_serializer.Deserialize(NULL, NULL));
   if (!root.get())
     return false;
 
   // Preferences should always have a dictionary root.
-  if (!root->IsType(Value::TYPE_DICTIONARY))
+  if (!root->IsType(base::Value::TYPE_DICTIONARY))
     return false;
 
-  return ExtractUninstallMetrics(*static_cast<DictionaryValue*>(root.get()),
-                                 uninstall_metrics_string);
+  return ExtractUninstallMetrics(
+      *static_cast<base::DictionaryValue*>(root.get()),
+      uninstall_metrics_string);
 }
 
 }  // namespace installer

@@ -292,30 +292,31 @@ bool BrowserProxy::GetInitialLoadTimes(base::TimeDelta timeout,
     return false;
   }
   std::string error;
-  scoped_ptr<Value> values(base::JSONReader::ReadAndReturnError(
+  scoped_ptr<base::Value> values(base::JSONReader::ReadAndReturnError(
       json_response, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error));
-  if (!error.empty() || values->GetType() != Value::TYPE_DICTIONARY)
+  if (!error.empty() || values->GetType() != base::Value::TYPE_DICTIONARY)
     return false;
 
-  DictionaryValue* values_dict = static_cast<DictionaryValue*>(values.get());
+  base::DictionaryValue* values_dict =
+      static_cast<base::DictionaryValue*>(values.get());
 
-  Value* tabs_value;
+  base::Value* tabs_value;
   if (!values_dict->Get("tabs", &tabs_value) ||
-      tabs_value->GetType() != Value::TYPE_LIST)
+      tabs_value->GetType() != base::Value::TYPE_LIST)
     return false;
 
-  ListValue* tabs_list = static_cast<ListValue*>(tabs_value);
+  base::ListValue* tabs_list = static_cast<base::ListValue*>(tabs_value);
 
   for (size_t i = 0; i < tabs_list->GetSize(); i++) {
     float stop_ms = 0;
     float start_ms = 0;
-    Value* tab_value;
-    DictionaryValue* tab_dict;
+    base::Value* tab_value;
+    base::DictionaryValue* tab_dict;
 
     if (!tabs_list->Get(i, &tab_value) ||
-        tab_value->GetType() != Value::TYPE_DICTIONARY)
+        tab_value->GetType() != base::Value::TYPE_DICTIONARY)
       return false;
-    tab_dict = static_cast<DictionaryValue*>(tab_value);
+    tab_dict = static_cast<base::DictionaryValue*>(tab_value);
 
     double temp;
     if (!tab_dict->GetDouble("load_start_ms", &temp))

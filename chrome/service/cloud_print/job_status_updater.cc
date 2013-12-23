@@ -97,7 +97,7 @@ void JobStatusUpdater::Stop() {
 CloudPrintURLFetcher::ResponseAction JobStatusUpdater::HandleJSONData(
       const net::URLFetcher* source,
       const GURL& url,
-      DictionaryValue* json_data,
+      base::DictionaryValue* json_data,
       bool succeeded) {
   if (IsTerminalJobState(last_job_details_.status)) {
     base::MessageLoop::current()->PostTask(

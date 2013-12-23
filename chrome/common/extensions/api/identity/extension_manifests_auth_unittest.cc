@@ -83,7 +83,7 @@ class OAuth2ManifestTest : public ExtensionManifestTest {
   }
 
  private:
-  scoped_ptr<Value> parsed_manifest_;
+  scoped_ptr<base::Value> parsed_manifest_;
 };
 
 TEST_F(OAuth2ManifestTest, OAuth2SectionParsing) {

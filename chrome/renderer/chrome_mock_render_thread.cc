@@ -183,7 +183,7 @@ void ChromeMockRenderThread::OnUpdatePrintSettings(
   }
 
   // Just return the default settings.
-  const ListValue* page_range_array;
+  const base::ListValue* page_range_array;
   printing::PageRanges new_ranges;
   if (job_settings.GetList(printing::kSettingPageRange, &page_range_array)) {
     for (size_t index = 0; index < page_range_array->GetSize(); ++index) {

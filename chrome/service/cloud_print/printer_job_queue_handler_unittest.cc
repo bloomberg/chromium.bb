@@ -51,8 +51,8 @@ class TimeProviderMock : public PrinterJobQueueHandler::TimeProvider {
 
 class PrinterJobQueueHandlerTest : public ::testing::Test {
  protected:
-  Value* data_;
-  DictionaryValue* json_data_;
+  base::Value* data_;
+  base::DictionaryValue* json_data_;
   virtual void SetUp() {
     base::JSONReader json_reader;
     data_ = json_reader.Read(kJobListResponse);

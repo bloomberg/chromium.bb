@@ -46,12 +46,13 @@ TEST(UninstallMetricsTest, TestExtractUninstallMetrics) {
   JSONStringValueSerializer json_deserializer(pref_string);
   std::string error_message;
 
-  scoped_ptr<Value> root(json_deserializer.Deserialize(NULL, &error_message));
+  scoped_ptr<base::Value> root(
+      json_deserializer.Deserialize(NULL, &error_message));
   ASSERT_TRUE(root.get());
   base::string16 uninstall_metrics_string;
 
   EXPECT_TRUE(
-      ExtractUninstallMetrics(*static_cast<DictionaryValue*>(root.get()),
+      ExtractUninstallMetrics(*static_cast<base::DictionaryValue*>(root.get()),
                               &uninstall_metrics_string));
   EXPECT_EQ(expected_url_string, uninstall_metrics_string);
 }

@@ -178,24 +178,24 @@ class DomCheckerTest : public UITest {
 
     std::string json = WideToUTF8(json_wide);
     JSONStringValueSerializer deserializer(json);
-    scoped_ptr<Value> value(deserializer.Deserialize(NULL, NULL));
+    scoped_ptr<base::Value> value(deserializer.Deserialize(NULL, NULL));
 
     EXPECT_TRUE(value.get());
     if (!value.get())
       return false;
 
-    EXPECT_TRUE(value->IsType(Value::TYPE_LIST));
-    if (!value->IsType(Value::TYPE_LIST))
+    EXPECT_TRUE(value->IsType(base::Value::TYPE_LIST));
+    if (!value->IsType(base::Value::TYPE_LIST))
       return false;
 
-    ListValue* list_value = static_cast<ListValue*>(value.get());
+    base::ListValue* list_value = static_cast<base::ListValue*>(value.get());
 
     // The parsed JSON object will be an array of strings, each of which is a
     // test failure. Add those strings to the results set.
-    ListValue::const_iterator it = list_value->begin();
+    base::ListValue::const_iterator it = list_value->begin();
     for (; it != list_value->end(); ++it) {
-      EXPECT_TRUE((*it)->IsType(Value::TYPE_STRING));
-      if ((*it)->IsType(Value::TYPE_STRING)) {
+      EXPECT_TRUE((*it)->IsType(base::Value::TYPE_STRING));
+      if ((*it)->IsType(base::Value::TYPE_STRING)) {
         std::string test_name;
         succeeded = (*it)->GetAsString(&test_name);
         EXPECT_TRUE(succeeded);

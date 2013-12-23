@@ -36,7 +36,7 @@ void DOMActivityLogger::log(
   ActivityLogConverterStrategy strategy;
   converter->SetFunctionAllowed(true);
   converter->SetStrategy(&strategy);
-  scoped_ptr<ListValue> argv_list_value(new ListValue());
+  scoped_ptr<base::ListValue> argv_list_value(new base::ListValue());
   for (int i =0; i < argc; i++) {
     argv_list_value->Set(
         i,

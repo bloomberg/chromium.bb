@@ -51,7 +51,7 @@ PrinterJobQueueHandler::PrinterJobQueueHandler()
 PrinterJobQueueHandler::~PrinterJobQueueHandler() {}
 
 void PrinterJobQueueHandler::ConstructJobDetailsFromJson(
-    const DictionaryValue* job_data,
+    const base::DictionaryValue* job_data,
     JobDetails* job_details) {
   job_details->Clear();
 
@@ -62,7 +62,7 @@ void PrinterJobQueueHandler::ConstructJobDetailsFromJson(
   job_data->GetString(kFileUrlValue, &job_details->print_data_url_);
 
   // Get tags for print job.
-  const ListValue* tags = NULL;
+  const base::ListValue* tags = NULL;
   if (job_data->GetList(kTagsValue, &tags)) {
     for (size_t i = 0; i < tags->GetSize(); i++) {
       std::string value;
@@ -98,20 +98,21 @@ base::TimeDelta PrinterJobQueueHandler::ComputeBackoffTime(
   return scheduled_retry - now;
 }
 
-void PrinterJobQueueHandler::GetJobsFromQueue(const DictionaryValue* json_data,
-                                              std::vector<JobDetails>* jobs) {
+void PrinterJobQueueHandler::GetJobsFromQueue(
+    const base::DictionaryValue* json_data,
+    std::vector<JobDetails>* jobs) {
   std::vector<JobDetails> jobs_with_timeouts;
 
   jobs->clear();
 
-  const ListValue* job_list = NULL;
+  const base::ListValue* job_list = NULL;
   if (!json_data->GetList(kJobListValue, &job_list)) {
     return;
   }
 
   size_t list_size = job_list->GetSize();
   for (size_t cur_job = 0; cur_job < list_size; cur_job++) {
-    const DictionaryValue* job_data = NULL;
+    const base::DictionaryValue* job_data = NULL;
     if (job_list->GetDictionary(cur_job, &job_data)) {
       JobDetails job_details_current;
       ConstructJobDetailsFromJson(job_data, &job_details_current);
