@@ -78,7 +78,7 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
 
  protected:
   std::string InvokeGetActiveSink(int tab_id) {
-    ListValue parameters;
+    base::ListValue parameters;
     parameters.AppendInteger(tab_id);
     std::string parameter_string;
     JSONWriter::Write(&parameters, &parameter_string);
@@ -210,7 +210,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetActiveSinkNoMediaStream) {
 IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, SetActiveSinkNoMediaStream) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   int tab_id = ExtensionTabUtil::GetTabId(tab);
-  ListValue parameters;
+  base::ListValue parameters;
   parameters.AppendInteger(tab_id);
   parameters.AppendString("no such id");
   std::string parameter_string;
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAndSetWithMediaStream) {
        ++it) {
     std::string target_device(it->unique_id);
 
-    ListValue parameters;
+    base::ListValue parameters;
     parameters.AppendInteger(tab_id);
     parameters.AppendString(target_device);
     std::string parameter_string;
@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
                         raw_device_id,
                         &source_id_in_origin);
 
-    ListValue parameters;
+    base::ListValue parameters;
     parameters.AppendString(origin.spec());
     parameters.AppendString(source_id_in_origin);
     std::string parameter_string;

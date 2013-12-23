@@ -40,7 +40,7 @@ class SettingsStorageQuotaEnforcer : public ValueStore {
   virtual WriteResult Set(
       WriteOptions options,
       const std::string& key,
-      const Value& value) OVERRIDE;
+      const base::Value& value) OVERRIDE;
   virtual WriteResult Set(
       WriteOptions options, const base::DictionaryValue& values) OVERRIDE;
   virtual WriteResult Remove(const std::string& key) OVERRIDE;

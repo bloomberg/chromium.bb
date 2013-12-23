@@ -220,10 +220,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevices) {
           "[{\"maxResults\": 0}]",
           browser_)));
   ASSERT_TRUE(result);
-  ListValue* devices = result.get();
+  base::ListValue* devices = result.get();
   EXPECT_EQ(5u, devices->GetSize());
-  DictionaryValue* device = NULL;
-  ListValue* sessions = NULL;
+  base::DictionaryValue* device = NULL;
+  base::ListValue* sessions = NULL;
   for (size_t i = 0; i < devices->GetSize(); ++i) {
     EXPECT_TRUE(devices->GetDictionary(i, &device));
     EXPECT_EQ(kSessionTags[i], utils::GetString(device, "info"));
@@ -241,10 +241,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesMaxResults) {
           "[]",
           browser_)));
   ASSERT_TRUE(result);
-  ListValue* devices = result.get();
+  base::ListValue* devices = result.get();
   EXPECT_EQ(5u, devices->GetSize());
-  DictionaryValue* device = NULL;
-  ListValue* sessions = NULL;
+  base::DictionaryValue* device = NULL;
+  base::ListValue* sessions = NULL;
   for (size_t i = 0; i < devices->GetSize(); ++i) {
     EXPECT_TRUE(devices->GetDictionary(i, &device));
     EXPECT_EQ(kSessionTags[i], utils::GetString(device, "info"));
@@ -261,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest, GetDevicesListEmpty) {
           browser_)));
 
   ASSERT_TRUE(result);
-  ListValue* devices = result.get();
+  base::ListValue* devices = result.get();
   EXPECT_EQ(0u, devices->GetSize());
 }
 
@@ -285,12 +285,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionSessionsTest,
           browser_)));
   ASSERT_TRUE(result);
 
-  ListValue* windows = result.get();
+  base::ListValue* windows = result.get();
   EXPECT_EQ(2u, windows->GetSize());
-  DictionaryValue* restored_window = NULL;
+  base::DictionaryValue* restored_window = NULL;
   EXPECT_TRUE(restored_window_session->GetDictionary("window",
                                                      &restored_window));
-  DictionaryValue* window = NULL;
+  base::DictionaryValue* window = NULL;
   int restored_id = utils::GetInteger(restored_window, "id");
   for (size_t i = 0; i < windows->GetSize(); ++i) {
     EXPECT_TRUE(windows->GetDictionary(i, &window));

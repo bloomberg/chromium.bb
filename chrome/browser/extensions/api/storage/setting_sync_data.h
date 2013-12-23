@@ -35,7 +35,7 @@ class SettingSyncData {
       syncer::SyncChange::SyncChangeType change_type,
       const std::string& extension_id,
       const std::string& key,
-      scoped_ptr<Value> value);
+      scoped_ptr<base::Value> value);
 
   ~SettingSyncData();
 
@@ -49,7 +49,7 @@ class SettingSyncData {
   const std::string& key() const;
 
   // Returns the value of the setting.
-  const Value& value() const;
+  const base::Value& value() const;
 
  private:
   // Ref-counted container for the data.
@@ -60,12 +60,12 @@ class SettingSyncData {
       syncer::SyncChange::SyncChangeType change_type,
       const std::string& extension_id,
       const std::string& key,
-      scoped_ptr<Value> value);
+      scoped_ptr<base::Value> value);
 
     syncer::SyncChange::SyncChangeType change_type_;
     std::string extension_id_;
     std::string key_;
-    scoped_ptr<Value> value_;
+    scoped_ptr<base::Value> value_;
 
    private:
     friend class base::RefCountedThreadSafe<Internal>;

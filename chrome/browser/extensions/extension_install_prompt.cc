@@ -494,13 +494,13 @@ ExtensionInstallPrompt::ShowParams::ShowParams(
 // static
 scoped_refptr<Extension>
     ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
-    const DictionaryValue* manifest,
+    const base::DictionaryValue* manifest,
     int flags,
     const std::string& id,
     const std::string& localized_name,
     const std::string& localized_description,
     std::string* error) {
-  scoped_ptr<DictionaryValue> localized_manifest;
+  scoped_ptr<base::DictionaryValue> localized_manifest;
   if (!localized_name.empty() || !localized_description.empty()) {
     localized_manifest.reset(manifest->DeepCopy());
     if (!localized_name.empty()) {

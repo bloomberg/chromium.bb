@@ -678,7 +678,7 @@ GetProcessInfoFunction::~GetProcessInfoFunction() {
 
 bool GetProcessInfoFunction::RunImpl() {
 #if defined(ENABLE_TASK_MANAGER)
-  Value* processes = NULL;
+  base::Value* processes = NULL;
 
   EXTENSION_FUNCTION_VALIDATE(args_->Get(0, &processes));
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &memory_));

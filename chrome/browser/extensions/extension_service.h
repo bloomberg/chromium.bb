@@ -466,7 +466,7 @@ class ExtensionService
   // Sets the name, id and icon resource path of the given extension into the
   // returned dictionary. Returns an empty dictionary if the given extension id
   // is not found.
-  scoped_ptr<DictionaryValue> GetExtensionInfo(
+  scoped_ptr<base::DictionaryValue> GetExtensionInfo(
       const std::string& extension_id) const;
 
   // Notify the frontend that there was an error loading an extension.

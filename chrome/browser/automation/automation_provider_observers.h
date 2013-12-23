@@ -853,7 +853,7 @@ class AllDownloadsCompleteObserver
       AutomationProvider* provider,
       IPC::Message* reply_message,
       content::DownloadManager* download_manager,
-      ListValue* pre_download_ids);
+      base::ListValue* pre_download_ids);
   virtual ~AllDownloadsCompleteObserver();
 
   // content::DownloadManager::Observer.

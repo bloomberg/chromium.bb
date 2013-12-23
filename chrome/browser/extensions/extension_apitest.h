@@ -196,7 +196,7 @@ class ExtensionApiTest : public ExtensionBrowserTest {
 
   // Hold details of the test, set in C++, which can be accessed by
   // javascript using chrome.test.getConfig().
-  scoped_ptr<DictionaryValue> test_config_;
+  scoped_ptr<base::DictionaryValue> test_config_;
 
   // Hold the test WebSocket server.
   scoped_ptr<net::SpawnedTestServer> websocket_server_;

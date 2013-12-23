@@ -102,7 +102,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   }
 
   // Create the manifest
-  scoped_ptr<DictionaryValue> root(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> root(new base::DictionaryValue);
   if (!web_app.is_bookmark_app)
     root->SetString(keys::kPublicKey, GenerateKey(web_app.manifest_url));
   else
@@ -120,7 +120,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     root->SetString(keys::kLaunchContainer, web_app.launch_container);
 
   // Add the icons.
-  DictionaryValue* icons = new DictionaryValue();
+  base::DictionaryValue* icons = new base::DictionaryValue();
   root->Set(keys::kIcons, icons);
   for (size_t i = 0; i < web_app.icons.size(); ++i) {
     std::string size = base::StringPrintf("%i", web_app.icons[i].width);

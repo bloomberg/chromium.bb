@@ -37,14 +37,15 @@ namespace {
 
 namespace tabs = api::tabs;
 
-void WillDispatchTabUpdatedEvent(WebContents* contents,
-                                 const DictionaryValue* changed_properties,
-                                 content::BrowserContext* context,
-                                 const Extension* extension,
-                                 ListValue* event_args) {
+void WillDispatchTabUpdatedEvent(
+    WebContents* contents,
+    const base::DictionaryValue* changed_properties,
+    content::BrowserContext* context,
+    const Extension* extension,
+    base::ListValue* event_args) {
   // Overwrite the second argument with the appropriate properties dictionary,
   // depending on extension permissions.
-  DictionaryValue* properties_value = changed_properties->DeepCopy();
+  base::DictionaryValue* properties_value = changed_properties->DeepCopy();
   ExtensionTabUtil::ScrubTabValueForExtension(contents,
                                               extension,
                                               properties_value);
@@ -60,7 +61,7 @@ TabsEventRouter::TabEntry::TabEntry() : complete_waiting_on_load_(false),
                                         url_() {
 }
 
-DictionaryValue* TabsEventRouter::TabEntry::UpdateLoadState(
+base::DictionaryValue* TabsEventRouter::TabEntry::UpdateLoadState(
     const WebContents* contents) {
   // The tab may go in & out of loading (for instance if iframes navigate).
   // We only want to respond to the first change from loading to !loading after
@@ -70,17 +71,17 @@ DictionaryValue* TabsEventRouter::TabEntry::UpdateLoadState(
 
   // Send "complete" state change.
   complete_waiting_on_load_ = false;
-  DictionaryValue* changed_properties = new DictionaryValue();
+  base::DictionaryValue* changed_properties = new base::DictionaryValue();
   changed_properties->SetString(tabs_constants::kStatusKey,
                                 tabs_constants::kStatusValueComplete);
   return changed_properties;
 }
 
-DictionaryValue* TabsEventRouter::TabEntry::DidNavigate(
+base::DictionaryValue* TabsEventRouter::TabEntry::DidNavigate(
     const WebContents* contents) {
   // Send "loading" state change.
   complete_waiting_on_load_ = true;
-  DictionaryValue* changed_properties = new DictionaryValue();
+  base::DictionaryValue* changed_properties = new base::DictionaryValue();
   changed_properties->SetString(tabs_constants::kStatusKey,
                                 tabs_constants::kStatusValueLoading);
 
@@ -179,8 +180,8 @@ static void WillDispatchTabCreatedEvent(WebContents* contents,
                                         bool active,
                                         content::BrowserContext* context,
                                         const Extension* extension,
-                                        ListValue* event_args) {
-  DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
+                                        base::ListValue* event_args) {
+  base::DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
       contents, extension);
   event_args->Clear();
   event_args->Append(tab_value);
@@ -191,7 +192,7 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
                                    int index,
                                    bool active) {
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   scoped_ptr<Event> event(new Event(tabs::OnCreated::kEventName, args.Pass()));
   event->restrict_to_browser_context = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
@@ -214,10 +215,10 @@ void TabsEventRouter::TabInsertedAt(WebContents* contents,
     return;
   }
 
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(new FundamentalValue(tab_id));
 
-  DictionaryValue* object_args = new DictionaryValue();
+  base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->Set(tabs_constants::kNewWindowIdKey,
                    new FundamentalValue(
                        ExtensionTabUtil::GetWindowIdOfTab(contents)));
@@ -236,11 +237,11 @@ void TabsEventRouter::TabDetachedAt(WebContents* contents, int index) {
     return;
   }
 
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(
       new FundamentalValue(ExtensionTabUtil::GetTabId(contents)));
 
-  DictionaryValue* object_args = new DictionaryValue();
+  base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->Set(tabs_constants::kOldWindowIdKey,
                    new FundamentalValue(
                        ExtensionTabUtil::GetWindowIdOfTab(contents)));
@@ -260,10 +261,10 @@ void TabsEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
                                    int index) {
   int tab_id = ExtensionTabUtil::GetTabId(contents);
 
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(new FundamentalValue(tab_id));
 
-  DictionaryValue* object_args = new DictionaryValue();
+  base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->SetInteger(tabs_constants::kWindowIdKey,
                           ExtensionTabUtil::GetWindowIdOfTab(contents));
   object_args->SetBoolean(tabs_constants::kWindowClosing,
@@ -286,11 +287,11 @@ void TabsEventRouter::ActiveTabChanged(WebContents* old_contents,
                                        WebContents* new_contents,
                                        int index,
                                        int reason) {
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   int tab_id = ExtensionTabUtil::GetTabId(new_contents);
   args->Append(new FundamentalValue(tab_id));
 
-  DictionaryValue* object_args = new DictionaryValue();
+  base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->Set(tabs_constants::kWindowIdKey,
                    new FundamentalValue(
                        ExtensionTabUtil::GetWindowIdOfTab(new_contents)));
@@ -306,11 +307,11 @@ void TabsEventRouter::ActiveTabChanged(WebContents* old_contents,
       : EventRouter::USER_GESTURE_NOT_ENABLED;
   DispatchEvent(profile,
                 tabs::OnSelectionChanged::kEventName,
-                scoped_ptr<ListValue>(args->DeepCopy()),
+                scoped_ptr<base::ListValue>(args->DeepCopy()),
                 gesture);
   DispatchEvent(profile,
                 tabs::OnActiveChanged::kEventName,
-                scoped_ptr<ListValue>(args->DeepCopy()),
+                scoped_ptr<base::ListValue>(args->DeepCopy()),
                 gesture);
 
   // The onActivated event takes one argument: {windowId, tabId}.
@@ -325,7 +326,7 @@ void TabsEventRouter::TabSelectionChanged(
     const ui::ListSelectionModel& old_model) {
   ui::ListSelectionModel::SelectedIndices new_selection =
       tab_strip_model->selection_model().selected_indices();
-  scoped_ptr<ListValue> all_tabs(new ListValue);
+  scoped_ptr<base::ListValue> all_tabs(new base::ListValue);
 
   for (size_t i = 0; i < new_selection.size(); ++i) {
     int index = new_selection[i];
@@ -336,8 +337,8 @@ void TabsEventRouter::TabSelectionChanged(
     all_tabs->Append(new FundamentalValue(tab_id));
   }
 
-  scoped_ptr<ListValue> args(new ListValue);
-  scoped_ptr<DictionaryValue> select_info(new DictionaryValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
+  scoped_ptr<base::DictionaryValue> select_info(new base::DictionaryValue);
 
   select_info->Set(
       tabs_constants::kWindowIdKey,
@@ -351,7 +352,7 @@ void TabsEventRouter::TabSelectionChanged(
   Profile* profile = tab_strip_model->profile();
   DispatchEvent(profile,
                 tabs::OnHighlightChanged::kEventName,
-                scoped_ptr<ListValue>(args->DeepCopy()),
+                scoped_ptr<base::ListValue>(args->DeepCopy()),
                 EventRouter::USER_GESTURE_UNKNOWN);
   DispatchEvent(profile,
                 tabs::OnHighlighted::kEventName,
@@ -362,11 +363,11 @@ void TabsEventRouter::TabSelectionChanged(
 void TabsEventRouter::TabMoved(WebContents* contents,
                                int from_index,
                                int to_index) {
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(
       new FundamentalValue(ExtensionTabUtil::GetTabId(contents)));
 
-  DictionaryValue* object_args = new DictionaryValue();
+  base::DictionaryValue* object_args = new base::DictionaryValue();
   object_args->Set(tabs_constants::kWindowIdKey,
                    new FundamentalValue(
                        ExtensionTabUtil::GetWindowIdOfTab(contents)));
@@ -385,7 +386,7 @@ void TabsEventRouter::TabMoved(WebContents* contents,
 
 void TabsEventRouter::TabUpdated(WebContents* contents, bool did_navigate) {
   TabEntry* entry = GetTabEntry(contents);
-  scoped_ptr<DictionaryValue> changed_properties;
+  scoped_ptr<base::DictionaryValue> changed_properties;
 
   CHECK(entry);
 
@@ -403,7 +404,8 @@ void TabsEventRouter::FaviconUrlUpdated(WebContents* contents) {
         contents->GetController().GetVisibleEntry();
     if (!entry || !entry->GetFavicon().valid)
       return;
-    scoped_ptr<DictionaryValue> changed_properties(new DictionaryValue);
+    scoped_ptr<base::DictionaryValue> changed_properties(
+        new base::DictionaryValue);
     changed_properties->SetString(
         tabs_constants::kFaviconUrlKey,
         entry->GetFavicon().url.possibly_invalid_spec());
@@ -413,7 +415,7 @@ void TabsEventRouter::FaviconUrlUpdated(WebContents* contents) {
 void TabsEventRouter::DispatchEvent(
     Profile* profile,
     const std::string& event_name,
-    scoped_ptr<ListValue> args,
+    scoped_ptr<base::ListValue> args,
     EventRouter::UserGestureState user_gesture) {
   if (!profile_->IsSameProfile(profile) ||
       !ExtensionSystem::Get(profile)->event_router())
@@ -430,7 +432,7 @@ void TabsEventRouter::DispatchSimpleBrowserEvent(
   if (!profile_->IsSameProfile(profile))
     return;
 
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(new FundamentalValue(window_id));
 
   DispatchEvent(profile,
@@ -440,13 +442,14 @@ void TabsEventRouter::DispatchSimpleBrowserEvent(
 }
 
 void TabsEventRouter::DispatchTabUpdatedEvent(
-    WebContents* contents, scoped_ptr<DictionaryValue> changed_properties) {
+    WebContents* contents,
+    scoped_ptr<base::DictionaryValue> changed_properties) {
   DCHECK(changed_properties);
   DCHECK(contents);
 
   // The state of the tab (as seen from the extension point of view) has
   // changed.  Send a notification to the extension.
-  scoped_ptr<ListValue> args_base(new ListValue);
+  scoped_ptr<base::ListValue> args_base(new base::ListValue);
 
   // First arg: The id of the tab that changed.
   args_base->AppendInteger(ExtensionTabUtil::GetTabId(contents));
@@ -518,7 +521,7 @@ void TabsEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
   // WebContents being swapped.
   const int new_tab_id = ExtensionTabUtil::GetTabId(new_contents);
   const int old_tab_id = ExtensionTabUtil::GetTabId(old_contents);
-  scoped_ptr<ListValue> args(new ListValue);
+  scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(new FundamentalValue(new_tab_id));
   args->Append(new FundamentalValue(old_tab_id));
 
@@ -543,7 +546,8 @@ void TabsEventRouter::TabPinnedStateChanged(WebContents* contents, int index) {
   int tab_index;
 
   if (ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index)) {
-    scoped_ptr<DictionaryValue> changed_properties(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> changed_properties(
+        new base::DictionaryValue());
     changed_properties->SetBoolean(tabs_constants::kPinnedKey,
                                    tab_strip->IsTabPinned(tab_index));
     DispatchTabUpdatedEvent(contents, changed_properties.Pass());

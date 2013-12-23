@@ -127,7 +127,7 @@ void ChromeDirectSettingAPI::OnPrefChanged(
         profile_->GetPrefs()->FindPreference(pref_key.c_str());
     const base::Value* value = preference->GetValue();
 
-    scoped_ptr<DictionaryValue> result(new DictionaryValue);
+    scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
     result->Set(preference_api_constants::kValue, value->DeepCopy());
     base::ListValue args;
     args.Append(result.release());

@@ -242,7 +242,7 @@ bool SupervisedUserManagerImpl::GetUserStringValue(
     const char* key,
     std::string* out_value) const {
   PrefService* local_state = g_browser_process->local_state();
-  const DictionaryValue* dictionary = local_state->GetDictionary(key);
+  const base::DictionaryValue* dictionary = local_state->GetDictionary(key);
   return dictionary->GetStringWithoutPathExpansion(user_id, out_value);
 }
 
@@ -251,7 +251,7 @@ bool SupervisedUserManagerImpl::GetUserIntegerValue(
     const char* key,
     int* out_value) const {
   PrefService* local_state = g_browser_process->local_state();
-  const DictionaryValue* dictionary = local_state->GetDictionary(key);
+  const base::DictionaryValue* dictionary = local_state->GetDictionary(key);
   return dictionary->GetIntegerWithoutPathExpansion(user_id, out_value);
 }
 

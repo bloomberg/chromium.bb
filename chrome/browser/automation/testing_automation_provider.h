@@ -208,7 +208,7 @@ class TestingAutomationProvider : public AutomationProvider,
       IPC::Message*);
 
   // JSON interface helper functions.
-  static scoped_ptr<DictionaryValue> ParseJSONRequestCommand(
+  static scoped_ptr<base::DictionaryValue> ParseJSONRequestCommand(
       const std::string& json_request,
       std::string* command,
       std::string* error);
@@ -224,7 +224,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // This includes info about the type of infobars, the message text,
   // buttons, etc.
   // Caller owns the returned object.
-  ListValue* GetInfobarsInfo(content::WebContents* tc);
+  base::ListValue* GetInfobarsInfo(content::WebContents* tc);
 
   // Perform actions on an infobar like dismiss, accept, cancel.
   // This method can handle dismiss for all infobars. It can also handle
@@ -646,7 +646,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //   input: { "accelerator": 1,
   //            "windex": 1
   //          }
-  void ExecuteBrowserCommandAsyncJSON(DictionaryValue* args,
+  void ExecuteBrowserCommandAsyncJSON(base::DictionaryValue* args,
                                       IPC::Message* reply_message);
 
   // Executes a browser command on the given browser window. Waits for the
@@ -655,7 +655,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //   input: { "accelerator": 1,
   //            "windex": 1
   //          }
-  void ExecuteBrowserCommandJSON(DictionaryValue* args,
+  void ExecuteBrowserCommandJSON(base::DictionaryValue* args,
                                  IPC::Message* reply_message);
 
   // Checks if a browser command is enabled on the given browser window.
@@ -664,7 +664,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "windex": 1
   //          }
   //   output: { "enabled": true }
-  void IsMenuCommandEnabledJSON(DictionaryValue* args,
+  void IsMenuCommandEnabledJSON(base::DictionaryValue* args,
                                 IPC::Message* reply_message);
 
   // Returns a dictionary of information about the given tab.
@@ -674,14 +674,14 @@ class TestingAutomationProvider : public AutomationProvider,
   //          }
   //   output: { "title": "Hello World",
   //             "url": "http://foo.bar" }
-  void GetTabInfo(DictionaryValue* args,
+  void GetTabInfo(base::DictionaryValue* args,
                   IPC::Message* reply_message);
 
   // Returns the tab count for the given browser window.
   // Example:
   //   input: { "windex": 1 }
   //   output: { "tab_count": 5 }
-  void GetTabCountJSON(DictionaryValue* args,
+  void GetTabCountJSON(base::DictionaryValue* args,
                        IPC::Message* reply_message);
 
   // Navigates to the given URL. Uses the JSON interface.
@@ -702,7 +702,7 @@ class TestingAutomationProvider : public AutomationProvider,
   // Example:
   //   input: { "windex": 1 }
   //   output: { "tab_index": 3 }
-  void GetActiveTabIndexJSON(DictionaryValue* args,
+  void GetActiveTabIndexJSON(base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
   // Append a new tab. Uses the JSON interface.
@@ -713,7 +713,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "url": "http://google.com"
   //          }
   //   output: { "result": AUTOMATION_MSG_NAVIGATION_SUCCESS }
-  void AppendTabJSON(DictionaryValue* args, IPC::Message* reply_message);
+  void AppendTabJSON(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Waits until any pending navigation completes in the specified tab.
   // The pair |windex| and |tab_index| or the single |auto_id| must be given
@@ -1127,7 +1127,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Blocks until the given tab is restored.
   // Uses the JSON interface.
-  void WaitForTabToBeRestored(DictionaryValue* args,
+  void WaitForTabToBeRestored(base::DictionaryValue* args,
                               IPC::Message* reply_message);
 
   // Simulates an action on the SSL blocking page at the specified tab.
@@ -1141,7 +1141,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //            "proceed": true
   //          }
   //   output: none
-  void ActionOnSSLBlockingPage(DictionaryValue* args,
+  void ActionOnSSLBlockingPage(base::DictionaryValue* args,
                                IPC::Message* reply_message);
 
   // Gets the security state for the given tab. Uses the JSON interface.
@@ -1153,7 +1153,7 @@ class TestingAutomationProvider : public AutomationProvider,
   //             "ssl_cert_status": 3,  // bitmask of status flags
   //             "insecure_content_status": 1,  // bitmask of ContentStatusFlags
   //           }
-  void GetSecurityState(DictionaryValue* args,
+  void GetSecurityState(base::DictionaryValue* args,
                         IPC::Message* reply_message);
 
   // Brings the given brower's window to the front.
@@ -1231,14 +1231,15 @@ class TestingAutomationProvider : public AutomationProvider,
   // Example:
   //    input: { "skip_image_selection": true }
   //    output: { "next_screen": "login" }
-  void SkipToLogin(DictionaryValue* args, IPC::Message* reply_message);
+  void SkipToLogin(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Returns info about the current OOBE screen.
   // Example:
   //    input: none
   //    output: { "screen_name": "network" }
   //    output: none  (when already logged in)
-  void GetOOBEScreenInfo(DictionaryValue* args, IPC::Message* reply_message);
+  void GetOOBEScreenInfo(base::DictionaryValue* args,
+                         IPC::Message* reply_message);
 
   // Login / Logout.
   void GetLoginInfo(base::DictionaryValue* args, IPC::Message* reply_message);
@@ -1257,7 +1258,7 @@ class TestingAutomationProvider : public AutomationProvider,
   void SubmitLoginForm(base::DictionaryValue* args,
                        IPC::Message* reply_message);
 
-  void AddLoginEventObserver(DictionaryValue* args,
+  void AddLoginEventObserver(base::DictionaryValue* args,
                              IPC::Message* reply_message);
 
   // Executes javascript in the specified frame in the OOBE WebUI on chromeos.
@@ -1286,9 +1287,10 @@ class TestingAutomationProvider : public AutomationProvider,
   void GetBatteryInfo(base::DictionaryValue* args, IPC::Message* reply_message);
 
   // Accessibility.
-  void EnableSpokenFeedback(DictionaryValue* args, IPC::Message* reply_message);
+  void EnableSpokenFeedback(base::DictionaryValue* args,
+                            IPC::Message* reply_message);
 
-  void IsSpokenFeedbackEnabled(DictionaryValue* args,
+  void IsSpokenFeedbackEnabled(base::DictionaryValue* args,
                                IPC::Message* reply_message);
 
   // Time.
@@ -1309,7 +1311,7 @@ class TestingAutomationProvider : public AutomationProvider,
   void SetMute(base::DictionaryValue* args, IPC::Message* reply_message);
 
   void CaptureProfilePhoto(Browser* browser,
-                           DictionaryValue* args,
+                           base::DictionaryValue* args,
                            IPC::Message* reply_message);
 
   // Html terminal.

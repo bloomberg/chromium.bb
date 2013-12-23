@@ -129,7 +129,7 @@ class ComponentLoaderTest : public testing::Test {
 };
 
 TEST_F(ComponentLoaderTest, ParseManifest) {
-  scoped_ptr<DictionaryValue> manifest;
+  scoped_ptr<base::DictionaryValue> manifest;
 
   // Test invalid JSON.
   manifest.reset(

@@ -41,14 +41,15 @@ std::string BrowserExtensionWindowController::GetWindowTypeText() const {
 
 base::DictionaryValue*
 BrowserExtensionWindowController::CreateWindowValue() const {
-  DictionaryValue* result = extensions::WindowController::CreateWindowValue();
+  base::DictionaryValue* result =
+      extensions::WindowController::CreateWindowValue();
   return result;
 }
 
 base::DictionaryValue*
 BrowserExtensionWindowController::CreateWindowValueWithTabs(
     const extensions::Extension* extension) const {
-  DictionaryValue* result = CreateWindowValue();
+  base::DictionaryValue* result = CreateWindowValue();
 
   result->Set(keys::kTabsKey,
               extensions::ExtensionTabUtil::CreateTabList(browser_, extension));
@@ -59,7 +60,7 @@ BrowserExtensionWindowController::CreateWindowValueWithTabs(
 base::DictionaryValue* BrowserExtensionWindowController::CreateTabValue(
     const extensions::Extension* extension, int tab_index) const {
   TabStripModel* tab_strip = browser_->tab_strip_model();
-  DictionaryValue* result = extensions::ExtensionTabUtil::CreateTabValue(
+  base::DictionaryValue* result = extensions::ExtensionTabUtil::CreateTabValue(
       tab_strip->GetWebContentsAt(tab_index), tab_strip, tab_index);
   return result;
 }

@@ -102,7 +102,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
 #elif defined(OS_POSIX)
     base::FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
-    DictionaryValue manifest;
+    base::DictionaryValue manifest;
     manifest.SetString(keys::kName, "Protected");
     manifest.SetString(keys::kVersion, "1");
     manifest.SetString(keys::kLaunchWebURL, "http://explicit/protected/start");
@@ -124,7 +124,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
 #elif defined(OS_POSIX)
     base::FilePath path(FILE_PATH_LITERAL("/bar"));
 #endif
-    DictionaryValue manifest;
+    base::DictionaryValue manifest;
     manifest.SetString(keys::kName, "Unlimited");
     manifest.SetString(keys::kVersion, "1");
     manifest.SetString(keys::kLaunchWebURL, "http://explicit/unlimited/start");
@@ -149,7 +149,7 @@ class ExtensionSpecialStoragePolicyTest : public testing::Test {
 #elif defined(OS_POSIX)
     base::FilePath path(FILE_PATH_LITERAL("/app"));
 #endif
-    DictionaryValue manifest;
+    base::DictionaryValue manifest;
     manifest.SetString(keys::kName, "App");
     manifest.SetString(keys::kVersion, "1");
     manifest.SetString(keys::kPlatformAppBackgroundPage, "background.html");

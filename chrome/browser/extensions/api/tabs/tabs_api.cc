@@ -618,7 +618,7 @@ bool WindowsCreateFunction::RunImpl() {
       !GetProfile()->IsOffTheRecord() && !include_incognito()) {
     // Don't expose incognito windows if extension itself works in non-incognito
     // profile and CanCrossIncognito isn't allowed.
-    SetResult(Value::CreateNullValue());
+    SetResult(base::Value::CreateNullValue());
   } else {
     SetResult(
         new_window->extension_window_controller()->CreateWindowValueWithTabs(
@@ -1449,7 +1449,7 @@ bool TabsMoveFunction::RunImpl() {
   if (num_tabs > 1) {
     SetResult(tab_values.DeepCopy());
   } else {
-    Value* value = NULL;
+    base::Value* value = NULL;
     CHECK(tab_values.Get(0, &value));
     SetResult(value->DeepCopy());
   }

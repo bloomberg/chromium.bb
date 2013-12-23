@@ -101,8 +101,9 @@ class TabsEventRouter : public TabStripModelObserver,
 
   // Packages |changed_properties| as a tab updated event for the tab |contents|
   // and dispatches the event to the extension.
-  void DispatchTabUpdatedEvent(content::WebContents* contents,
-                               scoped_ptr<DictionaryValue> changed_properties);
+  void DispatchTabUpdatedEvent(
+      content::WebContents* contents,
+      scoped_ptr<base::DictionaryValue> changed_properties);
 
   // Register ourselves to receive the various notifications we are interested
   // in for a browser.
@@ -135,12 +136,13 @@ class TabsEventRouter : public TabStripModelObserver,
     // processing of TabChangedAt(). This method will "hold" a state-change
     // to "loading", until the DidNavigate() method which should always follow
     // it. Returns NULL if no updates should be sent.
-    DictionaryValue* UpdateLoadState(const content::WebContents* contents);
+    base::DictionaryValue* UpdateLoadState(
+        const content::WebContents* contents);
 
     // Indicates that a tab load has resulted in a navigation and the
     // destination url is available for inspection. Returns NULL if no updates
     // should be sent.
-    DictionaryValue* DidNavigate(const content::WebContents* contents);
+    base::DictionaryValue* DidNavigate(const content::WebContents* contents);
 
    private:
     // Whether we are waiting to fire the 'complete' status change. This will

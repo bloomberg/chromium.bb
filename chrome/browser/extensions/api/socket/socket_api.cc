@@ -259,7 +259,7 @@ void SocketDisconnectFunction::Work() {
     socket->Disconnect();
   else
     error_ = kSocketNotFoundError;
-  SetResult(Value::CreateNullValue());
+  SetResult(base::Value::CreateNullValue());
 }
 
 bool SocketBindFunction::Prepare() {

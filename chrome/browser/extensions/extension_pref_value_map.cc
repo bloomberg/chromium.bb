@@ -48,7 +48,7 @@ void ExtensionPrefValueMap::Shutdown() {
 void ExtensionPrefValueMap::SetExtensionPref(const std::string& ext_id,
                                              const std::string& key,
                                              ExtensionPrefsScope scope,
-                                             Value* value) {
+                                             base::Value* value) {
   PrefValueMap* prefs = GetExtensionPrefValueMap(ext_id, scope);
 
   if (prefs->SetValue(key, value))
@@ -217,7 +217,7 @@ void ExtensionPrefValueMap::GetExtensionControlledKeys(
     out->insert(i->first);
 }
 
-const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
+const base::Value* ExtensionPrefValueMap::GetEffectivePrefValue(
     const std::string& key,
     bool incognito,
     bool* from_incognito) const {
@@ -226,7 +226,7 @@ const Value* ExtensionPrefValueMap::GetEffectivePrefValue(
   if (winner == entries_.end())
     return NULL;
 
-  const Value* value = NULL;
+  const base::Value* value = NULL;
   const std::string& ext_id = winner->first;
 
   // First search for incognito session only preferences.
@@ -280,7 +280,7 @@ ExtensionPrefValueMap::GetEffectivePrefValueController(
     if (install_time < winners_install_time)
       continue;
 
-    const Value* value = NULL;
+    const base::Value* value = NULL;
     const PrefValueMap* prefs = GetExtensionPrefValueMap(
         ext_id, extensions::kExtensionPrefsScopeRegular);
     if (prefs->GetValue(key, &value)) {

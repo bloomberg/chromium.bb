@@ -218,7 +218,7 @@ class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
   // Callback wrappers.
   void AfterGetProperties(ServiceCallbacksID callback_id,
                           const std::string& network_guid,
-                          const DictionaryValue* properties,
+                          const base::DictionaryValue* properties,
                           const std::string* error);
   void AfterSetProperties(ServiceCallbacksID callback_id,
                           const std::string* error);
@@ -226,7 +226,7 @@ class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
                           const std::string* network_guid,
                           const std::string* error);
   void AfterGetVisibleNetworks(ServiceCallbacksID callback_id,
-                               const ListValue* network_list);
+                               const base::ListValue* network_list);
   void AfterStartConnect(ServiceCallbacksID callback_id,
                          const std::string* error);
   void AfterStartDisconnect(ServiceCallbacksID callback_id,

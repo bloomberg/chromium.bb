@@ -153,9 +153,9 @@ class ExtensionIconImageTest : public testing::Test,
     int error_code = 0;
     std::string error;
     JSONFileValueSerializer serializer(test_file.AppendASCII("app.json"));
-    scoped_ptr<DictionaryValue> valid_value(
-        static_cast<DictionaryValue*>(serializer.Deserialize(&error_code,
-                                                             &error)));
+    scoped_ptr<base::DictionaryValue> valid_value(
+        static_cast<base::DictionaryValue*>(serializer.Deserialize(&error_code,
+                                                                   &error)));
     EXPECT_EQ(0, error_code) << error;
     if (error_code != 0)
       return NULL;

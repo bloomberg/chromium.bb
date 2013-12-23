@@ -42,7 +42,7 @@ bool GetDirectSettingFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(preference);
   const base::Value* value = preference->GetValue();
 
-  scoped_ptr<DictionaryValue> result(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->Set(preference_api_constants::kValue, value->DeepCopy());
   SetResult(result.release());
 
@@ -61,10 +61,10 @@ bool SetDirectSettingFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(ChromeDirectSettingAPI::Get(GetProfile())
                                   ->IsPreferenceOnWhitelist(pref_key));
 
-  DictionaryValue* details = NULL;
+  base::DictionaryValue* details = NULL;
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &details));
 
-  Value* value = NULL;
+  base::Value* value = NULL;
   EXTENSION_FUNCTION_VALIDATE(
       details->Get(preference_api_constants::kValue, &value));
 

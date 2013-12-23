@@ -65,7 +65,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   }
 
   // Create the manifest
-  scoped_ptr<DictionaryValue> root(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> root(new base::DictionaryValue);
   std::string script_name;
   if (!script.name().empty() && !script.name_space().empty())
     script_name = script.name_space() + "/" + script.name();
@@ -136,7 +136,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   for (size_t i = 0; i < script.exclude_globs().size(); ++i)
     excludes->Append(new base::StringValue(script.exclude_globs().at(i)));
 
-  DictionaryValue* content_script = new DictionaryValue();
+  base::DictionaryValue* content_script = new base::DictionaryValue();
   content_script->Set(keys::kMatches, matches);
   content_script->Set(keys::kExcludeMatches, exclude_matches);
   content_script->Set(keys::kIncludeGlobs, includes);

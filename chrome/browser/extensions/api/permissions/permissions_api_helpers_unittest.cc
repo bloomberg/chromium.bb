@@ -52,13 +52,13 @@ TEST(ExtensionPermissionsAPIHelpers, Pack) {
 
   std::string expected_apis[] = { "tabs", "webRequest" };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(expected_apis); ++i) {
-    scoped_ptr<Value> value(new base::StringValue(expected_apis[i]));
+    scoped_ptr<base::Value> value(new base::StringValue(expected_apis[i]));
     EXPECT_NE(api_list->end(), api_list->Find(*value));
   }
 
   std::string expected_origins[] = { "http://a.com/*", "http://b.com/*" };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(expected_origins); ++i) {
-    scoped_ptr<Value> value(new base::StringValue(expected_origins[i]));
+    scoped_ptr<base::Value> value(new base::StringValue(expected_origins[i]));
     EXPECT_NE(origin_list->end(), origin_list->Find(*value));
   }
 

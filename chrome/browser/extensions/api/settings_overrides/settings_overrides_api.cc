@@ -130,8 +130,9 @@ void SettingsOverridesAPI::Observe(
             VLOG(1) << extensions::ErrorUtils::FormatErrorMessage(
                 kManyStartupPagesWarning, manifest_keys::kSettingsOverride);
           }
-          scoped_ptr<ListValue> url_list(new ListValue);
-          url_list->Append(new StringValue(settings->startup_pages[0].spec()));
+          scoped_ptr<base::ListValue> url_list(new base::ListValue);
+          url_list->Append(
+              new base::StringValue(settings->startup_pages[0].spec()));
           SetPref(extension->id(), prefs::kURLsToRestoreOnStartup,
                   url_list.release());
         }

@@ -339,14 +339,14 @@ class MockProviderVisitor
     // We also parse the file into a dictionary to compare what we get back
     // from the provider.
     JSONStringValueSerializer serializer(json_data);
-    Value* json_value = serializer.Deserialize(NULL, NULL);
+    base::Value* json_value = serializer.Deserialize(NULL, NULL);
 
-    if (!json_value || !json_value->IsType(Value::TYPE_DICTIONARY)) {
+    if (!json_value || !json_value->IsType(base::Value::TYPE_DICTIONARY)) {
       NOTREACHED() << "Unable to deserialize json data";
       return -1;
     } else {
-      DictionaryValue* external_extensions =
-          static_cast<DictionaryValue*>(json_value);
+      base::DictionaryValue* external_extensions =
+          static_cast<base::DictionaryValue*>(json_value);
       prefs_.reset(external_extensions);
     }
 
@@ -367,7 +367,7 @@ class MockProviderVisitor
     EXPECT_EQ(expected_creation_flags_, creation_flags);
 
     ++ids_found_;
-    DictionaryValue* pref;
+    base::DictionaryValue* pref;
     // This tests is to make sure that the provider only notifies us of the
     // values we gave it. So if the id we doesn't exist in our internal
     // dictionary then something is wrong.
@@ -407,7 +407,7 @@ class MockProviderVisitor
       int creation_flags,
       bool mark_acknowledged) OVERRIDE {
     ++ids_found_;
-    DictionaryValue* pref;
+    base::DictionaryValue* pref;
     // This tests is to make sure that the provider only notifies us of the
     // values we gave it. So if the id we doesn't exist in our internal
     // dictionary then something is wrong.
@@ -442,7 +442,7 @@ class MockProviderVisitor
   base::FilePath fake_base_path_;
   int expected_creation_flags_;
   scoped_ptr<extensions::ExternalProviderImpl> provider_;
-  scoped_ptr<DictionaryValue> prefs_;
+  scoped_ptr<base::DictionaryValue> prefs_;
   scoped_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(MockProviderVisitor);
@@ -1011,7 +1011,7 @@ class ExtensionServiceTest
   }
 
   size_t GetPrefKeyCount() {
-    const DictionaryValue* dict =
+    const base::DictionaryValue* dict =
         profile_->GetPrefs()->GetDictionary("extensions.settings");
     if (!dict) {
       ADD_FAILURE();
@@ -1073,14 +1073,14 @@ class ExtensionServiceTest
     msg += expected_val ? "true" : "false";
 
     PrefService* prefs = profile_->GetPrefs();
-    const DictionaryValue* dict =
+    const base::DictionaryValue* dict =
         prefs->GetDictionary("extensions.settings");
     if (!dict) {
       return testing::AssertionFailure()
           << "extension.settings does not exist " << msg;
     }
 
-    const DictionaryValue* pref = NULL;
+    const base::DictionaryValue* pref = NULL;
     if (!dict->GetDictionary(extension_id, &pref)) {
       return testing::AssertionFailure()
           << "extension pref does not exist " << msg;
@@ -1094,15 +1094,15 @@ class ExtensionServiceTest
 
     return expected_val == val
         ? testing::AssertionSuccess()
-        : testing::AssertionFailure() << "Value is incorrect " << msg;
+        : testing::AssertionFailure() << "base::Value is incorrect " << msg;
   }
 
   bool IsPrefExist(const std::string& extension_id,
                    const std::string& pref_path) {
-    const DictionaryValue* dict =
+    const base::DictionaryValue* dict =
         profile_->GetPrefs()->GetDictionary("extensions.settings");
     if (dict == NULL) return false;
-    const DictionaryValue* pref = NULL;
+    const base::DictionaryValue* pref = NULL;
     if (!dict->GetDictionary(extension_id, &pref)) {
       return false;
     }
@@ -1127,10 +1127,10 @@ class ExtensionServiceTest
     msg += base::IntToString(expected_val);
 
     PrefService* prefs = profile_->GetPrefs();
-    const DictionaryValue* dict =
+    const base::DictionaryValue* dict =
         prefs->GetDictionary("extensions.settings");
     ASSERT_TRUE(dict != NULL) << msg;
-    const DictionaryValue* pref = NULL;
+    const base::DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
     EXPECT_TRUE(pref != NULL) << msg;
     int val;
@@ -1148,10 +1148,10 @@ class ExtensionServiceTest
     msg += " == ";
     msg += expected_val;
 
-    const DictionaryValue* dict =
+    const base::DictionaryValue* dict =
         profile_->GetPrefs()->GetDictionary("extensions.settings");
     ASSERT_TRUE(dict != NULL) << msg;
-    const DictionaryValue* pref = NULL;
+    const base::DictionaryValue* pref = NULL;
     std::string manifest_path = extension_id + ".manifest";
     ASSERT_TRUE(dict->GetDictionary(manifest_path, &pref)) << msg;
     EXPECT_TRUE(pref != NULL) << msg;
@@ -1162,12 +1162,12 @@ class ExtensionServiceTest
 
   void SetPref(const std::string& extension_id,
                const std::string& pref_path,
-               Value* value,
+               base::Value* value,
                const std::string& msg) {
     DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
-    DictionaryValue* dict = update.Get();
+    base::DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict != NULL) << msg;
-    DictionaryValue* pref = NULL;
+    base::DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
     EXPECT_TRUE(pref != NULL) << msg;
     pref->Set(pref_path, value);
@@ -1203,9 +1203,9 @@ class ExtensionServiceTest
     msg += extension_id + " " + pref_path;
 
     DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
-    DictionaryValue* dict = update.Get();
+    base::DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict != NULL) << msg;
-    DictionaryValue* pref = NULL;
+    base::DictionaryValue* pref = NULL;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
     EXPECT_TRUE(pref != NULL) << msg;
     pref->Remove(pref_path, NULL);
@@ -1217,7 +1217,7 @@ class ExtensionServiceTest
     std::string msg = " while setting: ";
     msg += extension_id + " " + pref_path;
 
-    ListValue* list_value = new ListValue();
+    base::ListValue* list_value = new base::ListValue();
     for (std::set<std::string>::const_iterator iter = value.begin();
          iter != value.end(); ++iter)
       list_value->Append(new base::StringValue(*iter));
@@ -1466,7 +1466,7 @@ TEST_F(ExtensionServiceTest, CleanupOnStartup) {
   // Simulate that one of them got partially deleted by clearing its pref.
   {
     DictionaryPrefUpdate update(profile_->GetPrefs(), "extensions.settings");
-    DictionaryValue* dict = update.Get();
+    base::DictionaryValue* dict = update.Get();
     ASSERT_TRUE(dict != NULL);
     dict->Remove("behllobkkfkfnphdnhnkndlbkcpglgmj", NULL);
   }
@@ -2157,7 +2157,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   // the extension's granted api permissions preference. (This simulates
   // updating the browser to a version which recognizes a new API permission).
   SetPref(extension_id, "granted_permissions.api",
-          new ListValue(), "granted_permissions.api");
+          new base::ListValue(), "granted_permissions.api");
   service_->ReloadExtensionsForTest();
 
   EXPECT_EQ(1u, service_->disabled_extensions()->size());
@@ -2193,7 +2193,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   host_permissions.insert("https://*.google.com/*");
   host_permissions.insert("http://*.google.com.hk/*");
 
-  ListValue* api_permissions = new ListValue();
+  base::ListValue* api_permissions = new base::ListValue();
   api_permissions->Append(
       new base::StringValue("tabs"));
   SetPref(extension_id, "granted_permissions.api",
@@ -3023,7 +3023,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsCanDowngrade) {
   ASSERT_FALSE(base::PathExists(manifest_path));
 
   // Start with version 2.0.
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("version", "2.0");
   manifest.SetString("name", "LOAD Downgrade Test");
   manifest.SetInteger("manifest_version", 2);
@@ -3544,7 +3544,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallDenyList);
-    ListValue* blacklist = update.Get();
+    base::ListValue* blacklist = update.Get();
     blacklist->Append(new base::StringValue("*"));
   }
 
@@ -3557,7 +3557,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
   {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallAllowList);
-    ListValue* whitelist = update.Get();
+    base::ListValue* whitelist = update.Get();
     whitelist->Append(new base::StringValue(good_crx));
   }
 
@@ -3578,7 +3578,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
   { // Scope for pref update notification.
     PrefService* prefs = profile_->GetPrefs();
     ListPrefUpdate update(prefs, prefs::kExtensionInstallDenyList);
-    ListValue* blacklist = update.Get();
+    base::ListValue* blacklist = update.Get();
     ASSERT_TRUE(blacklist != NULL);
 
     // Blacklist this extension.
@@ -3598,7 +3598,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallDenyList);
-    ListValue* blacklist = update.Get();
+    base::ListValue* blacklist = update.Get();
     blacklist->Append(new base::StringValue("*"));
   }
 
@@ -3627,7 +3627,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
   {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallDenyList);
-    ListValue* blacklist = update.Get();
+    base::ListValue* blacklist = update.Get();
     blacklist->Append(new base::StringValue(good0));
   }
   base::RunLoop().RunUntilIdle();
@@ -3643,7 +3643,7 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
     // Blacklist everything.
     ListPrefUpdate blacklist_update(profile_->GetPrefs(),
                                     prefs::kExtensionInstallDenyList);
-    ListValue* blacklist = blacklist_update.Get();
+    base::ListValue* blacklist = blacklist_update.Get();
     blacklist->AppendString("*");
 
     // Mark good.crx for force-installation.
@@ -3677,7 +3677,7 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
   {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallDenyList);
-    ListValue* blacklist = update.Get();
+    base::ListValue* blacklist = update.Get();
     blacklist->Append(new base::StringValue(good0));
   }
   base::RunLoop().RunUntilIdle();
@@ -3707,7 +3707,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   // Create a fake extension to be loaded as though it were read from prefs.
   base::FilePath path = data_dir_.AppendASCII("management")
                            .AppendASCII("simple_extension");
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString(keys::kName, "simple_extension");
   manifest.SetString(keys::kVersion, "1");
   // UNPACKED is for extensions loaded from a directory. We use it here, even

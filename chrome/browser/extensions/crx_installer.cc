@@ -429,11 +429,12 @@ void CrxInstaller::OnUnpackFailure(const base::string16& error_message) {
   ReportFailureFromFileThread(CrxInstallerError(error_message));
 }
 
-void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
-                                   const base::FilePath& extension_dir,
-                                   const DictionaryValue* original_manifest,
-                                   const Extension* extension,
-                                   const SkBitmap& install_icon) {
+void CrxInstaller::OnUnpackSuccess(
+    const base::FilePath& temp_dir,
+    const base::FilePath& extension_dir,
+    const base::DictionaryValue* original_manifest,
+    const Extension* extension,
+    const SkBitmap& install_icon) {
   DCHECK(installer_task_runner_->RunsTasksOnCurrentThread());
 
   UMA_HISTOGRAM_ENUMERATION("Extensions.UnpackSuccessInstallSource",
@@ -452,7 +453,7 @@ void CrxInstaller::OnUnpackSuccess(const base::FilePath& temp_dir,
   if (original_manifest)
     original_manifest_.reset(new Manifest(
         Manifest::INVALID_LOCATION,
-        scoped_ptr<DictionaryValue>(original_manifest->DeepCopy())));
+        scoped_ptr<base::DictionaryValue>(original_manifest->DeepCopy())));
 
   // We don't have to delete the unpack dir explicity since it is a child of
   // the temp dir.

@@ -25,11 +25,11 @@ namespace {
 
 // Takes |dictionary| of <string, list of strings> pairs, and gets the list
 // for |key|, creating it if necessary.
-ListValue* GetOrCreateList(DictionaryValue* dictionary,
-                           const std::string& key) {
-  ListValue* list = NULL;
+base::ListValue* GetOrCreateList(base::DictionaryValue* dictionary,
+                                 const std::string& key) {
+  base::ListValue* list = NULL;
   if (!dictionary->GetList(key, &list)) {
-    list = new ListValue();
+    list = new base::ListValue();
     dictionary->SetWithoutPathExpansion(key, list);
   }
   return list;
@@ -41,8 +41,10 @@ namespace extensions {
 
 namespace subtle {
 
-void AppendKeyValuePair(const char* key, Value* value, ListValue* list) {
-  DictionaryValue* dictionary = new DictionaryValue;
+void AppendKeyValuePair(const char* key,
+                        base::Value* value,
+                        base::ListValue* list) {
+  base::DictionaryValue* dictionary = new base::DictionaryValue;
   dictionary->SetWithoutPathExpansion(key, value);
   list->Append(dictionary);
 }
@@ -81,11 +83,11 @@ bool RawDataPresenter::Succeeded() {
   return success_;
 }
 
-scoped_ptr<Value> RawDataPresenter::Result() {
+scoped_ptr<base::Value> RawDataPresenter::Result() {
   if (!success_)
-    return scoped_ptr<Value>();
+    return scoped_ptr<base::Value>();
 
-  return list_.PassAs<Value>();
+  return list_.PassAs<base::Value>();
 }
 
 void RawDataPresenter::FeedNextBytes(const char* bytes, size_t size) {
@@ -106,7 +108,7 @@ void RawDataPresenter::FeedNextFile(const std::string& filename) {
 ParsedDataPresenter::ParsedDataPresenter(const net::URLRequest& request)
   : parser_(FormDataParser::Create(request)),
     success_(parser_.get() != NULL),
-    dictionary_(success_ ? new DictionaryValue() : NULL) {
+    dictionary_(success_ ? new base::DictionaryValue() : NULL) {
 }
 
 ParsedDataPresenter::~ParsedDataPresenter() {}
@@ -128,7 +130,7 @@ void ParsedDataPresenter::FeedNext(const net::UploadElementReader& reader) {
   FormDataParser::Result result;
   while (parser_->GetNextNameValue(&result)) {
     GetOrCreateList(dictionary_.get(), result.name())->Append(
-        new StringValue(result.value()));
+        new base::StringValue(result.value()));
   }
 }
 
@@ -138,11 +140,11 @@ bool ParsedDataPresenter::Succeeded() {
   return success_;
 }
 
-scoped_ptr<Value> ParsedDataPresenter::Result() {
+scoped_ptr<base::Value> ParsedDataPresenter::Result() {
   if (!success_)
-    return scoped_ptr<Value>();
+    return scoped_ptr<base::Value>();
 
-  return dictionary_.PassAs<Value>();
+  return dictionary_.PassAs<base::Value>();
 }
 
 // static
@@ -154,7 +156,7 @@ scoped_ptr<ParsedDataPresenter> ParsedDataPresenter::CreateForTests() {
 ParsedDataPresenter::ParsedDataPresenter(const std::string& form_type)
   : parser_(FormDataParser::CreateFromContentTypeHeader(&form_type)),
     success_(parser_.get() != NULL),
-    dictionary_(success_ ? new DictionaryValue() : NULL) {
+    dictionary_(success_ ? new base::DictionaryValue() : NULL) {
 }
 
 void ParsedDataPresenter::Abort() {

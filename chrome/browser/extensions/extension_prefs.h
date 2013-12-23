@@ -496,7 +496,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // Used for verification of installed extension ids. For the Set method, pass
   // null to remove the preference.
   const base::DictionaryValue* GetInstallSignature();
-  void SetInstallSignature(const DictionaryValue* signature);
+  void SetInstallSignature(const base::DictionaryValue* signature);
 
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.

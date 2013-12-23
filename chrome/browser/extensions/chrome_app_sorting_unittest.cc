@@ -623,7 +623,7 @@ TEST_F(ChromeAppSortingPageOrdinalMapping,
 class ChromeAppSortingPreinstalledAppsBase : public PrefsPrepopulatedTestBase {
  public:
   ChromeAppSortingPreinstalledAppsBase() {
-    DictionaryValue simple_dict;
+    base::DictionaryValue simple_dict;
     simple_dict.SetString(keys::kVersion, "1.0.0.0");
     simple_dict.SetString(keys::kName, "unused");
     simple_dict.SetString(keys::kApp, "true");
@@ -802,7 +802,7 @@ class ChromeAppSortingDefaultOrdinalsBase : public ChromeAppSortingTest {
 
  protected:
   scoped_refptr<Extension> CreateApp(const std::string& name) {
-    DictionaryValue simple_dict;
+    base::DictionaryValue simple_dict;
     simple_dict.SetString(keys::kVersion, "1.0.0.0");
     simple_dict.SetString(keys::kName, name);
     simple_dict.SetString(keys::kApp, "true");

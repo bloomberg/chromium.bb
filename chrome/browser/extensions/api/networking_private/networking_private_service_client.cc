@@ -183,7 +183,7 @@ void NetworkingPrivateServiceClient::GetProperties(
   service_callbacks->error_callback = error_callback;
   service_callbacks->get_properties_callback = callback;
 
-  DictionaryValue* properties = new DictionaryValue();
+  base::DictionaryValue* properties = new base::DictionaryValue();
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
@@ -209,7 +209,7 @@ void NetworkingPrivateServiceClient::GetManagedProperties(
   service_callbacks->error_callback = error_callback;
   service_callbacks->get_properties_callback = callback;
 
-  DictionaryValue* properties = new DictionaryValue();
+  base::DictionaryValue* properties = new base::DictionaryValue();
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
@@ -235,7 +235,7 @@ void NetworkingPrivateServiceClient::GetState(
   service_callbacks->error_callback = error_callback;
   service_callbacks->get_properties_callback = callback;
 
-  DictionaryValue* properties = new DictionaryValue();
+  base::DictionaryValue* properties = new base::DictionaryValue();
   std::string* error = new std::string;
 
   task_runner_->PostTaskAndReply(
@@ -259,7 +259,7 @@ void NetworkingPrivateServiceClient::GetVisibleNetworks(
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
   service_callbacks->get_visible_networks_callback = callback;
 
-  ListValue* networks = new ListValue();
+  base::ListValue* networks = new base::ListValue();
 
   task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -430,7 +430,7 @@ void NetworkingPrivateServiceClient::VerifyAndEncryptData(
 void NetworkingPrivateServiceClient::AfterGetProperties(
     ServiceCallbacksID callback_id,
     const std::string& network_guid,
-    const DictionaryValue* properties,
+    const base::DictionaryValue* properties,
     const std::string* error) {
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
@@ -447,7 +447,7 @@ void NetworkingPrivateServiceClient::AfterGetProperties(
 
 void NetworkingPrivateServiceClient::AfterGetVisibleNetworks(
     ServiceCallbacksID callback_id,
-    const ListValue* networks) {
+    const base::ListValue* networks) {
   ServiceCallbacks* service_callbacks = callbacks_map_.Lookup(callback_id);
   DCHECK(service_callbacks);
   DCHECK(!service_callbacks->get_visible_networks_callback.is_null());

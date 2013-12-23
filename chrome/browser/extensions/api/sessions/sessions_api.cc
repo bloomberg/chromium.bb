@@ -393,7 +393,7 @@ void SessionsRestoreFunction::SetInvalidIdError(const std::string& invalid_id) {
 
 void SessionsRestoreFunction::SetResultRestoredTab(
     const content::WebContents* contents) {
-  scoped_ptr<DictionaryValue> tab_value(
+  scoped_ptr<base::DictionaryValue> tab_value(
       ExtensionTabUtil::CreateTabValue(contents, GetExtension()));
   scoped_ptr<tabs::Tab> tab(tabs::Tab::FromValue(*tab_value));
   scoped_ptr<api::sessions::Session> restored_session(CreateSessionModelHelper(
@@ -409,7 +409,7 @@ bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
     // error_ is set by GetWindowFromWindowId function call.
     return false;
   }
-  scoped_ptr<DictionaryValue> window_value(
+  scoped_ptr<base::DictionaryValue> window_value(
       controller->CreateWindowValueWithTabs(GetExtension()));
   scoped_ptr<windows::Window> window(windows::Window::FromValue(
       *window_value));

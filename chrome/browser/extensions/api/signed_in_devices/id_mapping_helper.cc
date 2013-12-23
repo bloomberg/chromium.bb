@@ -23,10 +23,10 @@ namespace extensions {
 std::string GetPublicIdFromGUID(
     const base::DictionaryValue& id_mapping,
     const std::string& guid) {
-  for (DictionaryValue::Iterator it(id_mapping);
+  for (base::DictionaryValue::Iterator it(id_mapping);
        !it.IsAtEnd();
        it.Advance()) {
-    const Value& value = it.value();
+    const base::Value& value = it.value();
     std::string guid_in_value;
     if (!value.GetAsString(&guid_in_value)) {
       LOG(ERROR) << "Badly formatted dictionary";
@@ -51,13 +51,13 @@ std::string GetGUIDFromPublicId(
 // Finds out a random unused id. First finds a random id.
 // If the id is in use, increments the id until it finds an unused id.
 std::string GetRandomId(
-  const DictionaryValue& mapping,
+  const base::DictionaryValue& mapping,
   int device_count) {
   // Set the max value for rand to be twice the device count.
   int max = device_count * 2;
   int rand_value = base::RandInt(0, max);
   std::string string_value;
-  const Value *out_value;
+  const base::Value *out_value;
 
   do {
     string_value = base::IntToString(rand_value);

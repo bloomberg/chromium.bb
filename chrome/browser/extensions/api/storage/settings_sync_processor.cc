@@ -54,7 +54,7 @@ syncer::SyncError SettingsSyncProcessor::SendChanges(
   for (ValueStoreChangeList::const_iterator i = changes.begin();
       i != changes.end(); ++i) {
     const std::string& key = i->key();
-    const Value* value = i->new_value();
+    const base::Value* value = i->new_value();
     if (value) {
       if (synced_keys_.count(key)) {
         // New value, key is synced; send ACTION_UPDATE.

@@ -41,7 +41,7 @@ class SyncableSettingsStorage : public ValueStore {
   virtual WriteResult Set(
       WriteOptions options,
       const std::string& key,
-      const Value& value) OVERRIDE;
+      const base::Value& value) OVERRIDE;
   virtual WriteResult Set(
       WriteOptions options, const base::DictionaryValue& values) OVERRIDE;
   virtual WriteResult Remove(const std::string& key) OVERRIDE;
@@ -80,16 +80,16 @@ class SyncableSettingsStorage : public ValueStore {
   // are taken.
   syncer::SyncError OnSyncAdd(
       const std::string& key,
-      Value* new_value,
+      base::Value* new_value,
       ValueStoreChangeList* changes);
   syncer::SyncError OnSyncUpdate(
       const std::string& key,
-      Value* old_value,
-      Value* new_value,
+      base::Value* old_value,
+      base::Value* new_value,
       ValueStoreChangeList* changes);
   syncer::SyncError OnSyncDelete(
       const std::string& key,
-      Value* old_value,
+      base::Value* old_value,
       ValueStoreChangeList* changes);
 
   // List of observers to settings changes.

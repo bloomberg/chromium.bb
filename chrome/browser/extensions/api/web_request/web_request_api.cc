@@ -195,7 +195,7 @@ void ExtractRequestInfoDetails(net::URLRequest* request,
 // Extracts from |request| information for the keys requestId, url, method,
 // frameId, tabId, type, and timeStamp and writes these into |out| to be passed
 // on to extensions.
-void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
+void ExtractRequestInfo(net::URLRequest* request, base::DictionaryValue* out) {
   bool is_main_frame = false;
   int64 frame_id = -1;
   bool parent_is_main_frame = false;
@@ -228,13 +228,13 @@ void ExtractRequestInfo(net::URLRequest* request, DictionaryValue* out) {
 
 // Extracts the body from |request| and writes the data into |out|.
 void ExtractRequestInfoBody(const net::URLRequest* request,
-                            DictionaryValue* out) {
+                            base::DictionaryValue* out) {
   const net::UploadDataStream* upload_data = request->get_upload();
   if (!upload_data ||
       (request->method() != "POST" && request->method() != "PUT"))
     return;  // Need to exit without "out->Set(keys::kRequestBodyKey, ...);" .
 
-  DictionaryValue* requestBody = new DictionaryValue();
+  base::DictionaryValue* requestBody = new base::DictionaryValue();
   out->Set(keys::kRequestBodyKey, requestBody);
 
   // Get the data presenters, ordered by how specific they are.
@@ -268,7 +268,7 @@ void ExtractRequestInfoBody(const net::URLRequest* request,
 
 // Converts a HttpHeaders dictionary to a |name|, |value| pair. Returns
 // true if successful.
-bool FromHeaderDictionary(const DictionaryValue* header_value,
+bool FromHeaderDictionary(const base::DictionaryValue* header_value,
                           std::string* name,
                           std::string* value) {
   if (!header_value->GetString(keys::kHeaderNameKey, name))
@@ -284,7 +284,7 @@ bool FromHeaderDictionary(const DictionaryValue* header_value,
       return false;
     }
   } else if (header_value->HasKey(keys::kHeaderBinaryValueKey)) {
-    const ListValue* list = NULL;
+    const base::ListValue* list = NULL;
     if (!header_value->GetList(keys::kHeaderBinaryValueKey, &list) ||
         !helpers::CharListToString(list, value)) {
       return false;
@@ -295,9 +295,9 @@ bool FromHeaderDictionary(const DictionaryValue* header_value,
 
 // Converts the |name|, |value| pair of a http header to a HttpHeaders
 // dictionary. Ownership is passed to the caller.
-DictionaryValue* ToHeaderDictionary(const std::string& name,
-                                    const std::string& value) {
-  DictionaryValue* header = new DictionaryValue();
+base::DictionaryValue* ToHeaderDictionary(const std::string& name,
+                                          const std::string& value) {
+  base::DictionaryValue* header = new base::DictionaryValue();
   header->SetString(keys::kHeaderNameKey, name);
   if (IsStringUTF8(value)) {
     header->SetString(keys::kHeaderValueKey, value);
@@ -310,8 +310,9 @@ DictionaryValue* ToHeaderDictionary(const std::string& name,
 
 // Creates a list of HttpHeaders (see the extension API JSON). If |headers| is
 // NULL, the list is empty. Ownership is passed to the caller.
-ListValue* GetResponseHeadersList(const net::HttpResponseHeaders* headers) {
-  ListValue* headers_value = new ListValue();
+base::ListValue* GetResponseHeadersList(
+    const net::HttpResponseHeaders* headers) {
+  base::ListValue* headers_value = new base::ListValue();
   if (headers) {
     void* iter = NULL;
     std::string name;
@@ -322,17 +323,18 @@ ListValue* GetResponseHeadersList(const net::HttpResponseHeaders* headers) {
   return headers_value;
 }
 
-ListValue* GetRequestHeadersList(const net::HttpRequestHeaders& headers) {
-  ListValue* headers_value = new ListValue();
+base::ListValue* GetRequestHeadersList(const net::HttpRequestHeaders& headers) {
+  base::ListValue* headers_value = new base::ListValue();
   for (net::HttpRequestHeaders::Iterator it(headers); it.GetNext(); )
     headers_value->Append(ToHeaderDictionary(it.name(), it.value()));
   return headers_value;
 }
 
-// Creates a StringValue with the status line of |headers|. If |headers| is
-// NULL, an empty string is returned.  Ownership is passed to the caller.
-StringValue* GetStatusLine(net::HttpResponseHeaders* headers) {
-  return new StringValue(headers ? headers->GetStatusLine() : std::string());
+// Creates a base::StringValue with the status line of |headers|. If |headers|
+// is NULL, an empty string is returned.  Ownership is passed to the caller.
+base::StringValue* GetStatusLine(net::HttpResponseHeaders* headers) {
+  return new base::StringValue(
+      headers ? headers->GetStatusLine() : std::string());
 }
 
 void RemoveEventListenerOnUI(
@@ -372,7 +374,7 @@ void SendOnMessageEventOnUI(
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
-  scoped_ptr<base::ListValue> event_args(new ListValue);
+  scoped_ptr<base::ListValue> event_args(new base::ListValue);
   event_args->Append(event_argument.release());
 
   extensions::EventRouter* event_router =
@@ -540,13 +542,13 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
 };
 
 bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
-    const DictionaryValue& value, std::string* error) {
+    const base::DictionaryValue& value, std::string* error) {
   if (!value.HasKey("urls"))
     return false;
 
-  for (DictionaryValue::Iterator it(value); !it.IsAtEnd(); it.Advance()) {
+  for (base::DictionaryValue::Iterator it(value); !it.IsAtEnd(); it.Advance()) {
     if (it.key() == "urls") {
-      const ListValue* urls_value = NULL;
+      const base::ListValue* urls_value = NULL;
       if (!it.value().GetAsList(&urls_value))
         return false;
       for (size_t i = 0; i < urls_value->GetSize(); ++i) {
@@ -564,7 +566,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
         urls.AddPattern(pattern);
       }
     } else if (it.key() == "types") {
-      const ListValue* types_value = NULL;
+      const base::ListValue* types_value = NULL;
       if (!it.value().GetAsList(&types_value))
         return false;
       for (size_t i = 0; i < types_value->GetSize(); ++i) {
@@ -590,7 +592,7 @@ bool ExtensionWebRequestEventRouter::RequestFilter::InitFromValue(
 
 // static
 bool ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
-    const ListValue& value, int* extra_info_spec) {
+    const base::ListValue& value, int* extra_info_spec) {
   *extra_info_spec = 0;
   for (size_t i = 0; i < value.GetSize(); ++i) {
     std::string str;
@@ -697,8 +699,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
                            &extra_info_spec);
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnBeforeRequest)) {
-    ListValue args;
-    DictionaryValue* dict = new DictionaryValue();
+    base::ListValue args;
+    base::DictionaryValue* dict = new base::DictionaryValue();
     ExtractRequestInfo(request, dict);
     if (extra_info_spec & ExtraInfoSpec::REQUEST_BODY)
       ExtractRequestInfoBody(request, dict);
@@ -754,8 +756,8 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
                            &extra_info_spec);
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnBeforeSendHeaders)) {
-    ListValue args;
-    DictionaryValue* dict = new DictionaryValue();
+    base::ListValue args;
+    base::DictionaryValue* dict = new base::DictionaryValue();
     ExtractRequestInfo(request, dict);
     if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
       dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(*headers));
@@ -809,8 +811,8 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
   if (listeners.empty())
     return;
 
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
+  base::ListValue args;
+  base::DictionaryValue* dict = new base::DictionaryValue();
   ExtractRequestInfo(request, dict);
   if (extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS)
     dict->Set(keys::kRequestHeadersKey, GetRequestHeadersList(headers));
@@ -847,8 +849,8 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
 
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnHeadersReceived)) {
-    ListValue args;
-    DictionaryValue* dict = new DictionaryValue();
+    base::ListValue args;
+    base::DictionaryValue* dict = new base::DictionaryValue();
     ExtractRequestInfo(request, dict);
     dict->SetString(keys::kStatusLineKey,
         original_response_headers->GetStatusLine());
@@ -908,15 +910,15 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
   if (listeners.empty())
     return net::NetworkDelegate::AUTH_REQUIRED_RESPONSE_NO_ACTION;
 
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
+  base::ListValue args;
+  base::DictionaryValue* dict = new base::DictionaryValue();
   ExtractRequestInfo(request, dict);
   dict->SetBoolean(keys::kIsProxyKey, auth_info.is_proxy);
   if (!auth_info.scheme.empty())
     dict->SetString(keys::kSchemeKey, auth_info.scheme);
   if (!auth_info.realm.empty())
     dict->SetString(keys::kRealmKey, auth_info.realm);
-  DictionaryValue* challenger = new DictionaryValue();
+  base::DictionaryValue* challenger = new base::DictionaryValue();
   challenger->SetString(keys::kHostKey, auth_info.challenger.host());
   challenger->SetInteger(keys::kPortKey, auth_info.challenger.port());
   dict->Set(keys::kChallengerKey, challenger);
@@ -970,8 +972,8 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
 
   std::string response_ip = request->GetSocketAddress().host();
 
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
+  base::ListValue args;
+  base::DictionaryValue* dict = new base::DictionaryValue();
   ExtractRequestInfo(request, dict);
   dict->SetString(keys::kRedirectUrlKey, new_location.spec());
   dict->SetInteger(keys::kStatusCodeKey, http_status_code);
@@ -1016,8 +1018,8 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
 
   std::string response_ip = request->GetSocketAddress().host();
 
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
+  base::ListValue args;
+  base::DictionaryValue* dict = new base::DictionaryValue();
   ExtractRequestInfo(request, dict);
   if (!response_ip.empty())
     dict->SetString(keys::kIpKey, response_ip);
@@ -1068,8 +1070,8 @@ void ExtensionWebRequestEventRouter::OnCompleted(void* profile,
 
   std::string response_ip = request->GetSocketAddress().host();
 
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
+  base::ListValue args;
+  base::DictionaryValue* dict = new base::DictionaryValue();
   ExtractRequestInfo(request, dict);
   dict->SetInteger(keys::kStatusCodeKey, response_code);
   if (!response_ip.empty())
@@ -1117,8 +1119,8 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   if (listeners.empty())
     return;
 
-  ListValue args;
-  DictionaryValue* dict = new DictionaryValue();
+  base::ListValue args;
+  base::DictionaryValue* dict = new base::DictionaryValue();
   ExtractRequestInfo(request, dict);
   if (started) {
     std::string response_ip = request->GetSocketAddress().host();
@@ -1152,15 +1154,15 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     void* profile_id,
     net::URLRequest* request,
     const std::vector<const EventListener*>& listeners,
-    const ListValue& args) {
+    const base::ListValue& args) {
   // TODO(mpcomplete): Consider consolidating common (extension_id,json_args)
   // pairs into a single message sent to a list of sub_event_names.
   int num_handlers_blocking = 0;
   for (std::vector<const EventListener*>::const_iterator it = listeners.begin();
        it != listeners.end(); ++it) {
     // Filter out the optional keys that this listener didn't request.
-    scoped_ptr<ListValue> args_filtered(args.DeepCopy());
-    DictionaryValue* dict = NULL;
+    scoped_ptr<base::ListValue> args_filtered(args.DeepCopy());
+    base::DictionaryValue* dict = NULL;
     CHECK(args_filtered->GetDictionary(0, &dict) && dict);
     if (!((*it)->extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS))
       dict->Remove(keys::kRequestHeadersKey, NULL);
@@ -1563,8 +1565,8 @@ helpers::EventResponseDelta* CalculateDelta(
   return NULL;
 }
 
-Value* SerializeResponseHeaders(const helpers::ResponseHeaders& headers) {
-  scoped_ptr<ListValue> serialized_headers(new ListValue());
+base::Value* SerializeResponseHeaders(const helpers::ResponseHeaders& headers) {
+  scoped_ptr<base::ListValue> serialized_headers(new base::ListValue());
   for (helpers::ResponseHeaders::const_iterator i = headers.begin();
        i != headers.end(); ++i) {
     serialized_headers->Append(ToHeaderDictionary(i->first, i->second));
@@ -1573,17 +1575,17 @@ Value* SerializeResponseHeaders(const helpers::ResponseHeaders& headers) {
 }
 
 // Convert a RequestCookieModifications/ResponseCookieModifications object to a
-// ListValue which summarizes the changes made.  This is templated since the
-// two types (request/response) are different but contain essentially the same
-// fields.
+// base::ListValue which summarizes the changes made.  This is templated since
+// the two types (request/response) are different but contain essentially the
+// same fields.
 template<typename CookieType>
-ListValue* SummarizeCookieModifications(
+base::ListValue* SummarizeCookieModifications(
     const std::vector<linked_ptr<CookieType> >& modifications) {
-  scoped_ptr<ListValue> cookie_modifications(new ListValue());
+  scoped_ptr<base::ListValue> cookie_modifications(new base::ListValue());
   for (typename std::vector<linked_ptr<CookieType> >::const_iterator i =
            modifications.begin();
        i != modifications.end(); ++i) {
-    scoped_ptr<DictionaryValue> summary(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> summary(new base::DictionaryValue());
     const CookieType& mod = *i->get();
     switch (mod.type) {
       case helpers::ADD:
@@ -1622,10 +1624,10 @@ ListValue* SummarizeCookieModifications(
 
 // Converts an EventResponseDelta object to a dictionary value suitable for the
 // activity log.
-scoped_ptr<DictionaryValue> SummarizeResponseDelta(
+scoped_ptr<base::DictionaryValue> SummarizeResponseDelta(
     const std::string& event_name,
     const helpers::EventResponseDelta& delta) {
-  scoped_ptr<DictionaryValue> details(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> details(new base::DictionaryValue());
   if (delta.cancel) {
     details->SetBoolean(activitylog::kCancelKey, true);
   }
@@ -1633,7 +1635,7 @@ scoped_ptr<DictionaryValue> SummarizeResponseDelta(
       details->SetString(activitylog::kNewUrlKey, delta.new_url.spec());
   }
 
-  scoped_ptr<ListValue> modified_headers(new ListValue());
+  scoped_ptr<base::ListValue> modified_headers(new base::ListValue());
   net::HttpRequestHeaders::Iterator iter(delta.modified_request_headers);
   while (iter.GetNext()) {
     modified_headers->Append(ToHeaderDictionary(iter.name(), iter.value()));
@@ -1643,7 +1645,7 @@ scoped_ptr<DictionaryValue> SummarizeResponseDelta(
                  modified_headers.release());
   }
 
-  scoped_ptr<ListValue> deleted_headers(new ListValue());
+  scoped_ptr<base::ListValue> deleted_headers(new base::ListValue());
   deleted_headers->AppendStrings(delta.deleted_request_headers);
   if (!deleted_headers->empty()) {
     details->Set(activitylog::kDeletedRequestHeadersKey,
@@ -1677,7 +1679,7 @@ void LogExtensionActivity(void* profile_id,
                           const std::string& extension_id,
                           const GURL& url,
                           const std::string& api_call,
-                          scoped_ptr<DictionaryValue> details) {
+                          scoped_ptr<base::DictionaryValue> details) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
@@ -2135,7 +2137,7 @@ void ClearCacheQuotaHeuristic::OnPageLoad(Bucket* bucket) {
 bool WebRequestAddEventListener::RunImpl() {
   // Argument 0 is the callback, which we don't use here.
   ExtensionWebRequestEventRouter::RequestFilter filter;
-  DictionaryValue* value = NULL;
+  base::DictionaryValue* value = NULL;
   error_.clear();
   EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(1, &value));
   // Failure + an empty error string means a fatal error.
@@ -2146,7 +2148,7 @@ bool WebRequestAddEventListener::RunImpl() {
 
   int extra_info_spec = 0;
   if (HasOptionalArgument(2)) {
-    ListValue* value = NULL;
+    base::ListValue* value = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetList(2, &value));
     EXTENSION_FUNCTION_VALIDATE(
         ExtensionWebRequestEventRouter::ExtraInfoSpec::InitFromValue(
@@ -2227,7 +2229,7 @@ bool WebRequestEventHandled::RunImpl() {
 
   scoped_ptr<ExtensionWebRequestEventRouter::EventResponse> response;
   if (HasOptionalArgument(3)) {
-    DictionaryValue* value = NULL;
+    base::DictionaryValue* value = NULL;
     EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(3, &value));
 
     if (!value->empty()) {
@@ -2262,12 +2264,12 @@ bool WebRequestEventHandled::RunImpl() {
     }
 
     if (value->HasKey("requestHeaders")) {
-      ListValue* request_headers_value = NULL;
+      base::ListValue* request_headers_value = NULL;
       response->request_headers.reset(new net::HttpRequestHeaders());
       EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kRequestHeadersKey,
                                                  &request_headers_value));
       for (size_t i = 0; i < request_headers_value->GetSize(); ++i) {
-        DictionaryValue* header_value = NULL;
+        base::DictionaryValue* header_value = NULL;
         std::string name;
         std::string value;
         EXTENSION_FUNCTION_VALIDATE(
@@ -2281,11 +2283,11 @@ bool WebRequestEventHandled::RunImpl() {
     if (value->HasKey("responseHeaders")) {
       scoped_ptr<helpers::ResponseHeaders> response_headers(
           new helpers::ResponseHeaders());
-      ListValue* response_headers_value = NULL;
+      base::ListValue* response_headers_value = NULL;
       EXTENSION_FUNCTION_VALIDATE(value->GetList(keys::kResponseHeadersKey,
                                                  &response_headers_value));
       for (size_t i = 0; i < response_headers_value->GetSize(); ++i) {
-        DictionaryValue* header_value = NULL;
+        base::DictionaryValue* header_value = NULL;
         std::string name;
         std::string value;
         EXTENSION_FUNCTION_VALIDATE(
@@ -2298,7 +2300,7 @@ bool WebRequestEventHandled::RunImpl() {
     }
 
     if (value->HasKey(keys::kAuthCredentialsKey)) {
-      DictionaryValue* credentials_value = NULL;
+      base::DictionaryValue* credentials_value = NULL;
       EXTENSION_FUNCTION_VALIDATE(value->GetDictionary(
           keys::kAuthCredentialsKey,
           &credentials_value));

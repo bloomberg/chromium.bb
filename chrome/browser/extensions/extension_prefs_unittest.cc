@@ -473,7 +473,7 @@ class ExtensionPrefsDelayedInstallInfo : public ExtensionPrefsTest {
  public:
   // Sets idle install information for one test extension.
   void SetIdleInfo(std::string id, int num) {
-    DictionaryValue manifest;
+    base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kName, "test");
     manifest.SetString(manifest_keys::kVersion, "1." + base::IntToString(num));
     base::FilePath path =
@@ -584,7 +584,7 @@ TEST_F(ExtensionPrefsDelayedInstallInfo, DelayedInstallInfo) {}
 class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
  public:
   virtual void Initialize() OVERRIDE {
-    DictionaryValue dictionary;
+    base::DictionaryValue dictionary;
     dictionary.SetString(manifest_keys::kName, "test");
     dictionary.SetString(manifest_keys::kVersion, "0.1");
     dictionary.SetString(manifest_keys::kBackgroundPage, "background.html");
@@ -594,10 +594,10 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
 
 
     // Set idle info
-    DictionaryValue manifest;
+    base::DictionaryValue manifest;
     manifest.SetString(manifest_keys::kName, "test");
     manifest.SetString(manifest_keys::kVersion, "0.2");
-    scoped_ptr<ListValue> scripts(new ListValue);
+    scoped_ptr<base::ListValue> scripts(new base::ListValue);
     scripts->AppendString("test.js");
     manifest.Set(manifest_keys::kBackgroundScripts, scripts.release());
     base::FilePath path =
@@ -620,7 +620,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
   virtual void Verify() OVERRIDE {
     EXPECT_FALSE(prefs()->GetDelayedInstallInfo(id_));
 
-    const DictionaryValue* manifest;
+    const base::DictionaryValue* manifest;
     ASSERT_TRUE(prefs()->ReadPrefAsDictionary(id_, "manifest", &manifest));
     ASSERT_TRUE(manifest);
     std::string value;
@@ -629,7 +629,7 @@ class ExtensionPrefsFinishDelayedInstallInfo : public ExtensionPrefsTest {
     EXPECT_TRUE(manifest->GetString(manifest_keys::kVersion, &value));
     EXPECT_EQ("0.2", value);
     EXPECT_FALSE(manifest->GetString(manifest_keys::kBackgroundPage, &value));
-    const ListValue* scripts;
+    const base::ListValue* scripts;
     ASSERT_TRUE(manifest->GetList(manifest_keys::kBackgroundScripts, &scripts));
     EXPECT_EQ(1u, scripts->GetSize());
   }
@@ -735,7 +735,7 @@ TEST_F(ExtensionPrefsFlags, ExtensionPrefsFlags) {}
 
 PrefsPrepopulatedTestBase::PrefsPrepopulatedTestBase()
     : ExtensionPrefsTest() {
-  DictionaryValue simple_dict;
+  base::DictionaryValue simple_dict;
   std::string error;
 
   simple_dict.SetString(manifest_keys::kVersion, "1.0.0.0");

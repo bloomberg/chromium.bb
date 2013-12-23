@@ -83,7 +83,7 @@ int ExtensionTabUtil::GetWindowIdOfTab(const WebContents* web_contents) {
   return SessionID::IdForWindowContainingTab(web_contents);
 }
 
-DictionaryValue* ExtensionTabUtil::CreateTabValue(
+base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index,
@@ -95,7 +95,8 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
       (!extension || controller->IsVisibleToExtension(extension))) {
     return controller->CreateTabValue(extension, tab_index);
   }
-  DictionaryValue *result = CreateTabValue(contents, tab_strip, tab_index);
+  base::DictionaryValue *result =
+      CreateTabValue(contents, tab_strip, tab_index);
   ScrubTabValueForExtension(contents, extension, result);
   return result;
 }
@@ -115,7 +116,7 @@ base::ListValue* ExtensionTabUtil::CreateTabList(
   return tab_list;
 }
 
-DictionaryValue* ExtensionTabUtil::CreateTabValue(
+base::DictionaryValue* ExtensionTabUtil::CreateTabValue(
     const WebContents* contents,
     TabStripModel* tab_strip,
     int tab_index) {
@@ -128,7 +129,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   if (!tab_strip)
     ExtensionTabUtil::GetTabStripModel(contents, &tab_strip, &tab_index);
 
-  DictionaryValue* result = new DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
   bool is_loading = contents->IsLoading();
   result->SetInteger(keys::kIdKey, GetTabId(contents));
   result->SetInteger(keys::kIndexKey, tab_index);
@@ -168,9 +169,10 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   return result;
 }
 
-void ExtensionTabUtil::ScrubTabValueForExtension(const WebContents* contents,
-                                                 const Extension* extension,
-                                                 DictionaryValue* tab_info) {
+void ExtensionTabUtil::ScrubTabValueForExtension(
+    const WebContents* contents,
+    const Extension* extension,
+    base::DictionaryValue* tab_info) {
   bool has_permission =
       extension &&
       PermissionsData::HasAPIPermissionForTab(

@@ -21,7 +21,7 @@ void ExtensionPrefStore::OnInitializationCompleted() {
 
 void ExtensionPrefStore::OnPrefValueChanged(const std::string& key) {
   CHECK(extension_pref_value_map_);
-  const Value *winner =
+  const base::Value *winner =
       extension_pref_value_map_->GetEffectivePrefValue(key,
                                                        incognito_pref_store_,
                                                        NULL);

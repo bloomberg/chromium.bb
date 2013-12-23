@@ -27,7 +27,7 @@ class ExtensionSettingsQuotaTest : public testing::Test {
   ExtensionSettingsQuotaTest()
       : byte_value_1_(new base::FundamentalValue(1)),
         byte_value_16_(new base::StringValue("sixteen bytes.")),
-        byte_value_256_(new ListValue()),
+        byte_value_256_(new base::ListValue()),
         delegate_(new TestingValueStore()) {
     for (int i = 1; i < 89; ++i) {
       byte_value_256_->Append(new base::FundamentalValue(i));
@@ -61,15 +61,15 @@ class ExtensionSettingsQuotaTest : public testing::Test {
 
   // Returns whether the settings in |storage_| and |delegate_| are the same as
   // |settings|.
-  bool SettingsEqual(const DictionaryValue& settings) {
+  bool SettingsEqual(const base::DictionaryValue& settings) {
     return settings.Equals(&storage_->Get()->settings()) &&
            settings.Equals(&delegate_->Get()->settings());
   }
 
   // Values with different serialized sizes.
-  scoped_ptr<Value> byte_value_1_;
-  scoped_ptr<Value> byte_value_16_;
-  scoped_ptr<ListValue> byte_value_256_;
+  scoped_ptr<base::Value> byte_value_1_;
+  scoped_ptr<base::Value> byte_value_16_;
+  scoped_ptr<base::ListValue> byte_value_256_;
 
   // Quota enforcing storage area being tested.
   scoped_ptr<SettingsStorageQuotaEnforcer> storage_;
@@ -79,7 +79,7 @@ class ExtensionSettingsQuotaTest : public testing::Test {
 };
 
 TEST_F(ExtensionSettingsQuotaTest, ZeroQuotaBytes) {
-  DictionaryValue empty;
+  base::DictionaryValue empty;
   CreateStorage(0, UINT_MAX, UINT_MAX);
 
   EXPECT_TRUE(storage_->Set(DEFAULTS, "a", *byte_value_1_)->HasError());
@@ -89,7 +89,7 @@ TEST_F(ExtensionSettingsQuotaTest, ZeroQuotaBytes) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, KeySizeTakenIntoAccount) {
-  DictionaryValue empty;
+  base::DictionaryValue empty;
   CreateStorage(8u, UINT_MAX, UINT_MAX);
   EXPECT_TRUE(
       storage_->Set(DEFAULTS, "Really long key", *byte_value_1_)->HasError());
@@ -97,7 +97,7 @@ TEST_F(ExtensionSettingsQuotaTest, KeySizeTakenIntoAccount) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, SmallByteQuota) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(8u, UINT_MAX, UINT_MAX);
 
   EXPECT_FALSE(storage_->Set(DEFAULTS, "a", *byte_value_1_)->HasError());
@@ -110,10 +110,10 @@ TEST_F(ExtensionSettingsQuotaTest, SmallByteQuota) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, MediumByteQuota) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(40, UINT_MAX, UINT_MAX);
 
-  DictionaryValue to_set;
+  base::DictionaryValue to_set;
   to_set.Set("a", byte_value_1_->DeepCopy());
   to_set.Set("b", byte_value_16_->DeepCopy());
   EXPECT_FALSE(storage_->Set(DEFAULTS, to_set)->HasError());
@@ -132,7 +132,7 @@ TEST_F(ExtensionSettingsQuotaTest, MediumByteQuota) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, ZeroMaxKeys) {
-  DictionaryValue empty;
+  base::DictionaryValue empty;
   CreateStorage(UINT_MAX, UINT_MAX, 0);
 
   EXPECT_TRUE(storage_->Set(DEFAULTS, "a", *byte_value_1_)->HasError());
@@ -142,7 +142,7 @@ TEST_F(ExtensionSettingsQuotaTest, ZeroMaxKeys) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, SmallMaxKeys) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(UINT_MAX, UINT_MAX, 1);
 
   EXPECT_FALSE(storage_->Set(DEFAULTS, "a", *byte_value_1_)->HasError());
@@ -160,10 +160,10 @@ TEST_F(ExtensionSettingsQuotaTest, SmallMaxKeys) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, MediumMaxKeys) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(UINT_MAX, UINT_MAX, 2);
 
-  DictionaryValue to_set;
+  base::DictionaryValue to_set;
   to_set.Set("a", byte_value_1_->DeepCopy());
   to_set.Set("b", byte_value_16_->DeepCopy());
   EXPECT_FALSE(storage_->Set(DEFAULTS, to_set)->HasError());
@@ -183,7 +183,7 @@ TEST_F(ExtensionSettingsQuotaTest, MediumMaxKeys) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, RemovingExistingSettings) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(266, UINT_MAX, 2);
 
   storage_->Set(DEFAULTS, "b", *byte_value_16_);
@@ -216,11 +216,11 @@ TEST_F(ExtensionSettingsQuotaTest, RemovingExistingSettings) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, RemovingNonexistentSettings) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(36, UINT_MAX, 3);
 
   // Max out bytes.
-  DictionaryValue to_set;
+  base::DictionaryValue to_set;
   to_set.Set("b1", byte_value_16_->DeepCopy());
   to_set.Set("b2", byte_value_16_->DeepCopy());
   storage_->Set(DEFAULTS, to_set);
@@ -266,12 +266,12 @@ TEST_F(ExtensionSettingsQuotaTest, RemovingNonexistentSettings) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, Clear) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(40, UINT_MAX, 5);
 
   // Test running out of byte quota.
   {
-    DictionaryValue to_set;
+    base::DictionaryValue to_set;
     to_set.Set("a", byte_value_16_->DeepCopy());
     to_set.Set("b", byte_value_16_->DeepCopy());
     EXPECT_FALSE(storage_->Set(DEFAULTS, to_set)->HasError());
@@ -287,7 +287,7 @@ TEST_F(ExtensionSettingsQuotaTest, Clear) {
   // Test reaching max keys.
   storage_->Clear();
   {
-    DictionaryValue to_set;
+    base::DictionaryValue to_set;
     to_set.Set("a", byte_value_1_->DeepCopy());
     to_set.Set("b", byte_value_1_->DeepCopy());
     to_set.Set("c", byte_value_1_->DeepCopy());
@@ -305,7 +305,7 @@ TEST_F(ExtensionSettingsQuotaTest, Clear) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, ChangingUsedBytesWithSet) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(20, UINT_MAX, UINT_MAX);
 
   // Change a setting to make it go over quota.
@@ -327,14 +327,14 @@ TEST_F(ExtensionSettingsQuotaTest, ChangingUsedBytesWithSet) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, SetsOnlyEntirelyCompletedWithByteQuota) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(40, UINT_MAX, UINT_MAX);
 
   storage_->Set(DEFAULTS, "a", *byte_value_16_);
   settings.Set("a", byte_value_16_->DeepCopy());
 
   // The entire change is over quota.
-  DictionaryValue to_set;
+  base::DictionaryValue to_set;
   to_set.Set("b", byte_value_16_->DeepCopy());
   to_set.Set("c", byte_value_16_->DeepCopy());
   EXPECT_TRUE(storage_->Set(DEFAULTS, to_set)->HasError());
@@ -350,13 +350,13 @@ TEST_F(ExtensionSettingsQuotaTest, SetsOnlyEntirelyCompletedWithByteQuota) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, SetsOnlyEntireCompletedWithMaxKeys) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   CreateStorage(UINT_MAX, UINT_MAX, 2);
 
   storage_->Set(DEFAULTS, "a", *byte_value_1_);
   settings.Set("a", byte_value_1_->DeepCopy());
 
-  DictionaryValue to_set;
+  base::DictionaryValue to_set;
   to_set.Set("b", byte_value_16_->DeepCopy());
   to_set.Set("c", byte_value_16_->DeepCopy());
   EXPECT_TRUE(storage_->Set(DEFAULTS, to_set)->HasError());
@@ -364,7 +364,7 @@ TEST_F(ExtensionSettingsQuotaTest, SetsOnlyEntireCompletedWithMaxKeys) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, WithInitialDataAndByteQuota) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   delegate_->Set(DEFAULTS, "a", *byte_value_256_);
   settings.Set("a", byte_value_256_->DeepCopy());
 
@@ -406,7 +406,7 @@ TEST_F(ExtensionSettingsQuotaTest, WithInitialDataAndByteQuota) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, WithInitialDataAndMaxKeys) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   delegate_->Set(DEFAULTS, "a", *byte_value_1_);
   settings.Set("a", byte_value_1_->DeepCopy());
   CreateStorage(UINT_MAX, UINT_MAX, 2);
@@ -420,7 +420,7 @@ TEST_F(ExtensionSettingsQuotaTest, WithInitialDataAndMaxKeys) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, InitiallyOverByteQuota) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   settings.Set("a", byte_value_16_->DeepCopy());
   settings.Set("b", byte_value_16_->DeepCopy());
   settings.Set("c", byte_value_16_->DeepCopy());
@@ -443,7 +443,7 @@ TEST_F(ExtensionSettingsQuotaTest, InitiallyOverByteQuota) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, InitiallyOverMaxKeys) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
   settings.Set("a", byte_value_16_->DeepCopy());
   settings.Set("b", byte_value_16_->DeepCopy());
   settings.Set("c", byte_value_16_->DeepCopy());
@@ -475,7 +475,7 @@ TEST_F(ExtensionSettingsQuotaTest, InitiallyOverMaxKeys) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, ZeroQuotaBytesPerSetting) {
-  DictionaryValue empty;
+  base::DictionaryValue empty;
   CreateStorage(UINT_MAX, 0, UINT_MAX);
 
   EXPECT_TRUE(storage_->Set(DEFAULTS, "a", *byte_value_1_)->HasError());
@@ -485,7 +485,7 @@ TEST_F(ExtensionSettingsQuotaTest, ZeroQuotaBytesPerSetting) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, QuotaBytesPerSetting) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
 
   CreateStorage(UINT_MAX, 20, UINT_MAX);
 
@@ -503,7 +503,7 @@ TEST_F(ExtensionSettingsQuotaTest, QuotaBytesPerSetting) {
 }
 
 TEST_F(ExtensionSettingsQuotaTest, QuotaBytesPerSettingWithInitialSettings) {
-  DictionaryValue settings;
+  base::DictionaryValue settings;
 
   delegate_->Set(DEFAULTS, "a", *byte_value_1_);
   delegate_->Set(DEFAULTS, "b", *byte_value_16_);
@@ -533,7 +533,7 @@ TEST_F(ExtensionSettingsQuotaTest,
   // This is a lazy test to make sure IGNORE_QUOTA lets through changes: the
   // test above copied, but using IGNORE_QUOTA and asserting nothing is ever
   // rejected...
-  DictionaryValue settings;
+  base::DictionaryValue settings;
 
   delegate_->Set(DEFAULTS, "a", *byte_value_1_);
   delegate_->Set(DEFAULTS, "b", *byte_value_16_);

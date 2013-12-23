@@ -39,7 +39,7 @@ namespace {
 const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 
 // Gets the pretty-printed JSON for a value.
-static std::string GetJson(const Value& value) {
+static std::string GetJson(const base::Value& value) {
   std::string json;
   base::JSONWriter::WriteWithOptions(&value,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
@@ -50,8 +50,8 @@ static std::string GetJson(const Value& value) {
 // Returns whether two Values are equal.
 testing::AssertionResult ValuesEq(
     const char* _1, const char* _2,
-    const Value* expected,
-    const Value* actual) {
+    const base::Value* expected,
+    const base::Value* actual) {
   if (expected == actual) {
     return testing::AssertionSuccess();
   }
@@ -74,7 +74,7 @@ testing::AssertionResult ValuesEq(
 // Logs when different.
 testing::AssertionResult SettingsEq(
     const char* _1, const char* _2,
-    const DictionaryValue& expected,
+    const base::DictionaryValue& expected,
     ValueStore::ReadResult actual) {
   if (actual->HasError()) {
     return testing::AssertionFailure() <<
@@ -142,7 +142,8 @@ class MockSyncChangeProcessor : public syncer::SyncChangeProcessor {
       return SettingSyncData(syncer::SyncChange::ACTION_INVALID,
                              std::string(),
                              std::string(),
-                             scoped_ptr<Value>(new DictionaryValue()));
+                             scoped_ptr<base::Value>(
+                                 new base::DictionaryValue()));
     }
     if (matching_changes.size() != 1u) {
       ADD_FAILURE() << matching_changes.size() << " matching changes for " <<
@@ -315,8 +316,8 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  StringValue value1("fooValue");
-  ListValue value2;
+  base::StringValue value1("fooValue");
+  base::ListValue value2;
   value2.Append(new base::StringValue("barValue"));
 
   ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
@@ -365,8 +366,8 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  StringValue value1("fooValue");
-  ListValue value2;
+  base::StringValue value1("fooValue");
+  base::ListValue value2;
   value2.Append(new base::StringValue("barValue"));
 
   ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
@@ -397,13 +398,13 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  StringValue value1("fooValue");
-  ListValue value2;
+  base::StringValue value1("fooValue");
+  base::ListValue value2;
   value2.Append(new base::StringValue("barValue"));
 
   // Maintain dictionaries mirrored to the expected values of the settings in
   // each storage area.
-  DictionaryValue expected1, expected2;
+  base::DictionaryValue expected1, expected2;
 
   // Pre-populate one of the storage areas.
   ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
@@ -437,13 +438,13 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  StringValue value1("fooValue");
-  ListValue value2;
+  base::StringValue value1("fooValue");
+  base::ListValue value2;
   value2.Append(new base::StringValue("barValue"));
 
   // Maintain dictionaries mirrored to the expected values of the settings in
   // each storage area.
-  DictionaryValue expected1, expected2;
+  base::DictionaryValue expected1, expected2;
 
   // Make storage1 initialised from local data, storage2 initialised from sync.
   ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
@@ -510,8 +511,8 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  StringValue value1("fooValue");
-  ListValue value2;
+  base::StringValue value1("fooValue");
+  base::ListValue value2;
   value2.Append(new base::StringValue("barValue"));
 
   // Make storage1/2 initialised from local data, storage3/4 initialised from
@@ -649,8 +650,8 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
 }
 
 TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
-  StringValue value1("fooValue");
-  ListValue value2;
+  base::StringValue value1("fooValue");
+  base::ListValue value2;
   value2.Append(new base::StringValue("barValue"));
 
   // storage1 is an extension, storage2 is an app.
@@ -708,8 +709,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  StringValue fooValue("fooValue");
-  StringValue barValue("barValue");
+  base::StringValue fooValue("fooValue");
+  base::StringValue barValue("barValue");
 
   // There is a bit of a convoluted method to get storage areas that can fail;
   // hand out TestingValueStore object then toggle them failing/succeeding
@@ -738,12 +739,12 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   testing_factory->GetExisting("bad")->set_error_code(ValueStore::OK);
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
 
@@ -758,13 +759,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   EXPECT_EQ(1u, sync_processor_->changes().size());
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -783,13 +784,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   }
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", barValue.DeepCopy());
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -806,13 +807,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   EXPECT_EQ(1u, sync_processor_->changes().size());
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", barValue.DeepCopy());
     dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -831,13 +832,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   testing_factory->GetExisting("bad")->set_error_code(ValueStore::OK);
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -890,13 +891,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingStartSyncingDisablesSync) {
   }
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("bar", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -908,8 +909,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  StringValue fooValue("fooValue");
-  StringValue barValue("barValue");
+  base::StringValue fooValue("fooValue");
+  base::StringValue barValue("barValue");
 
   TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
@@ -935,12 +936,12 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   EXPECT_EQ(0u, sync_processor_->changes().size());
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -958,13 +959,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   testing_factory->GetExisting("bad")->set_error_code(ValueStore::OK);
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -990,13 +991,13 @@ TEST_F(ExtensionSettingsSyncTest, FailingProcessChangesDisablesSync) {
   }
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -1006,8 +1007,8 @@ TEST_F(ExtensionSettingsSyncTest, FailingGetAllSyncDataDoesntStopSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  StringValue fooValue("fooValue");
-  StringValue barValue("barValue");
+  base::StringValue fooValue("fooValue");
+  base::StringValue barValue("barValue");
 
   TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
@@ -1061,8 +1062,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
   syncer::ModelType model_type = syncer::APP_SETTINGS;
   Manifest::Type type = Manifest::TYPE_LEGACY_PACKAGED_APP;
 
-  StringValue fooValue("fooValue");
-  StringValue barValue("barValue");
+  base::StringValue fooValue("fooValue");
+  base::StringValue barValue("barValue");
 
   TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
@@ -1110,13 +1111,13 @@ TEST_F(ExtensionSettingsSyncTest, FailureToReadChangesToPushDisablesSync) {
   }
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", barValue.DeepCopy());
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", fooValue.DeepCopy());
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
@@ -1165,8 +1166,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  StringValue fooValue("fooValue");
-  StringValue barValue("barValue");
+  base::StringValue fooValue("fooValue");
+  base::StringValue barValue("barValue");
 
   TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
@@ -1206,13 +1207,13 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalStateDisablesSync) {
   }
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", barValue.DeepCopy());
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -1256,8 +1257,8 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
   syncer::ModelType model_type = syncer::EXTENSION_SETTINGS;
   Manifest::Type type = Manifest::TYPE_EXTENSION;
 
-  StringValue fooValue("fooValue");
-  StringValue barValue("barValue");
+  base::StringValue fooValue("fooValue");
+  base::StringValue barValue("barValue");
 
   TestingValueStoreFactory* testing_factory = new TestingValueStoreFactory();
   storage_factory_->Reset(testing_factory);
@@ -1303,13 +1304,13 @@ TEST_F(ExtensionSettingsSyncTest, FailureToPushLocalChangeDisablesSync) {
   }
 
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", barValue.DeepCopy());
     dict.Set("bar", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, good->Get());
   }
   {
-    DictionaryValue dict;
+    base::DictionaryValue dict;
     dict.Set("foo", barValue.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, dict, bad->Get());
   }
@@ -1359,7 +1360,7 @@ TEST_F(ExtensionSettingsSyncTest,
   for (size_t i = 0; i < 5000; ++i) {
     string_5k.append("a");
   }
-  StringValue large_value(string_5k);
+  base::StringValue large_value(string_5k);
 
   GetSyncableService(model_type)->MergeDataAndStartSyncing(
       model_type,
@@ -1383,7 +1384,7 @@ TEST_F(ExtensionSettingsSyncTest,
     GetSyncableService(model_type)->ProcessSyncChanges(FROM_HERE, change_list);
   }
   {
-    DictionaryValue expected;
+    base::DictionaryValue expected;
     expected.Set("large_value", large_value.DeepCopy());
     EXPECT_PRED_FORMAT2(SettingsEq, expected, storage1->Get());
     EXPECT_PRED_FORMAT2(SettingsEq, expected, storage2->Get());
@@ -1400,7 +1401,7 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
 
   {
     syncer::SyncDataList sync_data_list;
-    scoped_ptr<Value> string_value(new base::StringValue("value"));
+    scoped_ptr<base::Value> string_value(new base::StringValue("value"));
     sync_data_list.push_back(settings_sync_util::CreateData(
         "ext", "key.with.dot", *string_value, model_type));
 
@@ -1417,16 +1418,16 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
     ValueStore::ReadResult data = storage->Get();
     ASSERT_FALSE(data->HasError());
 
-    DictionaryValue expected_data;
+    base::DictionaryValue expected_data;
     expected_data.SetWithoutPathExpansion(
         "key.with.dot",
         new base::StringValue("value"));
-    EXPECT_TRUE(Value::Equals(&expected_data, &data->settings()));
+    EXPECT_TRUE(base::Value::Equals(&expected_data, &data->settings()));
   }
 
   // Test dots in keys going to sync.
   {
-    scoped_ptr<Value> string_value(new base::StringValue("spot"));
+    scoped_ptr<base::Value> string_value(new base::StringValue("spot"));
     storage->Set(DEFAULTS, "key.with.spot", *string_value);
 
     ASSERT_EQ(1u, sync_processor_->changes().size());

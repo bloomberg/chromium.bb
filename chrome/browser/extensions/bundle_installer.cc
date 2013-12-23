@@ -44,7 +44,7 @@ AutoApproveForTest g_auto_approve_for_test = DO_NOT_SKIP;
 // Creates a dummy extension and sets the manifest's name to the item's
 // localized name.
 scoped_refptr<Extension> CreateDummyExtension(const BundleInstaller::Item& item,
-                                              DictionaryValue* manifest) {
+                                              base::DictionaryValue* manifest) {
   // We require localized names so we can have nice error messages when we can't
   // parse an extension manifest.
   CHECK(!item.localized_name.empty());
@@ -297,9 +297,9 @@ void BundleInstaller::ShowInstalledBubbleIfDone() {
 void BundleInstaller::OnWebstoreParseSuccess(
     const std::string& id,
     const SkBitmap& icon,
-    DictionaryValue* manifest) {
+    base::DictionaryValue* manifest) {
   dummy_extensions_.push_back(CreateDummyExtension(items_[id], manifest));
-  parsed_manifests_[id] = linked_ptr<DictionaryValue>(manifest);
+  parsed_manifests_[id] = linked_ptr<base::DictionaryValue>(manifest);
 
   ShowPromptIfDoneParsing();
 }

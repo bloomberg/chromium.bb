@@ -29,7 +29,7 @@ namespace extensions {
 
 scoped_refptr<Extension> CreateTestExtension(const std::string& name,
                                              bool incognito_split_mode) {
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("name", name);
   manifest.SetString("version", "1");
   manifest.SetInteger("manifest_version", 2);
@@ -48,7 +48,7 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
 }
 
 scoped_refptr<Extension> CreateWebStoreExtension() {
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("name", "WebStore");
   manifest.SetString("version", "1");
   manifest.SetString("icons.16", "webstore_icon_16.png");
@@ -66,7 +66,7 @@ scoped_refptr<Extension> CreateWebStoreExtension() {
 }
 
 scoped_refptr<Extension> CreateTestResponseHeaderExtension() {
-  DictionaryValue manifest;
+  base::DictionaryValue manifest;
   manifest.SetString("name", "An extension with web-accessible resources");
   manifest.SetString("version", "2");
 

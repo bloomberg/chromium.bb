@@ -52,7 +52,7 @@ class MessageSender : public content::NotificationObserver {
   static scoped_ptr<base::ListValue> BuildEventArguments(
       const bool last_message,
       const std::string& data) {
-    DictionaryValue* event = new DictionaryValue();
+    base::DictionaryValue* event = new base::DictionaryValue();
     event->SetBoolean("lastMessage", last_message);
     event->SetString("data", data);
     scoped_ptr<base::ListValue> arguments(new base::ListValue());

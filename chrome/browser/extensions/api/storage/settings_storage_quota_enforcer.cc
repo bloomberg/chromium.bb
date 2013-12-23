@@ -29,7 +29,7 @@ enum Resource {
 // Allocates a setting in a record of total and per-setting usage.
 void Allocate(
     const std::string& key,
-    const Value& value,
+    const base::Value& value,
     size_t* used_total,
     std::map<std::string, size_t>* used_per_setting) {
   // Calculate the setting size based on its JSON serialization size.
@@ -139,7 +139,7 @@ ValueStore::ReadResult SettingsStorageQuotaEnforcer::Get() {
 }
 
 ValueStore::WriteResult SettingsStorageQuotaEnforcer::Set(
-    WriteOptions options, const std::string& key, const Value& value) {
+    WriteOptions options, const std::string& key, const base::Value& value) {
   size_t new_used_total = used_total_;
   std::map<std::string, size_t> new_used_per_setting = used_per_setting_;
   Allocate(key, value, &new_used_total, &new_used_per_setting);

@@ -105,7 +105,7 @@ bool SupervisedUserAuthentication::FillDataForNewUser(
 void SupervisedUserAuthentication::StorePasswordData(
     const std::string& user_id,
     const base::DictionaryValue& password_data) {
-  DictionaryValue holder;
+  base::DictionaryValue holder;
   owner_->GetPasswordInformation(user_id, &holder);
   const base::Value* value;
   if (password_data.GetWithoutPathExpansion(kSchemaVersion, &value))

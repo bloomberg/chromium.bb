@@ -253,7 +253,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                               extension_info_map->process_map(),
                               g_global_io_data.Get().api.get(),
                               browser_context, callback));
-  scoped_ptr<ListValue> args(params.arguments.DeepCopy());
+  scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
 
   if (!function.get())
     return;
@@ -354,7 +354,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
                               extensions::ExtensionAPI::GetSharedInstance(),
                               browser_context_,
                               callback));
-  scoped_ptr<ListValue> args(params.arguments.DeepCopy());
+  scoped_ptr<base::ListValue> args(params.arguments.DeepCopy());
 
   if (!function.get())
     return;
@@ -513,7 +513,7 @@ ExtensionFunction* ExtensionFunctionDispatcher::CreateExtensionFunction(
 // static
 void ExtensionFunctionDispatcher::SendAccessDenied(
     const ExtensionFunction::ResponseCallback& callback) {
-  ListValue empty_list;
+  base::ListValue empty_list;
   callback.Run(ExtensionFunction::FAILED, empty_list,
                "Access to extension API denied.");
 }

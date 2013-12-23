@@ -117,14 +117,14 @@ bool HasWarning(const ExtensionWarningSet& warnings,
 // Parses the JSON data attached to the |message| and tries to return it.
 // |param| must outlive |out|. Returns NULL on failure.
 void GetPartOfMessageArguments(IPC::Message* message,
-                               const DictionaryValue** out,
+                               const base::DictionaryValue** out,
                                ExtensionMsg_MessageInvoke::Param* param) {
   ASSERT_EQ(ExtensionMsg_MessageInvoke::ID, message->type());
   ASSERT_TRUE(ExtensionMsg_MessageInvoke::Read(message, param));
   ASSERT_GE(param->d.GetSize(), 2u);
-  const Value* value = NULL;
+  const base::Value* value = NULL;
   ASSERT_TRUE(param->d.Get(1, &value));
-  const ListValue* list = NULL;
+  const base::ListValue* list = NULL;
   ASSERT_TRUE(value->GetAsList(&list));
   ASSERT_EQ(1u, list->GetSize());
   ASSERT_TRUE(list->GetDictionary(0, out));
@@ -481,7 +481,7 @@ namespace {
 // Create the numerical representation of |values|, strings passed as
 // extraInfoSpec by the event handler. Returns true on success, otherwise false.
 bool GenerateInfoSpec(const std::string& values, int* result) {
-  // Create a ListValue of strings.
+  // Create a base::ListValue of strings.
   std::vector<std::string> split_values;
   base::ListValue list_value;
   size_t num_values = Tokenize(values, ",", &split_values);
@@ -579,11 +579,11 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
   // Contents of formData.
   const char kFormData[] =
       "{\"A\":[\"test text\"],\"B\":[\"\"],\"C\":[\"test password\"]}";
-  scoped_ptr<const Value> form_data(base::JSONReader::Read(kFormData));
+  scoped_ptr<const base::Value> form_data(base::JSONReader::Read(kFormData));
   ASSERT_TRUE(form_data.get() != NULL);
-  ASSERT_TRUE(form_data->GetType() == Value::TYPE_DICTIONARY);
+  ASSERT_TRUE(form_data->GetType() == base::Value::TYPE_DICTIONARY);
   // Contents of raw.
-  ListValue raw;
+  base::ListValue raw;
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
       BinaryValue::CreateWithCopiedBuffer(kPlainBlock1, kPlainBlock1Length),
@@ -597,7 +597,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
       BinaryValue::CreateWithCopiedBuffer(kPlainBlock2, kPlainBlock2Length),
       &raw);
   // Summary.
-  const Value* const kExpected[] = {
+  const base::Value* const kExpected[] = {
     form_data.get(),
     NULL,
     &raw,
@@ -672,11 +672,11 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
     SCOPED_TRACE(testing::Message("iteration number ") << test);
     EXPECT_NE(i, ipc_sender_.sent_end());
     message = (i++)->get();
-    const DictionaryValue* details;
+    const base::DictionaryValue* details;
     ExtensionMsg_MessageInvoke::Param param;
     GetPartOfMessageArguments(message, &details, &param);
     ASSERT_TRUE(details != NULL);
-    const Value* result = NULL;
+    const base::Value* result = NULL;
     if (kExpected[test]) {
       EXPECT_TRUE(details->Get(*(kPath[test]), &result));
       EXPECT_TRUE(kExpected[test]->Equals(result));
@@ -732,7 +732,7 @@ TEST_F(ExtensionWebRequestTest, NoAccessRequestBodyData) {
     SCOPED_TRACE(testing::Message("iteration number ") << test);
     EXPECT_NE(i, ipc_sender_.sent_end());
     IPC::Message* message = i->get();
-    const DictionaryValue* details = NULL;
+    const base::DictionaryValue* details = NULL;
     ExtensionMsg_MessageInvoke::Param param;
     GetPartOfMessageArguments(message, &details, &param);
     ASSERT_TRUE(details != NULL);
@@ -919,7 +919,7 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
       continue;
     ExtensionMsg_MessageInvoke::Param message_tuple;
     ExtensionMsg_MessageInvoke::Read(message, &message_tuple);
-    ListValue& args = message_tuple.d;
+    base::ListValue& args = message_tuple.d;
 
     std::string event_name;
     if (!args.GetString(0, &event_name) ||
@@ -927,19 +927,19 @@ TEST_P(ExtensionWebRequestHeaderModificationTest, TestModifications) {
       continue;
     }
 
-    ListValue* event_arg = NULL;
+    base::ListValue* event_arg = NULL;
     ASSERT_TRUE(args.GetList(1, &event_arg));
 
-    DictionaryValue* event_arg_dict = NULL;
+    base::DictionaryValue* event_arg_dict = NULL;
     ASSERT_TRUE(event_arg->GetDictionary(0, &event_arg_dict));
 
-    ListValue* request_headers = NULL;
+    base::ListValue* request_headers = NULL;
     ASSERT_TRUE(event_arg_dict->GetList(keys::kRequestHeadersKey,
                                         &request_headers));
 
     net::HttpRequestHeaders observed_headers;
     for (size_t j = 0; j < request_headers->GetSize(); ++j) {
-      DictionaryValue* header = NULL;
+      base::DictionaryValue* header = NULL;
       ASSERT_TRUE(request_headers->GetDictionary(j, &header));
       std::string key;
       std::string value;
@@ -1168,7 +1168,7 @@ TEST(ExtensionWebRequestHelpersTest,
 }
 
 TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
-  ListValue list_value;
+  base::ListValue list_value;
   list_value.Append(new base::FundamentalValue('1'));
   list_value.Append(new base::FundamentalValue('2'));
   list_value.Append(new base::FundamentalValue('3'));
@@ -1178,7 +1178,7 @@ TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
   unsigned char char_value[] = {'1', '2', '3', 0xFE, 0xD1};
   std::string string_value(reinterpret_cast<char *>(char_value), 5);
 
-  scoped_ptr<ListValue> converted_list(StringToCharList(string_value));
+  scoped_ptr<base::ListValue> converted_list(StringToCharList(string_value));
   EXPECT_TRUE(list_value.Equals(converted_list.get()));
 
   std::string converted_string;

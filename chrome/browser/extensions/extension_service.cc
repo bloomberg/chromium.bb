@@ -2475,9 +2475,9 @@ bool ExtensionService::OnExternalExtensionFileFound(
   return true;
 }
 
-scoped_ptr<DictionaryValue> ExtensionService::GetExtensionInfo(
+scoped_ptr<base::DictionaryValue> ExtensionService::GetExtensionInfo(
     const std::string& extension_id) const {
-  scoped_ptr<DictionaryValue> dictionary(new DictionaryValue);
+  scoped_ptr<base::DictionaryValue> dictionary(new base::DictionaryValue);
   const extensions::Extension* extension =
       registry_->enabled_extensions().GetByID(extension_id);
   if (extension) {

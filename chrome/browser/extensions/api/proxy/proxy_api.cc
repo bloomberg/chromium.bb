@@ -88,13 +88,14 @@ ProxyPrefTransformer::ProxyPrefTransformer() {
 ProxyPrefTransformer::~ProxyPrefTransformer() {
 }
 
-Value* ProxyPrefTransformer::ExtensionToBrowserPref(const Value* extension_pref,
-                                                    std::string* error,
-                                                    bool* bad_message) {
+base::Value* ProxyPrefTransformer::ExtensionToBrowserPref(
+    const base::Value* extension_pref,
+    std::string* error,
+    bool* bad_message) {
   // When ExtensionToBrowserPref is called, the format of |extension_pref|
   // has been verified already by the extension API to match the schema
   // defined in the extension API JSON.
-  CHECK(extension_pref->IsType(Value::TYPE_DICTIONARY));
+  CHECK(extension_pref->IsType(base::Value::TYPE_DICTIONARY));
   const base::DictionaryValue* config =
       static_cast<const base::DictionaryValue*>(extension_pref);
 
@@ -129,8 +130,9 @@ Value* ProxyPrefTransformer::ExtensionToBrowserPref(const Value* extension_pref,
       bypass_list, error);
 }
 
-Value* ProxyPrefTransformer::BrowserToExtensionPref(const Value* browser_pref) {
-  CHECK(browser_pref->IsType(Value::TYPE_DICTIONARY));
+base::Value* ProxyPrefTransformer::BrowserToExtensionPref(
+    const base::Value* browser_pref) {
+  CHECK(browser_pref->IsType(base::Value::TYPE_DICTIONARY));
 
   // This is a dictionary wrapper that exposes the proxy configuration stored in
   // the browser preferences.

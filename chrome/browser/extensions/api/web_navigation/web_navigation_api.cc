@@ -697,7 +697,7 @@ bool WebNavigationGetFrameFunction::RunImpl() {
   int frame_id = params->details.frame_id;
   int process_id = params->details.process_id;
 
-  SetResult(Value::CreateNullValue());
+  SetResult(base::Value::CreateNullValue());
 
   content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id,
@@ -752,7 +752,7 @@ bool WebNavigationGetAllFramesFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   int tab_id = params->details.tab_id;
 
-  SetResult(Value::CreateNullValue());
+  SetResult(base::Value::CreateNullValue());
 
   content::WebContents* web_contents;
   if (!ExtensionTabUtil::GetTabById(tab_id,

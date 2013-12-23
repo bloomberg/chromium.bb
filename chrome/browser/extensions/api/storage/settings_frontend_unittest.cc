@@ -30,21 +30,21 @@ namespace {
 const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 
 // Creates a kilobyte of data.
-scoped_ptr<Value> CreateKilobyte() {
+scoped_ptr<base::Value> CreateKilobyte() {
   std::string kilobyte_string;
   for (int i = 0; i < 1024; ++i) {
     kilobyte_string += "a";
   }
-  return scoped_ptr<Value>(new base::StringValue(kilobyte_string));
+  return scoped_ptr<base::Value>(new base::StringValue(kilobyte_string));
 }
 
 // Creates a megabyte of data.
-scoped_ptr<Value> CreateMegabyte() {
+scoped_ptr<base::Value> CreateMegabyte() {
   base::ListValue* megabyte = new base::ListValue();
   for (int i = 0; i < 1000; ++i) {
     megabyte->Append(CreateKilobyte().release());
   }
-  return scoped_ptr<Value>(megabyte);
+  return scoped_ptr<base::Value>(megabyte);
 }
 
 }  // namespace
@@ -103,7 +103,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsPreservedAcrossReconstruction) {
   // The correctness of Get/Set/Remove/Clear is tested elsewhere so no need to
   // be too rigorous.
   {
-    StringValue bar("bar");
+    base::StringValue bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_FALSE(result->HasError());
   }
@@ -134,7 +134,7 @@ TEST_F(ExtensionSettingsFrontendTest, SettingsClearedOnUninstall) {
   ValueStore* storage = util::GetStorage(id, frontend_.get());
 
   {
-    StringValue bar("bar");
+    base::StringValue bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_FALSE(result->HasError());
   }
@@ -162,7 +162,7 @@ TEST_F(ExtensionSettingsFrontendTest, LeveldbDatabaseDeletedFromDiskOnClear) {
   ValueStore* storage = util::GetStorage(id, frontend_.get());
 
   {
-    StringValue bar("bar");
+    base::StringValue bar("bar");
     ValueStore::WriteResult result = storage->Set(DEFAULTS, "foo", bar);
     ASSERT_FALSE(result->HasError());
     EXPECT_TRUE(base::PathExists(temp_dir_.path()));
@@ -199,7 +199,7 @@ TEST_F(ExtensionSettingsFrontendTest,
       util::GetStorage(id, settings::LOCAL, frontend_.get());
 
   // Sync storage should run out after ~100K.
-  scoped_ptr<Value> kilobyte = CreateKilobyte();
+  scoped_ptr<base::Value> kilobyte = CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
     sync_storage->Set(
         ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
@@ -218,7 +218,7 @@ TEST_F(ExtensionSettingsFrontendTest,
       ValueStore::DEFAULTS, "WontError", *kilobyte)->HasError());
 
   // Local storage should run out after ~5MB.
-  scoped_ptr<Value> megabyte = CreateMegabyte();
+  scoped_ptr<base::Value> megabyte = CreateMegabyte();
   for (int i = 0; i < 5; ++i) {
     local_storage->Set(
         ValueStore::DEFAULTS, base::StringPrintf("%d", i), *megabyte);
@@ -236,7 +236,7 @@ TEST_F(ExtensionSettingsFrontendTest,
 static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
   // Sync storage should still run out after ~100K; the unlimitedStorage
   // permission can't apply to sync.
-  scoped_ptr<Value> kilobyte = CreateKilobyte();
+  scoped_ptr<base::Value> kilobyte = CreateKilobyte();
   for (int i = 0; i < 100; ++i) {
     sync_storage->Set(
         ValueStore::DEFAULTS, base::StringPrintf("%d", i), *kilobyte);
@@ -248,7 +248,7 @@ static void UnlimitedSyncStorageTestCallback(ValueStore* sync_storage) {
 
 static void UnlimitedLocalStorageTestCallback(ValueStore* local_storage) {
   // Local storage should never run out.
-  scoped_ptr<Value> megabyte = CreateMegabyte();
+  scoped_ptr<base::Value> megabyte = CreateMegabyte();
   for (int i = 0; i < 7; ++i) {
     local_storage->Set(
         ValueStore::DEFAULTS, base::StringPrintf("%d", i), *megabyte);

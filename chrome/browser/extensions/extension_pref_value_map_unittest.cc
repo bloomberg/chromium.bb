@@ -22,7 +22,7 @@ const char kPref3[] = "path3";
 const char kPref4[] = "path4";
 }  // namespace
 
-static Value* CreateVal(const char* str) {
+static base::Value* CreateVal(const char* str) {
   return new base::StringValue(str);
 }
 
@@ -44,7 +44,8 @@ class ExtensionPrefValueMapTestBase : public BASECLASS {
 
   // Returns an empty string if the key is not set.
   std::string GetValue(const char * key, bool incognito) const {
-    const Value *value = epvm_.GetEffectivePrefValue(key, incognito, NULL);
+    const base::Value *value =
+        epvm_.GetEffectivePrefValue(key, incognito, NULL);
     std::string string_value;
     if (value)
       value->GetAsString(&string_value);

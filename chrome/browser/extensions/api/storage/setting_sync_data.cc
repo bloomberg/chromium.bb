@@ -46,7 +46,7 @@ void SettingSyncData::InitFromExtensionSettingSpecifics(
     syncer::SyncChange::SyncChangeType change_type,
     const sync_pb::ExtensionSettingSpecifics& specifics) {
   DCHECK(!internal_.get());
-  scoped_ptr<Value> value(
+  scoped_ptr<base::Value> value(
       base::JSONReader::Read(specifics.value()));
   if (!value.get()) {
     LOG(WARNING) << "Specifics for " << specifics.extension_id() << "/" <<
@@ -64,7 +64,7 @@ SettingSyncData::SettingSyncData(
     syncer::SyncChange::SyncChangeType change_type,
     const std::string& extension_id,
     const std::string& key,
-    scoped_ptr<Value> value)
+    scoped_ptr<base::Value> value)
     : internal_(new Internal(change_type, extension_id, key, value.Pass())) {}
 
 SettingSyncData::~SettingSyncData() {}
@@ -81,7 +81,7 @@ const std::string& SettingSyncData::key() const {
   return internal_->key_;
 }
 
-const Value& SettingSyncData::value() const {
+const base::Value& SettingSyncData::value() const {
   return *internal_->value_;
 }
 
@@ -89,7 +89,7 @@ SettingSyncData::Internal::Internal(
     syncer::SyncChange::SyncChangeType change_type,
     const std::string& extension_id,
     const std::string& key,
-    scoped_ptr<Value> value)
+    scoped_ptr<base::Value> value)
     : change_type_(change_type),
       extension_id_(extension_id),
       key_(key),

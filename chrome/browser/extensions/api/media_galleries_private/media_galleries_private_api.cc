@@ -388,7 +388,7 @@ bool MediaGalleriesPrivateGetHandlersFunction::RunImpl() {
       extensions::ExtensionSystem::Get(GetProfile())->extension_service();
   DCHECK(service);
 
-  ListValue* result_list = new ListValue;
+  base::ListValue* result_list = new base::ListValue;
 
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
@@ -408,7 +408,7 @@ bool MediaGalleriesPrivateGetHandlersFunction::RunImpl() {
          action_iter != handler_list->end();
          ++action_iter) {
       const MediaGalleriesHandler* action = action_iter->get();
-      DictionaryValue* handler = new DictionaryValue;
+      base::DictionaryValue* handler = new base::DictionaryValue;
       handler->SetString("extensionId", action->extension_id());
       handler->SetString("id", action->id());
       handler->SetString("title", action->title());

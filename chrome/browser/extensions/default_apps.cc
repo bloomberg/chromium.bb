@@ -161,7 +161,7 @@ void Provider::VisitRegisteredExtension() {
 void Provider::SetPrefs(base::DictionaryValue* prefs) {
   if (is_migration_) {
     std::set<std::string> new_default_apps;
-    for (DictionaryValue::Iterator i(*prefs); !i.IsAtEnd(); i.Advance()) {
+    for (base::DictionaryValue::Iterator i(*prefs); !i.IsAtEnd(); i.Advance()) {
       if (!IsOldDefaultApp(i.key()))
         new_default_apps.insert(i.key());
     }
