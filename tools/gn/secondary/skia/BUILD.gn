@@ -40,7 +40,7 @@ config("skia_config") {
     ]
     defines += "SK_SUPPORT_GPU=1"
   } else {
-    defines = "SK_SUPPORT_GPU=0"
+    defines += "SK_SUPPORT_GPU=0"
   }
 
   # For POSIX platforms, prefer the Mutex implementation provided by Skia

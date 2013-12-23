@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # Should only be running on Mac.
-assert(is_mac)
+assert(is_mac || is_ios)
 
 cc = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang", ".", root_build_dir)
 cxx = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang++", ".", root_build_dir)

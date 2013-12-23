@@ -65,6 +65,18 @@ declare_args() {
   # true means official Google Chrome branding (requires extra Google-internal
   # resources).
   is_chrome_branded = false
+
+  # Compile for Address Sanitizer to find memory bugs.
+  is_asan = false
+
+  # Compile for Leak Sanitizer to find leaks.
+  is_lsan = false
+
+  # Compile for Memory Sanitizer to find uninitialized reads.
+  is_msan = false
+
+  # Compile for Thread Sanitizer to find threading bugs.
+  is_tsan = false
 }
 
 # =============================================================================
@@ -280,6 +292,12 @@ if (is_component_build) {
   component_mode = "static_library"
 }
 
+# These Sanitizers all imply using the Clang compiler. On Windows they either
+# don't work or work differently.
+if (!is_clang && (is_asan || is_lsan || is_tsan || is_msan)) {
+  is_clang = true
+}
+
 toolkit_uses_gtk = is_linux
 
 # =============================================================================
@@ -422,7 +440,7 @@ if (is_win) {
   } else if (build_cpu_arch == "x64") {
     set_default_toolchain("//build/toolchain/linux:64")
   }
-} else if (is_mac) {
+} else if (is_mac || is_ios) {
   host_toolchain = "//build/toolchain/mac:clang"
   set_default_toolchain(host_toolchain)
 }
