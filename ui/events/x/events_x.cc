@@ -277,10 +277,19 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
 
+      // This check works only for master and floating slave devices. That is
+      // why it is necessary to check for the XI_Touch* events in the following
+      // switch statement to account for attached-slave touchscreens.
       if (factory->IsTouchDevice(xievent->sourceid))
         return GetTouchEventType(native_event);
 
       switch (xievent->evtype) {
+        case XI_TouchBegin:
+          return ui::ET_TOUCH_PRESSED;
+        case XI_TouchUpdate:
+          return ui::ET_TOUCH_MOVED;
+        case XI_TouchEnd:
+          return ui::ET_TOUCH_RELEASED;
         case XI_ButtonPress: {
           int button = EventButtonFromNative(native_event);
           if (button >= kMinWheelButton && button <= kMaxWheelButton)
