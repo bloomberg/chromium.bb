@@ -2185,7 +2185,7 @@ void RenderViewImpl::GetWindowSnapshot(const WindowSnapshotCallback& callback) {
     latency_info_swap_promise_monitor =
         rwc->CreateLatencyInfoSwapPromiseMonitor(&latency_info).Pass();
   } else {
-    latency_info_.MergeWith(latency_info);
+    latency_info_.push_back(latency_info);
   }
   ScheduleCompositeWithForcedRedraw();
 }

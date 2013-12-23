@@ -135,7 +135,7 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
       const gfx::Rect& scroll_rect,
       const gfx::Vector2d& scroll_delta,
       const std::vector<gfx::Rect>& copy_rects,
-      const ui::LatencyInfo& latency_info) = 0;
+      const std::vector<ui::LatencyInfo>& latency_info) = 0;
 
   // Notifies the View that the renderer has ceased to exist.
   virtual void RenderProcessGone(base::TerminationStatus status,

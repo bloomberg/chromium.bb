@@ -515,7 +515,7 @@ void RenderWidgetHostViewAndroid::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
     const std::vector<gfx::Rect>& copy_rects,
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   NOTIMPLEMENTED();
 }
 

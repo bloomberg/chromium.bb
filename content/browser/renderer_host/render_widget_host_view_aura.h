@@ -189,7 +189,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const gfx::Rect& scroll_rect,
       const gfx::Vector2d& scroll_delta,
       const std::vector<gfx::Rect>& copy_rects,
-      const ui::LatencyInfo& latency_info) OVERRIDE;
+      const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
@@ -773,7 +773,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   TouchEditingClient* touch_editing_client_;
 
-  ui::LatencyInfo software_latency_info_;
+  std::vector<ui::LatencyInfo> software_latency_info_;
 
   struct ReleasedFrameInfo {
     ReleasedFrameInfo(uint32 output_id, unsigned software_frame_id)

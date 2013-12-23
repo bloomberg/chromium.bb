@@ -194,7 +194,7 @@ class RenderWidgetHostViewWin
       const gfx::Rect& scroll_rect,
       const gfx::Vector2d& scroll_delta,
       const std::vector<gfx::Rect>& copy_rects,
-      const ui::LatencyInfo& latency_info) OVERRIDE;
+      const std::vector<ui::LatencyInfo>& latency_info) OVERRIDE;
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) OVERRIDE;
   virtual bool CanSubscribeFrame() const OVERRIDE;
@@ -606,7 +606,7 @@ class RenderWidgetHostViewWin
   // The OS-provided default IAccessible instance for our hwnd.
   base::win::ScopedComPtr<IAccessible> window_iaccessible_;
 
-  ui::LatencyInfo software_latency_info_;
+  std::vector<ui::LatencyInfo> software_latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };

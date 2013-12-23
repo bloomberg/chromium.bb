@@ -622,7 +622,7 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
 
   // The latency information for the frame. Only valid when accelerated
   // compositing is disabled.
-  IPC_STRUCT_MEMBER(ui::LatencyInfo, latency_info)
+  IPC_STRUCT_MEMBER(std::vector<ui::LatencyInfo>, latency_info)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_Navigate_Params)

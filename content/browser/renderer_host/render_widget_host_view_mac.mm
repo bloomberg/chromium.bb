@@ -927,10 +927,11 @@ void RenderWidgetHostViewMac::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
     const std::vector<gfx::Rect>& copy_rects,
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   GotSoftwareFrame();
 
-  software_latency_info_.MergeWith(latency_info);
+  for (size_t i = 0; i < latency_info.size(); i++)
+    software_latency_info_.push_back(latency_info[i]);
 
   if (render_widget_host_->is_hidden())
     return;
@@ -1692,7 +1693,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
       software_frame_manager_->GetCurrentFrameOutputSurfaceId(),
       render_widget_host_->GetProcess()->GetID(),
       ack);
-  software_latency_info_.MergeWith(frame->metadata.latency_info);
+  software_latency_info_.push_back(frame->metadata.latency_info);
   software_frame_manager_->SwapToNewFrameComplete(
       !render_widget_host_->is_hidden());
 
@@ -1951,10 +1952,12 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
 }
 
 void RenderWidgetHostViewMac::SendSoftwareLatencyInfoToHost() {
-  software_latency_info_.AddLatencyNumber(
-      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
-  render_widget_host_->FrameSwapped(software_latency_info_);
-  software_latency_info_.Clear();
+  for (size_t i = 0; i < software_latency_info_.size(); i++) {
+    software_latency_info_[i].AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+    render_widget_host_->FrameSwapped(software_latency_info_[i]);
+  }
+  software_latency_info_.clear();
 }
 
 }  // namespace content

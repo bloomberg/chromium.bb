@@ -1061,7 +1061,7 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
     latency_info_swap_promise_monitor =
         compositor_->CreateLatencyInfoSwapPromiseMonitor(&latency_info).Pass();
   } else {
-    latency_info_.MergeWith(latency_info);
+    latency_info_.push_back(latency_info);
   }
 
   base::TimeDelta now = base::TimeDelta::FromInternalValue(
@@ -1574,9 +1574,9 @@ void RenderWidget::DoDeferredUpdate() {
   need_update_rect_for_auto_resize_ = false;
 
   if (!is_accelerated_compositing_active_)
-    pending_update_params_->latency_info = latency_info_;
+    pending_update_params_->latency_info.swap(latency_info_);
 
-  latency_info_.Clear();
+  latency_info_.clear();
 
   if (update.scroll_rect.IsEmpty() &&
       !is_accelerated_compositing_active_ &&

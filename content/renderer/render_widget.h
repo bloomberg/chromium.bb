@@ -769,7 +769,7 @@ class CONTENT_EXPORT RenderWidget
 
   // The latency information for any current non-accelerated-compositing
   // frame.
-  ui::LatencyInfo latency_info_;
+  std::vector<ui::LatencyInfo> latency_info_;
 
   uint32 next_output_surface_id_;
 

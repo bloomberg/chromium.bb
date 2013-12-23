@@ -760,9 +760,10 @@ void RenderWidgetHostViewWin::DidUpdateBackingStore(
     const gfx::Rect& scroll_rect,
     const gfx::Vector2d& scroll_delta,
     const std::vector<gfx::Rect>& copy_rects,
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   TRACE_EVENT0("content", "RenderWidgetHostViewWin::DidUpdateBackingStore");
-  software_latency_info_.MergeWith(latency_info);
+  for (size_t i = 0; i < latency_info.size(); i++)
+    software_latency_info_.push_back(latency_info[i]);
   if (render_widget_host_->is_hidden())
     return;
 
@@ -1412,10 +1413,12 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
       web_contents_switch_paint_time_ = TimeTicks();
     }
 
-    software_latency_info_.AddLatencyNumber(
-        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
-    render_widget_host_->FrameSwapped(software_latency_info_);
-    software_latency_info_.Clear();
+    for (size_t i = 0; i < software_latency_info_.size(); i++) {
+      software_latency_info_[i].AddLatencyNumber(
+          ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+      render_widget_host_->FrameSwapped(software_latency_info_[i]);
+    }
+    software_latency_info_.clear();
   } else {
     DrawBackground(paint_dc.m_ps.rcPaint, &paint_dc);
     if (whiteout_start_time_.is_null())
