@@ -7,11 +7,9 @@
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/media/desktop_media_list_ash.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/native_desktop_media_list.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -165,29 +163,19 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
         show_screens, show_windows);
     picker_ = g_picker_factory->CreatePicker();
   } else {
-#if defined(USE_ASH)
-    if (chrome::IsNativeWindowInAsh(parent_window)) {
-      media_list.reset(new DesktopMediaListAsh(
-          (show_screens ? DesktopMediaListAsh::SCREENS : 0) |
-          (show_windows ? DesktopMediaListAsh::WINDOWS : 0)));
-    } else
-#endif
-    {
-      webrtc::DesktopCaptureOptions options =
-          webrtc::DesktopCaptureOptions::CreateDefault();
-      options.set_disable_effects(false);
-      scoped_ptr<webrtc::ScreenCapturer> screen_capturer(
-          show_screens ? webrtc::ScreenCapturer::Create(options) : NULL);
-      scoped_ptr<webrtc::WindowCapturer> window_capturer(
-          show_windows ? webrtc::WindowCapturer::Create(options) : NULL);
-
-      media_list.reset(new NativeDesktopMediaList(
-          screen_capturer.Pass(), window_capturer.Pass()));
-    }
-
     // DesktopMediaPicker is implemented only for Windows, OSX and
     // Aura Linux builds.
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
+#if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+    webrtc::DesktopCaptureOptions options =
+        webrtc::DesktopCaptureOptions::CreateDefault();
+    options.set_disable_effects(false);
+    scoped_ptr<webrtc::ScreenCapturer> screen_capturer(
+        show_screens ? webrtc::ScreenCapturer::Create(options) : NULL);
+    scoped_ptr<webrtc::WindowCapturer> window_capturer(
+        show_windows ? webrtc::WindowCapturer::Create(options) : NULL);
+
+    media_list.reset(new NativeDesktopMediaList(
+        screen_capturer.Pass(), window_capturer.Pass()));
     picker_ = DesktopMediaPicker::Create();
 #else
     error_ = "Desktop Capture API is not yet implemented for this platform.";

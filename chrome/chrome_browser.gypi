@@ -1045,8 +1045,6 @@
         'browser/media/chrome_midi_permission_context_factory.cc',
         'browser/media/chrome_midi_permission_context_factory.h',
         'browser/media/desktop_media_list.h',
-        'browser/media/desktop_media_list_ash.cc',
-        'browser/media/desktop_media_list_ash.h',
         'browser/media/desktop_media_picker.h',
         'browser/media/desktop_streams_registry.cc',
         'browser/media/desktop_streams_registry.h',

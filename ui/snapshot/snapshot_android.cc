@@ -4,7 +4,6 @@
 
 #include "ui/snapshot/snapshot.h"
 
-#include "base/callback.h"
 #include "ui/base/android/view_android.h"
 #include "ui/base/android/window_android.h"
 #include "ui/gfx/display.h"
@@ -31,15 +30,6 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   return window->GrabSnapshot(
       scaled_bounds.x(), scaled_bounds.y(), scaled_bounds.width(),
       scaled_bounds.height(), png_representation);
-}
-
-SNAPSHOT_EXPORT void GrapWindowSnapshotAsync(
-    gfx::NativeWindow window,
-    const gfx::Rect& snapshot_bounds,
-    const gfx::Size& target_size,
-    scoped_refptr<base::TaskRunner> background_task_runner,
-    GrapWindowSnapshotAsyncCallback callback) {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace ui

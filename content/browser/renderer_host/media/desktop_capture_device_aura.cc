@@ -217,17 +217,14 @@ void DesktopVideoCaptureMachine::Stop() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Stop observing window events.
-  if (desktop_window_) {
+  if (desktop_window_)
     desktop_window_->RemoveObserver(this);
-    desktop_window_ = NULL;
-  }
 
   // Stop observing compositor updates.
   if (desktop_layer_) {
     ui::Compositor* compositor = desktop_layer_->GetCompositor();
     if (compositor)
       compositor->RemoveObserver(this);
-    desktop_layer_ = NULL;
   }
 
   // Stop timer.
@@ -293,7 +290,7 @@ void DesktopVideoCaptureMachine::DidCopyOutput(
     base::Time start_time,
     const ThreadSafeCaptureOracle::CaptureFrameCallback& capture_frame_cb,
     scoped_ptr<cc::CopyOutputResult> result) {
-  if (result->IsEmpty() || result->size().IsEmpty() || !desktop_layer_)
+  if (result->IsEmpty() || result->size().IsEmpty())
     return;
 
   // Compute the dest size we want after the letterboxing resize. Make the
@@ -399,11 +396,13 @@ void DesktopVideoCaptureMachine::OnWindowBoundsChanged(
 }
 
 void DesktopVideoCaptureMachine::OnWindowDestroyed(aura::Window* window) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(desktop_window_ && window == desktop_window_);
+  desktop_window_ = NULL;
+  desktop_layer_ = NULL;
 
-  Stop();
-
-  oracle_proxy_->ReportError();
+  // Post task to stop capture on UI thread.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+      &DesktopVideoCaptureMachine::Stop, AsWeakPtr()));
 }
 
 void DesktopVideoCaptureMachine::OnCompositingEnded(

@@ -37,7 +37,6 @@
       'conditions': [
         ['use_aura==1', {
           'dependencies': [
-            '../../cc/cc.gyp:cc',
             '../aura/aura.gyp:aura',
             '../compositor/compositor.gyp:compositor',
           ],
