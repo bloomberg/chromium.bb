@@ -2026,5 +2026,41 @@
     "extensions/declarativeContent.html",
     "#type-Rule",
     "target anchor not found"
+  ],
+  [
+    200,
+    "extensions/whats_new.html",
+    "#badge",
+    "target anchor not found"
+  ],
+  [
+    200,
+    "extensions/whats_new.html",
+    "#icon",
+    "target anchor not found"
+  ],
+  [
+    200,
+    "extensions/whats_new.html",
+    "#manifest",
+    "target anchor not found"
+  ],
+  [
+    200,
+    "apps/whats_new.html",
+    "#manifest",
+    "target anchor not found"
+  ],  
+  [
+    200,
+    "extensions/whats_new.html",
+    "#popups",
+    "target anchor not found"
+  ],
+  [
+    200,
+    "extensions/whats_new.html",
+    "#tooltip",
+    "target anchor not found"
   ]
 ]

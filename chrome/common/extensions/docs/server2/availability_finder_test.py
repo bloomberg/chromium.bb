@@ -10,32 +10,17 @@ import api_schema_graph
 from availability_finder import AvailabilityFinder
 from branch_utility import BranchUtility, ChannelInfo
 from compiled_file_system import CompiledFileSystem
+from fake_host_file_system_provider import FakeHostFileSystemProvider
 from fake_url_fetcher import FakeUrlFetcher
 from host_file_system_iterator import HostFileSystemIterator
-from mock_file_system import MockFileSystem
 from mock_function import MockFunction
 from object_store_creator import ObjectStoreCreator
-from test_file_system import TestFileSystem
 from test_data.canned_data import (CANNED_API_FILE_SYSTEM_DATA, CANNED_BRANCHES)
 from test_data.object_level_availability.tabs import TABS_SCHEMA_BRANCHES
-from third_party.json_schema_compiler.memoize import memoize
+
 
 
 TABS_UNMODIFIED_VERSIONS = (16, 20, 23, 24)
-
-
-class _FakeHostFileSystemProvider(object):
-
-  def __init__(self, file_system_data):
-    self._file_system_data = file_system_data
-
-  def GetTrunk(self):
-    return self.GetBranch('trunk')
-
-  @memoize
-  def GetBranch(self, branch):
-    return MockFileSystem(TestFileSystem(self._file_system_data[str(branch)]))
-
 
 class AvailabilityFinderTest(unittest.TestCase):
 
@@ -45,8 +30,8 @@ class AvailabilityFinderTest(unittest.TestCase):
         os.path.join('branch_utility', 'second.json'),
         FakeUrlFetcher(os.path.join(sys.path[0], 'test_data')),
         ObjectStoreCreator.ForTest())
-    api_fs_creator = _FakeHostFileSystemProvider(CANNED_API_FILE_SYSTEM_DATA)
-    self._node_fs_creator = _FakeHostFileSystemProvider(TABS_SCHEMA_BRANCHES)
+    api_fs_creator = FakeHostFileSystemProvider(CANNED_API_FILE_SYSTEM_DATA)
+    self._node_fs_creator = FakeHostFileSystemProvider(TABS_SCHEMA_BRANCHES)
 
     def create_availability_finder(host_fs_creator):
       test_object_store = ObjectStoreCreator.ForTest()

@@ -9,6 +9,7 @@ from permissions_data_source import PermissionsDataSource
 from sidenav_data_source import SidenavDataSource
 from strings_data_source import StringsDataSource
 from template_data_source import TemplateDataSource
+from whats_new_data_source import WhatsNewDataSource
 
 
 _all_data_sources = {
@@ -18,6 +19,7 @@ _all_data_sources = {
   'permissions': PermissionsDataSource,
   'sidenavs': SidenavDataSource,
   'strings': StringsDataSource,
+  'whatsNew' : WhatsNewDataSource
 }
 
 assert all(issubclass(cls, DataSource)
