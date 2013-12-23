@@ -1480,6 +1480,10 @@ class RootWindowTestWithMessageLoop : public RootWindowTest {
   virtual ~RootWindowTestWithMessageLoop() {}
 
   void RunTest() {
+    // Reset any event the window may have received when bringing up the window
+    // (e.g. mouse-move events if the mouse cursor is over the window).
+    handler_.Reset();
+
     // Start a nested message-loop, post an event to be dispatched, and then
     // terminate the message-loop. When the message-loop unwinds and gets back,
     // the reposted event should not have fired.
