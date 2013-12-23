@@ -104,8 +104,9 @@ TEST_F(ProfileOAuth2TokenServiceRequestTest,
   EXPECT_EQ(1, consumer_.number_of_errors_);
 }
 
-TEST_F(ProfileOAuth2TokenServiceRequestTest, Success) {
-  oauth2_service_->UpdateCredentials(kAccountId, kRefreshToken);
+TEST_F(ProfileOAuth2TokenServiceRequestTest,
+       Success) {
+  oauth2_service_->IssueRefreshToken(kRefreshToken);
   scoped_ptr<ProfileOAuth2TokenServiceRequest> request(
       ProfileOAuth2TokenServiceRequest::CreateAndStart(
           profile_.get(),
@@ -122,7 +123,7 @@ TEST_F(ProfileOAuth2TokenServiceRequestTest, Success) {
 
 TEST_F(ProfileOAuth2TokenServiceRequestTest,
        RequestDeletionBeforeServiceComplete) {
-  oauth2_service_->UpdateCredentials(kAccountId, kRefreshToken);
+  oauth2_service_->IssueRefreshToken(kRefreshToken);
   scoped_ptr<ProfileOAuth2TokenServiceRequest> request(
       ProfileOAuth2TokenServiceRequest::CreateAndStart(
           profile_.get(),
@@ -139,7 +140,7 @@ TEST_F(ProfileOAuth2TokenServiceRequestTest,
 
 TEST_F(ProfileOAuth2TokenServiceRequestTest,
        RequestDeletionAfterServiceComplete) {
-  oauth2_service_->UpdateCredentials(kAccountId, kRefreshToken);
+  oauth2_service_->IssueRefreshToken(kRefreshToken);
   scoped_ptr<ProfileOAuth2TokenServiceRequest> request(
       ProfileOAuth2TokenServiceRequest::CreateAndStart(
           profile_.get(),
