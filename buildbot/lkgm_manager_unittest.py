@@ -8,6 +8,7 @@
 
 import mox
 import os
+import random
 import sys
 import tempfile
 from xml.dom import minidom
@@ -40,6 +41,9 @@ CHROMEOS_BRANCH=2
 CHROMEOS_PATCH=4
 CHROME_BRANCH=13
 """
+
+FAKE_WHITELISTED_REMOTES = ('cros', 'chromium')
+FAKE_NON_WHITELISTED_REMOTE = 'hottubtimemachine'
 
 
 class LKGMCandidateInfoTest(cros_test_lib.TestCase):
@@ -76,26 +80,52 @@ class LKGMCandidateInfoTest(cros_test_lib.TestCase):
 class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
   """Tests for the BuildSpecs manager."""
 
-  def _CreateFakeManifest(self, internal, entries, commits):
-    """Creates a fake manifest with some internal projects."""
+  def _CreateFakeManifest(self, num_internal, num_external, commits,
+                          has_default_remote=False):
+    """Creates a fake manifest with (optionally) some internal projects.
+
+    Args:
+      num_internal: Number of internal projects to add.
+      num_external: Number of external projects to add.
+      commits: Number of commits to add.
+      has_default_remote: If the manifest should have a default remote.
+
+    Returns:
+      A fake manifest for use in tests.
+    """
     tmp_manifest = tempfile.mktemp('manifest')
     # Create fake but empty manifest file.
     new_doc = minidom.getDOMImplementation().createDocument(None, 'manifest',
                                                             None)
     m_element = new_doc.getElementsByTagName('manifest')[0]
-    for idx in xrange(entries):
-      internal_element = idx % 2 == 0 and internal
+
+    default_remote = None
+    if has_default_remote:
+      default_remote = FAKE_WHITELISTED_REMOTES[0]
+      new_element = minidom.Element('default')
+      new_element.setAttribute('remote', default_remote)
+      m_element.appendChild(new_element)
+    remotes_to_use = list(FAKE_WHITELISTED_REMOTES) * (
+          num_external / len(FAKE_WHITELISTED_REMOTES))
+
+    internal_remotes = [FAKE_NON_WHITELISTED_REMOTE] * num_internal
+    remotes_to_use.extend(internal_remotes)
+    # Randomize the list of remotes to get wider test coverage for the
+    # filtering logic.
+    random.shuffle(remotes_to_use)
+
+    for idx in xrange(num_internal + num_external):
       new_element = minidom.Element('project')
       new_element.setAttribute('name', 'project_%d' % idx)
       new_element.setAttribute('path', 'some_path/to/project_%d' % idx)
       new_element.setAttribute('revision', 'revision_%d' % idx)
-      if internal_element:
-        new_element.setAttribute('remote', 'cros-internal')
-
+      remote = remotes_to_use[idx % len(remotes_to_use)]
+      # Skip setting a remote attribute if this is a default remote.
+      if not has_default_remote or remote is not default_remote:
+        new_element.setAttribute('remote', remote)
       m_element.appendChild(new_element)
 
     for idx in xrange(commits):
-      internal_element = idx % 2 == 0 and internal
       new_element = minidom.Element('pending_commit')
       new_element.setAttribute('project', 'project_%d' % idx)
       new_element.setAttribute('change_id', 'changeid_%d' % idx)
@@ -486,23 +516,31 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     fake_manifest = None
     fake_new_manifest = None
     try:
-      fake_manifest = self._CreateFakeManifest(internal=True, entries=100,
-                                               commits=4)
+      fake_manifest = self._CreateFakeManifest(num_internal=20,
+                                               num_external=80,
+                                               commits=100)
       fake_new_manifest = \
           lkgm_manager.LKGMManager._FilterCrosInternalProjectsFromManifest(
-              fake_manifest)
+              fake_manifest, whitelisted_remotes=FAKE_WHITELISTED_REMOTES)
 
       new_dom = minidom.parse(fake_new_manifest)
       projects = new_dom.getElementsByTagName('project')
+      # All external projects must be present in the new manifest.
+      self.assertEqual(len(projects), 80)
+      project_remote_dict = {}
+      # All projects should have whitelisted remotes.
       for p in projects:
-        self.assertFalse(p.getAttribute('remote') == 'cros-internal')
+        remote = p.getAttribute('remote')
+        self.assertIn(remote, FAKE_WHITELISTED_REMOTES)
+        project_remote_dict[p.getAttribute('name')] = remote
 
-      # Check commits.  All commits with project_X where X % 2 == 0 are
-      # internal commits.
+      # Check commits. All commits should correspond to projects which
+      # have whitelisted remotes.
       commits = new_dom.getElementsByTagName('pending_commit')
+      self.assertEqual(len(commits), 80)
       for c in commits:
-        index = c.getAttribute('project').split('_')[-1]
-        self.assertTrue(int(index) % 2 != 0)
+        p = c.getAttribute('project')
+        self.assertIn(project_remote_dict[p], FAKE_WHITELISTED_REMOTES)
 
     finally:
       if fake_manifest:
@@ -515,17 +553,41 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
     fake_manifest = None
     fake_new_manifest = None
     try:
-      fake_manifest = self._CreateFakeManifest(internal=False, entries=100,
+      fake_manifest = self._CreateFakeManifest(num_internal=0,
+                                               num_external=100,
                                                commits=20)
       fake_new_manifest = \
           lkgm_manager.LKGMManager._FilterCrosInternalProjectsFromManifest(
-              fake_manifest)
+              fake_manifest, whitelisted_remotes=FAKE_WHITELISTED_REMOTES)
 
       new_dom = minidom.parse(fake_new_manifest)
       projects = new_dom.getElementsByTagName('project')
       self.assertEqual(len(projects), 100)
       commits = new_dom.getElementsByTagName('pending_commit')
       self.assertEqual(len(commits), 20)
+
+    finally:
+      if fake_manifest:
+        os.remove(fake_manifest)
+      if fake_new_manifest:
+        os.remove(fake_new_manifest)
+
+  def testFilterDefaultProjectsFromManifest(self):
+    """Tests whether we correctly handle projects with default remotes."""
+    fake_manifest = None
+    fake_new_manifest = None
+    try:
+      fake_manifest = self._CreateFakeManifest(num_internal=20,
+                                               num_external=80,
+                                               commits=20,
+                                               has_default_remote=True)
+      fake_new_manifest = \
+          lkgm_manager.LKGMManager._FilterCrosInternalProjectsFromManifest(
+              fake_manifest, whitelisted_remotes=FAKE_WHITELISTED_REMOTES)
+
+      new_dom = minidom.parse(fake_new_manifest)
+      projects = new_dom.getElementsByTagName('project')
+      self.assertEqual(len(projects), 80)
 
     finally:
       if fake_manifest:

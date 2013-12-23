@@ -3,9 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-A library to generate and store the manifests for cros builders to use.
-"""
+"""A library to generate and store the manifests for cros builders to use."""
 
 import logging
 import os
@@ -28,15 +26,18 @@ PALADIN_CHANGE_ID_ATTR = 'change_id'
 PALADIN_COMMIT_ATTR = 'commit'
 
 MANIFEST_ELEMENT = 'manifest'
+DEFAULT_ELEMENT = 'default'
 PROJECT_ELEMENT = 'project'
 PROJECT_NAME_ATTR = 'name'
 PROJECT_REMOTE_ATTR = 'remote'
-INTERNAL_REMOTE = 'cros-internal'
 
 
 class PromoteCandidateException(Exception):
   """Exception thrown for failure to promote manifest candidate."""
-  pass
+
+
+class FilterManifestException(Exception):
+  """Exception thrown when failing to filter the internal manifest."""
 
 
 class _LKGMCandidateInfo(manifest_version.VersionInfo):
@@ -134,8 +135,16 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     """Initialize an LKGM Manager.
 
     Args:
+      source_repo: Repository object for the source code.
+      manifest_repo: Manifest repository for manifest versions/buildspecs.
+      build_name: Identifier for the build. Must much cbuildbot_config.
       build_type:  Type of build.  Must be a pfq type.
-    Other args see manifest_version.BuildSpecsManager.
+      incr_type: How we should increment this version - build|branch|patch
+      force: Create a new manifest even if there are no changes.
+      branch: Branch this builder is running on.
+      manifest: Manifest to use for checkout. E.g. 'full' or 'buildtools'.
+      dry_run: Whether we actually commit changes we make or not.
+      master: Whether we are the master builder.
     """
     super(LKGMManager, self).__init__(
         source_repo=source_repo, manifest_repo=manifest_repo,
@@ -197,12 +206,34 @@ class LKGMManager(manifest_version.BuildSpecsManager):
       manifest_dom.writexml(manifest_file)
 
   @staticmethod
-  def _FilterCrosInternalProjectsFromManifest(manifest):
+  def _GetDefaultRemote(manifest_dom):
+    """Returns the default remote in a manifest (if any).
+
+    Args:
+      manifest_dom: DOM Document object representing the manifest.
+
+    Returns:
+      Default remote if one exists, None otherwise.
+    """
+    default_nodes = manifest_dom.getElementsByTagName(DEFAULT_ELEMENT)
+    if default_nodes:
+      if len(default_nodes) > 1:
+        raise FilterManifestException(
+            'More than one <default> element found in manifest')
+      return default_nodes[0].getAttribute(PROJECT_REMOTE_ATTR)
+    return None
+
+  @staticmethod
+  def _FilterCrosInternalProjectsFromManifest(
+      manifest, whitelisted_remotes=constants.EXTERNAL_REMOTES):
     """Returns a path to a new manifest with internal repositories stripped.
 
     Args:
       manifest: Path to an existing manifest that may have internal
         repositories.
+      whitelisted_remotes: Tuple of remotes to allow in the external manifest.
+        Only projects with those remotes will be included in the external
+        manifest.
 
     Returns:
       Path to a new manifest that is a copy of the original without internal
@@ -214,10 +245,20 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     projects = manifest_dom.getElementsByTagName(PROJECT_ELEMENT)
     pending_commits = manifest_dom.getElementsByTagName(PALADIN_COMMIT_ELEMENT)
 
+    default_remote = LKGMManager._GetDefaultRemote(manifest_dom)
     internal_projects = set()
     for project_element in projects:
-      if project_element.getAttribute(PROJECT_REMOTE_ATTR) == INTERNAL_REMOTE:
-        project = project_element.getAttribute(PROJECT_NAME_ATTR)
+      project_remote = project_element.getAttribute(PROJECT_REMOTE_ATTR)
+      project = project_element.getAttribute(PROJECT_NAME_ATTR)
+      if not project_remote:
+        if not default_remote:
+          # This should not happen for a valid manifest. Either each
+          # project must have a remote specified or there should
+          # be manifest default we could use.
+          raise FilterManifestException(
+              'Project %s has unspecified remote with no default' % project)
+        project_remote = default_remote
+      if project_remote not in whitelisted_remotes:
         internal_projects.add(project)
         manifest_node.removeChild(project_element)
 
