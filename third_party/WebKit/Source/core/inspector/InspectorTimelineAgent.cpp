@@ -67,7 +67,7 @@ static const char enabled[] = "enabled";
 static const char started[] = "started";
 static const char startedFromProtocol[] = "startedFromProtocol";
 static const char timelineMaxCallStackDepth[] = "timelineMaxCallStackDepth";
-static const char includeDomCounters[] = "includeDomCounters";
+static const char includeCounters[] = "includeCounters";
 static const char includeGPUEvents[] = "includeGPUEvents";
 static const char bufferEvents[] = "bufferEvents";
 }
@@ -307,7 +307,7 @@ void InspectorTimelineAgent::disable(ErrorString*)
     m_state->setBoolean(TimelineAgentState::enabled, false);
 }
 
-void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeDomCounters, const bool* includeGPUEvents)
+void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeCounters, const bool* includeGPUEvents)
 {
     if (!m_frontend)
         return;
@@ -328,7 +328,7 @@ void InspectorTimelineAgent::start(ErrorString* errorString, const int* maxCallS
         m_bufferedEvents = TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent>::create();
 
     m_state->setLong(TimelineAgentState::timelineMaxCallStackDepth, m_maxCallStackDepth);
-    m_state->setBoolean(TimelineAgentState::includeDomCounters, includeDomCounters && *includeDomCounters);
+    m_state->setBoolean(TimelineAgentState::includeCounters, includeCounters && *includeCounters);
     m_state->setBoolean(TimelineAgentState::includeGPUEvents, includeGPUEvents && *includeGPUEvents);
     m_state->setBoolean(TimelineAgentState::bufferEvents, bufferEvents && *bufferEvents);
 
@@ -1041,7 +1041,7 @@ void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<JSONObject> prp
     if (m_recordStack.isEmpty()) {
         sendEvent(record.release());
     } else {
-        setDOMCounters(record.get());
+        setCounters(record.get());
         TimelineRecordEntry parent = m_recordStack.last();
         parent.children->pushObject(record.release());
     }
@@ -1054,11 +1054,11 @@ static size_t getUsedHeapSize()
     return info.usedJSHeapSize;
 }
 
-void InspectorTimelineAgent::setDOMCounters(TypeBuilder::Timeline::TimelineEvent* record)
+void InspectorTimelineAgent::setCounters(TypeBuilder::Timeline::TimelineEvent* record)
 {
     record->setUsedHeapSize(getUsedHeapSize());
 
-    if (m_state->getBoolean(TimelineAgentState::includeDomCounters)) {
+    if (m_state->getBoolean(TimelineAgentState::includeCounters)) {
         int documentCount = 0;
         int nodeCount = 0;
         int listenerCount = 0;
@@ -1067,10 +1067,10 @@ void InspectorTimelineAgent::setDOMCounters(TypeBuilder::Timeline::TimelineEvent
             nodeCount = InspectorCounters::counterValue(InspectorCounters::NodeCounter);
             listenerCount = InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter);
         }
-        RefPtr<TypeBuilder::Timeline::DOMCounters> counters = TypeBuilder::Timeline::DOMCounters::create()
-            .setDocuments(documentCount)
-            .setNodes(nodeCount)
-            .setJsEventListeners(listenerCount);
+        RefPtr<TypeBuilder::Timeline::Counters> counters = TypeBuilder::Timeline::Counters::create();
+        counters->setDocuments(documentCount);
+        counters->setNodes(nodeCount);
+        counters->setJsEventListeners(listenerCount);
         record->setCounters(counters.release());
     }
 }
