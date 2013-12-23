@@ -430,7 +430,7 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
            url_parse::Component(0, static_cast<int>(scheme.length())))))
     return scheme;
 
-  if (scheme == chrome::kFileSystemScheme) {
+  if (scheme == content::kFileSystemScheme) {
     // Have the GURL parser do the heavy lifting for us.
     url_parse::ParseFileSystemURL(text->data(),
         static_cast<int>(text->length()), parts);
@@ -521,7 +521,7 @@ GURL URLFixerUpper::FixupURL(const std::string& text,
     return GURL(parts.scheme.is_valid() ? text : FixupPath(text));
 
   // We handle the filesystem scheme separately.
-  if (scheme == chrome::kFileSystemScheme) {
+  if (scheme == content::kFileSystemScheme) {
     if (parts.inner_parsed() && parts.inner_parsed()->scheme.is_valid())
       return GURL(text);
     return GURL();

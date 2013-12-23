@@ -197,7 +197,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
       }
       StringToLowerASCII(&filter);
       if (!StartsWithASCII(filter,
-                           std::string(chrome::kFileSystemScheme) + ':',
+                           std::string(content::kFileSystemScheme) + ':',
                            true)) {
         *error = extensions::ErrorUtils::FormatErrorMessageUTF16(
             errors::kInvalidURLPatternError, filter);

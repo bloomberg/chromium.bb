@@ -16,7 +16,7 @@ const char* const kDefaultSavableSchemes[] = {
   kHttpScheme,
   kHttpsScheme,
   chrome::kFileScheme,
-  chrome::kFileSystemScheme,
+  kFileSystemScheme,
   kFtpScheme,
   chrome::kChromeDevToolsScheme,
   chrome::kChromeUIScheme,

@@ -21,11 +21,11 @@ CONTENT_EXPORT extern const char kChromeDevToolsScheme[];
 CONTENT_EXPORT extern const char kChromeUIScheme[];  // Used for WebUIs.
 CONTENT_EXPORT extern const char kDataScheme[];
 CONTENT_EXPORT extern const char kFileScheme[];
-CONTENT_EXPORT extern const char kFileSystemScheme[];
 }  // namespace chrome
 
 namespace content {
 
+CONTENT_EXPORT extern const char kFileSystemScheme[];
 CONTENT_EXPORT extern const char kFtpScheme[];
 CONTENT_EXPORT extern const char kGuestScheme[];
 CONTENT_EXPORT extern const char kHttpScheme[];

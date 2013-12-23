@@ -64,7 +64,7 @@ TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreWebSafe) {
   EXPECT_TRUE(IsWebScheme(chrome::kDataScheme));
   EXPECT_TRUE(IsWebScheme("feed"));
   EXPECT_TRUE(IsWebScheme(chrome::kBlobScheme));
-  EXPECT_TRUE(IsWebScheme(chrome::kFileSystemScheme));
+  EXPECT_TRUE(IsWebScheme(content::kFileSystemScheme));
   EXPECT_FALSE(IsWebScheme("invalid-scheme-i-just-made-up"));
 }
 
@@ -87,7 +87,7 @@ TEST_F(BrowsingDataHelperTest, WebSafeSchemesAreNotExtensions) {
   EXPECT_FALSE(IsExtensionScheme(chrome::kDataScheme));
   EXPECT_FALSE(IsExtensionScheme("feed"));
   EXPECT_FALSE(IsExtensionScheme(chrome::kBlobScheme));
-  EXPECT_FALSE(IsExtensionScheme(chrome::kFileSystemScheme));
+  EXPECT_FALSE(IsExtensionScheme(content::kFileSystemScheme));
   EXPECT_FALSE(IsExtensionScheme("invalid-scheme-i-just-made-up"));
 }
 

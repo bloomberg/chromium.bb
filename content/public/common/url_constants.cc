@@ -15,11 +15,11 @@ const char kChromeDevToolsScheme[] = "chrome-devtools";
 const char kChromeUIScheme[] = "chrome";
 const char kDataScheme[] = "data";
 const char kFileScheme[] = "file";
-const char kFileSystemScheme[] = "filesystem";
 }  // namespace chrome
 
 namespace content {
 
+const char kFileSystemScheme[] = "filesystem";
 const char kFtpScheme[] = "ftp";
 const char kGuestScheme[] = "chrome-guest";
 const char kHttpScheme[] = "http";

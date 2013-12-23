@@ -251,7 +251,7 @@ URLSchemeForHistogram URLScheme(const GURL& url) {
   return kUnknownURLScheme;
 }
 
-}  // anonymous namespace
+}  // namespace
 
 void WebMediaPlayerImpl::load(LoadType load_type, const blink::WebURL& url,
                               CORSMode cors_mode) {

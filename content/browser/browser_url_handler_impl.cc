@@ -26,7 +26,7 @@ static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
     static const char* const allowed_sub_schemes[] = {
       kHttpScheme, kHttpsScheme, kFtpScheme,
       chrome::kChromeDevToolsScheme, chrome::kChromeUIScheme,
-      chrome::kFileScheme, chrome::kFileSystemScheme
+      chrome::kFileScheme, kFileSystemScheme
     };
 
     bool is_sub_scheme_allowed = false;

@@ -160,7 +160,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     return URL;
   }
 
-  if (LowerCaseEqualsASCII(parsed_scheme, chrome::kFileSystemScheme)) {
+  if (LowerCaseEqualsASCII(parsed_scheme, content::kFileSystemScheme)) {
     // This could theoretically be a strange search, but let's check.
     // If it's got an inner_url with a scheme, it's a URL, whether it's valid or
     // not.
@@ -460,7 +460,7 @@ void AutocompleteInput::ParseForEmphasizeComponents(
         host->reset();
       }
     }
-  } else if (LowerCaseEqualsASCII(scheme_str, chrome::kFileSystemScheme) &&
+  } else if (LowerCaseEqualsASCII(scheme_str, content::kFileSystemScheme) &&
              parts.inner_parsed() && parts.inner_parsed()->scheme.is_valid()) {
     *host = parts.inner_parsed()->host;
   }

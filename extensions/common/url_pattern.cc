@@ -26,7 +26,7 @@ const char* kValidSchemes[] = {
   content::kFtpScheme,
   chrome::kChromeUIScheme,
   extensions::kExtensionScheme,
-  chrome::kFileSystemScheme,
+  content::kFileSystemScheme,
 };
 
 const int kValidSchemeMasks[] = {

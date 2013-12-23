@@ -21,7 +21,7 @@ const char* kValidSchemes[] = {
   content::kFtpScheme,
   content::kJavaScriptScheme,
   chrome::kDataScheme,
-  chrome::kFileSystemScheme,
+  content::kFileSystemScheme,
 };
 
 }  // namespace
