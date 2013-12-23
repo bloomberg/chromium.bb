@@ -14,15 +14,15 @@ shouldThrow("document.implementation.createDocumentType(null, null)", ExpectedNo
 shouldThrow("document.implementation.createDocumentType(null, '')", ExpectedNotEnoughArgumentsMessage(2));
 shouldThrow("document.implementation.createDocumentType('', null)", ExpectedNotEnoughArgumentsMessage(2));
 shouldThrow("document.implementation.createDocumentType('', '')", ExpectedNotEnoughArgumentsMessage(2));
-shouldThrow("document.implementation.createDocumentType('a:', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
-shouldThrow("document.implementation.createDocumentType(':foo', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
-shouldThrow("document.implementation.createDocumentType(':', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
+shouldThrow("document.implementation.createDocumentType('a:', null, null)", '"NamespaceError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': The qualified name provided (\'a:\') has an empty local name."');
+shouldThrow("document.implementation.createDocumentType(':foo', null, null)", '"NamespaceError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': The qualified name provided (\':foo\') has an empty namespace prefix."');
+shouldThrow("document.implementation.createDocumentType(':', null, null)", '"NamespaceError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': The qualified name provided (\':\') has an empty namespace prefix."');
 shouldNotThrow("document.implementation.createDocumentType('foo', null, null)");
 shouldNotThrow("document.implementation.createDocumentType('foo:bar', null, null)");
-shouldThrow("document.implementation.createDocumentType('foo::bar', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
-shouldThrow("document.implementation.createDocumentType('\t:bar', null, null)", "'InvalidCharacterError: The string contains invalid characters.'");
-shouldThrow("document.implementation.createDocumentType('foo:\t', null, null)", "'InvalidCharacterError: The string contains invalid characters.'");
-shouldThrow("document.implementation.createDocumentType('foo :bar', null, null)", "'InvalidCharacterError: The string contains invalid characters.'");
-shouldThrow("document.implementation.createDocumentType('foo: bar', null, null)", "'InvalidCharacterError: The string contains invalid characters.'");
-shouldThrow("document.implementation.createDocumentType('a:b:c', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
+shouldThrow("document.implementation.createDocumentType('foo::bar', null, null)", '"NamespaceError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': The qualified name provided (\'foo::bar\') contains multiple colons."');
+shouldThrow("document.implementation.createDocumentType('\t:bar', null, null)", '"InvalidCharacterError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': The qualified name provided (\'\t:bar\') contains the invalid name-start character \'\t\'."');
+shouldThrow("document.implementation.createDocumentType('foo:\t', null, null)", '"InvalidCharacterError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': The qualified name provided (\'foo:\t\') contains the invalid name-start character \'\t\'."');
+shouldThrow("document.implementation.createDocumentType('foo :bar', null, null)", '"InvalidCharacterError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': The qualified name provided (\'foo :bar\') contains the invalid character \' \'."');
+shouldThrow("document.implementation.createDocumentType('foo: bar', null, null)", '"InvalidCharacterError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': The qualified name provided (\'foo: bar\') contains the invalid name-start character \' \'."');
+shouldThrow("document.implementation.createDocumentType('a:b:c', null, null)", '"NamespaceError: Failed to execute \'createDocumentType\' on \'DOMImplementation\': The qualified name provided (\'a:b:c\') contains multiple colons."');
 

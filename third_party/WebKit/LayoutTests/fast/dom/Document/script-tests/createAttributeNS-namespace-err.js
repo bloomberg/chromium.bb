@@ -23,13 +23,14 @@ function stringForExceptionCode(c)
     return c;
 }
 
-function assertEquals(actual, expect, m)
+function assertExceptionCode(exception, expect, m)
 {
+    var actual = exception.code;
     if (actual !== expect) {
         m += "; expected " + stringForExceptionCode(expect) + ", threw " + stringForExceptionCode(actual);
         testFailed(m);
     } else {
-        m += "; threw " + stringForExceptionCode(actual);;
+        m += "; threw " + exception.toString();
         testPassed(m);
     }
 }
@@ -118,7 +119,7 @@ function runNSTests()
             createFunction.apply(doc, test.args);
             assert(!("code" in test), msg);
         } catch (e) {
-            assertEquals(e.code, test.code || "expected no exception", msg);
+            assertExceptionCode(e, test.code || "expected no exception", msg);
         }
     }
 }

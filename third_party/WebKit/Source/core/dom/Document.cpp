@@ -686,7 +686,7 @@ void Document::childrenChanged(bool changedByParser, Node* beforeChange, Node* a
 PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionState& exceptionState)
 {
     if (!isValidName(name)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+        exceptionState.throwDOMException(InvalidCharacterError, "The tag name provided ('" + name + "') is not a valid name.");
         return 0;
     }
 
@@ -699,7 +699,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionS
 PassRefPtr<Element> Document::createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState& exceptionState)
 {
     if (!isValidName(localName)) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+        exceptionState.throwDOMException(InvalidCharacterError, "The tag name provided ('" + localName + "') is not a valid name.");
         return 0;
     }
 
@@ -727,7 +727,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
 
     QualifiedName qName(prefix, localName, namespaceURI);
     if (!hasValidNamespaceForElements(qName)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
+        exceptionState.throwDOMException(NamespaceError, "The namespace URI provided ('" + namespaceURI + "') is not valid for the qualified name provided ('" + qualifiedName + "').");
         return 0;
     }
 
@@ -1044,7 +1044,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     QualifiedName qName(prefix, localName, namespaceURI);
     if (!hasValidNamespaceForElements(qName)) {
         exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
-        return 0;
+        exceptionState.throwDOMException(NamespaceError, "The namespace URI provided ('" + namespaceURI + "') is not valid for the qualified name provided ('" + qualifiedName + "').");
     }
 
     return createElement(qName, false);
@@ -3941,7 +3941,7 @@ static bool parseQualifiedNameInternal(const AtomicString& qualifiedName, const 
         U16_NEXT(characters, i, length, c)
         if (c == ':') {
             if (sawColon) {
-                exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
+                exceptionState.throwDOMException(NamespaceError, "The qualified name provided ('" + qualifiedName + "') contains multiple colons.");
                 return false; // multiple colons: not allowed
             }
             nameStart = true;
@@ -3949,13 +3949,25 @@ static bool parseQualifiedNameInternal(const AtomicString& qualifiedName, const 
             colonPos = i - 1;
         } else if (nameStart) {
             if (!isValidNameStart(c)) {
-                exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+                StringBuilder message;
+                message.appendLiteral("The qualified name provided ('");
+                message.append(qualifiedName);
+                message.appendLiteral("') contains the invalid name-start character '");
+                message.append(c);
+                message.appendLiteral("'.");
+                exceptionState.throwDOMException(InvalidCharacterError, message.toString());
                 return false;
             }
             nameStart = false;
         } else {
             if (!isValidNamePart(c)) {
-                exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+                StringBuilder message;
+                message.appendLiteral("The qualified name provided ('");
+                message.append(qualifiedName);
+                message.appendLiteral("') contains the invalid character '");
+                message.append(c);
+                message.appendLiteral("'.");
+                exceptionState.throwDOMException(InvalidCharacterError, message.toString());
                 return false;
             }
         }
@@ -3967,7 +3979,7 @@ static bool parseQualifiedNameInternal(const AtomicString& qualifiedName, const 
     } else {
         prefix = AtomicString(characters, colonPos);
         if (prefix.isEmpty()) {
-            exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
+            exceptionState.throwDOMException(NamespaceError, "The qualified name provided ('" + qualifiedName + "') has an empty namespace prefix.");
             return false;
         }
         int prefixStart = colonPos + 1;
@@ -3975,7 +3987,7 @@ static bool parseQualifiedNameInternal(const AtomicString& qualifiedName, const 
     }
 
     if (localName.isEmpty()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
+        exceptionState.throwDOMException(NamespaceError, "The qualified name provided ('" + qualifiedName + "') has an empty local name.");
         return false;
     }
 
@@ -3987,7 +3999,7 @@ bool Document::parseQualifiedName(const AtomicString& qualifiedName, AtomicStrin
     unsigned length = qualifiedName.length();
 
     if (!length) {
-        exceptionState.throwUninformativeAndGenericDOMException(InvalidCharacterError);
+        exceptionState.throwDOMException(InvalidCharacterError, "The qualified name provided is empty.");
         return false;
     }
 
@@ -4213,7 +4225,7 @@ PassRefPtr<Attr> Document::createAttributeNS(const AtomicString& namespaceURI, c
     QualifiedName qName(prefix, localName, namespaceURI);
 
     if (!shouldIgnoreNamespaceChecks && !hasValidNamespaceForAttributes(qName)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
+        exceptionState.throwDOMException(NamespaceError, "The namespace URI provided ('" + namespaceURI + "') is not valid for the qualified name provided ('" + qualifiedName + "').");
         return 0;
     }
 

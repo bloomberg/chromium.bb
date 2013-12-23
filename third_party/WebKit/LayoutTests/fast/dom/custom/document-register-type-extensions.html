@@ -123,7 +123,7 @@ fooCreatedEmpty = document.createElement('x-foo', '');
 shouldBeEqualToString('fooCreatedEmpty.outerHTML', fooOuterHTML);
 shouldBeTrue('fooCreatedEmpty instanceof fooConstructor');
 
-shouldThrow('document.createElement("@invalid", "x-bar")', '"InvalidCharacterError: The string contains invalid characters."');
+shouldThrow('document.createElement("@invalid", "x-bar")', '"InvalidCharacterError: Failed to execute \'createElement\' on \'Document\': The tag name provided (\'@invalid\') is not a valid name."');
 
 //
 // createElementNS() with type extensions
@@ -138,7 +138,7 @@ shouldBeEqualToString('barCreatedNS.outerHTML', barOuterHTML);
 shouldBeTrue('barCreatedNS instanceof barConstructor');
 shouldBeTrue('isFormControl(barCreatedNS)');
 
-shouldThrow('document.createElementNS("http://example.com/2013/no-such-namespace", "xml:lang", "x-bar")', '"NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces."');
+shouldThrow('document.createElementNS("http://example.com/2013/no-such-namespace", "xml:lang", "x-bar")', '"NamespaceError: Failed to execute \'createElementNS\' on \'Document\': The namespace URI provided (\'http://example.com/2013/no-such-namespace\') is not valid for the qualified name provided (\'xml:lang\')."');
 
 // parser
 function createElementFromHTML(html) {

@@ -26,7 +26,7 @@ var nameList = [
                 ];
 
 for (var i in nameList)
-    shouldThrow("document.createElement('" + nameList[i] +"')", "'InvalidCharacterError: The string contains invalid characters.'");
+    shouldThrow("document.createElement('" + nameList[i] +"')");
 </script>
 </body>
 </html>
