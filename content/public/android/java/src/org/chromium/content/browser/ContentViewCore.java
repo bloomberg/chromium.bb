@@ -458,6 +458,7 @@ public class ContentViewCore
 
     private ViewAndroid mViewAndroid;
 
+    /** ActionAfterDoubleTap defined in tools/metrics/histograms/histograms.xml. */
     public static class UMAActionAfterDoubleTap {
         public static final int NAVIGATE_BACK = 0;
         public static final int NAVIGATE_STOP = 1;
@@ -465,6 +466,7 @@ public class ContentViewCore
         public static final int COUNT = 3;
     }
 
+    /** TapDelayType defined in tools/metrics/histograms/histograms.xml. */
     public static class UMASingleTapType {
         public static final int DELAYED_TAP = 0;
         public static final int UNDELAYED_TAP = 1;
@@ -1487,6 +1489,7 @@ public class ContentViewCore
         }
     }
 
+    /** Callback interface for evaluateJavaScript(). */
     public interface JavaScriptCallback {
         void handleJavaScriptResult(String jsonResult);
     }
@@ -3037,7 +3040,9 @@ public class ContentViewCore
 
             return Settings.Secure.getInt(contentResolver, accessibilityScriptInjection, 0) == 1;
         } catch (NoSuchFieldException e) {
+            // Do nothing, default to false.
         } catch (IllegalAccessException e) {
+            // Do nothing, default to false.
         }
         return false;
     }
