@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_filter.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -61,9 +60,7 @@ TEST_F(JsonPrefStoreTest, NonExistentFile) {
   base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      bogus_input_file,
-      message_loop_.message_loop_proxy().get(),
-      scoped_ptr<PrefFilter>());
+      bogus_input_file, message_loop_.message_loop_proxy().get());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_NO_FILE,
             pref_store->ReadPrefs());
   EXPECT_FALSE(pref_store->ReadOnly());
@@ -75,9 +72,7 @@ TEST_F(JsonPrefStoreTest, InvalidFile) {
   base::FilePath invalid_file = temp_dir_.path().AppendASCII("invalid.json");
   ASSERT_TRUE(base::CopyFile(invalid_file_original, invalid_file));
   scoped_refptr<JsonPrefStore> pref_store =
-      new JsonPrefStore(invalid_file,
-                        message_loop_.message_loop_proxy().get(),
-                        scoped_ptr<PrefFilter>());
+      new JsonPrefStore(invalid_file, message_loop_.message_loop_proxy().get());
   EXPECT_EQ(PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE,
             pref_store->ReadPrefs());
   EXPECT_FALSE(pref_store->ReadOnly());
@@ -162,10 +157,8 @@ TEST_F(JsonPrefStoreTest, Basic) {
   // Test that the persistent value can be loaded.
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
   ASSERT_TRUE(PathExists(input_file));
-  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      input_file,
-      message_loop_.message_loop_proxy().get(),
-      scoped_ptr<PrefFilter>());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(input_file, message_loop_.message_loop_proxy().get());
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
   ASSERT_FALSE(pref_store->ReadOnly());
 
@@ -190,10 +183,8 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
   // Test that the persistent value can be loaded.
   base::FilePath input_file = temp_dir_.path().AppendASCII("write.json");
   ASSERT_TRUE(PathExists(input_file));
-  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      input_file,
-      message_loop_.message_loop_proxy().get(),
-      scoped_ptr<PrefFilter>());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(input_file, message_loop_.message_loop_proxy().get());
 
   {
     MockPrefStoreObserver mock_observer;
@@ -228,10 +219,8 @@ TEST_F(JsonPrefStoreTest, BasicAsync) {
 TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
   FilePath pref_file = temp_dir_.path().AppendASCII("empty_values.json");
 
-  scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      pref_file,
-      message_loop_.message_loop_proxy(),
-      scoped_ptr<PrefFilter>());
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(pref_file, message_loop_.message_loop_proxy());
 
   // Set some keys with empty values.
   pref_store->SetValue("list", new base::ListValue);
@@ -242,10 +231,7 @@ TEST_F(JsonPrefStoreTest, PreserveEmptyValues) {
   MessageLoop::current()->RunUntilIdle();
 
   // Reload.
-  pref_store = new JsonPrefStore(
-      pref_file,
-      message_loop_.message_loop_proxy(),
-      scoped_ptr<PrefFilter>());
+  pref_store = new JsonPrefStore(pref_file, message_loop_.message_loop_proxy());
   ASSERT_EQ(PersistentPrefStore::PREF_READ_ERROR_NONE, pref_store->ReadPrefs());
   ASSERT_FALSE(pref_store->ReadOnly());
 
@@ -262,9 +248,7 @@ TEST_F(JsonPrefStoreTest, AsyncNonExistingFile) {
   base::FilePath bogus_input_file = data_dir_.AppendASCII("read.txt");
   ASSERT_FALSE(PathExists(bogus_input_file));
   scoped_refptr<JsonPrefStore> pref_store = new JsonPrefStore(
-      bogus_input_file,
-      message_loop_.message_loop_proxy().get(),
-      scoped_ptr<PrefFilter>());
+      bogus_input_file, message_loop_.message_loop_proxy().get());
   MockPrefStoreObserver mock_observer;
   pref_store->AddObserver(&mock_observer);
 

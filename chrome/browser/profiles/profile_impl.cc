@@ -60,7 +60,6 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
-#include "chrome/browser/prefs/pref_hash_store_impl.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
@@ -94,7 +93,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_constants.h"
-#include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -120,9 +118,6 @@
 #if defined(OS_WIN)
 #include "chrome/browser/profiles/file_path_verifier_win.h"
 #include "chrome/installer/util/install_util.h"
-#if defined(ENABLE_RLZ)
-#include "rlz/lib/machine_id.h"
-#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -260,28 +255,6 @@ void SchedulePrefsFileVerification(const base::FilePath& prefs_file) {
         base::Bind(&VerifyPreferencesFile, prefs_file),
         base::TimeDelta::FromSeconds(kVerifyPrefsFileDelaySeconds));
 #endif
-}
-
-scoped_ptr<PrefHashStore> GetPrefHashStore(Profile* profile) {
-  std::string seed = ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_PREF_HASH_SEED_BIN).as_string();
-  std::string device_id;
-
-#if defined(OS_WIN) && defined(ENABLE_RLZ)
-  // This is used by
-  // chrome/browser/extensions/api/music_manager_private/device_id_win.cc
-  // but that API is private (http://crbug.com/276485) and other platforms are
-  // not available synchronously.
-  // As part of improving pref metrics on other platforms we may want to find
-  // ways to defer preference loading until the device ID can be used.
-  rlz_lib::GetMachineId(&device_id);
-#endif
-
-  return scoped_ptr<PrefHashStore>(new PrefHashStoreImpl(
-      profile->GetPath().AsUTF8Unsafe(),
-      seed,
-      device_id,
-      g_browser_process->local_state()));
 }
 
 }  // namespace
@@ -487,7 +460,6 @@ ProfileImpl::ProfileImpl(
         sequenced_task_runner,
         profile_policy_connector_->policy_service(),
         managed_user_settings,
-        GetPrefHashStore(this),
         new ExtensionPrefStore(
             ExtensionPrefValueMapFactory::GetForBrowserContext(this), false),
         pref_registry_,
