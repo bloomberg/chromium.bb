@@ -49,7 +49,6 @@ void LiveNodeListBase::invalidateCache() const
     m_isLengthCacheValid = false;
     m_isItemCacheValid = false;
     m_isNameCacheValid = false;
-    m_isItemRefElementsCacheValid = false;
     if (isNodeList(type()))
         return;
 

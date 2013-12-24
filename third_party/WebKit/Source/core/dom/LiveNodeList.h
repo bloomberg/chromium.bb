@@ -60,7 +60,6 @@ public:
         , m_isNameCacheValid(false)
         , m_collectionType(collectionType)
         , m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter)
-        , m_isItemRefElementsCacheValid(false)
     {
         ASSERT(m_rootType == static_cast<unsigned>(rootType));
         ASSERT(m_invalidationType == static_cast<unsigned>(invalidationType));
@@ -124,9 +123,6 @@ protected:
     }
     void setItemCache(Node* item, unsigned offset, unsigned elementsArrayOffset) const;
 
-    ALWAYS_INLINE bool isItemRefElementsCacheValid() const { return m_isItemRefElementsCacheValid; }
-    ALWAYS_INLINE void setItemRefElementsCacheValid() const { m_isItemRefElementsCacheValid = true; }
-
     ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
 
     bool hasNameCache() const { return m_isNameCacheValid; }
@@ -158,7 +154,6 @@ private:
     mutable unsigned m_isNameCacheValid : 1;
     const unsigned m_collectionType : 5;
     const unsigned m_overridesItemAfter : 1;
-    mutable unsigned m_isItemRefElementsCacheValid : 1;
 };
 
 ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeListInvalidationType type, const QualifiedName& attrName)
