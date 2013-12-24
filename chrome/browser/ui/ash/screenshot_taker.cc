@@ -82,7 +82,7 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
     std::string html(kImageClipboardFormatPrefix);
     html += encoded;
     html += kImageClipboardFormatSuffix;
-    scw.WriteHTML(UTF8ToUTF16(html), std::string());
+    scw.WriteHTML(base::UTF8ToUTF16(html), std::string());
   }
   content::RecordAction(content::UserMetricsAction("Screenshot_CopyClipboard"));
 }
@@ -510,7 +510,7 @@ Notification* ScreenshotTaker::CreateNotification(
   // We cancel a previous screenshot notification, if any, to ensure we get
   // a fresh notification pop-up.
   g_browser_process->notification_ui_manager()->CancelById(notification_id);
-  const base::string16 replace_id(UTF8ToUTF16(notification_id));
+  const base::string16 replace_id(base::UTF8ToUTF16(notification_id));
   bool success =
       (screenshot_result == ScreenshotTakerObserver::SCREENSHOT_SUCCESS);
   message_center::RichNotificationData optional_field;

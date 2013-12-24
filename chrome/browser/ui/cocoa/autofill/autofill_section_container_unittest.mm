@@ -20,6 +20,8 @@
 #include "ui/base/models/simple_menu_model.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 class AutofillSectionContainerTest : public ui::CocoaTest {

@@ -466,7 +466,7 @@ class ExtensionLoadedNotificationObserver
   }
 
   // First part of extension installed message, the heading.
-  base::string16 extension_name = UTF8ToUTF16(extension_->name().c_str());
+  base::string16 extension_name = base::UTF8ToUTF16(extension_->name().c_str());
   base::i18n::AdjustStringForLocaleDirection(&extension_name);
   [heading_ setStringValue:l10n_util::GetNSStringF(
       IDS_EXTENSION_INSTALLED_HEADING, extension_name)];
@@ -493,7 +493,7 @@ class ExtensionLoadedNotificationObserver
   if (type_ == extension_installed_bubble::kOmniboxKeyword) {
     [howToUse_ setStringValue:l10n_util::GetNSStringF(
         IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
-        UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension_)))];
+        base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension_)))];
     [howToUse_ setHidden:NO];
     [[howToUse_ cell]
         setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];

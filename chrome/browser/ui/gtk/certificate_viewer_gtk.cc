@@ -148,7 +148,7 @@ CertificateViewer::CertificateViewer(
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringFUTF8(
           IDS_CERT_INFO_DIALOG_TITLE,
-          UTF8ToUTF16(
+          base::UTF8ToUTF16(
               x509_certificate_model::GetTitle(
                   cert_chain_list_.front()))).c_str(),
       parent,
@@ -270,9 +270,9 @@ void CertificateViewer::InitGeneralPage() {
   base::Time issued, expires;
   std::string issued_str, expires_str;
   if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
-    issued_str = UTF16ToUTF8(
+    issued_str = base::UTF16ToUTF8(
         base::TimeFormatShortDateNumeric(issued));
-    expires_str = UTF16ToUTF8(
+    expires_str = base::UTF16ToUTF8(
         base::TimeFormatShortDateNumeric(expires));
   } else {
     issued_str = alternative_text;
@@ -353,7 +353,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(
   std::string version = x509_certificate_model::GetVersion(cert);
   if (!version.empty())
     version_str = l10n_util::GetStringFUTF8(IDS_CERT_DETAILS_VERSION_FORMAT,
-                                            UTF8ToUTF16(version));
+                                            base::UTF8ToUTF16(version));
   GtkTreeIter iter;
   gtk_tree_store_append(store, &iter, &cert_iter);
   gtk_tree_store_set(
@@ -403,8 +403,8 @@ void CertificateViewer::FillTreeStoreWithCertFields(
   base::Time issued, expires;
   std::string issued_str, expires_str;
   if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
-    issued_str = UTF16ToUTF8(base::TimeFormatShortDateAndTime(issued));
-    expires_str = UTF16ToUTF8(base::TimeFormatShortDateAndTime(expires));
+    issued_str = base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(issued));
+    expires_str = base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(expires));
   }
   gtk_tree_store_append(store, &iter, &validity_iter);
   gtk_tree_store_set(

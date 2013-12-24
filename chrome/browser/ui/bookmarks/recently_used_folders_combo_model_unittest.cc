@@ -84,7 +84,7 @@ BookmarkModel* RecentlyUsedFoldersComboModelTest::GetModel() {
 // Verifies there are no duplicate nodes in the model.
 TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
   const BookmarkNode* new_node = GetModel()->AddURL(
-      GetModel()->bookmark_bar_node(), 0, ASCIIToUTF16("a"),
+      GetModel()->bookmark_bar_node(), 0, base::ASCIIToUTF16("a"),
       GURL("http://a"));
   RecentlyUsedFoldersComboModel model(GetModel(), new_node);
   std::set<base::string16> items;
@@ -97,11 +97,11 @@ TEST_F(RecentlyUsedFoldersComboModelTest, NoDups) {
 // Verifies that observers are notified on changes.
 TEST_F(RecentlyUsedFoldersComboModelTest, NotifyObserver) {
   const BookmarkNode* folder = GetModel()->AddFolder(
-      GetModel()->bookmark_bar_node(), 0, ASCIIToUTF16("a"));
+      GetModel()->bookmark_bar_node(), 0, base::ASCIIToUTF16("a"));
   const BookmarkNode* sub_folder = GetModel()->AddFolder(
-      folder, 0, ASCIIToUTF16("b"));
+      folder, 0, base::ASCIIToUTF16("b"));
   const BookmarkNode* new_node = GetModel()->AddURL(
-      sub_folder, 0, ASCIIToUTF16("a"), GURL("http://a"));
+      sub_folder, 0, base::ASCIIToUTF16("a"), GURL("http://a"));
   RecentlyUsedFoldersComboModel model(GetModel(), new_node);
   TestComboboxModelObserver observer;
   model.AddObserver(&observer);

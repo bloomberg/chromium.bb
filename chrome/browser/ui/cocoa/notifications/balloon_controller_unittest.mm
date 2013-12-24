@@ -79,7 +79,7 @@ class BalloonControllerTest : public ChromeRenderViewHostTestHarness {
 
 TEST_F(BalloonControllerTest, ShowAndCloseTest) {
   Notification n(GURL("http://www.google.com"), GURL("http://www.google.com"),
-      ASCIIToUTF16("http://www.google.com"), base::string16(),
+      base::ASCIIToUTF16("http://www.google.com"), base::string16(),
       new NotificationObjectProxy(-1, -1, -1, false));
   scoped_ptr<Balloon> balloon(
       new Balloon(n, profile(), collection_.get()));
@@ -95,7 +95,7 @@ TEST_F(BalloonControllerTest, ShowAndCloseTest) {
 
 TEST_F(BalloonControllerTest, SizesTest) {
   Notification n(GURL("http://www.google.com"), GURL("http://www.google.com"),
-      ASCIIToUTF16("http://www.google.com"), base::string16(),
+      base::ASCIIToUTF16("http://www.google.com"), base::string16(),
       new NotificationObjectProxy(-1, -1, -1, false));
   scoped_ptr<Balloon> balloon(
       new Balloon(n, profile(), collection_.get()));

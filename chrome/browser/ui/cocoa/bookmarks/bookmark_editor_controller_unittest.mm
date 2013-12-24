@@ -16,6 +16,8 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+using base::ASCIIToUTF16;
+
 class BookmarkEditorControllerTest : public CocoaProfileTest {
  public:
   const BookmarkNode* default_node_;

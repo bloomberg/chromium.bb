@@ -964,7 +964,7 @@ NSColor* IdentityVerifiedTextColor() {
 
   base::string16 labelText =
       WebsiteSettingsUI::PermissionTypeToUIString(permissionInfo.type) +
-      ASCIIToUTF16(":");
+      base::ASCIIToUTF16(":");
 
   NSTextField* label = [self addText:labelText
                             withSize:[NSFont smallSystemFontSize]
@@ -1029,7 +1029,7 @@ NSColor* IdentityVerifiedTextColor() {
 
   base::string16 labelText = l10n_util::GetStringFUTF16(
       IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE,
-      UTF8ToUTF16(cookieInfo.cookie_source),
+      base::UTF8ToUTF16(cookieInfo.cookie_source),
       base::IntToString16(cookieInfo.allowed),
       base::IntToString16(cookieInfo.blocked));
 

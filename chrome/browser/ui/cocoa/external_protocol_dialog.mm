@@ -71,12 +71,12 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
 
   const int kMaxUrlWithoutSchemeSize = 256;
   base::string16 elided_url_without_scheme;
-  gfx::ElideString(ASCIIToUTF16(url_.possibly_invalid_spec()),
+  gfx::ElideString(base::ASCIIToUTF16(url_.possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
 
   NSString* urlString = l10n_util::GetNSStringFWithFixup(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
-      ASCIIToUTF16(url_.scheme() + ":"),
+      base::ASCIIToUTF16(url_.scheme() + ":"),
       elided_url_without_scheme);
   NSString* appString = l10n_util::GetNSStringFWithFixup(
       IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH,

@@ -70,6 +70,7 @@
 #include "ui/views/test/test_views_delegate.h"
 #endif
 
+using base::ASCIIToUTF16;
 using extensions::Extension;
 using extensions::Manifest;
 using extensions::UnloadedExtensionInfo;

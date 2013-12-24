@@ -161,8 +161,8 @@ void CreateApplicationShortcutsDialogGtk::CreateDialogBox(GtkWindow* parent) {
     label_width = kDescriptionLabelMinimumWidthPixels;
   gtk_util::SetLabelWidth(description_label, label_width);
 
-  std::string description(UTF16ToUTF8(shortcut_info_.description));
-  std::string title(UTF16ToUTF8(shortcut_info_.title));
+  std::string description(base::UTF16ToUTF8(shortcut_info_.description));
+  std::string title(base::UTF16ToUTF8(shortcut_info_.title));
   gtk_label_set_text(GTK_LABEL(description_label),
                      (description.empty() ? title : description).c_str());
 

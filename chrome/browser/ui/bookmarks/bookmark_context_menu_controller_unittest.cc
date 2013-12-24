@@ -22,6 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 
+using base::ASCIIToUTF16;
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::PageNavigator;

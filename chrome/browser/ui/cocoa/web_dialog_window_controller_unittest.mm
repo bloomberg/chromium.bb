@@ -50,7 +50,7 @@ class WebDialogWindowControllerTest : public BrowserWithTestWindowTest {
   virtual void SetUp() {
     BrowserWithTestWindowTest::SetUp();
     CocoaTest::BootstrapCocoa();
-    title_ = ASCIIToUTF16("Mock Title");
+    title_ = base::ASCIIToUTF16("Mock Title");
     size_ = gfx::Size(50, 100);
     gurl_ = GURL("");
   }

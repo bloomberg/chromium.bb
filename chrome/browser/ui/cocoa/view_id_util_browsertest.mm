@@ -62,7 +62,8 @@ class ViewIDTest : public InProcessBrowserTest {
         test::WaitForBookmarkModelToLoad(bookmark_model);
 
       bookmark_utils::AddIfNotBookmarked(
-          bookmark_model, GURL(content::kAboutBlankURL), ASCIIToUTF16("about"));
+          bookmark_model, GURL(content::kAboutBlankURL),
+          base::ASCIIToUTF16("about"));
     }
 
     for (int i = VIEW_ID_TOOLBAR; i < VIEW_ID_PREDEFINED_COUNT; ++i) {

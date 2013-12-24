@@ -48,6 +48,8 @@
 #include "ui/aura/window.h"
 #endif
 
+using base::ASCIIToUTF16;
+using base::WideToUTF16;
 using content::NavigationController;
 using content::WebContents;
 

@@ -20,6 +20,8 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+using base::UTF16ToUTF8;
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;

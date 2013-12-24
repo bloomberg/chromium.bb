@@ -22,6 +22,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 DataModelWrapper::~DataModelWrapper() {}

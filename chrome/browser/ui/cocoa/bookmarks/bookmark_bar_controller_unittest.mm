@@ -38,6 +38,8 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/image/image_skia.h"
 
+using base::ASCIIToUTF16;
+
 // Unit tests don't need time-consuming asynchronous animations.
 @interface BookmarkBarControllerTestable : BookmarkBarController {
 }

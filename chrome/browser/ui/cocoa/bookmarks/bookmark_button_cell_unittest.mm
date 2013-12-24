@@ -159,7 +159,7 @@ TEST_F(BookmarkButtonCellTest, FolderArrow) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* bar = model->bookmark_bar_node();
   const BookmarkNode* node = model->AddURL(bar, bar->child_count(),
-                                           ASCIIToUTF16("title"),
+                                           base::ASCIIToUTF16("title"),
                                            GURL("http://www.google.com"));
   base::scoped_nsobject<BookmarkButtonCell> cell(
       [[BookmarkButtonCell alloc] initForNode:node
@@ -183,7 +183,7 @@ TEST_F(BookmarkButtonCellTest, VerticalTextOffset) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* bar = model->bookmark_bar_node();
   const BookmarkNode* node = model->AddURL(bar, bar->child_count(),
-                                           ASCIIToUTF16("title"),
+                                           base::ASCIIToUTF16("title"),
                                            GURL("http://www.google.com"));
 
   base::scoped_nsobject<GradientButtonCell> gradient_cell(

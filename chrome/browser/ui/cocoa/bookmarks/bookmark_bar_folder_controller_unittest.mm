@@ -22,6 +22,7 @@
 #include "testing/platform_test.h"
 #include "ui/base/cocoa/animation_utils.h"
 
+using base::ASCIIToUTF16;
 
 namespace {
 

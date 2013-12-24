@@ -32,12 +32,12 @@ int MockConfirmInfoBarDelegate::GetIconID() const {
 
 base::string16 MockConfirmInfoBarDelegate::GetMessageText() const {
   message_text_accessed_ = true;
-  return ASCIIToUTF16(kMessage);
+  return base::ASCIIToUTF16(kMessage);
 }
 
 base::string16 MockConfirmInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return ASCIIToUTF16((button == BUTTON_OK) ? "OK" : "Cancel");
+  return base::ASCIIToUTF16((button == BUTTON_OK) ? "OK" : "Cancel");
 }
 
 bool MockConfirmInfoBarDelegate::Accept() {

@@ -209,7 +209,8 @@ void ChromeJavaScriptDialogManager::RunBeforeUnloadDialog(
   const base::string16 footer = l10n_util::GetStringUTF16(is_reload ?
       IDS_BEFORERELOAD_MESSAGEBOX_FOOTER : IDS_BEFOREUNLOAD_MESSAGEBOX_FOOTER);
 
-  base::string16 full_message = message_text + ASCIIToUTF16("\n\n") + footer;
+  base::string16 full_message =
+      message_text + base::ASCIIToUTF16("\n\n") + footer;
 
   const Extension* extension = GetExtensionForWebContents(web_contents);
   if (extension)
@@ -271,7 +272,7 @@ base::string16 ChromeJavaScriptDialogManager::GetTitle(
 
   const Extension* extension = GetExtensionForWebContents(web_contents);
   if (extension)
-    return UTF8ToUTF16(extension->name());
+    return base::UTF8ToUTF16(extension->name());
 
   // Otherwise, return the formatted URL.
   // In this case, force URL to have LTR directionality.

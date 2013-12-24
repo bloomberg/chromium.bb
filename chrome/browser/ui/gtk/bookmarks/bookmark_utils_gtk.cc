@@ -73,7 +73,7 @@ void PackButton(GdkPixbuf* pixbuf,
   GtkWidget* box = gtk_hbox_new(FALSE, kBarButtonPadding);
   gtk_box_pack_start(GTK_BOX(box), image, FALSE, FALSE, 0);
 
-  std::string label_string = UTF16ToUTF8(title);
+  std::string label_string = base::UTF16ToUTF8(title);
   if (!label_string.empty()) {
     GtkWidget* label = gtk_label_new(label_string.c_str());
     // Until we switch to vector graphics, force the font size.
@@ -276,12 +276,12 @@ std::string BuildTooltipFor(const BookmarkNode* node) {
 std::string BuildMenuLabelFor(const BookmarkNode* node) {
   // This breaks on word boundaries. Ideally we would break on character
   // boundaries.
-  std::string elided_name = UTF16ToUTF8(
+  std::string elided_name = base::UTF16ToUTF8(
       gfx::TruncateString(node->GetTitle(), kMaxCharsOnAMenuLabel));
 
   if (elided_name.empty()) {
-    elided_name = UTF16ToUTF8(gfx::TruncateString(
-        UTF8ToUTF16(node->url().possibly_invalid_spec()),
+    elided_name = base::UTF16ToUTF8(gfx::TruncateString(
+        base::UTF8ToUTF16(node->url().possibly_invalid_spec()),
         kMaxCharsOnAMenuLabel));
   }
 
@@ -352,7 +352,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
     case ui::NETSCAPE_URL: {
       // _NETSCAPE_URL format is URL + \n + title.
       std::string utf8_text = nodes[0]->url().spec() + "\n" +
-          UTF16ToUTF8(nodes[0]->GetTitle());
+          base::UTF16ToUTF8(nodes[0]->GetTitle());
       gtk_selection_data_set(selection_data,
                              gtk_selection_data_get_target(selection_data),
                              kBitsInAByte,
@@ -379,7 +379,7 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
       break;
     }
     case ui::TEXT_HTML: {
-      std::string utf8_title = UTF16ToUTF8(nodes[0]->GetTitle());
+      std::string utf8_title = base::UTF16ToUTF8(nodes[0]->GetTitle());
       std::string utf8_html = base::StringPrintf("<a href=\"%s\">%s</a>",
                                                  nodes[0]->url().spec().c_str(),
                                                  utf8_title.c_str());

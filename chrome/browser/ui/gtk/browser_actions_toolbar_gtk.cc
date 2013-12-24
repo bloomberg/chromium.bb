@@ -1067,7 +1067,8 @@ gboolean BrowserActionsToolbarGtk::OnOverflowButtonPress(
     const Extension* extension = model_->toolbar_items()[model_index].get();
     BrowserActionButton* button = extension_button_map_[extension->id()].get();
 
-    overflow_menu_model_->AddItem(model_index, UTF8ToUTF16(extension->name()));
+    overflow_menu_model_->AddItem(model_index,
+                                  base::UTF8ToUTF16(extension->name()));
     overflow_menu_model_->SetIcon(overflow_menu_model_->GetItemCount() - 1,
                                   button->GetIcon());
 

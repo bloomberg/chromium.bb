@@ -276,7 +276,7 @@ void OmniboxViewMac::SetForcedQuery() {
   const base::string16 current_text(GetText());
   const size_t start = current_text.find_first_not_of(base::kWhitespaceUTF16);
   if (start == base::string16::npos || (current_text[start] != '?')) {
-    SetUserText(ASCIIToUTF16("?"));
+    SetUserText(base::ASCIIToUTF16("?"));
   } else {
     NSRange range = NSMakeRange(start + 1, current_text.size() - start - 1);
     [[field_ currentEditor] setSelectedRange:range];
@@ -442,7 +442,7 @@ void OmniboxViewMac::ApplyTextAttributes(const base::string16& display_text,
   AutocompleteInput::ParseForEmphasizeComponents(
       display_text, &scheme, &host);
   bool grey_out_url = display_text.substr(scheme.begin, scheme.len) ==
-      UTF8ToUTF16(extensions::kExtensionScheme);
+      base::UTF8ToUTF16(extensions::kExtensionScheme);
   if (model()->CurrentTextIsURL() &&
       (host.is_nonempty() || grey_out_url)) {
     [as addAttribute:NSForegroundColorAttributeName value:BaseTextColor()

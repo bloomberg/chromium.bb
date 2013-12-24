@@ -20,11 +20,11 @@ TEST(AutofillDialogTypesTest, WarningColorMatches) {
 
 // Tests for correct parsing of anchor text ranges.
 TEST(AutofillDialogTypesTest, DialogNotificationLink) {
-  base::string16 text(ASCIIToUTF16("Notification without anchor text"));
+  base::string16 text(base::ASCIIToUTF16("Notification without anchor text"));
   DialogNotification notification(DialogNotification::WALLET_ERROR, text);
   EXPECT_TRUE(notification.link_range().is_empty());
 
-  text = ASCIIToUTF16("Notification with |anchor text|");
+  text = base::ASCIIToUTF16("Notification with |anchor text|");
   notification = DialogNotification(DialogNotification::WALLET_ERROR, text);
   base::char16 bar = '|';
   EXPECT_EQ(base::string16::npos, notification.display_text().find(bar));

@@ -12,8 +12,8 @@ namespace {
 
 static NSView* constructView(const char* main_text, const char* sub_text) {
   return [ValidationMessageBubbleController
-      constructContentView:UTF8ToUTF16(main_text)
-                   subText:UTF8ToUTF16(sub_text)];
+      constructContentView:base::UTF8ToUTF16(main_text)
+                   subText:base::UTF8ToUTF16(sub_text)];
 }
 
 TEST(ValidationMessageBubbleControllerTest, FrameSize) {

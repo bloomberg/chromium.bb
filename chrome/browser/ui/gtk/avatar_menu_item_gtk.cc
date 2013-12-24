@@ -231,11 +231,12 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
                                        kUserNameMaxWidth,
                                        gfx::ELIDE_AT_END);
 
-  name_label = theme_service->BuildLabel(UTF16ToUTF8(elided_name),
+  name_label = theme_service->BuildLabel(base::UTF16ToUTF8(elided_name),
                                          ui::kGdkBlack);
   if (item_.active) {
     char* markup = g_markup_printf_escaped(
-        "<span weight='bold'>%s</span>", UTF16ToUTF8(elided_name).c_str());
+        "<span weight='bold'>%s</span>",
+        base::UTF16ToUTF8(elided_name).c_str());
     gtk_label_set_markup(GTK_LABEL(name_label), markup);
     g_free(markup);
   }
@@ -246,7 +247,8 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
   // The sync status label.
   status_label_ = theme_service_->BuildLabel(std::string(), ui::kGdkBlack);
   char* markup = g_markup_printf_escaped(
-      "<span size='small'>%s</span>", UTF16ToUTF8(item_.sync_state).c_str());
+      "<span size='small'>%s</span>",
+      base::UTF16ToUTF8(item_.sync_state).c_str());
   gtk_label_set_markup(GTK_LABEL(status_label_), markup);
   g_free(markup);
   gtk_misc_set_alignment(GTK_MISC(status_label_), 0, 0);

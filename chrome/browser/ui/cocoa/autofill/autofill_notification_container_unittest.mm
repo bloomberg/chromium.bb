@@ -40,7 +40,7 @@ TEST_F(AutofillNotificationContainerTest, Subviews) {
   notifications.push_back(
       autofill::DialogNotification(
           autofill::DialogNotification::REQUIRED_ACTION,
-          ASCIIToUTF16("test")));
+          base::ASCIIToUTF16("test")));
   ASSERT_FALSE(notifications[0].HasArrow());
   [container_ setNotifications:notifications];
 
@@ -50,7 +50,7 @@ TEST_F(AutofillNotificationContainerTest, Subviews) {
   notifications.push_back(
       autofill::DialogNotification(
           autofill::DialogNotification::REQUIRED_ACTION,
-          ASCIIToUTF16("test")));
+          base::ASCIIToUTF16("test")));
   ASSERT_FALSE(notifications[1].HasArrow());
   [container_ setNotifications:notifications];
 

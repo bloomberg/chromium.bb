@@ -29,7 +29,7 @@ ContentSettingMediaMenuModel::ContentSettingMediaMenuModel(
 
   for (size_t i = 0; i < devices.size(); ++i) {
     commands_.insert(std::make_pair(commands_.size(), devices[i]));
-    AddItem(i, UTF8ToUTF16(devices[i].name));
+    AddItem(i, base::UTF8ToUTF16(devices[i].name));
   }
 }
 

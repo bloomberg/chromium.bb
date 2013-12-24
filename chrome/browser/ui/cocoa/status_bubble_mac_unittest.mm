@@ -17,6 +17,8 @@
 #include "ui/gfx/point.h"
 #include "url/gurl.h"
 
+using base::UTF8ToUTF16;
+
 // The test delegate records all of the status bubble object's state
 // transitions.
 @interface StatusBubbleMacTestDelegate : NSObject {

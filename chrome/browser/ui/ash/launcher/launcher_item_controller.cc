@@ -36,7 +36,7 @@ base::string16 LauncherItemController::GetAppTitle() const {
   const extensions::Extension* extension =
       launcher_controller_->profile()->GetExtensionService()->
       GetInstalledExtension(app_id_);
-  return extension ? UTF8ToUTF16(extension->name()) : base::string16();
+  return extension ? base::UTF8ToUTF16(extension->name()) : base::string16();
 }
 
 ash::LauncherItemType LauncherItemController::GetLauncherItemType() const {

@@ -634,7 +634,7 @@ void NativeAppWindowGtk::UpdateWindowIcon() {
 
 void NativeAppWindowGtk::UpdateWindowTitle() {
   base::string16 title = shell_window_->GetTitle();
-  gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
+  gtk_window_set_title(window_, base::UTF16ToUTF8(title).c_str());
 }
 
 void NativeAppWindowGtk::UpdateDraggableRegions(

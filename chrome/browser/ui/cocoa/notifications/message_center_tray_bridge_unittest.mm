@@ -47,8 +47,8 @@ TEST_F(MessageCenterTrayBridgeTest, StatusItemOnlyAfterFirstNotification) {
       new message_center::Notification(
           message_center::NOTIFICATION_TYPE_SIMPLE,
           "1",
-          ASCIIToUTF16("First notification"),
-          ASCIIToUTF16("This is a simple test."),
+          base::ASCIIToUTF16("First notification"),
+          base::ASCIIToUTF16("This is a simple test."),
           gfx::Image(),
           base::string16(),
           message_center::NotifierId(),

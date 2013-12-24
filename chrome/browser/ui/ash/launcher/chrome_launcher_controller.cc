@@ -1364,7 +1364,7 @@ base::string16 ChromeLauncherController::GetAppListTitle(
     std::string app_id = iter->second;
     const extensions::Extension* extension = GetExtensionForAppID(app_id);
     if (extension)
-      return UTF8ToUTF16(extension->name());
+      return base::UTF8ToUTF16(extension->name());
   }
   return l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
 }

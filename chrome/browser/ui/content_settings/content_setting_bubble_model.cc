@@ -250,7 +250,7 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       &display_host);
 
   if (display_host.empty())
-    display_host = ASCIIToUTF16(url.spec());
+    display_host = base::ASCIIToUTF16(url.spec());
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
@@ -657,7 +657,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
       url,
       profile()->GetPrefs()->GetString(prefs::kAcceptLanguages),
       &display_host_utf16);
-  std::string display_host(UTF16ToUTF8(display_host_utf16));
+  std::string display_host(base::UTF16ToUTF8(display_host_utf16));
   if (display_host.empty())
     display_host = url.spec();
 
@@ -718,7 +718,7 @@ void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
   }
 
   std::string radio_allow_label = l10n_util::GetStringFUTF8(
-      radio_allow_label_id, UTF8ToUTF16(display_host));
+      radio_allow_label_id, base::UTF8ToUTF16(display_host));
   std::string radio_block_label =
       l10n_util::GetStringUTF8(radio_block_label_id);
 
@@ -1020,18 +1020,20 @@ ContentSettingRPHBubbleModel::ContentSettingRPHBubbleModel(
     protocol = l10n_util::GetStringUTF16(
         IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME);
   } else {
-    protocol = UTF8ToUTF16(pending_handler_.protocol());
+    protocol = base::UTF8ToUTF16(pending_handler_.protocol());
   }
 
   if (previous_handler_.IsEmpty()) {
     set_title(l10n_util::GetStringFUTF8(
         IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
-        pending_handler_.title(), UTF8ToUTF16(pending_handler_.url().host()),
+        pending_handler_.title(),
+        base::UTF8ToUTF16(pending_handler_.url().host()),
         protocol));
   } else {
     set_title(l10n_util::GetStringFUTF8(
         IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
-        pending_handler_.title(), UTF8ToUTF16(pending_handler_.url().host()),
+        pending_handler_.title(),
+        base::UTF8ToUTF16(pending_handler_.url().host()),
         protocol, previous_handler_.title()));
   }
 

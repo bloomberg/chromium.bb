@@ -56,7 +56,7 @@ TEST_F(AutofillDetailsContainerTest, ValidateAllSections) {
 
   ValidityMessages invalid;
   invalid.Set(ADDRESS_HOME_ZIP,
-              ValidityMessage(ASCIIToUTF16("Some error message"), false));
+              ValidityMessage(base::ASCIIToUTF16("Some error message"), false));
 
   EXPECT_CALL(delegate_, InputsAreValid(_, _))
       .Times(3)

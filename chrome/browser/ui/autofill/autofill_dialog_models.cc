@@ -153,7 +153,7 @@ int MonthComboboxModel::GetItemCount() const {
 
 // static
 base::string16 MonthComboboxModel::FormatMonth(int index) {
-  return ASCIIToUTF16(base::StringPrintf("%.2d", index));
+  return base::ASCIIToUTF16(base::StringPrintf("%.2d", index));
 }
 
 base::string16 MonthComboboxModel::GetItemAt(int index) {

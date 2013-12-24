@@ -318,7 +318,7 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetIdentityInfo) {
 
 TEST_F(WebsiteSettingsBubbleControllerTest, SetFirstVisit) {
   CreateBubble();
-  bridge_->SetFirstVisit(ASCIIToUTF16("Yesterday"));
+  bridge_->SetFirstVisit(base::ASCIIToUTF16("Yesterday"));
   EXPECT_NSEQ(@"Yesterday",
               [[controller_ firstVisitDescriptionField] stringValue]);
 }

@@ -776,7 +776,7 @@ class NotificationBridge
 
   if (url.SchemeIs(content::kJavaScriptScheme)) {
     browser_->window()->GetLocationBar()->GetOmniboxView()->SetUserText(
-          OmniboxView::StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
+          OmniboxView::StripJavascriptSchemas(base::UTF8ToUTF16(url.spec())));
   }
   OpenURLParams params(
       url, Referrer(), CURRENT_TAB, content::PAGE_TRANSITION_TYPED, false);

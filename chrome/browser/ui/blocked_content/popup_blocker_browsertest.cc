@@ -332,7 +332,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, search_string);
   OmniboxEditModel* model = location_bar->GetOmniboxView()->model();
   EXPECT_EQ(GURL(search_string), model->CurrentMatch(NULL).destination_url);
-  EXPECT_EQ(ASCIIToUTF16(search_string), model->CurrentMatch(NULL).contents);
+  EXPECT_EQ(base::ASCIIToUTF16(search_string),
+            model->CurrentMatch(NULL).contents);
 }
 
 // This test fails on linux AURA with this change

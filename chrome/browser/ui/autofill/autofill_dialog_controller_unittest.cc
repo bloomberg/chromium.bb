@@ -54,6 +54,9 @@
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
 
+using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
+
 namespace autofill {
 
 namespace {

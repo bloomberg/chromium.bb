@@ -95,7 +95,7 @@ TEST_F(BookmarkButtonTest, FolderAndEmptyOrNot) {
   EXPECT_TRUE([button isFolder]);
   EXPECT_EQ([button bookmarkNode], node);
 
-  node = model->AddURL(node, 0, ASCIIToUTF16("hi mom"),
+  node = model->AddURL(node, 0, base::ASCIIToUTF16("hi mom"),
                        GURL("http://www.google.com"));
   [cell setBookmarkNode:node];
   EXPECT_FALSE([button isEmpty]);
@@ -143,7 +143,8 @@ TEST_F(BookmarkButtonTest, DragToTrash) {
   // Add a deletable bookmark to the button.
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* barNode = model->bookmark_bar_node();
-  const BookmarkNode* node = model->AddURL(barNode, 0, ASCIIToUTF16("hi mom"),
+  const BookmarkNode* node = model->AddURL(barNode, 0,
+                                           base::ASCIIToUTF16("hi mom"),
                                            GURL("http://www.google.com"));
   [cell setBookmarkNode:node];
 

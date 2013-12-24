@@ -15,6 +15,8 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 TEST(AutofillCreditCardWrapperTest, GetInfoCreditCardExpMonth) {

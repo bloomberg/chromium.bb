@@ -75,9 +75,9 @@
 - (ui::SimpleMenuModel*)contextMenuModelForController:(TabController*)controller
     menuDelegate:(ui::SimpleMenuModel::Delegate*)delegate {
   ui::SimpleMenuModel* model = new ui::SimpleMenuModel(delegate);
-  model->AddItem(1, ASCIIToUTF16("Hello World"));
-  model->AddItem(2, ASCIIToUTF16("Allays"));
-  model->AddItem(3, ASCIIToUTF16("Chromium"));
+  model->AddItem(1, base::ASCIIToUTF16("Hello World"));
+  model->AddItem(2, base::ASCIIToUTF16("Allays"));
+  model->AddItem(3, base::ASCIIToUTF16("Chromium"));
   return model;
 }
 - (id<TabDraggingEventTarget>)dragController {

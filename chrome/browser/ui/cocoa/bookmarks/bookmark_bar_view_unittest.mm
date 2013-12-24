@@ -220,7 +220,7 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
   const BookmarkNode* node =
       bookmark_model->AddURL(bookmark_model->bookmark_bar_node(),
                              0,
-                             ASCIIToUTF16("Test Bookmark"),
+                             base::ASCIIToUTF16("Test Bookmark"),
                              GURL("http://www.exmaple.com"));
 
   base::scoped_nsobject<BookmarkButtonCell> button_cell(
@@ -262,7 +262,7 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDropAcrossProfiles) {
   const BookmarkNode* node =
       bookmark_model->AddURL(bookmark_model->bookmark_bar_node(),
                              0,
-                             ASCIIToUTF16("Test Bookmark"),
+                             base::ASCIIToUTF16("Test Bookmark"),
                              GURL("http://www.exmaple.com"));
 
   base::scoped_nsobject<BookmarkButtonCell> button_cell(

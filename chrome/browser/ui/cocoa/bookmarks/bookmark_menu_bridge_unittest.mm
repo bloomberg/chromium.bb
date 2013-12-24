@@ -18,6 +18,8 @@
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::ASCIIToUTF16;
+
 class TestBookmarkMenuBridge : public BookmarkMenuBridge {
  public:
   TestBookmarkMenuBridge(Profile* profile, NSMenu *menu)

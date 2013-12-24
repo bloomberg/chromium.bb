@@ -22,11 +22,11 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
 
     testing_profile_manager()->
         CreateTestingProfile("test1", scoped_ptr<PrefServiceSyncable>(),
-                             ASCIIToUTF16("Test 1"), 0, std::string(),
+                             base::ASCIIToUTF16("Test 1"), 0, std::string(),
                              TestingProfile::TestingFactories());
     testing_profile_manager()->
         CreateTestingProfile("test2", scoped_ptr<PrefServiceSyncable>(),
-                             ASCIIToUTF16("Test 2"), 1, std::string(),
+                             base::ASCIIToUTF16("Test 2"), 1, std::string(),
                              TestingProfile::TestingFactories());
 
     menu_ = new AvatarMenu(testing_profile_manager()->profile_info_cache(),
@@ -129,7 +129,7 @@ TEST_F(ProfileChooserControllerTest, LocalProfileActiveCardLinks) {
 TEST_F(ProfileChooserControllerTest, SignedInProfileActiveCardLinks) {
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetUserNameOfProfileAtIndex(0, ASCIIToUTF16("user_name"));
+  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16("user_name"));
 
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];

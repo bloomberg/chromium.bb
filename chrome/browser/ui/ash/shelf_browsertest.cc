@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(ShelfBrowserTest, StatusBubble) {
 
   // Show status, which will overlap the shelf by a pixel.
   browser()->window()->GetStatusBubble()->SetStatus(
-      UTF8ToUTF16("Dummy Status Text"));
+      base::UTF8ToUTF16("Dummy Status Text"));
   shelf->UpdateVisibilityState();
 
   // Ensure that status doesn't cause overlap.

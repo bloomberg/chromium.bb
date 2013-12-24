@@ -32,7 +32,7 @@ class SelectedKeywordDecorationTest : public CocoaTest {
 // not enough room.
 TEST_F(SelectedKeywordDecorationTest, UsesPartialKeywordIfNarrow) {
 
-  const base::string16 kKeyword = ASCIIToUTF16("Engine");
+  const base::string16 kKeyword = base::ASCIIToUTF16("Engine");
   NSString* const kFullString = @"Search Engine:";
   NSString* const kPartialString = @"Search En\u2026:";  // ellipses
 

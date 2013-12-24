@@ -27,6 +27,7 @@
 using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::NiceMock;
+using base::ASCIIToUTF16;
 using base::WeakPtr;
 using blink::WebAutofillClient;
 

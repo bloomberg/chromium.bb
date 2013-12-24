@@ -181,7 +181,7 @@ AutoLoginInfoBarDelegate*
 
 base::string16 AutoLoginInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
-                                    UTF8ToUTF16(params_.username));
+                                    base::UTF8ToUTF16(params_.username));
 }
 
 base::string16 AutoLoginInfoBarDelegate::GetButtonLabel(

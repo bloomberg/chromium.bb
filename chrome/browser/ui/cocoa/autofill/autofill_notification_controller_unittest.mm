@@ -10,6 +10,8 @@
 #include "testing/gtest_mac.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 class AutofillNotificationControllerTest : public ui::CocoaTest {

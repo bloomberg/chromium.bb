@@ -47,8 +47,8 @@ const int kMinMediaMenuButtonWidth = 100;
 const int kMaxMediaMenuButtonWidth = 600;
 
 std::string BuildElidedText(const std::string& input) {
-  return UTF16ToUTF8(gfx::ElideText(
-      UTF8ToUTF16(input),
+  return base::UTF16ToUTF8(gfx::ElideText(
+      base::UTF8ToUTF16(input),
       gfx::Font(),
       kMaxLinkPixelSize,
       gfx::ELIDE_AT_END));

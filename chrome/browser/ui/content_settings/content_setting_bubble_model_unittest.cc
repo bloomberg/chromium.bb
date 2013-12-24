@@ -139,7 +139,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMicAndCamera) {
   EXPECT_EQ(bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION,
-                UTF8ToUTF16(request_host)));
+                base::UTF8ToUTF16(request_host)));
   EXPECT_EQ(bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_BLOCK));
@@ -267,7 +267,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
   EXPECT_EQ(bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_NO_ACTION,
-                UTF8ToUTF16(request_host)));
+                base::UTF8ToUTF16(request_host)));
   EXPECT_EQ(bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_BLOCK));
@@ -296,7 +296,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_BLOCKED_MEDIASTREAM_MIC_ASK,
-                UTF8ToUTF16(request_host)));
+                base::UTF8ToUTF16(request_host)));
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_BLOCKED_MEDIASTREAM_MIC_NO_ACTION));
@@ -337,7 +337,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
   EXPECT_EQ(bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_CAMERA_NO_ACTION,
-                UTF8ToUTF16(request_host)));
+                base::UTF8ToUTF16(request_host)));
   EXPECT_EQ(bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_CAMERA_BLOCK));
@@ -366,7 +366,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_BLOCKED_MEDIASTREAM_CAMERA_ASK,
-                UTF8ToUTF16(request_host)));
+                base::UTF8ToUTF16(request_host)));
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_BLOCKED_MEDIASTREAM_CAMERA_NO_ACTION));
@@ -409,7 +409,7 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
   EXPECT_EQ(bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_NO_ACTION,
-                UTF8ToUTF16(request_host)));
+                base::UTF8ToUTF16(request_host)));
   EXPECT_EQ(bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_BLOCK));
@@ -436,7 +436,7 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION,
-                UTF8ToUTF16(request_host)));
+                base::UTF8ToUTF16(request_host)));
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_BLOCK));
@@ -560,7 +560,7 @@ TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   content_settings->set_pending_protocol_handler(
       ProtocolHandler::CreateProtocolHandler("mailto",
-          GURL("http://www.toplevel.example/"), ASCIIToUTF16("Handler")));
+          GURL("http://www.toplevel.example/"), base::ASCIIToUTF16("Handler")));
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
           NULL, web_contents(), profile(), NULL,
@@ -614,7 +614,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
       TabSpecificContentSettings::FromWebContents(web_contents());
   ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
       "mailto", GURL("http://www.toplevel.example/"),
-      ASCIIToUTF16("Handler"));
+      base::ASCIIToUTF16("Handler"));
   content_settings->set_pending_protocol_handler(test_handler);
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
@@ -633,7 +633,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
     ASSERT_FALSE(handler.IsEmpty());
-    EXPECT_EQ(ASCIIToUTF16("Handler"), handler.title());
+    EXPECT_EQ(base::ASCIIToUTF16("Handler"), handler.title());
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
               content_settings->pending_protocol_handler_setting());
   }
@@ -662,7 +662,7 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
   {
     ProtocolHandler handler = registry.GetHandlerFor("mailto");
     ASSERT_FALSE(handler.IsEmpty());
-    EXPECT_EQ(ASCIIToUTF16("Handler"), handler.title());
+    EXPECT_EQ(base::ASCIIToUTF16("Handler"), handler.title());
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
               content_settings->pending_protocol_handler_setting());
     EXPECT_FALSE(registry.IsIgnored(test_handler));

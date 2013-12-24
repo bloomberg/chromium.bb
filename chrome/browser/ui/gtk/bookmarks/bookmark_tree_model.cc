@@ -30,7 +30,7 @@ void AddSingleNodeToTreeStore(GtkTreeStore* store, const BookmarkNode* node,
                      FOLDER_ICON,
                      GtkThemeService::GetFolderIcon(true).ToGdkPixbuf(),
                      FOLDER_NAME,
-                     UTF16ToUTF8(node->GetTitle()).c_str(),
+                     base::UTF16ToUTF8(node->GetTitle()).c_str(),
                      ITEM_ID,
                      node->id(),
                      // We don't want to use node->is_folder() because that
@@ -233,7 +233,7 @@ base::string16 GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
   gtk_tree_model_get_value(model, iter, FOLDER_NAME, &value);
   if (G_VALUE_HOLDS_STRING(&value)) {
     const gchar* utf8str = g_value_get_string(&value);
-    ret_val = UTF8ToUTF16(utf8str);
+    ret_val = base::UTF8ToUTF16(utf8str);
     g_value_unset(&value);
   } else {
     NOTREACHED() << "Impossible type mismatch";

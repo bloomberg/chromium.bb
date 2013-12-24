@@ -59,9 +59,9 @@ TEST_F(TaskManagerWindowControllerTest, Init) {
 TEST_F(TaskManagerWindowControllerTest, Sort) {
   TaskManager task_manager;
 
-  TestResource resource1(UTF8ToUTF16("zzz"), 1);
-  TestResource resource2(UTF8ToUTF16("zzb"), 2);
-  TestResource resource3(UTF8ToUTF16("zza"), 2);
+  TestResource resource1(base::UTF8ToUTF16("zzz"), 1);
+  TestResource resource2(base::UTF8ToUTF16("zzb"), 2);
+  TestResource resource3(base::UTF8ToUTF16("zza"), 2);
 
   task_manager.AddResource(&resource1);
   task_manager.AddResource(&resource2);
@@ -94,8 +94,8 @@ TEST_F(TaskManagerWindowControllerTest, Sort) {
 TEST_F(TaskManagerWindowControllerTest, SelectionAdaptsToSorting) {
   TaskManager task_manager;
 
-  TestResource resource1(UTF8ToUTF16("yyy"), 1);
-  TestResource resource2(UTF8ToUTF16("aaa"), 2);
+  TestResource resource1(base::UTF8ToUTF16("yyy"), 1);
+  TestResource resource2(base::UTF8ToUTF16("aaa"), 2);
 
   task_manager.AddResource(&resource1);
   task_manager.AddResource(&resource2);
@@ -110,7 +110,7 @@ TEST_F(TaskManagerWindowControllerTest, SelectionAdaptsToSorting) {
      byExtendingSelection:NO];
 
   // Change the name of resource2 so that it becomes row 1 in the table.
-  resource2.title_ = UTF8ToUTF16("zzz");
+  resource2.title_ = base::UTF8ToUTF16("zzz");
   bridge->task_manager()->model()->Refresh();
   bridge->OnItemsChanged(1, 1);
 

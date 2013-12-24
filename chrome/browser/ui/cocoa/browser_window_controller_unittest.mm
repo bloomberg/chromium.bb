@@ -660,7 +660,7 @@ TEST_F(BrowserWindowControllerTest, TestSigninMenuItemNoErrors) {
   std::string username = "foo@example.com";
   NSString* alreadySignedIn =
     l10n_util::GetNSStringFWithFixup(IDS_SYNC_MENU_SYNCED_LABEL,
-                                     UTF8ToUTF16(username));
+                                     base::UTF8ToUTF16(username));
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile());
   signin->SetAuthenticatedUsername(username);
   ProfileSyncService* sync =

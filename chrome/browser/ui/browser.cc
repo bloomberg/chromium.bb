@@ -2256,7 +2256,7 @@ bool Browser::MaybeCreateBackgroundContents(
   // Only allow a single background contents per app.
   bool allow_js_access = extensions::BackgroundInfo::AllowJSAccess(extension);
   BackgroundContents* existing =
-      service->GetAppBackgroundContents(ASCIIToUTF16(extension->id()));
+      service->GetAppBackgroundContents(base::ASCIIToUTF16(extension->id()));
   if (existing) {
     // For non-scriptable background contents, ignore the request altogether,
     // (returning true, so that a regular WebContents isn't created either).
@@ -2280,7 +2280,7 @@ bool Browser::MaybeCreateBackgroundContents(
                                         route_id,
                                         profile_,
                                         frame_name,
-                                        ASCIIToUTF16(extension->id()),
+                                        base::ASCIIToUTF16(extension->id()),
                                         partition_id,
                                         session_storage_namespace);
 

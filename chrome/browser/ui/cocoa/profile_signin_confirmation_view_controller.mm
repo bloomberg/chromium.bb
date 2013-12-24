@@ -252,8 +252,8 @@ NSTextField* AddTextField(
   // Prompt text.
   size_t offset;
   const base::string16 domain =
-      ASCIIToUTF16(gaia::ExtractDomainName(username_));
-  const base::string16 username = ASCIIToUTF16(username_);
+      base::ASCIIToUTF16(gaia::ExtractDomainName(username_));
+  const base::string16 username = base::ASCIIToUTF16(username_);
   const base::string16 prompt_text =
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_ALERT_NEW_STYLE,

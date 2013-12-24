@@ -66,6 +66,8 @@
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #endif
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 namespace {

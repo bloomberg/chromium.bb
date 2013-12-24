@@ -56,9 +56,9 @@ TEST_F(FindBackendTest, InternalState) {
   EXPECT_EQ(base::string16(), FindPrepopulateText(contents2.get()));
   EXPECT_EQ(base::string16(), find_tab_helper2->find_text());
 
-  base::string16 search_term1 = ASCIIToUTF16(" I had a 401K    ");
-  base::string16 search_term2 = ASCIIToUTF16(" but the economy ");
-  base::string16 search_term3 = ASCIIToUTF16(" eated it.       ");
+  base::string16 search_term1 = base::ASCIIToUTF16(" I had a 401K    ");
+  base::string16 search_term2 = base::ASCIIToUTF16(" but the economy ");
+  base::string16 search_term3 = base::ASCIIToUTF16(" eated it.       ");
 
   // Start searching in the first WebContents, searching forwards but not case
   // sensitive (as indicated by the last two params).

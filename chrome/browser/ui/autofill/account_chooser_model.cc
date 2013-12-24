@@ -88,7 +88,7 @@ base::string16 AccountChooserModel::GetActiveWalletAccountName() const {
   if (wallet_accounts_.empty())
     return base::string16();
 
-  return UTF8ToUTF16(wallet_accounts_[GetActiveWalletAccountIndex()]);
+  return base::UTF8ToUTF16(wallet_accounts_[GetActiveWalletAccountIndex()]);
 }
 
 size_t AccountChooserModel::GetActiveWalletAccountIndex() const {
@@ -173,7 +173,7 @@ void AccountChooserModel::ReconstructMenuItems() {
   if (!wallet_accounts_.empty()) {
     for (size_t i = 0; i < wallet_accounts_.size(); ++i) {
       int item_id = kWalletAccountsStartId + i;
-      AddCheckItem(item_id, UTF8ToUTF16(wallet_accounts_[i]));
+      AddCheckItem(item_id, base::UTF8ToUTF16(wallet_accounts_[i]));
     }
   } else if (checked_item_ == kWalletAccountsStartId) {
     // A selected active Wallet account without account names means

@@ -18,7 +18,7 @@ namespace fullscreen_bubble {
 base::string16 GetLabelTextForType(FullscreenExitBubbleType type,
                                    const GURL& url,
                                    ExtensionService* extension_service) {
-  base::string16 host(UTF8ToUTF16(url.host()));
+  base::string16 host(base::UTF8ToUTF16(url.host()));
   if (extension_service) {
     const extensions::ExtensionSet* extensions =
         extension_service->extensions();
@@ -26,7 +26,7 @@ base::string16 GetLabelTextForType(FullscreenExitBubbleType type,
     const extensions::Extension* extension =
         extensions->GetExtensionOrAppByURL(url);
     if (extension) {
-      host = UTF8ToUTF16(extension->name());
+      host = base::UTF8ToUTF16(extension->name());
     } else if (url.SchemeIs(extensions::kExtensionScheme)) {
       // In this case, |host| is set to an extension ID.
       // We are not going to show it because it's human-unreadable.

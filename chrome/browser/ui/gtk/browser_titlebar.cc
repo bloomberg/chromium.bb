@@ -606,7 +606,8 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
   // Get the page title and elide it to the available space.
   base::string16 title =
       browser_window_->browser()->GetWindowTitleForCurrentTab();
-  gtk_label_set_text(GTK_LABEL(app_mode_title_), UTF16ToUTF8(title).c_str());
+  gtk_label_set_text(GTK_LABEL(app_mode_title_),
+                     base::UTF16ToUTF8(title).c_str());
 
   if (browser_window_->browser()->is_app()) {
     switch (browser_window_->browser()->type()) {

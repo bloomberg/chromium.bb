@@ -477,7 +477,7 @@ base::string16 GenerateRandomCardNumber() {
     int part = base::RandInt(0, 10000);
     base::StringAppendF(&card_number, "%04d ", part);
   }
-  return ASCIIToUTF16(card_number);
+  return base::ASCIIToUTF16(card_number);
 }
 
 gfx::Image CreditCardIconForType(const std::string& credit_card_type) {
@@ -810,7 +810,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
         full_wallet_->GetInfo(AutofillType(CREDIT_CARD_NUMBER));
     DCHECK_GE(cc_number.size(), 4U);
     state.image = GetGeneratedCardImage(
-        ASCIIToUTF16("XXXX XXXX XXXX ") +
+        base::ASCIIToUTF16("XXXX XXXX XXXX ") +
             cc_number.substr(cc_number.size() - 4),
         full_wallet_->billing_address()->recipient_name(),
         color_utils::AlphaBlend(
@@ -1998,7 +1998,7 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
     notifications.push_back(DialogNotification(
         DialogNotification::SECURITY_WARNING,
         l10n_util::GetStringFUTF16(IDS_AUTOFILL_DIALOG_SITE_WARNING,
-                                   UTF8ToUTF16(source_url_.host()))));
+                                   base::UTF8ToUTF16(source_url_.host()))));
   }
 
   return notifications;
@@ -2103,7 +2103,7 @@ bool AutofillDialogControllerImpl::OnAccept() {
     full_wallet_.reset();
     GetWalletClient()->AuthenticateInstrument(
         active_instrument_id_,
-        UTF16ToUTF8(view_->GetCvc()));
+        base::UTF16ToUTF8(view_->GetCvc()));
     view_->UpdateOverlay();
   } else if (IsPayingWithWallet()) {
     AcceptLegalTerms();
@@ -2730,7 +2730,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
             kManageItemsKey,
             l10n_util::GetStringUTF16(
                 IDS_AUTOFILL_DIALOG_MANAGE_BILLING_DETAILS),
-                UTF8ToUTF16(wallet::GetManageInstrumentsUrl(0U).host()));
+                base::UTF8ToUTF16(wallet::GetManageInstrumentsUrl(0U).host()));
       }
 
       // Determine which instrument item should be selected.
@@ -2801,7 +2801,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     suggested_shipping_.AddKeyedItemWithMinorText(
         kManageItemsKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS),
-        UTF8ToUTF16(wallet::GetManageAddressesUrl(0U).host()));
+        base::UTF8ToUTF16(wallet::GetManageAddressesUrl(0U).host()));
   }
 
   if (!IsPayingWithWallet()) {

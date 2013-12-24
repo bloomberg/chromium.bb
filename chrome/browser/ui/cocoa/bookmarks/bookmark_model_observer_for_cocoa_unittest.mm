@@ -20,7 +20,7 @@ class BookmarkModelObserverForCocoaTest : public CocoaProfileTest {
 TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
   BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile());
   const BookmarkNode* node = model->AddURL(model->bookmark_bar_node(),
-                                           0, ASCIIToUTF16("super"),
+                                           0, base::ASCIIToUTF16("super"),
                                            GURL("http://www.google.com"));
 
   __block size_t pings = 0U;
@@ -41,7 +41,7 @@ TEST_F(BookmarkModelObserverForCocoaTest, TestCallback) {
   EXPECT_EQ(0U, pings);
   EXPECT_EQ(0U, deletions);
 
-  model->SetTitle(node, ASCIIToUTF16("duper"));
+  model->SetTitle(node, base::ASCIIToUTF16("duper"));
   EXPECT_EQ(1U, pings);
   EXPECT_EQ(0U, deletions);
 

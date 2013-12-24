@@ -339,7 +339,7 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocusFindInPage) {
   chrome::Find(browser());
   ui_test_utils::FindInPage(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      ASCIIToUTF16("a"), true, false, NULL, NULL);
+      base::ASCIIToUTF16("a"), true, false, NULL, NULL);
   ASSERT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   // Focus the location bar.

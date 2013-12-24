@@ -218,7 +218,7 @@ void GeneratedCreditCardBubbleController::SetupAndShow(
   // Add a "Learn more" link at the end of the header text if it's a generated
   // card bubble.
   base::string16 learn_more = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-  contents_text_.append(ASCIIToUTF16(" ") + learn_more);
+  contents_text_.append(base::ASCIIToUTF16(" ") + learn_more);
   const size_t header_size = contents_text_.size();
   TextRange end_link;
   end_link.range = gfx::Range(header_size - learn_more.size(), header_size);

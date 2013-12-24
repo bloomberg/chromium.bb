@@ -357,8 +357,9 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
 
       // Only enforce signin if the field trial is set.
       if (!field_trial_value.empty()) {
-        GURL gurl(l10n_util::GetStringFUTF8(IDS_APP_LAUNCH_NOT_SIGNED_IN_LINK,
-                                            UTF8ToUTF16(extension->id())));
+        GURL gurl(l10n_util::GetStringFUTF8(
+            IDS_APP_LAUNCH_NOT_SIGNED_IN_LINK,
+            base::UTF8ToUTF16(extension->id())));
         chrome::NavigateParams navigate_params(profile, gurl,
                                                content::PAGE_TRANSITION_LINK);
         navigate_params.host_desktop_type = params.desktop_type;

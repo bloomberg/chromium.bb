@@ -70,8 +70,8 @@ CryptoModulePasswordDialog::CryptoModulePasswordDialog(
 
   // Select an appropriate text for the reason.
   std::string text;
-  const base::string16& hostname16 = UTF8ToUTF16(hostname);
-  const base::string16& slot16 = UTF8ToUTF16(slot_name);
+  const base::string16& hostname16 = base::UTF8ToUTF16(hostname);
+  const base::string16& slot16 = base::UTF8ToUTF16(slot_name);
   switch (reason) {
     case chrome::kCryptoModulePasswordKeygen:
       text = l10n_util::GetStringFUTF8(

@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   profile_manager->CreateProfileAsync(
       profile_manager->user_data_dir().Append("test"),
       create_callback,
-      ASCIIToUTF16("avatar_test"),
+      base::ASCIIToUTF16("avatar_test"),
       base::string16(),
       std::string());
 

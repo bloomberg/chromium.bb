@@ -31,10 +31,10 @@ namespace {
 // signal.  (Like views Textfield::STYLE_LOWERCASE.)
 void LowercaseInsertTextHandler(GtkEditable *editable, const gchar *text,
                                 gint length, gint *position, gpointer data) {
-  base::string16 original_text = UTF8ToUTF16(text);
+  base::string16 original_text = base::UTF8ToUTF16(text);
   base::string16 lower_text = base::i18n::ToLower(original_text);
   if (lower_text != original_text) {
-    std::string result = UTF16ToUTF8(lower_text);
+    std::string result = base::UTF16ToUTF8(lower_text);
     // Prevent ourselves getting called recursively about our own edit.
     g_signal_handlers_block_by_func(G_OBJECT(editable),
         reinterpret_cast<gpointer>(LowercaseInsertTextHandler), data);
@@ -143,13 +143,13 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
   if (controller_->template_url()) {
     gtk_entry_set_text(
         GTK_ENTRY(title_entry_),
-        UTF16ToUTF8(controller_->template_url()->short_name()).c_str());
+        base::UTF16ToUTF8(controller_->template_url()->short_name()).c_str());
     gtk_entry_set_text(
         GTK_ENTRY(keyword_entry_),
-        UTF16ToUTF8(controller_->template_url()->keyword()).c_str());
+        base::UTF16ToUTF8(controller_->template_url()->keyword()).c_str());
     gtk_entry_set_text(
         GTK_ENTRY(url_entry_),
-        UTF16ToUTF8(controller_->template_url()->url_ref().DisplayURL()).
+        base::UTF16ToUTF8(controller_->template_url()->url_ref().DisplayURL()).
             c_str());
     // We don't allow users to edit prepopulated URLs.
     gtk_editable_set_editable(
@@ -216,11 +216,11 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
 }
 
 base::string16 EditSearchEngineDialog::GetTitleInput() const {
-  return UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(title_entry_)));
+  return base::UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(title_entry_)));
 }
 
 base::string16 EditSearchEngineDialog::GetKeywordInput() const {
-  return UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(keyword_entry_)));
+  return base::UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(keyword_entry_)));
 }
 
 std::string EditSearchEngineDialog::GetURLInput() const {

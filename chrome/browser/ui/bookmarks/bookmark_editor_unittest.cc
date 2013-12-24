@@ -7,6 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 TEST(BookmarkEditorTest, ApplyEditsWithNoFolderChange) {

@@ -733,7 +733,7 @@ StatusBubble* BrowserWindowGtk::GetStatusBubble() {
 void BrowserWindowGtk::UpdateTitleBar() {
   TRACE_EVENT0("ui::gtk", "BrowserWindowGtk::UpdateTitleBar");
   base::string16 title = browser_->GetWindowTitleForCurrentTab();
-  gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
+  gtk_window_set_title(window_, base::UTF16ToUTF8(title).c_str());
   if (ShouldShowWindowIcon())
     titlebar_->UpdateTitleAndIcon();
 }

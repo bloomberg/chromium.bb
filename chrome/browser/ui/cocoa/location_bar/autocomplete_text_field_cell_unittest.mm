@@ -100,7 +100,7 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
 
   SelectedKeywordDecoration selected_keyword_decoration;
   selected_keyword_decoration.SetVisible(true);
-  selected_keyword_decoration.SetKeyword(ASCIIToUTF16("Google"), false);
+  selected_keyword_decoration.SetKeyword(base::ASCIIToUTF16("Google"), false);
   [cell addLeftDecoration:&selected_keyword_decoration];
   EXPECT_NE(selected_keyword_decoration.GetWidthForSpace(kVeryWide),
             LocationBarDecoration::kOmittedWidth);
@@ -131,7 +131,7 @@ TEST_F(AutocompleteTextFieldCellTest, DISABLED_FocusedDisplay) {
 
   KeywordHintDecoration keyword_hint_decoration;
   keyword_hint_decoration.SetVisible(true);
-  keyword_hint_decoration.SetKeyword(ASCIIToUTF16("google"), false);
+  keyword_hint_decoration.SetKeyword(base::ASCIIToUTF16("google"), false);
   [cell addRightDecoration:&keyword_hint_decoration];
   EXPECT_NE(keyword_hint_decoration.GetWidthForSpace(kVeryWide),
             LocationBarDecoration::kOmittedWidth);

@@ -31,11 +31,11 @@ namespace autofill {
 namespace {
 
 base::string16 BackingCard() {
-  return ASCIIToUTF16("Visa - 1111");
+  return base::ASCIIToUTF16("Visa - 1111");
 }
 
 base::string16 FrontingCard() {
-  return ASCIIToUTF16("Mastercard - 4444");
+  return base::ASCIIToUTF16("Mastercard - 4444");
 }
 
 base::string16 RangeOfString(const base::string16& string,

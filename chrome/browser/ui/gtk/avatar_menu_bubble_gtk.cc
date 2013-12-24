@@ -184,7 +184,7 @@ void AvatarMenuBubbleGtk::InitManagedUserContents() {
       theme_service_->BuildLabel(std::string(), ui::kGdkBlack);
   char* markup = g_markup_printf_escaped(
       "<span size='small'>%s</span>",
-      UTF16ToUTF8(avatar_menu_->GetManagedUserInformation()).c_str());
+      base::UTF16ToUTF8(avatar_menu_->GetManagedUserInformation()).c_str());
   const int kLabelWidth = 150;
   gtk_widget_set_size_request(status_label, kLabelWidth, -1);
   gtk_label_set_markup(GTK_LABEL(status_label), markup);

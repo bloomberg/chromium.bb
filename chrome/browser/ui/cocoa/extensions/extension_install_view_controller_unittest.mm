@@ -38,7 +38,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
       chrome::BuildExtensionInstallPrompt(extension_.get());
 
   std::vector<base::string16> permissions;
-  permissions.push_back(UTF8ToUTF16("warning 1"));
+  permissions.push_back(base::UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
@@ -93,7 +93,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalOK) {
   ExtensionInstallPrompt::Prompt prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
   std::vector<base::string16> permissions;
-  permissions.push_back(UTF8ToUTF16("warning 1"));
+  permissions.push_back(base::UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
@@ -121,7 +121,7 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
   ExtensionInstallPrompt::Prompt one_warning_prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
   std::vector<base::string16> permissions;
-  permissions.push_back(UTF8ToUTF16("warning 1"));
+  permissions.push_back(base::UTF8ToUTF16("warning 1"));
   one_warning_prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
@@ -130,7 +130,7 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
 
   ExtensionInstallPrompt::Prompt two_warnings_prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
-  permissions.push_back(UTF8ToUTF16("warning 2"));
+  permissions.push_back(base::UTF8ToUTF16("warning 2"));
   two_warnings_prompt.SetPermissions(permissions);
   // No details provided with this permission.
   details.push_back(base::string16());
@@ -268,7 +268,7 @@ TEST_F(ExtensionInstallViewControllerTest, OAuthIssues) {
   ExtensionInstallPrompt::Prompt prompt =
       chrome::BuildExtensionInstallPrompt(extension_.get());
   std::vector<base::string16> permissions;
-  permissions.push_back(UTF8ToUTF16("warning 1"));
+  permissions.push_back(base::UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
@@ -276,8 +276,8 @@ TEST_F(ExtensionInstallViewControllerTest, OAuthIssues) {
   prompt.SetPermissionsDetails(details);
 
   IssueAdviceInfoEntry issue;
-  issue.description = UTF8ToUTF16("issue description 1");
-  issue.details.push_back(UTF8ToUTF16("issue detail 1"));
+  issue.description = base::UTF8ToUTF16("issue description 1");
+  issue.details.push_back(base::UTF8ToUTF16("issue detail 1"));
   IssueAdviceInfo issues;
   issues.push_back(issue);
   prompt.SetOAuthIssueAdvice(issues);
@@ -310,7 +310,7 @@ TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
   ExtensionInstallPrompt::Prompt prompt =
       chrome::BuildExtensionPostInstallPermissionsPrompt(extension_.get());
   std::vector<base::string16> permissions;
-  permissions.push_back(UTF8ToUTF16("warning 1"));
+  permissions.push_back(base::UTF8ToUTF16("warning 1"));
   prompt.SetPermissions(permissions);
   // No details provided with this permission.
   std::vector<base::string16> details;
@@ -339,9 +339,9 @@ TEST_F(ExtensionInstallViewControllerTest, PermissionsDetails) {
       chrome::BuildExtensionInstallPrompt(extension_.get());
 
   std::vector<base::string16> permissions;
-  permissions.push_back(UTF8ToUTF16("warning 1"));
+  permissions.push_back(base::UTF8ToUTF16("warning 1"));
   std::vector<base::string16> permissions_details;
-  permissions_details.push_back(UTF8ToUTF16("Detail 1"));
+  permissions_details.push_back(base::UTF8ToUTF16("Detail 1"));
   prompt.SetPermissions(permissions);
   prompt.SetPermissionsDetails(permissions_details);
   prompt.SetIsShowingDetails(

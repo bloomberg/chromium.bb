@@ -343,13 +343,13 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
   std::string title;
   GURL url;
   if (details_.type == EditDetails::EXISTING_NODE) {
-    title = UTF16ToUTF8(details_.existing_node->GetTitle());
+    title = base::UTF16ToUTF8(details_.existing_node->GetTitle());
     url = details_.existing_node->url();
   } else if (details_.type == EditDetails::NEW_FOLDER) {
     title = l10n_util::GetStringUTF8(IDS_BOOKMARK_EDITOR_NEW_FOLDER_NAME);
   } else if (details_.type == EditDetails::NEW_URL) {
     url = details_.url;
-    title = UTF16ToUTF8(details_.title);
+    title = base::UTF16ToUTF8(details_.title);
   }
   gtk_entry_set_text(GTK_ENTRY(name_entry_), title.c_str());
   g_signal_connect(name_entry_, "changed",
@@ -363,7 +363,8 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
       profile_ ? user_prefs::UserPrefs::Get(profile_) :  NULL;
     gtk_entry_set_text(
         GTK_ENTRY(url_entry_),
-        UTF16ToUTF8(chrome::FormatBookmarkURLForDisplay(url, prefs)).c_str());
+        base::UTF16ToUTF8(
+            chrome::FormatBookmarkURLForDisplay(url, prefs)).c_str());
     g_signal_connect(url_entry_, "changed",
                      G_CALLBACK(OnEntryChangedThunk), this);
     gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
@@ -517,7 +518,7 @@ GURL BookmarkEditorGtk::GetInputURL() const {
 }
 
 base::string16 BookmarkEditorGtk::GetInputTitle() const {
-  return UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(name_entry_)));
+  return base::UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(name_entry_)));
 }
 
 void BookmarkEditorGtk::ApplyEdits() {

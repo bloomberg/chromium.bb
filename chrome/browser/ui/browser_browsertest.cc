@@ -93,6 +93,7 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
+using base::ASCIIToUTF16;
 using content::InterstitialPage;
 using content::HostZoomMap;
 using content::NavigationController;

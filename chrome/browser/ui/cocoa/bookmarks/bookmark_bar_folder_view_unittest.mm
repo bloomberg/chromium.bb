@@ -126,7 +126,7 @@ class BookmarkBarFolderViewTest : public CocoaProfileTest {
     const BookmarkNode* node =
         bookmark_model->AddURL(bookmark_model->bookmark_bar_node(),
                                0,
-                               ASCIIToUTF16("Test Bookmark"),
+                               base::ASCIIToUTF16("Test Bookmark"),
                                GURL("http://www.exmaple.com"));
 
     id mock_button = [OCMockObject mockForClass:[BookmarkButton class]];

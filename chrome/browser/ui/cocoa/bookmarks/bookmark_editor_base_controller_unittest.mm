@@ -18,6 +18,8 @@
 #include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+using base::ASCIIToUTF16;
+
 class BookmarkEditorBaseControllerTest : public CocoaProfileTest {
  public:
   BookmarkEditorBaseController* controller_;  // weak

@@ -34,21 +34,21 @@ base::string16 ExternalProtocolDialogDelegate::GetMessageText() const {
   // into the constructor. Will require simultaneous change of
   // ExternalProtocolHandler::RunExternalProtocolDialog across all platforms.
   base::string16 command =
-    UTF8ToUTF16(ShellIntegration::GetApplicationForProtocol(url()));
+    base::UTF8ToUTF16(ShellIntegration::GetApplicationForProtocol(url()));
   base::string16 elided_url_without_scheme;
   base::string16 elided_command;
-  gfx::ElideString(ASCIIToUTF16(url().possibly_invalid_spec()),
+  gfx::ElideString(base::ASCIIToUTF16(url().possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
   gfx::ElideString(command, kMaxCommandSize, &elided_command);
 
   base::string16 message_text = l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,
-      ASCIIToUTF16(url().scheme() + ":"),
-      elided_url_without_scheme) + ASCIIToUTF16("\n\n");
+      base::ASCIIToUTF16(url().scheme() + ":"),
+      elided_url_without_scheme) + base::ASCIIToUTF16("\n\n");
 
   message_text += l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH,
-      elided_command) + ASCIIToUTF16("\n\n");
+      elided_command) + base::ASCIIToUTF16("\n\n");
 
   message_text += l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_WARNING);
   return message_text;

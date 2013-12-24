@@ -342,7 +342,7 @@ void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
 int AutofillPopupControllerImpl::GetIconResourceID(
     const base::string16& resource_name) const {
   for (size_t i = 0; i < arraysize(kDataResources); ++i) {
-    if (resource_name == ASCIIToUTF16(kDataResources[i].name))
+    if (resource_name == base::ASCIIToUTF16(kDataResources[i].name))
       return kDataResources[i].id;
   }
 

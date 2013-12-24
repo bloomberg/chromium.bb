@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationViewControllerTest,
   NSString* explanationWithoutCreateProfile = base::SysUTF16ToNSString(
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITHOUT_PROFILE_CREATION_NEW_STYLE,
-          UTF8ToUTF16(username()), learn_more()));
+          base::UTF8ToUTF16(username()), learn_more()));
   EXPECT_NSEQ(explanationWithoutCreateProfile,
               [[[controller_ explanationField] textStorage] string]);
 }
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(ProfileSigninConfirmationViewControllerTest,
   NSString* explanationWithCreateProfile = base::SysUTF16ToNSString(
       l10n_util::GetStringFUTF16(
           IDS_ENTERPRISE_SIGNIN_EXPLANATION_WITH_PROFILE_CREATION_NEW_STYLE,
-          UTF8ToUTF16(username()), learn_more()));
+          base::UTF8ToUTF16(username()), learn_more()));
   EXPECT_NSEQ(explanationWithCreateProfile,
               [[[controller_ explanationField] textStorage] string]);
 }

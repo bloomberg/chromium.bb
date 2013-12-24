@@ -14,6 +14,8 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+using base::ASCIIToUTF16;
+
 class BookmarkNameFolderControllerTest : public CocoaProfileTest {
 };
 

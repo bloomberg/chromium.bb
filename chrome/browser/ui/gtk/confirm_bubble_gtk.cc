@@ -81,7 +81,7 @@ void ConfirmBubbleGtk::Show() {
   gtk_box_pack_start(GTK_BOX(row), icon_view, FALSE, FALSE, 0);
 
   GtkWidget* title_label = theme_service->BuildLabel(
-      UTF16ToUTF8(model_->GetTitle()), ui::kGdkBlack);
+      base::UTF16ToUTF8(model_->GetTitle()), ui::kGdkBlack);
   gtk_box_pack_start(GTK_BOX(row), title_label, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(row), gtk_label_new(NULL), TRUE, TRUE, 0);
 
@@ -93,7 +93,7 @@ void ConfirmBubbleGtk::Show() {
 
   // Add the message label to the second row.
   GtkWidget* message_label = theme_service->BuildLabel(
-      UTF16ToUTF8(model_->GetMessageText()), ui::kGdkBlack);
+      base::UTF16ToUTF8(model_->GetMessageText()), ui::kGdkBlack);
   gtk_util::ForceFontSizePixels(message_label, kMessageTextSize);
   gtk_util::SetLabelWidth(message_label, kMaxMessageWidth);
   gtk_box_pack_start(GTK_BOX(content), message_label, FALSE, FALSE, 0);
@@ -103,7 +103,7 @@ void ConfirmBubbleGtk::Show() {
   if (!link_text.empty()) {
     GtkWidget* row = gtk_hbox_new(FALSE, kImageViewSpacing);
     GtkWidget* link_button = gtk_chrome_link_button_new(
-        UTF16ToUTF8(link_text).c_str());
+        base::UTF16ToUTF8(link_text).c_str());
     g_signal_connect(link_button, "clicked", G_CALLBACK(OnLinkButtonThunk),
                      this);
     gtk_util::ForceFontSizePixels(link_button, kMessageTextSize);
@@ -119,14 +119,14 @@ void ConfirmBubbleGtk::Show() {
     GtkWidget* row = gtk_hbox_new(FALSE, kImageViewSpacing);
     gtk_box_pack_start(GTK_BOX(row), gtk_label_new(NULL), TRUE, TRUE, 0);
     if (has_cancel_button) {
-      GtkWidget* cancel_button = gtk_button_new_with_label(UTF16ToUTF8(
+      GtkWidget* cancel_button = gtk_button_new_with_label(base::UTF16ToUTF8(
           model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_CANCEL)).c_str());
       g_signal_connect(cancel_button, "clicked",
                        G_CALLBACK(OnCancelButtonThunk), this);
       gtk_box_pack_start(GTK_BOX(row), cancel_button, FALSE, FALSE, 0);
     }
     if (has_ok_button) {
-      GtkWidget* ok_button = gtk_button_new_with_label(UTF16ToUTF8(
+      GtkWidget* ok_button = gtk_button_new_with_label(base::UTF16ToUTF8(
           model_->GetButtonLabel(ConfirmBubbleModel::BUTTON_OK)).c_str());
       g_signal_connect(ok_button, "clicked", G_CALLBACK(OnOkButtonThunk), this);
       gtk_box_pack_start(GTK_BOX(row), ok_button, FALSE, FALSE, 0);

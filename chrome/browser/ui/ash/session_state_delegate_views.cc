@@ -57,7 +57,7 @@ bool SessionStateDelegate::IsUserSessionBlocked() const {
 const base::string16 SessionStateDelegate::GetUserDisplayName(
     ash::MultiProfileIndex index) const {
   NOTIMPLEMENTED();
-  return UTF8ToUTF16("");
+  return base::UTF8ToUTF16("");
 }
 
 const std::string SessionStateDelegate::GetUserEmail(
