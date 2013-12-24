@@ -106,6 +106,9 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // otherwise, returns false and does not modify headers.
   virtual bool GetFullRequestHeaders(HttpRequestHeaders* headers) const = 0;
 
+  // Get the number of bytes received from network.
+  virtual int64 GetTotalReceivedBytes() const = 0;
+
   // Called to tell the transaction that we have successfully reached the end
   // of the stream. This is equivalent to performing an extra Read() at the end
   // that should return 0 bytes. This method should not be called if the

@@ -182,7 +182,8 @@ void RunTransactionTestWithRequestAndDelegateAndGetTiming(
     int num_cache_delegate_actions,
     int num_network_delegate_actions,
     const net::BoundNetLog& net_log,
-    net::LoadTimingInfo* load_timing_info) {
+    net::LoadTimingInfo* load_timing_info,
+    int64* received_bytes) {
   net::TestCompletionCallback callback;
 
   // write to the cache
@@ -223,6 +224,9 @@ void RunTransactionTestWithRequestAndDelegateAndGetTiming(
   }
 
   ReadAndVerifyTransaction(trans.get(), trans_info);
+
+  if (received_bytes)
+    *received_bytes = trans->GetTotalReceivedBytes();
 }
 
 void RunTransactionTestWithRequestAndDelegate(
@@ -234,7 +238,7 @@ void RunTransactionTestWithRequestAndDelegate(
     int num_network_delegate_actions) {
   RunTransactionTestWithRequestAndDelegateAndGetTiming(
       cache, trans_info, request, response_info, num_cache_delegate_actions,
-      num_network_delegate_actions, net::BoundNetLog(), NULL);
+      num_network_delegate_actions, net::BoundNetLog(), NULL, NULL);
 }
 
 void RunTransactionTestWithRequest(net::HttpCache* cache,
@@ -254,7 +258,7 @@ void RunTransactionTestAndGetTiming(
   RunTransactionTestWithRequestAndDelegateAndGetTiming(
       cache, trans_info, MockHttpRequest(trans_info), NULL,
       kNoDelegateTransactionCheck, kNoDelegateTransactionCheck, log,
-      load_timing_info);
+      load_timing_info, NULL);
 }
 
 void RunTransactionTestWithDelegate(net::HttpCache* cache,
@@ -268,7 +272,8 @@ void RunTransactionTestWithDelegate(net::HttpCache* cache,
 
 void RunTransactionTest(net::HttpCache* cache,
                         const MockTransaction& trans_info) {
-  RunTransactionTestAndGetTiming(cache, trans_info, net::BoundNetLog(), NULL);
+  RunTransactionTestAndGetTiming(
+      cache, trans_info, net::BoundNetLog(), NULL);
 }
 
 void RunTransactionTestWithResponseInfo(net::HttpCache* cache,
@@ -287,7 +292,7 @@ void RunTransactionTestWithResponseInfoAndGetTiming(
   RunTransactionTestWithRequestAndDelegateAndGetTiming(
       cache, trans_info, MockHttpRequest(trans_info), response,
       kNoDelegateTransactionCheck, kNoDelegateTransactionCheck, log,
-      load_timing_info);
+      load_timing_info, NULL);
 }
 
 void RunTransactionTestWithResponse(net::HttpCache* cache,
@@ -308,7 +313,7 @@ void RunTransactionTestWithResponseAndGetTiming(
   RunTransactionTestWithRequestAndDelegateAndGetTiming(
       cache, trans_info, MockHttpRequest(trans_info), &response,
       kNoDelegateTransactionCheck, kNoDelegateTransactionCheck,
-      log, load_timing_info);
+      log, load_timing_info, NULL);
   response.headers->GetNormalizedHeaders(response_headers);
 }
 
@@ -6387,6 +6392,101 @@ TEST(HttpCache, SetPriorityNewTransaction) {
 
   EXPECT_EQ(net::HIGHEST,
             cache.network_layer()->last_create_transaction_priority());
+
+  RemoveMockTransaction(&kRangeGET_TransactionOK);
+}
+
+int64 RunTransactionAndGetReceivedBytes(
+    MockHttpCache& cache,
+    const MockTransaction& trans_info) {
+  int64 received_bytes = -1;
+  RunTransactionTestWithRequestAndDelegateAndGetTiming(
+      cache.http_cache(), trans_info, MockHttpRequest(trans_info), NULL,
+      kNoDelegateTransactionCheck, kNoDelegateTransactionCheck,
+      net::BoundNetLog(), NULL, &received_bytes);
+  return received_bytes;
+}
+
+int64 TransactionSize(MockTransaction& transaction) {
+  return strlen(transaction.status) + strlen(transaction.response_headers) +
+      strlen(transaction.data);
+}
+
+TEST(HttpCache, ReceivedBytesCacheMissAndThenHit) {
+  MockHttpCache cache;
+
+  MockTransaction transaction(kSimpleGET_Transaction);
+  int64 received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  EXPECT_EQ(TransactionSize(transaction), received_bytes);
+
+  received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  EXPECT_EQ(0, received_bytes);
+}
+
+TEST(HttpCache, ReceivedBytesConditionalRequest304) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kETagGET_Transaction);
+  int64 received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  EXPECT_EQ(TransactionSize(transaction), received_bytes);
+
+  transaction.load_flags = net::LOAD_VALIDATE_CACHE;
+  transaction.handler = ETagGet_ConditionalRequest_Handler;
+  received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  EXPECT_EQ(TransactionSize(transaction), received_bytes);
+}
+
+TEST(HttpCache, ReceivedBytesConditionalRequest200) {
+  MockHttpCache cache;
+
+  MockTransaction transaction(kTypicalGET_Transaction);
+  transaction.request_headers = "Foo: bar\r\n";
+  transaction.response_headers =
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
+      "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n"
+      "Etag: \"foopy\"\n"
+      "Cache-Control: max-age=0\n"
+      "Vary: Foo\n";
+  AddMockTransaction(&transaction);
+  int64 received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  EXPECT_EQ(TransactionSize(transaction), received_bytes);
+
+  RevalidationServer server;
+  transaction.handler = server.Handler;
+  transaction.request_headers = "Foo: none\r\n";
+  received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  EXPECT_EQ(TransactionSize(transaction), received_bytes);
+
+  RemoveMockTransaction(&transaction);
+}
+
+TEST(HttpCache, ReceivedBytesRange) {
+  MockHttpCache cache;
+  AddMockTransaction(&kRangeGET_TransactionOK);
+  MockTransaction transaction(kRangeGET_TransactionOK);
+
+  // Read bytes 40-49 from the network.
+  int64 received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  int64 range_response_size = TransactionSize(transaction);
+  EXPECT_EQ(range_response_size, received_bytes);
+
+  // Read bytes 40-49 from the cache.
+  received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  EXPECT_EQ(0, received_bytes);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Read bytes 30-39 from the network.
+  transaction.request_headers = "Range: bytes = 30-39\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 30-39 ";
+  received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  EXPECT_EQ(range_response_size, received_bytes);
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Read bytes 20-29 and 50-59 from the network, bytes 30-49 from the cache.
+  transaction.request_headers = "Range: bytes = 20-59\r\n" EXTRA_HEADER;
+  transaction.data = "rg: 20-29 rg: 30-39 rg: 40-49 rg: 50-59 ";
+  received_bytes = RunTransactionAndGetReceivedBytes(cache, transaction);
+  EXPECT_EQ(range_response_size * 2, received_bytes);
 
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }

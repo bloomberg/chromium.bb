@@ -123,6 +123,7 @@ class HttpCache::Transaction : public HttpTransaction {
   virtual void StopCaching() OVERRIDE;
   virtual bool GetFullRequestHeaders(
       HttpRequestHeaders* headers) const OVERRIDE;
+  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
   virtual void DoneReading() OVERRIDE;
   virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE;
   virtual LoadState GetLoadState() const OVERRIDE;
@@ -430,6 +431,8 @@ class HttpCache::Transaction : public HttpTransaction {
   base::TimeTicks send_request_since_;
 
   HttpTransactionDelegate* transaction_delegate_;
+
+  int64 total_received_bytes_;
 
   // Load timing information for the last network request, if any.  Set in the
   // 304 and 206 response cases, as the network transaction may be destroyed

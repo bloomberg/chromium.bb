@@ -244,6 +244,7 @@ class HttpNetworkTransactionTest
     int rv;
     std::string status_line;
     std::string response_data;
+    int64 totalReceivedBytes;
     LoadTimingInfo load_timing_info;
   };
 
@@ -356,6 +357,7 @@ class HttpNetworkTransactionTest
     EXPECT_EQ("['Host: www.google.com','Connection: keep-alive']",
               response_headers);
 
+    out.totalReceivedBytes = trans->GetTotalReceivedBytes();
     return out;
   }
 
@@ -364,6 +366,13 @@ class HttpNetworkTransactionTest
     StaticSocketDataProvider reads(data_reads, reads_count, NULL, 0);
     StaticSocketDataProvider* data[] = { &reads };
     return SimpleGetHelperForData(data, 1);
+  }
+
+  int64 ReadsSize(MockRead data_reads[], size_t reads_count) {
+    int64 size = 0;
+    for (size_t i = 0; i < reads_count; ++i)
+      size += data_reads[i].data_len;
+    return size;
   }
 
   void ConnectStatusHelperWithExpectedStatus(const MockRead& status,
@@ -584,6 +593,8 @@ TEST_P(HttpNetworkTransactionTest, SimpleGET) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.0 200 OK", out.status_line);
   EXPECT_EQ("hello world", out.response_data);
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.totalReceivedBytes);
 }
 
 // Response with no status line.
@@ -597,6 +608,8 @@ TEST_P(HttpNetworkTransactionTest, SimpleGETNoHeaders) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
   EXPECT_EQ("hello world", out.response_data);
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.totalReceivedBytes);
 }
 
 // Allow up to 4 bytes of junk to precede status line.
@@ -610,6 +623,8 @@ TEST_P(HttpNetworkTransactionTest, StatusLineJunk3Bytes) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.0 404 Not Found", out.status_line);
   EXPECT_EQ("DATA", out.response_data);
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.totalReceivedBytes);
 }
 
 // Allow up to 4 bytes of junk to precede status line.
@@ -623,6 +638,8 @@ TEST_P(HttpNetworkTransactionTest, StatusLineJunk4Bytes) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.0 404 Not Found", out.status_line);
   EXPECT_EQ("DATA", out.response_data);
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.totalReceivedBytes);
 }
 
 // Beyond 4 bytes of slop and it should fail to find a status line.
@@ -636,6 +653,8 @@ TEST_P(HttpNetworkTransactionTest, StatusLineJunk5Bytes) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
   EXPECT_EQ("xxxxxHTTP/1.1 404 Not Found\nServer: blah", out.response_data);
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.totalReceivedBytes);
 }
 
 // Same as StatusLineJunk4Bytes, except the read chunks are smaller.
@@ -653,6 +672,8 @@ TEST_P(HttpNetworkTransactionTest, StatusLineJunk4Bytes_Slow) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.0 404 Not Found", out.status_line);
   EXPECT_EQ("DATA", out.response_data);
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.totalReceivedBytes);
 }
 
 // Close the connection before enough bytes to have a status line.
@@ -666,15 +687,18 @@ TEST_P(HttpNetworkTransactionTest, StatusLinePartial) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/0.9 200 OK", out.status_line);
   EXPECT_EQ("HTT", out.response_data);
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, out.totalReceivedBytes);
 }
 
 // Simulate a 204 response, lacking a Content-Length header, sent over a
 // persistent connection.  The response should still terminate since a 204
 // cannot have a response body.
 TEST_P(HttpNetworkTransactionTest, StopsReading204) {
+  char junk[] = "junk";
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 204 No Content\r\n\r\n"),
-    MockRead("junk"),  // Should not be read!!
+    MockRead(junk),  // Should not be read!!
     MockRead(SYNCHRONOUS, OK),
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
@@ -682,18 +706,24 @@ TEST_P(HttpNetworkTransactionTest, StopsReading204) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 204 No Content", out.status_line);
   EXPECT_EQ("", out.response_data);
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  int64 response_size = reads_size - strlen(junk);
+  EXPECT_EQ(response_size, out.totalReceivedBytes);
 }
 
 // A simple request using chunked encoding with some extra data after.
 // (Like might be seen in a pipelined response.)
 TEST_P(HttpNetworkTransactionTest, ChunkedEncoding) {
+  std::string final_chunk = "0\r\n\r\n";
+  std::string extra_data = "HTTP/1.1 200 OK\r\n";
+  std::string last_read = final_chunk + extra_data;
   MockRead data_reads[] = {
     MockRead("HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n"),
     MockRead("5\r\nHello\r\n"),
     MockRead("1\r\n"),
     MockRead(" \r\n"),
     MockRead("5\r\nworld\r\n"),
-    MockRead("0\r\n\r\nHTTP/1.1 200 OK\r\n"),
+    MockRead(last_read.data()),
     MockRead(SYNCHRONOUS, OK),
   };
   SimpleGetHelperResult out = SimpleGetHelper(data_reads,
@@ -701,6 +731,9 @@ TEST_P(HttpNetworkTransactionTest, ChunkedEncoding) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("Hello world", out.response_data);
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  int64 response_size = reads_size - extra_data.size();
+  EXPECT_EQ(response_size, out.totalReceivedBytes);
 }
 
 // Next tests deal with http://crbug.com/56344.
@@ -1569,6 +1602,9 @@ TEST_P(HttpNetworkTransactionTest, BasicAuth) {
   EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info1));
   TestLoadTimingNotReused(load_timing_info1, CONNECT_TIMING_HAS_DNS_TIMES);
 
+  int64 reads_size1 = ReadsSize(data_reads1, arraysize(data_reads1));
+  EXPECT_EQ(reads_size1, trans->GetTotalReceivedBytes());
+
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
   EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
@@ -1590,6 +1626,9 @@ TEST_P(HttpNetworkTransactionTest, BasicAuth) {
   EXPECT_LE(load_timing_info1.receive_headers_end,
             load_timing_info2.connect_timing.connect_start);
   EXPECT_NE(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
+
+  int64 reads_size2 = ReadsSize(data_reads2, arraysize(data_reads2));
+  EXPECT_EQ(reads_size1 + reads_size2, trans->GetTotalReceivedBytes());
 
   response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
@@ -1632,6 +1671,9 @@ TEST_P(HttpNetworkTransactionTest, DoNotSendAuth) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(0, rv);
+
+  int64 reads_size = ReadsSize(data_reads, arraysize(data_reads));
+  EXPECT_EQ(reads_size, trans->GetTotalReceivedBytes());
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
   ASSERT_TRUE(response != NULL);
@@ -1730,6 +1772,12 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthKeepAlive) {
   ASSERT_TRUE(response != NULL);
   EXPECT_TRUE(response->auth_challenge.get() == NULL);
   EXPECT_EQ(5, response->headers->GetContentLength());
+
+  std::string response_data;
+  rv = ReadTransaction(trans.get(), &response_data);
+  EXPECT_EQ(OK, rv);
+  int64 reads_size1 = ReadsSize(data_reads1, arraysize(data_reads1));
+  EXPECT_EQ(reads_size1, trans->GetTotalReceivedBytes());
 }
 
 // Test the request-challenge-retry sequence for basic auth, over a keep-alive

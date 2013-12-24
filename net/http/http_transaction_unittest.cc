@@ -230,6 +230,7 @@ MockNetworkTransaction::MockNetworkTransaction(
       priority_(priority),
       websocket_handshake_stream_create_helper_(NULL),
       transaction_factory_(factory->AsWeakPtr()),
+      received_bytes_(0),
       socket_log_id_(net::NetLog::Source::kInvalidId) {
 }
 
@@ -255,6 +256,7 @@ int MockNetworkTransaction::Start(const net::HttpRequestInfo* request,
   std::string resp_status = t->status;
   std::string resp_headers = t->response_headers;
   std::string resp_data = t->data;
+  received_bytes_ = resp_status.size() + resp_headers.size() + resp_data.size();
   if (t->handler)
     (t->handler)(request, &resp_status, &resp_headers, &resp_data);
 
@@ -329,6 +331,10 @@ void MockNetworkTransaction::StopCaching() {}
 bool MockNetworkTransaction::GetFullRequestHeaders(
     net::HttpRequestHeaders* headers) const {
   return false;
+}
+
+int64 MockNetworkTransaction::GetTotalReceivedBytes() const {
+  return received_bytes_;
 }
 
 void MockNetworkTransaction::DoneReading() {

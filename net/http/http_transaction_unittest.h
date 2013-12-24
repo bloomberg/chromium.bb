@@ -193,6 +193,8 @@ class MockNetworkTransaction
   virtual bool GetFullRequestHeaders(
       net::HttpRequestHeaders* headers) const OVERRIDE;
 
+  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
+
   virtual void DoneReading() OVERRIDE;
 
   virtual const net::HttpResponseInfo* GetResponseInfo() const OVERRIDE;
@@ -226,6 +228,7 @@ class MockNetworkTransaction
   net::RequestPriority priority_;
   CreateHelper* websocket_handshake_stream_create_helper_;
   base::WeakPtr<MockNetworkLayer> transaction_factory_;
+  int64 received_bytes_;
 
   // NetLog ID of the fake / non-existent underlying socket used by the
   // connection. Requires Start() be passed a BoundNetLog with a real NetLog to

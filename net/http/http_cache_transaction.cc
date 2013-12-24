@@ -214,6 +214,7 @@ HttpCache::Transaction::Transaction(
                               weak_factory_.GetWeakPtr())),
       transaction_pattern_(PATTERN_UNDEFINED),
       transaction_delegate_(transaction_delegate),
+      total_received_bytes_(0),
       websocket_handshake_stream_base_create_helper_(NULL) {
   COMPILE_ASSERT(HttpCache::Transaction::kNumValidationHeaders ==
                  arraysize(kValidationHeaders),
@@ -463,6 +464,13 @@ bool HttpCache::Transaction::GetFullRequestHeaders(
 
   // TODO(ttuttle): Read headers from cache.
   return false;
+}
+
+int64 HttpCache::Transaction::GetTotalReceivedBytes() const {
+  int64 total_received_bytes = total_received_bytes_;
+  if (network_trans_)
+    total_received_bytes += network_trans_->GetTotalReceivedBytes();
+  return total_received_bytes;
 }
 
 void HttpCache::Transaction::DoneReading() {
@@ -2387,6 +2395,7 @@ void HttpCache::Transaction::ResetNetworkTransaction() {
   LoadTimingInfo load_timing;
   if (network_trans_->GetLoadTimingInfo(&load_timing))
     old_network_trans_load_timing_.reset(new LoadTimingInfo(load_timing));
+  total_received_bytes_ += network_trans_->GetTotalReceivedBytes();
   network_trans_.reset();
 }
 

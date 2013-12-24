@@ -86,7 +86,9 @@ bool HttpBasicStream::IsConnectionReusable() const {
 }
 
 int64 HttpBasicStream::GetTotalReceivedBytes() const {
-  return parser()->received_bytes();
+  if (parser())
+    return parser()->received_bytes();
+  return 0;
 }
 
 bool HttpBasicStream::GetLoadTimingInfo(

@@ -62,6 +62,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   virtual void StopCaching() OVERRIDE {}
   virtual bool GetFullRequestHeaders(
       HttpRequestHeaders* headers) const OVERRIDE;
+  virtual int64 GetTotalReceivedBytes() const OVERRIDE;
   virtual void DoneReading() OVERRIDE {}
   virtual const HttpResponseInfo* GetResponseInfo() const OVERRIDE;
   virtual LoadState GetLoadState() const OVERRIDE;
@@ -254,6 +255,8 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Debug helper.
   static std::string DescribeState(State state);
 
+  void SetStream(HttpStreamBase* stream);
+
   scoped_refptr<HttpAuthController>
       auth_controllers_[HttpAuth::AUTH_NUM_TARGETS];
 
@@ -305,6 +308,9 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // User buffer and length passed to the Read method.
   scoped_refptr<IOBuffer> read_buf_;
   int read_buf_len_;
+
+  // Total number of bytes received on streams for this transaction.
+  int64 total_received_bytes_;
 
   // The time the Start method was called.
   base::Time start_time_;
