@@ -23,6 +23,8 @@
         '--intermediate-directory=<(INTERMEDIATE_DIR)',
         '--sanitizer-type=<(_sanitizer_type)',
         '--custom-configure-flags=<(_custom_configure_flags)',
+        '--custom-c-compiler-flags=<(_custom_c_compiler_flags)',
+        '--custom-cxx-compiler-flags=<(_custom_cxx_compiler_flags)',
         '--custom-linker-flags=<(_custom_linker_flags)',
         '--run-before-build=<(_run_before_build)',
         '<(_verbose_libraries_build_flag)',

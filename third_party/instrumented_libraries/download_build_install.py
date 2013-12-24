@@ -98,8 +98,10 @@ def download_build_install(parsed_arguments):
     environment['CC'] = parsed_arguments.c_compiler
   if 'CXX' not in environment and parsed_arguments.cxx_compiler:
     environment['CXX'] = parsed_arguments.cxx_compiler
-  environment['CFLAGS'] = sanitizer_params['compiler_flags']
-  environment['CXXFLAGS'] = sanitizer_params['compiler_flags']
+  environment['CFLAGS'] = '%s %s' % (sanitizer_params['compiler_flags'],
+      parsed_arguments.custom_c_compiler_flags)
+  environment['CXXFLAGS'] = '%s %s' % (sanitizer_params['compiler_flags'],
+      parsed_arguments.custom_cxx_compiler_flags)
   # We use XORIGIN as RPATH and after building library replace it to $ORIGIN
   # The reason: this flag goes through configure script and makefiles
   # differently for different libraries. So the dollar sign '$' should be
@@ -166,6 +168,8 @@ def main():
   argument_parser.add_argument('-m', '--intermediate-directory', default='.',
       help='Relative path to the directory for temporary build files')
   argument_parser.add_argument('--custom-configure-flags', default='')
+  argument_parser.add_argument('--custom-c-compiler-flags', default='')
+  argument_parser.add_argument('--custom-cxx-compiler-flags', default='')
   argument_parser.add_argument('--custom-linker-flags', default='')
   argument_parser.add_argument('-s', '--sanitizer-type', required=True,
       choices=SUPPORTED_SANITIZERS.keys()) 

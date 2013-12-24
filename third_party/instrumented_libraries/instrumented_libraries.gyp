@@ -5,6 +5,8 @@
 {
   # Default value for all libraries.
   'custom_configure_flags': '',
+  'custom_c_compiler_flags': '',
+  'custom_cxx_compiler_flags': '',
   'custom_linker_flags': '',
   'run_before_build': '',
 
