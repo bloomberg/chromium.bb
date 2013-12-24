@@ -8,7 +8,7 @@ function initialize_timelineFrameController()
 
 InspectorTest.dumpFrame = function(frame)
 {
-    var fieldsToDump = ["cpuTime", "duration", "startTime", "endTime", "id", "mainThreadFrameId", "isBackground", "timeByCategory", "other", "scripting"];
+    var fieldsToDump = ["cpuTime", "duration", "startTime", "endTime", "id", "mainThreadFrameId", "isBackground", "timeByCategory", "other", "scripting", "painting"];
     function formatFields(object)
     {
         var result = {};
@@ -45,6 +45,7 @@ function test()
         ]},
         {"startTime": 1021.000, "type":"ActivateLayerTree", "data":{"id":"2"}, "thread":"implSide"},
         {"startTime": 1031.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1032.990, "type":"Rasterize", "thread":"implSide", "endTime": 1035.990},
         {"startTime": 1032.000, "data":{}, "endTime":1035.999, "type":"Program", "children":[
             {"startTime":1032.001, "type":"BeginFrame", "data":{"id":"3"}},
             {"startTime":1032.002, "endTime":1035.999, "type":"FunctionCall" }
@@ -65,6 +66,8 @@ function test()
         ]},
         {"startTime": 1105.000, "type":"ActivateLayerTree", "data":{"id":"5"}, "thread":"implSide"},
         {"startTime": 1115.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1116.990, "type":"Rasterize", "thread":"1", "endTime": 1118.990},
+        {"startTime": 1117.990, "type":"Rasterize", "thread":"2", "endTime": 1119.990},
         {"startTime": 1116.000,"data":{}, "endTime":1119.999, "type":"Program", "children":[
             {"startTime":1116.001, "type":"BeginFrame", "data":{"id":"6"}},
             {"startTime":1116.002, "endTime":1119.999, "type":"FunctionCall" }

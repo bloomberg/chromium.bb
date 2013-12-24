@@ -168,6 +168,7 @@ Background frames:
     startTime : 1.03199
     timeByCategory : {
         other : 0
+        painting : 0.003
     }
 }
 {
@@ -226,6 +227,7 @@ Background frames:
     startTime : 1.11599
     timeByCategory : {
         other : 0
+        painting : 0.003
     }
 }
 {
