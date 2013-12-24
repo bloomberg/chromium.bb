@@ -39,7 +39,7 @@ IN_PROC_BROWSER_TEST_F(MultipartResponseTest, DISABLED_SingleVisit) {
   Observe(browser()->tab_strip_model()->GetActiveWebContents());
   ui_test_utils::NavigateToURL(browser(), test_server()->GetURL("multipart"));
 
-  EXPECT_EQ(ASCIIToUTF16("page 9"),
+  EXPECT_EQ(base::ASCIIToUTF16("page 9"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
   EXPECT_EQ(1, update_history_count_);
   EXPECT_GT(did_navigate_any_frame_count_, update_history_count_);

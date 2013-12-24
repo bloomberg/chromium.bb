@@ -65,7 +65,7 @@ void ContextMenuMatcher::AppendExtensionItems(
     MenuItem::List submenu_items;
 
     if (items.size() > 1 || items[0]->type() != MenuItem::NORMAL) {
-      title = UTF8ToUTF16(extension->name());
+      title = base::UTF8ToUTF16(extension->name());
       submenu_items = items;
     } else {
       MenuItem* item = items[0];
@@ -109,7 +109,7 @@ base::string16 ContextMenuMatcher::GetTopLevelContextMenuTitle(
   if (items.empty() ||
       items.size() > 1 ||
       items[0]->type() != MenuItem::NORMAL) {
-    title = UTF8ToUTF16(extension->name());
+    title = base::UTF8ToUTF16(extension->name());
   } else {
     MenuItem* item = items[0];
     title = item->TitleWithReplacement(

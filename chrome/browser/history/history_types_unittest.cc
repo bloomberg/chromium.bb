@@ -119,7 +119,7 @@ TEST(HistoryQueryResult, RowSignificance) {
   const base::Time& threshold(AutocompleteAgeThreshold());
   const GURL url("http://www.google.com/");
   URLRow url_row(url);
-  url_row.set_title(UTF8ToUTF16("Google"));
+  url_row.set_title(base::UTF8ToUTF16("Google"));
   EXPECT_FALSE(RowQualifiesAsSignificant(url_row, threshold));
   EXPECT_FALSE(RowQualifiesAsSignificant(url_row, base::Time()));
   url_row.set_visit_count(kLowQualityMatchVisitLimit);

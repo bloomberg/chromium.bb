@@ -2500,8 +2500,8 @@ void ExtensionService::ReportExtensionLoadError(
       content::Source<Profile>(profile_),
       content::Details<const std::string>(&error));
 
-  std::string path_str = UTF16ToUTF8(extension_path.LossyDisplayName());
-  base::string16 message = UTF8ToUTF16(base::StringPrintf(
+  std::string path_str = base::UTF16ToUTF8(extension_path.LossyDisplayName());
+  base::string16 message = base::UTF8ToUTF16(base::StringPrintf(
       "Could not load extension from '%s'. %s",
       path_str.c_str(), error.c_str()));
   ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);

@@ -55,10 +55,10 @@ ExtensionMessageBubbleController::GetExtensionList() {
        it != list->end(); ++it) {
     const Extension* extension = service_->GetInstalledExtension(*it);
     if (extension) {
-      return_value.push_back(UTF8ToUTF16(extension->name()));
+      return_value.push_back(base::UTF8ToUTF16(extension->name()));
     } else {
       return_value.push_back(
-          ASCIIToUTF16(std::string("(unknown name) ") + *it));
+          base::ASCIIToUTF16(std::string("(unknown name) ") + *it));
       // TODO(finnur): Add this as a string to the grd, for next milestone.
     }
   }

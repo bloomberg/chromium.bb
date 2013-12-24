@@ -207,7 +207,7 @@ TEST_F(AndroidHistoryProviderServiceTest, TestHistoryAndBookmark) {
 
 TEST_F(AndroidHistoryProviderServiceTest, TestSearchTerm) {
   SearchRow search_row;
-  search_row.set_search_term(UTF8ToUTF16("google"));
+  search_row.set_search_term(base::UTF8ToUTF16("google"));
   search_row.set_url(GURL("http://google.com"));
   search_row.set_template_url_id(1);
   search_row.set_search_time(Time::Now());

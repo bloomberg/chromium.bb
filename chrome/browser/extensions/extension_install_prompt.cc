@@ -246,7 +246,7 @@ void ExtensionInstallPrompt::Prompt::SetOAuthIssueAdvice(
 void ExtensionInstallPrompt::Prompt::SetUserNameFromProfile(Profile* profile) {
   // |profile| can be NULL in unit tests.
   if (profile) {
-    oauth_user_name_ = UTF8ToUTF16(profile->GetPrefs()->GetString(
+    oauth_user_name_ = base::UTF8ToUTF16(profile->GetPrefs()->GetString(
         prefs::kGoogleServicesUsername));
   } else {
     oauth_user_name_.clear();
@@ -277,7 +277,7 @@ base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
       resource_id = IDS_EXTENSION_INSTALL_EXTENSION_PROMPT_TITLE;
   } else if (type_ == EXTERNAL_INSTALL_PROMPT) {
     return l10n_util::GetStringFUTF16(
-        resource_id, UTF8ToUTF16(extension_->name()));
+        resource_id, base::UTF8ToUTF16(extension_->name()));
   }
 
   return l10n_util::GetStringUTF16(resource_id);
@@ -285,7 +285,7 @@ base::string16 ExtensionInstallPrompt::Prompt::GetDialogTitle() const {
 
 base::string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
   if (type_ == INLINE_INSTALL_PROMPT) {
-    return UTF8ToUTF16(extension_->name());
+    return base::UTF8ToUTF16(extension_->name());
   } else if (type_ == BUNDLE_INSTALL_PROMPT) {
     return bundle_->GetHeadingTextFor(BundleInstaller::Item::STATE_PENDING);
   } else if (type_ == EXTERNAL_INSTALL_PROMPT) {
@@ -299,7 +299,7 @@ base::string16 ExtensionInstallPrompt::Prompt::GetHeading() const {
     return l10n_util::GetStringUTF16(resource_id);
   } else {
     return l10n_util::GetStringFUTF16(
-        kHeadingIds[type_], UTF8ToUTF16(extension_->name()));
+        kHeadingIds[type_], base::UTF8ToUTF16(extension_->name()));
   }
 }
 

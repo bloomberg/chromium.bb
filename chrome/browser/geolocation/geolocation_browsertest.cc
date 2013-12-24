@@ -90,7 +90,7 @@ IFrameLoader::IFrameLoader(Browser* browser, int iframe_id, const GURL& url)
       "window.domAutomationController.send(addIFrame(%d, \"%s\"));",
       iframe_id, url.spec().c_str()));
   web_contents->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      base::string16(), UTF8ToUTF16(script));
+      base::string16(), base::UTF8ToUTF16(script));
   content::RunMessageLoop();
 
   EXPECT_EQ(base::StringPrintf("\"%d\"", iframe_id), javascript_response_);
@@ -212,8 +212,8 @@ void GeolocationNotificationObserver::AddWatchAndWaitForNotification(
   std::string script(
       "window.domAutomationController.setAutomationId(0);"
       "window.domAutomationController.send(geoStart());");
-  render_view_host->ExecuteJavascriptInWebFrame(UTF8ToUTF16(iframe_xpath),
-                                                UTF8ToUTF16(script));
+  render_view_host->ExecuteJavascriptInWebFrame(base::UTF8ToUTF16(iframe_xpath),
+                                                base::UTF8ToUTF16(script));
   content::RunMessageLoop();
   registrar_.RemoveAll();
   LOG(WARNING) << "got geolocation watch" << javascript_response_;

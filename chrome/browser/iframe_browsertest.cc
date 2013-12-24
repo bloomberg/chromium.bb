@@ -18,7 +18,7 @@ class IFrameTest : public InProcessBrowserTest {
         base::FilePath(), base::FilePath().AppendASCII(file));
 
     ui_test_utils::NavigateToURL(browser(), url);
-    EXPECT_EQ(ASCIIToUTF16(page_title),
+    EXPECT_EQ(base::ASCIIToUTF16(page_title),
               browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
   }
 };

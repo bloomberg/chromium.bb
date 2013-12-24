@@ -69,8 +69,9 @@ scoped_ptr<Cookie> CreateCookie(
 
   // A cookie is a raw byte sequence. By explicitly parsing it as UTF-8, we
   // apply error correction, so the string can be safely passed to the renderer.
-  cookie->name = UTF16ToUTF8(UTF8ToUTF16(canonical_cookie.Name()));
-  cookie->value = UTF16ToUTF8(UTF8ToUTF16(canonical_cookie.Value()));
+  cookie->name = base::UTF16ToUTF8(base::UTF8ToUTF16(canonical_cookie.Name()));
+  cookie->value =
+      base::UTF16ToUTF8(base::UTF8ToUTF16(canonical_cookie.Value()));
   cookie->domain = canonical_cookie.Domain();
   cookie->host_only = net::cookie_util::DomainIsHostOnly(
       canonical_cookie.Domain());

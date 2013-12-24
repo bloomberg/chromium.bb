@@ -205,8 +205,8 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
   }
 
  bool MenuHasExtensionItemWithLabel(TestRenderViewContextMenu* menu,
-                                     const std::string& label) {
-    base::string16 label16 = UTF8ToUTF16(label);
+                                    const std::string& label) {
+    base::string16 label16 = base::UTF8ToUTF16(label);
     std::map<int, MenuItem::Id>::iterator i;
     for (i = menu->extension_items().extension_item_map_.begin();
          i != menu->extension_items().extension_item_map_.end(); ++i) {
@@ -391,16 +391,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, MAYBE_TopLevel) {
 
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
       IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
-  EXPECT_EQ(UTF8ToUTF16("An Extension with multiple Context Menus"),
-                        model->GetLabelAt(index++));
-  EXPECT_EQ(UTF8ToUTF16("Context Menu #1 - Extension #2"),
-                        model->GetLabelAt(index++));
-  EXPECT_EQ(UTF8ToUTF16("Context Menu #2 - Extension #3"),
-                        model->GetLabelAt(index++));
-  EXPECT_EQ(UTF8ToUTF16("Context Menu #3 - Extension #1"),
-                        model->GetLabelAt(index++));
-  EXPECT_EQ(UTF8ToUTF16("Ze Extension with multiple Context Menus"),
-                        model->GetLabelAt(index++));
+  EXPECT_EQ(base::UTF8ToUTF16("An Extension with multiple Context Menus"),
+                              model->GetLabelAt(index++));
+  EXPECT_EQ(base::UTF8ToUTF16("Context Menu #1 - Extension #2"),
+                              model->GetLabelAt(index++));
+  EXPECT_EQ(base::UTF8ToUTF16("Context Menu #2 - Extension #3"),
+                              model->GetLabelAt(index++));
+  EXPECT_EQ(base::UTF8ToUTF16("Context Menu #3 - Extension #1"),
+                              model->GetLabelAt(index++));
+  EXPECT_EQ(base::UTF8ToUTF16("Ze Extension with multiple Context Menus"),
+                              model->GetLabelAt(index++));
 }
 
 // Checks that in |menu|, the item at |index| has type |expected_type| and a
@@ -410,7 +410,7 @@ static void ExpectLabelAndType(const char* expected_label,
                                const MenuModel& menu,
                                int index) {
   EXPECT_EQ(expected_type, menu.GetTypeAt(index));
-  EXPECT_EQ(UTF8ToUTF16(expected_label), menu.GetLabelAt(index));
+  EXPECT_EQ(base::UTF8ToUTF16(expected_label), menu.GetLabelAt(index));
 }
 
 // In the separators test we build a submenu with items and separators in two
@@ -476,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   base::string16 label;
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
       IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
-  EXPECT_EQ(UTF8ToUTF16(extension->name()), model->GetLabelAt(index));
+  EXPECT_EQ(base::UTF8ToUTF16(extension->name()), model->GetLabelAt(index));
   ASSERT_EQ(MenuModel::TYPE_SUBMENU, model->GetTypeAt(index));
 
   // Get the submenu and verify the items there.
@@ -493,7 +493,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionContextMenuBrowserTest, Separators) {
   menu.reset(CreateMenu(browser(), url, GURL(), GURL()));
   ASSERT_TRUE(menu->GetMenuModelAndItemIndex(
       IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST, &model, &index));
-  EXPECT_EQ(UTF8ToUTF16("parent"), model->GetLabelAt(index));
+  EXPECT_EQ(base::UTF8ToUTF16("parent"), model->GetLabelAt(index));
   submenu = model->GetSubmenuModelAt(index);
   ASSERT_TRUE(submenu != NULL);
   VerifyMenuForSeparatorsTest(*submenu);

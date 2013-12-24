@@ -80,7 +80,7 @@ TEST_F(BookmarkModelSQLHandlerTest, InsertIntoMobileFolder) {
   HistoryAndBookmarkRow row;
   row.set_raw_url("http://bookmark.com");
   row.set_url(GURL("http://bookmark.com"));
-  row.set_title(UTF8ToUTF16("Bookmark Title"));
+  row.set_title(base::UTF8ToUTF16("Bookmark Title"));
   row.set_is_bookmark(true);
 
   BookmarkModelSQLHandler handler(&history_db_);
@@ -99,7 +99,7 @@ TEST_F(BookmarkModelSQLHandlerTest, InsertIntoSpecificFolder) {
   HistoryAndBookmarkRow row;
   row.set_raw_url("http://bookmark.com");
   row.set_url(GURL("http://bookmark.com"));
-  row.set_title(UTF8ToUTF16("Bookmark Title"));
+  row.set_title(base::UTF8ToUTF16("Bookmark Title"));
   row.set_is_bookmark(true);
   // Set other folder as parent.
   row.set_parent_id(bookmark_model_->other_node()->id());
@@ -119,7 +119,7 @@ TEST_F(BookmarkModelSQLHandlerTest, InsertIntoSpecificFolder) {
 TEST_F(BookmarkModelSQLHandlerTest, UpdateHistoryToBookmark) {
   // Added a row in url database.
   URLRow url_row(GURL("http://www.google.com"));
-  url_row.set_title(UTF8ToUTF16("Google"));
+  url_row.set_title(base::UTF8ToUTF16("Google"));
   URLID url_id = history_db_.AddURL(url_row);
   ASSERT_TRUE(url_id);
 
@@ -182,7 +182,7 @@ TEST_F(BookmarkModelSQLHandlerTest, UpdateHistoryToBookmark) {
   EXPECT_EQ(row.parent_id(), parent1->id());
 
   // Only update the title.
-  url_row.set_title(UTF8ToUTF16("Google Inc."));
+  url_row.set_title(base::UTF8ToUTF16("Google Inc."));
   history_db_.UpdateURLRow(url_id, url_row);
   HistoryAndBookmarkRow update_title;
   update_title.set_title(url_row.title());
@@ -212,7 +212,7 @@ TEST_F(BookmarkModelSQLHandlerTest, Delete) {
   GURL url1 = GURL("http://bookmark.com");
   row.set_raw_url("http://bookmark.com");
   row.set_url(url1);
-  row.set_title(UTF8ToUTF16("Bookmark Title"));
+  row.set_title(base::UTF8ToUTF16("Bookmark Title"));
   row.set_is_bookmark(true);
 
   BookmarkModelSQLHandler handler(&history_db_);

@@ -32,6 +32,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using base::UTF8ToUTF16;
 using content::BrowserThread;
 
 namespace history {

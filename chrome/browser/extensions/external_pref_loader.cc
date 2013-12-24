@@ -41,7 +41,7 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
       false,  // Recursive.
       base::FileEnumerator::FILES);
 #if defined(OS_WIN)
-  base::FilePath::StringType extension = UTF8ToWide(std::string(".json"));
+  base::FilePath::StringType extension = base::UTF8ToWide(std::string(".json"));
 #elif defined(OS_POSIX)
   base::FilePath::StringType extension(".json");
 #endif

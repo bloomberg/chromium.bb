@@ -258,7 +258,7 @@ GURL GetQueryUrl(const base::string16& text_query,
   }
 
   if (!text_query.empty())
-    url = net::AppendQueryParameter(url, "q", UTF16ToUTF8(text_query));
+    url = net::AppendQueryParameter(url, "q", base::UTF16ToUTF8(text_query));
 
   if (!version_info.empty())
     url = net::AppendQueryParameter(url, "kvi", version_info);

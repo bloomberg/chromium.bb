@@ -71,7 +71,7 @@ TEST_F(URLDatabaseTest, AddURL) {
   // First, add two URLs.
   const GURL url1("http://www.google.com/");
   URLRow url_info1(url1);
-  url_info1.set_title(UTF8ToUTF16("Google"));
+  url_info1.set_title(base::UTF8ToUTF16("Google"));
   url_info1.set_visit_count(4);
   url_info1.set_typed_count(2);
   url_info1.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
@@ -80,7 +80,7 @@ TEST_F(URLDatabaseTest, AddURL) {
 
   const GURL url2("http://mail.google.com/");
   URLRow url_info2(url2);
-  url_info2.set_title(UTF8ToUTF16("Google Mail"));
+  url_info2.set_title(base::UTF8ToUTF16("Google Mail"));
   url_info2.set_visit_count(3);
   url_info2.set_typed_count(0);
   url_info2.set_last_visit(Time::Now() - TimeDelta::FromDays(2));
@@ -96,7 +96,7 @@ TEST_F(URLDatabaseTest, AddURL) {
   EXPECT_TRUE(IsURLRowEqual(url_info2, info));
 
   // Update the second.
-  url_info2.set_title(UTF8ToUTF16("Google Mail Too"));
+  url_info2.set_title(base::UTF8ToUTF16("Google Mail Too"));
   url_info2.set_visit_count(4);
   url_info2.set_typed_count(1);
   url_info2.set_typed_count(91011);
@@ -124,7 +124,7 @@ TEST_F(URLDatabaseTest, AddURL) {
 // Tests adding, querying and deleting keyword visits.
 TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
   URLRow url_info1(GURL("http://www.google.com/"));
-  url_info1.set_title(UTF8ToUTF16("Google"));
+  url_info1.set_title(base::UTF8ToUTF16("Google"));
   url_info1.set_visit_count(4);
   url_info1.set_typed_count(2);
   url_info1.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
@@ -134,7 +134,7 @@ TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
 
   // Add a keyword visit.
   TemplateURLID keyword_id = 100;
-  base::string16 keyword = UTF8ToUTF16("visit");
+  base::string16 keyword = base::UTF8ToUTF16("visit");
   ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id, keyword_id, keyword));
 
   // Make sure we get it back.
@@ -163,7 +163,7 @@ TEST_F(URLDatabaseTest, KeywordSearchTermVisit) {
 // Make sure deleting a URL also deletes a keyword visit.
 TEST_F(URLDatabaseTest, DeleteURLDeletesKeywordSearchTermVisit) {
   URLRow url_info1(GURL("http://www.google.com/"));
-  url_info1.set_title(UTF8ToUTF16("Google"));
+  url_info1.set_title(base::UTF8ToUTF16("Google"));
   url_info1.set_visit_count(4);
   url_info1.set_typed_count(2);
   url_info1.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
@@ -172,14 +172,15 @@ TEST_F(URLDatabaseTest, DeleteURLDeletesKeywordSearchTermVisit) {
   ASSERT_NE(0, url_id);
 
   // Add a keyword visit.
-  ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id, 1, UTF8ToUTF16("visit")));
+  ASSERT_TRUE(
+      SetKeywordSearchTermsForURL(url_id, 1, base::UTF8ToUTF16("visit")));
 
   // Delete the url.
   ASSERT_TRUE(DeleteURLRow(url_id));
 
   // Make sure the keyword visit was deleted.
   std::vector<KeywordSearchTermVisit> matches;
-  GetMostRecentKeywordSearchTerms(1, UTF8ToUTF16("visit"), 10, &matches);
+  GetMostRecentKeywordSearchTerms(1, base::UTF8ToUTF16("visit"), 10, &matches);
   ASSERT_EQ(0U, matches.size());
 }
 
@@ -223,7 +224,7 @@ TEST_F(URLDatabaseTest, EnumeratorForSignificant) {
 // Test GetKeywordSearchTermRows and DeleteSearchTerm
 TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
   URLRow url_info1(GURL("http://www.google.com/"));
-  url_info1.set_title(UTF8ToUTF16("Google"));
+  url_info1.set_title(base::UTF8ToUTF16("Google"));
   url_info1.set_visit_count(4);
   url_info1.set_typed_count(2);
   url_info1.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
@@ -233,11 +234,11 @@ TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
 
   // Add a keyword visit.
   TemplateURLID keyword_id = 100;
-  base::string16 keyword = UTF8ToUTF16("visit");
+  base::string16 keyword = base::UTF8ToUTF16("visit");
   ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id1, keyword_id, keyword));
 
   URLRow url_info2(GURL("https://www.google.com/"));
-  url_info2.set_title(UTF8ToUTF16("Google"));
+  url_info2.set_title(base::UTF8ToUTF16("Google"));
   url_info2.set_visit_count(4);
   url_info2.set_typed_count(2);
   url_info2.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
@@ -249,14 +250,14 @@ TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
 
   // Add another URL for different keyword.
   URLRow url_info3(GURL("https://www.google.com/search"));
-  url_info3.set_title(UTF8ToUTF16("Google"));
+  url_info3.set_title(base::UTF8ToUTF16("Google"));
   url_info3.set_visit_count(4);
   url_info3.set_typed_count(2);
   url_info3.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
   url_info3.set_hidden(false);
   URLID url_id3 = AddURL(url_info3);
   ASSERT_NE(0, url_id3);
-  base::string16 keyword2 = UTF8ToUTF16("Search");
+  base::string16 keyword2 = base::UTF8ToUTF16("Search");
 
   ASSERT_TRUE(SetKeywordSearchTermsForURL(url_id3, keyword_id, keyword2));
 

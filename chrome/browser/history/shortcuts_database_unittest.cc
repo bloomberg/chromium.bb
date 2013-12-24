@@ -17,6 +17,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 
 // Helpers --------------------------------------------------------------------
 

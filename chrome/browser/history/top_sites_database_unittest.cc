@@ -360,7 +360,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
 
   // Add a new URL, not forced, rank = 1.
   GURL mapsUrl = GURL("http://maps.google.com/");
-  MostVisitedURL url1(mapsUrl, ASCIIToUTF16("Google Maps"));
+  MostVisitedURL url1(mapsUrl, base::ASCIIToUTF16("Google Maps"));
   db.SetPageThumbnail(url1, 1, Images());
 
   MostVisitedURLList urls;
@@ -373,7 +373,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
 
   // Add a new URL, forced.
   GURL driveUrl = GURL("http://drive.google.com/");
-  MostVisitedURL url2(driveUrl, ASCIIToUTF16("Google Drive"));
+  MostVisitedURL url2(driveUrl, base::ASCIIToUTF16("Google Drive"));
   url2.last_forced_time = base::Time::FromJsTime(789714000000);  // 10/1/1995
   db.SetPageThumbnail(url2, TopSitesDatabase::kRankOfForcedURL, Images());
 
@@ -386,7 +386,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
 
   // Add a new URL, forced (earlier).
   GURL plusUrl = GURL("http://plus.google.com/");
-  MostVisitedURL url3(plusUrl, ASCIIToUTF16("Google Plus"));
+  MostVisitedURL url3(plusUrl, base::ASCIIToUTF16("Google Plus"));
   url3.last_forced_time = base::Time::FromJsTime(787035600000);  // 10/12/1994
   db.SetPageThumbnail(url3, TopSitesDatabase::kRankOfForcedURL, Images());
 

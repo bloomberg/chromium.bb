@@ -99,8 +99,9 @@ TEST(ExtensionFromWebApp, Basic) {
 
   WebApplicationInfo web_app;
   web_app.manifest_url = GURL("http://aaronboodman.com/gearpad/manifest.json");
-  web_app.title = ASCIIToUTF16("Gearpad");
-  web_app.description = ASCIIToUTF16("The best text editor in the universe!");
+  web_app.title = base::ASCIIToUTF16("Gearpad");
+  web_app.description =
+      base::ASCIIToUTF16("The best text editor in the universe!");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
   web_app.permissions.push_back("geolocation");
   web_app.permissions.push_back("notifications");
@@ -129,8 +130,8 @@ TEST(ExtensionFromWebApp, Basic) {
             extension->public_key());
   EXPECT_EQ("ncnbaadanljoanockmphfdkimpdedemj", extension->id());
   EXPECT_EQ("1978.12.11.0", extension->version()->GetString());
-  EXPECT_EQ(UTF16ToUTF8(web_app.title), extension->name());
-  EXPECT_EQ(UTF16ToUTF8(web_app.description), extension->description());
+  EXPECT_EQ(base::UTF16ToUTF8(web_app.title), extension->name());
+  EXPECT_EQ(base::UTF16ToUTF8(web_app.description), extension->description());
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
   EXPECT_EQ(2u, extension->GetActivePermissions()->apis().size());
   EXPECT_TRUE(extension->HasAPIPermission("geolocation"));
@@ -160,7 +161,7 @@ TEST(ExtensionFromWebApp, Minimal) {
 
   WebApplicationInfo web_app;
   web_app.manifest_url = GURL("http://aaronboodman.com/gearpad/manifest.json");
-  web_app.title = ASCIIToUTF16("Gearpad");
+  web_app.title = base::ASCIIToUTF16("Gearpad");
   web_app.app_url = GURL("http://aaronboodman.com/gearpad/");
 
   scoped_refptr<Extension> extension = ConvertWebAppToExtension(
@@ -179,7 +180,7 @@ TEST(ExtensionFromWebApp, Minimal) {
             extension->public_key());
   EXPECT_EQ("ncnbaadanljoanockmphfdkimpdedemj", extension->id());
   EXPECT_EQ("1978.12.11.0", extension->version()->GetString());
-  EXPECT_EQ(UTF16ToUTF8(web_app.title), extension->name());
+  EXPECT_EQ(base::UTF16ToUTF8(web_app.title), extension->name());
   EXPECT_EQ("", extension->description());
   EXPECT_EQ(web_app.app_url, AppLaunchInfo::GetFullLaunchURL(extension.get()));
   EXPECT_EQ(0u, IconsInfo::GetIcons(extension.get()).map().size());

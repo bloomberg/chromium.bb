@@ -331,7 +331,7 @@ void TypedUrlSyncableService::WriteToTypedUrlSpecifics(
             visits.back().visit_time.ToInternalValue());
 
   typed_url->set_url(url.url().spec());
-  typed_url->set_title(UTF16ToUTF8(url.title()));
+  typed_url->set_title(base::UTF16ToUTF8(url.title()));
   typed_url->set_hidden(url.hidden());
 
   DCHECK(CheckVisitOrdering(visits));

@@ -320,7 +320,7 @@ scoped_ptr<developer::ItemInfo>
 
   if (Manifest::IsUnpackedLocation(item.location())) {
     info->path.reset(
-        new std::string(UTF16ToUTF8(item.path().LossyDisplayName())));
+        new std::string(base::UTF16ToUTF8(item.path().LossyDisplayName())));
     for (std::vector<extensions::InstallWarning>::const_iterator it =
              item.install_warnings().begin();
          it != item.install_warnings().end(); ++it) {
@@ -769,7 +769,7 @@ void DeveloperPrivateEnableFunction::OnRequirementsChecked(
     service->EnableExtension(extension_id);
   } else {
     ExtensionErrorReporter::GetInstance()->ReportError(
-        UTF8ToUTF16(JoinString(requirements_errors, ' ')),
+        base::UTF8ToUTF16(JoinString(requirements_errors, ' ')),
         true /* be noisy */);
   }
   Release();
@@ -877,8 +877,8 @@ void DeveloperPrivatePackDirectoryFunction::OnPackSuccess(
     const base::FilePath& crx_file,
     const base::FilePath& pem_file) {
   developer::PackDirectoryResponse response;
-  response.message =
-      UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(crx_file, pem_file));
+  response.message = base::UTF16ToUTF8(
+      PackExtensionJob::StandardSuccessMessage(crx_file, pem_file));
   response.status = developer::PACK_STATUS_SUCCESS;
   results_ = developer::PackDirectory::Results::Create(response);
   SendResponse(true);
@@ -1210,7 +1210,7 @@ bool DeveloperPrivateChoosePathFunction::RunImpl() {
 
 void DeveloperPrivateChoosePathFunction::FileSelected(
     const base::FilePath& path) {
-  SetResult(new base::StringValue(UTF16ToUTF8(path.LossyDisplayName())));
+  SetResult(new base::StringValue(base::UTF16ToUTF8(path.LossyDisplayName())));
   SendResponse(true);
   Release();
 }

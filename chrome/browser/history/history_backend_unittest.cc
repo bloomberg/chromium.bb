@@ -600,7 +600,7 @@ TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
   ASSERT_EQ(0U, all_visits.size());
 
   // Try and set the title.
-  backend_->SetPageTitle(url, UTF8ToUTF16("Title"));
+  backend_->SetPageTitle(url, base::UTF8ToUTF16("Title"));
 
   // The row should still be deleted.
   EXPECT_FALSE(backend_->db_->GetRowForURL(url, &outrow));
@@ -2612,7 +2612,7 @@ TEST_F(HistoryBackendTest, AddPageNoVisitForBookmark) {
   ASSERT_TRUE(backend_.get());
 
   GURL url("http://www.google.com");
-  base::string16 title(UTF8ToUTF16("Bookmark title"));
+  base::string16 title(base::UTF8ToUTF16("Bookmark title"));
   backend_->AddPageNoVisitForBookmark(url, title);
 
   URLRow row;
@@ -2625,7 +2625,7 @@ TEST_F(HistoryBackendTest, AddPageNoVisitForBookmark) {
   backend_->AddPageNoVisitForBookmark(url, base::string16());
   backend_->GetURL(url, &row);
   EXPECT_EQ(url, row.url());
-  EXPECT_EQ(UTF8ToUTF16(url.spec()), row.title());
+  EXPECT_EQ(base::UTF8ToUTF16(url.spec()), row.title());
   EXPECT_EQ(0, row.visit_count());
 }
 
@@ -2753,7 +2753,7 @@ TEST_F(HistoryBackendTest, DeleteMatchingUrlsForKeyword) {
   EXPECT_NE(0, url1_id);
 
   TemplateURLID keyword_id = 1;
-  base::string16 keyword = UTF8ToUTF16("bar");
+  base::string16 keyword = base::UTF8ToUTF16("bar");
   ASSERT_TRUE(backend_->db()->SetKeywordSearchTermsForURL(
       url1_id, keyword_id, keyword));
 

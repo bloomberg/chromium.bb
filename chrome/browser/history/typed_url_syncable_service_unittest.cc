@@ -143,7 +143,7 @@ class TypedUrlSyncableServiceTest : public testing::Test {
   static bool URLsEqual(URLRow& row,
                         sync_pb::TypedUrlSpecifics& specifics) {
     return ((row.url().spec().compare(specifics.url()) == 0) &&
-            (UTF16ToUTF8(row.title()).compare(specifics.title()) == 0) &&
+            (base::UTF16ToUTF8(row.title()).compare(specifics.title()) == 0) &&
             (row.hidden() == specifics.hidden()));
   }
 
@@ -185,7 +185,7 @@ URLRow TypedUrlSyncableServiceTest::MakeTypedUrlRow(
   static int unique_url_id = 0;
   GURL gurl(url);
   URLRow history_url(gurl, ++unique_url_id);
-  history_url.set_title(UTF8ToUTF16(title));
+  history_url.set_title(base::UTF8ToUTF16(title));
   history_url.set_typed_count(typed_count);
   history_url.set_hidden(hidden);
 

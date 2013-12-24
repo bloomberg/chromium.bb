@@ -110,7 +110,7 @@ TEST_F(UrlsSQLHandlerTest, InsertURLWithCreatedTime) {
   HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
-  row.set_title(UTF8ToUTF16("Google"));
+  row.set_title(base::UTF8ToUTF16("Google"));
   row.set_created(Time::Now());
 
   ASSERT_TRUE(urls_sql_handler_.Insert(&row));
@@ -150,7 +150,7 @@ TEST_F(UrlsSQLHandlerTest, Insert) {
   row.set_url(GURL("http://google.com"));
   row.set_visit_count(10);
   row.set_last_visit_time(Time::Now());
-  row.set_title(UTF8ToUTF16("Google"));
+  row.set_title(base::UTF8ToUTF16("Google"));
 
   ASSERT_TRUE(urls_sql_handler_.Insert(&row));
   URLRow url_row;
@@ -167,7 +167,7 @@ TEST_F(UrlsSQLHandlerTest, Update) {
   HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
-  row.set_title(UTF8ToUTF16("Google"));
+  row.set_title(base::UTF8ToUTF16("Google"));
   row.set_visit_count(10);
   row.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
 
@@ -182,7 +182,7 @@ TEST_F(UrlsSQLHandlerTest, Update) {
   HistoryAndBookmarkRow update_row;
   update_row.set_last_visit_time(Time::Now());
   update_row.set_visit_count(1);
-  update_row.set_title(UTF8ToUTF16("Google Inc"));
+  update_row.set_title(base::UTF8ToUTF16("Google Inc"));
   TableIDRow id;
   id.url_id = url_row.id();
   TableIDRows ids;
@@ -200,7 +200,7 @@ TEST_F(UrlsSQLHandlerTest, UpdateLastBothTime) {
   HistoryAndBookmarkRow row;
   row.set_raw_url("http://google.com");
   row.set_url(GURL("http://google.com"));
-  row.set_title(UTF8ToUTF16("Google"));
+  row.set_title(base::UTF8ToUTF16("Google"));
   row.set_visit_count(10);
   row.set_last_visit_time(Time::Now() - TimeDelta::FromDays(10));
 

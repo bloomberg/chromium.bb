@@ -61,7 +61,7 @@ BookmarkTreeNode* GetBookmarkTreeNode(const BookmarkNode* node,
     }
   }
 
-  bookmark_tree_node->title = UTF16ToUTF8(node->GetTitle());
+  bookmark_tree_node->title = base::UTF16ToUTF8(node->GetTitle());
   if (!node->date_added().is_null()) {
     // Javascript Date wants milliseconds since the epoch, ToDoubleT is seconds.
     bookmark_tree_node->date_added.reset(

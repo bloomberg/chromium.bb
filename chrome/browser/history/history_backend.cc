@@ -934,7 +934,7 @@ void HistoryBackend::AddPageNoVisitForBookmark(const GURL& url,
   if (!title.empty()) {
     url_info.set_title(title);
   } else {
-    url_info.set_title(UTF8ToUTF16(url.spec()));
+    url_info.set_title(base::UTF8ToUTF16(url.spec()));
   }
 
   url_info.set_last_visit(Time::Now());

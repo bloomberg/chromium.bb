@@ -48,7 +48,7 @@ base::string16 ExtensionErrorUI::GenerateMessageSection(
         extension_service_->GetInstalledExtension(*iter);
     message += l10n_util::GetStringFUTF16(
         e->is_app() ? app_template_message_id : extension_template_message_id,
-        UTF8ToUTF16(e->name())) + char16('\n');
+        base::UTF8ToUTF16(e->name())) + char16('\n');
   }
   return message;
 }

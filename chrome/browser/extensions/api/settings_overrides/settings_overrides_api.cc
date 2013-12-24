@@ -35,8 +35,8 @@ TemplateURLData ConvertSearchProvider(
     const ChromeSettingsOverrides::Search_provider& search_provider) {
   TemplateURLData data;
 
-  data.short_name = UTF8ToUTF16(search_provider.name);
-  data.SetKeyword(UTF8ToUTF16(search_provider.keyword));
+  data.short_name = base::UTF8ToUTF16(search_provider.name);
+  data.SetKeyword(base::UTF8ToUTF16(search_provider.keyword));
   data.SetURL(search_provider.search_url);
   if (search_provider.suggest_url)
     data.suggestions_url = *search_provider.suggest_url;

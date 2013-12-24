@@ -73,7 +73,7 @@ TEST_F(AndroidCacheDatabaseTest, InitAndroidCacheDatabase) {
 TEST_F(AndroidCacheDatabaseTest, SearchTermsTable) {
   // Test AddSearchTerm.
   Time search_time1 = Time::Now() - TimeDelta::FromDays(1);
-  base::string16 search_term1(UTF8ToUTF16("search term 1"));
+  base::string16 search_term1(base::UTF8ToUTF16("search term 1"));
   SearchTermID id1 = history_db_.AddSearchTerm(search_term1, search_time1);
   ASSERT_TRUE(id1);
   SearchTermRow row1;
@@ -85,7 +85,7 @@ TEST_F(AndroidCacheDatabaseTest, SearchTermsTable) {
 
   // Test UpdateSearchTerm.
   SearchTermRow update_row1;
-  update_row1.term = (UTF8ToUTF16("update search term1"));
+  update_row1.term = (base::UTF8ToUTF16("update search term1"));
   update_row1.last_visit_time = Time::Now();
   ASSERT_TRUE(history_db_.UpdateSearchTerm(id1, update_row1));
   EXPECT_EQ(id1, history_db_.GetSearchTerm(update_row1.term, &row1));
@@ -95,7 +95,7 @@ TEST_F(AndroidCacheDatabaseTest, SearchTermsTable) {
   EXPECT_EQ(id1, row1.id);
 
   Time search_time2 = Time::Now() - TimeDelta::FromHours(1);
-  base::string16 search_term2(UTF8ToUTF16("search term 2"));
+  base::string16 search_term2(base::UTF8ToUTF16("search term 2"));
   SearchTermID id2 = history_db_.AddSearchTerm(search_term2, search_time2);
   ASSERT_TRUE(id2);
   ASSERT_TRUE(history_db_.SetKeywordSearchTermsForURL(1, 1, search_term2));

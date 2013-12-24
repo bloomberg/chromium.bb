@@ -23,16 +23,18 @@ class ExtensionBookmarksTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     model_.reset(new BookmarkModel(NULL));
-    model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("Digg"),
+    model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Digg"),
                      GURL("http://www.reddit.com"));
-    model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("News"),
+    model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("News"),
                      GURL("http://www.foxnews.com"));
     folder_ = model_->AddFolder(
-        model_->other_node(), 0, ASCIIToUTF16("outer folder"));
-    model_->AddFolder(folder_, 0, ASCIIToUTF16("inner folder 1"));
-    model_->AddFolder(folder_, 0, ASCIIToUTF16("inner folder 2"));
-    model_->AddURL(folder_, 0, ASCIIToUTF16("Digg"), GURL("http://reddit.com"));
-    model_->AddURL(folder_, 0, ASCIIToUTF16("CNet"), GURL("http://cnet.com"));
+        model_->other_node(), 0, base::ASCIIToUTF16("outer folder"));
+    model_->AddFolder(folder_, 0, base::ASCIIToUTF16("inner folder 1"));
+    model_->AddFolder(folder_, 0, base::ASCIIToUTF16("inner folder 2"));
+    model_->AddURL(
+        folder_, 0, base::ASCIIToUTF16("Digg"), GURL("http://reddit.com"));
+    model_->AddURL(
+        folder_, 0, base::ASCIIToUTF16("CNet"), GURL("http://cnet.com"));
   }
 
   scoped_ptr<BookmarkModel> model_;
