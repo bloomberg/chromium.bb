@@ -20,13 +20,11 @@ var whitelistedExtensionIds = [
   'ehibbfinohgbchlgdbfpikodjaojhccn', // QuickOffice
   'gbkeegbaiigmenfmjfclcdgdpimamgkj', // QuickOffice
   'efjnaogkjbogokcnohkmnjdojkikgobo', // G+ Photos
-  'ebpbnabdhheoknfklmpddcdijjkmklkp', // G+ Photos
+  'ebpbnabdhheoknfklmpddcdijjkmklkp', // G+ Photoes
   'endkpmfloggdajndjpoekmkjnkolfdbf', // Feedback Extension
   'mlocfejafidcakdddnndjdngfmncfbeg', // Connectivity Diagnostics
   'ganomidahfnpdchomfgdoppjmmedlhia', // Connectivity Diagnostics
-  'eemlkeanncmjljgehlbplemhmdmalhdc', // Connectivity Diagnostics
-  'kkebgepbbgbcmghedmmdfcbdcodlkngh', // Chrome OS Recovery Tool
-  'jndclpdbaamdhonoechobihbbiimdgai'  // Chrome OS Recovery Tool
+  'eemlkeanncmjljgehlbplemhmdmalhdc'  // Connectivity Diagnostics
 ];
 
 /**
