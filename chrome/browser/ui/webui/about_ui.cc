@@ -465,7 +465,7 @@ std::string AboutDiscards(const std::string& path) {
     output.append("<ul>");
     std::vector<base::string16>::iterator it = titles.begin();
     for ( ; it != titles.end(); ++it) {
-      std::string title = UTF16ToUTF8(*it);
+      std::string title = base::UTF16ToUTF8(*it);
       title = net::EscapeForHTML(title);
       output.append(WrapWithTag("li", title));
     }
@@ -779,7 +779,7 @@ std::string AboutLinuxProxyConfig() {
   data.append(l10n_util::GetStringFUTF8(
       IDS_ABOUT_LINUX_PROXY_CONFIG_BODY,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      ASCIIToUTF16(binary.BaseName().value())));
+      base::ASCIIToUTF16(binary.BaseName().value())));
   AppendFooter(&data);
   return data;
 }
@@ -937,12 +937,12 @@ void AboutMemoryHandler::OnDetailsAvailable() {
 
     // We log memory info as we record it.
     if (!log_string.empty())
-      log_string += ASCIIToUTF16(", ");
-    log_string += browser_processes[index].name + ASCIIToUTF16(", ") +
+      log_string += base::ASCIIToUTF16(", ");
+    log_string += browser_processes[index].name + base::ASCIIToUTF16(", ") +
                   base::Int64ToString16(aggregate.working_set.priv) +
-                  ASCIIToUTF16(", ") +
+                  base::ASCIIToUTF16(", ") +
                   base::Int64ToString16(aggregate.working_set.shared) +
-                  ASCIIToUTF16(", ") +
+                  base::ASCIIToUTF16(", ") +
                   base::Int64ToString16(aggregate.working_set.shareable);
   }
   if (!log_string.empty())

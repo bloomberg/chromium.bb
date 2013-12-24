@@ -44,7 +44,7 @@ CertificateViewerDialog::CertificateViewerDialog(net::X509Certificate* cert)
   x509_certificate_model::GetCertChainFromCert(cert_->os_cert_handle(),
       &cert_chain);
   title_ = l10n_util::GetStringFUTF16(IDS_CERT_INFO_DIALOG_TITLE,
-      UTF8ToUTF16(x509_certificate_model::GetTitle(cert_chain.front())));
+      base::UTF8ToUTF16(x509_certificate_model::GetTitle(cert_chain.front())));
 }
 
 CertificateViewerDialog::~CertificateViewerDialog() {
@@ -114,7 +114,8 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
   const std::string alternative_text =
       l10n_util::GetStringUTF8(IDS_CERT_INFO_FIELD_NOT_PRESENT);
   cert_info.SetString("general.title", l10n_util::GetStringFUTF8(
-      IDS_CERT_INFO_DIALOG_TITLE, UTF8ToUTF16(x509_certificate_model::GetTitle(
+      IDS_CERT_INFO_DIALOG_TITLE,
+      base::UTF8ToUTF16(x509_certificate_model::GetTitle(
           cert_chain.front()))));
 
   // Issued to information.
@@ -141,9 +142,9 @@ std::string CertificateViewerDialog::GetDialogArgs() const {
   base::Time issued, expires;
   std::string issued_str, expires_str;
   if (x509_certificate_model::GetTimes(cert_hnd, &issued, &expires)) {
-    issued_str = UTF16ToUTF8(
+    issued_str = base::UTF16ToUTF8(
         base::TimeFormatShortDateNumeric(issued));
-    expires_str = UTF16ToUTF8(
+    expires_str = base::UTF16ToUTF8(
         base::TimeFormatShortDateNumeric(expires));
   } else {
     issued_str = alternative_text;
@@ -266,7 +267,7 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
   if (!version.empty())
     node_details->SetString("payload.val",
         l10n_util::GetStringFUTF8(IDS_CERT_DETAILS_VERSION_FORMAT,
-                                  UTF8ToUTF16(version)));
+                                  base::UTF8ToUTF16(version)));
 
   cert_fields->Append(node_details = new base::DictionaryValue());
   node_details->SetString("label",
@@ -302,9 +303,9 @@ void CertificateViewerDialogHandler::RequestCertificateFields(
   base::Time issued, expires;
   if (x509_certificate_model::GetTimes(cert, &issued, &expires)) {
     node_details->SetString("payload.val",
-        UTF16ToUTF8(base::TimeFormatShortDateAndTime(issued)));
+        base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(issued)));
     alt_node_details->SetString("payload.val",
-        UTF16ToUTF8(base::TimeFormatShortDateAndTime(expires)));
+        base::UTF16ToUTF8(base::TimeFormatShortDateAndTime(expires)));
   }
 
   cert_fields->Append(node_details = new base::DictionaryValue());

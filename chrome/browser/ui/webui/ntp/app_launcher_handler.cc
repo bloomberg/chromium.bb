@@ -115,14 +115,14 @@ void AppLauncherHandler::CreateAppInfo(
 
   // The Extension class 'helpfully' wraps bidi control characters that
   // impede our ability to determine directionality.
-  base::string16 short_name = UTF8ToUTF16(extension->short_name());
+  base::string16 short_name = base::UTF8ToUTF16(extension->short_name());
   base::i18n::UnadjustStringForLocaleDirection(&short_name);
   NewTabUI::SetUrlTitleAndDirection(
       value,
       short_name,
       extensions::AppLaunchInfo::GetFullLaunchURL(extension));
 
-  base::string16 name = UTF8ToUTF16(extension->name());
+  base::string16 name = base::UTF8ToUTF16(extension->name());
   base::i18n::UnadjustStringForLocaleDirection(&name);
   NewTabUI::SetFullNameAndDirection(name, value);
 

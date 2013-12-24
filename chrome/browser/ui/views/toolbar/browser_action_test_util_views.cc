@@ -66,7 +66,7 @@ std::string BrowserActionTestUtil::GetTooltip(int index) {
   base::string16 text;
   GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
     GetTooltipText(gfx::Point(), &text);
-  return UTF16ToUTF8(text);
+  return base::UTF16ToUTF8(text);
 }
 
 bool BrowserActionTestUtil::HasPopup() {

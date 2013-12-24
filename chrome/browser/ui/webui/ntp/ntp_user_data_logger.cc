@@ -129,7 +129,7 @@ void NTPUserDataLogger::LogImpression(int position,
   // generated dynamically.
   base::HistogramBase* counter = base::LinearHistogram::FactoryGet(
       base::StringPrintf(kImpressionHistogramWithProvider,
-                         UTF16ToUTF8(provider).c_str()),
+                         base::UTF16ToUTF8(provider).c_str()),
       1, MostVisitedIframeSource::kNumMostVisited,
       MostVisitedIframeSource::kNumMostVisited + 1,
       base::Histogram::kUmaTargetedHistogramFlag);

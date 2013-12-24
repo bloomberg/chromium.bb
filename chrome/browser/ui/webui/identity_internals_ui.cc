@@ -197,7 +197,7 @@ const base::string16 IdentityInternalsUIMessageHandler::GetStatus(
 
 const std::string IdentityInternalsUIMessageHandler::GetExpirationTime(
     const extensions::IdentityTokenCacheValue& token_cache_value) {
-  return UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
+  return base::UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(
       token_cache_value.expiration_time()));
 }
 

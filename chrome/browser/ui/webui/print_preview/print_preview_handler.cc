@@ -833,7 +833,7 @@ void PrintPreviewHandler::PrintToPdf() {
     base::FilePath::StringType print_job_title(print_job_title_utf16);
 #elif defined(OS_POSIX)
     base::FilePath::StringType print_job_title =
-        UTF16ToUTF8(print_job_title_utf16);
+        base::UTF16ToUTF8(print_job_title_utf16);
 #endif
 
     file_util::ReplaceIllegalCharactersInPath(&print_job_title, '_');

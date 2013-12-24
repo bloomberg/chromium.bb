@@ -145,7 +145,7 @@ class InstalledBubbleContent : public views::View,
       }
       case ExtensionInstalledBubble::OMNIBOX_KEYWORD: {
         flavors_ |= HOW_TO_USE | HOW_TO_MANAGE;
-        key = UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension));
+        key = base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(extension));
         break;
       }
       case ExtensionInstalledBubble::GENERIC: {
@@ -174,7 +174,7 @@ class InstalledBubbleContent : public views::View,
     AddChildView(icon_);
 
     // Add the heading (for all flavors).
-    base::string16 extension_name = UTF8ToUTF16(extension->name());
+    base::string16 extension_name = base::UTF8ToUTF16(extension->name());
     base::i18n::AdjustStringForLocaleDirection(&extension_name);
     heading_ = new views::Label(l10n_util::GetStringFUTF16(
         IDS_EXTENSION_INSTALLED_HEADING, extension_name));

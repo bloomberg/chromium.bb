@@ -1196,7 +1196,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnStartConnectionTests(
 
   // Try to fix-up the user provided URL into something valid.
   // For example, turn "www.google.com" into "http://www.google.com".
-  GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(url_str), std::string()));
+  GURL url(URLFixerUpper::FixupURL(base::UTF16ToUTF8(url_str), std::string()));
 
   connection_tester_.reset(new ConnectionTester(
       this,

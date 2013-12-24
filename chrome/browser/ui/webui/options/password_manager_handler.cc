@@ -111,7 +111,7 @@ void PasswordManagerHandler::InitializeHandler() {
 
 void PasswordManagerHandler::HandleRemoveSavedPassword(
     const base::ListValue* args) {
-  std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
+  std::string string_value = base::UTF16ToUTF8(ExtractStringValue(args));
   int index;
   if (base::StringToInt(string_value, &index) && index >= 0) {
     password_manager_presenter_.RemoveSavedPassword(static_cast<size_t>(index));
@@ -120,7 +120,7 @@ void PasswordManagerHandler::HandleRemoveSavedPassword(
 
 void PasswordManagerHandler::HandleRemovePasswordException(
     const base::ListValue* args) {
-  std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
+  std::string string_value = base::UTF16ToUTF8(ExtractStringValue(args));
   int index;
   if (base::StringToInt(string_value, &index) && index >= 0) {
     password_manager_presenter_.RemovePasswordException(
@@ -157,7 +157,7 @@ void PasswordManagerHandler::SetPasswordList(
     bool show_passwords) {
   base::ListValue entries;
   languages_ = GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  base::string16 placeholder(ASCIIToUTF16("        "));
+  base::string16 placeholder(base::ASCIIToUTF16("        "));
   for (size_t i = 0; i < password_list.size(); ++i) {
     base::ListValue* entry = new base::ListValue();
     entry->Append(new base::StringValue(net::FormatUrl(password_list[i]->origin,

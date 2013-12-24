@@ -215,13 +215,14 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   localized_strings->SetString(
       "passphraseRecover",
       GetStringFUTF16(IDS_SYNC_PASSPHRASE_RECOVER,
-                      ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
-                          chrome::kSyncGoogleDashboardURL))));
+                      base::ASCIIToUTF16(
+                          google_util::StringAppendGoogleLocaleParam(
+                              chrome::kSyncGoogleDashboardURL))));
   localized_strings->SetString("stopSyncingExplanation",
       l10n_util::GetStringFUTF16(
           IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
+          base::ASCIIToUTF16(google_util::StringAppendGoogleLocaleParam(
               chrome::kSyncGoogleDashboardURL))));
   localized_strings->SetString("stopSyncingTitle",
       l10n_util::GetStringUTF16(IDS_SYNC_STOP_SYNCING_DIALOG_TITLE));

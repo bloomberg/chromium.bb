@@ -143,7 +143,7 @@ void PageActionImageView::ExecuteAction(
 
 void PageActionImageView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = UTF8ToUTF16(tooltip_);
+  state->name = base::UTF8ToUTF16(tooltip_);
 }
 
 bool PageActionImageView::OnMousePressed(const ui::MouseEvent& event) {
@@ -226,7 +226,7 @@ void PageActionImageView::UpdateVisibility(WebContents* contents,
 
   // Set the tooltip.
   tooltip_ = page_action_->GetTitle(current_tab_id_);
-  SetTooltipText(UTF8ToUTF16(tooltip_));
+  SetTooltipText(base::UTF8ToUTF16(tooltip_));
 
   // Set the image.
   gfx::Image icon = icon_factory_->GetIcon(current_tab_id_);

@@ -399,8 +399,8 @@ void AutocompleteSyncableService::WriteAutofillEntry(
     const AutofillEntry& entry, sync_pb::EntitySpecifics* autofill_specifics) {
   sync_pb::AutofillSpecifics* autofill =
       autofill_specifics->mutable_autofill();
-  autofill->set_name(UTF16ToUTF8(entry.key().name()));
-  autofill->set_value(UTF16ToUTF8(entry.key().value()));
+  autofill->set_name(base::UTF16ToUTF8(entry.key().name()));
+  autofill->set_value(base::UTF16ToUTF8(entry.key().value()));
   const std::vector<base::Time>& ts(entry.timestamps());
   for (std::vector<base::Time>::const_iterator timestamp = ts.begin();
        timestamp != ts.end(); ++timestamp) {
@@ -412,7 +412,8 @@ syncer::SyncError AutocompleteSyncableService::AutofillEntryDelete(
     const sync_pb::AutofillSpecifics& autofill) {
   if (!AutofillTable::FromWebDatabase(
           webdata_backend_->GetDatabase())->RemoveFormElement(
-              UTF8ToUTF16(autofill.name()), UTF8ToUTF16(autofill.value()))) {
+              base::UTF8ToUTF16(autofill.name()),
+              base::UTF8ToUTF16(autofill.value()))) {
     return error_handler_->CreateAndUploadError(
         FROM_HERE,
         "Could not remove autocomplete entry from WebDatabase.");
@@ -481,8 +482,8 @@ syncer::SyncData AutocompleteSyncableService::CreateSyncData(
     const AutofillEntry& entry) const {
   sync_pb::EntitySpecifics autofill_specifics;
   WriteAutofillEntry(entry, &autofill_specifics);
-  std::string tag(KeyToTag(UTF16ToUTF8(entry.key().name()),
-                           UTF16ToUTF8(entry.key().value())));
+  std::string tag(KeyToTag(base::UTF16ToUTF8(entry.key().name()),
+                           base::UTF16ToUTF8(entry.key().value())));
   return syncer::SyncData::CreateLocalData(tag, tag, autofill_specifics);
 }
 

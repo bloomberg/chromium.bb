@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(ToolbarViewTest,
   BookmarkModel* model =
       BookmarkModelFactory::GetForProfile(browser()->profile());
   bookmark_utils::AddIfNotBookmarked(
-      model, GURL("http://foo.com"), ASCIIToUTF16("Foo"));
+      model, GURL("http://foo.com"), base::ASCIIToUTF16("Foo"));
 
   // We want to specifically test the case where the bookmark bar is
   // already showing when a window opens, so create a second browser

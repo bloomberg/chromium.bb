@@ -28,7 +28,8 @@ content::WebUIDataSource* CreateWebUIHTMLSource() {
   source->AddResourcePath("flot.js", IDR_PERFORMANCE_MONITOR_JQUERY_FLOT_JS);
   source->SetDefaultResource(IDR_PERFORMANCE_MONITOR_HTML);
 
-  source->AddString("enableFlagsURL", ASCIIToUTF16(chrome::kChromeUIFlagsURL));
+  source->AddString("enableFlagsURL",
+                    base::ASCIIToUTF16(chrome::kChromeUIFlagsURL));
 
   source->AddLocalizedString("title", IDS_PERFORMANCE_MONITOR_TITLE);
   source->AddLocalizedString("flagNotEnabledWarning",

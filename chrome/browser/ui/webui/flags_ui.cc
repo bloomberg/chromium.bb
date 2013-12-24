@@ -80,7 +80,7 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
     chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
     source->AddString("ownerWarning",
                       l10n_util::GetStringFUTF16(IDS_SYSTEM_FLAGS_OWNER_ONLY,
-                                                 UTF8ToUTF16(owner)));
+                                                 base::UTF8ToUTF16(owner)));
   } else {
     // The warning will be only shown on ChromeOS, when the current user is not
     // the owner.

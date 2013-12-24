@@ -141,7 +141,7 @@ void SuggestionsHandler::SendPagesValue() {
 }
 
 void SuggestionsHandler::HandleBlacklistURL(const base::ListValue* args) {
-  std::string url = UTF16ToUTF8(ExtractStringValue(args));
+  std::string url = base::UTF16ToUTF8(ExtractStringValue(args));
   BlacklistURL(GURL(url));
 }
 

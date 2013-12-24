@@ -547,7 +547,7 @@ void AutofillOptionsHandler::SetAddress(const base::ListValue* args) {
 
   if (args->GetString(8, &country_code))
     profile.SetRawInfo(autofill::ADDRESS_HOME_COUNTRY,
-                       ASCIIToUTF16(country_code));
+                       base::ASCIIToUTF16(country_code));
 
   if (args->GetList(9, &list_value))
     SetValueList(list_value, autofill::PHONE_HOME_WHOLE_NUMBER, &profile);

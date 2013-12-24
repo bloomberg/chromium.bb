@@ -17,6 +17,8 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
+using base::ASCIIToUTF16;
+
 // This is a convenience base class for all tests to provide some
 // common functionality.  It sets up a MenuButton and a MenuItemView
 // and clicks the MenuButton.

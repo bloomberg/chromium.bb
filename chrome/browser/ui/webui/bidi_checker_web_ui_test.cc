@@ -163,7 +163,7 @@ static void SetupHistoryPageTest(Browser* browser,
   const GURL history_url = GURL(page_url);
   history_service->AddPage(
       history_url, base::Time::Now(), history::SOURCE_BROWSED);
-  history_service->SetPageTitle(history_url, UTF8ToUTF16(page_title));
+  history_service->SetPageTitle(history_url, base::UTF8ToUTF16(page_title));
 }
 
 IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR,

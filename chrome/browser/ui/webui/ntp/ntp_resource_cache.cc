@@ -82,7 +82,7 @@ const char kLearnMoreGuestSessionUrl[] =
     "https://www.google.com/support/chromeos/bin/answer.py?answer=1057090";
 
 base::string16 GetUrlWithLang(const GURL& url) {
-  return ASCIIToUTF16(google_util::AppendGoogleLocaleParam(url).spec());
+  return base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(url).spec());
 }
 
 std::string SkColorToRGBAString(SkColor color) {
@@ -311,7 +311,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       localized_strings.SetString("enterpriseInfoVisible", "true");
       base::string16 enterprise_info = l10n_util::GetStringFUTF16(
           IDS_DEVICE_OWNED_BY_NOTICE,
-          UTF8ToUTF16(enterprise_domain));
+          base::UTF8ToUTF16(enterprise_domain));
       localized_strings.SetString("enterpriseInfoMessage", enterprise_info);
       localized_strings.SetString("learnMore",
           l10n_util::GetStringUTF16(IDS_LEARN_MORE));
@@ -329,7 +329,7 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       l10n_util::GetStringFUTF16(
           IDS_NEW_TAB_OTR_EXTENSIONS_MESSAGE,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-          ASCIIToUTF16(chrome::kChromeUIExtensionsURL)));
+          base::ASCIIToUTF16(chrome::kChromeUIExtensionsURL)));
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
   localized_strings.SetBoolean("bookmarkbarattached", bookmark_bar_attached);

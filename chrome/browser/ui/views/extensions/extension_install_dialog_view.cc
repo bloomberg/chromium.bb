@@ -468,7 +468,8 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     BundleInstaller::ItemList items = prompt.bundle()->GetItemsWithState(
         BundleInstaller::Item::STATE_PENDING);
     for (size_t i = 0; i < items.size(); ++i) {
-      base::string16 extension_name = UTF8ToUTF16(items[i].localized_name);
+      base::string16 extension_name =
+          base::UTF8ToUTF16(items[i].localized_name);
       base::i18n::AdjustStringForLocaleDirection(&extension_name);
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, column_set_id);

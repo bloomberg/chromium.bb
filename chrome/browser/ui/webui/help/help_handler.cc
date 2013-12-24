@@ -75,7 +75,7 @@ base::string16 BuildBrowserVersionString() {
   browser_version += ")";
 #endif
 
-  return UTF8ToUTF16(browser_version);
+  return base::UTF8ToUTF16(browser_version);
 }
 
 #if defined(OS_CHROMEOS)
@@ -229,14 +229,14 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
 
   base::string16 license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_VERSION_LICENSE,
-      ASCIIToUTF16(chrome::kChromiumProjectURL),
-      ASCIIToUTF16(chrome::kChromeUICreditsURL));
+      base::ASCIIToUTF16(chrome::kChromiumProjectURL),
+      base::ASCIIToUTF16(chrome::kChromeUICreditsURL));
   source->AddString("productLicense", license);
 
 #if defined(OS_CHROMEOS)
   base::string16 os_license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_CROS_VERSION_LICENSE,
-      ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
+      base::ASCIIToUTF16(chrome::kChromeUIOSCreditsURL));
   source->AddString("productOsLicense", os_license);
 
   base::string16 product_name = l10n_util::GetStringUTF16(IDS_PRODUCT_OS_NAME);
@@ -258,7 +258,7 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
 #endif
 
   base::string16 tos = l10n_util::GetStringFUTF16(
-      IDS_ABOUT_TERMS_OF_SERVICE, UTF8ToUTF16(chrome::kChromeUITermsURL));
+      IDS_ABOUT_TERMS_OF_SERVICE, base::UTF8ToUTF16(chrome::kChromeUITermsURL));
   source->AddString("productTOS", tos);
 
   source->AddString("webkitVersion", webkit_glue::GetWebKitVersion());
@@ -401,7 +401,8 @@ void HelpHandler::SetChannel(const base::ListValue* args) {
     return;
   }
 
-  version_updater_->SetChannel(UTF16ToUTF8(channel), is_powerwash_allowed);
+  version_updater_->SetChannel(base::UTF16ToUTF8(channel),
+                               is_powerwash_allowed);
   if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
     // Check for update after switching release channel.
     version_updater_->CheckForUpdate(base::Bind(&HelpHandler::SetUpdateStatus,

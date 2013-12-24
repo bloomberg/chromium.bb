@@ -19,6 +19,8 @@
 #include "sync/api/sync_error_factory.h"
 #include "sync/protocol/sync.pb.h"
 
+using base::ASCIIToUTF16;
+using base::UTF16ToUTF8;
 using autofill::AutofillCountry;
 using autofill::ServerFieldType;
 using autofill::AutofillProfile;

@@ -25,6 +25,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+using base::ASCIIToUTF16;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::RenderViewHost;

@@ -73,7 +73,7 @@ void SuggestionsSourceDiscovery::FetchItems(Profile* profile) {
        it != list->end(); ++it) {
     base::DictionaryValue* page_value = new base::DictionaryValue();
     NewTabUI::SetUrlTitleAndDirection(page_value,
-                                      ASCIIToUTF16((*it)->link_text()),
+                                      base::ASCIIToUTF16((*it)->link_text()),
                                       GURL((*it)->link_url()));
     page_value->SetDouble("score", (*it)->score());
     const std::string& url_image = (*it)->url_image();

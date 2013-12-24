@@ -22,6 +22,7 @@ using ::testing::Return;
 using ::testing::Property;
 using autofill::AutofillProfile;
 using autofill::AutofillProfileChange;
+using base::UTF8ToUTF16;
 using content::BrowserThread;
 
 // Some guids for testing.

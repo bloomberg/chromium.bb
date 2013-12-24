@@ -210,7 +210,7 @@ bool CreateShortcutsInPaths(
   // Generates app id from web app url and profile path.
   std::string app_name(web_app::GenerateApplicationNameFromInfo(shortcut_info));
   base::string16 app_id(ShellIntegration::GetAppModelIdForProfile(
-      UTF8ToUTF16(app_name), shortcut_info.profile_path));
+      base::UTF8ToUTF16(app_name), shortcut_info.profile_path));
 
   bool success = true;
   for (size_t i = 0; i < shortcut_paths.size(); ++i) {

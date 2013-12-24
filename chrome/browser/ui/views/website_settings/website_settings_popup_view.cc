@@ -432,7 +432,7 @@ void WebsiteSettingsPopupView::SetCookieInfo(
        ++i) {
     base::string16 label_text = l10n_util::GetStringFUTF16(
         IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE,
-        UTF8ToUTF16(i->cookie_source),
+        base::UTF8ToUTF16(i->cookie_source),
         base::IntToString16(i->allowed),
         base::IntToString16(i->blocked));
     if (i != cookie_info_list.begin())
@@ -512,7 +512,7 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
          l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_NOT_VERIFIED);
       break;
   }
-  header_->SetIdentityName(UTF8ToUTF16(identity_info.site_identity));
+  header_->SetIdentityName(base::UTF8ToUTF16(identity_info.site_identity));
   header_->SetIdentityStatus(identity_status_text, text_color);
 
   // The headline and the certificate dialog link of the site's identity
@@ -533,20 +533,20 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
 
     // XXX(eranm): Wire the SCT Viewer here.
 
-    headline = UTF8ToUTF16(identity_info.site_identity);
+    headline = base::UTF8ToUTF16(identity_info.site_identity);
   }
   ResetConnectionSection(
       identity_info_content_,
       WebsiteSettingsUI::GetIdentityIcon(identity_info.identity_status),
       base::string16(),  // The identity section has no headline.
-      UTF8ToUTF16(identity_info.identity_status_description),
+      base::UTF8ToUTF16(identity_info.identity_status_description),
       certificate_dialog_link_);
 
   ResetConnectionSection(
       connection_info_content_,
       WebsiteSettingsUI::GetConnectionIcon(identity_info.connection_status),
       base::string16(),  // The connection section has no headline.
-      UTF8ToUTF16(identity_info.connection_status_description),
+      base::UTF8ToUTF16(identity_info.connection_status_description),
       NULL);
 
   connection_tab_->InvalidateLayout();

@@ -297,7 +297,7 @@ void NewTabUI::SetUrlTitleAndDirection(base::DictionaryValue* dictionary,
   base::string16 title_to_set(title);
   if (title_to_set.empty()) {
     using_url_as_the_title = true;
-    title_to_set = UTF8ToUTF16(gurl.spec());
+    title_to_set = base::UTF8ToUTF16(gurl.spec());
   }
 
   // We set the "dir" attribute of the title, so that in RTL locales, a LTR

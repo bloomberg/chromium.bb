@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
-#include "base/strings/utf_string_conversions.h"  // ASCIIToUTF16
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -203,7 +203,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     std::string button_class =
         (button_type == DIALOG_BTN_OK) ? ".button-panel .ok" :
                                          ".button-panel .cancel";
-    base::string16 script = ASCIIToUTF16(
+    base::string16 script = base::ASCIIToUTF16(
         "console.log(\'Test JavaScript injected.\');"
         "document.querySelector(\'" + button_class + "\').click();");
     // The file selection handler closes the dialog and does not return control

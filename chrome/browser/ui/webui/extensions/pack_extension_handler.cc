@@ -70,7 +70,7 @@ void PackExtensionHandler::OnPackSuccess(const base::FilePath& crx_file,
                                          const base::FilePath& pem_file) {
   base::ListValue arguments;
   arguments.Append(base::Value::CreateStringValue(
-      UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(
+      base::UTF16ToUTF8(PackExtensionJob::StandardSuccessMessage(
           crx_file, pem_file))));
   web_ui()->CallJavascriptFunction(
       "extensions.PackExtensionOverlay.showSuccessMessage", arguments);

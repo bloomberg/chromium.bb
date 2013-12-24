@@ -363,12 +363,12 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_NONE_INSTALLED));
   source->AddString("extensionSettingsSuggestGallery",
       l10n_util::GetStringFUTF16(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
-          ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+          base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
               GURL(extension_urls::GetExtensionGalleryURL())).spec())));
   source->AddString("extensionSettingsGetMoreExtensions",
       l10n_util::GetStringUTF16(IDS_GET_MORE_EXTENSIONS));
   source->AddString("extensionSettingsGetMoreExtensionsUrl",
-      ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+      base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
           GURL(extension_urls::GetExtensionGalleryURL())).spec()));
   source->AddString("extensionSettingsExtensionId",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ID));
@@ -421,7 +421,7 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   source->AddString("extensionSettingsSuspiciousInstallLearnMore",
       l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   source->AddString("extensionSettingsSuspiciousInstallHelpUrl",
-      ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+      base::ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
           GURL(chrome::kRemoveNonCWSExtensionURL)).spec()));
   source->AddString("extensionSettingsUseAppsDevTools",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_USE_APPS_DEV_TOOLS));
@@ -819,7 +819,7 @@ void ExtensionSettingsHandler::HandleLaunchMessage(
 
 void ExtensionSettingsHandler::HandleReloadMessage(
     const base::ListValue* args) {
-  std::string extension_id = UTF16ToUTF8(ExtractStringValue(args));
+  std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   extension_service_->ReloadExtension(extension_id);
 }
@@ -952,7 +952,7 @@ void ExtensionSettingsHandler::HandleOptionsMessage(
 
 void ExtensionSettingsHandler::HandlePermissionsMessage(
     const base::ListValue* args) {
-  std::string extension_id(UTF16ToUTF8(ExtractStringValue(args)));
+  std::string extension_id(base::UTF16ToUTF8(ExtractStringValue(args)));
   CHECK(!extension_id.empty());
   const Extension* extension =
       extension_service_->GetExtensionById(extension_id, true);
@@ -1032,7 +1032,7 @@ void ExtensionSettingsHandler::ShowAlert(const std::string& message) {
 
 const Extension* ExtensionSettingsHandler::GetActiveExtension(
     const base::ListValue* args) {
-  std::string extension_id = UTF16ToUTF8(ExtractStringValue(args));
+  std::string extension_id = base::UTF16ToUTF8(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   return extension_service_->GetExtensionById(extension_id, false);
 }
@@ -1233,7 +1233,7 @@ void ExtensionSettingsHandler::OnRequirementsChecked(
     extension_service_->EnableExtension(extension_id);
   } else {
     ExtensionErrorReporter::GetInstance()->ReportError(
-        UTF8ToUTF16(JoinString(requirement_errors, ' ')),
+        base::UTF8ToUTF16(JoinString(requirement_errors, ' ')),
         true /* be noisy */);
   }
   requirements_checker_.reset();

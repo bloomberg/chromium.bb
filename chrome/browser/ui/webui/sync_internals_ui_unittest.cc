@@ -21,6 +21,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 // Rewrite to use WebUI testing infrastructure. Current code below is mostly
 // testing how WebUI concrete class serializes function parameters, and that
 // SyncInternalsUI::HandleJSEvent/HandleJsReply prefix the given function with

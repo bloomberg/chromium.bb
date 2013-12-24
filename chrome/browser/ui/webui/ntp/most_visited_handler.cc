@@ -173,7 +173,7 @@ void MostVisitedHandler::StartQueryForMostVisited() {
 }
 
 void MostVisitedHandler::HandleBlacklistUrl(const base::ListValue* args) {
-  std::string url = UTF16ToUTF8(ExtractStringValue(args));
+  std::string url = base::UTF16ToUTF8(ExtractStringValue(args));
   BlacklistUrl(GURL(url));
 }
 

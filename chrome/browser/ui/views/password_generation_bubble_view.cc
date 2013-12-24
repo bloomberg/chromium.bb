@@ -168,7 +168,7 @@ void PasswordGenerationBubbleView::Init() {
 
   textfield_ = new views::Textfield();
   textfield_->set_default_width_in_chars(kDefaultTextFieldChars);
-  textfield_->SetText(ASCIIToUTF16(password_generator_->Generate()));
+  textfield_->SetText(base::ASCIIToUTF16(password_generator_->Generate()));
   textfield_->SetController(this);
 
   textfield_wrapper_ = new TextfieldWrapper(textfield_,
@@ -226,7 +226,7 @@ void PasswordGenerationBubbleView::ButtonPressed(views::Button* sender,
   }
   if (sender == regenerate_button_) {
     textfield_->SetText(
-        ASCIIToUTF16(password_generator_->Generate()));
+        base::ASCIIToUTF16(password_generator_->Generate()));
     actions_.password_regenerated = true;
   }
 }

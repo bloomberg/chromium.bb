@@ -70,7 +70,7 @@ base::FilePath GetSanitizedFileName(const base::string16& name) {
 #if defined(OS_WIN)
   base::string16 file_name = name;
 #else
-  std::string file_name = UTF16ToUTF8(name);
+  std::string file_name = base::UTF16ToUTF8(name);
 #endif
   file_util::ReplaceIllegalCharactersInPath(&file_name, '_');
   return base::FilePath(file_name);
@@ -95,8 +95,8 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
   std::string scheme_port(scheme + "_" + port);
 
 #if defined(OS_WIN)
-  base::FilePath::StringType host_path(UTF8ToUTF16(host));
-  base::FilePath::StringType scheme_port_path(UTF8ToUTF16(scheme_port));
+  base::FilePath::StringType host_path(base::UTF8ToUTF16(host));
+  base::FilePath::StringType scheme_port_path(base::UTF8ToUTF16(scheme_port));
 #elif defined(OS_POSIX)
   base::FilePath::StringType host_path(host);
   base::FilePath::StringType scheme_port_path(scheme_port);

@@ -49,9 +49,9 @@ bool YearFromNow(double* date_epoch, std::string* date_string) {
   if (!U_SUCCESS(status))
     return false;
 
-  return UTF16ToUTF8(date_unicode_string.getBuffer(),
-                     static_cast<size_t>(date_unicode_string.length()),
-                     date_string);
+  return base::UTF16ToUTF8(date_unicode_string.getBuffer(),
+                           static_cast<size_t>(date_unicode_string.length()),
+                           date_string);
 }
 
 }  // namespace

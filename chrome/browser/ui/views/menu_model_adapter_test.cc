@@ -129,7 +129,7 @@ class SubMenuModel : public CommonMenuModel {
   }
 
   virtual base::string16 GetLabelAt(int index) const OVERRIDE {
-    return ASCIIToUTF16("Item");
+    return base::ASCIIToUTF16("Item");
   }
 
   virtual void MenuWillShow() OVERRIDE {
@@ -173,7 +173,7 @@ class TopMenuModel : public CommonMenuModel {
   }
 
   virtual base::string16 GetLabelAt(int index) const OVERRIDE {
-    return ASCIIToUTF16("submenu");
+    return base::ASCIIToUTF16("submenu");
   }
 
   virtual MenuModel* GetSubmenuModelAt(int index) const OVERRIDE {
@@ -207,7 +207,7 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
   virtual void SetUp() OVERRIDE {
     button_ = new views::MenuButton(
-        NULL, ASCIIToUTF16("Menu Adapter Test"), this, true);
+        NULL, base::ASCIIToUTF16("Menu Adapter Test"), this, true);
 
     menu_ = menu_model_adapter_.CreateMenu();
     menu_runner_.reset(new views::MenuRunner(menu_));

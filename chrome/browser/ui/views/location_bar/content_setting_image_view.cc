@@ -102,7 +102,7 @@ void ContentSettingImageView::Update(content::WebContents* web_contents) {
   icon_->SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       content_setting_image_model_->get_icon()));
   icon_->SetTooltipText(
-      UTF8ToUTF16(content_setting_image_model_->get_tooltip()));
+      base::UTF8ToUTF16(content_setting_image_model_->get_tooltip()));
   SetVisible(true);
 
   // If the content blockage should be indicated to the user, start the

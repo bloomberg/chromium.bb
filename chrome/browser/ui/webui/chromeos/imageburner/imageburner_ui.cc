@@ -76,7 +76,7 @@ content::WebUIDataSource* CreateImageburnerUIHTMLSource() {
   source->AddLocalizedString("confirmButton", IDS_IMAGEBURN_CONFIRM_BUTTON);
   source->AddLocalizedString("cancelButton", IDS_IMAGEBURN_CANCEL_BUTTON);
   source->AddLocalizedString("retryButton", IDS_IMAGEBURN_RETRY_BUTTON);
-  source->AddString("moreInfoLink", ASCIIToUTF16(kMoreInfoLink));
+  source->AddString("moreInfoLink", base::ASCIIToUTF16(kMoreInfoLink));
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("image_burner.js", IDR_IMAGEBURNER_JS);
@@ -186,7 +186,7 @@ class WebUIHandler
  private:
   void CreateDiskValue(const disks::DiskMountManager::Disk& disk,
                        base::DictionaryValue* disk_value) {
-    base::string16 label = ASCIIToUTF16(disk.drive_label());
+    base::string16 label = base::ASCIIToUTF16(disk.drive_label());
     base::i18n::AdjustStringForLocaleDirection(&label);
     disk_value->SetString(std::string(kPropertyLabel), label);
     disk_value->SetString(std::string(kPropertyFilePath), disk.file_path());

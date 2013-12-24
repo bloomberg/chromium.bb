@@ -248,16 +248,16 @@ void ExtensionMessageBubbleView::Init() {
     for (; i < suspicious.size() && i < kMaxExtensionsToShow; ++i) {
       // Add each extension with bullet point.
       extension_list.push_back(
-          bullet_point + ASCIIToUTF16(" ") + suspicious[i]);
+          bullet_point + base::ASCIIToUTF16(" ") + suspicious[i]);
     }
 
     if (i > kMaxExtensionsToShow) {
       base::string16 difference = base::IntToString16(i - kMaxExtensionsToShow);
-      extension_list.push_back(bullet_point + ASCIIToUTF16(" ") +
+      extension_list.push_back(bullet_point + base::ASCIIToUTF16(" ") +
           delegate_->GetOverflowText(difference));
     }
 
-    extensions->SetText(JoinString(extension_list, ASCIIToUTF16("\n")));
+    extensions->SetText(JoinString(extension_list, base::ASCIIToUTF16("\n")));
     extensions->SizeToFit(views::Widget::GetLocalizedContentsWidth(
         IDS_EXTENSION_WIPEOUT_BUBBLE_WIDTH_CHARS));
     layout->AddView(extensions);

@@ -26,6 +26,7 @@
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
 
+using base::ASCIIToUTF16;
 using content::WebContents;
 
 namespace {

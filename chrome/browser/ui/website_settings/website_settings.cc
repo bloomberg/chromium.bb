@@ -51,6 +51,8 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #endif
 
+using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 using content::BrowserThread;
 
 namespace {

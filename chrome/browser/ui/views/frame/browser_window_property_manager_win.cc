@@ -43,8 +43,9 @@ void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
   // Set the app user model id for this application to that of the application
   // name. See http://crbug.com/7028.
   base::string16 app_id = browser->is_app() ?
-      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(browser->app_name()),
-                                                profile->GetPath()) :
+      ShellIntegration::GetAppModelIdForProfile(
+          base::UTF8ToWide(browser->app_name()),
+          profile->GetPath()) :
       ShellIntegration::GetChromiumModelIdForProfile(profile->GetPath());
   base::string16 icon_path_string;
   base::string16 command_line_string;

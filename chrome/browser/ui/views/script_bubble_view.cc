@@ -78,7 +78,7 @@ ScriptBubbleView::ScriptBubbleView(views::View* anchor_view,
         extension_service->GetExtensionById(*iter, true);
     ScriptEntry entry;
     entry.extension_id = *iter;
-    entry.extension_name = UTF8ToUTF16(extension->name());
+    entry.extension_name = base::UTF8ToUTF16(extension->name());
     entries_.push_back(entry);
 
     int size = extension_misc::EXTENSION_ICON_BITTY;

@@ -291,7 +291,7 @@ void ChargerReplacementHandler::ConfirmStillUseBadCharger(
 }
 
 void ChargerReplacementHandler::ShowLink(const base::ListValue* args) {
-  std::string url = UTF16ToUTF8(ExtractStringValue(args));
+  std::string url = base::UTF16ToUTF8(ExtractStringValue(args));
   ChargerLinkDialog* dialog = new ChargerLinkDialog(charger_window_, url);
   dialog->Show();
 }

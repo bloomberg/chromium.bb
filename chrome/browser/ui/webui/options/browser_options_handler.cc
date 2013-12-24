@@ -472,7 +472,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 #endif
 
   values->SetString("syncLearnMoreURL", chrome::kSyncLearnMoreURL);
-  base::string16 omnibox_url = ASCIIToUTF16(chrome::kOmniboxLearnMoreURL);
+  base::string16 omnibox_url = base::ASCIIToUTF16(chrome::kOmniboxLearnMoreURL);
   values->SetString(
       "defaultSearchGroupLabel",
       l10n_util::GetStringFUTF16(IDS_SEARCH_PREF_EXPLANATION, omnibox_url));
@@ -867,8 +867,10 @@ void BrowserOptionsHandler::CheckAutoLaunch(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Auto-launch is not supported for secondary profiles yet.
-  if (profile_path.BaseName().value() != ASCIIToUTF16(chrome::kInitialProfile))
+  if (profile_path.BaseName().value() !=
+          base::ASCIIToUTF16(chrome::kInitialProfile)) {
     return;
+  }
 
   // Pass in weak pointer to this to avoid race if BrowserOptionsHandler is
   // deleted.
@@ -1485,7 +1487,7 @@ void BrowserOptionsHandler::SetupCloudPrintConnectorSection() {
     label_str = l10n_util::GetStringFUTF16(
         IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL,
         l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
-        UTF8ToUTF16(email));
+        base::UTF8ToUTF16(email));
   }
   base::StringValue label(label_str);
 

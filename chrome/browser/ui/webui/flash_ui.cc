@@ -47,6 +47,7 @@
 #include "base/win/windows_version.h"
 #endif
 
+using base::ASCIIToUTF16;
 using content::GpuDataManager;
 using content::PluginService;
 using content::UserMetricsAction;

@@ -965,7 +965,7 @@ void InternetOptionsHandler::GetLocalizedValues(
 
   std::string owner;
   chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
-  localized_strings->SetString("ownerUserId", UTF8ToUTF16(owner));
+  localized_strings->SetString("ownerUserId", base::UTF8ToUTF16(owner));
 
   base::DictionaryValue* network_dictionary = new base::DictionaryValue;
   FillNetworkInfo(network_dictionary);

@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
   {
     ui::ScopedClipboardWriter clipboard_writer(
         ui::Clipboard::GetForCurrentThread(), ui::CLIPBOARD_TYPE_COPY_PASTE);
-    clipboard_writer.WriteURL(ASCIIToUTF16("http://www.example.com/"));
+    clipboard_writer.WriteURL(base::ASCIIToUTF16("http://www.example.com/"));
   }
 
   // Paste and go.
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
-  omnibox_view->SetUserText(ASCIIToUTF16("http://www.google.com/"));
+  omnibox_view->SetUserText(base::ASCIIToUTF16("http://www.google.com/"));
 
   // Take the focus away from the omnibox.
   ASSERT_NO_FATAL_FAILURE(ClickBrowserWindowCenter());
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnClick) {
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, SelectAllOnTap) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
-  omnibox_view->SetUserText(ASCIIToUTF16("http://www.google.com/"));
+  omnibox_view->SetUserText(base::ASCIIToUTF16("http://www.google.com/"));
 
   // Take the focus away from the omnibox.
   ASSERT_NO_FATAL_FAILURE(TapBrowserWindowCenter());

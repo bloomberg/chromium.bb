@@ -221,8 +221,9 @@ void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
       "Please add some informative text about the network issues.";
   base::FilePath::StringType file_to_attach(file_to_send.value());
   chrome::android::SendEmail(
-      UTF8ToUTF16(email), UTF8ToUTF16(subject),
-      UTF8ToUTF16(body), UTF8ToUTF16(title), UTF8ToUTF16(file_to_attach));
+      base::UTF8ToUTF16(email), base::UTF8ToUTF16(subject),
+      base::UTF8ToUTF16(body), base::UTF8ToUTF16(title),
+      base::UTF8ToUTF16(file_to_attach));
 #endif
 }
 

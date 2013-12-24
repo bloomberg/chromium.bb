@@ -261,7 +261,7 @@ void BrowserActionButton::UpdateState() {
   // If the browser action name is empty, show the extension name instead.
   std::string title = browser_action()->GetTitle(tab_id);
   base::string16 name =
-      UTF8ToUTF16(title.empty() ? extension()->name() : title);
+      base::UTF8ToUTF16(title.empty() ? extension()->name() : title);
   SetTooltipText(delegate_->NeedToShowTooltip() ? name : base::string16());
   SetAccessibleName(name);
 

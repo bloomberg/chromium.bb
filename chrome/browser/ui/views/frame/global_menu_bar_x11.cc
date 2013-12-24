@@ -529,10 +529,10 @@ void GlobalMenuBarX11::AddHistoryItemToMenu(HistoryItem* item,
   std::string url_string = item->url.possibly_invalid_spec();
 
   if (title.empty())
-    title = UTF8ToUTF16(url_string);
+    title = base::UTF8ToUTF16(url_string);
   gfx::ElideString(title, kMaximumMenuWidthInChars, &title);
 
-  DbusmenuMenuitem* menu_item = BuildMenuItem(UTF16ToUTF8(title), tag);
+  DbusmenuMenuitem* menu_item = BuildMenuItem(base::UTF16ToUTF8(title), tag);
   g_signal_connect(menu_item, "item-activated",
                    G_CALLBACK(OnHistoryItemActivatedThunk), this);
 

@@ -402,7 +402,7 @@ void TaskManagerView::UpdateStatsCounters() {
         // stat names not in the string table would be filtered out.
         ui::TableColumn col;
         col.id = i;
-        col.title = ASCIIToUTF16(row);
+        col.title = base::ASCIIToUTF16(row);
         col.alignment = ui::TableColumn::RIGHT;
         // TODO(erikkay): Width is hard-coded right now, so many column
         // names are clipped.

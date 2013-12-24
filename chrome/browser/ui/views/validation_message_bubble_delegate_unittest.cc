@@ -12,7 +12,8 @@ namespace {
 gfx::Size GetSizeForMessages(const std::string& main_text,
                              const std::string& sub_text) {
   ValidationMessageBubbleDelegate delegate(
-      gfx::Rect(), UTF8ToUTF16(main_text), UTF8ToUTF16(sub_text), NULL);
+      gfx::Rect(), base::UTF8ToUTF16(main_text),
+      base::UTF8ToUTF16(sub_text), NULL);
   return delegate.GetPreferredSize();
 }
 

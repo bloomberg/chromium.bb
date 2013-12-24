@@ -315,7 +315,7 @@ void MobileSetupUIHTMLSource::GetPropertiesAndStartDataRequest(
 
   strings.SetString("connecting_header",
                     l10n_util::GetStringFUTF16(IDS_MOBILE_CONNECTING_HEADER,
-                                               UTF8ToUTF16(name)));
+                                               base::UTF8ToUTF16(name)));
   strings.SetString("error_header",
                     l10n_util::GetStringUTF16(IDS_MOBILE_ERROR_HEADER));
   strings.SetString("activating_header",
@@ -642,7 +642,7 @@ void MobileSetupUI::DidCommitProvisionalLoadForFrame(
     const GURL& url,
     content::PageTransition transition_type,
     content::RenderViewHost* render_view_host) {
-  if (frame_unique_name != UTF8ToUTF16("paymentForm"))
+  if (frame_unique_name != base::UTF8ToUTF16("paymentForm"))
     return;
 
   web_ui()->CallJavascriptFunction(
@@ -657,7 +657,7 @@ void MobileSetupUI::DidFailProvisionalLoad(
     int error_code,
     const base::string16& error_description,
     content::RenderViewHost* render_view_host) {
-  if (frame_unique_name != UTF8ToUTF16("paymentForm"))
+  if (frame_unique_name != base::UTF8ToUTF16("paymentForm"))
     return;
 
   base::FundamentalValue result_value(-error_code);

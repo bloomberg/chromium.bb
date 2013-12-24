@@ -73,8 +73,8 @@ CertificateSelectorTableModel::CertificateSelectorTableModel(
     net::X509Certificate* cert = cert_request_info->client_certs[i].get();
     base::string16 text = l10n_util::GetStringFUTF16(
         IDS_CERT_SELECTOR_TABLE_CERT_FORMAT,
-        UTF8ToUTF16(cert->subject().GetDisplayName()),
-        UTF8ToUTF16(cert->issuer().GetDisplayName()));
+        base::UTF8ToUTF16(cert->subject().GetDisplayName()),
+        base::UTF8ToUTF16(cert->issuer().GetDisplayName()));
     items_.push_back(text);
   }
 }
@@ -130,7 +130,7 @@ void SSLClientCertificateSelector::Init() {
   layout->StartRow(0, column_set_id);
   base::string16 text = l10n_util::GetStringFUTF16(
       IDS_CLIENT_CERT_DIALOG_TEXT,
-      ASCIIToUTF16(cert_request_info()->host_and_port.ToString()));
+      base::ASCIIToUTF16(cert_request_info()->host_and_port.ToString()));
   views::Label* label = new views::Label(text);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -64,13 +64,13 @@ void LocallyManagedUserCreationScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_2);
   builder->AddF("createManagedUserIntroText3",
                IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_3,
-               UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
+               base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
 
   builder->Add("createManagedUserPickManagerTitle",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_TITLE);
   builder->AddF("createManagedUserPickManagerTitleExplanation",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_PICK_MANAGER_EXPLANATION,
-               UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
+               base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
   builder->Add("createManagedUserManagerPasswordHint",
                IDS_CREATE_LOCALLY_MANAGED_USER_CREATE_MANAGER_PASSWORD_HINT);
   builder->Add("createManagedUserWrongManagerPasswordText",

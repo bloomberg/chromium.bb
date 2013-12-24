@@ -64,11 +64,12 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
   void AddNotification(const std::string& id, const std::string& replace_id) {
     ::Notification notification(GURL("chrome-extension://abbccedd"),
                                 GURL(),
-                                ASCIIToUTF16("Test Web Notification"),
-                                ASCIIToUTF16("Notification message body."),
+                                base::ASCIIToUTF16("Test Web Notification"),
+                                base::ASCIIToUTF16(
+                                    "Notification message body."),
                                 blink::WebTextDirectionDefault,
                                 base::string16(),
-                                ASCIIToUTF16(replace_id),
+                                base::ASCIIToUTF16(replace_id),
                                 new TestNotificationDelegate(id));
 
     g_browser_process->notification_ui_manager()->Add(
@@ -79,11 +80,11 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
                           const std::string& new_id) {
     ::Notification notification(GURL("chrome-extension://abbccedd"),
                                 GURL(""),
-                                ASCIIToUTF16("Updated Web Notification"),
-                                ASCIIToUTF16("Updated message body."),
+                                base::ASCIIToUTF16("Updated Web Notification"),
+                                base::ASCIIToUTF16("Updated message body."),
                                 blink::WebTextDirectionDefault,
                                 base::string16(),
-                                ASCIIToUTF16(replace_id),
+                                base::ASCIIToUTF16(replace_id),
                                 new TestNotificationDelegate(new_id));
 
     g_browser_process->notification_ui_manager()->Add(

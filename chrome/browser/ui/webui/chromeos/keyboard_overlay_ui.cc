@@ -255,7 +255,8 @@ content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
                                kI18nContentToMessage[i].message);
   }
 
-  source->AddString("keyboardOverlayLearnMoreURL", UTF8ToUTF16(kLearnMoreURL));
+  source->AddString("keyboardOverlayLearnMoreURL",
+                    base::UTF8ToUTF16(kLearnMoreURL));
   source->AddBoolean("keyboardOverlayHasChromeOSDiamondKey",
                      CommandLine::ForCurrentProcess()->HasSwitch(
                          chromeos::switches::kHasChromeOSDiamondKey));

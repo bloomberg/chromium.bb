@@ -593,7 +593,7 @@ void CoreOptionsHandler::HandleClearPref(const base::ListValue* args) {
 }
 
 void CoreOptionsHandler::HandleUserMetricsAction(const base::ListValue* args) {
-  std::string metric = UTF16ToUTF8(ExtractStringValue(args));
+  std::string metric = base::UTF16ToUTF8(ExtractStringValue(args));
   if (!metric.empty())
     content::RecordComputedAction(metric);
 }

@@ -827,7 +827,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   // unnamed "multiple accounts" buttons.
   views::MenuButton* email_button = new views::MenuButton(
       NULL,
-      gfx::ElideEmail(UTF8ToUTF16(account),
+      gfx::ElideEmail(base::UTF8ToUTF16(account),
                       rb->GetFontList(ui::ResourceBundle::BaseFont),
                       width()),
       is_primary_account ? NULL : this,  // Cannot delete the primary account.

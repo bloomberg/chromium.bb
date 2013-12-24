@@ -71,8 +71,8 @@ SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
 // Puts the |content| into a span with the given CSS class.
 base::string16 CreateSpanWithClass(const base::string16& content,
                                    const std::string& css_class) {
-  return ASCIIToUTF16("<span class='" + css_class + "'>") +
-      net::EscapeForHTML(content) + ASCIIToUTF16("</span>");
+  return base::ASCIIToUTF16("<span class='" + css_class + "'>") +
+      net::EscapeForHTML(content) + base::ASCIIToUTF16("</span>");
 }
 
 } // namespace
@@ -220,8 +220,10 @@ void NTPLoginHandler::UpdateLogin() {
         if (image)
           icon_url = webui::GetBitmapDataUrl(GetGAIAPictureForNTP(*image));
       }
-      if (header.empty())
-        header = CreateSpanWithClass(UTF8ToUTF16(username), "profile-name");
+      if (header.empty()) {
+        header = CreateSpanWithClass(base::UTF8ToUTF16(username),
+                                     "profile-name");
+      }
     }
   } else {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

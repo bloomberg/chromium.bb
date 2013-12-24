@@ -55,7 +55,7 @@ ShellIntegration::ShortcutInfo GetShortcutInfo() {
   ShellIntegration::ShortcutInfo info;
   info.extension_id = "extensionid";
   info.extension_path = base::FilePath("/fake/extension/path");
-  info.title = ASCIIToUTF16("Shortcut Title");
+  info.title = base::ASCIIToUTF16("Shortcut Title");
   info.url = GURL("http://example.com/");
   info.profile_path = base::FilePath("user_data_dir").Append("Profile 1");
   info.profile_name = "profile name";

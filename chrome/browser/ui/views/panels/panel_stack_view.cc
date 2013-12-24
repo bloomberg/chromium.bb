@@ -504,8 +504,8 @@ views::Widget* PanelStackView::CreateWindowWithBounds(const gfx::Rect& bounds) {
   DCHECK(!panels_.empty());
   Panel* panel = panels_.front();
   ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
-                                                panel->profile()->GetPath()),
+      ShellIntegration::GetAppModelIdForProfile(
+          base::UTF8ToWide(panel->app_name()), panel->profile()->GetPath()),
       views::HWNDForWidget(window));
 
   // Remove the filter for old window in case that we're recreating the window.

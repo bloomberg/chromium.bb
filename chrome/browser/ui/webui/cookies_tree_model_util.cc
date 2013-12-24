@@ -124,9 +124,9 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
           l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_NO) :
           l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_YES);
       dict->SetString(kKeyAccessibleToScript, accessible);
-      dict->SetString(kKeyCreated, UTF16ToUTF8(
+      dict->SetString(kKeyCreated, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(cookie.CreationDate())));
-      dict->SetString(kKeyExpires, cookie.IsPersistent() ? UTF16ToUTF8(
+      dict->SetString(kKeyExpires, cookie.IsPersistent() ? base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(cookie.ExpiryDate())) :
           l10n_util::GetStringUTF8(IDS_COOKIES_COOKIE_EXPIRES_SESSION));
 
@@ -144,7 +144,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
           database_info.database_name);
       dict->SetString(kKeyDesc, database_info.description);
       dict->SetString(kKeySize, ui::FormatBytes(database_info.size));
-      dict->SetString(kKeyModified, UTF16ToUTF8(
+      dict->SetString(kKeyModified, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(database_info.last_modified)));
 
       break;
@@ -158,7 +158,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 
       dict->SetString(kKeyOrigin, local_storage_info.origin_url.spec());
       dict->SetString(kKeySize, ui::FormatBytes(local_storage_info.size));
-      dict->SetString(kKeyModified, UTF16ToUTF8(
+      dict->SetString(kKeyModified, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(
               local_storage_info.last_modified)));
 
@@ -173,9 +173,9 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 
       dict->SetString(kKeyManifest, appcache_info.manifest_url.spec());
       dict->SetString(kKeySize, ui::FormatBytes(appcache_info.size));
-      dict->SetString(kKeyCreated, UTF16ToUTF8(
+      dict->SetString(kKeyCreated, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(appcache_info.creation_time)));
-      dict->SetString(kKeyAccessed, UTF16ToUTF8(
+      dict->SetString(kKeyAccessed, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(appcache_info.last_access_time)));
 
       break;
@@ -189,7 +189,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 
       dict->SetString(kKeyOrigin, indexed_db_info.origin_.spec());
       dict->SetString(kKeySize, ui::FormatBytes(indexed_db_info.size_));
-      dict->SetString(kKeyModified, UTF16ToUTF8(
+      dict->SetString(kKeyModified, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(indexed_db_info.last_modified_)));
 
       break;
@@ -206,13 +206,13 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyOrigin, file_system_info.origin.spec());
       dict->SetString(kKeyPersistent,
                       ContainsKey(file_system_info.usage_map, kPerm) ?
-                          UTF16ToUTF8(ui::FormatBytes(
+                          base::UTF16ToUTF8(ui::FormatBytes(
                               file_system_info.usage_map.find(kPerm)->second)) :
                           l10n_util::GetStringUTF8(
                               IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
       dict->SetString(kKeyTemporary,
                       ContainsKey(file_system_info.usage_map, kTemp) ?
-                          UTF16ToUTF8(ui::FormatBytes(
+                          base::UTF16ToUTF8(ui::FormatBytes(
                               file_system_info.usage_map.find(kTemp)->second)) :
                           l10n_util::GetStringUTF8(
                               IDS_COOKIES_FILE_SYSTEM_USAGE_NONE));
@@ -230,14 +230,14 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
 
       dict->SetString(kKeyOrigin, quota_info.host);
       dict->SetString(kKeyTotalUsage,
-                      UTF16ToUTF8(ui::FormatBytes(
+                      base::UTF16ToUTF8(ui::FormatBytes(
                           quota_info.temporary_usage +
                           quota_info.persistent_usage)));
       dict->SetString(kKeyTemporaryUsage,
-                      UTF16ToUTF8(ui::FormatBytes(
+                      base::UTF16ToUTF8(ui::FormatBytes(
                           quota_info.temporary_usage)));
       dict->SetString(kKeyPersistentUsage,
-                      UTF16ToUTF8(ui::FormatBytes(
+                      base::UTF16ToUTF8(ui::FormatBytes(
                           quota_info.persistent_usage)));
       break;
     }
@@ -251,7 +251,7 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       dict->SetString(kKeyServerId, server_bound_cert.server_identifier());
       dict->SetString(kKeyCertType,
                       ClientCertTypeToString(net::CLIENT_CERT_ECDSA_SIGN));
-      dict->SetString(kKeyCreated, UTF16ToUTF8(
+      dict->SetString(kKeyCreated, base::UTF16ToUTF8(
           base::TimeFormatFriendlyDateAndTime(
               server_bound_cert.creation_time())));
       break;

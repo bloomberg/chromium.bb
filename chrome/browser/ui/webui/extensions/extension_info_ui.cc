@@ -74,7 +74,7 @@ void ExtensionInfoUI::AddExtensionDataToSource(
                                       extension_misc::EXTENSION_ICON_MEDIUM,
                                       ExtensionIconSet::MATCH_BIGGER,
                                       false, NULL);
-  source_->AddString("icon", UTF8ToUTF16(icon.spec()));
+  source_->AddString("icon", base::UTF8ToUTF16(icon.spec()));
   // Set the last update time (the install time).
   base::Time install_time = extension_service->extension_prefs()->
       GetInstallTime(extension_id);

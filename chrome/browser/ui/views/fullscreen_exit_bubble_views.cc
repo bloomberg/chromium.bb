@@ -241,7 +241,7 @@ void FullscreenExitBubbleViews::FullscreenExitView::UpdateContent(
     if (link_visible) {
       link_->SetText(
           l10n_util::GetStringUTF16(IDS_EXIT_FULLSCREEN_MODE) +
-          UTF8ToUTF16(" ") +
+          base::UTF8ToUTF16(" ") +
           l10n_util::GetStringFUTF16(IDS_EXIT_FULLSCREEN_MODE_ACCELERATOR,
               accelerator));
     }

@@ -107,7 +107,7 @@ void FontSettingsHandler::GetLocalizedValues(
   localized_strings->SetString("advancedFontSettingsInstall",
       l10n_util::GetStringFUTF16(
           IDS_FONT_LANGUAGE_SETTING_ADVANCED_FONT_SETTINGS_INSTALL,
-          UTF8ToUTF16(
+          base::UTF8ToUTF16(
               install_url.Resolve(kAdvancedFontSettingsExtensionId).spec())));
 }
 

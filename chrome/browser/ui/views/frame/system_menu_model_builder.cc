@@ -109,7 +109,8 @@ void SystemMenuModelBuilder::AddFrameToggleItems(ui::SimpleMenuModel* model) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDebugEnableFrameToggle)) {
     model->AddSeparator(ui::NORMAL_SEPARATOR);
-    model->AddItem(IDC_DEBUG_FRAME_TOGGLE, ASCIIToUTF16("Toggle Frame Type"));
+    model->AddItem(IDC_DEBUG_FRAME_TOGGLE,
+                   base::ASCIIToUTF16("Toggle Frame Type"));
   }
 }
 

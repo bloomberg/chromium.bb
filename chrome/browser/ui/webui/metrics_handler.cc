@@ -44,7 +44,7 @@ void MetricsHandler::RegisterMessages() {
 }
 
 void MetricsHandler::HandleRecordAction(const base::ListValue* args) {
-  std::string string_action = UTF16ToUTF8(ExtractStringValue(args));
+  std::string string_action = base::UTF16ToUTF8(ExtractStringValue(args));
   content::RecordComputedAction(string_action);
 }
 
@@ -83,7 +83,7 @@ void MetricsHandler::HandleRecordInHistogram(const base::ListValue* args) {
 }
 
 void MetricsHandler::HandleLogEventTime(const base::ListValue* args) {
-  std::string event_name = UTF16ToUTF8(ExtractStringValue(args));
+  std::string event_name = base::UTF16ToUTF8(ExtractStringValue(args));
   WebContents* tab = web_ui()->GetWebContents();
 
   // Not all new tab pages get timed. In those cases, we don't have a

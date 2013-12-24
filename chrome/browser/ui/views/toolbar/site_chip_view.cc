@@ -217,15 +217,15 @@ base::string16 SiteChipView::SiteLabelFromURL(const GURL& provided_url) {
     base::string16 formatted = net::FormatUrl(url.GetOrigin(), languages,
         net::kFormatUrlOmitAll, net::UnescapeRule::NORMAL, NULL, NULL, NULL);
     // Remove scheme, "www.", and trailing "/".
-    if (StartsWith(formatted, ASCIIToUTF16("http://"), false))
+    if (StartsWith(formatted, base::ASCIIToUTF16("http://"), false))
       formatted = formatted.substr(7);
-    else if (StartsWith(formatted, ASCIIToUTF16("https://"), false))
+    else if (StartsWith(formatted, base::ASCIIToUTF16("https://"), false))
       formatted = formatted.substr(8);
-    else if (StartsWith(formatted, ASCIIToUTF16("ftp://"), false))
+    else if (StartsWith(formatted, base::ASCIIToUTF16("ftp://"), false))
       formatted = formatted.substr(6);
-    if (StartsWith(formatted, ASCIIToUTF16("www."), false))
+    if (StartsWith(formatted, base::ASCIIToUTF16("www."), false))
       formatted = formatted.substr(4);
-    if (EndsWith(formatted, ASCIIToUTF16("/"), false))
+    if (EndsWith(formatted, base::ASCIIToUTF16("/"), false))
       formatted = formatted.substr(0, formatted.size()-1);
     return formatted;
   }

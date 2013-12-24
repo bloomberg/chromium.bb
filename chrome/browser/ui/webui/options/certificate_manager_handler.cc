@@ -39,6 +39,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #endif
 
+using base::UTF8ToUTF16;
 using content::BrowserThread;
 
 namespace {

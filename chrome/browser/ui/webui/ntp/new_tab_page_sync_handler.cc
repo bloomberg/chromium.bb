@@ -120,7 +120,8 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
                                                  &status_msg,
                                                  &link_text);
   SendSyncMessageToPage(FromSyncStatusMessageType(type),
-                        UTF16ToUTF8(status_msg), UTF16ToUTF8(link_text));
+                        base::UTF16ToUTF8(status_msg),
+                        base::UTF16ToUTF8(link_text));
 }
 
 void NewTabPageSyncHandler::HandleSyncLinkClicked(const base::ListValue* args) {
@@ -134,7 +135,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const base::ListValue* args) {
   chrome::ShowBrowserSignin(browser, signin::SOURCE_NTP_LINK);
 
   if (sync_service_->HasSyncSetupCompleted()) {
-    base::string16 user = UTF8ToUTF16(SigninManagerFactory::GetForProfile(
+    base::string16 user = base::UTF8ToUTF16(SigninManagerFactory::GetForProfile(
         Profile::FromWebUI(web_ui()))->GetAuthenticatedUsername());
     base::DictionaryValue value;
     value.SetString("syncEnabledMessage",

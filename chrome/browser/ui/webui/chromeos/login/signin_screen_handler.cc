@@ -443,7 +443,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_PUBLIC_ACCOUNT_ENTER_ACCESSIBLE_NAME);
   builder->AddF("removeUserWarningText",
                IDS_LOGIN_POD_USER_REMOVE_WARNING,
-               UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
+               base::UTF8ToUTF16(chrome::kSupervisedUserManagementDisplayURL));
   builder->Add("removeUserWarningButtonTitle",
                IDS_LOGIN_POD_USER_REMOVE_WARNING_BUTTON);
 
@@ -1380,8 +1380,8 @@ void SigninScreenHandler::HandleLoginWebuiReady() {
     const char code[] = "gWindowOnLoad();";
     RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
     rvh->ExecuteJavascriptInWebFrame(
-        ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
-        ASCIIToUTF16(code));
+        base::ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
+        base::ASCIIToUTF16(code));
   }
   if (!gaia_silent_load_) {
     content::NotificationService::current()->Notify(
@@ -1397,8 +1397,8 @@ void SigninScreenHandler::HandleLoginWebuiReady() {
                         "window.onload=function() {};";
     RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
     rvh->ExecuteJavascriptInWebFrame(
-        ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
-        ASCIIToUTF16(code));
+        base::ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
+        base::ASCIIToUTF16(code));
     // As we could miss and window.onload could already be called, restore
     // focus to current pod (see crbug/175243).
     RefocusCurrentPod();
@@ -1659,8 +1659,8 @@ void SigninScreenHandler::SubmitLoginFormForTest() {
 
   RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
   rvh->ExecuteJavascriptInWebFrame(
-      ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
-      ASCIIToUTF16(code));
+      base::ASCIIToUTF16("//iframe[@id='signin-frame']\n//iframe"),
+      base::ASCIIToUTF16(code));
 
   // Test properties are cleared in HandleCompleteLogin because the form
   // submission might fail and login will not be attempted after reloading

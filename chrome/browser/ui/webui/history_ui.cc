@@ -140,7 +140,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddString(
       "deleteWarning",
       l10n_util::GetStringFUTF16(IDS_HISTORY_DELETE_PRIOR_VISITS_WARNING,
-                                 UTF8ToUTF16(kIncognitoModeShortcut)));
+                                 base::UTF8ToUTF16(kIncognitoModeShortcut)));
   source->AddLocalizedString("actionMenuDescription",
                              IDS_HISTORY_ACTION_MENU_DESCRIPTION);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
@@ -294,7 +294,7 @@ void BrowsingHistoryHandler::HistoryEntry::SetUrlAndTitle(
   base::string16 title_to_set(title);
   if (title.empty()) {
     using_url_as_the_title = true;
-    title_to_set = UTF8ToUTF16(url.spec());
+    title_to_set = base::UTF8ToUTF16(url.spec());
   }
 
   // Since the title can contain BiDi text, we need to mark the text as either
@@ -321,7 +321,7 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   // When the domain is empty, use the scheme instead. This allows for a
   // sensible treatment of e.g. file: URLs when group by domain is on.
   if (domain.empty())
-    domain = UTF8ToUTF16(url.scheme() + ":");
+    domain = base::UTF8ToUTF16(url.scheme() + ":");
 
   result->SetString("domain", domain);
   result->SetDouble("time", time.ToJsTime());
@@ -1004,7 +1004,7 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 // static
 const GURL HistoryUI::GetHistoryURLWithSearchText(const base::string16& text) {
   return GURL(std::string(chrome::kChromeUIHistoryURL) + "#q=" +
-              net::EscapeQueryParamValue(UTF16ToUTF8(text), true));
+              net::EscapeQueryParamValue(base::UTF16ToUTF8(text), true));
 }
 
 // static

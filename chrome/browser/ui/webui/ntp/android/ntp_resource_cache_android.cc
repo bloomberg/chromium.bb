@@ -149,7 +149,7 @@ void NTPResourceCache::CreateNewTabHTML() {
       bookmark_shortcuts_allowed ? "true" : "false");
 
   const char* new_tab_link = kLearnMoreIncognitoUrl;
-  base::string16 learnMoreLink = ASCIIToUTF16(
+  base::string16 learnMoreLink = base::ASCIIToUTF16(
       google_util::AppendGoogleLocaleParam(GURL(new_tab_link)).spec());
   localized_strings.SetString("content",
       l10n_util::GetStringFUTF16(

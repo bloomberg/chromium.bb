@@ -34,7 +34,7 @@ void StatsOptionsHandler::RegisterMessages() {
 void StatsOptionsHandler::HandleMetricsReportingCheckbox(
     const base::ListValue* args) {
 #if defined(GOOGLE_CHROME_BUILD)
-  const std::string checked_str = UTF16ToUTF8(ExtractStringValue(args));
+  const std::string checked_str = base::UTF16ToUTF8(ExtractStringValue(args));
   const bool enabled = (checked_str == "true");
   content::RecordAction(
       enabled ?

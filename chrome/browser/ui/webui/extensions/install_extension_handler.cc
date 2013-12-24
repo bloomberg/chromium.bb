@@ -110,12 +110,14 @@ void InstallExtensionHandler::HandleInstallMessage(
 
   const bool kCaseSensitive = false;
 
-  if (EndsWith(file_display_name_, ASCIIToUTF16(".user.js"), kCaseSensitive)) {
+  if (EndsWith(file_display_name_,
+      base::ASCIIToUTF16(".user.js"),
+      kCaseSensitive)) {
     crx_installer->InstallUserScript(
         file_to_install_,
         net::FilePathToFileURL(file_to_install_));
   } else if (EndsWith(file_display_name_,
-                      ASCIIToUTF16(".crx"),
+                      base::ASCIIToUTF16(".crx"),
                       kCaseSensitive)) {
     crx_installer->InstallCrx(file_to_install_);
   } else {

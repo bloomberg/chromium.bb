@@ -300,7 +300,8 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
   if (!shortcut_files_.empty()) {
     // Generates app id from web app url and profile path.
     base::string16 app_id = ShellIntegration::GetAppModelIdForProfile(
-        UTF8ToWide(web_app::GenerateApplicationNameFromURL(shortcut_info_.url)),
+        base::UTF8ToWide(
+            web_app::GenerateApplicationNameFromURL(shortcut_info_.url)),
         profile_path_);
 
     // Sanitize description
@@ -404,7 +405,7 @@ void GetShortcutInfoForTab(WebContents* web_contents,
   info->url = app_info.app_url.is_empty() ? web_contents->GetURL() :
                                             app_info.app_url;
   info->title = app_info.title.empty() ?
-      (web_contents->GetTitle().empty() ? UTF8ToUTF16(info->url.spec()) :
+      (web_contents->GetTitle().empty() ? base::UTF8ToUTF16(info->url.spec()) :
                                           web_contents->GetTitle()) :
       app_info.title;
   info->description = app_info.description;
@@ -429,8 +430,8 @@ void UpdateShortcutInfoForApp(const extensions::Extension& app,
   shortcut_info->extension_id = app.id();
   shortcut_info->is_platform_app = app.is_platform_app();
   shortcut_info->url = extensions::AppLaunchInfo::GetLaunchWebURL(&app);
-  shortcut_info->title = UTF8ToUTF16(app.name());
-  shortcut_info->description = UTF8ToUTF16(app.description());
+  shortcut_info->title = base::UTF8ToUTF16(app.name());
+  shortcut_info->description = base::UTF8ToUTF16(app.description());
   shortcut_info->extension_path = app.path();
   shortcut_info->profile_path = profile->GetPath();
   shortcut_info->profile_name =

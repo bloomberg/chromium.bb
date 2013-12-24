@@ -607,7 +607,7 @@ void LocalDiscoveryUIHandler::SetupCloudPrintConnectorSection() {
     label_str = l10n_util::GetStringFUTF16(
         IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL,
         l10n_util::GetStringUTF16(IDS_GOOGLE_CLOUD_PRINT),
-        UTF8ToUTF16(email));
+        base::UTF8ToUTF16(email));
   }
   base::StringValue label(label_str);
 

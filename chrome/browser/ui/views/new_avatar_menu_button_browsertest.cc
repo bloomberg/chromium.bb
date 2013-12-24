@@ -60,7 +60,7 @@ void NewAvatarMenuButtonTest::CreateTestingProfile() {
 
   // Sign in the default profile
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
-  cache.SetUserNameOfProfileAtIndex(0, UTF8ToUTF16("user_name"));
+  cache.SetUserNameOfProfileAtIndex(0, base::UTF8ToUTF16("user_name"));
 
   base::FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);

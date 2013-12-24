@@ -316,7 +316,8 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
             website_settings()->site_connection_status());
   EXPECT_EQ(WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT,
             website_settings()->site_identity_status());
-  EXPECT_EQ(UTF8ToUTF16("Google Inc"), website_settings()->organization_name());
+  EXPECT_EQ(base::UTF8ToUTF16("Google Inc"),
+            website_settings()->organization_name());
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSRevocationError) {

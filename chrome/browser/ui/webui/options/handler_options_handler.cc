@@ -192,8 +192,8 @@ ProtocolHandler HandlerOptionsHandler::ParseHandlerFromArgs(
     args->GetString(2, &title);
   if (!ok)
     return ProtocolHandler::EmptyProtocolHandler();
-  return ProtocolHandler::CreateProtocolHandler(UTF16ToUTF8(protocol),
-                                                GURL(UTF16ToUTF8(url)),
+  return ProtocolHandler::CreateProtocolHandler(base::UTF16ToUTF8(protocol),
+                                                GURL(base::UTF16ToUTF8(url)),
                                                 title);
 }
 

@@ -500,7 +500,7 @@ void OmniboxViewViews::SetForcedQuery() {
   const base::string16 current_text(text());
   const size_t start = current_text.find_first_not_of(base::kWhitespaceUTF16);
   if (start == base::string16::npos || (current_text[start] != '?'))
-    OmniboxView::SetUserText(ASCIIToUTF16("?"));
+    OmniboxView::SetUserText(base::ASCIIToUTF16("?"));
   else
     SelectRange(gfx::Range(current_text.size(), start + 1));
 }
@@ -802,7 +802,8 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
     GURL url;
     base::string16 title;
     if (data.GetURLAndTitle(&url, &title)) {
-      base::string16 text(StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
+      base::string16 text(
+          StripJavascriptSchemas(base::UTF8ToUTF16(url.spec())));
       if (model()->CanPasteAndGo(text)) {
         model()->PasteAndGo(text);
         return ui::DragDropTypes::DRAG_COPY;
@@ -924,7 +925,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   url_parse::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(text(), &scheme, &host);
   bool grey_out_url = text().substr(scheme.begin, scheme.len) ==
-      UTF8ToUTF16(extensions::kExtensionScheme);
+      base::UTF8ToUTF16(extensions::kExtensionScheme);
   bool grey_base = model()->CurrentTextIsURL() &&
       (host.is_nonempty() || grey_out_url);
   SetColor(location_bar_view_->GetColor(

@@ -256,9 +256,10 @@ void ManageProfileHandler::SendProfileNames() {
   const ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
   base::DictionaryValue profile_name_dict;
-  for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i)
-    profile_name_dict.SetBoolean(UTF16ToUTF8(cache.GetNameOfProfileAtIndex(i)),
-                                 true);
+  for (size_t i = 0, e = cache.GetNumberOfProfiles(); i < e; ++i) {
+    profile_name_dict.SetBoolean(
+        base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(i)), true);
+  }
 
   web_ui()->CallJavascriptFunction("ManageProfileOverlay.receiveProfileNames",
                                    profile_name_dict);
@@ -405,7 +406,8 @@ void ManageProfileHandler::RequestCreateProfileUpdate(
   Profile* profile = Profile::FromWebUI(web_ui());
   SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(profile);
-  base::string16 username = UTF8ToUTF16(manager->GetAuthenticatedUsername());
+  base::string16 username =
+      base::UTF8ToUTF16(manager->GetAuthenticatedUsername());
   ProfileSyncService* service =
      ProfileSyncServiceFactory::GetForProfile(profile);
   GoogleServiceAuthError::State state = service->GetAuthError().state();
