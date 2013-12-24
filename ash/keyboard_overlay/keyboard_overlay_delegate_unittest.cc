@@ -37,7 +37,7 @@ TEST_P(KeyboardOverlayDelegateTest, ShowAndClose) {
   UpdateDisplay("500x400,300x200");
   ash::Shell* shell = ash::Shell::GetInstance();
   shell->SetShelfAlignment(shelf_alignment(), shell->GetPrimaryRootWindow());
-  KeyboardOverlayDelegate delegate(ASCIIToUTF16("Title"),
+  KeyboardOverlayDelegate delegate(base::ASCIIToUTF16("Title"),
                                    GURL("chrome://keyboardoverlay/"));
   // Showing the dialog creates a widget.
   views::Widget* widget = delegate.Show(NULL);

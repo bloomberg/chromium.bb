@@ -24,8 +24,8 @@ namespace shell {
 class LockView : public views::WidgetDelegateView,
                  public views::ButtonListener {
  public:
-  LockView()
-      : unlock_button_(new views::LabelButton(this, ASCIIToUTF16("Unlock"))) {
+  LockView() : unlock_button_(new views::LabelButton(
+                                  this, base::ASCIIToUTF16("Unlock"))) {
     unlock_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     AddChildView(unlock_button_);
     unlock_button_->SetFocusable(true);
@@ -41,7 +41,7 @@ class LockView : public views::WidgetDelegateView,
   // Overridden from views::View:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
     canvas->FillRect(GetLocalBounds(), SK_ColorYELLOW);
-    base::string16 text = ASCIIToUTF16("LOCKED!");
+    base::string16 text = base::ASCIIToUTF16("LOCKED!");
     int string_width = font_.GetStringWidth(text);
     canvas->DrawStringInt(text, font_, SK_ColorRED, (width() - string_width)/ 2,
                           (height() - font_.GetHeight()) / 2,

@@ -453,7 +453,7 @@ void TouchHudDebug::UpdateTouchPointLabel(int index) {
                                           GetTouchEventLabel(touch_status),
                                           touch_position.ToString().c_str(),
                                           touch_radius);
-  touch_labels_[index]->SetText(UTF8ToUTF16(string));
+  touch_labels_[index]->SetText(base::UTF8ToUTF16(string));
 }
 
 void TouchHudDebug::OnTouchEvent(ui::TouchEvent* event) {

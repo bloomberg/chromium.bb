@@ -78,7 +78,7 @@ void ExecuteScript(blink::WebFrame* frame,
   std::string json;
   base::JSONWriter::Write(&parameters, &json);
   std::string script = base::StringPrintf(script_format, json.c_str());
-  frame->executeScript(blink::WebString(UTF8ToUTF16(script)));
+  frame->executeScript(blink::WebString(base::UTF8ToUTF16(script)));
 }
 #endif
 

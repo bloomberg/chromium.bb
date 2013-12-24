@@ -66,7 +66,7 @@ void PanelWindow::OnPaint(gfx::Canvas* canvas) {
 }
 
 base::string16 PanelWindow::GetWindowTitle() const {
-  return ASCIIToUTF16(name_);
+  return base::ASCIIToUTF16(name_);
 }
 
 views::View* PanelWindow::GetContentsView() {

@@ -397,7 +397,7 @@ base::string16 ShellWindow::GetTitle() const {
   if (!web_contents() ||
       !web_contents()->GetController().GetActiveEntry() ||
       web_contents()->GetController().GetActiveEntry()->GetTitle().empty()) {
-    title = UTF8ToUTF16(extension()->name());
+    title = base::UTF8ToUTF16(extension()->name());
   } else {
     title = web_contents()->GetTitle();
   }

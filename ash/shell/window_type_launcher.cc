@@ -55,7 +55,8 @@ class ModalWindow : public views::WidgetDelegateView,
   explicit ModalWindow(ui::ModalType modal_type)
       : modal_type_(modal_type),
         color_(g_colors[g_color_index]),
-        open_button_(new views::LabelButton(this, ASCIIToUTF16("Moar!"))) {
+        open_button_(new views::LabelButton(this,
+                                            base::ASCIIToUTF16("Moar!"))) {
     ++g_color_index %= arraysize(g_colors);
     open_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     AddChildView(open_button_);
@@ -94,7 +95,7 @@ class ModalWindow : public views::WidgetDelegateView,
     return true;
   }
   virtual base::string16 GetWindowTitle() const OVERRIDE {
-    return ASCIIToUTF16("Modal Window");
+    return base::ASCIIToUTF16("Modal Window");
   }
   virtual ui::ModalType GetModalType() const OVERRIDE {
     return modal_type_;
@@ -159,7 +160,7 @@ class NonModalTransient : public views::WidgetDelegateView {
     return true;
   }
   virtual base::string16 GetWindowTitle() const OVERRIDE {
-    return ASCIIToUTF16("Non-Modal Transient");
+    return base::ASCIIToUTF16("Non-Modal Transient");
   }
   virtual void DeleteDelegate() OVERRIDE {
     if (GetWidget() == non_modal_transient_)
@@ -201,33 +202,33 @@ void InitWindowTypeLauncher() {
 
 WindowTypeLauncher::WindowTypeLauncher()
     : create_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Create Window"))),
+          this, base::ASCIIToUTF16("Create Window"))),
       panel_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Create Panel"))),
+          this, base::ASCIIToUTF16("Create Panel"))),
       create_nonresizable_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Create Non-Resizable Window"))),
+          this, base::ASCIIToUTF16("Create Non-Resizable Window"))),
       bubble_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Create Pointy Bubble"))),
+          this, base::ASCIIToUTF16("Create Pointy Bubble"))),
       lock_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Lock Screen"))),
+          this, base::ASCIIToUTF16("Lock Screen"))),
       widgets_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Show Example Widgets"))),
+          this, base::ASCIIToUTF16("Show Example Widgets"))),
       system_modal_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Open System Modal Window"))),
+          this, base::ASCIIToUTF16("Open System Modal Window"))),
       window_modal_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Open Window Modal Window"))),
+          this, base::ASCIIToUTF16("Open Window Modal Window"))),
       child_modal_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Open Child Modal Window"))),
+          this, base::ASCIIToUTF16("Open Child Modal Window"))),
       transient_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Open Non-Modal Transient Window"))),
+          this, base::ASCIIToUTF16("Open Non-Modal Transient Window"))),
       examples_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Open Views Examples Window"))),
+          this, base::ASCIIToUTF16("Open Views Examples Window"))),
       show_hide_window_button_(new views::LabelButton(
-          this, ASCIIToUTF16("Show/Hide a Window"))),
+          this, base::ASCIIToUTF16("Show/Hide a Window"))),
       show_screensaver_(new views::LabelButton(
-          this, ASCIIToUTF16("Show the Screensaver [for 5 seconds]"))),
+          this, base::ASCIIToUTF16("Show the Screensaver [for 5 seconds]"))),
       show_web_notification_(new views::LabelButton(
-          this, ASCIIToUTF16("Show a web/app notification"))) {
+          this, base::ASCIIToUTF16("Show a web/app notification"))) {
   create_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   panel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   create_nonresizable_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
@@ -291,7 +292,7 @@ bool WindowTypeLauncher::CanResize() const {
 }
 
 base::string16 WindowTypeLauncher::GetWindowTitle() const {
-  return ASCIIToUTF16("Examples: Window Builder");
+  return base::ASCIIToUTF16("Examples: Window Builder");
 }
 
 bool WindowTypeLauncher::CanMaximize() const {
@@ -340,10 +341,10 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
     notification.reset(new message_center::Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
         "id0",
-        ASCIIToUTF16("Test Shell Web Notification"),
-        ASCIIToUTF16("Notification message body."),
+        base::ASCIIToUTF16("Test Shell Web Notification"),
+        base::ASCIIToUTF16("Notification message body."),
         gfx::Image(),
-        ASCIIToUTF16("www.testshell.org"),
+        base::ASCIIToUTF16("www.testshell.org"),
         message_center::NotifierId(
             message_center::NotifierId::APPLICATION, "test-id"),
         message_center::RichNotificationData(),
@@ -379,10 +380,10 @@ void WindowTypeLauncher::ShowContextMenuForView(
     ui::MenuSourceType source_type) {
   MenuItemView* root = new MenuItemView(this);
   root->AppendMenuItem(COMMAND_NEW_WINDOW,
-                       ASCIIToUTF16("New Window"),
+                       base::ASCIIToUTF16("New Window"),
                        MenuItemView::NORMAL);
   root->AppendMenuItem(COMMAND_TOGGLE_FULLSCREEN,
-                       ASCIIToUTF16("Toggle FullScreen"),
+                       base::ASCIIToUTF16("Toggle FullScreen"),
                        MenuItemView::NORMAL);
   // MenuRunner takes ownership of root.
   menu_runner_.reset(new MenuRunner(root));

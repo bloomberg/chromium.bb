@@ -282,7 +282,7 @@ int MainDllLoader::Launch(HINSTANCE instance,
     return chrome::RESULT_CODE_MISSING_DATA;
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  env->SetVar(chrome::kChromeVersionEnvVar, WideToUTF8(version));
+  env->SetVar(chrome::kChromeVersionEnvVar, base::WideToUTF8(version));
   // TODO(erikwright): Remove this when http://crbug.com/174953 is fixed and
   // widely deployed.
   env->UnSetVar(env_vars::kGoogleUpdateIsMachineEnvVar);

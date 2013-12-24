@@ -130,7 +130,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
         int hour = 0, min = 0;
         PowerStatus::SplitTimeIntoHoursAndMinutes(time, &hour, &min);
         base::string16 minute = min < 10 ?
-            ASCIIToUTF16("0") + base::IntToString16(min) :
+            base::ASCIIToUTF16("0") + base::IntToString16(min) :
             base::IntToString16(min);
         battery_time_status =
             l10n_util::GetStringFUTF16(
@@ -142,7 +142,7 @@ void PowerStatusView::UpdateTextForDefaultView() {
       }
     }
     battery_percentage = battery_time_status.empty() ?
-        battery_percentage : battery_percentage + ASCIIToUTF16(" - ");
+        battery_percentage : battery_percentage + base::ASCIIToUTF16(" - ");
   }
   percentage_label_->SetVisible(!battery_percentage.empty());
   percentage_label_->SetText(battery_percentage);

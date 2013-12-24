@@ -63,7 +63,7 @@ base::string16 IntToTwoDigitString(int value) {
   DCHECK_GE(value, 0);
   DCHECK_LE(value, 99);
   if (value < 10)
-    return ASCIIToUTF16("0") + base::IntToString16(value);
+    return base::ASCIIToUTF16("0") + base::IntToString16(value);
   return base::IntToString16(value);
 }
 

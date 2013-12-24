@@ -158,7 +158,7 @@ void DateView::UpdateTimeFormat() {
 void DateView::UpdateTextInternal(const base::Time& now) {
   SetAccessibleName(
       base::TimeFormatFriendlyDate(now) +
-      ASCIIToUTF16(", ") +
+      base::ASCIIToUTF16(", ") +
       base::TimeFormatTimeOfDayWithHourClockType(
           now, hour_type_, base::kKeepAmPm));
   date_label_->SetText(
@@ -223,7 +223,7 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
   horizontal_label_->SetTooltipText(base::TimeFormatFriendlyDate(now));
 
   // Calculate vertical clock layout labels.
-  size_t colon_pos = current_time.find(ASCIIToUTF16(":"));
+  size_t colon_pos = current_time.find(base::ASCIIToUTF16(":"));
   base::string16 hour = current_time.substr(0, colon_pos);
   base::string16 minute = current_time.substr(colon_pos + 1);
 
@@ -231,7 +231,7 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
   if (hour.length() == 1 &&
       hour_type_ == base::k24HourClock &&
       !base::i18n::IsRTL())
-    hour = ASCIIToUTF16("0") + hour;
+    hour = base::ASCIIToUTF16("0") + hour;
 
   vertical_label_hours_->SetText(hour);
   vertical_label_minutes_->SetText(minute);

@@ -77,7 +77,7 @@ class TestItem : public SystemTrayItem {
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
     views::View* default_view = new views::View;
     default_view->SetLayoutManager(new views::FillLayout);
-    default_view->AddChildView(new views::Label(UTF8ToUTF16("Default")));
+    default_view->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
     return default_view;
   }
 
@@ -108,10 +108,10 @@ class WebNotificationTrayTest : public test::AshTestBase {
     notification.reset(new message_center::Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
         id,
-        ASCIIToUTF16("Test Web Notification"),
-        ASCIIToUTF16("Notification message body."),
+        base::ASCIIToUTF16("Test Web Notification"),
+        base::ASCIIToUTF16("Notification message body."),
         gfx::Image(),
-        ASCIIToUTF16("www.test.org"),
+        base::ASCIIToUTF16("www.test.org"),
         message_center::NotifierId(),
         message_center::RichNotificationData(),
         NULL /* delegate */));
@@ -124,10 +124,10 @@ class WebNotificationTrayTest : public test::AshTestBase {
     notification.reset(new message_center::Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
         new_id,
-        ASCIIToUTF16("Updated Web Notification"),
-        ASCIIToUTF16("Updated message body."),
+        base::ASCIIToUTF16("Updated Web Notification"),
+        base::ASCIIToUTF16("Updated message body."),
         gfx::Image(),
-        ASCIIToUTF16("www.test.org"),
+        base::ASCIIToUTF16("www.test.org"),
         message_center::NotifierId(),
         message_center::RichNotificationData(),
         NULL /* delegate */));

@@ -70,7 +70,7 @@ Target::Target(WebContents* web_contents) {
       DevToolsAgentHost::GetOrCreateFor(web_contents->GetRenderViewHost());
   id_ = agent_host_->GetId();
   description_ = GetViewDescription(web_contents);
-  title_ = UTF16ToUTF8(web_contents->GetTitle());
+  title_ = base::UTF16ToUTF8(web_contents->GetTitle());
   url_ = web_contents->GetURL();
   last_activity_time_ = web_contents->GetLastSelectedTime();
 }

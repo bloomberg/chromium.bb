@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
-#include "base/strings/utf_string_conversions.h"  // ASCIIToUTF16
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
@@ -53,22 +53,24 @@ class WidgetsWindow : public views::WidgetDelegateView {
 };
 
 WidgetsWindow::WidgetsWindow()
-    : button_(new views::LabelButton(NULL, ASCIIToUTF16("Button"))),
+    : button_(new views::LabelButton(NULL, base::ASCIIToUTF16("Button"))),
       disabled_button_(
-          new views::LabelButton(NULL, ASCIIToUTF16("Disabled button"))),
-      checkbox_(new views::Checkbox(ASCIIToUTF16("Checkbox"))),
+          new views::LabelButton(NULL, base::ASCIIToUTF16("Disabled button"))),
+      checkbox_(new views::Checkbox(base::ASCIIToUTF16("Checkbox"))),
       checkbox_disabled_(new views::Checkbox(
-          ASCIIToUTF16("Checkbox disabled"))),
-      checkbox_checked_(new views::Checkbox(ASCIIToUTF16("Checkbox checked"))),
+          base::ASCIIToUTF16("Checkbox disabled"))),
+      checkbox_checked_(new views::Checkbox(
+          base::ASCIIToUTF16("Checkbox checked"))),
       checkbox_checked_disabled_(new views::Checkbox(
-          ASCIIToUTF16("Checkbox checked disabled"))),
-      radio_button_(new views::RadioButton(ASCIIToUTF16("Radio button"), 0)),
+          base::ASCIIToUTF16("Checkbox checked disabled"))),
+      radio_button_(new views::RadioButton(
+          base::ASCIIToUTF16("Radio button"), 0)),
       radio_button_disabled_(new views::RadioButton(
-          ASCIIToUTF16("Radio button disabled"), 0)),
+          base::ASCIIToUTF16("Radio button disabled"), 0)),
       radio_button_selected_(new views::RadioButton(
-          ASCIIToUTF16("Radio button selected"), 0)),
+          base::ASCIIToUTF16("Radio button selected"), 0)),
       radio_button_selected_disabled_(new views::RadioButton(
-          ASCIIToUTF16("Radio button selected disabled"), 1)) {
+          base::ASCIIToUTF16("Radio button selected disabled"), 1)) {
   button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   AddChildView(button_);
   disabled_button_->SetEnabled(false);
@@ -120,7 +122,7 @@ views::View* WidgetsWindow::GetContentsView() {
 }
 
 base::string16 WidgetsWindow::GetWindowTitle() const {
-  return ASCIIToUTF16("Examples: Widgets");
+  return base::ASCIIToUTF16("Examples: Widgets");
 }
 
 bool WidgetsWindow::CanResize() const {

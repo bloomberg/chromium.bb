@@ -115,7 +115,7 @@ void TestSessionStateDelegate::SetUserAddingScreenRunning(
 
 const base::string16 TestSessionStateDelegate::GetUserDisplayName(
     MultiProfileIndex index) const {
-  return UTF8ToUTF16("Über tray Über tray Über tray Über tray");
+  return base::UTF8ToUTF16("Über tray Über tray Über tray Über tray");
 }
 
 const std::string TestSessionStateDelegate::GetUserEmail(

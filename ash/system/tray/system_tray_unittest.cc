@@ -46,21 +46,22 @@ class TestItem : public SystemTrayItem {
     tray_view_ = new views::View;
     // Add a label so it has non-zero width.
     tray_view_->SetLayoutManager(new views::FillLayout);
-    tray_view_->AddChildView(new views::Label(UTF8ToUTF16("Tray")));
+    tray_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Tray")));
     return tray_view_;
   }
 
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE {
     default_view_ = new views::View;
     default_view_->SetLayoutManager(new views::FillLayout);
-    default_view_->AddChildView(new views::Label(UTF8ToUTF16("Default")));
+    default_view_->AddChildView(new views::Label(base::UTF8ToUTF16("Default")));
     return default_view_;
   }
 
   virtual views::View* CreateDetailedView(user::LoginStatus status) OVERRIDE {
     detailed_view_ = new views::View;
     detailed_view_->SetLayoutManager(new views::FillLayout);
-    detailed_view_->AddChildView(new views::Label(UTF8ToUTF16("Detailed")));
+    detailed_view_->AddChildView(
+        new views::Label(base::UTF8ToUTF16("Detailed")));
     return detailed_view_;
   }
 

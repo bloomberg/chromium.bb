@@ -30,7 +30,7 @@ class DraggableView : public views::View {
   }
   virtual void WriteDragData(const gfx::Point& press_pt,
                              OSExchangeData* data)OVERRIDE {
-    data->SetString(UTF8ToUTF16("test"));
+    data->SetString(base::UTF8ToUTF16("test"));
   }
 
  private:

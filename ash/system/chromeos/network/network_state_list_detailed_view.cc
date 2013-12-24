@@ -89,8 +89,8 @@ views::View* CreateInfoBubbleLine(const base::string16& text_label,
   view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 1));
   view->AddChildView(CreateInfoBubbleLabel(text_label));
-  view->AddChildView(CreateInfoBubbleLabel(UTF8ToUTF16(": ")));
-  view->AddChildView(CreateInfoBubbleLabel(UTF8ToUTF16(text_string)));
+  view->AddChildView(CreateInfoBubbleLabel(base::UTF8ToUTF16(": ")));
+  view->AddChildView(CreateInfoBubbleLabel(base::UTF8ToUTF16(text_string)));
   return view;
 }
 
@@ -429,7 +429,7 @@ void NetworkStateListDetailedView::CreateNetworkExtra() {
       std::string toggle_debug_preferred_label =
           (list_type_ == LIST_TYPE_DEBUG_PREFERRED) ? "Visible" : "Preferred";
       toggle_debug_preferred_networks_ = new TrayPopupLabelButton(
-          this, UTF8ToUTF16(toggle_debug_preferred_label));
+          this, base::UTF8ToUTF16(toggle_debug_preferred_label));
       bottom_row->AddChildView(toggle_debug_preferred_networks_);
     }
   } else {
@@ -546,7 +546,7 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
       if (favorite) {
         info->image = network_icon::GetImageForDisconnectedNetwork(
             network_icon::ICON_TYPE_LIST, favorite->type());
-        info->label = UTF8ToUTF16(favorite->name());
+        info->label = base::UTF8ToUTF16(favorite->name());
       }
     }
   }

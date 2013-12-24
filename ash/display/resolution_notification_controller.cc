@@ -222,9 +222,9 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
       kNotificationId,
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-          UTF8ToUTF16(Shell::GetInstance()->display_manager()->
+          base::UTF8ToUTF16(Shell::GetInstance()->display_manager()->
               GetDisplayNameForId(change_info_->display_id)),
-          UTF8ToUTF16(change_info_->new_resolution.ToString())),
+          base::UTF8ToUTF16(change_info_->new_resolution.ToString())),
       timeout_message,
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16() /* display_source */,

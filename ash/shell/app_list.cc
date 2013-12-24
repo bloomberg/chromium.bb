@@ -159,7 +159,8 @@ class ExampleSearchResult : public app_list::SearchResult {
       : type_(type) {
     SetIcon(WindowTypeLauncherItem::GetIcon(type_));
 
-    base::string16 title = UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type_));
+    base::string16 title =
+        base::UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type_));
     set_title(title);
 
     Tags title_tags;
@@ -178,7 +179,7 @@ class ExampleSearchResult : public app_list::SearchResult {
     set_title_tags(title_tags);
 
     base::string16 details =
-        UTF8ToUTF16(WindowTypeLauncherItem::GetDetails(type_));
+        base::UTF8ToUTF16(WindowTypeLauncherItem::GetDetails(type_));
     set_details(details);
     Tags details_tags;
     details_tags.push_back(Tag(Tag::DIM, 0, details.length()));
@@ -214,7 +215,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   gfx::ImageSkia CreateSearchBoxIcon() {
-    const base::string16 icon_text = ASCIIToUTF16("ash");
+    const base::string16 icon_text = base::ASCIIToUTF16("ash");
     const gfx::Size icon_size(32, 32);
 
     gfx::Canvas canvas(icon_size, 1.0f, false /* is_opaque */);
@@ -230,7 +231,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
 
   void DecorateSearchBox(app_list::SearchBoxModel* search_box_model) {
     search_box_model->SetIcon(CreateSearchBoxIcon());
-    search_box_model->SetHintText(ASCIIToUTF16("Type to search..."));
+    search_box_model->SetHintText(base::ASCIIToUTF16("Type to search..."));
   }
 
   // Overridden from app_list::AppListViewDelegate:
@@ -291,7 +292,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
           static_cast<WindowTypeLauncherItem::Type>(i);
 
       base::string16 title =
-          UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type));
+          base::UTF8ToUTF16(WindowTypeLauncherItem::GetTitle(type));
       if (base::i18n::StringSearchIgnoringCaseAndAccents(
               query, title, NULL, NULL)) {
         model_->results()->Add(new ExampleSearchResult(type, query));

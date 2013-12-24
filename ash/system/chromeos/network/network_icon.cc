@@ -694,33 +694,33 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
     if (network->IsConnectingState()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING,
-          UTF8ToUTF16(network->name()));
+          base::UTF8ToUTF16(network->name()));
     }
     if (activation_state == shill::kActivationStateActivating) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING,
-          UTF8ToUTF16(network->name()));
+          base::UTF8ToUTF16(network->name()));
     }
     // Show "Activate <network>" in list view only.
     if (activation_state == shill::kActivationStateNotActivated ||
         activation_state == shill::kActivationStatePartiallyActivated) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATE,
-          UTF8ToUTF16(network->name()));
+          base::UTF8ToUTF16(network->name()));
     }
   } else {
     // Show "[Connected to|Connecting to|Activating] <network>" (non-list view).
     if (network->IsConnectedState()) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED, UTF8ToUTF16(network->name()));
+      return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
+                                        base::UTF8ToUTF16(network->name()));
     }
     if (network->IsConnectingState()) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING, UTF8ToUTF16(network->name()));
+      return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_CONNECTING,
+                                        base::UTF8ToUTF16(network->name()));
     }
     if (activation_state == shill::kActivationStateActivating) {
-      return l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING, UTF8ToUTF16(network->name()));
+      return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING,
+                                        base::UTF8ToUTF16(network->name()));
     }
   }
 
@@ -728,7 +728,7 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
   if (network->Matches(NetworkTypePattern::Ethernet())) {
     return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_ETHERNET);
   } else {
-    return UTF8ToUTF16(network->name());
+    return base::UTF8ToUTF16(network->name());
   }
 }
 

@@ -102,7 +102,7 @@ class ModalWindow : public views::WidgetDelegateView {
     return true;
   }
   virtual base::string16 GetWindowTitle() const OVERRIDE {
-    return ASCIIToUTF16("Modal Window");
+    return base::ASCIIToUTF16("Modal Window");
   }
   virtual ui::ModalType GetModalType() const OVERRIDE {
     return ui::MODAL_TYPE_SYSTEM;
@@ -371,7 +371,7 @@ TEST_F(ShellTest, LockScreenClosesActiveMenu) {
   SimpleMenuDelegate menu_delegate;
   scoped_ptr<ui::SimpleMenuModel> menu_model(
       new ui::SimpleMenuModel(&menu_delegate));
-  menu_model->AddItem(0, ASCIIToUTF16("Menu item"));
+  menu_model->AddItem(0, base::ASCIIToUTF16("Menu item"));
   views::Widget* widget = ash::Shell::GetPrimaryRootWindowController()->
       wallpaper_controller()->widget();
   scoped_ptr<views::MenuRunner> menu_runner(

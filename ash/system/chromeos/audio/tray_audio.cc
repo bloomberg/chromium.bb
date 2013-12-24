@@ -91,17 +91,17 @@ base::string16 GetAudioDeviceName(const chromeos::AudioDevice& device) {
     case chromeos::AUDIO_TYPE_USB:
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_AUDIO_USB_DEVICE,
-          UTF8ToUTF16(device.display_name));
+          base::UTF8ToUTF16(device.display_name));
     case chromeos::AUDIO_TYPE_BLUETOOTH:
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_AUDIO_BLUETOOTH_DEVICE,
-          UTF8ToUTF16(device.display_name));
+          base::UTF8ToUTF16(device.display_name));
     case chromeos::AUDIO_TYPE_HDMI:
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_AUDIO_HDMI_DEVICE,
-          UTF8ToUTF16(device.display_name));
+          base::UTF8ToUTF16(device.display_name));
     default:
-      return UTF8ToUTF16(device.display_name);
+      return base::UTF8ToUTF16(device.display_name);
   }
 }
 

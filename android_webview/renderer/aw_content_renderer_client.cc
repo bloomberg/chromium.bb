@@ -43,11 +43,11 @@ AwContentRendererClient::~AwContentRendererClient() {
 
 void AwContentRendererClient::RenderThreadStarted() {
   blink::WebString content_scheme(
-      ASCIIToUTF16(android_webview::kContentScheme));
+      base::ASCIIToUTF16(android_webview::kContentScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsLocal(content_scheme);
 
   blink::WebString aw_scheme(
-      ASCIIToUTF16(android_webview::kAndroidWebViewVideoPosterScheme));
+      base::ASCIIToUTF16(android_webview::kAndroidWebViewVideoPosterScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsSecure(aw_scheme);
 
   RenderThread* thread = RenderThread::Get();
@@ -148,7 +148,7 @@ void AwContentRendererClient::GetNavigationErrorStrings(
     base::string16* error_description) {
   if (error_html) {
     GURL error_url(failed_request.url());
-    std::string err = UTF16ToUTF8(error.localizedDescription);
+    std::string err = base::UTF16ToUTF8(error.localizedDescription);
     std::string contents;
     if (err.empty()) {
       contents = AwResource::GetNoDomainPageContent();
@@ -163,7 +163,7 @@ void AwContentRendererClient::GetNavigationErrorStrings(
   }
   if (error_description) {
     if (error.localizedDescription.isEmpty())
-      *error_description = ASCIIToUTF16(net::ErrorToString(error.reason));
+      *error_description = base::ASCIIToUTF16(net::ErrorToString(error.reason));
     else
       *error_description = error.localizedDescription;
   }

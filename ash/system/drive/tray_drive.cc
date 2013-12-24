@@ -162,9 +162,11 @@ class DriveDetailedView : public TrayDetailsView,
       label_container_->SetLayoutManager(new views::BoxLayout(
           views::BoxLayout::kVertical, 0, 0, kVerticalPadding));
 #if defined(OS_POSIX)
-      base::string16 file_label = UTF8ToUTF16(file_path.BaseName().value());
+      base::string16 file_label =
+          base::UTF8ToUTF16(file_path.BaseName().value());
 #elif defined(OS_WIN)
-      base::string16 file_label = WideToUTF16(file_path.BaseName().value());
+      base::string16 file_label =
+          base::WideToUTF16(file_path.BaseName().value());
 #endif
       views::Label* label = new views::Label(file_label);
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

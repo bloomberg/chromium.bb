@@ -203,7 +203,8 @@ TrayIME::~TrayIME() {
 void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
   if (tray_label_) {
     if (current.third_party) {
-      tray_label_->label()->SetText(current.short_name + UTF8ToUTF16("*"));
+      tray_label_->label()->SetText(
+          current.short_name + base::UTF8ToUTF16("*"));
     } else {
       tray_label_->label()->SetText(current.short_name);
     }

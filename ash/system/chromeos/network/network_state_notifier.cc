@@ -145,7 +145,7 @@ void NetworkStateNotifier::UpdateCellularOutOfCredits(
     out_of_credits_notify_time_ = base::Time::Now();
     base::string16 error_msg = l10n_util::GetStringFUTF16(
         IDS_NETWORK_OUT_OF_CREDITS_BODY,
-        UTF8ToUTF16(cellular->name()));
+        base::UTF8ToUTF16(cellular->name()));
     ShowErrorNotification(
         kNetworkOutOfCreditsNotificationId,
         cellular->type(),
@@ -182,7 +182,7 @@ void NetworkStateNotifier::UpdateCellularActivating(
           ash::network_connect::kNetworkActivateNotificationId,
           l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
           l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
-                                     UTF8ToUTF16((cellular->name()))),
+                                     base::UTF8ToUTF16((cellular->name()))),
           icon,
           system_notifier::kNotifierNetwork,
           base::Bind(&ash::network_connect::ShowNetworkSettings,
@@ -247,7 +247,7 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
     if (error.empty())
       error = l10n_util::GetStringUTF16(IDS_CHROMEOS_NETWORK_ERROR_UNKNOWN);
   }
-  NET_LOG_ERROR("Connect error notification: " + UTF16ToUTF8(error),
+  NET_LOG_ERROR("Connect error notification: " + base::UTF16ToUTF8(error),
                 service_path);
 
   std::string network_name =
@@ -262,15 +262,15 @@ void NetworkStateNotifier::ShowConnectErrorNotification(
     // network_name should't be empty if network_error_details is set.
     error_msg = l10n_util::GetStringFUTF16(
         IDS_NETWORK_CONNECTION_ERROR_MESSAGE_WITH_SERVER_MESSAGE,
-        UTF8ToUTF16(network_name), error,
-        UTF8ToUTF16(network_error_details));
+        base::UTF8ToUTF16(network_name), error,
+        base::UTF8ToUTF16(network_error_details));
   } else if (network_name.empty()) {
     error_msg = l10n_util::GetStringFUTF16(
         IDS_NETWORK_CONNECTION_ERROR_MESSAGE_NO_NAME, error);
   } else {
     error_msg = l10n_util::GetStringFUTF16(
         IDS_NETWORK_CONNECTION_ERROR_MESSAGE,
-        UTF8ToUTF16(network_name), error);
+        base::UTF8ToUTF16(network_name), error);
   }
 
   std::string network_type;

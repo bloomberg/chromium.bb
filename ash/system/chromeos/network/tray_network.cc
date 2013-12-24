@@ -84,10 +84,12 @@ class NetworkTrayView : public TrayItemView,
     // Update accessibility.
     const NetworkState* connected_network =
         handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
-    if (connected_network)
-      UpdateConnectionStatus(UTF8ToUTF16(connected_network->name()), true);
-    else
+    if (connected_network) {
+      UpdateConnectionStatus(
+          base::UTF8ToUTF16(connected_network->name()), true);
+    } else {
       UpdateConnectionStatus(base::string16(), false);
+    }
   }
 
   void UpdateAlignment(ShelfAlignment alignment) {

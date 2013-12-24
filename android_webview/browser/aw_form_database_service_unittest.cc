@@ -63,8 +63,8 @@ TEST_F(AwFormDatabaseServiceTest, DISABLED_HasAndClearFormData) {
   EXPECT_FALSE(service_->HasFormData());
   std::vector<FormFieldData> fields;
   FormFieldData field;
-  field.name = ASCIIToUTF16("foo");
-  field.value = ASCIIToUTF16("bar");
+  field.name = base::ASCIIToUTF16("foo");
+  field.value = base::ASCIIToUTF16("bar");
   fields.push_back(field);
   service_->get_autofill_webdata_service()->AddFormFields(fields);
   EXPECT_TRUE(service_->HasFormData());

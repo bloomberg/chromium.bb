@@ -58,7 +58,7 @@ bool SessionStateDelegateStub::IsUserSessionBlocked() const  {
 
 const base::string16 SessionStateDelegateStub::GetUserDisplayName(
     MultiProfileIndex index) const {
-  return UTF8ToUTF16("stub-user");
+  return base::UTF8ToUTF16("stub-user");
 }
 
 const std::string SessionStateDelegateStub::GetUserEmail(

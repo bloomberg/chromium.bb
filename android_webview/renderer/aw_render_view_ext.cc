@@ -73,7 +73,7 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
     url_canon::RawCanonOutputW<1024> output;
     url_util::DecodeURLEscapeSequences(spec.data() + prefix.length(),
         spec.length() - prefix.length(), &output);
-    std::string decoded_url = UTF16ToUTF8(
+    std::string decoded_url = base::UTF16ToUTF8(
         base::string16(output.data(), output.length()));
     dest->assign(decoded_url.begin(), decoded_url.end());
     return true;
@@ -101,7 +101,7 @@ void DistinguishAndAssignSrcLinkType(const GURL& url, AwHitTestData* data) {
     data->type = AwHitTestData::SRC_LINK_TYPE;
     data->extra_data_for_type = url.possibly_invalid_spec();
     if (!data->extra_data_for_type.empty())
-      data->href = UTF8ToUTF16(data->extra_data_for_type);
+      data->href = base::UTF8ToUTF16(data->extra_data_for_type);
   }
 }
 
@@ -127,7 +127,7 @@ void PopulateHitTestData(const GURL& absolute_link_url,
     data->type = AwHitTestData::SRC_IMAGE_LINK_TYPE;
     data->extra_data_for_type = data->img_src.possibly_invalid_spec();
     if (absolute_link_url.is_valid())
-      data->href = UTF8ToUTF16(absolute_link_url.possibly_invalid_spec());
+      data->href = base::UTF8ToUTF16(absolute_link_url.possibly_invalid_spec());
   } else if (!has_link_url && has_image_url) {
     data->type = AwHitTestData::IMAGE_TYPE;
     data->extra_data_for_type = data->img_src.possibly_invalid_spec();

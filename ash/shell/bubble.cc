@@ -36,7 +36,7 @@ class ExampleBubbleDelegateView : public views::BubbleDelegateView {
 
 void CreatePointyBubble(views::View* anchor_view) {
   BubbleConfig config;
-  config.label = ASCIIToUTF16("PointyBubble");
+  config.label = base::ASCIIToUTF16("PointyBubble");
   config.anchor_view = anchor_view;
   config.arrow = views::BubbleBorder::TOP_LEFT;
   ExampleBubbleDelegateView* bubble = new ExampleBubbleDelegateView(config);

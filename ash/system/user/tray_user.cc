@@ -485,7 +485,7 @@ PublicAccountUserDetails::PublicAccountUserDetails(SystemTrayItem* owner,
   base::RemoveChars(display_name, kDisplayNameMark, &display_name);
   display_name = kDisplayNameMark[0] + display_name + kDisplayNameMark[0];
   // Retrieve the domain managing the device and wrap it with markers.
-  base::string16 domain = UTF8ToUTF16(
+  base::string16 domain = base::UTF8ToUTF16(
       Shell::GetInstance()->system_tray_delegate()->GetEnterpriseDomain());
   base::RemoveChars(domain, kDisplayNameMark, &domain);
   base::i18n::WrapStringWithLTRFormatting(&domain);
@@ -553,7 +553,8 @@ void PublicAccountUserDetails::Layout() {
   // Position the link after the label text, separated by a space. If it does
   // not fit onto the last line of the text, wrap the link onto its own line.
   const gfx::Size last_line_size = lines_.back()->GetStringSize();
-  const int space_width = gfx::GetStringWidth(ASCIIToUTF16(" "), font_list);
+  const int space_width =
+      gfx::GetStringWidth(base::ASCIIToUTF16(" "), font_list);
   const gfx::Size link_size = learn_more_->GetPreferredSize();
   if (contents_area.width() - last_line_size.width() >=
       space_width + link_size.width()) {
@@ -592,7 +593,8 @@ void PublicAccountUserDetails::CalculatePreferredSize(SystemTrayItem* owner,
                                                       int used_width) {
   const gfx::FontList font_list;
   const gfx::Size link_size = learn_more_->GetPreferredSize();
-  const int space_width = gfx::GetStringWidth(ASCIIToUTF16(" "), font_list);
+  const int space_width =
+      gfx::GetStringWidth(base::ASCIIToUTF16(" "), font_list);
   const gfx::Insets insets = GetInsets();
   views::TrayBubbleView* bubble_view =
       owner->system_tray()->GetSystemBubble()->bubble_view();
@@ -912,7 +914,7 @@ void UserView::AddUserCard(SystemTrayItem* owner, user::LoginStatus login) {
         login == user::LOGGED_IN_LOCALLY_MANAGED ?
             bundle.GetLocalizedString(
                 IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL) :
-            UTF8ToUTF16(delegate->GetUserEmail(multiprofile_index_));
+            base::UTF8ToUTF16(delegate->GetUserEmail(multiprofile_index_));
     if (!user_email_string.empty()) {
       additional = new views::Label(user_email_string);
       additional->SetFontList(

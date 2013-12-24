@@ -36,12 +36,12 @@ base::string16 GetTooltipText(const base::string16& headline,
   } else {
     lines.push_back(l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
-        name1, UTF8ToUTF16(data1)));
+        name1, base::UTF8ToUTF16(data1)));
   }
   if (!name2.empty()) {
     lines.push_back(l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
-        name2, UTF8ToUTF16(data2)));
+        name2, base::UTF8ToUTF16(data2)));
   }
   return JoinString(lines, '\n');
 }
@@ -54,19 +54,19 @@ base::string16 GetMirroredTooltipText(const base::string16& headline,
 
 base::string16 GetFirstDisplayName() {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  return UTF8ToUTF16(display_manager->GetDisplayNameForId(
+  return base::UTF8ToUTF16(display_manager->GetDisplayNameForId(
       display_manager->first_display_id()));
 }
 
 base::string16 GetSecondDisplayName() {
-  return UTF8ToUTF16(
+  return base::UTF8ToUTF16(
       Shell::GetInstance()->display_manager()->GetDisplayNameForId(
           ScreenAsh::GetSecondaryDisplay().id()));
 }
 
 base::string16 GetMirroredDisplayName() {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-  return UTF8ToUTF16(display_manager->GetDisplayNameForId(
+  return base::UTF8ToUTF16(display_manager->GetDisplayNameForId(
       display_manager->mirrored_display_id()));
 }
 
@@ -232,7 +232,7 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   EXPECT_TRUE(IsDisplayVisibleInTray());
   base::string16 internal_info = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
-      GetFirstDisplayName(), UTF8ToUTF16("600x600"));
+      GetFirstDisplayName(), base::UTF8ToUTF16("600x600"));
   EXPECT_EQ(internal_info, GetTrayDisplayText());
   EXPECT_EQ(GetTooltipText(base::string16(), GetFirstDisplayName(), "600x600",
                            base::string16(), std::string()),
@@ -295,7 +295,7 @@ TEST_F(TrayDisplayTest, ExternalDisplayResized) {
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME,
           GetSecondDisplayName(),
-          UTF8ToUTF16(secondary_display.size().ToString())));
+          base::UTF8ToUTF16(secondary_display.size().ToString())));
   EXPECT_EQ(expected, GetTrayDisplayText());
   EXPECT_EQ(GetTooltipText(expected, GetFirstDisplayName(), "400x400",
                            GetSecondDisplayName(), "300x300"),
@@ -329,10 +329,10 @@ TEST_F(TrayDisplayTest, OverscanDisplay) {
       IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED,
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATED_NAME,
-          GetSecondDisplayName(), UTF8ToUTF16("286x286")));
+          GetSecondDisplayName(), base::UTF8ToUTF16("286x286")));
   std::string second_data = l10n_util::GetStringFUTF8(
       IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION,
-      UTF8ToUTF16("286x286"), overscan);
+      base::UTF8ToUTF16("286x286"), overscan);
   EXPECT_EQ(GetTooltipText(headline, GetFirstDisplayName(), "400x400",
                            GetSecondDisplayName(), second_data),
             GetTrayDisplayTooltipText());
@@ -347,7 +347,7 @@ TEST_F(TrayDisplayTest, OverscanDisplay) {
           GetSecondDisplayName(), overscan));
   second_data = l10n_util::GetStringFUTF8(
       IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION,
-      UTF8ToUTF16("300x300"), overscan);
+      base::UTF8ToUTF16("300x300"), overscan);
   EXPECT_EQ(GetTooltipText(headline, GetFirstDisplayName(), "400x400",
                            GetSecondDisplayName(), second_data),
             GetTrayDisplayTooltipText());
@@ -362,7 +362,7 @@ TEST_F(TrayDisplayTest, UpdateDuringDisplayConfigurationChange) {
   EXPECT_TRUE(IsDisplayVisibleInTray());
   base::string16 internal_info = l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY,
-      GetFirstDisplayName(), UTF8ToUTF16("600x600"));
+      GetFirstDisplayName(), base::UTF8ToUTF16("600x600"));
   EXPECT_EQ(internal_info, GetTrayDisplayText());
   EXPECT_EQ(GetTooltipText(base::string16(), GetFirstDisplayName(), "600x600",
                            base::string16(), std::string()),
@@ -425,7 +425,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-          GetFirstDisplayName(), UTF8ToUTF16("600x600")),
+          GetFirstDisplayName(), base::UTF8ToUTF16("600x600")),
       GetDisplayNotificationText());
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
@@ -435,7 +435,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-          GetFirstDisplayName(), UTF8ToUTF16("400x400")),
+          GetFirstDisplayName(), base::UTF8ToUTF16("400x400")),
       GetDisplayNotificationText());
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
@@ -479,7 +479,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
-          GetFirstDisplayName(), UTF8ToUTF16("600x600")),
+          GetFirstDisplayName(), base::UTF8ToUTF16("600x600")),
       GetDisplayNotificationText());
   EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 

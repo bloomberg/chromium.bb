@@ -39,7 +39,8 @@ DisplayManager* GetDisplayManager() {
 }
 
 base::string16 GetDisplayName(int64 display_id) {
-  return UTF8ToUTF16(GetDisplayManager()->GetDisplayNameForId(display_id));
+  return base::UTF8ToUTF16(
+      GetDisplayManager()->GetDisplayNameForId(display_id));
 }
 
 base::string16 GetDisplaySize(int64 display_id) {
@@ -55,7 +56,7 @@ base::string16 GetDisplaySize(int64 display_id) {
     return base::string16();
 
   DCHECK(display->is_valid());
-  return UTF8ToUTF16(display->size().ToString());
+  return base::UTF8ToUTF16(display->size().ToString());
 }
 
 // Returns 1-line information for the specified display, like
@@ -171,7 +172,7 @@ class DisplayView : public internal::ActionableView {
     if (tray_message.empty() && display_message.empty())
       return false;
 
-    *tooltip = tray_message + ASCIIToUTF16("\n") + display_message;
+    *tooltip = tray_message + base::ASCIIToUTF16("\n") + display_message;
     return true;
   }
 
