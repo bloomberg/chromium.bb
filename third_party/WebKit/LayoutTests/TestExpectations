@@ -841,3 +841,4 @@ crbug.com/328749 virtual/threaded/transitions/position-background-transition.htm
 
 Bug(dcarney) http/tests/security/naked-global-object.html [ NeedsManualRebaseline ]
 
+crbug.com/330617 inspector/profiler/heap-snapshot-loader.html [ Pass Failure ]
