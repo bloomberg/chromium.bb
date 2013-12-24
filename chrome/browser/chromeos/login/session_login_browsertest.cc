@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(BrowserLoginTest, PRE_BrowserActive) {
 
 IN_PROC_BROWSER_TEST_F(BrowserLoginTest, BrowserActive) {
   LoginUser(kTestUser);
-  Browser* browser = FindAnyBrowser(ProfileManager::GetDefaultProfile(),
+  Browser* browser = FindAnyBrowser(ProfileManager::GetActiveUserProfile(),
                                     false,
                                     chrome::HOST_DESKTOP_TYPE_ASH);
   EXPECT_TRUE(browser != NULL);

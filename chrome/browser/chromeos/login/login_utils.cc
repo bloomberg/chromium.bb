@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -107,7 +108,6 @@ class LoginUtilsImpl
   LoginUtilsImpl()
       : has_web_auth_cookies_(false),
         delegate_(NULL),
-        should_restore_auth_session_(false),
         exit_after_session_restore_(false),
         session_restore_strategy_(
             OAuth2LoginManager::RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN) {
@@ -146,6 +146,8 @@ class LoginUtilsImpl
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
  private:
+  typedef std::set<std::string> SessionRestoreStateSet;
+
   // DoBrowserLaunch is split into two parts.
   // This one is called after anynchronous locale switch.
   void DoBrowserLaunchOnLocaleLoadedImpl(Profile* profile,
@@ -210,9 +212,9 @@ class LoginUtilsImpl
   // Delegate to be fired when the profile will be prepared.
   LoginUtils::Delegate* delegate_;
 
-  // True if should restore authentication session when notified about
-  // online state change.
-  bool should_restore_auth_session_;
+  // Set of user_id for those users that we should restore authentication
+  // session when notified about online state change.
+  SessionRestoreStateSet pending_restore_sessions_;
 
   // True if we should restart chrome right after session restore.
   bool exit_after_session_restore_;
@@ -717,24 +719,27 @@ scoped_refptr<Authenticator> LoginUtilsImpl::CreateAuthenticator(
 }
 
 void LoginUtilsImpl::RestoreAuthenticationSession(Profile* user_profile) {
+  UserManager* user_manager = UserManager::Get();
   // We don't need to restore session for demo/guest/stub/public account users.
-  if (!UserManager::Get()->IsUserLoggedIn() ||
-      UserManager::Get()->IsLoggedInAsGuest() ||
-      UserManager::Get()->IsLoggedInAsPublicAccount() ||
-      UserManager::Get()->IsLoggedInAsDemoUser() ||
-      UserManager::Get()->IsLoggedInAsStub()) {
+  if (!user_manager->IsUserLoggedIn() ||
+      user_manager->IsLoggedInAsGuest() ||
+      user_manager->IsLoggedInAsPublicAccount() ||
+      user_manager->IsLoggedInAsDemoUser() ||
+      user_manager->IsLoggedInAsStub()) {
     return;
   }
 
+  User* user = user_manager->GetUserByProfile(user_profile);
+  DCHECK(user);
   if (!net::NetworkChangeNotifier::IsOffline()) {
-    should_restore_auth_session_ = false;
+    pending_restore_sessions_.erase(user->email());
     RestoreAuthSession(user_profile, false);
   } else {
     // Even if we're online we should wait till initial
     // OnConnectionTypeChanged() call. Otherwise starting fetchers too early may
     // end up canceling all request when initial network connection type is
     // processed. See http://crbug.com/121643.
-    should_restore_auth_session_ = true;
+    pending_restore_sessions_.insert(user->email());
   }
 }
 
@@ -796,10 +801,19 @@ void LoginUtilsImpl::OnNewRefreshTokenAvaiable(Profile* user_profile) {
 
 void LoginUtilsImpl::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  if (type != net::NetworkChangeNotifier::CONNECTION_NONE &&
-      !UserManager::Get()->IsLoggedInAsGuest() &&
-      UserManager::Get()->IsUserLoggedIn()) {
-    Profile* user_profile = ProfileManager::GetDefaultProfile();
+  UserManager* user_manager = UserManager::Get();
+  if (type == net::NetworkChangeNotifier::CONNECTION_NONE ||
+      user_manager->IsLoggedInAsGuest() || !user_manager->IsUserLoggedIn()) {
+    return;
+  }
+
+  // Need to iterate over all users and their OAuth2 session state.
+  const UserList& users = user_manager->GetLoggedInUsers();
+  for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
+    Profile* user_profile = user_manager->GetProfileByUser(*it);
+    bool should_restore_session =
+        pending_restore_sessions_.find((*it)->email()) !=
+            pending_restore_sessions_.end();
     OAuth2LoginManager* login_manager =
         OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
     if (login_manager->state() ==
@@ -807,8 +821,8 @@ void LoginUtilsImpl::OnConnectionTypeChanged(
       // If we come online for the first time after successful offline login,
       // we need to kick off OAuth token verification process again.
       login_manager->ContinueSessionRestore();
-    } else if (should_restore_auth_session_) {
-      should_restore_auth_session_ = false;
+    } else if (should_restore_session) {
+      pending_restore_sessions_.erase((*it)->email());
       RestoreAuthSession(user_profile, has_web_auth_cookies_);
     }
   }

@@ -80,7 +80,7 @@ void TermsOfServiceScreen::OnActorDestroyed(TermsOfServiceScreenActor* actor) {
 }
 
 void TermsOfServiceScreen::StartDownload() {
-  const PrefService* prefs = ProfileManager::GetDefaultProfile()->GetPrefs();
+  const PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   // If an URL from which the Terms of Service can be downloaded has not been
   // set, show an error message to the user.
   std::string terms_of_service_url =

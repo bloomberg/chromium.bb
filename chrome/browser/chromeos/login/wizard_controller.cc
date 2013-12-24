@@ -387,8 +387,8 @@ void WizardController::ShowTermsOfServiceScreen() {
   // of Service have been specified through policy. In all other cases, advance
   // to the user image screen immediately.
   if (!chromeos::UserManager::Get()->IsLoggedInAsPublicAccount() ||
-      !ProfileManager::GetDefaultProfile()->GetPrefs()->IsManagedPreference(
-          prefs::kTermsOfServiceURL)) {
+      !ProfileManager::GetActiveUserProfile()->GetPrefs()->
+          IsManagedPreference(prefs::kTermsOfServiceURL)) {
     ShowUserImageScreen();
     return;
   }
@@ -530,9 +530,8 @@ void WizardController::OnUserImageSelected() {
       FROM_HERE,
       base::Bind(&chromeos::LoginUtils::DoBrowserLaunch,
                  base::Unretained(chromeos::LoginUtils::Get()),
-                 ProfileManager::GetDefaultProfile(), host_));
+                 ProfileManager::GetActiveUserProfile(), host_));
   host_ = NULL;
-  // TODO(avayvod): Sync image with Google Sync.
 }
 
 void WizardController::OnUserImageSkipped() {
