@@ -49,11 +49,12 @@ const int kExternalMargin = 60;
 // Margin between WebView and SimpleWebViewDialog border.
 const int kInnerMargin = 2;
 
+const SkColor kDialogColor = SK_ColorWHITE;
+
 class ToolbarRowView : public views::View {
  public:
   ToolbarRowView() {
-    set_background(views::Background::CreateSolidBackground(
-        SkColorSetRGB(0xbe, 0xbe, 0xbe)));
+    set_background(views::Background::CreateSolidBackground(kDialogColor));
   }
 
   virtual ~ToolbarRowView() {}
@@ -163,7 +164,7 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
 void SimpleWebViewDialog::Init() {
   toolbar_model_.reset(new ToolbarModelImpl(this));
 
-  set_background(views::Background::CreateSolidBackground(SK_ColorWHITE));
+  set_background(views::Background::CreateSolidBackground(kDialogColor));
 
   // Back/Forward buttons.
   back_ = new views::ImageButton(this);
