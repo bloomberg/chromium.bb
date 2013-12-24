@@ -28,48 +28,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackQueue_h
-#define CustomElementCallbackQueue_h
+#ifndef CustomElementProcessingStep_h
+#define CustomElementProcessingStep_h
 
-#include "core/dom/Element.h"
-#include "core/dom/custom/CustomElementProcessingStep.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
-// FIXME: Should be renamed to CustomElementProcessingQueue
-class CustomElementCallbackQueue {
-    WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
+class Element;
+
+class CustomElementProcessingStep {
+    WTF_MAKE_NONCOPYABLE(CustomElementProcessingStep);
 public:
-    static PassOwnPtr<CustomElementCallbackQueue> create(PassRefPtr<Element>);
+    CustomElementProcessingStep() { }
 
-    typedef int ElementQueue;
-    ElementQueue owner() { return m_owner; }
-    void setOwner(ElementQueue newOwner)
-    {
-        // ElementCallbackQueues only migrate towards the top of the
-        // processing stack.
-        ASSERT(newOwner >= m_owner);
-        m_owner = newOwner;
-    }
-
-    void append(PassOwnPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
-    void processInElementQueue(ElementQueue);
-    bool inCreatedCallback() const { return m_inCreatedCallback; }
-
-private:
-    CustomElementCallbackQueue(PassRefPtr<Element>);
-
-    RefPtr<Element> m_element;
-    Vector<OwnPtr<CustomElementProcessingStep> > m_queue;
-    ElementQueue m_owner;
-    size_t m_index;
-    bool m_inCreatedCallback;
+    virtual ~CustomElementProcessingStep() { }
+    virtual void dispatch(Element*) = 0;
+    // FIXME: Should be isUpgradeStep()
+    virtual bool isCreated() const { return false; }
 };
 
 }
 
-#endif // CustomElementCallbackQueue_h
+#endif // CustomElementProcessingStep_h

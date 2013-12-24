@@ -36,25 +36,6 @@
 
 namespace WebCore {
 
-class CreatedInvocation : public CustomElementCallbackInvocation {
-public:
-    CreatedInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks)
-        : CustomElementCallbackInvocation(callbacks)
-    {
-    }
-
-private:
-    virtual void dispatch(Element*) OVERRIDE;
-    virtual bool isCreated() const OVERRIDE { return true; }
-};
-
-void CreatedInvocation::dispatch(Element* element)
-{
-    if (element->inDocument() && element->document().domWindow())
-        CustomElementCallbackScheduler::scheduleAttachedCallback(callbacks(), element);
-    callbacks()->created(element);
-}
-
 class AttachedDetachedInvocation : public CustomElementCallbackInvocation {
 public:
     AttachedDetachedInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType which);
@@ -114,13 +95,9 @@ void AttributeChangedInvocation::dispatch(Element* element)
 PassOwnPtr<CustomElementCallbackInvocation> CustomElementCallbackInvocation::createInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, CustomElementLifecycleCallbacks::CallbackType which)
 {
     switch (which) {
-    case CustomElementLifecycleCallbacks::Created:
-        return adoptPtr(new CreatedInvocation(callbacks));
-
     case CustomElementLifecycleCallbacks::Attached:
     case CustomElementLifecycleCallbacks::Detached:
         return adoptPtr(new AttachedDetachedInvocation(callbacks, which));
-
     default:
         ASSERT_NOT_REACHED();
         return PassOwnPtr<CustomElementCallbackInvocation>();

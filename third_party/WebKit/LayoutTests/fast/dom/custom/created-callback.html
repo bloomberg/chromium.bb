@@ -112,4 +112,33 @@ withFrame(t.step_func(function(frame) {
 }));
 
 })();
+
+(function() {
+
+t = async_test('callback is called even if the element is moved to foreign document');
+var callbackInvoked = false;
+
+withFrame(t.step_func(function(originalFrame) {
+    withFrame(function(destinationFrame) {
+        var protoA = Object.create(originalFrame.contentWindow.HTMLElement.prototype);
+        protoA.createdCallback = function() {
+            var toBeMoved = originalFrame.contentDocument.getElementById('toBeMoved');
+            destinationFrame.contentDocument.body.appendChild(toBeMoved);
+        };
+
+        var protoB = Object.create(originalFrame.contentWindow.HTMLElement.prototype);
+        protoB.createdCallback = function() {
+            callbackInvoked = true;
+        };
+
+        originalFrame.contentDocument.registerElement('x-a', {prototype: protoA});
+        originalFrame.contentDocument.registerElement('x-b', {prototype: protoB});
+        originalFrame.contentDocument.body.innerHTML = '<x-a></x-a><x-b id="toBeMoved"></x-b>';
+        assert_true(callbackInvoked);
+
+        t.done();
+    });
+}));
+
+})();
 </script>

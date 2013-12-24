@@ -28,48 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackQueue_h
-#define CustomElementCallbackQueue_h
+#ifndef CustomElementResolutionStep_h
+#define CustomElementResolutionStep_h
 
-#include "core/dom/Element.h"
+#include "core/dom/custom/CustomElementDescriptor.h"
 #include "core/dom/custom/CustomElementProcessingStep.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
-// FIXME: Should be renamed to CustomElementProcessingQueue
-class CustomElementCallbackQueue {
-    WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
+class CustomElementRegistrationContext;
+
+class CustomElementResolutionStep : public CustomElementProcessingStep {
+    WTF_MAKE_NONCOPYABLE(CustomElementResolutionStep);
 public:
-    static PassOwnPtr<CustomElementCallbackQueue> create(PassRefPtr<Element>);
+    static PassOwnPtr<CustomElementResolutionStep> create(PassRefPtr<CustomElementRegistrationContext>, const CustomElementDescriptor&);
 
-    typedef int ElementQueue;
-    ElementQueue owner() { return m_owner; }
-    void setOwner(ElementQueue newOwner)
-    {
-        // ElementCallbackQueues only migrate towards the top of the
-        // processing stack.
-        ASSERT(newOwner >= m_owner);
-        m_owner = newOwner;
-    }
+    virtual ~CustomElementResolutionStep();
 
-    void append(PassOwnPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
-    void processInElementQueue(ElementQueue);
-    bool inCreatedCallback() const { return m_inCreatedCallback; }
+protected:
+    CustomElementResolutionStep(PassRefPtr<CustomElementRegistrationContext>, const CustomElementDescriptor&);
+
+    virtual void dispatch(Element*) OVERRIDE;
+    virtual bool isCreated() const OVERRIDE { return true; }
 
 private:
-    CustomElementCallbackQueue(PassRefPtr<Element>);
-
-    RefPtr<Element> m_element;
-    Vector<OwnPtr<CustomElementProcessingStep> > m_queue;
-    ElementQueue m_owner;
-    size_t m_index;
-    bool m_inCreatedCallback;
+    RefPtr<CustomElementRegistrationContext> m_context;
+    CustomElementDescriptor m_descriptor;
 };
 
 }
 
-#endif // CustomElementCallbackQueue_h
+#endif // CustomElementResolutionStep_h

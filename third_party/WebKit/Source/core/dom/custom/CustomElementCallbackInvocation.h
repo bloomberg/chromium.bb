@@ -32,6 +32,7 @@
 #define CustomElementCallbackInvocation_h
 
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
+#include "core/dom/custom/CustomElementProcessingStep.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
@@ -39,17 +40,12 @@
 
 namespace WebCore {
 
-class Element;
-
-class CustomElementCallbackInvocation {
+// FIXME: Rename to CustomElementCallbackStep
+class CustomElementCallbackInvocation : public CustomElementProcessingStep {
     WTF_MAKE_NONCOPYABLE(CustomElementCallbackInvocation);
 public:
     static PassOwnPtr<CustomElementCallbackInvocation> createInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, CustomElementLifecycleCallbacks::CallbackType);
     static PassOwnPtr<CustomElementCallbackInvocation> createAttributeChangedInvocation(PassRefPtr<CustomElementLifecycleCallbacks>, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
-
-    virtual ~CustomElementCallbackInvocation() { }
-    virtual void dispatch(Element*) = 0;
-    virtual bool isCreated() const { return false; }
 
 protected:
     CustomElementCallbackInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks)

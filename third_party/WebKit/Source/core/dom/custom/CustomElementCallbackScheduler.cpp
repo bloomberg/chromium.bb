@@ -33,7 +33,10 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/dom/custom/CustomElementCallbackInvocation.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
+#include "core/dom/custom/CustomElementResolutionStep.h"
 
 namespace WebCore {
 
@@ -44,15 +47,6 @@ void CustomElementCallbackScheduler::scheduleAttributeChangedCallback(PassRefPtr
 
     CustomElementCallbackQueue* queue = instance().schedule(element);
     queue->append(CustomElementCallbackInvocation::createAttributeChangedInvocation(callbacks, name, oldValue, newValue));
-}
-
-void CustomElementCallbackScheduler::scheduleCreatedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
-{
-    if (!callbacks->hasCreatedCallback())
-        return;
-
-    CustomElementCallbackQueue* queue = instance().scheduleInCurrentElementQueue(element);
-    queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
 }
 
 void CustomElementCallbackScheduler::scheduleAttachedCallback(PassRefPtr<CustomElementLifecycleCallbacks> callbacks, PassRefPtr<Element> element)
@@ -71,6 +65,13 @@ void CustomElementCallbackScheduler::scheduleDetachedCallback(PassRefPtr<CustomE
 
     CustomElementCallbackQueue* queue = instance().schedule(element);
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Detached));
+}
+
+void CustomElementCallbackScheduler::scheduleResolutionStep(const CustomElementDescriptor& descriptor, PassRefPtr<Element> element)
+{
+    RefPtr<CustomElementRegistrationContext> context = element->document().registrationContext();
+    CustomElementCallbackQueue* queue = instance().schedule(element);
+    queue->append(CustomElementResolutionStep::create(context.release(), descriptor));
 }
 
 CustomElementCallbackScheduler& CustomElementCallbackScheduler::instance()

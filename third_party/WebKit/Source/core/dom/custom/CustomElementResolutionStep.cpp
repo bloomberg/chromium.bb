@@ -28,48 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef CustomElementCallbackQueue_h
-#define CustomElementCallbackQueue_h
+#include "config.h"
+#include "core/dom/custom/CustomElementResolutionStep.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/custom/CustomElementProcessingStep.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
+#include "core/dom/custom/CustomElementRegistrationContext.h"
 
 namespace WebCore {
 
-// FIXME: Should be renamed to CustomElementProcessingQueue
-class CustomElementCallbackQueue {
-    WTF_MAKE_NONCOPYABLE(CustomElementCallbackQueue);
-public:
-    static PassOwnPtr<CustomElementCallbackQueue> create(PassRefPtr<Element>);
-
-    typedef int ElementQueue;
-    ElementQueue owner() { return m_owner; }
-    void setOwner(ElementQueue newOwner)
-    {
-        // ElementCallbackQueues only migrate towards the top of the
-        // processing stack.
-        ASSERT(newOwner >= m_owner);
-        m_owner = newOwner;
-    }
-
-    void append(PassOwnPtr<CustomElementProcessingStep> invocation) { m_queue.append(invocation); }
-    void processInElementQueue(ElementQueue);
-    bool inCreatedCallback() const { return m_inCreatedCallback; }
-
-private:
-    CustomElementCallbackQueue(PassRefPtr<Element>);
-
-    RefPtr<Element> m_element;
-    Vector<OwnPtr<CustomElementProcessingStep> > m_queue;
-    ElementQueue m_owner;
-    size_t m_index;
-    bool m_inCreatedCallback;
-};
-
+PassOwnPtr<CustomElementResolutionStep> CustomElementResolutionStep::create(PassRefPtr<CustomElementRegistrationContext> context, const CustomElementDescriptor& descriptor)
+{
+    return adoptPtr(new CustomElementResolutionStep(context, descriptor));
 }
 
-#endif // CustomElementCallbackQueue_h
+CustomElementResolutionStep::CustomElementResolutionStep(PassRefPtr<CustomElementRegistrationContext> context, const CustomElementDescriptor& descriptor)
+    : m_context(context)
+    , m_descriptor(descriptor)
+{
+}
+
+CustomElementResolutionStep::~CustomElementResolutionStep()
+{
+}
+
+void CustomElementResolutionStep::dispatch(Element* element)
+{
+    m_context->resolve(element, m_descriptor);
+}
+
+} // namespace WebCore

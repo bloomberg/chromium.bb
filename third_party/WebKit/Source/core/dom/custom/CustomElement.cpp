@@ -101,7 +101,9 @@ void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition>
 
     case Element::WaitingForUpgrade:
         definitions().add(element, definition);
-        CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
+        if (element->inDocument() && element->document().domWindow())
+            CustomElementCallbackScheduler::scheduleAttachedCallback(definition->callbacks(), element);
+        definition->callbacks()->created(element);
         break;
     }
 }

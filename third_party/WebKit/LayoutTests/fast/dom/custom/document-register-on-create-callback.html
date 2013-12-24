@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script>
+description('document.registerElement() in a createdCallback should upgrade elements that are in the same processing queue.');
+
+var createdElements = [];
+
+var protoA = Object.create(HTMLElement.prototype);
+protoA.createdCallback = function () {
+    createdElements.push(this.id);
+    var protoB = Object.create(HTMLElement.prototype);
+    protoB.createdCallback = function () {
+        createdElements.push(this.id);
+    };
+
+    document.registerElement('x-b', {prototype: protoB});
+    shouldBe('createdElements', '["elemA0", "elemB0"]');
+};
+
+document.registerElement('x-a', {prototype: protoA});
+</script>
+<x-b id='elemB0'></x-b>
+<x-a id='elemA0'></x-a>
+<x-b id='elemB1'></x-b>
+<script>
+shouldBe('createdElements', '["elemA0", "elemB0", "elemB1"]');
+</script>
