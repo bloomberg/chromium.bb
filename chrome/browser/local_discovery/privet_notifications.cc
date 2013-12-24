@@ -269,7 +269,7 @@ void PrivetNotificationService::PrivetNotify(bool has_multiple,
       blink::WebTextDirectionDefault,
       message_center::NotifierId(GURL(kPrivetNotificationOriginUrl)),
       product_name,
-      UTF8ToUTF16(kPrivetNotificationID),
+      base::UTF8ToUTF16(kPrivetNotificationID),
       rich_notification_data,
       new PrivetNotificationDelegate(profile_));
 

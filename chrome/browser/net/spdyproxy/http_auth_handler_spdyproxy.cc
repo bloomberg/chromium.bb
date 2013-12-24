@@ -114,7 +114,7 @@ int HttpAuthHandlerSpdyProxy::GenerateAuthTokenImpl(
     return -1;
   }
   *auth_token = "SpdyProxy ps=\"" + ps_token_ + "\", sid=\"" +
-      UTF16ToUTF8(credentials->password()) + "\"";
+      base::UTF16ToUTF8(credentials->password()) + "\"";
   return net::OK;
 }
 

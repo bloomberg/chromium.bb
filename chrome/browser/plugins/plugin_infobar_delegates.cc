@@ -92,7 +92,7 @@ void UnauthorizedPluginInfoBarDelegate::Create(
           content_settings, name, identifier))));
 
   content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown"));
-  std::string utf8_name(UTF16ToUTF8(name));
+  std::string utf8_name(base::UTF16ToUTF8(name));
   if (utf8_name == PluginMetadata::kJavaGroupName) {
     content::RecordAction(UserMetricsAction("BlockedPluginInfobar.Shown.Java"));
   } else if (utf8_name == PluginMetadata::kQuickTimeGroupName) {
@@ -192,7 +192,7 @@ OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
       plugin_metadata_(plugin_metadata.Pass()),
       message_(message) {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Shown"));
-  std::string name = UTF16ToUTF8(plugin_metadata_->name());
+  std::string name = base::UTF16ToUTF8(plugin_metadata_->name());
   if (name == PluginMetadata::kJavaGroupName) {
     content::RecordAction(
         UserMetricsAction("OutdatedPluginInfobar.Shown.Java"));

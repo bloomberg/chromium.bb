@@ -116,7 +116,7 @@ base::string16 GetApplicationTitle(content::WebContents* web_contents,
   } else {
     title = web_contents->GetURL().GetOrigin().spec();
   }
-  return UTF8ToUTF16(title);
+  return base::UTF8ToUTF16(title);
 }
 
 // Helper to get list of media stream devices for desktop capture in |devices|.
@@ -361,7 +361,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     // For component extensions, bypass message box.
     bool user_approved = false;
     if (!component_extension) {
-      base::string16 application_name = UTF8ToUTF16(
+      base::string16 application_name = base::UTF8ToUTF16(
           extension ? extension->name() : request.security_origin.spec());
       base::string16 confirmation_text = l10n_util::GetStringFUTF16(
           request.audio_type == content::MEDIA_NO_SERVICE ?

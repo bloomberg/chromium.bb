@@ -341,8 +341,8 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   std::vector<ManagedModeSiteList::Site> sites;
   site_lists[0]->GetSites(&sites);
   ASSERT_EQ(3u, sites.size());
-  EXPECT_EQ(ASCIIToUTF16("YouTube"), sites[0].name);
-  EXPECT_EQ(ASCIIToUTF16("Homestar Runner"), sites[1].name);
+  EXPECT_EQ(base::ASCIIToUTF16("YouTube"), sites[0].name);
+  EXPECT_EQ(base::ASCIIToUTF16("Homestar Runner"), sites[1].name);
   EXPECT_EQ(base::string16(), sites[2].name);
 
   EXPECT_EQ(ManagedModeURLFilter::ALLOW,
@@ -367,7 +367,7 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   std::set<std::string> site_names;
   for (std::vector<ManagedModeSiteList::Site>::const_iterator it =
       sites.begin(); it != sites.end(); ++it) {
-    site_names.insert(UTF16ToUTF8(it->name));
+    site_names.insert(base::UTF16ToUTF8(it->name));
   }
   EXPECT_TRUE(site_names.count("YouTube") == 1u);
   EXPECT_TRUE(site_names.count("Homestar Runner") == 1u);
@@ -389,7 +389,7 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   sites.clear();
   site_lists[0]->GetSites(&sites);
   ASSERT_EQ(1u, sites.size());
-  EXPECT_EQ(ASCIIToUTF16("Moose"), sites[0].name);
+  EXPECT_EQ(base::ASCIIToUTF16("Moose"), sites[0].name);
 
   EXPECT_EQ(ManagedModeURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(example_url));

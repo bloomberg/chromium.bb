@@ -657,7 +657,7 @@ base::string16 DataReductionProxySettings::AuthHashForSalt(int64 salt) {
 
   std::string salted_key =
       base::StringPrintf("%lld%s%lld", salt, key.c_str(), salt);
-  return UTF8ToUTF16(base::MD5String(salted_key));
+  return base::UTF8ToUTF16(base::MD5String(salted_key));
 }
 
 net::URLFetcher* DataReductionProxySettings::GetURLFetcher() {

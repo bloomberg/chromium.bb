@@ -530,16 +530,18 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCreateSimpleNotification) {
   if (message_center::IsRichNotificationEnabled()) {
     message_center::NotificationList::Notifications notifications =
         message_center::MessageCenter::Get()->GetVisibleNotifications();
-    EXPECT_EQ(ASCIIToUTF16("My Title"), (*notifications.rbegin())->title());
-    EXPECT_EQ(ASCIIToUTF16("My Body"), (*notifications.rbegin())->message());
+    EXPECT_EQ(base::ASCIIToUTF16("My Title"),
+              (*notifications.rbegin())->title());
+    EXPECT_EQ(base::ASCIIToUTF16("My Body"),
+              (*notifications.rbegin())->message());
   } else {
     const std::deque<Balloon*>& balloons = GetActiveBalloons();
     ASSERT_EQ(1U, balloons.size());
     Balloon* balloon = balloons[0];
     const Notification& notification = balloon->notification();
     EXPECT_EQ(EXPECTED_ICON_URL, notification.icon_url());
-    EXPECT_EQ(ASCIIToUTF16("My Title"), notification.title());
-    EXPECT_EQ(ASCIIToUTF16("My Body"), notification.message());
+    EXPECT_EQ(base::ASCIIToUTF16("My Title"), notification.title());
+    EXPECT_EQ(base::ASCIIToUTF16("My Body"), notification.message());
   }
 }
 
@@ -936,8 +938,9 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
     ASSERT_EQ(1, GetNotificationCount());
     message_center::NotificationList::Notifications notifications =
         message_center::MessageCenter::Get()->GetVisibleNotifications();
-    EXPECT_EQ(ASCIIToUTF16("Title2"), (*notifications.rbegin())->title());
-    EXPECT_EQ(ASCIIToUTF16("Body2"), (*notifications.rbegin())->message());
+    EXPECT_EQ(base::ASCIIToUTF16("Title2"), (*notifications.rbegin())->title());
+    EXPECT_EQ(base::ASCIIToUTF16("Body2"),
+              (*notifications.rbegin())->message());
   } else {
     const std::deque<Balloon*>& balloons = GetActiveBalloons();
     ASSERT_EQ(1U, balloons.size());
@@ -945,7 +948,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
     const Notification& notification = balloon->notification();
     GURL EXPECTED_ICON_URL = embedded_test_server()->GetURL(kExpectedIconUrl);
     EXPECT_EQ(EXPECTED_ICON_URL, notification.icon_url());
-    EXPECT_EQ(ASCIIToUTF16("Title2"), notification.title());
-    EXPECT_EQ(ASCIIToUTF16("Body2"), notification.message());
+    EXPECT_EQ(base::ASCIIToUTF16("Title2"), notification.title());
+    EXPECT_EQ(base::ASCIIToUTF16("Body2"), notification.message());
   }
 }

@@ -477,7 +477,7 @@ scoped_ptr<leveldb::DB> Database::SafelyOpenDatabase(
 #if defined(OS_POSIX)
   std::string name = path_.AppendASCII(path).value();
 #elif defined(OS_WIN)
-  std::string name = WideToUTF8(path_.AppendASCII(path).value());
+  std::string name = base::WideToUTF8(path_.AppendASCII(path).value());
 #endif
 
   leveldb::DB* database;

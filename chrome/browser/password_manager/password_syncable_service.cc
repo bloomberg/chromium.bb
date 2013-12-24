@@ -87,13 +87,13 @@ syncer::SyncData PasswordSyncableService::CreateSyncData(
   password_specifics->set_origin(password_form.origin.spec());
   password_specifics->set_action(password_form.action.spec());
   password_specifics->set_username_element(
-      UTF16ToUTF8(password_form.username_element));
+      base::UTF16ToUTF8(password_form.username_element));
   password_specifics->set_password_element(
-      UTF16ToUTF8(password_form.password_element));
+      base::UTF16ToUTF8(password_form.password_element));
   password_specifics->set_username_value(
-      UTF16ToUTF8(password_form.username_value));
+      base::UTF16ToUTF8(password_form.username_value));
   password_specifics->set_password_value(
-      UTF16ToUTF8(password_form.password_value));
+      base::UTF16ToUTF8(password_form.password_value));
   password_specifics->set_ssl_valid(password_form.ssl_valid);
   password_specifics->set_preferred(password_form.preferred);
   password_specifics->set_date_created(
@@ -122,9 +122,9 @@ std::string PasswordSyncableService::MakeTag(
 std::string PasswordSyncableService::MakeTag(
     const autofill::PasswordForm& password) {
   return MakeTag(password.origin.spec(),
-                 UTF16ToUTF8(password.username_element),
-                 UTF16ToUTF8(password.username_value),
-                 UTF16ToUTF8(password.password_element),
+                 base::UTF16ToUTF8(password.username_element),
+                 base::UTF16ToUTF8(password.username_value),
+                 base::UTF16ToUTF8(password.password_element),
                  password.signon_realm);
 }
 

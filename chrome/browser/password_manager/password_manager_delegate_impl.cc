@@ -109,7 +109,7 @@ void SavePasswordInfoBarDelegate::Create(
        (realm == GURL("https://www.google.com/"))) &&
       OneClickSigninHelper::CanOffer(
           web_contents, OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
-          UTF16ToUTF8(form_to_save->associated_username()), NULL))
+          base::UTF16ToUTF8(form_to_save->associated_username()), NULL))
     return;
 #endif
 

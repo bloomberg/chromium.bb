@@ -74,7 +74,7 @@ base::string16 GetSecurityOrigin(WebContents* web_contents) {
       security_origin.erase(it);
   }
 
-  return UTF8ToUTF16(security_origin);
+  return base::UTF8ToUTF16(security_origin);
 }
 
 base::string16 GetTitle(WebContents* web_contents) {
@@ -85,7 +85,7 @@ base::string16 GetTitle(WebContents* web_contents) {
 
   const extensions::Extension* const extension = GetExtension(web_contents);
   if (extension)
-    return UTF8ToUTF16(extension->name());
+    return base::UTF8ToUTF16(extension->name());
 
   base::string16 tab_title = web_contents->GetTitle();
 

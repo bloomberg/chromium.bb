@@ -14,10 +14,10 @@ PluginMetadata::SecurityStatus GetSecurityStatus(
     PluginMetadata* plugin_metadata,
     const char* version) {
   content::WebPluginInfo plugin(
-      ASCIIToUTF16("Foo plug-in"),
+      base::ASCIIToUTF16("Foo plug-in"),
       base::FilePath(FILE_PATH_LITERAL("/tmp/plugin.so")),
-      ASCIIToUTF16(version),
-      ASCIIToUTF16("Foo plug-in."));
+      base::ASCIIToUTF16(version),
+      base::ASCIIToUTF16("Foo plug-in."));
   return plugin_metadata->GetSecurityStatus(plugin);
 }
 
@@ -32,11 +32,11 @@ TEST(PluginMetadataTest, SecurityStatus) {
       PluginMetadata::SECURITY_STATUS_REQUIRES_AUTHORIZATION;
 
   PluginMetadata plugin_metadata("claybrick-writer",
-                                 ASCIIToUTF16("ClayBrick Writer"),
+                                 base::ASCIIToUTF16("ClayBrick Writer"),
                                  true,
                                  GURL(),
                                  GURL(),
-                                 ASCIIToUTF16("ClayBrick"),
+                                 base::ASCIIToUTF16("ClayBrick"),
                                  std::string());
   EXPECT_EQ(kRequiresAuthorization,
             GetSecurityStatus(&plugin_metadata, "1.2.3"));

@@ -13,10 +13,10 @@ namespace {
 PluginInstaller::SecurityStatus GetSecurityStatus(PluginInstaller* installer,
                                                   const char* version) {
   content:: WebPluginInfo plugin(
-      ASCIIToUTF16("Foo plug-in"),
+      base::ASCIIToUTF16("Foo plug-in"),
       base::FilePath(FILE_PATH_LITERAL("/tmp/plugin.so")),
-      ASCIIToUTF16(version),
-      ASCIIToUTF16("Foo plug-in."));
+      base::ASCIIToUTF16(version),
+      base::ASCIIToUTF16("Foo plug-in."));
   return installer->GetSecurityStatus(plugin);
 }
 
@@ -31,8 +31,9 @@ TEST(PluginInstallerTest, SecurityStatus) {
       PluginInstaller::SECURITY_STATUS_REQUIRES_AUTHORIZATION;
 
   PluginInstaller installer("claybrick-writer",
-                            ASCIIToUTF16("ClayBrick Writer"),
-                            true, GURL(), GURL(), ASCIIToUTF16("ClayBrick"));
+                            base::ASCIIToUTF16("ClayBrick Writer"),
+                            true, GURL(), GURL(),
+                            base::ASCIIToUTF16("ClayBrick"));
 
 #if defined(OS_LINUX)
   EXPECT_EQ(kRequiresAuthorization, GetSecurityStatus(&installer, "1.2.3"));

@@ -18,7 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using autofill::PasswordForm;
-
+using base::ASCIIToUTF16;
 using ::testing::Eq;
 
 class LoginDatabaseTest : public testing::Test {

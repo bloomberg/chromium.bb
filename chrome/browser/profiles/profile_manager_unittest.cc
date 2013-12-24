@@ -46,6 +46,7 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+using base::ASCIIToUTF16;
 using content::BrowserThread;
 
 namespace {
@@ -119,7 +120,7 @@ class ProfileManagerTest : public testing::Test {
         temp_dir_.path().AppendASCII(name),
         base::Bind(&MockObserver::OnProfileCreated,
                    base::Unretained(mock_observer)),
-        UTF8ToUTF16(name),
+        base::UTF8ToUTF16(name),
         base::string16(),
         std::string());
   }
@@ -400,7 +401,7 @@ TEST_F(ProfileManagerTest, InitProfileInfoCacheForAProfile) {
 
   // Check if the profile prefs are the same as the cache prefs
   EXPECT_EQ(profile_name,
-            UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
   EXPECT_EQ(avatar_index,
             cache.GetAvatarIconIndexOfProfileAtIndex(profile_index));
 }

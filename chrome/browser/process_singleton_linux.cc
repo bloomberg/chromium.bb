@@ -299,10 +299,10 @@ bool DisplayProfileInUseError(const base::FilePath& lock_path,
   base::string16 error = l10n_util::GetStringFUTF16(
       IDS_PROFILE_IN_USE_LINUX,
       base::IntToString16(pid),
-      ASCIIToUTF16(hostname));
+      base::ASCIIToUTF16(hostname));
   base::string16 relaunch_button_text = l10n_util::GetStringUTF16(
       IDS_PROFILE_IN_USE_LINUX_RELAUNCH);
-  LOG(ERROR) << base::SysWideToNativeMB(UTF16ToWide(error)).c_str();
+  LOG(ERROR) << base::SysWideToNativeMB(base::UTF16ToWide(error)).c_str();
   if (!g_disable_prompt)
     return ShowProcessSingletonDialog(error, relaunch_button_text);
   return false;

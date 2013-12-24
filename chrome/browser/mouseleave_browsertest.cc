@@ -41,7 +41,7 @@ class MouseLeaveTest : public InProcessBrowserTest {
                                above_content_point.y());
 
     // Navigate to the test html page.
-    base::string16 load_expected_title(ASCIIToUTF16("onload"));
+    base::string16 load_expected_title(base::ASCIIToUTF16("onload"));
     content::TitleWatcher load_title_watcher(tab, load_expected_title);
     ui_test_utils::NavigateToURL(browser(), test_url);
     // Wait for the onload() handler to complete so we can do the
@@ -53,7 +53,7 @@ class MouseLeaveTest : public InProcessBrowserTest {
     ui_controls::SendMouseMove(in_content_point.x(), in_content_point.y());
 
     // Wait on the correct intermediate title.
-    base::string16 entered_expected_title(ASCIIToUTF16("entered"));
+    base::string16 entered_expected_title(base::ASCIIToUTF16("entered"));
     content::TitleWatcher entered_title_watcher(tab, entered_expected_title);
     EXPECT_EQ(entered_expected_title, entered_title_watcher.WaitAndGetTitle());
 
@@ -63,7 +63,7 @@ class MouseLeaveTest : public InProcessBrowserTest {
                                above_content_point.y());
 
     // Wait on the correct final value of the cookie.
-    base::string16 left_expected_title(ASCIIToUTF16("left"));
+    base::string16 left_expected_title(base::ASCIIToUTF16("left"));
     content::TitleWatcher left_title_watcher(tab, left_expected_title);
     EXPECT_EQ(left_expected_title, left_title_watcher.WaitAndGetTitle());
   }

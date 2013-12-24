@@ -251,7 +251,8 @@ base::string16 GetDisplayNameForDevice(uint64 storage_size_in_bytes,
                                        const base::string16& name) {
   DCHECK(!name.empty());
   return (storage_size_in_bytes == 0) ?
-      name : ui::FormatBytes(storage_size_in_bytes) + ASCIIToUTF16(" ") + name;
+      name :
+      ui::FormatBytes(storage_size_in_bytes) + base::ASCIIToUTF16(" ") + name;
 }
 
 // For a device with |device_name| and a relative path |sub_folder|, construct
@@ -261,7 +262,7 @@ base::string16 GetDisplayNameForSubFolder(const base::string16& device_name,
   if (sub_folder.empty())
     return device_name;
   return (sub_folder.BaseName().LossyDisplayName() +
-          ASCIIToUTF16(" - ") +
+          base::ASCIIToUTF16(" - ") +
           device_name);
 }
 
@@ -276,7 +277,7 @@ base::string16 GetFullProductName(const base::string16& vendor_name,
   else if (model_name.empty())
     product_name = vendor_name;
   else if (!vendor_name.empty() && !model_name.empty())
-    product_name = vendor_name + UTF8ToUTF16(", ") + model_name;
+    product_name = vendor_name + base::UTF8ToUTF16(", ") + model_name;
 
   return product_name;
 }
@@ -563,7 +564,7 @@ void MediaGalleriesPreferences::OnFinderDeviceID(const std::string& device_id) {
     else
       NOTREACHED();
 
-    AddGalleryInternal(device_id, ASCIIToUTF16(gallery_name),
+    AddGalleryInternal(device_id, base::ASCIIToUTF16(gallery_name),
                        base::FilePath(), false /*not user added*/,
                        base::string16(), base::string16(), base::string16(), 0,
                        base::Time(), false, 2);

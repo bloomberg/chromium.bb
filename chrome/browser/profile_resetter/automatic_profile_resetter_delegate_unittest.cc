@@ -443,7 +443,8 @@ TEST_F(AutomaticProfileResetterDelegateTest,
     std::string keyword;
     ASSERT_TRUE(details->GetString("keyword", &keyword));
     TemplateURL* search_engine =
-        template_url_service->GetTemplateURLForKeyword(ASCIIToUTF16(keyword));
+        template_url_service->GetTemplateURLForKeyword(
+            base::ASCIIToUTF16(keyword));
     ASSERT_TRUE(search_engine);
     template_url_service->SetDefaultSearchProvider(prepopulated_engines[i]);
 

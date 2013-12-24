@@ -79,9 +79,9 @@ content::WebPluginInfo CreateFakePluginInfo(
     const base::FilePath::CharType* path,
     const std::string& version,
     bool is_pepper) {
-  content::WebPluginInfo plugin(UTF8ToUTF16(name),
+  content::WebPluginInfo plugin(base::UTF8ToUTF16(name),
                                 base::FilePath(path),
-                                UTF8ToUTF16(version),
+                                base::UTF8ToUTF16(version),
                                 base::string16());
   if (is_pepper)
     plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;

@@ -19,6 +19,8 @@
 #include "crypto/mock_apple_keychain.h"
 
 using autofill::PasswordForm;
+using base::ASCIIToUTF16;
+using base::WideToUTF16;
 using content::BrowserThread;
 using crypto::MockAppleKeychain;
 using testing::_;

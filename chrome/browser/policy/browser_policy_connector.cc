@@ -536,10 +536,10 @@ bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
     L"yahoo(\\.co|\\.com|)\\.[^.]+", // yahoo.com, yahoo.co.uk, yahoo.com.tw
     L"yandex\\.ru",
   };
-  const base::string16 domain =
-      UTF8ToUTF16(gaia::ExtractDomainName(gaia::CanonicalizeEmail(username)));
+  const base::string16 domain = base::UTF8ToUTF16(
+      gaia::ExtractDomainName(gaia::CanonicalizeEmail(username)));
   for (size_t i = 0; i < arraysize(kNonManagedDomainPatterns); i++) {
-    base::string16 pattern = WideToUTF16(kNonManagedDomainPatterns[i]);
+    base::string16 pattern = base::WideToUTF16(kNonManagedDomainPatterns[i]);
     if (MatchDomain(domain, pattern))
       return true;
   }
@@ -574,7 +574,7 @@ void BrowserPolicyConnector::SetTimezoneIfPolicyAvailable() {
                                                &timezone) &&
       !timezone.empty()) {
     chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-        UTF8ToUTF16(timezone));
+        base::UTF8ToUTF16(timezone));
   }
 #endif
 }

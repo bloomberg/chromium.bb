@@ -220,16 +220,16 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
 
   // Set up the fields we need to send and create a Notification object.
   GURL image_url = GetImageUrl();
-  base::string16 text = UTF8ToUTF16(GetText());
-  base::string16 heading = UTF8ToUTF16(GetHeading());
-  base::string16 description = UTF8ToUTF16(GetDescription());
-  base::string16 annotation = UTF8ToUTF16(GetAnnotation());
+  base::string16 text = base::UTF8ToUTF16(GetText());
+  base::string16 heading = base::UTF8ToUTF16(GetHeading());
+  base::string16 description = base::UTF8ToUTF16(GetDescription());
+  base::string16 annotation = base::UTF8ToUTF16(GetAnnotation());
   // TODO(petewil): Eventually put the display name of the sending service here.
-  base::string16 display_source = UTF8ToUTF16(GetAppId());
-  base::string16 replace_key = UTF8ToUTF16(GetKey());
+  base::string16 display_source = base::UTF8ToUTF16(GetAppId());
+  base::string16 replace_key = base::UTF8ToUTF16(GetKey());
   base::string16 notification_heading = heading;
   base::string16 notification_text = description;
-  base::string16 newline = UTF8ToUTF16("\n");
+  base::string16 newline = base::UTF8ToUTF16("\n");
 
   // The delegate will eventually catch calls that the notification
   // was read or deleted, and send the changes back to the server.
@@ -272,7 +272,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
       std::string title = GetButtonTitle(i);
       if (title.empty())
         break;
-      message_center::ButtonInfo button_info(UTF8ToUTF16(title));
+      message_center::ButtonInfo button_info(base::UTF8ToUTF16(title));
       if (!button_bitmaps_[i].IsEmpty())
         button_info.icon = button_bitmaps_[i];
       rich_notification_data.buttons.push_back(button_info);

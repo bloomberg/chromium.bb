@@ -242,9 +242,9 @@ PluginPrefs* GetPluginPrefs() {
 void SetPluginInfo(const content::WebPluginInfo& plugin_info,
                    const PluginPrefs* plugin_prefs,
                    SystemProfileProto::Plugin* plugin) {
-  plugin->set_name(UTF16ToUTF8(plugin_info.name));
+  plugin->set_name(base::UTF16ToUTF8(plugin_info.name));
   plugin->set_filename(plugin_info.path.BaseName().AsUTF8Unsafe());
-  plugin->set_version(UTF16ToUTF8(plugin_info.version));
+  plugin->set_version(base::UTF16ToUTF8(plugin_info.version));
   plugin->set_is_pepper(plugin_info.is_pepper_plugin());
   if (plugin_prefs)
     plugin->set_is_disabled(!plugin_prefs->IsPluginEnabled(plugin_info));

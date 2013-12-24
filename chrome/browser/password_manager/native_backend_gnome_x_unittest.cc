@@ -19,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
+using base::UTF8ToUTF16;
+using base::UTF16ToUTF8;
 using content::BrowserThread;
 
 namespace {

@@ -19,6 +19,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 using content::BrowserThread;
 using content::PluginService;
 

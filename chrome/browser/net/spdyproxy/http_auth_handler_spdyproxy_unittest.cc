@@ -93,8 +93,8 @@ TEST(HttpAuthHandlerSpdyProxyTest, GenerateAuthToken) {
           &spdyproxy));
       if (tests[j].err1 != OK)
         continue;
-      AuthCredentials credentials(ASCIIToUTF16(""),
-                                  ASCIIToUTF16("sid-string"));
+      AuthCredentials credentials(base::ASCIIToUTF16(""),
+                                  base::ASCIIToUTF16("sid-string"));
       HttpRequestInfo request_info;
       std::string auth_token;
       int rv = spdyproxy->GenerateAuthToken(&credentials, &request_info,

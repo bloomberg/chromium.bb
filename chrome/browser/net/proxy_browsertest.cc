@@ -60,8 +60,8 @@ class LoginPromptObserver : public content::NotificationObserver {
           content::Details<LoginNotificationDetails>(details).ptr();
       // |login_details->handler()| is the associated LoginHandler object.
       // SetAuth() will close the login dialog.
-      login_details->handler()->SetAuth(ASCIIToUTF16("foo"),
-                                        ASCIIToUTF16("bar"));
+      login_details->handler()->SetAuth(base::ASCIIToUTF16("foo"),
+                                        base::ASCIIToUTF16("bar"));
       auth_handled_ = true;
     }
   }
@@ -125,8 +125,8 @@ IN_PROC_BROWSER_TEST_F(ProxyBrowserTest, MAYBE_BasicAuthWSConnect) {
   registrar.Add(&observer, chrome::NOTIFICATION_AUTH_NEEDED,
                 content::Source<content::NavigationController>(controller));
 
-  content::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(tab, base::ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
   // Visit a page that tries to establish WebSocket connection. The title
   // of the page will be 'PASS' on success.

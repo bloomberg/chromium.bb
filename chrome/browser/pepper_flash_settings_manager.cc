@@ -412,7 +412,7 @@ void PepperFlashSettingsManager::Core::InitializeOnIOThread() {
 #if defined(OS_WIN)
   plugin_data_path_ = profile_path.Append(plugin_info.name);
 #else
-  plugin_data_path_ = profile_path.Append(UTF16ToUTF8(plugin_info.name));
+  plugin_data_path_ = profile_path.Append(base::UTF16ToUTF8(plugin_info.name));
 #endif
 
   helper_ = content::PepperFlashSettingsHelper::Create();

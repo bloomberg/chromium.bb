@@ -1226,7 +1226,7 @@ void ProfileImpl::UpdateProfileUserNameCache() {
   if (index != std::string::npos) {
     std::string user_name =
         GetPrefs()->GetString(prefs::kGoogleServicesUsername);
-    cache.SetUserNameOfProfileAtIndex(index, UTF8ToUTF16(user_name));
+    cache.SetUserNameOfProfileAtIndex(index, base::UTF8ToUTF16(user_name));
     ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
   }
 }
@@ -1238,7 +1238,7 @@ void ProfileImpl::UpdateProfileNameCache() {
   if (index != std::string::npos) {
     std::string profile_name =
         GetPrefs()->GetString(prefs::kProfileName);
-    cache.SetNameOfProfileAtIndex(index, UTF8ToUTF16(profile_name));
+    cache.SetNameOfProfileAtIndex(index, base::UTF8ToUTF16(profile_name));
   }
 }
 

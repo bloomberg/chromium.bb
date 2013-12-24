@@ -84,15 +84,15 @@ void AutocompleteActionPredictorTableTest::SetUp() {
 
   test_db_.push_back(AutocompleteActionPredictorTable::Row(
       "BD85DBA2-8C29-49F9-84AE-48E1E90880DF",
-      ASCIIToUTF16("goog"), GURL("http://www.google.com/"),
+      base::ASCIIToUTF16("goog"), GURL("http://www.google.com/"),
       1, 0));
   test_db_.push_back(AutocompleteActionPredictorTable::Row(
       "BD85DBA2-8C29-49F9-84AE-48E1E90880E0",
-      ASCIIToUTF16("slash"), GURL("http://slashdot.org/"),
+      base::ASCIIToUTF16("slash"), GURL("http://slashdot.org/"),
       3, 2));
   test_db_.push_back(AutocompleteActionPredictorTable::Row(
       "BD85DBA2-8C29-49F9-84AE-48E1E90880E1",
-      ASCIIToUTF16("news"), GURL("http://slashdot.org/"),
+      base::ASCIIToUTF16("news"), GURL("http://slashdot.org/"),
       0, 1));
 }
 

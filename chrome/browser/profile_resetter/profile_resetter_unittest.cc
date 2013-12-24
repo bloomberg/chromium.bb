@@ -33,6 +33,7 @@
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
 
 namespace {
 
@@ -816,7 +817,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
 // Make sure GetReadableFeedback handles non-ascii letters.
 TEST_F(ProfileResetterTest, GetReadableFeedback) {
   scoped_refptr<Extension> ext = CreateExtension(
-      WideToUTF16(L"Tiësto"),
+      base::WideToUTF16(L"Tiësto"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
       extensions::Manifest::TYPE_EXTENSION,
@@ -830,10 +831,10 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
   std::wstring url(L"http://"
     L"\u0440\u043e\u0441\u0441\u0438\u044f.\u0440\u0444");
   prefs->SetBoolean(prefs::kHomePageIsNewTabPage, false);
-  prefs->SetString(prefs::kHomePage, WideToUTF8(url));
+  prefs->SetString(prefs::kHomePage, base::WideToUTF8(url));
 
   SessionStartupPref startup_pref(SessionStartupPref::URLS);
-  startup_pref.urls.push_back(GURL(WideToUTF8(url)));
+  startup_pref.urls.push_back(GURL(base::WideToUTF8(url)));
   SessionStartupPref::SetStartupPref(prefs, startup_pref);
 
   // The homepage and the startup page are in punycode. They are unreadable.
@@ -848,7 +849,7 @@ TEST_F(ProfileResetterTest, GetReadableFeedback) {
     if (value == "Extensions") {
       base::string16 extensions;
       EXPECT_TRUE(dict->GetString("value", &extensions));
-      EXPECT_EQ(WideToUTF16(L"Tiësto"), extensions);
+      EXPECT_EQ(base::WideToUTF16(L"Tiësto"), extensions);
     }
   }
 }

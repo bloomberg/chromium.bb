@@ -267,7 +267,7 @@ base::string16 PluginFinder::FindPluginNameWithIdentifier(
   if (it != identifier_plugin_.end())
     name = it->second->name();
 
-  return name.empty() ? UTF8ToUTF16(identifier) : name;
+  return name.empty() ? base::UTF8ToUTF16(identifier) : name;
 }
 
 scoped_ptr<PluginMetadata> PluginFinder::GetPluginMetadata(

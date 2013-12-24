@@ -157,7 +157,7 @@ std::string MemoryDetails::ToLogString() {
            iter2 != iter1->titles.end(); ++iter2) {
         if (iter2 != iter1->titles.begin())
           log += "|";
-        log += UTF16ToUTF8(*iter2);
+        log += base::UTF16ToUTF8(*iter2);
       }
       log += "]";
     }
@@ -281,7 +281,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         const Extension* extension =
             extension_service->extensions()->GetByID(url.host());
         if (extension) {
-          base::string16 title = UTF8ToUTF16(extension->name());
+          base::string16 title = base::UTF8ToUTF16(extension->name());
           process.titles.push_back(title);
           process.renderer_type =
               ProcessMemoryInformation::RENDERER_EXTENSION;
@@ -296,14 +296,14 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
       }
 
       if (type == extensions::VIEW_TYPE_BACKGROUND_CONTENTS) {
-        process.titles.push_back(UTF8ToUTF16(url.spec()));
+        process.titles.push_back(base::UTF8ToUTF16(url.spec()));
         process.renderer_type =
             ProcessMemoryInformation::RENDERER_BACKGROUND_APP;
         continue;
       }
 
       if (type == extensions::VIEW_TYPE_NOTIFICATION) {
-        process.titles.push_back(UTF8ToUTF16(url.spec()));
+        process.titles.push_back(base::UTF8ToUTF16(url.spec()));
         process.renderer_type =
             ProcessMemoryInformation::RENDERER_NOTIFICATION;
         continue;

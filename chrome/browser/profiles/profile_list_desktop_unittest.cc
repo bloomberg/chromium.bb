@@ -20,6 +20,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 class MockObserver : public AvatarMenuObserver {

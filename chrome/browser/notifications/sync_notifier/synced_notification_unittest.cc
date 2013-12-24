@@ -333,10 +333,10 @@ TEST_F(SyncedNotificationTest, ShowTest) {
 
   // Check the base fields of the notification.
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE, notification.type());
-  EXPECT_EQ(std::string(kTitle1), UTF16ToUTF8(notification.title()));
-  EXPECT_EQ(std::string(kText1), UTF16ToUTF8(notification.message()));
+  EXPECT_EQ(std::string(kTitle1), base::UTF16ToUTF8(notification.title()));
+  EXPECT_EQ(std::string(kText1), base::UTF16ToUTF8(notification.message()));
   EXPECT_EQ(std::string(kExpectedOriginUrl), notification.origin_url().spec());
-  EXPECT_EQ(std::string(kKey1), UTF16ToUTF8(notification.replace_id()));
+  EXPECT_EQ(std::string(kKey1), base::UTF16ToUTF8(notification.replace_id()));
 
   EXPECT_EQ(kFakeCreationTime, notification.timestamp().ToDoubleT());
   EXPECT_EQ(kNotificationPriority, notification.priority());
@@ -416,9 +416,9 @@ TEST_F(SyncedNotificationTest, OnFetchCompleteTest) {
   EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
             notification_manager.notification().type());
   EXPECT_EQ(std::string(kTitle1),
-            UTF16ToUTF8(notification_manager.notification().title()));
+            base::UTF16ToUTF8(notification_manager.notification().title()));
   EXPECT_EQ(std::string(kText1),
-            UTF16ToUTF8(notification_manager.notification().message()));
+            base::UTF16ToUTF8(notification_manager.notification().message()));
 
   // TODO(petewil): Check that the bitmap in the notification is what we expect.
   // This fails today, the type info is different.

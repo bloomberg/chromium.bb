@@ -132,7 +132,7 @@ MediaGalleriesDialogController::~MediaGalleriesDialogController() {
 
 base::string16 MediaGalleriesDialogController::GetHeader() const {
   return l10n_util::GetStringFUTF16(IDS_MEDIA_GALLERIES_DIALOG_HEADER,
-                                    UTF8ToUTF16(extension_->name()));
+                                    base::UTF8ToUTF16(extension_->name()));
 }
 
 base::string16 MediaGalleriesDialogController::GetSubtext() const {
@@ -155,7 +155,7 @@ base::string16 MediaGalleriesDialogController::GetSubtext() const {
   else
     id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_ONLY;
 
-  return l10n_util::GetStringFUTF16(id, UTF8ToUTF16(extension_->name()));
+  return l10n_util::GetStringFUTF16(id, base::UTF8ToUTF16(extension_->name()));
 }
 
 base::string16 MediaGalleriesDialogController::GetUnattachedLocationsHeader()

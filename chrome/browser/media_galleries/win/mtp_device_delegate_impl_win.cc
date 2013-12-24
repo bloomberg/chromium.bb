@@ -50,7 +50,7 @@ bool GetStorageInfoOnUIThread(const base::string16& storage_path,
   StorageMonitor* monitor = StorageMonitor::GetInstance();
   DCHECK(monitor);
   return monitor->GetMTPStorageInfoFromDeviceId(
-      UTF16ToUTF8(storage_device_id), pnp_device_id, storage_object_id);
+      base::UTF16ToUTF8(storage_device_id), pnp_device_id, storage_object_id);
 }
 
 // Returns the object id of the file object specified by the |file_path|,

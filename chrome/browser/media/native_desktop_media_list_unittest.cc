@@ -189,7 +189,7 @@ TEST_F(DesktopMediaListTest, InitialSourceList) {
   EXPECT_EQ(model_->GetSource(0).id.id, 0);
   EXPECT_EQ(model_->GetSource(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
   EXPECT_EQ(model_->GetSource(1).id.id, 0);
-  EXPECT_EQ(model_->GetSource(1).name, UTF8ToUTF16(window.title));
+  EXPECT_EQ(model_->GetSource(1).name, base::UTF8ToUTF16(window.title));
 }
 
 // Verifies that the window specified with SetViewDialogWindowId() is filtered
@@ -229,7 +229,7 @@ TEST_F(DesktopMediaListTest, Filtering) {
   EXPECT_EQ(model_->GetSource(0).id.id, 0);
   EXPECT_EQ(model_->GetSource(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
   EXPECT_EQ(model_->GetSource(1).id.id, 1);
-  EXPECT_EQ(model_->GetSource(1).name, UTF8ToUTF16(window.title));
+  EXPECT_EQ(model_->GetSource(1).name, base::UTF8ToUTF16(window.title));
 }
 
 TEST_F(DesktopMediaListTest, WindowsOnly) {

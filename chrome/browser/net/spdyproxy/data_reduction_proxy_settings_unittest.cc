@@ -314,7 +314,7 @@ TEST_F(DataReductionProxySettingsTest, TestAuthHashGeneration) {
   AddProxyToCommandLine();
   std::string salt = "8675309";  // Jenny's number to test the hash generator.
   std::string salted_key = salt + kDataReductionProxyAuth + salt;
-  base::string16 expected_hash = UTF8ToUTF16(base::MD5String(salted_key));
+  base::string16 expected_hash = base::UTF8ToUTF16(base::MD5String(salted_key));
   EXPECT_EQ(expected_hash,
             DataReductionProxySettings::AuthHashForSalt(8675309));
 }

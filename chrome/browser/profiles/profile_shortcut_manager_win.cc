@@ -643,7 +643,8 @@ base::string16 GetShortcutFilenameForProfile(
 
 base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path) {
   return base::StringPrintf(L"--%ls=\"%ls\"",
-                            ASCIIToUTF16(switches::kProfileDirectory).c_str(),
+                            base::ASCIIToUTF16(
+                                switches::kProfileDirectory).c_str(),
                             profile_path.BaseName().value().c_str());
 }
 

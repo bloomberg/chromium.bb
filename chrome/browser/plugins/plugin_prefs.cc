@@ -246,7 +246,7 @@ bool PluginPrefs::IsPluginEnabled(const content::WebPluginInfo& plugin) const {
   // information.
   // TODO(dspringer): When NaCl is on by default, remove this code.
   if ((plugin.name ==
-       ASCIIToUTF16(ChromeContentClient::kNaClPluginName)) &&
+       base::ASCIIToUTF16(ChromeContentClient::kNaClPluginName)) &&
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableNaCl)) {
     return true;
   }
@@ -466,7 +466,7 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
 
       // Only want one PDF plugin enabled at a time. See http://crbug.com/50105
       // for background.
-      plugin_group_state_[ASCIIToUTF16(
+      plugin_group_state_[base::ASCIIToUTF16(
           PluginMetadata::kAdobeReaderGroupName)] = false;
     }
   }  // Scoped update of prefs::kPluginsPluginsList.

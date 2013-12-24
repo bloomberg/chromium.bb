@@ -89,7 +89,8 @@ void UpdateProfileName(Profile* profile,
     PrefService* pref_service = profile->GetPrefs();
     // Updating the profile preference will cause the cache to be updated for
     // this preference.
-    pref_service->SetString(prefs::kProfileName, UTF16ToUTF8(new_profile_name));
+    pref_service->SetString(prefs::kProfileName,
+                            base::UTF16ToUTF8(new_profile_name));
 
     // Changing the profile name can invalidate the profile index.
     profile_index = cache.GetIndexOfProfileWithPath(profile_file_path);

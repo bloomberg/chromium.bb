@@ -24,6 +24,8 @@
 #include "content/public/browser/browser_thread.h"
 
 using autofill::PasswordForm;
+using base::UTF8ToUTF16;
+using base::UTF16ToUTF8;
 using content::BrowserThread;
 
 #define GNOME_KEYRING_DEFINE_POINTER(name) \

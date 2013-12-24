@@ -464,13 +464,13 @@ base::string16 ConnectionTester::ProxySettingsExperimentDescription(
   // TODO(eroman): Use proper string resources.
   switch (experiment) {
     case PROXY_EXPERIMENT_USE_DIRECT:
-      return ASCIIToUTF16("Don't use any proxy");
+      return base::ASCIIToUTF16("Don't use any proxy");
     case PROXY_EXPERIMENT_USE_SYSTEM_SETTINGS:
-      return ASCIIToUTF16("Use system proxy settings");
+      return base::ASCIIToUTF16("Use system proxy settings");
     case PROXY_EXPERIMENT_USE_FIREFOX_SETTINGS:
-      return ASCIIToUTF16("Use Firefox's proxy settings");
+      return base::ASCIIToUTF16("Use Firefox's proxy settings");
     case PROXY_EXPERIMENT_USE_AUTO_DETECT:
-      return ASCIIToUTF16("Auto-detect proxy settings");
+      return base::ASCIIToUTF16("Auto-detect proxy settings");
     default:
       NOTREACHED();
       return base::string16();
@@ -485,9 +485,9 @@ base::string16 ConnectionTester::HostResolverExperimentDescription(
     case HOST_RESOLVER_EXPERIMENT_PLAIN:
       return base::string16();
     case HOST_RESOLVER_EXPERIMENT_DISABLE_IPV6:
-      return ASCIIToUTF16("Disable IPv6 host resolving");
+      return base::ASCIIToUTF16("Disable IPv6 host resolving");
     case HOST_RESOLVER_EXPERIMENT_IPV6_PROBE:
-      return ASCIIToUTF16("Probe for IPv6 host resolving");
+      return base::ASCIIToUTF16("Probe for IPv6 host resolving");
     default:
       NOTREACHED();
       return base::string16();

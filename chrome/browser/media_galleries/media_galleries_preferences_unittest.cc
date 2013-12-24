@@ -34,6 +34,8 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 class MockGalleryChangeObserver
@@ -284,7 +286,8 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
 base::FilePath MakePath(std::string dir) {
 #if defined(OS_WIN)
-  return base::FilePath(FILE_PATH_LITERAL("C:\\")).Append(UTF8ToWide(dir));
+  return
+      base::FilePath(FILE_PATH_LITERAL("C:\\")).Append(base::UTF8ToWide(dir));
 #elif defined(OS_POSIX)
   return base::FilePath(FILE_PATH_LITERAL("/")).Append(dir);
 #else
@@ -875,7 +878,7 @@ TEST(MediaGalleryPrefInfoTest, NameGeneration) {
   info.device_id = StorageInfo::MakeDeviceId(
       StorageInfo::FIXED_MASS_STORAGE, "unique");
   EXPECT_EQ(base::FilePath(FILE_PATH_LITERAL("unique")).AsUTF8Unsafe(),
-            UTF16ToUTF8(info.GetGalleryTooltip()));
+            base::UTF16ToUTF8(info.GetGalleryTooltip()));
 
   TestStorageMonitor::RemoveSingleton();
 }

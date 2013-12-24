@@ -174,7 +174,7 @@ bool PrintDialogGtk::UpdateSettings(printing::PrintSettings* settings) {
 
   scoped_ptr<GtkPrinterList> printer_list(new GtkPrinterList);
   printer_ = printer_list->GetPrinterWithName(
-      UTF16ToUTF8(settings->device_name()));
+      base::UTF16ToUTF8(settings->device_name()));
   if (printer_) {
     g_object_ref(printer_);
     gtk_print_settings_set_printer(gtk_settings_,
@@ -401,7 +401,7 @@ void PrintDialogGtk::SendDocumentToPrinter(
   g_last_used_settings.Get().SetLastUsedSettings(gtk_settings_);
 
   GtkPrintJob* print_job = gtk_print_job_new(
-      UTF16ToUTF8(document_name).c_str(),
+      base::UTF16ToUTF8(document_name).c_str(),
       printer_,
       gtk_settings_,
       page_setup_);

@@ -23,6 +23,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 // Unlike the base AutofillMetrics, exposes copy and assignment constructors,

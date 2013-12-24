@@ -278,8 +278,8 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
   }
 
   if (extract_password_data) {
-    UTF8ToUTF16(static_cast<const char *>(password_data), password_length,
-                &(form->password_value));
+    base::UTF8ToUTF16(static_cast<const char *>(password_data), password_length,
+                      &(form->password_value));
   }
 
   int port = kAnyPort;
@@ -293,8 +293,8 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
     }
     switch (attr.tag) {
       case kSecAccountItemAttr:
-        UTF8ToUTF16(static_cast<const char *>(attr.data), attr.length,
-                    &(form->username_value));
+        base::UTF8ToUTF16(static_cast<const char *>(attr.data), attr.length,
+                          &(form->username_value));
         break;
       case kSecServerItemAttr:
         server.assign(static_cast<const char *>(attr.data), attr.length);
@@ -619,7 +619,7 @@ PasswordForm* MacKeychainPasswordFormAdapter::PasswordExactlyMatchingForm(
 
 bool MacKeychainPasswordFormAdapter::HasPasswordsMergeableWithForm(
     const PasswordForm& query_form) {
-  std::string username = UTF16ToUTF8(query_form.username_value);
+  std::string username = base::UTF16ToUTF8(query_form.username_value);
   std::vector<SecKeychainItemRef> matches =
       MatchingKeychainItems(query_form.signon_realm, query_form.scheme,
                             NULL, username.c_str());
@@ -667,8 +667,8 @@ bool MacKeychainPasswordFormAdapter::AddPassword(const PasswordForm& form) {
            form.signon_realm, &server, &port, &is_secure, &security_domain)) {
     return false;
   }
-  std::string username = UTF16ToUTF8(form.username_value);
-  std::string password = UTF16ToUTF8(form.password_value);
+  std::string username = base::UTF16ToUTF8(form.username_value);
+  std::string password = base::UTF16ToUTF8(form.password_value);
   std::string path = form.origin.path();
   SecProtocolType protocol = is_secure ? kSecProtocolTypeHTTPS
                                        : kSecProtocolTypeHTTP;
@@ -739,7 +739,7 @@ SecKeychainItemRef MacKeychainPasswordFormAdapter::KeychainItemForForm(
   }
 
   std::string path = form.origin.path();
-  std::string username = UTF16ToUTF8(form.username_value);
+  std::string username = base::UTF16ToUTF8(form.username_value);
   std::vector<SecKeychainItemRef> matches = MatchingKeychainItems(
       form.signon_realm, form.scheme, path.c_str(), username.c_str());
 

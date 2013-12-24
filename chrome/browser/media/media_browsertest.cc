@@ -50,7 +50,7 @@ void MediaBrowserTest::RunMediaTestPage(
   }
 
   base::string16 final_title = RunTest(gurl, expected_title);
-  EXPECT_EQ(ASCIIToUTF16(expected_title), final_title);
+  EXPECT_EQ(base::ASCIIToUTF16(expected_title), final_title);
 }
 
 base::string16 MediaBrowserTest::RunTest(const GURL& gurl,
@@ -58,7 +58,7 @@ base::string16 MediaBrowserTest::RunTest(const GURL& gurl,
   DVLOG(1) << "Running test URL: " << gurl;
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      ASCIIToUTF16(expected_title));
+      base::ASCIIToUTF16(expected_title));
   AddWaitForTitles(&title_watcher);
   ui_test_utils::NavigateToURL(browser(), gurl);
 
@@ -66,7 +66,7 @@ base::string16 MediaBrowserTest::RunTest(const GURL& gurl,
 }
 
 void MediaBrowserTest::AddWaitForTitles(content::TitleWatcher* title_watcher) {
-  title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEnded));
-  title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kError));
-  title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kFailed));
+  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEnded));
+  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kError));
+  title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kFailed));
 }

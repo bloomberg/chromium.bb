@@ -44,8 +44,8 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, WebSocketSplitSegments) {
   // Setup page title observer.
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(tab, base::ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
   // Visit a HTTP page for testing.
   std::string scheme("http");
@@ -75,8 +75,8 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest,
   // Setup page title observer.
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::TitleWatcher watcher(tab, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(tab, base::ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
   // Visit a HTTPS page for testing.
   std::string scheme("https");

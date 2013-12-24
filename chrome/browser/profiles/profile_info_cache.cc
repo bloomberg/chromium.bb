@@ -731,7 +731,7 @@ base::string16 ProfileInfoCache::ChooseNameForNewProfile(
       name = l10n_util::GetStringUTF16(
           kDefaultNames[icon_index - kGenericIconCount]);
       if (name_index > 1)
-        name.append(UTF8ToUTF16(base::IntToString(name_index)));
+        name.append(base::UTF8ToUTF16(base::IntToString(name_index)));
     }
 
     // Loop through previously named profiles to ensure we're not duplicating.

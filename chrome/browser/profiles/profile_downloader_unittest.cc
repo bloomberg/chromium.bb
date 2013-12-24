@@ -66,8 +66,8 @@ class ProfileDownloaderTest : public testing::Test {
         32,
         &parsed_locale);
     EXPECT_EQ(is_valid, result);
-    std::string parsed_full_name_utf8 = UTF16ToUTF8(parsed_full_name);
-    std::string parsed_given_name_utf8 = UTF16ToUTF8(parsed_given_name);
+    std::string parsed_full_name_utf8 = base::UTF16ToUTF8(parsed_full_name);
+    std::string parsed_given_name_utf8 = base::UTF16ToUTF8(parsed_given_name);
 
     EXPECT_EQ(full_name, parsed_full_name_utf8);
     EXPECT_EQ(given_name, parsed_given_name_utf8);

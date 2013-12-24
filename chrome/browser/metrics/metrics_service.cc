@@ -1908,7 +1908,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
     }
 
     // TODO(viettrungluu): remove conversions
-    base::string16 name16 = UTF8ToUTF16(plugin_name);
+    base::string16 name16 = base::UTF8ToUTF16(plugin_name);
     if (child_process_stats_buffer_.find(name16) ==
         child_process_stats_buffer_.end()) {
       continue;
@@ -1957,7 +1957,7 @@ void MetricsService::RecordPluginChanges(PrefService* pref) {
       continue;
 
     // TODO(viettrungluu): remove conversion
-    std::string plugin_name = UTF16ToUTF8(cache_iter->first);
+    std::string plugin_name = base::UTF16ToUTF8(cache_iter->first);
 
     base::DictionaryValue* plugin_dict = new base::DictionaryValue;
 

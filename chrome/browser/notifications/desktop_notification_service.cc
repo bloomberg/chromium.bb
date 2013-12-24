@@ -222,8 +222,8 @@ base::string16 DesktopNotificationService::CreateDataUrl(
   if (icon_url.is_valid()) {
     resource = IDR_NOTIFICATION_ICON_HTML;
     subst.push_back(icon_url.spec());
-    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(title)));
-    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(body)));
+    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(title)));
+    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(body)));
     // icon float position
     subst.push_back(dir == blink::WebTextDirectionRightToLeft ?
                     "right" : "left");
@@ -231,14 +231,15 @@ base::string16 DesktopNotificationService::CreateDataUrl(
     resource = IDR_NOTIFICATION_1LINE_HTML;
     base::string16 line = title.empty() ? body : title;
     // Strings are div names in the template file.
-    base::string16 line_name = title.empty() ? ASCIIToUTF16("description")
-                                       : ASCIIToUTF16("title");
-    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(line_name)));
-    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(line)));
+    base::string16 line_name =
+        title.empty() ? base::ASCIIToUTF16("description")
+                      : base::ASCIIToUTF16("title");
+    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(line_name)));
+    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(line)));
   } else {
     resource = IDR_NOTIFICATION_2LINE_HTML;
-    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(title)));
-    subst.push_back(net::EscapeForHTML(UTF16ToUTF8(body)));
+    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(title)));
+    subst.push_back(net::EscapeForHTML(base::UTF16ToUTF8(body)));
   }
   // body text direction
   subst.push_back(dir == blink::WebTextDirectionRightToLeft ?
@@ -260,8 +261,8 @@ base::string16 DesktopNotificationService::CreateDataUrl(
   }
 
   std::string data = ReplaceStringPlaceholders(template_html, subst, NULL);
-  return UTF8ToUTF16("data:text/html;charset=utf-8," +
-                      net::EscapeQueryParamValue(data, false));
+  return base::UTF8ToUTF16("data:text/html;charset=utf-8," +
+                               net::EscapeQueryParamValue(data, false));
 }
 
 // static
@@ -524,11 +525,11 @@ base::string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
            iter != extensions.end(); ++iter) {
         NotifierId notifier_id(NotifierId::APPLICATION, (*iter)->id());
         if (IsNotifierEnabled(notifier_id))
-          return UTF8ToUTF16((*iter)->name());
+          return base::UTF8ToUTF16((*iter)->name());
       }
     }
   }
-  return UTF8ToUTF16(origin.host());
+  return base::UTF8ToUTF16(origin.host());
 }
 
 void DesktopNotificationService::NotifySettingsChange() {

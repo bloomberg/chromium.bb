@@ -333,7 +333,7 @@ class TestPrerenderContents : public PrerenderContents {
       content::SessionStorageNamespace* session_storage_namespace) OVERRIDE {
     WebContents* web_contents = PrerenderContents::CreateWebContents(
         session_storage_namespace);
-    base::string16 ready_title = ASCIIToUTF16(kReadyTitle);
+    base::string16 ready_title = base::ASCIIToUTF16(kReadyTitle);
     if (prerender_should_wait_for_ready_title_)
       ready_title_watcher_.reset(new content::TitleWatcher(
           web_contents, ready_title));
@@ -342,7 +342,7 @@ class TestPrerenderContents : public PrerenderContents {
 
   void WaitForPrerenderToHaveReadyTitleIfRequired() {
     if (ready_title_watcher_.get()) {
-      base::string16 ready_title = ASCIIToUTF16(kReadyTitle);
+      base::string16 ready_title = base::ASCIIToUTF16(kReadyTitle);
       ASSERT_EQ(ready_title, ready_title_watcher_->WaitAndGetTitle());
     }
   }
@@ -854,7 +854,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
   }
 
   void NavigateToDestUrlAndWaitForPassTitle() {
-    base::string16 expected_title = ASCIIToUTF16(kPassTitle);
+    base::string16 expected_title = base::ASCIIToUTF16(kPassTitle);
     content::TitleWatcher title_watcher(
         GetPrerenderContents()->prerender_contents(),
         expected_title);
@@ -926,7 +926,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     current_browser()->tab_strip_model()->GetActiveWebContents()->
         GetRenderViewHost()->ExecuteJavascriptInWebFrame(
             base::string16(),
-            ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)));
+            base::ASCIIToUTF16(base::StringPrintf("RemoveLinkElement(%d)", i)));
   }
 
   void ClickToNextPageAfterPrerender() {
@@ -937,7 +937,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         GetActiveWebContents()->GetRenderViewHost();
     render_view_host->ExecuteJavascriptInWebFrame(
         base::string16(),
-        ASCIIToUTF16("ClickOpenLink()"));
+        base::ASCIIToUTF16("ClickOpenLink()"));
     new_page_observer.Wait();
   }
 
@@ -1335,7 +1335,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         GetActiveWebContents()->GetRenderViewHost();
 
     render_view_host->ExecuteJavascriptInWebFrame(
-        base::string16(), ASCIIToUTF16(javascript_function_name));
+        base::string16(), base::ASCIIToUTF16(javascript_function_name));
 
     if (prerender_contents->quit_message_loop_on_destruction()) {
       // Run message loop until the prerender contents is destroyed.
@@ -2686,7 +2686,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderUnload) {
   set_loader_path("files/prerender/prerender_loader_with_unload.html");
   PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
-  base::string16 expected_title = ASCIIToUTF16("Unloaded");
+  base::string16 expected_title = base::ASCIIToUTF16("Unloaded");
   content::TitleWatcher title_watcher(
       current_browser()->tab_strip_model()->GetActiveWebContents(),
       expected_title);

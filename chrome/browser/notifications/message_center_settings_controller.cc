@@ -232,7 +232,7 @@ void MessageCenterSettingsController::GetNotifierList(
     NotifierId notifier_id(NotifierId::APPLICATION, extension->id());
     notifiers->push_back(new Notifier(
         notifier_id,
-        UTF8ToUTF16(extension->name()),
+        base::UTF8ToUTF16(extension->name()),
         notification_service->IsNotifierEnabled(notifier_id)));
     app_icon_loader_->FetchImage(extension->id());
   }
@@ -269,7 +269,7 @@ void MessageCenterSettingsController::GetNotifierList(
     }
 
     std::string url_pattern = iter->primary_pattern.ToString();
-    base::string16 name = UTF8ToUTF16(url_pattern);
+    base::string16 name = base::UTF8ToUTF16(url_pattern);
     GURL url(url_pattern);
     NotifierId notifier_id(url);
     notifiers->push_back(new Notifier(

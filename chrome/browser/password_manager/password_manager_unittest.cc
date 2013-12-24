@@ -24,6 +24,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
+using base::ASCIIToUTF16;
 using testing::_;
 using testing::DoAll;
 using testing::Exactly;

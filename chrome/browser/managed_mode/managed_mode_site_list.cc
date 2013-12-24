@@ -151,7 +151,7 @@ void ManagedModeSiteList::GetCategoryNames(
     std::vector<base::string16>* categories) {
   // TODO(bauerb): Collect custom categories from extensions.
   for (size_t i = 0; i < arraysize(g_categories); ++i) {
-    categories->push_back(ASCIIToUTF16(g_categories[i].name));
+    categories->push_back(base::ASCIIToUTF16(g_categories[i].name));
   }
 }
 

@@ -125,14 +125,14 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestJavascriptEnableDisable) {
   ui_test_utils::NavigateToURL(
       browser(),
       test_server()->GetURL("files/javaScriptTitle.html"));
-  EXPECT_EQ(ASCIIToUTF16("Title from script javascript enabled"),
+  EXPECT_EQ(base::ASCIIToUTF16("Title from script javascript enabled"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kWebKitJavascriptEnabled,
                                                false);
   ui_test_utils::NavigateToURL(
       browser(),
       test_server()->GetURL("files/javaScriptTitle.html"));
-  EXPECT_EQ(ASCIIToUTF16("This is html title"),
+  EXPECT_EQ(base::ASCIIToUTF16("This is html title"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 

@@ -911,7 +911,7 @@ base::FilePath ProfileManager::GenerateNextProfileDirectoryPath() {
   profile_name.append(base::IntToString(next_directory));
   base::FilePath new_path = user_data_dir_;
 #if defined(OS_WIN)
-  new_path = new_path.Append(ASCIIToUTF16(profile_name));
+  new_path = new_path.Append(base::ASCIIToUTF16(profile_name));
 #else
   new_path = new_path.Append(profile_name);
 #endif
@@ -988,13 +988,13 @@ void ProfileManager::AddProfileToCache(Profile* profile) {
   if (cache.GetIndexOfProfileWithPath(profile->GetPath()) != std::string::npos)
     return;
 
-  base::string16 username = UTF8ToUTF16(profile->GetPrefs()->GetString(
+  base::string16 username = base::UTF8ToUTF16(profile->GetPrefs()->GetString(
       prefs::kGoogleServicesUsername));
 
   // Profile name and avatar are set by InitProfileUserPrefs and stored in the
   // profile. Use those values to setup the cache entry.
-  base::string16 profile_name = UTF8ToUTF16(profile->GetPrefs()->GetString(
-      prefs::kProfileName));
+  base::string16 profile_name =
+      base::UTF8ToUTF16(profile->GetPrefs()->GetString(prefs::kProfileName));
 
   size_t icon_index = profile->GetPrefs()->GetInteger(
       prefs::kProfileAvatarIndex);
@@ -1034,7 +1034,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
       avatar_index =
           cache.GetAvatarIconIndexOfProfileAtIndex(profile_cache_index);
       profile_name =
-          UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
+          base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_cache_index));
       managed_user_id =
           cache.GetManagedUserIdOfProfileAtIndex(profile_cache_index);
     } else if (profile->GetPath() ==
@@ -1043,7 +1043,8 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
       profile_name = l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
     } else {
       avatar_index = cache.ChooseAvatarIconIndexForNewProfile();
-      profile_name = UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index));
+      profile_name =
+          base::UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index));
     }
   }
 

@@ -27,6 +27,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
+using base::UTF8ToUTF16;
 using content::BrowserThread;
 using testing::_;
 using testing::Invoke;

@@ -84,7 +84,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         referrer = "Referrer is " + url.GetWithEmptyPath().spec();
         break;
     }
-    return ASCIIToUTF16(referrer);
+    return base::ASCIIToUTF16(referrer);
   }
 
   // Adds all possible titles to the TitleWatcher, so we don't time out

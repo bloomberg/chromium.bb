@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ManagedUserServiceTest, ProfileName) {
   const ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
   EXPECT_EQ(original_name,
-            UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
 }
 
 IN_PROC_BROWSER_TEST_F(ManagedUserServiceTestManaged, LocalPolicies) {
@@ -74,7 +74,8 @@ IN_PROC_BROWSER_TEST_F(ManagedUserServiceTestManaged, ProfileName) {
   EXPECT_FALSE(prefs->IsUserModifiablePreference(prefs::kProfileName));
   EXPECT_EQ(name, prefs->GetString(prefs::kProfileName));
   size_t profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
-  EXPECT_EQ(name, UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+  EXPECT_EQ(name,
+            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
 
   // Change the name once more.
   std::string new_name = "New Managed User Test Name";
@@ -84,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(ManagedUserServiceTestManaged, ProfileName) {
   EXPECT_EQ(new_name, prefs->GetString(prefs::kProfileName));
   profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
   EXPECT_EQ(new_name,
-            UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
 
   // Remove the setting.
   settings->SetLocalSettingForTesting(managed_users::kUserName,
@@ -92,5 +93,5 @@ IN_PROC_BROWSER_TEST_F(ManagedUserServiceTestManaged, ProfileName) {
   EXPECT_EQ(original_name, prefs->GetString(prefs::kProfileName));
   profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());
   EXPECT_EQ(original_name,
-            UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
+            base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
 }

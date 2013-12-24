@@ -146,8 +146,8 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
   // We want to fail quickly when a test fails because an error is encountered.
   virtual void AddWaitForTitles(content::TitleWatcher* title_watcher) OVERRIDE {
     MediaBrowserTest::AddWaitForTitles(title_watcher);
-    title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeNotSupportedError));
-    title_watcher->AlsoWaitForTitle(ASCIIToUTF16(kEmeKeyError));
+    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeNotSupportedError));
+    title_watcher->AlsoWaitForTitle(base::ASCIIToUTF16(kEmeKeyError));
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
@@ -188,7 +188,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
     base::FilePath::StringType pepper_plugin = plugin_lib.value();
     pepper_plugin.append(FILE_PATH_LITERAL("#CDM#0.1.0.0;"));
 #if defined(OS_WIN)
-    pepper_plugin.append(ASCIIToWide(GetPepperType(key_system)));
+    pepper_plugin.append(base::ASCIIToWide(GetPepperType(key_system)));
 #else
     pepper_plugin.append(GetPepperType(key_system));
 #endif

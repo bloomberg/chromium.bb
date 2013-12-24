@@ -241,8 +241,8 @@ std::string ManagedUserService::GetCustodianEmailAddress() const {
 
 std::string ManagedUserService::GetCustodianName() const {
 #if defined(OS_CHROMEOS)
-  return UTF16ToUTF8(chromeos::UserManager::Get()->GetSupervisedUserManager()->
-      GetManagerDisplayName(
+  return base::UTF16ToUTF8(chromeos::UserManager::Get()->
+      GetSupervisedUserManager()->GetManagerDisplayName(
           chromeos::UserManager::Get()->GetActiveUser()->email()));
 #else
   std::string name = profile_->GetPrefs()->GetString(
@@ -586,7 +586,7 @@ void ManagedUserService::RegisterAndInitSync(
   DCHECK(ProfileIsManaged());
   DCHECK(!custodian_profile->IsManaged());
 
-  base::string16 name = UTF8ToUTF16(
+  base::string16 name = base::UTF8ToUTF16(
       profile_->GetPrefs()->GetString(prefs::kProfileName));
   int avatar_index = profile_->GetPrefs()->GetInteger(
       prefs::kProfileAvatarIndex);
@@ -611,7 +611,7 @@ void ManagedUserService::RegisterAndInitSync(
 void ManagedUserService::OnCustodianProfileDownloaded(
     const base::string16& full_name) {
   profile_->GetPrefs()->SetString(prefs::kManagedUserCustodianName,
-                                  UTF16ToUTF8(full_name));
+                                  base::UTF16ToUTF8(full_name));
 }
 
 void ManagedUserService::OnManagedUserRegistered(

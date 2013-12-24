@@ -136,7 +136,7 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
     CancelableRequestConsumer history_request_consumer;
     base::RunLoop run_loop;
     history_service->QueryHistory(
-        UTF8ToUTF16(text_query),
+        base::UTF8ToUTF16(text_query),
         options,
         &history_request_consumer,
         base::Bind(&ManagedModeBlockModeTest::QueryHistoryComplete,

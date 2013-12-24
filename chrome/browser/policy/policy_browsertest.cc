@@ -284,7 +284,7 @@ void CheckCanOpenURL(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  base::string16 title = UTF8ToUTF16(url.spec() + " was blocked");
+  base::string16 title = base::UTF8ToUTF16(url.spec() + " was blocked");
   EXPECT_NE(title, contents->GetTitle());
 }
 
@@ -295,7 +295,7 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   content::WebContents* contents =
       browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(url, contents->GetURL());
-  base::string16 title = UTF8ToUTF16(url.spec() + " was blocked");
+  base::string16 title = base::UTF8ToUTF16(url.spec() + " was blocked");
   EXPECT_EQ(title, contents->GetTitle());
 
   // Verify that the expected error page is being displayed.
@@ -392,7 +392,7 @@ const content::WebPluginInfo* GetFlashPlugin(
     const std::vector<content::WebPluginInfo>& plugins) {
   const content::WebPluginInfo* flash = NULL;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (plugins[i].name == ASCIIToUTF16(content::kFlashPluginName)) {
+    if (plugins[i].name == base::ASCIIToUTF16(content::kFlashPluginName)) {
       flash = &plugins[i];
       break;
     }
@@ -841,7 +841,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
-  const base::string16 kKeyword(ASCIIToUTF16("testsearch"));
+  const base::string16 kKeyword(base::ASCIIToUTF16("testsearch"));
   const std::string kSearchURL("http://search.example/search?q={searchTerms}");
   const std::string kAlternateURL0(
       "http://search.example/search#q={searchTerms}");
@@ -1032,7 +1032,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
 
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
-  const base::string16 kKeyword(ASCIIToUTF16("testsearch"));
+  const base::string16 kKeyword(base::ASCIIToUTF16("testsearch"));
   const std::string kSearchURL("https://www.google.com/search?q={searchTerms}");
   const std::string kInstantURL("http://does/not/exist");
   const std::string kAlternateURL0(
@@ -1102,7 +1102,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
       "https://www.google.com/?espv=1#q=foobar");
   EXPECT_TRUE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(ASCIIToUTF16("foobar"), omnibox_view->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("foobar"), omnibox_view->GetText());
 
   // Verify that not using espv=1 does not do search term replacement.
   chrome::FocusLocationBar(browser());
@@ -1110,7 +1110,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
       "https://www.google.com/?q=foobar");
   EXPECT_FALSE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(ASCIIToUTF16("https://www.google.com/?q=foobar"),
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.google.com/?q=foobar"),
             omnibox_view->GetText());
 
   // Verify that searching from the omnibox does search term replacement with
@@ -1120,7 +1120,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
       "https://www.google.com/search?espv=1#q=banana");
   EXPECT_TRUE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(ASCIIToUTF16("banana"), omnibox_view->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("banana"), omnibox_view->GetText());
 
   // Verify that searching from the omnibox does search term replacement with
   // standard search URL pattern.
@@ -1129,7 +1129,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
       "https://www.google.com/search?q=tractor+parts&espv=1");
   EXPECT_TRUE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(ASCIIToUTF16("tractor parts"), omnibox_view->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("tractor parts"), omnibox_view->GetText());
 
   // Verify that searching from the omnibox prioritizes hash over query.
   chrome::FocusLocationBar(browser());
@@ -1137,7 +1137,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
       "https://www.google.com/search?q=tractor+parts&espv=1#q=foobar");
   EXPECT_TRUE(
       browser()->toolbar_model()->WouldPerformSearchTermReplacement(false));
-  EXPECT_EQ(ASCIIToUTF16("foobar"), omnibox_view->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("foobar"), omnibox_view->GetText());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {

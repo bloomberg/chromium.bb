@@ -44,9 +44,9 @@ class ProfileWriterTest : public testing::Test {
   // simulate bookmark importing.
   void CreateImportedBookmarksEntries() {
     AddImportedBookmarkEntry(GURL("http://www.google.com"),
-                             ASCIIToUTF16("Google"));
+                             base::ASCIIToUTF16("Google"));
     AddImportedBookmarkEntry(GURL("http://www.yahoo.com"),
-                             ASCIIToUTF16("Yahoo"));
+                             base::ASCIIToUTF16("Yahoo"));
   }
 
   // Helper function to create history entries.
@@ -68,9 +68,11 @@ class ProfileWriterTest : public testing::Test {
   // simulate history importing.
   void CreateHistoryPageEntries() {
     history::URLRow row1(
-        MakeURLRow("http://www.google.com", ASCIIToUTF16("Google"), 3, 10, 1));
+        MakeURLRow("http://www.google.com", base::ASCIIToUTF16("Google"),
+        3, 10, 1));
     history::URLRow row2(
-        MakeURLRow("http://www.yahoo.com", ASCIIToUTF16("Yahoo"), 3, 30, 10));
+        MakeURLRow("http://www.yahoo.com", base::ASCIIToUTF16("Yahoo"),
+        3, 30, 10));
     pages_.push_back(row1);
     pages_.push_back(row2);
   }
@@ -144,7 +146,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
   test::WaitForBookmarkModelToLoad(bookmark_model2);
   bookmark_utils::AddIfNotBookmarked(bookmark_model2,
                                      GURL("http://www.bing.com"),
-                                     ASCIIToUTF16("Bing"));
+                                     base::ASCIIToUTF16("Bing"));
   TestingProfile profile1;
   profile1.CreateBookmarkModel(true);
 
@@ -156,7 +158,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksWithMultiProfile) {
   scoped_refptr<TestProfileWriter> profile_writer(
       new TestProfileWriter(&profile1));
   profile_writer->AddBookmarks(bookmarks_,
-                               ASCIIToUTF16("Imported from Firefox"));
+                               base::ASCIIToUTF16("Imported from Firefox"));
 
   std::vector<BookmarkService::URLAndTitle> url_record1;
   bookmark_model1->GetBookmarks(&url_record1);
@@ -180,7 +182,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksAfterWritingDataTwice) {
   scoped_refptr<TestProfileWriter> profile_writer(
       new TestProfileWriter(&profile));
   profile_writer->AddBookmarks(bookmarks_,
-                               ASCIIToUTF16("Imported from Firefox"));
+                               base::ASCIIToUTF16("Imported from Firefox"));
   std::vector<BookmarkService::URLAndTitle> bookmarks_record;
   bookmark_model->GetBookmarks(&bookmarks_record);
   EXPECT_EQ(2u, bookmarks_record.size());
@@ -188,7 +190,7 @@ TEST_F(ProfileWriterTest, CheckBookmarksAfterWritingDataTwice) {
   VerifyBookmarksCount(bookmarks_record, bookmark_model, 1);
 
   profile_writer->AddBookmarks(bookmarks_,
-                               ASCIIToUTF16("Imported from Firefox"));
+                               base::ASCIIToUTF16("Imported from Firefox"));
   // Verify that duplicate bookmarks exist.
   VerifyBookmarksCount(bookmarks_record, bookmark_model, 2);
 }
