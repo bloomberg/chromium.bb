@@ -109,7 +109,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
 
     StorageMonitor::GetInstance()->receiver()->ProcessAttach(
         StorageInfo(device_id_, base::string16(), kDevicePath,
-                    base::ASCIIToUTF16(kDeviceName), base::string16(),
+                    ASCIIToUTF16(kDeviceName), base::string16(),
                     base::string16(), 0));
     content::RunAllPendingInMessageLoop();
   }

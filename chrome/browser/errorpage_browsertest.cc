@@ -55,13 +55,12 @@ class ErrorPageTest : public InProcessBrowserTest {
                                     int num_navigations) {
     content::TitleWatcher title_watcher(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        base::ASCIIToUTF16(expected_title));
+        ASCIIToUTF16(expected_title));
 
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
         browser(), url, num_navigations);
 
-    EXPECT_EQ(base::ASCIIToUTF16(expected_title),
-              title_watcher.WaitAndGetTitle());
+    EXPECT_EQ(ASCIIToUTF16(expected_title), title_watcher.WaitAndGetTitle());
   }
 
   // Navigates back in the history and waits for |num_navigations| to occur, and
@@ -102,7 +101,7 @@ class ErrorPageTest : public InProcessBrowserTest {
                                       HistoryNavigationDirection direction) {
     content::TitleWatcher title_watcher(
         browser()->tab_strip_model()->GetActiveWebContents(),
-        base::ASCIIToUTF16(expected_title));
+        ASCIIToUTF16(expected_title));
 
     content::TestNavigationObserver test_navigation_observer(
         browser()->tab_strip_model()->GetActiveWebContents(),
@@ -116,8 +115,7 @@ class ErrorPageTest : public InProcessBrowserTest {
     }
     test_navigation_observer.Wait();
 
-    EXPECT_EQ(title_watcher.WaitAndGetTitle(),
-              base::ASCIIToUTF16(expected_title));
+    EXPECT_EQ(title_watcher.WaitAndGetTitle(), ASCIIToUTF16(expected_title));
   }
 };
 
@@ -306,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&wc->GetController()));
     wc->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-        base::string16(), base::ASCIIToUTF16(script));
+        base::string16(), ASCIIToUTF16(script));
     load_observer.Wait();
 
     // Ensure we saw the expected failure.
@@ -327,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&wc->GetController()));
     wc->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-        base::string16(), base::ASCIIToUTF16(script));
+        base::string16(), ASCIIToUTF16(script));
     load_observer.Wait();
   }
 
@@ -339,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, IFrameDNSError_JavaScript) {
         content::NOTIFICATION_LOAD_STOP,
         content::Source<NavigationController>(&wc->GetController()));
     wc->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-        base::string16(), base::ASCIIToUTF16(script));
+        base::string16(), ASCIIToUTF16(script));
     load_observer.Wait();
 
     EXPECT_EQ(fail_url, fail_observer.fail_url());

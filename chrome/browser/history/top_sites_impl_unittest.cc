@@ -649,11 +649,11 @@ TEST_F(TopSitesImplTest, GetMostVisited) {
 TEST_F(TopSitesImplTest, SaveToDB) {
   MostVisitedURL url;
   GURL asdf_url("http://asdf.com");
-  base::string16 asdf_title(base::ASCIIToUTF16("ASDF"));
+  base::string16 asdf_title(ASCIIToUTF16("ASDF"));
   GURL google_url("http://google.com");
-  base::string16 google_title(base::ASCIIToUTF16("Google"));
+  base::string16 google_title(ASCIIToUTF16("Google"));
   GURL news_url("http://news.google.com");
-  base::string16 news_title(base::ASCIIToUTF16("Google News"));
+  base::string16 news_title(ASCIIToUTF16("Google News"));
 
   // Add asdf_url to history.
   AddPageToHistory(asdf_url, asdf_title);
@@ -713,16 +713,16 @@ TEST_F(TopSitesImplTest, SaveToDB) {
 TEST_F(TopSitesImplTest, SaveForcedToDB) {
   MostVisitedURL url;
   GURL asdf_url("http://asdf.com");
-  base::string16 asdf_title(base::ASCIIToUTF16("ASDF"));
+  base::string16 asdf_title(ASCIIToUTF16("ASDF"));
   GURL google_url("http://google.com");
-  base::string16 google_title(base::ASCIIToUTF16("Google"));
+  base::string16 google_title(ASCIIToUTF16("Google"));
   GURL news_url("http://news.google.com");
-  base::string16 news_title(base::ASCIIToUTF16("Google News"));
+  base::string16 news_title(ASCIIToUTF16("Google News"));
 
   // Add a number of forced URLs.
   std::vector<MostVisitedURL> list;
   AppendForcedMostVisitedURL(&list, GURL("http://forced1"), 1000);
-  list[0].title = base::ASCIIToUTF16("forced1");
+  list[0].title = ASCIIToUTF16("forced1");
   AppendForcedMostVisitedURL(&list, GURL("http://forced2"), 2000);
   AppendForcedMostVisitedURL(&list, GURL("http://forced3"), 3000);
   AppendForcedMostVisitedURL(&list, GURL("http://forced4"), 4000);
@@ -749,7 +749,7 @@ TEST_F(TopSitesImplTest, SaveForcedToDB) {
 
   ASSERT_EQ(4u + GetPrepopulatePages().size(), querier.urls().size());
   EXPECT_EQ(GURL("http://forced1"), querier.urls()[0].url);
-  EXPECT_EQ(base::ASCIIToUTF16("forced1"), querier.urls()[0].title);
+  EXPECT_EQ(ASCIIToUTF16("forced1"), querier.urls()[0].title);
   SkBitmap thumbnail = GetThumbnail(GURL("http://forced1"));
   ASSERT_EQ(orig_thumbnail.getSize(), thumbnail.getSize());
   orig_thumbnail.lockPixels();
@@ -773,13 +773,13 @@ TEST_F(TopSitesImplTest, SaveForcedToDB) {
 TEST_F(TopSitesImplTest, RealDatabase) {
   MostVisitedURL url;
   GURL asdf_url("http://asdf.com");
-  base::string16 asdf_title(base::ASCIIToUTF16("ASDF"));
+  base::string16 asdf_title(ASCIIToUTF16("ASDF"));
   GURL google1_url("http://google.com");
   GURL google2_url("http://google.com/redirect");
   GURL google3_url("http://www.google.com");
-  base::string16 google_title(base::ASCIIToUTF16("Google"));
+  base::string16 google_title(ASCIIToUTF16("Google"));
   GURL news_url("http://news.google.com");
-  base::string16 news_title(base::ASCIIToUTF16("Google News"));
+  base::string16 news_title(ASCIIToUTF16("Google News"));
 
   url.url = asdf_url;
   url.title = asdf_title;
@@ -887,9 +887,9 @@ TEST_F(TopSitesImplTest, DeleteNotifications) {
   GURL google1_url("http://google.com");
   GURL google2_url("http://google.com/redirect");
   GURL google3_url("http://www.google.com");
-  base::string16 google_title(base::ASCIIToUTF16("Google"));
+  base::string16 google_title(ASCIIToUTF16("Google"));
   GURL news_url("http://news.google.com");
-  base::string16 news_title(base::ASCIIToUTF16("Google News"));
+  base::string16 news_title(ASCIIToUTF16("Google News"));
 
   AddPageToHistory(google1_url, google_title);
   AddPageToHistory(news_url, news_title);

@@ -34,7 +34,6 @@
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::ASCIIToUTF16;
 using content::BrowserThread;
 
 // The test version of the history url database table ('url') is contained in

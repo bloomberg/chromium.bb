@@ -170,7 +170,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
   // Ampersands need to be escaped to avoid being treated like
   // mnemonics in the menu.
   base::ReplaceChars(extension_name, "&", "&&", &extension_name);
-  AddItem(NAME, base::UTF8ToUTF16(extension_name));
+  AddItem(NAME, UTF8ToUTF16(extension_name));
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);
   AddItem(UNINSTALL, l10n_util::GetStringUTF16(IDS_EXTENSIONS_UNINSTALL));

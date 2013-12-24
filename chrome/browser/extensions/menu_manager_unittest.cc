@@ -562,7 +562,7 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
   params.media_type = blink::WebContextMenuData::MediaTypeImage;
   params.src_url = GURL("http://foo.bar/image.png");
   params.page_url = GURL("http://foo.bar");
-  params.selection_text = base::ASCIIToUTF16("Hello World");
+  params.selection_text = ASCIIToUTF16("Hello World");
   params.is_editable = false;
 
   Extension* extension = AddExtension("test");

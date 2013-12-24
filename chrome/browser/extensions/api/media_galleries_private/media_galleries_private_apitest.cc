@@ -78,7 +78,7 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
                       const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false  /* no reply */);
     host->ExecuteJavascriptInWebFrame(base::string16(),
-                                      base::ASCIIToUTF16(js_command));
+                                      ASCIIToUTF16(js_command));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 
@@ -89,7 +89,7 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
 
   void Attach() {
     DCHECK(StorageMonitor::GetInstance()->IsInitialized());
-    StorageInfo info(device_id_, base::ASCIIToUTF16(kDeviceName), kDevicePath,
+    StorageInfo info(device_id_, ASCIIToUTF16(kDeviceName), kDevicePath,
                      base::string16(), base::string16(), base::string16(), 0);
     StorageMonitor::GetInstance()->receiver()->ProcessAttach(info);
     content::RunAllPendingInMessageLoop();

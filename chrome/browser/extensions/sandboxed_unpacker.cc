@@ -41,7 +41,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/png_codec.h"
 
-using base::ASCIIToUTF16;
 using content::BrowserThread;
 using content::UtilityProcessHost;
 
@@ -381,7 +380,7 @@ void SandboxedUnpacker::OnUnpackExtensionSucceeded(
         COULD_NOT_LOCALIZE_EXTENSION,
         l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_ERROR_MESSAGE,
-            base::UTF8ToUTF16(utf8_error)));
+            UTF8ToUTF16(utf8_error)));
     return;
   }
 

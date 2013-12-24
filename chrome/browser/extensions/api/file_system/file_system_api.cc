@@ -191,7 +191,7 @@ bool GetFileTypesFromAcceptOption(
       std::string extension = *iter;
       StringToLowerASCII(&extension);
 #if defined(OS_WIN)
-      extension_set.insert(base::UTF8ToWide(*iter));
+      extension_set.insert(UTF8ToWide(*iter));
 #else
       extension_set.insert(*iter);
 #endif
@@ -203,7 +203,7 @@ bool GetFileTypesFromAcceptOption(
     return false;
 
   if (accept_option.description.get())
-    *description = base::UTF8ToUTF16(*accept_option.description.get());
+    *description = UTF8ToUTF16(*accept_option.description.get());
   else if (description_id)
     *description = l10n_util::GetStringUTF16(description_id);
 
@@ -731,7 +731,7 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessOnFileThread(
           base::Bind(
               CreateDirectoryAccessConfirmationDialog,
               app_file_handler_util::HasFileSystemWritePermission(extension_),
-              base::UTF8ToUTF16(extension_->name()),
+              UTF8ToUTF16(extension_->name()),
               web_contents,
               base::Bind(
                   &FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed,

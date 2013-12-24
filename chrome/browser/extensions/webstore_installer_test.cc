@@ -122,6 +122,6 @@ void WebstoreInstallerTest::RunTestAsync(
       "%s('%s')", test_function_name.c_str(), test_gallery_url_.c_str());
   browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost()->
       ExecuteJavascriptInWebFrame(
-          base::UTF8ToUTF16(std::string()),
-          base::UTF8ToUTF16(script));
+          UTF8ToUTF16(std::string()),
+          UTF8ToUTF16(script));
 }

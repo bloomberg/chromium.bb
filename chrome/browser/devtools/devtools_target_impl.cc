@@ -64,7 +64,7 @@ RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab) {
   if (!web_contents)
     return;  // Orphan RVH will show up with no title/url/icon in clients.
 
-  title_ = base::UTF16ToUTF8(web_contents->GetTitle());
+  title_ = UTF16ToUTF8(web_contents->GetTitle());
   url_ = web_contents->GetURL();
   content::NavigationController& controller = web_contents->GetController();
   content::NavigationEntry* entry = controller.GetActiveEntry();
@@ -164,7 +164,7 @@ WorkerTarget::WorkerTarget(const WorkerService::WorkerInfo& worker) {
       DevToolsAgentHost::GetForWorker(worker.process_id, worker.route_id);
   id_ = agent_host_->GetId();
   type_ = kTargetTypeWorker;
-  title_ = base::UTF16ToUTF8(worker.name);
+  title_ = UTF16ToUTF8(worker.name);
   description_ =
       base::StringPrintf("Worker pid:%d", base::GetProcId(worker.handle));
   url_ = worker.url;

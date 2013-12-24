@@ -63,8 +63,7 @@ bool NthResultIs(const QueryResults& results,
 
   // Now check the URL & title.
   return result.url() == GURL(test_entries[test_entry_index].url) &&
-         result.title() ==
-             base::UTF8ToUTF16(test_entries[test_entry_index].title);
+         result.title() == UTF8ToUTF16(test_entries[test_entry_index].title);
 }
 
 }  // namespace
@@ -79,7 +78,7 @@ class HistoryQueryTest : public testing::Test {
                     const QueryOptions& options,
                     QueryResults* results) {
     history_->QueryHistory(
-        base::UTF8ToUTF16(text_query), options, &consumer_,
+        UTF8ToUTF16(text_query), options, &consumer_,
         base::Bind(&HistoryQueryTest::QueryHistoryComplete,
                    base::Unretained(this)));
     // Will go until ...Complete calls Quit.
@@ -153,7 +152,7 @@ class HistoryQueryTest : public testing::Test {
     history_->AddPage(url, entry.time, id_scope, page_id_++, GURL(),
                       history::RedirectList(), content::PAGE_TRANSITION_LINK,
                       history::SOURCE_BROWSED, false);
-    history_->SetPageTitle(url, base::UTF8ToUTF16(entry.title));
+    history_->SetPageTitle(url, UTF8ToUTF16(entry.title));
   }
 
  private:
@@ -392,12 +391,12 @@ TEST_F(HistoryQueryTest, TextSearchArchived) {
   URLRows urls_to_add;
 
   URLRow row1(GURL("http://foo.bar/"));
-  row1.set_title(base::UTF8ToUTF16("archived title same"));
+  row1.set_title(UTF8ToUTF16("archived title same"));
   row1.set_last_visit(Time::Now() - TimeDelta::FromDays(365));
   urls_to_add.push_back(row1);
 
   URLRow row2(GURL("http://foo.bar/"));
-  row2.set_title(base::UTF8ToUTF16("nonarchived title same"));
+  row2.set_title(UTF8ToUTF16("nonarchived title same"));
   row2.set_last_visit(Time::Now());
   urls_to_add.push_back(row2);
 

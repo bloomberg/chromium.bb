@@ -1471,8 +1471,7 @@ void DevToolsWindow::CallClientFunction(const std::string& function_name,
       }
     }
   }
-  base::string16 javascript =
-      base::ASCIIToUTF16(function_name + "(" + params + ");");
+  base::string16 javascript = ASCIIToUTF16(function_name + "(" + params + ");");
   web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       base::string16(), javascript);
 }

@@ -372,10 +372,10 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
 
   ASSERT_TRUE(content::ExecuteScript(tab, "browsertestRunAllTests();"));
 
-  content::TitleWatcher title_watcher(tab, base::ASCIIToUTF16("success"));
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("failure"));
+  content::TitleWatcher title_watcher(tab, ASCIIToUTF16("success"));
+  title_watcher.AlsoWaitForTitle(ASCIIToUTF16("failure"));
   base::string16 result = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(base::ASCIIToUTF16("success"), result);
+  EXPECT_EQ(ASCIIToUTF16("success"), result);
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

@@ -160,7 +160,7 @@ std::string EscapeQueryStringValue(const std::string& str) {
 
 std::string TranslateQuery(const std::string& original_query) {
   // In order to handle non-ascii white spaces correctly, convert to UTF16.
-  base::string16 query = base::UTF8ToUTF16(original_query);
+  base::string16 query = UTF8ToUTF16(original_query);
   const base::string16 kDelimiter(
       base::kWhitespaceUTF16 + base::string16(1, static_cast<char16>('"')));
 
@@ -218,7 +218,7 @@ std::string TranslateQuery(const std::string& original_query) {
         &result,
         "%sfullText contains \'%s\'",
         is_exclusion ? "not " : "",
-        EscapeQueryStringValue(base::UTF16ToUTF8(token)).c_str());
+        EscapeQueryStringValue(UTF16ToUTF8(token)).c_str());
   }
 
   return result;

@@ -175,7 +175,7 @@ TEST_F(DownloadItemModelTest, InterruptedStatus) {
     const TestCase& test_case = kTestCases[i];
     SetupInterruptedDownloadItem(test_case.reason);
     EXPECT_STREQ(test_case.expected_status,
-                 base::UTF16ToUTF8(model().GetStatusText()).c_str());
+                 UTF16ToUTF8(model().GetStatusText()).c_str());
   }
 }
 
@@ -261,15 +261,15 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
     // large enough to accomodate all the strings.
     EXPECT_STREQ(
         test_case.expected_tooltip,
-        base::UTF16ToUTF8(model().GetTooltipText(font_list,
-                                                 kLargeTooltipWidth)).c_str());
+        UTF16ToUTF8(model().GetTooltipText(font_list,
+                                           kLargeTooltipWidth)).c_str());
 
     // Check that if the width is small, the returned tooltip only contains
     // lines of the given width or smaller.
     std::vector<base::string16> lines;
     base::string16 truncated_tooltip =
         model().GetTooltipText(font_list, kSmallTooltipWidth);
-    Tokenize(truncated_tooltip, base::ASCIIToUTF16("\n"), &lines);
+    Tokenize(truncated_tooltip, ASCIIToUTF16("\n"), &lines);
     for (unsigned i = 0; i < lines.size(); ++i)
       EXPECT_GE(kSmallTooltipWidth, gfx::GetStringWidth(lines[i], font_list));
   }
@@ -343,7 +343,7 @@ TEST_F(DownloadItemModelTest, InProgressStatus) {
         .WillRepeatedly(Return(test_case.is_paused));
 
     EXPECT_STREQ(test_case.expected_status,
-                 base::UTF16ToUTF8(model().GetStatusText()).c_str());
+                 UTF16ToUTF8(model().GetStatusText()).c_str());
   }
 }
 

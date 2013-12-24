@@ -81,8 +81,8 @@ bool IncognitoConnectability::Query(const Extension* extension,
                        : NULL,
           base::string16(),  // no title
           l10n_util::GetStringFUTF16(template_id,
-                                     base::UTF8ToUTF16(origin.spec()),
-                                     base::UTF8ToUTF16(extension->name())),
+                                     UTF8ToUTF16(origin.spec()),
+                                     UTF8ToUTF16(extension->name())),
           chrome::MESSAGE_BOX_TYPE_QUESTION);
       break;
     }

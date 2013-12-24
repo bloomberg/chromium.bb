@@ -101,7 +101,7 @@ void MediaGalleriesPrivateEventRouter::OnRemovableStorageAttached(
   pref_info.volume_metadata_valid = true;
 
   DeviceAttachmentDetails details;
-  details.device_name = base::UTF16ToUTF8(pref_info.GetGalleryDisplayName());
+  details.device_name = UTF16ToUTF8(pref_info.GetGalleryDisplayName());
   details.device_id = GetTransientIdForDeviceId(info.device_id());
 
   scoped_ptr<base::ListValue> args(new base::ListValue());

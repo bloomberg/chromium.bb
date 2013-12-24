@@ -9,8 +9,6 @@
 #include "chrome/browser/history/in_memory_url_index_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::UTF8ToUTF16;
-
 namespace history {
 
 // Helper function for verifying that the contents of a C++ iterable container
@@ -32,8 +30,7 @@ class InMemoryURLIndexTypesTest : public testing::Test {
 
 TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   // Test String16VectorFromString16
-  base::string16 string_a(
-      base::UTF8ToUTF16("http://www.google.com/ frammy  the brammy"));
+  base::string16 string_a(ASCIIToUTF16("http://www.google.com/ frammy  the brammy"));
   WordStarts actual_starts_a;
   String16Vector string_vec =
       String16VectorFromString16(string_a, false, &actual_starts_a);
@@ -63,7 +60,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
   EXPECT_TRUE(IntArraysEqual(expected_starts_b, arraysize(expected_starts_b),
                              actual_starts_b));
 
-  base::string16 string_c(base::ASCIIToUTF16(
+  base::string16 string_c(ASCIIToUTF16(
       " funky%20string-with=@strange   sequences, intended(to exceed)"));
   WordStarts actual_starts_c;
   string_vec = String16VectorFromString16(string_c, false, &actual_starts_c);
@@ -74,7 +71,7 @@ TEST_F(InMemoryURLIndexTypesTest, StaticFunctions) {
                              actual_starts_c));
 
   // Test String16SetFromString16
-  base::string16 string_d(base::ASCIIToUTF16(
+  base::string16 string_d(ASCIIToUTF16(
       "http://web.google.com/search Google Web Search"));
   WordStarts actual_starts_d;
   String16Set string_set = String16SetFromString16(string_d, &actual_starts_d);

@@ -305,8 +305,7 @@ class PathTest : public DiagnosticsTest {
     if (!base::PathExists(dir_or_file)) {
       RecordFailure(
           DIAG_RECON_PATH_NOT_FOUND,
-          "Path not found: " +
-              base::UTF16ToUTF8(dir_or_file.LossyDisplayName()));
+          "Path not found: " + UTF16ToUTF8(dir_or_file.LossyDisplayName()));
       return true;
     }
 
@@ -319,7 +318,7 @@ class PathTest : public DiagnosticsTest {
     if (!dir_or_file_size && !path_info_.is_optional) {
       RecordFailure(DIAG_RECON_CANNOT_OBTAIN_SIZE,
                     "Cannot obtain size for: " +
-                        base::UTF16ToUTF8(dir_or_file.LossyDisplayName()));
+                        UTF16ToUTF8(dir_or_file.LossyDisplayName()));
       return true;
     }
     std::string printable_size = base::Int64ToString(dir_or_file_size);
@@ -328,7 +327,7 @@ class PathTest : public DiagnosticsTest {
       if (dir_or_file_size > path_info_.max_size) {
         RecordFailure(DIAG_RECON_FILE_TOO_LARGE,
                       "Path contents too large (" + printable_size + ") for: " +
-                          base::UTF16ToUTF8(dir_or_file.LossyDisplayName()));
+                          UTF16ToUTF8(dir_or_file.LossyDisplayName()));
         return true;
       }
     }
@@ -339,7 +338,7 @@ class PathTest : public DiagnosticsTest {
     if (!base::PathIsWritable(dir_or_file)) {
       RecordFailure(DIAG_RECON_NOT_WRITABLE,
                     "Path is not writable: " +
-                        base::UTF16ToUTF8(dir_or_file.LossyDisplayName()));
+                        UTF16ToUTF8(dir_or_file.LossyDisplayName()));
       return true;
     }
     RecordSuccess("Path exists and is writable: " + printable_size);

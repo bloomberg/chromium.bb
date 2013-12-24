@@ -395,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, MAYBE_IncognitoSplitMode) {
     test::WaitForBookmarkModelToLoad(bookmark_model);
     const BookmarkNode* parent = bookmark_model->bookmark_bar_node();
     bookmark_model->AddURL(
-        parent, 0, base::ASCIIToUTF16("Title"), GURL("about:blank"));
+        parent, 0, ASCIIToUTF16("Title"), GURL("about:blank"));
     page_complete.Wait();
     page2_complete.Wait();
 
@@ -511,9 +511,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventDispatchToTab) {
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForProfile(browser()->profile());
   test::WaitForBookmarkModelToLoad(bookmark_model);
-  bookmark_utils::AddIfNotBookmarked(bookmark_model,
-                                     GURL("http://www.google.com"),
-                                     base::UTF8ToUTF16("Google"));
+  bookmark_utils::AddIfNotBookmarked(
+      bookmark_model, GURL("http://www.google.com"), UTF8ToUTF16("Google"));
 
   EXPECT_TRUE(event_page_ready.WaitUntilSatisfied());
 

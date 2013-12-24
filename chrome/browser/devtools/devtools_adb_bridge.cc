@@ -869,7 +869,7 @@ RemotePageTarget::RemotePageTarget(
   value.GetString("url", &url);
   url_ = GURL(url);
   value.GetString("title", &title_);
-  title_ = base::UTF16ToUTF8(net::UnescapeForHTML(base::UTF8ToUTF16(title_)));
+  title_ = UTF16ToUTF8(net::UnescapeForHTML(UTF8ToUTF16(title_)));
   value.GetString("description", &description_);
   std::string favicon_url;
   value.GetString("faviconUrl", &favicon_url);

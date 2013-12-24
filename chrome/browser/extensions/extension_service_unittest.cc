@@ -193,7 +193,7 @@ static std::vector<base::string16> GetErrors() {
 
   for (std::vector<base::string16>::const_iterator iter = errors->begin();
        iter != errors->end(); ++iter) {
-    std::string utf8_error = base::UTF16ToUTF8(*iter);
+    std::string utf8_error = UTF16ToUTF8(*iter);
     if (utf8_error.find(".svn") == std::string::npos) {
       ret_val.push_back(*iter);
     }
@@ -1436,25 +1436,25 @@ TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectoryFail) {
   ASSERT_EQ(4u, GetErrors().size());
   ASSERT_EQ(0u, loaded_.size());
 
-  EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[0]),
+  EXPECT_TRUE(MatchPattern(UTF16ToUTF8(GetErrors()[0]),
       std::string("Could not load extension from '*'. ") +
       extensions::manifest_errors::kManifestUnreadable)) <<
-      base::UTF16ToUTF8(GetErrors()[0]);
+      UTF16ToUTF8(GetErrors()[0]);
 
-  EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[1]),
+  EXPECT_TRUE(MatchPattern(UTF16ToUTF8(GetErrors()[1]),
       std::string("Could not load extension from '*'. ") +
       extensions::manifest_errors::kManifestUnreadable)) <<
-      base::UTF16ToUTF8(GetErrors()[1]);
+      UTF16ToUTF8(GetErrors()[1]);
 
-  EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[2]),
+  EXPECT_TRUE(MatchPattern(UTF16ToUTF8(GetErrors()[2]),
       std::string("Could not load extension from '*'. ") +
       extensions::manifest_errors::kMissingFile)) <<
-      base::UTF16ToUTF8(GetErrors()[2]);
+      UTF16ToUTF8(GetErrors()[2]);
 
-  EXPECT_TRUE(MatchPattern(base::UTF16ToUTF8(GetErrors()[3]),
+  EXPECT_TRUE(MatchPattern(UTF16ToUTF8(GetErrors()[3]),
       std::string("Could not load extension from '*'. ") +
       extensions::manifest_errors::kManifestUnreadable)) <<
-      base::UTF16ToUTF8(GetErrors()[3]);
+      UTF16ToUTF8(GetErrors()[3]);
 };
 
 // Test that partially deleted extensions are cleaned up during startup
@@ -4275,8 +4275,8 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   webkit_database::DatabaseTracker* db_tracker =
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetDatabaseTracker();
-  base::string16 db_name = base::UTF8ToUTF16("db");
-  base::string16 description = base::UTF8ToUTF16("db_description");
+  base::string16 db_name = UTF8ToUTF16("db");
+  base::string16 description = UTF8ToUTF16("db_description");
   int64 size;
   db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
   db_tracker->DatabaseClosed(origin_id, db_name);
@@ -4391,8 +4391,8 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   webkit_database::DatabaseTracker* db_tracker =
       BrowserContext::GetDefaultStoragePartition(profile_.get())->
           GetDatabaseTracker();
-  base::string16 db_name = base::UTF8ToUTF16("db");
-  base::string16 description = base::UTF8ToUTF16("db_description");
+  base::string16 db_name = UTF8ToUTF16("db");
+  base::string16 description = UTF8ToUTF16("db_description");
   int64 size;
   db_tracker->DatabaseOpened(origin_id, db_name, description, 1, &size);
   db_tracker->DatabaseClosed(origin_id, db_name);
@@ -4539,9 +4539,8 @@ TEST_F(ExtensionServiceTest, UnpackedValidatesLocales) {
   base::FilePath ms_messages_file = bad_locale.AppendASCII("_locales")
                                               .AppendASCII("ms")
                                               .AppendASCII("messages.json");
-  EXPECT_THAT(base::UTF16ToUTF8(GetErrors()[0]), testing::AllOf(
-       testing::HasSubstr(
-           base::UTF16ToUTF8(ms_messages_file.LossyDisplayName())),
+  EXPECT_THAT(UTF16ToUTF8(GetErrors()[0]), testing::AllOf(
+       testing::HasSubstr(UTF16ToUTF8(ms_messages_file.LossyDisplayName())),
        testing::HasSubstr("Dictionary keys must be quoted.")));
   ASSERT_EQ(0u, loaded_.size());
 }

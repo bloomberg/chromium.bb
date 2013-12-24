@@ -49,7 +49,7 @@ base::string16 GetManifestPath(const base::string16& native_host_name,
 base::FilePath NativeProcessLauncher::FindManifest(
     const std::string& native_host_name,
     std::string* error_message) {
-  base::string16 native_host_name_wide = base::UTF8ToUTF16(native_host_name);
+  base::string16 native_host_name_wide = UTF8ToUTF16(native_host_name);
 
   // First check 32-bit registry and then try 64-bit.
   base::string16 manifest_path_str =

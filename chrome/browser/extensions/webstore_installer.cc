@@ -385,7 +385,7 @@ void WebstoreInstaller::Observe(int type,
       // replacing with base::string16. See crbug.com/71980.
       const base::string16* error =
           content::Details<const base::string16>(details).ptr();
-      const std::string utf8_error = base::UTF16ToUTF8(*error);
+      const std::string utf8_error = UTF16ToUTF8(*error);
       if (download_url_ == crx_installer->original_download_url())
         ReportFailure(utf8_error, FAILURE_REASON_OTHER);
       break;

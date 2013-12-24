@@ -66,7 +66,7 @@ scoped_ptr<HistoryItem> GetHistoryItem(const history::URLRow& row) {
 
   history_item->id = base::Int64ToString(row.id());
   history_item->url.reset(new std::string(row.url().spec()));
-  history_item->title.reset(new std::string(base::UTF16ToUTF8(row.title())));
+  history_item->title.reset(new std::string(UTF16ToUTF8(row.title())));
   history_item->last_visit_time.reset(
       new double(MilliSecondsFromTime(row.last_visit())));
   history_item->typed_count.reset(new int(row.typed_count()));
@@ -334,7 +334,7 @@ bool HistorySearchFunction::RunAsyncImpl() {
   scoped_ptr<Search::Params> params(Search::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  base::string16 search_text = base::UTF8ToUTF16(params->query.text);
+  base::string16 search_text = UTF8ToUTF16(params->query.text);
 
   history::QueryOptions options;
   options.SetRecentDayRange(1);

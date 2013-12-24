@@ -271,7 +271,7 @@ base::string16 ExternalInstallMenuAlert::MenuItemLabel() {
     id = IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_THEME;
   else
     id = IDS_EXTENSION_EXTERNAL_INSTALL_ALERT_EXTENSION;
-  return l10n_util::GetStringFUTF16(id, base::UTF8ToUTF16(extension_->name()));
+  return l10n_util::GetStringFUTF16(id, UTF8ToUTF16(extension_->name()));
 }
 
 void ExternalInstallMenuAlert::ExecuteMenuItem(Browser* browser) {

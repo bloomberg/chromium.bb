@@ -720,8 +720,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestPartialUpdate) {
       g_browser_process->message_center()->GetVisibleNotifications();
   ASSERT_EQ(1u, notifications.size());
   message_center::Notification* notification = *(notifications.begin());
-  EXPECT_EQ(base::ASCIIToUTF16(kNewTitle), notification->title());
-  EXPECT_EQ(base::ASCIIToUTF16(kNewMessage), notification->message());
+  EXPECT_EQ(ASCIIToUTF16(kNewTitle), notification->title());
+  EXPECT_EQ(ASCIIToUTF16(kNewMessage), notification->message());
   EXPECT_EQ(kNewPriority, notification->priority());
   EXPECT_EQ(0u, notification->buttons().size());
 }

@@ -17,7 +17,7 @@ StorageInfo BuildStorageInfoFromTestStorageUnitInfo(
     const TestStorageUnitInfo& unit) {
   return StorageInfo(
       unit.device_id,
-      base::UTF8ToUTF16(unit.name),
+      UTF8ToUTF16(unit.name),
       base::FilePath::StringType(), /* no location */
       base::string16(), /* no storage label */
       base::string16(), /* no storage vendor */

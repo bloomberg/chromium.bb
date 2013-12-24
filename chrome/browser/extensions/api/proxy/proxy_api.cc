@@ -65,11 +65,10 @@ void ProxyEventRouter::OnPACScriptError(
                   net::ErrorToString(net::ERR_PAC_SCRIPT_FAILED));
   std::string error_msg;
   if (line_number != -1) {
-    base::SStringPrintf(&error_msg,
-                        "line: %d: %s",
-                        line_number, base::UTF16ToUTF8(error).c_str());
+    base::SStringPrintf(
+        &error_msg, "line: %d: %s", line_number, UTF16ToUTF8(error).c_str());
   } else {
-    error_msg = base::UTF16ToUTF8(error);
+    error_msg = UTF16ToUTF8(error);
   }
   dict->SetString(keys::kProxyEventDetails, error_msg);
   args->Append(dict);

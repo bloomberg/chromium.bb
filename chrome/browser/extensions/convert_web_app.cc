@@ -111,9 +111,9 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   if (web_app.is_offline_enabled)
     root->SetBoolean(keys::kOfflineEnabled, true);
 
-  root->SetString(keys::kName, base::UTF16ToUTF8(web_app.title));
+  root->SetString(keys::kName, UTF16ToUTF8(web_app.title));
   root->SetString(keys::kVersion, ConvertTimeToExtensionVersion(create_time));
-  root->SetString(keys::kDescription, base::UTF16ToUTF8(web_app.description));
+  root->SetString(keys::kDescription, UTF16ToUTF8(web_app.description));
   root->SetString(keys::kLaunchWebURL, web_app.app_url.spec());
 
   if (!web_app.launch_container.empty())

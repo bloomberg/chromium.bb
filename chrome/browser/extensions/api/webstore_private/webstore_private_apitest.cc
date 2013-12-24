@@ -151,8 +151,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        DISABLED_FrameWebstorePageBlocked) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  base::string16 expected_title = base::UTF8ToUTF16("PASS: about:blank");
-  base::string16 failure_title = base::UTF8ToUTF16("FAIL");
+  base::string16 expected_title = UTF8ToUTF16("PASS: about:blank");
+  base::string16 failure_title = UTF8ToUTF16("FAIL");
   content::TitleWatcher watcher(contents, expected_title);
   watcher.AlsoWaitForTitle(failure_title);
   GURL url = test_server()->GetURL(
@@ -168,8 +168,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTest,
                        DISABLED_FrameErrorPageBlocked) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  base::string16 expected_title = base::UTF8ToUTF16("PASS: about:blank");
-  base::string16 failure_title = base::UTF8ToUTF16("FAIL");
+  base::string16 expected_title = UTF8ToUTF16("PASS: about:blank");
+  base::string16 failure_title = UTF8ToUTF16("FAIL");
   content::TitleWatcher watcher(contents, expected_title);
   watcher.AlsoWaitForTitle(failure_title);
   GURL url = test_server()->GetURL(

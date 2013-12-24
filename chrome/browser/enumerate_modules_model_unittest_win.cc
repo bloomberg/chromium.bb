@@ -215,11 +215,10 @@ const struct CollapsePathList {
   base::string16 test_case;
 } kCollapsePathList[] = {
   // Negative testing (should not collapse this path).
-  { base::ASCIIToUTF16("c:\\a\\a.dll"), base::ASCIIToUTF16("c:\\a\\a.dll") },
+  { ASCIIToUTF16("c:\\a\\a.dll"), ASCIIToUTF16("c:\\a\\a.dll") },
   // These two are to test that we select the maximum collapsed path.
-  { base::ASCIIToUTF16("%foo%\\a.dll"), base::ASCIIToUTF16("c:\\foo\\a.dll") },
-  { base::ASCIIToUTF16("%x%\\a.dll"),
-    base::ASCIIToUTF16("c:\\foo\\bar\\a.dll") },
+  { ASCIIToUTF16("%foo%\\a.dll"), ASCIIToUTF16("c:\\foo\\a.dll") },
+  { ASCIIToUTF16("%x%\\a.dll"), ASCIIToUTF16("c:\\foo\\bar\\a.dll") },
 };
 
 TEST_F(EnumerateModulesTest, CollapsePath) {

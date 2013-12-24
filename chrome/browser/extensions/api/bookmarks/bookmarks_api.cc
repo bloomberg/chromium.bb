@@ -441,7 +441,7 @@ bool BookmarksSearchFunction::RunImpl() {
   if (params->query.as_string) {
     bookmark_utils::QueryFields query;
     query.word_phrase_query.reset(
-        new base::string16(base::UTF8ToUTF16(*params->query.as_string)));
+        new base::string16(UTF8ToUTF16(*params->query.as_string)));
     bookmark_utils::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForProfile(GetProfile()),
         query,
@@ -455,12 +455,12 @@ bool BookmarksSearchFunction::RunImpl() {
     bookmark_utils::QueryFields query;
     if (object.query) {
       query.word_phrase_query.reset(
-          new base::string16(base::UTF8ToUTF16(*object.query)));
+          new base::string16(UTF8ToUTF16(*object.query)));
     }
     if (object.url)
-      query.url.reset(new base::string16(base::UTF8ToUTF16(*object.url)));
+      query.url.reset(new base::string16(UTF8ToUTF16(*object.url)));
     if (object.title)
-      query.title.reset(new base::string16(base::UTF8ToUTF16(*object.title)));
+      query.title.reset(new base::string16(UTF8ToUTF16(*object.title)));
     bookmark_utils::GetBookmarksMatchingProperties(
         BookmarkModelFactory::GetForProfile(GetProfile()),
         query,
@@ -558,7 +558,7 @@ bool BookmarksCreateFunction::RunImpl() {
 
   base::string16 title;  // Optional.
   if (params->bookmark.title.get())
-    title = base::UTF8ToUTF16(*params->bookmark.title.get());
+    title = UTF8ToUTF16(*params->bookmark.title.get());
 
   std::string url_string;  // Optional.
   if (params->bookmark.url.get())
@@ -675,7 +675,7 @@ bool BookmarksUpdateFunction::RunImpl() {
   base::string16 title;
   bool has_title = false;
   if (params->changes.title.get()) {
-    title = base::UTF8ToUTF16(*params->changes.title);
+    title = UTF8ToUTF16(*params->changes.title);
     has_title = true;
   }
 
@@ -753,7 +753,7 @@ class CreateBookmarkBucketMapper : public BookmarkBucketMapper<std::string> {
     if (!parent)
       return;
 
-    std::string bucket_id = base::UTF16ToUTF8(parent->GetTitle());
+    std::string bucket_id = UTF16ToUTF8(parent->GetTitle());
     std::string title;
     json->GetString(keys::kTitleKey, &title);
     std::string url_string;
@@ -790,8 +790,8 @@ class RemoveBookmarksBucketMapper : public BookmarkBucketMapper<std::string> {
         return;
 
       std::string bucket_id;
-      bucket_id += base::UTF16ToUTF8(node->parent()->GetTitle());
-      bucket_id += base::UTF16ToUTF8(node->GetTitle());
+      bucket_id += UTF16ToUTF8(node->parent()->GetTitle());
+      bucket_id += UTF16ToUTF8(node->GetTitle());
       bucket_id += node->url().spec();
       buckets->push_back(GetBucket(base::SHA1HashString(bucket_id)));
     }

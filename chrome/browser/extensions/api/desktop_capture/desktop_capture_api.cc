@@ -186,7 +186,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
       &DesktopCaptureChooseDesktopMediaFunction::OnPickerDialogResults, this);
 
   picker_->Show(parent_window, parent_window,
-                base::UTF8ToUTF16(GetExtension()->name()),
+                UTF8ToUTF16(GetExtension()->name()),
                 media_list.Pass(), callback);
   return true;
 }

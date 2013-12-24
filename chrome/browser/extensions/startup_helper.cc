@@ -45,7 +45,7 @@ void StartupHelper::OnPackSuccess(
     const base::FilePath& output_private_key_path) {
   pack_job_succeeded_ = true;
   PrintPackExtensionMessage(
-      base::UTF16ToUTF8(
+      UTF16ToUTF8(
           PackExtensionJob::StandardSuccessMessage(crx_path,
                                                    output_private_key_path)));
 }
@@ -191,7 +191,7 @@ bool StartupHelper::ValidateCrx(const CommandLine& cmd_line,
 
   bool success = helper->success();
   if (!success)
-    *error = base::UTF16ToUTF8(helper->error());
+    *error = UTF16ToUTF8(helper->error());
   return success;
 }
 

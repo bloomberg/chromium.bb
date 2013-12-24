@@ -165,10 +165,9 @@ ExtensionWarning ExtensionWarning::CreateDownloadFilenameConflictWarning(
     const base::FilePath& losing_filename,
     const base::FilePath& winning_filename) {
   std::vector<std::string> message_parameters;
-  message_parameters.push_back(base::UTF16ToUTF8(
-      losing_filename.LossyDisplayName()));
+  message_parameters.push_back(UTF16ToUTF8(losing_filename.LossyDisplayName()));
   message_parameters.push_back(kTranslate + winning_extension_id);
-  message_parameters.push_back(base::UTF16ToUTF8(
+  message_parameters.push_back(UTF16ToUTF8(
       winning_filename.LossyDisplayName()));
   return ExtensionWarning(
       kDownloadFilenameConflict,
@@ -193,7 +192,7 @@ std::string ExtensionWarning::GetLocalizedMessage(
           extensions->GetByID(extension_id);
       message = extension ? extension->name() : extension_id;
     }
-    final_parameters.push_back(base::UTF8ToUTF16(net::EscapeForHTML(message)));
+    final_parameters.push_back(UTF8ToUTF16(net::EscapeForHTML(message)));
   }
 
   COMPILE_ASSERT(kMaxNumberOfParameters == 4u, YouNeedToAddMoreCaseStatements);

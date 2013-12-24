@@ -319,7 +319,7 @@ void TabHelper::FinishCreateHostedApp(
   if (install_info.title.empty())
     install_info.title = web_contents()->GetTitle();
   if (install_info.title.empty())
-    install_info.title = base::UTF8ToUTF16(install_info.app_url.spec());
+    install_info.title = UTF8ToUTF16(install_info.app_url.spec());
 
   install_info.urls.push_back(install_info.app_url);
   install_info.is_bookmark_app = true;

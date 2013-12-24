@@ -1183,7 +1183,7 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
       if (num_handlers_blocking == 0) {
         std::string delegate_info =
             l10n_util::GetStringFUTF8(IDS_LOAD_STATE_PARAMETER_EXTENSION,
-                                      base::UTF8ToUTF16((*it)->extension_name));
+                                      UTF8ToUTF16((*it)->extension_name));
         // LobAndReport allows extensions that block requests to be displayed in
         // the load status bar.
         request->LogAndReportBlockedBy(delegate_info.c_str());
@@ -1662,8 +1662,7 @@ scoped_ptr<base::DictionaryValue> SummarizeResponseDelta(
   }
   if (delta.auth_credentials) {
     details->SetString(activitylog::kAuthCredentialsKey,
-                       base::UTF16ToUTF8(
-                           delta.auth_credentials->username()) + ":*");
+                       UTF16ToUTF8(delta.auth_credentials->username()) + ":*");
   }
 
   if (!delta.response_cookie_modifications.empty()) {
@@ -1767,7 +1766,7 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
         continue;
       std::string delegate_info =
           l10n_util::GetStringFUTF8(IDS_LOAD_STATE_PARAMETER_EXTENSION,
-                                    base::UTF8ToUTF16(it->extension_name));
+                                    UTF8ToUTF16(it->extension_name));
       blocked_request.request->LogAndReportBlockedBy(delegate_info.c_str());
       break;
     }

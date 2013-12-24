@@ -35,33 +35,32 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     const base::FilePath& extensions_dir, base::string16* error) {
   std::string content;
   if (!base::ReadFileToString(user_script_path, &content)) {
-    *error = base::ASCIIToUTF16("Could not read source file.");
+    *error = ASCIIToUTF16("Could not read source file.");
     return NULL;
   }
 
   if (!IsStringUTF8(content)) {
-    *error = base::ASCIIToUTF16("User script must be UTF8 encoded.");
+    *error = ASCIIToUTF16("User script must be UTF8 encoded.");
     return NULL;
   }
 
   UserScript script;
   if (!UserScriptMaster::ScriptReloader::ParseMetadataHeader(content,
                                                              &script)) {
-    *error = base::ASCIIToUTF16("Invalid script header.");
+    *error = ASCIIToUTF16("Invalid script header.");
     return NULL;
   }
 
   base::FilePath install_temp_dir =
       extension_file_util::GetInstallTempDir(extensions_dir);
   if (install_temp_dir.empty()) {
-    *error = base::ASCIIToUTF16(
-        "Could not get path to profile temporary directory.");
+    *error = ASCIIToUTF16("Could not get path to profile temporary directory.");
     return NULL;
   }
 
   base::ScopedTempDir temp_dir;
   if (!temp_dir.CreateUniqueTempDirUnderPath(install_temp_dir)) {
-    *error = base::ASCIIToUTF16("Could not create temporary directory.");
+    *error = ASCIIToUTF16("Could not create temporary directory.");
     return NULL;
   }
 
@@ -160,14 +159,14 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   base::FilePath manifest_path = temp_dir.path().Append(kManifestFilename);
   JSONFileValueSerializer serializer(manifest_path);
   if (!serializer.Serialize(*root)) {
-    *error = base::ASCIIToUTF16("Could not write JSON.");
+    *error = ASCIIToUTF16("Could not write JSON.");
     return NULL;
   }
 
   // Write the script file.
   if (!base::CopyFile(user_script_path,
                       temp_dir.path().AppendASCII("script.js"))) {
-    *error = base::ASCIIToUTF16("Could not copy script file.");
+    *error = ASCIIToUTF16("Could not copy script file.");
     return NULL;
   }
 
@@ -180,7 +179,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
       *root,
       Extension::NO_FLAGS,
       &utf8_error);
-  *error = base::UTF8ToUTF16(utf8_error);
+  *error = UTF8ToUTF16(utf8_error);
   if (!extension.get()) {
     NOTREACHED() << "Could not init extension " << *error;
     return NULL;

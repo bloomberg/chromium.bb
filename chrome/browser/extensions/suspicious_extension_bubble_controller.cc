@@ -99,8 +99,8 @@ base::string16 SuspiciousExtensionBubbleController::GetOverflowText(
   // Just before string freeze, we checked in # as a substitution value for
   // this string, whereas we should have used $1. It was discovered too late,
   // so we do the substitution by hand in that case.
-  if (overflow_string.find(base::ASCIIToUTF16("#")) != base::string16::npos) {
-    base::ReplaceChars(overflow_string, base::ASCIIToUTF16("#").c_str(),
+  if (overflow_string.find(ASCIIToUTF16("#")) != base::string16::npos) {
+    base::ReplaceChars(overflow_string, ASCIIToUTF16("#").c_str(),
                        overflow_count, &new_string);
   } else {
     new_string = l10n_util::GetStringFUTF16(

@@ -106,7 +106,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
   // typing "w" will inline "ashington..." instead of "ww.washington...".
   const URLPrefix* best_inlineable_prefix =
       (!url_matches_.empty() && (terms.size() == 1)) ?
-      URLPrefix::BestURLPrefix(base::UTF8ToUTF16(gurl.spec()), terms[0]) :
+      URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), terms[0]) :
       NULL;
   can_inline_ = (best_inlineable_prefix != NULL) &&
       !IsWhitespace(*(lower_string.rbegin()));
@@ -133,8 +133,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     //
     // Now, the code that implements this.
     // The deepest prefix for this URL regardless of where the match is.
-    const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
-        base::UTF8ToUTF16(gurl.spec()), base::string16());
+    const URLPrefix* best_prefix =
+        URLPrefix::BestURLPrefix(UTF8ToUTF16(gurl.spec()), base::string16());
     DCHECK(best_prefix != NULL);
     const int num_components_in_best_prefix = best_prefix->num_components;
     // If the URL is inlineable, we must have a match.  Note the prefix that
@@ -171,7 +171,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     // (because the URL-that-you-typed will go first and everything
     // else will be assigned one minus the previous score, as coded
     // at the end of HistoryURLProvider::DoAutocomplete().
-    if (base::UTF8ToUTF16(gurl.host()) == terms[0])
+    if (UTF8ToUTF16(gurl.host()) == terms[0])
       hup_like_score = HistoryURLProvider::kScoreForBestInlineableResult;
 
     // HistoryURLProvider has the function PromoteOrCreateShorterSuggestion()

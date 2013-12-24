@@ -11,8 +11,6 @@
 #include "chrome/browser/history/scored_history_match.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::ASCIIToUTF16;
-
 namespace history {
 
 // Returns a VisitInfoVector that includes |num_visits| spread over the
