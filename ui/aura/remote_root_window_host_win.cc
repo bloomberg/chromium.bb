@@ -24,6 +24,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/base/view_prop.h"
 #include "ui/gfx/insets.h"
+#include "ui/gfx/win/dpi.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 
 namespace aura {
@@ -483,18 +484,24 @@ void RemoteRootWindowHostWin::OnTextInputClientUpdated(
       input_scopes, character_bounds));
 }
 
+gfx::Point PointFromNativeEvent(int32 x, int32 y) {
+  static float scale_factor = gfx::GetModernUIScale();
+  gfx::Point result( x * scale_factor, y * scale_factor);
+  return result;
+}
+
 void RemoteRootWindowHostWin::OnMouseMoved(int32 x, int32 y, int32 flags) {
   if (ignore_mouse_moves_until_set_cursor_ack_)
     return;
 
-  gfx::Point location(x, y);
+  gfx::Point location = PointFromNativeEvent(x, y);
   ui::MouseEvent event(ui::ET_MOUSE_MOVED, location, location, flags, 0);
   delegate_->OnHostMouseEvent(&event);
 }
 
 void RemoteRootWindowHostWin::OnMouseButton(
     const MetroViewerHostMsg_MouseButtonParams& params) {
-  gfx::Point location(params.x, params.y);
+  gfx::Point location = PointFromNativeEvent(params.x, params.y);
   ui::MouseEvent mouse_event(params.event_type, location, location,
                              static_cast<int>(params.flags),
                              static_cast<int>(params.changed_button));
@@ -556,8 +563,9 @@ void RemoteRootWindowHostWin::OnTouchDown(int32 x,
                                           int32 y,
                                           uint64 timestamp,
                                           uint32 pointer_id) {
+  gfx::Point location = PointFromNativeEvent(x, y);
   ui::TouchEvent event(ui::ET_TOUCH_PRESSED,
-                       gfx::Point(x, y),
+                       location,
                        pointer_id,
                        base::TimeDelta::FromMicroseconds(timestamp));
   delegate_->OnHostTouchEvent(&event);
@@ -567,8 +575,9 @@ void RemoteRootWindowHostWin::OnTouchUp(int32 x,
                                         int32 y,
                                         uint64 timestamp,
                                         uint32 pointer_id) {
+  gfx::Point location = PointFromNativeEvent(x, y);
   ui::TouchEvent event(ui::ET_TOUCH_RELEASED,
-                       gfx::Point(x, y),
+                       location,
                        pointer_id,
                        base::TimeDelta::FromMicroseconds(timestamp));
   delegate_->OnHostTouchEvent(&event);
@@ -578,8 +587,9 @@ void RemoteRootWindowHostWin::OnTouchMoved(int32 x,
                                            int32 y,
                                            uint64 timestamp,
                                            uint32 pointer_id) {
+  gfx::Point location = PointFromNativeEvent(x, y);
   ui::TouchEvent event(ui::ET_TOUCH_MOVED,
-                       gfx::Point(x, y),
+                       location,
                        pointer_id,
                        base::TimeDelta::FromMicroseconds(timestamp));
   delegate_->OnHostTouchEvent(&event);

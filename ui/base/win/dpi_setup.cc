@@ -4,6 +4,7 @@
 
 #include "ui/base/win/dpi_setup.h"
 
+#include "base/command_line.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/win/dpi.h"
@@ -12,7 +13,15 @@ namespace ui {
 namespace win {
 
 void InitDeviceScaleFactor() {
-  gfx::InitDeviceScaleFactor(gfx::GetDPIScale());
+  float scale = 1.0;
+  if (CommandLine::ForCurrentProcess()->HasSwitch("silent-launch")) {
+    if (gfx::IsHighDPIEnabled())
+      scale = gfx::GetModernUIScale();
+  }
+  else {
+    scale = gfx::GetDPIScale();
+  }
+  gfx::InitDeviceScaleFactor(scale);
 }
 
 }  // namespace win

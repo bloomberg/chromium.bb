@@ -17,6 +17,7 @@
 
 #if defined(OS_WIN)
 #include "ui/aura/window_tree_host.h"
+#include "ui/gfx/win/dpi.h"
 #endif
 
 namespace ash {
@@ -95,6 +96,12 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
       sscanf(main_spec.c_str(), "%d+%d-%dx%d*%f", &x, &y, &width, &height,
              &device_scale_factor) >= 4) {
     bounds_in_native.SetRect(x, y, width, height);
+  } else {
+#if defined(OS_WIN)
+    if (gfx::IsHighDPIEnabled()) {
+      device_scale_factor = gfx::GetModernUIScale();
+    }
+#endif
   }
 
   std::vector<Resolution> resolutions;

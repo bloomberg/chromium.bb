@@ -16,7 +16,7 @@
 
 extern "C" {
 
-  __declspec(dllexport) float GetModernUIScale() {
+__declspec(dllexport) float GetModernUIScale() {
   base::win::ScopedCOMInitializer com_init;
   Microsoft::WRL::ComPtr<
       ABI::Windows::Graphics::Display::IDisplayPropertiesStatics>
