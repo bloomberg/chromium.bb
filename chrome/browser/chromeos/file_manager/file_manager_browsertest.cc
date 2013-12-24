@@ -661,20 +661,24 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "autocomplete")));
 
 INSTANTIATE_TEST_CASE_P(
-    Transfer,
+    DISABLED_Transfer,
     FileManagerBrowserTest,
-    ::testing::Values(
-// Tests have become flaky. crbug.com/330549
-#if 0
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromDriveToDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromSharedToDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromSharedToDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromRecentToDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDrive")
-#endif
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromDownloadsToDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromRecentToDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDownloads")));
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromDriveToDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromDownloadsToDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromSharedToDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromSharedToDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromRecentToDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromRecentToDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromOfflineToDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "transferFromOfflineToDrive")));
 
 INSTANTIATE_TEST_CASE_P(
      HideSearchBox,
