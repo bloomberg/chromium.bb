@@ -55,13 +55,13 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     // Strong binding will make the service priority equal to the priority of the activity. We want
     // the OS to be able to kill background renderers as it kills other background apps, so strong
     // bindings are maintained only for services that are active at the moment (between
-    // attachAsActive() and detachAsActive()).
+    // addStrongBinding() and removeStrongBinding()).
     private ChildServiceConnection mStrongBinding = null;
     // Low priority binding maintained in the entire lifetime of the connection, i.e. between calls
     // to start() and stop().
     private ChildServiceConnection mWaivedBinding = null;
-    // Incremented on attachAsActive(), decremented on detachAsActive().
-    private int mAttachAsActiveCount = 0;
+    // Incremented on addStrongBinding(), decremented on removeStrongBinding().
+    private int mStrongBindingCount = 0;
 
     // Linker-related parameters.
     private LinkerParams mLinkerParams = null;
@@ -264,7 +264,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             mInitialBinding.unbind();
             mStrongBinding.unbind();
             mWaivedBinding.unbind();
-            mAttachAsActiveCount = 0;
+            mStrongBindingCount = 0;
             if (mService != null) {
                 mService = null;
                 mPID = 0;
@@ -390,35 +390,35 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         synchronized (mLock) {
             mInitialBinding.unbind();
 
-            mAttachAsActiveCount = 0;
+            mStrongBindingCount = 0;
             mStrongBinding.unbind();
         }
     }
 
     @Override
-    public void attachAsActive() {
+    public void addStrongBinding() {
         synchronized (mLock) {
             if (mService == null) {
                 Log.w(TAG, "The connection is not bound for " + mPID);
                 return;
             }
-            if (mAttachAsActiveCount == 0) {
+            if (mStrongBindingCount == 0) {
                 mStrongBinding.bind(null);
             }
-            mAttachAsActiveCount++;
+            mStrongBindingCount++;
         }
     }
 
     @Override
-    public void detachAsActive() {
+    public void removeStrongBinding() {
         synchronized (mLock) {
             if (mService == null) {
                 Log.w(TAG, "The connection is not bound for " + mPID);
                 return;
             }
-            assert mAttachAsActiveCount > 0;
-            mAttachAsActiveCount--;
-            if (mAttachAsActiveCount == 0) {
+            assert mStrongBindingCount > 0;
+            mStrongBindingCount--;
+            if (mStrongBindingCount == 0) {
                 mStrongBinding.unbind();
             }
         }

@@ -11,9 +11,9 @@ import org.chromium.content.common.IChildProcessService;
 
 /**
  * Manages a connection between the browser activity and a child service. ChildProcessConnection is
- * responsible for estabilishing the connection (start()), closing it (stop()) and increasing the
- * priority of the service when it is in active use (between calls to attachAsActive() and
- * detachAsActive()).
+ * responsible for estabilishing the connection (start()), closing it (stop()) and manipulating the
+ * bindings held onto the service (addStrongBinding(), removeStrongBinding(),
+ * removeInitialBinding()).
  */
 public interface ChildProcessConnection {
     /**
@@ -121,13 +121,13 @@ public interface ChildProcessConnection {
 
     /**
      * Attaches a strong binding that will make the service as important as the main process. Each
-     * call should be succeeded by detachAsActive(), but multiple strong bindings can be
+     * call should be succeeded by removeStrongBinding(), but multiple strong bindings can be
      * requested and released independently.
      */
-    void attachAsActive();
+    void addStrongBinding();
 
     /**
      * Called when the service is no longer in active use of the consumer.
      */
-    void detachAsActive();
+    void removeStrongBinding();
 }

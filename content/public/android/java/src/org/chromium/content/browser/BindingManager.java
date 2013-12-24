@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -17,15 +18,23 @@ import org.chromium.base.ThreadUtils;
  * normal conditions (it can still be killed under drastic memory pressure). ChildProcessConnections
  * have two oom bindings: initial binding and strong binding.
  *
- * This class serves as a proxy between external calls that manipulate the bindings and the
- * connections, allowing to enforce policies:
- * - delayed removal of the oom bindings
+ * This class receives calls that signal visibility of each service (setInForeground()) and the
+ * entire embedding application (onSentToBackground(), onBroughtToForeground()) and manipulates
+ * child process bindings accordingly.
+ *
+ * In particular, the class is responsible for:
+ * - removing the initial binding of a service when its visibility is determined for the first time
+ * - addition and (possibly delayed) removal of a strong binding when service visibility changes
  * - dropping the current oom bindings when a new connection is started on a low-memory device
+ * - keeping a strong binding on the foreground service while the entire application is in
+ *   background
  *
  * Thread-safety: most of the methods will be called only on the main thread, exceptions are
  * explicitly noted.
  */
 class BindingManager {
+    private static final String TAG = "BindingManager";
+
     // Delay of 1 second used when removing the initial oom binding of a process.
     private static final long REMOVE_INITIAL_BINDING_DELAY_MILLIS = 1 * 1000;
 
@@ -45,18 +54,112 @@ class BindingManager {
      * connection goes away, but ManagedConnection itself is kept (until overwritten by a new entry
      * for the same pid).
      */
-    private static class ManagedConnection {
+    private class ManagedConnection {
+        // Set in constructor, cleared in clearConnection().
         private ChildProcessConnection mConnection;
+
+        // True iff there is a strong binding kept on the service because it is working in
+        // foreground.
+        private boolean mInForeground;
+
+        // True iff there is a strong binding kept on the service because it was bound for the
+        // application background period.
+        private boolean mBoundForBackgroundPeriod;
 
         // When mConnection is cleared, oom binding status is stashed here.
         private boolean mWasOomProtected;
+
+        /** Removes the initial service binding. */
+        private void removeInitialBinding() {
+            final ChildProcessConnection connection = mConnection;
+            if (connection == null || !connection.isInitialBindingBound()) return;
+
+            ThreadUtils.postOnUiThreadDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (connection.isInitialBindingBound()) {
+                        connection.removeInitialBinding();
+                    }
+                }
+            }, mRemoveInitialBindingDelay);
+        }
+
+        /** Adds a strong service binding. */
+        private void addStrongBinding() {
+            ChildProcessConnection connection = mConnection;
+            if (connection == null) return;
+
+            connection.addStrongBinding();
+        }
+
+        /** Removes a strong service binding. */
+        private void removeStrongBinding() {
+            final ChildProcessConnection connection = mConnection;
+            // We have to fail gracefully if the strong binding is not present, as on low-end the
+            // binding could have been removed by dropOomBindings() when a new service was started.
+            if (connection == null || !connection.isStrongBindingBound()) return;
+
+            // This runnable performs the actual unbinding. It will be executed synchronously when
+            // on low-end devices and posted with a delay otherwise.
+            Runnable doUnbind = new Runnable() {
+                @Override
+                public void run() {
+                    if (connection.isStrongBindingBound()) {
+                        connection.removeStrongBinding();
+                    }
+                }
+            };
+
+            if (mIsLowMemoryDevice) {
+                doUnbind.run();
+            } else {
+                ThreadUtils.postOnUiThreadDelayed(doUnbind, mRemoveStrongBindingDelay);
+            }
+        }
+
+        /**
+         * Drops the service bindings. This is used on low-end to drop bindings of the current
+         * service when a new one is created.
+         */
+        private void dropBindings() {
+            assert mIsLowMemoryDevice;
+            ChildProcessConnection connection = mConnection;
+            if (connection == null) return;
+
+            connection.dropOomBindings();
+        }
 
         ManagedConnection(ChildProcessConnection connection) {
             mConnection = connection;
         }
 
-        ChildProcessConnection getConnection() {
-            return mConnection;
+        /**
+         * Sets the visibility of the service, adding or removing the strong binding as needed. This
+         * also removes the initial binding, as the service visibility is now known.
+         */
+        void setInForeground(boolean nextInForeground) {
+            if (!mInForeground && nextInForeground) {
+                addStrongBinding();
+            } else if (mInForeground && !nextInForeground) {
+                removeStrongBinding();
+            }
+
+            removeInitialBinding();
+            mInForeground = nextInForeground;
+        }
+
+        /**
+         * Sets or removes additional binding when the service is main service during the embedder
+         * background period.
+         */
+        void setBoundForBackgroundPeriod(boolean nextBound) {
+            if (!mBoundForBackgroundPeriod && nextBound) {
+                addStrongBinding();
+            } else if (mBoundForBackgroundPeriod && !nextBound) {
+                removeStrongBinding();
+            }
+
+            mBoundForBackgroundPeriod = nextBound;
         }
 
         boolean isOomProtected() {
@@ -71,45 +174,30 @@ class BindingManager {
             mWasOomProtected = mConnection.isOomProtectedOrWasWhenDied();
             mConnection = null;
         }
+
+        /** @return true iff the reference to the connection is no longer held */
+        @VisibleForTesting
+        boolean isConnectionCleared() {
+            return mConnection == null;
+        }
     }
 
     // This can be manipulated on different threads, synchronize access on mManagedConnections.
     private final SparseArray<ManagedConnection> mManagedConnections =
             new SparseArray<ManagedConnection>();
 
-    /**
-     * A helper method that returns the bare ChildProcessConnection for the given pid, returning
-     * null with a log message if there is no entry for the pid.
-     *
-     * This is visible for testing, so that we can verify that we are not holding onto the reference
-     * when we shouldn't.
-     */
-    @VisibleForTesting
-    ChildProcessConnection getConnectionForPid(int pid) {
-        ManagedConnection managedConnection;
-        synchronized (mManagedConnections) {
-            managedConnection = mManagedConnections.get(pid);
-        }
-        if (managedConnection == null) {
-            ChildProcessLauncher.logPidWarning(pid,
-                    "BindingManager never saw a connection for the pid: " + Integer.toString(pid));
-            return null;
-        }
+    // The connection that was most recently set as foreground (using setInForeground()). This is
+    // used to add additional binding on it when the embedder goes to background. On low-end, this
+    // is also used to drop process bidnings when a new one is created, making sure that only one
+    // renderer process at a time is protected from oom killing.
+    private ManagedConnection mLastInForeground;
 
-        return managedConnection.getConnection();
-    }
+    // Synchronizes operations that access mLastInForeground: setInForeground() and
+    // addNewConnection().
+    private final Object mLastInForegroundLock = new Object();
 
-    // Pid of the renderer that was most recently bound using bindAsHighPriority(). This is used on
-    // low-memory devices to drop oom bindings of a process when another one acquires them, making
-    // sure that only one renderer process at a time is oom bound.
-    private int mLastOomPid = -1;
-
-    // Pid of the renderer that is bound with a strong binding for the background period. Equals
-    // -1 when there is no such renderer.
-    private int mBoundForBackgroundPeriodPid = -1;
-
-    // Synchronizes operations that access mLastOomPid: addNewConnection() and bindAsHighPriority().
-    private final Object mLastOomPidLock = new Object();
+    // The connection bound with additional binding in onSentToBackground().
+    private ManagedConnection mBoundForBackgroundPeriod;
 
     /**
      * The constructor is private to hide parameters exposed for testing from the regular consumer.
@@ -141,15 +229,13 @@ class BindingManager {
      * oom bindings of the last process that was oom-bound. We can do that, because every time a
      * connection is created on the low-end, it is used in foreground (no prerendering, no
      * loading of tabs opened in background). This can be called on any thread.
-     * @param pid handle of the process.
+     * @param pid handle of the service process
      */
     void addNewConnection(int pid, ChildProcessConnection connection) {
-        synchronized (mLastOomPidLock) {
-            if (mIsLowMemoryDevice && mLastOomPid >= 0) {
-                ChildProcessConnection lastOomConnection = getConnectionForPid(mLastOomPid);
-                if (lastOomConnection != null) lastOomConnection.dropOomBindings();
-            }
+        synchronized (mLastInForegroundLock) {
+            if (mIsLowMemoryDevice && mLastInForeground != null) mLastInForeground.dropBindings();
         }
+
         // This will reset the previous entry for the pid in the unlikely event of the OS
         // reusing renderer pids.
         synchronized (mManagedConnections) {
@@ -158,62 +244,25 @@ class BindingManager {
     }
 
     /**
-     * Remove the initial binding of the child process. Child processes are bound with initial
-     * binding to protect them from getting killed before they are put to use. This method
-     * allows to remove the binding once it is no longer needed. The binding is removed after a
-     * fixed delay period so that the renderer will not be killed immediately after the call.
+     * Called when the service visibility changes or is determined for the first time.
+     * @param pid handle of the service process
+     * @param inForeground true iff the service is visibile to the user
      */
-    void removeInitialBinding(final int pid) {
-        final ChildProcessConnection connection = getConnectionForPid(pid);
-        if (connection == null || !connection.isInitialBindingBound()) return;
-
-        ThreadUtils.postOnUiThreadDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (connection.isInitialBindingBound()) {
-                    connection.removeInitialBinding();
-                }
-            }
-        }, mRemoveInitialBindingDelay);
-    }
-
-    /**
-     * Binds a child process as a high priority process so that it has the same priority as the main
-     * process. This can be used for the foreground renderer process to distinguish it from the
-     * background renderer process.
-     */
-    void bindAsHighPriority(final int pid) {
-        ChildProcessConnection connection = getConnectionForPid(pid);
-        if (connection == null) return;
-
-        synchronized (mLastOomPidLock) {
-            connection.attachAsActive();
-            mLastOomPid = pid;
+    void setInForeground(int pid, boolean inForeground) {
+        ManagedConnection managedConnection;
+        synchronized (mManagedConnections) {
+            managedConnection = mManagedConnections.get(pid);
         }
-    }
 
-    /**
-     * Unbinds a high priority process which was previous bound with bindAsHighPriority.
-     */
-    void unbindAsHighPriority(final int pid) {
-        final ChildProcessConnection connection = getConnectionForPid(pid);
-        if (connection == null || !connection.isStrongBindingBound()) return;
+        if (managedConnection == null) {
+            Log.w(TAG, "Cannot setInForeground() - never saw a connection for the pid: " +
+                    Integer.toString(pid));
+            return;
+        }
 
-        // This runnable performs the actual unbinding. It will be executed synchronously when
-        // on low-end devices and posted with a delay otherwise.
-        Runnable doUnbind = new Runnable() {
-            @Override
-            public void run() {
-                if (connection.isStrongBindingBound()) {
-                    connection.detachAsActive();
-                }
-            }
-        };
-
-        if (mIsLowMemoryDevice) {
-            doUnbind.run();
-        } else {
-            ThreadUtils.postOnUiThreadDelayed(doUnbind, mRemoveStrongBindingDelay);
+        synchronized (mLastInForegroundLock) {
+            managedConnection.setInForeground(inForeground);
+            if (inForeground) mLastInForeground = managedConnection;
         }
     }
 
@@ -227,13 +276,13 @@ class BindingManager {
      *  - pairs of consecutive onBroughtToForeground() / onSentToBackground() calls do not overlap
      */
     void onSentToBackground() {
-        assert mBoundForBackgroundPeriodPid == -1;
-        synchronized (mLastOomPidLock) {
-            // mLastOomPid can be -1 at this point as the embedding application could be used in
-            // foreground without spawning any renderers.
-            if (mLastOomPid >= 0) {
-                bindAsHighPriority(mLastOomPid);
-                mBoundForBackgroundPeriodPid = mLastOomPid;
+        assert mBoundForBackgroundPeriod == null;
+        synchronized (mLastInForegroundLock) {
+            // mLastInForeground can be null at this point as the embedding application could be
+            // used in foreground without spawning any renderers.
+            if (mLastInForeground != null) {
+                mLastInForeground.setBoundForBackgroundPeriod(true);
+                mBoundForBackgroundPeriod = mLastInForeground;
             }
         }
     }
@@ -245,9 +294,9 @@ class BindingManager {
      * session.
      */
     void onBroughtToForeground() {
-        if (mBoundForBackgroundPeriodPid >= 0) {
-            unbindAsHighPriority(mBoundForBackgroundPeriodPid);
-            mBoundForBackgroundPeriodPid = -1;
+        if (mBoundForBackgroundPeriod != null) {
+            mBoundForBackgroundPeriod.setBoundForBackgroundPeriod(false);
+            mBoundForBackgroundPeriod = null;
         }
     }
 
@@ -278,5 +327,13 @@ class BindingManager {
             managedConnection = mManagedConnections.get(pid);
         }
         if (managedConnection != null) managedConnection.clearConnection();
+    }
+
+    /** @return true iff the connection reference is no longer held */
+    @VisibleForTesting
+    boolean isConnectionCleared(int pid) {
+        synchronized (mManagedConnections) {
+            return mManagedConnections.get(pid).isConnectionCleared();
+        }
     }
 }

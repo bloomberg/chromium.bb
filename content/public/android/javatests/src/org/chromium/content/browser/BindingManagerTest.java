@@ -68,12 +68,12 @@ public class BindingManagerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void attachAsActive() {
+        public void addStrongBinding() {
             mStrongBindingCount++;
         }
 
         @Override
-        public void detachAsActive() {
+        public void removeStrongBinding() {
             assert mStrongBindingCount > 0;
             mStrongBindingCount--;
         }
@@ -152,7 +152,7 @@ public class BindingManagerTest extends InstrumentationTestCase {
         manager.addNewConnection(firstConnection.getPid(), firstConnection);
 
         // Bind a strong binding on the connection.
-        manager.bindAsHighPriority(firstConnection.getPid());
+        manager.setInForeground(firstConnection.getPid(), true);
         assertTrue(firstConnection.isStrongBindingBound());
 
         // Add a new connection.
@@ -177,24 +177,21 @@ public class BindingManagerTest extends InstrumentationTestCase {
         // Add a connection to the manager.
         final MockChildProcessConnection connection = new MockChildProcessConnection(1);
         manager.addNewConnection(connection.getPid(), connection);
-
-        // Verify that the initial binding is held, add a strong binding.
         assertTrue(connection.isInitialBindingBound());
         assertFalse(connection.isStrongBindingBound());
-        manager.bindAsHighPriority(connection.getPid());
-        assertTrue(connection.isStrongBindingBound());
 
         // This has to happen on the UI thread, so that we can check the binding status right after
         // the call to remove it, before the any other task is executed on the main thread.
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // Verify that the initial binding is not removed immediately.
-                manager.removeInitialBinding(connection.getPid());
+                // Add a strong binding, verify that the initial binding is not removed immediately.
+                manager.setInForeground(connection.getPid(), true);
+                assertTrue(connection.isStrongBindingBound());
                 assertTrue(connection.isInitialBindingBound());
 
-                // Verify that the strong binding is removed immediately.
-                manager.unbindAsHighPriority(connection.getPid());
+                // Remove the strong binding, verify that the strong binding is removed immediately.
+                manager.setInForeground(connection.getPid(), false);
                 assertFalse(connection.isStrongBindingBound());
             }
         });
@@ -219,30 +216,27 @@ public class BindingManagerTest extends InstrumentationTestCase {
         // Add a connection to the manager.
         final MockChildProcessConnection connection = new MockChildProcessConnection(1);
         manager.addNewConnection(connection.getPid(), connection);
-
-        // Verify that the initial binding is held, add a strong binding.
         assertTrue(connection.isInitialBindingBound());
         assertFalse(connection.isStrongBindingBound());
-        manager.bindAsHighPriority(connection.getPid());
-        assertTrue(connection.isStrongBindingBound());
-
         // This has to happen on the UI thread, so that we can check the binding status right after
         // the call to remove it, before the any other task is executed on the main thread.
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // Verify that the initial binding is not removed immediately.
-                manager.removeInitialBinding(connection.getPid());
+                // Add a strong binding, verify that the initial binding is not removed immediately.
+                manager.setInForeground(connection.getPid(), true);
+                assertTrue(connection.isStrongBindingBound());
                 assertTrue(connection.isInitialBindingBound());
 
-                // Verify that the strong binding is not removed immediately.
-                manager.unbindAsHighPriority(connection.getPid());
+                // Remove the strong binding, verify that the strong binding is not removed
+                // immediately.
+                manager.setInForeground(connection.getPid(), false);
                 assertTrue(connection.isStrongBindingBound());
             }
         });
 
-        // Wait until the posted unbinding tasks get executed and verify that the inital bindings
-        // were eventually. Note that this works only because the test binding manager has the
+        // Wait until the posted unbinding tasks get executed and verify that both bindings were
+        // eventually removed. Note that this works only because the test binding manager has the
         // unbinding delay set to 0.
         getInstrumentation().waitForIdleSync();
         assertFalse(connection.isInitialBindingBound());
@@ -274,20 +268,19 @@ public class BindingManagerTest extends InstrumentationTestCase {
             assertTrue(message, manager.isOomProtected(connection.getPid()));
 
             // After initial binding is removed, the connection is no longer oom protected.
-            manager.removeInitialBinding(connection.getPid());
+            manager.setInForeground(connection.getPid(), false);
             getInstrumentation().waitForIdleSync();
             assertFalse(message, manager.isOomProtected(connection.getPid()));
 
             // Add a strong binding, restoring the oom protection.
-            manager.bindAsHighPriority(connection.getPid());
+            manager.setInForeground(connection.getPid(), true);
             assertTrue(message, manager.isOomProtected(connection.getPid()));
 
             // Simulate a process crash - clear a connection in binding manager and remove the
             // bindings.
-            assertNotNull(manager.getConnectionForPid(connection.getPid()));
+            assertFalse(manager.isConnectionCleared(connection.getPid()));
             manager.clearConnection(connection.getPid());
-            // Verify that we no longer hold onto the connection reference.
-            assertNull(manager.getConnectionForPid(connection.getPid()));
+            assertTrue(manager.isConnectionCleared(connection.getPid()));
             connection.stop();
 
             // Verify that the connection doesn't keep any oom bindings, but the manager reports the
@@ -304,7 +297,7 @@ public class BindingManagerTest extends InstrumentationTestCase {
      * period.
      *
      * The renderer that will be bound for the background period should be the one that was most
-     * recendly bound using .bindAsHighPriority(), even if there is one that was added using
+     * recendly bound using .setInForeground(), even if there is one that was added using
      * .addNewConnection() after that. Otherwise we would bound a background renderer when user
      * loads a new tab in background and leaves the browser.
      */
@@ -319,17 +312,18 @@ public class BindingManagerTest extends InstrumentationTestCase {
             // Add two connections, bind and release each.
             MockChildProcessConnection firstConnection = new MockChildProcessConnection(1);
             manager.addNewConnection(firstConnection.getPid(), firstConnection);
-            manager.bindAsHighPriority(firstConnection.getPid());
-            manager.unbindAsHighPriority(firstConnection.getPid());
+            manager.setInForeground(firstConnection.getPid(), true);
+            manager.setInForeground(firstConnection.getPid(), false);
 
             MockChildProcessConnection secondConnection = new MockChildProcessConnection(2);
             manager.addNewConnection(secondConnection.getPid(), secondConnection);
-            manager.bindAsHighPriority(secondConnection.getPid());
-            manager.unbindAsHighPriority(secondConnection.getPid());
+            manager.setInForeground(secondConnection.getPid(), true);
+            manager.setInForeground(secondConnection.getPid(), false);
 
             // Add third connection, do not bind it.
             MockChildProcessConnection thirdConnection = new MockChildProcessConnection(3);
             manager.addNewConnection(thirdConnection.getPid(), thirdConnection);
+            manager.setInForeground(thirdConnection.getPid(), false);
 
             // Sanity check: verify that no connection has a strong binding.
             getInstrumentation().waitForIdleSync();
