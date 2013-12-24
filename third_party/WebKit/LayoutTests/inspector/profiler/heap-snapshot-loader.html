@@ -28,7 +28,6 @@ function test()
             profileType.removeEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, snapshotLoaded, this);
             if (overrideGetProfile)
                 InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
-            callback(event.data);
         }
 
         InspectorTest.override(HeapProfilerAgent, "getHeapSnapshot", getHeapSnapshotMock);
@@ -38,6 +37,11 @@ function test()
             callback();
         }
 
+        function tempFileReady()
+        {
+            callback(this);
+        }
+        InspectorTest.addSniffer(WebInspector.HeapProfileHeader.prototype, "_didWriteToTempFile", tempFileReady);
         profileType._profileBeingRecorded = new WebInspector.HeapProfileHeader(profileType, "Snapshotting");
         profileType.addProfile(profileType._profileBeingRecorded);
 
@@ -82,11 +86,14 @@ function test()
                     WebInspector.fileManager.appendedToURL(url);
                 }
 
+                function didCompleteSave()
+                {
+                    InspectorTest.assertEquals(sourceStringified, savedSnapshotData, "Saved snapshot data");
+                    InspectorFrontendHost.append = oldAppend;
+                    next();
+                }
+                InspectorTest.addSniffer(WebInspector.HeapProfileHeader.prototype, "_didCompleteSnapshotTransfer", didCompleteSave);
                 profileHeader.saveToFile();
-                InspectorTest.assertEquals(sourceStringified, savedSnapshotData, "Saved snapshot data");
-
-                InspectorFrontendHost.append = oldAppend;
-                next();
             }
 
             injectMockProfile(true, snapshotLoaded);
