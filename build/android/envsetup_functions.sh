@@ -132,9 +132,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
       print_usage
       return 1
   esac
-
-  # nacl isn't enabled for android, avoid downloading the toolchain.
-  DEFINES+=" -Ddisable_nacl=1"
 }
 
 
