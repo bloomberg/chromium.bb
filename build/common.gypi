@@ -527,15 +527,6 @@
           'os_bsd%': 0,
         }],
 
-        # Set armv7 for backward compatibility.
-        # TODO(mostynb@opera.com): remove armv7 once all uses are
-        # removed http://crbug.com/234135
-        ['arm_version==7', {
-          'armv7': 1,
-        }, {
-          'armv7': 0,
-        }],
-
         # NSS usage.
         ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and use_openssl==0', {
           'use_nss%': 1,
@@ -914,7 +905,6 @@
     'tracing_like_official_build%': '<(tracing_like_official_build)',
     'python_ver%': '<(python_ver)',
     'arm_version%': '<(arm_version)',
-    'armv7%': '<(armv7)',
     'arm_neon%': '<(arm_neon)',
     'arm_neon_optional%': '<(arm_neon_optional)',
     'sysroot%': '<(sysroot)',
