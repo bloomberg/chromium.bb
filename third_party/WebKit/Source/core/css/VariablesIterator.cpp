@@ -23,12 +23,13 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Element.h"
 
 namespace WebCore {
 
-PassRefPtr<VariablesIterator> VariablesIterator::create(MutableStylePropertySet* propertySet)
+void AbstractVariablesIterator::initRemainingNames(
+    const StylePropertySet* propertySet)
 {
-    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
     const size_t propertyCount = propertySet->propertyCount();
     size_t variableCount = 0;
     Vector<AtomicString> remainingNames(propertyCount);
@@ -37,12 +38,22 @@ PassRefPtr<VariablesIterator> VariablesIterator::create(MutableStylePropertySet*
         if (property.id() == CSSPropertyVariable)
             remainingNames[variableCount++] = toCSSVariableValue(property.value())->name();
     }
+    // FIXME: Make use of the Vector move constructor when rvalues are supported on all platforms.
     remainingNames.shrink(variableCount);
 
-    RefPtr<VariablesIterator> iterator = adoptRef(new VariablesIterator(propertySet));
-    // FIXME: Make use of the Vector move constructor when rvalues are supported on all platforms.
-    iterator->takeRemainingNames(remainingNames);
-    return iterator.release();
+    takeRemainingNames(remainingNames);
+}
+
+VariablesIterator::VariablesIterator(MutableStylePropertySet* propertySet) :
+    m_propertySet(propertySet)
+{
+    ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
+    initRemainingNames(propertySet);
+}
+
+PassRefPtr<VariablesIterator> VariablesIterator::create(MutableStylePropertySet* propertySet)
+{
+    return adoptRef(new VariablesIterator(propertySet));
 }
 
 String AbstractVariablesIterator::value() const

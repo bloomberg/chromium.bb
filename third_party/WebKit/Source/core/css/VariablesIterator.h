@@ -27,6 +27,7 @@
 namespace WebCore {
 
 class MutableStylePropertySet;
+class StylePropertySet;
 
 class AbstractVariablesIterator : public CSSVariablesIterator {
 public:
@@ -34,6 +35,8 @@ public:
 
 protected:
     void takeRemainingNames(Vector<AtomicString>& remainingNames) { m_remainingNames.swap(remainingNames); }
+
+    virtual void initRemainingNames(const StylePropertySet*);
 
 private:
     virtual void advance() OVERRIDE;
@@ -55,8 +58,7 @@ public:
     static PassRefPtr<VariablesIterator> create(MutableStylePropertySet*);
 
 private:
-    explicit VariablesIterator(MutableStylePropertySet* propertySet) : m_propertySet(propertySet) { }
-
+    explicit VariablesIterator(MutableStylePropertySet*);
     virtual MutableStylePropertySet* propertySet() const OVERRIDE { return m_propertySet.get(); }
 
     RefPtr<MutableStylePropertySet> m_propertySet;

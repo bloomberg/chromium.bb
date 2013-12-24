@@ -50,6 +50,9 @@ RemoveCSSPropertyCommand::~RemoveCSSPropertyCommand()
 void RemoveCSSPropertyCommand::doApply()
 {
     const StylePropertySet* style = m_element->inlineStyle();
+    if (!style)
+        return;
+
     m_oldValue = style->getPropertyValue(m_property);
     m_important = style->propertyIsImportant(m_property);
 

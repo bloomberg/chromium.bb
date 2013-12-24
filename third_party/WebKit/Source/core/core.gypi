@@ -754,6 +754,8 @@
             'css/FontSize.cpp',
             'css/FontSize.h',
             'css/HashTools.h',
+            'css/InlineVariablesIterator.cpp',
+            'css/InlineVariablesIterator.h',
             'css/InspectorCSSOMWrappers.cpp',
             'css/InspectorCSSOMWrappers.h',
             'css/MediaFeatureNames.cpp',

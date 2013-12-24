@@ -3437,8 +3437,9 @@ void Element::synchronizeStyleAttributeInternal() const
     ASSERT(elementData());
     ASSERT(elementData()->m_styleAttributeIsDirty);
     elementData()->m_styleAttributeIsDirty = false;
-    if (const StylePropertySet* inlineStyle = this->inlineStyle())
-        const_cast<Element*>(this)->setSynchronizedLazyAttribute(styleAttr, inlineStyle->asText());
+    const StylePropertySet* inlineStyle = this->inlineStyle();
+    const_cast<Element*>(this)->setSynchronizedLazyAttribute(styleAttr,
+        inlineStyle ? AtomicString(inlineStyle->asText()) : nullAtom);
 }
 
 CSSStyleDeclaration* Element::style()
@@ -3459,6 +3460,13 @@ MutableStylePropertySet* Element::ensureMutableInlineStyle()
         inlineStyle = inlineStyle->mutableCopy();
     }
     return toMutableStylePropertySet(inlineStyle);
+}
+
+void Element::clearMutableInlineStyleIfEmpty()
+{
+    if (ensureMutableInlineStyle()->isEmpty()) {
+        ensureUniqueElementData()->m_inlineStyle.clear();
+    }
 }
 
 PropertySetCSSStyleDeclaration* Element::inlineStyleCSSOMWrapper()
@@ -3569,7 +3577,7 @@ bool Element::removeInlineStyleProperty(CSSPropertyID propertyID)
 void Element::removeAllInlineStyleProperties()
 {
     ASSERT(isStyledElement());
-    if (!inlineStyle() || inlineStyle()->isEmpty())
+    if (!inlineStyle())
         return;
     ensureMutableInlineStyle()->clear();
     inlineStyleChanged();

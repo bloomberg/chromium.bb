@@ -957,10 +957,6 @@ bool ApplyStyleCommand::removeCSSStyle(EditingStyle* style, HTMLElement* element
     for (size_t i = 0; i < properties.size(); i++)
         removeCSSProperty(element, properties[i]);
 
-    // No need to serialize <foo style=""> if we just removed the last css property
-    if (element->inlineStyle()->isEmpty())
-        removeNodeAttribute(element, styleAttr);
-
     if (isSpanWithoutAttributesOrUnstyledStyleSpan(element))
         removeNodePreservingChildren(element);
 

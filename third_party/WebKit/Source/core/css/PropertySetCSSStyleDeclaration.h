@@ -46,6 +46,9 @@ public:
     virtual void clearParentElement() { ASSERT_NOT_REACHED(); }
     StyleSheetContents* contextStyleSheet() const;
 
+protected:
+    virtual PassRefPtr<CSSVariablesIterator> variablesIterator() const OVERRIDE;
+
 private:
     virtual CSSRule* parentRule() const OVERRIDE { return 0; };
     virtual unsigned length() const OVERRIDE;
@@ -68,7 +71,6 @@ private:
     virtual bool setVariableValue(const AtomicString& name, const String& value, ExceptionState&) OVERRIDE;
     virtual bool removeVariable(const AtomicString& name) OVERRIDE;
     virtual bool clearVariables(ExceptionState&) OVERRIDE;
-    virtual PassRefPtr<CSSVariablesIterator> variablesIterator() const OVERRIDE;
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
     virtual PassRefPtr<MutableStylePropertySet> copyProperties() const OVERRIDE;
@@ -136,6 +138,7 @@ public:
     }
 
 private:
+    virtual PassRefPtr<CSSVariablesIterator> variablesIterator() const OVERRIDE;
     virtual MutableStylePropertySet* propertySet() const OVERRIDE;
     virtual void ref() OVERRIDE;
     virtual void deref() OVERRIDE;

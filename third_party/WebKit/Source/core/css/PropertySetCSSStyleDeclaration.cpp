@@ -27,7 +27,9 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/InlineVariablesIterator.h"
 #include "core/css/StylePropertySet.h"
+#include "core/css/VariablesIterator.h"
 #include "core/dom/Element.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
@@ -426,6 +428,7 @@ void InlineCSSStyleDeclaration::didMutate(MutationType type)
     if (!m_parentElement)
         return;
 
+    m_parentElement->clearMutableInlineStyleIfEmpty();
     m_parentElement->setNeedsStyleRecalc(LocalStyleChange);
     m_parentElement->invalidateStyleAttribute();
     StyleAttributeMutationScope(this).didInvalidateStyleAttr();
@@ -444,6 +447,11 @@ void InlineCSSStyleDeclaration::ref()
 void InlineCSSStyleDeclaration::deref()
 {
     m_parentElement->deref();
+}
+
+PassRefPtr<CSSVariablesIterator> InlineCSSStyleDeclaration::variablesIterator() const
+{
+    return InlineVariablesIterator::create(m_parentElement);
 }
 
 
