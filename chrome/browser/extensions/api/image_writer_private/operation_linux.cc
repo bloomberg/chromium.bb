@@ -138,15 +138,11 @@ void Operation::WriteComplete() {
   DVLOG(2) << "Completed write of " << image_path_.value();
   SetProgress(kProgressComplete);
 
-  if (verify_write_) {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::VerifyWriteStart, this));
-  } else {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&Operation::Finish, this));
-  }
+  BrowserThread::PostTask(
+    BrowserThread::FILE,
+    FROM_HERE,
+    base::Bind(&Operation::VerifyWriteStart,
+               this));
 }
 
 void Operation::VerifyWriteStart() {

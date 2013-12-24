@@ -61,11 +61,6 @@ class OperationManager
   void CancelWrite(const ExtensionId& extension_id,
                    const Operation::CancelWriteCallback& callback);
 
-  // Starts a write that removes the partition table.
-  void DestroyPartitions(const ExtensionId& extension_id,
-                         const std::string& storage_unit_id,
-                         const Operation::StartWriteCallback& callback);
-
   // Callback for progress events.
   virtual void OnProgress(const ExtensionId& extension_id,
                           image_writer_api::Stage stage,
