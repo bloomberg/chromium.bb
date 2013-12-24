@@ -110,6 +110,9 @@ class Operation
   base::FilePath image_path_;
   const std::string storage_unit_id_;
 
+  // Whether or not to run the final verification step.
+  bool verify_write_;
+
  private:
   friend class base::RefCountedThreadSafe<Operation>;
 

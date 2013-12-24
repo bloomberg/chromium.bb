@@ -59,6 +59,7 @@ class ImageWriterPrivateDestroyPartitionsFunction
  private:
   virtual ~ImageWriterPrivateDestroyPartitionsFunction();
   virtual bool RunImpl() OVERRIDE;
+  void OnDestroyComplete(bool success, const std::string& error);
 };
 
 class ImageWriterPrivateListRemovableStorageDevicesFunction

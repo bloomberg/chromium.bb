@@ -101,11 +101,11 @@
 
     // Destroys the partition table of a disk, effectively erasing it.  This is
     // a fairly quick operation and so it does not have complex stages or
-    // progress information.  However, it can fail and call the callback with
-    // an error.
+    // progress information, just a write phase.
     //
     // |storageUnitId|: The identifier of the storage unit to wipe
-    // |callback|: A callback which is called when the operation is complete.
+    // |callback|: A callback that triggers when the operation has been
+    // successfully started.
     static void destroyPartitions(DOMString storageUnitId,
                                   DestroyPartitionsCallback callback);
 

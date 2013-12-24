@@ -32,6 +32,7 @@ Operation::Operation(base::WeakPtr<OperationManager> manager,
     : manager_(manager),
       extension_id_(extension_id),
       storage_unit_id_(storage_unit_id),
+      verify_write_(true),
       stage_(image_writer_api::STAGE_UNKNOWN),
       progress_(0) {
 }

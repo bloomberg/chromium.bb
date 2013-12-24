@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_IMAGE_WRITER_PRIVATE_TEST_UTILS_H_
 
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
@@ -17,8 +18,16 @@ namespace extensions {
 namespace image_writer {
 
 const char kDummyExtensionId[] = "DummyExtension";
-const char kTestData[] = "This is some test data, padded.  ";
 
+// Default file size to use in tests.  Currently 32kB.
+const int kTestFileSize = 32 * 1024;
+// Pattern to use in the image file.
+const int kImagePattern = 0x55555555; // 01010101
+// Pattern to use in the device file.
+const int kDevicePattern = 0xAAAAAAAA; // 10101010
+
+// A mock around the operation manager for tracking callbacks.  Note that there
+// are non-virtual methods on this class that should not be called in tests.
 class MockOperationManager : public OperationManager {
  public:
   MockOperationManager();
@@ -37,15 +46,32 @@ class MockOperationManager : public OperationManager {
                              const std::string& error_message));
 };
 
+// Base class for unit tests that manages creating image and device files.
 class ImageWriterUnitTestBase : public testing::Test {
  public:
+  ImageWriterUnitTestBase();
+  virtual ~ImageWriterUnitTestBase();
+
+ protected:
   virtual void SetUp() OVERRIDE;
 
   virtual void TearDown() OVERRIDE;
 
-  base::FilePath test_image_;
-  base::FilePath test_device_;
+  // Compare the image and device files, returning true if they are the same,
+  // false if different.
+  bool CompareImageAndDevice();
+
+  base::ScopedTempDir temp_dir_;
+  base::FilePath test_image_path_;
+  base::FilePath test_device_path_;
+
  private:
+  // Fills |file| with |length| bytes of |pattern|, overwriting any existing
+  // data.
+  bool FillFile(const base::FilePath& file,
+                const int pattern,
+                const int length);
+
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
