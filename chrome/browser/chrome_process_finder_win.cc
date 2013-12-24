@@ -124,7 +124,7 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
     if (launch != base::win::METRO_SEARCH) {
       LOG(WARNING) << "In metro mode, but and launch is " << launch;
     } else {
-      std::string query = EscapeQueryParamValue(UTF16ToUTF8(terms), true);
+      std::string query = EscapeQueryParamValue(base::UTF16ToUTF8(terms), true);
       std::string url = base::StringPrintf(kSearchUrl, query.c_str());
       SHELLEXECUTEINFOA sei = { sizeof(sei) };
       sei.fMask = SEE_MASK_FLAG_LOG_USAGE;

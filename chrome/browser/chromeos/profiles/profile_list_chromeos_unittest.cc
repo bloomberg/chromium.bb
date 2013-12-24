@@ -25,6 +25,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 // As defined in /chromeos/dbus/cryptohome_client.cc.

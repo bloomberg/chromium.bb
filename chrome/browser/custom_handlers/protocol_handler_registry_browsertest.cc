@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
 
   AddProtocolHandler(std::string("web+search"),
                      GURL("http://www.google.com/%s"),
-                     UTF8ToUTF16(std::string("Test handler")));
+                     base::UTF8ToUTF16(std::string("Test handler")));
   GURL url("web+search:testing");
   ProtocolHandlerRegistry* registry =
       ProtocolHandlerRegistryFactory::GetForProfile(browser()->profile());
@@ -105,7 +105,7 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
   ASSERT_TRUE(test_server()->Start());
   GURL handler_url = test_server()->GetURL("files/custom_handler_foo.html");
   AddProtocolHandler("foo", handler_url,
-                     UTF8ToUTF16(std::string("Test foo Handler")));
+                     base::UTF8ToUTF16(std::string("Test foo Handler")));
 
   ui_test_utils::NavigateToURL(browser(), GURL("foo:test"));
 

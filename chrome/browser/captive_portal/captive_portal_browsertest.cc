@@ -660,7 +660,7 @@ void FailLoadsAfterLoginObserver::Observe(
   ASSERT_EQ(1u, tabs_needing_navigation_.count(contents));
   ASSERT_EQ(0u, tabs_navigated_to_final_destination_.count(contents));
 
-  if (contents->GetTitle() != ASCIIToUTF16(kInternetConnectedTitle))
+  if (contents->GetTitle() != base::ASCIIToUTF16(kInternetConnectedTitle))
     return;
   tabs_navigated_to_final_destination_.insert(contents);
 
@@ -1319,8 +1319,8 @@ void CaptivePortalBrowserTest::NavigateLoginTab(Browser* browser,
   // Do the navigation.
   content::RenderViewHost* render_view_host =
       tab_strip_model->GetActiveWebContents()->GetRenderViewHost();
-  render_view_host->ExecuteJavascriptInWebFrame(base::string16(),
-                                                ASCIIToUTF16("submitForm()"));
+  render_view_host->ExecuteJavascriptInWebFrame(
+      base::string16(), base::ASCIIToUTF16("submitForm()"));
 
   portal_observer.WaitForResults(1);
   navigation_observer.WaitForNavigations(1);
@@ -1367,8 +1367,8 @@ void CaptivePortalBrowserTest::Login(Browser* browser,
   // Trigger a navigation.
   content::RenderViewHost* render_view_host =
       tab_strip_model->GetActiveWebContents()->GetRenderViewHost();
-  render_view_host->ExecuteJavascriptInWebFrame(base::string16(),
-                                                ASCIIToUTF16("submitForm()"));
+  render_view_host->ExecuteJavascriptInWebFrame(
+      base::string16(), base::ASCIIToUTF16("submitForm()"));
 
   portal_observer.WaitForResults(1);
 
@@ -1723,7 +1723,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SSLCertErrorLogin) {
       tab_strip_model->GetActiveWebContents()->GetRenderViewHost();
   render_view_host->ExecuteJavascriptInWebFrame(
       base::string16(),
-      ASCIIToUTF16("submitForm()"));
+      base::ASCIIToUTF16("submitForm()"));
 
   // The captive portal tab navigation will trigger a captive portal check,
   // and reloading the original tab will bring up the interstitial page again,

@@ -115,8 +115,8 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
   if (error) {
     *error = l10n_util::GetStringFUTF16(
           IDS_EXTENSION_CANT_INSTALL_IN_DEVICE_LOCAL_ACCOUNT,
-          UTF8ToUTF16(extension->name()),
-          UTF8ToUTF16(extension->id()));
+          base::UTF8ToUTF16(extension->name()),
+          base::UTF8ToUTF16(extension->id()));
   }
   return false;
 }

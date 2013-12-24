@@ -291,7 +291,7 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
 
   // Prevent redirection if background contents already exists.
   if (background_contents_service->GetAppBackgroundContents(
-      UTF8ToUTF16(app_id_))) {
+      base::UTF8ToUTF16(app_id_))) {
     return false;
   }
   BackgroundContents* contents = background_contents_service
@@ -299,7 +299,7 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
                                  route_id,
                                  profile_,
                                  frame_name,
-                                 ASCIIToUTF16(app_id_),
+                                 base::ASCIIToUTF16(app_id_),
                                  partition_id,
                                  session_storage_namespace);
 
@@ -318,7 +318,7 @@ void DriveWebContentsManager::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BACKGROUND_CONTENTS_OPENED) {
-    const std::string app_id = UTF16ToUTF8(
+    const std::string app_id = base::UTF16ToUTF8(
         content::Details<BackgroundContentsOpenedDetails>(details)
             ->application_id);
     if (app_id == app_id_)
@@ -370,7 +370,7 @@ void DriveFirstRunController::EnableOfflineMode() {
   BackgroundContentsService* background_contents_service =
       BackgroundContentsServiceFactory::GetForProfile(profile_);
   if (background_contents_service->GetAppBackgroundContents(
-      UTF8ToUTF16(drive_hosted_app_id_))) {
+      base::UTF8ToUTF16(drive_hosted_app_id_))) {
     LOG(WARNING) << "Background page for Drive app already exists";
     OnOfflineInit(false, OUTCOME_BACKGROUND_PAGE_EXISTS);
     return;

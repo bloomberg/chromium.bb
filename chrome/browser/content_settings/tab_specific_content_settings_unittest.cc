@@ -370,13 +370,13 @@ TEST_F(TabSpecificContentSettingsTest, SiteDataObserver) {
   content_settings->OnFileSystemAccessed(GURL("http://google.com"),
                                               blocked_by_policy);
   content_settings->OnIndexedDBAccessed(GURL("http://google.com"),
-                                        UTF8ToUTF16("text"),
+                                        base::UTF8ToUTF16("text"),
                                         blocked_by_policy);
   content_settings->OnLocalStorageAccessed(GURL("http://google.com"),
                                            true,
                                            blocked_by_policy);
   content_settings->OnWebDatabaseAccessed(GURL("http://google.com"),
-                                          UTF8ToUTF16("name"),
-                                          UTF8ToUTF16("display_name"),
+                                          base::UTF8ToUTF16("name"),
+                                          base::UTF8ToUTF16("display_name"),
                                           blocked_by_policy);
 }

@@ -52,14 +52,14 @@ base::string16 NetworkStateHelper::GetCurrentNetworkName() const {
   if (network) {
     if (network->Matches(NetworkTypePattern::Ethernet()))
       return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-    return UTF8ToUTF16(network->name());
+    return base::UTF8ToUTF16(network->name());
   }
 
   network = nsh->ConnectingNetworkByType(NetworkTypePattern::NonVirtual());
   if (network) {
     if (network->Matches(NetworkTypePattern::Ethernet()))
       return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-    return UTF8ToUTF16(network->name());
+    return base::UTF8ToUTF16(network->name());
   }
   return base::string16();
 }

@@ -1135,15 +1135,15 @@ TEST_F(CookiesTreeModelTest, FileSystemFilter) {
   scoped_ptr<CookiesTreeModel> cookies_model(
       CreateCookiesTreeModelWithInitialSample());
 
-  cookies_model->UpdateSearchResults(ASCIIToUTF16("fshost1"));
+  cookies_model->UpdateSearchResults(base::ASCIIToUTF16("fshost1"));
   EXPECT_EQ("http://fshost1:1/",
             GetDisplayedFileSystems(cookies_model.get()));
 
-  cookies_model->UpdateSearchResults(ASCIIToUTF16("fshost2"));
+  cookies_model->UpdateSearchResults(base::ASCIIToUTF16("fshost2"));
   EXPECT_EQ("http://fshost2:2/",
             GetDisplayedFileSystems(cookies_model.get()));
 
-  cookies_model->UpdateSearchResults(ASCIIToUTF16("fshost3"));
+  cookies_model->UpdateSearchResults(base::ASCIIToUTF16("fshost3"));
   EXPECT_EQ("http://fshost3:3/",
             GetDisplayedFileSystems(cookies_model.get()));
 
@@ -1178,13 +1178,13 @@ TEST_F(CookiesTreeModelTest, CookiesFilter) {
   mock_browsing_data_cookie_helper_->Notify();
   EXPECT_EQ("A,B,C,D", GetDisplayedCookies(&cookies_model));
 
-  cookies_model.UpdateSearchResults(base::string16(ASCIIToUTF16("foo")));
+  cookies_model.UpdateSearchResults(base::string16(base::ASCIIToUTF16("foo")));
   EXPECT_EQ("B,C,D", GetDisplayedCookies(&cookies_model));
 
-  cookies_model.UpdateSearchResults(base::string16(ASCIIToUTF16("2")));
+  cookies_model.UpdateSearchResults(base::string16(base::ASCIIToUTF16("2")));
   EXPECT_EQ("A,C", GetDisplayedCookies(&cookies_model));
 
-  cookies_model.UpdateSearchResults(base::string16(ASCIIToUTF16("foo3")));
+  cookies_model.UpdateSearchResults(base::string16(base::ASCIIToUTF16("foo3")));
   EXPECT_EQ("D", GetDisplayedCookies(&cookies_model));
 
   cookies_model.UpdateSearchResults(base::string16());

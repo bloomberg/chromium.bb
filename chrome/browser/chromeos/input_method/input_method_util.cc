@@ -337,7 +337,7 @@ base::string16 InputMethodUtil::TranslateString(
   if (TranslateStringInternal(english_string, &localized_string)) {
     return localized_string;
   }
-  return UTF8ToUTF16(english_string);
+  return base::UTF8ToUTF16(english_string);
 }
 
 bool InputMethodUtil::IsValidInputMethodId(
@@ -380,7 +380,7 @@ std::string InputMethodUtil::GetInputMethodDisplayNameFromId(
   base::string16 display_name;
   if (!extension_ime_util::IsExtensionIME(input_method_id) &&
       TranslateStringInternal(input_method_id, &display_name)) {
-    return UTF16ToUTF8(display_name);
+    return base::UTF16ToUTF8(display_name);
   }
   // Return an empty string if the display name is not found.
   return "";
@@ -395,7 +395,7 @@ base::string16 InputMethodUtil::GetInputMethodShortName(
   // Check special cases first.
   for (size_t i = 0; i < kMappingFromIdToIndicatorTextLen; ++i) {
     if (kMappingFromIdToIndicatorText[i].input_method_id == input_method.id()) {
-      text = UTF8ToUTF16(kMappingFromIdToIndicatorText[i].indicator_text);
+      text = base::UTF8ToUTF16(kMappingFromIdToIndicatorText[i].indicator_text);
       break;
     }
   }
@@ -405,7 +405,7 @@ base::string16 InputMethodUtil::GetInputMethodShortName(
       IsKeyboardLayout(input_method.id())) {
     const size_t kMaxKeyboardLayoutNameLen = 2;
     const base::string16 keyboard_layout =
-        UTF8ToUTF16(GetKeyboardLayoutName(input_method.id()));
+        base::UTF8ToUTF16(GetKeyboardLayoutName(input_method.id()));
     text = StringToUpperASCII(keyboard_layout).substr(
         0, kMaxKeyboardLayoutNameLen);
   }
@@ -420,7 +420,7 @@ base::string16 InputMethodUtil::GetInputMethodShortName(
     const size_t kMaxLanguageNameLen = 2;
     DCHECK(!input_method.language_codes().empty());
     const std::string language_code = input_method.language_codes().at(0);
-    text = StringToUpperASCII(UTF8ToUTF16(language_code)).substr(
+    text = StringToUpperASCII(base::UTF8ToUTF16(language_code)).substr(
         0, kMaxLanguageNameLen);
   }
   DCHECK(!text.empty());
@@ -446,7 +446,7 @@ base::string16 InputMethodUtil::GetInputMethodLongName(
     const InputMethodDescriptor& input_method) const {
   if (!input_method.name().empty()) {
     // If the descriptor has a name, use it.
-    return UTF8ToUTF16(input_method.name());
+    return base::UTF8ToUTF16(input_method.name());
   }
 
   // We don't show language here.  Name of keyboard layout or input method
@@ -470,7 +470,7 @@ base::string16 InputMethodUtil::GetInputMethodLongName(
     const base::string16 language_name = delegate_->GetDisplayLanguageName(
         language_code);
 
-    text = language_name + UTF8ToUTF16(" - ") + text;
+    text = language_name + base::UTF8ToUTF16(" - ") + text;
   }
 
   DCHECK(!text.empty());

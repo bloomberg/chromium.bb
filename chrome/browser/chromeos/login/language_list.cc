@@ -47,14 +47,14 @@ base::string16 LanguageList::GetLanguageNameAt(int index) const {
   // and native_name without going back to translators.
   std::string formatted_item;
   base::SStringPrintf(&formatted_item, "%s - %s",
-                      UTF16ToUTF8(locale_name).c_str(),
-                      UTF16ToUTF8(native_name).c_str());
+                      base::UTF16ToUTF8(locale_name).c_str(),
+                      base::UTF16ToUTF8(native_name).c_str());
   if (base::i18n::IsRTL())
     // Somehow combo box (even with LAYOUTRTL flag) doesn't get this
     // right so we add RTL BDO (U+202E) to set the direction
     // explicitly.
     formatted_item.insert(0, "\xE2\x80\xAE");  // U+202E = UTF-8 0xE280AE
-  return UTF8ToUTF16(formatted_item);
+  return base::UTF8ToUTF16(formatted_item);
 }
 
 std::string LanguageList::GetLocaleFromIndex(int index) const {

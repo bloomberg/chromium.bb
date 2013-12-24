@@ -55,7 +55,7 @@ base::string16 CaptivePortalView::GetWindowTitle() const {
   std::string default_network_name =
       default_network ? default_network->name() : std::string();
   if (!default_network_name.empty()) {
-    network_name = ASCIIToUTF16(default_network_name);
+    network_name = base::ASCIIToUTF16(default_network_name);
   } else {
     DLOG(ERROR)
         << "No active/default network, but captive portal window is shown.";

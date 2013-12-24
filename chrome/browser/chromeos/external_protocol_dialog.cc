@@ -95,13 +95,13 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
       scheme_(url.scheme()) {
   const int kMaxUrlWithoutSchemeSize = 256;
   base::string16 elided_url_without_scheme;
-  gfx::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
+  gfx::ElideString(base::ASCIIToUTF16(url.possibly_invalid_spec()),
       kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
 
   views::MessageBoxView::InitParams params(
       l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_INFORMATION,
-      ASCIIToUTF16(url.scheme() + ":"),
-      elided_url_without_scheme) + ASCIIToUTF16("\n\n"));
+      base::ASCIIToUTF16(url.scheme() + ":"),
+      elided_url_without_scheme) + base::ASCIIToUTF16("\n\n"));
   params.message_width = kMessageWidth;
   message_box_view_ = new views::MessageBoxView(params);
   message_box_view_->SetCheckBoxLabel(

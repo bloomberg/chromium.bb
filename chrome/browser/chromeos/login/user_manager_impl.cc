@@ -1247,7 +1247,7 @@ void UserManagerImpl::RegularUserLoggedIn(const std::string& user_id) {
     active_user_ = User::CreateRegularUser(user_id);
     active_user_->set_oauth_token_status(LoadUserOAuthStatus(user_id));
     SaveUserDisplayName(active_user_->email(),
-                        UTF8ToUTF16(active_user_->GetAccountName(true)));
+                        base::UTF8ToUTF16(active_user_->GetAccountName(true)));
     WallpaperManager::Get()->SetInitialUserWallpaper(user_id, true);
   }
 
@@ -1585,7 +1585,7 @@ void UserManagerImpl::UpdatePublicAccountDisplayName(
   }
 
   // Set or clear the display name.
-  SaveUserDisplayName(user_id, UTF8ToUTF16(display_name));
+  SaveUserDisplayName(user_id, base::UTF8ToUTF16(display_name));
 }
 
 UserFlow* UserManagerImpl::GetCurrentUserFlow() const {

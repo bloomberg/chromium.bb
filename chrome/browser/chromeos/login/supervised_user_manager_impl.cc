@@ -189,7 +189,7 @@ base::string16 SupervisedUserManagerImpl::GetManagerDisplayName(
   if (manager_names->GetStringWithoutPathExpansion(user_id, &result) &&
       !result.empty())
     return result;
-  return UTF8ToUTF16(GetManagerDisplayEmail(user_id));
+  return base::UTF8ToUTF16(GetManagerDisplayEmail(user_id));
 }
 
 std::string SupervisedUserManagerImpl::GetManagerUserId(

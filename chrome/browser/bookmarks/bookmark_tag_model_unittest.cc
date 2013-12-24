@@ -8,6 +8,7 @@
 #include "chrome/browser/bookmarks/bookmark_tag_model_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 
 namespace {
 

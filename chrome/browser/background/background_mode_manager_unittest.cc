@@ -362,7 +362,7 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
       profile1->GetPath(),
       manager.GetBackgroundModeData(profile1)->name());
 
-  EXPECT_EQ(UTF8ToUTF16("p1"),
+  EXPECT_EQ(base::UTF8ToUTF16("p1"),
             manager.GetBackgroundModeData(profile1)->name());
 
   TestingProfile* profile2 = profile_manager->CreateTestingProfile("p2");
@@ -370,14 +370,14 @@ TEST_F(BackgroundModeManagerTest, ProfileInfoCacheObserver) {
   EXPECT_EQ(2, manager.NumberOfBackgroundModeData());
 
   manager.OnProfileAdded(profile2->GetPath());
-  EXPECT_EQ(UTF8ToUTF16("p2"),
+  EXPECT_EQ(base::UTF8ToUTF16("p2"),
             manager.GetBackgroundModeData(profile2)->name());
 
   manager.OnProfileWillBeRemoved(profile2->GetPath());
   EXPECT_EQ(1, manager.NumberOfBackgroundModeData());
 
   // Check that the background mode data we think is in the map actually is.
-  EXPECT_EQ(UTF8ToUTF16("p1"),
+  EXPECT_EQ(base::UTF8ToUTF16("p1"),
             manager.GetBackgroundModeData(profile1)->name());
 }
 
@@ -497,19 +497,19 @@ TEST_F(BackgroundModeManagerTest, BackgroundMenuGeneration) {
   bmd->BuildProfileMenu(submenu.get(), menu.get());
   EXPECT_TRUE(
       submenu->GetLabelAt(0) ==
-          UTF8ToUTF16("Component Extension"));
+          base::UTF8ToUTF16("Component Extension"));
   EXPECT_FALSE(submenu->IsCommandIdEnabled(submenu->GetCommandIdAt(0)));
   EXPECT_TRUE(
       submenu->GetLabelAt(1) ==
-          UTF8ToUTF16("Component Extension with Options"));
+          base::UTF8ToUTF16("Component Extension with Options"));
   EXPECT_TRUE(submenu->IsCommandIdEnabled(submenu->GetCommandIdAt(1)));
   EXPECT_TRUE(
       submenu->GetLabelAt(2) ==
-          UTF8ToUTF16("Regular Extension"));
+          base::UTF8ToUTF16("Regular Extension"));
   EXPECT_TRUE(submenu->IsCommandIdEnabled(submenu->GetCommandIdAt(2)));
   EXPECT_TRUE(
       submenu->GetLabelAt(3) ==
-          UTF8ToUTF16("Regular Extension with Options"));
+          base::UTF8ToUTF16("Regular Extension with Options"));
   EXPECT_TRUE(submenu->IsCommandIdEnabled(submenu->GetCommandIdAt(3)));
 
   // We have to destroy the profile now because we created it with real thread
@@ -644,12 +644,12 @@ TEST_F(BackgroundModeManagerTest, BackgroundMenuGenerationMultipleProfile) {
   EXPECT_TRUE(context_menu != NULL);
 
   // Background Profile Enable Checks
-  EXPECT_TRUE(context_menu->GetLabelAt(3) == UTF8ToUTF16("p1"));
+  EXPECT_TRUE(context_menu->GetLabelAt(3) == base::UTF8ToUTF16("p1"));
   EXPECT_TRUE(
       context_menu->IsCommandIdEnabled(context_menu->GetCommandIdAt(3)));
   EXPECT_TRUE(context_menu->GetCommandIdAt(3) == 4);
 
-  EXPECT_TRUE(context_menu->GetLabelAt(4) == UTF8ToUTF16("p2"));
+  EXPECT_TRUE(context_menu->GetLabelAt(4) == base::UTF8ToUTF16("p2"));
   EXPECT_TRUE(
       context_menu->IsCommandIdEnabled(context_menu->GetCommandIdAt(4)));
   EXPECT_TRUE(context_menu->GetCommandIdAt(4) == 8);
@@ -659,28 +659,28 @@ TEST_F(BackgroundModeManagerTest, BackgroundMenuGenerationMultipleProfile) {
       static_cast<StatusIconMenuModel*>(context_menu->GetSubmenuModelAt(3));
   EXPECT_TRUE(
       profile1_submenu->GetLabelAt(0) ==
-          UTF8ToUTF16("Component Extension"));
+          base::UTF8ToUTF16("Component Extension"));
   EXPECT_FALSE(
       profile1_submenu->IsCommandIdEnabled(
           profile1_submenu->GetCommandIdAt(0)));
   EXPECT_TRUE(profile1_submenu->GetCommandIdAt(0) == 0);
   EXPECT_TRUE(
       profile1_submenu->GetLabelAt(1) ==
-          UTF8ToUTF16("Component Extension with Options"));
+          base::UTF8ToUTF16("Component Extension with Options"));
   EXPECT_TRUE(
       profile1_submenu->IsCommandIdEnabled(
           profile1_submenu->GetCommandIdAt(1)));
   EXPECT_TRUE(profile1_submenu->GetCommandIdAt(1) == 1);
   EXPECT_TRUE(
       profile1_submenu->GetLabelAt(2) ==
-          UTF8ToUTF16("Regular Extension"));
+          base::UTF8ToUTF16("Regular Extension"));
   EXPECT_TRUE(
       profile1_submenu->IsCommandIdEnabled(
           profile1_submenu->GetCommandIdAt(2)));
   EXPECT_TRUE(profile1_submenu->GetCommandIdAt(2) == 2);
   EXPECT_TRUE(
       profile1_submenu->GetLabelAt(3) ==
-          UTF8ToUTF16("Regular Extension with Options"));
+          base::UTF8ToUTF16("Regular Extension with Options"));
   EXPECT_TRUE(
       profile1_submenu->IsCommandIdEnabled(
           profile1_submenu->GetCommandIdAt(3)));
@@ -691,21 +691,21 @@ TEST_F(BackgroundModeManagerTest, BackgroundMenuGenerationMultipleProfile) {
       static_cast<StatusIconMenuModel*>(context_menu->GetSubmenuModelAt(4));
   EXPECT_TRUE(
       profile2_submenu->GetLabelAt(0) ==
-          UTF8ToUTF16("Component Extension"));
+          base::UTF8ToUTF16("Component Extension"));
   EXPECT_FALSE(
       profile2_submenu->IsCommandIdEnabled(
           profile2_submenu->GetCommandIdAt(0)));
   EXPECT_TRUE(profile2_submenu->GetCommandIdAt(0) == 5);
   EXPECT_TRUE(
       profile2_submenu->GetLabelAt(1) ==
-          UTF8ToUTF16("Regular Extension"));
+          base::UTF8ToUTF16("Regular Extension"));
   EXPECT_TRUE(
       profile2_submenu->IsCommandIdEnabled(
           profile2_submenu->GetCommandIdAt(1)));
   EXPECT_TRUE(profile2_submenu->GetCommandIdAt(1) == 6);
   EXPECT_TRUE(
       profile2_submenu->GetLabelAt(2) ==
-          UTF8ToUTF16("Regular Extension with Options"));
+          base::UTF8ToUTF16("Regular Extension with Options"));
   EXPECT_TRUE(
       profile2_submenu->IsCommandIdEnabled(
           profile2_submenu->GetCommandIdAt(2)));

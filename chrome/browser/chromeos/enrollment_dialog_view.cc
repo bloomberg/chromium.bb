@@ -152,7 +152,7 @@ void EnrollmentDialogView::InitDialog() {
   // Create the views and layout manager and set them up.
   views::Label* label = new views::Label(
       l10n_util::GetStringFUTF16(IDS_NETWORK_ENROLLMENT_HANDLER_INSTRUCTIONS,
-                                 UTF8ToUTF16(network_name_)));
+                                 base::UTF8ToUTF16(network_name_)));
   label->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
       ui::ResourceBundle::BaseFont));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

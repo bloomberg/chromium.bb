@@ -119,9 +119,11 @@ class CrashNotificationDelegate : public NotificationDelegate {
       // loading the background page.
       BackgroundContentsService* service =
           BackgroundContentsServiceFactory::GetForProfile(profile_);
-      if (!service->GetAppBackgroundContents(ASCIIToUTF16(copied_extension_id)))
+      if (!service->GetAppBackgroundContents(
+              base::ASCIIToUTF16(copied_extension_id))) {
         service->LoadBackgroundContentsForExtension(profile_,
                                                     copied_extension_id);
+      }
     } else if (is_platform_app_) {
       apps::AppLoadService::Get(profile_)->
           RestartApplication(copied_extension_id);
@@ -192,7 +194,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
   const base::string16 message = l10n_util::GetStringFUTF16(
       extension->is_app() ? IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
                             IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
-      UTF8ToUTF16(extension->name()));
+      base::UTF8ToUTF16(extension->name()));
   extension_misc::ExtensionIcons size(extension_misc::EXTENSION_ICON_MEDIUM);
   extensions::ExtensionResource resource =
       extensions::IconsInfo::GetIconResource(
@@ -372,8 +374,8 @@ void BackgroundContentsService::Observe(
           extensions::ExtensionSystem::Get(profile)->extension_service();
       // extension_service can be NULL when running tests.
       if (extension_service) {
-        const Extension* extension =
-            extension_service->GetExtensionById(UTF16ToUTF8(appid), false);
+        const Extension* extension = extension_service->GetExtensionById(
+            base::UTF16ToUTF8(appid), false);
         if (extension && BackgroundInfo::HasBackgroundPage(extension))
           break;
       }
@@ -388,7 +390,8 @@ void BackgroundContentsService::Observe(
           BackgroundInfo::HasBackgroundPage(extension)) {
         // If there is a background page specified in the manifest for a hosted
         // app, then blow away registered urls in the pref.
-        ShutdownAssociatedBackgroundContents(ASCIIToUTF16(extension->id()));
+        ShutdownAssociatedBackgroundContents(
+            base::ASCIIToUTF16(extension->id()));
 
         ExtensionService* service =
             extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -398,8 +401,8 @@ void BackgroundContentsService::Observe(
           // EXTENSIONS_READY callback.
           LoadBackgroundContents(profile,
                                  BackgroundInfo::GetBackgroundURL(extension),
-                                 ASCIIToUTF16("background"),
-                                 UTF8ToUTF16(extension->id()));
+                                 base::ASCIIToUTF16("background"),
+                                 base::UTF8ToUTF16(extension->id()));
         }
       }
 
@@ -445,8 +448,8 @@ void BackgroundContentsService::Observe(
         case UnloadedExtensionInfo::REASON_TERMINATE:  // Fall through.
         case UnloadedExtensionInfo::REASON_UNINSTALL:  // Fall through.
         case UnloadedExtensionInfo::REASON_BLACKLIST:
-          ShutdownAssociatedBackgroundContents(
-              ASCIIToUTF16(content::Details<UnloadedExtensionInfo>(details)->
+          ShutdownAssociatedBackgroundContents(base::ASCIIToUTF16(
+              content::Details<UnloadedExtensionInfo>(details)->
                   extension->id()));
           SendChangeNotification(content::Source<Profile>(source).ptr());
           break;
@@ -459,14 +462,16 @@ void BackgroundContentsService::Observe(
           // from the LOADED callback.
           const Extension* extension =
               content::Details<UnloadedExtensionInfo>(details)->extension;
-          if (BackgroundInfo::HasBackgroundPage(extension))
-            ShutdownAssociatedBackgroundContents(ASCIIToUTF16(extension->id()));
+          if (BackgroundInfo::HasBackgroundPage(extension)) {
+            ShutdownAssociatedBackgroundContents(
+                base::ASCIIToUTF16(extension->id()));
+          }
           break;
         }
         default:
           NOTREACHED();
-          ShutdownAssociatedBackgroundContents(
-              ASCIIToUTF16(content::Details<UnloadedExtensionInfo>(details)->
+          ShutdownAssociatedBackgroundContents(base::ASCIIToUTF16(
+              content::Details<UnloadedExtensionInfo>(details)->
                   extension->id()));
           break;
       }
@@ -544,8 +549,8 @@ void BackgroundContentsService::LoadBackgroundContentsForExtension(
   if (extension && BackgroundInfo::HasBackgroundPage(extension)) {
     LoadBackgroundContents(profile,
                            BackgroundInfo::GetBackgroundURL(extension),
-                           ASCIIToUTF16("background"),
-                           UTF8ToUTF16(extension->id()));
+                           base::ASCIIToUTF16("background"),
+                           base::UTF8ToUTF16(extension->id()));
     return;
   }
 
@@ -579,7 +584,7 @@ void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
   LoadBackgroundContents(profile,
                          GURL(url),
                          frame_name,
-                         UTF8ToUTF16(extension_id));
+                         base::UTF8ToUTF16(extension_id));
 }
 
 void BackgroundContentsService::LoadBackgroundContentsFromManifests(
@@ -594,8 +599,8 @@ void BackgroundContentsService::LoadBackgroundContentsFromManifests(
         BackgroundInfo::HasBackgroundPage(extension)) {
       LoadBackgroundContents(profile,
                              BackgroundInfo::GetBackgroundURL(extension),
-                             ASCIIToUTF16("background"),
-                             UTF8ToUTF16(extension->id()));
+                             base::ASCIIToUTF16("background"),
+                             base::UTF8ToUTF16(extension->id()));
     }
   }
 }
@@ -669,21 +674,23 @@ void BackgroundContentsService::RegisterBackgroundContents(
   base::DictionaryValue* pref = update.Get();
   const base::string16& appid = GetParentApplicationId(background_contents);
   base::DictionaryValue* current;
-  if (pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &current))
+  if (pref->GetDictionaryWithoutPathExpansion(base::UTF16ToUTF8(appid),
+                                              &current)) {
     return;
+  }
 
   // No entry for this application yet, so add one.
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString(kUrlKey, background_contents->GetURL().spec());
   dict->SetString(kFrameNameKey, contents_map_[appid].frame_name);
-  pref->SetWithoutPathExpansion(UTF16ToUTF8(appid), dict);
+  pref->SetWithoutPathExpansion(base::UTF16ToUTF8(appid), dict);
 }
 
 bool BackgroundContentsService::HasRegisteredBackgroundContents(
     const base::string16& app_id) {
   if (!prefs_)
     return false;
-  std::string app = UTF16ToUTF8(app_id);
+  std::string app = base::UTF16ToUTF8(app_id);
   const base::DictionaryValue* contents =
       prefs_->GetDictionary(prefs::kRegisteredBackgroundContents);
   return contents->HasKey(app);
@@ -696,7 +703,7 @@ void BackgroundContentsService::UnregisterBackgroundContents(
   DCHECK(IsTracked(background_contents));
   const base::string16 appid = GetParentApplicationId(background_contents);
   DictionaryPrefUpdate update(prefs_, prefs::kRegisteredBackgroundContents);
-  update.Get()->RemoveWithoutPathExpansion(UTF16ToUTF8(appid), NULL);
+  update.Get()->RemoveWithoutPathExpansion(base::UTF16ToUTF8(appid), NULL);
 }
 
 void BackgroundContentsService::ShutdownAssociatedBackgroundContents(

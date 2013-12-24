@@ -193,7 +193,7 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
       continue;
 
     // Do it only if the version we're trying to register is newer.
-    base::Version registered_version(UTF16ToUTF8(it->version));
+    base::Version registered_version(base::UTF16ToUTF8(it->version));
     if (registered_version.IsValid() &&
         version.CompareTo(registered_version) <= 0) {
       return;
