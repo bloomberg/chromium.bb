@@ -44,7 +44,6 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/Frame.h"
-#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -362,7 +361,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(pTag))
         return ParagraphRole;
 
-    if (node && isHTMLLabelElement(node))
+    if (node && node->hasTagName(labelTag))
         return LabelRole;
 
     if (node && node->hasTagName(divTag))
@@ -393,7 +392,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         return DialogRole;
 
     // The HTML element should not be exposed as an element. That's what the RenderView element does.
-    if (node && isHTMLHtmlElement(node))
+    if (node && node->hasTagName(htmlTag))
         return IgnoredRole;
 
     // There should only be one banner/contentInfo per page. If header/footer are being used within an article or section
@@ -475,7 +474,7 @@ bool AXRenderObject::isLinked() const
         return false;
 
     Element* anchor = anchorElement();
-    if (!anchor || !isHTMLAnchorElement(anchor))
+    if (!anchor || !anchor->hasTagName(aTag))
         return false;
 
     return !toHTMLAnchorElement(anchor)->href().isEmpty();
@@ -664,7 +663,7 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
 
     // don't ignore labels, because they serve as TitleUIElements
     Node* node = m_renderer->node();
-    if (node && isHTMLLabelElement(node))
+    if (node && node->hasTagName(labelTag))
         return false;
 
     // Anything that is content editable should not be ignored.
@@ -810,7 +809,7 @@ int AXRenderObject::textLength() const
 
 KURL AXRenderObject::url() const
 {
-    if (isAnchor() && isHTMLAnchorElement(m_renderer->node())) {
+    if (isAnchor() && m_renderer->node()->hasTagName(aTag)) {
         if (HTMLAnchorElement* anchor = toHTMLAnchorElement(anchorElement()))
             return anchor->href();
     }
@@ -1266,7 +1265,7 @@ AXObject* AXRenderObject::accessibilityHitTest(const IntPoint& point) const
         return 0;
     Node* node = hitTestResult.innerNode()->deprecatedShadowAncestorNode();
 
-    if (isHTMLAreaElement(node))
+    if (node->hasTagName(areaTag))
         return accessibilityImageMapHitTest(toHTMLAreaElement(node), point);
 
     if (node->hasTagName(optionTag))
@@ -1527,7 +1526,7 @@ Element* AXRenderObject::anchorElement() const
     // NOTE: this assumes that any non-image with an anchor is an HTMLAnchorElement
     Node* node = currRenderer->node();
     for ( ; node; node = node->parentNode()) {
-        if (isHTMLAnchorElement(node) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
+        if (node->hasTagName(aTag) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
             return toElement(node);
     }
 
@@ -1938,7 +1937,7 @@ AXObject* AXRenderObject::internalLinkElement() const
         return 0;
 
     // Right now, we do not support ARIA links as internal link elements
-    if (!isHTMLAnchorElement(element))
+    if (!element->hasTagName(aTag))
         return 0;
     HTMLAnchorElement* anchor = toHTMLAnchorElement(element);
 
@@ -2199,7 +2198,7 @@ void AXRenderObject::addImageMapChildren()
 
     for (Element* current = ElementTraversal::firstWithin(*map); current; current = ElementTraversal::next(*current, map)) {
         // add an <area> element for this child if it has a link
-        if (isHTMLAreaElement(current) && current->isLink()) {
+        if (current->hasTagName(areaTag) && current->isLink()) {
             AXImageMapLink* areaObject = toAXImageMapLink(axObjectCache()->getOrCreate(ImageMapLinkRole));
             areaObject->setHTMLAreaElement(toHTMLAreaElement(current));
             areaObject->setHTMLMapElement(map);

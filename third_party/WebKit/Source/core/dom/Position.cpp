@@ -35,8 +35,6 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/html/HTMLTableElement.h"
 #include "core/frame/Frame.h"
 #include "core/frame/Settings.h"
 #include "platform/Logging.h"
@@ -546,7 +544,7 @@ static bool endsOfNodeAreVisuallyDistinctPositions(Node* node)
         return true;
 
     // Don't include inline tables.
-    if (isHTMLTableElement(node))
+    if (node->hasTagName(tableTag))
         return false;
 
     // There is a VisiblePosition inside an empty inline-block container.
@@ -892,7 +890,7 @@ bool Position::isCandidate() const
     if (isTableElement(deprecatedNode()) || editingIgnoresContent(deprecatedNode()))
         return (atFirstEditingPositionForNode() || atLastEditingPositionForNode()) && !nodeIsUserSelectNone(deprecatedNode()->parentNode());
 
-    if (isHTMLHtmlElement(m_anchorNode.get()))
+    if (m_anchorNode->hasTagName(htmlTag))
         return false;
 
     if (renderer->isRenderBlockFlow()) {

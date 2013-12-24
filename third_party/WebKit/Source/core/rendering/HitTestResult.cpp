@@ -31,12 +31,9 @@
 #include "core/editing/FrameSelection.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLAnchorElement.h"
-#include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/HTMLTextAreaElement.h"
-#include "core/html/HTMLVideoElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
@@ -325,8 +322,8 @@ HTMLMediaElement* HitTestResult::mediaElement() const
     if (!(m_innerNonSharedNode->renderer() && m_innerNonSharedNode->renderer()->isMedia()))
         return 0;
 
-    if (isHTMLVideoElement(m_innerNonSharedNode.get()) || m_innerNonSharedNode->hasTagName(HTMLNames::audioTag))
-        return toHTMLMediaElement(m_innerNonSharedNode.get());
+    if (isHTMLMediaElement(*m_innerNonSharedNode))
+        return toHTMLMediaElement(m_innerNonSharedNode);
     return 0;
 }
 
@@ -336,7 +333,7 @@ KURL HitTestResult::absoluteLinkURL() const
         return KURL();
 
     AtomicString urlString;
-    if (isHTMLAnchorElement(m_innerURLElement.get()) || isHTMLAreaElement(m_innerURLElement.get()) || m_innerURLElement->hasTagName(linkTag))
+    if (m_innerURLElement->hasTagName(aTag) || m_innerURLElement->hasTagName(areaTag) || m_innerURLElement->hasTagName(linkTag))
         urlString = m_innerURLElement->getAttribute(hrefAttr);
     else if (m_innerURLElement->hasTagName(SVGNames::aTag))
         urlString = m_innerURLElement->getAttribute(XLinkNames::hrefAttr);
@@ -351,7 +348,7 @@ bool HitTestResult::isLiveLink() const
     if (!m_innerURLElement)
         return false;
 
-    if (isHTMLAnchorElement(m_innerURLElement.get()))
+    if (m_innerURLElement->hasTagName(aTag))
         return toHTMLAnchorElement(m_innerURLElement)->isLiveLink();
 
     if (m_innerURLElement->hasTagName(SVGNames::aTag))
@@ -400,7 +397,7 @@ bool HitTestResult::isContentEditable() const
     if (!m_innerNonSharedNode)
         return false;
 
-    if (isHTMLTextAreaElement(m_innerNonSharedNode.get()))
+    if (m_innerNonSharedNode->hasTagName(textareaTag))
         return true;
 
     if (m_innerNonSharedNode->hasTagName(inputTag))

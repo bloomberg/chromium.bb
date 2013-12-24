@@ -35,7 +35,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/TreeScope.h"
-#include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMapElement.h"
 
 namespace WebCore {
@@ -59,7 +58,7 @@ inline bool keyMatchesLowercasedMapName(StringImpl* key, Element* element)
 
 inline bool keyMatchesLabelForAttribute(StringImpl* key, Element* element)
 {
-    return isHTMLLabelElement(element) && element->getAttribute(forAttr).impl() == key;
+    return element->hasTagName(labelTag) && element->getAttribute(forAttr).impl() == key;
 }
 
 void DocumentOrderedMap::clear()

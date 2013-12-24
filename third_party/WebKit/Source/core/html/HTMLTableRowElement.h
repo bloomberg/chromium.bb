@@ -49,11 +49,6 @@ private:
     explicit HTMLTableRowElement(Document&);
 };
 
-inline bool isHTMLTableRowElement(const Node* node)
-{
-    return node->hasTagName(HTMLNames::trTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLTableRowElement, hasTagName(HTMLNames::trTag));
 
 } // namespace

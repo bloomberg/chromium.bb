@@ -90,16 +90,6 @@ inline bool HTMLContentElement::canSelectNode(const Vector<Node*, 32>& siblings,
     return matchSelector(siblings, nth);
 }
 
-inline bool isHTMLContentElement(const Node* node)
-{
-    return node->hasTagName(HTMLNames::contentTag);
-}
-
-inline bool isHTMLContentElement(const Element* element)
-{
-    return element->hasTagName(HTMLNames::contentTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLContentElement, hasTagName(HTMLNames::contentTag));
 
 }

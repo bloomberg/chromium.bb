@@ -288,7 +288,7 @@ HTMLLabelElement* TreeScope::labelElementForId(const AtomicString& forAttributeV
         m_labelsByForAttribute = adoptPtr(new DocumentOrderedMap);
         ASSERT(rootNode());
         for (Element* element = ElementTraversal::firstWithin(*rootNode()); element; element = ElementTraversal::next(*element)) {
-            if (isHTMLLabelElement(element)) {
+            if (element->hasTagName(labelTag)) {
                 HTMLLabelElement* label = toHTMLLabelElement(element);
                 const AtomicString& forValue = label->fastGetAttribute(forAttr);
                 if (!forValue.isEmpty())
@@ -323,7 +323,7 @@ Element* TreeScope::findAnchor(const String& name)
         return element;
     ASSERT(rootNode());
     for (Element* element = ElementTraversal::firstWithin(*rootNode()); element; element = ElementTraversal::next(*element)) {
-        if (isHTMLAnchorElement(element)) {
+        if (element->hasTagName(aTag)) {
             HTMLAnchorElement* anchor = toHTMLAnchorElement(element);
             if (rootNode()->document().inQuirksMode()) {
                 // Quirks mode, case insensitive comparison of names.

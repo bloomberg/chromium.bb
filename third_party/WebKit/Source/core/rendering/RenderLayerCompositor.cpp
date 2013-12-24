@@ -36,7 +36,7 @@
 #include "core/dom/NodeList.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/html/HTMLVideoElement.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Chrome.h"
@@ -342,7 +342,7 @@ static RenderVideo* findFullscreenVideoRenderer(Document* document)
             return 0;
         fullscreenElement = FullscreenElementStack::currentFullScreenElementFrom(document);
     }
-    if (!fullscreenElement || !isHTMLVideoElement(fullscreenElement))
+    if (!fullscreenElement || !fullscreenElement->hasTagName(videoTag))
         return 0;
     RenderObject* renderer = fullscreenElement->renderer();
     if (!renderer)

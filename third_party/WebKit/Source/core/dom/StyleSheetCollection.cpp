@@ -90,7 +90,7 @@ void StyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool createdBy
     else
         m_styleSheetCandidateNodes.add(node);
 
-    if (!isHTMLStyleElement(node))
+    if (!node->hasTagName(HTMLNames::styleTag))
         return;
 
     ContainerNode* scopingNode = toHTMLStyleElement(node)->scopingNode();

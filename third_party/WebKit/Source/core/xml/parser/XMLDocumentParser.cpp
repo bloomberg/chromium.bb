@@ -1000,7 +1000,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     else
         pushCurrentNode(newElement.get());
 
-    if (isHTMLHtmlElement(newElement.get()))
+    if (newElement->hasTagName(HTMLNames::htmlTag))
         toHTMLHtmlElement(newElement)->insertedByParser();
 
     if (!m_parsingFragment && isFirstElement && document()->frame())

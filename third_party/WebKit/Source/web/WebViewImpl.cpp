@@ -88,7 +88,6 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/html/HTMLVideoElement.h"
 #include "core/html/ime/InputMethodContext.h"
 #include "core/inspector/InspectorController.h"
 #include "core/loader/DocumentLoader.h"
@@ -2134,7 +2133,7 @@ WebTextInputType WebViewImpl::textInputType()
         return WebTextInputTypeNone;
     }
 
-    if (isHTMLTextAreaElement(element)) {
+    if (element->hasTagName(HTMLNames::textareaTag)) {
         if (toHTMLTextAreaElement(element)->isDisabledOrReadOnly())
             return WebTextInputTypeNone;
         return WebTextInputTypeTextArea;
@@ -2168,7 +2167,7 @@ WebString WebViewImpl::inputModeOfFocusedElement()
             return input->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
         return WebString();
     }
-    if (isHTMLTextAreaElement(element)) {
+    if (element->hasTagName(HTMLNames::textareaTag)) {
         const HTMLTextAreaElement* textarea = toHTMLTextAreaElement(element);
         return textarea->fastGetAttribute(HTMLNames::inputmodeAttr).lower();
     }
@@ -3044,7 +3043,7 @@ void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
 {
     HitTestResult result = hitTestResultForWindowPos(location);
     RefPtr<Node> node = result.innerNonSharedNode();
-    if (!isHTMLVideoElement(node.get()) && !node->hasTagName(HTMLNames::audioTag))
+    if (!node->hasTagName(HTMLNames::videoTag) && !node->hasTagName(HTMLNames::audioTag))
         return;
 
     RefPtr<HTMLMediaElement> mediaElement =

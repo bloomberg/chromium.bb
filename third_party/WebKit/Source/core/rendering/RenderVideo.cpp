@@ -192,7 +192,6 @@ void RenderVideo::layout()
 
 HTMLVideoElement* RenderVideo::videoElement() const
 {
-    ASSERT(isHTMLVideoElement(node()));
     return toHTMLVideoElement(node());
 }
 

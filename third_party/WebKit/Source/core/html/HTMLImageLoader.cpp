@@ -28,7 +28,6 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/HTMLObjectElement.h"
-#include "core/html/HTMLVideoElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
 namespace WebCore {
@@ -45,7 +44,7 @@ HTMLImageLoader::~HTMLImageLoader()
 void HTMLImageLoader::dispatchLoadEvent()
 {
     // HTMLVideoElement uses this class to load the poster image, but it should not fire events for loading or failure.
-    if (isHTMLVideoElement(element()))
+    if (element()->hasTagName(HTMLNames::videoTag))
         return;
 
     bool errorOccurred = image()->errorOccurred();

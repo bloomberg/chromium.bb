@@ -34,8 +34,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/html/HTMLTextAreaElement.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/AutoscrollController.h"
@@ -199,7 +197,7 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle* newStyl
         // The background of the root element or the body element could propagate up to
         // the canvas.  Just dirty the entire canvas when our style changes substantially.
         if (diff >= StyleDifferenceRepaint && node() &&
-            (isHTMLHtmlElement(node()) || node()->hasTagName(bodyTag))) {
+            (node()->hasTagName(htmlTag) || node()->hasTagName(bodyTag))) {
             view()->repaint();
 
             if (oldStyle->hasEntirelyFixedBackground() != newStyle->hasEntirelyFixedBackground())
@@ -341,7 +339,7 @@ void RenderBox::updateFromStyle()
             // (1) The root element is <html>.
             // (2) We are the primary <body> (can be checked by looking at document.body).
             // (3) The root element has visible overflow.
-            if (isHTMLHtmlElement(document().documentElement())
+            if (document().documentElement()->hasTagName(htmlTag)
                 && document().body() == node()
                 && document().documentElement()->renderer()->style()->overflowX() == OVISIBLE)
                 boxHasOverflowClip = false;
@@ -2512,11 +2510,8 @@ bool RenderBox::sizesLogicalWidthToFitContent(SizeType widthType) const
 
 bool RenderBox::autoWidthShouldFitContent() const
 {
-    if (node() && (node()->hasTagName(inputTag) || node()->hasTagName(selectTag) || node()->hasTagName(buttonTag)
-        || isHTMLTextAreaElement(node()) || node()->hasTagName(legendTag)))
-        return true;
-
-    return false;
+    return node() && (node()->hasTagName(inputTag) || node()->hasTagName(selectTag) || node()->hasTagName(buttonTag)
+        || node()->hasTagName(textareaTag) || node()->hasTagName(legendTag));
 }
 
 void RenderBox::computeInlineDirectionMargins(RenderBlock* containingBlock, LayoutUnit containerWidth, LayoutUnit childWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd) const

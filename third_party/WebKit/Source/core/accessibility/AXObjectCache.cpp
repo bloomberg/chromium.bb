@@ -167,7 +167,7 @@ AXObject* AXObjectCache::focusedUIElementForPage(const Page* page)
     if (!focusedNode)
         focusedNode = focusedDocument;
 
-    if (isHTMLAreaElement(focusedNode))
+    if (focusedNode->hasTagName(areaTag))
         return focusedImageMapUIElement(toHTMLAreaElement(focusedNode));
 
     AXObject* obj = focusedNode->document().axObjectCache()->getOrCreate(focusedNode);
@@ -826,7 +826,7 @@ void AXObjectCache::handleAttributeChanged(const QualifiedName& attrName, Elemen
         handleAriaRoleChanged(element);
     else if (attrName == altAttr || attrName == titleAttr)
         textChanged(element);
-    else if (attrName == forAttr && isHTMLLabelElement(element))
+    else if (attrName == forAttr && element->hasTagName(labelTag))
         labelChanged(element);
 
     if (!attrName.localName().string().startsWith("aria-"))

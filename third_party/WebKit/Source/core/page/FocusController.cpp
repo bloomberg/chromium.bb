@@ -47,7 +47,6 @@
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLTextAreaElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -609,7 +608,7 @@ static void clearSelectionIfNeeded(Frame* oldFocusedFrame, Frame* newFocusedFram
                 return;
 
             if (Node* shadowAncestorNode = root->deprecatedShadowAncestorNode()) {
-                if (!shadowAncestorNode->hasTagName(inputTag) && !isHTMLTextAreaElement(shadowAncestorNode))
+                if (!shadowAncestorNode->hasTagName(inputTag) && !shadowAncestorNode->hasTagName(textareaTag))
                     return;
             }
         }
@@ -886,7 +885,7 @@ bool FocusController::advanceFocusDirectionally(FocusDirection direction)
         if (!hasOffscreenRect(focusedElement)) {
             container = scrollableEnclosingBoxOrParentFrameForNodeInDirection(direction, focusedElement);
             startingRect = nodeRectInAbsoluteCoordinates(focusedElement, true /* ignore border */);
-        } else if (isHTMLAreaElement(focusedElement)) {
+        } else if (focusedElement->hasTagName(areaTag)) {
             HTMLAreaElement* area = toHTMLAreaElement(focusedElement);
             container = scrollableEnclosingBoxOrParentFrameForNodeInDirection(direction, area->imageElement());
             startingRect = virtualRectForAreaElementAndDirection(area, direction);

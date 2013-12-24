@@ -33,9 +33,7 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
-#include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLTableElement.h"
 
 using namespace WebCore;
 using namespace WebCore::HTMLNames;
@@ -47,11 +45,11 @@ bool elementHasLegalLinkAttribute(const Element* element, const QualifiedName& a
     if (attrName == srcAttr)
         return element->hasTagName(imgTag) || element->hasTagName(scriptTag) || element->hasTagName(iframeTag) || element->hasTagName(frameTag) || (element->hasTagName(inputTag) && toHTMLInputElement(element)->isImageButton());
     if (attrName == hrefAttr)
-        return element->hasTagName(linkTag) || isHTMLAnchorElement(element) || isHTMLAreaElement(element);
+        return element->hasTagName(linkTag) || element->hasTagName(aTag) || element->hasTagName(areaTag);
     if (attrName == actionAttr)
         return element->hasTagName(formTag);
     if (attrName == backgroundAttr)
-        return element->hasTagName(bodyTag) || isHTMLTableElement(element) || element->hasTagName(trTag) || element->hasTagName(tdTag);
+        return element->hasTagName(bodyTag) || element->hasTagName(tableTag) || element->hasTagName(trTag) || element->hasTagName(tdTag);
     if (attrName == citeAttr)
         return element->hasTagName(blockquoteTag) || element->hasTagName(qTag) || element->hasTagName(delTag) || element->hasTagName(insTag);
     if (attrName == classidAttr || attrName == dataAttr)

@@ -120,11 +120,11 @@ void SpellChecker::didBeginEditing(Element* element)
     if (isContinuousSpellCheckingEnabled() && unifiedTextCheckerEnabled()) {
         bool isTextField = false;
         HTMLTextFormControlElement* enclosingHTMLTextFormControlElement = 0;
-        if (!isHTMLTextFormControlElement(element))
+        if (!isHTMLTextFormControlElement(*element))
             enclosingHTMLTextFormControlElement = enclosingTextFormControl(firstPositionInNode(element));
         element = enclosingHTMLTextFormControlElement ? enclosingHTMLTextFormControlElement : element;
         Element* parent = element;
-        if (isHTMLTextFormControlElement(element)) {
+        if (isHTMLTextFormControlElement(*element)) {
             HTMLTextFormControlElement* textControl = toHTMLTextFormControlElement(element);
             parent = textControl;
             element = textControl->innerTextElement();

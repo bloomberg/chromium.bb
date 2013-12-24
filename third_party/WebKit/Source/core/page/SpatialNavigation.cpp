@@ -42,6 +42,8 @@
 
 namespace WebCore {
 
+using namespace HTMLNames;
+
 static RectsAlignment alignmentForRects(FocusDirection, const LayoutRect&, const LayoutRect&, const LayoutSize& viewSize);
 static bool areRectsFullyAligned(FocusDirection, const LayoutRect&, const LayoutRect&);
 static bool areRectsPartiallyAligned(FocusDirection, const LayoutRect&, const LayoutRect&);
@@ -66,7 +68,7 @@ FocusCandidate::FocusCandidate(Node* node, FocusDirection direction)
     ASSERT(node);
     ASSERT(node->isElementNode());
 
-    if (isHTMLAreaElement(node)) {
+    if (node->hasTagName(areaTag)) {
         HTMLAreaElement* area = toHTMLAreaElement(node);
         HTMLImageElement* image = area->imageElement();
         if (!image || !image->renderer())
@@ -603,7 +605,7 @@ bool areElementsOnSameLine(const FocusCandidate& firstCandidate, const FocusCand
     if (!firstCandidate.rect.intersects(secondCandidate.rect))
         return false;
 
-    if (isHTMLAreaElement(firstCandidate.focusableNode) || isHTMLAreaElement(secondCandidate.focusableNode))
+    if (firstCandidate.focusableNode->hasTagName(areaTag) || secondCandidate.focusableNode->hasTagName(areaTag))
         return false;
 
     if (!firstCandidate.visibleNode->renderer()->isRenderInline() || !secondCandidate.visibleNode->renderer()->isRenderInline())

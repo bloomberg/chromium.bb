@@ -37,7 +37,6 @@
 #include "core/dom/Text.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLHtmlElement.h"
-#include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/HTMLTemplateElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
@@ -70,7 +69,7 @@ static bool hasImpliedEndTag(const HTMLStackItem* item)
         || item->hasTagName(dtTag)
         || item->hasTagName(liTag)
         || item->hasTagName(optionTag)
-        || isHTMLOptGroupElement(item->node())
+        || item->hasTagName(optgroupTag)
         || item->hasTagName(pTag)
         || item->hasTagName(rpTag)
         || item->hasTagName(rtTag);

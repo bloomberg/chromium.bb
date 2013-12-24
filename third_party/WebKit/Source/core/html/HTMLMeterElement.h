@@ -81,11 +81,6 @@ private:
     RefPtr<MeterValueElement> m_value;
 };
 
-inline bool isHTMLMeterElement(Node* node)
-{
-    return node->hasTagName(HTMLNames::meterTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLMeterElement, hasTagName(HTMLNames::meterTag));
 
 } // namespace

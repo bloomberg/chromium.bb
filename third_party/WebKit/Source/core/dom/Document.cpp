@@ -129,7 +129,6 @@
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHeadElement.h"
-#include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLImport.h"
 #include "core/html/HTMLInputElement.h"
@@ -660,7 +659,7 @@ DOMImplementation* Document::implementation()
 
 bool Document::hasManifest() const
 {
-    return documentElement() && isHTMLHtmlElement(documentElement()) && documentElement()->hasAttribute(manifestAttr);
+    return documentElement() && documentElement()->hasTagName(htmlTag) && documentElement()->hasAttribute(manifestAttr);
 }
 
 Location* Document::location() const
@@ -1324,7 +1323,7 @@ void Document::setTitle(const String& title)
 
     updateTitle(title);
 
-    if (m_titleElement && isHTMLTitleElement(m_titleElement.get()))
+    if (m_titleElement && m_titleElement->hasTagName(titleTag))
         toHTMLTitleElement(m_titleElement)->setText(title);
 }
 
@@ -1352,7 +1351,7 @@ void Document::removeTitle(Element* titleElement)
     // Update title based on first title element in the head, if one exists.
     if (HTMLElement* headElement = head()) {
         for (Element* element = headElement->firstElementChild(); element; element = element->nextElementSibling()) {
-            if (!isHTMLTitleElement(element))
+            if (!element->hasTagName(titleTag))
                 continue;
             HTMLTitleElement* title = toHTMLTitleElement(element);
             setTitleElement(title->text(), title);
@@ -2521,7 +2520,7 @@ bool Document::shouldScheduleLayout()
     //    (b) Only schedule layout once we have a body element.
 
     return (haveStylesheetsLoaded() && body())
-        || (documentElement() && !isHTMLHtmlElement(documentElement()));
+        || (documentElement() && !documentElement()->hasTagName(htmlTag));
 }
 
 bool Document::shouldParserYieldAgressivelyBeforeScriptExecution()
@@ -2653,7 +2652,7 @@ void Document::updateBaseURL()
         // Base URL change changes any relative visited links.
         // FIXME: There are other URLs in the tree that would need to be re-evaluated on dynamic base URL change. Style should be invalidated too.
         for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element)) {
-            if (isHTMLAnchorElement(element))
+            if (element->hasTagName(aTag))
                 toHTMLAnchorElement(element)->invalidateCachedVisitedLinkHash();
         }
     }

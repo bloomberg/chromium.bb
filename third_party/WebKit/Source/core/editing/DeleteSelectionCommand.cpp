@@ -36,7 +36,6 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLTableElement.h"
 #include "core/frame/Frame.h"
 #include "core/rendering/RenderTableCell.h"
 
@@ -452,7 +451,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
     makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
 
     // Never remove the start block unless it's a table, in which case we won't merge content in.
-    if (startNode->isSameNode(m_startBlock.get()) && !startOffset && canHaveChildrenForEditing(startNode) && !isHTMLTableElement(startNode)) {
+    if (startNode->isSameNode(m_startBlock.get()) && !startOffset && canHaveChildrenForEditing(startNode) && !startNode->hasTagName(tableTag)) {
         startOffset = 0;
         startNode = NodeTraversal::next(*startNode);
         if (!startNode)

@@ -32,8 +32,6 @@
 #define ShadowRootRareData_h
 
 #include "core/dom/shadow/InsertionPoint.h"
-#include "core/html/shadow/HTMLContentElement.h"
-#include "core/html/shadow/HTMLShadowElement.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -83,9 +81,9 @@ private:
 
 inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)
 {
-    if (isHTMLShadowElement(point))
+    if (point->hasTagName(HTMLNames::shadowTag))
         ++m_descendantShadowElementCount;
-    else if (isHTMLContentElement(point))
+    else if (point->hasTagName(HTMLNames::contentTag))
         ++m_descendantContentElementCount;
     else
         ASSERT_NOT_REACHED();
@@ -93,9 +91,9 @@ inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)
 
 inline void ShadowRootRareData::didRemoveInsertionPoint(InsertionPoint* point)
 {
-    if (isHTMLShadowElement(point))
+    if (point->hasTagName(HTMLNames::shadowTag))
         --m_descendantShadowElementCount;
-    else if (isHTMLContentElement(point))
+    else if (point->hasTagName(HTMLNames::contentTag))
         --m_descendantContentElementCount;
     else
         ASSERT_NOT_REACHED();

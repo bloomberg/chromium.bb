@@ -417,7 +417,7 @@ void RenderImage::paintAreaElementFocusRing(PaintInfo& paintInfo)
         return;
 
     Element* focusedElement = document.focusedElement();
-    if (!focusedElement || !isHTMLAreaElement(focusedElement))
+    if (!focusedElement || !focusedElement->hasTagName(areaTag))
         return;
 
     HTMLAreaElement* areaElement = toHTMLAreaElement(focusedElement);

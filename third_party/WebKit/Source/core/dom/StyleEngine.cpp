@@ -41,7 +41,6 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLImport.h"
 #include "core/html/HTMLLinkElement.h"
-#include "core/html/HTMLStyleElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
@@ -240,7 +239,7 @@ void StyleEngine::addPendingSheet()
 // This method is called whenever a top-level stylesheet has finished loading.
 void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType notification)
 {
-    TreeScope* treeScope = isHTMLStyleElement(styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : &m_document;
+    TreeScope* treeScope = styleSheetCandidateNode->hasTagName(styleTag) ? &styleSheetCandidateNode->treeScope() : &m_document;
     markTreeScopeDirty(*treeScope);
     master()->styleEngine()->notifyPendingStyleSheetRemoved(notification);
 }
@@ -280,8 +279,8 @@ void StyleEngine::modifiedStyleSheet(StyleSheet* sheet)
     if (!node || !node->inDocument())
         return;
 
-    TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
-    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    TreeScope& treeScope = node->hasTagName(styleTag) ? node->treeScope() : m_document;
+    ASSERT(node->hasTagName(styleTag) || treeScope == m_document);
 
     markTreeScopeDirty(treeScope);
 }
@@ -291,8 +290,8 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
     if (!node->inDocument())
         return;
 
-    TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
-    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    TreeScope& treeScope = node->hasTagName(styleTag) ? node->treeScope() : m_document;
+    ASSERT(node->hasTagName(styleTag) || treeScope == m_document);
 
     StyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     ASSERT(collection);
@@ -306,7 +305,7 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 void StyleEngine::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
 {
     TreeScope& treeScope = scopingNode ? scopingNode->treeScope() : m_document;
-    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    ASSERT(node->hasTagName(styleTag) || treeScope == m_document);
 
     StyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     ASSERT(collection);
@@ -321,8 +320,8 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
     if (!node->inDocument())
         return;
 
-    TreeScope& treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
-    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    TreeScope& treeScope = node->hasTagName(styleTag) ? node->treeScope() : m_document;
+    ASSERT(node->hasTagName(styleTag) || treeScope == m_document);
     markTreeScopeDirty(treeScope);
 }
 

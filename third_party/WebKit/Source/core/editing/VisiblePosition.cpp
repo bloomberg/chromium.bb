@@ -35,7 +35,6 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/HTMLHtmlElement.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
 #include "platform/geometry/FloatQuad.h"
@@ -592,14 +591,14 @@ Position VisiblePosition::canonicalPosition(const Position& passedPosition)
 
     // The new position must be in the same editable element. Enforce that first.
     // Unless the descent is from a non-editable html element to an editable body.
-    if (node && isHTMLHtmlElement(node) && !node->rendererIsEditable() && node->document().body() && node->document().body()->rendererIsEditable())
+    if (node && node->hasTagName(htmlTag) && !node->rendererIsEditable() && node->document().body() && node->document().body()->rendererIsEditable())
         return next.isNotNull() ? next : prev;
 
     Node* editingRoot = editableRootForPosition(position);
 
     // If the html element is editable, descending into its body will look like a descent
     // from non-editable to editable content since rootEditableElement() always stops at the body.
-    if ((editingRoot && isHTMLHtmlElement(editingRoot)) || position.deprecatedNode()->isDocumentNode())
+    if ((editingRoot && editingRoot->hasTagName(htmlTag)) || position.deprecatedNode()->isDocumentNode())
         return next.isNotNull() ? next : prev;
 
     bool prevIsInSameEditableElement = prevNode && editableRootForPosition(prev) == editingRoot;

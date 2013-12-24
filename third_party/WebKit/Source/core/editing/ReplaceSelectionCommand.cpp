@@ -50,7 +50,6 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLTitleElement.h"
 #include "core/frame/Frame.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
@@ -703,7 +702,7 @@ static void removeHeadContents(ReplacementFragment& fragment)
             || node->hasTagName(linkTag)
             || node->hasTagName(metaTag)
             || node->hasTagName(styleTag)
-            || isHTMLTitleElement(node)) {
+            || node->hasTagName(titleTag)) {
             next = NodeTraversal::nextSkippingChildren(*node);
             fragment.removeNode(node);
         } else {

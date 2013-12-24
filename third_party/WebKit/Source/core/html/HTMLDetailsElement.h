@@ -44,16 +44,6 @@ private:
     bool m_isOpen;
 };
 
-inline bool isHTMLDetailsElement(const Node* node)
-{
-    return node->hasTagName(HTMLNames::detailsTag);
-}
-
-inline bool isHTMLDetailsElement(const Element* element)
-{
-    return element->hasTagName(HTMLNames::detailsTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLDetailsElement, hasTagName(HTMLNames::detailsTag));
 
 } // namespace WebCore

@@ -126,16 +126,6 @@ private:
     mutable bool m_isDirty;
 };
 
-inline bool isHTMLTextAreaElement(const Node* node)
-{
-    return node->hasTagName(HTMLNames::textareaTag);
-}
-
-inline bool isHTMLTextAreaElement(const Element* element)
-{
-    return element->hasTagName(HTMLNames::textareaTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLTextAreaElement, hasTagName(HTMLNames::textareaTag));
 
 } //namespace

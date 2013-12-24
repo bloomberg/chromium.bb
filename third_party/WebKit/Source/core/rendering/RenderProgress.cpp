@@ -98,7 +98,7 @@ HTMLProgressElement* RenderProgress::progressElement() const
     if (!node())
         return 0;
 
-    if (isHTMLProgressElement(node()))
+    if (node()->hasTagName(HTMLNames::progressTag))
         return toHTMLProgressElement(node());
 
     ASSERT(node()->shadowHost());

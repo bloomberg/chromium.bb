@@ -60,7 +60,7 @@ bool AXListBoxOption::isEnabled() const
     if (!m_optionElement)
         return false;
 
-    if (isHTMLOptGroupElement(m_optionElement))
+    if (m_optionElement->hasTagName(optgroupTag))
         return false;
 
     if (equalIgnoringCase(getAttribute(aria_disabledAttr), "true"))
@@ -155,7 +155,7 @@ String AXListBoxOption::stringValue() const
     if (m_optionElement->hasTagName(optionTag))
         return toHTMLOptionElement(m_optionElement)->text();
 
-    if (isHTMLOptGroupElement(m_optionElement))
+    if (m_optionElement->hasTagName(optgroupTag))
         return toHTMLOptGroupElement(m_optionElement)->groupLabelText();
 
     return String();
@@ -201,7 +201,7 @@ HTMLSelectElement* AXListBoxOption::listBoxOptionParentNode() const
     if (m_optionElement->hasTagName(optionTag))
         return toHTMLOptionElement(m_optionElement)->ownerSelectElement();
 
-    if (isHTMLOptGroupElement(m_optionElement))
+    if (m_optionElement->hasTagName(optgroupTag))
         return toHTMLOptGroupElement(m_optionElement)->ownerSelectElement();
 
     return 0;

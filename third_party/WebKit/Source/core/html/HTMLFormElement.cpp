@@ -41,7 +41,6 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
-#include "core/html/HTMLTableElement.h"
 #include "core/html/RadioNodeList.h"
 #include "core/html/forms/FormController.h"
 #include "core/loader/FrameLoader.h"
@@ -103,7 +102,7 @@ bool HTMLFormElement::rendererIsNeeded(const RenderStyle& style)
     RenderObject* parentRenderer = node->renderer();
     // FIXME: Shouldn't we also check for table caption (see |formIsTablePart| below).
     // FIXME: This check is not correct for Shadow DOM.
-    bool parentIsTableElementPart = (parentRenderer->isTable() && isHTMLTableElement(node))
+    bool parentIsTableElementPart = (parentRenderer->isTable() && node->hasTagName(tableTag))
         || (parentRenderer->isTableRow() && node->hasTagName(trTag))
         || (parentRenderer->isTableSection() && node->hasTagName(tbodyTag))
         || (parentRenderer->isRenderTableCol() && node->hasTagName(colTag))

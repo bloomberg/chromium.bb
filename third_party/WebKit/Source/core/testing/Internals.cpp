@@ -357,7 +357,7 @@ bool Internals::isValidContentSelect(Element* insertionPoint, ExceptionState& ex
         return false;
     }
 
-    return isHTMLContentElement(insertionPoint) && toHTMLContentElement(insertionPoint)->isSelectValid();
+    return insertionPoint->hasTagName(contentTag) && toHTMLContentElement(insertionPoint)->isSelectValid();
 }
 
 Node* Internals::treeScopeRootNode(Node* node, ExceptionState& exceptionState)
@@ -700,7 +700,7 @@ void Internals::setShadowPseudoId(Element* element, const String& id, ExceptionS
 
 String Internals::visiblePlaceholder(Element* element)
 {
-    if (element && isHTMLTextFormControlElement(element)) {
+    if (element && isHTMLTextFormControlElement(*element)) {
         if (toHTMLTextFormControlElement(element)->placeholderShouldBeVisible())
             return toHTMLTextFormControlElement(element)->placeholderElement()->textContent();
     }

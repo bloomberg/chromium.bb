@@ -37,9 +37,6 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/html/HTMLHtmlElement.h"
-#include "core/html/HTMLOptGroupElement.h"
-#include "core/html/HTMLTableElement.h"
 #include "core/html/parser/AtomicHTMLToken.h"
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -1396,7 +1393,7 @@ void HTMLTreeBuilder::processStartTag(AtomicHTMLToken* token)
                 AtomicHTMLToken endOption(HTMLToken::EndTag, optionTag.localName());
                 processEndTag(&endOption);
             }
-            if (isHTMLOptGroupElement(m_tree.currentStackItem()->node())) {
+            if (m_tree.currentStackItem()->hasTagName(optgroupTag)) {
                 AtomicHTMLToken endOptgroup(HTMLToken::EndTag, optgroupTag.localName());
                 processEndTag(&endOptgroup);
             }
@@ -1636,7 +1633,7 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
                 while (item->node() != m_tree.openElements()->rootNode() && !item->hasTagName(templateTag)) {
                     nodeRecord = nodeRecord->next();
                     item = nodeRecord->stackItem();
-                    if (isHTMLTableElement(item->node()))
+                    if (item->hasTagName(tableTag))
                         return setInsertionMode(InSelectInTableMode);
                 }
             }
@@ -1653,7 +1650,7 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
         if (item->hasTagName(colgroupTag)) {
             return setInsertionMode(InColumnGroupMode);
         }
-        if (isHTMLTableElement(item->node()))
+        if (item->hasTagName(tableTag))
             return setInsertionMode(InTableMode);
         if (item->hasTagName(headTag)) {
             if (!m_fragmentContext.fragment() || m_fragmentContext.contextElement() != item->node())
@@ -1665,7 +1662,7 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
         if (item->hasTagName(framesetTag)) {
             return setInsertionMode(InFramesetMode);
         }
-        if (isHTMLHtmlElement(item->node())) {
+        if (item->hasTagName(htmlTag)) {
             if (m_tree.headStackItem())
                 return setInsertionMode(AfterHeadMode);
 
@@ -2212,9 +2209,9 @@ void HTMLTreeBuilder::processEndTag(AtomicHTMLToken* token)
     case InSelectMode:
         ASSERT(insertionMode() == InSelectMode || insertionMode() == InSelectInTableMode);
         if (token->name() == optgroupTag) {
-            if (m_tree.currentStackItem()->hasTagName(optionTag) && m_tree.oneBelowTop() && isHTMLOptGroupElement(m_tree.oneBelowTop()->node()))
+            if (m_tree.currentStackItem()->hasTagName(optionTag) && m_tree.oneBelowTop() && m_tree.oneBelowTop()->hasTagName(optgroupTag))
                 processFakeEndTag(optionTag);
-            if (isHTMLOptGroupElement(m_tree.currentStackItem()->node())) {
+            if (m_tree.currentStackItem()->hasTagName(optgroupTag)) {
                 m_tree.openElements()->pop();
                 return;
             }
@@ -2366,11 +2363,11 @@ ReprocessBuffer:
         ASSERT(insertionMode() == InTableMode || insertionMode() == InTableBodyMode || insertionMode() == InRowMode);
         ASSERT(m_pendingTableCharacters.isEmpty());
         if (m_tree.currentStackItem()->isElementNode()
-            && (isHTMLTableElement(m_tree.currentStackItem()->node())
-                || m_tree.currentStackItem()->hasTagName(HTMLNames::tbodyTag)
-                || m_tree.currentStackItem()->hasTagName(HTMLNames::tfootTag)
-                || m_tree.currentStackItem()->hasTagName(HTMLNames::theadTag)
-                || m_tree.currentStackItem()->hasTagName(HTMLNames::trTag))) {
+            && (m_tree.currentStackItem()->hasTagName(tableTag)
+                || m_tree.currentStackItem()->hasTagName(tbodyTag)
+                || m_tree.currentStackItem()->hasTagName(tfootTag)
+                || m_tree.currentStackItem()->hasTagName(theadTag)
+                || m_tree.currentStackItem()->hasTagName(trTag))) {
             m_originalInsertionMode = m_insertionMode;
             setInsertionMode(InTableTextMode);
             // Note that we fall through to the InTableTextMode case below.

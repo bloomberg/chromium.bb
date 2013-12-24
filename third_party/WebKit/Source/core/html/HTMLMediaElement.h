@@ -580,11 +580,6 @@ struct ValueToString<TextTrackCue*> {
 };
 #endif
 
-inline bool isHTMLMediaElement(Node* node)
-{
-    return node && node->isElementNode() && toElement(node)->isMediaElement();
-}
-
 inline bool isHTMLMediaElement(const Node& node)
 {
     return node.isElementNode() && toElement(node).isMediaElement();

@@ -32,14 +32,12 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
-#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include "core/html/HTMLTextAreaElement.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/UserGestureIndicator.h"
 #include "wtf/text/StringBuilder.h"
@@ -209,7 +207,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         HTMLSelectElement* selectElement = toHTMLSelectElement(node());
         return selectElement->multiple() ? ListBoxRole : PopUpButtonRole;
     }
-    if (isHTMLTextAreaElement(node()))
+    if (node()->hasTagName(textareaTag))
         return TextAreaRole;
     if (headingLevel())
         return HeadingRole;
@@ -217,7 +215,7 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return DivRole;
     if (node()->hasTagName(pTag))
         return ParagraphRole;
-    if (isHTMLLabelElement(node()))
+    if (node()->hasTagName(labelTag))
         return LabelRole;
     if (node()->isElementNode() && toElement(node())->isFocusable())
         return GroupRole;
@@ -346,7 +344,7 @@ HTMLLabelElement* AXNodeObject::labelForElement(Element* element) const
     }
 
     for (Element* parent = element->parentElement(); parent; parent = parent->parentElement()) {
-        if (isHTMLLabelElement(parent))
+        if (parent->hasTagName(labelTag))
             return toHTMLLabelElement(parent);
     }
 
@@ -577,7 +575,7 @@ bool AXNodeObject::isNativeTextControl() const
     if (!node)
         return false;
 
-    if (isHTMLTextAreaElement(node))
+    if (node->hasTagName(textareaTag))
         return true;
 
     if (node->hasTagName(inputTag)) {
@@ -706,7 +704,7 @@ bool AXNodeObject::isReadOnly() const
     if (!node)
         return true;
 
-    if (isHTMLTextAreaElement(node))
+    if (node->hasTagName(textareaTag))
         return toHTMLFormControlElement(node)->isReadOnly();
 
     if (node->hasTagName(inputTag)) {
@@ -883,7 +881,7 @@ String AXNodeObject::text() const
     if (!node)
         return String();
 
-    if (isNativeTextControl() && (isHTMLTextAreaElement(node) || node->hasTagName(inputTag)))
+    if (isNativeTextControl() && (node->hasTagName(textareaTag) || node->hasTagName(inputTag)))
         return toHTMLTextFormControlElement(node)->value();
 
     if (!node->isElementNode())
@@ -1447,7 +1445,7 @@ Element* AXNodeObject::anchorElement() const
     // search up the DOM tree for an anchor element
     // NOTE: this assumes that any non-image with an anchor is an HTMLAnchorElement
     for ( ; node; node = node->parentNode()) {
-        if (isHTMLAnchorElement(node) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
+        if (node->hasTagName(aTag) || (node->renderer() && cache->getOrCreate(node->renderer())->isAnchor()))
             return toElement(node);
     }
 
@@ -1495,7 +1493,7 @@ HTMLLabelElement* AXNodeObject::labelElementContainer() const
 
     // find if this has a parent that is a label
     for (Node* parentNode = node(); parentNode; parentNode = parentNode->parentNode()) {
-        if (isHTMLLabelElement(parentNode))
+        if (parentNode->hasTagName(labelTag))
             return toHTMLLabelElement(parentNode);
     }
 

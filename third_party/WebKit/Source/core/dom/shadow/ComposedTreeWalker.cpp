@@ -30,7 +30,6 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/shadow/ElementShadow.h"
-#include "core/html/shadow/HTMLContentElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"
 
 namespace WebCore {
@@ -73,7 +72,7 @@ Node* ComposedTreeWalker::traverseNode(const Node* node, TraversalDirection dire
     const InsertionPoint* insertionPoint = toInsertionPoint(node);
     if (Node* found = traverseDistributedNodes(direction == TraversalDirectionForward ? insertionPoint->first() : insertionPoint->last(), insertionPoint, direction))
         return found;
-    ASSERT(isHTMLShadowElement(node) || (isHTMLContentElement(node) && !node->hasChildNodes()));
+    ASSERT(node->hasTagName(HTMLNames::shadowTag) || (node->hasTagName(HTMLNames::contentTag) && !node->hasChildNodes()));
     return 0;
 }
 

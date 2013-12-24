@@ -50,7 +50,7 @@ ContainerNode* ScopedStyleResolver::scopingNodeFor(Document& document, const CSS
     if (!sheetDocument)
         return 0;
     Node* ownerNode = sheet->ownerNode();
-    if (!ownerNode || !isHTMLStyleElement(ownerNode))
+    if (!ownerNode || !ownerNode->hasTagName(HTMLNames::styleTag))
         return &document;
 
     HTMLStyleElement* styleElement = toHTMLStyleElement(ownerNode);

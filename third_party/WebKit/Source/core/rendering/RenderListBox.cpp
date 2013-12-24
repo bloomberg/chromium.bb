@@ -123,7 +123,7 @@ void RenderListBox::updateFromElement()
             Font itemFont = style()->font();
             if (element->hasTagName(optionTag)) {
                 text = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-            } else if (isHTMLOptGroupElement(element)) {
+            } else if (element->hasTagName(optgroupTag)) {
                 text = toHTMLOptGroupElement(element)->groupLabelText();
                 FontDescription d = itemFont.fontDescription();
                 d.setWeight(d.bolderWeight());
@@ -409,7 +409,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
     bool isOptionElement = element->hasTagName(optionTag);
     if (isOptionElement)
         itemText = toHTMLOptionElement(element)->textIndentedToRespectGroupLabel();
-    else if (isHTMLOptGroupElement(element))
+    else if (element->hasTagName(optgroupTag))
         itemText = toHTMLOptGroupElement(element)->groupLabelText();
     applyTextTransform(style(), itemText, ' ');
 
@@ -429,7 +429,7 @@ void RenderListBox::paintItemForeground(PaintInfo& paintInfo, const LayoutPoint&
     LayoutRect r = itemBoundingBoxRect(paintOffset, listIndex);
     r.move(itemOffsetForAlignment(textRun, itemStyle, itemFont, r));
 
-    if (isHTMLOptGroupElement(element)) {
+    if (element->hasTagName(optgroupTag)) {
         FontDescription d = itemFont.fontDescription();
         d.setWeight(d.bolderWeight());
         itemFont = Font(d, itemFont.letterSpacing(), itemFont.wordSpacing());

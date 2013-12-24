@@ -68,16 +68,6 @@ private:
     Shape m_shape;
 };
 
-inline bool isHTMLAreaElement(const Node* node)
-{
-    return node->hasTagName(HTMLNames::areaTag);
-}
-
-inline bool isHTMLAreaElement(const Element* element)
-{
-    return element->hasTagName(HTMLNames::areaTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLAreaElement, hasTagName(HTMLNames::areaTag));
 
 } //namespace

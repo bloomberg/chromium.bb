@@ -2443,7 +2443,7 @@ bool RenderObject::isRooted(RenderView** view) const
 RenderObject* RenderObject::rendererForRootBackground()
 {
     ASSERT(isRoot());
-    if (!hasBackground() && node() && isHTMLHtmlElement(node())) {
+    if (!hasBackground() && node() && node()->hasTagName(htmlTag)) {
         // Locate the <body> element using the DOM. This is easier than trying
         // to crawl around a render tree with potential :before/:after content and
         // anonymous blocks created by inline <body> tags etc. We can locate the <body>
@@ -3019,7 +3019,7 @@ void RenderObject::getTextDecorationColors(unsigned decorations, Color& underlin
         curr = curr->parent();
         if (curr && curr->isAnonymousBlock() && toRenderBlock(curr)->continuation())
             curr = toRenderBlock(curr)->continuation();
-    } while (curr && decorations && (!quirksMode || !curr->node() || (!isHTMLAnchorElement(curr->node()) && !curr->node()->hasTagName(fontTag))));
+    } while (curr && decorations && (!quirksMode || !curr->node() || (!curr->node()->hasTagName(aTag) && !curr->node()->hasTagName(fontTag))));
 
     // If we bailed out, use the element we bailed out at (typically a <font> or <a> element).
     if (decorations && curr) {
@@ -3201,10 +3201,10 @@ Element* RenderObject::offsetParent() const
         if (ancestor->isPositioned())
             break;
 
-        if (node->hasTagName(HTMLNames::bodyTag))
+        if (node->hasTagName(bodyTag))
             break;
 
-        if (!isPositioned() && (isHTMLTableElement(node) || node->hasTagName(tdTag) || node->hasTagName(thTag)))
+        if (!isPositioned() && (node->hasTagName(tableTag) || node->hasTagName(tdTag) || node->hasTagName(thTag)))
             break;
 
         // Webkit specific extension where offsetParent stops at zoom level changes.

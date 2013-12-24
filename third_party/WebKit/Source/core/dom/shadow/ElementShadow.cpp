@@ -86,7 +86,7 @@ void DistributionPool::distributeTo(InsertionPoint* insertionPoint, ElementShado
         if (m_distributed[i])
             continue;
 
-        if (isHTMLContentElement(insertionPoint) && !toHTMLContentElement(insertionPoint)->canSelectNode(m_nodes, i))
+        if (insertionPoint->hasTagName(HTMLNames::contentTag) && !toHTMLContentElement(insertionPoint)->canSelectNode(m_nodes, i))
             continue;
 
         Node* node = m_nodes[i];
@@ -275,7 +275,7 @@ void ElementShadow::distribute()
             InsertionPoint* point = insertionPoints[i].get();
             if (!point->isActive())
                 continue;
-            if (isHTMLShadowElement(point)) {
+            if (point->hasTagName(HTMLNames::shadowTag)) {
                 if (!shadowInsertionPoint)
                     shadowInsertionPoint = toHTMLShadowElement(point);
             } else {
@@ -337,7 +337,7 @@ void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot& root)
     for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(*element, &root)) {
         if (ElementShadow* shadow = element->shadow())
             m_selectFeatures.add(shadow->ensureSelectFeatureSet());
-        if (!isHTMLContentElement(element))
+        if (!element->hasTagName(HTMLNames::contentTag))
             continue;
         const CSSSelectorList& list = toHTMLContentElement(element)->selectorList();
         for (const CSSSelector* selector = list.first(); selector; selector = CSSSelectorList::next(selector)) {

@@ -68,12 +68,6 @@ private:
     ProgressValueElement* m_value;
 };
 
-inline bool isHTMLProgressElement(Node* node)
-{
-    ASSERT(node);
-    return node->hasTagName(HTMLNames::progressTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLProgressElement, hasTagName(HTMLNames::progressTag));
 
 } // namespace

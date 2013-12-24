@@ -656,8 +656,7 @@ Node* DragController::draggableNode(const Frame* src, Node* startNode, const Int
                 return node;
             }
             // Other draggable elements are considered unselectable.
-            if (isHTMLAnchorElement(node)
-                && toHTMLAnchorElement(node)->isLiveLink()) {
+            if (node->hasTagName(HTMLNames::aTag) && toHTMLAnchorElement(node)->isLiveLink()) {
                 candidateDragType = DragSourceActionLink;
                 break;
             }

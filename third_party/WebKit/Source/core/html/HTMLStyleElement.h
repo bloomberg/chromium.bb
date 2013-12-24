@@ -101,12 +101,6 @@ private:
     ScopedStyleRegistrationState m_scopedStyleRegistrationState;
 };
 
-inline bool isHTMLStyleElement(Node* node)
-{
-    ASSERT(node);
-    return node->hasTagName(HTMLNames::styleTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLStyleElement, hasTagName(HTMLNames::styleTag));
 
 } //namespace

@@ -71,7 +71,7 @@ KURL getSubResourceURLFromElement(Element* element)
         if (toHTMLInputElement(element)->isImageButton())
             attributeName = &HTMLNames::srcAttr;
     } else if (element->hasTagName(HTMLNames::bodyTag)
-        || isHTMLTableElement(element)
+        || element->hasTagName(HTMLNames::tableTag)
         || element->hasTagName(HTMLNames::trTag)
         || element->hasTagName(HTMLNames::tdTag))
         attributeName = &HTMLNames::backgroundAttr;

@@ -141,21 +141,6 @@ inline LinkHash HTMLAnchorElement::visitedLinkHash() const
 bool isEnterKeyKeydownEvent(Event*);
 bool isLinkClick(Event*);
 
-inline bool isHTMLAnchorElement(const Node* node)
-{
-    return node->hasTagName(HTMLNames::aTag);
-}
-
-inline bool isHTMLAnchorElement(const Element* element)
-{
-    return element->hasTagName(HTMLNames::aTag);
-}
-
-inline bool isHTMLAnchorElement(const Element& element)
-{
-    return element.hasTagName(HTMLNames::aTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLAnchorElement, hasTagName(HTMLNames::aTag));
 
 } // namespace WebCore

@@ -98,16 +98,6 @@ private:
     RefPtr<StylePropertySet> m_sharedCellStyle;
 };
 
-inline bool isHTMLTableElement(const Node* node)
-{
-    return node->hasTagName(HTMLNames::tableTag);
-}
-
-inline bool isHTMLTableElement(const Element* element)
-{
-    return element->hasTagName(HTMLNames::tableTag);
-}
-
 DEFINE_NODE_TYPE_CASTS(HTMLTableElement, hasTagName(HTMLNames::tableTag));
 
 } //namespace

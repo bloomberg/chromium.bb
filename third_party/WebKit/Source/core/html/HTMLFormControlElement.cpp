@@ -32,7 +32,6 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLegendElement.h"
-#include "core/html/HTMLTextAreaElement.h"
 #include "core/html/ValidityState.h"
 #include "core/html/forms/ValidationMessage.h"
 #include "core/frame/UseCounter.h"
@@ -202,7 +201,7 @@ bool HTMLFormControlElement::isAutofocusable() const
         return true;
     if (hasTagName(buttonTag))
         return true;
-    if (isHTMLTextAreaElement(this))
+    if (hasTagName(textareaTag))
         return true;
     return false;
 }

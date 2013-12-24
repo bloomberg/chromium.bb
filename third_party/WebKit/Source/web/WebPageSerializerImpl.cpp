@@ -145,7 +145,7 @@ String WebPageSerializerImpl::preActionBeforeSerializeOpenTag(
                     *needSkip = true;
                 }
             }
-        } else if (isHTMLHtmlElement(element)) {
+        } else if (element->hasTagName(HTMLNames::htmlTag)) {
             // Check something before processing the open tag of HEAD element.
             // First we add doc type declaration if original document has it.
             if (!param->haveSeenDocType) {
