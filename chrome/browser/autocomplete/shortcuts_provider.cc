@@ -56,7 +56,8 @@ class DestinationURLEqualsURL {
 const URLPrefix* BestURLPrefixWithWWWCase(
     const base::string16& text,
     const base::string16& prefix_suffix) {
-  CR_DEFINE_STATIC_LOCAL(URLPrefix, www_prefix, (ASCIIToUTF16("www."), 1));
+  CR_DEFINE_STATIC_LOCAL(URLPrefix, www_prefix,
+                         (base::ASCIIToUTF16("www."), 1));
   const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(text, prefix_suffix);
   if ((best_prefix == NULL) ||
       (best_prefix->num_components < www_prefix.num_components)) {
@@ -220,7 +221,8 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
   DCHECK(match.destination_url.is_valid());
   match.RecordAdditionalInfo("number of hits", shortcut.number_of_hits);
   match.RecordAdditionalInfo("last access time", shortcut.last_access_time);
-  match.RecordAdditionalInfo("original input text", UTF16ToUTF8(shortcut.text));
+  match.RecordAdditionalInfo("original input text",
+                             base::UTF16ToUTF8(shortcut.text));
 
   // Set |inline_autocompletion| and |allowed_to_be_default_match| if possible.
   // If the match is a search query this is easy: simply check whether the

@@ -333,7 +333,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuSelection) {
   WebContents* web_contents = GetFirstShellWindowWebContents();
   ASSERT_TRUE(web_contents);
   content::ContextMenuParams params;
-  params.selection_text = ASCIIToUTF16("Hello World");
+  params.selection_text = base::ASCIIToUTF16("Hello World");
   scoped_ptr<PlatformAppContextMenu> menu;
   menu.reset(new PlatformAppContextMenu(web_contents, params));
   menu->Init();

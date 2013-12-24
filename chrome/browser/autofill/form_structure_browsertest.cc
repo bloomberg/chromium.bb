@@ -91,9 +91,9 @@ std::string FormStructureBrowserTest::FormStructuresToString(
          field_iter != (*iter)->end();
          ++field_iter) {
       forms_string += (*field_iter)->Type().ToString();
-      forms_string += " | " + UTF16ToUTF8((*field_iter)->name);
-      forms_string += " | " + UTF16ToUTF8((*field_iter)->label);
-      forms_string += " | " + UTF16ToUTF8((*field_iter)->value);
+      forms_string += " | " + base::UTF16ToUTF8((*field_iter)->name);
+      forms_string += " | " + base::UTF16ToUTF8((*field_iter)->label);
+      forms_string += " | " + base::UTF16ToUTF8((*field_iter)->value);
       forms_string += "\n";
     }
   }

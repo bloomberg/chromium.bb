@@ -46,11 +46,13 @@ BuiltinProvider::BuiltinProvider(AutocompleteProviderListener* listener,
   std::sort(builtins.begin(), builtins.end());
   for (std::vector<std::string>::iterator i(builtins.begin());
        i != builtins.end(); ++i)
-    builtins_.push_back(ASCIIToUTF16(*i));
-  base::string16 settings(ASCIIToUTF16(chrome::kChromeUISettingsHost) +
-                          ASCIIToUTF16("/"));
-  for (size_t i = 0; i < arraysize(kChromeSettingsSubPages); i++)
-    builtins_.push_back(settings + ASCIIToUTF16(kChromeSettingsSubPages[i]));
+    builtins_.push_back(base::ASCIIToUTF16(*i));
+  base::string16 settings(base::ASCIIToUTF16(chrome::kChromeUISettingsHost) +
+                          base::ASCIIToUTF16("/"));
+  for (size_t i = 0; i < arraysize(kChromeSettingsSubPages); i++) {
+    builtins_.push_back(
+        settings + base::ASCIIToUTF16(kChromeSettingsSubPages[i]));
+  }
 }
 
 void BuiltinProvider::Start(const AutocompleteInput& input,
@@ -61,10 +63,10 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
       (input.type() == AutocompleteInput::QUERY))
     return;
 
-  const base::string16 kAbout = ASCIIToUTF16(chrome::kAboutScheme) +
-      ASCIIToUTF16(content::kStandardSchemeSeparator);
-  const base::string16 kChrome = ASCIIToUTF16(chrome::kChromeUIScheme) +
-      ASCIIToUTF16(content::kStandardSchemeSeparator);
+  const base::string16 kAbout = base::ASCIIToUTF16(chrome::kAboutScheme) +
+      base::ASCIIToUTF16(content::kStandardSchemeSeparator);
+  const base::string16 kChrome = base::ASCIIToUTF16(chrome::kChromeUIScheme) +
+      base::ASCIIToUTF16(content::kStandardSchemeSeparator);
 
   const int kUrl = ACMatchClassification::URL;
   const int kMatch = kUrl | ACMatchClassification::MATCH;
@@ -82,22 +84,22 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
     if (highlight)
       styles.push_back(ACMatchClassification(offset, kUrl));
     // Include some common builtin chrome URLs as the user types the scheme.
-    AddMatch(ASCIIToUTF16(chrome::kChromeUIChromeURLsURL), base::string16(),
-             styles);
-    AddMatch(ASCIIToUTF16(chrome::kChromeUISettingsURL), base::string16(),
-             styles);
-    AddMatch(ASCIIToUTF16(chrome::kChromeUIVersionURL), base::string16(),
-             styles);
+    AddMatch(base::ASCIIToUTF16(chrome::kChromeUIChromeURLsURL),
+             base::string16(), styles);
+    AddMatch(base::ASCIIToUTF16(chrome::kChromeUISettingsURL),
+             base::string16(), styles);
+    AddMatch(base::ASCIIToUTF16(chrome::kChromeUIVersionURL),
+             base::string16(), styles);
   } else {
     // Match input about: or chrome: URL input against builtin chrome URLs.
-    GURL url = URLFixerUpper::FixupURL(UTF16ToUTF8(text), std::string());
+    GURL url = URLFixerUpper::FixupURL(base::UTF16ToUTF8(text), std::string());
     // BuiltinProvider doesn't know how to suggest valid ?query or #fragment
     // extensions to chrome: URLs.
     if (url.SchemeIs(chrome::kChromeUIScheme) && url.has_host() &&
         !url.has_query() && !url.has_ref()) {
       // Include the path for sub-pages (e.g. "chrome://settings/browser").
-      base::string16 host_and_path = UTF8ToUTF16(url.host() + url.path());
-      base::TrimString(host_and_path, ASCIIToUTF16("/").c_str(),
+      base::string16 host_and_path = base::UTF8ToUTF16(url.host() + url.path());
+      base::TrimString(host_and_path, base::ASCIIToUTF16("/").c_str(),
                        &host_and_path);
       size_t match_length = kChrome.length() + host_and_path.length();
       for (Builtins::const_iterator i(builtins_.begin());

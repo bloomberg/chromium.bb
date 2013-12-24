@@ -362,7 +362,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
         bool have_listeners =
           extensions::ExtensionOmniboxEventRouter::OnInputChanged(
               profile_, template_url->GetExtensionId(),
-              UTF16ToUTF8(remaining_input), current_input_id_);
+              base::UTF16ToUTF8(remaining_input), current_input_id_);
 
         // We only have to wait for suggest results if there are actually
         // extensions listening for input changes.
@@ -590,10 +590,11 @@ void KeywordProvider::Observe(int type,
         // interaction.
         extension_suggest_matches_.push_back(CreateAutocompleteMatch(
             template_url, input, keyword.length(),
-            UTF8ToUTF16(suggestion.content), false, first_relevance - (i + 1)));
+            base::UTF8ToUTF16(suggestion.content), false,
+            first_relevance - (i + 1)));
 
         AutocompleteMatch* match = &extension_suggest_matches_.back();
-        match->contents.assign(UTF8ToUTF16(suggestion.description));
+        match->contents.assign(base::UTF8ToUTF16(suggestion.description));
         match->contents_class =
             extensions::StyleTypesToACMatchClassifications(suggestion);
         match->description.clear();

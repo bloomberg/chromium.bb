@@ -49,6 +49,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+using base::ASCIIToUTF16;
+using base::WideToUTF16;
+
 namespace autofill {
 
 class WindowedPersonalDataManagerObserver

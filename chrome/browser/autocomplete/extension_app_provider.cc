@@ -173,8 +173,8 @@ void ExtensionAppProvider::RefreshAppList() {
     DCHECK(launch_url.is_valid());
 
     ExtensionApp extension_app = {
-        UTF8ToUTF16(app->name()),
-        UTF8ToUTF16(launch_url.spec()),
+        base::UTF8ToUTF16(app->name()),
+        base::UTF8ToUTF16(launch_url.spec()),
         // Only hosted apps have recognizable URLs that users might type in,
         // packaged apps and hosted apps use chrome-extension:// URLs that are
         // normally not shown to users.

@@ -61,7 +61,7 @@ bool ExtensionNameComparator::operator()(
     const scoped_refptr<const Extension>& x,
     const scoped_refptr<const Extension>& y) {
   return l10n_util::StringComparator<base::string16>(collator_)(
-      UTF8ToUTF16(x->name()), UTF8ToUTF16(y->name()));
+      base::UTF8ToUTF16(x->name()), base::UTF8ToUTF16(y->name()));
 }
 
 // Background application representation, private to the
@@ -317,7 +317,7 @@ bool BackgroundApplicationListModel::IsBackgroundApp(
 
   BackgroundContentsService* service =
       BackgroundContentsServiceFactory::GetForProfile(profile);
-  base::string16 app_id = ASCIIToUTF16(extension.id());
+  base::string16 app_id = base::ASCIIToUTF16(extension.id());
   // If we have an active or registered background contents for this app, then
   // it's a background app. This covers the cases where the app has created its
   // background contents, but it hasn't navigated yet, or the background

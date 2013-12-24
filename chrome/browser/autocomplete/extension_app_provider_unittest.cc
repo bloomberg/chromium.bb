@@ -14,6 +14,8 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 class ExtensionAppProviderTest : public testing::Test {
  protected:
   struct test_data {
@@ -75,7 +77,7 @@ void ExtensionAppProviderTest::SetUp() {
 
     // Populate the InMemoryDatabase.
     history::URLRow info(GURL(kExtensionApps[i].launch_url));
-    info.set_title(UTF8ToUTF16(kExtensionApps[i].title));
+    info.set_title(base::UTF8ToUTF16(kExtensionApps[i].title));
     info.set_typed_count(kExtensionApps[i].typed_count);
     url_db->AddURL(info);
   }

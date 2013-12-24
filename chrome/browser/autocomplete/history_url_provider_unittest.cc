@@ -28,6 +28,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 
@@ -247,14 +248,15 @@ void HistoryURLProviderTest::FillData() {
   for (size_t i = 0; i < arraysize(test_db); ++i) {
     const TestURLInfo& cur = test_db[i];
     const GURL current_url(cur.url);
-    history_service_->AddPageWithDetails(current_url, UTF8ToUTF16(cur.title),
+    history_service_->AddPageWithDetails(current_url,
+                                         base::UTF8ToUTF16(cur.title),
                                          cur.visit_count, cur.typed_count,
                                          visit_time, false,
                                          history::SOURCE_BROWSED);
   }
 
   history_service_->AddPageWithDetails(
-      GURL("http://p/"), UTF8ToUTF16("p"), 0, 0,
+      GURL("http://p/"), base::UTF8ToUTF16("p"), 0, 0,
       Time::Now() -
       TimeDelta::FromDays(history::kLowQualityMatchAgeLimitInDays - 1),
       false, history::SOURCE_BROWSED);
@@ -427,7 +429,7 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     history_service_->AddPageWithDetails(GURL(test_cases[i].url),
-        UTF8ToUTF16("Title"), test_cases[i].count, test_cases[i].count,
+        ASCIIToUTF16("Title"), test_cases[i].count, test_cases[i].count,
         Time::Now(), false, history::SOURCE_BROWSED);
   }
 
@@ -448,7 +450,7 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   // "what you typed" result, plus this one.
   const base::string16 typing(ASCIIToUTF16("http://redirects/"));
   const UrlAndLegalDefault expected_results[] = {
-    { UTF16ToUTF8(typing), true },
+    { base::UTF16ToUTF8(typing), true },
     { test_cases[0].url, false }
   };
   RunTest(typing, base::string16(), true, expected_results,
@@ -490,9 +492,9 @@ TEST_F(HistoryURLProviderTest, Fixup) {
   const UrlAndLegalDefault fixup_crash[] = {
     { "http://%EF%BD%A5@s/", true }
   };
-  RunTest(WideToUTF16(L"\uff65@s"), base::string16(), false, fixup_crash,
+  RunTest(base::WideToUTF16(L"\uff65@s"), base::string16(), false, fixup_crash,
           arraysize(fixup_crash));
-  RunTest(WideToUTF16(L"\u2015\u2015@ \uff7c"), base::string16(), false,
+  RunTest(base::WideToUTF16(L"\u2015\u2015@ \uff7c"), base::string16(), false,
           NULL, 0);
 
   // Fixing up "file:" should result in an inline autocomplete offset of just
@@ -806,7 +808,7 @@ TEST_F(HistoryURLProviderTest, CullSearchResults) {
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     history_service_->AddPageWithDetails(GURL(test_cases[i].url),
-        UTF8ToUTF16("Title"), test_cases[i].count, test_cases[i].count,
+        base::UTF8ToUTF16("Title"), test_cases[i].count, test_cases[i].count,
         Time::Now(), false, history::SOURCE_BROWSED);
   }
 

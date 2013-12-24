@@ -82,7 +82,7 @@ void BookmarkProviderTest::SetUp() {
     const BookmarksTestInfo& cur(bookmark_provider_test_data[i]);
     const GURL url(cur.url);
     model_->AddURL(other_node, other_node->child_count(),
-                   ASCIIToUTF16(cur.title), url);
+                   base::ASCIIToUTF16(cur.title), url);
   }
 }
 
@@ -118,9 +118,9 @@ std::string TestBookmarkPositionsAsString(
 base::string16 MatchesAsString16(const ACMatches& matches) {
   base::string16 matches_string;
   for (ACMatches::const_iterator i = matches.begin(); i != matches.end(); ++i) {
-    matches_string.append(ASCIIToUTF16("    '"));
+    matches_string.append(base::ASCIIToUTF16("    '"));
     matches_string.append(i->description);
-    matches_string.append(ASCIIToUTF16("'\n"));
+    matches_string.append(base::ASCIIToUTF16("'\n"));
   }
   return matches_string;
 }
@@ -242,7 +242,7 @@ TEST_F(BookmarkProviderTest, Positions) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
-    AutocompleteInput input(ASCIIToUTF16(query_data[i].query),
+    AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false, false,
                             false, AutocompleteInput::ALL_MATCHES);
@@ -316,7 +316,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
-    AutocompleteInput input(ASCIIToUTF16(query_data[i].query),
+    AutocompleteInput input(base::ASCIIToUTF16(query_data[i].query),
                             base::string16::npos, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false, false,
                             false, AutocompleteInput::ALL_MATCHES);
@@ -326,7 +326,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
     for (size_t j = 0; j < std::max(query_data[i].match_count, matches.size());
          ++j) {
       EXPECT_LT(j, query_data[i].match_count) << "    Unexpected match '"
-          << UTF16ToUTF8(matches[j].description) << "' for query: '"
+          << base::UTF16ToUTF8(matches[j].description) << "' for query: '"
           <<  query_data[i].query << "'.";
       if (j >= query_data[i].match_count)
         continue;
@@ -335,7 +335,8 @@ TEST_F(BookmarkProviderTest, Rankings) {
           << query_data[i].query << "'.";
       if (j >= matches.size())
         continue;
-      EXPECT_EQ(query_data[i].matches[j], UTF16ToUTF8(matches[j].description))
+      EXPECT_EQ(query_data[i].matches[j],
+                base::UTF16ToUTF8(matches[j].description))
           << "    Mismatch at [" << base::IntToString(j) << "] for query '"
           << query_data[i].query << "'.";
       EXPECT_FALSE(matches[j].allowed_to_be_default_match);

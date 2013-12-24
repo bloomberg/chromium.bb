@@ -297,8 +297,8 @@ class WebViewInteractiveTest
   };
 
   void WaitForTitle(const char* title) {
-    base::string16 expected_title(ASCIIToUTF16(title));
-    base::string16 error_title(ASCIIToUTF16("FAILED"));
+    base::string16 expected_title(base::ASCIIToUTF16(title));
+    base::string16 error_title(base::ASCIIToUTF16("FAILED"));
     content::TitleWatcher title_watcher(guest_web_contents(), expected_title);
     title_watcher.AlsoWaitForTitle(error_title);
     ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -324,8 +324,8 @@ class WebViewInteractiveTest
     ASSERT_TRUE(!popup_rwh->IsRenderView());
     ASSERT_TRUE(popup_rwh->GetView());
 
-    base::string16 expected_title = ASCIIToUTF16("PASSED2");
-    base::string16 error_title = ASCIIToUTF16("FAILED");
+    base::string16 expected_title = base::ASCIIToUTF16("PASSED2");
+    base::string16 error_title = base::ASCIIToUTF16("FAILED");
     content::TitleWatcher title_watcher(guest_web_contents(), expected_title);
     title_watcher.AlsoWaitForTitle(error_title);
     EXPECT_TRUE(content::ExecuteScript(guest_web_contents(),

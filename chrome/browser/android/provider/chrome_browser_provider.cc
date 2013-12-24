@@ -169,7 +169,7 @@ GURL ParseAndMaybeAppendScheme(const base::string16& url,
                                const char* default_scheme) {
   GURL gurl(url);
   if (!gurl.is_valid() && !gurl.has_scheme()) {
-    base::string16 refined_url(ASCIIToUTF16(default_scheme));
+    base::string16 refined_url(base::ASCIIToUTF16(default_scheme));
     refined_url.append(url);
     gurl = GURL(refined_url);
   }
@@ -1095,7 +1095,7 @@ void FillBookmarkRow(JNIEnv* env,
     // history::BookmarkRow.raw_url_.
     GURL gurl = ParseAndMaybeAppendScheme(raw_url, kDefaultUrlScheme);
     row->set_url(gurl);
-    row->set_raw_url(UTF16ToUTF8(raw_url));
+    row->set_raw_url(base::UTF16ToUTF8(raw_url));
   }
 
   if (created)

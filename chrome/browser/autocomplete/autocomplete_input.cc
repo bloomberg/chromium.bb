@@ -149,8 +149,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (scheme)
     *scheme = parsed_scheme;
   if (canonicalized_url) {
-    *canonicalized_url = URLFixerUpper::FixupURL(UTF16ToUTF8(text),
-                                                 UTF16ToUTF8(desired_tld));
+    *canonicalized_url = URLFixerUpper::FixupURL(
+        base::UTF16ToUTF8(text), base::UTF16ToUTF8(desired_tld));
   }
 
   if (LowerCaseEqualsASCII(parsed_scheme, chrome::kFileScheme)) {
@@ -197,7 +197,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // open them, but users still can.
     // TODO(viettrungluu): get rid of conversion.
     ExternalProtocolHandler::BlockState block_state =
-        ExternalProtocolHandler::GetBlockState(UTF16ToUTF8(parsed_scheme));
+        ExternalProtocolHandler::GetBlockState(
+            base::UTF16ToUTF8(parsed_scheme));
     switch (block_state) {
       case ExternalProtocolHandler::DONT_BLOCK:
         return URL;
@@ -211,15 +212,16 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         // We don't know about this scheme.  It might be that the user typed a
         // URL of the form "username:password@foo.com".
         const base::string16 http_scheme_prefix =
-            ASCIIToUTF16(std::string(content::kHttpScheme) +
-                         content::kStandardSchemeSeparator);
+            base::ASCIIToUTF16(std::string(content::kHttpScheme) +
+                               content::kStandardSchemeSeparator);
         url_parse::Parsed http_parts;
         base::string16 http_scheme;
         GURL http_canonicalized_url;
         Type http_type = Parse(http_scheme_prefix + text, desired_tld,
                                &http_parts, &http_scheme,
                                &http_canonicalized_url);
-        DCHECK_EQ(std::string(content::kHttpScheme), UTF16ToUTF8(http_scheme));
+        DCHECK_EQ(std::string(content::kHttpScheme),
+                  base::UTF16ToUTF8(http_scheme));
 
         if (http_type == URL &&
             http_parts.username.is_nonempty() &&
@@ -274,7 +276,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   const base::string16 host(text.substr(parts->host.begin, parts->host.len));
   const size_t registry_length =
       net::registry_controlled_domains::GetRegistryLength(
-          UTF16ToUTF8(host),
+          base::UTF16ToUTF8(host),
           net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
   if (registry_length == std::string::npos) {
@@ -286,7 +288,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
       host_with_tld += desired_tld;
       const size_t tld_length =
           net::registry_controlled_domains::GetRegistryLength(
-              UTF16ToUTF8(host_with_tld),
+              base::UTF16ToUTF8(host_with_tld),
               net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
               net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
       if (tld_length != std::string::npos)
@@ -302,11 +304,11 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   // unlikely that a user would be trying to type those in for anything other
   // than a search query.
   url_canon::CanonHostInfo host_info;
-  const std::string canonicalized_host(net::CanonicalizeHost(UTF16ToUTF8(host),
-                                                             &host_info));
+  const std::string canonicalized_host(net::CanonicalizeHost(
+      base::UTF16ToUTF8(host), &host_info));
   if ((host_info.family == url_canon::CanonHostInfo::NEUTRAL) &&
       !net::IsCanonicalizedHostCompliant(canonicalized_host,
-                                         UTF16ToUTF8(desired_tld))) {
+                                         base::UTF16ToUTF8(desired_tld))) {
     // Invalid hostname.  There are several possible cases:
     // * Our checker is too strict and the user pasted in a real-world URL
     //   that's "invalid" but resolves.  To catch these, we return UNKNOWN when
@@ -393,7 +395,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   //   default and let users correct us on a case-by-case basis.
   // Note that we special-case "localhost" as a known hostname.
   if ((host_info.family != url_canon::CanonHostInfo::IPV4) &&
-      ((registry_length != 0) || (host == ASCIIToUTF16("localhost") ||
+      ((registry_length != 0) || (host == base::ASCIIToUTF16("localhost") ||
        parts->port.is_nonempty())))
     return parts->username.is_nonempty() ? UNKNOWN : URL;
 
@@ -502,7 +504,7 @@ int AutocompleteInput::NumNonHostComponents(const url_parse::Parsed& parts) {
 
 // static
 bool AutocompleteInput::HasHTTPScheme(const base::string16& input) {
-  std::string utf8_input(UTF16ToUTF8(input));
+  std::string utf8_input(base::UTF16ToUTF8(input));
   url_parse::Component scheme;
   if (url_util::FindAndCompareScheme(utf8_input, content::kViewSourceScheme,
                                      &scheme))

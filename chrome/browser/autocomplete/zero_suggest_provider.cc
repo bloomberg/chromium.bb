@@ -258,7 +258,8 @@ void ZeroSuggestProvider::FillResults(
       relevances = NULL;
     if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
       // Do not blindly trust the URL coming from the server to be valid.
-      GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(result), std::string()));
+      GURL url(URLFixerUpper::FixupURL(
+          base::UTF16ToUTF8(result), std::string()));
       if (url.is_valid()) {
         if (descriptions != NULL)
           descriptions->GetString(index, &title);

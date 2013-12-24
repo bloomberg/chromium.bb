@@ -141,8 +141,8 @@ void AutocompleteProvider::UpdateStarredStateOfMatches() {
 bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
   const base::string16& input_text = input->text();
   // Fixup and canonicalize user input.
-  const GURL canonical_gurl(URLFixerUpper::FixupURL(UTF16ToUTF8(input_text),
-                                                    std::string()));
+  const GURL canonical_gurl(URLFixerUpper::FixupURL(
+      base::UTF16ToUTF8(input_text), std::string()));
   std::string canonical_gurl_str(canonical_gurl.possibly_invalid_spec());
   if (canonical_gurl_str.empty()) {
     // This probably won't happen, but there are no guarantees.
@@ -158,8 +158,8 @@ bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
   if ((input->type() != AutocompleteInput::URL) &&
       canonical_gurl.HostIsIPAddress()) {
     std::string original_hostname =
-        UTF16ToUTF8(input_text.substr(input->parts().host.begin,
-                                      input->parts().host.len));
+        base::UTF16ToUTF8(input_text.substr(input->parts().host.begin,
+                                            input->parts().host.len));
     const url_parse::Parsed& parts =
         canonical_gurl.parsed_for_possibly_invalid_spec();
     // parts.host must not be empty when HostIsIPAddress() is true.
@@ -167,7 +167,7 @@ bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
     canonical_gurl_str.replace(parts.host.begin, parts.host.len,
                                original_hostname);
   }
-  base::string16 output = UTF8ToUTF16(canonical_gurl_str);
+  base::string16 output = base::UTF8ToUTF16(canonical_gurl_str);
   // Don't prepend a scheme when the user didn't have one.  Since the fixer
   // upper only prepends the "http" scheme, that's all we need to check for.
   if (!AutocompleteInput::HasHTTPScheme(input_text))
@@ -188,12 +188,12 @@ bool AutocompleteProvider::FixupUserInput(AutocompleteInput* input) {
   // clear that the result of fixup really matters in this case, but there's no
   // harm in making sure.
   const size_t last_input_nonslash =
-      input_text.find_last_not_of(ASCIIToUTF16("/\\"));
+      input_text.find_last_not_of(base::ASCIIToUTF16("/\\"));
   const size_t num_input_slashes =
       (last_input_nonslash == base::string16::npos) ?
       input_text.length() : (input_text.length() - 1 - last_input_nonslash);
   const size_t last_output_nonslash =
-      output.find_last_not_of(ASCIIToUTF16("/\\"));
+      output.find_last_not_of(base::ASCIIToUTF16("/\\"));
   const size_t num_output_slashes =
       (last_output_nonslash == base::string16::npos) ?
       output.length() : (output.length() - 1 - last_output_nonslash);
@@ -214,7 +214,7 @@ size_t AutocompleteProvider::TrimHttpPrefix(base::string16* url) {
   if (!AutocompleteInput::HasHTTPScheme(*url))
     return 0;
   size_t scheme_pos =
-      url->find(ASCIIToUTF16(content::kHttpScheme) + char16(':'));
+      url->find(base::ASCIIToUTF16(content::kHttpScheme) + char16(':'));
   DCHECK_NE(base::string16::npos, scheme_pos);
 
   // Erase scheme plus up to two slashes.

@@ -149,7 +149,7 @@ TEST_F(PartnerBookmarksShimTest, RemoveBookmarks) {
   EXPECT_CALL(observer_, PartnerShimChanged(shim)).Times(0);
 
   BookmarkNode* root_partner_node = new BookmarkPermanentNode(0);
-  root_partner_node->SetTitle(ASCIIToUTF16("Partner bookmarks"));
+  root_partner_node->SetTitle(base::ASCIIToUTF16("Partner bookmarks"));
 
   BookmarkNode* partner_folder1 = new BookmarkNode(1, GURL("http://www.a.net"));
   partner_folder1->set_type(BookmarkNode::FOLDER);
@@ -238,28 +238,28 @@ TEST_F(PartnerBookmarksShimTest, RenameBookmarks) {
   EXPECT_CALL(observer_, PartnerShimChanged(shim)).Times(0);
 
   BookmarkNode* root_partner_node = new BookmarkPermanentNode(0);
-  root_partner_node->SetTitle(ASCIIToUTF16("Partner bookmarks"));
+  root_partner_node->SetTitle(base::ASCIIToUTF16("Partner bookmarks"));
 
   BookmarkNode* partner_folder1 = new BookmarkNode(1, GURL("http://www.a.net"));
   partner_folder1->set_type(BookmarkNode::FOLDER);
-  partner_folder1->SetTitle(ASCIIToUTF16("a.net"));
+  partner_folder1->SetTitle(base::ASCIIToUTF16("a.net"));
   root_partner_node->Add(partner_folder1, root_partner_node->child_count());
 
   BookmarkNode* partner_folder2 = new BookmarkNode(2, GURL("http://www.b.net"));
   partner_folder2->set_type(BookmarkNode::FOLDER);
-  partner_folder2->SetTitle(ASCIIToUTF16("b.net"));
+  partner_folder2->SetTitle(base::ASCIIToUTF16("b.net"));
   root_partner_node->Add(partner_folder2, root_partner_node->child_count());
 
   BookmarkNode* partner_bookmark1 = new BookmarkNode(3,
                                                      GURL("http://www.a.com"));
   partner_bookmark1->set_type(BookmarkNode::URL);
-  partner_bookmark1->SetTitle(ASCIIToUTF16("a.com"));
+  partner_bookmark1->SetTitle(base::ASCIIToUTF16("a.com"));
   partner_folder1->Add(partner_bookmark1, partner_folder1->child_count());
 
   BookmarkNode* partner_bookmark2 = new BookmarkNode(4,
                                                      GURL("http://www.b.com"));
   partner_bookmark2->set_type(BookmarkNode::URL);
-  partner_bookmark2->SetTitle(ASCIIToUTF16("b.com"));
+  partner_bookmark2->SetTitle(base::ASCIIToUTF16("b.com"));
   partner_folder2->Add(partner_bookmark2, partner_folder2->child_count());
 
   ASSERT_FALSE(shim->IsLoaded());
@@ -280,9 +280,9 @@ TEST_F(PartnerBookmarksShimTest, RenameBookmarks) {
   EXPECT_TRUE(shim->IsReachable(partner_bookmark2));
 
   EXPECT_CALL(observer_, PartnerShimChanged(shim)).Times(1);
-  EXPECT_EQ(ASCIIToUTF16("b.com"), shim->GetTitle(partner_bookmark2));
-  shim->RenameBookmark(partner_bookmark2, ASCIIToUTF16("b2.com"));
-  EXPECT_EQ(ASCIIToUTF16("b2.com"), shim->GetTitle(partner_bookmark2));
+  EXPECT_EQ(base::ASCIIToUTF16("b.com"), shim->GetTitle(partner_bookmark2));
+  shim->RenameBookmark(partner_bookmark2, base::ASCIIToUTF16("b2.com"));
+  EXPECT_EQ(base::ASCIIToUTF16("b2.com"), shim->GetTitle(partner_bookmark2));
 
   EXPECT_TRUE(shim->IsReachable(root_partner_node));
   EXPECT_TRUE(shim->IsReachable(partner_folder1));
@@ -291,9 +291,9 @@ TEST_F(PartnerBookmarksShimTest, RenameBookmarks) {
   EXPECT_TRUE(shim->IsReachable(partner_bookmark2));
 
   EXPECT_CALL(observer_, PartnerShimChanged(shim)).Times(1);
-  EXPECT_EQ(ASCIIToUTF16("a.net"), shim->GetTitle(partner_folder1));
-  shim->RenameBookmark(partner_folder1, ASCIIToUTF16("a2.net"));
-  EXPECT_EQ(ASCIIToUTF16("a2.net"), shim->GetTitle(partner_folder1));
+  EXPECT_EQ(base::ASCIIToUTF16("a.net"), shim->GetTitle(partner_folder1));
+  shim->RenameBookmark(partner_folder1, base::ASCIIToUTF16("a2.net"));
+  EXPECT_EQ(base::ASCIIToUTF16("a2.net"), shim->GetTitle(partner_folder1));
 
   EXPECT_TRUE(shim->IsReachable(root_partner_node));
   EXPECT_TRUE(shim->IsReachable(partner_folder1));
@@ -302,10 +302,10 @@ TEST_F(PartnerBookmarksShimTest, RenameBookmarks) {
   EXPECT_TRUE(shim->IsReachable(partner_bookmark2));
 
   EXPECT_CALL(observer_, PartnerShimChanged(shim)).Times(1);
-  EXPECT_EQ(ASCIIToUTF16("Partner bookmarks"),
+  EXPECT_EQ(base::ASCIIToUTF16("Partner bookmarks"),
             shim->GetTitle(root_partner_node));
-  shim->RenameBookmark(root_partner_node, ASCIIToUTF16("Partner"));
-  EXPECT_EQ(ASCIIToUTF16("Partner"), shim->GetTitle(root_partner_node));
+  shim->RenameBookmark(root_partner_node, base::ASCIIToUTF16("Partner"));
+  EXPECT_EQ(base::ASCIIToUTF16("Partner"), shim->GetTitle(root_partner_node));
 
   EXPECT_TRUE(shim->IsReachable(root_partner_node));
   EXPECT_TRUE(shim->IsReachable(partner_folder1));
@@ -323,23 +323,23 @@ TEST_F(PartnerBookmarksShimTest, SaveLoadProfile) {
     EXPECT_CALL(observer_, PartnerShimChanged(shim)).Times(0);
 
     BookmarkNode* root_partner_node = new BookmarkPermanentNode(0);
-    root_partner_node->SetTitle(ASCIIToUTF16("Partner bookmarks"));
+    root_partner_node->SetTitle(base::ASCIIToUTF16("Partner bookmarks"));
 
     BookmarkNode* partner_folder1 = new BookmarkNode(1, GURL("http://a.net"));
     partner_folder1->set_type(BookmarkNode::FOLDER);
-    partner_folder1->SetTitle(ASCIIToUTF16("a.net"));
+    partner_folder1->SetTitle(base::ASCIIToUTF16("a.net"));
     root_partner_node->Add(partner_folder1, root_partner_node->child_count());
 
     BookmarkNode* partner_bookmark1 = new BookmarkNode(3,
                                                        GURL("http://a.com"));
     partner_bookmark1->set_type(BookmarkNode::URL);
-    partner_bookmark1->SetTitle(ASCIIToUTF16("a.com"));
+    partner_bookmark1->SetTitle(base::ASCIIToUTF16("a.com"));
     partner_folder1->Add(partner_bookmark1, partner_folder1->child_count());
 
     BookmarkNode* partner_bookmark2 = new BookmarkNode(5,
                                                        GURL("http://b.com"));
     partner_bookmark2->set_type(BookmarkNode::URL);
-    partner_bookmark2->SetTitle(ASCIIToUTF16("b.com"));
+    partner_bookmark2->SetTitle(base::ASCIIToUTF16("b.com"));
     partner_folder1->Add(partner_bookmark2, partner_folder1->child_count());
 
     ASSERT_FALSE(shim->IsLoaded());
@@ -348,9 +348,9 @@ TEST_F(PartnerBookmarksShimTest, SaveLoadProfile) {
     ASSERT_TRUE(shim->IsLoaded());
 
     EXPECT_CALL(observer_, PartnerShimChanged(shim)).Times(2);
-    shim->RenameBookmark(partner_bookmark1, ASCIIToUTF16("a2.com"));
+    shim->RenameBookmark(partner_bookmark1, base::ASCIIToUTF16("a2.com"));
     shim->RemoveBookmark(partner_bookmark2);
-    EXPECT_EQ(ASCIIToUTF16("a2.com"), shim->GetTitle(partner_bookmark1));
+    EXPECT_EQ(base::ASCIIToUTF16("a2.com"), shim->GetTitle(partner_bookmark1));
     EXPECT_FALSE(shim->IsReachable(partner_bookmark2));
   }
 
@@ -367,7 +367,7 @@ TEST_F(PartnerBookmarksShimTest, SaveLoadProfile) {
     const BookmarkNode* partner_bookmark1 = shim->GetNodeByID(3);
     const BookmarkNode* partner_bookmark2 = shim->GetNodeByID(5);
 
-    EXPECT_EQ(ASCIIToUTF16("a2.com"), shim->GetTitle(partner_bookmark1));
+    EXPECT_EQ(base::ASCIIToUTF16("a2.com"), shim->GetTitle(partner_bookmark1));
     EXPECT_FALSE(shim->IsReachable(partner_bookmark2));
   }
 }

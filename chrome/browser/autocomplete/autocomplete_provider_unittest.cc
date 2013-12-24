@@ -88,13 +88,13 @@ void TestProvider::Start(const AutocompleteInput& input,
   AddResults(0, 1);
   AddResultsWithSearchTermsArgs(
       1, 1, AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("echo")));
+      TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("echo")));
   AddResultsWithSearchTermsArgs(
       2, 1, AutocompleteMatchType::NAVSUGGEST,
-      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("nav")));
+      TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("nav")));
   AddResultsWithSearchTermsArgs(
       3, 1, AutocompleteMatchType::SEARCH_SUGGEST,
-      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("query")));
+      TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("query")));
 
   if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
     done_ = false;
@@ -127,8 +127,8 @@ void TestProvider::AddResultsWithSearchTermsArgs(
   for (int i = start_at; i < num; i++) {
     AutocompleteMatch match(this, relevance_ - i, false, type);
 
-    match.fill_into_edit = prefix_ + UTF8ToUTF16(base::IntToString(i));
-    match.destination_url = GURL(UTF16ToUTF8(match.fill_into_edit));
+    match.fill_into_edit = prefix_ + base::UTF8ToUTF16(base::IntToString(i));
+    match.destination_url = GURL(base::UTF16ToUTF8(match.fill_into_edit));
     match.allowed_to_be_default_match = true;
 
     match.contents = match.fill_into_edit;
@@ -242,7 +242,7 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   //   (2) Inject test arguments rather than rely on the hardcoded values, e.g.
   //       don't rely on kResultsPerProvided and default relevance ordering
   //       (B > A).
-  RegisterTemplateURL(ASCIIToUTF16(kTestTemplateURLKeyword),
+  RegisterTemplateURL(base::ASCIIToUTF16(kTestTemplateURLKeyword),
                       "http://aqs/{searchTerms}/{google:assistedQueryStats}");
 
   ACProviders providers;
@@ -250,15 +250,16 @@ void AutocompleteProviderTest::ResetControllerWithTestProviders(
   // Construct two new providers, with either the same or different prefixes.
   TestProvider* provider1 = new TestProvider(
       kResultsPerProvider,
-      ASCIIToUTF16("http://a"),
+      base::ASCIIToUTF16("http://a"),
       &profile_,
-      ASCIIToUTF16(kTestTemplateURLKeyword));
+      base::ASCIIToUTF16(kTestTemplateURLKeyword));
   provider1->AddRef();
   providers.push_back(provider1);
 
   TestProvider* provider2 = new TestProvider(
       kResultsPerProvider * 2,
-      same_destinations ? ASCIIToUTF16("http://a") : ASCIIToUTF16("http://b"),
+      same_destinations ? base::ASCIIToUTF16("http://a")
+                        : base::ASCIIToUTF16("http://b"),
       &profile_,
       base::string16());
   provider2->AddRef();
@@ -302,8 +303,8 @@ void AutocompleteProviderTest::
   ASSERT_NE(0, default_provider_id);
 
   // Create another TemplateURL for KeywordProvider.
-  data.short_name = ASCIIToUTF16("k");
-  data.SetKeyword(ASCIIToUTF16("k"));
+  data.short_name = base::ASCIIToUTF16("k");
+  data.SetKeyword(base::ASCIIToUTF16("k"));
   data.SetURL("http://keyword/{searchTerms}");
   TemplateURL* keyword_t_url = new TemplateURL(&profile_, data);
   turl_model->Add(keyword_t_url);
@@ -323,16 +324,16 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
 
   // Create a TemplateURL for KeywordProvider.
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("foo.com");
-  data.SetKeyword(ASCIIToUTF16("foo.com"));
+  data.short_name = base::ASCIIToUTF16("foo.com");
+  data.SetKeyword(base::ASCIIToUTF16("foo.com"));
   data.SetURL("http://foo.com/{searchTerms}");
   TemplateURL* keyword_t_url = new TemplateURL(&profile_, data);
   turl_model->Add(keyword_t_url);
   ASSERT_NE(0, keyword_t_url->id());
 
   // Create another TemplateURL for KeywordProvider.
-  data.short_name = ASCIIToUTF16("bar.com");
-  data.SetKeyword(ASCIIToUTF16("bar.com"));
+  data.short_name = base::ASCIIToUTF16("bar.com");
+  data.SetKeyword(base::ASCIIToUTF16("bar.com"));
   data.SetURL("http://bar.com/{searchTerms}");
   keyword_t_url = new TemplateURL(&profile_, data);
   turl_model->Add(keyword_t_url);
@@ -343,7 +344,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
 }
 
 void AutocompleteProviderTest::RunTest() {
-  RunQuery(ASCIIToUTF16("a"));
+  RunQuery(base::ASCIIToUTF16("a"));
 }
 
 void AutocompleteProviderTest::RunRedundantKeywordTest(
@@ -380,7 +381,7 @@ void AutocompleteProviderTest::RunAssistedQueryStatsTest(
     AutocompleteMatch match(NULL, kMaxRelevance - i, false,
                             aqs_test_data[i].match_type);
     match.allowed_to_be_default_match = true;
-    match.keyword = ASCIIToUTF16(kTestTemplateURLKeyword);
+    match.keyword = base::ASCIIToUTF16(kTestTemplateURLKeyword);
     match.search_terms_args.reset(
         new TemplateURLRef::SearchTermsArgs(base::string16()));
     matches.push_back(match);
@@ -420,9 +421,9 @@ void AutocompleteProviderTest::RunExactKeymatchTest(
   // be from SearchProvider.  (It provides all verbatim search matches,
   // keyword or not.)
   controller_->Start(AutocompleteInput(
-      ASCIIToUTF16("k test"), base::string16::npos, base::string16(), GURL(),
-      AutocompleteInput::INVALID_SPEC, true, false, allow_exact_keyword_match,
-      AutocompleteInput::SYNCHRONOUS_MATCHES));
+      base::ASCIIToUTF16("k test"), base::string16::npos, base::string16(),
+      GURL(), AutocompleteInput::INVALID_SPEC, true, false,
+      allow_exact_keyword_match, AutocompleteInput::SYNCHRONOUS_MATCHES));
   EXPECT_TRUE(controller_->done());
   EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,
       controller_->result().default_match()->provider->type());
@@ -528,9 +529,9 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
   {
     KeywordTestData duplicate_url[] = {
-      { ASCIIToUTF16("fo"), base::string16(), false },
-      { ASCIIToUTF16("foo.com"), base::string16(), true },
-      { ASCIIToUTF16("foo.com"), base::string16(), false }
+      { base::ASCIIToUTF16("fo"), base::string16(), false },
+      { base::ASCIIToUTF16("foo.com"), base::string16(), true },
+      { base::ASCIIToUTF16("foo.com"), base::string16(), false }
     };
 
     SCOPED_TRACE("Duplicate url");
@@ -539,8 +540,8 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
   {
     KeywordTestData keyword_match[] = {
-      { ASCIIToUTF16("foo.com"), ASCIIToUTF16("foo.com"), false },
-      { ASCIIToUTF16("foo.com"), base::string16(), false }
+      { base::ASCIIToUTF16("foo.com"), base::ASCIIToUTF16("foo.com"), false },
+      { base::ASCIIToUTF16("foo.com"), base::string16(), false }
     };
 
     SCOPED_TRACE("Duplicate url with keyword match");
@@ -549,10 +550,10 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
 
   {
     KeywordTestData multiple_keyword[] = {
-      { ASCIIToUTF16("fo"), base::string16(), false },
-      { ASCIIToUTF16("foo.com"), base::string16(), true },
-      { ASCIIToUTF16("foo.com"), base::string16(), false },
-      { ASCIIToUTF16("bar.com"), base::string16(), true },
+      { base::ASCIIToUTF16("fo"), base::string16(), false },
+      { base::ASCIIToUTF16("foo.com"), base::string16(), true },
+      { base::ASCIIToUTF16("foo.com"), base::string16(), false },
+      { base::ASCIIToUTF16("bar.com"), base::string16(), true },
     };
 
     SCOPED_TRACE("Duplicate url with multiple keywords");
@@ -617,13 +618,13 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
   EXPECT_TRUE(url.path().empty());
 
   // The protocol needs to be https.
-  RegisterTemplateURL(ASCIIToUTF16(kTestTemplateURLKeyword),
+  RegisterTemplateURL(base::ASCIIToUTF16(kTestTemplateURLKeyword),
                       "https://aqs/{searchTerms}/{google:assistedQueryStats}");
   url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_TRUE(url.path().empty());
 
   // There needs to be a keyword provider.
-  match.keyword = ASCIIToUTF16(kTestTemplateURLKeyword);
+  match.keyword = base::ASCIIToUTF16(kTestTemplateURLKeyword);
   url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_TRUE(url.path().empty());
 

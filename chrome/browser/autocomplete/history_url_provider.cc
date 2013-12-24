@@ -101,7 +101,7 @@ GURL ConvertToHostOnly(const history::HistoryMatch& match,
   if ((host.spec().length() < (match.input_location + input.length())))
     return GURL();  // User typing is longer than this host suggestion.
 
-  const base::string16 spec = UTF8ToUTF16(host.spec());
+  const base::string16 spec = base::UTF8ToUTF16(host.spec());
   if (spec.compare(match.input_location, input.length(), input))
     return GURL();  // User typing is no longer a prefix.
 
@@ -430,8 +430,8 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     // This relies on match.destination_url being the non-prefix-trimmed version
     // of match.contents.
     match.contents = display_string;
-    const URLPrefix* best_prefix =
-        URLPrefix::BestURLPrefix(UTF8ToUTF16(destination_url.spec()), text);
+    const URLPrefix* best_prefix = URLPrefix::BestURLPrefix(
+        base::UTF8ToUTF16(destination_url.spec()), text);
     // It's possible for match.destination_url to not contain the user's input
     // at all (so |best_prefix| is NULL), for example if the input is
     // "view-source:x" and |destination_url| has an inserted "http://" in the
@@ -521,14 +521,14 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
       // to work with.  CullRedirects() will then reduce the list to
       // the best kMaxMatches results.
       db->AutocompleteForPrefix(
-          UTF16ToUTF8(i->prefix + params->input.text()),
+          base::UTF16ToUTF8(i->prefix + params->input.text()),
           kMaxMatches * 2,
           (backend == NULL),
           &url_matches);
       for (history::URLRows::const_iterator j(url_matches.begin());
            j != url_matches.end(); ++j) {
         const URLPrefix* best_prefix =
-            URLPrefix::BestURLPrefix(UTF8ToUTF16(j->url().spec()),
+            URLPrefix::BestURLPrefix(base::UTF8ToUTF16(j->url().spec()),
                                      base::string16());
         DCHECK(best_prefix != NULL);
         history_matches.push_back(history::HistoryMatch(*j, i->prefix.length(),
@@ -843,7 +843,7 @@ bool HistoryURLProvider::CanFindIntranetURL(
       !LowerCaseEqualsASCII(input.scheme(), content::kHttpScheme) ||
       !input.parts().host.is_nonempty())
     return false;
-  const std::string host(UTF16ToUTF8(
+  const std::string host(base::UTF16ToUTF8(
       input.text().substr(input.parts().host.begin, input.parts().host.len)));
   const size_t registry_length =
       net::registry_controlled_domains::GetRegistryLength(

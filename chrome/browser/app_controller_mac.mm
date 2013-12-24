@@ -1427,7 +1427,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
            ++cursor, ++position) {
         DCHECK_EQ(applications.GetPosition(cursor->get()), position);
         NSString* itemStr =
-            base::SysUTF16ToNSString(UTF8ToUTF16((*cursor)->name()));
+            base::SysUTF16ToNSString(base::UTF8ToUTF16((*cursor)->name()));
         base::scoped_nsobject<NSMenuItem> appItem(
             [[NSMenuItem alloc] initWithTitle:itemStr
                                        action:@selector(executeApplication:)

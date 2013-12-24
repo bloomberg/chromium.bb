@@ -439,7 +439,8 @@ void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
 void AutocompleteMatch::RecordAdditionalInfo(const std::string& property,
                                              const base::Time& value) {
   RecordAdditionalInfo(property,
-                       UTF16ToUTF8(base::TimeFormatShortDateAndTime(value)));
+                       base::UTF16ToUTF8(
+                           base::TimeFormatShortDateAndTime(value)));
 }
 
 std::string AutocompleteMatch::GetAdditionalInfo(

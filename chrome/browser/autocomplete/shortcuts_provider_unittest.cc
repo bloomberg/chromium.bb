@@ -37,6 +37,7 @@
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 
 // TestShortcutInfo -----------------------------------------------------------
 

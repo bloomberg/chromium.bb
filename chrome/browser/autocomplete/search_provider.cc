@@ -427,7 +427,7 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
   // values preserve that property.  Otherwise, if the user starts editing a
   // suggestion, non-Search results will suddenly appear.
   if (input.type() == AutocompleteInput::FORCED_QUERY)
-    match.fill_into_edit.assign(ASCIIToUTF16("?"));
+    match.fill_into_edit.assign(base::ASCIIToUTF16("?"));
   if (is_keyword)
     match.fill_into_edit.append(match.keyword + char16(' '));
   if (!input.prevent_inline_autocomplete() &&
@@ -726,7 +726,7 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
         if (base::CodepageToUTF16(json_data, charset.c_str(),
                                   base::OnStringConversionError::FAIL,
                                   &data_16))
-          json_data = UTF16ToUTF8(data_16);
+          json_data = base::UTF16ToUTF8(data_16);
       }
     }
 
@@ -1173,7 +1173,8 @@ bool SearchProvider::ParseSuggestResults(base::Value* root_val,
       relevances = NULL;
     if (types && types->GetString(index, &type) && (type == "NAVIGATION")) {
       // Do not blindly trust the URL coming from the server to be valid.
-      GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(suggestion), std::string()));
+      GURL url(URLFixerUpper::FixupURL(
+          base::UTF16ToUTF8(suggestion), std::string()));
       if (url.is_valid() && allow_navsuggest) {
         base::string16 title;
         if (descriptions != NULL)
@@ -1895,7 +1896,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   // Preserve the forced query '?' prefix in |match.fill_into_edit|.
   // Otherwise, user edits to a suggestion would show non-Search results.
   if (input_.type() == AutocompleteInput::FORCED_QUERY) {
-    match.fill_into_edit.insert(0, ASCIIToUTF16("?"));
+    match.fill_into_edit.insert(0, base::ASCIIToUTF16("?"));
     if (inline_autocomplete_offset != base::string16::npos)
       ++inline_autocomplete_offset;
   }

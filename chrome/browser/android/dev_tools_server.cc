@@ -83,14 +83,14 @@ class TargetBase : public content::DevToolsTarget {
 
  protected:
   explicit TargetBase(WebContents* web_contents)
-      : title_(UTF16ToUTF8(web_contents->GetTitle())),
+      : title_(base::UTF16ToUTF8(web_contents->GetTitle())),
         url_(web_contents->GetURL()),
         favicon_url_(GetFaviconURL(web_contents)),
         last_activity_time_(web_contents->GetLastSelectedTime()) {
   }
 
   TargetBase(const base::string16& title, const GURL& url)
-      : title_(UTF16ToUTF8(title)),
+      : title_(base::UTF16ToUTF8(title)),
         url_(url)
   {}
 

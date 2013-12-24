@@ -53,6 +53,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+using base::ASCIIToUTF16;
 
 namespace autofill {
 
@@ -1031,15 +1032,16 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
     base::string16 street = ASCIIToUTF16(
         base::IntToString(base::RandInt(0, 10000)) + " " +
         streets[base::RandInt(0, streets.size() - 1)]);
-    base::string16 city = ASCIIToUTF16(cities[base::RandInt(0, cities.size() - 1)]);
+    base::string16 city =
+        ASCIIToUTF16(cities[base::RandInt(0, cities.size() - 1)]);
     base::string16 zip(base::IntToString16(base::RandInt(0, 10000)));
     profile.SetRawInfo(NAME_FIRST, name);
     profile.SetRawInfo(EMAIL_ADDRESS, email);
     profile.SetRawInfo(ADDRESS_HOME_LINE1, street);
     profile.SetRawInfo(ADDRESS_HOME_CITY, city);
-    profile.SetRawInfo(ADDRESS_HOME_STATE, WideToUTF16(L"CA"));
+    profile.SetRawInfo(ADDRESS_HOME_STATE, ASCIIToUTF16("CA"));
     profile.SetRawInfo(ADDRESS_HOME_ZIP, zip);
-    profile.SetRawInfo(ADDRESS_HOME_COUNTRY, WideToUTF16(L"US"));
+    profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
     profiles.push_back(profile);
   }
   SetProfiles(&profiles);

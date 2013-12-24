@@ -473,8 +473,8 @@ void TestingAutomationProvider::ExecuteJavascriptInOOBEWebUI(
       webui_host->GetOobeUI()->web_ui()->GetWebContents();
 
   new DomOperationMessageSender(this, reply_message, true);
-  ExecuteJavascriptInRenderViewFrame(ASCIIToUTF16(frame_xpath),
-                                     ASCIIToUTF16(javascript),
+  ExecuteJavascriptInRenderViewFrame(base::ASCIIToUTF16(frame_xpath),
+                                     base::ASCIIToUTF16(javascript),
                                      reply_message,
                                      web_contents->GetRenderViewHost());
 }

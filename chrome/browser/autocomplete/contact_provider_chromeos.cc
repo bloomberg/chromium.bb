@@ -171,12 +171,12 @@ void ContactProvider::RefreshContacts() {
   for (contacts::ContactPointers::const_iterator it = contacts->begin();
        it != contacts->end(); ++it) {
     const contacts::Contact& contact = **it;
-    base::string16 full_name =
-        AutocompleteMatch::SanitizeString(UTF8ToUTF16(contact.full_name()));
-    base::string16 given_name =
-        AutocompleteMatch::SanitizeString(UTF8ToUTF16(contact.given_name()));
-    base::string16 family_name =
-        AutocompleteMatch::SanitizeString(UTF8ToUTF16(contact.family_name()));
+    base::string16 full_name = AutocompleteMatch::SanitizeString(
+        base::UTF8ToUTF16(contact.full_name()));
+    base::string16 given_name = AutocompleteMatch::SanitizeString(
+        base::UTF8ToUTF16(contact.given_name()));
+    base::string16 family_name = AutocompleteMatch::SanitizeString(
+        base::UTF8ToUTF16(contact.family_name()));
     float affinity =
         contact.has_affinity() ? contact.affinity() : kDefaultAffinity;
 

@@ -168,7 +168,7 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
     const TestData* last, size_t last_size,
     const TestData* current, size_t current_size,
     const TestData* expected, size_t expected_size) {
-  AutocompleteInput input(ASCIIToUTF16("a"), base::string16::npos,
+  AutocompleteInput input(base::ASCIIToUTF16("a"), base::string16::npos,
                           base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
@@ -204,7 +204,7 @@ TEST_F(AutocompleteResultTest, Swap) {
   AutocompleteMatch match;
   match.relevance = 1;
   match.allowed_to_be_default_match = true;
-  AutocompleteInput input(ASCIIToUTF16("a"), base::string16::npos,
+  AutocompleteInput input(base::ASCIIToUTF16("a"), base::string16::npos,
                           base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
@@ -310,8 +310,8 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
 TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   // Register a template URL that corresponds to 'foo' search engine.
   TemplateURLData url_data;
-  url_data.short_name = ASCIIToUTF16("unittest");
-  url_data.SetKeyword(ASCIIToUTF16("foo"));
+  url_data.short_name = base::ASCIIToUTF16("unittest");
+  url_data.SetKeyword(base::ASCIIToUTF16("foo"));
   url_data.SetURL("http://www.foo.com/s?q={searchTerms}");
   test_util_.model()->Add(new TemplateURL(test_util_.profile(), url_data));
 

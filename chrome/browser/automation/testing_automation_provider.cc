@@ -1015,7 +1015,7 @@ void TestingAutomationProvider::ExecuteJavascriptInRenderViewFrame(
   // this javascript execution.
   render_view_host->ExecuteJavascriptInWebFrame(
       frame_xpath,
-      UTF8ToUTF16("window.domAutomationController.setAutomationId(0);"));
+      base::ASCIIToUTF16("window.domAutomationController.setAutomationId(0);"));
   render_view_host->ExecuteJavascriptInWebFrame(
       frame_xpath, script);
 }
@@ -1045,7 +1045,8 @@ void TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   new BrowserOpenedWithNewProfileNotificationObserver(this, reply_message);
   profile_manager->CreateMultiProfileAsync(
-      base::string16(), base::string16(), ProfileManager::CreateCallback(), std::string());
+      base::string16(), base::string16(),
+      ProfileManager::CreateCallback(), std::string());
 }
 
 // Sample json input: { "command": "GetMultiProfileInfo" }
@@ -2686,8 +2687,9 @@ void TestingAutomationProvider::GetSearchEngineInfo(
   for (TemplateURLService::TemplateURLVector::const_iterator it =
        template_urls.begin(); it != template_urls.end(); ++it) {
     base::DictionaryValue* search_engine = new base::DictionaryValue;
-    search_engine->SetString("short_name", UTF16ToUTF8((*it)->short_name()));
-    search_engine->SetString("keyword", UTF16ToUTF8((*it)->keyword()));
+    search_engine->SetString("short_name",
+                             base::UTF16ToUTF8((*it)->short_name()));
+    search_engine->SetString("keyword", base::UTF16ToUTF8((*it)->keyword()));
     search_engine->SetBoolean("in_default_list", (*it)->ShowInDefaultList());
     search_engine->SetBoolean("is_default",
         (*it) == url_model->GetDefaultSearchProvider());
@@ -2698,7 +2700,7 @@ void TestingAutomationProvider::GetSearchEngineInfo(
     search_engine->SetString("host", (*it)->url_ref().GetHost());
     search_engine->SetString("path", (*it)->url_ref().GetPath());
     search_engine->SetString("display_url",
-                             UTF16ToUTF8((*it)->url_ref().DisplayURL()));
+                             base::UTF16ToUTF8((*it)->url_ref().DisplayURL()));
     search_engines->Append(search_engine);
   }
   return_value->Set("search_engines", search_engines);
@@ -2724,12 +2726,12 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
     return;
   }
   std::string new_ref_url = TemplateURLRef::DisplayURLToURLRef(
-      UTF8ToUTF16(new_url));
+      base::UTF8ToUTF16(new_url));
   scoped_ptr<KeywordEditorController> controller(
       new KeywordEditorController(browser->profile()));
   if (args->GetString("keyword", &keyword)) {
     TemplateURL* template_url =
-        url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword));
+        url_model->GetTemplateURLForKeyword(base::UTF8ToUTF16(keyword));
     if (template_url == NULL) {
       AutomationJSONReply(this, reply_message).SendError(
           "No match for keyword: " + keyword);
@@ -2763,7 +2765,7 @@ void TestingAutomationProvider::PerformActionOnSearchEngine(
     return;
   }
   TemplateURL* template_url =
-      url_model->GetTemplateURLForKeyword(UTF8ToUTF16(keyword));
+      url_model->GetTemplateURLForKeyword(base::UTF8ToUTF16(keyword));
   if (template_url == NULL) {
     AutomationJSONReply(this, reply_message).SendError(
         "No match for keyword: " + keyword);
@@ -4214,7 +4216,7 @@ void TestingAutomationProvider::GetAppModalDialogMessage(
     return;
   }
   base::DictionaryValue result_dict;
-  result_dict.SetString("message", UTF16ToUTF8(dialog->message_text()));
+  result_dict.SetString("message", base::UTF16ToUTF8(dialog->message_text()));
   reply.SendSuccess(&result_dict);
 }
 
@@ -4236,7 +4238,7 @@ void TestingAutomationProvider::AcceptOrDismissAppModalDialog(
   if (accept) {
     std::string prompt_text;
     if (args->GetString("prompt_text", &prompt_text))
-      dialog->SetOverridePromptText(UTF8ToUTF16(prompt_text));
+      dialog->SetOverridePromptText(base::UTF8ToUTF16(prompt_text));
     dialog->native_dialog()->AcceptAppModalDialog();
   } else {
     dialog->native_dialog()->CancelAppModalDialog();
