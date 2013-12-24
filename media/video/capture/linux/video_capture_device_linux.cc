@@ -163,6 +163,7 @@ void VideoCaptureDevice::GetDeviceSupportedFormats(
     supported_format.pixel_format =
         V4l2ColorToVideoCaptureColorFormat((int32)pixel_format.pixelformat);
     if (supported_format.pixel_format == PIXEL_FORMAT_UNKNOWN) {
+      ++pixel_format.index;
       continue;
     }
 
