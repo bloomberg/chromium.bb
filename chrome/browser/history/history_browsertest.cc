@@ -101,10 +101,10 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   }
 
   void LoadAndWaitForURL(const GURL& url) {
-    base::string16 expected_title(ASCIIToUTF16("OK"));
+    base::string16 expected_title(base::ASCIIToUTF16("OK"));
     content::TitleWatcher title_watcher(
         browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
-    title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
   }
@@ -279,10 +279,10 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, MAYBE_HistorySearchXSS) {
   // Should a race condition ever trigger, it won't result in flakiness.
   int num = ui_test_utils::FindInPage(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      ASCIIToUTF16("<img"), true,
+      base::ASCIIToUTF16("<img"), true,
       true, NULL, NULL);
   EXPECT_GT(num, 0);
-  EXPECT_EQ(ASCIIToUTF16("History"),
+  EXPECT_EQ(base::ASCIIToUTF16("History"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 
@@ -466,7 +466,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, SubmitFormAddsTargetPage) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  base::string16 expected_title(ASCIIToUTF16("Target Page"));
+  base::string16 expected_title(base::ASCIIToUTF16("Target Page"));
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
   ASSERT_TRUE(content::ExecuteScript(
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, OneHistoryTabPerWindow) {
   // 'Loading...' for a brief time while the history page loads.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  base::string16 expected_title(ASCIIToUTF16("History"));
+  base::string16 expected_title(base::ASCIIToUTF16("History"));
   content::TitleWatcher title_watcher(web_contents, expected_title);
   chrome::ExecuteCommand(browser(), IDC_SHOW_HISTORY);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());

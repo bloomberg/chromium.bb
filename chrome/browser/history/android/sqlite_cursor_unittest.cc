@@ -161,7 +161,7 @@ TEST_F(SQLiteCursorTest, Run) {
   row.set_favicon(data_bytes);
   row.set_last_visit_time(Time::Now());
   row.set_visit_count(2);
-  row.set_title(UTF8ToUTF16("cnn"));
+  row.set_title(base::UTF8ToUTF16("cnn"));
   scoped_refptr<CallbackHelper> callback(new CallbackHelper());
 
   // Insert a row and verify it succeeded.

@@ -70,11 +70,11 @@ class SearchProviderTest : public InProcessBrowserTest {
       const IsSearchProviderTestData& data) {
     base::string16 title = data.tab->GetTitle();
     if (title.empty()) {
-      content::TitleWatcher title_watcher(data.tab, ASCIIToUTF16("OK"));
-      title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+      content::TitleWatcher title_watcher(data.tab, base::ASCIIToUTF16("OK"));
+      title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
       title = title_watcher.WaitAndGetTitle();
     }
-    EXPECT_EQ(ASCIIToUTF16("OK"), title);
+    EXPECT_EQ(base::ASCIIToUTF16("OK"), title);
   }
 
   GURL search_provider_test_url_;

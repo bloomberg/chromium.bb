@@ -17,7 +17,7 @@ namespace bluetooth {
 void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
                                 Device* out) {
   out->address = device.GetAddress();
-  out->name.reset(new std::string(UTF16ToUTF8(device.GetName())));
+  out->name.reset(new std::string(base::UTF16ToUTF8(device.GetName())));
   out->paired.reset(new bool(device.IsPaired()));
   out->connected.reset(new bool(device.IsConnected()));
 }

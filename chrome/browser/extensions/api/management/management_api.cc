@@ -83,7 +83,7 @@ std::vector<std::string> CreateWarningsList(const Extension* extension) {
       PermissionsData::GetPermissionMessages(extension);
   for (PermissionMessages::const_iterator iter = warnings.begin();
        iter != warnings.end(); ++iter) {
-    warnings_list.push_back(UTF16ToUTF8(iter->message()));
+    warnings_list.push_back(base::UTF16ToUTF8(iter->message()));
   }
 
   return warnings_list;

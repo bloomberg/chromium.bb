@@ -216,7 +216,7 @@ bool ExtensionDevToolsInfoBarDelegate::ShouldExpireInternal(
 
 base::string16 ExtensionDevToolsInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_DEV_TOOLS_INFOBAR_LABEL,
-                                    UTF8ToUTF16(client_name_));
+                                    base::UTF8ToUTF16(client_name_));
 }
 
 int ExtensionDevToolsInfoBarDelegate::GetButtons() const {

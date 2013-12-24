@@ -47,8 +47,8 @@ const StackTrace& GetStackTraceFromError(const ExtensionError* error) {
 void CheckStackFrame(const StackFrame& frame,
                      const std::string& source,
                      const std::string& function) {
-  EXPECT_EQ(UTF8ToUTF16(source), frame.source);
-  EXPECT_EQ(UTF8ToUTF16(function), frame.function);
+  EXPECT_EQ(base::UTF8ToUTF16(source), frame.source);
+  EXPECT_EQ(base::UTF8ToUTF16(function), frame.function);
 }
 
 // Verify that all properties of a given |frame| are correct. Overloaded because
@@ -74,9 +74,9 @@ void CheckError(const ExtensionError* error,
   ASSERT_TRUE(error);
   EXPECT_EQ(type, error->type());
   EXPECT_EQ(id, error->extension_id());
-  EXPECT_EQ(UTF8ToUTF16(source), error->source());
+  EXPECT_EQ(base::UTF8ToUTF16(source), error->source());
   EXPECT_EQ(from_incognito, error->from_incognito());
-  EXPECT_EQ(UTF8ToUTF16(message), error->message());
+  EXPECT_EQ(base::UTF8ToUTF16(message), error->message());
 }
 
 // Verify that all properties of a JS runtime error are correct.
@@ -116,8 +116,8 @@ void CheckManifestError(const ExtensionError* error,
 
   const ManifestError* manifest_error =
       static_cast<const ManifestError*>(error);
-  EXPECT_EQ(UTF8ToUTF16(manifest_key), manifest_error->manifest_key());
-  EXPECT_EQ(UTF8ToUTF16(manifest_specific),
+  EXPECT_EQ(base::UTF8ToUTF16(manifest_key), manifest_error->manifest_key());
+  EXPECT_EQ(base::UTF8ToUTF16(manifest_specific),
             manifest_error->manifest_specific());
 }
 
@@ -295,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, ReportManifestErrors) {
   const char kFakeKey[] = "not_a_real_key";
   for (size_t i = 0; i < errors.size(); ++i) {
     ASSERT_EQ(ExtensionError::MANIFEST_ERROR, errors[i]->type());
-    std::string utf8_key = UTF16ToUTF8(
+    std::string utf8_key = base::UTF16ToUTF8(
         (static_cast<const ManifestError*>(errors[i]))->manifest_key());
     if (utf8_key == manifest_keys::kPermissions)
       permissions_error = errors[i];

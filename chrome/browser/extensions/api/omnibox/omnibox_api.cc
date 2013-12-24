@@ -317,7 +317,7 @@ ACMatchClassifications StyleTypesToACMatchClassifications(
     const omnibox::SuggestResult &suggestion) {
   ACMatchClassifications match_classifications;
   if (suggestion.description_styles) {
-    base::string16 description = UTF8ToUTF16(suggestion.description);
+    base::string16 description = base::UTF8ToUTF16(suggestion.description);
     std::vector<int> styles(description.length(), 0);
 
     for (std::vector<linked_ptr<omnibox::SuggestResult::DescriptionStylesType> >
@@ -377,10 +377,10 @@ void ApplyDefaultSuggestionForExtensionKeyword(
   if (!suggestion || suggestion->description.empty())
     return;  // fall back to the universal default
 
-  const base::string16 kPlaceholderText(ASCIIToUTF16("%s"));
-  const base::string16 kReplacementText(ASCIIToUTF16("<input>"));
+  const base::string16 kPlaceholderText(base::ASCIIToUTF16("%s"));
+  const base::string16 kReplacementText(base::ASCIIToUTF16("<input>"));
 
-  base::string16 description = UTF8ToUTF16(suggestion->description);
+  base::string16 description = base::UTF8ToUTF16(suggestion->description);
   ACMatchClassifications& description_styles = match->contents_class;
   description_styles = StyleTypesToACMatchClassifications(*suggestion);
 

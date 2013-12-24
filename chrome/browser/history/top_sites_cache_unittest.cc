@@ -50,7 +50,7 @@ void TopSitesCacheTest::BuildTopSites(const char** spec, size_t size) {
       NOTREACHED() << "Duplicate URL found: " << spec_item;
     urls_seen.insert(spec_item);
     if (spec_item == spec[i]) {  // No indent: add new MostVisitedURL.
-      base::string16 title(ASCIIToUTF16("Title ") +
+      base::string16 title(base::ASCIIToUTF16("Title ") +
                      base::Uint64ToString16(top_sites_.size() + 1));
       top_sites_.push_back(MostVisitedURL(GURL(spec_item), title));
     }

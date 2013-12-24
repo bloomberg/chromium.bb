@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
 
   base::string16 title;
   ui_test_utils::GetCurrentTabTitle(browser(), &title);
-  EXPECT_EQ(std::string("FIRSTMESSAGE"), UTF16ToUTF8(title));
+  EXPECT_EQ(std::string("FIRSTMESSAGE"), base::UTF16ToUTF8(title));
 
   // Change messages.json file and reload extension.
   base::CopyFile(
@@ -64,5 +64,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
   EXPECT_TRUE(catcher.GetNextResult());
 
   ui_test_utils::GetCurrentTabTitle(browser(), &title);
-  EXPECT_EQ(std::string("SECONDMESSAGE"), UTF16ToUTF8(title));
+  EXPECT_EQ(std::string("SECONDMESSAGE"), base::UTF16ToUTF8(title));
 }

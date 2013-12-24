@@ -742,9 +742,9 @@ class DownloadTest : public InProcessBrowserTest {
     base::FilePath filename;
     net::FileURLToFilePath(url, &filename);
     base::string16 expected_title_in_progress(
-        ASCIIToUTF16(partial_indication) + filename.LossyDisplayName());
+        base::ASCIIToUTF16(partial_indication) + filename.LossyDisplayName());
     base::string16 expected_title_finished(
-        ASCIIToUTF16(total_indication) + filename.LossyDisplayName());
+        base::ASCIIToUTF16(total_indication) + filename.LossyDisplayName());
 
     // Download a partial web page in a background tab and wait.
     // The mock system will not complete until it gets a special URL.
@@ -2378,7 +2378,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   content::RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host != NULL);
   render_view_host->ExecuteJavascriptInWebFrame(
-        base::string16(), ASCIIToUTF16("SubmitForm()"));
+        base::string16(), base::ASCIIToUTF16("SubmitForm()"));
   observer.Wait();
   EXPECT_EQ(jpeg_url, web_contents->GetURL());
 
@@ -2897,8 +2897,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_CrazyFilenames) {
     base::string16 crazy16;
     std::string crazy8;
     const wchar_t* crazy_w = kCrazyFilenames[index];
-    ASSERT_TRUE(WideToUTF8(crazy_w, wcslen(crazy_w), &crazy8));
-    ASSERT_TRUE(WideToUTF16(crazy_w, wcslen(crazy_w), &crazy16));
+    ASSERT_TRUE(base::WideToUTF8(crazy_w, wcslen(crazy_w), &crazy8));
+    ASSERT_TRUE(base::WideToUTF16(crazy_w, wcslen(crazy_w), &crazy16));
     base::FilePath file_path(DestinationFile(browser(), origin.Append(
 #if defined(OS_WIN)
             crazy16

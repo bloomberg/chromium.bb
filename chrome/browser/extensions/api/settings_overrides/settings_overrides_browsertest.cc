@@ -79,8 +79,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, OverrideSettings) {
   TemplateURL* extension_provider = url_service->GetDefaultSearchProvider();
   EXPECT_EQ(TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION,
             extension_provider->GetType());
-  EXPECT_EQ(ASCIIToUTF16("name.de"), extension_provider->short_name());
-  EXPECT_EQ(ASCIIToUTF16("keyword.de"), extension_provider->keyword());
+  EXPECT_EQ(base::ASCIIToUTF16("name.de"), extension_provider->short_name());
+  EXPECT_EQ(base::ASCIIToUTF16("keyword.de"), extension_provider->keyword());
   EXPECT_EQ("http://www.foo.de/s?q={searchTerms}", extension_provider->url());
   EXPECT_EQ(GURL("http://www.foo.de/favicon.ico"),
             extension_provider->favicon_url());

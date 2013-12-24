@@ -117,7 +117,7 @@ ThemeInstalledInfoBarDelegate*
 
 base::string16 ThemeInstalledInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_THEME_INSTALL_INFOBAR_LABEL,
-                                    UTF8ToUTF16(name_));
+                                    base::UTF8ToUTF16(name_));
 }
 
 int ThemeInstalledInfoBarDelegate::GetButtons() const {

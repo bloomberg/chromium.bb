@@ -34,7 +34,7 @@ ShortcutsBackend::Shortcut::MatchCore MatchCoreForTesting(
     const std::string& url) {
   AutocompleteMatch match;
   match.destination_url = GURL(url);
-  match.contents = ASCIIToUTF16("test");
+  match.contents = base::ASCIIToUTF16("test");
   return ShortcutsBackend::Shortcut::MatchCore(match);
 }
 
@@ -134,7 +134,7 @@ TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
   InitBackend();
   EXPECT_FALSE(changed_notified_);
   ShortcutsBackend::Shortcut shortcut(
-      "BD85DBA2-8C29-49F9-84AE-48E1E90880DF", ASCIIToUTF16("goog"),
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880DF", base::ASCIIToUTF16("goog"),
       MatchCoreForTesting("http://www.google.com"), base::Time::Now(), 100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut));
   EXPECT_TRUE(changed_notified_);
@@ -145,7 +145,7 @@ TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
   EXPECT_EQ(shortcut.id, shortcuts.find(shortcut.text)->second.id);
   EXPECT_EQ(shortcut.match_core.contents,
             shortcuts.find(shortcut.text)->second.match_core.contents);
-  shortcut.match_core.contents = ASCIIToUTF16("Google Web Search");
+  shortcut.match_core.contents = base::ASCIIToUTF16("Google Web Search");
   EXPECT_TRUE(backend_->UpdateShortcut(shortcut));
   EXPECT_TRUE(changed_notified_);
   EXPECT_EQ(shortcut.id, shortcuts.find(shortcut.text)->second.id);
@@ -156,22 +156,22 @@ TEST_F(ShortcutsBackendTest, AddAndUpdateShortcut) {
 TEST_F(ShortcutsBackendTest, DeleteShortcuts) {
   InitBackend();
   ShortcutsBackend::Shortcut shortcut1(
-      "BD85DBA2-8C29-49F9-84AE-48E1E90880DF", ASCIIToUTF16("goog"),
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880DF", base::ASCIIToUTF16("goog"),
       MatchCoreForTesting("http://www.google.com"), base::Time::Now(), 100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut1));
 
   ShortcutsBackend::Shortcut shortcut2(
-      "BD85DBA2-8C29-49F9-84AE-48E1E90880E0", ASCIIToUTF16("gle"),
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880E0", base::ASCIIToUTF16("gle"),
       MatchCoreForTesting("http://www.google.com"), base::Time::Now(), 100);
   EXPECT_TRUE(backend_->AddShortcut(shortcut2));
 
   ShortcutsBackend::Shortcut shortcut3(
-      "BD85DBA2-8C29-49F9-84AE-48E1E90880E1", ASCIIToUTF16("sp"),
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880E1", base::ASCIIToUTF16("sp"),
       MatchCoreForTesting("http://www.sport.com"), base::Time::Now(), 10);
   EXPECT_TRUE(backend_->AddShortcut(shortcut3));
 
   ShortcutsBackend::Shortcut shortcut4(
-      "BD85DBA2-8C29-49F9-84AE-48E1E90880E2", ASCIIToUTF16("mov"),
+      "BD85DBA2-8C29-49F9-84AE-48E1E90880E2", base::ASCIIToUTF16("mov"),
       MatchCoreForTesting("http://www.film.com"), base::Time::Now(), 10);
   EXPECT_TRUE(backend_->AddShortcut(shortcut4));
 

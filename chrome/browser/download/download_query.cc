@@ -73,7 +73,7 @@ static bool MatchesQuery(
     const std::vector<base::string16>& query_terms,
     const DownloadItem& item) {
   DCHECK(!query_terms.empty());
-  base::string16 url_raw(UTF8ToUTF16(item.GetOriginalUrl().spec()));
+  base::string16 url_raw(base::UTF8ToUTF16(item.GetOriginalUrl().spec()));
   base::string16 url_formatted = url_raw;
   if (item.GetBrowserContext()) {
     Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
@@ -139,7 +139,7 @@ static base::string16 GetFilename(const DownloadItem& item) {
 }
 
 static std::string GetFilenameUTF8(const DownloadItem& item) {
-  return UTF16ToUTF8(GetFilename(item));
+  return base::UTF16ToUTF8(GetFilename(item));
 }
 
 static std::string GetUrl(const DownloadItem& item) {

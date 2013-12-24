@@ -28,7 +28,7 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Simple) {
 
   int matches = ui_test_utils::FindInPage(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      base::string16(ASCIIToUTF16("1")),
+      base::ASCIIToUTF16("1"),
       true /* forward */, false /* match case */, NULL /* ordinal */,
       NULL /* selection_rect */);
 
@@ -49,7 +49,7 @@ IN_PROC_BROWSER_TEST_F(DoNotTrackTest, Redirect) {
 
   int matches = ui_test_utils::FindInPage(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      base::string16(ASCIIToUTF16("1")),
+      base::ASCIIToUTF16("1"),
       true /* forward */, false /* match case */, NULL /* ordinal */,
       NULL /* selection_rect */);
 

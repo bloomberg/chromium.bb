@@ -148,7 +148,7 @@ class PosixConsole : public SimpleConsole {
 
   virtual bool Write(const base::string16& text) OVERRIDE {
     // We're assuming that the terminal is using UTF-8 encoding.
-    printf("%s", UTF16ToUTF8(text).c_str());
+    printf("%s", base::UTF16ToUTF8(text).c_str());
     return true;
   }
 
@@ -216,7 +216,7 @@ bool DiagnosticsWriter::WriteInfoLine(const std::string& info_text) {
   } else {
     if (console_.get()) {
       console_->SetColor(SimpleConsole::DEFAULT);
-      console_->Write(UTF8ToUTF16(info_text + "\n"));
+      console_->Write(base::UTF8ToUTF16(info_text + "\n"));
     }
   }
   return true;
@@ -266,7 +266,7 @@ bool DiagnosticsWriter::WriteResult(bool success,
   if (format_ != LOG) {
     if (console_.get()) {
       console_->SetColor(color);
-      console_->Write(ASCIIToUTF16(result));
+      console_->Write(base::ASCIIToUTF16(result));
     }
     if (format_ == MACHINE) {
       return WriteInfoLine(base::StringPrintf(

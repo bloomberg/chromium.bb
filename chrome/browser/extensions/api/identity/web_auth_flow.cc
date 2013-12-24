@@ -192,7 +192,7 @@ void WebAuthFlow::Observe(int type,
 
         if (title->first) {
           delegate_->OnAuthFlowTitleChange(
-              UTF16ToUTF8(title->first->GetTitle()));
+              base::UTF16ToUTF8(title->first->GetTitle()));
         }
         break;
       }

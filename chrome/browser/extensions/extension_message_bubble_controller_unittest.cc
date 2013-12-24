@@ -277,7 +277,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_WipeoutControllerTest) {
   EXPECT_TRUE(controller->ShouldShow());
   suspicious_extensions = controller->GetExtensionList();
   ASSERT_EQ(1U, suspicious_extensions.size());
-  EXPECT_TRUE(ASCIIToUTF16("Extension 1") == suspicious_extensions[0]);
+  EXPECT_TRUE(base::ASCIIToUTF16("Extension 1") == suspicious_extensions[0]);
   controller->Show(&bubble);  // Simulate showing the bubble.
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(1U, controller->dismiss_click_count());
@@ -299,8 +299,8 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_WipeoutControllerTest) {
   EXPECT_TRUE(controller->ShouldShow());
   suspicious_extensions = controller->GetExtensionList();
   ASSERT_EQ(2U, suspicious_extensions.size());
-  EXPECT_TRUE(ASCIIToUTF16("Extension 1") == suspicious_extensions[1]);
-  EXPECT_TRUE(ASCIIToUTF16("Extension 2") == suspicious_extensions[0]);
+  EXPECT_TRUE(base::ASCIIToUTF16("Extension 1") == suspicious_extensions[1]);
+  EXPECT_TRUE(base::ASCIIToUTF16("Extension 2") == suspicious_extensions[0]);
   controller->Show(&bubble);  // Simulate showing the bubble.
   EXPECT_EQ(1U, controller->link_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
@@ -329,8 +329,8 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_DevModeControllerTest) {
   std::vector<base::string16> dev_mode_extensions =
       controller->GetExtensionList();
   ASSERT_EQ(2U, dev_mode_extensions.size());
-  EXPECT_TRUE(ASCIIToUTF16("Extension 2") == dev_mode_extensions[0]);
-  EXPECT_TRUE(ASCIIToUTF16("Extension 1") == dev_mode_extensions[1]);
+  EXPECT_TRUE(base::ASCIIToUTF16("Extension 2") == dev_mode_extensions[0]);
+  EXPECT_TRUE(base::ASCIIToUTF16("Extension 1") == dev_mode_extensions[1]);
   EXPECT_EQ(0U, controller->link_click_count());
   EXPECT_EQ(0U, controller->dismiss_click_count());
   EXPECT_EQ(0U, controller->action_click_count());

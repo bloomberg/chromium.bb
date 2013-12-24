@@ -17,6 +17,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/base/window_open_disposition.h"
 
+using base::ASCIIToUTF16;
+
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 

@@ -218,16 +218,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionContentSettingsApiTest,
   const char* kBarName = "Bar Plugin";
 
   content::PluginService::GetInstance()->RegisterInternalPlugin(
-      content::WebPluginInfo(ASCIIToUTF16(kFooName),
+      content::WebPluginInfo(base::ASCIIToUTF16(kFooName),
                              base::FilePath(kFooPath),
-                             ASCIIToUTF16("1.2.3"),
-                             ASCIIToUTF16("foo")),
+                             base::ASCIIToUTF16("1.2.3"),
+                             base::ASCIIToUTF16("foo")),
       false);
   content::PluginService::GetInstance()->RegisterInternalPlugin(
-    content::WebPluginInfo(ASCIIToUTF16(kBarName),
+    content::WebPluginInfo(base::ASCIIToUTF16(kBarName),
                            base::FilePath(kBarPath),
-                           ASCIIToUTF16("2.3.4"),
-                           ASCIIToUTF16("bar")),
+                           base::ASCIIToUTF16("2.3.4"),
+                           base::ASCIIToUTF16("bar")),
       false);
 
   EXPECT_TRUE(RunExtensionTest("content_settings/getresourceidentifiers"))

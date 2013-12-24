@@ -104,8 +104,9 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {
-  const base::string16 ref_token1 = ASCIIToUTF16("jksdfo90,'s#\"#1*(");
-  const base::string16 ref_token2 = ASCIIToUTF16("\1\2\3\4\5\6\7\10\11\12=023");
+  const base::string16 ref_token1 = base::ASCIIToUTF16("jksdfo90,'s#\"#1*(");
+  const base::string16 ref_token2 =
+      base::ASCIIToUTF16("\1\2\3\4\5\6\7\10\11\12=023");
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DoTestStepAndWaitForResults(kRefServerUrl1, NULL, &ref_token1);
@@ -122,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, OldUrlRemoval) {
-  const base::string16 ref_token1 = ASCIIToUTF16("jksdfo90,'s#\"#1*(");
+  const base::string16 ref_token1 = base::ASCIIToUTF16("jksdfo90,'s#\"#1*(");
   ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Set a token for the old default network provider url.

@@ -211,7 +211,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
   // The length of snippets we try to produce.
   // We can generate longer snippets but stop once we cross kSnippetMaxLength.
   const size_t kSnippetMaxLength = 200;
-  const base::string16 kEllipsis = ASCIIToUTF16(" ... ");
+  const base::string16 kEllipsis = base::ASCIIToUTF16(" ... ");
 
   UText* document_utext = NULL;
   UErrorCode status = U_ZERO_ERROR;
@@ -247,13 +247,13 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
         snippet += kEllipsis;
       // Switch to DCHECK after debugging http://crbug.com/15261.
       CHECK(start < document.size());
-      snippet += UTF8ToUTF16(document.substr(start, match_start - start));
+      snippet += base::UTF8ToUTF16(document.substr(start, match_start - start));
     }
 
     // Add the match.
     const size_t first = snippet.size();
-    snippet += UTF8ToUTF16(document.substr(match_start,
-                                          match_end - match_start));
+    snippet += base::UTF8ToUTF16(document.substr(match_start,
+                                                 match_end - match_start));
     matches_.push_back(std::make_pair(first, snippet.size()));
 
     // Compute the context, if any, to show after the match.
@@ -268,7 +268,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
       // Switch to DCHECK after debugging http://crbug.com/15261.
       CHECK(end >= match_end);
       CHECK(end <= document.size());
-      snippet += UTF8ToUTF16(document.substr(match_end, end - match_end));
+      snippet += base::UTF8ToUTF16(document.substr(match_end, end - match_end));
     } else {
       // No, there's either no next match or the next match is too far away.
       end = match_end;
@@ -276,7 +276,7 @@ void Snippet::ComputeSnippet(const MatchPositions& match_positions,
       // Switch to DCHECK after debugging http://crbug.com/15261.
       CHECK(end >= match_end);
       CHECK(end <= document.size());
-      snippet += UTF8ToUTF16(document.substr(match_end, end - match_end));
+      snippet += base::UTF8ToUTF16(document.substr(match_end, end - match_end));
       if (end < document.size())
         snippet += kEllipsis;
     }

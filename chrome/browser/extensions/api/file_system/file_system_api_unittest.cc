@@ -47,7 +47,7 @@ AcceptOption* BuildAcceptOption(std::string description,
 }
 
 #if defined(OS_WIN)
-#define ToStringType UTF8ToWide
+#define ToStringType base::UTF8ToWide
 #else
 #define ToStringType
 #endif
@@ -150,7 +150,7 @@ TEST_F(FileSystemApiUnitTest, FileSystemChooseEntryFunctionFileTypeInfoTest) {
   FileSystemChooseEntryFunction::BuildFileTypeInfo(&file_type_info,
       base::FilePath::StringType(), &options, &acceptsAllTypes);
   EXPECT_EQ(file_type_info.extension_description_overrides[0],
-      UTF8ToUTF16("File Types 101"));
+      base::UTF8ToUTF16("File Types 101"));
 }
 
 TEST_F(FileSystemApiUnitTest, FileSystemChooseEntryFunctionSuggestionTest) {

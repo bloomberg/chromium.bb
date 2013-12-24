@@ -49,11 +49,12 @@ class OmniboxApiTest : public ExtensionApiTest {
     for (size_t i = 0; i < result.size(); ++i) {
       AutocompleteMatch match = result.match_at(i);
       std::string provider_name = match.provider->GetName();
-      output.append(base::StringPrintf("[\"%s\" by \"%s\"] ",
-                                       UTF16ToUTF8(match.contents).c_str(),
-                                       provider_name.c_str()));
+      output.append(
+          base::StringPrintf("[\"%s\" by \"%s\"] ",
+                             base::UTF16ToUTF8(match.contents).c_str(),
+                             provider_name.c_str()));
     }
-    return UTF8ToUTF16(output);
+    return base::UTF8ToUTF16(output);
   }
 };
 

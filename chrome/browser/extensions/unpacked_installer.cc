@@ -286,7 +286,7 @@ void UnpackedInstaller::ConfirmInstall() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::string16 error = installer_.CheckManagementPolicy();
   if (!error.empty()) {
-    ReportExtensionLoadError(UTF16ToUTF8(error));
+    ReportExtensionLoadError(base::UTF16ToUTF8(error));
     return;
   }
 

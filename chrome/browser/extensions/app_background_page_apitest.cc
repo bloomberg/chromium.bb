@@ -28,6 +28,7 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+using base::ASCIIToUTF16;
 using extensions::Extension;
 
 class AppBackgroundPageApiTest : public ExtensionApiTest {

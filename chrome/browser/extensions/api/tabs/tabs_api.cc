@@ -927,7 +927,7 @@ bool TabsQueryFunction::RunImpl() {
       }
 
       if (!title.empty() && !MatchPattern(web_contents->GetTitle(),
-                                          UTF8ToUTF16(title)))
+                                          base::UTF8ToUTF16(title)))
         continue;
 
       if (!url_pattern.MatchesURL(web_contents->GetURL()))

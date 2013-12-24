@@ -173,7 +173,7 @@ bool GetProxyServer(const base::DictionaryValue* proxy_server,
     *error = ErrorUtils::FormatErrorMessage(
         "Invalid 'rules.???.host' entry '*'. 'host' field supports only ASCII "
         "URLs (encode URLs in Punycode format).",
-        UTF16ToUTF8(host16));
+        base::UTF16ToUTF8(host16));
     return false;
   }
   std::string host = UTF16ToASCII(host16);

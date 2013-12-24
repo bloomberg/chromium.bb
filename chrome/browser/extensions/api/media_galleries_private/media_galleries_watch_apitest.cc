@@ -90,7 +90,7 @@ class MediaGalleriesPrivateGalleryWatchApiTest : public ExtensionApiTest {
                               const std::string& ok_message) {
     ExtensionTestMessageListener listener(ok_message, false);
     host->ExecuteJavascriptInWebFrame(base::string16(),
-                                      ASCIIToUTF16(js_command));
+                                      base::ASCIIToUTF16(js_command));
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 

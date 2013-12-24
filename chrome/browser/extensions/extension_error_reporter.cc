@@ -56,7 +56,7 @@ void ExtensionErrorReporter::ReportError(const base::string16& message,
   LOG(WARNING) << "Extension error: " << message;
 
   if (enable_noisy_errors_ && be_noisy) {
-    chrome::ShowMessageBox(NULL, ASCIIToUTF16("Extension error"), message,
+    chrome::ShowMessageBox(NULL, base::ASCIIToUTF16("Extension error"), message,
                            chrome::MESSAGE_BOX_TYPE_WARNING);
   }
 }

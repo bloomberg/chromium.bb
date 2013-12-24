@@ -158,7 +158,7 @@ base::string16 DownloadDangerPromptImpl::GetMessage() {
       case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
         return l10n_util::GetStringUTF16(
             IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_LEAD) +
-            ASCIIToUTF16("\n\n") +
+            base::ASCIIToUTF16("\n\n") +
             l10n_util::GetStringUTF16(
                 IDS_PROMPT_CONFIRM_KEEP_MALICIOUS_DOWNLOAD_BODY);
       }

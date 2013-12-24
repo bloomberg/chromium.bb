@@ -203,7 +203,8 @@ class DelayLoadStartAndExecuteJavascript
     if (validated_url != delay_url_ || !rvh_)
       return;
 
-    rvh_->ExecuteJavascriptInWebFrame(base::string16(), UTF8ToUTF16(script_));
+    rvh_->ExecuteJavascriptInWebFrame(base::string16(),
+                                      base::UTF8ToUTF16(script_));
     script_was_executed_ = true;
   }
 

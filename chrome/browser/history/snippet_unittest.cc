@@ -126,10 +126,10 @@ base::string16 BuildSnippet(const std::string& document,
   for (match = snippet.matches().begin();
        match != snippet.matches().end(); ++match) {
     star_snippet += snippet.text().substr(pos, match->first - pos);
-    star_snippet += UTF8ToUTF16("**");
+    star_snippet += base::UTF8ToUTF16("**");
     star_snippet += snippet.text().substr(match->first,
                                           match->second - match->first);
-    star_snippet += UTF8ToUTF16("**");
+    star_snippet += base::UTF8ToUTF16("**");
     pos = match->second;
   }
   star_snippet += snippet.text().substr(pos);
@@ -143,7 +143,7 @@ TEST(Snippets, SimpleQuery) {
             "Goo ...  ... way, Mountain View, CA 94043, United States. This "
             "**document** explains how the agreement is made up, and sets "
             "o ... ",
-            UTF16ToUTF8(BuildSnippet(kSampleDocument, "document")));
+            base::UTF16ToUTF8(BuildSnippet(kSampleDocument, "document")));
 }
 
 // Test that two words that are near each other don't produce two elided bits.
@@ -151,7 +151,7 @@ TEST(Snippets, NearbyWords) {
   ASSERT_EQ(" ... lace of business is at 1600 Amphitheatre Parkway, "
             "**Mountain** **View**, CA 94043, United States. This "
             "document explains  ... ",
-            UTF16ToUTF8(BuildSnippet(kSampleDocument, "mountain view")));
+            base::UTF16ToUTF8(BuildSnippet(kSampleDocument, "mountain view")));
 }
 
 // The above tests already test that we get byte offsets correct, but here's
@@ -160,7 +160,7 @@ TEST(Snippets, UTF8) {
   ASSERT_EQ(" ... ogle\xe2\x84\xa2 Terms of Service Welcome to Google! "
             "1. Your **relationship** with Google 1.1 Your use of Google's "
             "products, so ... ",
-            UTF16ToUTF8(BuildSnippet(kSampleDocument, "relationship")));
+            base::UTF16ToUTF8(BuildSnippet(kSampleDocument, "relationship")));
 }
 
 TEST(Snippets, ThaiUTF8) {
@@ -219,7 +219,7 @@ TEST(Snippets, ThaiUTF8) {
             "\xE0\xB8\xA3\xE0\xB8\xB1\xE0\xB8\x9A\xE0\xB9\x81\xE0\xB8\x95"
             "\xE0\xB9\x88\xE0\xB8\x87\xE0\xB9\x80\xE0\xB8\x99\xE0\xB8\xB7"
             "\xE0\xB9\x89\xE0\xB8\xAD\xE0\xB8\xAB\xE0\xB8\xB2",
-            UTF16ToUTF8(BuildSnippet(kThaiSample,
+            base::UTF16ToUTF8(BuildSnippet(kThaiSample,
                                      "\xE0\xB9\x83\xE0\xB8\xAB\xE0\xB9\x89")));
 }
 
