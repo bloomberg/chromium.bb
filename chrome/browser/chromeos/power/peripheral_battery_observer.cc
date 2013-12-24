@@ -219,11 +219,11 @@ bool PeripheralBatteryObserver::PostNotification(const std::string& address,
       GURL(kNotificationOriginUrl),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW),
-      base::UTF8ToUTF16(battery.name),
+      UTF8ToUTF16(battery.name),
       string_text,
       blink::WebTextDirectionDefault,
       base::string16(),
-      base::UTF8ToUTF16(address),
+      UTF8ToUTF16(address),
       new PeripheralBatteryNotificationDelegate(address));
 
   notification_manager->Add(

@@ -58,7 +58,7 @@ void ShowWarningMessageBox(Profile* profile, const base::FilePath& file_path) {
       browser ? browser->window()->GetNativeWindow() : NULL,
       l10n_util::GetStringFUTF16(
           IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,
-          base::UTF8ToUTF16(file_path.BaseName().value())),
+          UTF8ToUTF16(file_path.BaseName().value())),
       l10n_util::GetStringUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE),
       chrome::MESSAGE_BOX_TYPE_WARNING);
 }

@@ -265,7 +265,7 @@ base::string16 GetEncodingDisplayName(const std::string& encoding_name,
     DCHECK(found_name != map->end());
     return l10n_util::GetStringFUTF16(IDS_ENCODING_DISPLAY_TEMPLATE,
                                       category_name,
-                                      base::ASCIIToUTF16(found_name->second));
+                                      ASCIIToUTF16(found_name->second));
   }
   return category_name;
 }
@@ -293,7 +293,7 @@ std::string GetEncodingCategoryStringByCommandId(int id) {
 CharacterEncoding::EncodingInfo::EncodingInfo(int id)
     : encoding_id(id) {
   encoding_category_name =
-      base::UTF8ToUTF16(GetEncodingCategoryStringByCommandId(id));
+      UTF8ToUTF16(GetEncodingCategoryStringByCommandId(id));
   encoding_display_name = GetCanonicalEncodingDisplayNameByCommandId(id);
 }
 

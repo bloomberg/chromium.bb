@@ -95,7 +95,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
                        FakeProfileOAuth2TokenService::Build));
     profile_ = profile_manager_->CreateTestingProfile(
         chrome::kInitialProfile, scoped_ptr<PrefServiceSyncable>(),
-        base::UTF8ToUTF16("testing_profile"), 0, std::string(), factories);
+        UTF8ToUTF16("testing_profile"), 0, std::string(), factories);
     signin_profile_ = profile_manager_->CreateTestingProfile(kSigninProfile);
     signin_profile_->ForceIncognito(true);
     // Usually the signin Profile and the main Profile are separate, but since

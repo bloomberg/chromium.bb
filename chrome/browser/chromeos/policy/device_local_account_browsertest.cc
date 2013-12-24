@@ -252,8 +252,8 @@ bool DoesInstallSuccessReferToId(const std::string& id,
 bool DoesInstallFailureReferToId(const std::string& id,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  return content::Details<const base::string16>(details)->
-      find(base::UTF8ToUTF16(id)) != base::string16::npos;
+  return content::Details<const base::string16>(details)->find(UTF8ToUTF16(id)) !=
+      base::string16::npos;
 }
 
 scoped_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(
@@ -453,7 +453,7 @@ static bool DisplayNameMatches(const std::string& account_id,
       chromeos::UserManager::Get()->FindUser(account_id);
   if (!user || user->display_name().empty())
     return false;
-  EXPECT_EQ(base::UTF8ToUTF16(display_name), user->display_name());
+  EXPECT_EQ(UTF8ToUTF16(display_name), user->display_name());
   return true;
 }
 
@@ -1156,15 +1156,15 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, DISABLED_TermsOfServiceScreen) {
   // Verify that the screen's headings have been set correctly.
   EXPECT_EQ(
       l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_HEADING,
-                                base::UTF8ToUTF16(kDomain)),
+                                UTF8ToUTF16(kDomain)),
       heading);
   EXPECT_EQ(
       l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_SUBHEADING,
-                                base::UTF8ToUTF16(kDomain)),
+                                UTF8ToUTF16(kDomain)),
       subheading);
   EXPECT_EQ(
       l10n_util::GetStringFUTF8(IDS_TERMS_OF_SERVICE_SCREEN_CONTENT_HEADING,
-                                base::UTF8ToUTF16(kDomain)),
+                                UTF8ToUTF16(kDomain)),
       content_heading);
 
   if (!GetParam()) {

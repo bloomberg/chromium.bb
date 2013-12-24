@@ -236,9 +236,8 @@ int ChromeBrowserMainPartsWin::PreCreateThreads() {
 }
 
 void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
-  ui::MessageBox(NULL,
-                 base::ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
-                 base::ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
+  ui::MessageBox(NULL, ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
+                 ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
                  MB_OK | MB_ICONERROR | MB_TOPMOST);
 }
 
@@ -282,10 +281,10 @@ void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
   base::i18n::AdjustStringForLocaleDirection(&adjusted_string);
   dlg_strings.append(adjusted_string);
   dlg_strings.push_back('|');
-  dlg_strings.append(base::ASCIIToUTF16(
+  dlg_strings.append(ASCIIToUTF16(
       base::i18n::IsRTL() ? env_vars::kRtlLocale : env_vars::kLtrLocale));
 
-  env->SetVar(env_vars::kRestartInfo, base::UTF16ToUTF8(dlg_strings));
+  env->SetVar(env_vars::kRestartInfo, UTF16ToUTF8(dlg_strings));
 }
 
 // static

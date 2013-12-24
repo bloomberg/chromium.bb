@@ -43,7 +43,7 @@ TEST(FileSystemUtilTest, FilePathToDriveURL) {
   utf16_string.push_back(0x307b);  // HIRAGANA_LETTER_HO
   utf16_string.push_back(0x3052);  // HIRAGANA_LETTER_GE
   path = GetDriveMyDriveRootPath().Append(
-      base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(utf16_string) + ".txt"));
+      base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(utf16_string) + ".txt"));
   EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
 }
 

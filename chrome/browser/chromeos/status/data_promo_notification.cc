@@ -194,7 +194,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
     const std::string locale = g_browser_process->GetApplicationLocale();
     std::string deal_text =
         deal->GetLocalizedString(locale, "notification_text");
-    message = base::UTF8ToUTF16(deal_text + "\n\n") + message;
+    message = UTF8ToUTF16(deal_text + "\n\n") + message;
     info_url = deal->info_url();
     if (info_url.empty() && carrier)
       info_url = carrier->top_up_url();

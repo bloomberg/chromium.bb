@@ -39,7 +39,7 @@ void PlatformVerificationDialog::ShowDialog(
 
   PlatformVerificationDialog* dialog = new PlatformVerificationDialog(
       chrome::FindBrowserWithWebContents(web_contents),
-      base::UTF8ToUTF16(origin),
+      UTF8ToUTF16(origin),
       callback);
 
   // Sets up the dialog widget and shows it.

@@ -174,12 +174,11 @@ bool WimaxConfigView::Login() {
 
 std::string WimaxConfigView::GetEapIdentity() const {
   DCHECK(identity_textfield_);
-  return base::UTF16ToUTF8(identity_textfield_->text());
+  return UTF16ToUTF8(identity_textfield_->text());
 }
 
 std::string WimaxConfigView::GetEapPassphrase() const {
-  return passphrase_textfield_ ? base::UTF16ToUTF8(
-                                     passphrase_textfield_->text()) :
+  return passphrase_textfield_ ? UTF16ToUTF8(passphrase_textfield_->text()) :
                                  std::string();
 }
 
@@ -231,7 +230,7 @@ void WimaxConfigView::Init() {
   layout->StartRow(0, column_view_set_id);
   layout->AddView(new views::Label(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK)));
-  views::Label* label = new views::Label(base::UTF8ToUTF16(wimax->name()));
+  views::Label* label = new views::Label(UTF8ToUTF16(wimax->name()));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->AddView(label);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
@@ -361,7 +360,7 @@ void WimaxConfigView::InitFromProperties(
   std::string eap_identity;
   properties.GetStringWithoutPathExpansion(
       shill::kEapIdentityProperty, &eap_identity);
-  identity_textfield_->SetText(base::UTF8ToUTF16(eap_identity));
+  identity_textfield_->SetText(UTF8ToUTF16(eap_identity));
 
   // Save credentials
   if (save_credentials_checkbox_) {

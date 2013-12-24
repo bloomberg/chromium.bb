@@ -279,7 +279,7 @@ CookiesTreeModel* CookieTreeNode::GetModel() const {
 
 CookieTreeCookieNode::CookieTreeCookieNode(
     std::list<net::CanonicalCookie>::iterator cookie)
-    : CookieTreeNode(base::UTF8ToUTF16(cookie->Name())),
+    : CookieTreeNode(UTF8ToUTF16(cookie->Name())),
       cookie_(cookie) {
 }
 
@@ -302,7 +302,7 @@ CookieTreeNode::DetailedInfo CookieTreeCookieNode::GetDetailedInfo() const {
 CookieTreeAppCacheNode::CookieTreeAppCacheNode(
     const GURL& origin_url,
     std::list<appcache::AppCacheInfo>::iterator appcache_info)
-    : CookieTreeNode(base::UTF8ToUTF16(appcache_info->manifest_url.spec())),
+    : CookieTreeNode(UTF8ToUTF16(appcache_info->manifest_url.spec())),
       origin_url_(origin_url),
       appcache_info_(appcache_info) {
 }
@@ -332,7 +332,7 @@ CookieTreeDatabaseNode::CookieTreeDatabaseNode(
     std::list<BrowsingDataDatabaseHelper::DatabaseInfo>::iterator database_info)
     : CookieTreeNode(database_info->database_name.empty() ?
           l10n_util::GetStringUTF16(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
-          base::UTF8ToUTF16(database_info->database_name)),
+          UTF8ToUTF16(database_info->database_name)),
       database_info_(database_info) {
 }
 
@@ -358,7 +358,7 @@ CookieTreeNode::DetailedInfo CookieTreeDatabaseNode::GetDetailedInfo() const {
 CookieTreeLocalStorageNode::CookieTreeLocalStorageNode(
     std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::iterator
         local_storage_info)
-    : CookieTreeNode(base::UTF8ToUTF16(local_storage_info->origin_url.spec())),
+    : CookieTreeNode(UTF8ToUTF16(local_storage_info->origin_url.spec())),
       local_storage_info_(local_storage_info) {
 }
 
@@ -386,8 +386,7 @@ CookieTreeLocalStorageNode::GetDetailedInfo() const {
 CookieTreeSessionStorageNode::CookieTreeSessionStorageNode(
     std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::iterator
         session_storage_info)
-    : CookieTreeNode(
-          base::UTF8ToUTF16(session_storage_info->origin_url.spec())),
+    : CookieTreeNode(UTF8ToUTF16(session_storage_info->origin_url.spec())),
       session_storage_info_(session_storage_info) {
 }
 
@@ -412,7 +411,7 @@ CookieTreeSessionStorageNode::GetDetailedInfo() const {
 CookieTreeIndexedDBNode::CookieTreeIndexedDBNode(
     std::list<content::IndexedDBInfo>::iterator
         indexed_db_info)
-    : CookieTreeNode(base::UTF8ToUTF16(
+    : CookieTreeNode(UTF8ToUTF16(
           indexed_db_info->origin_.spec())),
       indexed_db_info_(indexed_db_info) {
 }
@@ -439,7 +438,7 @@ CookieTreeNode::DetailedInfo CookieTreeIndexedDBNode::GetDetailedInfo() const {
 CookieTreeFileSystemNode::CookieTreeFileSystemNode(
     std::list<BrowsingDataFileSystemHelper::FileSystemInfo>::iterator
         file_system_info)
-    : CookieTreeNode(base::UTF8ToUTF16(
+    : CookieTreeNode(UTF8ToUTF16(
           file_system_info->origin.spec())),
       file_system_info_(file_system_info) {
 }
@@ -465,7 +464,7 @@ CookieTreeNode::DetailedInfo CookieTreeFileSystemNode::GetDetailedInfo() const {
 
 CookieTreeQuotaNode::CookieTreeQuotaNode(
     std::list<BrowsingDataQuotaHelper::QuotaInfo>::iterator quota_info)
-    : CookieTreeNode(base::UTF8ToUTF16(quota_info->host)),
+    : CookieTreeNode(UTF8ToUTF16(quota_info->host)),
       quota_info_(quota_info) {
 }
 
@@ -491,7 +490,7 @@ CookieTreeNode::DetailedInfo CookieTreeQuotaNode::GetDetailedInfo() const {
 
 CookieTreeServerBoundCertNode::CookieTreeServerBoundCertNode(
       net::ServerBoundCertStore::ServerBoundCertList::iterator cert)
-    : CookieTreeNode(base::ASCIIToUTF16(cert->server_identifier())),
+    : CookieTreeNode(ASCIIToUTF16(cert->server_identifier())),
       server_bound_cert_(cert) {
 }
 
@@ -556,8 +555,7 @@ CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
 base::string16 CookieTreeHostNode::TitleForUrl(const GURL& url) {
   const std::string file_origin_node_name(
       std::string(chrome::kFileScheme) + content::kStandardSchemeSeparator);
-  return base::UTF8ToUTF16(url.SchemeIsFile() ? file_origin_node_name
-                                              : url.host());
+  return UTF8ToUTF16(url.SchemeIsFile() ? file_origin_node_name : url.host());
 }
 
 CookieTreeHostNode::CookieTreeHostNode(const GURL& url)
@@ -1052,7 +1050,7 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
   notifier->StartBatchUpdate();
   for (InfoByOrigin::iterator origin = container->appcache_info_.begin();
        origin != container->appcache_info_.end(); ++origin) {
-    base::string16 host_node_name = base::UTF8ToUTF16(origin->first.host());
+    base::string16 host_node_name = UTF8ToUTF16(origin->first.host());
     if (filter.empty() ||
         (host_node_name.find(filter) != base::string16::npos)) {
       CookieTreeHostNode* host_node = root->GetOrCreateHostNode(origin->first);
@@ -1288,8 +1286,7 @@ void CookiesTreeModel::PopulateQuotaInfoWithFilter(
        quota_info != container->quota_info_list_.end();
        ++quota_info) {
     if (!filter.size() ||
-        (base::UTF8ToUTF16(quota_info->host).find(filter) !=
-            base::string16::npos)) {
+        (UTF8ToUTF16(quota_info->host).find(filter) != base::string16::npos)) {
       CookieTreeHostNode* host_node =
           root->GetOrCreateHostNode(GURL("http://" + quota_info->host));
       host_node->UpdateOrCreateQuotaNode(quota_info);
@@ -1306,7 +1303,7 @@ void CookiesTreeModel::PopulateFlashLSOInfoWithFilter(
   if (container->flash_lso_domain_list_.empty())
     return;
 
-  std::string filter_utf8 = base::UTF16ToUTF8(filter);
+  std::string filter_utf8 = UTF16ToUTF8(filter);
   notifier->StartBatchUpdate();
   for (std::vector<std::string>::iterator it =
            container->flash_lso_domain_list_.begin();

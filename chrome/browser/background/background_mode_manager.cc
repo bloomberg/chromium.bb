@@ -123,7 +123,7 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
       // Check that the command ID is within the dynamic range.
       DCHECK(command_id < IDC_MinimumLabelValue);
       command_id_extension_vector_->push_back(position);
-      menu->AddItem(command_id, base::UTF8ToUTF16(name));
+      menu->AddItem(command_id, UTF8ToUTF16(name));
       if (icon)
         menu->SetIcon(menu->GetItemCount() - 1, gfx::Image(*icon));
 

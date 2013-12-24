@@ -85,11 +85,10 @@ class ChromePluginTest : public InProcessBrowserTest {
   static void LoadAndWait(Browser* window, const GURL& url, bool pass) {
     content::WebContents* web_contents =
         window->tab_strip_model()->GetActiveWebContents();
-    base::string16 expected_title(
-        base::ASCIIToUTF16(pass ? "OK" : "plugin_not_found"));
+    base::string16 expected_title(ASCIIToUTF16(pass ? "OK" : "plugin_not_found"));
     content::TitleWatcher title_watcher(web_contents, expected_title);
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(
+    title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+    title_watcher.AlsoWaitForTitle(ASCIIToUTF16(
         pass ? "plugin_not_found" : "OK"));
     ui_test_utils::NavigateToURL(window, url);
     ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
@@ -110,7 +109,7 @@ class ChromePluginTest : public InProcessBrowserTest {
     std::vector<content::WebPluginInfo> plugins = GetPlugins();
     for (std::vector<content::WebPluginInfo>::const_iterator it =
              plugins.begin(); it != plugins.end(); ++it) {
-      if (it->name == base::ASCIIToUTF16(content::kFlashPluginName))
+      if (it->name == ASCIIToUTF16(content::kFlashPluginName))
         paths->push_back(it->path);
     }
   }
@@ -257,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(expected); ++i) {
     size_t j = 0;
     for (; j < plugins.size(); ++j) {
-      if (plugins[j].name == base::ASCIIToUTF16(expected[i]))
+      if (plugins[j].name == ASCIIToUTF16(expected[i]))
         break;
     }
     ASSERT_TRUE(j != plugins.size()) << "Didn't find " << expected[i];

@@ -72,7 +72,7 @@ base::string16 CertificateManagerModel::GetColumnText(
   base::string16 rv;
   switch (column) {
     case COL_SUBJECT_NAME:
-      rv = base::UTF8ToUTF16(
+      rv = UTF8ToUTF16(
           x509_certificate_model::GetCertNameOrNickname(cert.os_cert_handle()));
 
       // TODO(xiyuan): Put this into a column when we have js tree-table.
@@ -84,11 +84,11 @@ base::string16 CertificateManagerModel::GetColumnText(
       }
       break;
     case COL_CERTIFICATE_STORE:
-      rv = base::UTF8ToUTF16(
+      rv = UTF8ToUTF16(
           x509_certificate_model::GetTokenName(cert.os_cert_handle()));
       break;
     case COL_SERIAL_NUMBER:
-      rv = base::ASCIIToUTF16(x509_certificate_model::GetSerialNumberHexified(
+      rv = ASCIIToUTF16(x509_certificate_model::GetSerialNumberHexified(
           cert.os_cert_handle(), std::string()));
       break;
     case COL_EXPIRES_ON:

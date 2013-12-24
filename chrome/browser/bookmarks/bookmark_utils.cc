@@ -83,8 +83,7 @@ bool DoesBookmarkContainWords(const BookmarkNode* node,
                               const std::string& languages) {
   return
       DoesBookmarkTextContainWords(node->GetTitle(), words) ||
-      DoesBookmarkTextContainWords(
-          base::UTF8ToUTF16(node->url().spec()), words) ||
+      DoesBookmarkTextContainWords(UTF8ToUTF16(node->url().spec()), words) ||
       DoesBookmarkTextContainWords(net::FormatUrl(
           node->url(), languages, net::kFormatUrlOmitNothing,
           net::UnescapeRule::NORMAL, NULL, NULL, NULL), words);
@@ -253,7 +252,7 @@ void GetBookmarksMatchingProperties(BookmarkModel* model,
     if (query.url) {
       // Check against bare url spec and IDN-decoded url.
       if (!node->is_url() ||
-          !(base::UTF8ToUTF16(node->url().spec()) == *query.url ||
+          !(UTF8ToUTF16(node->url().spec()) == *query.url ||
             net::FormatUrl(
                 node->url(), languages, net::kFormatUrlOmitNothing,
                 net::UnescapeRule::NORMAL, NULL, NULL, NULL) == *query.url)) {

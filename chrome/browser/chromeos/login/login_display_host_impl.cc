@@ -197,7 +197,7 @@ void ShowLoginWizardFinish(
   // user has changed to during OOBE.
   if (!timezone_name.empty()) {
     chromeos::system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
-        base::UTF8ToUTF16(timezone_name));
+        UTF8ToUTF16(timezone_name));
   }
 }
 

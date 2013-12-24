@@ -16,8 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using base::ASCIIToUTF16;
-
 namespace chromeos {
 
 extern const char* kExtensionImePrefix;
@@ -122,7 +120,7 @@ TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
   }
   {
     InputMethodDescriptor desc = GetDesc("mozc-hangul", "us", "ko");
-    EXPECT_EQ(base::UTF8ToUTF16("\xed\x95\x9c"),
+    EXPECT_EQ(UTF8ToUTF16("\xed\x95\x9c"),
               util_.GetInputMethodShortName(desc));
   }
   {
@@ -159,12 +157,12 @@ TEST_F(InputMethodUtilTest, GetInputMethodShortNameTest) {
   }
   {
     InputMethodDescriptor desc = GetDesc(pinyin_ime_id, "us", "zh-CN");
-    EXPECT_EQ(base::UTF8ToUTF16("\xe6\x8b\xbc"),
+    EXPECT_EQ(UTF8ToUTF16("\xe6\x8b\xbc"),
               util_.GetInputMethodShortName(desc));
   }
   {
     InputMethodDescriptor desc = GetDesc(zhuyin_ime_id, "us", "zh-TW");
-    EXPECT_EQ(base::UTF8ToUTF16("\xE6\xB3\xA8"),
+    EXPECT_EQ(UTF8ToUTF16("\xE6\xB3\xA8"),
               util_.GetInputMethodShortName(desc));
   }
 }
@@ -480,7 +478,7 @@ TEST_F(InputMethodUtilTest, TestIBusInputMethodText) {
     EXPECT_FALSE(display_name.empty())
         << "Invalid language code " << language_code;
     // On error, GetDisplayNameForLocale() returns the |language_code| as-is.
-    EXPECT_NE(language_code, base::UTF16ToUTF8(display_name))
+    EXPECT_NE(language_code, UTF16ToUTF8(display_name))
         << "Invalid language code " << language_code;
   }
 }

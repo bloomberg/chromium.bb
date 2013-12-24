@@ -353,10 +353,10 @@ void MainMenuModel::AddWirelessNetworkMenuItem(const NetworkState* network,
   if (network->IsConnectingState()) {
     label = l10n_util::GetStringFUTF16(
         IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-        base::UTF8ToUTF16(wifi_name),
+        UTF8ToUTF16(wifi_name),
         l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
   } else {
-    label = base::UTF8ToUTF16(wifi_name);
+    label = UTF8ToUTF16(wifi_name);
   }
 
   // We do not have convenient access to whether or not it might be possible
@@ -436,10 +436,10 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
       if (network->IsConnectingState()) {
         label = l10n_util::GetStringFUTF16(
             IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-            base::UTF8ToUTF16(network_name),
+            UTF8ToUTF16(network_name),
             l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING));
       } else {
-        label = base::UTF8ToUTF16(network_name);
+        label = UTF8ToUTF16(network_name);
       }
 
       int flag = FLAG_CELLULAR;
@@ -617,9 +617,9 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
   if (default_network) {
     std::string ip_address = default_network->ip_address();
     if (!ip_address.empty()) {
-      address_items.push_back(MenuItem(
-          ui::MenuModel::TYPE_COMMAND, base::ASCIIToUTF16(ip_address),
-          gfx::ImageSkia(), std::string(), FLAG_DISABLED));
+      address_items.push_back(MenuItem(ui::MenuModel::TYPE_COMMAND,
+          ASCIIToUTF16(ip_address), gfx::ImageSkia(), std::string(),
+                       FLAG_DISABLED));
     }
   }
 
@@ -629,8 +629,8 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
     std::string label = l10n_util::GetStringUTF8(
         IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET) + " " + ethernet_address;
     address_items.push_back(MenuItem(
-        ui::MenuModel::TYPE_COMMAND, base::UTF8ToUTF16(label),
-        gfx::ImageSkia(), std::string(), FLAG_DISABLED));
+        ui::MenuModel::TYPE_COMMAND,
+        UTF8ToUTF16(label), gfx::ImageSkia(), std::string(), FLAG_DISABLED));
   }
 
   std::string wifi_address =
@@ -639,8 +639,8 @@ void MoreMenuModel::InitMenuItems(bool should_open_button_options) {
     std::string label = l10n_util::GetStringUTF8(
         IDS_STATUSBAR_NETWORK_DEVICE_WIFI) + " " + wifi_address;
     address_items.push_back(MenuItem(
-        ui::MenuModel::TYPE_COMMAND, base::UTF8ToUTF16(label),
-        gfx::ImageSkia(), std::string(), FLAG_DISABLED));
+        ui::MenuModel::TYPE_COMMAND,
+        UTF8ToUTF16(label), gfx::ImageSkia(), std::string(), FLAG_DISABLED));
   }
 
   menu_items_ = link_items;

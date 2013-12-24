@@ -30,7 +30,6 @@
 #include "ui/base/models/tree_node_model.h"
 #include "url/gurl.h"
 
-using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 
@@ -329,7 +328,7 @@ TEST_F(BookmarkModelTest, AddURL) {
 
 TEST_F(BookmarkModelTest, AddURLWithUnicodeTitle) {
   const BookmarkNode* root = model_.bookmark_bar_node();
-  const base::string16 title(base::WideToUTF16(
+  const base::string16 title(WideToUTF16(
       L"\u767e\u5ea6\u4e00\u4e0b\uff0c\u4f60\u5c31\u77e5\u9053"));
   const GURL url("https://www.baidu.com/");
 
@@ -816,7 +815,7 @@ void PopulateNodeImpl(const std::vector<std::string>& description,
       // likely means a space was forgotten.
       DCHECK(element.find('[') == std::string::npos);
       DCHECK(element.find(']') == std::string::npos);
-      parent->Add(new TestNode(base::UTF8ToUTF16(element), BookmarkNode::URL),
+      parent->Add(new TestNode(UTF8ToUTF16(element), BookmarkNode::URL),
                   parent->child_count());
     }
   }

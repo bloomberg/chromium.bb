@@ -412,11 +412,11 @@ void TabSpecificContentSettings::OnWebDatabaseAccessed(
     bool blocked_by_policy) {
   if (blocked_by_policy) {
     blocked_local_shared_objects_.databases()->AddDatabase(
-        url, base::UTF16ToUTF8(name), base::UTF16ToUTF8(display_name));
+        url, UTF16ToUTF8(name), UTF16ToUTF8(display_name));
     OnContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES);
   } else {
     allowed_local_shared_objects_.databases()->AddDatabase(
-        url, base::UTF16ToUTF8(name), base::UTF16ToUTF8(display_name));
+        url, UTF16ToUTF8(name), UTF16ToUTF8(display_name));
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
 

@@ -141,8 +141,8 @@ void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
     if (ibus_entry.description_title.empty() &&
         ibus_entry.description_body.empty())
       continue;
-    InfolistEntry entry(base::UTF8ToUTF16(ibus_entry.description_title),
-                        base::UTF8ToUTF16(ibus_entry.description_body));
+    InfolistEntry entry(UTF8ToUTF16(ibus_entry.description_title),
+                        UTF8ToUTF16(ibus_entry.description_body));
     if (i == cursor_index_in_page) {
       entry.highlighted = true;
       *has_highlighted = true;

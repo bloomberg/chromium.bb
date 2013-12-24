@@ -227,13 +227,13 @@ std::vector<base::string16> OomPriorityManager::GetTabTitles() {
     str.reserve(4096);
     int score = pid_to_oom_score_[it->renderer_handle];
     str += base::IntToString16(score);
-    str += base::ASCIIToUTF16(" - ");
+    str += ASCIIToUTF16(" - ");
     str += it->title;
-    str += base::ASCIIToUTF16(it->is_app ? " app" : "");
-    str += base::ASCIIToUTF16(it->is_reloadable_ui ? " reloadable_ui" : "");
-    str += base::ASCIIToUTF16(it->is_playing_audio ? " playing_audio" : "");
-    str += base::ASCIIToUTF16(it->is_pinned ? " pinned" : "");
-    str += base::ASCIIToUTF16(it->is_discarded ? " discarded" : "");
+    str += ASCIIToUTF16(it->is_app ? " app" : "");
+    str += ASCIIToUTF16(it->is_reloadable_ui ? " reloadable_ui" : "");
+    str += ASCIIToUTF16(it->is_playing_audio ? " playing_audio" : "");
+    str += ASCIIToUTF16(it->is_pinned ? " pinned" : "");
+    str += ASCIIToUTF16(it->is_discarded ? " discarded" : "");
     titles.push_back(str);
   }
   return titles;

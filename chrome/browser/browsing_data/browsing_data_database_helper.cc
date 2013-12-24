@@ -91,8 +91,8 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
         if (base::GetFileInfo(file_path, &file_info)) {
           database_info_.push_back(DatabaseInfo(
                 identifier,
-                base::UTF16ToUTF8(*db),
-                base::UTF16ToUTF8(ori->GetDatabaseDescription(*db)),
+                UTF16ToUTF8(*db),
+                UTF16ToUTF8(ori->GetDatabaseDescription(*db)),
                 file_info.size,
                 file_info.last_modified));
         }
@@ -120,7 +120,7 @@ void BrowsingDataDatabaseHelper::DeleteDatabaseOnFileThread(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!tracker_.get())
     return;
-  tracker_->DeleteDatabase(origin, base::UTF8ToUTF16(name),
+  tracker_->DeleteDatabase(origin, UTF8ToUTF16(name),
                            net::CompletionCallback());
 }
 

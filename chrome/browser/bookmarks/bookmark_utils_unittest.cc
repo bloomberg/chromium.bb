@@ -14,7 +14,6 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
-using base::ASCIIToUTF16;
 using std::string;
 
 namespace bookmark_utils {

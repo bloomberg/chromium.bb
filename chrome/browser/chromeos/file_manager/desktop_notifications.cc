@@ -168,7 +168,7 @@ class DesktopNotifications::NotificationMessage {
         ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             GetIconId(type));
     // TODO(mukai): refactor here to invoke NotificationUIManager directly.
-    const base::string16 replace_id = base::UTF8ToUTF16(notification_id);
+    const base::string16 replace_id = UTF8ToUTF16(notification_id);
     DesktopNotificationService::AddIconNotification(
         util::GetFileManagerBaseUrl(), GetTitle(type),
         message, icon, replace_id,
@@ -257,19 +257,19 @@ void DesktopNotifications::ManageNotificationsOnMountCompleted(
         l10n_util::GetStringUTF16(
             IDS_MULTIPART_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE) :
         l10n_util::GetStringFUTF16(
-            IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE, base::UTF8ToUTF16(label));
+            IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE, UTF8ToUTF16(label));
   } else if (!success) {
     // First device failed.
     if (!is_unsupported) {
       message = label.empty() ?
           l10n_util::GetStringUTF16(IDS_DEVICE_UNKNOWN_DEFAULT_MESSAGE) :
           l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_MESSAGE,
-                                     base::UTF8ToUTF16(label));
+                                     UTF8ToUTF16(label));
     } else {
       message = label.empty() ?
           l10n_util::GetStringUTF16(IDS_DEVICE_UNSUPPORTED_DEFAULT_MESSAGE) :
           l10n_util::GetStringFUTF16(IDS_DEVICE_UNSUPPORTED_MESSAGE,
-                                     base::UTF8ToUTF16(label));
+                                     UTF8ToUTF16(label));
     }
   }
 

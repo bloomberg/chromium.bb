@@ -68,9 +68,9 @@ class CandidateWindowViewTest : public views::ViewsTestBase {
                     const std::string& candidate,
                     const std::string& annotation,
                     const CandidateView* row) {
-    EXPECT_EQ(shortcut, base::UTF16ToUTF8(row->shortcut_label_->text()));
-    EXPECT_EQ(candidate, base::UTF16ToUTF8(row->candidate_label_->text()));
-    EXPECT_EQ(annotation, base::UTF16ToUTF8(row->annotation_label_->text()));
+    EXPECT_EQ(shortcut, UTF16ToUTF8(row->shortcut_label_->text()));
+    EXPECT_EQ(candidate, UTF16ToUTF8(row->candidate_label_->text()));
+    EXPECT_EQ(annotation, UTF16ToUTF8(row->annotation_label_->text()));
   }
 };
 

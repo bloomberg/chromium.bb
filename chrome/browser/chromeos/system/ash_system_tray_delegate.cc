@@ -435,7 +435,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (GetEnterpriseDomain().empty())
         return base::string16();
     return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
-                                      base::UTF8ToUTF16(GetEnterpriseDomain()));
+                                      UTF8ToUTF16(GetEnterpriseDomain()));
   }
 
   virtual const std::string GetLocallyManagedUserManager() const OVERRIDE {
@@ -460,7 +460,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         return base::string16();
     return l10n_util::GetStringFUTF16(
         IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
-        base::UTF8ToUTF16(GetLocallyManagedUserManager()));
+        UTF8ToUTF16(GetLocallyManagedUserManager()));
   }
 
   virtual bool SystemShouldUpgrade() const OVERRIDE {

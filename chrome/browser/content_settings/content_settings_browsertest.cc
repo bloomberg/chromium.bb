@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(base::UTF8ToUTF16(test_url.spec() + " failed to load"),
+  ASSERT_EQ(UTF8ToUTF16(test_url.spec() + " failed to load"),
             web_contents->GetTitle());
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, ContentSettingsBlockDataURLs) {
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(base::UTF8ToUTF16("Data URL"), web_contents->GetTitle());
+  ASSERT_EQ(UTF8ToUTF16("Data URL"), web_contents->GetTitle());
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
       IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
@@ -316,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, Basic) {
       base::FilePath(), base::FilePath().AppendASCII("clicktoplay.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  base::string16 expected_title(base::ASCIIToUTF16("OK"));
+  base::string16 expected_title(ASCIIToUTF16("OK"));
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
 
@@ -346,7 +346,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, AllowException) {
                           std::string(),
                           CONTENT_SETTING_ALLOW);
 
-  base::string16 expected_title(base::ASCIIToUTF16("OK"));
+  base::string16 expected_title(ASCIIToUTF16("OK"));
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -365,7 +365,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, BlockException) {
                           std::string(),
                           CONTENT_SETTING_BLOCK);
 
-  base::string16 expected_title(base::ASCIIToUTF16("Click To Play"));
+  base::string16 expected_title(ASCIIToUTF16("Click To Play"));
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -390,7 +390,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, MAYBE_LoadAllBlockedPlugins) {
       base::FilePath().AppendASCII("load_all_blocked_plugins.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  base::string16 expected_title1(base::ASCIIToUTF16("1"));
+  base::string16 expected_title1(ASCIIToUTF16("1"));
   content::TitleWatcher title_watcher1(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title1);
 
@@ -399,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, MAYBE_LoadAllBlockedPlugins) {
       std::string());
   EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
 
-  base::string16 expected_title2(base::ASCIIToUTF16("2"));
+  base::string16 expected_title2(ASCIIToUTF16("2"));
   content::TitleWatcher title_watcher2(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title2);
 
@@ -424,7 +424,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, NoCallbackAtLoad) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       "CallOnStartup = function() { document.title = \"OK\"; }"));
 
-  base::string16 expected_title(base::ASCIIToUTF16("OK"));
+  base::string16 expected_title(ASCIIToUTF16("OK"));
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
 
@@ -445,7 +445,7 @@ IN_PROC_BROWSER_TEST_F(ClickToPlayPluginTest, DeleteSelfAtLoad) {
       base::FilePath().AppendASCII("plugin_delete_self_at_load.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  base::string16 expected_title(base::ASCIIToUTF16("OK"));
+  base::string16 expected_title(ASCIIToUTF16("OK"));
   content::TitleWatcher title_watcher(
       browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
 
@@ -473,7 +473,7 @@ class PepperContentSettingsTest : public ContentSettingsTest {
     // Platform-specific filename relative to the chrome executable.
 #if defined(OS_WIN)
     const std::wstring external_clear_key_mime_type =
-        base::ASCIIToWide(kExternalClearKeyMimeType);
+        ASCIIToWide(kExternalClearKeyMimeType);
     const char kLibraryName[] = "clearkeycdmadapter.dll";
 #else  // !defined(OS_WIN)
     const char* external_clear_key_mime_type = kExternalClearKeyMimeType;
@@ -508,7 +508,7 @@ class PepperContentSettingsTest : public ContentSettingsTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
 
-    base::string16 expected_title(base::ASCIIToUTF16(expected_result));
+    base::string16 expected_title(ASCIIToUTF16(expected_result));
     content::TitleWatcher title_watcher(web_contents, expected_title);
 
     // GetTestUrl assumes paths, so we must append query parameters to result.
@@ -534,7 +534,7 @@ class PepperContentSettingsTest : public ContentSettingsTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     TabSpecificContentSettings* tab_settings =
         TabSpecificContentSettings::FromWebContents(web_contents);
-    base::string16 expected_title(base::ASCIIToUTF16(kExpectedTitle));
+    base::string16 expected_title(ASCIIToUTF16(kExpectedTitle));
     content::TitleWatcher title_watcher(web_contents, expected_title);
 
     GURL url = ui_test_utils::GetTestUrl(

@@ -37,12 +37,12 @@ void PassphraseTextfield::OnBlur() {
 }
 
 std::string PassphraseTextfield::GetPassphrase() {
-  return changed_ ? base::UTF16ToUTF8(text()) : std::string();
+  return changed_ ? UTF16ToUTF8(text()) : std::string();
 }
 
 void PassphraseTextfield::SetFakePassphrase() {
   CR_DEFINE_STATIC_LOCAL(base::string16, fake_passphrase,
-      (base::ASCIIToUTF16("********")));
+      (ASCIIToUTF16("********")));
   SetText(fake_passphrase);
   changed_ = false;
 }

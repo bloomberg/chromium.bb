@@ -157,7 +157,7 @@ bool UserContext::operator==(const UserContext& context) const {
 base::string16 User::GetDisplayName() const {
   // Fallback to the email account name in case display name haven't been set.
   return display_name_.empty() ?
-      base::UTF8ToUTF16(GetAccountName(true)) :
+      UTF8ToUTF16(GetAccountName(true)) :
       display_name_;
 }
 
@@ -312,7 +312,7 @@ bool LocallyManagedUser::can_lock() const {
 }
 
 std::string LocallyManagedUser::display_email() const {
-  return base::UTF16ToUTF8(display_name());
+  return UTF16ToUTF8(display_name());
 }
 
 RetailModeUser::RetailModeUser() : User(UserManager::kRetailModeUserName) {

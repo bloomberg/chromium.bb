@@ -732,7 +732,7 @@ bool WifiConfigView::Login() {
 std::string WifiConfigView::GetSsid() const {
   std::string result;
   if (ssid_textfield_ != NULL) {
-    std::string untrimmed = base::UTF16ToUTF8(ssid_textfield_->text());
+    std::string untrimmed = UTF16ToUTF8(ssid_textfield_->text());
     TrimWhitespaceASCII(untrimmed, TRIM_ALL, &result);
   }
   return result;
@@ -741,7 +741,7 @@ std::string WifiConfigView::GetSsid() const {
 std::string WifiConfigView::GetPassphrase() const {
   std::string result;
   if (passphrase_textfield_ != NULL)
-    result = base::UTF16ToUTF8(passphrase_textfield_->text());
+    result = UTF16ToUTF8(passphrase_textfield_->text());
   return result;
 }
 
@@ -820,7 +820,7 @@ bool WifiConfigView::GetEapUseSystemCas() const {
 
 std::string WifiConfigView::GetEapSubjectMatch() const {
   DCHECK(subject_match_textfield_);
-  return base::UTF16ToUTF8(subject_match_textfield_->text());
+  return UTF16ToUTF8(subject_match_textfield_->text());
 }
 
 std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
@@ -837,12 +837,12 @@ std::string WifiConfigView::GetEapClientCertPkcs11Id() const {
 
 std::string WifiConfigView::GetEapIdentity() const {
   DCHECK(identity_textfield_);
-  return base::UTF16ToUTF8(identity_textfield_->text());
+  return UTF16ToUTF8(identity_textfield_->text());
 }
 
 std::string WifiConfigView::GetEapAnonymousIdentity() const {
   DCHECK(identity_anonymous_textfield_);
-  return base::UTF16ToUTF8(identity_anonymous_textfield_->text());
+  return UTF16ToUTF8(identity_anonymous_textfield_->text());
 }
 
 void WifiConfigView::SetEapProperties(base::DictionaryValue* properties) {
@@ -942,7 +942,7 @@ void WifiConfigView::Init(bool show_8021x) {
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID));
     layout->AddView(ssid_textfield_);
   } else {
-    views::Label* label = new views::Label(base::UTF8ToUTF16(wifi->name()));
+    views::Label* label = new views::Label(UTF8ToUTF16(wifi->name()));
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(label);
   }
@@ -1192,7 +1192,7 @@ void WifiConfigView::InitFromProperties(
     std::string passphrase;
     properties.GetStringWithoutPathExpansion(
         shill::kPassphraseProperty, &passphrase);
-    passphrase_textfield_->SetText(base::UTF8ToUTF16(passphrase));
+    passphrase_textfield_->SetText(UTF8ToUTF16(passphrase));
     return;
   }
 
@@ -1229,15 +1229,14 @@ void WifiConfigView::InitFromProperties(
     std::string eap_anonymous_identity;
     properties.GetStringWithoutPathExpansion(
         shill::kEapAnonymousIdentityProperty, &eap_anonymous_identity);
-    identity_anonymous_textfield_->SetText(
-        base::UTF8ToUTF16(eap_anonymous_identity));
+    identity_anonymous_textfield_->SetText(UTF8ToUTF16(eap_anonymous_identity));
   }
 
   // Subject match
   std::string subject_match;
   properties.GetStringWithoutPathExpansion(
       shill::kEapSubjectMatchProperty, &subject_match);
-  subject_match_textfield_->SetText(base::UTF8ToUTF16(subject_match));
+  subject_match_textfield_->SetText(UTF8ToUTF16(subject_match));
 
   // Server CA certificate.
   if (CaCertActive()) {
@@ -1289,14 +1288,14 @@ void WifiConfigView::InitFromProperties(
   std::string eap_identity;
   properties.GetStringWithoutPathExpansion(
       shill::kEapIdentityProperty, &eap_identity);
-  identity_textfield_->SetText(base::UTF8ToUTF16(eap_identity));
+  identity_textfield_->SetText(UTF8ToUTF16(eap_identity));
 
   // Passphrase
   if (PassphraseActive()) {
     std::string eap_password;
     properties.GetStringWithoutPathExpansion(
         shill::kEapPasswordProperty, &eap_password);
-    passphrase_textfield_->SetText(base::UTF8ToUTF16(eap_password));
+    passphrase_textfield_->SetText(UTF8ToUTF16(eap_password));
     // If 'Connectable' is True, show a fake passphrase to indicate that it
     // has already been set.
     bool connectable = false;

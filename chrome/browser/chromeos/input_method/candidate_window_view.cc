@@ -75,12 +75,12 @@ views::View* WrapWithPadding(views::View* view, const gfx::Insets& insets) {
 base::string16 CreateShortcutText(size_t index,
                             const CandidateWindow& candidate_window) {
   if (index >= candidate_window.candidates().size())
-    return base::string16();
+    return UTF8ToUTF16("");
   std::string shortcut_text = candidate_window.candidates()[index].label;
   if (!shortcut_text.empty() &&
       candidate_window.orientation() != CandidateWindow::VERTICAL)
     shortcut_text += '.';
-  return base::UTF8ToUTF16(shortcut_text);
+  return UTF8ToUTF16(shortcut_text);
 }
 
 // Creates the shortcut label, and returns it (never returns NULL).
@@ -245,7 +245,7 @@ gfx::Size ComputeCandidateColumnSize(
     const size_t index = start_from + i;
 
     candidate_label->SetText(
-        base::UTF8ToUTF16(candidate_window.candidates()[index].value));
+        UTF8ToUTF16(candidate_window.candidates()[index].value));
     gfx::Size text_size = candidate_label->GetPreferredSize();
     candidate_column_width = std::max(candidate_column_width,
                                       text_size.width());
@@ -279,7 +279,7 @@ gfx::Size ComputeAnnotationColumnSize(
     const size_t index = start_from + i;
 
     annotation_label->SetText(
-        base::UTF8ToUTF16(candidate_window.candidates()[index].annotation));
+        UTF8ToUTF16(candidate_window.candidates()[index].annotation));
     gfx::Size text_size = annotation_label->GetPreferredSize();
     annotation_column_width = std::max(annotation_column_width,
                                        text_size.width());
@@ -318,7 +318,7 @@ class InformationTextArea : public HidableArea {
 
   // Set the displayed text.
   void SetText(const std::string& utf8_text) {
-    label_->SetText(base::UTF8ToUTF16(utf8_text));
+    label_->SetText(UTF8ToUTF16(utf8_text));
   }
 
  protected:
@@ -745,8 +745,8 @@ void CandidateWindowView::UpdateCandidates(
        if (candidate_index < new_candidate_window.candidates().size()) {
          const CandidateWindow::Entry& entry =
              new_candidate_window.candidates()[candidate_index];
-         candidate_view->SetCandidateText(base::UTF8ToUTF16(entry.value));
-         candidate_view->SetAnnotationText(base::UTF8ToUTF16(entry.annotation));
+         candidate_view->SetCandidateText(UTF8ToUTF16(entry.value));
+         candidate_view->SetAnnotationText(UTF8ToUTF16(entry.annotation));
          candidate_view->SetRowEnabled(true);
          candidate_view->SetInfolistIcon(!entry.description_title.empty());
       } else {

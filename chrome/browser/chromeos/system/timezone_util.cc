@@ -78,7 +78,7 @@ base::string16 GetExemplarCity(const icu::TimeZone& zone) {
     zone_id_str.erase(0, slash_pos + 1);
   // zone id has '_' in place of ' '.
   ReplaceSubstringsAfterOffset(&zone_id_str, 0, "_", " ");
-  return base::ASCIIToUTF16(zone_id_str);
+  return ASCIIToUTF16(zone_id_str);
 }
 
 // Gets the given timezone's name for visualization.
@@ -113,10 +113,8 @@ base::string16 GetTimezoneName(const icu::TimeZone& timezone) {
   icu::UnicodeString name;
   timezone.getDisplayName(dst_offset != 0, icu::TimeZone::LONG, name);
   base::string16 result(l10n_util::GetStringFUTF16(
-      IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE,
-      base::ASCIIToUTF16(offset_str),
-      base::string16(name.getBuffer(), name.length()),
-      GetExemplarCity(timezone)));
+      IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE, ASCIIToUTF16(offset_str),
+      base::string16(name.getBuffer(), name.length()), GetExemplarCity(timezone)));
   base::i18n::AdjustStringForLocaleDirection(&result);
   return result;
 }

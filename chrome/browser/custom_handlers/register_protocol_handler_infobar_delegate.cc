@@ -73,10 +73,10 @@ base::string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
   ProtocolHandler old_handler = registry_->GetHandlerFor(handler_.protocol());
   return old_handler.IsEmpty() ?
       l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
-          handler_.title(), base::UTF8ToUTF16(handler_.url().host()),
+          handler_.title(), UTF8ToUTF16(handler_.url().host()),
           GetProtocolName(handler_)) :
       l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM_REPLACE,
-          handler_.title(), base::UTF8ToUTF16(handler_.url().host()),
+          handler_.title(), UTF8ToUTF16(handler_.url().host()),
           GetProtocolName(handler_), old_handler.title());
 }
 
@@ -128,5 +128,5 @@ base::string16 RegisterProtocolHandlerInfoBarDelegate::GetProtocolName(
     return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);
   if (handler.protocol() == "webcal")
     return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_WEBCAL_NAME);
-  return base::UTF8ToUTF16(handler.protocol());
+  return UTF8ToUTF16(handler.protocol());
 }

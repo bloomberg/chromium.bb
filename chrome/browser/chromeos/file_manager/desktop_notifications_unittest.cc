@@ -174,7 +174,7 @@ TEST(FileManagerMountNotificationsTest, UnsupportedDevice) {
   EXPECT_EQ(notification_path, notifications.params()[1].path);
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(IDS_DEVICE_UNSUPPORTED_MESSAGE,
-                                 base::UTF8ToUTF16(device_label)),
+                                 UTF8ToUTF16(device_label)),
       notifications.params()[1].message);
 }
 
@@ -226,7 +226,7 @@ TEST(FileManagerMountNotificationsTest, UnsupportedWithUnknownParent) {
   EXPECT_EQ(notification_path, notifications.params()[3].path);
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(IDS_DEVICE_UNSUPPORTED_MESSAGE,
-                                 base::UTF8ToUTF16(device_label)),
+                                 UTF8ToUTF16(device_label)),
       notifications.params()[3].message);
 }
 
@@ -266,7 +266,7 @@ TEST(FileManagerMountNotificationsTest, MountPartialSuccess) {
   EXPECT_EQ(notification_path, notifications.params()[1].path);
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
-                                 base::UTF8ToUTF16(device_label)),
+                                 UTF8ToUTF16(device_label)),
       notifications.params()[1].message);
 }
 
@@ -298,7 +298,7 @@ TEST(FileManagerMountNotificationsTest, Unknown) {
   EXPECT_EQ(notification_path, notifications.params()[1].path);
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_MESSAGE,
-                                 base::UTF8ToUTF16(device_label)),
+                                 UTF8ToUTF16(device_label)),
       notifications.params()[1].message);
 }
 
@@ -331,7 +331,7 @@ TEST(FileManagerMountNotificationsTest, NonASCIILabel) {
   EXPECT_EQ(notification_path, notifications.params()[1].path);
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_MESSAGE,
-                                 base::UTF8ToUTF16(device_label)),
+                                 UTF8ToUTF16(device_label)),
       notifications.params()[1].message);
 }
 
@@ -363,7 +363,7 @@ TEST(FileManagerMountNotificationsTest, MulitpleFail) {
   EXPECT_EQ(notification_path, notifications.params()[1].path);
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_MESSAGE,
-                                 base::UTF8ToUTF16(device_label)),
+                                 UTF8ToUTF16(device_label)),
       notifications.params()[1].message);
 
   notifications.ManageNotificationsOnMountCompleted(
@@ -386,7 +386,7 @@ TEST(FileManagerMountNotificationsTest, MulitpleFail) {
   EXPECT_EQ(notification_path, notifications.params()[3].path);
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(IDS_DEVICE_UNKNOWN_MESSAGE,
-                                 base::UTF8ToUTF16(device_label)),
+                                 UTF8ToUTF16(device_label)),
       notifications.params()[3].message);
 
   notifications.ManageNotificationsOnMountCompleted(
@@ -409,7 +409,7 @@ TEST(FileManagerMountNotificationsTest, MulitpleFail) {
   EXPECT_EQ(notification_path, notifications.params()[5].path);
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(IDS_MULTIPART_DEVICE_UNSUPPORTED_MESSAGE,
-                                 base::UTF8ToUTF16(device_label)),
+                                 UTF8ToUTF16(device_label)),
       notifications.params()[5].message);
 
   notifications.ManageNotificationsOnMountCompleted(
