@@ -488,6 +488,11 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   // Pass along sync status early so it will be available during page init.
   values->Set("syncData", GetSyncStateDictionary().release());
 
+  // The Reset Profile Settings feature makes no sense for an off-the-record
+  // profile (e.g. in Guest mode on Chrome OS), so hide it.
+  values->SetBoolean("enableResetProfileSettings",
+                     !Profile::FromWebUI(web_ui())->IsOffTheRecord());
+
   values->SetString("privacyLearnMoreURL", chrome::kPrivacyLearnMoreURL);
   values->SetString("doNotTrackLearnMoreURL", chrome::kDoNotTrackLearnMoreURL);
 

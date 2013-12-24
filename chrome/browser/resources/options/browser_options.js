@@ -482,6 +482,8 @@ cr.define('options', function() {
       $('reset-profile-settings').onclick = function(event) {
         OptionsPage.navigateToPage('resetProfileSettings');
       };
+      $('reset-profile-settings-section').hidden =
+          !loadTimeData.getBoolean('enableResetProfileSettings');
     },
 
     /** @override */
