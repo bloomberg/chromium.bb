@@ -100,7 +100,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
 
   std::string RunQuery(const std::string& query,
                        const std::string& mock_server_response) {
-    webstore_provider_->Start(UTF8ToUTF16(query));
+    webstore_provider_->Start(base::UTF8ToUTF16(query));
 
     if (webstore_provider_->webstore_search_ && !mock_server_response.empty()) {
       mock_server_response_ = mock_server_response;
@@ -125,7 +125,7 @@ class WebstoreProviderTest : public InProcessBrowserTest {
          ++it) {
       if (!results.empty())
         results += ',';
-      results += UTF16ToUTF8((*it)->title());
+      results += base::UTF16ToUTF8((*it)->title());
     }
     return results;
   }

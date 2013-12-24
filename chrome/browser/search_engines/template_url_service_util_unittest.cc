@@ -20,7 +20,7 @@ TemplateURL* CreatePrepopulateTemplateURL(int prepopulate_id,
                                           TemplateURLID id) {
   TemplateURLData data;
   data.prepopulate_id = prepopulate_id;
-  data.SetKeyword(ASCIIToUTF16(keyword));
+  data.SetKeyword(base::ASCIIToUTF16(keyword));
   data.id = id;
   return new TemplateURL(NULL, data);
 }
@@ -73,6 +73,8 @@ TEST(TemplateURLServiceUtilTest, RemoveDuplicatePrepopulateIDs) {
   EXPECT_EQ(local_turls.size(),
             prepopulated_turls.size() + num_non_prepopulated_urls);
   for (TemplateURLService::TemplateURLVector::const_iterator itr =
-       local_turls.begin(); itr != local_turls.end(); ++itr)
-    EXPECT_TRUE(StartsWith((*itr)->keyword(), ASCIIToUTF16("winner"), true));
+       local_turls.begin(); itr != local_turls.end(); ++itr) {
+    EXPECT_TRUE(
+        StartsWith((*itr)->keyword(), base::ASCIIToUTF16("winner"), true));
+  }
 }

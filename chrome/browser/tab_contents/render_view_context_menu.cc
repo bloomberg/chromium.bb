@@ -372,7 +372,7 @@ void DevToolsInspectElementAt(RenderViewHost* rvh, int x, int y) {
 // Helper function to escape "&" as "&&".
 void EscapeAmpersands(base::string16* text) {
   const char16 ampersand[] = {'&', 0};
-  base::ReplaceChars(*text, ampersand, ASCIIToUTF16("&&"), text);
+  base::ReplaceChars(*text, ampersand, base::ASCIIToUTF16("&&"), text);
 }
 
 }  // namespace
@@ -1016,7 +1016,7 @@ void RenderViewContextMenu::AppendSearchProvider() {
     return;
 
   base::ReplaceChars(params_.selection_text, AutocompleteMatch::kInvalidChars,
-                     ASCIIToUTF16(" "), &params_.selection_text);
+                     base::ASCIIToUTF16(" "), &params_.selection_text);
 
   AutocompleteMatch match;
   AutocompleteClassifierFactory::GetForProfile(profile_)->Classify(

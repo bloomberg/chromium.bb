@@ -11,6 +11,8 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
+using base::ASCIIToUTF16;
+
 class TwoClientSearchEnginesSyncTest : public SyncTest {
  public:
   TwoClientSearchEnginesSyncTest() : SyncTest(TWO_CLIENT) {}

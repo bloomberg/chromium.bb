@@ -85,7 +85,7 @@ StorageInfo BuildStorageInfo(
     base::string16 unique_id2 = vendor;
     unique_id2 = JoinName(unique_id2, model);
     unique_id2 = JoinName(unique_id2, revision);
-    unique_id = UTF16ToUTF8(unique_id2);
+    unique_id = base::UTF16ToUTF8(unique_id2);
   }
 
   CFBooleanRef is_removable_ref =
@@ -365,7 +365,7 @@ bool StorageMonitorMac::ShouldPostNotificationForDisk(
   // are removable. Also exclude disk images (DMGs).
   return !info.device_id().empty() &&
          !info.location().empty() &&
-         info.model_name() != ASCIIToUTF16(kDiskImageModelName) &&
+         info.model_name() != base::ASCIIToUTF16(kDiskImageModelName) &&
          StorageInfo::IsMassStorageDevice(info.device_id());
 }
 

@@ -183,7 +183,7 @@ class FakeServerChange {
     std::string old_title = node.GetTitle();
     node.SetTitle(new_title);
     SetModified(id);
-    return UTF8ToWide(old_title);
+    return base::UTF8ToWide(old_title);
   }
 
   // Set a new parent and predecessor value.  Return the old parent id.
@@ -354,7 +354,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     syncer::WriteNode node(trans);
     EXPECT_TRUE(node.InitBookmarkByCreation(bookmark_bar, NULL));
     node.SetIsFolder(true);
-    node.SetTitle(ASCIIToWide(title));
+    node.SetTitle(base::ASCIIToWide(title));
 
     return node.GetId();
   }
@@ -382,7 +382,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     syncer::WriteNode node(trans);
     EXPECT_TRUE(node.InitBookmarkByCreation(parent, NULL));
     node.SetIsFolder(false);
-    node.SetTitle(ASCIIToWide(title));
+    node.SetTitle(base::ASCIIToWide(title));
     node.SetBookmarkSpecifics(specifics);
 
     return node.GetId();
@@ -468,7 +468,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         return false;
       node.SetIsFolder(true);
       node.GetMutableEntryForTest()->PutUniqueServerTag(permanent_tags[i]);
-      node.SetTitle(UTF8ToWide(permanent_tags[i]));
+      node.SetTitle(base::UTF8ToWide(permanent_tags[i]));
       node.SetExternalId(0);
       last_child_id = node.GetId();
     }
@@ -565,7 +565,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     ASSERT_TRUE(InitSyncNodeFromChromeNode(bnode, &gnode));
     // Non-root node titles and parents must match.
     if (!model_->is_permanent_node(bnode)) {
-      EXPECT_EQ(bnode->GetTitle(), UTF8ToUTF16(gnode.GetTitle()));
+      EXPECT_EQ(bnode->GetTitle(), base::UTF8ToUTF16(gnode.GetTitle()));
       EXPECT_EQ(
           model_associator_->GetChromeNodeFromSyncId(gnode.GetParentId()),
           bnode->parent());
@@ -789,44 +789,45 @@ TEST_F(ProfileSyncServiceBookmarkTest, BookmarkModelOperations) {
 
   // Test addition.
   const BookmarkNode* folder =
-      model_->AddFolder(model_->other_node(), 0, ASCIIToUTF16("foobar"));
+      model_->AddFolder(model_->other_node(), 0, base::ASCIIToUTF16("foobar"));
   ExpectSyncerNodeMatching(folder);
   ExpectModelMatch();
   const BookmarkNode* folder2 =
-      model_->AddFolder(folder, 0, ASCIIToUTF16("nested"));
+      model_->AddFolder(folder, 0, base::ASCIIToUTF16("nested"));
   ExpectSyncerNodeMatching(folder2);
   ExpectModelMatch();
   const BookmarkNode* url1 = model_->AddURL(
-      folder, 0, ASCIIToUTF16("Internets #1 Pies Site"),
+      folder, 0, base::ASCIIToUTF16("Internets #1 Pies Site"),
       GURL("http://www.easypie.com/"));
   ExpectSyncerNodeMatching(url1);
   ExpectModelMatch();
   const BookmarkNode* url2 = model_->AddURL(
-      folder, 1, ASCIIToUTF16("Airplanes"), GURL("http://www.easyjet.com/"));
+      folder, 1, base::ASCIIToUTF16("Airplanes"),
+      GURL("http://www.easyjet.com/"));
   ExpectSyncerNodeMatching(url2);
   ExpectModelMatch();
   // Test addition.
   const BookmarkNode* mobile_folder =
-      model_->AddFolder(model_->mobile_node(), 0, ASCIIToUTF16("pie"));
+      model_->AddFolder(model_->mobile_node(), 0, base::ASCIIToUTF16("pie"));
   ExpectSyncerNodeMatching(mobile_folder);
   ExpectModelMatch();
 
   // Test modification.
-  model_->SetTitle(url2, ASCIIToUTF16("EasyJet"));
+  model_->SetTitle(url2, base::ASCIIToUTF16("EasyJet"));
   ExpectModelMatch();
   model_->Move(url1, folder2, 0);
   ExpectModelMatch();
   model_->Move(folder2, model_->bookmark_bar_node(), 0);
   ExpectModelMatch();
-  model_->SetTitle(folder2, ASCIIToUTF16("Not Nested"));
+  model_->SetTitle(folder2, base::ASCIIToUTF16("Not Nested"));
   ExpectModelMatch();
   model_->Move(folder, folder2, 0);
   ExpectModelMatch();
-  model_->SetTitle(folder, ASCIIToUTF16("who's nested now?"));
+  model_->SetTitle(folder, base::ASCIIToUTF16("who's nested now?"));
   ExpectModelMatch();
   model_->Copy(url2, model_->bookmark_bar_node(), 0);
   ExpectModelMatch();
-  model_->SetTitle(mobile_folder, ASCIIToUTF16("strawberry"));
+  model_->SetTitle(mobile_folder, base::ASCIIToUTF16("strawberry"));
   ExpectModelMatch();
 
   // Test deletion.
@@ -1076,8 +1077,8 @@ TEST_F(ProfileSyncServiceBookmarkTest, CornerCaseNames) {
   // Create both folders and bookmarks using each name.
   GURL url("http://www.doublemint.com");
   for (size_t i = 0; i < arraysize(names); ++i) {
-    model_->AddFolder(model_->other_node(), 0, ASCIIToUTF16(names[i]));
-    model_->AddURL(model_->other_node(), 0, ASCIIToUTF16(names[i]), url);
+    model_->AddFolder(model_->other_node(), 0, base::ASCIIToUTF16(names[i]));
+    model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16(names[i]), url);
   }
 
   // Verify that the browser model matches the sync model.
@@ -1096,15 +1097,15 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
   static const int kTimesToInsert = 256;
 
   // Create two book-end nodes to insert between.
-  model_->AddFolder(model_->other_node(), 0, ASCIIToUTF16("Alpha"));
-  model_->AddFolder(model_->other_node(), 1, ASCIIToUTF16("Omega"));
+  model_->AddFolder(model_->other_node(), 0, base::ASCIIToUTF16("Alpha"));
+  model_->AddFolder(model_->other_node(), 1, base::ASCIIToUTF16("Omega"));
   int count = 2;
 
   // Test insertion in first half of range by repeatedly inserting in second
   // position.
   for (int i = 0; i < kTimesToInsert; ++i) {
     base::string16 title =
-        ASCIIToUTF16("Pre-insertion ") + base::IntToString16(i);
+        base::ASCIIToUTF16("Pre-insertion ") + base::IntToString16(i);
     model_->AddFolder(model_->other_node(), 1, title);
     count++;
   }
@@ -1113,7 +1114,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, RepeatedMiddleInsertion) {
   // second-to-last position.
   for (int i = 0; i < kTimesToInsert; ++i) {
     base::string16 title =
-        ASCIIToUTF16("Post-insertion ") + base::IntToString16(i);
+        base::ASCIIToUTF16("Post-insertion ") + base::IntToString16(i);
     model_->AddFolder(model_->other_node(), count - 1, title);
     count++;
   }
@@ -1134,7 +1135,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, UnrecoverableErrorSuspendsService) {
 
   // Add a node which will be the target of the consistency violation.
   const BookmarkNode* node =
-      model_->AddFolder(model_->other_node(), 0, ASCIIToUTF16("node"));
+      model_->AddFolder(model_->other_node(), 0, base::ASCIIToUTF16("node"));
   ExpectSyncerNodeMatching(node);
 
   // Now destroy the syncer node as if we were the ProfileSyncService without
@@ -1152,7 +1153,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, UnrecoverableErrorSuspendsService) {
 
   // Add a child to the inconsistent node.  This should cause detection of the
   // problem and the syncer should stop processing changes.
-  model_->AddFolder(node, 0, ASCIIToUTF16("nested"));
+  model_->AddFolder(node, 0, base::ASCIIToUTF16("nested"));
 }
 
 // See what happens if we run model association when there are two exact URL
@@ -1162,9 +1163,9 @@ TEST_F(ProfileSyncServiceBookmarkTest, MergeDuplicates) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, SAVE_TO_STORAGE);
   StartSync();
 
-  model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("Dup"),
+  model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Dup"),
                  GURL("http://dup.com/"));
-  model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("Dup"),
+  model_->AddURL(model_->other_node(), 0, base::ASCIIToUTF16("Dup"),
                  GURL("http://dup.com/"));
 
   EXPECT_EQ(2, model_->other_node()->child_count());
@@ -1230,7 +1231,7 @@ TEST_F(ProfileSyncServiceBookmarkTest, ApplySyncDeletesFromJournal) {
   // Add a bookmark under f1 when sync is off so that f1 will not be
   // deleted even when f1 matches delete journal because it's not empty.
   model_->AddURL(model_->bookmark_bar_node()->GetChild(1),
-                 0, UTF8ToUTF16("local"), GURL("http://www.youtube.com"));
+                 0, base::UTF8ToUTF16("local"), GURL("http://www.youtube.com"));
   // Sync model has fixed bookmarks nodes and u3.
   EXPECT_EQ(fixed_sync_bk_count + 1, GetSyncBookmarkCount());
   StartSync();
@@ -1238,11 +1239,11 @@ TEST_F(ProfileSyncServiceBookmarkTest, ApplySyncDeletesFromJournal) {
   // by delete journal, f1 is not removed by delete journal because it's
   // not empty due to www.youtube.com added above.
   EXPECT_EQ(4, model_->bookmark_bar_node()->GetTotalNodeCount());
-  EXPECT_EQ(UTF8ToUTF16("URL 0"),
+  EXPECT_EQ(base::UTF8ToUTF16("URL 0"),
             model_->bookmark_bar_node()->GetChild(0)->GetTitle());
-  EXPECT_EQ(UTF8ToUTF16("Folder 1"),
+  EXPECT_EQ(base::UTF8ToUTF16("Folder 1"),
             model_->bookmark_bar_node()->GetChild(1)->GetTitle());
-  EXPECT_EQ(UTF8ToUTF16("local"),
+  EXPECT_EQ(base::UTF8ToUTF16("local"),
             model_->bookmark_bar_node()->GetChild(1)->GetChild(0)->GetTitle());
   StopSync();
 
@@ -1776,7 +1777,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData,
   // the situation where bookmark model is different from sync model and
   // make sure model associator correctly rebuilds associations.
   const BookmarkNode* bookmark_bar_node = model_->bookmark_bar_node();
-  model_->AddURL(bookmark_bar_node, 0, ASCIIToUTF16("xtra"),
+  model_->AddURL(bookmark_bar_node, 0, base::ASCIIToUTF16("xtra"),
                  GURL("http://www.xtra.com"));
   // Now restart sync. This time it will try to use the persistent
   // associations and realize that they are invalid and hence will rebuild
@@ -1956,9 +1957,9 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, UpdateMetaInfoFromModel) {
 
   const BookmarkNode* folder_node =
       model_->AddFolder(model_->bookmark_bar_node(), 0,
-                        ASCIIToUTF16("folder title"));
+                        base::ASCIIToUTF16("folder title"));
   const BookmarkNode* node = model_->AddURL(folder_node, 0,
-                                            ASCIIToUTF16("node title"),
+                                            base::ASCIIToUTF16("node title"),
                                             GURL("http://www.foo.com"));
   ExpectModelMatch();
 

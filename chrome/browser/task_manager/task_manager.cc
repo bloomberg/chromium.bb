@@ -403,14 +403,14 @@ base::string16 TaskManagerModel::GetResourceNetworkUsage(int index) const {
   if (net_usage == -1)
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
   if (net_usage == 0)
-    return ASCIIToUTF16("0");
+    return base::ASCIIToUTF16("0");
   base::string16 net_byte = ui::FormatSpeed(net_usage);
   // Force number string to have LTR directionality.
   return base::i18n::GetDisplayStringInLTRDirectionality(net_byte);
 }
 
 base::string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
-  return UTF8ToUTF16(base::StringPrintf(
+  return base::UTF8ToUTF16(base::StringPrintf(
 #if defined(OS_MACOSX)
       // Activity Monitor shows %cpu with one decimal digit -- be
       // consistent with that.
@@ -424,14 +424,14 @@ base::string16 TaskManagerModel::GetResourceCPUUsage(int index) const {
 base::string16 TaskManagerModel::GetResourcePrivateMemory(int index) const {
   size_t private_mem;
   if (!GetPrivateMemory(index, &private_mem))
-    return ASCIIToUTF16("N/A");
+    return base::ASCIIToUTF16("N/A");
   return GetMemCellText(private_mem);
 }
 
 base::string16 TaskManagerModel::GetResourceSharedMemory(int index) const {
   size_t shared_mem;
   if (!GetSharedMemory(index, &shared_mem))
-    return ASCIIToUTF16("N/A");
+    return base::ASCIIToUTF16("N/A");
   return GetMemCellText(shared_mem);
 }
 
@@ -485,9 +485,9 @@ base::string16 TaskManagerModel::GetResourceVideoMemory(int index) const {
   size_t video_memory;
   bool has_duplicates;
   if (!GetVideoMemory(index, &video_memory, &has_duplicates) || !video_memory)
-    return ASCIIToUTF16("N/A");
+    return base::ASCIIToUTF16("N/A");
   if (has_duplicates) {
-    return GetMemCellText(video_memory) + ASCIIToUTF16("*");
+    return GetMemCellText(video_memory) + base::ASCIIToUTF16("*");
   }
   return GetMemCellText(video_memory);
 }
@@ -497,7 +497,7 @@ base::string16 TaskManagerModel::GetResourceFPS(
   float fps = 0;
   if (!GetFPS(index, &fps))
     return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT);
-  return UTF8ToUTF16(base::StringPrintf("%.0f", fps));
+  return base::UTF8ToUTF16(base::StringPrintf("%.0f", fps));
 }
 
 base::string16 TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {

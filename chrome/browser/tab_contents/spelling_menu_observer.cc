@@ -288,7 +288,7 @@ void SpellingMenuObserver::ExecuteCommand(int command_id) {
       SpellcheckService* spellcheck =
           SpellcheckServiceFactory::GetForContext(profile);
       if (spellcheck) {
-        spellcheck->GetCustomDictionary()->AddWord(UTF16ToUTF8(
+        spellcheck->GetCustomDictionary()->AddWord(base::UTF16ToUTF8(
             misspelled_word_));
         spellcheck->GetFeedbackSender()->AddedToDictionary(misspelling_hash_);
       }

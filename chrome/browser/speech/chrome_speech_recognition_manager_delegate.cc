@@ -99,10 +99,10 @@ class ChromeSpeechRecognitionManagerDelegate::OptionalRequestInfo
     base::string16 device_model =
         SpeechRecognitionManager::GetInstance()->GetAudioInputDeviceModel();
 #if defined(OS_WIN)
-    value_ = UTF16ToUTF8(
+    value_ = base::UTF16ToUTF8(
         installer::WMIComputerSystem::GetModel() + L"|" + device_model);
 #else  // defined(OS_WIN)
-    value_ = UTF16ToUTF8(device_model);
+    value_ = base::UTF16ToUTF8(device_model);
 #endif  // defined(OS_WIN)
   }
 

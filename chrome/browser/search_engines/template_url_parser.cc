@@ -245,7 +245,7 @@ void TemplateURLParsingContext::EndElementImpl(void* ctx, const xmlChar* name) {
       context->data_.short_name = context->string_;
       break;
     case TemplateURLParsingContext::IMAGE: {
-      GURL image_url(UTF16ToUTF8(context->string_));
+      GURL image_url(base::UTF16ToUTF8(context->string_));
       if (image_url.SchemeIs(chrome::kDataScheme)) {
         // TODO (jcampan): bug 1169256: when dealing with data URL, we need to
         // decode the data URL in the renderer. For now, we'll just point to the
@@ -280,7 +280,7 @@ void TemplateURLParsingContext::CharactersImpl(void* ctx,
                                                const xmlChar* ch,
                                                int len) {
   reinterpret_cast<TemplateURLParsingContext*>(ctx)->string_ +=
-      UTF8ToUTF16(std::string(reinterpret_cast<const char*>(ch), len));
+      base::UTF8ToUTF16(std::string(reinterpret_cast<const char*>(ch), len));
 }
 
 TemplateURL* TemplateURLParsingContext::GetTemplateURL(

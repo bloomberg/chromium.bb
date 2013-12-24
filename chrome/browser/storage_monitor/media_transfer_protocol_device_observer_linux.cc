@@ -88,7 +88,7 @@ base::string16 GetDeviceLabelFromStorageInfo(
         device_label += GetFormattedIdString(data_store_id);
     }
   }
-  return UTF8ToUTF16(device_label);
+  return base::UTF8ToUTF16(device_label);
 }
 
 // Helper function to get the device storage details such as device id, label

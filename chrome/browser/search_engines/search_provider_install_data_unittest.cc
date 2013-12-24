@@ -208,7 +208,7 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
   // Set up the database.
   util_.ChangeModelToLoadState();
   std::string host = "www.unittest.com";
-  AddNewTemplateURL("http://" + host + "/path", ASCIIToUTF16("unittest"));
+  AddNewTemplateURL("http://" + host + "/path", base::ASCIIToUTF16("unittest"));
 
   // Wait for the changes to be saved.
   base::RunLoop().RunUntilIdle();
@@ -220,7 +220,8 @@ TEST_F(SearchProviderInstallDataTest, GetInstallState) {
   // Set-up a default and try it all one more time.
   std::string default_host = "www.mmm.com";
   TemplateURL* default_url =
-      AddNewTemplateURL("http://" + default_host + "/", ASCIIToUTF16("mmm"));
+      AddNewTemplateURL("http://" + default_host + "/",
+                        base::ASCIIToUTF16("mmm"));
   util_.model()->SetDefaultSearchProvider(default_url);
   test_get_install_state.RunTests(host, default_host);
 }
@@ -229,7 +230,7 @@ TEST_F(SearchProviderInstallDataTest, ManagedDefaultSearch) {
   // Set up the database.
   util_.ChangeModelToLoadState();
   std::string host = "www.unittest.com";
-  AddNewTemplateURL("http://" + host + "/path", ASCIIToUTF16("unittest"));
+  AddNewTemplateURL("http://" + host + "/path", base::ASCIIToUTF16("unittest"));
 
   // Set a managed preference that establishes a default search provider.
   std::string host2 = "www.managedtest.com";
@@ -256,9 +257,10 @@ TEST_F(SearchProviderInstallDataTest, GoogleBaseUrlChange) {
   // Wait for the I/O thread to process the update notification.
   base::RunLoop().RunUntilIdle();
 
-  AddNewTemplateURL("{google:baseURL}?q={searchTerms}", ASCIIToUTF16("t"));
+  AddNewTemplateURL("{google:baseURL}?q={searchTerms}",
+                    base::ASCIIToUTF16("t"));
   TemplateURL* default_url =
-      AddNewTemplateURL("http://d.com/", ASCIIToUTF16("d"));
+      AddNewTemplateURL("http://d.com/", base::ASCIIToUTF16("d"));
   util_.model()->SetDefaultSearchProvider(default_url);
 
   // Wait for the changes to be saved.

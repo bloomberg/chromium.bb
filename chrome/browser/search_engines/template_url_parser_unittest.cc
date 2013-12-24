@@ -11,6 +11,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 // ParamFilterImpl ------------------------------------------------------------
 
 // Filters any param which as an occurrence of name_str_ in its name or an

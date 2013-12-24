@@ -56,29 +56,33 @@ TEST(SpellcheckActionTest, SerializeTest) {
     std::string expected;
   } kTestCases[] = {
     { SpellcheckAction(
-          SpellcheckAction::TYPE_ADD_TO_DICT, -1, ASCIIToUTF16("nothing")),
+          SpellcheckAction::TYPE_ADD_TO_DICT, -1,
+          base::ASCIIToUTF16("nothing")),
       "{\"actionType\": \"ADD_TO_DICT\"}" },
     { SpellcheckAction(
-          SpellcheckAction::TYPE_IGNORE, -1, ASCIIToUTF16("nothing")),
+          SpellcheckAction::TYPE_IGNORE, -1, base::ASCIIToUTF16("nothing")),
       "{\"actionType\": \"IGNORE\"}" },
     { SpellcheckAction(
-          SpellcheckAction::TYPE_IN_DICTIONARY, -1, ASCIIToUTF16("nothing")),
+          SpellcheckAction::TYPE_IN_DICTIONARY, -1,
+          base::ASCIIToUTF16("nothing")),
       "{\"actionType\": \"IN_DICTIONARY\"}" },
     { SpellcheckAction(
-          SpellcheckAction::TYPE_MANUALLY_CORRECTED, -1, ASCIIToUTF16("hello")),
+          SpellcheckAction::TYPE_MANUALLY_CORRECTED, -1,
+          base::ASCIIToUTF16("hello")),
       "{\"actionTargetValue\": \"hello\","
       "\"actionType\": \"MANUALLY_CORRECTED\"}" },
     { SpellcheckAction(
-          SpellcheckAction::TYPE_NO_ACTION, -1, ASCIIToUTF16("nothing")),
+          SpellcheckAction::TYPE_NO_ACTION, -1, base::ASCIIToUTF16("nothing")),
       "{\"actionType\": \"NO_ACTION\"}" },
     { SpellcheckAction(
-          SpellcheckAction::TYPE_PENDING, -1, ASCIIToUTF16("nothing")),
+          SpellcheckAction::TYPE_PENDING, -1, base::ASCIIToUTF16("nothing")),
       "{\"actionType\": \"PENDING\"}" },
     { SpellcheckAction(
-          SpellcheckAction::TYPE_PENDING_IGNORE, -1, ASCIIToUTF16("nothing")),
+          SpellcheckAction::TYPE_PENDING_IGNORE, -1,
+          base::ASCIIToUTF16("nothing")),
       "{\"actionType\": \"PENDING\"}" },
     { SpellcheckAction(
-          SpellcheckAction::TYPE_SELECT, 42, ASCIIToUTF16("nothing")),
+          SpellcheckAction::TYPE_SELECT, 42, base::ASCIIToUTF16("nothing")),
       "{\"actionTargetIndex\": 42, \"actionType\": \"SELECT\"}" },
   };
   for (size_t i = 0; i < kNumTestCases; ++i) {

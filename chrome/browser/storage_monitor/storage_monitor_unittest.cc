@@ -34,7 +34,7 @@ TEST(StorageMonitorTest, TestInitialize) {
 TEST(StorageMonitorTest, DeviceAttachDetachNotifications) {
   TestStorageMonitor::RemoveSingleton();
   base::MessageLoop message_loop;
-  const base::string16 kDeviceName = ASCIIToUTF16("media device");
+  const base::string16 kDeviceName = base::ASCIIToUTF16("media device");
   const std::string kDeviceId1 = "dcim:UUID:FFF0-0001";
   const std::string kDeviceId2 = "dcim:UUID:FFF0-0002";
   MockRemovableStorageObserver observer1;
@@ -92,7 +92,7 @@ TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   base::MessageLoop message_loop;
   TestStorageMonitor monitor;
   const std::string kDeviceId1 = "dcim:UUID:FFF0-0042";
-  const base::string16 kDeviceName1 = ASCIIToUTF16("test");
+  const base::string16 kDeviceName1 = base::ASCIIToUTF16("test");
   const base::FilePath kDevicePath1(FILE_PATH_LITERAL("/testfoo"));
   StorageInfo info1(kDeviceId1, kDeviceName1, kDevicePath1.value(),
                     base::string16(), base::string16(), base::string16(), 0);
@@ -105,7 +105,7 @@ TEST(StorageMonitorTest, GetAllAvailableStorageAttachDetach) {
   EXPECT_EQ(kDevicePath1.value(), devices[0].location());
 
   const std::string kDeviceId2 = "dcim:UUID:FFF0-0044";
-  const base::string16 kDeviceName2 = ASCIIToUTF16("test2");
+  const base::string16 kDeviceName2 = base::ASCIIToUTF16("test2");
   const base::FilePath kDevicePath2(FILE_PATH_LITERAL("/testbar"));
   StorageInfo info2(kDeviceId2, kDeviceName2, kDevicePath2.value(),
                     base::string16(), base::string16(), base::string16(), 0);

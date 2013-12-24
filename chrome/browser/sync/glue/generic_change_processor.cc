@@ -411,7 +411,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
           }
         }
       }
-      sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
+      sync_node.SetTitle(base::UTF8ToWide(change.sync_data().GetTitle()));
       SetNodeSpecifics(change.sync_data().GetSpecifics(), &sync_node);
       if (merge_result_.get()) {
         merge_result_->set_num_items_added(merge_result_->num_items_added() +
@@ -504,7 +504,7 @@ syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
         }
       }
 
-      sync_node.SetTitle(UTF8ToWide(change.sync_data().GetTitle()));
+      sync_node.SetTitle(base::UTF8ToWide(change.sync_data().GetTitle()));
       SetNodeSpecifics(change.sync_data().GetSpecifics(), &sync_node);
       if (merge_result_.get()) {
         merge_result_->set_num_items_modified(

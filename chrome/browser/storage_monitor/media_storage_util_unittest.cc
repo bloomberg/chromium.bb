@@ -140,7 +140,7 @@ TEST_F(MediaStorageUtilTest, DetectDeviceFiltered) {
   event.Wait();
   EXPECT_FALSE(devices.find(kImageCaptureDeviceId) != devices.end());
 
-  ProcessAttach(kImageCaptureDeviceId, ASCIIToUTF16("name"),
+  ProcessAttach(kImageCaptureDeviceId, base::ASCIIToUTF16("name"),
                 FILE_PATH_LITERAL("/location"));
   devices.insert(kImageCaptureDeviceId);
   event.Reset();

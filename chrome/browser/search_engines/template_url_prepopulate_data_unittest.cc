@@ -19,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 SearchEngineType GetEngineType(const std::string& url) {
   TemplateURLData data;

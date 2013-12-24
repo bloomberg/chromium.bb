@@ -54,7 +54,7 @@ void PasswordsSyncPerfTest::UpdateLogins(int profile) {
   GetLogins(GetPasswordStore(profile), logins);
   for (std::vector<autofill::PasswordForm>::iterator it = logins.begin();
        it != logins.end(); ++it) {
-    (*it).password_value = ASCIIToUTF16(NextPassword());
+    (*it).password_value = base::ASCIIToUTF16(NextPassword());
     UpdateLogin(GetPasswordStore(profile), (*it));
   }
 }

@@ -140,7 +140,7 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
 
   void SetExpectedTextCheckResult(bool success, const char* text) {
     success_ = success;
-    corrected_text_.assign(UTF8ToUTF16(text));
+    corrected_text_.assign(base::UTF8ToUTF16(text));
   }
 
   void CallOnURLFetchComplete() {
@@ -153,7 +153,7 @@ class TestingSpellingServiceClient : public SpellingServiceClient {
                       const base::string16& request_text,
                       const std::vector<SpellCheckResult>& results) {
     EXPECT_EQ(success_, success);
-    base::string16 text(UTF8ToUTF16(request_text_));
+    base::string16 text(base::UTF8ToUTF16(request_text_));
     EXPECT_EQ(text, request_text);
     for (std::vector<SpellCheckResult>::const_iterator it = results.begin();
          it != results.end(); ++it) {
@@ -314,7 +314,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
     client_.RequestTextCheck(
         &profile_,
         kTests[i].request_type,
-        ASCIIToUTF16(kTests[i].request_text),
+        base::ASCIIToUTF16(kTests[i].request_text),
         base::Bind(&SpellingServiceClientTest::OnTextCheckComplete,
                    base::Unretained(this), 0));
     client_.CallOnURLFetchComplete();

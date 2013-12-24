@@ -931,7 +931,7 @@ void SafeBrowsingBlockingPageV1::PopulateMultipleThreatStringDictionary(
           l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_HEADLINE),
           l10n_util::GetStringFUTF16(
               IDS_SAFE_BROWSING_MULTI_THREAT_DESCRIPTION1,
-              UTF8ToUTF16(web_contents_->GetURL().host())),
+              base::UTF8ToUTF16(web_contents_->GetURL().host())),
           l10n_util::GetStringUTF16(
               IDS_SAFE_BROWSING_MULTI_THREAT_DESCRIPTION2),
           base::string16());
@@ -943,7 +943,7 @@ void SafeBrowsingBlockingPageV1::PopulateMultipleThreatStringDictionary(
           l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_MALWARE_HEADLINE),
           l10n_util::GetStringFUTF16(
               IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION1,
-              UTF8ToUTF16(web_contents_->GetURL().host())),
+              base::UTF8ToUTF16(web_contents_->GetURL().host())),
           l10n_util::GetStringUTF16(
               IDS_SAFE_BROWSING_MULTI_MALWARE_DESCRIPTION2),
           l10n_util::GetStringUTF16(
@@ -956,7 +956,7 @@ void SafeBrowsingBlockingPageV1::PopulateMultipleThreatStringDictionary(
           l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_HEADLINE),
           l10n_util::GetStringFUTF16(
               IDS_SAFE_BROWSING_MULTI_PHISHING_DESCRIPTION1,
-              UTF8ToUTF16(web_contents_->GetURL().host())),
+              base::UTF8ToUTF16(web_contents_->GetURL().host())),
           base::string16(),
           base::string16());
       break;
@@ -1109,7 +1109,7 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
     description1 = l10n_util::GetStringFUTF16(
         IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-        UTF8ToUTF16(url_.host()));
+        base::UTF8ToUTF16(url_.host()));
     description2 = l10n_util::GetStringUTF16(
         IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2);
     strings->SetString("details", l10n_util::GetStringUTF16(
@@ -1120,13 +1120,13 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
     description1 = l10n_util::GetStringFUTF16(
         IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION1_SUBRESOURCE,
         l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-        UTF8ToUTF16(web_contents_->GetURL().host()));
+        base::UTF8ToUTF16(web_contents_->GetURL().host()));
     description2 = l10n_util::GetStringFUTF16(
         IDS_SAFE_BROWSING_MALWARE_V2_DESCRIPTION2_SUBRESOURCE,
-        UTF8ToUTF16(url_.host()));
+        base::UTF8ToUTF16(url_.host()));
     strings->SetString("details", l10n_util::GetStringFUTF16(
           IDS_SAFE_BROWSING_MALWARE_V2_DETAILS_SUBRESOURCE,
-          UTF8ToUTF16(url_.host())));
+          base::UTF8ToUTF16(url_.host())));
   }
 
   PopulateStringDictionary(
@@ -1153,7 +1153,7 @@ void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
     strings->SetString("confirm_text",
                        l10n_util::GetStringFUTF16(
                            IDS_SAFE_BROWSING_MALWARE_V2_REPORTING_AGREE,
-                           UTF8ToUTF16(privacy_link)));
+                           base::UTF8ToUTF16(privacy_link)));
     if (IsPrefEnabled(prefs::kSafeBrowsingReportingEnabled))
       strings->SetString(kBoxChecked, "yes");
     else
@@ -1173,7 +1173,7 @@ void SafeBrowsingBlockingPageV2::PopulatePhishingStringDictionary(
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_HEADLINE),
       l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION1,
                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                                 UTF8ToUTF16(url_.host())),
+                                 base::UTF8ToUTF16(url_.host())),
       base::string16(),
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_PHISHING_V2_DESCRIPTION2));
 

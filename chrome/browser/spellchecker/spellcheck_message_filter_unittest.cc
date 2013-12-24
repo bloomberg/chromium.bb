@@ -80,17 +80,17 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
   static const int kRouteId = 0;
   static const int kCallbackId = 0;
   static const std::vector<SpellCheckMarker> kMarkers;
-  static const base::string16 kText = ASCIIToUTF16("Helllo warld.");
+  static const base::string16 kText = base::ASCIIToUTF16("Helllo warld.");
   static const bool kSuccess = true;
   static const SpellCheckResult::Decoration kDecoration =
       SpellCheckResult::SPELLING;
   static const int kLocation = 7;
   static const int kLength = 5;
-  static const base::string16 kReplacement = ASCIIToUTF16("world");
+  static const base::string16 kReplacement = base::ASCIIToUTF16("world");
 
   std::vector<SpellCheckResult> results;
   results.push_back(SpellCheckResult(
-      SpellCheckResult::SPELLING, 0, 6, ASCIIToUTF16("Hello")));
+      SpellCheckResult::SPELLING, 0, 6, base::ASCIIToUTF16("Hello")));
   results.push_back(
       SpellCheckResult(kDecoration, kLocation, kLength, kReplacement));
 
@@ -124,14 +124,14 @@ TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTestCustomDictionary) {
 TEST(SpellCheckMessageFilterTest, OnTextCheckCompleteTest) {
   std::vector<SpellCheckResult> results;
   results.push_back(SpellCheckResult(
-      SpellCheckResult::SPELLING, 0, 6, ASCIIToUTF16("Hello")));
+      SpellCheckResult::SPELLING, 0, 6, base::ASCIIToUTF16("Hello")));
   results.push_back(SpellCheckResult(
-      SpellCheckResult::SPELLING, 7, 7, ASCIIToUTF16("world")));
+      SpellCheckResult::SPELLING, 7, 7, base::ASCIIToUTF16("world")));
 
   scoped_refptr<TestingSpellCheckMessageFilter> filter(
       new TestingSpellCheckMessageFilter);
   filter->OnTextCheckComplete(1, 1, std::vector<SpellCheckMarker>(),
-      true,  ASCIIToUTF16("Helllo walrd"), results);
+      true,  base::ASCIIToUTF16("Helllo walrd"), results);
   EXPECT_EQ(static_cast<size_t>(1), filter->sent_messages.size());
 
   int sent_identifier = -1;

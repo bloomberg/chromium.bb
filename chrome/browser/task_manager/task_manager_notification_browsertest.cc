@@ -62,16 +62,16 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
       g_browser_process->notification_ui_manager();
 
   base::string16 content = DesktopNotificationService::CreateDataUrl(
-      GURL(), ASCIIToUTF16("Hello World!"), base::string16(),
+      GURL(), base::ASCIIToUTF16("Hello World!"), base::string16(),
       blink::WebTextDirectionDefault);
 
   scoped_refptr<NotificationDelegate> del1(new MockNotificationDelegate("n1"));
   Notification n1(
-      GURL(), GURL(content), ASCIIToUTF16("Test 1"), base::string16(),
+      GURL(), GURL(content), base::ASCIIToUTF16("Test 1"), base::string16(),
       del1.get());
   scoped_refptr<NotificationDelegate> del2(new MockNotificationDelegate("n2"));
   Notification n2(
-      GURL(), GURL(content), ASCIIToUTF16("Test 2"), base::string16(),
+      GURL(), GURL(content), base::ASCIIToUTF16("Test 2"), base::string16(),
       del2.get());
 
   notifications->Add(n1, browser()->profile());

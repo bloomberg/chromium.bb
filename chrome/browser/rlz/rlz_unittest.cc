@@ -218,7 +218,7 @@ void RlzLibTest::SetRegistryBrandValue(const wchar_t* name,
     LONG result = key.DeleteValue(name);
     ASSERT_TRUE(ERROR_SUCCESS == result || ERROR_FILE_NOT_FOUND == result);
   } else {
-    base::string16 brand16 = ASCIIToUTF16(brand);
+    base::string16 brand16 = base::ASCIIToUTF16(brand);
     ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(name, brand16.c_str()));
   }
 }
@@ -587,7 +587,7 @@ TEST_F(RlzLibTest, GetAccessPointRlzOnIoThread) {
 
   tracker_.set_assume_not_ui_thread(true);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
 }
 
 TEST_F(RlzLibTest, GetAccessPointRlzNotOnIoThread) {
@@ -611,11 +611,11 @@ TEST_F(RlzLibTest, GetAccessPointRlzIsCached) {
 
   tracker_.set_assume_not_ui_thread(true);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
 
   tracker_.set_assume_not_ui_thread(false);
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
 }
 
 TEST_F(RlzLibTest, PingUpdatesRlzCache) {
@@ -629,19 +629,19 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   tracker_.set_assume_not_ui_thread(true);
 
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
         RLZTracker::CHROME_HOME_PAGE, &rlz));
-  EXPECT_STREQ(kHomepageRlzString, UTF16ToUTF8(rlz).c_str());
+  EXPECT_STREQ(kHomepageRlzString, base::UTF16ToUTF8(rlz).c_str());
 
   // Make sure cache is valid.
   tracker_.set_assume_not_ui_thread(false);
 
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
+  EXPECT_STREQ(kOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
         RLZTracker::CHROME_HOME_PAGE, &rlz));
-  EXPECT_STREQ(kHomepageRlzString, UTF16ToUTF8(rlz).c_str());
+  EXPECT_STREQ(kHomepageRlzString, base::UTF16ToUTF8(rlz).c_str());
 
   // Perform ping.
   tracker_.set_assume_not_ui_thread(true);
@@ -653,10 +653,10 @@ TEST_F(RlzLibTest, PingUpdatesRlzCache) {
   tracker_.set_assume_not_ui_thread(false);
 
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(RLZTracker::CHROME_OMNIBOX, &rlz));
-  EXPECT_STREQ(kNewOmniboxRlzString, UTF16ToUTF8(rlz).c_str());
+  EXPECT_STREQ(kNewOmniboxRlzString, base::UTF16ToUTF8(rlz).c_str());
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
         RLZTracker::CHROME_HOME_PAGE, &rlz));
-  EXPECT_STREQ(kNewHomepageRlzString, UTF16ToUTF8(rlz).c_str());
+  EXPECT_STREQ(kNewHomepageRlzString, base::UTF16ToUTF8(rlz).c_str());
 }
 
 TEST_F(RlzLibTest, ObserveHandlesBadArgs) {

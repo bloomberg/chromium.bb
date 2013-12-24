@@ -55,8 +55,8 @@ class LoginHandlerAndroid : public LoginHandler {
 
       tab_android->OnReceivedHttpAuthRequest(
           chrome_http_auth_handler_.get()->GetJavaObject(),
-          ASCIIToUTF16(auth_info()->challenger.ToString()),
-          UTF8ToUTF16(auth_info()->realm));
+          base::ASCIIToUTF16(auth_info()->challenger.ToString()),
+          base::UTF8ToUTF16(auth_info()->realm));
 
       // Register to receive a callback to OnAutofillDataAvailable().
       SetModel(manager);

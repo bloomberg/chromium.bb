@@ -704,7 +704,7 @@ void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
       sync_node.GetBookmarkSpecifics();
   if (!sync_node.GetIsFolder())
     model->SetURL(node, GURL(specifics.url()));
-  model->SetTitle(node, UTF8ToUTF16(sync_node.GetTitle()));
+  model->SetTitle(node, base::UTF8ToUTF16(sync_node.GetTitle()));
   if (specifics.has_creation_time_us()) {
     model->SetDateAdded(
         node,
@@ -740,7 +740,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
 
   const BookmarkNode* node;
   if (sync_node->GetIsFolder()) {
-    node = model->AddFolder(parent, index, UTF8ToUTF16(sync_node->GetTitle()));
+    node = model->AddFolder(
+        parent, index, base::UTF8ToUTF16(sync_node->GetTitle()));
   } else {
     // 'creation_time_us' was added in m24. Assume a time of 0 means now.
     const sync_pb::BookmarkSpecifics& specifics =
@@ -749,7 +750,8 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     base::Time create_time = (create_time_internal == 0) ?
         base::Time::Now() : base::Time::FromInternalValue(create_time_internal);
     node = model->AddURLWithCreationTime(parent, index,
-                                         UTF8ToUTF16(sync_node->GetTitle()),
+                                         base::UTF8ToUTF16(
+                                             sync_node->GetTitle()),
                                          GURL(specifics.url()), create_time);
     if (node)
       SetBookmarkFavicon(sync_node, node, model, profile);

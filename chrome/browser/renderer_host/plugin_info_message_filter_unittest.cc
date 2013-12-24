@@ -79,20 +79,20 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    content::WebPluginInfo foo_plugin(ASCIIToUTF16("Foo Plug-in"),
+    content::WebPluginInfo foo_plugin(base::ASCIIToUTF16("Foo Plug-in"),
                                       foo_plugin_path_,
-                                      ASCIIToUTF16("1"),
-                                      ASCIIToUTF16("The Foo plug-in."));
+                                      base::ASCIIToUTF16("1"),
+                                      base::ASCIIToUTF16("The Foo plug-in."));
     content::WebPluginMimeType mime_type;
     mime_type.mime_type = "foo/bar";
     foo_plugin.mime_types.push_back(mime_type);
     PluginService::GetInstance()->Init();
     PluginService::GetInstance()->RegisterInternalPlugin(foo_plugin, false);
 
-    content::WebPluginInfo bar_plugin(ASCIIToUTF16("Bar Plug-in"),
+    content::WebPluginInfo bar_plugin(base::ASCIIToUTF16("Bar Plug-in"),
                                       bar_plugin_path_,
-                                      ASCIIToUTF16("1"),
-                                      ASCIIToUTF16("The Bar plug-in."));
+                                      base::ASCIIToUTF16("1"),
+                                      base::ASCIIToUTF16("The Bar plug-in."));
     mime_type.mime_type = "foo/bar";
     bar_plugin.mime_types.push_back(mime_type);
     PluginService::GetInstance()->RegisterInternalPlugin(bar_plugin, false);

@@ -28,6 +28,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 using content::BrowserThread;
 
 typedef std::vector<int> DeviceIndices;

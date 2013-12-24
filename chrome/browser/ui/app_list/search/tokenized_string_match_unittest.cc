@@ -26,7 +26,7 @@ std::string MatchHit(const base::string16& text,
     marked.insert(hit.start(), 1, '[');
   }
 
-  return UTF16ToUTF8(marked);
+  return base::UTF16ToUTF8(marked);
 }
 
 TEST(TokenizedStringMatchTest, NotMatch) {
@@ -44,8 +44,8 @@ TEST(TokenizedStringMatchTest, NotMatch) {
 
   TokenizedStringMatch match;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    const base::string16 text(UTF8ToUTF16(kTestCases[i].text));
-    EXPECT_FALSE(match.Calculate(UTF8ToUTF16(kTestCases[i].query), text))
+    const base::string16 text(base::UTF8ToUTF16(kTestCases[i].text));
+    EXPECT_FALSE(match.Calculate(base::UTF8ToUTF16(kTestCases[i].query), text))
         << "Test case " << i
         << " : text=" << kTestCases[i].text
         << ", query=" << kTestCases[i].query;
@@ -70,8 +70,8 @@ TEST(TokenizedStringMatchTest, Match) {
 
   TokenizedStringMatch match;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    const base::string16 text(UTF8ToUTF16(kTestCases[i].text));
-    EXPECT_TRUE(match.Calculate(UTF8ToUTF16(kTestCases[i].query), text));
+    const base::string16 text(base::UTF8ToUTF16(kTestCases[i].text));
+    EXPECT_TRUE(match.Calculate(base::UTF8ToUTF16(kTestCases[i].query), text));
     EXPECT_EQ(kTestCases[i].expect, MatchHit(text, match));
   }
 }
@@ -98,11 +98,11 @@ TEST(TokenizedStringMatchTest, Relevance) {
   TokenizedStringMatch match_low;
   TokenizedStringMatch match_high;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
-    const base::string16 text(UTF8ToUTF16(kTestCases[i].text));
+    const base::string16 text(base::UTF8ToUTF16(kTestCases[i].text));
     EXPECT_TRUE(
-        match_low.Calculate(UTF8ToUTF16(kTestCases[i].query_low), text));
-    EXPECT_TRUE(
-        match_high.Calculate(UTF8ToUTF16(kTestCases[i].query_high), text));
+        match_low.Calculate(base::UTF8ToUTF16(kTestCases[i].query_low), text));
+    EXPECT_TRUE(match_high.Calculate(
+        base::UTF8ToUTF16(kTestCases[i].query_high), text));
     EXPECT_LT(match_low.relevance(), match_high.relevance())
         << "Test case " << i
         << " : text=" << kTestCases[i].text

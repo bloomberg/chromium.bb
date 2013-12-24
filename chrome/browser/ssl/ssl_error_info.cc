@@ -16,6 +16,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+using base::UTF8ToUTF16;
+
 SSLErrorInfo::SSLErrorInfo(const base::string16& title,
                            const base::string16& details,
                            const base::string16& short_description,

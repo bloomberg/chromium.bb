@@ -1190,8 +1190,8 @@ TemplateURL* MakePrepopulatedTemplateURLFromPrepopulateEngine(
       alternate_urls.AppendString(std::string(engine.alternate_urls[i]));
   }
 
-  return MakePrepopulatedTemplateURL(profile, WideToUTF16(engine.name),
-      WideToUTF16(engine.keyword), engine.search_url, engine.suggest_url,
+  return MakePrepopulatedTemplateURL(profile, base::WideToUTF16(engine.name),
+      base::WideToUTF16(engine.keyword), engine.search_url, engine.suggest_url,
       engine.instant_url, engine.image_url, engine.new_tab_url,
       engine.search_url_post_params, engine.suggest_url_post_params,
       engine.instant_url_post_params, engine.image_url_post_params,
@@ -1302,7 +1302,7 @@ SearchEngineType GetEngineType(const TemplateURL& url) {
   // can't be directly inspected (e.g. due to containing {google:baseURL}) can
   // be converted to GURLs we can look at.
   GURL gurl(url.url_ref().ReplaceSearchTerms(TemplateURLRef::SearchTermsArgs(
-      ASCIIToUTF16("x"))));
+      base::ASCIIToUTF16("x"))));
   return gurl.is_valid() ? GetEngineType(gurl) : SEARCH_ENGINE_OTHER;
 }
 

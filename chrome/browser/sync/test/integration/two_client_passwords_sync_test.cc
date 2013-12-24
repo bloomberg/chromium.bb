@@ -61,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Race) {
   AddLogin(GetPasswordStore(0), form0);
 
   PasswordForm form1 = form0;
-  form1.password_value = ASCIIToUTF16("new_password");
+  form1.password_value = base::ASCIIToUTF16("new_password");
   AddLogin(GetPasswordStore(1), form1);
 
   ASSERT_TRUE(AwaitQuiescence());
@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest, Update) {
   AddLogin(GetPasswordStore(0), form);
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
-  form.password_value = ASCIIToUTF16("new_password");
+  form.password_value = base::ASCIIToUTF16("new_password");
   UpdateLogin(GetVerifierPasswordStore(), form);
   UpdateLogin(GetPasswordStore(1), form);
   ASSERT_TRUE(AwaitQuiescence());

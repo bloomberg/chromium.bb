@@ -216,8 +216,10 @@ PasswordForm CreateTestPasswordForm(int index) {
   PasswordForm form;
   form.signon_realm = kFakeSignonRealm;
   form.origin = GURL(base::StringPrintf(kIndexedFakeOrigin, index));
-  form.username_value = ASCIIToUTF16(base::StringPrintf("username%d", index));
-  form.password_value = ASCIIToUTF16(base::StringPrintf("password%d", index));
+  form.username_value =
+      base::ASCIIToUTF16(base::StringPrintf("username%d", index));
+  form.password_value =
+      base::ASCIIToUTF16(base::StringPrintf("password%d", index));
   form.date_created = base::Time::Now();
   return form;
 }

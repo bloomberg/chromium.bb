@@ -15,6 +15,8 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+using base::ASCIIToUTF16;
+
 class StatusIconMenuModelTest : public testing::Test,
                                 public StatusIconMenuModel::Observer {
  public:

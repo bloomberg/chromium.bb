@@ -144,11 +144,11 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
     return storage_info.Pass();
 
   base::string16 volume_label =
-      UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(), kLabel));
+      base::UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(), kLabel));
   base::string16 vendor_name =
-      UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(), kVendor));
+      base::UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(), kVendor));
   base::string16 model_name =
-      UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(), kModel));
+      base::UTF8ToUTF16(GetUdevDevicePropertyValue(device.get(), kModel));
 
   std::string unique_id = MakeDeviceUniqueId(device.get());
 

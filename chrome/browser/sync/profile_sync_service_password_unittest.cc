@@ -50,6 +50,7 @@
 
 using autofill::PasswordForm;
 using base::Time;
+using base::UTF8ToUTF16;
 using browser_sync::PasswordChangeProcessor;
 using browser_sync::PasswordDataTypeController;
 using browser_sync::PasswordModelAssociator;

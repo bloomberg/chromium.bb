@@ -328,7 +328,7 @@ base::string16 TemplateURLService::GenerateKeyword(const GURL& url) {
   // perhaps with some weird intranet and custom DNS server?), ensure we at
   // least don't return the empty string.
   base::string16 keyword(net::StripWWWFromHost(url));
-  return keyword.empty() ? ASCIIToUTF16("www") : keyword;
+  return keyword.empty() ? base::ASCIIToUTF16("www") : keyword;
 }
 
 // static
@@ -338,22 +338,22 @@ base::string16 TemplateURLService::CleanUserInputKeyword(
   base::string16 result(base::i18n::ToLower(keyword));
   TrimWhitespace(result, TRIM_ALL, &result);
   url_parse::Component scheme_component;
-  if (url_parse::ExtractScheme(UTF16ToUTF8(keyword).c_str(),
+  if (url_parse::ExtractScheme(base::UTF16ToUTF8(keyword).c_str(),
                                static_cast<int>(keyword.length()),
                                &scheme_component)) {
     // If the scheme isn't "http" or "https", bail.  The user isn't trying to
     // type a web address, but rather an FTP, file:, or other scheme URL, or a
     // search query with some sort of initial operator (e.g. "site:").
     if (result.compare(0, scheme_component.end(),
-                       ASCIIToUTF16(content::kHttpScheme)) &&
+                       base::ASCIIToUTF16(content::kHttpScheme)) &&
         result.compare(0, scheme_component.end(),
-                       ASCIIToUTF16(content::kHttpsScheme)))
+                       base::ASCIIToUTF16(content::kHttpsScheme)))
       return base::string16();
 
     // Include trailing ':'.
     result.erase(0, scheme_component.end() + 1);
     // Many schemes usually have "//" after them, so strip it too.
-    const base::string16 after_scheme(ASCIIToUTF16("//"));
+    const base::string16 after_scheme(base::ASCIIToUTF16("//"));
     if (result.compare(0, after_scheme.length(), after_scheme) == 0)
       result.erase(0, after_scheme.length());
   }
@@ -392,7 +392,8 @@ GURL TemplateURLService::GenerateSearchURLUsingTermsData(
   // TODO(jnd): Add additional parameters to get post data when the search URL
   // has post parameters.
   return GURL(search_ref.ReplaceSearchTermsUsingTermsData(
-      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("blah.blah.blah.blah.blah")),
+      TemplateURLRef::SearchTermsArgs(
+          base::ASCIIToUTF16("blah.blah.blah.blah.blah")),
       search_terms_data, NULL));
 }
 
@@ -1275,8 +1276,8 @@ syncer::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
   sync_pb::EntitySpecifics specifics;
   sync_pb::SearchEngineSpecifics* se_specifics =
       specifics.mutable_search_engine();
-  se_specifics->set_short_name(UTF16ToUTF8(turl.short_name()));
-  se_specifics->set_keyword(UTF16ToUTF8(turl.keyword()));
+  se_specifics->set_short_name(base::UTF16ToUTF8(turl.short_name()));
+  se_specifics->set_keyword(base::UTF16ToUTF8(turl.keyword()));
   se_specifics->set_favicon_url(turl.favicon_url().spec());
   se_specifics->set_url(turl.url());
   se_specifics->set_safe_for_autoreplace(turl.safe_for_autoreplace());
@@ -1337,9 +1338,9 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
 
   TemplateURLData data(existing_turl ?
       existing_turl->data() : TemplateURLData());
-  data.short_name = UTF8ToUTF16(specifics.short_name());
+  data.short_name = base::UTF8ToUTF16(specifics.short_name());
   data.originating_url = GURL(specifics.originating_url());
-  base::string16 keyword(UTF8ToUTF16(specifics.keyword()));
+  base::string16 keyword(base::UTF8ToUTF16(specifics.keyword()));
   // NOTE: Once this code has shipped in a couple of stable releases, we can
   // probably remove the migration portion, comment out the
   // "autogenerate_keyword" field entirely in the .proto file, and fold the
@@ -1347,7 +1348,7 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   bool reset_keyword =
       specifics.autogenerate_keyword() || specifics.keyword().empty();
   if (reset_keyword)
-    keyword = ASCIIToUTF16("dummy");  // Will be replaced below.
+    keyword = base::ASCIIToUTF16("dummy");  // Will be replaced below.
   DCHECK(!keyword.empty());
   data.SetKeyword(keyword);
   data.SetURL(specifics.url());
@@ -1470,8 +1471,8 @@ void TemplateURLService::Init(const Initializer* initializers,
       // TemplateURLService ends up owning the TemplateURL, don't try and free
       // it.
       TemplateURLData data;
-      data.short_name = UTF8ToUTF16(initializers[i].content);
-      data.SetKeyword(UTF8ToUTF16(initializers[i].keyword));
+      data.short_name = base::UTF8ToUTF16(initializers[i].content);
+      data.SetKeyword(base::UTF8ToUTF16(initializers[i].keyword));
       data.SetURL(initializers[i].url);
       TemplateURL* template_url = new TemplateURL(profile_, data);
       AddNoNotify(template_url, true);
@@ -1644,8 +1645,8 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
     if (!icon_gurl.is_empty())
       icon_url = icon_gurl.spec();
     encodings = JoinString(t_url->input_encodings(), ';');
-    short_name = UTF16ToUTF8(t_url->short_name());
-    keyword = UTF16ToUTF8(t_url->keyword());
+    short_name = base::UTF16ToUTF8(t_url->short_name());
+    keyword = base::UTF16ToUTF8(t_url->keyword());
     id_string = base::Int64ToString(t_url->id());
     prepopulate_id = base::Int64ToString(t_url->prepopulate_id());
     for (size_t i = 0; i < t_url->alternate_urls().size(); ++i)
@@ -1695,16 +1696,16 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
   }
 
   base::string16 name =
-      UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderName));
+      base::UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderName));
   base::string16 keyword =
-      UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderKeyword));
+      base::UTF8ToUTF16(prefs->GetString(prefs::kDefaultSearchProviderKeyword));
   // Force keyword to be non-empty.
   // TODO(pkasting): This is only necessary as long as we're potentially loading
   // older prefs where empty keywords are theoretically possible.  Eventually
   // this code can be replaced with a DCHECK(!keyword.empty());.
   bool update_keyword = keyword.empty();
   if (update_keyword)
-    keyword = ASCIIToUTF16("dummy");
+    keyword = base::ASCIIToUTF16("dummy");
   std::string search_url =
       prefs->GetString(prefs::kDefaultSearchProviderSearchURL);
   // Force URL to be non-empty.  We've never supported this case, but past bugs
@@ -1964,7 +1965,7 @@ void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
   if (!history)
     return;
 
-  GURL url(URLFixerUpper::FixupURL(UTF16ToUTF8(t_url.keyword()),
+  GURL url(URLFixerUpper::FixupURL(base::UTF16ToUTF8(t_url.keyword()),
                                    std::string()));
   if (!url.is_valid())
     return;
@@ -2384,7 +2385,7 @@ base::string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
   // keyword and let the user do what they will after our attempt.
   base::string16 keyword_candidate(turl.keyword());
   do {
-    keyword_candidate.append(ASCIIToUTF16("_"));
+    keyword_candidate.append(base::ASCIIToUTF16("_"));
   } while (GetTemplateURLForKeyword(keyword_candidate));
 
   return keyword_candidate;
@@ -2684,8 +2685,8 @@ void TemplateURLService::EnsureDefaultSearchProviderExists() {
 TemplateURL* TemplateURLService::CreateTemplateURLForExtension(
     const ExtensionKeyword& extension_keyword) const {
   TemplateURLData data;
-  data.short_name = UTF8ToUTF16(extension_keyword.extension_name);
-  data.SetKeyword(UTF8ToUTF16(extension_keyword.extension_keyword));
+  data.short_name = base::UTF8ToUTF16(extension_keyword.extension_name);
+  data.SetKeyword(base::UTF8ToUTF16(extension_keyword.extension_keyword));
   // This URL is not actually used for navigation. It holds the extension's
   // ID, as well as forcing the TemplateURL to be treated as a search keyword.
   data.SetURL(std::string(extensions::kExtensionScheme) + "://" +

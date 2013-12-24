@@ -197,7 +197,7 @@ bool SyncedSessionTracker::DeleteOldSessionTabIfNecessary(
       SessionTab* tab_ptr = tab_wrapper.tab_ptr;
       std::string title;
       if (tab_ptr->navigations.size() > 0) {
-        title = " (" + UTF16ToUTF8(
+        title = " (" + base::UTF16ToUTF8(
             tab_ptr->navigations[tab_ptr->navigations.size()-1].title()) + ")";
       }
       DVLOG(1) << "Deleting closed tab " << tab_ptr->tab_id.id() << title
@@ -341,7 +341,7 @@ SessionTab* SyncedSessionTracker::GetTabImpl(
     if (VLOG_IS_ON(1)) {
       std::string title;
       if (tab_ptr->navigations.size() > 0) {
-        title = " (" + UTF16ToUTF8(
+        title = " (" + base::UTF16ToUTF8(
             tab_ptr->navigations[tab_ptr->navigations.size()-1].title()) + ")";
       }
       DVLOG(1) << "Getting "

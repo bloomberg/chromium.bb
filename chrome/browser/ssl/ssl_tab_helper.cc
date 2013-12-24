@@ -219,7 +219,8 @@ void SSLTabHelper::OnVerifyClientCertificateError(
   GetAddCertData(handler.get())->ShowInfoBar(
       l10n_util::GetStringFUTF16(IDS_ADD_CERT_ERR_INVALID_CERT,
                                  base::IntToString16(-error_code),
-                                 ASCIIToUTF16(net::ErrorToString(error_code))),
+                                 base::ASCIIToUTF16(
+                                     net::ErrorToString(error_code))),
       NULL);
 }
 
@@ -234,7 +235,8 @@ void SSLTabHelper::OnAddClientCertificateSuccess(
   // TODO(evanm): GetDisplayName should return UTF-16.
   GetAddCertData(handler.get())->ShowInfoBar(
       l10n_util::GetStringFUTF16(IDS_ADD_CERT_SUCCESS_INFOBAR_LABEL,
-                                 UTF8ToUTF16(cert->issuer().GetDisplayName())),
+                                 base::UTF8ToUTF16(
+                                     cert->issuer().GetDisplayName())),
       cert);
 }
 
@@ -245,7 +247,8 @@ void SSLTabHelper::OnAddClientCertificateError(
   GetAddCertData(handler.get())->ShowInfoBar(
       l10n_util::GetStringFUTF16(IDS_ADD_CERT_ERR_FAILED,
                                  base::IntToString16(-error_code),
-                                 ASCIIToUTF16(net::ErrorToString(error_code))),
+                                 base::ASCIIToUTF16(
+                                     net::ErrorToString(error_code))),
       NULL);
 }
 

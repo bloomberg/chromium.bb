@@ -165,7 +165,7 @@ void AddToHistory(HistoryService* service,
                    transition,
                    source,
                    false);
-  service->SetPageTitle(url, ASCIIToUTF16(url.spec() + " - title"));
+  service->SetPageTitle(url, base::ASCIIToUTF16(url.spec() + " - title"));
 }
 
 history::URLRows GetTypedUrlsFromHistoryService(HistoryService* service) {

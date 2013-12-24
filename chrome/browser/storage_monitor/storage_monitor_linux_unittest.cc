@@ -90,9 +90,9 @@ scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
       StorageInfo::MakeDeviceId(type, kTestDeviceData[i].unique_id),
       base::string16(),
       mount_point.value(),
-      ASCIIToUTF16("volume label"),
-      ASCIIToUTF16("vendor name"),
-      ASCIIToUTF16("model name"),
+      base::ASCIIToUTF16("volume label"),
+      base::ASCIIToUTF16("vendor name"),
+      base::ASCIIToUTF16("model name"),
       kTestDeviceData[i].partition_size_in_bytes));
   return storage_info.Pass();
 }
@@ -612,9 +612,9 @@ TEST_F(StorageMonitorLinuxTest, DeviceLookUp) {
   EXPECT_EQ(test_path_a.value(), device_info.location());
   EXPECT_EQ(base::string16(), device_info.name());
   EXPECT_EQ(88788ULL, device_info.total_size_in_bytes());
-  EXPECT_EQ(ASCIIToUTF16("volume label"), device_info.storage_label());
-  EXPECT_EQ(ASCIIToUTF16("vendor name"), device_info.vendor_name());
-  EXPECT_EQ(ASCIIToUTF16("model name"), device_info.model_name());
+  EXPECT_EQ(base::ASCIIToUTF16("volume label"), device_info.storage_label());
+  EXPECT_EQ(base::ASCIIToUTF16("vendor name"), device_info.vendor_name());
+  EXPECT_EQ(base::ASCIIToUTF16("model name"), device_info.model_name());
 
   EXPECT_TRUE(notifier()->GetStorageInfoForPath(test_path_b, &device_info));
   EXPECT_EQ(GetDeviceId(kDeviceNoDCIM), device_info.device_id());

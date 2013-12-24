@@ -23,7 +23,8 @@ namespace {
 // last one is optional and only shows up when IsFirstCharOfToken returns true.
 std::string GetIterateState(const TokenizedStringCharIterator& iter) {
   return base::StringPrintf("%s%d%s",
-                            UTF16ToUTF8(base::string16(1, iter.Get())).c_str(),
+                            base::UTF16ToUTF8(
+                                base::string16(1, iter.Get())).c_str(),
                             iter.GetArrayPos(),
                             iter.IsFirstCharOfToken() ? "!" : "");
 }
@@ -38,7 +39,7 @@ void TestBeyondTheEnd(TokenizedStringCharIterator* iter) {
 }
 
 void TestEveryChar(const std::string& text, const std::string& expects) {
-  TokenizedString tokens(UTF8ToUTF16(text));
+  TokenizedString tokens(base::UTF8ToUTF16(text));
   TokenizedStringCharIterator iter(tokens);
 
   std::vector<std::string> results;
@@ -52,7 +53,7 @@ void TestEveryChar(const std::string& text, const std::string& expects) {
 }
 
 void TestNextToken(const std::string& text, const std::string& expects) {
-  TokenizedString tokens(UTF8ToUTF16(text));
+  TokenizedString tokens(base::UTF8ToUTF16(text));
   TokenizedStringCharIterator iter(tokens);
 
   std::vector<std::string> results;
@@ -67,7 +68,7 @@ void TestNextToken(const std::string& text, const std::string& expects) {
 
 void TestFirstTwoCharInEveryToken(const std::string& text,
                                   const std::string& expects) {
-  TokenizedString tokens(UTF8ToUTF16(text));
+  TokenizedString tokens(base::UTF8ToUTF16(text));
   TokenizedStringCharIterator iter(tokens);
 
   std::vector<std::string> results;

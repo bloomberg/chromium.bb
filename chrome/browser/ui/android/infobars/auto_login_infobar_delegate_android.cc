@@ -55,7 +55,7 @@ bool AutoLoginInfoBarDelegateAndroid::AttachAccount(
 
 base::string16 AutoLoginInfoBarDelegateAndroid::GetMessageText() const {
   return l10n_util::GetStringFUTF16(IDS_AUTOLOGIN_INFOBAR_MESSAGE,
-                                    UTF8ToUTF16(user_));
+                                    base::UTF8ToUTF16(user_));
 }
 
 bool AutoLoginInfoBarDelegateAndroid::Accept() {

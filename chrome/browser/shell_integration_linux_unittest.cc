@@ -573,7 +573,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             GURL(test_cases[i].url),
             std::string(),
             base::FilePath(),
-            ASCIIToUTF16(test_cases[i].title),
+            base::ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name,
             base::FilePath(),
             test_cases[i].nodisplay));
@@ -618,7 +618,7 @@ TEST(ShellIntegrationTest, GetDirectoryFileContents) {
     EXPECT_EQ(
         test_cases[i].expected_output,
         ShellIntegrationLinux::GetDirectoryFileContents(
-            ASCIIToUTF16(test_cases[i].title),
+            base::ASCIIToUTF16(test_cases[i].title),
             test_cases[i].icon_name));
   }
 }

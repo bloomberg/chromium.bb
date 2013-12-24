@@ -50,7 +50,7 @@ class AppSearchProviderTest : public ExtensionServiceTestBase {
   }
 
   std::string RunQuery(const std::string& query) {
-    app_search_->Start(UTF8ToUTF16(query));
+    app_search_->Start(base::UTF8ToUTF16(query));
     app_search_->Stop();
 
     std::string result_str;
@@ -59,7 +59,7 @@ class AppSearchProviderTest : public ExtensionServiceTestBase {
       if (!result_str.empty())
         result_str += ',';
 
-      result_str += UTF16ToUTF8(results[i]->title());
+      result_str += base::UTF16ToUTF8(results[i]->title());
     }
     return result_str;
   }

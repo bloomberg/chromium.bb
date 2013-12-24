@@ -61,9 +61,9 @@ namespace app_list {
 PeopleResult::PeopleResult(Profile* profile, scoped_ptr<Person> person)
     : profile_(profile), person_(person.Pass()), weak_factory_(this) {
   set_id(person_->id);
-  set_title(UTF8ToUTF16(person_->display_name));
+  set_title(base::UTF8ToUTF16(person_->display_name));
   set_relevance(person_->interaction_rank);
-  set_details(UTF8ToUTF16(person_->email));
+  set_details(base::UTF8ToUTF16(person_->email));
 
   RefreshHangoutsExtensionId();
   SetDefaultActions();

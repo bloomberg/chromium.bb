@@ -348,7 +348,7 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     EXPECT_FALSE(status_label.empty()) <<
         "Empty status label returned for case #" << idx;
     base::string16 combined_label =
-        status_label + base::string16(ASCIIToUTF16("#")) + link_label;
+        status_label + base::ASCIIToUTF16("#") + link_label;
     EXPECT_TRUE(messages.find(combined_label) == messages.end()) <<
         "Duplicate message for case #" << idx << ": " << combined_label;
     messages.insert(combined_label);
@@ -387,7 +387,7 @@ TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     // found in an English language message) fails when links are excluded from
     // the status label.
     EXPECT_FALSE(status_label.empty());
-    EXPECT_EQ(status_label.find(base::string16(ASCIIToUTF16("href"))),
+    EXPECT_EQ(status_label.find(base::ASCIIToUTF16("href")),
               base::string16::npos);
     testing::Mock::VerifyAndClearExpectations(&service);
     testing::Mock::VerifyAndClearExpectations(&signin);

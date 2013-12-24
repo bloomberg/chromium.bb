@@ -568,7 +568,8 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     // reply, hanging the test.
     rvh->ExecuteJavascriptInWebFrame(
         base::string16(),
-        ASCIIToUTF16("document.getElementById('" + node_id + "').click();\n"));
+        base::ASCIIToUTF16(
+            "document.getElementById('" + node_id + "').click();\n"));
     return true;
   }
 

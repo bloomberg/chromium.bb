@@ -131,7 +131,7 @@ const BookmarkNode* BookmarkNodeFinder::FindBookmarkNode(
     const GURL& url, const std::string& title, bool is_folder) {
   // Create a bookmark node from the given bookmark attributes.
   BookmarkNode temp_node(url);
-  temp_node.SetTitle(UTF8ToUTF16(title));
+  temp_node.SetTitle(base::UTF8ToUTF16(title));
   if (is_folder)
     temp_node.set_type(BookmarkNode::FOLDER);
   else
@@ -326,7 +326,7 @@ bool BookmarkModelAssociator::SyncModelHasUserCreatedNodes(bool* has_nodes) {
 bool BookmarkModelAssociator::NodesMatch(
     const BookmarkNode* bookmark,
     const syncer::BaseNode* sync_node) const {
-  if (bookmark->GetTitle() != UTF8ToUTF16(sync_node->GetTitle()))
+  if (bookmark->GetTitle() != base::UTF8ToUTF16(sync_node->GetTitle()))
     return false;
   if (bookmark->is_folder() != sync_node->GetIsFolder())
     return false;

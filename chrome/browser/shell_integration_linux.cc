@@ -736,7 +736,7 @@ std::string GetDesktopFileContents(
   g_key_file_set_string(key_file, kDesktopEntry, "Type", "Application");
 
   // Set the "Name" key.
-  std::string final_title = UTF16ToUTF8(title);
+  std::string final_title = base::UTF16ToUTF8(title);
   // Make sure no endline characters can slip in and possibly introduce
   // additional lines (like Exec, which makes it a security risk). Also
   // use the URL as a default when the title is empty.
@@ -806,7 +806,7 @@ std::string GetDirectoryFileContents(const base::string16& title,
 
   g_key_file_set_string(key_file, kDesktopEntry, "Version", "1.0");
   g_key_file_set_string(key_file, kDesktopEntry, "Type", "Directory");
-  std::string final_title = UTF16ToUTF8(title);
+  std::string final_title = base::UTF16ToUTF8(title);
   g_key_file_set_string(key_file, kDesktopEntry, "Name", final_title.c_str());
   if (!icon_name.empty()) {
     g_key_file_set_string(key_file, kDesktopEntry, "Icon", icon_name.c_str());

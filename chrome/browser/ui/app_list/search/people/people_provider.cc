@@ -56,7 +56,7 @@ void PeopleProvider::Start(const base::string16& query) {
     return;
   }
 
-  query_ = UTF16ToUTF8(query);
+  query_ = base::UTF16ToUTF8(query);
 
   const CacheResult result = cache_->Get(WebserviceCache::PEOPLE, query_);
   if (result.second) {

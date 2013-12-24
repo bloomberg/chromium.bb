@@ -27,7 +27,7 @@ class MultipleClientTypedUrlsSyncTest : public SyncTest {
 // TCM: 3728323
 IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToOne) {
   const base::string16 kHistoryUrl(
-      ASCIIToUTF16("http://www.add-one-history.google.com/"));
+      base::ASCIIToUTF16("http://www.add-one-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Populate one client with a URL, should sync to all others.
@@ -46,7 +46,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToOne) {
 
 IN_PROC_BROWSER_TEST_F(MultipleClientTypedUrlsSyncTest, AddToAll) {
   const base::string16 kHistoryUrl(
-      ASCIIToUTF16("http://www.add-all-history.google.com/"));
+      base::ASCIIToUTF16("http://www.add-all-history.google.com/"));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Populate clients with the same URL.

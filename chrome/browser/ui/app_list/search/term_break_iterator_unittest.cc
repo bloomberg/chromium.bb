@@ -7,6 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::UTF8ToUTF16;
+
 namespace app_list {
 namespace test {
 

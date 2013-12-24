@@ -110,7 +110,7 @@ TEST_F(SpellcheckHostMetricsTest, RecordWordCountsDiscardsDuplicates) {
   };
 
   // Ensure all histograms exist.
-  metrics()->RecordCheckedWordStats(ASCIIToUTF16("test"), false);
+  metrics()->RecordCheckedWordStats(base::ASCIIToUTF16("test"), false);
   RecordWordCountsForTesting();
 
   // Get baselines for all affected histograms.

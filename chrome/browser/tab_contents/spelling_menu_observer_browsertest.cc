@@ -225,10 +225,10 @@ class SpellingMenuObserverTest : public InProcessBrowserTest {
   void InitMenu(const char* word, const char* suggestion) {
     content::ContextMenuParams params;
     params.is_editable = true;
-    params.misspelled_word = ASCIIToUTF16(word);
+    params.misspelled_word = base::ASCIIToUTF16(word);
     params.dictionary_suggestions.clear();
     if (suggestion)
-      params.dictionary_suggestions.push_back(ASCIIToUTF16(suggestion));
+      params.dictionary_suggestions.push_back(base::ASCIIToUTF16(suggestion));
     observer_->InitMenu(params);
   }
 

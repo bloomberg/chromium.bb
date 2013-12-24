@@ -52,7 +52,8 @@ void SigninNamesOnIOThreadTest::TearDown() {
 }
 
 void SigninNamesOnIOThreadTest::SimulateSignin(const base::string16& email) {
-  GoogleServiceSigninSuccessDetails details(UTF16ToUTF8(email), "password");
+  GoogleServiceSigninSuccessDetails details(
+      base::UTF16ToUTF8(email), "password");
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
       content::Source<Profile>(NULL),
@@ -60,7 +61,7 @@ void SigninNamesOnIOThreadTest::SimulateSignin(const base::string16& email) {
 }
 
 void SigninNamesOnIOThreadTest::SimulateSignout(const base::string16& email) {
-  GoogleServiceSignoutDetails details(UTF16ToUTF8(email));
+  GoogleServiceSignoutDetails details(base::UTF16ToUTF8(email));
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
       content::Source<Profile>(NULL),
@@ -72,7 +73,8 @@ void SigninNamesOnIOThreadTest::AddNewProfile(const base::string16& name,
   ProfileInfoCache* cache = testing_profile_manager_.profile_info_cache();
   const base::FilePath& user_data_dir = cache->GetUserDataDir();
 #if defined(OS_POSIX)
-  const base::FilePath profile_dir = user_data_dir.Append(UTF16ToUTF8(name));
+  const base::FilePath profile_dir =
+      user_data_dir.Append(base::UTF16ToUTF8(name));
 #else
   const base::FilePath profile_dir = user_data_dir.Append(name);
 #endif
@@ -86,7 +88,7 @@ TEST_F(SigninNamesOnIOThreadTest, Basic) {
 }
 
 TEST_F(SigninNamesOnIOThreadTest, Signin) {
-  const base::string16 email = UTF8ToUTF16("foo@gmail.com");
+  const base::string16 email = base::UTF8ToUTF16("foo@gmail.com");
   SimulateSignin(email);
 
   const SigninNamesOnIOThread::EmailSet& emails = signin_names_.GetEmails();
@@ -95,7 +97,7 @@ TEST_F(SigninNamesOnIOThreadTest, Signin) {
 }
 
 TEST_F(SigninNamesOnIOThreadTest, Signout) {
-  const base::string16 email = UTF8ToUTF16("foo@gmail.com");
+  const base::string16 email = base::UTF8ToUTF16("foo@gmail.com");
   SimulateSignin(email);
   SimulateSignout(email);
 
@@ -104,9 +106,9 @@ TEST_F(SigninNamesOnIOThreadTest, Signout) {
 }
 
 TEST_F(SigninNamesOnIOThreadTest, HandleUnknownSignout) {
-  const base::string16 email = UTF8ToUTF16("foo@gmail.com");
+  const base::string16 email = base::UTF8ToUTF16("foo@gmail.com");
   SimulateSignin(email);
-  SimulateSignout(UTF8ToUTF16("bar@gmail.com"));
+  SimulateSignout(base::UTF8ToUTF16("bar@gmail.com"));
 
   const SigninNamesOnIOThread::EmailSet& emails = signin_names_.GetEmails();
   ASSERT_EQ(1u, emails.size());
@@ -115,11 +117,11 @@ TEST_F(SigninNamesOnIOThreadTest, HandleUnknownSignout) {
 
 TEST_F(SigninNamesOnIOThreadTest, StartWithConnectedProfiles) {
   // Setup a couple of connected profiles, and one unconnected.
-  const base::string16 email1 = UTF8ToUTF16("foo@gmail.com");
-  const base::string16 email2 = UTF8ToUTF16("bar@gmail.com");
-  AddNewProfile(UTF8ToUTF16("foo"), email1);
-  AddNewProfile(UTF8ToUTF16("bar"), email2);
-  AddNewProfile(UTF8ToUTF16("toto"), base::string16());
+  const base::string16 email1 = base::UTF8ToUTF16("foo@gmail.com");
+  const base::string16 email2 = base::UTF8ToUTF16("bar@gmail.com");
+  AddNewProfile(base::UTF8ToUTF16("foo"), email1);
+  AddNewProfile(base::UTF8ToUTF16("bar"), email2);
+  AddNewProfile(base::UTF8ToUTF16("toto"), base::string16());
 
   SigninNamesOnIOThread signin_names;
 

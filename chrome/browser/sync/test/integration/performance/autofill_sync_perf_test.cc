@@ -104,7 +104,7 @@ void AutofillSyncPerfTest::UpdateProfiles(int profile) {
   for (size_t i = 0; i < all_profiles.size(); ++i) {
     autofill_profiles.push_back(*all_profiles[i]);
     autofill_profiles.back().SetRawInfo(autofill::NAME_FIRST,
-                                        UTF8ToUTF16(NextName()));
+                                        base::UTF8ToUTF16(NextName()));
   }
   SetProfiles(profile, &autofill_profiles);
 }

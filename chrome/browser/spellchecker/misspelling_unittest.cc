@@ -13,12 +13,12 @@
 
 TEST(MisspellingTest, SerializeTest) {
   Misspelling misspelling;
-  misspelling.context = ASCIIToUTF16("How doe sit know");
+  misspelling.context = base::ASCIIToUTF16("How doe sit know");
   misspelling.location = 4;
   misspelling.length = 7;
   misspelling.timestamp = base::Time::FromJsTime(42);
   misspelling.hash = 9001;
-  misspelling.suggestions.push_back(ASCIIToUTF16("does it"));
+  misspelling.suggestions.push_back(base::ASCIIToUTF16("does it"));
 
   scoped_ptr<base::Value> expected(base::JSONReader::Read(
       "{\"originalText\": \"How doe sit know\","
@@ -35,10 +35,10 @@ TEST(MisspellingTest, SerializeTest) {
 
 TEST(MisspellingTest, GetMisspelledStringTest) {
   Misspelling misspelling;
-  misspelling.context = ASCIIToUTF16("How doe sit know");
+  misspelling.context = base::ASCIIToUTF16("How doe sit know");
   misspelling.location = 4;
   misspelling.length = 7;
-  EXPECT_EQ(ASCIIToUTF16("doe sit"), misspelling.GetMisspelledString());
+  EXPECT_EQ(base::ASCIIToUTF16("doe sit"), misspelling.GetMisspelledString());
 
   misspelling.length = 0;
   EXPECT_EQ(base::string16(), misspelling.GetMisspelledString());

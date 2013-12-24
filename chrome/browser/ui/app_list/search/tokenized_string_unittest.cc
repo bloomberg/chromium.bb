@@ -21,7 +21,7 @@ base::string16 GetContent(const TokenizedString& tokenized) {
     if (i > 0)
       str += ' ';
     str += tokens[i];
-    str += UTF8ToUTF16(mappings[i].ToString());
+    str += base::UTF8ToUTF16(mappings[i].ToString());
   }
   return str;
 }
@@ -36,51 +36,51 @@ TEST(TokenizedStringTest, Empty) {
 
 TEST(TokenizedStringTest, Basic) {
   {
-    base::string16 text(UTF8ToUTF16("ScratchPad"));
+    base::string16 text(base::UTF8ToUTF16("ScratchPad"));
     TokenizedString tokens(text);
-    EXPECT_EQ(UTF8ToUTF16("scratch{0,7} pad{7,10}"),
+    EXPECT_EQ(base::UTF8ToUTF16("scratch{0,7} pad{7,10}"),
               GetContent(tokens));
   }
   {
-    base::string16 text(UTF8ToUTF16("Chess2.0"));
+    base::string16 text(base::UTF8ToUTF16("Chess2.0"));
     TokenizedString tokens(text);
-    EXPECT_EQ(UTF8ToUTF16("chess{0,5} 2.0{5,8}"),
+    EXPECT_EQ(base::UTF8ToUTF16("chess{0,5} 2.0{5,8}"),
               GetContent(tokens));
   }
   {
-    base::string16 text(UTF8ToUTF16("Cut the rope"));
+    base::string16 text(base::UTF8ToUTF16("Cut the rope"));
     TokenizedString tokens(text);
-    EXPECT_EQ(UTF8ToUTF16("cut{0,3} the{4,7} rope{8,12}"),
+    EXPECT_EQ(base::UTF8ToUTF16("cut{0,3} the{4,7} rope{8,12}"),
               GetContent(tokens));
   }
   {
-    base::string16 text(UTF8ToUTF16("AutoCAD WS"));
+    base::string16 text(base::UTF8ToUTF16("AutoCAD WS"));
     TokenizedString tokens(text);
-    EXPECT_EQ(UTF8ToUTF16("auto{0,4} cad{4,7} ws{8,10}"),
+    EXPECT_EQ(base::UTF8ToUTF16("auto{0,4} cad{4,7} ws{8,10}"),
               GetContent(tokens));
   }
   {
-    base::string16 text(UTF8ToUTF16("Great TweetDeck"));
+    base::string16 text(base::UTF8ToUTF16("Great TweetDeck"));
     TokenizedString tokens(text);
-    EXPECT_EQ(UTF8ToUTF16("great{0,5} tweet{6,11} deck{11,15}"),
+    EXPECT_EQ(base::UTF8ToUTF16("great{0,5} tweet{6,11} deck{11,15}"),
               GetContent(tokens));
   }
   {
-    base::string16 text(UTF8ToUTF16("Draw-It!"));
+    base::string16 text(base::UTF8ToUTF16("Draw-It!"));
     TokenizedString tokens(text);
-    EXPECT_EQ(UTF8ToUTF16("draw{0,4} it{5,7}"),
+    EXPECT_EQ(base::UTF8ToUTF16("draw{0,4} it{5,7}"),
               GetContent(tokens));
   }
   {
-    base::string16 text(UTF8ToUTF16("Faxing & Signing"));
+    base::string16 text(base::UTF8ToUTF16("Faxing & Signing"));
     TokenizedString tokens(text);
-    EXPECT_EQ(UTF8ToUTF16("faxing{0,6} signing{9,16}"),
+    EXPECT_EQ(base::UTF8ToUTF16("faxing{0,6} signing{9,16}"),
               GetContent(tokens));
   }
   {
-    base::string16 text(UTF8ToUTF16("!@#$%^&*()<<<**>>>"));
+    base::string16 text(base::UTF8ToUTF16("!@#$%^&*()<<<**>>>"));
     TokenizedString tokens(text);
-    EXPECT_EQ(UTF8ToUTF16(""),
+    EXPECT_EQ(base::UTF8ToUTF16(""),
               GetContent(tokens));
   }
 }

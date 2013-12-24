@@ -67,8 +67,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
 
     extension_id_ = L"chromiumexampleappidforunittests";
     base::string16 app_name =
-        UTF8ToUTF16(web_app::GenerateApplicationNameFromExtensionId(
-        UTF16ToUTF8(extension_id_)));
+        base::UTF8ToUTF16(web_app::GenerateApplicationNameFromExtensionId(
+        base::UTF16ToUTF8(extension_id_)));
     extension_app_id_ =
         ShellIntegration::GetAppModelIdForProfile(app_name,
                                                   default_profile_path);

@@ -142,8 +142,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
   // Visit non-secure page which is going to be translated.
   ui_test_utils::NavigateToURL(browser(), GetNonSecureURL(kFrenchTestPath));
@@ -205,8 +205,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTag) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
   // Visit a test page.
   ui_test_utils::NavigateToURL(
@@ -240,8 +240,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
   // Visit a test page.
   ui_test_utils::NavigateToURL(
@@ -274,8 +274,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, IgnoreRefreshMetaTagAtOnload) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
   // Visit a test page.
   ui_test_utils::NavigateToURL(
@@ -308,8 +308,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocation) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
   // Visit a test page.
   ui_test_utils::NavigateToURL(
@@ -342,8 +342,8 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, UpdateLocationAtOnload) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
-  content::TitleWatcher watcher(web_contents, ASCIIToUTF16("PASS"));
-  watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
+  content::TitleWatcher watcher(web_contents, base::ASCIIToUTF16("PASS"));
+  watcher.AlsoWaitForTitle(base::ASCIIToUTF16("FAIL"));
 
   // Visit a test page.
   ui_test_utils::NavigateToURL(

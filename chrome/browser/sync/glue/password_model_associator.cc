@@ -21,6 +21,8 @@
 #include "sync/internal_api/public/write_transaction.h"
 #include "sync/protocol/password_specifics.pb.h"
 
+using base::UTF8ToUTF16;
+using base::UTF16ToUTF8;
 using content::BrowserThread;
 
 namespace browser_sync {

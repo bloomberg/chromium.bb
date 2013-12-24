@@ -41,6 +41,7 @@
 #include "base/win/windows_version.h"
 #endif
 
+using base::ASCIIToUTF16;
 using base::TimeTicks;
 using content::InterstitialPage;
 using content::NavigationController;

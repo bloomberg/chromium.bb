@@ -19,11 +19,11 @@
 
 // Stores user feedback to a spellcheck suggestion. Sample usage:
 //    Misspelling misspelling.
-//    misspelling.context = ASCIIToUTF16("Helllo world");
+//    misspelling.context = base::ASCIIToUTF16("Helllo world");
 //    misspelling.location = 0;
 //    misspelling.length = 6;
 //    misspelling.suggestions =
-//        std::vector<base::string16>(1, ASCIIToUTF16("Hello"));
+//        std::vector<base::string16>(1, base::ASCIIToUTF16("Hello"));
 //    misspelling.hash = GenerateRandomHash();
 //    misspelling.action.type = SpellcheckAction::TYPE_SELECT;
 //    misspelling.action.index = 0;

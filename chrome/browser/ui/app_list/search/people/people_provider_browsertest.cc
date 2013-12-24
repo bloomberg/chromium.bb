@@ -190,7 +190,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
 
   std::string RunQuery(const std::string& query,
                        const std::string& mock_server_response) {
-    people_provider_->Start(UTF8ToUTF16(query));
+    people_provider_->Start(base::UTF8ToUTF16(query));
 
     if (people_provider_->people_search_ && !mock_server_response.empty()) {
       mock_server_response_ = mock_server_response;
@@ -215,7 +215,7 @@ class PeopleProviderTest : public InProcessBrowserTest {
          ++it) {
       if (!results.empty())
         results += ',';
-      results += UTF16ToUTF8((*it)->title());
+      results += base::UTF16ToUTF8((*it)->title());
     }
     return results;
   }

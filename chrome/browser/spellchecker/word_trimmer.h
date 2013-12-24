@@ -18,10 +18,10 @@
 //  size_t start = 14;
 //  size_t end = 23;
 //  base::string16 text =
-//      ASCIIToUTF16("one two three four five six seven eight");
+//      base::ASCIIToUTF16("one two three four five six seven eight");
 //  int keep = 2;
 //  base::string16 trimmed = TrimWords(&start, end, text, keep);
-//  DCHECK(trimmed == ASCIIToUTF16("two three four five six seven"));
+//  DCHECK(trimmed == base::ASCIIToUTF16("two three four five six seven"));
 //  DCHECK(start == 10);
 //
 base::string16 TrimWords(size_t* start,

@@ -66,7 +66,7 @@ base::string16 GetTitleFromWebContents(content::WebContents* web_contents) {
   base::string16 title = web_contents->GetTitle();
   if (title.empty()) {
     GURL url = web_contents->GetURL();
-    title = UTF8ToUTF16(url.spec());
+    title = base::UTF8ToUTF16(url.spec());
     // Force URL to be LTR.
     title = base::i18n::GetDisplayStringInLTRDirectionality(title);
   } else {

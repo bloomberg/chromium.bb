@@ -324,7 +324,7 @@ ScopedJavaLocalRef<jstring>
   return base::android::ConvertUTF16ToJavaString(env,
       l10n_util::GetStringFUTF16(
           IDS_SYNC_ACCOUNT_SYNCING_TO_USER,
-          ASCIIToUTF16(sync_username)));
+          base::ASCIIToUTF16(sync_username)));
 }
 
 ScopedJavaLocalRef<jstring>

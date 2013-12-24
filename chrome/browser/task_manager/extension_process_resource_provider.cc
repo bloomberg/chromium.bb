@@ -87,7 +87,7 @@ ExtensionProcessResource::ExtensionProcessResource(
   process_handle_ = render_view_host_->GetProcess()->GetHandle();
   unique_process_id_ = render_view_host->GetProcess()->GetID();
   pid_ = base::GetProcId(process_handle_);
-  base::string16 extension_name = UTF8ToUTF16(GetExtension()->name());
+  base::string16 extension_name = base::UTF8ToUTF16(GetExtension()->name());
   DCHECK(!extension_name.empty());
 
   Profile* profile = Profile::FromBrowserContext(

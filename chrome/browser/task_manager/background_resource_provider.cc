@@ -101,7 +101,7 @@ base::string16 BackgroundContentsResource::GetTitle() const {
     // No title (can't locate the parent app for some reason) so just display
     // the URL (properly forced to be LTR).
     title = base::i18n::GetDisplayStringInLTRDirectionality(
-        UTF8ToUTF16(background_contents_->GetURL().spec()));
+        base::UTF8ToUTF16(background_contents_->GetURL().spec()));
   }
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_BACKGROUND_PREFIX, title);
 }
@@ -181,9 +181,9 @@ void BackgroundContentsResourceProvider::StartUpdating() {
         const base::string16& application_id =
             background_contents_service->GetParentApplicationId(*iterator);
         const Extension* extension = extension_service->GetExtensionById(
-            UTF16ToUTF8(application_id), false);
+            base::UTF16ToUTF8(application_id), false);
         if (extension)
-          application_name = UTF8ToUTF16(extension->name());
+          application_name = base::UTF8ToUTF16(extension->name());
       }
       Add(*iterator, application_name);
     }
@@ -277,14 +277,14 @@ void BackgroundContentsResourceProvider::Observe(
       ExtensionService* service =
           content::Source<Profile>(source)->GetExtensionService();
       if (service) {
-        std::string application_id = UTF16ToUTF8(
+        std::string application_id = base::UTF16ToUTF8(
             content::Details<BackgroundContentsOpenedDetails>(details)->
                 application_id);
         const Extension* extension =
             service->GetExtensionById(application_id, false);
         // Extension can be NULL when running unit tests.
         if (extension)
-          application_name = UTF8ToUTF16(extension->name());
+          application_name = base::UTF8ToUTF16(extension->name());
       }
       Add(content::Details<BackgroundContentsOpenedDetails>(details)->contents,
           application_name);

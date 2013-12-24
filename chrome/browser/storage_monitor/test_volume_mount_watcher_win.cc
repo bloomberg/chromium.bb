@@ -64,8 +64,8 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
     return false;
 
   StorageInfo::Type type = StorageInfo::FIXED_MASS_STORAGE;
-  if (path.value() != ASCIIToUTF16("N:\\") &&
-      path.value() != ASCIIToUTF16("C:\\") &&
+  if (path.value() != base::ASCIIToUTF16("N:\\") &&
+      path.value() != base::ASCIIToUTF16("C:\\") &&
       path.value() != GetTempRoot().value()) {
     type = StorageInfo::REMOVABLE_MASS_STORAGE_WITH_DCIM;
   }

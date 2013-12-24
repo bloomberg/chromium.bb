@@ -40,7 +40,7 @@ IN_PROC_BROWSER_TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
 
   // Check that the title didn't get set.  It should not be there (because we
   // are in view-source mode).
-  EXPECT_NE(ASCIIToUTF16("foo"),
+  EXPECT_NE(base::ASCIIToUTF16("foo"),
             browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 

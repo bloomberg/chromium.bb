@@ -59,7 +59,7 @@ base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   if (chrome::GetDefaultUserDataDirectory(&default_user_data_dir) &&
       profile_path.DirName() == default_user_data_dir &&
       profile_path.BaseName().value() ==
-          ASCIIToUTF16(chrome::kInitialProfile)) {
+          base::ASCIIToUTF16(chrome::kInitialProfile)) {
     return base::string16();
   }
 
@@ -106,18 +106,20 @@ base::string16 GetExpectedAppId(const CommandLine& command_line,
     profile_subdir =
         command_line.GetSwitchValuePath(switches::kProfileDirectory);
   } else {
-    profile_subdir = base::FilePath(ASCIIToUTF16(chrome::kInitialProfile));
+    profile_subdir =
+        base::FilePath(base::ASCIIToUTF16(chrome::kInitialProfile));
   }
   DCHECK(!profile_subdir.empty());
 
   base::FilePath profile_path = user_data_dir.Append(profile_subdir);
   base::string16 app_name;
   if (command_line.HasSwitch(switches::kApp)) {
-    app_name = UTF8ToUTF16(web_app::GenerateApplicationNameFromURL(
+    app_name = base::UTF8ToUTF16(web_app::GenerateApplicationNameFromURL(
         GURL(command_line.GetSwitchValueASCII(switches::kApp))));
   } else if (command_line.HasSwitch(switches::kAppId)) {
-    app_name = UTF8ToUTF16(web_app::GenerateApplicationNameFromExtensionId(
-        command_line.GetSwitchValueASCII(switches::kAppId)));
+    app_name = base::UTF8ToUTF16(
+        web_app::GenerateApplicationNameFromExtensionId(
+            command_line.GetSwitchValueASCII(switches::kAppId)));
   } else if (command_line.HasSwitch(switches::kShowAppList)) {
     app_name = GetAppListAppName();
   } else {
@@ -232,7 +234,7 @@ bool ShellIntegration::SetAsDefaultProtocolClient(const std::string& protocol) {
     return false;
   }
 
-  base::string16 wprotocol(UTF8ToUTF16(protocol));
+  base::string16 wprotocol(base::UTF8ToUTF16(protocol));
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (!ShellUtil::MakeChromeDefaultProtocolClient(dist, chrome_exe.value(),
         wprotocol)) {
@@ -271,7 +273,7 @@ bool ShellIntegration::SetAsDefaultProtocolClientInteractive(
   }
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 wprotocol(UTF8ToUTF16(protocol));
+  base::string16 wprotocol(base::UTF8ToUTF16(protocol));
   if (!ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(
           dist, chrome_exe.value(), wprotocol)) {
     LOG(ERROR) << "Failed to launch the set-default-client Windows UI.";
@@ -290,7 +292,8 @@ ShellIntegration::DefaultWebClientState ShellIntegration::GetDefaultBrowser() {
 ShellIntegration::DefaultWebClientState
     ShellIntegration::IsDefaultProtocolClient(const std::string& protocol) {
   return GetDefaultWebClientStateFromShellUtilDefaultState(
-      ShellUtil::GetChromeDefaultProtocolClientState(UTF8ToUTF16(protocol)));
+      ShellUtil::GetChromeDefaultProtocolClientState(
+          base::UTF8ToUTF16(protocol)));
 }
 
 std::string ShellIntegration::GetApplicationForProtocol(const GURL& url) {

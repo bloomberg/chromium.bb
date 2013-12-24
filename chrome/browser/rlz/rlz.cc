@@ -359,7 +359,7 @@ void RLZTracker::PingNowImpl() {
   base::string16 lang;
   GoogleUpdateSettings::GetLanguage(&lang);
   if (lang.empty())
-    lang = ASCIIToUTF16("en");
+    lang = base::ASCIIToUTF16("en");
   base::string16 referral;
   GoogleUpdateSettings::GetReferral(&referral);
 
@@ -494,7 +494,7 @@ std::string RLZTracker::GetAccessPointHttpHeader(rlz_lib::AccessPoint point) {
   RLZTracker::GetAccessPointRlz(point, &rlz_string);
   if (!rlz_string.empty()) {
     net::HttpUtil::AppendHeaderIfMissing("X-Rlz-String",
-                                         UTF16ToUTF8(rlz_string),
+                                         base::UTF16ToUTF8(rlz_string),
                                          &extra_headers);
   }
 
@@ -533,7 +533,7 @@ bool RLZTracker::GetAccessPointRlzImpl(rlz_lib::AccessPoint point,
   if (!rlz_lib::GetAccessPointRlz(point, str_rlz, rlz_lib::kMaxRlzLength))
     return false;
 
-  base::string16 rlz_local(ASCIIToUTF16(std::string(str_rlz)));
+  base::string16 rlz_local(base::ASCIIToUTF16(std::string(str_rlz)));
   if (rlz)
     *rlz = rlz_local;
 

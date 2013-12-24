@@ -53,8 +53,9 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_FailsTypeCheck) {
   EXPECT_EQ(1U, errors().size());
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_POLICY_TYPE_ERROR,
-                ASCIIToUTF16(ConfigurationPolicyHandler::ValueTypeToString(
-                    base::Value::TYPE_INTEGER))),
+                base::ASCIIToUTF16(
+                    ConfigurationPolicyHandler::ValueTypeToString(
+                        base::Value::TYPE_INTEGER))),
             errors().begin()->second);
 }
 
@@ -78,7 +79,7 @@ TEST_F(RestoreOnStartupPolicyHandlerTest, CheckPolicySettings_UnknownValue) {
   EXPECT_EQ(1U, errors().size());
   EXPECT_EQ(l10n_util::GetStringFUTF16(
                 IDS_POLICY_OUT_OF_RANGE_ERROR,
-                ASCIIToUTF16(base::IntToString(impossible_value))),
+                base::ASCIIToUTF16(base::IntToString(impossible_value))),
             errors().begin()->second);
 }
 
@@ -107,8 +108,9 @@ TEST_F(RestoreOnStartupPolicyHandlerTest,
   EXPECT_TRUE(CheckPolicySettings());
   EXPECT_EQ(1U, errors().size());
   EXPECT_TRUE(key::kCookiesSessionOnlyForUrls == errors().begin()->first);
-  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_POLICY_OVERRIDDEN,
-                                       ASCIIToUTF16(key::kRestoreOnStartup)),
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_POLICY_OVERRIDDEN,
+                base::ASCIIToUTF16(key::kRestoreOnStartup)),
             errors().begin()->second);
 }
 
@@ -123,8 +125,9 @@ TEST_F(RestoreOnStartupPolicyHandlerTest,
   EXPECT_TRUE(CheckPolicySettings());
   EXPECT_EQ(1U, errors().size());
   EXPECT_TRUE(key::kClearSiteDataOnExit == errors().begin()->first);
-  EXPECT_EQ(l10n_util::GetStringFUTF16(IDS_POLICY_OVERRIDDEN,
-                                       ASCIIToUTF16(key::kRestoreOnStartup)),
+  EXPECT_EQ(l10n_util::GetStringFUTF16(
+                IDS_POLICY_OVERRIDDEN,
+                base::ASCIIToUTF16(key::kRestoreOnStartup)),
             errors().begin()->second);
 }
 

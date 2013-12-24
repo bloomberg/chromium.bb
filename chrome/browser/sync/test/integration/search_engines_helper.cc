@@ -108,7 +108,7 @@ bool ServicesMatch(int profile_a, int profile_b) {
 // Convenience helper for consistently generating the same keyword for a given
 // seed.
 base::string16 CreateKeyword(int seed) {
-  return ASCIIToUTF16(base::StringPrintf("test%d", seed));
+  return base::ASCIIToUTF16(base::StringPrintf("test%d", seed));
 }
 
 }  // namespace

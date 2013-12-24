@@ -148,7 +148,7 @@ bool GetDeviceDetails(const base::FilePath& device_path, StorageInfo* info) {
   DeviceType device_type = GetDeviceType(mount_point);
   if (device_type == FLOPPY) {
     info->set_device_id(StorageInfo::MakeDeviceId(
-        StorageInfo::FIXED_MASS_STORAGE, UTF16ToUTF8(guid)));
+        StorageInfo::FIXED_MASS_STORAGE, base::UTF16ToUTF8(guid)));
     return true;
   }
 
@@ -167,7 +167,8 @@ bool GetDeviceDetails(const base::FilePath& device_path, StorageInfo* info) {
                         kMaxPathBufLen, NULL, NULL, NULL, NULL, 0);
 
   uint64 total_size_in_bytes = GetVolumeSize(mount_point);
-  std::string device_id = StorageInfo::MakeDeviceId(type, UTF16ToUTF8(guid));
+  std::string device_id =
+      StorageInfo::MakeDeviceId(type, base::UTF16ToUTF8(guid));
 
   // TODO(gbillock): if volume_label.empty(), get the vendor/model information
   // for the volume.

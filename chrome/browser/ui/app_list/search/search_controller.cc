@@ -128,7 +128,7 @@ void SearchController::OpenResult(SearchResult* result, int event_flags) {
   chrome_result->Open(event_flags);
 
   if (history_ && history_->IsReady()) {
-    history_->AddLaunchEvent(UTF16ToUTF8(search_box_->text()),
+    history_->AddLaunchEvent(base::UTF16ToUTF8(search_box_->text()),
                              chrome_result->id());
   }
 }
@@ -156,7 +156,7 @@ void SearchController::OnResultsChanged() {
 
   KnownResults known_results;
   if (history_ && history_->IsReady()) {
-    history_->GetKnownResults(UTF16ToUTF8(search_box_->text()))
+    history_->GetKnownResults(base::UTF16ToUTF8(search_box_->text()))
         ->swap(known_results);
   }
 

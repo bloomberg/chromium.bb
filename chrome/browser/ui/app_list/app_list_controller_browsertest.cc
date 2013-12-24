@@ -61,7 +61,7 @@ class AppListControllerSearchResultsBrowserTest
     EXPECT_FALSE(observed_results_list_);
     observed_results_list_ = search_results;
     observed_results_list_->AddObserver(this);
-    item_to_observe_ = ASCIIToUTF16(extension_name);
+    item_to_observe_ = base::ASCIIToUTF16(extension_name);
   }
 
   void StopWatchingResults() {
@@ -144,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
 
   // Ensure a search finds the extension.
   EXPECT_FALSE(observed_result_);
-  model->search_box()->SetText(ASCIIToUTF16("minimal"));
+  model->search_box()->SetText(base::ASCIIToUTF16("minimal"));
   EXPECT_TRUE(observed_result_);
 
   // Ensure the UI is updated. This is via PostTask in views.

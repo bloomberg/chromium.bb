@@ -190,7 +190,8 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgIsFormatAvailable(
         clipboard->ReadData(
             ui::Clipboard::GetPepperCustomDataFormatType(), &clipboard_data);
         Pickle pickle(clipboard_data.data(), clipboard_data.size());
-        available = IsFormatAvailableInPickle(UTF8ToUTF16(format_name), pickle);
+        available =
+            IsFormatAvailableInPickle(base::UTF8ToUTF16(format_name), pickle);
       }
       break;
   }
@@ -219,7 +220,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
         clipboard->ReadText(type, &text);
         if (!text.empty()) {
           result = PP_OK;
-          clipboard_string = UTF16ToUTF8(text);
+          clipboard_string = base::UTF16ToUTF8(text);
           break;
         }
       }
@@ -244,7 +245,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
       uint32 fragment_end;
       clipboard->ReadHTML(type, &html, &url, &fragment_start, &fragment_end);
       result = PP_OK;
-      clipboard_string = UTF16ToUTF8(
+      clipboard_string = base::UTF16ToUTF8(
           html.substr(fragment_start, fragment_end - fragment_start));
       break;
     }
@@ -262,7 +263,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgReadData(
     default: {
       if (custom_formats_.IsFormatRegistered(format)) {
         base::string16 format_name =
-            UTF8ToUTF16(custom_formats_.GetFormatName(format));
+            base::UTF8ToUTF16(custom_formats_.GetFormatName(format));
         std::string clipboard_data;
         clipboard->ReadData(
             ui::Clipboard::GetPepperCustomDataFormatType(), &clipboard_data);
@@ -314,10 +315,10 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
 
     switch (formats[i]) {
       case PP_FLASH_CLIPBOARD_FORMAT_PLAINTEXT:
-        scw.WriteText(UTF8ToUTF16(data[i]));
+        scw.WriteText(base::UTF8ToUTF16(data[i]));
         break;
       case PP_FLASH_CLIPBOARD_FORMAT_HTML:
-        scw.WriteHTML(UTF8ToUTF16(data[i]), std::string());
+        scw.WriteHTML(base::UTF8ToUTF16(data[i]), std::string());
         break;
       case PP_FLASH_CLIPBOARD_FORMAT_RTF:
         scw.WriteRTF(data[i]);
@@ -328,7 +329,7 @@ int32_t PepperFlashClipboardMessageFilter::OnMsgWriteData(
       default:
         if (custom_formats_.IsFormatRegistered(formats[i])) {
           std::string format_name = custom_formats_.GetFormatName(formats[i]);
-          custom_data_map[UTF8ToUTF16(format_name)] = data[i];
+          custom_data_map[base::UTF8ToUTF16(format_name)] = data[i];
         } else {
           // Invalid format.
           res = PP_ERROR_BADARGUMENT;

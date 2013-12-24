@@ -47,7 +47,8 @@ namespace {
 base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
                                          const SigninManagerBase& signin,
                                          StatusLabelStyle style) {
-  base::string16 user_name = UTF8ToUTF16(signin.GetAuthenticatedUsername());
+  base::string16 user_name =
+      base::UTF8ToUTF16(signin.GetAuthenticatedUsername());
 
   if (!user_name.empty()) {
     if (!service || service->IsManaged()) {
@@ -78,7 +79,7 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
       return l10n_util::GetStringFUTF16(
           IDS_SYNC_ACCOUNT_SYNCING_TO_USER_WITH_MANAGE_LINK,
           user_name,
-          ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
+          base::ASCIIToUTF16(chrome::kSyncGoogleDashboardURL));
     default:
       NOTREACHED();
       return NULL;
@@ -253,8 +254,8 @@ MessageType GetStatusInfo(ProfileSyncService* service,
       // The user is signed in, but sync has been stopped.
       if (status_label) {
         base::string16 label = l10n_util::GetStringFUTF16(
-                             IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
-                             UTF8ToUTF16(signin.GetAuthenticatedUsername()));
+            IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED,
+            base::UTF8ToUTF16(signin.GetAuthenticatedUsername()));
         status_label->assign(label);
         result_type = PRE_SYNCED;
       }

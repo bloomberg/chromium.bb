@@ -304,7 +304,7 @@ syncer::SyncError TypedUrlModelAssociator::DoAssociateModels() {
               model_type());
         }
 
-        node.SetTitle(UTF8ToWide(tag));
+        node.SetTitle(base::UTF8ToWide(tag));
         WriteToSyncNode(*ix, visits, &node);
       }
 
@@ -573,7 +573,7 @@ TypedUrlModelAssociator::MergeResult TypedUrlModelAssociator::MergeUrls(
     return DIFF_UPDATE_NODE;
 
   // Convert these values only once.
-  base::string16 node_title(UTF8ToUTF16(node.title()));
+  base::string16 node_title(base::UTF8ToUTF16(node.title()));
   base::Time node_last_visit = base::Time::FromInternalValue(
       node.visits(node.visits_size() - 1));
 
@@ -690,7 +690,7 @@ void TypedUrlModelAssociator::WriteToTypedUrlSpecifics(
             visits.back().visit_time.ToInternalValue());
 
   typed_url->set_url(url.url().spec());
-  typed_url->set_title(UTF16ToUTF8(url.title()));
+  typed_url->set_title(base::UTF16ToUTF8(url.title()));
   typed_url->set_hidden(url.hidden());
 
   DCHECK(CheckVisitOrdering(visits));
@@ -821,7 +821,7 @@ void TypedUrlModelAssociator::UpdateURLRowFromTypedUrlSpecifics(
     const sync_pb::TypedUrlSpecifics& typed_url, history::URLRow* new_url) {
   DCHECK_GT(typed_url.visits_size(), 0);
   CHECK_EQ(typed_url.visit_transitions_size(), typed_url.visits_size());
-  new_url->set_title(UTF8ToUTF16(typed_url.title()));
+  new_url->set_title(base::UTF8ToUTF16(typed_url.title()));
   new_url->set_hidden(typed_url.hidden());
   // Only provide the initial value for the last_visit field - after that, let
   // the history code update the last_visit field on its own.

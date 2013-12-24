@@ -26,7 +26,7 @@ class AppSearchProvider::App {
  public:
   explicit App(const extensions::Extension* extension)
       : app_id_(extension->id()),
-        indexed_name_(UTF8ToUTF16(extension->name())) {
+        indexed_name_(base::UTF8ToUTF16(extension->name())) {
   }
   ~App() {}
 

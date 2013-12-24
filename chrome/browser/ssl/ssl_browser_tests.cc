@@ -48,6 +48,7 @@
 #include "net/cert/nss_cert_database.h"
 #endif  // defined(USE_NSS)
 
+using base::ASCIIToUTF16;
 using content::InterstitialPage;
 using content::NavigationController;
 using content::NavigationEntry;

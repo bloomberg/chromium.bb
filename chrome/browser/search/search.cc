@@ -96,9 +96,9 @@ const char kInstantSupportDisabled[] = "Instant support disabled";
 const char kInstantSupportUnknown[] = "Instant support unknown";
 
 InstantSupportState StringToInstantSupportState(const base::string16& value) {
-  if (value == ASCIIToUTF16(kInstantSupportEnabled))
+  if (value == base::ASCIIToUTF16(kInstantSupportEnabled))
     return INSTANT_SUPPORT_YES;
-  else if (value == ASCIIToUTF16(kInstantSupportDisabled))
+  else if (value == base::ASCIIToUTF16(kInstantSupportDisabled))
     return INSTANT_SUPPORT_NO;
   else
     return INSTANT_SUPPORT_UNKNOWN;
@@ -107,13 +107,13 @@ InstantSupportState StringToInstantSupportState(const base::string16& value) {
 base::string16 InstantSupportStateToString(InstantSupportState state) {
   switch (state) {
     case INSTANT_SUPPORT_NO:
-      return ASCIIToUTF16(kInstantSupportDisabled);
+      return base::ASCIIToUTF16(kInstantSupportDisabled);
     case INSTANT_SUPPORT_YES:
-      return ASCIIToUTF16(kInstantSupportEnabled);
+      return base::ASCIIToUTF16(kInstantSupportEnabled);
     case INSTANT_SUPPORT_UNKNOWN:
-      return ASCIIToUTF16(kInstantSupportUnknown);
+      return base::ASCIIToUTF16(kInstantSupportUnknown);
   }
-  return ASCIIToUTF16(kInstantSupportUnknown);
+  return base::ASCIIToUTF16(kInstantSupportUnknown);
 }
 
 TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {

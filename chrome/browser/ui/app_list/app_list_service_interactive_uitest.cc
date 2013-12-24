@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceInteractiveTest,
   app_list::AppListModel* model = test::GetAppListModel(service);
   ASSERT_TRUE(model);
 
-  model->search_box()->SetText(ASCIIToUTF16("minimal"));
+  model->search_box()->SetText(base::ASCIIToUTF16("minimal"));
   base::RunLoop().RunUntilIdle();
 
   // Switch to the second profile.

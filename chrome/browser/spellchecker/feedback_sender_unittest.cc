@@ -41,7 +41,7 @@ SpellCheckResult BuildSpellCheckResult() {
   return SpellCheckResult(SpellCheckResult::SPELLING,
                           kMisspellingStart,
                           kMisspellingLength,
-                          UTF8ToUTF16("Hello"));
+                          base::UTF8ToUTF16("Hello"));
 }
 
 // Returns the number of times that |needle| appears in |haystack| without
@@ -96,7 +96,7 @@ class FeedbackSenderTest : public testing::Test {
   uint32 AddPendingFeedback() {
     std::vector<SpellCheckResult> results(1, BuildSpellCheckResult());
     feedback_->OnSpellcheckResults(kRendererProcessId,
-                                   UTF8ToUTF16(kText),
+                                   base::UTF8ToUTF16(kText),
                                    std::vector<SpellCheckMarker>(),
                                    &results);
     return results[0].hash;
@@ -241,7 +241,7 @@ TEST_F(FeedbackSenderTest, IgnoreFeedbackMarkerNotInDocument) {
 TEST_F(FeedbackSenderTest, ManuallyCorrectedFeedback) {
   uint32 hash = AddPendingFeedback();
   static const std::string kManualCorrection = "Howdy";
-  feedback_->ManuallyCorrected(hash, ASCIIToUTF16(kManualCorrection));
+  feedback_->ManuallyCorrected(hash, base::ASCIIToUTF16(kManualCorrection));
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
                                       std::vector<uint32>());
   EXPECT_TRUE(UploadDataContains("\"actionType\":\"MANUALLY_CORRECTED\""));
@@ -255,15 +255,15 @@ TEST_F(FeedbackSenderTest, BatchFeedback) {
   results.push_back(SpellCheckResult(SpellCheckResult::SPELLING,
                                      kMisspellingStart,
                                      kMisspellingLength,
-                                     ASCIIToUTF16("Hello")));
+                                     base::ASCIIToUTF16("Hello")));
   static const int kSecondMisspellingStart = 7;
   static const int kSecondMisspellingLength = 5;
   results.push_back(SpellCheckResult(SpellCheckResult::SPELLING,
                                      kSecondMisspellingStart,
                                      kSecondMisspellingLength,
-                                     ASCIIToUTF16("world")));
+                                     base::ASCIIToUTF16("world")));
   feedback_->OnSpellcheckResults(kRendererProcessId,
-                                 UTF8ToUTF16(kText),
+                                 base::UTF8ToUTF16(kText),
                                  std::vector<SpellCheckMarker>(),
                                  &results);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
@@ -310,9 +310,9 @@ TEST_F(FeedbackSenderTest, SessionExpirationFeedback) {
       SpellCheckResult(SpellCheckResult::SPELLING,
                        kMisspellingStart,
                        kMisspellingLength,
-                       ASCIIToUTF16("Hello")));
+                       base::ASCIIToUTF16("Hello")));
   feedback_->OnSpellcheckResults(kRendererProcessId,
-                                 UTF8ToUTF16(kText),
+                                 base::UTF8ToUTF16(kText),
                                  std::vector<SpellCheckMarker>(),
                                  &results);
   uint32 original_hash = results[0].hash;
@@ -347,9 +347,9 @@ TEST_F(FeedbackSenderTest, SessionExpirationFeedback) {
   results[0] = SpellCheckResult(SpellCheckResult::SPELLING,
                                 kMisspellingStart,
                                 kMisspellingLength,
-                                ASCIIToUTF16("Hello"));
+                                base::ASCIIToUTF16("Hello"));
   feedback_->OnSpellcheckResults(
-      kRendererProcessId, UTF8ToUTF16(kText), original_markers, &results);
+      kRendererProcessId, base::UTF8ToUTF16(kText), original_markers, &results);
   uint32 updated_hash = results[0].hash;
   EXPECT_NE(updated_hash, original_hash);
   remaining_markers[0] = updated_hash;
@@ -506,12 +506,12 @@ TEST_F(FeedbackSenderTest, MatchDupliateResultsWithExistingMarkers) {
       SpellCheckResult(SpellCheckResult::SPELLING,
                        kMisspellingStart,
                        kMisspellingLength,
-                       ASCIIToUTF16("Hello")));
+                       base::ASCIIToUTF16("Hello")));
   std::vector<SpellCheckMarker> markers(
       1, SpellCheckMarker(hash, results[0].location));
   EXPECT_EQ(static_cast<uint32>(0), results[0].hash);
   feedback_->OnSpellcheckResults(
-      kRendererProcessId, UTF8ToUTF16(kText), markers, &results);
+      kRendererProcessId, base::UTF8ToUTF16(kText), markers, &results);
   EXPECT_EQ(hash, results[0].hash);
 }
 
@@ -522,12 +522,12 @@ TEST_F(FeedbackSenderTest, MultipleAddToDictFeedback) {
   static const int kSentenceLength = 14;
   static const int kNumberOfSentences = 2;
   static const base::string16 kTextWithDuplicates =
-      ASCIIToUTF16("Helllo world. Helllo world.");
+      base::ASCIIToUTF16("Helllo world. Helllo world.");
   for (int i = 0; i < kNumberOfSentences; ++i) {
     results.push_back(SpellCheckResult(SpellCheckResult::SPELLING,
                                        kMisspellingStart + i * kSentenceLength,
                                        kMisspellingLength,
-                                       ASCIIToUTF16("Hello")));
+                                       base::ASCIIToUTF16("Hello")));
   }
   static const int kNumberOfRenderers = 2;
   int last_renderer_process_id = -1;
@@ -571,17 +571,17 @@ TEST_F(FeedbackSenderTest, AddToDictOnlyPending) {
 TEST_F(FeedbackSenderTest, IgnoreOutOfBounds) {
   std::vector<SpellCheckResult> results;
   results.push_back(SpellCheckResult(
-      SpellCheckResult::SPELLING, 0, 100, UTF8ToUTF16("Hello")));
+      SpellCheckResult::SPELLING, 0, 100, base::UTF8ToUTF16("Hello")));
   results.push_back(SpellCheckResult(
-      SpellCheckResult::SPELLING, 100, 3, UTF8ToUTF16("world")));
-  results.push_back(
-      SpellCheckResult(SpellCheckResult::SPELLING, -1, 3, UTF8ToUTF16("how")));
-  results.push_back(
-      SpellCheckResult(SpellCheckResult::SPELLING, 0, 0, UTF8ToUTF16("are")));
-  results.push_back(
-      SpellCheckResult(SpellCheckResult::SPELLING, 2, -1, UTF8ToUTF16("you")));
+      SpellCheckResult::SPELLING, 100, 3, base::UTF8ToUTF16("world")));
+  results.push_back(SpellCheckResult(
+      SpellCheckResult::SPELLING, -1, 3, base::UTF8ToUTF16("how")));
+  results.push_back(SpellCheckResult(
+      SpellCheckResult::SPELLING, 0, 0, base::UTF8ToUTF16("are")));
+  results.push_back(SpellCheckResult(
+      SpellCheckResult::SPELLING, 2, -1, base::UTF8ToUTF16("you")));
   feedback_->OnSpellcheckResults(kRendererProcessId,
-                                 UTF8ToUTF16(kText),
+                                 base::UTF8ToUTF16(kText),
                                  std::vector<SpellCheckMarker>(),
                                  &results);
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,

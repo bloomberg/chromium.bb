@@ -12,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 
+using base::ASCIIToUTF16;
 using typed_urls_helper::AddUrlToHistory;
 using typed_urls_helper::AddUrlToHistoryWithTimestamp;
 using typed_urls_helper::AddUrlToHistoryWithTransition;

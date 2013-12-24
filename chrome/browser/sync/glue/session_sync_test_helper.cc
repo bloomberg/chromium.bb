@@ -84,7 +84,7 @@ void SessionSyncTestHelper::VerifySyncedSession(
       ASSERT_EQ(tab->navigations[0].virtual_url(), GURL(kVirtualUrl));
       ASSERT_EQ(tab->navigations[0].referrer().url, GURL(kReferrer));
       ASSERT_EQ(tab->navigations[0].title(),
-                base::string16(ASCIIToUTF16(kTitle)));
+                base::ASCIIToUTF16(kTitle));
       ASSERT_EQ(tab->navigations[0].transition_type(),
                 content::PAGE_TRANSITION_TYPED);
     }

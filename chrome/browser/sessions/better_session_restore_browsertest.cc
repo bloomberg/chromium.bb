@@ -125,10 +125,10 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
   BetterSessionRestoreTest()
       : fake_server_address_("http://www.test.com/"),
         test_path_("session_restore/"),
-        title_pass_(ASCIIToUTF16("PASS")),
-        title_storing_(ASCIIToUTF16("STORING")),
-        title_error_write_failed_(ASCIIToUTF16("ERROR_WRITE_FAILED")),
-        title_error_empty_(ASCIIToUTF16("ERROR_EMPTY")) {
+        title_pass_(base::ASCIIToUTF16("PASS")),
+        title_storing_(base::ASCIIToUTF16("STORING")),
+        title_error_write_failed_(base::ASCIIToUTF16("ERROR_WRITE_FAILED")),
+        title_error_empty_(base::ASCIIToUTF16("ERROR_EMPTY")) {
     // Set up the URL request filtering.
     std::vector<std::string> test_files;
     test_files.push_back("common.js");

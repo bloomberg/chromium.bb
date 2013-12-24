@@ -16,8 +16,8 @@ namespace {
 TEST(SpellcheckMessageFilterMacTest, CombineResults) {
   std::vector<SpellCheckResult> local_results;
   std::vector<SpellCheckResult> remote_results;
-  base::string16 remote_suggestion = ASCIIToUTF16("remote");
-  base::string16 local_suggestion = ASCIIToUTF16("local");
+  base::string16 remote_suggestion = base::ASCIIToUTF16("remote");
+  base::string16 local_suggestion = base::ASCIIToUTF16("local");
 
   // Remote-only result - must be flagged as GRAMMAR after combine
   remote_results.push_back(

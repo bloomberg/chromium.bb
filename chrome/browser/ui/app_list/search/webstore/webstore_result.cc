@@ -78,7 +78,7 @@ WebstoreResult::WebstoreResult(Profile* profile,
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
   set_relevance(0.0);  // What is the right value to use?
 
-  set_title(UTF8ToUTF16(localized_name_));
+  set_title(base::UTF8ToUTF16(localized_name_));
   SetDefaultDetails();
 
   UpdateActions();

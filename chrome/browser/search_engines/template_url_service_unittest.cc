@@ -34,6 +34,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
@@ -100,8 +101,8 @@ TemplateURL* CreateKeywordWithDate(
     Time date_created,
     Time last_modified) {
   TemplateURLData data;
-  data.short_name = UTF8ToUTF16(short_name);
-  data.SetKeyword(UTF8ToUTF16(keyword));
+  data.short_name = base::UTF8ToUTF16(short_name);
+  data.SetKeyword(base::UTF8ToUTF16(keyword));
   data.SetURL(url);
   data.suggestions_url = suggest_url;
   if (!alternate_url.empty())

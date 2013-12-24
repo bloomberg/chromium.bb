@@ -29,7 +29,7 @@ StorageInfo CreateStorageInfo(
     uint64 size_bytes) {
   return StorageInfo(
       device_id, base::string16(), mount_point.value(),
-      base::string16(), base::string16(), UTF8ToUTF16(model_name),
+      base::string16(), base::string16(), base::UTF8ToUTF16(model_name),
       size_bytes);
 }
 

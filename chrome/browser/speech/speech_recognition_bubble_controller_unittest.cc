@@ -126,7 +126,7 @@ class SpeechRecognitionBubbleControllerTest
   static void ActivateBubble() {
     if (MockSpeechRecognitionBubble::type() !=
         MockSpeechRecognitionBubble::BUBBLE_TEST_FOCUS_CHANGED) {
-      test_fixture_->controller_->SetBubbleMessage(ASCIIToUTF16("Test"));
+      test_fixture_->controller_->SetBubbleMessage(base::ASCIIToUTF16("Test"));
     }
   }
 

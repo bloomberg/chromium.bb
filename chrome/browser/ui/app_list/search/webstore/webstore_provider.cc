@@ -52,7 +52,7 @@ void WebstoreProvider::Start(const base::string16& query) {
     return;
   }
 
-  query_ = UTF16ToUTF8(query);
+  query_ = base::UTF16ToUTF8(query);
   const CacheResult result = cache_->Get(WebserviceCache::WEBSTORE, query_);
   if (result.second) {
     ProcessWebstoreSearchResults(result.second);

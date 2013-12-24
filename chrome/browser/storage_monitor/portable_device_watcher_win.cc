@@ -250,7 +250,7 @@ bool ConstructDeviceStorageUniqueId(const base::string16& device_serial_num,
   DCHECK(device_storage_id);
   *device_storage_id = StorageInfo::MakeDeviceId(
        StorageInfo::MTP_OR_PTP,
-       UTF16ToUTF8(storage_id + L':' + device_serial_num));
+       base::UTF16ToUTF8(storage_id + L':' + device_serial_num));
   return true;
 }
 
@@ -542,7 +542,7 @@ base::string16 PortableDeviceWatcherWin::GetStoragePathFromStorageId(
   // Construct a dummy device path using the storage name. This is only used
   // for registering the device media file system.
   DCHECK(!storage_unique_id.empty());
-  return UTF8ToUTF16("\\\\" + storage_unique_id);
+  return base::UTF8ToUTF16("\\\\" + storage_unique_id);
 }
 
 void PortableDeviceWatcherWin::SetNotifications(

@@ -65,13 +65,13 @@ void SigninNamesOnIOThread::Observe(
     case chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL: {
       const GoogleServiceSigninSuccessDetails* signin_details =
           content::Details<GoogleServiceSigninSuccessDetails>(details).ptr();
-      PostTaskToIOThread(type, UTF8ToUTF16(signin_details->username));
+      PostTaskToIOThread(type, base::UTF8ToUTF16(signin_details->username));
       break;
     }
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT: {
       const GoogleServiceSignoutDetails* signout_details =
           content::Details<GoogleServiceSignoutDetails>(details).ptr();
-      PostTaskToIOThread(type, UTF8ToUTF16(signout_details->username));
+      PostTaskToIOThread(type, base::UTF8ToUTF16(signout_details->username));
       break;
     }
     default:

@@ -72,7 +72,7 @@ struct WebPluginAction;
 //                                     const std::string& data) {
 //       bool enabled = response == 200;
 //       const char* text = enabled ? "OK" : "ERROR";
-//       proxy_->UpdateMenuItem(id_, enabled, ASCIIToUTF16(text));
+//       proxy_->UpdateMenuItem(id_, enabled, base::ASCIIToUTF16(text));
 //     }
 //     void Start(const GURL* url, net::URLRequestContextGetter* context) {
 //       fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));

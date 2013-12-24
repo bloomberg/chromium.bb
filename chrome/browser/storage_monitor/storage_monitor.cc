@@ -147,7 +147,7 @@ void StorageMonitor::ProcessAttach(const StorageInfo& info) {
     storage_map_.insert(std::make_pair(info.device_id(), info));
   }
 
-  DVLOG(1) << "StorageAttached with name " << UTF16ToUTF8(info.name())
+  DVLOG(1) << "StorageAttached with name " << base::UTF16ToUTF8(info.name())
            << " and id " << info.device_id();
   if (StorageInfo::IsRemovableDevice(info.device_id())) {
     observer_list_->Notify(

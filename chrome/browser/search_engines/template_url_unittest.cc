@@ -23,6 +23,8 @@
 #include "chrome/browser/search_engines/search_terms_data_android.h"
 #endif
 
+using base::ASCIIToUTF16;
+
 // TestSearchTermsData --------------------------------------------------------
 
 // Simple implementation of SearchTermsData.
@@ -349,13 +351,14 @@ TEST_F(TemplateURLTest, URLRefTermToWide) {
   } to_wide_cases[] = {
     {"hello+world", ASCIIToUTF16("hello world")},
     // Test some big-5 input.
-    {"%a7A%A6%6e+to+you", WideToUTF16(L"\x4f60\x597d to you")},
+    {"%a7A%A6%6e+to+you", base::WideToUTF16(L"\x4f60\x597d to you")},
     // Test some UTF-8 input. We should fall back to this when the encoding
     // doesn't look like big-5. We have a '5' in the middle, which is an invalid
     // Big-5 trailing byte.
-    {"%e4%bd%a05%e5%a5%bd+to+you", WideToUTF16(L"\x4f60\x35\x597d to you")},
+    {"%e4%bd%a05%e5%a5%bd+to+you",
+        base::WideToUTF16(L"\x4f60\x35\x597d to you")},
     // Undecodable input should stay escaped.
-    {"%91%01+abcd", WideToUTF16(L"%91%01 abcd")},
+    {"%91%01+abcd", base::WideToUTF16(L"%91%01 abcd")},
     // Make sure we convert %2B to +.
     {"C%2B%2B", ASCIIToUTF16("C++")},
     // C%2B is escaped as C%252B, make sure we unescape it properly.
@@ -457,16 +460,16 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
     const std::string url;
     const std::string expected_result;
   } test_data[] = {
-    { "BIG5",  WideToUTF16(L"\x60BD"),
+    { "BIG5",  base::WideToUTF16(L"\x60BD"),
       "http://foo/?{searchTerms}{inputEncoding}",
       "http://foo/?%B1~BIG5" },
     { "UTF-8", ASCIIToUTF16("blah"),
       "http://foo/?{searchTerms}{inputEncoding}",
       "http://foo/?blahUTF-8" },
-    { "Shift_JIS", UTF8ToUTF16("\xe3\x81\x82"),
+    { "Shift_JIS", base::UTF8ToUTF16("\xe3\x81\x82"),
       "http://foo/{searchTerms}/bar",
       "http://foo/%82%A0/bar"},
-    { "Shift_JIS", UTF8ToUTF16("\xe3\x81\x82 \xe3\x81\x84"),
+    { "Shift_JIS", base::UTF8ToUTF16("\xe3\x81\x82 \xe3\x81\x84"),
       "http://foo/{searchTerms}/bar",
       "http://foo/%82%A0%20%82%A2/bar"},
   };
@@ -673,7 +676,7 @@ TEST_F(TemplateURLTest, RLZ) {
   ASSERT_TRUE(result.is_valid());
   std::string expected_url = "http://bar/?";
   if (!rlz_string.empty())
-    expected_url += "rlz=" + UTF16ToUTF8(rlz_string) + "&";
+    expected_url += "rlz=" + base::UTF16ToUTF8(rlz_string) + "&";
   expected_url += "x";
   EXPECT_EQ(expected_url, result.spec());
 }

@@ -31,12 +31,12 @@ const content::Referrer kReferrer =
     content::Referrer(GURL("http://www.referrer.com"),
                       blink::WebReferrerPolicyAlways);
 const GURL kVirtualURL("http://www.virtual-url.com");
-const base::string16 kTitle = ASCIIToUTF16("title");
+const base::string16 kTitle = base::ASCIIToUTF16("title");
 const content::PageState kPageState =
     content::PageState::CreateFromEncodedData("page state");
 const GURL kOriginalRequestURL("http://www.original-request.com");
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
-const base::string16 kSearchTerms = ASCIIToUTF16("my search terms");
+const base::string16 kSearchTerms = base::ASCIIToUTF16("my search terms");
 const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
 
 // Create a typical SessionTab protocol buffer and set an existing
@@ -83,7 +83,7 @@ TEST(SessionTab, FromSyncData) {
   for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(i, tab.navigations[i].index());
     EXPECT_EQ(GURL("referrer"), tab.navigations[i].referrer().url);
-    EXPECT_EQ(ASCIIToUTF16("title"),tab.navigations[i].title());
+    EXPECT_EQ(base::ASCIIToUTF16("title"),tab.navigations[i].title());
     EXPECT_EQ(content::PAGE_TRANSITION_TYPED,
               tab.navigations[i].transition_type());
     EXPECT_EQ(GURL("http://foo/" + base::IntToString(i)),
@@ -120,7 +120,7 @@ TEST(SessionTab, ToSyncData) {
   for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(tab.navigations[i].virtual_url().spec(),
               sync_data.navigation(i).virtual_url());
-    EXPECT_EQ(UTF16ToUTF8(tab.navigations[i].title()),
+    EXPECT_EQ(base::UTF16ToUTF8(tab.navigations[i].title()),
               sync_data.navigation(i).title());
   }
   EXPECT_FALSE(sync_data.has_favicon());

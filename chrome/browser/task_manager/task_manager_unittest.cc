@@ -15,6 +15,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 #if defined(OS_MACOSX)

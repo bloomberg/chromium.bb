@@ -87,7 +87,7 @@ void TestPortableDeviceWatcherWin::GetMTPStorageDetails(
   std::string storage_unique_id = GetMTPStorageUniqueId(pnp_device_id,
                                                         storage_object_id);
   if (device_location)
-    *device_location = UTF8ToUTF16("\\\\" + storage_unique_id);
+    *device_location = base::UTF8ToUTF16("\\\\" + storage_unique_id);
 
   if (unique_id)
     *unique_id = storage_unique_id;

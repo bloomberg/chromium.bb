@@ -24,7 +24,7 @@ SearchWebstoreResult::SearchWebstoreResult(Profile* profile,
   set_id(launch_url_.spec());
   set_relevance(0.0);
 
-  set_title(UTF8ToUTF16(query));
+  set_title(base::UTF8ToUTF16(query));
 
   const base::string16 details =
       l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE);
