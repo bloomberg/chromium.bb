@@ -143,7 +143,7 @@ bool ShowAutolaunchPrompt(Browser* browser) {
   // Only supported on the main profile for now.
   Profile* profile = browser->profile();
   if (profile->GetPath().BaseName() !=
-      base::FilePath(ASCIIToUTF16(chrome::kInitialProfile))) {
+      base::FilePath(base::ASCIIToUTF16(chrome::kInitialProfile))) {
     return false;
   }
 

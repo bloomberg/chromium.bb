@@ -234,7 +234,7 @@ void X11InputMethodContextImplGtk2::OnCommit(GtkIMContext* context,
   if (context != gtk_context_)
     return;
 
-  const base::string16& text_in_utf16 = UTF8ToUTF16(text);
+  const base::string16& text_in_utf16 = base::UTF8ToUTF16(text);
   // If an underlying IME is emitting the "commit" signal to insert a character
   // for a direct input key event, ignores the insertion of the character at
   // this point, because we have to call DispatchKeyEventPostIME() for direct

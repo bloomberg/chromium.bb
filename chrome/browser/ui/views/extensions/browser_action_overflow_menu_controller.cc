@@ -44,11 +44,11 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
     BrowserActionView* view = (*views_)[i];
     menu_->AppendMenuItemWithIcon(
         command_id,
-        UTF8ToUTF16(view->button()->extension()->name()),
+        base::UTF8ToUTF16(view->button()->extension()->name()),
         view->GetIconWithBadge());
 
     // Set the tooltip for this item.
-    base::string16 tooltip = UTF8ToUTF16(
+    base::string16 tooltip = base::UTF8ToUTF16(
         extensions::ExtensionActionManager::Get(owner_->profile())->
         GetBrowserAction(*view->button()->extension())->
         GetTitle(owner_->GetCurrentTabId()));

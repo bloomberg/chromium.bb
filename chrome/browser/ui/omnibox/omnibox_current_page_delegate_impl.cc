@@ -76,7 +76,7 @@ bool OmniboxCurrentPageDelegateImpl::ProcessExtensionKeyword(
   extensions::ExtensionOmniboxEventRouter::OnInputEntered(
       controller_->GetWebContents(),
       template_url->GetExtensionId(),
-      UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)),
+      base::UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)),
       disposition);
 
   return true;

@@ -32,6 +32,8 @@
 #include "ipc/ipc_test_sink.h"
 #include "ui/gfx/size.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 using content::Referrer;

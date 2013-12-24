@@ -53,13 +53,13 @@ void FullscreenExitBubbleGtk::UpdateContent(
   bubble_type_ = bubble_type;
 
   gtk_label_set_text(GTK_LABEL(message_label_),
-                     UTF16ToUTF8(GetCurrentMessageText()).c_str());
+                     base::UTF16ToUTF8(GetCurrentMessageText()).c_str());
   if (fullscreen_bubble::ShowButtonsForType(bubble_type)) {
     gtk_widget_hide(link_);
     gtk_widget_hide(instruction_label_);
     gtk_widget_show(allow_button_);
     gtk_button_set_label(GTK_BUTTON(deny_button_),
-                         UTF16ToUTF8(GetCurrentDenyButtonText()).c_str());
+                         base::UTF16ToUTF8(GetCurrentDenyButtonText()).c_str());
     gtk_widget_show(deny_button_);
   } else {
     bool link_visible = true;
@@ -123,7 +123,8 @@ void FullscreenExitBubbleGtk::InitWidgets() {
                                            FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), link_, FALSE, FALSE, 0);
 
-  instruction_label_ = gtk_label_new(UTF16ToUTF8(GetInstructionText()).c_str());
+  instruction_label_ =
+      gtk_label_new(base::UTF16ToUTF8(GetInstructionText()).c_str());
   gtk_widget_set_no_show_all(instruction_label_, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox_), instruction_label_, FALSE, FALSE, 0);
 
@@ -169,7 +170,7 @@ std::string FullscreenExitBubbleGtk::GetMessage(const GURL& url) {
   if (url.SchemeIsFile())
     return l10n_util::GetStringUTF8(IDS_FULLSCREEN_ENTERED_FULLSCREEN);
   return l10n_util::GetStringFUTF8(IDS_FULLSCREEN_SITE_ENTERED_FULLSCREEN,
-      UTF8ToUTF16(url.host()));
+      base::UTF8ToUTF16(url.host()));
 }
 
 gfx::Rect FullscreenExitBubbleGtk::GetPopupRect(

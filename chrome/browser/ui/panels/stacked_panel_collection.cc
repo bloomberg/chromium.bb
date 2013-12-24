@@ -145,7 +145,7 @@ base::string16 StackedPanelCollection::GetTitle() const {
 
   Panel* panel = panels_.front();
   const extensions::Extension* extension = panel->GetExtension();
-  return UTF8ToUTF16(extension && !extension->name().empty() ?
+  return base::UTF8ToUTF16(extension && !extension->name().empty() ?
       extension->name() : panel->app_name());
 }
 

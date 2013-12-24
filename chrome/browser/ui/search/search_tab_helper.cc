@@ -531,7 +531,7 @@ void SearchTabHelper::OnChromeIdentityCheck(const base::string16& identity) {
   SigninManagerBase* manager = SigninManagerFactory::GetForProfile(profile());
   if (manager) {
     const base::string16 username =
-        UTF8ToUTF16(manager->GetAuthenticatedUsername());
+        base::UTF8ToUTF16(manager->GetAuthenticatedUsername());
     ipc_router_.SendChromeIdentityCheckResult(identity,
                                               identity == username);
   }

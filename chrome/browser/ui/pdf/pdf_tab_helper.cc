@@ -98,7 +98,7 @@ void PDFTabHelper::OnModalPromptForPasswordClosed(
     bool success,
     const base::string16& actual_value) {
   ChromeViewHostMsg_PDFModalPromptForPassword::WriteReplyParams(
-      reply_message, UTF16ToUTF8(actual_value));
+      reply_message, base::UTF16ToUTF8(actual_value));
   Send(reply_message);
 }
 

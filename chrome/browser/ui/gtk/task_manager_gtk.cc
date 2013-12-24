@@ -652,7 +652,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
 }
 
 std::string TaskManagerGtk::GetModelText(int row, int col_id) {
-  return UTF16ToUTF8(model_->GetResourceById(row, col_id));
+  return base::UTF16ToUTF8(model_->GetResourceById(row, col_id));
 }
 
 GdkPixbuf* TaskManagerGtk::GetModelIcon(int row) {

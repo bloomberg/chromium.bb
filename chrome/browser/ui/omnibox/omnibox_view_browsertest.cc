@@ -50,6 +50,8 @@
 #include <gtk/gtk.h>
 #endif
 
+using base::ASCIIToUTF16;
+using base::UTF16ToUTF8;
 using base::Time;
 using base::TimeDelta;
 
@@ -299,7 +301,7 @@ class OmniboxViewTest : public InProcessBrowserTest,
     GURL url(entry.url);
     // Add everything in order of time. We don't want to have a time that
     // is "right now" or it will nondeterministically appear in the results.
-    history_service->AddPageWithDetails(url, UTF8ToUTF16(entry.title),
+    history_service->AddPageWithDetails(url, base::UTF8ToUTF16(entry.title),
                                         entry.visit_count,
                                         entry.typed_count, time, false,
                                         history::SOURCE_BROWSED);
@@ -755,7 +757,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BasicTextOperations) {
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
   base::string16 old_text = omnibox_view->GetText();
-  EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), old_text);
+  EXPECT_EQ(base::UTF8ToUTF16(content::kAboutBlankURL), old_text);
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   size_t start, end;
@@ -844,7 +846,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   // Keyword should also be accepted by typing an ideographic space.
   omnibox_view->OnBeforePossibleChange();
   omnibox_view->SetWindowTextAndCaretPos(search_keyword +
-      WideToUTF16(L"\x3000"), search_keyword.length() + 1, false, false);
+      base::WideToUTF16(L"\x3000"), search_keyword.length() + 1, false, false);
   omnibox_view->OnAfterPossibleChange();
   ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
@@ -1392,7 +1394,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, UndoRedo) {
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
 
   base::string16 old_text = omnibox_view->GetText();
-  EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), old_text);
+  EXPECT_EQ(base::UTF8ToUTF16(content::kAboutBlankURL), old_text);
   EXPECT_TRUE(omnibox_view->IsSelectAll());
 
   // Delete the text, then undo.
@@ -1450,14 +1452,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest,
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   // Insert text: ﾀﾞ
-  omnibox_view->SetUserText(UTF8ToUTF16("\357\276\200\357\276\236"));
+  omnibox_view->SetUserText(base::UTF8ToUTF16("\357\276\200\357\276\236"));
 
   // Move the cursor to the end.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_END, 0));
 
   // Backspace should delete one character.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
-  EXPECT_EQ(UTF8ToUTF16("\357\276\200"), omnibox_view->GetText());
+  EXPECT_EQ(base::UTF8ToUTF16("\357\276\200"), omnibox_view->GetText());
 }
 #endif  // defined(TOOLKIT_GTK) || defined(TOOLKIT_VIEWS)
 

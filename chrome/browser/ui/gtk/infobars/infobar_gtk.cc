@@ -216,7 +216,7 @@ void InfoBarGtk::AddLabelWithInlineLink(const base::string16& display_text,
                                         size_t link_offset,
                                         GCallback callback) {
   DCHECK(hbox_);
-  GtkWidget* link_button = CreateLinkButton(UTF16ToUTF8(link_text));
+  GtkWidget* link_button = CreateLinkButton(base::UTF16ToUTF8(link_text));
   gtk_util::ForceFontSizePixels(
       GTK_CHROME_LINK_BUTTON(link_button)->label, 13.4);
   DCHECK(callback);
@@ -231,9 +231,9 @@ void InfoBarGtk::AddLabelWithInlineLink(const base::string16& display_text,
 
   // Need to insert the link inside the display text.
   GtkWidget* initial_label = CreateLabel(
-      UTF16ToUTF8(display_text.substr(0, link_offset)));
+      base::UTF16ToUTF8(display_text.substr(0, link_offset)));
   GtkWidget* trailing_label = CreateLabel(
-      UTF16ToUTF8(display_text.substr(link_offset)));
+      base::UTF16ToUTF8(display_text.substr(link_offset)));
 
   gtk_util::ForceFontSizePixels(initial_label, 13.4);
   gtk_util::ForceFontSizePixels(trailing_label, 13.4);

@@ -74,8 +74,8 @@ void LoginPromptBrowserTest::SetAuthFor(LoginHandler* handler) {
   EXPECT_TRUE(auth_map_.end() != i);
   if (i != auth_map_.end()) {
     const AuthInfo& info = i->second;
-    handler->SetAuth(UTF8ToUTF16(info.username_),
-                     UTF8ToUTF16(info.password_));
+    handler->SetAuth(base::UTF8ToUTF16(info.username_),
+                     base::UTF8ToUTF16(info.password_));
   }
 }
 
@@ -217,7 +217,7 @@ const char* kAuthDigestPage = "auth-digest";
 base::string16 ExpectedTitleFromAuth(const base::string16& username,
                                      const base::string16& password) {
   // The TestServer sets the title to username/password on successful login.
-  return username + UTF8ToUTF16("/") + password;
+  return username + base::UTF8ToUTF16("/") + password;
 }
 
 // Confirm that <link rel="prefetch"> targetting an auth required
@@ -296,7 +296,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuth) {
     LoginHandler* handler = *observer.handlers_.begin();
 
     ASSERT_TRUE(handler);
-    handler->SetAuth(UTF8ToUTF16(bad_username_), UTF8ToUTF16(bad_password_));
+    handler->SetAuth(base::UTF8ToUTF16(bad_username_),
+                     base::UTF8ToUTF16(bad_password_));
     auth_supplied_waiter.Wait();
 
     // The request should be retried after the incorrect password is
@@ -312,7 +313,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestBasicAuth) {
   auth_supplied_waiter.Wait();
 
   base::string16 expected_title =
-      ExpectedTitleFromAuth(ASCIIToUTF16("basicuser"), ASCIIToUTF16("secret"));
+      ExpectedTitleFromAuth(base::ASCIIToUTF16("basicuser"),
+                            base::ASCIIToUTF16("secret"));
   content::TitleWatcher title_watcher(contents, expected_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
@@ -344,7 +346,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestDigestAuth) {
     LoginHandler* handler = *observer.handlers_.begin();
 
     ASSERT_TRUE(handler);
-    handler->SetAuth(UTF8ToUTF16(bad_username_), UTF8ToUTF16(bad_password_));
+    handler->SetAuth(base::UTF8ToUTF16(bad_username_),
+                     base::UTF8ToUTF16(bad_password_));
     auth_supplied_waiter.Wait();
 
     // The request should be retried after the incorrect password is
@@ -357,8 +360,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestDigestAuth) {
   WindowedAuthSuppliedObserver auth_supplied_waiter(controller);
   LoginHandler* handler = *observer.handlers_.begin();
 
-  base::string16 username(UTF8ToUTF16(username_digest_));
-  base::string16 password(UTF8ToUTF16(password_));
+  base::string16 username(base::UTF8ToUTF16(username_digest_));
+  base::string16 password(base::UTF8ToUTF16(password_));
   handler->SetAuth(username, password);
   auth_supplied_waiter.Wait();
 
@@ -412,14 +415,16 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestTwoAuths) {
   LoginHandler* handler2 = *(++(observer.handlers_.begin()));
 
   base::string16 expected_title1 = ExpectedTitleFromAuth(
-      UTF8ToUTF16(username_basic_), UTF8ToUTF16(password_));
+      base::UTF8ToUTF16(username_basic_), base::UTF8ToUTF16(password_));
   base::string16 expected_title2 = ExpectedTitleFromAuth(
-      UTF8ToUTF16(username_digest_), UTF8ToUTF16(password_));
+      base::UTF8ToUTF16(username_digest_), base::UTF8ToUTF16(password_));
   content::TitleWatcher title_watcher1(contents1, expected_title1);
   content::TitleWatcher title_watcher2(contents2, expected_title2);
 
-  handler1->SetAuth(UTF8ToUTF16(username_basic_), UTF8ToUTF16(password_));
-  handler2->SetAuth(UTF8ToUTF16(username_digest_), UTF8ToUTF16(password_));
+  handler1->SetAuth(base::UTF8ToUTF16(username_basic_),
+                    base::UTF8ToUTF16(password_));
+  handler2->SetAuth(base::UTF8ToUTF16(username_digest_),
+                    base::UTF8ToUTF16(password_));
 
   EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
   EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
@@ -656,8 +661,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, IncorrectConfirmation) {
     LoginHandler* handler = *observer.handlers_.begin();
 
     ASSERT_TRUE(handler);
-    handler->SetAuth(UTF8ToUTF16(bad_username_),
-                     UTF8ToUTF16(bad_password_));
+    handler->SetAuth(base::UTF8ToUTF16(bad_username_),
+                     base::UTF8ToUTF16(bad_password_));
     auth_supplied_waiter.Wait();
 
     // The request should be retried after the incorrect password is

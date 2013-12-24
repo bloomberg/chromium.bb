@@ -124,7 +124,7 @@ void AppInfoView::PrepareDescriptionLabel(const base::string16& description) {
     return;
 
   const size_t kMaxLength = 200;
-  const base::string16 kEllipsis(ASCIIToUTF16(" ... "));
+  const base::string16 kEllipsis(base::ASCIIToUTF16(" ... "));
 
   base::string16 text = description;
   if (text.length() > kMaxLength) {
@@ -522,8 +522,8 @@ CreateChromeApplicationShortcutView::CreateChromeApplicationShortcutView(
           close_callback_(close_callback),
           weak_ptr_factory_(this) {
   // Required by InitControls().
-  shortcut_info_.title = UTF8ToUTF16(app->name());
-  shortcut_info_.description = UTF8ToUTF16(app->description());
+  shortcut_info_.title = base::UTF8ToUTF16(app->name());
+  shortcut_info_.description = base::UTF8ToUTF16(app->description());
 
   // Place Chrome app shortcuts in the "Chrome Apps" submenu.
   create_in_chrome_apps_subdir_ = true;

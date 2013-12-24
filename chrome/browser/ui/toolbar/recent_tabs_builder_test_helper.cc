@@ -171,7 +171,7 @@ base::string16 RecentTabsBuilderTestHelper::GetTabTitle(int session_index,
   base::string16 title =
       sessions_[session_index].windows[window_index].tabs[tab_index].title;
   if (title.empty()) {
-    title = UTF8ToUTF16(ToTabTitle(
+    title = base::UTF8ToUTF16(ToTabTitle(
         GetSessionID(session_index),
         GetWindowID(session_index, window_index),
         GetTabID(session_index, window_index, tab_index)));
@@ -308,7 +308,7 @@ void RecentTabsBuilderTestHelper::BuildTabSpecifics(
   sync_pb::TabNavigation* navigation = tab->add_navigation();
   navigation->set_virtual_url(ToTabUrl(session_id, window_id, tab_id));
   navigation->set_referrer("referrer");
-  navigation->set_title(UTF16ToUTF8(GetTabTitle(
+  navigation->set_title(base::UTF16ToUTF8(GetTabTitle(
       session_index, window_index, tab_index)));
   navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
 }

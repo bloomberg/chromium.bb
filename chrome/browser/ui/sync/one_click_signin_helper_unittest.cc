@@ -319,7 +319,7 @@ void OneClickSigninHelperTest::SubmitGAIAPassword(
   autofill::PasswordForm password_form;
   password_form.origin = GURL("https://accounts.google.com");
   password_form.signon_realm = "https://accounts.google.com";
-  password_form.password_value = UTF8ToUTF16("password");
+  password_form.password_value = base::UTF8ToUTF16("password");
   helper->PasswordSubmitted(password_form);
 }
 
@@ -495,7 +495,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_INTERSTITAL_ONLY,
       "user@gmail.com", &error_message));
   EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
-                                      UTF8ToUTF16("foo@gmail.com")),
+                                      base::UTF8ToUTF16("foo@gmail.com")),
             error_message);
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
@@ -507,7 +507,7 @@ TEST_F(OneClickSigninHelperTest, CanOfferProfileConnected) {
       web_contents(), OneClickSigninHelper::CAN_OFFER_FOR_ALL,
       "user@gmail.com", &error_message));
   EXPECT_EQ(l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
-                                      UTF8ToUTF16("foo@gmail.com")),
+                                      base::UTF8ToUTF16("foo@gmail.com")),
             error_message);
   EXPECT_TRUE(OneClickSigninHelper::CanOffer(
       web_contents(),
@@ -798,8 +798,9 @@ TEST_F(OneClickSigninHelperIOTest, CanOfferOnIOThreadEmailAlreadyUsed) {
   ProfileInfoCache* cache = testing_profile_manager_.profile_info_cache();
   const base::FilePath& user_data_dir = cache->GetUserDataDir();
   cache->AddProfileToCache(user_data_dir.Append(FILE_PATH_LITERAL("user")),
-                           UTF8ToUTF16("user"),
-                           UTF8ToUTF16("user@gmail.com"), 0, std::string());
+                           base::UTF8ToUTF16("user"),
+                           base::UTF8ToUTF16("user@gmail.com"), 0,
+                           std::string());
 
   scoped_ptr<TestProfileIOData> io_data(CreateTestProfileIOData(false));
   EXPECT_EQ(OneClickSigninHelper::DONT_OFFER,

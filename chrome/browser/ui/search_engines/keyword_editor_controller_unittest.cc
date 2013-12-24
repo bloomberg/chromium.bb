@@ -19,6 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/table_model_observer.h"
 
+using base::ASCIIToUTF16;
+
 static const base::string16 kA(ASCIIToUTF16("a"));
 static const base::string16 kA1(ASCIIToUTF16("a1"));
 static const base::string16 kB(ASCIIToUTF16("b"));

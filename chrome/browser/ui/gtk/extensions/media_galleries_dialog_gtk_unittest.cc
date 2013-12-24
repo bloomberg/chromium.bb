@@ -24,7 +24,7 @@ MediaGalleryPrefInfo MakePrefInfoForTesting(MediaGalleryPrefId id) {
   gallery.pref_id = id;
   gallery.device_id = StorageInfo::MakeDeviceId(StorageInfo::FIXED_MASS_STORAGE,
                                                 base::Int64ToString(id));
-  gallery.display_name = ASCIIToUTF16("Display Name");
+  gallery.display_name = base::ASCIIToUTF16("Display Name");
   return gallery;
 }
 

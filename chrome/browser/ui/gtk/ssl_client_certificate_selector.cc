@@ -262,12 +262,12 @@ std::string SSLClientCertificateSelector::FormatDetailsText(
 
   rv += l10n_util::GetStringFUTF8(
       IDS_CERT_SUBJECTNAME_FORMAT,
-      UTF8ToUTF16(x509_certificate_model::GetSubjectName(cert)));
+      base::UTF8ToUTF16(x509_certificate_model::GetSubjectName(cert)));
 
   rv += "\n  ";
   rv += l10n_util::GetStringFUTF8(
       IDS_CERT_SERIAL_NUMBER_FORMAT,
-      UTF8ToUTF16(x509_certificate_model::GetSerialNumberHexified(
+      base::UTF8ToUTF16(x509_certificate_model::GetSerialNumberHexified(
           cert, std::string())));
 
   base::Time issued, expires;
@@ -284,14 +284,14 @@ std::string SSLClientCertificateSelector::FormatDetailsText(
   if (usages.size()) {
     rv += "\n  ";
     rv += l10n_util::GetStringFUTF8(IDS_CERT_X509_EXTENDED_KEY_USAGE_FORMAT,
-                                    UTF8ToUTF16(JoinString(usages, ',')));
+                                    base::UTF8ToUTF16(JoinString(usages, ',')));
   }
 
   std::string key_usage_str = x509_certificate_model::GetKeyUsageString(cert);
   if (!key_usage_str.empty()) {
     rv += "\n  ";
     rv += l10n_util::GetStringFUTF8(IDS_CERT_X509_KEY_USAGE_FORMAT,
-                                    UTF8ToUTF16(key_usage_str));
+                                    base::UTF8ToUTF16(key_usage_str));
   }
 
   std::vector<std::string> email_addresses;
@@ -300,15 +300,16 @@ std::string SSLClientCertificateSelector::FormatDetailsText(
     rv += "\n  ";
     rv += l10n_util::GetStringFUTF8(
         IDS_CERT_EMAIL_ADDRESSES_FORMAT,
-        UTF8ToUTF16(JoinString(email_addresses, ',')));
+        base::UTF8ToUTF16(JoinString(email_addresses, ',')));
   }
 
   rv += '\n';
   rv += l10n_util::GetStringFUTF8(
       IDS_CERT_ISSUERNAME_FORMAT,
-      UTF8ToUTF16(x509_certificate_model::GetIssuerName(cert)));
+      base::UTF8ToUTF16(x509_certificate_model::GetIssuerName(cert)));
 
-  base::string16 token(UTF8ToUTF16(x509_certificate_model::GetTokenName(cert)));
+  base::string16 token(
+      base::UTF8ToUTF16(x509_certificate_model::GetTokenName(cert)));
   if (!token.empty()) {
     rv += '\n';
     rv += l10n_util::GetStringFUTF8(IDS_CERT_TOKEN_FORMAT, token);

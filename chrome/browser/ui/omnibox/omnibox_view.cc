@@ -17,8 +17,8 @@
 
 // static
 base::string16 OmniboxView::StripJavascriptSchemas(const base::string16& text) {
-  const base::string16 kJsPrefix(ASCIIToUTF16(content::kJavaScriptScheme) +
-                           ASCIIToUTF16(":"));
+  const base::string16 kJsPrefix(
+      base::ASCIIToUTF16(content::kJavaScriptScheme) + base::ASCIIToUTF16(":"));
   base::string16 out(text);
   while (StartsWith(out, kJsPrefix, false))
     TrimWhitespace(out.substr(kJsPrefix.length()), TRIM_LEADING, &out);
@@ -37,7 +37,7 @@ base::string16 OmniboxView::SanitizeTextForPaste(const base::string16& text) {
       // If the user is pasting all-whitespace, paste a single space
       // rather than nothing, since pasting nothing feels broken.
       return collapsed.empty() ?
-          ASCIIToUTF16(" ") : StripJavascriptSchemas(collapsed);
+          base::ASCIIToUTF16(" ") : StripJavascriptSchemas(collapsed);
     }
   }
 
@@ -70,7 +70,7 @@ base::string16 OmniboxView::GetClipboardText() {
     // pass resulting url string through GURL to normalize
     GURL url(url_str);
     if (url.is_valid())
-      return StripJavascriptSchemas(UTF8ToUTF16(url.spec()));
+      return StripJavascriptSchemas(base::UTF8ToUTF16(url.spec()));
   }
 
   return base::string16();

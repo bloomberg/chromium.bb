@@ -60,7 +60,7 @@ base::string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
 }
 
 base::string16 AlternateNavInfoBarDelegate::GetLinkText() const {
-  return UTF8ToUTF16(match_.destination_url.spec());
+  return base::UTF8ToUTF16(match_.destination_url.spec());
 }
 
 bool AlternateNavInfoBarDelegate::LinkClicked(

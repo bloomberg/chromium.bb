@@ -58,10 +58,10 @@ CookieInfoView::~CookieInfoView() {
 
 void CookieInfoView::SetCookie(const std::string& domain,
                                const net::CanonicalCookie& cookie) {
-  name_value_field_->SetText(UTF8ToUTF16(cookie.Name()));
-  content_value_field_->SetText(UTF8ToUTF16(cookie.Value()));
-  domain_value_field_->SetText(UTF8ToUTF16(domain));
-  path_value_field_->SetText(UTF8ToUTF16(cookie.Path()));
+  name_value_field_->SetText(base::UTF8ToUTF16(cookie.Name()));
+  content_value_field_->SetText(base::UTF8ToUTF16(cookie.Value()));
+  domain_value_field_->SetText(base::UTF8ToUTF16(domain));
+  path_value_field_->SetText(base::UTF8ToUTF16(cookie.Path()));
   created_value_field_->SetText(
       base::TimeFormatFriendlyDateAndTime(cookie.CreationDate()));
 

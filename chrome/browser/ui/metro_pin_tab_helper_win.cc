@@ -45,9 +45,9 @@ const char kMetroPinMetric[] = "Metro.SecondaryTilePin";
 // the URL.
 base::string16 GenerateTileId(const base::string16& url_str) {
   uint8 hash[crypto::kSHA256Length];
-  crypto::SHA256HashString(UTF16ToUTF8(url_str), hash, sizeof(hash));
+  crypto::SHA256HashString(base::UTF16ToUTF8(url_str), hash, sizeof(hash));
   std::string hash_str = base::HexEncode(hash, sizeof(hash));
-  return UTF8ToUTF16(hash_str);
+  return base::UTF8ToUTF16(hash_str);
 }
 
 // Get the path of the directory to store the tile logos in.
@@ -355,7 +355,7 @@ bool MetroPinTabHelper::IsPinned() const {
   }
 
   GURL url = web_contents()->GetURL();
-  base::string16 tile_id = GenerateTileId(UTF8ToUTF16(url.spec()));
+  base::string16 tile_id = GenerateTileId(base::UTF8ToUTF16(url.spec()));
   return metro_is_pinned_to_start_screen(tile_id) != 0;
 }
 
@@ -372,7 +372,7 @@ void MetroPinTabHelper::TogglePinnedToStartScreen() {
                             base::win::METRO_PIN_INITIATED,
                             base::win::METRO_PIN_STATE_LIMIT);
   GURL url = web_contents()->GetURL();
-  base::string16 url_str = UTF8ToUTF16(url.spec());
+  base::string16 url_str = base::UTF8ToUTF16(url.spec());
   base::string16 title = web_contents()->GetTitle();
   // TODO(oshima): Use scoped_ptr::Pass to pass it to other thread.
   SkBitmap favicon;
@@ -449,7 +449,7 @@ void MetroPinTabHelper::UnPinPageFromStartScreen() {
   }
 
   GURL url = web_contents()->GetURL();
-  base::string16 tile_id = GenerateTileId(UTF8ToUTF16(url.spec()));
+  base::string16 tile_id = GenerateTileId(base::UTF8ToUTF16(url.spec()));
   metro_un_pin_from_start_screen(tile_id,
                                  base::Bind(&PinPageReportUmaCallback));
 }

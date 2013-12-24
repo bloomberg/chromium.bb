@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #endif
 
+using base::ASCIIToUTF16;
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::PageNavigator;

@@ -163,7 +163,8 @@ GtkWidget* TranslateInfoBarBase::CreateLanguageCombobox(
     gtk_list_store_append(model, &tree_iter);
     gtk_list_store_set(model, &tree_iter,
                        LANGUAGE_COMBO_COLUMN_ID, i,
-                       LANGUAGE_COMBO_COLUMN_NAME, UTF16ToUTF8(name).c_str(),
+                       LANGUAGE_COMBO_COLUMN_NAME,
+                       base::UTF16ToUTF8(name).c_str(),
                        -1);
     if (i == selected_language) {
       selected_iter = tree_iter;

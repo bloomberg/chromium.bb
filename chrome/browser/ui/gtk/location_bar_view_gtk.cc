@@ -1294,7 +1294,7 @@ void LocationBarViewGtk::UpdateSiteTypeArea() {
 
     base::string16 info_text = GetToolbarModel()->GetEVCertName();
     gtk_label_set_text(GTK_LABEL(security_info_label_),
-                       UTF16ToUTF8(info_text).c_str());
+                       base::UTF16ToUTF8(info_text).c_str());
 
     UpdateEVCertificateLabelSize();
 
@@ -1376,9 +1376,9 @@ void LocationBarViewGtk::SetKeywordLabel(const base::string16& keyword) {
       min_string :
       l10n_util::GetStringFUTF16(IDS_OMNIBOX_KEYWORD_TEXT, min_string);
   gtk_label_set_text(GTK_LABEL(tab_to_search_full_label_),
-                     UTF16ToUTF8(full_name).c_str());
+                     base::UTF16ToUTF8(full_name).c_str());
   gtk_label_set_text(GTK_LABEL(tab_to_search_partial_label_),
-                     UTF16ToUTF8(partial_name).c_str());
+                     base::UTF16ToUTF8(partial_name).c_str());
 
   if (last_keyword_ != keyword) {
     last_keyword_ = keyword;
@@ -1424,9 +1424,9 @@ void LocationBarViewGtk::SetKeywordHintLabel(const base::string16& keyword) {
     return;
   }
 
-  std::string leading(UTF16ToUTF8(
+  std::string leading(base::UTF16ToUTF8(
       keyword_hint.substr(0, content_param_offsets.front())));
-  std::string trailing(UTF16ToUTF8(
+  std::string trailing(base::UTF16ToUTF8(
       keyword_hint.substr(content_param_offsets.front())));
   gtk_label_set_text(GTK_LABEL(tab_to_search_hint_leading_label_),
                      leading.c_str());
@@ -1607,7 +1607,7 @@ void LocationBarViewGtk::UpdateZoomIcon() {
 
   base::string16 tooltip = l10n_util::GetStringFUTF16Int(
       IDS_TOOLTIP_ZOOM, zoom_controller->zoom_percent());
-  gtk_widget_set_tooltip_text(zoom_.get(), UTF16ToUTF8(tooltip).c_str());
+  gtk_widget_set_tooltip_text(zoom_.get(), base::UTF16ToUTF8(tooltip).c_str());
 
   gtk_widget_show(zoom_.get());
 }
@@ -1634,7 +1634,7 @@ void LocationBarViewGtk::UpdateManagePasswordsIcon() {
   base::string16 tooltip =
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TOOLTIP_SAVE);
   gtk_widget_set_tooltip_text(manage_passwords_icon_.get(),
-                              UTF16ToUTF8(tooltip).c_str());
+                              base::UTF16ToUTF8(tooltip).c_str());
 
   gtk_widget_show(manage_passwords_icon_.get());
   if (manage_passwords_bubble_ui_controller->

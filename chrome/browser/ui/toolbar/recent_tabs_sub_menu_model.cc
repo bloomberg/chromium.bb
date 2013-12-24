@@ -478,7 +478,7 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
     AddSeparator(ui::NORMAL_SEPARATOR);
     int command_id = kMinDeviceNameCommandId + i;
     DCHECK_LE(command_id, kMaxDeviceNameCommandId);
-    AddItem(command_id, UTF8ToUTF16(session->session_name));
+    AddItem(command_id, base::UTF8ToUTF16(session->session_name));
     AddDeviceFavicon(GetItemCount() - 1, session->device_type);
 
     // Build tab menu items from sorted session tabs.
@@ -508,7 +508,7 @@ void RecentTabsSubMenuModel::BuildLocalTabItem(int session_id,
   // See comments in BuildLocalEntries() about usage of InsertItem*At().
   // There may be no tab title, in which case, use the url as tab title.
   InsertItemAt(curr_model_index, command_id,
-               title.empty() ? UTF8ToUTF16(item.url.spec()) : title);
+               title.empty() ? base::UTF8ToUTF16(item.url.spec()) : title);
   AddTabFavicon(command_id, item.url);
   local_tab_navigation_items_.push_back(item);
 }
@@ -547,7 +547,7 @@ void RecentTabsSubMenuModel::BuildOtherDevicesTabItem(
   // There may be no tab title, in which case, use the url as tab title.
   AddItem(command_id,
           current_navigation.title().empty() ?
-              UTF8ToUTF16(item.url.spec()) : current_navigation.title());
+              base::UTF8ToUTF16(item.url.spec()) : current_navigation.title());
   AddTabFavicon(command_id, item.url);
   other_devices_tab_navigation_items_.push_back(item);
 }

@@ -434,7 +434,7 @@ void WebsiteSettingsPopupGtk::SetCookieInfo(
     // Add the allowed and blocked cookies counts to the cookies info box.
     std::string info_str = l10n_util::GetStringFUTF8(
         IDS_WEBSITE_SETTINGS_SITE_DATA_STATS_LINE,
-        UTF8ToUTF16(it->cookie_source),
+        base::UTF8ToUTF16(it->cookie_source),
         base::IntToString16(it->allowed),
         base::IntToString16(it->blocked));
 
@@ -560,7 +560,7 @@ void WebsiteSettingsPopupGtk::SetFirstVisit(const base::string16& first_visit) {
   pango_attr_list_unref(attributes);
   gtk_misc_set_alignment(GTK_MISC(title), 0, 0);
 
-  GtkWidget* first_visit_label = CreateTextLabel(UTF16ToUTF8(first_visit),
+  GtkWidget* first_visit_label = CreateTextLabel(base::UTF16ToUTF8(first_visit),
                                                  kConnectionTabTextWidth,
                                                  theme_service_,
                                                  ui::kGdkBlack);

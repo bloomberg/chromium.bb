@@ -84,6 +84,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::ASCIIToUTF16;
 using testing::HasSubstr;
 
 namespace {

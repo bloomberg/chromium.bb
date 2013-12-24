@@ -41,7 +41,7 @@ void StatusIconGtk::SetPressedImage(const gfx::ImageSkia& image) {
 }
 
 void StatusIconGtk::SetToolTip(const base::string16& tool_tip) {
-  gtk_status_icon_set_tooltip_text(icon_, UTF16ToUTF8(tool_tip).c_str());
+  gtk_status_icon_set_tooltip_text(icon_, base::UTF16ToUTF8(tool_tip).c_str());
 }
 
 void StatusIconGtk::DisplayBalloon(const gfx::ImageSkia& icon,

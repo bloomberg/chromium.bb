@@ -237,5 +237,6 @@ void RenderViewContextMenuGtk::UpdateMenuItem(int command_id,
     gtk_widget_hide(item);
   else
     gtk_widget_show(item);
-  gtk_menu_item_set_label(GTK_MENU_ITEM(item), UTF16ToUTF8(title).c_str());
+  gtk_menu_item_set_label(GTK_MENU_ITEM(item),
+                          base::UTF16ToUTF8(title).c_str());
 }

@@ -237,7 +237,7 @@ void PanelStackWindowGtk::EnsureWindowCreated() {
 
   // Set the window icon and title.
   base::string16 title = delegate_->GetTitle();
-  gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
+  gtk_window_set_title(window_, base::UTF16ToUTF8(title).c_str());
 
   gfx::Image app_icon = delegate_->GetIcon();
   if (!app_icon.IsEmpty())

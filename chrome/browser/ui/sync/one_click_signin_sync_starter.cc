@@ -230,8 +230,8 @@ void OneClickSigninSyncStarter::CreateNewSignedInProfile() {
   size_t icon_index = g_browser_process->profile_manager()->
       GetProfileInfoCache().ChooseAvatarIconIndexForNewProfile();
   ProfileManager::CreateMultiProfileAsync(
-      UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
-      UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(icon_index)),
+      base::UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
+      base::UTF8ToUTF16(ProfileInfoCache::GetDefaultAvatarIconUrl(icon_index)),
       base::Bind(&OneClickSigninSyncStarter::CompleteInitForNewProfile,
                  weak_pointer_factory_.GetWeakPtr(), desktop_type_),
       std::string());
@@ -317,7 +317,7 @@ void OneClickSigninSyncStarter::ConfirmAndSignin() {
     // Display a confirmation dialog to the user.
     browser_->window()->ShowOneClickSigninBubble(
         BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_SAML_MODAL_DIALOG,
-        UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
+        base::UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
         base::string16(), // No error message to display.
         base::Bind(&OneClickSigninSyncStarter::UntrustedSigninConfirmed,
                    weak_pointer_factory_.GetWeakPtr()));

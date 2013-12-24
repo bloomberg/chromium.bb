@@ -102,7 +102,7 @@ ZoomBubbleGtk::ZoomBubbleGtk(GtkWidget* anchor,
   ZoomController* zoom_controller =
       ZoomController::FromWebContents(web_contents_);
   int zoom_percent = zoom_controller->zoom_percent();
-  std::string percentage_text = UTF16ToUTF8(l10n_util::GetStringFUTF16Int(
+  std::string percentage_text = base::UTF16ToUTF8(l10n_util::GetStringFUTF16Int(
       IDS_TOOLTIP_ZOOM, zoom_percent));
   label_ = theme_service->BuildLabel(percentage_text, ui::kGdkBlack);
   gtk_widget_modify_font(label_, pango_font_description_from_string("13"));
@@ -180,7 +180,8 @@ void ZoomBubbleGtk::Refresh() {
   int zoom_percent = zoom_controller->zoom_percent();
   base::string16 text =
       l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent);
-  gtk_label_set_text(GTK_LABEL(g_bubble->label_), UTF16ToUTF8(text).c_str());
+  gtk_label_set_text(GTK_LABEL(g_bubble->label_),
+                     base::UTF16ToUTF8(text).c_str());
   StartTimerIfNecessary();
 }
 

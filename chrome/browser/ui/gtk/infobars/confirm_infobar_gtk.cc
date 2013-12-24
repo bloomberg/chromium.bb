@@ -53,7 +53,7 @@ void ConfirmInfoBarGtk::PlatformSpecificSetOwner() {
   AddButton(ConfirmInfoBarDelegate::BUTTON_OK);
   AddButton(ConfirmInfoBarDelegate::BUTTON_CANCEL);
 
-  std::string label_text = UTF16ToUTF8(GetDelegate()->GetMessageText());
+  std::string label_text = base::UTF16ToUTF8(GetDelegate()->GetMessageText());
   GtkWidget* label = CreateLabel(label_text);
   gtk_util::ForceFontSizePixels(label, 13.4);
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
@@ -62,7 +62,7 @@ void ConfirmInfoBarGtk::PlatformSpecificSetOwner() {
                      G_CALLBACK(gtk_util::InitLabelSizeRequestAndEllipsizeMode),
                      NULL);
 
-  std::string link_text = UTF16ToUTF8(GetDelegate()->GetLinkText());
+  std::string link_text = base::UTF16ToUTF8(GetDelegate()->GetLinkText());
   if (link_text.empty())
     return;
 
@@ -86,7 +86,7 @@ void ConfirmInfoBarGtk::AddButton(ConfirmInfoBarDelegate::InfoBarButton type) {
     if (!size_group_)
       size_group_ = gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL);
 
-    GtkWidget* button = gtk_button_new_with_label(UTF16ToUTF8(
+    GtkWidget* button = gtk_button_new_with_label(base::UTF16ToUTF8(
         delegate()->AsConfirmInfoBarDelegate()->GetButtonLabel(type)).c_str());
     gtk_size_group_add_widget(size_group_, button);
 

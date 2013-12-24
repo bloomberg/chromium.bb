@@ -144,7 +144,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMatch) {
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
-  const base::string16 test_identity = ASCIIToUTF16("foo@bar.com");
+  const base::string16 test_identity = base::ASCIIToUTF16("foo@bar.com");
   search_tab_helper->OnChromeIdentityCheck(test_identity);
 
   const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
@@ -164,7 +164,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckMismatch) {
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
-  const base::string16 test_identity = ASCIIToUTF16("bar@foo.com");
+  const base::string16 test_identity = base::ASCIIToUTF16("bar@foo.com");
   search_tab_helper->OnChromeIdentityCheck(test_identity);
 
   const IPC::Message* message = process()->sink().GetUniqueMessageMatching(
@@ -204,7 +204,7 @@ TEST_F(SearchTabHelperTest, OnChromeIdentityCheckSignedOutMismatch) {
       SearchTabHelper::FromWebContents(web_contents());
   ASSERT_NE(static_cast<SearchTabHelper*>(NULL), search_tab_helper);
 
-  const base::string16 test_identity = ASCIIToUTF16("bar@foo.com");
+  const base::string16 test_identity = base::ASCIIToUTF16("bar@foo.com");
   search_tab_helper->OnChromeIdentityCheck(test_identity);
 
   const IPC::Message* message = process()->sink().GetUniqueMessageMatching(

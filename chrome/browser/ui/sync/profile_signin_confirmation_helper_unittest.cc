@@ -182,7 +182,8 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Bookmarks) {
 
   // Profile is new but has bookmarks.
   model_->AddURL(model_->bookmark_bar_node(), 0,
-                 base::string16(ASCIIToUTF16("foo")), GURL("http://foo.com"));
+                 base::string16(base::ASCIIToUTF16("foo")),
+                 GURL("http://foo.com"));
   EXPECT_TRUE(
       GetCallbackResult(
           base::Bind(

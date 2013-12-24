@@ -78,5 +78,5 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
   // Verify that the NTP is in French.
   content::WebContents* active_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
 }

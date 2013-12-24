@@ -61,7 +61,7 @@ void InstantTestBase::SetupInstant(Browser* browser) {
   TemplateURLData data;
   // Necessary to use exact URL for both the main URL and the alternate URL for
   // search term extraction to work in InstantExtended.
-  data.short_name = ASCIIToUTF16("name");
+  data.short_name = base::ASCIIToUTF16("name");
   data.SetURL(instant_url_.spec() +
               "q={searchTerms}&is_search&{google:omniboxStartMarginParameter}");
   data.instant_url = instant_url_.spec();
@@ -86,7 +86,7 @@ void InstantTestBase::SetInstantURL(const std::string& url) {
   ui_test_utils::WaitForTemplateURLServiceToLoad(service);
 
   TemplateURLData data;
-  data.short_name = ASCIIToUTF16("name");
+  data.short_name = base::ASCIIToUTF16("name");
   data.SetURL(url);
   data.instant_url = url;
 
@@ -126,7 +126,7 @@ void InstantTestBase::FocusOmniboxAndWaitForInstantNTPSupport() {
 
 void InstantTestBase::SetOmniboxText(const std::string& text) {
   FocusOmnibox();
-  omnibox()->SetUserText(UTF8ToUTF16(text));
+  omnibox()->SetUserText(base::UTF8ToUTF16(text));
 }
 
 void InstantTestBase::PressEnterAndWaitForNavigation() {
@@ -176,7 +176,7 @@ bool InstantTestBase::CheckVisibilityIs(content::WebContents* contents,
 }
 
 std::string InstantTestBase::GetOmniboxText() {
-  return UTF16ToUTF8(omnibox()->GetText());
+  return base::UTF16ToUTF8(omnibox()->GetText());
 }
 
 bool InstantTestBase::LoadImage(content::RenderViewHost* rvh,

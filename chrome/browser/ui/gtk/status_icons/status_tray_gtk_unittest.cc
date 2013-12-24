@@ -33,10 +33,10 @@ TEST(StatusTrayGtkTest, CreateIcon) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
   StatusIcon* icon = tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip"));
+      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip"));
   icon->SetPressedImage(*image);
   scoped_ptr<StatusIconMenuModel> menu(new StatusIconMenuModel(NULL));
-  menu->AddItem(0, ASCIIToUTF16("foo"));
+  menu->AddItem(0, base::ASCIIToUTF16("foo"));
   icon->SetContextMenu(menu.Pass());
 }
 
@@ -46,7 +46,7 @@ TEST(StatusTrayGtkTest, ClickOnIcon) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia* image = rb.GetImageSkiaNamed(IDR_STATUS_TRAY_ICON);
   StatusIconGtk* icon = static_cast<StatusIconGtk*>(tray.CreateStatusIcon(
-      StatusTray::OTHER_ICON, *image, ASCIIToUTF16("tool tip")));
+      StatusTray::OTHER_ICON, *image, base::ASCIIToUTF16("tool tip")));
   MockStatusIconObserver observer;
   icon->AddObserver(&observer);
   EXPECT_CALL(observer, OnStatusIconClicked());

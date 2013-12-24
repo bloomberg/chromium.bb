@@ -201,7 +201,7 @@ void SelectFileDialogImplKDE::SelectFileImpl(
   if (owning_window)
     parents_.insert(owning_window);
 
-  std::string title_string = UTF16ToUTF8(title);
+  std::string title_string = base::UTF16ToUTF8(title);
 
   file_type_index_ = file_type_index;
   if (file_types)

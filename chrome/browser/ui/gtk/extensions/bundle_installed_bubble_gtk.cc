@@ -113,12 +113,13 @@ void BundleInstalledBubbleGtk::InsertExtensionList(
   if (heading.empty() || items.empty())
     return;
 
-  GtkWidget* heading_label = gtk_util::CreateBoldLabel(UTF16ToUTF8(heading));
+  GtkWidget* heading_label =
+    gtk_util::CreateBoldLabel(base::UTF16ToUTF8(heading));
   gtk_util::SetLabelWidth(heading_label, kContentWidth);
   gtk_box_pack_start(GTK_BOX(parent), heading_label, FALSE, FALSE, 0);
 
   for (size_t i = 0; i < items.size(); ++i) {
-    GtkWidget* extension_label = gtk_label_new(UTF16ToUTF8(
+    GtkWidget* extension_label = gtk_label_new(base::UTF16ToUTF8(
         items[i].GetNameForDisplay()).c_str());
     gtk_util::SetLabelWidth(extension_label, kContentWidth);
     gtk_box_pack_start(GTK_BOX(parent), extension_label, false, false,

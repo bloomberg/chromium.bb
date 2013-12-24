@@ -25,11 +25,11 @@ TestConfirmBubbleModel::~TestConfirmBubbleModel() {
 }
 
 base::string16 TestConfirmBubbleModel::GetTitle() const {
-  return ASCIIToUTF16("Test");
+  return base::ASCIIToUTF16("Test");
 }
 
 base::string16 TestConfirmBubbleModel::GetMessageText() const {
-  return ASCIIToUTF16("Test Message");
+  return base::ASCIIToUTF16("Test Message");
 }
 
 gfx::Image* TestConfirmBubbleModel::GetIcon() const {
@@ -44,7 +44,8 @@ int TestConfirmBubbleModel::GetButtons() const {
 
 base::string16 TestConfirmBubbleModel::GetButtonLabel(
     BubbleButton button) const {
-  return button == BUTTON_OK ? ASCIIToUTF16("OK") : ASCIIToUTF16("Cancel");
+  return button == BUTTON_OK ? base::ASCIIToUTF16("OK")
+                             : base::ASCIIToUTF16("Cancel");
 }
 
 void TestConfirmBubbleModel::Accept() {
@@ -58,7 +59,7 @@ void TestConfirmBubbleModel::Cancel() {
 }
 
 base::string16 TestConfirmBubbleModel::GetLinkText() const {
-  return ASCIIToUTF16("Link");
+  return base::ASCIIToUTF16("Link");
 }
 
 void TestConfirmBubbleModel::LinkClicked() {

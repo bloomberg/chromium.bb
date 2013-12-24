@@ -12,6 +12,8 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 class OmniboxViewTest : public PlatformTest {

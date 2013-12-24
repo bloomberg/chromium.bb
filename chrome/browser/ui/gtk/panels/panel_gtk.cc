@@ -919,7 +919,7 @@ gfx::NativeWindow PanelGtk::GetNativePanelWindow() {
 void PanelGtk::UpdatePanelTitleBar() {
   TRACE_EVENT0("ui::gtk", "PanelGtk::UpdatePanelTitleBar");
   base::string16 title = panel_->GetWindowTitle();
-  gtk_window_set_title(window_, UTF16ToUTF8(title).c_str());
+  gtk_window_set_title(window_, base::UTF16ToUTF8(title).c_str());
   titlebar_->UpdateTitleAndIcon();
 
   gfx::Image app_icon = panel_->app_icon();

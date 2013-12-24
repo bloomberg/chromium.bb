@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
+using base::ASCIIToUTF16;
 using content::WebContentsTester;
 
 namespace {
@@ -77,7 +78,7 @@ class BackFwdMenuModelTest : public ChromeRenderViewHostTestHarness {
 
   void LoadURLAndUpdateState(const char* url, const char* title) {
     NavigateAndCommit(GURL(url));
-    controller().GetLastCommittedEntry()->SetTitle(UTF8ToUTF16(title));
+    controller().GetLastCommittedEntry()->SetTitle(base::UTF8ToUTF16(title));
   }
 
   // Navigate back or forward the given amount and commits the entry (which

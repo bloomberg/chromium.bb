@@ -94,8 +94,8 @@ void AccessibilityEventRouterViews::HandleMenuItemFocused(
     return;
 
   AccessibilityMenuItemInfo info(most_recent_profile_,
-                                 UTF16ToUTF8(menu_item_name),
-                                 UTF16ToUTF8(menu_name),
+                                 base::UTF16ToUTF8(menu_item_name),
+                                 base::UTF16ToUTF8(menu_name),
                                  has_submenu,
                                  item_index,
                                  item_count);
@@ -341,12 +341,12 @@ void AccessibilityEventRouterViews::SendTextfieldNotification(
     Profile* profile) {
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
-  std::string name = UTF16ToUTF8(state.name);
+  std::string name = base::UTF16ToUTF8(state.name);
   std::string context = GetViewContext(view);
   bool password =
       (state.state & ui::AccessibilityTypes::STATE_PROTECTED) != 0;
   AccessibilityTextBoxInfo info(profile, name, context, password);
-  std::string value = UTF16ToUTF8(state.value);
+  std::string value = base::UTF16ToUTF8(state.value);
   info.SetValue(value, state.selection_start, state.selection_end);
   SendControlAccessibilityNotification(event, &info);
 }
@@ -358,8 +358,8 @@ void AccessibilityEventRouterViews::SendComboboxNotification(
     Profile* profile) {
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
-  std::string name = UTF16ToUTF8(state.name);
-  std::string value = UTF16ToUTF8(state.value);
+  std::string name = base::UTF16ToUTF8(state.name);
+  std::string value = base::UTF16ToUTF8(state.value);
   std::string context = GetViewContext(view);
   AccessibilityComboBoxInfo info(
       profile, name, context, value, state.index, state.count);
@@ -373,7 +373,7 @@ void AccessibilityEventRouterViews::SendCheckboxNotification(
     Profile* profile) {
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
-  std::string name = UTF16ToUTF8(state.name);
+  std::string name = base::UTF16ToUTF8(state.name);
   std::string context = GetViewContext(view);
   AccessibilityCheckboxInfo info(
       profile,
@@ -399,7 +399,7 @@ void AccessibilityEventRouterViews::SendWindowNotification(
 
   // Otherwise get it from the window's accessible name.
   if (window_text.empty())
-    window_text = UTF16ToUTF8(state.name);
+    window_text = base::UTF16ToUTF8(state.name);
 
   AccessibilityWindowInfo info(profile, window_text);
   SendWindowAccessibilityNotification(event, &info);
@@ -413,8 +413,8 @@ void AccessibilityEventRouterViews::SendSliderNotification(
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
 
-  std::string name = UTF16ToUTF8(state.name);
-  std::string value = UTF16ToUTF8(state.value);
+  std::string name = base::UTF16ToUTF8(state.name);
+  std::string value = base::UTF16ToUTF8(state.value);
   std::string context = GetViewContext(view);
   AccessibilitySliderInfo info(
       profile,
@@ -432,7 +432,7 @@ void AccessibilityEventRouterViews::SendAlertControlNotification(
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
 
-  std::string name = UTF16ToUTF8(state.name);
+  std::string name = base::UTF16ToUTF8(state.name);
   AccessibilityAlertInfo info(
       profile,
       name);
@@ -443,7 +443,7 @@ void AccessibilityEventRouterViews::SendAlertControlNotification(
 std::string AccessibilityEventRouterViews::GetViewName(views::View* view) {
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
-  return UTF16ToUTF8(state.name);
+  return base::UTF16ToUTF8(state.name);
 }
 
 // static
@@ -463,7 +463,7 @@ std::string AccessibilityEventRouterViews::GetViewContext(views::View* view) {
          state.role == ui::AccessibilityTypes::ROLE_DIALOG ||
          state.role == ui::AccessibilityTypes::ROLE_TOOLBAR) &&
         !state.name.empty()) {
-      return UTF16ToUTF8(state.name);
+      return base::UTF16ToUTF8(state.name);
     }
 
     // A control inside of an alert or dialog (including an infobar)
@@ -477,7 +477,7 @@ std::string AccessibilityEventRouterViews::GetViewContext(views::View* view) {
         ui::AccessibleViewState state;
         static_text_child->GetAccessibleState(&state);
         if (!state.name.empty())
-          return UTF16ToUTF8(state.name);
+          return base::UTF16ToUTF8(state.name);
       }
       return std::string();
     }
@@ -538,7 +538,7 @@ std::string AccessibilityEventRouterViews::RecursiveGetStaticText(
   ui::AccessibleViewState state;
   view->GetAccessibleState(&state);
   if (state.role == ui::AccessibilityTypes::ROLE_STATICTEXT)
-    return UTF16ToUTF8(state.name);
+    return base::UTF16ToUTF8(state.name);
 
   for (int i = 0; i < view->child_count(); ++i) {
     views::View* child = view->child_at(i);

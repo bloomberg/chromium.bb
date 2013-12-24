@@ -222,7 +222,7 @@ void TableAdapter::OnModelChanged() {
                          COL_WEIGHT_SET,
                          TRUE,
                          COL_TITLE,
-                         UTF16ToUTF8(it->title).c_str(),
+                         base::UTF16ToUTF8(it->title).c_str(),
                          COL_IS_HEADER,
                          TRUE,
                          -1);
@@ -388,7 +388,7 @@ void TreeAdapter::FillRow(GtkTreeIter* iter, ui::TreeModelNode* node) {
     pixbuf = GtkThemeService::GetFolderIcon(true).ToGdkPixbuf();
   gtk_tree_store_set(tree_store_, iter,
                      COL_ICON, pixbuf,
-                     COL_TITLE, UTF16ToUTF8(node->GetTitle()).c_str(),
+                     COL_TITLE, base::UTF16ToUTF8(node->GetTitle()).c_str(),
                      COL_NODE_PTR, node,
                      -1);
 }

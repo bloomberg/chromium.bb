@@ -126,7 +126,7 @@ base::string16 GetAppListIconPath() {
   std::stringstream ss;
   ss << "," << GetAppListIconIndex();
   base::string16 result = icon_path.value();
-  result.append(UTF8ToUTF16(ss.str()));
+  result.append(base::UTF8ToUTF16(ss.str()));
   return result;
 }
 

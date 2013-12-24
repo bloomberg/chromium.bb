@@ -174,7 +174,7 @@ AppIndicatorIcon::AppIndicatorIcon(std::string id,
       block_activation_(false),
       weak_factory_(this) {
   EnsureMethodsLoaded();
-  tool_tip_ = UTF16ToUTF8(tool_tip);
+  tool_tip_ = base::UTF16ToUTF8(tool_tip);
   SetImage(image);
 }
 AppIndicatorIcon::~AppIndicatorIcon() {
@@ -224,7 +224,7 @@ void AppIndicatorIcon::SetPressedImage(const gfx::ImageSkia& image) {
 
 void AppIndicatorIcon::SetToolTip(const base::string16& tool_tip) {
   DCHECK(!tool_tip_.empty());
-  tool_tip_ = UTF16ToUTF8(tool_tip);
+  tool_tip_ = base::UTF16ToUTF8(tool_tip);
 
   // We can set the click action label only if the icon exists. Also we only
   // need to update the label if it is shown and it's only shown if we are sure

@@ -219,7 +219,7 @@ void SpeechRecognitionBubbleGtk::UpdateLayout() {
     // Message text and the Try Again + Cancel buttons are visible, hide the
     // icon.
     gtk_label_set_text(GTK_LABEL(label_),
-                       UTF16ToUTF8(message_text()).c_str());
+                       base::UTF16ToUTF8(message_text()).c_str());
     gtk_widget_show(label_);
     gtk_widget_show(try_again_button_);
     if (mic_settings_)

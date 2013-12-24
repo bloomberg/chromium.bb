@@ -207,7 +207,7 @@ GtkWidget* PanelTitlebarGtk::GetButtonHBox() {
 
 void PanelTitlebarGtk::UpdateTitleAndIcon() {
   std::string title_text =
-      UTF16ToUTF8(panel_gtk_->panel()->GetWindowTitle());
+      base::UTF16ToUTF8(panel_gtk_->panel()->GetWindowTitle());
 
   // Add the markup to show the title in the desired font.
   gchar* escaped_title_text = g_markup_escape_text(title_text.c_str(), -1);

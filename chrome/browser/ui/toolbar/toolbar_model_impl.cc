@@ -250,8 +250,8 @@ base::string16 ToolbarModelImpl::GetEVCertName(
 
   return l10n_util::GetStringFUTF16(
       IDS_SECURE_CONNECTION_EV,
-      UTF8ToUTF16(cert.subject().organization_names[0]),
-      UTF8ToUTF16(cert.subject().country_name));
+      base::UTF8ToUTF16(cert.subject().organization_names[0]),
+      base::UTF8ToUTF16(cert.subject().country_name));
 }
 
 NavigationController* ToolbarModelImpl::GetNavigationController() const {

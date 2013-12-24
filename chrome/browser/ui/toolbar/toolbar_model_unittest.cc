@@ -28,6 +28,7 @@
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 
+using base::ASCIIToUTF16;
 
 // Test data ------------------------------------------------------------------
 

@@ -36,7 +36,7 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
       closing_(false) {
   dialog_ = gtk_vbox_new(FALSE, ui::kContentAreaSpacing);
   GtkWidget* label = gtk_label_new(
-      UTF16ToUTF8(delegate->GetMessage()).c_str());
+      base::UTF16ToUTF8(delegate->GetMessage()).c_str());
   gfx::Image* icon = delegate->GetIcon();
   GtkWidget* image = icon ? gtk_image_new_from_pixbuf(icon->ToGdkPixbuf())
                           : gtk_image_new_from_stock(GTK_STOCK_DIALOG_QUESTION,
@@ -61,7 +61,7 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
     GtkThemeService* theme_service = GtkThemeService::GetFrom(
         browser->profile());
 
-    GtkWidget* link = theme_service->BuildChromeLinkButton(UTF16ToUTF8(
+    GtkWidget* link = theme_service->BuildChromeLinkButton(base::UTF16ToUTF8(
         link_text.c_str()));
     g_signal_connect(link, "clicked", G_CALLBACK(OnLinkClickedThunk), this);
     GtkWidget* link_align = gtk_alignment_new(0, 0, 0, 0);
@@ -79,7 +79,7 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
   gtk_box_pack_end(GTK_BOX(dialog_), buttonBox, FALSE, TRUE, 0);
 
   cancel_ = gtk_button_new_with_label(
-      UTF16ToUTF8(delegate->GetCancelButtonTitle()).c_str());
+      base::UTF16ToUTF8(delegate->GetCancelButtonTitle()).c_str());
   const char* cancel_button_icon_id = delegate->GetCancelButtonIcon();
   if (cancel_button_icon_id) {
     gtk_button_set_image(GTK_BUTTON(cancel_), gtk_image_new_from_stock(
@@ -89,7 +89,7 @@ TabModalConfirmDialogGtk::TabModalConfirmDialogGtk(
   gtk_box_pack_end(GTK_BOX(buttonBox), cancel_, FALSE, TRUE, 0);
 
   ok_ = gtk_button_new_with_label(
-      UTF16ToUTF8(delegate->GetAcceptButtonTitle()).c_str());
+      base::UTF16ToUTF8(delegate->GetAcceptButtonTitle()).c_str());
   const char* accept_button_icon_id = delegate->GetAcceptButtonIcon();
   if (accept_button_icon_id) {
     gtk_button_set_image(GTK_BUTTON(ok_), gtk_image_new_from_stock(

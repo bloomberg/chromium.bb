@@ -12,6 +12,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 using content::WebContents;
 
 namespace {

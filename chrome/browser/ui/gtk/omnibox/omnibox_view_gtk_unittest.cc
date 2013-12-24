@@ -74,7 +74,7 @@ TEST_F(OmniboxViewGtkTest, InsertText) {
   const std::string expected = input;
   gtk_text_buffer_get_iter_at_offset(text_buffer_, &i, 0);
   gtk_text_buffer_insert(text_buffer_, &i, input, strlen(input));
-  ASSERT_EQ(expected, UTF16ToUTF8(view_->GetText()));
+  ASSERT_EQ(expected, base::UTF16ToUTF8(view_->GetText()));
 }
 
 TEST_F(OmniboxViewGtkTest, PasteText) {
@@ -86,5 +86,5 @@ TEST_F(OmniboxViewGtkTest, PasteText) {
   gtk_text_buffer_get_iter_at_offset(text_buffer_, &i, 0);
   gtk_text_buffer_insert(text_buffer_, &i, input, strlen(input));
 
-  ASSERT_EQ(expected, UTF16ToUTF8(view_->GetText()));
+  ASSERT_EQ(expected, base::UTF16ToUTF8(view_->GetText()));
 }

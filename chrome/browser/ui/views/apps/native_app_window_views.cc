@@ -302,7 +302,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   }
 
 #if defined(OS_WIN)
-  base::string16 app_name_wide = UTF8ToWide(app_name);
+  base::string16 app_name_wide = base::UTF8ToWide(app_name);
   HWND hwnd = GetNativeAppWindowHWND();
   ui::win::SetAppIdForWindow(ShellIntegration::GetAppModelIdForProfile(
       app_name_wide, profile()->GetPath()), hwnd);

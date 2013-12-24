@@ -481,7 +481,7 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
   for (int i = 0; i < model->GetItemCount(); ++i) {
     gfx::Image icon;
     std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
-        UTF16ToUTF8(model->GetLabelAt(i)));
+        base::UTF16ToUTF8(model->GetLabelAt(i)));
     bool connect_to_activate = true;
 
     switch (model->GetTypeAt(i)) {
@@ -564,7 +564,8 @@ void MenuGtk::BuildSubmenuFromModel(ui::MenuModel* model, GtkWidget* menu) {
 GtkWidget* MenuGtk::BuildButtonMenuItem(ui::ButtonMenuItemModel* model,
                                         GtkWidget* menu) {
   GtkWidget* menu_item = gtk_custom_menu_item_new(
-      ui::RemoveWindowsStyleAccelerators(UTF16ToUTF8(model->label())).c_str());
+      ui::RemoveWindowsStyleAccelerators(
+          base::UTF16ToUTF8(model->label())).c_str());
 
   // Set up the callback to the model for when it is clicked.
   g_object_set_data(G_OBJECT(menu_item), "button-model", model);
@@ -594,7 +595,7 @@ GtkWidget* MenuGtk::BuildButtonMenuItem(ui::ButtonMenuItemModel* model,
           gtk_button_set_label(
               GTK_BUTTON(button),
               ui::RemoveWindowsStyleAccelerators(
-                  UTF16ToUTF8(model->GetLabelAt(i))).c_str());
+                  base::UTF16ToUTF8(model->GetLabelAt(i))).c_str());
         }
 
         SetUpButtonShowHandler(button, model, i);
@@ -607,7 +608,7 @@ GtkWidget* MenuGtk::BuildButtonMenuItem(ui::ButtonMenuItemModel* model,
         gtk_button_set_label(
             GTK_BUTTON(button),
             ui::RemoveWindowsStyleAccelerators(
-                UTF16ToUTF8(model->GetLabelAt(i))).c_str());
+                base::UTF16ToUTF8(model->GetLabelAt(i))).c_str());
         SetUpButtonShowHandler(button, model, i);
         break;
       }
@@ -895,7 +896,7 @@ void MenuGtk::SetButtonItemInfo(GtkWidget* button, gpointer userdata) {
 
   if (model->IsItemDynamicAt(index)) {
     std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
-        UTF16ToUTF8(model->GetLabelAt(index)));
+        base::UTF16ToUTF8(model->GetLabelAt(index)));
     gtk_button_set_label(GTK_BUTTON(button), label.c_str());
   }
 
@@ -953,7 +954,7 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
       // Update the menu item label if it is dynamic.
       if (model->IsItemDynamicAt(id)) {
         std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
-            UTF16ToUTF8(model->GetLabelAt(id)));
+            base::UTF16ToUTF8(model->GetLabelAt(id)));
 
         gtk_menu_item_set_label(GTK_MENU_ITEM(widget), label.c_str());
         if (GTK_IS_IMAGE_MENU_ITEM(widget)) {

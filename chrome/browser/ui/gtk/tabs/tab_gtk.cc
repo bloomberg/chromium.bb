@@ -300,7 +300,8 @@ void TabGtk::ContextMenuClosed() {
 void TabGtk::UpdateTooltipState() {
   // Only show the tooltip if the title is truncated.
   if (title_width_ > title_bounds().width()) {
-    gtk_widget_set_tooltip_text(widget(), UTF16ToUTF8(GetTitle()).c_str());
+    gtk_widget_set_tooltip_text(widget(),
+                                base::UTF16ToUTF8(GetTitle()).c_str());
   } else {
     gtk_widget_set_has_tooltip(widget(), FALSE);
   }

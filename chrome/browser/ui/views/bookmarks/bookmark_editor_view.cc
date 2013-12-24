@@ -423,7 +423,8 @@ void BookmarkEditorView::Reset() {
 GURL BookmarkEditorView::GetInputURL() const {
   if (details_.GetNodeType() == BookmarkNode::FOLDER)
     return GURL();
-  return URLFixerUpper::FixupURL(UTF16ToUTF8(url_tf_->text()), std::string());
+  return URLFixerUpper::FixupURL(
+      base::UTF16ToUTF8(url_tf_->text()), std::string());
 }
 
 void BookmarkEditorView::UserInputChanged() {

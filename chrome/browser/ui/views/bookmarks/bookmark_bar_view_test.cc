@@ -43,6 +43,7 @@
 #include "ui/views/controls/menu/submenu_view.h"
 #include "ui/views/widget/widget.h"
 
+using base::ASCIIToUTF16;
 using content::BrowserThread;
 using content::OpenURLParams;
 using content::PageNavigator;

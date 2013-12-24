@@ -99,7 +99,7 @@ gfx::Rect GetWindowRect(GdkWindow* window) {
 
 // TODO(deanm): Find some better home for this, and make it more efficient.
 size_t GetUTF8Offset(const base::string16& text, size_t text_offset) {
-  return UTF16ToUTF8(text.substr(0, text_offset)).length();
+  return base::UTF16ToUTF8(text.substr(0, text_offset)).length();
 }
 
 // Generates the normal URL color, a green color used in unhighlighted URL
@@ -395,7 +395,7 @@ void OmniboxPopupViewGtk::SetupLayoutForMatch(
   // classifications.  We need to take this in to account when we translate the
   // UTF-16 offsets in the classification into text_utf8 byte offsets.
   size_t additional_offset = prefix_text.length();  // Length in utf-8 bytes.
-  std::string text_utf8 = prefix_text + UTF16ToUTF8(localized_text);
+  std::string text_utf8 = prefix_text + base::UTF16ToUTF8(localized_text);
 
   PangoAttrList* attrs = pango_attr_list_new();
 

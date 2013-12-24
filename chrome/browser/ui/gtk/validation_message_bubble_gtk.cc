@@ -99,14 +99,14 @@ GtkWidget* ValidationMessageBubbleGtk::ConstructContent(
   gtk_container_add(GTK_CONTAINER(icon_text_box), icon);
 
   GtkWidget* text_box = gtk_vbox_new(FALSE, kTextMargin);
-  GtkWidget* label = gtk_label_new(UTF16ToUTF8(main_text).c_str());
+  GtkWidget* label = gtk_label_new(base::UTF16ToUTF8(main_text).c_str());
   const gfx::Font& main_font = bundle.GetFont(ResourceBundle::MediumFont);
   gtk_util::ForceFontSizePixels(label, main_font.GetHeight());
   gtk_box_pack_start(
       GTK_BOX(text_box), gtk_util::LeftAlignMisc(label), TRUE, TRUE, 0);
 
   if (!sub_text.empty()) {
-    GtkWidget* sub_label = gtk_label_new(UTF16ToUTF8(sub_text).c_str());
+    GtkWidget* sub_label = gtk_label_new(base::UTF16ToUTF8(sub_text).c_str());
     const gfx::Font& sub_font = bundle.GetFont(ResourceBundle::BaseFont);
     gtk_util::ForceFontSizePixels(sub_label, sub_font.GetHeight());
     int max_characters = kTextMaxWidth / sub_font.GetAverageCharacterWidth();

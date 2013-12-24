@@ -281,7 +281,7 @@ void OverrideFontFamily(WebPreferences* prefs,
     map = &prefs->pictograph_font_family_map;
   else
     NOTREACHED() << "Unknown generic font family: " << generic_family;
-  (*map)[script] = UTF8ToUTF16(pref_value);
+  (*map)[script] = base::UTF8ToUTF16(pref_value);
 }
 
 }  // namespace

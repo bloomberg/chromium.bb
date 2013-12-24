@@ -233,7 +233,7 @@ base::string16 ConfirmEmailDialogDelegate::GetTitle() {
 base::string16 ConfirmEmailDialogDelegate::GetMessage() {
   return l10n_util::GetStringFUTF16(
       IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_MESSAGE,
-      UTF8ToUTF16(last_email_), UTF8ToUTF16(email_));
+      base::UTF8ToUTF16(last_email_), base::UTF8ToUTF16(email_));
 }
 
 base::string16 ConfirmEmailDialogDelegate::GetAcceptButtonTitle() {
@@ -730,7 +730,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
         if (error_message) {
           error_message->assign(
               l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
-                                        UTF8ToUTF16(current_email)));
+                                        base::UTF8ToUTF16(current_email)));
         }
         return false;
       }
@@ -740,7 +740,7 @@ bool OneClickSigninHelper::CanOffer(content::WebContents* web_contents,
       if (g_browser_process && !same_email) {
         ProfileManager* manager = g_browser_process->profile_manager();
         if (manager) {
-          base::string16 email16 = UTF8ToUTF16(email);
+          base::string16 email16 = base::UTF8ToUTF16(email);
           ProfileInfoCache& cache = manager->GetProfileInfoCache();
 
           for (size_t i = 0; i < cache.GetNumberOfProfiles(); ++i) {
@@ -831,7 +831,7 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
     }
 
     if (io_data->signin_names()->GetEmails().count(
-            UTF8ToUTF16(pending_email)) > 0) {
+            base::UTF8ToUTF16(pending_email)) > 0) {
       return DONT_OFFER;
     }
   }
@@ -1039,7 +1039,7 @@ void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
   browser->window()->ShowOneClickSigninBubble(
       BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
       base::string16(), /* no SAML email */
-      UTF8ToUTF16(error),
+      base::UTF8ToUTF16(error),
       // This callback is never invoked.
       // TODO(rogerta): Separate out the bubble API so we don't have to pass
       // ignored |email| and |callback| params.
@@ -1143,7 +1143,7 @@ void OneClickSigninHelper::PasswordSubmitted(
   // We only need to scrape the password for Gaia logins.
   if (gaia::IsGaiaSignonRealm(GURL(form.signon_realm))) {
     VLOG(1) << "OneClickSigninHelper::DidNavigateAnyFrame: got password";
-    password_ = UTF16ToUTF8(form.password_value);
+    password_ = base::UTF16ToUTF8(form.password_value);
   }
 }
 

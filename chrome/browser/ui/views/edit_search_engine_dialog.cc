@@ -83,7 +83,7 @@ bool EditSearchEngineDialog::IsDialogButtonEnabled(
   if (button == ui::DIALOG_BUTTON_OK) {
     return (controller_->IsKeywordValid(keyword_tf_->text()) &&
             controller_->IsTitleValid(title_tf_->text()) &&
-            controller_->IsURLValid(UTF16ToUTF8(url_tf_->text())));
+            controller_->IsURLValid(base::UTF16ToUTF8(url_tf_->text())));
   }
   return true;
 }
@@ -95,7 +95,7 @@ bool EditSearchEngineDialog::Cancel() {
 
 bool EditSearchEngineDialog::Accept() {
   controller_->AcceptAddOrEdit(title_tf_->text(), keyword_tf_->text(),
-                               UTF16ToUTF8(url_tf_->text()));
+                               base::UTF16ToUTF8(url_tf_->text()));
   return true;
 }
 
@@ -199,9 +199,9 @@ void EditSearchEngineDialog::Init() {
   base::string16 description = l10n_util::GetStringUTF16(
       IDS_SEARCH_ENGINES_EDITOR_URL_DESCRIPTION_LABEL);
   if (base::i18n::IsRTL()) {
-    const base::string16 reversed_percent(ASCIIToUTF16("s%"));
+    const base::string16 reversed_percent(base::ASCIIToUTF16("s%"));
     base::string16::size_type percent_index =
-        description.find(ASCIIToUTF16("%s"),
+        description.find(base::ASCIIToUTF16("%s"),
                          static_cast<base::string16::size_type>(0));
     if (percent_index != base::string16::npos)
       description.replace(percent_index,
@@ -236,7 +236,7 @@ void EditSearchEngineDialog::UpdateImageViews() {
   UpdateImageView(keyword_iv_, controller_->IsKeywordValid(keyword_tf_->text()),
                   IDS_SEARCH_ENGINES_INVALID_KEYWORD_TT);
   UpdateImageView(url_iv_,
-                  controller_->IsURLValid(UTF16ToUTF8(url_tf_->text())),
+                  controller_->IsURLValid(base::UTF16ToUTF8(url_tf_->text())),
                   IDS_SEARCH_ENGINES_INVALID_URL_TT);
   UpdateImageView(title_iv_, controller_->IsTitleValid(title_tf_->text()),
                   IDS_SEARCH_ENGINES_INVALID_TITLE_TT);

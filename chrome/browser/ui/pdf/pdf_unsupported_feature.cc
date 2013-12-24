@@ -108,9 +108,9 @@ void PDFEnableAdobeReaderPromptDelegate::Accept() {
   content::RecordAction(UserMetricsAction("PDF_EnableReaderInfoBarOK"));
   PluginPrefs* plugin_prefs = PluginPrefs::GetForProfile(profile_).get();
   plugin_prefs->EnablePluginGroup(
-      true, ASCIIToUTF16(PluginMetadata::kAdobeReaderGroupName));
+      true, base::ASCIIToUTF16(PluginMetadata::kAdobeReaderGroupName));
   plugin_prefs->EnablePluginGroup(
-      false, ASCIIToUTF16(ChromeContentClient::kPDFPluginName));
+      false, base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName));
 }
 
 void PDFEnableAdobeReaderPromptDelegate::Cancel() {
@@ -215,7 +215,7 @@ class PDFUnsupportedFeatureInterstitial
       content::RecordAction(
           UserMetricsAction("PDF_ReaderInterstitialIgnore"));
       // Pretend that the plug-in is up-to-date so that we don't block it.
-      reader_webplugininfo_.version = ASCIIToUTF16("11.0.0.0");
+      reader_webplugininfo_.version = base::ASCIIToUTF16("11.0.0.0");
       OpenUsingReader(web_contents_, reader_webplugininfo_, NULL);
     } else {
       NOTREACHED();

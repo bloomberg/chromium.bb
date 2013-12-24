@@ -10,10 +10,10 @@
 namespace autofill {
 
 TEST(DecoratedTextfieldTest, HeightMatchesButton) {
-  DecoratedTextfield textfield(ASCIIToUTF16("default"),
-                               ASCIIToUTF16("placeholder"),
+  DecoratedTextfield textfield(base::ASCIIToUTF16("default"),
+                               base::ASCIIToUTF16("placeholder"),
                                NULL);
-  views::LabelButton button(NULL, ASCIIToUTF16("anyoldtext"));;
+  views::LabelButton button(NULL, base::ASCIIToUTF16("anyoldtext"));;
   button.SetStyle(views::Button::STYLE_BUTTON);
   EXPECT_EQ(button.GetPreferredSize().height() -
                 DecoratedTextfield::kMagicInsetNumber,

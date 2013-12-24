@@ -159,7 +159,7 @@ void OneClickSigninBubbleGtk::InitializeWidgets(
         l10n_util::GetStringFUTF8(IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW,
                                   email_);
   } else {
-    label_text = !error_message_.empty() ? UTF16ToUTF8(error_message_):
+    label_text = !error_message_.empty() ? base::UTF16ToUTF8(error_message_):
         l10n_util::GetStringUTF8(IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE);
   }
 

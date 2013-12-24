@@ -50,7 +50,7 @@ class ScreenCaptureNotificationUIGtk : public ScreenCaptureNotificationUI {
 
 ScreenCaptureNotificationUIGtk::ScreenCaptureNotificationUIGtk(
     const base::string16& text)
-    : text_(UTF16ToUTF8(text)),
+    : text_(base::UTF16ToUTF8(text)),
       window_(NULL),
       current_width_(0),
       current_height_(0) {

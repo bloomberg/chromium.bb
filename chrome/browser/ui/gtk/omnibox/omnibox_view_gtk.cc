@@ -66,7 +66,7 @@ const double kStrikethroughStrokeRed = 162.0 / 256.0;
 const double kStrikethroughStrokeWidth = 2.0;
 
 size_t GetUTF8Offset(const base::string16& text, size_t text_offset) {
-  return UTF16ToUTF8(text.substr(0, text_offset)).size();
+  return base::UTF16ToUTF8(text.substr(0, text_offset)).size();
 }
 
 // Stores GTK+-specific state so it can be restored after switching tabs.
@@ -469,7 +469,7 @@ base::string16 OmniboxViewGtk::GetText() const {
   GtkTextIter start, end;
   GetTextBufferBounds(&start, &end);
   gchar* utf8 = gtk_text_buffer_get_text(text_buffer_, &start, &end, false);
-  base::string16 out(UTF8ToUTF16(utf8));
+  base::string16 out(base::UTF8ToUTF16(utf8));
   g_free(utf8);
 
   if (supports_pre_edit_) {
@@ -503,7 +503,7 @@ void OmniboxViewGtk::SetForcedQuery() {
   const base::string16 current_text(GetText());
   const size_t start = current_text.find_first_not_of(base::kWhitespaceUTF16);
   if (start == base::string16::npos || (current_text[start] != '?')) {
-    SetUserText(ASCIIToUTF16("?"));
+    SetUserText(base::ASCIIToUTF16("?"));
   } else {
     StartUpdatingHighlightedText();
     SetSelectedRange(CharRange(current_text.size(), start + 1));
@@ -701,7 +701,7 @@ gfx::NativeView OmniboxViewGtk::GetRelativeWindowForPopup() const {
 
 void OmniboxViewGtk::SetGrayTextAutocompletion(
     const base::string16& suggestion) {
-  std::string suggestion_utf8 = UTF16ToUTF8(suggestion);
+  std::string suggestion_utf8 = base::UTF16ToUTF8(suggestion);
 
   gtk_label_set_text(GTK_LABEL(gray_text_view_), suggestion_utf8.c_str());
 
@@ -717,7 +717,7 @@ void OmniboxViewGtk::SetGrayTextAutocompletion(
 
 base::string16 OmniboxViewGtk::GetGrayTextAutocompletion() const {
   const gchar* suggestion = gtk_label_get_text(GTK_LABEL(gray_text_view_));
-  return suggestion ? UTF8ToUTF16(suggestion) : base::string16();
+  return suggestion ? base::UTF8ToUTF16(suggestion) : base::string16();
 }
 
 int OmniboxViewGtk::GetTextWidth() const {
@@ -1221,7 +1221,8 @@ void OmniboxViewGtk::HandlePopulatePopup(GtkWidget* sender, GtkMenu* menu) {
   GtkClipboard* x_clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
   gchar* text = gtk_clipboard_wait_for_text(x_clipboard);
   sanitized_text_for_paste_and_go_ = text ?
-      StripJavascriptSchemas(CollapseWhitespace(UTF8ToUTF16(text), true)) :
+      StripJavascriptSchemas(
+          CollapseWhitespace(base::UTF8ToUTF16(text), true)) :
       base::string16();
   g_free(text);
   GtkWidget* paste_and_go_menuitem = gtk_menu_item_new_with_mnemonic(
@@ -1360,7 +1361,8 @@ void OmniboxViewGtk::HandleDragDataReceived(GtkWidget* sender,
   if (!text)
     return;
 
-  base::string16 possible_url = UTF8ToUTF16(reinterpret_cast<char*>(text));
+  base::string16 possible_url =
+      base::UTF8ToUTF16(reinterpret_cast<char*>(text));
   g_free(text);
   if (OnPerformDropImpl(possible_url)) {
     gtk_drag_finish(context, TRUE, FALSE, time);
@@ -1398,7 +1400,7 @@ void OmniboxViewGtk::HandleDragDataGet(GtkWidget* widget,
 
 void OmniboxViewGtk::HandleDragBegin(GtkWidget* widget,
                                        GdkDragContext* context) {
-  base::string16 text = UTF8ToUTF16(GetSelectedText());
+  base::string16 text = base::UTF8ToUTF16(GetSelectedText());
 
   if (text.empty())
     return;
@@ -1410,7 +1412,7 @@ void OmniboxViewGtk::HandleDragBegin(GtkWidget* widget,
   model()->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
   if (write_url) {
-    selected_text_ = UTF16ToUTF8(text);
+    selected_text_ = base::UTF16ToUTF8(text);
     GtkTargetList* copy_targets =
         gtk_text_buffer_get_copy_target_list(text_buffer_);
     gtk_target_list_add(copy_targets,
@@ -1463,7 +1465,7 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
     // If the user is pasting all-whitespace, paste a single space
     // rather than nothing, since pasting nothing feels broken.
     filtered_text = CollapseWhitespace(filtered_text, true);
-    filtered_text = filtered_text.empty() ? ASCIIToUTF16(" ") :
+    filtered_text = filtered_text.empty() ? base::ASCIIToUTF16(" ") :
         StripJavascriptSchemas(filtered_text);
   }
 
@@ -1473,7 +1475,7 @@ void OmniboxViewGtk::HandleInsertText(GtkTextBuffer* buffer,
 
     // Call the default handler to insert filtered text.
     GtkTextBufferClass* klass = GTK_TEXT_BUFFER_GET_CLASS(buffer);
-    std::string utf8_text = UTF16ToUTF8(filtered_text);
+    std::string utf8_text = base::UTF16ToUTF8(filtered_text);
     klass->insert_text(buffer, location, utf8_text.data(),
                        static_cast<gint>(utf8_text.length()));
   }
@@ -1569,7 +1571,7 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
 
   CharRange selection = GetSelection();
   GURL url;
-  base::string16 text(UTF8ToUTF16(GetSelectedText()));
+  base::string16 text(base::UTF8ToUTF16(GetSelectedText()));
   bool write_url;
   model()->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
@@ -1599,7 +1601,7 @@ void OmniboxViewGtk::HandleCopyOrCutClipboard(bool copy) {
       gtk_text_buffer_delete_selection(text_buffer_, true, true);
   }
 
-  OwnPrimarySelection(UTF16ToUTF8(text));
+  OwnPrimarySelection(base::UTF16ToUTF8(text));
 }
 
 int OmniboxViewGtk::GetOmniboxTextLength() const {
@@ -1640,7 +1642,7 @@ void OmniboxViewGtk::EmphasizeURLComponents() {
   GetTextBufferBounds(&start, &end);
   gtk_text_buffer_remove_all_tags(text_buffer_, &start, &end);
   bool grey_out_url = text.substr(scheme.begin, scheme.len) ==
-       UTF8ToUTF16(extensions::kExtensionScheme);
+       base::UTF8ToUTF16(extensions::kExtensionScheme);
   bool grey_base = model()->CurrentTextIsURL() &&
       (host.is_nonempty() || grey_out_url);
   gtk_text_buffer_apply_tag(
@@ -1892,7 +1894,7 @@ void OmniboxViewGtk::SavePrimarySelection(const std::string& selected_text) {
 void OmniboxViewGtk::SetTextAndSelectedRange(const base::string16& text,
                                              const CharRange& range) {
   if (text != GetText()) {
-    std::string utf8 = UTF16ToUTF8(text);
+    std::string utf8 = base::UTF16ToUTF8(text);
     gtk_text_buffer_set_text(text_buffer_, utf8.data(), utf8.length());
   }
   SetSelectedRange(range);
@@ -2061,7 +2063,7 @@ std::string OmniboxViewGtk::GetSelectedText() const {
 }
 
 void OmniboxViewGtk::UpdatePrimarySelectionIfValidURL() {
-  base::string16 text = UTF8ToUTF16(GetSelectedText());
+  base::string16 text = base::UTF8ToUTF16(GetSelectedText());
 
   if (text.empty())
     return;
@@ -2073,7 +2075,7 @@ void OmniboxViewGtk::UpdatePrimarySelectionIfValidURL() {
   model()->AdjustTextForCopy(selection.selection_min(), IsSelectAll(), &text,
                             &url, &write_url);
   if (write_url) {
-    selected_text_ = UTF16ToUTF8(text);
+    selected_text_ = base::UTF16ToUTF8(text);
     OwnPrimarySelection(selected_text_);
   }
 }
@@ -2090,7 +2092,7 @@ void OmniboxViewGtk::HandlePreEditChanged(GtkWidget* sender,
     // delete the selection range here explicitly. See http://crbug.com/18808.
     if (pre_edit_.empty())
       gtk_text_buffer_delete_selection(text_buffer_, false, true);
-    pre_edit_ = UTF8ToUTF16(pre_edit);
+    pre_edit_ = base::UTF8ToUTF16(pre_edit);
   } else {
     pre_edit_.clear();
   }

@@ -79,7 +79,7 @@ PermissionSelector::PermissionSelector(GtkThemeService* theme_service,
   gtk_container_add(GTK_CONTAINER(menu_button_), button_hbox);
 
   GtkWidget* button_label = theme_service->BuildLabel(
-      UTF16ToUTF8(WebsiteSettingsUI::PermissionActionToUIString(
+      base::UTF16ToUTF8(WebsiteSettingsUI::PermissionActionToUIString(
           setting, default_setting, source)),
       ui::kGdkBlack);
   gtk_box_pack_start(GTK_BOX(button_hbox), button_label, FALSE, FALSE,
@@ -146,7 +146,7 @@ void PermissionSelector::ExecuteCommand(int command_id) {
   gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), pixbuf);
 
   // Change the text of the menu button to reflect the selected setting.
-  gtk_button_set_label(GTK_BUTTON(menu_button_), UTF16ToUTF8(
+  gtk_button_set_label(GTK_BUTTON(menu_button_), base::UTF16ToUTF8(
       WebsiteSettingsUI::PermissionActionToUIString(
           setting_,
           default_setting_,

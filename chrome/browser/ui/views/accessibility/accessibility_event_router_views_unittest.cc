@@ -36,6 +36,8 @@
 #include "ui/aura/test/aura_test_helper.h"
 #endif
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 // The expected initial focus count.

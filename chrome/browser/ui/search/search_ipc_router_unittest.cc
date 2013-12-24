@@ -358,7 +358,7 @@ TEST_F(SearchIPCRouterTest, ProcessLogImpressionMsg) {
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
   EXPECT_CALL(*mock_delegate(),
-              OnLogImpression(3, ASCIIToUTF16("Server"))).Times(1);
+              OnLogImpression(3, base::ASCIIToUTF16("Server"))).Times(1);
   EXPECT_CALL(*policy, ShouldProcessLogEvent()).Times(1)
       .WillOnce(testing::Return(true));
 
@@ -367,7 +367,7 @@ TEST_F(SearchIPCRouterTest, ProcessLogImpressionMsg) {
       contents->GetRoutingID(),
       contents->GetController().GetVisibleEntry()->GetPageID(),
       3,
-      ASCIIToUTF16("Server")));
+      base::ASCIIToUTF16("Server")));
   OnMessageReceived(*message);
 }
 
@@ -375,7 +375,7 @@ TEST_F(SearchIPCRouterTest, ProcessChromeIdentityCheckMsg) {
   NavigateAndCommitActiveTab(GURL(chrome::kChromeSearchLocalNtpUrl));
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
-  const base::string16 test_identity = ASCIIToUTF16("foo@bar.com");
+  const base::string16 test_identity = base::ASCIIToUTF16("foo@bar.com");
   EXPECT_CALL(*mock_delegate(), OnChromeIdentityCheck(test_identity)).Times(1);
   EXPECT_CALL(*policy, ShouldProcessChromeIdentityCheck()).Times(1)
       .WillOnce(testing::Return(true));
@@ -393,7 +393,7 @@ TEST_F(SearchIPCRouterTest, IgnoreChromeIdentityCheckMsg) {
   SetupMockDelegateAndPolicy();
   MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
 
-  const base::string16 test_identity = ASCIIToUTF16("foo@bar.com");
+  const base::string16 test_identity = base::ASCIIToUTF16("foo@bar.com");
   EXPECT_CALL(*mock_delegate(), OnChromeIdentityCheck(test_identity)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessChromeIdentityCheck()).Times(1)
       .WillOnce(testing::Return(false));

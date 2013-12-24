@@ -168,7 +168,7 @@ void ContentSettingBubbleContents::UpdateMenuLabel(
   for (MediaMenuPartsMap::const_iterator it = media_menus_.begin();
        it != media_menus_.end(); ++it) {
     if (it->second->type == type) {
-      it->first->SetText(UTF8ToUTF16(label));
+      it->first->SetText(base::UTF8ToUTF16(label));
       return;
     }
   }
@@ -191,7 +191,7 @@ void ContentSettingBubbleContents::Init() {
   bool bubble_content_empty = true;
 
   if (!bubble_content.title.empty()) {
-    views::Label* title_label = new views::Label(UTF8ToUTF16(
+    views::Label* title_label = new views::Label(base::UTF8ToUTF16(
         bubble_content.title));
     title_label->SetMultiLine(true);
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -219,7 +219,7 @@ void ContentSettingBubbleContents::Init() {
         layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, kPopupColumnSetId);
 
-      views::Link* link = new views::Link(UTF8ToUTF16(i->title));
+      views::Link* link = new views::Link(base::UTF8ToUTF16(i->title));
       link->set_listener(this);
       link->SetElideBehavior(views::Label::ELIDE_IN_MIDDLE);
       popup_links_[link] = i - bubble_content.popup_items.begin();
@@ -245,7 +245,8 @@ void ContentSettingBubbleContents::Init() {
     for (ContentSettingBubbleModel::RadioItems::const_iterator i(
          radio_group.radio_items.begin());
          i != radio_group.radio_items.end(); ++i) {
-      views::RadioButton* radio = new views::RadioButton(UTF8ToUTF16(*i), 0);
+      views::RadioButton* radio =
+          new views::RadioButton(base::UTF8ToUTF16(*i), 0);
       radio->SetEnabled(bubble_content.radio_group_enabled);
       radio->set_listener(this);
       radio_group_.push_back(radio);
@@ -281,11 +282,13 @@ void ContentSettingBubbleContents::Init() {
         layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, kMediaMenuColumnSetId);
 
-      views::Label* label = new views::Label(UTF8ToUTF16(i->second.label));
+      views::Label* label =
+          new views::Label(base::UTF8ToUTF16(i->second.label));
       label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
       views::MenuButton* menu_button = new views::MenuButton(
-          NULL, UTF8ToUTF16((i->second.selected_device.name)), this, true);
+          NULL, base::UTF8ToUTF16((i->second.selected_device.name)),
+          this, true);
       menu_button->set_alignment(views::TextButton::ALIGN_LEFT);
       menu_button->set_border(
           new views::TextButtonNativeThemeBorder(menu_button));
@@ -341,20 +344,21 @@ void ContentSettingBubbleContents::Init() {
        bubble_content.domain_lists.begin());
        i != bubble_content.domain_lists.end(); ++i) {
     layout->StartRow(0, kSingleColumnSetId);
-    views::Label* section_title = new views::Label(UTF8ToUTF16(i->title));
+    views::Label* section_title = new views::Label(base::UTF8ToUTF16(i->title));
     section_title->SetMultiLine(true);
     section_title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(section_title, 1, 1, GridLayout::FILL, GridLayout::LEADING);
     for (std::set<std::string>::const_iterator j = i->hosts.begin();
          j != i->hosts.end(); ++j) {
       layout->StartRow(0, indented_kSingleColumnSetId);
-      layout->AddView(new views::Label(UTF8ToUTF16(*j), domain_font));
+      layout->AddView(new views::Label(base::UTF8ToUTF16(*j), domain_font));
     }
     bubble_content_empty = false;
   }
 
   if (!bubble_content.custom_link.empty()) {
-    custom_link_ = new views::Link(UTF8ToUTF16(bubble_content.custom_link));
+    custom_link_ =
+        new views::Link(base::UTF8ToUTF16(bubble_content.custom_link));
     custom_link_->SetEnabled(bubble_content.custom_link_enabled);
     custom_link_->set_listener(this);
     if (!bubble_content_empty)
@@ -383,7 +387,8 @@ void ContentSettingBubbleContents::Init() {
                                  GridLayout::USE_PREF, 0, 0);
 
     layout->StartRow(0, kDoubleColumnSetId);
-    manage_link_ = new views::Link(UTF8ToUTF16(bubble_content.manage_link));
+    manage_link_ =
+        new views::Link(base::UTF8ToUTF16(bubble_content.manage_link));
     manage_link_->set_listener(this);
     layout->AddView(manage_link_);
 

@@ -455,7 +455,7 @@ ActionButtonView::ActionButtonView(views::ButtonListener* listener,
   } else {
     signout_button_->SetTooltipText(
         l10n_util::GetStringFUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON_TIP,
-                                   UTF8ToUTF16(username)));
+                                   base::UTF8ToUTF16(username)));
   }
   signout_button_->set_tag(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON);
 

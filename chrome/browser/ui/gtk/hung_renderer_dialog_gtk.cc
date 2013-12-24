@@ -185,9 +185,9 @@ void HungRendererDialogGtk::ShowForWebContents(WebContents* hung_contents) {
   for (TabContentsIterator it; !it.done(); it.Next()) {
     if (it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost()) {
       gtk_list_store_append(model_, &tree_iter);
-      std::string title = UTF16ToUTF8(it->GetTitle());
+      std::string title = base::UTF16ToUTF8(it->GetTitle());
       if (title.empty())
-        title = UTF16ToUTF8(CoreTabHelper::GetDefaultTitle());
+        title = base::UTF16ToUTF8(CoreTabHelper::GetDefaultTitle());
       FaviconTabHelper* favicon_tab_helper =
           FaviconTabHelper::FromWebContents(*it);
       SkBitmap favicon = favicon_tab_helper->GetFavicon().AsBitmap();

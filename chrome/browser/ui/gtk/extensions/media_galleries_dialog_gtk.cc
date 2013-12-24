@@ -64,11 +64,11 @@ void MediaGalleriesDialogGtk::InitWidgets() {
   confirm_ = NULL;
 
   GtkWidget* header = gtk_util::LeftAlignMisc(gtk_label_new(
-      UTF16ToUTF8(controller_->GetHeader()).c_str()));
+      base::UTF16ToUTF8(controller_->GetHeader()).c_str()));
   gtk_box_pack_start(GTK_BOX(contents_.get()), header, FALSE, FALSE, 0);
 
   GtkWidget* subtext =
-      gtk_label_new(UTF16ToUTF8(controller_->GetSubtext()).c_str());
+      gtk_label_new(base::UTF16ToUTF8(controller_->GetSubtext()).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(subtext), TRUE);
   gtk_widget_set_size_request(subtext, 500, -1);
   gtk_box_pack_start(GTK_BOX(contents_.get()), subtext, FALSE, FALSE, 0);
@@ -111,7 +111,7 @@ void MediaGalleriesDialogGtk::InitWidgets() {
     gtk_box_pack_start(GTK_BOX(checkbox_container), separator, FALSE, FALSE, 0);
 
     GtkWidget* unattached_hbox = gtk_hbox_new(FALSE, ui::kLabelSpacing);
-    GtkWidget* unattached_text = gtk_label_new(UTF16ToUTF8(
+    GtkWidget* unattached_text = gtk_label_new(base::UTF16ToUTF8(
         controller_->GetUnattachedLocationsHeader()).c_str());
     gtk_label_set_line_wrap(GTK_LABEL(unattached_text), FALSE);
     gtk_box_pack_start(GTK_BOX(unattached_hbox), unattached_text,
@@ -175,7 +175,8 @@ void MediaGalleriesDialogGtk::UpdateGalleryInContainer(
   g_signal_connect(widget, "toggled", G_CALLBACK(OnToggledThunk), this);
   gtk_box_pack_start(GTK_BOX(checkbox_container), hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
-  std::string details = UTF16ToUTF8(gallery.GetGalleryAdditionalDetails());
+  std::string details =
+      base::UTF16ToUTF8(gallery.GetGalleryAdditionalDetails());
   GtkWidget* details_label = gtk_label_new(details.c_str());
   gtk_label_set_line_wrap(GTK_LABEL(details_label), FALSE);
   gtk_util::SetLabelColor(details_label, &kDeemphasizedTextColor);
@@ -187,11 +188,11 @@ void MediaGalleriesDialogGtk::UpdateGalleryInContainer(
   else
     new_checkbox_map_[widget] = gallery;
 
-  std::string tooltip_text = UTF16ToUTF8(gallery.GetGalleryTooltip());
+  std::string tooltip_text = base::UTF16ToUTF8(gallery.GetGalleryTooltip());
   gtk_widget_set_tooltip_text(widget, tooltip_text.c_str());
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), permitted);
-  std::string label = UTF16ToUTF8(gallery.GetGalleryDisplayName());
+  std::string label = base::UTF16ToUTF8(gallery.GetGalleryDisplayName());
   // TODO(gbillock): Would be nice to add middle elide behavior here.
   gtk_button_set_label(GTK_BUTTON(widget), label.c_str());
 }

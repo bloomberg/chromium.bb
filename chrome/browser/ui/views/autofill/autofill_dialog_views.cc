@@ -403,7 +403,7 @@ class LoadingAnimationView : public views::View,
 
     for (size_t i = 0; i < 3; ++i) {
       views::Label* dot = new views::Label();
-      dot->SetText(ASCIIToUTF16("."));
+      dot->SetText(base::ASCIIToUTF16("."));
       dot->SetFont(font);
       container_->AddChildView(dot);
     }
@@ -1117,7 +1117,7 @@ void AutofillDialogViews::SuggestionView::SetState(
 void AutofillDialogViews::SuggestionView::SetLabelText(
     const base::string16& text) {
   // TODO(estade): does this localize well?
-  base::string16 line_return(ASCIIToUTF16("\n"));
+  base::string16 line_return(base::ASCIIToUTF16("\n"));
   size_t position = text.find(line_return);
   if (position == base::string16::npos) {
     label_->SetText(text);
@@ -1571,7 +1571,7 @@ base::string16 AutofillDialogViews::GetWindowTitle() const {
   // Hack alert: we don't want the dialog to jiggle when a title is added or
   // removed. Setting a non-empty string here keeps the dialog's title bar the
   // same size.
-  return title.empty() ? ASCIIToUTF16(" ") : title;
+  return title.empty() ? base::ASCIIToUTF16(" ") : title;
 }
 
 void AutofillDialogViews::WindowClosing() {

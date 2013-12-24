@@ -26,6 +26,8 @@
 #include "ui/views/accessibility/native_view_accessibility_win.h"
 #include "ui/views/widget/widget.h"
 
+using base::UTF16ToWide;
+
 class BrowserViewsAccessibilityTest : public InProcessBrowserTest {
  public:
   BrowserViewsAccessibilityTest();
@@ -130,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(BrowserViewsAccessibilityTest,
   ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
   std::wstring title = UTF16ToWide(l10n_util::GetStringFUTF16(
       IDS_BROWSER_WINDOW_TITLE_FORMAT,
-      ASCIIToUTF16(content::kAboutBlankURL)));
+      base::ASCIIToUTF16(content::kAboutBlankURL)));
   TestAccessibilityInfo(acc_obj, title, ROLE_SYSTEM_WINDOW);
 }
 

@@ -14,6 +14,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
+using base::UTF16ToUTF8;
+
 namespace {
 
 void InitBrowserDetailStyle(GtkWidget* entry, GtkStyle* label_style,

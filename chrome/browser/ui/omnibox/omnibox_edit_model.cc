@@ -323,7 +323,8 @@ bool OmniboxEditModel::UpdatePermanentText() {
 }
 
 GURL OmniboxEditModel::PermanentURL() {
-  return URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_), std::string());
+  return URLFixerUpper::FixupURL(base::UTF16ToUTF8(permanent_text_),
+                                 std::string());
 }
 
 void OmniboxEditModel::SetUserText(const base::string16& text) {
@@ -412,7 +413,7 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
                                            base::string16* title,
                                            gfx::Image* favicon) {
   *url = CurrentMatch(NULL).destination_url;
-  if (*url == URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_),
+  if (*url == URLFixerUpper::FixupURL(base::UTF16ToUTF8(permanent_text_),
                                       std::string())) {
     content::WebContents* web_contents = controller_->GetWebContents();
     *title = web_contents->GetTitle();
@@ -456,7 +457,7 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
     // text so that if the scheme was stripped it's added back, and the url
     // is unescaped (we escape parts of the url for display).
     *url = PermanentURL();
-    *text = UTF8ToUTF16(url->spec());
+    *text = base::UTF8ToUTF16(url->spec());
     *write_url = true;
     return;
   }
@@ -479,8 +480,8 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
   if (perm_url.SchemeIs(content::kHttpScheme) &&
       url->SchemeIs(content::kHttpScheme) && perm_url.host() == url->host()) {
     *write_url = true;
-    base::string16 http = ASCIIToUTF16(content::kHttpScheme) +
-        ASCIIToUTF16(content::kStandardSchemeSeparator);
+    base::string16 http = base::ASCIIToUTF16(content::kHttpScheme) +
+        base::ASCIIToUTF16(content::kStandardSchemeSeparator);
     if (text->compare(0, http.length(), http) != 0)
       *text = http + *text;
   }
@@ -628,7 +629,7 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     AutocompleteInput input(
       has_temporary_text_ ?
           UserTextFromDisplayText(view_->GetText())  : old_input.text(),
-      old_input.cursor_position(), ASCIIToUTF16("com"),
+      old_input.cursor_position(), base::ASCIIToUTF16("com"),
       GURL(), old_input.current_page_classification(),
       old_input.prevent_inline_autocomplete(), old_input.prefer_keyword(),
       old_input.allow_exact_keyword_match(), old_input.matches_requested());
@@ -648,7 +649,8 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
 
   if ((match.transition == content::PAGE_TRANSITION_TYPED) &&
       (match.destination_url ==
-       URLFixerUpper::FixupURL(UTF16ToUTF8(permanent_text_), std::string()))) {
+       URLFixerUpper::FixupURL(base::UTF16ToUTF8(permanent_text_),
+                               std::string()))) {
     // When the user hit enter on the existing permanent URL, treat it like a
     // reload for scoring purposes.  We could detect this by just checking
     // user_input_in_progress_, but it seems better to treat "edits" that end

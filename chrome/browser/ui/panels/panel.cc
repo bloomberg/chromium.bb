@@ -759,7 +759,7 @@ base::string16 Panel::GetWindowTitle() const {
   }
 
   if (title.empty())
-    title = UTF8ToUTF16(app_name());
+    title = base::UTF8ToUTF16(app_name());
 
   return title;
 }

@@ -61,7 +61,7 @@ bool CryptoModulePasswordDialogView::Cancel() {
 }
 
 bool CryptoModulePasswordDialogView::Accept() {
-  callback_.Run(UTF16ToUTF8(password_entry_->text()));
+  callback_.Run(base::UTF16ToUTF8(password_entry_->text()));
   const base::string16 empty;
   password_entry_->SetText(empty);
   return true;
@@ -83,8 +83,8 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
                                           CryptoModulePasswordReason reason) {
   // Select an appropriate text for the reason.
   std::string text;
-  const base::string16& hostname16 = UTF8ToUTF16(hostname);
-  const base::string16& slot16 = UTF8ToUTF16(slot_name);
+  const base::string16& hostname16 = base::UTF8ToUTF16(hostname);
+  const base::string16& slot16 = base::UTF8ToUTF16(slot_name);
   switch (reason) {
     case chrome::kCryptoModulePasswordKeygen:
       text = l10n_util::GetStringFUTF8(
@@ -115,7 +115,7 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
     default:
       NOTREACHED();
   }
-  reason_label_ = new views::Label(UTF8ToUTF16(text));
+  reason_label_ = new views::Label(base::UTF8ToUTF16(text));
   reason_label_->SetMultiLine(true);
 
   password_label_ = new views::Label(l10n_util::GetStringUTF16(

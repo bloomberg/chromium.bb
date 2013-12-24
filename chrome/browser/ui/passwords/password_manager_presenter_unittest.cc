@@ -77,10 +77,10 @@ void PasswordManagerPresenterTest::AddPasswordEntry(
     const std::string& password) {
   autofill::PasswordForm* form = new autofill::PasswordForm();
   form->origin = origin;
-  form->username_element = ASCIIToUTF16("Email");
-  form->username_value = ASCIIToUTF16(user_name);
-  form->password_element = ASCIIToUTF16("Passwd");
-  form->password_value = ASCIIToUTF16(password);
+  form->username_element = base::ASCIIToUTF16("Email");
+  form->username_value = base::ASCIIToUTF16(user_name);
+  form->password_element = base::ASCIIToUTF16("Passwd");
+  form->password_value = base::ASCIIToUTF16(password);
   mock_controller_->GetPasswordManagerPresenter()->password_list_
       .push_back(form);
 }

@@ -59,21 +59,24 @@ void AfterTranslateInfoBar::PlatformSpecificSetOwner() {
   signals()->Connect(target_lang_combo, "changed",
                      G_CALLBACK(&OnTargetLanguageModifiedThunk), this);
 
-  gtk_box_pack_start(GTK_BOX(new_hbox), CreateLabel(UTF16ToUTF8(strings[0])),
+  gtk_box_pack_start(GTK_BOX(new_hbox),
+                     CreateLabel(base::UTF16ToUTF8(strings[0])),
                      FALSE, FALSE, 0);
   gtk_box_pack_start(
       GTK_BOX(new_hbox),
       (swapped_language_combos || autodetermined_source_language) ?
           target_lang_combo : original_lang_combo,
       FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(new_hbox), CreateLabel(UTF16ToUTF8(strings[1])),
+  gtk_box_pack_start(GTK_BOX(new_hbox),
+                     CreateLabel(base::UTF16ToUTF8(strings[1])),
                      FALSE, FALSE, 0);
   if (!autodetermined_source_language) {
     gtk_box_pack_start(GTK_BOX(new_hbox),
                        swapped_language_combos ?
                            original_lang_combo : target_lang_combo,
                        FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(new_hbox), CreateLabel(UTF16ToUTF8(strings[2])),
+    gtk_box_pack_start(GTK_BOX(new_hbox),
+                       CreateLabel(base::UTF16ToUTF8(strings[2])),
                        FALSE, FALSE, 0);
   }
 

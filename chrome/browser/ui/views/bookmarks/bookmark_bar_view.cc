@@ -616,7 +616,7 @@ base::string16 BookmarkBarView::CreateToolTipForURLAndTitle(
   }
 
   // Only show the URL if the url and title differ.
-  if (title != UTF8ToUTF16(url.spec())) {
+  if (title != base::UTF8ToUTF16(url.spec())) {
     if (!result.empty())
       result.push_back('\n');
 

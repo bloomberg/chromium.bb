@@ -22,33 +22,33 @@ TEST_F(X11InputMethodContextImplGtk2FriendTest, GtkCommitSignalTrap) {
 
   // Cases which don't match the target keyval.
   trap.StartTrap('t');
-  EXPECT_FALSE(trap.Trap(UTF8ToUTF16("T")));
+  EXPECT_FALSE(trap.Trap(base::UTF8ToUTF16("T")));
   EXPECT_FALSE(trap.IsSignalCaught());
-  EXPECT_FALSE(trap.Trap(UTF8ToUTF16("true")));
+  EXPECT_FALSE(trap.Trap(base::UTF8ToUTF16("true")));
   EXPECT_FALSE(trap.IsSignalCaught());
 
   // Do not catch when the trap is not activated.
   trap.StopTrap();
-  EXPECT_FALSE(trap.Trap(UTF8ToUTF16("t")));
+  EXPECT_FALSE(trap.Trap(base::UTF8ToUTF16("t")));
   EXPECT_FALSE(trap.IsSignalCaught());
 
   // Successive calls don't break anything.
   trap.StopTrap();
   trap.StopTrap();
-  EXPECT_FALSE(trap.Trap(UTF8ToUTF16("t")));
+  EXPECT_FALSE(trap.Trap(base::UTF8ToUTF16("t")));
   EXPECT_FALSE(trap.IsSignalCaught());
   trap.StartTrap('f');
   trap.StartTrap('t');
-  EXPECT_TRUE(trap.Trap(UTF8ToUTF16("t")));
+  EXPECT_TRUE(trap.Trap(base::UTF8ToUTF16("t")));
   EXPECT_TRUE(trap.IsSignalCaught());
 
   // StartTrap() resets the state.
   trap.StartTrap('t');
   EXPECT_FALSE(trap.IsSignalCaught());
   // Many times calls to Trap() are okay.
-  EXPECT_FALSE(trap.Trap(UTF8ToUTF16("f")));
+  EXPECT_FALSE(trap.Trap(base::UTF8ToUTF16("f")));
   EXPECT_FALSE(trap.IsSignalCaught());
-  EXPECT_TRUE(trap.Trap(UTF8ToUTF16("t")));
+  EXPECT_TRUE(trap.Trap(base::UTF8ToUTF16("t")));
   EXPECT_TRUE(trap.IsSignalCaught());
 }
 

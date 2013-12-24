@@ -197,11 +197,11 @@ GtkWidget* GlobalHistoryMenu::AddHistoryItemToMenu(HistoryItem* item,
   std::string url_string = item->url.possibly_invalid_spec();
 
   if (title.empty())
-    title = UTF8ToUTF16(url_string);
+    title = base::UTF8ToUTF16(url_string);
   gfx::ElideString(title, kMaximumMenuWidthInChars, &title);
 
   GtkWidget* menu_item = gtk_menu_item_new_with_label(
-      UTF16ToUTF8(title).c_str());
+      base::UTF16ToUTF8(title).c_str());
 
   item->menu_item = menu_item;
   gtk_widget_show(menu_item);

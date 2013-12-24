@@ -31,7 +31,7 @@ void BeforeTranslateInfoBar::PlatformSpecificSetOwner() {
                                  base::string16(), &offset);
 
   gtk_box_pack_start(GTK_BOX(new_hbox),
-                     CreateLabel(UTF16ToUTF8(text.substr(0, offset))),
+                     CreateLabel(base::UTF16ToUTF8(text.substr(0, offset))),
                      FALSE, FALSE, 0);
   size_t original_language_index = GetDelegate()->original_language_index();
   size_t target_language_index = GetDelegate()->target_language_index();
@@ -44,7 +44,7 @@ void BeforeTranslateInfoBar::PlatformSpecificSetOwner() {
                      G_CALLBACK(&OnLanguageModifiedThunk), this);
   gtk_box_pack_start(GTK_BOX(new_hbox), combobox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(new_hbox),
-                     CreateLabel(UTF16ToUTF8(text.substr(offset))),
+                     CreateLabel(base::UTF16ToUTF8(text.substr(offset))),
                      FALSE, FALSE, 0);
 
   GtkWidget* button = gtk_button_new_with_label(

@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(PanelExtensionBrowserTest, BasicContextMenu) {
   {
     content::ContextMenuParams params;
     params.page_url = web_contents->GetURL();
-    params.selection_text = ASCIIToUTF16("Select me");
+    params.selection_text = base::ASCIIToUTF16("Select me");
     // Ensure context menu isn't swallowed by WebContentsDelegate (the panel).
     EXPECT_FALSE(web_contents->GetDelegate()->HandleContextMenu(params));
 

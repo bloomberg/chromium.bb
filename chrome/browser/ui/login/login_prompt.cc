@@ -441,10 +441,10 @@ void LoginDialogCallback(const GURL& request_url,
   // The realm is controlled by the remote server, so there is no reason
   // to believe it is of a reasonable length.
   base::string16 elided_realm;
-  gfx::ElideString(UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
+  gfx::ElideString(base::UTF8ToUTF16(auth_info->realm), 120, &elided_realm);
 
-  base::string16 host_and_port = ASCIIToUTF16(request_url.scheme() + "://" +
-                                        auth_info->challenger.ToString());
+  base::string16 host_and_port = base::ASCIIToUTF16(
+      request_url.scheme() + "://" + auth_info->challenger.ToString());
   base::string16 explanation = elided_realm.empty() ?
       l10n_util::GetStringFUTF16(IDS_LOGIN_DIALOG_DESCRIPTION_NO_REALM,
                                  host_and_port) :

@@ -41,7 +41,7 @@ TEST_F(CryptoModulePasswordDialogViewTest, TestAccept) {
   EXPECT_EQ(dialog_->password_entry_, dialog_->GetInitiallyFocusedView());
   EXPECT_TRUE(dialog_->GetModalType() != ui::MODAL_TYPE_NONE);
   const std::string kPassword = "diAl0g";
-  dialog_->password_entry_->SetText(ASCIIToUTF16(kPassword));
+  dialog_->password_entry_->SetText(base::ASCIIToUTF16(kPassword));
   EXPECT_TRUE(dialog_->Accept());
   EXPECT_EQ(kPassword, text_);
   const base::string16 empty;

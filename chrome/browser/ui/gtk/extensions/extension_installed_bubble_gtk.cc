@@ -169,7 +169,8 @@ bool ExtensionInstalledBubbleGtk::MaybeShowNow() {
 
   // Heading label.
   GtkWidget* heading_label = gtk_label_new(NULL);
-  base::string16 extension_name = UTF8ToUTF16(bubble_.extension()->name());
+  base::string16 extension_name =
+      base::UTF8ToUTF16(bubble_.extension()->name());
   base::i18n::AdjustStringForLocaleDirection(&extension_name);
   std::string heading_text = l10n_util::GetStringFUTF8(
       IDS_EXTENSION_INSTALLED_HEADING, extension_name);
@@ -233,7 +234,7 @@ bool ExtensionInstalledBubbleGtk::MaybeShowNow() {
   if (bubble_.type() == bubble_.OMNIBOX_KEYWORD) {
     GtkWidget* info_label = gtk_label_new(l10n_util::GetStringFUTF8(
         IDS_EXTENSION_INSTALLED_OMNIBOX_KEYWORD_INFO,
-        UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(
+        base::UTF8ToUTF16(extensions::OmniboxInfo::GetKeyword(
             bubble_.extension()))).c_str());
     gtk_util::SetLabelWidth(info_label, kTextColumnWidth);
     gtk_box_pack_start(GTK_BOX(text_column), info_label, FALSE, FALSE, 0);
