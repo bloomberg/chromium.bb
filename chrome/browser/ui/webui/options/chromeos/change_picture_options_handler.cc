@@ -270,8 +270,7 @@ void ChangePictureOptionsHandler::SendProfileImage(const gfx::ImageSkia& image,
 
 void ChangePictureOptionsHandler::UpdateProfileImage() {
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
-
+      UserManager::Get()->GetUserImageManager(GetUser()->email());
   // If we have a downloaded profile image and haven't sent it in
   // |SendSelectedImage|, send it now (without selecting).
   if (previous_image_index_ != User::kProfileImageIndex &&
@@ -301,9 +300,8 @@ void ChangePictureOptionsHandler::HandleSelectImage(
   DCHECK(!image_url.empty());
   DCHECK(!image_type.empty());
 
-  const User* user = GetUser();
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
+      UserManager::Get()->GetUserImageManager(GetUser()->email());
   int image_index = User::kInvalidImageIndex;
   bool waiting_for_camera_photo = false;
 
@@ -311,7 +309,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(
     // Previous image (from camera or manually uploaded) re-selected.
     DCHECK(!previous_image_.isNull());
     user_image_manager->SaveUserImage(
-        user->email(), UserImage::CreateAndEncode(previous_image_));
+        UserImage::CreateAndEncode(previous_image_));
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               kHistogramImageOld,
@@ -320,7 +318,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(
   } else if (image_type == "default" &&
              IsDefaultImageUrl(image_url, &image_index)) {
     // One of the default user images.
-    user_image_manager->SaveUserDefaultImageIndex(user->email(), image_index);
+    user_image_manager->SaveUserDefaultImageIndex(image_index);
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               GetDefaultImageHistogramValue(image_index),
@@ -337,7 +335,7 @@ void ChangePictureOptionsHandler::HandleSelectImage(
     }
   } else if (image_type == "profile") {
     // Profile image selected. Could be previous (old) user image.
-    user_image_manager->SaveUserImageFromProfileImage(user->email());
+    user_image_manager->SaveUserImageFromProfileImage();
 
     if (previous_image_index_ == User::kProfileImageIndex) {
       UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
@@ -363,8 +361,8 @@ void ChangePictureOptionsHandler::FileSelected(const base::FilePath& path,
                                                int index,
                                                void* params) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->GetUserImageManager()->SaveUserImageFromFile(GetUser()->email(),
-                                                             path);
+  user_manager->GetUserImageManager(GetUser()->email())->
+      SaveUserImageFromFile(path);
   UMA_HISTOGRAM_ENUMERATION(
       "UserImage.ChangeChoice", kHistogramImageFromFile, kHistogramImagesCount);
   VLOG(1) << "Selected image from file";
@@ -373,8 +371,8 @@ void ChangePictureOptionsHandler::FileSelected(const base::FilePath& path,
 void ChangePictureOptionsHandler::SetImageFromCamera(
     const gfx::ImageSkia& photo) {
   UserManager* user_manager = UserManager::Get();
-  user_manager->GetUserImageManager()->SaveUserImage(
-      GetUser()->email(), UserImage::CreateAndEncode(photo));
+  user_manager->GetUserImageManager(GetUser()->email())->SaveUserImage(
+      UserImage::CreateAndEncode(photo));
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             kHistogramImageFromCamera,
                             kHistogramImagesCount);

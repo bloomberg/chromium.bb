@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -21,7 +20,6 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 #include "chrome/browser/chromeos/login/user_image_manager.h"
-#include "chrome/browser/chromeos/policy/cloud_external_data_policy_observer.h"
 #include "chrome/browser/profiles/profile_downloader_delegate.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -41,42 +39,32 @@ class UserManager;
 
 class UserImageManagerImpl
     : public UserImageManager,
-      public ProfileDownloaderDelegate,
-      public policy::CloudExternalDataPolicyObserver::Delegate {
+      public ProfileDownloaderDelegate {
  public:
-  UserImageManagerImpl(CrosSettings* cros_settings, UserManager* user_manager);
-
   // UserImageManager:
+  UserImageManagerImpl(const std::string& user_id,
+                       CrosSettings* cros_settings,
+                       UserManager* user_manager);
   virtual ~UserImageManagerImpl();
-  virtual void LoadUserImages(const UserList& users) OVERRIDE;
-  virtual void UserLoggedIn(const std::string& user_id,
-                            bool user_is_new,
-                            bool user_is_local) OVERRIDE;
-  virtual void SaveUserDefaultImageIndex(const std::string& user_id,
-                                         int default_image_index) OVERRIDE;
-  virtual void SaveUserImage(const std::string& user_id,
-                             const UserImage& user_image) OVERRIDE;
-  virtual void SaveUserImageFromFile(const std::string& user_id,
-                                     const base::FilePath& path) OVERRIDE;
-  virtual void SaveUserImageFromProfileImage(
-      const std::string& user_id) OVERRIDE;
-  virtual void DeleteUserImage(const std::string& user_id) OVERRIDE;
+
+  virtual void LoadUserImage() OVERRIDE;
+  virtual void UserLoggedIn(bool user_is_new, bool user_is_local) OVERRIDE;
+  virtual void SaveUserDefaultImageIndex(int default_image_index) OVERRIDE;
+  virtual void SaveUserImage(const UserImage& user_image) OVERRIDE;
+  virtual void SaveUserImageFromFile(const base::FilePath& path) OVERRIDE;
+  virtual void SaveUserImageFromProfileImage() OVERRIDE;
+  virtual void DeleteUserImage() OVERRIDE;
   virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
   virtual const gfx::ImageSkia& DownloadedProfileImage() const OVERRIDE;
   virtual UserImageSyncObserver* GetSyncObserver() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
 
-  // policy::CloudExternalDataPolicyObserver::Delegate:
-  virtual void OnExternalDataSet(const std::string& policy,
-                                 const std::string& user_id) OVERRIDE;
-  virtual void OnExternalDataCleared(const std::string& policy,
-                                     const std::string& user_id) OVERRIDE;
+  virtual void OnExternalDataSet(const std::string& policy) OVERRIDE;
+  virtual void OnExternalDataCleared(const std::string& policy) OVERRIDE;
   virtual void OnExternalDataFetched(const std::string& policy,
-                                     const std::string& user_id,
                                      scoped_ptr<std::string> data) OVERRIDE;
 
   static void IgnoreProfileDataDownloadDelayForTesting();
-  void StopPolicyObserverForTesting();
 
  private:
   friend class UserImageManagerTest;
@@ -104,13 +92,13 @@ class UserImageManagerImpl
       ProfileDownloader* downloader,
       ProfileDownloaderDelegate::FailureReason reason) OVERRIDE;
 
-  // Returns true if the user image for |user_id| is managed by policy and the
-  // user is not allowed to change it.
-  bool IsUserImageManaged(const std::string& user_id) const;
+  // Returns true if the user image for the user is managed by
+  // policy and the user is not allowed to change it.
+  bool IsUserImageManaged() const;
 
   // Randomly chooses one of the default images for the specified user, sends a
   // LOGIN_USER_IMAGE_CHANGED notification and updates local state.
-  void SetInitialUserImage(const std::string& user_id);
+  void SetInitialUserImage();
 
   // Initializes the |downloaded_profile_image_| for the currently logged-in
   // user to a profile image that had been downloaded and saved before if such
@@ -130,27 +118,37 @@ class UserImageManagerImpl
   // with download times).
   void DownloadProfileData(const std::string& reason);
 
-  // Removes |user_id| from the dictionary |prefs_dict_root| in local state and
-  // deletes the image file that the dictionary referenced for that user.
-  void DeleteUserImageAndLocalStateEntry(const std::string& user_id,
-                                         const char* prefs_dict_root);
+  // Removes ther user from the dictionary |prefs_dict_root| in
+  // local state and deletes the image file that the dictionary
+  // referenced for that user.
+  void DeleteUserImageAndLocalStateEntry(const char* prefs_dict_root);
 
-  // Called when a Job updates the copy of the user image held in memory by
-  // |user|. Allows |this| to update |downloaded_profile_image_| and send a
-  // NOTIFICATION_LOGIN_USER_IMAGE_CHANGED notification.
-  void OnJobChangedUserImage(const User* user);
+  // Called when a Job updates the copy of the user image held in
+  // memory.  Allows |this| to update |downloaded_profile_image_| and
+  // send a NOTIFICATION_LOGIN_USER_IMAGE_CHANGED notification.
+  void OnJobChangedUserImage();
 
-  // Called when a Job for |user_id| finishes. If a migration was required for
-  // the user, the migration is now complete and the old image file for that
-  // user, if any, is deleted.
-  void OnJobDone(const std::string& user_id);
+  // Called when a Job for the user finishes. If a migration was
+  // required for the user, the migration is now complete and the old
+  // image file for that user, if any, is deleted.
+  void OnJobDone();
 
-  // Completes migration by removing |user_id| from the old prefs dictionary.
-  void UpdateLocalStateAfterMigration(const std::string& user_id);
+  // Completes migration by removing the user from the old prefs
+  // dictionary.
+  void UpdateLocalStateAfterMigration();
 
   // Create a sync observer if a user is logged in, the user's user image is
   // allowed to be synced and no sync observer exists yet.
   void TryToCreateImageSyncObserver();
+
+  // Returns immutable version of user with |user_id_|.
+  const User* GetUser() const;
+
+  // Returns mutable version of user with |user_id_|.
+  User* GetUserAndModify() const;
+
+  // Returns true if user with |user_id_| is logged in and a regular user.
+  bool IsUserLoggedInAndRegular() const;
 
   // The user manager.
   UserManager* user_manager_;
@@ -175,7 +173,7 @@ class UserImageManagerImpl
   // currently in progress and |downloading_profile_image_| is true.
   base::TimeTicks profile_image_load_start_time_;
 
-  // Downloader for the current user's profile data. NULL when no download is
+  // Downloader for the user's profile data. NULL when no download is
   // currently in progress.
   scoped_ptr<ProfileDownloader> profile_downloader_;
 
@@ -204,25 +202,18 @@ class UserImageManagerImpl
   // stays up to date.
   base::RepeatingTimer<UserImageManagerImpl> profile_download_periodic_timer_;
 
-  // Users whose user images need to be migrated from the old dictionary pref to
-  // the new dictionary pref, converting any non-default images to JPEG format.
-  std::set<std::string> users_to_migrate_;
-
   // Sync observer for the currently logged-in user.
   scoped_ptr<UserImageSyncObserver> user_image_sync_observer_;
-
-  // Observer for the policy that can be used to manage user images.
-  scoped_ptr<policy::CloudExternalDataPolicyObserver> policy_observer_;
 
   // Background task runner on which Jobs perform file I/O and the image
   // decoders run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
-  // The currently running jobs.
-  std::map<std::string, linked_ptr<Job> > jobs_;
+  // The currently running job.
+  scoped_ptr<Job> job_;
 
-  // List of user_ids whose user image is managed by policy.
-  std::set<std::string> users_with_managed_images_;
+  bool has_managed_image_;
+  bool user_needs_migration_;
 
   base::WeakPtrFactory<UserImageManagerImpl> weak_factory_;
 

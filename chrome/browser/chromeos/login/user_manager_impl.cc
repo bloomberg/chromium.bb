@@ -189,7 +189,6 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_new_(false),
       is_current_user_ephemeral_regular_user_(false),
       ephemeral_users_enabled_(false),
-      user_image_manager_(new UserImageManagerImpl(cros_settings_, this)),
       supervised_user_manager_(new SupervisedUserManagerImpl(this)),
       manager_creation_time_(base::TimeTicks::Now()),
       multi_profile_first_run_notification_(
@@ -214,6 +213,15 @@ UserManagerImpl::UserManagerImpl()
                  base::Unretained(this)));
   multi_profile_user_controller_.reset(new MultiProfileUserController(
       this, g_browser_process->local_state()));
+  policy_observer_.reset(new policy::CloudExternalDataPolicyObserver(
+      cros_settings_,
+      this,
+      g_browser_process->browser_policy_connector()->
+          GetDeviceLocalAccountPolicyService(),
+      policy::key::kUserAvatarImage,
+      this));
+  policy_observer_->Init();
+
   UpdateLoginState();
 }
 
@@ -242,12 +250,26 @@ void UserManagerImpl::Shutdown() {
   if (device_local_account_policy_service_)
     device_local_account_policy_service_->RemoveObserver(this);
 
-  user_image_manager_->Shutdown();
+  for (UserImageManagerMap::iterator it = user_image_managers_.begin(),
+                                     ie = user_image_managers_.end();
+       it != ie; ++it) {
+    it->second->Shutdown();
+  }
   multi_profile_user_controller_.reset();
+  policy_observer_.reset();
 }
 
-UserImageManager* UserManagerImpl::GetUserImageManager() {
-  return user_image_manager_.get();
+UserImageManager* UserManagerImpl::GetUserImageManager(
+    const std::string& user_id) {
+  UserImageManagerMap::iterator ui = user_image_managers_.find(user_id);
+  if (ui != user_image_managers_.end())
+    return ui->second.get();
+  linked_ptr<UserImageManagerImpl> mgr(new UserImageManagerImpl(
+      user_id,
+      cros_settings_,
+      this));
+  user_image_managers_[user_id] = mgr;
+  return mgr.get();
 }
 
 SupervisedUserManager* UserManagerImpl::GetSupervisedUserManager() {
@@ -784,6 +806,10 @@ bool UserManagerImpl::RespectLocalePreference(
   return true;
 }
 
+void UserManagerImpl::StopPolicyObserverForTesting() {
+  policy_observer_.reset();
+}
+
 void UserManagerImpl::Observe(int type,
                               const content::NotificationSource& source,
                               const content::NotificationDetails& details) {
@@ -824,6 +850,22 @@ void UserManagerImpl::Observe(int type,
     default:
       NOTREACHED();
   }
+}
+
+void UserManagerImpl::OnExternalDataSet(const std::string& policy,
+                                        const std::string& user_id) {
+  GetUserImageManager(user_id)->OnExternalDataSet(policy);
+}
+
+void UserManagerImpl::OnExternalDataCleared(const std::string& policy,
+                                            const std::string& user_id) {
+  GetUserImageManager(user_id)->OnExternalDataCleared(policy);
+}
+
+void UserManagerImpl::OnExternalDataFetched(const std::string& policy,
+                                            const std::string& user_id,
+                                            scoped_ptr<std::string> data) {
+  GetUserImageManager(user_id)->OnExternalDataFetched(policy, data.Pass());
 }
 
 void UserManagerImpl::OnPolicyUpdated(const std::string& user_id) {
@@ -1083,7 +1125,10 @@ void UserManagerImpl::EnsureUsersLoaded() {
   }
   user_loading_stage_ = STAGE_LOADED;
 
-  user_image_manager_->LoadUserImages(users_);
+  for (UserList::iterator ui = users_.begin(), ue = users_.end();
+       ui != ue; ++ui) {
+    GetUserImageManager((*ui)->email())->LoadUserImage();
+  }
 }
 
 void UserManagerImpl::RetrieveTrustedDevicePolicies() {
@@ -1208,7 +1253,7 @@ void UserManagerImpl::RegularUserLoggedIn(const std::string& user_id) {
 
   AddUserRecord(active_user_);
 
-  user_image_manager_->UserLoggedIn(user_id, is_current_user_new_, false);
+  GetUserImageManager(user_id)->UserLoggedIn(is_current_user_new_, false);
 
   WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
 
@@ -1222,7 +1267,7 @@ void UserManagerImpl::RegularUserLoggedInAsEphemeral(
   is_current_user_new_ = true;
   is_current_user_ephemeral_regular_user_ = true;
   active_user_ = User::CreateRegularUser(user_id);
-  user_image_manager_->UserLoggedIn(user_id, is_current_user_new_, false);
+  GetUserImageManager(user_id)->UserLoggedIn(is_current_user_new_, false);
   WallpaperManager::Get()->SetInitialUserWallpaper(user_id, false);
 }
 
@@ -1259,7 +1304,7 @@ void UserManagerImpl::LocallyManagedUserLoggedIn(
                         active_user_->GetDisplayName());
   }
 
-  user_image_manager_->UserLoggedIn(user_id, is_current_user_new_, true);
+  GetUserImageManager(user_id)->UserLoggedIn(is_current_user_new_, true);
   WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
 
   // Make sure that new data is persisted to Local State.
@@ -1272,7 +1317,7 @@ void UserManagerImpl::PublicAccountUserLoggedIn(User* user) {
   // The UserImageManager chooses a random avatar picture when a user logs in
   // for the first time. Tell the UserImageManager that this user is not new to
   // prevent the avatar from getting changed.
-  user_image_manager_->UserLoggedIn(user->email(), false, true);
+  GetUserImageManager(user->email())->UserLoggedIn(false, true);
   WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
 }
 
@@ -1324,9 +1369,9 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   is_current_user_new_ = true;
   active_user_ = User::CreateRetailModeUser();
-  user_image_manager_->UserLoggedIn(UserManager::kRetailModeUserName,
-                                    is_current_user_new_,
-                                    true);
+  GetUserImageManager(UserManager::kRetailModeUserName)->UserLoggedIn(
+      is_current_user_new_,
+      true);
   WallpaperManager::Get()->SetInitialUserWallpaper(
       UserManager::kRetailModeUserName, false);
 }
@@ -1362,7 +1407,7 @@ void UserManagerImpl::UpdateOwnership() {
 
 void UserManagerImpl::RemoveNonCryptohomeData(const std::string& user_id) {
   WallpaperManager::Get()->RemoveUserWallpaperInfo(user_id);
-  user_image_manager_->DeleteUserImage(user_id);
+  GetUserImageManager(user_id)->DeleteUserImage();
 
   PrefService* prefs = g_browser_process->local_state();
   DictionaryPrefUpdate prefs_oauth_update(prefs, kUserOAuthTokenStatus);
@@ -1487,14 +1532,14 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
   ListPrefUpdate prefs_public_accounts_update(g_browser_process->local_state(),
                                               kPublicAccounts);
   prefs_public_accounts_update->Clear();
-  for (std::vector<std::string>::const_iterator
-           it = new_public_accounts.begin();
+  for (std::vector<std::string>::const_iterator it =
+           new_public_accounts.begin();
        it != new_public_accounts.end(); ++it) {
     prefs_public_accounts_update->AppendString(*it);
   }
 
   // Remove the old public accounts from the user list.
-  for (UserList::iterator it = users_.begin(); it != users_.end(); ) {
+  for (UserList::iterator it = users_.begin(); it != users_.end();) {
     if ((*it)->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
       if (*it != GetLoggedInUser())
         delete *it;
@@ -1505,8 +1550,8 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
   }
 
   // Add the new public accounts to the front of the user list.
-  for (std::vector<std::string>::const_reverse_iterator
-           it = new_public_accounts.rbegin();
+  for (std::vector<std::string>::const_reverse_iterator it =
+           new_public_accounts.rbegin();
        it != new_public_accounts.rend(); ++it) {
     if (IsLoggedInAsPublicAccount() && *it == GetActiveUser()->email())
       users_.insert(users_.begin(), GetLoggedInUser());
@@ -1515,8 +1560,11 @@ bool UserManagerImpl::UpdateAndCleanUpPublicAccounts(
     UpdatePublicAccountDisplayName(*it);
   }
 
-  user_image_manager_->LoadUserImages(
-      UserList(users_.begin(), users_.begin() + new_public_accounts.size()));
+  for (UserList::iterator ui = users_.begin(),
+                          ue = users_.begin() + new_public_accounts.size();
+       ui != ue; ++ui) {
+    GetUserImageManager((*ui)->email())->LoadUserImage();
+  }
 
   // Remove data belonging to public accounts that are no longer found on the
   // user list.

@@ -122,7 +122,7 @@ class UserManager {
 
   virtual ~UserManager();
 
-  virtual UserImageManager* GetUserImageManager() = 0;
+  virtual UserImageManager* GetUserImageManager(const std::string& user_id) = 0;
   virtual SupervisedUserManager* GetSupervisedUserManager() = 0;
 
   // Returns a list of users who have logged into this device previously. This

@@ -16,14 +16,13 @@ namespace chromeos {
 
 class MockUserImageManager : public UserImageManager {
  public:
-  MockUserImageManager();
+  explicit MockUserImageManager(const std::string& user_id);
   virtual ~MockUserImageManager();
 
-  MOCK_METHOD2(SaveUserDefaultImageIndex, void(const std::string&, int));
-  MOCK_METHOD2(SaveUserImage, void(const std::string&, const UserImage&));
-  MOCK_METHOD2(SaveUserImageFromFile, void(const std::string&,
-                                           const base::FilePath&));
-  MOCK_METHOD1(SaveUserImageFromProfileImage, void(const std::string&));
+  MOCK_METHOD1(SaveUserDefaultImageIndex, void(int));
+  MOCK_METHOD1(SaveUserImage, void(const UserImage&));
+  MOCK_METHOD1(SaveUserImageFromFile, void(const base::FilePath&));
+  MOCK_METHOD0(SaveUserImageFromProfileImage, void());
   MOCK_METHOD1(DownloadProfileImage, void(const std::string&));
   MOCK_CONST_METHOD0(DownloadedProfileImage, const gfx::ImageSkia& (void));
 

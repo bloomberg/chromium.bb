@@ -141,8 +141,7 @@ void UserImageScreen::OnInitialSync(bool local_image_updated) {
   DCHECK(sync_timer_);
   if (!local_image_updated) {
     sync_timer_.reset();
-    UserManager::Get()->GetUserImageManager()->GetSyncObserver()->
-        RemoveObserver(this);
+    GetSyncObserver()->RemoveObserver(this);
     if (is_screen_ready_)
       HideCurtain();
     return;
@@ -152,8 +151,7 @@ void UserImageScreen::OnInitialSync(bool local_image_updated) {
 
 void UserImageScreen::OnSyncTimeout() {
   sync_timer_.reset();
-  UserManager::Get()->GetUserImageManager()->GetSyncObserver()->
-      RemoveObserver(this);
+  GetSyncObserver()->RemoveObserver(this);
   if (is_screen_ready_)
     HideCurtain();
 }
@@ -193,9 +191,7 @@ void UserImageScreen::OnImageSelected(const std::string& image_type,
 }
 
 void UserImageScreen::OnImageAccepted() {
-  UserManager* user_manager = UserManager::Get();
-  UserImageManager* image_manager = user_manager->GetUserImageManager();
-  std::string user_id = GetUser()->email();
+  UserImageManager* image_manager = GetUserImageManager();
   int uma_index = 0;
   switch (selected_image_) {
     case User::kExternalImageIndex:
@@ -204,17 +200,16 @@ void UserImageScreen::OnImageAccepted() {
         accept_photo_after_decoding_ = true;
         return;
       }
-      image_manager->
-          SaveUserImage(user_id, UserImage::CreateAndEncode(user_photo_));
+      image_manager->SaveUserImage(UserImage::CreateAndEncode(user_photo_));
       uma_index = kHistogramImageFromCamera;
       break;
     case User::kProfileImageIndex:
-      image_manager->SaveUserImageFromProfileImage(user_id);
+      image_manager->SaveUserImageFromProfileImage();
       uma_index = kHistogramImageFromProfile;
       break;
     default:
       DCHECK(selected_image_ >= 0 && selected_image_ < kDefaultImagesCount);
-      image_manager->SaveUserDefaultImageIndex(user_id, selected_image_);
+      image_manager->SaveUserDefaultImageIndex(selected_image_);
       uma_index = GetDefaultImageHistogramValue(selected_image_);
       break;
   }
@@ -265,9 +260,15 @@ void UserImageScreen::PrepareToShow() {
 const User* UserImageScreen::GetUser() {
   if (user_id_.empty())
     return UserManager::Get()->GetLoggedInUser();
-  const User* user = UserManager::Get()->FindUser(user_id_);
-  DCHECK(user);
-  return user;
+  return UserManager::Get()->FindUser(user_id_);
+}
+
+UserImageManager* UserImageScreen::GetUserImageManager() {
+  return UserManager::Get()->GetUserImageManager(GetUser()->email());
+}
+
+UserImageSyncObserver* UserImageScreen::GetSyncObserver() {
+  return GetUserImageManager()->GetSyncObserver();
 }
 
 void UserImageScreen::Show() {
@@ -304,8 +305,7 @@ void UserImageScreen::Show() {
   }
 
   if (GetUser()->CanSyncImage()) {
-    if (UserImageSyncObserver* sync_observer =
-          UserManager::Get()->GetUserImageManager()->GetSyncObserver()) {
+    if (UserImageSyncObserver* sync_observer = GetSyncObserver()) {
       // We have synced image already.
       if (sync_observer->is_synced()) {
         ExitScreen();
@@ -328,8 +328,7 @@ void UserImageScreen::Show() {
 
   if (profile_picture_enabled_) {
     // Start fetching the profile image.
-    UserManager::Get()->GetUserImageManager()->
-        DownloadProfileImage(kProfileDownloadReason);
+    GetUserImageManager()->DownloadProfileImage(kProfileDownloadReason);
   }
 }
 
@@ -392,9 +391,7 @@ std::string UserImageScreen::profile_picture_data_url() {
 void UserImageScreen::ExitScreen() {
   policy_registrar_.reset();
   sync_timer_.reset();
-  UserImageSyncObserver* sync_observer =
-      UserManager::Get()->GetUserImageManager()->GetSyncObserver();
-  if (sync_observer)
+  if (UserImageSyncObserver* sync_observer = GetSyncObserver())
     sync_observer->RemoveObserver(this);
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 }

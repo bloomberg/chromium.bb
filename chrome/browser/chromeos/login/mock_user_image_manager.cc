@@ -6,10 +6,9 @@
 
 namespace chromeos {
 
-MockUserImageManager::MockUserImageManager() {
-}
+MockUserImageManager::MockUserImageManager(const std::string& user_id)
+    : UserImageManager(user_id) {}
 
-MockUserImageManager::~MockUserImageManager() {
-}
+MockUserImageManager::~MockUserImageManager() {}
 
 }  // namespace chromeos

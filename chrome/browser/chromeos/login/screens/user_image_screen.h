@@ -89,7 +89,14 @@ class UserImageScreen: public WizardScreen,
   void OnUserImagePolicyChanged(const base::Value* previous,
                                 const base::Value* current);
 
+  // Returns current user.
   const User* GetUser();
+
+  // Returns UserImageManager for the current user.
+  UserImageManager* GetUserImageManager();
+
+  // Returns UserImageSyncObserver for the current user.
+  UserImageSyncObserver* GetSyncObserver();
 
   // Called when the camera presence check has been completed.
   void OnCameraPresenceCheckDone();

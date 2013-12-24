@@ -6,7 +6,9 @@
 
 namespace chromeos {
 
-UserImageManager::~UserImageManager() {
-}
+UserImageManager::UserImageManager(const std::string& user_id)
+    : user_id_(user_id) {}
+
+UserImageManager::~UserImageManager() {}
 
 }  // namespace chromeos

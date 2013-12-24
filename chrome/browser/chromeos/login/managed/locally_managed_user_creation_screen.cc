@@ -406,9 +406,9 @@ bool LocallyManagedUserCreationScreen::FindUserByDisplayName(
 // It should be removed by issue 251179.
 
 void LocallyManagedUserCreationScreen::ApplyPicture() {
-  UserManager* user_manager = UserManager::Get();
-  UserImageManager* image_manager = user_manager->GetUserImageManager();
   std::string user_id = controller_->GetManagedUserId();
+  UserManager* user_manager = UserManager::Get();
+  UserImageManager* image_manager = user_manager->GetUserImageManager(user_id);
   switch (selected_image_) {
     case User::kExternalImageIndex:
       // Photo decoding may not have been finished yet.
@@ -416,15 +416,14 @@ void LocallyManagedUserCreationScreen::ApplyPicture() {
         apply_photo_after_decoding_ = true;
         return;
       }
-      image_manager->
-          SaveUserImage(user_id, UserImage::CreateAndEncode(user_photo_));
+      image_manager->SaveUserImage(UserImage::CreateAndEncode(user_photo_));
       break;
     case User::kProfileImageIndex:
       NOTREACHED() << "Supervised users have no profile pictures";
       break;
     default:
       DCHECK(selected_image_ >= 0 && selected_image_ < kDefaultImagesCount);
-      image_manager->SaveUserDefaultImageIndex(user_id, selected_image_);
+      image_manager->SaveUserDefaultImageIndex(selected_image_);
       break;
   }
   // Proceed to tutorial.

@@ -42,6 +42,7 @@
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_image_manager_test_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/login/user_manager_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
@@ -835,16 +836,14 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExtensionsCached) {
   EXPECT_FALSE(PathExists(cached_extension));
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExternalData) {
-  // chromeos::UserImageManagerImpl requests an external data fetch whenever the
-  // key::kUserAvatarImage policy is set. Since this test wants to verify that
-  // the underlying policy subsystem will start a fetch without this request as
-  // well, the chromeos::UserImageManagerImpl must be prevented from seeing the
-  // policy change.
-  reinterpret_cast<chromeos::UserImageManagerImpl*>(
-      chromeos::UserManager::Get()->GetUserImageManager())->
-          StopPolicyObserverForTesting();
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
+  // chromeos::UserManager requests an external data fetch whenever
+  // the key::kUserAvatarImage policy is set. Since this test wants to
+  // verify that the underlying policy subsystem will start a fetch
+  // without this request as well, the chromeos::UserManager must be
+  // prevented from seeing the policy change.
+  reinterpret_cast<chromeos::UserManagerImpl*>(chromeos::UserManager::Get())->
+      StopPolicyObserverForTesting();
 
   UploadDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);

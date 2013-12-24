@@ -127,7 +127,8 @@ SupervisedUserManager* FakeUserManager::GetSupervisedUserManager() {
   return supervised_user_manager_.get();
 }
 
-UserImageManager* FakeUserManager::GetUserImageManager() {
+UserImageManager* FakeUserManager::GetUserImageManager(
+    const std::string& /* user_id */) {
   return NULL;
 }
 

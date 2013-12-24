@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/hash_tables.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
+#include "chrome/browser/chromeos/policy/cloud_external_data_policy_observer.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -51,6 +54,7 @@ class UserManagerImpl
     : public UserManager,
       public LoginUtils::Delegate,
       public content::NotificationObserver,
+      public policy::CloudExternalDataPolicyObserver::Delegate,
       public policy::DeviceLocalAccountPolicyService::Observer,
       public MultiProfileUserControllerDelegate {
  public:
@@ -58,7 +62,8 @@ class UserManagerImpl
 
   // UserManager implementation:
   virtual void Shutdown() OVERRIDE;
-  virtual UserImageManager* GetUserImageManager() OVERRIDE;
+  virtual UserImageManager* GetUserImageManager(
+      const std::string& user_id) OVERRIDE;
   virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
   virtual const UserList& GetUsers() const OVERRIDE;
   virtual UserList GetUsersAdmittedForMultiProfile() const OVERRIDE;
@@ -143,6 +148,15 @@ class UserManagerImpl
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // policy::CloudExternalDataPolicyObserver::Delegate:
+  virtual void OnExternalDataSet(const std::string& policy,
+                                 const std::string& user_id) OVERRIDE;
+  virtual void OnExternalDataCleared(const std::string& policy,
+                                     const std::string& user_id) OVERRIDE;
+  virtual void OnExternalDataFetched(const std::string& policy,
+                                     const std::string& user_id,
+                                     scoped_ptr<std::string> data) OVERRIDE;
+
   // policy::DeviceLocalAccountPolicyService::Observer implementation.
   virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
@@ -152,6 +166,8 @@ class UserManagerImpl
       const User* user,
       scoped_ptr<locale_util::SwitchLanguageCallback> callback) const OVERRIDE;
 
+  void StopPolicyObserverForTesting();
+
  private:
   friend class extensions::ExternalComponentLoaderTest;
   friend class SupervisedUserManagerImpl;
@@ -159,6 +175,9 @@ class UserManagerImpl
   friend class WallpaperManager;
   friend class UserManagerTest;
   friend class WallpaperManagerTest;
+
+  typedef base::hash_map<std::string,
+      linked_ptr<UserImageManager> > UserImageManagerMap;
 
   // Stages of loading user list from preferences. Some methods can have
   // different behavior depending on stage.
@@ -414,8 +433,8 @@ class UserManagerImpl
   ObserverList<UserManager::UserSessionStateObserver>
       session_state_observer_list_;
 
-  // User avatar manager.
-  scoped_ptr<UserImageManagerImpl> user_image_manager_;
+  // User avatar managers.
+  UserImageManagerMap user_image_managers_;
 
   // Supervised user manager.
   scoped_ptr<SupervisedUserManagerImpl> supervised_user_manager_;
@@ -447,6 +466,9 @@ class UserManagerImpl
   scoped_ptr<MultiProfileUserController> multi_profile_user_controller_;
   scoped_ptr<MultiProfileFirstRunNotification>
       multi_profile_first_run_notification_;
+
+  // Observer for the policy that can be used to manage user images.
+  scoped_ptr<policy::CloudExternalDataPolicyObserver> policy_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };

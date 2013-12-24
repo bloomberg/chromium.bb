@@ -213,16 +213,17 @@ class UserImageManagerTest : public LoginManagerTest,
     return user_data_dir_.Append(username).AddExtension(extension);
   }
 
-  // Completes the download of all non-image profile data for the currently
-  // logged-in user. This method must only be called after a profile data
-  // download has been started.
-  // |url_fetcher_factory| will capture the net::TestURLFetcher created by the
-  // ProfileDownloader to download the profile image.
+  // Completes the download of all non-image profile data for the user
+  // |username|.  This method must only be called after a profile data
+  // download has been started.  |url_fetcher_factory| will capture
+  // the net::TestURLFetcher created by the ProfileDownloader to
+  // download the profile image.
   void CompleteProfileMetadataDownload(
+      const std::string& username,
       net::TestURLFetcherFactory* url_fetcher_factory) {
     ProfileDownloader* profile_downloader =
         reinterpret_cast<UserImageManagerImpl*>(
-            UserManager::Get()->GetUserImageManager())->
+            UserManager::Get()->GetUserImageManager(username))->
                 profile_downloader_.get();
     ASSERT_TRUE(profile_downloader);
 
@@ -272,10 +273,9 @@ class UserImageManagerTest : public LoginManagerTest,
 
     const User* user = UserManager::Get()->GetLoggedInUser();
     ASSERT_TRUE(user);
-    const std::map<std::string, linked_ptr<UserImageManagerImpl::Job> >&
-        job_map = reinterpret_cast<UserImageManagerImpl*>(
-            UserManager::Get()->GetUserImageManager())->jobs_;
-    if (job_map.find(user->email()) != job_map.end()) {
+    UserImageManagerImpl* uim = reinterpret_cast<UserImageManagerImpl*>(
+        UserManager::Get()->GetUserImageManager(user->email()));
+    if (uim->job_.get()) {
       run_loop_.reset(new base::RunLoop);
       run_loop_->Run();
     }
@@ -398,9 +398,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserDefaultImageIndex) {
       GetDefaultImage(kFirstDefaultImageIndex);
 
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
-  user_image_manager->SaveUserDefaultImageIndex(kTestUser1,
-                                                kFirstDefaultImageIndex);
+      UserManager::Get()->GetUserImageManager(kTestUser1);
+  user_image_manager->SaveUserDefaultImageIndex(kFirstDefaultImageIndex);
 
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(kFirstDefaultImageIndex, user->image_index());
@@ -427,9 +426,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
-  user_image_manager->SaveUserImage(kTestUser1,
-                                    UserImage::CreateAndEncode(custom_image));
+      UserManager::Get()->GetUserImageManager(kTestUser1);
+  user_image_manager->SaveUserImage(UserImage::CreateAndEncode(custom_image));
   run_loop_->Run();
 
   EXPECT_FALSE(user->HasDefaultImage());
@@ -466,8 +464,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
-  user_image_manager->SaveUserImageFromFile(kTestUser1, custom_image_path);
+      UserManager::Get()->GetUserImageManager(kTestUser1);
+  user_image_manager->SaveUserImageFromFile(custom_image_path);
   run_loop_->Run();
 
   EXPECT_FALSE(user->HasDefaultImage());
@@ -503,12 +501,12 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromProfileImage) {
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
-  user_image_manager->SaveUserImageFromProfileImage(kTestUser1);
+      UserManager::Get()->GetUserImageManager(kTestUser1);
+  user_image_manager->SaveUserImageFromProfileImage();
   run_loop_->Run();
 
   net::TestURLFetcherFactory url_fetcher_factory;
-  CompleteProfileMetadataDownload(&url_fetcher_factory);
+  CompleteProfileMetadataDownload(kTestUser1, &url_fetcher_factory);
   CompleteProfileImageDownload(&url_fetcher_factory);
 
   const gfx::ImageSkia& profile_image =
@@ -553,15 +551,14 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest,
 
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
-  user_image_manager->SaveUserImageFromProfileImage(kTestUser1);
+      UserManager::Get()->GetUserImageManager(kTestUser1);
+  user_image_manager->SaveUserImageFromProfileImage();
   run_loop_->Run();
 
   net::TestURLFetcherFactory url_fetcher_factory;
-  CompleteProfileMetadataDownload(&url_fetcher_factory);
+  CompleteProfileMetadataDownload(kTestUser1, &url_fetcher_factory);
 
-  user_image_manager->SaveUserDefaultImageIndex(kTestUser1,
-                                                kFirstDefaultImageIndex);
+  user_image_manager->SaveUserDefaultImageIndex(kFirstDefaultImageIndex);
 
   CompleteProfileImageDownload(&url_fetcher_factory);
 
@@ -728,9 +725,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, SetAndClear) {
       GetDefaultImage(kFirstDefaultImageIndex);
 
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
-  user_image_manager->SaveUserDefaultImageIndex(kTestUser1,
-                                                kFirstDefaultImageIndex);
+      UserManager::Get()->GetUserImageManager(kTestUser1);
+  user_image_manager->SaveUserDefaultImageIndex(kFirstDefaultImageIndex);
 
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(kFirstDefaultImageIndex, user->image_index());
@@ -762,9 +758,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, PolicyOverridesUser) {
       GetDefaultImage(kFirstDefaultImageIndex);
 
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
-  user_image_manager->SaveUserDefaultImageIndex(kTestUser1,
-                                                kFirstDefaultImageIndex);
+      UserManager::Get()->GetUserImageManager(kTestUser1);
+  user_image_manager->SaveUserDefaultImageIndex(kFirstDefaultImageIndex);
 
   EXPECT_TRUE(user->HasDefaultImage());
   EXPECT_EQ(kFirstDefaultImageIndex, user->image_index());
@@ -846,9 +841,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerPolicyTest, UserDoesNotOverridePolicy) {
   // Choose a different user image. Verify that the user image does not change
   // as policy takes precedence.
   UserImageManager* user_image_manager =
-      UserManager::Get()->GetUserImageManager();
-  user_image_manager->SaveUserDefaultImageIndex(kTestUser1,
-                                                kFirstDefaultImageIndex);
+      UserManager::Get()->GetUserImageManager(kTestUser1);
+  user_image_manager->SaveUserDefaultImageIndex(kFirstDefaultImageIndex);
 
   EXPECT_FALSE(user->HasDefaultImage());
   EXPECT_EQ(User::kExternalImageIndex, user->image_index());

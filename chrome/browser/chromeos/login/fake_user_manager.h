@@ -58,7 +58,8 @@ class FakeUserManager : public UserManager {
       const std::string& user_id,
       const UserAccountData& account_data) OVERRIDE {}
   virtual void Shutdown() OVERRIDE {}
-  virtual UserImageManager* GetUserImageManager() OVERRIDE;
+  virtual UserImageManager* GetUserImageManager(
+      const std::string& user_id) OVERRIDE;
   virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;
   virtual const UserList& GetLRULoggedInUsers() OVERRIDE;
   virtual UserList GetUnlockUsers() const OVERRIDE;
