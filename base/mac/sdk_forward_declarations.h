@@ -21,8 +21,7 @@ enum {
   NSEventPhaseStationary  = 0x1 << 1,
   NSEventPhaseChanged     = 0x1 << 2,
   NSEventPhaseEnded       = 0x1 << 3,
-  NSEventPhaseCancelled   = 0x1 << 4,
-  NSEventPhaseMayBegin    = 0x1 << 5
+  NSEventPhaseCancelled   = 0x1 << 4
 };
 typedef NSUInteger NSEventPhase;
 
@@ -76,5 +75,12 @@ typedef NSInteger NSWindowAnimationBehavior;
 - (void)setAnimationBehavior:(NSWindowAnimationBehavior)newAnimationBehavior;
 @end
 #endif  // MAC_OS_X_VERSION_10_7
+
+#if !defined(MAC_OS_X_VERSION_10_8) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_8
+enum {
+  NSEventPhaseMayBegin    = 0x1 << 5
+};
+#endif  // MAC_OS_X_VERSION_10_8
 
 #endif  // BASE_MAC_SDK_FORWARD_DECLARATIONS_H_
