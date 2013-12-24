@@ -2556,8 +2556,11 @@ void Document::write(const SegmentedString& text, Document* ownerDocument)
        return;
 
     bool hasInsertionPoint = m_parser && m_parser->hasInsertionPoint();
-    if (!hasInsertionPoint && m_ignoreDestructiveWriteCount)
+
+    if (!hasInsertionPoint && m_ignoreDestructiveWriteCount) {
+        addConsoleMessage(JSMessageSource, WarningMessageLevel, ExceptionMessages::failedToExecute("write", "Document", "It isn't possible to write into a document from an asynchronously-loaded external script unless it is explicitly opened."));
         return;
+    }
 
     if (!hasInsertionPoint)
         open(ownerDocument);
