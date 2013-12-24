@@ -10,10 +10,10 @@ using namespace test::api::additional_properties;
 TEST(JsonSchemaCompilerAdditionalPropertiesTest,
     AdditionalPropertiesTypePopulate) {
   {
-    scoped_ptr<ListValue> list_value(new ListValue());
-    list_value->Append(Value::CreateStringValue("asdf"));
-    list_value->Append(Value::CreateIntegerValue(4));
-    scoped_ptr<DictionaryValue> type_value(new DictionaryValue());
+    scoped_ptr<base::ListValue> list_value(new base::ListValue());
+    list_value->Append(base::Value::CreateStringValue("asdf"));
+    list_value->Append(base::Value::CreateIntegerValue(4));
+    scoped_ptr<base::DictionaryValue> type_value(new base::DictionaryValue());
     type_value->SetString("string", "value");
     type_value->SetInteger("other", 9);
     type_value->Set("another", list_value.release());
@@ -22,7 +22,7 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
     EXPECT_TRUE(type->additional_properties.Equals(type_value.get()));
   }
   {
-    scoped_ptr<DictionaryValue> type_value(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> type_value(new base::DictionaryValue());
     type_value->SetInteger("string", 3);
     scoped_ptr<AdditionalPropertiesType> type(new AdditionalPropertiesType());
     EXPECT_FALSE(AdditionalPropertiesType::Populate(*type_value, type.get()));
@@ -31,10 +31,11 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
 
 TEST(JsonSchemaCompilerAdditionalPropertiesTest,
     AdditionalPropertiesParamsCreate) {
-  scoped_ptr<DictionaryValue> param_object_value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> param_object_value(
+      new base::DictionaryValue());
   param_object_value->SetString("str", "a");
   param_object_value->SetInteger("num", 1);
-  scoped_ptr<ListValue> params_value(new ListValue());
+  scoped_ptr<base::ListValue> params_value(new base::ListValue());
   params_value->Append(param_object_value->DeepCopy());
   scoped_ptr<AdditionalProperties::Params> params(
       AdditionalProperties::Params::Create(*params_value));
@@ -49,15 +50,15 @@ TEST(JsonSchemaCompilerAdditionalPropertiesTest,
   result_object.integer = 5;
   result_object.additional_properties["key"] = "value";
 
-  ListValue expected;
+  base::ListValue expected;
   {
-    DictionaryValue* dict = new DictionaryValue();
+    base::DictionaryValue* dict = new base::DictionaryValue();
     dict->SetInteger("integer", 5);
     dict->SetString("key", "value");
     expected.Append(dict);
   }
 
-  EXPECT_TRUE(Value::Equals(
+  EXPECT_TRUE(base::Value::Equals(
       ReturnAdditionalProperties::Results::Create(result_object).get(),
       &expected));
 }

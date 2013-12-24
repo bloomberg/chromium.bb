@@ -122,7 +122,7 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
 
   // DispatchExtensionMessage does _not_ take ownership of event_args, so we
   // must ensure that the destruction of args does not attempt to free it.
-  scoped_ptr<Value> removed_event_args;
+  scoped_ptr<base::Value> removed_event_args;
   args.Remove(1, &removed_event_args);
   ignore_result(removed_event_args.release());
 }
@@ -356,7 +356,7 @@ void EventRouter::SetRegisteredEvents(const std::string& extension_id,
   ListValue* events_value = new ListValue;
   for (std::set<std::string>::const_iterator iter = events.begin();
        iter != events.end(); ++iter) {
-    events_value->Append(new StringValue(*iter));
+    events_value->Append(new base::StringValue(*iter));
   }
   extension_prefs_->UpdateExtensionPref(
       extension_id, kRegisteredEvents, events_value);

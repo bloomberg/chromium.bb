@@ -37,15 +37,15 @@ TEST(PrefHashStoreImplTest, TestCase) {
   ASSERT_EQ(PrefHashStore::CHANGED,
             pref_hash_store.CheckValue("path1", &string_2));
 
-  DictionaryValue dict;
-  dict.Set("a", new StringValue("foo"));
-  dict.Set("d", new StringValue("bad"));
-  dict.Set("b", new StringValue("bar"));
-  dict.Set("c", new StringValue("baz"));
+  base::DictionaryValue dict;
+  dict.Set("a", new base::StringValue("foo"));
+  dict.Set("d", new base::StringValue("bad"));
+  dict.Set("b", new base::StringValue("bar"));
+  dict.Set("c", new base::StringValue("baz"));
 
   // Manually shove in a legacy hash.
   DictionaryPrefUpdate update(&local_state, prefs::kProfilePreferenceHashes);
-  DictionaryValue* child_dictionary = NULL;
+  base::DictionaryValue* child_dictionary = NULL;
   ASSERT_TRUE(update->GetDictionary("store_id", &child_dictionary));
   child_dictionary->SetString(
       "path1",

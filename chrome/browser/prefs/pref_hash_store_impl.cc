@@ -57,13 +57,13 @@ void PrefHashStoreImpl::StoreHash(
     const std::string& path, const base::Value* new_value) {
   {
     DictionaryPrefUpdate update(local_state_, prefs::kProfilePreferenceHashes);
-    DictionaryValue* child_dictionary = NULL;
+    base::DictionaryValue* child_dictionary = NULL;
 
     // Get the dictionary corresponding to the profile name, which may have a
     // '.'
     if (!update->GetDictionaryWithoutPathExpansion(hash_store_id_,
                                                    &child_dictionary)) {
-      child_dictionary = new DictionaryValue;
+      child_dictionary = new base::DictionaryValue;
       update->SetWithoutPathExpansion(hash_store_id_, child_dictionary);
     }
 

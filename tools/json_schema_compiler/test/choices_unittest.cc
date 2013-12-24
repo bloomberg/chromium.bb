@@ -19,21 +19,21 @@ using json_schema_compiler::test_util::Vector;
 TEST(JsonSchemaCompilerChoicesTest, TakesIntegersParamsCreate) {
   {
     scoped_ptr<TakesIntegers::Params> params(TakesIntegers::Params::Create(
-        *List(Value::CreateBooleanValue(true))));
+        *List(base::Value::CreateBooleanValue(true))));
     EXPECT_FALSE(params);
   }
   {
     scoped_ptr<TakesIntegers::Params> params(TakesIntegers::Params::Create(
-        *List(Value::CreateIntegerValue(6))));
+        *List(base::Value::CreateIntegerValue(6))));
     ASSERT_TRUE(params);
     EXPECT_FALSE(params->nums.as_integers);
     EXPECT_EQ(6, *params->nums.as_integer);
   }
   {
     scoped_ptr<TakesIntegers::Params> params(TakesIntegers::Params::Create(
-        *List(List(Value::CreateIntegerValue(2),
-                   Value::CreateIntegerValue(6),
-                   Value::CreateIntegerValue(8)).release())));
+        *List(List(base::Value::CreateIntegerValue(2),
+                   base::Value::CreateIntegerValue(6),
+                   base::Value::CreateIntegerValue(8)).release())));
     ASSERT_TRUE(params);
     ASSERT_TRUE(params->nums.as_integers);
     EXPECT_EQ(Vector(2, 6, 8), *params->nums.as_integers);
@@ -69,32 +69,32 @@ TEST(JsonSchemaCompilerChoicesTest, ObjectWithChoicesParamsCreate) {
 
 TEST(JsonSchemaCompilerChoicesTest, ObjectWithChoicesParamsCreateFail) {
   {
-    scoped_ptr<DictionaryValue> object_param(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> object_param(new base::DictionaryValue());
     object_param->SetWithoutPathExpansion("strings",
-        Value::CreateIntegerValue(5));
-    scoped_ptr<ListValue> params_value(new ListValue());
+        base::Value::CreateIntegerValue(5));
+    scoped_ptr<base::ListValue> params_value(new base::ListValue());
     params_value->Append(object_param.release());
     scoped_ptr<ObjectWithChoices::Params> params(
         ObjectWithChoices::Params::Create(*params_value));
     EXPECT_FALSE(params.get());
   }
   {
-    scoped_ptr<DictionaryValue> object_param(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> object_param(new base::DictionaryValue());
     object_param->SetWithoutPathExpansion("strings",
-        Value::CreateStringValue("asdf"));
+        base::Value::CreateStringValue("asdf"));
     object_param->SetWithoutPathExpansion("integers",
-        Value::CreateStringValue("asdf"));
-    scoped_ptr<ListValue> params_value(new ListValue());
+        base::Value::CreateStringValue("asdf"));
+    scoped_ptr<base::ListValue> params_value(new base::ListValue());
     params_value->Append(object_param.release());
     scoped_ptr<ObjectWithChoices::Params> params(
         ObjectWithChoices::Params::Create(*params_value));
     EXPECT_FALSE(params.get());
   }
   {
-    scoped_ptr<DictionaryValue> object_param(new DictionaryValue());
+    scoped_ptr<base::DictionaryValue> object_param(new base::DictionaryValue());
     object_param->SetWithoutPathExpansion("integers",
-        Value::CreateIntegerValue(6));
-    scoped_ptr<ListValue> params_value(new ListValue());
+        base::Value::CreateIntegerValue(6));
+    scoped_ptr<base::ListValue> params_value(new base::ListValue());
     params_value->Append(object_param.release());
     scoped_ptr<ObjectWithChoices::Params> params(
         ObjectWithChoices::Params::Create(*params_value));
@@ -107,11 +107,11 @@ TEST(JsonSchemaCompilerChoicesTest, PopulateChoiceType) {
                                             std::string("of"),
                                             std::string("strings"));
 
-  ListValue* strings_value = new ListValue();
+  base::ListValue* strings_value = new base::ListValue();
   for (size_t i = 0; i < strings.size(); ++i)
-    strings_value->Append(Value::CreateStringValue(strings[i]));
+    strings_value->Append(base::Value::CreateStringValue(strings[i]));
 
-  DictionaryValue value;
+  base::DictionaryValue value;
   value.SetInteger("integers", 4);
   value.Set("strings", strings_value);
 
@@ -127,12 +127,12 @@ TEST(JsonSchemaCompilerChoicesTest, PopulateChoiceType) {
 }
 
 TEST(JsonSchemaCompilerChoicesTest, ChoiceTypeToValue) {
-  ListValue* strings_value = new ListValue();
-  strings_value->Append(Value::CreateStringValue("list"));
-  strings_value->Append(Value::CreateStringValue("of"));
-  strings_value->Append(Value::CreateStringValue("strings"));
+  base::ListValue* strings_value = new base::ListValue();
+  strings_value->Append(base::Value::CreateStringValue("list"));
+  strings_value->Append(base::Value::CreateStringValue("of"));
+  strings_value->Append(base::Value::CreateStringValue("strings"));
 
-  DictionaryValue value;
+  base::DictionaryValue value;
   value.SetInteger("integers", 5);
   value.Set("strings", strings_value);
 

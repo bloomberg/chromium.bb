@@ -262,7 +262,7 @@ void CastStreamingNativeHandler::StartCastRtpStream(
     return;
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  scoped_ptr<Value> params_value(
+  scoped_ptr<base::Value> params_value(
       converter->FromV8Value(args[1], context()->v8_context()));
   if (!params_value) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(
@@ -316,7 +316,7 @@ void CastStreamingNativeHandler::StartCastUdpTransport(
     return;
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  scoped_ptr<Value> udp_params_value(
+  scoped_ptr<base::Value> udp_params_value(
       converter->FromV8Value(args[1], context()->v8_context()));
   if (!udp_params_value) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(

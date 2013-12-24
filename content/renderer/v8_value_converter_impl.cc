@@ -119,7 +119,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Value(
   return handle_scope.Escape(ToV8ValueImpl(context->GetIsolate(), value));
 }
 
-Value* V8ValueConverterImpl::FromV8Value(
+base::Value* V8ValueConverterImpl::FromV8Value(
     v8::Handle<v8::Value> val,
     v8::Handle<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
@@ -231,7 +231,7 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
   return buffer.toV8Value();
 }
 
-Value* V8ValueConverterImpl::FromV8ValueImpl(
+base::Value* V8ValueConverterImpl::FromV8ValueImpl(
     v8::Handle<v8::Value> val,
     FromV8ValueState* state,
     v8::Isolate* isolate) const {

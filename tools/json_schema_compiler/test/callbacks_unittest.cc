@@ -11,11 +11,12 @@ using namespace test::api::callbacks;
 TEST(JsonSchemaCompilerCallbacksTest, ReturnsObjectResultCreate) {
   ReturnsObject::Results::SomeObject some_object;
   some_object.state = ReturnsObject::Results::SomeObject::STATE_FOO;
-  scoped_ptr<ListValue> results = ReturnsObject::Results::Create(some_object);
+  scoped_ptr<base::ListValue> results =
+      ReturnsObject::Results::Create(some_object);
 
-  DictionaryValue* expected_dict = new DictionaryValue();
+  base::DictionaryValue* expected_dict = new base::DictionaryValue();
   expected_dict->SetString("state", "foo");
-  ListValue expected;
+  base::ListValue expected;
   expected.Append(expected_dict);
   EXPECT_TRUE(results->Equals(&expected));
 }
@@ -23,13 +24,13 @@ TEST(JsonSchemaCompilerCallbacksTest, ReturnsObjectResultCreate) {
 TEST(JsonSchemaCompilerCallbacksTest, ReturnsMultipleResultCreate) {
   ReturnsMultiple::Results::SomeObject some_object;
   some_object.state = ReturnsMultiple::Results::SomeObject::STATE_FOO;
-  scoped_ptr<ListValue> results =
+  scoped_ptr<base::ListValue> results =
       ReturnsMultiple::Results::Create(5, some_object);
 
-  DictionaryValue* expected_dict = new DictionaryValue();
+  base::DictionaryValue* expected_dict = new base::DictionaryValue();
   expected_dict->SetString("state", "foo");
-  ListValue expected;
-  expected.Append(Value::CreateIntegerValue(5));
+  base::ListValue expected;
+  expected.Append(base::Value::CreateIntegerValue(5));
   expected.Append(expected_dict);
   EXPECT_TRUE(results->Equals(&expected));
 }

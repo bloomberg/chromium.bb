@@ -70,23 +70,23 @@ void AddItemToList(const linked_ptr<base::DictionaryValue>& from,
   out->Append(static_cast<base::Value*>(from->DeepCopy()));
 }
 
-std::string ValueTypeToString(Value::Type type) {
+std::string ValueTypeToString(base::Value::Type type) {
   switch(type) {
-    case Value::TYPE_NULL:
+    case base::Value::TYPE_NULL:
       return "null";
-    case Value::TYPE_BOOLEAN:
+    case base::Value::TYPE_BOOLEAN:
       return "boolean";
-    case Value::TYPE_INTEGER:
+    case base::Value::TYPE_INTEGER:
       return "integer";
-    case Value::TYPE_DOUBLE:
+    case base::Value::TYPE_DOUBLE:
       return "number";
-    case Value::TYPE_STRING:
+    case base::Value::TYPE_STRING:
       return "string";
-    case Value::TYPE_BINARY:
+    case base::Value::TYPE_BINARY:
       return "binary";
-    case Value::TYPE_DICTIONARY:
+    case base::Value::TYPE_DICTIONARY:
       return "dictionary";
-    case Value::TYPE_LIST:
+    case base::Value::TYPE_LIST:
       return "list";
   }
   NOTREACHED();

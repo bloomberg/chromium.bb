@@ -11,20 +11,22 @@ using namespace test::api::crossref;
 
 namespace {
 
-static scoped_ptr<DictionaryValue> CreateTestTypeDictionary() {
-  DictionaryValue* value(new DictionaryValue());
-  value->SetWithoutPathExpansion("number", Value::CreateDoubleValue(1.1));
-  value->SetWithoutPathExpansion("integer", Value::CreateIntegerValue(4));
-  value->SetWithoutPathExpansion("string", Value::CreateStringValue("bling"));
-  value->SetWithoutPathExpansion("boolean", Value::CreateBooleanValue(true));
-  return scoped_ptr<DictionaryValue>(value);
+static scoped_ptr<base::DictionaryValue> CreateTestTypeDictionary() {
+  base::DictionaryValue* value(new base::DictionaryValue());
+  value->SetWithoutPathExpansion("number", base::Value::CreateDoubleValue(1.1));
+  value->SetWithoutPathExpansion("integer", base::Value::CreateIntegerValue(4));
+  value->SetWithoutPathExpansion("string",
+                                 base::Value::CreateStringValue("bling"));
+  value->SetWithoutPathExpansion("boolean",
+                                 base::Value::CreateBooleanValue(true));
+  return scoped_ptr<base::DictionaryValue>(value);
 }
 
 }  // namespace
 
 TEST(JsonSchemaCompilerCrossrefTest, CrossrefTypePopulate) {
   scoped_ptr<CrossrefType> crossref_type(new CrossrefType());
-  scoped_ptr<DictionaryValue> value(new DictionaryValue());
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
   value->Set("testType", CreateTestTypeDictionary().release());
   EXPECT_TRUE(CrossrefType::Populate(*value, crossref_type.get()));
   EXPECT_TRUE(crossref_type->test_type.get());
@@ -34,7 +36,7 @@ TEST(JsonSchemaCompilerCrossrefTest, CrossrefTypePopulate) {
 }
 
 TEST(JsonSchemaCompilerCrossrefTest, TestTypeOptionalParamCreate) {
-  scoped_ptr<ListValue> params_value(new ListValue());
+  scoped_ptr<base::ListValue> params_value(new base::ListValue());
   params_value->Append(CreateTestTypeDictionary().release());
   scoped_ptr<TestTypeOptionalParam::Params> params(
       TestTypeOptionalParam::Params::Create(*params_value));
@@ -45,8 +47,9 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeOptionalParamCreate) {
 }
 
 TEST(JsonSchemaCompilerCrossrefTest, TestTypeOptionalParamFail) {
-  scoped_ptr<ListValue> params_value(new ListValue());
-  scoped_ptr<DictionaryValue> test_type_value = CreateTestTypeDictionary();
+  scoped_ptr<base::ListValue> params_value(new base::ListValue());
+  scoped_ptr<base::DictionaryValue> test_type_value =
+      CreateTestTypeDictionary();
   test_type_value->RemoveWithoutPathExpansion("number", NULL);
   params_value->Append(test_type_value.release());
   scoped_ptr<TestTypeOptionalParam::Params> params(
@@ -55,24 +58,26 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeOptionalParamFail) {
 }
 
 TEST(JsonSchemaCompilerCrossrefTest, GetTestType) {
-  scoped_ptr<DictionaryValue> value = CreateTestTypeDictionary();
+  scoped_ptr<base::DictionaryValue> value = CreateTestTypeDictionary();
   scoped_ptr<test::api::simple_api::TestType> test_type(
       new test::api::simple_api::TestType());
   EXPECT_TRUE(
       test::api::simple_api::TestType::Populate(*value, test_type.get()));
 
-  scoped_ptr<ListValue> results = GetTestType::Results::Create(*test_type);
-  DictionaryValue* result_dict = NULL;
+  scoped_ptr<base::ListValue> results =
+      GetTestType::Results::Create(*test_type);
+  base::DictionaryValue* result_dict = NULL;
   results->GetDictionary(0, &result_dict);
   EXPECT_TRUE(value->Equals(result_dict));
 }
 
 TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {
   {
-    scoped_ptr<ListValue> params_value(new ListValue());
-    scoped_ptr<DictionaryValue> param_object_value(new DictionaryValue());
+    scoped_ptr<base::ListValue> params_value(new base::ListValue());
+    scoped_ptr<base::DictionaryValue> param_object_value(
+        new base::DictionaryValue());
     param_object_value->Set("testType", CreateTestTypeDictionary().release());
-    param_object_value->Set("boolean", Value::CreateBooleanValue(true));
+    param_object_value->Set("boolean", base::Value::CreateBooleanValue(true));
     params_value->Append(param_object_value.release());
     scoped_ptr<TestTypeInObject::Params> params(
         TestTypeInObject::Params::Create(*params_value));
@@ -83,9 +88,10 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {
           params->param_object.test_type->ToValue().get()));
   }
   {
-    scoped_ptr<ListValue> params_value(new ListValue());
-    scoped_ptr<DictionaryValue> param_object_value(new DictionaryValue());
-    param_object_value->Set("boolean", Value::CreateBooleanValue(true));
+    scoped_ptr<base::ListValue> params_value(new base::ListValue());
+    scoped_ptr<base::DictionaryValue> param_object_value(
+        new base::DictionaryValue());
+    param_object_value->Set("boolean", base::Value::CreateBooleanValue(true));
     params_value->Append(param_object_value.release());
     scoped_ptr<TestTypeInObject::Params> params(
         TestTypeInObject::Params::Create(*params_value));
@@ -94,18 +100,21 @@ TEST(JsonSchemaCompilerCrossrefTest, TestTypeInObjectParamsCreate) {
     EXPECT_TRUE(params->param_object.boolean);
   }
   {
-    scoped_ptr<ListValue> params_value(new ListValue());
-    scoped_ptr<DictionaryValue> param_object_value(new DictionaryValue());
-    param_object_value->Set("testType", Value::CreateStringValue("invalid"));
-    param_object_value->Set("boolean", Value::CreateBooleanValue(true));
+    scoped_ptr<base::ListValue> params_value(new base::ListValue());
+    scoped_ptr<base::DictionaryValue> param_object_value(
+        new base::DictionaryValue());
+    param_object_value->Set("testType",
+                            base::Value::CreateStringValue("invalid"));
+    param_object_value->Set("boolean", base::Value::CreateBooleanValue(true));
     params_value->Append(param_object_value.release());
     scoped_ptr<TestTypeInObject::Params> params(
         TestTypeInObject::Params::Create(*params_value));
     EXPECT_FALSE(params.get());
   }
   {
-    scoped_ptr<ListValue> params_value(new ListValue());
-    scoped_ptr<DictionaryValue> param_object_value(new DictionaryValue());
+    scoped_ptr<base::ListValue> params_value(new base::ListValue());
+    scoped_ptr<base::DictionaryValue> param_object_value(
+        new base::DictionaryValue());
     param_object_value->Set("testType", CreateTestTypeDictionary().release());
     params_value->Append(param_object_value.release());
     scoped_ptr<TestTypeInObject::Params> params(

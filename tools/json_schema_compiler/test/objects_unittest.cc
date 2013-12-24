@@ -11,15 +11,15 @@ using namespace test::api::objects;
 
 TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
   {
-    scoped_ptr<ListValue> strings(new ListValue());
-    strings->Append(Value::CreateStringValue("one"));
-    strings->Append(Value::CreateStringValue("two"));
-    scoped_ptr<DictionaryValue> info_value(new DictionaryValue());
+    scoped_ptr<base::ListValue> strings(new base::ListValue());
+    strings->Append(base::Value::CreateStringValue("one"));
+    strings->Append(base::Value::CreateStringValue("two"));
+    scoped_ptr<base::DictionaryValue> info_value(new base::DictionaryValue());
     info_value->Set("strings", strings.release());
-    info_value->Set("integer", Value::CreateIntegerValue(5));
-    info_value->Set("boolean", Value::CreateBooleanValue(true));
+    info_value->Set("integer", base::Value::CreateIntegerValue(5));
+    info_value->Set("boolean", base::Value::CreateBooleanValue(true));
 
-    scoped_ptr<ListValue> params_value(new ListValue());
+    scoped_ptr<base::ListValue> params_value(new base::ListValue());
     params_value->Append(info_value.release());
     scoped_ptr<ObjectParam::Params> params(
         ObjectParam::Params::Create(*params_value));
@@ -31,14 +31,14 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
     EXPECT_TRUE(params->info.boolean);
   }
   {
-    scoped_ptr<ListValue> strings(new ListValue());
-    strings->Append(Value::CreateStringValue("one"));
-    strings->Append(Value::CreateStringValue("two"));
-    scoped_ptr<DictionaryValue> info_value(new DictionaryValue());
+    scoped_ptr<base::ListValue> strings(new base::ListValue());
+    strings->Append(base::Value::CreateStringValue("one"));
+    strings->Append(base::Value::CreateStringValue("two"));
+    scoped_ptr<base::DictionaryValue> info_value(new base::DictionaryValue());
     info_value->Set("strings", strings.release());
-    info_value->Set("integer", Value::CreateIntegerValue(5));
+    info_value->Set("integer", base::Value::CreateIntegerValue(5));
 
-    scoped_ptr<ListValue> params_value(new ListValue());
+    scoped_ptr<base::ListValue> params_value(new base::ListValue());
     params_value->Append(info_value.release());
     scoped_ptr<ObjectParam::Params> params(
         ObjectParam::Params::Create(*params_value));
@@ -49,11 +49,11 @@ TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
 TEST(JsonSchemaCompilerObjectsTest, ReturnsObjectResultCreate) {
   ReturnsObject::Results::Info info;
   info.state = ReturnsObject::Results::Info::STATE_FOO;
-  scoped_ptr<ListValue> results = ReturnsObject::Results::Create(info);
+  scoped_ptr<base::ListValue> results = ReturnsObject::Results::Create(info);
 
-  DictionaryValue expected;
+  base::DictionaryValue expected;
   expected.SetString("state", "foo");
-  DictionaryValue* result = NULL;
+  base::DictionaryValue* result = NULL;
   ASSERT_TRUE(results->GetDictionary(0, &result));
   ASSERT_TRUE(result->Equals(&expected));
 }
@@ -61,11 +61,11 @@ TEST(JsonSchemaCompilerObjectsTest, ReturnsObjectResultCreate) {
 TEST(JsonSchemaCompilerObjectsTest, OnObjectFiredCreate) {
   OnObjectFired::SomeObject object;
   object.state = OnObjectFired::SomeObject::STATE_BAR;
-  scoped_ptr<ListValue> results(OnObjectFired::Create(object));
+  scoped_ptr<base::ListValue> results(OnObjectFired::Create(object));
 
-  DictionaryValue expected;
+  base::DictionaryValue expected;
   expected.SetString("state", "bar");
-  DictionaryValue* result = NULL;
+  base::DictionaryValue* result = NULL;
   ASSERT_TRUE(results->GetDictionary(0, &result));
   ASSERT_TRUE(result->Equals(&expected));
 }

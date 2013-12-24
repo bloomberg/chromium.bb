@@ -11,32 +11,32 @@ using namespace test::api::arrays;
 namespace {
 
 // TODO(calamity): Change to AppendString etc once kalman's patch goes through
-static scoped_ptr<DictionaryValue> CreateBasicArrayTypeDictionary() {
-  DictionaryValue* value = new DictionaryValue();
-  ListValue* strings_value = new ListValue();
-  strings_value->Append(Value::CreateStringValue("a"));
-  strings_value->Append(Value::CreateStringValue("b"));
-  strings_value->Append(Value::CreateStringValue("c"));
-  strings_value->Append(Value::CreateStringValue("it's easy as"));
-  ListValue* integers_value = new ListValue();
-  integers_value->Append(Value::CreateIntegerValue(1));
-  integers_value->Append(Value::CreateIntegerValue(2));
-  integers_value->Append(Value::CreateIntegerValue(3));
-  ListValue* booleans_value = new ListValue();
-  booleans_value->Append(Value::CreateBooleanValue(false));
-  booleans_value->Append(Value::CreateBooleanValue(true));
-  ListValue* numbers_value = new ListValue();
-  numbers_value->Append(Value::CreateDoubleValue(6.1));
+static scoped_ptr<base::DictionaryValue> CreateBasicArrayTypeDictionary() {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  base::ListValue* strings_value = new base::ListValue();
+  strings_value->Append(base::Value::CreateStringValue("a"));
+  strings_value->Append(base::Value::CreateStringValue("b"));
+  strings_value->Append(base::Value::CreateStringValue("c"));
+  strings_value->Append(base::Value::CreateStringValue("it's easy as"));
+  base::ListValue* integers_value = new base::ListValue();
+  integers_value->Append(base::Value::CreateIntegerValue(1));
+  integers_value->Append(base::Value::CreateIntegerValue(2));
+  integers_value->Append(base::Value::CreateIntegerValue(3));
+  base::ListValue* booleans_value = new base::ListValue();
+  booleans_value->Append(base::Value::CreateBooleanValue(false));
+  booleans_value->Append(base::Value::CreateBooleanValue(true));
+  base::ListValue* numbers_value = new base::ListValue();
+  numbers_value->Append(base::Value::CreateDoubleValue(6.1));
   value->Set("numbers", numbers_value);
   value->Set("booleans", booleans_value);
   value->Set("strings", strings_value);
   value->Set("integers", integers_value);
-  return scoped_ptr<DictionaryValue>(value);
+  return scoped_ptr<base::DictionaryValue>(value);
 }
 
-static Value* CreateItemValue(int val) {
-  DictionaryValue* value(new DictionaryValue());
-  value->Set("val", Value::CreateIntegerValue(val));
+static base::Value* CreateItemValue(int val) {
+  base::DictionaryValue* value(new base::DictionaryValue());
+  value->Set("val", base::Value::CreateIntegerValue(val));
   return value;
 }
 
@@ -44,7 +44,7 @@ static Value* CreateItemValue(int val) {
 
 TEST(JsonSchemaCompilerArrayTest, BasicArrayType) {
   {
-    scoped_ptr<DictionaryValue> value = CreateBasicArrayTypeDictionary();
+    scoped_ptr<base::DictionaryValue> value = CreateBasicArrayTypeDictionary();
     scoped_ptr<BasicArrayType> basic_array_type(new BasicArrayType());
     ASSERT_TRUE(BasicArrayType::Populate(*value, basic_array_type.get()));
     EXPECT_TRUE(value->Equals(basic_array_type->ToValue().get()));
@@ -57,11 +57,11 @@ TEST(JsonSchemaCompilerArrayTest, EnumArrayType) {
   enums.push_back(EnumArrayType::TYPES_TYPE_TWO);
   enums.push_back(EnumArrayType::TYPES_TYPE_THREE);
 
-  scoped_ptr<ListValue> types(new ListValue());
+  scoped_ptr<base::ListValue> types(new base::ListValue());
   for (size_t i = 0; i < enums.size(); ++i)
     types->Append(new base::StringValue(EnumArrayType::ToString(enums[i])));
 
-  DictionaryValue value;
+  base::DictionaryValue value;
   value.Set("types", types.release());
 
   EnumArrayType enum_array_type;
@@ -76,13 +76,13 @@ TEST(JsonSchemaCompilerArrayTest, OptionalEnumArrayType) {
     enums.push_back(OptionalEnumArrayType::TYPES_TYPE_TWO);
     enums.push_back(OptionalEnumArrayType::TYPES_TYPE_THREE);
 
-    scoped_ptr<ListValue> types(new ListValue());
+    scoped_ptr<base::ListValue> types(new base::ListValue());
     for (size_t i = 0; i < enums.size(); ++i) {
       types->Append(new base::StringValue(
           OptionalEnumArrayType::ToString(enums[i])));
     }
 
-    DictionaryValue value;
+    base::DictionaryValue value;
     value.Set("types", types.release());
 
     OptionalEnumArrayType enum_array_type;
@@ -90,9 +90,9 @@ TEST(JsonSchemaCompilerArrayTest, OptionalEnumArrayType) {
     EXPECT_EQ(enums, *enum_array_type.types);
   }
   {
-    DictionaryValue value;
-    scoped_ptr<ListValue> enum_array(new ListValue());
-    enum_array->Append(Value::CreateStringValue("invalid"));
+    base::DictionaryValue value;
+    scoped_ptr<base::ListValue> enum_array(new base::ListValue());
+    enum_array->Append(base::Value::CreateStringValue("invalid"));
 
     value.Set("types", enum_array.release());
     OptionalEnumArrayType enum_array_type;
@@ -103,8 +103,8 @@ TEST(JsonSchemaCompilerArrayTest, OptionalEnumArrayType) {
 
 TEST(JsonSchemaCompilerArrayTest, RefArrayType) {
   {
-    scoped_ptr<DictionaryValue> value(new DictionaryValue());
-    scoped_ptr<ListValue> ref_array(new ListValue());
+    scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+    scoped_ptr<base::ListValue> ref_array(new base::ListValue());
     ref_array->Append(CreateItemValue(1));
     ref_array->Append(CreateItemValue(2));
     ref_array->Append(CreateItemValue(3));
@@ -117,10 +117,10 @@ TEST(JsonSchemaCompilerArrayTest, RefArrayType) {
     EXPECT_EQ(3, ref_array_type->refs[2]->val);
   }
   {
-    scoped_ptr<DictionaryValue> value(new DictionaryValue());
-    scoped_ptr<ListValue> not_ref_array(new ListValue());
+    scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
+    scoped_ptr<base::ListValue> not_ref_array(new base::ListValue());
     not_ref_array->Append(CreateItemValue(1));
-    not_ref_array->Append(Value::CreateIntegerValue(3));
+    not_ref_array->Append(base::Value::CreateIntegerValue(3));
     value->Set("refs", not_ref_array.release());
     scoped_ptr<RefArrayType> ref_array_type(new RefArrayType());
     EXPECT_FALSE(RefArrayType::Populate(*value, ref_array_type.get()));
@@ -128,11 +128,11 @@ TEST(JsonSchemaCompilerArrayTest, RefArrayType) {
 }
 
 TEST(JsonSchemaCompilerArrayTest, IntegerArrayParamsCreate) {
-  scoped_ptr<ListValue> params_value(new ListValue());
-  scoped_ptr<ListValue> integer_array(new ListValue());
-  integer_array->Append(Value::CreateIntegerValue(2));
-  integer_array->Append(Value::CreateIntegerValue(4));
-  integer_array->Append(Value::CreateIntegerValue(8));
+  scoped_ptr<base::ListValue> params_value(new base::ListValue());
+  scoped_ptr<base::ListValue> integer_array(new base::ListValue());
+  integer_array->Append(base::Value::CreateIntegerValue(2));
+  integer_array->Append(base::Value::CreateIntegerValue(4));
+  integer_array->Append(base::Value::CreateIntegerValue(8));
   params_value->Append(integer_array.release());
   scoped_ptr<IntegerArray::Params> params(
       IntegerArray::Params::Create(*params_value));
@@ -144,10 +144,10 @@ TEST(JsonSchemaCompilerArrayTest, IntegerArrayParamsCreate) {
 }
 
 TEST(JsonSchemaCompilerArrayTest, AnyArrayParamsCreate) {
-  scoped_ptr<ListValue> params_value(new ListValue());
-  scoped_ptr<ListValue> any_array(new ListValue());
-  any_array->Append(Value::CreateIntegerValue(1));
-  any_array->Append(Value::CreateStringValue("test"));
+  scoped_ptr<base::ListValue> params_value(new base::ListValue());
+  scoped_ptr<base::ListValue> any_array(new base::ListValue());
+  any_array->Append(base::Value::CreateIntegerValue(1));
+  any_array->Append(base::Value::CreateStringValue("test"));
   any_array->Append(CreateItemValue(2));
   params_value->Append(any_array.release());
   scoped_ptr<AnyArray::Params> params(
@@ -160,8 +160,8 @@ TEST(JsonSchemaCompilerArrayTest, AnyArrayParamsCreate) {
 }
 
 TEST(JsonSchemaCompilerArrayTest, ObjectArrayParamsCreate) {
-  scoped_ptr<ListValue> params_value(new ListValue());
-  scoped_ptr<ListValue> item_array(new ListValue());
+  scoped_ptr<base::ListValue> params_value(new base::ListValue());
+  scoped_ptr<base::ListValue> item_array(new base::ListValue());
   item_array->Append(CreateItemValue(1));
   item_array->Append(CreateItemValue(2));
   params_value->Append(item_array.release());
@@ -174,8 +174,8 @@ TEST(JsonSchemaCompilerArrayTest, ObjectArrayParamsCreate) {
 }
 
 TEST(JsonSchemaCompilerArrayTest, RefArrayParamsCreate) {
-  scoped_ptr<ListValue> params_value(new ListValue());
-  scoped_ptr<ListValue> item_array(new ListValue());
+  scoped_ptr<base::ListValue> params_value(new base::ListValue());
+  scoped_ptr<base::ListValue> item_array(new base::ListValue());
   item_array->Append(CreateItemValue(1));
   item_array->Append(CreateItemValue(2));
   params_value->Append(item_array.release());
@@ -191,12 +191,13 @@ TEST(JsonSchemaCompilerArrayTest, ReturnIntegerArrayResultCreate) {
   std::vector<int> integers;
   integers.push_back(1);
   integers.push_back(2);
-  scoped_ptr<ListValue> results = ReturnIntegerArray::Results::Create(integers);
+  scoped_ptr<base::ListValue> results =
+      ReturnIntegerArray::Results::Create(integers);
 
-  ListValue expected;
-  ListValue* expected_argument = new ListValue();
-  expected_argument->Append(Value::CreateIntegerValue(1));
-  expected_argument->Append(Value::CreateIntegerValue(2));
+  base::ListValue expected;
+  base::ListValue* expected_argument = new base::ListValue();
+  expected_argument->Append(base::Value::CreateIntegerValue(1));
+  expected_argument->Append(base::Value::CreateIntegerValue(2));
   expected.Append(expected_argument);
   EXPECT_TRUE(results->Equals(&expected));
 }
@@ -207,14 +208,15 @@ TEST(JsonSchemaCompilerArrayTest, ReturnRefArrayResultCreate) {
   items.push_back(linked_ptr<Item>(new Item()));
   items[0]->val = 1;
   items[1]->val = 2;
-  scoped_ptr<ListValue> results = ReturnRefArray::Results::Create(items);
+  scoped_ptr<base::ListValue> results =
+      ReturnRefArray::Results::Create(items);
 
-  ListValue expected;
-  ListValue* expected_argument = new ListValue();
-  DictionaryValue* first = new DictionaryValue();
+  base::ListValue expected;
+  base::ListValue* expected_argument = new base::ListValue();
+  base::DictionaryValue* first = new base::DictionaryValue();
   first->SetInteger("val", 1);
   expected_argument->Append(first);
-  DictionaryValue* second = new DictionaryValue();
+  base::DictionaryValue* second = new base::DictionaryValue();
   second->SetInteger("val", 2);
   expected_argument->Append(second);
   expected.Append(expected_argument);

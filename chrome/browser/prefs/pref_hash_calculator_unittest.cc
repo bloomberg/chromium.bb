@@ -14,7 +14,7 @@ TEST(PrefHashCalculatorTest, TestCurrentAlgorithm) {
   base::StringValue string_value_2("string value 2");
   base::DictionaryValue dictionary_value_1;
   dictionary_value_1.SetInteger("int value", 1);
-  dictionary_value_1.Set("nested empty map", new DictionaryValue);
+  dictionary_value_1.Set("nested empty map", new base::DictionaryValue);
   base::DictionaryValue dictionary_value_1_equivalent;
   dictionary_value_1_equivalent.SetInteger("int value", 1);
   base::DictionaryValue dictionary_value_2;
@@ -91,11 +91,11 @@ TEST(PrefHashCalculatorTest, CatchHashChanges) {
     static const char kExpectedValue[] =
         "A50FE7EB31BFBC32B8A27E71730AF15421178A9B5815644ACE174B18966735B9";
 
-    DictionaryValue dict;
-    dict.Set("a", new StringValue("foo"));
-    dict.Set("d", new StringValue("bad"));
-    dict.Set("b", new StringValue("bar"));
-    dict.Set("c", new StringValue("baz"));
+    base::DictionaryValue dict;
+    dict.Set("a", new base::StringValue("foo"));
+    dict.Set("d", new base::StringValue("bad"));
+    dict.Set("b", new base::StringValue("bar"));
+    dict.Set("c", new base::StringValue("baz"));
 
     // 32 NULL bytes is the seed that was used to generate the hash in old
     // tests. Use it again to ensure that we haven't altered the algorithm.
@@ -110,11 +110,11 @@ TEST(PrefHashCalculatorTest, TestLegacyAlgorithm) {
       "C503FB7C65EEFD5C07185F616A0AA67923C069909933F362022B1F187E73E9A2";
   const char* kDeviceId = "deviceid";
 
-  DictionaryValue dict;
-  dict.Set("a", new StringValue("foo"));
-  dict.Set("d", new StringValue("bad"));
-  dict.Set("b", new StringValue("bar"));
-  dict.Set("c", new StringValue("baz"));
+  base::DictionaryValue dict;
+  dict.Set("a", new base::StringValue("foo"));
+  dict.Set("d", new base::StringValue("bad"));
+  dict.Set("b", new base::StringValue("bar"));
+  dict.Set("c", new base::StringValue("baz"));
 
   // 32 NULL bytes is the seed that was used to generate the legacy hash.
   EXPECT_EQ(PrefHashCalculator::VALID_LEGACY,

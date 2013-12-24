@@ -69,7 +69,7 @@ TEST_F(EventRouterTest, GetBaseEventName) {
 TEST_F(EventRouterTest, EventRouterObserver) {
   EventRouter router(NULL, NULL);
   EventListener listener(
-      "event_name", "extension_id", NULL, scoped_ptr<DictionaryValue>());
+      "event_name", "extension_id", NULL, scoped_ptr<base::DictionaryValue>());
 
   // Add/remove works without any observers.
   router.OnListenerAdded(&listener);
@@ -104,8 +104,10 @@ TEST_F(EventRouterTest, EventRouterObserver) {
   // Adding a listener with a sub-event notifies the main observer with
   // proper details.
   matching_observer.Reset();
-  EventListener sub_event_listener(
-      "event_name/1", "extension_id", NULL, scoped_ptr<DictionaryValue>());
+  EventListener sub_event_listener("event_name/1",
+                                   "extension_id",
+                                   NULL,
+                                   scoped_ptr<base::DictionaryValue>());
   router.OnListenerAdded(&sub_event_listener);
   EXPECT_EQ(1, matching_observer.listener_added_count());
   EXPECT_EQ(0, matching_observer.listener_removed_count());

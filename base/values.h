@@ -31,11 +31,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 
-// This file declares "using base::Value", etc. at the bottom, so that
-// current code can use these classes without the base namespace. In
-// new code, please always use base::Value, etc. or add your own
-// "using" declaration.
-// http://crbug.com/88666
 namespace base {
 
 class DictionaryValue;
@@ -527,11 +522,5 @@ BASE_EXPORT inline std::ostream& operator<<(std::ostream& out,
 }
 
 }  // namespace base
-
-// http://crbug.com/88666
-using base::DictionaryValue;
-using base::ListValue;
-using base::StringValue;
-using base::Value;
 
 #endif  // BASE_VALUES_H_

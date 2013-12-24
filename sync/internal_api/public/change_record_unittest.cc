@@ -58,7 +58,7 @@ void CheckChangeRecordValue(
     const base::Value* extra_value = NULL;
     EXPECT_EQ(record.extra.get() != NULL,
               value.Get("extra", &extra_value));
-    EXPECT_TRUE(Value::Equals(extra_value, expected_extra_value.get()));
+    EXPECT_TRUE(base::Value::Equals(extra_value, expected_extra_value.get()));
 
     scoped_ptr<base::DictionaryValue> expected_specifics_value(
         EntitySpecificsToValue(record.specifics));
