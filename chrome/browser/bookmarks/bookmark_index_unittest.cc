@@ -23,6 +23,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 class BookmarkIndexTest : public testing::Test {
  public:
   BookmarkIndexTest() : model_(new BookmarkModel(NULL)) {}
@@ -220,7 +222,7 @@ TEST_F(BookmarkIndexTest, HonorMax) {
 // than the upper case string no match positions are returned.
 TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
   const BookmarkNode* n1 = model_->AddURL(model_->other_node(), 0,
-                                          WideToUTF16(L"\u0130 i"),
+                                          base::WideToUTF16(L"\u0130 i"),
                                           GURL("http://www.google.com"));
 
   std::vector<BookmarkTitleMatch> matches;
@@ -261,31 +263,31 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     history::URLRow info(data[i].url);
-    info.set_title(UTF8ToUTF16(data[i].title));
+    info.set_title(base::UTF8ToUTF16(data[i].title));
     info.set_typed_count(data[i].typed_count);
     // Populate the InMemoryDatabase....
     url_db->AddURL(info);
     // Populate the BookmarkIndex.
-    model->AddURL(model->other_node(), i, UTF8ToUTF16(data[i].title),
+    model->AddURL(model->other_node(), i, base::UTF8ToUTF16(data[i].title),
                   data[i].url);
   }
 
   // Check that the InMemoryDatabase stored the URLs properly.
   history::URLRow result1;
   url_db->GetRowForURL(data[0].url, &result1);
-  EXPECT_EQ(data[0].title, UTF16ToUTF8(result1.title()));
+  EXPECT_EQ(data[0].title, base::UTF16ToUTF8(result1.title()));
 
   history::URLRow result2;
   url_db->GetRowForURL(data[1].url, &result2);
-  EXPECT_EQ(data[1].title, UTF16ToUTF8(result2.title()));
+  EXPECT_EQ(data[1].title, base::UTF16ToUTF8(result2.title()));
 
   history::URLRow result3;
   url_db->GetRowForURL(data[2].url, &result3);
-  EXPECT_EQ(data[2].title, UTF16ToUTF8(result3.title()));
+  EXPECT_EQ(data[2].title, base::UTF16ToUTF8(result3.title()));
 
   history::URLRow result4;
   url_db->GetRowForURL(data[3].url, &result4);
-  EXPECT_EQ(data[3].title, UTF16ToUTF8(result4.title()));
+  EXPECT_EQ(data[3].title, base::UTF16ToUTF8(result4.title()));
 
   // Populate match nodes.
   std::vector<BookmarkTitleMatch> matches;

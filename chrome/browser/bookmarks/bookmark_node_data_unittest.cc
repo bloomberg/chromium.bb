@@ -17,6 +17,8 @@
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
+
 class BookmarkNodeDataTest : public testing::Test {
  public:
   BookmarkNodeDataTest() : model_(NULL) {}

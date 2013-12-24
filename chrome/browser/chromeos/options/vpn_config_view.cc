@@ -742,17 +742,17 @@ void VPNConfigView::InitFromProperties(
   provider_type_index_ = ProviderTypeToIndex(provider_type, client_cert_id_);
 
   if (service_text_)
-    service_text_->SetText(ASCIIToUTF16(vpn->name()));
+    service_text_->SetText(base::ASCIIToUTF16(vpn->name()));
   if (provider_type_text_label_)
     provider_type_text_label_->SetText(
         ProviderTypeIndexToString(provider_type_index_));
 
   if (server_textfield_ && !server_hostname.empty())
-    server_textfield_->SetText(UTF8ToUTF16(server_hostname));
+    server_textfield_->SetText(base::UTF8ToUTF16(server_hostname));
   if (username_textfield_ && !username.empty())
-    username_textfield_->SetText(UTF8ToUTF16(username));
+    username_textfield_->SetText(base::UTF8ToUTF16(username));
   if (group_name_textfield_ && !group_name.empty())
-    group_name_textfield_->SetText(UTF8ToUTF16(group_name));
+    group_name_textfield_->SetText(base::UTF8ToUTF16(group_name));
   if (psk_passphrase_textfield_)
     psk_passphrase_textfield_->SetShowFake(!psk_passphrase_required);
   if (save_credentials_checkbox_)
@@ -1024,7 +1024,7 @@ const std::string VPNConfigView::GetTextFromField(views::Textfield* textfield,
                                                   bool trim_whitespace) const {
   if (!textfield)
     return std::string();
-  std::string untrimmed = UTF16ToUTF8(textfield->text());
+  std::string untrimmed = base::UTF16ToUTF8(textfield->text());
   if (!trim_whitespace)
     return untrimmed;
   std::string result;

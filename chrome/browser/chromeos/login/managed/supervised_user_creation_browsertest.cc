@@ -222,7 +222,7 @@ void SupervisedUserTest::CreateSupervisedUser() {
 
   EXPECT_TRUE(registration_utility_stub_->register_was_called());
   EXPECT_EQ(registration_utility_stub_->display_name(),
-            UTF8ToUTF16(kSupervisedUserDisplayName));
+            base::UTF8ToUTF16(kSupervisedUserDisplayName));
 
   registration_utility_stub_->RunSuccessCallback("token");
 
@@ -240,7 +240,8 @@ void SupervisedUserTest::SigninAsSupervisedUser() {
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
   // Created supervised user have to be first in a list.
   const User* user = UserManager::Get()->GetUsers().at(0);
-  ASSERT_EQ(UTF8ToUTF16(kSupervisedUserDisplayName), user->display_name());
+  ASSERT_EQ(base::UTF8ToUTF16(kSupervisedUserDisplayName),
+            user->display_name());
   LoginUser(user->email());
 }
 
@@ -250,7 +251,8 @@ void SupervisedUserTest::RemoveSupervisedUser() {
   ASSERT_EQ(3UL, UserManager::Get()->GetUsers().size());
   // Created supervised user have to be first in a list.
   const User* user = UserManager::Get()->GetUsers().at(0);
-  ASSERT_EQ(UTF8ToUTF16(kSupervisedUserDisplayName), user->display_name());
+  ASSERT_EQ(base::UTF8ToUTF16(kSupervisedUserDisplayName),
+            user->display_name());
 
   // Open pod menu.
   JSExpect("!$('pod-row').pods[0].isActionBoxMenuActive");
@@ -366,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserTransactionCleanupTest,
 
   EXPECT_TRUE(registration_utility_stub_->register_was_called());
   EXPECT_EQ(registration_utility_stub_->display_name(),
-            UTF8ToUTF16(kSupervisedUserDisplayName));
+            base::UTF8ToUTF16(kSupervisedUserDisplayName));
 
   std::string user_id = registration_utility_stub_->managed_user_id();
   // Make sure user is already in list.

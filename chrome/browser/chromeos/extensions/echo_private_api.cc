@@ -259,8 +259,8 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
   chromeos::EchoDialogView* dialog = new chromeos::EchoDialogView(this);
   if (redeem_offers_allowed_) {
     dialog->InitForEnabledEcho(
-        UTF8ToUTF16(params->consent_requester.service_name),
-        UTF8ToUTF16(params->consent_requester.origin));
+        base::UTF8ToUTF16(params->consent_requester.service_name),
+        base::UTF8ToUTF16(params->consent_requester.origin));
   } else {
     dialog->InitForDisabledEcho();
   }

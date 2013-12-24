@@ -59,25 +59,26 @@ class BookmarkHTMLWriterTest : public testing::Test {
   // testing.
   base::string16 BookmarkEntryToString(const ImportedBookmarkEntry& entry) {
     base::string16 result;
-    result.append(ASCIIToUTF16("on_toolbar="));
+    result.append(base::ASCIIToUTF16("on_toolbar="));
     if (entry.in_toolbar)
-      result.append(ASCIIToUTF16("true"));
+      result.append(base::ASCIIToUTF16("true"));
     else
-      result.append(ASCIIToUTF16("false"));
+      result.append(base::ASCIIToUTF16("false"));
 
-    result.append(ASCIIToUTF16(" url=") + UTF8ToUTF16(entry.url.spec()));
+    result.append(base::ASCIIToUTF16(" url=") +
+        base::UTF8ToUTF16(entry.url.spec()));
 
-    result.append(ASCIIToUTF16(" path="));
+    result.append(base::ASCIIToUTF16(" path="));
     for (size_t i = 0; i < entry.path.size(); ++i) {
       if (i != 0)
-        result.append(ASCIIToUTF16("/"));
+        result.append(base::ASCIIToUTF16("/"));
       result.append(entry.path[i]);
     }
 
-    result.append(ASCIIToUTF16(" title="));
+    result.append(base::ASCIIToUTF16(" title="));
     result.append(entry.title);
 
-    result.append(ASCIIToUTF16(" time="));
+    result.append(base::ASCIIToUTF16(" time="));
     result.append(base::TimeFormatFriendlyDateAndTime(entry.creation_time));
     return result;
   }
@@ -177,15 +178,15 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   // Mobile
   //   url1
   //   <bookmark without a title.>
-  base::string16 f1_title = ASCIIToUTF16("F\"&;<1\"");
-  base::string16 f2_title = ASCIIToUTF16("F2");
-  base::string16 f3_title = ASCIIToUTF16("F 3");
-  base::string16 f4_title = ASCIIToUTF16("F4");
-  base::string16 url1_title = ASCIIToUTF16("url 1");
-  base::string16 url2_title = ASCIIToUTF16("url&2");
-  base::string16 url3_title = ASCIIToUTF16("url\"3");
-  base::string16 url4_title = ASCIIToUTF16("url\"&;");
-  base::string16 unnamed_bookmark_title = ASCIIToUTF16("");
+  base::string16 f1_title = base::ASCIIToUTF16("F\"&;<1\"");
+  base::string16 f2_title = base::ASCIIToUTF16("F2");
+  base::string16 f3_title = base::ASCIIToUTF16("F 3");
+  base::string16 f4_title = base::ASCIIToUTF16("F4");
+  base::string16 url1_title = base::ASCIIToUTF16("url 1");
+  base::string16 url2_title = base::ASCIIToUTF16("url&2");
+  base::string16 url3_title = base::ASCIIToUTF16("url\"3");
+  base::string16 url4_title = base::ASCIIToUTF16("url\"&;");
+  base::string16 unnamed_bookmark_title = base::ASCIIToUTF16("");
   GURL url1("http://url1");
   GURL url1_favicon("http://url1/icon.ico");
   GURL url2("http://url2");

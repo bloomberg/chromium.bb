@@ -33,8 +33,8 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
     webkit_database::DatabaseTracker* db_tracker =
         BrowserContext::GetDefaultStoragePartition(browser()->profile())->
             GetDatabaseTracker();
-    base::string16 db_name = ASCIIToUTF16("db");
-    base::string16 description = ASCIIToUTF16("db_description");
+    base::string16 db_name = base::ASCIIToUTF16("db");
+    base::string16 description = base::ASCIIToUTF16("db_description");
     int64 size;
     db_tracker->DatabaseOpened(kTestIdentifier1, db_name, description,
                                1, &size);

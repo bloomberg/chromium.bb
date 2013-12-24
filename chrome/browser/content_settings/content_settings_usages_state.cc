@@ -104,5 +104,5 @@ std::string ContentSettingsUsagesState::GURLToFormattedHost(
   base::string16 display_host;
   net::AppendFormattedHost(url,
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &display_host);
-  return UTF16ToUTF8(display_host);
+  return base::UTF16ToUTF8(display_host);
 }

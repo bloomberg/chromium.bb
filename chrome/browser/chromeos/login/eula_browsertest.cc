@@ -72,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOnline) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(1, ui_test_utils::FindInPage(web_contents,
-                                         ASCIIToUTF16(kFakeOnlineEULA),
+                                         base::ASCIIToUTF16(kFakeOnlineEULA),
                                          true,
                                          true,
                                          NULL,
@@ -91,12 +91,13 @@ IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOffline) {
       browser()->tab_strip_model()->GetActiveWebContents();
 
 #if defined(GOOGLE_CHROME_BUILD)
-  EXPECT_NE(0, ui_test_utils::FindInPage(web_contents,
-                                         ASCIIToUTF16(kOfflineEULAWarning),
-                                         true,
-                                         true,
-                                         NULL,
-                                         NULL));
+  EXPECT_NE(0,
+            ui_test_utils::FindInPage(web_contents,
+                                      base::ASCIIToUTF16(kOfflineEULAWarning),
+                                      true,
+                                      true,
+                                      NULL,
+                                      NULL));
 #else
   std::string body;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(

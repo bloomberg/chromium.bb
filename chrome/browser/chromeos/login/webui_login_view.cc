@@ -409,7 +409,7 @@ void WebUILoginView::DidFailProvisionalLoad(
     int error_code,
     const base::string16& error_description,
     content::RenderViewHost* render_view_host) {
-  if (frame_unique_name != UTF8ToUTF16("gaia-frame"))
+  if (frame_unique_name != base::UTF8ToUTF16("gaia-frame"))
     return;
 
   base::FundamentalValue error_value(-error_code);

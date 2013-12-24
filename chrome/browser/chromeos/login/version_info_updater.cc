@@ -96,8 +96,8 @@ void VersionInfoUpdater::UpdateVersionLabel() {
   std::string label_text = l10n_util::GetStringFUTF8(
       IDS_LOGIN_VERSION_LABEL_FORMAT,
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-      UTF8ToUTF16(version_info.Version()),
-      UTF8ToUTF16(version_text_));
+      base::UTF8ToUTF16(version_info.Version()),
+      base::UTF8ToUTF16(version_text_));
 
   // Workaround over incorrect width calculation in old fonts.
   // TODO(glotov): remove the following line when new fonts are used.
@@ -118,7 +118,7 @@ void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name) {
     std::string enterprise_info;
     enterprise_info = l10n_util::GetStringFUTF8(
         IDS_DEVICE_OWNED_BY_NOTICE,
-        UTF8ToUTF16(domain_name));
+        base::UTF8ToUTF16(domain_name));
     delegate_->OnEnterpriseInfoUpdated(enterprise_info);
   }
 }

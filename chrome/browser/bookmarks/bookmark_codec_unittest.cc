@@ -17,6 +17,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 const char kUrl1Title[] = "url1";

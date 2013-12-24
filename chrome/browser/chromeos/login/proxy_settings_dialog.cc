@@ -77,7 +77,7 @@ ProxySettingsDialog::ProxySettingsDialog(const NetworkState& network,
   }
 
   SetDialogTitle(l10n_util::GetStringFUTF16(IDS_PROXY_PAGE_TITLE_FORMAT,
-                                            ASCIIToUTF16(network_name)));
+                                            base::ASCIIToUTF16(network_name)));
 }
 
 ProxySettingsDialog::~ProxySettingsDialog() {

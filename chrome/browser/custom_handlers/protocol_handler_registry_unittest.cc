@@ -326,7 +326,7 @@ class ProtocolHandlerRegistryTest : public testing::Test {
                                         const GURL& url,
                                         const std::string& title) {
     return ProtocolHandler::CreateProtocolHandler(protocol, url,
-        UTF8ToUTF16(title));
+        base::UTF8ToUTF16(title));
   }
 
   ProtocolHandler CreateProtocolHandler(const std::string& protocol,
