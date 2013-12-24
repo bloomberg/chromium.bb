@@ -770,7 +770,7 @@ DirectoryModel.prototype.resolveDirectory = function(
     if (volumeInfo &&
         volumeInfo.volumeType === util.VolumeType.DRIVE &&
         error.code === FileError.INVALID_STATE_ERR) {
-      successCallback(volumeInfo.createFakeEntry(RootType.DRIVE));
+      successCallback(volumeInfo.fakeEntries[RootType.DRIVE]);
       return;
     }
     errorCallback(error);
@@ -1049,7 +1049,6 @@ DirectoryModel.prototype.search = function(query,
  * @param {string=} opt_query Query string used for the search.
  */
 DirectoryModel.prototype.specialSearch = function(path, opt_query) {
-  console.log('special search');
   var query = opt_query || '';
 
   this.clearSearch_();
