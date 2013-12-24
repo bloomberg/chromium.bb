@@ -6,6 +6,7 @@
   # Default value for all libraries.
   'custom_configure_flags': '',
   'custom_linker_flags': '',
+  'run_before_build': '',
 
   # Some librraies should not be built before others, so these lists define
   # the order to build them all.
@@ -52,6 +53,7 @@
       'first_order_libraries': [
         '<(_sanitizer_type)-libfontconfig1',
         '<(_sanitizer_type)-libglib2.0-0',
+        '<(_sanitizer_type)-libnspr4',
       ],
     }],
     ['msan==1', {
@@ -131,6 +133,13 @@
     {
       'library_name': 'libgpg-error0',
       'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libnspr4',
+      'dependencies=': [],
+      'custom_configure_flags': '--enable-64bit',
+      'run_before_build': 'libnspr4.sh',
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
