@@ -55,7 +55,6 @@ Committing uiSourceCode again (with live edit success now):
 Dumping uiSourceCode and script content:
     uiSourceCode: <foo content edited again>
     script: <foo content edited again>
- //# sourceURL=http://localhost/html/foo.js
  - hasDivergedFromVM: false
  - sourceFrame._muted: false
 Reloading page:

@@ -6,18 +6,14 @@ Running: testSourceURLCommentInInlineScript
 
 Running: testSourceURLComment
 function keepAlive() {}
-//# sourceURL=evalURL.js
 
 Running: testDeprecatedSourceURLComment
 function keepAlive() {}
-//@ sourceURL=deprecatedEvalURL.js
 
 Running: testSourceURLCommentInDynamicScript
 function keepAliveInDynamicScript() {}
-//# sourceURL=dynamicScriptURL.js
 
 Running: testNonRelativeURL
 function relativeURLScript() {}
-//# sourceURL=/js/nonRelativeURL.js
 Debugger was disabled.
 

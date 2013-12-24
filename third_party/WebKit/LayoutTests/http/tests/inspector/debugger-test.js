@@ -362,7 +362,11 @@ InspectorTest.createScriptMock = function(url, startLine, startColumn, isContent
     var endColumn = lineCount === 1 ? startColumn + source.length : source.length - source.lineEndings()[lineCount - 2];
     var hasSourceURL = !!source.match(/\/\/#\ssourceURL=\s*(\S*?)\s*$/m) || !!source.match(/\/\/@\ssourceURL=\s*(\S*?)\s*$/m);
     var script = new WebInspector.Script(scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, null, hasSourceURL);
-    script.requestContent = function(callback) { callback(source, false, "text/javascript"); };
+    script.requestContent = function(callback)
+    {
+        var trimmedSource = WebInspector.Script._trimSourceURLComment(source);
+        callback(trimmedSource, false, "text/javascript");
+    };
     WebInspector.debuggerModel._registerScript(script);
     return script;
 };
