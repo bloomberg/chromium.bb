@@ -185,13 +185,7 @@ int PlatformFontPango::GetBaseline() const {
 }
 
 int PlatformFontPango::GetCapHeight() const {
-  // Return the ascent as an approximation because Pango doesn't support cap
-  // height.
-  // TODO(yukishiino): Come up with a better approximation of cap height, or
-  // support cap height metrics.  Another option is to have a hard-coded table
-  // of cap height for major fonts used in Chromium/Chrome.
-  // See http://crbug.com/249507
-  return ascent_pixels_;
+  return cap_height_pixels_;
 }
 
 int PlatformFontPango::GetAverageCharacterWidth() const {
@@ -345,6 +339,7 @@ void PlatformFontPango::InitWithTypefaceNameSizeAndStyle(
 
   ascent_pixels_ = SkScalarCeil(-metrics.fAscent);
   height_pixels_ = ascent_pixels_ + SkScalarCeil(metrics.fDescent);
+  cap_height_pixels_ = SkScalarCeil(metrics.fCapHeight);
 }
 
 void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {
@@ -354,6 +349,7 @@ void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {
   style_ = other->style_;
   height_pixels_ = other->height_pixels_;
   ascent_pixels_ = other->ascent_pixels_;
+  cap_height_pixels_ = other->cap_height_pixels_;
   pango_metrics_inited_ = other->pango_metrics_inited_;
   average_width_pixels_ = other->average_width_pixels_;
   underline_position_pixels_ = other->underline_position_pixels_;

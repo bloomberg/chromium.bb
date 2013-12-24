@@ -104,6 +104,7 @@ class GFX_EXPORT PlatformFontPango : public PlatformFont {
   // Cached metrics, generated at construction.
   int height_pixels_;
   int ascent_pixels_;
+  int cap_height_pixels_;
 
   // The pango metrics are much more expensive so we wait until we need them
   // to compute them.

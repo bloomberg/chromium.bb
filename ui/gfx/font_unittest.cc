@@ -95,11 +95,7 @@ TEST_F(FontTest, CapHeight) {
   Font cf("Arial", 16);
   EXPECT_GT(cf.GetCapHeight(), 0);
   EXPECT_GT(cf.GetCapHeight(), cf.GetHeight() / 2);
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-  EXPECT_EQ(cf.GetCapHeight(), cf.GetBaseline());
-#else
   EXPECT_LT(cf.GetCapHeight(), cf.GetBaseline());
-#endif
 }
 
 TEST_F(FontTest, AvgWidths) {
