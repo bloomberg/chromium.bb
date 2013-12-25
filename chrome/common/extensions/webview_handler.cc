@@ -72,14 +72,14 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
   const base::DictionaryValue* dict_value = NULL;
   if (!extension->manifest()->GetDictionary(keys::kWebview,
                                             &dict_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidWebview);
+    *error = base::ASCIIToUTF16(errors::kInvalidWebview);
     return false;
   }
 
   const base::ListValue* url_list = NULL;
   if (!dict_value->GetList(keys::kWebviewAccessibleResources,
                            &url_list)) {
-    *error = ASCIIToUTF16(errors::kInvalidWebviewAccessibleResourcesList);
+    *error = base::ASCIIToUTF16(errors::kInvalidWebviewAccessibleResourcesList);
     return false;
   }
 
@@ -105,7 +105,7 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
   const base::ListValue* partition_list = NULL;
   if (!dict_value->GetList(keys::kWebviewPrivilegedPartitions,
                            &partition_list)) {
-    *error = ASCIIToUTF16(errors::kInvalidWebviewPrivilegedPartitionList);
+    *error = base::ASCIIToUTF16(errors::kInvalidWebviewPrivilegedPartitionList);
     return false;
   }
   for (size_t i = 0; i < partition_list->GetSize(); ++i) {

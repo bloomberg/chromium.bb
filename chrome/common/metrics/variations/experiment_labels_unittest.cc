@@ -71,7 +71,7 @@ TEST(ExperimentLabelsTest, BuildGoogleUpdateExperimentLabel) {
     std::vector<std::string> expected_ids_list;
     base::SplitString(test_cases[i].expected_ids, '#', &expected_ids_list);
 
-    std::string experiment_labels_string = UTF16ToUTF8(
+    std::string experiment_labels_string = base::UTF16ToUTF8(
         BuildGoogleUpdateExperimentLabel(groups));
 
     // Split the VariationIDs from the labels for verification below.
@@ -127,9 +127,9 @@ TEST(ExperimentLabelsTest, CombineExperimentLabels) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
-    std::string result = UTF16ToUTF8(CombineExperimentLabels(
-        ASCIIToUTF16(test_cases[i].variations_labels),
-        ASCIIToUTF16(test_cases[i].other_labels)));
+    std::string result = base::UTF16ToUTF8(CombineExperimentLabels(
+        base::ASCIIToUTF16(test_cases[i].variations_labels),
+        base::ASCIIToUTF16(test_cases[i].other_labels)));
     EXPECT_EQ(test_cases[i].expected_label, result);
   }
 }
@@ -183,8 +183,9 @@ TEST(ExperimentLabelsTest, ExtractNonVariationLabels) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
-    std::string non_variation_labels = UTF16ToUTF8(
-        ExtractNonVariationLabels(ASCIIToUTF16(test_cases[i].input_label)));
+    std::string non_variation_labels = base::UTF16ToUTF8(
+        ExtractNonVariationLabels(
+            base::ASCIIToUTF16(test_cases[i].input_label)));
     EXPECT_EQ(test_cases[i].expected_output, non_variation_labels);
   }
 }

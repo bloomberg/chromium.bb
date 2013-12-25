@@ -30,7 +30,7 @@ bool GetTestKeyFromEnvironment(base::string16* key) {
   std::string value;
   bool result = env->GetVar(kTestHKCUOverrideEnvironmentVariable, &value);
   if (result)
-    *key = UTF8ToUTF16(value);
+    *key = base::UTF8ToUTF16(value);
   return result;
 }
 
@@ -41,12 +41,12 @@ bool GetTestKeyFromEnvironment(base::string16* key) {
 
 IEImporterTestRegistryOverrider::IEImporterTestRegistryOverrider()
     : temporary_key_(kTestHKCUOverrideKeyPrefix +
-                     UTF8ToUTF16(base::GenerateGUID())) {
+                     base::UTF8ToUTF16(base::GenerateGUID())) {
   DCHECK(!GetTestKeyFromEnvironment(NULL));
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
   bool success = env->SetVar(kTestHKCUOverrideEnvironmentVariable,
-                             UTF16ToUTF8(temporary_key_));
+                             base::UTF16ToUTF8(temporary_key_));
   DCHECK(success);
 }
 

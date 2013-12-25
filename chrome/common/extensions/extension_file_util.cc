@@ -247,7 +247,7 @@ bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
         extension->GetResource(iter->second).GetFilePath();
     if (!ValidateFilePath(path)) {
       *error = l10n_util::GetStringFUTF8(error_message_id,
-                                         UTF8ToUTF16(iter->second));
+                                         base::UTF8ToUTF16(iter->second));
       return false;
     }
   }

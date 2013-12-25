@@ -141,7 +141,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
   // Read the file action |id| (mandatory).
   if (!file_browser_handler->HasKey(keys::kPageActionId) ||
       !file_browser_handler->GetString(keys::kPageActionId, &handler_id)) {
-    *error = ASCIIToUTF16(errors::kInvalidPageActionId);
+    *error = base::ASCIIToUTF16(errors::kInvalidPageActionId);
     return NULL;
   }
   result->set_id(handler_id);
@@ -150,7 +150,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
   std::string title;
   if (!file_browser_handler->HasKey(keys::kPageActionDefaultTitle) ||
       !file_browser_handler->GetString(keys::kPageActionDefaultTitle, &title)) {
-    *error = ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
+    *error = base::ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
     return NULL;
   }
   result->set_title(title);
@@ -161,7 +161,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
     if (!file_browser_handler->GetList(keys::kFileAccessList,
                                        &access_list_value) ||
         access_list_value->empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidFileAccessList);
+      *error = base::ASCIIToUTF16(errors::kInvalidFileAccessList);
       return NULL;
     }
     for (size_t i = 0; i < access_list_value->GetSize(); ++i) {
@@ -175,7 +175,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
     }
   }
   if (!result->ValidateFileAccessPermissions()) {
-    *error = ASCIIToUTF16(errors::kInvalidFileAccessList);
+    *error = base::ASCIIToUTF16(errors::kInvalidFileAccessList);
     return NULL;
   }
 
@@ -185,7 +185,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
     const base::ListValue* file_filters = NULL;
     if (!file_browser_handler->HasKey(keys::kFileFilters) ||
         !file_browser_handler->GetList(keys::kFileFilters, &file_filters)) {
-      *error = ASCIIToUTF16(errors::kInvalidFileFiltersList);
+      *error = base::ASCIIToUTF16(errors::kInvalidFileFiltersList);
       return NULL;
     }
     for (size_t i = 0; i < file_filters->GetSize(); ++i) {
@@ -231,7 +231,7 @@ FileBrowserHandler* LoadFileBrowserHandler(
     if (!file_browser_handler->GetString(
             keys::kPageActionDefaultIcon, &default_icon) ||
         default_icon.empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+      *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
       return NULL;
     }
     result->set_icon_path(default_icon);
@@ -250,7 +250,7 @@ bool LoadFileBrowserHandlers(
        iter != extension_actions->end();
        ++iter) {
     if (!(*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
-      *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
+      *error = base::ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
       return false;
     }
     scoped_ptr<FileBrowserHandler> action(
@@ -271,7 +271,7 @@ bool FileBrowserHandlerParser::Parse(extensions::Extension* extension,
   const base::ListValue* file_browser_handlers_value = NULL;
   if (!extension->manifest()->GetList(keys::kFileBrowserHandlers,
                                       &file_browser_handlers_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
+    *error = base::ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
     return false;
   }
   scoped_ptr<FileBrowserHandlerInfo> info(new FileBrowserHandlerInfo);

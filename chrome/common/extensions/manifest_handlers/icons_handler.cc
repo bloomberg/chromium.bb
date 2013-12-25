@@ -77,7 +77,7 @@ bool IconsHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<IconsInfo> icons_info(new IconsInfo);
   const base::DictionaryValue* icons_dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kIcons, &icons_dict)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidIcons);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidIcons);
     return false;
   }
 

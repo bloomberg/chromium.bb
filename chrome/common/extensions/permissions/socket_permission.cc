@@ -55,7 +55,7 @@ void SocketPermission::AddSubdomainHostMessage(
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
     if (i->entry().GetHostType() == SocketPermissionEntry::HOSTS_IN_DOMAINS)
-      domains.insert(UTF8ToUTF16(i->entry().pattern().host));
+      domains.insert(base::UTF8ToUTF16(i->entry().pattern().host));
   }
   if (!domains.empty()) {
     int id = (domains.size() == 1) ?
@@ -77,7 +77,7 @@ void SocketPermission::AddSpecificHostMessage(
   std::set<SocketPermissionData>::const_iterator i;
   for (i = data_set_.begin(); i != data_set_.end(); ++i) {
     if (i->entry().GetHostType() == SocketPermissionEntry::SPECIFIC_HOSTS)
-      hostnames.insert(UTF8ToUTF16(i->entry().pattern().host));
+      hostnames.insert(base::UTF8ToUTF16(i->entry().pattern().host));
   }
   if (!hostnames.empty()) {
     int id = (hostnames.size() == 1) ?

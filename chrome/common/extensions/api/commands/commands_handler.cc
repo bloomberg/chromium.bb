@@ -72,7 +72,7 @@ bool CommandsHandler::Parse(Extension* extension, base::string16* error) {
 
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kCommands, &dict)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidCommandsKey);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidCommandsKey);
     return false;
   }
 

@@ -51,7 +51,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
   scoped_ptr<InputComponents> info(new InputComponents);
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kInputComponents, &list_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidInputComponents);
+    *error = base::ASCIIToUTF16(errors::kInvalidInputComponents);
     return false;
   }
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
@@ -69,7 +69,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     bool shortcut_shift = false;
 
     if (!list_value->GetDictionary(i, &module_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidInputComponents);
+      *error = base::ASCIIToUTF16(errors::kInvalidInputComponents);
       return false;
     }
 

@@ -41,7 +41,7 @@ bool DefaultLocaleHandler::Parse(Extension* extension, base::string16* error) {
   if (!extension->manifest()->GetString(keys::kDefaultLocale,
                                         &info->default_locale) ||
       !l10n_util::IsValidLocaleSyntax(info->default_locale)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidDefaultLocale);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidDefaultLocale);
     return false;
   }
   extension->SetManifestData(keys::kDefaultLocale, info.release());
@@ -90,7 +90,7 @@ bool DefaultLocaleHandler::Validate(
     if (!base::PathExists(messages_path)) {
       *error = base::StringPrintf(
           "%s %s", errors::kLocalesMessagesFileMissing,
-          UTF16ToUTF8(messages_path.LossyDisplayName()).c_str());
+          base::UTF16ToUTF8(messages_path.LossyDisplayName()).c_str());
       return false;
     }
 

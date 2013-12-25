@@ -41,7 +41,7 @@ bool OmniboxHandler::Parse(Extension* extension, base::string16* error) {
                                             &dict) ||
       !dict->GetString(kKeyword, &info->keyword) ||
       info->keyword.empty()) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidOmniboxKeyword);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidOmniboxKeyword);
     return false;
   }
   extension->SetManifestData(manifest_keys::kOmnibox, info.release());

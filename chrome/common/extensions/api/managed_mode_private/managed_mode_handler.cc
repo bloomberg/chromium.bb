@@ -52,7 +52,7 @@ bool ManagedModeHandler::Parse(Extension* extension, base::string16* error) {
   const base::DictionaryValue* content_pack_value = NULL;
   if (!extension->manifest()->GetDictionary(keys::kContentPack,
                                             &content_pack_value)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidContentPack);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidContentPack);
     return false;
   }
 
@@ -79,7 +79,7 @@ bool ManagedModeHandler::LoadSites(
   base::FilePath::StringType site_list_string;
   if (!content_pack_value->GetString(keys::kContentPackSites,
                                      &site_list_string)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidContentPackSites);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidContentPackSites);
     return false;
   }
 

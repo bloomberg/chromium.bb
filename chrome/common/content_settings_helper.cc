@@ -23,7 +23,7 @@ std::string OriginToString(const GURL& origin) {
 }
 
 base::string16 OriginToString16(const GURL& origin) {
-  return UTF8ToUTF16(OriginToString(origin));
+  return base::UTF8ToUTF16(OriginToString(origin));
 }
 
 }  // namespace content_settings_helper

@@ -574,11 +574,11 @@ void LocalizedError::GetStrings(int error_code,
     std::string ascii_error_string = net::ErrorToString(error_code);
     // Remove the leading "net::" from the returned string.
     base::RemoveChars(ascii_error_string, "net:", &ascii_error_string);
-    error_string = ASCIIToUTF16(ascii_error_string);
+    error_string = base::ASCIIToUTF16(ascii_error_string);
   } else if (error_domain == chrome_common_net::kDnsProbeErrorDomain) {
     std::string ascii_error_string =
         chrome_common_net::DnsProbeStatusToString(error_code);
-    error_string = ASCIIToUTF16(ascii_error_string);
+    error_string = base::ASCIIToUTF16(ascii_error_string);
   } else {
     DCHECK_EQ(LocalizedError::kHttpErrorDomain, error_domain);
     error_string = base::IntToString16(error_code);
@@ -795,7 +795,7 @@ void LocalizedError::GetAppErrorStrings(
   bool rtl = LocaleIsRTL();
   error_strings->SetString("textdirection", rtl ? "rtl" : "ltr");
 
-  base::string16 failed_url(ASCIIToUTF16(display_url.spec()));
+  base::string16 failed_url(base::ASCIIToUTF16(display_url.spec()));
   // URLs are always LTR.
   if (rtl)
     base::i18n::WrapStringWithLTRFormatting(&failed_url);

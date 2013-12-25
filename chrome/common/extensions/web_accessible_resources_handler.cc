@@ -67,7 +67,7 @@ bool WebAccessibleResourcesHandler::Parse(Extension* extension,
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kWebAccessibleResources,
                                       &list_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidWebAccessibleResourcesList);
+    *error = base::ASCIIToUTF16(errors::kInvalidWebAccessibleResourcesList);
     return false;
   }
   for (size_t i = 0; i < list_value->GetSize(); ++i) {

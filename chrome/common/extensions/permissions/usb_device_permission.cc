@@ -48,14 +48,14 @@ PermissionMessages UsbDevicePermission::GetMessages() const {
             PermissionMessage::kUsbDevice,
             l10n_util::GetStringFUTF16(
                 IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE,
-                ASCIIToUTF16(product),
-                ASCIIToUTF16(vendor))));
+                base::ASCIIToUTF16(product),
+                base::ASCIIToUTF16(vendor))));
       } else {
         result.push_back(PermissionMessage(
             PermissionMessage::kUsbDevice,
             l10n_util::GetStringFUTF16(
                 IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_PRODUCT,
-                ASCIIToUTF16(vendor))));
+                base::ASCIIToUTF16(vendor))));
       }
     } else {
       result.push_back(PermissionMessage(

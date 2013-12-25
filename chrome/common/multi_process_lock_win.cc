@@ -30,7 +30,7 @@ class MultiProcessLockWin : public MultiProcessLock {
       return false;
     }
 
-    base::string16 wname = UTF8ToUTF16(name_);
+    base::string16 wname = base::UTF8ToUTF16(name_);
     event_.Set(CreateEvent(NULL, FALSE, FALSE, wname.c_str()));
     if (event_.Get() && GetLastError() != ERROR_ALREADY_EXISTS) {
       return true;

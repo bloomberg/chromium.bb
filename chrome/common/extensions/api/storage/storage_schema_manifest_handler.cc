@@ -66,7 +66,7 @@ bool StorageSchemaManifestHandler::Parse(Extension* extension,
                                          base::string16* error) {
   std::string path;
   if (!extension->manifest()->GetString(kStorageManagedSchema, &path)) {
-    *error = ASCIIToUTF16(
+    *error = base::ASCIIToUTF16(
         base::StringPrintf("%s must be a string", kStorageManagedSchema));
     return false;
   }

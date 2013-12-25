@@ -48,7 +48,7 @@ TEST(ExtensionL10nUtil, ValidateLocalesWithBadLocale) {
       temp.path(), &manifest, &error));
   EXPECT_THAT(error,
               testing::HasSubstr(
-                  UTF16ToUTF8(messages_file.LossyDisplayName())));
+                  base::UTF16ToUTF8(messages_file.LossyDisplayName())));
 }
 
 TEST(ExtensionL10nUtil, GetValidLocalesEmptyLocaleFolder) {

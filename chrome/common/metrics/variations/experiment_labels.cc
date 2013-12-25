@@ -26,14 +26,14 @@ base::string16 CreateSingleExperimentLabel(int count, VariationID id,
                                            const base::Time& current_time) {
   // Build the parts separately so they can be validated.
   const base::string16 key =
-      ASCIIToUTF16(kVariationPrefix) + base::IntToString16(count);
+      base::ASCIIToUTF16(kVariationPrefix) + base::IntToString16(count);
   DCHECK_LE(key.size(), 8U);
   const base::string16 value = base::IntToString16(id);
   DCHECK_LE(value.size(), 8U);
   base::string16 label(key);
-  label += ASCIIToUTF16("=");
+  label += base::ASCIIToUTF16("=");
   label += value;
-  label += ASCIIToUTF16("|");
+  label += base::ASCIIToUTF16("|");
   label += installer::BuildExperimentDateString(current_time);
   return label;
 }
@@ -56,8 +56,10 @@ base::string16 BuildGoogleUpdateExperimentLabel(
     if (id == EMPTY_ID)
       continue;
 
-    if (!experiment_labels.empty())
-      experiment_labels += ASCIIToUTF16(google_update::kExperimentLabelSep);
+    if (!experiment_labels.empty()) {
+      experiment_labels +=
+          base::ASCIIToUTF16(google_update::kExperimentLabelSep);
+    }
     experiment_labels += CreateSingleExperimentLabel(++counter, id,
                                                      current_time);
   }
@@ -67,7 +69,7 @@ base::string16 BuildGoogleUpdateExperimentLabel(
 
 base::string16 ExtractNonVariationLabels(const base::string16& labels) {
   const base::string16 separator =
-      ASCIIToUTF16(google_update::kExperimentLabelSep);
+      base::ASCIIToUTF16(google_update::kExperimentLabelSep);
   base::string16 non_variation_labels;
 
   // First, split everything by the label separator.
@@ -77,8 +79,10 @@ base::string16 ExtractNonVariationLabels(const base::string16& labels) {
   // For each label, keep the ones that do not look like a Variations label.
   for (std::vector<base::string16>::const_iterator it = entries.begin();
        it != entries.end(); ++it) {
-    if (it->empty() || StartsWith(*it, ASCIIToUTF16(kVariationPrefix), false))
+    if (it->empty() ||
+        StartsWith(*it, base::ASCIIToUTF16(kVariationPrefix), false)) {
       continue;
+    }
 
     // Dump the whole thing, including the timestamp.
     if (!non_variation_labels.empty())
@@ -92,7 +96,7 @@ base::string16 ExtractNonVariationLabels(const base::string16& labels) {
 base::string16 CombineExperimentLabels(const base::string16& variation_labels,
                                        const base::string16& other_labels) {
   const base::string16 separator =
-      ASCIIToUTF16(google_update::kExperimentLabelSep);
+      base::ASCIIToUTF16(google_update::kExperimentLabelSep);
   DCHECK(!StartsWith(variation_labels, separator, false));
   DCHECK(!EndsWith(variation_labels, separator, false));
   DCHECK(!StartsWith(other_labels, separator, false));

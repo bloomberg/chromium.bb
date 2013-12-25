@@ -69,7 +69,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       if (iter == icons->end() ||
           !(*iter)->GetAsString(&path) ||
           !manifest_handler_helpers::NormalizeAndValidatePath(&path)) {
-        *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+        *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
         return scoped_ptr<ActionInfo>();
       }
       result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION, path);
@@ -78,7 +78,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
     std::string id;
     if (dict->HasKey(keys::kPageActionId)) {
       if (!dict->GetString(keys::kPageActionId, &id)) {
-        *error = ASCIIToUTF16(errors::kInvalidPageActionId);
+        *error = base::ASCIIToUTF16(errors::kInvalidPageActionId);
         return scoped_ptr<ActionInfo>();
       }
       result->id = id;
@@ -106,7 +106,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
       result->default_icon.Add(extension_misc::EXTENSION_ICON_ACTION,
                                default_icon);
     } else {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+      *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
       return scoped_ptr<ActionInfo>();
     }
   }
@@ -116,12 +116,12 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
   if (dict->HasKey(keys::kPageActionDefaultTitle)) {
     if (!dict->GetString(keys::kPageActionDefaultTitle,
                          &result->default_title)) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
+      *error = base::ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
       return scoped_ptr<ActionInfo>();
     }
   } else if (extension->manifest_version() == 1 && dict->HasKey(keys::kName)) {
     if (!dict->GetString(keys::kName, &result->default_title)) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionName);
+      *error = base::ASCIIToUTF16(errors::kInvalidPageActionName);
       return scoped_ptr<ActionInfo>();
     }
   }
@@ -157,7 +157,7 @@ scoped_ptr<ActionInfo> ActionInfo::Load(const Extension* extension,
         return scoped_ptr<ActionInfo>();
       }
     } else {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionPopup);
+      *error = base::ASCIIToUTF16(errors::kInvalidPageActionPopup);
       return scoped_ptr<ActionInfo>();
     }
 

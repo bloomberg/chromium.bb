@@ -30,7 +30,7 @@ bool PageActionHandler::Parse(Extension* extension, base::string16* error) {
   if (extension->manifest()->HasKey(keys::kPageActions)) {
     const base::ListValue* list_value = NULL;
     if (!extension->manifest()->GetList(keys::kPageActions, &list_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionsList);
+      *error = base::ASCIIToUTF16(errors::kInvalidPageActionsList);
       return false;
     }
 
@@ -41,24 +41,24 @@ bool PageActionHandler::Parse(Extension* extension, base::string16* error) {
       // a page_actions key in the manifest.  Don't set |page_action_value|.
     } else if (list_value_length == 1u) {
       if (!list_value->GetDictionary(0, &page_action_value)) {
-        *error = ASCIIToUTF16(errors::kInvalidPageAction);
+        *error = base::ASCIIToUTF16(errors::kInvalidPageAction);
         return false;
       }
     } else {  // list_value_length > 1u.
-      *error = ASCIIToUTF16(errors::kInvalidPageActionsListSize);
+      *error = base::ASCIIToUTF16(errors::kInvalidPageActionsListSize);
       return false;
     }
   } else if (extension->manifest()->HasKey(keys::kPageAction)) {
     if (!extension->manifest()->GetDictionary(keys::kPageAction,
                                               &page_action_value)) {
-      *error = ASCIIToUTF16(errors::kInvalidPageAction);
+      *error = base::ASCIIToUTF16(errors::kInvalidPageAction);
       return false;
     }
   }
 
   // An extension cannot have both browser and page actions.
   if (extension->manifest()->HasKey(keys::kBrowserAction)) {
-    *error = ASCIIToUTF16(errors::kOneUISurfaceOnly);
+    *error = base::ASCIIToUTF16(errors::kOneUISurfaceOnly);
     return false;
   }
 

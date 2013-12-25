@@ -98,7 +98,7 @@ bool ParseUrlHandler(const std::string& handler_id,
   handler.id = handler_id;
 
   if (!handler_info.GetString(mkeys::kUrlHandlerTitle, &handler.title)) {
-    *error = ASCIIToUTF16(merrors::kInvalidURLHandlerTitle);
+    *error = base::ASCIIToUTF16(merrors::kInvalidURLHandlerTitle);
     return false;
   }
 
@@ -137,7 +137,7 @@ bool UrlHandlersParser::Parse(Extension* extension, base::string16* error) {
   const base::DictionaryValue* all_handlers = NULL;
   if (!extension->manifest()->GetDictionary(
         mkeys::kUrlHandlers, &all_handlers)) {
-    *error = ASCIIToUTF16(merrors::kInvalidURLHandlers);
+    *error = base::ASCIIToUTF16(merrors::kInvalidURLHandlers);
     return false;
   }
 
@@ -148,7 +148,7 @@ bool UrlHandlersParser::Parse(Extension* extension, base::string16* error) {
     // A URL handler entry is a title and a list of URL patterns to handle.
     const base::DictionaryValue* handler = NULL;
     if (!iter.value().GetAsDictionary(&handler)) {
-      *error = ASCIIToUTF16(merrors::kInvalidURLHandlerPatternElement);
+      *error = base::ASCIIToUTF16(merrors::kInvalidURLHandlerPatternElement);
       return false;
     }
 

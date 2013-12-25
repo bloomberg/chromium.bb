@@ -74,7 +74,7 @@ bool LoadFileHandler(const std::string& handler_id,
 
   if (handler_info.HasKey(keys::kFileHandlerTitle) &&
       !handler_info.GetString(keys::kFileHandlerTitle, &handler.title)) {
-    *error = ASCIIToUTF16(errors::kInvalidFileHandlerTitle);
+    *error = base::ASCIIToUTF16(errors::kInvalidFileHandlerTitle);
     return false;
   }
 
@@ -115,7 +115,7 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
   const base::DictionaryValue* all_handlers = NULL;
   if (!extension->manifest()->GetDictionary(keys::kFileHandlers,
                                             &all_handlers)) {
-    *error = ASCIIToUTF16(errors::kInvalidFileHandlers);
+    *error = base::ASCIIToUTF16(errors::kInvalidFileHandlers);
     return false;
   }
 
@@ -129,7 +129,7 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
       if (!LoadFileHandler(iter.key(), *handler, &info->file_handlers, error))
         return false;
     } else {
-      *error = ASCIIToUTF16(errors::kInvalidFileHandlers);
+      *error = base::ASCIIToUTF16(errors::kInvalidFileHandlers);
       return false;
     }
   }
@@ -144,7 +144,7 @@ bool FileHandlersParser::Parse(Extension* extension, base::string16* error) {
   }
 
   if (filterCount > kMaxTypeAndExtensionHandlers) {
-    *error = ASCIIToUTF16(
+    *error = base::ASCIIToUTF16(
         errors::kInvalidFileHandlersTooManyTypesAndExtensions);
     return false;
   }

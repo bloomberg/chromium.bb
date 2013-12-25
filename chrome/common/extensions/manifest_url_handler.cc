@@ -120,7 +120,7 @@ bool DevToolsPageHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<ManifestURL> manifest_url(new ManifestURL);
   std::string devtools_str;
   if (!extension->manifest()->GetString(keys::kDevToolsPage, &devtools_str)) {
-    *error = ASCIIToUTF16(errors::kInvalidDevToolsPage);
+    *error = base::ASCIIToUTF16(errors::kInvalidDevToolsPage);
     return false;
   }
   manifest_url->url_ = extension->GetResourceURL(devtools_str);
@@ -206,7 +206,7 @@ bool OptionsPageHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<ManifestURL> manifest_url(new ManifestURL);
   std::string options_str;
   if (!extension->manifest()->GetString(keys::kOptionsPage, &options_str)) {
-    *error = ASCIIToUTF16(errors::kInvalidOptionsPage);
+    *error = base::ASCIIToUTF16(errors::kInvalidOptionsPage);
     return false;
   }
 
@@ -215,19 +215,20 @@ bool OptionsPageHandler::Parse(Extension* extension, base::string16* error) {
     GURL options_url(options_str);
     if (!options_url.is_valid() ||
         !options_url.SchemeIsHTTPOrHTTPS()) {
-      *error = ASCIIToUTF16(errors::kInvalidOptionsPageInHostedApp);
+      *error = base::ASCIIToUTF16(errors::kInvalidOptionsPageInHostedApp);
       return false;
     }
     manifest_url->url_ = options_url;
   } else {
     GURL absolute(options_str);
     if (absolute.is_valid()) {
-      *error = ASCIIToUTF16(errors::kInvalidOptionsPageExpectUrlInPackage);
+      *error =
+          base::ASCIIToUTF16(errors::kInvalidOptionsPageExpectUrlInPackage);
       return false;
     }
     manifest_url->url_ = extension->GetResourceURL(options_str);
     if (!manifest_url->url_.is_valid()) {
-      *error = ASCIIToUTF16(errors::kInvalidOptionsPage);
+      *error = base::ASCIIToUTF16(errors::kInvalidOptionsPage);
       return false;
     }
   }
@@ -273,7 +274,7 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
   const base::DictionaryValue* overrides = NULL;
   if (!extension->manifest()->GetDictionary(keys::kChromeURLOverrides,
                                             &overrides)) {
-    *error = ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
+    *error = base::ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
     return false;
   }
   scoped_ptr<URLOverrides> url_overrides(new URLOverrides);
@@ -300,7 +301,7 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
 #endif
 
     if (is_override || !iter.value().GetAsString(&val)) {
-      *error = ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
+      *error = base::ASCIIToUTF16(errors::kInvalidChromeURLOverrides);
       return false;
     }
     // Replace the entry with a fully qualified chrome-extension:// URL.
@@ -323,7 +324,7 @@ bool URLOverridesHandler::Parse(Extension* extension, base::string16* error) {
 
   // An extension may override at most one page.
   if (overrides->size() > 1) {
-    *error = ASCIIToUTF16(errors::kMultipleOverrides);
+    *error = base::ASCIIToUTF16(errors::kMultipleOverrides);
     return false;
   }
   extension->SetManifestData(keys::kChromeURLOverrides,

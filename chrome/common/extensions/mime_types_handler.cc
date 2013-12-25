@@ -90,7 +90,7 @@ bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
   const base::ListValue* mime_types_value = NULL;
   if (!extension->manifest()->GetList(keys::kMIMETypes,
                                       &mime_types_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidMimeTypesHandler);
+    *error = base::ASCIIToUTF16(errors::kInvalidMimeTypesHandler);
     return false;
   }
 
@@ -99,7 +99,7 @@ bool MimeTypesHandlerParser::Parse(extensions::Extension* extension,
   for (size_t i = 0; i < mime_types_value->GetSize(); ++i) {
     std::string filter;
     if (!mime_types_value->GetString(i, &filter)) {
-      *error = ASCIIToUTF16(errors::kInvalidMIMETypes);
+      *error = base::ASCIIToUTF16(errors::kInvalidMIMETypes);
       return false;
     }
     info->handler_.AddMIMEType(filter);

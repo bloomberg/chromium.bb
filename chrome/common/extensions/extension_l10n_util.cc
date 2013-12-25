@@ -50,7 +50,7 @@ base::DictionaryValue* LoadMessageFile(const base::FilePath& locale_path,
     } else {
       *error = extensions::ErrorUtils::FormatErrorMessage(
           errors::kLocalesInvalidLocale,
-          UTF16ToUTF8(file.LossyDisplayName()),
+          base::UTF16ToUTF8(file.LossyDisplayName()),
           *error);
     }
   }

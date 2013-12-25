@@ -379,7 +379,7 @@ TEST(URLFixerUpperTest, FixupFile) {
 
   // c:\foo\bar.txt -> file:///c:/foo/bar.txt (basic)
 #if defined(OS_WIN)
-  GURL fixedup(URLFixerUpper::FixupURL(WideToUTF8(original.value()),
+  GURL fixedup(URLFixerUpper::FixupURL(base::WideToUTF8(original.value()),
                                        std::string()));
 #elif defined(OS_POSIX)
   GURL fixedup(URLFixerUpper::FixupURL(original.value(), std::string()));
@@ -389,7 +389,7 @@ TEST(URLFixerUpperTest, FixupFile) {
   // TODO(port): Make some equivalent tests for posix.
 #if defined(OS_WIN)
   // c|/foo\bar.txt -> file:///c:/foo/bar.txt (pipe allowed instead of colon)
-  std::string cur(WideToUTF8(original.value()));
+  std::string cur(base::WideToUTF8(original.value()));
   EXPECT_EQ(':', cur[1]);
   cur[1] = '|';
   EXPECT_EQ(golden, URLFixerUpper::FixupURL(cur, std::string()));

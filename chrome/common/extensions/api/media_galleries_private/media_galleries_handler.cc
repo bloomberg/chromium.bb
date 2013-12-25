@@ -44,7 +44,7 @@ MediaGalleriesHandler* LoadMediaGalleriesHandler(
   // Read the file action |id| (mandatory).
   if (!media_galleries_handler->HasKey(keys::kPageActionId) ||
       !media_galleries_handler->GetString(keys::kPageActionId, &handler_id)) {
-    *error = ASCIIToUTF16(errors::kInvalidPageActionId);
+    *error = base::ASCIIToUTF16(errors::kInvalidPageActionId);
     return NULL;
   }
   result->set_id(handler_id);
@@ -54,7 +54,7 @@ MediaGalleriesHandler* LoadMediaGalleriesHandler(
   if (!media_galleries_handler->HasKey(keys::kPageActionDefaultTitle) ||
       !media_galleries_handler->GetString(keys::kPageActionDefaultTitle,
                                           &title)) {
-    *error = ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
+    *error = base::ASCIIToUTF16(errors::kInvalidPageActionDefaultTitle);
     return NULL;
   }
   result->set_title(title);
@@ -65,7 +65,7 @@ MediaGalleriesHandler* LoadMediaGalleriesHandler(
     if (!media_galleries_handler->GetString(
             keys::kPageActionDefaultIcon, &default_icon) ||
         default_icon.empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidPageActionIconPath);
+      *error = base::ASCIIToUTF16(errors::kInvalidPageActionIconPath);
       return NULL;
     }
     result->set_icon_path(default_icon);
@@ -85,7 +85,7 @@ bool LoadMediaGalleriesHandlers(
        iter != extension_actions->end();
        ++iter) {
     if (!(*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
-      *error = ASCIIToUTF16(errors::kInvalidMediaGalleriesHandler);
+      *error = base::ASCIIToUTF16(errors::kInvalidMediaGalleriesHandler);
       return false;
     }
     scoped_ptr<MediaGalleriesHandler> action(
@@ -128,7 +128,7 @@ bool MediaGalleriesHandlerParser::Parse(extensions::Extension* extension,
   const base::ListValue* media_galleries_handlers_value = NULL;
   if (!extension->manifest()->GetList(keys::kMediaGalleriesHandlers,
                                       &media_galleries_handlers_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidMediaGalleriesHandler);
+    *error = base::ASCIIToUTF16(errors::kInvalidMediaGalleriesHandler);
     return false;
   }
   scoped_ptr<MediaGalleriesHandlerInfo> info(new MediaGalleriesHandlerInfo);

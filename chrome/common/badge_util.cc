@@ -103,7 +103,7 @@ SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
   paint->setTextSize(SkFloatToScalar(font_size));
   paint->setColor(SK_ColorWHITE);
 
-  std::string badge_text = UTF16ToUTF8(text);
+  std::string badge_text = base::UTF16ToUTF8(text);
 
   // See if the text will fit - otherwise use a default.
   SkScalar text_width = paint->measureText(badge_text.c_str(),
@@ -111,7 +111,7 @@ SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
 
   if (SkScalarRound(text_width) > (icon.width() - kMinPadding * 2)) {
     // String is too large - use the alternate text.
-    badge_text = UTF16ToUTF8(fallback);
+    badge_text = base::UTF16ToUTF8(fallback);
     text_width = paint->measureText(badge_text.c_str(), badge_text.size());
   }
 

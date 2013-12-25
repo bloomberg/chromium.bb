@@ -34,8 +34,10 @@ void SetCrashKeyValueTrampoline(const base::StringPiece& key,
         GetProcAddress(exe_module, "SetCrashKeyValueImpl"));
   }
 
-  if (set_crash_key)
-    (set_crash_key)(UTF8ToWide(key).data(), UTF8ToWide(value).data());
+  if (set_crash_key) {
+    (set_crash_key)(base::UTF8ToWide(key).data(),
+                    base::UTF8ToWide(value).data());
+  }
 }
 
 void ClearCrashKeyValueTrampoline(const base::StringPiece& key) {
@@ -49,7 +51,7 @@ void ClearCrashKeyValueTrampoline(const base::StringPiece& key) {
   }
 
   if (clear_crash_key)
-    (clear_crash_key)(UTF8ToWide(key).data());
+    (clear_crash_key)(base::UTF8ToWide(key).data());
 }
 
 }  // namespace

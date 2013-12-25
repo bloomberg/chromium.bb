@@ -69,7 +69,7 @@ const std::vector<std::string> PluginsHandler::Keys() const {
 bool PluginsHandler::Parse(Extension* extension, base::string16* error) {
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kPlugins, &list_value)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidPlugins);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidPlugins);
     return false;
   }
 
@@ -78,7 +78,7 @@ bool PluginsHandler::Parse(Extension* extension, base::string16* error) {
   for (size_t i = 0; i < list_value->GetSize(); ++i) {
     const base::DictionaryValue* plugin_value = NULL;
     if (!list_value->GetDictionary(i, &plugin_value)) {
-      *error = ASCIIToUTF16(manifest_errors::kInvalidPlugins);
+      *error = base::ASCIIToUTF16(manifest_errors::kInvalidPlugins);
       return false;
     }
     // Get plugins[i].path.

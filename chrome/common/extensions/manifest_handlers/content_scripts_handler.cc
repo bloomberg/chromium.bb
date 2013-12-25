@@ -384,7 +384,7 @@ bool ContentScriptsHandler::Parse(Extension* extension, base::string16* error) {
   scoped_ptr<ContentScriptsInfo> content_scripts_info(new ContentScriptsInfo);
   const base::ListValue* scripts_list = NULL;
   if (!extension->manifest()->GetList(keys::kContentScripts, &scripts_list)) {
-    *error = ASCIIToUTF16(errors::kInvalidContentScriptsList);
+    *error = base::ASCIIToUTF16(errors::kInvalidContentScriptsList);
     return false;
   }
 

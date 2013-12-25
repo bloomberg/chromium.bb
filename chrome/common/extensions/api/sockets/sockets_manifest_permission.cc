@@ -324,7 +324,7 @@ void SocketsManifestPermission::AddSubdomainHostMessage(
   for (SocketPermissionEntrySet::const_iterator it = permissions_.begin();
       it != permissions_.end(); ++it) {
     if (it->GetHostType() == SocketPermissionEntry::HOSTS_IN_DOMAINS)
-      domains.insert(UTF8ToUTF16(it->pattern().host));
+      domains.insert(base::UTF8ToUTF16(it->pattern().host));
   }
   if (!domains.empty()) {
     int id = (domains.size() == 1) ?
@@ -346,7 +346,7 @@ void SocketsManifestPermission::AddSpecificHostMessage(
   for (SocketPermissionEntrySet::const_iterator it = permissions_.begin();
     it != permissions_.end(); ++it) {
     if (it->GetHostType() == SocketPermissionEntry::SPECIFIC_HOSTS)
-      hostnames.insert(UTF8ToUTF16(it->pattern().host));
+      hostnames.insert(base::UTF8ToUTF16(it->pattern().host));
   }
   if (!hostnames.empty()) {
     int id = (hostnames.size() == 1) ?

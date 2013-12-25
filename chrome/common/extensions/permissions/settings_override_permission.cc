@@ -46,7 +46,8 @@ PermissionMessages SettingsOverrideAPIPermission::GetMessages() const {
   PermissionMessages result;
   result.push_back(PermissionMessage(
       info()->message_id(),
-      l10n_util::GetStringFUTF16(string_id, UTF8ToUTF16(setting_value_))));
+      l10n_util::GetStringFUTF16(string_id,
+                                 base::UTF8ToUTF16(setting_value_))));
   return result;
 }
 

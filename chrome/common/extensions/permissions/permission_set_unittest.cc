@@ -36,7 +36,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 size_t IndexOf(const std::vector<base::string16>& warnings,
                const std::string& warning) {
   for (size_t i = 0; i < warnings.size(); ++i) {
-    if (warnings[i] == ASCIIToUTF16(warning))
+    if (warnings[i] == base::ASCIIToUTF16(warning))
       return i;
   }
 
@@ -877,7 +877,7 @@ TEST(PermissionsTest, GetWarningMessages_ManyHosts) {
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Access your data on encrypted.google.com and www.google.com",
-            UTF16ToUTF8(warnings[0]));
+            base::UTF16ToUTF8(warnings[0]));
 }
 
 TEST(PermissionsTest, GetWarningMessages_Plugins) {
@@ -894,7 +894,7 @@ TEST(PermissionsTest, GetWarningMessages_Plugins) {
 #else
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Access all data on your computer and the websites you visit",
-            UTF16ToUTF8(warnings[0]));
+            base::UTF16ToUTF8(warnings[0]));
 #endif
 }
 
@@ -1007,11 +1007,11 @@ TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
   EXPECT_EQ(2u, warnings.size());
   if (warnings.size() > 0)
     EXPECT_EQ(warnings[0],
-              UTF8ToUTF16("Exchange data with any computer in the domain "
+              base::UTF8ToUTF16("Exchange data with any computer in the domain "
                           "example.org"));
   if (warnings.size() > 1)
     EXPECT_EQ(warnings[1],
-              UTF8ToUTF16("Exchange data with the computers named: "
+              base::UTF8ToUTF16("Exchange data with the computers named: "
                           "b\xC3\xA5r.example.com foo.example.com"));
                           // "\xC3\xA5" = UTF-8 for lowercase A with ring above
 }
@@ -1032,12 +1032,12 @@ TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
   EXPECT_EQ(2u, warnings.size());
   if (warnings.size() > 0)
     EXPECT_EQ(warnings[0],
-              UTF8ToUTF16("Exchange data with any computer in the domains: "
-                           "example.com foo.example.org"));
+              base::UTF8ToUTF16("Exchange data with any computer in the "
+                                "domains: example.com foo.example.org"));
   if (warnings.size() > 1)
     EXPECT_EQ(warnings[1],
-              UTF8ToUTF16("Exchange data with the computer named "
-                           "bar.example.org"));
+              base::UTF8ToUTF16("Exchange data with the computer named "
+                                "bar.example.org"));
 }
 
 TEST(PermissionsTest, GetWarningMessages_PlatformApppHosts) {

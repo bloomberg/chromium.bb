@@ -71,7 +71,7 @@ TEST_F(SettingsOverridePermissionTest, HomePage) {
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Change your home page to: google.com/",
-            UTF16ToUTF8(warnings[0]));
+            base::UTF16ToUTF8(warnings[0]));
 
   EXPECT_FALSE(permission_set->HasAPIPermission(APIPermission::kStartupPages));
   EXPECT_FALSE(permission_set->HasAPIPermission(
@@ -88,7 +88,7 @@ TEST_F(SettingsOverridePermissionTest, SartupPages) {
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Change your start page to: startup.com/startup.html",
-            UTF16ToUTF8(warnings[0]));
+            base::UTF16ToUTF8(warnings[0]));
 
   EXPECT_FALSE(permission_set->HasAPIPermission(APIPermission::kHomepage));
   EXPECT_FALSE(permission_set->HasAPIPermission(
@@ -105,7 +105,7 @@ TEST_F(SettingsOverridePermissionTest, SearchSettings) {
       PermissionsData::GetPermissionMessageStrings(extension.get());
   ASSERT_EQ(1u, warnings.size());
   EXPECT_EQ("Change your search settings to: google.com",
-            UTF16ToUTF8(warnings[0]));
+            base::UTF16ToUTF8(warnings[0]));
 
   EXPECT_FALSE(permission_set->HasAPIPermission(APIPermission::kHomepage));
   EXPECT_FALSE(permission_set->HasAPIPermission(APIPermission::kStartupPages));

@@ -49,7 +49,7 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
   scoped_ptr<OAuth2Info> info(new OAuth2Info);
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(keys::kOAuth2, &dict)) {
-    *error = ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
+    *error = base::ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
     return false;
   }
 
@@ -59,7 +59,7 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
   // duplicate checking.
   if (extension->manifest()->HasPath(keys::kOAuth2AutoApprove) &&
       !dict->GetBoolean(kAutoApprove, &info->auto_approve)) {
-    *error = ASCIIToUTF16(errors::kInvalidOAuth2AutoApprove);
+    *error = base::ASCIIToUTF16(errors::kInvalidOAuth2AutoApprove);
     return false;
   }
 
@@ -68,20 +68,20 @@ bool OAuth2ManifestHandler::Parse(Extension* extension,
   if ((!dict->GetString(kClientId, &info->client_id) ||
        info->client_id.empty()) &&
       (extension->location() != Manifest::COMPONENT || !info->auto_approve)) {
-    *error = ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
+    *error = base::ASCIIToUTF16(errors::kInvalidOAuth2ClientId);
     return false;
   }
 
   const base::ListValue* list = NULL;
   if (!dict->GetList(kScopes, &list)) {
-    *error = ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
+    *error = base::ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
     return false;
   }
 
   for (size_t i = 0; i < list->GetSize(); ++i) {
     std::string scope;
     if (!list->GetString(i, &scope)) {
-      *error = ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
+      *error = base::ASCIIToUTF16(errors::kInvalidOAuth2Scopes);
       return false;
     }
     info->scopes.push_back(scope);

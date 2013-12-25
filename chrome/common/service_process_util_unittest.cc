@@ -126,7 +126,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
   std::string value_name = GetServiceProcessScopedName("_service_run");
   base::string16 value;
   EXPECT_TRUE(base::win::ReadCommandFromAutoRun(HKEY_CURRENT_USER,
-                                                UTF8ToWide(value_name),
+                                                base::UTF8ToWide(value_name),
                                                 &value));
   autorun_command_line.reset(new CommandLine(CommandLine::FromString(value)));
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -156,7 +156,7 @@ TEST_F(ServiceProcessStateTest, AutoRun) {
   ASSERT_TRUE(state.RemoveFromAutoRun());
 #if defined(OS_WIN)
   EXPECT_FALSE(base::win::ReadCommandFromAutoRun(HKEY_CURRENT_USER,
-                                                 UTF8ToWide(value_name),
+                                                 base::UTF8ToWide(value_name),
                                                  &value));
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
   EXPECT_FALSE(AutoStart::GetAutostartFileValue(

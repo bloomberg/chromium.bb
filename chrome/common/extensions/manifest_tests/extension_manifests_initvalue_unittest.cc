@@ -153,16 +153,16 @@ TEST_F(InitValueManifestTest, InitFromValueValidNameInRTL) {
   scoped_refptr<Extension> extension(LoadAndExpectSuccess(
       "init_valid_name_no_rtl.json"));
 
-  base::string16 localized_name(ASCIIToUTF16("Dictionary (by Google)"));
+  base::string16 localized_name(base::ASCIIToUTF16("Dictionary (by Google)"));
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
-  EXPECT_EQ(localized_name, UTF8ToUTF16(extension->name()));
+  EXPECT_EQ(localized_name, base::UTF8ToUTF16(extension->name()));
 
   // Strong RTL characters in name.
   extension = LoadAndExpectSuccess("init_valid_name_strong_rtl.json");
 
-  localized_name = WideToUTF16(L"Dictionary (\x05D1\x05D2" L" Google)");
+  localized_name = base::WideToUTF16(L"Dictionary (\x05D1\x05D2" L" Google)");
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
-  EXPECT_EQ(localized_name, UTF8ToUTF16(extension->name()));
+  EXPECT_EQ(localized_name, base::UTF8ToUTF16(extension->name()));
 
   // Reset locale.
 #if defined(TOOLKIT_GTK)

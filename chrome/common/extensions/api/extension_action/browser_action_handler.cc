@@ -28,7 +28,7 @@ bool BrowserActionHandler::Parse(Extension* extension,
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(
           manifest_keys::kBrowserAction, &dict)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidBrowserAction);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidBrowserAction);
     return false;
   }
 

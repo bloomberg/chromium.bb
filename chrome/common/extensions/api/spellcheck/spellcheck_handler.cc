@@ -28,7 +28,7 @@ bool SpellcheckHandler::Parse(Extension* extension, base::string16* error) {
   const base::DictionaryValue* spellcheck_value = NULL;
   if (!extension->manifest()->GetDictionary(keys::kSpellcheck,
                                             &spellcheck_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidSpellcheck);
+    *error = base::ASCIIToUTF16(errors::kInvalidSpellcheck);
     return false;
   }
   scoped_ptr<SpellcheckDictionaryInfo> spellcheck_info(
@@ -36,25 +36,25 @@ bool SpellcheckHandler::Parse(Extension* extension, base::string16* error) {
   if (!spellcheck_value->HasKey(keys::kSpellcheckDictionaryLanguage) ||
       !spellcheck_value->GetString(keys::kSpellcheckDictionaryLanguage,
                                   &spellcheck_info->language)) {
-    *error = ASCIIToUTF16(errors::kInvalidSpellcheckDictionaryLanguage);
+    *error = base::ASCIIToUTF16(errors::kInvalidSpellcheckDictionaryLanguage);
     return false;
   }
   if (!spellcheck_value->HasKey(keys::kSpellcheckDictionaryLocale) ||
       !spellcheck_value->GetString(keys::kSpellcheckDictionaryLocale,
                                   &spellcheck_info->locale)) {
-    *error = ASCIIToUTF16(errors::kInvalidSpellcheckDictionaryLocale);
+    *error = base::ASCIIToUTF16(errors::kInvalidSpellcheckDictionaryLocale);
     return false;
   }
   if (!spellcheck_value->HasKey(keys::kSpellcheckDictionaryFormat) ||
       !spellcheck_value->GetString(keys::kSpellcheckDictionaryFormat,
                                   &spellcheck_info->format)) {
-    *error = ASCIIToUTF16(errors::kInvalidSpellcheckDictionaryFormat);
+    *error = base::ASCIIToUTF16(errors::kInvalidSpellcheckDictionaryFormat);
     return false;
   }
   if (!spellcheck_value->HasKey(keys::kSpellcheckDictionaryPath) ||
       !spellcheck_value->GetString(keys::kSpellcheckDictionaryPath,
                                   &spellcheck_info->path)) {
-    *error = ASCIIToUTF16(errors::kInvalidSpellcheckDictionaryPath);
+    *error = base::ASCIIToUTF16(errors::kInvalidSpellcheckDictionaryPath);
     return false;
   }
   extension->SetManifestData(keys::kSpellcheck, spellcheck_info.release());

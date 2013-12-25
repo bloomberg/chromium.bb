@@ -33,7 +33,7 @@ base::FilePath GetProfilePath(const base::DictionaryValue& root,
 
 #if defined(OS_WIN)
   ReplaceSubstringsAfterOffset(
-      &path16, 0, ASCIIToUTF16("/"), ASCIIToUTF16("\\"));
+      &path16, 0, base::ASCIIToUTF16("/"), base::ASCIIToUTF16("\\"));
 #endif
   base::FilePath path = base::FilePath::FromUTF16Unsafe(path16);
 
