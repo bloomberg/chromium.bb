@@ -36,8 +36,8 @@
 
 namespace WebCore {
 
-SVGAnimatedNewPropertyAnimator::SVGAnimatedNewPropertyAnimator(SVGAnimationElement* animationElement, SVGElement* contextElement)
-    : SVGAnimatedTypeAnimator(AnimatedNewProperty, animationElement, contextElement)
+SVGAnimatedNewPropertyAnimator::SVGAnimatedNewPropertyAnimator(AnimatedPropertyType type, SVGAnimationElement* animationElement, SVGElement* contextElement)
+    : SVGAnimatedTypeAnimator(type, animationElement, contextElement)
 {
     ASSERT(m_animationElement);
     ASSERT(m_contextElement);
@@ -45,6 +45,7 @@ SVGAnimatedNewPropertyAnimator::SVGAnimatedNewPropertyAnimator(SVGAnimationEleme
     const QualifiedName& attributeName = m_animationElement->attributeName();
     m_animatedProperty = m_contextElement->propertyFromAttribute(attributeName);
     ASSERT(m_animatedProperty);
+    ASSERT(m_animatedProperty->type() == m_type);
 }
 
 SVGAnimatedNewPropertyAnimator::~SVGAnimatedNewPropertyAnimator()

@@ -40,7 +40,7 @@ class NewSVGAnimatedPropertyBase;
 // Bridges new SVGProperty impl. to existing SVG animation impl.
 class SVGAnimatedNewPropertyAnimator : public SVGAnimatedTypeAnimator {
 public:
-    SVGAnimatedNewPropertyAnimator(SVGAnimationElement*, SVGElement*);
+    SVGAnimatedNewPropertyAnimator(AnimatedPropertyType, SVGAnimationElement*, SVGElement*);
     virtual ~SVGAnimatedNewPropertyAnimator();
 
     PassRefPtr<NewSVGPropertyBase> createPropertyForAnimation(const String&);

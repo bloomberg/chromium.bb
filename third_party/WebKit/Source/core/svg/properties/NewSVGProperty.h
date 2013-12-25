@@ -31,6 +31,7 @@
 #ifndef NewSVGProperty_h
 #define NewSVGProperty_h
 
+#include "core/svg/properties/SVGPropertyInfo.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -59,8 +60,19 @@ public:
     virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<NewSVGPropertyBase> from, PassRefPtr<NewSVGPropertyBase> to, PassRefPtr<NewSVGPropertyBase> toAtEndOfDurationValue, SVGElement*) = 0;
     virtual float calculateDistance(PassRefPtr<NewSVGPropertyBase> to, SVGElement*) = 0;
 
+    AnimatedPropertyType type()
+    {
+        return m_type;
+    }
+
 protected:
-    NewSVGPropertyBase() { }
+    NewSVGPropertyBase(AnimatedPropertyType type)
+        : m_type(type)
+    {
+    }
+
+private:
+    const AnimatedPropertyType m_type;
 };
 
 }

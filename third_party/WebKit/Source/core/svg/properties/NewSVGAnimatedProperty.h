@@ -35,6 +35,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/NewSVGPropertyTearOff.h"
+#include "core/svg/properties/SVGPropertyInfo.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -57,6 +58,11 @@ public:
 
     void synchronizeAttribute();
 
+    AnimatedPropertyType type() const
+    {
+        return m_type;
+    }
+
     SVGElement* contextElement()
     {
         return m_contextElement;
@@ -68,13 +74,16 @@ public:
     }
 
 protected:
-    NewSVGAnimatedPropertyBase(SVGElement* contextElement, const QualifiedName& attributeName)
-        : m_contextElement(contextElement)
+    NewSVGAnimatedPropertyBase(AnimatedPropertyType type, SVGElement* contextElement, const QualifiedName& attributeName)
+        : m_type(type)
+        , m_contextElement(contextElement)
         , m_attributeName(attributeName)
     {
     }
 
 private:
+    const AnimatedPropertyType m_type;
+
     // This reference is kept alive from V8 wrapper
     SVGElement* m_contextElement;
 
@@ -199,7 +208,7 @@ public:
 
 protected:
     NewSVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
-        : NewSVGAnimatedPropertyBase(contextElement, attributeName)
+        : NewSVGAnimatedPropertyBase(Property::classType(), contextElement, attributeName)
         , m_baseValue(initialValue)
     {
     }

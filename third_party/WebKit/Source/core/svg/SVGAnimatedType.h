@@ -168,7 +168,6 @@ public:
 
     RefPtr<NewSVGPropertyBase>& newProperty()
     {
-        ASSERT(m_type == AnimatedNewProperty);
         ASSERT(m_newProperty);
         return m_newProperty;
     }

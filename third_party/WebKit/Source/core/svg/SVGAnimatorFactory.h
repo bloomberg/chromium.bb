@@ -85,8 +85,6 @@ public:
             return adoptPtr(new SVGAnimatedStringAnimator(animationElement, contextElement));
         case AnimatedTransformList:
             return adoptPtr(new SVGAnimatedTransformListAnimator(animationElement, contextElement));
-        case AnimatedNewProperty:
-            return adoptPtr(new SVGAnimatedNewPropertyAnimator(animationElement, contextElement));
         case AnimatedUnknown:
             break;
         }
