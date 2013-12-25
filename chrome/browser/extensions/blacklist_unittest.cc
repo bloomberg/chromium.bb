@@ -77,6 +77,9 @@ class BlacklistTest : public testing::Test {
 
 class BlacklistStateFetcherMock : public BlacklistStateFetcher {
  public:
+  BlacklistStateFetcherMock() : request_count_(0) {
+  }
+
   virtual void Request(const std::string& id,
                        const RequestCallback& callback) OVERRIDE {
     request_count_++;
