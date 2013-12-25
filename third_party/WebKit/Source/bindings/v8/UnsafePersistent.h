@@ -67,16 +67,15 @@ public:
     template<typename V8T, typename U>
     inline bool setReturnValueWithSecurityCheck(v8::ReturnValue<v8::Value> returnValue, U* object)
     {
-        v8::Handle<v8::Object> result = deprecatedHandle();
         // Security: always guard against malicious tampering.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
-        returnValue.Set(result);
-        return !result.IsEmpty();
+        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(isEmpty() || value()->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
+        returnValue.Set(*persistent());
+        return !isEmpty();
     }
 
     inline bool setReturnValue(v8::ReturnValue<v8::Value> returnValue)
     {
-        returnValue.Set(deprecatedHandle());
+        returnValue.Set(*persistent());
         return !isEmpty();
     }
 
@@ -115,12 +114,6 @@ public:
     }
 
 private:
-    v8::Handle<T> deprecatedHandle()
-    {
-        v8::Handle<T>* handle = reinterpret_cast<v8::Handle<T>*>(&m_value);
-        return *handle;
-    }
-
     T* m_value;
 };
 
