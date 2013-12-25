@@ -14,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/sqlite3.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 void CreateV1Table(sql::Connection* db) {

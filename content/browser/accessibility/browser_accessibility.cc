@@ -481,7 +481,7 @@ base::string16 BrowserAccessibility::GetString16Attribute(
   std::string value_utf8;
   if (!GetStringAttribute(attribute, &value_utf8))
     return base::string16();
-  return UTF8ToUTF16(value_utf8);
+  return base::UTF8ToUTF16(value_utf8);
 }
 
 bool BrowserAccessibility::GetString16Attribute(
@@ -490,7 +490,7 @@ bool BrowserAccessibility::GetString16Attribute(
   std::string value_utf8;
   if (!GetStringAttribute(attribute, &value_utf8))
     return false;
-  *value = UTF8ToUTF16(value_utf8);
+  *value = base::UTF8ToUTF16(value_utf8);
   return true;
 }
 
@@ -558,7 +558,7 @@ bool BrowserAccessibility::GetHtmlAttribute(
   std::string value_utf8;
   if (!GetHtmlAttribute(html_attr, &value_utf8))
     return false;
-  *value = UTF8ToUTF16(value_utf8);
+  *value = base::UTF8ToUTF16(value_utf8);
   return true;
 }
 

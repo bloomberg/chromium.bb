@@ -1299,7 +1299,7 @@ NSDictionary* attributeToMethodNameMap = nil;
       base::string16 parentRole;
       browserAccessibility_->parent()->GetHtmlAttribute(
           "role", &parentRole);
-      const base::string16 treegridRole(ASCIIToUTF16("treegrid"));
+      const base::string16 treegridRole(base::ASCIIToUTF16("treegrid"));
       if (parentRole == treegridRole) {
         [ret addObjectsFromArray:[NSArray arrayWithObjects:
             NSAccessibilityDisclosingAttribute,

@@ -165,7 +165,7 @@ DownloadItemImpl::DownloadItemImpl(
               TARGET_DISPOSITION_PROMPT : TARGET_DISPOSITION_OVERWRITE),
       url_chain_(info.url_chain),
       referrer_url_(info.referrer_url),
-      suggested_filename_(UTF16ToUTF8(info.save_info->suggested_name)),
+      suggested_filename_(base::UTF16ToUTF8(info.save_info->suggested_name)),
       forced_file_path_(info.save_info->file_path),
       transition_type_(info.transition_type),
       has_user_gesture_(info.has_user_gesture),

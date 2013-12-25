@@ -511,7 +511,7 @@ void WorkerProcessHost::UpdateTitle() {
     display_title += *i;
   }
 
-  process_->SetName(UTF8ToUTF16(display_title));
+  process_->SetName(base::UTF8ToUTF16(display_title));
 }
 
 void WorkerProcessHost::DocumentDetached(WorkerMessageFilter* filter,

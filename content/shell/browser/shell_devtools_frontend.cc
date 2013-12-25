@@ -103,7 +103,7 @@ void ShellDevToolsFrontend::RenderViewCreated(
 void ShellDevToolsFrontend::DocumentOnLoadCompletedInMainFrame(int32 page_id) {
   web_contents()->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       base::string16(),
-      ASCIIToUTF16("InspectorFrontendAPI.setUseSoftMenu(true);"));
+      base::ASCIIToUTF16("InspectorFrontendAPI.setUseSoftMenu(true);"));
 }
 
 void ShellDevToolsFrontend::WebContentsDestroyed(WebContents* web_contents) {

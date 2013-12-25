@@ -39,7 +39,7 @@ HANDLE CreatePowerRequest(POWER_REQUEST_TYPE type, const std::string& reason) {
     if (!PowerCreateRequestFn || !PowerSetRequestFn)
       return INVALID_HANDLE_VALUE;
   }
-  base::string16 wide_reason = ASCIIToUTF16(reason);
+  base::string16 wide_reason = base::ASCIIToUTF16(reason);
   REASON_CONTEXT context = {0};
   context.Version = POWER_REQUEST_CONTEXT_VERSION;
   context.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;

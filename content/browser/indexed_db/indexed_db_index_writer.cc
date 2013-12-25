@@ -13,6 +13,8 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 IndexWriter::IndexWriter(

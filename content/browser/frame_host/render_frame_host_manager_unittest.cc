@@ -260,7 +260,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
       contents()->GetRenderManagerForTesting()->current_host());
 
   // Send an update title message and make sure it works.
-  const base::string16 ntp_title = ASCIIToUTF16("NTP Title");
+  const base::string16 ntp_title = base::ASCIIToUTF16("NTP Title");
   blink::WebTextDirection direction = blink::WebTextDirectionLeftToRight;
   EXPECT_TRUE(ntp_rvh->OnMessageReceived(
       ViewHostMsg_UpdateTitle(rvh()->GetRoutingID(), 0, ntp_title, direction)));
@@ -288,7 +288,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   dest_rvh->SendNavigate(101, kDestUrl);
 
   // The new RVH should be able to update its title.
-  const base::string16 dest_title = ASCIIToUTF16("Google");
+  const base::string16 dest_title = base::ASCIIToUTF16("Google");
   EXPECT_TRUE(dest_rvh->OnMessageReceived(
       ViewHostMsg_UpdateTitle(rvh()->GetRoutingID(), 101, dest_title,
                               direction)));
@@ -308,7 +308,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   MockRenderProcessHost* ntp_process_host =
       static_cast<MockRenderProcessHost*>(ntp_rvh->GetProcess());
   ntp_process_host->sink().ClearMessages();
-  const base::string16 msg = ASCIIToUTF16("Message");
+  const base::string16 msg = base::ASCIIToUTF16("Message");
   bool result = false;
   base::string16 unused;
   ViewHostMsg_RunBeforeUnloadConfirm before_unload_msg(

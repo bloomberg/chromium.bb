@@ -1125,7 +1125,7 @@ TEST_F(NavigationControllerTest, Reload) {
   EXPECT_EQ(1U, navigation_entry_committed_counter_);
   navigation_entry_committed_counter_ = 0;
   ASSERT_TRUE(controller.GetVisibleEntry());
-  controller.GetVisibleEntry()->SetTitle(ASCIIToUTF16("Title"));
+  controller.GetVisibleEntry()->SetTitle(base::ASCIIToUTF16("Title"));
   controller.Reload(true);
   EXPECT_EQ(0U, notifications.size());
 
@@ -1249,7 +1249,7 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
   EXPECT_EQ(final_url, controller.GetVisibleEntry()->GetURL());
 
   // Reload using the original URL.
-  controller.GetVisibleEntry()->SetTitle(ASCIIToUTF16("Title"));
+  controller.GetVisibleEntry()->SetTitle(base::ASCIIToUTF16("Title"));
   controller.ReloadOriginalRequestURL(false);
   EXPECT_EQ(0U, notifications.size());
 
@@ -2292,7 +2292,7 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
       url, Referrer(), PAGE_TRANSITION_RELOAD, false, std::string(),
       browser_context());
   entry->SetPageID(0);
-  entry->SetTitle(ASCIIToUTF16("Title"));
+  entry->SetTitle(base::ASCIIToUTF16("Title"));
   entry->SetPageState(PageState::CreateFromEncodedData("state"));
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
@@ -2371,7 +2371,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
       url, Referrer(), PAGE_TRANSITION_RELOAD, false, std::string(),
       browser_context());
   entry->SetPageID(0);
-  entry->SetTitle(ASCIIToUTF16("Title"));
+  entry->SetTitle(base::ASCIIToUTF16("Title"));
   entry->SetPageState(PageState::CreateFromEncodedData("state"));
   entries.push_back(entry);
   scoped_ptr<WebContentsImpl> our_contents(static_cast<WebContentsImpl*>(
@@ -2965,7 +2965,7 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
-  const base::string16 title(ASCIIToUTF16("Title"));
+  const base::string16 title(base::ASCIIToUTF16("Title"));
 
   NavigateAndCommit(url1);
   controller.GetVisibleEntry()->SetTitle(title);
@@ -2990,7 +2990,7 @@ TEST_F(NavigationControllerTest, CloneAndReload) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
-  const base::string16 title(ASCIIToUTF16("Title"));
+  const base::string16 title(base::ASCIIToUTF16("Title"));
 
   NavigateAndCommit(url1);
   controller.GetVisibleEntry()->SetTitle(title);

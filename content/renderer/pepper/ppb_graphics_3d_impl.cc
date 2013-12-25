@@ -287,7 +287,7 @@ void PPB_Graphics3D_Impl::OnConsoleMessage(const std::string& message,
   if (!frame)
     return;
   WebConsoleMessage console_message = WebConsoleMessage(
-      WebConsoleMessage::LevelError, WebString(UTF8ToUTF16(message)));
+      WebConsoleMessage::LevelError, WebString(base::UTF8ToUTF16(message)));
   frame->addMessageToConsole(console_message);
 }
 

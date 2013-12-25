@@ -234,14 +234,14 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     video_tracks[0].initialize(video_source.id(), video_source);
 
     blink::WebMediaStream local_stream;
-    local_stream.initialize(UTF8ToUTF16(stream_label), audio_tracks,
+    local_stream.initialize(base::UTF8ToUTF16(stream_label), audio_tracks,
                             video_tracks);
 
     scoped_refptr<webrtc::MediaStreamInterface> native_stream(
         mock_dependency_factory_->CreateLocalMediaStream(stream_label));
 
     local_stream.audioTracks(audio_tracks);
-    const std::string audio_track_id = UTF16ToUTF8(audio_tracks[0].id());
+    const std::string audio_track_id = base::UTF16ToUTF8(audio_tracks[0].id());
     scoped_refptr<WebRtcAudioCapturer> capturer;
     RTCMediaConstraints audio_constraints(audio_source.constraints());
     scoped_refptr<webrtc::AudioTrackInterface> audio_track(
@@ -253,7 +253,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     native_stream->AddTrack(audio_track.get());
 
     local_stream.videoTracks(video_tracks);
-    const std::string video_track_id = UTF16ToUTF8(video_tracks[0].id());
+    const std::string video_track_id = base::UTF16ToUTF8(video_tracks[0].id());
     webrtc::VideoSourceInterface* source = NULL;
     scoped_refptr<webrtc::VideoTrackInterface> video_track(
         mock_dependency_factory_->CreateLocalVideoTrack(
@@ -653,20 +653,20 @@ TEST_F(RTCPeerConnectionHandlerTest, OnAddAndOnRemoveStream) {
   EXPECT_CALL(*mock_tracker_.get(), TrackAddStream(
       pc_handler_.get(),
       testing::Property(&blink::WebMediaStream::id,
-                        UTF8ToUTF16(remote_stream_label)),
+                        base::UTF8ToUTF16(remote_stream_label)),
       PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
       testing::Property(&blink::WebMediaStream::id,
-                        UTF8ToUTF16(remote_stream_label))));
+                        base::UTF8ToUTF16(remote_stream_label))));
 
   EXPECT_CALL(*mock_tracker_.get(), TrackRemoveStream(
       pc_handler_.get(),
       testing::Property(&blink::WebMediaStream::id,
-                        UTF8ToUTF16(remote_stream_label)),
+                        base::UTF8ToUTF16(remote_stream_label)),
       PeerConnectionTracker::SOURCE_REMOTE));
   EXPECT_CALL(*mock_client_.get(), didRemoveRemoteStream(
       testing::Property(&blink::WebMediaStream::id,
-                        UTF8ToUTF16(remote_stream_label))));
+                        base::UTF8ToUTF16(remote_stream_label))));
 
   pc_handler_->OnAddStream(remote_stream.get());
   pc_handler_->OnRemoveStream(remote_stream.get());
@@ -681,7 +681,7 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoteTrackState) {
   testing::InSequence sequence;
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
       testing::Property(&blink::WebMediaStream::id,
-                        UTF8ToUTF16(remote_stream_label))));
+                        base::UTF8ToUTF16(remote_stream_label))));
   pc_handler_->OnAddStream(remote_stream.get());
   const blink::WebMediaStream& webkit_stream = mock_client_->remote_stream();
 
@@ -713,7 +713,7 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddAudioTrackFromRemoteStream) {
 
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
       testing::Property(&blink::WebMediaStream::id,
-                        UTF8ToUTF16(remote_stream_label))));
+                        base::UTF8ToUTF16(remote_stream_label))));
   pc_handler_->OnAddStream(remote_stream.get());
   const blink::WebMediaStream& webkit_stream = mock_client_->remote_stream();
 
@@ -743,7 +743,7 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddVideoTrackFromRemoteStream) {
 
   EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(
       testing::Property(&blink::WebMediaStream::id,
-                        UTF8ToUTF16(remote_stream_label))));
+                        base::UTF8ToUTF16(remote_stream_label))));
   pc_handler_->OnAddStream(remote_stream.get());
   const blink::WebMediaStream& webkit_stream = mock_client_->remote_stream();
 

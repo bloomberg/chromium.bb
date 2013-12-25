@@ -28,10 +28,10 @@ TEST(RenderViewImplTest, ShouldUpdateSelectionTextFromContextMenuParams) {
 
   ContextMenuParams params;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
-    params.selection_text = UTF8ToUTF16(cases[i].params_selection_text);
+    params.selection_text = base::UTF8ToUTF16(cases[i].params_selection_text);
     EXPECT_EQ(cases[i].expected_result,
               RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
-                  UTF8ToUTF16(cases[i].selection_text),
+                  base::UTF8ToUTF16(cases[i].selection_text),
                   cases[i].selection_text_offset,
                   cases[i].selection_range,
                   params));

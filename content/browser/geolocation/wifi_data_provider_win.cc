@@ -520,9 +520,9 @@ bool GetNetworkData(const WLAN_BSS_ENTRY& bss_entry,
   access_point_data->mac_address = MacAddressAsString16(bss_entry.dot11Bssid);
   access_point_data->radio_signal_strength = bss_entry.lRssi;
   // bss_entry.dot11Ssid.ucSSID is not null-terminated.
-  UTF8ToUTF16(reinterpret_cast<const char*>(bss_entry.dot11Ssid.ucSSID),
-              static_cast<ULONG>(bss_entry.dot11Ssid.uSSIDLength),
-              &access_point_data->ssid);
+  base::UTF8ToUTF16(reinterpret_cast<const char*>(bss_entry.dot11Ssid.ucSSID),
+                    static_cast<ULONG>(bss_entry.dot11Ssid.uSSIDLength),
+                    &access_point_data->ssid);
   // TODO(steveblock): Is it possible to get the following?
   // access_point_data->signal_to_noise
   // access_point_data->age

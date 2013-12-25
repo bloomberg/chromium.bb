@@ -83,7 +83,7 @@ TEST_F(GoogleOneShotRemoteEngineTest, BasicTest) {
       "[{\"utterance\":\"123456\",\"confidence\":0.9}]}");
   EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NONE);
   EXPECT_EQ(1U, result().hypotheses.size());
-  EXPECT_EQ(ASCIIToUTF16("123456"), result().hypotheses[0].utterance);
+  EXPECT_EQ(base::ASCIIToUTF16("123456"), result().hypotheses[0].utterance);
   EXPECT_EQ(0.9, result().hypotheses[0].confidence);
 
   // Normal success case with multiple results.
@@ -93,9 +93,9 @@ TEST_F(GoogleOneShotRemoteEngineTest, BasicTest) {
       "{\"utterance\":\"123456\",\"confidence\":0.5}]}");
   EXPECT_EQ(error_, SPEECH_RECOGNITION_ERROR_NONE);
   EXPECT_EQ(2u, result().hypotheses.size());
-  EXPECT_EQ(ASCIIToUTF16("hello"), result().hypotheses[0].utterance);
+  EXPECT_EQ(base::ASCIIToUTF16("hello"), result().hypotheses[0].utterance);
   EXPECT_EQ(0.9, result().hypotheses[0].confidence);
-  EXPECT_EQ(ASCIIToUTF16("123456"), result().hypotheses[1].utterance);
+  EXPECT_EQ(base::ASCIIToUTF16("123456"), result().hypotheses[1].utterance);
   EXPECT_EQ(0.5, result().hypotheses[1].confidence);
 
   // Zero results.

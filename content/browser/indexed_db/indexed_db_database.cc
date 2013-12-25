@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseException.h"
 
+using base::ASCIIToUTF16;
 using base::Int64ToString16;
 using blink::WebIDBKeyTypeNumber;
 

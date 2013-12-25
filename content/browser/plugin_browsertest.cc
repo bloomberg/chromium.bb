@@ -33,6 +33,8 @@
 #define MAYBE(x) x
 #endif
 
+using base::ASCIIToUTF16;
+
 namespace content {
 namespace {
 

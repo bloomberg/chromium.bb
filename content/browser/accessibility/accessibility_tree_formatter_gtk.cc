@@ -74,7 +74,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
                  base::StringPrintf("id=%d", id_value),
                  &line);
 
-  return indent + line + ASCIIToUTF16("\n");
+  return indent + line + base::ASCIIToUTF16("\n");
 }
 
 void AccessibilityTreeFormatter::Initialize() {}

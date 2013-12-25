@@ -348,7 +348,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCompositionText) {
   view_->Show();
 
   ui::CompositionText composition_text;
-  composition_text.text = ASCIIToUTF16("|a|b");
+  composition_text.text = base::ASCIIToUTF16("|a|b");
 
   // Focused segment
   composition_text.underlines.push_back(

@@ -24,7 +24,8 @@ void HandlePpapiFlashDebugURL(const GURL& url) {
   bool crash = url == GURL(kChromeUIPpapiFlashCrashURL);
 
   std::vector<PpapiPluginProcessHost*> hosts;
-  PpapiPluginProcessHost::FindByName(UTF8ToUTF16(kFlashPluginName), &hosts);
+  PpapiPluginProcessHost::FindByName(
+      base::UTF8ToUTF16(kFlashPluginName), &hosts);
   for (std::vector<PpapiPluginProcessHost*>::iterator iter = hosts.begin();
        iter != hosts.end(); ++iter) {
     if (crash)

@@ -91,7 +91,7 @@ void RecursiveFindNodeInAccessibilityTree(IAccessible* node,
   // on the bots, this is really helpful in figuring out why.
   for (int i = 0; i < depth; i++)
     printf("  ");
-  printf("role=%d name=%s\n", V_I4(&role), WideToUTF8(name).c_str());
+  printf("role=%d name=%s\n", V_I4(&role), base::WideToUTF8(name).c_str());
 
   if (expected_role == V_I4(&role) && expected_name == name) {
     *found = true;
@@ -286,7 +286,8 @@ void AccessibleChecker::AppendExpectedChild(
 }
 
 void AccessibleChecker::CheckAccessible(IAccessible* accessible) {
-  SCOPED_TRACE("while checking " + UTF16ToUTF8(RoleVariantToString(role_)));
+  SCOPED_TRACE("while checking " +
+                   base::UTF16ToUTF8(RoleVariantToString(role_)));
   CheckAccessibleName(accessible);
   CheckAccessibleRole(accessible);
   CheckIA2Role(accessible);

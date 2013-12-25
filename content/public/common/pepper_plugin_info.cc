@@ -34,10 +34,10 @@ WebPluginInfo PepperPluginInfo::ToWebPluginInfo() const {
       WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
 
   info.name = name.empty() ?
-      path.BaseName().LossyDisplayName() : UTF8ToUTF16(name);
+      path.BaseName().LossyDisplayName() : base::UTF8ToUTF16(name);
   info.path = path;
-  info.version = ASCIIToUTF16(version);
-  info.desc = ASCIIToUTF16(description);
+  info.version = base::ASCIIToUTF16(version);
+  info.desc = base::ASCIIToUTF16(description);
   info.mime_types = mime_types;
   info.pepper_permissions = permissions;
 

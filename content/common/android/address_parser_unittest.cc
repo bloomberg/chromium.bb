@@ -25,14 +25,14 @@ class AddressParserTest : public testing::Test {
   }
 
   std::string GetHouseNumber(const std::string& content) const {
-    base::string16 content_16 = UTF8ToUTF16(content);
+    base::string16 content_16 = base::UTF8ToUTF16(content);
     base::string16 result;
 
     HouseNumberParser parser;
     Word word;
     if (parser.Parse(content_16.begin(), content_16.end(), &word))
       result = base::string16(word.begin, word.end);
-    return UTF16ToUTF8(result);
+    return base::UTF16ToUTF8(result);
   }
 
   bool ContainsHouseNumber(const std::string& content) const {
@@ -40,7 +40,7 @@ class AddressParserTest : public testing::Test {
   }
 
   bool GetState(const std::string& state, size_t* state_index) const {
-    base::string16 state_16 = UTF8ToUTF16(state);
+    base::string16 state_16 = base::UTF8ToUTF16(state);
     String16Tokenizer tokenizer(state_16.begin(), state_16.end(),
                                 base::kWhitespaceUTF16);
     if (!tokenizer.GetNext())
@@ -62,7 +62,7 @@ class AddressParserTest : public testing::Test {
     size_t state_index;
     EXPECT_TRUE(GetState(state, &state_index));
 
-    base::string16 zip_16 = UTF8ToUTF16(zip);
+    base::string16 zip_16 = base::UTF8ToUTF16(zip);
     WordList words;
     TokenizeWords(zip_16, &words);
     EXPECT_TRUE(words.size() == 1);
@@ -70,7 +70,7 @@ class AddressParserTest : public testing::Test {
   }
 
   bool IsLocationName(const std::string& street) const {
-    base::string16 street_16 = UTF8ToUTF16(street);
+    base::string16 street_16 = base::UTF8ToUTF16(street);
     WordList words;
     TokenizeWords(street_16, &words);
     EXPECT_TRUE(words.size() == 1);
@@ -78,12 +78,12 @@ class AddressParserTest : public testing::Test {
   }
 
   std::string FindAddress(const std::string& content) const {
-    base::string16 content_16 = UTF8ToUTF16(content);
+    base::string16 content_16 = base::UTF8ToUTF16(content);
     base::string16 result_16;
     size_t start, end;
     if (::FindAddress(content_16.begin(), content_16.end(), &start, &end))
       result_16 = content_16.substr(start, end - start);
-    return UTF16ToUTF8(result_16);
+    return base::UTF16ToUTF8(result_16);
   }
 
   bool ContainsAddress(const std::string& content) const {

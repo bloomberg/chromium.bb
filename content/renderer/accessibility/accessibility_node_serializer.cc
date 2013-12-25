@@ -133,14 +133,15 @@ void SerializeAccessibilityNode(
   dst->state = ConvertState(src);
   dst->location = src.boundingBoxRect();
   dst->id = src.axID();
-  std::string name = UTF16ToUTF8(src.title());
+  std::string name = base::UTF16ToUTF8(src.title());
 
   std::string value;
   if (src.valueDescription().length()) {
     dst->AddStringAttribute(dst->ATTR_VALUE,
-                            UTF16ToUTF8(src.valueDescription()));
+                            base::UTF16ToUTF8(src.valueDescription()));
   } else {
-    dst->AddStringAttribute(dst->ATTR_VALUE, UTF16ToUTF8(src.stringValue()));
+    dst->AddStringAttribute(dst->ATTR_VALUE,
+                            base::UTF16ToUTF8(src.stringValue()));
   }
 
   if (dst->role == blink::WebAXRoleColorWell) {
@@ -177,10 +178,14 @@ void SerializeAccessibilityNode(
     dst->AddIntListAttribute(dst->ATTR_WORD_ENDS, word_ends);
   }
 
-  if (src.accessKey().length())
-    dst->AddStringAttribute(dst->ATTR_ACCESS_KEY, UTF16ToUTF8(src.accessKey()));
-  if (src.actionVerb().length())
-    dst->AddStringAttribute(dst->ATTR_ACTION, UTF16ToUTF8(src.actionVerb()));
+  if (src.accessKey().length()) {
+    dst->AddStringAttribute(dst->ATTR_ACCESS_KEY,
+                            base::UTF16ToUTF8(src.accessKey()));
+  }
+  if (src.actionVerb().length()) {
+    dst->AddStringAttribute(dst->ATTR_ACTION,
+                            base::UTF16ToUTF8(src.actionVerb()));
+  }
   if (src.isAriaReadOnly())
     dst->AddBoolAttribute(dst->ATTR_ARIA_READONLY, true);
   if (src.isButtonStateMixed())
@@ -189,17 +194,17 @@ void SerializeAccessibilityNode(
     dst->AddBoolAttribute(dst->ATTR_CAN_SET_VALUE, true);
   if (src.accessibilityDescription().length()) {
     dst->AddStringAttribute(dst->ATTR_DESCRIPTION,
-                            UTF16ToUTF8(src.accessibilityDescription()));
+                            base::UTF16ToUTF8(src.accessibilityDescription()));
   }
   if (src.hasComputedStyle()) {
     dst->AddStringAttribute(dst->ATTR_DISPLAY,
-                            UTF16ToUTF8(src.computedStyleDisplay()));
+                            base::UTF16ToUTF8(src.computedStyleDisplay()));
   }
   if (src.helpText().length())
-    dst->AddStringAttribute(dst->ATTR_HELP, UTF16ToUTF8(src.helpText()));
+    dst->AddStringAttribute(dst->ATTR_HELP, base::UTF16ToUTF8(src.helpText()));
   if (src.keyboardShortcut().length()) {
     dst->AddStringAttribute(dst->ATTR_SHORTCUT,
-                            UTF16ToUTF8(src.keyboardShortcut()));
+                            base::UTF16ToUTF8(src.keyboardShortcut()));
   }
   if (!src.titleUIElement().isDetached()) {
     dst->AddIntAttribute(dst->ATTR_TITLE_UI_ELEMENT,
@@ -234,7 +239,7 @@ void SerializeAccessibilityNode(
 
   if (!node.isNull() && node.isElementNode()) {
     WebElement element = node.to<WebElement>();
-    is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
+    is_iframe = (element.tagName() == base::ASCIIToUTF16("IFRAME"));
 
     if (LowerCaseEqualsASCII(element.getAttribute("aria-expanded"), "true"))
       dst->state |= (1 << blink::WebAXStateExpanded);
@@ -244,11 +249,11 @@ void SerializeAccessibilityNode(
     // a WebElement method that returns the original lower cased tagName.
     dst->AddStringAttribute(
         dst->ATTR_HTML_TAG,
-        StringToLowerASCII(UTF16ToUTF8(element.tagName())));
+        StringToLowerASCII(base::UTF16ToUTF8(element.tagName())));
     for (unsigned i = 0; i < element.attributeCount(); ++i) {
-      std::string name = StringToLowerASCII(UTF16ToUTF8(
+      std::string name = StringToLowerASCII(base::UTF16ToUTF8(
           element.attributeLocalName(i)));
-      std::string value = UTF16ToUTF8(element.attributeValue(i));
+      std::string value = base::UTF16ToUTF8(element.attributeValue(i));
       dst->html_attributes.push_back(std::make_pair(name, value));
     }
 
@@ -272,14 +277,14 @@ void SerializeAccessibilityNode(
     // ARIA role.
     if (element.hasAttribute("role")) {
       dst->AddStringAttribute(dst->ATTR_ROLE,
-                              UTF16ToUTF8(element.getAttribute("role")));
+                              base::UTF16ToUTF8(element.getAttribute("role")));
     }
 
     // Live region attributes
-    live_atomic = UTF16ToUTF8(element.getAttribute("aria-atomic"));
-    live_busy = UTF16ToUTF8(element.getAttribute("aria-busy"));
-    live_status = UTF16ToUTF8(element.getAttribute("aria-live"));
-    live_relevant = UTF16ToUTF8(element.getAttribute("aria-relevant"));
+    live_atomic = base::UTF16ToUTF8(element.getAttribute("aria-atomic"));
+    live_busy = base::UTF16ToUTF8(element.getAttribute("aria-busy"));
+    live_status = base::UTF16ToUTF8(element.getAttribute("aria-live"));
+    live_relevant = base::UTF16ToUTF8(element.getAttribute("aria-relevant"));
   }
 
   // Walk up the parent chain to set live region attributes of containers
@@ -295,22 +300,22 @@ void SerializeAccessibilityNode(
       if (container_elem.hasAttribute("aria-atomic") &&
           container_live_atomic.empty()) {
         container_live_atomic =
-            UTF16ToUTF8(container_elem.getAttribute("aria-atomic"));
+            base::UTF16ToUTF8(container_elem.getAttribute("aria-atomic"));
       }
       if (container_elem.hasAttribute("aria-busy") &&
           container_live_busy.empty()) {
         container_live_busy =
-            UTF16ToUTF8(container_elem.getAttribute("aria-busy"));
+            base::UTF16ToUTF8(container_elem.getAttribute("aria-busy"));
       }
       if (container_elem.hasAttribute("aria-live") &&
           container_live_status.empty()) {
         container_live_status =
-            UTF16ToUTF8(container_elem.getAttribute("aria-live"));
+            base::UTF16ToUTF8(container_elem.getAttribute("aria-live"));
       }
       if (container_elem.hasAttribute("aria-relevant") &&
           container_live_relevant.empty()) {
         container_live_relevant =
-            UTF16ToUTF8(container_elem.getAttribute("aria-relevant"));
+            base::UTF16ToUTF8(container_elem.getAttribute("aria-relevant"));
       }
     }
     container_accessible = container_accessible.parentObject();
@@ -358,8 +363,9 @@ void SerializeAccessibilityNode(
     dst->AddStringAttribute(dst->ATTR_HTML_TAG, "#document");
     const WebDocument& document = src.document();
     if (name.empty())
-      name = UTF16ToUTF8(document.title());
-    dst->AddStringAttribute(dst->ATTR_DOC_TITLE, UTF16ToUTF8(document.title()));
+      name = base::UTF16ToUTF8(document.title());
+    dst->AddStringAttribute(dst->ATTR_DOC_TITLE,
+                            base::UTF16ToUTF8(document.title()));
     dst->AddStringAttribute(dst->ATTR_DOC_URL, document.url().spec());
     dst->AddStringAttribute(
         dst->ATTR_DOC_MIMETYPE,
@@ -371,7 +377,7 @@ void SerializeAccessibilityNode(
     const WebDocumentType& doctype = document.doctype();
     if (!doctype.isNull()) {
       dst->AddStringAttribute(dst->ATTR_DOC_DOCTYPE,
-                              UTF16ToUTF8(doctype.name()));
+                              base::UTF16ToUTF8(doctype.name()));
     }
 
     const gfx::Size& scroll_offset = document.frame()->scrollOffset();
@@ -478,7 +484,7 @@ bool ShouldIncludeChildNode(
   WebNode node = parent.node();
   if (!node.isNull() && node.isElementNode()) {
     WebElement element = node.to<WebElement>();
-    is_iframe = (element.tagName() == ASCIIToUTF16("IFRAME"));
+    is_iframe = (element.tagName() == base::ASCIIToUTF16("IFRAME"));
   }
 
   return (is_iframe || IsParentUnignoredOf(parent, child));

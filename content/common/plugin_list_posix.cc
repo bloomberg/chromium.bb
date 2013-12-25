@@ -321,23 +321,23 @@ bool PluginList::ReadWebPluginInfo(const base::FilePath& filename,
     const char* name = NULL;
     NP_GetValue(NULL, nsPluginVariable_NameString, &name);
     if (name) {
-      info->name = UTF8ToUTF16(name);
+      info->name = base::UTF8ToUTF16(name);
       ExtractVersionString(name, info);
     }
 
     const char* description = NULL;
     NP_GetValue(NULL, nsPluginVariable_DescriptionString, &description);
     if (description) {
-      info->desc = UTF8ToUTF16(description);
+      info->desc = base::UTF8ToUTF16(description);
       if (info->version.empty())
         ExtractVersionString(description, info);
     }
 
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
         << "Got info for plugin " << filename.value()
-        << " Name = \"" << UTF16ToUTF8(info->name)
-        << "\", Description = \"" << UTF16ToUTF8(info->desc)
-        << "\", Version = \"" << UTF16ToUTF8(info->version)
+        << " Name = \"" << base::UTF16ToUTF8(info->name)
+        << "\", Description = \"" << base::UTF16ToUTF8(info->desc)
+        << "\", Version = \"" << base::UTF16ToUTF8(info->version)
         << "\".";
   } else {
     LOG_IF(ERROR, PluginList::DebugPluginLoading())
@@ -383,9 +383,10 @@ void PluginList::ParseMIMEDescription(
     // It's ok for end to run off the string here.  If there's no
     // trailing semicolon we consume the remainder of the string.
     if (end != std::string::npos) {
-      mime_type.description = UTF8ToUTF16(description.substr(ofs, end - ofs));
+      mime_type.description =
+          base::UTF8ToUTF16(description.substr(ofs, end - ofs));
     } else {
-      mime_type.description = UTF8ToUTF16(description.substr(ofs));
+      mime_type.description = base::UTF8ToUTF16(description.substr(ofs));
     }
     mime_types->push_back(mime_type);
     if (end == std::string::npos)
@@ -423,7 +424,7 @@ void PluginList::ExtractVersionString(const std::string& desc,
     }
   }
   if (!version.empty()) {
-    info->version = UTF8ToUTF16(version);
+    info->version = base::UTF8ToUTF16(version);
   }
 }
 

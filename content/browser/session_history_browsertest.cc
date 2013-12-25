@@ -99,7 +99,7 @@ class SessionHistoryTest : public ContentBrowserTest {
 
   void NavigateAndCheckTitle(const char* filename,
                              const std::string& expected_title) {
-    base::string16 expected_title16(ASCIIToUTF16(expected_title));
+    base::string16 expected_title16(base::ASCIIToUTF16(expected_title));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
     NavigateToURL(shell(), GetURL(filename));
     ASSERT_EQ(expected_title16, title_watcher.WaitAndGetTitle());

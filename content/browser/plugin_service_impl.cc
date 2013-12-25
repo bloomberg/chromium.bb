@@ -292,7 +292,7 @@ PluginProcessHost* PluginServiceImpl::FindOrStartNpapiPluginProcess(
 
   // Record when NPAPI Flash process is started for the first time.
   static bool counted = false;
-  if (!counted && UTF16ToUTF8(info.name) == kFlashPluginName) {
+  if (!counted && base::UTF16ToUTF8(info.name) == kFlashPluginName) {
     counted = true;
     UMA_HISTOGRAM_ENUMERATION("Plugin.FlashUsage",
                               START_NPAPI_FLASH_AT_LEAST_ONCE,
@@ -574,7 +574,7 @@ base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
     // Many plugins on the Mac have .plugin in the actual name, which looks
     // terrible, so look for that and strip it off if present.
     const std::string kPluginExtension = ".plugin";
-    if (EndsWith(plugin_name, ASCIIToUTF16(kPluginExtension), true))
+    if (EndsWith(plugin_name, base::ASCIIToUTF16(kPluginExtension), true))
       plugin_name.erase(plugin_name.length() - kPluginExtension.length());
 #endif  // OS_MACOSX
   }

@@ -74,25 +74,25 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   base::string16 serif;
 #if defined(OS_MACOSX)
   prefs->cursive_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Apple Chancery");
+      base::ASCIIToUTF16("Apple Chancery");
   prefs->fantasy_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Papyrus");
-  serif = ASCIIToUTF16("Times");
+      base::ASCIIToUTF16("Papyrus");
+  serif = base::ASCIIToUTF16("Times");
 #else
   prefs->cursive_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Comic Sans MS");
+      base::ASCIIToUTF16("Comic Sans MS");
   prefs->fantasy_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Impact");
-  serif = ASCIIToUTF16("times new roman");
+      base::ASCIIToUTF16("Impact");
+  serif = base::ASCIIToUTF16("times new roman");
 #endif
   prefs->serif_font_family_map[webkit_glue::kCommonScript] =
       serif;
   prefs->standard_font_family_map[webkit_glue::kCommonScript] =
       serif;
   prefs->fixed_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Courier");
+      base::ASCIIToUTF16("Courier");
   prefs->sans_serif_font_family_map[
-      webkit_glue::kCommonScript] = ASCIIToUTF16("Helvetica");
+      webkit_glue::kCommonScript] = base::ASCIIToUTF16("Helvetica");
   prefs->minimum_logical_font_size = 9;
   prefs->asynchronous_spell_checking_enabled = false;
   prefs->threaded_html_parser = true;

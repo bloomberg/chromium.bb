@@ -616,7 +616,8 @@ void ReadPageState(SerializeObject* obj, ExplodedPageState* state) {
     GURL url = ReadGURL(obj);
     // NOTE: GURL::possibly_invalid_spec() always returns valid UTF-8.
     state->top.url_string = state->top.original_url_string =
-        base::NullableString16(UTF8ToUTF16(url.possibly_invalid_spec()), false);
+        base::NullableString16(
+            base::UTF8ToUTF16(url.possibly_invalid_spec()), false);
     return;
   }
 

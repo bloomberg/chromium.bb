@@ -64,13 +64,13 @@ static string SerializeMediaConstraints(
 
 static string SerializeMediaStreamComponent(
     const blink::WebMediaStreamTrack component) {
-  string id = UTF16ToUTF8(component.source().id());
+  string id = base::UTF16ToUTF8(component.source().id());
   return id;
 }
 
 static string SerializeMediaDescriptor(
     const blink::WebMediaStream& stream) {
-  string label = UTF16ToUTF8(stream.id());
+  string label = base::UTF16ToUTF8(stream.id());
   string result = "label: " + label;
   blink::WebVector<blink::WebMediaStreamTrack> tracks;
   stream.audioTracks(tracks);
@@ -306,8 +306,8 @@ void PeerConnectionTracker::TrackSetSessionDescription(
     RTCPeerConnectionHandler* pc_handler,
     const blink::WebRTCSessionDescription& desc,
     Source source) {
-  string sdp = UTF16ToUTF8(desc.sdp());
-  string type = UTF16ToUTF8(desc.type());
+  string sdp = base::UTF16ToUTF8(desc.sdp());
+  string type = base::UTF16ToUTF8(desc.type());
 
   string value = "type: " + type + ", sdp: " + sdp;
   SendPeerConnectionUpdate(
@@ -332,8 +332,8 @@ void PeerConnectionTracker::TrackAddIceCandidate(
       RTCPeerConnectionHandler* pc_handler,
       const blink::WebRTCICECandidate& candidate,
       Source source) {
-  string value = "mid: " + UTF16ToUTF8(candidate.sdpMid()) + ", " +
-                 "candidate: " + UTF16ToUTF8(candidate.candidate());
+  string value = "mid: " + base::UTF16ToUTF8(candidate.sdpMid()) + ", " +
+                 "candidate: " + base::UTF16ToUTF8(candidate.candidate());
   SendPeerConnectionUpdate(
       pc_handler,
       source == SOURCE_LOCAL ? "onIceCandidate" : "addIceCandidate", value);
@@ -431,7 +431,7 @@ void PeerConnectionTracker::TrackCreateDTMFSender(
     RTCPeerConnectionHandler* pc_handler,
     const blink::WebMediaStreamTrack& track) {
   SendPeerConnectionUpdate(pc_handler, "createDTMFSender",
-                           UTF16ToUTF8(track.id()));
+                           base::UTF16ToUTF8(track.id()));
 }
 
 int PeerConnectionTracker::GetNextLocalID() {

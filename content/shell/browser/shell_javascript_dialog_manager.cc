@@ -53,7 +53,7 @@ void ShellJavaScriptDialogManager::RunJavaScriptDialog(
   }
 
   base::string16 new_message_text = net::FormatUrl(origin_url, accept_lang) +
-                              ASCIIToUTF16("\n\n") +
+                              base::ASCIIToUTF16("\n\n") +
                               message_text;
   gfx::NativeWindow parent_window =
       web_contents->GetView()->GetTopLevelNativeWindow();
@@ -97,7 +97,7 @@ void ShellJavaScriptDialogManager::RunBeforeUnloadDialog(
 
   base::string16 new_message_text =
       message_text +
-      ASCIIToUTF16("\n\nIs it OK to leave/reload this page?");
+      base::ASCIIToUTF16("\n\nIs it OK to leave/reload this page?");
 
   gfx::NativeWindow parent_window =
       web_contents->GetView()->GetTopLevelNativeWindow();

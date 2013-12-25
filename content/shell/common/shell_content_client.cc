@@ -33,21 +33,21 @@ base::string16 ShellContentClient::GetLocalizedString(int message_id) const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     switch (message_id) {
       case IDS_FORM_OTHER_DATE_LABEL:
-        return ASCIIToUTF16("<<OtherDateLabel>>");
+        return base::ASCIIToUTF16("<<OtherDateLabel>>");
       case IDS_FORM_OTHER_MONTH_LABEL:
-        return ASCIIToUTF16("<<OtherMonthLabel>>");
+        return base::ASCIIToUTF16("<<OtherMonthLabel>>");
       case IDS_FORM_OTHER_TIME_LABEL:
-        return ASCIIToUTF16("<<OtherTimeLabel>>");
+        return base::ASCIIToUTF16("<<OtherTimeLabel>>");
       case IDS_FORM_OTHER_WEEK_LABEL:
-        return ASCIIToUTF16("<<OtherWeekLabel>>");
+        return base::ASCIIToUTF16("<<OtherWeekLabel>>");
       case IDS_FORM_CALENDAR_CLEAR:
-        return ASCIIToUTF16("<<CalendarClear>>");
+        return base::ASCIIToUTF16("<<CalendarClear>>");
       case IDS_FORM_CALENDAR_TODAY:
-        return ASCIIToUTF16("<<CalendarToday>>");
+        return base::ASCIIToUTF16("<<CalendarToday>>");
       case IDS_FORM_THIS_MONTH_LABEL:
-        return ASCIIToUTF16("<<ThisMonthLabel>>");
+        return base::ASCIIToUTF16("<<ThisMonthLabel>>");
       case IDS_FORM_THIS_WEEK_LABEL:
-        return ASCIIToUTF16("<<ThisWeekLabel>>");
+        return base::ASCIIToUTF16("<<ThisWeekLabel>>");
     }
   }
   return l10n_util::GetStringUTF16(message_id);

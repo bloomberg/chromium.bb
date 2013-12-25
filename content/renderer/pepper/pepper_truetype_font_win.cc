@@ -83,7 +83,7 @@ PepperTrueTypeFontWin::PepperTrueTypeFontWin(
                      CLIP_DEFAULT_PRECIS,
                      DEFAULT_QUALITY,
                      pitch_and_family,
-                     UTF8ToUTF16(desc.family).c_str());
+                     base::UTF8ToUTF16(desc.family).c_str());
 }
 
 PepperTrueTypeFontWin::~PepperTrueTypeFontWin() {
@@ -131,7 +131,7 @@ int32_t PepperTrueTypeFontWin::Describe(
     base::win::ScopedSelectObject select_object(hdc, font_);
     WCHAR name[LF_FACESIZE];
     GetTextFace(hdc, LF_FACESIZE, name);
-    desc->family = UTF16ToUTF8(name);
+    desc->family = base::UTF16ToUTF8(name);
   }
   return PP_OK;
 }

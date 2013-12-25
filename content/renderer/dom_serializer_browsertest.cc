@@ -585,8 +585,8 @@ class DomSerializerTests : public ContentBrowserTest,
       '%', 0x2285, 0x00b9, '\'', 0
     };
     WebString value = body_element.getAttribute("title");
-    ASSERT_TRUE(UTF16ToWide(value) == parsed_value);
-    ASSERT_TRUE(UTF16ToWide(body_element.innerText()) == parsed_value);
+    ASSERT_TRUE(base::UTF16ToWide(value) == parsed_value);
+    ASSERT_TRUE(base::UTF16ToWide(body_element.innerText()) == parsed_value);
 
     // Do serialization.
     SerializeDomForURL(file_url, false);

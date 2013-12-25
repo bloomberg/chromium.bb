@@ -120,8 +120,8 @@ class DOMStorageCachedAreaTest : public testing::Test {
   DOMStorageCachedAreaTest()
     : kNamespaceId(10),
       kOrigin("http://dom_storage/"),
-      kKey(ASCIIToUTF16("key")),
-      kValue(ASCIIToUTF16("value")),
+      kKey(base::ASCIIToUTF16("key")),
+      kValue(base::ASCIIToUTF16("value")),
       kPageUrl("http://dom_storage/page") {
   }
 

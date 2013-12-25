@@ -555,7 +555,7 @@ void RenderWidgetHostViewAndroid::SelectionChanged(const base::string16& text,
     return;
   }
 
-  std::string utf8_selection = UTF16ToUTF8(text.substr(pos, n));
+  std::string utf8_selection = base::UTF16ToUTF8(text.substr(pos, n));
 
   content_view_core_->OnSelectionChanged(utf8_selection);
 }

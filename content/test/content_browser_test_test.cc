@@ -31,7 +31,7 @@ class ContentBrowserTestSanityTest : public ContentBrowserTest {
   void Test() {
     GURL url = GetTestUrl(".", "simple_page.html");
 
-    base::string16 expected_title(ASCIIToUTF16("OK"));
+    base::string16 expected_title(base::ASCIIToUTF16("OK"));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
     NavigateToURL(shell(), url);
     base::string16 title = title_watcher.WaitAndGetTitle();

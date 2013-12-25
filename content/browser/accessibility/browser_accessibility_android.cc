@@ -284,13 +284,13 @@ base::string16 BrowserAccessibilityAndroid::GetText() const {
     case blink::WebAXRoleImageMapLink:
     case blink::WebAXRoleLink:
       if (!text.empty())
-        text += ASCIIToUTF16(" ");
-      text += ASCIIToUTF16("Link");
+        text += base::ASCIIToUTF16(" ");
+      text += base::ASCIIToUTF16("Link");
       break;
     case blink::WebAXRoleHeading:
       // Only append "heading" if this node already has text.
       if (!text.empty())
-        text += ASCIIToUTF16(" Heading");
+        text += base::ASCIIToUTF16(" Heading");
       break;
   }
 
@@ -562,7 +562,7 @@ bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
 bool BrowserAccessibilityAndroid::IsIframe() const {
   base::string16 html_tag = GetString16Attribute(
       AccessibilityNodeData::ATTR_HTML_TAG);
-  return html_tag == ASCIIToUTF16("iframe");
+  return html_tag == base::ASCIIToUTF16("iframe");
 }
 
 void BrowserAccessibilityAndroid::PostInitialize() {

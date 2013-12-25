@@ -253,7 +253,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
   if (info.name.empty()) {
     process_->SetName(plugin_path_.BaseName().LossyDisplayName());
   } else {
-    process_->SetName(UTF8ToUTF16(info.name));
+    process_->SetName(base::UTF8ToUTF16(info.name));
   }
 
   std::string channel_id = process_->GetHost()->CreateChannel();

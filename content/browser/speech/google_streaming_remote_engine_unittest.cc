@@ -112,9 +112,9 @@ TEST_F(GoogleStreamingRemoteEngineTest, SingleDefinitiveResult) {
   SpeechRecognitionResult& result = results.back();
   result.is_provisional = false;
   result.hypotheses.push_back(
-      SpeechRecognitionHypothesis(UTF8ToUTF16("hypothesis 1"), 0.1F));
+      SpeechRecognitionHypothesis(base::UTF8ToUTF16("hypothesis 1"), 0.1F));
   result.hypotheses.push_back(
-      SpeechRecognitionHypothesis(UTF8ToUTF16("hypothesis 2"), 0.2F));
+      SpeechRecognitionHypothesis(base::UTF8ToUTF16("hypothesis 2"), 0.2F));
 
   ProvideMockResultDownstream(result);
   ExpectResultsReceived(results);
@@ -142,8 +142,8 @@ TEST_F(GoogleStreamingRemoteEngineTest, SeveralStreamingResults) {
     SpeechRecognitionResult& result = results.back();
     result.is_provisional = (i % 2 == 0);  // Alternate result types.
     float confidence = result.is_provisional ? 0.0F : (i * 0.1F);
-    result.hypotheses.push_back(
-        SpeechRecognitionHypothesis(UTF8ToUTF16("hypothesis"), confidence));
+    result.hypotheses.push_back(SpeechRecognitionHypothesis(
+        base::UTF8ToUTF16("hypothesis"), confidence));
 
     ProvideMockResultDownstream(result);
     ExpectResultsReceived(results);
@@ -161,7 +161,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, SeveralStreamingResults) {
   SpeechRecognitionResult& result = results.back();
   result.is_provisional = false;
   result.hypotheses.push_back(
-      SpeechRecognitionHypothesis(UTF8ToUTF16("The final result"), 1.0F));
+      SpeechRecognitionHypothesis(base::UTF8ToUTF16("The final result"), 1.0F));
   ProvideMockResultDownstream(result);
   ExpectResultsReceived(results);
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
@@ -188,7 +188,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, NoFinalResultAfterAudioChunksEnded) {
   results.push_back(SpeechRecognitionResult());
   SpeechRecognitionResult& result = results.back();
   result.hypotheses.push_back(
-      SpeechRecognitionHypothesis(UTF8ToUTF16("hypothesis"), 1.0F));
+      SpeechRecognitionHypothesis(base::UTF8ToUTF16("hypothesis"), 1.0F));
   ProvideMockResultDownstream(result);
   ExpectResultsReceived(results);
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
@@ -228,7 +228,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, NoMatchError) {
   SpeechRecognitionResult& result = results.back();
   result.is_provisional = true;
   result.hypotheses.push_back(
-      SpeechRecognitionHypothesis(UTF8ToUTF16("The final result"), 0.0F));
+      SpeechRecognitionHypothesis(base::UTF8ToUTF16("The final result"), 0.0F));
   ProvideMockResultDownstream(result);
   ExpectResultsReceived(results);
   ASSERT_TRUE(engine_under_test_->IsRecognitionPending());
@@ -305,7 +305,7 @@ TEST_F(GoogleStreamingRemoteEngineTest, Stability) {
   SpeechRecognitionResult& result = results.back();
   result.is_provisional = true;
   result.hypotheses.push_back(
-      SpeechRecognitionHypothesis(UTF8ToUTF16("foo"), 0.5));
+      SpeechRecognitionHypothesis(base::UTF8ToUTF16("foo"), 0.5));
 
   // Check that the protobuf generated the expected result.
   ExpectResultsReceived(results);
@@ -425,7 +425,7 @@ void GoogleStreamingRemoteEngineTest::ProvideMockResultDownstream(
         proto_result->add_alternative();
     const SpeechRecognitionHypothesis& hypothesis = result.hypotheses[i];
     proto_alternative->set_confidence(hypothesis.confidence);
-    proto_alternative->set_transcript(UTF16ToUTF8(hypothesis.utterance));
+    proto_alternative->set_transcript(base::UTF16ToUTF8(hypothesis.utterance));
   }
   ProvideMockProtoResultDownstream(proto_event);
 }

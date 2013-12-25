@@ -309,10 +309,10 @@ WebURL WebKitTestRunner::rewriteLayoutTestsURL(const std::string& utf8_url) {
       ShellRenderProcessObserver::GetInstance()->webkit_source_dir().Append(
           FILE_PATH_LITERAL("LayoutTests/"));
 #if defined(OS_WIN)
-  std::string utf8_path = WideToUTF8(replace_path.value());
+  std::string utf8_path = base::WideToUTF8(replace_path.value());
 #else
   std::string utf8_path =
-      WideToUTF8(base::SysNativeMBToWide(replace_path.value()));
+      base::WideToUTF8(base::SysNativeMBToWide(replace_path.value()));
 #endif
   std::string new_url =
       std::string("file://") + utf8_path + utf8_url.substr(kPrefixLen);

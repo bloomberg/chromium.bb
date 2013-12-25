@@ -328,7 +328,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
 void IndexedDBTransaction::Timeout() {
   Abort(IndexedDBDatabaseError(
       blink::WebIDBDatabaseExceptionTimeoutError,
-      ASCIIToUTF16("Transaction timed out due to inactivity.")));
+      base::ASCIIToUTF16("Transaction timed out due to inactivity.")));
 }
 
 void IndexedDBTransaction::CloseOpenCursors() {

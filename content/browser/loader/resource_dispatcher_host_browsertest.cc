@@ -27,6 +27,8 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 class ResourceDispatcherHostBrowserTest : public ContentBrowserTest,

@@ -142,7 +142,7 @@ bool UtilityProcessHostImpl::StartProcess() {
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
   process_.reset(new BrowserChildProcessHostImpl(PROCESS_TYPE_UTILITY, this));
-  process_->SetName(ASCIIToUTF16("utility process"));
+  process_->SetName(base::ASCIIToUTF16("utility process"));
 
   std::string channel_id = process_->GetHost()->CreateChannel();
   if (channel_id.empty())

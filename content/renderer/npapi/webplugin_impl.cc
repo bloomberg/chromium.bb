@@ -773,7 +773,7 @@ std::string WebPluginImpl::GetCookies(const GURL& url,
     return std::string();
   }
 
-  return UTF16ToUTF8(cookie_jar->cookies(url, first_party_for_cookies));
+  return base::UTF16ToUTF8(cookie_jar->cookies(url, first_party_for_cookies));
 }
 
 void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {

@@ -945,7 +945,7 @@ void RenderWidgetHostViewGtk::SetTooltipText(
     gtk_widget_set_has_tooltip(view_.get(), FALSE);
   } else {
     gtk_widget_set_tooltip_text(view_.get(),
-                                UTF16ToUTF8(clamped_tooltip).c_str());
+                                base::UTF16ToUTF8(clamped_tooltip).c_str());
   }
 }
 
@@ -1416,7 +1416,7 @@ bool RenderWidgetHostViewGtk::RetrieveSurrounding(std::string* text,
   DCHECK(offset <= selection_text_.length());
 
   if (offset == selection_text_.length()) {
-    *text = UTF16ToUTF8(selection_text_);
+    *text = base::UTF16ToUTF8(selection_text_);
     *cursor_index = text->length();
     return true;
   }

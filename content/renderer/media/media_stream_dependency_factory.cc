@@ -398,7 +398,7 @@ void MediaStreamDependencyFactory::CreateNativeLocalMediaStream(
     return;
   }
 
-  std::string label = UTF16ToUTF8(web_stream->id());
+  std::string label = base::UTF16ToUTF8(web_stream->id());
   scoped_refptr<webrtc::MediaStreamInterface> native_stream =
       CreateLocalMediaStream(label);
   MediaStreamExtraData* extra_data =
@@ -462,7 +462,7 @@ MediaStreamDependencyFactory::CreateNativeAudioMediaStreamTrack(
     }
   }
 
-  std::string track_id = UTF16ToUTF8(track.id());
+  std::string track_id = base::UTF16ToUTF8(track.id());
   scoped_refptr<WebRtcAudioCapturer> capturer;
   if (GetWebRtcAudioDevice())
     capturer = GetWebRtcAudioDevice()->GetDefaultCapturer();
@@ -500,7 +500,7 @@ MediaStreamDependencyFactory::CreateNativeVideoMediaStreamTrack(
     return NULL;
   }
 
-  std::string track_id = UTF16ToUTF8(track.id());
+  std::string track_id = base::UTF16ToUTF8(track.id());
   scoped_refptr<webrtc::VideoTrackInterface> video_track(
       CreateLocalVideoTrack(track_id, source_data->video_source()));
   AddNativeTrackToBlinkTrack(video_track.get(), track, true);
@@ -582,7 +582,7 @@ bool MediaStreamDependencyFactory::AddNativeVideoMediaTrack(
   // Create a new webkit video track.
   blink::WebMediaStreamTrack webkit_track;
   blink::WebMediaStreamSource webkit_source;
-  blink::WebString webkit_track_id(UTF8ToUTF16(track_id));
+  blink::WebString webkit_track_id(base::UTF8ToUTF16(track_id));
   blink::WebMediaStreamSource::Type type =
       blink::WebMediaStreamSource::TypeVideo;
   webkit_source.initialize(webkit_track_id, type, webkit_track_id);
@@ -602,7 +602,7 @@ bool MediaStreamDependencyFactory::RemoveNativeMediaStreamTrack(
       static_cast<MediaStreamExtraData*>(stream.extraData());
   webrtc::MediaStreamInterface* native_stream = extra_data->stream().get();
   DCHECK(native_stream);
-  std::string track_id = UTF16ToUTF8(track.id());
+  std::string track_id = base::UTF16ToUTF8(track.id());
   switch (track.source().type()) {
     case blink::WebMediaStreamSource::TypeAudio:
       return native_stream->RemoveTrack(

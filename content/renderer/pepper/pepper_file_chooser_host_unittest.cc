@@ -59,7 +59,7 @@ class PepperFileChooserHostTest : public RenderViewTest {
 // For testing to convert our hardcoded file paths to 8-bit.
 std::string FilePathToUTF8(const base::FilePath::StringType& path) {
 #if defined(OS_WIN)
-  return UTF16ToUTF8(path);
+  return base::UTF16ToUTF8(path);
 #else
   return path;
 #endif
@@ -97,7 +97,7 @@ TEST_F(PepperFileChooserHostTest, Show) {
   // Basic validation of request.
   EXPECT_EQ(FileChooserParams::Open, chooser_params.mode);
   ASSERT_EQ(1u, chooser_params.accept_types.size());
-  EXPECT_EQ(accept[0], UTF16ToUTF8(chooser_params.accept_types[0]));
+  EXPECT_EQ(accept[0], base::UTF16ToUTF8(chooser_params.accept_types[0]));
 
   // Send a chooser reply to the render view. Note our reply path has to have a
   // path separator so we include both a Unix and a Windows one.

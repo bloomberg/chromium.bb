@@ -226,7 +226,7 @@ MediaStreamImpl::GetVideoFrameProvider(
     return NULL;  // This is not a valid stream.
 
   DVLOG(1) << "MediaStreamImpl::GetVideoFrameProvider stream:"
-           << UTF16ToUTF8(web_stream.id());
+           << base::UTF16ToUTF8(web_stream.id());
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   web_stream.videoTracks(video_tracks);
@@ -245,7 +245,7 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
     return NULL;  // This is not a valid stream.
 
   DVLOG(1) << "MediaStreamImpl::GetAudioRenderer stream:"
-           << UTF16ToUTF8(web_stream.id());
+           << base::UTF16ToUTF8(web_stream.id());
 
   MediaStreamExtraData* extra_data =
       static_cast<MediaStreamExtraData*>(web_stream.extraData());
@@ -350,7 +350,7 @@ void MediaStreamImpl::OnStreamGenerated(
                            request_info->frame,
                            video_source_vector);
   blink::WebUserMediaRequest* request = &(request_info->request);
-  blink::WebString webkit_id = UTF8ToUTF16(label);
+  blink::WebString webkit_id = base::UTF8ToUTF16(label);
   blink::WebMediaStream* web_stream = &(request_info->web_stream);
 
   blink::WebVector<blink::WebMediaStreamTrack> audio_track_vector(
@@ -462,9 +462,9 @@ void MediaStreamImpl::CreateWebKitSourceVector(
       continue;
     }
     webkit_sources[i].initialize(
-        UTF8ToUTF16(devices[i].device.id),
+        base::UTF8ToUTF16(devices[i].device.id),
         type,
-        UTF8ToUTF16(devices[i].device.name));
+        base::UTF8ToUTF16(devices[i].device.name));
     MediaStreamSourceExtraData* source_extra_data(
         new content::MediaStreamSourceExtraData(
             devices[i],
@@ -600,7 +600,7 @@ MediaStreamImpl::UserMediaRequestInfo*
 MediaStreamImpl::FindUserMediaRequestInfo(const std::string& label) {
   UserMediaRequests::iterator it = user_media_requests_.begin();
   for (; it != user_media_requests_.end(); ++it) {
-    if ((*it)->generated && (*it)->web_stream.id() == UTF8ToUTF16(label))
+    if ((*it)->generated && (*it)->web_stream.id() == base::UTF8ToUTF16(label))
       return (*it);
   }
   return NULL;

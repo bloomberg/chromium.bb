@@ -1299,7 +1299,7 @@ const base::FilePath::CharType* SavePackage::ExtensionForMimeType(
 #if defined(OS_POSIX)
   base::FilePath::StringType mime_type(contents_mime_type);
 #elif defined(OS_WIN)
-  base::FilePath::StringType mime_type(UTF8ToWide(contents_mime_type));
+  base::FilePath::StringType mime_type(base::UTF8ToWide(contents_mime_type));
 #endif  // OS_WIN
   for (uint32 i = 0; i < ARRAYSIZE_UNSAFE(extensions); ++i) {
     if (mime_type == extensions[i].mime_type)

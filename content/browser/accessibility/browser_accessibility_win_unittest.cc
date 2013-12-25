@@ -549,7 +549,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   const std::string embed = base::UTF16ToUTF8(
       BrowserAccessibilityWin::kEmbeddedCharacter);
   EXPECT_EQ(text1_name + embed + text2_name + embed,
-            UTF16ToUTF8(base::string16(text)));
+            base::UTF16ToUTF8(base::string16(text)));
   text.Reset();
 
   long hyperlink_count;

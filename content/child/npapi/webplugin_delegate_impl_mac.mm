@@ -229,7 +229,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         // that behavior here.
         const WebPluginInfo& plugin_info =
             instance_->plugin_lib()->plugin_info();
-        if (plugin_info.name.find(ASCIIToUTF16("Flash")) !=
+        if (plugin_info.name.find(base::ASCIIToUTF16("Flash")) !=
             base::string16::npos)
           gpu_preference = gfx::PreferIntegratedGpu;
         surface_ = plugin_->GetAcceleratedSurface(gpu_preference);

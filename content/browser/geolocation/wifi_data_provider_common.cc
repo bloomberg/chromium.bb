@@ -15,13 +15,13 @@ base::string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
   // Format is XX-XX-XX-XX-XX-XX.
   static const char* const kMacFormatString =
       "%02x-%02x-%02x-%02x-%02x-%02x";
-  return ASCIIToUTF16(base::StringPrintf(kMacFormatString,
-                                        mac_as_int[0],
-                                        mac_as_int[1],
-                                        mac_as_int[2],
-                                        mac_as_int[3],
-                                        mac_as_int[4],
-                                        mac_as_int[5]));
+  return base::ASCIIToUTF16(base::StringPrintf(kMacFormatString,
+                                               mac_as_int[0],
+                                               mac_as_int[1],
+                                               mac_as_int[2],
+                                               mac_as_int[3],
+                                               mac_as_int[4],
+                                               mac_as_int[5]));
 }
 
 WifiDataProviderCommon::WifiDataProviderCommon()

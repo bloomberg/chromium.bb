@@ -32,6 +32,8 @@
 #include "net/base/net_util.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 class RenderFrameHostManagerTest : public ContentBrowserTest {

@@ -729,7 +729,7 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 void RenderThreadImpl::RegisterSchemes() {
   // swappedout: pages should not be accessible, and should also
   // be treated as empty documents that can commit synchronously.
-  WebString swappedout_scheme(ASCIIToUTF16(kSwappedOutScheme));
+  WebString swappedout_scheme(base::ASCIIToUTF16(kSwappedOutScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(swappedout_scheme);
   WebSecurityPolicy::registerURLSchemeAsEmptyDocument(swappedout_scheme);
 }

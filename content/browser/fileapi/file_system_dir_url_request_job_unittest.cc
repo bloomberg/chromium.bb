@@ -180,7 +180,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     base::Time date;
     icu::UnicodeString date_ustr(match.group(5, status));
     std::string date_str;
-    UTF16ToUTF8(date_ustr.getBuffer(), date_ustr.length(), &date_str);
+    base::UTF16ToUTF8(date_ustr.getBuffer(), date_ustr.length(), &date_str);
     EXPECT_TRUE(base::Time::FromString(date_str.c_str(), &date));
     EXPECT_FALSE(date.is_null());
   }

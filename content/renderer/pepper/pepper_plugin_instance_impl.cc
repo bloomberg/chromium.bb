@@ -1249,7 +1249,7 @@ base::string16 PepperPluginInstanceImpl::GetSelectedText(bool html) {
   StringVar* string = StringVar::FromPPVar(rv);
   base::string16 selection;
   if (string)
-    selection = UTF8ToUTF16(string->value());
+    selection = base::UTF8ToUTF16(string->value());
   // Release the ref the plugin transfered to us.
   HostGlobals::Get()->GetVarTracker()->ReleaseVar(rv);
   return selection;
@@ -1269,7 +1269,7 @@ base::string16 PepperPluginInstanceImpl::GetLinkAtPosition(
   StringVar* string = StringVar::FromPPVar(rv);
   base::string16 link;
   if (string)
-    link = UTF8ToUTF16(string->value());
+    link = base::UTF8ToUTF16(string->value());
   // Release the ref the plugin transfered to us.
   PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(rv);
   return link;
@@ -1304,7 +1304,7 @@ bool PepperPluginInstanceImpl::StartFind(const base::string16& search_text,
   return PP_ToBool(
       plugin_find_interface_->StartFind(
           pp_instance(),
-          UTF16ToUTF8(search_text.c_str()).c_str(),
+          base::UTF16ToUTF8(search_text.c_str()).c_str(),
           PP_FromBool(case_sensitive)));
 }
 
@@ -2053,7 +2053,7 @@ bool PepperPluginInstanceImpl::SimulateIMEEvent(
       break;
     case PP_INPUTEVENT_TYPE_IME_TEXT:
       render_frame_->SimulateImeConfirmComposition(
-          UTF8ToUTF16(input_event.character_text), gfx::Range());
+          base::UTF8ToUTF16(input_event.character_text), gfx::Range());
       break;
     default:
       return false;

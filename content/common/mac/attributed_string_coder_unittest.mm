@@ -106,7 +106,8 @@ TEST_F(AttributedStringCoderTest, NilString) {
 }
 
 TEST_F(AttributedStringCoderTest, OutOfRange) {
-  AttributedStringCoder::EncodedString encoded(ASCIIToUTF16("Hello World"));
+  AttributedStringCoder::EncodedString encoded(
+      base::ASCIIToUTF16("Hello World"));
   encoded.attributes()->push_back(
       AttributedStringCoder::FontAttribute(
           FontDescriptor([NSFont systemFontOfSize:12]),

@@ -70,7 +70,7 @@ bool CompareFonts(NSFont* font1, NSFont* font2) {
 // Create an NSFont via a FontDescriptor object.
 NSFont* MakeNSFont(const std::string& font_name, float font_point_size) {
   FontDescriptor desc;
-  desc.font_name = UTF8ToUTF16(font_name);
+  desc.font_name = base::UTF8ToUTF16(font_name);
   desc.font_point_size = font_point_size;
   return desc.ToNSFont();
 }

@@ -107,7 +107,7 @@ WebString WebClipboardImpl::readPlainText(Buffer buffer) {
     std::string text;
     client_->ReadAsciiText(clipboard_type, &text);
     if (!text.empty())
-      return ASCIIToUTF16(text);
+      return base::ASCIIToUTF16(text);
   }
 
   return WebString();
@@ -187,7 +187,8 @@ void WebClipboardImpl::writeImage(const WebImage& image,
     // We also don't want to write HTML on a Mac, since Mail.app prefers to use
     // the image markup over attaching the actual image. See
     // http://crbug.com/33016 for details.
-    scw.WriteHTML(UTF8ToUTF16(URLToImageMarkup(url, title)), std::string());
+    scw.WriteHTML(base::UTF8ToUTF16(URLToImageMarkup(url, title)),
+                  std::string());
 #endif
   }
 }

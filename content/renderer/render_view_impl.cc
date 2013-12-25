@@ -2028,7 +2028,7 @@ void RenderViewImpl::UpdateTitle(WebFrame* frame,
     return;
 
   base::debug::TraceLog::GetInstance()->UpdateProcessLabel(
-      routing_id_, UTF16ToUTF8(title));
+      routing_id_, base::UTF16ToUTF8(title));
 
   base::string16 shortened_title = title.substr(0, kMaxTitleChars);
   Send(new ViewHostMsg_UpdateTitle(routing_id_, page_id_, shortened_title,
@@ -2477,7 +2477,7 @@ void RenderViewImpl::didChangeSelection(bool is_empty_selection) {
 }
 
 void RenderViewImpl::didExecuteCommand(const WebString& command_name) {
-  const std::string& name = UTF16ToUTF8(command_name);
+  const std::string& name = base::UTF16ToUTF8(command_name);
   if (StartsWithASCII(name, "Move", true) ||
       StartsWithASCII(name, "Insert", true) ||
       StartsWithASCII(name, "Delete", true))
@@ -6028,12 +6028,12 @@ void RenderViewImpl::registerProtocolHandler(const WebString& scheme,
                                              const WebString& title) {
   bool user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
   GURL base(base_url);
-  GURL absolute_url = base.Resolve(UTF16ToUTF8(url));
+  GURL absolute_url = base.Resolve(base::UTF16ToUTF8(url));
   if (base.GetOrigin() != absolute_url.GetOrigin()) {
     return;
   }
   Send(new ViewHostMsg_RegisterProtocolHandler(routing_id_,
-                                               UTF16ToUTF8(scheme),
+                                               base::UTF16ToUTF8(scheme),
                                                absolute_url,
                                                title,
                                                user_gesture));
@@ -6111,7 +6111,7 @@ WebContentDetectionResult RenderViewImpl::detectContentAround(
     ContentDetector::Result content = (*it)->FindTappedContent(touch_hit);
     if (content.valid) {
       return WebContentDetectionResult(content.content_boundaries,
-          UTF8ToUTF16(content.text), content.intent_url);
+          base::UTF8ToUTF16(content.text), content.intent_url);
     }
   }
   return WebContentDetectionResult();

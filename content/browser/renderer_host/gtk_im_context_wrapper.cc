@@ -623,7 +623,7 @@ void GtkIMContextWrapper::SendFakeCompositionKeyEvent(
 
 void GtkIMContextWrapper::HandleCommitThunk(
     GtkIMContext* context, gchar* text, GtkIMContextWrapper* self) {
-  self->HandleCommit(UTF8ToUTF16(text));
+  self->HandleCommit(base::UTF8ToUTF16(text));
 }
 
 void GtkIMContextWrapper::HandlePreeditStartThunk(

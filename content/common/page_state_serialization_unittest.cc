@@ -23,7 +23,7 @@ inline bool isnan(double num) { return !!_isnan(num); }
 #endif
 
 base::NullableString16 NS16(const char* s) {
-  return s ? base::NullableString16(ASCIIToUTF16(s), false) :
+  return s ? base::NullableString16(base::ASCIIToUTF16(s), false) :
              base::NullableString16();
 }
 

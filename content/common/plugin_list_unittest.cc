@@ -41,14 +41,14 @@ bool Contains(const std::vector<WebPluginInfo>& list,
 class PluginListTest : public testing::Test {
  public:
   PluginListTest()
-      : foo_plugin_(ASCIIToUTF16(kFooName),
+      : foo_plugin_(base::ASCIIToUTF16(kFooName),
                     base::FilePath(kFooPath),
-                    ASCIIToUTF16("1.2.3"),
-                    ASCIIToUTF16("foo")),
-        bar_plugin_(ASCIIToUTF16("Bar Plugin"),
+                    base::ASCIIToUTF16("1.2.3"),
+                    base::ASCIIToUTF16("foo")),
+        bar_plugin_(base::ASCIIToUTF16("Bar Plugin"),
                     base::FilePath(kBarPath),
-                    ASCIIToUTF16("2.3.4"),
-                    ASCIIToUTF16("bar")) {
+                    base::ASCIIToUTF16("2.3.4"),
+                    base::ASCIIToUTF16("bar")) {
   }
 
   virtual void SetUp() {
@@ -149,7 +149,7 @@ TEST(MIMEDescriptionParse, Simple) {
   EXPECT_EQ("audio/x-pn-realaudio-plugin", type.mime_type);
   ASSERT_EQ(1U, type.file_extensions.size());
   EXPECT_EQ("rpm", type.file_extensions[0]);
-  EXPECT_EQ(ASCIIToUTF16("RealAudio document"), type.description);
+  EXPECT_EQ(base::ASCIIToUTF16("RealAudio document"), type.description);
 }
 
 // Test parsing a multi-entry description: QuickTime as provided by Totem.
@@ -170,7 +170,7 @@ TEST(MIMEDescriptionParse, Multi) {
   EXPECT_EQ("image/x-quicktime", type.mime_type);
   ASSERT_EQ(3U, type.file_extensions.size());
   EXPECT_EQ("pict2", type.file_extensions[2]);
-  EXPECT_EQ(ASCIIToUTF16("QuickTime image"), type.description);
+  EXPECT_EQ(base::ASCIIToUTF16("QuickTime image"), type.description);
 }
 
 // Test parsing a Japanese description, since we got this wrong in the past.
@@ -222,7 +222,7 @@ TEST(MIMEDescriptionParse, ComplicatedJava) {
 
   ASSERT_EQ(12U, types.size());
   for (size_t i = 0; i < types.size(); ++i)
-    EXPECT_EQ(ASCIIToUTF16("IcedTea"), types[i].description);
+    EXPECT_EQ(base::ASCIIToUTF16("IcedTea"), types[i].description);
 
   // Verify that the mime types with semis are coming through ok.
   EXPECT_TRUE(types[4].mime_type.find(';') != std::string::npos);
@@ -233,16 +233,16 @@ TEST(MIMEDescriptionParse, ComplicatedJava) {
 TEST(PluginDescriptionParse, ExtractVersion) {
   WebPluginInfo info;
   PluginList::ExtractVersionString("Shockwave Flash 10.1 r102", &info);
-  EXPECT_EQ(ASCIIToUTF16("10.1 r102"), info.version);
+  EXPECT_EQ(base::ASCIIToUTF16("10.1 r102"), info.version);
   PluginList::ExtractVersionString("Java(TM) Plug-in 1.6.0_22", &info);
-  EXPECT_EQ(ASCIIToUTF16("1.6.0_22"), info.version);
+  EXPECT_EQ(base::ASCIIToUTF16("1.6.0_22"), info.version);
   // It's actually much more likely for a modern Linux distribution to have
   // IcedTea.
   PluginList::ExtractVersionString(
       "IcedTea-Web Plugin "
       "(using IcedTea-Web 1.2 (1.2-2ubuntu0.10.04.2))",
       &info);
-  EXPECT_EQ(ASCIIToUTF16("1.2"), info.version);
+  EXPECT_EQ(base::ASCIIToUTF16("1.2"), info.version);
 }
 
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)

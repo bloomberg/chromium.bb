@@ -179,7 +179,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
 
   switch (target_type) {
     case ui::TEXT_PLAIN: {
-      std::string utf8_text = UTF16ToUTF8(drop_data_->text.string());
+      std::string utf8_text = base::UTF16ToUTF8(drop_data_->text.string());
       gtk_selection_data_set_text(selection_data, utf8_text.c_str(),
                                   utf8_text.length());
       break;
@@ -188,7 +188,7 @@ void WebDragSourceGtk::OnDragDataGet(GtkWidget* sender,
     case ui::TEXT_HTML: {
       // TODO(estade): change relative links to be absolute using
       // |html_base_url|.
-      std::string utf8_text = UTF16ToUTF8(drop_data_->html.string());
+      std::string utf8_text = base::UTF16ToUTF8(drop_data_->html.string());
       gtk_selection_data_set(selection_data,
                              ui::GetAtomForTarget(ui::TEXT_HTML),
                              kBitsPerByte,
@@ -319,7 +319,7 @@ void WebDragSourceGtk::OnDragBegin(GtkWidget* sender,
                               std::string(),
                               std::string(),
                               download_file_name_.value(),
-                              UTF16ToUTF8(wide_download_mime_type_),
+                              base::UTF16ToUTF8(wide_download_mime_type_),
                               default_name);
 
     // Pass the file name to the drop target by setting the source window's

@@ -186,7 +186,7 @@ void DatabaseMessageFilter::DatabaseDeleteFile(
     // In order to delete a journal file in incognito mode, we only need to
     // close the open handle to it that's stored in the database tracker.
     if (db_tracker_->IsIncognitoProfile()) {
-      const base::string16 wal_suffix(ASCIIToUTF16("-wal"));
+      const base::string16 wal_suffix(base::ASCIIToUTF16("-wal"));
       base::string16 sqlite_suffix;
 
       // WAL files can be deleted without having previously been opened.

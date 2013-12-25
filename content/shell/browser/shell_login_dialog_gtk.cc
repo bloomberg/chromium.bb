@@ -46,7 +46,7 @@ void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
                                  "Please log in.");
 
   GtkWidget* content_area = gtk_dialog_get_content_area(GTK_DIALOG(root_));
-  GtkWidget* label = gtk_label_new(UTF16ToUTF8(message).c_str());
+  GtkWidget* label = gtk_label_new(base::UTF16ToUTF8(message).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
   gtk_box_pack_start(GTK_BOX(content_area), label, FALSE, FALSE, 0);
 
@@ -94,8 +94,8 @@ void ShellLoginDialog::OnResponse(GtkWidget* sender, int response_id) {
   switch (response_id) {
     case GTK_RESPONSE_OK:
       UserAcceptedAuth(
-          UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(username_entry_))),
-          UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(password_entry_))));
+          base::UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(username_entry_))),
+          base::UTF8ToUTF16(gtk_entry_get_text(GTK_ENTRY(password_entry_))));
       break;
     case GTK_RESPONSE_CANCEL:
     case GTK_RESPONSE_DELETE_EVENT:

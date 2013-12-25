@@ -41,7 +41,7 @@ std::string AddressDetector::GetContentText(const base::string16& text) {
   base::string16 address_16 = CollapseWhitespace(text, false);
   std::replace(address_16.begin(), address_16.end(),
       static_cast<char16>(0x2022), static_cast<char16>(','));
-  return UTF16ToUTF8(address_16);
+  return base::UTF16ToUTF8(address_16);
 }
 
 bool AddressDetector::FindContent(

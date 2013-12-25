@@ -75,7 +75,7 @@ base::DictionaryValue* BuildTargetDescriptor(RenderViewHost* rvh) {
     // TODO(nasko): Fix the following code to use a consistent set of data
     // across the URL, title, and favicon.
     url = web_contents->GetURL();
-    title = UTF16ToUTF8(web_contents->GetTitle());
+    title = base::UTF16ToUTF8(web_contents->GetTitle());
     NavigationController& controller = web_contents->GetController();
     NavigationEntry* entry = controller.GetVisibleEntry();
     if (entry != NULL && entry->GetURL().is_valid())
@@ -244,13 +244,14 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   }
   std::vector<AccessibilityTreeFormatter::Filter> filters;
   filters.push_back(AccessibilityTreeFormatter::Filter(
-      ASCIIToUTF16("*"),
+      base::ASCIIToUTF16("*"),
       AccessibilityTreeFormatter::Filter::ALLOW));
   formatter->SetFilters(filters);
   formatter->FormatAccessibilityTree(&accessibility_contents_utf16);
 
   result->Set("tree",
-              new base::StringValue(UTF16ToUTF8(accessibility_contents_utf16)));
+              new base::StringValue(
+                  base::UTF16ToUTF8(accessibility_contents_utf16)));
   web_ui()->CallJavascriptFunction("accessibility.showTree", *(result.get()));
 }
 

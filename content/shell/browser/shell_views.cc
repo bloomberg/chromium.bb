@@ -82,7 +82,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
 
   // Update the state of UI controls
   void SetAddressBarURL(const GURL& url) {
-    url_entry_->SetText(ASCIIToUTF16(url.spec()));
+    url_entry_->SetText(base::ASCIIToUTF16(url.spec()));
   }
   void SetWebContents(WebContents* web_contents, const gfx::Size& size) {
     contents_view_->SetLayoutManager(new views::FillLayout());
@@ -145,7 +145,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
       views::ColumnSet* toolbar_column_set =
           toolbar_layout->AddColumnSet(0);
       // Back button
-      back_button_ = new views::LabelButton(this, ASCIIToUTF16("Back"));
+      back_button_ = new views::LabelButton(this, base::ASCIIToUTF16("Back"));
       back_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size back_button_size = back_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
@@ -154,7 +154,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     back_button_size.width(),
                                     back_button_size.width() / 2);
       // Forward button
-      forward_button_ = new views::LabelButton(this, ASCIIToUTF16("Forward"));
+      forward_button_ =
+          new views::LabelButton(this, base::ASCIIToUTF16("Forward"));
       forward_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size forward_button_size = forward_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
@@ -163,7 +164,8 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     forward_button_size.width(),
                                     forward_button_size.width() / 2);
       // Refresh button
-      refresh_button_ = new views::LabelButton(this, ASCIIToUTF16("Refresh"));
+      refresh_button_ =
+          new views::LabelButton(this, base::ASCIIToUTF16("Refresh"));
       refresh_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size refresh_button_size = refresh_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
@@ -172,7 +174,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                                     refresh_button_size.width(),
                                     refresh_button_size.width() / 2);
       // Stop button
-      stop_button_ = new views::LabelButton(this, ASCIIToUTF16("Stop"));
+      stop_button_ = new views::LabelButton(this, base::ASCIIToUTF16("Stop"));
       stop_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
       gfx::Size stop_button_size = stop_button_->GetPreferredSize();
       toolbar_column_set->AddColumn(views::GridLayout::CENTER,
@@ -216,11 +218,11 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE {
    if (sender == url_entry_ && key_event.key_code() == ui::VKEY_RETURN) {
-     std::string text = UTF16ToUTF8(url_entry_->text());
+     std::string text = base::UTF16ToUTF8(url_entry_->text());
      GURL url(text);
      if (!url.has_scheme()) {
        url = GURL(std::string("http://") + std::string(text));
-       url_entry_->SetText(ASCIIToUTF16(url.spec()));
+       url_entry_->SetText(base::ASCIIToUTF16(url.spec()));
      }
      shell_->LoadURL(url);
      return true;

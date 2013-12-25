@@ -139,7 +139,7 @@ bool ParamTraits<AttributedStringCoder::EncodedString>::Read(
 
 void ParamTraits<AttributedStringCoder::EncodedString>::Log(
     const param_type& p, std::string* l) {
-  l->append(UTF16ToUTF8(p.string()));
+  l->append(base::UTF16ToUTF8(p.string()));
 }
 
 void ParamTraits<AttributedStringCoder::FontAttribute>::Write(

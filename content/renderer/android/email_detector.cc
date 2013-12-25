@@ -63,7 +63,8 @@ bool EmailDetector::FindContent(const base::string16::const_iterator& begin,
     DCHECK(U_SUCCESS(status));
     icu::UnicodeString content_ustr(matcher->group(status));
     DCHECK(U_SUCCESS(status));
-    UTF16ToUTF8(content_ustr.getBuffer(), content_ustr.length(), content_text);
+    base::UTF16ToUTF8(content_ustr.getBuffer(), content_ustr.length(),
+        content_text);
     return true;
   }
 

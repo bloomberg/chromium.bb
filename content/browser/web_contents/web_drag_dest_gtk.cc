@@ -186,7 +186,7 @@ void WebDragDestGtk::OnDragDataReceived(
       guchar* text = gtk_selection_data_get_text(data);
       if (text) {
         drop_data_->text = base::NullableString16(
-            UTF8ToUTF16(std::string(reinterpret_cast<const char*>(text))),
+            base::UTF8ToUTF16(std::string(reinterpret_cast<const char*>(text))),
             false);
         g_free(text);
       }
@@ -204,7 +204,7 @@ void WebDragDestGtk::OnDragDataReceived(
           if (url.SchemeIs(chrome::kFileScheme) &&
               net::FileURLToFilePath(url, &file_path)) {
             drop_data_->filenames.push_back(
-                DropData::FileInfo(UTF8ToUTF16(file_path.value()),
+                DropData::FileInfo(base::UTF8ToUTF16(file_path.value()),
                                    base::string16()));
             // This is a hack. Some file managers also populate text/plain with
             // a file URL when dragging files, so we clear it to avoid exposing
@@ -220,7 +220,7 @@ void WebDragDestGtk::OnDragDataReceived(
     } else if (target == ui::GetAtomForTarget(ui::TEXT_HTML)) {
       // TODO(estade): Can the html have a non-UTF8 encoding?
       drop_data_->html = base::NullableString16(
-          UTF8ToUTF16(std::string(reinterpret_cast<const char*>(raw_data),
+          base::UTF8ToUTF16(std::string(reinterpret_cast<const char*>(raw_data),
                                   data_length)),
           false);
       // We leave the base URL empty.
@@ -230,8 +230,10 @@ void WebDragDestGtk::OnDragDataReceived(
       size_t split = netscape_url.find_first_of('\n');
       if (split != std::string::npos) {
         drop_data_->url = GURL(netscape_url.substr(0, split));
-        if (split < netscape_url.size() - 1)
-          drop_data_->url_title = UTF8ToUTF16(netscape_url.substr(split + 1));
+        if (split < netscape_url.size() - 1) {
+          drop_data_->url_title =
+              base::UTF8ToUTF16(netscape_url.substr(split + 1));
+        }
       }
     } else if (target == ui::GetAtomForTarget(ui::CHROME_NAMED_URL)) {
       ui::ExtractNamedURL(data, &drop_data_->url, &drop_data_->url_title);

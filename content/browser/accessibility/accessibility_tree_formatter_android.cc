@@ -122,7 +122,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
 
   base::string16 class_value;
   dict.GetString("class", &class_value);
-  WriteAttribute(true, UTF16ToUTF8(class_value), &line);
+  WriteAttribute(true, base::UTF16ToUTF8(class_value), &line);
 
   for (unsigned i = 0; i < arraysize(BOOL_ATTRIBUTES); i++) {
     const char* attribute_name = BOOL_ATTRIBUTES[i];
@@ -151,7 +151,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
                    &line);
   }
 
-  return indent + line + ASCIIToUTF16("\n");
+  return indent + line + base::ASCIIToUTF16("\n");
 }
 
 // static

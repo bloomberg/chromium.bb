@@ -18,8 +18,9 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+using base::ASCIIToUTF16;
 
+namespace content {
 
 class DOMStorageAreaTest : public testing::Test {
  public:

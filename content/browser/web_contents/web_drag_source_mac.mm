@@ -147,7 +147,7 @@ void PromiseWriterHelper(const DropData& drop_data,
 - (void)lazyWriteToPasteboard:(NSPasteboard*)pboard forType:(NSString*)type {
   // NSHTMLPboardType requires the character set to be declared. Otherwise, it
   // assumes US-ASCII. Awesome.
-  const base::string16 kHtmlHeader = ASCIIToUTF16(
+  const base::string16 kHtmlHeader = base::ASCIIToUTF16(
       "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">");
 
   // Be extra paranoid; avoid crashing.
@@ -397,7 +397,7 @@ void PromiseWriterHelper(const DropData& drop_data,
         // name.
         std::string defaultName =
             content::GetContentClient()->browser()->GetDefaultDownloadName();
-        mimeType = UTF16ToUTF8(mimeType16);
+        mimeType = base::UTF16ToUTF8(mimeType16);
         downloadFileName_ =
             net::GenerateFileName(downloadURL_,
                                   std::string(),

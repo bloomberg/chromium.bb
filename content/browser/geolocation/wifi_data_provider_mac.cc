@@ -140,9 +140,10 @@ bool Apple80211Api::GetAccessPointData(WifiData::AccessPointDataSet* data) {
     // WirelessNetworkInfo::noise appears to be noise floor in dBm.
     access_point_data.signal_to_noise = access_point_info->signal -
                                         access_point_info->noise;
-    if (!UTF8ToUTF16(reinterpret_cast<const char*>(access_point_info->name),
-                     access_point_info->nameLen,
-                     &access_point_data.ssid)) {
+    if (!base::UTF8ToUTF16(reinterpret_cast<const char*>(
+                               access_point_info->name),
+                           access_point_info->nameLen,
+                           &access_point_data.ssid)) {
       access_point_data.ssid.clear();
     }
     data->insert(access_point_data);

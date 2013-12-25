@@ -264,7 +264,7 @@ WebString WorkerWebKitPlatformSupportImpl::mimeTypeForExtension(
   std::string mime_type;
   thread_safe_sender_->Send(new MimeRegistryMsg_GetMimeTypeFromExtension(
       base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type));
-  return ASCIIToUTF16(mime_type);
+  return base::ASCIIToUTF16(mime_type);
 }
 
 WebString WorkerWebKitPlatformSupportImpl::wellKnownMimeTypeForExtension(
@@ -272,7 +272,7 @@ WebString WorkerWebKitPlatformSupportImpl::wellKnownMimeTypeForExtension(
   std::string mime_type;
   net::GetWellKnownMimeTypeFromExtension(
       base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type);
-  return ASCIIToUTF16(mime_type);
+  return base::ASCIIToUTF16(mime_type);
 }
 
 WebString WorkerWebKitPlatformSupportImpl::mimeTypeFromFile(
@@ -282,7 +282,7 @@ WebString WorkerWebKitPlatformSupportImpl::mimeTypeFromFile(
       new MimeRegistryMsg_GetMimeTypeFromFile(
           base::FilePath::FromUTF16Unsafe(file_path),
           &mime_type));
-  return ASCIIToUTF16(mime_type);
+  return base::ASCIIToUTF16(mime_type);
 }
 
 WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {

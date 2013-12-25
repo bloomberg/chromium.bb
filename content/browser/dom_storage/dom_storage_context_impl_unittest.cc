@@ -20,6 +20,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/browser/quota/mock_special_storage_policy.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 class DOMStorageContextImplTest : public testing::Test {

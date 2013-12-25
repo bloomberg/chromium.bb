@@ -49,7 +49,7 @@ void InitializeWebkitTrack(webrtc::MediaStreamTrackInterface* track,
                            blink::WebMediaStreamTrack* webkit_track,
                            blink::WebMediaStreamSource::Type type) {
   blink::WebMediaStreamSource webkit_source;
-  blink::WebString webkit_track_id(UTF8ToUTF16(track->id()));
+  blink::WebString webkit_track_id(base::UTF8ToUTF16(track->id()));
 
   webkit_source.initialize(webkit_track_id, type, webkit_track_id);
   webkit_track->initialize(webkit_track_id, webkit_source);
@@ -150,7 +150,7 @@ RemoteMediaStreamImpl::RemoteMediaStreamImpl(
                                            webkit_video_tracks[i]));
   }
 
-  webkit_stream_.initialize(UTF8ToUTF16(webrtc_stream->label()),
+  webkit_stream_.initialize(base::UTF8ToUTF16(webrtc_stream->label()),
                             webkit_audio_tracks, webkit_video_tracks);
   webkit_stream_.setExtraData(new MediaStreamExtraData(webrtc_stream, false));
 }

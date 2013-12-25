@@ -90,7 +90,7 @@ void AccessibilityTreeFormatter::AddProperties(
   for (std::vector<base::string16>::const_iterator it = state_strings.begin();
        it != state_strings.end();
        ++it) {
-    states->AppendString(UTF16ToUTF8(*it));
+    states->AppendString(base::UTF16ToUTF8(*it));
   }
   dict->Set("states", states);
 
@@ -99,7 +99,7 @@ void AccessibilityTreeFormatter::AddProperties(
   for (std::vector<base::string16>::const_iterator it = ia2_attributes.begin();
        it != ia2_attributes.end();
        ++it) {
-    attributes->AppendString(UTF16ToUTF8(*it));
+    attributes->AppendString(base::UTF16ToUTF8(*it));
   }
   dict->Set("attributes", attributes);
 
@@ -206,7 +206,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
 
   base::string16 role_value;
   dict.GetString("role", &role_value);
-  WriteAttribute(true, UTF16ToUTF8(role_value), &line);
+  WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
 
   base::string16 name_value;
   dict.GetString("name", &name_value);
@@ -225,7 +225,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
         value->GetAsString(&string_value);
         WriteAttribute(false,
                        StringPrintf(L"%ls='%ls'",
-                                    UTF8ToUTF16(attribute_name).c_str(),
+                                    base::UTF8ToUTF16(attribute_name).c_str(),
                                     string_value.c_str()),
                        &line);
         break;
@@ -235,7 +235,8 @@ base::string16 AccessibilityTreeFormatter::ToString(
         value->GetAsInteger(&int_value);
         WriteAttribute(false,
                        base::StringPrintf(L"%ls=%d",
-                                          UTF8ToUTF16(attribute_name).c_str(),
+                                          base::UTF8ToUTF16(
+                                              attribute_name).c_str(),
                                           int_value),
                        &line);
         break;
@@ -245,7 +246,8 @@ base::string16 AccessibilityTreeFormatter::ToString(
         value->GetAsDouble(&double_value);
         WriteAttribute(false,
                        base::StringPrintf(L"%ls=%.2f",
-                                          UTF8ToUTF16(attribute_name).c_str(),
+                                          base::UTF8ToUTF16(
+                                              attribute_name).c_str(),
                                           double_value),
                        &line);
         break;
@@ -287,7 +289,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
     }
   }
 
-  return indent + line + ASCIIToUTF16("\n");
+  return indent + line + base::ASCIIToUTF16("\n");
 }
 
 // static

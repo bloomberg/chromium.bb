@@ -1211,7 +1211,7 @@ bool WebPluginDelegateProxy::UseSynchronousGeometryUpdates() {
   // Need to update geometry synchronously with WMP, otherwise if a site
   // scripts the plugin to start playing while it's in the middle of handling
   // an update geometry message, videos don't play.  See urls in bug 20260.
-  if (info_.name.find(ASCIIToUTF16("Windows Media Player")) !=
+  if (info_.name.find(base::ASCIIToUTF16("Windows Media Player")) !=
       base::string16::npos)
     return true;
 

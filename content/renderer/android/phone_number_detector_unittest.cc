@@ -13,7 +13,7 @@ class PhoneNumberDetectorTest : public testing::Test {
  public:
   static std::string FindNumber(const std::string& content,
                                 const std::string& region) {
-    base::string16 content_16 = UTF8ToUTF16(content);
+    base::string16 content_16 = base::UTF8ToUTF16(content);
     base::string16 result_16;
     size_t start, end;
     PhoneNumberDetector detector(region);
@@ -21,12 +21,12 @@ class PhoneNumberDetectorTest : public testing::Test {
     if (detector.FindContent(content_16.begin(), content_16.end(),
                              &start, &end, &content_text))
          result_16 = content_16.substr(start, end - start);
-    return UTF16ToUTF8(result_16);
+    return base::UTF16ToUTF8(result_16);
   }
 
   static std::string FindAndFormatNumber(const std::string& content,
                                          const std::string& region) {
-    base::string16 content_16 = UTF8ToUTF16(content);
+    base::string16 content_16 = base::UTF8ToUTF16(content);
     base::string16 result_16;
     size_t start, end;
     PhoneNumberDetector detector(region);

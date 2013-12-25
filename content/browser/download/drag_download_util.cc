@@ -49,7 +49,7 @@ bool ParseDownloadMetadata(const base::string16& metadata,
 #if defined(OS_WIN)
     *file_name = base::FilePath(file_name_str);
 #else
-    *file_name = base::FilePath(UTF16ToUTF8(file_name_str));
+    *file_name = base::FilePath(base::UTF16ToUTF8(file_name_str));
 #endif
   }
   if (url)
@@ -70,7 +70,8 @@ FileStream* CreateFileStreamForDrop(base::FilePath* file_path,
       new_file_path = *file_path;
     } else {
 #if defined(OS_WIN)
-      base::string16 suffix = ASCIIToUTF16("-") + base::IntToString16(seq);
+      base::string16 suffix =
+          base::ASCIIToUTF16("-") + base::IntToString16(seq);
 #else
       std::string suffix = std::string("-") + base::IntToString(seq);
 #endif

@@ -6,6 +6,8 @@
 #include "content/common/dom_storage/dom_storage_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 TEST(DOMStorageMapTest, DOMStorageMapBasics) {

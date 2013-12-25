@@ -79,7 +79,7 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
     // This means we can't provide plugins from non-ASCII paths, but
     // since this switch is only for development I don't think that's
     // too awful.
-    plugin.path = base::FilePath(ASCIIToUTF16(name_parts[0]));
+    plugin.path = base::FilePath(base::ASCIIToUTF16(name_parts[0]));
 #else
     plugin.path = base::FilePath(name_parts[0]);
 #endif
@@ -108,8 +108,10 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
     }
 
     // If the plugin name is empty, use the filename.
-    if (plugin.name.empty())
-      plugin.name = UTF16ToUTF8(plugin.path.BaseName().LossyDisplayName());
+    if (plugin.name.empty()) {
+      plugin.name =
+          base::UTF16ToUTF8(plugin.path.BaseName().LossyDisplayName());
+    }
 
     // Command-line plugins get full permissions.
     plugin.permissions = ppapi::PERMISSION_ALL_BITS;

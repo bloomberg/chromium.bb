@@ -131,7 +131,8 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setDefaultFixedFontSize(prefs.default_fixed_font_size);
   settings->setMinimumFontSize(prefs.minimum_font_size);
   settings->setMinimumLogicalFontSize(prefs.minimum_logical_font_size);
-  settings->setDefaultTextEncodingName(ASCIIToUTF16(prefs.default_encoding));
+  settings->setDefaultTextEncodingName(
+      base::ASCIIToUTF16(prefs.default_encoding));
   settings->setJavaScriptEnabled(prefs.javascript_enabled);
   settings->setWebSecurityEnabled(prefs.web_security_enabled);
   settings->setJavaScriptCanOpenWindowsAutomatically(
@@ -341,7 +342,7 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setMediaFullscreenRequiresUserGesture(
       prefs.user_gesture_required_for_media_fullscreen);
   settings->setDefaultVideoPosterURL(
-        ASCIIToUTF16(prefs.default_video_poster_url.spec()));
+        base::ASCIIToUTF16(prefs.default_video_poster_url.spec()));
   settings->setSupportDeprecatedTargetDensityDPI(
       prefs.support_deprecated_target_density_dpi);
   settings->setUseLegacyBackgroundSizeShorthandBehavior(

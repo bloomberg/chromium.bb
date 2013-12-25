@@ -184,7 +184,7 @@ bool PluginInstance::GetFormValue(base::string16* value) {
     return false;
   }
   // Assumes the result is UTF8 text, as Firefox does.
-  *value = UTF8ToUTF16(plugin_value);
+  *value = base::UTF8ToUTF16(plugin_value);
   host_->host_functions()->memfree(plugin_value);
   return true;
 }

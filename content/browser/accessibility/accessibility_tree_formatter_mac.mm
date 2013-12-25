@@ -171,7 +171,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
                                 nil];
   string s_value;
   dict.GetString(SysNSStringToUTF8(NSAccessibilityRoleAttribute), &s_value);
-  WriteAttribute(true, UTF8ToUTF16(s_value), &line);
+  WriteAttribute(true, base::UTF8ToUTF16(s_value), &line);
 
   string subroleAttribute = SysNSStringToUTF8(NSAccessibilitySubroleAttribute);
   if (dict.GetString(subroleAttribute, &s_value)) {
@@ -218,7 +218,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
                    &line);
   }
 
-  return indent + line + ASCIIToUTF16("\n");
+  return indent + line + base::ASCIIToUTF16("\n");
 }
 
 // static

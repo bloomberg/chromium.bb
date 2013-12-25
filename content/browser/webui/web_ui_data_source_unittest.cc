@@ -27,7 +27,7 @@ class TestClient : public TestContentClient {
 
   virtual base::string16 GetLocalizedString(int message_id) const OVERRIDE {
     if (message_id == kDummyStringId)
-      return UTF8ToUTF16(kDummyString);
+      return base::UTF8ToUTF16(kDummyString);
     return base::string16();
 
   }
@@ -100,7 +100,7 @@ TEST_F(WebUIDataSourceTest, EmptyStrings) {
 
 TEST_F(WebUIDataSourceTest, SomeStrings) {
   source()->SetJsonPath("strings.js");
-  source()->AddString("planet", ASCIIToUTF16("pluto"));
+  source()->AddString("planet", base::ASCIIToUTF16("pluto"));
   source()->AddLocalizedString("button", kDummyStringId);
   StartDataRequest("strings.js");
   std::string result(reinterpret_cast<const char*>(

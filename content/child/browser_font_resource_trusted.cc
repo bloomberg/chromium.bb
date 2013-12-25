@@ -65,7 +65,7 @@ class TextRunCollection {
     StringVar* text_string = StringVar::FromPPVar(run.text);
     if (!text_string)
       return;  // Leave num_runs_ = 0 so we'll do nothing.
-    text_ = UTF8ToUTF16(text_string->value());
+    text_ = base::UTF8ToUTF16(text_string->value());
 
     if (run.override_direction) {
       // Skip autodetection.
@@ -127,7 +127,7 @@ bool PPTextRunToWebTextRun(const PP_BrowserFont_Trusted_TextRun& text,
   if (!text_string)
     return false;
 
-  *run = WebTextRun(UTF8ToUTF16(text_string->value()),
+  *run = WebTextRun(base::UTF8ToUTF16(text_string->value()),
                     PP_ToBool(text.rtl),
                     PP_ToBool(text.override_direction));
   return true;
@@ -191,7 +191,7 @@ WebFontDescription PPFontDescToWebFontDesc(
     }
   } else {
     // Use the exact font.
-    resolved_family = UTF8ToUTF16(face_name->value());
+    resolved_family = base::UTF8ToUTF16(face_name->value());
   }
   result.family = resolved_family;
 
@@ -273,7 +273,8 @@ PP_Bool BrowserFontResource_Trusted::Describe(
   // While converting the other way in PPFontDescToWebFontDesc we validated
   // that the enums can be casted.
   WebFontDescription web_desc = font_->fontDescription();
-  description->face = StringVar::StringToPPVar(UTF16ToUTF8(web_desc.family));
+  description->face =
+      StringVar::StringToPPVar(base::UTF16ToUTF8(web_desc.family));
   description->family =
       static_cast<PP_BrowserFont_Trusted_Family>(web_desc.genericFamily);
   description->size = static_cast<uint32_t>(web_desc.size);

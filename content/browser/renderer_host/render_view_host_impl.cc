@@ -899,15 +899,15 @@ void RenderViewHostImpl::DragTargetDragEnter(
     // and request permissions to the specific file to cover both cases.
     // We do not give it the permission to request all file:// URLs.
     base::FilePath path =
-        base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(iter->path));
+        base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(iter->path));
 
     // Make sure we have the same display_name as the one we register.
     if (iter->display_name.empty()) {
       std::string name;
       files.AddPath(path, &name);
-      iter->display_name = UTF8ToUTF16(name);
+      iter->display_name = base::UTF8ToUTF16(name);
     } else {
-      files.AddPathWithName(path, UTF16ToUTF8(iter->display_name));
+      files.AddPathWithName(path, base::UTF16ToUTF8(iter->display_name));
     }
 
     policy->GrantRequestSpecificFileURL(renderer_id,
@@ -932,7 +932,7 @@ void RenderViewHostImpl::DragTargetDragEnter(
     // Grant the permission iff the ID is valid.
     policy->GrantReadFileSystem(renderer_id, filesystem_id);
   }
-  filtered_data.filesystem_id = UTF8ToUTF16(filesystem_id);
+  filtered_data.filesystem_id = base::UTF8ToUTF16(filesystem_id);
 
   Send(new DragMsg_TargetDragEnter(GetRoutingID(), filtered_data, client_pt,
                                    screen_pt, operations_allowed,
@@ -1771,7 +1771,8 @@ void RenderViewHostImpl::OnStartDragging(
   for (std::vector<DropData::FileInfo>::const_iterator it =
            drop_data.filenames.begin();
        it != drop_data.filenames.end(); ++it) {
-    base::FilePath path(base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)));
+    base::FilePath path(
+        base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(it->path)));
     if (policy->CanReadFile(GetProcess()->GetID(), path))
       filtered_data.filenames.push_back(*it);
   }

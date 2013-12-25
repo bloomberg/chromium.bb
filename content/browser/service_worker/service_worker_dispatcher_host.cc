@@ -91,7 +91,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
         thread_id,
         request_id,
         WebServiceWorkerError::DisabledError,
-        ASCIIToUTF16(kDisabledErrorMessage)));
+        base::ASCIIToUTF16(kDisabledErrorMessage)));
     return;
   }
 
@@ -103,7 +103,7 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
         thread_id,
         request_id,
         WebServiceWorkerError::SecurityError,
-        ASCIIToUTF16(kDomainMismatchErrorMessage)));
+        base::ASCIIToUTF16(kDomainMismatchErrorMessage)));
     return;
   }
 
@@ -128,7 +128,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
         thread_id,
         request_id,
         blink::WebServiceWorkerError::DisabledError,
-        ASCIIToUTF16(kDisabledErrorMessage)));
+        base::ASCIIToUTF16(kDisabledErrorMessage)));
     return;
   }
 

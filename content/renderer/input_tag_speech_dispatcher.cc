@@ -60,9 +60,9 @@ bool InputTagSpeechDispatcher::startRecognition(
   DVLOG(1) << "InputTagSpeechDispatcher::startRecognition enter";
 
   InputTagSpeechHostMsg_StartRecognition_Params params;
-  params.grammar = UTF16ToUTF8(grammar);
-  params.language = UTF16ToUTF8(language);
-  params.origin_url = UTF16ToUTF8(origin.toString());
+  params.grammar = base::UTF16ToUTF8(grammar);
+  params.language = base::UTF16ToUTF8(language);
+  params.origin_url = base::UTF16ToUTF8(origin.toString());
   params.render_view_id = routing_id();
   params.request_id = request_id;
   params.element_rect = element_rect;

@@ -11,6 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 namespace {

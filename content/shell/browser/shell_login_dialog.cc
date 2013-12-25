@@ -23,8 +23,8 @@ ShellLoginDialog::ShellLoginDialog(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ShellLoginDialog::PrepDialog, this,
-                 ASCIIToUTF16(auth_info->challenger.ToString()),
-                 UTF8ToUTF16(auth_info->realm)));
+                 base::ASCIIToUTF16(auth_info->challenger.ToString()),
+                 base::UTF8ToUTF16(auth_info->realm)));
 }
 
 void ShellLoginDialog::OnRequestCancelled() {
@@ -77,13 +77,13 @@ void ShellLoginDialog::PrepDialog(const base::string16& host,
   gfx::ElideString(realm, 120, &elided_realm);
 
   base::string16 explanation =
-      ASCIIToUTF16("The server ") + host +
-      ASCIIToUTF16(" requires a username and password.");
+      base::ASCIIToUTF16("The server ") + host +
+      base::ASCIIToUTF16(" requires a username and password.");
 
   if (!elided_realm.empty()) {
-    explanation += ASCIIToUTF16(" The server says: ");
+    explanation += base::ASCIIToUTF16(" The server says: ");
     explanation += elided_realm;
-    explanation += ASCIIToUTF16(".");
+    explanation += base::ASCIIToUTF16(".");
   }
 
   PlatformCreateDialog(explanation);

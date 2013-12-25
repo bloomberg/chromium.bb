@@ -151,7 +151,7 @@ void OpenFileSystemCallbackAdapter(
   CallbackFileSystemCallbacks(
       thread_id, callbacks_id, waitable_results,
       &WebFileSystemCallbacks::didOpenFileSystem,
-      MakeTuple(UTF8ToUTF16(name), root));
+      MakeTuple(base::UTF8ToUTF16(name), root));
 }
 
 void ResolveURLCallbackAdapter(
@@ -164,7 +164,7 @@ void ResolveURLCallbackAdapter(
   CallbackFileSystemCallbacks(
       thread_id, callbacks_id, waitable_results,
       &WebFileSystemCallbacks::didResolveURL,
-      MakeTuple(UTF8ToUTF16(info.name), info.root_url,
+      MakeTuple(base::UTF8ToUTF16(info.name), info.root_url,
                 static_cast<blink::WebFileSystemType>(info.mount_type),
                 normalized_path.AsUTF16Unsafe(), is_directory));
 }

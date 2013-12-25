@@ -455,7 +455,7 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
       DCHECK(ws_alternative.has_transcript());
       // TODO(hans): Perhaps the transcript should be required in the proto?
       if (ws_alternative.has_transcript())
-        hypothesis.utterance = UTF8ToUTF16(ws_alternative.transcript());
+        hypothesis.utterance = base::UTF8ToUTF16(ws_alternative.transcript());
 
       result.hypotheses.push_back(hypothesis);
     }

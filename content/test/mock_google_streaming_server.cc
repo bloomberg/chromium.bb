@@ -93,7 +93,7 @@ void MockGoogleStreamingServer::SimulateResult(
         proto_result->add_alternative();
     const SpeechRecognitionHypothesis& hypothesis = result.hypotheses[i];
     proto_alternative->set_confidence(hypothesis.confidence);
-    proto_alternative->set_transcript(UTF16ToUTF8(hypothesis.utterance));
+    proto_alternative->set_transcript(base::UTF16ToUTF8(hypothesis.utterance));
   }
 
   std::string msg_string;

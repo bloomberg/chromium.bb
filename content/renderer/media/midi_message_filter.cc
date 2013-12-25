@@ -123,18 +123,18 @@ void MIDIMessageFilter::HandleSessionStarted(
     // Add the client's input and output ports.
     for (size_t i = 0; i < inputs.size(); ++i) {
       client->didAddInputPort(
-          UTF8ToUTF16(inputs[i].id),
-          UTF8ToUTF16(inputs[i].manufacturer),
-          UTF8ToUTF16(inputs[i].name),
-          UTF8ToUTF16(inputs[i].version));
+          base::UTF8ToUTF16(inputs[i].id),
+          base::UTF8ToUTF16(inputs[i].manufacturer),
+          base::UTF8ToUTF16(inputs[i].name),
+          base::UTF8ToUTF16(inputs[i].version));
     }
 
     for (size_t i = 0; i < outputs.size(); ++i) {
       client->didAddOutputPort(
-          UTF8ToUTF16(outputs[i].id),
-          UTF8ToUTF16(outputs[i].manufacturer),
-          UTF8ToUTF16(outputs[i].name),
-          UTF8ToUTF16(outputs[i].version));
+          base::UTF8ToUTF16(outputs[i].id),
+          base::UTF8ToUTF16(outputs[i].manufacturer),
+          base::UTF8ToUTF16(outputs[i].name),
+          base::UTF8ToUTF16(outputs[i].version));
     }
   }
   client->didStartSession(success);

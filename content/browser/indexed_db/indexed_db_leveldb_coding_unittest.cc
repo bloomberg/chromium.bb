@@ -15,6 +15,7 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 using base::StringPiece;
 using blink::WebIDBKeyTypeDate;
 using blink::WebIDBKeyTypeNumber;

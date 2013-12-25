@@ -61,7 +61,7 @@ bool PhoneNumberDetector::FindContent(
     size_t* end_pos,
     std::string* content_text) {
   base::string16 utf16_input = base::string16(begin, end);
-  std::string utf8_input = UTF16ToUTF8(utf16_input);
+  std::string utf8_input = base::UTF16ToUTF8(utf16_input);
 
   PhoneNumberMatcher matcher(utf8_input, region_code_);
   if (matcher.HasNext()) {
@@ -78,8 +78,9 @@ bool PhoneNumberDetector::FindContent(
       return false;
 
     // Need to return start_pos and end_pos relative to a UTF16 encoding.
-    *start_pos = UTF8ToUTF16(utf8_input.substr(0, match.start())).length();
-    *end_pos = *start_pos + UTF8ToUTF16(match.raw_string()).length();
+    *start_pos =
+        base::UTF8ToUTF16(utf8_input.substr(0, match.start())).length();
+    *end_pos = *start_pos + base::UTF8ToUTF16(match.raw_string()).length();
 
     return true;
   }

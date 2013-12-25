@@ -99,7 +99,7 @@ bool GetNextTest(const CommandLine::StringVector& args,
   if (args[*position] == FILE_PATH_LITERAL("-"))
     return !!std::getline(std::cin, *test, '\n');
 #if defined(OS_WIN)
-  *test = WideToUTF8(args[(*position)++]);
+  *test = base::WideToUTF8(args[(*position)++]);
 #else
   *test = args[(*position)++];
 #endif

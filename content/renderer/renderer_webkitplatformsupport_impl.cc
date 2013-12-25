@@ -338,7 +338,7 @@ void RendererWebKitPlatformSupportImpl::cacheMetadata(
 }
 
 WebString RendererWebKitPlatformSupportImpl::defaultLocale() {
-  return ASCIIToUTF16(RenderThread::Get()->GetLocale());
+  return base::ASCIIToUTF16(RenderThread::Get()->GetLocale());
 }
 
 void RendererWebKitPlatformSupportImpl::suddenTerminationChanged(bool enabled) {
@@ -456,7 +456,7 @@ RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeForExtension(
   RenderThread::Get()->Send(
       new MimeRegistryMsg_GetMimeTypeFromExtension(
           base::FilePath::FromUTF16Unsafe(file_extension).value(), &mime_type));
-  return ASCIIToUTF16(mime_type);
+  return base::ASCIIToUTF16(mime_type);
 }
 
 WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
@@ -470,7 +470,7 @@ WebString RendererWebKitPlatformSupportImpl::MimeRegistry::mimeTypeFromFile(
   RenderThread::Get()->Send(new MimeRegistryMsg_GetMimeTypeFromFile(
       base::FilePath::FromUTF16Unsafe(file_path),
       &mime_type));
-  return ASCIIToUTF16(mime_type);
+  return base::ASCIIToUTF16(mime_type);
 }
 
 //------------------------------------------------------------------------------
@@ -716,7 +716,7 @@ RendererWebKitPlatformSupportImpl::createAudioDevice(
 
   int session_id = 0;
   if (input_device_id.isNull() ||
-      !base::StringToInt(UTF16ToUTF8(input_device_id), &session_id)) {
+      !base::StringToInt(base::UTF16ToUTF8(input_device_id), &session_id)) {
     if (input_channels > 0)
       DLOG(WARNING) << "createAudioDevice(): request for audio input ignored";
 

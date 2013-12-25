@@ -22,7 +22,7 @@ const int kBrokerReleaseTimeSeconds = 30;
 std::string ConvertPluginDataPath(const base::FilePath& plugin_data_path) {
   // The string is always 8-bit, convert on Windows.
 #if defined(OS_WIN)
-  return WideToUTF8(plugin_data_path.value());
+  return base::WideToUTF8(plugin_data_path.value());
 #else
   return plugin_data_path.value();
 #endif

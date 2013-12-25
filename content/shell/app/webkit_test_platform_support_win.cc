@@ -36,7 +36,7 @@ bool SetupFonts() {
 
   std::string font_buffer;
   if (!base::ReadFileToString(font_path, &font_buffer)) {
-    std::cerr << "Failed to load font " << WideToUTF8(font_path.value())
+    std::cerr << "Failed to load font " << base::WideToUTF8(font_path.value())
               << "\n";
     return false;
   }

@@ -37,9 +37,9 @@ base::string16 WebUI::GetJavascriptCall(
       parameters += char16(',');
 
     base::JSONWriter::Write(arg_list[i], &json);
-    parameters += UTF8ToUTF16(json);
+    parameters += base::UTF8ToUTF16(json);
   }
-  return ASCIIToUTF16(function_name) +
+  return base::ASCIIToUTF16(function_name) +
       char16('(') + parameters + char16(')') + char16(';');
 }
 
@@ -144,7 +144,7 @@ void WebUIImpl::SetController(WebUIController* controller) {
 
 void WebUIImpl::CallJavascriptFunction(const std::string& function_name) {
   DCHECK(IsStringASCII(function_name));
-  base::string16 javascript = ASCIIToUTF16(function_name + "();");
+  base::string16 javascript = base::ASCIIToUTF16(function_name + "();");
   ExecuteJavascript(javascript);
 }
 
@@ -233,7 +233,7 @@ void WebUIImpl::AddMessageHandler(WebUIMessageHandler* handler) {
 void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
   static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost())->ExecuteJavascriptInWebFrame(
-      ASCIIToUTF16(frame_xpath_), javascript);
+      base::ASCIIToUTF16(frame_xpath_), javascript);
 }
 
 }  // namespace content

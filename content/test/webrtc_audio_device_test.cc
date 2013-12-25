@@ -430,7 +430,7 @@ std::string MAYBE_WebRTCAudioDeviceTest::GetTestDataPath(
   path = path.Append(file_name);
   EXPECT_TRUE(base::PathExists(path));
 #if defined(OS_WIN)
-  return WideToUTF8(path.value());
+  return base::WideToUTF8(path.value());
 #else
   return path.value();
 #endif

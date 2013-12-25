@@ -238,7 +238,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
   scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks(
       new MockIndexedDBDatabaseCallbacks());
   const int64 transaction_id = 1;
-  factory->Open(ASCIIToUTF16("db"),
+  factory->Open(base::ASCIIToUTF16("db"),
                 IndexedDBDatabaseMetadata::DEFAULT_INT_VERSION,
                 transaction_id,
                 callbacks,

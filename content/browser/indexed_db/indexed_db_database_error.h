@@ -16,7 +16,7 @@ class IndexedDBDatabaseError {
   IndexedDBDatabaseError(uint16 code)
       : code_(code) {}
   IndexedDBDatabaseError(uint16 code, const char* message)
-      : code_(code), message_(ASCIIToUTF16(message)) {}
+      : code_(code), message_(base::ASCIIToUTF16(message)) {}
   IndexedDBDatabaseError(uint16 code, const base::string16& message)
       : code_(code), message_(message) {}
   ~IndexedDBDatabaseError() {}

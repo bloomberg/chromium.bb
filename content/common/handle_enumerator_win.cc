@@ -16,6 +16,8 @@
 #include "content/public/common/result_codes.h"
 #include "sandbox/win/src/handle_table.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 namespace {
 

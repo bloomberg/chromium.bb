@@ -153,7 +153,7 @@ bool PluginList::ParseMimeTypes(
       // On Windows, the description likely has a list of file extensions
       // embedded in it (e.g. "SurfWriter file (*.swr)"). Remove an extension
       // list from the description if it is present.
-      size_t ext = mime_type.description.find(ASCIIToUTF16("(*"));
+      size_t ext = mime_type.description.find(base::ASCIIToUTF16("(*"));
       if (ext != base::string16::npos) {
         if (ext > 1 && mime_type.description[ext - 1] == ' ')
           ext--;

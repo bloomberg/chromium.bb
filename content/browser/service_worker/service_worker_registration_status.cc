@@ -28,12 +28,12 @@ void GetServiceWorkerRegistrationStatusResponse(
 
     case REGISTRATION_INSTALL_FAILED:
       *error_type = WebServiceWorkerError::InstallError;
-      *message = ASCIIToUTF16(kInstallFailedErrorMessage);
+      *message = base::ASCIIToUTF16(kInstallFailedErrorMessage);
       return;
 
     case REGISTRATION_ACTIVATE_FAILED:
       *error_type = WebServiceWorkerError::ActivateError;
-      *message = ASCIIToUTF16(kActivateFailedErrorMessage);
+      *message = base::ASCIIToUTF16(kActivateFailedErrorMessage);
       return;
   }
   NOTREACHED();

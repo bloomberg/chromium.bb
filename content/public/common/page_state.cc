@@ -12,7 +12,7 @@ namespace content {
 namespace {
 
 base::NullableString16 ToNullableString16(const std::string& utf8) {
-  return base::NullableString16(UTF8ToUTF16(utf8), false);
+  return base::NullableString16(base::UTF8ToUTF16(utf8), false);
 }
 
 base::FilePath ToFilePath(const base::NullableString16& s) {

@@ -254,7 +254,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
         continue;
       }
       std::string ssid(ssid_bytes, ssid_bytes + ssid_length);
-      access_point_data.ssid = UTF8ToUTF16(ssid);
+      access_point_data.ssid = base::UTF8ToUTF16(ssid);
     }
 
     { // Read the mac address
@@ -275,7 +275,7 @@ bool NetworkManagerWlanApi::GetAccessPointsForAdapter(
       if (!base::HexStringToBytes(mac, &mac_bytes) || mac_bytes.size() != 6) {
         LOG(WARNING) << "Can't parse mac address (found " << mac_bytes.size()
                      << " bytes) so using raw string: " << mac;
-        access_point_data.mac_address = UTF8ToUTF16(mac);
+        access_point_data.mac_address = base::UTF8ToUTF16(mac);
       } else {
         access_point_data.mac_address = MacAddressAsString16(&mac_bytes[0]);
       }

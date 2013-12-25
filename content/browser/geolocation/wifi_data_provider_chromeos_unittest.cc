@@ -84,7 +84,8 @@ TEST_F(GeolocationChromeOsWifiDataProviderTest, GetOneAccessPoint) {
   AddAccessPoints(1, 1);
   EXPECT_TRUE(GetAccessPointData());
   ASSERT_EQ(1u, ap_data_.size());
-  EXPECT_EQ("00:00:03:04:05:06", UTF16ToUTF8(ap_data_.begin()->mac_address));
+  EXPECT_EQ("00:00:03:04:05:06",
+            base::UTF16ToUTF8(ap_data_.begin()->mac_address));
 }
 
 TEST_F(GeolocationChromeOsWifiDataProviderTest, GetManyAccessPoints) {

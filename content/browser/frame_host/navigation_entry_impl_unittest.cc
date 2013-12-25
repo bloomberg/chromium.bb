@@ -11,6 +11,8 @@
 #include "content/public/common/ssl_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 class NavigationEntryTest : public testing::Test {

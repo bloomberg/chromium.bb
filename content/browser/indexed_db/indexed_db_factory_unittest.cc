@@ -18,6 +18,8 @@
 #include "url/gurl.h"
 #include "webkit/common/database/database_identifier.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 class IndexedDBFactoryTest : public testing::Test {

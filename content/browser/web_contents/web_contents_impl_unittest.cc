@@ -304,9 +304,10 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
   LoadCommittedDetails details;
   cont.RendererDidNavigate(params, &details);
 
-  contents()->UpdateTitle(rvh(), 0, ASCIIToUTF16("    Lots O' Whitespace\n"),
+  contents()->UpdateTitle(rvh(), 0,
+                          base::ASCIIToUTF16("    Lots O' Whitespace\n"),
                           base::i18n::LEFT_TO_RIGHT);
-  EXPECT_EQ(ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());
 }
 
 TEST_F(WebContentsImplTest, DontUseTitleFromPendingEntry) {
@@ -318,7 +319,7 @@ TEST_F(WebContentsImplTest, DontUseTitleFromPendingEntry) {
 
 TEST_F(WebContentsImplTest, UseTitleFromPendingEntryIfSet) {
   const GURL kGURL("chrome://blah");
-  const base::string16 title = ASCIIToUTF16("My Title");
+  const base::string16 title = base::ASCIIToUTF16("My Title");
   controller().LoadURL(
       kGURL, Referrer(), PAGE_TRANSITION_TYPED, std::string());
 
@@ -350,7 +351,7 @@ TEST_F(WebContentsImplTest, NTPViewSource) {
   LoadCommittedDetails details;
   cont.RendererDidNavigate(params, &details);
   // Also check title and url.
-  EXPECT_EQ(ASCIIToUTF16(kUrl), contents()->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16(kUrl), contents()->GetTitle());
 }
 
 // Test to ensure UpdateMaxPageID is working properly.
@@ -2037,7 +2038,8 @@ TEST_F(WebContentsImplTest, NoJSMessageOnInterstitials) {
   IPC::Message* dummy_message = new IPC::Message;
   bool did_suppress_message = false;
   contents()->RunJavaScriptMessage(contents()->GetRenderViewHost(),
-      ASCIIToUTF16("This is an informative message"), ASCIIToUTF16("OK"),
+      base::ASCIIToUTF16("This is an informative message"),
+      base::ASCIIToUTF16("OK"),
       kGURL, JAVASCRIPT_MESSAGE_TYPE_ALERT, dummy_message,
       &did_suppress_message);
   EXPECT_TRUE(did_suppress_message);

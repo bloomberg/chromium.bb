@@ -32,9 +32,9 @@ MockWebRTCPeerConnectionHandlerClient::
 void MockWebRTCPeerConnectionHandlerClient::didGenerateICECandidateWorker(
     const blink::WebRTCICECandidate& candidate) {
   if (!candidate.isNull()) {
-    candidate_sdp_ = UTF16ToUTF8(candidate.candidate());
+    candidate_sdp_ = base::UTF16ToUTF8(candidate.candidate());
     candidate_mline_index_ = candidate.sdpMLineIndex();
-    candidate_mid_ = UTF16ToUTF8(candidate.sdpMid());
+    candidate_mid_ = base::UTF16ToUTF8(candidate.sdpMid());
   } else {
     candidate_sdp_ = "";
     candidate_mline_index_ = -1;

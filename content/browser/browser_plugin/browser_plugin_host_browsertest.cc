@@ -39,6 +39,7 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
+using base::ASCIIToUTF16;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using content::BrowserPluginEmbedder;
@@ -953,7 +954,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
   {
     ExecuteSyncJSFunction(guest_rvh,
                           "document.getElementById('input1').focus();");
-    base::string16 expected_title = UTF8ToUTF16("InputTest123");
+    base::string16 expected_title = base::UTF8ToUTF16("InputTest123");
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
     embedder_rvh->Send(
@@ -967,7 +968,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
   }
   // A composition is committed via IME.
   {
-    base::string16 expected_title = UTF8ToUTF16("InputTest456");
+    base::string16 expected_title = base::UTF8ToUTF16("InputTest456");
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_title);
     embedder_rvh->Send(
@@ -984,7 +985,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
   {
     ExecuteSyncJSFunction(guest_rvh,
                           "document.getElementById('input1').value = '';");
-    base::string16 composition = UTF8ToUTF16("InputTest789");
+    base::string16 composition = base::UTF8ToUTF16("InputTest789");
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         composition);
     embedder_rvh->Send(
@@ -1005,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
             guest_rvh, "document.getElementById('input1').value");
     std::string result;
     ASSERT_TRUE(value->GetAsString(&result));
-    EXPECT_EQ(UTF16ToUTF8(composition), result);
+    EXPECT_EQ(base::UTF16ToUTF8(composition), result);
   }
   // Tests ExtendSelectionAndDelete message works in browser_plugin.
   {
@@ -1016,7 +1017,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
                           "i.value = 'InputTestABC';"
                           "i.selectionStart=6;"
                           "i.selectionEnd=6;");
-    base::string16 expected_value = UTF8ToUTF16("InputABC");
+    base::string16 expected_value = base::UTF8ToUTF16("InputABC");
     content::TitleWatcher title_watcher(test_guest()->web_contents(),
                                         expected_value);
     // Delete 'Test' in 'InputTestABC', as the caret is after 'T':
@@ -1032,7 +1033,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, InputMethod) {
             guest_rvh, "document.getElementById('input1').value");
     std::string actual_value;
     ASSERT_TRUE(value->GetAsString(&actual_value));
-    EXPECT_EQ(UTF16ToUTF8(expected_value), actual_value);
+    EXPECT_EQ(base::UTF16ToUTF8(expected_value), actual_value);
   }
 }
 

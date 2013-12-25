@@ -947,7 +947,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
                              test_case->input_id);
       // Move the input focus to the target <input> element, where we should
       // activate IMEs.
-      ExecuteJavaScriptAndReturnIntValue(ASCIIToUTF16(javascript), NULL);
+      ExecuteJavaScriptAndReturnIntValue(base::ASCIIToUTF16(javascript), NULL);
       ProcessPendingMessages();
       render_thread_->sink().ClearMessages();
 
@@ -1295,7 +1295,7 @@ TEST_F(RenderViewImplTest, MAYBE_OnHandleKeyboardEvent) {
         // text created from a virtual-key code, a character code, and the
         // modifier-key status.
         const int kMaxOutputCharacters = 1024;
-        std::string output = UTF16ToUTF8(
+        std::string output = base::UTF16ToUTF8(
             GetMainFrame()->contentAsText(kMaxOutputCharacters));
         EXPECT_EQ(expected_result, output);
       }
@@ -1776,7 +1776,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   blink::WebHistoryItem page_a_item = GetMainFrame()->currentHistoryItem();
   int was_page_a = -1;
   base::string16 check_page_a =
-      ASCIIToUTF16(
+      base::ASCIIToUTF16(
           "Number(document.getElementById('pagename').innerHTML == 'Page A')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
   EXPECT_EQ(1, was_page_a);
@@ -1784,7 +1784,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   LoadHTML("<div id=pagename>Page B</div>");
   int was_page_b = -1;
   base::string16 check_page_b =
-      ASCIIToUTF16(
+      base::ASCIIToUTF16(
           "Number(document.getElementById('pagename').innerHTML == 'Page B')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
@@ -1792,7 +1792,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   LoadHTML("<div id=pagename>Page C</div>");
   int was_page_c = -1;
   base::string16 check_page_c =
-      ASCIIToUTF16(
+      base::ASCIIToUTF16(
           "Number(document.getElementById('pagename').innerHTML == 'Page C')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_b);
@@ -1832,14 +1832,14 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   LoadHTML("<textarea id=\"test\"></textarea>");
   ExecuteJavaScript("document.getElementById('test').focus();");
 
-  const base::string16 empty_string = UTF8ToUTF16("");
+  const base::string16 empty_string;
   const std::vector<blink::WebCompositionUnderline> empty_underline;
   std::vector<gfx::Rect> bounds;
   view()->OnSetFocus(true);
   view()->OnSetInputMethodActive(true);
 
   // ASCII composition
-  const base::string16 ascii_composition = UTF8ToUTF16("aiueo");
+  const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
   view()->OnImeSetComposition(ascii_composition, empty_underline, 0, 0);
   view()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(ascii_composition.size(), bounds.size());
@@ -1849,7 +1849,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       empty_string, gfx::Range::InvalidRange(), false);
 
   // Non surrogate pair unicode character.
-  const base::string16 unicode_composition = UTF8ToUTF16(
+  const base::string16 unicode_composition = base::UTF8ToUTF16(
       "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
   view()->OnImeSetComposition(unicode_composition, empty_underline, 0, 0);
   view()->GetCompositionCharacterBounds(&bounds);
@@ -1860,7 +1860,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       empty_string, gfx::Range::InvalidRange(), false);
 
   // Surrogate pair character.
-  const base::string16 surrogate_pair_char = UTF8ToUTF16("\xF0\xA0\xAE\x9F");
+  const base::string16 surrogate_pair_char =
+      base::UTF8ToUTF16("\xF0\xA0\xAE\x9F");
   view()->OnImeSetComposition(surrogate_pair_char,
                               empty_underline,
                               0,
@@ -1874,8 +1875,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
 
   // Mixed string.
   const base::string16 surrogate_pair_mixed_composition =
-      surrogate_pair_char + UTF8ToUTF16("\xE3\x81\x82") + surrogate_pair_char +
-      UTF8ToUTF16("b") + surrogate_pair_char;
+      surrogate_pair_char + base::UTF8ToUTF16("\xE3\x81\x82") +
+      surrogate_pair_char + base::UTF8ToUTF16("b") + surrogate_pair_char;
   const size_t utf16_length = 8UL;
   const bool is_surrogate_pair_empty_rect[8] = {
     false, true, false, false, true, false, false, true };
@@ -2175,7 +2176,7 @@ TEST_F(RenderViewImplTest, SendCandidateWindowEvents) {
 
   // Retrieve the content and check if it is expected.
   const int kMaxOutputCharacters = 50;
-  std::string output = UTF16ToUTF8(
+  std::string output = base::UTF16ToUTF8(
       GetMainFrame()->contentAsText(kMaxOutputCharacters));
   EXPECT_EQ(output, "\nResult:showupdatehide");
 }

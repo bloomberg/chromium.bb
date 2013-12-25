@@ -21,7 +21,7 @@ WebPluginMimeType::WebPluginMimeType(const std::string& m,
                                      const std::string& d)
     : mime_type(m),
       file_extensions(),
-      description(ASCIIToUTF16(d)) {
+      description(base::ASCIIToUTF16(d)) {
   file_extensions.push_back(f);
 }
 

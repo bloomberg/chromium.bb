@@ -103,7 +103,7 @@ void PepperFileChooserHost::StoreChosenFiles(
   std::vector<std::string> display_names;
   for (size_t i = 0; i < files.size(); i++) {
 #if defined(OS_WIN)
-    base::FilePath file_path(UTF8ToWide(files[i].path));
+    base::FilePath file_path(base::UTF8ToWide(files[i].path));
 #else
     base::FilePath file_path(files[i].path);
 #endif

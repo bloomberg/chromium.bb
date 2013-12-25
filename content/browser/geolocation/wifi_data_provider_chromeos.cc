@@ -151,11 +151,11 @@ bool WifiDataProviderChromeOs::GetAccessPointData(
            = access_points.begin();
        i != access_points.end(); ++i) {
     AccessPointData ap_data;
-    ap_data.mac_address = ASCIIToUTF16(i->mac_address);
+    ap_data.mac_address = base::ASCIIToUTF16(i->mac_address);
     ap_data.radio_signal_strength = i->signal_strength;
     ap_data.channel = i->channel;
     ap_data.signal_to_noise = i->signal_to_noise;
-    ap_data.ssid = UTF8ToUTF16(i->ssid);
+    ap_data.ssid = base::UTF8ToUTF16(i->ssid);
     result->insert(ap_data);
   }
   // If the age is significantly longer than our long polling time, assume the

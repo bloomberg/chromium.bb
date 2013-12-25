@@ -173,7 +173,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, IntermittentWifi){
   single_access_point.mac_address = 3;
   single_access_point.radio_signal_strength = 4;
   single_access_point.signal_to_noise = 5;
-  single_access_point.ssid = ASCIIToUTF16("foossid");
+  single_access_point.ssid = base::ASCIIToUTF16("foossid");
   wlan_api_->data_out_.insert(single_access_point);
 
   provider_->StartDataProvider();
@@ -204,7 +204,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
   single_access_point.mac_address = 3;
   single_access_point.radio_signal_strength = 4;
   single_access_point.signal_to_noise = 5;
-  single_access_point.ssid = ASCIIToUTF16("foossid");
+  single_access_point.ssid = base::ASCIIToUTF16("foossid");
   wlan_api_->data_out_.insert(single_access_point);
 
   provider_->StartDataProvider();

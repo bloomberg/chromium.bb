@@ -88,9 +88,9 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
   }
 
   void AddDefaultFilters(std::vector<Filter>* filters) {
-    filters->push_back(Filter(ASCIIToUTF16("FOCUSABLE"), Filter::ALLOW));
-    filters->push_back(Filter(ASCIIToUTF16("READONLY"), Filter::ALLOW));
-    filters->push_back(Filter(ASCIIToUTF16("*=''"), Filter::DENY));
+    filters->push_back(Filter(base::ASCIIToUTF16("FOCUSABLE"), Filter::ALLOW));
+    filters->push_back(Filter(base::ASCIIToUTF16("READONLY"), Filter::ALLOW));
+    filters->push_back(Filter(base::ASCIIToUTF16("*=''"), Filter::DENY));
   }
 
   void ParseFilters(const std::string& test_html,
@@ -109,13 +109,15 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
           AccessibilityTreeFormatter::GetDenyString();
       if (StartsWithASCII(line, allow_empty_str, true)) {
         filters->push_back(
-          Filter(UTF8ToUTF16(line.substr(allow_empty_str.size())),
+          Filter(base::UTF8ToUTF16(line.substr(allow_empty_str.size())),
                  Filter::ALLOW_EMPTY));
       } else if (StartsWithASCII(line, allow_str, true)) {
-        filters->push_back(Filter(UTF8ToUTF16(line.substr(allow_str.size())),
+        filters->push_back(Filter(base::UTF8ToUTF16(
+                                      line.substr(allow_str.size())),
                                   Filter::ALLOW));
       } else if (StartsWithASCII(line, deny_str, true)) {
-        filters->push_back(Filter(UTF8ToUTF16(line.substr(deny_str.size())),
+        filters->push_back(Filter(base::UTF8ToUTF16(
+                                      line.substr(deny_str.size())),
                                   Filter::DENY));
       }
     }
@@ -170,7 +172,7 @@ void DumpAccessibilityTreeTest::RunTest(
 
   // Load the page.
   base::string16 html_contents16;
-  html_contents16 = UTF8ToUTF16(html_contents);
+  html_contents16 = base::UTF8ToUTF16(html_contents);
   GURL url = GetTestUrl("accessibility",
                         html_file.BaseName().MaybeAsASCII().c_str());
   AccessibilityNotificationWaiter waiter(
@@ -193,7 +195,7 @@ void DumpAccessibilityTreeTest::RunTest(
   // Perform a diff (or write the initial baseline).
   base::string16 actual_contents_utf16;
   formatter.FormatAccessibilityTree(&actual_contents_utf16);
-  std::string actual_contents = UTF16ToUTF8(actual_contents_utf16);
+  std::string actual_contents = base::UTF16ToUTF8(actual_contents_utf16);
   std::vector<std::string> actual_lines, expected_lines;
   Tokenize(actual_contents, "\n", &actual_lines);
   Tokenize(expected_contents, "\n", &expected_lines);

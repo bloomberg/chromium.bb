@@ -243,8 +243,8 @@ void WebContentsDragWin::PrepareDragForDownload(
       net::GenerateFileName(download_url,
                             std::string(),
                             std::string(),
-                            UTF16ToUTF8(file_name.value()),
-                            UTF16ToUTF8(mime_type),
+                            base::UTF16ToUTF8(file_name.value()),
+                            base::UTF16ToUTF8(mime_type),
                             default_name);
   base::FilePath temp_dir_path;
   if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_drag"),

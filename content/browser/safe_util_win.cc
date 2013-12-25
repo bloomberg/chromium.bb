@@ -81,7 +81,7 @@ HRESULT AVScanFile(const base::FilePath& full_path,
   // Note: SetSource looks like it needs to be called, even if empty.
   // Docs say it is optional, but it appears not calling it at all sets
   // a zone that is too restrictive.
-  hr = attachment_services->SetSource(UTF8ToWide(source_url).c_str());
+  hr = attachment_services->SetSource(base::UTF8ToWide(source_url).c_str());
   if (FAILED(hr))
     return hr;
 

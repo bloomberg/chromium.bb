@@ -168,7 +168,7 @@ void IPCWebSocketStreamHandleBridge::OnFailed(int error_code,
   DVLOG(1) << "Bridge #" << socket_id_ << " OnFailed (error_code=" << error_code
            << ")";
   if (delegate_)
-    delegate_->DidFail(handle_, error_code, ASCIIToUTF16(error_msg));
+    delegate_->DidFail(handle_, error_code, base::ASCIIToUTF16(error_msg));
 }
 
 SocketStreamDispatcher::SocketStreamDispatcher() {

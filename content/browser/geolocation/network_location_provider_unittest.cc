@@ -162,11 +162,11 @@ class GeolocationNetworkProviderTest : public testing::Test {
     for (int i = 0; i < ap_count; ++i) {
       AccessPointData ap;
       ap.mac_address =
-          ASCIIToUTF16(base::StringPrintf("%02d-34-56-78-54-32", i));
+          base::ASCIIToUTF16(base::StringPrintf("%02d-34-56-78-54-32", i));
       ap.radio_signal_strength = ap_count - i;
       ap.channel = IndexToChannel(i);
       ap.signal_to_noise = i + 42;
-      ap.ssid = ASCIIToUTF16("Some nice+network|name\\");
+      ap.ssid = base::ASCIIToUTF16("Some nice+network|name\\");
       data.access_point_data.insert(ap);
     }
     return data;
@@ -421,7 +421,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_TRUE(position.Validate());
 
   // Token should be in the store.
-  EXPECT_EQ(UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
+  EXPECT_EQ(base::UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
             access_token_store_->access_token_set_[test_server_url_]);
 
   // Wifi updated again, with one less AP. This is 'close enough' to the
@@ -517,7 +517,7 @@ TEST_F(GeolocationNetworkProviderTest, NetworkRequestDeferredForPermission) {
 TEST_F(GeolocationNetworkProviderTest,
        NetworkRequestWithWifiDataDeferredForPermission) {
   access_token_store_->access_token_set_[test_server_url_] =
-      UTF8ToUTF16(REFERENCE_ACCESS_TOKEN);
+      base::UTF8ToUTF16(REFERENCE_ACCESS_TOKEN);
   scoped_ptr<LocationProvider> provider(CreateProvider(false));
   EXPECT_TRUE(provider->StartProvider(false));
   net::TestURLFetcher* fetcher = get_url_fetcher_and_advance_id();

@@ -480,7 +480,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
   if (name_str.empty())
     return S_FALSE;
 
-  *name = SysAllocString(UTF8ToUTF16(name_str).c_str());
+  *name = SysAllocString(base::UTF8ToUTF16(name_str).c_str());
 
   DCHECK(*name);
   return S_OK;
@@ -591,7 +591,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accValue(VARIANT var_id,
     return S_OK;
   }
 
-  *value = SysAllocString(UTF8ToUTF16(target->value()).c_str());
+  *value = SysAllocString(base::UTF8ToUTF16(target->value()).c_str());
   DCHECK(*value);
   return S_OK;
 }
@@ -905,7 +905,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_appName(BSTR* app_name) {
   DCHECK_EQ(2U, product_components.size());
   if (product_components.size() != 2)
     return E_FAIL;
-  *app_name = SysAllocString(UTF8ToUTF16(product_components[0]).c_str());
+  *app_name = SysAllocString(base::UTF8ToUTF16(product_components[0]).c_str());
   DCHECK(*app_name);
   return *app_name ? S_OK : E_FAIL;
 }
@@ -924,7 +924,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_appVersion(BSTR* app_version) {
   DCHECK_EQ(2U, product_components.size());
   if (product_components.size() != 2)
     return E_FAIL;
-  *app_version = SysAllocString(UTF8ToUTF16(product_components[1]).c_str());
+  *app_version =
+      SysAllocString(base::UTF8ToUTF16(product_components[1]).c_str());
   DCHECK(*app_version);
   return *app_version ? S_OK : E_FAIL;
 }
@@ -953,7 +954,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_toolkitVersion(
     return E_INVALIDARG;
 
   std::string user_agent = GetContentClient()->GetUserAgent();
-  *toolkit_version = SysAllocString(UTF8ToUTF16(user_agent).c_str());
+  *toolkit_version = SysAllocString(base::UTF8ToUTF16(user_agent).c_str());
   DCHECK(*toolkit_version);
   return *toolkit_version ? S_OK : E_FAIL;
 }
@@ -2435,7 +2436,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nodeInfo(
     *node_name = NULL;
 
   *name_space_id = 0;
-  *node_value = SysAllocString(UTF8ToUTF16(value()).c_str());
+  *node_value = SysAllocString(base::UTF8ToUTF16(value()).c_str());
   *num_children = PlatformChildCount();
   *unique_id = unique_id_win_;
 
@@ -2469,10 +2470,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributes(
 
   for (unsigned short i = 0; i < *num_attribs; ++i) {
     attrib_names[i] = SysAllocString(
-        UTF8ToUTF16(html_attributes()[i].first).c_str());
+        base::UTF8ToUTF16(html_attributes()[i].first).c_str());
     name_space_id[i] = 0;
     attrib_values[i] = SysAllocString(
-        UTF8ToUTF16(html_attributes()[i].second).c_str());
+        base::UTF8ToUTF16(html_attributes()[i].second).c_str());
   }
   return S_OK;
 }
@@ -2491,11 +2492,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributesForNames(
   for (unsigned short i = 0; i < num_attribs; ++i) {
     name_space_id[i] = 0;
     bool found = false;
-    std::string name = UTF16ToUTF8((LPCWSTR)attrib_names[i]);
+    std::string name = base::UTF16ToUTF8((LPCWSTR)attrib_names[i]);
     for (unsigned int j = 0;  j < html_attributes().size(); ++j) {
       if (html_attributes()[j].first == name) {
         attrib_values[i] = SysAllocString(
-            UTF8ToUTF16(html_attributes()[j].second).c_str());
+            base::UTF8ToUTF16(html_attributes()[j].second).c_str());
         found = true;
         break;
       }
@@ -3081,7 +3082,7 @@ void BrowserAccessibilityWin::PostInitialize() {
   for (unsigned int i = 0; i < PlatformChildCount(); ++i) {
     BrowserAccessibility* child = PlatformGetChild(i);
     if (child->role() == blink::WebAXRoleStaticText) {
-      hypertext_ += UTF8ToUTF16(child->name());
+      hypertext_ += base::UTF8ToUTF16(child->name());
     } else {
       hyperlink_offset_to_index_[hypertext_.size()] = hyperlinks_.size();
       hypertext_ += kEmbeddedCharacter;
@@ -3216,7 +3217,7 @@ void BrowserAccessibilityWin::StringAttributeToIA2(
     const char* ia2_attr) {
   base::string16 value;
   if (GetString16Attribute(attribute, &value))
-    ia2_attributes_.push_back(ASCIIToUTF16(ia2_attr) + L":" + value);
+    ia2_attributes_.push_back(base::ASCIIToUTF16(ia2_attr) + L":" + value);
 }
 
 void BrowserAccessibilityWin::BoolAttributeToIA2(
@@ -3224,7 +3225,7 @@ void BrowserAccessibilityWin::BoolAttributeToIA2(
     const char* ia2_attr) {
   bool value;
   if (GetBoolAttribute(attribute, &value)) {
-    ia2_attributes_.push_back((ASCIIToUTF16(ia2_attr) + L":") +
+    ia2_attributes_.push_back((base::ASCIIToUTF16(ia2_attr) + L":") +
                               (value ? L"true" : L"false"));
   }
 }
@@ -3234,27 +3235,27 @@ void BrowserAccessibilityWin::IntAttributeToIA2(
     const char* ia2_attr) {
   int value;
   if (GetIntAttribute(attribute, &value)) {
-    ia2_attributes_.push_back(ASCIIToUTF16(ia2_attr) + L":" +
+    ia2_attributes_.push_back(base::ASCIIToUTF16(ia2_attr) + L":" +
                               base::IntToString16(value));
   }
 }
 
 base::string16 BrowserAccessibilityWin::GetValueText() {
   float fval;
-  base::string16 value = UTF8ToUTF16(this->value());
+  base::string16 value = base::UTF8ToUTF16(this->value());
 
   if (value.empty() &&
       GetFloatAttribute(AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &fval)) {
-    value = UTF8ToUTF16(base::DoubleToString(fval));
+    value = base::UTF8ToUTF16(base::DoubleToString(fval));
   }
   return value;
 }
 
 base::string16 BrowserAccessibilityWin::TextForIAccessibleText() {
   if (IsEditableText())
-    return UTF8ToUTF16(value());
+    return base::UTF8ToUTF16(value());
   return (blink_role() == blink::WebAXRoleStaticText) ?
-      UTF8ToUTF16(name()) : hypertext_;
+      base::UTF8ToUTF16(name()) : hypertext_;
 }
 
 void BrowserAccessibilityWin::HandleSpecialTextOffset(

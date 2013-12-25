@@ -21,6 +21,8 @@
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace content {
 
 TEST(IndexedDBDatabaseTest, BackingStoreRetention) {

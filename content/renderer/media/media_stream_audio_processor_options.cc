@@ -80,7 +80,7 @@ void StartAecDump(AudioProcessing* audio_processing) {
   base::FilePath file = path.Append(FILE_PATH_LITERAL("audio.aecdump"));
 
 #if defined(OS_WIN)
-  const std::string file_name = WideToUTF8(file.value());
+  const std::string file_name = base::WideToUTF8(file.value());
 #else
   const std::string file_name = file.value();
 #endif

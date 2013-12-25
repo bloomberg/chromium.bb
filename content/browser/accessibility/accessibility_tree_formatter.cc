@@ -79,7 +79,7 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     const base::DictionaryValue& dict, base::string16* contents, int depth) {
   base::string16 line =
       ToString(dict, base::string16(depth * kIndentSpaces, ' '));
-  if (line.find(ASCIIToUTF16(kSkipString)) != base::string16::npos)
+  if (line.find(base::ASCIIToUTF16(kSkipString)) != base::string16::npos)
     return;
 
   *contents += line;
@@ -105,7 +105,7 @@ base::string16 AccessibilityTreeFormatter::ToString(
   int id_value;
   node.GetInteger("id", &id_value);
   return indent + base::IntToString16(id_value) +
-       ASCIIToUTF16("\n");
+       base::ASCIIToUTF16("\n");
 }
 
 void AccessibilityTreeFormatter::Initialize() {}
@@ -152,7 +152,7 @@ bool AccessibilityTreeFormatter::MatchesFilters(
       if (iter->type == Filter::ALLOW_EMPTY)
         allow = true;
       else if (iter->type == Filter::ALLOW)
-        allow = (!MatchPattern(text, UTF8ToUTF16("*=''")));
+        allow = (!MatchPattern(text, base::UTF8ToUTF16("*=''")));
       else
         allow = false;
     }
@@ -168,12 +168,12 @@ base::string16 AccessibilityTreeFormatter::FormatCoordinates(
   value.GetInteger(y_name, &y);
   std::string xy_str(base::StringPrintf("%s=(%d, %d)", name, x, y));
 
-  return UTF8ToUTF16(xy_str);
+  return base::UTF8ToUTF16(xy_str);
 }
 
 void AccessibilityTreeFormatter::WriteAttribute(
     bool include_by_default, const std::string& attr, base::string16* line) {
-  WriteAttribute(include_by_default, UTF8ToUTF16(attr), line);
+  WriteAttribute(include_by_default, base::UTF8ToUTF16(attr), line);
 }
 
 void AccessibilityTreeFormatter::WriteAttribute(
@@ -183,7 +183,7 @@ void AccessibilityTreeFormatter::WriteAttribute(
   if (!MatchesFilters(attr, include_by_default))
     return;
   if (!line->empty())
-    *line += ASCIIToUTF16(" ");
+    *line += base::ASCIIToUTF16(" ");
   *line += attr;
 }
 

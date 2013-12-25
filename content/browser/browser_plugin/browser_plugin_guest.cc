@@ -221,7 +221,7 @@ class BrowserPluginGuest::JavaScriptDialogRequest : public PermissionRequest {
 
   virtual void Respond(bool should_allow,
                        const std::string& user_input) OVERRIDE {
-    callback_.Run(should_allow, UTF8ToUTF16(user_input));
+    callback_.Run(should_allow, base::UTF8ToUTF16(user_input));
   }
 
  private:
@@ -829,7 +829,7 @@ void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
       static_cast<WebContentsImpl*>(new_contents);
   BrowserPluginGuest* guest = new_contents_impl->GetBrowserPluginGuest();
   guest->opener_ = AsWeakPtr();
-  std::string guest_name = UTF16ToUTF8(frame_name);
+  std::string guest_name = base::UTF16ToUTF8(frame_name);
   guest->name_ = guest_name;
   // Take ownership of the new guest until it is attached to the embedder's DOM
   // tree to avoid leaking a guest if this guest is destroyed before attaching
@@ -1078,7 +1078,7 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
                           "  window.event.preventDefault(); "
                           "});";
     render_view_host->ExecuteJavascriptInWebFrame(base::string16(),
-                                                  ASCIIToUTF16(script));
+                                                  base::ASCIIToUTF16(script));
   }
 }
 
@@ -1308,7 +1308,7 @@ void BrowserPluginGuest::OnImeSetComposition(
     int selection_start,
     int selection_end) {
   Send(new ViewMsg_ImeSetComposition(routing_id(),
-                                     UTF8ToUTF16(text), underlines,
+                                     base::UTF8ToUTF16(text), underlines,
                                      selection_start, selection_end));
 }
 
@@ -1317,7 +1317,7 @@ void BrowserPluginGuest::OnImeConfirmComposition(
     const std::string& text,
     bool keep_selection) {
   Send(new ViewMsg_ImeConfirmComposition(routing_id(),
-                                         UTF8ToUTF16(text),
+                                         base::UTF8ToUTF16(text),
                                          gfx::Range::InvalidRange(),
                                          keep_selection));
 }
@@ -1715,10 +1715,10 @@ void BrowserPluginGuest::RunJavaScriptDialog(
   base::DictionaryValue request_info;
   request_info.Set(
       browser_plugin::kDefaultPromptText,
-      base::Value::CreateStringValue(UTF16ToUTF8(default_prompt_text)));
+      base::Value::CreateStringValue(base::UTF16ToUTF8(default_prompt_text)));
   request_info.Set(
       browser_plugin::kMessageText,
-      base::Value::CreateStringValue(UTF16ToUTF8(message_text)));
+      base::Value::CreateStringValue(base::UTF16ToUTF8(message_text)));
   request_info.Set(
       browser_plugin::kMessageType,
       base::Value::CreateStringValue(

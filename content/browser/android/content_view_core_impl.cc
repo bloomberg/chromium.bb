@@ -427,7 +427,7 @@ void ContentViewCoreImpl::SetTitle(const base::string16& title) {
   if (obj.is_null())
     return;
   ScopedJavaLocalRef<jstring> jtitle =
-      ConvertUTF8ToJavaString(env, UTF16ToUTF8(title));
+      ConvertUTF8ToJavaString(env, base::UTF16ToUTF8(title));
   Java_ContentViewCore_setTitle(env, obj.obj(), jtitle.obj());
 }
 

@@ -87,13 +87,13 @@ SessionStorageDatabaseTest::SessionStorageDatabaseTest()
       kNamespace1("namespace1"),
       kNamespace2("namespace2"),
       kNamespaceClone("wascloned"),
-      kKey1(ASCIIToUTF16("key1")),
-      kKey2(ASCIIToUTF16("key2")),
-      kKey3(ASCIIToUTF16("key3")),
-      kValue1(ASCIIToUTF16("value1"), false),
-      kValue2(ASCIIToUTF16("value2"), false),
-      kValue3(ASCIIToUTF16("value3"), false),
-      kValue4(ASCIIToUTF16("value4"), false) { }
+      kKey1(base::ASCIIToUTF16("key1")),
+      kKey2(base::ASCIIToUTF16("key2")),
+      kKey3(base::ASCIIToUTF16("key3")),
+      kValue1(base::ASCIIToUTF16("value1"), false),
+      kValue2(base::ASCIIToUTF16("value2"), false),
+      kValue3(base::ASCIIToUTF16("value3"), false),
+      kValue4(base::ASCIIToUTF16("value4"), false) { }
 
 SessionStorageDatabaseTest::~SessionStorageDatabaseTest() { }
 

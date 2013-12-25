@@ -76,7 +76,7 @@ void Shell::PlatformEnableUIControl(UIControl control, bool is_enabled) {
 }
 
 void Shell::PlatformSetAddressBarURL(const GURL& url) {
-  std::wstring url_string = UTF8ToWide(url.spec());
+  std::wstring url_string = base::UTF8ToWide(url.spec());
   SendMessage(url_edit_view_, WM_SETTEXT, 0,
               reinterpret_cast<LPARAM>(url_string.c_str()));
 }

@@ -172,7 +172,7 @@ class SpeechRecognitionBrowserTest :
   SpeechRecognitionResult GetGoodSpeechResult() {
     SpeechRecognitionResult result;
     result.hypotheses.push_back(SpeechRecognitionHypothesis(
-        UTF8ToUTF16("Pictures of the moon"), 1.0F));
+        base::UTF8ToUTF16("Pictures of the moon"), 1.0F));
     return result;
   }
 

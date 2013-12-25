@@ -56,8 +56,9 @@ bool IsBlacklistedPlugin(const WebPluginInfo& info) {
 
   // Versions of Flip4Mac 2.3 before 2.3.6 often hang the renderer, so don't
   // load them.
-  if (StartsWith(info.name, ASCIIToUTF16("Flip4Mac Windows Media"), false) &&
-      StartsWith(info.version, ASCIIToUTF16("2.3"), false)) {
+  if (StartsWith(info.name,
+                 base::ASCIIToUTF16("Flip4Mac Windows Media"), false) &&
+      StartsWith(info.version, base::ASCIIToUTF16("2.3"), false)) {
     std::vector<base::string16> components;
     base::SplitString(info.version, '.', &components);
     int bugfix_version = 0;
@@ -169,14 +170,14 @@ bool ReadPlistPluginInfo(const base::FilePath& filename, CFBundleRef bundle,
   if (plugin_name)
     info->name = base::SysNSStringToUTF16(plugin_name);
   else
-    info->name = UTF8ToUTF16(filename.BaseName().value());
+    info->name = base::UTF8ToUTF16(filename.BaseName().value());
   info->path = filename;
   if (plugin_vers)
     info->version = base::SysNSStringToUTF16(plugin_vers);
   if (plugin_desc)
     info->desc = base::SysNSStringToUTF16(plugin_desc);
   else
-    info->desc = UTF8ToUTF16(filename.BaseName().value());
+    info->desc = base::UTF8ToUTF16(filename.BaseName().value());
 
   return true;
 }

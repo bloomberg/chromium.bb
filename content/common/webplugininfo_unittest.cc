@@ -33,7 +33,7 @@ TEST(PluginUtilsTest, VersionExtraction) {
   for (size_t i = 0; i < arraysize(versions); i++) {
     base::Version version;
     WebPluginInfo::CreateVersionFromString(
-        ASCIIToUTF16(versions[i][0]), &version);
+        base::ASCIIToUTF16(versions[i][0]), &version);
 
     ASSERT_TRUE(version.IsValid());
     EXPECT_EQ(versions[i][1], version.GetString());

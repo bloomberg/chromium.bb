@@ -162,23 +162,23 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
   // Returns placeholder strings to check if they are correctly localized.
   switch (name) {
     case blink::WebLocalizedString::OtherDateLabel:
-      return ASCIIToUTF16("<<OtherDateLabel>>");
+      return base::ASCIIToUTF16("<<OtherDateLabel>>");
     case blink::WebLocalizedString::OtherMonthLabel:
-      return ASCIIToUTF16("<<OtherMonthLabel>>");
+      return base::ASCIIToUTF16("<<OtherMonthLabel>>");
     case blink::WebLocalizedString::OtherTimeLabel:
-      return ASCIIToUTF16("<<OtherTimeLabel>>");
+      return base::ASCIIToUTF16("<<OtherTimeLabel>>");
     case blink::WebLocalizedString::OtherWeekLabel:
-      return ASCIIToUTF16("<<OtherWeekLabel>>");
+      return base::ASCIIToUTF16("<<OtherWeekLabel>>");
     case blink::WebLocalizedString::CalendarClear:
-      return ASCIIToUTF16("<<CalendarClear>>");
+      return base::ASCIIToUTF16("<<CalendarClear>>");
     case blink::WebLocalizedString::CalendarToday:
-      return ASCIIToUTF16("<<CalendarToday>>");
+      return base::ASCIIToUTF16("<<CalendarToday>>");
     case blink::WebLocalizedString::ThisMonthButtonLabel:
-      return ASCIIToUTF16("<<ThisMonthLabel>>");
+      return base::ASCIIToUTF16("<<ThisMonthLabel>>");
     case blink::WebLocalizedString::ThisWeekButtonLabel:
-      return ASCIIToUTF16("<<ThisWeekLabel>>");
+      return base::ASCIIToUTF16("<<ThisWeekLabel>>");
     case blink::WebLocalizedString::WeekFormatTemplate:
-      return ASCIIToUTF16("Week $2, $1");
+      return base::ASCIIToUTF16("Week $2, $1");
     default:
       return WebKitPlatformSupportImpl::queryLocalizedString(name);
   }
@@ -188,9 +188,9 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
     blink::WebLocalizedString::Name name,
     const blink::WebString& value) {
   if (name == blink::WebLocalizedString::ValidationRangeUnderflow)
-    return ASCIIToUTF16("range underflow");
+    return base::ASCIIToUTF16("range underflow");
   if (name == blink::WebLocalizedString::ValidationRangeOverflow)
-    return ASCIIToUTF16("range overflow");
+    return base::ASCIIToUTF16("range overflow");
   return WebKitPlatformSupportImpl::queryLocalizedString(name, value);
 }
 
@@ -199,14 +199,14 @@ blink::WebString TestWebKitPlatformSupport::queryLocalizedString(
     const blink::WebString& value1,
     const blink::WebString& value2) {
   if (name == blink::WebLocalizedString::ValidationTooLong)
-    return ASCIIToUTF16("too long");
+    return base::ASCIIToUTF16("too long");
   if (name == blink::WebLocalizedString::ValidationStepMismatch)
-    return ASCIIToUTF16("step mismatch");
+    return base::ASCIIToUTF16("step mismatch");
   return WebKitPlatformSupportImpl::queryLocalizedString(name, value1, value2);
 }
 
 blink::WebString TestWebKitPlatformSupport::defaultLocale() {
-  return ASCIIToUTF16("en-US");
+  return base::ASCIIToUTF16("en-US");
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

@@ -281,8 +281,9 @@ void PrepareDragData(const DropData& drop_data,
          it != drop_data.filenames.end(); ++it) {
       filenames.push_back(
           ui::OSExchangeData::FileInfo(
-              base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->path)),
-              base::FilePath::FromUTF8Unsafe(UTF16ToUTF8(it->display_name))));
+              base::FilePath::FromUTF8Unsafe(base::UTF16ToUTF8(it->path)),
+              base::FilePath::FromUTF8Unsafe(
+                  base::UTF16ToUTF8(it->display_name))));
     }
     provider->SetFilenames(filenames);
   }
@@ -323,8 +324,8 @@ void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
              it = files.begin(); it != files.end(); ++it) {
       drop_data->filenames.push_back(
           DropData::FileInfo(
-              UTF8ToUTF16(it->path.AsUTF8Unsafe()),
-              UTF8ToUTF16(it->display_name.AsUTF8Unsafe())));
+              base::UTF8ToUTF16(it->path.AsUTF8Unsafe()),
+              base::UTF8ToUTF16(it->display_name.AsUTF8Unsafe())));
     }
   }
 

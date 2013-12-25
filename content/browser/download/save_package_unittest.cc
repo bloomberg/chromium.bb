@@ -244,7 +244,7 @@ TEST_F(SavePackageTest, MAYBE_TestLongSafePureFilename) {
   const base::FilePath::StringType ext(FPL_HTML_EXTENSION);
   base::FilePath::StringType filename =
 #if defined(OS_WIN)
-      ASCIIToWide(long_file_name);
+      base::ASCIIToWide(long_file_name);
 #else
       long_file_name;
 #endif
@@ -352,38 +352,38 @@ static const struct SuggestedSaveNameTestCase {
 } kSuggestedSaveNames[] = {
   // Title overrides the URL.
   { "http://foo.com",
-    ASCIIToUTF16("A page title"),
+    base::ASCIIToUTF16("A page title"),
     FPL("A page title") FPL_HTML_EXTENSION,
     true
   },
   // Extension is preserved.
   { "http://foo.com",
-    ASCIIToUTF16("A page title with.ext"),
+    base::ASCIIToUTF16("A page title with.ext"),
     FPL("A page title with.ext"),
     false
   },
   // If the title matches the URL, use the last component of the URL.
   { "http://foo.com/bar",
-    ASCIIToUTF16("foo.com/bar"),
+    base::ASCIIToUTF16("foo.com/bar"),
     FPL("bar"),
     false
   },
   // If the title matches the URL, but there is no "filename" component,
   // use the domain.
   { "http://foo.com",
-    ASCIIToUTF16("foo.com"),
+    base::ASCIIToUTF16("foo.com"),
     FPL("foo.com"),
     false
   },
   // Make sure fuzzy matching works.
   { "http://foo.com/bar",
-    ASCIIToUTF16("foo.com/bar"),
+    base::ASCIIToUTF16("foo.com/bar"),
     FPL("bar"),
     false
   },
   // A URL-like title that does not match the title is respected in full.
   { "http://foo.com",
-    ASCIIToUTF16("http://www.foo.com/path/title.txt"),
+    base::ASCIIToUTF16("http://www.foo.com/path/title.txt"),
     FPL("http   www.foo.com path title.txt"),
     false
   },

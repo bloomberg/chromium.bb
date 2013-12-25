@@ -21,7 +21,7 @@ class IndexedDBTransactionTest : public testing::Test {
   IndexedDBTransactionTest() {
     IndexedDBFactory* factory = NULL;
     backing_store_ = new IndexedDBFakeBackingStore();
-    db_ = IndexedDBDatabase::Create(ASCIIToUTF16("db"),
+    db_ = IndexedDBDatabase::Create(base::ASCIIToUTF16("db"),
                                     backing_store_,
                                     factory,
                                     IndexedDBDatabase::Identifier());

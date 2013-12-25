@@ -27,6 +27,7 @@
 #include "webkit/browser/database/database_util.h"
 #include "webkit/browser/quota/quota_manager.h"
 
+using base::ASCIIToUTF16;
 using quota::QuotaManager;
 using webkit_database::DatabaseUtil;
 

@@ -77,7 +77,7 @@ class SessionStorageDatabase::DBOperation {
       session_storage_database_->db_.reset();
 #if defined(OS_WIN)
       leveldb::DestroyDB(
-          WideToUTF8(session_storage_database_->file_path_.value()),
+          base::WideToUTF8(session_storage_database_->file_path_.value()),
           leveldb::Options());
 #else
       leveldb::DestroyDB(session_storage_database_->file_path_.value(),
@@ -377,7 +377,7 @@ leveldb::Status SessionStorageDatabase::TryToOpen(leveldb::DB** db) {
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
 #if defined(OS_WIN)
-  return leveldb::DB::Open(options, WideToUTF8(file_path_.value()), db);
+  return leveldb::DB::Open(options, base::WideToUTF8(file_path_.value()), db);
 #elif defined(OS_POSIX)
   return leveldb::DB::Open(options, file_path_.value(), db);
 #endif
@@ -571,7 +571,8 @@ bool SessionStorageDatabase::ReadMap(const std::string& map_id,
       break;
     }
     // Key is of the form "map-<mapid>-<key>".
-    base::string16 key16 = UTF8ToUTF16(key.substr(map_start_key.length()));
+    base::string16 key16 =
+        base::UTF8ToUTF16(key.substr(map_start_key.length()));
     if (only_keys) {
       (*result)[key16] = base::NullableString16();
     } else {
@@ -594,7 +595,7 @@ void SessionStorageDatabase::WriteValuesToMap(const std::string& map_id,
        it != values.end();
        ++it) {
     base::NullableString16 value = it->second;
-    std::string key = MapKey(map_id, UTF16ToUTF8(it->first));
+    std::string key = MapKey(map_id, base::UTF16ToUTF8(it->first));
     if (value.is_null()) {
       batch->Delete(key);
     } else {
@@ -656,7 +657,7 @@ bool SessionStorageDatabase::ClearMap(const std::string& map_id,
     return false;
   for (DOMStorageValuesMap::const_iterator it = values.begin();
        it != values.end(); ++it)
-    batch->Delete(MapKey(map_id, UTF16ToUTF8(it->first)));
+    batch->Delete(MapKey(map_id, base::UTF16ToUTF8(it->first)));
   return true;
 }
 

@@ -611,7 +611,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
     Send(new FrameHostMsg_CreateChildFrame(routing_id_,
                                            parent->identifier(),
                                            child_frame_identifier,
-                                           UTF16ToUTF8(name),
+                                           base::UTF16ToUTF8(name),
                                            &routing_id));
     child_render_frame = RenderFrameImpl::Create(render_view_, routing_id);
   }
@@ -697,7 +697,7 @@ void RenderFrameImpl::didChangeName(blink::WebFrame* frame,
       new ViewHostMsg_UpdateFrameName(render_view_->GetRoutingID(),
                                       frame->identifier(),
                                       !frame->parent(),
-                                      UTF16ToUTF8(name)));
+                                      base::UTF16ToUTF8(name)));
 }
 
 void RenderFrameImpl::didMatchCSS(

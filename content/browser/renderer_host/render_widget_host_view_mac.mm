@@ -1070,7 +1070,7 @@ void RenderWidgetHostViewMac::SelectionChanged(const base::string16& text,
       DCHECK(false) << "The text can not cover range.";
       return;
     }
-    selected_text_ = UTF16ToUTF8(text.substr(pos, n));
+    selected_text_ = base::UTF16ToUTF8(text.substr(pos, n));
   }
 
   [cocoa_view_ setSelectedRange:range.ToNSRange()];

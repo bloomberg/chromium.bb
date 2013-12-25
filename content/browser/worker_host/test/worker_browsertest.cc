@@ -42,7 +42,7 @@ class WorkerTest : public ContentBrowserTest {
                const std::string& test_case,
                const std::string& query) {
     GURL url = GetTestURL(test_case, query);
-    const base::string16 expected_title = ASCIIToUTF16("OK");
+    const base::string16 expected_title = base::ASCIIToUTF16("OK");
     TitleWatcher title_watcher(window->web_contents(), expected_title);
     NavigateToURL(window, url);
     base::string16 final_title = title_watcher.WaitAndGetTitle();
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
 
   // Run test.
   Shell* window = shell();
-  const base::string16 expected_title = ASCIIToUTF16("OK");
+  const base::string16 expected_title = base::ASCIIToUTF16("OK");
   TitleWatcher title_watcher(window->web_contents(), expected_title);
   NavigateToURL(window, url);
   base::string16 final_title = title_watcher.WaitAndGetTitle();
