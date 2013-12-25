@@ -2627,11 +2627,14 @@ class HWTestStage(ArchivingStage):
     self._PrintFile(os.path.join(self._run.options.log_dir, result_file_name))
 
   def _CheckAborted(self):
+    """Checks with GS to see if HWTest for this build's release_tag was aborted.
+
+    Returns:
+      True if HWTest have been aborted for this build's release_tag.
+      False otherwise.
+    """
     aborted = (self.archive_stage.release_tag and
                commands.HaveHWTestsBeenAborted(self.archive_stage.release_tag))
-    if aborted:
-      cros_build_lib.PrintBuildbotStepText('aborted')
-      cros_build_lib.Warning('HWTests aborted')
     return aborted
 
   # Disable complaint about calling _HandleStageException.
@@ -2667,7 +2670,8 @@ class HWTestStage(ArchivingStage):
 
   def PerformStage(self):
     if self._CheckAborted():
-      cros_build_lib.Info('Skipping HWTests as they have been aborted.')
+      cros_build_lib.PrintBuildbotStepText('aborted')
+      cros_build_lib.Warning('Skipping HWTests as they have been aborted.')
       return
 
     build = '/'.join([self._bot_id, self.version])
