@@ -656,8 +656,8 @@ FileTable.prototype.updateFileMetadata = function(item, entry) {
 /**
  * Updates list items 'in place' on metadata change.
  * @param {string} type Type of metadata change.
- * @param {Object.<sting, Object>} propsMap Map from entry URLs to metadata
- *                                          properties.
+ * @param {Object.<string, Object>} propsMap Map from entry URLs to metadata
+ *     properties.
  */
 FileTable.prototype.updateListItemsMetadata = function(type, propsMap) {
   var forEachCell = function(selector, callback) {

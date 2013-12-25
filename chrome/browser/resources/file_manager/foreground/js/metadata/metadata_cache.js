@@ -400,8 +400,8 @@ MetadataCache.prototype.clearRecursively = function(entry, type) {
  * @param {number} relation This defines, which items will trigger the observer.
  *     See comments to |MetadataCache.EXACT| and others.
  * @param {string} type The metadata type.
- * @param {function(Array.<Entry>, Array.<Object>)} observer List of entries
- *     and corresponding metadata values are passed to this callback.
+ * @param {function(Array.<Entry>, Object.<string, Object>)} observer Map of
+ *     entries and corresponding metadata values are passed to this callback.
  * @return {number} The observer id, which can be used to remove it.
  */
 MetadataCache.prototype.addObserver = function(
@@ -462,14 +462,14 @@ MetadataCache.prototype.endBatchUpdates = function() {
   for (var index = 0; index < this.observers_.length; index++) {
     var observer = this.observers_[index];
     var entries = [];
-    var properties = [];
+    var properties = {};
     for (var entryURL in observer.pending) {
       if (observer.pending.hasOwnProperty(entryURL) &&
           entryURL in this.cache_) {
         var entry = observer.pending[entryURL];
         entries.push(entry);
-        properties.push(
-            this.cache_[entryURL].properties[observer.type] || null);
+        properties[entryURL] =
+            this.cache_[entryURL].properties[observer.type] || null;
       }
     }
     observer.pending = {};
@@ -491,9 +491,11 @@ MetadataCache.prototype.notifyObservers_ = function(entry, type) {
     var observer = this.observers_[index];
     if (observer.type === type && observer.re.test(entryURL)) {
       if (this.batchCount_ === 0) {
-        // Observer expects array of urls and array of properties.
+        // Observer expects array of urls and map of properties.
+        var property = {};
+        property[entryURL] = this.cache_[entryURL].properties[type] || null;
         observer.callback(
-            [entry], [this.cache_[entryURL].properties[type] || null]);
+            [entry], property);
       } else {
         observer.pending[entryURL] = entry;
       }

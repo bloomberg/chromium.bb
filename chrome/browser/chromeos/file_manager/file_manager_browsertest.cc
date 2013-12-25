@@ -638,7 +638,6 @@ INSTANTIATE_TEST_CASE_P(
                                     "galleryOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive")));
 
-/* http://crbug.com/316918 Tests are flaky.
 INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
     FileManagerBrowserTest,
@@ -649,7 +648,6 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive")));
-*/
 
 INSTANTIATE_TEST_CASE_P(
     DriveSpecific,
@@ -661,7 +659,7 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "autocomplete")));
 
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_Transfer,
+    Transfer,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "transferFromDriveToDownloads"),
