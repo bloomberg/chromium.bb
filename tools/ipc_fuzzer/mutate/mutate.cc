@@ -149,8 +149,8 @@ class DefaultFuzzer : public Fuzzer {
 
   virtual void FuzzString16(base::string16* value) OVERRIDE {
     FuzzStringType<base::string16>(value, frequency_,
-                             WideToUTF16(L"BORKED"),
-                             WideToUTF16(L""));
+                                   base::WideToUTF16(L"BORKED"),
+                                   base::WideToUTF16(L""));
   }
 
   virtual void FuzzData(char* data, int length) OVERRIDE {

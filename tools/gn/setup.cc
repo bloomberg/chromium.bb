@@ -320,7 +320,8 @@ void Setup::FillPythonPath() {
         "just \"python.exe\"");
     python_path = "python.exe";
   }
-  build_settings_.set_python_path(base::FilePath(UTF8ToUTF16(python_path)));
+  build_settings_.set_python_path(
+      base::FilePath(base::UTF8ToUTF16(python_path)));
 #else
   build_settings_.set_python_path(base::FilePath("python"));
 #endif

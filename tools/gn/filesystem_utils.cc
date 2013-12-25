@@ -197,7 +197,7 @@ const char* GetExtensionForOutputType(Target::OutputType type,
 
 std::string FilePathToUTF8(const base::FilePath::StringType& str) {
 #if defined(OS_WIN)
-  return WideToUTF8(str);
+  return base::WideToUTF8(str);
 #else
   return str;
 #endif
@@ -205,7 +205,7 @@ std::string FilePathToUTF8(const base::FilePath::StringType& str) {
 
 base::FilePath UTF8ToFilePath(const base::StringPiece& sp) {
 #if defined(OS_WIN)
-  return base::FilePath(UTF8ToWide(sp));
+  return base::FilePath(base::UTF8ToWide(sp));
 #else
   return base::FilePath(sp.as_string());
 #endif

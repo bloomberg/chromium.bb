@@ -256,7 +256,7 @@ bool RdpSession::Initialize(const ScreenResolution& resolution) {
   base::win::ScopedComPtr<IRdpDesktopSessionEventHandler> event_handler(
       new EventHandler(weak_factory_.GetWeakPtr()));
   terminal_id_ = base::GenerateGUID();
-  base::win::ScopedBstr terminal_id(UTF8ToUTF16(terminal_id_).c_str());
+  base::win::ScopedBstr terminal_id(base::UTF8ToUTF16(terminal_id_).c_str());
   result = rdp_desktop_session_->Connect(host_size.width(),
                                          host_size.height(),
                                          terminal_id,
@@ -544,7 +544,8 @@ void DesktopSessionWin::OnSessionAttached(uint32 session_id) {
       new WtsSessionProcessDelegate(io_task_runner_,
                                     target.Pass(),
                                     launch_elevated,
-                                    WideToUTF8(kDaemonIpcSecurityDescriptor)));
+                                    base::WideToUTF8(
+                                        kDaemonIpcSecurityDescriptor)));
   if (!delegate->Initialize(session_id)) {
     TerminateSession();
     return;

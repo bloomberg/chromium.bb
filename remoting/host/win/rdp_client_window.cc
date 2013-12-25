@@ -240,8 +240,8 @@ LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   base::win::ScopedComPtr<mstsc::IMsTscSecuredSettings> secured_settings;
   base::win::ScopedComPtr<mstsc::IMsRdpClientSecuredSettings> secured_settings2;
   base::win::ScopedBstr server_name(
-      UTF8ToUTF16(server_endpoint_.ToStringWithoutPort()).c_str());
-  base::win::ScopedBstr terminal_id(UTF8ToUTF16(terminal_id_).c_str());
+      base::UTF8ToUTF16(server_endpoint_.ToStringWithoutPort()).c_str());
+  base::win::ScopedBstr terminal_id(base::UTF8ToUTF16(terminal_id_).c_str());
 
   // Create the child window that actually hosts the ActiveX control.
   RECT rect = { 0, 0, screen_size_.width(), screen_size_.height() };

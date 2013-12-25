@@ -927,7 +927,7 @@ class _Generator(object):
     if not self._generate_error_messages:
       return c
     (c.Append('if (error)')
-      .Append('  *error = UTF8ToUTF16(' + body + ');'))
+      .Append('  *error = base::UTF8ToUTF16(' + body + ');'))
     return c
 
   def _GenerateParams(self, params):

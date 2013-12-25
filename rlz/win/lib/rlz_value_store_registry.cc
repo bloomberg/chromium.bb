@@ -13,6 +13,8 @@
 #include "rlz/lib/string_utils.h"
 #include "rlz/win/lib/registry_util.h"
 
+using base::ASCIIToWide;
+
 namespace rlz_lib {
 
 namespace {

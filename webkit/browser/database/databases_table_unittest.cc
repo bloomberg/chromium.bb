@@ -12,6 +12,8 @@
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/browser/database/databases_table.h"
 
+using base::ASCIIToWide;
+
 namespace webkit_database {
 
 static void CheckDetailsAreEqual(const DatabaseDetails& d1,

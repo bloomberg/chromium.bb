@@ -58,7 +58,8 @@ bool ConnectToExecutionServer(uint32 session_id,
 
   // Use winsta!WinStationQueryInformationW() to determine the process creation
   // pipe name for the session.
-  base::FilePath winsta_path(base::GetNativeLibraryName(UTF8ToUTF16("winsta")));
+  base::FilePath winsta_path(
+      base::GetNativeLibraryName(base::UTF8ToUTF16("winsta")));
   base::ScopedNativeLibrary winsta(winsta_path);
   if (winsta.is_valid()) {
     PWINSTATIONQUERYINFORMATIONW win_station_query_information =
@@ -80,7 +81,7 @@ bool ConnectToExecutionServer(uint32 session_id,
 
   // Use the default pipe name if we couldn't query its name.
   if (pipe_name.empty()) {
-    pipe_name = UTF8ToUTF16(
+    pipe_name = base::UTF8ToUTF16(
         base::StringPrintf(kCreateProcessDefaultPipeNameFormat, session_id));
   }
 

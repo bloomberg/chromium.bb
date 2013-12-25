@@ -27,7 +27,7 @@ STDMETHODIMP RdpDesktopSession::Connect(
 
   client_.reset(new RdpClient(task_runner, task_runner,
                               webrtc::DesktopSize(width, height),
-                              UTF16ToUTF8(terminal_id), this));
+                              base::UTF16ToUTF8(terminal_id), this));
   return S_OK;
 }
 

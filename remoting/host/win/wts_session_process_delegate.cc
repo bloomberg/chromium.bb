@@ -387,7 +387,7 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
 
   // Pass the name of the IPC channel to use.
   command_line.AppendSwitchNative(kDaemonPipeSwitchName,
-                                  UTF8ToWide(channel_name));
+                                  base::UTF8ToWide(channel_name));
 
   // Try to launch the process.
   ScopedHandle worker_process;
@@ -399,7 +399,7 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
                               NULL,
                               false,
                               CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB,
-                              UTF8ToUTF16(kDefaultDesktopName).c_str(),
+                              base::UTF8ToUTF16(kDefaultDesktopName).c_str(),
                               &worker_process,
                               &worker_thread)) {
     ReportFatalError();

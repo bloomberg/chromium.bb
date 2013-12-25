@@ -149,7 +149,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
       return OnError();
   } else {
     // Don't need this for preview.
-    if (!SetPrinter(UTF16ToUTF8(settings_.device_name())) ||
+    if (!SetPrinter(base::UTF16ToUTF8(settings_.device_name())) ||
         !SetCopiesInPrintSettings(settings_.copies()) ||
         !SetCollateInPrintSettings(settings_.collate()) ||
         !SetDuplexModeInPrintSettings(settings_.duplex_mode()) ||

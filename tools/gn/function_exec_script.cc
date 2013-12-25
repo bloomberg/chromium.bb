@@ -340,7 +340,8 @@ Value RunExecScript(Scope* scope,
   base::TimeTicks begin_exec;
   if (g_scheduler->verbose_logging()) {
 #if defined(OS_WIN)
-    g_scheduler->Log("Pythoning", UTF16ToUTF8(cmdline.GetCommandLineString()));
+    g_scheduler->Log("Pythoning",
+                     base::UTF16ToUTF8(cmdline.GetCommandLineString()));
 #else
     g_scheduler->Log("Pythoning", cmdline.GetCommandLineString());
 #endif

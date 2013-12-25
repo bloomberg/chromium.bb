@@ -187,7 +187,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         ++line_p;
 
       base::string16 url16;
-      WideToUTF16(line.c_str(), line_p - line.c_str(), &url16);
+      base::WideToUTF16(line.c_str(), line_p - line.c_str(), &url16);
       GURL url = manifest_url.Resolve(url16);
       if (!url.is_valid())
         continue;
@@ -232,7 +232,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         continue;  // There was no whitespace separating the URLs.
 
       base::string16 namespace_url16;
-      WideToUTF16(line.c_str(), line_p - line.c_str(), &namespace_url16);
+      base::WideToUTF16(line.c_str(), line_p - line.c_str(), &namespace_url16);
       GURL namespace_url = manifest_url.Resolve(namespace_url16);
       if (!namespace_url.is_valid())
         continue;
@@ -279,7 +279,8 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         ++line_p;
 
       base::string16 target_url16;
-      WideToUTF16(target_url_start, line_p - target_url_start, &target_url16);
+      base::WideToUTF16(target_url_start, line_p - target_url_start,
+                        &target_url16);
       GURL target_url = manifest_url.Resolve(target_url16);
       if (!target_url.is_valid())
         continue;
@@ -310,7 +311,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       }
 
       base::string16 namespace_url16;
-      WideToUTF16(line.c_str(), line_p - line.c_str(), &namespace_url16);
+      base::WideToUTF16(line.c_str(), line_p - line.c_str(), &namespace_url16);
       GURL namespace_url = manifest_url.Resolve(namespace_url16);
       if (!namespace_url.is_valid())
         continue;
@@ -336,7 +337,8 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
         ++line_p;
 
       base::string16 fallback_url16;
-      WideToUTF16(fallback_start, line_p - fallback_start, &fallback_url16);
+      base::WideToUTF16(fallback_start, line_p - fallback_start,
+                        &fallback_url16);
       GURL fallback_url = manifest_url.Resolve(fallback_url16);
       if (!fallback_url.is_valid())
         continue;

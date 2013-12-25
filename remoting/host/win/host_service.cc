@@ -272,8 +272,9 @@ void HostService::RunAsServiceImpl() {
   if (!com_initializer.succeeded())
     return;
 
-  if (!InitializeComSecurity(WideToUTF8(kComProcessSd),
-                             WideToUTF8(kComProcessMandatoryLabel), false)) {
+  if (!InitializeComSecurity(base::WideToUTF8(kComProcessSd),
+                             base::WideToUTF8(kComProcessMandatoryLabel),
+                             false)) {
     return;
   }
 
@@ -308,8 +309,9 @@ int HostService::RunInConsole() {
   if (!com_initializer.succeeded())
     return result;
 
-  if (!InitializeComSecurity(WideToUTF8(kComProcessSd),
-                             WideToUTF8(kComProcessMandatoryLabel), false)) {
+  if (!InitializeComSecurity(base::WideToUTF8(kComProcessSd),
+                             base::WideToUTF8(kComProcessMandatoryLabel),
+                             false)) {
     return result;
   }
 

@@ -39,7 +39,7 @@ bool CreateConnectedIpcChannel(
   // to the network process. It gives full access to the account that
   // the calling code is running under and  denies access by anyone else.
   std::string security_descriptor = base::StringPrintf(
-      "O:%1$sG:%1$sD:(A;;GA;;;%1$s)", WideToUTF8(user_sid).c_str());
+      "O:%1$sG:%1$sD:(A;;GA;;;%1$s)", base::WideToUTF8(user_sid).c_str());
 
   // Generate a unique name for the channel.
   std::string channel_name = IPC::Channel::GenerateUniqueRandomChannelID();
@@ -69,7 +69,7 @@ bool CreateConnectedIpcChannel(
   // Create the client end of the channel. This code should match the code in
   // IPC::Channel.
   ScopedHandle client;
-  client.Set(CreateFile(UTF8ToUTF16(pipe_name).c_str(),
+  client.Set(CreateFile(base::UTF8ToUTF16(pipe_name).c_str(),
                         GENERIC_READ | GENERIC_WRITE,
                         0,
                         &security_attributes,
@@ -112,7 +112,7 @@ bool CreateIpcChannel(
   // IPC::Channel with exception of passing a non-default security descriptor.
   base::win::ScopedHandle pipe;
   pipe.Set(CreateNamedPipe(
-      UTF8ToUTF16(pipe_name).c_str(),
+      base::UTF8ToUTF16(pipe_name).c_str(),
       PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED | FILE_FLAG_FIRST_PIPE_INSTANCE,
       PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
       1,

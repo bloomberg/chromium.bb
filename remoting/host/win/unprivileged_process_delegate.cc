@@ -166,7 +166,7 @@ bool CreateWindowStationAndDesktop(ScopedSid logon_sid,
 
   WindowStationAndDesktop handles;
   handles.SetWindowStation(CreateWindowStation(
-      UTF8ToUTF16(window_station_name).c_str(), window_station_flags,
+      base::UTF8ToUTF16(window_station_name).c_str(), window_station_flags,
       desired_access, &security_attributes));
   if (!handles.window_station()) {
     LOG_GETLASTERROR(ERROR) << "CreateWindowStation() failed";

@@ -42,8 +42,9 @@ bool WtsTerminalMonitor::LookupTerminalId(uint32 session_id,
     return false;
   }
 
-  bool result = WideToUTF8(working_directory, (bytes / sizeof(wchar_t)) - 1,
-                           terminal_id);
+  bool result = base::WideToUTF8(working_directory,
+                                 (bytes / sizeof(wchar_t)) - 1,
+                                 terminal_id);
   WTSFreeMemory(working_directory);
   return result;
 }

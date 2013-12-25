@@ -29,7 +29,7 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
 #if defined(OS_WIN)
   wchar_t module[MAX_PATH];
   GetModuleFileName(NULL, module, MAX_PATH);
-  //result = "\"" + WideToUTF8(module) + "\"";
+  //result = "\"" + base::WideToUTF8(module) + "\"";
   base::FilePath executable(module);
 #elif defined(OS_MACOSX)
   // FIXME(brettw) write this on Mac!
@@ -70,7 +70,7 @@ std::string GetSelfInvocationCommand(const BuildSettings* build_settings) {
   }
 
 #if defined(OS_WIN)
-  return WideToUTF8(cmdline.GetCommandLineString());
+  return base::WideToUTF8(cmdline.GetCommandLineString());
 #else
   return cmdline.GetCommandLineString();
 #endif

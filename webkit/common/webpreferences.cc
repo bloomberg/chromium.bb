@@ -10,6 +10,7 @@
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 
+using base::ASCIIToWide;
 using blink::WebSettings;
 
 WebPreferences::WebPreferences()

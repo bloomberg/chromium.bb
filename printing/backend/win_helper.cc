@@ -289,15 +289,19 @@ bool InitBasicPrinterInfo(HANDLE printer, PrinterBasicInfo* printer_info) {
   if (!info_2.Init(printer))
     return false;
 
-  printer_info->printer_name = WideToUTF8(info_2.get()->pPrinterName);
-  if (info_2.get()->pComment)
-    printer_info->printer_description = WideToUTF8(info_2.get()->pComment);
-  if (info_2.get()->pLocation)
+  printer_info->printer_name = base::WideToUTF8(info_2.get()->pPrinterName);
+  if (info_2.get()->pComment) {
+    printer_info->printer_description =
+        base::WideToUTF8(info_2.get()->pComment);
+  }
+  if (info_2.get()->pLocation) {
     printer_info->options[kLocationTagName] =
-        WideToUTF8(info_2.get()->pLocation);
-  if (info_2.get()->pDriverName)
+        base::WideToUTF8(info_2.get()->pLocation);
+  }
+  if (info_2.get()->pDriverName) {
     printer_info->options[kDriverNameTagName] =
-        WideToUTF8(info_2.get()->pDriverName);
+        base::WideToUTF8(info_2.get()->pDriverName);
+  }
   printer_info->printer_status = info_2.get()->Status;
 
   std::string driver_info = GetDriverInfo(printer);
@@ -319,16 +323,16 @@ std::string GetDriverInfo(HANDLE printer) {
 
   std::string info[4];
   if (info_6.get()->pName)
-    info[0] = WideToUTF8(info_6.get()->pName);
+    info[0] = base::WideToUTF8(info_6.get()->pName);
 
   if (info_6.get()->pDriverPath) {
     scoped_ptr<FileVersionInfo> version_info(
         FileVersionInfo::CreateFileVersionInfo(
             base::FilePath(info_6.get()->pDriverPath)));
     if (version_info.get()) {
-      info[1] = WideToUTF8(version_info->file_version());
-      info[2] = WideToUTF8(version_info->product_name());
-      info[3] = WideToUTF8(version_info->product_version());
+      info[1] = base::WideToUTF8(version_info->file_version());
+      info[2] = base::WideToUTF8(version_info->product_name());
+      info[3] = base::WideToUTF8(version_info->product_version());
     }
   }
 

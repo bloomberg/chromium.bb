@@ -268,7 +268,7 @@ std::string GetFileSystemTypeString(FileSystemType type) {
 
 std::string FilePathToString(const base::FilePath& file_path) {
 #if defined(OS_WIN)
-  return UTF16ToUTF8(file_path.value());
+  return base::UTF16ToUTF8(file_path.value());
 #elif defined(OS_POSIX)
   return file_path.value();
 #endif
@@ -276,7 +276,7 @@ std::string FilePathToString(const base::FilePath& file_path) {
 
 base::FilePath StringToFilePath(const std::string& file_path_string) {
 #if defined(OS_WIN)
-  return base::FilePath(UTF8ToUTF16(file_path_string));
+  return base::FilePath(base::UTF8ToUTF16(file_path_string));
 #elif defined(OS_POSIX)
   return base::FilePath(file_path_string);
 #endif

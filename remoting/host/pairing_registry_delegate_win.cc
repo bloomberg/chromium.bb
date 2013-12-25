@@ -48,7 +48,7 @@ scoped_ptr<base::DictionaryValue> ReadValue(const base::win::RegKey& key,
   }
 
   // Parse the value.
-  std::string value_json_utf8 = WideToUTF8(value_json);
+  std::string value_json_utf8 = base::WideToUTF8(value_json);
   JSONStringValueSerializer serializer(&value_json_utf8);
   int error_code;
   std::string error_message;
@@ -82,7 +82,7 @@ bool WriteValue(base::win::RegKey& key,
   }
 
   // presubmit: allow wstring
-  std::wstring value_json = UTF8ToWide(value_json_utf8);
+  std::wstring value_json = base::UTF8ToWide(value_json_utf8);
   LONG result = key.WriteValue(value_name, value_json.c_str());
   if (result != ERROR_SUCCESS) {
     SetLastError(result);
@@ -135,7 +135,7 @@ scoped_ptr<base::ListValue> PairingRegistryDelegateWin::LoadAll() {
       continue;
     }
 
-    PairingRegistry::Pairing pairing = Load(WideToUTF8(value_name));
+    PairingRegistry::Pairing pairing = Load(base::WideToUTF8(value_name));
     if (pairing.is_valid())
       pairings->Append(pairing.ToValue().release());
   }
@@ -168,7 +168,7 @@ bool PairingRegistryDelegateWin::DeleteAll() {
 PairingRegistry::Pairing PairingRegistryDelegateWin::Load(
     const std::string& client_id) {
   // presubmit: allow wstring
-  std::wstring value_name = UTF8ToWide(client_id);
+  std::wstring value_name = base::UTF8ToWide(client_id);
 
   // Read unprivileged fields first.
   scoped_ptr<base::DictionaryValue> pairing = ReadValue(unprivileged_,
@@ -207,7 +207,7 @@ bool PairingRegistryDelegateWin::Save(const PairingRegistry::Pairing& pairing) {
   secret_json->Set(PairingRegistry::kSharedSecretKey, secret_key.release());
 
   // presubmit: allow wstring
-  std::wstring value_name = UTF8ToWide(pairing.client_id());
+  std::wstring value_name = base::UTF8ToWide(pairing.client_id());
 
   // Write pairing to the registry.
   if (!WriteValue(privileged_, value_name.c_str(), secret_json.Pass()) ||
@@ -226,7 +226,7 @@ bool PairingRegistryDelegateWin::Delete(const std::string& client_id) {
   }
 
   // presubmit: allow wstring
-  std::wstring value_name = UTF8ToWide(client_id);
+  std::wstring value_name = base::UTF8ToWide(client_id);
   LONG result = privileged_.DeleteValue(value_name.c_str());
   if (result != ERROR_SUCCESS &&
       result != ERROR_FILE_NOT_FOUND &&

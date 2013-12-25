@@ -24,7 +24,7 @@ base::string16 GetPopulateError(const base::Value& value) {
 
 testing::AssertionResult EqualsUtf16(const std::string& expected,
                                      const base::string16& actual) {
-  if (ASCIIToUTF16(expected) != actual)
+  if (base::ASCIIToUTF16(expected) != actual)
     return testing::AssertionFailure() << expected << " != " << actual;
   return testing::AssertionSuccess();
 }

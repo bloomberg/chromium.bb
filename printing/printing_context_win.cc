@@ -434,7 +434,7 @@ PrintingContext::Result PrintingContextWin::NewDocument(
 
   DCHECK(SimplifyDocumentTitle(document_name) == document_name);
   DOCINFO di = { sizeof(DOCINFO) };
-  const std::wstring& document_name_wide = UTF16ToWide(document_name);
+  const std::wstring& document_name_wide = base::UTF16ToWide(document_name);
   di.lpszDocName = document_name_wide.c_str();
 
   // Is there a debug dump directory specified? If so, force to print to a file.
@@ -447,7 +447,7 @@ PrintingContext::Result PrintingContextWin::NewDocument(
     filename += L"_";
     filename += base::TimeFormatTimeOfDay(now);
     filename += L"_";
-    filename += UTF16ToWide(document_name);
+    filename += base::UTF16ToWide(document_name);
     filename += L"_";
     filename += L"buffer.prn";
     file_util::ReplaceIllegalCharactersInPath(&filename, '_');

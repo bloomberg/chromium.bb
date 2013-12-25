@@ -147,7 +147,7 @@ void CreateTileOnStartScreen(const base::string16& tile_id,
   // chrome will see the arguments as command line parameters.
   // A GURL is used to ensure any spaces are properly escaped.
   GURL url(url_str);
-  args.Attach(MakeHString(UTF8ToUTF16(url.spec())));
+  args.Attach(MakeHString(base::UTF8ToUTF16(url.spec())));
 
   mswr::ComPtr<winfoundtn::IUriRuntimeClassFactory> uri_factory;
   hr = winrt_utils::CreateActivationFactory(

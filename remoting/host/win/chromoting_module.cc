@@ -204,7 +204,7 @@ int ElevatedControllerMain() {
   ChromotingModule module(elevated_controller_entry,
                           elevated_controller_entry + 1);
 
-  if (!InitializeComSecurity(WideToUTF8(kElevatedControllerSd), "", true))
+  if (!InitializeComSecurity(base::WideToUTF8(kElevatedControllerSd), "", true))
     return kInitializationFailed;
 
   if (!module.Run())

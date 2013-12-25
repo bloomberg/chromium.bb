@@ -18,7 +18,7 @@ int targets_written = 0;
 
 base::FilePath UTF8ToFilePath(const std::string& s) {
 #if defined(OS_WIN)
-  return base::FilePath(UTF8ToWide(s));
+  return base::FilePath(base::UTF8ToWide(s));
 #else
   return base::FilePath(s);
 #endif
@@ -26,7 +26,7 @@ base::FilePath UTF8ToFilePath(const std::string& s) {
 
 std::string FilePathToUTF8(const base::FilePath& path) {
 #if defined(OS_WIN)
-  return WideToUTF8(path.value());
+  return base::WideToUTF8(path.value());
 #else
   return path.value();
 #endif

@@ -321,7 +321,7 @@ void CppBoundClass::BindToJavascript(WebFrame* frame,
   // up after itself. It will also (indirectly) register the object with V8,
   // against an owner pointer we supply, so we must register that as an owner,
   // and unregister when we teardown.
-  frame->bindToWindowObject(ASCIIToUTF16(classname),
+  frame->bindToWindowObject(base::ASCIIToUTF16(classname),
                             NPVARIANT_TO_OBJECT(*GetAsCppVariant()));
   bound_to_frame_ = true;
 }

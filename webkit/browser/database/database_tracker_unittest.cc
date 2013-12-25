@@ -20,6 +20,8 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/database/database_identifier.h"
 
+using base::ASCIIToWide;
+
 namespace {
 
 const char kOrigin1Url[] = "http://origin1";

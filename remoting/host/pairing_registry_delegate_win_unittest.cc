@@ -22,7 +22,8 @@ class PairingRegistryDelegateWinTest : public testing::Test {
     key_name_ = base::GenerateGUID();
 
     base::win::RegKey root;
-    EXPECT_TRUE(root.Create(HKEY_CURRENT_USER, UTF8ToWide(key_name_).c_str(),
+    EXPECT_TRUE(root.Create(HKEY_CURRENT_USER,
+                            base::UTF8ToWide(key_name_).c_str(),
                             KEY_READ | KEY_WRITE) == ERROR_SUCCESS);
 
     EXPECT_TRUE(privileged_.Create(root.Handle(), L"privileged",
@@ -34,8 +35,9 @@ class PairingRegistryDelegateWinTest : public testing::Test {
   virtual void TearDown() OVERRIDE {
     privileged_.Close();
     unprivileged_.Close();
-    EXPECT_TRUE(SHDeleteKey(HKEY_CURRENT_USER,
-                            UTF8ToWide(key_name_).c_str()) == ERROR_SUCCESS);
+    EXPECT_TRUE(
+        SHDeleteKey(HKEY_CURRENT_USER,
+                    base::UTF8ToWide(key_name_).c_str()) == ERROR_SUCCESS);
   }
 
  protected:

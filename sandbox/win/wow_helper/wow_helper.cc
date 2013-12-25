@@ -15,43 +15,6 @@
 #include "sandbox/win/wow_helper/service64_resolver.h"
 #include "sandbox/win/wow_helper/target_code.h"
 
-namespace {
-
-// Grabbed from base/strings/string_util.h
-template <class string_type>
-inline typename string_type::value_type* WriteInto(string_type* str,
-                                                   size_t length_with_null) {
-  str->reserve(length_with_null);
-  str->resize(length_with_null - 1);
-  return &((*str)[0]);
-}
-
-// Grabbed from base/string_util.cc
-std::string WideToMultiByte(const base::string16& wide, UINT code_page) {
-  if (wide.length() == 0)
-    return std::string();
-
-  // compute the length of the buffer we'll need
-  int charcount = WideCharToMultiByte(code_page, 0, wide.c_str(), -1,
-                                      NULL, 0, NULL, NULL);
-  if (charcount == 0)
-    return std::string();
-
-  // convert
-  std::string mb;
-  WideCharToMultiByte(code_page, 0, wide.c_str(), -1,
-                      WriteInto(&mb, charcount), charcount, NULL, NULL);
-
-  return mb;
-}
-
-// Grabbed from base/string_util.cc
-std::string WideToUTF8(const base::string16& wide) {
-  return WideToMultiByte(wide, CP_UTF8);
-}
-
-}  // namespace
-
 namespace sandbox {
 
 // Performs the interception of NtMapViewOfSection on the 64-bit version of

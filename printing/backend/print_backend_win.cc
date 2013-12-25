@@ -95,14 +95,14 @@ std::string PrintBackendWin::GetDefaultPrinterName() {
   TCHAR default_printer_name[MAX_PATH];
   if (!::GetDefaultPrinter(default_printer_name, &size))
     return std::string();
-  return WideToUTF8(default_printer_name);
+  return base::WideToUTF8(default_printer_name);
 }
 
 bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     PrinterSemanticCapsAndDefaults* printer_info) {
   ScopedPrinterHandle printer_handle;
-  if (!printer_handle.OpenPrinter(UTF8ToWide(printer_name).c_str())) {
+  if (!printer_handle.OpenPrinter(base::UTF8ToWide(printer_name).c_str())) {
     LOG(WARNING) << "Failed to open printer, error = " << GetLastError();
     return false;
   }
@@ -111,7 +111,7 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   if (!info_5.Init(printer_handle)) {
     return false;
   }
-  DCHECK_EQ(info_5.get()->pPrinterName, UTF8ToUTF16(printer_name));
+  DCHECK_EQ(info_5.get()->pPrinterName, base::UTF8ToUTF16(printer_name));
 
   PrinterSemanticCapsAndDefaults caps;
 
@@ -173,7 +173,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
   }
   DCHECK(printer_info);
   HPTPROVIDER provider = NULL;
-  std::wstring printer_name_wide = UTF8ToWide(printer_name);
+  std::wstring printer_name_wide = base::UTF8ToWide(printer_name);
   HRESULT hr = XPSModule::OpenProvider(printer_name_wide, 1, &provider);
   if (provider) {
     base::win::ScopedComPtr<IStream> print_capabilities_stream;
@@ -236,7 +236,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
 std::string PrintBackendWin::GetPrinterDriverInfo(
     const std::string& printer_name) {
   ScopedPrinterHandle printer;
-  if (!printer.OpenPrinter(UTF8ToWide(printer_name).c_str())) {
+  if (!printer.OpenPrinter(base::UTF8ToWide(printer_name).c_str())) {
     return std::string();
   }
   return GetDriverInfo(printer);
@@ -244,7 +244,7 @@ std::string PrintBackendWin::GetPrinterDriverInfo(
 
 bool PrintBackendWin::IsValidPrinter(const std::string& printer_name) {
   ScopedPrinterHandle printer_handle;
-  return printer_handle.OpenPrinter(UTF8ToWide(printer_name).c_str());
+  return printer_handle.OpenPrinter(base::UTF8ToWide(printer_name).c_str());
 }
 
 scoped_refptr<PrintBackend> PrintBackend::CreateInstance(

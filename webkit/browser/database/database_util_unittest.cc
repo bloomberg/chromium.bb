@@ -8,6 +8,7 @@
 #include "webkit/browser/database/database_util.h"
 #include "webkit/common/database/database_identifier.h"
 
+using base::ASCIIToWide;
 using webkit_database::DatabaseUtil;
 
 static void TestVfsFilePath(bool expected_result,

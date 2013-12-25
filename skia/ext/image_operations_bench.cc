@@ -186,7 +186,7 @@ bool Benchmark::ParseArgs(const CommandLine* command_line) {
     const std::string& s = iter->first;
     std::string value;
 #if defined(OS_WIN)
-    value = WideToUTF8(iter->second);
+    value = base::WideToUTF8(iter->second);
 #else
     value = iter->second;
 #endif

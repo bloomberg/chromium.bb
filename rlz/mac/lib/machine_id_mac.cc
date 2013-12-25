@@ -123,9 +123,10 @@ bool GetRawMachineId(base::string16* data, int* more_data) {
 
   data->clear();
   if (GetMacAddress(mac_address, sizeof(mac_address))) {
-    *data += ASCIIToUTF16(base::StringPrintf("mac:%02x%02x%02x%02x%02x%02x",
-        mac_address[0], mac_address[1], mac_address[2],
-        mac_address[3], mac_address[4], mac_address[5]));
+    *data += base::ASCIIToUTF16(
+        base::StringPrintf("mac:%02x%02x%02x%02x%02x%02x",
+                           mac_address[0], mac_address[1], mac_address[2],
+                           mac_address[3], mac_address[4], mac_address[5]));
   }
 
   // A MAC address is enough to uniquely identify a machine, but it's only 6
@@ -134,8 +135,8 @@ bool GetRawMachineId(base::string16* data, int* more_data) {
   CFStringRef serial = CopySerialNumber();
   if (serial) {
     if (!data->empty())
-      *data += UTF8ToUTF16(" ");
-    *data += UTF8ToUTF16("serial:") + base::SysCFStringRefToUTF16(serial);
+      *data += base::UTF8ToUTF16(" ");
+    *data += base::UTF8ToUTF16("serial:") + base::SysCFStringRefToUTF16(serial);
     CFRelease(serial);
   }
 

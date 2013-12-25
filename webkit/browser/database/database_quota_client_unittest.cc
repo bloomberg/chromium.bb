@@ -87,7 +87,7 @@ class MockDatabaseTracker : public DatabaseTracker {
   void AddMockDatabase(const GURL& origin,  const char* name, int size) {
     MockOriginInfo& info = mock_origin_infos_[origin];
     info.set_origin(webkit_database::GetIdentifierFromOrigin(origin));
-    info.AddMockDatabase(ASCIIToUTF16(name), size);
+    info.AddMockDatabase(base::ASCIIToUTF16(name), size);
   }
 
   int delete_called_count() { return delete_called_count_; }

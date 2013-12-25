@@ -23,7 +23,7 @@ std::string GetNameForExternalFilePath(const base::FilePath& path) {
   size_t pos = file_path.rfind(base::FilePath::kSeparators[0]);
   CHECK(pos != base::FilePath::StringType::npos);
 #if defined(OS_WIN)
-  return WideToUTF8(file_path.substr(pos + 1));
+  return base::WideToUTF8(file_path.substr(pos + 1));
 #elif defined(OS_POSIX)
   return file_path.substr(pos + 1);
 #else

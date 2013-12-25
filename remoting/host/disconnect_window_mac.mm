@@ -86,7 +86,7 @@ scoped_ptr<HostWindow> HostWindow::CreateDisconnectWindow() {
   self = [super initWithWindowNibName:@"disconnect_window"];
   if (self) {
     disconnect_callback_ = disconnect_callback;
-    username_ = UTF8ToUTF16(username);
+    username_ = base::UTF8ToUTF16(username);
   }
   return self;
 }

@@ -58,7 +58,7 @@ const int kUnprivilegedTimeoutSec = 60;
 void ConfigToString(const base::DictionaryValue& config, ScopedBstr* out) {
   std::string config_str;
   base::JSONWriter::Write(&config, &config_str);
-  ScopedBstr config_scoped_bstr(UTF8ToUTF16(config_str).c_str());
+  ScopedBstr config_scoped_bstr(base::UTF8ToUTF16(config_str).c_str());
   out->Swap(config_scoped_bstr);
 }
 
@@ -183,7 +183,7 @@ scoped_ptr<base::DictionaryValue> DaemonControllerDelegateWin::GetConfig() {
   base::string16 file_content(
       static_cast<BSTR>(host_config), host_config.Length());
   scoped_ptr<base::Value> config(
-      base::JSONReader::Read(UTF16ToUTF8(file_content),
+      base::JSONReader::Read(base::UTF16ToUTF8(file_content),
           base::JSON_ALLOW_TRAILING_COMMAS));
 
   if (!config || config->GetType() != base::Value::TYPE_DICTIONARY)
@@ -278,7 +278,7 @@ std::string DaemonControllerDelegateWin::GetVersion() {
   if (FAILED(hr))
     return std::string();
 
-  return UTF16ToUTF8(
+  return base::UTF16ToUTF8(
       base::string16(static_cast<BSTR>(version), version.Length()));
 }
 

@@ -150,7 +150,7 @@ bool Statement::BindString(int col, const std::string& val) {
 }
 
 bool Statement::BindString16(int col, const base::string16& value) {
-  return BindString(col, UTF16ToUTF8(value));
+  return BindString(col, base::UTF16ToUTF8(value));
 }
 
 bool Statement::BindBlob(int col, const void* val, int val_len) {
@@ -240,7 +240,7 @@ base::string16 Statement::ColumnString16(int col) const {
     return base::string16();
 
   std::string s = ColumnString(col);
-  return !s.empty() ? UTF8ToUTF16(s) : base::string16();
+  return !s.empty() ? base::UTF8ToUTF16(s) : base::string16();
 }
 
 int Statement::ColumnByteLength(int col) const {

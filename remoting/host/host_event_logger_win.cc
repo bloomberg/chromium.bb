@@ -60,8 +60,8 @@ HostEventLoggerWin::HostEventLoggerWin(base::WeakPtr<HostStatusMonitor> monitor,
                                        const std::string& application_name)
     : monitor_(monitor),
       event_log_(NULL) {
-  event_log_ = RegisterEventSourceW(NULL,
-                                    UTF8ToUTF16(application_name).c_str());
+  event_log_ = RegisterEventSourceW(
+      NULL, base::UTF8ToUTF16(application_name).c_str());
   if (event_log_ != NULL) {
     monitor_->AddStatusObserver(this);
   } else {
@@ -122,7 +122,7 @@ void HostEventLoggerWin::Log(WORD type,
   std::vector<const WCHAR*> raw_strings(strings.size());
   std::vector<base::string16> utf16_strings(strings.size());
   for (size_t i = 0; i < strings.size(); ++i) {
-    utf16_strings[i] = UTF8ToUTF16(strings[i]);
+    utf16_strings[i] = base::UTF8ToUTF16(strings[i]);
     raw_strings[i] = utf16_strings[i].c_str();
   }
 

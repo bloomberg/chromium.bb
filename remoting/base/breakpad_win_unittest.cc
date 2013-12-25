@@ -91,7 +91,7 @@ void BreakpadWinDeathTest::SetUp() {
   if (environment->GetVar(kPipeVariableName, &pipe_name)) {
     // This is a child process. Initialize crash dump reporting to the crash
     // dump server.
-    pipe_name_ = UTF8ToWide(pipe_name);
+    pipe_name_ = base::UTF8ToWide(pipe_name);
     InitializeCrashReportingForTest(pipe_name_.c_str());
   } else {
     // This is the parent process. Generate a unique pipe name and setup
@@ -116,7 +116,7 @@ void BreakpadWinDeathTest::SetUp() {
             guid.Data4[6],
             guid.Data4[7]);
     EXPECT_TRUE(environment->SetVar(kPipeVariableName,
-                                    WideToUTF8(pipe_name_)));
+                                    base::WideToUTF8(pipe_name_)));
 
     // Setup a dummy crash dump server.
     callbacks_.reset(new MockCrashServerCallbacks());

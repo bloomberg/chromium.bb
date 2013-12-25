@@ -128,19 +128,19 @@ void EmitAppCacheInfo(const GURL& base_url,
   out->append("<ul>");
   EmitListItem(
       kSize,
-      UTF16ToUTF8(FormatBytesUnlocalized(info->size)),
+      base::UTF16ToUTF8(FormatBytesUnlocalized(info->size)),
       out);
   EmitListItem(
       kCreationTime,
-      UTF16ToUTF8(TimeFormatFriendlyDateAndTime(info->creation_time)),
+      base::UTF16ToUTF8(TimeFormatFriendlyDateAndTime(info->creation_time)),
       out);
   EmitListItem(
       kLastUpdateTime,
-      UTF16ToUTF8(TimeFormatFriendlyDateAndTime(info->last_update_time)),
+      base::UTF16ToUTF8(TimeFormatFriendlyDateAndTime(info->last_update_time)),
       out);
   EmitListItem(
       kLastAccessTime,
-      UTF16ToUTF8(TimeFormatFriendlyDateAndTime(info->last_access_time)),
+      base::UTF16ToUTF8(TimeFormatFriendlyDateAndTime(info->last_access_time)),
       out);
   out->append("</ul></p></br>\n");
 }
@@ -242,7 +242,7 @@ void EmitAppCacheResourceInfoVector(
                                       iter->url, iter->response_id,
                                       group_id),
                   false, false, out);
-    EmitTableData(UTF16ToUTF8(FormatBytesUnlocalized(iter->size)),
+    EmitTableData(base::UTF16ToUTF8(FormatBytesUnlocalized(iter->size)),
                   true, false, out);
     out->append("</tr>\n");
   }

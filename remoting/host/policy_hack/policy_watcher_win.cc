@@ -115,13 +115,13 @@ class PolicyWatcherWin :
   bool GetRegistryPolicyString(const std::string& value_name,
                                std::string* result) const {
     // presubmit: allow wstring
-    std::wstring value_name_wide = UTF8ToWide(value_name);
+    std::wstring value_name_wide = base::UTF8ToWide(value_name);
     // presubmit: allow wstring
     std::wstring value;
     RegKey policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
     if (policy_key.ReadValue(value_name_wide.c_str(), &value) ==
         ERROR_SUCCESS) {
-      *result = WideToUTF8(value);
+      *result = base::WideToUTF8(value);
       return true;
     }
 
@@ -129,7 +129,7 @@ class PolicyWatcherWin :
       ERROR_SUCCESS) {
       if (policy_key.ReadValue(value_name_wide.c_str(), &value) ==
           ERROR_SUCCESS) {
-        *result = WideToUTF8(value);
+        *result = base::WideToUTF8(value);
         return true;
       }
     }
@@ -139,7 +139,7 @@ class PolicyWatcherWin :
   bool GetRegistryPolicyInteger(const std::string& value_name,
                                 uint32* result) const {
     // presubmit: allow wstring
-    std::wstring value_name_wide = UTF8ToWide(value_name);
+    std::wstring value_name_wide = base::UTF8ToWide(value_name);
     DWORD value = 0;
     RegKey policy_key(HKEY_LOCAL_MACHINE, kRegistrySubKey, KEY_READ);
     if (policy_key.ReadValueDW(value_name_wide.c_str(), &value) ==

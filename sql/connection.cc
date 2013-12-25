@@ -242,7 +242,7 @@ bool Connection::Open(const base::FilePath& path) {
   }
 
 #if defined(OS_WIN)
-  return OpenInternal(WideToUTF8(path.value()), RETRY_ON_POISON);
+  return OpenInternal(base::WideToUTF8(path.value()), RETRY_ON_POISON);
 #elif defined(OS_POSIX)
   return OpenInternal(path.value(), RETRY_ON_POISON);
 #endif

@@ -153,7 +153,8 @@ google_breakpad::CustomClientInfo* BreakpadWin::GetCustomInfo() {
 
   static wchar_t version[64];
   if (version_info.get()) {
-    wcscpy_s(version, UTF16ToWide(version_info->product_version()).c_str());
+    wcscpy_s(version,
+             base::UTF16ToWide(version_info->product_version()).c_str());
   } else {
     wcscpy_s(version, kBreakpadVersionDefault);
   }

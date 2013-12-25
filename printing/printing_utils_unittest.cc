@@ -9,7 +9,7 @@
 namespace printing {
 
 std::string Simplify(const char* title) {
-  return UTF16ToUTF8(SimplifyDocumentTitle(ASCIIToUTF16(title)));
+  return base::UTF16ToUTF8(SimplifyDocumentTitle(base::ASCIIToUTF16(title)));
 }
 
 TEST(PrintingUtilsTest, SimplifyDocumentTitle) {
