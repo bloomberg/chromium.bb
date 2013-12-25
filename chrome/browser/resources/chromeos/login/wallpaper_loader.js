@@ -51,7 +51,12 @@ cr.define('login', function() {
   WallpaperLoader.prototype = {
     // When moving through users quickly at login screen, set a timeout to
     // prevent loading intermediate wallpapers.
-    loadWallpaperTimeout_: null,
+    beforeLoadTimeout_: null,
+
+    // If we do not receive notification on WallpaperLoaded within timeout,
+    // probably an error happened and the wallpaper is just bad. Skip it
+    // and unblock loader.
+    loadTimeout_: null,
 
     // When waiting for wallpaper load, remember load start time.
     // wallpaperLoadInProgress_: { name: '', date: undefined }
@@ -70,28 +75,40 @@ cr.define('login', function() {
     // Length is limited by WALLPAPER_LOAD_STATS_MAX_LENGTH.
     loadStats_: undefined,
 
+    // Force next load request even if requested wallpaper is already loaded.
+    forceLoad_: false,
+
     /**
      * Stop load timer. Clear pending record.
      */
     reset: function() {
       delete this.wallpaperLoadPending_;
-      if (this.loadWallpaperTimeout_ != null)
-        window.clearTimeout(this.loadWallpaperTimeout_);
-      this.loadWallpaperTimeout_ = null;
+
+      if (this.beforeLoadTimeout_ != null)
+        window.clearTimeout(this.beforeLoadTimeout_);
+      this.beforeLoadTimeout_ = null;
+
+      if (this.loadTimeout_ != null)
+        window.clearTimeout(this.loadTimeout_);
+      this.loadTimeout_ = null;
+
+      this.wallpaperLoadInProgress_.name = '';
     },
 
     /**
      * Schedules wallpaper load.
      */
-    scheduleLoad: function(email) {
-      if (this.wallpaperLoadPending_ && this.wallpaperLoadPending_ == email)
-        return;
+    scheduleLoad: function(email, force) {
+      if (force || this.forceLoad_) {
+        this.forceLoad_ = true;
+      } else {
+        if (this.wallpaperLoadPending_ && this.wallpaperLoadPending_ == email)
+          return;
+        if ((this.wallpaperLoadInProgress_.name == '') &&
+            (this.currentWallpaper_ == email))
+          return;
+      }
       this.reset();
-      if (this.wallpaperLoadInProgress_.name == email)
-        return;
-      if ((this.wallpaperLoadInProgress_.name == '') &&
-          (this.currentWallpaper_ == email))
-        return;
 
       this.wallpaperLoadPending_ = email;
       var now = new Date();
@@ -99,9 +116,9 @@ cr.define('login', function() {
       if (this.wallpaperLoadTryNextAfter_)
         timeout = Math.max(timeout, this.wallpaperLoadTryNextAfter_ - now);
 
-      this.loadWallpaperTimeout_ = window.setTimeout(
-        this.loadWallpaper_.bind(this), timeout);
-     },
+      this.beforeLoadTimeout_ = window.setTimeout(
+          this.loadWallpaper_.bind(this), timeout);
+    },
 
 
     /**
@@ -109,18 +126,23 @@ cr.define('login', function() {
      * @private
      */
     loadWallpaper_: function() {
-      this.loadWallpaperTimeout_ = null;
+      this.beforeLoadTimeout_ = null;
       if (!this.wallpaperLoadPending_)
         return;
-      if (this.wallpaperLoadInProgress_.name != '')
+      if (!this.forceLoad_ && this.wallpaperLoadInProgress_.name != '')
         return;
       var email = this.wallpaperLoadPending_;
       delete this.wallpaperLoadPending_;
-      if (email == this.currentWallpaper_)
+      if (!this.forceLoad_ && email == this.currentWallpaper_)
         return;
       this.wallpaperLoadInProgress_.name = email;
       this.wallpaperLoadInProgress_.date = new Date();
+      this.forceLoad_ = false;
       chrome.send('loadWallpaper', [email]);
+
+      var timeout = 3 * this.getWallpaperLoadTime_();
+      this.loadTimeout_ = window.setTimeout(
+          this.loadTimeoutFired_.bind(this), timeout);
     },
 
     /**
@@ -160,6 +182,10 @@ cr.define('login', function() {
       this.currentWallpaper_ = email;
       if (email != this.wallpaperLoadInProgress_.name)
           return;
+
+      window.clearTimeout(this.loadTimeout_);
+      this.loadTimeout_ = null;
+
       this.wallpaperLoadInProgress_.name = '';
       var started = this.wallpaperLoadInProgress_.date;
       var finished = new Date();
@@ -174,8 +200,20 @@ cr.define('login', function() {
       if (this.wallpaperLoadPending_) {
         var newWallpaperEmail = this.wallpaperLoadPending_;
         this.reset();
-        this.scheduleLoad(newWallpaperEmail);
+        this.scheduleLoad(newWallpaperEmail, this.forceLoad_);
       }
+    },
+
+    /**
+     * Handles timeout of wallpaper load. Pretends load is completed to unblock
+     * loader.
+     */
+    loadTimeoutFired_: function() {
+      var email = this.wallpaperLoadInProgress_.name;
+      this.loadTimeout_ = null;
+      if (email == '')
+        return;
+      this.onWallpaperLoaded(email);
     }
   };
 

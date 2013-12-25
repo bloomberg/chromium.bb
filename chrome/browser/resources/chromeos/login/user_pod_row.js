@@ -1399,7 +1399,7 @@ cr.define('login', function() {
         podToFocus.reset(true);  // Reset and give focus.
         chrome.send('focusPod', [podToFocus.user.username]);
 
-        this.wallpaperLoader_.scheduleLoad(podToFocus.user.username);
+        this.wallpaperLoader_.scheduleLoad(podToFocus.user.username, opt_force);
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
       }
@@ -1423,7 +1423,8 @@ cr.define('login', function() {
      */
     loadLastWallpaper: function() {
       if (this.lastFocusedPod_)
-        this.wallpaperLoader_.scheduleLoad(this.lastFocusedPod_.user.username);
+        this.wallpaperLoader_.scheduleLoad(this.lastFocusedPod_.user.username,
+                                           true /* force */);
     },
 
     /**
@@ -1700,7 +1701,8 @@ cr.define('login', function() {
             focusedPod.reset(true);
             // Notify screen that it is ready.
             screen.onShow();
-            self.wallpaperLoader_.scheduleLoad(focusedPod.user.username);
+            self.wallpaperLoader_.scheduleLoad(focusedPod.user.username,
+                                               true /* force */);
           }
         });
         // Guard timer for 1 second -- it would conver all possible animations.
