@@ -11,6 +11,7 @@
 
 #include <limits>
 
+#include "base/android/sys_utils.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
@@ -31,7 +32,8 @@ const char kAshmemAllocatorName[] = "DiscardableMemoryAllocator";
 struct GlobalContext {
   GlobalContext()
       : ashmem_fd_limit(GetSoftFDLimit()),
-        allocator(kAshmemAllocatorName),
+        allocator(kAshmemAllocatorName,
+                  GetOptimalAshmemRegionSizeForAllocator()),
         ashmem_fd_count_(0) {
   }
 
@@ -61,6 +63,14 @@ struct GlobalContext {
       return 128;
     // Allow 25% of file descriptor capacity for ashmem.
     return limit_info.rlim_cur / 4;
+  }
+
+  // Returns 64 MBytes for a 512 MBytes device, 128 MBytes for 1024 MBytes...
+  static size_t GetOptimalAshmemRegionSizeForAllocator() {
+    // Note that this may do some I/O (without hitting the disk though) so it
+    // should not be called on the critical path.
+    return internal::AlignToNextPage(
+        base::android::SysUtils::AmountOfPhysicalMemoryKB() * 1024 / 8);
   }
 
   int ashmem_fd_count_;
@@ -231,11 +241,8 @@ scoped_ptr<DiscardableMemory> DiscardableMemory::CreateLockedMemory(
   // rather than DiscardableMemoryAndroidSimple). Moreover keeping the lock
   // acquired for the whole allocation would cause a deadlock when the allocator
   // tries to create an ashmem region.
-  const size_t kAllocatorRegionSize =
-      internal::DiscardableMemoryAllocator::kMinAshmemRegionSize;
   GlobalContext* const global_context = g_context.Pointer();
-  if (aligned_size >= kAllocatorRegionSize ||
-      GetCurrentNumberOfAshmemFDs() < 0.9 * global_context->ashmem_fd_limit) {
+  if (GetCurrentNumberOfAshmemFDs() < 0.9 * global_context->ashmem_fd_limit) {
     int fd;
     void* address;
     if (internal::CreateAshmemRegion("", aligned_size, &fd, &address)) {

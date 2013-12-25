@@ -32,13 +32,12 @@ namespace internal {
 // discardable_memory.h for DiscardableMemory's threading guarantees.
 class BASE_EXPORT_PRIVATE DiscardableMemoryAllocator {
  public:
-  // Exposed for testing.
-  enum {
-    kMinAshmemRegionSize = 32 * 1024 * 1024,
-  };
-
   // Note that |name| is only used for debugging/measurement purposes.
-  explicit DiscardableMemoryAllocator(const std::string& name);
+  // |ashmem_region_size| is the size that will be used to create the underlying
+  // ashmem regions and is expected to be greater or equal than 32 MBytes.
+  DiscardableMemoryAllocator(const std::string& name,
+                             size_t ashmem_region_size);
+
   ~DiscardableMemoryAllocator();
 
   // Note that the allocator must outlive the returned DiscardableMemory
@@ -53,6 +52,7 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryAllocator {
 
   base::ThreadChecker thread_checker_;
   const std::string name_;
+  const size_t ashmem_region_size_;
   base::Lock lock_;
   ScopedVector<AshmemRegion> ashmem_regions_;
 
