@@ -39,99 +39,71 @@
 
 namespace WebCore {
 
-    class Event;
-    class FloatQuad;
-    class InspectorFrontend;
-    class IntRect;
-    class ResourceRequest;
-    class ResourceResponse;
+class Event;
+class FloatQuad;
+class InspectorFrontend;
+class IntRect;
+class ResourceRequest;
+class ResourceResponse;
 
-    class TimelineRecordFactory {
-    public:
-        typedef TypeBuilder::Timeline::TimelineEvent TimelineEvent;
+class TimelineRecordFactory {
+public:
+    typedef TypeBuilder::Timeline::TimelineEvent TimelineEvent;
 
-        static PassRefPtr<TimelineEvent> createGenericRecord(double startTime, int maxCallStackDepth, const String& type, PassRefPtr<JSONObject> data);
-        static PassRefPtr<TimelineEvent> createBackgroundRecord(double startTime, const String& thread, const String& type, PassRefPtr<JSONObject> data);
+    static PassRefPtr<TimelineEvent> createGenericRecord(double startTime, int maxCallStackDepth, const String& type, PassRefPtr<JSONObject> data);
+    static PassRefPtr<TimelineEvent> createBackgroundRecord(double startTime, const String& thread, const String& type, PassRefPtr<JSONObject> data);
 
-        static PassRefPtr<JSONObject> createGCEventData(size_t usedHeapSizeDelta);
+    static PassRefPtr<JSONObject> createGCEventData(size_t usedHeapSizeDelta);
+    static PassRefPtr<JSONObject> createFunctionCallData(const String& scriptName, int scriptLine);
+    static PassRefPtr<JSONObject> createEventDispatchData(const Event&);
+    static PassRefPtr<JSONObject> createGenericTimerData(int timerId);
+    static PassRefPtr<JSONObject> createTimerInstallData(int timerId, int timeout, bool singleShot);
+    static PassRefPtr<JSONObject> createXHRReadyStateChangeData(const String& url, int readyState);
+    static PassRefPtr<JSONObject> createXHRLoadData(const String& url);
+    static PassRefPtr<JSONObject> createEvaluateScriptData(const String&, double lineNumber);
+    static PassRefPtr<JSONObject> createTimeStampData(const String&);
+    static PassRefPtr<JSONObject> createResourceSendRequestData(const String& requestId, const ResourceRequest&);
+    static PassRefPtr<JSONObject> createScheduleResourceRequestData(const String&);
+    static PassRefPtr<JSONObject> createResourceReceiveResponseData(const String& requestId, const ResourceResponse&);
+    static PassRefPtr<JSONObject> createReceiveResourceData(const String& requestId, int length);
+    static PassRefPtr<JSONObject> createResourceFinishData(const String& requestId, bool didFail, double finishTime);
+    static PassRefPtr<JSONObject> createLayoutData(unsigned dirtyObjects, unsigned totalObjects, bool partialLayout);
+    static PassRefPtr<JSONObject> createDecodeImageData(const String& imageType);
+    static PassRefPtr<JSONObject> createResizeImageData(bool shouldCache);
+    static PassRefPtr<JSONObject> createMarkData(bool isMainFrame);
+    static PassRefPtr<JSONObject> createParseHTMLData(unsigned startLine);
+    static PassRefPtr<JSONObject> createAnimationFrameData(int callbackId);
+    static PassRefPtr<JSONObject> createNodeData(long long nodeId);
+    static PassRefPtr<JSONObject> createLayerData(long long layerRootNodeId);
+    static PassRefPtr<JSONObject> createFrameData(int frameId);
+    static PassRefPtr<JSONObject> createGPUTaskData(bool foreign, size_t usedGPUMemoryBytes);
 
-        static PassRefPtr<JSONObject> createFunctionCallData(const String& scriptName, int scriptLine);
+    static void setNodeData(JSONObject* data, long long nodeId);
+    static void setLayerData(JSONObject* data, long long layerRootNodeId);
+    static void setPaintData(JSONObject* data, const FloatQuad&, long long layerRootNodeId, int graphicsLayerId);
+    static void setLayoutRoot(JSONObject* data, const FloatQuad&, long long rootNodeId);
+    static void setStyleRecalcDetails(JSONObject* data, unsigned elementCount);
+    static void setImageDetails(JSONObject* data, long long imageElementId, const String& url);
 
-        static PassRefPtr<JSONObject> createEventDispatchData(const Event&);
+    static inline PassRefPtr<JSONObject> createWebSocketCreateData(unsigned long identifier, const KURL& url, const String& protocol)
+    {
+        RefPtr<JSONObject> data = JSONObject::create();
+        data->setNumber("identifier", identifier);
+        data->setString("url", url.string());
+        if (!protocol.isNull())
+            data->setString("webSocketProtocol", protocol);
+        return data.release();
+    }
 
-        static PassRefPtr<JSONObject> createGenericTimerData(int timerId);
-
-        static PassRefPtr<JSONObject> createTimerInstallData(int timerId, int timeout, bool singleShot);
-
-        static PassRefPtr<JSONObject> createXHRReadyStateChangeData(const String& url, int readyState);
-
-        static PassRefPtr<JSONObject> createXHRLoadData(const String& url);
-
-        static PassRefPtr<JSONObject> createEvaluateScriptData(const String&, double lineNumber);
-
-        static PassRefPtr<JSONObject> createTimeStampData(const String&);
-
-        static PassRefPtr<JSONObject> createResourceSendRequestData(const String& requestId, const ResourceRequest&);
-
-        static PassRefPtr<JSONObject> createScheduleResourceRequestData(const String&);
-
-        static PassRefPtr<JSONObject> createResourceReceiveResponseData(const String& requestId, const ResourceResponse&);
-
-        static PassRefPtr<JSONObject> createReceiveResourceData(const String& requestId, int length);
-
-        static PassRefPtr<JSONObject> createResourceFinishData(const String& requestId, bool didFail, double finishTime);
-
-        static PassRefPtr<JSONObject> createLayoutData(unsigned dirtyObjects, unsigned totalObjects, bool partialLayout);
-
-        static PassRefPtr<JSONObject> createDecodeImageData(const String& imageType);
-
-        static PassRefPtr<JSONObject> createResizeImageData(bool shouldCache);
-
-        static PassRefPtr<JSONObject> createMarkData(bool isMainFrame);
-
-        static PassRefPtr<JSONObject> createParseHTMLData(unsigned startLine);
-
-        static PassRefPtr<JSONObject> createAnimationFrameData(int callbackId);
-
-        static PassRefPtr<JSONObject> createNodeData(long long nodeId);
-
-        static PassRefPtr<JSONObject> createLayerData(long long layerRootNodeId);
-
-        static PassRefPtr<JSONObject> createFrameData(int frameId);
-
-        static PassRefPtr<JSONObject> createGPUTaskData(bool foreign, size_t usedGPUMemoryBytes);
-
-        static void setNodeData(JSONObject* data, long long nodeId);
-
-        static void setLayerData(JSONObject* data, long long layerRootNodeId);
-
-        static void setPaintData(JSONObject* data, const FloatQuad&, long long layerRootNodeId, int graphicsLayerId);
-
-        static void setLayoutRoot(JSONObject* data, const FloatQuad&, long long rootNodeId);
-
-        static void setStyleRecalcDetails(JSONObject* data, unsigned elementCount);
-
-        static void setImageDetails(JSONObject* data, long long imageElementId, const String& url);
-
-        static inline PassRefPtr<JSONObject> createWebSocketCreateData(unsigned long identifier, const KURL& url, const String& protocol)
-        {
-            RefPtr<JSONObject> data = JSONObject::create();
-            data->setNumber("identifier", identifier);
-            data->setString("url", url.string());
-            if (!protocol.isNull())
-                data->setString("webSocketProtocol", protocol);
-            return data.release();
-        }
-
-        static inline PassRefPtr<JSONObject> createGenericWebSocketData(unsigned long identifier)
-        {
-            RefPtr<JSONObject> data = JSONObject::create();
-            data->setNumber("identifier", identifier);
-            return data.release();
-        }
-    private:
-        TimelineRecordFactory() { }
-    };
+    static inline PassRefPtr<JSONObject> createGenericWebSocketData(unsigned long identifier)
+    {
+        RefPtr<JSONObject> data = JSONObject::create();
+        data->setNumber("identifier", identifier);
+        return data.release();
+    }
+private:
+    TimelineRecordFactory() { }
+};
 
 } // namespace WebCore
 
