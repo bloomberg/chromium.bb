@@ -38,7 +38,7 @@ int MockProxyScriptFetcher::Fetch(const GURL& url, base::string16* text,
 void MockProxyScriptFetcher::NotifyFetchCompletion(
     int result, const std::string& ascii_text) {
   DCHECK(has_pending_request());
-  *pending_request_text_ = ASCIIToUTF16(ascii_text);
+  *pending_request_text_ = base::ASCIIToUTF16(ascii_text);
   CompletionCallback callback = pending_request_callback_;
   pending_request_callback_.Reset();
   callback.Run(result);

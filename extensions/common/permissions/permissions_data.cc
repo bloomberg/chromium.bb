@@ -152,7 +152,7 @@ bool ParseHelper(Extension* extension,
 
     if (iter->id() == APIPermission::kExperimental) {
       if (!CanSpecifyExperimentalPermission(extension)) {
-        *error = ASCIIToUTF16(errors::kExperimentalFlagRequired);
+        *error = base::ASCIIToUTF16(errors::kExperimentalFlagRequired);
         return false;
       }
     }

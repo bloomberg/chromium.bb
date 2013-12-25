@@ -48,6 +48,8 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #endif
 
+using base::UTF16ToUTF8;
+
 namespace {
 
 // base::TimeTicks::Now() is documented to have a resolution of

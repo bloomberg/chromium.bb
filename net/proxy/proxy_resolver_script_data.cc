@@ -14,7 +14,7 @@ scoped_refptr<ProxyResolverScriptData> ProxyResolverScriptData::FromUTF8(
     const std::string& utf8) {
   return new ProxyResolverScriptData(TYPE_SCRIPT_CONTENTS,
                                      GURL(),
-                                     UTF8ToUTF16(utf8));
+                                     base::UTF8ToUTF16(utf8));
 }
 
 // static

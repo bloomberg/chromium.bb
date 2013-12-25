@@ -44,9 +44,9 @@ class Rules {
 
     base::string16 text() const {
       if (is_valid_script)
-        return UTF8ToUTF16(url.spec() + "!FindProxyForURL");
+        return base::UTF8ToUTF16(url.spec() + "!FindProxyForURL");
       if (fetch_error == OK)
-        return UTF8ToUTF16(url.spec() + "!invalid-script");
+        return base::UTF8ToUTF16(url.spec() + "!invalid-script");
       return base::string16();
     }
 
@@ -675,7 +675,7 @@ TEST(ProxyScriptDeciderTest, AutodetectDhcpSuccess) {
   Rules rules;
   RuleBasedProxyScriptFetcher fetcher(&rules);
   SynchronousSuccessDhcpFetcher dhcp_fetcher(
-      WideToUTF16(L"http://bingo/!FindProxyForURL"));
+      base::WideToUTF16(L"http://bingo/!FindProxyForURL"));
 
   ProxyConfig config;
   config.set_auto_detect(true);
@@ -698,7 +698,7 @@ TEST(ProxyScriptDeciderTest, AutodetectDhcpFailParse) {
   Rules rules;
   RuleBasedProxyScriptFetcher fetcher(&rules);
   SynchronousSuccessDhcpFetcher dhcp_fetcher(
-      WideToUTF16(L"http://bingo/!invalid-script"));
+      base::WideToUTF16(L"http://bingo/!invalid-script"));
 
   ProxyConfig config;
   config.set_auto_detect(true);

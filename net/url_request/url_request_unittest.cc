@@ -82,6 +82,7 @@
 #include "base/win/windows_version.h"
 #endif
 
+using base::ASCIIToUTF16;
 using base::Time;
 
 namespace net {

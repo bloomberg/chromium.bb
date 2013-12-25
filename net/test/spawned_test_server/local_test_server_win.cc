@@ -122,7 +122,7 @@ ScopedPath::ScopedPath(const base::FilePath& path_to_add)
   if (!new_value.empty())
     new_value += ";";
 
-  new_value += WideToUTF8(path_to_add.value());
+  new_value += base::WideToUTF8(path_to_add.value());
 
   path_modified_ = environment_->SetVar("PATH", new_value);
 }

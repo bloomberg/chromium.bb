@@ -28,7 +28,7 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
 
   virtual void Alert(const base::string16& message) OVERRIDE {
     VLOG(1) << "PAC-alert: " << message;  // Helpful when debugging.
-    alerts.push_back(UTF16ToUTF8(message));
+    alerts.push_back(base::UTF16ToUTF8(message));
   }
 
   virtual bool ResolveDns(const std::string& host,
@@ -70,7 +70,7 @@ class MockJSBindings : public ProxyResolverV8::JSBindings {
     // Helpful when debugging.
     VLOG(1) << "PAC-error: [" << line_number << "] " << message;
 
-    errors.push_back(UTF16ToUTF8(message));
+    errors.push_back(base::UTF16ToUTF8(message));
     errors_line_number.push_back(line_number);
   }
 

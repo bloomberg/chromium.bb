@@ -39,7 +39,7 @@ std::string GetInErrorMessage(MMRESULT result) {
                 << " midiInGetErrorText error: " << get_result;
     return std::string();
   }
-  return WideToUTF8(text);
+  return base::WideToUTF8(text);
 }
 
 std::string GetOutErrorMessage(MMRESULT result) {
@@ -51,7 +51,7 @@ std::string GetOutErrorMessage(MMRESULT result) {
                 << " midiOutGetErrorText error: " << get_result;
     return std::string();
   }
-  return WideToUTF8(text);
+  return base::WideToUTF8(text);
 }
 
 class MIDIHDRDeleter {

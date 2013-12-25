@@ -91,7 +91,7 @@ TEST_P(FtpDirectoryListingParserTest, Parse) {
       ADD_FAILURE() << "invalid gold test data: " << type;
     }
 
-    EXPECT_EQ(UTF8ToUTF16(name), entry.name);
+    EXPECT_EQ(base::UTF8ToUTF16(name), entry.name);
     EXPECT_EQ(size, entry.size);
 
     base::Time::Exploded time_exploded;

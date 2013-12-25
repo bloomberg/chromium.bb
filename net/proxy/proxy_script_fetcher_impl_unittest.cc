@@ -30,6 +30,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+using base::ASCIIToUTF16;
+
 namespace net {
 
 // TODO(eroman):

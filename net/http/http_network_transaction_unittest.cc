@@ -69,6 +69,8 @@
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
+
 //-----------------------------------------------------------------------------
 
 namespace {

@@ -32,7 +32,7 @@ class FtpDirectoryListingParserTest : public testing::Test {
 
   std::vector<base::string16> GetSingleLineTestCase(const std::string& text) {
     std::vector<base::string16> lines;
-    lines.push_back(UTF8ToUTF16(text));
+    lines.push_back(base::UTF8ToUTF16(text));
     return lines;
   }
 
@@ -43,7 +43,7 @@ class FtpDirectoryListingParserTest : public testing::Test {
 
     FtpDirectoryListingEntry entry = entries[0];
     EXPECT_EQ(test_case.type, entry.type);
-    EXPECT_EQ(UTF8ToUTF16(test_case.filename), entry.name);
+    EXPECT_EQ(base::UTF8ToUTF16(test_case.filename), entry.name);
     EXPECT_EQ(test_case.size, entry.size);
 
     base::Time::Exploded time_exploded;

@@ -36,7 +36,7 @@ TEST_F(FtpDirectoryListingParserNetwareTest, Good) {
         GetSingleLineTestCase(good_cases[i].input));
 
     // The parser requires a "total n" line before accepting regular input.
-    lines.insert(lines.begin(), ASCIIToUTF16("total 1"));
+    lines.insert(lines.begin(), base::ASCIIToUTF16("total 1"));
 
     std::vector<FtpDirectoryListingEntry> entries;
     EXPECT_TRUE(ParseFtpDirectoryListingNetware(lines,
@@ -63,7 +63,7 @@ TEST_F(FtpDirectoryListingParserNetwareTest, Bad) {
     std::vector<base::string16> lines(GetSingleLineTestCase(bad_cases[i]));
 
     // The parser requires a "total n" line before accepting regular input.
-    lines.insert(lines.begin(), ASCIIToUTF16("total 1"));
+    lines.insert(lines.begin(), base::ASCIIToUTF16("total 1"));
 
     std::vector<FtpDirectoryListingEntry> entries;
     EXPECT_FALSE(ParseFtpDirectoryListingNetware(lines,

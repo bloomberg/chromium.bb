@@ -166,8 +166,8 @@ class SSLClientSocketPoolTest
   }
 
   void AddAuthToCache() {
-    const base::string16 kFoo(ASCIIToUTF16("foo"));
-    const base::string16 kBar(ASCIIToUTF16("bar"));
+    const base::string16 kFoo(base::ASCIIToUTF16("foo"));
+    const base::string16 kBar(base::ASCIIToUTF16("bar"));
     session_->http_auth_cache()->Add(GURL("http://proxy:443/"),
                                      "MyRealm1",
                                      HttpAuth::AUTH_SCHEME_BASIC,

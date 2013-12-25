@@ -72,7 +72,7 @@ bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
   const base::DictionaryValue* requirements_value = NULL;
   if (!extension->manifest()->GetDictionary(keys::kRequirements,
                                             &requirements_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidRequirements);
+    *error = base::ASCIIToUTF16(errors::kInvalidRequirements);
     return false;
   }
 
@@ -129,7 +129,7 @@ bool RequirementsHandler::Parse(Extension* extension, base::string16* error) {
         }
       }
     } else {
-      *error = ASCIIToUTF16(errors::kInvalidRequirements);
+      *error = base::ASCIIToUTF16(errors::kInvalidRequirements);
       return false;
     }
   }

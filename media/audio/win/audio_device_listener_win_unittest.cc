@@ -47,7 +47,7 @@ class AudioDeviceListenerWinTest : public testing::Test {
   bool SimulateDefaultOutputDeviceChange(const char* new_device_id) {
     return output_device_listener_->OnDefaultDeviceChanged(
         static_cast<EDataFlow>(eConsole), static_cast<ERole>(eRender),
-        ASCIIToWide(new_device_id).c_str()) == S_OK;
+        base::ASCIIToWide(new_device_id).c_str()) == S_OK;
   }
 
   void SetOutputDeviceId(std::string new_device_id) {

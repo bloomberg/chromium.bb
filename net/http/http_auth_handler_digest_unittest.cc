@@ -67,7 +67,8 @@ bool RespondToChallenge(HttpAuth::Target target,
   TestCompletionCallback callback;
   scoped_ptr<HttpRequestInfo> request(new HttpRequestInfo());
   request->url = GURL(request_url);
-  AuthCredentials credentials(ASCIIToUTF16("foo"), ASCIIToUTF16("bar"));
+  AuthCredentials credentials(base::ASCIIToUTF16("foo"),
+                              base::ASCIIToUTF16("bar"));
   int rv_generate = handler->GenerateAuthToken(
       &credentials, request.get(), callback.callback(), token);
   if (rv_generate != OK) {
@@ -530,8 +531,8 @@ TEST(HttpAuthHandlerDigestTest, AssembleCredentials) {
         digest->AssembleCredentials(tests[i].req_method,
                                     tests[i].req_path,
                                     AuthCredentials(
-                                        ASCIIToUTF16(tests[i].username),
-                                        ASCIIToUTF16(tests[i].password)),
+                                        base::ASCIIToUTF16(tests[i].username),
+                                        base::ASCIIToUTF16(tests[i].password)),
                                     tests[i].cnonce,
                                     tests[i].nonce_count);
 

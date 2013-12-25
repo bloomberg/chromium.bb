@@ -20,6 +20,7 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::ASCIIToUTF16;
 using base::DictionaryValue;
 
 namespace extensions {
@@ -275,7 +276,7 @@ bool BackgroundManifestHandler::Validate(
             extension->GetResource(background_scripts[i]).GetFilePath())) {
       *error = l10n_util::GetStringFUTF8(
           IDS_EXTENSION_LOAD_BACKGROUND_SCRIPT_FAILED,
-          UTF8ToUTF16(background_scripts[i]));
+          base::UTF8ToUTF16(background_scripts[i]));
       return false;
     }
   }

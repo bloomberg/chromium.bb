@@ -30,7 +30,8 @@ bool LooksLikePacScript(const base::string16& script) {
   // file not containing the string is not likely to be a PAC script.
   //
   // An exact test would have to load the script in a javascript evaluator.
-  return script.find(ASCIIToUTF16("FindProxyForURL")) != base::string16::npos;
+  return script.find(base::ASCIIToUTF16("FindProxyForURL")) !=
+             base::string16::npos;
 }
 
 }

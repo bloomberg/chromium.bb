@@ -1311,8 +1311,8 @@ TEST_P(FtpNetworkTransactionTest, EvilRestartUser) {
   ASSERT_EQ(ERR_IO_PENDING,
             transaction_.RestartWithAuth(
                 AuthCredentials(
-                    ASCIIToUTF16("foo\nownz0red"),
-                    ASCIIToUTF16("innocent")),
+                    base::ASCIIToUTF16("foo\nownz0red"),
+                    base::ASCIIToUTF16("innocent")),
                 callback_.callback()));
   EXPECT_EQ(ERR_MALFORMED_IDENTITY, callback_.WaitForResult());
 }
@@ -1346,8 +1346,8 @@ TEST_P(FtpNetworkTransactionTest, EvilRestartPassword) {
   mock_socket_factory_.AddSocketDataProvider(&ctrl_socket2);
   ASSERT_EQ(ERR_IO_PENDING,
             transaction_.RestartWithAuth(
-                AuthCredentials(ASCIIToUTF16("innocent"),
-                                ASCIIToUTF16("foo\nownz0red")),
+                AuthCredentials(base::ASCIIToUTF16("innocent"),
+                                base::ASCIIToUTF16("foo\nownz0red")),
                 callback_.callback()));
   EXPECT_EQ(ERR_MALFORMED_IDENTITY, callback_.WaitForResult());
 }

@@ -108,7 +108,7 @@ void URLRequestFileDirJob::OnListFile(
     // On Linux, the file system encoding is not defined, but we assume that
     // SysNativeMBToWide takes care of it at least for now. We can try something
     // more sophisticated if necessary later.
-    const base::string16& title = WideToUTF16(
+    const base::string16& title = base::WideToUTF16(
         base::SysNativeMBToWide(dir_path_.value()));
 #endif
     data_.append(GetDirectoryListingHeader(title));

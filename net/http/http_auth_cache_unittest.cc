@@ -13,6 +13,8 @@
 #include "net/http/http_auth_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace net {
 
 namespace {

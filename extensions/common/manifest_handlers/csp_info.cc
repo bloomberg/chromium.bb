@@ -97,17 +97,17 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
 
   std::string content_security_policy;
   if (!extension->manifest()->GetString(key, &content_security_policy)) {
-    *error = ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
+    *error = base::ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
     return false;
   }
   if (!ContentSecurityPolicyIsLegal(content_security_policy)) {
-    *error = ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
+    *error = base::ASCIIToUTF16(errors::kInvalidContentSecurityPolicy);
     return false;
   }
   if (extension->manifest_version() >= 2 &&
       !ContentSecurityPolicyIsSecure(content_security_policy,
                                      extension->GetType())) {
-    *error = ASCIIToUTF16(errors::kInsecureContentSecurityPolicy);
+    *error = base::ASCIIToUTF16(errors::kInsecureContentSecurityPolicy);
     return false;
   }
 

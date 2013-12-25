@@ -24,6 +24,7 @@
 #include "extensions/common/url_pattern_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::UTF16ToUTF8;
 using content::SocketPermissionRequest;
 using extension_test_util::LoadManifest;
 using extension_test_util::LoadManifestUnchecked;

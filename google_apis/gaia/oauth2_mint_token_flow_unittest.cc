@@ -111,13 +111,13 @@ std::vector<std::string> CreateTestScopes() {
 static IssueAdviceInfo CreateIssueAdvice() {
   IssueAdviceInfo ia;
   IssueAdviceInfoEntry e1;
-  e1.description = ASCIIToUTF16("Manage your calendars");
-  e1.details.push_back(ASCIIToUTF16("View and manage your calendars"));
+  e1.description = base::ASCIIToUTF16("Manage your calendars");
+  e1.details.push_back(base::ASCIIToUTF16("View and manage your calendars"));
   ia.push_back(e1);
   IssueAdviceInfoEntry e2;
-  e2.description = ASCIIToUTF16("Manage your documents");
-  e2.details.push_back(ASCIIToUTF16("View your documents"));
-  e2.details.push_back(ASCIIToUTF16("Upload new documents"));
+  e2.description = base::ASCIIToUTF16("Manage your documents");
+  e2.details.push_back(base::ASCIIToUTF16("View your documents"));
+  e2.details.push_back(base::ASCIIToUTF16("Upload new documents"));
   ia.push_back(e2);
   return ia;
 }

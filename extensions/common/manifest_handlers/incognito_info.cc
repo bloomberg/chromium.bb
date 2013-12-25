@@ -48,7 +48,7 @@ bool IncognitoHandler::Parse(Extension* extension, base::string16* error) {
   bool split_mode = false;
   std::string incognito_string;
   if (!extension->manifest()->GetString(keys::kIncognito, &incognito_string)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidIncognitoBehavior);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidIncognitoBehavior);
     return false;
   }
 
@@ -57,7 +57,7 @@ bool IncognitoHandler::Parse(Extension* extension, base::string16* error) {
   else if (incognito_string != manifest_values::kIncognitoSpanning) {
     // If incognito_string == kIncognitoSpanning, it is valid and
     // split_mode remains false.
-    *error = ASCIIToUTF16(manifest_errors::kInvalidIncognitoBehavior);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidIncognitoBehavior);
     return false;
   }
 

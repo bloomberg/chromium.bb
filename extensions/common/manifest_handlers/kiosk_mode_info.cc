@@ -52,19 +52,20 @@ bool KioskModeHandler::Parse(Extension* extension, base::string16* error) {
   bool kiosk_enabled = false;
   if (manifest->HasKey(keys::kKioskEnabled) &&
       !manifest->GetBoolean(keys::kKioskEnabled, &kiosk_enabled)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidKioskEnabled);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidKioskEnabled);
     return false;
   }
 
   bool kiosk_only = false;
   if (manifest->HasKey(keys::kKioskOnly) &&
       !manifest->GetBoolean(keys::kKioskOnly, &kiosk_only)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidKioskOnly);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidKioskOnly);
     return false;
   }
 
   if (kiosk_only && !kiosk_enabled) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidKioskOnlyButNotEnabled);
+    *error = base::ASCIIToUTF16(
+        manifest_errors::kInvalidKioskOnlyButNotEnabled);
     return false;
   }
 

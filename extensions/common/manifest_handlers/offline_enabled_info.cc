@@ -49,7 +49,7 @@ bool OfflineEnabledHandler::Parse(Extension* extension, base::string16* error) {
 
   if (!extension->manifest()->GetBoolean(keys::kOfflineEnabled,
                                          &offline_enabled)) {
-    *error = ASCIIToUTF16(manifest_errors::kInvalidOfflineEnabled);
+    *error = base::ASCIIToUTF16(manifest_errors::kInvalidOfflineEnabled);
     return false;
   }
 

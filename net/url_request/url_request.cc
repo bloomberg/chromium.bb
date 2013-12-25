@@ -353,7 +353,7 @@ LoadStateWithParam URLRequest::GetLoadState() const {
   if (calling_delegate_ || !blocked_by_.empty()) {
     return LoadStateWithParam(
         LOAD_STATE_WAITING_FOR_DELEGATE,
-        use_blocked_by_as_load_param_ ? UTF8ToUTF16(blocked_by_) :
+        use_blocked_by_as_load_param_ ? base::UTF8ToUTF16(blocked_by_) :
                                         base::string16());
   }
   return LoadStateWithParam(job_.get() ? job_->GetLoadState() : LOAD_STATE_IDLE,

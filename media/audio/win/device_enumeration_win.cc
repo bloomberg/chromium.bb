@@ -68,7 +68,8 @@ static bool GetDeviceNamesWinImpl(EDataFlow data_flow,
     // Store the unique name.
     ScopedCoMem<WCHAR> endpoint_device_id;
     audio_device->GetId(&endpoint_device_id);
-    device.unique_id = WideToUTF8(static_cast<WCHAR*>(endpoint_device_id));
+    device.unique_id =
+        base::WideToUTF8(static_cast<WCHAR*>(endpoint_device_id));
 
     // Retrieve user-friendly name of endpoint device.
     // Example: "Microphone (Realtek High Definition Audio)".
@@ -82,7 +83,7 @@ static bool GetDeviceNamesWinImpl(EDataFlow data_flow,
       // Store the user-friendly name.
       if (SUCCEEDED(hr) &&
           friendly_name.get().vt == VT_LPWSTR && friendly_name.get().pwszVal) {
-        device.device_name = WideToUTF8(friendly_name.get().pwszVal);
+        device.device_name = base::WideToUTF8(friendly_name.get().pwszVal);
       }
     }
 
@@ -124,7 +125,7 @@ static bool GetDeviceNamesWinXPImpl(AudioDeviceNames* device_names) {
     // Store the user-friendly name. Max length is MAXPNAMELEN(=32)
     // characters and the name cane be truncated on XP.
     // Example: "Microphone (Realtek High Defini".
-    device.device_name = WideToUTF8(capabilities.szPname);
+    device.device_name = base::WideToUTF8(capabilities.szPname);
 
     // Store the "unique" name (we use same as friendly name on Windows XP).
     device.unique_id = device.device_name;
@@ -181,7 +182,7 @@ std::string ConvertToWinXPInputDeviceId(const std::string& device_id) {
     if (result != MMSYSERR_NOERROR)
       continue;
 
-    std::string utf8_id = WideToUTF8(static_cast<WCHAR*>(id));
+    std::string utf8_id = base::WideToUTF8(static_cast<WCHAR*>(id));
     // Check whether the endpoint ID string of this waveIn device matches that
     // of the audio endpoint device.
     if (device_id == utf8_id)
@@ -195,7 +196,7 @@ std::string ConvertToWinXPInputDeviceId(const std::string& device_id) {
 
     result = waveInGetDevCaps(i, &capabilities, sizeof(capabilities));
     if (result == MMSYSERR_NOERROR)
-      return WideToUTF8(capabilities.szPname);
+      return base::WideToUTF8(capabilities.szPname);
   }
 
   return std::string();

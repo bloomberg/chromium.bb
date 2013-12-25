@@ -110,7 +110,7 @@ int DecodeAndParse(const std::string& text,
                               &converted_text)) {
       for (size_t j = 0; j < arraysize(kNewlineSeparators); j++) {
         int rv = ParseListing(converted_text,
-                              ASCIIToUTF16(kNewlineSeparators[j]),
+                              base::ASCIIToUTF16(kNewlineSeparators[j]),
                               encodings[i],
                               current_time,
                               entries,

@@ -54,7 +54,7 @@ bool GetAttributeValue(PCERT_RDN_ATTR attribute,
   if (chars_written <= 1)
     return false;
   wide_name.resize(chars_written - 1);
-  *value = WideToUTF8(wide_name);
+  *value = base::WideToUTF8(wide_name);
   return true;
 }
 

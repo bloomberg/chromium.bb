@@ -224,7 +224,7 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
   ASSERT_EQ(OK,
             controller->HandleAuthChallenge(headers, false, false, dummy_log));
   ASSERT_TRUE(controller->HaveAuthHandler());
-  controller->ResetAuth(AuthCredentials(ASCIIToUTF16("Hello"),
+  controller->ResetAuth(AuthCredentials(base::ASCIIToUTF16("Hello"),
                         base::string16()));
   EXPECT_TRUE(controller->HaveAuth());
   EXPECT_TRUE(controller->IsAuthSchemeDisabled(HttpAuth::AUTH_SCHEME_MOCK));

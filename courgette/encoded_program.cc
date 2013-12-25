@@ -300,7 +300,8 @@ static FieldSelect GetFieldSelect() {
   std::string s;
   env->GetVar("A_FIELDS", &s);
   if (!s.empty()) {
-    return static_cast<FieldSelect>(wcstoul(ASCIIToWide(s).c_str(), 0, 0));
+    return static_cast<FieldSelect>(
+        wcstoul(base::ASCIIToWide(s).c_str(), 0, 0));
   }
 #endif
   return  static_cast<FieldSelect>(~0);

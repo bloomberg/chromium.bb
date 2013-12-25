@@ -40,7 +40,7 @@ base::string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
                                                    const std::string& s1) {
   std::string ret_val = format;
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
-  return UTF8ToUTF16(ret_val);
+  return base::UTF8ToUTF16(ret_val);
 }
 
 base::string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
@@ -49,7 +49,7 @@ base::string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
   std::string ret_val = format;
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s2);
-  return UTF8ToUTF16(ret_val);
+  return base::UTF8ToUTF16(ret_val);
 }
 
 base::string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
@@ -60,7 +60,7 @@ base::string16 ErrorUtils::FormatErrorMessageUTF16(const std::string& format,
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s1);
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s2);
   ReplaceFirstSubstringAfterOffset(&ret_val, 0, "*", s3);
-  return UTF8ToUTF16(ret_val);
+  return base::UTF8ToUTF16(ret_val);
 }
 
 }  // namespace

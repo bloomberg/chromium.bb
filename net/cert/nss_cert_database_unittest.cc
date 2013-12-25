@@ -37,6 +37,8 @@
 #define CERTDB_TERMINAL_RECORD CERTDB_VALID_PEER
 #endif
 
+using base::ASCIIToUTF16;
+
 namespace net {
 
 class CertDatabaseNSSTest : public testing::Test {

@@ -36,7 +36,7 @@ void RecurseDiagnosticTree(DxDiagNode* output,
       WCHAR prop_name16[256];
       hr = container->EnumPropNames(i, prop_name16, arraysize(prop_name16));
       if (SUCCEEDED(hr)) {
-        std::string prop_name8 = WideToUTF8(prop_name16);
+        std::string prop_name8 = base::WideToUTF8(prop_name16);
 
         hr = container->GetProp(prop_name16, &variant);
         if (SUCCEEDED(hr)) {
@@ -51,7 +51,7 @@ void RecurseDiagnosticTree(DxDiagNode* output,
               output->values[prop_name8] = variant.boolVal ? "true" : "false";
               break;
             case VT_BSTR:
-              output->values[prop_name8] = WideToUTF8(variant.bstrVal);
+              output->values[prop_name8] = base::WideToUTF8(variant.bstrVal);
               break;
             default:
               break;
@@ -74,7 +74,7 @@ void RecurseDiagnosticTree(DxDiagNode* output,
                                                 child_name16,
                                                 arraysize(child_name16));
         if (SUCCEEDED(hr)) {
-          std::string child_name8 = WideToUTF8(child_name16);
+          std::string child_name8 = base::WideToUTF8(child_name16);
           DxDiagNode* output_child = &output->children[child_name8];
 
           IDxDiagContainer* child_container = NULL;

@@ -233,7 +233,7 @@ bool GetHostnameArgument(const v8::FunctionCallbackInfo<v8::Value>& args,
   // |punycode_output| should now be ASCII; convert it to a std::string.
   // (We could use UTF16ToASCII() instead, but that requires an extra string
   // copy. Since ASCII is a subset of UTF8 the following is equivalent).
-  bool success = UTF16ToUTF8(punycode_output.data(),
+  bool success = base::UTF16ToUTF8(punycode_output.data(),
                              punycode_output.length(),
                              hostname);
   DCHECK(success);
@@ -372,7 +372,7 @@ class ProxyResolverV8::Context {
     v8::Local<v8::Value> function;
     if (!GetFindProxyForURL(&function)) {
       js_bindings()->OnError(
-          -1, ASCIIToUTF16("FindProxyForURL() is undefined."));
+          -1, base::ASCIIToUTF16("FindProxyForURL() is undefined."));
       return ERR_PAC_SCRIPT_FAILED;
     }
 
@@ -392,7 +392,7 @@ class ProxyResolverV8::Context {
 
     if (!ret->IsString()) {
       js_bindings()->OnError(
-          -1, ASCIIToUTF16("FindProxyForURL() did not return a string."));
+          -1, base::ASCIIToUTF16("FindProxyForURL() did not return a string."));
       return ERR_PAC_SCRIPT_FAILED;
     }
 
@@ -404,8 +404,8 @@ class ProxyResolverV8::Context {
       //               converting them to ASCII punycode.
       //               crbug.com/47234
       base::string16 error_message =
-          ASCIIToUTF16("FindProxyForURL() returned a non-ASCII string "
-                       "(crbug.com/47234): ") + ret_str;
+          base::ASCIIToUTF16("FindProxyForURL() returned a non-ASCII string "
+                             "(crbug.com/47234): ") + ret_str;
       js_bindings()->OnError(-1, error_message);
       return ERR_PAC_SCRIPT_FAILED;
     }
@@ -496,7 +496,7 @@ class ProxyResolverV8::Context {
     v8::Local<v8::Value> function;
     if (!GetFindProxyForURL(&function)) {
       js_bindings()->OnError(
-          -1, ASCIIToUTF16("FindProxyForURL() is undefined."));
+          -1, base::ASCIIToUTF16("FindProxyForURL() is undefined."));
       return ERR_PAC_SCRIPT_FAILED;
     }
 
@@ -564,7 +564,7 @@ class ProxyResolverV8::Context {
     // disregard any arguments beyond the first.
     base::string16 message;
     if (args.Length() == 0) {
-      message = ASCIIToUTF16("undefined");
+      message = base::ASCIIToUTF16("undefined");
     } else {
       if (!V8ObjectToUTF16String(args[0], &message, args.GetIsolate()))
         return;  // toString() threw an exception.

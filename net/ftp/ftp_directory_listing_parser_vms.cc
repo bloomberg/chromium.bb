@@ -54,7 +54,7 @@ bool ParseVmsFilename(const base::string16& raw_filename,
 }
 
 bool ParseVmsFilesize(const base::string16& input, int64* size) {
-  if (ContainsOnlyChars(input, ASCIIToUTF16("*"))) {
+  if (ContainsOnlyChars(input, base::ASCIIToUTF16("*"))) {
     // Response consisting of asterisks means unknown size.
     *size = -1;
     return true;
@@ -141,7 +141,7 @@ bool LooksLikeVMSError(const base::string16& text) {
   };
 
   for (size_t i = 0; i < arraysize(kPermissionDeniedMessages); i++) {
-    if (text.find(ASCIIToUTF16(kPermissionDeniedMessages[i])) !=
+    if (text.find(base::ASCIIToUTF16(kPermissionDeniedMessages[i])) !=
         base::string16::npos)
       return true;
   }
@@ -210,7 +210,7 @@ bool ParseFtpDirectoryListingVms(
     if (lines[i].empty())
       continue;
 
-    if (StartsWith(lines[i], ASCIIToUTF16("Total of "), true)) {
+    if (StartsWith(lines[i], base::ASCIIToUTF16("Total of "), true)) {
       // After the "total" line, all following lines must be empty.
       for (size_t j = i + 1; j < lines.size(); j++)
         if (!lines[j].empty())
@@ -248,7 +248,7 @@ bool ParseFtpDirectoryListingVms(
 
       // Join the current and next line and split them into columns.
       base::SplitString(
-          CollapseWhitespace(lines[i - 1] + ASCIIToUTF16(" ") + lines[i],
+          CollapseWhitespace(lines[i - 1] + base::ASCIIToUTF16(" ") + lines[i],
                              false),
           ' ',
           &columns);

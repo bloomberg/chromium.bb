@@ -133,7 +133,7 @@ STDMETHODIMP AudioDeviceListenerWin::OnDefaultDeviceChanged(
   // If no device is now available, |new_default_device_id| will be NULL.
   std::string new_device_id;
   if (new_default_device_id)
-    new_device_id = WideToUTF8(new_default_device_id);
+    new_device_id = base::WideToUTF8(new_default_device_id);
 
   VLOG(1) << "OnDefaultDeviceChanged() "
           << "new_default_device: "

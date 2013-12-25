@@ -116,7 +116,7 @@ std::string Latin1DataToUTF8String(CSSM_DATA data) {
   if (!CodepageToUTF16(DataToString(data), base::kCodepageLatin1,
                        base::OnStringConversionError::FAIL, &utf16))
     return "";
-  return UTF16ToUTF8(utf16);
+  return base::UTF16ToUTF8(utf16);
 }
 
 // Converts big-endian UTF-16 to UTF-8 in a std::string.
@@ -125,7 +125,7 @@ bool UTF16BigEndianToUTF8(base::char16* chars, size_t length,
                           std::string* out_string) {
   for (size_t i = 0; i < length; i++)
     chars[i] = EndianU16_BtoN(chars[i]);
-  return UTF16ToUTF8(chars, length, out_string);
+  return base::UTF16ToUTF8(chars, length, out_string);
 }
 
 // Converts big-endian UTF-32 to UTF-8 in a std::string.
@@ -135,7 +135,7 @@ bool UTF32BigEndianToUTF8(char32* chars, size_t length,
   for (size_t i = 0; i < length; ++i)
     chars[i] = EndianS32_BtoN(chars[i]);
 #if defined(WCHAR_T_IS_UTF32)
-  return WideToUTF8(reinterpret_cast<const wchar_t*>(chars),
+  return base::WideToUTF8(reinterpret_cast<const wchar_t*>(chars),
                     length, out_string);
 #else
 #error This code doesn't handle 16-bit wchar_t.

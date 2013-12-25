@@ -180,14 +180,14 @@ TEST_F(ManagementPolicyTest, MustRemainDisabled) {
 TEST_F(ManagementPolicyTest, ErrorHandling) {
   // The error parameter should be unchanged if no restriction was found.
   std::string original_error = "Ceci est en effet une erreur.";
-  base::string16 original_error16 = UTF8ToUTF16(original_error);
+  base::string16 original_error16 = base::UTF8ToUTF16(original_error);
   base::string16 error = original_error16;
   EXPECT_TRUE(policy_.UserMayLoad(NULL, &error));
-  EXPECT_EQ(original_error, UTF16ToUTF8(error));
+  EXPECT_EQ(original_error, base::UTF16ToUTF8(error));
   EXPECT_TRUE(policy_.UserMayModifySettings(NULL, &error));
-  EXPECT_EQ(original_error, UTF16ToUTF8(error));
+  EXPECT_EQ(original_error, base::UTF16ToUTF8(error));
   EXPECT_FALSE(policy_.MustRemainEnabled(NULL, &error));
-  EXPECT_EQ(original_error, UTF16ToUTF8(error));
+  EXPECT_EQ(original_error, base::UTF16ToUTF8(error));
 
   // Ensure no crashes if no error message was requested.
   EXPECT_TRUE(policy_.UserMayLoad(NULL, NULL));
@@ -201,11 +201,11 @@ TEST_F(ManagementPolicyTest, ErrorHandling) {
   // Make sure returned error is correct.
   error = original_error16;
   EXPECT_FALSE(policy_.UserMayLoad(NULL, &error));
-  EXPECT_EQ(UTF8ToUTF16(TestProvider::expected_error()), error);
+  EXPECT_EQ(base::UTF8ToUTF16(TestProvider::expected_error()), error);
   error = original_error16;
   EXPECT_FALSE(policy_.UserMayModifySettings(NULL, &error));
-  EXPECT_EQ(UTF8ToUTF16(TestProvider::expected_error()), error);
+  EXPECT_EQ(base::UTF8ToUTF16(TestProvider::expected_error()), error);
   error = original_error16;
   EXPECT_TRUE(policy_.MustRemainEnabled(NULL, &error));
-  EXPECT_EQ(UTF8ToUTF16(TestProvider::expected_error()), error);
+  EXPECT_EQ(base::UTF8ToUTF16(TestProvider::expected_error()), error);
 }

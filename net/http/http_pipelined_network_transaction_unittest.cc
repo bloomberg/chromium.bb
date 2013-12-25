@@ -603,7 +603,8 @@ TEST_F(HttpPipelinedNetworkTransactionTest, BasicHttpAuthentication) {
                               BoundNetLog()));
   EXPECT_EQ(OK, callback_.WaitForResult());
 
-  AuthCredentials credentials(ASCIIToUTF16("user"), ASCIIToUTF16("pass"));
+  AuthCredentials credentials(base::ASCIIToUTF16("user"),
+                              base::ASCIIToUTF16("pass"));
   EXPECT_EQ(OK, transaction.RestartWithAuth(credentials, callback_.callback()));
 
   ExpectResponse("one.html", transaction, SYNCHRONOUS);

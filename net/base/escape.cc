@@ -337,7 +337,7 @@ base::string16 UnescapeForHTML(const base::string16& input) {
     { "&#39;", '\''},
   };
 
-  if (input.find(ASCIIToUTF16("&")) == std::string::npos)
+  if (input.find(base::ASCIIToUTF16("&")) == std::string::npos)
     return input;
 
   base::string16 ampersand_chars[ARRAYSIZE_UNSAFE(kEscapeToChars)];
@@ -348,8 +348,10 @@ base::string16 UnescapeForHTML(const base::string16& input) {
       // Potential ampersand encode char.
       size_t index = iter - text.begin();
       for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEscapeToChars); i++) {
-        if (ampersand_chars[i].empty())
-          ampersand_chars[i] = ASCIIToUTF16(kEscapeToChars[i].ampersand_code);
+        if (ampersand_chars[i].empty()) {
+          ampersand_chars[i] =
+              base::ASCIIToUTF16(kEscapeToChars[i].ampersand_code);
+        }
         if (text.find(ampersand_chars[i], index) == index) {
           text.replace(iter, iter + ampersand_chars[i].length(),
                        1, kEscapeToChars[i].replacement);

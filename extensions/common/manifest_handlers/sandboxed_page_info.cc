@@ -66,7 +66,7 @@ bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
 
   const base::ListValue* list_value = NULL;
   if (!extension->manifest()->GetList(keys::kSandboxedPages, &list_value)) {
-    *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesList);
+    *error = base::ASCIIToUTF16(errors::kInvalidSandboxedPagesList);
     return false;
   }
 
@@ -93,7 +93,7 @@ bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
     if (!extension->manifest()->GetString(
             keys::kSandboxedPagesCSP,
             &sandboxed_info->content_security_policy)) {
-      *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesCSP);
+      *error = base::ASCIIToUTF16(errors::kInvalidSandboxedPagesCSP);
       return false;
     }
 
@@ -101,7 +101,7 @@ bool SandboxedPageHandler::Parse(Extension* extension, base::string16* error) {
             sandboxed_info->content_security_policy) ||
         !csp_validator::ContentSecurityPolicyIsSandboxed(
             sandboxed_info->content_security_policy, extension->GetType())) {
-      *error = ASCIIToUTF16(errors::kInvalidSandboxedPagesCSP);
+      *error = base::ASCIIToUTF16(errors::kInvalidSandboxedPagesCSP);
       return false;
     }
   } else {

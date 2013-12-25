@@ -41,7 +41,8 @@ void NetworkTimeNotifier::UpdateNetworkTime(const base::Time& network_time,
                                             const base::TimeTicks& post_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Network time updating to "
-           << UTF16ToUTF8(base::TimeFormatFriendlyDateAndTime(network_time));
+           << base::UTF16ToUTF8(
+                  base::TimeFormatFriendlyDateAndTime(network_time));
   // Update network time on every request to limit dependency on ticks lag.
   // TODO(mad): Find a heuristic to avoid augmenting the
   // network_time_uncertainty_ too much by a particularly long latency.

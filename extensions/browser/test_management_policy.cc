@@ -14,13 +14,13 @@ TestManagementPolicyProvider::TestManagementPolicyProvider()
       must_remain_enabled_(false),
       must_remain_disabled_(false),
       disable_reason_(Extension::DISABLE_NONE) {
-  error_message_ = UTF8ToUTF16(expected_error());
+  error_message_ = base::UTF8ToUTF16(expected_error());
 }
 
 TestManagementPolicyProvider::TestManagementPolicyProvider(
     int prohibited_actions) {
   SetProhibitedActions(prohibited_actions);
-  error_message_ = UTF8ToUTF16(expected_error());
+  error_message_ = base::UTF8ToUTF16(expected_error());
 }
 
 void TestManagementPolicyProvider::SetProhibitedActions(

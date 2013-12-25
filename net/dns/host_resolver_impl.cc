@@ -307,7 +307,7 @@ base::Value* NetLogProcTaskFailedCallback(uint32 attempt_number,
                              (LPWSTR)&error_string,
                              0,  // Buffer size.
                              0);  // Arguments (unused).
-    dict->SetString("os_error_string", WideToUTF8(error_string));
+    dict->SetString("os_error_string", base::WideToUTF8(error_string));
     LocalFree(error_string);
 #endif
   }

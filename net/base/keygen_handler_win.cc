@@ -64,7 +64,7 @@ bool GetSubjectPublicKeyInfo(HCRYPTPROV prov, std::vector<BYTE>* output) {
 bool GetSignedPublicKeyAndChallenge(HCRYPTPROV prov,
                                     const std::string& challenge,
                                     std::string* output) {
-  std::wstring wide_challenge = ASCIIToWide(challenge);
+  std::wstring wide_challenge = base::ASCIIToWide(challenge);
   std::vector<BYTE> spki;
 
   if (!GetSubjectPublicKeyInfo(prov, &spki))

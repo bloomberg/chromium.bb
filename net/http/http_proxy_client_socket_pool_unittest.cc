@@ -100,8 +100,8 @@ class HttpProxyClientSocketPoolTest
   }
 
   void AddAuthToCache() {
-    const base::string16 kFoo(ASCIIToUTF16("foo"));
-    const base::string16 kBar(ASCIIToUTF16("bar"));
+    const base::string16 kFoo(base::ASCIIToUTF16("foo"));
+    const base::string16 kBar(base::ASCIIToUTF16("bar"));
     GURL proxy_url(GetParam().proxy_type == HTTP ?
                    (std::string("http://") + kHttpProxyHost) :
                    (std::string("https://") + kHttpsProxyHost));

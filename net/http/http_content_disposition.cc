@@ -113,9 +113,9 @@ bool DecodeWord(const std::string& encoded_word,
           base::CodepageToUTF16(encoded_word, referrer_charset.c_str(),
                                 base::OnStringConversionError::FAIL,
                                 &utf16_output)) {
-        *output = UTF16ToUTF8(utf16_output);
+        *output = base::UTF16ToUTF8(utf16_output);
       } else {
-        *output = WideToUTF8(base::SysNativeMBToWide(encoded_word));
+        *output = base::WideToUTF8(base::SysNativeMBToWide(encoded_word));
       }
     }
 

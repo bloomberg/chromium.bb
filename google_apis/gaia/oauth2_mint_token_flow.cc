@@ -268,7 +268,7 @@ bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
 
     TrimWhitespace(entry.description, TRIM_ALL, &entry.description);
     static const base::string16 detail_separators =
-        ASCIIToUTF16(kDetailSeparators);
+        base::ASCIIToUTF16(kDetailSeparators);
     Tokenize(detail, detail_separators, &entry.details);
     for (size_t i = 0; i < entry.details.size(); i++)
       TrimWhitespace(entry.details[i], TRIM_ALL, &entry.details[i]);

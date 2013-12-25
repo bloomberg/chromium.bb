@@ -23,6 +23,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
+
 // TODO(eroman): Write a test which exercises
 //              ProxyService::SuspendAllPendingRequests().
 namespace net {

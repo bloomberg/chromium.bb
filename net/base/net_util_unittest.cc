@@ -30,6 +30,9 @@
 #include <net/if.h>
 #endif  // OS_WIN
 
+using base::ASCIIToUTF16;
+using base::WideToUTF16;
+
 namespace net {
 
 namespace {
@@ -493,7 +496,7 @@ std::string DumpIPNumber(const IPAddressNumber& v) {
 }
 
 void RunGenerateFileNameTestCase(const GenerateFilenameCase* test_case) {
-  std::string default_filename(WideToUTF8(test_case->default_filename));
+  std::string default_filename(base::WideToUTF8(test_case->default_filename));
   base::FilePath file_path = GenerateFileName(
       GURL(test_case->url), test_case->content_disp_header,
       test_case->referrer_charset, test_case->suggested_filename,
@@ -3344,7 +3347,7 @@ TEST(NetUtilTest, GetNetworkList) {
       EXPECT_EQ(luid_to_guid(&luid, &guid), NO_ERROR);
       LPOLESTR name;
       StringFromCLSID(guid, &name);
-      EXPECT_STREQ(UTF8ToWide(it->name).c_str(), name);
+      EXPECT_STREQ(base::UTF8ToWide(it->name).c_str(), name);
       CoTaskMemFree(name);
       continue;
     } else {

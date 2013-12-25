@@ -117,7 +117,7 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
           location, scoped_ptr<base::DictionaryValue>(value.DeepCopy())));
 
   if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error)) {
-    *utf8_error = UTF16ToUTF8(error);
+    *utf8_error = base::UTF16ToUTF8(error);
     return NULL;
   }
 
@@ -130,7 +130,7 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
   extension->install_warnings_.swap(install_warnings);
 
   if (!extension->InitFromValue(flags, &error)) {
-    *utf8_error = UTF16ToUTF8(error);
+    *utf8_error = base::UTF16ToUTF8(error);
     return NULL;
   }
 
@@ -479,7 +479,7 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
     std::string public_key_bytes;
     if (!manifest->GetString(keys::kPublicKey, &public_key) ||
         !ParsePEMKeyBytes(public_key, &public_key_bytes)) {
-      *error = ASCIIToUTF16(errors::kInvalidKey);
+      *error = base::ASCIIToUTF16(errors::kInvalidKey);
       return false;
     }
     std::string extension_id = id_util::GenerateId(public_key_bytes);
@@ -488,7 +488,7 @@ bool Extension::InitExtensionID(extensions::Manifest* manifest,
   }
 
   if (creation_flags & REQUIRE_KEY) {
-    *error = ASCIIToUTF16(errors::kInvalidKey);
+    *error = base::ASCIIToUTF16(errors::kInvalidKey);
     return false;
   } else {
     // If there is a path, we generate the ID from it. This is useful for
@@ -575,24 +575,24 @@ bool Extension::LoadRequiredFeatures(base::string16* error) {
 bool Extension::LoadName(base::string16* error) {
   base::string16 localized_name;
   if (!manifest_->GetString(keys::kName, &localized_name)) {
-    *error = ASCIIToUTF16(errors::kInvalidName);
+    *error = base::ASCIIToUTF16(errors::kInvalidName);
     return false;
   }
-  non_localized_name_ = UTF16ToUTF8(localized_name);
+  non_localized_name_ = base::UTF16ToUTF8(localized_name);
   base::i18n::AdjustStringForLocaleDirection(&localized_name);
-  name_ = UTF16ToUTF8(localized_name);
+  name_ = base::UTF16ToUTF8(localized_name);
   return true;
 }
 
 bool Extension::LoadVersion(base::string16* error) {
   std::string version_str;
   if (!manifest_->GetString(keys::kVersion, &version_str)) {
-    *error = ASCIIToUTF16(errors::kInvalidVersion);
+    *error = base::ASCIIToUTF16(errors::kInvalidVersion);
     return false;
   }
   version_.reset(new base::Version(version_str));
   if (!version_->IsValid() || version_->components().size() > 4) {
-    *error = ASCIIToUTF16(errors::kInvalidVersion);
+    *error = base::ASCIIToUTF16(errors::kInvalidVersion);
     return false;
   }
   return true;
@@ -605,13 +605,13 @@ bool Extension::LoadAppFeatures(base::string16* error) {
   }
   if (manifest_->HasKey(keys::kDisplayInLauncher) &&
       !manifest_->GetBoolean(keys::kDisplayInLauncher, &display_in_launcher_)) {
-    *error = ASCIIToUTF16(errors::kInvalidDisplayInLauncher);
+    *error = base::ASCIIToUTF16(errors::kInvalidDisplayInLauncher);
     return false;
   }
   if (manifest_->HasKey(keys::kDisplayInNewTabPage)) {
     if (!manifest_->GetBoolean(keys::kDisplayInNewTabPage,
                                &display_in_new_tab_page_)) {
-      *error = ASCIIToUTF16(errors::kInvalidDisplayInNewTabPage);
+      *error = base::ASCIIToUTF16(errors::kInvalidDisplayInNewTabPage);
       return false;
     }
   } else {
@@ -632,7 +632,7 @@ bool Extension::LoadExtent(const char* key,
 
   const base::ListValue* pattern_list = NULL;
   if (!temp_pattern_value->GetAsList(&pattern_list)) {
-    *error = ASCIIToUTF16(list_error);
+    *error = base::ASCIIToUTF16(list_error);
     return false;
   }
 
@@ -707,7 +707,7 @@ bool Extension::LoadSharedFeatures(base::string16* error) {
 bool Extension::LoadDescription(base::string16* error) {
   if (manifest_->HasKey(keys::kDescription) &&
       !manifest_->GetString(keys::kDescription, &description_)) {
-    *error = ASCIIToUTF16(errors::kInvalidDescription);
+    *error = base::ASCIIToUTF16(errors::kInvalidDescription);
     return false;
   }
   return true;
@@ -720,7 +720,7 @@ bool Extension::LoadManifestVersion(base::string16* error) {
     int manifest_version = 1;
     if (!manifest_->GetInteger(keys::kManifestVersion, &manifest_version) ||
         manifest_version < 1) {
-      *error = ASCIIToUTF16(errors::kInvalidManifestVersion);
+      *error = base::ASCIIToUTF16(errors::kInvalidManifestVersion);
       return false;
     }
   }
@@ -746,12 +746,12 @@ bool Extension::LoadShortName(base::string16* error) {
     base::string16 localized_short_name;
     if (!manifest_->GetString(keys::kShortName, &localized_short_name) ||
         localized_short_name.empty()) {
-      *error = ASCIIToUTF16(errors::kInvalidShortName);
+      *error = base::ASCIIToUTF16(errors::kInvalidShortName);
       return false;
     }
 
     base::i18n::AdjustStringForLocaleDirection(&localized_short_name);
-    short_name_ = UTF16ToUTF8(localized_short_name);
+    short_name_ = base::UTF16ToUTF8(localized_short_name);
   } else {
     short_name_ = name_;
   }

@@ -39,8 +39,10 @@ bool ParseFtpDirectoryListingNetware(
     const std::vector<base::string16>& lines,
     const base::Time& current_time,
     std::vector<FtpDirectoryListingEntry>* entries) {
-  if (!lines.empty() && !StartsWith(lines[0], ASCIIToUTF16("total "), true))
+  if (!lines.empty() &&
+          !StartsWith(lines[0], base::ASCIIToUTF16("total "), true)) {
     return false;
+  }
 
   for (size_t i = 1U; i < lines.size(); i++) {
     if (lines[i].empty())

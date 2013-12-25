@@ -21,7 +21,7 @@ void AppendToPythonPath(const base::FilePath& dir) {
   std::string old_path;
   std::string dir_path;
 #if defined(OS_WIN)
-  dir_path = WideToUTF8(dir.value());
+  dir_path = base::WideToUTF8(dir.value());
 #elif defined(OS_POSIX)
   dir_path = dir.value();
 #endif

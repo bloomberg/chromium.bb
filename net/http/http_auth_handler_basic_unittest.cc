@@ -36,8 +36,8 @@ TEST(HttpAuthHandlerBasicTest, GenerateAuthToken) {
     scoped_ptr<HttpAuthHandler> basic;
     EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
         challenge, HttpAuth::AUTH_SERVER, origin, BoundNetLog(), &basic));
-    AuthCredentials credentials(ASCIIToUTF16(tests[i].username),
-                                ASCIIToUTF16(tests[i].password));
+    AuthCredentials credentials(base::ASCIIToUTF16(tests[i].username),
+                                base::ASCIIToUTF16(tests[i].password));
     HttpRequestInfo request_info;
     std::string auth_token;
     int rv = basic->GenerateAuthToken(&credentials, &request_info,

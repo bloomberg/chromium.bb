@@ -127,7 +127,7 @@ bool FileURLToFilePath(const GURL& url, base::FilePath* file_path) {
     file_path_str = base::SysNativeMBToWide(path);
     return !file_path_str.empty();
   }
-  file_path_str.assign(UTF8ToWide(path));
+  file_path_str.assign(base::UTF8ToWide(path));
 
   // We used to try too hard and see if |path| made up entirely of
   // the 1st 256 characters in the Unicode was a zero-extended UTF-16.

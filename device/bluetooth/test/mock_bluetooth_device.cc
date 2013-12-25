@@ -33,7 +33,7 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
   ON_CALL(*this, IsConnecting())
       .WillByDefault(testing::Return(false));
   ON_CALL(*this, GetName())
-      .WillByDefault(testing::Return(UTF8ToUTF16(name_)));
+      .WillByDefault(testing::Return(base::UTF8ToUTF16(name_)));
   ON_CALL(*this, ExpectingPinCode())
       .WillByDefault(testing::Return(false));
   ON_CALL(*this, ExpectingPasskey())

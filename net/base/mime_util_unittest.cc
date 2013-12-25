@@ -196,7 +196,7 @@ TEST(MimeUtilTest, TestIsMimeType) {
   std::string nonAscii("application/nonutf8");
   EXPECT_TRUE(IsMimeType(nonAscii));
 #if defined(OS_WIN)
-  nonAscii.append(WideToUTF8(std::wstring(L"\u2603")));
+  nonAscii.append(base::WideToUTF8(std::wstring(L"\u2603")));
 #else
   nonAscii.append("\u2603");  // unicode snowman
 #endif
@@ -278,7 +278,7 @@ TEST(MimeUtilTest, TestGetExtensionsForMimeType) {
     bool found = false;
     for (size_t j = 0; !found && j < extensions.size(); ++j) {
 #if defined(OS_WIN)
-      if (extensions[j] == UTF8ToWide(tests[i].contained_result))
+      if (extensions[j] == base::UTF8ToWide(tests[i].contained_result))
         found = true;
 #else
       if (extensions[j] == tests[i].contained_result)

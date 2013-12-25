@@ -25,7 +25,7 @@ bool ManagementPolicyImpl(const extensions::Extension* extension,
   if (error) {
     *error = l10n_util::GetStringFUTF16(
         IDS_EXTENSION_CANT_MODIFY_POLICY_REQUIRED,
-        UTF8ToUTF16(extension->name()));
+        base::UTF8ToUTF16(extension->name()));
   }
   return !modifiable_value;
 }
@@ -35,8 +35,8 @@ bool ReturnLoadError(const extensions::Extension* extension,
   if (error) {
     *error = l10n_util::GetStringFUTF16(
           IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED,
-          UTF8ToUTF16(extension->name()),
-          UTF8ToUTF16(extension->id()));
+          base::UTF8ToUTF16(extension->name()),
+          base::UTF8ToUTF16(extension->id()));
   }
   return false;
 }

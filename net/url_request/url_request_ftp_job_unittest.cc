@@ -23,6 +23,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
+
 namespace net {
 
 class FtpTestURLRequestContext : public TestURLRequestContext {

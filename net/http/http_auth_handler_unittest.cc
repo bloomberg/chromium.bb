@@ -19,7 +19,8 @@ namespace net {
 TEST(HttpAuthHandlerTest, NetLog) {
   GURL origin("http://www.example.com");
   std::string challenge = "Mock asdf";
-  AuthCredentials credentials(ASCIIToUTF16("user"), ASCIIToUTF16("pass"));
+  AuthCredentials credentials(base::ASCIIToUTF16("user"),
+                              base::ASCIIToUTF16("pass"));
   std::string auth_token;
   HttpRequestInfo request;
 

@@ -749,7 +749,7 @@ TEST_F(BluetoothChromeOSTest, DeviceProperties) {
             devices[0]->GetAddress());
 
   // Verify the other device properties.
-  EXPECT_EQ(UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
+  EXPECT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
             devices[0]->GetName());
   EXPECT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[0]->GetDeviceType());
   EXPECT_TRUE(devices[0]->IsPaired());
@@ -805,7 +805,7 @@ TEST_F(BluetoothChromeOSTest, DeviceNameChanged) {
   ASSERT_EQ(1U, devices.size());
   ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
             devices[0]->GetAddress());
-  ASSERT_EQ(UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
+  ASSERT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
             devices[0]->GetName());
 
   // Install an observer; expect the DeviceChanged method to be called when
@@ -823,7 +823,7 @@ TEST_F(BluetoothChromeOSTest, DeviceNameChanged) {
   EXPECT_EQ(1, observer.device_changed_count_);
   EXPECT_EQ(devices[0], observer.last_device_);
 
-  EXPECT_EQ(UTF8ToUTF16(new_name), devices[0]->GetName());
+  EXPECT_EQ(base::UTF8ToUTF16(new_name), devices[0]->GetName());
 }
 
 TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {

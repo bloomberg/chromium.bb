@@ -282,7 +282,7 @@ HRESULT WASAPIAudioInputStream::GetMixFormat(const std::string& device_id,
   } else {
     // Retrieve a capture endpoint device that is specified by an endpoint
     // device-identification string.
-    hr = enumerator->GetDevice(UTF8ToUTF16(device_id).c_str(),
+    hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id).c_str(),
                                endpoint_device.Receive());
   }
   if (FAILED(hr))
@@ -478,7 +478,7 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
   } else {
     // Retrieve a capture endpoint device that is specified by an endpoint
     // device-identification string.
-    hr = enumerator->GetDevice(UTF8ToUTF16(device_id_).c_str(),
+    hr = enumerator->GetDevice(base::UTF8ToUTF16(device_id_).c_str(),
                                endpoint_device_.Receive());
   }
 

@@ -146,7 +146,7 @@ static std::string GetDeviceID(IMMDevice* device) {
   ScopedCoMem<WCHAR> device_id_com;
   std::string device_id;
   if (SUCCEEDED(device->GetId(&device_id_com)))
-    WideToUTF8(device_id_com, wcslen(device_id_com), &device_id);
+    base::WideToUTF8(device_id_com, wcslen(device_id_com), &device_id);
   return device_id;
 }
 
@@ -288,8 +288,8 @@ ScopedComPtr<IMMDevice> CoreAudioUtil::CreateDevice(
 
   // Retrieve an audio device specified by an endpoint device-identification
   // string.
-  HRESULT hr = device_enumerator->GetDevice(UTF8ToUTF16(device_id).c_str(),
-                                            endpoint_device.Receive());
+  HRESULT hr = device_enumerator->GetDevice(
+      base::UTF8ToUTF16(device_id).c_str(), endpoint_device.Receive());
   DVLOG_IF(1, FAILED(hr)) << "IMMDeviceEnumerator::GetDevice: "
                           << std::hex << hr;
   return endpoint_device;
@@ -316,9 +316,9 @@ HRESULT CoreAudioUtil::GetDeviceName(IMMDevice* device, AudioDeviceName* name) {
   if (FAILED(hr))
     return hr;
   if (friendly_name.get().vt == VT_LPWSTR && friendly_name.get().pwszVal) {
-    WideToUTF8(friendly_name.get().pwszVal,
-               wcslen(friendly_name.get().pwszVal),
-               &device_name.device_name);
+    base::WideToUTF8(friendly_name.get().pwszVal,
+                     wcslen(friendly_name.get().pwszVal),
+                     &device_name.device_name);
   }
 
   *name = device_name;
@@ -367,9 +367,9 @@ std::string CoreAudioUtil::GetAudioControllerID(IMMDevice* device,
   }
 
   std::string controller_id;
-  WideToUTF8(instance_id.get().pwszVal,
-             wcslen(instance_id.get().pwszVal),
-             &controller_id);
+  base::WideToUTF8(instance_id.get().pwszVal,
+                   wcslen(instance_id.get().pwszVal),
+                   &controller_id);
 
   return controller_id;
 }

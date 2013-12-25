@@ -722,7 +722,7 @@ int CertVerifyProcWin::VerifyInternal(
   if (CertSubjectCommonNameHasNull(cert_handle))
     verify_result->cert_status |= CERT_STATUS_INVALID;
 
-  std::wstring wstr_hostname = ASCIIToWide(hostname);
+  std::wstring wstr_hostname = base::ASCIIToWide(hostname);
 
   SSL_EXTRA_CERT_CHAIN_POLICY_PARA extra_policy_para;
   memset(&extra_policy_para, 0, sizeof(extra_policy_para));

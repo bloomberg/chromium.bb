@@ -112,7 +112,7 @@ class ManifestHandlerTest : public testing::Test {
         : TestManifestHandler(name, keys, prereqs, watcher) {
     }
     virtual bool Parse(Extension* extension, base::string16* error) OVERRIDE {
-      *error = ASCIIToUTF16(name_);
+      *error = base::ASCIIToUTF16(name_);
       return false;
     }
   };

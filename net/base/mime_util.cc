@@ -876,7 +876,8 @@ void GetExtensionsFromHardCodedMappings(
                                    &this_extensions);
       for (size_t j = 0; j < this_extensions.size(); ++j) {
 #if defined(OS_WIN)
-        base::FilePath::StringType extension(UTF8ToWide(this_extensions[j]));
+        base::FilePath::StringType extension(
+            base::UTF8ToWide(this_extensions[j]));
 #else
         base::FilePath::StringType extension(this_extensions[j]);
 #endif

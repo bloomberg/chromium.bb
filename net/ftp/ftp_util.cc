@@ -22,6 +22,7 @@
 #include "third_party/icu/source/i18n/unicode/datefmt.h"
 #include "third_party/icu/source/i18n/unicode/dtfmtsym.h"
 
+using base::ASCIIToUTF16;
 using base::StringPiece16;
 
 // For examples of Unix<->VMS path conversions, see the unit test file. On VMS

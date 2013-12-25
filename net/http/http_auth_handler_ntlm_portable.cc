@@ -257,7 +257,7 @@ static void LM_Hash(const base::string16& password, uint8* hash) {
 
   // Convert password to OEM character set.  We'll just use the native
   // filesystem charset.
-  std::string passbuf = base::SysWideToNativeMB(UTF16ToWide(password));
+  std::string passbuf = base::SysWideToNativeMB(base::UTF16ToWide(password));
   StringToUpperASCII(&passbuf);
   passbuf.resize(14, '\0');
 
@@ -487,7 +487,7 @@ static int GenerateType3Msg(const base::string16& domain,
     domain_len = domain.length() * 2;
 #endif
   } else {
-    oem_domain_buf = base::SysWideToNativeMB(UTF16ToWide(domain));
+    oem_domain_buf = base::SysWideToNativeMB(base::UTF16ToWide(domain));
     domain_ptr = oem_domain_buf.data();
     domain_len = oem_domain_buf.length();
   }
@@ -507,7 +507,7 @@ static int GenerateType3Msg(const base::string16& domain,
     user_len = username.length() * 2;
 #endif
   } else {
-    oem_user_buf = base::SysWideToNativeMB(UTF16ToWide(username));
+    oem_user_buf = base::SysWideToNativeMB(base::UTF16ToWide(username));
     user_ptr = oem_user_buf.data();
     user_len = oem_user_buf.length();
   }

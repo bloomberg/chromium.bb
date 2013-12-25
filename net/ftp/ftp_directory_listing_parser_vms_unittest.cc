@@ -11,6 +11,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/ftp/ftp_directory_listing_parser_vms.h"
 
+using base::ASCIIToUTF16;
+
 namespace net {
 
 namespace {
