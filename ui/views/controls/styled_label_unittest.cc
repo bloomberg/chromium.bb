@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
@@ -208,8 +209,9 @@ TEST_F(StyledLabelTest, StyledRangeUnderlined) {
   ASSERT_EQ(2, styled()->child_count());
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(1)->GetClassName());
-  EXPECT_EQ(gfx::Font::UNDERLINE,
-            static_cast<Label*>(styled()->child_at(1))->font().GetStyle());
+  EXPECT_EQ(
+      gfx::Font::UNDERLINE,
+      static_cast<Label*>(styled()->child_at(1))->font_list().GetFontStyle());
 }
 
 TEST_F(StyledLabelTest, StyledRangeBold) {
@@ -226,7 +228,8 @@ TEST_F(StyledLabelTest, StyledRangeBold) {
   // and normal style.
   Label label(ASCIIToUTF16(bold_text));
   const gfx::Size normal_label_size = label.GetPreferredSize();
-  label.SetFont(label.font().DeriveFont(0, gfx::Font::BOLD));
+  label.SetFontList(label.font_list().DeriveFontListWithSizeDeltaAndStyle(
+      0, gfx::Font::BOLD));
   const gfx::Size bold_label_size = label.GetPreferredSize();
 
   ASSERT_GE(bold_label_size.width(), normal_label_size.width());
@@ -251,16 +254,19 @@ TEST_F(StyledLabelTest, StyledRangeBold) {
   // The bold text should be broken up into two parts.
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(0)->GetClassName());
-  EXPECT_EQ(gfx::Font::BOLD,
-            static_cast<Label*>(styled()->child_at(0))->font().GetStyle());
+  EXPECT_EQ(
+      gfx::Font::BOLD,
+      static_cast<Label*>(styled()->child_at(0))->font_list().GetFontStyle());
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(1)->GetClassName());
-  EXPECT_EQ(gfx::Font::BOLD,
-            static_cast<Label*>(styled()->child_at(1))->font().GetStyle());
+  EXPECT_EQ(
+      gfx::Font::BOLD,
+      static_cast<Label*>(styled()->child_at(1))->font_list().GetFontStyle());
   ASSERT_EQ(std::string(Label::kViewClassName),
             styled()->child_at(2)->GetClassName());
-  EXPECT_EQ(gfx::Font::NORMAL,
-            static_cast<Label*>(styled()->child_at(2))->font().GetStyle());
+  EXPECT_EQ(
+      gfx::Font::NORMAL,
+      static_cast<Label*>(styled()->child_at(2))->font_list().GetFontStyle());
 
   // The second bold part should start on a new line.
   EXPECT_EQ(0, styled()->child_at(0)->x());

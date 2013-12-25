@@ -9,6 +9,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -131,16 +132,17 @@ Button* TouchEditingMenuView::CreateButton(const base::string16& title,
   LabelButton* button = new LabelButton(this, label);
   button->SetFocusable(true);
   button->set_request_focus_on_press(false);
-  gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::SmallFont);
+  const gfx::FontList& font_list =
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::SmallFont);
   scoped_ptr<LabelButtonBorder> button_border(
       new LabelButtonBorder(button->style()));
-  int v_border = (kMenuButtonHeight - font.GetHeight()) / 2;
-  int h_border = (kMenuButtonWidth - font.GetStringWidth(label)) / 2;
+  int v_border = (kMenuButtonHeight - font_list.GetHeight()) / 2;
+  int h_border = (kMenuButtonWidth - gfx::GetStringWidth(label, font_list)) / 2;
   button_border->set_insets(
       gfx::Insets(v_border, h_border, v_border, h_border));
   button->set_border(button_border.release());
-  button->SetFont(font);
+  button->SetFontList(font_list);
   button->set_tag(tag);
   return button;
 }

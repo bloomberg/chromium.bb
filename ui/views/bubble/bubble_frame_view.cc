@@ -67,8 +67,8 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
       close_(NULL),
       titlebar_extra_view_(NULL) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  title_ =
-      new Label(base::string16(), rb.GetFont(ui::ResourceBundle::MediumFont));
+  title_ = new Label(base::string16(),
+                     rb.GetFontList(ui::ResourceBundle::MediumFont));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(title_);
 

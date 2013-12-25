@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/custom_button.h"
@@ -143,9 +143,11 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   void set_min_width(int min_width) { min_width_ = min_width; }
   void set_min_height(int min_height) { min_height_ = min_height; }
   void set_max_width(int max_width) { max_width_ = max_width; }
+  const gfx::FontList& font_list() const { return font_list_; }
+  void SetFontList(const gfx::FontList& font_list);
+  // Obsolete versions.
+  const gfx::Font& font() const;
   void SetFont(const gfx::Font& font);
-  // Return the font used by this button.
-  gfx::Font font() const { return font_; }
 
   void SetEnabledColor(SkColor color);
   void SetDisabledColor(SkColor color);
@@ -192,7 +194,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   virtual void UpdateColor();
 
   // Updates text_size_ and max_text_size_ from the current text/font. This is
-  // invoked when the font or text changes.
+  // invoked when the font list or text changes.
   void UpdateTextSize();
 
   // Calculate the size of the text size without setting any of the members.
@@ -252,7 +254,7 @@ class VIEWS_EXPORT TextButtonBase : public CustomButton,
   TextAlignment alignment_;
 
   // The font used to paint the text.
-  gfx::Font font_;
+  gfx::FontList font_list_;
 
   // Flag indicating if a shadow should be drawn behind the text.
   bool has_text_shadow_;

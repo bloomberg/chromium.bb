@@ -203,8 +203,6 @@ TextButtonBase::TextButtonBase(ButtonListener* listener,
                                const base::string16& text)
     : CustomButton(listener),
       alignment_(ALIGN_LEFT),
-      font_(ResourceBundle::GetSharedInstance().GetFont(
-          ResourceBundle::BaseFont)),
       has_text_shadow_(false),
       active_text_shadow_color_(0),
       inactive_text_shadow_color_(0),
@@ -248,9 +246,17 @@ void TextButtonBase::SetText(const base::string16& text) {
   UpdateTextSize();
 }
 
-void TextButtonBase::SetFont(const gfx::Font& font) {
-  font_ = font;
+void TextButtonBase::SetFontList(const gfx::FontList& font_list) {
+  font_list_ = font_list;
   UpdateTextSize();
+}
+
+const gfx::Font& TextButtonBase::font() const {
+  return font_list_.GetPrimaryFont();
+}
+
+void TextButtonBase::SetFont(const gfx::Font& font) {
+  SetFontList(gfx::FontList(font));
 }
 
 void TextButtonBase::SetEnabledColor(SkColor color) {
@@ -379,13 +385,13 @@ void TextButtonBase::UpdateTextSize() {
 }
 
 void TextButtonBase::CalculateTextSize(gfx::Size* text_size, int max_width) {
-  int h = font_.GetHeight();
+  int h = font_list_.GetHeight();
   int w = multi_line_ ? max_width : 0;
   int flags = ComputeCanvasStringFlags();
   if (!multi_line_)
     flags |= gfx::Canvas::NO_ELLIPSIS;
 
-  gfx::Canvas::SizeStringInt(text_, font_, &w, &h, 0, flags);
+  gfx::Canvas::SizeStringInt(text_, font_list_, &w, &h, 0, flags);
   text_size->SetSize(w, h);
 }
 
@@ -498,23 +504,9 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     if (mode == PB_FOR_DRAG) {
       // Disable sub-pixel rendering as background is transparent.
       draw_string_flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
-
-#if defined(OS_WIN)
-      // TODO(erg): Either port DrawStringWithHalo to linux or find an
-      // alternative here.
-      canvas->DrawStringWithHalo(text_, font_, SK_ColorBLACK, SK_ColorWHITE,
-          text_bounds.x(), text_bounds.y(), text_bounds.width(),
-          text_bounds.height(), draw_string_flags);
-#else
-      canvas->DrawStringInt(text_,
-                            font_,
-                            text_color,
-                            text_bounds.x(),
-                            text_bounds.y(),
-                            text_bounds.width(),
-                            text_bounds.height(),
-                            draw_string_flags);
-#endif
+      canvas->DrawStringRectWithHalo(text_, font_list_,
+                                     SK_ColorBLACK, SK_ColorWHITE,
+                                     text_bounds, draw_string_flags);
     } else {
       gfx::ShadowValues shadows;
       if (has_text_shadow_) {
@@ -522,8 +514,9 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
                                                   inactive_text_shadow_color_;
         shadows.push_back(gfx::ShadowValue(text_shadow_offset_, 0, color));
       }
-      canvas->DrawStringWithShadows(text_, font_, text_color, text_bounds,
-                                    0, draw_string_flags, shadows);
+      canvas->DrawStringRectWithShadows(text_, font_list_, text_color,
+                                        text_bounds, 0, draw_string_flags,
+                                        shadows);
     }
   }
 }
@@ -658,8 +651,8 @@ gfx::Size TextButton::GetPreferredSize() {
 #if defined(OS_WIN)
   // Clamp the size returned to at least the minimum size.
   if (!ignore_minimum_size_) {
-    gfx::PlatformFontWin* platform_font =
-        static_cast<gfx::PlatformFontWin*>(font_.platform_font());
+    gfx::PlatformFontWin* platform_font = static_cast<gfx::PlatformFontWin*>(
+        font_list_.GetPrimaryFont().platform_font());
     prefsize.set_width(std::max(
         prefsize.width(),
         platform_font->horizontal_dlus_to_pixels(kMinWidthDLUs)));

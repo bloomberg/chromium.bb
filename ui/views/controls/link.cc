@@ -13,7 +13,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/controls/link_listener.h"
 
 #if defined(USE_AURA)
@@ -167,8 +167,8 @@ void Link::OnBlur() {
   SchedulePaint();
 }
 
-void Link::SetFont(const gfx::Font& font) {
-  Label::SetFont(font);
+void Link::SetFontList(const gfx::FontList& font_list) {
+  Label::SetFontList(font_list);
   RecalculateFont();
 }
 
@@ -233,11 +233,13 @@ void Link::SetPressed(bool pressed) {
 
 void Link::RecalculateFont() {
   // Underline the link iff it is enabled and |underline_| is true.
-  const int style = font().GetStyle();
+  const int style = font_list().GetFontStyle();
   const int intended_style = (enabled() && underline_) ?
       (style | gfx::Font::UNDERLINE) : (style & ~gfx::Font::UNDERLINE);
-  if (style != intended_style)
-    Label::SetFont(font().DeriveFont(0, intended_style));
+  if (style != intended_style) {
+    Label::SetFontList(
+        font_list().DeriveFontListWithSizeDeltaAndStyle(0, intended_style));
+  }
 }
 
 }  // namespace views

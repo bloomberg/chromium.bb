@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/label.h"
@@ -46,10 +47,13 @@ scoped_ptr<Label> CreateLabelRange(
 
   if (!style_info.tooltip.empty())
     result->SetTooltipText(style_info.tooltip);
-  if (style_info.font_style != gfx::Font::NORMAL)
-    result->SetFont(result->font().DeriveFont(0, style_info.font_style));
+  if (style_info.font_style != gfx::Font::NORMAL) {
+    result->SetFontList(
+        result->font_list().DeriveFontListWithSizeDeltaAndStyle(
+            0, style_info.font_style));
+  }
 
-  return scoped_ptr<Label>(result.release());
+  return result.Pass();
 }
 
 }  // namespace

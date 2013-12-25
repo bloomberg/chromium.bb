@@ -8,7 +8,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/layout/layout_manager.h"
@@ -87,10 +87,12 @@ class TabStrip : public View {
 
 Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
     : tabbed_pane_(tabbed_pane),
-      title_(new Label(title, gfx::Font().DeriveFont(0, gfx::Font::BOLD))),
+      title_(new Label(title,
+                       gfx::FontList().DeriveFontListWithSizeDeltaAndStyle(
+                           0, gfx::Font::BOLD))),
       tab_state_(TAB_ACTIVE),
       contents_(contents) {
-  // Calculate this now while the font is guaranteed to be bold.
+  // Calculate this now while the font list is guaranteed to be bold.
   preferred_title_size_ = title_->GetPreferredSize();
 
   SetState(TAB_INACTIVE);
@@ -160,15 +162,17 @@ void Tab::SetState(TabState tab_state) {
   switch (tab_state) {
     case TAB_INACTIVE:
       title_->SetEnabledColor(kTabTitleColor_Inactive);
-      title_->SetFont(gfx::Font());
+      title_->SetFontList(gfx::FontList());
       break;
     case TAB_ACTIVE:
       title_->SetEnabledColor(kTabTitleColor_Active);
-      title_->SetFont(gfx::Font().DeriveFont(0, gfx::Font::BOLD));
+      title_->SetFontList(
+          gfx::FontList().DeriveFontListWithSizeDeltaAndStyle(
+              0, gfx::Font::BOLD));
       break;
     case TAB_HOVERED:
       title_->SetEnabledColor(kTabTitleColor_Hovered);
-      title_->SetFont(gfx::Font());
+      title_->SetFontList(gfx::FontList());
       break;
   }
   SchedulePaint();

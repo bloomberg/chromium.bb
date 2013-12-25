@@ -8,6 +8,7 @@
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/throb_animation.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button_border.h"
@@ -101,6 +102,14 @@ void LabelButton::SetTextMultiLine(bool text_multi_line) {
   label_->SetMultiLine(text_multi_line);
 }
 
+const gfx::FontList& LabelButton::GetFontList() const {
+  return label_->font_list();
+}
+
+void LabelButton::SetFontList(const gfx::FontList& font_list) {
+  label_->SetFontList(font_list);
+}
+
 const gfx::Font& LabelButton::GetFont() const {
   return label_->font();
 }
@@ -131,9 +140,10 @@ void LabelButton::SetIsDefault(bool is_default) {
 
   // STYLE_BUTTON uses bold text to indicate default buttons.
   if (style_ == STYLE_BUTTON) {
-    int style = label_->font().GetStyle();
+    int style = label_->font_list().GetFontStyle();
     style = is_default ? style | gfx::Font::BOLD : style & ~gfx::Font::BOLD;
-    label_->SetFont(label_->font().DeriveFont(0, style));
+    label_->SetFontList(
+        label_->font_list().DeriveFontListWithSizeDeltaAndStyle(0, style));
   }
 }
 
@@ -169,17 +179,18 @@ void LabelButton::SetFocusPainter(scoped_ptr<Painter> focus_painter) {
 
 gfx::Size LabelButton::GetPreferredSize() {
   // Use a temporary label copy for sizing to avoid calculation side-effects.
-  gfx::Font font = GetFont();
-  Label label(GetText(), font);
+  const gfx::FontList& font_list = GetFontList();
+  Label label(GetText(), font_list);
   label.SetMultiLine(GetTextMultiLine());
 
   if (style() == STYLE_BUTTON) {
     // Some text appears wider when rendered normally than when rendered bold.
     // Accommodate the widest, as buttons may show bold and shouldn't resize.
     const int current_width = label.GetPreferredSize().width();
-    label.SetFont(font.DeriveFont(0, font.GetStyle() ^ gfx::Font::BOLD));
+    label.SetFontList(font_list.DeriveFontListWithSizeDeltaAndStyle(
+        0, font_list.GetFontStyle() ^ gfx::Font::BOLD));
     if (label.GetPreferredSize().width() < current_width)
-      label.SetFont(font);
+      label.SetFontList(font_list);
   }
 
   // Resize multi-line labels given the current limited available width.

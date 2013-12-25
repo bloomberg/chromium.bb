@@ -64,7 +64,7 @@ void LabelExample::CreateExampleView(View* container) {
   container->AddChildView(label);
 
   label = new Label(ASCIIToUTF16("A Courier-18 label with a shadow."));
-  label->SetFont(gfx::Font("Courier", 18));
+  label->SetFontList(gfx::FontList("Courier, 18px"));
   label->SetShadowColors(SK_ColorGRAY, SK_ColorLTGRAY);
   label->SetShadowOffset(1, 1);
   container->AddChildView(label);
