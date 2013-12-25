@@ -588,7 +588,8 @@ PortForwardingController::UpdateDeviceList(
     Registry::iterator rit = registry_.find(device->GetSerial());
     if (rit == registry_.end()) {
       std::string socket = FindBestSocketForTethering(device->browsers());
-      if (!socket.empty()) {
+      if (!socket.empty() || device->GetSerial().empty()) {
+        // Will delete itself when disconnected.
         new Connection(
           &registry_, device->device(), socket, adb_thread_, pref_service_);
       }

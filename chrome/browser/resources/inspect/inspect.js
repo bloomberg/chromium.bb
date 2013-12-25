@@ -170,10 +170,12 @@ function populateRemoteTargets(devices) {
       deviceName.className = 'device-name';
       deviceHeader.appendChild(deviceName);
 
-      var deviceSerial = document.createElement('div');
-      deviceSerial.className = 'device-serial';
-      deviceSerial.textContent = '#' + device.adbSerial.toUpperCase();
-      deviceHeader.appendChild(deviceSerial);
+      if (device.adbSerial) {
+        var deviceSerial = document.createElement('div');
+        deviceSerial.className = 'device-serial';
+        deviceSerial.textContent = '#' + device.adbSerial.toUpperCase();
+        deviceHeader.appendChild(deviceSerial);
+      }
 
       var devicePorts = document.createElement('div');
       devicePorts.className = 'device-ports';
