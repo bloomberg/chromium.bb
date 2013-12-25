@@ -115,7 +115,7 @@ base::FilePath GetLogFilePath(const installer::MasterPreferences& prefs) {
   std::string path;
   prefs.GetString(installer::master_preferences::kLogFile, &path);
   if (!path.empty())
-    return base::FilePath(UTF8ToWide(path));
+    return base::FilePath(base::UTF8ToWide(path));
 
   static const base::FilePath::CharType kLogFilename[] =
       FILE_PATH_LITERAL("chrome_installer.log");

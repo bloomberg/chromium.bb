@@ -293,10 +293,10 @@ bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
     if (error.empty()) {
       // If file is missing, Deserialize will fail with empty error.
       SetError(base::StringPrintf("%s %s", errors::kLocalesMessagesFileMissing,
-                                  UTF16ToUTF8(messages_file).c_str()));
+                                  base::UTF16ToUTF8(messages_file).c_str()));
     } else {
       SetError(base::StringPrintf("%s: %s",
-                                  UTF16ToUTF8(messages_file).c_str(),
+                                  base::UTF16ToUTF8(messages_file).c_str(),
                                   error.c_str()));
     }
     return false;
@@ -320,7 +320,7 @@ bool Unpacker::ReadMessageCatalog(const base::FilePath& message_path) {
 }
 
 void Unpacker::SetError(const std::string &error) {
-  SetUTF16Error(UTF8ToUTF16(error));
+  SetUTF16Error(base::UTF8ToUTF16(error));
 }
 
 void Unpacker::SetUTF16Error(const base::string16& error) {

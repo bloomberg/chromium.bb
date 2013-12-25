@@ -225,7 +225,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
   EXPECT_CALL(*clock_, Now())
       .WillRepeatedly(::testing::Return(base::TimeTicks::Now()));
 
-  base::string16 page_text = ASCIIToUTF16("login");
+  base::string16 page_text = base::ASCIIToUTF16("login");
   float phishy_score;
   FeatureMap features;
 

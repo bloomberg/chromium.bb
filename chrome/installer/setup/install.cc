@@ -45,6 +45,8 @@
 // Build-time generated include file.
 #include "registered_dlls.h"  // NOLINT
 
+using base::ASCIIToUTF16;
+using base::UTF16ToUTF8;
 using installer::InstallerState;
 using installer::InstallationState;
 using installer::Product;

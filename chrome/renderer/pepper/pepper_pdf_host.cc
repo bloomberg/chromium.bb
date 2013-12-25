@@ -157,13 +157,13 @@ int32_t PepperPDFHost::OnHostMsgGetLocalizedString(
     PP_ResourceString string_id) {
   std::string rv;
   if (string_id == PP_RESOURCESTRING_PDFGETPASSWORD) {
-    rv = UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_NEED_PASSWORD));
+    rv = base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_NEED_PASSWORD));
   } else if (string_id == PP_RESOURCESTRING_PDFLOADING) {
-    rv = UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOADING));
+    rv = base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOADING));
   } else if (string_id == PP_RESOURCESTRING_PDFLOAD_FAILED) {
-    rv = UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOAD_FAILED));
+    rv = base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOAD_FAILED));
   } else if (string_id == PP_RESOURCESTRING_PDFPROGRESSLOADING) {
-    rv = UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PROGRESS_LOADING));
+    rv = base::UTF16ToUTF8(l10n_util::GetStringUTF16(IDS_PDF_PROGRESS_LOADING));
   } else {
     NOTREACHED();
     return PP_ERROR_FAILED;

@@ -310,7 +310,7 @@ void FirefoxImporter::ImportBookmarks() {
       if (!item->keyword.empty() && item->url.is_valid()) {
         importer::URLKeywordInfo url_keyword_info;
         url_keyword_info.url = item->url;
-        url_keyword_info.keyword.assign(UTF8ToUTF16(item->keyword));
+        url_keyword_info.keyword.assign(base::UTF8ToUTF16(item->keyword));
         url_keyword_info.display_name = item->title;
         url_keywords.push_back(url_keyword_info);
       }

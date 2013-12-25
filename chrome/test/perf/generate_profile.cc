@@ -90,8 +90,8 @@ base::string16 RandomWords(int count) {
 
 // Return a random URL-looking string.
 GURL ConstructRandomURL() {
-  return GURL(ASCIIToUTF16("http://") + RandomChars(3) + ASCIIToUTF16(".com/") +
-      RandomChars(RandomInt(5, 20)));
+  return GURL(base::ASCIIToUTF16("http://") + RandomChars(3) +
+      base::ASCIIToUTF16(".com/") + RandomChars(RandomInt(5, 20)));
 }
 
 // Return a random page title-looking string.

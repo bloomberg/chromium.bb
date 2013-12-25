@@ -393,7 +393,7 @@ void SendToOmniboxAndSubmit(LocationBar* location_bar,
                             const std::string& input) {
   OmniboxView* omnibox = location_bar->GetOmniboxView();
   omnibox->model()->OnSetFocus(false);
-  omnibox->SetUserText(ASCIIToUTF16(input));
+  omnibox->SetUserText(base::ASCIIToUTF16(input));
   location_bar->AcceptInput();
   while (!omnibox->model()->autocomplete_controller()->done()) {
     content::WindowedNotificationObserver observer(

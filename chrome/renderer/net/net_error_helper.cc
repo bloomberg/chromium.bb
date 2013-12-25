@@ -229,7 +229,7 @@ void NetErrorHelper::UpdateErrorPage() {
   std::string js = "if (window.updateForDnsProbe) "
                    "updateForDnsProbe(" + json + ");";
   base::string16 js16;
-  if (!UTF8ToUTF16(js.c_str(), js.length(), &js16)) {
+  if (!base::UTF8ToUTF16(js.c_str(), js.length(), &js16)) {
     NOTREACHED();
     return;
   }

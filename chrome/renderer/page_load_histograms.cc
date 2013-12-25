@@ -147,7 +147,7 @@ bool DataReductionProxyWasUsed(WebFrame* frame) {
   if (!document_state->was_fetched_via_proxy())
     return false;
 
-  std::string via_header(UTF16ToUTF8(
+  std::string via_header(base::UTF16ToUTF8(
       frame->dataSource()->response().httpHeaderField(kViaHeaderName)));
   return via_header.find(kDatReductionProxyViaValue) != std::string::npos;
 #endif

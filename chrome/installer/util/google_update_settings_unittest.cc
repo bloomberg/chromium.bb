@@ -749,7 +749,7 @@ TEST_P(GetGoogleUpdateVersion, TestEmptyValue) {
 TEST_P(GetGoogleUpdateVersion, TestRealValue) {
   RegKey(root_key_, google_update::kRegPathGoogleUpdate, KEY_SET_VALUE)
       .WriteValue(google_update::kRegGoogleUpdateVersion, kDummyVersion);
-  base::Version expected(UTF16ToUTF8(kDummyVersion));
+  base::Version expected(base::UTF16ToUTF8(kDummyVersion));
   EXPECT_TRUE(expected.Equals(
       GoogleUpdateSettings::GetGoogleUpdateVersion(system_install_)));
   // Make sure that there's no value in the other level (user or system).

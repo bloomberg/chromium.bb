@@ -52,6 +52,7 @@
 #include "chrome_frame/chrome_tab.h"
 #endif
 
+using base::ASCIIToWide;
 using base::win::RegKey;
 
 namespace installer {

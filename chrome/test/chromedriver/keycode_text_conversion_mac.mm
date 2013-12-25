@@ -66,7 +66,7 @@ bool ConvertKeyCodeToText(
   if (status == noErr && char_count == 1 && !std::iscntrl(character)) {
     base::string16 text16;
     text16.push_back(character);
-    *text = UTF16ToUTF8(text16);
+    *text = base::UTF16ToUTF8(text16);
     return true;
   }
   *text = std::string();
@@ -78,7 +78,7 @@ bool ConvertCharToKeyCode(
     std::string* error_msg) {
   base::string16 key_string;
   key_string.push_back(key);
-  std::string key_string_utf8 = UTF16ToUTF8(key_string);
+  std::string key_string_utf8 = base::UTF16ToUTF8(key_string);
   bool found_code = false;
   *error_msg = std::string();
   // There doesn't seem to be a way to get a mac key code for a given unicode

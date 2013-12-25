@@ -101,7 +101,7 @@ base::string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
     base::Base64Decode(crypt.substr(1), &plain);
   }
 
-  return UTF8ToUTF16(plain);
+  return base::UTF8ToUTF16(plain);
 }
 
 // There are three versions of password files. They store saved user
@@ -205,11 +205,11 @@ void NSSDecryptor::ParseSignons(
     // line (contains a dot).
     while (begin + 4 < end) {
       // The user name.
-      form.username_element = UTF8ToUTF16(lines[begin++]);
+      form.username_element = base::UTF8ToUTF16(lines[begin++]);
       form.username_value = Decrypt(lines[begin++]);
       // The element name has a leading '*'.
       if (lines[begin].at(0) == '*') {
-        form.password_element = UTF8ToUTF16(lines[begin++].substr(1));
+        form.password_element = base::UTF8ToUTF16(lines[begin++].substr(1));
         form.password_value = Decrypt(lines[begin++]);
       } else {
         // Maybe the file is bad, we skip to next block.

@@ -33,12 +33,12 @@ bool BuildUninstallMetricsString(
        iter.Advance()) {
     has_values = true;
     metrics->append(L"&");
-    metrics->append(UTF8ToWide(iter.key()));
+    metrics->append(base::UTF8ToWide(iter.key()));
     metrics->append(L"=");
 
     std::string value;
     iter.value().GetAsString(&value);
-    metrics->append(UTF8ToWide(value));
+    metrics->append(base::UTF8ToWide(value));
   }
 
   return has_values;

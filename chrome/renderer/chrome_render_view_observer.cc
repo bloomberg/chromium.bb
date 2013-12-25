@@ -585,8 +585,8 @@ bool ChromeRenderViewObserver::HasRefreshMetaTag(WebFrame* frame) {
   if (head.isNull() || !head.hasChildNodes())
     return false;
 
-  const WebString tag_name(ASCIIToUTF16("meta"));
-  const WebString attribute_name(ASCIIToUTF16("http-equiv"));
+  const WebString tag_name(base::ASCIIToUTF16("meta"));
+  const WebString attribute_name(base::ASCIIToUTF16("http-equiv"));
 
   WebNodeList children = head.childNodes();
   for (size_t i = 0; i < children.length(); ++i) {

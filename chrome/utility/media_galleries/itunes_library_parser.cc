@@ -79,7 +79,7 @@ bool GetTrackInfoFromDict(XmlReader* reader, TrackInfo* result) {
 #else
       base::string16 location16(decoded_location.data(),
                                 decoded_location.length());
-      std::string location = "/" + UTF16ToUTF8(location16);
+      std::string location = "/" + base::UTF16ToUTF8(location16);
 #endif
       result->location = base::FilePath(location);
       found_location = true;

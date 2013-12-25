@@ -16,6 +16,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+using base::ASCIIToUTF16;
+
 namespace extensions {
 
 namespace errors = manifest_errors;

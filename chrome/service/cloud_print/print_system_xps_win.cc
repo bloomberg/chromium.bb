@@ -77,7 +77,7 @@ HRESULT PrintTicketToDevMode(const std::string& printer_name,
     return hr;
 
   HPTPROVIDER provider = NULL;
-  hr = printing::XPSModule::OpenProvider(UTF8ToWide(printer_name), 1,
+  hr = printing::XPSModule::OpenProvider(base::UTF8ToWide(printer_name), 1,
                                          &provider);
   if (SUCCEEDED(hr)) {
     ULONG size = 0;
@@ -166,7 +166,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
           return false;
         }
 
-        HDC dc = CreateDC(L"WINSPOOL", UTF8ToWide(printer_name).c_str(),
+        HDC dc = CreateDC(L"WINSPOOL", base::UTF8ToWide(printer_name).c_str(),
                           NULL, pt_dev_mode.dm_);
         if (!dc) {
           NOTREACHED();
@@ -175,7 +175,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
         hr = E_FAIL;
         DOCINFO di = {0};
         di.cbSize = sizeof(DOCINFO);
-        base::string16 doc_name = UTF8ToUTF16(job_title);
+        base::string16 doc_name = base::UTF8ToUTF16(job_title);
         DCHECK(printing::SimplifyDocumentTitle(doc_name) == doc_name);
         di.lpszDocName = doc_name.c_str();
         job_id_ = StartDoc(dc, &di);
@@ -360,7 +360,8 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       base::win::ScopedComPtr<IXpsPrintJobStream> doc_stream;
       base::win::ScopedComPtr<IXpsPrintJobStream> print_ticket_stream;
       if (FAILED(printing::XPSPrintModule::StartXpsPrintJob(
-              UTF8ToWide(printer_name).c_str(), UTF8ToWide(job_title).c_str(),
+              base::UTF8ToWide(printer_name).c_str(),
+              base::UTF8ToWide(job_title).c_str(),
               NULL, job_progress_event_.Get(), NULL, NULL, NULL,
               xps_print_job_.Receive(), doc_stream.Receive(),
               print_ticket_stream.Receive())))
@@ -537,7 +538,7 @@ bool PrintSystemWinXPS::ValidatePrintTicket(
   }
   bool ret = false;
   HPTPROVIDER provider = NULL;
-  printing::XPSModule::OpenProvider(UTF8ToWide(printer_name.c_str()),
+  printing::XPSModule::OpenProvider(base::UTF8ToWide(printer_name.c_str()),
                                     1,
                                     &provider);
   if (provider) {

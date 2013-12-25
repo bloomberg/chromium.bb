@@ -40,7 +40,7 @@ void HistoryUIBrowserTest::AddPageToHistory(
   history_->AddPage(gurl, time, id_scope, page_id_++, GURL(),
                     history::RedirectList(), content::PAGE_TRANSITION_LINK,
                     history::SOURCE_BROWSED, false);
-  history_->SetPageTitle(gurl, UTF8ToUTF16(title));
+  history_->SetPageTitle(gurl, base::UTF8ToUTF16(title));
 }
 
 void HistoryUIBrowserTest::SetDeleteAllowed(bool allowed) {

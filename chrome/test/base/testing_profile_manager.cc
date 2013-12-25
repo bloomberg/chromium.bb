@@ -91,7 +91,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
     const std::string& name) {
   DCHECK(called_set_up_);
   return CreateTestingProfile(name, scoped_ptr<PrefServiceSyncable>(),
-                              UTF8ToUTF16(name), 0, std::string(),
+                              base::UTF8ToUTF16(name), 0, std::string(),
                               TestingProfile::TestingFactories());
 }
 

@@ -118,6 +118,7 @@
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
+using base::ASCIIToUTF16;
 using content::RenderThread;
 using content::UserMetricsAction;
 using content::WebPluginInfo;

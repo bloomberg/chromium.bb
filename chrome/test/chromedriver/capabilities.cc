@@ -309,7 +309,7 @@ void Switches::SetSwitch(const std::string& name) {
 
 void Switches::SetSwitch(const std::string& name, const std::string& value) {
 #if defined(OS_WIN)
-  SetSwitch(name, UTF8ToUTF16(value));
+  SetSwitch(name, base::UTF8ToUTF16(value));
 #else
   switch_map_[name] = value;
 #endif
@@ -319,7 +319,7 @@ void Switches::SetSwitch(const std::string& name, const base::string16& value) {
 #if defined(OS_WIN)
   switch_map_[name] = value;
 #else
-  SetSwitch(name, UTF16ToUTF8(value));
+  SetSwitch(name, base::UTF16ToUTF8(value));
 #endif
 }
 
@@ -361,7 +361,7 @@ bool Switches::HasSwitch(const std::string& name) const {
 std::string Switches::GetSwitchValue(const std::string& name) const {
   NativeString value = GetSwitchValueNative(name);
 #if defined(OS_WIN)
-  return UTF16ToUTF8(value);
+  return base::UTF16ToUTF8(value);
 #else
   return value;
 #endif

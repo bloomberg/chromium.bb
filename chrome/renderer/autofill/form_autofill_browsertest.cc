@@ -28,6 +28,7 @@
 #include "third_party/WebKit/public/web/WebSelectElement.h"
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
 
+using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFormControlElement;

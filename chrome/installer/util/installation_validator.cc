@@ -560,7 +560,8 @@ void InstallationValidator::ValidateUninstallCommand(
     bool* is_valid) {
   DCHECK(is_valid);
 
-  ValidateSetupPath(ctx, command.GetProgram(), ASCIIToUTF16("uninstaller"),
+  ValidateSetupPath(ctx, command.GetProgram(),
+                    base::ASCIIToUTF16("uninstaller"),
                     is_valid);
 
   const bool is_multi_install = ctx.state.is_multi_install();
@@ -583,7 +584,7 @@ void InstallationValidator::ValidateRenameCommand(const ProductContext& ctx,
   DCHECK(!ctx.state.rename_cmd().empty());
 
   CommandLine command = CommandLine::FromString(ctx.state.rename_cmd());
-  base::string16 name(ASCIIToUTF16("in-use renamer"));
+  base::string16 name(base::ASCIIToUTF16("in-use renamer"));
 
   ValidateSetupPath(ctx, command.GetProgram(), name, is_valid);
 
@@ -726,7 +727,8 @@ void InstallationValidator::ValidateProduct(
   ProductContext ctx(machine_state, system_install, product_state, rules);
 
   ValidateUninstallCommand(ctx, ctx.state.uninstall_command(),
-                           ASCIIToUTF16("Google Update uninstall command"),
+                           base::ASCIIToUTF16(
+                               "Google Update uninstall command"),
                            is_valid);
 
   ValidateOldVersionValues(ctx, is_valid);

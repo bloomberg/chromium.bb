@@ -44,7 +44,7 @@ class PrintSystemWatcherWin : public base::win::ObjectWatcher::Delegate {
     LPTSTR printer_name_to_use = NULL;
     std::wstring printer_name_wide;
     if (!printer_name.empty()) {
-      printer_name_wide = UTF8ToWide(printer_name);
+      printer_name_wide = base::UTF8ToWide(printer_name);
       printer_name_to_use = const_cast<LPTSTR>(printer_name_wide.c_str());
     }
     bool ret = false;
@@ -223,7 +223,7 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
       print_backend_->GetPrinterDriverInfo(printer_name));
   DCHECK(job_details);
   printing::ScopedPrinterHandle printer_handle;
-  std::wstring printer_name_wide = UTF8ToWide(printer_name);
+  std::wstring printer_name_wide = base::UTF8ToWide(printer_name);
   printer_handle.OpenPrinter(printer_name_wide.c_str());
   DCHECK(printer_handle.IsValid());
   bool ret = false;
@@ -240,8 +240,8 @@ bool PrintSystemWin::GetJobDetails(const std::string& printer_name,
         JOB_INFO_1 *job_info =
             reinterpret_cast<JOB_INFO_1 *>(job_info_buffer.get());
         if (job_info->pStatus) {
-          WideToUTF8(job_info->pStatus, wcslen(job_info->pStatus),
-                     &job_details->status_message);
+          base::WideToUTF8(job_info->pStatus, wcslen(job_info->pStatus),
+                           &job_details->status_message);
         }
         job_details->platform_status_flags = job_info->Status;
         if ((job_info->Status & JOB_STATUS_COMPLETE) ||

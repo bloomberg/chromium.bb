@@ -279,12 +279,12 @@ bool GoogleUpdateSettings::SetCollectStatsConsentAtLevel(bool system_install,
 bool GoogleUpdateSettings::GetMetricsId(std::string* metrics_id) {
   std::wstring metrics_id_w;
   bool rv = ReadGoogleUpdateStrKey(google_update::kRegMetricsId, &metrics_id_w);
-  *metrics_id = WideToUTF8(metrics_id_w);
+  *metrics_id = base::WideToUTF8(metrics_id_w);
   return rv;
 }
 
 bool GoogleUpdateSettings::SetMetricsId(const std::string& metrics_id) {
-  std::wstring metrics_id_w = UTF8ToWide(metrics_id);
+  std::wstring metrics_id_w = base::UTF8ToWide(metrics_id);
   return WriteGoogleUpdateStrKey(google_update::kRegMetricsId, metrics_id_w);
 }
 
@@ -596,7 +596,7 @@ base::Version GoogleUpdateSettings::GetGoogleUpdateVersion(
                KEY_QUERY_VALUE) == ERROR_SUCCESS &&
       key.ReadValue(google_update::kRegGoogleUpdateVersion,
                     &version) == ERROR_SUCCESS) {
-    return base::Version(UTF16ToUTF8(version));
+    return base::Version(base::UTF16ToUTF8(version));
   }
 
   return base::Version();

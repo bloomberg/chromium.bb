@@ -13,6 +13,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
+using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebFrame;
 using blink::WebInputElement;

@@ -1117,7 +1117,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
     }
 
     auto_launch_util::DisableAllAutoStartFeatures(
-        ASCIIToUTF16(chrome::kInitialProfile));
+        base::ASCIIToUTF16(chrome::kInitialProfile));
 
     // If user-level chrome is self-destructing as a result of encountering a
     // system-level chrome, retarget owned non-default shortcuts (app shortcuts,

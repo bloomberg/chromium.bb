@@ -70,7 +70,7 @@ bool ConvertMenuData(const PP_Flash_Menu* in_menu,
         return false;
     }
     if (in_menu->items[i].name)
-      item.label = UTF8ToUTF16(in_menu->items[i].name);
+      item.label = base::UTF8ToUTF16(in_menu->items[i].name);
     if (menu_id_map->size() >= kMaxMenuIdMapEntries)
       return false;
     item.action = static_cast<unsigned>(menu_id_map->size());

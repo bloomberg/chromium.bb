@@ -221,7 +221,7 @@ void PhishingTermFeatureExtractor::HandleWord(
     return;
   }
 
-  std::string word_lower = UTF16ToUTF8(base::i18n::ToLower(word));
+  std::string word_lower = base::UTF16ToUTF8(base::i18n::ToLower(word));
   uint32 word_hash = MurmurHash3String(word_lower, murmurhash3_seed_);
 
   // Quick out if the word is not part of any term, which is the common case.

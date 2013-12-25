@@ -1162,7 +1162,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
            ++it) {
         const Product& product = **it;
         installer::InactiveUserToastExperiment(
-            flavor, ASCIIToUTF16(experiment_group), product,
+            flavor, base::ASCIIToUTF16(experiment_group), product,
             installer_state->target_path());
       }
     }

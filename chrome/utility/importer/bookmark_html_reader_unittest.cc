@@ -16,6 +16,9 @@
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+using base::UTF16ToWide;
+
 namespace bookmark_html_reader {
 
 TEST(BookmarkHTMLReaderTest, ParseTests) {

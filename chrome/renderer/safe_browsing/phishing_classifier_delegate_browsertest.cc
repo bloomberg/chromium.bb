@@ -39,6 +39,7 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
 using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Mock;

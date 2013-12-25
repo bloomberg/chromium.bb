@@ -45,7 +45,7 @@ bool SetExperimentLabel(const wchar_t* brand_code,
   std::vector<base::string16> entries;
   base::SplitStringUsingSubstr(
       original_labels,
-      ASCIIToUTF16(google_update::kExperimentLabelSep),
+      base::ASCIIToUTF16(google_update::kExperimentLabelSep),
       &entries);
 
   // Keep all labels, but the one we want to add/replace.
@@ -54,7 +54,7 @@ bool SetExperimentLabel(const wchar_t* brand_code,
        it != entries.end(); ++it) {
     if (!it->empty() && !StartsWith(*it, label + L"=", true)) {
       new_labels += *it;
-      new_labels += ASCIIToUTF16(google_update::kExperimentLabelSep);
+      new_labels += base::ASCIIToUTF16(google_update::kExperimentLabelSep);
     }
   }
 

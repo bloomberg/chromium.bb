@@ -93,7 +93,7 @@ class SpellcheckCharAttribute {
 //   // Set up a SpellcheckWordIterator object which extracts English words,
 //   // and retrieve them.
 //   SpellcheckWordIterator iterator;
-//   base::string16 text(UTF8ToUTF16("this is a test."));
+//   base::string16 text(base::UTF8ToUTF16("this is a test."));
 //   iterator.Initialize(&attribute, true);
 //   iterator.SetText(text.c_str(), text_.length());
 //

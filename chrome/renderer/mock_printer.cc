@@ -72,8 +72,8 @@ MockPrinter::MockPrinter()
     preview_request_id_(0),
     print_scaling_option_(blink::WebPrintScalingOptionSourceSize),
     display_header_footer_(false),
-    title_(ASCIIToUTF16("title")),
-    url_(ASCIIToUTF16("url")),
+    title_(base::ASCIIToUTF16("title")),
+    url_(base::ASCIIToUTF16("url")),
     use_invalid_settings_(false) {
   page_size_.SetSize(static_cast<int>(8.5 * dpi_),
                      static_cast<int>(11.0 * dpi_));

@@ -30,6 +30,7 @@
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
+using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFrame;

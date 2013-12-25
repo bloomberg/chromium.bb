@@ -50,7 +50,7 @@ void CheckEventsReleaseModifiers(const base::string16& keys,
 void CheckEventsReleaseModifiers(const std::string& keys,
                                  KeyEvent expected_events[],
                                  size_t expected_size) {
-  CheckEventsReleaseModifiers(UTF8ToUTF16(keys),
+  CheckEventsReleaseModifiers(base::UTF8ToUTF16(keys),
       expected_events, expected_size);
 }
 
@@ -59,7 +59,7 @@ void CheckNonShiftChar(ui::KeyboardCode key_code, char character) {
   std::string char_string;
   char_string.push_back(character);
   std::list<KeyEvent> events;
-  EXPECT_EQ(kOk, ConvertKeysToKeyEvents(ASCIIToUTF16(char_string),
+  EXPECT_EQ(kOk, ConvertKeysToKeyEvents(base::ASCIIToUTF16(char_string),
                                         true /* release_modifiers*/,
                                         &modifiers, &events).code());
   ASSERT_EQ(3u, events.size()) << "Char: " << character;
@@ -79,7 +79,7 @@ void CheckShiftChar(ui::KeyboardCode key_code, char character, char lower) {
   std::string char_string;
   char_string.push_back(character);
   std::list<KeyEvent> events;
-  EXPECT_EQ(kOk, ConvertKeysToKeyEvents(ASCIIToUTF16(char_string),
+  EXPECT_EQ(kOk, ConvertKeysToKeyEvents(base::ASCIIToUTF16(char_string),
                                         true /* release_modifiers*/,
                                         &modifiers, &events).code());
   ASSERT_EQ(5u, events.size()) << "Char: " << character;
@@ -152,9 +152,10 @@ TEST(KeyConverter, WebDriverSpecialNonCharKey) {
 TEST(KeyConverter, FrenchKeyOnEnglishLayout) {
   KeyEvent event_array[] = {
       CreateKeyDownEvent(ui::VKEY_UNKNOWN, 0),
-      CreateCharEvent(WideToUTF8(L"\u00E9"), WideToUTF8(L"\u00E9"), 0),
+      CreateCharEvent(base::WideToUTF8(L"\u00E9"),
+                      base::WideToUTF8(L"\u00E9"), 0),
       CreateKeyUpEvent(ui::VKEY_UNKNOWN, 0)};
-  CheckEventsReleaseModifiers(WideToUTF16(L"\u00E9"),
+  CheckEventsReleaseModifiers(base::WideToUTF16(L"\u00E9"),
       event_array, arraysize(event_array));
 }
 
@@ -210,7 +211,7 @@ TEST(KeyConverter, UppercaseCharUsesShiftOnlyIfNecessary) {
       CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
   base::string16 keys;
   keys.push_back(static_cast<char16>(0xE008U));
-  keys.append(UTF8ToUTF16("aBc"));
+  keys.append(base::UTF8ToUTF16("aBc"));
   CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
 

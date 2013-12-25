@@ -12,6 +12,8 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 const wchar_t kBrand[] = L"ABCD";

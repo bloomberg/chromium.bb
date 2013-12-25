@@ -15,19 +15,19 @@ GURL ResolveURL(const GURL& current_url,
 
 TEST(SearchboxExtensionTest, ResolveURL) {
   EXPECT_EQ(GURL("http://www.google.com/"),
-            ResolveURL(GURL(""), ASCIIToUTF16("http://www.google.com")));
+            ResolveURL(GURL(""), base::ASCIIToUTF16("http://www.google.com")));
 
   EXPECT_EQ(GURL("http://news.google.com/"),
             ResolveURL(GURL("http://www.google.com"),
-                       ASCIIToUTF16("http://news.google.com")));
+                       base::ASCIIToUTF16("http://news.google.com")));
 
   EXPECT_EQ(GURL("http://www.google.com/hello?q=world"),
             ResolveURL(GURL("http://www.google.com/foo?a=b"),
-                       ASCIIToUTF16("hello?q=world")));
+                       base::ASCIIToUTF16("hello?q=world")));
 
   EXPECT_EQ(GURL("http://www.google.com:90/foo/hello?q=world"),
             ResolveURL(GURL("http://www.google.com:90/"),
-                       ASCIIToUTF16("foo/hello?q=world")));
+                       base::ASCIIToUTF16("foo/hello?q=world")));
 }
 
 }  // namespace internal

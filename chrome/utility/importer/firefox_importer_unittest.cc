@@ -36,11 +36,11 @@ TEST(FirefoxImporterTest, MAYBE_NSS(Firefox3NSS3Decryptor)) {
   ASSERT_TRUE(decryptor_proxy.Setup(nss_path));
 
   ASSERT_TRUE(decryptor_proxy.DecryptorInit(nss_path, db_path));
-  EXPECT_EQ(ASCIIToUTF16("hello"),
+  EXPECT_EQ(base::ASCIIToUTF16("hello"),
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECKa"
                               "jtRg4qFSHBAhv9luFkXgDJA=="));
   // Test UTF-16 encoding.
-  EXPECT_EQ(WideToUTF16(L"\x4E2D"),
+  EXPECT_EQ(base::WideToUTF16(L"\x4E2D"),
       decryptor_proxy.Decrypt("MDIEEPgAAAAAAAAAAAAAAAAAAAEwFAYIKoZIhvcNAwcECLW"
                               "qqiccfQHWBAie74hxnULxlw=="));
 }

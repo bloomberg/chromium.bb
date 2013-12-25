@@ -120,7 +120,7 @@ v8::Handle<v8::Object> GenerateMostVisitedItem(
 
   base::string16 title = mv_item.title;
   if (title.empty())
-    title = UTF8ToUTF16(mv_item.url.spec());
+    title = base::UTF8ToUTF16(mv_item.url.spec());
 
   v8::Handle<v8::Object> obj = v8::Object::New(isolate);
   obj->Set(v8::String::NewFromUtf8(isolate, "renderViewId"),
@@ -464,7 +464,7 @@ void SearchBoxExtension::DispatchChromeIdentityCheckResult(
     const base::string16& identity,
     bool identity_match) {
   std::string escaped_identity = base::GetQuotedJSONString(identity);
-  blink::WebString script(UTF8ToUTF16(base::StringPrintf(
+  blink::WebString script(base::UTF8ToUTF16(base::StringPrintf(
       kDispatchChromeIdentityCheckResult,
       escaped_identity.c_str(),
       identity_match ? "true" : "false")));

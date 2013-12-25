@@ -22,6 +22,8 @@
 #include "sql/connection.h"
 #include "testing/platform_test.h"
 
+using base::ASCIIToUTF16;
+
 // In order to test the Safari import functionality effectively, we store a
 // simulated Library directory containing dummy data files in the same
 // structure as ~/Library in the Chrome test data directory.
@@ -57,7 +59,7 @@ TEST_F(SafariImporterTest, HistoryImport) {
 
   ImporterURLRow& it1 = history_items[0];
   EXPECT_EQ(it1.url, GURL("http://www.firsthistoryitem.com/"));
-  EXPECT_EQ(it1.title, UTF8ToUTF16("First History Item Title"));
+  EXPECT_EQ(it1.title, base::UTF8ToUTF16("First History Item Title"));
   EXPECT_EQ(it1.visit_count, 1);
   EXPECT_EQ(it1.hidden, 0);
   EXPECT_EQ(it1.typed_count, 0);
@@ -68,7 +70,7 @@ TEST_F(SafariImporterTest, HistoryImport) {
   std::string second_item_title("http://www.secondhistoryitem.com/");
   EXPECT_EQ(it2.url, GURL(second_item_title));
   // The second item lacks a title so we expect the URL to be substituted.
-  EXPECT_EQ(UTF16ToUTF8(it2.title), second_item_title.c_str());
+  EXPECT_EQ(base::UTF16ToUTF8(it2.title), second_item_title.c_str());
   EXPECT_EQ(it2.visit_count, 55);
   EXPECT_EQ(it2.hidden, 0);
   EXPECT_EQ(it2.typed_count, 0);

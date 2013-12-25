@@ -110,7 +110,8 @@ TEST_F(ProductTest, MAYBE_ProductInstallBasic) {
     const char kCurrentVersion[] = "1.2.3.4";
     base::Version current_version(kCurrentVersion);
     version_key.WriteValue(google_update::kRegVersionField,
-                           UTF8ToWide(current_version.GetString()).c_str());
+                           base::UTF8ToWide(
+                               current_version.GetString()).c_str());
 
     // We started out with a non-msi product.
     machine_state.Initialize();

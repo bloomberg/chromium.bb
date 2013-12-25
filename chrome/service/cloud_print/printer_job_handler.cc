@@ -773,8 +773,8 @@ void PrinterJobHandler::DoPrint(const JobDetails& job_details,
   DCHECK(job_spooler_.get());
   if (!job_spooler_.get())
     return;
-  base::string16 document_name =
-      printing::SimplifyDocumentTitle(UTF8ToUTF16(job_details.job_title_));
+  base::string16 document_name = printing::SimplifyDocumentTitle(
+      base::UTF8ToUTF16(job_details.job_title_));
   if (document_name.empty()) {
     document_name = printing::SimplifyDocumentTitle(
         l10n_util::GetStringUTF16(IDS_DEFAULT_PRINT_DOCUMENT_TITLE));
@@ -786,7 +786,7 @@ void PrinterJobHandler::DoPrint(const JobDetails& job_details,
                            job_details.print_data_file_path_,
                            job_details.print_data_mime_type_,
                            printer_name,
-                           UTF16ToUTF8(document_name),
+                           base::UTF16ToUTF8(document_name),
                            job_details.tags_,
                            this)) {
     OnJobSpoolFailed();

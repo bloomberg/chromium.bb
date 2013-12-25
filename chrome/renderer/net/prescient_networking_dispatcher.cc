@@ -55,7 +55,7 @@ void PrescientNetworkingDispatcher::prefetchDNS(
   if (hostname.isEmpty())
     return;
 
-  std::string hostname_utf8 = UTF16ToUTF8(hostname);
+  std::string hostname_utf8 = base::UTF16ToUTF8(hostname);
   net_predictor_.Resolve(hostname_utf8.data(), hostname_utf8.length());
 }
 

@@ -487,7 +487,7 @@ void WebUIBrowserTest::BuildJavascriptLibraries(base::string16* content) {
     utf8_content.append(library_content);
     utf8_content.append(";\n");
   }
-  content->append(UTF8ToUTF16(utf8_content));
+  content->append(base::UTF8ToUTF16(utf8_content));
 }
 
 base::string16 WebUIBrowserTest::BuildRunTestJSCall(

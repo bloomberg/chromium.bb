@@ -30,7 +30,7 @@ bool ConvertKeyCodeToText(
   if (code <= 0 || (code == 1 && iswcntrl(chars[0])))
     *text = std::string();
   else
-    WideToUTF8(chars, code, text);
+    base::WideToUTF8(chars, code, text);
   return true;
 }
 

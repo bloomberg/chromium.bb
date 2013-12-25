@@ -141,7 +141,7 @@ bool KeyCodeFromShorthandKey(char16 key_utf16,
                              bool* client_should_skip) {
   base::string16 key_str_utf16;
   key_str_utf16.push_back(key_utf16);
-  std::string key_str_utf8 = UTF16ToUTF8(key_str_utf16);
+  std::string key_str_utf8 = base::UTF16ToUTF8(key_str_utf16);
   if (key_str_utf8.length() != 1)
     return false;
   bool should_skip = false;
@@ -303,8 +303,8 @@ Status ConvertKeysToKeyEvents(const base::string16& client_keys,
         }
       } else {
         // Do a best effort and use the raw key we were given.
-        unmodified_text = UTF16ToUTF8(keys.substr(i, 1));
-        modified_text = UTF16ToUTF8(keys.substr(i, 1));
+        unmodified_text = base::UTF16ToUTF8(keys.substr(i, 1));
+        modified_text = base::UTF16ToUTF8(keys.substr(i, 1));
       }
     }
 

@@ -92,8 +92,8 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   iexplore = iexplore.AppendASCII("iexplore.exe");
 
   base::string16 command = iexplore.value() + L" " + GetUninstallSurveyUrl() +
-      L"&" + kVersionParam + L"=" + UTF8ToWide(version.GetString()) + L"&" +
-      kOSParam + L"=" + os_version;
+      L"&" + kVersionParam + L"=" + base::UTF8ToWide(version.GetString()) +
+      L"&" + kOSParam + L"=" + os_version;
 
   base::string16 uninstall_metrics;
   if (installer::ExtractUninstallMetricsFromFile(local_data_path,

@@ -257,7 +257,7 @@ void ChromePluginPlaceholder::OnFinishedDownloadingPlugin() {
 void ChromePluginPlaceholder::OnErrorDownloadingPlugin(
     const std::string& error) {
   SetMessage(l10n_util::GetStringFUTF16(IDS_PLUGIN_DOWNLOAD_ERROR,
-                                        UTF8ToUTF16(error)));
+                                        base::UTF8ToUTF16(error)));
 }
 
 void ChromePluginPlaceholder::OnCancelledDownloadingPlugin() {

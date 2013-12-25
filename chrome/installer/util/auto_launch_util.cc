@@ -19,6 +19,9 @@
 #include "chrome/installer/util/util_constants.h"
 #include "crypto/sha2.h"
 
+using base::ASCIIToUTF16;
+using base::ASCIIToWide;
+
 namespace auto_launch_util {
 
 // The prefix of the Chrome Auto-launch key under the Run key.

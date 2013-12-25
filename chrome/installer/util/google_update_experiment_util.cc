@@ -50,14 +50,15 @@ base::string16 BuildExperimentDateString(const base::Time& current_time) {
   then.year += 1;
   DCHECK(then.HasValidValues());
 
-  return UTF8ToUTF16(base::StringPrintf("%s, %02d %s %d %02d:%02d:%02d GMT",
-                                        kDays[then.day_of_week],
-                                        then.day_of_month,
-                                        kMonths[then.month - 1],
-                                        then.year,
-                                        then.hour,
-                                        then.minute,
-                                        then.second));
+  return base::UTF8ToUTF16(
+      base::StringPrintf("%s, %02d %s %d %02d:%02d:%02d GMT",
+                         kDays[then.day_of_week],
+                         then.day_of_month,
+                         kMonths[then.month - 1],
+                         then.year,
+                         then.hour,
+                         then.minute,
+                         then.second));
 }
 
 }  // namespace installer

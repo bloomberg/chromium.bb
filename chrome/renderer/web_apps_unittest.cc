@@ -43,8 +43,8 @@ TEST(WebAppInfo, ParseIconSizes) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(data); ++i) {
     bool is_any;
     std::vector<gfx::Size> sizes;
-    bool result = web_apps::ParseIconSizes(ASCIIToUTF16(data[i].input), &sizes,
-                                           &is_any);
+    bool result = web_apps::ParseIconSizes(
+        base::ASCIIToUTF16(data[i].input), &sizes, &is_any);
     ASSERT_EQ(result, data[i].expected_result);
     if (result) {
       ASSERT_EQ(data[i].is_any, is_any);

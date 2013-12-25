@@ -553,8 +553,8 @@ std::string ProcessGeneralName(PRArenaPool* arena,
       break;
   }
   std::string rv(l10n_util::GetStringFUTF8(IDS_CERT_UNKNOWN_OID_INFO_FORMAT,
-                                           UTF8ToUTF16(key),
-                                           UTF8ToUTF16(value)));
+                                           base::UTF8ToUTF16(key),
+                                           base::UTF8ToUTF16(value)));
   rv += '\n';
   return rv;
 }
@@ -601,7 +601,7 @@ std::string ProcessSubjectKeyId(SECItem* extension_data) {
   }
 
   rv = l10n_util::GetStringFUTF8(IDS_CERT_KEYID_FORMAT,
-                                 ASCIIToUTF16(ProcessRawBytes(&decoded)));
+                                 base::ASCIIToUTF16(ProcessRawBytes(&decoded)));
   return rv;
 }
 
@@ -616,21 +616,23 @@ std::string ProcessAuthKeyId(SECItem* extension_data) {
 
   if (ret->keyID.len > 0) {
     rv += l10n_util::GetStringFUTF8(IDS_CERT_KEYID_FORMAT,
-                                    ASCIIToUTF16(ProcessRawBytes(&ret->keyID)));
+                                    base::ASCIIToUTF16(
+                                        ProcessRawBytes(&ret->keyID)));
     rv += '\n';
   }
 
   if (ret->authCertIssuer) {
     rv += l10n_util::GetStringFUTF8(
         IDS_CERT_ISSUER_FORMAT,
-        UTF8ToUTF16(ProcessGeneralNames(arena.get(), ret->authCertIssuer)));
+        base::UTF8ToUTF16(
+            ProcessGeneralNames(arena.get(), ret->authCertIssuer)));
     rv += '\n';
   }
 
   if (ret->authCertSerialNumber.len > 0) {
     rv += l10n_util::GetStringFUTF8(
         IDS_CERT_SERIAL_NUMBER_FORMAT,
-        ASCIIToUTF16(ProcessRawBytes(&ret->authCertSerialNumber)));
+        base::ASCIIToUTF16(ProcessRawBytes(&ret->authCertSerialNumber)));
     rv += '\n';
   }
 
@@ -666,7 +668,7 @@ std::string ProcessUserNotice(SECItem* der_notice) {
         if (itemList != notice->noticeReference.noticeNumbers)
           rv += ", ";
         rv += '#';
-        rv += UTF16ToUTF8(base::UintToString16(number));
+        rv += base::UTF16ToUTF8(base::UintToString16(number));
       }
       itemList++;
     }
@@ -711,7 +713,7 @@ std::string ProcessCertificatePolicies(SECItem* extension_data) {
     // complicated, since we don't want to do the EV check synchronously.)
     if (policyInfo->policyQualifiers) {
       rv += l10n_util::GetStringFUTF8(IDS_CERT_MULTILINE_INFO_START_FORMAT,
-                                      UTF8ToUTF16(key));
+                                      base::UTF8ToUTF16(key));
     } else {
       rv += key;
     }
@@ -726,7 +728,7 @@ std::string ProcessCertificatePolicies(SECItem* extension_data) {
         CERTPolicyQualifier* policyQualifier = *policyQualifiers++;
         rv += l10n_util::GetStringFUTF8(
             IDS_CERT_MULTILINE_INFO_START_FORMAT,
-            UTF8ToUTF16(GetOIDText(&policyQualifier->qualifierID)));
+            base::UTF8ToUTF16(GetOIDText(&policyQualifier->qualifierID)));
         switch(policyQualifier->oid) {
           case SEC_OID_PKIX_CPS_POINTER_QUALIFIER:
             rv += "    ";
@@ -808,7 +810,8 @@ std::string ProcessCrlDistPoints(SECItem* extension_data) {
     if (point->crlIssuer) {
       rv += l10n_util::GetStringFUTF8(
           IDS_CERT_ISSUER_FORMAT,
-          UTF8ToUTF16(ProcessGeneralNames(arena.get(), point->crlIssuer)));
+          base::UTF8ToUTF16(
+              ProcessGeneralNames(arena.get(), point->crlIssuer)));
     }
   }
   return rv;
@@ -828,7 +831,7 @@ std::string ProcessAuthInfoAccess(SECItem* extension_data) {
   while (*aia != NULL) {
     desc = *aia++;
     base::string16 location_str =
-        UTF8ToUTF16(ProcessGeneralName(arena.get(), desc->location));
+        base::UTF8ToUTF16(ProcessGeneralName(arena.get(), desc->location));
     switch (SECOID_FindOIDTag(&desc->method)) {
     case SEC_OID_PKIX_OCSP:
       rv += l10n_util::GetStringFUTF8(IDS_CERT_OCSP_RESPONDER_FORMAT,
@@ -840,7 +843,8 @@ std::string ProcessAuthInfoAccess(SECItem* extension_data) {
       break;
     default:
       rv += l10n_util::GetStringFUTF8(IDS_CERT_UNKNOWN_OID_INFO_FORMAT,
-                                      UTF8ToUTF16(GetOIDText(&desc->method)),
+                                      base::UTF8ToUTF16(
+                                          GetOIDText(&desc->method)),
                                       location_str);
       break;
     }
@@ -962,16 +966,16 @@ std::string ProcessExtKeyUsage(SECItem* extension_data) {
     std::string oid_dump = DumpOidString(oid);
     std::string oid_text = GetOIDText(oid);
 
-    // If oid is one we recognize, oid_text will have a text description of the OID,
-    // which we display along with the oid_dump.  If we don't recognize the OID,
-    // GetOIDText will return the same value as DumpOidString, so just display
-    // the OID alone.
+    // If oid is one we recognize, oid_text will have a text description of the
+    // OID, which we display along with the oid_dump.  If we don't recognize the
+    // OID, GetOIDText will return the same value as DumpOidString, so just
+    // display the OID alone.
     if (oid_dump == oid_text)
       rv += oid_dump;
     else
       rv += l10n_util::GetStringFUTF8(IDS_CERT_EXT_KEY_USAGE_FORMAT,
-                                      UTF8ToUTF16(oid_text),
-                                      UTF8ToUTF16(oid_dump));
+                                      base::UTF8ToUTF16(oid_text),
+                                      base::UTF8ToUTF16(oid_dump));
     rv += '\n';
   }
   CERT_DestroyOidSequence(extension_key_usage);
@@ -1030,9 +1034,9 @@ std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki) {
         rv = l10n_util::GetStringFUTF8(
             IDS_CERT_RSA_PUBLIC_KEY_DUMP_FORMAT,
             base::UintToString16(key->u.rsa.modulus.len * 8),
-            UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.modulus)),
+            base::UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.modulus)),
             base::UintToString16(key->u.rsa.publicExponent.len * 8),
-            UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.publicExponent)));
+            base::UTF8ToUTF16(ProcessRawBytes(&key->u.rsa.publicExponent)));
         break;
       }
       default:

@@ -101,7 +101,7 @@ void RunDictionaryTest(const char* codepage,
     for (size_t i = 0; i < dic_reader.words().size(); ++i) {
       SCOPED_TRACE(base::StringPrintf("dic_reader.words()[%" PRIuS "]: %s",
                                       i, dic_reader.words()[i].first.c_str()));
-      base::string16 word(UTF8ToUTF16(dic_reader.words()[i].first));
+      base::string16 word(base::UTF8ToUTF16(dic_reader.words()[i].first));
       EXPECT_TRUE(word_list.find(word) != word_list.end());
     }
 
@@ -152,7 +152,8 @@ TEST(ConvertDictTest, English) {
   std::map<base::string16, bool> word_list;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWords); ++i)
     word_list.insert(
-        std::make_pair<base::string16, bool>(WideToUTF16(kWords[i]), true));
+        std::make_pair<base::string16, bool>(base::WideToUTF16(kWords[i]),
+                                             true));
 
   RunDictionaryTest(kCodepage, word_list);
 }
@@ -174,7 +175,8 @@ TEST(ConvertDictTest, Russian) {
   std::map<base::string16, bool> word_list;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWords); ++i)
     word_list.insert(
-        std::make_pair<base::string16, bool>(WideToUTF16(kWords[i]), true));
+        std::make_pair<base::string16, bool>(base::WideToUTF16(kWords[i]),
+                                             true));
 
   RunDictionaryTest(kCodepage, word_list);
 }
@@ -198,7 +200,8 @@ TEST(ConvertDictTest, Hungarian) {
   std::map<base::string16, bool> word_list;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kWords); ++i)
     word_list.insert(
-        std::make_pair<base::string16, bool>(WideToUTF16(kWords[i]), true));
+        std::make_pair<base::string16, bool>(base::WideToUTF16(kWords[i]),
+                                             true));
 
   RunDictionaryTest(kCodepage, word_list);
 }

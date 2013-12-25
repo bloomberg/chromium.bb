@@ -274,9 +274,9 @@ TEST_F(InstallerStateTest, Basic) {
   EXPECT_FALSE(installer_dir.empty());
 
   base::FilePath new_version_dir(installer_state.target_path().Append(
-      UTF8ToWide(new_version.GetString())));
+      base::UTF8ToWide(new_version.GetString())));
   base::FilePath old_version_dir(installer_state.target_path().Append(
-      UTF8ToWide(old_version.GetString())));
+      base::UTF8ToWide(old_version.GetString())));
 
   EXPECT_FALSE(base::PathExists(new_version_dir));
   EXPECT_FALSE(base::PathExists(old_version_dir));
@@ -359,7 +359,8 @@ TEST_F(InstallerStateTest, WithProduct) {
     EXPECT_TRUE(chrome_key.Valid());
     if (chrome_key.Valid()) {
       chrome_key.WriteValue(google_update::kRegVersionField,
-                            UTF8ToWide(current_version.GetString()).c_str());
+                            base::UTF8ToWide(
+                                current_version.GetString()).c_str());
       machine_state.Initialize();
       // TODO(tommi): Also test for when there exists a new_chrome.exe.
       base::Version found_version(
@@ -524,11 +525,12 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
     installer_state.target_path().Append(L"1.2.3.4"),
     installer_state.target_path().Append(L"1.2.3.5"),
     installer_state.target_path().Append(L"1.2.3.6"),
-    installer_state.target_path().Append(ASCIIToWide(kOldVersion)),
-    installer_state.target_path().Append(ASCIIToWide(kOldChromeExeVersion)),
+    installer_state.target_path().Append(base::ASCIIToWide(kOldVersion)),
+    installer_state.target_path().Append(
+        base::ASCIIToWide(kOldChromeExeVersion)),
     installer_state.target_path().Append(L"2.1.1.0"),
-    installer_state.target_path().Append(ASCIIToWide(kChromeExeVersion)),
-    installer_state.target_path().Append(ASCIIToWide(kNewVersion)),
+    installer_state.target_path().Append(base::ASCIIToWide(kChromeExeVersion)),
+    installer_state.target_path().Append(base::ASCIIToWide(kNewVersion)),
     installer_state.target_path().Append(L"3.9.1.1"),
   };
 
@@ -688,7 +690,7 @@ class InstallerStateCriticalVersionTest : public ::testing::Test {
         CommandLine::FromString(L"setup.exe") :
         CommandLine::FromString(
             L"setup.exe --critical-update-version=" +
-            ASCIIToWide(version->GetString()));
+            base::ASCIIToWide(version->GetString()));
     prefs_.reset(new MasterPreferences(cmd_line_));
     machine_state_.Initialize();
     installer_state_.Initialize(cmd_line_, *prefs_, machine_state_);
