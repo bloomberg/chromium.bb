@@ -490,11 +490,10 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   if (get_use_acceleration_when_possible())
     SetPaintToLayer(true);
 
-  gfx::Font title_font =
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::MediumFont);
   title_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL),
-      title_font);
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::MediumFont));
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
   title_label_->set_border(

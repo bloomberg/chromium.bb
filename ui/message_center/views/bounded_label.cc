@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/controls/label.h"
 
 namespace {
@@ -24,7 +25,7 @@ namespace message_center {
 
 // InnerBoundedLabel is a views::Label subclass that does all of the work for
 // BoundedLabel. It is kept private to prevent outside code from calling a
-// number of views::Label methods like setFont() that break BoundedLabel's
+// number of views::Label methods like SetFontList() that break BoundedLabel's
 // caching but can't be overridden.
 //
 // TODO(dharcourt): Move the line limiting functionality to views::Label to make
@@ -109,7 +110,7 @@ gfx::Size InnerBoundedLabel::GetSizeForWidthAndLines(int width, int lines) {
                                    std::max(width - insets.width(), 0);
     int text_height = std::numeric_limits<int>::max();
     std::vector<base::string16> wrapped = GetWrappedText(text_width, lines);
-    gfx::Canvas::SizeStringInt(JoinString(wrapped, '\n'), font(),
+    gfx::Canvas::SizeStringInt(JoinString(wrapped, '\n'), font_list(),
                                &text_width, &text_height,
                                owner_->GetLineHeight(),
                                GetTextFlags());
@@ -130,7 +131,8 @@ std::vector<base::string16> InnerBoundedLabel::GetWrappedText(int width,
   // use it to calculate a reasonable text height.
   int height = std::numeric_limits<int>::max();
   if (lines > 0) {
-    int line_height = std::max(font().GetHeight(), 2);  // At least 2 pixels.
+    int line_height = std::max(font_list().GetHeight(),
+                               2);  // At least 2 pixels.
     int max_lines = std::numeric_limits<int>::max() / line_height - 1;
     lines = std::min(lines, max_lines);
     height = (lines + 1) * line_height;
@@ -139,7 +141,8 @@ std::vector<base::string16> InnerBoundedLabel::GetWrappedText(int width,
   // Try to ensure that the width is no smaller than the width of the text's
   // characters to avoid the http://crbug.com/237700 infinite loop.
   // TODO(dharcourt): Remove when http://crbug.com/237700 is fixed.
-  width = std::max(width, 2 * font().GetStringWidth(UTF8ToUTF16("W")));
+  width = std::max(width,
+                   2 * gfx::GetStringWidth(UTF8ToUTF16("W"), font_list()));
 
   // Wrap, using INT_MAX for -1 widths that indicate no wrapping.
   std::vector<base::string16> wrapped;
@@ -153,8 +156,8 @@ std::vector<base::string16> InnerBoundedLabel::GetWrappedText(int width,
     // too wide, that line will be further elided by the gfx::ElideText below,
     // so for example "ABC" could become "ABC..." and then "AB...".
     base::string16 last = wrapped[lines - 1] + UTF8ToUTF16(gfx::kEllipsis);
-    if (width > 0 && font().GetStringWidth(last) > width)
-      last = gfx::ElideText(last, font(), width, gfx::ELIDE_AT_END);
+    if (width > 0 && gfx::GetStringWidth(last, font_list()) > width)
+      last = gfx::ElideText(last, font_list(), width, gfx::ELIDE_AT_END);
     wrapped.resize(lines - 1);
     wrapped.push_back(last);
   }

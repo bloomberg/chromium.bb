@@ -117,11 +117,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   title_arrow_->SetFocusable(false);
   AddChildView(title_arrow_);
 
-  gfx::Font notification_label_font =
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
   notification_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_FOOTER_TITLE),
-      notification_label_font);
+      l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_FOOTER_TITLE));
   notification_label_->SetAutoColorReadabilityEnabled(false);
   notification_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   notification_label_->SetEnabledColor(kRegularTextColor);
