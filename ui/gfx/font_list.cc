@@ -254,8 +254,15 @@ const std::vector<Font>& FontList::GetFonts() const {
     DCHECK(!font_description_string_.empty());
 
     std::vector<std::string> font_names;
+    // It's possible that gfx::Font::UNDERLINE is specified and it's already
+    // stored in |font_style_| but |font_description_string_| doesn't have the
+    // underline info.  So we should respect |font_style_| as long as it's
+    // valid.
+    int style = 0;
     ParseFontDescriptionString(font_description_string_, &font_names,
-                               &font_style_, &font_size_);
+                               &style, &font_size_);
+    if (font_style_ == -1)
+      font_style_ = style;
     for (size_t i = 0; i < font_names.size(); ++i) {
       DCHECK(!font_names[i].empty());
 

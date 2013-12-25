@@ -3,6 +3,7 @@
 CanvasTest.StringSizeEmptyString
 CanvasTest.StringWidth
 ClipboardTest.RTFTest
+FontListTest.FontDescString_DeriveFontListWithSizeDeltaAndStyle
 FontListTest.FontDescString_FromFont
 FontListTest.FontDescString_FromFontNamesStyleAndSize
 FontListTest.FontDescString_FromFontVector
