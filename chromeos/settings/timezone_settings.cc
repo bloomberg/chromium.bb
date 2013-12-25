@@ -352,7 +352,7 @@ void TimezoneSettingsImpl::SetTimezone(const icu::TimeZone& timezone) {
     known_timezone = &timezone;
 
   timezone_.reset(known_timezone->clone());
-  std::string id = UTF16ToUTF8(GetTimezoneID(*known_timezone));
+  std::string id = base::UTF16ToUTF8(GetTimezoneID(*known_timezone));
   VLOG(1) << "Setting timezone to " << id;
   // It's safe to change the timezone config files in the background as the
   // following operations don't depend on the completion of the config change.

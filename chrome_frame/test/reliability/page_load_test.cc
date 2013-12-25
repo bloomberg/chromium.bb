@@ -197,7 +197,7 @@ class PageLoadTest : public testing::Test {
     test_log << (time_now.ToDoubleT() - time_start) << std::endl;
 
     bool is_chrome_frame_navigation =
-        StartsWith(UTF8ToWide(url.spec()), kChromeProtocolPrefix, true);
+        StartsWith(base::UTF8ToWide(url.spec()), kChromeProtocolPrefix, true);
 
     CComObjectStack<chrome_frame_test::IEEventSink> ie_event_sink;
     MockLoadListener load_listener;
@@ -221,7 +221,7 @@ class PageLoadTest : public testing::Test {
     // Attach the sink and navigate.
     ie_event_sink.set_listener(&load_listener);
     ie_event_sink.Attach(web_browser2);
-    hr = ie_event_sink.Navigate(UTF8ToWide(url.spec()));
+    hr = ie_event_sink.Navigate(base::UTF8ToWide(url.spec()));
     if (SUCCEEDED(hr)) {
       message_loop.RunFor(base::TimeDelta::FromSeconds(g_timeout_seconds));
       if (!message_loop.WasTimedOut())
@@ -317,7 +317,7 @@ class PageLoadTest : public testing::Test {
       // Every 3rd URL goes into the host browser.
       if (line_index % 3 != 0) {
         std::string actual_url;
-        actual_url = WideToUTF8(kChromeProtocolPrefix);
+        actual_url = base::WideToUTF8(kChromeProtocolPrefix);
         actual_url += url_str;
         url_str = actual_url;
       }

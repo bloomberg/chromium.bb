@@ -252,7 +252,7 @@ TEST_F(AutofillDriverImplTest, FillActionSentToRenderer) {
 }
 
 TEST_F(AutofillDriverImplTest, AcceptDataListSuggestion) {
-  base::string16 input_value(ASCIIToUTF16("barfoo"));
+  base::string16 input_value(base::ASCIIToUTF16("barfoo"));
   base::string16 output_value;
   driver_->RendererShouldAcceptDataListSuggestion(input_value);
   EXPECT_TRUE(GetString16FromMessageWithID(
@@ -262,7 +262,7 @@ TEST_F(AutofillDriverImplTest, AcceptDataListSuggestion) {
 }
 
 TEST_F(AutofillDriverImplTest, AcceptPasswordAutofillSuggestion) {
-  base::string16 input_value(ASCIIToUTF16("barbaz"));
+  base::string16 input_value(base::ASCIIToUTF16("barbaz"));
   base::string16 output_value;
   driver_->RendererShouldAcceptPasswordAutofillSuggestion(input_value);
   EXPECT_TRUE(GetString16FromMessageWithID(
@@ -282,7 +282,7 @@ TEST_F(AutofillDriverImplTest, ClearPreviewedFormSentToRenderer) {
 }
 
 TEST_F(AutofillDriverImplTest, SetNodeText) {
-  base::string16 input_value(ASCIIToUTF16("barqux"));
+  base::string16 input_value(base::ASCIIToUTF16("barqux"));
   base::string16 output_value;
   driver_->RendererShouldSetNodeText(input_value);
   EXPECT_TRUE(GetString16FromMessageWithID(AutofillMsg_SetNodeText::ID,

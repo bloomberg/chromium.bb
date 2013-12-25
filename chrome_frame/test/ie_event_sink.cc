@@ -254,7 +254,7 @@ void IEEventSink::Uninitialize() {
         web_browser2_->get_LocationURL(browser_url.Receive());
         std::wstring browser_url_wstring;
         browser_url_wstring.assign(browser_url, browser_url.Length());
-        std::string browser_url_string = WideToUTF8(browser_url_wstring);
+        std::string browser_url_string = base::WideToUTF8(browser_url_wstring);
         LOG(ERROR) << "OnQuit was not received for browser with url "
                    << browser_url_string;
         web_browser2_->Quit();

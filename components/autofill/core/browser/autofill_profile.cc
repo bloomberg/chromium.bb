@@ -27,6 +27,9 @@
 #include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::ASCIIToUTF16;
+using base::UTF16ToUTF8;
+
 namespace autofill {
 namespace {
 

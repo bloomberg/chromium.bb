@@ -139,7 +139,7 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
 
     RewindStream(cache_stream_);
 
-    server_url_ = ASCIIToWide(server_url);
+    server_url_ = base::ASCIIToWide(server_url);
     mime_type_ = mime_type;
     DCHECK(!server_url_.empty());
     DCHECK(!mime_type_.empty());
@@ -185,7 +185,7 @@ class ChromeFrameMetricsDataUploader : public BSCBImpl {
     *additional_headers = reinterpret_cast<wchar_t*>(
         CoTaskMemAlloc((new_headers.size() + 1) * sizeof(wchar_t)));
 
-    lstrcpynW(*additional_headers, ASCIIToWide(new_headers).c_str(),
+    lstrcpynW(*additional_headers, base::ASCIIToWide(new_headers).c_str(),
               new_headers.size());
 
     return BSCBImpl::BeginningTransaction(url, headers, reserved,
@@ -315,7 +315,8 @@ const std::string& MetricsService::GetClientID() {
     int result = StringFromGUID2(guid,
                                  WriteInto(&guid_string, kGUIDSize), kGUIDSize);
     DCHECK(result == kGUIDSize);
-    client_id_ = WideToUTF8(guid_string.substr(1, guid_string.length() - 2));
+    client_id_ =
+        base::WideToUTF8(guid_string.substr(1, guid_string.length() - 2));
   }
   return client_id_;
 }

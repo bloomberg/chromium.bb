@@ -34,6 +34,7 @@
 using autofill::AutofillProfile;
 using autofill::AutofillTable;
 using autofill::CreditCard;
+using base::ASCIIToUTF16;
 using base::Time;
 
 namespace {

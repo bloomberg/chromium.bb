@@ -11,6 +11,8 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 class CreditCardFieldTest : public testing::Test {

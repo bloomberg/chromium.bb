@@ -151,11 +151,11 @@ bool DeserializeFormFieldData(PickleIterator* iter,
 
 std::ostream& operator<<(std::ostream& os, const FormFieldData& field) {
   return os
-      << UTF16ToUTF8(field.label)
+      << base::UTF16ToUTF8(field.label)
       << " "
-      << UTF16ToUTF8(field.name)
+      << base::UTF16ToUTF8(field.name)
       << " "
-      << UTF16ToUTF8(field.value)
+      << base::UTF16ToUTF8(field.value)
       << " "
       << field.form_control_type
       << " "

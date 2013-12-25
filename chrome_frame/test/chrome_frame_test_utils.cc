@@ -512,27 +512,27 @@ base::FilePath GetSeleniumTestFolder() {
 }
 
 std::wstring GetPathFromUrl(const std::wstring& url) {
-  base::string16 url16 = WideToUTF16(url);
+  base::string16 url16 = base::WideToUTF16(url);
   GURL gurl = GURL(url16);
   if (gurl.has_query()) {
     GURL::Replacements replacements;
     replacements.ClearQuery();
     gurl = gurl.ReplaceComponents(replacements);
   }
-  return UTF8ToWide(gurl.PathForRequest());
+  return base::UTF8ToWide(gurl.PathForRequest());
 }
 
 std::wstring GetPathAndQueryFromUrl(const std::wstring& url) {
-  base::string16 url16 = WideToUTF16(url);
+  base::string16 url16 = base::WideToUTF16(url);
   GURL gurl = GURL(url16);
-  return UTF8ToWide(gurl.PathForRequest());
+  return base::UTF8ToWide(gurl.PathForRequest());
 }
 
 std::wstring GetClipboardText() {
   base::string16 text16;
   ui::Clipboard::GetForCurrentThread()->ReadText(
       ui::CLIPBOARD_TYPE_COPY_PASTE, &text16);
-  return UTF16ToWide(text16);
+  return base::UTF16ToWide(text16);
 }
 
 void DestroyClipboard() {
@@ -543,7 +543,7 @@ void SetClipboardText(const std::wstring& text) {
   ui::ScopedClipboardWriter clipboard_writer(
       ui::Clipboard::GetForCurrentThread(),
       ui::CLIPBOARD_TYPE_COPY_PASTE);
-  clipboard_writer.WriteText(WideToUTF16(text));
+  clipboard_writer.WriteText(base::WideToUTF16(text));
 }
 
 bool AddCFMetaTag(std::string* html_data) {

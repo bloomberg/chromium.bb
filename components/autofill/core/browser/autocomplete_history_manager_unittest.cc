@@ -29,6 +29,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/rect.h"
 
+using base::ASCIIToUTF16;
 using testing::_;
 
 namespace autofill {

@@ -91,7 +91,7 @@ bool FormField::ParseFieldSpecifics(AutofillScanner* scanner,
 bool FormField::ParseEmptyLabel(AutofillScanner* scanner,
                                 const AutofillField** match) {
   return ParseFieldSpecifics(scanner,
-                             ASCIIToUTF16("^$"),
+                             base::ASCIIToUTF16("^$"),
                              MATCH_LABEL | MATCH_ALL_INPUTS,
                              match);
 }

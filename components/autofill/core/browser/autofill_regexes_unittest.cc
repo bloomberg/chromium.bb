@@ -9,6 +9,8 @@
 #include "components/autofill/core/browser/autofill_regex_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 TEST(AutofillRegexesTest, AutofillRegexes) {

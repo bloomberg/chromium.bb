@@ -10,6 +10,8 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 // Test that country data can be properly returned as either a country code or a

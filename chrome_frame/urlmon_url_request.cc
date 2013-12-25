@@ -246,7 +246,7 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
   switch (status_code) {
     case BINDSTATUS_CONNECTING: {
       if (status_text) {
-        socket_address_.set_host(WideToUTF8(status_text));
+        socket_address_.set_host(base::WideToUTF8(status_text));
       }
       break;
     }
@@ -265,7 +265,7 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
         // Fetch the redirect status as they aren't all equal (307 in particular
         // retains the HTTP request verb).
         int http_code = GetHttpResponseStatusFromBinding(binding_);
-        status_.SetRedirected(http_code, WideToUTF8(status_text));
+        status_.SetRedirected(http_code, base::WideToUTF8(status_text));
         // Abort. We will inform Chrome in OnStopBinding callback.
         binding_->Abort();
         return E_ABORT;
@@ -349,7 +349,7 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
         DCHECK_LE(http_code, 206);
         status_.set_result(S_OK);
         std::string headers = GetHttpHeadersFromBinding(binding_);
-        OnResponse(0, UTF8ToWide(headers).c_str(), NULL, NULL);
+        OnResponse(0, base::UTF8ToWide(headers).c_str(), NULL, NULL);
       } else if (net::HttpResponseHeaders::IsRedirectResponseCode(http_code) &&
                  result == E_ACCESSDENIED) {
         // Special case. If the last request was a redirect and the current OS
@@ -393,7 +393,7 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
     // after processing headers we had provided.
     if (!pending_) {
       std::string headers = GetHttpHeadersFromBinding(binding_);
-      OnResponse(0, UTF8ToWide(headers).c_str(), NULL, NULL);
+      OnResponse(0, base::UTF8ToWide(headers).c_str(), NULL, NULL);
     }
     ReleaseBindings();
     return S_OK;
@@ -430,7 +430,7 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
   } else if (LowerCaseEqualsASCII(method(), "put")) {
     bind_info->dwBindVerb = BINDVERB_PUT;
   } else {
-    std::wstring verb(ASCIIToWide(StringToUpperASCII(method())));
+    std::wstring verb(base::ASCIIToWide(StringToUpperASCII(method())));
     bind_info->dwBindVerb = BINDVERB_CUSTOM;
     bind_info->szCustomVerb = reinterpret_cast<wchar_t*>(
         ::CoTaskMemAlloc((verb.length() + 1) * sizeof(wchar_t)));
@@ -589,7 +589,7 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
       NOTREACHED();
       hr = E_OUTOFMEMORY;
     } else {
-      lstrcpynW(*additional_headers, ASCIIToWide(new_headers).c_str(),
+      lstrcpynW(*additional_headers, base::ASCIIToWide(new_headers).c_str(),
                 new_headers.size());
     }
   }
@@ -708,7 +708,7 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
   DCHECK((moniker_ && bind_context_) || (!moniker_ && !bind_context_));
 
   if (!moniker_.get()) {
-    std::wstring wide_url = UTF8ToWide(url());
+    std::wstring wide_url = base::UTF8ToWide(url());
     hr = CreateURLMonikerEx(NULL, wide_url.c_str(), moniker_.Receive(),
                             URL_MK_UNIFORM);
     if (FAILED(hr)) {
@@ -947,10 +947,10 @@ void UrlmonUrlRequestManager::AddPrivacyDataForUrl(
   }
 
   PrivacyInfo::PrivacyEntry& privacy_entry =
-      privacy_info_.privacy_records[UTF8ToWide(url)];
+      privacy_info_.privacy_records[base::UTF8ToWide(url)];
 
   privacy_entry.flags |= flags;
-  privacy_entry.policy_ref = UTF8ToWide(policy_ref);
+  privacy_entry.policy_ref = base::UTF8ToWide(policy_ref);
 
   if (fire_privacy_event && IsWindow(notification_window_)) {
     PostMessage(notification_window_, WM_FIRE_PRIVACY_CHANGE_NOTIFICATION, 1,

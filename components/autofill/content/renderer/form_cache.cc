@@ -290,13 +290,15 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
     std::string placeholder = form.fields[i].overall_type;
     base::string16 title = l10n_util::GetStringFUTF16(
         IDS_AUTOFILL_SHOW_PREDICTIONS_TITLE,
-        UTF8ToUTF16(form.fields[i].heuristic_type),
-        UTF8ToUTF16(form.fields[i].server_type),
-        UTF8ToUTF16(form.fields[i].signature),
-        UTF8ToUTF16(form.signature),
-        UTF8ToUTF16(form.experiment_id));
-    if (!element->hasAttribute("placeholder"))
-      element->setAttribute("placeholder", WebString(UTF8ToUTF16(placeholder)));
+        base::UTF8ToUTF16(form.fields[i].heuristic_type),
+        base::UTF8ToUTF16(form.fields[i].server_type),
+        base::UTF8ToUTF16(form.fields[i].signature),
+        base::UTF8ToUTF16(form.signature),
+        base::UTF8ToUTF16(form.experiment_id));
+    if (!element->hasAttribute("placeholder")) {
+      element->setAttribute("placeholder",
+                            WebString(base::UTF8ToUTF16(placeholder)));
+    }
     element->setAttribute("title", WebString(title));
   }
 

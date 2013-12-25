@@ -9,6 +9,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 // Tests that the when there is a single preferred match, and no extra

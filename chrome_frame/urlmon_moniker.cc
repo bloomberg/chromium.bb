@@ -53,14 +53,14 @@ HRESULT NavigationManager::NavigateToCurrentUrlInCF(IBrowserService* browser) {
       std::wstring headers;
       if (!referrer_.empty()) {
         headers = base::StringPrintf(L"Referer: %ls\r\n\r\n",
-            ASCIIToWide(referrer_).c_str());
+            base::ASCIIToWide(referrer_).c_str());
       }
 
       // Pass in URL fragments if applicable.
       std::wstring fragment;
       GURL parsed_moniker_url(url_);
       if (parsed_moniker_url.has_ref()) {
-        fragment = UTF8ToWide(parsed_moniker_url.ref());
+        fragment = base::UTF8ToWide(parsed_moniker_url.ref());
       }
 
       VARIANT flags = { VT_I4 };

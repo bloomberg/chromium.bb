@@ -13,9 +13,9 @@ namespace autofill {
 
 TEST(FormFieldDataTest, SerializeAndDeserialize) {
   FormFieldData data;
-  data.label = ASCIIToUTF16("label");
-  data.name = ASCIIToUTF16("name");
-  data.value = ASCIIToUTF16("value");
+  data.label = base::ASCIIToUTF16("label");
+  data.name = base::ASCIIToUTF16("name");
+  data.value = base::ASCIIToUTF16("value");
   data.form_control_type = "password";
   data.autocomplete_attribute = "off";
   data.max_length = 200;
@@ -25,10 +25,10 @@ TEST(FormFieldDataTest, SerializeAndDeserialize) {
   data.is_focusable = true;
   data.should_autocomplete = false;
   data.text_direction = base::i18n::RIGHT_TO_LEFT;
-  data.option_values.push_back(ASCIIToUTF16("First"));
-  data.option_values.push_back(ASCIIToUTF16("Second"));
-  data.option_contents.push_back(ASCIIToUTF16("First"));
-  data.option_contents.push_back(ASCIIToUTF16("Second"));
+  data.option_values.push_back(base::ASCIIToUTF16("First"));
+  data.option_values.push_back(base::ASCIIToUTF16("Second"));
+  data.option_contents.push_back(base::ASCIIToUTF16("First"));
+  data.option_contents.push_back(base::ASCIIToUTF16("Second"));
 
   Pickle pickle;
   SerializeFormFieldData(data, &pickle);

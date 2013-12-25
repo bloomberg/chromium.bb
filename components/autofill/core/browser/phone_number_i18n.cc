@@ -66,11 +66,11 @@ void FormatValidatedNumber(const PhoneNumber& number,
   phone_util->Format(number, format, &processed_number);
 
   if (formatted_number)
-    *formatted_number = UTF8ToUTF16(processed_number);
+    *formatted_number = base::UTF8ToUTF16(processed_number);
 
   if (normalized_number) {
     phone_util->NormalizeDigitsOnly(&processed_number);
-    *normalized_number = UTF8ToUTF16(processed_number);
+    *normalized_number = base::UTF8ToUTF16(processed_number);
   }
 }
 
@@ -92,7 +92,7 @@ bool ParsePhoneNumber(const base::string16& value,
   number->clear();
   *i18n_number = PhoneNumber();
 
-  std::string number_text(UTF16ToUTF8(value));
+  std::string number_text(base::UTF16ToUTF8(value));
 
   // Parse phone number based on the region.
   PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
@@ -128,17 +128,17 @@ bool ParsePhoneNumber(const base::string16& value,
   } else {
     subscriber_number = national_significant_number;
   }
-  *number = UTF8ToUTF16(subscriber_number);
-  *city_code = UTF8ToUTF16(area_code);
+  *number = base::UTF8ToUTF16(subscriber_number);
+  *city_code = base::UTF8ToUTF16(area_code);
   *country_code = base::string16();
 
   phone_util->NormalizeDigitsOnly(&number_text);
-  base::string16 normalized_number(UTF8ToUTF16(number_text));
+  base::string16 normalized_number(base::UTF8ToUTF16(number_text));
 
   // Check if parsed number has a country code that was not inferred from the
   // region.
   if (i18n_number->has_country_code()) {
-    *country_code = UTF8ToUTF16(
+    *country_code = base::UTF8ToUTF16(
         base::StringPrintf("%d", i18n_number->country_code()));
     if (normalized_number.length() <= national_significant_number.length() &&
         !StartsWith(normalized_number, *country_code,
@@ -200,14 +200,16 @@ bool PhoneNumbersMatch(const base::string16& number_a,
 
   // Parse phone numbers based on the region
   PhoneNumber i18n_number1;
-  if (phone_util->Parse(UTF16ToUTF8(number_a), region.c_str(), &i18n_number1) !=
-          PhoneNumberUtil::NO_PARSING_ERROR) {
+  if (phone_util->Parse(
+          base::UTF16ToUTF8(number_a), region.c_str(), &i18n_number1) !=
+              PhoneNumberUtil::NO_PARSING_ERROR) {
     return false;
   }
 
   PhoneNumber i18n_number2;
-  if (phone_util->Parse(UTF16ToUTF8(number_b), region.c_str(), &i18n_number2) !=
-          PhoneNumberUtil::NO_PARSING_ERROR) {
+  if (phone_util->Parse(
+          base::UTF16ToUTF8(number_b), region.c_str(), &i18n_number2) !=
+              PhoneNumberUtil::NO_PARSING_ERROR) {
     return false;
   }
 

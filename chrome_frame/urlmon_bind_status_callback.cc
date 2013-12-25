@@ -183,7 +183,8 @@ void SniffData::DetermineRendererType(bool last_chance) {
         std::wstring html_contents;
         // TODO(joshia): detect and handle different content encodings
         if (buffer && size_) {
-          UTF8ToWide(buffer, std::min(size_, kMaxSniffSize), &html_contents);
+          base::UTF8ToWide(buffer, std::min(size_, kMaxSniffSize),
+                           &html_contents);
           GlobalUnlock(memory);
         }
 

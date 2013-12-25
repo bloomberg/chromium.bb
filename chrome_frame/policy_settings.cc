@@ -72,7 +72,7 @@ void PolicySettings::ReadUrlSettings(
   base::win::RegKey config_key;
   DWORD value = RENDERER_NOT_SPECIFIED;
   std::wstring settings_value(
-      ASCIIToWide(policy::key::kChromeFrameRendererSettings));
+      base::ASCIIToWide(policy::key::kChromeFrameRendererSettings));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
     if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,
                          KEY_READ) == ERROR_SUCCESS) &&
@@ -96,7 +96,8 @@ void PolicySettings::ReadUrlSettings(
         policy::key::kRenderInHostList;
 
     EnumerateKeyValues(config_key.Handle(),
-        ASCIIToWide(exclusion_list_name).c_str(), renderer_exclusion_list);
+                       base::ASCIIToWide(exclusion_list_name).c_str(),
+                       renderer_exclusion_list);
 
     DVLOG(1) << "Default renderer as specified via policy: "
              << *default_renderer
@@ -113,7 +114,8 @@ void PolicySettings::ReadMetadataCheckSettings(
 
   base::win::RegKey config_key;
   DWORD value = SKIP_METADATA_CHECK_NOT_SPECIFIED;
-  base::string16 settings_value(ASCIIToWide(policy::key::kSkipMetadataCheck));
+  base::string16 settings_value(
+      base::ASCIIToWide(policy::key::kSkipMetadataCheck));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
     if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,
                          KEY_READ) == ERROR_SUCCESS) &&
@@ -144,7 +146,7 @@ void PolicySettings::ReadContentTypeSetting(
 
   std::wstring sub_key(policy::kRegistryChromePolicyKey);
   sub_key += L"\\";
-  sub_key += ASCIIToWide(policy::key::kChromeFrameContentTypes);
+  sub_key += base::ASCIIToWide(policy::key::kChromeFrameContentTypes);
 
   content_type_list->clear();
   for (int i = 0; i < arraysize(kRootKeys) && content_type_list->empty();
@@ -159,7 +161,7 @@ void PolicySettings::ReadStringSetting(const char* value_name,
   DCHECK(value);
   value->clear();
   base::win::RegKey config_key;
-  std::wstring value_name_str(ASCIIToWide(value_name));
+  std::wstring value_name_str(base::ASCIIToWide(value_name));
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
     if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,
                          KEY_READ) == ERROR_SUCCESS) &&
@@ -174,7 +176,7 @@ void PolicySettings::ReadStringSetting(const char* value_name,
 void PolicySettings::ReadBoolSetting(const char* value_name, bool* value) {
   DCHECK(value);
   base::win::RegKey config_key;
-  base::string16 value_name_str(ASCIIToWide(value_name));
+  base::string16 value_name_str(base::ASCIIToWide(value_name));
   DWORD dword_value = 0;
   for (int i = 0; i < arraysize(kRootKeys); ++i) {
     if ((config_key.Open(kRootKeys[i], policy::kRegistryChromePolicyKey,

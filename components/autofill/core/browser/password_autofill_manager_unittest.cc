@@ -38,15 +38,15 @@ class PasswordAutofillManagerTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     // Add a preferred login and an additional login to the FillData.
-    base::string16 username1 = ASCIIToUTF16(kAliceUsername);
-    base::string16 password1 = ASCIIToUTF16(kAlicePassword);
+    base::string16 username1 = base::ASCIIToUTF16(kAliceUsername);
+    base::string16 password1 = base::ASCIIToUTF16(kAlicePassword);
 
-    username_field_.name = ASCIIToUTF16(kUsernameName);
+    username_field_.name = base::ASCIIToUTF16(kUsernameName);
     username_field_.value = username1;
     fill_data_.basic_data.fields.push_back(username_field_);
 
     FormFieldData password_field;
-    password_field.name = ASCIIToUTF16(kPasswordName);
+    password_field.name = base::ASCIIToUTF16(kPasswordName);
     password_field.value = password1;
     fill_data_.basic_data.fields.push_back(password_field);
 
@@ -78,25 +78,25 @@ class PasswordAutofillManagerTest : public testing::Test {
 TEST_F(PasswordAutofillManagerTest, DidAcceptAutofillSuggestion) {
   EXPECT_CALL(*autofill_driver(),
       RendererShouldAcceptPasswordAutofillSuggestion(
-          ASCIIToUTF16(kAliceUsername)));
+          base::ASCIIToUTF16(kAliceUsername)));
   EXPECT_TRUE(password_autofill_manager()->DidAcceptAutofillSuggestion(
-      username_field(), ASCIIToUTF16(kAliceUsername)));
+      username_field(), base::ASCIIToUTF16(kAliceUsername)));
 
   EXPECT_CALL(*autofill_driver(),
       RendererShouldAcceptPasswordAutofillSuggestion(
-          ASCIIToUTF16(kInvalidUsername))).Times(0);
+          base::ASCIIToUTF16(kInvalidUsername))).Times(0);
   EXPECT_FALSE(password_autofill_manager()->DidAcceptAutofillSuggestion(
-      username_field(), ASCIIToUTF16(kInvalidUsername)));
+      username_field(), base::ASCIIToUTF16(kInvalidUsername)));
 
   FormFieldData invalid_username_field;
-  invalid_username_field.name = ASCIIToUTF16(kInvalidUsername);
+  invalid_username_field.name = base::ASCIIToUTF16(kInvalidUsername);
 
   EXPECT_FALSE(password_autofill_manager()->DidAcceptAutofillSuggestion(
-      invalid_username_field, ASCIIToUTF16(kAliceUsername)));
+      invalid_username_field, base::ASCIIToUTF16(kAliceUsername)));
 
   password_autofill_manager()->Reset();
   EXPECT_FALSE(password_autofill_manager()->DidAcceptAutofillSuggestion(
-      username_field(), ASCIIToUTF16(kAliceUsername)));
+      username_field(), base::ASCIIToUTF16(kAliceUsername)));
 }
 
 }  // namespace autofill

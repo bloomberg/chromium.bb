@@ -304,7 +304,7 @@ void DisplayVersionMismatchWarning(HWND parent,
   if (server_version.empty()) {
     wide_server_version = SimpleResourceLoader::Get(IDS_VERSIONUNKNOWN);
   } else {
-    wide_server_version = ASCIIToWide(server_version);
+    wide_server_version = base::ASCIIToWide(server_version);
   }
   std::wstring title = SimpleResourceLoader::Get(IDS_VERSIONMISMATCH_HEADER);
   std::wstring message;
@@ -900,7 +900,8 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
           fragment = NULL;
         }
 
-        base::win::ScopedVariant var_url(UTF8ToWide(target_url.spec()).c_str());
+        base::win::ScopedVariant var_url(
+            base::UTF8ToWide(target_url.spec()).c_str());
         hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), flags, NULL,
                                                post_data_variant.AsInput(),
                                                headers_var.AsInput(), bind_ctx,
@@ -1041,7 +1042,7 @@ std::wstring GetActualUrlFromMoniker(IMoniker* moniker,
   moniker->GetDisplayName(bind_context, NULL, &display_name);
   std::wstring moniker_url = display_name;
 
-  GURL parsed_url(WideToUTF8(bho_url));
+  GURL parsed_url(base::WideToUTF8(bho_url));
   if (!parsed_url.has_ref())
     return moniker_url;
 
@@ -1131,7 +1132,7 @@ std::string FindReferrerFromHeaders(const wchar_t* headers,
   for (int i = 0; referrer.empty() && i < arraysize(both_headers); ++i) {
     if (!both_headers[i])
       continue;
-    std::string raw_headers_utf8 = WideToUTF8(both_headers[i]);
+    std::string raw_headers_utf8 = base::WideToUTF8(both_headers[i]);
     net::HttpUtil::HeadersIterator it(raw_headers_utf8.begin(),
                                       raw_headers_utf8.end(), "\r\n");
     while (it.GetNext()) {

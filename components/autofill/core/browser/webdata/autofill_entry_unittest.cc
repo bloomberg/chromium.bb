@@ -56,7 +56,8 @@ TEST(AutofillEntryTest, CullByTime) {
   // Within the time limit.
   timestamps.push_back(cutoff_time + one_hour);
 
-  AutofillKey key(UTF8ToUTF16("test_key"), UTF8ToUTF16("test_value"));
+  AutofillKey key(base::UTF8ToUTF16("test_key"),
+                  base::UTF8ToUTF16("test_value"));
 
   AutofillEntry entry_within_the_limits(key, timestamps);
   EXPECT_FALSE(entry_within_the_limits.IsExpired());

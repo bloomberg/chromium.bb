@@ -258,8 +258,8 @@ HTTPTestServer::HTTPTestServer(int port, const std::wstring& address,
                                base::FilePath root_dir)
     : port_(port), address_(address), root_dir_(root_dir) {
   net::EnsureWinsockInit();
-  server_ =
-      net::TCPListenSocket::CreateAndListen(WideToUTF8(address), port, this);
+  server_ = net::TCPListenSocket::CreateAndListen(
+      base::WideToUTF8(address), port, this);
 }
 
 HTTPTestServer::~HTTPTestServer() {
@@ -309,7 +309,7 @@ void HTTPTestServer::DidRead(net::StreamListenSocket* socket,
     if (connection->r_.AllContentReceived()) {
       VLOG(1) << __FUNCTION__ << ": " << connection->r_.method() << " "
               << connection->r_.path();
-      std::wstring path = UTF8ToWide(connection->r_.path());
+      std::wstring path = base::UTF8ToWide(connection->r_.path());
       if (LowerCaseEqualsASCII(connection->r_.method(), "post"))
         this->Post(connection, path, connection->r_);
       else

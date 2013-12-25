@@ -13,6 +13,8 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::UTF8ToUTF16;
+
 namespace autofill {
 namespace {
 

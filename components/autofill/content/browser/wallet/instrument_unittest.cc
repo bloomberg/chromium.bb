@@ -9,6 +9,8 @@
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 const char kPrimaryAccountNumber[] = "4444444444444448";

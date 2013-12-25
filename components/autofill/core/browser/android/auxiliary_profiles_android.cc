@@ -45,7 +45,7 @@ base::string16 CollapseAddress(const base::string16& post_office_box,
   if (!neighborhood.empty())
     accumulator.push_back(neighborhood);
 
-  return JoinString(accumulator, ASCIIToUTF16(", "));
+  return JoinString(accumulator, base::ASCIIToUTF16(", "));
 }
 
 }  // namespace

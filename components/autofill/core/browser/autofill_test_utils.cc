@@ -21,6 +21,8 @@
 #include "components/webdata/encryptor/encryptor.h"
 #include "content/public/browser/browser_context.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 namespace test {
 
@@ -85,7 +87,7 @@ void CreateTestAddressFormData(FormData* form) {
 inline void check_and_set(
     FormGroup* profile, ServerFieldType type, const char* value) {
   if (value)
-    profile->SetRawInfo(type, UTF8ToUTF16(value));
+    profile->SetRawInfo(type, base::UTF8ToUTF16(value));
 }
 
 AutofillProfile GetFullProfile() {

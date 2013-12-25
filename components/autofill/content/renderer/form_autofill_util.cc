@@ -125,7 +125,7 @@ const base::string16 CombineAndCollapseWhitespace(
 
   if (prefix_trailing_whitespace || suffix_leading_whitespace ||
       force_whitespace) {
-    return prefix_trimmed + ASCIIToUTF16(" ") + suffix_trimmed;
+    return prefix_trimmed + base::ASCIIToUTF16(" ") + suffix_trimmed;
   } else {
     return prefix_trimmed + suffix_trimmed;
   }
@@ -753,9 +753,9 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
   // labels for all form control elements are scraped from the DOM and set in
   // WebFormElementToFormData.
   field->name = element.nameForAutofill();
-  field->form_control_type = UTF16ToUTF8(element.formControlType());
+  field->form_control_type = base::UTF16ToUTF8(element.formControlType());
   field->autocomplete_attribute =
-      UTF16ToUTF8(element.getAttribute(kAutocomplete));
+      base::UTF16ToUTF8(element.getAttribute(kAutocomplete));
   if (field->autocomplete_attribute.size() > kMaxDataLength) {
     // Discard overly long attribute values to avoid DOS-ing the browser
     // process.  However, send over a default string to indicate that the
@@ -929,7 +929,7 @@ bool WebFormElementToFormData(
       // Concatenate labels because some sites might have multiple label
       // candidates.
       if (!iter->second->label.empty() && !label_text.empty())
-        iter->second->label += ASCIIToUTF16(" ");
+        iter->second->label += base::ASCIIToUTF16(" ");
       iter->second->label += label_text;
     }
   }

@@ -512,7 +512,7 @@ AccObject* AccObject::CreateFromVariant(AccObject* object,
     }
     VLOG(1) << "Failed to determine if child id refers to a full "
             << "object. Error: " << result << std::endl
-            << "Parent object: " << WideToUTF8(object->GetDescription())
+            << "Parent object: " << base::WideToUTF8(object->GetDescription())
             << std::endl << "Child ID: " << V_I4(&variant);
     return NULL;
   } else if (V_VT(&variant) == VT_DISPATCH) {

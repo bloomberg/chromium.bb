@@ -15,6 +15,7 @@
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToWide;
 using base::win::RegKey;
 using chrome_frame_test::ScopedVirtualizeHklmAndHkcu;
 

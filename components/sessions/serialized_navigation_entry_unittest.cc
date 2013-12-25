@@ -33,7 +33,7 @@ const content::Referrer kReferrer =
     content::Referrer(GURL("http://www.referrer.com"),
                       blink::WebReferrerPolicyAlways);
 const GURL kVirtualURL("http://www.virtual-url.com");
-const base::string16 kTitle = ASCIIToUTF16("title");
+const base::string16 kTitle = base::ASCIIToUTF16("title");
 const content::PageState kPageState =
     content::PageState::CreateFromEncodedData("page state");
 const content::PageTransition kTransitionType =
@@ -46,7 +46,7 @@ const int64 kPostID = 100;
 const GURL kOriginalRequestURL("http://www.original-request.com");
 const bool kIsOverridingUserAgent = true;
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
-const base::string16 kSearchTerms = ASCIIToUTF16("my search terms");
+const base::string16 kSearchTerms = base::ASCIIToUTF16("my search terms");
 const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
 const int kHttpStatusCode = 404;
 
@@ -78,7 +78,7 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_pb::TabNavigation sync_data;
   sync_data.set_virtual_url(kVirtualURL.spec());
   sync_data.set_referrer(kReferrer.url.spec());
-  sync_data.set_title(UTF16ToUTF8(kTitle));
+  sync_data.set_title(base::UTF16ToUTF8(kTitle));
   sync_data.set_state(kPageState.ToEncodedData());
   sync_data.set_page_transition(
       sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
@@ -86,7 +86,7 @@ sync_pb::TabNavigation MakeSyncDataForTest() {
   sync_data.set_timestamp_msec(syncer::TimeToProtoTime(kTimestamp));
   sync_data.set_redirect_type(sync_pb::SyncEnums::CLIENT_REDIRECT);
   sync_data.set_navigation_home_page(true);
-  sync_data.set_search_terms(UTF16ToUTF8(kSearchTerms));
+  sync_data.set_search_terms(base::UTF16ToUTF8(kSearchTerms));
   sync_data.set_favicon_url(kFaviconURL.spec());
   sync_data.set_http_status_code(kHttpStatusCode);
   return sync_data;
@@ -250,7 +250,7 @@ TEST(SerializedNavigationEntryTest, ToSyncData) {
 
   EXPECT_EQ(kVirtualURL.spec(), sync_data.virtual_url());
   EXPECT_EQ(kReferrer.url.spec(), sync_data.referrer());
-  EXPECT_EQ(kTitle, ASCIIToUTF16(sync_data.title()));
+  EXPECT_EQ(kTitle, base::ASCIIToUTF16(sync_data.title()));
   EXPECT_TRUE(sync_data.state().empty());
   EXPECT_EQ(sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME,
             sync_data.page_transition());

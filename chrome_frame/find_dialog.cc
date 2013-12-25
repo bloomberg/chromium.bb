@@ -27,7 +27,8 @@ LRESULT CFFindDialog::OnDestroy(UINT msg, WPARAM wparam, LPARAM lparam,
   // TODO(robertshield): Change this to plumb through a StopFinding automation
   // message that triggers a ViewMsg_StopFinding.
   std::string guid(base::GenerateGUID());
-  automation_client_->FindInPage(ASCIIToWide(guid), FWD, CASE_SENSITIVE, false);
+  automation_client_->FindInPage(base::ASCIIToWide(guid),
+                                 FWD, CASE_SENSITIVE, false);
 
   UninstallMessageHook();
   return 0;

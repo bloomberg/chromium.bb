@@ -672,7 +672,7 @@ void PersonalDataManager::GetCreditCardSuggestions(
 
       values->push_back(creditcard_field_value);
       labels->push_back(label);
-      icons->push_back(UTF8ToUTF16(credit_card->type()));
+      icons->push_back(base::UTF8ToUTF16(credit_card->type()));
       guid_pairs->push_back(GUIDPair(credit_card->guid(), 0));
     }
   }

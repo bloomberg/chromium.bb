@@ -132,7 +132,8 @@ void SimpleResourceLoader::GetPreferredLanguages(
   }
   // Use the base i18n routines (i.e., ICU) as a last, best hope for something
   // meaningful for the user.
-  PushBackWithFallbackIfAbsent(ASCIIToWide(base::i18n::GetConfiguredLocale()),
+  PushBackWithFallbackIfAbsent(base::ASCIIToWide(
+                                   base::i18n::GetConfiguredLocale()),
                                language_tags);
 }
 
@@ -250,7 +251,7 @@ std::wstring SimpleResourceLoader::GetLocalizedResource(int message_id) {
     msg = base::string16(reinterpret_cast<const char16*>(data.data()),
                          data.length() / 2);
   } else if (data_pack_->GetTextEncodingType() == ui::DataPack::UTF8) {
-    msg = UTF8ToUTF16(data);
+    msg = base::UTF8ToUTF16(data);
   }
   return msg;
 }

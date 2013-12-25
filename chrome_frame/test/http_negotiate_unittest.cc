@@ -68,8 +68,9 @@ TEST_F(HttpNegotiateTest, BeginningTransaction) {
                   &test_http)))[kBeginningTransactionIndex]);
 
   base::string16 cf_ua(
-      ASCIIToWide(http_utils::GetDefaultUserAgentHeaderWithCFTag()));
-  base::string16 cf_tag(ASCIIToWide(http_utils::GetChromeFrameUserAgent()));
+      base::ASCIIToWide(http_utils::GetDefaultUserAgentHeaderWithCFTag()));
+  base::string16 cf_tag(
+      base::ASCIIToWide(http_utils::GetChromeFrameUserAgent()));
 
   EXPECT_NE(base::string16::npos, cf_ua.find(L"chromeframe/"));
 
@@ -133,9 +134,9 @@ TEST_F(HttpNegotiateTest, BeginningTransactionUARemoval) {
                   &test_http)))[kBeginningTransactionIndex]);
 
   base::string16 nocf_ua(
-      ASCIIToWide(http_utils::RemoveChromeFrameFromUserAgentValue(
+      base::ASCIIToWide(http_utils::RemoveChromeFrameFromUserAgentValue(
           http_utils::GetDefaultUserAgentHeaderWithCFTag())));
-  base::string16 cf_ua(ASCIIToWide(
+  base::string16 cf_ua(base::ASCIIToWide(
       http_utils::AddChromeFrameToUserAgentValue(WideToASCII(nocf_ua))));
 
   EXPECT_EQ(base::string16::npos, nocf_ua.find(L"chromeframe/"));

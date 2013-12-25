@@ -11,6 +11,8 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 class AuxiliaryProfileAndroidTest : public testing::Test {

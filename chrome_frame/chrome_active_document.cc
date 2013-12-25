@@ -232,7 +232,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
       GURL url_for_anchor(mgr->url());
       if (url_for_anchor.has_ref()) {
         url += L"#";
-        url += UTF8ToWide(url_for_anchor.ref());
+        url += base::UTF8ToWide(url_for_anchor.ref());
       }
     }
   } else {

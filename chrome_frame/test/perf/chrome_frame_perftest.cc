@@ -180,7 +180,8 @@ class ChromeFrameActiveXContainer
   void Navigate(const char* url) {
     BeforeNavigateImpl(url);
 
-    HRESULT hr = tab_->put_src(base::win::ScopedBstr(UTF8ToWide(url).c_str()));
+    HRESULT hr =
+        tab_->put_src(base::win::ScopedBstr(base::UTF8ToWide(url).c_str()));
     DCHECK(hr == S_OK) << "Chrome frame NavigateToURL(" << url
                        << base::StringPrintf(L") failed 0x%08X", hr);
   }

@@ -108,15 +108,15 @@ STDMETHODIMP ComMessageEvent::Invoke(DISPID dispid, REFIID iid, LCID lcid,
   HRESULT hr = DISP_E_MEMBERNOTFOUND;
   switch (dispid) {
     case DISPID_MESSAGE_EVENT_DATA:
-      hr = GetStringProperty(flags, UTF8ToWide(message_).c_str(), result);
+      hr = GetStringProperty(flags, base::UTF8ToWide(message_).c_str(), result);
       break;
 
     case DISPID_MESSAGE_EVENT_ORIGIN:
-      hr = GetStringProperty(flags, UTF8ToWide(origin_).c_str(), result);
+      hr = GetStringProperty(flags, base::UTF8ToWide(origin_).c_str(), result);
       break;
 
     case DISPID_MESSAGE_EVENT_TYPE:
-      hr = GetStringProperty(flags, UTF8ToWide(type_).c_str(), result);
+      hr = GetStringProperty(flags, base::UTF8ToWide(type_).c_str(), result);
       break;
 
     case DISPID_MESSAGE_EVENT_LAST_EVENT_ID:

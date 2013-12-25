@@ -430,7 +430,7 @@ END_MSG_MAP()
 
     // Switch the src to UTF8 and try to expand to full URL
     std::string src_utf8;
-    WideToUTF8(src, SysStringLen(src), &src_utf8);
+    base::WideToUTF8(src, SysStringLen(src), &src_utf8);
     std::string full_url = ResolveURL(GetDocumentUrl(), src_utf8);
 
     // We can initiate navigation here even if ready_state is not complete.
@@ -445,7 +445,7 @@ END_MSG_MAP()
     }
 
     // Save full URL in BSTR member
-    url_.Reset(::SysAllocString(UTF8ToWide(full_url).c_str()));
+    url_.Reset(::SysAllocString(base::UTF8ToWide(full_url).c_str()));
 
     return S_OK;
   }
@@ -702,7 +702,8 @@ END_MSG_MAP()
   // Helper function to execute a function on a script IDispatch interface.
   HRESULT InvokeScriptFunction(const VARIANT& script_object,
                                const std::string& param) {
-    base::win::ScopedVariant script_arg(UTF8ToWide(param.c_str()).c_str());
+    base::win::ScopedVariant script_arg(
+        base::UTF8ToWide(param.c_str()).c_str());
     return InvokeScriptFunction(script_object, script_arg.AsInput());
   }
 
@@ -835,11 +836,11 @@ END_MSG_MAP()
         url_to_open.SchemeIs(chrome::kAboutScheme))) {
       std::wstring chrome_url;
       chrome_url.append(kChromeProtocolPrefix);
-      chrome_url.append(UTF8ToWide(url_to_open.spec()));
+      chrome_url.append(base::UTF8ToWide(url_to_open.spec()));
       url.Set(chrome_url.c_str());
       open_disposition = NEW_WINDOW;
     } else {
-      url.Set(UTF8ToWide(url_to_open.spec()).c_str());
+      url.Set(base::UTF8ToWide(url_to_open.spec()).c_str());
     }
 
     VARIANT flags = { VT_I4 };
@@ -886,7 +887,7 @@ END_MSG_MAP()
     // CComQIPtr<ITargetFramePriv2> target_frame = web_browser2;
     // if (target_frame) {
     //   CComPtr<IUri> uri;
-    //   CreateUri(UTF8ToWide(open_url_command->url_.spec()).c_str(),
+    //   CreateUri(base::UTF8ToWide(open_url_command->url_.spec()).c_str(),
     //             Uri_CREATE_IE_SETTINGS, 0, &uri);
     //   CComPtr<IBindCtx> bind_ctx;
     //   CreateBindCtx(0, &bind_ctx);
@@ -900,7 +901,7 @@ END_MSG_MAP()
 
     if (referrer.is_valid()) {
       std::wstring referrer_header = L"Referer: ";
-      referrer_header += UTF8ToWide(referrer.spec());
+      referrer_header += base::UTF8ToWide(referrer.spec());
       referrer_header += L"\r\n\r\n";
       http_headers.Set(referrer_header.c_str());
     }

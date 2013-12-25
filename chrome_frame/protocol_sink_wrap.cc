@@ -321,7 +321,7 @@ RendererType DetermineRendererType(void* buffer, DWORD size, bool last_chance) {
 
   std::wstring html_contents;
   // TODO(joshia): detect and handle different content encodings
-  UTF8ToWide(reinterpret_cast<char*>(buffer), size, &html_contents);
+  base::UTF8ToWide(reinterpret_cast<char*>(buffer), size, &html_contents);
 
   // Note that document_contents_ may have NULL characters in it. While
   // browsers may handle this properly, we don't and will stop scanning

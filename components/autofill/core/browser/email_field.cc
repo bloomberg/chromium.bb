@@ -14,7 +14,7 @@ namespace autofill {
 // static
 FormField* EmailField::Parse(AutofillScanner* scanner) {
   const AutofillField* field;
-  if (ParseFieldSpecifics(scanner, UTF8ToUTF16(autofill::kEmailRe),
+  if (ParseFieldSpecifics(scanner, base::UTF8ToUTF16(autofill::kEmailRe),
                           MATCH_DEFAULT | MATCH_EMAIL, &field)) {
     return new EmailField(field);
   }

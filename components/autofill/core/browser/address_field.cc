@@ -17,6 +17,8 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::UTF8ToUTF16;
+
 namespace autofill {
 
 FormField* AddressField::Parse(AutofillScanner* scanner) {

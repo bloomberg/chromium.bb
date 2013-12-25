@@ -107,7 +107,7 @@ std::string DecodePRegStringValue(const std::vector<uint8>& data) {
   base::string16 result;
   std::transform(chars, chars + len - 1, std::back_inserter(result),
                  std::ptr_fun(base::ByteSwapToLE16));
-  return UTF16ToUTF8(result);
+  return base::UTF16ToUTF8(result);
 }
 
 // Decodes a value from a PReg file given as a uint8 vector.
@@ -162,7 +162,7 @@ void HandleRecord(const base::string16& key_name,
        entry != path.end(); ++entry) {
     if (entry->empty())
       continue;
-    const std::string name = UTF16ToUTF8(*entry);
+    const std::string name = base::UTF16ToUTF8(*entry);
     RegistryDict* subdict = dict->GetKey(name);
     if (!subdict) {
       subdict = new RegistryDict();
@@ -174,7 +174,7 @@ void HandleRecord(const base::string16& key_name,
   if (value.empty())
     return;
 
-  std::string value_name(UTF16ToUTF8(value));
+  std::string value_name(base::UTF16ToUTF8(value));
   if (!StartsWithASCII(value_name, kActionTriggerPrefix, true)) {
     scoped_ptr<base::Value> value;
     if (DecodePRegValue(type, data, &value))

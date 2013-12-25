@@ -371,9 +371,9 @@ void WalletClient::SaveToWallet(
   std::string card_verification_number;
   if (instrument) {
     primary_account_number = net::EscapeUrlEncodedData(
-        UTF16ToUTF8(instrument->primary_account_number()), true);
+        base::UTF16ToUTF8(instrument->primary_account_number()), true);
     card_verification_number = net::EscapeUrlEncodedData(
-        UTF16ToUTF8(instrument->card_verification_number()), true);
+        base::UTF16ToUTF8(instrument->card_verification_number()), true);
 
     if (!reference_instrument) {
       request_dict.Set(kInstrumentKey, instrument->ToDictionary().release());

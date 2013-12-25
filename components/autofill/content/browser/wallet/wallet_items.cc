@@ -309,7 +309,7 @@ base::string16 WalletItems::MaskedInstrument::DisplayNameDetail() const {
 
 base::string16 WalletItems::MaskedInstrument::TypeAndLastFourDigits() const {
   // TODO(dbeam): i18n.
-  return DisplayStringFromType(type_) + ASCIIToUTF16(" - ") +
+  return DisplayStringFromType(type_) + base::ASCIIToUTF16(" - ") +
          last_four_digits();
 }
 

@@ -80,8 +80,8 @@ bool FormData::operator!=(const FormData& form) const {
 }
 
 std::ostream& operator<<(std::ostream& os, const FormData& form) {
-  os << UTF16ToUTF8(form.name) << " "
-     << UTF16ToUTF8(form.method) << " "
+  os << base::UTF16ToUTF8(form.name) << " "
+     << base::UTF16ToUTF8(form.method) << " "
      << form.origin << " "
      << form.action << " "
      << form.user_submitted << " "

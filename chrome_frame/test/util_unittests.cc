@@ -239,11 +239,11 @@ class MockNavigationConstraints : public NavigationConstraints {
 // Matcher which returns true if the URL passed in starts with the prefix
 // specified.
 MATCHER_P(UrlPathStartsWith, url_prefix, "url starts with prefix") {
-  return StartsWith(UTF8ToWide(arg.spec()), url_prefix, false);
+  return StartsWith(base::UTF8ToWide(arg.spec()), url_prefix, false);
 }
 
 ACTION_P3(HandleZone, mock, url_prefix, zone) {
-  if (StartsWith(UTF8ToWide(arg0.spec()), url_prefix, false))
+  if (StartsWith(base::UTF8ToWide(arg0.spec()), url_prefix, false))
     return zone != URLZONE_UNTRUSTED;
   return false;
 }

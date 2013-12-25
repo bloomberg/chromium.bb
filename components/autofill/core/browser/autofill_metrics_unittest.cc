@@ -33,6 +33,7 @@
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
 using base::TimeDelta;
 using base::TimeTicks;
 using testing::_;

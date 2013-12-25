@@ -2236,7 +2236,7 @@ bool AutofillTable::MigrateToVersion54AddI18nFieldsAndRemoveDeprecatedFields() {
       base::string16 line2 = s.ColumnString16(2);
       base::string16 street_address = line1;
       if (!line2.empty())
-        street_address += ASCIIToUTF16("\n") + line2;
+        street_address += base::ASCIIToUTF16("\n") + line2;
 
       sql::Statement s_update(db_->GetUniqueStatement(
           "UPDATE autofill_profiles_temp SET street_address=? WHERE guid=?"));

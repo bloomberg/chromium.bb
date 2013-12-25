@@ -12,6 +12,8 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 const char kAddressMissingObjectId[] =

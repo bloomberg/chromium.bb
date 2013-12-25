@@ -569,7 +569,7 @@ void PasswordAutofillAgent::GetSuggestions(
     std::vector<base::string16>* realms) {
   if (StartsWith(fill_data.basic_data.fields[0].value, input, false)) {
     suggestions->push_back(fill_data.basic_data.fields[0].value);
-    realms->push_back(UTF8ToUTF16(fill_data.preferred_realm));
+    realms->push_back(base::UTF8ToUTF16(fill_data.preferred_realm));
   }
 
   for (PasswordFormFillData::LoginCollection::const_iterator iter =
@@ -577,7 +577,7 @@ void PasswordAutofillAgent::GetSuggestions(
        iter != fill_data.additional_logins.end(); ++iter) {
     if (StartsWith(iter->first, input, false)) {
       suggestions->push_back(iter->first);
-      realms->push_back(UTF8ToUTF16(iter->second.realm));
+      realms->push_back(base::UTF8ToUTF16(iter->second.realm));
     }
   }
 
@@ -588,7 +588,7 @@ void PasswordAutofillAgent::GetSuggestions(
       if (StartsWith(iter->second[i], input, false)) {
         usernames_usage_ = OTHER_POSSIBLE_USERNAME_SHOWN;
         suggestions->push_back(iter->second[i]);
-        realms->push_back(UTF8ToUTF16(iter->first.realm));
+        realms->push_back(base::UTF8ToUTF16(iter->first.realm));
       }
     }
   }

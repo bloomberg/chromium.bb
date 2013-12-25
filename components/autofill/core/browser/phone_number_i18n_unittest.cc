@@ -10,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libphonenumber/src/phonenumber_api.h"
 
+using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 using content::BrowserThread;
 
 namespace autofill {

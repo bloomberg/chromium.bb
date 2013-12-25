@@ -81,7 +81,7 @@ base::string16 GetAbbreviationForName(const base::string16& name) {
   for (size_t i = 0; i < arraysize(kStateData); ++i) {
     const StateData& state = kStateData[i];
     if (LowerCaseEqualsASCII(name, state.name))
-      return ASCIIToUTF16(state.abbreviation);
+      return base::ASCIIToUTF16(state.abbreviation);
   }
   return base::string16();
 }
@@ -90,7 +90,7 @@ base::string16 GetNameForAbbreviation(const base::string16& abbreviation) {
   for (size_t i = 0; i < arraysize(kStateData); ++i) {
     const StateData& state = kStateData[i];
     if (LowerCaseEqualsASCII(abbreviation, state.abbreviation))
-      return ASCIIToUTF16(state.name);
+      return base::ASCIIToUTF16(state.name);
   }
   return base::string16();
 }

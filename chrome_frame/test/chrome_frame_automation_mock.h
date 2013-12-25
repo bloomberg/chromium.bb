@@ -36,8 +36,8 @@ class AutomationMockDelegate
 
     // Endeavour to only kill off Chrome Frame derived Chrome processes.
     base::KillAllNamedProcessesWithArgument(
-        UTF8ToWide(chrome_frame_test::kChromeImageName),
-        UTF8ToWide(switches::kChromeFrame));
+        base::UTF8ToWide(chrome_frame_test::kChromeImageName),
+        base::UTF8ToWide(switches::kChromeFrame));
 
     mock_server_.ExpectAndServeAnyRequests(CFInvocation(CFInvocation::NONE));
 
@@ -83,11 +83,12 @@ class AutomationMockDelegate
         FILE_PATH_LITERAL("chrome_frame")).Append(
             FILE_PATH_LITERAL("test")).Append(
                 FILE_PATH_LITERAL("data")).Append(file).value());
-    return Navigate(WideToUTF8(file_url));
+    return Navigate(base::WideToUTF8(file_url));
   }
 
   bool NavigateRelative(const std::wstring& relative_url) {
-    return Navigate(WideToUTF8(mock_server_.Resolve(relative_url.c_str())));
+    return Navigate(base::WideToUTF8(
+        mock_server_.Resolve(relative_url.c_str())));
   }
 
   virtual void OnAutomationServerReady() {

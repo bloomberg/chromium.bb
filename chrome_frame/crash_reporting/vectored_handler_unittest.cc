@@ -141,18 +141,18 @@ TEST(ChromeFrame, ExceptionReport) {
   void* id = ::AddVectoredExceptionHandler(FALSE, VEH);
 
   scoped_ptr<base::Environment> env(base::Environment::Create());
-  EXPECT_TRUE(env->SetVar(WideToUTF8(kCrashOnLoadMode).c_str(), "1"));
+  EXPECT_TRUE(env->SetVar(base::WideToUTF8(kCrashOnLoadMode).c_str(), "1"));
   long exceptions_seen = veh.get_exceptions_seen();
   HMODULE module = ::LoadLibrary(kCrashDllName);
   EXPECT_EQ(NULL, module);
 
   testing::Mock::VerifyAndClearExpectations(&api);
   EXPECT_EQ(exceptions_seen + 1, veh.get_exceptions_seen());
-  EXPECT_TRUE(env->UnSetVar(WideToUTF8(kCrashOnLoadMode).c_str()));
+  EXPECT_TRUE(env->UnSetVar(base::WideToUTF8(kCrashOnLoadMode).c_str()));
 
   // Exception in an unloading module, we are on the stack/
   // Make sure we report it.
-  EXPECT_TRUE(env->SetVar(WideToUTF8(kCrashOnUnloadMode).c_str(), "1"));
+  EXPECT_TRUE(env->SetVar(base::WideToUTF8(kCrashOnUnloadMode).c_str(), "1"));
 
   module = ::LoadLibrary(kCrashDllName);
 

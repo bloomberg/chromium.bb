@@ -81,7 +81,7 @@ TEST_P(FullTabUITest, KeyboardInput) {
   EXPECT_CALL(ie_mock_, OnLoad(GetParam().invokes_cf(), StrEq(key_event_url)))
       .WillOnce(PostKeyMessagesToRenderer(&ie_mock_, input));
 
-  EXPECT_CALL(ie_mock_, OnMessage(StrCaseEq(UTF8ToWide(input)), _, _))
+  EXPECT_CALL(ie_mock_, OnMessage(StrCaseEq(base::UTF8ToWide(input)), _, _))
       .WillOnce(CloseBrowserMock(&ie_mock_));
 
   LaunchIEAndNavigate(key_event_url);
@@ -322,7 +322,7 @@ TEST_P(FullTabUITest, ViewSource) {
   // Expect notification for view-source window, handle new window event
   // and attach a new ie_mock_ to the received web browser
   std::wstring view_source_url;
-  view_source_url += UTF8ToWide(content::kViewSourceScheme);
+  view_source_url += base::UTF8ToWide(content::kViewSourceScheme);
   view_source_url += L":";
   view_source_url += GetSimplePageUrl();
   std::wstring url_in_new_window = kChromeProtocolPrefix;
@@ -572,7 +572,7 @@ TEST_F(ContextMenuTest, CFViewSource) {
   // Expect notification for view-source window, handle new window event
   // and attach a new ie_mock_ to the received web browser
   std::wstring view_source_url;
-  view_source_url += UTF8ToWide(content::kViewSourceScheme);
+  view_source_url += base::UTF8ToWide(content::kViewSourceScheme);
   view_source_url += L":";
   view_source_url += initial_url;
   std::wstring url_in_new_window = kChromeProtocolPrefix;

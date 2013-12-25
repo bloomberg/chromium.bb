@@ -66,7 +66,7 @@ bool NavigationConstraintsImpl::IsZoneAllowed(const GURL& url) {
       return true;
     }
     DWORD zone = URLZONE_INVALID;
-    std::wstring unicode_url = UTF8ToWide(url.spec());
+    std::wstring unicode_url = base::UTF8ToWide(url.spec());
     security_manager_->MapUrlToZone(unicode_url.c_str(), &zone, 0);
     if (zone == URLZONE_UNTRUSTED) {
       DLOG(WARNING) << __FUNCTION__

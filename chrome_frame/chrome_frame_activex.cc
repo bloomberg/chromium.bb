@@ -312,7 +312,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
     if (document) {
       base::win::ScopedBstr url;
       if (SUCCEEDED(document->get_URL(url.Receive())))
-        WideToUTF8(url, url.Length(), &document_url_);
+        base::WideToUTF8(url, url.Length(), &document_url_);
     }
 
     // Probe to see whether the host implements the privileged service.
@@ -341,7 +341,7 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
 
     std::string utf8_url;
     if (url_.Length()) {
-      WideToUTF8(url_, url_.Length(), &utf8_url);
+      base::WideToUTF8(url_, url_.Length(), &utf8_url);
     }
 
     InitializeAutomationSettings();

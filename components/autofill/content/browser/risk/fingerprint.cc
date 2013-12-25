@@ -100,14 +100,14 @@ void AddPluginsToFingerprint(const std::vector<content::WebPluginInfo>& plugins,
        it != plugins.end(); ++it) {
     Fingerprint::MachineCharacteristics::Plugin* plugin =
         machine->add_plugin();
-    plugin->set_name(UTF16ToUTF8(it->name));
-    plugin->set_description(UTF16ToUTF8(it->desc));
+    plugin->set_name(base::UTF16ToUTF8(it->name));
+    plugin->set_description(base::UTF16ToUTF8(it->desc));
     for (std::vector<content::WebPluginMimeType>::const_iterator mime_type =
              it->mime_types.begin();
          mime_type != it->mime_types.end(); ++mime_type) {
       plugin->add_mime_type(mime_type->mime_type);
     }
-    plugin->set_version(UTF16ToUTF8(it->version));
+    plugin->set_version(base::UTF16ToUTF8(it->version));
   }
 }
 

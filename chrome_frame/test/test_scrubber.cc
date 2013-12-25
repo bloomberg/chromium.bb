@@ -105,7 +105,7 @@ void TestScrubber::CleanUpFromTestRun() {
   // Kill all chrome.exe processes with --chrome-frame.
   base::KillAllNamedProcessesWithArgument(
       chrome::kBrowserProcessExecutableName,
-      ASCIIToWide(switches::kChromeFrame));
+      base::ASCIIToWide(switches::kChromeFrame));
 
   // Delete the user data directory.
   base::FilePath data_directory(data_directory_override_.empty() ?

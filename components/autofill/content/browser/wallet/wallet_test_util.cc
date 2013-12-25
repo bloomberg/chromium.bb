@@ -17,6 +17,8 @@
 #include "components/autofill/content/browser/wallet/required_action.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 namespace wallet {
 

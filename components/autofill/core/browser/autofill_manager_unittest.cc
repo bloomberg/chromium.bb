@@ -52,9 +52,11 @@
 #include "ui/gfx/rect.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 using content::WebContents;
-using testing::_;
 using blink::WebFormElement;
+using testing::_;
 
 namespace autofill {
 
@@ -441,7 +443,7 @@ class TestAutofillManager : public AutofillManager {
         SCOPED_TRACE(
             base::StringPrintf(
                 "Field %d with value %s", static_cast<int>(i),
-                UTF16ToUTF8(submitted_form->field(i)->value).c_str()));
+                base::UTF16ToUTF8(submitted_form->field(i)->value).c_str()));
         const ServerFieldTypeSet& possible_types =
             submitted_form->field(i)->possible_types();
         EXPECT_EQ(expected_submitted_field_types_[i].size(),

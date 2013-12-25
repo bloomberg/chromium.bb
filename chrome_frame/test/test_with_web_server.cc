@@ -123,7 +123,7 @@ void ChromeFrameTestWithWebServer::SetUpTestCase() {
   local_address_ = chrome_frame_test::GetLocalIPv4Address();
   listener_mock_ = new testing::StrictMock<MockWebServerListener>();
   server_mock_ = new testing::StrictMock<MockWebServer>(
-      1337, ASCIIToWide(local_address_),
+      1337, base::ASCIIToWide(local_address_),
       chrome_frame_test::GetTestDataFolder());
   server_mock_->set_listener(listener_mock_);
 }
@@ -174,7 +174,7 @@ bool ChromeFrameTestWithWebServer::LaunchBrowser(BrowserKind browser,
   std::wstring url = page;
 
   // We should resolve the URL only if it is a relative url.
-  GURL parsed_url(WideToUTF8(page));
+  GURL parsed_url(base::WideToUTF8(page));
   if (!parsed_url.has_scheme()) {
     url = server_mock().Resolve(page);
   }
@@ -314,7 +314,7 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
 
     bool system_install = ver_system.IsValid();
     base::FilePath cf_dll_path(installer::GetChromeInstallPath(system_install, dist));
-    cf_dll_path = cf_dll_path.Append(UTF8ToWide(
+    cf_dll_path = cf_dll_path.Append(base::UTF8ToWide(
         ver_system.IsValid() ? ver_system.GetString() : ver_user.GetString()));
     cf_dll_path = cf_dll_path.Append(kChromeFrameDllName);
     version_info = FileVersionInfo::CreateFileVersionInfo(cf_dll_path);
@@ -322,7 +322,7 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
       version = version_info->product_version();
   }
 
-  server_mock().set_expected_result(WideToUTF8(version));
+  server_mock().set_expected_result(base::WideToUTF8(version));
 
   EXPECT_TRUE(version_info);
   EXPECT_FALSE(version.empty());
@@ -384,7 +384,7 @@ void MockWebServer::SendResponseHelper(
         request_uri.length() - wcslen(kEchoHeader));
 
     std::string header_value = http_utils::GetHttpHeaderFromHeaderList(
-        WideToUTF8(header), request.headers());
+        base::WideToUTF8(header), request.headers());
     connection->Send(header_value, "");
     return;
   }
@@ -409,7 +409,7 @@ void MockWebServer::SendResponseHelper(
                                                              headers);
     } else {
       EXPECT_TRUE(net::GetMimeTypeFromFile(file_path, &content_type));
-      VLOG(1) << "Going to send file (" << WideToUTF8(file_path.value())
+      VLOG(1) << "Going to send file (" << base::WideToUTF8(file_path.value())
               << ") with content type (" << content_type << ")";
       headers = CreateHttpHeaders(invocation, add_no_cache_header,
                                   content_type);
@@ -418,7 +418,8 @@ void MockWebServer::SendResponseHelper(
     EXPECT_FALSE(headers.empty());
 
     EXPECT_TRUE(base::ReadFileToString(file_path, &body))
-        << "Could not read file (" << WideToUTF8(file_path.value()) << ")";
+        << "Could not read file ("
+        << base::WideToUTF8(file_path.value()) << ")";
     if (invocation.type() == CFInvocation::META_TAG &&
         StartsWithASCII(content_type, "text/html", false)) {
       EXPECT_TRUE(chrome_frame_test::AddCFMetaTag(&body)) << "Could not add "
@@ -426,7 +427,7 @@ void MockWebServer::SendResponseHelper(
     }
   } else {
     VLOG(1) << "Going to send 404 for non-existent file ("
-            << WideToUTF8(file_path.value()) << ")";
+            << base::WideToUTF8(file_path.value()) << ")";
     headers = "HTTP/1.1 404 Not Found";
     body = "";
   }
@@ -951,7 +952,7 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_RefreshMshtmlTest) {
     test_server::Connection* c = (*it);
     const test_server::Request& r = c->request();
     if (!r.path().empty() &&
-        ASCIIToWide(r.path().substr(1)).compare(kPages[0]) == 0) {
+        base::ASCIIToWide(r.path().substr(1)).compare(kPages[0]) == 0) {
       requests_for_first_page++;
       std::string ua(GetHeaderValue(r.headers(), "User-Agent"));
       EXPECT_NE(std::string::npos, ua.find("chromeframe"));

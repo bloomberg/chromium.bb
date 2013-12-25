@@ -253,7 +253,7 @@ base::string16 Address::DisplayName() const {
   return recipient_name();
 #else
   // TODO(estade): improve this stub implementation + l10n.
-  return recipient_name() + ASCIIToUTF16(", ") + address_line_1();
+  return recipient_name() + base::ASCIIToUTF16(", ") + address_line_1();
 #endif
 }
 
@@ -279,11 +279,11 @@ base::string16 Address::GetInfo(const AutofillType& type,
                                 const std::string& app_locale) const {
   if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
     DCHECK(IsStringASCII(country_name_code()));
-    return ASCIIToUTF16(country_name_code());
+    return base::ASCIIToUTF16(country_name_code());
   } else if (type.html_type() == HTML_TYPE_STREET_ADDRESS) {
     base::string16 address = address_line_1();
     if (!address_line_2().empty())
-      address += ASCIIToUTF16(", ") + address_line_2();
+      address += base::ASCIIToUTF16(", ") + address_line_2();
     return address;
   }
 

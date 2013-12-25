@@ -30,12 +30,13 @@ DllRedirector::DllRedirector() : first_module_handle_(NULL) {
   std::wstring beacon_name(kSharedMemoryName);
   beacon_name += GetHostProcessName(false);
   shared_memory_.reset(new base::SharedMemory(beacon_name));
-  shared_memory_name_ = WideToUTF8(beacon_name);
+  shared_memory_name_ = base::WideToUTF8(beacon_name);
 }
 
 DllRedirector::DllRedirector(const char* shared_memory_name)
     : shared_memory_name_(shared_memory_name), first_module_handle_(NULL) {
-  shared_memory_.reset(new base::SharedMemory(ASCIIToWide(shared_memory_name)));
+  shared_memory_.reset(
+      new base::SharedMemory(base::ASCIIToWide(shared_memory_name)));
 }
 
 DllRedirector::~DllRedirector() {
@@ -286,7 +287,7 @@ HMODULE DllRedirector::LoadVersionedModule(base::Version* version) {
     base::FilePath module_name = module_path.BaseName();
     module_path = module_path.DirName()
                              .DirName()
-                             .Append(ASCIIToWide(version->GetString()))
+                             .Append(base::ASCIIToWide(version->GetString()))
                              .Append(module_name);
 
     hmodule = LoadLibrary(module_path.value().c_str());

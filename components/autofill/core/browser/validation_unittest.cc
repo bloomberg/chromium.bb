@@ -7,6 +7,8 @@
 #include "components/autofill/core/browser/validation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 namespace {
 

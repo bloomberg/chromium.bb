@@ -11,6 +11,8 @@
 #include "components/autofill/core/browser/phone_number_i18n.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 TEST(PhoneNumberTest, Matcher) {

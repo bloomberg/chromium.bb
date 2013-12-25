@@ -164,7 +164,7 @@ void PluginPlaceholder::UpdateMessage() {
   std::string script =
       "window.setMessage(" + base::GetQuotedJSONString(message_) + ")";
   plugin_->web_view()->mainFrame()->executeScript(
-      WebScriptSource(ASCIIToUTF16(script)));
+      WebScriptSource(base::ASCIIToUTF16(script)));
 }
 
 void PluginPlaceholder::ShowContextMenu(const WebMouseEvent& event) {

@@ -13,6 +13,8 @@
 #include "grit/webkit_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 namespace {
 

@@ -321,8 +321,8 @@ ACTION_P(DelayDoCloseWindow, delay) {
 
 ACTION(KillChromeFrameProcesses) {
   base::KillAllNamedProcessesWithArgument(
-      UTF8ToWide(chrome_frame_test::kChromeImageName),
-      UTF8ToWide(switches::kChromeFrame));
+      base::UTF8ToWide(chrome_frame_test::kChromeImageName),
+      base::UTF8ToWide(switches::kChromeFrame));
 }
 
 // Verifying actions

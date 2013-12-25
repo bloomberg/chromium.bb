@@ -138,14 +138,15 @@ void PolicyErrorMap::Convert(const PendingError& error) {
   base::string16 submessage;
   if (error.has_replacement) {
     submessage = l10n_util::GetStringFUTF16(error.message_id,
-                                            ASCIIToUTF16(error.replacement));
+                                            base::ASCIIToUTF16(
+                                                error.replacement));
   } else {
     submessage = l10n_util::GetStringUTF16(error.message_id);
   }
   base::string16 message;
   if (!error.subkey.empty()) {
     message = l10n_util::GetStringFUTF16(IDS_POLICY_SUBKEY_ERROR,
-                                         ASCIIToUTF16(error.subkey),
+                                         base::ASCIIToUTF16(error.subkey),
                                          submessage);
   } else if (error.index >= 0) {
     message = l10n_util::GetStringFUTF16(IDS_POLICY_LIST_ENTRY_ERROR,

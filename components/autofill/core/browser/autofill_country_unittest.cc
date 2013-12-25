@@ -9,6 +9,8 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
+
 namespace autofill {
 
 // Test the constructor and accessors

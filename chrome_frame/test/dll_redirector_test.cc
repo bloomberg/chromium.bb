@@ -242,7 +242,7 @@ DWORD WINAPI LockSquattingThread(void* in_params) {
   DCHECK(params);
 
   // Grab the lock for the shared memory region and hold onto it.
-  base::SharedMemory squatter(ASCIIToWide(kTestVersionBeaconName));
+  base::SharedMemory squatter(base::ASCIIToWide(kTestVersionBeaconName));
   base::SharedMemoryAutoLock squatter_lock(&squatter);
 
   // Notify our caller that we're squatting.
@@ -318,7 +318,7 @@ TEST_F(DllRedirectorTest, LowIntegrityAccess) {
 
   // Ensure that we can acquire the mutex from medium integrity:
   {
-    base::SharedMemory shared_memory(ASCIIToWide(kTestVersionBeaconName));
+    base::SharedMemory shared_memory(base::ASCIIToWide(kTestVersionBeaconName));
     bool mutex_locked = shared_memory.Lock(kWaitTestTimeout, NULL);
     EXPECT_TRUE(mutex_locked);
 
@@ -338,7 +338,7 @@ TEST_F(DllRedirectorTest, LowIntegrityAccess) {
     ASSERT_TRUE(low_integrity_token.Impersonate());
 
     // Ensure that we can also acquire the mutex from low integrity.
-    base::SharedMemory shared_memory(ASCIIToWide(kTestVersionBeaconName));
+    base::SharedMemory shared_memory(base::ASCIIToWide(kTestVersionBeaconName));
     bool mutex_locked = shared_memory.Lock(kWaitTestTimeout, NULL);
     EXPECT_TRUE(mutex_locked);
 
@@ -362,7 +362,7 @@ TEST_F(DllRedirectorTest, LowIntegrityAccessDenied) {
 
   // Ensure that we can acquire the mutex from medium integrity:
   {
-    base::SharedMemory shared_memory(ASCIIToWide(kTestVersionBeaconName));
+    base::SharedMemory shared_memory(base::ASCIIToWide(kTestVersionBeaconName));
     bool mutex_locked = shared_memory.Lock(kWaitTestTimeout, NULL);
     EXPECT_TRUE(mutex_locked);
 
@@ -381,7 +381,7 @@ TEST_F(DllRedirectorTest, LowIntegrityAccessDenied) {
 
     // Ensure that we can't acquire the mutex without having set the
     // Low Integrity ACE in the SACL.
-    base::SharedMemory shared_memory(ASCIIToWide(kTestVersionBeaconName));
+    base::SharedMemory shared_memory(base::ASCIIToWide(kTestVersionBeaconName));
     bool mutex_locked = shared_memory.Lock(kWaitTestTimeout, NULL);
     EXPECT_FALSE(mutex_locked);
 

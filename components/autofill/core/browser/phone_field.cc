@@ -19,9 +19,9 @@ namespace {
 
 // This string includes all area code separators, including NoText.
 base::string16 GetAreaRegex() {
-  base::string16 area_code = UTF8ToUTF16(autofill::kAreaCodeRe);
-  area_code.append(ASCIIToUTF16("|"));  // Regexp separator.
-  area_code.append(UTF8ToUTF16(autofill::kAreaCodeNotextRe));
+  base::string16 area_code = base::UTF8ToUTF16(autofill::kAreaCodeRe);
+  area_code.append(base::ASCIIToUTF16("|"));  // Regexp separator.
+  area_code.append(base::UTF8ToUTF16(autofill::kAreaCodeNotextRe));
   return area_code;
 }
 
@@ -182,15 +182,15 @@ FormField* PhoneField::Parse(AutofillScanner* scanner) {
 
   // Look for a third text box.
   if (!phone_field->parsed_phone_fields_[FIELD_SUFFIX]) {
-    if (!ParseField(scanner, UTF8ToUTF16(autofill::kPhoneSuffixRe),
+    if (!ParseField(scanner, base::UTF8ToUTF16(autofill::kPhoneSuffixRe),
                     &phone_field->parsed_phone_fields_[FIELD_SUFFIX])) {
-      ParseField(scanner, UTF8ToUTF16(autofill::kPhoneSuffixSeparatorRe),
+      ParseField(scanner, base::UTF8ToUTF16(autofill::kPhoneSuffixSeparatorRe),
                  &phone_field->parsed_phone_fields_[FIELD_SUFFIX]);
     }
   }
 
   // Now look for an extension.
-  ParseField(scanner, UTF8ToUTF16(autofill::kPhoneExtensionRe),
+  ParseField(scanner, base::UTF8ToUTF16(autofill::kPhoneExtensionRe),
              &phone_field->parsed_phone_fields_[FIELD_EXTENSION]);
 
   return phone_field.release();
@@ -249,23 +249,23 @@ PhoneField::PhoneField() {
 base::string16 PhoneField::GetRegExp(RegexType regex_id) {
   switch (regex_id) {
     case REGEX_COUNTRY:
-      return UTF8ToUTF16(autofill::kCountryCodeRe);
+      return base::UTF8ToUTF16(autofill::kCountryCodeRe);
     case REGEX_AREA:
       return GetAreaRegex();
     case REGEX_AREA_NOTEXT:
-      return UTF8ToUTF16(autofill::kAreaCodeNotextRe);
+      return base::UTF8ToUTF16(autofill::kAreaCodeNotextRe);
     case REGEX_PHONE:
-      return UTF8ToUTF16(autofill::kPhoneRe);
+      return base::UTF8ToUTF16(autofill::kPhoneRe);
     case REGEX_PREFIX_SEPARATOR:
-      return UTF8ToUTF16(autofill::kPhonePrefixSeparatorRe);
+      return base::UTF8ToUTF16(autofill::kPhonePrefixSeparatorRe);
     case REGEX_PREFIX:
-      return UTF8ToUTF16(autofill::kPhonePrefixRe);
+      return base::UTF8ToUTF16(autofill::kPhonePrefixRe);
     case REGEX_SUFFIX_SEPARATOR:
-      return UTF8ToUTF16(autofill::kPhoneSuffixSeparatorRe);
+      return base::UTF8ToUTF16(autofill::kPhoneSuffixSeparatorRe);
     case REGEX_SUFFIX:
-      return UTF8ToUTF16(autofill::kPhoneSuffixRe);
+      return base::UTF8ToUTF16(autofill::kPhoneSuffixRe);
     case REGEX_EXTENSION:
-      return UTF8ToUTF16(autofill::kPhoneExtensionRe);
+      return base::UTF8ToUTF16(autofill::kPhoneExtensionRe);
     default:
       NOTREACHED();
       break;

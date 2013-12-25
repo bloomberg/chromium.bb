@@ -22,11 +22,11 @@ class TestData {
   }
 
   std::wstring GetPath() const {
-    return ASCIIToWide("/" + name_);
+    return base::ASCIIToWide("/" + name_);
   }
 
   std::wstring GetUrl(MockWebServer* server_mock) const {
-    return server_mock->Resolve(ASCIIToWide(name_));
+    return server_mock->Resolve(base::ASCIIToWide(name_));
   }
 
   void ExpectOnServer(MockWebServer* server_mock) const {

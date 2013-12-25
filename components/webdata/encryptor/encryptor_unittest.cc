@@ -39,14 +39,14 @@ TEST_F(EncryptorTest, String16EncryptionDecryption) {
   EXPECT_EQ(plaintext, result);
 
   // Test a simple string.
-  plaintext = ASCIIToUTF16("hello");
+  plaintext = base::ASCIIToUTF16("hello");
   EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
   EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
 
   // Test a 16-byte aligned string.  This previously hit a boundary error in
   // base::Encryptor::Crypt() on Mac.
-  plaintext = ASCIIToUTF16("1234567890123456");
+  plaintext = base::ASCIIToUTF16("1234567890123456");
   EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
   EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
@@ -59,19 +59,19 @@ TEST_F(EncryptorTest, String16EncryptionDecryption) {
                       0x65e5, 0x661f, 0x671f, 0x4e94, 0xd8b1,
                       0xdce1, 0x7052, 0x5095, 0x7c0b, 0xe586, 0};
   plaintext = wchars;
-  utf8_plaintext = UTF16ToUTF8(plaintext);
-  EXPECT_EQ(plaintext, UTF8ToUTF16(utf8_plaintext));
+  utf8_plaintext = base::UTF16ToUTF8(plaintext);
+  EXPECT_EQ(plaintext, base::UTF8ToUTF16(utf8_plaintext));
   EXPECT_TRUE(Encryptor::EncryptString16(plaintext, &ciphertext));
   EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
   EXPECT_TRUE(Encryptor::DecryptString(ciphertext, &utf8_result));
-  EXPECT_EQ(utf8_plaintext, UTF16ToUTF8(result));
+  EXPECT_EQ(utf8_plaintext, base::UTF16ToUTF8(result));
 
   EXPECT_TRUE(Encryptor::EncryptString(utf8_plaintext, &ciphertext));
   EXPECT_TRUE(Encryptor::DecryptString16(ciphertext, &result));
   EXPECT_EQ(plaintext, result);
   EXPECT_TRUE(Encryptor::DecryptString(ciphertext, &utf8_result));
-  EXPECT_EQ(utf8_plaintext, UTF16ToUTF8(result));
+  EXPECT_EQ(utf8_plaintext, base::UTF16ToUTF8(result));
 }
 
 TEST_F(EncryptorTest, EncryptionDecryption) {

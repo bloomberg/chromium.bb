@@ -17,6 +17,7 @@
 #include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using base::ASCIIToUTF16;
 using base::StringToInt;
 
 namespace autofill {
@@ -378,7 +379,7 @@ bool AutofillField::IsEmpty() const {
 }
 
 std::string AutofillField::FieldSignature() const {
-  std::string field_name = UTF16ToUTF8(name);
+  std::string field_name = base::UTF16ToUTF8(name);
   std::string field_string = field_name + "&" + form_control_type;
   return Hash32Bit(field_string);
 }

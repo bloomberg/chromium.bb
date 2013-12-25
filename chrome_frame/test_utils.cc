@@ -95,15 +95,15 @@ void ScopedChromeFrameRegistrar::DoRegistration(
     entrypoint_index += 2;
   if (registration_operation == UNREGISTER)
     entrypoint_index += 1;
-  base::string16 registration_command(ASCIIToUTF16("\""));
+  base::string16 registration_command(base::ASCIIToUTF16("\""));
   registration_command +=
       CommandLine::ForCurrentProcess()->GetProgram().value();
-  registration_command += ASCIIToUTF16("\" ");
+  registration_command += base::ASCIIToUTF16("\" ");
   registration_command += kCallRegistrationEntrypointSwitch;
-  registration_command += ASCIIToUTF16(" \"");
+  registration_command += base::ASCIIToUTF16(" \"");
   registration_command += path;
-  registration_command += ASCIIToUTF16("\" ");
-  registration_command += ASCIIToUTF16(kEntrypoints[entrypoint_index]);
+  registration_command += base::ASCIIToUTF16("\" ");
+  registration_command += base::ASCIIToUTF16(kEntrypoints[entrypoint_index]);
   launch_options.wait = true;
   if (!base::LaunchProcess(registration_command, launch_options,
                            &process_handle)) {

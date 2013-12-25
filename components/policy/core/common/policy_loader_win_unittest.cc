@@ -37,6 +37,7 @@
 #include "components/policy/core/common/schema_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::UTF8ToUTF16;
 using base::win::RegKey;
 
 namespace policy {
@@ -293,7 +294,7 @@ ScopedGroupPolicyRegistrySandbox::ScopedGroupPolicyRegistrySandbox() {
   // Generate a unique registry key for the override for each test. This
   // makes sure that tests executing in parallel won't delete each other's
   // key, at DeleteKeys().
-  key_name_ = ASCIIToWide(base::StringPrintf(
+  key_name_ = base::ASCIIToWide(base::StringPrintf(
         "SOFTWARE\\chromium unittest %d",
         base::Process::Current().pid()));
   std::wstring hklm_key_name = key_name_ + L"\\HKLM";
@@ -382,7 +383,7 @@ void RegistryTestHarness::InstallStringListPolicy(
     const std::string& policy_name,
     const base::ListValue* policy_value) {
   RegKey key(hive_,
-             (base::string16(kTestPolicyKey) + ASCIIToUTF16("\\") +
+             (base::string16(kTestPolicyKey) + base::ASCIIToUTF16("\\") +
               UTF8ToUTF16(policy_name)).c_str(),
              KEY_ALL_ACCESS);
   ASSERT_TRUE(key.Valid());
@@ -820,7 +821,7 @@ TEST_F(PolicyLoaderWinTest, Merge3rdPartyPolicies) {
       "}"));
 
   const base::string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\merge");
+      kTestPolicyKey + base::ASCIIToUTF16("\\3rdparty\\extensions\\merge");
 
   const char kUserMandatory[] = "user-mandatory";
   const char kUserRecommended[] = "user-recommended";
@@ -909,7 +910,7 @@ TEST_F(PolicyLoaderWinTest, LoadStringEncodedValues) {
   encoded_policy.SetString("dict", encoded_dict);
 
   const base::string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\string");
+      kTestPolicyKey + base::ASCIIToUTF16("\\3rdparty\\extensions\\string");
   EXPECT_TRUE(
       InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
 
@@ -937,7 +938,7 @@ TEST_F(PolicyLoaderWinTest, LoadIntegerEncodedValues) {
   encoded_policy.SetInteger("double", 456);
 
   const base::string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\int");
+      kTestPolicyKey + base::ASCIIToUTF16("\\3rdparty\\extensions\\int");
   EXPECT_TRUE(
       InstallValue(encoded_policy, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
 
@@ -984,7 +985,7 @@ TEST_F(PolicyLoaderWinTest, DefaultPropertySchemaType) {
   all_policies.Set("policy", policy.DeepCopy());
 
   const base::string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions\\test");
+      kTestPolicyKey + base::ASCIIToUTF16("\\3rdparty\\extensions\\test");
   EXPECT_TRUE(
       InstallValue(all_policies, HKEY_CURRENT_USER, kPathSuffix, kMandatory));
 
@@ -1161,7 +1162,7 @@ TEST_F(PolicyLoaderWinTest, LBSSupport) {
       "}";
 
   const base::string16 kPathSuffix =
-      kTestPolicyKey + ASCIIToUTF16("\\3rdparty\\extensions");
+      kTestPolicyKey + base::ASCIIToUTF16("\\3rdparty\\extensions");
 
   base::ListValue list;
   list.AppendString("youtube.com");
@@ -1169,10 +1170,10 @@ TEST_F(PolicyLoaderWinTest, LBSSupport) {
   policy.Set("url_list", list.DeepCopy());
   policy.SetString("alternative_browser_path", "c:\\legacy\\browser.exe");
   base::DictionaryValue root;
-  root.Set(UTF16ToUTF8(kMandatory), policy.DeepCopy());
+  root.Set(base::UTF16ToUTF8(kMandatory), policy.DeepCopy());
   root.SetString(kSchema, kIncompleteSchema);
   EXPECT_TRUE(InstallValue(root, HKEY_LOCAL_MACHINE,
-                           kPathSuffix, ASCIIToUTF16(ns.component_id)));
+                           kPathSuffix, base::ASCIIToUTF16(ns.component_id)));
 
   PolicyBundle expected;
   PolicyMap& expected_policy = expected.Get(ns);

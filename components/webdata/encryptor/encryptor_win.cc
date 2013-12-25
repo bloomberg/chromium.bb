@@ -12,7 +12,7 @@
 
 bool Encryptor::EncryptString16(const base::string16& plaintext,
                                 std::string* ciphertext) {
-  return EncryptString(UTF16ToUTF8(plaintext), ciphertext);
+  return EncryptString(base::UTF16ToUTF8(plaintext), ciphertext);
 }
 
 bool Encryptor::DecryptString16(const std::string& ciphertext,
@@ -21,7 +21,7 @@ bool Encryptor::DecryptString16(const std::string& ciphertext,
   if (!DecryptString(ciphertext, &utf8))
     return false;
 
-  *plaintext = UTF8ToUTF16(utf8);
+  *plaintext = base::UTF8ToUTF16(utf8);
   return true;
 }
 

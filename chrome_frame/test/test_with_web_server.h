@@ -274,7 +274,7 @@ class SimpleWebServerTest {
 
   std::wstring FormatHttpPath(const wchar_t* document_path) {
     return base::StringPrintf(L"http://%ls:%i/%ls",
-                              ASCIIToWide(server_.host()).c_str(), port_,
+                              base::ASCIIToWide(server_.host()).c_str(), port_,
                               document_path);
   }
 
@@ -314,7 +314,7 @@ class SimpleWebServerTest {
       const test_server::Connection* c = (*it);
       const test_server::Request& r = c->request();
       if (!r.path().empty() &&
-          ASCIIToWide(r.path().substr(1)).compare(page) == 0) {
+          base::ASCIIToWide(r.path().substr(1)).compare(page) == 0) {
         if (expected_method) {
           EXPECT_EQ(expected_method, r.method());
         }

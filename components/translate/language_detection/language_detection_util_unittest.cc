@@ -94,7 +94,7 @@ TEST_F(LanguageDetectionUtilTest, WellKnownWrongConfiguration) {
 // Tests that the language meta tag providing wrong information is ignored by
 // LanguageDetectionUtil due to disagreement between meta tag and CLD.
 TEST_F(LanguageDetectionUtilTest, CLDDisagreeWithWrongLanguageCode) {
-  base::string16 contents = ASCIIToUTF16(
+  base::string16 contents = base::ASCIIToUTF16(
       "<html><head><meta http-equiv='Content-Language' content='ja'></head>"
       "<body>This is a page apparently written in English. Even though "
       "content-language is provided, the value will be ignored if the value "
@@ -114,7 +114,7 @@ TEST_F(LanguageDetectionUtilTest, CLDDisagreeWithWrongLanguageCode) {
 // Tests that the language meta tag providing "en-US" style information is
 // agreed by CLD.
 TEST_F(LanguageDetectionUtilTest, CLDAgreeWithLanguageCodeHavingCountryCode) {
-  base::string16 contents = ASCIIToUTF16(
+  base::string16 contents = base::ASCIIToUTF16(
       "<html><head><meta http-equiv='Content-Language' content='en-US'></head>"
       "<body>This is a page apparently written in English. Even though "
       "content-language is provided, the value will be ignored if the value "
@@ -135,7 +135,7 @@ TEST_F(LanguageDetectionUtilTest, CLDAgreeWithLanguageCodeHavingCountryCode) {
 // CLD's language will be adopted by LanguageDetectionUtil due to an invalid
 // meta tag.
 TEST_F(LanguageDetectionUtilTest, InvalidLanguageMetaTagProviding) {
-  base::string16 contents = ASCIIToUTF16(
+  base::string16 contents = base::ASCIIToUTF16(
       "<html><head><meta http-equiv='Content-Language' content='utf-8'></head>"
       "<body>This is a page apparently written in English. Even though "
       "content-language is provided, the value will be ignored and CLD's"
@@ -155,7 +155,7 @@ TEST_F(LanguageDetectionUtilTest, InvalidLanguageMetaTagProviding) {
 // Tests that the language meta tag providing wrong information is ignored
 // because of valid html lang attribute.
 TEST_F(LanguageDetectionUtilTest, AdoptHtmlLang) {
-  base::string16 contents = ASCIIToUTF16(
+  base::string16 contents = base::ASCIIToUTF16(
       "<html lang='en'><head><meta http-equiv='Content-Language' content='ja'>"
       "</head><body>This is a page apparently written in English. Even though "
       "content-language is provided, the value will be ignored if the value "

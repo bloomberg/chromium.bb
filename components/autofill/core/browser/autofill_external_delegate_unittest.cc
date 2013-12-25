@@ -21,8 +21,9 @@
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/gfx/rect.h"
 
-using testing::_;
+using base::ASCIIToUTF16;
 using blink::WebAutofillClient;
+using testing::_;
 
 namespace autofill {
 

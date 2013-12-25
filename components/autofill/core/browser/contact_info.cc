@@ -121,7 +121,7 @@ void NameInfo::SetFullName(const base::string16& full) {
   last_ = base::string16();
 
   std::vector<base::string16> full_name_tokens;
-  Tokenize(full, ASCIIToUTF16(" "), &full_name_tokens);
+  Tokenize(full, base::ASCIIToUTF16(" "), &full_name_tokens);
 
   // There are four possibilities: empty; first name; first and last names;
   // first, middle (possibly multiple strings) and then the last name.

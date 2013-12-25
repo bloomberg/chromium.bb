@@ -77,7 +77,7 @@ std::string LogEntry::ToString(bool show_time,
                                bool format_html) const {
   std::string line;
   if (show_time)
-    line += "[" + UTF16ToUTF8(base::TimeFormatTimeOfDay(time)) + "] ";
+    line += "[" + base::UTF16ToUTF8(base::TimeFormatTimeOfDay(time)) + "] ";
   if (show_file) {
     std::string filestr = format_html ? net::EscapeForHTML(file) : file;
     line += base::StringPrintf("%s:%d ", file.c_str(), file_line);

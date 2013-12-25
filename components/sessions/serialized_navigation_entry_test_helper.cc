@@ -39,7 +39,7 @@ SerializedNavigationEntry SerializedNavigationEntryTestHelper::CreateNavigation(
       content::Referrer(GURL("http://www.referrer.com"),
                         blink::WebReferrerPolicyDefault);
   navigation.virtual_url_ = GURL(virtual_url);
-  navigation.title_ = UTF8ToUTF16(title);
+  navigation.title_ = base::UTF8ToUTF16(title);
   navigation.page_state_ =
       content::PageState::CreateFromEncodedData("fake_state");
   navigation.timestamp_ = base::Time::Now();

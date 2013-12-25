@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
 using blink::WebInputElement;
 
 namespace autofill {
@@ -34,9 +35,9 @@ class TestAutofillMetrics : public AutofillMetrics {
 namespace content {
 
 std::ostream& operator<<(std::ostream& os, const FormData& form) {
-  os << UTF16ToUTF8(form.name)
+  os << base::UTF16ToUTF8(form.name)
      << " "
-     << UTF16ToUTF8(form.method)
+     << base::UTF16ToUTF8(form.method)
      << " "
      << form.origin.spec()
      << " "

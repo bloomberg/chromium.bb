@@ -27,8 +27,8 @@ AutofillKey::AutofillKey(const base::string16& name,
 }
 
 AutofillKey::AutofillKey(const char* name, const char* value)
-    : name_(UTF8ToUTF16(name)),
-      value_(UTF8ToUTF16(value)) {
+    : name_(base::UTF8ToUTF16(name)),
+      value_(base::UTF8ToUTF16(value)) {
 }
 
 AutofillKey::AutofillKey(const AutofillKey& key)

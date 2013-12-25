@@ -110,7 +110,7 @@ std::string DetermineTextLanguage(const base::string16& text,
 #endif
 #if !defined(CLD_VERSION) || CLD_VERSION==2
     case 2: {
-      std::string utf8_text(UTF16ToUTF8(text));
+      std::string utf8_text(base::UTF16ToUTF8(text));
       CLD2::Language language3[3];
       int percent3[3];
       CLD2::DetectLanguageSummary(

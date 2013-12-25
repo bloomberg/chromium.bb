@@ -34,6 +34,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 using base::WaitableEvent;

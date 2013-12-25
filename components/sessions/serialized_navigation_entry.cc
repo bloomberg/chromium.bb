@@ -69,7 +69,7 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
       content::Referrer(GURL(sync_data.referrer()),
                         blink::WebReferrerPolicyDefault);
   navigation.virtual_url_ = GURL(sync_data.virtual_url());
-  navigation.title_ = UTF8ToUTF16(sync_data.title());
+  navigation.title_ = base::UTF8ToUTF16(sync_data.title());
   navigation.page_state_ =
       content::PageState::CreateFromEncodedData(sync_data.state());
 
@@ -141,7 +141,7 @@ SerializedNavigationEntry SerializedNavigationEntry::FromSyncData(
       static_cast<content::PageTransition>(transition);
 
   navigation.timestamp_ = base::Time();
-  navigation.search_terms_ = UTF8ToUTF16(sync_data.search_terms());
+  navigation.search_terms_ = base::UTF8ToUTF16(sync_data.search_terms());
   if (sync_data.has_favicon_url())
     navigation.favicon_url_ = GURL(sync_data.favicon_url());
 
@@ -368,7 +368,7 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   sync_data.set_virtual_url(virtual_url_.spec());
   // FIXME(zea): Support referrer policy?
   sync_data.set_referrer(referrer_.url.spec());
-  sync_data.set_title(UTF16ToUTF8(title_));
+  sync_data.set_title(base::UTF16ToUTF8(title_));
 
   // Page transition core.
   COMPILE_ASSERT(content::PAGE_TRANSITION_LAST_CORE ==
@@ -449,7 +449,7 @@ sync_pb::TabNavigation SerializedNavigationEntry::ToSyncData() const {
   // The full-resolution timestamp works as a global ID.
   sync_data.set_global_id(timestamp_.ToInternalValue());
 
-  sync_data.set_search_terms(UTF16ToUTF8(search_terms_));
+  sync_data.set_search_terms(base::UTF16ToUTF8(search_terms_));
 
   sync_data.set_http_status_code(http_status_code_);
 
