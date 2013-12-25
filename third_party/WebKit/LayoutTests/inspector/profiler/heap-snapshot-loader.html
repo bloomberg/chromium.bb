@@ -53,6 +53,9 @@ function test()
         });
     }
 
+    WebInspector.log = function(message) {
+        InspectorTest.addResult("WebInspector.log: " + message);
+    }
     InspectorTest.runTestSuite([
         function heapSnapshotLoaderTest(next)
         {
@@ -85,14 +88,13 @@ function test()
                     savedSnapshotData += data;
                     WebInspector.fileManager.appendedToURL(url);
                 }
-
-                function didCompleteSave()
+                function closeMock(url)
                 {
                     InspectorTest.assertEquals(sourceStringified, savedSnapshotData, "Saved snapshot data");
                     InspectorFrontendHost.append = oldAppend;
                     next();
                 }
-                InspectorTest.addSniffer(WebInspector.HeapProfileHeader.prototype, "_didCompleteSnapshotTransfer", didCompleteSave);
+                InspectorTest.override(InspectorFrontendHost, "close", closeMock);
                 profileHeader.saveToFile();
             }
 
