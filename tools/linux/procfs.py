@@ -92,8 +92,11 @@ class ProcStat(object):
 
   @staticmethod
   def load(pid):
-    with open(os.path.join('/proc', str(pid), 'stat'), 'r') as stat_f:
-      return ProcStat.load_file(stat_f)
+    try:
+      with open(os.path.join('/proc', str(pid), 'stat'), 'r') as stat_f:
+        return ProcStat.load_file(stat_f)
+    except IOError:
+      return None
 
   @property
   def raw(self):
@@ -135,7 +138,10 @@ class ProcStatm(object):
 
   @staticmethod
   def load_file(statm_f):
-    raw = statm_f.readlines()
+    try:
+      raw = statm_f.readlines()
+    except (IOError, OSError):
+      return None
     statm = ProcStatm._PATTERN.match(raw[0])
     return ProcStatm(raw,
                      statm.groupdict().get('SIZE'),
@@ -148,8 +154,11 @@ class ProcStatm(object):
 
   @staticmethod
   def load(pid):
-    with open(os.path.join('/proc', str(pid), 'statm'), 'r') as statm_f:
-      return ProcStatm.load_file(statm_f)
+    try:
+      with open(os.path.join('/proc', str(pid), 'statm'), 'r') as statm_f:
+        return ProcStatm.load_file(statm_f)
+    except (IOError, OSError):
+      return None
 
   @property
   def raw(self):
@@ -330,8 +339,11 @@ class ProcMaps(object):
 
   @staticmethod
   def load(pid):
-    with open(os.path.join('/proc', str(pid), 'maps'), 'r') as maps_f:
-      return ProcMaps.load_file(maps_f)
+    try:
+      with open(os.path.join('/proc', str(pid), 'maps'), 'r') as maps_f:
+        return ProcMaps.load_file(maps_f)
+    except (IOError, OSError):
+      return None
 
   def append_line(self, line):
     entry = self.parse_line(line)
@@ -555,8 +567,11 @@ class ProcPagemap(object):
     vma_internals = collections.OrderedDict()
     process_pageframe_set = set()
 
-    pagemap_fd = os.open(
-        os.path.join('/proc', str(pid), 'pagemap'), os.O_RDONLY)
+    try:
+      pagemap_fd = os.open(
+          os.path.join('/proc', str(pid), 'pagemap'), os.O_RDONLY)
+    except (IOError, OSError):
+      return None
     for vma in maps:
       present = 0
       swapped = 0
@@ -564,8 +579,11 @@ class ProcPagemap(object):
       pageframes = collections.defaultdict(int)
       begin_offset = ProcPagemap._offset(vma.begin)
       chunk_size = ProcPagemap._offset(vma.end) - begin_offset
-      os.lseek(pagemap_fd, begin_offset, os.SEEK_SET)
-      buf = os.read(pagemap_fd, chunk_size)
+      try:
+        os.lseek(pagemap_fd, begin_offset, os.SEEK_SET)
+        buf = os.read(pagemap_fd, chunk_size)
+      except (IOError, OSError):
+        return None
       if len(buf) < chunk_size:
         _LOGGER.warn('Failed to read pagemap at 0x%x in %d.' % (vma.begin, pid))
       pagemap_values = struct.unpack(
@@ -586,7 +604,10 @@ class ProcPagemap(object):
       total_present += present
       total_swapped += swapped
       total_vsize += vsize
-    os.close(pagemap_fd)
+    try:
+      os.close(pagemap_fd)
+    except OSError:
+      return None
 
     return ProcPagemap(total_vsize, total_present, total_swapped,
                        vma_internals, in_process_dup)
