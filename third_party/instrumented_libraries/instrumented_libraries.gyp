@@ -22,6 +22,7 @@
     '<(_sanitizer_type)-libffi6',
     '<(_sanitizer_type)-libgcrypt11',
     '<(_sanitizer_type)-libgpg-error0',
+    '<(_sanitizer_type)-libnspr4',
     '<(_sanitizer_type)-libp11-kit0',
     '<(_sanitizer_type)-libpcre3',
     '<(_sanitizer_type)-libpixman-1-0',
@@ -55,7 +56,6 @@
       'first_order_libraries': [
         '<(_sanitizer_type)-libfontconfig1',
         '<(_sanitizer_type)-libglib2.0-0',
-        '<(_sanitizer_type)-libnspr4',
       ],
     }],
     ['msan==1', {
