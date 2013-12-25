@@ -81,7 +81,7 @@ TEST_F(AppListWindowControllerTest, CloseClearsSearch) {
 
   EXPECT_FALSE([view_controller showingSearchResults]);
 
-  const base::string16 search_text(ASCIIToUTF16("test"));
+  const base::string16 search_text(base::ASCIIToUTF16("test"));
   model->SetText(search_text);
   EXPECT_TRUE([view_controller showingSearchResults]);
 

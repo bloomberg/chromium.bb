@@ -122,7 +122,7 @@ void TouchEditingMenuView::CreateButtons() {
 
   // Finally, add ellipses button.
   AddChildView(CreateButton(
-      UTF8ToUTF16(kEllipsesButtonText), kEllipsesButtonTag));
+      base::UTF8ToUTF16(kEllipsesButtonText), kEllipsesButtonTag));
   Layout();
 }
 

@@ -225,7 +225,7 @@ bool IsLocalePartiallyPopulated(const std::string& locale_name) {
 bool IsLocaleAvailable(const std::string& locale) {
   // If locale has any illegal characters in it, we don't want to try to
   // load it because it may be pointing outside the locale data file directory.
-  if (!file_util::IsFilenameLegal(ASCIIToUTF16(locale)))
+  if (!file_util::IsFilenameLegal(base::ASCIIToUTF16(locale)))
     return false;
 
   // IsLocalePartiallyPopulated() can be called here for an early return w/o
@@ -661,7 +661,7 @@ bool IsValidLocaleSyntax(const std::string& locale) {
 }
 
 std::string GetStringUTF8(int message_id) {
-  return UTF16ToUTF8(GetStringUTF16(message_id));
+  return base::UTF16ToUTF8(GetStringUTF16(message_id));
 }
 
 base::string16 GetStringUTF16(int message_id) {
@@ -688,7 +688,7 @@ base::string16 GetStringFUTF16(int message_id,
   // check as the code may simply want to find the placeholders rather than
   // actually replacing them.
   if (!offsets) {
-    std::string utf8_string = UTF16ToUTF8(format_string);
+    std::string utf8_string = base::UTF16ToUTF8(format_string);
 
     // $9 is the highest allowed placeholder.
     for (size_t i = 0; i < 9; ++i) {
@@ -719,20 +719,20 @@ base::string16 GetStringFUTF16(int message_id,
 
 std::string GetStringFUTF8(int message_id,
                            const base::string16& a) {
-  return UTF16ToUTF8(GetStringFUTF16(message_id, a));
+  return base::UTF16ToUTF8(GetStringFUTF16(message_id, a));
 }
 
 std::string GetStringFUTF8(int message_id,
                            const base::string16& a,
                            const base::string16& b) {
-  return UTF16ToUTF8(GetStringFUTF16(message_id, a, b));
+  return base::UTF16ToUTF8(GetStringFUTF16(message_id, a, b));
 }
 
 std::string GetStringFUTF8(int message_id,
                            const base::string16& a,
                            const base::string16& b,
                            const base::string16& c) {
-  return UTF16ToUTF8(GetStringFUTF16(message_id, a, b, c));
+  return base::UTF16ToUTF8(GetStringFUTF16(message_id, a, b, c));
 }
 
 std::string GetStringFUTF8(int message_id,
@@ -740,7 +740,7 @@ std::string GetStringFUTF8(int message_id,
                            const base::string16& b,
                            const base::string16& c,
                            const base::string16& d) {
-  return UTF16ToUTF8(GetStringFUTF16(message_id, a, b, c, d));
+  return base::UTF16ToUTF8(GetStringFUTF16(message_id, a, b, c, d));
 }
 
 base::string16 GetStringFUTF16(int message_id,
@@ -819,11 +819,11 @@ base::string16 GetStringFUTF16(int message_id,
 }
 
 base::string16 GetStringFUTF16Int(int message_id, int a) {
-  return GetStringFUTF16(message_id, UTF8ToUTF16(base::IntToString(a)));
+  return GetStringFUTF16(message_id, base::UTF8ToUTF16(base::IntToString(a)));
 }
 
 base::string16 GetStringFUTF16Int(int message_id, int64 a) {
-  return GetStringFUTF16(message_id, UTF8ToUTF16(base::Int64ToString(a)));
+  return GetStringFUTF16(message_id, base::UTF8ToUTF16(base::Int64ToString(a)));
 }
 
 // Specialization of operator() method for base::string16 version.

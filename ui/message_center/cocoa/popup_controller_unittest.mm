@@ -11,6 +11,8 @@
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/message_center/notification.h"
 
+using base::ASCIIToUTF16;
+
 namespace message_center {
 
 class PopupControllerTest : public ui::CocoaTest {

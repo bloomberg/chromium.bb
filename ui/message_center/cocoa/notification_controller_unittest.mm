@@ -16,6 +16,9 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 
+using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
+
 namespace {
 
 class MockMessageCenter : public message_center::FakeMessageCenter {

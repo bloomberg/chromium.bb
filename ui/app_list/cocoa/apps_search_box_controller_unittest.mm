@@ -16,6 +16,8 @@
 #import "ui/base/cocoa/menu_controller.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
+using base::ASCIIToUTF16;
+
 @interface TestAppsSearchBoxDelegate : NSObject<AppsSearchBoxDelegate> {
  @private
   app_list::SearchBoxModel searchBoxModel_;

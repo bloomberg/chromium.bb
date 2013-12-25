@@ -19,6 +19,8 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 
 namespace {

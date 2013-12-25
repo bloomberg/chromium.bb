@@ -14,6 +14,8 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 namespace examples {
 

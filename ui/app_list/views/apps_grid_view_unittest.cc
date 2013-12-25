@@ -441,8 +441,8 @@ TEST_F(AppsGridViewTest, ItemLabelShortNameOverride) {
   const views::Label* title_label = item_view->title();
   EXPECT_TRUE(title_label->GetTooltipText(
       title_label->bounds().CenterPoint(), &actual_tooltip));
-  EXPECT_EQ(expected_tooltip, UTF16ToUTF8(actual_tooltip));
-  EXPECT_EQ(expected_text, UTF16ToUTF8(title_label->text()));
+  EXPECT_EQ(expected_tooltip, base::UTF16ToUTF8(actual_tooltip));
+  EXPECT_EQ(expected_text, base::UTF16ToUTF8(title_label->text()));
 }
 
 TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
@@ -457,7 +457,7 @@ TEST_F(AppsGridViewTest, ItemLabelNoShortName) {
   const views::Label* title_label = item_view->title();
   EXPECT_FALSE(title_label->GetTooltipText(
       title_label->bounds().CenterPoint(), &actual_tooltip));
-  EXPECT_EQ(title, UTF16ToUTF8(title_label->text()));
+  EXPECT_EQ(title, base::UTF16ToUTF8(title_label->text()));
 }
 
 }  // namespace test

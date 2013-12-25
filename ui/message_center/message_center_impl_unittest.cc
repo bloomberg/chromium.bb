@@ -16,6 +16,8 @@
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_types.h"
 
+using base::UTF8ToUTF16;
+
 namespace message_center {
 namespace {
 

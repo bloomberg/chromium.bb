@@ -128,7 +128,7 @@ class MenuModelBase : public ui::MenuModel {
          const std::string& item_label,
          ui::MenuModel* item_submenu)
         : type(item_type),
-          label(ASCIIToUTF16(item_label)),
+          label(base::ASCIIToUTF16(item_label)),
           submenu(item_submenu) {
     }
 

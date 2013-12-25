@@ -10,6 +10,8 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification_types.h"
 
+using base::ASCIIToUTF16;
+
 namespace message_center {
 namespace {
 

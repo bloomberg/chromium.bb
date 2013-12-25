@@ -17,6 +17,8 @@ using ui::TreeModel;
 using ui::TreeModelNode;
 using ui::TreeNode;
 
+using base::ASCIIToUTF16;
+
 namespace views {
 
 class TestNode : public TreeNode<TestNode> {

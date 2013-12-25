@@ -10,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using base::ASCIIToUTF16;
+
 namespace ui {
 namespace {
 

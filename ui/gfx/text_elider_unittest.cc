@@ -17,6 +17,11 @@
 #include "ui/gfx/text_utils.h"
 #include "url/gurl.h"
 
+using base::ASCIIToUTF16;
+using base::UTF16ToUTF8;
+using base::UTF8ToUTF16;
+using base::WideToUTF16;
+
 namespace gfx {
 
 namespace {

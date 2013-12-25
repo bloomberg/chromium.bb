@@ -14,6 +14,8 @@
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/layout/grid_layout.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 namespace examples {
 

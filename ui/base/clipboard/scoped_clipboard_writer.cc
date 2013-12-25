@@ -36,7 +36,7 @@ void ScopedClipboardWriter::WriteURL(const base::string16& text) {
 
 void ScopedClipboardWriter::WriteHTML(const base::string16& markup,
                                       const std::string& source_url) {
-  std::string utf8_markup = UTF16ToUTF8(markup);
+  std::string utf8_markup = base::UTF16ToUTF8(markup);
 
   Clipboard::ObjectMapParams parameters;
   parameters.push_back(
@@ -62,7 +62,7 @@ void ScopedClipboardWriter::WriteBookmark(const base::string16& bookmark_title,
   if (bookmark_title.empty() || url.empty())
     return;
 
-  std::string utf8_markup = UTF16ToUTF8(bookmark_title);
+  std::string utf8_markup = base::UTF16ToUTF8(bookmark_title);
 
   Clipboard::ObjectMapParams parameters;
   parameters.push_back(Clipboard::ObjectMapParam(utf8_markup.begin(),
@@ -80,9 +80,9 @@ void ScopedClipboardWriter::WriteHyperlink(const base::string16& anchor_text,
   std::string html("<a href=\"");
   html.append(net::EscapeForHTML(url));
   html.append("\">");
-  html.append(net::EscapeForHTML(UTF16ToUTF8(anchor_text)));
+  html.append(net::EscapeForHTML(base::UTF16ToUTF8(anchor_text)));
   html.append("</a>");
-  WriteHTML(UTF8ToUTF16(html), std::string());
+  WriteHTML(base::UTF8ToUTF16(html), std::string());
 }
 
 void ScopedClipboardWriter::WriteWebSmartPaste() {
@@ -113,7 +113,7 @@ void ScopedClipboardWriter::Reset() {
 
 void ScopedClipboardWriter::WriteTextOrURL(const base::string16& text,
                                            bool is_url) {
-  std::string utf8_text = UTF16ToUTF8(text);
+  std::string utf8_text = base::UTF16ToUTF8(text);
 
   Clipboard::ObjectMapParams parameters;
   parameters.push_back(Clipboard::ObjectMapParam(utf8_text.begin(),

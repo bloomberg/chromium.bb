@@ -51,11 +51,11 @@ void ProgressBarExample::CreateExampleView(View* container) {
                         0, GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, 0);
-  minus_button_ = new LabelButton(this, ASCIIToUTF16("-"));
+  minus_button_ = new LabelButton(this, base::ASCIIToUTF16("-"));
   layout->AddView(minus_button_);
   progress_bar_ = new ProgressBar();
   layout->AddView(progress_bar_);
-  plus_button_ = new LabelButton(this, ASCIIToUTF16("+"));
+  plus_button_ = new LabelButton(this, base::ASCIIToUTF16("+"));
   layout->AddView(plus_button_);
 }
 

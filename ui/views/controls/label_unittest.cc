@@ -12,6 +12,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/border.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 
 // All text sizing measurements (width and height) should be greater than this.
@@ -288,7 +290,7 @@ TEST(LabelTest, AutoDetectDirectionality) {
   label.set_directionality_mode(Label::AUTO_DETECT_DIRECTIONALITY);
 
   // Test text starts with RTL character.
-  base::string16 test_text(WideToUTF16(L"  \x5d0\x5d1\x5d2 abc"));
+  base::string16 test_text(base::WideToUTF16(L"  \x5d0\x5d1\x5d2 abc"));
   label.SetText(test_text);
   gfx::Size required_size(label.GetPreferredSize());
   gfx::Size extra(22, 8);
@@ -306,7 +308,7 @@ TEST(LabelTest, AutoDetectDirectionality) {
                      gfx::Canvas::FORCE_LTR_DIRECTIONALITY));
 
   // Test text starts with LTR character.
-  test_text = (WideToUTF16(L"ltr \x5d0\x5d1\x5d2 abc"));
+  test_text = (base::WideToUTF16(L"ltr \x5d0\x5d1\x5d2 abc"));
   label.SetText(test_text);
   required_size = label.GetPreferredSize();
   label.SetBounds(0,

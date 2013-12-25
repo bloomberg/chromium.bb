@@ -9,6 +9,8 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/test/views_test_base.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 
 namespace {

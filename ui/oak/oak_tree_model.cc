@@ -16,7 +16,7 @@ base::string16 GetNodeTitleForWindow(aura::Window* window) {
   std::string window_name = window->name();
   if (window_name.empty())
     window_name.append("Unnamed window");
-  return ASCIIToUTF16(window_name);
+  return base::ASCIIToUTF16(window_name);
 }
 
 void AddChildWindows(aura::Window* parent_window, WindowNode* parent_node) {

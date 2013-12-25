@@ -206,7 +206,7 @@ base::string16 Accelerator::GetShortcutText() const {
         shortcut +=
             static_cast<base::string16::value_type>(g_ascii_toupper(name[0]));
       else
-        shortcut += UTF8ToUTF16(name);
+        shortcut += base::UTF8ToUTF16(name);
     }
 #endif
   } else {
@@ -262,7 +262,7 @@ base::string16 Accelerator::GetShortcutText() const {
   if (adjust_shortcut_for_rtl) {
     int key_length = static_cast<int>(shortcut_rtl.length());
     DCHECK_GT(key_length, 0);
-    shortcut_rtl.append(ASCIIToUTF16("+"));
+    shortcut_rtl.append(base::ASCIIToUTF16("+"));
 
     // Subtracting the size of the shortcut key and 1 for the '+' sign.
     shortcut_rtl.append(shortcut, 0, shortcut.length() - key_length - 1);

@@ -264,7 +264,7 @@ void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
   DCHECK_EQ(type, CLIPBOARD_TYPE_COPY_PASTE);
   std::string utf8;
   ReadAsciiText(type, &utf8);
-  *result = UTF8ToUTF16(utf8);
+  *result = base::UTF8ToUTF16(utf8);
 }
 
 void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const {
@@ -285,7 +285,7 @@ void Clipboard::ReadHTML(ClipboardType type,
     src_url->clear();
 
   std::string input = g_map.Get().Get(kHTMLFormat);
-  *markup = UTF8ToUTF16(input);
+  *markup = base::UTF8ToUTF16(input);
 
   *fragment_start = 0;
   *fragment_end = static_cast<uint32>(markup->length());

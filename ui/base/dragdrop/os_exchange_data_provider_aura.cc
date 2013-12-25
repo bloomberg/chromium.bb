@@ -44,7 +44,7 @@ void OSExchangeDataProviderAura::SetURL(const GURL& url,
   title_ = title;
   formats_ |= OSExchangeData::URL;
 
-  SetString(UTF8ToUTF16(url.spec()));
+  SetString(base::UTF8ToUTF16(url.spec()));
 }
 
 void OSExchangeDataProviderAura::SetFilename(const base::FilePath& path) {

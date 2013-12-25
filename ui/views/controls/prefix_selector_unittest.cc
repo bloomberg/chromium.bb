@@ -11,6 +11,8 @@
 #include "ui/views/controls/prefix_delegate.h"
 #include "ui/views/test/views_test_base.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 
 class TestPrefixDelegate : public PrefixDelegate {

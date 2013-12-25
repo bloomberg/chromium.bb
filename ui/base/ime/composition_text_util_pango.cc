@@ -19,7 +19,7 @@ void ExtractCompositionTextFromGtkPreedit(const gchar* utf8_text,
                                           int cursor_position,
                                           CompositionText* composition) {
   composition->Clear();
-  composition->text = UTF8ToUTF16(utf8_text);
+  composition->text = base::UTF8ToUTF16(utf8_text);
 
   if (composition->text.empty())
     return;

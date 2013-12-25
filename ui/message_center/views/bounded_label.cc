@@ -142,7 +142,8 @@ std::vector<base::string16> InnerBoundedLabel::GetWrappedText(int width,
   // characters to avoid the http://crbug.com/237700 infinite loop.
   // TODO(dharcourt): Remove when http://crbug.com/237700 is fixed.
   width = std::max(width,
-                   2 * gfx::GetStringWidth(UTF8ToUTF16("W"), font_list()));
+                   2 * gfx::GetStringWidth(base::UTF8ToUTF16("W"),
+                   font_list()));
 
   // Wrap, using INT_MAX for -1 widths that indicate no wrapping.
   std::vector<base::string16> wrapped;
@@ -155,7 +156,8 @@ std::vector<base::string16> InnerBoundedLabel::GetWrappedText(int width,
     // Add an ellipsis to the last line. If this ellipsis makes the last line
     // too wide, that line will be further elided by the gfx::ElideText below,
     // so for example "ABC" could become "ABC..." and then "AB...".
-    base::string16 last = wrapped[lines - 1] + UTF8ToUTF16(gfx::kEllipsis);
+    base::string16 last =
+        wrapped[lines - 1] + base::UTF8ToUTF16(gfx::kEllipsis);
     if (width > 0 && gfx::GetStringWidth(last, font_list()) > width)
       last = gfx::ElideText(last, font_list(), width, gfx::ELIDE_AT_END);
     wrapped.resize(lines - 1);

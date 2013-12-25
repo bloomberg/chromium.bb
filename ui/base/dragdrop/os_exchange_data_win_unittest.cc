@@ -136,7 +136,7 @@ TEST(OSExchangeDataWinTest, URLDataAccessViaCOM) {
   EXPECT_EQ(S_OK, com_data->GetData(&format_etc, &medium));
   std::wstring output =
       base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
-  EXPECT_EQ(url.spec(), WideToUTF8(output));
+  EXPECT_EQ(url.spec(), base::WideToUTF8(output));
   ReleaseStgMedium(&medium);
 }
 
@@ -163,7 +163,7 @@ TEST(OSExchangeDataWinTest, MultipleFormatsViaCOM) {
   EXPECT_EQ(S_OK, com_data->GetData(&url_format_etc, &medium));
   std::wstring output_url =
       base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
-  EXPECT_EQ(url.spec(), WideToUTF8(output_url));
+  EXPECT_EQ(url.spec(), base::WideToUTF8(output_url));
   ReleaseStgMedium(&medium);
 
   // The text is supposed to be the raw text of the URL, _NOT_ the value of
@@ -171,7 +171,7 @@ TEST(OSExchangeDataWinTest, MultipleFormatsViaCOM) {
   EXPECT_EQ(S_OK, com_data->GetData(&text_format_etc, &medium));
   std::wstring output_text =
       base::win::ScopedHGlobal<wchar_t>(medium.hGlobal).get();
-  EXPECT_EQ(url_spec, WideToUTF8(output_text));
+  EXPECT_EQ(url_spec, base::WideToUTF8(output_text));
   ReleaseStgMedium(&medium);
 }
 
@@ -321,7 +321,7 @@ TEST(OSExchangeDataWinTest, CFHtml) {
       "StartFragment:0000000175\r\nEndFragment:0000000252\r\n"
       "SourceURL:http://www.google.com/\r\n<html>\r\n<body>\r\n"
       "<!--StartFragment-->");
-  expected_cf_html += WideToUTF8(html);
+  expected_cf_html += base::WideToUTF8(html);
   expected_cf_html.append("<!--EndFragment-->\r\n</body>\r\n</html>");
 
   FORMATETC format = Clipboard::GetHtmlFormatType().ToFormatEtc();

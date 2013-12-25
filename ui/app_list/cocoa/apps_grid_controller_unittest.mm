@@ -138,7 +138,7 @@ class AppListItemWithMenu : public AppListItemModel {
         menu_model_(NULL),
         menu_ready_(true) {
     SetTitleAndFullName(title, title);
-    menu_model_.AddItem(0, UTF8ToUTF16("Menu For: " + title));
+    menu_model_.AddItem(0, base::UTF8ToUTF16("Menu For: " + title));
   }
 
   void SetMenuReadyForTesting(bool ready) {

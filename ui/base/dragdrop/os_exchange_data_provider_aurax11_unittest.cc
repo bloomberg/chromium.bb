@@ -22,12 +22,12 @@ TEST(OSExchangeDataProviderAuraX11Test, MozillaURL) {
   ui::OSExchangeDataProviderAuraX11 provider;
 
   // Check that we can get titled entries.
-  provider.SetURL(GURL(kGoogleURL), ASCIIToUTF16(kGoogleTitle));
+  provider.SetURL(GURL(kGoogleURL), base::ASCIIToUTF16(kGoogleTitle));
   {
     GURL out_gurl;
     base::string16 out_str;
     EXPECT_TRUE(provider.GetURLAndTitle(&out_gurl, &out_str));
-    EXPECT_EQ(ASCIIToUTF16(kGoogleTitle), out_str);
+    EXPECT_EQ(base::ASCIIToUTF16(kGoogleTitle), out_str);
     EXPECT_EQ(kGoogleURL, out_gurl.spec());
   }
 

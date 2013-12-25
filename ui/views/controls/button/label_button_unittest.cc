@@ -12,6 +12,8 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/views/test/views_test_base.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 gfx::ImageSkia CreateTestImage(int width, int height) {

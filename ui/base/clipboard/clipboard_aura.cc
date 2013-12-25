@@ -189,7 +189,7 @@ class AuraClipboard {
   void ReadText(base::string16* result) const {
     std::string utf8_result;
     ReadAsciiText(&utf8_result);
-    *result = UTF8ToUTF16(utf8_result);
+    *result = base::UTF8ToUTF16(utf8_result);
   }
 
   // Reads ascii text from the data at the top of clipboard stack.
@@ -221,7 +221,7 @@ class AuraClipboard {
       return;
 
     const ClipboardData* data = GetData();
-    *markup = UTF8ToUTF16(data->markup_data());
+    *markup = base::UTF8ToUTF16(data->markup_data());
     *src_url = data->url();
 
     *fragment_start = 0;
@@ -272,7 +272,7 @@ class AuraClipboard {
       return;
 
     const ClipboardData* data = GetData();
-    *title = UTF8ToUTF16(data->bookmark_title());
+    *title = base::UTF8ToUTF16(data->bookmark_title());
     *url = data->bookmark_url();
   }
 
@@ -493,13 +493,13 @@ void Clipboard::ReadAvailableTypes(ClipboardType type,
   types->clear();
   *contains_filenames = false;
   if (IsFormatAvailable(GetPlainTextFormatType(), type))
-    types->push_back(UTF8ToUTF16(GetPlainTextFormatType().ToString()));
+    types->push_back(base::UTF8ToUTF16(GetPlainTextFormatType().ToString()));
   if (IsFormatAvailable(GetHtmlFormatType(), type))
-    types->push_back(UTF8ToUTF16(GetHtmlFormatType().ToString()));
+    types->push_back(base::UTF8ToUTF16(GetHtmlFormatType().ToString()));
   if (IsFormatAvailable(GetRtfFormatType(), type))
-    types->push_back(UTF8ToUTF16(GetRtfFormatType().ToString()));
+    types->push_back(base::UTF8ToUTF16(GetRtfFormatType().ToString()));
   if (IsFormatAvailable(GetBitmapFormatType(), type))
-    types->push_back(UTF8ToUTF16(kMimeTypePNG));
+    types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
 
   AuraClipboard* clipboard = GetClipboard();
   if (clipboard->IsFormatAvailable(CUSTOM) && clipboard->GetData()) {

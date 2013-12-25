@@ -37,6 +37,8 @@
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #endif
 
+using base::ASCIIToUTF16;
+
 namespace views {
 namespace corewm {
 namespace test {

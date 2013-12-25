@@ -30,7 +30,7 @@ base::FilePath GetResourcesPakFilePath(const std::string& pak_name) {
     return path.AppendASCII(pak_name.c_str());
 
   // Return just the name of the pack file.
-  return base::FilePath(ASCIIToUTF16(pak_name));
+  return base::FilePath(base::ASCIIToUTF16(pak_name));
 }
 
 }  // namespace

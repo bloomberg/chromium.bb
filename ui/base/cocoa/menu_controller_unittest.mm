@@ -16,6 +16,8 @@
 #import "ui/base/test/ui_cocoa_test_helper.h"
 #include "ui/gfx/image/image.h"
 
+using base::ASCIIToUTF16;
+
 namespace ui {
 
 namespace {

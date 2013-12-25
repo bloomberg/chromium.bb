@@ -109,7 +109,7 @@ OSExchangeData::Provider* OSExchangeDataProviderAuraX11::Clone() const {
 }
 
 void OSExchangeDataProviderAuraX11::SetString(const base::string16& text_data) {
-  std::string utf8 = UTF16ToUTF8(text_data);
+  std::string utf8 = base::UTF16ToUTF8(text_data);
   scoped_refptr<base::RefCountedMemory> mem(
       base::RefCountedString::TakeString(&utf8));
 
@@ -123,11 +123,11 @@ void OSExchangeDataProviderAuraX11::SetURL(const GURL& url,
                                            const base::string16& title) {
   // Mozilla's URL format: (UTF16: URL, newline, title)
   if (url.is_valid()) {
-    base::string16 spec = UTF8ToUTF16(url.spec());
+    base::string16 spec = base::UTF8ToUTF16(url.spec());
 
     std::vector<unsigned char> data;
     ui::AddString16ToVector(spec, &data);
-    ui::AddString16ToVector(ASCIIToUTF16("\n"), &data);
+    ui::AddString16ToVector(base::ASCIIToUTF16("\n"), &data);
     ui::AddString16ToVector(title, &data);
     scoped_refptr<base::RefCountedMemory> mem(
         base::RefCountedBytes::TakeVector(&data));
@@ -169,7 +169,7 @@ bool OSExchangeDataProviderAuraX11::GetString(base::string16* result) const {
   ui::SelectionData data(format_map_.GetFirstOf(requested_types));
   if (data.IsValid()) {
     std::string text = data.GetText();
-    *result = UTF8ToUTF16(text);
+    *result = base::UTF8ToUTF16(text);
     return true;
   }
 
@@ -195,7 +195,7 @@ bool OSExchangeDataProviderAuraX11::GetURLAndTitle(
       data.AssignTo(&unparsed);
 
       std::vector<base::string16> tokens;
-      size_t num_tokens = Tokenize(unparsed, ASCIIToUTF16("\n"), &tokens);
+      size_t num_tokens = Tokenize(unparsed, base::ASCIIToUTF16("\n"), &tokens);
       if (num_tokens > 0) {
         if (num_tokens > 1)
           *title = tokens[1];

@@ -19,7 +19,7 @@ class OSExchangeDataTest : public PlatformTest {
 
 TEST_F(OSExchangeDataTest, StringDataGetAndSet) {
   OSExchangeData data;
-  base::string16 input = ASCIIToUTF16("I can has cheezburger?");
+  base::string16 input = base::ASCIIToUTF16("I can has cheezburger?");
   data.SetString(input);
 
   OSExchangeData data2(data.provider().Clone());
@@ -38,7 +38,7 @@ TEST_F(OSExchangeDataTest, TestURLExchangeFormats) {
   OSExchangeData data;
   std::string url_spec = "http://www.google.com/";
   GURL url(url_spec);
-  base::string16 url_title = ASCIIToUTF16("www.google.com");
+  base::string16 url_title = base::ASCIIToUTF16("www.google.com");
   data.SetURL(url, url_title);
   base::string16 output;
 
@@ -54,7 +54,7 @@ TEST_F(OSExchangeDataTest, TestURLExchangeFormats) {
 
   // URL should be the raw text response
   EXPECT_TRUE(data2.GetString(&output_string));
-  EXPECT_EQ(url_spec, UTF16ToUTF8(output_string));
+  EXPECT_EQ(url_spec, base::UTF16ToUTF8(output_string));
 }
 
 TEST_F(OSExchangeDataTest, TestPickledData) {
@@ -83,7 +83,7 @@ TEST_F(OSExchangeDataTest, TestPickledData) {
 TEST_F(OSExchangeDataTest, TestHTML) {
   OSExchangeData data;
   GURL url("http://www.google.com/");
-  base::string16 html = ASCIIToUTF16(
+  base::string16 html = base::ASCIIToUTF16(
       "<HTML>\n<BODY>\n"
       "<b>bold.</b> <i><b>This is bold italic.</b></i>\n"
       "</BODY>\n</HTML>");

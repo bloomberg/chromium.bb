@@ -136,10 +136,10 @@ void MessageCenterViewTest::SetUp() {
   // Create a dummy notification.
   Notification notification(NOTIFICATION_TYPE_SIMPLE,
                             std::string("notification id"),
-                            UTF8ToUTF16("title"),
-                            UTF8ToUTF16("message"),
+                            base::UTF8ToUTF16("title"),
+                            base::UTF8ToUTF16("message"),
                             gfx::Image(),
-                            UTF8ToUTF16("display source"),
+                            base::UTF8ToUTF16("display source"),
                             NotifierId(NotifierId::APPLICATION, "extension_id"),
                             message_center::RichNotificationData(),
                             NULL);
@@ -240,7 +240,7 @@ void MessageCenterViewTest::RegisterCall(CallType type) {
 void MessageCenterViewTest::LogBounds(int depth, views::View* view) {
   base::string16 inset;
   for (int i = 0; i < depth; ++i)
-    inset.append(UTF8ToUTF16("  "));
+    inset.append(base::UTF8ToUTF16("  "));
   gfx::Rect bounds = view->bounds();
   DVLOG(0) << inset << bounds.width() << " x " << bounds.height()
            << " @ " << bounds.x() << ", " << bounds.y();

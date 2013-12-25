@@ -298,7 +298,7 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedString) {
   MockResourceBundleDelegate delegate;
   ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
-  base::string16 data = ASCIIToUTF16("My test data");
+  base::string16 data = base::ASCIIToUTF16("My test data");
   int resource_id = 5;
 
   EXPECT_CALL(delegate, GetLocalizedStringMock(resource_id))

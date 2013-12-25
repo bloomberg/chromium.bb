@@ -16,6 +16,8 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
+using base::ASCIIToUTF16;
+
 namespace {
 const char kLabelButton[] = "Label Button";
 const char kTextButton[] = "Text Button";

@@ -24,8 +24,9 @@ void QueryFontsFromRegistry(std::map<std::string, std::string>* map) {
 
   base::win::RegistryValueIterator it(HKEY_LOCAL_MACHINE, kFonts);
   for (; it.Valid(); ++it) {
-    const std::string filename = StringToLowerASCII(WideToUTF8(it.Value()));
-    (*map)[filename] = WideToUTF8(it.Name());
+    const std::string filename =
+        StringToLowerASCII(base::WideToUTF8(it.Value()));
+    (*map)[filename] = base::WideToUTF8(it.Name());
   }
 }
 
@@ -69,7 +70,7 @@ void QueryLinkedFontsFromRegistry(const Font& font,
   if (FAILED(key.Open(HKEY_LOCAL_MACHINE, kSystemLink, KEY_READ)))
     return;
 
-  const std::wstring original_font_name = UTF8ToWide(font.GetFontName());
+  const std::wstring original_font_name = base::UTF8ToWide(font.GetFontName());
   std::vector<std::wstring> values;
   if (FAILED(key.ReadValues(original_font_name.c_str(), &values))) {
     key.Close();
@@ -79,7 +80,8 @@ void QueryLinkedFontsFromRegistry(const Font& font,
   std::string filename;
   std::string font_name;
   for (size_t i = 0; i < values.size(); ++i) {
-    internal::ParseFontLinkEntry(WideToUTF8(values[i]), &filename, &font_name);
+    internal::ParseFontLinkEntry(
+        base::WideToUTF8(values[i]), &filename, &font_name);
     // If the font name is present, add that directly, otherwise add the
     // font names corresponding to the filename.
     if (!font_name.empty()) {

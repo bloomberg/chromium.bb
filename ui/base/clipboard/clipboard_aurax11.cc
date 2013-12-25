@@ -581,13 +581,13 @@ void Clipboard::ReadAvailableTypes(ClipboardType type,
   types->clear();
 
   if (target_list.ContainsText())
-    types->push_back(UTF8ToUTF16(kMimeTypeText));
+    types->push_back(base::UTF8ToUTF16(kMimeTypeText));
   if (target_list.ContainsFormat(GetHtmlFormatType()))
-    types->push_back(UTF8ToUTF16(kMimeTypeHTML));
+    types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
   if (target_list.ContainsFormat(GetRtfFormatType()))
-    types->push_back(UTF8ToUTF16(kMimeTypeRTF));
+    types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
   if (target_list.ContainsFormat(GetBitmapFormatType()))
-    types->push_back(UTF8ToUTF16(kMimeTypePNG));
+    types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 
   SelectionData data(aurax11_details_->RequestAndWaitForTypes(
@@ -603,7 +603,7 @@ void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
       type, aurax11_details_->GetTextAtoms()));
   if (data.IsValid()) {
     std::string text = data.GetText();
-    *result = UTF8ToUTF16(text);
+    *result = base::UTF8ToUTF16(text);
   }
 }
 
@@ -736,8 +736,8 @@ void Clipboard::WriteBookmark(const char* title_data,
                               const char* url_data,
                               size_t url_len) {
   // Write as a mozilla url (UTF16: URL, newline, title).
-  base::string16 url = UTF8ToUTF16(std::string(url_data, url_len) + "\n");
-  base::string16 title = UTF8ToUTF16(std::string(title_data, title_len));
+  base::string16 url = base::UTF8ToUTF16(std::string(url_data, url_len) + "\n");
+  base::string16 title = base::UTF8ToUTF16(std::string(title_data, title_len));
 
   std::vector<unsigned char> data;
   ui::AddString16ToVector(url, &data);

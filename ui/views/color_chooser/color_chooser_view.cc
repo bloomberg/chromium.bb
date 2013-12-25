@@ -33,17 +33,18 @@ const int kBorderWidth = 1;
 const int kTextfieldLengthInChars = 14;
 
 base::string16 GetColorText(SkColor color) {
-  return ASCIIToUTF16(base::StringPrintf("#%02x%02x%02x",
-                                         SkColorGetR(color),
-                                         SkColorGetG(color),
-                                         SkColorGetB(color)));
+  return base::ASCIIToUTF16(base::StringPrintf("#%02x%02x%02x",
+                                               SkColorGetR(color),
+                                               SkColorGetG(color),
+                                               SkColorGetB(color)));
 }
 
 bool GetColorFromText(const base::string16& text, SkColor* result) {
   if (text.size() != 6 && !(text.size() == 7 && text[0] == '#'))
     return false;
 
-  std::string input = UTF16ToUTF8((text.size() == 6) ? text : text.substr(1));
+  std::string input =
+      base::UTF16ToUTF8((text.size() == 6) ? text : text.substr(1));
   std::vector<uint8> hex;
   if (!base::HexStringToBytes(input, &hex))
     return false;

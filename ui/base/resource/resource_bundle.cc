@@ -481,7 +481,7 @@ base::string16 ResourceBundle::GetLocalizedString(int message_id) {
     msg = base::string16(reinterpret_cast<const base::char16*>(data.data()),
                          data.length() / 2);
   } else if (encoding == ResourceHandle::UTF8) {
-    msg = UTF8ToUTF16(data);
+    msg = base::UTF8ToUTF16(data);
   }
   return msg;
 }

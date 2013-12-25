@@ -19,7 +19,7 @@ LinkExample::~LinkExample() {
 }
 
 void LinkExample::CreateExampleView(View* container) {
-  link_ = new Link(ASCIIToUTF16("Click me!"));
+  link_ = new Link(base::ASCIIToUTF16("Click me!"));
   link_->set_listener(this);
 
   container->SetLayoutManager(new FillLayout);

@@ -228,13 +228,13 @@ void Clipboard::ReadAvailableTypes(ClipboardType type,
   DCHECK(CalledOnValidThread());
   types->clear();
   if (IsFormatAvailable(Clipboard::GetPlainTextFormatType(), type))
-    types->push_back(UTF8ToUTF16(kMimeTypeText));
+    types->push_back(base::UTF8ToUTF16(kMimeTypeText));
   if (IsFormatAvailable(Clipboard::GetHtmlFormatType(), type))
-    types->push_back(UTF8ToUTF16(kMimeTypeHTML));
+    types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
   if (IsFormatAvailable(Clipboard::GetRtfFormatType(), type))
-    types->push_back(UTF8ToUTF16(kMimeTypeRTF));
+    types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
   if ([NSImage canInitWithPasteboard:GetPasteboard()])
-    types->push_back(UTF8ToUTF16(kMimeTypePNG));
+    types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 
   NSPasteboard* pb = GetPasteboard();
@@ -251,9 +251,7 @@ void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
   NSPasteboard* pb = GetPasteboard();
   NSString* contents = [pb stringForType:NSStringPboardType];
 
-  UTF8ToUTF16([contents UTF8String],
-              [contents lengthOfBytesUsingEncoding:NSUTF8StringEncoding],
-              result);
+  *result = base::SysNSStringToUTF16(contents);
 }
 
 void Clipboard::ReadAsciiText(ClipboardType type, std::string* result) const {
@@ -291,9 +289,7 @@ void Clipboard::ReadHTML(ClipboardType type,
     NSString* contents = [pb stringForType:bestType];
     if ([bestType isEqualToString:NSRTFPboardType])
       contents = [pb htmlFromRtf];
-    UTF8ToUTF16([contents UTF8String],
-                [contents lengthOfBytesUsingEncoding:NSUTF8StringEncoding],
-                markup);
+    *markup = base::SysNSStringToUTF16(contents);
   }
 
   *fragment_start = 0;
@@ -346,9 +342,7 @@ void Clipboard::ReadBookmark(base::string16* title, std::string* url) const {
 
   if (title) {
     NSString* contents = [pb stringForType:kUTTypeURLName];
-    UTF8ToUTF16([contents UTF8String],
-                [contents lengthOfBytesUsingEncoding:NSUTF8StringEncoding],
-                title);
+    *title = base::SysNSStringToUTF16(contents);
   }
 
   if (url) {

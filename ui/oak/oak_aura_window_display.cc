@@ -68,7 +68,7 @@ base::string16 PropertyWithWindowType(int type) {
       NOTREACHED();
       break;
   }
-  return ASCIIToUTF16(property);
+  return base::ASCIIToUTF16(property);
 }
 
 }  // namespace
@@ -110,9 +110,9 @@ base::string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
     case ROW_TYPE:
       return PropertyWithWindowType(window_->type());
     case ROW_NAME:
-      return ASCIIToUTF16("Name: " + window_->name());
+      return base::ASCIIToUTF16("Name: " + window_->name());
     case ROW_TITLE:
-      return ASCIIToUTF16("Title: ") + window_->title();
+      return base::ASCIIToUTF16("Title: ") + window_->title();
     case ROW_TRANSPARENT:
       return PropertyWithBool("Transparent: ", window_->transparent());
     case ROW_LAYER:
@@ -125,7 +125,7 @@ base::string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
       return PropertyWithBounds("Bounds in Root Window: ",
                                 window_->GetBoundsInRootWindow());
     case ROW_TRANSFORM:
-      return ASCIIToUTF16("Transform:");
+      return base::ASCIIToUTF16("Transform:");
     case ROW_PARENT:
       return PropertyWithVoidStar("Parent: ", window_->parent());
     case ROW_ROOTWINDOW:

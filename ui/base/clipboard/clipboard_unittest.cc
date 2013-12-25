@@ -31,6 +31,10 @@
 #include "base/android/jni_string.h"
 #endif
 
+using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
+using base::UTF16ToUTF8;
+
 namespace ui {
 
 class ClipboardTest : public PlatformTest {

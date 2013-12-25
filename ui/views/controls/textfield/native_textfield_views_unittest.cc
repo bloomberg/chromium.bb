@@ -43,6 +43,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
+using base::WideToUTF16;
+
 #define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(ASCIIToUTF16(ascii), utf16)
 
 namespace {

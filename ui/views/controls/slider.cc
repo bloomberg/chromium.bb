@@ -326,7 +326,7 @@ void Slider::AnimationProgressed(const gfx::Animation* animation) {
 void Slider::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_SLIDER;
   state->name = accessible_name_;
-  state->value = UTF8ToUTF16(
+  state->value = base::UTF8ToUTF16(
       base::StringPrintf("%d%%", (int)(value_ * 100 + 0.5)));
 }
 

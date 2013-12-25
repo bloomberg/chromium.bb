@@ -487,7 +487,7 @@ std::string IMM32Manager::GetInputLanguageName() const {
     return std::string();
 
   std::string language;
-  WideToUTF8(buffer, length - 1, &language);
+  base::WideToUTF8(buffer, length - 1, &language);
   if (SUBLANGID(input_language_id_) == SUBLANG_NEUTRAL)
     return language;
 
@@ -498,7 +498,7 @@ std::string IMM32Manager::GetInputLanguageName() const {
     return language;
 
   std::string region;
-  WideToUTF8(buffer, length - 1, &region);
+  base::WideToUTF8(buffer, length - 1, &region);
   return language.append(1, '-').append(region);
 }
 

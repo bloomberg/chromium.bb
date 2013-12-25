@@ -25,7 +25,8 @@ MONITORINFOEX GetMonitorInfoForMonitor(HMONITOR monitor) {
 
 gfx::Display GetDisplay(MONITORINFOEX& monitor_info) {
   // TODO(oshima): Implement Observer.
-  int64 id = static_cast<int64>(base::Hash(WideToUTF8(monitor_info.szDevice)));
+  int64 id = static_cast<int64>(
+      base::Hash(base::WideToUTF8(monitor_info.szDevice)));
   gfx::Rect bounds = gfx::Rect(monitor_info.rcMonitor);
   gfx::Display display(id, bounds);
   display.set_work_area(gfx::Rect(monitor_info.rcWork));

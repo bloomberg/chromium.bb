@@ -29,7 +29,7 @@ TEST(GtkDndUtilTest, ExtractNamedURLValid) {
   GURL url;
   base::string16 title;
   ASSERT_EQ(true, ui::ExtractNamedURL(&data, &url, &title));
-  EXPECT_EQ(UTF8ToUTF16(kTitle), title);
+  EXPECT_EQ(base::UTF8ToUTF16(kTitle), title);
   EXPECT_EQ(GURL(kUrl), url);
 }
 

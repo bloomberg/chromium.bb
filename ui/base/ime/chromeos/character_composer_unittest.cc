@@ -10,6 +10,8 @@
 #include "ui/base/glib/glib_integers.h"
 #include "ui/events/event_constants.h"
 
+using base::ASCIIToUTF16;
+
 namespace ui {
 
 class CharacterComposerTest : public testing::Test {

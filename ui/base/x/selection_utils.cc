@@ -205,7 +205,7 @@ base::string16 SelectionData::GetHtml() const {
       markup.assign(reinterpret_cast<const uint16_t*>(data) + 1,
                     (size / 2) - 1);
     } else {
-      UTF8ToUTF16(reinterpret_cast<const char*>(data), size, &markup);
+      base::UTF8ToUTF16(reinterpret_cast<const char*>(data), size, &markup);
     }
 
     // If there is a terminating NULL, drop it.

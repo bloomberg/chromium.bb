@@ -15,6 +15,8 @@
 #include "ui/gfx/platform_font_win.h"
 #endif
 
+using base::ASCIIToUTF16;
+
 namespace gfx {
 namespace {
 

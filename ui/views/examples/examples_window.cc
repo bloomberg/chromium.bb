@@ -52,7 +52,7 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE { return example_list_.size(); }
   virtual base::string16 GetItemAt(int index) OVERRIDE {
-    return UTF8ToUTF16(example_list_[index]->example_title());
+    return base::UTF8ToUTF16(example_list_[index]->example_title());
   }
 
   View* GetItemViewAt(int index) {
@@ -88,7 +88,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
 
   // Prints a message in the status area, at the bottom of the window.
   void SetStatus(const std::string& status) {
-    status_label_->SetText(UTF8ToUTF16(status));
+    status_label_->SetText(base::UTF8ToUTF16(status));
   }
 
   static ExamplesWindowContents* instance() { return instance_; }
@@ -98,7 +98,7 @@ class ExamplesWindowContents : public WidgetDelegateView,
   virtual bool CanResize() const OVERRIDE { return true; }
   virtual bool CanMaximize() const OVERRIDE { return true; }
   virtual base::string16 GetWindowTitle() const OVERRIDE {
-    return ASCIIToUTF16("Views Examples");
+    return base::ASCIIToUTF16("Views Examples");
   }
   virtual View* GetContentsView() OVERRIDE { return this; }
   virtual void WindowClosing() OVERRIDE {

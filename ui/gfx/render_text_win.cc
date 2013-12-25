@@ -86,7 +86,8 @@ bool ChooseFallbackFont(HDC hdc,
     log_font.lfFaceName[0] = 0;
     EnumEnhMetaFile(0, meta_file, MetaFileEnumProc, &log_font, NULL);
     if (log_font.lfFaceName[0]) {
-      *result = Font(UTF16ToUTF8(log_font.lfFaceName), font.GetFontSize());
+      *result = Font(base::UTF16ToUTF8(log_font.lfFaceName),
+                     font.GetFontSize());
       found_fallback = true;
     }
   }

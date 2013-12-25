@@ -119,7 +119,7 @@ bool GetFileUrl(IDataObject* data_object, base::string16* url,
         DWORD file_url_len = arraysize(file_url);
         if (SUCCEEDED(::UrlCreateFromPathA(data.get(), file_url, &file_url_len,
                                            0))) {
-          url->assign(UTF8ToWide(file_url));
+          url->assign(base::UTF8ToWide(file_url));
           title->assign(*url);
           success = true;
         }
@@ -191,7 +191,7 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
     {
       // URL using ascii
       base::win::ScopedHGlobal<char> data(store.hGlobal);
-      SplitUrlAndTitle(UTF8ToWide(data.get()), url, title);
+      SplitUrlAndTitle(base::UTF8ToWide(data.get()), url, title);
     }
     ReleaseStgMedium(&store);
     return true;
@@ -255,7 +255,7 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
     {
       // ascii text
       base::win::ScopedHGlobal<char> data(store.hGlobal);
-      plain_text->assign(UTF8ToWide(data.get()));
+      plain_text->assign(base::UTF8ToWide(data.get()));
     }
     ReleaseStgMedium(&store);
     return true;
@@ -280,7 +280,7 @@ bool ClipboardUtil::GetHtml(IDataObject* data_object,
 
       std::string html_utf8;
       CFHtmlToHtml(std::string(data.get(), data.Size()), &html_utf8, base_url);
-      html->assign(UTF8ToWide(html_utf8));
+      html->assign(base::UTF8ToWide(html_utf8));
     }
     ReleaseStgMedium(&store);
     return true;

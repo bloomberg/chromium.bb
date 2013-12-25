@@ -14,11 +14,11 @@ namespace gfx {
 class CanvasTest : public testing::Test {
  protected:
   int GetStringWidth(const char *text) {
-    return Canvas::GetStringWidth(UTF8ToUTF16(text), font_);
+    return Canvas::GetStringWidth(base::UTF8ToUTF16(text), font_);
   }
 
   gfx::Size SizeStringInt(const char *text, int width, int line_height) {
-    base::string16 text16 = UTF8ToUTF16(text);
+    base::string16 text16 = base::UTF8ToUTF16(text);
     int height = 0;
     int flags =
       (text16.find('\n') != base::string16::npos) ? Canvas::MULTI_LINE : 0;

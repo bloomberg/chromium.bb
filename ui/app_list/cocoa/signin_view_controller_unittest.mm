@@ -37,7 +37,7 @@ class SigninViewControllerTest : public ui::CocoaTest,
                                  public SigninDelegate {
  public:
   SigninViewControllerTest()
-      : test_text_(ASCIIToUTF16("Sign in")),
+      : test_text_(base::ASCIIToUTF16("Sign in")),
         needs_signin_(true),
         show_signin_count_(0),
         open_learn_more_count_(0),

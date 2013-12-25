@@ -171,7 +171,7 @@ std::wstring FormatFilterForExtensions(
         include_all_files = true;
         desc = l10n_util::GetStringFUTF16(
             IDS_APP_SAVEAS_EXTENSION_FORMAT,
-            base::i18n::ToUpper(WideToUTF16(ext_name)),
+            base::i18n::ToUpper(base::WideToUTF16(ext_name)),
             ext_name);
       }
       if (desc.empty())
@@ -552,7 +552,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       GetShellDialogsDelegate()->IsWindowInMetro(owning_window)) {
     if (type == SELECT_SAVEAS_FILE) {
       aura::HandleSaveFile(
-          UTF16ToWide(title),
+          base::UTF16ToWide(title),
           default_path,
           GetFilterForFileTypes(*file_types),
           file_type_index,
@@ -564,7 +564,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       return;
     } else if (type == SELECT_OPEN_FILE) {
       aura::HandleOpenFile(
-          UTF16ToWide(title),
+          base::UTF16ToWide(title),
           default_path,
           GetFilterForFileTypes(*file_types),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
@@ -574,7 +574,7 @@ void SelectFileDialogImpl::SelectFileImpl(
       return;
     } else if (type == SELECT_OPEN_MULTI_FILE) {
       aura::HandleOpenMultipleFiles(
-          UTF16ToWide(title),
+          base::UTF16ToWide(title),
           default_path,
           GetFilterForFileTypes(*file_types),
           base::Bind(&ui::SelectFileDialog::Listener::MultiFilesSelected,
@@ -591,7 +591,7 @@ void SelectFileDialogImpl::SelectFileImpl(
             IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE);
       }
       aura::HandleSelectFolder(
-          UTF16ToWide(title_string),
+          base::UTF16ToWide(title_string),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelected,
                      base::Unretained(listener_)),
           base::Bind(&ui::SelectFileDialog::Listener::FileSelectionCanceled,
@@ -604,8 +604,8 @@ void SelectFileDialogImpl::SelectFileImpl(
 #else
   HWND owner = owning_window;
 #endif
-  ExecuteSelectParams execute_params(type, UTF16ToWide(title), default_path,
-                                     file_types, file_type_index,
+  ExecuteSelectParams execute_params(type, base::UTF16ToWide(title),
+                                     default_path, file_types, file_type_index,
                                      default_extension, BeginRun(owner),
                                      owner, params);
   execute_params.run_state.dialog_thread->message_loop()->PostTask(
@@ -647,7 +647,7 @@ void SelectFileDialogImpl::ExecuteSelectFile(
     if (title.empty() && params.type == SELECT_UPLOAD_FOLDER) {
       // If it's for uploading don't use default dialog title to
       // make sure we clearly tell it's for uploading.
-      title = UTF16ToWide(
+      title = base::UTF16ToWide(
           l10n_util::GetStringUTF16(IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE));
     }
     success = RunSelectFolderDialog(title,

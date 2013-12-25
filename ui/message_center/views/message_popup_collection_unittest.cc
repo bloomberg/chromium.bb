@@ -87,8 +87,8 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     scoped_ptr<Notification> notification(
         new Notification(NOTIFICATION_TYPE_BASE_FORMAT,
                          id,
-                         UTF8ToUTF16("test title"),
-                         UTF8ToUTF16("test message"),
+                         base::UTF8ToUTF16("test title"),
+                         base::UTF8ToUTF16("test message"),
                          gfx::Image(),
                          base::string16() /* display_source */,
                          NotifierId(),

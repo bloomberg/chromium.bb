@@ -527,7 +527,7 @@ bool DesktopRootWindowHostX11::SetWindowTitle(const base::string16& title) {
   if (window_title_ == title)
     return false;
   window_title_ = title;
-  std::string utf8str = UTF16ToUTF8(title);
+  std::string utf8str = base::UTF16ToUTF8(title);
   XChangeProperty(xdisplay_,
                   xwindow_,
                   atom_cache_.GetAtom("_NET_WM_NAME"),

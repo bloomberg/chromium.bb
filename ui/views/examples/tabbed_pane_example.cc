@@ -9,6 +9,8 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
 #include "ui/views/layout/grid_layout.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 namespace examples {
 

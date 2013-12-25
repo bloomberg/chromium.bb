@@ -572,7 +572,7 @@ TEST_F(FocusManagerDtorTest, FocusManagerDestructedLast) {
   // Setup views hierarchy.
   GetContentsView()->AddChildView(new Textfield());
   GetContentsView()->AddChildView(new LabelButtonDtorTracked(
-      ASCIIToUTF16("button"), &dtor_tracker_));
+      base::ASCIIToUTF16("button"), &dtor_tracker_));
 
   // Close the window.
   GetWidget()->Close();

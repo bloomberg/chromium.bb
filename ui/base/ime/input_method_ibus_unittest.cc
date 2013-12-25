@@ -26,6 +26,9 @@
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/gfx/rect.h"
 
+using base::UTF8ToUTF16;
+using base::UTF16ToUTF8;
+
 namespace ui {
 namespace {
 typedef chromeos::IBusEngineHandlerInterface::KeyEventDoneCallback

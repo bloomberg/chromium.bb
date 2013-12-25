@@ -50,7 +50,7 @@ bool OakWindow::CanMaximize() const {
 }
 
 base::string16 OakWindow::GetWindowTitle() const {
-  return ASCIIToUTF16("Oak");
+  return base::ASCIIToUTF16("Oak");
 }
 
 views::View* OakWindow::GetContentsView() {

@@ -70,7 +70,7 @@ TEST_F(FocusManagerTest, FocusStoreRestore) {
   // Simulate an activate, otherwise the deactivate isn't going to do anything.
   SimulateActivateWindow();
 
-  LabelButton* button = new LabelButton(NULL, ASCIIToUTF16("Press me"));
+  LabelButton* button = new LabelButton(NULL, base::ASCIIToUTF16("Press me"));
   button->SetStyle(Button::STYLE_NATIVE_TEXTBUTTON);
   View* view = new View();
   view->SetFocusable(true);

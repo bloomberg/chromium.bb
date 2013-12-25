@@ -205,7 +205,7 @@ void InputMethodIBus::OnCaretBoundsChanged(const TextInputClient* client) {
   // |surrounding_text| coordinates.
   if (!GetEngine())
     return;
-  GetEngine()->SetSurroundingText(UTF16ToUTF8(surrounding_text),
+  GetEngine()->SetSurroundingText(base::UTF16ToUTF8(surrounding_text),
                                   selection_range.start() - text_range.start(),
                                   selection_range.end() - text_range.start());
 }
@@ -464,7 +464,7 @@ void InputMethodIBus::CommitText(const std::string& text) {
   if (!GetTextInputClient())
     return;
 
-  const base::string16 utf16_text = UTF8ToUTF16(text);
+  const base::string16 utf16_text = base::UTF8ToUTF16(text);
   if (utf16_text.empty())
     return;
 
@@ -552,11 +552,11 @@ bool InputMethodIBus::ExecuteCharacterComposer(const ui::KeyEvent& event) {
 
   chromeos::IBusText preedit;
   preedit.set_text(
-      UTF16ToUTF8(character_composer_.preedit_string()));
+      base::UTF16ToUTF8(character_composer_.preedit_string()));
   UpdatePreeditText(preedit, preedit.text().size(),
                     !preedit.text().empty());
    std::string commit_text =
-      UTF16ToUTF8(character_composer_.composed_character());
+      base::UTF16ToUTF8(character_composer_.composed_character());
   if (!commit_text.empty()) {
     CommitText(commit_text);
   }
@@ -568,7 +568,7 @@ void InputMethodIBus::ExtractCompositionText(
     uint32 cursor_position,
     CompositionText* out_composition) const {
   out_composition->Clear();
-  out_composition->text = UTF8ToUTF16(text.text());
+  out_composition->text = base::UTF8ToUTF16(text.text());
 
   if (out_composition->text.empty())
     return;

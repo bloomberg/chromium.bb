@@ -561,7 +561,7 @@ void CharacterComposer::UpdatePreeditStringHexMode() {
     DCHECK(0 <= digit && digit < 16);
     preedit_string_ascii += digit <= 9 ? ('0' + digit) : ('a' + (digit - 10));
   }
-  preedit_string_ = ASCIIToUTF16(preedit_string_ascii);
+  preedit_string_ = base::ASCIIToUTF16(preedit_string_ascii);
 }
 
 }  // namespace ui

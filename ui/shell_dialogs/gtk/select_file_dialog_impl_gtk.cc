@@ -183,7 +183,7 @@ void SelectFileDialogImplGTK::SelectFileImpl(
   if (owning_window)
     parents_.insert(owning_window);
 
-  std::string title_string = UTF16ToUTF8(title);
+  std::string title_string = base::UTF16ToUTF8(title);
 
   file_type_index_ = file_type_index;
   if (file_types)
@@ -262,7 +262,7 @@ void SelectFileDialogImplGTK::AddFilters(GtkFileChooser* chooser) {
     // The description vector may be blank, in which case we are supposed to
     // use some sort of default description based on the filter.
     if (i < file_types_.extension_description_overrides.size()) {
-      gtk_file_filter_set_name(filter, UTF16ToUTF8(
+      gtk_file_filter_set_name(filter, base::UTF16ToUTF8(
           file_types_.extension_description_overrides[i]).c_str());
     } else {
       // There is no system default filter description so we use

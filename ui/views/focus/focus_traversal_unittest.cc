@@ -25,6 +25,8 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 
 namespace {

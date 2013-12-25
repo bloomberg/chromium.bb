@@ -451,7 +451,7 @@ uint16 GetCharacterFromXEvent(XEvent* xev) {
   DCHECK_LE(bytes_written, 6);
 
   base::string16 result;
-  return (bytes_written > 0 && UTF8ToUTF16(buf, bytes_written, &result) &&
+  return (bytes_written > 0 && base::UTF8ToUTF16(buf, bytes_written, &result) &&
           result.length() == 1) ? result[0] : 0;
 }
 

@@ -317,8 +317,8 @@ void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
 void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
                               const char* url_data, size_t url_len) {
   // Write as a mozilla url (UTF16: URL, newline, title).
-  base::string16 url = UTF8ToUTF16(std::string(url_data, url_len) + "\n");
-  base::string16 title = UTF8ToUTF16(std::string(title_data, title_len));
+  base::string16 url = base::UTF8ToUTF16(std::string(url_data, url_len) + "\n");
+  base::string16 title = base::UTF8ToUTF16(std::string(title_data, title_len));
   if (title.length() >= std::numeric_limits<size_t>::max() / 4 ||
       url.length() >= std::numeric_limits<size_t>::max() / 4)
     return;
@@ -417,13 +417,13 @@ void Clipboard::ReadAvailableTypes(ClipboardType type,
 
   types->clear();
   if (IsFormatAvailable(GetPlainTextFormatType(), type))
-    types->push_back(UTF8ToUTF16(kMimeTypeText));
+    types->push_back(base::UTF8ToUTF16(kMimeTypeText));
   if (IsFormatAvailable(GetHtmlFormatType(), type))
-    types->push_back(UTF8ToUTF16(kMimeTypeHTML));
+    types->push_back(base::UTF8ToUTF16(kMimeTypeHTML));
   if (IsFormatAvailable(GetRtfFormatType(), type))
-    types->push_back(UTF8ToUTF16(kMimeTypeRTF));
+    types->push_back(base::UTF8ToUTF16(kMimeTypeRTF));
   if (IsFormatAvailable(GetBitmapFormatType(), type))
-    types->push_back(UTF8ToUTF16(kMimeTypePNG));
+    types->push_back(base::UTF8ToUTF16(kMimeTypePNG));
   *contains_filenames = false;
 
   GtkClipboard* clipboard = LookupBackingClipboard(type);
@@ -454,7 +454,7 @@ void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
     return;
 
   // TODO(estade): do we want to handle the possible error here?
-  UTF8ToUTF16(text, strlen(text), result);
+  base::UTF8ToUTF16(text, strlen(text), result);
   g_free(text);
 }
 
@@ -508,7 +508,8 @@ void Clipboard::ReadHTML(ClipboardType type,
     markup->assign(reinterpret_cast<const uint16_t*>(raw_data) + 1,
                    (data_length / 2) - 1);
   } else {
-    UTF8ToUTF16(reinterpret_cast<const char*>(raw_data), data_length, markup);
+    base::UTF8ToUTF16(
+        reinterpret_cast<const char*>(raw_data), data_length, markup);
   }
 
   // If there is a terminating NULL, drop it.

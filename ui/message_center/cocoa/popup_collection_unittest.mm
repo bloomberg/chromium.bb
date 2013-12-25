@@ -17,6 +17,8 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 
+using base::ASCIIToUTF16;
+
 namespace message_center {
 
 class PopupCollectionTest : public ui::CocoaTest {

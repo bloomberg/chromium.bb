@@ -211,7 +211,7 @@ static void SetupPangoLayoutWithoutFont(
   // Set text and accelerator character if needed.
   if (flags & Canvas::SHOW_PREFIX) {
     // Escape the text string to be used as markup.
-    std::string utf8 = UTF16ToUTF8(text);
+    std::string utf8 = base::UTF16ToUTF8(text);
     gchar* escaped_text = g_markup_escape_text(utf8.c_str(), utf8.size());
     pango_layout_set_markup_with_accel(layout,
                                        escaped_text,
@@ -229,9 +229,9 @@ static void SetupPangoLayoutWithoutFont(
           RemoveAcceleratorChar(text,
                                 static_cast<base::char16>(kAcceleratorChar),
                                 NULL, NULL);
-      utf8 = UTF16ToUTF8(accelerator_removed);
+      utf8 = base::UTF16ToUTF8(accelerator_removed);
     } else {
-      utf8 = UTF16ToUTF8(text);
+      utf8 = base::UTF16ToUTF8(text);
     }
 
     pango_layout_set_text(layout, utf8.data(), utf8.size());

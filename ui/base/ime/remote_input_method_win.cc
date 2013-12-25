@@ -61,7 +61,7 @@ std::string GetLocaleString(LCID Locale_id, LCTYPE locale_type) {
   if (chars_written <= 1 || arraysize(buffer) < chars_written)
     return std::string();
   std::string result;
-  WideToUTF8(buffer, chars_written - 1, &result);
+  base::WideToUTF8(buffer, chars_written - 1, &result);
   return result;
 }
 

@@ -33,6 +33,9 @@
 #include "ui/base/test/data/resource.h"
 #endif
 
+using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
+
 namespace {
 
 class StringWrapper {

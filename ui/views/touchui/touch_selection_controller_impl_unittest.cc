@@ -22,6 +22,9 @@
 #include "ui/aura/window.h"
 #endif
 
+using base::ASCIIToUTF16;
+using base::UTF16ToUTF8;
+
 namespace {
 // Should match kSelectionHandlePadding in touch_selection_controller.
 const int kPadding = 10;

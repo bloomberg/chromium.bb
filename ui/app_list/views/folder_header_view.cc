@@ -99,7 +99,7 @@ void FolderHeaderView::Update() {
   if (!folder_item_)
     return;
 
-  folder_name_view_->SetText(UTF8ToUTF16(folder_item_->title()));
+  folder_name_view_->SetText(base::UTF8ToUTF16(folder_item_->title()));
 }
 
 gfx::Size FolderHeaderView::GetPreferredSize() {
@@ -146,7 +146,7 @@ void FolderHeaderView::ContentsChanged(views::Textfield* sender,
     return;
 
   folder_item_->RemoveObserver(this);
-  std::string name = UTF16ToUTF8(folder_name_view_->text());
+  std::string name = base::UTF16ToUTF8(folder_name_view_->text());
   folder_item_->SetTitleAndFullName(name, name);
   folder_item_->AddObserver(this);
 }

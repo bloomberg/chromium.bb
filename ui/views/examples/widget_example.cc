@@ -13,6 +13,8 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 namespace examples {
 

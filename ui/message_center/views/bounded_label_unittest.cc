@@ -23,9 +23,9 @@ namespace test {
 class BoundedLabelTest : public testing::Test {
  public:
   BoundedLabelTest() {
-    digit_pixels_ = gfx::GetStringWidth(UTF8ToUTF16("0"), font_list_);
-    space_pixels_ = gfx::GetStringWidth(UTF8ToUTF16(" "), font_list_);
-    ellipsis_pixels_ = gfx::GetStringWidth(UTF8ToUTF16("\xE2\x80\xA6"),
+    digit_pixels_ = gfx::GetStringWidth(base::UTF8ToUTF16("0"), font_list_);
+    space_pixels_ = gfx::GetStringWidth(base::UTF8ToUTF16(" "), font_list_);
+    ellipsis_pixels_ = gfx::GetStringWidth(base::UTF8ToUTF16("\xE2\x80\xA6"),
                                            font_list_);
   }
 
@@ -36,9 +36,9 @@ class BoundedLabelTest : public testing::Test {
   // with the results. This allows test strings to be specified as ASCII const
   // char* strings, making tests more readable and easier to write.
   base::string16 ToString(const char* string) {
-    const base::string16 periods = UTF8ToUTF16("...");
-    const base::string16 ellipses = UTF8ToUTF16("\xE2\x80\xA6");
-    base::string16 result = UTF8ToUTF16(string);
+    const base::string16 periods = base::UTF8ToUTF16("...");
+    const base::string16 ellipses = base::UTF8ToUTF16("\xE2\x80\xA6");
+    base::string16 result = base::UTF8ToUTF16(string);
     ReplaceSubstringsAfterOffset(&result, 0, periods, ellipses);
     return result;
   }

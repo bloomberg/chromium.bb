@@ -392,8 +392,8 @@ void PlatformFontPango::InitPangoMetrics() {
 
     // Yes, this is how Microsoft recommends calculating the dialog unit
     // conversions.
-    const int text_width_pixels = GetStringWidth(
-        ASCIIToUTF16("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
+    const int text_width_pixels = GetStringWidth(base::ASCIIToUTF16(
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"));
     const double dialog_units_pixels = (text_width_pixels / 26 + 1) / 2;
     average_width_pixels_ = std::min(pango_width_pixels, dialog_units_pixels);
   }

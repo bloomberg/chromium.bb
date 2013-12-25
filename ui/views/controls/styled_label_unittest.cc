@@ -15,6 +15,8 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
 
+using base::ASCIIToUTF16;
+
 namespace views {
 
 class StyledLabelTest : public testing::Test, public StyledLabelListener {

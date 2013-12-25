@@ -175,9 +175,9 @@ class TableViewTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     model_.reset(new TestTableModel2);
     std::vector<ui::TableColumn> columns(2);
-    columns[0].title = ASCIIToUTF16("Title Column 0");
+    columns[0].title = base::ASCIIToUTF16("Title Column 0");
     columns[0].sortable = true;
-    columns[1].title = ASCIIToUTF16("Title Column 1");
+    columns[1].title = base::ASCIIToUTF16("Title Column 1");
     columns[1].id = 1;
     columns[1].sortable = true;
     table_ = new TestTableView(model_.get(), columns);

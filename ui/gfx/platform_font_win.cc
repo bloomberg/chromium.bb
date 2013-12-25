@@ -211,7 +211,7 @@ void PlatformFontWin::InitWithCopyOfHFONT(HFONT hfont) {
 void PlatformFontWin::InitWithFontNameAndSize(const std::string& font_name,
                                               int font_size) {
   HFONT hf = ::CreateFont(-font_size, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                          UTF8ToUTF16(font_name).c_str());
+                          base::UTF8ToUTF16(font_name).c_str());
   font_ref_ = CreateHFontRef(hf);
 }
 
@@ -289,7 +289,7 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
 
   LOGFONT font_info;
   GetObject(hfont_, sizeof(LOGFONT), &font_info);
-  font_name_ = UTF16ToUTF8(base::string16(font_info.lfFaceName));
+  font_name_ = base::UTF16ToUTF8(base::string16(font_info.lfFaceName));
   if (font_info.lfHeight < 0)
     requested_font_size_ = -font_info.lfHeight;
 }

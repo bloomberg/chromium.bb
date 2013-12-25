@@ -27,8 +27,8 @@ FakeNotifierSettingsProvider::FakeNotifierSettingsProvider(
       notifier_settings_requested_count_(0u) {
   NotifierGroupItem item;
   item.group = new NotifierGroup(gfx::Image(),
-                                 UTF8ToUTF16("Fake name"),
-                                 UTF8ToUTF16("fake@email.com"),
+                                 base::UTF8ToUTF16("Fake name"),
+                                 base::UTF8ToUTF16("fake@email.com"),
                                  true);
   item.notifiers = notifiers;
   items_.push_back(item);

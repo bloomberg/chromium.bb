@@ -65,9 +65,9 @@ class SearchResultWithMenu : public SearchResult {
   SearchResultWithMenu(const std::string& title, const std::string& details)
       : menu_model_(NULL),
         menu_ready_(true) {
-    set_title(ASCIIToUTF16(title));
-    set_details(ASCIIToUTF16(details));
-    menu_model_.AddItem(0, UTF8ToUTF16("Menu For: " + title));
+    set_title(base::ASCIIToUTF16(title));
+    set_details(base::ASCIIToUTF16(details));
+    menu_model_.AddItem(0, base::UTF8ToUTF16("Menu For: " + title));
   }
 
   void SetMenuReadyForTesting(bool ready) {
@@ -146,7 +146,7 @@ void AppsSearchResultsControllerTest::ExpectConsistent() {
     SearchResult* result = ModelResultAt(i);
     base::string16 string_in_model = result->title();
     if (!result->details().empty())
-      string_in_model += ASCIIToUTF16("\n") + result->details();
+      string_in_model += base::ASCIIToUTF16("\n") + result->details();
     EXPECT_NSEQ(base::SysUTF16ToNSString(string_in_model),
                 [[ViewResultAt(i) attributedStringValue] string]);
   }

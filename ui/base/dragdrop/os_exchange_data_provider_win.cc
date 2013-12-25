@@ -275,7 +275,7 @@ void OSExchangeDataProviderWin::SetString(const base::string16& data) {
       Clipboard::GetPlainTextWFormatType().ToFormatEtc(), storage));
 
   // Also add the UTF8-encoded version.
-  storage = GetStorageForString(UTF16ToUTF8(data));
+  storage = GetStorageForString(base::UTF16ToUTF8(data));
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       Clipboard::GetPlainTextFormatType().ToFormatEtc(), storage));
 }
@@ -289,7 +289,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   // will fail! It assumes an insertion order.
 
   // Add text/x-moz-url for drags from Firefox
-  base::string16 x_moz_url_str = UTF8ToUTF16(url.spec());
+  base::string16 x_moz_url_str = base::UTF8ToUTF16(url.spec());
   x_moz_url_str += '\n';
   x_moz_url_str += title;
   STGMEDIUM* storage = GetStorageForString(x_moz_url_str);
@@ -304,7 +304,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   SetFileContents(base::FilePath(valid_file_name), shortcut_url_file_contents);
 
   // Add a UniformResourceLocator link for apps like IE and Word.
-  storage = GetStorageForString(UTF8ToUTF16(url.spec()));
+  storage = GetStorageForString(base::UTF8ToUTF16(url.spec()));
   data_->contents_.push_back(new DataObjectImpl::StoredDataInfo(
       Clipboard::GetUrlWFormatType().ToFormatEtc(), storage));
   storage = GetStorageForString(url.spec());
@@ -316,7 +316,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
 
   // Also add text representations (these should be last since they're the
   // least preferable).
-  SetString(UTF8ToUTF16(url.spec()));
+  SetString(base::UTF8ToUTF16(url.spec()));
 }
 
 void OSExchangeDataProviderWin::SetFilename(const base::FilePath& path) {
@@ -368,7 +368,7 @@ void OSExchangeDataProviderWin::SetFileContents(
 void OSExchangeDataProviderWin::SetHtml(const base::string16& html,
                                         const GURL& base_url) {
   // Add both MS CF_HTML and text/html format.  CF_HTML should be in utf-8.
-  std::string utf8_html = UTF16ToUTF8(html);
+  std::string utf8_html = base::UTF16ToUTF8(html);
   std::string url = base_url.is_valid() ? base_url.spec() : std::string();
 
   std::string cf_html = ClipboardUtil::HtmlToCFHtml(utf8_html, url);

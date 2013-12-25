@@ -16,6 +16,8 @@
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_settings.h"
 
+using base::ASCIIToUTF16;
+
 namespace message_center {
 
 class TrayViewControllerTest : public ui::CocoaTest {

@@ -15,6 +15,8 @@
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
 
+using base::UTF8ToUTF16;
+
 namespace message_center {
 
 class NotificationListTest : public testing::Test {

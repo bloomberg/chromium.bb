@@ -21,7 +21,7 @@ int ExampleComboboxModel::GetItemCount() const {
 }
 
 base::string16 ExampleComboboxModel::GetItemAt(int index) {
-  return ASCIIToUTF16(strings_[index]);
+  return base::ASCIIToUTF16(strings_[index]);
 }
 
 }  // namespace examples

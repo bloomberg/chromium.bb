@@ -159,7 +159,7 @@ void WriteURLWithName(GtkSelectionData* selection_data,
   if (title.empty()) {
     // We prefer to not have empty titles. Set it to the filename extracted
     // from the URL.
-    title = UTF8ToUTF16(url.ExtractFileName());
+    title = base::UTF8ToUTF16(url.ExtractFileName());
   }
 
   switch (type) {
@@ -178,7 +178,7 @@ void WriteURLWithName(GtkSelectionData* selection_data,
     }
     case CHROME_NAMED_URL: {
       Pickle pickle;
-      pickle.WriteString(UTF16ToUTF8(title));
+      pickle.WriteString(base::UTF16ToUTF8(title));
       pickle.WriteString(url.spec());
       gtk_selection_data_set(
           selection_data,
@@ -190,7 +190,7 @@ void WriteURLWithName(GtkSelectionData* selection_data,
     }
     case NETSCAPE_URL: {
       // _NETSCAPE_URL format is URL + \n + title.
-      std::string utf8_text = url.spec() + "\n" + UTF16ToUTF8(title);
+      std::string utf8_text = url.spec() + "\n" + base::UTF16ToUTF8(title);
       gtk_selection_data_set(selection_data,
                              gtk_selection_data_get_target(selection_data),
                              kBitsPerByte,
@@ -228,7 +228,7 @@ bool ExtractNamedURL(GtkSelectionData* selection_data,
     return false;
 
   *url = gurl;
-  *title = UTF8ToUTF16(title_utf8);
+  *title = base::UTF8ToUTF16(title_utf8);
   return true;
 }
 
@@ -268,7 +268,7 @@ bool ExtractNetscapeURL(GtkSelectionData* selection_data,
     return false;
 
   *url = gurl;
-  *title = UTF8ToUTF16(data.substr(newline + 1));
+  *title = base::UTF8ToUTF16(data.substr(newline + 1));
   return true;
 }
 

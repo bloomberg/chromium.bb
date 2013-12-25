@@ -19,6 +19,8 @@
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/transform.h"
 
+using base::UTF8ToWide;
+
 namespace ui {
 
 namespace {

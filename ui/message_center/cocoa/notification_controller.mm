@@ -744,7 +744,8 @@
   if (wrapped.size() > lines) {
     // Add an ellipsis to the last line. If this ellipsis makes the last line
     // too wide, that line will be further elided by the gfx::ElideText below.
-    base::string16 last = wrapped[lines - 1] + UTF8ToUTF16(gfx::kEllipsis);
+    base::string16 last =
+        wrapped[lines - 1] + base::UTF8ToUTF16(gfx::kEllipsis);
     if (gfx::GetStringWidth(last, font_list) > width)
       last = gfx::ElideText(last, font_list, width, gfx::ELIDE_AT_END);
     wrapped.resize(lines - 1);

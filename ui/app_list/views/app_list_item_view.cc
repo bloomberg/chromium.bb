@@ -134,7 +134,7 @@ void AppListItemView::UpdateIcon() {
 
 void AppListItemView::UpdateTooltip() {
   title_->SetTooltipText(model_->title() == model_->full_name() ?
-      base::string16() : UTF8ToUTF16(model_->full_name()));
+      base::string16() : base::UTF8ToUTF16(model_->full_name()));
 }
 
 void AppListItemView::SetUIState(UIState state) {
@@ -226,7 +226,7 @@ void AppListItemView::ItemIconChanged() {
 }
 
 void AppListItemView::ItemTitleChanged() {
-  title_->SetText(UTF8ToUTF16(model_->title()));
+  title_->SetText(base::UTF8ToUTF16(model_->title()));
   title_->Invalidate();
   UpdateTooltip();
   Layout();
@@ -317,7 +317,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
 
 void AppListItemView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = UTF8ToUTF16(model_->title());
+  state->name = base::UTF8ToUTF16(model_->title());
 }
 
 void AppListItemView::ShowContextMenuForView(views::View* source,

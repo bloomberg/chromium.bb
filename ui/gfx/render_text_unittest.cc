@@ -28,6 +28,9 @@
 #include <gtk/gtk.h>
 #endif
 
+using base::ASCIIToUTF16;
+using base::WideToUTF16;
+
 namespace gfx {
 
 namespace {
