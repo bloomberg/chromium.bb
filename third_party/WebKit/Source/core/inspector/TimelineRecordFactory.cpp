@@ -42,27 +42,29 @@
 
 namespace WebCore {
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createGenericRecord(double startTime, int maxCallStackDepth, const String& type)
+PassRefPtr<TimelineRecordFactory::TimelineEvent> TimelineRecordFactory::createGenericRecord(double startTime, int maxCallStackDepth, const String& type, PassRefPtr<JSONObject> data)
 {
-    RefPtr<JSONObject> record = JSONObject::create();
+    ASSERT(data.get());
+    RefPtr<TimelineEvent> record = TimelineEvent::create()
+        .setType(type)
+        .setData(data);
     record->setNumber("startTime", startTime);
-
     if (maxCallStackDepth) {
         RefPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxCallStackDepth, true);
         if (stackTrace && stackTrace->size())
             record->setValue("stackTrace", stackTrace->buildInspectorArray());
     }
-    record->setString("type", type);
     return record.release();
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createBackgroundRecord(double startTime, const String& threadName, const String& type, PassRefPtr<JSONObject> data)
+PassRefPtr<TimelineRecordFactory::TimelineEvent> TimelineRecordFactory::createBackgroundRecord(double startTime, const String& threadName, const String& type, PassRefPtr<JSONObject> data)
 {
-    RefPtr<JSONObject> record = JSONObject::create();
+    ASSERT(data.get());
+    RefPtr<TimelineEvent> record = TimelineEvent::create()
+        .setType(type)
+        .setData(data);
     record->setNumber("startTime", startTime);
     record->setString("thread", threadName);
-    record->setString("type", type);
-    record->setObject("data", data ? data : JSONObject::create());
     return record.release();
 }
 
@@ -247,8 +249,7 @@ static PassRefPtr<JSONArray> createQuad(const FloatQuad& quad)
 PassRefPtr<JSONObject> TimelineRecordFactory::createNodeData(long long nodeId)
 {
     RefPtr<JSONObject> data = JSONObject::create();
-    if (nodeId)
-        data->setNumber("rootNode", nodeId);
+    setNodeData(data.get(), nodeId);
     return data.release();
 }
 
@@ -257,12 +258,22 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createLayerData(long long rootNode
     return createNodeData(rootNodeId);
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createPaintData(const FloatQuad& quad, long long layerRootNodeId, int graphicsLayerId)
+void TimelineRecordFactory::setNodeData(JSONObject* data, long long nodeId)
 {
-    RefPtr<JSONObject> data = TimelineRecordFactory::createLayerData(layerRootNodeId);
+    if (nodeId)
+        data->setNumber("rootNode", nodeId);
+}
+
+void TimelineRecordFactory::setLayerData(JSONObject* data, long long rootNodeId)
+{
+    setNodeData(data, rootNodeId);
+}
+
+void TimelineRecordFactory::setPaintData(JSONObject* data, const FloatQuad& quad, long long layerRootNodeId, int graphicsLayerId)
+{
+    setLayerData(data, layerRootNodeId);
     data->setArray("clip", createQuad(quad));
     data->setNumber("layerId", graphicsLayerId);
-    return data.release();
 }
 
 PassRefPtr<JSONObject> TimelineRecordFactory::createFrameData(int frameId)
@@ -272,19 +283,19 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createFrameData(int frameId)
     return data.release();
 }
 
-void TimelineRecordFactory::appendLayoutRoot(JSONObject* data, const FloatQuad& quad, long long rootNodeId)
+void TimelineRecordFactory::setLayoutRoot(JSONObject* data, const FloatQuad& quad, long long rootNodeId)
 {
     data->setArray("root", createQuad(quad));
     if (rootNodeId)
         data->setNumber("rootNode", rootNodeId);
 }
 
-void TimelineRecordFactory::appendStyleRecalcDetails(JSONObject* data, unsigned elementCount)
+void TimelineRecordFactory::setStyleRecalcDetails(JSONObject* data, unsigned elementCount)
 {
     data->setNumber("elementCount", elementCount);
 }
 
-void TimelineRecordFactory::appendImageDetails(JSONObject* data, long long imageElementId, const String& url)
+void TimelineRecordFactory::setImageDetails(JSONObject* data, long long imageElementId, const String& url)
 {
     if (imageElementId)
         data->setNumber("elementId", imageElementId);

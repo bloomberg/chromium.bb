@@ -31,6 +31,7 @@
 #ifndef TimelineRecordFactory_h
 #define TimelineRecordFactory_h
 
+#include "InspectorTypeBuilder.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
@@ -47,8 +48,10 @@ namespace WebCore {
 
     class TimelineRecordFactory {
     public:
-        static PassRefPtr<JSONObject> createGenericRecord(double startTime, int maxCallStackDepth, const String& type);
-        static PassRefPtr<JSONObject> createBackgroundRecord(double startTime, const String& thread, const String& type, PassRefPtr<JSONObject> data = 0);
+        typedef TypeBuilder::Timeline::TimelineEvent TimelineEvent;
+
+        static PassRefPtr<TimelineEvent> createGenericRecord(double startTime, int maxCallStackDepth, const String& type, PassRefPtr<JSONObject> data);
+        static PassRefPtr<TimelineEvent> createBackgroundRecord(double startTime, const String& thread, const String& type, PassRefPtr<JSONObject> data);
 
         static PassRefPtr<JSONObject> createGCEventData(size_t usedHeapSizeDelta);
 
@@ -94,17 +97,21 @@ namespace WebCore {
 
         static PassRefPtr<JSONObject> createLayerData(long long layerRootNodeId);
 
-        static PassRefPtr<JSONObject> createPaintData(const FloatQuad&, long long layerRootNodeId, int graphicsLayerId);
-
         static PassRefPtr<JSONObject> createFrameData(int frameId);
 
         static PassRefPtr<JSONObject> createGPUTaskData(bool foreign, size_t usedGPUMemoryBytes);
 
-        static void appendLayoutRoot(JSONObject* data, const FloatQuad&, long long rootNodeId);
+        static void setNodeData(JSONObject* data, long long nodeId);
 
-        static void appendStyleRecalcDetails(JSONObject* data, unsigned elementCount);
+        static void setLayerData(JSONObject* data, long long layerRootNodeId);
 
-        static void appendImageDetails(JSONObject* data, long long imageElementId, const String& url);
+        static void setPaintData(JSONObject* data, const FloatQuad&, long long layerRootNodeId, int graphicsLayerId);
+
+        static void setLayoutRoot(JSONObject* data, const FloatQuad&, long long rootNodeId);
+
+        static void setStyleRecalcDetails(JSONObject* data, unsigned elementCount);
+
+        static void setImageDetails(JSONObject* data, long long imageElementId, const String& url);
 
         static inline PassRefPtr<JSONObject> createWebSocketCreateData(unsigned long identifier, const KURL& url, const String& protocol)
         {
