@@ -55,6 +55,14 @@ bool CapturingNetLog::CapturedEntry::GetIntegerValue(
   return params->GetInteger(name, value);
 }
 
+bool CapturingNetLog::CapturedEntry::GetListValue(
+    const std::string& name,
+    base::ListValue** value) const {
+  if (!params)
+    return false;
+  return params->GetList(name, value);
+}
+
 bool CapturingNetLog::CapturedEntry::GetNetErrorCode(int* value) const {
   return GetIntegerValue("net_error", value);
 }

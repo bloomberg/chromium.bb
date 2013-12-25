@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/values.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_log.h"
@@ -64,16 +65,40 @@ class MultiLogCTVerifierTest : public ::testing::Test {
     if (entries.size() != 2)
       return false;
 
-    const CapturingNetLog::CapturedEntry& received(entries[0]);
+    const CapturingNetLog::CapturedEntry& received = entries[0];
     std::string embedded_scts;
     if (!received.GetStringValue("embedded_scts", &embedded_scts))
       return false;
     if (embedded_scts.empty())
       return false;
 
-    //XXX(eranm): entries[1] is the NetLog message with the checked SCTs.
-    //When CapturedEntry has methods to get a dictionary, rather than just
-    //a string, add more checks here.
+    const CapturingNetLog::CapturedEntry& parsed = entries[1];
+    base::ListValue* verified_scts;
+    if (!parsed.GetListValue("verified_scts", &verified_scts) ||
+        verified_scts->GetSize() != 1) {
+      return false;
+    }
+
+    base::DictionaryValue* the_sct;
+    if (!verified_scts->GetDictionary(0, &the_sct))
+      return false;
+
+    std::string origin;
+    if (!the_sct->GetString("origin", &origin))
+      return false;
+    if (origin != "embedded_in_certificate")
+      return false;
+
+    base::ListValue* other_scts;
+    if (!parsed.GetListValue("invalid_scts", &other_scts) ||
+        !other_scts->empty()) {
+      return false;
+    }
+
+    if (!parsed.GetListValue("unknown_logs_scts", &other_scts) ||
+        !other_scts->empty()) {
+      return false;
+    }
 
     return true;
   }

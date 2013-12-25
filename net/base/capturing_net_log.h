@@ -19,6 +19,7 @@
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace net {
@@ -50,6 +51,7 @@ class CapturingNetLog : public NetLog {
     // modify |value| on failure.
     bool GetStringValue(const std::string& name, std::string* value) const;
     bool GetIntegerValue(const std::string& name, int* value) const;
+    bool GetListValue(const std::string& name, base::ListValue** value) const;
 
     // Same as GetIntegerValue, but returns the error code associated with a
     // log entry.
