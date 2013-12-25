@@ -95,12 +95,12 @@ class RemoveOnReadyRunLoopHandler : public TestRunLoopHandler {
 // Verifies RunLoop quits when no more handles (handle is removed when ready).
 TEST_F(RunLoopTest, HandleReady) {
   RemoveOnReadyRunLoopHandler handler;
-  test::MessagePipe test_pipe;
-  EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle_1.get()));
+  MessagePipe test_pipe;
+  EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle1.get()));
 
   RunLoop run_loop;
   handler.set_run_loop(&run_loop);
-  run_loop.AddHandler(&handler, test_pipe.handle_0.get(),
+  run_loop.AddHandler(&handler, test_pipe.handle0.get(),
                       MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE);
   run_loop.Run();
   EXPECT_EQ(1, handler.ready_count());
@@ -130,12 +130,12 @@ class QuitOnReadyRunLoopHandler : public TestRunLoopHandler {
 // Verifies Quit() from OnHandleReady() quits the loop.
 TEST_F(RunLoopTest, QuitFromReady) {
   QuitOnReadyRunLoopHandler handler;
-  test::MessagePipe test_pipe;
-  EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle_1.get()));
+  MessagePipe test_pipe;
+  EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle1.get()));
 
   RunLoop run_loop;
   handler.set_run_loop(&run_loop);
-  run_loop.AddHandler(&handler, test_pipe.handle_0.get(),
+  run_loop.AddHandler(&handler, test_pipe.handle0.get(),
                       MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE);
   run_loop.Run();
   EXPECT_EQ(1, handler.ready_count());
@@ -165,10 +165,10 @@ class QuitOnErrorRunLoopHandler : public TestRunLoopHandler {
 // Verifies Quit() when the deadline is reached works.
 TEST_F(RunLoopTest, QuitWhenDeadlineExpired) {
   QuitOnErrorRunLoopHandler handler;
-  test::MessagePipe test_pipe;
+  MessagePipe test_pipe;
   RunLoop run_loop;
   handler.set_run_loop(&run_loop);
-  run_loop.AddHandler(&handler, test_pipe.handle_0.get(),
+  run_loop.AddHandler(&handler, test_pipe.handle0.get(),
                       MOJO_WAIT_FLAG_READABLE,
                       static_cast<MojoDeadline>(10000));
   run_loop.Run();

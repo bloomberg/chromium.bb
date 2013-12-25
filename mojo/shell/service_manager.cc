@@ -25,11 +25,10 @@ class ServiceManager::Service : public ShellStub {
   Service(ServiceManager* manager, const GURL& url)
       : manager_(manager),
         url_(url) {
-    ScopedMessagePipeHandle shell_handle, service_handle;
-    CreateMessagePipe(&shell_handle, &service_handle);
-    shell_client_.reset(shell_handle.Pass());
+    MessagePipe pipe;
+    shell_client_.reset(pipe.handle0.Pass());
     shell_client_.SetPeer(this);
-    manager_->GetLoaderForURL(url)->Load(url, manager_, service_handle.Pass());
+    manager_->GetLoaderForURL(url)->Load(url, manager_, pipe.handle1.Pass());
   }
 
   virtual ~Service() {}

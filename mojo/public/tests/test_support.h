@@ -13,16 +13,6 @@
 namespace mojo {
 namespace test {
 
-struct MessagePipe {
-  MessagePipe();
-  ~MessagePipe();
-
-  ScopedMessagePipeHandle handle_0;
-  ScopedMessagePipeHandle handle_1;
-
-  DISALLOW_COPY_AND_ASSIGN(MessagePipe);
-};
-
 bool WriteTextMessage(MessagePipeHandle handle, const std::string& text);
 bool ReadTextMessage(MessagePipeHandle handle, std::string* text);
 

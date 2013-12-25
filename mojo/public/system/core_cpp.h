@@ -199,6 +199,18 @@ inline void CreateMessagePipe(ScopedMessagePipeHandle* message_pipe_0,
   message_pipe_1->reset(h_1);
 }
 
+class MessagePipe {
+ public:
+  MessagePipe();
+  ~MessagePipe();
+
+  ScopedMessagePipeHandle handle0;
+  ScopedMessagePipeHandle handle1;
+};
+
+inline MessagePipe::MessagePipe() { CreateMessagePipe(&handle0, &handle1); }
+inline MessagePipe::~MessagePipe() {}
+
 // These "raw" versions fully expose the underlying API, but don't help with
 // ownership of handles (especially when writing messages).
 // TODO(vtl): Write "baked" versions.

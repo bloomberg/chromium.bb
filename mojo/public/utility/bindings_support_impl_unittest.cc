@@ -63,11 +63,11 @@ class BindingsSupportImplTest : public testing::Test {
 // Verifies AsyncWaitCallback is notified when pipe is ready.
 TEST_F(BindingsSupportImplTest, CallbackNotified) {
   TestAsyncWaitCallback callback;
-  test::MessagePipe test_pipe;
+  MessagePipe test_pipe;
   EXPECT_EQ(MOJO_RESULT_OK,
-            test::WriteEmptyMessage(test_pipe.handle_1.get()));
+            test::WriteEmptyMessage(test_pipe.handle1.get()));
 
-  BindingsSupport::Get()->AsyncWait(test_pipe.handle_0.get(),
+  BindingsSupport::Get()->AsyncWait(test_pipe.handle0.get(),
                                     MOJO_WAIT_FLAG_READABLE, &callback);
   RunLoop::current()->Run();
   EXPECT_EQ(1, callback.result_count());
@@ -78,16 +78,16 @@ TEST_F(BindingsSupportImplTest, CallbackNotified) {
 TEST_F(BindingsSupportImplTest, TwoCallbacksNotified) {
   TestAsyncWaitCallback callback1;
   TestAsyncWaitCallback callback2;
-  test::MessagePipe test_pipe1;
-  test::MessagePipe test_pipe2;
+  MessagePipe test_pipe1;
+  MessagePipe test_pipe2;
   EXPECT_EQ(MOJO_RESULT_OK,
-            test::WriteEmptyMessage(test_pipe1.handle_1.get()));
+            test::WriteEmptyMessage(test_pipe1.handle1.get()));
   EXPECT_EQ(MOJO_RESULT_OK,
-            test::WriteEmptyMessage(test_pipe2.handle_1.get()));
+            test::WriteEmptyMessage(test_pipe2.handle1.get()));
 
-  BindingsSupport::Get()->AsyncWait(test_pipe1.handle_0.get(),
+  BindingsSupport::Get()->AsyncWait(test_pipe1.handle0.get(),
                                     MOJO_WAIT_FLAG_READABLE, &callback1);
-  BindingsSupport::Get()->AsyncWait(test_pipe2.handle_0.get(),
+  BindingsSupport::Get()->AsyncWait(test_pipe2.handle0.get(),
                                     MOJO_WAIT_FLAG_READABLE, &callback2);
   RunLoop::current()->Run();
   EXPECT_EQ(1, callback1.result_count());
@@ -99,11 +99,11 @@ TEST_F(BindingsSupportImplTest, TwoCallbacksNotified) {
 // Verifies cancel works.
 TEST_F(BindingsSupportImplTest, CancelCallback) {
   TestAsyncWaitCallback callback;
-  test::MessagePipe test_pipe;
-  EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle_1.get()));
+  MessagePipe test_pipe;
+  EXPECT_EQ(MOJO_RESULT_OK, test::WriteEmptyMessage(test_pipe.handle1.get()));
 
   BindingsSupport::Get()->CancelWait(
-      BindingsSupport::Get()->AsyncWait(test_pipe.handle_0.get(),
+      BindingsSupport::Get()->AsyncWait(test_pipe.handle0.get(),
                                         MOJO_WAIT_FLAG_READABLE, &callback));
   RunLoop::current()->Run();
   EXPECT_EQ(0, callback.result_count());

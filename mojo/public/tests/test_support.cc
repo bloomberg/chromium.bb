@@ -10,13 +10,6 @@
 namespace mojo {
 namespace test {
 
-MessagePipe::MessagePipe() {
-  CreateMessagePipe(&handle_0, &handle_1);
-}
-
-MessagePipe::~MessagePipe() {
-}
-
 bool WriteTextMessage(MessagePipeHandle handle, const std::string& text) {
   MojoResult rv = WriteMessageRaw(handle,
                                   text.data(),
