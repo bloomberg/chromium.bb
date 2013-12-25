@@ -978,9 +978,9 @@ void InspectorPageAgent::didPaint(RenderObject*, const GraphicsLayer*, GraphicsC
 
     static int colorSelector = 0;
     const Color colors[] = {
-        Color(0xFF, 0, 0, 0x3F),
-        Color(0xFF, 0, 0xFF, 0x3F),
-        Color(0, 0, 0xFF, 0x3F),
+        Color(0, 0x5F, 0, 0x3F),
+        Color(0, 0xAF, 0, 0x3F),
+        Color(0, 0xFF, 0, 0x3F),
     };
 
     LayoutRect inflatedRect(rect);
