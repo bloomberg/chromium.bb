@@ -12,7 +12,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
-class Font;
+class FontList;
 class Point;
 class Rect;
 class RectF;
@@ -102,8 +102,8 @@ class AutofillPopupController {
 #if !defined(OS_ANDROID)
   // The same font can vary based on the type of data it is showing,
   // so we need to know the row.
-  virtual const gfx::Font& GetNameFontForRow(size_t index) const = 0;
-  virtual const gfx::Font& subtext_font() const = 0;
+  virtual const gfx::FontList& GetNameFontListForRow(size_t index) const = 0;
+  virtual const gfx::FontList& subtext_font_list() const = 0;
 #endif
 
   // Returns the index of the selected line. A line is "selected" when it is

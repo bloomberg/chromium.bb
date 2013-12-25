@@ -512,13 +512,6 @@ base::string16 ElideText(const base::string16& text,
   return slicer.CutString(guess, insert_ellipsis);
 }
 
-base::string16 ElideText(const base::string16& text,
-                         const Font& font,
-                         float available_pixel_width,
-                         ElideBehavior elide_behavior) {
-  return ElideText(text, FontList(font), available_pixel_width, elide_behavior);
-}
-
 SortedDisplayURL::SortedDisplayURL(const GURL& url,
                                    const std::string& languages) {
   net::AppendFormattedHost(url, languages, &sort_host_);

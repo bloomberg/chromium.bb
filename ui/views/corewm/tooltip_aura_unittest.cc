@@ -6,8 +6,9 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace views {
@@ -15,33 +16,30 @@ namespace corewm {
 
 typedef ViewsTestBase TooltipAuraTest;
 
-// TODO(sky): clean this up.
-gfx::Font GetDefaultFont() {
-  return ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont);
-}
-
 TEST_F(TooltipAuraTest, TrimTooltipToFitTests) {
+  const gfx::FontList font_list;
   const int max_width = 4000;
   base::string16 tooltip;
   int width, line_count, expect_lines;
   int max_pixel_width = 400;  // copied from constants in tooltip_controller.cc
   int max_lines = 10;  // copied from constants in tooltip_controller.cc
-  gfx::Font font = GetDefaultFont();
   size_t tooltip_len;
 
   // Error in computed size vs. expected size should not be greater than the
   // size of the longest word.
-  int error_in_pixel_width = font.GetStringWidth(ASCIIToUTF16("tooltip"));
+  int error_in_pixel_width = gfx::GetStringWidth(ASCIIToUTF16("tooltip"),
+                                                 font_list);
 
   // Long tooltips should wrap to next line
   tooltip.clear();
   width = line_count = -1;
   expect_lines = 3;
-  for (; font.GetStringWidth(tooltip) <= (expect_lines - 1) * max_pixel_width;)
+  for (; gfx::GetStringWidth(tooltip, font_list) <=
+           (expect_lines - 1) * max_pixel_width;)
     tooltip.append(ASCIIToUTF16("This is part of the tooltip"));
   tooltip_len = tooltip.length();
-  TooltipAura::TrimTooltipToFit(max_width, &tooltip, &width, &line_count);
+  TooltipAura::TrimTooltipToFit(font_list, max_width, &tooltip, &width,
+                                &line_count);
   EXPECT_NEAR(max_pixel_width, width, error_in_pixel_width);
   EXPECT_EQ(expect_lines, line_count);
   EXPECT_EQ(tooltip_len + expect_lines - 1, tooltip.length());
@@ -50,9 +48,11 @@ TEST_F(TooltipAuraTest, TrimTooltipToFitTests) {
   tooltip.clear();
   width = line_count = -1;
   expect_lines = 13;
-  for (; font.GetStringWidth(tooltip) <= (expect_lines - 1) * max_pixel_width;)
+  for (; gfx::GetStringWidth(tooltip, font_list) <=
+           (expect_lines - 1) * max_pixel_width;)
     tooltip.append(ASCIIToUTF16("This is part of the tooltip"));
-  TooltipAura::TrimTooltipToFit(max_width, &tooltip, &width, &line_count);
+  TooltipAura::TrimTooltipToFit(font_list, max_width, &tooltip, &width,
+                                &line_count);
   EXPECT_NEAR(max_pixel_width, width, error_in_pixel_width);
   EXPECT_EQ(max_lines, line_count);
 
@@ -60,11 +60,13 @@ TEST_F(TooltipAuraTest, TrimTooltipToFitTests) {
   tooltip.clear();
   width = line_count = -1;
   expect_lines = 4;
-  for (; font.GetStringWidth(tooltip) <= (expect_lines - 2) * max_pixel_width;)
+  for (; gfx::GetStringWidth(tooltip, font_list) <=
+           (expect_lines - 2) * max_pixel_width;)
     tooltip.append(ASCIIToUTF16("This is part of the tooltip"));
   tooltip.insert(tooltip.length() / 2, ASCIIToUTF16("\n"));
   tooltip_len = tooltip.length();
-  TooltipAura::TrimTooltipToFit(max_width, &tooltip, &width, &line_count);
+  TooltipAura::TrimTooltipToFit(font_list, max_width, &tooltip, &width,
+                                &line_count);
   EXPECT_NEAR(max_pixel_width, width, error_in_pixel_width);
   EXPECT_EQ(expect_lines, line_count);
   // We may have inserted the line break above near a space which will get
@@ -76,19 +78,23 @@ TEST_F(TooltipAuraTest, TrimTooltipToFitTests) {
   tooltip.clear();
   width = line_count = -1;
   tooltip = UTF8ToUTF16(std::string('a', max_pixel_width));
-  TooltipAura::TrimTooltipToFit(max_width, &tooltip, &width, &line_count);
+  TooltipAura::TrimTooltipToFit(font_list, max_width, &tooltip, &width,
+                                &line_count);
   EXPECT_NEAR(max_pixel_width, width, 5);
   EXPECT_EQ(1, line_count);
-  EXPECT_EQ(gfx::ElideText(UTF8ToUTF16(std::string('a', max_pixel_width)), font,
-                          max_pixel_width, gfx::ELIDE_AT_END), tooltip);
+  EXPECT_EQ(gfx::ElideText(UTF8ToUTF16(std::string('a', max_pixel_width)),
+                           font_list,
+                           max_pixel_width, gfx::ELIDE_AT_END), tooltip);
 #endif
 
   // Normal small tooltip should stay as is.
   tooltip.clear();
   width = line_count = -1;
   tooltip = ASCIIToUTF16("Small Tooltip");
-  TooltipAura::TrimTooltipToFit(max_width, &tooltip, &width, &line_count);
-  EXPECT_EQ(font.GetStringWidth(ASCIIToUTF16("Small Tooltip")), width);
+  TooltipAura::TrimTooltipToFit(font_list, max_width, &tooltip, &width,
+                                &line_count);
+  EXPECT_EQ(gfx::GetStringWidth(ASCIIToUTF16("Small Tooltip"), font_list),
+            width);
   EXPECT_EQ(1, line_count);
   EXPECT_EQ(ASCIIToUTF16("Small Tooltip"), tooltip);
 
@@ -96,10 +102,13 @@ TEST_F(TooltipAuraTest, TrimTooltipToFitTests) {
   tooltip.clear();
   width = line_count = -1;
   tooltip = ASCIIToUTF16("Multi line\nTooltip");
-  TooltipAura::TrimTooltipToFit(max_width, &tooltip, &width, &line_count);
-  int expected_width = font.GetStringWidth(ASCIIToUTF16("Multi line"));
+  TooltipAura::TrimTooltipToFit(font_list, max_width, &tooltip, &width,
+                                &line_count);
+  int expected_width = gfx::GetStringWidth(ASCIIToUTF16("Multi line"),
+                                           font_list);
   expected_width = std::max(expected_width,
-                            font.GetStringWidth(ASCIIToUTF16("Tooltip")));
+                            gfx::GetStringWidth(ASCIIToUTF16("Tooltip"),
+                                                font_list));
   EXPECT_EQ(expected_width, width);
   EXPECT_EQ(2, line_count);
   EXPECT_EQ(ASCIIToUTF16("Multi line\nTooltip"), tooltip);
@@ -108,8 +117,10 @@ TEST_F(TooltipAuraTest, TrimTooltipToFitTests) {
   tooltip.clear();
   width = line_count = -1;
   tooltip = ASCIIToUTF16("Small  Tool  t\tip");
-  TooltipAura::TrimTooltipToFit(max_width, &tooltip, &width, &line_count);
-  EXPECT_EQ(font.GetStringWidth(ASCIIToUTF16("Small  Tool  t\tip")), width);
+  TooltipAura::TrimTooltipToFit(font_list, max_width, &tooltip, &width,
+                                &line_count);
+  EXPECT_EQ(gfx::GetStringWidth(ASCIIToUTF16("Small  Tool  t\tip"), font_list),
+            width);
   EXPECT_EQ(1, line_count);
   EXPECT_EQ(ASCIIToUTF16("Small  Tool  t\tip"), tooltip);
 }

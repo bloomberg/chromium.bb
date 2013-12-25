@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/test/base/testing_profile.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/text_elider.h"
 
@@ -486,16 +487,17 @@ TEST_F(OmniboxPopupViewMacTest, ElideString) {
   EXPECT_TRUE([[as string] isEqualToString:contents]);
 
   // When elided, result is the same as ElideText().
+  gfx::FontList font_list(font_);
   ret = OmniboxPopupViewMac::ElideString(as, contents16, font_, kNarrow);
   base::string16 elided =
-      gfx::ElideText(contents16, font_, kNarrow, gfx::ELIDE_AT_END);
+      gfx::ElideText(contents16, font_list, kNarrow, gfx::ELIDE_AT_END);
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);
   EXPECT_TRUE([[as string] isEqualToString:base::SysUTF16ToNSString(elided)]);
 
   // When elided, result is the same as ElideText().
   ret = OmniboxPopupViewMac::ElideString(as, contents16, font_, 0.0);
-  elided = gfx::ElideText(contents16, font_, 0.0, gfx::ELIDE_AT_END);
+  elided = gfx::ElideText(contents16, font_list, 0.0, gfx::ELIDE_AT_END);
   EXPECT_TRUE(ret == as);
   EXPECT_FALSE([[as string] isEqualToString:contents]);
   EXPECT_TRUE([[as string] isEqualToString:base::SysUTF16ToNSString(elided)]);

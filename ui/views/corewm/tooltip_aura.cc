@@ -11,6 +11,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/corewm/corewm_switches.h"
@@ -53,13 +54,6 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window) {
   return widget;
 }
 
-gfx::Font GetDefaultFont() {
-  // TODO(varunjain): implementation duplicated in tooltip_manager_aura. Figure
-  // out a way to merge.
-  return ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont);
-}
-
 }  // namespace
 
 namespace views {
@@ -85,7 +79,8 @@ TooltipAura::~TooltipAura() {
 }
 
 // static
-void TooltipAura::TrimTooltipToFit(int max_width,
+void TooltipAura::TrimTooltipToFit(const gfx::FontList& font_list,
+                                   int max_width,
                                    base::string16* text,
                                    int* width,
                                    int* line_count) {
@@ -100,7 +95,6 @@ void TooltipAura::TrimTooltipToFit(int max_width,
   std::vector<base::string16> result_lines;
 
   // Format each line to fit.
-  gfx::Font font = GetDefaultFont();
   for (std::vector<base::string16>::iterator l = lines.begin();
        l != lines.end(); ++l) {
     // We break the line at word boundaries, then stuff as many words as we can
@@ -115,7 +109,7 @@ void TooltipAura::TrimTooltipToFit(int max_width,
       base::string16 word = *w;
       if (w + 1 != words.end())
         word.push_back(' ');
-      int word_width = font.GetStringWidth(word);
+      int word_width = gfx::GetStringWidth(word, font_list);
       if (current_width + word_width > available_width) {
         // Current width will exceed the available width. Must start a new line.
         if (!line.empty())
@@ -144,13 +138,13 @@ void TooltipAura::TrimTooltipToFit(int max_width,
       l != result_lines.end(); ++l) {
     if (!result.empty())
       result.push_back('\n');
-    int line_width = font.GetStringWidth(*l);
+    int line_width = gfx::GetStringWidth(*l, font_list);
     // Since we only break at word boundaries, it could happen that due to some
     // very long word, line_width is greater than the available_width. In such
     // case, we simply truncate at available_width and add ellipses at the end.
     if (line_width > available_width) {
       *width = available_width;
-      result.append(gfx::ElideText(*l, font, available_width,
+      result.append(gfx::ElideText(*l, font_list, available_width,
                                    gfx::ELIDE_AT_END));
     } else {
       *width = std::max(*width, line_width);
@@ -239,8 +233,8 @@ void TooltipAura::SetText(aura::Window* window,
   tooltip_window_ = window;
   int max_width, line_count;
   base::string16 trimmed_text(tooltip_text);
-  TrimTooltipToFit(
-      GetMaxWidth(location), &trimmed_text, &max_width, &line_count);
+  TrimTooltipToFit(label_.font_list(), GetMaxWidth(location), &trimmed_text,
+                   &max_width, &line_count);
   label_.SetText(trimmed_text);
 
   int width = max_width + 2 * kTooltipHorizontalPadding;

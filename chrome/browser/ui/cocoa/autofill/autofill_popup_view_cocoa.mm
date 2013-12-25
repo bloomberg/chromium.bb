@@ -11,6 +11,7 @@
 #include "grit/ui_resources.h"
 #include "third_party/WebKit/public/web/WebAutofillClient.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -221,7 +222,8 @@ NSColor* SubtextColor() {
       controller_->IsWarning(index) ? WarningColor() : NameColor();
   NSDictionary* nameAttributes =
       [NSDictionary dictionaryWithObjectsAndKeys:
-           controller_->GetNameFontForRow(index).GetNativeFont(),
+           controller_->GetNameFontListForRow(index).GetPrimaryFont().
+               GetNativeFont(),
            NSFontAttributeName, nameColor, NSForegroundColorAttributeName,
            nil];
   NSSize nameSize = [name sizeWithAttributes:nameAttributes];
@@ -260,8 +262,8 @@ NSColor* SubtextColor() {
   // Draw the subtext.
   NSDictionary* subtextAttributes =
       [NSDictionary dictionaryWithObjectsAndKeys:
-           controller_->subtext_font().GetNativeFont(), NSFontAttributeName,
-           SubtextColor(), NSForegroundColorAttributeName,
+           controller_->subtext_font_list().GetPrimaryFont().GetNativeFont(),
+           NSFontAttributeName, SubtextColor(), NSForegroundColorAttributeName,
            nil];
   NSSize subtextSize = [subtext sizeWithAttributes:subtextAttributes];
   x += isRTL ? 0 : -subtextSize.width;

@@ -19,7 +19,7 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/text_elider.h"
@@ -148,11 +148,9 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
       std::min(kMaximumWidth, NSWidth([[NSScreen mainScreen] visibleFrame]));
   int maxLabelWidth = maximumWidth - kPaddingLeft - kPadding -
                       kHorizontalMargin * 2 - gripWidth - buttonWidth;
-  gfx::Font font(ui::ResourceBundle::GetSharedInstance()
-                     .GetFont(ui::ResourceBundle::BaseFont)
-                     .GetNativeFont());
+  gfx::FontList font_list;
   base::string16 elidedText =
-      ElideText(text, font, maxLabelWidth, gfx::ELIDE_IN_MIDDLE);
+      ElideText(text, font_list, maxLabelWidth, gfx::ELIDE_IN_MIDDLE);
   NSString* statusText = base::SysUTF16ToNSString(elidedText);
   base::scoped_nsobject<NSTextField> statusTextField(
       [[NSTextField alloc] initWithFrame:ui::kWindowSizeDeterminedLater]);
@@ -161,7 +159,7 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
   [statusTextField setDrawsBackground:NO];
   [statusTextField setBezeled:NO];
   [statusTextField setStringValue:statusText];
-  [statusTextField setFont:font.GetNativeFont()];
+  [statusTextField setFont:font_list.GetPrimaryFont().GetNativeFont()];
   [statusTextField sizeToFit];
   [statusTextField setFrameOrigin:NSMakePoint(
                        kPaddingLeft + kHorizontalMargin + gripWidth,

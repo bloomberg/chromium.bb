@@ -29,7 +29,7 @@
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/gtk_util.h"
 #include "ui/gfx/text_elider.h"
 
@@ -49,7 +49,7 @@ const int kMaxMediaMenuButtonWidth = 600;
 std::string BuildElidedText(const std::string& input) {
   return base::UTF16ToUTF8(gfx::ElideText(
       base::UTF8ToUTF16(input),
-      gfx::Font(),
+      gfx::FontList(),
       kMaxLinkPixelSize,
       gfx::ELIDE_AT_END));
 }

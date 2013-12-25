@@ -227,9 +227,9 @@ void AvatarMenuItemGtk::Init(GtkThemeService* theme_service) {
   GtkWidget* item_vbox = gtk_vbox_new(FALSE, 0);
   GtkWidget* name_label = NULL;
   base::string16 elided_name = gfx::ElideText(item_.name,
-                                       gfx::Font(),
-                                       kUserNameMaxWidth,
-                                       gfx::ELIDE_AT_END);
+                                              gfx::FontList(),
+                                              kUserNameMaxWidth,
+                                              gfx::ELIDE_AT_END);
 
   name_label = theme_service->BuildLabel(base::UTF16ToUTF8(elided_name),
                                          ui::kGdkBlack);

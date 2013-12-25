@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "content/public/browser/render_widget_host.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 
@@ -109,8 +109,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual const std::vector<base::string16>& icons() const OVERRIDE;
   virtual const std::vector<int>& identifiers() const OVERRIDE;
 #if !defined(OS_ANDROID)
-  virtual const gfx::Font& GetNameFontForRow(size_t index) const OVERRIDE;
-  virtual const gfx::Font& subtext_font() const OVERRIDE;
+  virtual const gfx::FontList& GetNameFontListForRow(
+      size_t index) const OVERRIDE;
+  virtual const gfx::FontList& subtext_font_list() const OVERRIDE;
 #endif
   virtual int selected_line() const OVERRIDE;
   virtual bool hide_on_outside_click() const OVERRIDE;
@@ -237,9 +238,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
 #if !defined(OS_ANDROID)
   // The fonts for the popup text.
-  gfx::Font name_font_;
-  gfx::Font subtext_font_;
-  gfx::Font warning_font_;
+  gfx::FontList name_font_list_;
+  gfx::FontList subtext_font_list_;
+  gfx::FontList warning_font_list_;
 #endif
 
   // The line that is currently selected by the user.

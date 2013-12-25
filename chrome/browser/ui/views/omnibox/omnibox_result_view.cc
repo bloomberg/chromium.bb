@@ -27,6 +27,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 
 #if defined(OS_WIN)
@@ -116,9 +117,10 @@ OmniboxResultView::OmniboxResultView(OmniboxResultViewModel* model,
       font_list_(font_list),
       font_height_(
           std::max(font_list.GetHeight(),
-                   font_list.DeriveFontList(gfx::Font::BOLD).GetHeight())),
-      ellipsis_width_(font_list.GetPrimaryFont().GetStringWidth(
-          base::string16(kEllipsis))),
+                   font_list.DeriveFontListWithSizeDeltaAndStyle(
+                       0, gfx::Font::BOLD).GetHeight())),
+      ellipsis_width_(gfx::GetStringWidth(base::string16(kEllipsis),
+                                          font_list)),
       mirroring_context_(new MirroringContext()),
       keyword_icon_(new views::ImageView()),
       animation_(new gfx::SlideAnimation(this)) {
@@ -512,12 +514,14 @@ void OmniboxResultView::Elide(Runs* runs, int remaining_width) const {
       on_trailing_classification = false;
 
       // Can we fit at least an ellipsis?
-      gfx::Font font((*j)->GetStyle(gfx::BOLD) ?
-          (*j)->GetPrimaryFont().DeriveFont(0, gfx::Font::BOLD) :
-          (*j)->GetPrimaryFont());
+      const gfx::FontList& font_list =
+          (*j)->GetStyle(gfx::BOLD) ?
+          (*j)->font_list().DeriveFontListWithSizeDeltaAndStyle(
+              0, gfx::Font::BOLD) :
+          (*j)->font_list();
       base::string16 elided_text(
-          gfx::ElideText((*j)->text(), font, remaining_width,
-          gfx::ELIDE_AT_END));
+          gfx::ElideText((*j)->text(), font_list, remaining_width,
+                         gfx::ELIDE_AT_END));
       Classifications::reverse_iterator prior(j + 1);
       const bool on_leading_classification =
           (prior == i->classifications.rend());

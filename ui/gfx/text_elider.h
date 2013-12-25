@@ -77,11 +77,6 @@ GFX_EXPORT base::string16 ElideText(const base::string16& text,
                                     const gfx::FontList& font_list,
                                     float available_pixel_width,
                                     ElideBehavior elide_behavior);
-// Obsolete version.  Use the above version which takes gfx::FontList.
-GFX_EXPORT base::string16 ElideText(const base::string16& text,
-                                    const gfx::Font& font,
-                                    float available_pixel_width,
-                                    ElideBehavior elide_behavior);
 
 // Elide a filename to fit a given pixel width, with an emphasis on not hiding
 // the extension unless we have to. If filename contains a path, the path will

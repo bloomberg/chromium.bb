@@ -22,6 +22,7 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector2d.h"
 
 using base::WeakPtr;
@@ -112,12 +113,14 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
       weak_ptr_factory_(this) {
   ClearState();
 #if !defined(OS_ANDROID)
-  subtext_font_ = name_font_.DeriveFont(kLabelFontSizeDelta);
+  subtext_font_list_ = name_font_list_.DeriveFontListWithSizeDelta(
+      kLabelFontSizeDelta);
 #if defined(OS_MACOSX)
   // There is no italic version of the system font.
-  warning_font_ = name_font_;
+  warning_font_list_ = name_font_list_;
 #else
-  warning_font_ = name_font_.DeriveFont(0, gfx::Font::ITALIC);
+  warning_font_list_ = name_font_list_.DeriveFontListWithSizeDeltaAndStyle(
+      0, gfx::Font::ITALIC);
 #endif
 #endif
 }
@@ -140,8 +143,8 @@ void AutofillPopupControllerImpl::Show(
   // Elide the name and subtext strings so that the popup fits in the available
   // space.
   for (size_t i = 0; i < names_.size(); ++i) {
-    int name_width = GetNameFontForRow(i).GetStringWidth(names_[i]);
-    int subtext_width = subtext_font().GetStringWidth(subtexts_[i]);
+    int name_width = gfx::GetStringWidth(names_[i], GetNameFontListForRow(i));
+    int subtext_width = gfx::GetStringWidth(subtexts_[i], subtext_font_list());
     int total_text_length = name_width + subtext_width;
 
     // The line can have no strings if it represents a UI element, such as
@@ -154,15 +157,15 @@ void AutofillPopupControllerImpl::Show(
     // Each field recieves space in proportion to its length.
     int name_size = available_width * name_width / total_text_length;
     names_[i] = gfx::ElideText(names_[i],
-                              GetNameFontForRow(i),
-                              name_size,
-                              gfx::ELIDE_AT_END);
+                               GetNameFontListForRow(i),
+                               name_size,
+                               gfx::ELIDE_AT_END);
 
     int subtext_size = available_width * subtext_width / total_text_length;
     subtexts_[i] = gfx::ElideText(subtexts_[i],
-                                 subtext_font(),
-                                 subtext_size,
-                                 gfx::ELIDE_AT_END);
+                                  subtext_font_list(),
+                                  subtext_size,
+                                  gfx::ELIDE_AT_END);
   }
 #endif
 
@@ -418,16 +421,16 @@ const std::vector<int>& AutofillPopupControllerImpl::identifiers() const {
 }
 
 #if !defined(OS_ANDROID)
-const gfx::Font& AutofillPopupControllerImpl::GetNameFontForRow(size_t index)
-    const {
+const gfx::FontList& AutofillPopupControllerImpl::GetNameFontListForRow(
+    size_t index) const {
   if (identifiers_[index] == WebAutofillClient::MenuItemIDWarningMessage)
-    return warning_font_;
+    return warning_font_list_;
 
-  return name_font_;
+  return name_font_list_;
 }
 
-const gfx::Font& AutofillPopupControllerImpl::subtext_font() const {
-  return subtext_font_;
+const gfx::FontList& AutofillPopupControllerImpl::subtext_font_list() const {
+  return subtext_font_list_;
 }
 #endif
 
@@ -594,17 +597,12 @@ void AutofillPopupControllerImpl::InvalidateRow(size_t row) {
 
 #if !defined(OS_ANDROID)
 int AutofillPopupControllerImpl::GetDesiredPopupWidth() const {
-  if (!name_font_.platform_font() || !subtext_font_.platform_font()) {
-    // We can't calculate the size of the popup if the fonts
-    // aren't present.
-    return 0;
-  }
-
   int popup_width = RoundedElementBounds().width();
   DCHECK_EQ(names().size(), subtexts().size());
   for (size_t i = 0; i < names().size(); ++i) {
-    int row_size = name_font_.GetStringWidth(names()[i]) +
-        subtext_font_.GetStringWidth(subtexts()[i]) +
+    int row_size =
+        gfx::GetStringWidth(names()[i], name_font_list_) +
+        gfx::GetStringWidth(subtexts()[i], subtext_font_list_) +
         RowWidthWithoutText(i);
 
     popup_width = std::max(popup_width, row_size);

@@ -15,6 +15,7 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/border.h"
 #include "ui/views/event_utils.h"
 #include "ui/views/widget/widget.h"
@@ -251,21 +252,21 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   if (controller_->selected_line() == index)
     canvas->FillRect(entry_rect, kHoveredBackgroundColor);
 
-  bool is_rtl = controller_->IsRTL();
-  int value_text_width = controller_->GetNameFontForRow(index).GetStringWidth(
-      controller_->names()[index]);
-  int value_content_x = is_rtl ?
+  const bool is_rtl = controller_->IsRTL();
+  const int value_text_width =
+      gfx::GetStringWidth(controller_->names()[index],
+                          controller_->GetNameFontListForRow(index));
+  const int value_content_x = is_rtl ?
       entry_rect.width() - value_text_width - kEndPadding : kEndPadding;
 
-  canvas->DrawStringInt(
+  canvas->DrawStringRectWithFlags(
       controller_->names()[index],
-      controller_->GetNameFontForRow(index),
+      controller_->GetNameFontListForRow(index),
       controller_->IsWarning(index) ? kWarningTextColor : kValueTextColor,
-      value_content_x,
-      entry_rect.y(),
-      canvas->GetStringWidth(controller_->names()[index],
-                             controller_->GetNameFontForRow(index)),
-      entry_rect.height(),
+      gfx::Rect(value_content_x,
+                entry_rect.y(),
+                value_text_width,
+                entry_rect.height()),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 
   // Use this to figure out where all the other Autofill items should be placed.
@@ -288,20 +289,20 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   }
 
   // Draw the name text.
-  if (!is_rtl) {
-    x_align_left -= canvas->GetStringWidth(controller_->subtexts()[index],
-                                           controller_->subtext_font());
-  }
+  const int subtext_width =
+      gfx::GetStringWidth(controller_->subtexts()[index],
+                          controller_->subtext_font_list());
+  if (!is_rtl)
+    x_align_left -= subtext_width;
 
-  canvas->DrawStringInt(
+  canvas->DrawStringRectWithFlags(
       controller_->subtexts()[index],
-      controller_->subtext_font(),
+      controller_->subtext_font_list(),
       kItemTextColor,
-      x_align_left,
-      entry_rect.y(),
-      canvas->GetStringWidth(controller_->subtexts()[index],
-                             controller_->subtext_font()),
-      entry_rect.height(),
+      gfx::Rect(x_align_left,
+                entry_rect.y(),
+                subtext_width,
+                entry_rect.height()),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 }
 

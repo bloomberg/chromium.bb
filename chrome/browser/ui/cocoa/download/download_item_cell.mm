@@ -370,22 +370,14 @@ using content::DownloadItem;
 }
 
 - (NSString*)elideTitle:(int)availableWidth {
-  NSFont* font = [self font];
-  gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
-                     [font pointSize]);
-
   return base::SysUTF16ToNSString(gfx::ElideFilename(
-      downloadPath_, gfx::FontList(font_chr), availableWidth));
+      downloadPath_, gfx::FontList(gfx::Font([self font])), availableWidth));
 }
 
 - (NSString*)elideStatus:(int)availableWidth {
-  NSFont* font = [self secondaryFont];
-  gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
-                     [font pointSize]);
-
   return base::SysUTF16ToNSString(gfx::ElideText(
       base::SysNSStringToUTF16([self secondaryTitle]),
-      font_chr,
+      gfx::FontList(gfx::Font([self secondaryFont])),
       availableWidth,
       gfx::ELIDE_AT_END));
 }

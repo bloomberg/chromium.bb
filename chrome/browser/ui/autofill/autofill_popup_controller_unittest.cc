@@ -23,6 +23,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/text_utils.h"
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -97,8 +98,8 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   using AutofillPopupControllerImpl::popup_bounds;
   using AutofillPopupControllerImpl::element_bounds;
 #if !defined(OS_ANDROID)
-  using AutofillPopupControllerImpl::GetNameFontForRow;
-  using AutofillPopupControllerImpl::subtext_font;
+  using AutofillPopupControllerImpl::GetNameFontListForRow;
+  using AutofillPopupControllerImpl::subtext_font_list;
   using AutofillPopupControllerImpl::RowWidthWithoutText;
 #endif
   using AutofillPopupControllerImpl::SetValues;
@@ -515,10 +516,10 @@ TEST_F(AutofillPopupControllerUnitTest, ElideText) {
 
   // Ensure the popup will be too small to display all of the first row.
   int popup_max_width =
-      autofill_popup_controller_->GetNameFontForRow(0).GetStringWidth(
-          names[0]) +
-      autofill_popup_controller_->subtext_font().GetStringWidth(subtexts[0]) -
-      25;
+      gfx::GetStringWidth(
+          names[0], autofill_popup_controller_->GetNameFontListForRow(0)) +
+      gfx::GetStringWidth(
+          subtexts[0], autofill_popup_controller_->subtext_font_list()) - 25;
   gfx::Rect popup_bounds = gfx::Rect(0, 0, popup_max_width, 0);
   autofill_popup_controller_->set_display(gfx::Display(0, popup_bounds));
 

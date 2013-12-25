@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/gtk/autofill/autofill_popup_view_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
+#include <pango/pango.h>
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/pango_util.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/text_utils.h"
 
 using blink::WebAutofillClient;
 
@@ -176,7 +178,7 @@ void AutofillPopupViewGtk::SetUpLayout() {
 }
 
 void AutofillPopupViewGtk::SetLayoutText(const base::string16& text,
-                                         const gfx::Font& font,
+                                         const gfx::FontList& font_list,
                                          const GdkColor text_color) {
   PangoAttrList* attrs = pango_attr_list_new();
 
@@ -188,7 +190,9 @@ void AutofillPopupViewGtk::SetLayoutText(const base::string16& text,
   pango_layout_set_attributes(layout_, attrs);  // Ref taken.
   pango_attr_list_unref(attrs);
 
-  gfx::ScopedPangoFontDescription font_description(font.GetNativeFont());
+  gfx::ScopedPangoFontDescription font_description(
+      pango_font_description_from_string(
+          font_list.GetFontDescriptionString().c_str()));
   pango_layout_set_font_description(layout_, font_description.get());
 
   gtk_util::SetLayoutText(layout_, text);
@@ -221,17 +225,19 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
 
   // Draw the value.
   SetLayoutText(controller_->names()[index],
-                controller_->GetNameFontForRow(index),
+                controller_->GetNameFontListForRow(index),
                 controller_->IsWarning(index) ? kWarningColor : kNameColor);
-  int value_text_width = controller_->GetNameFontForRow(index).GetStringWidth(
-      controller_->names()[index]);
+  int value_text_width =
+      gfx::GetStringWidth(controller_->names()[index],
+                          controller_->GetNameFontListForRow(index));
 
   // Center the text within the line.
   int row_height = entry_rect.height();
   int value_content_y = std::max(
       entry_rect.y(),
       entry_rect.y() +
-          (row_height - controller_->GetNameFontForRow(index).GetHeight()) / 2);
+          (row_height -
+           controller_->GetNameFontListForRow(index).GetHeight()) / 2);
 
   bool is_rtl = controller_->IsRTL();
   int value_content_x = is_rtl ?
@@ -268,18 +274,18 @@ void AutofillPopupViewGtk::DrawAutofillEntry(cairo_t* cairo_context,
 
   // Draw the subtext.
   SetLayoutText(controller_->subtexts()[index],
-                controller_->subtext_font(),
+                controller_->subtext_font_list(),
                 kSubtextColor);
   if (!is_rtl) {
-    x_align_left -= controller_->subtext_font().GetStringWidth(
-        controller_->subtexts()[index]);
+    x_align_left -= gfx::GetStringWidth(controller_->subtexts()[index],
+                                        controller_->subtext_font_list());
   }
 
   // Center the text within the line.
   int subtext_content_y = std::max(
       entry_rect.y(),
       entry_rect.y() +
-          (row_height - controller_->subtext_font().GetHeight()) / 2);
+          (row_height - controller_->subtext_font_list().GetHeight()) / 2);
 
   cairo_save(cairo_context);
   cairo_move_to(cairo_context, x_align_left, subtext_content_y);
