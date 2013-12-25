@@ -241,7 +241,7 @@ void SpellCheckProvider::OnRespondSpellingService(
 bool SpellCheckProvider::HasWordCharacters(
     const base::string16& text,
     int index) const {
-  const char16* data = text.data();
+  const base::char16* data = text.data();
   int length = text.length();
   while (index < length) {
     uint32 code = 0;

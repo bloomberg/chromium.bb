@@ -79,7 +79,7 @@ struct AutocompleteMatch {
 
   // Null-terminated array of characters that are not valid within |contents|
   // and |description| strings.
-  static const char16 kInvalidChars[];
+  static const base::char16 kInvalidChars[];
 
   AutocompleteMatch();
   AutocompleteMatch(AutocompleteProvider* provider,

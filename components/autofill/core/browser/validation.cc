@@ -18,7 +18,7 @@ using base::StringPiece16;
 namespace {
 
 // The separator characters for SSNs.
-const char16 kSSNSeparators[] = {' ', '-', 0};
+const base::char16 kSSNSeparators[] = {' ', '-', 0};
 
 }  // namespace
 

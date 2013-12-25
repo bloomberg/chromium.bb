@@ -1282,7 +1282,7 @@ base::string16 OmniboxEditModel::DisplayTextFromUserText(
 
 base::string16 OmniboxEditModel::UserTextFromDisplayText(
     const base::string16& text) const {
-  return KeywordIsSelected() ? (keyword_ + char16(' ') + text) : text;
+  return KeywordIsSelected() ? (keyword_ + base::char16(' ') + text) : text;
 }
 
 void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,

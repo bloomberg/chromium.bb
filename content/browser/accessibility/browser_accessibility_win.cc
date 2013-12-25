@@ -34,7 +34,7 @@ const GUID GUID_IAccessibleContentDocument = {
     0xa5d8e1f3, 0x3571, 0x4d8f,
     0x95, 0x21, 0x07, 0xed, 0x28, 0xfb, 0x07, 0x2e};
 
-const char16 BrowserAccessibilityWin::kEmbeddedCharacter[] = L"\xfffc";
+const base::char16 BrowserAccessibilityWin::kEmbeddedCharacter[] = L"\xfffc";
 
 // static
 LONG BrowserAccessibilityWin::next_unique_id_win_ =

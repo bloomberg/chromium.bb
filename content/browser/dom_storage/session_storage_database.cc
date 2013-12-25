@@ -578,9 +578,9 @@ bool SessionStorageDatabase::ReadMap(const std::string& map_id,
     } else {
       // Convert the raw data stored in std::string (it->value()) to raw data
       // stored in base::string16.
-      size_t len = it->value().size() / sizeof(char16);
-      const char16* data_ptr =
-          reinterpret_cast<const char16*>(it->value().data());
+      size_t len = it->value().size() / sizeof(base::char16);
+      const base::char16* data_ptr =
+          reinterpret_cast<const base::char16*>(it->value().data());
       (*result)[key16] =
           base::NullableString16(base::string16(data_ptr, len), false);
     }

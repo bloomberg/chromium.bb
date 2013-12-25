@@ -32,9 +32,9 @@ TEST(IndexedDBKeyTest, KeySizeEstimates) {
   keys.push_back(IndexedDBKey(date, blink::WebIDBKeyTypeDate));
   estimates.push_back(static_cast<size_t>(24));  // Overhead + sizeof(double).
 
-  const base::string16 string(1024, static_cast<char16>('X'));
+  const base::string16 string(1024, static_cast<base::char16>('X'));
   keys.push_back(IndexedDBKey(string));
-  // Overhead + string length * sizeof(char16).
+  // Overhead + string length * sizeof(base::char16).
   estimates.push_back(static_cast<size_t>(2064));
 
   const size_t array_size = 1024;

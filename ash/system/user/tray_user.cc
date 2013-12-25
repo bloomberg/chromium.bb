@@ -89,7 +89,7 @@ const SkColor kBorderColor = 0xffdcdcdc;
 
 // The invisible word joiner character, used as a marker to indicate the start
 // and end of the user's display name in the public account user card's text.
-const char16 kDisplayNameMark[] = { 0x2060, 0 };
+const base::char16 kDisplayNameMark[] = { 0x2060, 0 };
 
 const int kPublicAccountLogoutButtonBorderImagesNormal[] = {
     IDR_AURA_TRAY_POPUP_PUBLIC_ACCOUNT_LOGOUT_BUTTON_BORDER,

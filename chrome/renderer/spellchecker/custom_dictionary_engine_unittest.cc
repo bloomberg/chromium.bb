@@ -25,6 +25,6 @@ TEST(CustomDictionaryTest, Basic) {
 }
 
 TEST(CustomDictionaryTest, HandlesNullCharacters) {
-  char16 data[4] = {'a', 0, 'b', 'c'};
+  base::char16 data[4] = {'a', 0, 'b', 'c'};
   EXPECT_FALSE(CustomDictionaryEngine().SpellCheckWord(data, 1, 1));
 }

@@ -41,7 +41,7 @@ class ShortcutsProvider
   friend class ClassifyTest;
   friend class history::ShortcutsProviderTest;
 
-  typedef std::multimap<char16, base::string16> WordMap;
+  typedef std::multimap<base::char16, base::string16> WordMap;
 
   virtual ~ShortcutsProvider();
 

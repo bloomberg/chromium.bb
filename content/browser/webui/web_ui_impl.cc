@@ -34,13 +34,13 @@ base::string16 WebUI::GetJavascriptCall(
   std::string json;
   for (size_t i = 0; i < arg_list.size(); ++i) {
     if (i > 0)
-      parameters += char16(',');
+      parameters += base::char16(',');
 
     base::JSONWriter::Write(arg_list[i], &json);
     parameters += base::UTF8ToUTF16(json);
   }
   return base::ASCIIToUTF16(function_name) +
-      char16('(') + parameters + char16(')') + char16(';');
+      base::char16('(') + parameters + base::char16(')') + base::char16(';');
 }
 
 WebUIImpl::WebUIImpl(WebContents* contents)

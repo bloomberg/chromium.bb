@@ -222,7 +222,7 @@ class RenderViewImplTest : public RenderViewTest {
 
     long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
                                      flags);
-    output->assign(1, static_cast<char16>(c));
+    output->assign(1, static_cast<base::char16>(c));
     return 1;
 #elif defined(USE_OZONE)
     const int flags = ConvertMockKeyboardModifier(modifiers);
@@ -255,7 +255,7 @@ class RenderViewImplTest : public RenderViewTest {
 
     long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
                                      flags);
-    output->assign(1, static_cast<char16>(c));
+    output->assign(1, static_cast<base::char16>(c));
     return 1;
 #elif defined(TOOLKIT_GTK)
     // We ignore |layout|, which means we are only testing the layout of the
@@ -288,7 +288,7 @@ class RenderViewImplTest : public RenderViewTest {
       gdk_event_free(events[i]);
     }
 
-    output->assign(1, static_cast<char16>(unicode_key));
+    output->assign(1, static_cast<base::char16>(unicode_key));
     return 1;
 #else
     NOTIMPLEMENTED();

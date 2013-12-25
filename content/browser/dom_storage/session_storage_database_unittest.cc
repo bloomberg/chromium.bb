@@ -303,9 +303,10 @@ void SessionStorageDatabaseTest::DumpData() const {
     if (IsMapValueKey(it->key().ToString(), &dummy_map_id)) {
       // Convert the value back to base::string16.
       base::string16 value;
-      size_t len = it->value().size() / sizeof(char16);
+      size_t len = it->value().size() / sizeof(base::char16);
       value.resize(len);
-      value.assign(reinterpret_cast<const char16*>(it->value().data()), len);
+      value.assign(
+          reinterpret_cast<const base::char16*>(it->value().data()), len);
       LOG(WARNING) << it->key().ToString() << ": " << value;
     } else {
       LOG(WARNING) << it->key().ToString() << ": " << it->value().ToString();
@@ -699,7 +700,7 @@ TEST_F(SessionStorageDatabaseTest, WriteRawBytes) {
   unsigned char raw_data[10] = {255, 0, 0, 0, 1, 2, 3, 4, 5, 0};
   DOMStorageValuesMap changes;
   base::string16 string_with_raw_data;
-  string_with_raw_data.assign(reinterpret_cast<char16*>(raw_data), 5);
+  string_with_raw_data.assign(reinterpret_cast<base::char16*>(raw_data), 5);
   changes[kKey1] = base::NullableString16(string_with_raw_data, false);
   EXPECT_TRUE(db_->CommitAreaChanges(kNamespace1, kOrigin1, false, changes));
   CheckDatabaseConsistency();

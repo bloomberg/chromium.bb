@@ -219,7 +219,7 @@ void StorageMonitorWinTest::DoMTPDeviceTest(const base::string16& pnp_device_id,
   if (FAILED(hr))
     return;
 
-  size_t device_id_size = pnp_device_id.size() * sizeof(char16);
+  size_t device_id_size = pnp_device_id.size() * sizeof(base::char16);
   size_t size = sizeof(DEV_BROADCAST_DEVICEINTERFACE) + device_id_size;
   scoped_ptr_malloc<DEV_BROADCAST_DEVICEINTERFACE> dev_interface_broadcast(
       static_cast<DEV_BROADCAST_DEVICEINTERFACE*>(malloc(size)));

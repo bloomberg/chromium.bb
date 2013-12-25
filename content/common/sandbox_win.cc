@@ -220,7 +220,7 @@ void AddGenericDllEvictionPolicy(sandbox::TargetPolicy* policy) {
 }
 
 // Returns the object path prepended with the current logon session.
-base::string16 PrependWindowsSessionPath(const char16* object) {
+base::string16 PrependWindowsSessionPath(const base::char16* object) {
   // Cache this because it can't change after process creation.
   static uintptr_t s_session_id = 0;
   if (s_session_id == 0) {

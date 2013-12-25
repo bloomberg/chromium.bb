@@ -123,7 +123,7 @@ template<> void DownloadQueryTest::AddFilter(
 }
 
 template<> void DownloadQueryTest::AddFilter(
-    DownloadQuery::FilterType name, const char16* cpp_value) {
+    DownloadQuery::FilterType name, const base::char16* cpp_value) {
   scoped_ptr<base::Value> value(
       base::Value::CreateStringValue(base::string16(cpp_value)));
   CHECK(query_.AddFilter(name, *value.get()));

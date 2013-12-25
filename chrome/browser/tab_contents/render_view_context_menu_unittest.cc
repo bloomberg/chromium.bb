@@ -40,7 +40,7 @@ static content::ContextMenuParams CreateParams(int contexts) {
   rv.media_type = blink::WebContextMenuData::MediaTypeNone;
   rv.page_url = GURL("http://test.page/");
 
-  static const char16 selected_text[] = { 's', 'e', 'l', 0 };
+  static const base::char16 selected_text[] = { 's', 'e', 'l', 0 };
   if (contexts & MenuItem::SELECTION)
     rv.selection_text = selected_text;
 

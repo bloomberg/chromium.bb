@@ -311,8 +311,8 @@ void WriteString(const base::NullableString16& str, SerializeObject* obj) {
   if (str.is_null()) {
     obj->pickle.WriteInt(-1);
   } else {
-    const char16* data = str.string().data();
-    size_t length_in_bytes = str.string().length() * sizeof(char16);
+    const base::char16* data = str.string().data();
+    size_t length_in_bytes = str.string().length() * sizeof(base::char16);
 
     CHECK_LT(length_in_bytes,
              static_cast<size_t>(std::numeric_limits<int>::max()));
@@ -323,7 +323,7 @@ void WriteString(const base::NullableString16& str, SerializeObject* obj) {
 
 // This reads a serialized NullableString16 from obj. If a string can't be
 // read, NULL is returned.
-const char16* ReadStringNoCopy(SerializeObject* obj, int* num_chars) {
+const base::char16* ReadStringNoCopy(SerializeObject* obj, int* num_chars) {
   int length_in_bytes;
   if (!obj->pickle.ReadInt(&obj->iter, &length_in_bytes)) {
     obj->parse_error = true;
@@ -340,20 +340,20 @@ const char16* ReadStringNoCopy(SerializeObject* obj, int* num_chars) {
   }
 
   if (num_chars)
-    *num_chars = length_in_bytes / sizeof(char16);
-  return reinterpret_cast<const char16*>(data);
+    *num_chars = length_in_bytes / sizeof(base::char16);
+  return reinterpret_cast<const base::char16*>(data);
 }
 
 base::NullableString16 ReadString(SerializeObject* obj) {
   int num_chars;
-  const char16* chars = ReadStringNoCopy(obj, &num_chars);
+  const base::char16* chars = ReadStringNoCopy(obj, &num_chars);
   return chars ?
       base::NullableString16(base::string16(chars, num_chars), false) :
       base::NullableString16();
 }
 
 void ConsumeString(SerializeObject* obj) {
-  const char16* unused ALLOW_UNUSED = ReadStringNoCopy(obj, NULL);
+  const base::char16* unused ALLOW_UNUSED = ReadStringNoCopy(obj, NULL);
 }
 
 template <typename T>

@@ -81,8 +81,8 @@ TermMatches ReplaceOffsetsInTermMatches(const TermMatches& matches,
 
 typedef std::vector<base::string16> String16Vector;
 typedef std::set<base::string16> String16Set;
-typedef std::set<char16> Char16Set;
-typedef std::vector<char16> Char16Vector;
+typedef std::set<base::char16> Char16Set;
+typedef std::vector<base::char16> Char16Vector;
 
 // A vector that contains the offsets at which each word starts within a string.
 typedef std::vector<size_t> WordStarts;
@@ -143,7 +143,7 @@ typedef std::map<base::string16, WordID> WordMap;
 
 // A map from character to the word_ids of words containing that character.
 typedef std::set<WordID> WordIDSet;  // An index into the WordList.
-typedef std::map<char16, WordIDSet> CharWordIDMap;
+typedef std::map<base::char16, WordIDSet> CharWordIDMap;
 
 // A map from word (by word_id) to history items containing that word.
 typedef history::URLID HistoryID;

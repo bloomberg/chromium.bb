@@ -429,7 +429,7 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
   if (input.type() == AutocompleteInput::FORCED_QUERY)
     match.fill_into_edit.assign(base::ASCIIToUTF16("?"));
   if (is_keyword)
-    match.fill_into_edit.append(match.keyword + char16(' '));
+    match.fill_into_edit.append(match.keyword + base::char16(' '));
   if (!input.prevent_inline_autocomplete() &&
       StartsWith(query_string, input_text, false)) {
     match.inline_autocompletion = query_string.substr(input_text.length());

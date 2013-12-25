@@ -11,7 +11,7 @@ namespace content {
 namespace {
 
 size_t size_of_item(const base::string16& key, const base::string16& value) {
-  return (key.length() + value.length()) * sizeof(char16);
+  return (key.length() + value.length()) * sizeof(base::char16);
 }
 
 size_t CountBytes(const DOMStorageValuesMap& values) {

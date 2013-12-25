@@ -603,12 +603,12 @@ void PRegTestHarness::AppendStringToPRegFile(const base::string16& path,
                                              const std::string& key,
                                              const std::string& value) {
   base::string16 string16_value(UTF8ToUTF16(value));
-  std::vector<char16> data;
+  std::vector<base::char16> data;
   std::transform(string16_value.begin(), string16_value.end(),
                  std::back_inserter(data), std::ptr_fun(base::ByteSwapToLE16));
   data.push_back(base::ByteSwapToLE16(L'\0'));
 
-  AppendRecordToPRegFile(path, key, REG_SZ, data.size() * sizeof(char16),
+  AppendRecordToPRegFile(path, key, REG_SZ, data.size() * sizeof(base::char16),
                          reinterpret_cast<uint8*>(vector_as_array(&data)));
 }
 
@@ -693,7 +693,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
  protected:
   // The policy key this tests places data under. This must match the data
   // files in chrome/test/data/policy/gpo.
-  static const char16 kTestPolicyKey[];
+  static const base::char16 kTestPolicyKey[];
 
   PolicyLoaderWinTest()
       : gpo_list_(NULL),
@@ -782,7 +782,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   base::FilePath test_data_dir_;
 };
 
-const char16 PolicyLoaderWinTest::kTestPolicyKey[] =
+const base::char16 PolicyLoaderWinTest::kTestPolicyKey[] =
     L"SOFTWARE\\Policies\\Chromium";
 
 TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {

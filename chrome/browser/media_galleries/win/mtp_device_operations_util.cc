@@ -109,7 +109,7 @@ bool IsDirectory(IPortableDeviceValues* properties_values) {
 base::string16 GetObjectName(IPortableDeviceValues* properties_values,
                        bool is_directory) {
   DCHECK(properties_values);
-  base::win::ScopedCoMem<char16> buffer;
+  base::win::ScopedCoMem<base::char16> buffer;
   REFPROPERTYKEY key =
       is_directory ? WPD_OBJECT_NAME : WPD_OBJECT_ORIGINAL_FILE_NAME;
   HRESULT hr = properties_values->GetStringValue(key, &buffer);
@@ -269,7 +269,8 @@ bool GetMTPDeviceObjectEntries(IPortableDevice* device,
   const bool get_all_entries = object_name.empty();
   for (HRESULT hr = S_OK; hr == S_OK;) {
     DWORD num_objects_fetched = 0;
-    scoped_ptr<char16*[]> object_ids(new char16*[num_objects_to_request]);
+    scoped_ptr<base::char16*[]> object_ids(
+        new base::char16*[num_objects_to_request]);
     hr = enum_object_ids->Next(num_objects_to_request,
                                object_ids.get(),
                                &num_objects_fetched);

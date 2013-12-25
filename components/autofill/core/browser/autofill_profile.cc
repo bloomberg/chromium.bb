@@ -682,7 +682,7 @@ base::string16 AutofillProfile::ConstructInferredLabel(
   }
 
   // Flatten the label if need be.
-  const char16 kNewline[] = { '\n', 0 };
+  const base::char16 kNewline[] = { '\n', 0 };
   const base::string16 newline_separator =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR);
   base::ReplaceChars(label, kNewline, newline_separator, &label);

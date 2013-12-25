@@ -241,7 +241,7 @@ void ExtensionMessageBubbleView::Init() {
     extensions->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
     std::vector<base::string16> extension_list;
-    char16 bullet_point = 0x2022;
+    base::char16 bullet_point = 0x2022;
 
     std::vector<base::string16> suspicious = delegate_->GetExtensions();
     size_t i = 0;

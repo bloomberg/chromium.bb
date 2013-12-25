@@ -136,7 +136,7 @@ TEST(KeyConverter, WebDriverSpecialChar) {
       CreateCharEvent(" ", " ", 0),
       CreateKeyUpEvent(ui::VKEY_SPACE, 0)};
   base::string16 keys;
-  keys.push_back(static_cast<char16>(0xE00DU));
+  keys.push_back(static_cast<base::char16>(0xE00DU));
   CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
 
@@ -145,7 +145,7 @@ TEST(KeyConverter, WebDriverSpecialNonCharKey) {
       CreateKeyDownEvent(ui::VKEY_F1, 0),
       CreateKeyUpEvent(ui::VKEY_F1, 0)};
   base::string16 keys;
-  keys.push_back(static_cast<char16>(0xE031U));
+  keys.push_back(static_cast<base::char16>(0xE031U));
   CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
 
@@ -210,7 +210,7 @@ TEST(KeyConverter, UppercaseCharUsesShiftOnlyIfNecessary) {
       CreateKeyUpEvent(ui::VKEY_C, kShiftKeyModifierMask),
       CreateKeyUpEvent(ui::VKEY_SHIFT, 0)};
   base::string16 keys;
-  keys.push_back(static_cast<char16>(0xE008U));
+  keys.push_back(static_cast<base::char16>(0xE008U));
   keys.append(base::UTF8ToUTF16("aBc"));
   CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
@@ -226,14 +226,14 @@ TEST(KeyConverter, ToggleModifiers) {
       CreateKeyDownEvent(ui::VKEY_COMMAND, kMetaKeyModifierMask),
       CreateKeyUpEvent(ui::VKEY_COMMAND, 0)};
   base::string16 keys;
-  keys.push_back(static_cast<char16>(0xE008U));
-  keys.push_back(static_cast<char16>(0xE008U));
-  keys.push_back(static_cast<char16>(0xE009U));
-  keys.push_back(static_cast<char16>(0xE009U));
-  keys.push_back(static_cast<char16>(0xE00AU));
-  keys.push_back(static_cast<char16>(0xE00AU));
-  keys.push_back(static_cast<char16>(0xE03DU));
-  keys.push_back(static_cast<char16>(0xE03DU));
+  keys.push_back(static_cast<base::char16>(0xE008U));
+  keys.push_back(static_cast<base::char16>(0xE008U));
+  keys.push_back(static_cast<base::char16>(0xE009U));
+  keys.push_back(static_cast<base::char16>(0xE009U));
+  keys.push_back(static_cast<base::char16>(0xE00AU));
+  keys.push_back(static_cast<base::char16>(0xE00AU));
+  keys.push_back(static_cast<base::char16>(0xE03DU));
+  keys.push_back(static_cast<base::char16>(0xE03DU));
   CheckEventsReleaseModifiers(keys, event_array, arraysize(event_array));
 }
 
@@ -387,10 +387,10 @@ TEST(KeyConverter, ModifiersState) {
       CreateKeyDownEvent(ui::VKEY_MENU, alt_key_modifier),
       CreateKeyDownEvent(ui::VKEY_COMMAND, meta_key_modifier)};
   base::string16 keys;
-  keys.push_back(static_cast<char16>(0xE008U));
-  keys.push_back(static_cast<char16>(0xE009U));
-  keys.push_back(static_cast<char16>(0xE00AU));
-  keys.push_back(static_cast<char16>(0xE03DU));
+  keys.push_back(static_cast<base::char16>(0xE008U));
+  keys.push_back(static_cast<base::char16>(0xE009U));
+  keys.push_back(static_cast<base::char16>(0xE00AU));
+  keys.push_back(static_cast<base::char16>(0xE03DU));
 
   CheckEvents(keys, event_array, false /* release_modifiers */,
       arraysize(event_array), meta_key_modifier);
@@ -404,8 +404,8 @@ TEST(KeyConverter, ReleaseModifiers) {
       CreateKeyUpEvent(ui::VKEY_SHIFT, 0),
       CreateKeyUpEvent(ui::VKEY_CONTROL, 0)};
   base::string16 keys;
-  keys.push_back(static_cast<char16>(0xE008U));
-  keys.push_back(static_cast<char16>(0xE009U));
+  keys.push_back(static_cast<base::char16>(0xE008U));
+  keys.push_back(static_cast<base::char16>(0xE009U));
 
   CheckEvents(keys, event_array, true /* release_modifiers */,
       arraysize(event_array), 0);

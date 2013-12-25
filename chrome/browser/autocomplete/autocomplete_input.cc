@@ -474,7 +474,7 @@ base::string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
     const base::string16& formatted_url) {
   if (!net::CanStripTrailingSlash(url))
     return formatted_url;
-  const base::string16 url_with_path(formatted_url + char16('/'));
+  const base::string16 url_with_path(formatted_url + base::char16('/'));
   return (AutocompleteInput::Parse(formatted_url, base::string16(), NULL, NULL,
                                    NULL) ==
           AutocompleteInput::Parse(url_with_path, base::string16(), NULL, NULL,

@@ -20,14 +20,14 @@ const size_t kZipPlus4Digits = 9;
 // Maximum number of digits of a house number, including possible hyphens.
 const size_t kMaxHouseDigits = 5;
 
-char16 SafePreviousChar(const base::string16::const_iterator& it,
+base::char16 SafePreviousChar(const base::string16::const_iterator& it,
     const base::string16::const_iterator& begin) {
   if (it == begin)
     return ' ';
   return *(it - 1);
 }
 
-char16 SafeNextChar(const base::string16::const_iterator& it,
+base::char16 SafeNextChar(const base::string16::const_iterator& it,
     const base::string16::const_iterator& end) {
   if (it == end)
     return ' ';
@@ -73,11 +73,11 @@ Word::Word(const base::string16::const_iterator& begin,
   DCHECK(begin <= end);
 }
 
-bool HouseNumberParser::IsPreDelimiter(char16 character) {
+bool HouseNumberParser::IsPreDelimiter(base::char16 character) {
   return character == ':' || IsPostDelimiter(character);
 }
 
-bool HouseNumberParser::IsPostDelimiter(char16 character) {
+bool HouseNumberParser::IsPostDelimiter(base::char16 character) {
   return IsWhitespace(character) || strchr(",\"'", character);
 }
 
@@ -161,10 +161,10 @@ bool HouseNumberParser::Parse(
       // There should be more than 1 character because of result_chars.
       DCHECK_GT(result_chars_, 0U);
       DCHECK(it_ != begin_);
-      char16 previous = SafePreviousChar(it_, begin_);
+      base::char16 previous = SafePreviousChar(it_, begin_);
       if (IsAsciiDigit(previous)) {
         // Check cases like '12A'.
-        char16 next = SafeNextChar(it_, end_);
+        base::char16 next = SafeNextChar(it_, end_);
         if (IsPostDelimiter(next)) {
           AcceptChars(1);
           continue;
@@ -172,9 +172,9 @@ bool HouseNumberParser::Parse(
 
         // Handle cases like 12a, 1st, 2nd, 3rd, 7th.
         if (IsAsciiAlpha(next)) {
-          char16 last_digit = previous;
-          char16 first_letter = base::ToLowerASCII(*it_);
-          char16 second_letter = base::ToLowerASCII(next);
+          base::char16 last_digit = previous;
+          base::char16 first_letter = base::ToLowerASCII(*it_);
+          base::char16 second_letter = base::ToLowerASCII(next);
           bool is_teen = SafePreviousChar(it_ - 1, begin_) == '1' &&
               num_digits_ == 2;
 
@@ -348,7 +348,7 @@ bool FindStateStartingInWord(WordList* words,
     return false;
 
   // No state names start with x, y, z.
-  char16 first_letter = base::ToLowerASCII(*first_word.begin);
+  base::char16 first_letter = base::ToLowerASCII(*first_word.begin);
   if (first_letter > 'w')
     return false;
 
@@ -357,7 +357,7 @@ bool FindStateStartingInWord(WordList* words,
 
   // Look for two-letter state names.
   if (length == 2 && IsAsciiAlpha(*(first_word.begin + 1))) {
-    char16 second_letter = base::ToLowerASCII(*(first_word.begin + 1));
+    base::char16 second_letter = base::ToLowerASCII(*(first_word.begin + 1));
     DCHECK(second_letter >= 'a');
 
     int second_index = second_letter - 'a';
@@ -596,7 +596,7 @@ bool IsValidLocationName(const Word& word) {
     return false;
 
   // No location names start with y, z.
-  char16 first_letter = base::ToLowerASCII(*word.begin);
+  base::char16 first_letter = base::ToLowerASCII(*word.begin);
   if (first_letter > 'x')
     return false;
 

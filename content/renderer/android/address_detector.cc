@@ -40,7 +40,7 @@ std::string AddressDetector::GetContentText(const base::string16& text) {
   // Get the address and replace unicode bullets with commas.
   base::string16 address_16 = CollapseWhitespace(text, false);
   std::replace(address_16.begin(), address_16.end(),
-      static_cast<char16>(0x2022), static_cast<char16>(','));
+      static_cast<base::char16>(0x2022), static_cast<base::char16>(','));
   return base::UTF16ToUTF8(address_16);
 }
 

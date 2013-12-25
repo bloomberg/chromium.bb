@@ -339,7 +339,7 @@ bool SpellcheckWordIterator::IsInitialized() const {
   return !!iterator_;
 }
 
-bool SpellcheckWordIterator::SetText(const char16* text, size_t length) {
+bool SpellcheckWordIterator::SetText(const base::char16* text, size_t length) {
   DCHECK(!!iterator_);
 
   // Set the text to be split by this iterator.

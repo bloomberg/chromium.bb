@@ -27,7 +27,7 @@ bool ParseDownloadMetadata(const base::string16& metadata,
                            base::string16* mime_type,
                            base::FilePath* file_name,
                            GURL* url) {
-  const char16 separator = L':';
+  const base::char16 separator = L':';
 
   size_t mime_type_end_pos = metadata.find(separator);
   if (mime_type_end_pos == base::string16::npos)

@@ -946,7 +946,7 @@ base::string16 GetStockPreferencesMenuLabel() {
   GtkStockItem stock_item;
   base::string16 preferences;
   if (gtk_stock_lookup(GTK_STOCK_PREFERENCES, &stock_item)) {
-    const char16 kUnderscore[] = { '_', 0 };
+    const base::char16 kUnderscore[] = { '_', 0 };
     base::RemoveChars(base::UTF8ToUTF16(stock_item.label),
                       kUnderscore, &preferences);
   }

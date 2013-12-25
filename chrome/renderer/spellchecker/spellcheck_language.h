@@ -34,7 +34,7 @@ class SpellcheckLanguage {
   // If the word is spelled correctly, the vector is empty.
   // If optional_suggestions is NULL, suggested words will not be looked up.
   // Note that doing suggest lookups can be slow.
-  bool SpellCheckWord(const char16* in_word,
+  bool SpellCheckWord(const base::char16* in_word,
                       int in_word_len,
                       int tag,
                       int* misspelling_start,

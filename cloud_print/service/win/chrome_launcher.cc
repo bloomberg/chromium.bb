@@ -32,7 +32,7 @@ namespace {
 const int kShutdownTimeoutMs = 30 * 1000;
 const int kUsageUpdateTimeoutMs = 6 * 3600 * 1000;  // 6 hours.
 
-static const char16 kAutoRunKeyPath[] =
+static const base::char16 kAutoRunKeyPath[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 
 // Terminates any process.

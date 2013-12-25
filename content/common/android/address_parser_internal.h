@@ -37,8 +37,8 @@ class CONTENT_EXPORT HouseNumberParser {
              Word* word);
 
  private:
-  static inline bool IsPreDelimiter(char16 character);
-  static inline bool IsPostDelimiter(char16 character);
+  static inline bool IsPreDelimiter(base::char16 character);
+  static inline bool IsPostDelimiter(base::char16 character);
   inline void RestartOnNextDelimiter();
 
   inline bool CheckFinished(Word* word) const;

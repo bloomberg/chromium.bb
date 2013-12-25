@@ -262,7 +262,7 @@ void FillSelectControl(const AutofillType& type,
 bool FillMonthControl(const base::string16& value, FormFieldData* field) {
   // Autofill formats a combined date as month/year.
   std::vector<base::string16> pieces;
-  base::SplitString(value, char16('/'), &pieces);
+  base::SplitString(value, base::char16('/'), &pieces);
   if (pieces.size() != 2)
     return false;
 
@@ -290,7 +290,7 @@ void FillStreetAddress(const base::string16& value,
   }
 
   base::string16 one_line_value;
-  const char16 kNewline[] = { '\n', 0 };
+  const base::char16 kNewline[] = { '\n', 0 };
   const base::string16 separator =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR);
   base::ReplaceChars(value, kNewline, separator, &one_line_value);

@@ -260,7 +260,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void ConfirmCompositionText() OVERRIDE;
   virtual void ClearCompositionText() OVERRIDE;
   virtual void InsertText(const base::string16& text) OVERRIDE;
-  virtual void InsertChar(char16 ch, int flags) OVERRIDE;
+  virtual void InsertChar(base::char16 ch, int flags) OVERRIDE;
   virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
   virtual ui::TextInputMode GetTextInputMode() const OVERRIDE;

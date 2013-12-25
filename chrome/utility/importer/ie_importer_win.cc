@@ -46,15 +46,15 @@
 namespace {
 
 // Registry key paths from which we import IE settings.
-const char16 kSearchScopePath[] =
+const base::char16 kSearchScopePath[] =
   L"Software\\Microsoft\\Internet Explorer\\SearchScopes";
-const char16 kIEVersionKey[] =
+const base::char16 kIEVersionKey[] =
   L"Software\\Microsoft\\Internet Explorer";
-const char16 kIEToolbarKey[] =
+const base::char16 kIEToolbarKey[] =
   L"Software\\Microsoft\\Internet Explorer\\Toolbar";
 
 // NTFS stream name of favicon image data.
-const char16 kFaviconStreamName[] = L":favicon:$DATA";
+const base::char16 kFaviconStreamName[] = L":favicon:$DATA";
 
 // A struct that hosts the information of AutoComplete data in PStore.
 struct AutoCompleteInfo {

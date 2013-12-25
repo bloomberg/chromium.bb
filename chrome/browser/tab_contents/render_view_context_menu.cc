@@ -371,7 +371,7 @@ void DevToolsInspectElementAt(RenderViewHost* rvh, int x, int y) {
 
 // Helper function to escape "&" as "&&".
 void EscapeAmpersands(base::string16* text) {
-  const char16 ampersand[] = {'&', 0};
+  const base::char16 ampersand[] = {'&', 0};
   base::ReplaceChars(*text, ampersand, base::ASCIIToUTF16("&&"), text);
 }
 

@@ -804,7 +804,7 @@ void URLIndexPrivateData::AddWordHistory(const base::string16& term,
   Char16Set characters = Char16SetFromString16(term);
   for (Char16Set::iterator uni_char_iter = characters.begin();
        uni_char_iter != characters.end(); ++uni_char_iter) {
-    char16 uni_char = *uni_char_iter;
+    base::char16 uni_char = *uni_char_iter;
     CharWordIDMap::iterator char_iter = char_word_map_.find(uni_char);
     if (char_iter != char_word_map_.end()) {
       // Update existing entry in the char/word index.
@@ -868,7 +868,7 @@ void URLIndexPrivateData::RemoveRowWordsFromIndex(const URLRow& row) {
     Char16Set characters = Char16SetFromString16(word);
     for (Char16Set::iterator uni_char_iter = characters.begin();
          uni_char_iter != characters.end(); ++uni_char_iter) {
-      char16 uni_char = *uni_char_iter;
+      base::char16 uni_char = *uni_char_iter;
       char_word_map_[uni_char].erase(word_id);
       if (char_word_map_[uni_char].empty())
         char_word_map_.erase(uni_char);  // No longer in use.
@@ -1120,7 +1120,7 @@ bool URLIndexPrivateData::RestoreCharWordMap(
     actual_item_count = iter->word_id_size();
     if (actual_item_count == 0 || actual_item_count != expected_item_count)
       return false;
-    char16 uni_char = static_cast<char16>(iter->char_16());
+    base::char16 uni_char = static_cast<base::char16>(iter->char_16());
     WordIDSet word_id_set;
     const RepeatedField<int32>& word_ids(iter->word_id());
     for (RepeatedField<int32>::const_iterator jiter = word_ids.begin();

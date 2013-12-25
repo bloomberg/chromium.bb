@@ -376,7 +376,7 @@ bool UsbDeviceHandle::GetSerial(base::string16* serial) {
 
   for (int i = 1; i <= language_count; ++i) {
     // Get the string using language ID.
-    char16 text[256] = { 0 };
+    base::char16 text[256] = { 0 };
     size = libusb_get_string_descriptor(
         handle_, desc.iSerialNumber, langid[i],
         reinterpret_cast<unsigned char*>(&text[0]), sizeof(text));

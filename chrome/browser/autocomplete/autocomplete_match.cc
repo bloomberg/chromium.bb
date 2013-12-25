@@ -31,7 +31,7 @@ bool IsTrivialClassification(const ACMatchClassifications& classifications) {
 // AutocompleteMatch ----------------------------------------------------------
 
 // static
-const char16 AutocompleteMatch::kInvalidChars[] = {
+const base::char16 AutocompleteMatch::kInvalidChars[] = {
   '\n', '\r', '\t',
   0x2028,  // Line separator
   0x2029,  // Paragraph separator

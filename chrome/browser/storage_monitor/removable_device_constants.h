@@ -19,7 +19,7 @@ extern const char kVendorModelVolumeStoragePrefix[];
 
 #if defined(OS_WIN)
 // Windows portable device interface GUID constant.
-extern const char16 kWPDDevInterfaceGUID[];
+extern const base::char16 kWPDDevInterfaceGUID[];
 #endif
 
 extern const base::FilePath::CharType kDCIMDirectoryName[];

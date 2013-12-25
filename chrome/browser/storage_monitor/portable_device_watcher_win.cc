@@ -28,7 +28,7 @@
 namespace {
 
 // Name of the client application that communicates with the MTP device.
-const char16 kClientName[] = L"Chromium";
+const base::char16 kClientName[] = L"Chromium";
 
 // Name of the sequenced task runner.
 const char kMediaTaskRunnerName[] = "media-task-runner";
@@ -195,11 +195,11 @@ bool GetStringPropertyValue(IPortableDeviceValues* properties_values,
                             base::string16* value) {
   DCHECK(properties_values);
   DCHECK(value);
-  base::win::ScopedCoMem<char16> buffer;
+  base::win::ScopedCoMem<base::char16> buffer;
   HRESULT hr = properties_values->GetStringValue(key, &buffer);
   if (FAILED(hr))
     return false;
-  *value = static_cast<const char16*>(buffer);
+  *value = static_cast<const base::char16*>(buffer);
   return true;
 }
 
@@ -413,7 +413,8 @@ bool EnumerateAttachedDevicesOnBlockingThread(
   if (FAILED(hr))
     return false;
 
-  scoped_ptr<char16*[]> pnp_device_ids(new char16*[pnp_device_count]);
+  scoped_ptr<base::char16*[]> pnp_device_ids(
+      new base::char16*[pnp_device_count]);
   hr = portable_device_mgr->GetDevices(pnp_device_ids.get(), &pnp_device_count);
   if (FAILED(hr))
     return false;

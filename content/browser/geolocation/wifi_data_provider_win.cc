@@ -617,7 +617,7 @@ bool GetSystemDirectory(base::string16* path) {
   if (buffer_size == 0) {
     return false;
   }
-  scoped_ptr<char16[]> buffer(new char16[buffer_size]);
+  scoped_ptr<base::char16[]> buffer(new base::char16[buffer_size]);
 
   // Return value excludes terminating NULL.
   int characters_written = ::GetSystemDirectory(buffer.get(), buffer_size);

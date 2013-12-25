@@ -33,12 +33,12 @@ const char kPRegFileHeader[8] =
 const int64 kMaxPRegFileSize = 1024 * 1024 * 16;
 
 // Constants for PReg file delimiters.
-const char16 kDelimBracketOpen = L'[';
-const char16 kDelimBracketClose = L']';
-const char16 kDelimSemicolon = L';';
+const base::char16 kDelimBracketOpen = L'[';
+const base::char16 kDelimBracketClose = L']';
+const base::char16 kDelimSemicolon = L';';
 
 // Registry path separator.
-const char16 kRegistryPathSeparator[] = L"\\";
+const base::char16 kRegistryPathSeparator[] = L"\\";
 
 // Magic strings for the PReg value field to trigger special actions.
 const char kActionTriggerPrefix[] = "**";
@@ -52,12 +52,12 @@ const char kActionTriggerSoft[] = "soft";
 // Returns the character at |cursor| and increments it, unless the end is here
 // in which case -1 is returned.
 int NextChar(const uint8** cursor, const uint8* end) {
-  // Only read the character if a full char16 is available.
-  if (*cursor + sizeof(char16) > end)
+  // Only read the character if a full base::char16 is available.
+  if (*cursor + sizeof(base::char16) > end)
     return -1;
 
   int result = **cursor | (*(*cursor + 1) << 8);
-  *cursor += sizeof(char16);
+  *cursor += sizeof(base::char16);
   return result;
 }
 
@@ -99,11 +99,12 @@ bool ReadFieldString(const uint8** cursor,
 }
 
 std::string DecodePRegStringValue(const std::vector<uint8>& data) {
-  size_t len = data.size() / sizeof(char16);
+  size_t len = data.size() / sizeof(base::char16);
   if (len <= 0)
     return std::string();
 
-  const char16* chars = reinterpret_cast<const char16*>(vector_as_array(&data));
+  const base::char16* chars =
+      reinterpret_cast<const base::char16*>(vector_as_array(&data));
   base::string16 result;
   std::transform(chars, chars + len - 1, std::back_inserter(result),
                  std::ptr_fun(base::ByteSwapToLE16));

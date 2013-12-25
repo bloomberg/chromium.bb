@@ -107,7 +107,7 @@ bool DOMStorageDatabase::CommitChanges(bool clear_all_first,
           "INSERT INTO ItemTable VALUES (?,?)"));
       statement.BindString16(0, key);
       statement.BindBlob(1, value.string().data(),
-                         value.string().length() * sizeof(char16));
+                         value.string().length() * sizeof(base::char16));
       known_to_be_empty_ = false;
       did_insert = true;
     }

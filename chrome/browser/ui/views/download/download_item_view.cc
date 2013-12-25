@@ -1243,11 +1243,11 @@ void DownloadItemView::SizeLabelToMinWidth() {
     // This can be a low surrogate codepoint, but u_isUWhiteSpace will
     // return false and inserting a new line after a surrogate pair
     // is perfectly ok.
-    char16 line_end_char = current_text[pos - 1];
+    base::char16 line_end_char = current_text[pos - 1];
     if (u_isUWhiteSpace(line_end_char))
-      current_text.replace(pos - 1, 1, 1, char16('\n'));
+      current_text.replace(pos - 1, 1, 1, base::char16('\n'));
     else
-      current_text.insert(pos, 1, char16('\n'));
+      current_text.insert(pos, 1, base::char16('\n'));
     dangerous_download_label_->SetText(current_text);
     size = dangerous_download_label_->GetPreferredSize();
 
@@ -1286,7 +1286,7 @@ void DownloadItemView::UpdateAccessibleName() {
   if (IsShowingWarningDialog()) {
     new_name = dangerous_download_label_->text();
   } else {
-    new_name = status_text_ + char16(' ') +
+    new_name = status_text_ + base::char16(' ') +
         download()->GetFileNameToReportUser().LossyDisplayName();
   }
 

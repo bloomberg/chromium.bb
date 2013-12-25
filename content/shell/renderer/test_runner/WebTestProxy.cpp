@@ -291,7 +291,7 @@ string dumpFrameScrollPosition(WebFrame* frame, bool recursive)
 }
 
 struct ToLower {
-    char16 operator()(char16 c) { return tolower(c); }
+    base::char16 operator()(base::char16 c) { return tolower(c); }
 };
 
 // Returns True if item1 < item2.

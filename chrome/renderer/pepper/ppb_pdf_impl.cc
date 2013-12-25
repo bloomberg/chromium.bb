@@ -243,8 +243,10 @@ void SearchString(PP_Instance instance,
                   bool case_sensitive,
                   PP_PrivateFindResult** results,
                   int* count) {
-  const char16* string = reinterpret_cast<const char16*>(input_string);
-  const char16* term = reinterpret_cast<const char16*>(input_term);
+  const base::char16* string =
+      reinterpret_cast<const base::char16*>(input_string);
+  const base::char16* term =
+      reinterpret_cast<const base::char16*>(input_term);
 
   UErrorCode status = U_ZERO_ERROR;
   UStringSearch* searcher = usearch_open(

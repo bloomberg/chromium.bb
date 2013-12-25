@@ -33,7 +33,7 @@ bool SpellcheckLanguage::InitializeIfNeeded() {
 }
 
 bool SpellcheckLanguage::SpellCheckWord(
-    const char16* in_word,
+    const base::char16* in_word,
     int in_word_len,
     int tag,
     int* misspelling_start,

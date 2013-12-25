@@ -175,7 +175,7 @@ void SpellCheck::Init(base::PlatformFile file,
 }
 
 bool SpellCheck::SpellCheckWord(
-    const char16* in_word,
+    const base::char16* in_word,
     int in_word_len,
     int tag,
     int* misspelling_start,
@@ -258,9 +258,9 @@ base::string16 SpellCheck::GetAutoCorrectionWord(const base::string16& word,
   if (InitializeIfNeeded())
     return autocorrect_word;
 
-  char16 misspelled_word[
+  base::char16 misspelled_word[
       chrome::spellcheck_common::kMaxAutoCorrectWordSize + 1];
-  const char16* word_char = word.c_str();
+  const base::char16* word_char = word.c_str();
   for (int i = 0; i <= chrome::spellcheck_common::kMaxAutoCorrectWordSize;
        ++i) {
     if (i >= word_length)
@@ -354,7 +354,7 @@ void SpellCheck::CreateTextCheckingResults(
   // Double-check misspelled words with our spellchecker and attach grammar
   // markers to them if our spellchecker tells they are correct words, i.e. they
   // are probably contextually-misspelled words.
-  const char16* text = line_text.c_str();
+  const base::char16* text = line_text.c_str();
   std::vector<WebTextCheckingResult> list;
   for (size_t i = 0; i < spellcheck_results.size(); ++i) {
     SpellCheckResult::Decoration decoration = spellcheck_results[i].decoration;

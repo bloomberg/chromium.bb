@@ -2258,7 +2258,7 @@ void RenderWidgetHostViewAura::InsertText(const base::string16& text) {
   has_composition_text_ = false;
 }
 
-void RenderWidgetHostViewAura::InsertChar(char16 ch, int flags) {
+void RenderWidgetHostViewAura::InsertChar(base::char16 ch, int flags) {
   if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab()) {
     popup_child_host_view_->InsertChar(ch, flags);
     return;

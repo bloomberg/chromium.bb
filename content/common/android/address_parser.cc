@@ -32,7 +32,7 @@ const size_t kMaxAddressNameWordLength = 25;
 const size_t kMaxLocationNameDistance = 4;
 
 // Additional characters used as new line delimiters.
-const char16 kNewlineDelimiters[] = {
+const base::char16 kNewlineDelimiters[] = {
   '\n',
   ',',
   '*',

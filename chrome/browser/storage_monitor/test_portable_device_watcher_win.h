@@ -16,9 +16,9 @@
 class TestPortableDeviceWatcherWin : public PortableDeviceWatcherWin {
  public:
   // MTP device PnP identifiers.
-  static const char16 kMTPDeviceWithMultipleStorages[];
-  static const char16 kMTPDeviceWithInvalidInfo[];
-  static const char16 kMTPDeviceWithValidInfo[];
+  static const base::char16 kMTPDeviceWithMultipleStorages[];
+  static const base::char16 kMTPDeviceWithInvalidInfo[];
+  static const base::char16 kMTPDeviceWithValidInfo[];
 
   // MTP device storage unique identifier.
   static const char kStorageUniqueIdA[];

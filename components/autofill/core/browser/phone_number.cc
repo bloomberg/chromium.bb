@@ -17,7 +17,7 @@
 namespace autofill {
 namespace {
 
-const char16 kPhoneNumberSeparators[] = { ' ', '.', '(', ')', '-', 0 };
+const base::char16 kPhoneNumberSeparators[] = { ' ', '.', '(', ')', '-', 0 };
 
 void StripPunctuation(base::string16* number) {
   base::RemoveChars(*number, kPhoneNumberSeparators, number);

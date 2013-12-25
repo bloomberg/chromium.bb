@@ -58,7 +58,7 @@ const char kRTLHtmlTextDirection[] = "rtl";
 // Converts a V8 value to a string16.
 base::string16 V8ValueToUTF16(v8::Handle<v8::Value> v) {
   v8::String::Value s(v);
-  return base::string16(reinterpret_cast<const char16*>(*s), s.length());
+  return base::string16(reinterpret_cast<const base::char16*>(*s), s.length());
 }
 
 // Converts string16 to V8 String.

@@ -53,7 +53,7 @@ const base::string16 TermBreakIterator::GetCurrentTerm() const {
   return word_.substr(prev_, pos_ - prev_);
 }
 
-TermBreakIterator::State TermBreakIterator::GetNewState(char16 ch) {
+TermBreakIterator::State TermBreakIterator::GetNewState(base::char16 ch) {
   if (IsAsciiDigit(ch) || ch == '.' || ch == ',')
     return STATE_NUMBER;
 

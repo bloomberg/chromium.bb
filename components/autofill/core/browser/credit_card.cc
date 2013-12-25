@@ -39,7 +39,7 @@ namespace autofill {
 
 namespace {
 
-const char16 kCreditCardObfuscationSymbol = '*';
+const base::char16 kCreditCardObfuscationSymbol = '*';
 
 // This is the maximum obfuscated symbols displayed.
 // It is introduced to avoid rare cases where the credit card number is

@@ -13,11 +13,11 @@
 namespace {
 
 // Sample MTP device storage information.
-const char16 kMTPDeviceFriendlyName[] = L"Camera V1.1";
-const char16 kStorageLabelA[] = L"Camera V1.1 (s10001)";
-const char16 kStorageLabelB[] = L"Camera V1.1 (s20001)";
-const char16 kStorageObjectIdA[] = L"s10001";
-const char16 kStorageObjectIdB[] = L"s20001";
+const base::char16 kMTPDeviceFriendlyName[] = L"Camera V1.1";
+const base::char16 kStorageLabelA[] = L"Camera V1.1 (s10001)";
+const base::char16 kStorageLabelB[] = L"Camera V1.1 (s20001)";
+const base::char16 kStorageObjectIdA[] = L"s10001";
+const base::char16 kStorageObjectIdB[] = L"s20001";
 const char kStorageUniqueIdB[] =
     "mtp:StorageSerial:SID-{s20001, S, 2238}:123123";
 
@@ -40,11 +40,12 @@ base::string16 GetMTPStorageName(const base::string16& pnp_device_id,
 // TestPortableDeviceWatcherWin ------------------------------------------------
 
 // static
-const char16 TestPortableDeviceWatcherWin::kMTPDeviceWithMultipleStorages[] =
+const base::char16
+TestPortableDeviceWatcherWin::kMTPDeviceWithMultipleStorages[] =
     L"\\?\\usb#vid_ff&pid_18#32&2&1#{ab33-1de4-f22e-1882-9724})";
-const char16 TestPortableDeviceWatcherWin::kMTPDeviceWithInvalidInfo[] =
+const base::char16 TestPortableDeviceWatcherWin::kMTPDeviceWithInvalidInfo[] =
     L"\\?\\usb#vid_00&pid_00#0&2&1#{0000-0000-0000-0000-0000})";
-const char16 TestPortableDeviceWatcherWin::kMTPDeviceWithValidInfo[] =
+const base::char16 TestPortableDeviceWatcherWin::kMTPDeviceWithValidInfo[] =
     L"\\?\\usb#vid_ff&pid_000f#32&2&1#{abcd-1234-ffde-1112-9172})";
 const char TestPortableDeviceWatcherWin::kStorageUniqueIdA[] =
     "mtp:StorageSerial:SID-{s10001, D, 12378}:123123";

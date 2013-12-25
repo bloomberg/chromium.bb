@@ -13,14 +13,14 @@ namespace content {
 TEST(DOMStorageMapTest, DOMStorageMapBasics) {
   const base::string16 kKey(ASCIIToUTF16("key"));
   const base::string16 kValue(ASCIIToUTF16("value"));
-  const size_t kValueBytes = kValue.size() * sizeof(char16);
+  const size_t kValueBytes = kValue.size() * sizeof(base::char16);
   const size_t kItemBytes =
-      (kKey.size() + kValue.size()) * sizeof(char16);
+      (kKey.size() + kValue.size()) * sizeof(base::char16);
   const base::string16 kKey2(ASCIIToUTF16("key2"));
-  const size_t kKey2Bytes = kKey2.size() * sizeof(char16);
+  const size_t kKey2Bytes = kKey2.size() * sizeof(base::char16);
   const base::string16 kValue2(ASCIIToUTF16("value2"));
   const size_t kItem2Bytes =
-      (kKey2.size() + kValue2.size()) * sizeof(char16);
+      (kKey2.size() + kValue2.size()) * sizeof(base::char16);
   const size_t kQuota = 1024;  // 1K quota for this test.
 
   scoped_refptr<DOMStorageMap> map(new DOMStorageMap(kQuota));

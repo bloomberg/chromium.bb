@@ -82,7 +82,7 @@ BrowserAccessibilityWin
   // Represents a non-static text node in IAccessibleHypertext. This character
   // is embedded in the response to IAccessibleText::get_text, indicating the
   // position where a non-static text child object appears.
-  CONTENT_EXPORT static const char16 kEmbeddedCharacter[];
+  CONTENT_EXPORT static const base::char16 kEmbeddedCharacter[];
 
   // Mappings from roles and states to human readable strings. Initialize
   // with |InitializeStringMaps|.

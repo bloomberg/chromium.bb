@@ -118,7 +118,7 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
     base::string16::const_iterator name_iter =
         std::search(name.begin(), name.end(),
                     input.text().begin(), input.text().end(),
-                    base::CaseInsensitiveCompare<char16>());
+                    base::CaseInsensitiveCompare<base::char16>());
     bool matches_name = name_iter != name.end();
     size_t name_match_index = matches_name ?
         static_cast<size_t>(name_iter - name.begin()) : base::string16::npos;
@@ -130,7 +130,7 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
       base::string16::const_iterator url_iter =
           std::search(url.begin(), url.end(),
                       input.text().begin(), input.text().end(),
-                      base::CaseInsensitiveCompare<char16>());
+                      base::CaseInsensitiveCompare<base::char16>());
       matches_url = url_iter != url.end() &&
           input.type() != AutocompleteInput::FORCED_QUERY;
       url_match_index = matches_url ?

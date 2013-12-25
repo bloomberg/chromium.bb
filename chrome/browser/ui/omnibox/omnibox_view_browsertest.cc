@@ -782,7 +782,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_BasicTextOperations) {
   // Insert one character at the end. Make sure we won't insert
   // anything after the special ZWS mark used in gtk implementation.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_A, 0));
-  EXPECT_EQ(old_text + char16('a'), omnibox_view->GetText());
+  EXPECT_EQ(old_text + base::char16('a'), omnibox_view->GetText());
 
   // Delete one character from the end. Make sure we won't delete the special
   // ZWS mark used in gtk implementation.
@@ -860,7 +860,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
 
   // Keyword shouldn't be accepted by pressing space with a trailing
   // whitespace.
-  omnibox_view->SetWindowTextAndCaretPos(search_keyword + char16(' '),
+  omnibox_view->SetWindowTextAndCaretPos(search_keyword + base::char16(' '),
       search_keyword.length() + 1, false, false);
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_SPACE, 0));
   ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
@@ -871,7 +871,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_AcceptKeywordBySpace) {
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_BACK, 0));
   ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
   ASSERT_EQ(search_keyword, omnibox_view->model()->keyword());
-  ASSERT_EQ(search_keyword + char16(' '), omnibox_view->GetText());
+  ASSERT_EQ(search_keyword + base::char16(' '), omnibox_view->GetText());
 
   // Keyword shouldn't be accepted by pressing space before a trailing space.
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_LEFT, 0));

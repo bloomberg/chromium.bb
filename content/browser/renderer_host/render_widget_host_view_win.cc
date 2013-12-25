@@ -1030,7 +1030,7 @@ void RenderWidgetHostViewWin::InsertText(const base::string16& text) {
                                                false);
 }
 
-void RenderWidgetHostViewWin::InsertChar(char16 ch, int flags) {
+void RenderWidgetHostViewWin::InsertChar(base::char16 ch, int flags) {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return;
