@@ -38,6 +38,7 @@ public:
     virtual ~HTMLImportChildClient() { }
     virtual void didFinish() = 0;
     virtual void importWillBeDestroyed() = 0;
+    virtual bool isCreatedByParser() const = 0;
 };
 
 } // namespace WebCore

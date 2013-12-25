@@ -68,7 +68,7 @@ void HTMLImportsController::clear()
 
 HTMLImportChild* HTMLImportsController::createChild(const KURL& url, HTMLImport* parent, HTMLImportChildClient* client)
 {
-    OwnPtr<HTMLImportChild> loader = adoptPtr(new HTMLImportChild(url));
+    OwnPtr<HTMLImportChild> loader = adoptPtr(new HTMLImportChild(url, client->isCreatedByParser()));
     loader->addClient(client);
     parent->appendChild(loader.get());
     m_imports.append(loader.release());
@@ -107,7 +107,7 @@ HTMLImportChild* HTMLImportsController::findLinkFor(const KURL& url, HTMLImport*
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
         HTMLImportChild* candidate = m_imports[i].get();
-        if (candidate != excluding && equalIgnoringFragmentIdentifier(candidate->url(), url) && !candidate->isDocumentBlocked())
+        if (candidate != excluding && equalIgnoringFragmentIdentifier(candidate->url(), url) && !candidate->isBlockedFromCreatingDocument())
             return candidate;
     }
 

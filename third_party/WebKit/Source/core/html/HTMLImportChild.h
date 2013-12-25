@@ -53,7 +53,7 @@ class HTMLImportChildClient;
 //
 class HTMLImportChild : public HTMLImport, public HTMLImportLoaderClient, public HTMLImportResourceOwner {
 public:
-    HTMLImportChild(const KURL&);
+    HTMLImportChild(const KURL&, bool createdByParser);
     virtual ~HTMLImportChild();
 
     Document* importedDocument() const;
@@ -71,7 +71,7 @@ public:
     virtual void didFinishParsing() OVERRIDE;
     virtual bool isProcessing() const OVERRIDE;
     virtual bool isDone() const OVERRIDE;
-    virtual void didUnblockDocument() OVERRIDE;
+    virtual void didUnblockFromCreatingDocument() OVERRIDE;
 
     void addClient(HTMLImportChildClient*);
     void removeClient(HTMLImportChildClient*);

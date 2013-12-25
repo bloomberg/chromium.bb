@@ -37,8 +37,9 @@
 
 namespace WebCore {
 
-HTMLImportChild::HTMLImportChild(const KURL& url)
-    : m_url(url)
+HTMLImportChild::HTMLImportChild(const KURL& url, bool createdByParser)
+    : HTMLImport(createdByParser)
+    , m_url(url)
     , m_traversingClients(false)
 {
 }
@@ -71,8 +72,8 @@ void HTMLImportChild::startLoading(const ResourcePtr<RawResource>& resource)
     // even if there is no sharable one found, as there is possibility that
     // preceding imports load the sharable imports.
     // In that case preceding one should win because it comes first in the tree order.
-    // See also didUnblockDocument().
-    if (isDocumentBlocked())
+    // See also didUnblockFromCreatingDocument().
+    if (isBlockedFromCreatingDocument())
         return;
 
     createLoader();
@@ -132,10 +133,9 @@ void HTMLImportChild::didFinishParsing()
 // Once all preceding imports are loaded and "document blocking" ends,
 // HTMLImportChild can decide whether it should load the import by itself
 // or it can share existing one.
-void HTMLImportChild::didUnblockDocument()
+void HTMLImportChild::didUnblockFromCreatingDocument()
 {
-    HTMLImport::didUnblockDocument();
-    ASSERT(!isDocumentBlocked());
+    HTMLImport::didUnblockFromCreatingDocument();
     ASSERT(!m_loader || !m_loader->isOwnedBy(this));
 
     if (m_loader)
@@ -148,7 +148,7 @@ void HTMLImportChild::didUnblockDocument()
 
 void HTMLImportChild::createLoader()
 {
-    ASSERT(!isDocumentBlocked());
+    ASSERT(!isBlockedFromCreatingDocument());
     ASSERT(!m_loader);
     m_loader = HTMLImportLoader::create(this, parent()->document()->fetcher());
     m_loader->addClient(this);

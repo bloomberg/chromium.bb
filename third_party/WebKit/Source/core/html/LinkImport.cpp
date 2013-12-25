@@ -118,6 +118,11 @@ void LinkImport::importWillBeDestroyed()
     clear();
 }
 
+bool LinkImport::isCreatedByParser() const
+{
+    return m_owner && m_owner->isCreatedByParser();
+}
+
 bool LinkImport::hasLoaded() const
 {
     return m_child && m_child->isLoaded();

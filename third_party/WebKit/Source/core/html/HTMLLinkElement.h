@@ -158,6 +158,7 @@ public:
     bool loadLink(const String& type, const KURL& url) { return m_linkLoader.loadLink(m_relAttribute, type, url, document()); }
     bool isAlternate() const { return linkStyle()->isUnset() && m_relAttribute.isAlternate(); }
     bool shouldProcessStyle() { return linkResourceToProcess() && linkStyle(); }
+    bool isCreatedByParser() const { return m_createdByParser; }
 
 private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

@@ -89,19 +89,19 @@ class KURL;
 //
 // The HTML parser blocks on <script> when preceding <link>s aren't finish loading imports.
 // Each HTMLImport instance tracks such a blocking state, that is called "script-blocked"
-// or HTMLImport::isScriptBlocked().
+// or HTMLImport::isBlockedFromRunningScript().
 //
 // ## Blocking Imports
 //
 // Each imports can become being script-blocked when new imports are added to the import tree.
 // For example, the parser of a parent import is blocked when new child import is given.
 // See HTMLImport::appendChild() to see how it is handled. Note that this blocking-ness is
-// transitive. HTMLImport::blockAfter() flips the flags iteratively to fullfill this transitivity.
+// transitive. HTMLImport::blockPredecessorsOf() flips the flags iteratively to fullfill this transitivity.
 //
 // ## Unblocking Imports
 //
 // The blocking state can change when one of the imports finish loading. The Document notices it through
-// HTMLImportRoot::blockerGone(). The blockerGone() triggers HTMLImport::unblockScript(), which traverses
+// HTMLImportRoot::blockerGone(). The blockerGone() triggers HTMLImport::unblockFromRunningScript(), which traverses
 // whole import tree and find unblock-able imports and unblock them.
 // Unblocked imported documents are notified through Document::didLoadAllImports() so that
 // it can resume its parser.
@@ -139,10 +139,11 @@ public:
     Document* master();
     HTMLImportsController* controller();
 
-    bool isLoaded() const { return !isScriptBlocked() && !isProcessing(); }
-    bool isScriptBlocked() const { return m_scriptBlocked; }
-    bool isDocumentBlocked() const { return m_documentBlocked; }
-    bool isBlocked() const { return m_scriptBlocked || m_documentBlocked; }
+    bool isCreatedByParser() const { return m_createdByParser; }
+    bool isLoaded() const { return !isBlockedFromRunningScript() && !isProcessing(); }
+    bool isBlockedFromRunningScript() const { return m_blockingState <= BlockedFromRunningScript; }
+    bool isBlockedFromCreatingDocument() const { return m_blockingState <= BlockedFromCreatingDocument; }
+    bool isBlocked() const { return m_blockingState < Unblocked; }
 
     void appendChild(HTMLImport*);
 
@@ -154,30 +155,37 @@ public:
     virtual bool isDone() const = 0;
 
 protected:
-    HTMLImport()
-        : m_scriptBlocked(false)
-        , m_documentBlocked(false)
+    explicit HTMLImport(bool createdByParser = false)
+        : m_blockingState(Unblocked)
+        , m_createdByParser(createdByParser)
     { }
 
-    virtual void didUnblockDocument();
+    virtual void didUnblockFromCreatingDocument();
 
 private:
     static void block(HTMLImport*);
 
-    void blockAfter(HTMLImport* child);
-    void blockScript();
-    void unblockScript();
-    void didUnblockScript();
+    void blockPredecessorsOf(HTMLImport* child);
+    void blockFromRunningScript();
+    void blockFromCreatingDocument();
+    void unblockFromRunningScript();
+    void unblockFromCreatingDocument();
+    void didUnblockFromRunningScript();
 
-    void blockDocument();
-    void unblockDocument();
+    bool isBlockedFromCreatingDocumentByPredecessors() const;
+    bool isBlockedFromRunningScriptByPredecessors() const;
+    bool isBlockingFollowersFromRunningScript() const;
+    bool isBlockingFollowersFromCreatingDocument() const;
 
-    bool needsBlockingDocument() const;
-    bool arePredecessorsLoaded() const;
-    bool areChilrenLoaded() const;
+    enum BlockingState {
+        BlockedFromCreatingDocument,
+        BlockedFromRunningScript,
+        Unblocked
+    };
 
-    bool m_scriptBlocked; // If any of decendants or predecessors is in processing, the parser blocks on <script>.
-    bool m_documentBlocked; // If its predecessor is not done yet, the document creation is blocked.
+    enum BlockingState m_blockingState;
+
+    bool m_createdByParser : 1;
 };
 
 // An abstract class to decouple its sublcass HTMLImportsController.
