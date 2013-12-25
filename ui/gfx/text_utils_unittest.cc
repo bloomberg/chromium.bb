@@ -10,7 +10,7 @@
 namespace gfx {
 namespace {
 
-const char16 kAcceleratorChar = '&';
+const base::char16 kAcceleratorChar = '&';
 
 TEST(TextUtilsTest, RemoveAcceleratorChar) {
   struct TestData {

@@ -34,8 +34,8 @@ SANDBOX_INTERCEPT HandleCloserInfo* g_handles_to_close;
 
 HandleCloser::HandleCloser() {}
 
-ResultCode HandleCloser::AddHandle(const char16* handle_type,
-                                   const char16* handle_name) {
+ResultCode HandleCloser::AddHandle(const base::char16* handle_type,
+                                   const base::char16* handle_name) {
   if (!handle_type)
     return SBOX_ERROR_BAD_PARAMS;
 
@@ -61,10 +61,10 @@ size_t HandleCloser::GetBufferSize() {
   for (HandleMap::iterator i = handles_to_close_.begin();
        i != handles_to_close_.end(); ++i) {
     size_t bytes_entry = offsetof(HandleListEntry, handle_type) +
-        (i->first.size() + 1) * sizeof(char16);
+        (i->first.size() + 1) * sizeof(base::char16);
     for (HandleMap::mapped_type::iterator j = i->second.begin();
          j != i->second.end(); ++j) {
-      bytes_entry += ((*j).size() + 1) * sizeof(char16);
+      bytes_entry += ((*j).size() + 1) * sizeof(base::char16);
     }
 
     // Round up to the nearest multiple of word size.
@@ -119,8 +119,9 @@ bool HandleCloser::SetupHandleList(void* buffer, size_t buffer_bytes) {
   handle_info->record_bytes = buffer_bytes;
   handle_info->num_handle_types = handles_to_close_.size();
 
-  char16* output = reinterpret_cast<char16*>(&handle_info->handle_entries[0]);
-  char16* end = reinterpret_cast<char16*>(
+  base::char16* output = reinterpret_cast<base::char16*>(
+      &handle_info->handle_entries[0]);
+  base::char16* end = reinterpret_cast<base::char16*>(
       reinterpret_cast<char*>(buffer) + buffer_bytes);
   for (HandleMap::iterator i = handles_to_close_.begin();
        i != handles_to_close_.end(); ++i) {

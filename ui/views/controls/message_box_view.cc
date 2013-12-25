@@ -36,7 +36,7 @@ const int kDefaultMessageWidth = 320;
 // 001C..001E    ; B # Cc   [3] <control-001C>..<control-001E>
 // 0085          ; B # Cc       <control-0085>
 // 2029          ; B # Zp       PARAGRAPH SEPARATOR
-bool IsParagraphSeparator(char16 c) {
+bool IsParagraphSeparator(base::char16 c) {
   return ( c == 0x000A || c == 0x000D || c == 0x001C || c == 0x001D ||
            c == 0x001E || c == 0x0085 || c == 0x2029);
 }

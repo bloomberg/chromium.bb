@@ -231,7 +231,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   virtual void ConfirmCompositionText() OVERRIDE;
   virtual void ClearCompositionText() OVERRIDE;
   virtual void InsertText(const base::string16& text) OVERRIDE;
-  virtual void InsertChar(char16 ch, int flags) OVERRIDE;
+  virtual void InsertChar(base::char16 ch, int flags) OVERRIDE;
   virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
   virtual ui::TextInputMode GetTextInputMode() const OVERRIDE;
@@ -332,7 +332,7 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
 
   // Checks if a char is ok to be inserted into the textfield. The |ch| is a
   // modified character, i.e., modifiers took effect when generating this char.
-  static bool ShouldInsertChar(char16 ch, int flags);
+  static bool ShouldInsertChar(base::char16 ch, int flags);
 
   void CreateTouchSelectionControllerAndNotifyIt();
 

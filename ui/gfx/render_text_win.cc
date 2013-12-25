@@ -122,7 +122,7 @@ void DeriveFontIfNecessary(int font_size,
 }
 
 // Returns true if |c| is a Unicode BiDi control character.
-bool IsUnicodeBidiControlCharacter(char16 c) {
+bool IsUnicodeBidiControlCharacter(base::char16 c) {
   return c == base::i18n::kRightToLeftMark ||
          c == base::i18n::kLeftToRightMark ||
          c == base::i18n::kLeftToRightEmbeddingMark ||

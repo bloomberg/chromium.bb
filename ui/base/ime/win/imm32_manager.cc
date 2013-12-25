@@ -24,7 +24,7 @@
 
 // Following code requires wchar_t to be same as char16. It should always be
 // true on Windows.
-COMPILE_ASSERT(sizeof(wchar_t) == sizeof(char16), wchar_t__char16_diff);
+COMPILE_ASSERT(sizeof(wchar_t) == sizeof(base::char16), wchar_t__char16_diff);
 
 ///////////////////////////////////////////////////////////////////////////////
 // IMM32Manager

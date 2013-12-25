@@ -286,10 +286,10 @@ TEST_F(RenderTextTest, ObscuredText) {
   render_text->SetObscured(true);
 
   // Surrogate pairs are counted as one code point.
-  const char16 invalid_surrogates[] = {0xDC00, 0xD800, 0};
+  const base::char16 invalid_surrogates[] = {0xDC00, 0xD800, 0};
   render_text->SetText(invalid_surrogates);
   EXPECT_EQ(ASCIIToUTF16("**"), render_text->GetLayoutText());
-  const char16 valid_surrogates[] = {0xD800, 0xDC00, 0};
+  const base::char16 valid_surrogates[] = {0xD800, 0xDC00, 0};
   render_text->SetText(valid_surrogates);
   EXPECT_EQ(ASCIIToUTF16("*"), render_text->GetLayoutText());
   EXPECT_EQ(0U, render_text->cursor_position());
@@ -373,32 +373,34 @@ TEST_F(RenderTextTest, RevealObscuredText) {
   EXPECT_EQ(ASCIIToUTF16("**********"), render_text->GetLayoutText());
 
   // Text with invalid surrogates.
-  const char16 invalid_surrogates[] = {0xDC00, 0xD800, 'h', 'o', 'p', 0};
+  const base::char16 invalid_surrogates[] = {0xDC00, 0xD800, 'h', 'o', 'p', 0};
   render_text->SetText(invalid_surrogates);
   EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetLayoutText());
   render_text->RenderText::SetObscuredRevealIndex(0);
-  const char16 invalid_expect_0[] = {0xDC00, '*', '*', '*', '*', 0};
+  const base::char16 invalid_expect_0[] = {0xDC00, '*', '*', '*', '*', 0};
   EXPECT_EQ(invalid_expect_0, render_text->GetLayoutText());
   render_text->RenderText::SetObscuredRevealIndex(1);
-  const char16 invalid_expect_1[] = {'*', 0xD800, '*', '*', '*', 0};
+  const base::char16 invalid_expect_1[] = {'*', 0xD800, '*', '*', '*', 0};
   EXPECT_EQ(invalid_expect_1, render_text->GetLayoutText());
   render_text->RenderText::SetObscuredRevealIndex(2);
   EXPECT_EQ(ASCIIToUTF16("**h**"), render_text->GetLayoutText());
 
   // Text with valid surrogates before and after the reveal index.
-  const char16 valid_surrogates[] =
+  const base::char16 valid_surrogates[] =
       {0xD800, 0xDC00, 'h', 'o', 'p', 0xD800, 0xDC00, 0};
   render_text->SetText(valid_surrogates);
   EXPECT_EQ(ASCIIToUTF16("*****"), render_text->GetLayoutText());
   render_text->RenderText::SetObscuredRevealIndex(0);
-  const char16 valid_expect_0_and_1[] = {0xD800, 0xDC00, '*', '*', '*', '*', 0};
+  const base::char16 valid_expect_0_and_1[] =
+      {0xD800, 0xDC00, '*', '*', '*', '*', 0};
   EXPECT_EQ(valid_expect_0_and_1, render_text->GetLayoutText());
   render_text->RenderText::SetObscuredRevealIndex(1);
   EXPECT_EQ(valid_expect_0_and_1, render_text->GetLayoutText());
   render_text->RenderText::SetObscuredRevealIndex(2);
   EXPECT_EQ(ASCIIToUTF16("*h***"), render_text->GetLayoutText());
   render_text->RenderText::SetObscuredRevealIndex(5);
-  const char16 valid_expect_5_and_6[] = {'*', '*', '*', '*', 0xD800, 0xDC00, 0};
+  const base::char16 valid_expect_5_and_6[] =
+      {'*', '*', '*', '*', 0xD800, 0xDC00, 0};
   EXPECT_EQ(valid_expect_5_and_6, render_text->GetLayoutText());
   render_text->RenderText::SetObscuredRevealIndex(6);
   EXPECT_EQ(valid_expect_5_and_6, render_text->GetLayoutText());
@@ -1367,8 +1369,8 @@ TEST_F(RenderTextTest, GetTextOffsetHorizontalDefaultInRTL) {
 
 TEST_F(RenderTextTest, SameFontForParentheses) {
   struct {
-    const char16 left_char;
-    const char16 right_char;
+    const base::char16 left_char;
+    const base::char16 right_char;
   } punctuation_pairs[] = {
     { '(', ')' },
     { '{', '}' },

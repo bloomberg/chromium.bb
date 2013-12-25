@@ -444,7 +444,7 @@ void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
   if (!data)
     return;
 
-  result->assign(static_cast<const char16*>(::GlobalLock(data)));
+  result->assign(static_cast<const base::char16*>(::GlobalLock(data)));
   ::GlobalUnlock(data);
 }
 
@@ -632,7 +632,7 @@ void Clipboard::ReadBookmark(base::string16* title, std::string* url) const {
   if (!data)
     return;
 
-  base::string16 bookmark(static_cast<const char16*>(::GlobalLock(data)));
+  base::string16 bookmark(static_cast<const base::char16*>(::GlobalLock(data)));
   ::GlobalUnlock(data);
 
   ParseBookmarkClipboardFormat(bookmark, title, url);

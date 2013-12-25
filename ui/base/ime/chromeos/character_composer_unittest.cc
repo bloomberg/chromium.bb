@@ -288,7 +288,7 @@ TEST_F(CharacterComposerTest, HexadecimalComposition) {
                           GDK_KEY_2, GDK_KEY_space, 0,
                           base::string16(1, 0x3042));
   // MUSICAL KEYBOARD (U+1F3B9)
-  const char16 kMusicalKeyboard[] = {0xd83c, 0xdfb9};
+  const base::char16 kMusicalKeyboard[] = {0xd83c, 0xdfb9};
   ExpectKeyFiltered(&character_composer, GDK_KEY_U,
                     EF_SHIFT_DOWN | EF_CONTROL_DOWN);
   ExpectCharacterComposed(&character_composer, GDK_KEY_1, GDK_KEY_f, GDK_KEY_3,

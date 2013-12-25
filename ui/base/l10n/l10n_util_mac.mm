@@ -54,12 +54,12 @@ void OverrideLocaleWithCocoaLocale() {
 // Remove the Windows-style accelerator marker and change "..." into an
 // ellipsis.  Returns the result in an autoreleased NSString.
 NSString* FixUpWindowsStyleLabel(const base::string16& label) {
-  const char16 kEllipsisUTF16 = 0x2026;
+  const base::char16 kEllipsisUTF16 = 0x2026;
   base::string16 ret;
   size_t label_len = label.length();
   ret.reserve(label_len);
   for (size_t i = 0; i < label_len; ++i) {
-    char16 c = label[i];
+    base::char16 c = label[i];
     if (c == '(' && i + 3 < label_len && label[i + 1] == '&'
         && label[i + 3] == ')') {
       // Strip '(&?)' patterns which means Windows-style accelerator in some

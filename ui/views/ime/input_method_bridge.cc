@@ -198,7 +198,7 @@ void InputMethodBridge::InsertText(const base::string16& text) {
     client->InsertText(text);
 }
 
-void InputMethodBridge::InsertChar(char16 ch, int flags) {
+void InputMethodBridge::InsertChar(base::char16 ch, int flags) {
   TextInputClient* client = GetTextInputClient();
   if (client)
     client->InsertChar(ch, flags);

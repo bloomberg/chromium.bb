@@ -909,7 +909,7 @@ void NativeTextfieldViews::InsertText(const base::string16& text) {
   OnAfterUserAction();
 }
 
-void NativeTextfieldViews::InsertChar(char16 ch, int flags) {
+void NativeTextfieldViews::InsertChar(base::char16 ch, int flags) {
   if (GetTextInputType() == ui::TEXT_INPUT_TYPE_NONE ||
       !ShouldInsertChar(ch, flags)) {
     return;
@@ -1484,7 +1484,7 @@ bool NativeTextfieldViews::ImeEditingAllowed() const {
 }
 
 // static
-bool NativeTextfieldViews::ShouldInsertChar(char16 ch, int flags) {
+bool NativeTextfieldViews::ShouldInsertChar(base::char16 ch, int flags) {
   // Filter out all control characters, including tab and new line characters,
   // and all characters with Alt modifier. But we need to allow characters with
   // AltGr modifier.

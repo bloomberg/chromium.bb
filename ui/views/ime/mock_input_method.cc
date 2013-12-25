@@ -88,7 +88,7 @@ void MockInputMethod::DispatchKeyEvent(const ui::KeyEvent& key) {
           client->ClearCompositionText();
       }
     } else if (key.type() == ui::ET_KEY_PRESSED) {
-      char16 ch = key.GetCharacter();
+      base::char16 ch = key.GetCharacter();
       client->InsertChar(ch, key.flags());
     }
   }

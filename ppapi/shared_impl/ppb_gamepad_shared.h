@@ -28,7 +28,7 @@ struct WebKitGamepad {
     bool connected;
 
     // Device identifier (based on manufacturer, model, etc.).
-    char16 id[kIdLengthCap];
+    base::char16 id[kIdLengthCap];
 
     // Monotonically increasing value referring to when the data were last
     // updated.

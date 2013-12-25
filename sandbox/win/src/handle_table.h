@@ -18,22 +18,22 @@ namespace sandbox {
 // for iterating through the table and retrieving handle info.
 class HandleTable {
  public:
-  static const char16* HandleTable::kTypeProcess;
-  static const char16* HandleTable::kTypeThread;
-  static const char16* HandleTable::kTypeFile;
-  static const char16* HandleTable::kTypeDirectory;
-  static const char16* HandleTable::kTypeKey;
-  static const char16* HandleTable::kTypeWindowStation;
-  static const char16* HandleTable::kTypeDesktop;
-  static const char16* HandleTable::kTypeService;
-  static const char16* HandleTable::kTypeMutex;
-  static const char16* HandleTable::kTypeSemaphore;
-  static const char16* HandleTable::kTypeEvent;
-  static const char16* HandleTable::kTypeTimer;
-  static const char16* HandleTable::kTypeNamedPipe;
-  static const char16* HandleTable::kTypeJobObject;
-  static const char16* HandleTable::kTypeFileMap;
-  static const char16* HandleTable::kTypeAlpcPort;
+  static const base::char16* HandleTable::kTypeProcess;
+  static const base::char16* HandleTable::kTypeThread;
+  static const base::char16* HandleTable::kTypeFile;
+  static const base::char16* HandleTable::kTypeDirectory;
+  static const base::char16* HandleTable::kTypeKey;
+  static const base::char16* HandleTable::kTypeWindowStation;
+  static const base::char16* HandleTable::kTypeDesktop;
+  static const base::char16* HandleTable::kTypeService;
+  static const base::char16* HandleTable::kTypeMutex;
+  static const base::char16* HandleTable::kTypeSemaphore;
+  static const base::char16* HandleTable::kTypeEvent;
+  static const base::char16* HandleTable::kTypeTimer;
+  static const base::char16* HandleTable::kTypeNamedPipe;
+  static const base::char16* HandleTable::kTypeJobObject;
+  static const base::char16* HandleTable::kTypeFileMap;
+  static const base::char16* HandleTable::kTypeAlpcPort;
 
   class Iterator;
 

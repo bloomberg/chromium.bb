@@ -384,8 +384,8 @@ TEST(TextEliderTest, ElideTextEllipsis) {
 // Checks that all occurrences of |first_char| are followed by |second_char| and
 // all occurrences of |second_char| are preceded by |first_char| in |text|.
 static void CheckSurrogatePairs(const base::string16& text,
-                                char16 first_char,
-                                char16 second_char) {
+                                base::char16 first_char,
+                                base::char16 second_char) {
   size_t index = text.find_first_of(first_char);
   while (index != base::string16::npos) {
     EXPECT_LT(index, text.length() - 1);
@@ -408,8 +408,8 @@ TEST(TextEliderTest, ElideTextSurrogatePairs) {
   const base::string16 kTestString =
       UTF8ToUTF16(kSurrogate + "ab" + kSurrogate + kSurrogate + "cd");
   const float kTestStringWidth = GetStringWidthF(kTestString, font_list);
-  const char16 kSurrogateFirstChar = kTestString[0];
-  const char16 kSurrogateSecondChar = kTestString[1];
+  const base::char16 kSurrogateFirstChar = kTestString[0];
+  const base::char16 kSurrogateSecondChar = kTestString[1];
   base::string16 result;
 
   // Elide |kTextString| to all possible widths and check that no instance of

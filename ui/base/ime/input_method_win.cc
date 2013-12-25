@@ -134,8 +134,8 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
   // We need to send character events to the focused text input client event if
   // its text input type is ui::TEXT_INPUT_TYPE_NONE.
   if (GetTextInputClient()) {
-    const char16 kCarriageReturn = L'\r';
-    const char16 ch = static_cast<char16>(wparam);
+    const base::char16 kCarriageReturn = L'\r';
+    const base::char16 ch = static_cast<base::char16>(wparam);
     // A mask to determine the previous key state from |lparam|. The value is 1
     // if the key is down before the message is sent, or it is 0 if the key is
     // up.

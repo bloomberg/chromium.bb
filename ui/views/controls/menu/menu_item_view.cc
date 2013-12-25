@@ -195,7 +195,7 @@ base::string16 MenuItemView::GetAccessibleNameForMenuItem(
 
   // Filter out the "&" for accessibility clients.
   size_t index = 0;
-  const char16 amp = '&';
+  const base::char16 amp = '&';
   while ((index = accessible_name.find(amp, index)) != base::string16::npos &&
          index + 1 < accessible_name.length()) {
     accessible_name.replace(index, accessible_name.length() - index,
@@ -442,7 +442,7 @@ const MenuItemView* MenuItemView::GetRootMenuItem() const {
   return item;
 }
 
-char16 MenuItemView::GetMnemonic() {
+base::char16 MenuItemView::GetMnemonic() {
   if (!GetRootMenuItem()->has_mnemonics_)
     return 0;
 
@@ -451,7 +451,7 @@ char16 MenuItemView::GetMnemonic() {
     index = title_.find('&', index);
     if (index != base::string16::npos) {
       if (index + 1 != title_.size() && title_[index + 1] != '&') {
-        char16 char_array[] = { title_[index + 1], 0 };
+        base::char16 char_array[] = { title_[index + 1], 0 };
         // TODO(jshin): What about Turkish locale? See http://crbug.com/81719.
         // If the mnemonic is capital I and the UI language is Turkish,
         // lowercasing it results in 'small dotless i', which is different

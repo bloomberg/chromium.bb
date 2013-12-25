@@ -27,7 +27,7 @@ struct HandleListEntry {
   size_t record_bytes;       // Rounded to sizeof(size_t) bytes.
   size_t offset_to_names;    // Nul terminated strings of name_count names.
   size_t name_count;
-  char16 handle_type[1];
+  base::char16 handle_type[1];
 };
 
 // Global parameters and a pointer to the list of entries.
@@ -47,7 +47,8 @@ class HandleCloser {
   // Adds a handle that will be closed in the target process after lockdown.
   // A NULL value for handle_name indicates all handles of the specified type.
   // An empty string for handle_name indicates the handle is unnamed.
-  ResultCode AddHandle(const char16* handle_type, const char16* handle_name);
+  ResultCode AddHandle(const base::char16* handle_type,
+                       const base::char16* handle_name);
 
   // Serializes and copies the closer table into the target process.
   bool InitializeTargetHandles(TargetProcess* target);

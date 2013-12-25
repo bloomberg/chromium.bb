@@ -262,7 +262,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   virtual void InsertText(const base::string16& text) OVERRIDE {
     inserted_text_ = text;
   }
-  virtual void InsertChar(char16 ch, int flags) OVERRIDE {
+  virtual void InsertChar(base::char16 ch, int flags) OVERRIDE {
     inserted_char_ = ch;
     inserted_char_flags_ = flags;
   }
@@ -362,7 +362,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   CompositionText composition_text_;
   CompositionText confirmed_text_;
   base::string16 inserted_text_;
-  char16 inserted_char_;
+  base::char16 inserted_char_;
   unsigned int on_input_method_changed_call_count_;
   int inserted_char_flags_;
 

@@ -28,7 +28,7 @@ ScopedSd ConvertSddlToSd(const std::string& sddl) {
 
 // Converts a SID into a text string.
 std::string ConvertSidToString(SID* sid) {
-  char16* c_sid_string = NULL;
+  base::char16* c_sid_string = NULL;
   if (!ConvertSidToStringSid(sid, &c_sid_string))
     return std::string();
 

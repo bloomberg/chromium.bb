@@ -414,8 +414,8 @@ ResultCode PolicyBase::AddDllToUnload(const wchar_t* dll_name) {
   return SBOX_ALL_OK;
 }
 
-ResultCode PolicyBase::AddKernelObjectToClose(const char16* handle_type,
-                                              const char16* handle_name) {
+ResultCode PolicyBase::AddKernelObjectToClose(const base::char16* handle_type,
+                                              const base::char16* handle_name) {
   return handle_closer_.AddHandle(handle_type, handle_name);
 }
 

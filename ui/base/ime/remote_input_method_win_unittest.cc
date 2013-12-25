@@ -90,11 +90,11 @@ class MockTextInputClient : public DummyTextInputClient {
       const ui::CompositionText& composition) OVERRIDE {
     ++call_count_set_composition_text_;
   }
-  virtual void InsertChar(char16 ch, int flags) OVERRIDE{
+  virtual void InsertChar(base::char16 ch, int flags) OVERRIDE {
     inserted_text_.append(1, ch);
     ++call_count_insert_char_;
   }
-  virtual void InsertText(const base::string16& text) OVERRIDE{
+  virtual void InsertText(const base::string16& text) OVERRIDE {
     inserted_text_.append(text);
     ++call_count_insert_text_;
   }

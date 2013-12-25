@@ -26,7 +26,7 @@ void DummyTextInputClient::ClearCompositionText() {
 void DummyTextInputClient::InsertText(const base::string16& text) {
 }
 
-void DummyTextInputClient::InsertChar(char16 ch, int flags) {
+void DummyTextInputClient::InsertChar(base::char16 ch, int flags) {
 }
 
 gfx::NativeWindow DummyTextInputClient::GetAttachedWindow() const {

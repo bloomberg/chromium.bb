@@ -51,7 +51,7 @@ using base::WideToUTF16;
 
 namespace {
 
-const char16 kHebrewLetterSamekh = 0x05E1;
+const base::char16 kHebrewLetterSamekh = 0x05E1;
 
 // A Textfield wrapper to intercept OnKey[Pressed|Released]() ressults.
 class TestTextfield : public views::Textfield {
@@ -236,7 +236,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
     SendKeyEvent(key_code, false, false);
   }
 
-  void SendKeyEvent(char16 ch) {
+  void SendKeyEvent(base::char16 ch) {
     if (ch < 0x80) {
       ui::KeyboardCode code =
           ch == ' ' ? ui::VKEY_SPACE :
@@ -1808,7 +1808,7 @@ TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBoundsTest) {
 TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBounds_ComplexText) {
   InitTextfield(Textfield::STYLE_DEFAULT);
 
-  const char16 kUtf16Chars[] = {
+  const base::char16 kUtf16Chars[] = {
     // U+0020 SPACE
     0x0020,
     // U+1F408 (CAT) as surrogate pair

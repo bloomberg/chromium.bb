@@ -38,7 +38,7 @@ bool LaunchProcessWithToken(const base::FilePath& binary,
                             SECURITY_ATTRIBUTES* thread_attributes,
                             bool inherit_handles,
                             DWORD creation_flags,
-                            const char16* desktop_name,
+                            const base::char16* desktop_name,
                             base::win::ScopedHandle* process_out,
                             base::win::ScopedHandle* thread_out);
 

@@ -190,7 +190,7 @@ class RemoteInputMethodWin : public InputMethod,
       if (!text_input_client_)
         return false;
       text_input_client_->InsertChar(
-          static_cast<char16>(native_key_event.wParam),
+          static_cast<base::char16>(native_key_event.wParam),
           ui::GetModifiersFromKeyState());
       return true;
     }

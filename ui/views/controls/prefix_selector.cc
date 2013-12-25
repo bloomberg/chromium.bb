@@ -51,7 +51,7 @@ void PrefixSelector::InsertText(const base::string16& text) {
   OnTextInput(text);
 }
 
-void PrefixSelector::InsertChar(char16 ch, int flags) {
+void PrefixSelector::InsertChar(base::char16 ch, int flags) {
   OnTextInput(base::string16(1, ch));
 }
 

@@ -63,8 +63,9 @@ class PolicyBase : public Dispatcher, public TargetPolicy {
   virtual ResultCode AddRule(SubSystem subsystem, Semantics semantics,
                              const wchar_t* pattern) OVERRIDE;
   virtual ResultCode AddDllToUnload(const wchar_t* dll_name);
-  virtual ResultCode AddKernelObjectToClose(const char16* handle_type,
-                                            const char16* handle_name) OVERRIDE;
+  virtual ResultCode AddKernelObjectToClose(
+      const base::char16* handle_type,
+      const base::char16* handle_name) OVERRIDE;
 
   // Dispatcher:
   virtual Dispatcher* OnMessageReady(IPCParams* ipc,
