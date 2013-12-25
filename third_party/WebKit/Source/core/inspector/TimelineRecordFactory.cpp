@@ -47,12 +47,12 @@ PassRefPtr<TimelineRecordFactory::TimelineEvent> TimelineRecordFactory::createGe
     ASSERT(data.get());
     RefPtr<TimelineEvent> record = TimelineEvent::create()
         .setType(type)
-        .setData(data);
-    record->setNumber("startTime", startTime);
+        .setData(data)
+        .setStartTime(startTime);
     if (maxCallStackDepth) {
         RefPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxCallStackDepth, true);
         if (stackTrace && stackTrace->size())
-            record->setValue("stackTrace", stackTrace->buildInspectorArray());
+            record->setStackTrace(stackTrace->buildInspectorArray());
     }
     return record.release();
 }
@@ -62,9 +62,9 @@ PassRefPtr<TimelineRecordFactory::TimelineEvent> TimelineRecordFactory::createBa
     ASSERT(data.get());
     RefPtr<TimelineEvent> record = TimelineEvent::create()
         .setType(type)
-        .setData(data);
-    record->setNumber("startTime", startTime);
-    record->setString("thread", threadName);
+        .setData(data)
+        .setStartTime(startTime);
+    record->setThread(threadName);
     return record.release();
 }
 

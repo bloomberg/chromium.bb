@@ -49,11 +49,9 @@ TYPE_NAME_FIX_MAP = {
 
 TYPES_WITH_RUNTIME_CAST_SET = frozenset(["Runtime.RemoteObject", "Runtime.PropertyDescriptor", "Runtime.InternalPropertyDescriptor",
                                          "Debugger.FunctionDetails", "Debugger.CallFrame", "Debugger.Location",
-                                         "Canvas.TraceLog", "Canvas.ResourceState",
-                                         # This should be a temporary hack. TimelineEvent should be created via generated C++ API.
-                                         "Timeline.TimelineEvent"])
+                                         "Canvas.TraceLog", "Canvas.ResourceState"])
 
-TYPES_WITH_OPEN_FIELD_LIST_SET = frozenset(["Timeline.TimelineEvent",
+TYPES_WITH_OPEN_FIELD_LIST_SET = frozenset([
                                             # InspectorStyleSheet not only creates this property but wants to read it and modify it.
                                             "CSS.CSSProperty",
                                             # InspectorResourceAgent needs to update mime-type.
