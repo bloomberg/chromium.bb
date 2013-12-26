@@ -94,6 +94,8 @@ public:
     const Vector<RefPtr<CSSStyleSheet> >& documentAuthorStyleSheets() const { return m_authorStyleSheets; }
     const Vector<RefPtr<CSSStyleSheet> >& injectedAuthorStyleSheets() const;
 
+    const Vector<RefPtr<StyleSheet> > activeStyleSheetsForInspector() const;
+
     void modifiedStyleSheet(StyleSheet*);
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
     void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode = 0);
@@ -179,7 +181,6 @@ private:
 
     StyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
     StyleSheetCollection* styleSheetCollectionFor(TreeScope&);
-    void activeStyleSheetsUpdatedForInspector();
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode);
     void resolverThrowawayTimerFired(Timer<StyleEngine>*);
 

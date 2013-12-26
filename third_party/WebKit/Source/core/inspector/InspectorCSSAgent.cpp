@@ -845,11 +845,17 @@ void InspectorCSSAgent::regionOversetChanged(NamedFlow* namedFlow, int documentN
     m_frontend->regionOversetChanged(buildObjectForNamedFlow(&errorString, namedFlow, documentNodeId));
 }
 
-void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const StyleSheetVector& newSheets)
+void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 {
     if (styleSheetEditInProgress())
         return;
 
+    const Vector<RefPtr<StyleSheet> > newSheets = document->styleEngine()->activeStyleSheetsForInspector();
+    updateActiveStyleSheets(document, newSheets);
+}
+
+void InspectorCSSAgent::updateActiveStyleSheets(Document* document, const Vector<RefPtr<StyleSheet> >& newSheets)
+{
     HashSet<CSSStyleSheet*> removedSheets;
     for (CSSStyleSheetToInspectorStyleSheet::iterator it = m_cssStyleSheetToInspectorStyleSheet.begin(); it != m_cssStyleSheetToInspectorStyleSheet.end(); ++it) {
         if (it->value->canBind() && (!it->key->ownerDocument() || it->key->ownerDocument() == document))
@@ -857,8 +863,8 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const Style
     }
 
     Vector<CSSStyleSheet*> newSheetsVector;
-    for (size_t i = 0, size = newSheets.size(); i < size; ++i) {
-        StyleSheet* newSheet = newSheets.at(i).get();
+    for (Vector<RefPtr<StyleSheet> >::const_iterator it = newSheets.begin(); it != newSheets.end(); ++it) {
+        StyleSheet* newSheet = (*it).get();
         if (newSheet->isCSSStyleSheet()) {
             StyleSheetAppender appender(newSheetsVector);
             appender.run(toCSSStyleSheet(newSheet));
@@ -898,8 +904,8 @@ void InspectorCSSAgent::frameDetachedFromParent(Frame* frame)
     Document* document = frame->document();
     if (!document)
         return;
-    StyleSheetVector newSheets;
-    activeStyleSheetsUpdated(document, newSheets);
+    const Vector<RefPtr<StyleSheet> > styleSheets;
+    updateActiveStyleSheets(document, styleSheets);
 }
 
 bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoType pseudoType)

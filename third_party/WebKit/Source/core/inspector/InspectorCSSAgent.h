@@ -62,7 +62,6 @@ class StyleResolver;
 class UpdateRegionLayoutTask;
 
 typedef HashMap<CSSStyleSheet*, RefPtr<InspectorStyleSheet> > CSSStyleSheetToInspectorStyleSheet;
-typedef Vector<RefPtr<StyleSheet> > StyleSheetVector;
 
 class InspectorCSSAgent
     : public InspectorBaseAgent<InspectorCSSAgent>
@@ -128,7 +127,7 @@ public:
     void didUpdateRegionLayout(Document*, NamedFlow*);
     void didChangeRegionOverset(Document*, NamedFlow*);
 
-    void activeStyleSheetsUpdated(Document*, const StyleSheetVector& newSheets);
+    void activeStyleSheetsUpdated(Document*);
     void frameDetachedFromParent(Frame*);
 
     virtual void getComputedStyleForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >&);
@@ -175,6 +174,8 @@ private:
     int documentNodeWithRequestedFlowsId(Document*);
     void collectAllStyleSheets(Vector<InspectorStyleSheet*>&);
     void collectStyleSheets(CSSStyleSheet*, Vector<InspectorStyleSheet*>&);
+
+    void updateActiveStyleSheets(Document*, const Vector<RefPtr<StyleSheet> >& newSheets);
 
     void collectPlatformFontsForRenderer(RenderText*, HashCountedSet<String>*);
 

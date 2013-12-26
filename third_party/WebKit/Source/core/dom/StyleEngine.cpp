@@ -404,7 +404,7 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
                 m_activeTreeScopes.remove(*it);
     }
     m_needsUpdateActiveStylesheetsOnStyleRecalc = false;
-    activeStyleSheetsUpdatedForInspector();
+    InspectorInstrumentation::activeStyleSheetsUpdated(&m_document);
     m_usesRemUnits = m_documentStyleSheetCollection.usesRemUnits();
 
     if (m_documentScopeDirty || updateMode == FullStyleUpdate)
@@ -416,19 +416,18 @@ bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
     return requiresFullStyleRecalc;
 }
 
-void StyleEngine::activeStyleSheetsUpdatedForInspector()
+const Vector<RefPtr<StyleSheet> > StyleEngine::activeStyleSheetsForInspector() const
 {
-    if (m_activeTreeScopes.isEmpty()) {
-        InspectorInstrumentation::activeStyleSheetsUpdated(&m_document, m_documentStyleSheetCollection.styleSheetsForStyleSheetList());
-        return;
-    }
+    if (m_activeTreeScopes.isEmpty())
+        return m_documentStyleSheetCollection.styleSheetsForStyleSheetList();
+
     Vector<RefPtr<StyleSheet> > activeStyleSheets;
 
     activeStyleSheets.append(m_documentStyleSheetCollection.styleSheetsForStyleSheetList());
 
-    TreeScopeSet::iterator begin = m_activeTreeScopes.begin();
-    TreeScopeSet::iterator end = m_activeTreeScopes.end();
-    for (TreeScopeSet::iterator it = begin; it != end; ++it) {
+    TreeScopeSet::const_iterator begin = m_activeTreeScopes.begin();
+    TreeScopeSet::const_iterator end = m_activeTreeScopes.end();
+    for (TreeScopeSet::const_iterator it = begin; it != end; ++it) {
         if (StyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it))
             activeStyleSheets.append(collection->styleSheetsForStyleSheetList());
     }
@@ -436,7 +435,7 @@ void StyleEngine::activeStyleSheetsUpdatedForInspector()
     // FIXME: Inspector needs a vector which has all active stylesheets.
     // However, creating such a large vector might cause performance regression.
     // Need to implement some smarter solution.
-    InspectorInstrumentation::activeStyleSheetsUpdated(&m_document, activeStyleSheets);
+    return activeStyleSheets;
 }
 
 void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot)
