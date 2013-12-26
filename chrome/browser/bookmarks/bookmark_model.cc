@@ -306,9 +306,9 @@ void BookmarkModel::RemoveAll() {
   {
     base::AutoLock url_lock(url_lock_);
     for (int i = 0; i < root_.child_count(); ++i) {
-      const BookmarkNode* permanent_node = root_.GetChild(i);
+      BookmarkNode* permanent_node = root_.GetChild(i);
       for (int j = permanent_node->child_count() - 1; j >= 0; --j) {
-        BookmarkNode* child_node = AsMutable(permanent_node->GetChild(j));
+        BookmarkNode* child_node = permanent_node->GetChild(j);
         removed_nodes.push_back(child_node);
         RemoveNodeAndGetRemovedUrls(child_node, &removed_urls);
       }
