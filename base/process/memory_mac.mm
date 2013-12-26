@@ -133,7 +133,7 @@ void CrMallocErrorBreak() {
   // as EBADF.  Unfortunately, 10.9's opensource releases don't include malloc
   // source code at this time.
   // <http://crbug.com/312234>
-  if (g_unchecked_alloc.Get().Get() && (errno == EBADF || errno == EPERM))
+  if ((errno == EBADF || errno == EPERM) && g_unchecked_alloc.Get().Get())
     return;
 
   // A unit test checks this error message, so it needs to be in release builds.
