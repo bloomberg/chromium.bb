@@ -17,7 +17,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
@@ -65,14 +66,15 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
     accessible_name_ =
         l10n_util::GetStringUTF16(IDS_ASH_EXIT_WARNING_POPUP_TEXT_ACCESSIBLE);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    font_ = rb.GetFont(ui::ResourceBundle::LargeFont);
-    text_width_ = font_.GetStringWidth(text_);
+    const gfx::FontList& font_list =
+        rb.GetFontList(ui::ResourceBundle::LargeFont);
+    text_width_ = gfx::GetStringWidth(text_, font_list);
     width_ = text_width_ + kHorizontalMarginAroundText;
-    height_ = font_.GetHeight() + kVerticalMarginAroundText;
+    height_ = font_list.GetHeight() + kVerticalMarginAroundText;
     views::Label* label = new ExitWarningLabel;
     label->SetText(text_);
     label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    label->SetFont(font_);
+    label->SetFontList(font_list);
     label->SetEnabledColor(kTextColor);
     label->SetDisabledColor(kTextColor);
     label->SetAutoColorReadabilityEnabled(false);
@@ -100,7 +102,6 @@ class ExitWarningWidgetDelegateView : public views::WidgetDelegateView {
  private:
   base::string16 text_;
   base::string16 accessible_name_;
-  gfx::Font font_;
   int text_width_;
   int width_;
   int height_;

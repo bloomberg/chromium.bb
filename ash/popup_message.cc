@@ -130,7 +130,8 @@ PopupMessage::MessageBubble::MessageBubble(const base::string16& caption,
     views::Label* caption_label = new views::Label(caption);
     caption_label->SetMultiLine(true);
     caption_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    caption_label->SetFont(bundle.GetFont(ui::ResourceBundle::BoldFont));
+    caption_label->SetFontList(
+        bundle.GetFontList(ui::ResourceBundle::BoldFont));
     caption_label->SetEnabledColor(kMessageTextColor);
     details->AddChildView(caption_label);
   }

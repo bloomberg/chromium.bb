@@ -98,8 +98,9 @@ class TraySms::SmsMessageView : public views::View,
         l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_SMS_NUMBER,
                                    base::UTF8ToUTF16(number)));
     number_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    number_label_->SetFont(
-        number_label_->font().DeriveFont(0, gfx::Font::BOLD));
+    number_label_->SetFontList(
+        number_label_->font_list().DeriveFontListWithSizeDeltaAndStyle(
+            0, gfx::Font::BOLD));
 
     message_label_ = new views::Label(base::UTF8ToUTF16(message));
     message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

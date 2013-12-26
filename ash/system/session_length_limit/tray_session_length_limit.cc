@@ -25,7 +25,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/views/border.h"
@@ -54,8 +54,8 @@ views::Label* CreateAndSetupLabel() {
   views::Label* label = new views::Label;
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   SetupLabelForTray(label);
-  gfx::Font font = label->font();
-  label->SetFont(font.DeriveFont(0, font.GetStyle() & ~gfx::Font::BOLD));
+  label->SetFontList(label->font_list().DeriveFontListWithSizeDeltaAndStyle(
+      0, label->font_list().GetFontStyle() & ~gfx::Font::BOLD));
   return label;
 }
 

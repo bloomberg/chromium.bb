@@ -6,7 +6,7 @@
 
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_item_view.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 
@@ -16,8 +16,9 @@ namespace internal {
 void SetupLabelForTray(views::Label* label) {
   // Making label_font static to avoid the time penalty of DeriveFont for
   // all but the first call.
-  static const gfx::Font label_font(gfx::Font().DeriveFont(1, gfx::Font::BOLD));
-  label->SetFont(label_font);
+  static const gfx::FontList label_font_list(
+      gfx::FontList().DeriveFontListWithSizeDeltaAndStyle(1, gfx::Font::BOLD));
+  label->SetFontList(label_font_list);
   label->SetAutoColorReadabilityEnabled(false);
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));

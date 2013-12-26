@@ -65,7 +65,7 @@ const int kRequestScanDelaySeconds = 10;
 views::Label* CreateInfoBubbleLabel(const base::string16& text) {
   views::Label* label = new views::Label(text);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  label->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
+  label->SetFontList(rb.GetFontList(ui::ResourceBundle::SmallFont));
   label->SetEnabledColor(SkColorSetARGB(127, 0, 0, 0));
   return label;
 }
