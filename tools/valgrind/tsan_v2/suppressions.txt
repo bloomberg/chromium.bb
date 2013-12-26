@@ -14,6 +14,8 @@ race:libevent/event.c
 
 # http://crbug.com/46840
 race:base::HistogramSamples::IncreaseSum
+race:base::Histogram::Add
+race:base::HistogramSamples::Add
 
 # http://crbug.com/84094
 race:sqlite3StatusSet
