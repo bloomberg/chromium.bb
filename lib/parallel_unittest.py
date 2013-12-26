@@ -427,9 +427,5 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
 
 
 if __name__ == '__main__':
-  # Set timeouts small so that if the unit test hangs, it won't hang for long.
-  parallel._BackgroundTask.STARTUP_TIMEOUT = _EXIT_TIMEOUT
-  parallel._BackgroundTask.EXIT_TIMEOUT = _EXIT_TIMEOUT
-
   # Run the tests.
   cros_test_lib.main(level=logging.INFO)
