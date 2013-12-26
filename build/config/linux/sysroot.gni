@@ -15,8 +15,8 @@ if (is_linux && is_chrome_branded && is_official_build && !is_chromeos) {
     sysroot = rebase_path(
       "//chrome/installer/linux/debian_wheezy_i386-sysroot", ".", "")
   } else {
-    assert(false,
-           "Official builds on non-x86/64 processors not supported.")
+    # Any other builds don't use a sysroot.
+    sysroot = ""
   }
 } else if (is_mac) {
   # Set which SDK to use.
