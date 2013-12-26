@@ -439,9 +439,8 @@ class LocationBarView : public LocationBar,
   // Our delegate.
   Delegate* delegate_;
 
-  // Objects used to paint the normal-mode background.
-  scoped_ptr<views::Painter> background_border_painter_;
-  scoped_ptr<views::Painter> background_filling_painter_;
+  // Object used to paint the border.
+  scoped_ptr<views::Painter> border_painter_;
 
   // An icon to the left of the edit field.
   LocationIconView* location_icon_view_;

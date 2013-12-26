@@ -32,27 +32,27 @@ const CGFloat kLeftDecorationXOffset = 5.0;
 NSString* const kButtonDecorationKey = @"ButtonDecoration";
 
 const ui::NinePartImageIds kPopupBorderImageIds = {
-  IDR_OMNIBOX_POPUP_BORDER_TOP_LEFT,
-  IDR_OMNIBOX_POPUP_BORDER_TOP,
-  IDR_OMNIBOX_POPUP_BORDER_TOP_RIGHT,
-  IDR_OMNIBOX_POPUP_BORDER_LEFT,
-  IDR_OMNIBOX_POPUP_BORDER_CENTER,
-  IDR_OMNIBOX_POPUP_BORDER_RIGHT,
-  IDR_OMNIBOX_POPUP_BORDER_BOTTOM_LEFT,
-  IDR_OMNIBOX_POPUP_BORDER_BOTTOM,
-  IDR_OMNIBOX_POPUP_BORDER_BOTTOM_RIGHT
+  IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP_LEFT,
+  IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP,
+  IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_TOP_RIGHT,
+  IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_LEFT,
+  IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_CENTER,
+  IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_RIGHT,
+  IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM_LEFT,
+  IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM,
+  IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW_BOTTOM_RIGHT
 };
 
 const ui::NinePartImageIds kNormalBorderImageIds = {
-  IDR_OMNIBOX_BORDER_TOP_LEFT,
-  IDR_OMNIBOX_BORDER_TOP,
-  IDR_OMNIBOX_BORDER_TOP_RIGHT,
-  IDR_OMNIBOX_BORDER_LEFT,
-  IDR_OMNIBOX_BORDER_CENTER,
-  IDR_OMNIBOX_BORDER_RIGHT,
-  IDR_OMNIBOX_BORDER_BOTTOM_LEFT,
-  IDR_OMNIBOX_BORDER_BOTTOM,
-  IDR_OMNIBOX_BORDER_BOTTOM_RIGHT
+  IDR_OMNIBOX_BORDER_AND_SHADOW_TOP_LEFT,
+  IDR_OMNIBOX_BORDER_AND_SHADOW_TOP,
+  IDR_OMNIBOX_BORDER_AND_SHADOW_TOP_RIGHT,
+  IDR_OMNIBOX_BORDER_AND_SHADOW_LEFT,
+  IDR_OMNIBOX_BORDER_AND_SHADOW_CENTER,
+  IDR_OMNIBOX_BORDER_AND_SHADOW_RIGHT,
+  IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM_LEFT,
+  IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM,
+  IDR_OMNIBOX_BORDER_AND_SHADOW_BOTTOM_RIGHT
 };
 
 // How far to inset the right-hand decorations from the field's bounds.
@@ -368,6 +368,9 @@ size_t CalculatePositionsInFrame(
                                      yRadius:kCornerRadius] fill];
   }
 
+  // Interior contents.
+  [self drawInteriorWithFrame:frame inView:controlView];
+
   // Border.
   ui::DrawNinePartImage(frame,
                         isPopupMode_ ? kPopupBorderImageIds
@@ -375,9 +378,6 @@ size_t CalculatePositionsInFrame(
                         NSCompositeSourceOver,
                         1.0,
                         true);
-
-  // Interior contents.
-  [self drawInteriorWithFrame:frame inView:controlView];
 
   // Focus ring.
   if ([self showsFirstResponder]) {

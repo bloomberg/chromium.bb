@@ -221,19 +221,6 @@ LocationBarView::LocationBarView(Browser* browser,
       template_url_service_(NULL),
       animation_offset_(0),
       weak_ptr_factory_(this) {
-  const int kOmniboxBorderImages[] = IMAGE_GRID(IDR_OMNIBOX_BORDER);
-  const int kOmniboxPopupImages[] = IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER);
-  background_border_painter_.reset(
-      views::Painter::CreateImageGridPainter(
-          is_popup_mode_ ? kOmniboxPopupImages : kOmniboxBorderImages));
-#if defined(OS_CHROMEOS)
-  if (!is_popup_mode_) {
-    const int kOmniboxFillingImages[] = IMAGE_GRID(IDR_OMNIBOX_FILLING);
-    background_filling_painter_.reset(
-        views::Painter::CreateImageGridPainter(kOmniboxFillingImages));
-  }
-#endif
-
   edit_bookmarks_enabled_.Init(
       prefs::kEditBookmarksEnabled,
       profile_->GetPrefs(),
@@ -265,6 +252,13 @@ void LocationBarView::Init() {
   // We need to be in a Widget, otherwise GetNativeTheme() may change and we're
   // not prepared for that.
   DCHECK(GetWidget());
+
+  const int kOmniboxPopupBorderImages[] =
+      IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
+  const int kOmniboxBorderImages[] =
+      IMAGE_GRID(IDR_OMNIBOX_BORDER_AND_SHADOW);
+  border_painter_.reset(views::Painter::CreateImageGridPainter(
+      is_popup_mode_ ? kOmniboxPopupBorderImages : kOmniboxBorderImages));
 
   location_icon_view_ = new LocationIconView(this);
   location_icon_view_->set_drag_controller(this);
@@ -444,13 +438,8 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
   const ui::NativeTheme* native_theme = GetNativeTheme();
   switch (kind) {
     case BACKGROUND:
-#if defined(OS_CHROMEOS)
-      // Chrome OS requires a transparent omnibox background color.
-      return SkColorSetARGB(0, 255, 255, 255);
-#else
       return native_theme->GetSystemColor(
           ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-#endif
 
     case TEXT:
       return native_theme->GetSystemColor(
@@ -695,7 +684,7 @@ base::string16 LocationBarView::GetGrayTextAutocompletion() const {
 }
 
 gfx::Size LocationBarView::GetPreferredSize() {
-  gfx::Size background_min_size(background_border_painter_->GetMinimumSize());
+  gfx::Size background_min_size(border_painter_->GetMinimumSize());
   if (!IsInitialized())
     return background_min_size;
   gfx::Size search_button_min_size(search_button_->GetMinimumSize());
@@ -955,6 +944,13 @@ void LocationBarView::PaintChildren(gfx::Canvas* canvas) {
   // Note: |Canvas::DrawFocusRect| paints a dashed rect with gray color.
   if (show_focus_rect_ && HasFocus())
     canvas->DrawFocusRect(omnibox_view_->bounds());
+
+  // Maximized popup windows don't draw the horizontal edges.  We implement this
+  // by simply expanding the paint area outside the view by the edge thickness.
+  gfx::Rect border_rect(GetContentsBounds());
+  if (is_popup_mode_ && (GetHorizontalEdgeThickness() == 0))
+    border_rect.Inset(-kPopupEdgeThickness, 0);
+  views::Painter::PaintPainterAt(canvas, border_painter_.get(), border_rect);
 }
 
 void LocationBarView::OnPaint(gfx::Canvas* canvas) {
@@ -963,31 +959,21 @@ void LocationBarView::OnPaint(gfx::Canvas* canvas) {
   // Fill the location bar background color behind the border.  Parts of the
   // border images are meant to rest atop the toolbar background and parts atop
   // the omnibox background, so we can't just blindly fill our entire bounds.
-  const int horizontal_edge_thickness = GetHorizontalEdgeThickness();
-  if (!background_filling_painter_) {
-    gfx::Rect bounds(GetContentsBounds());
-    bounds.Inset(horizontal_edge_thickness, vertical_edge_thickness());
-    SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));
-    if (is_popup_mode_) {
-      canvas->FillRect(bounds, color);
-    } else {
-      SkPaint paint;
-      paint.setStyle(SkPaint::kFill_Style);
-      paint.setColor(color);
-      const int kBorderCornerRadius = 2;
-      canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
-    }
+  gfx::Rect bounds(GetContentsBounds());
+  bounds.Inset(GetHorizontalEdgeThickness(), vertical_edge_thickness());
+  SkColor color(GetColor(ToolbarModel::NONE, BACKGROUND));
+  if (is_popup_mode_) {
+    canvas->FillRect(bounds, color);
+  } else {
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setColor(color);
+    const int kBorderCornerRadius = 2;
+    canvas->DrawRoundRect(bounds, kBorderCornerRadius, paint);
   }
 
-  // Maximized popup windows don't draw the horizontal edges.  We implement this
-  // by simply expanding the paint area outside the view by the edge thickness.
-  gfx::Rect background_rect(GetContentsBounds());
-  if (is_popup_mode_ && (horizontal_edge_thickness == 0))
-    background_rect.Inset(-kPopupEdgeThickness, 0);
-  views::Painter::PaintPainterAt(canvas, background_border_painter_.get(),
-                                 background_rect);
-  if (background_filling_painter_)
-    background_filling_painter_->Paint(canvas, size());
+  // The border itself will be drawn in PaintChildren() since it includes an
+  // inner shadow which should be drawn over the contents.
 
   if (!is_popup_mode_)
     PaintPageActionBackgrounds(canvas);
