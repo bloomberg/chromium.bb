@@ -1062,19 +1062,11 @@ void InspectorTimelineAgent::setCounters(TimelineEvent* record)
 {
     record->setUsedHeapSize(getUsedHeapSize());
 
-    if (m_state->getBoolean(TimelineAgentState::includeCounters)) {
-        int documentCount = 0;
-        int nodeCount = 0;
-        int listenerCount = 0;
-        if (m_inspectorType == PageInspector) {
-            documentCount = InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
-            nodeCount = InspectorCounters::counterValue(InspectorCounters::NodeCounter);
-            listenerCount = InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter);
-        }
+    if (m_state->getBoolean(TimelineAgentState::includeCounters) && m_inspectorType == PageInspector) {
         RefPtr<TypeBuilder::Timeline::Counters> counters = TypeBuilder::Timeline::Counters::create();
-        counters->setDocuments(documentCount);
-        counters->setNodes(nodeCount);
-        counters->setJsEventListeners(listenerCount);
+        counters->setDocuments(InspectorCounters::counterValue(InspectorCounters::DocumentCounter));
+        counters->setNodes(InspectorCounters::counterValue(InspectorCounters::NodeCounter));
+        counters->setJsEventListeners(InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter));
         record->setCounters(counters.release());
     }
 }
