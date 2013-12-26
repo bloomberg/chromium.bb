@@ -7,14 +7,9 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/view.h"
-
-namespace gfx {
-class Font;
-}
 
 namespace app_list {
 
@@ -38,9 +33,6 @@ class SigninView : public views::View,
 
   views::Link* learn_more_link_;
   views::Link* settings_link_;
-  scoped_ptr<gfx::Font> title_font_;
-  scoped_ptr<gfx::Font> text_font_;
-  scoped_ptr<gfx::Font> button_font_;
 
   SigninDelegate* delegate_;
 

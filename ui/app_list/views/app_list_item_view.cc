@@ -20,7 +20,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/transform_util.h"
@@ -70,7 +70,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetBackgroundColor(0);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kGridTitleColor);
-  title_->SetFont(rb.GetFont(kItemTextFontStyle));
+  title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->SetVisible(!model_->is_installing());
   title_->Invalidate();
@@ -261,8 +261,8 @@ const char* AppListItemView::GetClassName() const {
 void AppListItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
 
-  const int left_right_padding = kLeftRightPaddingChars *
-      title_->font().GetAverageCharacterWidth();
+  const int left_right_padding =
+      title_->font_list().GetExpectedTextWidth(kLeftRightPaddingChars);
   rect.Inset(left_right_padding, kTopPadding, left_right_padding, 0);
   const int y = rect.y();
 

@@ -5,8 +5,7 @@
 #include "ui/app_list/views/signin_view.h"
 
 #include "ui/app_list/signin_delegate.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/label.h"
@@ -35,14 +34,21 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
   if (!delegate_)
     return;
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::Font& base_font = rb.GetFont(ui::ResourceBundle::BaseFont);
-  title_font_.reset(new gfx::Font(base_font.GetFontName(), kTitleFontSize));
-  text_font_.reset(new gfx::Font(base_font.GetFontName(), kTextFontSize));
-  button_font_.reset(new gfx::Font(base_font.GetFontName(), kButtonFontSize));
+  const gfx::FontList base_font_list;
+  const gfx::FontList& title_font_list =
+      base_font_list.DeriveFontListWithSizeDelta(
+          kTitleFontSize - base_font_list.GetFontSize());
+  const gfx::FontList& text_font_list =
+      base_font_list.DeriveFontListWithSizeDelta(
+          kTextFontSize - base_font_list.GetFontSize());
+  const gfx::FontList& button_font_list =
+      base_font_list.DeriveFontListWithSizeDelta(
+          kButtonFontSize - base_font_list.GetFontSize());
 
-  int title_descender = title_font_->GetHeight() - title_font_->GetBaseline();
-  int text_descender = text_font_->GetHeight() - text_font_->GetBaseline();
+  int title_descender =
+      title_font_list.GetHeight() - title_font_list.GetBaseline();
+  int text_descender =
+      text_font_list.GetHeight() - text_font_list.GetBaseline();
 
   views::GridLayout* layout = new views::GridLayout(this);
   layout->SetInsets(kTopPadding, kLeftPadding, kBottomPadding - text_descender,
@@ -68,14 +74,14 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
                      0);
 
   views::Label* heading = new views::Label(delegate_->GetSigninHeading());
-  heading->SetFont(*title_font_);
+  heading->SetFontList(title_font_list);
   heading->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   layout->StartRow(0, kNormalSetId);
   layout->AddView(heading);
 
   views::Label* text = new views::Label(delegate_->GetSigninText());
-  text->SetFont(*text_font_);
+  text->SetFontList(text_font_list);
   text->SetMultiLine(true);
   text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->StartRowWithPadding(0, kNormalSetId, 0,
@@ -85,7 +91,7 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
   views::BlueButton* signin_button = new views::BlueButton(
       this,
       delegate_->GetSigninButtonText());
-  signin_button->SetFont(*button_font_);
+  signin_button->SetFontList(button_font_list);
   layout->StartRowWithPadding(0, kButtonSetId, 0,
                               kButtonPadding - text_descender);
   layout->AddView(signin_button);
@@ -93,7 +99,7 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
   layout->StartRow(1, kNormalSetId);
   learn_more_link_ = new views::Link(delegate_->GetLearnMoreLinkText());
   learn_more_link_->set_listener(this);
-  learn_more_link_->SetFont(*text_font_);
+  learn_more_link_->SetFontList(text_font_list);
   learn_more_link_->SetUnderline(false);
   layout->AddView(learn_more_link_,
                   1,
@@ -104,7 +110,7 @@ SigninView::SigninView(SigninDelegate* delegate, int width)
   layout->StartRow(0, kNormalSetId);
   settings_link_ = new views::Link(delegate_->GetSettingsLinkText());
   settings_link_->set_listener(this);
-  settings_link_->SetFont(*text_font_);
+  settings_link_->SetFontList(text_font_list);
   settings_link_->SetUnderline(false);
   layout->AddView(settings_link_,
                   1,
