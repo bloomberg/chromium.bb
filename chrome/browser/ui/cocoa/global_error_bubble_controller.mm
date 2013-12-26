@@ -16,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/wrench_menu/wrench_menu_controller.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_bubble_view_base.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
@@ -26,12 +27,7 @@
 #include "ui/gfx/image/image.h"
 
 namespace {
-
-// The vertical offset of the wrench bubble from the wrench menu button.
-const CGFloat kWrenchBubblePointOffsetY = 6;
-
 const CGFloat kParagraphSpacing = 6;
-
 } // namespace
 
 namespace GlobalErrorBubbleControllerInternal {
@@ -60,8 +56,9 @@ class Bridge : public GlobalErrorBubbleViewBase {
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:parentWindow];
   NSView* wrenchButton = [[bwc toolbarController] wrenchButton];
-  NSPoint offset = NSMakePoint(NSMidX([wrenchButton bounds]),
-                               kWrenchBubblePointOffsetY);
+  NSPoint offset = NSMakePoint(
+      NSMidX([wrenchButton bounds]),
+      wrench_menu_controller::kWrenchBubblePointOffsetY);
 
   // The bubble will be automatically deleted when the window is closed.
   GlobalErrorBubbleController* bubble = [[GlobalErrorBubbleController alloc]

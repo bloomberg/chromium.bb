@@ -30,6 +30,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 
+namespace wrench_menu_controller {
+const CGFloat kWrenchBubblePointOffsetY = 6;
+}
+
 using content::HostZoomMap;
 using content::UserMetricsAction;
 

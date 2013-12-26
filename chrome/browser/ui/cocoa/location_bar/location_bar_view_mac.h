@@ -95,8 +95,10 @@ class LocationBarViewMac : public LocationBar,
   // be obscured by other UI (wrench menu) or redundant (+/- from wrench).
   void ZoomChangedForActiveTab(bool can_show_bubble);
 
+  // Checks if the bookmark star should be enabled or not.
+  bool IsStarEnabled() const;
   // Get the point in window coordinates on the star for the bookmark bubble to
-  // aim at.
+  // aim at. Only works if IsStarEnabled returns YES.
   NSPoint GetBookmarkBubblePoint() const;
 
   // Get the point in window coordinates in the security icon at which the page
@@ -183,8 +185,8 @@ class LocationBarViewMac : public LocationBar,
 
   void ShowFirstRunBubbleInternal();
 
-  // Checks if the bookmark star should be enabled or not.
-  bool IsStarEnabled();
+  // Checks if the current url can be bookmarked.
+  bool IsBookmarkable() const;
 
   // Updates the zoom decoration in the omnibox with the current zoom level.
   void UpdateZoomDecoration();
@@ -197,7 +199,7 @@ class LocationBarViewMac : public LocationBar,
   bool UpdateMicSearchDecorationVisibility();
 
   // Checks if an extension has specified the bookmark star be hidden.
-  bool IsBookmarkStarHiddenByExtension();
+  bool IsBookmarkStarHiddenByExtension() const;
 
   scoped_ptr<OmniboxViewMac> omnibox_view_;
 

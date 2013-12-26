@@ -332,7 +332,14 @@ void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
     zoom_decoration_->ShowBubble(YES);
 }
 
+bool LocationBarViewMac::IsStarEnabled() const {
+  return IsBookmarkable() &&
+         !IsBookmarkStarHiddenByExtension();
+}
+
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
+  DCHECK(IsStarEnabled());
+
   AutocompleteTextFieldCell* cell = [field_ cell];
   const NSRect frame = [cell frameForDecoration:star_decoration_.get()
                                         inFrame:[field_ bounds]];
@@ -506,7 +513,7 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
 }
 
 void LocationBarViewMac::Update(const WebContents* contents) {
-  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsStarEnabled());
+  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsBookmarkable());
   command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
                                           IsStarEnabled());
   UpdateStarDecorationVisibility();
@@ -728,12 +735,11 @@ void LocationBarViewMac::ShowFirstRunBubbleInternal() {
                                 profile:profile_];
 }
 
-bool LocationBarViewMac::IsStarEnabled() {
+bool LocationBarViewMac::IsBookmarkable() const {
   return [field_ isEditable] &&
          browser_defaults::bookmarks_enabled &&
          !GetToolbarModel()->input_in_progress() &&
-         edit_bookmarks_enabled_.GetValue() &&
-         !IsBookmarkStarHiddenByExtension();
+         edit_bookmarks_enabled_.GetValue();
 }
 
 void LocationBarViewMac::UpdateZoomDecoration() {
@@ -757,7 +763,7 @@ bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {
   return true;
 }
 
-bool LocationBarViewMac::IsBookmarkStarHiddenByExtension() {
+bool LocationBarViewMac::IsBookmarkStarHiddenByExtension() const {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::GetForBrowserContext(
           profile_)->extension_service();

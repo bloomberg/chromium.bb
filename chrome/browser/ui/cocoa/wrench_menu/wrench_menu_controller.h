@@ -18,6 +18,11 @@ class RecentTabsMenuModelDelegate;
 @class WrenchMenuButtonViewController;
 class WrenchMenuModel;
 
+namespace wrench_menu_controller {
+// The vertical offset of the wrench bubbles from the wrench menu button.
+extern const CGFloat kWrenchBubblePointOffsetY;
+}
+
 namespace WrenchMenuControllerInternal {
 class AcceleratorDelegate;
 class ZoomLevelObserver;

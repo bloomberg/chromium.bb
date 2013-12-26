@@ -723,7 +723,15 @@ class NotificationBridge
 }
 
 - (NSPoint)bookmarkBubblePoint {
-  return locationBarView_->GetBookmarkBubblePoint();
+  if (locationBarView_->IsStarEnabled())
+    return locationBarView_->GetBookmarkBubblePoint();
+
+  // Grab bottom middle of hotdogs.
+  NSRect frame = wrenchButton_.frame;
+  NSPoint point = NSMakePoint(NSMidX(frame), NSMinY(frame));
+  // Inset to account for the whitespace around the hotdogs.
+  point.y += wrench_menu_controller::kWrenchBubblePointOffsetY;
+  return [self.view convertPoint:point toView:nil];
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {
