@@ -68,6 +68,8 @@ class WebContentsViewDelegate;
 struct ColorSuggestion;
 struct FaviconURL;
 struct LoadNotificationDetails;
+struct ResourceRedirectDetails;
+struct ResourceRequestDetails;
 
 // Factory function for the implementations that content knows about. Takes
 // ownership of |delegate|.
@@ -165,6 +167,15 @@ class CONTENT_EXPORT WebContentsImpl
   // a Drag Source Move.
   void DragSourceMovedTo(int client_x, int client_y,
                          int screen_x, int screen_y);
+
+  // A response has been received for a resource request.
+  void DidGetResourceResponseStart(
+      const ResourceRequestDetails& details);
+
+  // A redirect was received while requesting a resource.
+  void DidGetRedirectForResourceRequest(
+      RenderViewHost* render_view_host,
+      const ResourceRedirectDetails& details);
 
   // WebContents ------------------------------------------------------
   virtual WebContentsDelegate* GetDelegate() OVERRIDE;
@@ -318,11 +329,6 @@ class CONTENT_EXPORT WebContentsImpl
       RenderViewHost* render_view_host,
       const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params)
           OVERRIDE;
-  virtual void DidGetResourceResponseStart(
-      const ResourceRequestDetails& details) OVERRIDE;
-  virtual void DidGetRedirectForResourceRequest(
-      RenderViewHost* render_view_host,
-      const ResourceRedirectDetails& details) OVERRIDE;
   virtual void DidNavigate(
       RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;

@@ -61,8 +61,6 @@ struct GlobalRequestID;
 struct NativeWebKeyboardEvent;
 struct Referrer;
 struct RendererPreferences;
-struct ResourceRedirectDetails;
-struct ResourceRequestDetails;
 
 //
 // RenderViewHostDelegate
@@ -166,15 +164,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void DidFailProvisionalLoadWithError(
       RenderViewHost* render_view_host,
       const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
-
-  // A response has been received for a resource request.
-  virtual void DidGetResourceResponseStart(
-      const ResourceRequestDetails& details) {}
-
-  // A redirect was received while requesting a resource.
-  virtual void DidGetRedirectForResourceRequest(
-      RenderViewHost* render_view_host,
-      const ResourceRedirectDetails& details) {}
 
   // The RenderView was navigated to a different page.
   virtual void DidNavigate(RenderViewHost* render_view_host,

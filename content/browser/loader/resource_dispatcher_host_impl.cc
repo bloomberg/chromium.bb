@@ -50,6 +50,7 @@
 #include "content/browser/streams/stream_context.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/browser/worker_host/worker_service_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/common/ssl_status_serialization.h"
 #include "content/common/view_messages.h"
@@ -274,27 +275,30 @@ int GetCertID(net::URLRequest* request, int child_id) {
 }
 
 void NotifyRedirectOnUI(int render_process_id,
-                        int render_view_id,
+                        int render_frame_host,
                         scoped_ptr<ResourceRedirectDetails> details) {
-  RenderViewHostImpl* host =
-      RenderViewHostImpl::FromID(render_process_id, render_view_id);
+  RenderFrameHostImpl* host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_host);
   if (!host)
     return;
 
-  RenderViewHostDelegate* delegate = host->GetDelegate();
-  delegate->DidGetRedirectForResourceRequest(host, *details.get());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
+  web_contents->DidGetRedirectForResourceRequest(
+      host->render_view_host(), *details.get());
 }
 
 void NotifyResponseOnUI(int render_process_id,
-                        int render_view_id,
+                        int render_frame_host,
                         scoped_ptr<ResourceRequestDetails> details) {
-  RenderViewHostImpl* host =
-      RenderViewHostImpl::FromID(render_process_id, render_view_id);
+  RenderFrameHostImpl* host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_host);
   if (!host)
     return;
 
-  RenderViewHostDelegate* delegate = host->GetDelegate();
-  delegate->DidGetResourceResponseStart(*details.get());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
+  web_contents->DidGetResourceResponseStart(*details.get());
 }
 
 }  // namespace
@@ -697,8 +701,8 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
                                                     const GURL& new_url) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
 
-  int render_process_id, render_view_id;
-  if (!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
+  int render_process_id, render_frame_host;
+  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_host))
     return;
 
   // Notify the observers on the UI thread.
@@ -710,7 +714,7 @@ void ResourceDispatcherHostImpl::DidReceiveRedirect(ResourceLoader* loader,
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &NotifyRedirectOnUI,
-          render_process_id, render_view_id, base::Passed(&detail)));
+          render_process_id, render_frame_host, base::Passed(&detail)));
 }
 
 void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
@@ -731,8 +735,8 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
            info->detachable_handler()->is_detached());
   }
 
-  int render_process_id, render_view_id;
-  if (!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
+  int render_process_id, render_frame_host;
+  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_host))
     return;
 
   // Notify the observers on the UI thread.
@@ -743,7 +747,7 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(ResourceLoader* loader) {
       BrowserThread::UI, FROM_HERE,
       base::Bind(
           &NotifyResponseOnUI,
-          render_process_id, render_view_id, base::Passed(&detail)));
+          render_process_id, render_frame_host, base::Passed(&detail)));
 }
 
 void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {

@@ -1964,6 +1964,37 @@ void WebContentsImpl::DragSourceMovedTo(int client_x, int client_y,
                                                screen_x, screen_y);
 }
 
+void WebContentsImpl::DidGetResourceResponseStart(
+  const ResourceRequestDetails& details) {
+  controller_.ssl_manager()->DidStartResourceResponse(details);
+
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidGetResourceResponseStart(details));
+
+  // TODO(avi): Remove. http://crbug.com/170921
+  NotificationService::current()->Notify(
+      NOTIFICATION_RESOURCE_RESPONSE_STARTED,
+      Source<WebContents>(this),
+      Details<const ResourceRequestDetails>(&details));
+}
+
+void WebContentsImpl::DidGetRedirectForResourceRequest(
+  RenderViewHost* render_view_host,
+  const ResourceRedirectDetails& details) {
+  controller_.ssl_manager()->DidReceiveResourceRedirect(details);
+
+  FOR_EACH_OBSERVER(
+      WebContentsObserver,
+      observers_,
+      DidGetRedirectForResourceRequest(render_view_host, details));
+
+  // TODO(avi): Remove. http://crbug.com/170921
+  NotificationService::current()->Notify(
+      NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
+      Source<WebContents>(this),
+      Details<const ResourceRedirectDetails>(&details));
+}
+
 void WebContentsImpl::SystemDragEnded() {
   if (GetRenderViewHost())
     GetRenderViewHostImpl()->DragSourceSystemDragEnded();
@@ -2933,37 +2964,6 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
   ClearPowerSaveBlockers(rvh);
   GetRenderManager()->RenderViewDeleted(rvh);
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, RenderViewDeleted(rvh));
-}
-
-void WebContentsImpl::DidGetResourceResponseStart(
-  const ResourceRequestDetails& details) {
-  controller_.ssl_manager()->DidStartResourceResponse(details);
-
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidGetResourceResponseStart(details));
-
-  // TODO(avi): Remove. http://crbug.com/170921
-  NotificationService::current()->Notify(
-      NOTIFICATION_RESOURCE_RESPONSE_STARTED,
-      Source<WebContents>(this),
-      Details<const ResourceRequestDetails>(&details));
-}
-
-void WebContentsImpl::DidGetRedirectForResourceRequest(
-  RenderViewHost* render_view_host,
-  const ResourceRedirectDetails& details) {
-  controller_.ssl_manager()->DidReceiveResourceRedirect(details);
-
-  FOR_EACH_OBSERVER(
-      WebContentsObserver,
-      observers_,
-      DidGetRedirectForResourceRequest(render_view_host, details));
-
-  // TODO(avi): Remove. http://crbug.com/170921
-  NotificationService::current()->Notify(
-      NOTIFICATION_RESOURCE_RECEIVED_REDIRECT,
-      Source<WebContents>(this),
-      Details<const ResourceRedirectDetails>(&details));
 }
 
 void WebContentsImpl::DidNavigate(
