@@ -1268,7 +1268,7 @@ static int darwin_release_interface(struct libusb_device_handle *dev_handle, int
   if (kresult != kIOReturnSuccess)
     usbi_warn (HANDLE_CTX (dev_handle), "Release: %s", darwin_error_str(kresult));
 
-  cInterface->interface = IO_OBJECT_NULL;
+  cInterface->interface = NULL;
 
   return darwin_to_libusb (kresult);
 }

@@ -16,3 +16,4 @@ Local Modifications:
   libusb_handle_event.
 - windows-build.patch has been applied.
 - darwin-sigfpe.patch has been applied.
+- upstream-tick147.patch has been applied.
