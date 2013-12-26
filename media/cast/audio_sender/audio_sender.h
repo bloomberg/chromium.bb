@@ -14,8 +14,8 @@
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/rtp_sender/rtp_sender.h"
 #include "media/cast/rtcp/rtcp.h"
+#include "media/cast/transport/rtp_sender/rtp_sender.h"
 
 namespace crypto {
 class Encryptor;
@@ -32,7 +32,6 @@ namespace cast {
 class AudioEncoder;
 class LocalRtcpAudioSenderFeedback;
 class LocalRtpSenderStatistics;
-class PacedPacketSender;
 
 // This class is not thread safe.
 // It's only called from the main cast thread.
@@ -41,7 +40,7 @@ class AudioSender : public base::NonThreadSafe,
  public:
   AudioSender(scoped_refptr<CastEnvironment> cast_environment,
               const AudioSenderConfig& audio_config,
-              PacedPacketSender* const paced_packet_sender);
+              transport::PacedPacketSender* const paced_packet_sender);
 
   virtual ~AudioSender();
 
@@ -89,7 +88,7 @@ class AudioSender : public base::NonThreadSafe,
 
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_refptr<AudioEncoder> audio_encoder_;
-  RtpSender rtp_sender_;
+  transport::RtpSender rtp_sender_;
   scoped_ptr<LocalRtpSenderStatistics> rtp_audio_sender_statistics_;
   scoped_ptr<LocalRtcpAudioSenderFeedback> rtcp_feedback_;
   Rtcp rtcp_;

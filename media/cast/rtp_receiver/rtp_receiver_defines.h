@@ -13,8 +13,6 @@
 namespace media {
 namespace cast {
 
-const uint8 kRtpMarkerBitMask = 0x80;
-
 struct RtpCastHeader {
   RtpCastHeader() {
     is_key_frame = false;

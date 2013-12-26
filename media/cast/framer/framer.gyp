@@ -9,6 +9,7 @@
       'type': 'static_library',
       'include_dirs': [
         '<(DEPTH)/',
+        '<(DEPTH)/media/cast/transport/cast_transport.gyp:cast_transport',
         '<(DEPTH)/third_party/',
         '<(DEPTH)/third_party/webrtc',
       ],

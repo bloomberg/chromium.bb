@@ -9,9 +9,9 @@
 #include "media/cast/audio_receiver/audio_receiver.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/pacing/mock_paced_packet_sender.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_task_runner.h"
+#include "media/cast/transport/pacing/mock_paced_packet_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -58,7 +58,7 @@ class PeerAudioReceiver : public AudioReceiver {
  public:
   PeerAudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                     const AudioReceiverConfig& audio_config,
-                    PacedPacketSender* const packet_sender)
+                    transport::PacedPacketSender* const packet_sender)
       : AudioReceiver(cast_environment, audio_config, packet_sender) {}
 
   using AudioReceiver::IncomingParsedRtpPacket;
@@ -108,7 +108,7 @@ class AudioReceiverTest : public ::testing::Test {
   std::vector<uint8> payload_;
   RtpCastHeader rtp_header_;
   base::SimpleTestTickClock testing_clock_;
-  MockPacedPacketSender mock_transport_;
+  transport::MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PeerAudioReceiver> receiver_;
   scoped_refptr<CastEnvironment> cast_environment_;

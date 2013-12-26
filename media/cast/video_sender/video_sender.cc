@@ -12,7 +12,7 @@
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/net/pacing/paced_sender.h"
+#include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/video_sender/video_encoder.h"
 
 namespace media {
@@ -37,31 +37,33 @@ class LocalRtcpVideoSenderFeedback : public RtcpSenderFeedback {
 
 class LocalRtpVideoSenderStatistics : public RtpSenderStatistics {
  public:
-  explicit LocalRtpVideoSenderStatistics(RtpSender* rtp_sender)
+  explicit LocalRtpVideoSenderStatistics(transport::RtpSender* rtp_sender)
      : rtp_sender_(rtp_sender) {
   }
 
   virtual void GetStatistics(const base::TimeTicks& now,
-                             RtcpSenderInfo* sender_info) OVERRIDE {
+                             transport::RtcpSenderInfo* sender_info) OVERRIDE {
     rtp_sender_->RtpStatistics(now, sender_info);
   }
 
  private:
-  RtpSender* rtp_sender_;
+  transport::RtpSender* rtp_sender_;
 };
 
 VideoSender::VideoSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const VideoSenderConfig& video_config,
     VideoEncoderController* const video_encoder_controller,
-    PacedPacketSender* const paced_packet_sender)
+    transport::PacedPacketSender* const paced_packet_sender)
     : rtp_max_delay_(
           base::TimeDelta::FromMilliseconds(video_config.rtp_max_delay_ms)),
       max_frame_rate_(video_config.max_frame_rate),
       cast_environment_(cast_environment),
       rtcp_feedback_(new LocalRtcpVideoSenderFeedback(this)),
-      rtp_sender_(new RtpSender(cast_environment, NULL, &video_config,
-                                paced_packet_sender)),
+      rtp_sender_(new transport::RtpSender(cast_environment,
+                                           NULL,
+                                           &video_config,
+                                           paced_packet_sender)),
       last_acked_frame_id_(-1),
       last_sent_frame_id_(-1),
       duplicate_ack_(0),
@@ -232,15 +234,15 @@ void VideoSender::ScheduleNextRtcpReport() {
 void VideoSender::SendRtcpReport() {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
 
-  RtcpSenderLogMessage sender_log_message;
+  transport::RtcpSenderLogMessage sender_log_message;
   const FrameRawMap& frame_raw_map =
       cast_environment_->Logging()->GetFrameRawData();
 
   FrameRawMap::const_iterator it = frame_raw_map.begin();
   while (it != frame_raw_map.end()) {
-    RtcpSenderFrameLogMessage frame_message;
+    transport::RtcpSenderFrameLogMessage frame_message;
     frame_message.rtp_timestamp = it->first;
-    frame_message.frame_status = kRtcpSenderFrameStatusUnknown;
+    frame_message.frame_status = transport::kRtcpSenderFrameStatusUnknown;
     if (it->second.type.empty()) {
       ++it;
       continue;
@@ -248,13 +250,16 @@ void VideoSender::SendRtcpReport() {
     CastLoggingEvent last_event = it->second.type.back();
     switch (last_event) {
       case kVideoFrameCaptured:
-        frame_message.frame_status = kRtcpSenderFrameStatusDroppedByFlowControl;
+        frame_message.frame_status =
+            transport::kRtcpSenderFrameStatusDroppedByFlowControl;
         break;
       case kVideoFrameSentToEncoder:
-        frame_message.frame_status = kRtcpSenderFrameStatusDroppedByEncoder;
+        frame_message.frame_status =
+            transport::kRtcpSenderFrameStatusDroppedByEncoder;
         break;
       case kVideoFrameEncoded:
-        frame_message.frame_status = kRtcpSenderFrameStatusSentToNetwork;
+        frame_message.frame_status =
+            transport::kRtcpSenderFrameStatusSentToNetwork;
         break;
       default:
         ++it;

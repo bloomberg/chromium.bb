@@ -10,9 +10,9 @@
 #include "media/cast/audio_sender/audio_sender.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/pacing/mock_paced_packet_sender.h"
 #include "media/cast/test/audio_utility.h"
 #include "media/cast/test/fake_task_runner.h"
+#include "media/cast/transport/pacing/mock_paced_packet_sender.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -54,7 +54,7 @@ class AudioSenderTest : public ::testing::Test {
   virtual ~AudioSenderTest() {}
 
   base::SimpleTestTickClock testing_clock_;
-  MockPacedPacketSender mock_transport_;
+  transport::MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<AudioSender> audio_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;

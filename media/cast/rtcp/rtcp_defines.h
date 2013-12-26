@@ -12,7 +12,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/net/cast_net_defines.h"
+#include "media/cast/transport/cast_transport_defines.h"
 
 namespace media {
 namespace cast {
@@ -78,14 +78,6 @@ struct RtcpReceiverReferenceTimeReport {
   uint32 ntp_seconds;
   uint32 ntp_fraction;
 };
-
-inline bool operator==(RtcpSenderInfo lhs, RtcpSenderInfo rhs) {
-  return lhs.ntp_seconds == rhs.ntp_seconds &&
-      lhs.ntp_fraction == rhs.ntp_fraction &&
-      lhs.rtp_timestamp == rhs.rtp_timestamp &&
-      lhs.send_packet_count == rhs.send_packet_count &&
-      lhs.send_octet_count == rhs.send_octet_count;
-}
 
 inline bool operator==(RtcpReceiverReferenceTimeReport lhs,
                        RtcpReceiverReferenceTimeReport rhs) {

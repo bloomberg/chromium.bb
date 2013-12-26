@@ -19,13 +19,15 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/rtcp_defines.h"
+#include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/pacing/paced_sender.h"
+#include "media/cast/transport/rtcp/rtcp_builder.h"
 
 namespace media {
 namespace cast {
 
 class LocalRtcpReceiverFeedback;
 class LocalRtcpRttFeedback;
-class RtcpBuilder;
 class PacedPacketSender;
 class RtcpReceiver;
 class RtcpSender;
@@ -44,7 +46,7 @@ class RtcpSenderFeedback {
 class RtpSenderStatistics {
  public:
   virtual void GetStatistics(const base::TimeTicks& now,
-                             RtcpSenderInfo* sender_info) = 0;
+                             transport::RtcpSenderInfo* sender_info) = 0;
 
   virtual ~RtpSenderStatistics() {}
 };
@@ -63,7 +65,7 @@ class Rtcp {
  public:
   Rtcp(scoped_refptr<CastEnvironment> cast_environment,
        RtcpSenderFeedback* sender_feedback,
-       PacedPacketSender* paced_packet_sender,
+       transport::PacedPacketSender* paced_packet_sender,
        RtpSenderStatistics* rtp_sender_statistics,
        RtpReceiverStatistics* rtp_receiver_statistics,
        RtcpMode rtcp_mode,
@@ -85,7 +87,8 @@ class Rtcp {
   // Additionally if all messages in |sender_log_message| does
   // not fit in the packet the |sender_log_message| will contain the remaining
   // unsent messages.
-  void SendRtcpFromRtpSender(RtcpSenderLogMessage* sender_log_message);
+  void SendRtcpFromRtpSender(
+      transport::RtcpSenderLogMessage* sender_log_message);
 
   // |cast_message| and |receiver_log| is optional; if |cast_message| is
   // provided the RTCP receiver report will append a Cast message containing
@@ -150,7 +153,7 @@ class Rtcp {
   scoped_ptr<LocalRtcpRttFeedback> rtt_feedback_;
   scoped_ptr<LocalRtcpReceiverFeedback> receiver_feedback_;
   scoped_ptr<RtcpSender> rtcp_sender_;
-  scoped_ptr<RtcpBuilder> rtcp_builder_;
+  scoped_ptr<transport::RtcpBuilder> rtcp_builder_;
   scoped_ptr<RtcpReceiver> rtcp_receiver_;
 
   base::TimeTicks next_time_to_send_rtcp_;

@@ -5,8 +5,8 @@
 #ifndef MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_RTP_PARSER_H_
 #define MEDIA_CAST_RTP_RECEIVER_RTP_PARSER_RTP_PARSER_H_
 
-#include "media/cast/net/cast_net_defines.h"
 #include "media/cast/rtp_receiver/rtp_receiver_defines.h"
+#include "media/cast/transport/cast_transport_defines.h"
 
 namespace media {
 namespace cast {
@@ -46,8 +46,8 @@ class RtpParser {
 
   RtpData* data_callback_;
   RtpParserConfig parser_config_;
-  FrameIdWrapHelper frame_id_wrap_helper_;
-  FrameIdWrapHelper reference_frame_id_wrap_helper_;
+  transport::FrameIdWrapHelper frame_id_wrap_helper_;
+  transport::FrameIdWrapHelper reference_frame_id_wrap_helper_;
 };
 
 }  // namespace cast

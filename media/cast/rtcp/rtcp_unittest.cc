@@ -5,12 +5,12 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/rtcp/mock_rtcp_receiver_feedback.h"
 #include "media/cast/rtcp/mock_rtcp_sender_feedback.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_task_runner.h"
+#include "media/cast/transport/pacing/paced_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -26,7 +26,7 @@ static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 static const int64 kAddedDelay = 123;
 static const int64 kAddedShortDelay= 100;
 
-class LocalRtcpTransport : public PacedPacketSender {
+class LocalRtcpTransport : public transport::PacedPacketSender {
  public:
   explicit LocalRtcpTransport(scoped_refptr<CastEnvironment> cast_environment,
                               base::SimpleTestTickClock* testing_clock)
@@ -74,7 +74,7 @@ class RtcpPeer : public Rtcp {
  public:
   RtcpPeer(scoped_refptr<CastEnvironment> cast_environment,
            RtcpSenderFeedback* sender_feedback,
-           PacedPacketSender* const paced_packet_sender,
+           transport::PacedPacketSender* const paced_packet_sender,
            RtpSenderStatistics* rtp_sender_statistics,
            RtpReceiverStatistics* rtp_receiver_statistics,
            RtcpMode rtcp_mode,

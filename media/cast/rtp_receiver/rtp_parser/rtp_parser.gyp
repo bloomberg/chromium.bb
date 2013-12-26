@@ -17,6 +17,7 @@
       ], # source
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/media/cast/transport/cast_transport.gyp:cast_transport',
       ],
     },
   ],

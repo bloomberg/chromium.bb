@@ -12,6 +12,7 @@ namespace cast {
 
 const uint32 kCastRtpHeaderLength = 7;
 const uint32 kGenericRtpHeaderLength = 12;
+static const uint8 kRtpMarkerBitMask = 0x80;
 
 RtpPacketBuilder::RtpPacketBuilder()
     : is_key_(false),

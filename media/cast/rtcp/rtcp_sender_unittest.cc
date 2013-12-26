@@ -6,11 +6,12 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/rtcp/rtcp_sender.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_task_runner.h"
+#include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/pacing/paced_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -22,7 +23,7 @@ static const uint32 kMediaSsrc = 0x87654321;
 static const std::string kCName("test@10.1.1.1");
 }  // namespace
 
-class TestRtcpTransport : public PacedPacketSender {
+class TestRtcpTransport : public transport::PacedPacketSender {
  public:
   TestRtcpTransport()
       : expected_packet_length_(0),
@@ -96,7 +97,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReport) {
   p2.AddSdesCname(kSendingSsrc, kCName);
   test_transport_.SetExpectedRtcpPacket(p2.Packet(), p2.Length());
 
-  RtcpReportBlock report_block;
+  transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
   report_block.remote_ssrc = 0xDEAD;
   report_block.media_ssrc = kMediaSsrc;  // SSRC of the RTP packet sender.
@@ -123,7 +124,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtr) {
   p.AddXrRrtrBlock();
   test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
 
-  RtcpReportBlock report_block;
+  transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
   report_block.remote_ssrc = 0xDEAD;
   report_block.media_ssrc = kMediaSsrc;  // SSRC of the RTP packet sender.
@@ -157,7 +158,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithCast) {
   p.AddCast(kSendingSsrc, kMediaSsrc);
   test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
 
-  RtcpReportBlock report_block;
+  transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
   report_block.remote_ssrc = 0xDEAD;
   report_block.media_ssrc = kMediaSsrc;  // SSRC of the RTP packet sender.
@@ -199,7 +200,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtraAndCastMessage) {
   p.AddCast(kSendingSsrc, kMediaSsrc);
   test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
 
-  RtcpReportBlock report_block;
+  transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
   report_block.remote_ssrc = 0xDEAD;
   report_block.media_ssrc = kMediaSsrc;  // SSRC of the RTP packet sender.
@@ -249,7 +250,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithRrtrCastMessageAndLog) {
   p.AddCast(kSendingSsrc, kMediaSsrc);
   test_transport_.SetExpectedRtcpPacket(p.Packet(), p.Length());
 
-  RtcpReportBlock report_block;
+  transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
   report_block.remote_ssrc = 0xDEAD;
   report_block.media_ssrc = kMediaSsrc;  // SSRC of the RTP packet sender.
@@ -337,7 +338,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithOversizedFrameLog) {
   p.AddRb(kMediaSsrc);
   p.AddSdesCname(kSendingSsrc, kCName);
 
-  RtcpReportBlock report_block;
+  transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
   report_block.remote_ssrc = 0xDEAD;
   report_block.media_ssrc = kMediaSsrc;  // SSRC of the RTP packet sender.
@@ -410,7 +411,7 @@ TEST_F(RtcpSenderTest, RtcpReceiverReportWithTooManyLogFrames) {
   p.AddRb(kMediaSsrc);
   p.AddSdesCname(kSendingSsrc, kCName);
 
-  RtcpReportBlock report_block;
+  transport::RtcpReportBlock report_block;
   // Initialize remote_ssrc to a "clearly illegal" value.
   report_block.remote_ssrc = 0xDEAD;
   report_block.media_ssrc = kMediaSsrc;  // SSRC of the RTP packet sender.

@@ -8,11 +8,11 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/rtcp/rtcp_builder.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/rtcp/rtcp_receiver.h"
 #include "media/cast/rtcp/rtcp_sender.h"
 #include "media/cast/rtcp/rtcp_utility.h"
+#include "media/cast/transport/cast_transport_defines.h"
 #include "net/base/big_endian.h"
 
 namespace media {
@@ -66,7 +66,7 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
   }
 
   virtual void OnReceivedSenderReport(
-      const RtcpSenderInfo& remote_sender_info) OVERRIDE {
+      const transport::RtcpSenderInfo& remote_sender_info) OVERRIDE {
     rtcp_->OnReceivedNtp(remote_sender_info.ntp_seconds,
                          remote_sender_info.ntp_fraction);
     if (remote_sender_info.send_packet_count != 0) {
@@ -126,8 +126,8 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
   }
 
   virtual void OnReceivedSenderLog(
-      const RtcpSenderLogMessage& sender_log)  OVERRIDE {
-    RtcpSenderLogMessage::const_iterator it = sender_log.begin();
+      const transport::RtcpSenderLogMessage& sender_log)  OVERRIDE {
+    transport::RtcpSenderLogMessage::const_iterator it = sender_log.begin();
 
     for (; it != sender_log.end(); ++it) {
       uint32 rtp_timestamp = it->rtp_timestamp;
@@ -137,17 +137,17 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
       // reached the receiver. The timing information for these events are not
       // relevant and is not sent over the wire.
       switch (it->frame_status) {
-        case kRtcpSenderFrameStatusDroppedByFlowControl:
+        case transport::kRtcpSenderFrameStatusDroppedByFlowControl:
           // A frame that have been dropped by the flow control would have
           // kVideoFrameCaptured as its last event in the log.
           log_event = kVideoFrameCaptured;
           break;
-        case kRtcpSenderFrameStatusDroppedByEncoder:
+        case transport::kRtcpSenderFrameStatusDroppedByEncoder:
           // A frame that have been dropped by the encoder would have
           // kVideoFrameSentToEncoder as its last event in the log.
           log_event = kVideoFrameSentToEncoder;
           break;
-        case kRtcpSenderFrameStatusSentToNetwork:
+        case transport::kRtcpSenderFrameStatusSentToNetwork:
           // A frame that have be encoded is always sent to the network. We
           // do not add a new log entry for this.
           log_event = kVideoFrameEncoded;
@@ -172,7 +172,7 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
 
 Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
            RtcpSenderFeedback* sender_feedback,
-           PacedPacketSender* paced_packet_sender,
+           transport::PacedPacketSender* paced_packet_sender,
            RtpSenderStatistics* rtp_sender_statistics,
            RtpReceiverStatistics* rtp_receiver_statistics,
            RtcpMode rtcp_mode,
@@ -190,7 +190,8 @@ Rtcp::Rtcp(scoped_refptr<CastEnvironment> cast_environment,
       rtt_feedback_(new LocalRtcpRttFeedback(this)),
       rtcp_sender_(new RtcpSender(cast_environment, paced_packet_sender,
                                   local_ssrc, c_name)),
-      rtcp_builder_(new RtcpBuilder(paced_packet_sender, local_ssrc, c_name)),
+      rtcp_builder_(new
+          transport::RtcpBuilder(paced_packet_sender, local_ssrc, c_name)),
       last_report_received_(0),
       last_received_rtp_timestamp_(0),
       last_received_ntp_seconds_(0),
@@ -252,7 +253,7 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
   uint32 packet_type_flags = 0;
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  RtcpReportBlock report_block;
+  transport::RtcpReportBlock report_block;
   RtcpReceiverReferenceTimeReport rrtr;
 
   if (cast_message) {
@@ -308,7 +309,7 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
 }
 
 void Rtcp::SendRtcpFromRtpSender(
-    RtcpSenderLogMessage* sender_log_message) {
+    transport::RtcpSenderLogMessage* sender_log_message) {
   uint32 packet_type_flags = RtcpSender::kRtcpSr;
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
@@ -316,7 +317,7 @@ void Rtcp::SendRtcpFromRtpSender(
     packet_type_flags |= RtcpSender::kRtcpSenderLog;
   }
 
-  RtcpSenderInfo sender_info;
+  transport::RtcpSenderInfo sender_info;
   if (rtp_sender_statistics_) {
     rtp_sender_statistics_->GetStatistics(now, &sender_info);
   } else {
@@ -324,7 +325,7 @@ void Rtcp::SendRtcpFromRtpSender(
   }
   SaveLastSentNtpTime(now, sender_info.ntp_seconds, sender_info.ntp_fraction);
 
-  RtcpDlrrReportBlock dlrr;
+  transport::RtcpDlrrReportBlock dlrr;
   if (!time_last_report_received_.is_null()) {
     packet_type_flags |= RtcpSender::kRtcpDlrr;
     dlrr.last_rr = last_report_received_;

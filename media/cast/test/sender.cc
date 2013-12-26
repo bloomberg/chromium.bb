@@ -15,10 +15,10 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/net/transport/transport.h"
 #include "media/cast/test/audio_utility.h"
 #include "media/cast/test/utility/input_helper.h"
 #include "media/cast/test/video_utility.h"
+#include "media/cast/transport/transport/transport.h"
 #include "ui/gfx/size.h"
 
 namespace media {
@@ -322,8 +322,9 @@ int main(int argc, char** argv) {
   media::cast::VideoSenderConfig video_config =
       media::cast::GetVideoSenderConfig();
 
-  scoped_ptr<media::cast::Transport> transport(
-      new media::cast::Transport(io_message_loop.message_loop_proxy()));
+  scoped_ptr<media::cast::transport::Transport> transport(
+      new media::cast::transport::Transport(
+      io_message_loop.message_loop_proxy()));
   scoped_ptr<media::cast::CastSender> cast_sender(
       media::cast::CastSender::CreateCastSender(cast_environment,
       audio_config,
@@ -341,7 +342,6 @@ int main(int argc, char** argv) {
   transport->SetLocalReceiver(packet_receiver, ip_address, local_ip_address,
                               receive_port);
   transport->SetSendDestination(ip_address, send_to_port);
-  // TODO(mikhal): Add option to simulate packet loss.
 
   media::cast::FrameInput* frame_input = cast_sender->frame_input();
   scoped_ptr<media::cast::SendProcess> send_process(new

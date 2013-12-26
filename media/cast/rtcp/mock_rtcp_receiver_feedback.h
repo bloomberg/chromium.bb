@@ -7,7 +7,9 @@
 
 #include <vector>
 
+#include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/rtcp/rtcp_receiver.h"
+#include "media/cast/transport/cast_transport_defines.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -19,7 +21,7 @@ class MockRtcpReceiverFeedback : public RtcpReceiverFeedback {
   virtual ~MockRtcpReceiverFeedback();
 
   MOCK_METHOD1(OnReceivedSenderReport,
-               void(const RtcpSenderInfo& remote_sender_info));
+               void(const transport::RtcpSenderInfo& remote_sender_info));
 
   MOCK_METHOD1(OnReceiverReferenceTimeReport,
                void(const RtcpReceiverReferenceTimeReport& remote_time_report));
@@ -29,7 +31,7 @@ class MockRtcpReceiverFeedback : public RtcpReceiverFeedback {
   MOCK_METHOD1(OnReceivedReceiverLog,
                void(const RtcpReceiverLogMessage& receiver_log));
   MOCK_METHOD1(OnReceivedSenderLog,
-               void(const RtcpSenderLogMessage& sender_log));
+               void(const transport::RtcpSenderLogMessage& sender_log));
 };
 
 class MockRtcpRttFeedback : public RtcpRttFeedback {

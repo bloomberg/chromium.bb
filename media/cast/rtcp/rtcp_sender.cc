@@ -9,9 +9,9 @@
 
 #include "base/logging.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/cast_net_defines.h"
-#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/rtcp/rtcp_utility.h"
+#include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/pacing/paced_sender.h"
 #include "net/base/big_endian.h"
 
 static const size_t kRtcpCastLogHeaderSize = 12;
@@ -125,7 +125,7 @@ namespace media {
 namespace cast {
 
 RtcpSender::RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
-                       PacedPacketSender* outgoing_transport,
+                       transport::PacedPacketSender* outgoing_transport,
                        uint32 sending_ssrc,
                        const std::string& c_name)
      : ssrc_(sending_ssrc),
@@ -139,7 +139,7 @@ RtcpSender::~RtcpSender() {}
 
 void RtcpSender::SendRtcpFromRtpReceiver(
     uint32 packet_type_flags,
-    const RtcpReportBlock* report_block,
+    const transport::RtcpReportBlock* report_block,
     const RtcpReceiverReferenceTimeReport* rrtr,
     const RtcpCastMessage* cast_message,
     RtcpReceiverLogMessage* receiver_log) {
@@ -184,7 +184,7 @@ void RtcpSender::SendRtcpFromRtpReceiver(
   transport_->SendRtcpPacket(packet);
 }
 
-void RtcpSender::BuildRR(const RtcpReportBlock* report_block,
+void RtcpSender::BuildRR(const transport::RtcpReportBlock* report_block,
                          std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 32, kIpPacketSize) << "Not enough buffer space";
@@ -204,7 +204,7 @@ void RtcpSender::BuildRR(const RtcpReportBlock* report_block,
   }
 }
 
-void RtcpSender::AddReportBlocks(const RtcpReportBlock& report_block,
+void RtcpSender::AddReportBlocks(const transport::RtcpReportBlock& report_block,
                                  std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
   DCHECK_LT(start_size + 24, kIpPacketSize) << "Not enough buffer space";

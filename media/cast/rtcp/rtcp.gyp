@@ -20,11 +20,10 @@
         'rtcp_sender.h',
         'rtcp_utility.cc',
         'rtcp_utility.h',
-        '<(DEPTH)/media/cast/net/rtcp/rtcp_builder.cc',
-        '<(DEPTH)/media/cast/net/rtcp/rtcp_builder.h',
       ], # source
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/media/cast/transport/cast_transport.gyp:cast_transport',
         '<(DEPTH)/net/net.gyp:net',
       ],
     },
@@ -40,6 +39,7 @@
       ], # source
       'dependencies': [
         'cast_rtcp',
+        '<(DEPTH)/media/cast/transport/cast_transport.gyp:cast_transport',
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],
     },

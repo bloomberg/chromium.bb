@@ -85,7 +85,7 @@ class LocalRtpReceiverStatistics : public RtpReceiverStatistics {
 
 AudioReceiver::AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              const AudioReceiverConfig& audio_config,
-                             PacedPacketSender* const packet_sender)
+                             transport::PacedPacketSender* const packet_sender)
     : cast_environment_(cast_environment),
       codec_(audio_config.codec),
       frequency_(audio_config.frequency),

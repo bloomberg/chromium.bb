@@ -8,8 +8,8 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/pacing/mock_paced_packet_sender.h"
 #include "media/cast/test/fake_task_runner.h"
+#include "media/cast/transport/pacing/mock_paced_packet_sender.h"
 #include "media/cast/video_receiver/video_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -58,7 +58,7 @@ class PeerVideoReceiver : public VideoReceiver {
  public:
   PeerVideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                     const VideoReceiverConfig& video_config,
-                    PacedPacketSender* const packet_sender)
+                    transport::PacedPacketSender* const packet_sender)
       : VideoReceiver(cast_environment, video_config, packet_sender) {
   }
   using VideoReceiver::IncomingParsedRtpPacket;
@@ -96,7 +96,7 @@ class VideoReceiverTest : public ::testing::Test {
     rtp_header_.reference_frame_id = 0;
   }
 
-  MockPacedPacketSender mock_transport_;
+  transport::MockPacedPacketSender mock_transport_;
   VideoReceiverConfig config_;
   scoped_ptr<PeerVideoReceiver> receiver_;
   std::vector<uint8> payload_;

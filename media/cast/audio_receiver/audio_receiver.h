@@ -31,7 +31,6 @@ class AudioDecoder;
 class Framer;
 class LocalRtpAudioData;
 class LocalRtpAudioFeedback;
-class PacedPacketSender;
 class RtpReceiver;
 class RtpReceiverStatistics;
 
@@ -50,7 +49,7 @@ class AudioReceiver : public base::NonThreadSafe,
  public:
   AudioReceiver(scoped_refptr<CastEnvironment> cast_environment,
                 const AudioReceiverConfig& audio_config,
-                PacedPacketSender* const packet_sender);
+                transport::PacedPacketSender* const packet_sender);
 
   virtual ~AudioReceiver();
 

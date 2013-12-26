@@ -85,7 +85,7 @@ class LocalRtpReceiverStatistics : public RtpReceiverStatistics {
 
 VideoReceiver::VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                              const VideoReceiverConfig& video_config,
-                             PacedPacketSender* const packet_sender)
+                             transport::PacedPacketSender* const packet_sender)
       : cast_environment_(cast_environment),
         codec_(video_config.codec),
         target_delay_delta_(
@@ -340,6 +340,7 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
   // Senders time in ms when this frame was captured.
   // Note: the senders clock and our local clock might not be synced.
   base::TimeTicks rtp_timestamp_in_ticks;
+
   if (time_offset_.InMilliseconds() == 0) {
     if (!rtcp_->RtpTimestampInSenderTime(kVideoFrequency,
                                          incoming_rtp_timestamp_,
@@ -369,7 +370,7 @@ base::TimeTicks VideoReceiver::GetRenderTime(base::TimeTicks now,
     return now;
   }
   base::TimeTicks render_time =
-      (rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_);
+      rtp_timestamp_in_ticks + time_offset_ + target_delay_delta_;
   if (last_render_time_ > render_time)
     render_time = last_render_time_;
   last_render_time_ = render_time;

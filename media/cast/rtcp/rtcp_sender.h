@@ -12,6 +12,8 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtcp/rtcp_defines.h"
+#include "media/cast/transport/cast_transport_defines.h"
+#include "media/cast/transport/rtcp/rtcp_builder.h"
 
 namespace media {
 namespace cast {
@@ -20,18 +22,17 @@ namespace cast {
 class RtcpSender {
  public:
   RtcpSender(scoped_refptr<CastEnvironment> cast_environment,
-             PacedPacketSender* const paced_packet_sender,
+             transport::PacedPacketSender* const paced_packet_sender,
              uint32 sending_ssrc,
              const std::string& c_name);
 
   virtual ~RtcpSender();
 
   void SendRtcpFromRtpReceiver(uint32 packet_type_flags,
-                               const RtcpReportBlock* report_block,
+                               const transport::RtcpReportBlock* report_block,
                                const RtcpReceiverReferenceTimeReport* rrtr,
                                const RtcpCastMessage* cast_message,
                                RtcpReceiverLogMessage* receiver_log);
-
   enum RtcpPacketType {
     kRtcpSr     = 0x0002,
     kRtcpRr     = 0x0004,
@@ -48,12 +49,11 @@ class RtcpSender {
     kRtcpSenderLog = 0x40000,
     kRtcpReceiverLog = 0x80000,
   };
-
  private:
-  void BuildRR(const RtcpReportBlock* report_block,
+  void BuildRR(const transport::RtcpReportBlock* report_block,
                std::vector<uint8>* packet) const;
 
-  void AddReportBlocks(const RtcpReportBlock& report_block,
+  void AddReportBlocks(const transport::RtcpReportBlock& report_block,
                        std::vector<uint8>* packet) const;
 
   void BuildSdec(std::vector<uint8>* packet) const;
@@ -99,7 +99,7 @@ class RtcpSender {
   const std::string c_name_;
 
   // Not owned by this class.
-  PacedPacketSender* transport_;
+  transport::PacedPacketSender* transport_;
   scoped_refptr<CastEnvironment> cast_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpSender);

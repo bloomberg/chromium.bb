@@ -11,8 +11,8 @@
 #include "crypto/symmetric_key.h"
 #include "media/cast/audio_sender/audio_encoder.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/rtp_sender/rtp_sender.h"
 #include "media/cast/rtcp/rtcp.h"
+#include "media/cast/transport/rtp_sender/rtp_sender.h"
 
 namespace media {
 namespace cast {
@@ -40,22 +40,23 @@ class LocalRtcpAudioSenderFeedback : public RtcpSenderFeedback {
 
 class LocalRtpSenderStatistics : public RtpSenderStatistics {
  public:
-  explicit LocalRtpSenderStatistics(RtpSender* rtp_sender)
+  explicit LocalRtpSenderStatistics(transport::RtpSender* rtp_sender)
      : rtp_sender_(rtp_sender) {
   }
 
   virtual void GetStatistics(const base::TimeTicks& now,
-                             RtcpSenderInfo* sender_info) OVERRIDE {
+                             transport::RtcpSenderInfo* sender_info) OVERRIDE {
     rtp_sender_->RtpStatistics(now, sender_info);
   }
 
  private:
-  RtpSender* rtp_sender_;
+  transport::RtpSender* rtp_sender_;
 };
 
-AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
-                         const AudioSenderConfig& audio_config,
-                         PacedPacketSender* const paced_packet_sender)
+AudioSender::AudioSender(
+    scoped_refptr<CastEnvironment> cast_environment,
+    const AudioSenderConfig& audio_config,
+    transport::PacedPacketSender* const paced_packet_sender)
       : cast_environment_(cast_environment),
         rtp_sender_(cast_environment, &audio_config, NULL,
                     paced_packet_sender),

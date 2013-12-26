@@ -27,11 +27,9 @@ class SymmetricKey;
 
 namespace media {
 namespace cast {
-
 class Framer;
 class LocalRtpVideoData;
 class LocalRtpVideoFeedback;
-class PacedPacketSender;
 class PeerVideoReceiver;
 class Rtcp;
 class RtpReceiverStatistics;
@@ -43,7 +41,7 @@ class VideoReceiver : public base::NonThreadSafe,
  public:
   VideoReceiver(scoped_refptr<CastEnvironment> cast_environment,
                 const VideoReceiverConfig& video_config,
-                PacedPacketSender* const packet_sender);
+                transport::PacedPacketSender* const packet_sender);
 
   virtual ~VideoReceiver();
 

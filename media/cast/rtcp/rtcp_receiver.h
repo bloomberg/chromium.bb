@@ -5,10 +5,10 @@
 #ifndef MEDIA_CAST_RTCP_RTCP_RECEIVER_H_
 #define MEDIA_CAST_RTCP_RTCP_RECEIVER_H_
 
-#include "media/cast/net/cast_net_defines.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/rtcp/rtcp_utility.h"
+#include "media/cast/transport/cast_transport_defines.h"
 
 namespace media {
 namespace cast {
@@ -16,7 +16,7 @@ namespace cast {
 class RtcpReceiverFeedback {
  public:
   virtual void OnReceivedSenderReport(
-      const RtcpSenderInfo& remote_sender_info) = 0;
+      const transport::RtcpSenderInfo& remote_sender_info) = 0;
 
   virtual void OnReceiverReferenceTimeReport(
       const RtcpReceiverReferenceTimeReport& remote_time_report) = 0;
@@ -27,7 +27,7 @@ class RtcpReceiverFeedback {
       const RtcpReceiverLogMessage& receiver_log) = 0;
 
   virtual void OnReceivedSenderLog(
-      const RtcpSenderLogMessage& sender_log) = 0;
+      const transport::RtcpSenderLogMessage& sender_log) = 0;
 
   virtual ~RtcpReceiverFeedback() {}
 };
@@ -112,7 +112,7 @@ class RtcpReceiver {
   RtcpRttFeedback* const rtt_feedback_;
   scoped_refptr<CastEnvironment> cast_environment_;
 
-  FrameIdWrapHelper ack_frame_id_wrap_helper_;
+  transport::FrameIdWrapHelper ack_frame_id_wrap_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcpReceiver);
 };

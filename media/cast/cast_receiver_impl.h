@@ -11,7 +11,7 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
-#include "media/cast/net/pacing/paced_sender.h"
+#include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/video_receiver/video_receiver.h"
 
 namespace media {
@@ -37,7 +37,7 @@ class CastReceiverImpl : public CastReceiver {
   virtual scoped_refptr<FrameReceiver> frame_receiver() OVERRIDE;
 
  private:
-  PacedSender pacer_;
+  transport::PacedSender pacer_;
   AudioReceiver audio_receiver_;
   VideoReceiver video_receiver_;
   scoped_refptr<FrameReceiver> frame_receiver_;

@@ -5,13 +5,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/cast_net_defines.h"
 #include "media/cast/rtcp/mock_rtcp_receiver_feedback.h"
 #include "media/cast/rtcp/mock_rtcp_sender_feedback.h"
 #include "media/cast/rtcp/rtcp_receiver.h"
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/rtcp/test_rtcp_packet_builder.h"
 #include "media/cast/test/fake_task_runner.h"
+#include "media/cast/transport/cast_transport_defines.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -68,7 +68,7 @@ class RtcpReceiverCastLogVerification : public RtcpReceiverFeedback {
         called_on_received_receiver_log_(false) {}
 
   virtual void OnReceivedSenderReport(
-      const RtcpSenderInfo& remote_sender_info) OVERRIDE {};
+      const transport::RtcpSenderInfo& remote_sender_info) OVERRIDE {};
 
   virtual void OnReceiverReferenceTimeReport(
       const RtcpReceiverReferenceTimeReport& remote_time_report) OVERRIDE {};
@@ -109,12 +109,13 @@ class RtcpReceiverCastLogVerification : public RtcpReceiverFeedback {
   }
 
   virtual void OnReceivedSenderLog(
-      const RtcpSenderLogMessage& sender_log) OVERRIDE {
+      const transport::RtcpSenderLogMessage& sender_log) OVERRIDE {
     EXPECT_EQ(expected_sender_log_.size(), sender_log.size());
 
-    RtcpSenderLogMessage::const_iterator expected_it =
+    transport::RtcpSenderLogMessage::const_iterator expected_it =
        expected_sender_log_.begin();
-    RtcpSenderLogMessage::const_iterator incoming_it = sender_log.begin();
+    transport::RtcpSenderLogMessage::const_iterator incoming_it =
+        sender_log.begin();
     for (; expected_it != expected_sender_log_.end();
         ++expected_it, ++incoming_it) {
       EXPECT_EQ(expected_it->frame_status, incoming_it->frame_status);
@@ -136,13 +137,13 @@ class RtcpReceiverCastLogVerification : public RtcpReceiverFeedback {
     expected_receiver_log_ = receiver_log;
   }
 
-  void SetExpectedSenderLog(const RtcpSenderLogMessage& sender_log) {
+  void SetExpectedSenderLog(const transport::RtcpSenderLogMessage& sender_log) {
     expected_sender_log_ = sender_log;
   }
 
  private:
   RtcpReceiverLogMessage expected_receiver_log_;
-  RtcpSenderLogMessage expected_sender_log_;
+  transport::RtcpSenderLogMessage expected_sender_log_;
   bool called_on_received_sender_log_;
   bool called_on_received_receiver_log_;
 };
@@ -207,8 +208,8 @@ class RtcpReceiverTest : public ::testing::Test {
   MockRtcpRttFeedback mock_rtt_feedback_;
   MockRtcpSenderFeedback mock_sender_feedback_;
   scoped_ptr<RtcpReceiver> rtcp_receiver_;
-  RtcpSenderInfo expected_sender_info_;
-  RtcpReportBlock expected_report_block_;
+  transport::RtcpSenderInfo expected_sender_info_;
+  transport::RtcpReportBlock expected_report_block_;
   RtcpReceiverReferenceTimeReport expected_receiver_reference_report_;
 };
 
@@ -457,10 +458,11 @@ TEST_F(RtcpReceiverTest, InjectSenderReportWithCastSenderLogVerification) {
                              kSourceSsrc);
   rtcp_receiver.SetRemoteSSRC(kSenderSsrc);
 
-  RtcpSenderLogMessage sender_log;
+  transport::RtcpSenderLogMessage sender_log;
   for (int j = 0; j < 359; ++j) {
-    RtcpSenderFrameLogMessage sender_frame_log;
-    sender_frame_log.frame_status = kRtcpSenderFrameStatusSentToNetwork;
+    transport::RtcpSenderFrameLogMessage sender_frame_log;
+    sender_frame_log.frame_status =
+        transport::kRtcpSenderFrameStatusSentToNetwork;
     sender_frame_log.rtp_timestamp = kRtpTimestamp + j * 90;
     sender_log.push_back(sender_frame_log);
   }
@@ -472,7 +474,7 @@ TEST_F(RtcpReceiverTest, InjectSenderReportWithCastSenderLogVerification) {
   p.AddSenderLog(kSenderSsrc);
 
   for (int i = 0; i < 359; ++i) {
-    p.AddSenderFrameLog(kRtcpSenderFrameStatusSentToNetwork,
+    p.AddSenderFrameLog(transport::kRtcpSenderFrameStatusSentToNetwork,
                         kRtpTimestamp + i * 90);
   }
   RtcpParser rtcp_parser(p.Packet(), p.Length());
@@ -580,8 +582,6 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportWithReceiverLogVerificationMulti) {
 
   EXPECT_TRUE(cast_log_verification.OnReceivedReceiverLogCalled());
 }
-
-
 
 }  // namespace cast
 }  // namespace media

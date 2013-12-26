@@ -15,8 +15,8 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/congestion_control/congestion_control.h"
-#include "media/cast/net/rtp_sender/rtp_sender.h"
 #include "media/cast/rtcp/rtcp.h"
+#include "media/cast/transport/rtp_sender/rtp_sender.h"
 
 namespace crypto {
 class Encryptor;
@@ -34,7 +34,6 @@ class VideoEncoder;
 class LocalRtcpVideoSenderFeedback;
 class LocalRtpVideoSenderStatistics;
 class LocalVideoEncoderCallback;
-class PacedPacketSender;
 
 // Not thread safe. Only called from the main cast thread.
 // This class owns all objects related to sending video, objects that create RTP
@@ -48,7 +47,7 @@ class VideoSender : public base::NonThreadSafe,
   VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const VideoSenderConfig& video_config,
               VideoEncoderController* const video_encoder_controller,
-              PacedPacketSender* const paced_packet_sender);
+              transport::PacedPacketSender* const paced_packet_sender);
 
   virtual ~VideoSender();
 
@@ -123,7 +122,7 @@ class VideoSender : public base::NonThreadSafe,
   scoped_ptr<LocalRtpVideoSenderStatistics> rtp_video_sender_statistics_;
   scoped_ptr<VideoEncoder> video_encoder_;
   scoped_ptr<Rtcp> rtcp_;
-  scoped_ptr<RtpSender> rtp_sender_;
+  scoped_ptr<transport::RtpSender> rtp_sender_;
   VideoEncoderController* video_encoder_controller_;
   uint8 max_unacked_frames_;
   scoped_ptr<crypto::Encryptor> encryptor_;

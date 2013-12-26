@@ -9,10 +9,10 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/net/pacing/mock_paced_packet_sender.h"
-#include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/test/video_utility.h"
+#include "media/cast/transport/pacing/mock_paced_packet_sender.h"
+#include "media/cast/transport/pacing/paced_sender.h"
 #include "media/cast/video_sender/mock_video_encoder_controller.h"
 #include "media/cast/video_sender/video_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,7 +37,7 @@ class PeerVideoSender : public VideoSender {
   PeerVideoSender(scoped_refptr<CastEnvironment> cast_environment,
                   const VideoSenderConfig& video_config,
                   VideoEncoderController* const video_encoder_controller,
-                  PacedPacketSender* const paced_packet_sender)
+                  transport::PacedPacketSender* const paced_packet_sender)
       : VideoSender(cast_environment, video_config,
                     video_encoder_controller, paced_packet_sender) {
   }
@@ -98,7 +98,7 @@ class VideoSenderTest : public ::testing::Test {
 
   MockVideoEncoderController mock_video_encoder_controller_;
   base::SimpleTestTickClock testing_clock_;
-  MockPacedPacketSender mock_transport_;
+  transport::MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
   scoped_ptr<PeerVideoSender> video_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;
