@@ -2664,6 +2664,13 @@
       # Documentation: http://dev.chromium.org/developers/testing/pyauto
       # Deprecated. Do not add additional dependencies.
       'target_name': 'pyautolib',
+      'variables': {
+        'conditions': [
+          ['enable_automation==1 and OS=="linux"', {
+            'python_arch': '<!(<(DEPTH)/build/linux/python_arch.sh <(sysroot)/usr/<(system_libdir)/libpython<(python_ver).so.1.0)',
+          }],
+        ],
+      },
       'conditions': [
         ['enable_automation==1 and OS=="linux" and target_arch==python_arch', {
           'type': 'loadable_module',

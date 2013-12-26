@@ -1267,13 +1267,8 @@
       }],
       ['OS=="win"', {
         'windows_driver_kit_path%': '$(WDK_DIR)',
-        # Set the python arch to prevent conflicts with pyauto on Win64 build.
-        # TODO(jschuh): crbug.com/177664 Investigate Win64 pyauto build.
-        'python_arch%': 'ia32',
       }],
       ['os_posix==1 and OS!="mac" and OS!="ios"', {
-        # Figure out the python architecture to decide if we build pyauto.
-        'python_arch%': '<!(<(DEPTH)/build/linux/python_arch.sh <(sysroot)/usr/<(system_libdir)/libpython<(python_ver).so.1.0)',
         'conditions': [
           ['target_arch=="mipsel"', {
             'werror%': '',
