@@ -9,55 +9,52 @@
 
 namespace message_center {
 
-ProportionalImageView::ProportionalImageView(const gfx::ImageSkia& image)
-    : image_(image) {
-}
+ProportionalImageView::ProportionalImageView(const gfx::ImageSkia& image,
+                                             const gfx::Size& max_size)
+    : image_(image), max_size_(max_size) {}
 
-ProportionalImageView::~ProportionalImageView() {
-}
+ProportionalImageView::~ProportionalImageView() {}
 
-gfx::Size ProportionalImageView::GetPreferredSize() {
-  gfx::Insets insets = GetInsets();
-  gfx::Rect rect = gfx::Rect(GetImageSizeForWidth(image_.width()));
-  rect.Inset(-insets);
-  return rect.size();
-}
+gfx::Size ProportionalImageView::GetPreferredSize() { return max_size_; }
 
 int ProportionalImageView::GetHeightForWidth(int width) {
-  // The border will count against the width available for the image
-  // and towards the height taken by the image.
-  gfx::Insets insets = GetInsets();
-  int inset_width = width - insets.width();
-  return GetImageSizeForWidth(inset_width).height() + insets.height();
+  return max_size_.height();
 }
 
 void ProportionalImageView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  gfx::Size draw_size(GetImageSizeForWidth(width() - GetInsets().width()));
-  if (!draw_size.IsEmpty()) {
-    gfx::Rect draw_bounds = GetContentsBounds();
-    draw_bounds.ClampToCenteredSize(draw_size);
+  gfx::Size draw_size = GetImageDrawingSize();
 
-    gfx::Size image_size(image_.size());
-    if (image_size == draw_size) {
-      canvas->DrawImageInt(image_, draw_bounds.x(), draw_bounds.y());
-    } else {
-      // Resize case
-      SkPaint paint;
-      paint.setFilterBitmap(true);
-      canvas->DrawImageInt(image_, 0, 0,
-                           image_size.width(), image_size.height(),
-                           draw_bounds.x(), draw_bounds.y(),
-                           draw_size.width(), draw_size.height(),
-                           true, paint);
-    }
+  if (draw_size.IsEmpty())
+    return;
+
+  gfx::Rect draw_bounds = GetContentsBounds();
+  draw_bounds.ClampToCenteredSize(draw_size);
+
+  gfx::Size image_size(image_.size());
+
+  if (image_size == draw_size) {
+    canvas->DrawImageInt(image_, draw_bounds.x(), draw_bounds.y());
+  } else {
+    SkPaint paint;
+    paint.setFilterBitmap(true);
+
+    // This call resizes the image while drawing into the canvas.
+    canvas->DrawImageInt(
+        image_,
+        0, 0, image_size.width(), image_size.height(),
+        draw_bounds.x(), draw_bounds.y(), draw_size.width(), draw_size.height(),
+        true,
+        paint);
   }
 }
 
-gfx::Size ProportionalImageView::GetImageSizeForWidth(int width) {
-  gfx::Size size = visible() ? image_.size() : gfx::Size();
-  return message_center::GetImageSizeForWidth(width, size);
+gfx::Size ProportionalImageView::GetImageDrawingSize() {
+  if (!visible())
+    return gfx::Size();
+  return message_center::GetImageSizeForContainerSize(
+      GetContentsBounds().size(), image_.size());
 }
 
 }  // namespace message_center

@@ -138,8 +138,8 @@ GroupView::GroupView(MessageCenterController* controller,
   }
 
   // Create the notification icon view.
-  icon_view_ =
-      new ProportionalImageView(last_notification.icon().AsImageSkia());
+  icon_view_ = new ProportionalImageView(last_notification.icon().AsImageSkia(),
+                                         gfx::Size(kIconSize, kIconSize));
   icon_view_->set_background(views::Background::CreateSolidBackground(
       kIconBackgroundColor));
 

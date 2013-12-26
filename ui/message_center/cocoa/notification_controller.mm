@@ -624,8 +624,8 @@
   // Images with non-preferred aspect ratios get a border on all sides.
   gfx::Size idealSize = gfx::Size(
       kNotificationPreferredImageWidth, kNotificationPreferredImageHeight);
-  gfx::Size scaledSize = message_center::GetImageSizeForWidth(
-      kNotificationPreferredImageWidth, notificationImage.Size());
+  gfx::Size scaledSize = message_center::GetImageSizeForContainerSize(
+      idealSize, notificationImage.Size());
   if (scaledSize != idealSize) {
     NSSize borderSize =
         NSMakeSize(kNotificationImageBorderSize, kNotificationImageBorderSize);

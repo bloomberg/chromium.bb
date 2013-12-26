@@ -169,14 +169,15 @@ views::View* MakeNotificationImage(const gfx::Image& image, gfx::Size size) {
   container->set_background(views::Background::CreateSolidBackground(
       message_center::kImageBackgroundColor));
 
-  views::View* proportional_image_view =
-      new message_center::ProportionalImageView(image.AsImageSkia());
-
   gfx::Size ideal_size(
       message_center::kNotificationPreferredImageWidth,
       message_center::kNotificationPreferredImageHeight);
-  gfx::Size scaled_size = message_center::GetImageSizeForWidth(
-      message_center::kNotificationPreferredImageWidth, image.Size());
+  gfx::Size scaled_size =
+      message_center::GetImageSizeForContainerSize(ideal_size, image.Size());
+
+  views::View* proportional_image_view =
+      new message_center::ProportionalImageView(image.AsImageSkia(),
+                                                ideal_size);
 
   // This calculation determines that the new image would have the correct
   // height for width.
@@ -404,7 +405,8 @@ NotificationView::NotificationView(MessageCenterController* controller,
     icon_view->SetVerticalAlignment(views::ImageView::CENTER);
     icon_view_ = icon_view;
   } else {
-    icon_view_ = new ProportionalImageView(icon);
+    icon_view_ =
+        new ProportionalImageView(icon, gfx::Size(kIconSize, kIconSize));
   }
 
   icon_view_->set_background(
