@@ -5,6 +5,161 @@
 'use strict';
 
 /**
+ * Item element of the progress center.
+ * @param {HTMLDocument} document Document which the new item belongs to.
+ * @constructor
+ */
+function ProgressCenterItemElement(document) {
+  var label = document.createElement('label');
+  label.className = 'label';
+
+  var progressBarIndicator = document.createElement('div');
+  progressBarIndicator.className = 'progress-track';
+
+  var progressBar = document.createElement('div');
+  progressBar.className = 'progress-bar';
+  progressBar.appendChild(progressBarIndicator);
+
+  var cancelButton = document.createElement('button');
+  cancelButton.className = 'cancel';
+  cancelButton.setAttribute('tabindex', '-1');
+
+  var progressFrame = document.createElement('div');
+  progressFrame.className = 'progress-frame';
+  progressFrame.appendChild(progressBar);
+  progressFrame.appendChild(cancelButton);
+
+  var itemElement = document.createElement('li');
+  itemElement.appendChild(label);
+  itemElement.appendChild(progressFrame);
+
+  return ProgressCenterItemElement.decorate(itemElement);
+}
+
+/**
+ * Event triggered when the item should be dismissed.
+ * @type {string}
+ * @const
+ */
+ProgressCenterItemElement.DISMISS_EVENT = 'dismiss';
+
+/**
+ * Decoreates the given element as a progress item.
+ * @param {HTMLElement} element Item to be decoreated.
+ * @return {ProgressCenterItemElement} Decoreated item.
+ */
+ProgressCenterItemElement.decorate = function(element) {
+  element.__proto__ = ProgressCenterItemElement.prototype;
+  element.state_ = ProgressItemState.PROGRESSING;
+  element.timeoutId_ = null;
+  element.track_ = element.querySelector('.progress-track');
+  element.track_.addEventListener('webkitTransitionEnd',
+                                  element.onTransitionEnd_.bind(element));
+  element.nextWidthRate_ = null;
+  element.timeoutId_ = null;
+  return element;
+};
+
+ProgressCenterItemElement.prototype = {
+  __proto__: HTMLDivElement.prototype,
+  get animated() {
+    return !!(this.timeoutId_ || this.track_.classList.contains('animated'));
+  }
+};
+
+/**
+ * Updates the element view according to the item.
+ * @param {ProgressCenterItem} item Item to be referred for the update.
+ */
+ProgressCenterItemElement.prototype.update = function(item) {
+  // If the current item is not progressing, the item no longer receives further
+  // update.
+  if (this.state_ === ProgressItemState.COMPLETED ||
+      this.state_ === ProgressItemState.ERROR ||
+      this.state_ === ProgressItemState.CANCELED)
+    return;
+
+  // Set element attributes.
+  this.state_ = item.state;
+  this.setAttribute('data-progress-id', item.id);
+  this.classList.toggle('error', item.state === ProgressItemState.ERROR);
+  this.classList.toggle('cancelable', item.cancelable);
+
+  // Set label.
+  if (this.state_ === ProgressItemState.PROGRESSING ||
+      this.state_ === ProgressItemState.ERROR) {
+    this.querySelector('label').textContent = item.message;
+  } else if (this.state_ === ProgressItemState.CANCELED) {
+    this.querySelector('label').textContent = '';
+  }
+
+  // Set track width.
+  this.applyTrackWidth_(item.progressRateInPercent);
+
+  // Check dismiss.
+  this.checkDismiss_();
+};
+
+/**
+ * Resets the item.
+ */
+ProgressCenterItemElement.prototype.reset = function() {
+  this.track_.hidden = true;
+  this.track_.width = '';
+  this.state_ = ProgressItemState.PROGRESSING;
+};
+
+/**
+ * Applies track width.
+ * @param {number} nextWidthRate Next track width rate in percent.
+ * @private
+ */
+ProgressCenterItemElement.prototype.applyTrackWidth_ = function(nextWidthRate) {
+  this.nextWidthRate_ = nextWidthRate;
+  this.timeoutId_ = this.timeoutId_ || setTimeout(function() {
+    this.timeoutId_ = null;
+    var currentWidthRate = parseInt(this.track_.style.width);
+    if (currentWidthRate === this.nextWidthRate_ &&
+        this.track_.classList.contains('animated'))
+      return;
+    var animated = !isNaN(currentWidthRate) && !isNaN(this.nextWidthRate_) &&
+      currentWidthRate < this.nextWidthRate_;
+    this.track_.hidden = false;
+    this.track_.style.width = this.nextWidthRate_ + '%';
+    this.track_.classList.toggle('animated', animated);
+    this.checkDismiss_();
+  }.bind(this));
+};
+
+/**
+ * Handles transition end events.
+ * @param {Event} event Transition end event.
+ * @private
+ */
+ProgressCenterItemElement.prototype.onTransitionEnd_ = function(event) {
+  if (event.propertyName !== 'width')
+    return;
+  this.track_.classList.remove('animated');
+  this.checkDismiss_();
+};
+
+/**
+ * Checks if the item should be dismissed or not.
+ * If true, resets the item and publish a dismiss event.
+ * @private
+ */
+ProgressCenterItemElement.prototype.checkDismiss_ = function() {
+  if (this.animated ||
+      this.state_ === ProgressItemState.PROGRESSING ||
+      this.state_ === ProgressItemState.ERROR)
+    return;
+
+  this.reset();
+  this.dispatchEvent(new Event(ProgressCenterItemElement.DISMISS_EVENT,
+                               {bubbles: true}));
+};
+
+/**
  * Progress center panel.
  *
  * @param {HTMLElement} element DOM Element of the process center panel.
@@ -13,28 +168,29 @@
 var ProgressCenterPanel = function(element) {
   /**
    * Root element of the progress center.
-   * @type {!HTMLElement}
+   * @type {HTMLElement}
    * @private
    */
   this.element_ = element;
 
   /**
    * Open view containing multiple progress items.
-   * @type {!HTMLElement}
+   * @type {HTMLElement}
    * @private
    */
   this.openView_ = this.element_.querySelector('#progress-center-open-view');
 
   /**
    * Close view that is a summarized progress item.
-   * @type {!HTMLElement}
+   * @type {HTMLElement}
    * @private
    */
-  this.closeView_ = this.element_.querySelector('#progress-center-close-view');
+  this.closeView_ = ProgressCenterItemElement.decorate(
+      this.element_.querySelector('#progress-center-close-view'));
 
   /**
    * Toggle animation rule of the progress center.
-   * @type {!CSSKeyFrameRule}
+   * @type {CSSKeyFrameRule}
    * @private
    */
   this.toggleAnimation_ = ProgressCenterPanel.getToggleAnimation_(
@@ -61,48 +217,8 @@ var ProgressCenterPanel = function(element) {
   element.addEventListener(
       'webkitAnimationEnd', this.onToggleAnimationEnd_.bind(this));
   element.addEventListener(
-      'webkitTransitionEnd', this.onItemTransitionEnd_.bind(this));
-};
-
-/**
- * Updates attributes of the item element.
- * @param {!HTMLElement} element Element to be updated.
- * @param {!ProgressCenterItem} item Progress center item.
- * @private
- */
-ProgressCenterPanel.updateItemElement_ = function(element, item) {
-  // Sets element attributes.
-  element.setAttribute('data-progress-id', item.id);
-  element.classList.toggle('error', item.state === ProgressItemState.ERROR);
-  element.classList.toggle('cancelable', item.cancelable);
-
-  // Only when the previousWidthRate is not NaN (when style width is already
-  // set) and the progress rate increases, we use transition animation.
-  var previousWidthRate =
-      parseInt(element.querySelector('.progress-track').style.width);
-  var targetWidthRate = item.progressRateInPercent;
-  var animation = !isNaN(previousWidthRate) &&
-      previousWidthRate < targetWidthRate;
-  if (item.state === ProgressItemState.COMPLETED && animation) {
-    // The attribute pre-complete means that the actual operation is already
-    // done but the UI transition of progress bar is not complete.
-    element.setAttribute('pre-complete', '');
-  } else {
-    element.querySelector('label').textContent = item.message;
-  }
-
-  // To commit the property change and to trigger the transition even if the
-  // change is done synchronously, assign the width value asynchronously.
-  var updateTrackWidth = function() {
-    var track = element.querySelector('.progress-track');
-    track.classList.toggle('animated', animation);
-    track.style.width = targetWidthRate + '%';
-    track.hidden = false;
-  };
-  if (animation)
-    setTimeout(updateTrackWidth);
-  else
-    updateTrackWidth();
+      ProgressCenterItemElement.DISMISS_EVENT,
+      this.onItemDismiss_.bind(this));
 };
 
 /**
@@ -134,44 +250,32 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
   if (this.resetRequested_)
     this.reset(true);
 
-  var itemElement = this.getItemElement_(item.id);
-
   // Check whether the item should be displayed or not by referring its state.
+  var itemElement = this.getItemElement_(item.id);
   switch (item.state) {
     // Should show the item.
     case ProgressItemState.PROGRESSING:
     case ProgressItemState.ERROR:
       // If the item has not been added yet, create a new element and add it.
       if (!itemElement) {
-        itemElement = this.createNewItemElement_();
+        itemElement =
+            new ProgressCenterItemElement(this.element_.ownerDocument);
         this.openView_.insertBefore(itemElement, this.openView_.firstNode);
       }
-
-      // Update the element by referring the item model.
-      ProgressCenterPanel.updateItemElement_(itemElement, item);
       this.element_.hidden = false;
       break;
 
     // Should not show the item.
     case ProgressItemState.COMPLETED:
     case ProgressItemState.CANCELED:
-      // If itemElement is not shown, just break.
+      // If itemElement is not shown, just return.
       if (!itemElement)
-        break;
-
-      // If the item is complete state, once update it because it may turn to
-      // have the pre-complete attribute.
-      if (item.state === ProgressItemState.COMPLETED)
-        ProgressCenterPanel.updateItemElement_(itemElement, item);
-
-      // If the item has the pre-complete attribute, keep showing it. Otherwise,
-      // just remove it.
-      if (item.state !== ProgressItemState.COMPLETED ||
-          !itemElement.hasAttribute('pre-complete')) {
-        this.openView_.removeChild(itemElement);
-      }
+        return;
       break;
   }
+
+  // Update the element by referring the item model.
+  itemElement.update(item);
 };
 
 /**
@@ -181,7 +285,7 @@ ProgressCenterPanel.prototype.updateItem = function(item) {
  */
 ProgressCenterPanel.prototype.updateCloseView = function(summarizedItem) {
   this.closeView_.classList.toggle('single', !summarizedItem.summarized);
-  ProgressCenterPanel.updateItemElement_(this.closeView_, summarizedItem);
+  this.closeView_.update(summarizedItem);
 };
 
 /**
@@ -190,9 +294,18 @@ ProgressCenterPanel.prototype.updateCloseView = function(summarizedItem) {
  *    transition of progress bar. False otherwise. False is default.
  */
 ProgressCenterPanel.prototype.reset = function(opt_force) {
-  if (!opt_force && this.element_.querySelector('[pre-complete]')) {
-    this.resetRequested_ = true;
-    return;
+  // If an item is still animated, pending the reset.
+  if (!opt_force) {
+    var items = this.element_.querySelectorAll('li');
+    var itemAnimated = false;
+    for (var i = 0; i < items.length; i++) {
+      itemAnimated = itemAnimated || items[i].animated;
+    }
+
+    if (itemAnimated) {
+      this.resetRequested_ = true;
+      return;
+    }
   }
 
   // Clear the flag.
@@ -202,11 +315,10 @@ ProgressCenterPanel.prototype.reset = function(opt_force) {
   this.openView_.innerHTML = '';
 
   // Clear track width of close view.
-  this.closeView_.querySelector('.progress-track').style.width = '';
+  this.closeView_.reset();
 
   // Hide the progress center.
   this.element_.hidden = true;
-  this.closeView_.querySelector('.progress-track').hidden = true;
   this.element_.classList.remove('opened');
 };
 
@@ -219,38 +331,6 @@ ProgressCenterPanel.prototype.reset = function(opt_force) {
 ProgressCenterPanel.prototype.getItemElement_ = function(id) {
   var query = 'li[data-progress-id="' + id + '"]';
   return this.openView_.querySelector(query);
-};
-
-/**
- * Creates an item element.
- * @return {HTMLElement} Created item element.
- * @private
- */
-ProgressCenterPanel.prototype.createNewItemElement_ = function() {
-  var label = this.element_.ownerDocument.createElement('label');
-  label.className = 'label';
-
-  var progressBarIndicator = this.element_.ownerDocument.createElement('div');
-  progressBarIndicator.className = 'progress-track';
-
-  var progressBar = this.element_.ownerDocument.createElement('div');
-  progressBar.className = 'progress-bar';
-  progressBar.appendChild(progressBarIndicator);
-
-  var cancelButton = this.element_.ownerDocument.createElement('button');
-  cancelButton.className = 'cancel';
-  cancelButton.setAttribute('tabindex', '-1');
-
-  var progressFrame = this.element_.ownerDocument.createElement('div');
-  progressFrame.className = 'progress-frame';
-  progressFrame.appendChild(progressBar);
-  progressFrame.appendChild(cancelButton);
-
-  var itemElement = this.element_.ownerDocument.createElement('li');
-  itemElement.appendChild(label);
-  itemElement.appendChild(progressFrame);
-
-  return itemElement;
 };
 
 /**
@@ -272,14 +352,9 @@ ProgressCenterPanel.prototype.onToggleAnimationEnd_ = function(event) {
  * @param {Event} event Transition end event.
  * @private
  */
-ProgressCenterPanel.prototype.onItemTransitionEnd_ = function(event) {
-  var itemElement = event.target.parentNode.parentNode.parentNode;
-  if (!itemElement.hasAttribute('pre-complete') ||
-      event.propertyName !== 'width')
-    return;
-  if (itemElement !== this.closeView_)
-    this.openView_.removeChild(itemElement);
-  itemElement.removeAttribute('pre-complete');
+ProgressCenterPanel.prototype.onItemDismiss_ = function(event) {
+  if (event.target !== this.closeView_)
+    this.openView_.removeChild(event.target);
 
   if (this.resetRequested_)
     this.reset();

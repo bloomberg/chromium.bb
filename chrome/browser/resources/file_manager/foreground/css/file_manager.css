@@ -1878,7 +1878,8 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 /* Progress center */
 
 @-webkit-keyframes progress-center-toggle {
-  /* Height values of each frame are set by script. */
+  /* Height values of each frame are set by script.
+   * Keep the animation sync with JS. */
   from {
   }
   to {

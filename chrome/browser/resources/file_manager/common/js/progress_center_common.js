@@ -131,10 +131,18 @@ ProgressCenterItem.prototype = {
 
   /**
    * Gets progress rate in percent.
+   *
+   * If the current state is canceled or completed, it always returns 0 or 100
+   * respectively.
+   *
    * @return {number} Progress rate in percent.
    */
   get progressRateInPercent() {
-    return ~~(100 * this.progressValue / this.progressMax);
+    switch (this.state) {
+      case ProgressItemState.CANCELED: return 0;
+      case ProgressItemState.COMPLETED: return 100;
+      default: return ~~(100 * this.progressValue / this.progressMax);
+    }
   },
 
   /**
