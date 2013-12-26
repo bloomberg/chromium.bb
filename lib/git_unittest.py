@@ -106,6 +106,37 @@ class NormalizeRefTest(cros_test_lib.TestCase):
     self._TestNormalize(functor, tests)
 
 
+class ProjectCheckoutTest(cros_test_lib.TestCase):
+  """Tests for git.ProjectCheckout"""
+
+  def setUp(self):
+    self.fake_unversioned_patchable = git.ProjectCheckout(
+        dict(name='chromite',
+             path='src/chromite',
+             revision='remotes/for/master'))
+    self.fake_unversioned_unpatchable = git.ProjectCheckout(
+        dict(name='chromite',
+             path='src/platform/somethingsomething/chromite',
+             # Pinned to a SHA1.
+             revision='1deadbeeaf1deadbeeaf1deadbeeaf1deadbeeaf'))
+    self.fake_versioned_patchable = git.ProjectCheckout(
+        dict(name='chromite',
+             path='src/chromite',
+             revision='1deadbeeaf1deadbeeaf1deadbeeaf1deadbeeaf',
+             upstream='remotes/for/master'))
+    self.fake_versioned_unpatchable = git.ProjectCheckout(
+        dict(name='chromite',
+             path='src/chromite',
+             revision='1deadbeeaf1deadbeeaf1deadbeeaf1deadbeeaf',
+             upstream='1deadbeeaf1deadbeeaf1deadbeeaf1deadbeeaf'))
+
+  def testIsPatchable(self):
+    self.assertTrue(self.fake_unversioned_patchable.IsPatchable())
+    self.assertFalse(self.fake_unversioned_unpatchable.IsPatchable())
+    self.assertTrue(self.fake_versioned_patchable.IsPatchable())
+    self.assertFalse(self.fake_versioned_unpatchable.IsPatchable())
+
+
 class GitPushTest(cros_test_lib.MockTestCase):
   """Tests for git.GitPush function."""
 

@@ -156,7 +156,7 @@ def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
     # Get the path to the first checkout associated with this change. Since
     # all of the checkouts share git objects, it doesn't matter which checkout
     # we pick.
-    path = manifest.FindCheckouts(patch.project)[0]['path']
+    path = manifest.FindCheckouts(patch.project, only_patchable=True)[0]['path']
 
     reference = os.path.join(constants.SOURCE_ROOT, path)
     if not os.path.isdir(reference):
@@ -192,8 +192,8 @@ def _ManifestContainsAllPatches(manifest, patches):
   """Returns true if the given manifest contains all the patches.
 
   Args:
-    manifest - an instance of git.Manifest
-    patches - a collection GerritPatch objects.
+    manifest: an instance of git.Manifest
+    patches: a collection of GerritPatch objects.
   """
   for patch in patches:
     if not manifest.FindCheckouts(patch.project):

@@ -94,6 +94,7 @@ class ApplyPatchException(PatchException):
 
 
 class PatchAlreadyApplied(ApplyPatchException):
+  """Exception thrown if we fail to apply an already applied patch"""
 
   def ShortExplanation(self):
     return 'conflicted with %s because it\'s already committed.' % (
@@ -104,7 +105,8 @@ class DependencyError(PatchException):
   """Thrown when a change cannot be applied due to a failure in a dependency."""
 
   def __init__(self, patch, error):
-    """
+    """Initialize the error object.
+
     Args:
       patch: The GitRepoPatch instance that this exception concerns.
       error: A PatchException object that can be stringified to describe
@@ -369,10 +371,12 @@ def FormatFullChangeId(text, force_internal=False, force_external=False,
   guaranteed to be unique.
 
   Args:
-    text, force_internal, force_external: Refer to FormatChangeId docstring.
+    text: Refer to FormatChangeId docstring.
+    force_internal: Refer to FormatChangeId docstring.
+    force_external: Refer to FormatChangeId docstring.
     strict: If True, then it's an error if text starts with '*' to signify an
-    internal change; and the Change-Id portion of text must meet the 'strict'
-    criteria of FormatChangeId.
+      internal change; and the Change-Id portion of text must meet the 'strict'
+      criteria of FormatChangeId.
   """
   err_str = "FormatFullChangeId invoked w/ a malformed change-id: %r" % text
   prefix, text = _StripPrefix(text, strict, force_external, force_internal)
@@ -396,8 +400,10 @@ def FormatPatchDep(text, force_internal=False, force_external=False,
   example).
 
   Args:
-    force_internal, force_external, strict: See FormatChangeId for
-      details.
+    text: Refer to FormatChangeId docstring.
+    force_internal: Refer to FormatChangeId docstring.
+    force_external: Refer to FormatChangeId docstring.
+    strict: See FormatChangeId for details.
     sha1: If False, throw ValueError if the dep is a sha1.
     changeId: If False, throw ValueError if the dep is a ChangeId.
     gerrit_number: If False, throw ValueError if the dep is a gerrit number.
@@ -493,6 +499,7 @@ class GitRepoPatch(object):
       project: The name of the project that the patch applies to.
       ref: The refspec to pull from the git repo.
       tracking_branch:  The remote branch of the project the patch applies to.
+      remote: The remote git instance path.
       sha1: The sha1 of the commit, if known.  This *must* be accurate.  Can
         be None if not yet known- in which case Fetch will update it.
       change_id: If given, this must be a strict gerrit format (external format)
@@ -914,7 +921,8 @@ class GitRepoPatch(object):
       ChangeMatchesMultipleCheckouts if there are multiple checkouts that
       match this change.
     """
-    checkouts = manifest.FindCheckouts(self.project, self.tracking_branch)
+    checkouts = manifest.FindCheckouts(self.project, self.tracking_branch,
+                                       only_patchable=True)
     if len(checkouts) != 1:
       if len(checkouts) > 1:
         raise ChangeMatchesMultipleCheckouts(self)
@@ -1382,7 +1390,7 @@ def PrepareLocalPatches(manifest, patches):
   for patch in patches:
     project, branch = patch.split(':')
     project_patch_info = []
-    for checkout in manifest.FindCheckouts(project):
+    for checkout in manifest.FindCheckouts(project, only_patchable=True):
       tracking_branch = checkout['tracking_branch']
       project_dir = checkout.GetPath(absolute=True)
       remote = checkout['remote']
