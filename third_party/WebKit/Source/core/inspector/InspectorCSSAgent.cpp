@@ -1443,11 +1443,12 @@ void InspectorCSSAgent::collectAllStyleSheets(Vector<InspectorStyleSheet*>& resu
 {
     Vector<Document*> documents = m_domAgent->documents();
     for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it) {
-        StyleSheetList* list = (*it)->styleSheets();
-        for (unsigned i = 0; i < list->length(); ++i) {
-            StyleSheet* styleSheet = list->item(i);
+        Document* document = *it;
+        const Vector<RefPtr<StyleSheet> > activeStyleSheets = document->styleEngine()->activeStyleSheetsForInspector();
+        for (Vector<RefPtr<StyleSheet> >::const_iterator it = activeStyleSheets.begin(); it != activeStyleSheets.end(); ++it) {
+            RefPtr<StyleSheet> styleSheet = *it;
             if (styleSheet->isCSSStyleSheet())
-                collectStyleSheets(toCSSStyleSheet(styleSheet), result);
+                collectStyleSheets(toCSSStyleSheet(styleSheet.get()), result);
         }
     }
 }

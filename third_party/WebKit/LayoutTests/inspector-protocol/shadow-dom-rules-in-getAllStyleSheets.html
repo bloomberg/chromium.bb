@@ -1,0 +1,47 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script>
+function pageLoaded()
+{
+    var template = document.querySelector('#tmpl');
+    var root = document.querySelector('#host').webkitCreateShadowRoot();
+    root.appendChild(template.content.cloneNode(true));
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.sendCommand("CSS.enable", {}, step1);
+    
+    function step1()
+    {
+        InspectorTest.sendCommand("CSS.getAllStyleSheets", {}, step2);
+    }
+    
+    function step2(payload)
+    {
+        var headers = payload.result.headers
+        InspectorTest.log("Loaded style sheets count: " + headers.length);
+        var styleSheetHeader = headers[0];
+        InspectorTest.sendCommand("CSS.getStyleSheetText", {"styleSheetId": styleSheetHeader.styleSheetId}, step3);
+    }
+    
+    function step3(payload)
+    {
+        InspectorTest.log("Loaded style sheet text: " + payload.result.text);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="pageLoaded()">
+<p>This test checks that style sheets hosted inside shadow roots are reported in CSS.getAllStyleSheets protocol method.</p>
+<div id="host"></div>
+<template id="tmpl">
+    <style> .red { color: red; } </style>
+    <div id="inner" class="red">hi!</div>
+</template>
+</body>
+</html>

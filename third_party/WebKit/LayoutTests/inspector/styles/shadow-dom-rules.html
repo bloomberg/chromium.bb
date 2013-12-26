@@ -27,7 +27,6 @@ function test()
         function testDumpStyles(next)
         {
             InspectorTest.dumpSelectedElementStyles(true);
-            WebInspector.settings.showShadowDOM.set(false);
             next();
         }
     ]);
