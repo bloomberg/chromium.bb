@@ -16,7 +16,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
@@ -95,8 +95,8 @@ LoginHandler::LoginHandler(net::AuthChallengeInfo* auth_info,
       BrowserThread::UI, FROM_HERE,
       base::Bind(&LoginHandler::AddObservers, this));
 
-  if (!ResourceRequestInfo::ForRequest(request_)->GetAssociatedRenderView(
-          &render_process_host_id_,  &tab_contents_id_)) {
+  if (!ResourceRequestInfo::ForRequest(request_)->GetAssociatedRenderFrame(
+          &render_process_host_id_,  &render_frame_id_)) {
     NOTREACHED();
   }
 }
@@ -123,8 +123,11 @@ void LoginHandler::SetPasswordManager(PasswordManager* password_manager) {
 WebContents* LoginHandler::GetWebContentsForLogin() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  return tab_util::GetWebContentsByID(render_process_host_id_,
-                                      tab_contents_id_);
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      render_process_host_id_, render_frame_id_);
+  if (!rfh)
+    return NULL;
+  return WebContents::FromRenderFrameHost(rfh);
 }
 
 void LoginHandler::SetAuth(const base::string16& username,

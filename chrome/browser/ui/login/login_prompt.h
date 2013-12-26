@@ -146,7 +146,7 @@ class LoginHandler : public content::ResourceDispatcherHostLoginDelegate,
 
   // Cached from the net::URLRequest, in case it goes NULL on us.
   int render_process_host_id_;
-  int tab_contents_id_;
+  int render_frame_id_;
 
   // If not null, points to a model we need to notify of our own destruction
   // so it doesn't try and access this when its too late.
