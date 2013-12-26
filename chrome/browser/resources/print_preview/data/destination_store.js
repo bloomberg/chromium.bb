@@ -760,8 +760,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrivetPrinterAdded_: function(event) {
-        this.insertDestinations(
-            print_preview.PrivetDestinationParser.parse(event.printer));
+      this.insertDestinations(
+          print_preview.PrivetDestinationParser.parse(event.printer));
     },
 
     /**

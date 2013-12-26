@@ -110,8 +110,7 @@ cr.define('print_preview', function() {
         } else {
           offlineMessageId = 'offline';
         }
-        var offlineStatusEl = this.getElement().querySelector(
-            '.offline-status');
+        var offlineStatusEl = this.getChildElement('.offline-status');
         offlineStatusEl.textContent = localStrings.getString(offlineMessageId);
         setIsVisible(offlineStatusEl, true);
       }
@@ -123,13 +122,11 @@ cr.define('print_preview', function() {
     initializeRegistrationPromoElement_: function() {
       if (this.destination_.connectionStatus ==
           print_preview.Destination.ConnectionStatus.UNREGISTERED) {
-        var registerBtnEl = this.getElement().querySelector(
-            '.register-promo-button');
+        var registerBtnEl = this.getChildElement('.register-promo-button');
         registerBtnEl.addEventListener('click',
                                        this.onRegisterPromoClicked_.bind(this));
 
-        var registerPromoEl = this.getElement().querySelector(
-            '.register-promo');
+        var registerPromoEl = this.getChildElement('.register-promo');
         setIsVisible(registerPromoEl, true);
       }
     },
@@ -153,7 +150,7 @@ cr.define('print_preview', function() {
         }
         this.fedexTos_.setIsVisible(true);
       } else if (this.destination_.connectionStatus !=
-          print_preview.Destination.ConnectionStatus.UNREGISTERED) {
+                     print_preview.Destination.ConnectionStatus.UNREGISTERED) {
         var selectEvt = new Event(DestinationListItem.EventType.SELECT);
         selectEvt.destination = this.destination_;
         this.eventTarget_.dispatchEvent(selectEvt);
