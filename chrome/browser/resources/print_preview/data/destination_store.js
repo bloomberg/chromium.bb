@@ -146,6 +146,15 @@ cr.define('print_preview', function() {
      */
     this.hasLoadedAllPrivetDestinations_ = false;
 
+
+    /**
+     * ID of a timeout after the start of a privet search to end that privet
+     * search.
+     * @type {?number}
+     * @private
+     */
+    this.privetSearchTimeout_ = null;
+
     this.addEventListeners_();
     this.reset_();
   };
@@ -177,6 +186,14 @@ cr.define('print_preview', function() {
    * @private
    */
   DestinationStore.AUTO_SELECT_TIMEOUT_ = 15000;
+
+  /**
+   * Amount of time spent searching for privet destination, in milliseconds.
+   * @type {number}
+   * @const
+   * @private
+   */
+  DestinationStore.PRIVET_SEARCH_DURATION_ = 2000;
 
   /**
    * Creates a local PDF print destination.
@@ -503,6 +520,9 @@ cr.define('print_preview', function() {
         this.nativeLayer_.startGetPrivetDestinations();
         cr.dispatchSimpleEvent(
             this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
+        this.privetSearchTimeout_ = setTimeout(
+            this.endPrivetPrinterSearch_.bind(this),
+            DestinationStore.PRIVET_SEARCH_DURATION_);
       }
     },
 
@@ -519,6 +539,19 @@ cr.define('print_preview', function() {
             this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
       }
     },
+
+    /**
+     * Called when the search for Privet printers is done.
+     * @private
+     */
+    endPrivetPrinterSearch_: function() {
+      this.nativeLayer_.stopGetPrivetDestinations();
+      this.isPrivetDestinationSearchInProgress_ = false;
+      this.hasLoadedAllPrivetDestinations_ = true;
+      cr.dispatchSimpleEvent(
+          this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
+    },
+
 
     /**
      * Inserts a destination into the store without dispatching any events.
@@ -569,10 +602,6 @@ cr.define('print_preview', function() {
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRIVET_PRINTER_CHANGED,
           this.onPrivetPrinterAdded_.bind(this));
-      this.tracker_.add(
-          this.nativeLayer_,
-          print_preview.NativeLayer.EventType.PRIVET_PRINTER_SEARCH_DONE,
-          this.onPrivetPrinterSearchDone_.bind(this));
       this.tracker_.add(
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRIVET_CAPABILITIES_SET,
@@ -748,17 +777,6 @@ cr.define('print_preview', function() {
         dest.capabilities = event.capabilities;
         this.updateDestination(dest);
       }, this);
-    },
-
-    /**
-     * Called when the search for Privet printers is done.
-     * @private
-     */
-    onPrivetPrinterSearchDone_: function() {
-      this.isPrivetDestinationSearchInProgress_ = false;
-      this.hasLoadedAllPrivetDestinations_ = true;
-      cr.dispatchSimpleEvent(
-          this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
     },
 
     /**

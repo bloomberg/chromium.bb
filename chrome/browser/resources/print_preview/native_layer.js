@@ -43,8 +43,6 @@ cr.define('print_preview', function() {
     global['onDidGetAccessToken'] = this.onDidGetAccessToken_.bind(this);
     global['autoCancelForTesting'] = this.autoCancelForTesting_.bind(this);
     global['onPrivetPrinterChanged'] = this.onPrivetPrinterChanged_.bind(this);
-    global['onPrivetPrinterSearchDone'] =
-      this.onPrivetPrinterSearchDone_.bind(this);
     global['onPrivetCapabilitiesSet'] =
       this.onPrivetCapabilitiesSet_.bind(this);
     global['onPrivetPrintFailed'] = this.onPrivetPrintFailed_.bind(this);
@@ -77,8 +75,6 @@ cr.define('print_preview', function() {
     PRINT_TO_CLOUD: 'print_preview.NativeLayer.PRINT_TO_CLOUD',
     SETTINGS_INVALID: 'print_preview.NativeLayer.SETTINGS_INVALID',
     PRIVET_PRINTER_CHANGED: 'print_preview.NativeLayer.PRIVET_PRINTER_CHANGED',
-    PRIVET_PRINTER_SEARCH_DONE:
-        'print_preview.NativeLayer.PRIVET_PRINTER_SEARCH_DONE',
     PRIVET_CAPABILITIES_SET:
         'print_preview.NativeLayer.PRIVET_CAPABILITIES_SET',
     PRIVET_PRINT_FAILED: 'print_preview.NativeLayer.PRIVET_PRINT_FAILED'
@@ -143,6 +139,14 @@ cr.define('print_preview', function() {
      */
     startGetPrivetDestinations: function() {
       chrome.send('getPrivetPrinters');
+    },
+
+    /**
+     * Requests that the privet print stack stop searching for privet print
+     * destinations.
+     */
+    stopGetPrivetDestinations: function() {
+      chrome.send('stopGetPrivetPrinters');
     },
 
     /**
@@ -639,16 +643,6 @@ cr.define('print_preview', function() {
             new Event(NativeLayer.EventType.PRIVET_PRINTER_CHANGED);
       privetPrinterChangedEvent.printer = printer;
       this.dispatchEvent(privetPrinterChangedEvent);
-    },
-
-    /**
-     * Called when the privet printer search is over.
-     * @private
-     */
-    onPrivetPrinterSearchDone_: function() {
-      var privetPrinterSearchDoneEvent =
-            new Event(NativeLayer.EventType.PRIVET_PRINTER_SEARCH_DONE);
-      this.dispatchEvent(privetPrinterSearchDoneEvent);
     },
 
     /**

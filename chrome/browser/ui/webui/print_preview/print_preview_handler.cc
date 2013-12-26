@@ -184,10 +184,6 @@ const char kCUPSsColorModel[] = "cupsColorModel";
 const char kCUPSsBWModel[] = "cupsBWModel";
 #endif
 
-#if defined(ENABLE_MDNS)
-const int kPrivetPrinterSearchDurationSeconds = 3;
-#endif
-
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
 base::DictionaryValue* GetSettingsDictionary(const base::ListValue* args) {
@@ -548,6 +544,9 @@ void PrintPreviewHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("getPrivetPrinters",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinters,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("stopGetPrivetPrinters",
+      base::Bind(&PrintPreviewHandler::HandleStopGetPrivetPrinters,
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getPrivetPrinterCapabilities",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinterCapabilities,
                  base::Unretained(this)));
@@ -589,18 +588,21 @@ void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
         profile->GetRequestContext(),
         this));
     printer_lister_->Start();
-
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&PrintPreviewHandler::StopPrivetPrinterSearch,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(kPrivetPrinterSearchDurationSeconds));
   }
 #endif
 
   if (!PrivetPrintingEnabled()) {
     web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
   }
+}
+
+void PrintPreviewHandler::HandleStopGetPrivetPrinters(
+    const base::ListValue* args) {
+#if defined(ENABLE_MDNS)
+  if (PrivetPrintingEnabled()) {
+    printer_lister_->Stop();
+  }
+#endif
 }
 
 void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
@@ -1390,11 +1392,6 @@ void PrintPreviewHandler::LocalPrinterRemoved(const std::string& name) {
 }
 
 void PrintPreviewHandler::LocalPrinterCacheFlushed() {
-}
-
-void PrintPreviewHandler::StopPrivetPrinterSearch() {
-  printer_lister_->Stop();
-  web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
 }
 
 void PrintPreviewHandler::PrivetCapabilitiesUpdateClient(

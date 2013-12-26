@@ -123,6 +123,9 @@ class PrintPreviewHandler
   // Starts getting all local privet printers. |arg| is unused.
   void HandleGetPrivetPrinters(const base::ListValue* args);
 
+  // Stops getting all local privet printers. |arg| is unused.
+  void HandleStopGetPrivetPrinters(const base::ListValue* args);
+
   // Asks the initiator renderer to generate a preview.  First element of |args|
   // is a job settings JSON string.
   void HandleGetPreview(const base::ListValue* args);
@@ -252,7 +255,6 @@ class PrintPreviewHandler
 #endif
 
 #if defined(ENABLE_MDNS)
-  void StopPrivetPrinterSearch();
   void PrivetCapabilitiesUpdateClient(
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
   void PrivetLocalPrintUpdateClient(
