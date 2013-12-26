@@ -23,7 +23,6 @@ class FilePath;
 }
 
 namespace gfx {
-class Font;
 class FontList;
 
 GFX_EXPORT extern const char kEllipsis[];
