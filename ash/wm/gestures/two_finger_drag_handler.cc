@@ -11,61 +11,56 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/wm/public/window_types.h"
 
 namespace {
 
-bool IsTopEdge(int component) {
-  return component == HTTOPLEFT ||
-         component == HTTOP ||
-         component == HTTOPRIGHT;
-}
+enum Edge {
+  TOP    = 1 << 0,
+  LEFT   = 1 << 1,
+  BOTTOM = 1 << 2,
+  RIGHT  = 1 << 3
+};
 
-bool IsBottomEdge(int component) {
-  return component == HTBOTTOMLEFT ||
-         component == HTBOTTOM ||
-         component == HTBOTTOMRIGHT;
-}
-
-bool IsRightEdge(int component) {
-  return component == HTTOPRIGHT ||
-         component == HTRIGHT ||
-         component == HTBOTTOMRIGHT;
-}
-
-bool IsLeftEdge(int component) {
-  return component == HTTOPLEFT ||
-         component == HTLEFT ||
-         component == HTBOTTOMLEFT;
-}
-
-bool IsSomeEdge(int component) {
-  switch (component) {
+// Returns the bitfield of Edge which corresponds to |hittest_component|.
+int GetEdges(int hittest_component) {
+  switch (hittest_component) {
     case HTTOPLEFT:
+      return TOP | LEFT;
     case HTTOP:
+      return TOP;
     case HTTOPRIGHT:
+      return TOP | RIGHT;
     case HTRIGHT:
+      return RIGHT;
+    case HTGROWBOX:
     case HTBOTTOMRIGHT:
+      return BOTTOM | RIGHT;
     case HTBOTTOM:
+      return BOTTOM;
     case HTBOTTOMLEFT:
+      return BOTTOM | LEFT;
     case HTLEFT:
-      return true;
+      return LEFT;
+    default:
+      return 0;
+  }
+}
+
+// Returns whether |window| can be moved via a two finger drag given
+// the hittest results of the two fingers.
+bool CanStartTwoFingerDrag(aura::Window* window,
+                           int hittest_component1,
+                           int hittest_component2) {
+  if (ash::wm::GetWindowState(window)->IsNormalShowState() &&
+      window->type() == ui::wm::WINDOW_TYPE_NORMAL) {
+    int edges1 = GetEdges(hittest_component1);
+    int edges2 = GetEdges(hittest_component2);
+    return (edges1 == edges2 || (edges1 & edges2) != 0);
   }
   return false;
-}
-
-// Returns whether a window-move should be allowed depending on the hit-test
-// results of the two fingers.
-bool WindowComponentsAllowMoving(int component1, int component2) {
-  return ((IsTopEdge(component1) && IsTopEdge(component2)) ||
-          (IsBottomEdge(component1) && IsBottomEdge(component2)) ||
-          (IsLeftEdge(component1) && IsLeftEdge(component2)) ||
-          (IsRightEdge(component1) && IsRightEdge(component2)) ||
-          (!IsSomeEdge(component1) && !IsSomeEdge(component2)));
 }
 
 }  // namespace
@@ -97,31 +92,29 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
 
   if (event.type() == ui::ET_GESTURE_BEGIN &&
       event.details().touch_points() == 2) {
-    if (!in_gesture_drag_ && window_state->IsNormalShowState() &&
-        target->type() == ui::wm::WINDOW_TYPE_NORMAL) {
-      if (WindowComponentsAllowMoving(first_finger_hittest_,
-          target->delegate()->GetNonClientComponent(event.location()))) {
-        in_gesture_drag_ = true;
-        target->AddObserver(this);
-        // Only create a new WindowResizer if one doesn't already exist
-        // for the target window.
-        window_resizer_ = CreateWindowResizer(
-            target,
-            event.details().bounding_box().CenterPoint(),
-            HTCAPTION,
-            aura::client::WINDOW_MOVE_SOURCE_TOUCH);
-        return true;
-      }
+    int second_finger_hittest =
+        target->delegate()->GetNonClientComponent(event.location());
+    if (!in_gesture_drag_ &&
+        CanStartTwoFingerDrag(
+            target, first_finger_hittest_, second_finger_hittest)) {
+      in_gesture_drag_ = true;
+      target->AddObserver(this);
+      // Only create a new WindowResizer if one doesn't already exist
+      // for the target window.
+      window_resizer_ = CreateWindowResizer(
+          target,
+          event.details().bounding_box().CenterPoint(),
+          HTCAPTION,
+          aura::client::WINDOW_MOVE_SOURCE_TOUCH);
+      return true;
     }
 
     return false;
   }
 
   if (!in_gesture_drag_) {
-    // Consume all two-finger gestures on a normal window.
-    return event.details().touch_points() == 2 &&
-           target->type() == ui::wm::WINDOW_TYPE_NORMAL &&
-           window_state->IsNormalShowState();
+    // Consume all two-finger gestures.
+    return event.details().touch_points() == 2;
   }
   // Since |in_gesture_drag_| is true a resizer was either created above or
   // it was created elsewhere and can be found in |window_state|.
@@ -158,10 +151,6 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
       } else if (event.details().swipe_down() && window_state->CanMinimize()) {
         window_state->Minimize();
       } else if (window_state->CanSnap()) {
-        ui::ScopedLayerAnimationSettings scoped_setter(
-            target->layer()->GetAnimator());
-        scoped_setter.SetPreemptionStrategy(
-            ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
         internal::SnapSizer::SnapWindow(window_state,
             event.details().swipe_left() ? internal::SnapSizer::LEFT_EDGE :
                                            internal::SnapSizer::RIGHT_EDGE);

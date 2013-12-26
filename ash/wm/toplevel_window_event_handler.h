@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/display_controller.h"
+#include "ash/wm/wm_types.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
@@ -62,10 +63,11 @@ class ASH_EXPORT ToplevelWindowEventHandler
     DRAG_REVERT
   };
 
-  void CreateScopedWindowResizer(aura::Window* window,
-                                 const gfx::Point& point_in_parent,
-                                 int window_component,
-                                 aura::client::WindowMoveSource source);
+  // Attempts to start a drag if one is not already in progress.
+  void AttemptToStartDrag(aura::Window* window,
+                          const gfx::Point& point_in_parent,
+                          int window_component,
+                          aura::client::WindowMoveSource source);
 
   // Finishes the drag.
   void CompleteDrag(DragCompletionStatus status, int event_flags);
@@ -85,6 +87,11 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Return value is returned by OnMouseEvent() above.
   void HandleMouseExited(aura::Window* target, ui::LocatedEvent* event);
 
+  // Sets |window|'s show type to |new_show_type|. Called after the drag has
+  // been completed for fling gestures.
+  void SetWindowShowTypeFromGesture(aura::Window* window,
+                                    wm::WindowShowType new_show_type);
+
   // Invoked from ScopedWindowResizer if the window is destroyed.
   void ResizerWindowDestroyed();
 
@@ -94,9 +101,8 @@ class ASH_EXPORT ToplevelWindowEventHandler
   // Are we running a nested message loop from RunMoveLoop().
   bool in_move_loop_;
 
-  // Was the move operation cancelled? Used only when the nested loop
-  // is used to move a window.
-  bool move_cancelled_;
+  // Whether the drag was reverted. Set by CompleteDrag().
+  bool drag_reverted_;
 
   // Is a window move/resize in progress because of gesture events?
   bool in_gesture_drag_;
