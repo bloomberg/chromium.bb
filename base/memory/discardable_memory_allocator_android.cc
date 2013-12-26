@@ -383,6 +383,8 @@ DiscardableMemoryAllocator::~DiscardableMemoryAllocator() {
 scoped_ptr<DiscardableMemory> DiscardableMemoryAllocator::Allocate(
     size_t size) {
   const size_t aligned_size = internal::AlignToNextPage(size);
+  if (!aligned_size)
+    return scoped_ptr<DiscardableMemory>();
   // TODO(pliard): make this function less naive by e.g. moving the free chunks
   // multiset to the allocator itself in order to decrease even more
   // fragmentation/speedup allocation. Note that there should not be more than a

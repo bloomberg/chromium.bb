@@ -46,6 +46,21 @@ TEST_F(DiscardableMemoryAllocatorTest, Basic) {
   WriteToDiscardableMemory(memory.get(), size);
 }
 
+TEST_F(DiscardableMemoryAllocatorTest, ZeroAllocationIsNotSupported) {
+  scoped_ptr<DiscardableMemory> memory(allocator_.Allocate(0));
+  ASSERT_FALSE(memory);
+}
+
+TEST_F(DiscardableMemoryAllocatorTest, TooLargeAllocationFails) {
+  const size_t max_allowed_allocation_size =
+      std::numeric_limits<size_t>::max() - kPageSize + 1;
+  scoped_ptr<DiscardableMemory> memory(
+      allocator_.Allocate(max_allowed_allocation_size + 1));
+  // Page-alignment would have caused an overflow resulting in a small
+  // allocation if the input size wasn't checked correctly.
+  ASSERT_FALSE(memory);
+}
+
 TEST_F(DiscardableMemoryAllocatorTest,
        AshmemRegionsAreNotSmallerThanRequestedSize) {
   const size_t size = std::numeric_limits<size_t>::max() - kPageSize + 1;
