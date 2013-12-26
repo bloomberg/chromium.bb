@@ -539,4 +539,21 @@ TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
   EXPECT_FALSE(test_menu_runner_handler->executed());
 }
 
+TEST_F(ComboboxTest, ConsumingPressKeyEvents) {
+  InitCombobox();
+
+  EXPECT_FALSE(combobox_->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false)));
+  EXPECT_FALSE(combobox_->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0, false)));
+
+  // When the combobox's style is STYLE_NOTIFY_ON_CLICK, pressing events of
+  // a space key or an enter key will be consumed.
+  combobox_->SetStyle(Combobox::STYLE_NOTIFY_ON_CLICK);
+  EXPECT_TRUE(combobox_->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0, false)));
+  EXPECT_TRUE(combobox_->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, 0, false)));
+}
+
 }  // namespace views

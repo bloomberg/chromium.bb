@@ -480,11 +480,15 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
         // When pressing space, the click event will be raised after the key is
         // released.
         text_button_->SetState(Button::STATE_PRESSED);
+      } else {
+        return false;
       }
       break;
 
     // Click the button only when the button style mode.
     case ui::VKEY_RETURN:
+      if (style_ != STYLE_NOTIFY_ON_CLICK)
+        return false;
       HandleClickEvent();
       break;
 
