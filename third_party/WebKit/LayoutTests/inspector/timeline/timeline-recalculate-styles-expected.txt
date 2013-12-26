@@ -12,6 +12,5 @@ RecalculateStyles Properties:
     frameId : <string>
     startTime : <number>
     type : "RecalculateStyles"
-    usedHeapSize : <number>
 }
 

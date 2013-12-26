@@ -11,6 +11,5 @@ TimeStamp Properties:
     stackTrace : <object>
     startTime : <number>
     type : "TimeStamp"
-    usedHeapSize : <number>
 }
 

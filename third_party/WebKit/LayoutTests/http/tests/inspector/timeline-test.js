@@ -9,7 +9,6 @@ InspectorTest.timelinePropertyFormatters = {
     stackTrace: "formatAsTypeName",
     url: "formatAsURL",
     scriptName: "formatAsTypeName",
-    usedHeapSize: "formatAsTypeName",
     usedHeapSizeDelta: "skip",
     mimeType: "formatAsTypeName",
     id: "formatAsTypeName",

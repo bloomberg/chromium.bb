@@ -11,7 +11,6 @@ WebSocketCreate Properties:
     stackTrace : <object>
     startTime : <number>
     type : "WebSocketCreate"
-    usedHeapSize : <number>
 }
 WebSocketSendHandshakeRequest Properties:
 {
@@ -22,7 +21,6 @@ WebSocketSendHandshakeRequest Properties:
     frameId : <string>
     startTime : <number>
     type : "WebSocketSendHandshakeRequest"
-    usedHeapSize : <number>
 }
 WebSocketReceiveHandshakeResponse Properties:
 {
@@ -33,7 +31,6 @@ WebSocketReceiveHandshakeResponse Properties:
     frameId : <string>
     startTime : <number>
     type : "WebSocketReceiveHandshakeResponse"
-    usedHeapSize : <number>
 }
 WebSocketDestroy Properties:
 {
@@ -44,6 +41,5 @@ WebSocketDestroy Properties:
     frameId : <string>
     startTime : <number>
     type : "WebSocketDestroy"
-    usedHeapSize : <number>
 }
 

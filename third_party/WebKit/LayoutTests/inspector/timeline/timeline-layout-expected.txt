@@ -21,7 +21,6 @@ Layout Properties:
     stackTrace : <object>
     startTime : <number>
     type : "Layout"
-    usedHeapSize : <number>
 }
 Layout Properties:
 {
@@ -39,6 +38,5 @@ Layout Properties:
     stackTrace : <object>
     startTime : <number>
     type : "Layout"
-    usedHeapSize : <number>
 }
 

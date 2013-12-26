@@ -35,7 +35,6 @@ DecodeImage Properties:
     endTime : <number>
     startTime : <number>
     type : "DecodeImage"
-    usedHeapSize : <number>
 }
 ResizeImage Properties:
 {
@@ -49,7 +48,6 @@ ResizeImage Properties:
     endTime : <number>
     startTime : <number>
     type : "ResizeImage"
-    usedHeapSize : <number>
 }
 DecodeImage Properties:
 {

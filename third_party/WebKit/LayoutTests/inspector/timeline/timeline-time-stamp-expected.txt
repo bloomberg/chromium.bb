@@ -10,7 +10,6 @@ TimeStamp Properties:
     stackTrace : <object>
     startTime : <number>
     type : "TimeStamp"
-    usedHeapSize : <number>
 }
 Timestamp records: 
 TimeStamp Properties:
@@ -23,6 +22,5 @@ TimeStamp Properties:
     stackTrace : <object>
     startTime : <number>
     type : "TimeStamp"
-    usedHeapSize : <number>
 }
 

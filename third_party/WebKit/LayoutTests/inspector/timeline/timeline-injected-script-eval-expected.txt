@@ -12,7 +12,6 @@ FunctionCall Properties:
     frameId : <string>
     startTime : <number>
     type : "FunctionCall"
-    usedHeapSize : <number>
 }
 FunctionCall Properties:
 {
@@ -26,6 +25,5 @@ FunctionCall Properties:
     frameId : <string>
     startTime : <number>
     type : "FunctionCall"
-    usedHeapSize : <number>
 }
 

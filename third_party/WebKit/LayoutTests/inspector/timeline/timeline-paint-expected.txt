@@ -15,6 +15,5 @@ Paint Properties:
     stackTrace : <object>
     startTime : <number>
     type : "Paint"
-    usedHeapSize : <number>
 }
 

@@ -15,7 +15,6 @@ ResourceSendRequest Properties:
     stackTrace : <object>
     startTime : <number>
     type : "ResourceSendRequest"
-    usedHeapSize : <number>
 }
 
 ResourceReceiveResponse Properties:
@@ -29,7 +28,6 @@ ResourceReceiveResponse Properties:
     frameId : <string>
     startTime : <number>
     type : "ResourceReceiveResponse"
-    usedHeapSize : <number>
 }
 
 ResourceFinish Properties:
@@ -43,6 +41,5 @@ ResourceFinish Properties:
     frameId : <string>
     startTime : <number>
     type : "ResourceFinish"
-    usedHeapSize : <number>
 }
 

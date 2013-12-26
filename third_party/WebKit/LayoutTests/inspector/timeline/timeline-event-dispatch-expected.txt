@@ -12,6 +12,5 @@ EventDispatch Properties:
     frameId : <string>
     startTime : <number>
     type : "EventDispatch"
-    usedHeapSize : <number>
 }
 

@@ -10,6 +10,5 @@ MarkDOMContent Properties:
     frameId : <string>
     startTime : <number>
     type : "MarkDOMContent"
-    usedHeapSize : <number>
 }
 

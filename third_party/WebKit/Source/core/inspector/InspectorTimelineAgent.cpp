@@ -1060,15 +1060,16 @@ static size_t getUsedHeapSize()
 
 void InspectorTimelineAgent::setCounters(TimelineEvent* record)
 {
-    record->setUsedHeapSize(getUsedHeapSize());
-
-    if (m_state->getBoolean(TimelineAgentState::includeCounters) && m_inspectorType == PageInspector) {
-        RefPtr<TypeBuilder::Timeline::Counters> counters = TypeBuilder::Timeline::Counters::create();
+    if (!m_state->getBoolean(TimelineAgentState::includeCounters))
+        return;
+    RefPtr<TypeBuilder::Timeline::Counters> counters = TypeBuilder::Timeline::Counters::create();
+    if (m_inspectorType == PageInspector) {
         counters->setDocuments(InspectorCounters::counterValue(InspectorCounters::DocumentCounter));
         counters->setNodes(InspectorCounters::counterValue(InspectorCounters::NodeCounter));
         counters->setJsEventListeners(InspectorCounters::counterValue(InspectorCounters::JSEventListenerCounter));
-        record->setCounters(counters.release());
     }
+    counters->setJsHeapSizeUsed(static_cast<double>(getUsedHeapSize()));
+    record->setCounters(counters.release());
 }
 
 void InspectorTimelineAgent::setFrameIdentifier(TimelineEvent* record, Frame* frame)
