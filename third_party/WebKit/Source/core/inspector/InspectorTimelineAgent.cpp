@@ -137,14 +137,16 @@ namespace {
 const char BackendNodeIdGroup[] = "timeline";
 }
 
+using TypeBuilder::Timeline::TimelineEvent;
+
 struct TimelineRecordEntry {
-    TimelineRecordEntry(PassRefPtr<InspectorTimelineAgent::TimelineEvent> record, PassRefPtr<JSONObject> data, PassRefPtr<TypeBuilder::Array<InspectorTimelineAgent::TimelineEvent> > children, const String& type, size_t usedHeapSizeAtStart)
+    TimelineRecordEntry(PassRefPtr<TimelineEvent> record, PassRefPtr<JSONObject> data, PassRefPtr<TypeBuilder::Array<TimelineEvent> > children, const String& type, size_t usedHeapSizeAtStart)
         : record(record), data(data), children(children), type(type), usedHeapSizeAtStart(usedHeapSizeAtStart)
     {
     }
-    RefPtr<InspectorTimelineAgent::TimelineEvent> record;
+    RefPtr<TimelineEvent> record;
     RefPtr<JSONObject> data;
-    RefPtr<TypeBuilder::Array<InspectorTimelineAgent::TimelineEvent> > children;
+    RefPtr<TypeBuilder::Array<TimelineEvent> > children;
     String type;
     size_t usedHeapSizeAtStart;
 };
@@ -152,17 +154,17 @@ struct TimelineRecordEntry {
 class TimelineRecordStack {
 private:
     struct Entry {
-        Entry(PassRefPtr<InspectorTimelineAgent::TimelineEvent> record, const String& type)
+        Entry(PassRefPtr<TimelineEvent> record, const String& type)
             : record(record)
-            , children(TypeBuilder::Array<InspectorTimelineAgent::TimelineEvent>::create())
+            , children(TypeBuilder::Array<TimelineEvent>::create())
 #ifndef NDEBUG
             , type(type)
 #endif
         {
         }
 
-        RefPtr<InspectorTimelineAgent::TimelineEvent> record;
-        RefPtr<TypeBuilder::Array<InspectorTimelineAgent::TimelineEvent> > children;
+        RefPtr<TimelineEvent> record;
+        RefPtr<TypeBuilder::Array<TimelineEvent> > children;
 #ifndef NDEBUG
         String type;
 #endif
@@ -172,9 +174,9 @@ public:
     TimelineRecordStack() : m_timelineAgent(0) { }
     TimelineRecordStack(InspectorTimelineAgent*);
 
-    void addScopedRecord(PassRefPtr<InspectorTimelineAgent::TimelineEvent> record, const String& type);
+    void addScopedRecord(PassRefPtr<TimelineEvent> record, const String& type);
     void closeScopedRecord(double endTime);
-    void addInstantRecord(PassRefPtr<InspectorTimelineAgent::TimelineEvent> record);
+    void addInstantRecord(PassRefPtr<TimelineEvent> record);
 
 #ifndef NDEBUG
     bool isOpenRecordOfType(const String& type);
@@ -1238,7 +1240,7 @@ FrameHost* InspectorTimelineAgent::frameHost() const
     return &m_pageAgent->page()->frameHost();
 }
 
-PassRefPtr<InspectorTimelineAgent::TimelineEvent> InspectorTimelineAgent::createRecordForEvent(const TraceEventDispatcher::TraceEvent& event, const String& type, PassRefPtr<JSONObject> data)
+PassRefPtr<TimelineEvent> InspectorTimelineAgent::createRecordForEvent(const TraceEventDispatcher::TraceEvent& event, const String& type, PassRefPtr<JSONObject> data)
 {
     double timeestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
     return TimelineRecordFactory::createBackgroundRecord(timeestamp, String::number(event.threadIdentifier()), type, data);
@@ -1249,7 +1251,7 @@ TimelineRecordStack::TimelineRecordStack(InspectorTimelineAgent* timelineAgent)
 {
 }
 
-void TimelineRecordStack::addScopedRecord(PassRefPtr<InspectorTimelineAgent::TimelineEvent> record, const String& type)
+void TimelineRecordStack::addScopedRecord(PassRefPtr<TimelineEvent> record, const String& type)
 {
     m_stack.append(Entry(record, type));
 }
@@ -1266,7 +1268,7 @@ void TimelineRecordStack::closeScopedRecord(double endTime)
     addInstantRecord(last.record);
 }
 
-void TimelineRecordStack::addInstantRecord(PassRefPtr<InspectorTimelineAgent::TimelineEvent> record)
+void TimelineRecordStack::addInstantRecord(PassRefPtr<TimelineEvent> record)
 {
     if (m_stack.isEmpty())
         m_timelineAgent->sendEvent(record);

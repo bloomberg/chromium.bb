@@ -48,10 +48,8 @@ class ResourceResponse;
 
 class TimelineRecordFactory {
 public:
-    typedef TypeBuilder::Timeline::TimelineEvent TimelineEvent;
-
-    static PassRefPtr<TimelineEvent> createGenericRecord(double startTime, int maxCallStackDepth, const String& type, PassRefPtr<JSONObject> data);
-    static PassRefPtr<TimelineEvent> createBackgroundRecord(double startTime, const String& thread, const String& type, PassRefPtr<JSONObject> data);
+    static PassRefPtr<TypeBuilder::Timeline::TimelineEvent> createGenericRecord(double startTime, int maxCallStackDepth, const String& type, PassRefPtr<JSONObject> data);
+    static PassRefPtr<TypeBuilder::Timeline::TimelineEvent> createBackgroundRecord(double startTime, const String& thread, const String& type, PassRefPtr<JSONObject> data);
 
     static PassRefPtr<JSONObject> createGCEventData(size_t usedHeapSizeDelta);
     static PassRefPtr<JSONObject> createFunctionCallData(const String& scriptName, int scriptLine);

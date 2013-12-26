@@ -42,7 +42,9 @@
 
 namespace WebCore {
 
-PassRefPtr<TimelineRecordFactory::TimelineEvent> TimelineRecordFactory::createGenericRecord(double startTime, int maxCallStackDepth, const String& type, PassRefPtr<JSONObject> data)
+using TypeBuilder::Timeline::TimelineEvent;
+
+PassRefPtr<TimelineEvent> TimelineRecordFactory::createGenericRecord(double startTime, int maxCallStackDepth, const String& type, PassRefPtr<JSONObject> data)
 {
     ASSERT(data.get());
     RefPtr<TimelineEvent> record = TimelineEvent::create()
@@ -57,7 +59,7 @@ PassRefPtr<TimelineRecordFactory::TimelineEvent> TimelineRecordFactory::createGe
     return record.release();
 }
 
-PassRefPtr<TimelineRecordFactory::TimelineEvent> TimelineRecordFactory::createBackgroundRecord(double startTime, const String& threadName, const String& type, PassRefPtr<JSONObject> data)
+PassRefPtr<TimelineEvent> TimelineRecordFactory::createBackgroundRecord(double startTime, const String& threadName, const String& type, PassRefPtr<JSONObject> data)
 {
     ASSERT(data.get());
     RefPtr<TimelineEvent> record = TimelineEvent::create()

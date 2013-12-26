@@ -117,8 +117,6 @@ class InspectorTimelineAgent
     , public PlatformInstrumentationClient {
     WTF_MAKE_NONCOPYABLE(InspectorTimelineAgent);
 public:
-    typedef TypeBuilder::Timeline::TimelineEvent TimelineEvent;
-
     enum InspectorType { PageInspector, WorkerInspector };
 
     class GPUEvent {
@@ -149,7 +147,7 @@ public:
     virtual void enable(ErrorString*);
     virtual void disable(ErrorString*);
     virtual void start(ErrorString*, const int* maxCallStackDepth, const bool* bufferEvents, const bool* includeCounters, const bool* includeGPUEvents);
-    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Array<TimelineEvent> >& events);
+    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> >& events);
 
     void setLayerTreeId(int layerTreeId) { m_layerTreeId = layerTreeId; }
     int id() const { return m_id; }
@@ -272,13 +270,13 @@ private:
 
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
 
-    void sendEvent(PassRefPtr<TimelineEvent>);
+    void sendEvent(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>);
     void appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame*);
     void pushCurrentRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame*, bool hasLowLevelDetails = false);
     TimelineThreadState& threadState(ThreadIdentifier);
 
-    void setCounters(TimelineEvent*);
-    void setFrameIdentifier(TimelineEvent* record, Frame*);
+    void setCounters(TypeBuilder::Timeline::TimelineEvent*);
+    void setFrameIdentifier(TypeBuilder::Timeline::TimelineEvent* record, Frame*);
     void populateImageDetails(JSONObject* data, const RenderImage&);
 
     void pushGCEventRecords();
@@ -288,10 +286,10 @@ private:
 
     void commitFrameRecord();
 
-    void addRecordToTimeline(PassRefPtr<TimelineEvent>);
-    void innerAddRecordToTimeline(PassRefPtr<TimelineEvent>);
+    void addRecordToTimeline(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>);
+    void innerAddRecordToTimeline(PassRefPtr<TypeBuilder::Timeline::TimelineEvent>);
     void clearRecordStack();
-    PassRefPtr<TimelineEvent> createRecordForEvent(const TraceEventDispatcher::TraceEvent&, const String& type, PassRefPtr<JSONObject> data);
+    PassRefPtr<TypeBuilder::Timeline::TimelineEvent> createRecordForEvent(const TraceEventDispatcher::TraceEvent&, const String& type, PassRefPtr<JSONObject> data);
 
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
     long long nodeId(Node*);
@@ -320,14 +318,14 @@ private:
     int m_maxCallStackDepth;
 
     Vector<TimelineRecordEntry> m_recordStack;
-    RefPtr<TypeBuilder::Array<TimelineEvent> > m_bufferedEvents;
+    RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> > m_bufferedEvents;
     Vector<String> m_consoleTimelines;
 
     typedef Vector<TimelineGCEvent> GCEvents;
     GCEvents m_gcEvents;
     unsigned m_platformInstrumentationClientInstalledAtStackDepth;
-    RefPtr<TimelineEvent> m_pendingFrameRecord;
-    RefPtr<TimelineEvent> m_pendingGPURecord;
+    RefPtr<TypeBuilder::Timeline::TimelineEvent> m_pendingFrameRecord;
+    RefPtr<TypeBuilder::Timeline::TimelineEvent> m_pendingGPURecord;
     typedef HashMap<unsigned long long, TimelineImageInfo> PixelRefToImageInfoMap;
     PixelRefToImageInfoMap m_pixelRefToImageInfo;
     RenderImage* m_imageBeingPainted;
