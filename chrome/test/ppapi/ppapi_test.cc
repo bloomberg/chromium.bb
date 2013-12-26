@@ -42,6 +42,13 @@ const char library_name[] = "ppapi_tests.plugin";
 const char library_name[] = "libppapi_tests.so";
 #endif
 
+void AddPrivateSwitches(CommandLine* command_line) {
+  // For TestRequestOSFileHandle.
+  command_line->AppendSwitch(switches::kUnlimitedStorage);
+  command_line->AppendSwitchASCII(switches::kAllowNaClFileHandleAPI,
+                                  "127.0.0.1");
+}
+
 }  // namespace
 
 PPAPITestMessageHandler::PPAPITestMessageHandler() {
@@ -132,11 +139,6 @@ void PPAPITestBase::SetUpCommandLine(CommandLine* command_line) {
 
   // Smooth scrolling confuses the scrollbar test.
   command_line->AppendSwitch(switches::kDisableSmoothScrolling);
-
-  // For TestRequestOSFileHandle.
-  command_line->AppendSwitch(switches::kUnlimitedStorage);
-  command_line->AppendSwitchASCII(switches::kAllowNaClFileHandleAPI,
-                                  "127.0.0.1");
 }
 
 void PPAPITestBase::SetUpOnMainThread() {
@@ -319,6 +321,11 @@ std::string PPAPITest::BuildQuery(const std::string& base,
   return base::StringPrintf("%stestcase=%s", base.c_str(), test_case.c_str());
 }
 
+void PPAPIPrivateTest::SetUpCommandLine(CommandLine* command_line) {
+  PPAPITest::SetUpCommandLine(command_line);
+  AddPrivateSwitches(command_line);
+}
+
 OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
   in_process_ = false;
 }
@@ -327,6 +334,11 @@ void OutOfProcessPPAPITest::SetUpCommandLine(CommandLine* command_line) {
   PPAPITest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+}
+
+void OutOfProcessPPAPIPrivateTest::SetUpCommandLine(CommandLine* command_line) {
+  OutOfProcessPPAPITest::SetUpCommandLine(command_line);
+  AddPrivateSwitches(command_line);
 }
 
 void PPAPINaClTest::SetUpCommandLine(CommandLine* command_line) {
@@ -350,6 +362,11 @@ std::string PPAPINaClNewlibTest::BuildQuery(const std::string& base,
                             test_case.c_str());
 }
 
+void PPAPIPrivateNaClNewlibTest::SetUpCommandLine(CommandLine* command_line) {
+  PPAPINaClNewlibTest::SetUpCommandLine(command_line);
+  AddPrivateSwitches(command_line);
+}
+
 // Append the correct mode and testcase string
 std::string PPAPINaClGLibcTest::BuildQuery(const std::string& base,
                                            const std::string& test_case) {
@@ -357,11 +374,21 @@ std::string PPAPINaClGLibcTest::BuildQuery(const std::string& base,
                             test_case.c_str());
 }
 
+void PPAPIPrivateNaClGLibcTest::SetUpCommandLine(CommandLine* command_line) {
+  PPAPINaClGLibcTest::SetUpCommandLine(command_line);
+  AddPrivateSwitches(command_line);
+}
+
 // Append the correct mode and testcase string
 std::string PPAPINaClPNaClTest::BuildQuery(const std::string& base,
                                            const std::string& test_case) {
   return base::StringPrintf("%smode=nacl_pnacl&testcase=%s", base.c_str(),
                             test_case.c_str());
+}
+
+void PPAPIPrivateNaClPNaClTest::SetUpCommandLine(CommandLine* command_line) {
+  PPAPINaClPNaClTest::SetUpCommandLine(command_line);
+  AddPrivateSwitches(command_line);
 }
 
 void PPAPINaClTestDisallowedSockets::SetUpCommandLine(

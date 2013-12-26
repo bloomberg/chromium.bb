@@ -817,8 +817,10 @@ TEST_PPAPI_OUT_OF_PROCESS(VideoDecoder)
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/318961
 #define MAYBE_FileIO DISABLED_FileIO
+#define MAYBE_FileIO_Private DISABLED_FileIO_Private
 #else
 #define MAYBE_FileIO FileIO
+#define MAYBE_FileIO_Private FileIO_Private
 #endif
 
 // FileIO tests.
@@ -833,6 +835,10 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, MAYBE_FileIO) {
       LIST_TEST(FileIO_ReadWriteSetLength)
       LIST_TEST(FileIO_ReadToArrayWriteSetLength)
       LIST_TEST(FileIO_TouchQuery)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPIPrivateTest, MAYBE_FileIO_Private) {
+  RunTestViaHTTP(
       LIST_TEST(FileIO_RequestOSFileHandle)
       LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
       LIST_TEST(FileIO_Mmap)
@@ -848,6 +854,10 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FileIO) {
       LIST_TEST(FileIO_ReadWriteSetLength)
       LIST_TEST(FileIO_ReadToArrayWriteSetLength)
       LIST_TEST(FileIO_TouchQuery)
+  );
+}
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPIPrivateTest, MAYBE_FileIO_Private) {
+  RunTestViaHTTP(
       LIST_TEST(FileIO_RequestOSFileHandle)
       LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
       LIST_TEST(FileIO_Mmap)
@@ -856,8 +866,10 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FileIO) {
 // Flaky on XP; times out, http://crbug.com/313401
 #if defined(OS_WIN)
 #define MAYBE_Nacl_Newlib_FileIO DISABLED_FileIO
+#define MAYBE_Nacl_Newlib_FileIO_Private DISABLED_FileIO_Private
 #else
 #define MAYBE_Nacl_Newlib_FileIO FileIO
+#define MAYBE_Nacl_Newlib_FileIO_Private FileIO_Private
 #endif
 IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_Nacl_Newlib_FileIO) {
   RunTestViaHTTP(
@@ -869,6 +881,11 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_Nacl_Newlib_FileIO) {
       LIST_TEST(FileIO_ReadWriteSetLength)
       LIST_TEST(FileIO_ReadToArrayWriteSetLength)
       LIST_TEST(FileIO_TouchQuery)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClNewlibTest,
+                       MAYBE_Nacl_Newlib_FileIO_Private) {
+  RunTestViaHTTP(
       LIST_TEST(FileIO_RequestOSFileHandle)
       LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
       LIST_TEST(FileIO_Mmap)
@@ -886,6 +903,11 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_NaCl_Glibc_FileIO) {
       LIST_TEST(FileIO_ReadWriteSetLength)
       LIST_TEST(FileIO_ReadToArrayWriteSetLength)
       LIST_TEST(FileIO_TouchQuery)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClGLibcTest,
+                       DISABLED_NaCl_Glibc_FileIO_Private) {
+  RunTestViaHTTP(
       LIST_TEST(FileIO_RequestOSFileHandle)
       LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
       LIST_TEST(FileIO_Mmap)
@@ -894,8 +916,10 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, DISABLED_NaCl_Glibc_FileIO) {
 // Flaky on XP; times out, http://crbug.com/313205
 #if defined(OS_WIN)
 #define MAYBE_PNaCl_FileIO DISABLED_FileIO
+#define MAYBE_PNaCl_FileIO_Private DISABLED_FileIO_Private
 #else
 #define MAYBE_PNaCl_FileIO FileIO
+#define MAYBE_PNaCl_FileIO_Private FileIO_Private
 #endif
 IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PNaCl_FileIO) {
   RunTestViaHTTP(
@@ -907,6 +931,10 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PNaCl_FileIO) {
       LIST_TEST(FileIO_ReadWriteSetLength)
       LIST_TEST(FileIO_ReadToArrayWriteSetLength)
       LIST_TEST(FileIO_TouchQuery)
+  );
+}
+IN_PROC_BROWSER_TEST_F(PPAPIPrivateNaClPNaClTest, MAYBE_PNaCl_FileIO_Private) {
+  RunTestViaHTTP(
       LIST_TEST(FileIO_RequestOSFileHandle)
       LIST_TEST(FileIO_RequestOSFileHandleWithOpenExclusive)
       LIST_TEST(FileIO_Mmap)
