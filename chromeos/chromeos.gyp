@@ -403,6 +403,8 @@
         'disks/mock_disk_mount_manager.h',
         'ime/mock_component_extension_ime_manager_delegate.cc',
         'ime/mock_component_extension_ime_manager_delegate.h',
+        'network/fake_network_device_handler.cc',
+        'network/fake_network_device_handler.h',
         'network/mock_managed_network_configuration_handler.cc',
         'network/mock_managed_network_configuration_handler.h',
         'network/onc/mock_certificate_importer.cc',

@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/policy/core/common/policy_map.h"
@@ -18,22 +17,6 @@ namespace policy {
 
 NetworkConfigurationUpdater::~NetworkConfigurationUpdater() {
   policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
-}
-
-// static
-scoped_ptr<NetworkConfigurationUpdater>
-NetworkConfigurationUpdater::CreateForDevicePolicy(
-    scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer,
-    PolicyService* policy_service,
-    chromeos::ManagedNetworkConfigurationHandler* network_config_handler) {
-  scoped_ptr<NetworkConfigurationUpdater> updater(
-      new NetworkConfigurationUpdater(onc::ONC_SOURCE_DEVICE_POLICY,
-                                      key::kDeviceOpenNetworkConfiguration,
-                                      certificate_importer.Pass(),
-                                      policy_service,
-                                      network_config_handler));
-  updater->Init();
-  return updater.Pass();
 }
 
 void NetworkConfigurationUpdater::OnPolicyUpdated(const PolicyNamespace& ns,
@@ -82,21 +65,6 @@ void NetworkConfigurationUpdater::Init() {
   } else {
     policy_service_->AddObserver(POLICY_DOMAIN_CHROME, this);
   }
-}
-
-void NetworkConfigurationUpdater::ImportCertificates(
-    const base::ListValue& certificates_onc) {
-  certificate_importer_->ImportCertificates(
-      certificates_onc, onc_source_, NULL);
-}
-
-void NetworkConfigurationUpdater::ApplyNetworkPolicy(
-    base::ListValue* network_configs_onc,
-    base::DictionaryValue* global_network_config) {
-  network_config_handler_->SetPolicy(onc_source_,
-                                     std::string() /* no username hash */,
-                                     *network_configs_onc,
-                                     *global_network_config);
 }
 
 void NetworkConfigurationUpdater::OnPolicyChanged(

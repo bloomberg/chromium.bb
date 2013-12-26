@@ -53,6 +53,7 @@ NetworkHandler::~NetworkHandler() {
 
 void NetworkHandler::Init() {
   network_state_handler_->InitShillPropertyHandler();
+  network_device_handler_->Init(network_state_handler_.get());
   network_profile_handler_->Init(network_state_handler_.get());
   network_configuration_handler_->Init(network_state_handler_.get());
   managed_network_configuration_handler_->Init(

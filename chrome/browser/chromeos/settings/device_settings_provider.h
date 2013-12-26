@@ -17,7 +17,6 @@
 #include "base/prefs/pref_value_map.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/settings/cros_settings_provider.h"
 
 namespace base {
@@ -32,8 +31,7 @@ namespace chromeos {
 
 // CrosSettingsProvider implementation that works with device settings.
 class DeviceSettingsProvider : public CrosSettingsProvider,
-                               public DeviceSettingsService::Observer,
-                               public NetworkStateHandlerObserver {
+                               public DeviceSettingsService::Observer {
  public:
   DeviceSettingsProvider(const NotifyObserversCallback& notify_cb,
                          DeviceSettingsService* device_settings_service);
@@ -47,9 +45,6 @@ class DeviceSettingsProvider : public CrosSettingsProvider,
   virtual TrustedStatus PrepareTrustedValues(
       const base::Closure& callback) OVERRIDE;
   virtual bool HandlesSetting(const std::string& path) const OVERRIDE;
-
-  // NetworkStateHandlerObserver implementation.
-  virtual void DeviceListChanged() OVERRIDE;
 
  private:
   // CrosSettingsProvider implementation:

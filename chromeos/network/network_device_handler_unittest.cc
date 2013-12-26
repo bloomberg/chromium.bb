@@ -10,6 +10,7 @@
 #include "chromeos/dbus/fake_shill_device_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/network/network_device_handler_impl.h"
+#include "chromeos/network/network_state_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -57,11 +58,15 @@ class NetworkDeviceHandlerTest : public testing::Test {
     error_callback_ = base::Bind(&NetworkDeviceHandlerTest::ErrorCallback,
                                  base::Unretained(this));
 
-    network_device_handler_.reset(new NetworkDeviceHandlerImpl);
+    network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
+    NetworkDeviceHandlerImpl* device_handler = new NetworkDeviceHandlerImpl;
+    device_handler->Init(network_state_handler_.get());
+    network_device_handler_.reset(device_handler);
   }
 
   virtual void TearDown() OVERRIDE {
     network_device_handler_.reset();
+    network_state_handler_.reset();
     DBusThreadManager::Shutdown();
   }
 
@@ -85,6 +90,7 @@ class NetworkDeviceHandlerTest : public testing::Test {
 
   FakeShillDeviceClient* fake_device_client_;
   scoped_ptr<NetworkDeviceHandler> network_device_handler_;
+  scoped_ptr<NetworkStateHandler> network_state_handler_;
   base::MessageLoopForUI message_loop_;
   base::Closure success_callback_;
   network_handler::DictionaryResultCallback properties_success_callback_;
@@ -106,15 +112,13 @@ TEST_F(NetworkDeviceHandlerTest, GetDeviceProperties) {
 }
 
 TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
-
-  // Set the shill::kCellularAllowRoamingProperty to true. The call
+  // Set the shill::kScanIntervalProperty to true. The call
   // should succeed and the value should be set.
-  network_device_handler_->SetDeviceProperty(
-      kDefaultCellularDevicePath,
-      shill::kCellularAllowRoamingProperty,
-      base::FundamentalValue(true),
-      success_callback_,
-      error_callback_);
+  network_device_handler_->SetDeviceProperty(kDefaultCellularDevicePath,
+                                             shill::kScanIntervalProperty,
+                                             base::FundamentalValue(1),
+                                             success_callback_,
+                                             error_callback_);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
 
@@ -124,18 +128,17 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
                                                error_callback_);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
-  bool allow_roaming = false;
-  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
-      shill::kCellularAllowRoamingProperty, &allow_roaming));
-  EXPECT_TRUE(allow_roaming);
+  int interval = 0;
+  EXPECT_TRUE(properties_->GetIntegerWithoutPathExpansion(
+      shill::kScanIntervalProperty, &interval));
+  EXPECT_EQ(1, interval);
 
   // Repeat the same with value false.
-  network_device_handler_->SetDeviceProperty(
-      kDefaultCellularDevicePath,
-      shill::kCellularAllowRoamingProperty,
-      base::FundamentalValue(false),
-      success_callback_,
-      error_callback_);
+  network_device_handler_->SetDeviceProperty(kDefaultCellularDevicePath,
+                                             shill::kScanIntervalProperty,
+                                             base::FundamentalValue(2),
+                                             success_callback_,
+                                             error_callback_);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
 
@@ -144,19 +147,66 @@ TEST_F(NetworkDeviceHandlerTest, SetDeviceProperty) {
                                                error_callback_);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(kResultSuccess, result_);
-  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
-      shill::kCellularAllowRoamingProperty, &allow_roaming));
-  EXPECT_FALSE(allow_roaming);
+  EXPECT_TRUE(properties_->GetIntegerWithoutPathExpansion(
+      shill::kScanIntervalProperty, &interval));
+  EXPECT_EQ(2, interval);
 
   // Set property on an invalid path.
+  network_device_handler_->SetDeviceProperty(kUnknownCellularDevicePath,
+                                             shill::kScanIntervalProperty,
+                                             base::FundamentalValue(1),
+                                             success_callback_,
+                                             error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(NetworkDeviceHandler::kErrorFailure, result_);
+
+  // Setting a owner-protected device property through SetDeviceProperty must
+  // fail.
   network_device_handler_->SetDeviceProperty(
-      kUnknownCellularDevicePath,
+      kDefaultCellularDevicePath,
       shill::kCellularAllowRoamingProperty,
       base::FundamentalValue(true),
       success_callback_,
       error_callback_);
   message_loop_.RunUntilIdle();
-  EXPECT_EQ(NetworkDeviceHandler::kErrorFailure, result_);
+  EXPECT_NE(kResultSuccess, result_);
+
+}
+
+TEST_F(NetworkDeviceHandlerTest, CellularAllowRoaming) {
+  // Start with disabled data roaming.
+  ShillDeviceClient::TestInterface* device_test =
+      fake_device_client_->GetTestInterface();
+  device_test->SetDeviceProperty(kDefaultCellularDevicePath,
+                                 shill::kCellularAllowRoamingProperty,
+                                 base::FundamentalValue(false));
+
+  network_device_handler_->SetCellularAllowRoaming(true);
+  message_loop_.RunUntilIdle();
+
+  // Roaming should be enabled now.
+  network_device_handler_->GetDeviceProperties(kDefaultCellularDevicePath,
+                                               properties_success_callback_,
+                                               error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(kResultSuccess, result_);
+  bool allow_roaming;
+  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
+      shill::kCellularAllowRoamingProperty, &allow_roaming));
+  EXPECT_TRUE(allow_roaming);
+
+  network_device_handler_->SetCellularAllowRoaming(false);
+  message_loop_.RunUntilIdle();
+
+  // Roaming should be disable again.
+  network_device_handler_->GetDeviceProperties(kDefaultCellularDevicePath,
+                                               properties_success_callback_,
+                                               error_callback_);
+  message_loop_.RunUntilIdle();
+  EXPECT_EQ(kResultSuccess, result_);
+  EXPECT_TRUE(properties_->GetBooleanWithoutPathExpansion(
+      shill::kCellularAllowRoamingProperty, &allow_roaming));
+  EXPECT_FALSE(allow_roaming);
 }
 
 TEST_F(NetworkDeviceHandlerTest, RequestRefreshIPConfigs) {

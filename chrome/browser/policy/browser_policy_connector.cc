@@ -68,9 +68,9 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
+#include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
-#include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/chromeos_paths.h"
@@ -341,12 +341,14 @@ void BrowserPolicyConnector::Init(
 
 #if defined(OS_CHROMEOS)
   network_configuration_updater_ =
-      NetworkConfigurationUpdater::CreateForDevicePolicy(
+      DeviceNetworkConfigurationUpdater::CreateForDevicePolicy(
           scoped_ptr<chromeos::onc::CertificateImporter>(
               new chromeos::onc::CertificateImporterImpl),
           GetPolicyService(),
           chromeos::NetworkHandler::Get()
-              ->managed_network_configuration_handler());
+              ->managed_network_configuration_handler(),
+          chromeos::NetworkHandler::Get()->network_device_handler(),
+          chromeos::CrosSettings::Get());
 #endif
 
   is_initialized_ = true;

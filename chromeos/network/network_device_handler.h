@@ -52,10 +52,12 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
       const network_handler::ErrorCallback& error_callback) const = 0;
 
   // Sets the value of property |name| on device with id |device_path| to
-  // |value|.
+  // |value|. This function provides a generic setter to be used by the UI or
+  // network API and doesn't allow changes to protected settings like cellular
+  // roaming.
   virtual void SetDeviceProperty(
       const std::string& device_path,
-      const std::string& name,
+      const std::string& property_name,
       const base::Value& value,
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) = 0;
@@ -185,6 +187,10 @@ class CHROMEOS_EXPORT NetworkDeviceHandler {
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback) = 0;
 
+  // Enables/disables roaming of all cellular devices. This happens
+  // asychronously in the background and applies also to devices which become
+  // available in the future.
+  virtual void SetCellularAllowRoaming(bool allow_roaming) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandler);

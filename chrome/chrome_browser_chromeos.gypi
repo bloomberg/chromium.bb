@@ -712,6 +712,8 @@
         'browser/chromeos/policy/device_local_account_policy_service.h',
         'browser/chromeos/policy/device_local_account_policy_store.cc',
         'browser/chromeos/policy/device_local_account_policy_store.h',
+        'browser/chromeos/policy/device_network_configuration_updater.cc',
+        'browser/chromeos/policy/device_network_configuration_updater.h',
         'browser/chromeos/policy/device_policy_decoder_chromeos.cc',
         'browser/chromeos/policy/device_policy_decoder_chromeos.h',
         'browser/chromeos/policy/device_status_collector.cc',

@@ -8,11 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -23,16 +21,9 @@
 #include "chrome/browser/ui/options/options_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_switches.h"
-#include "chromeos/network/device_state.h"
-#include "chromeos/network/network_device_handler.h"
-#include "chromeos/network/network_event_log.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/shill_property_util.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "policy/proto/device_management_backend.pb.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 using google::protobuf::RepeatedField;
 using google::protobuf::RepeatedPtrField;
@@ -94,12 +85,6 @@ bool HasOldMetricsFile() {
   return GoogleUpdateSettings::GetCollectStatsConsent();
 }
 
-void LogShillError(
-    const std::string& name,
-    scoped_ptr<base::DictionaryValue> error_data) {
-  NET_LOG_ERROR("Shill error: " + name, "Network operation failed.");
-}
-
 }  // namespace
 
 DeviceSettingsProvider::DeviceSettingsProvider(
@@ -111,11 +96,6 @@ DeviceSettingsProvider::DeviceSettingsProvider(
       ownership_status_(device_settings_service_->GetOwnershipStatus()),
       store_callback_factory_(this) {
   device_settings_service_->AddObserver(this);
-  if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
-                                                                FROM_HERE);
-  }
-
   if (!UpdateFromService()) {
     // Make sure we have at least the cache data immediately.
     RetrieveCachedData();
@@ -124,10 +104,6 @@ DeviceSettingsProvider::DeviceSettingsProvider(
 
 DeviceSettingsProvider::~DeviceSettingsProvider() {
   device_settings_service_->RemoveObserver(this);
-  if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
-                                                                   FROM_HERE);
-  }
 }
 
 // static
@@ -325,7 +301,6 @@ void DeviceSettingsProvider::SetInPolicy() {
       roam->set_data_roaming_enabled(roaming_value);
     else
       NOTREACHED();
-    ApplyRoamingSetting(roaming_value);
   } else if (prop == kReleaseChannel) {
     em::ReleaseChannelProto* release_channel =
         device_settings_.mutable_release_channel();
@@ -459,7 +434,6 @@ void DeviceSettingsProvider::DecodeLoginPolicies(
   // For all our boolean settings the following is applicable:
   // true is default permissive value and false is safe prohibitive value.
   // Exceptions:
-  //   kSignedDataRoamingEnabled has a default value of false.
   //   kAccountsPrefEphemeralUsersEnabled has a default value of false.
   if (policy.has_allow_new_users() &&
       policy.allow_new_users().has_allow_new_users()) {
@@ -646,6 +620,7 @@ void DeviceSettingsProvider::DecodeKioskPolicies(
 void DeviceSettingsProvider::DecodeNetworkPolicies(
     const em::ChromeDeviceSettingsProto& policy,
     PrefValueMap* new_values_cache) const {
+  // kSignedDataRoamingEnabled has a default value of false.
   new_values_cache->SetBoolean(
       kSignedDataRoamingEnabled,
       policy.has_data_roaming_enabled() &&
@@ -841,49 +816,6 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
   OptionsUtil::ResolveMetricsReportingEnabled(new_value);
 }
 
-void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
-  // TODO(pneubeck): Move this application of the roaming policy to
-  // NetworkConfigurationUpdater and ManagedNetworkConfigurationHandler. See
-  // http://crbug.com/323537 .
-  // TODO(armansito): Look up the device by explicitly using the device path.
-  const DeviceState* cellular =
-      NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
-          NetworkTypePattern::Cellular());
-  if (!cellular) {
-    NET_LOG_DEBUG("No cellular device is available",
-                  "Roaming is only supported by cellular devices.");
-    return;
-  }
-  bool current_value;
-  if (!cellular->properties().GetBooleanWithoutPathExpansion(
-          shill::kCellularAllowRoamingProperty, &current_value)) {
-    NET_LOG_ERROR("Could not get \"allow roaming\" property from cellular "
-                  "device.", cellular->path());
-    return;
-  }
-
-  // Only set the value if the current value is different from |new_value|.
-  // If roaming is required by the provider, always try to set to true.
-  new_value = (cellular->provider_requires_roaming() ? true : new_value);
-  if (new_value == current_value)
-    return;
-
-  NetworkHandler::Get()->network_device_handler()->SetDeviceProperty(
-      cellular->path(),
-      shill::kCellularAllowRoamingProperty,
-      base::FundamentalValue(new_value),
-      base::Bind(&base::DoNothing),
-      base::Bind(&LogShillError));
-}
-
-void DeviceSettingsProvider::ApplyRoamingSettingFromProto(
-    const em::ChromeDeviceSettingsProto& settings) {
-  ApplyRoamingSetting(
-      settings.has_data_roaming_enabled() ?
-          settings.data_roaming_enabled().data_roaming_enabled() :
-          false);
-}
-
 void DeviceSettingsProvider::ApplySideEffects(
     const em::ChromeDeviceSettingsProto& settings) {
   // First migrate metrics settings as needed.
@@ -891,9 +823,6 @@ void DeviceSettingsProvider::ApplySideEffects(
     ApplyMetricsSetting(false, settings.metrics_enabled().metrics_enabled());
   else
     ApplyMetricsSetting(true, false);
-
-  // Next set the roaming setting as needed.
-  ApplyRoamingSettingFromProto(settings);
 }
 
 bool DeviceSettingsProvider::MitigateMissingPolicy() {
@@ -946,10 +875,6 @@ DeviceSettingsProvider::TrustedStatus
 
 bool DeviceSettingsProvider::HandlesSetting(const std::string& path) const {
   return IsDeviceSetting(path);
-}
-
-void DeviceSettingsProvider::DeviceListChanged() {
-  ApplyRoamingSettingFromProto(device_settings_);
 }
 
 DeviceSettingsProvider::TrustedStatus

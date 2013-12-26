@@ -2,29 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_
-#define CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_
-
-#include <string>
+#ifndef CHROMEOS_NETWORK_FAKE_NETWORK_DEVICE_HANDLER_H_
+#define CHROMEOS_NETWORK_FAKE_NETWORK_DEVICE_HANDLER_H_
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_device_handler.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_handler_callbacks.h"
-#include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
 
-class NetworkStateHandler;
-
-class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
-    : public NetworkDeviceHandler,
-      public NetworkStateHandlerObserver {
+// This is a fake implementation which does nothing. Use this as a base class
+// for concrete fake handlers.
+class CHROMEOS_EXPORT FakeNetworkDeviceHandler : public NetworkDeviceHandler {
  public:
-  virtual ~NetworkDeviceHandlerImpl();
+  FakeNetworkDeviceHandler();
+  virtual ~FakeNetworkDeviceHandler();
 
   // NetworkDeviceHandler overrides
   virtual void GetDeviceProperties(
@@ -90,28 +83,10 @@ class CHROMEOS_EXPORT NetworkDeviceHandlerImpl
 
   virtual void SetCellularAllowRoaming(bool allow_roaming) OVERRIDE;
 
-  // NetworkStateHandlerObserver overrides
-  virtual void DeviceListChanged() OVERRIDE;
-
  private:
-  friend class NetworkHandler;
-  friend class NetworkDeviceHandlerTest;
-
-  NetworkDeviceHandlerImpl();
-
-  void Init(NetworkStateHandler* network_state_handler);
-
-  // Apply the current value of |cellular_allow_roaming_| to all existing
-  // cellular devices of Shill.
-  void ApplyCellularAllowRoamingToShill();
-
-  NetworkStateHandler* network_state_handler_;
-
-  bool cellular_allow_roaming_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerImpl);
+  DISALLOW_COPY_AND_ASSIGN(FakeNetworkDeviceHandler);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_
+#endif  // CHROMEOS_NETWORK_FAKE_NETWORK_DEVICE_HANDLER_H_

@@ -5,12 +5,16 @@
 #include "chromeos/network/network_device_handler_impl.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_ipconfig_client.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/shill_property_util.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -38,6 +42,15 @@ std::string GetErrorNameForShillError(const std::string& shill_error_name) {
   if (shill_error_name == shill::kErrorPinRequiredMsg)
     return NetworkDeviceHandler::kErrorPinRequired;
   return NetworkDeviceHandler::kErrorUnknown;
+}
+
+void InvokeErrorCallback(const std::string& service_path,
+                         const network_handler::ErrorCallback& error_callback,
+                         const std::string& error_name) {
+  std::string error_msg = "Device Error: " + error_name;
+  NET_LOG_ERROR(error_msg, service_path);
+  network_handler::RunErrorCallback(
+      error_callback, service_path, error_name, error_msg);
 }
 
 void HandleShillCallFailure(
@@ -103,9 +116,6 @@ void ProposeScanCallback(
     const network_handler::ErrorCallback& error_callback,
     DBusMethodCallStatus call_status) {
   if (call_status != DBUS_METHOD_CALL_SUCCESS) {
-    NET_LOG_ERROR(
-        base::StringPrintf("Device.ProposeScan failed: %d", call_status),
-        device_path);
     network_handler::ShillErrorCallbackFunction(
         "Device.ProposeScan Failed",
         device_path,
@@ -118,9 +128,25 @@ void ProposeScanCallback(
     callback.Run();
 }
 
+void SetDevicePropertyInternal(
+    const std::string& device_path,
+    const std::string& property_name,
+    const base::Value& value,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
+  DBusThreadManager::Get()->GetShillDeviceClient()->SetProperty(
+      dbus::ObjectPath(device_path),
+      property_name,
+      value,
+      callback,
+      base::Bind(&HandleShillCallFailure, device_path, error_callback));
+}
+
 }  // namespace
 
-NetworkDeviceHandlerImpl::~NetworkDeviceHandlerImpl() {}
+NetworkDeviceHandlerImpl::~NetworkDeviceHandlerImpl() {
+  network_state_handler_->RemoveObserver(this, FROM_HERE);
+}
 
 void NetworkDeviceHandlerImpl::GetDeviceProperties(
     const std::string& device_path,
@@ -134,16 +160,27 @@ void NetworkDeviceHandlerImpl::GetDeviceProperties(
 
 void NetworkDeviceHandlerImpl::SetDeviceProperty(
     const std::string& device_path,
-    const std::string& name,
+    const std::string& property_name,
     const base::Value& value,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
-  DBusThreadManager::Get()->GetShillDeviceClient()->SetProperty(
-      dbus::ObjectPath(device_path),
-      name,
-      value,
-      callback,
-      base::Bind(&HandleShillCallFailure, device_path, error_callback));
+  const char* const property_blacklist[] = {
+      // Must only be changed by policy/owner through.
+      shill::kCellularAllowRoamingProperty
+  };
+
+  for (size_t i = 0; i < arraysize(property_blacklist); ++i) {
+    if (property_name == property_blacklist[i]) {
+      InvokeErrorCallback(
+          device_path,
+          error_callback,
+          "SetDeviceProperty called on blacklisted property " + property_name);
+      return;
+    }
+  }
+
+  SetDevicePropertyInternal(
+      device_path, property_name, value, callback, error_callback);
 }
 
 void NetworkDeviceHandlerImpl::RequestRefreshIPConfigs(
@@ -243,6 +280,64 @@ void NetworkDeviceHandlerImpl::ChangePin(
       base::Bind(&HandleShillCallFailure, device_path, error_callback));
 }
 
-NetworkDeviceHandlerImpl::NetworkDeviceHandlerImpl() {}
+void NetworkDeviceHandlerImpl::SetCellularAllowRoaming(
+    const bool allow_roaming) {
+  cellular_allow_roaming_ = allow_roaming;
+  ApplyCellularAllowRoamingToShill();
+}
+
+void NetworkDeviceHandlerImpl::DeviceListChanged() {
+  ApplyCellularAllowRoamingToShill();
+}
+
+NetworkDeviceHandlerImpl::NetworkDeviceHandlerImpl()
+    : network_state_handler_(NULL),
+      cellular_allow_roaming_(false) {}
+
+void NetworkDeviceHandlerImpl::Init(
+    NetworkStateHandler* network_state_handler) {
+  DCHECK(network_state_handler);
+  network_state_handler_ = network_state_handler;
+  network_state_handler_->AddObserver(this, FROM_HERE);
+}
+
+void NetworkDeviceHandlerImpl::ApplyCellularAllowRoamingToShill() {
+  NetworkStateHandler::DeviceStateList list;
+  network_state_handler_->GetDeviceListByType(NetworkTypePattern::Cellular(),
+                                              &list);
+  if (list.empty()) {
+    NET_LOG_DEBUG("No cellular device is available",
+                  "Roaming is only supported by cellular devices.");
+    return;
+  }
+  for (NetworkStateHandler::DeviceStateList::const_iterator it = list.begin();
+      it != list.end(); ++it) {
+    const DeviceState* device_state = *it;
+    bool current_device_value;
+    if (!device_state->properties().GetBooleanWithoutPathExpansion(
+             shill::kCellularAllowRoamingProperty, &current_device_value)) {
+      NET_LOG_ERROR(
+          "Could not get \"allow roaming\" property from cellular "
+          "device.",
+          device_state->path());
+      continue;
+    }
+
+    // If roaming is required by the provider, always try to set to true.
+    bool new_device_value =
+        device_state->provider_requires_roaming() || cellular_allow_roaming_;
+
+    // Only set the value if the current value is different from
+    // |new_device_value|.
+    if (new_device_value == current_device_value)
+      continue;
+
+    SetDevicePropertyInternal(device_state->path(),
+                              shill::kCellularAllowRoamingProperty,
+                              base::FundamentalValue(new_device_value),
+                              base::Bind(&base::DoNothing),
+                              network_handler::ErrorCallback());
+  }
+}
 
 }  // namespace chromeos

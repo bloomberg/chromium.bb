@@ -10,7 +10,12 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chromeos/network/fake_network_device_handler.h"
 #include "chromeos/network/mock_managed_network_configuration_handler.h"
 #include "chromeos/network/onc/mock_certificate_importer.h"
 #include "chromeos/network/onc/onc_test_utils.h"
@@ -69,6 +74,17 @@ class FakeWebTrustedCertsObserver
     trust_anchors_ = trust_anchors;
   }
   net::CertificateList trust_anchors_;
+};
+
+class FakeNetworkDeviceHandler : public chromeos::FakeNetworkDeviceHandler {
+  public:
+   FakeNetworkDeviceHandler() : allow_roaming_(false) {}
+
+   virtual void SetCellularAllowRoaming(bool allow_roaming) OVERRIDE {
+     allow_roaming_ = allow_roaming;
+   }
+
+   bool allow_roaming_;
 };
 
 const char kFakeONC[] =
@@ -188,10 +204,12 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
 
   void CreateNetworkConfigurationUpdaterForDevicePolicy() {
     network_configuration_updater_ =
-        NetworkConfigurationUpdater::CreateForDevicePolicy(
+        DeviceNetworkConfigurationUpdater::CreateForDevicePolicy(
             certificate_importer_owned_.Pass(),
             policy_service_.get(),
-            &network_config_handler_);
+            &network_config_handler_,
+            &network_device_handler_,
+            chromeos::CrosSettings::Get());
   }
 
   base::ListValue fake_network_configs_;
@@ -199,6 +217,11 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   base::ListValue fake_certificates_;
   StrictMock<chromeos::MockManagedNetworkConfigurationHandler>
       network_config_handler_;
+  FakeNetworkDeviceHandler network_device_handler_;
+
+  // Not used directly. Required for CrosSettings.
+  chromeos::ScopedTestDeviceSettingsService scoped_device_settings_service_;
+  chromeos::ScopedTestCrosSettings scoped_cros_settings_;
 
   // Ownership of certificate_importer_owned_ is passed to the
   // NetworkConfigurationUpdater. When that happens, |certificate_importer_|
@@ -214,6 +237,36 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   scoped_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
   content::TestBrowserThreadBundle thread_bundle_;
 };
+
+TEST_F(NetworkConfigurationUpdaterTest, CellularAllowRoaming) {
+  // Ignore networ config updates.
+  EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _)).Times(AtLeast(1));
+  EXPECT_CALL(*certificate_importer_, ImportCertificates(_, _, _))
+      .Times(AtLeast(1));
+
+  // Setup the DataRoaming device setting.
+  chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
+  chromeos::CrosSettingsProvider* device_settings_provider =
+      cros_settings->GetProvider(chromeos::kSignedDataRoamingEnabled);
+  cros_settings->RemoveSettingsProvider(device_settings_provider);
+  delete device_settings_provider;
+  chromeos::StubCrosSettingsProvider* stub_settings_provider =
+      new chromeos::StubCrosSettingsProvider;
+  cros_settings->AddSettingsProvider(stub_settings_provider);
+
+  chromeos::CrosSettings::Get()->Set(chromeos::kSignedDataRoamingEnabled,
+                                     base::FundamentalValue(false));
+  EXPECT_FALSE(network_device_handler_.allow_roaming_);
+
+  CreateNetworkConfigurationUpdaterForDevicePolicy();
+  chromeos::CrosSettings::Get()->Set(chromeos::kSignedDataRoamingEnabled,
+                                     base::FundamentalValue(true));
+  EXPECT_TRUE(network_device_handler_.allow_roaming_);
+
+  chromeos::CrosSettings::Get()->Set(chromeos::kSignedDataRoamingEnabled,
+                                     base::FundamentalValue(false));
+  EXPECT_FALSE(network_device_handler_.allow_roaming_);
+}
 
 TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
   scoped_ptr<base::DictionaryValue> onc_repaired =
