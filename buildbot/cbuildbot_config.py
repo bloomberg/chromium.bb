@@ -11,8 +11,6 @@
 import constants
 import copy
 import json
-import optparse
-import sys
 
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
 
@@ -2116,7 +2114,7 @@ _factory_release.add_config('daisy-factory',
 )
 
 
-def _GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
+def GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
   """Given a config_name, return display position specified by suffix_order.
 
   Args:
@@ -2133,87 +2131,3 @@ def _GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
       return index
 
   return len(type_order)
-
-
-def _InjectDisplayPosition(config_source):
-  """Add field to help buildbot masters order builders on the waterfall."""
-  def _GetSortKey(items):
-    my_config = items[1]
-    # Allow configs to override the display_position.
-    return (my_config.get('display_position', 1000000),
-            _GetDisplayPosition(my_config['name']),
-            my_config['internal'], my_config['vm_tests'])
-
-  source = sorted(config_source.iteritems(), key=_GetSortKey)
-  return dict((name, dict(value.items() + [('display_position', idx)]))
-              for idx, (name, value) in enumerate(source))
-
-
-def main(argv=None):
-  if not argv:
-    argv = sys.argv[1:]
-
-  usage = "usage: %prog [options] [config1 ... configN]"
-  parser = optparse.OptionParser(usage=usage)
-
-  parser.add_option('-c', '--compare', action='store', type='string',
-                    default=None, metavar='file_name',
-                    help=('Compare current config against a saved on disk '
-                          'serialized version of a config.'))
-  parser.add_option('-d', '--dump', action='store_true', default=False,
-                    help=('Dump the configs in JSON format.'))
-  parser.add_option('--for-buildbot', action='store_true', default=False,
-                    help="Include the display position in json data.")
-
-  options, configs = parser.parse_args(argv)
-
-  if options.compare and options.dump:
-    parser.error('Cannot run with --load and --dump at the same time!')
-  elif not options.compare and not options.dump:
-    parser.print_help()
-    sys.exit(0)
-
-  convert = lambda x:x
-  if options.for_buildbot:
-    convert = _InjectDisplayPosition
-
-  my_config = convert(config)
-
-  # If configs specified, only dump/load those.
-  if configs:
-    temp_config = dict()
-    for c in configs:
-      temp_config[c] = my_config[c]
-
-    my_config = temp_config
-
-  if options.dump:
-    print json.dumps(my_config, cls=_JSONEncoder)
-  elif options.compare:
-    with open(options.compare, 'rb') as f:
-      original = convert(json.load(f))
-
-    my_config = json.loads(json.dumps(my_config, cls=_JSONEncoder))
-    for key in sorted(set(my_config.keys() + original.keys())):
-      obj1, obj2 = original.get(key), my_config.get(key)
-      if obj1 == obj2:
-        continue
-      elif obj1 is None:
-        print '%s: added to config\n' % (key,)
-        continue
-      elif obj2 is None:
-        print '%s: removed from config\n' % (key,)
-        continue
-
-      print '%s:' % (key,)
-
-      for subkey in sorted(set(obj1.keys() + obj2.keys())):
-        sobj1, sobj2 = obj1.get(subkey), obj2.get(subkey)
-        if sobj1 != sobj2:
-          print ' %s: %r, %r' % (subkey, sobj1, sobj2)
-
-      print
-
-
-if __name__ == '__main__':
-  main()

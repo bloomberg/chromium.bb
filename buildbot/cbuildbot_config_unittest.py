@@ -6,11 +6,8 @@
 
 """Unittests for config.  Needs to be run inside of chroot for mox."""
 
-import json
 import mock
-import os
 import cPickle
-import subprocess
 import sys
 
 import constants
@@ -190,28 +187,6 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
         self.assertTrue(config['vm_tests'] is None,
                         "ARM builder %s can't run vm tests!" % build_name)
 
-  # TODO: Add test for compare functionality
-  def testJSONDumpLoadable(self):
-    """Make sure config export functionality works."""
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    output = subprocess.Popen(['./cbuildbot_config', '--dump'],
-                              stdout=subprocess.PIPE, cwd=cwd).communicate()[0]
-    configs = json.loads(output)
-    self.assertFalse(not configs)
-
-
-  def testJSONBuildbotDumpHasOrder(self):
-    """Make sure config export functionality works."""
-    cwd = os.path.dirname(os.path.abspath(__file__))
-    output = subprocess.Popen(['./cbuildbot_config', '--dump',
-                               '--for-buildbot'],
-                              stdout=subprocess.PIPE, cwd=cwd).communicate()[0]
-    configs = json.loads(output)
-    for cfg in configs.itervalues():
-      self.assertTrue(cfg['display_position'] is not None)
-
-    self.assertFalse(not configs)
-
   def testHWTestsIFFArchivingHWTestArtifacts(self):
     """Make sure all configs upload artifacts that need them for hw testing."""
     for build_name, config in cbuildbot_config.config.iteritems():
@@ -328,7 +303,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
       my_list = list(cbuildbot_config.CONFIG_TYPE_DUMP_ORDER)
       my_list.remove(config_type)
       self.assertEquals(
-          cbuildbot_config._GetDisplayPosition(
+          cbuildbot_config.GetDisplayPosition(
               config_type, type_order=my_list),
           len(my_list))
 
@@ -342,13 +317,13 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     for index, config_type in enumerate(type_order):
       config = '-'.join(['pre-fix', config_type])
       self.assertEquals(
-          cbuildbot_config._GetDisplayPosition(
+          cbuildbot_config.GetDisplayPosition(
               config, type_order=type_order),
           index)
 
     # Verify suffix needs to match up to a '-'.
     self.assertEquals(
-        cbuildbot_config._GetDisplayPosition(
+        cbuildbot_config.GetDisplayPosition(
             'pre-fix-sometype1', type_order=type_order),
         len(type_order))
 
@@ -356,7 +331,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
     """Verify CONFIG_TYPE_DUMP_ORDER contains all valid config types."""
     for config_name in cbuildbot_config.config:
       self.assertNotEqual(
-          cbuildbot_config._GetDisplayPosition(config_name),
+          cbuildbot_config.GetDisplayPosition(config_name),
           len(cbuildbot_config.CONFIG_TYPE_DUMP_ORDER),
           '%s did not match any types in %s' %
           (config_name, 'cbuildbot_config.CONFIG_TYPE_DUMP_ORDER'))

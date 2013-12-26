@@ -19,28 +19,6 @@ class _JSONEncoder(json.JSONEncoder):
     return self.encode(obj.__dict__)
 
 
-def _GetDisplayPosition(config_name,
-                        type_order=cbuildbot_config.CONFIG_TYPE_DUMP_ORDER):
-  """Given |config_name|, return display position specified by |type_order|.
-
-  If config name does not contain any of the suffixes, returns the index
-  position after the last element of suffix_order.
-
-  Args:
-    config_name: Name of config to look up.
-    type_order: A tuple/list of config types in the order they are to be
-                displayed.
-
-  Returns:
-    The index for |config_name| within |type_order|.
-  """
-  for index, config_type in enumerate(type_order):
-    if config_name.endswith('-' + config_type) or config_name == config_type:
-      return index
-
-  return len(type_order)
-
-
 def _InjectDisplayPosition(config):
   """Add field to help buildbot masters order builders on the waterfall.
 
@@ -54,7 +32,7 @@ def _InjectDisplayPosition(config):
     my_config = items[1]
     # Allow configs to override the display_position.
     return (my_config.get('display_position', 1000000),
-            _GetDisplayPosition(my_config['name']),
+            cbuildbot_config.GetDisplayPosition(my_config['name']),
             my_config['internal'], my_config['vm_tests'])
 
   source = sorted(config.iteritems(), key=_GetSortKey)
