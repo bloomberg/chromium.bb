@@ -115,7 +115,7 @@ TEST_F(BookmarkBarBridgeTest, TestRedirect) {
                                                              model));
   EXPECT_TRUE(bridge.get());
 
-  bridge->Loaded(NULL, false);
+  bridge->BookmarkModelLoaded(NULL, false);
   bridge->BookmarkModelBeingDeleted(NULL);
   bridge->BookmarkNodeMoved(NULL, NULL, 0, NULL, 0);
   bridge->BookmarkNodeAdded(NULL, NULL, 0);

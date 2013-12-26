@@ -833,7 +833,7 @@ void BookmarkModel::DoneLoading(BookmarkLoadDetails* details_delete_me) {
 
   // Notify our direct observers.
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
-                    Loaded(this, details->ids_reassigned()));
+                    BookmarkModelLoaded(this, details->ids_reassigned()));
 }
 
 void BookmarkModel::RemoveAndDeleteNode(BookmarkNode* delete_me) {

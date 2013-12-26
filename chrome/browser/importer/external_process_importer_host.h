@@ -80,7 +80,8 @@ class ExternalProcessImporterHost : public BaseBookmarkModelObserver {
   virtual void LaunchImportIfReady();
 
   // BaseBookmarkModelObserver:
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkModelChanged() OVERRIDE;
 

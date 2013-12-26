@@ -70,7 +70,8 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   // any of the other callback methods. For example, this is called when
   // managed or partner bookmarks change.
   virtual void BookmarkModelChanged() OVERRIDE;
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,

@@ -63,20 +63,21 @@ class BookmarkModelObserverForCocoa : public BookmarkModelObserver {
   // Some notifications we don't care about, but by being pure virtual
   // in the base class we must implement them.
 
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE { }
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE {}
   virtual void BookmarkNodeAdded(BookmarkModel* model,
                                  const BookmarkNode* parent,
-                                 int index) OVERRIDE { }
+                                 int index) OVERRIDE {}
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
-                                          const BookmarkNode* node) OVERRIDE { }
+                                          const BookmarkNode* node) OVERRIDE {}
   virtual void BookmarkNodeChildrenReordered(
       BookmarkModel* model,
-      const BookmarkNode* node) OVERRIDE { }
+      const BookmarkNode* node) OVERRIDE {}
 
   virtual void ExtensiveBookmarkChangesBeginning(
-      BookmarkModel* model) OVERRIDE { }
+      BookmarkModel* model) OVERRIDE {}
 
-  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE { }
+  virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE {}
 
  private:
   BookmarkModel* model_;  // Weak; it is owned by a Profile.

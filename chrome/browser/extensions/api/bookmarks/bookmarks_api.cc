@@ -149,14 +149,14 @@ bool BookmarksFunction::EditBookmarksEnabled() {
 void BookmarksFunction::BookmarkModelChanged() {
 }
 
-void BookmarksFunction::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarksFunction::BookmarkModelLoaded(BookmarkModel* model,
+                                            bool ids_reassigned) {
   model->RemoveObserver(this);
   Run();
   Release();  // Balanced in Run().
 }
 
-BookmarkEventRouter::BookmarkEventRouter(Profile* profile,
-                                         BookmarkModel* model)
+BookmarkEventRouter::BookmarkEventRouter(Profile* profile, BookmarkModel* model)
     : profile_(profile),
       model_(model) {
   model_->AddObserver(this);
@@ -177,7 +177,8 @@ void BookmarkEventRouter::DispatchEvent(
   }
 }
 
-void BookmarkEventRouter::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarkEventRouter::BookmarkModelLoaded(BookmarkModel* model,
+                                              bool ids_reassigned) {
   // TODO(erikkay): Perhaps we should send this event down to the extension
   // so they know when it's safe to use the API?
 }

@@ -59,8 +59,8 @@ BookmarkExpandedStateTracker::GetExpandedNodes() {
   return nodes;
 }
 
-void BookmarkExpandedStateTracker::Loaded(BookmarkModel* model,
-                                          bool ids_reassigned) {
+void BookmarkExpandedStateTracker::BookmarkModelLoaded(BookmarkModel* model,
+                                                       bool ids_reassigned) {
   if (ids_reassigned) {
     // If the ids change we can't trust the value in preferences and need to
     // reset it.

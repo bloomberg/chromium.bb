@@ -973,7 +973,8 @@ void BookmarkBarView::OnBookmarkBubbleHidden() {
   StopThrobbing(false);
 }
 
-void BookmarkBarView::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarkBarView::BookmarkModelLoaded(BookmarkModel* model,
+                                          bool ids_reassigned) {
   // There should be no buttons. If non-zero it means Load was invoked more than
   // once, or we didn't properly clear things. Either of which shouldn't happen.
   DCHECK_EQ(0, GetBookmarkButtonCount());
@@ -1294,7 +1295,7 @@ void BookmarkBarView::Init() {
   if (model_) {
     model_->AddObserver(this);
     if (model_->loaded())
-      Loaded(model_, false);
+      BookmarkModelLoaded(model_, false);
     // else case: we'll receive notification back from the BookmarkModel when
     // done loading, then we'll populate the bar.
   }

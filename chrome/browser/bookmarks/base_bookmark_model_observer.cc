@@ -4,9 +4,8 @@
 
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
 
-void BaseBookmarkModelObserver::Loaded(BookmarkModel* model,
-                                       bool ids_reassigned) {
-}
+void BaseBookmarkModelObserver::BookmarkModelLoaded(BookmarkModel* model,
+                                                    bool ids_reassigned) {}
 
 void BaseBookmarkModelObserver::BookmarkModelBeingDeleted(
     BookmarkModel* model) {

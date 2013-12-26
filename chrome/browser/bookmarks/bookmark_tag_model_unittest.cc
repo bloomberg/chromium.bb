@@ -102,9 +102,8 @@ class BookmarkTagModelTest
   virtual ~BookmarkTagModelTest() {
   }
 
-  // BookmarkTagModelObserver methods.
-
-  virtual void Loaded(BookmarkTagModel* model) OVERRIDE {
+  // BookmarkTagModelObserver:
+  virtual void BookmarkTagModelLoaded(BookmarkTagModel* model) OVERRIDE {
     // We never load from the db, so that this should never get invoked.
     NOTREACHED();
   }

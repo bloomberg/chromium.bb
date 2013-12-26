@@ -101,7 +101,8 @@ void BookmarkTabHelper::UpdateStarredStateForCurrentURL() {
 void BookmarkTabHelper::BookmarkModelChanged() {
 }
 
-void BookmarkTabHelper::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarkTabHelper::BookmarkModelLoaded(BookmarkModel* model,
+                                            bool ids_reassigned) {
   UpdateStarredStateForCurrentURL();
 }
 

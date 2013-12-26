@@ -204,8 +204,8 @@ void BookmarkChangeProcessor::RemoveAllChildNodes(
   }
 }
 
-void BookmarkChangeProcessor::Loaded(BookmarkModel* model,
-                                     bool ids_reassigned) {
+void BookmarkChangeProcessor::BookmarkModelLoaded(BookmarkModel* model,
+                                                  bool ids_reassigned) {
   NOTREACHED();
 }
 

@@ -20,9 +20,8 @@ class BookmarkNode;
 // list always contains the Bookmarks Bar, Other Bookmarks and the parent
 // folder. The list also contains an extra item that shows the text
 // "Choose Another Folder...".
-class RecentlyUsedFoldersComboModel
-    : public ui::ComboboxModel,
-      public BookmarkModelObserver {
+class RecentlyUsedFoldersComboModel : public ui::ComboboxModel,
+                                      public BookmarkModelObserver {
  public:
   RecentlyUsedFoldersComboModel(BookmarkModel* model, const BookmarkNode* node);
   virtual ~RecentlyUsedFoldersComboModel();
@@ -35,8 +34,9 @@ class RecentlyUsedFoldersComboModel
   virtual void AddObserver(ui::ComboboxModelObserver* observer) OVERRIDE;
   virtual void RemoveObserver(ui::ComboboxModelObserver* observer) OVERRIDE;
 
-  // Overriden from BaseBookmarkModelObserver:
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  // Overriden from BookmarkModelObserver:
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,

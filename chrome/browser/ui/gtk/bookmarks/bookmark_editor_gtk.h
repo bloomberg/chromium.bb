@@ -58,7 +58,8 @@ class BookmarkEditorGtk : public BookmarkEditor,
 
   // BookmarkModel observer methods. Any structural change results in
   // resetting the tree model.
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {}
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE {}
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,

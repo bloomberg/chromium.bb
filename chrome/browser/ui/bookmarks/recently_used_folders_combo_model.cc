@@ -134,10 +134,8 @@ void RecentlyUsedFoldersComboModel::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-
-void RecentlyUsedFoldersComboModel::Loaded(BookmarkModel* model,
-                                           bool ids_reassigned) {
-}
+void RecentlyUsedFoldersComboModel::BookmarkModelLoaded(BookmarkModel* model,
+                                                        bool ids_reassigned) {}
 
 void RecentlyUsedFoldersComboModel::BookmarkModelBeingDeleted(
     BookmarkModel* model) {

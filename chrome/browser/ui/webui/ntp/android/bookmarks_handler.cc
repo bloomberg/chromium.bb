@@ -346,7 +346,8 @@ void BookmarksHandler::SendResult(const base::DictionaryValue& result) {
   web_ui()->CallJavascriptFunction("ntp.bookmarks", result);
 }
 
-void BookmarksHandler::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarksHandler::BookmarkModelLoaded(BookmarkModel* model,
+                                           bool ids_reassigned) {
   if (AreModelsLoaded())
     BookmarkModelChanged();
 }

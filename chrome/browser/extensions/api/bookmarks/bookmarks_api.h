@@ -34,7 +34,8 @@ class BookmarkEventRouter : public BookmarkModelObserver {
   virtual ~BookmarkEventRouter();
 
   // BookmarkModelObserver:
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
@@ -126,7 +127,8 @@ class BookmarksFunction : public ChromeAsyncExtensionFunction,
  private:
   // BaseBookmarkModelObserver:
   virtual void BookmarkModelChanged() OVERRIDE;
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
 };
 
 class BookmarksGetFunction : public BookmarksFunction {

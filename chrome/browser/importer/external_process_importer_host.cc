@@ -115,8 +115,8 @@ void ExternalProcessImporterHost::LaunchImportIfReady() {
   client_->Start();
 }
 
-void ExternalProcessImporterHost::Loaded(BookmarkModel* model,
-                                         bool ids_reassigned) {
+void ExternalProcessImporterHost::BookmarkModelLoaded(BookmarkModel* model,
+                                                      bool ids_reassigned) {
   DCHECK(model->loaded());
   model->RemoveObserver(this);
   waiting_for_bookmarkbar_model_ = false;

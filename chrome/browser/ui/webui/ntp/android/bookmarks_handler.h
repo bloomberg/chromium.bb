@@ -69,7 +69,8 @@ class BookmarksHandler : public content::WebUIMessageHandler,
   void HandleCreateHomeScreenBookmarkShortcut(const base::ListValue* args);
 
   // Override the methods of BookmarkModelObserver
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelChanged() OVERRIDE;
   virtual void ExtensiveBookmarkChangesBeginning(BookmarkModel* model) OVERRIDE;
   virtual void ExtensiveBookmarkChangesEnded(BookmarkModel* model) OVERRIDE;

@@ -305,7 +305,7 @@ void BookmarkBarGtk::Init() {
   model_ = BookmarkModelFactory::GetForProfile(profile);
   model_->AddObserver(this);
   if (model_->loaded())
-    Loaded(model_, false);
+    BookmarkModelLoaded(model_, false);
   // else case: we'll receive notification back from the BookmarkModel when done
   // loading, then we'll populate the bar.
 }
@@ -879,7 +879,8 @@ void BookmarkBarGtk::ClearToolbarDropHighlighting() {
                                       NULL, 0);
 }
 
-void BookmarkBarGtk::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarkBarGtk::BookmarkModelLoaded(BookmarkModel* model,
+                                         bool ids_reassigned) {
   // If |instructions_| has been nulled, we are in the middle of browser
   // shutdown. Do nothing.
   if (!instructions_)

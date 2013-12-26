@@ -330,7 +330,8 @@ void BookmarksBridge::BookmarkModelChanged() {
   Java_BookmarksBridge_bookmarkModelChanged(env, obj.obj());
 }
 
-void BookmarksBridge::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarksBridge::BookmarkModelLoaded(BookmarkModel* model,
+                                          bool ids_reassigned) {
   NotifyIfDoneLoading();
 }
 

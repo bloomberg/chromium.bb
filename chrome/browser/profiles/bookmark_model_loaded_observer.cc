@@ -14,8 +14,8 @@ BookmarkModelLoadedObserver::BookmarkModelLoadedObserver(Profile* profile)
 void BookmarkModelLoadedObserver::BookmarkModelChanged() {
 }
 
-void BookmarkModelLoadedObserver::Loaded(BookmarkModel* model,
-                                         bool ids_reassigned) {
+void BookmarkModelLoadedObserver::BookmarkModelLoaded(BookmarkModel* model,
+                                                      bool ids_reassigned) {
   // Causes lazy-load if sync is enabled.
   ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   model->RemoveObserver(this);

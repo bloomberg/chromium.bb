@@ -208,15 +208,9 @@ class BookmarkBarGtk : public gfx::AnimationDelegate,
   void ClearToolbarDropHighlighting();
 
   // Overridden from BookmarkModelObserver:
-
-  // Invoked when the bookmark model has finished loading. Creates a button
-  // for each of the children of the root node from the model.
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
-
-  // Invoked when the model is being deleted.
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
-
-  // Invoked when a node has moved.
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,
@@ -232,7 +226,6 @@ class BookmarkBarGtk : public gfx::AnimationDelegate,
   virtual void BookmarkAllNodesRemoved(BookmarkModel* model) OVERRIDE;
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) OVERRIDE;
-  // Invoked when a favicon has finished loading.
   virtual void BookmarkNodeFaviconChanged(BookmarkModel* model,
                                           const BookmarkNode* node) OVERRIDE;
   virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,

@@ -42,7 +42,8 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
 
   // BaseBookmarkModelObserver interface.
   virtual void BookmarkModelChanged() OVERRIDE;
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
 
   // Helper that returns true iff both the bookmark model and the history

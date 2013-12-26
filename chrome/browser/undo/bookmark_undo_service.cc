@@ -401,7 +401,8 @@ void BookmarkUndoService::OnBookmarkRenumbered(int64 old_id, int64 new_id) {
   }
 }
 
-void BookmarkUndoService::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarkUndoService::BookmarkModelLoaded(BookmarkModel* model,
+                                              bool ids_reassigned) {
   undo_manager_.RemoveAllOperations();
 }
 

@@ -93,12 +93,13 @@ class BookmarkSubMenuModel : public BookmarkNodeMenuModel,
   // See below; this is used to allow closing the menu when bookmarks change.
   void SetMenuGtk(MenuGtk* menu) { menu_ = menu; }
 
-  // From BookmarkModelObserver, BaseBookmarkModelObserver.
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  // BaseBookmarkModelObserver:
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE;
   virtual void BookmarkModelChanged() OVERRIDE;
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
 
-  // From MenuModel via BookmarkNodeMenuModel, SimpleMenuModel.
+  // BookmarkNodeMenuModel:
   virtual void MenuWillShow() OVERRIDE;
   virtual void MenuClosed() OVERRIDE;
   virtual void ActivatedAt(int index) OVERRIDE;

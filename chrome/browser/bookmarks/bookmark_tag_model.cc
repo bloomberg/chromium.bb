@@ -307,7 +307,8 @@ std::vector<BookmarkTag> BookmarkTagModel::TagsRelatedToTag(
 
 // BookmarkModelObserver methods.
 
-void BookmarkTagModel::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarkTagModel::BookmarkModelLoaded(BookmarkModel* model,
+                                           bool ids_reassigned) {
   Load();
 }
 
@@ -505,7 +506,7 @@ void BookmarkTagModel::Load() {
   }
   loaded_ = true;
   FOR_EACH_OBSERVER(BookmarkTagModelObserver, observers_,
-                    Loaded(this));
+                    BookmarkTagModelLoaded(this));
 }
 
 void BookmarkTagModel::ReloadDescendants(const BookmarkNode* folder) {

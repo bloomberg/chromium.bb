@@ -143,7 +143,8 @@ BookmarkSubMenuModel::~BookmarkSubMenuModel() {
     model()->RemoveObserver(this);
 }
 
-void BookmarkSubMenuModel::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarkSubMenuModel::BookmarkModelLoaded(BookmarkModel* model,
+                                               bool ids_reassigned) {
   // For now, just close the menu when the bookmarks are finished loading.
   // TODO(mdm): it would be slicker to just populate the menu while it's open.
   BookmarkModelChanged();

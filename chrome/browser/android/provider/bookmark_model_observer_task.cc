@@ -31,9 +31,8 @@ BookmarkModelObserverTask::~BookmarkModelObserverTask() {
   model()->RemoveObserver(this);
 }
 
-void BookmarkModelObserverTask::Loaded(BookmarkModel* model,
-                                       bool ids_reassigned) {
-}
+void BookmarkModelObserverTask::BookmarkModelLoaded(BookmarkModel* model,
+                                                    bool ids_reassigned) {}
 
 void BookmarkModelObserverTask::BookmarkNodeMoved(
     BookmarkModel* model,

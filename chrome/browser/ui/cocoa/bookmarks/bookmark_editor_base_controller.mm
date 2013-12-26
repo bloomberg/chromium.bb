@@ -119,7 +119,8 @@ class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
         importing_(false)
   { }
 
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE {
     [controller_ modelChangedPreserveSelection:YES];
   }
 

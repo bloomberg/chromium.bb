@@ -90,8 +90,8 @@ void BookmarkDataTypeController::CreateSyncComponents() {
 void BookmarkDataTypeController::BookmarkModelChanged() {
 }
 
-void BookmarkDataTypeController::Loaded(BookmarkModel* model,
-                                        bool ids_reassigned) {
+void BookmarkDataTypeController::BookmarkModelLoaded(BookmarkModel* model,
+                                                     bool ids_reassigned) {
   DCHECK(model->loaded());
   model->RemoveObserver(this);
   installed_bookmark_observer_ = false;

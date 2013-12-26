@@ -12,7 +12,7 @@ class BookmarkNode;
 class BookmarkTagModelObserver {
  public:
   // Invoked when the model has finished loading.
-  virtual void Loaded(BookmarkTagModel* model) = 0;
+  virtual void BookmarkTagModelLoaded(BookmarkTagModel* model) = 0;
 
   // Invoked from the destructor of the BookmarkTagModel.
   virtual void BookmarkTagModelBeingDeleted(BookmarkTagModel* model) {}

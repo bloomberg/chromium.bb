@@ -81,7 +81,8 @@ class FaviconChangeObserver : public BookmarkModelObserver {
     wait_for_load_ = false;
     content::RunMessageLoop();
   }
-  virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE {}
+  virtual void BookmarkModelLoaded(BookmarkModel* model,
+                                   bool ids_reassigned) OVERRIDE {}
   virtual void BookmarkNodeMoved(BookmarkModel* model,
                                  const BookmarkNode* old_parent,
                                  int old_index,

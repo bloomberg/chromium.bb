@@ -23,7 +23,7 @@ BookmarkBarBridge::BookmarkBarBridge(Profile* profile,
   // Bookmark loading is async; it may may not have happened yet.
   // We will be notified when that happens with the AddObserver() call.
   if (model->loaded())
-    Loaded(model, false);
+    BookmarkModelLoaded(model, false);
 
   profile_pref_registrar_.Init(profile->GetPrefs());
   profile_pref_registrar_.Add(
@@ -38,7 +38,8 @@ BookmarkBarBridge::~BookmarkBarBridge() {
   model_->RemoveObserver(this);
 }
 
-void BookmarkBarBridge::Loaded(BookmarkModel* model, bool ids_reassigned) {
+void BookmarkBarBridge::BookmarkModelLoaded(BookmarkModel* model,
+                                            bool ids_reassigned) {
   [controller_ loaded:model];
 }
 
