@@ -18,6 +18,7 @@
   # libraries.
   'first_order_libraries': [
     '<(_sanitizer_type)-libcairo2',
+    '<(_sanitizer_type)-libdbus-1-3',
     '<(_sanitizer_type)-libexpat1',
     '<(_sanitizer_type)-libffi6',
     '<(_sanitizer_type)-libgcrypt11',
@@ -54,6 +55,7 @@
     ['asan==1', {
       'sanitizer_type': 'asan',
       'first_order_libraries': [
+        '<(_sanitizer_type)-libdbus-glib-1-2',
         '<(_sanitizer_type)-libfontconfig1',
         '<(_sanitizer_type)-libglib2.0-0',
       ],
@@ -98,6 +100,16 @@
       'library_name': 'libcairo2',
       'dependencies=': [],
       'custom_configure_flags': '--disable-gtk-doc',
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libdbus-1-3',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'library_name': 'libdbus-glib-1-2',
+      'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
