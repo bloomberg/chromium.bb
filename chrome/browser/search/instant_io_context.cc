@@ -87,8 +87,8 @@ bool InstantIOContext::ShouldServiceRequest(const net::URLRequest* request) {
     return false;
 
   int process_id = -1;
-  int render_view_id = -1;
-  if (info->GetAssociatedRenderView(&process_id, &render_view_id) &&
+  int render_frame_id = -1;
+  if (info->GetAssociatedRenderFrame(&process_id, &render_frame_id) &&
       instant_io_context->IsInstantProcess(process_id))
     return true;
   return false;
