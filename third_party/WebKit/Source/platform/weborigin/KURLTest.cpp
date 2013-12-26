@@ -288,7 +288,7 @@ TEST(KURLTest, Decode)
     // Test the error behavior for invalid UTF-8 (we differ from WebKit here).
     WTF::String invalid = WebCore::decodeURLEscapeSequences(
         "%e4%a0%e5%a5%bd");
-    char16 invalidExpectedHelper[4] = { 0x00e4, 0x00a0, 0x597d, 0 };
+    UChar invalidExpectedHelper[4] = { 0x00e4, 0x00a0, 0x597d, 0 };
     WTF::String invalidExpected(
         reinterpret_cast<const ::UChar*>(invalidExpectedHelper),
         3);
@@ -334,7 +334,7 @@ TEST(KURLTest, Encode)
     EXPECT_EQ(reference, output);
 
     // Also test that it gets converted to UTF-8 properly.
-    char16 wideInputHelper[3] = { 0x4f60, 0x597d, 0 };
+    UChar wideInputHelper[3] = { 0x4f60, 0x597d, 0 };
     WTF::String wideInput(
         reinterpret_cast<const ::UChar*>(wideInputHelper), 2);
     WTF::String wideReference("%E4%BD%A0%E5%A5%BD");
