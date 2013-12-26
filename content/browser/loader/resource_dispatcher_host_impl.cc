@@ -284,6 +284,8 @@ void NotifyRedirectOnUI(int render_process_id,
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
+  if (!web_contents)
+    return;
   web_contents->DidGetRedirectForResourceRequest(
       host->render_view_host(), *details.get());
 }
@@ -298,6 +300,8 @@ void NotifyResponseOnUI(int render_process_id,
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(host));
+  if (!web_contents)
+    return;
   web_contents->DidGetResourceResponseStart(*details.get());
 }
 
