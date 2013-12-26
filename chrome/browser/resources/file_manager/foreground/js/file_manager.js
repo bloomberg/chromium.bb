@@ -1219,7 +1219,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // Preload a thumbnail if the new copied entry an image.
       this.metadataCache_.get(entry, 'thumbnail|drive', function(metadata) {
         var thumbnailLoader_ = new ThumbnailLoader(
-            entry.toURL(),
+            entry,
             ThumbnailLoader.LoaderType.CANVAS,
             metadata,
             undefined,  // Media type.
