@@ -1151,8 +1151,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         @Override
         public boolean sendTouchEvent(long timeMs, int action, TouchPoint[] pts) {
-            // Not implemented.
-            return false;
+            return true;
         }
 
         @Override
@@ -2228,16 +2227,16 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
                 MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, eventTime);
                 assertTrue(mGestureHandler.onTouchEvent(event));
                 mGestureHandler.confirmTouchEvent(
-                    ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+                        ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
                 assertTrue("Should have a pending LONG_PRESS",
                         mLongPressDetector.hasPendingMessage());
 
                 event = MotionEvent.obtain(
-                    downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
-                    FAKE_COORD_X, FAKE_COORD_Y + 200, 0);
+                        downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                        FAKE_COORD_X, FAKE_COORD_Y + 200, 0);
                 assertTrue(mGestureHandler.onTouchEvent(event));
                 mGestureHandler.confirmTouchEvent(
-                    ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+                        ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
                 assertFalse("Should not have a pending LONG_PRESS",
                         mLongPressDetector.hasPendingMessage());
             }
@@ -2248,5 +2247,52 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertFalse(mMockListener.mLongPressCalled.await(
                 ScalableTimeout.ScaleTimeout(ViewConfiguration.getLongPressTimeout() + 10),
                 TimeUnit.MILLISECONDS));
+    }
+
+    /**
+     * Verify that a TAP_DOWN will be followed by a TAP_CANCEL if the first
+     * touch is unconsumed, but the subsequent touch is consumed.
+     *
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testTapCancelledAfterTouchConsumed() throws Exception {
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), mockDelegate, mMockZoomManager);
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals("A TAP_DOWN gesture should have been sent",
+                ContentViewGestureHandler.GESTURE_TAP_DOWN,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X, FAKE_COORD_Y + 200, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals("A TAP_CANCEL gesture should have been sent",
+                ContentViewGestureHandler.GESTURE_TAP_CANCEL,
+                        mockDelegate.mMostRecentGestureEvent.mType);
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 15, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X, FAKE_COORD_Y + 400, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals("No further gestures should be sent",
+                ContentViewGestureHandler.GESTURE_TAP_CANCEL,
+                        mockDelegate.mMostRecentGestureEvent.mType);
     }
 }

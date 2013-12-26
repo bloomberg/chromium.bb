@@ -993,6 +993,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                 case INPUT_EVENT_ACK_STATE_IGNORED:
                     if (mTouchHandlingState != JAVASCRIPT_CONSUMING_GESTURE
                             && ackedEvent.getActionMasked() != MotionEvent.ACTION_DOWN) {
+                        sendTapCancelIfNecessary(ackedEvent);
                         resetGestureHandlers();
                     } else {
                         mZoomManager.passTouchEventThrough(ackedEvent);
