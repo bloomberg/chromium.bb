@@ -88,11 +88,18 @@ DirectoryModel.prototype.getFileListSelection = function() {
 };
 
 /**
- * @return {RootType} Root type of current root.
+ * @return {?RootType} Root type of current root, or null if not found.
  */
 DirectoryModel.prototype.getCurrentRootType = function() {
   var entry = this.currentDirContents_.getDirectoryEntry();
-  return PathUtil.getRootType(entry ? entry.fullPath : '');
+  if (!entry)
+    return null;
+
+  var locationInfo = this.volumeManager_.getLocationInfo(entry);
+  if (!locationInfo)
+    return null;
+
+  return locationInfo.rootType;
 };
 
 /**
