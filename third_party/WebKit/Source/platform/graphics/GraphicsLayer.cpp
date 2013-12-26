@@ -31,7 +31,6 @@
 #include "SkMatrix44.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
