@@ -494,7 +494,7 @@ void DisplayDebugMessageInDialog(const std::string& str) {
     backslash[1] = 0;
   wcscat_s(prog_name, MAX_PATH, L"debug_message.exe");
 
-  std::wstring cmdline = UTF8ToWide(str);
+  std::wstring cmdline = base::UTF8ToWide(str);
   if (cmdline.empty())
     return;
 
@@ -862,5 +862,5 @@ std::wstring GetLogFileFullPath() {
 }  // namespace logging
 
 std::ostream& operator<<(std::ostream& out, const wchar_t* wstr) {
-  return out << WideToUTF8(std::wstring(wstr));
+  return out << base::WideToUTF8(std::wstring(wstr));
 }

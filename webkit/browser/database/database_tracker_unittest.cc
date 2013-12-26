@@ -20,7 +20,7 @@
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/database/database_identifier.h"
 
-using base::ASCIIToWide;
+using base::ASCIIToUTF16;
 
 namespace {
 

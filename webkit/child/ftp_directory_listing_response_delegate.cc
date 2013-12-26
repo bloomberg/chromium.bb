@@ -48,7 +48,7 @@ base::string16 ConvertPathToUTF16(const std::string& path) {
   }
 
   // Use system native encoding as the last resort.
-  return WideToUTF16Hack(base::SysNativeMBToWide(path));
+  return base::WideToUTF16Hack(base::SysNativeMBToWide(path));
 }
 
 }  // namespace

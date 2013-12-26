@@ -12,6 +12,7 @@
 #include "ui/views/test/views_test_base.h"
 
 using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 
 namespace views {
 namespace corewm {

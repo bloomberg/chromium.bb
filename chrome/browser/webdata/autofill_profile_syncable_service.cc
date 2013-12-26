@@ -20,6 +20,7 @@
 #include "sync/protocol/sync.pb.h"
 
 using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 using base::UTF16ToUTF8;
 using autofill::AutofillCountry;
 using autofill::ServerFieldType;

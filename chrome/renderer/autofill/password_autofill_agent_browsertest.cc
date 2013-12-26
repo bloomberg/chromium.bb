@@ -25,6 +25,8 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using autofill::PasswordForm;
+using base::ASCIIToUTF16;
+using base::UTF16ToUTF8;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFrame;

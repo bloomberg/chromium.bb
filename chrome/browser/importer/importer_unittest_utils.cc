@@ -10,10 +10,12 @@
 
 void TestEqualBookmarkEntry(const ImportedBookmarkEntry& entry,
                             const BookmarkInfo& expected) {
-  ASSERT_EQ(WideToUTF16Hack(expected.title), entry.title);
+  ASSERT_EQ(base::WideToUTF16Hack(expected.title), entry.title);
   ASSERT_EQ(expected.in_toolbar, entry.in_toolbar) << entry.title;
   ASSERT_EQ(expected.path_size, entry.path.size()) << entry.title;
   ASSERT_EQ(expected.url, entry.url.spec()) << entry.title;
-  for (size_t i = 0; i < expected.path_size; ++i)
-    ASSERT_EQ(WideToUTF16Hack(expected.path[i]), entry.path[i]) << entry.title;
+  for (size_t i = 0; i < expected.path_size; ++i) {
+    ASSERT_EQ(base::WideToUTF16Hack(expected.path[i]),
+              entry.path[i]) << entry.title;
+  }
 }

@@ -332,8 +332,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_SearchWithinSpecialURL) {
   FlushHistoryService();
   EXPECT_EQ(1,
             FindInPageWchar(web_contents,
-                            ASCIIToWide(download_url.spec()).c_str(), kFwd,
-                            kIgnoreCase, NULL));
+                            base::ASCIIToWide(download_url.spec()).c_str(),
+                            kFwd, kIgnoreCase, NULL));
 }
 
 // Verify search selection coordinates. The data file used is set-up such that
@@ -416,7 +416,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindLongString) {
       base::FilePath().AppendASCII("LongFind.txt"));
   std::string query;
   base::ReadFileToString(path, &query);
-  std::wstring search_string = UTF8ToWide(query);
+  std::wstring search_string = base::UTF8ToWide(query);
   EXPECT_EQ(1,
             FindInPageWchar(web_contents, search_string.c_str(),
                             kFwd, kIgnoreCase, NULL));
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindWholeFileContent) {
 
   std::string query;
   base::ReadFileToString(path, &query);
-  std::wstring search_string = UTF8ToWide(query);
+  std::wstring search_string = base::UTF8ToWide(query);
   EXPECT_EQ(1,
             FindInPageWchar(web_contents, search_string.c_str(),
                             false, false, NULL));

@@ -12,7 +12,7 @@
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/browser/database/databases_table.h"
 
-using base::ASCIIToWide;
+using base::ASCIIToUTF16;
 
 namespace webkit_database {
 

@@ -15,6 +15,7 @@
 // Tests for Hunspell functionality in SpellcheckingProvider
 
 using base::ASCIIToUTF16;
+using base::WideToUTF16;
 
 namespace {
 

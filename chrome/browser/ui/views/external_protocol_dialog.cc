@@ -135,8 +135,9 @@ ExternalProtocolDialog::ExternalProtocolDialog(const GURL& url,
   base::string16 elided_url_without_scheme;
   base::string16 elided_command;
   gfx::ElideString(base::ASCIIToUTF16(url.possibly_invalid_spec()),
-                  kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  gfx::ElideString(WideToUTF16Hack(command), kMaxCommandSize, &elided_command);
+                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
+  gfx::ElideString(base::WideToUTF16Hack(command),
+                   kMaxCommandSize, &elided_command);
 
   base::string16 message_text = l10n_util::GetStringFUTF16(
       IDS_EXTERNAL_PROTOCOL_INFORMATION,

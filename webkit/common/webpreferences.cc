@@ -148,19 +148,19 @@ WebPreferences::WebPreferences()
 #endif
 {
   standard_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Times New Roman");
+      base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Courier New");
+      base::ASCIIToUTF16("Courier New");
   serif_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Times New Roman");
+      base::ASCIIToUTF16("Times New Roman");
   sans_serif_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Arial");
+      base::ASCIIToUTF16("Arial");
   cursive_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Script");
+      base::ASCIIToUTF16("Script");
   fantasy_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Impact");
+      base::ASCIIToUTF16("Impact");
   pictograph_font_family_map[webkit_glue::kCommonScript] =
-      ASCIIToUTF16("Times New Roman");
+      base::ASCIIToUTF16("Times New Roman");
 }
 
 WebPreferences::~WebPreferences() {

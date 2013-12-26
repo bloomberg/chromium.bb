@@ -73,9 +73,9 @@ TEST_F(FileUtilICUTest, ReplaceIllegalCharactersInPathTest) {
     file_util::ReplaceIllegalCharactersInPath(&bad_name, '-');
     EXPECT_EQ(kIllegalCharacterCases[i].good_name, bad_name);
 #elif defined(OS_MACOSX)
-    std::string bad_name(WideToUTF8(kIllegalCharacterCases[i].bad_name));
+    std::string bad_name(base::WideToUTF8(kIllegalCharacterCases[i].bad_name));
     file_util::ReplaceIllegalCharactersInPath(&bad_name, '-');
-    EXPECT_EQ(WideToUTF8(kIllegalCharacterCases[i].good_name), bad_name);
+    EXPECT_EQ(base::WideToUTF8(kIllegalCharacterCases[i].good_name), bad_name);
 #endif
   }
 }

@@ -198,10 +198,14 @@ TEST(CommandLineTest, GetArgumentsString) {
   cl.AppendArg(kFourthArgName);
 
 #if defined(OS_WIN)
-  CommandLine::StringType expected_first_arg(UTF8ToUTF16(kFirstArgName));
-  CommandLine::StringType expected_second_arg(UTF8ToUTF16(kSecondArgName));
-  CommandLine::StringType expected_third_arg(UTF8ToUTF16(kThirdArgName));
-  CommandLine::StringType expected_fourth_arg(UTF8ToUTF16(kFourthArgName));
+  CommandLine::StringType expected_first_arg(
+      base::UTF8ToUTF16(kFirstArgName));
+  CommandLine::StringType expected_second_arg(
+      base::UTF8ToUTF16(kSecondArgName));
+  CommandLine::StringType expected_third_arg(
+      base::UTF8ToUTF16(kThirdArgName));
+  CommandLine::StringType expected_fourth_arg(
+      base::UTF8ToUTF16(kFourthArgName));
 #elif defined(OS_POSIX)
   CommandLine::StringType expected_first_arg(kFirstArgName);
   CommandLine::StringType expected_second_arg(kSecondArgName);

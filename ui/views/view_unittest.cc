@@ -42,6 +42,8 @@
 #include "ui/events/gestures/gesture_recognizer.h"
 #endif
 
+using base::ASCIIToUTF16;
+
 namespace {
 
 // Returns true if |ancestor| is an ancestor of |layer|.

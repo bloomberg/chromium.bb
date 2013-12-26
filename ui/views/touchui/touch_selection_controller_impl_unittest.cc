@@ -24,6 +24,7 @@
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
+using base::WideToUTF16;
 
 namespace {
 // Should match kSelectionHandlePadding in touch_selection_controller.

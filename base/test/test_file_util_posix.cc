@@ -89,10 +89,10 @@ bool EvictFileFromSystemCache(const base::FilePath& file) {
 #endif
 
 std::wstring FilePathAsWString(const base::FilePath& path) {
-  return UTF8ToWide(path.value());
+  return base::UTF8ToWide(path.value());
 }
 base::FilePath WStringAsFilePath(const std::wstring& path) {
-  return base::FilePath(WideToUTF8(path));
+  return base::FilePath(base::WideToUTF8(path));
 }
 
 bool MakeFileUnreadable(const base::FilePath& path) {

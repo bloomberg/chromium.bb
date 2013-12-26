@@ -84,7 +84,8 @@ int fdatasync(int fildes) {
 // Wide-char safe fopen wrapper.
 FILE* fopen_internal(const char* fname, const char* mode) {
 #if defined(OS_WIN)
-  return _wfopen(UTF8ToUTF16(fname).c_str(), ASCIIToUTF16(mode).c_str());
+  return _wfopen(base::UTF8ToUTF16(fname).c_str(),
+                 base::ASCIIToUTF16(mode).c_str());
 #else
   return fopen(fname, mode);
 #endif
@@ -92,7 +93,7 @@ FILE* fopen_internal(const char* fname, const char* mode) {
 
 base::FilePath CreateFilePath(const std::string& file_path) {
 #if defined(OS_WIN)
-  return base::FilePath(UTF8ToUTF16(file_path));
+  return base::FilePath(base::UTF8ToUTF16(file_path));
 #else
   return base::FilePath(file_path);
 #endif
@@ -487,7 +488,7 @@ bool IsCorruption(const leveldb::Status& status) {
 
 std::string FilePathToString(const base::FilePath& file_path) {
 #if defined(OS_WIN)
-  return UTF16ToUTF8(file_path.value());
+  return base::UTF16ToUTF8(file_path.value());
 #else
   return file_path.value();
 #endif

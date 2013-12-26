@@ -339,7 +339,7 @@ void CommandLine::AppendSwitchNative(const std::string& switch_string,
                                      const CommandLine::StringType& value) {
   std::string switch_key(LowerASCIIOnWindows(switch_string));
 #if defined(OS_WIN)
-  StringType combined_switch_string(ASCIIToWide(switch_key));
+  StringType combined_switch_string(base::ASCIIToWide(switch_key));
 #elif defined(OS_POSIX)
   StringType combined_switch_string(switch_string);
 #endif
@@ -357,7 +357,7 @@ void CommandLine::AppendSwitchNative(const std::string& switch_string,
 void CommandLine::AppendSwitchASCII(const std::string& switch_string,
                                     const std::string& value_string) {
 #if defined(OS_WIN)
-  AppendSwitchNative(switch_string, ASCIIToWide(value_string));
+  AppendSwitchNative(switch_string, base::ASCIIToWide(value_string));
 #elif defined(OS_POSIX)
   AppendSwitchNative(switch_string, value_string);
 #endif
@@ -386,7 +386,7 @@ CommandLine::StringVector CommandLine::GetArgs() const {
 void CommandLine::AppendArg(const std::string& value) {
 #if defined(OS_WIN)
   DCHECK(IsStringUTF8(value));
-  AppendArgNative(UTF8ToWide(value));
+  AppendArgNative(base::UTF8ToWide(value));
 #elif defined(OS_POSIX)
   AppendArgNative(value);
 #endif

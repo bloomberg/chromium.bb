@@ -532,7 +532,7 @@ string16 FormatBytesUnlocalized(int64 bytes) {
                    kByteStringsUnlocalized[dimension]);
   }
 
-  return ASCIIToUTF16(buf);
+  return base::ASCIIToUTF16(buf);
 }
 
 template<class StringType>

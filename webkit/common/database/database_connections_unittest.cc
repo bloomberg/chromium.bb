@@ -9,7 +9,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/common/database/database_connections.h"
 
-using base::ASCIIToWide;
+using base::ASCIIToUTF16;
 
 namespace webkit_database {
 

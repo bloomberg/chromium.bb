@@ -117,7 +117,7 @@ TEST(FormFieldTest, Match) {
   EXPECT_FALSE(FormField::Match(&field, ASCIIToUTF16("\\bcon\\b"),
                                 FormField::MATCH_LABEL));
   // Make sure the circumflex in 'crepe' is not treated as a word boundary.
-  field.label = UTF8ToUTF16("cr" "\xC3\xAA" "pe");
+  field.label = base::UTF8ToUTF16("cr" "\xC3\xAA" "pe");
   EXPECT_FALSE(FormField::Match(&field, ASCIIToUTF16("\\bcr\\b"),
                                 FormField::MATCH_LABEL));
 }

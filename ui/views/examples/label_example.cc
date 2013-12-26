@@ -11,6 +11,7 @@
 #include "ui/views/view.h"
 
 using base::ASCIIToUTF16;
+using base::WideToUTF16;
 
 namespace views {
 namespace examples {

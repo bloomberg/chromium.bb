@@ -29,6 +29,7 @@
 #endif
 
 using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 using base::WideToUTF16;
 
 namespace gfx {

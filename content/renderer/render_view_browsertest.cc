@@ -69,7 +69,7 @@ using blink::WebString;
 using blink::WebTextDirection;
 using blink::WebURLError;
 
-namespace content  {
+namespace content {
 
 namespace {
 
@@ -1067,7 +1067,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_SETCOMPOSITION:
         view()->OnImeSetComposition(
-            WideToUTF16Hack(ime_message->ime_string),
+            base::WideToUTF16Hack(ime_message->ime_string),
             std::vector<blink::WebCompositionUnderline>(),
             ime_message->selection_start,
             ime_message->selection_end);
@@ -1075,7 +1075,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_CONFIRMCOMPOSITION:
         view()->OnImeConfirmComposition(
-            WideToUTF16Hack(ime_message->ime_string),
+            base::WideToUTF16Hack(ime_message->ime_string),
             gfx::Range::InvalidRange(),
             false);
         break;
@@ -1098,7 +1098,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       // Retrieve the content of this page and compare it with the expected
       // result.
       const int kMaxOutputCharacters = 128;
-      std::wstring output = UTF16ToWideHack(
+      std::wstring output = base::UTF16ToWideHack(
           GetMainFrame()->contentAsText(kMaxOutputCharacters));
       EXPECT_EQ(output, ime_message->result);
     }
@@ -1147,7 +1147,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
     // Copy the document content to std::wstring and compare with the
     // expected result.
     const int kMaxOutputCharacters = 16;
-    std::wstring output = UTF16ToWideHack(
+    std::wstring output = base::UTF16ToWideHack(
         GetMainFrame()->contentAsText(kMaxOutputCharacters));
     EXPECT_EQ(output, kTextDirection[i].expected_result);
   }
@@ -1527,7 +1527,7 @@ TEST_F(RenderViewImplTest, MAYBE_InsertCharacters) {
     // text created from a virtual-key code, a character code, and the
     // modifier-key status.
     const int kMaxOutputCharacters = 4096;
-    std::wstring output = UTF16ToWideHack(
+    std::wstring output = base::UTF16ToWideHack(
         GetMainFrame()->contentAsText(kMaxOutputCharacters));
     EXPECT_EQ(kLayouts[i].expected_result, output);
   }
@@ -1995,7 +1995,7 @@ TEST_F(RenderViewImplTest, NavigateFrame) {
   // Copy the document content to std::wstring and compare with the
   // expected result.
   const int kMaxOutputCharacters = 256;
-  std::wstring output = UTF16ToWideHack(
+  std::wstring output = base::UTF16ToWideHack(
       GetMainFrame()->contentAsText(kMaxOutputCharacters));
   EXPECT_EQ(output, L"hello \n\nworld");
 }

@@ -188,7 +188,8 @@ TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
 
   // Chinese translation of the phrase "hello goodbye". This tests that
   // we can correctly separate terms in languages that don't use spaces.
-  page_text = UTF8ToUTF16("\xe4\xbd\xa0\xe5\xa5\xbd\xe5\x86\x8d\xe8\xa7\x81");
+  page_text =
+      base::UTF8ToUTF16("\xe4\xbd\xa0\xe5\xa5\xbd\xe5\x86\x8d\xe8\xa7\x81");
   expected_features.Clear();
   expected_features.AddBooleanFeature(
       features::kPageTerm + std::string("\xe4\xbd\xa0\xe5\xa5\xbd"));

@@ -19,6 +19,7 @@
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
+using base::UTF16ToWide;
 using base::UTF8ToUTF16;
 using base::WideToUTF16;
 

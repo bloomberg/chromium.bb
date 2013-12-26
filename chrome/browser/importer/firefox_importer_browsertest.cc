@@ -180,7 +180,7 @@ class FirefoxObserver : public ProfileWriter,
       base::string16 keyword = template_urls[i]->keyword();
       for (size_t j = 0; j < arraysize(kFirefoxKeywords); ++j) {
         if (template_urls[i]->keyword() ==
-                WideToUTF16Hack(kFirefoxKeywords[j].keyword)) {
+                base::WideToUTF16Hack(kFirefoxKeywords[j].keyword)) {
           EXPECT_EQ(kFirefoxKeywords[j].url, template_urls[i]->url());
           found = true;
           break;

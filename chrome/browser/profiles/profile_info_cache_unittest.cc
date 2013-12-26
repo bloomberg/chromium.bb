@@ -26,6 +26,7 @@
 #include "ui/gfx/image/image_unittest_util.h"
 
 using base::ASCIIToUTF16;
+using base::UTF8ToUTF16;
 using content::BrowserThread;
 
 ProfileNameVerifierObserver::ProfileNameVerifierObserver(

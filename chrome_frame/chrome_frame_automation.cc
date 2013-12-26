@@ -653,7 +653,7 @@ void ChromeFrameAutomationClient::FindInPage(const std::wstring& search_string,
   // the SyncMessageReplyDispatcher to avoid concerns about blocking
   // synchronous messages.
   AutomationMsg_Find_Params params;
-  params.search_string = WideToUTF16Hack(search_string);
+  params.search_string = base::WideToUTF16Hack(search_string);
   params.find_next = find_next;
   params.match_case = (match_case == CASE_SENSITIVE);
   params.forward = (forward == FWD);
