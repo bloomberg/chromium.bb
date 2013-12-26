@@ -1,18 +1,28 @@
+math \x0200A a
+math \x02BC 12
+math \x2146 145
+math \x2147 15
+math \x2007 a
+math \x2008 a
+math \x200B a
+math \x205F a
+math \x2062 a
+math \x2063 a
 replace \x00af
 replace \x0001
 replace \x0002
 replace \x0003
 replace \x0088 # CHARACTER TABULATION SET 
 replace \x0089 # CHARACTER TABULATION WITH JUSTIFICATION 
-space \s 0 
-space \t 0
-space \x2061 0 FUNCTION APPLICATION
-space \x2062 0 INVISIBLE TIMES
-space \x2063 0 INVISIBLE SEPARATOR
-space \x2064 0 INVISIBLE PLUS
-space \x2009 0 THIN SPACE 0020 
+space \s a 
+space \t a
+space \x2061 a FUNCTION APPLICATION
+replace \x2062
+replace \x2063  
+replace \x2064  
+space \x2009 a THIN SPACE 0020 
 
-sign \x001B 0
+sign \x001B a
 sign \x009A a SINGLE CHARACTER INTRODUCER 
 sign \x00A2 4-14 CENT SIGN 
 sign \x00A7 4-6-234 SECTION SIGN 
