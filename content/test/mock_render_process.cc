@@ -36,10 +36,6 @@ void MockRenderProcess::ReleaseTransportDIB(TransportDIB* memory) {
   delete memory;
 }
 
-bool MockRenderProcess::UseInProcessPlugins() const {
-  return true;
-}
-
 void MockRenderProcess::AddBindings(int bindings) {
   enabled_bindings_ |= bindings;
 }

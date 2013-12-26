@@ -45,7 +45,7 @@ class MultipartResponseDelegate;
 namespace content {
 class RenderFrameImpl;
 class RenderViewImpl;
-class WebPluginDelegate;
+class WebPluginDelegateProxy;
 
 // This is the WebKit side of the plugin implementation that forwards calls,
 // after changing out of WebCore types, to a delegate.  The delegate may
@@ -68,7 +68,6 @@ class WebPluginImpl : public WebPlugin,
                                          uint32 length);
 
   blink::WebFrame* webframe() { return webframe_; }
-  WebPluginDelegate* delegate() { return delegate_; }
 
   // blink::WebPlugin methods:
   virtual bool initialize(
@@ -272,8 +271,6 @@ class WebPluginImpl : public WebPlugin,
   // Check for invalid chars like @, ;, \ before the first / (in path).
   bool IsValidUrl(const GURL& url, Referrer referrer_flag);
 
-  WebPluginDelegate* CreatePluginDelegate();
-
   std::vector<ClientInfo> clients_;
 
   bool windowless_;
@@ -291,7 +288,7 @@ class WebPluginImpl : public WebPlugin,
   base::WeakPtr<RenderViewImpl> render_view_;
   blink::WebFrame* webframe_;
 
-  WebPluginDelegate* delegate_;
+  WebPluginDelegateProxy* delegate_;
 
   // This is just a weak reference.
   blink::WebPluginContainer* container_;

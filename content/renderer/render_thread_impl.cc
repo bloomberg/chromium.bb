@@ -115,7 +115,6 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <objbase.h>
-#include "base/win/scoped_com_initializer.h"
 #else
 // TODO(port)
 #include "base/memory/scoped_handle.h"
@@ -320,13 +319,6 @@ void RenderThreadImpl::Init() {
 #endif
 
   lazy_tls.Pointer()->Set(this);
-
-#if defined(OS_WIN)
-  // If you are running plugins in this thread you need COM active but in
-  // the normal case you don't.
-  if (RenderProcessImpl::InProcessPlugins())
-    initialize_com_.reset(new base::win::ScopedCOMInitializer());
-#endif
 
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);

@@ -38,12 +38,6 @@ class WebMediaStreamCenterClient;
 namespace base {
 class MessageLoopProxy;
 class Thread;
-
-#if defined(OS_WIN)
-namespace win {
-class ScopedCOMInitializer;
-}
-#endif
 }
 
 namespace cc {
@@ -434,11 +428,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // Used on multiple threads.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
-
-#if defined(OS_WIN)
-  // Initialize COM when using plugins outside the sandbox.
-  scoped_ptr<base::win::ScopedCOMInitializer> initialize_com_;
-#endif
 
   // The count of RenderWidgets running through this thread.
   int widget_count_;

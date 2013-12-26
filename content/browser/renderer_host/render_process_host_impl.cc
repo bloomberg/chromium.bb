@@ -292,15 +292,6 @@ class RendererSandboxedProcessLauncherDelegate
   RendererSandboxedProcessLauncherDelegate() {}
   virtual ~RendererSandboxedProcessLauncherDelegate() {}
 
-  virtual void ShouldSandbox(bool* in_sandbox) OVERRIDE {
-#if !defined (GOOGLE_CHROME_BUILD)
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kInProcessPlugins)) {
-      *in_sandbox = false;
-    }
-#endif
-  }
-
   virtual void PreSpawnTarget(sandbox::TargetPolicy* policy,
                               bool* success) {
     AddBaseHandleClosePolicy(policy);
@@ -1138,11 +1129,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebRtcHWVp8Encoding,
     switches::kEnableWebRtcTcpServerSocket,
 #endif
-#if !defined (GOOGLE_CHROME_BUILD)
-    // These are unsupported and not fully tested modes, so don't enable them
-    // for official Google Chrome builds.
-    switches::kInProcessPlugins,
-#endif  // GOOGLE_CHROME_BUILD
 #if defined(GOOGLE_TV)
     switches::kUseExternalVideoSurfaceThresholdInPixels,
 #endif

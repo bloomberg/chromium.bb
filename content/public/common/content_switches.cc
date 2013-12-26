@@ -675,9 +675,6 @@ const char kIgnoreGpuBlacklist[]            = "ignore-gpu-blacklist";
 // Run the GPU process as a thread in the browser process.
 const char kInProcessGPU[]                  = "in-process-gpu";
 
-// Runs plugins inside the renderer process
-const char kInProcessPlugins[]              = "in-process-plugins";
-
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

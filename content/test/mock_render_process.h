@@ -20,7 +20,6 @@ class MockRenderProcess : public RenderProcess {
       TransportDIB** memory,
       const gfx::Rect& rect) OVERRIDE;
   virtual void ReleaseTransportDIB(TransportDIB* memory) OVERRIDE;
-  virtual bool UseInProcessPlugins() const OVERRIDE;
   virtual void AddBindings(int bindings) OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual TransportDIB* CreateTransportDIB(size_t size) OVERRIDE;

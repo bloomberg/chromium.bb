@@ -42,9 +42,6 @@ class RenderProcess : public ChildProcess {
   // this function to free the SharedMemory object.
   virtual void ReleaseTransportDIB(TransportDIB* memory) = 0;
 
-  // Returns true if plugisn should be loaded in-process.
-  virtual bool UseInProcessPlugins() const = 0;
-
   // Keep track of the cumulative set of enabled bindings for this process,
   // across any view.
   virtual void AddBindings(int bindings) = 0;

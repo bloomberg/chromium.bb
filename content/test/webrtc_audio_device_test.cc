@@ -66,7 +66,6 @@ class WebRTCMockRenderProcess : public RenderProcess {
     return NULL;
   }
   virtual void ReleaseTransportDIB(TransportDIB* memory) OVERRIDE {}
-  virtual bool UseInProcessPlugins() const OVERRIDE { return false; }
   virtual void AddBindings(int bindings) OVERRIDE {}
   virtual int GetEnabledBindings() const OVERRIDE { return 0; }
   virtual TransportDIB* CreateTransportDIB(size_t size) OVERRIDE {

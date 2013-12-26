@@ -206,8 +206,7 @@ void RenderWidgetHostViewBase::MovePluginWindowsHelper(
     return;
 
   bool oop_plugins =
-    !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) &&
-    !CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessPlugins);
+    !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 
   HDWP defer_window_pos_info =
       ::BeginDeferWindowPos(static_cast<int>(moves.size()));

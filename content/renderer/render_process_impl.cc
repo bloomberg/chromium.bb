@@ -48,7 +48,6 @@ RenderProcessImpl::RenderProcessImpl()
           this, &RenderProcessImpl::ClearTransportDIBCache),
       transport_dib_next_sequence_number_(0),
       enabled_bindings_(0) {
-  in_process_plugins_ = InProcessPlugins();
   for (size_t i = 0; i < arraysize(shared_mem_cache_); ++i)
     shared_mem_cache_[i] = NULL;
 
@@ -97,20 +96,6 @@ RenderProcessImpl::~RenderProcessImpl() {
 
   GetShutDownEvent()->Signal();
   ClearTransportDIBCache();
-}
-
-bool RenderProcessImpl::InProcessPlugins() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-  // Plugin processes require a UI message loop, and the Linux message loop
-  // implementation only allows one UI loop per process.
-  if (command_line.HasSwitch(switches::kInProcessPlugins))
-    NOTIMPLEMENTED() << ": in process plugins not supported on Linux";
-  return command_line.HasSwitch(switches::kInProcessPlugins);
-#else
-  return command_line.HasSwitch(switches::kInProcessPlugins) ||
-         command_line.HasSwitch(switches::kSingleProcess);
-#endif
 }
 
 void RenderProcessImpl::AddBindings(int bindings) {
@@ -194,10 +179,6 @@ void RenderProcessImpl::ReleaseTransportDIB(TransportDIB* mem) {
   }
 
   FreeTransportDIB(mem);
-}
-
-bool RenderProcessImpl::UseInProcessPlugins() const {
-  return in_process_plugins_;
 }
 
 bool RenderProcessImpl::GetTransportDIBFromCache(TransportDIB** mem,

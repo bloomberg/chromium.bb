@@ -232,9 +232,8 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
     return false;
   }
 
-  WebPluginDelegate* plugin_delegate = CreatePluginDelegate();
-  if (!plugin_delegate)
-    return false;
+  WebPluginDelegateProxy* plugin_delegate = new WebPluginDelegateProxy(
+      this, mime_type_, render_view_, render_frame_);
 
   // Store the plugin's unique identifier, used by the container to track its
   // script objects.
@@ -636,22 +635,6 @@ bool WebPluginImpl::IsValidUrl(const GURL& url, Referrer referrer_flag) {
   }
 
   return true;
-}
-
-WebPluginDelegate* WebPluginImpl::CreatePluginDelegate() {
-  bool in_process_plugin = RenderProcess::current()->UseInProcessPlugins();
-  if (in_process_plugin) {
-#if defined(OS_WIN) && !defined(USE_AURA)
-    return WebPluginDelegateImpl::Create(this, file_path_, mime_type_);
-#else
-    // In-proc plugins aren't supported on non-Windows.
-    NOTIMPLEMENTED();
-    return NULL;
-#endif
-  }
-
-  return new WebPluginDelegateProxy(
-      this, mime_type_, render_view_, render_frame_);
 }
 
 WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
@@ -1407,7 +1390,8 @@ bool WebPluginImpl::ReinitializePluginForResponse(
   container_ = container_widget;
   webframe_ = webframe;
 
-  WebPluginDelegate* plugin_delegate = CreatePluginDelegate();
+  WebPluginDelegateProxy* plugin_delegate = new WebPluginDelegateProxy(
+      this, mime_type_, render_view_, render_frame_);
 
   // Store the plugin's unique identifier, used by the container to track its
   // script objects, and enable script objects (since Initialize may use them
