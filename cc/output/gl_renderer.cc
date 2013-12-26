@@ -2384,13 +2384,16 @@ void GLRenderer::DoGetFramebufferPixels(
   // Save the finished_callback so it can be cancelled.
   pending_async_read_pixels_.front()->finished_read_pixels_callback.Reset(
       finished_callback);
+  base::Closure cancelable_callback =
+      pending_async_read_pixels_.front()->
+          finished_read_pixels_callback.callback();
 
   // Save the buffer to verify the callbacks happen in the expected order.
   pending_async_read_pixels_.front()->buffer = buffer;
 
   if (is_async) {
     GLC(gl_, gl_->EndQueryEXT(GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM));
-    context_support_->SignalQuery(query, finished_callback);
+    context_support_->SignalQuery(query, cancelable_callback);
   } else {
     resource_provider_->Finish();
     finished_callback.Run();
