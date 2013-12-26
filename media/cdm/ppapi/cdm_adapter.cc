@@ -1033,6 +1033,9 @@ class CdmAdapterModule : public pp::Module {
   virtual pp::Instance* CreateInstance(PP_Instance instance) {
     return new CdmAdapter(instance, this);
   }
+
+ private:
+  CdmFileIOImpl::ResourceTracker cdm_file_io_impl_resource_tracker;
 };
 
 }  // namespace media

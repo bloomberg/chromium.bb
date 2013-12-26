@@ -24,8 +24,18 @@ namespace media {
 // Due to PPAPI limitations, all functions must be called on the main thread.
 class CdmFileIOImpl : public cdm::FileIO {
  public:
+  // A class that helps release |file_lock_map_|.
+  // There should be only one instance of ResourceTracker in a process. Also,
+  // ResourceTracker should outlive all CdmFileIOImpl instances.
+  class ResourceTracker {
+   public:
+    ResourceTracker();
+    ~ResourceTracker();
+   private:
+    DISALLOW_COPY_AND_ASSIGN(ResourceTracker);
+  };
+
   CdmFileIOImpl(cdm::FileIOClient* client, PP_Instance pp_instance);
-  virtual ~CdmFileIOImpl();
 
   // cdm::FileIO implementation.
   virtual void Open(const char* file_name, uint32_t file_name_size) OVERRIDE;
@@ -53,6 +63,44 @@ class CdmFileIOImpl : public cdm::FileIO {
     WRITE_ERROR
   };
 
+  // Always use Close() to release |this| object.
+  virtual ~CdmFileIOImpl();
+
+  // |file_id_| -> |is_file_lock_acquired_| map.
+  // Design detail:
+  // - We never erase an entry from this map.
+  // - Pros: When the same file is read or written repeatedly, we don't need to
+  //   insert/erase the entry repeatedly, which is expensive.
+  // - Cons: If there are a lot of one-off files used, this map will be
+  //   unnecessarily large. But this should be a rare case.
+  // - Ideally we could use unordered_map for this. But unordered_set is only
+  //   available in C++11.
+  typedef std::map<std::string, bool> FileLockMap;
+
+  // File lock map shared by all CdmFileIOImpl objects to prevent read/write
+  // race. A CdmFileIOImpl object tries to acquire a lock before opening a
+  // file. If the file open failed, the lock is released. Otherwise, the
+  // CdmFileIOImpl object holds the lock until Close() is called.
+  // TODO(xhwang): Investigate the following cases and make sure we are good:
+  // - This assumes all CDM instances run in the same process for a given file
+  //   system.
+  // - When multiple CDM instances are running in different profiles (e.g.
+  //   normal/incognito window, multiple profiles), we may be overlocking.
+  static FileLockMap* file_lock_map_;
+
+  // Sets |file_id_|. Returns false if |file_id_| cannot be set (e.g. origin URL
+  // cannot be fetched).
+  bool SetFileID();
+
+  // Acquires the file lock. Returns true if the lock is successfully acquired.
+  // After the lock is acquired, other cdm::FileIO objects in the same process
+  // and in the same origin will get kInUse when trying to open the same file.
+  bool AcquireFileLock();
+
+  // Releases the file lock so that the file can be opened by other cdm::FileIO
+  // objects.
+  void ReleaseFileLock();
+
   void OpenFileSystem();
   void OnFileSystemOpened(int32_t result, pp::FileSystem file_system);
   void OpenFile();
@@ -70,6 +118,7 @@ class CdmFileIOImpl : public cdm::FileIO {
   // could actually call them synchronously, but since these errors shouldn't
   // happen in normal cases, we are not optimizing such cases.
   void OnError(ErrorType error_type);
+
   // Callback to notify client of error asynchronously.
   void NotifyClientOfError(int32_t result, ErrorType error_type);
 
@@ -81,6 +130,13 @@ class CdmFileIOImpl : public cdm::FileIO {
   const pp::InstanceHandle pp_instance_handle_;
 
   std::string file_name_;
+
+  // A string ID that uniquely identifies a file in the user's profile.
+  // It consists of the origin of the document URL (including scheme, host and
+  // port, delimited by colons) and the |file_name_|.
+  // For example: http:example.com:8080/foo_file.txt
+  std::string file_id_;
+
   pp::IsolatedFileSystemPrivate isolated_file_system_;
   pp::FileSystem file_system_;
   pp::FileIO file_io_;

@@ -241,9 +241,6 @@ void FileIOTestRunner::AddTests() {
     EXPECT_FILE_OPENED(kSuccess)  // The first Open() succeeded.
   END_TEST_CASE
 
-  // TODO(xhwang): This test should fail. But pp::FileIO doesn't support locking
-  // of opened files. We need to either workaround this or fix pp::FileIO
-  // implementation.
   START_TEST_CASE("ReopenFileInSeparateFileIO")
     OPEN_FILE
     EXPECT_FILE_OPENED(kSuccess)
@@ -251,11 +248,32 @@ void FileIOTestRunner::AddTests() {
     EXPECT_FILE_WRITTEN(kSuccess)
     CREATE_FILE_IO  // Create a second FileIO without closing the first one.
     OPEN_FILE
+    EXPECT_FILE_OPENED(kInUse)
+  END_TEST_CASE
+
+  START_TEST_CASE("CloseAfterCreation")
+    CLOSE_FILE
+  END_TEST_CASE
+
+  START_TEST_CASE("CloseDuringPendingOpen")
+    OPEN_FILE
+    CLOSE_FILE
+  END_TEST_CASE
+
+  START_TEST_CASE("CloseDuringPendingWrite")
+    OPEN_FILE
     EXPECT_FILE_OPENED(kSuccess)
-    READ_FILE
-    EXPECT_FILE_READ(kSuccess, kData, kDataSize)
-    WRITE_FILE(kBigData, kBigDataSize)
+    WRITE_FILE(kData, kDataSize)
+    CLOSE_FILE
+  END_TEST_CASE
+
+  START_TEST_CASE("CloseDuringPendingRead")
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    WRITE_FILE(kData, kDataSize)
     EXPECT_FILE_WRITTEN(kSuccess)
+    READ_FILE
+    CLOSE_FILE
   END_TEST_CASE
 }
 
@@ -426,8 +444,7 @@ bool FileIOTest::CheckResult(const TestStep& result) {
 
 void FileIOTest::OnTestComplete(bool success) {
   while (!file_io_stack_.empty()) {
-    cdm::FileIO* file_io = file_io_stack_.top();
-    file_io->Close();
+    file_io_stack_.top()->Close();
     file_io_stack_.pop();
   }
   FILE_IO_DVLOG(3) << test_name_ << (success ? " PASSED" : " FAILED");

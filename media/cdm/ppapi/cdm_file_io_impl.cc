@@ -9,6 +9,7 @@
 
 #include "media/cdm/ppapi/cdm_logging.h"
 #include "ppapi/c/pp_errors.h"
+#include "ppapi/cpp/dev/url_util_dev.h"
 
 namespace media {
 
@@ -43,6 +44,17 @@ static void PostOnMain(pp::CompletionCallback cb) {
   pp::Module::Get()->core()->CallOnMainThread(0, cb, PP_OK);
 }
 
+CdmFileIOImpl::FileLockMap* CdmFileIOImpl::file_lock_map_ = NULL;
+
+CdmFileIOImpl::ResourceTracker::ResourceTracker() {
+  // Do nothing here since we lazy-initialize CdmFileIOImpl::file_lock_map_
+  // in CdmFileIOImpl::AcquireFileLock().
+}
+
+CdmFileIOImpl::ResourceTracker::~ResourceTracker() {
+  delete CdmFileIOImpl::file_lock_map_;
+}
+
 CdmFileIOImpl::CdmFileIOImpl(cdm::FileIOClient* client, PP_Instance pp_instance)
     : state_(FILE_UNOPENED),
       client_(client),
@@ -54,8 +66,7 @@ CdmFileIOImpl::CdmFileIOImpl(cdm::FileIOClient* client, PP_Instance pp_instance)
 }
 
 CdmFileIOImpl::~CdmFileIOImpl() {
-  if (state_ != FILE_CLOSED)
-    CloseFile();
+  PP_DCHECK(state_ == FILE_CLOSED);
 }
 
 // Call sequence: Open() -> OpenFileSystem() -> OpenFile() -> FILE_OPENED.
@@ -69,8 +80,6 @@ void CdmFileIOImpl::Open(const char* file_name, uint32_t file_name_size) {
     return;
   }
 
-  state_ = OPENING_FILE_SYSTEM;
-
   // File name should not contain any path separators.
   std::string file_name_str(file_name, file_name_size);
   if (file_name_str.find('/') != std::string::npos ||
@@ -82,6 +91,14 @@ void CdmFileIOImpl::Open(const char* file_name, uint32_t file_name_size) {
 
   // pp::FileRef only accepts path that begins with a '/' character.
   file_name_ = '/' + file_name_str;
+
+  if (!AcquireFileLock()) {
+    CDM_DLOG() << "File is in use by other cdm::FileIO objects.";
+    OnError(OPEN_WHILE_IN_USE);
+    return;
+  }
+
+  state_ = OPENING_FILE_SYSTEM;
   OpenFileSystem();
 }
 
@@ -155,9 +172,63 @@ void CdmFileIOImpl::Write(const uint8_t* data, uint32_t data_size) {
 void CdmFileIOImpl::Close() {
   CDM_DLOG() << __FUNCTION__;
   PP_DCHECK(IsMainThread());
-  if (state_ != FILE_CLOSED)
-    CloseFile();
+  PP_DCHECK(state_ != FILE_CLOSED);
+  CloseFile();
+  ReleaseFileLock();
+  // All pending callbacks are canceled since |callback_factory_| is destroyed.
   delete this;
+}
+
+bool CdmFileIOImpl::SetFileID() {
+  PP_DCHECK(file_id_.empty());
+  PP_DCHECK(!file_name_.empty() && file_name_[0] == '/');
+
+  // Not taking ownership of |url_util_dev| (which is a singleton).
+  const pp::URLUtil_Dev* url_util_dev = pp::URLUtil_Dev::Get();
+  PP_URLComponents_Dev components;
+  pp::Var url_var =
+      url_util_dev->GetDocumentURL(pp_instance_handle_, &components);
+  if (!url_var.is_string())
+    return false;
+  std::string url = url_var.AsString();
+
+  file_id_.append(url, components.scheme.begin, components.scheme.len);
+  file_id_ += ':';
+  file_id_.append(url, components.host.begin, components.host.len);
+  file_id_ += ':';
+  file_id_.append(url, components.port.begin, components.port.len);
+  file_id_ += file_name_;
+
+  return true;
+}
+
+bool CdmFileIOImpl::AcquireFileLock() {
+  PP_DCHECK(IsMainThread());
+
+  if (file_id_.empty() && !SetFileID())
+    return false;
+
+  if (!file_lock_map_) {
+    file_lock_map_ = new FileLockMap();
+  } else {
+    FileLockMap::iterator found = file_lock_map_->find(file_id_);
+    if (found != file_lock_map_->end() && found->second)
+      return false;
+  }
+
+  (*file_lock_map_)[file_id_] = true;
+  return true;
+}
+
+void CdmFileIOImpl::ReleaseFileLock() {
+  PP_DCHECK(IsMainThread());
+
+  if (!file_lock_map_)
+    return;
+
+  FileLockMap::iterator found = file_lock_map_->find(file_id_);
+  if (found != file_lock_map_->end() && found->second)
+    found->second = false;
 }
 
 void CdmFileIOImpl::OpenFileSystem() {
@@ -179,6 +250,7 @@ void CdmFileIOImpl::OnFileSystemOpened(int32_t result,
 
   if (result != PP_OK) {
     CDM_DLOG() << "File system open failed asynchronously.";
+    ReleaseFileLock();
     OnError(OPEN_ERROR);
     return;
   }
@@ -208,6 +280,7 @@ void CdmFileIOImpl::OnFileOpened(int32_t result) {
 
   if (result != PP_OK) {
     CDM_DLOG() << "File open failed.";
+    ReleaseFileLock();
     OnError(OPEN_ERROR);
     return;
   }
