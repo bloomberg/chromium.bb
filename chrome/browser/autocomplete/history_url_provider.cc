@@ -14,8 +14,10 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_service.h"
@@ -185,6 +187,37 @@ void RecordAdditionalInfoFromUrlRow(const history::URLRow& info,
   match->RecordAdditionalInfo("typed count", info.typed_count());
   match->RecordAdditionalInfo("visit count", info.visit_count());
   match->RecordAdditionalInfo("last visit", info.last_visit());
+}
+
+// Calculates a new relevance score applying half-life time decaying to |count|
+// using |time_since_last_visit| and |score_buckets|.
+// This function will never return a score higher than |undecayed_relevance|.
+// In other words, it can only demote the old score.
+double CalculateRelevanceUsingScoreBuckets(
+    const HUPScoringParams::ScoreBuckets& score_buckets,
+    const base::TimeDelta& time_since_last_visit,
+    int undecayed_relevance,
+    int count) {
+  // Back off if above relevance cap.
+  if ((score_buckets.relevance_cap() != -1) &&
+      (undecayed_relevance >= score_buckets.relevance_cap()))
+    return undecayed_relevance;
+
+  // Time based decay using half-life time.
+  double decayed_count = count;
+  if (decayed_count > 0)
+    decayed_count *= score_buckets.HalfLifeTimeDecay(time_since_last_visit);
+
+  // Find a threshold where decayed_count >= bucket.
+  const HUPScoringParams::ScoreBuckets::CountMaxRelevance* score_bucket = NULL;
+  for (size_t i = 0; i < score_buckets.buckets().size(); ++i) {
+    score_bucket = &score_buckets.buckets()[i];
+    if (decayed_count >= score_bucket->first)
+      break;  // Buckets are in descending order, so we can ignore the rest.
+  }
+
+  return (score_bucket && (undecayed_relevance > score_bucket->second)) ?
+      score_bucket->second : undecayed_relevance;
 }
 
 }  // namespace
@@ -372,6 +405,8 @@ HistoryURLProvider::HistoryURLProvider(AutocompleteProviderListener* listener,
           !OmniboxFieldTrial::
               InHUPCreateShorterMatchFieldTrialExperimentGroup()),
       search_url_database_(true) {
+  // Initialize HUP scoring params based on the current experiment.
+  OmniboxFieldTrial::GetExperimentalHUPScoringParams(&scoring_params_);
 }
 
 void HistoryURLProvider::Start(const AutocompleteInput& input,
@@ -606,6 +641,11 @@ void HistoryURLProvider::DoAutocomplete(history::HistoryBackend* backend,
        CalculateRelevance(NORMAL, history_matches.size() - 1 - i);
     AutocompleteMatch ac_match = HistoryMatchToACMatch(*params, match,
         NORMAL, relevance);
+    // The experimental scoring must not change the top result's score.
+    if (!params->matches.empty()) {
+      relevance = CalculateRelevanceScoreUsingScoringParams(match, relevance);
+      ac_match.relevance = relevance;
+    }
     params->matches.push_back(ac_match);
   }
 }
@@ -877,8 +917,10 @@ bool HistoryURLProvider::PromoteMatchForInlineAutocomplete(
   // future pass from suggesting the exact input as a better match.
   if (params) {
     params->dont_suggest_exact_input = true;
-    params->matches.push_back(HistoryMatchToACMatch(*params, match,
-        INLINE_AUTOCOMPLETE, CalculateRelevance(INLINE_AUTOCOMPLETE, 0)));
+    AutocompleteMatch ac_match = HistoryMatchToACMatch(
+        *params, match, INLINE_AUTOCOMPLETE,
+        CalculateRelevance(INLINE_AUTOCOMPLETE, 0));
+    params->matches.push_back(ac_match);
   }
   return true;
 }
@@ -1095,11 +1137,37 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
   return match;
 }
 
+int HistoryURLProvider::CalculateRelevanceScoreUsingScoringParams(
+    const history::HistoryMatch& match,
+    int old_relevance) const {
+  if (!scoring_params_.experimental_scoring_enabled)
+    return old_relevance;
+
+  const base::TimeDelta time_since_last_visit =
+      base::Time::Now() - match.url_info.last_visit();
+
+  int relevance = CalculateRelevanceUsingScoreBuckets(
+      scoring_params_.typed_count_buckets, time_since_last_visit, old_relevance,
+      match.url_info.typed_count());
+
+  // Additional demotion (on top of typed_count demotion) of URLs that were
+  // never typed.
+  if (match.url_info.typed_count() == 0) {
+    relevance = CalculateRelevanceUsingScoreBuckets(
+        scoring_params_.visited_count_buckets, time_since_last_visit, relevance,
+        match.url_info.visit_count());
+  }
+
+  DCHECK_LE(relevance, old_relevance);
+  return relevance;
+}
+
 // static
 ACMatchClassifications HistoryURLProvider::ClassifyDescription(
     const base::string16& input_text,
     const base::string16& description) {
-  base::string16 clean_description = history::CleanUpTitleForMatching(description);
+  base::string16 clean_description = history::CleanUpTitleForMatching(
+      description);
   history::TermMatches description_matches(SortAndDeoverlapMatches(
       history::MatchTermInString(input_text, clean_description, 0)));
   history::WordStarts description_word_starts;

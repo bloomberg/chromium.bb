@@ -14,6 +14,7 @@
 #include "chrome/browser/autocomplete/history_provider.h"
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search_engines/search_terms_data.h"
 #include "chrome/browser/search_engines/template_url.h"
 
@@ -197,6 +198,8 @@ class HistoryURLProvider : public HistoryProvider {
   void QueryComplete(HistoryURLProviderParams* params_gets_deleted);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(HistoryURLProviderTest, HUPScoringExperiment);
+
   enum MatchType {
     NORMAL,
     WHAT_YOU_TYPED,
@@ -285,6 +288,8 @@ class HistoryURLProvider : public HistoryProvider {
                                    const std::vector<GURL>& remove) const;
 
   // Converts a line from the database into an autocomplete match for display.
+  // If experimental scoring is enabled, the final relevance score might be
+  // different from the given |relevance|.
   AutocompleteMatch HistoryMatchToACMatch(
       const HistoryURLProviderParams& params,
       const history::HistoryMatch& history_match,
@@ -297,11 +302,24 @@ class HistoryURLProvider : public HistoryProvider {
       const base::string16& input_text,
       const base::string16& description);
 
+  // Returns a new relevance score for the given |match| based on the
+  // |old_relevance| score and |scoring_params_|.  The new relevance score is
+  // guaranteed to be less than or equal to |old_relevance|.  In other words,
+  // this function can only demote a score, never boost it.
+  // Returns |old_relevance| score if experimental scoring is disabled
+  // or if the |match.promoted| is true.
+  int CalculateRelevanceScoreUsingScoringParams(
+      const history::HistoryMatch& match,
+      int old_relevance) const;
+
   // Params for the current query.  The provider should not free this directly;
   // instead, it is passed as a parameter through the history backend, and the
   // parameter itself is freed once it's no longer needed.  The only reason we
   // keep this member is so we can set the cancel bit on it.
   HistoryURLProviderParams* params_;
+
+  // Params controlling experimental behavior of this provider.
+  HUPScoringParams scoring_params_;
 
   // If true, HistoryURL provider should lookup and cull redirects.  If
   // false, it returns matches that may be redirects to each other and

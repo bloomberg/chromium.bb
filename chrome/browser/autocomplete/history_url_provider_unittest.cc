@@ -39,97 +39,107 @@ struct TestURLInfo {
   const char* title;
   int visit_count;
   int typed_count;
+  int age_in_days;
 } test_db[] = {
-  {"http://www.google.com/", "Google", 3, 3},
+  {"http://www.google.com/", "Google", 3, 3, 80},
 
   // High-quality pages should get a host synthesized as a lower-quality match.
-  {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100},
+  {"http://slashdot.org/favorite_page.html", "Favorite page", 200, 100, 80},
 
   // Less popular pages should have hosts synthesized as higher-quality
   // matches.
-  {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0},
+  {"http://kerneltrap.org/not_very_popular.html", "Less popular", 4, 0, 80},
 
   // Unpopular pages should not appear in the results at all.
-  {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 0},
+  {"http://freshmeat.net/unpopular.html", "Unpopular", 1, 0, 80},
 
   // If a host has a match, we should pick it up during host synthesis.
-  {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2},
-  {"http://news.google.com/", "Google News", 1, 1},
+  {"http://news.google.com/?ned=us&topic=n", "Google News - U.S.", 2, 2, 80},
+  {"http://news.google.com/", "Google News", 1, 1, 80},
 
   // Matches that are normally not inline-autocompletable should be
   // autocompleted if they are shorter substitutes for longer matches that would
   // have been inline autocompleted.
-  {"http://synthesisatest.com/foo/", "Test A", 1, 1},
-  {"http://synthesisbtest.com/foo/", "Test B", 1, 1},
-  {"http://synthesisbtest.com/foo/bar.html", "Test B Bar", 2, 2},
+  {"http://synthesisatest.com/foo/", "Test A", 1, 1, 80},
+  {"http://synthesisbtest.com/foo/", "Test B", 1, 1, 80},
+  {"http://synthesisbtest.com/foo/bar.html", "Test B Bar", 2, 2, 80},
 
   // Suggested short URLs must be "good enough" and must match user input.
-  {"http://foo.com/", "Dir", 5, 5},
-  {"http://foo.com/dir/", "Dir", 2, 2},
-  {"http://foo.com/dir/another/", "Dir", 5, 1},
-  {"http://foo.com/dir/another/again/", "Dir", 10, 0},
-  {"http://foo.com/dir/another/again/myfile.html", "File", 10, 2},
+  {"http://foo.com/", "Dir", 5, 5, 80},
+  {"http://foo.com/dir/", "Dir", 2, 2, 80},
+  {"http://foo.com/dir/another/", "Dir", 5, 1, 80},
+  {"http://foo.com/dir/another/again/", "Dir", 10, 0, 80},
+  {"http://foo.com/dir/another/again/myfile.html", "File", 10, 2, 80},
 
   // We throw in a lot of extra URLs here to make sure we're testing the
   // history database's query, not just the autocomplete provider.
-  {"http://startest.com/y/a", "A", 2, 2},
-  {"http://startest.com/y/b", "B", 5, 2},
-  {"http://startest.com/x/c", "C", 5, 2},
-  {"http://startest.com/x/d", "D", 5, 5},
-  {"http://startest.com/y/e", "E", 4, 2},
-  {"http://startest.com/y/f", "F", 3, 2},
-  {"http://startest.com/y/g", "G", 3, 2},
-  {"http://startest.com/y/h", "H", 3, 2},
-  {"http://startest.com/y/i", "I", 3, 2},
-  {"http://startest.com/y/j", "J", 3, 2},
-  {"http://startest.com/y/k", "K", 3, 2},
-  {"http://startest.com/y/l", "L", 3, 2},
-  {"http://startest.com/y/m", "M", 3, 2},
+  {"http://startest.com/y/a", "A", 2, 2, 80},
+  {"http://startest.com/y/b", "B", 5, 2, 80},
+  {"http://startest.com/x/c", "C", 5, 2, 80},
+  {"http://startest.com/x/d", "D", 5, 5, 80},
+  {"http://startest.com/y/e", "E", 4, 2, 80},
+  {"http://startest.com/y/f", "F", 3, 2, 80},
+  {"http://startest.com/y/g", "G", 3, 2, 80},
+  {"http://startest.com/y/h", "H", 3, 2, 80},
+  {"http://startest.com/y/i", "I", 3, 2, 80},
+  {"http://startest.com/y/j", "J", 3, 2, 80},
+  {"http://startest.com/y/k", "K", 3, 2, 80},
+  {"http://startest.com/y/l", "L", 3, 2, 80},
+  {"http://startest.com/y/m", "M", 3, 2, 80},
 
   // A file: URL is useful for testing that fixup does the right thing w.r.t.
   // the number of trailing slashes on the user's input.
-  {"file:///C:/foo.txt", "", 2, 2},
+  {"file:///C:/foo.txt", "", 2, 2, 80},
 
   // Results with absurdly high typed_counts so that very generic queries like
   // "http" will give consistent results even if more data is added above.
-  {"http://bogussite.com/a", "Bogus A", 10002, 10000},
-  {"http://bogussite.com/b", "Bogus B", 10001, 10000},
-  {"http://bogussite.com/c", "Bogus C", 10000, 10000},
+  {"http://bogussite.com/a", "Bogus A", 10002, 10000, 80},
+  {"http://bogussite.com/b", "Bogus B", 10001, 10000, 80},
+  {"http://bogussite.com/c", "Bogus C", 10000, 10000, 80},
 
   // Domain name with number.
-  {"http://www.17173.com/", "Domain with number", 3, 3},
+  {"http://www.17173.com/", "Domain with number", 3, 3, 80},
 
   // URLs to test exact-matching behavior.
-  {"http://go/", "Intranet URL", 1, 1},
-  {"http://gooey/", "Intranet URL 2", 5, 5},
+  {"http://go/", "Intranet URL", 1, 1, 80},
+  {"http://gooey/", "Intranet URL 2", 5, 5, 80},
 
   // URLs for testing offset adjustment.
-  {"http://www.\xEA\xB5\x90\xEC\x9C\xA1.kr/", "Korean", 2, 2},
-  {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2},
-  {"http://ms/c++%20style%20guide", "Style guide", 2, 2},
+  {"http://www.\xEA\xB5\x90\xEC\x9C\xA1.kr/", "Korean", 2, 2, 80},
+  {"http://spaces.com/path%20with%20spaces/foo.html", "Spaces", 2, 2, 80},
+  {"http://ms/c++%20style%20guide", "Style guide", 2, 2, 80},
 
   // URLs for testing ctrl-enter behavior.
-  {"http://binky/", "Intranet binky", 2, 2},
-  {"http://winky/", "Intranet winky", 2, 2},
-  {"http://www.winky.com/", "Internet winky", 5, 0},
+  {"http://binky/", "Intranet binky", 2, 2, 80},
+  {"http://winky/", "Intranet winky", 2, 2, 80},
+  {"http://www.winky.com/", "Internet winky", 5, 0, 80},
 
   // URLs used by EmptyVisits.
-  {"http://pandora.com/", "Pandora", 2, 2},
+  {"http://pandora.com/", "Pandora", 2, 2, 80},
   // This entry is explicitly added more recently than
   // history::kLowQualityMatchAgeLimitInDays.
-  // {"http://p/", "p", 0, 0},
+  // {"http://p/", "p", 0, 0, 80},
 
   // For intranet based tests.
-  {"http://intra/one", "Intranet", 2, 2},
-  {"http://intra/two", "Intranet two", 1, 1},
-  {"http://intra/three", "Intranet three", 2, 2},
-  {"http://moo/bar", "Intranet moo", 1, 1},
-  {"http://typedhost/typedpath", "Intranet typed", 1, 1},
-  {"http://typedhost/untypedpath", "Intranet untyped", 1, 0},
+  {"http://intra/one", "Intranet", 2, 2, 80},
+  {"http://intra/two", "Intranet two", 1, 1, 80},
+  {"http://intra/three", "Intranet three", 2, 2, 80},
+  {"http://moo/bar", "Intranet moo", 1, 1, 80},
+  {"http://typedhost/typedpath", "Intranet typed", 1, 1, 80},
+  {"http://typedhost/untypedpath", "Intranet untyped", 1, 0, 80},
 
-  {"http://x.com/one", "Internet", 2, 2},
-  {"http://x.com/two", "Internet two", 1, 1},
-  {"http://x.com/three", "Internet three", 2, 2},
+  {"http://x.com/one", "Internet", 2, 2, 80},
+  {"http://x.com/two", "Internet two", 1, 1, 80},
+  {"http://x.com/three", "Internet three", 2, 2, 80},
+
+  // For experimental HUP scoring test.
+  {"http://7.com/1a", "One", 8, 4, 4},
+  {"http://7.com/2a", "Two A", 4, 2, 8},
+  {"http://7.com/2b", "Two B", 4, 1, 8},
+  {"http://7.com/3a", "Three", 2, 1, 16},
+  {"http://7.com/4a", "Four A", 1, 1, 32},
+  {"http://7.com/4b", "Four B", 1, 1, 64},
+  {"http://7.com/5a", "Five A", 8, 0, 64},  // never typed.
 };
 
 class HistoryURLProviderTest : public testing::Test,
@@ -236,23 +246,22 @@ void HistoryURLProviderTest::TearDown() {
 }
 
 void HistoryURLProviderTest::FillData() {
-  // All visits are a long time ago (some tests require this since we do some
+  // Most visits are a long time ago (some tests require this since we do some
   // special logic for things visited very recently). Note that this time must
   // be more recent than the "archived history" threshold for the data to go
   // into the main database.
   //
   // TODO(brettw) It would be nice if we could test this behavior, in which
   // case the time would be specifed in the test_db structure.
-  Time visit_time = Time::Now() - TimeDelta::FromDays(80);
+  const Time now = Time::Now();
 
   for (size_t i = 0; i < arraysize(test_db); ++i) {
     const TestURLInfo& cur = test_db[i];
     const GURL current_url(cur.url);
-    history_service_->AddPageWithDetails(current_url,
-                                         base::UTF8ToUTF16(cur.title),
-                                         cur.visit_count, cur.typed_count,
-                                         visit_time, false,
-                                         history::SOURCE_BROWSED);
+    history_service_->AddPageWithDetails(
+        current_url, base::UTF8ToUTF16(cur.title), cur.visit_count,
+        cur.typed_count, now - TimeDelta::FromDays(cur.age_in_days), false,
+        history::SOURCE_BROWSED);
   }
 
   history_service_->AddPageWithDetails(
@@ -907,5 +916,110 @@ TEST_F(HistoryURLProviderTest, SuggestExactInput) {
                 match.contents_class[match_index].style);
     }
     EXPECT_EQ(npos, test_cases[i].offsets[match.contents_class.size()]);
+  }
+}
+
+TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
+  HUPScoringParams max_2000_no_time_decay;
+  max_2000_no_time_decay.typed_count_buckets.buckets().push_back(
+      std::make_pair(0.0, 2000));
+  HUPScoringParams max_1250_no_time_decay;
+  max_1250_no_time_decay.typed_count_buckets.buckets().push_back(
+      std::make_pair(0.0, 1250));
+  HUPScoringParams max_1000_no_time_decay;
+  max_1000_no_time_decay.typed_count_buckets.buckets().push_back(
+      std::make_pair(0.0, 1000));
+
+  HUPScoringParams max_1100_with_time_decay_and_max_cap;
+  max_1100_with_time_decay_and_max_cap.typed_count_buckets.
+      set_relevance_cap(1400);
+  max_1100_with_time_decay_and_max_cap.typed_count_buckets.
+      set_half_life_days(16);
+  max_1100_with_time_decay_and_max_cap.typed_count_buckets.buckets().push_back(
+      std::make_pair(0.5, 1100));
+  max_1100_with_time_decay_and_max_cap.typed_count_buckets.buckets().push_back(
+      std::make_pair(0.24, 200));
+  max_1100_with_time_decay_and_max_cap.typed_count_buckets.buckets().push_back(
+      std::make_pair(0.0, 100));
+
+  HUPScoringParams max_1100_visit_typed_decays;
+  max_1100_visit_typed_decays.typed_count_buckets.set_half_life_days(16);
+  max_1100_visit_typed_decays.typed_count_buckets.buckets().push_back(
+      std::make_pair(0.5, 1100));
+  max_1100_visit_typed_decays.typed_count_buckets.buckets().push_back(
+      std::make_pair(0.0, 100));
+  max_1100_visit_typed_decays.visited_count_buckets.set_half_life_days(16);
+  max_1100_visit_typed_decays.visited_count_buckets.buckets().push_back(
+      std::make_pair(0.5, 550));
+  max_1100_visit_typed_decays.visited_count_buckets.buckets().push_back(
+      std::make_pair(0.0, 50));
+
+  const int kMaxMatches = 3;
+  struct TestCase {
+    const char* input;
+    HUPScoringParams scoring_params;
+    struct ExpectedMatch {
+      const char* url;
+      int control_relevance;
+      int experiment_relevance;
+    };
+    ExpectedMatch matches[kMaxMatches];
+  } test_cases[] = {
+    // Max score 2000 -> no demotion.
+    { "7.com/1", max_2000_no_time_decay,
+      {{"7.com/1a", 1413, 1413}, {NULL, 0, 0}, {NULL, 0, 0}} },
+
+    // Limit score to 1250/1000 and make sure that the top match is unchanged.
+    { "7.com/1", max_1250_no_time_decay,
+      {{"7.com/1a", 1413, 1413}, {NULL, 0, 0}, {NULL, 0, 0}} },
+    { "7.com/2", max_1250_no_time_decay,
+      {{"7.com/2a", 1413, 1413}, {"7.com/2b", 1412, 1250}, {NULL, 0, 0}} },
+    { "7.com/4", max_1000_no_time_decay,
+      {{"7.com/4", 1203, 1203}, {"7.com/4a", 1202, 1000},
+       {"7.com/4b", 1201, 999}} },
+
+    // Max relevance cap is 1400 and half-life is 16 days.
+    { "7.com/1", max_1100_with_time_decay_and_max_cap,
+      {{"7.com/1a", 1413, 1413}, {NULL, 0, 0}, {NULL, 0, 0}} },
+    { "7.com/4", max_1100_with_time_decay_and_max_cap,
+      {{"7.com/4", 1203, 1203}, {"7.com/4a", 1202, 200},
+       {"7.com/4b", 1201, 100}} },
+
+    // Max relevance cap is 1400 and half-life is 16 days for both visit/typed.
+    { "7.com/5", max_1100_visit_typed_decays,
+      {{"7.com/5", 1203, 1203}, {"7.com/5a", 1202, 50}, {NULL, 0, 0}} },
+  };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    SCOPED_TRACE(test_cases[i].input);
+    UrlAndLegalDefault output[kMaxMatches];
+    int max_matches;
+    for (max_matches = 0; max_matches < kMaxMatches; ++max_matches) {
+      if (test_cases[i].matches[max_matches].url == NULL)
+        break;
+      output[max_matches].url = URLFixerUpper::FixupURL(
+          test_cases[i].matches[max_matches].url, std::string()).spec();
+      output[max_matches].allowed_to_be_default_match = true;
+    }
+    autocomplete_->scoring_params_ = test_cases[i].scoring_params;
+
+    // Test the control (scoring disabled).
+    autocomplete_->scoring_params_.experimental_scoring_enabled = false;
+    ASSERT_NO_FATAL_FAILURE(
+        RunTest(ASCIIToUTF16(test_cases[i].input),
+                string16(), false, output, max_matches));
+    for (int j = 0; j < max_matches; ++j) {
+      EXPECT_EQ(test_cases[i].matches[j].control_relevance,
+                matches_[j].relevance);
+    }
+
+    // Test the experiment (scoring enabled).
+    autocomplete_->scoring_params_.experimental_scoring_enabled = true;
+    ASSERT_NO_FATAL_FAILURE(
+        RunTest(ASCIIToUTF16(test_cases[i].input),
+                string16(), false, output, max_matches));
+    for (int j = 0; j < max_matches; ++j) {
+      EXPECT_EQ(test_cases[i].matches[j].experiment_relevance,
+                matches_[j].relevance);
+    }
   }
 }
