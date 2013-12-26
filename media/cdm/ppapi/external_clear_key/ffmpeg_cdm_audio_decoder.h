@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_FFMPEG_CDM_AUDIO_DECODER_H_
-#define MEDIA_CDM_PPAPI_FFMPEG_CDM_AUDIO_DECODER_H_
+#ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_FFMPEG_CDM_AUDIO_DECODER_H_
+#define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_FFMPEG_CDM_AUDIO_DECODER_H_
 
 #include <vector>
 
@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "media/cdm/ppapi/clear_key_cdm_common.h"
+#include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
 
 struct AVCodecContext;
 struct AVFrame;
@@ -92,4 +92,4 @@ class FFmpegCdmAudioDecoder {
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_FFMPEG_CDM_AUDIO_DECODER_H_
+#endif  // MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_FFMPEG_CDM_AUDIO_DECODER_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_H_
-#define MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_H_
+#ifndef MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_H_
+#define MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_H_
 
 #include <string>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "media/cdm/aes_decryptor.h"
-#include "media/cdm/ppapi/clear_key_cdm_common.h"
+#include "media/cdm/ppapi/external_clear_key/clear_key_cdm_common.h"
 
 // Enable this to use the fake decoder for testing.
 // TODO(tomfinegan): Move fake audio decoder into a separate class.
@@ -150,4 +150,4 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
 
 }  // namespace media
 
-#endif  // MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_H_
+#endif  // MEDIA_CDM_PPAPI_EXTERNAL_CLEAR_KEY_CLEAR_KEY_CDM_H_

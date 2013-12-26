@@ -31,8 +31,8 @@
             ['use_fake_video_decoder == 1' , {
               'defines': ['CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER'],
               'sources': [
-                'cdm/ppapi/fake_cdm_video_decoder.cc',
-                'cdm/ppapi/fake_cdm_video_decoder.h',
+                'cdm/ppapi/external_clear_key/fake_cdm_video_decoder.cc',
+                'cdm/ppapi/external_clear_key/fake_cdm_video_decoder.h',
               ],
             }],
             ['use_ffmpeg == 1'  , {
@@ -41,14 +41,14 @@
                 '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
               ],
               'sources': [
-                'cdm/ppapi/ffmpeg_cdm_audio_decoder.cc',
-                'cdm/ppapi/ffmpeg_cdm_audio_decoder.h',
+                'cdm/ppapi/external_clear_key/ffmpeg_cdm_audio_decoder.cc',
+                'cdm/ppapi/external_clear_key/ffmpeg_cdm_audio_decoder.h',
               ],
             }],
             ['use_ffmpeg == 1 and use_fake_video_decoder == 0'  , {
               'sources': [
-                'cdm/ppapi/ffmpeg_cdm_video_decoder.cc',
-                'cdm/ppapi/ffmpeg_cdm_video_decoder.h',
+                'cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.cc',
+                'cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h',
               ],
             }],
             ['use_libvpx == 1 and use_fake_video_decoder == 0' , {
@@ -57,8 +57,8 @@
                 '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
               ],
               'sources': [
-                'cdm/ppapi/libvpx_cdm_video_decoder.cc',
-                'cdm/ppapi/libvpx_cdm_video_decoder.h',
+                'cdm/ppapi/external_clear_key/libvpx_cdm_video_decoder.cc',
+                'cdm/ppapi/external_clear_key/libvpx_cdm_video_decoder.h',
               ],
             }],
             ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {
@@ -83,11 +83,11 @@
           'sources': [
             'cdm/ppapi/cdm_file_io_test.cc',
             'cdm/ppapi/cdm_file_io_test.h',
-            'cdm/ppapi/cdm_video_decoder.cc',
-            'cdm/ppapi/cdm_video_decoder.h',
-            'cdm/ppapi/clear_key_cdm.cc',
-            'cdm/ppapi/clear_key_cdm.h',
-            'cdm/ppapi/clear_key_cdm_common.h',
+            'cdm/ppapi/external_clear_key/cdm_video_decoder.cc',
+            'cdm/ppapi/external_clear_key/cdm_video_decoder.h',
+            'cdm/ppapi/external_clear_key/clear_key_cdm.cc',
+            'cdm/ppapi/external_clear_key/clear_key_cdm.h',
+            'cdm/ppapi/external_clear_key/clear_key_cdm_common.h',
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cdm/ppapi/clear_key_cdm.h"
+#include "media/cdm/ppapi/external_clear_key/clear_key_cdm.h"
 
 #include <algorithm>
 #include <sstream>
@@ -16,7 +16,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/cdm/ppapi/cdm_file_io_test.h"
-#include "media/cdm/ppapi/cdm_video_decoder.h"
+#include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
 #include "base/basictypes.h"
@@ -28,8 +28,8 @@ const int64 kNoTimestamp = kint64min;
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "media/base/media.h"
-#include "media/cdm/ppapi/ffmpeg_cdm_audio_decoder.h"
-#include "media/cdm/ppapi/ffmpeg_cdm_video_decoder.h"
+#include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_audio_decoder.h"
+#include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h"
 
 // Include FFmpeg avformat.h for av_register_all().
 extern "C" {

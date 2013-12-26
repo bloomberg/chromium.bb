@@ -4,18 +4,18 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "media/cdm/ppapi/cdm_video_decoder.h"
+#include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-#include "media/cdm/ppapi/fake_cdm_video_decoder.h"
+#include "media/cdm/ppapi/external_clear_key/fake_cdm_video_decoder.h"
 #endif
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-#include "media/cdm/ppapi/ffmpeg_cdm_video_decoder.h"
+#include "media/cdm/ppapi/external_clear_key/ffmpeg_cdm_video_decoder.h"
 #endif
 
 #if defined(CLEAR_KEY_CDM_USE_LIBVPX_DECODER)
-#include "media/cdm/ppapi/libvpx_cdm_video_decoder.h"
+#include "media/cdm/ppapi/external_clear_key/libvpx_cdm_video_decoder.h"
 #endif
 
 namespace media {
