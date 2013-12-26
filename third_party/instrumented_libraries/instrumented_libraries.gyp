@@ -10,55 +10,12 @@
   'custom_linker_flags': '',
   'run_before_build': '',
 
-  # Some librraies should not be built before others, so these lists define
-  # the order to build them all.
-  # The problem is that if you configure libraries to be installed to
-  # the directory where some other libraries are installed, it could break
-  # the build. For example, zlib1g should not be installed before other
-  # libraries.
-  'first_order_libraries': [
-    '<(_sanitizer_type)-libcairo2',
-    '<(_sanitizer_type)-libdbus-1-3',
-    '<(_sanitizer_type)-libexpat1',
-    '<(_sanitizer_type)-libffi6',
-    '<(_sanitizer_type)-libgcrypt11',
-    '<(_sanitizer_type)-libgpg-error0',
-    '<(_sanitizer_type)-libnspr4',
-    '<(_sanitizer_type)-libp11-kit0',
-    '<(_sanitizer_type)-libpcre3',
-    '<(_sanitizer_type)-libpixman-1-0',
-    '<(_sanitizer_type)-libpng12-0',
-    '<(_sanitizer_type)-libx11-6',
-    '<(_sanitizer_type)-libxau6',
-    '<(_sanitizer_type)-libxcb1',
-    '<(_sanitizer_type)-libxcomposite1',
-    '<(_sanitizer_type)-libxcursor1',
-    '<(_sanitizer_type)-libxdamage1',
-    '<(_sanitizer_type)-libxdmcp6',
-    '<(_sanitizer_type)-libxext6',
-    '<(_sanitizer_type)-libxfixes3',
-    '<(_sanitizer_type)-libxi6',
-    '<(_sanitizer_type)-libxinerama1',
-    '<(_sanitizer_type)-libxrandr2',
-    '<(_sanitizer_type)-libxrender1',
-    '<(_sanitizer_type)-libxss1',
-    '<(_sanitizer_type)-libxtst6',
-  ],
-  'second_order_libraries': [
-    '<(_sanitizer_type)-zlib1g',
-  ],
-  
   'variables': {
     'verbose_libraries_build%': 0,
   },
   'conditions': [
     ['asan==1', {
       'sanitizer_type': 'asan',
-      'first_order_libraries': [
-        '<(_sanitizer_type)-libdbus-glib-1-2',
-        '<(_sanitizer_type)-libfontconfig1',
-        '<(_sanitizer_type)-libglib2.0-0',
-      ],
     }],
     ['msan==1', {
       'sanitizer_type': 'msan',
@@ -74,11 +31,45 @@
       'target_name': 'instrumented_libraries',
       'type': 'none',
       'variables': {
-         'prune_self_dependency': 1,
+        'prune_self_dependency': 1,
       },
-      'dependencies=': [
-        '<@(_first_order_libraries)',
-        '<@(_second_order_libraries)',
+      'dependencies': [
+        '<(_sanitizer_type)-libcairo2',
+        '<(_sanitizer_type)-libexpat1',
+        '<(_sanitizer_type)-libffi6',
+        '<(_sanitizer_type)-libgcrypt11',
+        '<(_sanitizer_type)-libgpg-error0',
+        '<(_sanitizer_type)-libnspr4',
+        '<(_sanitizer_type)-libp11-kit0',
+        '<(_sanitizer_type)-libpcre3',
+        '<(_sanitizer_type)-libpng12-0',
+        '<(_sanitizer_type)-libx11-6',
+        '<(_sanitizer_type)-libxau6',
+        '<(_sanitizer_type)-libxcb1',
+        '<(_sanitizer_type)-libxcomposite1',
+        '<(_sanitizer_type)-libxcursor1',
+        '<(_sanitizer_type)-libxdamage1',
+        '<(_sanitizer_type)-libxdmcp6',
+        '<(_sanitizer_type)-libxext6',
+        '<(_sanitizer_type)-libxfixes3',
+        '<(_sanitizer_type)-libxi6',
+        '<(_sanitizer_type)-libxinerama1',
+        '<(_sanitizer_type)-libxrandr2',
+        '<(_sanitizer_type)-libxrender1',
+        '<(_sanitizer_type)-libxss1',
+        '<(_sanitizer_type)-libxtst6',
+        '<(_sanitizer_type)-zlib1g',
+      ],
+      'conditions': [
+        ['asan==1', {
+          'dependencies': [
+            '<(_sanitizer_type)-libdbus-1-3',
+            '<(_sanitizer_type)-libdbus-glib-1-2',
+            '<(_sanitizer_type)-libfontconfig1',
+            '<(_sanitizer_type)-libglib2.0-0',
+            '<(_sanitizer_type)-libpixman-1-0',
+          ],
+        }],
       ],
       'actions': [
         {
@@ -104,12 +95,16 @@
     },
     {
       'library_name': 'libdbus-1-3',
-      'dependencies=': [],
+      'dependencies=': [
+        '<(_sanitizer_type)-libglib2.0-0',
+      ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
       'library_name': 'libdbus-glib-1-2',
-      'dependencies=': [],
+      'dependencies=': [
+        '<(_sanitizer_type)-libglib2.0-0',
+      ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -172,7 +167,9 @@
     },
     {
       'library_name': 'libpixman-1-0',
-      'dependencies=': [],
+      'dependencies=': [
+        '<(_sanitizer_type)-libglib2.0-0',
+      ],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
     {
@@ -266,9 +263,7 @@
     },
     {
       'library_name': 'zlib1g',
-      'dependencies=': [
-        '<@(_first_order_libraries)', 
-      ],
+      'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
   ],
