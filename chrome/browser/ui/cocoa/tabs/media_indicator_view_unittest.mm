@@ -16,7 +16,7 @@ class MediaIndicatorViewTest : public CocoaTest {
  public:
   MediaIndicatorViewTest() {
     view_.reset([[MediaIndicatorView alloc] init]);
-    ASSERT_TRUE(!!view_);
+    EXPECT_TRUE(view_ != nil);
     EXPECT_EQ(TAB_MEDIA_STATE_NONE, [view_ animatingMediaState]);
 
     [[test_window() contentView] addSubview:view_.get()];
