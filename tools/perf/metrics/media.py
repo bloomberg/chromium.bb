@@ -80,5 +80,4 @@ class MediaMetric(Metric):
 
     AddOneResult('avg_loop_time', 'ms')
     AddOneResult('seek', 'ms')
-    AddOneResult('mse', 'ms')
     return trace

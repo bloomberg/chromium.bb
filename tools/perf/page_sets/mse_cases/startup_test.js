@@ -1,3 +1,12 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+
+// The file runs a series of Media Source Entensions (MSE) operations on a
+// video tag.  The test takes several URL parameters described in
+//loadTestParams() function.
+
 (function() {
   function getPerfTimestamp() {
     return performance.now();
@@ -118,22 +127,24 @@
   }
 
   function reportTelemetryMediaMetrics(stats, element) {
-    if (!stats || !window.__getMediaMetric) {
-      console.error("Stats not collected or could not find getMediaMetric().");
-      return;
-    }
-    var metric = window.__getMediaMetric(element);
-    if (!metric) {
-      console.error("Can not report Telemetry media metrics.");
-      return
-    }
+    var metrics = {};
     for (var i = 0; i < stats.length; ++i) {
       var bar = stats[i];
       var label = bar.label.toLowerCase().replace(/\s+|\./g, '_');
       var value =  (bar.end - bar.start).toFixed(3);
       console.log("appending to telemetry " + label + " : "  + value);
-      metric.appendMetric("mse_" + label, value);
+      _AppendMetric(metrics, label, value);
     }
+    window.__testMetrics = {
+      "id": element.id,
+      "metrics": metrics
+    };
+  }
+
+  function _AppendMetric(metrics, metric, value) {
+    if (!metrics[metric])
+      metrics[metric] = [];
+    metrics[metric].push(value);
   }
 
   function updateControls(testParams) {
@@ -483,4 +494,5 @@
 
   window["setupTest"] = setupTest;
   window.__testDone = false;
+  window.__testMetrics = null;
 })();

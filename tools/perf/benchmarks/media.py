@@ -4,8 +4,24 @@
 
 import sys
 
-from measurements import media
 from telemetry import test
+from telemetry.page import page_measurement
+
+from measurements import media
+
+
+class MSEMeasurement(page_measurement.PageMeasurement):
+  def MeasurePage(self, page, tab, results):
+    media_metric = tab.EvaluateJavaScript('window.__testMetrics')
+    trace = media_metric['id']
+    metrics = media_metric['metrics']
+    for m in metrics:
+      if isinstance(metrics[m], list):
+        values = [float(v) for v in metrics[m]]
+      else:
+        values = float(metrics[m])
+      results.Add(trace, 'ms', values, chart_name=m)
+
 
 class Media(test.Test):
   """Obtains media metrics for key user scenarios."""
@@ -38,6 +54,7 @@ class MediaSourceExtensions(test.Test):
   """Obtains media metrics for key media source extensions functions."""
   test = media.Media
   enabled = not sys.platform.startswith('linux')
+  test = MSEMeasurement
   page_set = 'page_sets/mse_cases.json'
 
   def CustomizeBrowserOptions(self, options):

@@ -111,7 +111,7 @@
 
   HTMLMediaMetric.prototype.onPlaying = function(event) {
     // Playing event can fire more than once if seeking.
-    if (!this.metrics['time_to_play'])
+    if (!this.metrics['time_to_play'] && this.playbackTimer)
       this.metrics['time_to_play'] = this.playbackTimer.stop();
   };
 
