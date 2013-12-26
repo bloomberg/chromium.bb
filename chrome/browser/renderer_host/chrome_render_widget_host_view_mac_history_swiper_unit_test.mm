@@ -345,7 +345,8 @@ TEST_F(MacHistorySwiperTest, TouchEventAfterGestureFinishes) {
   EXPECT_TRUE(navigated_right_);
 
   // Momentum events should be swallowed.
-  NSEvent* momentumEvent = scrollWheelEventWithPhase(NSEventPhaseNone);
+  NSEvent* momentumEvent = scrollWheelEventWithPhase(NSEventPhaseNone,
+                                                     NSEventPhaseChanged);
   EXPECT_TRUE([historySwiper_ handleEvent:momentumEvent]);
 
   // New events should not be swallowed.

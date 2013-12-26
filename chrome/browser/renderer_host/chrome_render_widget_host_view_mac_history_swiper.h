@@ -75,6 +75,20 @@ enum NavigationDirection {
   BOOL historySwipeDirectionInverted_;
 
   id<HistorySwiperDelegate> delegate_;
+
+  // Magic mouse and touchpad swipe events are identical except magic mouse
+  // events do not generate NSTouch callbacks. Since we rely on NSTouch
+  // callbacks to determine vertical scrolling, magic mouse swipe events use an
+  // entirely different set of logic.
+  //
+  // The two event types do not play well together. Just calling the API
+  // `[NSEvent trackSwipeEventWithOptions:]` will block touches{Began, Moved, *}
+  // callbacks for a non-deterministic period of time (even after the swipe has
+  // completed).
+  BOOL receivedTouch_;
+  // Cumulative scroll delta since scroll gesture start. Only valid during
+  // scroll gesture handling. Used for history swiping.
+  NSSize mouseScrollDelta_;
 }
 
 // Many event types are passed in, but the only one we care about is
