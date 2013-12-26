@@ -17,7 +17,6 @@ import glob
 import logging
 import optparse
 import os
-import pprint
 import sys
 import time
 import traceback
@@ -1219,9 +1218,6 @@ def _CreateParser():
   debug = [x for x in group.option_list if x._long_opts == ['--debug']][0]
   debug.help += "  Currently functions as --dry-run in addition."
   debug.pass_through = True
-  group.add_option('--dump_config', action='store_true', dest='dump_config',
-                    default=False,
-                    help='Dump out build config options, and exit.')
   group.add_option('--notee', action='store_false', dest='tee', default=True,
                     help="Disable logging and internal tee process.  Primarily "
                          "used for debugging cbuildbot itself.")
@@ -1502,13 +1498,6 @@ def main(argv):
 
   if options.reference_repo:
     options.reference_repo = os.path.abspath(options.reference_repo)
-
-  if options.dump_config:
-    # This works, but option ordering is bad...
-    print 'Configuration %s:' % bot_id
-    pretty_printer = pprint.PrettyPrinter(indent=2)
-    pretty_printer.pprint(build_config)
-    sys.exit(0)
 
   if not options.buildroot:
     if options.buildbot:
