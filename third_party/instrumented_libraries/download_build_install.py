@@ -11,7 +11,13 @@ import shutil
 import subprocess
 import sys
 
-# Build parameters for different sanitizers
+# Build parameters for different sanitizers.
+# We use XORIGIN as RPATH and after building library replace it to $ORIGIN
+# The reason: this flag goes through configure script and makefiles
+# differently for different libraries. So the dollar sign '$' should be
+# differently escaped. Instead of having problems with that it just
+# uses XORIGIN to build library and after that replaces it to $ORIGIN
+# directly in .so file.
 SUPPORTED_SANITIZERS = {
   'asan': {
     'compiler_flags': '-fsanitize=address -gline-tables-only -fPIC -w',
@@ -102,23 +108,21 @@ def download_build_install(parsed_arguments):
       parsed_arguments.custom_c_compiler_flags)
   environment['CXXFLAGS'] = '%s %s' % (sanitizer_params['compiler_flags'],
       parsed_arguments.custom_cxx_compiler_flags)
-  # We use XORIGIN as RPATH and after building library replace it to $ORIGIN
-  # The reason: this flag goes through configure script and makefiles
-  # differently for different libraries. So the dollar sign '$' should be
-  # differently escaped. Instead of having problems with that it just
-  # uses XORIGIN to build library and after that replaces it to $ORIGIN
-  # directly in .so file.
-  environment['LDFLAGS'] = '%s %s' % (sanitizer_params['linker_flags'],
-      parsed_arguments.custom_linker_flags)
 
-  library_directory = '%s/%s' % (parsed_arguments.intermediate_directory,
-      parsed_arguments.library)
-  
   install_prefix = '%s/%s/instrumented_libraries/%s' % (
       get_script_absolute_path(),
       parsed_arguments.product_directory,
       parsed_arguments.sanitizer_type)
 
+  # Make sure the linker searches the instrumented libraries dir for
+  # library dependencies.
+  environment['LDFLAGS'] = '%s -L%s/lib %s' % (sanitizer_params['linker_flags'],
+      install_prefix,
+      parsed_arguments.custom_linker_flags)
+
+  library_directory = '%s/%s' % (parsed_arguments.intermediate_directory,
+      parsed_arguments.library)
+ 
   if not os.path.exists(library_directory):
     os.makedirs(library_directory)
 
