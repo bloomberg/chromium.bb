@@ -143,7 +143,7 @@ std::vector<base::string16> InnerBoundedLabel::GetWrappedText(int width,
   // TODO(dharcourt): Remove when http://crbug.com/237700 is fixed.
   width = std::max(width,
                    2 * gfx::GetStringWidth(base::UTF8ToUTF16("W"),
-                   font_list()));
+                                           font_list()));
 
   // Wrap, using INT_MAX for -1 widths that indicate no wrapping.
   std::vector<base::string16> wrapped;
