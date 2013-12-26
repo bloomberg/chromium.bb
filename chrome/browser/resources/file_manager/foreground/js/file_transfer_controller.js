@@ -155,9 +155,8 @@ FileTransferController.prototype = {
     dataTransfer.setData('fs/tag', 'filemanager-data');
     dataTransfer.setData('fs/sourceRoot',
                          this.directoryModel_.getCurrentRootPath());
-    var sourcePaths =
-        this.selectedEntries_.map(function(e) { return e.fullPath; });
-    dataTransfer.setData('fs/sources', sourcePaths.join('\n'));
+    var sourceURLs = util.entriesToURLs(this.selectedEntries_);
+    dataTransfer.setData('fs/sources', sourceURLs.join('\n'));
     dataTransfer.effectAllowed = effectAllowed;
     dataTransfer.setData('fs/effectallowed', effectAllowed);
 
@@ -198,16 +197,22 @@ FileTransferController.prototype = {
    *
    * @this {FileTransferController}
    * @param {DataTransfer} dataTransfer System data transfer object.
-   * @param {string=} opt_destinationPath Paste destination.
+   * @param {DirectoryEntry=} opt_destinationEntry Paste destination.
    * @param {string=} opt_effect Desired drop/paste effect. Could be
    *     'move'|'copy' (default is copy). Ignored if conflicts with
    *     |dataTransfer.effectAllowed|.
    * @return {string} Either "copy" or "move".
    */
-  paste: function(dataTransfer, opt_destinationPath, opt_effect) {
-    var sourcePaths = (dataTransfer.getData('fs/sources') || '').split('\n');
-    var destinationPath = opt_destinationPath ||
-                          this.currentDirectoryContentPath;
+  paste: function(dataTransfer, opt_destinationEntry, opt_effect) {
+    var sourceURLs = dataTransfer.getData('fs/sources') ?
+        dataTransfer.getData('fs/sources').split('\n') : [];
+    util.URLsToEntries(sourceURLs, function(sourceEntries) {
+      var destinationEntry =
+          opt_destinationEntry || this.currentDirectoryContentEntry;
+      // Start the pasting operation.
+      this.fileOperationManager_.paste(sourceEntries, destinationEntry, toMove);
+    }.bind(this));
+
     // effectAllowed set in copy/paste handlers stay uninitialized. DnD handlers
     // work fine.
     var effectAllowed = dataTransfer.effectAllowed !== 'uninitialized' ?
@@ -215,8 +220,6 @@ FileTransferController.prototype = {
     var toMove = effectAllowed === 'move' ||
         (effectAllowed === 'copyMove' && opt_effect === 'move');
 
-    // Start the pasting operation.
-    this.fileOperationManager_.paste(sourcePaths, destinationPath, toMove);
     return toMove ? 'move' : 'copy';
   },
 
@@ -357,9 +360,9 @@ FileTransferController.prototype = {
    */
   onDragOver_: function(onlyIntoDirectories, list, event) {
     event.preventDefault();
-    var path = this.destinationPath_ ||
-        (!onlyIntoDirectories && this.currentDirectoryContentPath);
-    event.dataTransfer.dropEffect = this.selectDropEffect_(event, path);
+    var entry = this.destinationEntry_ ||
+        (!onlyIntoDirectories && this.currentDirectoryContentEntry);
+    event.dataTransfer.dropEffect = this.selectDropEffect_(event, entry);
     event.preventDefault();
   },
 
@@ -377,12 +380,10 @@ FileTransferController.prototype = {
       return;
 
     var entry = item && list.dataModel.item(item.listIndex);
-    if (entry) {
-      this.setDropTarget_(item, entry.isDirectory, event.dataTransfer,
-          entry.fullPath);
-    } else {
+    if (entry)
+      this.setDropTarget_(item, event.dataTransfer, entry);
+    else
       this.clearDropTarget_();
-    }
   },
 
   /**
@@ -403,8 +404,7 @@ FileTransferController.prototype = {
 
     var entry = item && item.entry;
     if (entry) {
-      this.setDropTarget_(item, entry.isDirectory, event.dataTransfer,
-          entry.fullPath);
+      this.setDropTarget_(item, event.dataTransfer, entry);
     } else {
       this.clearDropTarget_();
     }
@@ -423,9 +423,9 @@ FileTransferController.prototype = {
     if (item === this.dropTarget_)
       return;
 
-    var path = item && list.dataModel.item(item.listIndex).path;
-    if (path)
-      this.setDropTarget_(item, true /* directory */, event.dataTransfer, path);
+    var entry = item && list.dataModel.item(item.listIndex).getCachedEntry();
+    if (entry)
+      this.setDropTarget_(item, event.dataTransfer, entry);
     else
       this.clearDropTarget_();
   },
@@ -457,26 +457,25 @@ FileTransferController.prototype = {
   onDrop_: function(onlyIntoDirectories, event) {
     if (onlyIntoDirectories && !this.dropTarget_)
       return;
-    var destinationPath = this.destinationPath_ ||
-                          this.currentDirectoryContentPath;
-    if (!this.canPasteOrDrop_(event.dataTransfer, destinationPath))
+    var destinationEntry = this.destinationEntry_ ||
+                           this.currentDirectoryContentEntry;
+    if (!this.canPasteOrDrop_(event.dataTransfer, destinationEntry))
       return;
     event.preventDefault();
-    this.paste(event.dataTransfer, destinationPath,
-               this.selectDropEffect_(event, destinationPath));
+    this.paste(event.dataTransfer, destinationEntry,
+               this.selectDropEffect_(event, destinationEntry));
     this.clearDropTarget_();
   },
 
   /**
    * Sets the drop target.
+   *
    * @this {FileTransferController}
    * @param {Element} domElement Target of the drop.
-   * @param {boolean} isDirectory If the target is a directory.
    * @param {DataTransfer} dataTransfer Data transfer object.
-   * @param {string} destinationPath Destination path.
+   * @param {DirectoryEntry} destinationEntry Destination entry.
    */
-  setDropTarget_: function(domElement, isDirectory, dataTransfer,
-                           destinationPath) {
+  setDropTarget_: function(domElement, dataTransfer, destinationEntry) {
     if (this.dropTarget_ === domElement)
       return;
 
@@ -487,21 +486,21 @@ FileTransferController.prototype = {
     this.dropTarget_ = domElement;
 
     if (!domElement ||
-        !isDirectory ||
-        !this.canPasteOrDrop_(dataTransfer, destinationPath)) {
+        !destinationEntry.isDirectory ||
+        !this.canPasteOrDrop_(dataTransfer, destinationEntry)) {
       return;
     }
 
     // Add accept class if the domElement can accept the drag.
     domElement.classList.add('accepts');
-    this.destinationPath_ = destinationPath;
+    this.destinationEntry_ = destinationEntry;
 
     // Start timer changing the directory.
     this.navigateTimer_ = setTimeout(function() {
       if (domElement instanceof DirectoryItem)
         // Do custom action.
         (/** @type {DirectoryItem} */ domElement).doDropTargetAction();
-      this.directoryModel_.changeDirectory(destinationPath);
+      this.directoryModel_.changeDirectoryEntry(destinationEntry);
     }.bind(this), 2000);
   },
 
@@ -528,7 +527,7 @@ FileTransferController.prototype = {
     if (this.dropTarget_ && this.dropTarget_.classList.contains('accepts'))
       this.dropTarget_.classList.remove('accepts');
     this.dropTarget_ = null;
-    this.destinationPath_ = null;
+    this.destinationEntry_ = null;
     if (this.navigateTimer_ !== undefined) {
       clearTimeout(this.navigateTimer_);
       this.navigateTimer_ = undefined;
@@ -623,7 +622,7 @@ FileTransferController.prototype = {
     // Need to update here since 'beforepaste' doesn't fire.
     if (!this.isDocumentWideEvent_() ||
         !this.canPasteOrDrop_(event.clipboardData,
-                              this.currentDirectoryContentPath)) {
+                              this.currentDirectoryContentEntry)) {
       return;
     }
     event.preventDefault();
@@ -647,7 +646,7 @@ FileTransferController.prototype = {
       return;
     // queryCommandEnabled returns true if event.defaultPrevented is true.
     if (this.canPasteOrDrop_(event.clipboardData,
-                             this.currentDirectoryContentPath)) {
+                             this.currentDirectoryContentEntry)) {
       event.preventDefault();
     }
   },
@@ -655,33 +654,20 @@ FileTransferController.prototype = {
   /**
    * @this {FileTransferController}
    * @param {DataTransfer} dataTransfer Data transfer object.
-   * @param {string?} destinationPath Destination path.
+   * @param {DirectoryEntry} destinationEntry Destination entry.
    * @return {boolean} Returns true if items stored in {@code dataTransfer} can
-   *     be pasted to {@code destinationPath}. Otherwise, returns false.
+   *     be pasted to {@code destinationEntry}. Otherwise, returns false.
    */
-  canPasteOrDrop_: function(dataTransfer, destinationPath) {
-    if (!destinationPath) {
+  canPasteOrDrop_: function(dataTransfer, destinationEntry) {
+    if (!destinationEntry)
       return false;
-    }
-    if (this.directoryModel_.isPathReadOnly(destinationPath)) {
+
+    // TODO(mtomasz): Migrate from fullPath to LocationInformation.
+    if (this.directoryModel_.isPathReadOnly(destinationEntry.fullPath))
       return false;
-    }
-    if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') === -1) {
+
+    if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') === -1)
       return false;  // Unsupported type of content.
-    }
-    if (dataTransfer.getData('fs/tag') === '') {
-      // Data protected. Other checks are not possible but it makes sense to
-      // let the user try.
-      return true;
-    }
-
-    var directories = dataTransfer.getData('fs/directories').split('\n').
-                      filter(function(d) { return d !== ''; });
-
-    for (var i = 0; i < directories.length; i++) {
-      if (destinationPath.substr(0, directories[i].length) === directories[i])
-        return false;  // recursive paste.
-    }
 
     return true;
   },
@@ -703,7 +689,7 @@ FileTransferController.prototype = {
     var result;
     this.simulateCommand_('paste', function(event) {
       result = this.canPasteOrDrop_(event.clipboardData,
-                                    this.currentDirectoryContentPath);
+                                    this.currentDirectoryContentEntry);
     }.bind(this));
     return result;
   },
@@ -776,14 +762,14 @@ FileTransferController.prototype = {
   },
 
   /**
-   * Path of directory that is displaying now.
-   * If search result is displaying now, this is null.
+   * Obains directory that is displaying now. If search result is displaying
+   * now, then returns null.
    * @this {FileTransferController}
-   * @return {string} Path of directry that is displaying now.
+   * @return {DirectoryEntry} Entry of directry that is displaying now.
    */
-  get currentDirectoryContentPath() {
+  get currentDirectoryContentEntry() {
     return this.directoryModel_.isSearching() ?
-        null : this.directoryModel_.getCurrentDirPath();
+        null : this.directoryModel_.getCurrentDirEntry();
   },
 
   /**
@@ -820,7 +806,7 @@ FileTransferController.prototype = {
   get selectedEntries_() {
     var list = this.directoryModel_.getFileList();
     var selectedIndexes = this.directoryModel_.getFileListSelection().
-                               selectedIndexes;
+        selectedIndexes;
     var entries = selectedIndexes.map(function(index) {
       return list.item(index);
     });
@@ -837,17 +823,21 @@ FileTransferController.prototype = {
   },
 
   /**
+   * @param {Event} event Drag event.
+   * @param {DirectoryEntry} destinationEntry Destination entry.
    * @this {FileTransferController}
    * @return {string}  Returns the appropriate drop query type ('none', 'move'
    *     or copy') to the current modifiers status and the destination.
    */
-  selectDropEffect_: function(event, destinationPath) {
-    if (!destinationPath ||
-        this.directoryModel_.isPathReadOnly(destinationPath))
+  selectDropEffect_: function(event, destinationEntry) {
+    // TODO(mtomasz): Migrate from fullPath to locationInformation.
+    if (!destinationEntry ||
+        this.directoryModel_.isPathReadOnly(destinationEntry.fullPath)) {
       return 'none';
+    }
     if (event.dataTransfer.effectAllowed === 'copyMove' &&
-        this.getSourceRoot_(event.dataTransfer) ==
-            PathUtil.getRootPath(destinationPath) &&
+        this.getSourceRoot_(event.dataTransfer) ===
+            PathUtil.getRootPath(destinationEntry.fullPath) &&
         !event.ctrlKey) {
       return 'move';
     }
