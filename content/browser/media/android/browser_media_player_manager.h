@@ -30,6 +30,7 @@ class MediaDrmBridge;
 
 namespace content {
 class BrowserDemuxerAndroid;
+class ContentViewCoreImpl;
 class WebContents;
 
 // This class manages all the MediaPlayerAndroid objects. It receives
@@ -48,6 +49,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Returns a new instance using the registered factory if available.
   static BrowserMediaPlayerManager* Create(RenderViewHost* rvh);
 
+  ContentViewCoreImpl* GetContentViewCore() const;
+
   virtual ~BrowserMediaPlayerManager();
 
   // WebContentsObserver overrides.
@@ -59,6 +62,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void FullscreenPlayerSeek(int msec);
   virtual void ExitFullscreen(bool release_media_player);
   virtual void SetVideoSurface(gfx::ScopedJavaSurface surface);
+  virtual void SuspendFullscreen();
+  virtual void ResumeFullscreen(gfx::ScopedJavaSurface surface);
 
   // Called when browser player wants the renderer media element to seek.
   // Any actual seek started by renderer will be handled by browser in OnSeek().
@@ -218,9 +223,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // The player ID pending to enter fullscreen.
   int pending_fullscreen_player_id_;
-
-  // Whether the fullscreen player has been Release()-d.
-  bool fullscreen_player_is_released_;
 
   WebContents* web_contents_;
 

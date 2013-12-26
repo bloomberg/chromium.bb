@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/public/common/content_switches.h"
@@ -35,20 +36,16 @@ bool ContentVideoView::RegisterContentVideoView(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-bool ContentVideoView::HasContentVideoView() {
+ContentVideoView* ContentVideoView::GetInstance() {
   return g_content_video_view;
 }
 
 ContentVideoView::ContentVideoView(
-    const ScopedJavaLocalRef<jobject>& context,
-    const ScopedJavaLocalRef<jobject>& client,
     BrowserMediaPlayerManager* manager)
-    : manager_(manager) {
+    : manager_(manager),
+      fullscreen_state_(ENTERED) {
   DCHECK(!g_content_video_view);
-  JNIEnv *env = AttachCurrentThread();
-  j_content_video_view_ = JavaObjectWeakGlobalRef(env,
-      Java_ContentVideoView_createContentVideoView(env, context.obj(),
-          reinterpret_cast<intptr_t>(this), client.obj()).obj());
+  j_content_video_view_ = CreateJavaObject();
   g_content_video_view = this;
 }
 
@@ -148,15 +145,41 @@ void ContentVideoView::Pause(JNIEnv*, jobject obj) {
 }
 
 void ContentVideoView::ExitFullscreen(
-    JNIEnv*, jobject, jboolean release_media_player) {
+    JNIEnv* env, jobject, jboolean release_media_player) {
+  if (fullscreen_state_ == SUSPENDED)
+    return;
   j_content_video_view_.reset();
   manager_->ExitFullscreen(release_media_player);
 }
 
+void ContentVideoView::SuspendFullscreen() {
+  if (fullscreen_state_ != ENTERED)
+    return;
+  fullscreen_state_ = SUSPENDED;
+  DestroyContentVideoView(false);
+  manager_->SuspendFullscreen();
+}
+
+void ContentVideoView::ResumeFullscreenIfSuspended() {
+  if (fullscreen_state_ != SUSPENDED)
+    return;
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(!GetJavaObject(env).obj());
+  fullscreen_state_ = RESUME;
+  j_content_video_view_ = CreateJavaObject();
+}
+
 void ContentVideoView::SetSurface(JNIEnv* env, jobject obj,
                                   jobject surface) {
-  manager_->SetVideoSurface(
-      gfx::ScopedJavaSurface::AcquireExternalSurface(surface));
+  gfx::ScopedJavaSurface scoped_surface =
+      gfx::ScopedJavaSurface::AcquireExternalSurface(surface);
+  if (fullscreen_state_ == RESUME) {
+    DCHECK(surface);
+    manager_->ResumeFullscreen(scoped_surface.Pass());
+    fullscreen_state_ = ENTERED;
+  } else {
+    manager_->SetVideoSurface(scoped_surface.Pass());
+  }
 }
 
 void ContentVideoView::UpdateMediaMetadata(JNIEnv* env, jobject obj) {
@@ -170,6 +193,18 @@ void ContentVideoView::UpdateMediaMetadata(JNIEnv* env, jobject obj) {
 
 ScopedJavaLocalRef<jobject> ContentVideoView::GetJavaObject(JNIEnv* env) {
   return j_content_video_view_.get(env);
+}
+
+JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
+  ContentViewCoreImpl* content_view_core = manager_->GetContentViewCore();
+  JNIEnv *env = AttachCurrentThread();
+  return JavaObjectWeakGlobalRef(
+             env,
+             Java_ContentVideoView_createContentVideoView(
+                 env,
+                 content_view_core->GetContext().obj(),
+                 reinterpret_cast<intptr_t>(this),
+                 content_view_core->GetContentVideoViewClient().obj()).obj());
 }
 
 void ContentVideoView::DestroyContentVideoView(bool native_view_destroyed) {

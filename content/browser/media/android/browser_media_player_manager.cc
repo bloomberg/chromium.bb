@@ -59,6 +59,10 @@ BrowserMediaPlayerManager* BrowserMediaPlayerManager::Create(
   return new BrowserMediaPlayerManager(rvh);
 }
 
+ContentViewCoreImpl* BrowserMediaPlayerManager::GetContentViewCore() const {
+  return ContentViewCoreImpl::FromWebContents(web_contents());
+}
+
 #if !defined(GOOGLE_TV)
 // static
 MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
@@ -108,7 +112,6 @@ BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)),
       fullscreen_player_id_(-1),
       pending_fullscreen_player_id_(-1),
-      fullscreen_player_is_released_(false),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)),
       weak_ptr_factory_(this) {
 }
@@ -146,10 +149,6 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
 void BrowserMediaPlayerManager::FullscreenPlayerPlay() {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
-    if (fullscreen_player_is_released_) {
-      video_view_->OpenVideo();
-      fullscreen_player_is_released_ = false;
-    }
     player->Start();
     Send(new MediaPlayerMsg_DidMediaPlayerPlay(
         routing_id(), fullscreen_player_id_));
@@ -188,6 +187,19 @@ void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
     player->Release();
   else
     player->SetVideoSurface(gfx::ScopedJavaSurface());
+}
+
+void BrowserMediaPlayerManager::SuspendFullscreen() {
+  MediaPlayerAndroid* player = GetFullscreenPlayer();
+  if (player)
+    player->SetVideoSurface(gfx::ScopedJavaSurface());
+}
+
+void BrowserMediaPlayerManager::ResumeFullscreen(
+    gfx::ScopedJavaSurface surface) {
+  MediaPlayerAndroid* player = GetFullscreenPlayer();
+  if (player)
+    player->SetVideoSurface(surface.Pass());
 }
 
 void BrowserMediaPlayerManager::OnTimeUpdate(int player_id,
@@ -461,14 +473,11 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   if (video_view_.get()) {
     fullscreen_player_id_ = player_id;
     video_view_->OpenVideo();
-  } else if (!ContentVideoView::HasContentVideoView()) {
+  } else if (!ContentVideoView::GetInstance()) {
     // In Android WebView, two ContentViewCores could both try to enter
     // fullscreen video, we just ignore the second one.
     fullscreen_player_id_ = player_id;
-    ContentViewCoreImpl* content_view_core_impl =
-        ContentViewCoreImpl::FromWebContents(web_contents());
-    video_view_.reset(new ContentVideoView(content_view_core_impl->GetContext(),
-        content_view_core_impl->GetContentVideoViewClient(), this));
+    video_view_.reset(new ContentVideoView(this));
   }
 }
 
@@ -533,8 +542,6 @@ void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
     player->Release();
-  if (player_id == fullscreen_player_id_)
-    fullscreen_player_is_released_ = true;
 
 #if defined(VIDEO_HOLE)
   WebContentsViewAndroid* view =

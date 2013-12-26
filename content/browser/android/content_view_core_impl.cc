@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "cc/layers/layer.h"
 #include "cc/output/begin_frame_args.h"
+#include "content/browser/android/content_video_view.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/touch_point.h"
@@ -339,6 +340,7 @@ void ContentViewCoreImpl::OnShow(JNIEnv* env, jobject obj) {
 
 void ContentViewCoreImpl::Show() {
   GetWebContents()->WasShown();
+  ResumeVideo();
 }
 
 void ContentViewCoreImpl::Hide() {
@@ -350,6 +352,13 @@ void ContentViewCoreImpl::PauseVideo() {
   RenderViewHost* host = web_contents_->GetRenderViewHost();
   if (host)
     host->Send(new ViewMsg_PauseVideo(host->GetRoutingID()));
+  if (ContentVideoView::GetInstance())
+    ContentVideoView::GetInstance()->SuspendFullscreen();
+}
+
+void ContentViewCoreImpl::ResumeVideo() {
+  if (ContentVideoView::GetInstance())
+    ContentVideoView::GetInstance()->ResumeFullscreenIfSuspended();
 }
 
 void ContentViewCoreImpl::PauseOrResumeGeolocation(bool should_pause) {

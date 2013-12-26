@@ -31,6 +31,8 @@ class ContentVideoView {
       const base::android::ScopedJavaLocalRef<jobject>& client,
       BrowserMediaPlayerManager* manager);
 
+  ContentVideoView(BrowserMediaPlayerManager* manager);
+
   ~ContentVideoView();
 
   // To open another video on existing ContentVideoView.
@@ -39,8 +41,8 @@ class ContentVideoView {
   static bool RegisterContentVideoView(JNIEnv* env);
   static void KeepScreenOn(bool screen_on);
 
-  // Return true if there is existing ContentVideoView object.
-  static bool HasContentVideoView();
+  // Return the singleton object or NULL.
+  static ContentVideoView* GetInstance();
 
   // Getter method called by the Java class to get the media information.
   int GetVideoWidth(JNIEnv*, jobject obj) const;
@@ -54,6 +56,15 @@ class ContentVideoView {
   // |release_media_player| is true, |manager_| needs to release the player
   // as we are quitting the app.
   void ExitFullscreen(JNIEnv*, jobject, jboolean release_media_player);
+
+  // Supposed to be called when the application paused or stopped.
+  // Destroys the fullscreen view in a way that it can be recreated
+  // via ResumeFullscreenIfSuspended.
+  void SuspendFullscreen();
+
+  // Supposed to be called when the application switches back to foreground.
+  // Recreates the fullscreen view if it was suspended via SuspendFullscreen.
+  void ResumeFullscreenIfSuspended();
 
   // Media control method called by the Java class.
   void SeekTo(JNIEnv*, jobject obj, jint msec);
@@ -80,12 +91,21 @@ class ContentVideoView {
   // no further calls to the native object is allowed.
   void DestroyContentVideoView(bool native_view_destroyed);
 
+  // Creates the corresponding ContentVideoView Java object.
+  JavaObjectWeakGlobalRef CreateJavaObject();
+
   // Object that manages the fullscreen media player. It is responsible for
   // handling all the playback controls.
   BrowserMediaPlayerManager* manager_;
 
   // Weak reference of corresponding Java object.
   JavaObjectWeakGlobalRef j_content_video_view_;
+
+  enum FullscreenState {
+    ENTERED,
+    SUSPENDED,
+    RESUME
+  } fullscreen_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVideoView);
 };
