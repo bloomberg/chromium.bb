@@ -173,9 +173,10 @@ private:
     Element* elementForId(ErrorString*, int nodeId);
     int documentNodeWithRequestedFlowsId(Document*);
     void collectAllStyleSheets(Vector<InspectorStyleSheet*>&);
-    void collectStyleSheets(CSSStyleSheet*, Vector<InspectorStyleSheet*>&);
+    void collectAllDocumentStyleSheets(Document*, Vector<CSSStyleSheet*>&);
+    void collectStyleSheets(CSSStyleSheet*, Vector<CSSStyleSheet*>&);
 
-    void updateActiveStyleSheets(Document*, const Vector<RefPtr<StyleSheet> >& newSheets);
+    void updateActiveStyleSheets(Document*, const Vector<CSSStyleSheet*>&);
 
     void collectPlatformFontsForRenderer(RenderText*, HashCountedSet<String>*);
 

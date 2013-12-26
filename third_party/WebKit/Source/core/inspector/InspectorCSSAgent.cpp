@@ -91,28 +91,6 @@ enum ForcePseudoClassFlags {
     PseudoVisited = 1 << 3
 };
 
-class StyleSheetAppender {
-public:
-    StyleSheetAppender(Vector<CSSStyleSheet*>& result)
-        : m_result(result) { }
-
-    void run(CSSStyleSheet* styleSheet)
-    {
-        m_result.append(styleSheet);
-        for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
-            CSSRule* rule = styleSheet->item(i);
-            if (rule->type() == CSSRule::IMPORT_RULE) {
-                CSSStyleSheet* importedStyleSheet = toCSSImportRule(rule)->styleSheet();
-                if (importedStyleSheet)
-                    run(importedStyleSheet);
-            }
-        }
-    }
-
-private:
-    Vector<CSSStyleSheet*>& m_result;
-};
-
 static unsigned computePseudoClassMask(JSONArray* pseudoClassArray)
 {
     DEFINE_STATIC_LOCAL(String, active, ("active"));
@@ -850,11 +828,12 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
     if (styleSheetEditInProgress())
         return;
 
-    const Vector<RefPtr<StyleSheet> > newSheets = document->styleEngine()->activeStyleSheetsForInspector();
-    updateActiveStyleSheets(document, newSheets);
+    Vector<CSSStyleSheet*> newSheetsVector;
+    collectAllDocumentStyleSheets(document, newSheetsVector);
+    updateActiveStyleSheets(document, newSheetsVector);
 }
 
-void InspectorCSSAgent::updateActiveStyleSheets(Document* document, const Vector<RefPtr<StyleSheet> >& newSheets)
+void InspectorCSSAgent::updateActiveStyleSheets(Document* document, const Vector<CSSStyleSheet*>& allSheetsVector)
 {
     HashSet<CSSStyleSheet*> removedSheets;
     for (CSSStyleSheetToInspectorStyleSheet::iterator it = m_cssStyleSheetToInspectorStyleSheet.begin(); it != m_cssStyleSheetToInspectorStyleSheet.end(); ++it) {
@@ -862,22 +841,13 @@ void InspectorCSSAgent::updateActiveStyleSheets(Document* document, const Vector
             removedSheets.add(it->key);
     }
 
-    Vector<CSSStyleSheet*> newSheetsVector;
-    for (Vector<RefPtr<StyleSheet> >::const_iterator it = newSheets.begin(); it != newSheets.end(); ++it) {
-        StyleSheet* newSheet = (*it).get();
-        if (newSheet->isCSSStyleSheet()) {
-            StyleSheetAppender appender(newSheetsVector);
-            appender.run(toCSSStyleSheet(newSheet));
-        }
-    }
-
     HashSet<CSSStyleSheet*> addedSheets;
-    for (size_t i = 0; i < newSheetsVector.size(); ++i) {
-        CSSStyleSheet* newCSSSheet = newSheetsVector.at(i);
-        if (removedSheets.contains(newCSSSheet))
-            removedSheets.remove(newCSSSheet);
+    for (Vector<CSSStyleSheet*>::const_iterator it = allSheetsVector.begin(); it != allSheetsVector.end(); ++it) {
+        CSSStyleSheet* cssStyleSheet = *it;
+        if (removedSheets.contains(cssStyleSheet))
+            removedSheets.remove(cssStyleSheet);
         else
-            addedSheets.add(newCSSSheet);
+            addedSheets.add(cssStyleSheet);
     }
 
     for (HashSet<CSSStyleSheet*>::iterator it = removedSheets.begin(); it != removedSheets.end(); ++it) {
@@ -904,7 +874,7 @@ void InspectorCSSAgent::frameDetachedFromParent(Frame* frame)
     Document* document = frame->document();
     if (!document)
         return;
-    const Vector<RefPtr<StyleSheet> > styleSheets;
+    const Vector<CSSStyleSheet*> styleSheets;
     updateActiveStyleSheets(document, styleSheets);
 }
 
@@ -1441,22 +1411,27 @@ int InspectorCSSAgent::documentNodeWithRequestedFlowsId(Document* document)
 
 void InspectorCSSAgent::collectAllStyleSheets(Vector<InspectorStyleSheet*>& result)
 {
+    Vector<CSSStyleSheet*> cssStyleSheets;
     Vector<Document*> documents = m_domAgent->documents();
-    for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it) {
-        Document* document = *it;
-        const Vector<RefPtr<StyleSheet> > activeStyleSheets = document->styleEngine()->activeStyleSheetsForInspector();
-        for (Vector<RefPtr<StyleSheet> >::const_iterator it = activeStyleSheets.begin(); it != activeStyleSheets.end(); ++it) {
-            RefPtr<StyleSheet> styleSheet = *it;
-            if (styleSheet->isCSSStyleSheet())
-                collectStyleSheets(toCSSStyleSheet(styleSheet.get()), result);
-        }
+    for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it)
+        collectAllDocumentStyleSheets(*it, cssStyleSheets);
+    for (Vector<CSSStyleSheet*>::iterator it = cssStyleSheets.begin(); it != cssStyleSheets.end(); ++it)
+        result.append(bindStyleSheet(*it));
+}
+
+void InspectorCSSAgent::collectAllDocumentStyleSheets(Document* document, Vector<CSSStyleSheet*>& result)
+{
+    const Vector<RefPtr<StyleSheet> > activeStyleSheets = document->styleEngine()->activeStyleSheetsForInspector();
+    for (Vector<RefPtr<StyleSheet> >::const_iterator it = activeStyleSheets.begin(); it != activeStyleSheets.end(); ++it) {
+        StyleSheet* styleSheet = (*it).get();
+        if (styleSheet->isCSSStyleSheet())
+            collectStyleSheets(toCSSStyleSheet(styleSheet), result);
     }
 }
 
-void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, Vector<InspectorStyleSheet*>& result)
+void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, Vector<CSSStyleSheet*>& result)
 {
-    InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(styleSheet);
-    result.append(inspectorStyleSheet);
+    result.append(styleSheet);
     for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
         CSSRule* rule = styleSheet->item(i);
         if (rule->type() == CSSRule::IMPORT_RULE) {
