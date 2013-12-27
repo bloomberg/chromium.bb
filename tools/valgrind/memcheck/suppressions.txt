@@ -6321,3 +6321,8 @@
    ...
    fun:_ZN7WebCore12WorkerThread12workerThreadEv
 }
+{
+   bug_330846
+   Memcheck:Uninitialized
+   fun:_ZN8chromeos12input_method19CandidateWindowView16UpdateCandidatesERKNS0_15CandidateWindowE
+}
