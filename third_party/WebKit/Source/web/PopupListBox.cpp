@@ -61,13 +61,9 @@ namespace WebCore {
 
 using namespace WTF::Unicode;
 
-static const int labelToIconPadding = 5;
-// Padding height put at the top and bottom of each line.
-static const int autofillLinePaddingHeight = 3;
 const int PopupListBox::defaultMaxHeight = 500;
 static const int maxVisibleRows = 20;
 static const int minEndOfLinePadding = 2;
-static const int textToLabelPadding = 10;
 static const TimeStamp typeAheadTimeoutMs = 1000;
 
 PopupListBox::PopupListBox(PopupMenuClient* client, bool deviceSupportsTouch)
@@ -139,10 +135,7 @@ bool PopupListBox::handleMouseReleaseEvent(const PlatformMouseEvent& event)
     if (!isPointInBounds(event.position()))
         return true;
 
-    // Need to check before calling acceptIndex(), because m_popupClient might
-    // be removed in acceptIndex() calling because of event handler.
-    bool isSelectPopup = m_popupClient->menuStyle().menuType() == PopupMenuStyle::SelectPopup;
-    if (acceptIndex(pointToRowIndex(event.position())) && m_focusedElement && isSelectPopup) {
+    if (acceptIndex(pointToRowIndex(event.position())) && m_focusedElement) {
         m_focusedElement->dispatchMouseEvent(event, EventTypeNames::mouseup);
         m_focusedElement->dispatchMouseEvent(event, EventTypeNames::click);
 
@@ -224,17 +217,10 @@ bool PopupListBox::handleKeyEvent(const PlatformKeyboardEvent& event)
         acceptIndex(m_selectedIndex); // may delete this
         return true;
     case VKEY_UP:
+        selectPreviousRow();
+        break;
     case VKEY_DOWN:
-        // We have to forward only shift + up combination to focused node when
-        // autofill popup. Because all characters from the cursor to the start
-        // of the text area should selected when you press shift + up arrow.
-        // shift + down should be the similar way to shift + up.
-        if (event.modifiers() && m_popupClient->menuStyle().menuType() == PopupMenuStyle::AutofillPopup)
-            m_focusedElement->dispatchKeyEvent(event);
-        else if (event.windowsVirtualKeyCode() == VKEY_UP)
-            selectPreviousRow();
-        else
-            selectNextRow();
+        selectNextRow();
         break;
     case VKEY_PRIOR:
         adjustSelectedIndex(-m_visibleRows);
@@ -430,15 +416,12 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
 
     gc->fillRect(rowRect, backColor);
 
-    // It doesn't look good but Autofill requires special style for separator.
-    // Autofill doesn't have padding and #dcdcdc color.
     if (m_popupClient->itemIsSeparator(rowIndex)) {
-        int padding = style.menuType() == PopupMenuStyle::AutofillPopup ? 0 : separatorPadding;
         IntRect separatorRect(
-            rowRect.x() + padding,
+            rowRect.x() + separatorPadding,
             rowRect.y() + (rowRect.height() - separatorHeight) / 2,
-            rowRect.width() - 2 * padding, separatorHeight);
-        gc->fillRect(separatorRect, style.menuType() == PopupMenuStyle::AutofillPopup ? Color(0xdc, 0xdc, 0xdc) : textColor);
+            rowRect.width() - 2 * separatorPadding, separatorHeight);
+        gc->fillRect(separatorRect, textColor);
         return;
     }
 
@@ -455,16 +438,14 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
     bool rightAligned = m_popupClient->menuStyle().textDirection() == RTL;
     int textX = 0;
     int maxWidth = 0;
-    if (rightAligned)
-        maxWidth = rowRect.width() - max<int>(0, m_popupClient->clientPaddingRight() - m_popupClient->clientInsetRight());
-    else {
-        textX = max<int>(0, m_popupClient->clientPaddingLeft() - m_popupClient->clientInsetLeft());
+    if (rightAligned) {
+        maxWidth = rowRect.width() - max<int>(0, m_popupClient->clientPaddingRight());
+    } else {
+        textX = max<int>(0, m_popupClient->clientPaddingLeft());
         maxWidth = rowRect.width() - textX;
     }
     // Prepare text to be drawn.
     String itemText = m_popupClient->itemText(rowIndex);
-    String itemLabel = m_popupClient->itemLabel(rowIndex);
-    String itemIcon = m_popupClient->itemIcon(rowIndex);
 
     // Prepare the directionality to draw text.
     TextRun textRun(itemText, 0, 0, TextRun::AllowTrailingExpansion, style.textDirection(), style.hasTextDirectionOverride());
@@ -478,45 +459,6 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.bounds = rowRect;
     gc->drawBidiText(itemFont, textRunPaintInfo, IntPoint(textX, textY));
-
-    // We are using the left padding as the right padding includes room for the scroll-bar which
-    // does not show in this case.
-    int rightPadding = max<int>(0, m_popupClient->clientPaddingLeft() - m_popupClient->clientInsetLeft());
-    int remainingWidth = rowRect.width() - rightPadding;
-
-    // Draw the icon if applicable.
-    RefPtr<Image> image(Image::loadPlatformResource(itemIcon.utf8().data()));
-    if (image && !image->isNull()) {
-        IntRect imageRect = image->rect();
-        remainingWidth -= (imageRect.width() + labelToIconPadding);
-        imageRect.setX(rowRect.width() - rightPadding - imageRect.width());
-        imageRect.setY(rowRect.y() + (rowRect.height() - imageRect.height()) / 2);
-        gc->drawImage(image.get(), imageRect);
-    }
-
-    // Draw the the label if applicable.
-    if (itemLabel.isEmpty())
-        return;
-
-    // Autofill label is 0.9 smaller than regular font size.
-    if (style.menuType() == PopupMenuStyle::AutofillPopup) {
-        itemFont = m_popupClient->itemStyle(rowIndex).font();
-        FontDescription d = itemFont.fontDescription();
-        d.setComputedSize(d.computedSize() * 0.9);
-        itemFont = Font(d, itemFont.letterSpacing(), itemFont.wordSpacing());
-        itemFont.update(0);
-    }
-
-    TextRun labelTextRun(itemLabel, 0, 0, TextRun::AllowTrailingExpansion, style.textDirection(), style.hasTextDirectionOverride());
-    if (rightAligned)
-        textX = max<int>(0, m_popupClient->clientPaddingLeft() - m_popupClient->clientInsetLeft());
-    else
-        textX = remainingWidth - itemFont.width(labelTextRun);
-    TextRunPaintInfo labelTextRunPaintInfo(labelTextRun);
-    labelTextRunPaintInfo.bounds = rowRect;
-
-    gc->setFillColor(labelColor);
-    gc->drawBidiText(itemFont, labelTextRunPaintInfo, IntPoint(textX, textY));
 }
 
 Font PopupListBox::getRowFont(int rowIndex)
@@ -633,15 +575,8 @@ int PopupListBox::getRowHeight(int index)
     if (m_popupClient->itemIsSeparator(index))
         return max(separatorHeight, minimumHeight);
 
-    String icon = m_popupClient->itemIcon(index);
-    RefPtr<Image> image(Image::loadPlatformResource(icon.utf8().data()));
-
     int fontHeight = getRowFont(index).fontMetrics().height();
-    int iconHeight = (image && !image->isNull()) ? image->rect().height() : 0;
-
-    int linePaddingHeight = m_popupClient->menuStyle().menuType() == PopupMenuStyle::AutofillPopup ? autofillLinePaddingHeight : 0;
-    int calculatedRowHeight = max(fontHeight, iconHeight) + linePaddingHeight * 2;
-    return max(calculatedRowHeight, minimumHeight);
+    return max(fontHeight, minimumHeight);
 }
 
 IntRect PopupListBox::getRowBounds(int index)
@@ -805,22 +740,9 @@ void PopupListBox::layout()
         // Ensure the popup is wide enough to fit this item.
         Font itemFont = getRowFont(i);
         String text = m_popupClient->itemText(i);
-        String label = m_popupClient->itemLabel(i);
-        String icon = m_popupClient->itemIcon(i);
-        RefPtr<Image> iconImage(Image::loadPlatformResource(icon.utf8().data()));
         int width = 0;
         if (!text.isEmpty())
             width = itemFont.width(TextRun(text));
-        if (!label.isEmpty()) {
-            if (width > 0)
-                width += textToLabelPadding;
-            width += itemFont.width(TextRun(label));
-        }
-        if (iconImage && !iconImage->isNull()) {
-            if (width > 0)
-                width += labelToIconPadding;
-            width += iconImage->rect().width();
-        }
 
         baseWidth = max(baseWidth, width);
         // FIXME: http://b/1210481 We should get the padding of individual

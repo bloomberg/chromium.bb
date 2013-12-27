@@ -400,16 +400,6 @@ String RenderMenuList::itemText(unsigned listIndex) const
     return itemString;
 }
 
-String RenderMenuList::itemLabel(unsigned) const
-{
-    return String();
-}
-
-String RenderMenuList::itemIcon(unsigned) const
-{
-    return String();
-}
-
 String RenderMenuList::itemAccessibilityText(unsigned listIndex) const
 {
     // Allow the accessible name be changed if necessary.
@@ -525,16 +515,6 @@ PassRefPtr<Scrollbar> RenderMenuList::createScrollbar(ScrollableArea* scrollable
     else
         widget = Scrollbar::create(scrollableArea, orientation, controlSize);
     return widget.release();
-}
-
-int RenderMenuList::clientInsetLeft() const
-{
-    return 0;
-}
-
-int RenderMenuList::clientInsetRight() const
-{
-    return 0;
 }
 
 LayoutUnit RenderMenuList::clientPaddingLeft() const

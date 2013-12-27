@@ -44,15 +44,11 @@ public:
     virtual void selectionCleared() = 0;
 
     virtual String itemText(unsigned listIndex) const = 0;
-    virtual String itemLabel(unsigned listIndex) const = 0;
-    virtual String itemIcon(unsigned listIndex) const = 0;
     virtual String itemToolTip(unsigned listIndex) const = 0;
     virtual String itemAccessibilityText(unsigned listIndex) const = 0;
     virtual bool itemIsEnabled(unsigned listIndex) const = 0;
     virtual PopupMenuStyle itemStyle(unsigned listIndex) const = 0;
     virtual PopupMenuStyle menuStyle() const = 0;
-    virtual int clientInsetLeft() const = 0;
-    virtual int clientInsetRight() const = 0;
     virtual LayoutUnit clientPaddingLeft() const = 0;
     virtual LayoutUnit clientPaddingRight() const = 0;
     virtual int listSize() const = 0;
