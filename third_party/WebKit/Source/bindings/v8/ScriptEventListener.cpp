@@ -151,14 +151,15 @@ bool eventListenerHandlerLocation(Document* document, EventListener* listener, S
         return false;
 
     v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(object);
-    int scriptIdValue = function->ScriptId();
+    v8::Handle<v8::Function> originalFunction = getBoundFunction(function);
+    int scriptIdValue = originalFunction->ScriptId();
     scriptId = String::number(scriptIdValue);
-    v8::ScriptOrigin origin = function->GetScriptOrigin();
+    v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
     if (!origin.ResourceName().IsEmpty() && origin.ResourceName()->IsString())
         sourceName = toCoreString(origin.ResourceName().As<v8::String>());
     else
         sourceName = "";
-    lineNumber = function->GetScriptLineNumber();
+    lineNumber = originalFunction->GetScriptLineNumber();
     return true;
 }
 
