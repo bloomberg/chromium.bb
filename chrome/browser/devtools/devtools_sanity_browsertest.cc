@@ -791,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 }
 
 // Fails quite consistently on Win XP: crbug.com/317725.
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_TestNoScriptDuplicatesOnPanelSwitch \
   DISABLED_TestNoScriptDuplicatesOnPanelSwitch
 #else
