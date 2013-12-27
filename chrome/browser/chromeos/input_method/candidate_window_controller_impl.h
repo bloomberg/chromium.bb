@@ -44,18 +44,6 @@ class CandidateWindowControllerImpl
   virtual void Hide() OVERRIDE;
 
  protected:
-  // Returns infolist window position. This function handles right or bottom
-  // position overflow. Usually, infolist window is clipped with right-top of
-  // candidate window, but the position should be changed based on position
-  // overflow. If right of infolist window is out of screen, infolist window is
-  // shown left-top of candidate window. If bottom of infolist window is out of
-  // screen, infolist window is shown with clipping to bottom of screen.
-  // Infolist window does not overflow top and left direction.
-  static gfx::Point GetInfolistWindowPosition(
-      const gfx::Rect& candidate_window_rect,
-      const gfx::Rect& screen_rect,
-      const gfx::Size& infolist_winodw_size);
-
   // Converts |candidate_window| to infolist entry models. Sets
   // |has_highlighted| to true if infolist_entries contains highlighted entry.
   // TODO(mukai): move this method (and tests) to the new InfolistEntry model.
@@ -84,10 +72,6 @@ class CandidateWindowControllerImpl
 
   // Creates the candidate window view.
   void CreateView();
-
-  // Updates infolist bounds, if current bounds is up-to-date, this function
-  // does nothing.
-  gfx::Rect GetInfolistBounds();
 
   // The candidate window view.
   CandidateWindowView* candidate_window_view_;

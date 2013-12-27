@@ -98,8 +98,6 @@ void CandidateWindowControllerImpl::SetCursorBounds(
   candidate_window_view_->set_composition_head_bounds(composition_head);
   // Move the window per the cursor bounds.
   candidate_window_view_->ResizeAndMoveParentFrame();
-  if (infolist_window_)
-    infolist_window_->GetWidget()->SetBounds(GetInfolistBounds());
 
   // Mode indicator controller also needs the cursor bounds.
   mode_indicator_controller_->SetCursorBounds(cursor_bounds);
@@ -180,29 +178,13 @@ void CandidateWindowControllerImpl::UpdateLookupTable(
 
   if (infolist_window_) {
     infolist_window_->Relayout(infolist_entries);
-    infolist_window_->GetWidget()->SetBounds(GetInfolistBounds());
   } else {
-    infolist_window_ = new InfolistWindow(infolist_entries);
-    infolist_window_->InitWidget(
-        ash::Shell::GetContainer(
-            ash::Shell::GetTargetRootWindow(),
-            ash::internal::kShellWindowId_InputMethodContainer),
-        GetInfolistBounds());
+    infolist_window_ = new InfolistWindow(
+        candidate_window_view_, infolist_entries);
+    infolist_window_->InitWidget();
     infolist_window_->GetWidget()->AddObserver(this);
   }
   infolist_window_->ShowWithDelay();
-}
-
-gfx::Rect CandidateWindowControllerImpl::GetInfolistBounds() {
-  gfx::Rect new_bounds(infolist_window_->GetPreferredSize());
-  // Infolist has to be in the same display of the candidate window.
-  gfx::NativeWindow native_frame = frame_->GetNativeWindow();
-  new_bounds.set_origin(GetInfolistWindowPosition(
-        frame_->GetClientAreaBoundsInScreen(),
-        gfx::Screen::GetScreenFor(native_frame)->GetDisplayNearestWindow(
-            native_frame).work_area(),
-        new_bounds.size()));
-  return new_bounds;
 }
 
 void CandidateWindowControllerImpl::UpdatePreeditText(
@@ -246,25 +228,6 @@ void CandidateWindowControllerImpl::AddObserver(
 void CandidateWindowControllerImpl::RemoveObserver(
     CandidateWindowController::Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-// static
-gfx::Point CandidateWindowControllerImpl::GetInfolistWindowPosition(
-    const gfx::Rect& candidate_window_view_rect,
-    const gfx::Rect& screen_rect,
-    const gfx::Size& infolist_window_size) {
-  gfx::Point result(candidate_window_view_rect.right(),
-                    candidate_window_view_rect.y());
-
-  if (candidate_window_view_rect.right() + infolist_window_size.width() >
-      screen_rect.right())
-    result.set_x(candidate_window_view_rect.x() - infolist_window_size.width());
-
-  if (candidate_window_view_rect.y() + infolist_window_size.height() >
-      screen_rect.bottom())
-    result.set_y(screen_rect.bottom() - infolist_window_size.height());
-
-  return result;
 }
 
 }  // namespace input_method

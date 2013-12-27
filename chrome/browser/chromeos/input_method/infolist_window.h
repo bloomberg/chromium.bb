@@ -12,7 +12,7 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/font_list.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/bubble/bubble_delegate.h"
 
 namespace chromeos {
 namespace input_method {
@@ -32,11 +32,12 @@ struct InfolistEntry {
 };
 
 // A widget delegate representing the infolist window UI.
-class InfolistWindow : public views::WidgetDelegateView {
+class InfolistWindow : public views::BubbleDelegateView {
  public:
-  explicit InfolistWindow(const std::vector<InfolistEntry>& entries);
+  InfolistWindow(views::View* candidate_window,
+                 const std::vector<InfolistEntry>& entries);
   virtual ~InfolistWindow();
-  void InitWidget(gfx::NativeWindow parent, const gfx::Rect& initial_bounds);
+  void InitWidget();
 
   // Updates infolist contents with |entries|.
   void Relayout(const std::vector<InfolistEntry>& entries);
@@ -51,7 +52,6 @@ class InfolistWindow : public views::WidgetDelegateView {
 
  private:
   // views::WidgetDelegate implementation.
-  virtual views::View* GetContentsView() OVERRIDE;
   virtual void WindowClosing() OVERRIDE;
 
   // The list of visible entries. Owned by views hierarchy.
