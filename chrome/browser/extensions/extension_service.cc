@@ -329,7 +329,7 @@ ExtensionService::ExtensionService(Profile* profile,
       blacklist_(blacklist),
       settings_frontend_(extensions::SettingsFrontend::Create(profile)),
       extension_sync_service_(NULL),
-      registry_(new extensions::ExtensionRegistry),
+      registry_(extensions::ExtensionRegistry::Get(profile)),
       pending_extension_manager_(*this),
       install_directory_(install_directory),
       extensions_enabled_(extensions_enabled),
@@ -420,10 +420,6 @@ const ExtensionSet* ExtensionService::disabled_extensions() const {
 
 const ExtensionSet* ExtensionService::terminated_extensions() const {
   return &registry_->terminated_extensions();
-}
-
-const ExtensionSet* ExtensionService::blacklisted_extensions() const {
-  return &registry_->blacklisted_extensions();
 }
 
 const ExtensionSet* ExtensionService::delayed_installs() const {

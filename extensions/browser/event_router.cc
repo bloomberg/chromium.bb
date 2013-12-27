@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -482,12 +483,12 @@ void EventRouter::DispatchLazyEvent(
     const std::string& extension_id,
     const linked_ptr<Event>& event,
     std::set<EventDispatchIdentifier>* already_dispatched) {
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-      browser_context_)->extension_service();
   // Check both the original and the incognito browser context to see if we
   // should load a lazy bg page to handle the event. The latter case
   // occurs in the case of split-mode extensions.
-  const Extension* extension = service->extensions()->GetByID(extension_id);
+  const Extension* extension =
+      ExtensionRegistry::Get(browser_context_)->enabled_extensions().GetByID(
+          extension_id);
   if (!extension)
     return;
 
@@ -512,9 +513,9 @@ void EventRouter::DispatchLazyEvent(
 void EventRouter::DispatchEventToProcess(const std::string& extension_id,
                                          content::RenderProcessHost* process,
                                          const linked_ptr<Event>& event) {
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-      browser_context_)->extension_service();
-  const Extension* extension = service->extensions()->GetByID(extension_id);
+  const Extension* extension =
+      ExtensionRegistry::Get(browser_context_)->enabled_extensions().GetByID(
+          extension_id);
 
   // The extension could have been removed, but we do not unregister it until
   // the extension process is unloaded.
@@ -617,9 +618,9 @@ void EventRouter::IncrementInFlightEventsOnUI(
   EventRouter* event_router = extension_system->event_router();
   if (!event_router)
     return;
-  ExtensionService* extension_service = extension_system->extension_service();
   const Extension* extension =
-      extension_service->extensions()->GetByID(extension_id);
+      ExtensionRegistry::Get(browser_context)->enabled_extensions().GetByID(
+          extension_id);
   if (!extension)
     return;
   event_router->IncrementInFlightEvents(browser_context, extension);

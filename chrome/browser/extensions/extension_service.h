@@ -161,8 +161,10 @@ class ExtensionService
   // Gets the list of currently installed extensions.
   virtual const extensions::ExtensionSet* extensions() const OVERRIDE;
   virtual const extensions::ExtensionSet* disabled_extensions() const OVERRIDE;
+
+  // DEPRECATED: Use extensions::ExtensionRegistry::terminated_extensions().
   const extensions::ExtensionSet* terminated_extensions() const;
-  const extensions::ExtensionSet* blacklisted_extensions() const;
+
   const extensions::ExtensionSet* delayed_installs() const;
 
   // Returns a set of all installed, disabled, blacklisted, and terminated
@@ -739,8 +741,8 @@ class ExtensionService
   // The ExtensionSyncService that is used by this ExtensionService.
   ExtensionSyncService* extension_sync_service_;
 
-  // TODO(jamescook): Convert this to a BrowserContextKeyedService.
-  scoped_ptr<extensions::ExtensionRegistry> registry_;
+  // Sets of enabled/disabled/terminated/blacklisted extensions. Not owned.
+  extensions::ExtensionRegistry* registry_;
 
   // The list of extension installs delayed for various reasons.  The reason
   // for delayed install is stored in ExtensionPrefs. These are not part of

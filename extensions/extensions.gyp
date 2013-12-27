@@ -171,6 +171,8 @@
         'browser/extension_function.h',
         'browser/extension_registry.cc',
         'browser/extension_registry.h',
+        'browser/extension_registry_factory.cc',
+        'browser/extension_registry_factory.h',
         'browser/extensions_browser_client.cc',
         'browser/extensions_browser_client.h',
         'browser/external_provider_interface.h',

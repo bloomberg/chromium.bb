@@ -7,7 +7,6 @@
 #include "base/callback.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
@@ -73,11 +73,9 @@ void LazyBackgroundTaskQueue::AddPendingTask(
     tasks_list = new PendingTasksList();
     pending_tasks_[key] = linked_ptr<PendingTasksList>(tasks_list);
 
-    ExtensionService* extension_service = ExtensionSystem::GetForBrowserContext(
-        browser_context)->extension_service();
-    DCHECK(extension_service);
     const Extension* extension =
-        extension_service->extensions()->GetByID(extension_id);
+        ExtensionRegistry::Get(browser_context)->enabled_extensions().GetByID(
+            extension_id);
     if (extension && BackgroundInfo::HasLazyBackgroundPage(extension)) {
       // If this is the first enqueued task, and we're not waiting for the
       // background page to unload, ensure the background page is loaded.

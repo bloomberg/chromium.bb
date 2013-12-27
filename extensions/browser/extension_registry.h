@@ -7,19 +7,28 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/common/extension_set.h"
+
+namespace content {
+class BrowserContext;
+}
 
 namespace extensions {
 class Extension;
 
 // ExtensionRegistry holds sets of the installed extensions for a given
-// BrowserContext.
-// TODO(jamescook): Convert this to a BrowserContextKeyedService.
-class ExtensionRegistry {
+// BrowserContext. An incognito browser context and its master browser context
+// share a single registry.
+class ExtensionRegistry : public BrowserContextKeyedService {
  public:
   ExtensionRegistry();
-  ~ExtensionRegistry();
+  virtual ~ExtensionRegistry();
+
+  // Returns the instance for the given |browser_context|.
+  static ExtensionRegistry* Get(content::BrowserContext* browser_context);
 
   // NOTE: These sets are *eventually* mututally exclusive, but an extension can
   // appear in two sets for short periods of time.
@@ -69,6 +78,9 @@ class ExtensionRegistry {
   // other way to do this.
   void SetDisabledModificationCallback(
       const ExtensionSet::ModificationCallback& callback);
+
+  // BrowserContextKeyedService implementation:
+  virtual void Shutdown() OVERRIDE;
 
  private:
   // Extensions that are installed, enabled and not terminated.

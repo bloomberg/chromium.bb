@@ -87,6 +87,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pending_extension_info.h"
@@ -151,6 +152,7 @@ using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionCreator;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionRegistry;
 using extensions::ExtensionResource;
 using extensions::ExtensionSystem;
 using extensions::FakeSafeBrowsingDatabaseManager;
@@ -3369,16 +3371,18 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
   InitializeGoodInstalledExtensionService();
   service_->Init();
 
-  const extensions::ExtensionSet* extensions = service_->extensions();
-  const extensions::ExtensionSet* blacklisted_extensions =
-      service_->blacklisted_extensions();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  const extensions::ExtensionSet& enabled_extensions =
+      registry->enabled_extensions();
+  const extensions::ExtensionSet& blacklisted_extensions =
+      registry->blacklisted_extensions();
 
-  EXPECT_TRUE( extensions->Contains(good0) &&
-              !blacklisted_extensions->Contains(good0));
-  EXPECT_TRUE( extensions->Contains(good1) &&
-              !blacklisted_extensions->Contains(good1));
-  EXPECT_TRUE( extensions->Contains(good2) &&
-              !blacklisted_extensions->Contains(good2));
+  EXPECT_TRUE(enabled_extensions.Contains(good0) &&
+              !blacklisted_extensions.Contains(good0));
+  EXPECT_TRUE(enabled_extensions.Contains(good1) &&
+              !blacklisted_extensions.Contains(good1));
+  EXPECT_TRUE(enabled_extensions.Contains(good2) &&
+              !blacklisted_extensions.Contains(good2));
 
   EXPECT_FALSE(IsPrefExist(good0, "blacklist"));
   EXPECT_FALSE(IsPrefExist(good1, "blacklist"));
@@ -3389,12 +3393,12 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
   blacklist_db->SetUnsafe(good0, good1, "invalid_id").NotifyUpdate();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(!extensions->Contains(good0) &&
-               blacklisted_extensions->Contains(good0));
-  EXPECT_TRUE(!extensions->Contains(good1) &&
-               blacklisted_extensions->Contains(good1));
-  EXPECT_TRUE( extensions->Contains(good2) &&
-              !blacklisted_extensions->Contains(good2));
+  EXPECT_TRUE(!enabled_extensions.Contains(good0) &&
+              blacklisted_extensions.Contains(good0));
+  EXPECT_TRUE(!enabled_extensions.Contains(good1) &&
+              blacklisted_extensions.Contains(good1));
+  EXPECT_TRUE(enabled_extensions.Contains(good2) &&
+              !blacklisted_extensions.Contains(good2));
 
   EXPECT_TRUE(ValidateBooleanPref(good0, "blacklist", true));
   EXPECT_TRUE(ValidateBooleanPref(good1, "blacklist", true));
@@ -3405,12 +3409,12 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
   blacklist_db->SetUnsafe(good0, good2, "invalid_id").NotifyUpdate();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(!extensions->Contains(good0) &&
-               blacklisted_extensions->Contains(good0));
-  EXPECT_TRUE( extensions->Contains(good1) &&
-              !blacklisted_extensions->Contains(good1));
-  EXPECT_TRUE(!extensions->Contains(good2) &&
-               blacklisted_extensions->Contains(good2));
+  EXPECT_TRUE(!enabled_extensions.Contains(good0) &&
+              blacklisted_extensions.Contains(good0));
+  EXPECT_TRUE(enabled_extensions.Contains(good1) &&
+              !blacklisted_extensions.Contains(good1));
+  EXPECT_TRUE(!enabled_extensions.Contains(good2) &&
+              blacklisted_extensions.Contains(good2));
 
   EXPECT_TRUE(ValidateBooleanPref(good0, "blacklist", true));
   EXPECT_FALSE(IsPrefExist(good1, "blacklist"));
@@ -3492,12 +3496,14 @@ TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   ASSERT_EQ(3u, loaded_.size());  // hasn't had time to blacklist yet
 
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(1u, service_->blacklisted_extensions()->size());
-  ASSERT_EQ(2u, service_->extensions()->size());
 
-  ASSERT_TRUE(service_->extensions()->Contains(good0));
-  ASSERT_TRUE(service_->blacklisted_extensions()->Contains(good1));
-  ASSERT_TRUE(service_->extensions()->Contains(good2));
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  ASSERT_EQ(1u, registry->blacklisted_extensions().size());
+  ASSERT_EQ(2u, registry->enabled_extensions().size());
+
+  ASSERT_TRUE(registry->enabled_extensions().Contains(good0));
+  ASSERT_TRUE(registry->blacklisted_extensions().Contains(good1));
+  ASSERT_TRUE(registry->enabled_extensions().Contains(good2));
 }
 #endif  // defined(ENABLE_BLACKLIST_TESTS)
 
@@ -3517,22 +3523,23 @@ TEST_F(ExtensionServiceTest, BlacklistedInPrefsFromStartup) {
 
   service_->Init();
 
-  ASSERT_EQ(2u, service_->blacklisted_extensions()->size());
-  ASSERT_EQ(1u, service_->extensions()->size());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  ASSERT_EQ(2u, registry->blacklisted_extensions().size());
+  ASSERT_EQ(1u, registry->enabled_extensions().size());
 
-  ASSERT_TRUE(service_->blacklisted_extensions()->Contains(good0));
-  ASSERT_TRUE(service_->blacklisted_extensions()->Contains(good1));
-  ASSERT_TRUE(service_->extensions()->Contains(good2));
+  ASSERT_TRUE(registry->blacklisted_extensions().Contains(good0));
+  ASSERT_TRUE(registry->blacklisted_extensions().Contains(good1));
+  ASSERT_TRUE(registry->enabled_extensions().Contains(good2));
 
   // Give time for the blacklist to update.
   base::RunLoop().RunUntilIdle();
 
-  ASSERT_EQ(1u, service_->blacklisted_extensions()->size());
-  ASSERT_EQ(2u, service_->extensions()->size());
+  ASSERT_EQ(1u, registry->blacklisted_extensions().size());
+  ASSERT_EQ(2u, registry->enabled_extensions().size());
 
-  ASSERT_TRUE(service_->extensions()->Contains(good0));
-  ASSERT_TRUE(service_->blacklisted_extensions()->Contains(good1));
-  ASSERT_TRUE(service_->extensions()->Contains(good2));
+  ASSERT_TRUE(registry->enabled_extensions().Contains(good0));
+  ASSERT_TRUE(registry->blacklisted_extensions().Contains(good1));
+  ASSERT_TRUE(registry->enabled_extensions().Contains(good2));
 }
 #endif  // defined(ENABLE_BLACKLIST_TESTS)
 
@@ -3915,37 +3922,40 @@ TEST_F(ExtensionServiceTest, DisableExtension) {
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
   EXPECT_TRUE(service_->GetExtensionById(good_crx, false));
-  EXPECT_EQ(1u, service_->extensions()->size());
-  EXPECT_EQ(0u, service_->disabled_extensions()->size());
-  EXPECT_EQ(0u, service_->terminated_extensions()->size());
-  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  EXPECT_EQ(1u, registry->enabled_extensions().size());
+  EXPECT_EQ(0u, registry->disabled_extensions().size());
+  EXPECT_EQ(0u, registry->terminated_extensions().size());
+  EXPECT_EQ(0u, registry->blacklisted_extensions().size());
 
   // Disable it.
   service_->DisableExtension(good_crx, Extension::DISABLE_USER_ACTION);
 
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
   EXPECT_FALSE(service_->GetExtensionById(good_crx, false));
-  EXPECT_EQ(0u, service_->extensions()->size());
-  EXPECT_EQ(1u, service_->disabled_extensions()->size());
-  EXPECT_EQ(0u, service_->terminated_extensions()->size());
-  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
+  EXPECT_EQ(0u, registry->enabled_extensions().size());
+  EXPECT_EQ(1u, registry->disabled_extensions().size());
+  EXPECT_EQ(0u, registry->terminated_extensions().size());
+  EXPECT_EQ(0u, registry->blacklisted_extensions().size());
 }
 
 TEST_F(ExtensionServiceTest, TerminateExtension) {
   InitializeEmptyExtensionService();
 
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
-  EXPECT_EQ(1u, service_->extensions()->size());
-  EXPECT_EQ(0u, service_->disabled_extensions()->size());
-  EXPECT_EQ(0u, service_->terminated_extensions()->size());
-  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  EXPECT_EQ(1u, registry->enabled_extensions().size());
+  EXPECT_EQ(0u, registry->disabled_extensions().size());
+  EXPECT_EQ(0u, registry->terminated_extensions().size());
+  EXPECT_EQ(0u, registry->blacklisted_extensions().size());
 
   TerminateExtension(good_crx);
 
-  EXPECT_EQ(0u, service_->extensions()->size());
-  EXPECT_EQ(0u, service_->disabled_extensions()->size());
-  EXPECT_EQ(1u, service_->terminated_extensions()->size());
-  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
+  EXPECT_EQ(0u, registry->enabled_extensions().size());
+  EXPECT_EQ(0u, registry->disabled_extensions().size());
+  EXPECT_EQ(1u, registry->terminated_extensions().size());
+  EXPECT_EQ(0u, registry->blacklisted_extensions().size());
 }
 
 TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
@@ -3961,10 +3971,11 @@ TEST_F(ExtensionServiceTest, DisableTerminatedExtension) {
   EXPECT_FALSE(service_->GetTerminatedExtension(good_crx));
   EXPECT_TRUE(service_->GetExtensionById(good_crx, true));
 
-  EXPECT_EQ(0u, service_->extensions()->size());
-  EXPECT_EQ(1u, service_->disabled_extensions()->size());
-  EXPECT_EQ(0u, service_->terminated_extensions()->size());
-  EXPECT_EQ(0u, service_->blacklisted_extensions()->size());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  EXPECT_EQ(0u, registry->enabled_extensions().size());
+  EXPECT_EQ(1u, registry->disabled_extensions().size());
+  EXPECT_EQ(0u, registry->terminated_extensions().size());
+  EXPECT_EQ(0u, registry->blacklisted_extensions().size());
 }
 
 // Tests disabling all extensions (simulating --disable-extensions flag).
@@ -6703,10 +6714,12 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
   // Extension was installed but not loaded.
   EXPECT_TRUE(notifications.CheckNotifications(
       chrome::NOTIFICATION_EXTENSION_INSTALLED));
-
   EXPECT_TRUE(service_->GetInstalledExtension(id));
-  EXPECT_FALSE(service_->extensions()->Contains(id));
-  EXPECT_TRUE(service_->blacklisted_extensions()->Contains(id));
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile_.get());
+  EXPECT_FALSE(registry->enabled_extensions().Contains(id));
+  EXPECT_TRUE(registry->blacklisted_extensions().Contains(id));
+
   EXPECT_TRUE(service_->extension_prefs()->IsExtensionBlacklisted(id));
   EXPECT_TRUE(
       service_->extension_prefs()->IsBlacklistedExtensionAcknowledged(id));

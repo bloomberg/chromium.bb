@@ -33,6 +33,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/renderer_preferences.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
@@ -301,12 +302,12 @@ const Extension* ProcessManager::GetExtensionForRenderViewHost(
   if (!render_view_host->GetSiteInstance())
     return NULL;
 
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-      GetBrowserContext())->extension_service();
-  if (!service)
+  ExtensionRegistry* registry = ExtensionRegistry::Get(GetBrowserContext());
+  if (!registry)
     return NULL;
 
-  return service->extensions()->GetByID(GetExtensionID(render_view_host));
+  return registry->enabled_extensions().GetByID(
+      GetExtensionID(render_view_host));
 }
 
 void ProcessManager::UnregisterRenderViewHost(
@@ -702,11 +703,11 @@ void ProcessManager::CreateBackgroundHostsForProfileStartup() {
     return;
   }
 
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-      GetBrowserContext())->extension_service();
-  DCHECK(service);
-  for (ExtensionSet::const_iterator extension = service->extensions()->begin();
-       extension != service->extensions()->end(); ++extension) {
+  const ExtensionSet& enabled_extensions =
+      ExtensionRegistry::Get(GetBrowserContext())->enabled_extensions();
+  for (ExtensionSet::const_iterator extension = enabled_extensions.begin();
+       extension != enabled_extensions.end();
+       ++extension) {
     CreateBackgroundHostForExtensionLoad(this, extension->get());
 
     RuntimeEventRouter::DispatchOnStartupEvent(GetBrowserContext(),
@@ -841,11 +842,10 @@ ExtensionHost* IncognitoProcessManager::CreateBackgroundHost(
 }
 
 SiteInstance* IncognitoProcessManager::GetSiteInstanceForURL(const GURL& url) {
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-      GetBrowserContext())->extension_service();
-  if (service) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(GetBrowserContext());
+  if (registry) {
     const Extension* extension =
-        service->extensions()->GetExtensionOrAppByURL(url);
+        registry->enabled_extensions().GetExtensionOrAppByURL(url);
     if (extension && !IncognitoInfo::IsSplitMode(extension)) {
       return original_manager_->GetSiteInstanceForURL(url);
     }

@@ -4,10 +4,17 @@
 
 #include "extensions/browser/extension_registry.h"
 
+#include "extensions/browser/extension_registry_factory.h"
+
 namespace extensions {
 
 ExtensionRegistry::ExtensionRegistry() {}
 ExtensionRegistry::~ExtensionRegistry() {}
+
+// static
+ExtensionRegistry* ExtensionRegistry::Get(content::BrowserContext* context) {
+  return ExtensionRegistryFactory::GetForBrowserContext(context);
+}
 
 bool ExtensionRegistry::AddEnabled(
     const scoped_refptr<const Extension>& extension) {
@@ -55,6 +62,11 @@ void ExtensionRegistry::ClearAll() {
 void ExtensionRegistry::SetDisabledModificationCallback(
     const ExtensionSet::ModificationCallback& callback) {
   disabled_extensions_.set_modification_callback(callback);
+}
+
+void ExtensionRegistry::Shutdown() {
+  // Release references to all Extension objects in the sets.
+  ClearAll();
 }
 
 }  // namespace extensions
