@@ -49,7 +49,7 @@ public:
         Suggestion, // Autocomplete/autofill popup.
     };
 
-    static PassRefPtr<PopupContainer> create(PopupMenuClient*, PopupType, const PopupContainerSettings&);
+    static PassRefPtr<PopupContainer> create(PopupMenuClient*, PopupType, bool deviceSupportsTouch);
 
     // Whether a key event should be sent to this popup.
     bool isInterestedInEventForKey(int keyCode);
@@ -117,7 +117,7 @@ public:
 private:
     friend class WTF::RefCounted<PopupContainer>;
 
-    PopupContainer(PopupMenuClient*, PopupType, const PopupContainerSettings&);
+    PopupContainer(PopupMenuClient*, PopupType, bool deviceSupportsTouch);
     ~PopupContainer();
 
     // Paint the border.
@@ -134,7 +134,6 @@ private:
     RefPtr<PopupListBox> m_listBox;
     RefPtr<FrameView> m_frameView;
 
-    PopupContainerSettings m_settings;
     PopupType m_popupType;
 
     // m_controlPosition contains the transformed position of the

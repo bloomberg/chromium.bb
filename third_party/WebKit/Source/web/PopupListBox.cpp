@@ -70,8 +70,8 @@ static const int minEndOfLinePadding = 2;
 static const int textToLabelPadding = 10;
 static const TimeStamp typeAheadTimeoutMs = 1000;
 
-PopupListBox::PopupListBox(PopupMenuClient* client, const PopupContainerSettings& settings)
-    : m_settings(settings)
+PopupListBox::PopupListBox(PopupMenuClient* client, bool deviceSupportsTouch)
+    : m_deviceSupportsTouch(deviceSupportsTouch)
     , m_originalIndex(0)
     , m_selectedIndex(0)
     , m_acceptedIndexOnAbandon(-1)
@@ -261,12 +261,10 @@ bool PopupListBox::handleKeyEvent(const PlatformKeyboardEvent& event)
         // want to fire the onchange event until the popup is closed, to match
         // IE). We change the original index so we revert to that when the
         // popup is closed.
-        if (m_settings.acceptOnAbandon)
-            m_acceptedIndexOnAbandon = m_selectedIndex;
+        m_acceptedIndexOnAbandon = m_selectedIndex;
 
         setOriginalIndex(m_selectedIndex);
-        if (m_settings.setTextOnIndexChange)
-            m_popupClient->setTextFromItem(m_selectedIndex);
+        m_popupClient->setTextFromItem(m_selectedIndex);
     }
     if (event.windowsVirtualKeyCode() == VKEY_TAB) {
         // TAB is a special case as it should select the current item if any and
@@ -467,21 +465,6 @@ void PopupListBox::paintRow(GraphicsContext* gc, const IntRect& rect, int rowInd
     String itemText = m_popupClient->itemText(rowIndex);
     String itemLabel = m_popupClient->itemLabel(rowIndex);
     String itemIcon = m_popupClient->itemIcon(rowIndex);
-    if (m_settings.restrictWidthOfListBox) { // Truncate strings to fit in.
-        // FIXME: We should leftTruncate for the rtl case.
-        // StringTruncator::leftTruncate would have to be implemented.
-        String str = StringTruncator::rightTruncate(itemText, maxWidth, itemFont);
-        if (str != itemText) {
-            itemText = str;
-            // Don't display the label or icon, we already don't have enough
-            // room for the item text.
-            itemLabel = "";
-            itemIcon = "";
-        } else if (!itemLabel.isEmpty()) {
-            int availableWidth = maxWidth - textToLabelPadding - StringTruncator::width(itemText, itemFont);
-            itemLabel = StringTruncator::rightTruncate(itemLabel, availableWidth, itemFont);
-        }
-    }
 
     // Prepare the directionality to draw text.
     TextRun textRun(itemText, 0, 0, TextRun::AllowTrailingExpansion, style.textDirection(), style.hasTextDirectionOverride());
@@ -640,7 +623,7 @@ void PopupListBox::setOriginalIndex(int index)
 int PopupListBox::getRowHeight(int index)
 {
     int minimumHeight = PopupMenuChromium::minimumRowHeight();
-    if (m_settings.deviceSupportsTouch)
+    if (m_deviceSupportsTouch)
         minimumHeight = max(minimumHeight, PopupMenuChromium::optionRowHeightForTouch());
 
     if (index < 0 || m_popupClient->itemStyle(index).isDisplayNone())
@@ -715,31 +698,12 @@ void PopupListBox::clearSelection()
 
 void PopupListBox::selectNextRow()
 {
-    if (!m_settings.loopSelectionNavigation || m_selectedIndex != numItems() - 1) {
-        adjustSelectedIndex(1);
-        return;
-    }
-
-    // We are moving past the last item, no row should be selected.
-    clearSelection();
+    adjustSelectedIndex(1);
 }
 
 void PopupListBox::selectPreviousRow()
 {
-    if (!m_settings.loopSelectionNavigation || m_selectedIndex > 0) {
-        adjustSelectedIndex(-1);
-        return;
-    }
-
-    if (!m_selectedIndex) {
-        // We are moving past the first item, clear the selection.
-        clearSelection();
-        return;
-    }
-
-    // No row is selected, jump to the last item.
-    selectIndex(numItems() - 1);
-    scrollToRevealSelection();
+    adjustSelectedIndex(-1);
 }
 
 void PopupListBox::adjustSelectedIndex(int delta)
@@ -895,26 +859,20 @@ void PopupListBox::layout()
         paddingWidth = paddingWidth - lineEndPaddingWidth + minEndOfLinePadding;
     }
 
-    int windowWidth;
-    int contentWidth;
-    if (m_settings.restrictWidthOfListBox) {
+    int windowWidth = baseWidth + scrollbarWidth + paddingWidth;
+    if (windowWidth > m_maxWindowWidth) {
+        // windowWidth exceeds m_maxWindowWidth, so we have to clip.
+        windowWidth = m_maxWindowWidth;
+        baseWidth = windowWidth - scrollbarWidth - paddingWidth;
+        m_baseWidth = baseWidth;
+    }
+    int contentWidth = windowWidth - scrollbarWidth;
+
+    if (windowWidth < m_baseWidth) {
         windowWidth = m_baseWidth;
         contentWidth = m_baseWidth - scrollbarWidth;
     } else {
-        windowWidth = baseWidth + scrollbarWidth + paddingWidth;
-        if (windowWidth > m_maxWindowWidth) {
-            // windowWidth exceeds m_maxWindowWidth, so we have to clip.
-            windowWidth = m_maxWindowWidth;
-            baseWidth = windowWidth - scrollbarWidth - paddingWidth;
-            m_baseWidth = baseWidth;
-        }
-        contentWidth = windowWidth - scrollbarWidth;
-
-        if (windowWidth < m_baseWidth) {
-            windowWidth = m_baseWidth;
-            contentWidth = m_baseWidth - scrollbarWidth;
-        } else
-            m_baseWidth = baseWidth;
+        m_baseWidth = baseWidth;
     }
 
     resize(windowWidth, windowHeight);

@@ -79,14 +79,13 @@ static PlatformWheelEvent constructRelativeWheelEvent(const PlatformWheelEvent& 
 }
 
 // static
-PassRefPtr<PopupContainer> PopupContainer::create(PopupMenuClient* client, PopupType popupType, const PopupContainerSettings& settings)
+PassRefPtr<PopupContainer> PopupContainer::create(PopupMenuClient* client, PopupType popupType, bool deviceSupportsTouch)
 {
-    return adoptRef(new PopupContainer(client, popupType, settings));
+    return adoptRef(new PopupContainer(client, popupType, deviceSupportsTouch));
 }
 
-PopupContainer::PopupContainer(PopupMenuClient* client, PopupType popupType, const PopupContainerSettings& settings)
-    : m_listBox(PopupListBox::create(client, settings))
-    , m_settings(settings)
+PopupContainer::PopupContainer(PopupMenuClient* client, PopupType popupType, bool deviceSupportsTouch)
+    : m_listBox(PopupListBox::create(client, deviceSupportsTouch))
     , m_popupType(popupType)
     , m_popupOpen(false)
 {
