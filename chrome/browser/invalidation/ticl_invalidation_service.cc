@@ -58,7 +58,8 @@ TiclInvalidationService::TiclInvalidationService(
     SigninManagerBase* signin,
     ProfileOAuth2TokenService* oauth2_token_service,
     Profile* profile)
-    : profile_(profile),
+    : OAuth2TokenService::Consumer("ticl_invalidation"),
+      profile_(profile),
       signin_manager_(signin),
       oauth2_token_service_(oauth2_token_service),
       invalidator_registrar_(new syncer::InvalidatorRegistrar()),
@@ -215,24 +216,6 @@ void TiclInvalidationService::OnGetTokenFailure(
     }
     case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS: {
-      // This is a real auth error.
-      // Report time since token was issued for invalid credentials error.
-      base::Time auth_token_time =
-          AboutSigninInternalsFactory::GetForProfile(profile_)->
-              GetTokenTime(GaiaConstants::kGaiaOAuth2LoginRefreshToken);
-      if (!auth_token_time.is_null()) {
-        base::TimeDelta age = base::Time::Now() - auth_token_time;
-        if (age < base::TimeDelta::FromHours(1)) {
-          UMA_HISTOGRAM_CUSTOM_TIMES(
-              "Sync.AuthInvalidationRejectedTokenAgeShort",
-              age,
-              base::TimeDelta::FromSeconds(1),
-              base::TimeDelta::FromHours(1),
-              50);
-        }
-        UMA_HISTOGRAM_COUNTS("Sync.AuthInvalidationRejectedTokenAgeLong",
-                             age.InDays());
-      }
       invalidator_registrar_->UpdateInvalidatorState(
           syncer::INVALIDATION_CREDENTIALS_REJECTED);
       break;

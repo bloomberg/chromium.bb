@@ -28,8 +28,6 @@ enum {
 
 enum UntimedSigninStatusField {
   USERNAME = UNTIMED_FIELDS_BEGIN,
-  SID,
-  LSID,
   UNTIMED_FIELDS_END
 };
 
@@ -54,69 +52,14 @@ enum {
   SIGNIN_FIELDS_COUNT = SIGNIN_FIELDS_END - SIGNIN_FIELDS_BEGIN
 };
 
-// Encapsulates diagnostic information about tokens for different services.
-// Note that although SigninStatus contains a map of service names to token
-// values, we replicate the service name within this struct for a cleaner
-// serialization (with ToValue()).
-struct TokenInfo {
-  std::string truncated_token;  // The hashed and truncated token.
-  std::string status;  // Status of the last token fetch.
-  std::string time;  // Timestamp of the last token fetch
-  int64 time_internal;  // Same as |time|, but in base::Time internal format.
-  std::string service;  // The service that this token is for.
-
-  TokenInfo(const std::string& truncated_token,
-            const std::string& status,
-            const std::string& time,
-            const int64& time_internal,
-            const std::string& service);
-  TokenInfo();
-  ~TokenInfo();
-
-  base::DictionaryValue* ToValue();
-};
-
-// Associates a service name with its token information.
-typedef std::map<std::string, TokenInfo> TokenInfoMap;
-
 // Returns the root preference path for the service. The path should be
 // qualified with one of .value, .status or .time to get the respective
 // full preference path names.
 std::string TokenPrefPath(const std::string& service_name);
 
-// Many values in SigninStatus are also associated with a timestamp.
-// This makes it easier to keep values and their associated times together.
-typedef std::pair<std::string, std::string> TimedSigninStatusValue;
-
 // Returns the name of a SigninStatus field.
 std::string SigninStatusFieldToString(UntimedSigninStatusField field);
 std::string SigninStatusFieldToString(TimedSigninStatusField field);
-
-// Encapsulates both authentication and token related information. Used
-// by SigninInternals to maintain information that needs to be shown in
-// the about:signin-internals page.
-struct SigninStatus {
-  std::vector<std::string> untimed_signin_fields;
-  std::vector<TimedSigninStatusValue> timed_signin_fields;
-  TokenInfoMap token_info_map;
-
-  SigninStatus();
-  ~SigninStatus();
-
-  // Returns a dictionary with the following form:
-  // { "signin_info" :
-  //     [ {"title": "Basic Information",
-  //        "data": [List of {"label" : "foo-field", "value" : "foo"} elems]
-  //       },
-  //       { "title": "Detailed Information",
-  //        "data": [List of {"label" : "foo-field", "value" : "foo"} elems]
-  //       }],
-  //   "token_info" :
-  //     [ List of {"name": "foo-name", "token" : "foo-token",
-  //                 "status": "foo_stat", "time" : "foo_time"} elems]
-  //  }
-  scoped_ptr<base::DictionaryValue> ToValue();
-};
 
 // An Observer class for authentication and token diagnostic information.
 class SigninDiagnosticsObserver {

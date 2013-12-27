@@ -108,7 +108,8 @@ ManagedUserRefreshTokenFetcherImpl::ManagedUserRefreshTokenFetcherImpl(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
     URLRequestContextGetter* context)
-    : oauth2_token_service_(oauth2_token_service),
+    : OAuth2TokenService::Consumer("managed_user"),
+      oauth2_token_service_(oauth2_token_service),
       account_id_(account_id),
       context_(context),
       access_token_expired_(false) {}

@@ -204,7 +204,8 @@ void AccountTracker::DeleteFetcher(AccountIdFetcher* fetcher) {
 AccountIdFetcher::AccountIdFetcher(Profile* profile,
                                    AccountTracker* tracker,
                                    const std::string& account_key)
-    : profile_(profile),
+    : OAuth2TokenService::Consumer("extensions_account_tracker"),
+      profile_(profile),
       tracker_(tracker),
       account_key_(account_key) {}
 

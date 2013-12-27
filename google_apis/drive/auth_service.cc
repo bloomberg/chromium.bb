@@ -58,7 +58,8 @@ AuthRequest::AuthRequest(
     net::URLRequestContextGetter* url_request_context_getter,
     const AuthStatusCallback& callback,
     const std::vector<std::string>& scopes)
-    : callback_(callback) {
+    : OAuth2TokenService::Consumer("auth_service"),
+      callback_(callback) {
   DCHECK(!callback_.is_null());
   request_ = oauth2_token_service->
       StartRequestWithContext(

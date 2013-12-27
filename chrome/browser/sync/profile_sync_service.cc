@@ -160,7 +160,8 @@ ProfileSyncService::ProfileSyncService(
     SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* oauth2_token_service,
     StartBehavior start_behavior)
-    : last_auth_error_(AuthError::AuthErrorNone()),
+    : OAuth2TokenService::Consumer("sync"),
+      last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
       factory_(factory),
       profile_(profile),
@@ -730,23 +731,6 @@ void ProfileSyncService::OnGetTokenFailure(
     }
     case GoogleServiceAuthError::SERVICE_ERROR:
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS: {
-      // Report time since token was issued for invalid credentials error.
-      base::Time auth_token_time =
-          AboutSigninInternalsFactory::GetForProfile(profile_)->
-              GetTokenTime(GaiaConstants::kGaiaOAuth2LoginRefreshToken);
-      if (!auth_token_time.is_null()) {
-        base::TimeDelta age = base::Time::Now() - auth_token_time;
-        if (age < base::TimeDelta::FromHours(1)) {
-          UMA_HISTOGRAM_CUSTOM_TIMES("Sync.AuthServerRejectedTokenAgeShort",
-                                     age,
-                                     base::TimeDelta::FromSeconds(1),
-                                     base::TimeDelta::FromHours(1),
-                                     50);
-        }
-        UMA_HISTOGRAM_COUNTS("Sync.AuthServerRejectedTokenAgeLong",
-                             age.InDays());
-      }
-
       if (!sync_prefs_.SyncHasAuthError()) {
         sync_prefs_.SetSyncAuthError(true);
         UMA_HISTOGRAM_ENUMERATION("Sync.SyncAuthError",

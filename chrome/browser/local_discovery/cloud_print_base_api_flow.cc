@@ -28,7 +28,8 @@ CloudPrintBaseApiFlow::CloudPrintBaseApiFlow(
     const std::string& account_id,
     const GURL& automated_claim_url,
     Delegate* delegate)
-    : request_context_(request_context),
+    : OAuth2TokenService::Consumer("cloud_print"),
+      request_context_(request_context),
       token_service_(token_service),
       account_id_(account_id),
       user_index_(kAccountIndexUseOAuth2),
@@ -42,7 +43,8 @@ CloudPrintBaseApiFlow::CloudPrintBaseApiFlow(
     const std::string& xsrf_token,
     const GURL& automated_claim_url,
     Delegate* delegate)
-    : request_context_(request_context),
+    : OAuth2TokenService::Consumer("cloud_print"),
+      request_context_(request_context),
       token_service_(NULL),
       account_id_(""),
       user_index_(user_index),
@@ -56,7 +58,8 @@ CloudPrintBaseApiFlow::CloudPrintBaseApiFlow(
     int  user_index,
     const GURL& automated_claim_url,
     Delegate* delegate)
-    : request_context_(request_context),
+    : OAuth2TokenService::Consumer("cloud_print"),
+      request_context_(request_context),
       token_service_(NULL),
       account_id_(""),
       user_index_(user_index),

@@ -68,7 +68,8 @@ static const char kChromiumDomainRedirectUrlPattern[] =
 namespace identity = api::identity;
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
-    : should_prompt_for_scopes_(false),
+    : OAuth2TokenService::Consumer("extensions_identity_api"),
+      should_prompt_for_scopes_(false),
       should_prompt_for_signin_(false) {}
 
 IdentityGetAuthTokenFunction::~IdentityGetAuthTokenFunction() {}

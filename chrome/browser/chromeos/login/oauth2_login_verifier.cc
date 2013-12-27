@@ -54,7 +54,8 @@ OAuth2LoginVerifier::OAuth2LoginVerifier(
     net::URLRequestContextGetter* system_request_context,
     net::URLRequestContextGetter* user_request_context,
     const std::string& oauthlogin_access_token)
-    : delegate_(delegate),
+    : OAuth2TokenService::Consumer("cros_login_verifier"),
+      delegate_(delegate),
       system_request_context_(system_request_context),
       user_request_context_(user_request_context),
       access_token_(oauthlogin_access_token),

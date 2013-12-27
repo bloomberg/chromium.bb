@@ -61,6 +61,10 @@ std::string OAuth2TokenService::RequestImpl::GetAccountId() const {
   return account_id_;
 }
 
+std::string OAuth2TokenService::RequestImpl::GetConsumerId() const {
+  return consumer_->id();
+}
+
 void OAuth2TokenService::RequestImpl::InformConsumer(
     const GoogleServiceAuthError& error,
     const std::string& access_token,
@@ -122,6 +126,10 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
 
   // Returns count of waiting requests.
   size_t GetWaitingRequestCount() const;
+
+  const std::vector<base::WeakPtr<RequestImpl> >& waiting_requests() const {
+    return waiting_requests_;
+  }
 
   void Cancel();
 
@@ -273,11 +281,12 @@ void OAuth2TokenService::Fetcher::OnGetTokenFailure(
   fetcher_.reset();
 
   if (ShouldRetry(error) && retry_number_ < max_fetch_retry_num_) {
-    int64 backoff = ComputeExponentialBackOffMilliseconds(retry_number_);
+    base::TimeDelta backoff = base::TimeDelta::FromMilliseconds(
+        ComputeExponentialBackOffMilliseconds(retry_number_));
     ++retry_number_;
     retry_timer_.Stop();
     retry_timer_.Start(FROM_HERE,
-                       base::TimeDelta::FromMilliseconds(backoff),
+                       backoff,
                        this,
                        &OAuth2TokenService::Fetcher::Start);
     return;
@@ -364,8 +373,8 @@ OAuth2TokenService::Request::Request() {
 OAuth2TokenService::Request::~Request() {
 }
 
-OAuth2TokenService::Consumer::Consumer() {
-}
+OAuth2TokenService::Consumer::Consumer(const std::string& id)
+    : id_(id) {}
 
 OAuth2TokenService::Consumer::~Consumer() {
 }
@@ -385,6 +394,15 @@ void OAuth2TokenService::AddObserver(Observer* observer) {
 
 void OAuth2TokenService::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+void OAuth2TokenService::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
+  diagnostics_observer_list_.AddObserver(observer);
+}
+
+void OAuth2TokenService::RemoveDiagnosticsObserver(
+    DiagnosticsObserver* observer) {
+  diagnostics_observer_list_.RemoveObserver(observer);
 }
 
 bool OAuth2TokenService::RefreshTokenIsAvailable(
@@ -452,12 +470,23 @@ OAuth2TokenService::StartRequestForClientWithContext(
   DCHECK(CalledOnValidThread());
 
   scoped_ptr<RequestImpl> request = CreateRequest(account_id, consumer);
+  FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
+                    OnAccessTokenRequested(account_id,
+                                           consumer->id(),
+                                           scopes));
 
   if (!RefreshTokenIsAvailable(account_id)) {
+    GoogleServiceAuthError error(GoogleServiceAuthError::USER_NOT_SIGNED_UP);
+
+    FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
+                      OnFetchAccessTokenComplete(
+                          account_id, consumer->id(), scopes, error,
+                          base::Time()));
+
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &RequestImpl::InformConsumer,
         request->AsWeakPtr(),
-        GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP),
+        error,
         std::string(),
         base::Time()));
     return request.PassAs<Request>();
@@ -523,6 +552,13 @@ void OAuth2TokenService::StartCacheLookupRequest(
     OAuth2TokenService::Consumer* consumer) {
   CHECK(HasCacheEntry(request_parameters));
   const CacheEntry* cache_entry = GetCacheEntry(request_parameters);
+  FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
+                    OnFetchAccessTokenComplete(
+                        request_parameters.account_id,
+                        consumer->id(),
+                        request_parameters.scopes,
+                        GoogleServiceAuthError::AuthErrorNone(),
+                        cache_entry->expiration_date));
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &RequestImpl::InformConsumer,
       request->AsWeakPtr(),
@@ -594,11 +630,26 @@ void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
   // By (1), |fetcher| is created by this service.
   // Then by (2), |fetcher| is recorded in |pending_fetchers_|.
   // Then by (3), |fetcher_| is mapped to its refresh token and ScopeSet.
+  RequestParameters request_param(fetcher->GetClientId(),
+                                  fetcher->GetAccountId(),
+                                  fetcher->GetScopeSet());
+
+  const OAuth2TokenService::CacheEntry* entry = GetCacheEntry(request_param);
+  const std::vector<base::WeakPtr<RequestImpl> >& requests =
+      fetcher->waiting_requests();
+  for (size_t i = 0; i < requests.size(); ++i) {
+    const RequestImpl* req = requests[i].get();
+    if (req) {
+      FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
+                        OnFetchAccessTokenComplete(
+                            req->GetAccountId(), req->GetConsumerId(),
+                            fetcher->GetScopeSet(), fetcher->error(),
+                            entry ? entry->expiration_date : base::Time()));
+    }
+  }
+
   std::map<RequestParameters, Fetcher*>::iterator iter =
-    pending_fetchers_.find(RequestParameters(
-        fetcher->GetClientId(),
-        fetcher->GetAccountId(),
-        fetcher->GetScopeSet()));
+    pending_fetchers_.find(request_param);
   DCHECK(iter != pending_fetchers_.end());
   DCHECK_EQ(fetcher, iter->second);
   pending_fetchers_.erase(iter);
@@ -630,6 +681,9 @@ bool OAuth2TokenService::RemoveCacheEntry(
   TokenCache::iterator token_iterator = token_cache_.find(request_parameters);
   if (token_iterator != token_cache_.end() &&
       token_iterator->second.access_token == token_to_remove) {
+    FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
+                      OnTokenRemoved(request_parameters.account_id,
+                                     request_parameters.scopes));
     token_cache_.erase(token_iterator);
     return true;
   }
@@ -659,6 +713,13 @@ void OAuth2TokenService::UpdateAuthError(
 
 void OAuth2TokenService::ClearCache() {
   DCHECK(CalledOnValidThread());
+  for (TokenCache::iterator iter = token_cache_.begin();
+       iter != token_cache_.end(); ++iter) {
+    FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
+                      OnTokenRemoved(iter->first.account_id,
+                                     iter->first.scopes));
+  }
+
   token_cache_.clear();
 }
 
@@ -668,6 +729,8 @@ void OAuth2TokenService::ClearCacheForAccount(const std::string& account_id) {
        iter != token_cache_.end();
        /* iter incremented in body */) {
     if (iter->first.account_id == account_id) {
+      FOR_EACH_OBSERVER(DiagnosticsObserver, diagnostics_observer_list_,
+                        OnTokenRemoved(account_id, iter->first.scopes));
       token_cache_.erase(iter++);
     } else {
       ++iter;

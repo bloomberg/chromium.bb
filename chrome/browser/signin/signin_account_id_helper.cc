@@ -49,7 +49,8 @@ class SigninAccountIdHelper::AccountIdFetcher
 SigninAccountIdHelper::AccountIdFetcher::AccountIdFetcher(
     Profile* profile,
     SigninAccountIdHelper* signin_account_id_helper)
-    : profile_(profile),
+    : OAuth2TokenService::Consumer("account_id_fetcher"),
+      profile_(profile),
       signin_account_id_helper_(signin_account_id_helper) {
   Start();
 }

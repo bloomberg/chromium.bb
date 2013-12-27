@@ -208,7 +208,8 @@ bool ProfileDownloader::IsDefaultProfileImageURL(const std::string& url) {
 }
 
 ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
-    : delegate_(delegate),
+    : OAuth2TokenService::Consumer("profile_downloader"),
+      delegate_(delegate),
       picture_status_(PICTURE_FAILED) {
   DCHECK(delegate_);
 }

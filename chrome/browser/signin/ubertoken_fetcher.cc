@@ -17,7 +17,8 @@
 
 UbertokenFetcher::UbertokenFetcher(Profile* profile,
                                    UbertokenConsumer* consumer)
-    : profile_(profile), consumer_(consumer) {
+    : OAuth2TokenService::Consumer("uber_token_fetcher"),
+      profile_(profile), consumer_(consumer) {
   DCHECK(profile);
   DCHECK(consumer);
 }

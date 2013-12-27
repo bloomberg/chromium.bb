@@ -83,7 +83,8 @@ class ProfileOAuth2TokenServiceRequest::Core
 ProfileOAuth2TokenServiceRequest::Core::Core(
     Profile* profile,
     ProfileOAuth2TokenServiceRequest* owner)
-    : profile_(profile),
+    : OAuth2TokenService::Consumer("oauth2_token_service"),
+      profile_(profile),
       owner_(owner),
       owner_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(profile);

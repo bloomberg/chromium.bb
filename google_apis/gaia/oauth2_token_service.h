@@ -52,6 +52,9 @@ class GoogleServiceAuthError;
 // delete the request even once the callback has been invoked.
 class OAuth2TokenService : public base::NonThreadSafe {
  public:
+  // A set of scopes in OAuth2 authentication.
+  typedef std::set<std::string> ScopeSet;
+
   // Class representing a request that fetches an OAuth2 access token.
   class Request {
    public:
@@ -65,8 +68,11 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // which will be called back when the request completes.
   class Consumer {
    public:
-    Consumer();
+    Consumer(const std::string& id);
     virtual ~Consumer();
+
+    std::string id() const { return id_; }
+
     // |request| is a Request that is started by this consumer and has
     // completed.
     virtual void OnGetTokenSuccess(const Request* request,
@@ -74,10 +80,12 @@ class OAuth2TokenService : public base::NonThreadSafe {
                                    const base::Time& expiration_time) = 0;
     virtual void OnGetTokenFailure(const Request* request,
                                    const GoogleServiceAuthError& error) = 0;
+   private:
+    std::string id_;
   };
 
-  // Classes that want to listen for token availability should implement this
-  // interface and register with the AddObserver() call.
+  // Classes that want to listen for refresh token availability should
+  // implement this interface and register with the AddObserver() call.
   class Observer {
    public:
     // Called whenever a new login-scoped refresh token is available for
@@ -91,12 +99,31 @@ class OAuth2TokenService : public base::NonThreadSafe {
     // Called after all refresh tokens are loaded during OAuth2TokenService
     // startup.
     virtual void OnRefreshTokensLoaded() {}
+
    protected:
     virtual ~Observer() {}
   };
 
-  // A set of scopes in OAuth2 authentication.
-  typedef std::set<std::string> ScopeSet;
+  // Classes that want to monitor status of access token and access token
+  // request should implement this interface and register with the
+  // AddDiagnosticsObserver() call.
+  class DiagnosticsObserver {
+   public:
+    // Called when receiving request for access token.
+    virtual void OnAccessTokenRequested(const std::string& account_id,
+                                        const std::string& consumer_id,
+                                        const ScopeSet& scopes) = 0;
+    // Called when access token fetching finished successfully or
+    // unsuccessfully. |expiration_time| are only valid with
+    // successful completion.
+    virtual void OnFetchAccessTokenComplete(const std::string& account_id,
+                                            const std::string& consumer_id,
+                                            const ScopeSet& scopes,
+                                            GoogleServiceAuthError error,
+                                            base::Time expiration_time) = 0;
+    virtual void OnTokenRemoved(const std::string& account_id,
+                                const ScopeSet& scopes) = 0;
+  };
 
   OAuth2TokenService();
   virtual ~OAuth2TokenService();
@@ -104,6 +131,10 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // Add or remove observers of this token service.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Add or remove observers of this token service.
+  void AddDiagnosticsObserver(DiagnosticsObserver* observer);
+  void RemoveDiagnosticsObserver(DiagnosticsObserver* observer);
 
   // Checks in the cache for a valid access token for a specified |account_id|
   // and |scopes|, and if not found starts a request for an OAuth2 access token
@@ -183,6 +214,8 @@ class OAuth2TokenService : public base::NonThreadSafe {
 
     // Overridden from Request:
     virtual std::string GetAccountId() const OVERRIDE;
+
+    std::string GetConsumerId() const;
 
     // Informs |consumer_| that this request is completed.
     void InformConsumer(const GoogleServiceAuthError& error,
@@ -334,9 +367,12 @@ class OAuth2TokenService : public base::NonThreadSafe {
   // token using these parameters.
   PendingFetcherMap pending_fetchers_;
 
-  // List of observers to notify when token availability changes.
+  // List of observers to notify when refresh token availability changes.
   // Makes sure list is empty on destruction.
   ObserverList<Observer, true> observer_list_;
+
+  // List of observers to notify when access token status changes.
+  ObserverList<DiagnosticsObserver, true> diagnostics_observer_list_;
 
   // Maximum number of retries in fetching an OAuth2 access token.
   static int max_fetch_retry_num_;

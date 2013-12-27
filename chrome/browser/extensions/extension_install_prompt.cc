@@ -524,7 +524,8 @@ scoped_refptr<Extension>
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(
     content::WebContents* contents)
-    : record_oauth2_grant_(false),
+    : OAuth2TokenService::Consumer("extensions_install"),
+      record_oauth2_grant_(false),
       ui_loop_(base::MessageLoop::current()),
       extension_(NULL),
       install_ui_(ExtensionInstallUI::Create(ProfileForWebContents(contents))),
@@ -538,7 +539,8 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(
     Profile* profile,
     gfx::NativeWindow native_window,
     content::PageNavigator* navigator)
-    : record_oauth2_grant_(false),
+    : OAuth2TokenService::Consumer("extensions_install"),
+      record_oauth2_grant_(false),
       ui_loop_(base::MessageLoop::current()),
       extension_(NULL),
       install_ui_(ExtensionInstallUI::Create(profile)),

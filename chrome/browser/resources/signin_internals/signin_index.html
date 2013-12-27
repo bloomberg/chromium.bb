@@ -24,26 +24,26 @@
     </div>
   </div>
   <div id='token-info'>
+    <h2>Access Token Details By Account</h2>
     <div class="tokenSection" jsselect="token_info">
-      <h2 jscontent="title"></h2>
+      <h3 jscontent="title"></h3>
       <table class="signin-details">
         <tr class="header">
           <td>Service</td>
-          <td>Current Token Hash</td>
-          <td>Last Token Received On</td>
-          <td>Last Token Fetch Status</td>
+          <td>Requested Scopes</td>
+          <td>Request Time</td>
+          <td>Request Status</td>
         </tr>
         <tr jsselect="data"
             jsvalues="class:chrome.signin.setClassFromValue($this.status)"
             jseval="chrome.signin.highlightIfAnyChanged(this,
-                      [[this.children[1].innerText, token],
-                      [this.children[2].innerText, time],
+                      [[this.children[1].innerText, scopes],
+                      [this.children[2].innerText, request_time],
                       [this.children[3].innerText, status]])">
           <td jscontent="service"></td>
-          <td jscontent="token"
-              jsvalues="class:chrome.signin.setClassFromValue(token)"></td>
-          <td jscontent="time"></td>
-          <td jscontent="status"></td>
+          <td jsvalues=".innerHTML: scopes"></td>
+          <td jscontent="request_time"></td>
+          <td jsvalues=".innerHTML: status"></td>
         </tr>
       </table>
     </div>

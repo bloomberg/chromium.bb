@@ -77,7 +77,8 @@ void AccountReconcilor::UserIdFetcher::OnNetworkError(int response_code) {
 }
 
 AccountReconcilor::AccountReconcilor(Profile* profile)
-    : profile_(profile),
+    : OAuth2TokenService::Consumer("account_reconcilor"),
+      profile_(profile),
       registered_with_token_service_(false),
       are_gaia_accounts_set_(false),
       requests_(NULL) {

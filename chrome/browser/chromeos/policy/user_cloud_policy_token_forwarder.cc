@@ -16,7 +16,8 @@ namespace policy {
 UserCloudPolicyTokenForwarder::UserCloudPolicyTokenForwarder(
     UserCloudPolicyManagerChromeOS* manager,
     ProfileOAuth2TokenService* token_service)
-    : manager_(manager),
+    : OAuth2TokenService::Consumer("policy_token_forwarder"),
+      manager_(manager),
       token_service_(token_service) {
   // Start by waiting for the CloudPolicyService to be initialized, so that
   // we can check if it already has a DMToken or not.

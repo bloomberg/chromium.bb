@@ -88,7 +88,8 @@ DeviceOAuth2TokenService::ValidatingConsumer::ValidatingConsumer(
     DeviceOAuth2TokenService* token_service,
     const std::string& account_id,
     Consumer* consumer)
-        : OAuth2TokenService::RequestImpl(account_id, this),
+        : OAuth2TokenService::Consumer("device_token_service"),
+          OAuth2TokenService::RequestImpl(account_id, this),
           token_service_(token_service),
           consumer_(consumer),
           token_validation_done_(false),

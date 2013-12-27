@@ -82,7 +82,8 @@ void PushMessagingEventRouter::OnMessage(const std::string& extension_id,
 // GetChannelId class functions
 
 PushMessagingGetChannelIdFunction::PushMessagingGetChannelIdFunction()
-    : interactive_(false) {}
+    : OAuth2TokenService::Consumer("push_messaging"),
+      interactive_(false) {}
 
 PushMessagingGetChannelIdFunction::~PushMessagingGetChannelIdFunction() {}
 

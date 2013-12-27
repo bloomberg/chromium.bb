@@ -60,7 +60,8 @@ class CloudPolicyClientRegistrationHelper::TokenServiceHelper
   scoped_ptr<OAuth2TokenService::Request> token_request_;
 };
 
-CloudPolicyClientRegistrationHelper::TokenServiceHelper::TokenServiceHelper() {}
+CloudPolicyClientRegistrationHelper::TokenServiceHelper::TokenServiceHelper()
+    : OAuth2TokenService::Consumer("cloud_policy") {}
 
 void CloudPolicyClientRegistrationHelper::TokenServiceHelper::FetchAccessToken(
     OAuth2TokenService* token_service,

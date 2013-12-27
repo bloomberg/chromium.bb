@@ -380,7 +380,8 @@ class PrintPreviewHandler::AccessTokenService
     : public OAuth2TokenService::Consumer {
  public:
   explicit AccessTokenService(PrintPreviewHandler* handler)
-      : handler_(handler),
+      : OAuth2TokenService::Consumer("print_preview"),
+        handler_(handler),
         weak_factory_(this) {
   }
 
