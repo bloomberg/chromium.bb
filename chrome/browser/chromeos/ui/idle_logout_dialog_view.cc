@@ -14,11 +14,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -127,12 +125,9 @@ void IdleLogoutDialogView::InitAndShow() {
     return;
   }
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
   restart_label_ = new views::Label();
   restart_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   restart_label_->SetMultiLine(true);
-  restart_label_->SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);
