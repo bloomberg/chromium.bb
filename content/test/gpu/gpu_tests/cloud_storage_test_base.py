@@ -5,6 +5,7 @@
 """Base classes for a test and validator which upload results
 (reference images, error images) to cloud storage."""
 
+import os
 import re
 import tempfile
 
@@ -12,6 +13,11 @@ from telemetry import test
 from telemetry.core import bitmap
 from telemetry.page import cloud_storage
 from telemetry.page import page_test
+
+test_data_dir = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', 'data', 'gpu'))
+
+default_generated_data_dir = os.path.join(test_data_dir, 'generated')
 
 error_image_cloud_storage_bucket = 'chromium-browser-gpu-tests'
 
@@ -24,6 +30,47 @@ class ValidatorBase(page_test.PageTest):
     self.vendor_string = None
     self.device_string = None
     self.msaa = False
+
+  ###
+  ### Routines working with the local disk (only used for local
+  ### testing without a cloud storage account -- the bots do not use
+  ### this code path).
+  ###
+
+  def _UrlToImageName(self, url):
+    image_name = re.sub(r'^(http|https|file)://(/*)', '', url)
+    image_name = re.sub(r'\.\./', '', image_name)
+    image_name = re.sub(r'(\.|/|-)', '_', image_name)
+    return image_name
+
+  def _WriteImage(self, image_path, png_image):
+    output_dir = os.path.dirname(image_path)
+    if not os.path.exists(output_dir):
+      os.makedirs(output_dir)
+    png_image.WritePngFile(image_path)
+
+  def _WriteErrorImages(self, img_dir, img_name, screenshot, ref_png):
+    full_image_name = img_name + '_' + str(self.options.build_revision)
+    full_image_name = full_image_name + '.png'
+
+    # Always write the failing image.
+    self._WriteImage(
+        os.path.join(img_dir, 'FAIL_' + full_image_name), screenshot)
+
+    if ref_png:
+      # Save the reference image.
+      # This ensures that we get the right revision number.
+      self._WriteImage(
+          os.path.join(img_dir, full_image_name), ref_png)
+
+      # Save the difference image.
+      diff_png = screenshot.Diff(ref_png)
+      self._WriteImage(
+          os.path.join(img_dir, 'DIFF_' + full_image_name), diff_png)
+
+  ###
+  ### Cloud storage code path -- the bots use this.
+  ###
 
   def _ComputeGpuInfo(self, tab):
     if ((self.vendor_id and self.device_id) or
@@ -100,24 +147,26 @@ class ValidatorBase(page_test.PageTest):
                       temp_file)
     return bitmap.Bitmap.FromPngFile(temp_file)
 
-  def _UploadErrorImagesToCloudStorage(self, image_name, ref_img, screenshot):
-    """For a failing run, uploads the reference image, failing image,
-    and diff image to cloud storage. This subsumes the functionality
-    of the archive_gpu_pixel_test_results.py script."""
+  def _UploadErrorImagesToCloudStorage(self, image_name, screenshot, ref_img):
+    """For a failing run, uploads the failing image, reference image (if
+    supplied), and diff image (if reference image was supplied) to cloud
+    storage. This subsumes the functionality of the
+    archive_gpu_pixel_test_results.py script."""
     machine_name = re.sub('\W+', '_', self.options.test_machine_name)
     upload_dir = '%s_%s_telemetry' % (self.options.build_revision, machine_name)
     base_bucket = '%s/runs/%s' % (error_image_cloud_storage_bucket, upload_dir)
     image_name_with_revision = '%s_%s.png' % (
       image_name, self.options.build_revision)
     self._UploadBitmapToCloudStorage(
-      base_bucket + '/ref', image_name_with_revision, ref_img, public=True)
-    self._UploadBitmapToCloudStorage(
       base_bucket + '/gen', image_name_with_revision, screenshot,
       public=True)
-    diff_img = screenshot.Diff(ref_img)
-    self._UploadBitmapToCloudStorage(
-      base_bucket + '/diff', image_name_with_revision, diff_img,
-      public=True)
+    if ref_img:
+      self._UploadBitmapToCloudStorage(
+        base_bucket + '/ref', image_name_with_revision, ref_img, public=True)
+      diff_img = screenshot.Diff(ref_img)
+      self._UploadBitmapToCloudStorage(
+        base_bucket + '/diff', image_name_with_revision, diff_img,
+        public=True)
     print ('See http://%s.commondatastorage.googleapis.com/'
            'view_test_results.html?%s for this run\'s test results') % (
       error_image_cloud_storage_bucket, upload_dir)
@@ -153,3 +202,7 @@ class TestBase(test.Test):
         'script to upload failure images and diffs to cloud storage directly, '
         'instead of relying on the archive_gpu_pixel_test_results.py script.',
         default='')
+    option_group.add_option('--generated-dir',
+        help='Overrides the default on-disk location for generated test images '
+        '(only used for local testing without a cloud storage account)',
+        default=default_generated_data_dir)

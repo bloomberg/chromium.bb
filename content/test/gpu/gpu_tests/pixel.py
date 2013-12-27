@@ -16,7 +16,6 @@ from telemetry.page import page_test
 test_data_dir = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', 'data', 'gpu'))
 
-default_generated_data_dir = os.path.join(test_data_dir, 'generated')
 default_reference_image_dir = os.path.join(test_data_dir, 'gpu_reference')
 
 test_harness_script = r"""
@@ -70,7 +69,7 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
           page.test_rect[0], page.test_rect[1],
           page.test_rect[2], page.test_rect[3])
 
-    image_name = PixelValidator.UrlToImageName(page.display_name)
+    image_name = self._UrlToImageName(page.display_name)
 
     if self.options.upload_refimg_to_cloud_storage:
       if self._ConditionallyUploadToCloudStorage(image_name, page, tab,
@@ -87,27 +86,19 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
       ref_png = self._DownloadFromCloudStorage(image_name, page, tab)
     else:
       # Legacy path using on-disk results.
-      ref_png = PixelValidator.GetReferenceImage(self.options.reference_dir,
+      ref_png = self._GetReferenceImage(self.options.reference_dir,
           image_name, page.revision, screenshot)
 
     # Test new snapshot against existing reference image
     if not ref_png.IsEqual(screenshot, tolerance=2):
       if self.options.test_machine_name:
-        self._UploadErrorImagesToCloudStorage(image_name, ref_png, screenshot)
+        self._UploadErrorImagesToCloudStorage(image_name, screenshot, ref_png)
       else:
-        PixelValidator.WriteErrorImages(self.options.generated_dir, image_name,
-            self.options.build_revision, screenshot, ref_png)
+        self._WriteErrorImages(self.options.generated_dir, image_name,
+                               screenshot, ref_png)
       raise page_test.Failure('Reference image did not match captured screen')
 
-  @staticmethod
-  def UrlToImageName(url):
-    image_name = re.sub(r'^(http|https|file)://(/*)', '', url)
-    image_name = re.sub(r'\.\./', '', image_name)
-    image_name = re.sub(r'(\.|/|-)', '_', image_name)
-    return image_name
-
-  @staticmethod
-  def DeleteOldReferenceImages(ref_image_path, cur_revision):
+  def _DeleteOldReferenceImages(self, ref_image_path, cur_revision):
     if not cur_revision:
       return
 
@@ -118,14 +109,13 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
         print 'Found deprecated reference image. Deleting rev ' + m.group(1)
         os.remove(rev_path)
 
-  @staticmethod
-  def GetReferenceImage(img_dir, img_name, cur_revision, screenshot):
+  def _GetReferenceImage(self, img_dir, img_name, cur_revision, screenshot):
     if not cur_revision:
       cur_revision = 0
 
     image_path = os.path.join(img_dir, img_name)
 
-    PixelValidator.DeleteOldReferenceImages(image_path, cur_revision)
+    self._DeleteOldReferenceImages(image_path, cur_revision)
 
     image_path = image_path + '_' + str(cur_revision) + '.png'
 
@@ -139,33 +129,8 @@ class PixelValidator(cloud_storage_test_base.ValidatorBase):
 
     print 'Reference image not found. Writing tab contents as reference.'
 
-    PixelValidator.WriteImage(image_path, screenshot)
+    self._WriteImage(image_path, screenshot)
     return screenshot
-
-  @staticmethod
-  def WriteErrorImages(img_dir, img_name, build_revision, screenshot, ref_png):
-    full_image_name = img_name + '_' + str(build_revision)
-    full_image_name = full_image_name + '.png'
-
-    # Save the reference image
-    # This ensures that we get the right revision number
-    PixelValidator.WriteImage(
-        os.path.join(img_dir, full_image_name), ref_png)
-
-    PixelValidator.WriteImage(
-        os.path.join(img_dir, 'FAIL_' + full_image_name), screenshot)
-
-    diff_png = screenshot.Diff(ref_png)
-    PixelValidator.WriteImage(
-        os.path.join(img_dir, 'DIFF_' + full_image_name), diff_png)
-
-  @staticmethod
-  def WriteImage(image_path, png_image):
-    output_dir = os.path.dirname(image_path)
-    if not os.path.exists(output_dir):
-      os.makedirs(output_dir)
-
-    png_image.WritePngFile(image_path)
 
 class Pixel(cloud_storage_test_base.TestBase):
   test = PixelValidator
@@ -174,14 +139,11 @@ class Pixel(cloud_storage_test_base.TestBase):
   @staticmethod
   def AddTestCommandLineOptions(parser):
     group = optparse.OptionGroup(parser, 'Pixel test options')
-    group.add_option('--generated-dir',
-        help='Overrides the default location for generated test images that do '
-        'not match reference images',
-        default=default_generated_data_dir)
-    group.add_option('--reference-dir',
-        help='Overrides the default location for reference images',
-        default=default_reference_image_dir)
     cloud_storage_test_base.TestBase._AddTestCommandLineOptions(parser, group)
+    group.add_option('--reference-dir',
+        help='Overrides the default on-disk location for reference images '
+        '(only used for local testing without a cloud storage account)',
+        default=default_reference_image_dir)
     parser.add_option_group(group)
 
   def CreatePageSet(self, options):

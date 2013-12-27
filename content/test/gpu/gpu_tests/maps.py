@@ -9,8 +9,8 @@ captures a screenshot and compares selected pixels against expected values"""
 import json
 import optparse
 import os
-import re
 
+import cloud_storage_test_base
 import maps_expectations
 
 from telemetry import test
@@ -19,12 +19,7 @@ from telemetry.core import util
 from telemetry.page import page_test
 from telemetry.page import page_set
 
-test_data_dir = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), '..', '..', 'data', 'gpu'))
-
-default_generated_data_dir = os.path.join(test_data_dir, 'generated')
-
-class MapsValidator(page_test.PageTest):
+class MapsValidator(cloud_storage_test_base.ValidatorBase):
   def __init__(self):
     super(MapsValidator, self).__init__('ValidatePage')
 
@@ -44,14 +39,17 @@ class MapsValidator(page_test.PageTest):
       raise page_test.Failure('Could not capture screenshot')
 
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
-    expected = MapsValidator.ReadPixelExpectations(page)
+    expected = self._ReadPixelExpectations(page)
 
     try:
-      MapsValidator.CompareToExpectations(screenshot, expected, dpr)
+      self._CompareToExpectations(screenshot, expected, dpr)
     except page_test.Failure:
-      image_name = MapsValidator.UrlToImageName(page.display_name)
-      MapsValidator.WriteErrorImage(self.options.generated_dir,
-          image_name, self.options.build_revision, screenshot)
+      image_name = self._UrlToImageName(page.display_name)
+      if self.options.test_machine_name:
+        self._UploadErrorImagesToCloudStorage(image_name, screenshot, None)
+      else:
+        self._WriteErrorImages(self.options.generated_dir, image_name,
+                               screenshot, None)
       raise
 
   @staticmethod
@@ -77,15 +75,13 @@ class MapsValidator(page_test.PageTest):
     tab.ExecuteJavaScript(waitScript)
     util.WaitFor(IsWaitComplete, timeout)
 
-  @staticmethod
-  def ReadPixelExpectations(page):
+  def _ReadPixelExpectations(self, page):
     expectations_path = os.path.join(page._base_dir, page.pixel_expectations)
     with open(expectations_path, 'r') as f:
       json_contents = json.load(f)
     return json_contents
 
-  @staticmethod
-  def CompareToExpectations(screenshot, expectations, devicePixelRatio):
+  def _CompareToExpectations(self, screenshot, expectations, devicePixelRatio):
     for expectation in expectations:
       location = expectation["location"]
       x = location[0] * devicePixelRatio
@@ -110,44 +106,14 @@ class MapsValidator(page_test.PageTest):
             str(pixel_color.g) + ", " +
             str(pixel_color.b) + "]")
 
-  @staticmethod
-  def UrlToImageName(url):
-    image_name = re.sub(r'^(http|https|file)://(/*)', '', url)
-    image_name = re.sub(r'\.\./', '', image_name)
-    image_name = re.sub(r'(\.|/|-)', '_', image_name)
-    return image_name
-
-  @staticmethod
-  def WriteErrorImage(img_dir, img_name, build_revision, screenshot):
-    full_image_name = img_name + '_' + str(build_revision)
-    full_image_name = full_image_name + '.png'
-
-    # This is a nasty and temporary hack: The pixel test archive step will copy
-    # DIFF images directly, but for FAIL images it also requires a ref. This
-    # allows us to archive the erronous image while the archiving step is being
-    # refactored
-    image_path = os.path.join(img_dir, 'DIFF_' + full_image_name)
-
-    output_dir = os.path.dirname(image_path)
-    if not os.path.exists(output_dir):
-      os.makedirs(output_dir)
-
-    screenshot.WritePngFile(image_path)
-
-class Maps(test.Test):
+class Maps(cloud_storage_test_base.TestBase):
   """Google Maps pixel tests."""
   test = MapsValidator
 
   @staticmethod
   def AddTestCommandLineOptions(parser):
     group = optparse.OptionGroup(parser, 'Maps test options')
-    group.add_option('--generated-dir',
-        help='Overrides the default location for generated test images that '
-        'fail expectations checks',
-        default=default_generated_data_dir)
-    group.add_option('--build-revision',
-        help='Chrome revision being tested.',
-        default="unknownrev")
+    cloud_storage_test_base.TestBase._AddTestCommandLineOptions(parser, group)
     parser.add_option_group(group)
 
   def CreateExpectations(self, page_set):
