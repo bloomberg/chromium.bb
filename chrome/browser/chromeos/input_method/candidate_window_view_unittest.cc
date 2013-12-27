@@ -124,6 +124,7 @@ TEST_F(CandidateWindowViewTest, SelectCandidateAtTest) {
                                           &candidate_window_large);
   candidate_window_large.set_cursor_position(candidate_window_large_size - 1);
   candidate_window_view.UpdateCandidates(candidate_window_large);
+
   // Select the last candidate.
   candidate_window_view.SelectCandidateAt(candidate_window_large_size - 1);
 

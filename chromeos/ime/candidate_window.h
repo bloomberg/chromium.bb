@@ -30,6 +30,11 @@ class CHROMEOS_EXPORT CandidateWindow {
     bool is_cursor_visible;
     bool is_vertical;
     bool show_window_at_composition;
+
+    // Auxiliary text is typically displayed in the footer of the candidate
+    // window.
+    std::string auxiliary_text;
+    bool is_auxiliary_text_visible;
   };
 
   // Represents a candidate entry.
@@ -81,6 +86,22 @@ class CHROMEOS_EXPORT CandidateWindow {
   }
   void set_orientation(Orientation orientation) {
     property_->is_vertical = (orientation == VERTICAL);
+  }
+
+  // Returns true if the auxiliary text is visible.
+  bool is_auxiliary_text_visible() const {
+    return property_->is_auxiliary_text_visible;
+  }
+  void set_is_auxiliary_text_visible(bool is_auxiliary_text_visible) const {
+    property_->is_auxiliary_text_visible = is_auxiliary_text_visible;
+  }
+
+  // Accessors of auxiliary_text.
+  const std::string& auxiliary_text() const {
+    return property_->auxiliary_text;
+  }
+  void set_auxiliary_text(const std::string& auxiliary_text) const {
+    property_->auxiliary_text = auxiliary_text;
   }
 
   const std::vector<Entry>& candidates() const { return candidates_; }

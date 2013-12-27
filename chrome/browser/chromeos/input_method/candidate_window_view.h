@@ -84,9 +84,6 @@ class CandidateWindowView : public views::View {
   // Shows the preedit text.
   void ShowPreeditText();
 
-  // Updates the auxiliary text.
-  void UpdateAuxiliaryText(const std::string& utf8_text);
-
   // Updates the preedit text.
   void UpdatePreeditText(const std::string& utf8_text);
 

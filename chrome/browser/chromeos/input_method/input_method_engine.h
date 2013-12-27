@@ -61,8 +61,6 @@ class InputMethodEngine : public InputMethodEngineInterface {
       const CandidateWindowProperty& property) OVERRIDE;
   virtual bool SetCandidateWindowVisible(bool visible,
                                          std::string* error) OVERRIDE;
-  virtual void SetCandidateWindowAuxText(const char* text) OVERRIDE;
-  virtual void SetCandidateWindowAuxTextVisible(bool visible) OVERRIDE;
   virtual bool SetCandidates(int context_id,
                              const std::vector<Candidate>& candidates,
                              std::string* error) OVERRIDE;
@@ -115,10 +113,6 @@ class InputMethodEngine : public InputMethodEngineInterface {
 
   // This IME ID in ibus.
   std::string ibus_id_;
-
-  // The current auxialy text and it's visiblity.
-  std::string aux_text_;
-  bool aux_text_visible_;
 
   // Pointer to the object recieving events for this IME.
   InputMethodEngineInterface::Observer* observer_;

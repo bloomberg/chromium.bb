@@ -31,8 +31,6 @@ class UI_EXPORT MockIMECandidateWindowHandler
   virtual void UpdateLookupTable(
       const input_method::CandidateWindow& candidate_window,
       bool visible) OVERRIDE;
-  virtual void UpdateAuxiliaryText(const std::string& text,
-                                   bool visible) OVERRIDE;
   virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,
                                  bool visible) OVERRIDE;
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
@@ -46,27 +44,16 @@ class UI_EXPORT MockIMECandidateWindowHandler
     return update_lookup_table_call_count_;
   }
 
-  int update_auxiliary_text_call_count() const {
-    return update_auxiliary_text_call_count_;
-  }
-
   const UpdateLookupTableArg& last_update_lookup_table_arg() {
     return last_update_lookup_table_arg_;
   }
-
-  const UpdateAuxiliaryTextArg& last_update_auxiliary_text_arg() {
-    return last_update_auxiliary_text_arg_;
-  }
-
   // Resets all call count.
   void Reset();
 
  private:
   int set_cursor_bounds_call_count_;
   int update_lookup_table_call_count_;
-  int update_auxiliary_text_call_count_;
   UpdateLookupTableArg last_update_lookup_table_arg_;
-  UpdateAuxiliaryTextArg last_update_auxiliary_text_arg_;
 };
 
 }  // namespace chromeos

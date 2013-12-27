@@ -51,15 +51,6 @@ void UpdatePreedit(const IBusText& ibus_text,
     input_context->UpdatePreeditText(ibus_text, cursor_pos, is_visible);
 }
 
-// Notifies CandidateWindowHandler that the auxilary text is changed.
-// Auxilary text is usually footer text.
-void UpdateAuxiliaryText(const std::string& text, bool is_visible) {
-  IBusPanelCandidateWindowHandlerInterface* candidate_window =
-      IBusBridge::Get()->GetCandidateWindowHandler();
-  if (candidate_window)
-    candidate_window->UpdateAuxiliaryText(text, is_visible);
-}
-
 }  // namespace
 
 InputMethodEngine::InputMethodEngine()
@@ -67,7 +58,6 @@ InputMethodEngine::InputMethodEngine()
       active_(false),
       context_id_(0),
       next_context_id_(1),
-      aux_text_visible_(false),
       observer_(NULL),
       preedit_text_(new IBusText()),
       preedit_cursor_(0),
@@ -258,6 +248,9 @@ void InputMethodEngine::SetCandidateWindowProperty(
       property.show_window_at_composition;
   dest_property.cursor_position =
       candidate_window_->GetProperty().cursor_position;
+  dest_property.auxiliary_text = property.auxiliary_text;
+  dest_property.is_auxiliary_text_visible = property.is_auxiliary_text_visible;
+
   candidate_window_->SetProperty(dest_property);
   candidate_window_property_ = property;
 
@@ -282,22 +275,6 @@ bool InputMethodEngine::SetCandidateWindowVisible(bool visible,
   if (cw_handler)
     cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
   return true;
-}
-
-void InputMethodEngine::SetCandidateWindowAuxText(const char* text) {
-  aux_text_.assign(text);
-  if (active_) {
-    // Should not show auxiliary text if the whole window visibility is false.
-    UpdateAuxiliaryText(aux_text_, window_visible_ && aux_text_visible_);
-  }
-}
-
-void InputMethodEngine::SetCandidateWindowAuxTextVisible(bool visible) {
-  aux_text_visible_ = visible;
-  if (active_) {
-    // Should not show auxiliary text if the whole window visibility is false.
-    UpdateAuxiliaryText(aux_text_, window_visible_ && aux_text_visible_);
-  }
 }
 
 bool InputMethodEngine::SetCandidates(

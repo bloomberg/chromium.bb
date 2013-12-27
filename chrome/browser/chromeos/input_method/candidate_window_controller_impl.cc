@@ -74,7 +74,6 @@ void CandidateWindowControllerImpl::Hide() {
   // HideAuxiliaryText. Without calling HideAuxiliaryText the
   // auxiliary text area will remain.
   candidate_window_view_->HideLookupTable();
-  candidate_window_view_->HideAuxiliaryText();
   if (infolist_window_)
     infolist_window_->HideImmediately();
 }
@@ -104,18 +103,6 @@ void CandidateWindowControllerImpl::SetCursorBounds(
 
   // Mode indicator controller also needs the cursor bounds.
   mode_indicator_controller_->SetCursorBounds(cursor_bounds);
-}
-
-void CandidateWindowControllerImpl::UpdateAuxiliaryText(
-    const std::string& utf8_text,
-    bool visible) {
-  // If it's not visible, hide the auxiliary text and return.
-  if (!visible) {
-    candidate_window_view_->HideAuxiliaryText();
-    return;
-  }
-  candidate_window_view_->UpdateAuxiliaryText(utf8_text);
-  candidate_window_view_->ShowAuxiliaryText();
 }
 
 void CandidateWindowControllerImpl::FocusStateChanged(bool is_focused) {

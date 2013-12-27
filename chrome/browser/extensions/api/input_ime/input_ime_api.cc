@@ -602,16 +602,19 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunImpl() {
     modified = true;
   }
 
-  if (modified) {
-    engine->SetCandidateWindowProperty(properties_out);
+  if (properties.auxiliary_text) {
+    properties_out.auxiliary_text = *properties.auxiliary_text;
+    modified = true;
   }
 
-  if (properties.auxiliary_text)
-    engine->SetCandidateWindowAuxText(properties.auxiliary_text->c_str());
-
   if (properties.auxiliary_text_visible) {
-    engine->SetCandidateWindowAuxTextVisible(
-        *properties.auxiliary_text_visible);
+    properties_out.is_auxiliary_text_visible =
+        *properties.auxiliary_text_visible;
+    modified = true;
+  }
+
+  if (modified) {
+    engine->SetCandidateWindowProperty(properties_out);
   }
 
   SetResult(new base::FundamentalValue(true));

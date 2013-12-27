@@ -111,6 +111,11 @@ class InputMethodEngineInterface : public IBusEngineHandlerInterface {
     bool is_cursor_visible;
     bool is_vertical;
     bool show_window_at_composition;
+
+    // Auxiliary text is typically displayed in the footer of the candidate
+    // window.
+    std::string auxiliary_text;
+    bool is_auxiliary_text_visible;
   };
 
   struct SegmentInfo {
@@ -203,12 +208,6 @@ class InputMethodEngineInterface : public IBusEngineHandlerInterface {
 
   // Show or hide the candidate window.
   virtual bool SetCandidateWindowVisible(bool visible, std::string* error) = 0;
-
-  // Set the text that appears as a label in the candidate window.
-  virtual void SetCandidateWindowAuxText(const char* text) = 0;
-
-  // Show or hide the extra text in the candidate window.
-  virtual void SetCandidateWindowAuxTextVisible(bool visible) = 0;
 
   // Set the list of entries displayed in the candidate window.
   virtual bool SetCandidates(int context_id,

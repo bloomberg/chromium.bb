@@ -29,6 +29,8 @@ bool CandidateWindow::IsEqual(const CandidateWindow& cw) const {
       is_cursor_visible() != cw.is_cursor_visible() ||
       orientation() != cw.orientation() ||
       show_window_at_composition() != cw.show_window_at_composition() ||
+      is_auxiliary_text_visible() != cw.is_auxiliary_text_visible() ||
+      auxiliary_text() != cw.auxiliary_text() ||
       candidates_.size() != cw.candidates_.size())
     return false;
 

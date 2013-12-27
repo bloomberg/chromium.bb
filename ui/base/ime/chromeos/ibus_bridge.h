@@ -115,10 +115,6 @@ class UI_EXPORT IBusPanelCandidateWindowHandlerInterface {
       const input_method::CandidateWindow& candidate_window,
       bool visible) = 0;
 
-  // Called when the IME updates the auxiliary text. The |text| is given in
-  // UTF-8 encoding.
-  virtual void UpdateAuxiliaryText(const std::string& text, bool visible) = 0;
-
   // Called when the IME updates the preedit text. The |text| is given in
   // UTF-8 encoding.
   virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,

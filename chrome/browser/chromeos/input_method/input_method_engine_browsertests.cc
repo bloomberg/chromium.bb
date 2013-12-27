@@ -617,9 +617,11 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(),
         set_candidate_window_properties_test_script));
-    EXPECT_EQ(1, mock_candidate_window->update_auxiliary_text_call_count());
-    EXPECT_TRUE(
-        mock_candidate_window->last_update_auxiliary_text_arg().is_visible);
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
+
+    const input_method::CandidateWindow& table =
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
+    EXPECT_TRUE(table.is_auxiliary_text_visible());
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:auxText test");
@@ -636,14 +638,13 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(),
         set_candidate_window_properties_test_script));
-    EXPECT_EQ(1, mock_candidate_window->update_auxiliary_text_call_count());
+    EXPECT_EQ(1, mock_candidate_window->update_lookup_table_call_count());
 
     // aux text visibility is kept as before.
-    EXPECT_TRUE(
-        mock_candidate_window->last_update_auxiliary_text_arg().is_visible);
-
-    EXPECT_EQ("AUXILIARY_TEXT",
-              mock_candidate_window->last_update_auxiliary_text_arg().text);
+    const input_method::CandidateWindow& table =
+        mock_candidate_window->last_update_lookup_table_arg().lookup_table;
+    EXPECT_TRUE(table.is_auxiliary_text_visible());
+    EXPECT_EQ("AUXILIARY_TEXT", table.auxiliary_text());
   }
   {
     SCOPED_TRACE("setCandidates test");

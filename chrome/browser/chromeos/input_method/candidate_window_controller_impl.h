@@ -76,8 +76,6 @@ class CandidateWindowControllerImpl
   // IBusPanelCandidateWindowHandlerInterface implementation.
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
                                const gfx::Rect& composition_head) OVERRIDE;
-  virtual void UpdateAuxiliaryText(const std::string& utf8_text,
-                                   bool visible) OVERRIDE;
   virtual void UpdateLookupTable(const CandidateWindow& candidate_window,
                                  bool visible) OVERRIDE;
   virtual void UpdatePreeditText(const std::string& utf8_text,

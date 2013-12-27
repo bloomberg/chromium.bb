@@ -625,38 +625,9 @@ void CandidateWindowView::UpdateParentArea() {
 
 void CandidateWindowView::HideLookupTable() {
   candidate_area_->Hide();
-  UpdateParentArea();
-}
-
-void CandidateWindowView::HideAuxiliaryText() {
   header_area_->Hide();
   footer_area_->Hide();
   UpdateParentArea();
-}
-
-void CandidateWindowView::ShowAuxiliaryText() {
-  // If candidate_area is not shown, shows auxiliary text at header_area.
-  // We expect both header_area_ and footer_area_ contain same value.
-  if (!candidate_area_->IsShown()) {
-    header_area_->Show();
-    footer_area_->Hide();
-  } else {
-    // If candidate_area is shown, shows auxiliary text with orientation.
-    if (candidate_window_.orientation() == CandidateWindow::HORIZONTAL) {
-      header_area_->Show();
-      footer_area_->Hide();
-    } else {
-      footer_area_->Show();
-      header_area_->Hide();
-    }
-  }
-  UpdateParentArea();
-}
-
-void CandidateWindowView::UpdateAuxiliaryText(const std::string& utf8_text) {
-  header_area_->SetText(utf8_text);
-  footer_area_->SetText(utf8_text);
-  ShowAuxiliaryText();
 }
 
 void CandidateWindowView::HidePreeditText() {
@@ -677,6 +648,19 @@ void CandidateWindowView::ShowLookupTable() {
   if (!candidate_area_->IsShown())
     should_show_upper_side_ = false;
   candidate_area_->Show();
+
+  // Show auxiliary text.
+  if (!candidate_window_.is_auxiliary_text_visible()) {
+    header_area_->Hide();
+    footer_area_->Hide();
+  } else if (candidate_window_.orientation() == CandidateWindow::HORIZONTAL) {
+    header_area_->Show();
+    footer_area_->Hide();
+  } else {
+    header_area_->Hide();
+    footer_area_->Show();
+  }
+
   UpdateParentArea();
 }
 
@@ -780,6 +764,12 @@ void CandidateWindowView::UpdateCandidates(
       candidate_views_[selected_candidate_index_in_page_]->Unselect();
       selected_candidate_index_in_page_ = -1;
     }
+  }
+
+  // Updates auxiliary text
+  if (candidate_window_.is_auxiliary_text_visible()) {
+    header_area_->SetText(candidate_window_.auxiliary_text());
+    footer_area_->SetText(candidate_window_.auxiliary_text());
   }
 }
 
