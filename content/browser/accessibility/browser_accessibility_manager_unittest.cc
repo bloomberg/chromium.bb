@@ -781,7 +781,13 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
             static_text_accessible->GetLocalBoundsForRange(2, 2).ToString());
 }
 
-TEST(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
+#if defined(OS_WIN)
+#define MAYBE_BoundsForRangeOnParentElement \
+  DISABLED_BoundsForRangeOnParentElement
+#else
+#define MAYBE_BoundsForRangeOnParentElement BoundsForRangeOnParentElement
+#endif
+TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
   AccessibilityNodeData root;
   root.id = 1;
   root.role = blink::WebAXRoleRootWebArea;
