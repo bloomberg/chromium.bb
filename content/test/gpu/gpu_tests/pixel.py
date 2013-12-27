@@ -56,6 +56,7 @@ class PixelValidator(page_test.PageTest):
     self.device_id = None
     self.vendor_string = None
     self.device_string = None
+    self.msaa = False
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-gpu-benchmarking')
@@ -193,15 +194,18 @@ class PixelValidator(page_test.PageTest):
       self.device_string = device.device_string
     else:
       raise Exception('GPU device information was incomplete')
+    self.msaa = system_info.gpu.feature_status['multisampling'] == 'enabled'
 
   def _FormatGpuInfo(self, tab):
     self._ComputeGpuInfo(tab)
+    msaa_string = '_msaa' if self.msaa else '_non_msaa'
     if self.vendor_id:
-      return '%s_%04x_%04x' % (
-        self.options.os_type, self.vendor_id, self.device_id)
+      return '%s_%04x_%04x%s' % (
+        self.options.os_type, self.vendor_id, self.device_id, msaa_string)
     else:
-      return '%s_%s_%s' % (
-        self.options.os_type, self.vendor_string, self.device_string)
+      return '%s_%s_%s%s' % (
+        self.options.os_type, self.vendor_string, self.device_string,
+        msaa_string)
 
   def _FormatReferenceImageName(self, img_name, page, tab):
     return '%s_v%s_%s.png' % (
