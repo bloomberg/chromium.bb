@@ -1634,6 +1634,33 @@ void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
   rvhi->SendOrientationChangeEvent(device_orientation_);
 }
 
+void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,
+                                               jobject obj,
+                                               jint x,
+                                               jint y,
+                                               jint width,
+                                               jint height) {
+  gfx::Rect rect(
+      static_cast<int>(x / GetDpiScale()),
+      static_cast<int>(y / GetDpiScale()),
+      static_cast<int>((width > 0 && width < GetDpiScale()) ?
+          1 : (int)(width / GetDpiScale())),
+      static_cast<int>((height > 0 && height < GetDpiScale()) ?
+          1 : (int)(height / GetDpiScale())));
+  GetWebContents()->Send(new ViewMsg_ExtractSmartClipData(
+      GetWebContents()->GetRoutingID(), rect));
+}
+
+void ContentViewCoreImpl::OnSmartClipDataExtracted(const string16& result) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  ScopedJavaLocalRef<jstring> jresult = ConvertUTF16ToJavaString(env, result);
+  Java_ContentViewCore_onSmartClipDataExtracted(
+      env, obj.obj(), jresult.obj());
+}
+
 // This is called for each ContentView.
 jlong Init(JNIEnv* env, jobject obj,
            jboolean hardware_accelerated,

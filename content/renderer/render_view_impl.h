@@ -995,7 +995,7 @@ class CONTENT_EXPORT RenderViewImpl
                                 bool enable_showing,
                                 bool animate);
   void OnPauseVideo();
-
+  void OnExtractSmartClipData(const gfx::Rect& rect);
 #elif defined(OS_MACOSX)
   void OnCopyToFindPboard();
   void OnPluginImeCompositionCompleted(const base::string16& text,

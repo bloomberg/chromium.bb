@@ -227,9 +227,17 @@ class ContentViewCoreImpl : public ContentViewCore,
                                    jint count);
   void SendSingleTapUma(JNIEnv* env, jobject obj, jint type, jint count);
 
+  void ExtractSmartClipData(JNIEnv* env,
+                            jobject obj,
+                            jint x,
+                            jint y,
+                            jint width,
+                            jint height);
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI
   // --------------------------------------------------------------------------
+
+  void OnSmartClipDataExtracted(const string16& result);
 
   // Creates a popup menu with |items|.
   // |multiple| defines if it should support multi-select.

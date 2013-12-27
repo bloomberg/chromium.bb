@@ -256,6 +256,10 @@ public class ContentViewCore
         void onFrameInfoUpdated(float pageScaleFactor);
     }
 
+    public interface SmartClipDataListener {
+        public void onSmartClipDataExtracted(String result);
+    }
+
     private VSyncManager.Provider mVSyncProvider;
     private VSyncManager.Listener mVSyncListener;
     private int mVSyncSubscriberCount;
@@ -457,6 +461,8 @@ public class ContentViewCore
     private boolean mRequestedVSyncForInput = false;
 
     private ViewAndroid mViewAndroid;
+
+    private SmartClipDataListener mSmartClipDataListener = null;
 
     /** ActionAfterDoubleTap defined in tools/metrics/histograms/histograms.xml. */
     public static class UMAActionAfterDoubleTap {
@@ -3198,6 +3204,23 @@ public class ContentViewCore
         getContentViewClient().onGeometryChanged(playerId, new RectF(x, y, x + width, y + height));
     }
 
+    public void extractSmartClipData(int x, int y, int width, int height) {
+        if (mNativeContentViewCore != 0) {
+            nativeExtractSmartClipData(mNativeContentViewCore, x, y, width, height);
+        }
+    }
+
+    @CalledByNative
+    private void onSmartClipDataExtracted(String result) {
+        if (mSmartClipDataListener != null ) {
+            mSmartClipDataListener.onSmartClipDataExtracted(result);
+        }
+    }
+
+    public void setSmartClipDataListener(SmartClipDataListener listener) {
+        mSmartClipDataListener = listener;
+    }
+
     /**
      * Offer a subset of gesture events to the embedding View,
      * primarily for WebView compatibility.
@@ -3402,4 +3425,7 @@ public class ContentViewCore
 
     private native void nativeSendActionAfterDoubleTapUma(long nativeContentViewCoreImpl,
             int type, boolean hasDelay, int count);
+
+    private native void nativeExtractSmartClipData(long nativeContentViewCoreImpl,
+            int x, int y, int w, int h);
 }

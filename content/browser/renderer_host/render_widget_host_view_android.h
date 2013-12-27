@@ -215,6 +215,7 @@ class RenderWidgetHostViewAndroid
   void OnDidChangeBodyBackgroundColor(SkColor color);
   void OnStartContentIntent(const GURL& content_url);
   void OnSetNeedsBeginFrame(bool enabled);
+  void OnSmartClipDataExtracted(const string16& result);
 
   void LockResources();
   void UnlockResources();

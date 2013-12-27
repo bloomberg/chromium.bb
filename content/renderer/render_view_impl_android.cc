@@ -7,7 +7,9 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "cc/trees/layer_tree_host.h"
+#include "content/common/view_messages.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 namespace content {
 
@@ -60,6 +62,11 @@ void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
                                         current,
                                         true);
   }
+}
+
+void RenderViewImpl::OnExtractSmartClipData(const gfx::Rect& rect) {
+  Send(new ViewHostMsg_SmartClipDataExtracted(
+      routing_id_, webview()->getSmartClipData(rect)));
 }
 
 }  // namespace content

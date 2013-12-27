@@ -37,6 +37,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -164,6 +165,8 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
                         OnSetNeedsBeginFrame)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SmartClipDataExtracted,
+                        OnSmartClipDataExtracted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -505,6 +508,16 @@ void RenderWidgetHostViewAndroid::OnStartContentIntent(
     const GURL& content_url) {
   if (content_view_core_)
     content_view_core_->StartContentIntent(content_url);
+}
+
+void RenderWidgetHostViewAndroid::OnSmartClipDataExtracted(
+    const string16& result) {
+  // Custom serialization over IPC isn't allowed normally for security reasons.
+  // Since this feature is only used in (single-process) WebView, there are no
+  // security issues. Enforce that it's only called in single process mode.
+  CHECK(RenderProcessHost::run_renderer_in_process());
+  if (content_view_core_)
+    content_view_core_->OnSmartClipDataExtracted(result);
 }
 
 void RenderWidgetHostViewAndroid::ImeCancelComposition() {

@@ -1361,6 +1361,11 @@ IPC_MESSAGE_ROUTED0(ViewMsg_ImeEventAck)
 // Sent by the browser when we should pause video playback.
 IPC_MESSAGE_ROUTED0(ViewMsg_PauseVideo);
 
+// Extracts the data at the given rect, returning it through the
+// ViewHostMsg_SmartClipDataExtracted IPC.
+IPC_MESSAGE_ROUTED1(ViewMsg_ExtractSmartClipData,
+                    gfx::Rect /* rect */)
+
 #elif defined(OS_MACOSX)
 // Let the RenderView know its window has changed visibility.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,
@@ -2297,6 +2302,14 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,
 // to be be delivered until the notification is disabled.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrame,
                     bool /* enabled */)
+
+// Reply to the ViewMsg_ExtractSmartClipData message.
+// TODO(juhui24.lee@samsung.com): this should be changed to a vector of structs
+// instead of encoding the data as a string which is not allowed normally. Since
+// ths is only used in Android WebView, it's allowed temporarily.
+// http://crbug.com/330872
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SmartClipDataExtracted,
+                    string16)
 
 #elif defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.

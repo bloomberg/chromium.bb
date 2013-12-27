@@ -1995,6 +1995,14 @@ public class AwContents {
         return null;
     }
 
+    public void extractSmartClipData(int x, int y, int width, int height) {
+        mContentViewCore.extractSmartClipData(x, y, width, height);
+    }
+
+    public void setSmartClipDataListener(ContentViewCore.SmartClipDataListener listener) {
+        mContentViewCore.setSmartClipDataListener(listener);
+    }
+
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------

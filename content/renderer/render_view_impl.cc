@@ -1326,6 +1326,7 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTopControlsState,
                         OnUpdateTopControlsState)
     IPC_MESSAGE_HANDLER(ViewMsg_PauseVideo, OnPauseVideo)
+    IPC_MESSAGE_HANDLER(ViewMsg_ExtractSmartClipData, OnExtractSmartClipData)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(InputMsg_CopyToFindPboard, OnCopyToFindPboard)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginImeCompositionCompleted,
