@@ -41,8 +41,38 @@
                      '<@(grit_defines)' ],
           'message': 'Generating resources from <(grit_grd_file)',
           'msvs_cygwin_shell': 1,
+        },
+        {
+          'action_name': 'devtools_protocol_constants',
+          'variables': {
+            'blink_protocol': '../../../third_party/WebKit/Source/devtools/protocol.json',
+            'browser_protocol': 'browser_protocol.json'
+          },
+          'inputs': [
+            '<(blink_protocol)',
+            '<(browser_protocol)',
+            'devtools_protocol_constants_generator.py',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/content/browser/devtools/devtools_protocol_constants.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/content/browser/devtools/devtools_protocol_constants.h'
+          ],
+          'action':[
+            'python',
+            'devtools_protocol_constants_generator.py',
+            '<(blink_protocol)',
+            '<(browser_protocol)',
+            '<(SHARED_INTERMEDIATE_DIR)/content/browser/devtools/devtools_protocol_constants.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/content/browser/devtools/devtools_protocol_constants.h',
+          ],
+          'message': 'Generating DevTools protocol constants from <(blink_protocol)'
         }
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)',
+        ]
+      },
       'includes': [ '../../../build/grit_target.gypi' ],
     },
   ],
