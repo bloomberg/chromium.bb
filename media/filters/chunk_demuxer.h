@@ -181,10 +181,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void OnNewMediaSegment(const std::string& source_id,
                          base::TimeDelta start_timestamp);
 
-  // Computes the intersection between the video & audio
-  // buffered ranges.
-  Ranges<base::TimeDelta> ComputeIntersection() const;
-
   // Applies |time_offset| to the timestamps of |buffers|.
   void AdjustBufferTimestamps(const StreamParser::BufferQueue& buffers,
                               base::TimeDelta timestamp_offset);

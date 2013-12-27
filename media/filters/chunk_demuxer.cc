@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <deque>
 #include <limits>
+#include <list>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -22,6 +23,61 @@
 using base::TimeDelta;
 
 namespace media {
+
+// List of time ranges for each SourceBuffer.
+typedef std::list<Ranges<TimeDelta> > RangesList;
+static Ranges<TimeDelta> ComputeIntersection(const RangesList& activeRanges,
+                                             bool ended) {
+  // Implementation of HTMLMediaElement.buffered algorithm in MSE spec.
+  // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#dom-htmlmediaelement.buffered
+
+  // Step 1: If activeSourceBuffers.length equals 0 then return an empty
+  //  TimeRanges object and abort these steps.
+  if (activeRanges.empty())
+    return Ranges<TimeDelta>();
+
+  // Step 2: Let active ranges be the ranges returned by buffered for each
+  //  SourceBuffer object in activeSourceBuffers.
+  // Step 3: Let highest end time be the largest range end time in the active
+  //  ranges.
+  TimeDelta highest_end_time;
+  for (RangesList::const_iterator itr = activeRanges.begin();
+       itr != activeRanges.end(); ++itr) {
+    if (!itr->size())
+      continue;
+
+    highest_end_time = std::max(highest_end_time, itr->end(itr->size() - 1));
+  }
+
+  // Step 4: Let intersection ranges equal a TimeRange object containing a
+  //  single range from 0 to highest end time.
+  Ranges<TimeDelta> intersection_ranges;
+  intersection_ranges.Add(TimeDelta(), highest_end_time);
+
+  // Step 5: For each SourceBuffer object in activeSourceBuffers run the
+  //  following steps:
+  for (RangesList::const_iterator itr = activeRanges.begin();
+       itr != activeRanges.end(); ++itr) {
+    // Step 5.1: Let source ranges equal the ranges returned by the buffered
+    //  attribute on the current SourceBuffer.
+    Ranges<TimeDelta> source_ranges = *itr;
+
+    // Step 5.2: If readyState is "ended", then set the end time on the last
+    //  range in source ranges to highest end time.
+    if (ended && source_ranges.size() > 0u) {
+      source_ranges.Add(source_ranges.start(source_ranges.size() - 1),
+                        highest_end_time);
+    }
+
+    // Step 5.3: Let new intersection ranges equal the intersection between
+    // the intersection ranges and the source ranges.
+    // Step 5.4: Replace the ranges in intersection ranges with the new
+    // intersection ranges.
+    intersection_ranges = intersection_ranges.IntersectionWith(source_ranges);
+  }
+
+  return intersection_ranges;
+}
 
 // Contains state belonging to a source id.
 class SourceState {
@@ -69,6 +125,11 @@ class SourceState {
     append_window_start_ = start;
   }
   void set_append_window_end(TimeDelta end) { append_window_end_ = end; }
+
+  // Returns the range of buffered data in this source, capped at |duration|.
+  // |ended| - Set to true if end of stream has been signalled and the special
+  // end of stream range logic needs to be executed.
+  Ranges<TimeDelta> GetBufferedRanges(TimeDelta duration, bool ended) const;
 
   void StartReturningData();
   void AbortReads();
@@ -340,6 +401,25 @@ void SourceState::Abort() {
   can_update_offset_ = true;
 }
 
+Ranges<TimeDelta> SourceState::GetBufferedRanges(TimeDelta duration,
+                                                 bool ended) const {
+  // TODO(acolwell): When we start allowing disabled tracks we'll need to update
+  // this code to only add ranges from active tracks.
+  RangesList ranges_list;
+  if (audio_)
+    ranges_list.push_back(audio_->GetBufferedRanges(duration));
+
+  if (video_)
+    ranges_list.push_back(video_->GetBufferedRanges(duration));
+
+  for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    ranges_list.push_back(
+        itr->second->GetBufferedRanges(duration));
+  }
+
+  return ComputeIntersection(ranges_list, ended);
+}
 
 void SourceState::StartReturningData() {
   if (audio_)
@@ -754,6 +834,17 @@ void ChunkDemuxerStream::OnSetDuration(TimeDelta duration) {
 Ranges<TimeDelta> ChunkDemuxerStream::GetBufferedRanges(
     TimeDelta duration) const {
   base::AutoLock auto_lock(lock_);
+
+  if (type_ == TEXT) {
+    // Since text tracks are discontinuous and the lack of cues should not block
+    // playback, report the buffered range for text tracks as [0, |duration|) so
+    // that intesections with audio & video tracks are computed correctly when
+    // no cues are present.
+    Ranges<TimeDelta> text_range;
+    text_range.Add(TimeDelta(), duration);
+    return text_range;
+  }
+
   Ranges<TimeDelta> range = stream_->GetBufferedTime();
 
   if (range.size() == 0u)
@@ -1114,51 +1205,11 @@ void ChunkDemuxer::RemoveId(const std::string& id) {
 Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges(const std::string& id) const {
   base::AutoLock auto_lock(lock_);
   DCHECK(!id.empty());
-  DCHECK(IsValidId(id));
-  DCHECK(id == source_id_audio_ || id == source_id_video_);
 
-  if (id == source_id_audio_ && id != source_id_video_) {
-    // Only include ranges that have been buffered in |audio_|
-    return audio_ ? audio_->GetBufferedRanges(duration_) : Ranges<TimeDelta>();
-  }
+  SourceStateMap::const_iterator itr = source_state_map_.find(id);
 
-  if (id != source_id_audio_ && id == source_id_video_) {
-    // Only include ranges that have been buffered in |video_|
-    return video_ ? video_->GetBufferedRanges(duration_) : Ranges<TimeDelta>();
-  }
-
-  return ComputeIntersection();
-}
-
-Ranges<TimeDelta> ChunkDemuxer::ComputeIntersection() const {
-  lock_.AssertAcquired();
-
-  if (!audio_ || !video_)
-    return Ranges<TimeDelta>();
-
-  // Include ranges that have been buffered in both |audio_| and |video_|.
-  Ranges<TimeDelta> audio_ranges = audio_->GetBufferedRanges(duration_);
-  Ranges<TimeDelta> video_ranges = video_->GetBufferedRanges(duration_);
-  Ranges<TimeDelta> result = audio_ranges.IntersectionWith(video_ranges);
-
-  if (state_ == ENDED && result.size() > 0) {
-    // If appending has ended, extend the last intersection range to include the
-    // max end time of the last audio/video range. This allows the buffered
-    // information to match the actual time range that will get played out if
-    // the streams have slightly different lengths.
-    TimeDelta audio_start = audio_ranges.start(audio_ranges.size() - 1);
-    TimeDelta audio_end = audio_ranges.end(audio_ranges.size() - 1);
-    TimeDelta video_start = video_ranges.start(video_ranges.size() - 1);
-    TimeDelta video_end = video_ranges.end(video_ranges.size() - 1);
-
-    // Verify the last audio range overlaps with the last video range.
-    // This is enforced by the logic that controls the transition to ENDED.
-    DCHECK((audio_start <= video_start && video_start <= audio_end) ||
-           (video_start <= audio_start && audio_start <= video_end));
-    result.Add(result.end(result.size()-1), std::max(audio_end, video_end));
-  }
-
-  return result;
+  DCHECK(itr != source_state_map_.end());
+  return itr->second->GetBufferedRanges(duration_, state_ == ENDED);
 }
 
 void ChunkDemuxer::AppendData(const std::string& id,
@@ -1580,11 +1631,17 @@ Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges() const {
 
 Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges_Locked() const {
   lock_.AssertAcquired();
-  if (audio_ && !video_)
-    return audio_->GetBufferedRanges(duration_);
-  else if (!audio_ && video_)
-    return video_->GetBufferedRanges(duration_);
-  return ComputeIntersection();
+
+  bool ended = state_ == ENDED;
+  // TODO(acolwell): When we start allowing SourceBuffers that are not active,
+  // we'll need to update this loop to only add ranges from active sources.
+  RangesList ranges_list;
+  for (SourceStateMap::const_iterator itr = source_state_map_.begin();
+       itr != source_state_map_.end(); ++itr) {
+    ranges_list.push_back(itr->second->GetBufferedRanges(duration_, ended));
+  }
+
+  return ComputeIntersection(ranges_list, ended);
 }
 
 void ChunkDemuxer::StartReturningData() {
