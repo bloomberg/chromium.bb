@@ -352,7 +352,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
       origin_colorspace = libyuv::FOURCC_UYVY;
       break;
     case media::PIXEL_FORMAT_RGB24:
-      origin_colorspace = libyuv::FOURCC_RAW;
+      origin_colorspace = libyuv::FOURCC_24BG;
 #if defined(OS_WIN)
       // TODO(wjia): Currently, for RGB24 on WIN, capture device always
       // passes in positive src_width and src_height. Remove this hardcoded
