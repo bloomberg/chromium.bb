@@ -302,7 +302,7 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
   InitNavigateParams(&params, 0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   LoadCommittedDetails details;
-  cont.RendererDidNavigate(params, &details);
+  cont.RendererDidNavigate(test_rvh(), params, &details);
 
   contents()->UpdateTitle(rvh(), 0,
                           base::ASCIIToUTF16("    Lots O' Whitespace\n"),
@@ -349,7 +349,7 @@ TEST_F(WebContentsImplTest, NTPViewSource) {
   ViewHostMsg_FrameNavigate_Params params;
   InitNavigateParams(&params, 0, kGURL, PAGE_TRANSITION_TYPED);
   LoadCommittedDetails details;
-  cont.RendererDidNavigate(params, &details);
+  cont.RendererDidNavigate(test_rvh(), params, &details);
   // Also check title and url.
   EXPECT_EQ(base::ASCIIToUTF16(kUrl), contents()->GetTitle());
 }

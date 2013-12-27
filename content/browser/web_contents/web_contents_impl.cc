@@ -1738,10 +1738,17 @@ bool WebContentsImpl::NavigateToEntry(
     return false;
   }
 
-  // TODO(creis): Use entry->frame_tree_node_id() to pick which
-  // RenderFrameHostManager to use.
+  // Use entry->frame_tree_node_id() to pick which RenderFrameHostManager to
+  // use when --site-per-process is used.
+  RenderFrameHostManager* manager = GetRenderManager();
+  if (entry.frame_tree_node_id() != -1 &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    int64 frame_tree_node_id = entry.frame_tree_node_id();
+    manager = frame_tree_.FindByID(frame_tree_node_id)->render_manager();
+  }
+
   RenderViewHostImpl* dest_render_view_host =
-      static_cast<RenderViewHostImpl*>(GetRenderManager()->Navigate(entry));
+      static_cast<RenderViewHostImpl*>(manager->Navigate(entry));
   if (!dest_render_view_host)
     return false;  // Unable to create the desired render view host.
 
@@ -1768,6 +1775,9 @@ bool WebContentsImpl::NavigateToEntry(
   current_load_start_ = base::TimeTicks::Now();
 
   // Navigate in the desired RenderViewHost.
+  // TODO(creis): As a temporary hack, we currently do cross-process subframe
+  // navigations in a top-level frame of the new process.  Thus, we don't yet
+  // need to store the correct frame ID in ViewMsg_Navigate_Params.
   ViewMsg_Navigate_Params navigate_params;
   MakeNavigateParams(entry, controller_, delegate_, reload_type,
                      &navigate_params);
@@ -2323,6 +2333,14 @@ void WebContentsImpl::OnDidFinishLoad(
     const GURL& url,
     bool is_main_frame) {
   GURL validated_url(url);
+
+  // --site-per-process mode has a short-term hack allowing cross-process
+  // subframe pages to commit thinking they are top-level.  Correct it here to
+  // avoid confusing the observers.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
+      render_view_message_source_ != GetRenderViewHost())
+    is_main_frame = false;
+
   RenderProcessHost* render_process_host =
       render_view_message_source_->GetProcess();
   RenderViewHost::FilterURL(render_process_host, false, &validated_url);
@@ -2968,11 +2986,46 @@ void WebContentsImpl::RenderViewDeleted(RenderViewHost* rvh) {
 
 void WebContentsImpl::DidNavigate(
     RenderViewHost* rvh,
-    const ViewHostMsg_FrameNavigate_Params& params) {
+    const ViewHostMsg_FrameNavigate_Params& orig_params) {
+  ViewHostMsg_FrameNavigate_Params params(orig_params);
+  bool use_site_per_process =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess);
   if (frame_tree_.IsFirstNavigationAfterSwap()) {
     // First navigation should be a main frame navigation.
-    DCHECK(PageTransitionIsMainFrame(params.transition));
+    // TODO(creis): This DCHECK is currently disabled for --site-per-process
+    // because cross-process subframe navigations still have a main frame
+    // PageTransition.
+    if (!use_site_per_process)
+      DCHECK(PageTransitionIsMainFrame(params.transition));
     frame_tree_.OnFirstNavigationAfterSwap(params.frame_id);
+  }
+
+  // When using --site-per-process, look up the FrameTreeNode ID that the
+  // renderer-specific frame ID corresponds to.
+  int64 frame_tree_node_id = frame_tree_.root()->frame_tree_node_id();
+  if (use_site_per_process) {
+    FrameTreeNode* source_node = frame_tree_.FindByFrameID(params.frame_id);
+    if (source_node)
+      frame_tree_node_id = source_node->frame_tree_node_id();
+
+    // TODO(creis): In the short term, cross-process subframe navigations are
+    // happening in the pending RenderViewHost's top-level frame.  (We need to
+    // both mirror the frame tree and get the navigation to occur in the correct
+    // subframe to fix this.)  Until then, we should check whether we have a
+    // pending NavigationEntry with a frame ID and if so, treat the
+    // cross-process "main frame" navigation as a subframe navigation.  This
+    // limits us to a single cross-process subframe per RVH, and it affects
+    // NavigateToEntry, NavigatorImpl::DidStartProvisionalLoad, and
+    // OnDidFinishLoad.
+    NavigationEntryImpl* pending_entry =
+        NavigationEntryImpl::FromNavigationEntry(controller_.GetPendingEntry());
+    int root_ftn_id = frame_tree_.root()->frame_tree_node_id();
+    if (pending_entry &&
+        pending_entry->frame_tree_node_id() != -1 &&
+        pending_entry->frame_tree_node_id() != root_ftn_id) {
+      params.transition = PAGE_TRANSITION_AUTO_SUBFRAME;
+      frame_tree_node_id = pending_entry->frame_tree_node_id();
+    }
   }
 
   if (PageTransitionIsMainFrame(params.transition)) {
@@ -2985,7 +3038,16 @@ void WebContentsImpl::DidNavigate(
     if (delegate_ && delegate_->CanOverscrollContent())
       controller_.TakeScreenshot();
 
-    GetRenderManager()->DidNavigateMainFrame(rvh);
+    if (!use_site_per_process)
+      GetRenderManager()->DidNavigateMainFrame(rvh);
+  }
+
+  // When using --site-per-process, we notify the RFHM for all navigations,
+  // not just main frame navigations.
+  if (use_site_per_process) {
+    FrameTreeNode* frame = frame_tree_.FindByID(frame_tree_node_id);
+    // TODO(creis): Rename to DidNavigateFrame.
+    frame->render_manager()->DidNavigateMainFrame(rvh);
   }
 
   // Update the site of the SiteInstance if it doesn't have one yet, unless
@@ -3009,7 +3071,7 @@ void WebContentsImpl::DidNavigate(
     contents_mime_type_ = params.contents_mime_type;
 
   LoadCommittedDetails details;
-  bool did_navigate = controller_.RendererDidNavigate(params, &details);
+  bool did_navigate = controller_.RendererDidNavigate(rvh, params, &details);
 
   // For now, keep track of each frame's URL in its FrameTreeNode.  This lets
   // us estimate our process count for implementing OOP iframes.
@@ -3284,8 +3346,14 @@ void WebContentsImpl::RequestTransferURL(
           GetSiteInstance(), url))
     dest_url = GURL(kAboutBlankURL);
 
-  // TODO(creis): Look up the FrameTreeNode ID corresponding to source_frame_id.
-  int frame_tree_node_id = -1;
+  // Look up the FrameTreeNode ID corresponding to source_frame_id.
+  int64 frame_tree_node_id = -1;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess) &&
+      source_frame_id != -1) {
+    FrameTreeNode* source_node = frame_tree_.FindByFrameID(source_frame_id);
+    if (source_node)
+      frame_tree_node_id = source_node->frame_tree_node_id();
+  }
   OpenURLParams params(dest_url, referrer, source_frame_id,
       frame_tree_node_id, disposition,
       page_transition, true /* is_renderer_initiated */);

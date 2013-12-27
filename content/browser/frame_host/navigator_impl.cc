@@ -4,6 +4,7 @@
 
 #include "content/browser/frame_host/navigator_impl.h"
 
+#include "base/command_line.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 
 namespace content {
@@ -38,15 +40,22 @@ void NavigatorImpl::DidStartProvisionalLoad(
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
   RenderViewHost::FilterURL(render_process_host, false, &validated_url);
 
+  // TODO(creis): This is a hack for now, until we mirror the frame tree and do
+  // cross-process subframe navigations in actual subframes.  As a result, we
+  // can currently only support a single cross-process subframe per RVH.
+  NavigationEntryImpl* pending_entry =
+      NavigationEntryImpl::FromNavigationEntry(controller_->GetPendingEntry());
+  if (pending_entry &&
+      pending_entry->frame_tree_node_id() != -1 &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+    is_main_frame = false;
+
   if (is_main_frame) {
     // If there is no browser-initiated pending entry for this navigation and it
     // is not for the error URL, create a pending entry using the current
     // SiteInstance, and ensure the address bar updates accordingly.  We don't
     // know the referrer or extra headers at this point, but the referrer will
     // be set properly upon commit.
-    NavigationEntryImpl* pending_entry =
-        NavigationEntryImpl::FromNavigationEntry(
-            controller_->GetPendingEntry());
     bool has_browser_initiated_pending_entry = pending_entry &&
         !pending_entry->is_renderer_initiated();
     if (!has_browser_initiated_pending_entry && !is_error_page) {

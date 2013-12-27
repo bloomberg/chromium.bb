@@ -196,7 +196,9 @@ RenderViewHostImpl* FrameTree::GetRenderViewHostForSubFrame(
     SiteInstance* site_instance) {
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
-  CHECK(iter != render_view_host_map_.end());
+  // TODO(creis): Mirror the frame tree so this check can't fail.
+  if (iter == render_view_host_map_.end())
+    return NULL;
   RenderViewHostRefCount rvh_refcount = iter->second;
   return rvh_refcount.first;
 }

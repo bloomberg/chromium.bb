@@ -124,14 +124,14 @@ class CONTENT_EXPORT FrameTree {
   void RegisterRenderFrameHost(RenderFrameHostImpl* render_frame_host);
   void UnregisterRenderFrameHost(RenderFrameHostImpl* render_frame_host);
 
+  // Returns the FrameTreeNode with the given renderer-specific |frame_id|.
+  // TODO(creis): Make this private and replace this with a version that takes
+  // in a routing ID.
+  FrameTreeNode* FindByFrameID(int64 frame_id);
+
  private:
   typedef std::pair<RenderViewHostImpl*, int> RenderViewHostRefCount;
   typedef base::hash_map<int, RenderViewHostRefCount> RenderViewHostMap;
-
-  // Returns the FrameTreeNode with the given renderer-specific |frame_id|.
-  // For internal use only.
-  // TODO(creis): Replace this with a version that takes in a routing ID.
-  FrameTreeNode* FindByFrameID(int64 frame_id);
 
   // These delegates are installed into all the RenderViewHosts and
   // RenderFrameHosts that we create.

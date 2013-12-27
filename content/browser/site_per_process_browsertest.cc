@@ -31,8 +31,19 @@ class SitePerProcessWebContentsObserver: public WebContentsObserver {
  public:
   explicit SitePerProcessWebContentsObserver(WebContents* web_contents)
       : WebContentsObserver(web_contents),
-        navigation_succeeded_(true) {}
+        navigation_succeeded_(false) {}
   virtual ~SitePerProcessWebContentsObserver() {}
+
+  virtual void DidStartProvisionalLoadForFrame(
+      int64 frame_id,
+      int64 parent_frame_id,
+      bool is_main_frame,
+      const GURL& validated_url,
+      bool is_error_page,
+      bool is_iframe_srcdoc,
+      RenderViewHost* render_view_host) OVERRIDE {
+    navigation_succeeded_ = false;
+  }
 
   virtual void DidFailProvisionalLoad(
       int64 frame_id,
@@ -184,9 +195,8 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
   }
 };
 
-// TODO(nasko): Disable this test until out-of-process iframes is ready and the
-// security checks are back in place.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrossSiteIframe) {
+// Ensure that we can complete a cross-process subframe navigation.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
   ASSERT_TRUE(test_server()->Start());
   net::SpawnedTestServer https_server(
       net::SpawnedTestServer::TYPE_HTTPS,
@@ -198,21 +208,31 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DISABLED_CrossSiteIframe) {
   NavigateToURL(shell(), main_url);
 
   SitePerProcessWebContentsObserver observer(shell()->web_contents());
-  {
-    // Load same-site page into Iframe.
-    GURL http_url(test_server()->GetURL("files/title1.html"));
-    EXPECT_TRUE(NavigateIframeToURL(shell(), http_url, "test"));
-    EXPECT_EQ(observer.navigation_url(), http_url);
-    EXPECT_TRUE(observer.navigation_succeeded());
-  }
 
-  {
-    // Load cross-site page into Iframe.
-    GURL https_url(https_server.GetURL("files/title1.html"));
-    EXPECT_TRUE(NavigateIframeToURL(shell(), https_url, "test"));
-    EXPECT_EQ(observer.navigation_url(), https_url);
-    EXPECT_FALSE(observer.navigation_succeeded());
-  }
+  // Load same-site page into iframe.
+  GURL http_url(test_server()->GetURL("files/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(shell(), http_url, "test"));
+  EXPECT_EQ(observer.navigation_url(), http_url);
+  EXPECT_TRUE(observer.navigation_succeeded());
+
+  // Load cross-site page into iframe.
+  GURL https_url(https_server.GetURL("files/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(shell(), https_url, "test"));
+  EXPECT_EQ(observer.navigation_url(), https_url);
+  EXPECT_TRUE(observer.navigation_succeeded());
+
+  // Ensure that we have created a new process for the subframe.
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_NE(shell()->web_contents()->GetRenderViewHost(),
+            child->current_frame_host()->render_view_host());
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            child->current_frame_host()->render_view_host()->GetSiteInstance());
+  EXPECT_NE(shell()->web_contents()->GetRenderProcessHost(),
+            child->current_frame_host()->GetProcess());
 }
 
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the

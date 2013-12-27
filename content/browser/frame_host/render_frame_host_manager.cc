@@ -191,9 +191,10 @@ RenderViewHostImpl* RenderFrameHostManager::Navigate(
     if (dest_render_frame_host != render_frame_host_ &&
         dest_render_frame_host->render_view_host()->GetView()) {
       dest_render_frame_host->render_view_host()->GetView()->Hide();
-    } else {
+    } else if (frame_tree_node_->IsMainFrame()) {
       // This is our primary renderer, notify here as we won't be calling
-      // CommitPending (which does the notify).
+      // CommitPending (which does the notify).  We only do this for top-level
+      // frames.
       delegate_->NotifySwappedFromRenderManager(
           NULL, render_frame_host_->render_view_host());
     }
@@ -482,8 +483,12 @@ void RenderFrameHostManager::SwapOutOldPage() {
   // message to the ResourceDispatcherHost, allowing the pending RVH's response
   // to resume.
   // TODO(creis): We should do this on the RFH or else we'll swap out the
-  // top-level page when subframes navigate.
-  render_frame_host_->render_view_host()->SwapOut();
+  // top-level page when subframes navigate.  Until then, we skip swapping out
+  // for subframes.
+  if (frame_tree_node_->IsMainFrame())
+    render_frame_host_->render_view_host()->SwapOut();
+  else
+    SwappedOut(render_frame_host_->render_view_host());
 
   // ResourceDispatcherHost has told us to run the onunload handler, which
   // means it is not a download or unsafe page, and we are going to perform the
@@ -777,6 +782,16 @@ RenderFrameHostImpl* RenderFrameHostManager::CreateRenderFrameHost(
         site_instance, view_routing_id, frame_routing_id, swapped_out, hidden);
   } else {
     render_view_host = frame_tree->GetRenderViewHostForSubFrame(site_instance);
+
+    // If we haven't found a RVH for a subframe RFH, it's because we currently
+    // do not create top-level RFHs for pending subframe navigations.  Create
+    // the RVH here for now.
+    // TODO(creis): Mirror the frame tree so this check isn't necessary.
+    if (!render_view_host) {
+      render_view_host = frame_tree->CreateRenderViewHostForMainFrame(
+          site_instance, view_routing_id, frame_routing_id, swapped_out,
+          hidden);
+    }
   }
 
   // TODO(creis): Make render_frame_host a scoped_ptr.
@@ -833,7 +848,7 @@ int RenderFrameHostManager::CreateRenderFrame(
     if (success && frame_tree_node_->IsMainFrame()) {
       // Don't show the main frame's view until we get a DidNavigate from it.
       render_view_host->GetView()->Hide();
-    } else if (!swapped_out) {
+    } else if (!swapped_out && pending_render_frame_host_) {
       CancelPending();
     }
   }
@@ -909,19 +924,20 @@ void RenderFrameHostManager::CommitPending() {
       render_frame_host_->render_view_host()->GetView() &&
       render_frame_host_->render_view_host()->GetView()->HasFocus();
 
+  // TODO(creis): As long as show/hide are on RVH, we don't want to do them for
+  // subframe navigations or they'll interfere with the top-level page.
+  bool is_main_frame = frame_tree_node_->IsMainFrame();
+
   // Swap in the pending frame and make it active. Also ensure the FrameTree
   // stays in sync.
   RenderFrameHostImpl* old_render_frame_host = render_frame_host_;
   render_frame_host_ = pending_render_frame_host_;
   pending_render_frame_host_ = NULL;
-  render_frame_host_->render_view_host()->AttachToFrameTree();
+  if (is_main_frame)
+    render_frame_host_->render_view_host()->AttachToFrameTree();
 
   // The process will no longer try to exit, so we can decrement the count.
   render_frame_host_->GetProcess()->RemovePendingView();
-
-  // TODO(creis): As long as show/hide are on RVH, we don't want to do them for
-  // subframe navigations or they'll interfere with the top-level page.
-  bool is_main_frame = frame_tree_node_->IsMainFrame();
 
   // If the view is gone, then this RenderViewHost died while it was hidden.
   // We ignored the RenderProcessGone call at the time, so we should send it now
@@ -933,10 +949,16 @@ void RenderFrameHostManager::CommitPending() {
     render_frame_host_->render_view_host()->GetView()->Show();
   }
 
-  // Hide the old view now that the new one is visible.
+  // If the old view is live and top-level, hide it now that the new one is
+  // visible.
   if (old_render_frame_host->render_view_host()->GetView()) {
-    old_render_frame_host->render_view_host()->GetView()->Hide();
-    old_render_frame_host->render_view_host()->WasSwappedOut();
+    if (is_main_frame) {
+      old_render_frame_host->render_view_host()->GetView()->Hide();
+      old_render_frame_host->render_view_host()->WasSwappedOut();
+    } else {
+      // TODO(creis): Swap out the subframe. We'll need to swap it back in when
+      // navigating back.
+    }
   }
 
   // Make sure the size is up to date.  (Fix for bug 1079768.)
@@ -967,7 +989,9 @@ void RenderFrameHostManager::CommitPending() {
   if (old_render_frame_host->render_view_host()->IsRenderViewLive()) {
     // If the old RFH is live, we are swapping it out and should keep track of
     // it in case we navigate back to it.
-    DCHECK(old_render_frame_host->render_view_host()->is_swapped_out());
+    // TODO(creis): Swap out the subframe in --site-per-process.
+    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+      DCHECK(old_render_frame_host->render_view_host()->is_swapped_out());
     // Temp fix for http://crbug.com/90867 until we do a better cleanup to make
     // sure we don't get different rvh instances for the same site instance
     // in the same rvhmgr.

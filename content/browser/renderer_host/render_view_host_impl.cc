@@ -702,13 +702,19 @@ void RenderViewHostImpl::OnCrossSiteResponse(
     PageTransition page_transition,
     int64 frame_id,
     bool should_replace_current_entry) {
-  RenderViewHostDelegate::RendererManagement* manager =
-      delegate_->GetRendererManagementDelegate();
-  if (manager) {
-    manager->OnCrossSiteResponse(this, global_request_id, is_transfer,
-                                 transfer_url_chain, referrer, page_transition,
-                                 frame_id, should_replace_current_entry);
+  FrameTreeNode* node = NULL;
+  if (frame_id != -1 &&
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    node = delegate_->GetFrameTree()->FindByFrameID(frame_id);
   }
+
+  // TODO(creis): We should always be able to get the RFHM for a frame_id,
+  // but today the frame_id is -1 for the main frame.
+  RenderViewHostDelegate::RendererManagement* manager = node ?
+      node->render_manager() : delegate_->GetRendererManagementDelegate();
+  manager->OnCrossSiteResponse(this, global_request_id, is_transfer,
+                               transfer_url_chain, referrer, page_transition,
+                               frame_id, should_replace_current_entry);
 }
 
 void RenderViewHostImpl::SuppressDialogsUntilSwapOut() {
