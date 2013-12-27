@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -1474,7 +1474,7 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
 
   // Resize shelf view with that animation running and stay overflown.
   gfx::Rect bounds = shelf_view_->bounds();
-  bounds.set_width(bounds.width() - kLauncherPreferredSize);
+  bounds.set_width(bounds.width() - kShelfPreferredSize);
   shelf_view_->SetBoundsRect(bounds);
   ASSERT_TRUE(test_api_->IsOverflowButtonVisible());
 

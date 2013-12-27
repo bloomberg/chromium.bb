@@ -8,6 +8,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model.h"
@@ -530,7 +531,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
                          aura::Window* status_container,
                          internal::WorkspaceController* workspace_controller)
     : delegate_view_(new DelegateView(this)),
-      background_animator_(delegate_view_, 0, kLauncherBackgroundAlpha),
+      background_animator_(delegate_view_, 0, kShelfBackgroundAlpha),
       activating_as_fallback_(false),
       window_container_(shelf_container) {
   views::Widget::InitParams params(

@@ -85,7 +85,7 @@ class ASH_EXPORT ShelfLayoutManager :
   // the shelf items, notifications, status area etc.
   static const int kShelfItemInset;
 
-  // Returns the preferred size for the shelf (either kLauncherPreferredSize or
+  // Returns the preferred size for the shelf (either kShelfPreferredSize or
   // kShelfSize).
   static int GetPreferredShelfSize();
 

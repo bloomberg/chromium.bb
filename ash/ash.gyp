@@ -210,6 +210,8 @@
         'shelf/shelf_button.cc',
         'shelf/shelf_button.h',
         'shelf/shelf_button_host.h',
+        'shelf/shelf_constants.cc',
+        'shelf/shelf_constants.h',
         'shelf/shelf_delegate.h',
         'shelf/shelf_icon_observer.h',
         'shelf/shelf_item_delegate.h',

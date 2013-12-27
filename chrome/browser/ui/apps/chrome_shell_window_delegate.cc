@@ -20,7 +20,7 @@
 #include "content/public/browser/web_contents_view.h"
 
 #if defined(USE_ASH)
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_constants.h"
 #endif
 
 #if defined(ENABLE_PRINTING)
@@ -145,7 +145,7 @@ void ChromeShellWindowDelegate::RequestMediaAccessPermission(
 
 int ChromeShellWindowDelegate::PreferredIconSize() {
 #if defined(USE_ASH)
-  return ash::kLauncherPreferredSize;
+  return ash::kShelfPreferredSize;
 #else
   return extension_misc::EXTENSION_ICON_SMALL;
 #endif

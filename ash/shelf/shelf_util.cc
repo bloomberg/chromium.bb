@@ -4,6 +4,7 @@
 
 #include "ash/shelf/shelf_util.h"
 
+#include "ash/shelf/shelf_constants.h"
 #include "ui/aura/window_property.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::LauncherID);
@@ -11,7 +12,7 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::LauncherItemDetails*);
 
 namespace ash {
 
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(LauncherID, kLauncherID, kInvalidLauncherID);
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(LauncherID, kLauncherID, kInvalidShelfID);
 
 // ash::LauncherItemDetails for kLauncherItemDetaildKey is owned by the window
 // and will be freed automatically.

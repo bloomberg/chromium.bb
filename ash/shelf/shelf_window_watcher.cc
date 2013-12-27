@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_window_watcher.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
@@ -35,7 +36,7 @@ void SetShelfItemDetailsForLauncherItem(
 // Returns true if |window| has a LauncherItem added by ShelfWindowWatcher.
 bool HasLauncherItemForWindow(aura::Window* window) {
   if (ash::GetLauncherItemDetailsForWindow(window) != NULL &&
-      ash::GetLauncherIDForWindow(window) != ash::kInvalidLauncherID)
+      ash::GetLauncherIDForWindow(window) != ash::kInvalidShelfID)
     return true;
   return false;
 }
@@ -98,7 +99,7 @@ void ShelfWindowWatcher::AddLauncherItem(aura::Window* window) {
 
 void ShelfWindowWatcher::RemoveLauncherItem(aura::Window* window) {
   model_->RemoveItemAt(model_->ItemIndexByID(GetLauncherIDForWindow(window)));
-  SetLauncherIDForWindow(kInvalidLauncherID, window);
+  SetLauncherIDForWindow(kInvalidShelfID, window);
 }
 
 void ShelfWindowWatcher::OnRootWindowAdded(aura::Window* root_window) {
@@ -150,7 +151,7 @@ void ShelfWindowWatcher::OnWindowAdded(aura::Window* window) {
   // Add LauncherItem if |window| already has a LauncherItemDetails when it is
   // created. Don't make a new LauncherItem for the re-parented |window| that
   // already has a LauncherItem.
-  if (GetLauncherIDForWindow(window) == ash::kInvalidLauncherID &&
+  if (GetLauncherIDForWindow(window) == ash::kInvalidShelfID &&
       GetLauncherItemDetailsForWindow(window))
     AddLauncherItem(window);
 }

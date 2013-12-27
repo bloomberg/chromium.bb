@@ -5,8 +5,8 @@
 #ifndef ASH_ASH_EXPORT_H_
 #define ASH_ASH_EXPORT_H_
 
-// Defines ASH_EXPORT so that functionality implemented by the aura_shell
-// module can be exported to consumers.
+// Defines ASH_EXPORT so that functionality implemented by the Ash module can
+// be exported to consumers.
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

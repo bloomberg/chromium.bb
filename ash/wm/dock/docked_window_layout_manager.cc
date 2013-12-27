@@ -7,6 +7,7 @@
 #include "ash/ash_switches.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
@@ -59,7 +60,7 @@ class DockedBackgroundWidget : public views::Widget,
  public:
   explicit DockedBackgroundWidget(aura::Window* container)
       : alignment_(DOCKED_ALIGNMENT_NONE),
-        background_animator_(this, 0, kLauncherBackgroundAlpha),
+        background_animator_(this, 0, kShelfBackgroundAlpha),
         alpha_(0),
         opaque_background_(ui::LAYER_SOLID_COLOR) {
     InitWidget(container);

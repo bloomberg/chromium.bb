@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_constants.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,6 +13,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 using content::WebContents;
 using content::WebContentsObserver;
@@ -157,8 +158,8 @@ IN_PROC_BROWSER_TEST_F(LauncherFaviconLoaderBrowsertest, ManyLauncherIcons) {
 
   EXPECT_FALSE(favicon_loader_->GetFavicon().empty());
   // When multiple favicons are present, the correctly sized icon should be
-  // chosen. The icons are sized assuming ash::kLauncherPreferredSize < 128.
-  EXPECT_GT(128, ash::kLauncherPreferredSize);
+  // chosen. The icons are sized assuming ash::kShelfPreferredSize < 128.
+  EXPECT_GT(128, ash::kShelfPreferredSize);
   EXPECT_EQ(48, favicon_loader_->GetFavicon().height());
 }
 

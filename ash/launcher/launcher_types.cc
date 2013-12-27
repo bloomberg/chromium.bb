@@ -4,17 +4,13 @@
 
 #include "ash/launcher/launcher_types.h"
 
-namespace ash {
+#include "ash/shelf/shelf_constants.h"
 
-const int kLauncherPreferredSize = 48;
-const int kLauncherBackgroundAlpha = 204;
-const int kInvalidImageResourceID = -1;
-const int kInvalidLauncherID = 0;
-const int kTimeToSwitchBackgroundMs = 1000;
+namespace ash {
 
 LauncherItem::LauncherItem()
     : type(TYPE_UNDEFINED),
-      id(kInvalidLauncherID),
+      id(kInvalidShelfID),
       status(STATUS_CLOSED) {
 }
 

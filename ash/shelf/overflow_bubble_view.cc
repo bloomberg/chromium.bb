@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/root_window_controller.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
@@ -47,7 +48,7 @@ void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
   SetAnchorView(anchor);
   set_arrow(GetBubbleArrow());
   set_background(NULL);
-  set_color(SkColorSetARGB(kLauncherBackgroundAlpha, 0, 0, 0));
+  set_color(SkColorSetARGB(kShelfBackgroundAlpha, 0, 0, 0));
   set_margins(gfx::Insets(kPadding, kPadding, kPadding, kPadding));
   set_move_with_anchor(true);
   // Overflow bubble should not get focus. If it get focus when it is shown,

@@ -15,21 +15,6 @@ namespace ash {
 
 typedef int LauncherID;
 
-// Height of the Launcher. Hard coded to avoid resizing as items are
-// added/removed.
-ASH_EXPORT extern const int kLauncherPreferredSize;
-
-// Max alpha of the launcher background.
-ASH_EXPORT extern const int kLauncherBackgroundAlpha;
-
-// Invalid image resource id used for LauncherItemDetails.
-extern const int kInvalidImageResourceID;
-
-extern const int kInvalidLauncherID;
-
-// Animation duration for switching black shelf and dock background on and off.
-ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
-
 // Type the LauncherItem represents.
 enum LauncherItemType {
   // Represents a running app panel.

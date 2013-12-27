@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "ash/ash_constants.h"
-#include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_button_host.h"
+#include "ash/shelf/shelf_constants.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -43,7 +43,7 @@ AppListButton::AppListButton(views::ButtonListener* listener,
       rb.GetImageNamed(IDR_AURA_LAUNCHER_ICON_APPLIST_PUSHED).
           ToImageSkia());
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE));
-  SetSize(gfx::Size(kLauncherPreferredSize, kLauncherPreferredSize));
+  SetSize(gfx::Size(kShelfPreferredSize, kShelfPreferredSize));
   SetImageAlignment(ImageButton::ALIGN_CENTER, ImageButton::ALIGN_TOP);
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
                       kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));

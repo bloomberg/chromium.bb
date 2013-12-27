@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_bezel_event_filter.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -102,7 +102,7 @@ const int ShelfLayoutManager::kShelfItemInset = 3;
 
 int ShelfLayoutManager::GetPreferredShelfSize() {
   return ash::switches::UseAlternateShelfLayout() ?
-      ShelfLayoutManager::kShelfSize : kLauncherPreferredSize;
+      ShelfLayoutManager::kShelfSize : kShelfPreferredSize;
 }
 
 // ShelfLayoutManager::AutoHideEventFilter -------------------------------------

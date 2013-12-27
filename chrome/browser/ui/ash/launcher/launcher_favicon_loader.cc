@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/launcher_favicon_loader.h"
 
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_constants.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/render_view_host.h"
@@ -19,7 +19,7 @@ const int kMaxBitmapSize = 256;
 
 ////////////////////////////////////////////////////////////////////////////////
 // FaviconBitmapHandler fetchs all bitmaps with the 'icon' (or 'shortcut icon')
-// link tag, storing the one that best matches ash::kLauncherPreferredSize.
+// link tag, storing the one that best matches ash::kShelfPreferredSize.
 // These icon bitmaps are not resized and are not cached beyond the lifetime
 // of the class. Bitmaps larger than kMaxBitmapSize are ignored.
 
@@ -147,7 +147,7 @@ void FaviconBitmapHandler::AddFavicon(const GURL& image_url,
   if (new_bitmap.height() > kMaxBitmapSize ||
       new_bitmap.width() > kMaxBitmapSize)
     return;
-  if (new_bitmap.height() < ash::kLauncherPreferredSize)
+  if (new_bitmap.height() < ash::kShelfPreferredSize)
     return;
   if (!bitmap_.isNull()) {
     // We want the smallest icon that is large enough.

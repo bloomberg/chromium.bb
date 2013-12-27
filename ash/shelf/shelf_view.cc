@@ -18,6 +18,7 @@
 #include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_item_delegate.h"
@@ -1348,7 +1349,7 @@ void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) {
 
 int ShelfView::GetButtonSize() const {
   return ash::switches::UseAlternateShelfLayout() ?
-      kButtonSize : kLauncherPreferredSize;
+      kButtonSize : kShelfPreferredSize;
 }
 
 int ShelfView::GetButtonSpacing() const {
