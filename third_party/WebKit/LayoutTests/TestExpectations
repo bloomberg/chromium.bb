@@ -665,6 +665,13 @@ crbug.com/304841 [ Mac ] inspector/device-emulation/device-emulation-small.html 
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
 crbug.com/316145 [ XP ] fast/text/justify-ideograph-complex.html [ Failure Pass ]
 
+crbug.com/269692 compositing/force-compositing-mode/overflow-iframe-layer.html [ NeedsRebaseline ]
+crbug.com/269692 fast/dynamic/anchor-lock.html [ NeedsRebaseline ]
+crbug.com/269692 fast/repaint/border-radius-repaint-2.html [ NeedsRebaseline ]
+crbug.com/269692 fast/text-autosizing/wide-iframe.html [ NeedsRebaseline ]
+crbug.com/269692 virtual/fasttextautosizing/fast/text-autosizing/wide-iframe.html [ NeedsRebaseline ]
+crbug.com/269692 virtual/softwarecompositing/force-compositing-mode/overflow-iframe-layer.html [ NeedsRebaseline ]
+
 crbug.com/306280 http/tests/pointer-lock/iframe-sandboxed-allow-pointer-lock.html [ Crash Pass ]
 
 crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout ]
