@@ -141,16 +141,6 @@ ${ANDROID_SDK_BUILD_TOOLS_VERSION}
 common_gyp_vars() {
   export GYP_DEFINES="${DEFINES}"
 
-  # Set GYP_GENERATORS to ninja if it's currently unset or null.
-  if [ -z "$GYP_GENERATORS" ]; then
-    echo "Defaulting GYP_GENERATORS to ninja."
-    GYP_GENERATORS=ninja
-  elif [ "$GYP_GENERATORS" != "ninja" ]; then
-    echo "Warning: GYP_GENERATORS set to '$GYP_GENERATORS'."
-    echo "Only GYP_GENERATORS=ninja has continuous coverage."
-  fi
-  export GYP_GENERATORS
-
   # Use our All target as the default
   export GYP_GENERATOR_FLAGS="${GYP_GENERATOR_FLAGS} default_target=All"
 
