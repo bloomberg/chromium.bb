@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
@@ -70,6 +71,15 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
   // tabstrip.
   return GrabViewSnapshot([[window contentView] superview], png_representation,
       snapshot_bounds);
+}
+
+SNAPSHOT_EXPORT void GrapWindowSnapshotAsync(
+    gfx::NativeWindow window,
+    const gfx::Rect& snapshot_bounds,
+    const gfx::Size& target_size,
+    scoped_refptr<base::TaskRunner> background_task_runner,
+    GrapWindowSnapshotAsyncCallback callback) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace ui

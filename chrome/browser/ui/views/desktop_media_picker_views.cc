@@ -4,10 +4,10 @@
 
 #include "chrome/browser/media/desktop_media_picker.h"
 
-#include "ash/shell.h"
 #include "base/callback.h"
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -29,10 +29,6 @@
 #include "ui/aura/root_window.h"
 #endif
 
-#if defined(OS_WIN)
-#include "ui/views/win/hwnd_util.h"
-#endif
-
 using content::DesktopMediaID;
 
 namespace {
@@ -51,6 +47,15 @@ const int kDesktopMediaSourceViewGroupId = 1;
 
 const char kDesktopMediaSourceViewClassName[] =
     "DesktopMediaPicker_DesktopMediaSourceView";
+
+content::DesktopMediaID::Id AcceleratedWidgetToDesktopMediaId(
+    gfx::AcceleratedWidget accelerated_widget) {
+#if defined(OS_WIN)
+  return reinterpret_cast<content::DesktopMediaID::Id>(accelerated_widget);
+#else
+  return static_cast<content::DesktopMediaID::Id>(accelerated_widget);
+#endif
+}
 
 class DesktopMediaListView;
 class DesktopMediaPickerDialogView;
@@ -495,23 +500,26 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // DesktopMediaList needs to know the ID of the picker window which
   // matches the ID it gets from the OS. Depending on the OS and configuration
   // we get this ID differently.
-  //
-  // TODO(sergeyu): Update this code when Ash-specific window capturer is
-  // implemented. Currently this code will always get native windows ID
-  // which is not what we need in Ash. http://crbug.com/295102
-  content::DesktopMediaID::Id dialog_window_id;
+  content::DesktopMediaID::Id dialog_window_id = 0;
 
-#if defined(OS_WIN)
-  dialog_window_id = reinterpret_cast<content::DesktopMediaID::Id>(
-      views::HWNDForWidget(GetWidget()));
-#elif defined(USE_AURA)
-  dialog_window_id = static_cast<content::DesktopMediaID::Id>(
-      GetWidget()->GetNativeWindow()->GetDispatcher()->host()->
-          GetAcceleratedWidget());
-#else
+#if defined(USE_AURA)
+
+#if defined(USE_ASH)
+  if (chrome::IsNativeWindowInAsh(GetWidget()->GetNativeWindow())) {
+    dialog_window_id = content::DesktopMediaID::RegisterAuraWindow(
+        GetWidget()->GetNativeWindow()).id;
+  } else
+#endif
+  {
+    dialog_window_id = AcceleratedWidgetToDesktopMediaId(
+        GetWidget()->GetNativeWindow()->GetDispatcher()->host()->
+            GetAcceleratedWidget());
+  }
+
+#else  // defined(USE_AURA)
   dialog_window_id = 0;
   NOTIMPLEMENTED();
-#endif
+#endif  // !defined(USE_AURA)
 
   list_view_->StartUpdating(dialog_window_id);
 
