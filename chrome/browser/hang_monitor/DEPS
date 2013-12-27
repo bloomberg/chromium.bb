@@ -1,0 +1,4 @@
+include_rules = [
+  # This code is Windows only so it's ok to include this file.
+  "+chrome/browser/ui/views/simple_message_box_win.h",
+]

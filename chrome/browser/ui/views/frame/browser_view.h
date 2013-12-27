@@ -682,7 +682,7 @@ class BrowserView : public BrowserWindow,
 
   scoped_ptr<FullscreenExitBubbleViews> fullscreen_bubble_;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // This object is used to perform periodic actions in a worker
   // thread. It is currently used to monitor hung plugin windows.
   WorkerThreadTicker ticker_;

@@ -2992,13 +2992,7 @@
         ['use_aura==1', {
           'sources/': [
             ['exclude', '^browser/automation/testing_automation_provider_win.cc'],
-            ['exclude', '^browser/hang_monitor/hung_plugin_action.cc'],
-            ['exclude', '^browser/hang_monitor/hung_plugin_action.h'],
-            ['exclude', '^browser/hang_monitor/hung_window_detector.cc'],
-            ['exclude', '^browser/hang_monitor/hung_window_detector.h'],
             ['exclude', '^browser/icon_loader_linux.cc'],
-            ['exclude', '^browser/jumplist_win.cc'],
-            ['exclude', '^browser/jumplist_win.h'],
             ['exclude', '^browser/lifetime/application_lifetime_stub.cc'],
             ['exclude', '^browser/renderer_host/render_widget_host_view_views*'],
           ],

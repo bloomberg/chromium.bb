@@ -140,16 +140,16 @@
 #endif
 
 #if defined(USE_AURA)
+#include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/screen.h"
-#elif defined(OS_WIN)  // !defined(USE_AURA)
-#include "chrome/browser/jumplist_win.h"
-#include "ui/views/widget/native_widget_win.h"
-#include "ui/views/win/scoped_fullscreen_visibility.h"
 #endif
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "chrome/browser/jumplist_win.h"
+#include "ui/views/widget/native_widget_win.h"
+#include "ui/views/win/scoped_fullscreen_visibility.h"
 #include "win8/util/win8_util.h"
 #endif
 
@@ -419,7 +419,7 @@ BrowserView::BrowserView()
       devtools_window_(NULL),
       initialized_(false),
       in_process_fullscreen_(false),
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
       hung_window_detector_(&hung_plugin_action_),
       ticker_(0),
 #endif
@@ -438,7 +438,7 @@ BrowserView::~BrowserView() {
 
   browser_->tab_strip_model()->RemoveObserver(this);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Stop hung plugin monitoring.
   ticker_.Stop();
   ticker_.UnregisterTickHandler(&hung_window_detector_);
@@ -2006,7 +2006,7 @@ void BrowserView::InitViews() {
                             immersive_mode_controller_.get());
   SetLayoutManager(browser_view_layout);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Create a custom JumpList and add it to an observer of TabRestoreService
   // so we can update the custom JumpList when a tab is added or removed.
   if (JumpList::Enabled()) {
@@ -2044,7 +2044,7 @@ void BrowserView::LoadingAnimationCallback() {
 }
 
 void BrowserView::OnLoadCompleted() {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   DCHECK(!jumplist_);
   jumplist_ = new JumpList();
   jumplist_->AddObserver(browser_->profile());
@@ -2364,7 +2364,7 @@ int BrowserView::GetCommandIDForAppCommandID(int app_command_id) const {
 }
 
 void BrowserView::InitHangMonitor() {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   PrefService* pref_service = g_browser_process->local_state();
   if (!pref_service)
     return;
@@ -2373,8 +2373,14 @@ void BrowserView::InitHangMonitor() {
       pref_service->GetInteger(prefs::kPluginMessageResponseTimeout);
   int hung_plugin_detect_freq =
       pref_service->GetInteger(prefs::kHungPluginDetectFrequency);
+#if defined(USE_AURA)
+  HWND window = GetWidget()->GetNativeView()->GetDispatcher()->host()->
+      GetAcceleratedWidget();
+#else
+  HWND window = GetWidget()->GetNativeView();
+#endif
   if ((hung_plugin_detect_freq > 0) &&
-      hung_window_detector_.Initialize(GetWidget()->GetNativeView(),
+      hung_window_detector_.Initialize(window,
                                        plugin_message_response_timeout)) {
     ticker_.set_tick_interval(hung_plugin_detect_freq);
     ticker_.RegisterTickHandler(&hung_window_detector_);
