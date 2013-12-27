@@ -118,10 +118,6 @@ class BasicNetworkDelegate : public NetworkDelegate {
     return OK;
   }
 
-  virtual void OnRequestWaitStateChange(const URLRequest& request,
-                                        RequestWaitState state) OVERRIDE {
-  }
-
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 

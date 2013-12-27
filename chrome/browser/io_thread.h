@@ -31,7 +31,6 @@ class SystemURLRequestContextGetter;
 namespace chrome_browser_net {
 class DnsProbeService;
 class HttpPipeliningCompatibilityClient;
-class LoadTimeStats;
 }
 
 namespace extensions {
@@ -150,7 +149,6 @@ class IOThread : public content::BrowserThreadDelegate {
         extension_event_router_forwarder;
     scoped_ptr<chrome_browser_net::HttpPipeliningCompatibilityClient>
         http_pipelining_compatibility_client;
-    scoped_ptr<chrome_browser_net::LoadTimeStats> load_time_stats;
     scoped_ptr<net::HostMappingRules> host_mapping_rules;
     scoped_ptr<net::HttpUserAgentSettings> http_user_agent_settings;
     bool ignore_certificate_errors;

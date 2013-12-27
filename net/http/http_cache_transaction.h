@@ -23,7 +23,6 @@ namespace net {
 
 class PartialData;
 struct HttpRequestInfo;
-class HttpTransactionDelegate;
 struct LoadTimingInfo;
 
 // This is the transaction that is returned by the HttpCache transaction
@@ -60,8 +59,7 @@ class HttpCache::Transaction : public HttpTransaction {
   };
 
   Transaction(RequestPriority priority,
-              HttpCache* cache,
-              HttpTransactionDelegate* transaction_delegate);
+              HttpCache* cache);
   virtual ~Transaction();
 
   Mode mode() const { return mode_; }
@@ -374,15 +372,11 @@ class HttpCache::Transaction : public HttpTransaction {
   // data is considered for the result.
   bool CanResume(bool has_data);
 
-  // Called to signal completion of asynchronous IO.
-  void OnIOComplete(int result);
-
-  void ReportCacheActionStart();
-  void ReportCacheActionFinish();
-  void ReportNetworkActionStart();
-  void ReportNetworkActionFinish();
   void UpdateTransactionPattern(TransactionPattern new_transaction_pattern);
   void RecordHistograms();
+
+  // Called to signal completion of asynchronous IO.
+  void OnIOComplete(int result);
 
   State next_state_;
   const HttpRequestInfo* request_;
@@ -429,8 +423,6 @@ class HttpCache::Transaction : public HttpTransaction {
   base::TimeTicks entry_lock_waiting_since_;
   base::TimeTicks first_cache_access_since_;
   base::TimeTicks send_request_since_;
-
-  HttpTransactionDelegate* transaction_delegate_;
 
   int64 total_received_bytes_;
 

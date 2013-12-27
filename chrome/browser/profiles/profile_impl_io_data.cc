@@ -573,7 +573,7 @@ ProfileImplIOData::InitializeAppRequestContext(
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers) const {
   // Copy most state from the main context.
-  AppRequestContext* context = new AppRequestContext(load_time_stats());
+  AppRequestContext* context = new AppRequestContext();
   context->CopyFrom(main_context);
 
   base::FilePath cookie_path = partition_descriptor.path.Append(
@@ -655,7 +655,7 @@ ProfileImplIOData::InitializeMediaRequestContext(
     ChromeURLRequestContext* original_context,
     const StoragePartitionDescriptor& partition_descriptor) const {
   // Copy most state from the original context.
-  MediaRequestContext* context = new MediaRequestContext(load_time_stats());
+  MediaRequestContext* context = new MediaRequestContext();
   context->CopyFrom(original_context);
 
   // For in-memory context, return immediately after creating the new
@@ -733,11 +733,6 @@ ProfileImplIOData::AcquireIsolatedMediaRequestContext(
       InitializeMediaRequestContext(app_context, partition_descriptor);
   DCHECK(media_request_context);
   return media_request_context;
-}
-
-chrome_browser_net::LoadTimeStats* ProfileImplIOData::GetLoadTimeStats(
-    IOThread::Globals* io_thread_globals) const {
-  return io_thread_globals->load_time_stats.get();
 }
 
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(

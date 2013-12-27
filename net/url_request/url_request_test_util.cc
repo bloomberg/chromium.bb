@@ -574,11 +574,6 @@ int TestNetworkDelegate::OnBeforeSocketStreamConnect(
   return OK;
 }
 
-void TestNetworkDelegate::OnRequestWaitStateChange(
-    const URLRequest& request,
-    RequestWaitState state) {
-}
-
 // static
 std::string ScopedCustomUrlRequestTestHttpHost::value_("127.0.0.1");
 

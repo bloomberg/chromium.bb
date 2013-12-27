@@ -379,7 +379,7 @@ void HttpCache::WriteMetadata(const GURL& url,
   }
 
   HttpCache::Transaction* trans =
-      new HttpCache::Transaction(priority, this, NULL);
+      new HttpCache::Transaction(priority, this);
   MetadataWriter* writer = new MetadataWriter(trans);
 
   // The writer will self destruct when done.
@@ -421,15 +421,14 @@ void HttpCache::InitializeInfiniteCache(const base::FilePath& path) {
 }
 
 int HttpCache::CreateTransaction(RequestPriority priority,
-                                 scoped_ptr<HttpTransaction>* trans,
-                                 HttpTransactionDelegate* delegate) {
+                                 scoped_ptr<HttpTransaction>* trans) {
   // Do lazy initialization of disk cache if needed.
   if (!disk_cache_.get()) {
     // We don't care about the result.
     CreateBackend(NULL, net::CompletionCallback());
   }
 
-  trans->reset(new HttpCache::Transaction(priority, this, delegate));
+  trans->reset(new HttpCache::Transaction(priority, this));
   return OK;
 }
 

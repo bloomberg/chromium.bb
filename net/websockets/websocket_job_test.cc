@@ -286,8 +286,7 @@ class MockHttpTransactionFactory : public HttpTransactionFactory {
 
   virtual int CreateTransaction(
       RequestPriority priority,
-      scoped_ptr<HttpTransaction>* trans,
-      HttpTransactionDelegate* delegate) OVERRIDE {
+      scoped_ptr<HttpTransaction>* trans) OVERRIDE {
     NOTREACHED();
     return ERR_UNEXPECTED;
   }

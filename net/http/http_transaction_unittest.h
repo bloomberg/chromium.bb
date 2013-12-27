@@ -270,8 +270,7 @@ class MockNetworkLayer : public net::HttpTransactionFactory,
   // net::HttpTransactionFactory:
   virtual int CreateTransaction(
       net::RequestPriority priority,
-      scoped_ptr<net::HttpTransaction>* trans,
-      net::HttpTransactionDelegate* delegate) OVERRIDE;
+      scoped_ptr<net::HttpTransaction>* trans) OVERRIDE;
   virtual net::HttpCache* GetCache() OVERRIDE;
   virtual net::HttpNetworkSession* GetSession() OVERRIDE;
 

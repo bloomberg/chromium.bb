@@ -512,6 +512,10 @@ MockDiskCache* MockHttpCache::disk_cache() {
   return (rv == net::OK) ? static_cast<MockDiskCache*>(backend) : NULL;
 }
 
+int MockHttpCache::CreateTransaction(scoped_ptr<net::HttpTransaction>* trans) {
+  return http_cache_.CreateTransaction(net::DEFAULT_PRIORITY, trans);
+}
+
 bool MockHttpCache::ReadResponseInfo(disk_cache::Entry* disk_entry,
                                      net::HttpResponseInfo* response_info,
                                      bool* response_truncated) {

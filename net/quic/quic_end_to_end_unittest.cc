@@ -53,9 +53,7 @@ class TestTransactionFactory : public HttpTransactionFactory {
 
   // HttpTransactionFactory methods
   virtual int CreateTransaction(RequestPriority priority,
-                                scoped_ptr<HttpTransaction>* trans,
-                                HttpTransactionDelegate* delegate) OVERRIDE {
-    EXPECT_TRUE(delegate == NULL);
+                                scoped_ptr<HttpTransaction>* trans) OVERRIDE {
     trans->reset(new HttpNetworkTransaction(priority, session_));
     return OK;
   }

@@ -108,8 +108,4 @@ int AwNetworkDelegate::OnBeforeSocketStreamConnect(
   return net::OK;
 }
 
-void AwNetworkDelegate::OnRequestWaitStateChange(const net::URLRequest& request,
-                                                 RequestWaitState state) {
-}
-
 }  // namespace android_webview

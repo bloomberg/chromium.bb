@@ -284,8 +284,6 @@ class TestNetworkDelegate : public NetworkDelegate {
   virtual int OnBeforeSocketStreamConnect(
       SocketStream* stream,
       const CompletionCallback& callback) OVERRIDE;
-  virtual void OnRequestWaitStateChange(const URLRequest& request,
-                                        RequestWaitState state) OVERRIDE;
 
   void InitRequestStatesIfNew(int request_id);
 

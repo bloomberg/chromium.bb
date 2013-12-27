@@ -42,7 +42,6 @@
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/evicted_domain_cookie_counter.h"
-#include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
@@ -528,10 +527,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   BrowserContext::EnsureResourceContextInitialized(profile);
 }
 
-ProfileIOData::MediaRequestContext::MediaRequestContext(
-    chrome_browser_net::LoadTimeStats* load_time_stats)
-    : ChromeURLRequestContext(ChromeURLRequestContext::CONTEXT_TYPE_MEDIA,
-                              load_time_stats) {
+ProfileIOData::MediaRequestContext::MediaRequestContext() {
 }
 
 void ProfileIOData::MediaRequestContext::SetHttpTransactionFactory(
@@ -542,10 +538,7 @@ void ProfileIOData::MediaRequestContext::SetHttpTransactionFactory(
 
 ProfileIOData::MediaRequestContext::~MediaRequestContext() {}
 
-ProfileIOData::AppRequestContext::AppRequestContext(
-    chrome_browser_net::LoadTimeStats* load_time_stats)
-    : ChromeURLRequestContext(ChromeURLRequestContext::CONTEXT_TYPE_APP,
-                              load_time_stats) {
+ProfileIOData::AppRequestContext::AppRequestContext() {
 }
 
 void ProfileIOData::AppRequestContext::SetCookieStore(
@@ -578,7 +571,6 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false),
       resource_context_(new ResourceContext(this)),
-      load_time_stats_(NULL),
       initialized_on_UI_thread_(false),
       is_incognito_(is_incognito) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -975,16 +967,10 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
   IOThread* const io_thread = profile_params_->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  load_time_stats_ = GetLoadTimeStats(io_thread_globals);
 
   // Create the common request contexts.
-  main_request_context_.reset(
-      new ChromeURLRequestContext(ChromeURLRequestContext::CONTEXT_TYPE_MAIN,
-                                  load_time_stats_));
-  extensions_request_context_.reset(
-      new ChromeURLRequestContext(
-          ChromeURLRequestContext::CONTEXT_TYPE_EXTENSIONS,
-          load_time_stats_));
+  main_request_context_.reset(new ChromeURLRequestContext());
+  extensions_request_context_.reset(new ChromeURLRequestContext());
 
   ChromeNetworkDelegate* network_delegate =
       new ChromeNetworkDelegate(
@@ -1000,7 +986,6 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
   network_delegate->set_force_google_safe_search(&force_safesearch_);
-  network_delegate->set_load_time_stats(load_time_stats_);
   network_delegate_.reset(network_delegate);
 
   fraudulent_certificate_reporter_.reset(

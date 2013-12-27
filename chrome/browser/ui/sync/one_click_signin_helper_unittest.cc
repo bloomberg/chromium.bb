@@ -141,11 +141,6 @@ class TestProfileIOData : public ProfileIOData {
     NOTREACHED();
     return NULL;
   }
-  virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
-      IOThread::Globals* io_thread_globals) const OVERRIDE {
-    NOTREACHED();
-    return NULL;
-  }
 };
 
 class TestURLRequest : public base::SupportsUserData {

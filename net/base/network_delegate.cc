@@ -102,12 +102,6 @@ int NetworkDelegate::NotifyBeforeSocketStreamConnect(
   return OnBeforeSocketStreamConnect(socket, callback);
 }
 
-void NetworkDelegate::NotifyRequestWaitStateChange(const URLRequest& request,
-                                                   RequestWaitState state) {
-  DCHECK(CalledOnValidThread());
-  OnRequestWaitStateChange(request, state);
-}
-
 bool NetworkDelegate::CanGetCookies(const URLRequest& request,
                                     const CookieList& cookie_list) {
   DCHECK(CalledOnValidThread());
@@ -224,10 +218,6 @@ int NetworkDelegate::OnBeforeSocketStreamConnect(
     SocketStream* socket,
     const CompletionCallback& callback) {
   return OK;
-}
-
-void NetworkDelegate::OnRequestWaitStateChange(const URLRequest& request,
-                                               RequestWaitState state) {
 }
 
 }  // namespace net

@@ -60,8 +60,7 @@ void HttpNetworkLayer::ForceAlternateProtocol() {
 //-----------------------------------------------------------------------------
 
 int HttpNetworkLayer::CreateTransaction(RequestPriority priority,
-                                        scoped_ptr<HttpTransaction>* trans,
-                                        HttpTransactionDelegate* delegate) {
+                                        scoped_ptr<HttpTransaction>* trans) {
   if (suspended_)
     return ERR_NETWORK_IO_SUSPENDED;
 

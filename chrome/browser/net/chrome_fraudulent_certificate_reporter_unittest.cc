@@ -156,24 +156,21 @@ class MockReporter : public ChromeFraudulentCertificateReporter {
 };
 
 static void DoReportIsSent() {
-  ChromeURLRequestContext context(ChromeURLRequestContext::CONTEXT_TYPE_MAIN,
-                                  NULL);
+  ChromeURLRequestContext context;
   SendingTestReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
   reporter.SendReport("mail.google.com", info, true);
 }
 
 static void DoReportIsNotSent() {
-  ChromeURLRequestContext context(ChromeURLRequestContext::CONTEXT_TYPE_MAIN,
-                                  NULL);
+  ChromeURLRequestContext context;
   NotSendingTestReporter reporter(&context);
   SSLInfo info = GetBadSSLInfo();
   reporter.SendReport("www.example.com", info, true);
 }
 
 static void DoMockReportIsSent() {
-  ChromeURLRequestContext context(ChromeURLRequestContext::CONTEXT_TYPE_MAIN,
-                                  NULL);
+  ChromeURLRequestContext context;
   MockReporter reporter(&context);
   SSLInfo info = GetGoodSSLInfo();
   reporter.SendReport("mail.google.com", info, true);

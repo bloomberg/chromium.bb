@@ -59,7 +59,6 @@ void URLRequestJob::Kill() {
 
 void URLRequestJob::DetachRequest() {
   request_ = NULL;
-  OnDetachRequest();
 }
 
 // This function calls ReadData to get stream data. If a filter exists, passes

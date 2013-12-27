@@ -131,9 +131,6 @@ class OffTheRecordProfileIOData : public ProfileIOData {
           const StoragePartitionDescriptor& partition_descriptor)
               const OVERRIDE;
 
-  virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
-      IOThread::Globals* io_thread_globals) const OVERRIDE;
-
   mutable scoped_ptr<net::HttpTransactionFactory> main_http_factory_;
   mutable scoped_ptr<net::FtpTransactionFactory> ftp_factory_;
 

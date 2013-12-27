@@ -188,12 +188,12 @@ void URLRequestFtpJob::StartHttpTransaction() {
   http_request_info_.load_flags = request_->load_flags();
 
   int rv = request_->context()->http_transaction_factory()->CreateTransaction(
-      priority_, &http_transaction_, NULL);
+      priority_, &http_transaction_);
   if (rv == OK) {
     rv = http_transaction_->Start(
         &http_request_info_,
         base::Bind(&URLRequestFtpJob::OnStartCompleted,
-                   base::Unretained(this)),
+                  base::Unretained(this)),
         request_->net_log());
     if (rv == ERR_IO_PENDING)
       return;

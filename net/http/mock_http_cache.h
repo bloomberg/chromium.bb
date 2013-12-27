@@ -174,6 +174,9 @@ class MockHttpCache {
   }
   MockDiskCache* disk_cache();
 
+  // Wrapper around http_cache()->CreateTransaction(net::DEFAULT_PRIORITY...)
+  int CreateTransaction(scoped_ptr<net::HttpTransaction>* trans);
+
   // Helper function for reading response info from the disk cache.
   static bool ReadResponseInfo(disk_cache::Entry* disk_entry,
                                net::HttpResponseInfo* response_info,

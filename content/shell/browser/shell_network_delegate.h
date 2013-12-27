@@ -60,8 +60,6 @@ class ShellNetworkDelegate : public net::NetworkDelegate {
   virtual int OnBeforeSocketStreamConnect(
       net::SocketStream* stream,
       const net::CompletionCallback& callback) OVERRIDE;
-  virtual void OnRequestWaitStateChange(const net::URLRequest& request,
-                                        RequestWaitState state) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ShellNetworkDelegate);
 };

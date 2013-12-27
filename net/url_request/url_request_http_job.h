@@ -165,9 +165,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // overridden by |override_response_headers_|.
   HttpResponseHeaders* GetResponseHeaders() const;
 
-  // Override of the private interface of URLRequestJob.
-  virtual void OnDetachRequest() OVERRIDE;
-
   RequestPriority priority_;
 
   HttpRequestInfo request_info_;
@@ -260,8 +257,6 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   // NetworkDelegate::NotifyURLRequestDestroyed has not been called, yet,
   // to inform the NetworkDelegate that it may not call back.
   bool awaiting_callback_;
-
-  scoped_ptr<HttpTransactionDelegateImpl> http_transaction_delegate_;
 
   const HttpUserAgentSettings* http_user_agent_settings_;
 

@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
-#include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/storage_partition_descriptor.h"
@@ -251,20 +250,13 @@ ChromeURLRequestContextGetter::CreateForIsolatedMedia(
 // ChromeURLRequestContext
 // ----------------------------------------------------------------------------
 
-ChromeURLRequestContext::ChromeURLRequestContext(
-    ContextType type,
-    chrome_browser_net::LoadTimeStats* load_time_stats)
-    : weak_factory_(this),
-      load_time_stats_(load_time_stats) {
+ChromeURLRequestContext::ChromeURLRequestContext()
+    : weak_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (load_time_stats_)
-    load_time_stats_->RegisterURLRequestContext(this, type);
 }
 
 ChromeURLRequestContext::~ChromeURLRequestContext() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (load_time_stats_)
-    load_time_stats_->UnregisterURLRequestContext(this);
 }
 
 void ChromeURLRequestContext::CopyFrom(ChromeURLRequestContext* other) {

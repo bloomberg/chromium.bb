@@ -51,14 +51,6 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   };
   typedef base::Callback<void(AuthRequiredResponse)> AuthCallback;
 
-  enum RequestWaitState {
-    REQUEST_WAIT_STATE_CACHE_START,
-    REQUEST_WAIT_STATE_CACHE_FINISH,
-    REQUEST_WAIT_STATE_NETWORK_START,
-    REQUEST_WAIT_STATE_NETWORK_FINISH,
-    REQUEST_WAIT_STATE_RESET
-  };
-
   virtual ~NetworkDelegate() {}
 
   // Notification interface called by the network stack. Note that these
@@ -102,9 +94,6 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
 
   int NotifyBeforeSocketStreamConnect(SocketStream* socket,
                                       const CompletionCallback& callback);
-
-  void NotifyRequestWaitStateChange(const URLRequest& request,
-                                    RequestWaitState state);
 
  private:
   // This is the interface for subclasses of NetworkDelegate to implement. These
@@ -237,13 +226,6 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   // See OnBeforeURLRequest for return value description. Returns OK by default.
   virtual int OnBeforeSocketStreamConnect(
       SocketStream* socket, const CompletionCallback& callback);
-
-  // Called when the completion of a URLRequest is blocking on a cache
-  // action or a network action, or when that is no longer the case.
-  // REQUEST_WAIT_STATE_RESET indicates for a given URLRequest
-  // cancellation of any pending waits for this request.
-  virtual void OnRequestWaitStateChange(const URLRequest& request,
-                                        RequestWaitState state);
 };
 
 }  // namespace net

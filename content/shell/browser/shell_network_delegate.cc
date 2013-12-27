@@ -119,9 +119,4 @@ int ShellNetworkDelegate::OnBeforeSocketStreamConnect(
   return net::OK;
 }
 
-void ShellNetworkDelegate::OnRequestWaitStateChange(
-    const net::URLRequest& request,
-    RequestWaitState waiting) {
-}
-
 }  // namespace content

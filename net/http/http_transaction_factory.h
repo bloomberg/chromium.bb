@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP_HTTP_TRANSACTION_FACTORY_H__
-#define NET_HTTP_HTTP_TRANSACTION_FACTORY_H__
+#ifndef NET_HTTP_HTTP_TRANSACTION_FACTORY_H_
+#define NET_HTTP_HTTP_TRANSACTION_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
@@ -14,7 +14,6 @@ namespace net {
 class HttpCache;
 class HttpNetworkSession;
 class HttpTransaction;
-class HttpTransactionDelegate;
 
 // An interface to a class that can create HttpTransaction objects.
 class NET_EXPORT HttpTransactionFactory {
@@ -24,8 +23,7 @@ class NET_EXPORT HttpTransactionFactory {
   // Creates a HttpTransaction object. On success, saves the new
   // transaction to |*trans| and returns OK.
   virtual int CreateTransaction(RequestPriority priority,
-                                scoped_ptr<HttpTransaction>* trans,
-                                HttpTransactionDelegate* delegate) = 0;
+                                scoped_ptr<HttpTransaction>* trans) = 0;
 
   // Returns the associated cache if any (may be NULL).
   virtual HttpCache* GetCache() = 0;
@@ -36,4 +34,4 @@ class NET_EXPORT HttpTransactionFactory {
 
 }  // namespace net
 
-#endif  // NET_HTTP_HTTP_TRANSACTION_FACTORY_H__
+#endif  // NET_HTTP_HTTP_TRANSACTION_FACTORY_H_

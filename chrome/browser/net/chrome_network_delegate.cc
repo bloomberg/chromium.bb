@@ -29,7 +29,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/client_hints.h"
 #include "chrome/browser/net/connect_interceptor.h"
-#include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/spdyproxy/data_saving_metrics.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -347,7 +346,6 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       enable_do_not_track_(NULL),
       force_google_safe_search_(NULL),
       url_blacklist_manager_(NULL),
-      load_time_stats_(NULL),
       received_content_length_(0),
       original_content_length_(0) {
   DCHECK(event_router);
@@ -618,8 +616,6 @@ void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
 void ChromeNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
   ExtensionWebRequestEventRouter::GetInstance()->OnURLRequestDestroyed(
       profile_, request);
-  if (load_time_stats_)
-    load_time_stats_->OnURLRequestDestroyed(*request);
 }
 
 void ChromeNetworkDelegate::OnPACScriptError(int line_number,
@@ -795,13 +791,6 @@ int ChromeNetworkDelegate::OnBeforeSocketStreamConnect(
   }
 #endif
   return net::OK;
-}
-
-void ChromeNetworkDelegate::OnRequestWaitStateChange(
-    const net::URLRequest& request,
-    RequestWaitState state) {
-  if (load_time_stats_)
-    load_time_stats_->OnRequestWaitStateChange(request, state);
 }
 
 void ChromeNetworkDelegate::AccumulateContentLength(

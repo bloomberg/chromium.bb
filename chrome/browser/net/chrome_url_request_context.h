@@ -19,10 +19,6 @@ class Profile;
 class ProfileIOData;
 struct StoragePartitionDescriptor;
 
-namespace chrome_browser_net {
-class LoadTimeStats;
-}
-
 // Subclass of net::URLRequestContext which can be used to store extra
 // information for requests.
 //
@@ -30,14 +26,7 @@ class LoadTimeStats;
 // including the constructor and destructor.
 class ChromeURLRequestContext : public net::URLRequestContext {
  public:
-  enum ContextType {
-    CONTEXT_TYPE_MAIN,
-    CONTEXT_TYPE_MEDIA,
-    CONTEXT_TYPE_EXTENSIONS,
-    CONTEXT_TYPE_APP
-  };
-  ChromeURLRequestContext(ContextType type,
-                          chrome_browser_net::LoadTimeStats* load_time_stats);
+  ChromeURLRequestContext();
   virtual ~ChromeURLRequestContext();
 
   base::WeakPtr<ChromeURLRequestContext> GetWeakPtr() {
@@ -52,13 +41,6 @@ class ChromeURLRequestContext : public net::URLRequestContext {
 
   // ---------------------------------------------------------------------------
   // Important: When adding any new members below, consider whether they need to
-  // be added to CopyFrom.
-  // ---------------------------------------------------------------------------
-
-  chrome_browser_net::LoadTimeStats* load_time_stats_;
-
-  // ---------------------------------------------------------------------------
-  // Important: When adding any new members above, consider whether they need to
   // be added to CopyFrom.
   // ---------------------------------------------------------------------------
 

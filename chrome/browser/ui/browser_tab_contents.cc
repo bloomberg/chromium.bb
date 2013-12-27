@@ -15,7 +15,6 @@
 #include "chrome/browser/history/history_tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
-#include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/predictor_tab_helper.h"
 #include "chrome/browser/network_time/navigation_time_helper.h"
@@ -125,8 +124,6 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
       g_browser_process->GetApplicationLocale(),
       AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   BookmarkTabHelper::CreateForWebContents(web_contents);
-  chrome_browser_net::LoadTimeStatsTabHelper::CreateForWebContents(
-      web_contents);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
   chrome_browser_net::PredictorTabHelper::CreateForWebContents(web_contents);
   WebContentsModalDialogManager::CreateForWebContents(web_contents);

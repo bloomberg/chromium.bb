@@ -157,7 +157,7 @@ TestTransactionConsumer::TestTransactionConsumer(
     net::HttpTransactionFactory* factory)
     : state_(IDLE), error_(net::OK) {
   // Disregard the error code.
-  factory->CreateTransaction(priority, &trans_, NULL);
+  factory->CreateTransaction(priority, &trans_);
   ++quit_counter_;
 }
 
@@ -412,8 +412,7 @@ void MockNetworkLayer::TransactionDoneReading() {
 
 int MockNetworkLayer::CreateTransaction(
     net::RequestPriority priority,
-    scoped_ptr<net::HttpTransaction>* trans,
-    net::HttpTransactionDelegate* delegate) {
+    scoped_ptr<net::HttpTransaction>* trans) {
   transaction_count_++;
   last_create_transaction_priority_ = priority;
   scoped_ptr<MockNetworkTransaction> mock_transaction(

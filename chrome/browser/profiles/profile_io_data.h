@@ -37,7 +37,6 @@ class ProtocolHandlerRegistry;
 class SigninNamesOnIOThread;
 
 namespace chrome_browser_net {
-class LoadTimeStats;
 class ResourcePrefetchPredictorObserver;
 }
 
@@ -223,8 +222,7 @@ class ProfileIOData {
   // it is deleted.
   class MediaRequestContext : public ChromeURLRequestContext {
    public:
-    explicit MediaRequestContext(
-        chrome_browser_net::LoadTimeStats* load_time_stats);
+    MediaRequestContext();
 
     void SetHttpTransactionFactory(
         scoped_ptr<net::HttpTransactionFactory> http_factory);
@@ -239,8 +237,7 @@ class ProfileIOData {
   // to ensure they are deleted.
   class AppRequestContext : public ChromeURLRequestContext {
    public:
-    explicit AppRequestContext(
-        chrome_browser_net::LoadTimeStats* load_time_stats);
+    AppRequestContext();
 
     void SetCookieStore(net::CookieStore* cookie_store);
     void SetHttpTransactionFactory(
@@ -340,10 +337,6 @@ class ProfileIOData {
 
   ChromeURLRequestContext* main_request_context() const {
     return main_request_context_.get();
-  }
-
-  chrome_browser_net::LoadTimeStats* load_time_stats() const {
-    return load_time_stats_;
   }
 
   bool initialized() const {
@@ -447,10 +440,6 @@ class ProfileIOData {
           ChromeURLRequestContext* app_context,
           const StoragePartitionDescriptor& partition_descriptor) const = 0;
 
-  // Returns the LoadTimeStats object to be used for this profile.
-  virtual chrome_browser_net::LoadTimeStats* GetLoadTimeStats(
-      IOThread::Globals* io_thread_globals) const = 0;
-
   // The order *DOES* matter for the majority of these member variables, so
   // don't move them around unless you know what you're doing!
   // General rules:
@@ -552,8 +541,6 @@ class ProfileIOData {
 
   mutable scoped_ptr<ChromeHttpUserAgentSettings>
       chrome_http_user_agent_settings_;
-
-  mutable chrome_browser_net::LoadTimeStats* load_time_stats_;
 
 #if defined(ENABLE_MANAGED_USERS)
   mutable scoped_refptr<const ManagedModeURLFilter> managed_mode_url_filter_;

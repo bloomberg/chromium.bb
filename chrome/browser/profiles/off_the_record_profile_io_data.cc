@@ -282,7 +282,7 @@ OffTheRecordProfileIOData::InitializeAppRequestContext(
     scoped_ptr<ProtocolHandlerRegistry::JobInterceptorFactory>
         protocol_handler_interceptor,
     content::ProtocolHandlerMap* protocol_handlers) const {
-  AppRequestContext* context = new AppRequestContext(load_time_stats());
+  AppRequestContext* context = new AppRequestContext();
 
   // Copy most state from the main context.
   context->CopyFrom(main_context);
@@ -349,10 +349,5 @@ OffTheRecordProfileIOData::AcquireIsolatedMediaRequestContext(
     ChromeURLRequestContext* app_context,
     const StoragePartitionDescriptor& partition_descriptor) const {
   NOTREACHED();
-  return NULL;
-}
-
-chrome_browser_net::LoadTimeStats* OffTheRecordProfileIOData::GetLoadTimeStats(
-    IOThread::Globals* io_thread_globals) const {
   return NULL;
 }

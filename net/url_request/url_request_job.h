@@ -356,9 +356,6 @@ class NET_EXPORT URLRequestJob
   // The default implementation does nothing.
   virtual void UpdatePacketReadTimes();
 
-  // Custom handler for derived classes when the request is detached.
-  virtual void OnDetachRequest() {}
-
   // Indicates that the job is done producing data, either it has completed
   // all the data or an error has been encountered. Set exclusively by
   // NotifyDone so that it is kept in sync with the request.
