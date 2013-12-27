@@ -759,8 +759,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   RunTest("waitForTestResultsInConsole", std::string());
 }
 
-// Disabled on Windows and Mac OSX due to flakiness. http://crbug.com/183649
-#if defined(OS_WIN) || defined(OS_MACOSX)
+// Disabled on Windows due to flakiness. http://crbug.com/183649
+#if defined(OS_WIN)
 #define MAYBE_TestDevToolsExtensionMessaging DISABLED_TestDevToolsExtensionMessaging
 #else
 #define MAYBE_TestDevToolsExtensionMessaging TestDevToolsExtensionMessaging
