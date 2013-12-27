@@ -584,8 +584,14 @@ class GSContext(object):
       True if the path exists; otherwise returns False.
     """
     try:
-      self.DoCommand(['acl', 'get', path], redirect_stdout=True, **kwargs)
+      # Use 'gsutil stat' command to check for existence.  It is not
+      # subject to caching behavior of 'gsutil ls', and it only requires
+      # read access to the file, unlike 'gsutil acl get'.
+      self.DoCommand(['stat', path], redirect_stdout=True, **kwargs)
     except GSNoSuchKey:
+      # A path that does not exist will result in error output like:
+      # InvalidUriError: Attempt to get key for "gs://foo/bar"
+      # That will result in GSNoSuchKey.
       return False
     return True
 
