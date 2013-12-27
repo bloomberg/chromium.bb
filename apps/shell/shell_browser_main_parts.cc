@@ -131,9 +131,9 @@ void ShellBrowserMainParts::OnRootWindowHostCloseRequested(
 }
 
 void ShellBrowserMainParts::CreateRootWindow() {
+  test_screen_.reset(aura::TestScreen::Create());
   // TODO(jamescook): Replace this with a real Screen implementation.
-  gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
+  gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, test_screen_.get());
   // Set up basic pieces of views::corewm.
   wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
   // Ensure the X window gets mapped.

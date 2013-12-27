@@ -11,6 +11,10 @@
 #include "content/public/browser/browser_main_parts.h"
 #include "ui/aura/root_window_observer.h"
 
+namespace aura {
+class TestScreen;
+}
+
 namespace base {
 class FilePath;
 }
@@ -79,6 +83,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
 
   // Enable a minimal set of views::corewm to be initialized.
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;
+
+  scoped_ptr<aura::TestScreen> test_screen_;
 
   // Owned by the BrowserContextKeyedService system.
   extensions::ShellExtensionSystem* extension_system_;
