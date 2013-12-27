@@ -888,6 +888,7 @@ int SSLClientSocketOpenSSL::DoVerifyCertComplete(int result) {
   if (result == OK) {
     // TODO(joth): Work out if we need to remember the intermediate CA certs
     // when the server sends them to us, and do so here.
+    SSLContext::GetInstance()->session_cache()->MarkSSLSessionAsGood(ssl_);
   } else {
     DVLOG(1) << "DoVerifyCertComplete error " << ErrorToString(result)
              << " (" << result << ")";

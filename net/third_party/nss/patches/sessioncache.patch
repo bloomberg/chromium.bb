@@ -1,0 +1,100 @@
+diff --git a/net/third_party/nss/ssl/exports_win.def b/net/third_party/nss/ssl/exports_win.def
+index e0624f1..a1045bb 100644
+--- a/net/third_party/nss/ssl/exports_win.def
++++ b/net/third_party/nss/ssl/exports_win.def
+@@ -62,3 +62,5 @@ SSL_RestartHandshakeAfterChannelIDReq
+ SSL_GetChannelBinding
+ SSL_PeerSignedCertTimestamps
+ SSL_CipherOrderSet
++SSL_CacheSession
++SSL_CacheSessionUnlocked
+diff --git a/net/third_party/nss/ssl/ssl.h b/net/third_party/nss/ssl/ssl.h
+index bef33fc..6f7c988 100644
+--- a/net/third_party/nss/ssl/ssl.h
++++ b/net/third_party/nss/ssl/ssl.h
+@@ -872,6 +872,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDesc *fd);
+ SSL_IMPORT SECStatus SSL_InvalidateSession(PRFileDesc *fd);
+ 
+ /*
++** Cache the SSL session associated with fd, if it has not already been cached.
++*/
++SSL_IMPORT SECStatus SSL_CacheSession(PRFileDesc *fd);
++
++/*
++** Cache the SSL session associated with fd, if it has not already been cached.
++** This function may only be called when processing within a callback assigned
++** via SSL_HandshakeCallback
++*/
++SSL_IMPORT SECStatus SSL_CacheSessionUnlocked(PRFileDesc *fd);
++
++/*
+ ** Return a SECItem containing the SSL session ID associated with the fd.
+ */
+ SSL_IMPORT SECItem *SSL_GetSessionID(PRFileDesc *fd);
+diff --git a/net/third_party/nss/ssl/ssl3con.c b/net/third_party/nss/ssl/ssl3con.c
+index 307a0fe..e2be5e6 100644
+--- a/net/third_party/nss/ssl/ssl3con.c
++++ b/net/third_party/nss/ssl/ssl3con.c
+@@ -11240,7 +11240,7 @@ ssl3_FinishHandshake(sslSocket * ss)
+     /* The first handshake is now completed. */
+     ss->handshake           = NULL;
+ 
+-    if (ss->ssl3.hs.cacheSID) {
++    if (ss->ssl3.hs.cacheSID && ss->sec.isServer) {
+ 	(*ss->sec.cache)(ss->sec.ci.sid);
+ 	ss->ssl3.hs.cacheSID = PR_FALSE;
+     }
+diff --git a/net/third_party/nss/ssl/sslsecur.c b/net/third_party/nss/ssl/sslsecur.c
+index 31c343f..99538e5 100644
+--- a/net/third_party/nss/ssl/sslsecur.c
++++ b/net/third_party/nss/ssl/sslsecur.c
+@@ -1474,6 +1474,49 @@ SSL_InvalidateSession(PRFileDesc *fd)
+     return rv;
+ }
+ 
++static void
++ssl3_CacheSessionUnlocked(sslSocket *ss)
++{
++    PORT_Assert(!ss->sec.isServer);
++
++    if (ss->ssl3.hs.cacheSID) {
++	ss->sec.cache(ss->sec.ci.sid);
++	ss->ssl3.hs.cacheSID = PR_FALSE;
++    }
++}
++
++SECStatus
++SSL_CacheSession(PRFileDesc *fd)
++{
++    sslSocket *   ss = ssl_FindSocket(fd);
++    SECStatus     rv = SECFailure;
++
++    if (ss) {
++	ssl_Get1stHandshakeLock(ss);
++	ssl_GetSSL3HandshakeLock(ss);
++
++	ssl3_CacheSessionUnlocked(ss);
++	rv = SECSuccess;
++
++	ssl_ReleaseSSL3HandshakeLock(ss);
++	ssl_Release1stHandshakeLock(ss);
++    }
++    return rv;
++}
++
++SECStatus
++SSL_CacheSessionUnlocked(PRFileDesc *fd)
++{
++    sslSocket *   ss = ssl_FindSocket(fd);
++    SECStatus     rv = SECFailure;
++
++    if (ss) {
++	ssl3_CacheSessionUnlocked(ss);
++	rv = SECSuccess;
++    }
++    return rv;
++}
++
+ SECItem *
+ SSL_GetSessionID(PRFileDesc *fd)
+ {

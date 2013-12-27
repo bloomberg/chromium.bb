@@ -212,6 +212,9 @@ TEST_F(SSLSessionCacheOpenSSLTest, SetSSLSession) {
   AddToCache(ssl.get());
   EXPECT_EQ(2, session->references);
 
+  // Mark the session as good, so that it is re-used for the second connection.
+  cache_.MarkSSLSessionAsGood(ssl.get());
+
   ssl.reset(NULL);
   EXPECT_EQ(1, session->references);
 
@@ -227,6 +230,7 @@ TEST_F(SSLSessionCacheOpenSSLTest, SetSSLSessionWithKey) {
   const std::string key("hello");
   ScopedSSL ssl(NewSSL(key));
   AddToCache(ssl.get());
+  cache_.MarkSSLSessionAsGood(ssl.get());
   ssl.reset(NULL);
 
   ScopedSSL ssl2(NewSSL(key));
@@ -250,6 +254,52 @@ TEST_F(SSLSessionCacheOpenSSLTest, CheckSessionReplacement) {
   EXPECT_EQ(1U, cache_.size());
   EXPECT_EQ(1, ssl1.get()->session->references);
   EXPECT_EQ(2, ssl2.get()->session->references);
+}
+
+// Check that when two connections have the same key, a new session is created
+// if the existing session has not yet been marked "good". Further, after the
+// first session completes, if the second session has replaced it in the cache,
+// new sessions should continue to fail until the currently cached session
+// succeeds.
+TEST_F(SSLSessionCacheOpenSSLTest, CheckSessionReplacementWhenNotGood) {
+  const std::string key("hello");
+  ScopedSSL ssl(NewSSL(key));
+
+  // First call should fail because the session is not in the cache.
+  EXPECT_FALSE(cache_.SetSSLSession(ssl.get()));
+  SSL_SESSION* session = ssl.get()->session;
+  ASSERT_TRUE(session);
+  EXPECT_EQ(1, session->references);
+
+  AddToCache(ssl.get());
+  EXPECT_EQ(2, session->references);
+
+  // Second call should find the session ID, but because it is not yet good,
+  // fail to associate it with |ssl2|.
+  ScopedSSL ssl2(NewSSL(key));
+  EXPECT_FALSE(cache_.SetSSLSession(ssl2.get()));
+  SSL_SESSION* session2 = ssl2.get()->session;
+  ASSERT_TRUE(session2);
+  EXPECT_EQ(1, session2->references);
+
+  EXPECT_NE(session, session2);
+
+  // Add the second connection to the cache. It should replace the first
+  // session, and the cache should hold on to the second session.
+  AddToCache(ssl2.get());
+  EXPECT_EQ(1, session->references);
+  EXPECT_EQ(2, session2->references);
+
+  // Mark the first session as good, simulating it completing.
+  cache_.MarkSSLSessionAsGood(ssl.get());
+
+  // Third call should find the session ID, but because the second session (the
+  // current cache entry) is not yet good, fail to associate it with |ssl3|.
+  ScopedSSL ssl3(NewSSL(key));
+  EXPECT_FALSE(cache_.SetSSLSession(ssl3.get()));
+  EXPECT_NE(session, ssl3.get()->session);
+  EXPECT_NE(session2, ssl3.get()->session);
+  EXPECT_EQ(1, ssl3.get()->session->references);
 }
 
 TEST_F(SSLSessionCacheOpenSSLTest, CheckEviction) {

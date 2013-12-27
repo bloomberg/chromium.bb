@@ -872,6 +872,18 @@ SSL_IMPORT int SSL_DataPending(PRFileDesc *fd);
 SSL_IMPORT SECStatus SSL_InvalidateSession(PRFileDesc *fd);
 
 /*
+** Cache the SSL session associated with fd, if it has not already been cached.
+*/
+SSL_IMPORT SECStatus SSL_CacheSession(PRFileDesc *fd);
+
+/*
+** Cache the SSL session associated with fd, if it has not already been cached.
+** This function may only be called when processing within a callback assigned
+** via SSL_HandshakeCallback
+*/
+SSL_IMPORT SECStatus SSL_CacheSessionUnlocked(PRFileDesc *fd);
+
+/*
 ** Return a SECItem containing the SSL session ID associated with the fd.
 */
 SSL_IMPORT SECItem *SSL_GetSessionID(PRFileDesc *fd);

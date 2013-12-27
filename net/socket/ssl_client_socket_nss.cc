@@ -652,6 +652,14 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
   bool HasPendingAsyncOperation();
   bool HasUnhandledReceivedData();
 
+  // Called on the network task runner.
+  // Causes the associated SSL/TLS session ID to be added to NSS's session
+  // cache, but only if the connection has not been False Started.
+  //
+  // This should only be called after the server's certificate has been
+  // verified, and may not be called within an NSS callback.
+  void CacheSessionIfNecessary();
+
  private:
   friend class base::RefCountedThreadSafe<Core>;
   ~Core();
@@ -1274,6 +1282,30 @@ bool SSLClientSocketNSS::Core::HasUnhandledReceivedData() {
   return unhandled_buffer_size_ != 0;
 }
 
+void SSLClientSocketNSS::Core::CacheSessionIfNecessary() {
+  // TODO(rsleevi): This should occur on the NSS task runner, due to the use of
+  // nss_fd_. However, it happens on the network task runner in order to match
+  // the buggy behavior of ExportKeyingMaterial.
+  //
+  // Once http://crbug.com/330360 is fixed, this should be moved to an
+  // implementation that exclusively does this work on the NSS TaskRunner. This
+  // is "safe" because it is only called during the certificate verification
+  // state machine of the main socket, which is safe because no underlying
+  // transport IO will be occuring in that state, and NSS will not be blocking
+  // on any PKCS#11 related locks that might block the Network TaskRunner.
+  DCHECK(OnNetworkTaskRunner());
+
+  // Only cache the session if the connection was not False Started, because
+  // sessions should only be cached *after* the peer's Finished message is
+  // processed.
+  // In the case of False Start, the session will be cached once the
+  // HandshakeCallback is called, which signals the receipt and processing of
+  // the Finished message, and which will happen during a call to
+  // PR_Read/PR_Write.
+  if (!false_started_)
+    SSL_CacheSession(nss_fd_);
+}
+
 bool SSLClientSocketNSS::Core::OnNSSTaskRunner() const {
   return nss_task_runner_->RunsTasksOnCurrentThread();
 }
@@ -1650,7 +1682,17 @@ void SSLClientSocketNSS::Core::HandshakeCallback(
   core->handshake_callback_called_ = true;
   if (core->false_started_) {
     core->false_started_ = false;
-    // If we False Started, DoHandshake already called HandshakeSucceeded.
+    // If the connection was False Started, then at the time of this callback,
+    // the peer's certificate will have been verified or the caller will have
+    // accepted the error.
+    // This is guaranteed when using False Start because this callback will
+    // not be invoked until processing the peer's Finished message, which
+    // will only happen in a PR_Read/PR_Write call, which can only happen
+    // after the peer's certificate is verified.
+    SSL_CacheSessionUnlocked(socket);
+
+    // Additionally, when False Starting, DoHandshake() will have already
+    // called HandshakeSucceeded(), so return now.
     return;
   }
   core->HandshakeSucceeded();
@@ -3518,6 +3560,9 @@ int SSLClientSocketNSS::DoVerifyCertComplete(int result) {
     // Only check Certificate Transparency if there were no other errors with
     // the connection.
     VerifyCT();
+
+    // Only cache the session if the certificate verified successfully.
+    core_->CacheSessionIfNecessary();
   }
 
   completed_handshake_ = true;

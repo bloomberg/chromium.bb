@@ -24,14 +24,18 @@ namespace {
 class SSLContextExIndex {
 public:
   SSLContextExIndex() {
-    index_ = SSL_CTX_get_ex_new_index(0, 0, 0, 0, 0);
-    DCHECK_NE(-1, index_);
+    context_index_ = SSL_CTX_get_ex_new_index(0, NULL, NULL, NULL, NULL);
+    DCHECK_NE(-1, context_index_);
+    session_index_ = SSL_SESSION_get_ex_new_index(0, NULL, NULL, NULL, NULL);
+    DCHECK_NE(-1, session_index_);
   }
 
-  int index() const { return index_; }
+  int context_index() const { return context_index_; }
+  int session_index() const { return session_index_; }
 
  private:
-  int index_;
+  int context_index_;
+  int session_index_;
 };
 
 // static
@@ -41,7 +45,13 @@ base::LazyInstance<SSLContextExIndex>::Leaky s_ssl_context_ex_instance =
 // Retrieve the global EX_DATA index, created lazily on first call, to
 // be used with SSL_CTX_set_ex_data() and SSL_CTX_get_ex_data().
 static int GetSSLContextExIndex() {
-  return s_ssl_context_ex_instance.Get().index();
+  return s_ssl_context_ex_instance.Get().context_index();
+}
+
+// Retrieve the global EX_DATA index, created lazily on first call, to
+// be used with SSL_SESSION_set_ex_data() and SSL_SESSION_get_ex_data().
+static int GetSSLSessionExIndex() {
+  return s_ssl_context_ex_instance.Get().session_index();
 }
 
 // Helper struct used to store session IDs in a SessionIdIndex container
@@ -213,12 +223,27 @@ class SSLSessionCacheOpenSSLImpl {
 
     DVLOG(2) << "Lookup session: " << session << " for " << cache_key;
 
+    void* session_is_good =
+        SSL_SESSION_get_ex_data(session, GetSSLSessionExIndex());
+    if (!session_is_good)
+      return false;  // Session has not yet been marked good. Treat as a miss.
+
     // Move to front of MRU list.
     ordering_.push_front(session);
     ordering_.erase(it->second);
     it->second = ordering_.begin();
 
     return SSL_set_session(ssl, session) == 1;
+  }
+
+  void MarkSSLSessionAsGood(SSL* ssl) {
+    SSL_SESSION* session = SSL_get_session(ssl);
+    if (!session)
+      return;
+
+    // Mark the session as good, allowing it to be used for future connections.
+    SSL_SESSION_set_ex_data(
+        session, GetSSLSessionExIndex(), reinterpret_cast<void*>(1));
   }
 
   // Flush all entries from the cache.
@@ -472,6 +497,10 @@ bool SSLSessionCacheOpenSSL::SetSSLSessionWithKey(
     SSL* ssl,
     const std::string& cache_key) {
   return impl_->SetSSLSessionWithKey(ssl, cache_key);
+}
+
+void SSLSessionCacheOpenSSL::MarkSSLSessionAsGood(SSL* ssl) {
+  return impl_->MarkSSLSessionAsGood(ssl);
 }
 
 void SSLSessionCacheOpenSSL::Flush() { impl_->Flush(); }

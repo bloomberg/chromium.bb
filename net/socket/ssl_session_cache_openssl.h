@@ -113,6 +113,14 @@ class NET_EXPORT SSLSessionCacheOpenSSL {
   // Return true iff a cached session was associated with the |ssl| connection.
   bool SetSSLSessionWithKey(SSL* ssl, const std::string& cache_key);
 
+  // Indicates that the SSL session associated with |ssl| is "good" - that is,
+  // that all associated cryptographic parameters that were negotiated,
+  // including the peer's certificate, were successfully validated. Because
+  // OpenSSL does not provide an asynchronous certificate verification
+  // callback, it's necessary to manually manage the sessions to ensure that
+  // only validated sessions are resumed.
+  void MarkSSLSessionAsGood(SSL* ssl);
+
   // Flush removes all entries from the cache. This is typically called when
   // the system's certificate store has changed.
   void Flush();
