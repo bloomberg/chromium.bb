@@ -248,7 +248,7 @@ TEST_F(FileSystemDirURLRequestJobTest, DirectoryListing) {
 
   std::istringstream in(delegate_->data_received());
   std::string line;
-  EXPECT_TRUE(std::getline(in, line));
+  EXPECT_TRUE(!!std::getline(in, line));
 
 #if defined(OS_WIN)
   EXPECT_EQ("<script>start(\"foo\\\\bar\");</script>", line);
@@ -256,10 +256,10 @@ TEST_F(FileSystemDirURLRequestJobTest, DirectoryListing) {
   EXPECT_EQ("<script>start(\"/foo/bar\");</script>", line);
 #endif
 
-  EXPECT_TRUE(std::getline(in, line));
+  EXPECT_TRUE(!!std::getline(in, line));
   VerifyListingEntry(line, "hoge", "hoge", false, 10);
 
-  EXPECT_TRUE(std::getline(in, line));
+  EXPECT_TRUE(!!std::getline(in, line));
   VerifyListingEntry(line, "baz", "baz", true, 0);
 }
 
@@ -307,8 +307,8 @@ TEST_F(FileSystemDirURLRequestJobTest, Incognito) {
 
   std::istringstream in(delegate_->data_received());
   std::string line;
-  EXPECT_TRUE(std::getline(in, line));
-  EXPECT_FALSE(std::getline(in, line));
+  EXPECT_TRUE(!!std::getline(in, line));
+  EXPECT_FALSE(!!std::getline(in, line));
 
   TestRequestWithContext(CreateFileSystemURL("foo"),
                          file_system_context.get());
