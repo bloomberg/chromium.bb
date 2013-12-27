@@ -57,6 +57,7 @@ class InspectorFrontend;
 class InstrumentingAgents;
 class JSONObject;
 class KURL;
+class MutationObserver;
 class ScriptArguments;
 class ScriptCallStack;
 class ScriptDebugServer;
@@ -151,6 +152,10 @@ public:
     void willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
     void didHandleEvent();
     void willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient*, const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData> body, const HTTPHeaderMap& headers, bool includeCrendentials);
+    void didEnqueueMutationRecord(ExecutionContext*, MutationObserver*);
+    void didClearAllMutationRecords(ExecutionContext*, MutationObserver*);
+    void willDeliverMutationRecords(ExecutionContext*, MutationObserver*);
+    void didDeliverMutationRecords();
     bool canBreakProgram();
     void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
     virtual void scriptExecutionBlockedByCSP(const String& directiveText);

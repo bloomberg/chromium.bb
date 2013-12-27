@@ -40,6 +40,7 @@
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/Node.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -69,6 +70,8 @@ MutationObserver::MutationObserver(PassOwnPtr<MutationCallback> callback)
 MutationObserver::~MutationObserver()
 {
     ASSERT(m_registrations.isEmpty());
+    if (!m_records.isEmpty())
+        InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
 }
 
 void MutationObserver::observe(Node* node, const Dictionary& optionsDictionary, ExceptionState& exceptionState)
@@ -140,12 +143,14 @@ Vector<RefPtr<MutationRecord> > MutationObserver::takeRecords()
 {
     Vector<RefPtr<MutationRecord> > records;
     records.swap(m_records);
+    InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
     return records;
 }
 
 void MutationObserver::disconnect()
 {
     m_records.clear();
+    InspectorInstrumentation::didClearAllMutationRecords(m_callback->executionContext(), this);
     HashSet<MutationObserverRegistration*> registrations(m_registrations);
     for (HashSet<MutationObserverRegistration*>::iterator iter = registrations.begin(); iter != registrations.end(); ++iter)
         (*iter)->unregister();
@@ -182,6 +187,7 @@ void MutationObserver::enqueueMutationRecord(PassRefPtr<MutationRecord> mutation
     ASSERT(isMainThread());
     m_records.append(mutation);
     activeMutationObservers().add(this);
+    InspectorInstrumentation::didEnqueueMutationRecord(m_callback->executionContext(), this);
 }
 
 void MutationObserver::setHasTransientRegistration()
@@ -223,7 +229,9 @@ void MutationObserver::deliver()
     Vector<RefPtr<MutationRecord> > records;
     records.swap(m_records);
 
+    InspectorInstrumentation::willDeliverMutationRecords(m_callback->executionContext(), this);
     m_callback->call(records, this);
+    InspectorInstrumentation::didDeliverMutationRecords(m_callback->executionContext());
 }
 
 void MutationObserver::deliverAllMutations()

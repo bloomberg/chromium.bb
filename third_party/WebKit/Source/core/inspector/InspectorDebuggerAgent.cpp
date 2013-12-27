@@ -751,6 +751,30 @@ void InspectorDebuggerAgent::willLoadXHR(XMLHttpRequest* xhr, ThreadableLoaderCl
         m_asyncCallStackTracker.willLoadXHR(xhr, scriptDebugServer().currentCallFrames());
 }
 
+void InspectorDebuggerAgent::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer)
+{
+    if (m_asyncCallStackTracker.isEnabled() && !m_asyncCallStackTracker.hasEnqueuedMutationRecord(context, observer))
+        m_asyncCallStackTracker.didEnqueueMutationRecord(context, observer, scriptDebugServer().currentCallFrames());
+}
+
+void InspectorDebuggerAgent::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.didClearAllMutationRecords(context, observer);
+}
+
+void InspectorDebuggerAgent::willDeliverMutationRecords(ExecutionContext* context, MutationObserver* observer)
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.willDeliverMutationRecords(context, observer);
+}
+
+void InspectorDebuggerAgent::didDeliverMutationRecords()
+{
+    if (m_asyncCallStackTracker.isEnabled())
+        m_asyncCallStackTracker.didFireAsyncCall();
+}
+
 void InspectorDebuggerAgent::pause(ErrorString*)
 {
     if (m_javaScriptPauseScheduled)

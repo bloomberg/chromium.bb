@@ -44,6 +44,7 @@ namespace WebCore {
 class EventListener;
 class EventTarget;
 class ExecutionContext;
+class MutationObserver;
 class XMLHttpRequest;
 
 class AsyncCallStackTracker {
@@ -92,6 +93,11 @@ public:
     void willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool useCapture);
 
     void willLoadXHR(XMLHttpRequest*, const ScriptValue& callFrames);
+
+    void didEnqueueMutationRecord(ExecutionContext*, MutationObserver*, const ScriptValue& callFrames);
+    bool hasEnqueuedMutationRecord(ExecutionContext*, MutationObserver*);
+    void didClearAllMutationRecords(ExecutionContext*, MutationObserver*);
+    void willDeliverMutationRecords(ExecutionContext*, MutationObserver*);
 
     void didFireAsyncCall();
     void clear();

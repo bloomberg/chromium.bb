@@ -190,6 +190,18 @@ interface InspectorInstrumentation {
     [Timeline, Inline=FastReturn]
     void didDispatchEventOnWindow(const InspectorInstrumentationCookie&);
 
+    [Debugger, Inline=FastReturn]
+    void didEnqueueMutationRecord([Keep] ExecutionContext*, MutationObserver*);
+
+    [Debugger, Inline=FastReturn]
+    void didClearAllMutationRecords([Keep] ExecutionContext*, MutationObserver*);
+
+    [Debugger, Inline=FastReturn]
+    void willDeliverMutationRecords([Keep] ExecutionContext*, MutationObserver*);
+
+    [Debugger, Inline=FastReturn]
+    void didDeliverMutationRecords(ExecutionContext*);
+
     [Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willEvaluateScript([Keep] Frame*, const String& url, int lineNumber);
 

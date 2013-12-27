@@ -46,6 +46,7 @@ static const char setTimeoutName[] = "setTimeout";
 static const char setIntervalName[] = "setInterval";
 static const char requestAnimationFrameName[] = "requestAnimationFrame";
 static const char xhrSendName[] = "XMLHttpRequest.send";
+static const char enqueueMutationRecordName[] = "Mutation";
 
 }
 
@@ -124,6 +125,7 @@ public:
     HashMap<int, RefPtr<AsyncCallChain> > m_animationFrameCallChains;
     HashMap<EventTarget*, EventListenerAsyncCallChainVectorHashMap> m_eventTargetCallChains;
     HashMap<EventTarget*, RefPtr<AsyncCallChain> > m_xhrCallChains;
+    HashMap<MutationObserver*, RefPtr<AsyncCallChain> > m_mutationObserverCallChains;
 };
 
 static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
@@ -320,6 +322,52 @@ void AsyncCallStackTracker::willHandleXHREvent(XMLHttpRequest* xhr, EventTarget*
     } else {
         setCurrentAsyncCallChain(0);
     }
+}
+
+void AsyncCallStackTracker::didEnqueueMutationRecord(ExecutionContext* context, MutationObserver* observer, const ScriptValue& callFrames)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (!validateCallFrames(callFrames))
+        return;
+    ExecutionContextData* data = createContextDataIfNeeded(context);
+    data->m_mutationObserverCallChains.set(observer, createAsyncCallChain(enqueueMutationRecordName, callFrames));
+}
+
+bool AsyncCallStackTracker::hasEnqueuedMutationRecord(ExecutionContext* context, MutationObserver* observer)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        return data->m_mutationObserverCallChains.contains(observer);
+    return false;
+}
+
+void AsyncCallStackTracker::didClearAllMutationRecords(ExecutionContext* context, MutationObserver* observer)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        data->m_mutationObserverCallChains.remove(observer);
+}
+
+void AsyncCallStackTracker::willDeliverMutationRecords(ExecutionContext* context, MutationObserver* observer)
+{
+    ASSERT(context);
+    ASSERT(isEnabled());
+
+    // FIXME: Check Microtask::isPerformingCheckpoint() after http://crrev.com/120933002
+
+    // If we are at a Microtask checkpoint, any current AsyncCallChain is no longer valid,
+    // but it may not have been cleaned up yet, since the checkpoint may run before the
+    // corresponding instrumentation callback (e.g. didFireTimer).
+    m_currentAsyncCallChain.clear();
+    m_nestedAsyncCallCount = 0;
+
+    if (ExecutionContextData* data = m_executionContextDataMap.get(context))
+        setCurrentAsyncCallChain(data->m_mutationObserverCallChains.take(observer));
+    else
+        setCurrentAsyncCallChain(0);
 }
 
 void AsyncCallStackTracker::didFireAsyncCall()
