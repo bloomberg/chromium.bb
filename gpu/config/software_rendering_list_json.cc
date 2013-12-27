@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "6.19",
+  "version": "6.20",
   "entries": [
     {
       "id": 1,
@@ -1002,6 +1002,23 @@ LONG_STRING_CONST(
       },
       "features": [
         "all"
+      ]
+    },
+    {
+      "id": 85,
+      "description": "Samsung Gaxlaxy S4 is too buggy to use for video decoding",
+      "cr_bugs": [329072],
+      "os": {
+        "type": "android"
+      },
+      "machine_model": {
+        "name": {
+          "op": "=",
+          "value": "SCH-I545"
+        }
+      },
+      "features": [
+        "accelerated_video_decode"
       ]
     }
   ]
