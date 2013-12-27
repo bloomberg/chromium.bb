@@ -647,25 +647,6 @@ TEST_F(PasswordAutofillAgentTest, InlineAutocomplete) {
   CheckUsernameSelection(1, 17);
 }
 
-// Tests that selecting an item in the suggestion drop-down no-ops.
-TEST_F(PasswordAutofillAgentTest, SuggestionSelect) {
-  // Simulate the browser sending back the login info.
-  SimulateOnFillPasswordForm(fill_data_);
-
-  // Clear the text fields to start fresh.
-  ClearUsernameAndPasswordFields();
-
-  // To simulate accepting an item in the suggestion drop-down we just mimic
-  // what the WebView does: it sets the element value then calls
-  // didSelectAutofillSuggestion on the renderer.
-  autofill_agent_->didSelectAutofillSuggestion(username_element_,
-                                               ASCIIToUTF16(kAliceUsername),
-                                               blink::WebString(),
-                                               0);
-  // Autocomplete should not have kicked in.
-  CheckTextFieldsState(std::string(), false, std::string(), false);
-}
-
 TEST_F(PasswordAutofillAgentTest, IsWebNodeVisibleTest) {
   blink::WebVector<blink::WebFormElement> forms1, forms2, forms3;
   blink::WebFrame* frame;
