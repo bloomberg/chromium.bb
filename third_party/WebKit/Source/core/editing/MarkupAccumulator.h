@@ -63,8 +63,9 @@ struct EntityDescription {
     EntityMask mask;
 };
 
-// FIXME: Noncopyable?
 class MarkupAccumulator {
+    WTF_MAKE_NONCOPYABLE(MarkupAccumulator);
+
 public:
     MarkupAccumulator(Vector<Node*>*, EAbsoluteURLs, const Range* = 0);
     virtual ~MarkupAccumulator();
