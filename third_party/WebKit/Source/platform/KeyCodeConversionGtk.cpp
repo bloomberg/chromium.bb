@@ -30,7 +30,8 @@
 // windowsKeyCodeForKeyEvent is copied from platform/gtk/KeyEventGtk.cpp
 
 #include "config.h"
-#include "core/platform/chromium/KeyCodeConversion.h"
+
+#include "platform/KeyCodeConversion.h"
 
 #include "platform/KeyboardCodes.h"
 

@@ -29,6 +29,8 @@
  */
 
 #include "config.h"
+#include "platform/KeyCodeConversion.h"
+
 #include "platform/KeyboardCodes.h"
 
 #include <android/keycodes.h>
