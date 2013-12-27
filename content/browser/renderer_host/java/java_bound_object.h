@@ -29,11 +29,9 @@ class JavaBridgeDispatcherHostManager;
 // created and destroyed on different threads.
 class JavaBoundObject {
  public:
-  // Takes a Java object and creates a JavaBoundObject around it. The
-  // |require_annotation| flag specifies whether or not only methods with the
-  // JavascriptInterface annotation are exposed to JavaScript.  This property
-  // propagates to all Objects that get implicitly exposed as return values as
-  // well. Returns an NPObject with a ref count of one which owns the
+  // Takes a Java object and creates a JavaBoundObject around it. If
+  // |safe_annotation_clazz| annotation is non-null, the method is exposed
+  // to JavaScript. Returns an NPObject with a ref count of one which owns the
   // JavaBoundObject.
   // See also comment below for |manager_|.
   static NPObject* Create(
