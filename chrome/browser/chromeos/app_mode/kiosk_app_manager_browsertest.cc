@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 
-#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -23,6 +22,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/host_port_pair.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace chromeos {
 
@@ -101,14 +101,16 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   explicit AppDataLoadWaiter(KioskAppManager* manager)
       : manager_(manager),
         loaded_(false) {
-    manager_->AddObserver(this);
   }
+
   virtual ~AppDataLoadWaiter() {
-    manager_->RemoveObserver(this);
   }
 
   void Wait() {
-    base::MessageLoop::current()->Run();
+    manager_->AddObserver(this);
+    runner_ = new content::MessageLoopRunner;
+    runner_->Run();
+    manager_->RemoveObserver(this);
   }
 
   bool loaded() const { return loaded_; }
@@ -117,13 +119,15 @@ class AppDataLoadWaiter : public KioskAppManagerObserver {
   // KioskAppManagerObserver overrides:
   virtual void OnKioskAppDataChanged(const std::string& app_id) OVERRIDE {
     loaded_ = true;
-    base::MessageLoop::current()->Quit();
-  }
-  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE {
-    loaded_ = false;
-    base::MessageLoop::current()->Quit();
+    runner_->Quit();
   }
 
+  virtual void OnKioskAppDataLoadFailure(const std::string& app_id) OVERRIDE {
+    loaded_ = false;
+    runner_->Quit();
+  }
+
+  scoped_refptr<content::MessageLoopRunner> runner_;
   KioskAppManager* manager_;
   bool loaded_;
 
@@ -138,20 +142,45 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   virtual ~KioskAppManagerTest() {}
 
   // InProcessBrowserTest overrides:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // We start the test server now instead of in
-    // SetUpInProcessBrowserTestFixture so that we can get its port number.
-    ASSERT_TRUE(test_server()->Start());
+  virtual void SetUp() OVERRIDE {
+    base::FilePath test_data_dir;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
+    base::FilePath webstore_dir =
+        test_data_dir.Append(FILE_PATH_LITERAL("chromeos/app_mode/"));
+    embedded_test_server()->ServeFilesFromDirectory(webstore_dir);
+    ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+    // Stop IO thread here because no threads are allowed while
+    // spawning sandbox host process. See crbug.com/322732.
+    embedded_test_server()->StopThread();
 
-    net::HostPortPair host_port = test_server()->host_port_pair();
-    test_gallery_url_ = base::StringPrintf(
-        "http://%s:%d/files/chromeos/app_mode/webstore",
-        kWebstoreDomain, host_port.port());
-
-    command_line->AppendSwitchASCII(
-        switches::kAppsGalleryURL, test_gallery_url_);
+    InProcessBrowserTest::SetUp();
   }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+
+    // Get fake webstore gallery URL. At the end, it should look something like
+    // http://cws.com:<test_server_port>/webstore.
+    const GURL& server_url = embedded_test_server()->base_url();
+    std::string google_host(kWebstoreDomain);
+    GURL::Replacements replace_google_host;
+    replace_google_host.SetHostStr(google_host);
+    GURL google_url = server_url.ReplaceComponents(replace_google_host);
+    GURL fake_store_url = google_url.Resolve("/webstore");
+    command_line->AppendSwitchASCII(switches::kAppsGalleryURL,
+                                    fake_store_url.spec());
+  }
+
+  virtual void SetUpOnMainThread() OVERRIDE {
+    InProcessBrowserTest::SetUpOnMainThread();
+
+    // Restart the thread as the sandbox host process has already been spawned.
+    embedded_test_server()->RestartThreadAndListen();
+  }
+
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+
     host_resolver()->AddRule(kWebstoreDomain, "127.0.0.1");
   }
 
@@ -191,9 +220,6 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   }
 
  private:
-  std::string test_gallery_url_;
-  base::ShadowingAtExitManager exit_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(KioskAppManagerTest);
 };
 
@@ -314,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, GoodApp) {
   // Check data is correct.
   KioskAppManager::Apps apps;
   manager()->GetApps(&apps);
-  EXPECT_EQ(1u, apps.size());
+  ASSERT_EQ(1u, apps.size());
   EXPECT_EQ("app_1", apps[0].app_id);
   EXPECT_EQ("Name of App 1", apps[0].name);
   EXPECT_EQ(gfx::Size(16, 16), apps[0].icon.size());
