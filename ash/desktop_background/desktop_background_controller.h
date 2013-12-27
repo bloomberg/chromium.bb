@@ -108,8 +108,8 @@ class ASH_EXPORT DesktopBackgroundController
   // from file system or changed the layout of wallpaper.
   void SetCustomWallpaper(const gfx::ImageSkia& image, WallpaperLayout layout);
 
-  // Cancels the current wallpaper loading operation.
-  void CancelPendingWallpaperOperation();
+  // Cancels |default_wallpaper_loader_| if non-NULL.
+  void CancelDefaultWallpaperLoader();
 
   // Creates an empty wallpaper. Some tests require a wallpaper widget is ready
   // when running. However, the wallpaper widgets are now created asynchronously
@@ -211,7 +211,8 @@ class ASH_EXPORT DesktopBackgroundController
 
   gfx::Size current_max_display_size_;
 
-  scoped_refptr<WallpaperLoader> wallpaper_loader_;
+  // Loads default wallpaper from disk.
+  scoped_refptr<WallpaperLoader> default_wallpaper_loader_;
 
   base::WeakPtrFactory<DesktopBackgroundController> weak_ptr_factory_;
 

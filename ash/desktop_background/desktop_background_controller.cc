@@ -70,9 +70,25 @@ class DesktopBackgroundController::WallpaperLoader
         resource_layout_(resource_layout) {
   }
 
-  static void LoadOnWorkerPoolThread(scoped_refptr<WallpaperLoader> loader) {
+  void LoadOnWorkerPoolThread() {
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-    loader->LoadWallpaper();
+    if (cancel_flag_.IsSet())
+      return;
+
+    if (!file_path_.empty())
+      file_bitmap_ = LoadSkBitmapFromJPEGFile(file_path_);
+
+    if (cancel_flag_.IsSet())
+      return;
+
+    if (file_bitmap_) {
+      gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(*file_bitmap_);
+      wallpaper_resizer_.reset(new WallpaperResizer(
+          image, GetMaxDisplaySizeInNative(), file_layout_));
+    } else {
+      wallpaper_resizer_.reset(new WallpaperResizer(
+          resource_id_, GetMaxDisplaySizeInNative(), resource_layout_));
+    }
   }
 
   const base::FilePath& file_path() const { return file_path_; }
@@ -80,6 +96,10 @@ class DesktopBackgroundController::WallpaperLoader
 
   void Cancel() {
     cancel_flag_.Set();
+  }
+
+  bool IsCanceled() {
+    return cancel_flag_.IsSet();
   }
 
   WallpaperResizer* ReleaseWallpaperResizer() {
@@ -106,26 +126,6 @@ class DesktopBackgroundController::WallpaperLoader
     if (!bitmap)
       LOG(ERROR) << "Unable to decode JPEG data from " << path.value();
     return bitmap.Pass();
-  }
-
-  void LoadWallpaper() {
-    if (cancel_flag_.IsSet())
-      return;
-
-    if (!file_path_.empty())
-      file_bitmap_ = LoadSkBitmapFromJPEGFile(file_path_);
-
-    if (cancel_flag_.IsSet())
-      return;
-
-    if (file_bitmap_) {
-      gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(*file_bitmap_);
-      wallpaper_resizer_.reset(new WallpaperResizer(
-          image, GetMaxDisplaySizeInNative(), file_layout_));
-    } else {
-      wallpaper_resizer_.reset(new WallpaperResizer(
-          resource_id_, GetMaxDisplaySizeInNative(), resource_layout_));
-    }
   }
 
   ~WallpaperLoader() {}
@@ -163,7 +163,7 @@ DesktopBackgroundController::DesktopBackgroundController()
 }
 
 DesktopBackgroundController::~DesktopBackgroundController() {
-  CancelPendingWallpaperOperation();
+  CancelDefaultWallpaperLoader();
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
@@ -232,15 +232,16 @@ bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
   if (DefaultWallpaperIsAlreadyLoadingOrLoaded(file_path, resource_id))
     return false;
 
-  CancelPendingWallpaperOperation();
-  wallpaper_loader_ = new WallpaperLoader(
+  CancelDefaultWallpaperLoader();
+  default_wallpaper_loader_ = new WallpaperLoader(
       file_path, file_layout, resource_id, resource_layout);
   base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&WallpaperLoader::LoadOnWorkerPoolThread, wallpaper_loader_),
+      base::Bind(&WallpaperLoader::LoadOnWorkerPoolThread,
+                 default_wallpaper_loader_),
       base::Bind(&DesktopBackgroundController::OnDefaultWallpaperLoadCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
-                 wallpaper_loader_),
+                 default_wallpaper_loader_),
       true /* task_is_slow */);
   return true;
 }
@@ -248,7 +249,8 @@ bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
 void DesktopBackgroundController::SetCustomWallpaper(
     const gfx::ImageSkia& image,
     WallpaperLayout layout) {
-  CancelPendingWallpaperOperation();
+  CancelDefaultWallpaperLoader();
+
   if (CustomWallpaperIsAlreadyLoaded(image))
     return;
 
@@ -264,10 +266,10 @@ void DesktopBackgroundController::SetCustomWallpaper(
   SetDesktopBackgroundImageMode();
 }
 
-void DesktopBackgroundController::CancelPendingWallpaperOperation() {
+void DesktopBackgroundController::CancelDefaultWallpaperLoader() {
   // Set canceled flag of previous request to skip unneeded loading.
-  if (wallpaper_loader_.get())
-    wallpaper_loader_->Cancel();
+  if (default_wallpaper_loader_.get())
+    default_wallpaper_loader_->Cancel();
 
   // Cancel reply callback for previous request.
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -318,10 +320,12 @@ void DesktopBackgroundController::OnDisplayConfigurationChanged() {
 }
 
 bool DesktopBackgroundController::DefaultWallpaperIsAlreadyLoadingOrLoaded(
-    const base::FilePath& image_file, int image_resource_id) const {
-  return (wallpaper_loader_.get() &&
-          wallpaper_loader_->file_path() == image_file &&
-          wallpaper_loader_->resource_id() == image_resource_id) ||
+    const base::FilePath& image_file,
+    int image_resource_id) const {
+  return (default_wallpaper_loader_.get() &&
+          !default_wallpaper_loader_->IsCanceled() &&
+          default_wallpaper_loader_->file_path() == image_file &&
+          default_wallpaper_loader_->resource_id() == image_resource_id) ||
          (current_wallpaper_.get() &&
           current_default_wallpaper_path_ == image_file &&
           current_default_wallpaper_resource_id_ == image_resource_id);
@@ -350,8 +354,8 @@ void DesktopBackgroundController::OnDefaultWallpaperLoadCompleted(
 
   SetDesktopBackgroundImageMode();
 
-  DCHECK(loader.get() == wallpaper_loader_.get());
-  wallpaper_loader_ = NULL;
+  DCHECK(loader.get() == default_wallpaper_loader_.get());
+  default_wallpaper_loader_ = NULL;
 }
 
 void DesktopBackgroundController::InstallDesktopController(
