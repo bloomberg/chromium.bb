@@ -19,7 +19,7 @@ sel_ldr_command = env.AddBootstrap(env.GetSelLdr(), ['-v', '-f', test_prog])
 
 is_broken = not env.Bit('nacl_static_link') or env.GetSelLdr() is None
 
-if env.Bit('build_arm'):
+if env.Bit('build_arm') or env.Bit('build_mips32'):
   # Use the system's 'nm' tool.  The NaCl toolchain will not be
   # available on the ARM hardware bots, but they will be running Linux
   # with a normal GNU toolchain available.

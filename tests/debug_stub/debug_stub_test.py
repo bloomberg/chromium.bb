@@ -89,10 +89,48 @@ ARM_REG_DEFS = ([('r%d' % regno, 'I') for regno in xrange(16)]
                 + [('cpsr', 'I')])
 
 
+MIPS_REG_DEFS = [
+     ('zero', 'I'),
+     ('at', 'I'),
+     ('v0', 'I'),
+     ('v1', 'I'),
+     ('a0', 'I'),
+     ('a1', 'I'),
+     ('a2', 'I'),
+     ('a3', 'I'),
+     ('t0', 'I'),
+     ('t1', 'I'),
+     ('t2', 'I'),
+     ('t3', 'I'),
+     ('t4', 'I'),
+     ('t5', 'I'),
+     ('t6', 'I'),
+     ('t7', 'I'),
+     ('s0', 'I'),
+     ('s1', 'I'),
+     ('s2', 'I'),
+     ('s3', 'I'),
+     ('s4', 'I'),
+     ('s5', 'I'),
+     ('s6', 'I'),
+     ('s7', 'I'),
+     ('t8', 'I'),
+     ('t9', 'I'),
+     ('k0', 'I'),
+     ('k1', 'I'),
+     ('global_ptr', 'I'),
+     ('stack_ptr', 'I'),
+     ('frame_ptr', 'I'),
+     ('return_addr', 'I'),
+     ('prog_ctr', 'I'),
+]
+
+
 REG_DEFS = {
     'x86-32': X86_32_REG_DEFS,
     'x86-64': X86_64_REG_DEFS,
     'arm': ARM_REG_DEFS,
+    'mips32': MIPS_REG_DEFS,
     }
 
 
@@ -100,6 +138,7 @@ SP_REG = {
     'x86-32': 'esp',
     'x86-64': 'rsp',
     'arm': 'r13',
+    'mips32': 'stack_ptr',
     }
 
 
@@ -107,6 +146,7 @@ IP_REG = {
     'x86-32': 'eip',
     'x86-64': 'rip',
     'arm': 'r15',
+    'mips32': 'prog_ctr',
     }
 
 
@@ -221,6 +261,13 @@ def ReadUint32(connection, address):
   return struct.unpack('I', ReadMemory(connection, address, 4))[0]
 
 
+def SingleSteppingWorks():
+  # Single-stepping is not yet supported on ARM and MIPS.
+  # TODO(eaeltsin):
+  #   http://code.google.com/p/nativeclient/issues/detail?id=2911
+  return ARCH in ('x86-32', 'x86-64')
+
+
 class DebugStubTest(unittest.TestCase):
 
   def test_initial_breakpoint(self):
@@ -288,6 +335,38 @@ class DebugStubTest(unittest.TestCase):
       self.assertEquals(registers['r14'], 0xe000000f)
       self.assertEquals(registers['cpsr'] & ARM_USER_CPSR_FLAGS_MASK,
                         (1 << 29) | (1 << 27))
+    elif ARCH == 'mips32':
+      # We skip zero register because it cannot be set.
+      self.assertEquals(registers['at'], 0x11000220)
+      self.assertEquals(registers['v0'], 0x22000330)
+      self.assertEquals(registers['v1'], 0x33000440)
+      self.assertEquals(registers['a0'], 0x44000550)
+      self.assertEquals(registers['a1'], 0x55000660)
+      self.assertEquals(registers['a2'], 0x66000770)
+      self.assertEquals(registers['a3'], 0x77000880)
+      self.assertEquals(registers['t0'], 0x88000990)
+      self.assertEquals(registers['t1'], 0x99000aa0)
+      self.assertEquals(registers['t2'], 0xaa000bb0)
+      self.assertEquals(registers['t3'], 0xbb000cc0)
+      self.assertEquals(registers['t4'], 0xcc000dd0)
+      self.assertEquals(registers['t5'], 0xdd000ee0)
+      self.assertEquals(registers['t6'], 0x0ffffff0)
+      self.assertEquals(registers['t7'], 0x3fffffff)
+      # Skip t8 because it cannot be set by untrusted code.
+      self.assertEquals(registers['s0'], 0x11100222)
+      self.assertEquals(registers['s1'], 0x22200333)
+      self.assertEquals(registers['s2'], 0x33300444)
+      self.assertEquals(registers['s3'], 0x44400555)
+      self.assertEquals(registers['s4'], 0x55500666)
+      self.assertEquals(registers['s5'], 0x66600777)
+      self.assertEquals(registers['s6'], 0x77700888)
+      self.assertEquals(registers['s7'], 0x88800999)
+      self.assertEquals(registers['t9'], 0xaaa00bbb)
+      # Skip k0 and k1 registers, since they can be changed by kernel.
+      self.assertEquals(registers['global_ptr'],  0xddd00eee)
+      self.assertEquals(registers['stack_ptr'],   0x2ee00fff)
+      self.assertEquals(registers['frame_ptr'],   0xfff00000)
+      self.assertEquals(registers['return_addr'], 0x0a0a0a0a)
     else:
       raise AssertionError('Unknown architecture')
 
@@ -304,6 +383,8 @@ class DebugStubTest(unittest.TestCase):
       reg_name = 'rdx'
     elif ARCH == 'arm':
       reg_name = 'r0'
+    elif ARCH == 'mips32':
+      reg_name = 'a0'
     else:
       raise AssertionError('Unknown architecture')
 
@@ -332,6 +413,8 @@ class DebugStubTest(unittest.TestCase):
       sample_read_only_regs = ['r15', 'cs', 'ds']
     elif ARCH == 'arm':
       sample_read_only_regs = []
+    elif ARCH == 'mips32':
+      sample_read_only_regs = ['zero']
     else:
       raise AssertionError('Unknown architecture')
 
@@ -367,7 +450,7 @@ class DebugStubTest(unittest.TestCase):
       # Tell the process to continue, because it starts at the
       # breakpoint set at its start address.
       reply = connection.RspRequest('c')
-      if ARCH == 'arm':
+      if ARCH == 'arm' or ARCH == 'mips32':
         # The process should have stopped on a BKPT instruction.
         AssertReplySignal(reply, NACL_SIGTRAP)
       else:
@@ -451,10 +534,7 @@ class DebugStubTest(unittest.TestCase):
       self.assertEqual(regs['eflags'] & X86_TRAP_FLAG, 0)
 
   def test_single_step(self):
-    if ARCH == 'arm':
-      # Skip this test because single-stepping is not supported on ARM.
-      # TODO(eaeltsin):
-      #   http://code.google.com/p/nativeclient/issues/detail?id=2911
+    if not SingleSteppingWorks():
       return
     with LaunchDebugStub('test_single_step') as connection:
       # We expect test_single_step() to stop at a HLT instruction.
@@ -473,10 +553,7 @@ class DebugStubTest(unittest.TestCase):
 
   def test_vCont(self):
     # Basically repeat test_single_step, but using vCont commands.
-    if ARCH == 'arm':
-      # Skip this test because single-stepping is not supported on ARM.
-      # TODO(eaeltsin):
-      #   http://code.google.com/p/nativeclient/issues/detail?id=2911
+    if not SingleSteppingWorks():
       return
     with LaunchDebugStub('test_single_step') as connection:
       # Test if vCont is supported.
@@ -515,10 +592,7 @@ class DebugStubTest(unittest.TestCase):
       self.assertTrue(reply.startswith('E'))
 
   def test_interrupt(self):
-    if ARCH == 'arm':
-      # Skip this test because single-stepping is not supported on ARM.
-      # TODO(eaeltsin):
-      #   http://code.google.com/p/nativeclient/issues/detail?id=2911
+    if not SingleSteppingWorks():
       return
     func_addr = GetSymbols()['test_interrupt']
     with LaunchDebugStub('test_interrupt') as connection:
@@ -647,6 +721,11 @@ class DebugStubThreadSuspensionTest(unittest.TestCase):
       bundle_size = 16
       assert regs['r15'] % bundle_size == 0, regs['r15']
       regs['r15'] += bundle_size
+    elif ARCH == 'mips32':
+      AssertReplySignal(stop_reply, NACL_SIGTRAP)
+      bundle_size = 16
+      assert regs['prog_ctr'] % bundle_size == 0, regs['prog_ctr']
+      regs['prog_ctr'] += bundle_size
     else:
       raise AssertionError('Unknown architecture')
     AssertEquals(connection.RspRequest('G' + EncodeRegs(regs)), 'OK')
