@@ -37,7 +37,6 @@ class BookmarkModel;
   BookmarkEditor::Configuration configuration_;
   NSString* initialName_;
   NSString* displayName_;  // Bound to a text field in the dialog.
-  BOOL okEnabled_;  // Bound to the OK button.
   BOOL creatingNewFolders_;  // True while in createNewFolders.
   // An array of BookmarkFolderInfo where each item describes a folder in the
   // BookmarkNode structure.
@@ -51,7 +50,6 @@ class BookmarkModel;
 
 @property(nonatomic, copy) NSString* initialName;
 @property(nonatomic, copy) NSString* displayName;
-@property(nonatomic, assign) BOOL okEnabled;
 @property(nonatomic, retain, readonly) NSArray* folderTreeArray;
 @property(nonatomic, copy) NSArray* tableSelectionPaths;
 
@@ -112,6 +110,9 @@ class BookmarkModel;
 - (void)nodeRemoved:(const BookmarkNode*)node
          fromParent:(const BookmarkNode*)parent;
 - (void)modelChangedPreserveSelection:(BOOL)preserve;
+
+// Determines if the ok button should be enabled, can be overridden.
+- (BOOL)okEnabled;
 
 // Accessors
 - (BookmarkModel*)bookmarkModel;
