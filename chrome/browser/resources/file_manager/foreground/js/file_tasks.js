@@ -452,7 +452,10 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
   var fm = this.fileManager_;
   var entries = this.entries_;
 
-  if (fm.isOnDrive() && fm.isDriveOffline()) {
+  var isDriveOffline = fm.volumeManager.getDriveConnectionState().type ===
+      util.DriveConnectionType.OFFLINE;
+
+  if (fm.isOnDrive() && isDriveOffline) {
     fm.metadataCache_.get(entries, 'drive', function(props) {
       if (areAll(props, 'availableOffline')) {
         callback();
@@ -475,7 +478,10 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
     return;
   }
 
-  if (fm.isOnDrive() && fm.isDriveOnMeteredConnection()) {
+  var isOnMetered = fm.volumeManager.getDriveConnectionState().type ===
+      util.DriveConnectionType.METERED;
+
+  if (fm.isOnDrive() && isOnMetered) {
     fm.metadataCache_.get(entries, 'drive', function(driveProps) {
       if (areAll(driveProps, 'availableWhenMetered')) {
         callback();

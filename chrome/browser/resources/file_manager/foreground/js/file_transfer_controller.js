@@ -18,16 +18,19 @@ var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
  *     instance.
  * @param {MetadataCache} metadataCache Metadata cache service.
  * @param {DirectoryModel} directoryModel Directory model instance.
+ * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @constructor
  */
 function FileTransferController(doc,
                                 fileOperationManager,
                                 metadataCache,
-                                directoryModel) {
+                                directoryModel,
+                                volumeManager) {
   this.document_ = doc;
   this.fileOperationManager_ = fileOperationManager;
   this.metadataCache_ = metadataCache;
   this.directoryModel_ = directoryModel;
+  this.volumeManager_ = volumeManager;
 
   this.directoryModel_.getFileListSelection().addEventListener('change',
       this.onSelectionChanged_.bind(this));
@@ -575,8 +578,10 @@ FileTransferController.prototype = {
    *     on drive is available to be copied. Otherwise, returns false.
    */
   canCopyOrDrag_: function() {
+    var isDriveOffline = this.volumeManager_.getDriveConnectionState().type ===
+        util.DriveConnectionType.OFFLINE;
     if (this.isOnDrive &&
-        this.directoryModel_.isDriveOffline() &&
+        isDriveOffline &&
         !this.allDriveFilesAvailable)
       return false;
     return this.selectedEntries_.length > 0;
@@ -661,11 +666,8 @@ FileTransferController.prototype = {
   canPasteOrDrop_: function(dataTransfer, destinationEntry) {
     if (!destinationEntry)
       return false;
-
-    // TODO(mtomasz): Migrate from fullPath to LocationInformation.
-    if (this.directoryModel_.isPathReadOnly(destinationEntry.fullPath))
+    if (this.volumeManager_.getLocationInfo(destinationEntry).isReadOnly)
       return false;
-
     if (!dataTransfer.types || dataTransfer.types.indexOf('fs/tag') === -1)
       return false;  // Unsupported type of content.
 
@@ -747,8 +749,12 @@ FileTransferController.prototype = {
         // We consider directories not available offline for the purposes of
         // file transfer since we cannot afford to recursive traversal.
         this.allDriveFilesAvailable =
-            entries.filter(function(e) {return e.isDirectory}).length === 0 &&
-            props.filter(function(p) {return !p.availableOffline}).length === 0;
+            entries.filter(function(e) {
+              return e.isDirectory;
+            }).length === 0 &&
+            props.filter(function(p) {
+              return !p.availableOffline;
+            }).length === 0;
         // |Copy| is the only menu item affected by allDriveFilesAvailable.
         // It could be open right now, update its UI.
         this.copyCommand_.disabled = !this.canCopyOrDrag_();
@@ -830,9 +836,8 @@ FileTransferController.prototype = {
    *     or copy') to the current modifiers status and the destination.
    */
   selectDropEffect_: function(event, destinationEntry) {
-    // TODO(mtomasz): Migrate from fullPath to locationInformation.
     if (!destinationEntry ||
-        this.directoryModel_.isPathReadOnly(destinationEntry.fullPath)) {
+        this.volumeManager_.getLocationInfo(destinationEntry).isReadOnly) {
       return 'none';
     }
     if (event.dataTransfer.effectAllowed === 'copyMove' &&

@@ -1076,7 +1076,7 @@ util.EntryChangedKind = Object.freeze({
 
 /**
  * Obtains whether an entry is fake or not.
- * @param {Entry|Object} entry Entry of fake entry.
+ * @param {!Entry|!Object} entry Entry or a fake entry.
  * @return {boolean} True if the given entry is fake.
  */
 util.isFakeEntry = function(entry) {

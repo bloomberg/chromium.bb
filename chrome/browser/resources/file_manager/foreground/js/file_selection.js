@@ -313,8 +313,10 @@ FileSelectionHandler.prototype.updateOkButton = function() {
   *                   available.
   */
 FileSelectionHandler.prototype.isFileSelectionAvailable = function() {
-  return !this.fileManager_.isOnDrive() ||
-      !this.fileManager_.isDriveOffline() ||
+  var isDriveOffline =
+      this.fileManager_.volumeManager.getDriveConnectionState().type ===
+          util.DriveConnectionType.OFFLINE;
+  return !this.fileManager_.isOnDrive() || !isDriveOffline ||
       this.selection.allDriveFilesPresent;
 };
 

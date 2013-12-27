@@ -657,22 +657,57 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
         // TODO(hirono): Specify currect volume.
         this.getCurrentProfileVolumeInfo(RootType.DRIVE),
         entry.rootType,
-        true /* the entry points a root directory. */);
-  } else {
-    return this.getLocationInfoByPath(entry.fullPath);
+        true /* the entry points a root directory. */,
+        true /* fake entries are read only. */);
   }
-};
 
-/**
- * Obtains location information from a path.
- * TODO(hirono): Remove the method before introducing separate file system.
- *
- * @param {string} path Path.
- * @return {EntryLocation} Location information.
- */
-VolumeManager.prototype.getLocationInfoByPath = function(path) {
-  var volumeInfo = this.volumeInfoList.findByPath(path);
-  return volumeInfo && PathUtil.getLocationInfo(volumeInfo, path);
+  // TODO(mtomasz): Find by Entry instead.
+  var volumeInfo = this.volumeInfoList.findByPath(entry.fullPath);
+  if (!volumeInfo)
+    return null;
+
+  var rootPath;
+  var rootType;
+  var isReadOnly;
+  if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
+    // If the volume is drive, root path can be either mountPath + '/root' or
+    // mountPath + '/other'.
+    if ((entry.fullPath + '/').indexOf(volumeInfo.mountPath + '/root/') === 0) {
+      rootPath = volumeInfo.mountPath + '/root';
+      rootType = RootType.DRIVE;
+      isReadOnly = volumeInfo.isReadOnly ||
+          this.getDriveConnectionState().type ===
+              util.DriveConnectionType.OFFLINE;
+    } else if ((entry.fullPath + '/').indexOf(
+                   volumeInfo.mountPath + '/other/') === 0) {
+      rootPath = volumeInfo.mountPath + '/other';
+      rootType = RootType.DRIVE_OTHER;
+      isReadOnly = true;
+    } else {
+      throw new Error(entry.fullPath + ' is an invalid drive path.');
+    }
+  } else {
+    // Otherwise, root path is same with a mount path of the volume.
+    rootPath = volumeInfo.mountPath;
+    switch (volumeInfo.volumeType) {
+      case util.VolumeType.DOWNLOADS:
+        rootType = RootType.DOWNLOADS;
+        break;
+      case util.VolumeType.REMOVABLE:
+        rootType = RootType.REMOVABLE;
+        break;
+      case util.VolumeType.ARCHIVE:
+        rootType = RootType.ARCHIVE;
+        break;
+      default:
+        throw new Error('Invalid volume type: ' + volumeInfo.volumeType);
+    }
+    isReadOnly = volumeInfo.isReadOnly;
+  }
+  var isRootEntry = (entry.fullPath.substr(0, rootPath.length) || '/') ===
+      entry.fullPath;
+
+  return new EntryLocation(volumeInfo, rootType, isRootEntry, isReadOnly);
 };
 
 /**
@@ -748,3 +783,71 @@ VolumeManager.prototype.invokeRequestCallbacks_ = function(request, status,
     callEach(request.errorCallbacks, this, [status]);
   }
 };
+
+/**
+ * Location information which shows where the path points in FileManager's
+ * file system.
+ *
+ * @param {!VolumeInfo} volumeInfo Volume information.
+ * @param {RootType} rootType Root type.
+ * @param {boolean} isRootEntry Whether the entry is root entry or not.
+ * @param {boolean} isReadOnly Whether the entry is read only or not.
+ * @constructor
+ */
+function EntryLocation(volumeInfo, rootType, isRootEntry, isReadOnly) {
+  /**
+   * Volume information.
+   * @type {!VolumeInfo}
+   */
+  this.volumeInfo = volumeInfo;
+
+  /**
+   * Root type.
+   * @type {RootType}
+   */
+  this.rootType = rootType;
+
+  /**
+   * Whether the entry is root entry or not.
+   * @type {boolean}
+   */
+  this.isRootEntry = isRootEntry;
+
+  /**
+   * Whether the location obtained from the fake entry correspond to special
+   * searches.
+   * @type {boolean}
+   */
+  this.isSpecialSearchRoot =
+      this.rootType === RootType.DRIVE_OFFLINE ||
+      this.rootType === RootType.DRIVE_SHARED_WITH_ME ||
+      this.rootType === RootType.DRIVE_RECENT;
+
+  /**
+   * Whether the location is under Google Drive or a special search root which
+   * represents a special search from Google Drive.
+   * @type {boolean}
+   */
+  this.isDriveBased =
+      this.rootType === RootType.DRIVE ||
+      this.rootType === RootType.DRIVE_SHARED_WITH_ME ||
+      this.rootType === RootType.DRIVE_RECENT ||
+      this.rootType === RootType.DRIVE_OFFLINE;
+
+  /**
+   * Whether the given path can be a target path of folder shortcut.
+   * @type {boolean}
+   */
+  this.isEligibleForFolderShortcut =
+      !this.isSpecialSearchRoot &&
+      !this.isRootEntry &&
+      this.isDriveBased;
+
+  /**
+   * Whether the entry is read only or not.
+   * @type {boolean}
+   */
+  this.isReadOnly = isReadOnly;
+
+  Object.freeze(this);
+}

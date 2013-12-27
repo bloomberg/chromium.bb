@@ -420,9 +420,9 @@ CommandHandler.COMMANDS_['format'] = {
       root = directoryModel.getCurrentDirEntry();
     var location = root && fileManager.volumeManager.getLocationInfo(root);
     var removable = location && location.rootType === RootType.REMOVABLE;
-    // Don't check if the volume is read-only. Unformatted volume is
-    // considered read-only per directoryModel.isPathReadOnly(), but can be
-    // formatted. An error will be raised if formatting failed anyway.
+    // Don't check if the volume is read-only. Unformatted volume is considered
+    // read-only per VolumeInfo.isReadOnly, but can be formatted. An error will
+    // be raised if formatting failed anyway.
     event.canExecute = removable;
     event.command.setHidden(!removable);
   }
@@ -720,8 +720,11 @@ CommandHandler.COMMANDS_['share'] = {
   },
   canExecute: function(event, fileManager) {
     var selection = fileManager.getSelection();
+    var isDriveOffline =
+        fileManager.volumeManager.getDriveConnectionState().type ===
+            util.DriveConnectionType.OFFLINE;
     event.canExecute = fileManager.isOnDrive() &&
-        !fileManager.isDriveOffline() &&
+        !isDriveOffline &&
         selection && selection.totalCount == 1;
     event.command.setHidden(!fileManager.isOnDrive());
   }

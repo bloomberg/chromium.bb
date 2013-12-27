@@ -390,7 +390,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         new FileTransferController(this.document_,
                                    this.fileOperationManager_,
                                    this.metadataCache_,
-                                   this.directoryModel_);
+                                   this.directoryModel_,
+                                   this.volumeManager_);
     controller.attachDragSource(this.table_.list);
     controller.attachFileListDropTarget(this.table_.list);
     controller.attachDragSource(this.grid_);
@@ -1702,6 +1703,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
+   * TODO(mtomasz): Move this to a utility function working on the root type.
    * @return {boolean} True if the current directory content is from Google
    *     Drive.
    */
@@ -1827,28 +1829,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Get the metered status of Drive connection.
-   *
-   * @return {boolean} Returns true if drive should limit the traffic because
-   * the connection is metered and the 'disable-sync-on-metered' setting is
-   * enabled. Otherwise, returns false.
+   * Tells whether the current directory is read only.
+   * TODO(mtomasz): Remove and use EntryLocation directly.
+   * @return {boolean} True if read only, false otherwise.
    */
-  FileManager.prototype.isDriveOnMeteredConnection = function() {
-    var connection = this.volumeManager_.getDriveConnectionState();
-    return connection.type == util.DriveConnectionType.METERED;
-  };
-
-  /**
-   * Get the online/offline status of drive.
-   *
-   * @return {boolean} Returns true if the connection is offline. Otherwise,
-   * returns false.
-   */
-  FileManager.prototype.isDriveOffline = function() {
-    var connection = this.volumeManager_.getDriveConnectionState();
-    return connection.type == util.DriveConnectionType.OFFLINE;
-  };
-
   FileManager.prototype.isOnReadonlyDirectory = function() {
     return this.directoryModel_.isReadOnly();
   };
@@ -1869,7 +1853,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Show a modal-like file viewer/editor on top of the File Manager UI.
+   * Shows a modal-like file viewer/editor on top of the File Manager UI.
    *
    * @param {HTMLElement} popup Popup element.
    * @param {function()} closeCallback Function to call after the popup is

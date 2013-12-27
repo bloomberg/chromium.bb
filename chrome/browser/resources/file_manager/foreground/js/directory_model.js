@@ -125,20 +125,12 @@ DirectoryModel.prototype.getCurrentMountPointUrl = function() {
 };
 
 /**
- * @return {boolean} on True if offline.
- */
-DirectoryModel.prototype.isDriveOffline = function() {
-  var connection = this.volumeManager_.getDriveConnectionState();
-  return connection.type == util.DriveConnectionType.OFFLINE;
-};
-
-/**
- * TODO(haruki): This actually checks the current root. Fix the method name and
- * related code.
- * @return {boolean} True if the root for the current directory is read only.
+ * @return {boolean} True if the current directory is read only. If there is
+ *     no entry set, then returns true.
  */
 DirectoryModel.prototype.isReadOnly = function() {
-  return this.isPathReadOnly(this.getCurrentRootPath());
+  return this.getCurrentDirEntry() ? this.volumeManager_.getLocationInfo(
+      this.getCurrentDirEntry()).isReadOnly : true;
 };
 
 /**
@@ -153,33 +145,6 @@ DirectoryModel.prototype.isScanning = function() {
  */
 DirectoryModel.prototype.isSearching = function() {
   return this.currentDirContents_.isSearch();
-};
-
-/**
- * @param {string} path Path to check.
- * @return {boolean} True if the |path| is read only.
- */
-DirectoryModel.prototype.isPathReadOnly = function(path) {
-  // TODO(hidehiko): Migrate this into VolumeInfo.
-  switch (PathUtil.getRootType(path)) {
-    case RootType.REMOVABLE:
-      var volumeInfo = this.volumeManager_.getVolumeInfo(path);
-      // Returns true if the volume is actually read only, or if an error
-      // is found during the mounting.
-      // TODO(hidehiko): Remove "error" check here, by removing error'ed volume
-      // info from VolumeManager.
-      return volumeInfo && (volumeInfo.isReadOnly || !!volumeInfo.error);
-    case RootType.ARCHIVE:
-      return true;
-    case RootType.DOWNLOADS:
-      return false;
-    case RootType.DRIVE:
-      // TODO(haruki): Maybe add DRIVE_OFFLINE as well to allow renaming in the
-      // offline tab.
-      return this.isDriveOffline();
-    default:
-      return true;
-  }
 };
 
 /**
@@ -1032,8 +997,9 @@ DirectoryModel.prototype.search = function(query,
   // A search initiated from directories in Drive or special search results
   // should trigger Drive search.
   var newDirContents;
-  if (!this.isDriveOffline() &&
-      PathUtil.isDriveBasedPath(currentDirEntry.fullPath)) {
+  var isDriveOffline = this.volumeManager_.getDriveConnectionState().type ===
+      util.DriveConnectionType.OFFLINE;
+  if (!isDriveOffline && PathUtil.isDriveBasedPath(currentDirEntry.fullPath)) {
     // Drive search is performed over the whole drive, so pass  drive root as
     // |directoryEntry|.
     newDirContents = DirectoryContents.createForDriveSearch(
