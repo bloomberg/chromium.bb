@@ -24,7 +24,9 @@ class GcmApiTest : public ExtensionApiTest {
   GcmApiTest() : fake_gcm_profile_service_(NULL) {}
 
  protected:
-  void SetUpFakeService(bool collect);
+  virtual void SetUpOnMainThread() OVERRIDE;
+
+  void StartCollecting();
 
   const Extension* LoadTestExtension(const std::string& extension_path,
                                      const std::string& page_name);
@@ -36,14 +38,17 @@ class GcmApiTest : public ExtensionApiTest {
   gcm::FakeGCMProfileService* fake_gcm_profile_service_;
 };
 
-void GcmApiTest::SetUpFakeService(bool collect) {
+void GcmApiTest::SetUpOnMainThread() {
   gcm::GCMProfileServiceFactory::GetInstance()->SetTestingFactory(
-      profile(), &gcm::FakeGCMProfileService::Build);
-
+      browser()->profile(), &gcm::FakeGCMProfileService::Build);
   fake_gcm_profile_service_ = static_cast<gcm::FakeGCMProfileService*>(
-      gcm::GCMProfileServiceFactory::GetInstance()->GetForProfile(profile()));
-  fake_gcm_profile_service_->set_collect(collect);
+      gcm::GCMProfileServiceFactory::GetInstance()->GetForProfile(
+          browser()->profile()));
   gcm::FakeGCMProfileService::EnableGCMForTesting();
+}
+
+void GcmApiTest::StartCollecting() {
+  service()->set_collect(true);
 }
 
 void GcmApiTest::WaitUntilIdle() {
@@ -74,7 +79,6 @@ const Extension* GcmApiTest::LoadTestExtension(
 #define MAYBE_RegisterValidation RegisterValidation
 #endif
 IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_RegisterValidation) {
-  SetUpFakeService(false);
   EXPECT_TRUE(RunExtensionSubtest(kFunctionsTestExtension,
                                   "register_validation.html"));
 }
@@ -86,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_RegisterValidation) {
 #define MAYBE_Register Register
 #endif
 IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_Register) {
-  SetUpFakeService(true);
+  StartCollecting();
   const extensions::Extension* extension =
       LoadTestExtension(kFunctionsTestExtension, "register.html");
   ASSERT_TRUE(extension);
@@ -112,7 +116,6 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_Register) {
 #define MAYBE_SendValidation SendValidation
 #endif
 IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendValidation) {
-  SetUpFakeService(false);
   EXPECT_TRUE(RunExtensionSubtest(kFunctionsTestExtension, "send.html"));
 }
 
@@ -123,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendValidation) {
 #define MAYBE_SendMessageData SendMessageData
 #endif
 IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendMessageData) {
-  SetUpFakeService(true);
+  StartCollecting();
   const extensions::Extension* extension =
       LoadTestExtension(kFunctionsTestExtension, "send_message_data.html");
   ASSERT_TRUE(extension);
