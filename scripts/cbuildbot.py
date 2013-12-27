@@ -793,6 +793,13 @@ def _RunBuildStagesWrapper(options, build_config):
   elif options.rietveld_patches:
     cros_build_lib.Die('This builder does not support Rietveld patches.')
 
+  # We are done munging options values, so freeze options object now to avoid
+  # further abuse of it.
+  # TODO(mtennant): one by one identify each options value override and see if
+  # it can be handled another way.  Try to push this freeze closer and closer
+  # to the start of the script (e.g. in or after _PostParseCheck).
+  options.Freeze()
+
   builder_run = cbuildbot_run.BuilderRun(options, build_config)
   builder_cls = DistributedBuilder if IsDistributedBuilder() else SimpleBuilder
   builder = builder_cls(builder_run)
