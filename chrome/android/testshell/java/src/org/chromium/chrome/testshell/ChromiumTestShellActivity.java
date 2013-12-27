@@ -15,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
@@ -27,9 +29,7 @@ import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.testshell.sync.SyncController;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.printing.PrintingController;
@@ -91,7 +91,7 @@ public class ChromiumTestShellActivity extends Activity implements AppMenuProper
 
         mWindow = new ActivityWindowAndroid(this);
         mWindow.restoreInstanceState(savedInstanceState);
-        mTabManager.setWindow(mWindow);
+        mTabManager.initialize(mWindow, new ActivityContentVideoViewClient(this));
 
         String startupUrl = getUrlFromIntent(getIntent());
         if (!TextUtils.isEmpty(startupUrl)) {
@@ -116,8 +116,7 @@ public class ChromiumTestShellActivity extends Activity implements AppMenuProper
     protected void onDestroy() {
         super.onDestroy();
 
-        if (mDevToolsServer != null)
-            mDevToolsServer.destroy();
+        if (mDevToolsServer != null) mDevToolsServer.destroy();
         mDevToolsServer = null;
     }
 
@@ -203,14 +202,9 @@ public class ChromiumTestShellActivity extends Activity implements AppMenuProper
      *
      * @param url The URL the new {@link TestShellTab} should start with.
      */
+    @VisibleForTesting
     public void createTab(String url) {
         mTabManager.createTab(url);
-        getActiveContentView().setContentViewClient(new ContentViewClient() {
-            @Override
-            public ContentVideoViewClient getContentVideoViewClient() {
-                return new ActivityContentVideoViewClient(ChromiumTestShellActivity.this);
-            }
-        });
     }
 
     /**

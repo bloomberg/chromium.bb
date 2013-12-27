@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.content.browser.ContentView;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.ui.base.WindowAndroid;
@@ -29,14 +30,17 @@ public class TestShellTab extends TabBase {
     private boolean mIsLoading;
 
     /**
-     * @param context  The Context the view is running in.
-     * @param url      The URL to start this tab with.
-     * @param window   The WindowAndroid should represent this tab.
+     * @param context           The Context the view is running in.
+     * @param url               The URL to start this tab with.
+     * @param window            The WindowAndroid should represent this tab.
+     * @param contentViewClient The client for the {@link ContentView}s of this Tab.
      */
-    public TestShellTab(Context context, String url, WindowAndroid window) {
+    public TestShellTab(Context context, String url, WindowAndroid window,
+            ContentViewClient contentViewClient) {
         super(false, context, window);
         initialize();
         initContentView();
+        setContentViewClient(contentViewClient);
         loadUrlWithSanitization(url);
     }
 

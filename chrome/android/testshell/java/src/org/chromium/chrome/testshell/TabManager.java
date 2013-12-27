@@ -11,18 +11,21 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import org.chromium.content.browser.ContentVideoViewClient;
+import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewRenderView;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
  * The TabManager hooks together all of the related {@link View}s that are used to represent
  * a {@link TestShellTab}.  It properly builds a {@link TestShellTab} and makes sure that the
- * {@link Toolbar} and {@link ContentViewRenderView} show the proper content.
+ * {@link TestShellToolbar} and {@link ContentViewRenderView} show the proper content.
  */
 public class TabManager extends LinearLayout {
     private static final String DEFAULT_URL = "http://www.google.com";
 
     private WindowAndroid mWindow;
+    private ContentVideoViewClient mContentVideoViewClient;
     private ViewGroup mContentViewHolder;
     private ContentViewRenderView mContentViewRenderView;
     private TestShellToolbar mToolbar;
@@ -45,11 +48,15 @@ public class TabManager extends LinearLayout {
     }
 
     /**
+     * Initialize the components required for Tab creation.
      * @param window The window used to generate all ContentViews.
+     * @param videoViewClient The client to handle interactions from ContentVideoViews.
      */
-    public void setWindow(WindowAndroid window) {
+    public void initialize(WindowAndroid window, ContentVideoViewClient videoViewClient) {
         assert window != null;
         mWindow = window;
+        assert videoViewClient != null;
+        mContentVideoViewClient = videoViewClient;
         mContentViewHolder = (ViewGroup) findViewById(R.id.content_container);
         mToolbar = (TestShellToolbar) findViewById(R.id.toolbar);
         mContentViewRenderView = new ContentViewRenderView(getContext(), mWindow) {
@@ -85,7 +92,13 @@ public class TabManager extends LinearLayout {
     public void createTab(String url) {
         if (!isContentViewRenderViewInitialized()) return;
 
-        TestShellTab tab = new TestShellTab(getContext(), url, mWindow);
+        ContentViewClient client = new ContentViewClient() {
+            @Override
+            public ContentVideoViewClient getContentVideoViewClient() {
+                return mContentVideoViewClient;
+            }
+        };
+        TestShellTab tab = new TestShellTab(getContext(), url, mWindow, client);
         setCurrentTab(tab);
     }
 
