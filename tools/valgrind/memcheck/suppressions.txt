@@ -6326,3 +6326,15 @@
    Memcheck:Uninitialized
    fun:_ZN8chromeos12input_method19CandidateWindowView16UpdateCandidatesERKNS0_15CandidateWindowE
 }
+{
+   bug_330870_a
+   Memcheck:Uninitialized
+   fun:_ZNK8chromeos12input_method15CandidateWindow7IsEqualERKS1_
+   fun:_ZN8chromeos12input_method33CandidateWindow_CopyFromTest_Test8TestBodyEv
+}
+{
+   bug_330870_b
+   Memcheck:Uninitialized
+   fun:_ZNK8chromeos12input_method15CandidateWindow7IsEqualERKS1_
+   fun:_ZN8chromeos12input_method32CandidateWindow_IsEqualTest_Test8TestBodyEv
+}
