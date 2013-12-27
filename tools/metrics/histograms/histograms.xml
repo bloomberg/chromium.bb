@@ -21668,6 +21668,7 @@ other types of suffix sets.
   <int value="1" label="APP"/>
   <int value="2" label="WEBSTORE"/>
   <int value="3" label="SEARCH_WEBSTORE"/>
+  <int value="4" label="SEARCH_PEOPLE"/>
 </enum>
 
 <enum name="AppPromoAction" type="int">
