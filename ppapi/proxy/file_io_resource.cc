@@ -18,10 +18,12 @@
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_file_ref_api.h"
+#include "ppapi/thunk/ppb_file_system_api.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_FileIO_API;
 using ppapi::thunk::PPB_FileRef_API;
+using ppapi::thunk::PPB_FileSystem_API;
 
 namespace {
 
@@ -80,11 +82,13 @@ int32_t FileIOResource::ReadOp::DoWork() {
 
 FileIOResource::FileIOResource(Connection connection, PP_Instance instance)
     : PluginResource(connection, instance),
-      file_system_type_(PP_FILESYSTEMTYPE_INVALID) {
+      file_system_type_(PP_FILESYSTEMTYPE_INVALID),
+      called_close_(false) {
   SendCreate(BROWSER, PpapiHostMsg_FileIO_Create());
 }
 
 FileIOResource::~FileIOResource() {
+  Close();
 }
 
 PPB_FileIO_API* FileIOResource::AsPPB_FileIO_API() {
@@ -94,30 +98,36 @@ PPB_FileIO_API* FileIOResource::AsPPB_FileIO_API() {
 int32_t FileIOResource::Open(PP_Resource file_ref,
                              int32_t open_flags,
                              scoped_refptr<TrackedCallback> callback) {
-  EnterResourceNoLock<PPB_FileRef_API> enter(file_ref, true);
-  if (enter.failed())
+  EnterResourceNoLock<PPB_FileRef_API> enter_file_ref(file_ref, true);
+  if (enter_file_ref.failed())
     return PP_ERROR_BADRESOURCE;
 
-  PPB_FileRef_API* file_ref_api = enter.object();
+  PPB_FileRef_API* file_ref_api = enter_file_ref.object();
   const FileRefCreateInfo& create_info = file_ref_api->GetCreateInfo();
   if (!FileSystemTypeIsValid(create_info.file_system_type)) {
     NOTREACHED();
     return PP_ERROR_FAILED;
   }
-
   int32_t rv = state_manager_.CheckOperationState(
       FileIOStateManager::OPERATION_EXCLUSIVE, false);
   if (rv != PP_OK)
     return rv;
 
   file_system_type_ = create_info.file_system_type;
-  // Keep the FileSystem host alive by taking a reference to its resource. The
-  // FileIO host uses the FileSystem host for running tasks.
-  file_system_resource_ = create_info.file_system_plugin_resource;
+
+  if (create_info.file_system_plugin_resource) {
+    EnterResourceNoLock<PPB_FileSystem_API> enter_file_system(
+        create_info.file_system_plugin_resource, true);
+    if (enter_file_system.failed())
+      return PP_ERROR_FAILED;
+    // Take a reference on the FileSystem resource. The FileIO host uses the
+    // FileSystem host for running tasks and checking quota.
+    file_system_resource_ = enter_file_system.resource();
+  }
 
   // Take a reference on the FileRef resource while we're opening the file; we
   // don't want the plugin destroying it during the Open operation.
-  file_ref_ = enter.resource();
+  file_ref_ = enter_file_ref.resource();
 
   Call<PpapiPluginMsg_FileIO_OpenReply>(BROWSER,
       PpapiHostMsg_FileIO_Open(
@@ -279,9 +289,13 @@ int32_t FileIOResource::Flush(scoped_refptr<TrackedCallback> callback) {
 }
 
 void FileIOResource::Close() {
-  if (file_handle_) {
+  if (called_close_)
+    return;
+
+  called_close_ = true;
+  if (file_handle_)
     file_handle_ = NULL;
-  }
+
   Post(BROWSER, PpapiHostMsg_FileIO_Close());
 }
 

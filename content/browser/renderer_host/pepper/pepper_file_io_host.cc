@@ -405,8 +405,10 @@ int32_t PepperFileIOHost::OnHostMsgFlush(
 
 int32_t PepperFileIOHost::OnHostMsgClose(
     ppapi::host::HostMessageContext* context) {
-  if (check_quota_)
+  if (check_quota_) {
     file_system_host_->CloseQuotaFile(this);
+    check_quota_ = false;
+  }
 
   if (file_ != base::kInvalidPlatformFileValue) {
     base::FileUtilProxy::Close(

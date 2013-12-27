@@ -164,7 +164,8 @@ class PPAPI_PROXY_EXPORT FileIOResource
 
   scoped_refptr<FileHandleHolder> file_handle_;
   PP_FileSystemType file_system_type_;
-  ScopedPPResource file_system_resource_;
+  scoped_refptr<Resource> file_system_resource_;
+  bool called_close_;
   FileIOStateManager state_manager_;
 
   scoped_refptr<Resource> file_ref_;
