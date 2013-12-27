@@ -539,7 +539,7 @@ TEST_F(HttpNetworkLayerTest, ServerFallbackOn5xxError) {
     request_info.load_flags = LOAD_NORMAL;
 
     scoped_ptr<HttpTransaction> trans;
-    int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans, NULL);
+    int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans);
     EXPECT_EQ(OK, rv);
 
     rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
