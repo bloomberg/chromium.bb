@@ -218,10 +218,9 @@ class PixelValidator(page_test.PageTest):
     # PNG to disk, following the pattern in bitmap_unittest.py. The key to
     # avoiding PermissionErrors seems to be to not actually try to write to
     # the temporary file object, but to re-open its name for all operations.
-    f = tempfile.NamedTemporaryFile()
-    bitmap.WritePngFile(f.name)
-    cloud_storage.Insert(bucket, name, f.name, publicly_readable=public)
-    f.close()
+    temp_file = tempfile.NamedTemporaryFile().name
+    bitmap.WritePngFile(temp_file)
+    cloud_storage.Insert(bucket, name, temp_file, publicly_readable=public)
 
   def _ConditionallyUploadToCloudStorage(self, img_name, page, tab, screenshot):
     """Uploads the screenshot to cloud storage as the reference image
@@ -245,13 +244,11 @@ class PixelValidator(page_test.PageTest):
     # temporary file and gsutil's overwriting it.
     if not self.options.refimg_cloud_storage_bucket:
       raise Exception('--refimg-cloud-storage-bucket argument is required')
-    f = tempfile.NamedTemporaryFile()
-    filename = f.name
-    f.close()
+    temp_file = tempfile.NamedTemporaryFile().name
     cloud_storage.Get(self.options.refimg_cloud_storage_bucket,
                       self._FormatReferenceImageName(img_name, page, tab),
-                      filename)
-    return bitmap.Bitmap.FromPngFile(filename)
+                      temp_file)
+    return bitmap.Bitmap.FromPngFile(temp_file)
 
   def _UploadErrorImagesToCloudStorage(self, image_name, ref_img, screenshot):
     """For a failing run, uploads the reference image, failing image,
