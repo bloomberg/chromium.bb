@@ -676,6 +676,8 @@
             'css/CSSLineBoxContainValue.cpp',
             'css/CSSMatrix.cpp',
             'css/CSSMatrix.h',
+            'css/CSSMarkup.cpp',
+            'css/CSSMarkup.h',
             'css/CSSMediaRule.cpp',
             'css/CSSMediaRule.h',
             'css/CSSMixFunctionValue.cpp',

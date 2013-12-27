@@ -36,7 +36,6 @@
 #include "core/css/CSSTokenizer.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/StylePropertySet.h"
-#include "core/frame/UseCounter.h"
 #include "platform/graphics/Color.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -68,6 +67,7 @@ class StyleRuleBase;
 class StyleRuleKeyframes;
 class StyleKeyframe;
 class StyleSheetContents;
+class UseCounter;
 
 // FIXME: This class is shared with CSSTokenizer so should we rename it to CSSSourceLocation?
 struct CSSParserLocation {
@@ -662,10 +662,6 @@ public:
     virtual void startComment(unsigned offset) = 0;
     virtual void endComment(unsigned offset) = 0;
 };
-
-String quoteCSSString(const String&);
-String quoteCSSStringIfNeeded(const String&);
-String quoteCSSURLIfNeeded(const String&);
 
 bool isValidNthToken(const CSSParserString&);
 

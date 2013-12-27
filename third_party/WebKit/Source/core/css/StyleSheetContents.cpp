@@ -31,6 +31,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/CSSStyleSheetResource.h"
+#include "core/frame/UseCounter.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"

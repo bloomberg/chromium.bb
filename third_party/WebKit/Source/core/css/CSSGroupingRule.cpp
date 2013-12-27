@@ -36,6 +36,7 @@
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/animation/ElementAnimation.h"
 
+#include "bindings/v8/Dictionary.h"
 #include "core/animation/AnimatableLength.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"

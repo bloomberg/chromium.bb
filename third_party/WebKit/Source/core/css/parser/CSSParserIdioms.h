@@ -31,6 +31,8 @@
 #ifndef CSSParserIdioms_h
 #define CSSParserIdioms_h
 
+#include "wtf/unicode/Unicode.h"
+
 namespace WebCore {
 
 // Space characters as defined by the CSS specification.

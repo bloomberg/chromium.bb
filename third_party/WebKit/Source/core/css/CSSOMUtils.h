@@ -35,6 +35,8 @@
 #include "wtf/unicode/Unicode.h"
 
 // Utilities for CSSOM http://dev.w3.org/csswg/cssom/
+// FIXME: This file has a similar purpose to
+// CSSMarkup.h. Perhaps the two should be combined?
 
 namespace WebCore {
 

@@ -40,6 +40,7 @@
 #include "core/css/CSSValue.h"
 #include "core/css/RuntimeCSSEnabled.h"
 #include "core/events/EventTarget.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

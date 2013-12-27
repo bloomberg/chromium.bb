@@ -31,11 +31,11 @@
 #ifndef ElementAnimation_h
 #define ElementAnimation_h
 
-#include "bindings/v8/Dictionary.h"
-#include "core/css/CSSParser.h"
+#include "CSSPropertyNames.h" // For CSSPropertyID.
 
 namespace WebCore {
 
+class Dictionary;
 class Element;
 
 class ElementAnimation {

@@ -22,7 +22,7 @@
 #include "core/css/CSSImageValue.h"
 
 #include "FetchInitiatorTypeNames.h"
-#include "core/css/CSSParser.h"
+#include "core/css/CSSMarkup.h"
 #include "core/dom/Document.h"
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchRequest.h"

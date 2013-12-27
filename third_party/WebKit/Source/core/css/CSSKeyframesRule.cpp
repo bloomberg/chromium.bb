@@ -30,6 +30,7 @@
 #include "core/css/CSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

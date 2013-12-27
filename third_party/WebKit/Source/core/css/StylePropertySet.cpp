@@ -32,6 +32,7 @@
 #include "core/css/StylePropertySerializer.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/VariablesIterator.h"
+#include "core/frame/UseCounter.h"
 #include "wtf/text/StringBuilder.h"
 
 #ifndef NDEBUG

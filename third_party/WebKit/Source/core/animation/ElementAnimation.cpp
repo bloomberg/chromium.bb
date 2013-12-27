@@ -31,7 +31,9 @@
 #include "config.h"
 #include "core/animation/ElementAnimation.h"
 
+#include "bindings/v8/Dictionary.h"
 #include "core/animation/DocumentTimeline.h"
+#include "core/css/CSSParser.h"
 #include "core/css/RuntimeCSSEnabled.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "wtf/text/StringBuilder.h"
