@@ -181,6 +181,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
   }
 
   ps = new PasswordStoreX(login_db, profile, backend.release());
+#elif defined(USE_OZONE)
+  ps = new PasswordStoreDefault(login_db, profile);
 #else
   NOTIMPLEMENTED();
 #endif
