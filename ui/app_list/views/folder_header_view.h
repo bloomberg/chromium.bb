@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ui/app_list/app_list_item_model_observer.h"
+#include "ui/app_list/app_list_item_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -26,7 +26,7 @@ class FolderHeaderViewDelegate;
 class FolderHeaderView : public views::View,
                          public views::TextfieldController,
                          public views::ButtonListener,
-                         public AppListItemModelObserver {
+                         public AppListItemObserver {
  public:
   explicit FolderHeaderView(FolderHeaderViewDelegate* delegate);
   virtual ~FolderHeaderView();
@@ -54,7 +54,7 @@ class FolderHeaderView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from AppListItemModelObserver:
+  // Overridden from AppListItemObserver:
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;
   virtual void ItemHighlightedChanged() OVERRIDE;

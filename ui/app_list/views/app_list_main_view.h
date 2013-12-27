@@ -22,10 +22,10 @@ class Widget;
 
 namespace app_list {
 
-class ApplicationDragAndDropHost;
+class AppListItem;
 class AppListModel;
-class AppListItemModel;
 class AppListViewDelegate;
+class ApplicationDragAndDropHost;
 class ContentsView;
 class PaginationModel;
 class SearchBoxView;
@@ -76,7 +76,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   void OnItemIconLoaded(IconLoader* loader);
 
   // Overridden from AppsGridViewDelegate:
-  virtual void ActivateApp(AppListItemModel* item, int event_flags) OVERRIDE;
+  virtual void ActivateApp(AppListItem* item, int event_flags) OVERRIDE;
   virtual void GetShortcutPathForApp(
       const std::string& app_id,
       const base::Callback<void(const base::FilePath&)>& callback) OVERRIDE;

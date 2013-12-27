@@ -17,7 +17,7 @@ const char AppListTestModel::kAppType[] = "TestItem";
 AppListTestModel::AppListTestItemModel::AppListTestItemModel(
     const std::string& id,
     AppListTestModel* model)
-    : AppListItemModel(id),
+    : AppListItem(id),
       model_(model) {
 }
 AppListTestModel::AppListTestItemModel::~AppListTestItemModel() {
@@ -92,7 +92,7 @@ void AppListTestModel::CreateAndAddItem(const std::string& title) {
 }
 
 void AppListTestModel::HighlightItemAt(int index) {
-  AppListItemModel* item = item_list()->item_at(index);
+  AppListItem* item = item_list()->item_at(index);
   item->SetHighlighted(true);
 }
 

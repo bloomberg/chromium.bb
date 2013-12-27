@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 
 namespace app_list {
@@ -17,7 +17,7 @@ namespace test {
 // Extends AppListModel with helper functions for use in tests.
 class AppListTestModel : public AppListModel {
  public:
-  class AppListTestItemModel : public AppListItemModel {
+  class AppListTestItemModel : public AppListItem {
    public:
     AppListTestItemModel(const std::string& id, AppListTestModel* model);
     virtual ~AppListTestItemModel();
@@ -60,7 +60,7 @@ class AppListTestModel : public AppListModel {
   void HighlightItemAt(int index);
 
   int activate_count() { return activate_count_; }
-  AppListItemModel* last_activated() { return last_activated_; }
+  AppListItem* last_activated() { return last_activated_; }
 
   static const char kAppType[];
 
@@ -68,7 +68,7 @@ class AppListTestModel : public AppListModel {
   void ItemActivated(AppListTestItemModel* item);
 
   int activate_count_;
-  AppListItemModel* last_activated_;
+  AppListItem* last_activated_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListTestModel);
 };

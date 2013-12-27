@@ -4,7 +4,7 @@
 
 #include "ui/app_list/app_list_model.h"
 
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_result.h"

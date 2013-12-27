@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_item_model_observer.h"
+#include "ui/app_list/app_list_item_observer.h"
 #include "ui/app_list/views/cached_label.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/views/context_menu_controller.h"
@@ -27,18 +27,18 @@ class MenuRunner;
 
 namespace app_list {
 
-class AppListItemModel;
+class AppListItem;
 class AppsGridView;
 class ProgressBarView;
 
 class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
                                         public views::ContextMenuController,
-                                        public AppListItemModelObserver {
+                                        public AppListItemObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
 
-  AppListItemView(AppsGridView* apps_grid_view, AppListItemModel* model);
+  AppListItemView(AppsGridView* apps_grid_view, AppListItem* item);
   virtual ~AppListItemView();
 
   void SetIconSize(const gfx::Size& size);
@@ -53,7 +53,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   void SetAsAttemptedFolderTarget(bool is_target_folder);
 
-  AppListItemModel* model() const { return model_; }
+  AppListItem* item() const { return item_; }
 
   const views::Label* title() const { return title_; }
 
@@ -68,10 +68,10 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
     UI_STATE_DROPPING_IN_FOLDER,  // Folder dropping preview UI
   };
 
-  // Get icon from model and schedule background processing.
+  // Get icon from |item_| and schedule background processing.
   void UpdateIcon();
 
-  // Update the tooltip text from the model.
+  // Update the tooltip text from |item_|.
   void UpdateTooltip();
 
   void SetUIState(UIState state);
@@ -82,7 +82,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // Invoked when |mouse_drag_timer_| fires to show dragging UI.
   void OnMouseDragTimer();
 
-  // AppListItemModelObserver overrides:
+  // AppListItemObserver overrides:
   virtual void ItemIconChanged() OVERRIDE;
   virtual void ItemTitleChanged() OVERRIDE;
   virtual void ItemHighlightedChanged() OVERRIDE;
@@ -114,7 +114,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   // ui::EventHandler overrides:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
-  AppListItemModel* model_;  // Owned by AppListModel.
+  AppListItem* item_;  // Owned by AppListModel.
 
   AppsGridView* apps_grid_view_;  // Owned by views hierarchy.
   views::ImageView* icon_;  // Owned by views hierarchy.

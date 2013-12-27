@@ -8,7 +8,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/cached_label.h"
@@ -55,9 +55,9 @@ const int kMouseDragUIDelayInMs = 100;
 const char AppListItemView::kViewClassName[] = "ui/app_list/AppListItemView";
 
 AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
-                                 AppListItemModel* model)
+                                 AppListItem* item)
     : CustomButton(apps_grid_view),
-      model_(model),
+      item_(item),
       apps_grid_view_(apps_grid_view),
       icon_(new views::ImageView),
       title_(new CachedLabel),
@@ -72,7 +72,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetEnabledColor(kGridTitleColor);
   title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_->SetVisible(!model_->is_installing());
+  title_->SetVisible(!item_->is_installing());
   title_->Invalidate();
 
   const gfx::ShadowValue kIconShadows[] = {
@@ -87,7 +87,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   ItemIconChanged();
   ItemTitleChanged();
   ItemIsInstallingChanged();
-  model_->AddObserver(this);
+  item_->AddObserver(this);
 
   set_context_menu_controller(this);
   set_request_focus_on_press(false);
@@ -96,7 +96,7 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
 }
 
 AppListItemView::~AppListItemView() {
-  model_->RemoveObserver(this);
+  item_->RemoveObserver(this);
 }
 
 void AppListItemView::SetIconSize(const gfx::Size& size) {
@@ -112,8 +112,8 @@ void AppListItemView::UpdateIcon() {
   if (icon_size_.IsEmpty())
     return;
 
-  gfx::ImageSkia icon = model_->icon();
-  // Clear icon and bail out if model icon is empty.
+  gfx::ImageSkia icon = item_->icon();
+  // Clear icon and bail out if item icon is empty.
   if (icon.isNull()) {
     icon_->SetImage(NULL);
     return;
@@ -121,7 +121,7 @@ void AppListItemView::UpdateIcon() {
 
   gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(icon,
       skia::ImageOperations::RESIZE_BEST, icon_size_));
-  if (model_->has_shadow()) {
+  if (item_->has_shadow()) {
     gfx::ImageSkia shadow(
         gfx::ImageSkiaOperations::CreateImageWithDropShadow(resized,
                                                             icon_shadows_));
@@ -133,8 +133,8 @@ void AppListItemView::UpdateIcon() {
 }
 
 void AppListItemView::UpdateTooltip() {
-  title_->SetTooltipText(model_->title() == model_->full_name() ?
-      base::string16() : base::UTF8ToUTF16(model_->full_name()));
+  title_->SetTooltipText(item_->title() == item_->full_name() ? base::string16()
+                         : base::UTF8ToUTF16(item_->full_name()));
 }
 
 void AppListItemView::SetUIState(UIState state) {
@@ -146,8 +146,8 @@ void AppListItemView::SetUIState(UIState state) {
 #if defined(USE_AURA)
   switch (ui_state_) {
     case UI_STATE_NORMAL:
-      title_->SetVisible(!model_->is_installing());
-      progress_bar_->SetVisible(model_->is_installing());
+      title_->SetVisible(!item_->is_installing());
+      progress_bar_->SetVisible(item_->is_installing());
       break;
     case UI_STATE_DRAGGING:
       title_->SetVisible(false);
@@ -226,7 +226,7 @@ void AppListItemView::ItemIconChanged() {
 }
 
 void AppListItemView::ItemTitleChanged() {
-  title_->SetText(base::UTF8ToUTF16(model_->title()));
+  title_->SetText(base::UTF8ToUTF16(item_->title()));
   title_->Invalidate();
   UpdateTooltip();
   Layout();
@@ -238,10 +238,10 @@ void AppListItemView::ItemHighlightedChanged() {
 }
 
 void AppListItemView::ItemIsInstallingChanged() {
-  if (model_->is_installing())
+  if (item_->is_installing())
     apps_grid_view_->EnsureViewVisible(this);
-  title_->SetVisible(!model_->is_installing());
-  progress_bar_->SetVisible(model_->is_installing());
+  title_->SetVisible(!item_->is_installing());
+  progress_bar_->SetVisible(item_->is_installing());
   SchedulePaint();
 }
 
@@ -249,9 +249,9 @@ void AppListItemView::ItemPercentDownloadedChanged() {
   // A percent_downloaded() of -1 can mean it's not known how much percent is
   // completed, or the download hasn't been marked complete, as is the case
   // while an extension is being installed after being downloaded.
-  if (model_->percent_downloaded() == -1)
+  if (item_->percent_downloaded() == -1)
     return;
-  progress_bar_->SetValue(model_->percent_downloaded() / 100.0);
+  progress_bar_->SetValue(item_->percent_downloaded() / 100.0);
 }
 
 const char* AppListItemView::GetClassName() const {
@@ -290,7 +290,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect rect(GetContentsBounds());
-  if (model_->highlighted() && !model_->is_installing()) {
+  if (item_->highlighted() && !item_->is_installing()) {
     canvas->FillRect(rect, kHighlightedColor);
     return;
   } else if (apps_grid_view_->IsSelectedView(this)) {
@@ -317,13 +317,13 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
 
 void AppListItemView::GetAccessibleState(ui::AccessibleViewState* state) {
   state->role = ui::AccessibilityTypes::ROLE_PUSHBUTTON;
-  state->name = base::UTF8ToUTF16(model_->title());
+  state->name = base::UTF8ToUTF16(item_->title());
 }
 
 void AppListItemView::ShowContextMenuForView(views::View* source,
                                              const gfx::Point& point,
                                              ui::MenuSourceType source_type) {
-  ui::MenuModel* menu_model = model_->GetContextMenuModel();
+  ui::MenuModel* menu_model = item_->GetContextMenuModel();
   if (!menu_model)
     return;
 
@@ -348,7 +348,7 @@ void AppListItemView::StateChanged() {
   } else {
     if (!is_folder_ui_enabled)
       apps_grid_view_->ClearSelectedView(this);
-    model_->SetHighlighted(false);
+    item_->SetHighlighted(false);
     title_->SetEnabledColor(kGridTitleColor);
   }
   title_->Invalidate();

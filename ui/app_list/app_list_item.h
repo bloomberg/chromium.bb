@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_APP_LIST_APP_LIST_ITEM_MODEL_H_
-#define UI_APP_LIST_APP_LIST_ITEM_MODEL_H_
+#ifndef UI_APP_LIST_APP_LIST_ITEM_H_
+#define UI_APP_LIST_APP_LIST_ITEM_H_
 
 #include <string>
 
@@ -21,14 +21,14 @@ namespace app_list {
 
 class AppListItemList;
 class AppListItemListTest;
-class AppListItemModelObserver;
+class AppListItemObserver;
 
-// AppListItemModel provides icon and title to be shown in a AppListItemView
+// AppListItem provides icon and title to be shown in a AppListItemView
 // and action to be executed when the AppListItemView is activated.
-class APP_LIST_EXPORT AppListItemModel {
+class APP_LIST_EXPORT AppListItem {
  public:
-  explicit AppListItemModel(const std::string& id);
-  virtual ~AppListItemModel();
+  explicit AppListItem(const std::string& id);
+  virtual ~AppListItem();
 
   void SetIcon(const gfx::ImageSkia& icon, bool has_shadow);
   const gfx::ImageSkia& icon() const { return icon_; }
@@ -51,8 +51,8 @@ class APP_LIST_EXPORT AppListItemModel {
   const std::string& id() const { return id_; }
   const syncer::StringOrdinal& position() const { return position_; }
 
-  void AddObserver(AppListItemModelObserver* observer);
-  void RemoveObserver(AppListItemModelObserver* observer);
+  void AddObserver(AppListItemObserver* observer);
+  void RemoveObserver(AppListItemObserver* observer);
 
   // Activates (opens) the item. Does nothing by default.
   virtual void Activate(int event_flags);
@@ -67,7 +67,7 @@ class APP_LIST_EXPORT AppListItemModel {
   virtual ui::MenuModel* GetContextMenuModel();
 
   // Utility functions for sync integration tests.
-  virtual bool CompareForTest(const AppListItemModel* other) const;
+  virtual bool CompareForTest(const AppListItem* other) const;
   virtual std::string ToDebugString() const;
 
  protected:
@@ -92,11 +92,11 @@ class APP_LIST_EXPORT AppListItemModel {
   bool is_installing_;
   int percent_downloaded_;
 
-  ObserverList<AppListItemModelObserver> observers_;
+  ObserverList<AppListItemObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(AppListItemModel);
+  DISALLOW_COPY_AND_ASSIGN(AppListItem);
 };
 
 }  // namespace app_list
 
-#endif  // UI_APP_LIST_APP_LIST_ITEM_MODEL_H_
+#endif  // UI_APP_LIST_APP_LIST_ITEM_H_

@@ -23,7 +23,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 
 namespace {
 

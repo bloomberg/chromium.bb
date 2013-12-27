@@ -31,7 +31,7 @@ class AppListSpecifics;
 namespace app_list {
 
 class AppListModel;
-class AppListItemModel;
+class AppListItem;
 
 // Keyed Service that owns, stores, and syncs an AppListModel for an
 // ExtensionSystem and corresponding profile.
@@ -108,7 +108,7 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // Creates a SyncItem entry and adds |item| to the model.
   SyncItem* AddItem(sync_pb::AppListSpecifics::AppListItemType type,
-                    AppListItemModel* item);
+                    AppListItem* item);
 
   // Sends ADD or CHANGED for sync item.
   void SendSyncChange(SyncItem* sync_item,

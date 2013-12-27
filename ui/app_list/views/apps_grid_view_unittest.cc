@@ -13,7 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/test/app_list_test_model.h"

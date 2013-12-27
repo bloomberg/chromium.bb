@@ -77,7 +77,7 @@ ExtensionAppItem::ExtensionAppItem(
     const std::string& extension_name,
     const gfx::ImageSkia& installing_icon,
     bool is_platform_app)
-    : app_list::AppListItemModel(extension_id),
+    : app_list::AppListItem(extension_id),
       profile_(profile),
       extension_id_(extension_id),
       extension_enable_flow_controller_(NULL),

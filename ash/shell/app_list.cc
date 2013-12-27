@@ -17,8 +17,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_item_list.h"
-#include "ui/app_list/app_list_item_model.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/search_box_model.h"
@@ -37,7 +37,7 @@ namespace {
 
 // WindowTypeLauncherItem is an app item of app list. It carries a window
 // launch type and launches corresponding example window when activated.
-class WindowTypeLauncherItem : public app_list::AppListItemModel {
+class WindowTypeLauncherItem : public app_list::AppListItem {
  public:
   enum Type {
     TOPLEVEL_WINDOW = 0,
@@ -49,7 +49,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
   };
 
   explicit WindowTypeLauncherItem(const std::string& id, Type type)
-      : app_list::AppListItemModel(id),
+      : app_list::AppListItem(id),
         type_(type) {
     std::string title(GetTitle(type));
     SetIcon(GetIcon(type), false);
@@ -137,7 +137,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
     }
   }
 
-  // AppListItemModel
+  // AppListItem
   virtual void Activate(int event_flags) OVERRIDE {
     ActivateItem(type_, event_flags);
   }

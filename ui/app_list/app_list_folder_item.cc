@@ -92,7 +92,7 @@ class FolderImageSource : public gfx::CanvasImageSource {
 }  // namespace
 
 AppListFolderItem::AppListFolderItem(const std::string& id)
-    : AppListItemModel(id),
+    : AppListItem(id),
       item_list_(new AppListItemList) {
   item_list_->AddObserver(this);
 }
@@ -148,20 +148,20 @@ void AppListFolderItem::ItemPercentDownloadedChanged() {
 }
 
 void AppListFolderItem::OnListItemAdded(size_t index,
-                                        AppListItemModel* item) {
+                                        AppListItem* item) {
   if (index <= kNumTopApps)
     UpdateTopItems();
 }
 
 void AppListFolderItem::OnListItemRemoved(size_t index,
-                                          AppListItemModel* item) {
+                                          AppListItem* item) {
   if (index <= kNumTopApps)
     UpdateTopItems();
 }
 
 void AppListFolderItem::OnListItemMoved(size_t from_index,
                                         size_t to_index,
-                                        AppListItemModel* item) {
+                                        AppListItem* item) {
   if (from_index <= kNumTopApps || to_index <= kNumTopApps)
     UpdateTopItems();
 }
@@ -173,7 +173,7 @@ void AppListFolderItem::UpdateTopItems() {
 
   for (size_t i = 0;
        i < kNumTopApps && i < item_list_->item_count(); ++i) {
-    AppListItemModel* item = item_list_->item_at(i);
+    AppListItem* item = item_list_->item_at(i);
     item->AddObserver(this);
     top_items_.push_back(item);
   }

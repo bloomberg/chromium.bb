@@ -14,15 +14,15 @@
 
 namespace app_list {
 
+class AppListItem;
 class AppListItemList;
-class AppListItemModel;
 class AppListModelObserver;
 class SearchBoxModel;
 class SearchResult;
 
 // Master model of app list that consists of three sub models: AppListItemList,
 // SearchBoxModel and SearchResults. The AppListItemList sub model owns a list
-// of AppListItemModel and is displayed in the grid view. SearchBoxModel is
+// of AppListItems and is displayed in the grid view. SearchBoxModel is
 // the model for SearchBoxView. SearchResults owns a list of SearchResult.
 class APP_LIST_EXPORT AppListModel {
  public:

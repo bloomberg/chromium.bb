@@ -12,11 +12,11 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/common/extensions/sync_helper.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 
 using app_list::AppListItemList;
-using app_list::AppListItemModel;
+using app_list::AppListItem;
 using app_list::AppListSyncableService;
 using app_list::AppListSyncableServiceFactory;
 
@@ -70,8 +70,8 @@ bool SyncAppListHelper::AppListMatchesVerifier(Profile* profile) {
   }
   bool res = true;
   for (size_t i = 0; i < service->model()->item_list()->item_count(); ++i) {
-    AppListItemModel* item1 = service->model()->item_list()->item_at(i);
-    AppListItemModel* item2 = verifier->model()->item_list()->item_at(i);
+    AppListItem* item1 = service->model()->item_list()->item_at(i);
+    AppListItem* item2 = verifier->model()->item_list()->item_at(i);
     if (item1->CompareForTest(item2))
       continue;
 
@@ -134,7 +134,7 @@ void SyncAppListHelper::PrintAppList(Profile* profile) {
   AppListSyncableService* service =
       AppListSyncableServiceFactory::GetForProfile(profile);
   for (size_t i = 0; i < service->model()->item_list()->item_count(); ++i) {
-    AppListItemModel* item = service->model()->item_list()->item_at(i);
+    AppListItem* item = service->model()->item_list()->item_at(i);
     extensions::AppSorting* s =
         extensions::ExtensionSystem::Get(profile)->extension_service()->
         extension_prefs()->app_sorting();

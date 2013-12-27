@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_folder_item.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/base/models/list_model_observer.h"
@@ -37,18 +37,17 @@ class TestObserver : public AppListModelObserver,
   }
 
   // AppListItemListObserver
-  virtual void OnListItemAdded(size_t index, AppListItemModel* item) OVERRIDE {
+  virtual void OnListItemAdded(size_t index, AppListItem* item) OVERRIDE {
     items_added_++;
   }
 
-  virtual void OnListItemRemoved(size_t index,
-                                 AppListItemModel* item) OVERRIDE {
+  virtual void OnListItemRemoved(size_t index, AppListItem* item) OVERRIDE {
     items_removed_++;
   }
 
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
-                               AppListItemModel* item) OVERRIDE {
+                               AppListItem* item) OVERRIDE {
     items_moved_++;
   }
 
@@ -95,7 +94,7 @@ class AppListModelTest : public testing::Test {
 
  protected:
   bool ItemObservedByFolder(AppListFolderItem* folder,
-                            AppListItemModel* item) {
+                            AppListItem* item) {
     return item->observers_.HasObserver(folder);
   }
 
@@ -127,10 +126,10 @@ TEST_F(AppListModelTest, AppsObserver) {
 TEST_F(AppListModelTest, ModelGetItem) {
   const size_t num_apps = 2;
   model_.PopulateApps(num_apps);
-  AppListItemModel* item0 = model_.item_list()->item_at(0);
+  AppListItem* item0 = model_.item_list()->item_at(0);
   ASSERT_TRUE(item0);
   EXPECT_EQ(model_.GetItemName(0), item0->id());
-  AppListItemModel* item1 = model_.item_list()->item_at(1);
+  AppListItem* item1 = model_.item_list()->item_at(1);
   ASSERT_TRUE(item1);
   EXPECT_EQ(model_.GetItemName(1), item1->id());
 }
@@ -139,11 +138,11 @@ TEST_F(AppListModelTest, ModelFindItem) {
   const size_t num_apps = 2;
   model_.PopulateApps(num_apps);
   std::string item_name0 = model_.GetItemName(0);
-  AppListItemModel* item0 = model_.item_list()->FindItem(item_name0);
+  AppListItem* item0 = model_.item_list()->FindItem(item_name0);
   ASSERT_TRUE(item0);
   EXPECT_EQ(item_name0, item0->id());
   std::string item_name1 = model_.GetItemName(1);
-  AppListItemModel* item1 = model_.item_list()->FindItem(item_name1);
+  AppListItem* item1 = model_.item_list()->FindItem(item_name1);
   ASSERT_TRUE(item1);
   EXPECT_EQ(item_name1, item1->id());
 }
@@ -156,11 +155,11 @@ TEST_F(AppListModelTest, ModelAddItem) {
   ASSERT_EQ(num_apps + 1, model_.item_list()->item_count());
   EXPECT_EQ("Added Item 1", model_.item_list()->item_at(num_apps)->id());
   // Add an item between items 0 and 1.
-  AppListItemModel* item0 = model_.item_list()->item_at(0);
+  AppListItem* item0 = model_.item_list()->item_at(0);
   ASSERT_TRUE(item0);
-  AppListItemModel* item1 = model_.item_list()->item_at(1);
+  AppListItem* item1 = model_.item_list()->item_at(1);
   ASSERT_TRUE(item1);
-  AppListItemModel* item2 = model_.CreateItem("Added Item 2", "Added Item 2");
+  AppListItem* item2 = model_.CreateItem("Added Item 2", "Added Item 2");
   model_.item_list()->AddItem(item2);
   model_.item_list()->SetItemPosition(
       item2, item0->position().CreateBetween(item1->position()));
@@ -176,7 +175,7 @@ TEST_F(AppListModelTest, ModelMoveItem) {
   ASSERT_EQ(num_apps + 1, model_.item_list()->item_count());
   // Move it to the position 1.
   model_.item_list()->MoveItem(num_apps, 1);
-  AppListItemModel* item = model_.item_list()->item_at(1);
+  AppListItem* item = model_.item_list()->item_at(1);
   ASSERT_TRUE(item);
   EXPECT_EQ("Inserted Item", item->id());
 }
@@ -197,7 +196,7 @@ TEST_F(AppListModelTest, ModelRemoveItem) {
   EXPECT_EQ(num_apps - 3, model_.item_list()->item_count());
   EXPECT_EQ(3u, observer_.items_removed());
   // Ensure that the first item is the expected one
-  AppListItemModel* item0 = model_.item_list()->item_at(0);
+  AppListItem* item0 = model_.item_list()->item_at(0);
   ASSERT_TRUE(item0);
   EXPECT_EQ(model_.GetItemName(2), item0->id());
 }

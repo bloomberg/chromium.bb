@@ -276,11 +276,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
                              const ui::Event& event) OVERRIDE;
 
   // Overridden from AppListItemListObserver:
-  virtual void OnListItemAdded(size_t index, AppListItemModel* item) OVERRIDE;
-  virtual void OnListItemRemoved(size_t index, AppListItemModel* item) OVERRIDE;
+  virtual void OnListItemAdded(size_t index, AppListItem* item) OVERRIDE;
+  virtual void OnListItemRemoved(size_t index, AppListItem* item) OVERRIDE;
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
-                               AppListItemModel* item) OVERRIDE;
+                               AppListItem* item) OVERRIDE;
 
   // Overridden from PaginationModelObserver:
   virtual void TotalPagesChanged() OVERRIDE;

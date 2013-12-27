@@ -12,7 +12,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/gfx/image/image_skia.h"
 
 class AppListControllerDelegate;
@@ -29,7 +29,7 @@ class Extension;
 }
 
 // ExtensionAppItem represents an extension app in app list.
-class ExtensionAppItem : public app_list::AppListItemModel,
+class ExtensionAppItem : public app_list::AppListItem,
                          public extensions::IconImage::Observer,
                          public ExtensionEnableFlowDelegate,
                          public app_list::AppContextMenuDelegate {
@@ -86,7 +86,7 @@ class ExtensionAppItem : public app_list::AppListItemModel,
   virtual void ExtensionEnableFlowFinished() OVERRIDE;
   virtual void ExtensionEnableFlowAborted(bool user_initiated) OVERRIDE;
 
-  // Overridden from AppListItemModel:
+  // Overridden from AppListItem:
   virtual void Activate(int event_flags) OVERRIDE;
   virtual ui::MenuModel* GetContextMenuModel() OVERRIDE;
   virtual const char* GetAppType() const OVERRIDE;

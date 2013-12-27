@@ -8,8 +8,8 @@
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_folder_item.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_item_list_observer.h"
-#include "ui/app_list/app_list_item_model.h"
 
 namespace app_list {
 
@@ -26,12 +26,11 @@ class TestObserver : public AppListItemListObserver {
   }
 
   // AppListItemListObserver overriden:
-  virtual void OnListItemAdded(size_t index, AppListItemModel* item) OVERRIDE {
+  virtual void OnListItemAdded(size_t index, AppListItem* item) OVERRIDE {
     ++items_added_;
   }
 
-  virtual void OnListItemRemoved(size_t index,
-                                 AppListItemModel* item) OVERRIDE {
+  virtual void OnListItemRemoved(size_t index, AppListItem* item) OVERRIDE {
     ++items_removed_;
   }
 
@@ -66,9 +65,9 @@ class AppListItemListTest : public testing::Test {
   }
 
  protected:
-  AppListItemModel* CreateItem(const std::string& title,
+  AppListItem* CreateItem(const std::string& title,
                                const std::string& full_name) {
-    AppListItemModel* item = new AppListItemModel(title);
+    AppListItem* item = new AppListItem(title);
     size_t nitems = item_list_.item_count();
     syncer::StringOrdinal position;
     if (nitems == 0)
@@ -80,9 +79,9 @@ class AppListItemListTest : public testing::Test {
     return item;
   }
 
-  AppListItemModel* CreateAndAddItem(const std::string& title,
-                                     const std::string& full_name) {
-    AppListItemModel* item = CreateItem(title, full_name);
+  AppListItem* CreateAndAddItem(const std::string& title,
+                                const std::string& full_name) {
+    AppListItem* item = CreateItem(title, full_name);
     item_list_.AddItem(item);
     return item;
   }
@@ -122,9 +121,9 @@ class AppListItemListTest : public testing::Test {
 };
 
 TEST_F(AppListItemListTest, FindItemIndex) {
-  AppListItemModel* item_0 = CreateAndAddItem(GetItemName(0), GetItemName(0));
-  AppListItemModel* item_1 = CreateAndAddItem(GetItemName(1), GetItemName(1));
-  AppListItemModel* item_2 = CreateAndAddItem(GetItemName(2), GetItemName(2));
+  AppListItem* item_0 = CreateAndAddItem(GetItemName(0), GetItemName(0));
+  AppListItem* item_1 = CreateAndAddItem(GetItemName(1), GetItemName(1));
+  AppListItem* item_2 = CreateAndAddItem(GetItemName(2), GetItemName(2));
   EXPECT_EQ(observer_.items_added(), 3u);
   EXPECT_EQ(item_list_.item_count(), 3u);
   EXPECT_EQ(item_0, item_list_.item_at(0));
@@ -140,15 +139,15 @@ TEST_F(AppListItemListTest, FindItemIndex) {
   EXPECT_TRUE(item_list_.FindItemIndex(item_2->id(), &index));
   EXPECT_EQ(index, 2u);
 
-  scoped_ptr<AppListItemModel> item_3(
+  scoped_ptr<AppListItem> item_3(
       CreateItem(GetItemName(3), GetItemName(3)));
   EXPECT_FALSE(item_list_.FindItemIndex(item_3->id(), &index));
 }
 
 TEST_F(AppListItemListTest, RemoveItemAt) {
-  AppListItemModel* item_0 = CreateAndAddItem(GetItemName(0), GetItemName(0));
-  AppListItemModel* item_1 = CreateAndAddItem(GetItemName(1), GetItemName(1));
-  AppListItemModel* item_2 = CreateAndAddItem(GetItemName(2), GetItemName(2));
+  AppListItem* item_0 = CreateAndAddItem(GetItemName(0), GetItemName(0));
+  AppListItem* item_1 = CreateAndAddItem(GetItemName(1), GetItemName(1));
+  AppListItem* item_2 = CreateAndAddItem(GetItemName(2), GetItemName(2));
   EXPECT_EQ(item_list_.item_count(), 3u);
   EXPECT_EQ(observer_.items_added(), 3u);
   size_t index;
@@ -156,7 +155,7 @@ TEST_F(AppListItemListTest, RemoveItemAt) {
   EXPECT_EQ(index, 1u);
   EXPECT_TRUE(VerifyItemListOrdinals());
 
-  scoped_ptr<AppListItemModel> item_removed = item_list_.RemoveItemAt(1);
+  scoped_ptr<AppListItem> item_removed = item_list_.RemoveItemAt(1);
   EXPECT_EQ(item_removed, item_1);
   EXPECT_FALSE(item_list_.FindItem(item_1->id()));
   EXPECT_EQ(item_list_.item_count(), 2u);
@@ -167,9 +166,9 @@ TEST_F(AppListItemListTest, RemoveItemAt) {
 }
 
 TEST_F(AppListItemListTest, RemoveItem) {
-  AppListItemModel* item_0 = CreateAndAddItem(GetItemName(0), GetItemName(0));
-  AppListItemModel* item_1 = CreateAndAddItem(GetItemName(1), GetItemName(1));
-  AppListItemModel* item_2 = CreateAndAddItem(GetItemName(2), GetItemName(2));
+  AppListItem* item_0 = CreateAndAddItem(GetItemName(0), GetItemName(0));
+  AppListItem* item_1 = CreateAndAddItem(GetItemName(1), GetItemName(1));
+  AppListItem* item_2 = CreateAndAddItem(GetItemName(2), GetItemName(2));
   EXPECT_EQ(item_list_.item_count(), 3u);
   EXPECT_EQ(observer_.items_added(), 3u);
   EXPECT_EQ(item_0, item_list_.item_at(0));
@@ -181,7 +180,7 @@ TEST_F(AppListItemListTest, RemoveItem) {
   EXPECT_TRUE(item_list_.FindItemIndex(item_1->id(), &index));
   EXPECT_EQ(index, 1u);
 
-  scoped_ptr<AppListItemModel> item_removed =
+  scoped_ptr<AppListItem> item_removed =
       item_list_.RemoveItem(item_1->id());
   EXPECT_EQ(item_removed, item_1);
   EXPECT_FALSE(item_list_.FindItem(item_1->id()));
@@ -189,13 +188,13 @@ TEST_F(AppListItemListTest, RemoveItem) {
   EXPECT_EQ(observer_.items_removed(), 1u);
   EXPECT_TRUE(VerifyItemListOrdinals());
 
-  scoped_ptr<AppListItemModel> not_found_item = item_list_.RemoveItem("Bogus");
+  scoped_ptr<AppListItem> not_found_item = item_list_.RemoveItem("Bogus");
   EXPECT_FALSE(not_found_item.get());
 }
 
 TEST_F(AppListItemListTest, InsertItemAt) {
-  AppListItemModel* item_0 = CreateAndAddItem(GetItemName(0), GetItemName(0));
-  AppListItemModel* item_1 = CreateAndAddItem(GetItemName(1), GetItemName(1));
+  AppListItem* item_0 = CreateAndAddItem(GetItemName(0), GetItemName(0));
+  AppListItem* item_1 = CreateAndAddItem(GetItemName(1), GetItemName(1));
   EXPECT_EQ(item_list_.item_count(), 2u);
   EXPECT_EQ(observer_.items_added(), 2u);
   EXPECT_EQ(item_list_.item_at(0), item_0);
@@ -203,7 +202,7 @@ TEST_F(AppListItemListTest, InsertItemAt) {
   EXPECT_TRUE(VerifyItemListOrdinals());
 
   // Insert an item at the beginning of the item_list_.
-  AppListItemModel* item_2 = CreateItem(GetItemName(2), GetItemName(2));
+  AppListItem* item_2 = CreateItem(GetItemName(2), GetItemName(2));
   item_list_.InsertItemAt(item_2, 0);
   EXPECT_EQ(item_list_.item_count(), 3u);
   EXPECT_EQ(observer_.items_added(), 3u);
@@ -213,7 +212,7 @@ TEST_F(AppListItemListTest, InsertItemAt) {
   EXPECT_TRUE(VerifyItemListOrdinals());
 
   // Insert an item at the end of the item_list_.
-  AppListItemModel* item_3 = CreateItem(GetItemName(3), GetItemName(3));
+  AppListItem* item_3 = CreateItem(GetItemName(3), GetItemName(3));
   item_list_.InsertItemAt(item_3, item_list_.item_count());
   EXPECT_EQ(item_list_.item_count(), 4u);
   EXPECT_EQ(observer_.items_added(), 4u);
@@ -224,7 +223,7 @@ TEST_F(AppListItemListTest, InsertItemAt) {
   EXPECT_TRUE(VerifyItemListOrdinals());
 
   // Insert an item at the 2nd item of the item_list_.
-  AppListItemModel* item_4 = CreateItem(GetItemName(4), GetItemName(4));
+  AppListItem* item_4 = CreateItem(GetItemName(4), GetItemName(4));
   item_list_.InsertItemAt(item_4, 1);
   EXPECT_EQ(item_list_.item_count(), 5u);
   EXPECT_EQ(observer_.items_added(), 5u);
@@ -237,7 +236,7 @@ TEST_F(AppListItemListTest, InsertItemAt) {
 }
 
 TEST_F(AppListItemListTest, InsertItemAtEmptyList) {
-  AppListItemModel* item_0 = CreateItem(GetItemName(0), GetItemName(0));
+  AppListItem* item_0 = CreateItem(GetItemName(0), GetItemName(0));
   EXPECT_EQ(item_list_.item_count(), 0u);
   item_list_.InsertItemAt(item_0, 0);
   EXPECT_EQ(item_list_.item_count(), 1u);

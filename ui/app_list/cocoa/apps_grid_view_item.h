@@ -12,7 +12,7 @@
 #import "ui/base/cocoa/tracking_area.h"
 
 namespace app_list {
-class AppListItemModel;
+class AppListItem;
 class ItemModelObserverBridge;
 }
 
@@ -34,10 +34,10 @@ APP_LIST_EXPORT
 - (id)initWithSize:(NSSize)tileSize;
 
 // Set the represented model, updating views. Clears if |itemModel| is NULL.
-- (void)setModel:(app_list::AppListItemModel*)itemModel;
+- (void)setModel:(app_list::AppListItem*)itemModel;
 
 // Model accessor, via the |observerBridge_|.
-- (app_list::AppListItemModel*)model;
+- (app_list::AppListItem*)model;
 
 // Return the button portion of the item, showing the icon and title.
 - (NSButton*)button;

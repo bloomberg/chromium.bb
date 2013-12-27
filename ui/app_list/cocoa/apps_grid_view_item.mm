@@ -10,8 +10,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_item_model.h"
-#include "ui/app_list/app_list_item_model_observer.h"
+#include "ui/app_list/app_list_item.h"
+#include "ui/app_list/app_list_item_observer.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -43,7 +43,7 @@ const int kMacFontSizeDelta = -1;
 // Typed accessor for the root view.
 - (AppsGridItemBackgroundView*)itemBackgroundView;
 
-// Bridged methods from app_list::AppListItemModelObserver:
+// Bridged methods from app_list::AppListItemObserver:
 // Update the title, correctly setting the color if the button is highlighted.
 - (void)updateButtonTitle;
 
@@ -64,12 +64,12 @@ const int kMacFontSizeDelta = -1;
 
 namespace app_list {
 
-class ItemModelObserverBridge : public app_list::AppListItemModelObserver {
+class ItemModelObserverBridge : public app_list::AppListItemObserver {
  public:
-  ItemModelObserverBridge(AppsGridViewItem* parent, AppListItemModel* model);
+  ItemModelObserverBridge(AppsGridViewItem* parent, AppListItem* model);
   virtual ~ItemModelObserverBridge();
 
-  AppListItemModel* model() { return model_; }
+  AppListItem* model() { return model_; }
   NSMenu* GetContextMenu();
 
   virtual void ItemIconChanged() OVERRIDE;
@@ -80,14 +80,14 @@ class ItemModelObserverBridge : public app_list::AppListItemModelObserver {
 
  private:
   AppsGridViewItem* parent_;  // Weak. Owns us.
-  AppListItemModel* model_;  // Weak. Owned by AppListModel.
+  AppListItem* model_;  // Weak. Owned by AppListModel.
   base::scoped_nsobject<MenuController> context_menu_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(ItemModelObserverBridge);
 };
 
 ItemModelObserverBridge::ItemModelObserverBridge(AppsGridViewItem* parent,
-                                                 AppListItemModel* model)
+                                       AppListItem* model)
     : parent_(parent),
       model_(model) {
   model_->AddObserver(this);
@@ -286,7 +286,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   [[[self button] cell] setHasShadow:[self model]->has_shadow()];
 }
 
-- (void)setModel:(app_list::AppListItemModel*)itemModel {
+- (void)setModel:(app_list::AppListItem*)itemModel {
   [trackingArea_.get() clearOwner];
   if (!itemModel) {
     observerBridge_.reset();
@@ -310,7 +310,7 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   [[self view] addTrackingArea:trackingArea_.get()];
 }
 
-- (app_list::AppListItemModel*)model {
+- (app_list::AppListItem*)model {
   return observerBridge_->model();
 }
 

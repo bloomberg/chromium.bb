@@ -6,12 +6,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 
-using app_list::AppListItemModel;
+using app_list::AppListItem;
 using app_list::AppListModel;
 
 class AppListModelPicklerUnitTest : public testing::Test {
@@ -76,7 +76,7 @@ TEST_F(AppListModelPicklerUnitTest, EmptyModel) {
 
 TEST_F(AppListModelPicklerUnitTest, OneItem) {
   AppListModel model;
-  AppListItemModel* app1 = new AppListItemModel("abc");
+  AppListItem* app1 = new AppListItem("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   model.item_list()->AddItem(app1);
 
@@ -85,11 +85,11 @@ TEST_F(AppListModelPicklerUnitTest, OneItem) {
 
 TEST_F(AppListModelPicklerUnitTest, TwoItems) {
   AppListModel model;
-  AppListItemModel* app1 = new AppListItemModel("abc");
+  AppListItem* app1 = new AppListItem("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   model.item_list()->AddItem(app1);
 
-  AppListItemModel* app2 = new AppListItemModel("abc2");
+  AppListItem* app2 = new AppListItem("abc2");
   app2->SetTitleAndFullName("ht2", "hello, there 2");
   model.item_list()->AddItem(app2);
 
@@ -98,12 +98,12 @@ TEST_F(AppListModelPicklerUnitTest, TwoItems) {
 
 TEST_F(AppListModelPicklerUnitTest, Images) {
   AppListModel model;
-  AppListItemModel* app1 = new AppListItemModel("abc");
+  AppListItem* app1 = new AppListItem("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   app1->SetIcon(MakeImage(), true);
   model.item_list()->AddItem(app1);
 
-  AppListItemModel* app2 = new AppListItemModel("abc2");
+  AppListItem* app2 = new AppListItem("abc2");
   app2->SetTitleAndFullName("ht2", "hello, there 2");
   model.item_list()->AddItem(app2);
 
@@ -112,7 +112,7 @@ TEST_F(AppListModelPicklerUnitTest, Images) {
 
 TEST_F(AppListModelPicklerUnitTest, EmptyImage) {
   AppListModel model;
-  AppListItemModel* app1 = new AppListItemModel("abc");
+  AppListItem* app1 = new AppListItem("abc");
   app1->SetTitleAndFullName("ht", "hello, there");
   app1->SetIcon(gfx::ImageSkia(), true);
   model.item_list()->AddItem(app1);

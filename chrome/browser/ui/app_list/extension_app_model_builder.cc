@@ -242,7 +242,7 @@ void ExtensionAppModelBuilder::SetHighlightedApp(
 
 ExtensionAppItem* ExtensionAppModelBuilder::GetExtensionAppItem(
     const std::string& extension_id) {
-  app_list::AppListItemModel* item =
+  app_list::AppListItem* item =
       model_->item_list()->FindItem(extension_id);
   LOG_IF(ERROR, item &&
          item->GetAppType() != ExtensionAppItem::kAppType)
@@ -262,10 +262,9 @@ void ExtensionAppModelBuilder::UpdateHighlight() {
   highlighted_app_pending_ = false;
 }
 
-void ExtensionAppModelBuilder::OnListItemMoved(
-    size_t from_index,
-    size_t to_index,
-    app_list::AppListItemModel* item) {
+void ExtensionAppModelBuilder::OnListItemMoved(size_t from_index,
+                                               size_t to_index,
+                                               app_list::AppListItem* item) {
   // This will get called from AppListItemList::ListItemMoved after
   // set_position is called for the item.
   app_list::AppListItemList* item_list = model_->item_list();
@@ -280,7 +279,7 @@ void ExtensionAppModelBuilder::OnListItemMoved(
 
   ExtensionAppItem* prev = NULL;
   for (size_t idx = to_index; idx > 0; --idx) {
-    app_list::AppListItemModel* item = item_list->item_at(idx - 1);
+    app_list::AppListItem* item = item_list->item_at(idx - 1);
     if (item->GetAppType() == ExtensionAppItem::kAppType) {
       prev = static_cast<ExtensionAppItem*>(item);
       break;
@@ -288,7 +287,7 @@ void ExtensionAppModelBuilder::OnListItemMoved(
   }
   ExtensionAppItem* next = NULL;
   for (size_t idx = to_index; idx < item_list->item_count() - 1; ++idx) {
-    app_list::AppListItemModel* item = item_list->item_at(idx + 1);
+    app_list::AppListItem* item = item_list->item_at(idx + 1);
     if (item->GetAppType() == ExtensionAppItem::kAppType) {
       next = static_cast<ExtensionAppItem*>(item);
       break;

@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/app_list/fast_show_pickler.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/gfx/image/image_skia_rep.h"
 
 namespace {
 
-using app_list::AppListItemModel;
+using app_list::AppListItem;
 using app_list::AppListModel;
 
 // These have the same meaning as SkBitmap::Config. Reproduced here to insure
@@ -146,29 +146,29 @@ bool UnpickleImage(PickleIterator* it, gfx::ImageSkia* out) {
   return true;
 }
 
-scoped_ptr<AppListItemModel> UnpickleAppListItemModel(PickleIterator* it) {
+scoped_ptr<AppListItem> UnpickleAppListItem(PickleIterator* it) {
   std::string id;
   if (!it->ReadString(&id))
-    return scoped_ptr<AppListItemModel>();
-  scoped_ptr<AppListItemModel> result(new AppListItemModel(id));
+    return scoped_ptr<AppListItem>();
+  scoped_ptr<AppListItem> result(new AppListItem(id));
   std::string title;
   if (!it->ReadString(&title))
-    return scoped_ptr<AppListItemModel>();
+    return scoped_ptr<AppListItem>();
   std::string full_name;
   if (!it->ReadString(&full_name))
-    return scoped_ptr<AppListItemModel>();
+    return scoped_ptr<AppListItem>();
   result->SetTitleAndFullName(title, full_name);
   bool has_shadow = false;
   if (!it->ReadBool(&has_shadow))
-    return scoped_ptr<AppListItemModel>();
+    return scoped_ptr<AppListItem>();
   gfx::ImageSkia icon;
   if (!UnpickleImage(it, &icon))
-    return scoped_ptr<AppListItemModel>();
+    return scoped_ptr<AppListItem>();
   result->SetIcon(icon, has_shadow);
   return result.Pass();
 }
 
-bool PickleAppListItemModel(Pickle* pickle, AppListItemModel* item) {
+bool PickleAppListItem(Pickle* pickle, AppListItem* item) {
   if (!pickle->WriteString(item->id()))
     return false;
   if (!pickle->WriteString(item->title()))
@@ -182,7 +182,7 @@ bool PickleAppListItemModel(Pickle* pickle, AppListItemModel* item) {
   return true;
 }
 
-void CopyOverItem(AppListItemModel* src_item, AppListItemModel* dest_item) {
+void CopyOverItem(AppListItem* src_item, AppListItem* dest_item) {
   dest_item->SetTitleAndFullName(src_item->title(), src_item->full_name());
   dest_item->SetIcon(src_item->icon(), src_item->has_shadow());
 }
@@ -201,7 +201,7 @@ scoped_ptr<Pickle> FastShowPickler::PickleAppListModelForFastShow(
   if (!result->WriteInt((int) model->item_list()->item_count()))
     return scoped_ptr<Pickle>();
   for (size_t i = 0; i < model->item_list()->item_count(); ++i) {
-    if (!PickleAppListItemModel(result.get(), model->item_list()->item_at(i)))
+    if (!PickleAppListItem(result.get(), model->item_list()->item_at(i)))
       return scoped_ptr<Pickle>();
   }
   return result.Pass();
@@ -210,8 +210,8 @@ scoped_ptr<Pickle> FastShowPickler::PickleAppListModelForFastShow(
 void FastShowPickler::CopyOver(AppListModel* src, AppListModel* dest) {
   dest->item_list()->DeleteItemsByType(NULL /* all items */);
   for (size_t i = 0; i < src->item_list()->item_count(); i++) {
-    AppListItemModel* src_item = src->item_list()->item_at(i);
-    AppListItemModel* dest_item = new AppListItemModel(src_item->id());
+    AppListItem* src_item = src->item_list()->item_at(i);
+    AppListItem* dest_item = new AppListItem(src_item->id());
     CopyOverItem(src_item, dest_item);
     dest->item_list()->AddItem(dest_item);
   }
@@ -231,7 +231,7 @@ FastShowPickler::UnpickleAppListModelForFastShow(Pickle* pickle) {
 
   scoped_ptr<AppListModel> model(new AppListModel);
   for (int i = 0; i < app_count; ++i) {
-    scoped_ptr<AppListItemModel> item(UnpickleAppListItemModel(&it).Pass());
+    scoped_ptr<AppListItem> item(UnpickleAppListItem(&it).Pass());
     if (!item)
       return scoped_ptr<AppListModel>();
     model->item_list()->AddItem(item.release());

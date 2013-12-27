@@ -9,21 +9,21 @@
 
 namespace app_list {
 
-class AppListItemModel;
+class AppListItem;
 
 class APP_LIST_EXPORT AppListItemListObserver {
  public:
   // Triggered after |item| has been added to the list at |index|.
-  virtual void OnListItemAdded(size_t index, AppListItemModel* item) {}
+  virtual void OnListItemAdded(size_t index, AppListItem* item) {}
 
   // Triggered after an item has been removed from the list at |index|, just
   // before the item is deleted.
-  virtual void OnListItemRemoved(size_t index, AppListItemModel* item) {}
+  virtual void OnListItemRemoved(size_t index, AppListItem* item) {}
 
   // Triggered after |item| has been moved from |from_index| to |to_index|.
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
-                               AppListItemModel* item) {}
+                               AppListItem* item) {}
 
  protected:
   virtual ~AppListItemListObserver() {}

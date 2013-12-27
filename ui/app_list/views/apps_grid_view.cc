@@ -12,7 +12,7 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_folder_item.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
@@ -177,7 +177,7 @@ int GetDistanceBetweenRects(gfx::Rect rect_1,
 }
 
 // Returns true if the |item| is an folder item.
-bool IsFolderItem(AppListItemModel* item) {
+bool IsFolderItem(AppListItem* item) {
   return (item->GetAppType() == AppListFolderItem::kAppType);
 }
 
@@ -187,21 +187,21 @@ bool IsFolderItem(AppListItemModel* item) {
 // Returns the index of the target folder.
 size_t MergeItems(AppListItemList* item_list,
                   const std::string& target_item_id,
-                  AppListItemModel* source_item) {
-  scoped_ptr<AppListItemModel> source_item_ptr =
+                  AppListItem* source_item) {
+  scoped_ptr<AppListItem> source_item_ptr =
       item_list->RemoveItem(source_item->id());
   DCHECK_EQ(source_item, source_item_ptr.get());
   size_t target_index;
   bool found_target_item = item_list->FindItemIndex(target_item_id,
                                                     &target_index);
   DCHECK(found_target_item);
-  AppListItemModel* target_item = item_list->item_at(target_index);
+  AppListItem* target_item = item_list->item_at(target_index);
   if (IsFolderItem(target_item)) {
     AppListFolderItem* target_folder =
         static_cast<AppListFolderItem*>(target_item);
     target_folder->item_list()->AddItem(source_item_ptr.release());
   } else {
-    scoped_ptr<AppListItemModel> target_item_ptr =
+    scoped_ptr<AppListItem> target_item_ptr =
         item_list->RemoveItemAt(target_index);
     DCHECK_EQ(target_item, target_item_ptr.get());
     AppListFolderItem* new_folder =
@@ -488,7 +488,7 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
     return;
 
   delegate_->GetShortcutPathForApp(
-      drag_view_->model()->id(),
+      drag_view_->item()->id(),
       base::Bind(&AppsGridView::OnGotShortcutPath, base::Unretained(this)));
   synchronous_drag_ = new SynchronousDrag(this, drag_view_, drag_view_offset_);
 #endif
@@ -1238,7 +1238,7 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   // We have to hide the original item since the drag and drop host will do
   // the OS dependent code to "lift off the dragged item".
   drag_and_drop_host_->CreateDragIconProxy(screen_location,
-                                           drag_view_->model()->icon(),
+                                           drag_view_->item()->icon(),
                                            drag_view_,
                                            delta,
                                            kDragAndDropProxyScale);
@@ -1269,7 +1269,7 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
         drag_and_drop_host_->EndDrag(true);
       }
     } else {
-      if (drag_and_drop_host_->StartDrag(drag_view_->model()->id(),
+      if (drag_and_drop_host_->StartDrag(drag_view_->item()->id(),
                                          location_in_screen_coordinates)) {
         // From now on we forward the drag events.
         forward_events_to_drag_and_drop_host_ = true;
@@ -1342,11 +1342,11 @@ void AppsGridView::MoveItemInModel(views::View* item_view,
 
 void AppsGridView::MoveItemToFolder(views::View* item_view,
                                     const Index& target) {
-  AppListItemModel* source_item =
-      static_cast<AppListItemView*>(item_view)->model();
+  AppListItem* source_item =
+      static_cast<AppListItemView*>(item_view)->item();
   AppListItemView* target_view =
       static_cast<AppListItemView*>(GetViewAtSlotOnCurrentPage(target.slot));
-  AppListItemModel* target_item = target_view->model();
+  AppListItem* target_item = target_view->item();
   bool target_is_folder = IsFolderItem(target_item);
 
   // Make change to data model.
@@ -1401,7 +1401,7 @@ void AppsGridView::ButtonPressed(views::Button* sender,
     return;
 
   if (delegate_) {
-    delegate_->ActivateApp(static_cast<AppListItemView*>(sender)->model(),
+    delegate_->ActivateApp(static_cast<AppListItemView*>(sender)->item(),
                            event.flags());
   }
 }
@@ -1429,7 +1429,7 @@ void AppsGridView::LayoutStartPage() {
   start_page_view_->SetBoundsRect(start_page_bounds);
 }
 
-void AppsGridView::OnListItemAdded(size_t index, AppListItemModel* item) {
+void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
   EndDrag(true);
 
   views::View* view = CreateViewForItemAtIndex(index);
@@ -1442,7 +1442,7 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItemModel* item) {
   SchedulePaint();
 }
 
-void AppsGridView::OnListItemRemoved(size_t index, AppListItemModel* item) {
+void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
   EndDrag(true);
 
   views::View* view = view_model_.view_at(index);
@@ -1457,7 +1457,7 @@ void AppsGridView::OnListItemRemoved(size_t index, AppListItemModel* item) {
 
 void AppsGridView::OnListItemMoved(size_t from_index,
                                    size_t to_index,
-                                   AppListItemModel* item) {
+                                   AppListItem* item) {
   EndDrag(true);
   view_model_.Move(from_index, to_index);
 
@@ -1520,8 +1520,8 @@ bool AppsGridView::CanDropIntoTarget(const Index& drop_target) {
   if (!target_view)
     return true;
 
-  AppListItemModel* target_item =
-      static_cast<AppListItemView*>(target_view)->model();
+  AppListItem* target_item =
+      static_cast<AppListItemView*>(target_view)->item();
   if (!IsFolderItem(target_item))
     return true;
 
@@ -1561,7 +1561,7 @@ AppsGridView::Index AppsGridView::GetNearestTileForDragView() {
     if (d_min < d_folder_dropping) {
       views::View* target_view = GetViewAtSlotOnCurrentPage(nearest_tile.slot);
       if (target_view &&
-          !IsFolderItem(static_cast<AppListItemView*>(drag_view_)->model())) {
+          !IsFolderItem(static_cast<AppListItemView*>(drag_view_)->item())) {
         // If a non-folder item is dragged to the target slot with an item
         // sitting on it, attempt to drop the dragged item into the folder
         // containing the item on nearest_tile.

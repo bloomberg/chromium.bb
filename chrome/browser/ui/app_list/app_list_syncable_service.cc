@@ -19,7 +19,7 @@
 #include "sync/api/sync_data.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/protocol/sync.pb.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 
 using syncer::SyncChange;
@@ -40,7 +40,7 @@ void UpdateSyncItemFromSync(const sync_pb::AppListSpecifics& specifics,
     item->item_ordinal = syncer::StringOrdinal(specifics.item_ordinal());
 }
 
-bool UpdateSyncItemFromAppItem(const AppListItemModel* app_item,
+bool UpdateSyncItemFromAppItem(const AppListItem* app_item,
                                AppListSyncableService::SyncItem* sync_item) {
   DCHECK_EQ(sync_item->item_id, app_item->id());
   bool changed = false;
@@ -350,10 +350,10 @@ bool AppListSyncableService::SyncStarted() {
 
 AppListSyncableService::SyncItem* AppListSyncableService::AddItem(
     sync_pb::AppListSpecifics::AppListItemType type,
-    AppListItemModel* app_item) {
+    AppListItem* app_item) {
   const std::string& item_id = app_item->id();
   if (item_id.empty()) {
-    LOG(ERROR) << "AppListItemModel item with empty ID";
+    LOG(ERROR) << "AppListItem item with empty ID";
     return NULL;
   }
   bool new_item = false;
@@ -425,7 +425,7 @@ bool AppListSyncableService::CreateOrUpdateSyncItem(
            << " New: " << new_item << " Pos: " << specifics.item_ordinal();
   UpdateSyncItemFromSync(specifics, sync_item);
   // Update existing item in model
-  AppListItemModel* item = model_->item_list()->FindItem(sync_item->item_id);
+  AppListItem* item = model_->item_list()->FindItem(sync_item->item_id);
   if (item && !item->position().Equals(sync_item->item_ordinal))
     model_->item_list()->SetItemPosition(item, sync_item->item_ordinal);
   if (new_item) {

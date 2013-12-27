@@ -74,7 +74,7 @@ class ExtensionAppModelBuilder : public extensions::InstallObserver,
   // AppListItemListObserver
   virtual void OnListItemMoved(size_t from_index,
                                size_t to_index,
-                               app_list::AppListItemModel* item) OVERRIDE;
+                               app_list::AppListItem* item) OVERRIDE;
 
   ExtensionAppItem* CreateAppItem(const std::string& extension_id,
                                   const std::string& extension_name,

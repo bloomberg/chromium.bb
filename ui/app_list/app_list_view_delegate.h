@@ -27,7 +27,6 @@ class ImageSkia;
 
 namespace app_list {
 
-class AppListItemModel;
 class AppListModel;
 class AppListViewDelegateObserver;
 class SearchResult;

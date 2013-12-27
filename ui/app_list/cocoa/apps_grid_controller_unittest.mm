@@ -8,7 +8,7 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_constants.h"
-#include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_item.h"
 #import "ui/app_list/cocoa/apps_collection_view_drag_manager.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
@@ -131,10 +131,10 @@ class AppsGridControllerTest : public AppsGridControllerTestHelper {
   DISALLOW_COPY_AND_ASSIGN(AppsGridControllerTest);
 };
 
-class AppListItemWithMenu : public AppListItemModel {
+class AppListItemWithMenu : public AppListItem {
  public:
   explicit AppListItemWithMenu(const std::string& title)
-      : AppListItemModel(title),
+      : AppListItem(title),
         menu_model_(NULL),
         menu_ready_(true) {
     SetTitleAndFullName(title, title);
@@ -448,7 +448,7 @@ TEST_F(AppsGridControllerTest, ModelUpdate) {
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Update the title via the ItemModelObserver.
-  app_list::AppListItemModel* item_model = model()->item_list()->item_at(2);
+  app_list::AppListItem* item_model = model()->item_list()->item_at(2);
   item_model->SetTitleAndFullName("UpdatedItem", "UpdatedItem");
   EXPECT_NSEQ(@"UpdatedItem", [button title]);
   EXPECT_EQ(std::string("|Item 0,Item 1,UpdatedItem|"), GetViewContent());
@@ -482,9 +482,9 @@ TEST_F(AppsGridControllerTest, ModelAdd) {
   EXPECT_EQ(std::string("|Item 0,Item 1,Item 2|"), GetViewContent());
 
   // Test adding an item whose position is in the middle.
-  app_list::AppListItemModel* item0 = item_list->item_at(0);
-  app_list::AppListItemModel* item1 = item_list->item_at(1);
-  app_list::AppListItemModel* item3 =
+  app_list::AppListItem* item0 = item_list->item_at(0);
+  app_list::AppListItem* item1 = item_list->item_at(1);
+  app_list::AppListItem* item3 =
       model()->CreateItem("Item Three", "Item Three");
   item_list->AddItem(item3);
   item_list->SetItemPosition(
@@ -542,7 +542,7 @@ TEST_F(AppsGridControllerTest, ModelRemovePage) {
   EXPECT_EQ(2u, [apps_grid_controller_ pageCount]);
 
   // Test removing the last item when there is one item on the second page.
-  app_list::AppListItemModel* last_item = item_list->item_at(kItemsPerPage);
+  app_list::AppListItem* last_item = item_list->item_at(kItemsPerPage);
   item_list->DeleteItem(last_item->id());
   EXPECT_EQ(kItemsPerPage, item_list->item_count());
   EXPECT_EQ(kItemsPerPage, [apps_grid_controller_ itemCount]);
@@ -554,7 +554,7 @@ TEST_F(AppsGridControllerTest, ItemInstallProgress) {
   ReplaceTestModel(kItemsPerPage + 1);
   EXPECT_EQ(2u, [apps_grid_controller_ pageCount]);
   EXPECT_EQ(0u, [apps_grid_controller_ visiblePage]);
-  app_list::AppListItemModel* item_model =
+  app_list::AppListItem* item_model =
       model()->item_list()->item_at(kItemsPerPage);
 
   // Highlighting an item should activate the page it is on.
@@ -590,7 +590,7 @@ TEST_F(AppsGridControllerTest, ItemInstallProgress) {
 
   // Two things can be installing simultaneously. When one starts or completes
   // the model builder will ask for the item to be highlighted.
-  app_list::AppListItemModel* alternate_item_model =
+  app_list::AppListItem* alternate_item_model =
       model()->item_list()->item_at(0);
   item_model->SetHighlighted(false);
   alternate_item_model->SetHighlighted(true);

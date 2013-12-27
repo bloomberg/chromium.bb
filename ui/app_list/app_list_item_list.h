@@ -16,7 +16,7 @@
 
 namespace app_list {
 
-class AppListItemModel;
+class AppListItem;
 
 // Class to manage items in the app list. Used both by AppListModel and
 // AppListFolderItem. Manages the position ordinal of items in the list, and
@@ -30,7 +30,7 @@ class APP_LIST_EXPORT AppListItemList {
   void RemoveObserver(AppListItemListObserver* observer);
 
   // Finds item matching |id|. NOTE: Requires a linear search.
-  AppListItemModel* FindItem(const std::string& id);
+  AppListItem* FindItem(const std::string& id);
 
   // Finds the |index| of the the item matching |id| in |app_list_items_|.
   // Returns true if the matching item is found.
@@ -39,11 +39,11 @@ class APP_LIST_EXPORT AppListItemList {
 
   // Adds |item| to the end of |app_list_items_|. Takes ownership of |item|.
   // Triggers observers_.OnListItemAdded(). Returns the index of the added item.
-  size_t AddItem(AppListItemModel* item);
+  size_t AddItem(AppListItem* item);
 
   // Inserts |item| at the |index| into |app_list_items_|. Takes ownership of
   // |item|. Triggers observers_.OnListItemAdded().
-  void InsertItemAt(AppListItemModel* item, size_t index);
+  void InsertItemAt(AppListItem* item, size_t index);
 
   // Finds item matching |id| in |app_list_items_| (linear search) and deletes
   // it. Triggers observers_.OnListItemRemoved() after removing the item from
@@ -58,11 +58,11 @@ class APP_LIST_EXPORT AppListItemList {
 
   // Removes the item with matching |id| in |app_list_items_| without deleting
   // it. Returns a scoped pointer containing the removed item.
-  scoped_ptr<AppListItemModel> RemoveItem(const std::string& id);
+  scoped_ptr<AppListItem> RemoveItem(const std::string& id);
 
   // Removes the item at |index| from |app_list_items_| without deleting it.
   // Returns a scoped pointer containing the removed item.
-  scoped_ptr<AppListItemModel> RemoveItemAt(size_t index);
+  scoped_ptr<AppListItem> RemoveItemAt(size_t index);
 
   // Moves item at |from_index| to |to_index|.
   // Triggers observers_.OnListItemMoved().
@@ -70,10 +70,10 @@ class APP_LIST_EXPORT AppListItemList {
 
   // Sets the position of |item| which is expected to be a member of
   // |app_list_items_| and sorts the list accordingly.
-  void SetItemPosition(AppListItemModel* item,
+  void SetItemPosition(AppListItem* item,
                        const syncer::StringOrdinal& new_position);
 
-  AppListItemModel* item_at(size_t index) {
+  AppListItem* item_at(size_t index) {
     DCHECK_LT(index, app_list_items_.size());
     return app_list_items_[index];
   }
@@ -85,14 +85,14 @@ class APP_LIST_EXPORT AppListItemList {
 
   // If |item|->position() is not a valid ordinal, sets |item|->position()
   // to a valid ordinal after the last item in the list.
-  void EnsureValidItemPosition(AppListItemModel* item);
+  void EnsureValidItemPosition(AppListItem* item);
 
   // Returns the index at which to insert an item in |app_list_items_| based on
   // |position| (which must be valid) and |id| (if the positions are equal).
   size_t GetItemSortOrderIndex(const syncer::StringOrdinal& position,
                                const std::string& id);
 
-  ScopedVector<AppListItemModel> app_list_items_;
+  ScopedVector<AppListItem> app_list_items_;
   ObserverList<AppListItemListObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemList);
