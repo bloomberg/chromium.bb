@@ -72,25 +72,11 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
                      const OpenQuotaFileCallback& callback);
   // Closes the file. This must be called after OpenQuotaFile and before the
   // PepperFileIOHost is destroyed.
-  void CloseQuotaFile(PepperFileIOHost* file_io_host);
-  // Requests the given amount of quota. Returns the amount requested or
-  // PP_OK_COMPLETIONPENDING, in which case the amount granted is returned in
-  // the callback. Requests can't partially succeed so the amount granted is
-  // either 0 or the amount of the request. Requesting an amount of 0 will
-  // return immediately with a 0 result.
-  typedef base::Callback<void(int32_t)> RequestQuotaCallback;
-  int32_t RequestQuota(int32_t amount,
-                       const RequestQuotaCallback& callback);
+  void CloseQuotaFile(PepperFileIOHost* file_io_host,
+                      int64_t max_written_offset);
+
  private:
   friend class PepperFileSystemBrowserHostTest;
-
-  struct QuotaRequest {
-    QuotaRequest(int32_t amount, const RequestQuotaCallback& callback);
-    ~QuotaRequest();
-
-    int32_t amount;
-    RequestQuotaCallback callback;
-  };
 
   void OpenExistingFileSystem(
       const base::Closure& callback,
@@ -118,12 +104,17 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
       const std::string& fsid,
       base::PlatformFileError error);
 
-  int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
-                        int64_t expected_size);
+  int32_t OnHostMsgOpen(
+      ppapi::host::HostMessageContext* context,
+      int64_t expected_size);
   int32_t OnHostMsgInitIsolatedFileSystem(
       ppapi::host::HostMessageContext* context,
       const std::string& fsid,
       PP_IsolatedFileSystemType_Private type);
+  int32_t OnHostMsgReserveQuota(
+      ppapi::host::HostMessageContext* context,
+      int64_t amount,
+      const std::map<int32_t, int64_t>& max_written_offsets);
 
   void SendReplyForFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
@@ -142,9 +133,14 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
       const base::Closure& callback,
       scoped_refptr<QuotaReservation> quota_reservation);
 
-  void ReserveQuota(int32_t amount);
-  void GotReservedQuota(int64_t amount,
-                        const QuotaReservation::OffsetMap& max_written_offsets);
+  void GotReservedQuota(
+      ppapi::host::ReplyMessageContext reply_context,
+      int64_t amount,
+      const std::map<int32_t, int64_t>& max_written_offsets);
+  void DidOpenQuotaFile(
+      PP_Resource file_io_resource,
+      const OpenQuotaFileCallback& callback,
+      int64_t max_written_offset);
 
   std::string GetPluginMimeType() const;
 
@@ -167,7 +163,6 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
   // destroyed.
   typedef std::map<int32_t, PepperFileIOHost*> FileMap;
   FileMap files_;
-  std::queue<QuotaRequest> pending_quota_requests_;
   int64_t reserved_quota_;
   bool reserving_quota_;
   // Access only on the FileSystemContext's default_file_task_runner().

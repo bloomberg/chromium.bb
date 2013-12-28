@@ -10,6 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/lock.h"
+#include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace IPC {
@@ -24,6 +26,7 @@ class SerializedHandle;
 class PPAPI_PROXY_EXPORT NaClMessageScanner {
  public:
   NaClMessageScanner();
+  ~NaClMessageScanner();
 
   // Scans the message for items that require special handling. Copies any
   // SerializedHandles in the message into |handles| and if the message must be
@@ -44,14 +47,77 @@ class PPAPI_PROXY_EXPORT NaClMessageScanner {
   void ScanUntrustedMessage(const IPC::Message& untrusted_msg,
                             scoped_ptr<IPC::Message>* new_msg_ptr);
 
+  // FileSystem information for quota auditing.
+  class PPAPI_PROXY_EXPORT FileSystem {
+   public:
+    FileSystem();
+    ~FileSystem();
+
+    int64_t reserved_quota() const { return reserved_quota_; }
+
+    // Adds amount to reserved quota. Returns true if reserved quota >= 0.
+    bool UpdateReservedQuota(int64_t delta);
+
+   private:
+    base::Lock lock_;
+    // This is the remaining amount of quota reserved for the file system.
+    // Acquire the lock to modify this field, since it may be used on multiple
+    // threads.
+    int64_t reserved_quota_;
+
+    DISALLOW_COPY_AND_ASSIGN(FileSystem);
+  };
+
+  // FileIO information for quota auditing.
+  class PPAPI_PROXY_EXPORT FileIO {
+   public:
+    FileIO(FileSystem* file_system, int64_t max_written_offset);
+    ~FileIO();
+
+    int64_t max_written_offset() { return max_written_offset_; }
+
+    void SetMaxWrittenOffset(int64_t max_written_offset);
+
+    // Grows file by the given amount. Returns true on success.
+    bool Grow(int64_t amount);
+
+   private:
+    base::Lock lock_;
+
+    // The file system that contains this file.
+    FileSystem* file_system_;
+
+    // The maximum written offset. This is initialized by NaClMessageScanner
+    // when the file is opened and modified by a NaClDescQuotaInterface when the
+    // plugin writes to greater maximum offsets.
+    int64_t max_written_offset_;
+
+    DISALLOW_COPY_AND_ASSIGN(FileIO);
+  };
+
+  FileIO* GetFile(PP_Resource file_io);
+
  private:
+  friend class NaClMessageScannerTest;
+
   void RegisterSyncMessageForReply(const IPC::Message& msg);
+  void AuditNestedMessage(PP_Resource resource,
+                          const IPC::Message& msg,
+                          SerializedHandle* handle);
 
   // When we send a synchronous message (from untrusted to trusted), we store
   // its type here, so that later we can associate the reply with its type
   // for scanning.
   typedef std::map<int, uint32> PendingSyncMsgMap;
   PendingSyncMsgMap pending_sync_msgs_;
+
+  // We intercept FileSystem and FileIO messages to maintain information about
+  // file systems and open files. This is used by NaClQuotaDescs to calculate
+  // quota consumption and check it against the reserved amount.
+  typedef std::map<int32_t, FileSystem*> FileSystemMap;
+  FileSystemMap file_systems_;
+  typedef std::map<int32_t, FileIO*> FileIOMap;
+  FileIOMap files_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClMessageScanner);
 };

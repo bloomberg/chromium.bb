@@ -19,12 +19,16 @@
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
+#include "native_client/src/trusted/desc/nacl_desc_quota.h"
+#include "native_client/src/trusted/desc/nacl_desc_quota_interface.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_handle.h"
+
+using ppapi::proxy::NaClMessageScanner;
 
 namespace {
 
@@ -55,11 +59,12 @@ BufferSizeStatus GetBufferStatus(const char* data, size_t len) {
   return MESSAGE_IS_TRUNCATED;
 }
 
+//------------------------------------------------------------------------------
 // This object allows the NaClDesc to hold a reference to a NaClIPCAdapter and
 // forward calls to it.
 struct DescThunker {
-  explicit DescThunker(NaClIPCAdapter* adapter_param)
-      : adapter(adapter_param) {
+  explicit DescThunker(NaClIPCAdapter* adapter_arg)
+      : adapter(adapter_arg) {
   }
   scoped_refptr<NaClIPCAdapter> adapter;
 };
@@ -91,6 +96,96 @@ NaClDesc* MakeNaClDescCustom(NaClIPCAdapter* adapter) {
   // NaClDescMakeCustomDesc gives us a reference on the returned NaClDesc.
   return NaClDescMakeCustomDesc(new DescThunker(adapter), &funcs);
 }
+
+//------------------------------------------------------------------------------
+// This object is passed to a NaClDescQuota to intercept writes and forward them
+// to the NaClIPCAdapter, which checks quota. This is a NaCl-style struct. Don't
+// add non-trivial fields or virtual methods. Construction should use malloc,
+// because this is owned by the NaClDesc, and the NaCl Dtor code will call free.
+struct QuotaInterface {
+  // The "base" struct must be first. NaCl code expects a NaCl style ref-counted
+  // object, so the "vtable" and other base class fields must be first.
+  struct NaClDescQuotaInterface base NACL_IS_REFCOUNT_SUBCLASS;
+
+  NaClMessageScanner::FileIO* file_io;
+};
+
+static void QuotaInterfaceDtor(NaClRefCount* nrcp) {
+  // Trivial class, just pass through to the "base" struct Dtor.
+  nrcp->vtbl = reinterpret_cast<NaClRefCountVtbl*>(
+      const_cast<NaClDescQuotaInterfaceVtbl*>(&kNaClDescQuotaInterfaceVtbl));
+  (*nrcp->vtbl->Dtor)(nrcp);
+}
+
+static int64_t QuotaInterfaceWriteRequest(NaClDescQuotaInterface* ndqi,
+                                          const uint8_t* /* unused_id */,
+                                          int64_t offset,
+                                          int64_t length) {
+  if (offset < 0 || length < 0)
+    return 0;
+  if (std::numeric_limits<int64_t>::max() - length < offset)
+    return 0;  // offset + length would overflow.
+  int64_t max_offset = offset + length;
+  if (max_offset < 0)
+    return 0;
+
+  QuotaInterface* quota_interface = reinterpret_cast<QuotaInterface*>(ndqi);
+  NaClMessageScanner::FileIO* file_io = quota_interface->file_io;
+  int64_t increase = max_offset - file_io->max_written_offset();
+  if (increase <= 0 || file_io->Grow(increase))
+    return length;
+
+  return 0;
+}
+
+static int64_t QuotaInterfaceFtruncateRequest(NaClDescQuotaInterface* ndqi,
+                                              const uint8_t* /* unused_id */,
+                                              int64_t length) {
+  // We can't implement SetLength on the plugin side due to sandbox limitations.
+  // See crbug.com/156077.
+  NOTREACHED();
+  return 0;
+}
+
+static const struct NaClDescQuotaInterfaceVtbl kQuotaInterfaceVtbl = {
+  {
+    QuotaInterfaceDtor
+  },
+  QuotaInterfaceWriteRequest,
+  QuotaInterfaceFtruncateRequest
+};
+
+NaClDesc* MakeNaClDescQuota(
+    NaClMessageScanner::FileIO* file_io,
+    NaClDesc* wrapped_desc) {
+  // Create the QuotaInterface.
+  QuotaInterface* quota_interface =
+      static_cast<QuotaInterface*>(malloc(sizeof *quota_interface));
+  if (quota_interface && NaClDescQuotaInterfaceCtor(&quota_interface->base)) {
+    quota_interface->base.base.vtbl =
+        (struct NaClRefCountVtbl *)(&kQuotaInterfaceVtbl);
+    // QuotaInterface is a trivial class, so skip the ctor.
+    quota_interface->file_io = file_io;
+    // Create the NaClDescQuota.
+    NaClDescQuota* desc = static_cast<NaClDescQuota*>(malloc(sizeof *desc));
+    uint8_t unused_id[NACL_DESC_QUOTA_FILE_ID_LEN] = {0};
+    if (desc && NaClDescQuotaCtor(desc,
+                                  wrapped_desc,
+                                  unused_id,
+                                  &quota_interface->base)) {
+      return &desc->base;
+    }
+    if (desc)
+      NaClDescUnref(reinterpret_cast<NaClDesc*>(desc));
+  }
+
+  if (quota_interface)
+    NaClDescQuotaInterfaceUnref(&quota_interface->base);
+
+  return NULL;
+}
+
+//------------------------------------------------------------------------------
 
 void DeleteChannel(IPC::Channel* channel) {
   delete channel;
@@ -432,21 +527,26 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
                          base::Passed(&response)));
           break;
         }
-        case ppapi::proxy::SerializedHandle::FILE:
-          // IMPORTANT: The NaClDescIoDescFromHandleAllocCtor function creates
-          // a NaClDesc that checks file flags before reading and writing. This
-          // is essential since PPB_FileIO now sends a file descriptor to the
-          // plugin which may have write capabilities. We can't allow the plugin
-          // to write with it since it could bypass quota checks, which still
-          // happen in the host.
-          nacl_desc.reset(new NaClDescWrapper(NaClDescIoDescFromHandleAllocCtor(
+        case ppapi::proxy::SerializedHandle::FILE: {
+          // Create the NaClDesc for the file descriptor. If quota checking is
+          // required, wrap it in a NaClDescQuota.
+          NaClDesc* desc = NaClDescIoDescFromHandleAllocCtor(
 #if defined(OS_WIN)
               iter->descriptor(),
 #else
               iter->descriptor().fd,
 #endif
-              TranslatePepperFileReadWriteOpenFlags(iter->open_flags()))));
+              TranslatePepperFileReadWriteOpenFlags(iter->open_flags()));
+          if (desc && iter->file_io()) {
+            desc = MakeNaClDescQuota(
+                locked_data_.nacl_msg_scanner_.GetFile(iter->file_io()),
+                desc);
+          }
+          if (desc)
+            nacl_desc.reset(new NaClDescWrapper(desc));
           break;
+        }
+
         case ppapi::proxy::SerializedHandle::INVALID: {
           // Nothing to do. TODO(dmichael): Should we log this? Or is it
           // sometimes okay to pass an INVALID handle?
