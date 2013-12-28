@@ -111,16 +111,12 @@ bool SelLdrLauncherBase::SetupCommand(NaClSrpcChannel* command) {
 
 bool SelLdrLauncherBase::LoadModule(NaClSrpcChannel* command,
                                     DescWrapper* nexe) {
-  // TODO(sehr): This argument to load_module is unused.  Remove it.
-  static const char kLoadModulePlaceHolderString[] = "place holder";
-
   CHECK(nexe != NULL);
   // Load module over command channel.
   NaClSrpcResultCodes rpc_result =
       NaClSrpcInvokeBySignature(command,
                                 NACL_SECURE_SERVICE_LOAD_MODULE,
-                                nexe->desc(),
-                                kLoadModulePlaceHolderString);
+                                nexe->desc());
   if (NACL_SRPC_RESULT_OK != rpc_result) {
     NaClLog(LOG_ERROR, "SelLdrLauncherBase::LoadModule: "
             "rpc_result=%d is not successful\n",

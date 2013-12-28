@@ -17,6 +17,7 @@
 // ABIs/APIs.
 #include "native_client/src/public/imc_syscalls.h"
 #include "native_client/src/public/name_service.h"
+#include "native_client/src/public/secure_service.h"
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_kernel_service.h"
 // get NACL_SYSCALL_BLOCK_SIZE, NACL_SYSCALL_START_ADDR
@@ -200,9 +201,8 @@ NaClErrorCode ServiceRuntimeClient::RunNaClModule(int module_descriptor) {
   }
   printf("Entered RunNaClModule\n");
   printf("chan: %p\n", (void*) chan());
-  // TODO(bsy): srpc signature should be in a header file
-  result = NaClSrpcInvokeBySignature(chan(), "load_module:hs:",
-                                     module_descriptor, "aux info");
+  result = NaClSrpcInvokeBySignature(chan(), NACL_SECURE_SERVICE_LOAD_MODULE,
+                                     module_descriptor);
   printf("load_module result %d\n", result);
   if (NACL_SRPC_RESULT_OK != result) {
     fprintf(stderr, "load_module RPC failed (%d): %s\n",

@@ -94,8 +94,6 @@ int NaClLdrSetupCommandChannel(NaClSrpcImcDescType     socket_addr,
 
 int NaClLdrLoadModule(struct NaClSrpcChannel  *command_channel,
                       NaClSrpcImcDescType     nexe) {
-  /* TODO(phosek): This argument to load_module is unused.  Remove it. */
-  static const char kLoadModulePlaceHolderString[] = "place holder";
   NaClSrpcError     rpc_result;
 
   NaClLog(4,
@@ -109,8 +107,7 @@ int NaClLdrLoadModule(struct NaClSrpcChannel  *command_channel,
   /* Load nexe module. */
   rpc_result = NaClSrpcInvokeBySignature(command_channel,
                                          NACL_SECURE_SERVICE_LOAD_MODULE,
-                                         nexe,
-                                         kLoadModulePlaceHolderString);
+                                         nexe);
   NaClLog(4, "NaClLdrLoadModule: load_module RPC result %d\n",
           (int) rpc_result);
   if (NACL_SRPC_RESULT_OK != rpc_result) {

@@ -7,8 +7,8 @@
 #ifndef NATIVE_CLIENT_SRC_PUBLIC_SECURE_SERVICE_H_
 #define NATIVE_CLIENT_SRC_PUBLIC_SECURE_SERVICE_H_
 
-#define NACL_SECURE_SERVICE_LOAD_MODULE     "load_module:hs:"
-/* nexe to load, auxiliary vector */
+#define NACL_SECURE_SERVICE_LOAD_MODULE     "load_module:h:"
+/* nexe to load */
 
 #define NACL_SECURE_SERVICE_START_MODULE    "start_module::i"
 /* -> load module status */

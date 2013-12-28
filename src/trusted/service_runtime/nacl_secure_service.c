@@ -201,28 +201,15 @@ static void NaClSecureServiceLoadModuleRpc(
   struct NaClSecureService        *nssp =
       (struct NaClSecureService *) rpc->channel->server_instance_data;
   struct NaClDesc                 *nexe = in_args[0]->u.hval;
-  char                            *aux_info;
   UNREFERENCED_PARAMETER(out_args);
 
   NaClLog(4, "NaClSecureServiceLoadModuleRpc: loading module\n");
-
-  rpc->result = NACL_SRPC_RESULT_INTERNAL;
-
-  aux_info = strdup(in_args[1]->arrays.str);
-  if (NULL == aux_info) {
-    rpc->result = NACL_SRPC_RESULT_NO_MEMORY;
-    (*done_cls->Run)(done_cls);
-    goto cleanup;
-  }
-
   rpc->result = NACL_SRPC_RESULT_OK;
   NaClAppLoadModule(nssp->nap,
                     nexe,
-                    aux_info,
                     NaClSecureServiceLoadModuleRpcCallback,
                     (void *) done_cls);
 
- cleanup:
   NaClLog(4, "NaClSecureServiceLoadModuleRpc: done\n");
   NaClDescUnref(nexe);
 }

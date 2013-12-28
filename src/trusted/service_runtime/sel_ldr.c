@@ -93,8 +93,6 @@ int NaClAppWithSyscallTableCtor(struct NaClApp               *nap,
   nap->stack_size = NACL_DEFAULT_STACK_MAX;
   nap->initial_nexe_max_code_bytes = 0;
 
-  nap->aux_info = NULL;
-
   nap->mem_start = 0;
 
 #if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 \
@@ -1031,7 +1029,6 @@ void NaClSecureCommandChannel(struct NaClApp *nap) {
 
 void NaClAppLoadModule(struct NaClApp   *nap,
                        struct NaClDesc  *nexe,
-                       char             *aux_info,
                        void             (*load_cb)(void *instance_data,
                                                    NaClErrorCode status),
                        void             *instance_data) {
@@ -1039,8 +1036,8 @@ void NaClAppLoadModule(struct NaClApp   *nap,
 
   NaClLog(4,
           ("Entered NaClAppLoadModule: nap 0x%"NACL_PRIxPTR","
-           " nexe 0x%"NACL_PRIxPTR", aux_info \"%s\"\n"),
-          (uintptr_t) nap, (uintptr_t) nexe, aux_info);
+           " nexe 0x%"NACL_PRIxPTR"\n"),
+          (uintptr_t) nap, (uintptr_t) nexe);
 
   /*
    * TODO(bsy): consider doing the processing below after sending the
@@ -1065,8 +1062,6 @@ void NaClAppLoadModule(struct NaClApp   *nap,
   }
 
   NaClXMutexLock(&nap->mu);
-  free(nap->aux_info);
-  nap->aux_info = aux_info;
 
   /*
    * Check / Mark the nexe binary as OK to attempt memory mapping.

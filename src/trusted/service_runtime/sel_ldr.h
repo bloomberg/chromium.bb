@@ -120,14 +120,6 @@ struct NaClApp {
    */
 
   /*
-   * aux_info can contain an arbitrary NUL terminated string.  It is
-   * set via the load_module RPC, and is intended to enable the
-   * browser plugin to provide information that would be useful for
-   * the debugger.
-   */
-  char                      *aux_info;
-
-  /*
    * Determined at load time; OS-determined.
    * Read-only after load, so accesses do not require locking.
    */
@@ -698,13 +690,12 @@ void NaClSetUpBootstrapChannel(struct NaClApp  *nap,
 void NaClSecureCommandChannel(struct NaClApp  *nap);
 
 /*
- * Loads the |nexe| as a NaCl app module. The NaClApp takes an ownership
- * of the |aux_info|. The |load_cb| callback is invoked before the the
- * |nexe| is loaded to allow validation being run in parallel.
+ * Loads the |nexe| as a NaCl app module.
+ * The |load_cb| callback is invoked before the the |nexe| is loaded to allow
+ * validation being run in parallel.
  */
 void NaClAppLoadModule(struct NaClApp      *self,
                        struct NaClDesc     *nexe,
-                       char                *aux_info,
                        void                (*load_cb)(void *instance_data,
                                                       NaClErrorCode status),
                        void                *instance_data);
