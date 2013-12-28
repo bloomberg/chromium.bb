@@ -31,9 +31,7 @@ class FFmpegCdmAudioDecoder;
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
 class ClearKeyCdm : public ClearKeyCdmInterface {
  public:
-  explicit ClearKeyCdm(Host* host,
-                       bool is_decrypt_only,
-                       bool should_test_file_io);
+  ClearKeyCdm(Host* host, const std::string& key_system);
   virtual ~ClearKeyCdm();
 
   // ContentDecryptionModule implementation.
@@ -116,8 +114,7 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
 
   ClearKeyCdmHost* host_;
 
-  const bool is_decrypt_only_;
-  const bool should_test_file_io_;
+  const std::string key_system_;
 
   uint32 last_session_id_;
   std::string next_heartbeat_message_;

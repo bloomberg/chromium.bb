@@ -160,10 +160,7 @@ void* CreateCdmInstance(int cdm_interface_version,
   if (!host)
     return NULL;
 
-  return new media::ClearKeyCdm(
-      host,
-      key_system_string == kExternalClearKeyDecryptOnlyKeySystem,
-      key_system_string == kExternalClearKeyFileIOTestKeySystem);
+  return new media::ClearKeyCdm(host, key_system_string);
 }
 
 const char* GetCdmVersion() {
@@ -172,9 +169,7 @@ const char* GetCdmVersion() {
 
 namespace media {
 
-ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host,
-                         bool is_decrypt_only,
-                         bool should_test_file_io)
+ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, const std::string& key_system)
     : decryptor_(
           base::Bind(&ClearKeyCdm::OnSessionCreated, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionMessage, base::Unretained(this)),
@@ -182,8 +177,7 @@ ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host,
           base::Bind(&ClearKeyCdm::OnSessionClosed, base::Unretained(this)),
           base::Bind(&ClearKeyCdm::OnSessionError, base::Unretained(this))),
       host_(host),
-      is_decrypt_only_(is_decrypt_only),
-      should_test_file_io_(should_test_file_io),
+      key_system_(key_system),
       last_session_id_(MediaKeys::kInvalidSessionId),
       timer_delay_ms_(kInitialTimerDelayMs),
       timer_set_(false) {
@@ -210,7 +204,7 @@ void ClearKeyCdm::CreateSession(uint32 session_id,
   // Save the latest session ID for heartbeat and file IO test messages.
   last_session_id_ = session_id;
 
-  if (should_test_file_io_)
+  if (key_system_ == kExternalClearKeyFileIOTestKeySystem)
     StartFileIOTest();
 }
 
@@ -288,7 +282,7 @@ cdm::Status ClearKeyCdm::Decrypt(
 
 cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig& audio_decoder_config) {
-  if (is_decrypt_only_)
+  if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem)
     return cdm::kSessionError;
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
@@ -312,7 +306,7 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
 
 cdm::Status ClearKeyCdm::InitializeVideoDecoder(
     const cdm::VideoDecoderConfig& video_decoder_config) {
-  if (is_decrypt_only_)
+  if (key_system_ == kExternalClearKeyDecryptOnlyKeySystem)
     return cdm::kSessionError;
 
   if (video_decoder_ && video_decoder_->is_initialized()) {
