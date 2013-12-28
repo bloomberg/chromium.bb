@@ -2027,7 +2027,8 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
 
     this_make_global_settings = data[build_file].get('make_global_settings', [])
     assert make_global_settings == this_make_global_settings, (
-        "make_global_settings needs to be the same for all targets.")
+        "make_global_settings needs to be the same for all targets. %s vs. %s" %
+        (this_make_global_settings, make_global_settings))
 
     spec = target_dicts[qualified_target]
     if flavor == 'mac':
