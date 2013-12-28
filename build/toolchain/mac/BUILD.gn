@@ -2,11 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(brettw) Use "gcc_toolchain.gni" like the Linux toolchains. This requires
+# some enhancements since the commands on Mac are slightly different than on
+# Linux.
+
 # Should only be running on Mac.
 assert(is_mac || is_ios)
 
-cc = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang", ".", root_build_dir)
-cxx = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang++", ".", root_build_dir)
+# Clang variables.
+import("../clang.gni")
+
+if (is_clang) {
+  cc = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang", ".", root_build_dir)
+  cxx = rebase_path("//third_party/llvm-build/Release+Asserts/bin/clang++", ".", root_build_dir)
+
+  # Set the GYP header for all toolchains when running under Clang.
+  if (is_gyp) {
+    gyp_header = make_clang_global_settings
+  }
+} else {
+  cc = "gcc"
+  cxx = "g++"
+}
 ld = cxx
 
 # This will copy the gyp-mac-tool to the build directory. We pass in the source

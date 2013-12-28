@@ -1,180 +1,74 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-cc = "gcc"
-cxx = "g++"
-ar = "ar"
-ld = cxx
+import("../clang.gni")
+import("../goma.gni")
+import("../gcc_toolchain.gni")
 
-# The toolchains below all issue the same commands with some different flags.
-# TODO(brettw) it would be nice to have a different way to express this without
-# so much duplication.
-cc_command = "$cc -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_c -c \$in -o \$out"
-cxx_command = "$cxx -MMD -MF \$out.d \$defines \$includes \$cflags \$cflags_cc -c \$in -o \$out"
-alink_command = "rm -f \$out && $ar rcs \$out \$in"
-solink_command = "if [ ! -e \$lib -o ! -e \${lib}.TOC ]; then $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.TOC; else $ld -shared \$ldflags -o \$lib -Wl,-soname=\$soname -Wl,--whole-archive \$in \$solibs -Wl,--no-whole-archive \$libs && { readelf -d \${lib} | grep SONAME ; nm -gD -f p \${lib} | cut -f1-2 -d' '; } > \${lib}.tmp && if ! cmp -s \${lib}.tmp \${lib}.TOC; then mv \${lib}.tmp \${lib}.TOC ; fi; fi"
-link_command = "$ld \$ldflags -o \$out -Wl,--start-group \$in \$solibs -Wl,--end-group \$libs"
-stamp_command = "\${postbuilds}touch \$out"
-copy_command = "ln -f \$in \$out 2>/dev/null || (rm -rf \$out && cp -af \$in \$out)"
+if (is_gyp) {
+  # Set the compilers for GYP to use. This logic is only relevant to GYP where
+  # there is "a" target compiler. In native GN builds, we have separate
+  # compilers for the toolchains below, any or all of which could be active in
+  # any given build.
+  if (is_clang) {
+    # Set the GYP header for all toolchains when running under Clang.
+    gyp_header = make_clang_global_settings
+  } else {
+    gyp_header = ""
+  }
+
+  if (use_goma) {
+    # There is a TODO(yyanagisawa) in common.gypi about the make generator not
+    # supporting CC_wrapper without CC. As a result, we must add a condition
+    # when on the generator when we're not explicitly setting the variables
+    # above (which happens when gyp_header is empty at this point).
+    #
+    # GYP will interpret the file once for each generator, so we have to write
+    # this condition into the GYP file since the user could have more than one
+    # generator set.
+    if (gyp_header == "") {
+      gyp_header +=
+        "'conditions':" +
+        "['\"<(GENERATOR)\"==\"ninja\"', {" +
+        make_goma_global_settings +
+        "}],"
+    } else {
+      gyp_header += make_goma_global_settings
+    }
+  }
+}
 
 # ARM --------------------------------------------------------------------------
 
-cc = "arm-linux-gnueabi-gcc"
-cxx = "arm-linux-gnueabi-g++"
-ar = "arm-linux-gnueabi-ar"
-ld = cxx
+gcc_toolchain("arm") {
+  cc = "arm-linux-gnueabi-gcc"
+  cxx = "arm-linux-gnueabi-g++"
+  ar = "arm-linux-gnueabi-ar"
+  ld = cxx
 
-toolchain("arm") {
-  # Make these apply to all tools below.
-  lib_prefix = "-l"
-  lib_dir_prefix="-L"
-
-  tool("cc") {
-    # cflags_pch_c
-    command = cc_command
-    description = "CC \$out"
-    depfile = "\$out.d"
-    deps = "gcc"
-  }
-  tool("cxx") {
-    # cflags_pch_cc
-    command = cxx_command
-    description = "CXX \$out"
-    depfile = "\$out.d"
-    deps = "gcc"
-  }
-  tool("alink") {
-    command = alink_command
-    description = "AR \$out"
-  }
-  tool("solink") {
-    command = solink_command
-    description = "SOLINK \$lib"
-    #pool = "link_pool"
-    restat = "1"
-  }
-  tool("link") {
-    command = link_command
-    description = "LINK \$out"
-    #pool = "link_pool"
-  }
-  tool("stamp") {
-    command = stamp_command
-    description = "STAMP \$out"
-  }
-  tool("copy") {
-    command = copy_command
-    description = "COPY \$in \$out"
-  }
-
-  # When invoking this toolchain not as the default one, these args will be
-  # passed to the build. They are ignored when this is the default toolchain.
-  toolchain_args() {
-    cpu_arch = "arm"
-  }
+  toolchain_cpu_arch = "arm"
+  toolchain_os = "linux"
 }
 
 # 32-bit -----------------------------------------------------------------------
 
-toolchain("32") {
-  # Make these apply to all tools below.
-  lib_prefix = "-l"
-  lib_dir_prefix="-L"
+gcc_toolchain("x86") {
+  cc = "gcc"
+  cxx = "g++"
+  ar = "ar"
+  ld = cxx
 
-  tool("cc") {
-    # cflags_pch_c
-    command = cc_command
-    description = "CC \$out"
-    depfile = "\$out.d"
-    deps = "gcc"
-  }
-  tool("cxx") {
-    # cflags_pch_cc
-    command = cxx_command
-    description = "CXX \$out"
-    depfile = "\$out.d"
-    deps = "gcc"
-  }
-  tool("alink") {
-    command = alink_command
-    description = "AR \$out"
-  }
-  tool("solink") {
-    command = solink_command
-    description = "SOLINK \$lib"
-    #pool = "link_pool"
-    restat = "1"
-  }
-  tool("link") {
-    command = link_command
-    description = "LINK \$out"
-    #pool = "link_pool"
-  }
-  tool("stamp") {
-    command = stamp_command
-    description = "STAMP \$out"
-  }
-  tool("copy") {
-    command = copy_command
-    description = "COPY \$in \$out"
-  }
-
-  # When invoking this toolchain not as the default one, these args will be
-  # passed to the build. They are ignored when this is the default toolchain.
-  toolchain_args() {
-    cpu_arch = "x86"
-  }
+  toolchain_cpu_arch = "x86"
+  toolchain_os = "linux"
 }
 
-# 64-bit -----------------------------------------------------------------------
+gcc_toolchain("x64") {
+  cc = "gcc"
+  cxx = "g++"
+  ar = "ar"
+  ld = cxx
 
-toolchain("64") {
-  # Make these apply to all tools below.
-  lib_prefix = "-l"
-  lib_dir_prefix="-L"
-
-  tool("cc") {
-    # cflags_pch_c
-    command = cc_command
-    description = "CC \$out"
-    depfile = "\$out.d"
-    deps = "gcc"
-  }
-  tool("cxx") {
-    # cflags_pch_cc
-    command = cxx_command
-    description = "CXX \$out"
-    depfile = "\$out.d"
-    deps = "gcc"
-  }
-  tool("alink") {
-    command = alink_command
-    description = "AR \$out"
-  }
-  tool("solink") {
-    command = solink_command
-    description = "SOLINK \$lib"
-    #pool = "link_pool"
-    restat = "1"
-  }
-  tool("link") {
-    command = link_command
-    description = "LINK \$out"
-    #pool = "link_pool"
-  }
-  tool("stamp") {
-    command = stamp_command
-    description = "STAMP \$out"
-  }
-  tool("copy") {
-    command = copy_command
-    description = "COPY \$in \$out"
-  }
-
-  # When invoking this toolchain not as the default one, these args will be
-  # passed to the build. They are ignored when this is the default toolchain.
-  toolchain_args() {
-    cpu_arch = "x64"
-  }
+  toolchain_cpu_arch = "x64"
+  toolchain_os = "linux"
 }

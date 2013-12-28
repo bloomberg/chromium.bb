@@ -825,6 +825,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(External)
     INSERT_VARIABLE(ForwardDependentConfigsFrom)
     INSERT_VARIABLE(GypFile)
+    INSERT_VARIABLE(GypHeader)
     INSERT_VARIABLE(HardDep)
     INSERT_VARIABLE(IncludeDirs)
     INSERT_VARIABLE(Ldflags)
