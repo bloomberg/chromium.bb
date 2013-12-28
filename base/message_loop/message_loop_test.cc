@@ -101,30 +101,8 @@ void RunTest_PostTask(MessagePumpFactory factory) {
       &Foo::Test1Int, foo.get(), 100));
   MessageLoop::current()->PostTask(FROM_HERE, Bind(
       &Foo::Test2Ptr, foo.get(), &a, &c));
-
-  // TryPost with no contention. It must succeed.
-  EXPECT_TRUE(MessageLoop::current()->TryPostTask(FROM_HERE, Bind(
-      &Foo::Test2Mixed, foo.get(), a, &d)));
-
-  // TryPost with simulated contention. It must fail. We wait for a helper
-  // thread to lock the queue, we TryPost on this thread and finally we
-  // signal the helper to unlock and exit.
-  WaitableEvent wait(true, false);
-  WaitableEvent signal(true, false);
-  Thread thread("RunTest_PostTask_helper");
-  thread.Start();
-  thread.message_loop()->PostTask(
-      FROM_HERE,
-      Bind(&MessageLoop::LockWaitUnLockForTesting,
-           base::Unretained(MessageLoop::current()),
-           &wait,
-           &signal));
-
-  wait.Wait();
-  EXPECT_FALSE(MessageLoop::current()->TryPostTask(FROM_HERE, Bind(
-      &Foo::Test2Mixed, foo.get(), a, &d)));
-  signal.Signal();
-
+  MessageLoop::current()->PostTask(FROM_HERE, Bind(
+      &Foo::Test2Mixed, foo.get(), a, &d));
   // After all tests, post a message that will shut down the message loop
   MessageLoop::current()->PostTask(FROM_HERE, Bind(
       &MessageLoop::Quit, Unretained(MessageLoop::current())));

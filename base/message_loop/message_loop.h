@@ -210,17 +210,10 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // PostTask(from_here, task) is equivalent to
   // PostDelayedTask(from_here, task, 0).
   //
-  // The TryPostTask is meant for the cases where the calling thread cannot
-  // block. If posting the task will block, the call returns false, the task
-  // is not posted but the task is consumed anyways.
-  //
   // NOTE: These methods may be called on any thread.  The Task will be invoked
   // on the thread that executes MessageLoop::Run().
   void PostTask(const tracked_objects::Location& from_here,
                 const Closure& task);
-
-  bool TryPostTask(const tracked_objects::Location& from_here,
-                   const Closure& task);
 
   void PostDelayedTask(const tracked_objects::Location& from_here,
                        const Closure& task,
@@ -423,11 +416,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
-
-  // Takes the incoming queue lock, signals |caller_wait| and waits until
-  // |caller_signal| is signalled.
-  void LockWaitUnLockForTesting(WaitableEvent* caller_wait,
-                                WaitableEvent* caller_signal);
 
   //----------------------------------------------------------------------------
  protected:

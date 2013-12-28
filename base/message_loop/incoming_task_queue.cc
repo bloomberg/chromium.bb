@@ -28,21 +28,6 @@ bool IncomingTaskQueue::AddToIncomingQueue(
   return PostPendingTask(&pending_task);
 }
 
-bool IncomingTaskQueue::TryAddToIncomingQueue(
-    const tracked_objects::Location& from_here,
-    const Closure& task) {
-  if (!incoming_queue_lock_.Try()) {
-    // Reset |task|.
-    Closure local_task = task;
-    return false;
-  }
-
-  AutoLock locked(incoming_queue_lock_, AutoLock::AlreadyAcquired());
-  PendingTask pending_task(
-      from_here, task, CalculateDelayedRuntime(TimeDelta()), true);
-  return PostPendingTask(&pending_task);
-}
-
 bool IncomingTaskQueue::IsHighResolutionTimerEnabledForTesting() {
 #if defined(OS_WIN)
   return !high_resolution_timer_expiration_.is_null();
@@ -54,13 +39,6 @@ bool IncomingTaskQueue::IsHighResolutionTimerEnabledForTesting() {
 bool IncomingTaskQueue::IsIdleForTesting() {
   AutoLock lock(incoming_queue_lock_);
   return incoming_queue_.empty();
-}
-
-void IncomingTaskQueue::LockWaitUnLockForTesting(WaitableEvent* caller_wait,
-                                                 WaitableEvent* caller_signal) {
-  AutoLock lock(incoming_queue_lock_);
-  caller_wait->Signal();
-  caller_signal->Wait();
 }
 
 void IncomingTaskQueue::ReloadWorkQueue(TaskQueue* work_queue) {

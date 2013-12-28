@@ -286,13 +286,6 @@ void MessageLoop::PostTask(
   incoming_task_queue_->AddToIncomingQueue(from_here, task, TimeDelta(), true);
 }
 
-bool MessageLoop::TryPostTask(
-    const tracked_objects::Location& from_here,
-    const Closure& task) {
-  DCHECK(!task.is_null()) << from_here.ToString();
-  return incoming_task_queue_->TryAddToIncomingQueue(from_here, task);
-}
-
 void MessageLoop::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const Closure& task,
@@ -397,11 +390,6 @@ bool MessageLoop::IsIdleForTesting() {
   // We only check the imcoming queue|, since we don't want to lock the work
   // queue.
   return incoming_task_queue_->IsIdleForTesting();
-}
-
-void MessageLoop::LockWaitUnLockForTesting(WaitableEvent* caller_wait,
-                                           WaitableEvent* caller_signal) {
-  incoming_task_queue_->LockWaitUnLockForTesting(caller_wait, caller_signal);
 }
 
 //------------------------------------------------------------------------------

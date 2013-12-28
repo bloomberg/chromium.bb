@@ -38,23 +38,12 @@ class BASE_EXPORT IncomingTaskQueue
                           TimeDelta delay,
                           bool nestable);
 
-  // Same as AddToIncomingQueue() except that it will avoid blocking if the lock
-  // is already held, and will in that case (when the lock is contended) fail to
-  // add the task, and will return false.
-  bool TryAddToIncomingQueue(const tracked_objects::Location& from_here,
-                             const Closure& task);
-
   // Returns true if the message loop has high resolution timers enabled.
   // Provided for testing.
   bool IsHighResolutionTimerEnabledForTesting();
 
   // Returns true if the message loop is "idle". Provided for testing.
   bool IsIdleForTesting();
-
-  // Takes the incoming queue lock, signals |caller_wait| and waits until
-  // |caller_signal| is signalled.
-  void LockWaitUnLockForTesting(WaitableEvent* caller_wait,
-                                WaitableEvent* caller_signal);
 
   // Loads tasks from the |incoming_queue_| into |*work_queue|. Must be called
   // from the thread that is running the loop.
