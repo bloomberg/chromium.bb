@@ -80,7 +80,7 @@ void TracingControllerImpl::ResultFile::OpenTask() {
 
 void TracingControllerImpl::ResultFile::WriteTask(
     const scoped_refptr<base::RefCountedString>& events_str_ptr) {
-  if (!file_)
+  if (!file_ || !events_str_ptr->data().size())
     return;
 
   // If there is already a result in the file, then put a commma
@@ -173,7 +173,9 @@ bool TracingControllerImpl::EnableRecording(
   // TODO(haraken): How to handle ENABLE_SYSTRACE?
 
   TraceLog::GetInstance()->SetEnabled(
-      base::debug::CategoryFilter(category_filter), trace_options);
+      base::debug::CategoryFilter(category_filter),
+      base::debug::TraceLog::RECORDING_MODE,
+      trace_options);
   is_recording_ = true;
 
   // Notify all child processes.
@@ -247,10 +249,11 @@ bool TracingControllerImpl::EnableMonitoring(
 
   int monitoring_tracing_options = 0;
   if (options & ENABLE_SAMPLING)
-    monitoring_tracing_options |= base::debug::TraceLog::MONITOR_SAMPLING;
+    monitoring_tracing_options |= base::debug::TraceLog::ENABLE_SAMPLING;
 
   TraceLog::GetInstance()->SetEnabled(
       base::debug::CategoryFilter(category_filter),
+      base::debug::TraceLog::MONITORING_MODE,
       static_cast<TraceLog::Options>(monitoring_tracing_options));
 
   // Notify all child processes.
@@ -422,6 +425,11 @@ void TracingControllerImpl::AddTraceMessageFilter(
   }
   if (can_disable_recording()) {
     trace_message_filter->SendBeginTracing(
+        TraceLog::GetInstance()->GetCurrentCategoryFilter().ToString(),
+        TraceLog::GetInstance()->trace_options());
+  }
+  if (can_disable_monitoring()) {
+    trace_message_filter->SendEnableMonitoring(
         TraceLog::GetInstance()->GetCurrentCategoryFilter().ToString(),
         TraceLog::GetInstance()->trace_options());
   }
