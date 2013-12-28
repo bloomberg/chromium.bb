@@ -203,7 +203,7 @@ CSSParser::CSSParser(const CSSParserContext& context, UseCounter* counter)
     , m_ignoreErrors(false)
     , m_inFilterRule(false)
     , m_defaultNamespace(starAtom)
-    , m_sourceDataHandler(0)
+    , m_observer(0)
     , m_source(0)
     , m_ruleHeaderType(CSSRuleSourceData::UNKNOWN_RULE)
     , m_allowImportRules(true)
@@ -234,11 +234,11 @@ void CSSParser::setupParser(const char* prefix, unsigned prefixLength, const Str
     m_ruleHasHeader = true;
 }
 
-void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, const TextPosition& startPosition, SourceDataHandler* sourceDataHandler, bool logErrors)
+void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, const TextPosition& startPosition, CSSParserObserver* observer, bool logErrors)
 {
     setStyleSheet(sheet);
     m_defaultNamespace = starAtom; // Reset the default namespace.
-    m_sourceDataHandler = sourceDataHandler;
+    TemporaryChange<CSSParserObserver*> scopedObsever(m_observer, observer);
     m_logErrors = logErrors && sheet->singleOwnerDocument() && !sheet->baseURL().isEmpty() && sheet->singleOwnerDocument()->frameHost();
     m_ignoreErrors = false;
     m_tokenizer.m_lineNumber = 0;
@@ -249,7 +249,6 @@ void CSSParser::parseSheet(StyleSheetContents* sheet, const String& string, cons
     cssyyparse(this);
     sheet->shrinkToFit();
     m_source = 0;
-    m_sourceDataHandler = 0;
     m_rule = 0;
     m_lineEndings.clear();
     m_ignoreErrors = false;
@@ -1269,17 +1268,17 @@ PassRefPtr<ImmutableStylePropertySet> CSSParser::parseDeclaration(const String& 
 }
 
 
-bool CSSParser::parseDeclaration(MutableStylePropertySet* declaration, const String& string, SourceDataHandler* sourceDataHandler, StyleSheetContents* contextStyleSheet)
+bool CSSParser::parseDeclaration(MutableStylePropertySet* declaration, const String& string, CSSParserObserver* observer, StyleSheetContents* contextStyleSheet)
 {
     setStyleSheet(contextStyleSheet);
 
-    m_sourceDataHandler = sourceDataHandler;
+    TemporaryChange<CSSParserObserver*> scopedObsever(m_observer, observer);
 
     setupParser("@-internal-decls ", string, "");
-    if (m_sourceDataHandler) {
-        m_sourceDataHandler->startRuleHeader(CSSRuleSourceData::STYLE_RULE, 0);
-        m_sourceDataHandler->endRuleHeader(1);
-        m_sourceDataHandler->startRuleBody(0);
+    if (m_observer) {
+        m_observer->startRuleHeader(CSSRuleSourceData::STYLE_RULE, 0);
+        m_observer->endRuleHeader(1);
+        m_observer->startRuleBody(0);
     }
 
     {
@@ -1298,9 +1297,8 @@ bool CSSParser::parseDeclaration(MutableStylePropertySet* declaration, const Str
         clearProperties();
     }
 
-    if (m_sourceDataHandler)
-        m_sourceDataHandler->endRuleBody(string.length(), false);
-    m_sourceDataHandler = 0;
+    if (m_observer)
+        m_observer->endRuleBody(string.length(), false);
 
     return ok;
 }
@@ -9886,12 +9884,12 @@ void CSSParser::endInvalidRuleHeader()
     else
         location.token.init(m_tokenizer.m_dataStart16.get() + m_ruleHeaderStartOffset, 0);
 
-    reportError(location, m_ruleHeaderType == CSSRuleSourceData::STYLE_RULE ? InvalidSelectorError : InvalidRuleError);
+    reportError(location, m_ruleHeaderType == CSSRuleSourceData::STYLE_RULE ? InvalidSelectorCSSError : InvalidRuleCSSError);
 
     endRuleHeader();
 }
 
-void CSSParser::reportError(const CSSParserLocation&, ErrorType)
+void CSSParser::reportError(const CSSParserLocation&, CSSParserError)
 {
     // FIXME: error reporting temporatily disabled.
 }
@@ -10166,8 +10164,8 @@ StyleRuleBase* CSSParser::createRegionRule(Vector<OwnPtr<CSSParserSelector> >* r
 
     StyleRuleRegion* result = regionRule.get();
     m_parsedRules.append(regionRule.release());
-    if (m_sourceDataHandler)
-        m_sourceDataHandler->startEndUnknownRule();
+    if (m_observer)
+        m_observer->startEndUnknownRule();
 
     return result;
 }
@@ -10232,7 +10230,7 @@ void CSSParser::invalidBlockHit()
 
 void CSSParser::startRule()
 {
-    if (!m_sourceDataHandler)
+    if (!m_observer)
         return;
 
     ASSERT(m_ruleHasHeader);
@@ -10241,11 +10239,11 @@ void CSSParser::startRule()
 
 void CSSParser::endRule(bool valid)
 {
-    if (!m_sourceDataHandler)
+    if (!m_observer)
         return;
 
     if (m_ruleHasHeader)
-        m_sourceDataHandler->endRuleBody(m_tokenizer.safeUserStringTokenOffset(), !valid);
+        m_observer->endRuleBody(m_tokenizer.safeUserStringTokenOffset(), !valid);
     m_ruleHasHeader = true;
 }
 
@@ -10255,9 +10253,9 @@ void CSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)
     m_ruleHeaderType = ruleType;
     m_ruleHeaderStartOffset = m_tokenizer.safeUserStringTokenOffset();
     m_ruleHeaderStartLineNumber = m_tokenizer.m_tokenStartLineNumber;
-    if (m_sourceDataHandler) {
+    if (m_observer) {
         ASSERT(!m_ruleHasHeader);
-        m_sourceDataHandler->startRuleHeader(ruleType, m_ruleHeaderStartOffset);
+        m_observer->startRuleHeader(ruleType, m_ruleHeaderStartOffset);
         m_ruleHasHeader = true;
     }
 }
@@ -10266,48 +10264,48 @@ void CSSParser::endRuleHeader()
 {
     ASSERT(m_ruleHeaderType != CSSRuleSourceData::UNKNOWN_RULE);
     m_ruleHeaderType = CSSRuleSourceData::UNKNOWN_RULE;
-    if (m_sourceDataHandler) {
+    if (m_observer) {
         ASSERT(m_ruleHasHeader);
-        m_sourceDataHandler->endRuleHeader(m_tokenizer.safeUserStringTokenOffset());
+        m_observer->endRuleHeader(m_tokenizer.safeUserStringTokenOffset());
     }
 }
 
 void CSSParser::startSelector()
 {
-    if (m_sourceDataHandler)
-        m_sourceDataHandler->startSelector(m_tokenizer.safeUserStringTokenOffset());
+    if (m_observer)
+        m_observer->startSelector(m_tokenizer.safeUserStringTokenOffset());
 }
 
 void CSSParser::endSelector()
 {
-    if (m_sourceDataHandler)
-        m_sourceDataHandler->endSelector(m_tokenizer.safeUserStringTokenOffset());
+    if (m_observer)
+        m_observer->endSelector(m_tokenizer.safeUserStringTokenOffset());
 }
 
 void CSSParser::startRuleBody()
 {
-    if (m_sourceDataHandler)
-        m_sourceDataHandler->startRuleBody(m_tokenizer.safeUserStringTokenOffset());
+    if (m_observer)
+        m_observer->startRuleBody(m_tokenizer.safeUserStringTokenOffset());
 }
 
 void CSSParser::startProperty()
 {
     resumeErrorLogging();
-    if (m_sourceDataHandler)
-        m_sourceDataHandler->startProperty(m_tokenizer.safeUserStringTokenOffset());
+    if (m_observer)
+        m_observer->startProperty(m_tokenizer.safeUserStringTokenOffset());
 }
 
-void CSSParser::endProperty(bool isImportantFound, bool isPropertyParsed, ErrorType errorType)
+void CSSParser::endProperty(bool isImportantFound, bool isPropertyParsed, CSSParserError errorType)
 {
     m_id = CSSPropertyInvalid;
-    if (m_sourceDataHandler)
-        m_sourceDataHandler->endProperty(isImportantFound, isPropertyParsed, m_tokenizer.safeUserStringTokenOffset(), errorType);
+    if (m_observer)
+        m_observer->endProperty(isImportantFound, isPropertyParsed, m_tokenizer.safeUserStringTokenOffset(), errorType);
 }
 
 void CSSParser::startEndUnknownRule()
 {
-    if (m_sourceDataHandler)
-        m_sourceDataHandler->startEndUnknownRule();
+    if (m_observer)
+        m_observer->startEndUnknownRule();
 }
 
 StyleRuleBase* CSSParser::createViewportRule()

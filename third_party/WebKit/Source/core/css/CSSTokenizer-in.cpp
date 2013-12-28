@@ -1388,9 +1388,9 @@ restartAfterComment:
         // Ignore comments. They are not even considered as white spaces.
         if (*currentCharacter<SrcCharacterType>() == '*') {
             const CSSParserLocation startLocation = currentLocation();
-            if (m_parser.m_sourceDataHandler) {
+            if (m_parser.m_observer) {
                 unsigned startOffset = currentCharacter<SrcCharacterType>() - dataStart<SrcCharacterType>() - 1; // Start with a slash.
-                m_parser.m_sourceDataHandler->startComment(startOffset - m_parsedTextPrefixLength);
+                m_parser.m_observer->startComment(startOffset - m_parsedTextPrefixLength);
             }
             ++currentCharacter<SrcCharacterType>();
             while (currentCharacter<SrcCharacterType>()[0] != '*' || currentCharacter<SrcCharacterType>()[1] != '/') {
@@ -1399,16 +1399,16 @@ restartAfterComment:
                 if (*currentCharacter<SrcCharacterType>() == '\0') {
                     // Unterminated comments are simply ignored.
                     currentCharacter<SrcCharacterType>() -= 2;
-                    m_parser.reportError(startLocation, CSSParser::UnterminatedCommentError);
+                    m_parser.reportError(startLocation, UnterminatedCommentCSSError);
                     break;
                 }
                 ++currentCharacter<SrcCharacterType>();
             }
             currentCharacter<SrcCharacterType>() += 2;
-            if (m_parser.m_sourceDataHandler) {
+            if (m_parser.m_observer) {
                 unsigned endOffset = currentCharacter<SrcCharacterType>() - dataStart<SrcCharacterType>();
                 unsigned userTextEndOffset = static_cast<unsigned>(m_length - 1 - m_parsedTextSuffixLength);
-                m_parser.m_sourceDataHandler->endComment(std::min(endOffset, userTextEndOffset) - m_parsedTextPrefixLength);
+                m_parser.m_observer->endComment(std::min(endOffset, userTextEndOffset) - m_parsedTextPrefixLength);
             }
             goto restartAfterComment;
         }

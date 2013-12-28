@@ -716,11 +716,11 @@ valid_media_query:
 media_query:
     valid_media_query
     | valid_media_query error error_location rule_error_recovery {
-        parser->reportError(parser->lastLocationLabel(), CSSParser::InvalidMediaQueryError);
+        parser->reportError(parser->lastLocationLabel(), InvalidMediaQueryCSSError);
         $$ = parser->createFloatingNotAllQuery();
     }
     | error error_location rule_error_recovery {
-        parser->reportError(parser->lastLocationLabel(), CSSParser::InvalidMediaQueryError);
+        parser->reportError(parser->lastLocationLabel(), InvalidMediaQueryCSSError);
         $$ = parser->createFloatingNotAllQuery();
     }
     ;
@@ -846,7 +846,7 @@ supports_condition_in_parens:
     }
     | supports_declaration_condition
     | '(' error error_location error_recovery closing_parenthesis maybe_space {
-        parser->reportError($3, CSSParser::InvalidSupportsConditionError);
+        parser->reportError($3, InvalidSupportsConditionCSSError);
         $$ = false;
     }
     ;
@@ -868,7 +868,7 @@ supports_declaration_condition:
     }
     | '(' maybe_space IDENT maybe_space ':' maybe_space error error_recovery closing_parenthesis maybe_space {
         $$ = false;
-        parser->endProperty(false, false, CSSParser::GeneralError);
+        parser->endProperty(false, false, GeneralCSSError);
     }
     ;
 
@@ -953,7 +953,7 @@ key:
 
 keyframes_error_recovery:
     error rule_error_recovery {
-        parser->reportError(parser->lastLocationLabel(), CSSParser::InvalidKeyframeSelectorError);
+        parser->reportError(parser->lastLocationLabel(), InvalidKeyframeSelectorCSSError);
     }
     ;
 
@@ -1420,7 +1420,7 @@ pseudo:
         $$->setValue($3);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown) {
-            parser->reportError($2, CSSParser::InvalidSelectorPseudoError);
+            parser->reportError($2, InvalidSelectorPseudoCSSError);
             YYERROR;
         }
     }
@@ -1434,7 +1434,7 @@ pseudo:
         // FIXME: This call is needed to force selector to compute the pseudoType early enough.
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown) {
-            parser->reportError($3, CSSParser::InvalidSelectorPseudoError);
+            parser->reportError($3, InvalidSelectorPseudoCSSError);
             YYERROR;
         }
     }
@@ -1603,7 +1603,7 @@ declaration:
             $$ = parser->parseValue($1, $6);
             if (!$$) {
                 parser->rollbackLastProperties(parser->m_parsedProperties.size() - oldParsedProperties);
-                parser->reportError($4, CSSParser::InvalidPropertyValueError);
+                parser->reportError($4, InvalidPropertyValueCSSError);
             } else
                 isPropertyParsed = true;
             parser->m_valueList = nullptr;
@@ -1613,25 +1613,25 @@ declaration:
     |
     property ':' maybe_space error_location expr prio error error_recovery {
         /* When we encounter something like p {color: red !important fail;} we should drop the declaration */
-        parser->reportError($4, CSSParser::InvalidPropertyValueError);
+        parser->reportError($4, InvalidPropertyValueCSSError);
         parser->endProperty(false, false);
         $$ = false;
     }
     |
     property ':' maybe_space error_location error error_recovery {
-        parser->reportError($4, CSSParser::InvalidPropertyValueError);
+        parser->reportError($4, InvalidPropertyValueCSSError);
         parser->endProperty(false, false);
         $$ = false;
     }
     |
     property error error_location error_recovery {
-        parser->reportError($3, CSSParser::PropertyDeclarationError);
-        parser->endProperty(false, false, CSSParser::GeneralError);
+        parser->reportError($3, PropertyDeclarationCSSError);
+        parser->endProperty(false, false, GeneralCSSError);
         $$ = false;
     }
     |
     error error_location error_recovery {
-        parser->reportError($2, CSSParser::PropertyDeclarationError);
+        parser->reportError($2, PropertyDeclarationCSSError);
         $$ = false;
     }
   ;
@@ -1641,7 +1641,7 @@ property:
         $$ = cssPropertyID($2);
         parser->setCurrentProperty($$);
         if ($$ == CSSPropertyInvalid)
-            parser->reportError($1, CSSParser::InvalidPropertyError);
+            parser->reportError($1, InvalidPropertyCSSError);
     }
   ;
 
@@ -1691,7 +1691,7 @@ expr:
 
 expr_recovery:
     error error_location error_recovery {
-        parser->reportError($2, CSSParser::PropertyDeclarationError);
+        parser->reportError($2, PropertyDeclarationCSSError);
     }
   ;
 
@@ -1886,7 +1886,7 @@ at_rule_recovery:
 
 at_rule_header_recovery:
     error error_location rule_error_recovery {
-        parser->reportError($2, CSSParser::InvalidRuleError);
+        parser->reportError($2, InvalidRuleCSSError);
     }
     ;
 
@@ -1900,7 +1900,7 @@ regular_invalid_at_rule_header:
   | before_page_rule PAGE_SYM at_rule_header_recovery
   | before_font_face_rule FONT_FACE_SYM at_rule_header_recovery
   | before_supports_rule SUPPORTS_SYM error error_location rule_error_recovery {
-        parser->reportError($4, CSSParser::InvalidSupportsConditionError);
+        parser->reportError($4, InvalidSupportsConditionCSSError);
         parser->popSupportsRuleData();
     }
   | before_viewport_rule VIEWPORT_RULE_SYM at_rule_header_recovery {
@@ -1912,13 +1912,13 @@ regular_invalid_at_rule_header:
   | before_region_rule WEBKIT_REGION_RULE_SYM at_rule_header_recovery
   | error_location invalid_at at_rule_header_recovery {
         parser->resumeErrorLogging();
-        parser->reportError($1, CSSParser::InvalidRuleError);
+        parser->reportError($1, InvalidRuleCSSError);
     }
   ;
 
 invalid_rule:
     error error_location rule_error_recovery at_invalid_rule_header_end invalid_block {
-        parser->reportError($2, CSSParser::InvalidRuleError);
+        parser->reportError($2, InvalidRuleCSSError);
     }
   | regular_invalid_at_rule_header at_invalid_rule_header_end ';'
   | regular_invalid_at_rule_header at_invalid_rule_header_end invalid_block
@@ -1927,7 +1927,7 @@ invalid_rule:
 
 invalid_rule_header:
     error error_location rule_error_recovery at_invalid_rule_header_end {
-        parser->reportError($2, CSSParser::InvalidRuleError);
+        parser->reportError($2, InvalidRuleCSSError);
     }
   | regular_invalid_at_rule_header at_invalid_rule_header_end
   | media_rule_start maybe_media_list

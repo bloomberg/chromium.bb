@@ -140,7 +140,7 @@ static PassOwnPtr<CSSParser> createCSSParser(Document* document)
 
 namespace {
 
-class StyleSheetHandler : public CSSParser::SourceDataHandler {
+class StyleSheetHandler FINAL : public CSSParserObserver {
 public:
     StyleSheetHandler(const String& parsedText, Document* document, StyleSheetContents* styleSheetContents, RuleSourceDataList* result)
         : m_parsedText(parsedText)
@@ -163,7 +163,7 @@ private:
     virtual void endRuleBody(unsigned, bool) OVERRIDE;
     virtual void startEndUnknownRule() OVERRIDE { addNewRuleToSourceTree(CSSRuleSourceData::createUnknown()); }
     virtual void startProperty(unsigned) OVERRIDE;
-    virtual void endProperty(bool, bool, unsigned, CSSParser::ErrorType) OVERRIDE;
+    virtual void endProperty(bool, bool, unsigned, CSSParserError) OVERRIDE;
     virtual void startComment(unsigned) OVERRIDE;
     virtual void endComment(unsigned) OVERRIDE;
 
@@ -337,9 +337,10 @@ void StyleSheetHandler::startProperty(unsigned offset)
     m_propertyRangeStart = offset;
 }
 
-void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParser::ErrorType errorType)
+void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParserError errorType)
 {
-    if (errorType != CSSParser::NoError)
+    // FIXME: This is the only place CSSParserError is every read!?
+    if (errorType != NoCSSError)
         m_propertyRangeStart = UINT_MAX;
 
     if (m_propertyRangeStart == UINT_MAX || m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->styleSourceData)

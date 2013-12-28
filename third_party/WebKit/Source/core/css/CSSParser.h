@@ -36,6 +36,7 @@
 #include "core/css/CSSTokenizer.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/StylePropertySet.h"
+#include "core/css/parser/CSSParserObserver.h"
 #include "platform/graphics/Color.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -80,27 +81,11 @@ class CSSParser {
     friend inline int cssyylex(void*, CSSParser*);
 
 public:
-    class SourceDataHandler;
-    enum ErrorType {
-        NoError,
-        PropertyDeclarationError,
-        InvalidPropertyValueError,
-        InvalidPropertyError,
-        InvalidSelectorError,
-        InvalidSupportsConditionError,
-        InvalidRuleError,
-        InvalidMediaQueryError,
-        InvalidKeyframeSelectorError,
-        InvalidSelectorPseudoError,
-        UnterminatedCommentError,
-        GeneralError
-    };
-
     CSSParser(const CSSParserContext&, UseCounter* = 0);
 
     ~CSSParser();
 
-    void parseSheet(StyleSheetContents*, const String&, const TextPosition& startPosition = TextPosition::minimumPosition(), SourceDataHandler* = 0, bool = false);
+    void parseSheet(StyleSheetContents*, const String&, const TextPosition& startPosition = TextPosition::minimumPosition(), CSSParserObserver* = 0, bool = false);
     PassRefPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
     PassRefPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
     bool parseSupportsCondition(const String&);
@@ -109,7 +94,7 @@ public:
     static bool parseSystemColor(RGBA32& color, const String&, Document*);
     static PassRefPtr<CSSValueList> parseFontFaceValue(const AtomicString&);
     PassRefPtr<CSSPrimitiveValue> parseValidPrimitive(CSSValueID ident, CSSParserValue*);
-    bool parseDeclaration(MutableStylePropertySet*, const String&, SourceDataHandler*, StyleSheetContents* contextStyleSheet);
+    bool parseDeclaration(MutableStylePropertySet*, const String&, CSSParserObserver*, StyleSheetContents* contextStyleSheet);
     static PassRefPtr<ImmutableStylePropertySet> parseInlineStyleDeclaration(const String&, Element*);
     PassRefPtr<MediaQuerySet> parseMediaQueryList(const String&);
     PassOwnPtr<Vector<double> > parseKeyframeKeyList(const String&);
@@ -410,8 +395,9 @@ public:
     AtomicString m_defaultNamespace;
 
     // tokenizer methods and data
-    SourceDataHandler* m_sourceDataHandler;
+    CSSParserObserver* m_observer;
 
+    // Local functions which just call into CSSParserObserver if non-null.
     void startRule();
     void endRule(bool valid);
     void startRuleHeader(CSSRuleSourceData::Type);
@@ -420,11 +406,11 @@ public:
     void endSelector();
     void startRuleBody();
     void startProperty();
-    void endProperty(bool isImportantFound, bool isPropertyParsed, ErrorType = NoError);
+    void endProperty(bool isImportantFound, bool isPropertyParsed, CSSParserError = NoCSSError);
     void startEndUnknownRule();
 
     void endInvalidRuleHeader();
-    void reportError(const CSSParserLocation&, ErrorType = GeneralError);
+    void reportError(const CSSParserLocation&, CSSParserError = GeneralCSSError);
     void resumeErrorLogging() { m_ignoreErrors = false; }
     void setLocationLabel(const CSSParserLocation& location) { m_locationLabel = location; }
     const CSSParserLocation& lastLocationLabel() const { return m_locationLabel; }
@@ -646,21 +632,6 @@ public:
 
 private:
     CSSParser* m_parser;
-};
-
-class CSSParser::SourceDataHandler {
-public:
-    virtual void startRuleHeader(CSSRuleSourceData::Type, unsigned offset) = 0;
-    virtual void endRuleHeader(unsigned offset) = 0;
-    virtual void startSelector(unsigned offset) = 0;
-    virtual void endSelector(unsigned offset) = 0;
-    virtual void startRuleBody(unsigned offset) = 0;
-    virtual void endRuleBody(unsigned offset, bool error) = 0;
-    virtual void startEndUnknownRule() = 0;
-    virtual void startProperty(unsigned offset) = 0;
-    virtual void endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParser::ErrorType) = 0;
-    virtual void startComment(unsigned offset) = 0;
-    virtual void endComment(unsigned offset) = 0;
 };
 
 bool isValidNthToken(const CSSParserString&);
