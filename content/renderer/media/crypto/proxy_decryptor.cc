@@ -119,7 +119,6 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& type,
   uint32 session_id = next_session_id_++;
   if (!media_keys_->CreateSession(
            session_id, type, init_data, init_data_length)) {
-    media_keys_.reset();
     return false;
   }
 
