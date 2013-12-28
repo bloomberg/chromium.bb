@@ -1407,19 +1407,9 @@ void CSSParser::clearProperties()
     m_hasFontFaceOnlyValues = false;
 }
 
-// FIXME: Move to CSSParserContext?
-KURL CSSParser::completeURL(const CSSParserContext& context, const String& url)
-{
-    if (url.isNull())
-        return KURL();
-    if (context.charset().isEmpty())
-        return KURL(context.baseURL(), url);
-    return KURL(context.baseURL(), url, context.charset());
-}
-
 KURL CSSParser::completeURL(const String& url) const
 {
-    return completeURL(m_context, url);
+    return m_context.completeURL(url);
 }
 
 bool CSSParser::validCalculationUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc)
@@ -6903,7 +6893,7 @@ static bool buildBorderImageParseContext(CSSParser& parser, CSSPropertyID propId
 
         if (!context.canAdvance() && context.allowImage()) {
             if (val->unit == CSSPrimitiveValue::CSS_URI) {
-                context.commitImage(CSSImageValue::create(parser.completeURL(parser.m_context, val->string)));
+                context.commitImage(CSSImageValue::create(parser.m_context.completeURL(val->string)));
             } else if (isGeneratedImageValue(val)) {
                 RefPtr<CSSValue> value;
                 if (parser.parseGeneratedImage(parser.m_valueList.get(), value))

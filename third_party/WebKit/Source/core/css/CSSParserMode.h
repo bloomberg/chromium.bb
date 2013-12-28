@@ -113,6 +113,8 @@ public:
     void setBaseURL(const KURL& baseURL) { m_baseURL = baseURL; }
     void setCharset(const String& charset) { m_charset = charset; }
 
+    KURL completeURL(const String& url) const;
+
 private:
     KURL m_baseURL;
     String m_charset;

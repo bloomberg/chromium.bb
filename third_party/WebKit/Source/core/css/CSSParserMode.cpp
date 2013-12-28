@@ -63,4 +63,14 @@ const CSSParserContext& strictCSSParserContext()
     return strictContext;
 }
 
+KURL CSSParserContext::completeURL(const String& url) const
+{
+    if (url.isNull())
+        return KURL();
+    if (charset().isEmpty())
+        return KURL(baseURL(), url);
+    return KURL(baseURL(), url, charset());
+}
+
+
 } // namespace WebCore

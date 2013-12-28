@@ -425,8 +425,6 @@ public:
     PassRefPtr<CSSPrimitiveValue> createPrimitiveStringValue(CSSParserValue*);
     PassRefPtr<CSSPrimitiveValue> createPrimitiveVariableNameValue(CSSParserValue*);
 
-    static KURL completeURL(const CSSParserContext&, const String& url);
-
     CSSParserLocation currentLocation() { return m_tokenizer.currentLocation(); }
 
 private:

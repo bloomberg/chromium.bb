@@ -413,7 +413,8 @@ Document* StyleSheetContents::singleOwnerDocument() const
 
 KURL StyleSheetContents::completeURL(const String& url) const
 {
-    return CSSParser::completeURL(m_parserContext, url);
+    // FIXME: This is only OK when we have a singleOwnerNode, right?
+    return m_parserContext.completeURL(url);
 }
 
 static bool childRulesHaveFailedOrCanceledSubresources(const Vector<RefPtr<StyleRuleBase> >& rules)
