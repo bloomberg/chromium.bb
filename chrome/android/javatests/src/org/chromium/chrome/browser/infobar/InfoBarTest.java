@@ -53,6 +53,7 @@ public class InfoBarTest extends ChromiumTestShellTestBase {
      */
     @Smoke
     @MediumTest
+    @DisabledTest
     @Feature({"Browser", "Main"})
     public void testInfoBarForPopUp() throws InterruptedException {
         loadUrlWithSanitization(TestHttpServerClient.getUrl(POPUP_PAGE));
