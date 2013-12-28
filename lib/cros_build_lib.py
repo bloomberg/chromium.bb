@@ -32,10 +32,74 @@ from chromite.lib import signals
 sys.path.pop(0)
 del _path
 
+
 STRICT_SUDO = False
 
-
 logger = logging.getLogger('chromite')
+
+# For use by ShellQuote.  Match all characters that the shell might treat
+# specially.  This means a number of things:
+#  - Reserved characters.
+#  - Characters used in expansions (brace, variable, path, globs, etc...).
+#  - Characters that an interactive shell might use (like !).
+#  - Whitespace so that one arg turns into multiple.
+# See the bash man page as well as the POSIX shell documentation for more info:
+#   http://www.gnu.org/software/bash/manual/bashref.html
+#   http://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html
+_SHELL_QUOTABLE_CHARS = frozenset('[|&;()<> \t!{}[]=*?~$"\'\\#^')
+# The chars that, when used inside of double quotes, need escaping.
+_SHELL_ESCAPE_CHARS = frozenset('"`$')
+
+
+def ShellQuote(s):
+  """Quote |s| in a way that is safe for use in a shell.
+
+  We aim to be safe, but also to produce "nice" output.  That means we don't
+  use quotes when we don't need to, and we prefer to use less quotes (like
+  putting it all in single quotes) than more (using double quotes and escaping
+  a bunch of stuff, or mixing the quotes).
+
+  While python does provide a number of alternatives like:
+   - pipes.quote
+   - shlex.quote
+  They suffer from various problems like:
+   - Not widely available in different python versions.
+   - Do not produce pretty output in many cases.
+   - Are in modules that rarely otherwise get used.
+
+  Note: We don't handle reserved shell words like "for" or "case".  This is
+  because those only matter when they're the first element in a command, and
+  there is no use case for that.  When we want to run commands, we tend to
+  run real programs and not shell ones.
+
+  Args:
+    s: The string to quote.
+
+  Returns:
+    A safely (possibly quoted) string.
+  """
+  s = s.encode('utf-8')
+
+  # See if no quoting is needed so we can return the string as-is.
+  for c in s:
+    if c in _SHELL_QUOTABLE_CHARS:
+      break
+  else:
+    if not s:
+      return "''"
+    else:
+      return s
+
+  # See if we can use single quotes first.  Output is nicer.
+  if "'" not in s:
+    return "'%s'" % s
+
+  # Have to use double quotes.  Escape the few chars that still expand when
+  # used inside of double quotes.
+  for c in _SHELL_ESCAPE_CHARS:
+    if c in s:
+      s = s.replace(c, r'\%s' % c)
+  return '"%s"' % s
 
 
 def CmdToStr(cmd):
@@ -60,7 +124,7 @@ def CmdToStr(cmd):
     String representing full command.
   """
   # Use str before repr to translate unicode strings to regular strings.
-  return ' '.join(repr(str(arg)) for arg in cmd)
+  return ' '.join(ShellQuote(arg) for arg in cmd)
 
 
 class CommandResult(object):

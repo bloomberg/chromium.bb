@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 
 import contextlib
 import datetime
+import difflib
 import errno
 import functools
 import itertools
@@ -37,22 +38,54 @@ from chromite.lib import signals as cros_signals
 class CmdToStrTest(cros_test_lib.TestCase):
   """Test the CmdToStr function."""
 
+  def setUp(self):
+    self.differ = difflib.Differ()
+
+  def _assertEqual(self, func, test_input, test_output, result):
+    """Like assertEqual but with built in diff support."""
+    diff = '\n'.join(list(self.differ.compare([test_output], [result])))
+    msg = ('Expected %s to translate %r to %r, but got %r\n%s' %
+           (func, test_input, test_output, result, diff))
+    self.assertEqual(test_output, result, msg)
+
+    # Also make sure the result is a string, otherwise the %r output will
+    # include a "u" prefix and that is not good for logging.
+    self.assertEqual(type(test_output), str)
+
+  def _testData(self, functor, tests):
+    """Process a dict of test data."""
+    for test_output, test_input in tests.iteritems():
+      result = functor(test_input)
+      self._assertEqual(functor.__name__, test_input, test_output, result)
+
+  def testShellQuote(self):
+    """Basic ShellQuote tests."""
+    # Dict of expected output strings to input lists.
+    tests = {
+        "''": '',
+        'a': unicode('a'),
+        "'a b c'": unicode('a b c'),
+        "'a\tb'": 'a\tb',
+        "'/a$file'": '/a$file',
+        "'/a#file'": '/a#file',
+        """'b"c'""": 'b"c',
+        "'a@()b'": 'a@()b',
+        'j%k': 'j%k',
+        r'''"'a\$va\r"''': r"'a$va\r",
+    }
+    self._testData(cros_build_lib.ShellQuote, tests)
+
   def testCmdToStr(self):
     # Dict of expected output strings to input lists.
     tests = {
-        "'a' 'b'": ['a', 'b'],
-        "'a b' 'c'": ['a b', "c"],
-        '\'a\' "b\'c"': ['a', 'b\'c'],
-        '\'a\' "/\'$b" \'a b c\' "xy\'z"':
+        r"a b": ['a', 'b'],
+        r"'a b' c": ['a b', 'c'],
+        r'''a "b'c"''': ['a', "b'c"],
+        r'''a "/'\$b" 'a b c' "xy'z"''':
             [unicode('a'), "/'$b", 'a b c', "xy'z"],
         '': [],
     }
-
-    for test_output, test_input in tests.iteritems():
-      result = cros_build_lib.CmdToStr(test_input)
-      msg = ('Expected CmdToStr to translate %r to %r, but got %r' %
-             (test_input, test_output, result))
-      self.assertEqual(test_output, result, msg)
+    self._testData(cros_build_lib.CmdToStr, tests)
 
 
 class RunCommandMock(partial_mock.PartialCmdMock):
