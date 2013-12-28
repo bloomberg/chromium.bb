@@ -50,7 +50,7 @@ class StoragePartitionImpl : public StoragePartition {
       net::URLRequestContextGetter* request_context_getter) OVERRIDE;
   virtual void ClearData(uint32 remove_mask,
                          uint32 quota_storage_remove_mask,
-                         const GURL* storage_origin,
+                         const GURL& storage_origin,
                          const OriginMatcherFunction& origin_matcher,
                          const base::Time begin,
                          const base::Time end,
@@ -121,7 +121,7 @@ class StoragePartitionImpl : public StoragePartition {
 
   void ClearDataImpl(uint32 remove_mask,
                      uint32 quota_storage_remove_mask,
-                     const GURL* remove_origin,
+                     const GURL& remove_origin,
                      const OriginMatcherFunction& origin_matcher,
                      net::URLRequestContextGetter* rq_context,
                      const base::Time begin,

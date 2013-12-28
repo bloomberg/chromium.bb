@@ -44,12 +44,12 @@ void ClearCookiesOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& rq_context,
     const base::Time begin,
     const base::Time end,
-    const GURL& remove_origin,
+    const GURL& storage_origin,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   net::CookieStore* cookie_store = rq_context->
       GetURLRequestContext()->cookie_store();
-  if (remove_origin.is_empty()) {
+  if (storage_origin.is_empty()) {
     cookie_store->DeleteAllCreatedBetweenAsync(
         begin,
         end,
@@ -58,7 +58,7 @@ void ClearCookiesOnIOThread(
     cookie_store->DeleteAllCreatedBetweenForHostAsync(
         begin,
         end,
-        remove_origin, base::Bind(&OnClearedCookies, callback));
+        storage_origin, base::Bind(&OnClearedCookies, callback));
   }
 }
 
@@ -153,18 +153,18 @@ void ClearLocalStorageOnUIThread(
     const scoped_refptr<DOMStorageContextWrapper>& dom_storage_context,
     const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
-    const GURL& remove_origin,
+    const GURL& storage_origin,
     const base::Time begin,
     const base::Time end,
     const base::Closure& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (!remove_origin.is_empty()) {
+  if (!storage_origin.is_empty()) {
     bool can_delete = origin_matcher.is_null() ||
-                      origin_matcher.Run(remove_origin,
+                      origin_matcher.Run(storage_origin,
                                          special_storage_policy.get());
     if (can_delete)
-      dom_storage_context->DeleteLocalStorage(remove_origin);
+      dom_storage_context->DeleteLocalStorage(storage_origin);
 
     callback.Run();
     return;
@@ -213,11 +213,11 @@ int StoragePartitionImpl::GenerateQuotaClientMask(uint32 remove_mask) {
 struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
   QuotaManagedDataDeletionHelper(uint32 remove_mask,
                                  uint32 quota_storage_remove_mask,
-                                 const GURL& remove_origin,
+                                 const GURL& storage_origin,
                                  const base::Closure& callback)
       : remove_mask(remove_mask),
         quota_storage_remove_mask(quota_storage_remove_mask),
-        remove_origin(remove_origin),
+        storage_origin(storage_origin),
         callback(callback),
         task_count(0) {
   }
@@ -242,7 +242,7 @@ struct StoragePartitionImpl::QuotaManagedDataDeletionHelper {
   // All of these data are accessed on IO thread.
   uint32 remove_mask;
   uint32 quota_storage_remove_mask;
-  GURL remove_origin;
+  GURL storage_origin;
   const base::Closure callback;
   int task_count;
 };
@@ -270,7 +270,7 @@ struct StoragePartitionImpl::DataDeletionHelper {
   void IncrementTaskCountOnUI();
   void DecrementTaskCountOnUI();
 
-  void ClearDataOnUIThread(const GURL* remove_origin,
+  void ClearDataOnUIThread(const GURL& storage_origin,
                            const OriginMatcherFunction& origin_matcher,
                            const base::FilePath& path,
                            net::URLRequestContextGetter* rq_context,
@@ -284,7 +284,7 @@ struct StoragePartitionImpl::DataDeletionHelper {
   void ClearQuotaManagedDataOnIOThread(
       const scoped_refptr<quota::QuotaManager>& quota_manager,
       const base::Time begin,
-      const GURL& remove_origin,
+      const GURL& storage_origin,
       const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
       const StoragePartition::OriginMatcherFunction& origin_matcher,
       const base::Closure& callback);
@@ -301,7 +301,7 @@ struct StoragePartitionImpl::DataDeletionHelper {
 void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
     const scoped_refptr<quota::QuotaManager>& quota_manager,
     const base::Time begin,
-    const GURL& remove_origin,
+    const GURL& storage_origin,
     const scoped_refptr<quota::SpecialStoragePolicy>& special_storage_policy,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Closure& callback) {
@@ -311,7 +311,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
       new StoragePartitionImpl::QuotaManagedDataDeletionHelper(
           remove_mask,
           quota_storage_remove_mask,
-          remove_origin,
+          storage_origin,
           callback);
   helper->ClearDataOnIOThread(quota_manager, begin, special_storage_policy,
                               origin_matcher);
@@ -484,7 +484,7 @@ ServiceWorkerContextWrapper* StoragePartitionImpl::GetServiceWorkerContext() {
 void StoragePartitionImpl::ClearDataImpl(
     uint32 remove_mask,
     uint32 quota_storage_remove_mask,
-    const GURL* remove_origin,
+    const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
     net::URLRequestContextGetter* rq_context,
     const base::Time begin,
@@ -496,7 +496,7 @@ void StoragePartitionImpl::ClearDataImpl(
                                                       callback);
   // |helper| deletes itself when done in
   // DataDeletionHelper::DecrementTaskCountOnUI().
-  helper->ClearDataOnUIThread(remove_origin, origin_matcher, GetPath(),
+  helper->ClearDataOnUIThread(storage_origin, origin_matcher, GetPath(),
                               rq_context, dom_storage_context_, quota_manager_,
                               special_storage_policy_.get(),
                               webrtc_identity_store_, begin, end);
@@ -597,7 +597,7 @@ void StoragePartitionImpl::
   for (std::set<GURL>::const_iterator origin = origins.begin();
        origin != origins.end(); ++origin) {
     // TODO(mkwst): Clean this up, it's slow. http://crbug.com/130746
-    if (!remove_origin.is_empty() && origin->GetOrigin() != remove_origin)
+    if (!storage_origin.is_empty() && origin->GetOrigin() != storage_origin)
       continue;
 
     if (!origin_matcher.is_null() &&
@@ -640,7 +640,7 @@ void StoragePartitionImpl::DataDeletionHelper::DecrementTaskCountOnUI() {
 }
 
 void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
-    const GURL* remove_origin,
+    const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
     const base::FilePath& path,
     net::URLRequestContextGetter* rq_context,
@@ -657,14 +657,13 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
   base::Closure decrement_callback = base::Bind(
       &DataDeletionHelper::DecrementTaskCountOnUI, base::Unretained(this));
 
-  GURL origin = remove_origin ? *remove_origin : GURL();
   if (remove_mask & REMOVE_DATA_MASK_COOKIES) {
     // Handle the cookies.
     IncrementTaskCountOnUI();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&ClearCookiesOnIOThread,
-                   make_scoped_refptr(rq_context), begin, end, origin,
+                   make_scoped_refptr(rq_context), begin, end, storage_origin,
                    decrement_callback));
   }
 
@@ -679,7 +678,7 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
                    base::Unretained(this),
                    make_scoped_refptr(quota_manager),
                    begin,
-                   origin,
+                   storage_origin,
                    make_scoped_refptr(special_storage_policy),
                    origin_matcher,
                    decrement_callback));
@@ -691,13 +690,13 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
         make_scoped_refptr(dom_storage_context),
         make_scoped_refptr(special_storage_policy),
         origin_matcher,
-        origin, begin, end,
+        storage_origin, begin, end,
         decrement_callback);
 
     // ClearDataImpl cannot clear session storage data when a particular origin
     // is specified. Therefore we ignore clearing session storage in this case.
     // TODO(lazyboy): Fix.
-    if (origin.is_empty()) {
+    if (storage_origin.is_empty()) {
       IncrementTaskCountOnUI();
       ClearSessionStorageOnUIThread(
           make_scoped_refptr(dom_storage_context),
@@ -737,7 +736,7 @@ void StoragePartitionImpl::ClearDataForOrigin(
     const GURL& storage_origin,
     net::URLRequestContextGetter* request_context_getter) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ClearDataImpl(remove_mask, quota_storage_remove_mask, &storage_origin,
+  ClearDataImpl(remove_mask, quota_storage_remove_mask, storage_origin,
                 OriginMatcherFunction(), request_context_getter,
                 base::Time(), base::Time::Max(), base::Bind(&base::DoNothing));
 }
@@ -745,7 +744,7 @@ void StoragePartitionImpl::ClearDataForOrigin(
 void StoragePartitionImpl::ClearData(
     uint32 remove_mask,
     uint32 quota_storage_remove_mask,
-    const GURL* storage_origin,
+    const GURL& storage_origin,
     const OriginMatcherFunction& origin_matcher,
     const base::Time begin,
     const base::Time end,

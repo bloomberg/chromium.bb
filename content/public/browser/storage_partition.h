@@ -113,7 +113,7 @@ class StoragePartition {
   // scheduled.
   virtual void ClearData(uint32 remove_mask,
                          uint32 quota_storage_remove_mask,
-                         const GURL* storage_origin,
+                         const GURL& storage_origin,
                          const OriginMatcherFunction& origin_matcher,
                          const base::Time begin,
                          const base::Time end,

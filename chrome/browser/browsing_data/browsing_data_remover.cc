@@ -591,7 +591,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     storage_partition->ClearData(
         storage_partition_remove_mask,
         quota_storage_remove_mask,
-        &remove_origin_,
+        remove_origin_,
         base::Bind(&DoesOriginMatchMask, origin_set_mask_),
         delete_begin_,
         delete_end_,

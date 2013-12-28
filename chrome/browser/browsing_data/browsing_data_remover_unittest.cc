@@ -195,7 +195,7 @@ class TestStoragePartition : public StoragePartition {
 
   virtual void ClearData(uint32 remove_mask,
                          uint32 quota_storage_remove_mask,
-                         const GURL* storage_origin,
+                         const GURL& storage_origin,
                          const OriginMatcherFunction& origin_matcher,
                          const base::Time begin,
                          const base::Time end,
@@ -204,8 +204,7 @@ class TestStoragePartition : public StoragePartition {
     storage_partition_removal_data_.remove_mask = remove_mask;
     storage_partition_removal_data_.quota_storage_remove_mask =
         quota_storage_remove_mask;
-    storage_partition_removal_data_.remove_origin =
-        storage_origin ? *storage_origin : GURL();
+    storage_partition_removal_data_.remove_origin = storage_origin;
     storage_partition_removal_data_.remove_begin = begin;
     storage_partition_removal_data_.remove_end = end;
     storage_partition_removal_data_.origin_matcher = origin_matcher;

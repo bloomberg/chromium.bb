@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
@@ -60,31 +59,6 @@ const uint32 kAllQuotaRemoveMask =
     StoragePartition::REMOVE_DATA_MASK_WEBSQL |
     StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
     StoragePartition::REMOVE_DATA_MASK_APPCACHE;
-
-class TestClosureCallback {
- public:
-  TestClosureCallback()
-      : callback_(base::Bind(
-          &TestClosureCallback::StopWaiting, base::Unretained(this))) {
-  }
-
-  void WaitForResult() {
-    wait_run_loop_.reset(new base::RunLoop());
-    wait_run_loop_->Run();
-  }
-
-  const base::Closure& callback() { return callback_; }
-
- private:
-  void StopWaiting() {
-    wait_run_loop_->Quit();
-  }
-
-  base::Closure callback_;
-  scoped_ptr<base::RunLoop> wait_run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestClosureCallback);
-};
 
 class AwaitCompletionHelper {
  public:
@@ -270,70 +244,82 @@ bool DoesOriginMatchUnprotected(
   return origin.GetOrigin().scheme() != kOriginDevTools.scheme();
 }
 
-void ClearQuotaData(content::StoragePartition* storage_partition,
-                    const base::Closure& cb) {
-  storage_partition->ClearData(
+void ClearQuotaData(content::StoragePartition* partition,
+                    base::RunLoop* loop_to_quit) {
+  partition->ClearData(
       kAllQuotaRemoveMask,
       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      NULL, StoragePartition::OriginMatcherFunction(),
-      base::Time(), base::Time::Max(), cb);
+      GURL(), StoragePartition::OriginMatcherFunction(),
+      base::Time(), base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
 void ClearQuotaDataWithOriginMatcher(
-    content::StoragePartition* storage_partition,
+    content::StoragePartition* partition,
     const GURL& remove_origin,
     const StoragePartition::OriginMatcherFunction& origin_matcher,
     const base::Time delete_begin,
-    const base::Closure& cb) {
-  storage_partition->ClearData(kAllQuotaRemoveMask,
-                               StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-                               &remove_origin, origin_matcher, delete_begin,
-                               base::Time::Max(), cb);
+    base::RunLoop* loop_to_quit) {
+  partition->ClearData(kAllQuotaRemoveMask,
+                       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+                       remove_origin, origin_matcher, delete_begin,
+                       base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
 void ClearQuotaDataForOrigin(
-    content::StoragePartition* storage_partition,
+    content::StoragePartition* partition,
     const GURL& remove_origin,
     const base::Time delete_begin,
-    const base::Closure& cb) {
+    base::RunLoop* loop_to_quit) {
   ClearQuotaDataWithOriginMatcher(
-      storage_partition, remove_origin,
-      StoragePartition::OriginMatcherFunction(), delete_begin, cb);
+      partition, remove_origin,
+      StoragePartition::OriginMatcherFunction(), delete_begin,
+      loop_to_quit);
 }
 
 void ClearQuotaDataForNonPersistent(
-    content::StoragePartition* storage_partition,
+    content::StoragePartition* partition,
     const base::Time delete_begin,
-    const base::Closure& cb) {
+    base::RunLoop* loop_to_quit) {
   uint32 quota_storage_remove_mask_no_persistent =
       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL &
       ~StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
-  storage_partition->ClearData(
+  partition->ClearData(
       kAllQuotaRemoveMask, quota_storage_remove_mask_no_persistent,
-      NULL, StoragePartition::OriginMatcherFunction(),
-      delete_begin, base::Time::Max(), cb);
+      GURL(), StoragePartition::OriginMatcherFunction(),
+      delete_begin, base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
-void ClearCookies(content::StoragePartition* storage_partition,
+void ClearCookies(content::StoragePartition* partition,
                   const base::Time delete_begin,
                   const base::Time delete_end,
-                  const base::Closure& cb) {
-  storage_partition->ClearData(
+                  base::RunLoop* run_loop) {
+  partition->ClearData(
       StoragePartition::REMOVE_DATA_MASK_COOKIES,
       StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      NULL, StoragePartition::OriginMatcherFunction(),
-      delete_begin, delete_end, cb);
+      GURL(), StoragePartition::OriginMatcherFunction(),
+      delete_begin, delete_end, run_loop->QuitClosure());
 }
 
 void ClearStuff(uint32 remove_mask,
-                content::StoragePartition* storage_partition,
+                content::StoragePartition* partition,
                 const base::Time delete_begin,
                 const base::Time delete_end,
                 const StoragePartition::OriginMatcherFunction& origin_matcher,
-                const base::Closure& cb) {
-  storage_partition->ClearData(
+                base::RunLoop* run_loop) {
+  partition->ClearData(
       remove_mask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      NULL, origin_matcher, delete_begin, delete_end, cb);
+      GURL(), origin_matcher, delete_begin, delete_end,
+      run_loop->QuitClosure());
+}
+
+void ClearData(content::StoragePartition* partition,
+               base::RunLoop* run_loop) {
+  base::Time time;
+  partition->ClearData(
+      StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
+      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
+      GURL(), StoragePartition::OriginMatcherFunction(),
+      time, time, run_loop->QuitClosure());
 }
 
 }  // namespace
@@ -341,10 +327,9 @@ void ClearStuff(uint32 remove_mask,
 class StoragePartitionImplTest : public testing::Test {
  public:
   StoragePartitionImplTest()
-      : browser_context_(new TestBrowserContext()),
-        thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        browser_context_(new TestBrowserContext()) {
   }
-  virtual ~StoragePartitionImplTest() {}
 
   quota::MockQuotaManager* GetMockManager() {
     if (!quota_manager_.get()) {
@@ -358,14 +343,14 @@ class StoragePartitionImplTest : public testing::Test {
     return quota_manager_.get();
   }
 
-  TestBrowserContext* GetBrowserContext() {
+  TestBrowserContext* browser_context() {
     return browser_context_.get();
   }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<quota::MockQuotaManager> quota_manager_;
-  content::TestBrowserThreadBundle thread_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImplTest);
 };
@@ -373,20 +358,18 @@ class StoragePartitionImplTest : public testing::Test {
 class StoragePartitionShaderClearTest : public testing::Test {
  public:
   StoragePartitionShaderClearTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+        browser_context_(new TestBrowserContext()) {
+    ShaderCacheFactory::GetInstance()->SetCacheInfo(
+        kDefaultClientId,
+        BrowserContext::GetDefaultStoragePartition(
+            browser_context())->GetPath());
+    cache_ = ShaderCacheFactory::GetInstance()->Get(kDefaultClientId);
   }
 
-  virtual ~StoragePartitionShaderClearTest() {}
-
-  const base::FilePath& cache_path() { return temp_dir_.path(); }
-
-  virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ShaderCacheFactory::GetInstance()->SetCacheInfo(kDefaultClientId,
-                                                    cache_path());
-
-    cache_ = ShaderCacheFactory::GetInstance()->Get(kDefaultClientId);
-    ASSERT_TRUE(cache_.get() != NULL);
+  virtual ~StoragePartitionShaderClearTest() {
+    cache_ = NULL;
+    ShaderCacheFactory::GetInstance()->RemoveCacheInfo(kDefaultClientId);
   }
 
   void InitCache() {
@@ -405,27 +388,16 @@ class StoragePartitionShaderClearTest : public testing::Test {
 
   size_t Size() { return cache_->Size(); }
 
- private:
-  virtual void TearDown() OVERRIDE {
-    cache_ = NULL;
-    ShaderCacheFactory::GetInstance()->RemoveCacheInfo(kDefaultClientId);
+  TestBrowserContext* browser_context() {
+    return browser_context_.get();
   }
 
-  base::ScopedTempDir temp_dir_;
+ private:
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<TestBrowserContext> browser_context_;
 
   scoped_refptr<ShaderDiskCache> cache_;
 };
-
-void ClearData(content::StoragePartitionImpl* sp,
-               const base::Closure& cb) {
-  base::Time time;
-  sp->ClearData(
-      StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE,
-      StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      NULL, StoragePartition::OriginMatcherFunction(),
-      time, time, cb);
-}
 
 // Tests ---------------------------------------------------------------------
 
@@ -433,13 +405,13 @@ TEST_F(StoragePartitionShaderClearTest, ClearShaderCache) {
   InitCache();
   EXPECT_EQ(1u, Size());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl storage_partition(
-      cache_path(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&ClearData, &storage_partition,
-                            clear_cb.callback()));
-  clear_cb.WaitForResult();
+      FROM_HERE, base::Bind(
+          &ClearData,
+          BrowserContext::GetDefaultStoragePartition(browser_context()),
+          &run_loop));
+  run_loop.Run();
   EXPECT_EQ(0u, Size());
 }
 
@@ -504,14 +476,15 @@ void PopulateTestQuotaManagedNonBrowsingData(quota::MockQuotaManager* manager) {
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverBoth) {
   PopulateTestQuotaManagedData(GetMockManager());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&ClearQuotaData, &sp, clear_cb.callback()));
-  clear_cb.WaitForResult();
+      FROM_HERE, base::Bind(&ClearQuotaData, partition, &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -530,14 +503,15 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverBoth) {
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
   PopulateTestQuotaManagedTemporaryData(GetMockManager());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&ClearQuotaData, &sp, clear_cb.callback()));
-  clear_cb.WaitForResult();
+      FROM_HERE, base::Bind(&ClearQuotaData, partition, &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -556,14 +530,15 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
   PopulateTestQuotaManagedPersistentData(GetMockManager());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&ClearQuotaData, &sp, clear_cb.callback()));
-  clear_cb.WaitForResult();
+      FROM_HERE, base::Bind(&ClearQuotaData, partition, &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -580,14 +555,15 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverNeither) {
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&ClearQuotaData, &sp, clear_cb.callback()));
-  clear_cb.WaitForResult();
+      FROM_HERE, base::Bind(&ClearQuotaData, partition, &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -606,15 +582,17 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverNeither) {
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
   PopulateTestQuotaManagedData(GetMockManager());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearQuotaDataForOrigin,
-                            &sp, kOrigin1, base::Time(), clear_cb.callback()));
-  clear_cb.WaitForResult();
+                            partition, kOrigin1, base::Time(),
+                            &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -633,17 +611,18 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastHour) {
   PopulateTestQuotaManagedData(GetMockManager());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearQuotaDataForOrigin,
-                            &sp, GURL(),
+                            partition, GURL(),
                             base::Time::Now() - base::TimeDelta::FromHours(1),
-                            clear_cb.callback()));
-  clear_cb.WaitForResult();
+                            &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -662,17 +641,17 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastHour) {
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastWeek) {
   PopulateTestQuotaManagedData(GetMockManager());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  base::RunLoop run_loop;
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearQuotaDataForNonPersistent,
-                            &sp,
+                            partition,
                             base::Time::Now() - base::TimeDelta::FromDays(7),
-                            clear_cb.callback()));
-  clear_cb.WaitForResult();
+                            &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -696,19 +675,19 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
 
   PopulateTestQuotaManagedData(GetMockManager());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
-  static_cast<StoragePartitionImpl*>(
-      &sp)->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearQuotaDataWithOriginMatcher,
-                            &sp, GURL(),
+                            partition, GURL(),
                             base::Bind(&DoesOriginMatchForUnprotectedWeb),
-                            base::Time(), clear_cb.callback()));
-  clear_cb.WaitForResult();
+                            base::Time(), &run_loop));
+  run_loop.Run();
 
   EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -732,21 +711,20 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
 
   PopulateTestQuotaManagedData(GetMockManager());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
-  static_cast<StoragePartitionImpl*>(
-      &sp)->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
 
   // Try to remove kOrigin1. Expect failure.
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearQuotaDataWithOriginMatcher,
-                            &sp, kOrigin1,
+                            partition, kOrigin1,
                             base::Bind(&DoesOriginMatchForUnprotectedWeb),
-                            base::Time(), clear_cb.callback()));
-  clear_cb.WaitForResult();
+                            base::Time(), &run_loop));
+  run_loop.Run();
 
   EXPECT_TRUE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -771,20 +749,19 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedOrigins) {
   PopulateTestQuotaManagedData(GetMockManager());
 
   // Try to remove kOrigin1. Expect success.
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  base::RunLoop run_loop;
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
-  static_cast<StoragePartitionImpl*>(
-      &sp)->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClearQuotaDataWithOriginMatcher,
-                 &sp, GURL(),
+                 partition, GURL(),
                  base::Bind(&DoesOriginMatchForBothProtectedAndUnprotectedWeb),
-                 base::Time(), clear_cb.callback()));
-  clear_cb.WaitForResult();
+                 base::Time(), &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(GetMockManager()->OriginHasData(kOrigin1, kTemporary,
       kClientFile));
@@ -803,17 +780,17 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedOrigins) {
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedIgnoreDevTools) {
   PopulateTestQuotaManagedNonBrowsingData(GetMockManager());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(&sp)->OverrideQuotaManagerForTesting(
+  base::RunLoop run_loop;
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideQuotaManagerForTesting(
       GetMockManager());
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearQuotaDataWithOriginMatcher,
-                            &sp, GURL(),
+                            partition, GURL(),
                             base::Bind(&DoesOriginMatchUnprotected),
-                            base::Time(), clear_cb.callback()));
-  clear_cb.WaitForResult();
+                            base::Time(), &run_loop));
+  run_loop.Run();
 
   // Check that devtools data isn't removed.
   EXPECT_TRUE(GetMockManager()->OriginHasData(kOriginDevTools, kTemporary,
@@ -823,40 +800,42 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedIgnoreDevTools) {
 }
 
 TEST_F(StoragePartitionImplTest, RemoveCookieForever) {
-  RemoveCookieTester tester(GetBrowserContext());
+  RemoveCookieTester tester(browser_context());
 
   tester.AddCookie();
   ASSERT_TRUE(tester.ContainsCookie());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-  sp.SetURLRequestContext(GetBrowserContext()->GetRequestContext());
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->SetURLRequestContext(browser_context()->GetRequestContext());
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearCookies,
-                            &sp, base::Time(), base::Time::Max(),
-                            clear_cb.callback()));
-  clear_cb.WaitForResult();
+                            partition, base::Time(), base::Time::Max(),
+                            &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(tester.ContainsCookie());
 }
 
 TEST_F(StoragePartitionImplTest, RemoveCookieLastHour) {
-  RemoveCookieTester tester(GetBrowserContext());
+  RemoveCookieTester tester(browser_context());
 
   tester.AddCookie();
   ASSERT_TRUE(tester.ContainsCookie());
 
-  TestClosureCallback clear_cb;
-  StoragePartitionImpl sp(
-      base::FilePath(), NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
   base::Time an_hour_ago = base::Time::Now() - base::TimeDelta::FromHours(1);
-  sp.SetURLRequestContext(GetBrowserContext()->GetRequestContext());
+  partition->SetURLRequestContext(browser_context()->GetRequestContext());
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&ClearCookies,
-                            &sp, an_hour_ago, base::Time::Max(),
-                            clear_cb.callback()));
-  clear_cb.WaitForResult();
+                            partition, an_hour_ago, base::Time::Max(),
+                            &run_loop));
+  run_loop.Run();
 
   EXPECT_FALSE(tester.ContainsCookie());
 }
@@ -867,30 +846,26 @@ TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
       new quota::MockSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
 
-  RemoveLocalStorageTester tester(GetBrowserContext());
+  RemoveLocalStorageTester tester(browser_context());
 
   tester.AddDOMStorageTestData();
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
 
-  TestClosureCallback clear_cb;
-  DOMStorageContextWrapper* dom_storage_context =
-      static_cast<DOMStorageContextWrapper*>(
-          content::BrowserContext::GetDefaultStoragePartition(
-              GetBrowserContext())->GetDOMStorageContext());
-  StoragePartitionImpl sp(base::FilePath(), NULL, NULL, NULL, NULL,
-                          dom_storage_context, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(
-      &sp)->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClearStuff,
                  StoragePartitionImpl::REMOVE_DATA_MASK_LOCAL_STORAGE,
-                 &sp, base::Time(), base::Time::Max(),
+                 partition, base::Time(), base::Time::Max(),
                  base::Bind(&DoesOriginMatchForUnprotectedWeb),
-                 clear_cb.callback()));
-  clear_cb.WaitForResult();
+                 &run_loop));
+  run_loop.Run();
 
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
@@ -903,30 +878,26 @@ TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
       new quota::MockSpecialStoragePolicy;
   mock_policy->AddProtected(kOrigin1.GetOrigin());
 
-  RemoveLocalStorageTester tester(GetBrowserContext());
+  RemoveLocalStorageTester tester(browser_context());
 
   tester.AddDOMStorageTestData();
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
 
-  TestClosureCallback clear_cb;
-  DOMStorageContextWrapper* dom_storage_context =
-      static_cast<DOMStorageContextWrapper*>(
-          content::BrowserContext::GetDefaultStoragePartition(
-              GetBrowserContext())->GetDOMStorageContext());
-  StoragePartitionImpl sp(base::FilePath(), NULL, NULL, NULL, NULL,
-                          dom_storage_context, NULL, NULL, NULL, NULL);
-  static_cast<StoragePartitionImpl*>(
-      &sp)->OverrideSpecialStoragePolicyForTesting(mock_policy);
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  partition->OverrideSpecialStoragePolicyForTesting(mock_policy);
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClearStuff,
                  StoragePartitionImpl::REMOVE_DATA_MASK_LOCAL_STORAGE,
-                 &sp, base::Time(), base::Time::Max(),
+                 partition, base::Time(), base::Time::Max(),
                  base::Bind(&DoesOriginMatchForBothProtectedAndUnprotectedWeb),
-                 clear_cb.callback()));
-  clear_cb.WaitForResult();
+                 &run_loop));
+  run_loop.Run();
 
   // Even if kOrigin1 is protected, it will be deleted since we specify
   // ClearData to delete protected data.
@@ -936,29 +907,26 @@ TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
 }
 
 TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
-  RemoveLocalStorageTester tester(GetBrowserContext());
+  RemoveLocalStorageTester tester(browser_context());
 
   tester.AddDOMStorageTestData();
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin2));
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
 
-  TestClosureCallback clear_cb;
-  DOMStorageContextWrapper* dom_storage_context =
-      static_cast<DOMStorageContextWrapper*>(
-          content::BrowserContext::GetDefaultStoragePartition(
-              GetBrowserContext())->GetDOMStorageContext());
-  StoragePartitionImpl sp(base::FilePath(), NULL, NULL, NULL, NULL,
-                          dom_storage_context, NULL, NULL, NULL, NULL);
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
   base::Time a_week_ago = base::Time::Now() - base::TimeDelta::FromDays(7);
+
+  base::RunLoop run_loop;
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&ClearStuff,
                  StoragePartitionImpl::REMOVE_DATA_MASK_LOCAL_STORAGE,
-                 &sp, a_week_ago, base::Time::Max(),
+                 partition, a_week_ago, base::Time::Max(),
                  base::Bind(&DoesOriginMatchForBothProtectedAndUnprotectedWeb),
-                 clear_cb.callback()));
-  clear_cb.WaitForResult();
+                 &run_loop));
+  run_loop.Run();
 
   // kOrigin1 and kOrigin2 do not have age more than a week.
   EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));

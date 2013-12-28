@@ -552,7 +552,7 @@ bool WebViewGuest::ClearData(const base::Time remove_since,
   partition->ClearData(
       removal_mask,
       content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      NULL,
+      GURL(),
       content::StoragePartition::OriginMatcherFunction(),
       remove_since,
       base::Time::Now(),

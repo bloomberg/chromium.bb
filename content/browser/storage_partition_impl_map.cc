@@ -465,7 +465,7 @@ void StoragePartitionImplMap::AsyncObliterate(
           StoragePartition::REMOVE_DATA_MASK_ALL &
             (~StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE),
           StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-          NULL,
+          GURL(),
           StoragePartition::OriginMatcherFunction(),
           base::Time(), base::Time::Max(),
           base::Bind(&base::DoNothing));
