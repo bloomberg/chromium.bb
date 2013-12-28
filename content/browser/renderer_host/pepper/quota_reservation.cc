@@ -78,7 +78,7 @@ void QuotaReservation::ReserveQuota(
     int64_t amount,
     const OffsetMap& max_written_offsets,
     const ReserveQuotaCallback& callback) {
-  for (FileMap::iterator it = files_.begin(); it != files_.end(); ++ it) {
+  for (FileMap::iterator it = files_.begin(); it != files_.end(); ++it) {
     OffsetMap::const_iterator offset_it = max_written_offsets.find(it->first);
     if (offset_it != max_written_offsets.end())
       it->second->UpdateMaxWrittenOffset(offset_it->second);

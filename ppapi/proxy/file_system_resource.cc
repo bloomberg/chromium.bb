@@ -9,11 +9,25 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/tracked_callback.h"
+#include "ppapi/thunk/enter.h"
+#include "ppapi/thunk/ppb_file_io_api.h"
 
+using ppapi::thunk::EnterResourceNoLock;
+using ppapi::thunk::PPB_FileIO_API;
 using ppapi::thunk::PPB_FileSystem_API;
 
 namespace ppapi {
 namespace proxy {
+
+FileSystemResource::QuotaRequest::QuotaRequest(
+    int64_t amount_arg,
+    const RequestQuotaCallback& callback_arg)
+    : amount(amount_arg),
+      callback(callback_arg) {
+}
+
+FileSystemResource::QuotaRequest::~QuotaRequest() {
+}
 
 FileSystemResource::FileSystemResource(Connection connection,
                                        PP_Instance instance,
@@ -22,7 +36,9 @@ FileSystemResource::FileSystemResource(Connection connection,
       type_(type),
       called_open_(false),
       callback_count_(0),
-      callback_result_(PP_OK) {
+      callback_result_(PP_OK),
+      reserved_quota_(0),
+      reserving_quota_(false) {
   DCHECK(type_ != PP_FILESYSTEMTYPE_INVALID);
   SendCreate(RENDERER, PpapiHostMsg_FileSystem_Create(type_));
   SendCreate(BROWSER, PpapiHostMsg_FileSystem_Create(type_));
@@ -37,7 +53,9 @@ FileSystemResource::FileSystemResource(Connection connection,
       type_(type),
       called_open_(true),
       callback_count_(0),
-      callback_result_(PP_OK) {
+      callback_result_(PP_OK),
+      reserved_quota_(0),
+      reserving_quota_(false) {
   DCHECK(type_ != PP_FILESYSTEMTYPE_INVALID);
   AttachToPendingHost(RENDERER, pending_renderer_id);
   AttachToPendingHost(BROWSER, pending_browser_id);
@@ -72,6 +90,39 @@ int32_t FileSystemResource::Open(int64_t expected_size,
 
 PP_FileSystemType FileSystemResource::GetType() {
   return type_;
+}
+
+void FileSystemResource::OpenQuotaFile(PP_Resource file_io) {
+  DCHECK(max_written_offsets_.find(file_io) == max_written_offsets_.end());
+  EnterResourceNoLock<PPB_FileIO_API> enter(file_io, true);
+  DCHECK(!enter.failed());
+  PPB_FileIO_API* file_io_api = enter.object();
+  max_written_offsets_[file_io] = file_io_api->GetMaxWrittenOffset();
+}
+
+void FileSystemResource::CloseQuotaFile(PP_Resource file_io) {
+  OffsetMap::iterator it = max_written_offsets_.find(file_io);
+  DCHECK(it != max_written_offsets_.end());
+  max_written_offsets_.erase(it);
+}
+
+int64_t FileSystemResource::RequestQuota(
+    int64_t amount,
+    const RequestQuotaCallback& callback) {
+  DCHECK(amount >= 0);
+  if (!reserving_quota_ && reserved_quota_ >= amount) {
+    reserved_quota_ -= amount;
+    return amount;
+  }
+
+  // Queue up a pending quota request.
+  pending_quota_requests_.push(QuotaRequest(amount, callback));
+
+  // Reserve more quota if we haven't already.
+  if (!reserving_quota_)
+    ReserveQuota(amount);
+
+  return PP_OK_COMPLETIONPENDING;
 }
 
 int32_t FileSystemResource::InitIsolatedFileSystem(
@@ -120,6 +171,60 @@ void FileSystemResource::InitIsolatedFileSystemComplete(
   // Received callback from browser and renderer.
   if (callback_count_ == 2)
     callback.Run(callback_result_);
+}
+
+void FileSystemResource::ReserveQuota(int64_t amount) {
+  DCHECK(!reserving_quota_);
+  reserving_quota_ = true;
+  for (OffsetMap::iterator it = max_written_offsets_.begin();
+       it != max_written_offsets_.end(); ++it) {
+    EnterResourceNoLock<PPB_FileIO_API> enter(it->first, true);
+    DCHECK(!enter.failed());
+    PPB_FileIO_API* file_io_api = enter.object();
+    it->second = file_io_api->GetMaxWrittenOffset();
+  }
+  Call<PpapiPluginMsg_FileSystem_ReserveQuotaReply>(BROWSER,
+      PpapiHostMsg_FileSystem_ReserveQuota(amount, max_written_offsets_),
+      base::Bind(&FileSystemResource::ReserveQuotaComplete,
+                 this));
+}
+
+void FileSystemResource::ReserveQuotaComplete(
+    const ResourceMessageReplyParams& params,
+    int64_t amount,
+    const OffsetMap& max_written_offsets) {
+  DCHECK(reserving_quota_);
+  reserving_quota_ = false;
+  reserved_quota_ = amount;
+
+  for (OffsetMap::const_iterator it = max_written_offsets.begin();
+      it != max_written_offsets.end(); ++it) {
+    EnterResourceNoLock<PPB_FileIO_API> enter(it->first, true);
+    DCHECK(!enter.failed());
+    PPB_FileIO_API* file_io_api = enter.object();
+    file_io_api->SetMaxWrittenOffset(it->second);
+  }
+
+  DCHECK(!pending_quota_requests_.empty());
+  // If we can't grant the first request after refreshing reserved_quota_, then
+  // fail all pending quota requests to avoid an infinite refresh/fail loop.
+  bool fail_all = reserved_quota_ < pending_quota_requests_.front().amount;
+  while (!pending_quota_requests_.empty()) {
+    QuotaRequest& request = pending_quota_requests_.front();
+    if (fail_all) {
+      request.callback.Run(0);
+      pending_quota_requests_.pop();
+    } else if (reserved_quota_ >= request.amount) {
+      reserved_quota_ -= request.amount;
+      request.callback.Run(request.amount);
+      pending_quota_requests_.pop();
+    } else {
+      // Refresh the quota reservation for the first pending request that we
+      // can't satisfy.
+      ReserveQuota(request.amount);
+      break;
+    }
+  }
 }
 
 }  // namespace proxy

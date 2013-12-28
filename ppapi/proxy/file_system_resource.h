@@ -5,10 +5,13 @@
 #ifndef PPAPI_PROXY_FILE_SYSTEM_RESOURCE_H_
 #define PPAPI_PROXY_FILE_SYSTEM_RESOURCE_H_
 
+#include <map>
+#include <queue>
 #include <string>
 
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_file_info.h"
+#include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/proxy/plugin_resource.h"
@@ -48,11 +51,25 @@ class PPAPI_PROXY_EXPORT FileSystemResource
   virtual int32_t Open(int64_t expected_size,
                        scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual PP_FileSystemType GetType() OVERRIDE;
+  virtual void OpenQuotaFile(PP_Resource file_io) OVERRIDE;
+  virtual void CloseQuotaFile(PP_Resource file_io) OVERRIDE;
+  typedef base::Callback<void(int64_t)> RequestQuotaCallback;
+  virtual int64_t RequestQuota(int64_t amount,
+                               const RequestQuotaCallback& callback) OVERRIDE;
 
   int32_t InitIsolatedFileSystem(const std::string& fsid,
                                  PP_IsolatedFileSystemType_Private type,
                                  const base::Callback<void(int32_t)>& callback);
  private:
+  struct QuotaRequest {
+    QuotaRequest(int64_t amount,
+                 const RequestQuotaCallback& callback);
+    ~QuotaRequest();
+
+    int64_t amount;
+    RequestQuotaCallback callback;
+  };
+
   // Called when the host has responded to our open request.
   void OpenComplete(scoped_refptr<TrackedCallback> callback,
                     const ResourceMessageReplyParams& params);
@@ -62,10 +79,21 @@ class PPAPI_PROXY_EXPORT FileSystemResource
       const base::Callback<void(int32_t)>& callback,
       const ResourceMessageReplyParams& params);
 
+  void ReserveQuota(int64_t amount);
+  typedef std::map<int32_t, int64_t> OffsetMap;
+  void ReserveQuotaComplete(const ResourceMessageReplyParams& params,
+                            int64_t amount,
+                            const OffsetMap& max_written_offsets);
+
   PP_FileSystemType type_;
   bool called_open_;
   uint32_t callback_count_;
   int32_t callback_result_;
+
+  OffsetMap max_written_offsets_;
+  std::queue<QuotaRequest> pending_quota_requests_;
+  int64_t reserved_quota_;
+  bool reserving_quota_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemResource);
 };

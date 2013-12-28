@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // Multiply-included message header, no traditional include guard.
+#include <map>
 #include <string>
 #include <vector>
 
@@ -1224,14 +1225,14 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileIO_Create)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileIO_Open,
                      PP_Resource /* file_ref_resource */,
                      int32_t /* open_flags */)
-IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileIO_OpenReply)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileIO_Close)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_FileIO_OpenReply,
+                     PP_Resource /* quota_file_system */,
+                     int64_t /* max_written_offset */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileIO_Close,
+                     int64_t /* max_written_offset */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileIO_Touch,
                      PP_Time /* last_access_time */,
                      PP_Time /* last_modified_time */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileIO_Write,
-                     int64_t /* offset */,
-                     std::string /* data */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileIO_SetLength,
                      int64_t /* length */)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileIO_Flush)
@@ -1317,6 +1318,15 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileSystem_CreateFromRenderer,
 // linked to the existing resource host given in the ResourceVar.
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileSystem_CreateFromPendingHost,
                      PP_FileSystemType /* file_system_type */)
+// IPC_MESSAGE macros choke on extra , in the std::map, when expanding. We need
+// to typedef it to avoid that.
+typedef std::map<int32_t, int64_t> FileOffsetMap;
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileSystem_ReserveQuota,
+                     int64_t /* amount */,
+                     FileOffsetMap /* max_written_offsets */)
+IPC_MESSAGE_CONTROL2(PpapiPluginMsg_FileSystem_ReserveQuotaReply,
+                     int64_t /* amount */,
+                     FileOffsetMap /* max_written_offsets */)
 
 // Flash DRM ------------------------------------------------------------------
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDRM_Create)
