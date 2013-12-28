@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/crx_installer_error.h"
+#include "chrome/browser/extensions/extension_install_prompt_experiment.h"
 #include "extensions/common/url_pattern.h"
 #include "google_apis/gaia/oauth2_mint_token_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -51,6 +52,8 @@ class ExtensionInstallPrompt
       public OAuth2TokenService::Consumer,
       public base::SupportsWeakPtr<ExtensionInstallPrompt> {
  public:
+  // This enum is associated with Extensions.InstallPrompt_Type UMA histogram.
+  // Do not modify existing values and add new values only to the end.
   enum PromptType {
     UNSET_PROMPT_TYPE = -1,
     INSTALL_PROMPT = 0,
@@ -109,6 +112,7 @@ class ExtensionInstallPrompt
     base::string16 GetRetainedFilesHeading() const;
 
     bool ShouldShowPermissions() const;
+    bool ShouldShowExplanationText() const;
 
     // Getters for webstore metadata. Only populated when the type is
     // INLINE_INSTALL_PROMPT.
@@ -151,6 +155,14 @@ class ExtensionInstallPrompt
     const gfx::Image& icon() const { return icon_; }
     void set_icon(const gfx::Image& icon) { icon_ = icon; }
 
+    const ExtensionInstallPromptExperiment* experiment() const {
+      return experiment_;
+    }
+
+    void set_experiment(ExtensionInstallPromptExperiment* experiment) {
+      experiment_ = experiment;
+    }
+
    private:
     bool ShouldDisplayRevokeFilesButton() const;
 
@@ -191,6 +203,8 @@ class ExtensionInstallPrompt
     bool show_user_count_;
 
     std::vector<base::FilePath> retained_files_;
+
+    scoped_refptr<ExtensionInstallPromptExperiment> experiment_;
   };
 
   static const int kMinExtensionRating = 0;

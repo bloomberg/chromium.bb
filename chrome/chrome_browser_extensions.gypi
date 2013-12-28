@@ -720,6 +720,8 @@
         'browser/extensions/extension_infobar_delegate.h',
         'browser/extensions/extension_install_prompt.cc',
         'browser/extensions/extension_install_prompt.h',
+        'browser/extensions/extension_install_prompt_experiment.cc',
+        'browser/extensions/extension_install_prompt_experiment.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
         'browser/extensions/extension_installer.cc',

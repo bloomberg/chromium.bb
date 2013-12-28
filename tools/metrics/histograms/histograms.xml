@@ -4601,6 +4601,36 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.InstallPrompt.Accepted" enum="BooleanAccepted">
+  <summary>
+    Whether the user accepted or aborted an extension installation.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InstallPrompt.Type"
+    enum="ExtensionInstallPromptType">
+  <summary>
+    Type of the extension install prompt displayed when an extension
+    installation is triggered.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InstallPromptExperiment.ShowDetails"
+    enum="ExtensionInstallPromptExperimentLinkAction">
+  <summary>
+    Actions on the show details link grouped by action type when the install
+    prompt trial is running.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.InstallPromptExperiment.ShowPermissions"
+    enum="ExtensionInstallPromptExperimentLinkAction">
+  <summary>
+    Actions on the show permissions link grouped by action type when the install
+    prompt trial is running.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.InstallSource" enum="ExtensionLocation">
   <summary>Installs grouped by the location property in prefs.</summary>
 </histogram>
@@ -22061,6 +22091,11 @@ other types of suffix sets.
   <int value="1" label="True"/>
 </enum>
 
+<enum name="BooleanAccepted" type="int">
+  <int value="0" label="Not Accepted"/>
+  <int value="1" label="Accepted"/>
+</enum>
+
 <enum name="BooleanAttempted" type="int">
   <int value="0" label="Not Attempted"/>
   <int value="1" label="Attempted"/>
@@ -24386,6 +24421,23 @@ other types of suffix sets.
   <int value="2" label="INSTALL_CAUSE_UPDATE"/>
   <int value="3" label="INSTALL_CAUSE_EXTERNAL_FILE"/>
   <int value="4" label="INSTALL_CAUSE_AUTOMATION"/>
+</enum>
+
+<enum name="ExtensionInstallPromptExperimentLinkAction" type="int">
+  <int value="0" label="Link is shown"/>
+  <int value="1" label="Link is not shown"/>
+  <int value="2" label="Link is clicked"/>
+</enum>
+
+<enum name="ExtensionInstallPromptType" type="int">
+  <int value="0" label="Install prompt"/>
+  <int value="1" label="Inline install prompt"/>
+  <int value="2" label="Bundle install prompt"/>
+  <int value="3" label="Re-enable prompt"/>
+  <int value="4" label="Permissions prompt"/>
+  <int value="5" label="External install prompt"/>
+  <int value="6" label="Post install permissions prompt"/>
+  <int value="7" label="Launch prompt"/>
 </enum>
 
 <enum name="ExtensionLaunchType" type="int">
