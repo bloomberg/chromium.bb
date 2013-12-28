@@ -1092,6 +1092,11 @@
     'clang_load%': '',
     'clang_add_plugin%': '',
 
+    # Tell ld64 to write map files describing binary layout. Useful
+    # for looking at what contributes to binary size, e.g. with
+    # https://github.com/nico/bloat
+    'mac_write_linker_maps%': 0,
+
     # The default type of gtest.
     'gtest_target_type%': 'executable',
 
@@ -4089,6 +4094,13 @@
                 'xcode_settings': {
                   'OTHER_LDFLAGS': [
                     '-fsanitize=address',
+                  ],
+                },
+              }],
+              ['mac_write_linker_maps==1', {
+                'xcode_settings': {
+                  'OTHER_LDFLAGS': [
+                    '-Wl,-map,>(_target_name).map',
                   ],
                 },
               }],
