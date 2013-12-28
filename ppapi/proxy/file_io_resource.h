@@ -57,8 +57,6 @@ class PPAPI_PROXY_EXPORT FileIOResource
                         scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t SetLength(int64_t length,
                             scoped_refptr<TrackedCallback> callback) OVERRIDE;
-  virtual int64_t GetMaxWrittenOffset() const OVERRIDE;
-  virtual void SetMaxWrittenOffset(int64_t max_written_offset) OVERRIDE;
   virtual int32_t Flush(scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual int32_t RequestOSFileHandle(
@@ -141,49 +139,10 @@ class PPAPI_PROXY_EXPORT FileIOResource
     scoped_ptr<char[]> buffer_;
   };
 
-  // Class to perform file write operations across multiple threads.
-  class WriteOp : public base::RefCountedThreadSafe<WriteOp> {
-   public:
-    WriteOp(scoped_refptr<FileHandleHolder> file_handle,
-            int64_t offset,
-            const char* buffer,
-            int32_t bytes_to_write,
-            bool append);
-
-    // Writes the file. Called on the file thread (non-blocking) or the plugin
-    // thread (blocking). This should not be called when we hold the proxy lock.
-    int32_t DoWork();
-
-   private:
-    friend class base::RefCountedThreadSafe<WriteOp>;
-    ~WriteOp();
-
-    scoped_refptr<FileHandleHolder> file_handle_;
-    int64_t offset_;
-    const char* buffer_;
-    int32_t bytes_to_write_;
-    bool append_;
-  };
-
-  void OnRequestWriteQuotaComplete(int64_t offset,
-                                   const char* buffer,
-                                   int32_t bytes_to_write,
-                                   scoped_refptr<TrackedCallback> callback,
-                                   int64_t granted);
-  void OnRequestSetLengthQuotaComplete(int64_t length,
-                                       scoped_refptr<TrackedCallback> callback,
-                                       int64_t granted);
-
   int32_t ReadValidated(int64_t offset,
                         int32_t bytes_to_read,
                         const PP_ArrayOutput& array_output,
                         scoped_refptr<TrackedCallback> callback);
-  int32_t WriteValidated(int64_t offset,
-                         const char* buffer,
-                         int32_t bytes_to_write,
-                         scoped_refptr<TrackedCallback> callback);
-  void SetLengthValidated(int64_t length,
-                          scoped_refptr<TrackedCallback> callback);
 
   // Completion tasks for file operations that are done in the plugin.
   int32_t OnQueryComplete(scoped_refptr<QueryOp> query_op,
@@ -192,16 +151,12 @@ class PPAPI_PROXY_EXPORT FileIOResource
   int32_t OnReadComplete(scoped_refptr<ReadOp> read_op,
                          PP_ArrayOutput array_output,
                          int32_t result);
-  int32_t OnWriteComplete(scoped_refptr<WriteOp> write_op,
-                          int32_t result);
 
   // Reply message handlers for operations that are done in the host.
   void OnPluginMsgGeneralComplete(scoped_refptr<TrackedCallback> callback,
                                   const ResourceMessageReplyParams& params);
   void OnPluginMsgOpenFileComplete(scoped_refptr<TrackedCallback> callback,
-                                   const ResourceMessageReplyParams& params,
-                                   PP_Resource quota_file_system,
-                                   int64_t max_written_offset);
+                                   const ResourceMessageReplyParams& params);
   void OnPluginMsgRequestOSFileHandleComplete(
       scoped_refptr<TrackedCallback> callback,
       PP_FileHandle* output_handle,
@@ -210,14 +165,10 @@ class PPAPI_PROXY_EXPORT FileIOResource
   scoped_refptr<FileHandleHolder> file_handle_;
   PP_FileSystemType file_system_type_;
   scoped_refptr<Resource> file_system_resource_;
+  bool called_close_;
   FileIOStateManager state_manager_;
 
   scoped_refptr<Resource> file_ref_;
-
-  int32_t open_flags_;
-  int64_t max_written_offset_;
-  bool check_quota_;
-  bool called_close_;
 
   DISALLOW_COPY_AND_ASSIGN(FileIOResource);
 };

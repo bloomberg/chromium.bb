@@ -41,6 +41,12 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) OVERRIDE;
 
+  // Direct access for PepperFileSystemBrowserHost.
+  int64_t max_written_offset() const { return max_written_offset_; }
+  void set_max_written_offset(int64_t max_written_offset) {
+      max_written_offset_ = max_written_offset;
+  }
+
   struct UIThreadStuff {
     UIThreadStuff();
     ~UIThreadStuff();
@@ -54,10 +60,12 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   int32_t OnHostMsgTouch(ppapi::host::HostMessageContext* context,
                          PP_Time last_access_time,
                          PP_Time last_modified_time);
+  int32_t OnHostMsgWrite(ppapi::host::HostMessageContext* context,
+                         int64_t offset,
+                         const std::string& buffer);
   int32_t OnHostMsgSetLength(ppapi::host::HostMessageContext* context,
                              int64_t length);
-  int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context,
-                         int64_t max_written_offset);
+  int32_t OnHostMsgClose(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgFlush(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgRequestOSFileHandle(
       ppapi::host::HostMessageContext* context);
@@ -78,6 +86,10 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
       base::PlatformFileError error_code,
       base::PassPlatformFile file,
       bool unused_created);
+  void ExecutePlatformWriteCallback(
+      ppapi::host::ReplyMessageContext reply_context,
+      base::PlatformFileError error_code,
+      int bytes_written);
 
   void GotUIThreadStuffForInternalFileSystems(
       ppapi::host::ReplyMessageContext reply_context,
@@ -97,12 +109,20 @@ class PepperFileIOHost : public ppapi::host::ResourceHost,
   void DidOpenQuotaFile(ppapi::host::ReplyMessageContext reply_context,
                         base::PlatformFile file,
                         int64_t max_written_offset);
+  void GotWriteQuota(ppapi::host::ReplyMessageContext reply_context,
+                     int64_t offset,
+                     const std::string& buffer,
+                     int32_t granted);
+  void GotSetLengthQuota(ppapi::host::ReplyMessageContext reply_context,
+                         int64_t length,
+                         int32_t granted);
+  bool CallWrite(ppapi::host::ReplyMessageContext reply_context,
+                 int64_t offset,
+                 const std::string& buffer);
   bool CallSetLength(ppapi::host::ReplyMessageContext reply_context,
                      int64_t length);
 
   void DidCloseFile(base::PlatformFileError error);
-
-  void SendOpenErrorReply(ppapi::host::ReplyMessageContext reply_context);
 
   // Adds file_ to |reply_context| with the specified |open_flags|.
   bool AddFileToReplyContext(

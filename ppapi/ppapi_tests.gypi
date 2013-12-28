@@ -174,7 +174,6 @@
         'proxy/interface_list_unittest.cc',
         'proxy/mock_resource.cc',
         'proxy/mock_resource.h',
-        'proxy/nacl_message_scanner_unittest.cc',
         'proxy/pdf_resource_unittest.cc',
         'proxy/plugin_dispatcher_unittest.cc',
         'proxy/plugin_resource_tracker_unittest.cc',
@@ -208,7 +207,7 @@
         }],
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
+      'msvs_disabled_warnings': [ 4267, ],          
     },
     {
       'target_name': 'ppapi_example_skeleton',

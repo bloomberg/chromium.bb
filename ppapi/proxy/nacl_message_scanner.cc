@@ -19,16 +19,12 @@ namespace IPC {
 class Message;
 }
 
-using ppapi::proxy::ResourceMessageReplyParams;
-using ppapi::proxy::SerializedHandle;
-using ppapi::proxy::SerializedVar;
-
 namespace {
 
-typedef std::vector<SerializedHandle> Handles;
+typedef std::vector<ppapi::proxy::SerializedHandle> Handles;
 
 struct ScanningResults {
-  ScanningResults() : handle_index(0), pp_resource(0) {}
+  ScanningResults() : handle_index(0) {}
 
   // Vector to hold handles found in the message.
   Handles handles;
@@ -40,18 +36,12 @@ struct ScanningResults {
   // may set this to NULL when it can determine that there are no parameters
   // that need conversion. (See the ResourceMessageReplyParams overload.)
   scoped_ptr<IPC::Message> new_msg;
-  // Resource id for resource messages. Save this when scanning resource replies
-  // so when we audit the nested message, we know which resource it is for.
-  PP_Resource pp_resource;
-  // Callback to receive the nested message in a resource message or reply.
-  base::Callback<void(PP_Resource, const IPC::Message&, SerializedHandle*)>
-      nested_msg_callback;
 };
 
 void WriteHandle(int handle_index,
-                 const SerializedHandle& handle,
+                 const ppapi::proxy::SerializedHandle& handle,
                  IPC::Message* msg) {
-  SerializedHandle::WriteHeader(handle.header(), msg);
+  ppapi::proxy::SerializedHandle::WriteHeader(handle.header(), msg);
 
   // Now write the handle itself in POSIX style.
   msg->WriteBool(true);  // valid == true
@@ -62,7 +52,8 @@ void WriteHandle(int handle_index,
 // handling. See ScanTuple for how these get used.
 
 // Overload to match SerializedHandle.
-void ScanParam(const SerializedHandle& handle, ScanningResults* results) {
+void ScanParam(const ppapi::proxy::SerializedHandle& handle,
+               ScanningResults* results) {
   results->handles.push_back(handle);
   if (results->new_msg)
     WriteHandle(results->handle_index++, handle, results->new_msg.get());
@@ -70,13 +61,14 @@ void ScanParam(const SerializedHandle& handle, ScanningResults* results) {
 
 void HandleWriter(int* handle_index,
                   IPC::Message* m,
-                  const SerializedHandle& handle) {
+                  const ppapi::proxy::SerializedHandle& handle) {
   WriteHandle((*handle_index)++, handle, m);
 }
 
 // Overload to match SerializedVar, which can contain handles.
-void ScanParam(const SerializedVar& var, ScanningResults* results) {
-  std::vector<SerializedHandle*> var_handles = var.GetHandles();
+void ScanParam(const ppapi::proxy::SerializedVar& var,
+               ScanningResults* results) {
+  std::vector<ppapi::proxy::SerializedHandle*> var_handles = var.GetHandles();
   // Copy any handles and then rewrite the message.
   for (size_t i = 0; i < var_handles.size(); ++i)
     results->handles.push_back(*var_handles[i]);
@@ -90,9 +82,8 @@ void ScanParam(const SerializedVar& var, ScanningResults* results) {
 // NOTE: We only intercept handles from host->NaCl. The only kind of
 //       ResourceMessageParams that travels this direction is
 //       ResourceMessageReplyParams, so that's the only one we need to handle.
-void ScanParam(const ResourceMessageReplyParams& params,
+void ScanParam(const ppapi::proxy::ResourceMessageReplyParams& params,
                ScanningResults* results) {
-  results->pp_resource = params.pp_resource();
   // If the resource reply params don't contain handles, NULL the new message
   // pointer to cancel further rewriting.
   // NOTE: This works because only handles currently need rewriting, and we
@@ -121,21 +112,8 @@ void ScanParam(const ResourceMessageReplyParams& params,
   params.ConsumeHandles();
 }
 
-// Overload to match nested messages. If we need to rewrite the message, write
-// the parameter.
-void ScanParam(const IPC::Message& param, ScanningResults* results) {
-  if (results->pp_resource && !results->nested_msg_callback.is_null()) {
-    SerializedHandle* handle = NULL;
-    if (results->handles.size() == 1)
-      handle = &results->handles[0];
-    results->nested_msg_callback.Run(results->pp_resource, param, handle);
-  }
-  if (results->new_msg)
-    IPC::WriteParam(results->new_msg.get(), param);
-}
-
-// Overload to match all other types. If we need to rewrite the message, write
-// the parameter.
+// Overload to match all other types. If we need to rewrite the message,
+// write the parameter.
 template <class T>
 void ScanParam(const T& param, ScanningResults* results) {
   if (results->new_msg)
@@ -233,56 +211,7 @@ namespace proxy {
 
 class SerializedHandle;
 
-NaClMessageScanner::FileSystem::FileSystem()
-    : reserved_quota_(0) {
-}
-
-NaClMessageScanner::FileSystem::~FileSystem() {
-}
-
-bool NaClMessageScanner::FileSystem::UpdateReservedQuota(int64_t delta) {
-  base::AutoLock lock(lock_);
-  if (std::numeric_limits<int64_t>::max() - reserved_quota_ < delta)
-    return false;  // reserved_quota_ + delta would overflow.
-  if (reserved_quota_ + delta < 0)
-    return false;
-  reserved_quota_ += delta;
-  return true;
-}
-
-NaClMessageScanner::FileIO::FileIO(FileSystem* file_system,
-                                   int64_t max_written_offset)
-    : file_system_(file_system),
-      max_written_offset_(max_written_offset) {
-}
-
-NaClMessageScanner::FileIO::~FileIO() {
-}
-
-void NaClMessageScanner::FileIO::SetMaxWrittenOffset(
-    int64_t max_written_offset) {
-  base::AutoLock lock(lock_);
-  max_written_offset_ = max_written_offset;
-}
-
-bool NaClMessageScanner::FileIO::Grow(int64_t amount) {
-  base::AutoLock lock(lock_);
-  DCHECK(amount > 0);
-  if (!file_system_->UpdateReservedQuota(-amount))
-    return false;
-  max_written_offset_ += amount;
-  return true;
-}
-
 NaClMessageScanner::NaClMessageScanner() {
-}
-
-NaClMessageScanner::~NaClMessageScanner() {
-  for (FileSystemMap::iterator it = file_systems_.begin();
-      it != file_systems_.end(); ++it)
-    delete it->second;
-  for (FileIOMap::iterator it = files_.begin(); it != files_.end(); ++it)
-    delete it->second;
 }
 
 // Windows IPC differs from POSIX in that native handles are serialized in the
@@ -310,14 +239,12 @@ bool NaClMessageScanner::ScanMessage(
       (msg.type() == PpapiMsg_CreateNaClChannel::ID);
 #endif
 
+
   // We can't always tell from the message ID if rewriting is needed. Therefore,
   // scan any message types that might contain a handle. If we later determine
   // that there are no handles, we can cancel the rewriting by clearing the
   // results.new_msg pointer.
   ScanningResults results;
-  results.nested_msg_callback =
-      base::Bind(&NaClMessageScanner::AuditNestedMessage,
-                 base::Unretained(this));
   switch (msg.type()) {
     CASE_FOR_MESSAGE(PpapiMsg_CreateNaClChannel)
     CASE_FOR_MESSAGE(PpapiMsg_PPBAudio_NotifyAudioStreamCreated)
@@ -363,113 +290,8 @@ void NaClMessageScanner::ScanUntrustedMessage(
     scoped_ptr<IPC::Message>* new_msg_ptr) {
   if (untrusted_msg.is_sync())
     RegisterSyncMessageForReply(untrusted_msg);
-
-  // Audit FileIO and FileSystem messages to ensure that the plugin doesn't
-  // exceed its file quota. If we find the message is malformed, just pass it
-  // through - we only care about well formed messages to the host.
-  if (untrusted_msg.type() == PpapiHostMsg_ResourceCall::ID) {
-    ResourceMessageCallParams params;
-    IPC::Message nested_msg;
-    if (!UnpackMessage<PpapiHostMsg_ResourceCall>(
-            untrusted_msg, &params, &nested_msg))
-      return;
-
-    switch (nested_msg.type()) {
-      case PpapiHostMsg_FileIO_Close::ID: {
-        FileIOMap::iterator it = files_.find(params.pp_resource());
-        if (it == files_.end())
-          return;
-        // Audit FileIO Close messages to make sure the plugin reports an
-        // accurate file size.
-        int64_t max_written_offset = 0;
-        if (!UnpackMessage<PpapiHostMsg_FileIO_Close>(
-                nested_msg, &max_written_offset))
-          return;
-
-        int64_t trusted_max_written_offset = it->second->max_written_offset();
-        delete it->second;
-        files_.erase(it);
-        // If the plugin is under-reporting, rewrite the message with the
-        // trusted value.
-        if (trusted_max_written_offset > max_written_offset) {
-          new_msg_ptr->reset(
-              new PpapiHostMsg_ResourceCall(
-                  params,
-                  PpapiHostMsg_FileIO_Close(trusted_max_written_offset)));
-        }
-      }
-      case PpapiHostMsg_FileIO_SetLength::ID: {
-        FileIOMap::iterator it = files_.find(params.pp_resource());
-        if (it == files_.end())
-          return;
-        // Audit FileIO SetLength messages to make sure the plugin is within
-        // the current quota reservation. In addition, deduct the file size
-        // increase from the quota reservation.
-        int64_t length = 0;
-        if (!UnpackMessage<PpapiHostMsg_FileIO_SetLength>(
-                nested_msg, &length))
-          return;
-
-        // Calculate file size increase, taking care to avoid overflows.
-        if (length < 0)
-          return;
-        int64_t trusted_max_written_offset = it->second->max_written_offset();
-        int64_t increase = length - trusted_max_written_offset;
-        if (increase <= 0)
-          return;
-        if (!it->second->Grow(increase)) {
-          new_msg_ptr->reset(
-              new PpapiHostMsg_ResourceCall(
-                  params,
-                  PpapiHostMsg_FileIO_SetLength(-1)));
-        }
-        break;
-      }
-      case PpapiHostMsg_FileSystem_ReserveQuota::ID: {
-        // Audit FileSystem ReserveQuota messages to make sure the plugin
-        // reports accurate file sizes.
-        int64_t amount = 0;
-        FileOffsetMap max_written_offsets;
-        if (!UnpackMessage<PpapiHostMsg_FileSystem_ReserveQuota>(
-                nested_msg, &amount, &max_written_offsets))
-          return;
-
-        bool audit_failed = false;
-        for (FileOffsetMap::iterator it = max_written_offsets.begin();
-            it != max_written_offsets.end(); ++it) {
-          FileIOMap::iterator file_it = files_.find(it->first);
-          if (file_it == files_.end())
-            continue;
-          int64_t trusted_max_written_offset =
-              file_it->second->max_written_offset();
-          if (trusted_max_written_offset > it->second) {
-            audit_failed = true;
-            it->second = trusted_max_written_offset;
-          }
-        }
-        if (audit_failed) {
-          new_msg_ptr->reset(
-              new PpapiHostMsg_ResourceCall(
-                  params,
-                  PpapiHostMsg_FileSystem_ReserveQuota(
-                      amount, max_written_offsets)));
-        }
-        break;
-      }
-      case PpapiHostMsg_ResourceDestroyed::ID: {
-        // Audit resource destroyed messages to release FileSystems.
-        PP_Resource resource;
-        if (!UnpackMessage<PpapiHostMsg_ResourceDestroyed>(
-                nested_msg, &resource))
-          return;
-        FileSystemMap::iterator fs_it = file_systems_.find(resource);
-        if (fs_it != file_systems_.end()) {
-          delete fs_it->second;
-          file_systems_.erase(fs_it);
-        }
-      }
-    }
-  }
+  // TODO(bbudge) Add message auditing for FileSystem and FileIO resources when
+  // we implement Write on the plugin side of the proxy. See crbug.com/194304.
 }
 
 void NaClMessageScanner::RegisterSyncMessageForReply(const IPC::Message& msg) {
@@ -477,65 +299,6 @@ void NaClMessageScanner::RegisterSyncMessageForReply(const IPC::Message& msg) {
   DCHECK(pending_sync_msgs_.find(msg_id) == pending_sync_msgs_.end());
 
   pending_sync_msgs_[msg_id] = msg.type();
-}
-
-NaClMessageScanner::FileIO* NaClMessageScanner::GetFile(
-    PP_Resource file_io) {
-  FileIOMap::iterator it = files_.find(file_io);
-  DCHECK(it != files_.end());
-  return it->second;
-}
-
-void NaClMessageScanner::AuditNestedMessage(PP_Resource resource,
-                                            const IPC::Message& msg,
-                                            SerializedHandle* handle) {
-  switch (msg.type()) {
-    case PpapiPluginMsg_FileIO_OpenReply::ID: {
-      // A file that requires quota checking was opened.
-      PP_Resource quota_file_system;
-      int64_t max_written_offset = 0;
-      if (ppapi::UnpackMessage<PpapiPluginMsg_FileIO_OpenReply>(
-              msg, &quota_file_system, &max_written_offset)) {
-        if (quota_file_system) {
-          // Look up the FileSystem by inserting a new one. If it was already
-          // present, get the existing one, otherwise construct it.
-          FileSystem* file_system = NULL;
-          std::pair<FileSystemMap::iterator, bool> insert_result =
-              file_systems_.insert(std::make_pair(quota_file_system,
-                                                  file_system));
-          if (insert_result.second)
-            insert_result.first->second = new FileSystem();
-          file_system = insert_result.first->second;
-          // Create the FileIO.
-          DCHECK(files_.find(resource) == files_.end());
-          files_.insert(std::make_pair(
-              resource,
-              new FileIO(file_system, max_written_offset)));
-        }
-      }
-      break;
-    }
-    case PpapiPluginMsg_FileSystem_ReserveQuotaReply::ID: {
-      // The amount of reserved quota for a FileSystem was refreshed.
-      int64_t amount = 0;
-      FileOffsetMap max_written_offsets;
-      if (ppapi::UnpackMessage<PpapiPluginMsg_FileSystem_ReserveQuotaReply>(
-          msg, &amount, &max_written_offsets)) {
-        FileSystemMap::iterator it = file_systems_.find(resource);
-        DCHECK(it != file_systems_.end());
-        it->second->UpdateReservedQuota(amount);
-
-        FileOffsetMap::const_iterator offset_it = max_written_offsets.begin();
-        for (; offset_it != max_written_offsets.end(); ++offset_it) {
-          FileIOMap::iterator fio_it = files_.find(offset_it->first);
-          DCHECK(fio_it != files_.end());
-          if (fio_it != files_.end())
-            fio_it->second->SetMaxWrittenOffset(offset_it->second);
-        }
-      }
-      break;
-    }
-  }
 }
 
 }  // namespace proxy
