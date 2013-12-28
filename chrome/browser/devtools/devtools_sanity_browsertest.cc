@@ -874,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
   CloseDevToolsWindow();
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // Flakily times out: http://crbug.com/163411
 #define MAYBE_TestReattachAfterCrash DISABLED_TestReattachAfterCrash
 #else
