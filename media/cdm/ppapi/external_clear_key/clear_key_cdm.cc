@@ -481,34 +481,35 @@ void ClearKeyCdm::OnQueryOutputProtectionStatus(
   NOTIMPLEMENTED();
 };
 
-void ClearKeyCdm::OnSessionCreated(uint32 reference_id,
-                                   const std::string& session_id) {
-  host_->OnSessionCreated(reference_id, session_id.data(), session_id.size());
+void ClearKeyCdm::OnSessionCreated(uint32 session_id,
+                                   const std::string& web_session_id) {
+  host_->OnSessionCreated(
+      session_id, web_session_id.data(), web_session_id.size());
 }
 
-void ClearKeyCdm::OnSessionMessage(uint32 reference_id,
+void ClearKeyCdm::OnSessionMessage(uint32 session_id,
                                    const std::vector<uint8>& message,
                                    const std::string& destination_url) {
-  host_->OnSessionMessage(reference_id,
+  host_->OnSessionMessage(session_id,
                           reinterpret_cast<const char*>(message.data()),
                           message.size(),
                           destination_url.data(),
                           destination_url.size());
 }
 
-void ClearKeyCdm::OnSessionReady(uint32 reference_id) {
-  host_->OnSessionReady(reference_id);
+void ClearKeyCdm::OnSessionReady(uint32 session_id) {
+  host_->OnSessionReady(session_id);
 }
 
-void ClearKeyCdm::OnSessionClosed(uint32 reference_id) {
-  host_->OnSessionClosed(reference_id);
+void ClearKeyCdm::OnSessionClosed(uint32 session_id) {
+  host_->OnSessionClosed(session_id);
 }
 
-void ClearKeyCdm::OnSessionError(uint32 reference_id,
+void ClearKeyCdm::OnSessionError(uint32 session_id,
                                  media::MediaKeys::KeyError error_code,
                                  int system_code) {
   host_->OnSessionError(
-      reference_id, static_cast<cdm::MediaKeyError>(error_code), system_code);
+      session_id, static_cast<cdm::MediaKeyError>(error_code), system_code);
 }
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)

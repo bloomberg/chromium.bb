@@ -66,13 +66,13 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
 
  private:
   // ContentDecryptionModule callbacks.
-  void OnSessionCreated(uint32 reference_id, const std::string& session_id);
-  void OnSessionMessage(uint32 reference_id,
+  void OnSessionCreated(uint32 session_id, const std::string& web_session_id);
+  void OnSessionMessage(uint32 session_id,
                         const std::vector<uint8>& message,
                         const std::string& destination_url);
-  void OnSessionReady(uint32 reference_id);
-  void OnSessionClosed(uint32 reference_id);
-  void OnSessionError(uint32 reference_id,
+  void OnSessionReady(uint32 session_id);
+  void OnSessionClosed(uint32 session_id);
+  void OnSessionError(uint32 session_id,
                       MediaKeys::KeyError error_code,
                       int system_code);
 
