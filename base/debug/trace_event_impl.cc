@@ -1094,7 +1094,7 @@ void TraceLog::ThreadLocalEventBuffer::FlushWhileLocked() {
 
   trace_log_->lock_.AssertAcquired();
   if (trace_log_->CheckGeneration(generation_)) {
-    // Return the chunk to the buffer only if the generation matches.
+    // Return the chunk to the buffer only if the generation matches,
     trace_log_->logged_events_->ReturnChunk(chunk_index_, chunk_.Pass());
   }
   // Otherwise this method may be called from the destructor, or TraceLog will
@@ -1107,7 +1107,7 @@ TraceLog* TraceLog::GetInstance() {
 }
 
 TraceLog::TraceLog()
-    : mode_(DISABLED),
+    : enabled_(false),
       num_traces_recorded_(0),
       event_callback_(0),
       dispatching_to_observer_list_(false),
@@ -1153,7 +1153,7 @@ TraceLog::TraceLog()
 
     LOG(ERROR) << "Start " << switches::kTraceToConsole
                << " with CategoryFilter '" << filter << "'.";
-    SetEnabled(CategoryFilter(filter), RECORDING_MODE, ECHO_TO_CONSOLE);
+    SetEnabled(CategoryFilter(filter), ECHO_TO_CONSOLE);
   }
 #endif
 
@@ -1192,12 +1192,8 @@ const char* TraceLog::GetCategoryGroupName(
 void TraceLog::UpdateCategoryGroupEnabledFlag(int category_index) {
   unsigned char enabled_flag = 0;
   const char* category_group = g_category_groups[category_index];
-  if (mode_ == RECORDING_MODE &&
-      category_filter_.IsCategoryGroupEnabled(category_group))
+  if (enabled_ && category_filter_.IsCategoryGroupEnabled(category_group))
     enabled_flag |= ENABLED_FOR_RECORDING;
-  else if (mode_ == MONITORING_MODE &&
-      category_filter_.IsCategoryGroupEnabled(category_group))
-    enabled_flag |= ENABLED_FOR_MONITORING;
   if (event_callback_ &&
       event_callback_category_filter_.IsCategoryGroupEnabled(category_group))
     enabled_flag |= ENABLED_FOR_EVENT_CALLBACK;
@@ -1260,7 +1256,6 @@ void TraceLog::GetKnownCategoryGroups(
 }
 
 void TraceLog::SetEnabled(const CategoryFilter& category_filter,
-                          Mode mode,
                           Options options) {
   std::vector<EnabledStateObserver*> observer_list;
   {
@@ -1271,14 +1266,10 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
 
     Options old_options = trace_options();
 
-    if (IsEnabled()) {
+    if (enabled_) {
       if (options != old_options) {
         DLOG(ERROR) << "Attemting to re-enable tracing with a different "
                     << "set of options.";
-      }
-
-      if (mode != mode_) {
-        DLOG(ERROR) << "Attemting to re-enable tracing with a different mode.";
       }
 
       category_filter_.Merge(category_filter);
@@ -1292,7 +1283,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
       return;
     }
 
-    mode_ = mode;
+    enabled_ = true;
 
     if (options != old_options) {
       subtle::NoBarrier_Store(&trace_options_, options);
@@ -1304,7 +1295,7 @@ void TraceLog::SetEnabled(const CategoryFilter& category_filter,
     category_filter_ = CategoryFilter(category_filter);
     UpdateCategoryGroupEnabledFlags();
 
-    if (options & ENABLE_SAMPLING) {
+    if ((options & ENABLE_SAMPLING) || (options & MONITOR_SAMPLING)) {
       sampling_thread_.reset(new TraceSamplingThread);
       sampling_thread_->RegisterSampleBucket(
           &g_trace_state[0],
@@ -1350,7 +1341,7 @@ void TraceLog::SetDisabled() {
 void TraceLog::SetDisabledWhileLocked() {
   lock_.AssertAcquired();
 
-  if (!IsEnabled())
+  if (!enabled_)
     return;
 
   if (dispatching_to_observer_list_) {
@@ -1359,11 +1350,9 @@ void TraceLog::SetDisabledWhileLocked() {
     return;
   }
 
-  mode_ = DISABLED;
+  enabled_ = false;
 
   if (sampling_thread_.get()) {
-    base::ThreadRestrictions::SetIOAllowed(true);
-
     // Stop the sampling thread.
     sampling_thread_->Stop();
     lock_.Release();
@@ -1371,8 +1360,6 @@ void TraceLog::SetDisabledWhileLocked() {
     lock_.Acquire();
     sampling_thread_handle_ = PlatformThreadHandle();
     sampling_thread_.reset();
-
-    base::ThreadRestrictions::SetIOAllowed(false);
   }
 
   category_filter_.Clear();
@@ -1397,7 +1384,7 @@ void TraceLog::SetDisabledWhileLocked() {
 
 int TraceLog::GetNumTracesRecorded() {
   AutoLock lock(lock_);
-  if (!IsEnabled())
+  if (!enabled_)
     return -1;
   return num_traces_recorded_;
 }
@@ -1438,7 +1425,7 @@ TraceBuffer* TraceLog::CreateTraceBuffer() {
   Options options = trace_options();
   if (options & RECORD_CONTINUOUSLY)
     return new TraceBufferRingBuffer(kTraceEventRingBufferChunks);
-  else if ((options & ENABLE_SAMPLING) && mode_ == MONITORING_MODE)
+  else if (options & MONITOR_SAMPLING)
     return new TraceBufferRingBuffer(kMonitorTraceEventBufferChunks);
   else if (options & ECHO_TO_CONSOLE)
     return new TraceBufferRingBuffer(kEchoToConsoleTraceEventBufferChunks);
@@ -1782,8 +1769,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   }
 
   std::string console_message;
-  if (*category_group_enabled &
-      (ENABLED_FOR_RECORDING | ENABLED_FOR_MONITORING)) {
+  if ((*category_group_enabled & ENABLED_FOR_RECORDING)) {
     OptionalAutoLock lock(lock_);
 
     TraceEvent* trace_event = NULL;

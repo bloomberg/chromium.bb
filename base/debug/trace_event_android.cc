@@ -97,7 +97,6 @@ void TraceLog::StartATrace() {
     return;
   }
   SetEnabled(CategoryFilter(CategoryFilter::kDefaultCategoryFilterString),
-             base::debug::TraceLog::RECORDING_MODE,
              RECORD_CONTINUOUSLY);
 }
 

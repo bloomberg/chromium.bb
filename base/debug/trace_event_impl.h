@@ -354,12 +354,6 @@ class TraceSamplingThread;
 
 class BASE_EXPORT TraceLog {
  public:
-  enum Mode {
-    DISABLED = 0,
-    RECORDING_MODE,
-    MONITORING_MODE,
-  };
-
   // Options determines how the trace buffer stores data.
   enum Options {
     // Record until the trace buffer is full.
@@ -372,21 +366,21 @@ class BASE_EXPORT TraceLog {
     // Enable the sampling profiler in the recording mode.
     ENABLE_SAMPLING = 1 << 2,
 
+    // Enable the sampling profiler in the monitoring mode.
+    MONITOR_SAMPLING = 1 << 3,
+
     // Echo to console. Events are discarded.
-    ECHO_TO_CONSOLE = 1 << 3,
+    ECHO_TO_CONSOLE = 1 << 4,
   };
 
   // The pointer returned from GetCategoryGroupEnabledInternal() points to a
   // value with zero or more of the following bits. Used in this class only.
   // The TRACE_EVENT macros should only use the value as a bool.
-  // These values must be in sync with macro values in TraceEvent.h in Blink.
   enum CategoryGroupEnabledFlags {
-    // Category group enabled for the recording mode.
+    // Normal enabled flag for category groups enabled by SetEnabled().
     ENABLED_FOR_RECORDING = 1 << 0,
-    // Category group enabled for the monitoring mode.
-    ENABLED_FOR_MONITORING = 1 << 1,
     // Category group enabled by SetEventCallbackEnabled().
-    ENABLED_FOR_EVENT_CALLBACK = 1 << 2,
+    ENABLED_FOR_EVENT_CALLBACK = 1 << 1,
   };
 
   static TraceLog* GetInstance();
@@ -406,13 +400,12 @@ class BASE_EXPORT TraceLog {
   // See CategoryFilter comments for details on how to control what categories
   // will be traced. If tracing has already been enabled, |category_filter| will
   // be merged into the current category filter.
-  void SetEnabled(const CategoryFilter& category_filter,
-                  Mode mode, Options options);
+  void SetEnabled(const CategoryFilter& category_filter, Options options);
 
   // Disables normal tracing for all categories.
   void SetDisabled();
 
-  bool IsEnabled() { return mode_ != DISABLED; }
+  bool IsEnabled() { return enabled_; }
 
   // The number of times we have begun recording traces. If tracing is off,
   // returns -1. If tracing is on, then it returns the number of times we have
@@ -433,7 +426,7 @@ class BASE_EXPORT TraceLog {
   class EnabledStateObserver {
    public:
     // Called just after the tracing system becomes enabled, outside of the
-    // |lock_|. TraceLog::IsEnabled() is true at this point.
+    // |lock_|.  TraceLog::IsEnabled() is true at this point.
     virtual void OnTraceLogEnabled() = 0;
 
     // Called just after the tracing system disables, outside of the |lock_|.
@@ -598,9 +591,9 @@ class BASE_EXPORT TraceLog {
   // by the Singleton class.
   friend struct DefaultSingletonTraits<TraceLog>;
 
-  // Enable/disable each category group based on the current mode_,
+  // Enable/disable each category group based on the current enabled_,
   // category_filter_, event_callback_ and event_callback_category_filter_.
-  // Enable the category group in the enabled mode if category_filter_ matches
+  // Enable the category group if enabled_ is true and category_filter_ matches
   // the category group, or event_callback_ is not null and
   // event_callback_category_filter_ matches the category group.
   void UpdateCategoryGroupEnabledFlags();
@@ -659,7 +652,7 @@ class BASE_EXPORT TraceLog {
   // and thread_colors_.
   Lock thread_info_lock_;
   int locked_line_;
-  Mode mode_;
+  bool enabled_;
   int num_traces_recorded_;
   scoped_ptr<TraceBuffer> logged_events_;
   subtle::AtomicWord /* EventCallback */ event_callback_;

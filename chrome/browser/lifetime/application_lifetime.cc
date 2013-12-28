@@ -188,7 +188,6 @@ void StartShutdownTracing() {
         command_line.GetSwitchValueASCII(switches::kTraceShutdown));
     base::debug::TraceLog::GetInstance()->SetEnabled(
         category_filter,
-        base::debug::TraceLog::RECORDING_MODE,
         base::debug::TraceLog::RECORD_UNTIL_FULL);
   }
   TRACE_EVENT0("shutdown", "StartShutdownTracing");

@@ -417,7 +417,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TracePerformanceDuringGetUserMedia) {
   ExpectTitle("Running...");
   base::debug::TraceLog* trace_log = base::debug::TraceLog::GetInstance();
   trace_log->SetEnabled(base::debug::CategoryFilter("video"),
-                        base::debug::TraceLog::RECORDING_MODE,
                         base::debug::TraceLog::ENABLE_SAMPLING);
   // Check that we are indeed recording.
   EXPECT_EQ(trace_log->GetNumTracesRecorded(), 1);

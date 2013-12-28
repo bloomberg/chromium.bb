@@ -725,16 +725,12 @@
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_DELETE_OBJECT, \
         category_group, name, TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE)
 
-#define INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE() \
-    *INTERNAL_TRACE_EVENT_UID(category_group_enabled) & \
-        (base::debug::TraceLog::ENABLED_FOR_RECORDING | \
-         base::debug::TraceLog::ENABLED_FOR_EVENT_CALLBACK)
 
 // Macro to efficiently determine if a given category group is enabled.
 #define TRACE_EVENT_CATEGORY_GROUP_ENABLED(category_group, ret) \
     do { \
       INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group); \
-      if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
+      if (*INTERNAL_TRACE_EVENT_UID(category_group_enabled)) { \
         *ret = true; \
       } else { \
         *ret = false; \
@@ -874,7 +870,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
 #define INTERNAL_TRACE_EVENT_ADD(phase, category_group, name, flags, ...) \
     do { \
       INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group); \
-      if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
+      if (*INTERNAL_TRACE_EVENT_UID(category_group_enabled)) { \
         trace_event_internal::AddTraceEvent( \
             phase, INTERNAL_TRACE_EVENT_UID(category_group_enabled), name, \
             trace_event_internal::kNoEventId, flags, ##__VA_ARGS__); \
@@ -887,7 +883,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
 #define INTERNAL_TRACE_EVENT_ADD_SCOPED(category_group, name, ...) \
     INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group); \
     trace_event_internal::ScopedTracer INTERNAL_TRACE_EVENT_UID(tracer); \
-    if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
+    if (*INTERNAL_TRACE_EVENT_UID(category_group_enabled)) { \
       base::debug::TraceEventHandle h = trace_event_internal::AddTraceEvent( \
           TRACE_EVENT_PHASE_COMPLETE, \
           INTERNAL_TRACE_EVENT_UID(category_group_enabled), \
@@ -903,7 +899,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
                                          flags, ...) \
     do { \
       INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group); \
-      if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
+      if (*INTERNAL_TRACE_EVENT_UID(category_group_enabled)) { \
         unsigned char trace_event_flags = flags | TRACE_EVENT_FLAG_HAS_ID; \
         trace_event_internal::TraceID trace_event_trace_id( \
             id, &trace_event_flags); \
@@ -920,7 +916,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
         category_group, name, id, thread_id, timestamp, flags, ...) \
     do { \
       INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category_group); \
-      if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
+      if (*INTERNAL_TRACE_EVENT_UID(category_group_enabled)) { \
         unsigned char trace_event_flags = flags | TRACE_EVENT_FLAG_HAS_ID; \
         trace_event_internal::TraceID trace_event_trace_id( \
             id, &trace_event_flags); \
