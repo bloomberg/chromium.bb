@@ -195,7 +195,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void InsertCSS(const base::string16& frame_xpath,
                          const std::string& css) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
-  virtual bool IsSubframe() const OVERRIDE;
   virtual void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) OVERRIDE;
   virtual void NotifyMoveOrResizeStarted() OVERRIDE;
@@ -423,12 +422,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // User rotated the screen. Calls the "onorientationchange" Javascript hook.
   void SendOrientationChangeEvent(int orientation);
 
-  // Sets a bit indicating whether the RenderView is responsible for displaying
-  // a subframe in a different process from its parent page.
-  void set_is_subframe(bool is_subframe) {
-    is_subframe_ = is_subframe;
-  }
-
   // TODO(creis): Remove this when we replace frame IDs with RenderFrameHost
   // routing IDs.
   int64 main_frame_id() const {
@@ -470,17 +463,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   }
 
   // Returns whether the given URL is allowed to commit in the current process.
-  // This is a more conservative check than FilterURL, since it will be used to
-  // kill processes that commit unauthorized URLs.
+  // This is a more conservative check than RenderProcessHost::FilterURL, since
+  // it will be used to kill processes that commit unauthorized URLs.
   bool CanCommitURL(const GURL& url);
-
-  // Checks that the given renderer can request |url|, if not it sets it to
-  // about:blank.
-  // empty_allowed must be set to false for navigations for security reasons.
-  static void FilterURL(ChildProcessSecurityPolicyImpl* policy,
-                        const RenderProcessHost* process,
-                        bool empty_allowed,
-                        GURL* url);
 
   // Update the FrameTree to use this RenderViewHost's main frame
   // RenderFrameHost. Called when the RenderViewHost is committed.
@@ -661,10 +646,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Whether this RenderViewHost is currently swapped out, such that the view is
   // being rendered by another process.
   bool is_swapped_out_;
-
-  // Whether this RenderView is responsible for displaying a subframe in a
-  // different process from its parent page.
-  bool is_subframe_;
 
   // The frame id of the main (top level) frame. This value is set on the
   // initial navigation of a RenderView and reset when the RenderView's

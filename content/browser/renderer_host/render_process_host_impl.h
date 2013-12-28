@@ -121,6 +121,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   virtual base::TimeDelta GetChildProcessIdleTime() const OVERRIDE;
   virtual void SurfaceUpdated(int32 surface_id) OVERRIDE;
   virtual void ResumeRequestsForView(int route_id) OVERRIDE;
+  virtual void FilterURL(bool empty_allowed, GURL* url) OVERRIDE;
 #if defined(ENABLE_WEBRTC)
   virtual void EnableAecDump(const base::FilePath& file) OVERRIDE;
   virtual void DisableAecDump() OVERRIDE;
@@ -169,6 +170,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // list.
   static void RegisterHost(int host_id, RenderProcessHost* host);
   static void UnregisterHost(int host_id);
+
+  // Implementation of FilterURL below that can be shared with the mock class.
+  static void FilterURL(RenderProcessHost* rph, bool empty_allowed, GURL* url);
 
   // Returns true if |host| is suitable for launching a new view with |site_url|
   // in the given |browser_context|.

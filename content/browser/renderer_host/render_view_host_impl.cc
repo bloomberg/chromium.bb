@@ -157,14 +157,6 @@ RenderViewHost* RenderViewHost::From(RenderWidgetHost* rwh) {
   return static_cast<RenderViewHostImpl*>(RenderWidgetHostImpl::From(rwh));
 }
 
-// static
-void RenderViewHost::FilterURL(const RenderProcessHost* process,
-                               bool empty_allowed,
-                               GURL* url) {
-  RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
-                                process, empty_allowed, url);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderViewHostImpl, public:
 
@@ -197,7 +189,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       navigations_suspended_(false),
       has_accessed_initial_document_(false),
       is_swapped_out_(swapped_out),
-      is_subframe_(false),
       main_frame_id_(-1),
       main_frame_routing_id_(main_frame_routing_id),
       run_modal_reply_msg_(NULL),
@@ -321,10 +312,6 @@ bool RenderViewHostImpl::CreateRenderView(
 
 bool RenderViewHostImpl::IsRenderViewLive() const {
   return GetProcess()->HasConnection() && renderer_initialized_;
-}
-
-bool RenderViewHostImpl::IsSubframe() const {
-  return is_subframe_;
 }
 
 void RenderViewHostImpl::SyncRendererPrefs() {
@@ -891,7 +878,7 @@ void RenderViewHostImpl::DragTargetDragEnter(
   // The URL could have been cobbled together from any highlighted text string,
   // and can't be interpreted as a capability.
   DropData filtered_data(drop_data);
-  FilterURL(policy, GetProcess(), true, &filtered_data.url);
+  GetProcess()->FilterURL(true, &filtered_data.url);
 
   // The filenames vector, on the other hand, does represent a capability to
   // access the given files.
@@ -1340,12 +1327,9 @@ void RenderViewHostImpl::CreateNewWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     SessionStorageNamespace* session_storage_namespace) {
   ViewHostMsg_CreateWindow_Params validated_params(params);
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  FilterURL(policy, GetProcess(), false, &validated_params.target_url);
-  FilterURL(policy, GetProcess(), false, &validated_params.opener_url);
-  FilterURL(policy, GetProcess(), true,
-            &validated_params.opener_security_origin);
+  GetProcess()->FilterURL(false, &validated_params.target_url);
+  GetProcess()->FilterURL(false, &validated_params.opener_url);
+  GetProcess()->FilterURL(true, &validated_params.opener_security_origin);
 
   delegate_->CreateNewWindow(
       GetProcess()->GetID(), route_id, main_frame_route_id, validated_params,
@@ -1521,8 +1505,6 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
   // initial page has been accessed.
   has_accessed_initial_document_ = false;
 
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
   // Without this check, an evil renderer can trick the browser into creating
   // a navigation entry for a banned URL.  If the user clicks the back button
   // followed by the forward button (or clicks reload, or round-trips through
@@ -1530,13 +1512,13 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
   // renderer to load the URL and grant the renderer the privileges to request
   // the URL.  To prevent this attack, we block the renderer from inserting
   // banned URLs into the navigation controller in the first place.
-  FilterURL(policy, process, false, &validated_params.url);
-  FilterURL(policy, process, true, &validated_params.referrer.url);
+  process->FilterURL(false, &validated_params.url);
+  process->FilterURL(true, &validated_params.referrer.url);
   for (std::vector<GURL>::iterator it(validated_params.redirects.begin());
       it != validated_params.redirects.end(); ++it) {
-    FilterURL(policy, process, false, &(*it));
+    process->FilterURL(false, &(*it));
   }
-  FilterURL(policy, process, true, &validated_params.searchable_form_url);
+  process->FilterURL(true, &validated_params.searchable_form_url);
 
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.
@@ -1634,15 +1616,13 @@ void RenderViewHostImpl::OnContextMenu(const ContextMenuParams& params) {
   // directly, don't show them in the context menu.
   ContextMenuParams validated_params(params);
   RenderProcessHost* process = GetProcess();
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
 
   // We don't validate |unfiltered_link_url| so that this field can be used
   // when users want to copy the original link URL.
-  FilterURL(policy, process, true, &validated_params.link_url);
-  FilterURL(policy, process, true, &validated_params.src_url);
-  FilterURL(policy, process, false, &validated_params.page_url);
-  FilterURL(policy, process, true, &validated_params.frame_url);
+  process->FilterURL(true, &validated_params.link_url);
+  process->FilterURL(true, &validated_params.src_url);
+  process->FilterURL(false, &validated_params.page_url);
+  process->FilterURL(true, &validated_params.frame_url);
 
   delegate_->ShowContextMenu(validated_params);
 }
@@ -1658,8 +1638,7 @@ void RenderViewHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
 void RenderViewHostImpl::OnOpenURL(
     const ViewHostMsg_OpenURL_Params& params) {
   GURL validated_url(params.url);
-  FilterURL(ChildProcessSecurityPolicyImpl::GetInstance(),
-            GetProcess(), false, &validated_url);
+  GetProcess()->FilterURL(false, &validated_url);
 
   delegate_->RequestOpenURL(
       this, validated_url, params.referrer, params.disposition, params.frame_id,
@@ -1763,8 +1742,8 @@ void RenderViewHostImpl::OnStartDragging(
 
   // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
   if (!filtered_data.url.SchemeIs(kJavaScriptScheme))
-    FilterURL(policy, process, true, &filtered_data.url);
-  FilterURL(policy, process, false, &filtered_data.html_base_url);
+    process->FilterURL(true, &filtered_data.url);
+  process->FilterURL(false, &filtered_data.html_base_url);
   // Filter out any paths that the renderer didn't have access to. This prevents
   // the following attack on a malicious renderer:
   // 1. StartDragging IPC sent with renderer-specified filesystem paths that it
@@ -2008,50 +1987,6 @@ bool RenderViewHostImpl::CanCommitURL(const GURL& url) {
 
   // Give the client a chance to disallow URLs from committing.
   return GetContentClient()->browser()->CanCommitURL(GetProcess(), url);
-}
-
-void RenderViewHostImpl::FilterURL(ChildProcessSecurityPolicyImpl* policy,
-                                   const RenderProcessHost* process,
-                                   bool empty_allowed,
-                                   GURL* url) {
-  if (empty_allowed && url->is_empty())
-    return;
-
-  // The browser process should never hear the swappedout:// URL from any
-  // of the renderer's messages.  Check for this in debug builds, but don't
-  // let it crash a release browser.
-  DCHECK(GURL(kSwappedOutURL) != *url);
-
-  if (!url->is_valid()) {
-    // Have to use about:blank for the denied case, instead of an empty GURL.
-    // This is because the browser treats navigation to an empty GURL as a
-    // navigation to the home page. This is often a privileged page
-    // (chrome://newtab/) which is exactly what we don't want.
-    *url = GURL(kAboutBlankURL);
-    RecordAction(UserMetricsAction("FilterURLTermiate_Invalid"));
-    return;
-  }
-
-  if (url->SchemeIs(chrome::kAboutScheme)) {
-    // The renderer treats all URLs in the about: scheme as being about:blank.
-    // Canonicalize about: URLs to about:blank.
-    *url = GURL(kAboutBlankURL);
-    RecordAction(UserMetricsAction("FilterURLTermiate_About"));
-  }
-
-  // Do not allow browser plugin guests to navigate to non-web URLs, since they
-  // cannot swap processes or grant bindings.
-  bool non_web_url_in_guest = process->IsGuest() &&
-      !(url->is_valid() && policy->IsWebSafeScheme(url->scheme()));
-
-  if (non_web_url_in_guest || !policy->CanRequestURL(process->GetID(), *url)) {
-    // If this renderer is not permitted to request this URL, we invalidate the
-    // URL.  This prevents us from storing the blocked URL and becoming confused
-    // later.
-    VLOG(1) << "Blocked URL " << url->spec();
-    *url = GURL(kAboutBlankURL);
-    RecordAction(UserMetricsAction("FilterURLTermiate_Blocked"));
-  }
 }
 
 void RenderViewHostImpl::SetAltErrorPageURL(const GURL& url) {

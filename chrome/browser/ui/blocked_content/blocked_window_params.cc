@@ -6,7 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
@@ -34,8 +34,7 @@ BlockedWindowParams::BlockedWindowParams(
 chrome::NavigateParams BlockedWindowParams::CreateNavigateParams(
     content::WebContents* web_contents) const {
   GURL popup_url(target_url_);
-  content::RenderViewHost::FilterURL(
-      web_contents->GetRenderProcessHost(), false, &popup_url);
+  web_contents->GetRenderProcessHost()->FilterURL(false, &popup_url);
   chrome::NavigateParams nav_params(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       popup_url,

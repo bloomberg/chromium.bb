@@ -395,7 +395,8 @@ WebContentsImpl::WebContentsImpl(
       temporary_zoom_settings_(false),
       color_chooser_identifier_(0),
       render_view_message_source_(NULL),
-      fullscreen_widget_routing_id_(MSG_ROUTING_NONE) {
+      fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
+      is_subframe_(false) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
     g_created_callbacks.Get().at(i).Run(this);
   frame_tree_.SetFrameRemoveListener(
@@ -490,8 +491,7 @@ BrowserPluginGuest* WebContentsImpl::CreateGuest(
 
   // We are instantiating a WebContents for browser plugin. Set its subframe bit
   // to true.
-  static_cast<RenderViewHostImpl*>(
-      new_contents->GetRenderViewHost())->set_is_subframe(true);
+  new_contents->is_subframe_ = true;
 
   return new_contents->browser_plugin_guest_.get();
 }
@@ -2122,6 +2122,10 @@ int WebContentsImpl::DownloadImage(const GURL& url,
   return id;
 }
 
+bool WebContentsImpl::IsSubframe() const {
+  return is_subframe_;
+}
+
 bool WebContentsImpl::FocusLocationBarByDefault() {
   NavigationEntry* entry = controller_.GetVisibleEntry();
   if (entry && entry->GetURL() == GURL(kAboutBlankURL))
@@ -2177,8 +2181,8 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
   GURL validated_target_url(target_url);
   RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  RenderViewHost::FilterURL(render_process_host, false, &validated_source_url);
-  RenderViewHost::FilterURL(render_process_host, false, &validated_target_url);
+  render_process_host->FilterURL(false, &validated_source_url);
+  render_process_host->FilterURL(false, &validated_target_url);
   NavigationEntry* entry;
   if (page_id == -1) {
     entry = controller_.GetPendingEntry();
@@ -2208,7 +2212,7 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
   GURL validated_url(params.url);
   RenderProcessHost* render_process_host =
       render_view_host->GetProcess();
-  RenderViewHost::FilterURL(render_process_host, false, &validated_url);
+  render_process_host->FilterURL(false, &validated_url);
 
   if (net::ERR_ABORTED == params.error_code) {
     // EVIL HACK ALERT! Ignore failed loads when we're showing interstitials.
@@ -2343,7 +2347,7 @@ void WebContentsImpl::OnDidFinishLoad(
 
   RenderProcessHost* render_process_host =
       render_view_message_source_->GetProcess();
-  RenderViewHost::FilterURL(render_process_host, false, &validated_url);
+  render_process_host->FilterURL(false, &validated_url);
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFinishLoad(frame_id, validated_url, is_main_frame,
                                   render_view_message_source_));
@@ -2358,7 +2362,7 @@ void WebContentsImpl::OnDidFailLoadWithError(
   GURL validated_url(url);
   RenderProcessHost* render_process_host =
       render_view_message_source_->GetProcess();
-  RenderViewHost::FilterURL(render_process_host, false, &validated_url);
+  render_process_host->FilterURL(false, &validated_url);
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFailLoad(frame_id, validated_url, is_main_frame,
                                 error_code, error_description,

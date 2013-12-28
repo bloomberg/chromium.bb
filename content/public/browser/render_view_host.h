@@ -44,7 +44,6 @@ struct WebPluginAction;
 namespace content {
 
 class ChildProcessSecurityPolicy;
-class RenderProcessHost;
 class RenderViewHostDelegate;
 class SessionStorageNamespace;
 class SiteInstance;
@@ -71,13 +70,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Downcasts from a RenderWidgetHost to a RenderViewHost.  Required
   // because RenderWidgetHost is a virtual base class.
   static RenderViewHost* From(RenderWidgetHost* rwh);
-
-  // Checks that the given renderer can request |url|, if not it sets it to
-  // about:blank.
-  // |empty_allowed| must be set to false for navigations for security reasons.
-  static void FilterURL(const RenderProcessHost* process,
-                        bool empty_allowed,
-                        GURL* url);
 
   virtual ~RenderViewHost() {}
 
@@ -229,10 +221,6 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   // Returns true if the RenderView is active and has not crashed. Virtual
   // because it is overridden by TestRenderViewHost.
   virtual bool IsRenderViewLive() const = 0;
-
-  // Returns true if the RenderView is responsible for displaying a subframe
-  // in a different process from its parent page.
-  virtual bool IsSubframe() const = 0;
 
   // Let the renderer know that the menu has been closed.
   virtual void NotifyContextMenuClosed(

@@ -256,6 +256,10 @@ void MockRenderProcessHost::SurfaceUpdated(int32 surface_id) {
 void MockRenderProcessHost::ResumeRequestsForView(int route_id) {
 }
 
+void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
+  RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
+}
+
 #if defined(ENABLE_WEBRTC)
 void MockRenderProcessHost::EnableAecDump(const base::FilePath& file) {
 }

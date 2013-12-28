@@ -29,6 +29,7 @@ void ResourceRequestInfo::AllocateForTesting(
     ResourceContext* context,
     int render_process_id,
     int render_view_id,
+    int render_frame_id,
     bool is_async) {
   ResourceRequestInfoImpl* info =
       new ResourceRequestInfoImpl(
@@ -37,7 +38,7 @@ void ResourceRequestInfo::AllocateForTesting(
           render_view_id,                    // route_id
           0,                                 // origin_pid
           0,                                 // request_id
-          MSG_ROUTING_NONE,                  // render_frame_id
+          render_frame_id,                   // render_frame_id
           resource_type == ResourceType::MAIN_FRAME,  // is_main_frame
           0,                                 // frame_id
           false,                             // parent_is_main_frame

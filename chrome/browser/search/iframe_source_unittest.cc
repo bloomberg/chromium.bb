@@ -14,6 +14,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/browser_resources.h"
+#include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -107,6 +108,7 @@ class IframeSourceTest : public testing::Test {
                                                        &resource_context_,
                                                        render_process_id,
                                                        render_view_id,
+                                                       MSG_ROUTING_NONE,
                                                        false);
     }
     return request;

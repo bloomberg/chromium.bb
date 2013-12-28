@@ -20,6 +20,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/test/net/url_request_mock_http_job.h"
+#include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -534,7 +535,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
       &url_request_context);
   content::ResourceRequestInfo::AllocateForTesting(
       &request, ResourceType::IMAGE, NULL,
-      kDefaultChildId, kDefaultRouteId, true);
+      kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, true);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(&request, prerender_tracker());
@@ -574,7 +575,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectCancel) {
       &url_request_context);
   content::ResourceRequestInfo::AllocateForTesting(
       &request, ResourceType::IMAGE, NULL,
-      kDefaultChildId, kDefaultRouteId, true);
+      kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, true);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(&request, prerender_tracker());
@@ -614,7 +615,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
       &url_request_context);
   content::ResourceRequestInfo::AllocateForTesting(
       &request, ResourceType::MAIN_FRAME, NULL,
-      kDefaultChildId, kDefaultRouteId, true);
+      kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, true);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(&request, prerender_tracker());
@@ -653,7 +654,7 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectSyncXHR) {
       &url_request_context);
   content::ResourceRequestInfo::AllocateForTesting(
       &request, ResourceType::XHR, NULL,
-      kDefaultChildId, kDefaultRouteId, false);
+      kDefaultChildId, kDefaultRouteId, MSG_ROUTING_NONE, false);
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(&request, prerender_tracker());

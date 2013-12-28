@@ -14,7 +14,7 @@
 class GURL;
 
 namespace content {
-class RenderViewHost;
+class WebContents;
 }
 
 namespace net {
@@ -30,7 +30,7 @@ class NavigationParams;
 class InterceptNavigationResourceThrottle : public content::ResourceThrottle {
  public:
   typedef base::Callback<bool(
-          content::RenderViewHost* /* source */,
+          content::WebContents* /* source */,
           const NavigationParams& /* navigation_params */)>
       CheckOnUIThreadCallback;
 

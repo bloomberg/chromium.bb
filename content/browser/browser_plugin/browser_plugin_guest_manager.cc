@@ -11,6 +11,7 @@
 #include "content/common/browser_plugin/browser_plugin_constants.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
@@ -62,8 +63,7 @@ BrowserPluginGuest* BrowserPluginGuestManager::CreateGuest(
   // iframe's URL to determine the extension.
   const GURL& embedder_site_url = embedder_site_instance->GetSiteURL();
   GURL validated_frame_url(params.embedder_frame_url);
-  RenderViewHost::FilterURL(
-      embedder_process_host, false, &validated_frame_url);
+  embedder_process_host->FilterURL(false, &validated_frame_url);
   const std::string& host = content::HasWebUIScheme(embedder_site_url) ?
        validated_frame_url.host() : embedder_site_url.host();
 

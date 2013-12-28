@@ -38,7 +38,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
   GURL validated_url(url);
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
-  RenderViewHost::FilterURL(render_process_host, false, &validated_url);
+  render_process_host->FilterURL(false, &validated_url);
 
   // TODO(creis): This is a hack for now, until we mirror the frame tree and do
   // cross-process subframe navigations in actual subframes.  As a result, we

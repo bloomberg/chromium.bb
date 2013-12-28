@@ -30,7 +30,7 @@ namespace {
 
 bool LaunchEphemeralApp(
     const std::string& app_id,
-    content::RenderViewHost* source,
+    content::WebContents* source,
     const navigation_interception::NavigationParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -38,12 +38,8 @@ bool LaunchEphemeralApp(
   if (source->IsSubframe())
     return false;
 
-  WebContents* web_contents = WebContents::FromRenderViewHost(source);
-  if (!web_contents)
-    return false;
-
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(source->GetBrowserContext());
   if (!profile)
     return false;
 
@@ -56,7 +52,7 @@ bool LaunchEphemeralApp(
     // If the app is already installed, launch it.
     AppLaunchParams params(profile, extension, NEW_FOREGROUND_TAB);
     params.desktop_type = chrome::GetHostDesktopTypeForNativeView(
-        web_contents->GetView()->GetNativeView());
+        source->GetView()->GetNativeView());
     OpenApplication(params);
     return true;
   }
@@ -64,7 +60,7 @@ bool LaunchEphemeralApp(
   if (!extension) {
     // Install ephemeral app and launch.
     scoped_refptr<EphemeralAppLauncher> installer =
-        EphemeralAppLauncher::CreateForLink(app_id, web_contents);
+        EphemeralAppLauncher::CreateForLink(app_id, source);
     installer->Start();
     return true;
   }

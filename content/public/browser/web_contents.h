@@ -476,6 +476,10 @@ class WebContents : public PageNavigator,
                             uint32_t max_bitmap_size,
                             const ImageDownloadCallback& callback) = 0;
 
+  // Returns true if the WebContents is responsible for displaying a subframe
+  // in a different process from its parent page.
+  virtual bool IsSubframe() const = 0;
+
 #if defined(OS_ANDROID)
   CONTENT_EXPORT static WebContents* FromJavaWebContents(
       jobject jweb_contents_android);

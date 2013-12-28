@@ -210,6 +210,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // were initially blocked.
   virtual void ResumeRequestsForView(int route_id) = 0;
 
+  // Checks that the given renderer can request |url|, if not it sets it to
+  // about:blank.
+  // |empty_allowed| must be set to false for navigations for security reasons.
+  virtual void FilterURL(bool empty_allowed, GURL* url) = 0;
+
 #if defined(ENABLE_WEBRTC)
   virtual void EnableAecDump(const base::FilePath& file) = 0;
   virtual void DisableAecDump() = 0;

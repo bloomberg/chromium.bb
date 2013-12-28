@@ -35,7 +35,7 @@ namespace {
 bool LaunchAppWithUrl(
     const scoped_refptr<const Extension> app,
     const std::string& handler_id,
-    content::RenderViewHost* source,
+    content::WebContents* source,
     const navigation_interception::NavigationParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -50,12 +50,8 @@ bool LaunchAppWithUrl(
   DCHECK(!params.is_post());
   DCHECK(UrlHandlers::CanExtensionHandleUrl(app, params.url()));
 
-  WebContents* web_contents = WebContents::FromRenderViewHost(source);
-  if (!web_contents)
-    return false;
-
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(source->GetBrowserContext());
 
   DVLOG(1) << "Launching app handler with URL: "
            << params.url().spec() << " -> "

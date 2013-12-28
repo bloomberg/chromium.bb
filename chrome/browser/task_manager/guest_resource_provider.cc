@@ -138,7 +138,8 @@ void GuestResourceProvider::StartUpdating() {
   while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
     if (widget->IsRenderView()) {
       RenderViewHost* rvh = RenderViewHost::From(widget);
-      if (rvh->IsSubframe())
+      WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
+      if (web_contents->IsSubframe())
         Add(rvh);
     }
   }
@@ -190,7 +191,7 @@ void GuestResourceProvider::Observe(int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   WebContents* web_contents = content::Source<WebContents>(source).ptr();
-  if (!web_contents || !web_contents->GetRenderViewHost()->IsSubframe())
+  if (!web_contents || !web_contents->IsSubframe())
     return;
 
   switch (type) {

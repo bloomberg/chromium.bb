@@ -282,6 +282,7 @@ class CONTENT_EXPORT WebContentsImpl
                             bool is_favicon,
                             uint32_t max_bitmap_size,
                             const ImageDownloadCallback& callback) OVERRIDE;
+  virtual bool IsSubframe() const OVERRIDE;
 #if defined(OS_ANDROID)
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents()
       OVERRIDE;
@@ -1034,6 +1035,10 @@ class CONTENT_EXPORT WebContentsImpl
   // Maps the ids of pending image downloads to their callbacks
   typedef std::map<int, ImageDownloadCallback> ImageDownloadMap;
   ImageDownloadMap image_download_map_;
+
+  // Whether this RenderView is responsible for displaying a subframe in a
+  // different process from its parent page.
+  bool is_subframe_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsImpl);
 };

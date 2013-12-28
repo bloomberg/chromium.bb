@@ -30,16 +30,13 @@ namespace {
 const void* kInterceptNavigationDelegateUserDataKey =
     &kInterceptNavigationDelegateUserDataKey;
 
-bool CheckIfShouldIgnoreNavigationOnUIThread(RenderViewHost* source,
+bool CheckIfShouldIgnoreNavigationOnUIThread(WebContents* source,
                                              const NavigationParams& params) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(source);
 
-  WebContents* web_contents = WebContents::FromRenderViewHost(source);
-  if (!web_contents)
-    return false;
   InterceptNavigationDelegate* intercept_navigation_delegate =
-      InterceptNavigationDelegate::Get(web_contents);
+      InterceptNavigationDelegate::Get(source);
   if (!intercept_navigation_delegate)
     return false;
 

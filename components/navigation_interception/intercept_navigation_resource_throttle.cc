@@ -7,10 +7,11 @@
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "net/http/http_response_headers.h"
@@ -20,7 +21,7 @@ using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::PageTransition;
 using content::Referrer;
-using content::RenderViewHost;
+using content::RenderProcessHost;
 using content::ResourceRequestInfo;
 
 namespace navigation_interception {
@@ -29,22 +30,23 @@ namespace {
 
 void CheckIfShouldIgnoreNavigationOnUIThread(
     int render_process_id,
-    int render_view_id,
+    int render_frame_id,
     const NavigationParams& navigation_params,
     InterceptNavigationResourceThrottle::CheckOnUIThreadCallback
     should_ignore_callback,
     base::Callback<void(bool)> callback) {
-
   bool should_ignore_navigation = false;
-  RenderViewHost* rvh =
-      RenderViewHost::FromID(render_process_id, render_view_id);
-
-  if (rvh) {
+  RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
+  if (rph) {
     NavigationParams validated_params(navigation_params);
-    RenderViewHost::FilterURL(
-        rvh->GetProcess(), false, &validated_params.url());
+    rph->FilterURL(false, &validated_params.url());
 
-    should_ignore_navigation = should_ignore_callback.Run(rvh,
+    content::RenderFrameHost* render_frame_host =
+        content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderFrameHost(render_frame_host);
+
+    should_ignore_navigation = should_ignore_callback.Run(web_contents,
                                                           validated_params);
   }
 
@@ -100,8 +102,8 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
   if (!info)
     return false;
 
-  int render_process_id, render_view_id;
-  if (!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
+  int render_process_id, render_frame_id;
+  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))
     return false;
 
   NavigationParams navigation_params(url,
@@ -118,7 +120,7 @@ bool InterceptNavigationResourceThrottle::CheckIfShouldIgnoreNavigation(
       base::Bind(
           &CheckIfShouldIgnoreNavigationOnUIThread,
           render_process_id,
-          render_view_id,
+          render_frame_id,
           navigation_params,
           should_ignore_callback_,
           base::Bind(

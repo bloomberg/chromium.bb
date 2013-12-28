@@ -11,6 +11,7 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
+#include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/client_cert_store.h"
@@ -222,6 +223,7 @@ TEST_F(ResourceLoaderTest, ClientCertStoreLookup) {
                                           &resource_context_,
                                           kRenderProcessId,
                                           kRenderViewId,
+                                          MSG_ROUTING_NONE,
                                           false);
 
   // Set up the test client cert store.
@@ -287,6 +289,7 @@ TEST_F(ResourceLoaderTest, ClientCertStoreNull) {
                                           &resource_context_,
                                           kRenderProcessId,
                                           kRenderViewId,
+                                          MSG_ROUTING_NONE,
                                           false);
 
   // Ownership of the |request| is about to be turned over to ResourceLoader. We

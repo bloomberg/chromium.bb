@@ -1498,6 +1498,10 @@ void RenderProcessHostImpl::ResumeRequestsForView(int route_id) {
   widget_helper_->ResumeRequestsForView(route_id);
 }
 
+void RenderProcessHostImpl::FilterURL(bool empty_allowed, GURL* url) {
+  FilterURL(this, empty_allowed, url);
+}
+
 #if defined(ENABLE_WEBRTC)
 void RenderProcessHostImpl::EnableAecDump(const base::FilePath& file) {
   BrowserThread::PostTaskAndReplyWithResult(
@@ -1556,6 +1560,53 @@ void RenderProcessHostImpl::UnregisterHost(int host_id) {
   SiteProcessMap* map =
       GetSiteProcessMapForBrowserContext(host->GetBrowserContext());
   map->RemoveProcess(host);
+}
+
+// static
+void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
+                                      bool empty_allowed,
+                                      GURL* url) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  if (empty_allowed && url->is_empty())
+    return;
+
+  // The browser process should never hear the swappedout:// URL from any
+  // of the renderer's messages.  Check for this in debug builds, but don't
+  // let it crash a release browser.
+  DCHECK(GURL(kSwappedOutURL) != *url);
+
+  if (!url->is_valid()) {
+    // Have to use about:blank for the denied case, instead of an empty GURL.
+    // This is because the browser treats navigation to an empty GURL as a
+    // navigation to the home page. This is often a privileged page
+    // (chrome://newtab/) which is exactly what we don't want.
+    *url = GURL(kAboutBlankURL);
+    RecordAction(UserMetricsAction("FilterURLTermiate_Invalid"));
+    return;
+  }
+
+  if (url->SchemeIs(chrome::kAboutScheme)) {
+    // The renderer treats all URLs in the about: scheme as being about:blank.
+    // Canonicalize about: URLs to about:blank.
+    *url = GURL(kAboutBlankURL);
+    RecordAction(UserMetricsAction("FilterURLTermiate_About"));
+  }
+
+  // Do not allow browser plugin guests to navigate to non-web URLs, since they
+  // cannot swap processes or grant bindings.
+  bool non_web_url_in_guest = rph->IsGuest() &&
+      !(url->is_valid() && policy->IsWebSafeScheme(url->scheme()));
+
+  if (non_web_url_in_guest || !policy->CanRequestURL(rph->GetID(), *url)) {
+    // If this renderer is not permitted to request this URL, we invalidate the
+    // URL.  This prevents us from storing the blocked URL and becoming confused
+    // later.
+    VLOG(1) << "Blocked URL " << url->spec();
+    *url = GURL(kAboutBlankURL);
+    RecordAction(UserMetricsAction("FilterURLTermiate_Blocked"));
+  }
 }
 
 // static

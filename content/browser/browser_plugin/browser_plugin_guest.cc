@@ -1452,10 +1452,7 @@ void BrowserPluginGuest::OnNavigateGuest(
   }
 
   GURL validated_url(url);
-  RenderViewHost::FilterURL(
-      GetWebContents()->GetRenderProcessHost(),
-      false,
-      &validated_url);
+  GetWebContents()->GetRenderProcessHost()->FilterURL(false, &validated_url);
   // As guests do not swap processes on navigation, only navigations to
   // normal web URLs are supported.  No protocol handlers are installed for
   // other schemes (e.g., WebUI or extensions), and no permissions or bindings
