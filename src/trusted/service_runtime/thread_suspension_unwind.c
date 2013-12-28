@@ -15,9 +15,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 || \
-    NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-
 static void GetNaClSyscallSeg(struct NaClApp *nap,
                               uintptr_t *nacl_syscall_seg,
                               uintptr_t *nacl_syscall_seg_regs_saved) {
@@ -78,6 +75,13 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
     regs->prog_ctr = NaClSandboxCodeAddr(nap, regs->lr);
     return 1;
   }
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  if (regs->prog_ctr >= NACL_TRAMPOLINE_START &&
+      regs->prog_ctr < NACL_TRAMPOLINE_END) {
+    *unwind_case = NACL_UNWIND_in_trampoline;
+    regs->prog_ctr = NaClSandboxCodeAddr(nap, regs->return_addr);
+    return 1;
+  }
 #endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
@@ -113,15 +117,19 @@ static int Unwind(struct NaClAppThread *natp, struct NaClSignalContext *regs,
   if (regs->prog_ctr >= nacl_syscall_seg &&
       regs->prog_ctr < nacl_syscall_seg_regs_saved) {
     *unwind_case = NACL_UNWIND_in_syscallseg;
-    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86) {
-      if (NACL_BUILD_SUBARCH == 32) {
-        /* Pop user + trampoline return addresses */
-        regs->stack_ptr += 4 + 8;
-      } else {
-        /* Pop user return address. */
-        regs->stack_ptr += 8;
-      }
-    }
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
+    /* Pop user + trampoline return addresses */
+    regs->stack_ptr += 4 + 8;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+    /* Pop user return address. */
+    regs->stack_ptr += 8;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+    /*
+     * On MIPS, $ra is not modified from the start of the trampoline to the
+     * point where registers are saved.
+     */
+    regs->prog_ctr = NaClSandboxCodeAddr(nap, regs->return_addr);
+#endif
     return 1;
   }
 
@@ -146,7 +154,10 @@ void NaClGetRegistersForContextSwitch(struct NaClAppThread *natp,
 
   if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 ||
       (NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm &&
-       *unwind_case != NACL_UNWIND_in_trampoline)) {
+       *unwind_case != NACL_UNWIND_in_trampoline) ||
+      (NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips &&
+       *unwind_case != NACL_UNWIND_in_trampoline &&
+       *unwind_case != NACL_UNWIND_in_syscallseg)) {
     /*
      * Read the return address from the untrusted stack.
      * NaClCopyInFromUser() can fault or return an error here, but only
@@ -164,16 +175,3 @@ void NaClGetRegistersForContextSwitch(struct NaClAppThread *natp,
     regs->prog_ctr = NaClSandboxCodeAddr(natp->nap, user_ret);
   }
 }
-
-#else
-
-/* TODO(mseaborn): Extend this to handle MIPS. */
-void NaClGetRegistersForContextSwitch(struct NaClAppThread *natp,
-                                      struct NaClSignalContext *regs,
-                                      enum NaClUnwindCase *unwind_case) {
-  UNREFERENCED_PARAMETER(natp);
-  UNREFERENCED_PARAMETER(regs);
-  *unwind_case = 0;
-}
-
-#endif

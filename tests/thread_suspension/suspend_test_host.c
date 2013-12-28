@@ -339,6 +339,38 @@ static void TestGettingRegisterSnapshot(struct NaClApp *nap) {
   regs.r12 = 0x1234000c;
   /* Leave sp (r13) and lr (r14) alone for now. */
   regs.prog_ctr = test_shm->continue_after_suspension_func;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  /* Skip setting zero register because it's read-only. */
+  regs.at = 0x12340001;
+  regs.v0 = 0x12340002;
+  regs.v1 = 0x12340003;
+  regs.a0 = 0x12340004;
+  regs.a1 = 0x12340005;
+  regs.a2 = 0x12340006;
+  regs.a3 = 0x12340007;
+  regs.t0 = 0x12340008;
+  regs.t1 = 0x12340009;
+  regs.t2 = 0x12340010;
+  regs.t3 = 0x12340011;
+  regs.t4 = 0x12340012;
+  regs.t5 = 0x12340013;
+  /* Skip setting t6 and t7 because those are mask registers. */
+  regs.s0 = 0x12340014;
+  regs.s1 = 0x12340015;
+  regs.s2 = 0x12340016;
+  regs.s3 = 0x12340017;
+  regs.s4 = 0x12340018;
+  regs.s5 = 0x12340019;
+  regs.s6 = 0x12340020;
+  regs.s7 = 0x12340021;
+  /* Skip setting t8 because it holds thread pointer. */
+  regs.t9 = 0x12340022;
+  /* Skip setting k0 and k1 registers, they are used by kernel. */
+  regs.global_ptr  = 0x12340023;
+  /* Skip setting sp also. */
+  regs.frame_ptr   = 0x12340025;
+  regs.return_addr = 0x12340026;
+  regs.prog_ctr = test_shm->continue_after_suspension_func;
 #else
 # error Unsupported architecture
 #endif
@@ -431,15 +463,7 @@ static void TestGettingRegisterSnapshotInSyscallContextSwitch(
       regs.prog_ctr = test_shm->expected_regs.prog_ctr;
       RegsUnsetNonCalleeSavedRegisters(&regs);
     }
-    /*
-     * TODO(mseaborn): Enable the RegsAssertEqual() check for MIPS
-     * once NaClGetRegistersForContextSwitch() is implemented for
-     * MIPS.
-     */
-    if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 ||
-        NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm) {
-      RegsAssertEqual(&regs, &test_shm->expected_regs);
-    }
+    RegsAssertEqual(&regs, &test_shm->expected_regs);
 
     NaClUntrustedThreadsResumeAll(nap);
   }

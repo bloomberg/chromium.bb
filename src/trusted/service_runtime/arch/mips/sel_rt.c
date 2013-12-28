@@ -83,3 +83,27 @@ void NaClThreadContextToSignalContext(const struct NaClThreadContext *th_ctx,
   sig_ctx->prog_ctr    = th_ctx->new_prog_ctr;
   sig_ctx->return_addr = 0;
 }
+
+
+void NaClSignalContextUnsetClobberedRegisters(
+    struct NaClSignalContext *sig_ctx) {
+  sig_ctx->zero        = 0;
+  sig_ctx->at          = 0;
+  sig_ctx->v0          = 0;
+  sig_ctx->v1          = 0;
+  sig_ctx->a0          = 0;
+  sig_ctx->a1          = 0;
+  sig_ctx->a2          = 0;
+  sig_ctx->a3          = 0;
+  sig_ctx->t0          = 0;
+  sig_ctx->t1          = 0;
+  sig_ctx->t2          = 0;
+  sig_ctx->t3          = 0;
+  sig_ctx->t4          = 0;
+  sig_ctx->t5          = 0;
+  sig_ctx->t9          = 0;
+  sig_ctx->k0          = 0;
+  sig_ctx->k1          = 0;
+  sig_ctx->global_ptr  = 0;
+  sig_ctx->return_addr = 0;
+}

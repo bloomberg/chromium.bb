@@ -105,6 +105,19 @@ static void RegisterSetterThread(struct SuspendTestShm *test_shm) {
       "str r0, [r0]\n"
       "spin_instruction:\n"
       "b spin_instruction\n");
+#elif defined(__mips__)
+  regs->a0 = (uintptr_t) test_shm;
+  ASM_WITH_REGS(
+      regs,
+      /* Align to ensure no NOPs are inserted in the code that follows. */
+      ".p2align 4\n"
+      /* Set "test_shm->var = test_shm" to indicate that we are ready. */
+      "and $a0, $a0, $t7\n"
+      "sw $a0, 0($a0)\n"
+      ".global spin_instruction\n"
+      "spin_instruction:\n"
+      "b spin_instruction\n"
+      "nop\n");
 #else
 # error Unsupported architecture
 #endif
@@ -161,6 +174,15 @@ static void SyscallRegisterSetterThread(struct SuspendTestShm *test_shm) {
         &call_regs,
         "bic r1, r1, #0xf000000f\n"
         "bx r1\n");
+#elif defined(__mips__)
+    call_regs.a0 = (uintptr_t) test_shm;  /* Set syscall argument */
+    call_regs.t9 = syscall_addr;  /* Scratch register */
+    call_regs.return_addr = (uintptr_t) ContinueAfterSyscall;
+    ASM_WITH_REGS(
+        &call_regs,
+        "and $t9, $t9, $t6\n"
+        "jr $t9\n"
+        "nop\n");
 #else
 # error Unsupported architecture
 #endif
@@ -193,6 +215,17 @@ __asm__(".pushsection .text, \"ax\", %progbits\n"
         "bic r4, r4, #0xc000000f\n"
         "bx r4\n"
         ".popsection\n");
+#elif defined(__mips__)
+__asm__(".pushsection .text, \"ax\", %progbits\n"
+        ".p2align 4\n"
+        ".global SyscallReturnAddress\n"
+        "SyscallReturnAddress:\n"
+        "lui   $ra, %hi(SyscallReturnAddress)\n"
+        "addiu $ra, $ra, %lo(SyscallReturnAddress)\n"
+        "and $s0, $s0, $t6\n"
+        "jr $s0\n"
+        "nop\n"
+        ".popsection\n");
 #else
 # error Unsupported architecture
 #endif
@@ -220,6 +253,8 @@ static void SyscallRegisterSetterLoopThread(struct SuspendTestShm *test_shm) {
   regs->r12 = syscall_addr;
 #elif defined(__arm__)
   regs->r4 = syscall_addr;
+#elif defined(__mips__)
+  regs->s0 = syscall_addr;
 #else
 # error Unsupported architecture
 #endif
