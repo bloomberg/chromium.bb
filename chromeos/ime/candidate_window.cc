@@ -61,7 +61,8 @@ CandidateWindow::CandidateWindowProperty::CandidateWindowProperty()
       cursor_position(0),
       is_cursor_visible(true),
       is_vertical(false),
-      show_window_at_composition(false) {
+      show_window_at_composition(false),
+      is_auxiliary_text_visible(false) {
 }
 
 CandidateWindow::CandidateWindowProperty::~CandidateWindowProperty() {
