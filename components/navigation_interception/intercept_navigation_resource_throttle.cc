@@ -46,8 +46,10 @@ void CheckIfShouldIgnoreNavigationOnUIThread(
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
 
-    should_ignore_navigation = should_ignore_callback.Run(web_contents,
-                                                          validated_params);
+    if (web_contents) {
+      should_ignore_navigation = should_ignore_callback.Run(web_contents,
+                                                            validated_params);
+    }
   }
 
   BrowserThread::PostTask(

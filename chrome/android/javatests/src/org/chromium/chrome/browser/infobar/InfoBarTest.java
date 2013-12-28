@@ -9,7 +9,6 @@ import android.test.suitebuilder.annotation.Smoke;
 
 import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
@@ -54,7 +53,6 @@ public class InfoBarTest extends ChromiumTestShellTestBase {
      */
     @Smoke
     @MediumTest
-    @DisabledTest
     @Feature({"Browser", "Main"})
     public void testInfoBarForPopUp() throws InterruptedException {
         loadUrlWithSanitization(TestHttpServerClient.getUrl(POPUP_PAGE));
