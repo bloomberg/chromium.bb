@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.Smoke;
 
 import static org.chromium.base.test.util.ScalableTimeout.ScaleTimeout;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
