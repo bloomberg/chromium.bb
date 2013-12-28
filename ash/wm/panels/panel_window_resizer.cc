@@ -104,9 +104,9 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   }
 }
 
-void PanelWindowResizer::CompleteDrag(int event_flags) {
+void PanelWindowResizer::CompleteDrag() {
   // The root window can change when dragging into a different screen.
-  next_window_resizer_->CompleteDrag(event_flags);
+  next_window_resizer_->CompleteDrag();
   FinishDragging();
 }
 

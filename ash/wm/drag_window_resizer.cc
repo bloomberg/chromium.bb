@@ -106,11 +106,11 @@ void DragWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   }
 }
 
-void DragWindowResizer::CompleteDrag(int event_flags) {
+void DragWindowResizer::CompleteDrag() {
   if (TryDraggingToNewUser())
     return;
 
-  next_window_resizer_->CompleteDrag(event_flags);
+  next_window_resizer_->CompleteDrag();
 
   GetTarget()->layer()->SetOpacity(details_.initial_opacity);
   drag_window_controller_.reset();

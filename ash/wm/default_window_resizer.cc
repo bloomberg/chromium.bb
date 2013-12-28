@@ -40,7 +40,7 @@ void DefaultWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   }
 }
 
-void DefaultWindowResizer::CompleteDrag(int event_flags) {
+void DefaultWindowResizer::CompleteDrag() {
 }
 
 void DefaultWindowResizer::RevertDrag() {

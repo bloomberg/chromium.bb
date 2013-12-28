@@ -70,7 +70,7 @@ class ASH_EXPORT ToplevelWindowEventHandler
                           aura::client::WindowMoveSource source);
 
   // Finishes the drag.
-  void CompleteDrag(DragCompletionStatus status, int event_flags);
+  void CompleteDrag(DragCompletionStatus status);
 
   void HandleMousePressed(aura::Window* target, ui::MouseEvent* event);
   void HandleMouseReleased(aura::Window* target, ui::MouseEvent* event);

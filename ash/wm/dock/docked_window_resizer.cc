@@ -115,9 +115,9 @@ void DockedWindowResizer::Drag(const gfx::Point& location, int event_flags) {
     was_bounds_changed_by_user_ = false;
 }
 
-void DockedWindowResizer::CompleteDrag(int event_flags) {
+void DockedWindowResizer::CompleteDrag() {
   // The root window can change when dragging into a different screen.
-  next_window_resizer_->CompleteDrag(event_flags);
+  next_window_resizer_->CompleteDrag();
   FinishedDragging();
 }
 

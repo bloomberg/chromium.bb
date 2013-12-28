@@ -616,7 +616,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 0, 10), 0);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
 
     EXPECT_EQ(expected_bounds.ToString(), window_->bounds().ToString());
     ASSERT_TRUE(window_state->HasRestoreBounds());
@@ -633,7 +633,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(expected_bounds.ToString(), window_->bounds().ToString());
     ASSERT_TRUE(window_state->HasRestoreBounds());
     EXPECT_EQ("20,30 400x60",
@@ -663,7 +663,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
     int bottom =
         ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     // With the resolution of 500x600 we will hit in this case the 50% screen
     // size setting.
     // TODO(varkha): Insets are updated because of http://crbug.com/292238
@@ -683,7 +683,7 @@ TEST_F(WorkspaceWindowResizerTest, NonResizableWindows) {
       window_.get(), gfx::Point(), HTCAPTION));
   ASSERT_TRUE(resizer.get());
   resizer->Drag(CalculateDragPoint(*resizer, -20, 0), 0);
-  resizer->CompleteDrag(0);
+  resizer->CompleteDrag();
   EXPECT_EQ("0,30 50x60", window_->bounds().ToString());
 }
 
@@ -819,7 +819,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
     // on non-work area with kMinOnscreenHeight margin.
     EXPECT_EQ("100," + base::IntToString(expected_y) + " 300x400",
               window_->bounds().ToString());
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
 
   {
@@ -832,7 +832,7 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
     // The window can move to the secondary display beyond non-work area of
     // the primary display.
     EXPECT_EQ("100,700 300x400", window_->bounds().ToString());
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
 }
 
@@ -1215,18 +1215,6 @@ TEST_F(WorkspaceWindowResizerTest, CtrlDragResizeToExactPosition) {
   EXPECT_EQ("96,112 330x172", window_->bounds().ToString());
 }
 
-TEST_F(WorkspaceWindowResizerTest, CtrlCompleteDragMoveToExactPosition) {
-  window_->SetBounds(gfx::Rect(96, 112, 320, 160));
-  scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
-      window_.get(), gfx::Point(), HTCAPTION));
-  ASSERT_TRUE(resizer.get());
-  // Ctrl + drag the window to new poistion by adding (10, 12) to its origin,
-  // the window should move to the exact position.
-  resizer->Drag(CalculateDragPoint(*resizer, 10, 12), 0);
-  resizer->CompleteDrag(ui::EF_CONTROL_DOWN);
-  EXPECT_EQ("106,124 320x160", window_->bounds().ToString());
-}
-
 // Verifies that a dragged window will restore to its pre-maximized size.
 TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
   window_->SetBounds(gfx::Rect(0, 0, 1000, 1000));
@@ -1238,7 +1226,7 @@ TEST_F(WorkspaceWindowResizerTest, RestoreToPreMaximizeCoordinates) {
   // Drag the window to new position by adding (10, 10) to original point,
   // the window should get restored.
   resizer->Drag(CalculateDragPoint(*resizer, 10, 10), 0);
-  resizer->CompleteDrag(0);
+  resizer->CompleteDrag();
   EXPECT_EQ("10,10 320x160", window_->bounds().ToString());
   // The restore rectangle should get cleared as well.
   EXPECT_FALSE(window_state->HasRestoreBounds());
@@ -1468,7 +1456,7 @@ TEST_F(WorkspaceWindowResizerTest, CheckUserWindowManagedFlags) {
     // Move it 100 to the bottom.
     resizer->Drag(CalculateDragPoint(*resizer, 0, 100), 0);
     EXPECT_EQ("0,150 400x200", window_->bounds().ToString());
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_TRUE(wm::GetWindowState(window_.get())->bounds_changed_by_user());
   }
 }

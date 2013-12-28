@@ -86,7 +86,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   }
 
   void DragEnd() {
-    resizer_->CompleteDrag(0);
+    resizer_->CompleteDrag();
     resizer_.reset();
   }
 

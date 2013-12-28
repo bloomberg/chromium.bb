@@ -129,7 +129,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
     case ui::ET_GESTURE_BEGIN:
       if (event.details().touch_points() > 2) {
         if (window_resizer_)
-          window_resizer_->CompleteDrag(event.flags());
+          window_resizer_->CompleteDrag();
         Reset(target);
       }
       return false;
@@ -143,7 +143,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
       // For a swipe, the window either maximizes, minimizes, or snaps. In this
       // case, complete the drag, and do the appropriate action.
       if (window_resizer_)
-        window_resizer_->CompleteDrag(event.flags());
+        window_resizer_->CompleteDrag();
       Reset(target);
       if (event.details().swipe_up()) {
         if (window_state->CanMaximize())
@@ -166,7 +166,7 @@ bool TwoFingerDragHandler::ProcessGestureEvent(aura::Window* target,
 
     case ui::ET_GESTURE_PINCH_END:
       if (window_resizer_)
-        window_resizer_->CompleteDrag(event.flags());
+        window_resizer_->CompleteDrag();
       Reset(target);
       return true;
 

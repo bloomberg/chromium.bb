@@ -92,7 +92,7 @@ class MultiWindowResizeController::ResizeView : public views::View {
     return true;
   }
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE {
-    controller_->CompleteResize(event.flags());
+    controller_->CompleteResize();
   }
   virtual void OnMouseCaptureLost() OVERRIDE {
     controller_->CancelResize();
@@ -458,8 +458,8 @@ void MultiWindowResizeController::Resize(const gfx::Point& location_in_screen,
   resize_widget_->SetBounds(bounds);
 }
 
-void MultiWindowResizeController::CompleteResize(int event_flags) {
-  window_resizer_->CompleteDrag(event_flags);
+void MultiWindowResizeController::CompleteResize() {
+  window_resizer_->CompleteDrag();
   window_resizer_.reset();
 
   // Mouse may still be over resizer, if not hide.

@@ -47,7 +47,7 @@ class ASH_EXPORT WindowResizer {
   virtual void Drag(const gfx::Point& location, int event_flags) = 0;
 
   // Invoked to complete the drag.
-  virtual void CompleteDrag(int event_flags) = 0;
+  virtual void CompleteDrag() = 0;
 
   // Reverts the drag.
   virtual void RevertDrag() = 0;

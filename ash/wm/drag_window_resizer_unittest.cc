@@ -177,7 +177,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     // Drag the pointer to the right. Once it reaches the right edge of the
     // primary display, it warps to the secondary.
     resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     // The whole window is on the secondary display now. The parent should be
     // changed.
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
@@ -195,7 +195,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 795, 10), 0);
     // Window should be adjusted for minimum visibility (10px) during the drag.
     EXPECT_EQ("790,10 50x60", window_->bounds().ToString());
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     // Since the pointer is still on the primary root window, the parent should
     // not be changed.
     // Window origin should be adjusted for minimum visibility (10px).
@@ -213,7 +213,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
         window_.get(), gfx::Point(49, 0), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 751, 10), ui::EF_CONTROL_DOWN);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     // Since the pointer is on the secondary, the parent should be changed
     // even though only small fraction of the window is within the secondary
     // root window's bounds.
@@ -235,7 +235,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
         window_.get(), gfx::Point(699, 0), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 101, 10), ui::EF_CONTROL_DOWN);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     // Window size should be adjusted to fit to the work area
     EXPECT_EQ("400x253", window_->bounds().size().ToString());
@@ -265,7 +265,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplays) {
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 799, 10), ui::EF_CONTROL_DOWN);
     resizer->Drag(CalculateDragPoint(*resizer, 850, 10), ui::EF_CONTROL_DOWN);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     // Window size should be adjusted to fit to the work area
     EXPECT_EQ("400x253", window_->bounds().size().ToString());
@@ -310,7 +310,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysActiveRoot) {
     // Drag the pointer to the right. Once it reaches the right edge of the
     // primary display, it warps to the secondary.
     resizer->Drag(CalculateDragPoint(*resizer, 800, 10), 0);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     // The whole window is on the secondary display now. The parent should be
     // changed.
     EXPECT_EQ(root_windows[1], window->GetRootWindow());
@@ -338,7 +338,7 @@ TEST_F(DragWindowResizerTest, WindowDragWithMultiDisplaysRightToLeft) {
     ASSERT_TRUE(resizer.get());
     // Move the mouse near the right edge, (798, 0), of the primary display.
     resizer->Drag(CalculateDragPoint(*resizer, -2, 0), ui::EF_CONTROL_DOWN);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(root_windows[0], window_->GetRootWindow());
     // Window origin should be adjusted for minimum visibility (10px).
     int expected_x = 800 - 10;
@@ -402,7 +402,7 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
     EXPECT_GT(1.0f, window_->layer()->opacity());
     EXPECT_FLOAT_EQ(1.0f, drag_layer->opacity());
 
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(root_windows[1], window_->GetRootWindow());
     EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   }
@@ -443,7 +443,7 @@ TEST_F(DragWindowResizerTest, WarpMousePointer) {
     // While dragging a window, warp should be allowed.
     EXPECT_EQ(MouseCursorEventFilter::WARP_DRAG,
               event_filter->mouse_warp_mode_);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
   EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
             event_filter->mouse_warp_mode_);
@@ -464,7 +464,7 @@ TEST_F(DragWindowResizerTest, WarpMousePointer) {
     // While resizing a window, warp should NOT be allowed.
     EXPECT_EQ(MouseCursorEventFilter::WARP_NONE,
               event_filter->mouse_warp_mode_);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
   EXPECT_EQ(MouseCursorEventFilter::WARP_ALWAYS,
             event_filter->mouse_warp_mode_);
@@ -508,7 +508,7 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     WarpMouseCursorIfNecessary(root_windows[0], gfx::Point(399, 200));
     EXPECT_EQ(2.0f, cursor_test_api.GetDisplay().device_scale_factor());
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(2.0f, cursor_test_api.GetDisplay().device_scale_factor());
   }
 
@@ -527,7 +527,7 @@ TEST_F(DragWindowResizerTest, CursorDeviceScaleFactor) {
     resizer->Drag(CalculateDragPoint(*resizer, -200, 200), 0);
     WarpMouseCursorIfNecessary(root_windows[1], gfx::Point(400, 200));
     EXPECT_EQ(1.0f, cursor_test_api.GetDisplay().device_scale_factor());
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(1.0f, cursor_test_api.GetDisplay().device_scale_factor());
   }
 }
@@ -556,7 +556,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[0],
                                            gfx::Point(399, 200)));
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
 
   // Always on top window can be moved across display.
@@ -571,7 +571,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[0],
                                            gfx::Point(399, 200)));
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
 
   // System modal window can be moved across display.
@@ -586,7 +586,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[0],
                                            gfx::Point(399, 200)));
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
 
   // Transient window cannot be moved across display.
@@ -602,7 +602,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     EXPECT_FALSE(WarpMouseCursorIfNecessary(
         root_windows[0],
         gfx::Point(399, 200)));
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
 
   // The parent of transient window can be moved across display.
@@ -617,7 +617,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[0],
                                            gfx::Point(399, 200)));
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
 
   // Panel window can be moved across display.
@@ -632,7 +632,7 @@ TEST_F(DragWindowResizerTest, MoveWindowAcrossDisplays) {
     resizer->Drag(CalculateDragPoint(*resizer, 399, 200), 0);
     EXPECT_TRUE(WarpMouseCursorIfNecessary(root_windows[0],
                                            gfx::Point(399, 200)));
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
   }
 }
 
@@ -675,7 +675,7 @@ TEST_F(DragWindowResizerTest, DragToOtherDesktopOpacity) {
     resizer->Drag(center, 0);
     EXPECT_NE(1.0, window->layer()->opacity());
     EXPECT_EQ(0, session_delegate->num_transfer_to_desktop_of_user_calls());
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(1.0, window->layer()->opacity());
     EXPECT_EQ(1, session_delegate->num_transfer_to_desktop_of_user_calls());
     EXPECT_EQ(initial_bounds.ToString(), window->bounds().ToString());
@@ -715,7 +715,7 @@ TEST_F(DragWindowResizerTest, DragToOtherDesktopOpacity) {
     EXPECT_NE(1.0, window->layer()->opacity());
     resizer->Drag(gfx::Point(), 0);
     EXPECT_EQ(1.0, window->layer()->opacity());
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(1, session_delegate->num_transfer_to_desktop_of_user_calls());
     EXPECT_NE(initial_bounds.ToString(), window->bounds().ToString());
   }

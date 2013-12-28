@@ -110,7 +110,7 @@ class SoloWindowTrackerTest : public test::AshTestBase {
         HTCAPTION,
         aura::client::WINDOW_MOVE_SOURCE_MOUSE));
     resizer->Drag(drag_to, 0);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_EQ(internal::kShellWindowId_DockedContainer,
               window->parent()->id());
   }
@@ -126,7 +126,7 @@ class SoloWindowTrackerTest : public test::AshTestBase {
         HTCAPTION,
         aura::client::WINDOW_MOVE_SOURCE_MOUSE));
     resizer->Drag(drag_to, 0);
-    resizer->CompleteDrag(0);
+    resizer->CompleteDrag();
     EXPECT_NE(internal::kShellWindowId_DockedContainer,
               window->parent()->id());
   }

@@ -108,7 +108,7 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowHierarchyChanging(
     state->set_continue_drag_after_reparent(false);
     AddHandlers(params.new_parent);
   } else {
-    handler_->CompleteDrag(DRAG_COMPLETE, 0);
+    handler_->CompleteDrag(DRAG_COMPLETE);
   }
 }
 
@@ -116,7 +116,7 @@ void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowShowTypeChanged(
     wm::WindowState* window_state,
     wm::WindowShowType old) {
   if (!window_state->IsNormalShowState())
-    handler_->CompleteDrag(DRAG_COMPLETE, 0);
+    handler_->CompleteDrag(DRAG_COMPLETE);
 }
 
 void ToplevelWindowEventHandler::ScopedWindowResizer::OnWindowDestroying(
@@ -167,7 +167,7 @@ ToplevelWindowEventHandler::~ToplevelWindowEventHandler() {
 void ToplevelWindowEventHandler::OnKeyEvent(ui::KeyEvent* event) {
   if (window_resizer_.get() && event->type() == ui::ET_KEY_PRESSED &&
       event->key_code() == ui::VKEY_ESCAPE) {
-    CompleteDrag(DRAG_REVERT, event->flags());
+    CompleteDrag(DRAG_REVERT);
   }
 }
 
@@ -264,11 +264,11 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
       return;
     }
     case ui::ET_GESTURE_SCROLL_END:
-      CompleteDrag(DRAG_COMPLETE, event->flags());
+      CompleteDrag(DRAG_COMPLETE);
       event->StopPropagation();
       return;
     case ui::ET_SCROLL_FLING_START: {
-      CompleteDrag(DRAG_COMPLETE, event->flags());
+      CompleteDrag(DRAG_COMPLETE);
 
       int component =
           target->delegate()->GetNonClientComponent(event->location());
@@ -343,11 +343,11 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
 
 void ToplevelWindowEventHandler::EndMoveLoop() {
   if (in_move_loop_)
-    CompleteDrag(DRAG_REVERT, 0);
+    CompleteDrag(DRAG_REVERT);
 }
 
 void ToplevelWindowEventHandler::OnDisplayConfigurationChanging() {
-  CompleteDrag(DRAG_REVERT, 0);
+  CompleteDrag(DRAG_REVERT);
 }
 
 void ToplevelWindowEventHandler::AttemptToStartDrag(
@@ -356,7 +356,7 @@ void ToplevelWindowEventHandler::AttemptToStartDrag(
     int window_component,
     aura::client::WindowMoveSource source) {
   if (window_resizer_.get())
-    CompleteDrag(DRAG_REVERT, 0);
+    CompleteDrag(DRAG_REVERT);
   WindowResizer* resizer = CreateWindowResizer(window, point_in_parent,
       window_component, source).release();
   if (!resizer)
@@ -368,12 +368,11 @@ void ToplevelWindowEventHandler::AttemptToStartDrag(
   in_gesture_drag_ = (source == aura::client::WINDOW_MOVE_SOURCE_TOUCH);
 }
 
-void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status,
-                                              int event_flags) {
+void ToplevelWindowEventHandler::CompleteDrag(DragCompletionStatus status) {
   scoped_ptr<ScopedWindowResizer> resizer(window_resizer_.release());
   if (resizer) {
     if (status == DRAG_COMPLETE)
-      resizer->resizer()->CompleteDrag(event_flags);
+      resizer->resizer()->CompleteDrag();
     else
       resizer->resizer()->RevertDrag();
   }
@@ -418,8 +417,7 @@ void ToplevelWindowEventHandler::HandleMouseReleased(
     return;
 
   CompleteDrag(event->type() == ui::ET_MOUSE_RELEASED ?
-                   DRAG_COMPLETE : DRAG_REVERT,
-               event->flags());
+                   DRAG_COMPLETE : DRAG_REVERT);
   // Completing the drag may result in hiding the window. If this happens
   // return true so no other handlers/observers see the event. Otherwise
   // they see the event on a hidden window.
@@ -531,7 +529,7 @@ void ToplevelWindowEventHandler::ResizerWindowDestroyed() {
   // Instead we destroy the resizer.
   window_resizer_.reset();
 
-  CompleteDrag(DRAG_REVERT, 0);
+  CompleteDrag(DRAG_REVERT);
 }
 
 }  // namespace ash

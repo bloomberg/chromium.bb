@@ -430,7 +430,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   }
 }
 
-void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
+void WorkspaceWindowResizer::CompleteDrag() {
   window_state()->set_bounds_changed_by_user(true);
   snap_phantom_window_controller_.reset();
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)

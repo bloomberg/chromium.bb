@@ -134,7 +134,7 @@ class ASH_EXPORT MultiWindowResizeController :
   void Resize(const gfx::Point& location_in_screen, int event_flags);
 
   // Completes the resize.
-  void CompleteResize(int event_flags);
+  void CompleteResize();
 
   // Cancels the resize.
   void CancelResize();
