@@ -561,7 +561,7 @@ TEST(BrowserAccessibilityManagerTest, TestMoveChildUp) {
 #else
 #define MAYBE_TestFatalError TestFatalError
 #endif
-TEST(BrowserAccessibilityManagerTest, TestFatalError) {
+TEST(BrowserAccessibilityManagerTest, MAYBE_TestFatalError) {
   // Test that BrowserAccessibilityManager raises a fatal error
   // (which will crash the renderer) if the same id is used in
   // two places in the tree.
