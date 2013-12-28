@@ -334,6 +334,15 @@ class CONTENT_EXPORT RenderViewImpl
   int ShowContextMenu(ContextMenuClient* client,
                       const ContextMenuParams& params);
   void CancelContextMenu(int request_id);
+  // Temporary call until this code moves to RenderFrame.
+  blink::WebNavigationPolicy DecidePolicyForNavigation(
+      RenderFrame* render_frame,
+      blink::WebFrame* frame,
+      blink::WebDataSource::ExtraData* extraData,
+      const blink::WebURLRequest& request,
+      blink::WebNavigationType type,
+      blink::WebNavigationPolicy default_policy,
+      bool is_redirect);
 
   // Returns the length of the session history of this RenderView. Note that
   // this only coincides with the actual length of the session history if this
@@ -520,22 +529,6 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
       const blink::WebVector<blink::WebString>& stopped_matching_selectors);
-
-  // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
-  virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      blink::WebFrame* frame,
-      blink::WebDataSource::ExtraData* extraData,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationType type,
-      blink::WebNavigationPolicy default_policy,
-      bool is_redirect);
-  // DEPRECATED.
-  virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      blink::WebFrame* frame,
-      const blink::WebURLRequest& request,
-      blink::WebNavigationType type,
-      blink::WebNavigationPolicy default_policy,
-      bool is_redirect);
   virtual void willSendSubmitEvent(blink::WebFrame* frame,
                                    const blink::WebFormElement& form);
   virtual void willSubmitForm(blink::WebFrame* frame,

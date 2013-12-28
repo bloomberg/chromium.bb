@@ -36,6 +36,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   virtual RenderProcessHost* GetProcess() OVERRIDE;
   virtual int GetRoutingID() OVERRIDE;
   virtual gfx::NativeView GetNativeView() OVERRIDE;
+  virtual RenderViewHost* GetRenderViewHost() OVERRIDE;
 
   // IPC::Sender
   virtual bool Send(IPC::Message* msg) OVERRIDE;

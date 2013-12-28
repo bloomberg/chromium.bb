@@ -107,6 +107,6 @@ IPC_MESSAGE_ROUTED1(AwViewHostMsg_OnContentsSizeChanged,
 // cornercases. This is sent before updating the NavigationController state
 // or creating a URLRequest for the main frame resource.
 IPC_SYNC_MESSAGE_CONTROL2_1(AwViewHostMsg_ShouldOverrideUrlLoading,
-                            int /* routing id */,
+                            int /* render_frame_id id */,
                             base::string16 /* in - url */,
                             bool /* out - result */)

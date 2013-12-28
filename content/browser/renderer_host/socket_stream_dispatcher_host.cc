@@ -144,7 +144,7 @@ void SocketStreamDispatcherHost::OnSSLCertificateError(
   GlobalRequestID request_id(-1, socket_id);
   SSLManager::OnSSLCertificateError(
       weak_ptr_factory_.GetWeakPtr(), request_id, ResourceType::SUB_RESOURCE,
-      socket->url(), render_process_id_, socket_stream_host->render_view_id(),
+      socket->url(), render_process_id_, socket_stream_host->render_frame_id(),
       ssl_info, fatal);
 }
 
@@ -195,11 +195,11 @@ SocketStreamDispatcherHost::~SocketStreamDispatcherHost() {
 }
 
 // Message handlers called by OnMessageReceived.
-void SocketStreamDispatcherHost::OnConnect(int render_view_id,
+void SocketStreamDispatcherHost::OnConnect(int render_frame_id,
                                            const GURL& url,
                                            int socket_id) {
   DVLOG(2) << "SocketStreamDispatcherHost::OnConnect"
-           << " render_view_id=" << render_view_id
+           << " render_frame_id=" << render_frame_id
            << " url=" << url
            << " socket_id=" << socket_id;
   DCHECK_NE(kNoSocketId, socket_id);
@@ -223,7 +223,7 @@ void SocketStreamDispatcherHost::OnConnect(int render_view_id,
   // Note that the SocketStreamHost is responsible for checking that |url|
   // is valid.
   SocketStreamHost* socket_stream_host =
-      new SocketStreamHost(this, render_view_id, socket_id);
+      new SocketStreamHost(this, render_frame_id, socket_id);
   hosts_.AddWithID(socket_stream_host, socket_id);
   socket_stream_host->Connect(url, GetURLRequestContext());
   DVLOG(2) << "SocketStreamDispatcherHost::OnConnect -> " << socket_id;

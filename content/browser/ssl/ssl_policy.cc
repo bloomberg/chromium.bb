@@ -187,7 +187,7 @@ void SSLPolicy::OnCertErrorInternal(SSLCertErrorHandler* handler,
       CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE;
   GetContentClient()->browser()->AllowCertificateError(
       handler->render_process_id(),
-      handler->render_view_id(),
+      handler->render_frame_id(),
       handler->cert_error(),
       handler->ssl_info(),
       handler->request_url(),

@@ -101,7 +101,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   void TakeNoAction();
 
   int render_process_id() const { return render_process_id_; }
-  int render_view_id() const { return render_view_id_; }
+  int render_frame_id() const { return render_frame_id_; }
 
  protected:
   friend class base::RefCountedThreadSafe<SSLErrorHandler>;
@@ -112,7 +112,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
                   ResourceType::Type resource_type,
                   const GURL& url,
                   int render_process_id,
-                  int render_view_id);
+                  int render_frame_id);
 
   virtual ~SSLErrorHandler();
 
@@ -149,7 +149,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
   // We use these members to find the correct SSLManager when we arrive on
   // the UI thread.
   int render_process_id_;
-  int render_view_id_;
+  int render_frame_id_;
 
   // The URL that we requested.
   // This read-only member can be accessed on any thread.

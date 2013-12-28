@@ -154,7 +154,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       CreateQuotaPermissionContext() OVERRIDE;
   virtual void AllowCertificateError(
       int render_process_id,
-      int render_view_id,
+      int render_frame_id,
       int cert_error,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,

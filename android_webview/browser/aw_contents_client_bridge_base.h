@@ -34,7 +34,7 @@ class AwContentsClientBridgeBase {
   static AwContentsClientBridgeBase* FromWebContents(
       content::WebContents* web_contents);
   static AwContentsClientBridgeBase* FromID(int render_process_id,
-                                            int render_view_id);
+                                            int render_frame_id);
 
   virtual ~AwContentsClientBridgeBase();
 

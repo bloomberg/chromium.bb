@@ -21,10 +21,10 @@
 // The browser starts connecting asynchronously.
 // Once Socket Stream connection is established, the browser will send
 // SocketStreamMsg_Connected back.
-// |render_view_id| must be the routing id of RenderViewImpl to which the
+// |render_frame_id| must be the routing id of RenderFrameImpl to which the
 // Socket Stream belongs.
 IPC_MESSAGE_CONTROL3(SocketStreamHostMsg_Connect,
-                     int /* render_view_id */,
+                     int /* render_frame_id */,
                      GURL /* socket_url */,
                      int /* socket_id */)
 
