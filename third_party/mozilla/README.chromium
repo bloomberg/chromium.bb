@@ -33,4 +33,4 @@ WebKit license.
 
 Local modifitations:
 - Add #ifdef'd definifitions of a few symbols to support 10.5 SDK.
-
+- Added MOZILLA_EXPORT to some constants in NSPasteboard+Utils.h.
