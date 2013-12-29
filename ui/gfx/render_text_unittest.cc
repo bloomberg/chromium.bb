@@ -748,7 +748,7 @@ TEST_F(RenderTextTest, MoveCursorLeftRight_MeiryoUILigatures) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   // Meiryo UI uses single-glyph ligatures for 'ff' and 'ffi', but each letter
   // (code point) has unique bounds, so mid-glyph cursoring should be possible.
-  render_text->SetFont(Font("Meiryo UI", 12));
+  render_text->SetFontList(FontList("Meiryo UI, 12px"));
   render_text->SetText(WideToUTF16(L"ff ffi"));
   EXPECT_EQ(0U, render_text->cursor_position());
   for (size_t i = 0; i < render_text->text().length(); ++i) {
@@ -1216,13 +1216,6 @@ TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
   EXPECT_EQ(font_list.GetBaseline(), render_text->GetBaseline());
 }
 
-TEST_F(RenderTextTest, SetFont) {
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  render_text->SetFont(Font("Arial", 12));
-  EXPECT_EQ("Arial", render_text->GetPrimaryFont().GetFontName());
-  EXPECT_EQ(12, render_text->GetPrimaryFont().GetFontSize());
-}
-
 TEST_F(RenderTextTest, SetFontList) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("Arial,Symbol, 13px"));
@@ -1230,7 +1223,7 @@ TEST_F(RenderTextTest, SetFontList) {
   ASSERT_EQ(2U, fonts.size());
   EXPECT_EQ("Arial", fonts[0].GetFontName());
   EXPECT_EQ("Symbol", fonts[1].GetFontName());
-  EXPECT_EQ(13, render_text->GetPrimaryFont().GetFontSize());
+  EXPECT_EQ(13, render_text->font_list().GetFontSize());
 }
 
 TEST_F(RenderTextTest, StringSizeBoldWidth) {
@@ -1260,20 +1253,21 @@ TEST_F(RenderTextTest, StringSizeHeight) {
     WideToUTF16(L"\x05e0\x05b8"),  // Hebrew
   };
 
-  Font default_font;
-  Font larger_font = default_font.DeriveFont(24, default_font.GetStyle());
-  EXPECT_GT(larger_font.GetHeight(), default_font.GetHeight());
+  const FontList default_font_list;
+  const FontList& larger_font_list =
+      default_font_list.DeriveFontListWithSizeDelta(24);
+  EXPECT_GT(larger_font_list.GetHeight(), default_font_list.GetHeight());
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
     scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-    render_text->SetFont(default_font);
+    render_text->SetFontList(default_font_list);
     render_text->SetText(cases[i]);
 
     const int height1 = render_text->GetStringSize().height();
     EXPECT_GT(height1, 0);
 
     // Check that setting the larger font increases the height.
-    render_text->SetFont(larger_font);
+    render_text->SetFontList(larger_font_list);
     const int height2 = render_text->GetStringSize().height();
     EXPECT_GT(height2, height1);
   }

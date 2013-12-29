@@ -81,11 +81,11 @@ SkTypeface::Style ConvertFontStyleToSkiaTypefaceStyle(int font_style) {
 }
 
 // Given |font| and |display_width|, returns the width of the fade gradient.
-int CalculateFadeGradientWidth(const Font& font, int display_width) {
+int CalculateFadeGradientWidth(const FontList& font_list, int display_width) {
   // Fade in/out about 2.5 characters of the beginning/end of the string.
   // The .5 here is helpful if one of the characters is a space.
   // Use a quarter of the display width if the display width is very short.
-  const int average_character_width = font.GetAverageCharacterWidth();
+  const int average_character_width = font_list.GetExpectedTextWidth(1);
   const double gradient_width = std::min(average_character_width * 2.5,
                                          display_width / 4.0);
   DCHECK_GE(gradient_width, 0.0);
@@ -388,16 +388,8 @@ void RenderText::SetFontList(const FontList& font_list) {
   ResetLayout();
 }
 
-void RenderText::SetFont(const Font& font) {
-  SetFontList(FontList(font));
-}
-
 void RenderText::SetFontSize(int size) {
   SetFontList(font_list_.DeriveFontListWithSize(size));
-}
-
-const Font& RenderText::GetPrimaryFont() const {
-  return font_list_.GetPrimaryFont();
 }
 
 void RenderText::SetCursorEnabled(bool cursor_enabled) {
@@ -1027,8 +1019,7 @@ void RenderText::ApplyFadeEffects(internal::SkiaTextRenderer* renderer) {
   if (GetStringSize().width() <= display_width)
     return;
 
-  int gradient_width = CalculateFadeGradientWidth(GetPrimaryFont(),
-                                                  display_width);
+  int gradient_width = CalculateFadeGradientWidth(font_list(), display_width);
   if (gradient_width == 0)
     return;
 
