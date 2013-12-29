@@ -59,6 +59,8 @@ libdrm_la_LDFLAGS = -version-number 2:4:0 -no-undefined
 libdrm_la_LIBADD = @CLOCK_LIB@
 
 libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
+AM_CFLAGS = \
+	$(VALGRIND_CFLAGS)
 
 libdrm_la_SOURCES =				\
 	xf86drm.c				\
