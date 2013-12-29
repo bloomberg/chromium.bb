@@ -1627,6 +1627,12 @@ static int recoverOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor){
   pCursor->pLeafCursor = pLeafCursor;
   pCursor->iEncoding = iEncoding;
 
+  /* If no leaf pages were found, empty result set. */
+  /* TODO(shess): leafCursorNextValidCell() would return SQLITE_ROW or
+   * SQLITE_DONE to indicate whether there is further data to consider.
+   */
+  pCursor->bEOF = (pLeafCursor->pPage==NULL);
+
   *ppCursor = (sqlite3_vtab_cursor*)pCursor;
   return SQLITE_OK;
 }
@@ -1715,8 +1721,14 @@ static int recoverFilter(
 
   FNENTRY();
 
-  /* Load the first cell, and iterate forward if it's not valid. */
-  /* TODO(shess): What happens if no cells at all are valid? */
+  /* There were no valid leaf pages in the table. */
+  if( pCursor->bEOF ){
+    return SQLITE_OK;
+  }
+
+  /* Load the first cell, and iterate forward if it's not valid.  If no cells at
+   * all are valid, recoverNext() sets bEOF and returns appropriately.
+   */
   rc = leafCursorCellDecode(pCursor->pLeafCursor);
   if( rc!=SQLITE_OK || recoverValidateLeafCell(pRecover, pCursor)!=SQLITE_OK ){
     return recoverNext(pVtabCursor);
