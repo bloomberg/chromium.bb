@@ -75,7 +75,6 @@ class CONTENT_EXPORT InputHandlerProxy
 
 #ifndef NDEBUG
   bool expect_scroll_update_end_;
-  bool expect_pinch_update_end_;
 #endif
   bool gesture_scroll_on_impl_thread_;
   bool gesture_pinch_on_impl_thread_;

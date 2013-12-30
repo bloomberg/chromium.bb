@@ -66,7 +66,6 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler)
       input_handler_(input_handler),
 #ifndef NDEBUG
       expect_scroll_update_end_(false),
-      expect_pinch_update_end_(false),
 #endif
       gesture_scroll_on_impl_thread_(false),
       gesture_pinch_on_impl_thread_(false),
@@ -191,25 +190,17 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     gesture_scroll_on_impl_thread_ = false;
     return DID_HANDLE;
   } else if (event.type == WebInputEvent::GesturePinchBegin) {
-#ifndef NDEBUG
-    DCHECK(!expect_pinch_update_end_);
-    expect_pinch_update_end_ = true;
-#endif
     input_handler_->PinchGestureBegin();
+    DCHECK(!gesture_pinch_on_impl_thread_);
     gesture_pinch_on_impl_thread_ = true;
     return DID_HANDLE;
   } else if (event.type == WebInputEvent::GesturePinchEnd) {
-#ifndef NDEBUG
-    DCHECK(expect_pinch_update_end_);
-    expect_pinch_update_end_ = false;
-#endif
+    DCHECK(gesture_pinch_on_impl_thread_);
     gesture_pinch_on_impl_thread_ = false;
     input_handler_->PinchGestureEnd();
     return DID_HANDLE;
   } else if (event.type == WebInputEvent::GesturePinchUpdate) {
-#ifndef NDEBUG
-    DCHECK(expect_pinch_update_end_);
-#endif
+    DCHECK(gesture_pinch_on_impl_thread_);
     const WebGestureEvent& gesture_event =
         *static_cast<const WebGestureEvent*>(&event);
     input_handler_->PinchGestureUpdate(
