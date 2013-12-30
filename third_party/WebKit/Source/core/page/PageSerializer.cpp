@@ -199,20 +199,20 @@ void PageSerializer::serializeFrame(Frame* frame)
         return;
     }
 
-    Vector<Node*> nodes;
-    SerializerMarkupAccumulator accumulator(this, document, &nodes);
     WTF::TextEncoding textEncoding(document->charset());
-    CString data;
     if (!textEncoding.isValid()) {
         // FIXME: iframes used as images trigger this. We should deal with them correctly.
         return;
     }
+
+    Vector<Node*> serializedNodes;
+    SerializerMarkupAccumulator accumulator(this, document, &serializedNodes);
     String text = accumulator.serializeNodes(document, IncludeNode);
     CString frameHTML = textEncoding.normalizeAndEncode(text, WTF::EntitiesForUnencodables);
     m_resources->append(SerializedResource(url, document->suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
     m_resourceURLs.add(url);
 
-    for (Vector<Node*>::iterator iter = nodes.begin(); iter != nodes.end(); ++iter) {
+    for (Vector<Node*>::iterator iter = serializedNodes.begin(); iter != serializedNodes.end(); ++iter) {
         Node* node = *iter;
         if (!node->isElementNode())
             continue;
