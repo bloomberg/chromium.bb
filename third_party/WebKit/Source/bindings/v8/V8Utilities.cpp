@@ -178,14 +178,4 @@ ExecutionContext* getExecutionContext()
     return currentDocument();
 }
 
-v8::Handle<v8::Function> getBoundFunction(v8::Handle<v8::Function> function)
-{
-    v8::Handle<v8::Value> boundFunction = function->GetBoundFunction();
-    if (boundFunction->IsFunction()) {
-        return v8::Handle<v8::Function>::Cast(boundFunction);
-    } else {
-        return function;
-    }
-}
-
 } // namespace WebCore
