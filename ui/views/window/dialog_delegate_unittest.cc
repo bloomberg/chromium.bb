@@ -205,21 +205,22 @@ TEST_F(DialogTest, HitTest) {
   }
 }
 
-TEST_F(DialogTest, InitialBoundsAccommodateTitle) {
-  TestDialog* titled_dialog(new TestDialog());
-  titled_dialog->set_title(base::ASCIIToUTF16("Title"));
-  DialogDelegate::CreateDialogWidget(titled_dialog, GetContext(), NULL);
+TEST_F(DialogTest, BoundsAccommodateTitle) {
+  TestDialog* dialog2(new TestDialog());
+  dialog2->set_title(base::ASCIIToUTF16("Title"));
+  DialogDelegate::CreateDialogWidget(dialog2, GetContext(), NULL);
 
   // Titled dialogs have taller initial frame bounds than untitled dialogs.
-  EXPECT_GT(titled_dialog->GetWidget()->GetWindowBoundsInScreen().height(),
-            dialog()->GetWidget()->GetWindowBoundsInScreen().height());
+  View* frame1 = dialog()->GetWidget()->non_client_view()->frame_view();
+  View* frame2 = dialog2->GetWidget()->non_client_view()->frame_view();
+  EXPECT_LT(frame1->GetPreferredSize().height(),
+            frame2->GetPreferredSize().height());
 
-  // Giving the default test dialog a title will make the bounds the same.
+  // Giving the default test dialog a title will yield the same bounds.
   dialog()->set_title(base::ASCIIToUTF16("Title"));
   dialog()->GetWidget()->UpdateWindowTitle();
-  View* frame = dialog()->GetWidget()->non_client_view()->frame_view();
-  EXPECT_EQ(titled_dialog->GetWidget()->GetWindowBoundsInScreen().height(),
-            frame->GetPreferredSize().height());
+  EXPECT_EQ(frame1->GetPreferredSize().height(),
+            frame2->GetPreferredSize().height());
 }
 
 }  // namespace views
