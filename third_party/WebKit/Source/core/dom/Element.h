@@ -229,9 +229,9 @@ public:
     bool hasLocalName(const AtomicString& other) const { return m_tagName.localName() == other; }
     bool hasLocalName(const QualifiedName& other) const { return m_tagName.localName() == other.localName(); }
 
-    virtual const AtomicString& localName() const OVERRIDE { return m_tagName.localName(); }
-    virtual const AtomicString& prefix() const OVERRIDE { return m_tagName.prefix(); }
-    virtual const AtomicString& namespaceURI() const OVERRIDE { return m_tagName.namespaceURI(); }
+    virtual const AtomicString& localName() const OVERRIDE FINAL { return m_tagName.localName(); }
+    virtual const AtomicString& prefix() const OVERRIDE FINAL { return m_tagName.prefix(); }
+    virtual const AtomicString& namespaceURI() const OVERRIDE FINAL { return m_tagName.namespaceURI(); }
 
     virtual KURL baseURI() const OVERRIDE FINAL;
 
