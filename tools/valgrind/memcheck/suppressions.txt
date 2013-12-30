@@ -6322,19 +6322,40 @@
    fun:_ZN7WebCore12WorkerThread12workerThreadEv
 }
 {
-   bug_330846
-   Memcheck:Uninitialized
-   fun:_ZN8chromeos12input_method19CandidateWindowView16UpdateCandidatesERKNS0_15CandidateWindowE
+   bug_331061
+   Memcheck:Unaddressable
+   fun:_ZNK3WTF6RefPtrIN7WebCore14SecurityOriginEE3getEv
+   fun:_ZNK7WebCore15SecurityContext14securityOriginEv
+   fun:_ZN7WebCore13V8WindowShell16setSecurityTokenEv
+   fun:_ZN7WebCore13V8WindowShell20updateSecurityOriginEv
+   fun:_ZN7WebCore16ScriptController20updateSecurityOriginEv
+   fun:_ZN7WebCore8Document23didUpdateSecurityOriginEv
+   fun:_ZN7WebCore8Document15setIsViewSourceEb
+   fun:_ZN7WebCore22HTMLViewSourceDocumentC1ERKNS_12DocumentInitERKN3WTF6StringE
+   fun:_ZN7WebCore22HTMLViewSourceDocument6createERKNS_12DocumentInitERKN3WTF6StringE
+   fun:_ZN7WebCore17DOMImplementation14createDocumentERKN3WTF6StringERKNS_12DocumentInitEb
+   fun:_ZN7WebCore9DOMWindow14createDocumentERKN3WTF6StringERKNS_12DocumentInitEb
+   fun:_ZN7WebCore9DOMWindow18installNewDocumentERKN3WTF6StringERKNS_12DocumentInitEb
+   fun:_ZN7WebCore14DocumentLoader15createWriterForEPNS_5FrameEPKNS_8DocumentERKNS_4KURLERKN3WTF12AtomicStringESC_bb
+   fun:_ZN7WebCore14DocumentLoader12ensureWriterERKN3WTF12AtomicStringERKNS_4KURLE
+   fun:_ZN7WebCore14DocumentLoader12ensureWriterEv
+   fun:_ZN7WebCore14DocumentLoader10commitDataEPKcm
+   fun:_ZN7WebCore14DocumentLoader12dataReceivedEPNS_8ResourceEPKci
+   fun:_ZN7WebCore11RawResource10appendDataEPKci
+   fun:_ZN7WebCore14ResourceLoader14didReceiveDataEPN5blink12WebURLLoaderEPKcii
+   fun:_ZN11webkit_glue16WebURLLoaderImpl7Context14OnReceivedDataEPKcii
+   fun:_ZN7content18ResourceDispatcher14OnReceivedDataEiiii
 }
 {
-   bug_330870_a
+   bug_331063
    Memcheck:Uninitialized
-   fun:_ZNK8chromeos12input_method15CandidateWindow7IsEqualERKS1_
-   fun:_ZN8chromeos12input_method33CandidateWindow_CopyFromTest_Test8TestBodyEv
-}
-{
-   bug_330870_b
-   Memcheck:Uninitialized
-   fun:_ZNK8chromeos12input_method15CandidateWindow7IsEqualERKS1_
-   fun:_ZN8chromeos12input_method32CandidateWindow_IsEqualTest_Test8TestBodyEv
+   ...
+   fun:_ZN7WebCore11RenderImage12imageChangedEPvPKNS_7IntRectE
+   fun:_ZN7WebCore12RenderObject12imageChangedEPNS_13ImageResourceEPKNS_7IntRectE
+   fun:_ZN7WebCore13ImageResource12didAddClientEPNS_14ResourceClientE
+   fun:_ZN7WebCore8Resource9addClientEPNS_14ResourceClientE
+   fun:_ZN7WebCore19RenderImageResource16setImageResourceEPNS_13ImageResourceE
+   fun:_ZN7WebCore30PasswordGeneratorButtonElement11updateImageEv
+   fun:_ZN7WebCore30PasswordGeneratorButtonElement6attachERKNS_4Node13AttachContextE
+   fun:_ZN7WebCore13ContainerNode14attachChildrenERKNS_4Node13AttachContextE
 }
