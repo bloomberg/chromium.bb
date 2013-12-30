@@ -90,8 +90,6 @@ ExtensionInfoBar::ExtensionInfoBar(
       icon_as_menu_(NULL),
       icon_as_image_(NULL),
       weak_ptr_factory_(this) {
-  int height = GetDelegate()->height();
-  SetBarTargetHeight((height > 0) ? (height + kSeparatorLineHeight) : 0);
 }
 
 ExtensionInfoBar::~ExtensionInfoBar() {
@@ -100,15 +98,22 @@ ExtensionInfoBar::~ExtensionInfoBar() {
 void ExtensionInfoBar::Layout() {
   InfoBarView::Layout();
 
-  gfx::Size size = infobar_icon_->GetPreferredSize();
-  infobar_icon_->SetBounds(StartX(), OffsetY(size), size.width(),
-                           size.height());
-
-  GetDelegate()->extension_view_host()->view()->SetBounds(
-      infobar_icon_->bounds().right() + kIconHorizontalMargin,
-      arrow_height(),
-      std::max(0, EndX() - StartX() - ContentMinimumWidth()),
-      height() - arrow_height() - 1);
+  infobar_icon_->SetPosition(gfx::Point(StartX(), OffsetY(infobar_icon_)));
+  ExtensionViewViews* extension_view =
+      GetDelegate()->extension_view_host()->view();
+  // TODO(pkasting): We'd like to simply set the extension view's desired height
+  // at creation time and position using OffsetY() like for other infobar items,
+  // but the NativeViewHost inside does not seem to be clipped by the ClipRect()
+  // call in InfoBarView::PaintChildren(), so we have to manually clamp the size
+  // here.
+  extension_view->SetSize(
+      gfx::Size(std::max(0, EndX() - StartX() - ContentMinimumWidth()),
+                std::min(height() - kSeparatorLineHeight - arrow_height(),
+                         GetDelegate()->height())));
+  // We do SetPosition() separately after SetSize() so OffsetY() will work.
+  extension_view->SetPosition(
+      gfx::Point(infobar_icon_->bounds().right() + kIconHorizontalMargin,
+                 std::max(arrow_height(), OffsetY(extension_view))));
 }
 
 void ExtensionInfoBar::ViewHierarchyChanged(
@@ -203,6 +208,7 @@ void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image) {
     icon_as_image_->SetImage(*icon);
   }
 
+  infobar_icon_->SizeToPreferredSize();
   infobar_icon_->SetVisible(true);
 
   Layout();

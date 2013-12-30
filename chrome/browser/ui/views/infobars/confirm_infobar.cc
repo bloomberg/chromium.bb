@@ -39,28 +39,24 @@ void ConfirmInfoBar::Layout() {
 
   int available_width = std::max(0, EndX() - StartX() - ContentMinimumWidth());
   gfx::Size label_size = label_->GetPreferredSize();
-  label_->SetBounds(StartX(), OffsetY(label_size),
-      std::min(label_size.width(), available_width), label_size.height());
+  label_->SetBounds(StartX(), OffsetY(label_),
+                    std::min(label_size.width(), available_width),
+                    label_size.height());
   available_width = std::max(0, available_width - label_size.width());
 
   int button_x = label_->bounds().right() + kEndOfLabelSpacing;
   if (ok_button_ != NULL) {
-    gfx::Size ok_size = ok_button_->GetPreferredSize();
-    ok_button_->SetBounds(button_x, OffsetY(ok_size), ok_size.width(),
-                          ok_size.height());
-    button_x += ok_size.width() + kButtonButtonSpacing;
+    ok_button_->SetPosition(gfx::Point(button_x, OffsetY(ok_button_)));
+    button_x += ok_button_->width() + kButtonButtonSpacing;
   }
 
-  if (cancel_button_ != NULL) {
-    gfx::Size cancel_size = cancel_button_->GetPreferredSize();
-    cancel_button_->SetBounds(button_x, OffsetY(cancel_size),
-                              cancel_size.width(), cancel_size.height());
-  }
+  if (cancel_button_ != NULL)
+    cancel_button_->SetPosition(gfx::Point(button_x, OffsetY(cancel_button_)));
 
   if (link_ != NULL) {
     gfx::Size link_size = link_->GetPreferredSize();
     int link_width = std::min(link_size.width(), available_width);
-    link_->SetBounds(EndX() - link_width, OffsetY(link_size), link_width,
+    link_->SetBounds(EndX() - link_width, OffsetY(link_), link_width,
                      link_size.height());
   }
 }
@@ -118,11 +114,11 @@ int ConfirmInfoBar::ContentMinimumWidth() const {
   int width = (link_ == NULL) ? 0 : kEndOfLabelSpacing;  // Space before link
   int before_cancel_spacing = kEndOfLabelSpacing;
   if (ok_button_ != NULL) {
-    width += kEndOfLabelSpacing + ok_button_->GetPreferredSize().width();
+    width += kEndOfLabelSpacing + ok_button_->width();
     before_cancel_spacing = kButtonButtonSpacing;
   }
-  return width + ((cancel_button_ == NULL) ? 0 :
-      (before_cancel_spacing + cancel_button_->GetPreferredSize().width()));
+  return width +
+      (cancel_button_ ? (before_cancel_spacing + cancel_button_->width()) : 0);
 }
 
 void ConfirmInfoBar::LinkClicked(views::Link* source, int event_flags) {

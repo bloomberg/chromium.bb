@@ -36,52 +36,43 @@ void BeforeTranslateInfoBar::Layout() {
 
   int available_width = std::max(0, EndX() - StartX() - ContentMinimumWidth());
   gfx::Size label_1_size = label_1_->GetPreferredSize();
-  label_1_->SetBounds(StartX(), OffsetY(label_1_size),
+  label_1_->SetBounds(StartX(), OffsetY(label_1_),
       std::min(label_1_size.width(), available_width), label_1_size.height());
   available_width = std::max(0, available_width - label_1_size.width());
 
-  gfx::Size language_button_size = language_menu_button_->GetPreferredSize();
-  language_menu_button_->SetBounds(
-      label_1_->bounds().right() + kButtonInLabelSpacing,
-      OffsetY(language_button_size), language_button_size.width(),
-      language_button_size.height());
+  language_menu_button_->SetPosition(
+      gfx::Point(label_1_->bounds().right() + kButtonInLabelSpacing,
+                 OffsetY(language_menu_button_)));
 
   gfx::Size label_2_size = label_2_->GetPreferredSize();
   label_2_->SetBounds(
       language_menu_button_->bounds().right() + kButtonInLabelSpacing,
-      OffsetY(label_2_size), std::min(label_2_size.width(), available_width),
+      OffsetY(label_2_), std::min(label_2_size.width(), available_width),
       label_2_size.height());
 
-  gfx::Size accept_button_size = accept_button_->GetPreferredSize();
-  accept_button_->SetBounds(label_2_->bounds().right() + kEndOfLabelSpacing,
-      OffsetY(accept_button_size), accept_button_size.width(),
-      accept_button_size.height());
+  accept_button_->SetPosition(
+      gfx::Point(label_2_->bounds().right() + kEndOfLabelSpacing,
+                 OffsetY(accept_button_)));
 
-  gfx::Size deny_button_size = deny_button_->GetPreferredSize();
-  deny_button_->SetBounds(
-        accept_button_->bounds().right() + kButtonButtonSpacing,
-        OffsetY(deny_button_size), deny_button_size.width(),
-        deny_button_size.height());
+  deny_button_->SetPosition(
+      gfx::Point(accept_button_->bounds().right() + kButtonButtonSpacing,
+                 OffsetY(deny_button_)));
 
   if (never_translate_button_) {
-    gfx::Size never_button_size = never_translate_button_->GetPreferredSize();
-    never_translate_button_->SetBounds(
-          deny_button_->bounds().right() + kButtonButtonSpacing,
-          OffsetY(never_button_size), never_button_size.width(),
-          never_button_size.height());
+    never_translate_button_->SetPosition(
+        gfx::Point(deny_button_->bounds().right() + kButtonButtonSpacing,
+                   OffsetY(never_translate_button_)));
   }
 
   if (always_translate_button_) {
-    gfx::Size always_button_size = always_translate_button_->GetPreferredSize();
-    always_translate_button_->SetBounds(
-          deny_button_->bounds().right() + kButtonButtonSpacing,
-          OffsetY(always_button_size), always_button_size.width(),
-          always_button_size.height());
+    always_translate_button_->SetPosition(
+        gfx::Point(deny_button_->bounds().right() + kButtonButtonSpacing,
+                   OffsetY(always_translate_button_)));
   }
 
-  gfx::Size options_size = options_menu_button_->GetPreferredSize();
-  options_menu_button_->SetBounds(EndX() - options_size.width(),
-      OffsetY(options_size), options_size.width(), options_size.height());
+  options_menu_button_->SetPosition(
+      gfx::Point(EndX() - options_menu_button_->width(),
+                 OffsetY(options_menu_button_)));
 }
 
 void BeforeTranslateInfoBar::ViewHierarchyChanged(
@@ -150,18 +141,15 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(
 
 int BeforeTranslateInfoBar::ContentMinimumWidth() const {
   return
-      (kButtonInLabelSpacing +
-          language_menu_button_->GetPreferredSize().width() +
+      (kButtonInLabelSpacing + language_menu_button_->width() +
           kButtonInLabelSpacing) +
-      (kEndOfLabelSpacing + accept_button_->GetPreferredSize().width()) +
-      (kButtonButtonSpacing + deny_button_->GetPreferredSize().width()) +
-      ((never_translate_button_ == NULL) ? 0 :
-          (kButtonButtonSpacing +
-              never_translate_button_->GetPreferredSize().width())) +
-      ((always_translate_button_ == NULL) ? 0 :
-          (kButtonButtonSpacing +
-              always_translate_button_->GetPreferredSize().width())) +
-      (kEndOfLabelSpacing + options_menu_button_->GetPreferredSize().width());
+      (kEndOfLabelSpacing + accept_button_->width()) +
+      (kButtonButtonSpacing + deny_button_->width()) +
+      (never_translate_button_ ?
+          (kButtonButtonSpacing + never_translate_button_->width()) : 0) +
+      (always_translate_button_ ?
+          (kButtonButtonSpacing + always_translate_button_->width()) : 0) +
+      (kEndOfLabelSpacing + options_menu_button_->width());
 }
 
 void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
