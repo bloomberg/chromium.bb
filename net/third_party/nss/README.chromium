@@ -168,6 +168,11 @@ Patches:
     asynchronous certificate verification.
     patches/sessioncache.patch
 
+  * Remove static storage qualifier from variables in sslnonce.c. Due to
+    a clang codegen bug on Mac, this caused an infinite loop.
+    https://code.google.com/p/chromium/issues/detail?id=326011
+    patches/sslnoncestatics.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 

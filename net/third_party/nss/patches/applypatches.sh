@@ -83,3 +83,5 @@ patch -p4 < $patches_dir/fallbackscsv.patch
 patch -p4 < $patches_dir/disableticketrenewal.patch
 
 patch -p4 < $patches_dir/sessioncache.patch
+
+patch -p4 < $patches_dir/sslnoncestatics.patch

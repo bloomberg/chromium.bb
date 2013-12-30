@@ -1,0 +1,15 @@
+diff --git a/net/third_party/nss/ssl/sslnonce.c b/net/third_party/nss/ssl/sslnonce.c
+index 758aa4e..a3e6e0a 100644
+--- a/net/third_party/nss/ssl/sslnonce.c
++++ b/net/third_party/nss/ssl/sslnonce.c
+@@ -21,8 +21,8 @@
+ PRUint32 ssl_sid_timeout = 100;
+ PRUint32 ssl3_sid_timeout = 86400L; /* 24 hours */
+ 
+-static sslSessionID *cache = NULL;
+-static PZLock *      cacheLock = NULL;
++sslSessionID *cache = NULL;
++PZLock *      cacheLock = NULL;
+ 
+ /* sids can be in one of 4 states:
+  *
