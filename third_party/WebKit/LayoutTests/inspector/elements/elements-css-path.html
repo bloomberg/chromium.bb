@@ -71,7 +71,10 @@ function test()
 <article></article>
 <article></article>
 
+<!-- Comment node -->
+
 <div id="ids">
+    <!-- Comment node -->
     <div></div>
     <div></div>
     <div id="inner-id"></div>
@@ -88,7 +91,9 @@ function test()
 </div>
 
 <div id="classes">
+    <!-- Comment node 1 -->
     <div class="foo bar"></div>
+    <!-- Comment node 2 -->
     <div class=" foo foo "></div>
     <div class=".foo"></div>
     <div class=".foo.bar"></div>
@@ -101,19 +106,31 @@ function test()
     <div class="__proto__ foo"></div>
     <span class="bar"></span>
     <div id="id-with-class" class="moo"></div>
+    <!-- Comment node 3 -->
 </div>
 
 <div id="non-unique-classes">
+  <!-- Comment node 1 -->
   <span class="c1"></span>
+  <!-- Comment node 2 -->
   <span class="c1"></span>
+  <!-- Comment node 3 -->
   <span class="c1 c2"></span>
+  <!-- Comment node 4 -->
   <span class="c1 c2 c3"></span>
+  <!-- Comment node 5 -->
   <span></span>
+  <!-- Comment node 6 -->
   <div class="c1"></div>
+  <!-- Comment node 7 -->
   <div class="c1 c2"></div>
+  <!-- Comment node 8 -->
   <div class="c3 c2"></div>
+  <!-- Comment node 9 -->
   <div class="c3 c4"></div>
+  <!-- Comment node 10 -->
   <div class="c1 c4"></div>
+  <!-- Comment node 11 -->
   <div></div>
 </div>
 </body>
