@@ -279,8 +279,8 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   int render_process_id;
-  int render_frame_id;
-  if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))
+  int render_view_id;
+  if (!info->GetAssociatedRenderView(&render_process_id, &render_view_id))
     NOTREACHED();
 
   SSLManager::OnSSLCertificateError(
@@ -289,7 +289,7 @@ void ResourceLoader::OnSSLCertificateError(net::URLRequest* request,
       info->GetResourceType(),
       request_->url(),
       render_process_id,
-      render_frame_id,
+      render_view_id,
       ssl_info,
       fatal);
 }

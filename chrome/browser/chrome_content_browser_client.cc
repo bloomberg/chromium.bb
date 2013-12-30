@@ -1752,7 +1752,7 @@ ChromeContentBrowserClient::CreateQuotaPermissionContext() {
 
 void ChromeContentBrowserClient::AllowCertificateError(
     int render_process_id,
-    int render_frame_id,
+    int render_view_id,
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
@@ -1771,13 +1771,8 @@ void ChromeContentBrowserClient::AllowCertificateError(
   }
 
   // If the tab is being prerendered, cancel the prerender and the request.
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (!render_frame_host) {
-    NOTREACHED();
-    return;
-  }
-  WebContents* tab = WebContents::FromRenderFrameHost(render_frame_host);
+  WebContents* tab = tab_util::GetWebContentsByID(
+      render_process_id, render_view_id);
   if (!tab) {
     NOTREACHED();
     return;
@@ -1788,8 +1783,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
   if (prerender_manager && prerender_manager->IsWebContentsPrerendering(tab,
                                                                         NULL)) {
     if (prerender_manager->prerender_tracker()->TryCancel(
-            render_process_id,
-            render_frame_host->GetRenderViewHost()->GetRoutingID(),
+            render_process_id, render_view_id,
             prerender::FINAL_STATUS_SSL_ERROR)) {
       *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
       return;

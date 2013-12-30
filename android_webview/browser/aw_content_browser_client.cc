@@ -91,13 +91,13 @@ bool AwContentsMessageFilter::OnMessageReceived(const IPC::Message& message,
 }
 
 void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
-    int render_frame_id,
+    int routing_id,
     const base::string16& url,
     bool* ignore_navigation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   *ignore_navigation = false;
   AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromID(process_id_, render_frame_id);
+      AwContentsClientBridgeBase::FromID(process_id_, routing_id);
   if (client) {
     *ignore_navigation = client->ShouldOverrideUrlLoading(url);
   } else {
@@ -318,7 +318,7 @@ AwContentBrowserClient::CreateQuotaPermissionContext() {
 
 void AwContentBrowserClient::AllowCertificateError(
     int render_process_id,
-    int render_frame_id,
+    int render_view_id,
     int cert_error,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
@@ -327,8 +327,9 @@ void AwContentBrowserClient::AllowCertificateError(
     bool strict_enforcement,
     const base::Callback<void(bool)>& callback,
     content::CertificateRequestResultType* result) {
+
   AwContentsClientBridgeBase* client =
-      AwContentsClientBridgeBase::FromID(render_process_id, render_frame_id);
+      AwContentsClientBridgeBase::FromID(render_process_id, render_view_id);
   bool cancel_request = true;
   if (client)
     client->AllowCertificateError(cert_error,

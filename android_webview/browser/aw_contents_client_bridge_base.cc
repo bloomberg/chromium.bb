@@ -5,7 +5,7 @@
 #include "android_webview/browser/aw_contents_client_bridge_base.h"
 
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
 using content::BrowserThread;
@@ -56,13 +56,13 @@ AwContentsClientBridgeBase* AwContentsClientBridgeBase::FromWebContents(
 // static
 AwContentsClientBridgeBase* AwContentsClientBridgeBase::FromID(
     int render_process_id,
-    int render_frame_id) {
+    int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (!rfh) return NULL;
+  const content::RenderViewHost* rvh =
+      content::RenderViewHost::FromID(render_process_id, render_view_id);
+  if (!rvh) return NULL;
   content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(rfh);
+      content::WebContents::FromRenderViewHost(rvh);
   return UserData::GetContents(web_contents);
 }
 

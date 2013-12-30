@@ -736,8 +736,8 @@ blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     blink::WebNavigationType type,
     blink::WebNavigationPolicy default_policy,
     bool is_redirect) {
-  return render_view_->DecidePolicyForNavigation(
-      this, frame, extra_data, request, type, default_policy, is_redirect);
+  return render_view_->decidePolicyForNavigation(
+      frame, extra_data, request, type, default_policy, is_redirect);
 }
 
 blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
@@ -746,9 +746,8 @@ blink::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     blink::WebNavigationType type,
     blink::WebNavigationPolicy default_policy,
     bool is_redirect) {
-  return decidePolicyForNavigation(frame,
-                                   frame->provisionalDataSource()->extraData(),
-                                   request, type, default_policy, is_redirect);
+  return render_view_->decidePolicyForNavigation(
+      frame, request, type, default_policy, is_redirect);
 }
 
 void RenderFrameImpl::willSendSubmitEvent(blink::WebFrame* frame,
@@ -1290,7 +1289,7 @@ void RenderFrameImpl::requestStorageQuota(
 
 void RenderFrameImpl::willOpenSocketStream(
     blink::WebSocketStreamHandle* handle) {
-  SocketStreamHandleData::AddToHandle(handle, routing_id_);
+  SocketStreamHandleData::AddToHandle(handle, render_view_->GetRoutingID());
 }
 
 void RenderFrameImpl::willStartUsingPeerConnectionHandler(

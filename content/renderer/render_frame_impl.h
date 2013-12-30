@@ -210,7 +210,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURLRequest& request,
       blink::WebNavigationPolicy policy,
       const blink::WebString& suggested_name);
-  // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
   virtual blink::WebNavigationPolicy decidePolicyForNavigation(
       blink::WebFrame* frame,
       blink::WebDataSource::ExtraData* extra_data,

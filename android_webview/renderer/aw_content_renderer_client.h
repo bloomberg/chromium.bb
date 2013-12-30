@@ -41,7 +41,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
   virtual void AddKeySystems(
       std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
 
-  virtual bool HandleNavigation(content::RenderFrame* render_frame,
+  virtual bool HandleNavigation(content::RenderView* view,
                                 content::DocumentState* document_state,
                                 int opener_id,
                                 blink::WebFrame* frame,
