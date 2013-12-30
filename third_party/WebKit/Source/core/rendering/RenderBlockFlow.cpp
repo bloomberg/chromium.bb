@@ -42,8 +42,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/line/LineWidth.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
-#include "platform/text/BidiResolver.h"
-#include "platform/text/TextRunIterator.h"
 
 using namespace std;
 
@@ -2507,16 +2505,6 @@ static inline TextRun constructTextRunInternal(RenderObject* context, const Font
     }
 
     TextRun run(characters, length, 0, 0, expansion, textDirection, directionalOverride);
-    if (!directionalOverride) {
-        BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
-        bidiResolver.setStatus(BidiStatus(run.direction(), run.directionalOverride()));
-        bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
-        bool hasStrongDirectionality;
-        TextDirection direction = bidiResolver.determineParagraphDirectionality(&hasStrongDirectionality);
-        if (hasStrongDirectionality)
-            run.setDirection(direction);
-    }
-
     if (textRunNeedsRenderingContext(font))
         run.setRenderingContext(SVGTextRunRenderingContext::create(context));
 

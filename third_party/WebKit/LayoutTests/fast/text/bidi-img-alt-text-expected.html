@@ -15,7 +15,7 @@
                 position: absolute;
                 left: 0px;
                 top: 50px;
-                width: 100px;
+                width: 280px;
                 height: 80px;
             }
             span {
@@ -56,6 +56,16 @@
             <span>,.</span>
             <img src="about:blank">
         </section>
+        <section>
+            <h2>ltr image, mixed alt</h2>
+            <span>به عنوان مثال example جهت مخلوط</span>
+            <img dir="ltr"  src="about::blank">
+        </section>
+        <section>
+            <h2>rtr image, mixed alt</h2>
+            <span>به عنوان مثال example جهت مخلوط</span>
+            <img dir="rtr"  src="about::blank">
+        </section>
         <p>
             Tests that image alt text takes directionality into account.
         </p>
@@ -65,6 +75,8 @@
                 var elements = document.getElementsByTagName('span');
                 elements[0].style.top = '50px';
                 elements[1].style.top = '50px';
+                elements[6].style.top = '50px';
+                elements[7].style.top = '50px';
             }
         </script>
     </body>

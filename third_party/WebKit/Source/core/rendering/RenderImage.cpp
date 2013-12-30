@@ -371,9 +371,10 @@ void RenderImage::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
                 context->setFillColor(resolveColor(CSSPropertyColor));
                 if (errorPictureDrawn) {
                     if (usableWidth >= textWidth && fontMetrics.height() <= imageOffset.height())
-                        context->drawText(font, textRunPaintInfo, textOrigin);
-                } else if (usableWidth >= textWidth && usableHeight >= fontMetrics.height())
-                    context->drawText(font, textRunPaintInfo, textOrigin);
+                        context->drawBidiText(font, textRunPaintInfo, textOrigin);
+                } else if (usableWidth >= textWidth && usableHeight >= fontMetrics.height()) {
+                    context->drawBidiText(font, textRunPaintInfo, textOrigin);
+                }
             }
         }
     } else if (m_imageResource->hasImage() && cWidth > 0 && cHeight > 0) {
