@@ -159,7 +159,8 @@ bool WorkerProcessHost::Init(int render_process_id) {
 #if defined(OS_MACOSX)
     switches::kEnableSandboxLogging,
 #endif
-    switches::kJavaScriptFlags
+    switches::kJavaScriptFlags,
+    switches::kNoSandbox
   };
   cmd_line->CopySwitchesFrom(*CommandLine::ForCurrentProcess(), kSwitchNames,
                              arraysize(kSwitchNames));
