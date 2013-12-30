@@ -201,7 +201,7 @@ void WebDragDestGtk::OnDragDataReceived(
           // TODO(estade): Can the filenames have a non-UTF8 encoding?
           GURL url(*uri_iter);
           base::FilePath file_path;
-          if (url.SchemeIs(chrome::kFileScheme) &&
+          if (url.SchemeIs(kFileScheme) &&
               net::FileURLToFilePath(url, &file_path)) {
             drop_data_->filenames.push_back(
                 DropData::FileInfo(base::UTF8ToUTF16(file_path.value()),

@@ -71,7 +71,7 @@ bool WebserviceSearchProvider::IsSensitiveInput(const base::string16& query) {
   // file, we shouldn't send it. Sending such things is a waste of time and a
   // disclosure of potentially private, local data. If the scheme is OK, we
   // still need to check other cases below.
-  if (LowerCaseEqualsASCII(query_as_url.scheme(), chrome::kFileScheme))
+  if (LowerCaseEqualsASCII(query_as_url.scheme(), content::kFileScheme))
     return true;
 
   // Don't send URLs with usernames, queries or refs. Some of these are

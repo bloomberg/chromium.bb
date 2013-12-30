@@ -565,7 +565,7 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(
         GetProcess()->GetID(), params.url);
     if (params.url.SchemeIs(chrome::kDataScheme) &&
-        params.base_url_for_data_url.SchemeIs(chrome::kFileScheme)) {
+        params.base_url_for_data_url.SchemeIs(kFileScheme)) {
       // If 'data:' is used, and we have a 'file:' base url, grant access to
       // local files.
       ChildProcessSecurityPolicyImpl::GetInstance()->GrantRequestURL(

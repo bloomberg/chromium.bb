@@ -426,7 +426,7 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
 
   // Proceed with about and chrome schemes, but not file or nonstandard schemes.
   if ((scheme != chrome::kAboutScheme) && (scheme != chrome::kChromeUIScheme) &&
-      ((scheme == chrome::kFileScheme) || !url_util::IsStandard(scheme.c_str(),
+      ((scheme == content::kFileScheme) || !url_util::IsStandard(scheme.c_str(),
            url_parse::Component(0, static_cast<int>(scheme.length())))))
     return scheme;
 
@@ -517,7 +517,7 @@ GURL URLFixerUpper::FixupURL(const std::string& text,
   }
 
   // We handle the file scheme separately.
-  if (scheme == chrome::kFileScheme)
+  if (scheme == content::kFileScheme)
     return GURL(parts.scheme.is_valid() ? text : FixupPath(text));
 
   // We handle the filesystem scheme separately.

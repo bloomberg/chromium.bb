@@ -103,7 +103,7 @@ std::set<std::string> GetDistinctHosts(
   HostVector hosts_best_rcd;
   for (URLPatternSet::const_iterator i = host_patterns.begin();
        i != host_patterns.end(); ++i) {
-    if (exclude_file_scheme && i->scheme() == chrome::kFileScheme)
+    if (exclude_file_scheme && i->scheme() == content::kFileScheme)
       continue;
 
     std::string host = i->host();

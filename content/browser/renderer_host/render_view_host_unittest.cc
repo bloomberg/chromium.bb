@@ -29,7 +29,7 @@ class RenderViewHostTestBrowserClient : public TestContentBrowserClient {
   virtual ~RenderViewHostTestBrowserClient() {}
 
   virtual bool IsHandledURL(const GURL& url) OVERRIDE {
-    return url.scheme() == chrome::kFileScheme;
+    return url.scheme() == kFileScheme;
   }
 
  private:

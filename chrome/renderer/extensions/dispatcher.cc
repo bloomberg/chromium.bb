@@ -1357,7 +1357,7 @@ void Dispatcher::AddOrRemoveOriginPermissions(
     const char* schemes[] = {
       content::kHttpScheme,
       content::kHttpsScheme,
-      chrome::kFileScheme,
+      content::kFileScheme,
       chrome::kChromeUIScheme,
     };
     for (size_t j = 0; j < arraysize(schemes); ++j) {

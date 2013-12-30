@@ -67,7 +67,7 @@ bool IsSensitiveURL(const GURL& url) {
 // covered by CanExtensionAccessURL.
 bool HasWebRequestScheme(const GURL& url) {
   return (url.SchemeIs(chrome::kAboutScheme) ||
-          url.SchemeIs(chrome::kFileScheme) ||
+          url.SchemeIs(content::kFileScheme) ||
           url.SchemeIs(content::kFileSystemScheme) ||
           url.SchemeIs(content::kFtpScheme) ||
           url.SchemeIs(content::kHttpScheme) ||

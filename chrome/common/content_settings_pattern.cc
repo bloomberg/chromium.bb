@@ -179,9 +179,9 @@ bool ContentSettingsPattern::Builder::Canonicalize(PatternParts* parts) {
   const std::string scheme(StringToLowerASCII(parts->scheme));
   parts->scheme = scheme;
 
-  if (parts->scheme == std::string(chrome::kFileScheme) &&
+  if (parts->scheme == std::string(content::kFileScheme) &&
       !parts->is_path_wildcard) {
-      GURL url(std::string(chrome::kFileScheme) +
+      GURL url(std::string(content::kFileScheme) +
                std::string(content::kStandardSchemeSeparator) + parts->path);
       parts->path = url.path();
   }
@@ -213,7 +213,7 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
   }
 
   // file:// URL patterns have an empty host and port.
-  if (parts.scheme == std::string(chrome::kFileScheme)) {
+  if (parts.scheme == std::string(content::kFileScheme)) {
     if (parts.has_domain_wildcard || !parts.host.empty() || !parts.port.empty())
       return false;
     if (parts.is_path_wildcard)
@@ -254,7 +254,7 @@ bool ContentSettingsPattern::Builder::Validate(const PatternParts& parts) {
 bool ContentSettingsPattern::Builder::LegacyValidate(
     const PatternParts& parts) {
   // If the pattern is for a "file-pattern" test if it is valid.
-  if (parts.scheme == std::string(chrome::kFileScheme) &&
+  if (parts.scheme == std::string(content::kFileScheme) &&
       !parts.is_scheme_wildcard &&
       parts.host.empty() &&
       parts.port.empty())
@@ -457,7 +457,7 @@ bool ContentSettingsPattern::Matches(
   // TODO(markusheintz): Content settings should be defined for all files on
   // a machine. Unless there is a good use case for supporting paths for file
   // patterns, stop supporting path for file patterns.
-  if (!parts_.is_scheme_wildcard && scheme == chrome::kFileScheme)
+  if (!parts_.is_scheme_wildcard && scheme == content::kFileScheme)
     return parts_.is_path_wildcard ||
         parts_.path == std::string(local_url->path());
 

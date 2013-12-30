@@ -176,7 +176,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
     // file:// URLs are more granular.  The child may have been given
     // permission to a specific file but not the file:// scheme in general.
-    if (url.SchemeIs(chrome::kFileScheme)) {
+    if (url.SchemeIs(kFileScheme)) {
       base::FilePath path;
       if (net::FileURLToFilePath(url, &path))
         return ContainsKey(request_file_set_, path);
@@ -434,7 +434,7 @@ void ChildProcessSecurityPolicyImpl::GrantRequestURL(
 void ChildProcessSecurityPolicyImpl::GrantRequestSpecificFileURL(
     int child_id,
     const GURL& url) {
-  if (!url.SchemeIs(chrome::kFileScheme))
+  if (!url.SchemeIs(kFileScheme))
     return;
 
   {
@@ -548,7 +548,7 @@ void ChildProcessSecurityPolicyImpl::GrantWebUIBindings(int child_id) {
   state->second->GrantScheme(chrome::kChromeUIScheme);
 
   // Web UI pages can contain links to file:// URLs.
-  state->second->GrantScheme(chrome::kFileScheme);
+  state->second->GrantScheme(kFileScheme);
 }
 
 void ChildProcessSecurityPolicyImpl::GrantReadRawCookies(int child_id) {

@@ -92,7 +92,7 @@ scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
     content::ProtocolHandlerMap* protocol_handlers) {
   scoped_ptr<AwURLRequestJobFactory> aw_job_factory(new AwURLRequestJobFactory);
   bool set_protocol = aw_job_factory->SetProtocolHandler(
-      chrome::kFileScheme,
+      content::kFileScheme,
       new net::FileProtocolHandler(
           content::BrowserThread::GetBlockingPool()->
               GetTaskRunnerWithShutdownBehavior(

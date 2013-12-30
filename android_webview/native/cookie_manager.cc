@@ -420,7 +420,7 @@ bool CookieManager::AllowFileSchemeCookies() {
 }
 
 bool CookieManager::AllowFileSchemeCookiesLocked() {
-  return cookie_monster_->IsCookieableScheme(chrome::kFileScheme);
+  return cookie_monster_->IsCookieableScheme(content::kFileScheme);
 }
 
 void CookieManager::SetAcceptFileSchemeCookies(bool accept) {

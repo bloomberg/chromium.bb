@@ -173,7 +173,7 @@ void PatternParser::Parse(const std::string& pattern_spec,
     }
   } else {
     if (scheme != std::string(extensions::kExtensionScheme) &&
-        scheme != std::string(chrome::kFileScheme))
+        scheme != std::string(content::kFileScheme))
       builder->WithPortWildcard();
   }
 
@@ -202,7 +202,7 @@ std::string PatternParser::ToString(
   if (!parts.is_scheme_wildcard)
     str += parts.scheme + content::kStandardSchemeSeparator;
 
-  if (parts.scheme == chrome::kFileScheme) {
+  if (parts.scheme == content::kFileScheme) {
     if (parts.is_path_wildcard)
       return str + kUrlPathSeparator + kPathWildcard;
     else

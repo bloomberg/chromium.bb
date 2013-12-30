@@ -194,7 +194,7 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
   content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
       host->GetID(), android_webview::kContentScheme);
   content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-      host->GetID(), chrome::kFileScheme);
+      host->GetID(), content::kFileScheme);
 
   host->AddFilter(new AwContentsMessageFilter(host->GetID()));
 }

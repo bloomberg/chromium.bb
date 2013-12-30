@@ -69,7 +69,7 @@ class ChildProcessSecurityPolicyTest : public testing::Test {
     // net::URLRequest::IsHandledURL() no longer claims support for default
     // protocols as this is the responsibility of the browser (which is
     // responsible for adding the appropriate ProtocolHandler).
-    test_browser_client_.AddScheme(chrome::kFileScheme);
+    test_browser_client_.AddScheme(kFileScheme);
   }
 
   virtual void TearDown() {

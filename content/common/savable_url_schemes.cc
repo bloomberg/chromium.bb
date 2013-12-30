@@ -15,7 +15,7 @@ namespace {
 const char* const kDefaultSavableSchemes[] = {
   kHttpScheme,
   kHttpsScheme,
-  chrome::kFileScheme,
+  kFileScheme,
   kFileSystemScheme,
   kFtpScheme,
   chrome::kChromeDevToolsScheme,

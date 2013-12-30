@@ -644,7 +644,7 @@ void IOThread::InitAsync() {
   job_factory->SetProtocolHandler(chrome::kDataScheme,
                                   new net::DataProtocolHandler());
   job_factory->SetProtocolHandler(
-      chrome::kFileScheme,
+      content::kFileScheme,
       new net::FileProtocolHandler(
           content::BrowserThread::GetBlockingPool()->
               GetTaskRunnerWithShutdownBehavior(

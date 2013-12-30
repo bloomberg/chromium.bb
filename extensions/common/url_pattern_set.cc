@@ -206,7 +206,7 @@ bool URLPatternSet::Populate(const std::vector<std::string>& patterns,
       }
       return false;
     }
-    if (!allow_file_access && pattern.MatchesScheme(chrome::kFileScheme)) {
+    if (!allow_file_access && pattern.MatchesScheme(content::kFileScheme)) {
       pattern.SetValidSchemes(
           pattern.valid_schemes() & ~URLPattern::SCHEME_FILE);
     }

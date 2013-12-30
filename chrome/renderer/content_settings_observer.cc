@@ -663,8 +663,8 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
 
   // If the scheme is file:, an empty file name indicates a directory listing,
   // which requires JavaScript to function properly.
-  if (EqualsASCII(origin.protocol(), chrome::kFileScheme)) {
-    return document_url.SchemeIs(chrome::kFileScheme) &&
+  if (EqualsASCII(origin.protocol(), content::kFileScheme)) {
+    return document_url.SchemeIs(content::kFileScheme) &&
            document_url.ExtractFileName().empty();
   }
 

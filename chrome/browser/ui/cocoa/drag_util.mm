@@ -58,7 +58,7 @@ GURL GetFileURLFromDropData(id<NSDraggingInfo> info) {
                                           [info draggingPasteboard],
                                           YES);
 
-    if (url.SchemeIs(chrome::kFileScheme))
+    if (url.SchemeIs(content::kFileScheme))
       return url;
   }
   return GURL();

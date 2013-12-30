@@ -193,7 +193,7 @@ bool CreateShortcutsOnFileThread(
 
 bool IsValidUrl(const GURL& url) {
   static const char* const kValidUrlSchemes[] = {
-      chrome::kFileScheme,
+      content::kFileScheme,
       content::kFileSystemScheme,
       content::kFtpScheme,
       content::kHttpScheme,

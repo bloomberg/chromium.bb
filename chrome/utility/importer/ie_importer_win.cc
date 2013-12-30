@@ -471,7 +471,7 @@ void IEImporter::ImportHistory() {
   const std::string kSchemes[] = {content::kHttpScheme,
                                   content::kHttpsScheme,
                                   content::kFtpScheme,
-                                  chrome::kFileScheme};
+                                  content::kFileScheme};
   int total_schemes = arraysize(kSchemes);
 
   base::win::ScopedComPtr<IUrlHistoryStg2> url_history_stg2;

@@ -62,7 +62,7 @@ void ExtensionWebContentsObserver::RenderViewCreated(
     if (ExtensionSystem::Get(profile_)->extension_service()->
             extension_prefs()->AllowFileAccess(extension->id())) {
       content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
-          process->GetID(), chrome::kFileScheme);
+          process->GetID(), content::kFileScheme);
     }
   }
 

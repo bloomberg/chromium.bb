@@ -153,7 +153,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
         base::UTF16ToUTF8(text), base::UTF16ToUTF8(desired_tld));
   }
 
-  if (LowerCaseEqualsASCII(parsed_scheme, chrome::kFileScheme)) {
+  if (LowerCaseEqualsASCII(parsed_scheme, content::kFileScheme)) {
     // A user might or might not type a scheme when entering a file URL.  In
     // either case, |parsed_scheme| will tell us that this is a file URL, but
     // |parts->scheme| might be empty, e.g. if the user typed "C:\foo".
