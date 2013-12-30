@@ -478,6 +478,8 @@ class WebContents : public PageNavigator,
 
   // Returns true if the WebContents is responsible for displaying a subframe
   // in a different process from its parent page.
+  // TODO: this doesn't really belong here. With site isolation, this should be
+  // removed since we can then embed iframes in different processes.
   virtual bool IsSubframe() const = 0;
 
 #if defined(OS_ANDROID)

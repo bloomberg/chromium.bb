@@ -1036,7 +1036,7 @@ class CONTENT_EXPORT WebContentsImpl
   typedef std::map<int, ImageDownloadCallback> ImageDownloadMap;
   ImageDownloadMap image_download_map_;
 
-  // Whether this RenderView is responsible for displaying a subframe in a
+  // Whether this WebContents is responsible for displaying a subframe in a
   // different process from its parent page.
   bool is_subframe_;
 
