@@ -1883,10 +1883,10 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
         GetViewBounds()));
   }
 
-  if (compositing_iosurface_ && use_core_animation_) {
+  if (compositing_iosurface_) {
     scoped_refptr<CompositingIOSurfaceContext> new_context =
         CompositingIOSurfaceContext::Get(window_number());
-    if (new_context) {
+    if (new_context && new_context != compositing_iosurface_context_) {
       // Un-bind the GL context from this view before binding the new GL
       // context. Having two GL contexts bound to a view will result in
       // crashes and corruption.
