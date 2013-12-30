@@ -451,14 +451,14 @@ namespace WTF {
     template<typename HashTranslator, typename T>
     inline Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::lookup(const T& key)
     {
-        int k = 0;
-        int sizeMask = m_tableSizeMask;
         ValueType* table = m_table;
-        unsigned h = HashTranslator::hash(key);
-        int i = h & sizeMask;
-
         if (!table)
             return 0;
+
+        int k = 0;
+        int sizeMask = m_tableSizeMask;
+        unsigned h = HashTranslator::hash(key);
+        int i = h & sizeMask;
 
 #if DUMP_HASHTABLE_STATS
         atomicIncrement(&HashTableStats::numAccesses);
@@ -795,11 +795,8 @@ namespace WTF {
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template <typename HashTranslator, typename T>
-    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::iterator HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::find(const T& key)
+    inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::iterator HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::find(const T& key)
     {
-        if (!m_table)
-            return end();
-
         ValueType* entry = lookup<HashTranslator>(key);
         if (!entry)
             return end();
@@ -809,11 +806,8 @@ namespace WTF {
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
     template <typename HashTranslator, typename T>
-    typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::const_iterator HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::find(const T& key) const
+    inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::const_iterator HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::find(const T& key) const
     {
-        if (!m_table)
-            return end();
-
         ValueType* entry = const_cast<HashTable*>(this)->lookup<HashTranslator>(key);
         if (!entry)
             return end();
@@ -825,9 +819,6 @@ namespace WTF {
     template <typename HashTranslator, typename T>
     bool HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::contains(const T& key) const
     {
-        if (!m_table)
-            return false;
-
         return const_cast<HashTable*>(this)->lookup<HashTranslator>(key);
     }
 
