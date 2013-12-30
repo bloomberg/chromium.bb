@@ -256,6 +256,10 @@ public class ContentViewCore
         void onFrameInfoUpdated(float pageScaleFactor);
     }
 
+    /**
+     * An interface that allows the embedder to be notified when the results of
+     * extractSmartClipData are available.
+     */
     public interface SmartClipDataListener {
         public void onSmartClipDataExtracted(String result);
     }
