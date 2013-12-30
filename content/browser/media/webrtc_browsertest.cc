@@ -816,8 +816,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
   ExpectTitle("OK");
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY))
 // Timing out on ARM linux bot: http://crbug.com/238490
+// Failing on Windows: http://crbug.com/331035
 #define MAYBE_CallWithAecDump DISABLED_CallWithAecDump
 #else
 #define MAYBE_CallWithAecDump CallWithAecDump
