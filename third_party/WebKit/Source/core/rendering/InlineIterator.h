@@ -43,16 +43,16 @@ public:
     InlineIterator()
         : m_root(0)
         , m_obj(0)
-        , m_pos(0)
         , m_nextBreakablePosition(-1)
+        , m_pos(0)
     {
     }
 
     InlineIterator(RenderObject* root, RenderObject* o, unsigned p)
         : m_root(root)
         , m_obj(o)
-        , m_pos(p)
         , m_nextBreakablePosition(-1)
+        , m_pos(p)
     {
     }
 
@@ -72,6 +72,9 @@ public:
 
     RenderObject* object() const { return m_obj; }
     void setObject(RenderObject* object) { m_obj = object; }
+
+    int nextBreakablePosition() const { return m_nextBreakablePosition; }
+    void setNextBreakablePosition(int position) { m_nextBreakablePosition = position; }
 
     unsigned offset() const { return m_pos; }
     RenderObject* root() const { return m_root; }
@@ -100,10 +103,11 @@ private:
     RenderObject* m_root;
     RenderObject* m_obj;
 
+    int m_nextBreakablePosition;
+
 // FIXME: These should be private.
 public:
     unsigned m_pos;
-    int m_nextBreakablePosition;
 };
 
 inline bool operator==(const InlineIterator& it1, const InlineIterator& it2)
@@ -442,7 +446,7 @@ inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
 {
     bool inEndOfLine = m_current == end || m_current.atEnd() || (inIsolate() && m_current.object() == end.object());
     if (inIsolate() && inEndOfLine) {
-        m_current.moveTo(m_current.object(), end.m_pos, m_current.m_nextBreakablePosition);
+        m_current.moveTo(m_current.object(), end.m_pos, m_current.nextBreakablePosition());
         m_last = m_current;
         updateStatusLastFromCurrentDirection(WTF::Unicode::OtherNeutral);
     }
