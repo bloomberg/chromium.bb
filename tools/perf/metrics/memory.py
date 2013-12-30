@@ -14,6 +14,8 @@ _HISTOGRAMS = [
      'type': histogram_util.RENDERER_HISTOGRAM},
     {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb',
      'type': histogram_util.RENDERER_HISTOGRAM},
+    {'name': 'V8.MemoryHeapSampleMaximumCommitted', 'units': 'kb',
+     'type': histogram_util.RENDERER_HISTOGRAM},
     {'name': 'Memory.RendererUsed', 'units': 'kb',
      'type': histogram_util.RENDERER_HISTOGRAM},
     {'name': 'Memory.BrowserUsed', 'units': 'kb',
