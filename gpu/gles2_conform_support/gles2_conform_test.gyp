@@ -107,6 +107,20 @@
           'conditions': [
             ['OS=="linux"', {
               'dependencies': ['../../build/linux/system.gyp:gtk'],
+              'conditions': [
+                [ 'clang==1', {
+                  'cflags': [
+                    '-Wno-array-bounds',
+                    '-Wno-implicit-function-declaration',
+                    '-Wno-incompatible-pointer-types',
+                    '-Wno-parentheses-equality',
+                    '-Wno-pointer-sign',
+                    '-Wno-return-type',
+                    '-Wno-sizeof-pointer-memaccess',
+                    '-Wno-tautological-compare'
+                  ]
+                }]
+              ],
             }],
             ['OS=="win"', {
               'dependencies': [
