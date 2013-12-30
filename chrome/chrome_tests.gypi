@@ -3071,6 +3071,20 @@
             'sync_integration_tests.isolate',
           ],
         },
+        {
+          'target_name': 'telemetry_gpu_test_run',
+          'type': 'none',
+          'dependencies': [
+            'chrome_run',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'telemetry_gpu_test.isolate',
+          ],
+          'sources': [
+            'telemetry_gpu_test.isolate',
+          ],
+        },
       ],
     }],
     ['OS=="win"', {
