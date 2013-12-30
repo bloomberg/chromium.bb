@@ -34,7 +34,6 @@ class AppShimMenuControllerBrowserTest
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     PlatformAppBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableAppShims);
   }
 
   // Start two apps and wait for them to be launched.

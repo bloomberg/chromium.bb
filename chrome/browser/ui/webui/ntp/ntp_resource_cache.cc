@@ -492,7 +492,7 @@ void NTPResourceCache::CreateNewTabHTML() {
 #if defined(OS_MACOSX)
   load_time_data.SetBoolean(
       "disableCreateAppShortcut",
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableAppShims));
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableAppShims));
 #endif
 
 #if defined(OS_CHROMEOS)

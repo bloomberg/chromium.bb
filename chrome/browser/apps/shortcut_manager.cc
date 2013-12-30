@@ -163,9 +163,8 @@ void AppShortcutManager::OnProfileWillBeRemoved(
 void AppShortcutManager::OnceOffCreateShortcuts() {
   bool was_enabled = prefs_->GetBoolean(prefs::kAppShortcutsHaveBeenCreated);
 
-  // Creation of shortcuts on Mac currently sits behind --enable-app-shims.
-  // Until it is enabled permanently, we need to check the flag, and set the
-  // pref accordingly.
+  // Creation of shortcuts on Mac currently can be disabled with
+  // --disable-app-shims, so check the flag, and set the pref accordingly.
 #if defined(OS_MACOSX)
   bool is_now_enabled = apps::IsAppShimsEnabled();
 #else

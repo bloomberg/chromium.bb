@@ -1598,13 +1598,13 @@ const char kMigrateDataDirForSxS[]          = "migrate-data-dir-for-sxs";
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
+// Disables the creation and launch of app shims for platform apps.
+const char kDisableAppShims[]               = "disable-app-shims";
+
 // Forcibly disables Lion-style on newer OSes, to allow developers to test the
 // older, SnowLeopard-style fullscreen.
 const char kDisableSystemFullscreenForTesting[] =
     "disable-system-fullscreen-for-testing";
-
-// Enable to allow creation and launch of app shims for platform apps.
-const char kEnableAppShims[]                = "enable-app-shims";
 
 // Enables the tabs expose feature ( http://crbug.com/50307 ).
 const char kEnableExposeForTabs[]           = "enable-expose-for-tabs";
