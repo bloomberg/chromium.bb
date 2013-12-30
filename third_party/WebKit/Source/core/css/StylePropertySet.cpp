@@ -371,11 +371,6 @@ String StylePropertySet::asText() const
     return StylePropertySerializer(*this).asText();
 }
 
-bool StylePropertySet::hasCSSOMWrapper() const
-{
-    return m_isMutable && toMutableStylePropertySet(this)->m_cssomWrapper;
-}
-
 void MutableStylePropertySet::mergeAndOverrideOnConflict(const StylePropertySet* other)
 {
     unsigned size = other->propertyCount();
@@ -581,11 +576,6 @@ PassRefPtr<MutableStylePropertySet> StylePropertySet::copyPropertiesInSet(const 
             list.append(CSSProperty(properties[i], value.release(), false));
     }
     return MutableStylePropertySet::create(list.data(), list.size());
-}
-
-PropertySetCSSStyleDeclaration* MutableStylePropertySet::cssStyleDeclaration()
-{
-    return m_cssomWrapper.get();
 }
 
 CSSStyleDeclaration* MutableStylePropertySet::ensureCSSStyleDeclaration()

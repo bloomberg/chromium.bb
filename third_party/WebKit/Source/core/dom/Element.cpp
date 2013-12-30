@@ -197,9 +197,6 @@ Element::~Element()
     // and the inNamedFlow flag reset.
     ASSERT(!document().renderView() || !inNamedFlow());
 
-    if (PropertySetCSSStyleDeclaration* cssomWrapper = inlineStyleCSSOMWrapper())
-        cssomWrapper->clearParentElement();
-
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
         data->setPseudoElement(BEFORE, 0);
@@ -3371,12 +3368,10 @@ void Element::cloneAttributesFromElement(const Element& other)
         ownerDocumentsHaveDifferentCaseSensitivity = other.document().inQuirksMode() != document().inQuirksMode();
 
     // If 'other' has a mutable ElementData, convert it to an immutable one so we can share it between both elements.
-    // We can only do this if there is no CSSOM wrapper for other's inline style, and there are no presentation attributes,
-    // and sharing the data won't result in different case sensitivity of class or id.
+    // We can only do this if there are no presentation attributes and sharing the data won't result in different case sensitivity of class or id.
     if (other.m_elementData->isUnique()
         && !ownerDocumentsHaveDifferentCaseSensitivity
-        && !other.m_elementData->presentationAttributeStyle()
-        && (!other.m_elementData->inlineStyle() || !other.m_elementData->inlineStyle()->hasCSSOMWrapper()))
+        && !other.m_elementData->presentationAttributeStyle())
         const_cast<Element&>(other).m_elementData = static_cast<const UniqueElementData*>(other.m_elementData.get())->makeShareableCopy();
 
     if (!other.m_elementData->isUnique() && !ownerDocumentsHaveDifferentCaseSensitivity)
@@ -3469,15 +3464,6 @@ void Element::clearMutableInlineStyleIfEmpty()
     }
 }
 
-PropertySetCSSStyleDeclaration* Element::inlineStyleCSSOMWrapper()
-{
-    if (!inlineStyle() || !inlineStyle()->hasCSSOMWrapper())
-        return 0;
-    PropertySetCSSStyleDeclaration* cssomWrapper = ensureMutableInlineStyle()->cssStyleDeclaration();
-    ASSERT(cssomWrapper && cssomWrapper->parentElement() == this);
-    return cssomWrapper;
-}
-
 inline void Element::setInlineStyleFromString(const AtomicString& newStyleString)
 {
     ASSERT(isStyledElement());
@@ -3508,8 +3494,6 @@ void Element::styleAttributeChanged(const AtomicString& newStyleString, Attribut
         startLineNumber = document().scriptableDocumentParser()->lineNumber();
 
     if (newStyleString.isNull()) {
-        if (PropertySetCSSStyleDeclaration* cssomWrapper = inlineStyleCSSOMWrapper())
-            cssomWrapper->clearParentElement();
         ensureUniqueElementData()->m_inlineStyle.clear();
     } else if (modificationReason == ModifiedByCloning || document().contentSecurityPolicy()->allowInlineStyle(document().url(), startLineNumber)) {
         setInlineStyleFromString(newStyleString);

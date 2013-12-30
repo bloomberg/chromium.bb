@@ -109,7 +109,6 @@ public:
     String asText() const;
 
     bool isMutable() const { return m_isMutable; }
-    bool hasCSSOMWrapper() const;
 
     bool hasFailedOrCanceledSubresources() const;
 
@@ -184,7 +183,6 @@ public:
     static PassRefPtr<MutableStylePropertySet> create(const CSSProperty* properties, unsigned count);
 
     unsigned propertyCount() const { return m_propertyVector.size(); }
-    PropertySetCSSStyleDeclaration* cssStyleDeclaration();
 
     void addParsedProperties(const Vector<CSSProperty, 256>&);
     void addParsedProperty(const CSSProperty&);

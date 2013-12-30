@@ -452,7 +452,6 @@ public:
     PassRefPtr<TreeWalker> createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter>, ExceptionState&);
 
     // Special support for editing
-    PassRefPtr<CSSStyleDeclaration> createCSSStyleDeclaration();
     PassRefPtr<Text> createEditingTextNode(const String&);
 
     void setStyleDependentState(RenderStyle* documentStyle);
