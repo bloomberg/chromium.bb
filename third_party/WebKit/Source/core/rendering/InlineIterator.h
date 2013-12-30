@@ -77,6 +77,7 @@ public:
     void setNextBreakablePosition(int position) { m_nextBreakablePosition = position; }
 
     unsigned offset() const { return m_pos; }
+    void setOffset(unsigned position) { m_pos = position; }
     RenderObject* root() const { return m_root; }
 
     void fastIncrementInTextNode();
@@ -104,20 +105,17 @@ private:
     RenderObject* m_obj;
 
     int m_nextBreakablePosition;
-
-// FIXME: These should be private.
-public:
     unsigned m_pos;
 };
 
 inline bool operator==(const InlineIterator& it1, const InlineIterator& it2)
 {
-    return it1.m_pos == it2.m_pos && it1.object() == it2.object();
+    return it1.offset() == it2.offset() && it1.object() == it2.object();
 }
 
 inline bool operator!=(const InlineIterator& it1, const InlineIterator& it2)
 {
-    return it1.m_pos != it2.m_pos || it1.object() != it2.object();
+    return it1.offset() != it2.offset() || it1.object() != it2.object();
 }
 
 static inline WTF::Unicode::Direction embedCharFromDirection(TextDirection dir, EUnicodeBidi unicodeBidi)
@@ -446,7 +444,7 @@ inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
 {
     bool inEndOfLine = m_current == end || m_current.atEnd() || (inIsolate() && m_current.object() == end.object());
     if (inIsolate() && inEndOfLine) {
-        m_current.moveTo(m_current.object(), end.m_pos, m_current.nextBreakablePosition());
+        m_current.moveTo(m_current.object(), end.offset(), m_current.nextBreakablePosition());
         m_last = m_current;
         updateStatusLastFromCurrentDirection(WTF::Unicode::OtherNeutral);
     }
@@ -583,7 +581,7 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(RenderObject* obj, uns
         // This is a new start point. Stop ignoring objects and
         // adjust our start.
         lineMidpointState.betweenMidpoints = false;
-        start = nextMidpoint.m_pos;
+        start = nextMidpoint.offset();
         lineMidpointState.currentMidpoint++;
         if (start < end)
             return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, resolver, behavior, tracker);
@@ -595,13 +593,13 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(RenderObject* obj, uns
 
         // An end midpoint has been encountered within our object. We
         // need to go ahead and append a run with our endpoint.
-        if (nextMidpoint.m_pos + 1 <= end) {
+        if (nextMidpoint.offset() + 1 <= end) {
             lineMidpointState.betweenMidpoints = true;
             lineMidpointState.currentMidpoint++;
-            if (nextMidpoint.m_pos != UINT_MAX) { // UINT_MAX means stop at the object and don't nclude any of it.
-                if (nextMidpoint.m_pos + 1 > start)
-                    appendRunObjectIfNecessary(obj, start, nextMidpoint.m_pos + 1, resolver, behavior, tracker);
-                return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, nextMidpoint.m_pos + 1, end, resolver, behavior, tracker);
+            if (nextMidpoint.offset() != UINT_MAX) { // UINT_MAX means stop at the object and don't nclude any of it.
+                if (nextMidpoint.offset() + 1 > start)
+                    appendRunObjectIfNecessary(obj, start, nextMidpoint.offset() + 1, resolver, behavior, tracker);
+                return adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, nextMidpoint.offset() + 1, end, resolver, behavior, tracker);
             }
         } else {
             appendRunObjectIfNecessary(obj, start, end, resolver, behavior, tracker);
@@ -623,7 +621,7 @@ inline void InlineBidiResolver::appendRun()
         // Initialize our state depending on if we're starting in the middle of such an inline.
         // FIXME: Could this initialize from this->inIsolate() instead of walking up the render tree?
         IsolateTracker isolateTracker(numberOfIsolateAncestors(m_sor));
-        int start = m_sor.m_pos;
+        int start = m_sor.offset();
         RenderObject* obj = m_sor.object();
         while (obj && obj != m_eor.object() && obj != m_endOfRunAtEndOfLine.object()) {
             if (isolateTracker.inIsolate())
@@ -634,12 +632,12 @@ inline void InlineBidiResolver::appendRun()
             start = 0;
             obj = bidiNextSkippingEmptyInlines(m_sor.root(), obj, &isolateTracker);
         }
-        bool isEndOfLine = obj == m_endOfLine.object() && !m_endOfLine.m_pos;
+        bool isEndOfLine = obj == m_endOfLine.object() && !m_endOfLine.offset();
         if (obj && !isEndOfLine) {
-            unsigned pos = obj == m_eor.object() ? m_eor.m_pos : INT_MAX;
-            if (obj == m_endOfRunAtEndOfLine.object() && m_endOfRunAtEndOfLine.m_pos <= pos) {
+            unsigned pos = obj == m_eor.object() ? m_eor.offset() : INT_MAX;
+            if (obj == m_endOfRunAtEndOfLine.object() && m_endOfRunAtEndOfLine.offset() <= pos) {
                 m_reachedEndOfLine = true;
-                pos = m_endOfRunAtEndOfLine.m_pos;
+                pos = m_endOfRunAtEndOfLine.offset();
             }
             // It's OK to add runs for zero-length RenderObjects, just don't make the run larger than it should be
             int end = obj->length() ? pos + 1 : 0;

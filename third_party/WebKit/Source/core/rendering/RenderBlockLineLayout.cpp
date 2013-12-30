@@ -980,7 +980,7 @@ static inline void constructBidiRunsForLine(const RenderBlockFlow* block, Inline
         InlineIterator segmentEnd(iterator.root, iterator.object, iterator.offset);
         if (i) {
             ASSERT(segmentStart.object());
-            BidiRun* segmentMarker = createRun(segmentStart.m_pos, segmentStart.m_pos, segmentStart.object(), topResolver);
+            BidiRun* segmentMarker = createRun(segmentStart.offset(), segmentStart.offset(), segmentStart.object(), topResolver);
             segmentMarker->m_startsSegment = true;
             bidiRuns.addRun(segmentMarker);
             // Do not collapse midpoints between segments
@@ -1455,7 +1455,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
         // This is a short-cut for empty lines.
         if (layoutState.lineInfo().isEmpty()) {
             if (lastRootBox())
-                lastRootBox()->setLineBreakInfo(endOfLine.object(), endOfLine.m_pos, resolver.status());
+                lastRootBox()->setLineBreakInfo(endOfLine.object(), endOfLine.offset(), resolver.status());
         } else {
             VisualDirectionOverride override = (styleToUse->rtlOrdering() == VisualOrder ? (styleToUse->direction() == LTR ? VisualLeftToRightOverride : VisualRightToLeftOverride) : NoVisualOverride);
 
@@ -1487,7 +1487,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
             resolver.markCurrentRunEmpty(); // FIXME: This can probably be replaced by an ASSERT (or just removed).
 
             if (lineBox) {
-                lineBox->setLineBreakInfo(endOfLine.object(), endOfLine.m_pos, resolver.status());
+                lineBox->setLineBreakInfo(endOfLine.object(), endOfLine.offset(), resolver.status());
                 if (layoutState.usesRepaintBounds())
                     layoutState.updateRepaintRangeFromBox(lineBox);
 
@@ -2067,7 +2067,7 @@ bool RenderBlockFlow::matchedEndLine(LineLayoutState& layoutState, const InlineB
     RootInlineBox* originalEndLine = layoutState.endLine();
     RootInlineBox* line = originalEndLine;
     for (int i = 0; i < numLines && line; i++, line = line->nextRootBox()) {
-        if (line->lineBreakObj() == resolver.position().object() && line->lineBreakPos() == resolver.position().m_pos) {
+        if (line->lineBreakObj() == resolver.position().object() && line->lineBreakPos() == resolver.position().offset()) {
             // We have a match.
             if (line->lineBreakBidiStatus() != resolver.status())
                 return false; // ...but the bidi state doesn't match.
@@ -2194,7 +2194,7 @@ InlineIterator LineBreaker::nextSegmentBreak(InlineBidiResolver& resolver, LineI
 
     ASSERT(resolver.position().root() == m_block);
 
-    bool appliedStartWidth = resolver.position().m_pos > 0;
+    bool appliedStartWidth = resolver.position().offset() > 0;
 
     LineWidth width(*m_block, lineInfo.isFirstLine(), requiresIndent(lineInfo.isFirstLine(), lineInfo.previousLineBrokeCleanly(), m_block->style()));
 
