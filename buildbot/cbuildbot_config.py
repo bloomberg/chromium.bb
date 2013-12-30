@@ -1312,7 +1312,12 @@ internal_paladin.add_config('master-paladin',
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
   description='Commit Queue master (all others are slaves)',
-  paladin_builder_name='Commit Queue Master',
+
+  # This name should remain synced with with the name used in
+  # build_internals/masters/master.chromeos/board_config.py.
+  # TODO(mtennant): Fix this.  There should be some amount of auto-
+  # configuration in the board_config.py code.
+  paladin_builder_name='CQ master',
   health_threshold=3,
   health_alert_recipients=['chromeos-build-alerts@google.com'],
   sanity_check_slaves=['link-tot-paladin'],
