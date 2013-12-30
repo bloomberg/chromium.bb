@@ -588,16 +588,16 @@
           'inputs': [
             '<@(scripts_for_in_files)',
             '../build/scripts/make_token_matcher.py',
-            '../core/css/CSSParser-in.cpp',
+            '../core/css/parser/BisonCSSParser-in.cpp',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/BisonCSSParser.cpp',
           ],
           'action': [
             'python',
             '../build/scripts/make_token_matcher.py',
-            '../core/css/CSSParser-in.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',
+            '../core/css/parser/BisonCSSParser-in.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/BisonCSSParser.cpp',
           ],
         },
         {

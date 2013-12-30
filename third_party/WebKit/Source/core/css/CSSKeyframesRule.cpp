@@ -27,7 +27,7 @@
 #include "core/css/CSSKeyframesRule.h"
 
 #include "core/css/CSSKeyframeRule.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/frame/UseCounter.h"
@@ -116,7 +116,7 @@ void CSSKeyframesRule::insertRule(const String& ruleText)
     ASSERT(m_childRuleCSSOMWrappers.size() == m_keyframesRule->keyframes().size());
 
     CSSStyleSheet* styleSheet = parentStyleSheet();
-    CSSParser parser(parserContext(), UseCounter::getFrom(styleSheet));
+    BisonCSSParser parser(parserContext(), UseCounter::getFrom(styleSheet));
     RefPtr<StyleKeyframe> keyframe = parser.parseKeyframeRule(styleSheet ? styleSheet->contents() : 0, ruleText);
     if (!keyframe)
         return;

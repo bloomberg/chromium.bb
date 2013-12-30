@@ -25,7 +25,7 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "StylePropertyShorthand.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/RuntimeCSSEnabled.h"
@@ -244,7 +244,7 @@ bool MutableStylePropertySet::setProperty(CSSPropertyID propertyID, const String
 
     // When replacing an existing property value, this moves the property to the end of the list.
     // Firefox preserves the position, and MSIE moves the property to the beginning.
-    return CSSParser::parseValue(this, propertyID, value, important, cssParserMode(), contextStyleSheet);
+    return BisonCSSParser::parseValue(this, propertyID, value, important, cssParserMode(), contextStyleSheet);
 }
 
 void MutableStylePropertySet::setProperty(CSSPropertyID propertyID, PassRefPtr<CSSValue> prpValue, bool important)
@@ -348,7 +348,7 @@ void MutableStylePropertySet::parseDeclaration(const String& styleDeclaration, S
         context.setMode(cssParserMode());
     }
 
-    CSSParser parser(context, UseCounter::getFrom(contextStyleSheet));
+    BisonCSSParser parser(context, UseCounter::getFrom(contextStyleSheet));
     parser.parseDeclaration(this, styleDeclaration, 0, contextStyleSheet);
 }
 

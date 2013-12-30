@@ -23,7 +23,7 @@
 #include "core/svg/SVGColor.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/RGBColor.h"
 
 namespace WebCore {
@@ -49,7 +49,7 @@ Color SVGColor::colorFromRGBColorString(const String& colorString)
 {
     // FIXME: Rework css parser so it is more SVG aware.
     RGBA32 color;
-    if (CSSParser::parseColor(color, colorString.stripWhiteSpace()))
+    if (BisonCSSParser::parseColor(color, colorString.stripWhiteSpace()))
         return color;
     return Color();
 }

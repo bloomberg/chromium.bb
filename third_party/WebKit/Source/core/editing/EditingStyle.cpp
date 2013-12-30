@@ -30,7 +30,7 @@
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSValueList.h"
@@ -387,7 +387,7 @@ static RGBA32 cssValueToRGBA(CSSValue* colorValue)
         return primitiveColor->getRGBA32Value();
 
     RGBA32 rgba = 0;
-    CSSParser::parseColor(rgba, colorValue->cssText());
+    BisonCSSParser::parseColor(rgba, colorValue->cssText());
     return rgba;
 }
 

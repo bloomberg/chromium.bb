@@ -53,7 +53,7 @@
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSLineBoxContainValue.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSReflectValue.h"
@@ -439,7 +439,7 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
             height = second->computeLength<Length>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
         } else {
             // <page-size> <orientation>
-            // The value order is guaranteed. See CSSParser::parseSizeParameter.
+            // The value order is guaranteed. See BisonCSSParser::parseSizeParameter.
             if (!getPageSizeFromName(first, second, width, height))
                 return;
         }
@@ -533,7 +533,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
         return;
 
     // [ <length> | <percentage> ] each-line
-    // The order is guaranteed. See CSSParser::parseTextIndent.
+    // The order is guaranteed. See BisonCSSParser::parseTextIndent.
     // The second value, each-line is handled only when css3TextEnabled() returns true.
 
     CSSValueList* valueList = toCSSValueList(value);
@@ -1109,7 +1109,7 @@ static void resolveVariables(StyleResolverState& state, CSSPropertyID id, CSSVal
 
     // FIXME: It would be faster not to re-parse from strings, but for now CSS property validation lives inside the parser so we do it there.
     RefPtr<MutableStylePropertySet> resultSet = MutableStylePropertySet::create();
-    if (!CSSParser::parseValue(resultSet.get(), id, expression.second, false, state.document()))
+    if (!BisonCSSParser::parseValue(resultSet.get(), id, expression.second, false, state.document()))
         return; // expression failed to parse.
 
     for (unsigned i = 0; i < resultSet->propertyCount(); i++) {

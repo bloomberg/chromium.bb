@@ -33,7 +33,7 @@
 #include "bindings/v8/ScriptRegexp.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
@@ -117,7 +117,7 @@ void ParsedStyleSheet::setSourceData(PassOwnPtr<RuleSourceDataList> sourceData)
     m_sourceData = adoptPtr(new RuleSourceDataList());
 
     // FIXME: This is a temporary solution to retain the original flat sourceData structure
-    // containing only style rules, even though CSSParser now provides the full rule source data tree.
+    // containing only style rules, even though BisonCSSParser now provides the full rule source data tree.
     // Normally, we should just assign m_sourceData = sourceData;
     flattenSourceData(sourceData.get());
 }
@@ -132,10 +132,10 @@ PassRefPtr<WebCore::CSSRuleSourceData> ParsedStyleSheet::ruleSourceDataAt(unsign
 
 namespace WebCore {
 
-static PassOwnPtr<CSSParser> createCSSParser(Document* document)
+static PassOwnPtr<BisonCSSParser> createCSSParser(Document* document)
 {
     UseCounter* counter = 0;
-    return adoptPtr(new CSSParser(document ? CSSParserContext(*document) : strictCSSParserContext(), counter));
+    return adoptPtr(new BisonCSSParser(document ? CSSParserContext(*document) : strictCSSParserContext(), counter));
 }
 
 namespace {
@@ -178,7 +178,7 @@ private:
     RuleSourceDataList* m_result;
     RuleSourceDataList m_currentRuleDataStack;
     RefPtr<CSSRuleSourceData> m_currentRuleData;
-    OwnPtr<CSSParser> m_commentParser;
+    OwnPtr<BisonCSSParser> m_commentParser;
     unsigned m_propertyRangeStart;
     unsigned m_selectorRangeStart;
     unsigned m_commentRangeStart;
@@ -409,7 +409,7 @@ void StyleSheetHandler::endComment(unsigned offset)
         m_commentParser = createCSSParser(m_document);
     RuleSourceDataList sourceData;
 
-    // FIXME: Use another subclass of CSSParser::SourceDataHandler and assert that
+    // FIXME: Use another subclass of BisonCSSParser::SourceDataHandler and assert that
     // no comments are encountered (will not need m_document and m_styleSheetContents).
     StyleSheetHandler handler(commentText, m_document, m_styleSheetContents, &sourceData);
     RefPtr<MutableStylePropertySet> tempMutableStyle = MutableStylePropertySet::create();

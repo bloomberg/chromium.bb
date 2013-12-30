@@ -136,7 +136,7 @@ public:
         CSS_VALUE_ID = 118
     };
 
-    // This enum follows the CSSParser::Units enum augmented with UNIT_FREQUENCY for frequencies.
+    // This enum follows the BisonCSSParser::Units enum augmented with UNIT_FREQUENCY for frequencies.
     enum UnitCategory {
         UNumber,
         UPercent,

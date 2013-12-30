@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/css/CSSValuePool.h"
 
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSValueList.h"
 #include "core/rendering/style/RenderStyle.h"
 
@@ -137,7 +137,7 @@ PassRefPtr<CSSValueList> CSSValuePool::createFontFaceValue(const AtomicString& s
 
     RefPtr<CSSValueList>& value = m_fontFaceValueCache.add(string, 0).iterator->value;
     if (!value)
-        value = CSSParser::parseFontFaceValue(string);
+        value = BisonCSSParser::parseFontFaceValue(string);
     return value;
 }
 

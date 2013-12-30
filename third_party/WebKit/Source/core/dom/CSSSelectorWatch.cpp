@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/dom/CSSSelectorWatch.h"
 
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
@@ -142,7 +142,7 @@ void CSSSelectorWatch::watchCSSSelectors(const Vector<String>& selectors)
 {
     m_watchedCallbackSelectors.clear();
     CSSParserContext context(UASheetMode);
-    CSSParser parser(context);
+    BisonCSSParser parser(context);
 
     const CSSProperty callbackProperty(CSSPropertyInternalCallback, CSSPrimitiveValue::createIdentifier(CSSValueInternalPresence));
     const RefPtr<StylePropertySet> callbackPropertySet = ImmutableStylePropertySet::create(&callbackProperty, 1, UASheetMode);

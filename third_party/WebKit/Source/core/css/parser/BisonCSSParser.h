@@ -77,13 +77,13 @@ struct CSSParserLocation {
     CSSParserString token;
 };
 
-class CSSParser {
-    friend inline int cssyylex(void*, CSSParser*);
+class BisonCSSParser {
+    friend inline int cssyylex(void*, BisonCSSParser*);
 
 public:
-    CSSParser(const CSSParserContext&, UseCounter* = 0);
+    BisonCSSParser(const CSSParserContext&, UseCounter* = 0);
 
-    ~CSSParser();
+    ~BisonCSSParser();
 
     void parseSheet(StyleSheetContents*, const String&, const TextPosition& startPosition = TextPosition::minimumPosition(), CSSParserObserver* = 0, bool = false);
     PassRefPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
@@ -436,10 +436,10 @@ private:
     class ImplicitScope {
         WTF_MAKE_NONCOPYABLE(ImplicitScope);
     public:
-        ImplicitScope(WebCore::CSSParser* parser, PropertyType propertyType)
+        ImplicitScope(WebCore::BisonCSSParser* parser, PropertyType propertyType)
             : m_parser(parser)
         {
-            m_parser->m_implicitShorthand = propertyType == CSSParser::PropertyImplicit;
+            m_parser->m_implicitShorthand = propertyType == BisonCSSParser::PropertyImplicit;
         }
 
         ~ImplicitScope()
@@ -448,13 +448,13 @@ private:
         }
 
     private:
-        WebCore::CSSParser* m_parser;
+        WebCore::BisonCSSParser* m_parser;
     };
 
     class StyleDeclarationScope {
         WTF_MAKE_NONCOPYABLE(StyleDeclarationScope);
     public:
-        StyleDeclarationScope(CSSParser* parser, const StylePropertySet* declaration)
+        StyleDeclarationScope(BisonCSSParser* parser, const StylePropertySet* declaration)
             : m_parser(parser)
             , m_mode(declaration->cssParserMode())
         {
@@ -471,7 +471,7 @@ private:
         }
 
     private:
-        CSSParser* m_parser;
+        BisonCSSParser* m_parser;
         CSSParserMode m_mode;
     };
 
@@ -617,7 +617,7 @@ CSSValueID cssValueKeywordID(const CSSParserString&);
 class ShorthandScope {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    ShorthandScope(CSSParser* parser, CSSPropertyID propId) : m_parser(parser)
+    ShorthandScope(BisonCSSParser* parser, CSSPropertyID propId) : m_parser(parser)
     {
         if (!(m_parser->m_inParseShorthand++))
             m_parser->m_currentShorthand = propId;
@@ -629,12 +629,12 @@ public:
     }
 
 private:
-    CSSParser* m_parser;
+    BisonCSSParser* m_parser;
 };
 
 bool isValidNthToken(const CSSParserString&);
 
-inline int cssyylex(void* yylval, CSSParser* parser)
+inline int cssyylex(void* yylval, BisonCSSParser* parser)
 {
     return parser->m_tokenizer.lex(yylval);
 }

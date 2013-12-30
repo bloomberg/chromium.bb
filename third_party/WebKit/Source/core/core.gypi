@@ -686,7 +686,7 @@
             'css/CSSOMUtils.h',
             'css/CSSPageRule.cpp',
             'css/CSSPageRule.h',
-            'css/CSSParser.h',
+            'css/parser/BisonCSSParser.h',
             'css/CSSParserMode.cpp',
             'css/CSSParserMode.h',
             'css/CSSParserValues.cpp',

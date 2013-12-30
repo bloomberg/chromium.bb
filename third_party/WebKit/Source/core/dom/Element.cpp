@@ -34,7 +34,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/animation/DocumentTimeline.h"
 #include "core/animation/css/CSSAnimations.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
@@ -3479,7 +3479,7 @@ inline void Element::setInlineStyleFromString(const AtomicString& newStyleString
         inlineStyle.clear();
 
     if (!inlineStyle) {
-        inlineStyle = CSSParser::parseInlineStyleDeclaration(newStyleString, this);
+        inlineStyle = BisonCSSParser::parseInlineStyleDeclaration(newStyleString, this);
     } else {
         ASSERT(inlineStyle->isMutable());
         static_pointer_cast<MutableStylePropertySet>(inlineStyle)->parseDeclaration(newStyleString, document().elementSheet()->contents());

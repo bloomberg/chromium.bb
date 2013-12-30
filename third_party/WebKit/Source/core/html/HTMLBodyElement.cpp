@@ -28,7 +28,7 @@
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSImageValue.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/events/ThreadLocalEventNames.h"
@@ -101,7 +101,7 @@ void HTMLBodyElement::parseAttribute(const QualifiedName& name, const AtomicStri
                 document().textLinkColors().resetActiveLinkColor();
         } else {
             RGBA32 color;
-            if (CSSParser::parseColor(color, value, !document().inQuirksMode())) {
+            if (BisonCSSParser::parseColor(color, value, !document().inQuirksMode())) {
                 if (name == linkAttr)
                     document().textLinkColors().setLinkColor(color);
                 else if (name == vlinkAttr)

@@ -40,7 +40,7 @@
 #include "bindings/v8/ScriptState.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceSrcValue.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 #include "core/css/CSSValueList.h"
@@ -94,7 +94,7 @@ static PassRefPtr<CSSValue> parseCSSValue(const String& s, CSSPropertyID propert
     if (s.isEmpty())
         return 0;
     RefPtr<MutableStylePropertySet> parsedStyle = MutableStylePropertySet::create();
-    CSSParser::parseValue(parsedStyle.get(), propertyID, s, true, HTMLStandardMode, 0);
+    BisonCSSParser::parseValue(parsedStyle.get(), propertyID, s, true, HTMLStandardMode, 0);
     return parsedStyle->getPropertyCSSValue(propertyID);
 }
 

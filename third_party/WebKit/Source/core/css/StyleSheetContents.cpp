@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/css/StyleSheetContents.h"
 
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StylePropertySet.h"
@@ -301,7 +301,7 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
     bool hasValidMIMEType = false;
     String sheetText = cachedStyleSheet->sheetText(enforceMIMEType, &hasValidMIMEType);
 
-    CSSParser p(parserContext(), UseCounter::getFrom(this));
+    BisonCSSParser p(parserContext(), UseCounter::getFrom(this));
     p.parseSheet(this, sheetText, TextPosition::minimumPosition(), 0, true);
 
     // If we're loading a stylesheet cross-origin, and the MIME type is not standard, require the CSS
@@ -323,7 +323,7 @@ bool StyleSheetContents::parseString(const String& sheetText)
 
 bool StyleSheetContents::parseStringAtPosition(const String& sheetText, const TextPosition& startPosition, bool createdByParser)
 {
-    CSSParser p(parserContext(), UseCounter::getFrom(this));
+    BisonCSSParser p(parserContext(), UseCounter::getFrom(this));
     p.parseSheet(this, sheetText, startPosition, 0, createdByParser);
 
     return true;

@@ -25,7 +25,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "RuntimeEnabledFeatures.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSValueList.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/svg/SVGPaint.h"
@@ -39,7 +39,7 @@ static bool isSystemColor(int id)
     return (id >= CSSValueActiveborder && id <= CSSValueWindowtext) || id == CSSValueMenu;
 }
 
-bool CSSParser::parseSVGValue(CSSPropertyID propId, bool important)
+bool BisonCSSParser::parseSVGValue(CSSPropertyID propId, bool important)
 {
     CSSParserValue* value = m_valueList->current();
     if (!value)
@@ -287,7 +287,7 @@ bool CSSParser::parseSVGValue(CSSPropertyID propId, bool important)
     case CSSPropertyMarker:
     {
         ShorthandScope scope(this, propId);
-        CSSParser::ImplicitScope implicitScope(this, PropertyImplicit);
+        BisonCSSParser::ImplicitScope implicitScope(this, PropertyImplicit);
         if (!parseValue(CSSPropertyMarkerStart, important))
             return false;
         if (m_valueList->current()) {
@@ -301,7 +301,7 @@ bool CSSParser::parseSVGValue(CSSPropertyID propId, bool important)
     }
     default:
         // If you crash here, it's because you added a css property and are not handling it
-        // in either this switch statement or the one in CSSParser::parseValue
+        // in either this switch statement or the one in BisonCSSParser::parseValue
         ASSERT_WITH_MESSAGE(0, "unimplemented propertyID: %d", propId);
         return false;
     }
@@ -330,7 +330,7 @@ bool CSSParser::parseSVGValue(CSSPropertyID propId, bool important)
     return true;
 }
 
-PassRefPtr<CSSValue> CSSParser::parseSVGStrokeDasharray()
+PassRefPtr<CSSValue> BisonCSSParser::parseSVGStrokeDasharray()
 {
     RefPtr<CSSValueList> ret = CSSValueList::createCommaSeparated();
     CSSParserValue* value = m_valueList->current();
@@ -352,7 +352,7 @@ PassRefPtr<CSSValue> CSSParser::parseSVGStrokeDasharray()
     return ret.release();
 }
 
-PassRefPtr<CSSValue> CSSParser::parseSVGPaint()
+PassRefPtr<CSSValue> BisonCSSParser::parseSVGPaint()
 {
     RGBA32 c = Color::transparent;
     if (!parseColorFromValue(m_valueList->current(), c))
@@ -360,7 +360,7 @@ PassRefPtr<CSSValue> CSSParser::parseSVGPaint()
     return SVGPaint::createColor(Color(c));
 }
 
-PassRefPtr<CSSValue> CSSParser::parseSVGColor()
+PassRefPtr<CSSValue> BisonCSSParser::parseSVGColor()
 {
     RGBA32 c = Color::transparent;
     if (!parseColorFromValue(m_valueList->current(), c))
@@ -369,7 +369,7 @@ PassRefPtr<CSSValue> CSSParser::parseSVGColor()
 }
 
 // normal | [ fill || stroke || markers ]
-PassRefPtr<CSSValue> CSSParser::parsePaintOrder() const
+PassRefPtr<CSSValue> BisonCSSParser::parsePaintOrder() const
 {
     if (m_valueList->size() > 3)
         return 0;

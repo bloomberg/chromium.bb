@@ -26,7 +26,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSCharsetRule.h"
 #include "core/css/CSSImportRule.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/MediaList.h"
@@ -302,7 +302,7 @@ unsigned CSSStyleSheet::insertRule(const String& ruleString, unsigned index, Exc
         exceptionState.throwUninformativeAndGenericDOMException(IndexSizeError);
         return 0;
     }
-    CSSParser p(m_contents->parserContext(), UseCounter::getFrom(this));
+    BisonCSSParser p(m_contents->parserContext(), UseCounter::getFrom(this));
     RefPtr<StyleRuleBase> rule = p.parseRule(m_contents.get(), ruleString);
 
     if (!rule) {

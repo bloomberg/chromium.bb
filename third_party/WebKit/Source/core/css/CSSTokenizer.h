@@ -29,7 +29,7 @@
 
 namespace WebCore {
 
-class CSSParser;
+class BisonCSSParser;
 struct CSSParserLocation;
 struct CSSParserString;
 
@@ -37,9 +37,9 @@ class CSSTokenizer {
     WTF_MAKE_NONCOPYABLE(CSSTokenizer);
 public:
     // FIXME: This should not be needed but there are still some ties between the 2 classes.
-    friend class CSSParser;
+    friend class BisonCSSParser;
 
-    CSSTokenizer(CSSParser& parser)
+    CSSTokenizer(BisonCSSParser& parser)
         : m_parser(parser)
         , m_parsedTextPrefixLength(0)
         , m_parsedTextSuffixLength(0)
@@ -139,7 +139,7 @@ private:
     template <typename SourceCharacterType>
     int realLex(void* yylval);
 
-    CSSParser& m_parser;
+    BisonCSSParser& m_parser;
 
     size_t m_parsedTextPrefixLength;
     size_t m_parsedTextSuffixLength;

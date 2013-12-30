@@ -29,7 +29,7 @@
 #include "HTMLNames.h"
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSParserMode.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
@@ -62,8 +62,8 @@ using namespace HTMLNames;
 
 %pure_parser
 
-%parse-param { CSSParser* parser }
-%lex-param { CSSParser* parser }
+%parse-param { BisonCSSParser* parser }
+%lex-param { BisonCSSParser* parser }
 
 %union {
     bool boolean;

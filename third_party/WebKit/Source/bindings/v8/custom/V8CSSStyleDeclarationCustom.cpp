@@ -34,7 +34,7 @@
 #include "CSSPropertyNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSValue.h"

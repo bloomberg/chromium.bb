@@ -705,7 +705,7 @@ double CSSPrimitiveValue::getDoubleValue() const
 
 CSSPrimitiveValue::UnitTypes CSSPrimitiveValue::canonicalUnitTypeForCategory(UnitCategory category)
 {
-    // The canonical unit type is chosen according to the way CSSParser::validUnit() chooses the default unit
+    // The canonical unit type is chosen according to the way BisonCSSParser::validUnit() chooses the default unit
     // in each category (based on unitflags).
     switch (category) {
     case UNumber:
@@ -759,7 +759,7 @@ bool CSSPrimitiveValue::getDoubleValueInternal(UnitTypes requestedUnitType, doub
     }
 
     if (sourceUnitType == CSS_NUMBER) {
-        // We interpret conversion from CSS_NUMBER in the same way as CSSParser::validUnit() while using non-strict mode.
+        // We interpret conversion from CSS_NUMBER in the same way as BisonCSSParser::validUnit() while using non-strict mode.
         sourceUnitType = canonicalUnitTypeForCategory(targetCategory);
         if (sourceUnitType == CSS_UNKNOWN)
             return false;

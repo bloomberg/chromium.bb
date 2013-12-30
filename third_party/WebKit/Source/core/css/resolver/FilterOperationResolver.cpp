@@ -31,7 +31,7 @@
 
 #include "core/css/CSSFilterValue.h"
 #include "core/css/CSSMixFunctionValue.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSShaderValue.h"
 #include "core/css/CSSShadowValue.h"
@@ -261,9 +261,9 @@ static PassRefPtr<CustomFilterOperation> createCustomFilterOperationWithInlineSy
             ASSERT(mixFunction->length() <= 3);
             while (iterator.hasMore()) {
                 CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(iterator.value());
-                if (CSSParser::isBlendMode(primitiveValue->getValueID()))
+                if (BisonCSSParser::isBlendMode(primitiveValue->getValueID()))
                     mixSettings.blendMode = *primitiveValue;
-                else if (CSSParser::isCompositeOperator(primitiveValue->getValueID()))
+                else if (BisonCSSParser::isCompositeOperator(primitiveValue->getValueID()))
                     mixSettings.compositeOperator = *primitiveValue;
                 else
                     ASSERT_NOT_REACHED();

@@ -290,8 +290,8 @@
         # Generated from CSSTokenizer-in.cpp
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSTokenizer.cpp',
 
-        # Generated from CSSParser-in.cpp
-        '<(SHARED_INTERMEDIATE_DIR)/blink/CSSParser.cpp',
+        # Generated from BisonCSSParser-in.cpp
+        '<(SHARED_INTERMEDIATE_DIR)/blink/BisonCSSParser.cpp',
 
         # Generated from HTMLMetaElement-in.cpp
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLMetaElement.cpp',

@@ -32,7 +32,7 @@
 #include "WebSelector.h"
 
 #include "../platform/WebString.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSSelectorList.h"
 
 using namespace WebCore;
@@ -42,7 +42,7 @@ namespace blink {
 WebString canonicalizeSelector(WebString webSelector, WebSelectorType restriction)
 {
     CSSParserContext context(HTMLStandardMode);
-    CSSParser parser(context);
+    BisonCSSParser parser(context);
     CSSSelectorList selectorList;
     parser.parseSelector(webSelector, selectorList);
 

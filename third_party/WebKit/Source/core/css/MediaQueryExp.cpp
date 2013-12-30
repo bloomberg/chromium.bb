@@ -32,7 +32,7 @@
 
 #include "CSSValueKeywords.h"
 #include "core/css/CSSAspectRatioValue.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/text/StringBuilder.h"
 

@@ -38,7 +38,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
@@ -2018,7 +2018,7 @@ void CanvasRenderingContext2D::setFont(const String& newFont)
     if (!parsedStyle) {
         parsedStyle = MutableStylePropertySet::create();
         CSSParserMode mode = m_usesCSSCompatibilityParseMode ? HTMLQuirksMode : HTMLStandardMode;
-        CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, newFont, true, mode, 0);
+        BisonCSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, newFont, true, mode, 0);
         m_fetchedFonts.add(newFont, parsedStyle);
     }
     if (parsedStyle->isEmpty())

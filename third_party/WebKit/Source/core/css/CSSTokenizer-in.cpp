@@ -28,7 +28,7 @@
 #include "core/css/CSSTokenizer.h"
 
 #include "core/css/CSSKeyframeRule.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSParserValues.h"
 #include "core/css/MediaQuery.h"
 #include "core/css/StyleRule.h"

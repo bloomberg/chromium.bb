@@ -21,7 +21,7 @@
 #include "core/css/MediaList.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/css/CSSParser.h"
+#include "core/css/parser/BisonCSSParser.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaFeatureNames.h"
 #include "core/css/MediaQuery.h"
@@ -73,7 +73,7 @@ PassRefPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaString)
     if (mediaString.isEmpty())
         return MediaQuerySet::create();
 
-    CSSParser parser(HTMLStandardMode);
+    BisonCSSParser parser(HTMLStandardMode);
     return parser.parseMediaQueryList(mediaString);
 }
 
