@@ -38,7 +38,7 @@ class RegistryOverrideManager {
   // under the temporary test key path. There is no need to randomize
   // |override_name|, as a random parent key is generated. Multiple overrides to
   // the same hive are not supported and lead to undefined behavior.
-  void OverrideRegistry(HKEY override, const string16& override_name);
+  void OverrideRegistry(HKEY override, const base::string16& override_name);
 
  private:
   friend class RegistryOverrideManagerTest;
@@ -46,7 +46,7 @@ class RegistryOverrideManager {
   // Keeps track of one override.
   class ScopedRegistryKeyOverride {
    public:
-    ScopedRegistryKeyOverride(HKEY override, const string16& key_path);
+    ScopedRegistryKeyOverride(HKEY override, const base::string16& key_path);
     ~ScopedRegistryKeyOverride();
 
    private:
@@ -58,12 +58,12 @@ class RegistryOverrideManager {
 
   // Used for testing only.
   RegistryOverrideManager(const base::Time& timestamp,
-                          const string16& test_key_root);
+                          const base::string16& test_key_root);
 
   base::Time timestamp_;
-  string16 guid_;
+  base::string16 guid_;
 
-  string16 test_key_root_;
+  base::string16 test_key_root_;
   ScopedVector<ScopedRegistryKeyOverride> overrides_;
 
   DISALLOW_COPY_AND_ASSIGN(RegistryOverrideManager);
@@ -71,7 +71,7 @@ class RegistryOverrideManager {
 
 // Generates a temporary key path that will be eventually deleted
 // automatically if the process crashes.
-string16 GenerateTempKeyPath();
+base::string16 GenerateTempKeyPath();
 
 }  // namespace registry_util
 

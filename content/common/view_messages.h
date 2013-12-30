@@ -1953,7 +1953,8 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_SelectRange_ACK)
 IPC_MESSAGE_ROUTED0(ViewHostMsg_MoveCaret_ACK)
 
 // Notification that the text selection has changed.
-// Note: The secound parameter is the character based offset of the string16
+// Note: The secound parameter is the character based offset of the
+// base::string16
 // text in the document.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SelectionChanged,
                     base::string16 /* text covers the selection range */,
@@ -2308,8 +2309,7 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrame,
 // instead of encoding the data as a string which is not allowed normally. Since
 // ths is only used in Android WebView, it's allowed temporarily.
 // http://crbug.com/330872
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SmartClipDataExtracted,
-                    string16)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SmartClipDataExtracted, base::string16)
 
 #elif defined(OS_MACOSX)
 // Request that the browser load a font into shared memory for us.

@@ -1006,7 +1006,7 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
     autocomplete_->scoring_params_.experimental_scoring_enabled = false;
     ASSERT_NO_FATAL_FAILURE(
         RunTest(ASCIIToUTF16(test_cases[i].input),
-                string16(), false, output, max_matches));
+                base::string16(), false, output, max_matches));
     for (int j = 0; j < max_matches; ++j) {
       EXPECT_EQ(test_cases[i].matches[j].control_relevance,
                 matches_[j].relevance);
@@ -1016,7 +1016,7 @@ TEST_F(HistoryURLProviderTest, HUPScoringExperiment) {
     autocomplete_->scoring_params_.experimental_scoring_enabled = true;
     ASSERT_NO_FATAL_FAILURE(
         RunTest(ASCIIToUTF16(test_cases[i].input),
-                string16(), false, output, max_matches));
+                base::string16(), false, output, max_matches));
     for (int j = 0; j < max_matches; ++j) {
       EXPECT_EQ(test_cases[i].matches[j].experiment_relevance,
                 matches_[j].relevance);

@@ -31,35 +31,35 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
   return new FileVersionInfoMac(bundle);
 }
 
-string16 FileVersionInfoMac::company_name() {
-  return string16();
+base::string16 FileVersionInfoMac::company_name() {
+  return base::string16();
 }
 
-string16 FileVersionInfoMac::company_short_name() {
-  return string16();
+base::string16 FileVersionInfoMac::company_short_name() {
+  return base::string16();
 }
 
-string16 FileVersionInfoMac::internal_name() {
-  return string16();
+base::string16 FileVersionInfoMac::internal_name() {
+  return base::string16();
 }
 
-string16 FileVersionInfoMac::product_name() {
+base::string16 FileVersionInfoMac::product_name() {
   return GetString16Value(kCFBundleNameKey);
 }
 
-string16 FileVersionInfoMac::product_short_name() {
+base::string16 FileVersionInfoMac::product_short_name() {
   return GetString16Value(kCFBundleNameKey);
 }
 
-string16 FileVersionInfoMac::comments() {
-  return string16();
+base::string16 FileVersionInfoMac::comments() {
+  return base::string16();
 }
 
-string16 FileVersionInfoMac::legal_copyright() {
+base::string16 FileVersionInfoMac::legal_copyright() {
   return GetString16Value(CFSTR("CFBundleGetInfoString"));
 }
 
-string16 FileVersionInfoMac::product_version() {
+base::string16 FileVersionInfoMac::product_version() {
   // On OS X, CFBundleVersion is used by LaunchServices, and must follow
   // specific formatting rules, so the four-part Chrome version is in
   // CFBundleShortVersionString. On iOS, however, CFBundleVersion can be the
@@ -72,31 +72,31 @@ string16 FileVersionInfoMac::product_version() {
 #endif  // defined(OS_IOS)
 }
 
-string16 FileVersionInfoMac::file_description() {
-  return string16();
+base::string16 FileVersionInfoMac::file_description() {
+  return base::string16();
 }
 
-string16 FileVersionInfoMac::legal_trademarks() {
-  return string16();
+base::string16 FileVersionInfoMac::legal_trademarks() {
+  return base::string16();
 }
 
-string16 FileVersionInfoMac::private_build() {
-  return string16();
+base::string16 FileVersionInfoMac::private_build() {
+  return base::string16();
 }
 
-string16 FileVersionInfoMac::file_version() {
+base::string16 FileVersionInfoMac::file_version() {
   return product_version();
 }
 
-string16 FileVersionInfoMac::original_filename() {
+base::string16 FileVersionInfoMac::original_filename() {
   return GetString16Value(kCFBundleNameKey);
 }
 
-string16 FileVersionInfoMac::special_build() {
-  return string16();
+base::string16 FileVersionInfoMac::special_build() {
+  return base::string16();
 }
 
-string16 FileVersionInfoMac::last_change() {
+base::string16 FileVersionInfoMac::last_change() {
   return GetString16Value(CFSTR("SCMRevision"));
 }
 
@@ -108,7 +108,7 @@ bool FileVersionInfoMac::is_official_build() {
 #endif
 }
 
-string16 FileVersionInfoMac::GetString16Value(CFStringRef name) {
+base::string16 FileVersionInfoMac::GetString16Value(CFStringRef name) {
   if (bundle_) {
     NSString *ns_name = base::mac::CFToNSCast(name);
     NSString* value = [bundle_ objectForInfoDictionaryKey:ns_name];
@@ -116,5 +116,5 @@ string16 FileVersionInfoMac::GetString16Value(CFStringRef name) {
       return base::SysNSStringToUTF16(value);
     }
   }
-  return string16();
+  return base::string16();
 }

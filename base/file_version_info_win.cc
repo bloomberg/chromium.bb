@@ -81,63 +81,63 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
   }
 }
 
-string16 FileVersionInfoWin::company_name() {
+base::string16 FileVersionInfoWin::company_name() {
   return GetStringValue(L"CompanyName");
 }
 
-string16 FileVersionInfoWin::company_short_name() {
+base::string16 FileVersionInfoWin::company_short_name() {
   return GetStringValue(L"CompanyShortName");
 }
 
-string16 FileVersionInfoWin::internal_name() {
+base::string16 FileVersionInfoWin::internal_name() {
   return GetStringValue(L"InternalName");
 }
 
-string16 FileVersionInfoWin::product_name() {
+base::string16 FileVersionInfoWin::product_name() {
   return GetStringValue(L"ProductName");
 }
 
-string16 FileVersionInfoWin::product_short_name() {
+base::string16 FileVersionInfoWin::product_short_name() {
   return GetStringValue(L"ProductShortName");
 }
 
-string16 FileVersionInfoWin::comments() {
+base::string16 FileVersionInfoWin::comments() {
   return GetStringValue(L"Comments");
 }
 
-string16 FileVersionInfoWin::legal_copyright() {
+base::string16 FileVersionInfoWin::legal_copyright() {
   return GetStringValue(L"LegalCopyright");
 }
 
-string16 FileVersionInfoWin::product_version() {
+base::string16 FileVersionInfoWin::product_version() {
   return GetStringValue(L"ProductVersion");
 }
 
-string16 FileVersionInfoWin::file_description() {
+base::string16 FileVersionInfoWin::file_description() {
   return GetStringValue(L"FileDescription");
 }
 
-string16 FileVersionInfoWin::legal_trademarks() {
+base::string16 FileVersionInfoWin::legal_trademarks() {
   return GetStringValue(L"LegalTrademarks");
 }
 
-string16 FileVersionInfoWin::private_build() {
+base::string16 FileVersionInfoWin::private_build() {
   return GetStringValue(L"PrivateBuild");
 }
 
-string16 FileVersionInfoWin::file_version() {
+base::string16 FileVersionInfoWin::file_version() {
   return GetStringValue(L"FileVersion");
 }
 
-string16 FileVersionInfoWin::original_filename() {
+base::string16 FileVersionInfoWin::original_filename() {
   return GetStringValue(L"OriginalFilename");
 }
 
-string16 FileVersionInfoWin::special_build() {
+base::string16 FileVersionInfoWin::special_build() {
   return GetStringValue(L"SpecialBuild");
 }
 
-string16 FileVersionInfoWin::last_change() {
+base::string16 FileVersionInfoWin::last_change() {
   return GetStringValue(L"LastChange");
 }
 

@@ -37,27 +37,27 @@ class RegistryOverrideManagerTest : public testing::Test {
     key.DeleteKey(fake_test_key_root_.c_str());
   }
 
-  void AssertKeyExists(const string16& key_path) {
+  void AssertKeyExists(const base::string16& key_path) {
     base::win::RegKey key;
     ASSERT_EQ(ERROR_SUCCESS,
               key.Open(HKEY_CURRENT_USER, key_path.c_str(), KEY_READ))
         << key_path << " does not exist.";
   }
 
-  void AssertKeyAbsent(const string16& key_path) {
+  void AssertKeyAbsent(const base::string16& key_path) {
     base::win::RegKey key;
     ASSERT_NE(ERROR_SUCCESS,
               key.Open(HKEY_CURRENT_USER, key_path.c_str(), KEY_READ))
         << key_path << " exists but it should not.";
   }
 
-  void CreateKey(const string16& key_path) {
+  void CreateKey(const base::string16& key_path) {
     base::win::RegKey key;
     EXPECT_EQ(ERROR_SUCCESS,
               key.Create(HKEY_CURRENT_USER, key_path.c_str(), KEY_ALL_ACCESS));
   }
 
-  string16 FakeOverrideManagerPath(const base::Time& time) {
+  base::string16 FakeOverrideManagerPath(const base::Time& time) {
     return fake_test_key_root_ + L"\\" +
            base::Int64ToString16(time.ToInternalValue());
   }
@@ -67,7 +67,7 @@ class RegistryOverrideManagerTest : public testing::Test {
     manager_->OverrideRegistry(HKEY_CURRENT_USER, L"override_manager_unittest");
   }
 
-  string16 fake_test_key_root_;
+  base::string16 fake_test_key_root_;
   scoped_ptr<RegistryOverrideManager> manager_;
 };
 
@@ -101,14 +101,14 @@ TEST_F(RegistryOverrideManagerTest, DeleteStaleKeys) {
   base::Time::Exploded kTestTimeExploded = {2013, 11, 1, 4, 0, 0, 0, 0};
   base::Time kTestTime = base::Time::FromUTCExploded(kTestTimeExploded);
 
-  string16 path_garbage = fake_test_key_root_ + L"\\Blah";
-  string16 path_very_stale =
+  base::string16 path_garbage = fake_test_key_root_ + L"\\Blah";
+  base::string16 path_very_stale =
       FakeOverrideManagerPath(kTestTime - base::TimeDelta::FromDays(100));
-  string16 path_stale =
+  base::string16 path_stale =
       FakeOverrideManagerPath(kTestTime - base::TimeDelta::FromDays(5));
-  string16 path_current =
+  base::string16 path_current =
       FakeOverrideManagerPath(kTestTime - base::TimeDelta::FromMinutes(1));
-  string16 path_future =
+  base::string16 path_future =
       FakeOverrideManagerPath(kTestTime + base::TimeDelta::FromMinutes(1));
 
   CreateKey(path_garbage);

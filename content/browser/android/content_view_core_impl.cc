@@ -1659,7 +1659,8 @@ void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,
       GetWebContents()->GetRoutingID(), rect));
 }
 
-void ContentViewCoreImpl::OnSmartClipDataExtracted(const string16& result) {
+void ContentViewCoreImpl::OnSmartClipDataExtracted(
+    const base::string16& result) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())

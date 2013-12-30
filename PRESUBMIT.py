@@ -1037,7 +1037,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
   results.extend(_CheckCygwinShell(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
-  results.extend(_CheckForString16(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
@@ -1178,55 +1177,6 @@ def _CheckForInvalidOSMacros(input_api, output_api):
   return [output_api.PresubmitError(
       'Possibly invalid OS macro[s] found. Please fix your code\n'
       'or add your macro to src/PRESUBMIT.py.', bad_macros)]
-
-
-def _CheckForString16InFile(input_api, f):
-  """Check for string16 without base:: in front."""
-  reg = input_api.re.compile(r'\b(?<!base::)string16\b')
-  use = 'using base::string16;'
-  include = '#include "base/strings/string16.h"'
-  results = []
-  for lnum, line in f.ChangedContents():
-    if reg.search(line) and not include in line and not use in f.NewContents():
-      results.append('    %s:%d' % (f.LocalPath(), lnum))
-  return results
-
-
-def _CheckForString16(input_api, output_api):
-  file_filter = lambda f: input_api.FilterSourceFile(f,
-      white_list=(
-          r'^android_webview[\\\/]',
-          r'^apps[\\\/]',
-          r'^ash[\\\/]',
-          r'^chrome[\\\/]',
-          r'^chrome_frame[\\\/]',
-          r'^chromeos[\\\/]',
-          r'^components[\\\/]',
-          r'^content[\\\/]',
-          r'^device[\\\/]',
-          r'^ipc[\\\/]',
-          r'^net[\\\/]',
-          r'^ppapi[\\\/]',
-          r'^printing[\\\/]',
-          r'^rlz[\\\/]',
-          r'^skia[\\\/]',
-          r'^tools[\\\/]',
-          r'^ui[\\\/]',
-          r'^webkit[\\\/]',
-          r'^win8[\\\/]',
-      ),
-      black_list=(_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
-                  input_api.DEFAULT_BLACK_LIST))
-
-  unprefixed = []
-  for f in input_api.AffectedFiles(file_filter=file_filter):
-    unprefixed.extend(_CheckForString16InFile(input_api, f))
-
-  if not unprefixed:
-    return []
-
-  return [output_api.PresubmitPromptWarning(
-      'string16 should be prefixed with base:: namespace.', unprefixed)]
 
 
 def CheckChangeOnUpload(input_api, output_api):

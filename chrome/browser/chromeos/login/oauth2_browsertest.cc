@@ -587,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, MergeSessionThrottle) {
   ASSERT_FALSE(fake_google_.was_page_sent());
 
   // Check that throttle page is displayed instead.
-  string16 title;
+  base::string16 title;
   ui_test_utils::GetCurrentTabTitle(browser, &title);
   LOG(WARNING) << "Loaded page at the start : " << title;
 //  ui_test_utils::GetCurrentTabTitle(browser, &title);

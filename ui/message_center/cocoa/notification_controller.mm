@@ -227,8 +227,8 @@
 // more than the given number of lines. The wrapped text would be painted using
 // the given font. The Ellipsis could be added at the end of the last line if
 // it is too long.
-- (string16)wrapText:(const base::string16&)text
-             forFont:(NSFont*)font
+- (base::string16)wrapText:(const base::string16&)text
+                   forFont:(NSFont*)font
     maxNumberOfLines:(size_t)lines;
 @end
 
@@ -724,8 +724,8 @@
   return contentFrame;
 }
 
-- (string16)wrapText:(const base::string16&)text
-             forFont:(NSFont*)nsfont
+- (base::string16)wrapText:(const base::string16&)text
+                   forFont:(NSFont*)nsfont
     maxNumberOfLines:(size_t)lines {
   if (text.empty())
     return text;

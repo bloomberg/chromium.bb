@@ -25,8 +25,8 @@
 @synthesize model = model_;
 @synthesize useWithPopUpButtonCell = useWithPopUpButtonCell_;
 
-+ (string16)elideMenuTitle:(const base::string16&)title
-                   toWidth:(int)width {
++ (base::string16)elideMenuTitle:(const base::string16&)title
+                         toWidth:(int)width {
   NSFont* nsfont = [NSFont menuBarFontOfSize:0];  // 0 means "default"
   return gfx::ElideText(title, gfx::FontList(gfx::Font(nsfont)), width,
                         gfx::ELIDE_AT_END);

@@ -38,7 +38,7 @@ static bool GetQIP(NtQueryInformationProcess** qip_func_ptr) {
 }
 
 // Get the command line of a process
-bool GetCommandLineForProcess(uint32 process_id, string16* cmd_line) {
+bool GetCommandLineForProcess(uint32 process_id, base::string16* cmd_line) {
   DCHECK(process_id != 0);
   DCHECK(cmd_line);
 
@@ -93,7 +93,7 @@ bool GetCommandLineForProcess(uint32 process_id, string16* cmd_line) {
 
   // Copy all the process parameters into a buffer.
   bool success = false;
-  string16 buffer;
+  base::string16 buffer;
   if (process_params_address) {
     SIZE_T bytes_read;
     RTL_USER_PROCESS_PARAMETERS params = { 0 };
@@ -130,28 +130,28 @@ bool GetCommandLineForProcess(uint32 process_id, string16* cmd_line) {
 // Used to filter processes by process ID.
 class ArgumentFilter : public base::ProcessFilter {
  public:
-  explicit ArgumentFilter(const string16& argument)
+  explicit ArgumentFilter(const base::string16& argument)
       : argument_to_find_(argument) {}
 
   // Returns true to indicate set-inclusion and false otherwise.  This method
   // should not have side-effects and should be idempotent.
   virtual bool Includes(const base::ProcessEntry& entry) const {
     bool found = false;
-    string16 command_line;
+    base::string16 command_line;
     if (GetCommandLineForProcess(entry.pid(), &command_line)) {
-      string16::const_iterator it =
+      base::string16::const_iterator it =
           std::search(command_line.begin(),
                       command_line.end(),
                       argument_to_find_.begin(),
                       argument_to_find_.end(),
-          base::CaseInsensitiveCompareASCII<wchar_t>());
+                      base::CaseInsensitiveCompareASCII<wchar_t>());
       found = (it != command_line.end());
     }
     return found;
   }
 
  protected:
-  string16 argument_to_find_;
+  base::string16 argument_to_find_;
 };
 
 }  // namespace

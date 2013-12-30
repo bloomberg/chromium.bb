@@ -88,7 +88,7 @@ bool HandleCloserAgent::CloseHandles() {
                                      32 * sizeof(wchar_t));
   OBJECT_TYPE_INFORMATION* type_info =
       reinterpret_cast<OBJECT_TYPE_INFORMATION*>(&(type_info_buffer[0]));
-  string16 handle_name;
+  base::string16 handle_name;
   HANDLE handle = NULL;
   int invalid_count = 0;
 

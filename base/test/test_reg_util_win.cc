@@ -18,7 +18,8 @@ namespace {
 const wchar_t kTimestampDelimiter[] = L"$";
 const wchar_t kTempTestKeyPath[] = L"Software\\Chromium\\TempTestKeys";
 
-void DeleteStaleTestKeys(const base::Time& now, const string16& test_key_root) {
+void DeleteStaleTestKeys(const base::Time& now,
+                         const base::string16& test_key_root) {
   base::win::RegKey test_root_key;
   if (test_root_key.Open(HKEY_CURRENT_USER,
                          test_key_root.c_str(),
@@ -30,9 +31,9 @@ void DeleteStaleTestKeys(const base::Time& now, const string16& test_key_root) {
   base::win::RegistryKeyIterator iterator_test_root_key(HKEY_CURRENT_USER,
                                                         test_key_root.c_str());
   for (; iterator_test_root_key.Valid(); ++iterator_test_root_key) {
-    string16 key_name = iterator_test_root_key.Name();
-    std::vector<string16> tokens;
-    Tokenize(key_name, string16(kTimestampDelimiter), &tokens);
+    base::string16 key_name = iterator_test_root_key.Name();
+    std::vector<base::string16> tokens;
+    Tokenize(key_name, base::string16(kTimestampDelimiter), &tokens);
     int64 key_name_as_number = 0;
 
     if (!base::StringToInt64(tokens[0], &key_name_as_number)) {
@@ -48,9 +49,9 @@ void DeleteStaleTestKeys(const base::Time& now, const string16& test_key_root) {
   }
 }
 
-string16 GenerateTempKeyPath(const string16& test_key_root,
-                             const base::Time& timestamp) {
-  string16 key_path = test_key_root;
+base::string16 GenerateTempKeyPath(const base::string16& test_key_root,
+                                   const base::Time& timestamp) {
+  base::string16 key_path = test_key_root;
   key_path += L"\\" + base::Int64ToString16(timestamp.ToInternalValue());
   key_path += kTimestampDelimiter + base::ASCIIToWide(base::GenerateGUID());
 
@@ -61,7 +62,7 @@ string16 GenerateTempKeyPath(const string16& test_key_root,
 
 RegistryOverrideManager::ScopedRegistryKeyOverride::ScopedRegistryKeyOverride(
     HKEY override,
-    const string16& key_path)
+    const base::string16& key_path)
     : override_(override) {
   EXPECT_EQ(
       ERROR_SUCCESS,
@@ -81,8 +82,9 @@ RegistryOverrideManager::RegistryOverrideManager()
   DeleteStaleTestKeys(timestamp_, test_key_root_);
 }
 
-RegistryOverrideManager::RegistryOverrideManager(const base::Time& timestamp,
-                                                 const string16& test_key_root)
+RegistryOverrideManager::RegistryOverrideManager(
+    const base::Time& timestamp,
+    const base::string16& test_key_root)
     : timestamp_(timestamp), test_key_root_(test_key_root) {
   DeleteStaleTestKeys(timestamp_, test_key_root_);
 }
@@ -91,13 +93,14 @@ RegistryOverrideManager::~RegistryOverrideManager() {}
 
 void RegistryOverrideManager::OverrideRegistry(
     HKEY override,
-    const string16& /*override_name*/) {
-  string16 key_path = GenerateTempKeyPath(test_key_root_, timestamp_);
+    const base::string16& /*override_name*/) {
+  base::string16 key_path = GenerateTempKeyPath(test_key_root_, timestamp_);
   overrides_.push_back(new ScopedRegistryKeyOverride(override, key_path));
 }
 
-string16 GenerateTempKeyPath() {
-  return GenerateTempKeyPath(string16(kTempTestKeyPath), base::Time::Now());
+base::string16 GenerateTempKeyPath() {
+  return GenerateTempKeyPath(base::string16(kTempTestKeyPath),
+                             base::Time::Now());
 }
 
 }  // namespace registry_util
