@@ -249,8 +249,15 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   ASSERT_TRUE(peerconnection_server_.Stop());
 }
 
+#if defined(OS_WIN)
+// Timing out on Windows: http://crbug.com/331045
+#define MAYBE_TestMediaStreamTrackEnableDisable DISABLED_TestMediaStreamTrackEnableDisable
+#else
+#define MAYBE_TestMediaStreamTrackEnableDisable MANUAL_TestMediaStreamTrackEnableDisable
+#endif
+
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       MANUAL_TestMediaStreamTrackEnableDisable) {
+                       MAYBE_TestMediaStreamTrackEnableDisable) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
