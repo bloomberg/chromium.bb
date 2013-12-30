@@ -647,26 +647,6 @@ void HTMLCollection::updateNameCache() const
     setHasNameCache();
 }
 
-bool HTMLCollection::hasNamedItem(const AtomicString& name) const
-{
-    if (name.isEmpty())
-        return false;
-
-    updateNameCache();
-
-    if (Vector<Element*>* cache = idCache(name)) {
-        if (!cache->isEmpty())
-            return true;
-    }
-
-    if (Vector<Element*>* cache = nameCache(name)) {
-        if (!cache->isEmpty())
-            return true;
-    }
-
-    return false;
-}
-
 void HTMLCollection::namedItems(const AtomicString& name, Vector<RefPtr<Node> >& result) const
 {
     ASSERT(result.isEmpty());

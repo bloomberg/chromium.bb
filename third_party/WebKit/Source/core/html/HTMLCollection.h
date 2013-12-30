@@ -31,7 +31,7 @@
 
 namespace WebCore {
 
-class HTMLCollection : public LiveNodeListBase {
+class HTMLCollection : public ScriptWrappable, public RefCounted<HTMLCollection>, public LiveNodeListBase {
 public:
     static PassRefPtr<HTMLCollection> create(Node* base, CollectionType);
     virtual ~HTMLCollection();
@@ -40,7 +40,6 @@ public:
     virtual Node* namedItem(const AtomicString& name) const;
 
     // Non-DOM API
-    virtual bool hasNamedItem(const AtomicString& name) const;
     void namedItems(const AtomicString& name, Vector<RefPtr<Node> >&) const;
     bool isEmpty() const
     {
@@ -78,8 +77,6 @@ protected:
 private:
     bool checkForNameMatch(Element*, bool checkName, const AtomicString& name) const;
     Element* traverseNextElement(unsigned& offsetInArray, Element& previous, ContainerNode* root) const;
-
-    virtual bool isLiveNodeList() const OVERRIDE { ASSERT_NOT_REACHED(); return true; }
 
     static void append(NodeCacheMap&, const AtomicString&, Element*);
 

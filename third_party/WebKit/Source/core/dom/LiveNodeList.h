@@ -41,7 +41,7 @@ enum NodeListRootType {
     NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr,
 };
 
-class LiveNodeListBase : public NodeList {
+class LiveNodeListBase {
 public:
     enum ItemAfterOverrideType {
         OverridesItemAfter,
@@ -76,9 +76,8 @@ public:
             document().unregisterNodeList(this);
     }
 
-    // DOM API
-    virtual unsigned length() const OVERRIDE;
-    virtual Node* item(unsigned offset) const OVERRIDE;
+    unsigned length() const;
+    Node* item(unsigned offset) const;
 
     ALWAYS_INLINE bool hasIdNameCache() const { return !isNodeList(type()); }
     ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument || m_rootType == NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr; }
@@ -181,18 +180,20 @@ ALWAYS_INLINE bool LiveNodeListBase::shouldInvalidateTypeOnAttributeChange(NodeL
     return false;
 }
 
-class LiveNodeList : public LiveNodeListBase {
+class LiveNodeList : public NodeList, public LiveNodeListBase {
 public:
     LiveNodeList(PassRefPtr<Node> ownerNode, CollectionType collectionType, NodeListInvalidationType invalidationType, NodeListRootType rootType = NodeListIsRootedAtNode)
         : LiveNodeListBase(ownerNode.get(), rootType, invalidationType, collectionType == ChildNodeListType,
         collectionType, DoesNotOverrideItemAfter)
     { }
 
-    virtual Node* namedItem(const AtomicString&) const OVERRIDE;
+    virtual unsigned length() const OVERRIDE FINAL { return LiveNodeListBase::length(); }
+    virtual Node* item(unsigned offset) const OVERRIDE FINAL { return LiveNodeListBase::item(offset); }
+    virtual Node* namedItem(const AtomicString&) const OVERRIDE FINAL;
     virtual bool nodeMatches(Element*) const = 0;
 
 private:
-    virtual bool isLiveNodeList() const OVERRIDE { return true; }
+    virtual bool isLiveNodeList() const OVERRIDE FINAL { return true; }
 };
 
 } // namespace WebCore
