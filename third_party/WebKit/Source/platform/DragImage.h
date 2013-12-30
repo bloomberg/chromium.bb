@@ -37,7 +37,7 @@ class FontDescription;
 class Image;
 class KURL;
 
-class DragImage {
+class PLATFORM_EXPORT DragImage {
 public:
     static PassOwnPtr<DragImage> create(Image*, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     static PassOwnPtr<DragImage> create(const KURL&, const String& label, const FontDescription& systemFont, float deviceScaleFactor);

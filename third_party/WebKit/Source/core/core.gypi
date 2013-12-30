@@ -2704,7 +2704,6 @@
             'html/track/vtt/VTTTokenizer.h',
         ],
         'webcore_platform_files': [
-            'platform/DragImage.cpp',
             'platform/Pasteboard.cpp',
             'platform/Pasteboard.h',
             'platform/animation/AnimationTranslationUtil.cpp',

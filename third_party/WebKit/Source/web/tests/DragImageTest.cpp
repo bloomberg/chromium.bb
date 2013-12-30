@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "core/platform/DragImage.h"
+#include "platform/DragImage.h"
 
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Image.h"

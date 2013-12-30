@@ -40,7 +40,7 @@
 #include "core/page/FocusDirection.h"
 #include "core/page/Page.h"
 #include "core/page/SpellCheckerClient.h"
-#include "core/platform/DragImage.h"
+#include "platform/DragImage.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/network/ResourceError.h"
 #include "platform/text/TextCheckerClient.h"

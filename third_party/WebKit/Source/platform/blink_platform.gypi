@@ -30,6 +30,8 @@
       'DateTimeChooserClient.h',
       'Decimal.cpp',
       'Decimal.h',
+      'DragImage.cpp',
+      'DragImage.h',
       'EventTracer.cpp',
       'EventTracer.h',
       'FileChooser.cpp',

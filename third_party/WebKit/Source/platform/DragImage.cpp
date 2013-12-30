@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/DragImage.h"
+#include "platform/DragImage.h"
 
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontCache.h"
