@@ -25,6 +25,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -63,6 +64,22 @@ std::string GetExtensionID(RenderViewHost* render_view_host) {
     return std::string();
 
   return render_view_host->GetSiteInstance()->GetSiteURL().host();
+}
+
+std::string GetExtensionIDFromFrame(
+    content::RenderFrameHost* render_frame_host) {
+  // This works for both apps and extensions because the site has been
+  // normalized to the extension URL for apps.
+  if (!render_frame_host->GetSiteInstance())
+    return std::string();
+
+  return render_frame_host->GetSiteInstance()->GetSiteURL().host();
+}
+
+bool IsFrameInExtensionHost(ExtensionHost* extension_host,
+                            content::RenderFrameHost* render_frame_host) {
+  return WebContents::FromRenderFrameHost(render_frame_host) ==
+      extension_host->host_contents();
 }
 
 void OnRenderViewHostUnregistered(BrowserContext* context,
@@ -511,17 +528,19 @@ void ProcessManager::CloseLazyBackgroundPageNow(const std::string& extension_id,
   }
 }
 
-void ProcessManager::OnNetworkRequestStarted(RenderViewHost* render_view_host) {
+void ProcessManager::OnNetworkRequestStarted(
+    content::RenderFrameHost* render_frame_host) {
   ExtensionHost* host = GetBackgroundHostForExtension(
-      GetExtensionID(render_view_host));
-  if (host && host->render_view_host() == render_view_host)
+      GetExtensionIDFromFrame(render_frame_host));
+  if (host && IsFrameInExtensionHost(host, render_frame_host))
     IncrementLazyKeepaliveCount(host->extension());
 }
 
-void ProcessManager::OnNetworkRequestDone(RenderViewHost* render_view_host) {
+void ProcessManager::OnNetworkRequestDone(
+    content::RenderFrameHost* render_frame_host) {
   ExtensionHost* host = GetBackgroundHostForExtension(
-      GetExtensionID(render_view_host));
-  if (host && host->render_view_host() == render_view_host)
+      GetExtensionIDFromFrame(render_frame_host));
+  if (host && IsFrameInExtensionHost(host, render_frame_host))
     DecrementLazyKeepaliveCount(host->extension());
 }
 

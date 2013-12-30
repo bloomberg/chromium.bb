@@ -36,6 +36,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/info_map.h"
@@ -174,11 +175,11 @@ void ForceGoogleSafeSearchCallbackWrapper(
 enum RequestStatus { REQUEST_STARTED, REQUEST_DONE };
 
 // Notifies the extensions::ProcessManager that a request has started or stopped
-// for a particular RenderView.
+// for a particular RenderFrame.
 void NotifyEPMRequestStatus(RequestStatus status,
                             void* profile_id,
                             int process_id,
-                            int render_view_id) {
+                            int render_frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
@@ -192,13 +193,13 @@ void NotifyEPMRequestStatus(RequestStatus status,
 
   // Will be NULL if the request was not issued on behalf of a renderer (e.g. a
   // system-level request).
-  RenderViewHost* render_view_host =
-      RenderViewHost::FromID(process_id, render_view_id);
-  if (render_view_host) {
+  content::RenderFrameHost* render_frame_host =
+      content::RenderFrameHost::FromID(process_id, render_frame_id);
+  if (render_frame_host) {
     if (status == REQUEST_STARTED) {
-      process_manager->OnNetworkRequestStarted(render_view_host);
+      process_manager->OnNetworkRequestStarted(render_frame_host);
     } else if (status == REQUEST_DONE) {
-      process_manager->OnNetworkRequestDone(render_view_host);
+      process_manager->OnNetworkRequestDone(render_frame_host);
     } else {
       NOTREACHED();
     }
@@ -211,11 +212,11 @@ void ForwardRequestStatus(
   if (!info)
     return;
 
-  int process_id, render_view_id;
-  if (info->GetAssociatedRenderView(&process_id, &render_view_id)) {
+  int process_id, render_frame_id;
+  if (info->GetAssociatedRenderFrame(&process_id, &render_frame_id)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&NotifyEPMRequestStatus,
-                   status, profile_id, process_id, render_view_id));
+                   status, profile_id, process_id, render_frame_id));
   }
 }
 

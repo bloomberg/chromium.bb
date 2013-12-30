@@ -24,6 +24,7 @@ namespace content {
 class BrowserContext;
 class DevToolsAgentHost;
 class RenderViewHost;
+class RenderFrameHost;
 class SiteInstance;
 };
 
@@ -104,10 +105,10 @@ class ProcessManager : public content::NotificationObserver {
   // Same as above, for the Suspend message.
   void OnSuspendAck(const std::string& extension_id);
 
-  // Tracks network requests for a given RenderViewHost, used to know
+  // Tracks network requests for a given RenderFrameHost, used to know
   // when network activity is idle for lazy background pages.
-  void OnNetworkRequestStarted(content::RenderViewHost* render_view_host);
-  void OnNetworkRequestDone(content::RenderViewHost* render_view_host);
+  void OnNetworkRequestStarted(content::RenderFrameHost* render_frame_host);
+  void OnNetworkRequestDone(content::RenderFrameHost* render_frame_host);
 
   // Prevents |extension|'s background page from being closed and sends the
   // onSuspendCanceled() event to it.
