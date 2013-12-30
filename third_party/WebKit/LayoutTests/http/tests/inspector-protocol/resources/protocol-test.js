@@ -22,6 +22,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 var outputElement;
 
 /**
@@ -57,7 +58,7 @@ function log(text)
 
 function closeTest()
 {
-    window.internals.closeDummyInspectorFrontend();
+    closeInspector();
     testRunner.notifyDone();
 }
 
@@ -71,6 +72,16 @@ function runTest()
     testRunner.waitUntilDone();
     testRunner.setCanOpenWindows(true);
 
+    openInspector();
+}
+
+function closeInspector()
+{
+    window.internals.closeDummyInspectorFrontend();
+}
+
+function openInspector()
+{
     var scriptTags = document.getElementsByTagName("script");
     var scriptUrlBasePath = "";
     for (var i = 0; i < scriptTags.length; ++i) {
@@ -81,8 +92,8 @@ function runTest()
         }
     }
 
-    var url = scriptUrlBasePath + "/protocol-test.html";
-    var inspectorFrontend = window.internals.openDummyInspectorFrontend(url);
+    var dummyFrontendURL = scriptUrlBasePath + "/protocol-test.html";
+    var inspectorFrontend = window.internals.openDummyInspectorFrontend(dummyFrontendURL);
     inspectorFrontend.addEventListener("load", function(event) {
         // FIXME: rename this 'test' global field across all tests.
         var testFunction = window.test;

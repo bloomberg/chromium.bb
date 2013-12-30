@@ -688,16 +688,14 @@ void InspectorCSSAgent::wasEnabled(PassRefPtr<EnableCallback> callback)
         return;
     }
 
-    Vector<InspectorStyleSheet*> styleSheets;
-    collectAllStyleSheets(styleSheets);
-    for (size_t i = 0; i < styleSheets.size(); ++i)
-        m_frontend->styleSheetAdded(styleSheets.at(i)->buildObjectForStyleSheetInfo());
-
-    // More styleSheetAdded events will be generated below.
     m_instrumentingAgents->setInspectorCSSAgent(this);
     Vector<Document*> documents = m_domAgent->documents();
-    for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it)
-        (*it)->styleEngine()->updateActiveStyleSheets(FullStyleUpdate);
+    for (Vector<Document*>::iterator it = documents.begin(); it != documents.end(); ++it) {
+        Document* document = *it;
+        Vector<CSSStyleSheet*> newSheetsVector;
+        collectAllDocumentStyleSheets(document, newSheetsVector);
+        updateActiveStyleSheets(document, newSheetsVector, InitialFrontendLoad);
+    }
 
     if (callback)
         callback->sendSuccess();
@@ -830,11 +828,13 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document)
 
     Vector<CSSStyleSheet*> newSheetsVector;
     collectAllDocumentStyleSheets(document, newSheetsVector);
-    updateActiveStyleSheets(document, newSheetsVector);
+    updateActiveStyleSheets(document, newSheetsVector, ExistingFrontendRefresh);
 }
 
-void InspectorCSSAgent::updateActiveStyleSheets(Document* document, const Vector<CSSStyleSheet*>& allSheetsVector)
+void InspectorCSSAgent::updateActiveStyleSheets(Document* document, const Vector<CSSStyleSheet*>& allSheetsVector, StyleSheetsUpdateType styleSheetsUpdateType)
 {
+    bool isInitialFrontendLoad = styleSheetsUpdateType == InitialFrontendLoad;
+
     HashSet<CSSStyleSheet*> removedSheets;
     for (CSSStyleSheetToInspectorStyleSheet::iterator it = m_cssStyleSheetToInspectorStyleSheet.begin(); it != m_cssStyleSheetToInspectorStyleSheet.end(); ++it) {
         if (it->value->canBind() && (!it->key->ownerDocument() || it->key->ownerDocument() == document))
@@ -844,10 +844,13 @@ void InspectorCSSAgent::updateActiveStyleSheets(Document* document, const Vector
     HashSet<CSSStyleSheet*> addedSheets;
     for (Vector<CSSStyleSheet*>::const_iterator it = allSheetsVector.begin(); it != allSheetsVector.end(); ++it) {
         CSSStyleSheet* cssStyleSheet = *it;
-        if (removedSheets.contains(cssStyleSheet))
+        if (removedSheets.contains(cssStyleSheet)) {
             removedSheets.remove(cssStyleSheet);
-        else
+            if (isInitialFrontendLoad)
+                addedSheets.add(cssStyleSheet);
+        } else {
             addedSheets.add(cssStyleSheet);
+        }
     }
 
     for (HashSet<CSSStyleSheet*>::iterator it = removedSheets.begin(); it != removedSheets.end(); ++it) {
@@ -855,13 +858,14 @@ void InspectorCSSAgent::updateActiveStyleSheets(Document* document, const Vector
         ASSERT(inspectorStyleSheet);
         if (m_idToInspectorStyleSheet.contains(inspectorStyleSheet->id())) {
             String id = unbindStyleSheet(inspectorStyleSheet.get());
-            if (m_frontend)
+            if (m_frontend && !isInitialFrontendLoad)
                 m_frontend->styleSheetRemoved(id);
         }
     }
 
     for (HashSet<CSSStyleSheet*>::iterator it = addedSheets.begin(); it != addedSheets.end(); ++it) {
-        if (!m_cssStyleSheetToInspectorStyleSheet.contains(*it)) {
+        bool isNew = isInitialFrontendLoad || !m_cssStyleSheetToInspectorStyleSheet.contains(*it);
+        if (isNew) {
             InspectorStyleSheet* newStyleSheet = bindStyleSheet(*it);
             if (m_frontend)
                 m_frontend->styleSheetAdded(newStyleSheet->buildObjectForStyleSheetInfo());
@@ -875,7 +879,7 @@ void InspectorCSSAgent::frameDetachedFromParent(Frame* frame)
     if (!document)
         return;
     const Vector<CSSStyleSheet*> styleSheets;
-    updateActiveStyleSheets(document, styleSheets);
+    updateActiveStyleSheets(document, styleSheets, ExistingFrontendRefresh);
 }
 
 bool InspectorCSSAgent::forcePseudoState(Element* element, CSSSelector::PseudoType pseudoType)

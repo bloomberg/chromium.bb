@@ -77,6 +77,11 @@ public:
         MediaListSourceImportRule
     };
 
+    enum StyleSheetsUpdateType {
+        InitialFrontendLoad = 0,
+        ExistingFrontendRefresh,
+    };
+
     class InlineStyleOverrideScope {
     public:
         InlineStyleOverrideScope(SecurityContext* context)
@@ -176,7 +181,7 @@ private:
     void collectAllDocumentStyleSheets(Document*, Vector<CSSStyleSheet*>&);
     void collectStyleSheets(CSSStyleSheet*, Vector<CSSStyleSheet*>&);
 
-    void updateActiveStyleSheets(Document*, const Vector<CSSStyleSheet*>&);
+    void updateActiveStyleSheets(Document*, const Vector<CSSStyleSheet*>&, StyleSheetsUpdateType);
 
     void collectPlatformFontsForRenderer(RenderText*, HashCountedSet<String>*);
 
