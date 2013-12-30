@@ -181,8 +181,6 @@ DOMPasteAllowed initial=false
 threadedHTMLParser initial=false
 useThreadedHTMLParserForDataURLs initial=false
 
-applyPageScaleFactorInCompositor initial=false
-
 allowCustomScrollbarInMainFrame initial=true
 webSecurityEnabled initial=true
 
