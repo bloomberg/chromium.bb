@@ -650,8 +650,17 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertEquals("scrollBegin should be sent before scrollBy",
                 ContentViewGestureHandler.GESTURE_SCROLL_START,
                 (int) mockDelegate.mGestureTypeList.get(2));
+        GestureRecordingMotionEventDelegate.GestureEvent startEvent =
+                mockDelegate.getActiveScrollStartEvent();
+        assertNotNull(startEvent);
         assertEquals("scrollBegin should have the time of the ACTION_MOVE",
-                eventTime + 10, (long) mockDelegate.mGestureTimeList.get(2));
+                eventTime + 10, (long) startEvent.getTimeMs());
+        int hintX = startEvent.getExtraParams().getInt(ContentViewGestureHandler.DELTA_HINT_X);
+        int hintY = startEvent.getExtraParams().getInt(ContentViewGestureHandler.DELTA_HINT_Y);
+        // We don't want to take a dependency here on exactly how hints are calculated for a
+        // fling (eg. may depend on velocity), so just validate the direction.
+        assertTrue("scrollBegin hint should be in positive X axis",
+                hintX > 0 && hintY > 0 && hintX > hintY);
 
         event = MotionEvent.obtain(
                 downTime, eventTime + 15, MotionEvent.ACTION_UP,
@@ -979,6 +988,17 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertTrue("GESTURE_SCROLL_START should have been sent",
                 mockDelegate.mGestureTypeList.contains(
                         ContentViewGestureHandler.GESTURE_SCROLL_START));
+        GestureRecordingMotionEventDelegate.GestureEvent startEvent =
+                mockDelegate.getActiveScrollStartEvent();
+        assertEquals(FAKE_COORD_X, startEvent.getX());
+        assertEquals(FAKE_COORD_Y + 100, startEvent.getY());
+        Bundle extraParams = startEvent.getExtraParams();
+        assertNotNull(extraParams);
+        assertEquals("GESTURE_SCROLL_START should have an X hint equal to the distance traveled",
+                0, extraParams.getInt(ContentViewGestureHandler.DELTA_HINT_X));
+        assertEquals("GESTURE_SCROLL_START should have an X hint equal to the distance traveled",
+                100, extraParams.getInt(ContentViewGestureHandler.DELTA_HINT_Y));
+
         assertEquals("GESTURE_PINCH_BEGIN should have been sent",
                 ContentViewGestureHandler.GESTURE_PINCH_BEGIN,
                 mockDelegate.mMostRecentGestureEvent.mType);
@@ -1107,7 +1127,8 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
     }
 
     /**
-     * Mock MotionEventDelegate that remembers the most recent gesture event.
+     * Mock MotionEventDelegate that remembers the most recent gesture event and any
+     * currently active scroll start event.
      */
     static class GestureRecordingMotionEventDelegate implements MotionEventDelegate {
         static class GestureEvent {
@@ -1146,6 +1167,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
             }
         }
         private GestureEvent mMostRecentGestureEvent;
+        private GestureEvent mActiveScrollStartEvent;
         private final ArrayList<Integer> mGestureTypeList = new ArrayList<Integer>();
         private final ArrayList<Long> mGestureTimeList = new ArrayList<Long>();
 
@@ -1160,6 +1182,11 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
             mMostRecentGestureEvent = new GestureEvent(type, timeMs, x, y, extraParams);
             mGestureTypeList.add(mMostRecentGestureEvent.mType);
             mGestureTimeList.add(timeMs);
+            if (type == ContentViewGestureHandler.GESTURE_SCROLL_START)
+                mActiveScrollStartEvent = mMostRecentGestureEvent;
+            else if (type == ContentViewGestureHandler.GESTURE_SCROLL_END ||
+                         type == ContentViewGestureHandler.GESTURE_FLING_CANCEL)
+                mActiveScrollStartEvent = null;
             return true;
         }
 
@@ -1182,6 +1209,10 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         public GestureEvent getMostRecentGestureEvent() {
             return mMostRecentGestureEvent;
         }
+
+        public GestureEvent getActiveScrollStartEvent() {
+            return mActiveScrollStartEvent;
+        }
     }
 
     /**
@@ -1201,7 +1232,8 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
         assertTrue(gestureHandler.onTouchEvent(event));
 
-        // Move twice, because the first move gesture is discarded.
+        // Move twice so that we get two GESTURE_SCROLL_BY events and can compare
+        // the relative and absolute coordinates.
         event = MotionEvent.obtain(
                 downTime, downTime + 5, MotionEvent.ACTION_MOVE,
                 FAKE_COORD_X - deltaX / 2, FAKE_COORD_Y - deltaY / 2, 0);
@@ -1226,6 +1258,51 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         // No horizontal delta because of snapping.
         assertEquals(0, extraParams.getInt(ContentViewGestureHandler.DISTANCE_X));
         assertEquals(deltaY / 2, extraParams.getInt(ContentViewGestureHandler.DISTANCE_Y));
+    }
+
+    /**
+     * Generate a scroll gesture and verify that the resulting scroll start event
+     * has the expected hint values.
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testScrollStartValues() {
+        final int deltaX = 13;
+        final int deltaY = 89;
+        final long downTime = SystemClock.uptimeMillis();
+
+        GestureRecordingMotionEventDelegate delegate = new GestureRecordingMotionEventDelegate();
+        ContentViewGestureHandler gestureHandler = new ContentViewGestureHandler(
+                getInstrumentation().getTargetContext(), delegate, mMockZoomManager);
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(gestureHandler.onTouchEvent(event));
+
+        // Move twice such that the first event isn't sufficient to start
+        // scrolling on it's own.
+        event = MotionEvent.obtain(
+                downTime, downTime + 5, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X + 2, FAKE_COORD_Y + 1, 0);
+        assertFalse(gestureHandler.onTouchEvent(event));
+        assertNull("Expect scrolling hasn't yet started",
+                delegate.getActiveScrollStartEvent());
+
+        event = MotionEvent.obtain(
+                downTime, downTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X + deltaX, FAKE_COORD_Y + deltaY, 0);
+        assertTrue(gestureHandler.onTouchEvent(event));
+
+        GestureRecordingMotionEventDelegate.GestureEvent startEvent =
+                delegate.getActiveScrollStartEvent();
+        assertNotNull(startEvent);
+        assertEquals(ContentViewGestureHandler.GESTURE_SCROLL_START, startEvent.getType());
+        assertEquals(downTime + 10, startEvent.getTimeMs());
+        assertEquals(FAKE_COORD_X, startEvent.getX());
+        assertEquals(FAKE_COORD_Y, startEvent.getY());
+
+        Bundle extraParams = startEvent.getExtraParams();
+        assertNotNull(extraParams);
+        assertEquals(deltaX, extraParams.getInt(ContentViewGestureHandler.DELTA_HINT_X));
+        assertEquals(deltaY, extraParams.getInt(ContentViewGestureHandler.DELTA_HINT_Y));
     }
 
     /**

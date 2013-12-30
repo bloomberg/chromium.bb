@@ -985,10 +985,18 @@ void ContentViewCoreImpl::SendGestureEvent(
     rwhv->SendGestureEvent(event);
 }
 
-void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
-                                      jfloat x, jfloat y) {
+void ContentViewCoreImpl::ScrollBegin(JNIEnv* env,
+                                      jobject obj,
+                                      jlong time_ms,
+                                      jfloat x,
+                                      jfloat y,
+                                      jfloat hintx,
+                                      jfloat hinty) {
   WebGestureEvent event = MakeGestureEvent(
       WebInputEvent::GestureScrollBegin, time_ms, x, y);
+  event.data.scrollBegin.deltaXHint = hintx / GetDpiScale();
+  event.data.scrollBegin.deltaYHint = hinty / GetDpiScale();
+
   SendGestureEvent(event);
 }
 

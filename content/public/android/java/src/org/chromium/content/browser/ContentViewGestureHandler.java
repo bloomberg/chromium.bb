@@ -39,13 +39,21 @@ class ContentViewGestureHandler implements LongPressDelegate {
      */
     static final String VELOCITY_Y = "Velocity Y";
     /**
-     * Used for GESTURE_SCROLL_BY x distance
+     * Used for GESTURE_SCROLL_BY x distance (scroll offset of update)
      */
     static final String DISTANCE_X = "Distance X";
     /**
-     * Used for GESTURE_SCROLL_BY y distance
+     * Used for GESTURE_SCROLL_BY y distance (scroll offset of update)
      */
     static final String DISTANCE_Y = "Distance Y";
+    /**
+     * Used for GESTURE_SCROLL_START delta X hint (movement triggering scroll)
+     */
+    static final String DELTA_HINT_X = "Delta Hint X";
+    /**
+     * Used for GESTURE_SCROLL_START delta Y hint (movement triggering scroll)
+     */
+    static final String DELTA_HINT_Y = "Delta Hint Y";
     /**
      * Used in GESTURE_SINGLE_TAP_CONFIRMED to check whether ShowPress has been called before.
      */
@@ -64,6 +72,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     private final Bundle mExtraParamBundleSingleTap;
     private final Bundle mExtraParamBundleFling;
     private final Bundle mExtraParamBundleScroll;
+    private final Bundle mExtraParamBundleScrollStart;
     private final Bundle mExtraParamBundleDoubleTapDragZoom;
     private final Bundle mExtraParamBundlePinchBy;
     private GestureDetector mGestureDetector;
@@ -268,6 +277,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mExtraParamBundleSingleTap = new Bundle();
         mExtraParamBundleFling = new Bundle();
         mExtraParamBundleScroll = new Bundle();
+        mExtraParamBundleScrollStart = new Bundle();
         mExtraParamBundleDoubleTapDragZoom = new Bundle();
         mExtraParamBundlePinchBy = new Bundle();
 
@@ -326,8 +336,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
                     @Override
                     public boolean onScroll(MotionEvent e1, MotionEvent e2,
-                            float distanceX, float distanceY) {
+                            float rawDistanceX, float rawDistanceY) {
                         assert e1.getEventTime() <= e2.getEventTime();
+                        float distanceX = rawDistanceX;
+                        float distanceY = rawDistanceY;
                         if (!mSeenFirstScrollEvent) {
                             // Remove the touch slop region from the first scroll event to avoid a
                             // jump.
@@ -355,11 +367,18 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         if (!mTouchScrolling) {
                             sendTapCancelIfNecessary(e1);
                             endFlingIfNecessary(e2.getEventTime());
+                            // Note that scroll start hints are in distance traveled, where
+                            // scroll deltas are in the opposite direction.
+                            mExtraParamBundleScrollStart.putInt(DELTA_HINT_X, (int) -rawDistanceX);
+                            mExtraParamBundleScrollStart.putInt(DELTA_HINT_Y, (int) -rawDistanceY);
+                            assert mExtraParamBundleScrollStart.size() == 2;
                             if (sendGesture(GESTURE_SCROLL_START, e2.getEventTime(),
-                                        (int) e1.getX(), (int) e1.getY(), null)) {
+                                        (int) e1.getX(), (int) e1.getY(),
+                                        mExtraParamBundleScrollStart)) {
                                 mTouchScrolling = true;
                             }
                         }
+
                         // distanceX and distanceY is the scrolling offset since last onScroll.
                         // Because we are passing integers to webkit, this could introduce
                         // rounding errors. The rounding errors will accumulate overtime.
@@ -497,8 +516,14 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                     if (distanceX * distanceX + distanceY * distanceY >
                                             mScaledTouchSlopSquare) {
                                         sendTapCancelIfNecessary(e);
+                                        mExtraParamBundleScrollStart.putInt(DELTA_HINT_X,
+                                                (int) -distanceX);
+                                        mExtraParamBundleScrollStart.putInt(DELTA_HINT_Y,
+                                                (int) -distanceY);
+                                        assert mExtraParamBundleScrollStart.size() == 2;
                                         sendGesture(GESTURE_SCROLL_START, e.getEventTime(),
-                                                (int) e.getX(), (int) e.getY(), null);
+                                                (int) e.getX(), (int) e.getY(),
+                                                mExtraParamBundleScrollStart);
                                         pinchBegin(e.getEventTime(),
                                                 Math.round(mDoubleTapDragZoomAnchorX),
                                                 Math.round(mDoubleTapDragZoomAnchorY));
@@ -616,7 +641,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
         if (!mTouchScrolling) {
             // The native side needs a GESTURE_SCROLL_BEGIN before GESTURE_FLING_START
             // to send the fling to the correct target. Send if it has not sent.
-            sendGesture(GESTURE_SCROLL_START, timeMs, x, y, null);
+            // The distance traveled in one second is a reasonable scroll start hint.
+            mExtraParamBundleScrollStart.putInt(DELTA_HINT_X, velocityX);
+            mExtraParamBundleScrollStart.putInt(DELTA_HINT_Y, velocityY);
+            assert mExtraParamBundleScrollStart.size() == 2;
+            sendGesture(GESTURE_SCROLL_START, timeMs, x, y, mExtraParamBundleScrollStart);
         }
         endTouchScrollIfNecessary(timeMs, false);
 
@@ -917,7 +946,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
             }
         }
 
-        if (mTouchScrolling || mPinchInProgress) return EVENT_NOT_FORWARDED;
+        // TODO(rbyers): Remove this - content should be the one to decide when
+        // to drop touch events (eg. for touch-action).  Need to test / fix
+        // touch-action scenarios with pinch - http://crbug.com/247566
+        if (mPinchInProgress) return EVENT_NOT_FORWARDED;
 
         TouchPoint[] pts = new TouchPoint[event.getPointerCount()];
         int type = TouchPoint.createTouchPoints(event, pts);

@@ -1408,9 +1408,12 @@ public class ContentViewCore
             case ContentViewGestureHandler.GESTURE_LONG_TAP:
                 handleTapOrPress(timeMs, x, y, IS_LONG_TAP, false);
                 return true;
-            case ContentViewGestureHandler.GESTURE_SCROLL_START:
-                nativeScrollBegin(mNativeContentViewCore, timeMs, x, y);
+            case ContentViewGestureHandler.GESTURE_SCROLL_START: {
+                int dx = b.getInt(ContentViewGestureHandler.DELTA_HINT_X);
+                int dy = b.getInt(ContentViewGestureHandler.DELTA_HINT_Y);
+                nativeScrollBegin(mNativeContentViewCore, timeMs, x, y, dx, dy);
                 return true;
+            }
             case ContentViewGestureHandler.GESTURE_SCROLL_BY: {
                 int dx = b.getInt(ContentViewGestureHandler.DISTANCE_X);
                 int dy = b.getInt(ContentViewGestureHandler.DISTANCE_Y);
@@ -1932,7 +1935,8 @@ public class ContentViewCore
         final float dyPix = yPix - yCurrentPix;
         if (dxPix != 0 || dyPix != 0) {
             long time = System.currentTimeMillis();
-            nativeScrollBegin(mNativeContentViewCore, time, xCurrentPix, yCurrentPix);
+            nativeScrollBegin(mNativeContentViewCore, time,
+                    xCurrentPix, yCurrentPix, -dxPix, -dyPix);
             nativeScrollBy(mNativeContentViewCore,
                     time, xCurrentPix, yCurrentPix, dxPix, dyPix);
             nativeScrollEnd(mNativeContentViewCore, time);
@@ -3291,7 +3295,8 @@ public class ContentViewCore
             long nativeContentViewCoreImpl, long timeMs, float x, float y, float verticalAxis);
 
     private native void nativeScrollBegin(
-            long nativeContentViewCoreImpl, long timeMs, float x, float y);
+            long nativeContentViewCoreImpl, long timeMs, float x, float y, float hintX,
+            float hintY);
 
     private native void nativeScrollEnd(long nativeContentViewCoreImpl, long timeMs);
 
