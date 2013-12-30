@@ -1621,7 +1621,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     }
 
     if (styleChangeType() >= SubtreeStyleChange)
-        return Force;
+        return document().ensureStyleResolver().treeBoundaryCrossingRules().isEmpty() ? Inherit : Force;
 
     return max(localChange, change);
 }
