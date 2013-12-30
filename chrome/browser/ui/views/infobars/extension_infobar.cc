@@ -139,6 +139,11 @@ void ExtensionInfoBar::ViewHierarchyChanged(
   infobar_icon_->SetVisible(false);
   AddChildView(infobar_icon_);
 
+  // Set the desired height of the ExtensionViewViews, so that when the
+  // AddChildView() call triggers InfoBarView::ViewHierarchyChanged(), it can
+  // read the correct height off this object in order to calculate the overall
+  // desired infobar height.
+  extension_view_host->view()->SetSize(gfx::Size(0, GetDelegate()->height()));
   AddChildView(extension_view_host->view());
 
   // This must happen after adding all other children so InfoBarView can ensure
