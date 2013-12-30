@@ -1512,6 +1512,8 @@ void RenderBlock::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalH
     ColumnInfo* colInfo = columnInfo();
     if (hasColumns()) {
         if (!pageLogicalHeight) {
+            LayoutUnit oldLogicalHeight = logicalHeight();
+            setLogicalHeight(0);
             // We need to go ahead and set our explicit page height if one exists, so that we can
             // avoid doing two layout passes.
             updateLogicalHeight();
@@ -1520,7 +1522,7 @@ void RenderBlock::checkForPaginationLogicalHeightChange(LayoutUnit& pageLogicalH
                 pageLogicalHeight = columnHeight;
                 hasSpecifiedPageLogicalHeight = true;
             }
-            setLogicalHeight(0);
+            setLogicalHeight(oldLogicalHeight);
         }
         if (colInfo->columnHeight() != pageLogicalHeight && everHadLayout()) {
             colInfo->setColumnHeight(pageLogicalHeight);

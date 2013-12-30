@@ -1707,12 +1707,10 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
     }
 }
 
-void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom)
+void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom, LayoutUnit afterEdge)
 {
     if (FastTextAutosizer* textAutosizer = document().fastTextAutosizer())
         textAutosizer->inflate(this);
-
-    setLogicalHeight(borderBefore() + paddingBefore());
 
     // Lay out our hypothetical grid line as though it occurs at the top of the block.
     if (view()->layoutState() && view()->layoutState()->lineGrid() == this)
@@ -1809,7 +1807,7 @@ void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& re
     }
 
     // Now add in the bottom border/padding.
-    setLogicalHeight(logicalHeight() + lastLineAnnotationsAdjustment + borderAfter() + paddingAfter() + scrollbarLogicalHeight());
+    setLogicalHeight(logicalHeight() + lastLineAnnotationsAdjustment + afterEdge);
 
     if (!firstLineBox() && hasLineIfEmpty())
         setLogicalHeight(logicalHeight() + lineHeight(true, isHorizontalWritingMode() ? HorizontalLine : VerticalLine, PositionOfInteriorLineBoxes));

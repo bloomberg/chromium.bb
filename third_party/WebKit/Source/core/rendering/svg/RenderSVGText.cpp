@@ -408,7 +408,16 @@ void RenderSVGText::layout()
     // FIXME: We need to find a way to only layout the child boxes, if needed.
     FloatRect oldBoundaries = objectBoundingBox();
     ASSERT(childrenInline());
-    forceLayoutInlineChildren();
+
+    rebuildFloatsFromIntruding();
+
+    LayoutUnit beforeEdge = borderBefore() + paddingBefore();
+    LayoutUnit afterEdge = borderAfter() + paddingAfter() + scrollbarLogicalHeight();
+    setLogicalHeight(beforeEdge);
+
+    LayoutUnit repaintLogicalTop = 0;
+    LayoutUnit repaintLogicalBottom = 0;
+    layoutInlineChildren(true, repaintLogicalTop, repaintLogicalBottom, afterEdge);
 
     if (m_needsReordering)
         m_needsReordering = false;

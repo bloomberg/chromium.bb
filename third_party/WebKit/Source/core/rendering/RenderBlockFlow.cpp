@@ -254,11 +254,6 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
 
     rebuildFloatsFromIntruding();
 
-    LayoutUnit previousHeight = logicalHeight();
-    // FIXME: should this start out as borderAndPaddingLogicalHeight() + scrollbarLogicalHeight(),
-    // for consistency with other render classes?
-    setLogicalHeight(0);
-
     bool pageLogicalHeightChanged = false;
     bool hasSpecifiedPageLogicalHeight = false;
     checkForPaginationLogicalHeightChange(pageLogicalHeight, pageLogicalHeightChanged, hasSpecifiedPageLogicalHeight);
@@ -285,10 +280,8 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
     //
     // Start out by setting our margin values to our current margins. Table cells have
     // no margins, so we don't fill in the values for table cells.
-    bool isCell = isTableCell();
-    if (!isCell) {
+    if (!isTableCell()) {
         initMaxMarginValues();
-
         setHasMarginBeforeQuirk(style()->hasMarginBeforeQuirk());
         setHasMarginAfterQuirk(style()->hasMarginAfterQuirk());
         setPaginationStrut(0);
@@ -296,15 +289,20 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
 
     SubtreeLayoutScope layoutScope(this);
 
+    LayoutUnit beforeEdge = borderBefore() + paddingBefore();
+    LayoutUnit afterEdge = borderAfter() + paddingAfter() + scrollbarLogicalHeight();
+    LayoutUnit previousHeight = logicalHeight();
+    setLogicalHeight(beforeEdge);
+
     m_repaintLogicalTop = 0;
     m_repaintLogicalBottom = 0;
     LayoutUnit maxFloatLogicalBottom = 0;
     if (!firstChild() && !isAnonymousBlock())
         setChildrenInline(true);
     if (childrenInline())
-        layoutInlineChildren(relayoutChildren, m_repaintLogicalTop, m_repaintLogicalBottom);
+        layoutInlineChildren(relayoutChildren, m_repaintLogicalTop, m_repaintLogicalBottom, afterEdge);
     else
-        layoutBlockChildren(relayoutChildren, maxFloatLogicalBottom, layoutScope);
+        layoutBlockChildren(relayoutChildren, maxFloatLogicalBottom, layoutScope, beforeEdge, afterEdge);
 
     if (frameView()->partialLayout().isStopping()) {
         statePusher.pop();
@@ -312,9 +310,8 @@ void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
     }
 
     // Expand our intrinsic height to encompass floats.
-    LayoutUnit toAdd = borderAfter() + paddingAfter() + scrollbarLogicalHeight();
-    if (lowestFloatLogicalBottom() > (logicalHeight() - toAdd) && expandsToEncloseOverhangingFloats())
-        setLogicalHeight(lowestFloatLogicalBottom() + toAdd);
+    if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && expandsToEncloseOverhangingFloats())
+        setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
 
     if (relayoutForPagination(hasSpecifiedPageLogicalHeight, pageLogicalHeight, statePusher) || relayoutToAvoidWidows(statePusher)) {
         ASSERT(!shouldBreakAtLineToAvoidWidow());
@@ -761,14 +758,9 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
     }
 }
 
-void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope& layoutScope)
+void RenderBlockFlow::layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope& layoutScope, LayoutUnit beforeEdge, LayoutUnit afterEdge)
 {
     dirtyForLayoutFromPercentageHeightDescendants(layoutScope);
-
-    LayoutUnit beforeEdge = borderBefore() + paddingBefore();
-    LayoutUnit afterEdge = borderAfter() + paddingAfter() + scrollbarLogicalHeight();
-
-    setLogicalHeight(beforeEdge);
 
     // Lay out our hypothetical grid line as though it occurs at the top of the block.
     if (view()->layoutState()->lineGrid() == this)

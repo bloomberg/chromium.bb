@@ -157,14 +157,8 @@ public:
     GapRects inlineSelectionGaps(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*);
 protected:
-    // Only used by RenderSVGText, which explicitly overrides RenderBlock::layoutBlock(), do NOT use for anything else.
-    void forceLayoutInlineChildren()
-    {
-        LayoutUnit repaintLogicalTop = 0;
-        LayoutUnit repaintLogicalBottom = 0;
-        rebuildFloatsFromIntruding();
-        layoutInlineChildren(true, repaintLogicalTop, repaintLogicalBottom);
-    }
+    void rebuildFloatsFromIntruding();
+    void layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom, LayoutUnit afterEdge);
 
     void createFloatingObjects();
 
@@ -176,14 +170,11 @@ protected:
     virtual void insertedIntoTree() OVERRIDE;
     virtual void willBeDestroyed() OVERRIDE;
 private:
-    void layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope&);
-    void layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom);
+    void layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope&, LayoutUnit beforeEdge, LayoutUnit afterEdge);
 
     void layoutBlockChild(RenderBox* child, MarginInfo&, LayoutUnit& previousFloatLogicalBottom, LayoutUnit& maxFloatLogicalBottom);
     void adjustPositionedBlock(RenderBox* child, const MarginInfo&);
     void adjustFloatingBlock(const MarginInfo&);
-
-    void rebuildFloatsFromIntruding();
 
     LayoutPoint flipFloatForWritingModeForChild(const FloatingObject*, const LayoutPoint&) const;
 
