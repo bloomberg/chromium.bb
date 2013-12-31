@@ -2717,8 +2717,6 @@
             'platform/chromium/ChromiumDataObject.h',
             'platform/chromium/ChromiumDataObjectItem.cpp',
             'platform/chromium/ChromiumDataObjectItem.h',
-            'platform/mac/ThemeMac.h',
-            'platform/mac/ThemeMac.mm',
             'platform/mediastream/MediaStreamCenter.cpp',
             'platform/mediastream/MediaStreamCenter.h',
             'platform/mediastream/MediaStreamDescriptor.cpp',

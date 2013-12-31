@@ -107,8 +107,7 @@ private:
     mutable Color m_inactiveSelectionColor;
 };
 
-// Function to obtain the theme.  This is implemented in the platform-specific subclasses.
-Theme* platformTheme();
+PLATFORM_EXPORT Theme* platformTheme();
 
 } // namespace WebCore
 

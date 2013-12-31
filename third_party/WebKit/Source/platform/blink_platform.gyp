@@ -94,6 +94,9 @@
             'WebScrollbarPainterControllerDelegate=ChromiumWebCoreObjCWebScrollbarPainterControllerDelegate',
             'WebScrollbarPainterDelegate=ChromiumWebCoreObjCWebScrollbarPainterDelegate',
             'WebScrollbarPartAnimation=ChromiumWebCoreObjCWebScrollbarPartAnimation',
+            'WebCoreFlippedView=ChromiumWebCoreObjCWebCoreFlippedView',
+            'WebCoreTextFieldCell=ChromiumWebCoreObjCWebCoreTextFieldCell',
+            'WebCoreRenderThemeNotificationObserver=ChromiumWebCoreObjCWebCoreRenderThemeNotificationObserver',
           ],
           'postbuilds': [
             {
@@ -256,6 +259,8 @@
           ['include', 'mac/NSScrollerImpDetails\\.mm$'],
           ['include', 'mac/ScrollAnimatorMac\\.mm$'],
           ['include', 'mac/ScrollElasticityController\\.mm$'],
+          ['include', 'mac/ThemeMac\\.h$'],
+          ['include', 'mac/ThemeMac\\.mm$'],
  
           # Mac uses only ScrollAnimatorMac.
           ['exclude', 'scroll/ScrollbarThemeNonMacCommon\\.(cpp|h)$'],

@@ -24,7 +24,7 @@
  */
 
 #import "config.h"
-#import "core/platform/mac/ThemeMac.h"
+#import "platform/mac/ThemeMac.h"
 
 #import <Carbon/Carbon.h>
 #import "platform/graphics/GraphicsContextStateSaver.h"
