@@ -2158,6 +2158,7 @@ set_transient(struct shell_surface *shsurf,
 	shsurf->transient.flags = flags;
 
 	shsurf->next_state.relative = true;
+	shsurf->state_changed = true;
 	shsurf->type = SHELL_SURFACE_TOPLEVEL;
 
 	/* The layer_link is updated in set_surface_type(),
