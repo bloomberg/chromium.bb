@@ -585,16 +585,14 @@ void DrawingBuffer::clearFramebuffers(GC3Dbitfield clearMask)
     if (!m_context)
         return;
 
-    m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO ? m_multisampleFBO : m_fbo);
-
-    m_context->clear(clearMask);
-
-    // The multisample fbo was just cleared, but we also need to clear the non-multisampled buffer too.
+    // We will clear the multisample FBO, but we also need to clear the non-multisampled buffer too.
     if (m_multisampleFBO) {
         m_context->bindFramebuffer(GL_FRAMEBUFFER, m_fbo);
         m_context->clear(GL_COLOR_BUFFER_BIT);
-        m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
     }
+
+    m_context->bindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO ? m_multisampleFBO : m_fbo);
+    m_context->clear(clearMask);
 }
 
 void DrawingBuffer::setSize(const IntSize& size) {
