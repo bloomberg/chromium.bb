@@ -79,26 +79,21 @@ void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, cons
 
 PassRefPtr<StyleImage> StyleResourceLoader::loadPendingImage(StylePendingImage* pendingImage, float deviceScaleFactor)
 {
-    if (pendingImage->cssImageValue()) {
-        CSSImageValue* imageValue = pendingImage->cssImageValue();
+    if (CSSImageValue* imageValue = pendingImage->cssImageValue())
         return imageValue->cachedImage(m_fetcher);
-    }
 
-    if (pendingImage->cssImageGeneratorValue()) {
-        CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue();
+    if (CSSImageGeneratorValue* imageGeneratorValue
+        = pendingImage->cssImageGeneratorValue()) {
         imageGeneratorValue->loadSubimages(m_fetcher);
         return StyleGeneratedImage::create(imageGeneratorValue);
     }
 
-    if (pendingImage->cssCursorImageValue()) {
-        CSSCursorImageValue* cursorImageValue = pendingImage->cssCursorImageValue();
+    if (CSSCursorImageValue* cursorImageValue
+        = pendingImage->cssCursorImageValue())
         return cursorImageValue->cachedImage(m_fetcher, deviceScaleFactor);
-    }
 
-    if (pendingImage->cssImageSetValue()) {
-        CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue();
+    if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
         return imageSetValue->cachedImageSet(m_fetcher, deviceScaleFactor);
-    }
 
     return 0;
 }

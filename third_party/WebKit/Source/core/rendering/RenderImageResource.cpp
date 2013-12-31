@@ -97,11 +97,6 @@ void RenderImageResource::setContainerSizeForRenderer(const IntSize& imageContai
         m_cachedImage->setContainerSizeForRenderer(m_renderer, imageContainerSize, m_renderer->style()->effectiveZoom());
 }
 
-Image* RenderImageResource::nullImage()
-{
-    return Image::nullImage();
-}
-
 LayoutSize RenderImageResource::getImageSize(float multiplier, ImageResource::SizeType type) const
 {
     if (!m_cachedImage)

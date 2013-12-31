@@ -29,8 +29,6 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/rendering/style/StyleImage.h"
-#include "platform/geometry/LayoutSize.h"
-#include "platform/graphics/Image.h"
 
 namespace WebCore {
 
@@ -55,7 +53,10 @@ public:
 
     void resetAnimation();
 
-    virtual PassRefPtr<Image> image(int /* width */ = 0, int /* height */ = 0) const { return m_cachedImage ? m_cachedImage->imageForRenderer(m_renderer) : nullImage(); }
+    virtual PassRefPtr<Image> image(int /* width */ = 0, int /* height */ = 0) const
+    {
+        return m_cachedImage ? m_cachedImage->imageForRenderer(m_renderer) : Image::nullImage();
+    }
     virtual bool errorOccurred() const { return m_cachedImage && m_cachedImage->errorOccurred(); }
 
     virtual void setContainerSizeForRenderer(const IntSize&);
@@ -74,7 +75,6 @@ protected:
     ResourcePtr<ImageResource> m_cachedImage;
 
 private:
-    static Image* nullImage();
     LayoutSize getImageSize(float multiplier, ImageResource::SizeType) const;
 };
 
