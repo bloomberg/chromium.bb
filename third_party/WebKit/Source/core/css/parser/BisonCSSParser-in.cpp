@@ -623,7 +623,7 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
             return true;
         break;
     case CSSPropertyTouchActionDelay: // none | script
-        if (RuntimeEnabledFeatures::cssTouchActionEnabled() && (valueID == CSSValueScript || valueID == CSSValueNone))
+        if (RuntimeEnabledFeatures::cssTouchActionDelayEnabled() && (valueID == CSSValueScript || valueID == CSSValueNone))
             return true;
         break;
     case CSSPropertyVisibility: // visible | hidden | collapse | inherit

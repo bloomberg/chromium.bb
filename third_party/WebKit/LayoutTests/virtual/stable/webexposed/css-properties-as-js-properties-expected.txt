@@ -196,7 +196,6 @@ textUnderlineMode
 textUnderlineStyle
 textUnderlineWidth
 top
-touchActionDelay
 transition
 transitionDelay
 transitionDuration
