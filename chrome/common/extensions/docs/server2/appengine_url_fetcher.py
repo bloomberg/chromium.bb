@@ -52,6 +52,7 @@ class AppEngineUrlFetcher(object):
     return Future(delegate=_AsyncFetchDelegate(rpc))
 
   def _FromBasePath(self, url):
+    assert not url.startswith('/')
     if self._base_path is not None:
       url = posixpath.join(self._base_path, url) if url else self._base_path
     return url

@@ -7,7 +7,7 @@ import sys
 
 from docs_server_utils import StringIdentity
 from file_system import FileSystem, FileNotFoundError, StatInfo
-from future import Future
+from future import Gettable, Future
 
 def _ConvertToFilepath(path):
   return path.replace('/', os.sep)
@@ -64,20 +64,22 @@ class LocalFileSystem(FileSystem):
     self._base_path = _ConvertToFilepath(base_path)
 
   @staticmethod
-  def Create():
+  def Create(root=''):
     return LocalFileSystem(
-        os.path.join(sys.path[0], '..', '..', '..', '..', '..'))
+        os.path.join(sys.path[0], '..', '..', '..', '..', '..', root))
 
   def Read(self, paths):
-    result = {}
-    for path in paths:
-      full_path = os.path.join(self._base_path,
-                               _ConvertToFilepath(path).lstrip(os.sep))
-      if path.endswith('/'):
-        result[path] = _ListDir(full_path)
-      else:
-        result[path] = _ReadFile(full_path)
-    return Future(value=result)
+    def resolve():
+      result = {}
+      for path in paths:
+        full_path = os.path.join(self._base_path,
+                                 _ConvertToFilepath(path).lstrip(os.sep))
+        if path == '' or path.endswith('/'):
+          result[path] = _ListDir(full_path)
+        else:
+          result[path] = _ReadFile(full_path)
+      return result
+    return Future(delegate=Gettable(resolve))
 
   def Refresh(self):
     return Future(value=())
@@ -89,3 +91,6 @@ class LocalFileSystem(FileSystem):
 
   def GetIdentity(self):
     return '@'.join((self.__class__.__name__, StringIdentity(self._base_path)))
+
+  def __repr__(self):
+    return 'LocalFileSystem(%s)' % self._base_path

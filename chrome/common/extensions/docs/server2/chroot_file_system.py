@@ -50,4 +50,5 @@ class ChrootFileSystem(FileSystem):
         '%s/%s' % (self._file_system.GetIdentity(), self._root))
 
   def __repr__(self):
-    return 'ChrootFileSystem of <%s>' % repr(self._file_system)
+    return 'ChrootFileSystem(%s, %s)' % (
+            self._root, repr(self._file_system))

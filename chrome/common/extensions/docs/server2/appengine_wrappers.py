@@ -57,7 +57,7 @@ except ImportError:
     for k, v in FAKE_URL_FETCHER_CONFIGURATION.iteritems():
       if k.match(key):
         return v
-    return None
+    raise ValueError('No configuration found for %s' % key)
 
   class _RPC(object):
     def __init__(self, result=None):
@@ -83,6 +83,7 @@ except ImportError:
         self.status_code = 200
 
     def fetch(self, url, **kwargs):
+      url = url.split('?', 1)[0]
       response = self._Response(_GetConfiguration(url).fetch(url))
       if response.content is None:
         response.status_code = 404

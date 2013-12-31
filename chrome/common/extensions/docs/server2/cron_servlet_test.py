@@ -115,12 +115,11 @@ class CronServletTest(unittest.TestCase):
             },
           },
           'json': {
+            'chrome_sidenav.json': '{}',
             'content_providers.json': ReadFile(CONTENT_PROVIDERS),
             'manifest.json': '{}',
             'permissions.json': '{}',
             'strings.json': '{}',
-            'apps_sidenav.json': '{}',
-            'extensions_sidenav.json': '{}',
           },
         }
       }

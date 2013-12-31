@@ -143,8 +143,10 @@ class IntegrationTest(unittest.TestCase):
     start_time = time.time()
     try:
       for path, content in public_files.iteritems():
+        assert path.startswith('/')
         if path.endswith('redirects.json'):
           continue
+
         def check_result(response):
           self.assertEqual(200, response.status,
               'Got %s when rendering %s' % (response.status, path))
@@ -157,7 +159,7 @@ class IntegrationTest(unittest.TestCase):
 
         # Make sure that leaving out the .html will temporarily redirect to the
         # path with the .html.
-        if path.startswith(('apps/', 'extensions/')):
+        if path.startswith(('/apps/', '/extensions/')):
           redirect_result = Handler(
               Request.ForTest(posixpath.splitext(path)[0])).Get()
           self.assertEqual((path, False), redirect_result.GetRedirect())
@@ -166,7 +168,7 @@ class IntegrationTest(unittest.TestCase):
         # path without a channel.
         for channel in BranchUtility.GetAllChannelNames():
           redirect_result = Handler(
-              Request.ForTest('%s/%s' % (channel, path))).Get()
+              Request.ForTest('%s%s' % (channel, path))).Get()
           self.assertEqual((path, True), redirect_result.GetRedirect())
 
         # Samples are internationalized, test some locales.

@@ -137,8 +137,8 @@ def ConfigureFakeFetchers():
   '''Configure the fake fetcher paths relative to the docs directory.
   '''
   appengine_wrappers.ConfigureFakeUrlFetch({
+    url_constants.OMAHA_HISTORY: _FakeOmahaHistory(),
     url_constants.OMAHA_PROXY_URL: _FakeOmahaProxy(),
-    re.escape(url_constants.OMAHA_DEV_HISTORY): _FakeOmahaHistory(),
     '%s/.*' % url_constants.SVN_URL: _FakeSubversionServer(),
     '%s/.*' % url_constants.VIEWVC_URL: _FakeViewvcServer(),
     '%s/.*/commits/.*' % url_constants.GITHUB_REPOS: _FakeGithubStat(),
