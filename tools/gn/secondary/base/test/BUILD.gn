@@ -93,8 +93,8 @@ static_library("test_support_base") {
     "//base/third_party/dynamic_annotations",
     "//base:base_i18n",
     "//base:base_static",
-    "//testing:gmock",
-    "//testing:gtest",
+    "//testing/gmock",
+    "//testing/gtest",
     "//third_party/libxml"
   ]
 
@@ -129,7 +129,7 @@ static_library("test_support_perf") {
   ]
   deps = [
     "//base",
-    "//testing:gtest",
+    "//testing/gtest",
   ]
 
   direct_dependent_configs = [ ":perf_test_config" ]

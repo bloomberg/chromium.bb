@@ -214,7 +214,7 @@ test("gn_unittests") {
     ":gn_lib",
     "//base/test:run_all_unittests",
     "//base/test:test_support_base",
-    "//testing:gtest",
+    "//testing/gtest",
   ]
 }
 

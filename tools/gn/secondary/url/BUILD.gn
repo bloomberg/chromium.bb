@@ -64,7 +64,7 @@ test("url_unittests") {
     ":url",
     "//base:base_i18n",
     "//base/test:run_all_unittests",
-    "//testing:gtest",
+    "//testing/gtest",
     "//third_party/icu:icuuc",
   ]
 }

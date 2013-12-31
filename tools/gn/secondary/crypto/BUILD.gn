@@ -235,8 +235,8 @@ test("crypto_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support_base",
-    "//testing:gmock",
-    "//testing:gtest",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 
   if (is_mac) {

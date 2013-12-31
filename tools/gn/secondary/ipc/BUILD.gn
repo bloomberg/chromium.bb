@@ -117,7 +117,7 @@ test("ipc_tests") {
     "//base:base_i18n",
     "//base/test:run_all_unittests",
     "//base/test:test_support_base",
-    "//testing:gtest",
+    "//testing/gtest",
   ]
 }
 
@@ -145,7 +145,7 @@ test("ipc_perftests") {
     "//base:base_i18n",
     "//base/test:test_support_base",
     "//base/test:test_support_perf",
-    "//testing:gtest",
+    "//testing/gtest",
   ]
 }
 
@@ -160,7 +160,7 @@ static_library("test_support_ipc") {
   deps = [
     ":ipc",
     "//base",
-    "//testing:gtest",
+    "//testing/gtest",
   ]
 }
 
