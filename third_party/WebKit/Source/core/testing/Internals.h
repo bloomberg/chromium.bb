@@ -102,8 +102,8 @@ public:
     bool hasShadowInsertionPoint(const Node*, ExceptionState&) const;
     bool hasContentElement(const Node*, ExceptionState&) const;
     size_t countElementShadow(const Node*, ExceptionState&) const;
-    String shadowPseudoId(Element*, ExceptionState&);
-    void setShadowPseudoId(Element*, const String&, ExceptionState&);
+    const AtomicString& shadowPseudoId(Element*, ExceptionState&);
+    void setShadowPseudoId(Element*, const AtomicString&, ExceptionState&);
 
     // CSS Animation / Transition testing.
     unsigned numberOfActiveAnimations() const;
@@ -113,9 +113,9 @@ public:
     bool isValidContentSelect(Element* insertionPoint, ExceptionState&);
     Node* treeScopeRootNode(Node*, ExceptionState&);
     Node* parentTreeScope(Node*, ExceptionState&);
-    bool hasSelectorForIdInShadow(Element* host, const String& idValue, ExceptionState&);
-    bool hasSelectorForClassInShadow(Element* host, const String& className, ExceptionState&);
-    bool hasSelectorForAttributeInShadow(Element* host, const String& attributeName, ExceptionState&);
+    bool hasSelectorForIdInShadow(Element* host, const AtomicString& idValue, ExceptionState&);
+    bool hasSelectorForClassInShadow(Element* host, const AtomicString& className, ExceptionState&);
+    bool hasSelectorForAttributeInShadow(Element* host, const AtomicString& attributeName, ExceptionState&);
     bool hasSelectorForPseudoClassInShadow(Element* host, const String& pseudoClass, ExceptionState&);
     unsigned short compareTreeScopePosition(const Node*, const Node*, ExceptionState&) const;
 

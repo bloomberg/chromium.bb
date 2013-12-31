@@ -380,7 +380,7 @@ Node* Internals::parentTreeScope(Node* node, ExceptionState& exceptionState)
     return parentTreeScope ? parentTreeScope->rootNode() : 0;
 }
 
-bool Internals::hasSelectorForIdInShadow(Element* host, const String& idValue, ExceptionState& exceptionState)
+bool Internals::hasSelectorForIdInShadow(Element* host, const AtomicString& idValue, ExceptionState& exceptionState)
 {
     if (!host || !host->shadow()) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
@@ -390,7 +390,7 @@ bool Internals::hasSelectorForIdInShadow(Element* host, const String& idValue, E
     return host->shadow()->ensureSelectFeatureSet().hasSelectorForId(idValue);
 }
 
-bool Internals::hasSelectorForClassInShadow(Element* host, const String& className, ExceptionState& exceptionState)
+bool Internals::hasSelectorForClassInShadow(Element* host, const AtomicString& className, ExceptionState& exceptionState)
 {
     if (!host || !host->shadow()) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
@@ -400,7 +400,7 @@ bool Internals::hasSelectorForClassInShadow(Element* host, const String& classNa
     return host->shadow()->ensureSelectFeatureSet().hasSelectorForClass(className);
 }
 
-bool Internals::hasSelectorForAttributeInShadow(Element* host, const String& attributeName, ExceptionState& exceptionState)
+bool Internals::hasSelectorForAttributeInShadow(Element* host, const AtomicString& attributeName, ExceptionState& exceptionState)
 {
     if (!host || !host->shadow()) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
@@ -678,17 +678,17 @@ String Internals::shadowRootType(const Node* root, ExceptionState& exceptionStat
     }
 }
 
-String Internals::shadowPseudoId(Element* element, ExceptionState& exceptionState)
+const AtomicString& Internals::shadowPseudoId(Element* element, ExceptionState& exceptionState)
 {
     if (!element) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
-        return String();
+        return nullAtom;
     }
 
-    return element->shadowPseudoId().string();
+    return element->shadowPseudoId();
 }
 
-void Internals::setShadowPseudoId(Element* element, const String& id, ExceptionState& exceptionState)
+void Internals::setShadowPseudoId(Element* element, const AtomicString& id, ExceptionState& exceptionState)
 {
     if (!element) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);

@@ -216,7 +216,7 @@ void InternalSettings::setLayerSquashingEnabled(bool enabled, ExceptionState& ex
     settings()->setLayerSquashingEnabled(enabled);
 }
 
-void InternalSettings::setStandardFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
+void InternalSettings::setStandardFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
     UScriptCode code = scriptNameToCode(script);
@@ -226,7 +226,7 @@ void InternalSettings::setStandardFontFamily(const String& family, const String&
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
-void InternalSettings::setSerifFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
+void InternalSettings::setSerifFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
     UScriptCode code = scriptNameToCode(script);
@@ -236,7 +236,7 @@ void InternalSettings::setSerifFontFamily(const String& family, const String& sc
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
-void InternalSettings::setSansSerifFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
+void InternalSettings::setSansSerifFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
     UScriptCode code = scriptNameToCode(script);
@@ -246,7 +246,7 @@ void InternalSettings::setSansSerifFontFamily(const String& family, const String
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
-void InternalSettings::setFixedFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
+void InternalSettings::setFixedFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
     UScriptCode code = scriptNameToCode(script);
@@ -256,7 +256,7 @@ void InternalSettings::setFixedFontFamily(const String& family, const String& sc
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
-void InternalSettings::setCursiveFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
+void InternalSettings::setCursiveFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
     UScriptCode code = scriptNameToCode(script);
@@ -266,7 +266,7 @@ void InternalSettings::setCursiveFontFamily(const String& family, const String& 
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
-void InternalSettings::setFantasyFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
+void InternalSettings::setFantasyFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
     UScriptCode code = scriptNameToCode(script);
@@ -276,7 +276,7 @@ void InternalSettings::setFantasyFontFamily(const String& family, const String& 
     m_page->setNeedsRecalcStyleInAllFrames();
 }
 
-void InternalSettings::setPictographFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
+void InternalSettings::setPictographFontFamily(const AtomicString& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
     UScriptCode code = scriptNameToCode(script);

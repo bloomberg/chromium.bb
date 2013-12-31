@@ -81,13 +81,13 @@ public:
     virtual ~InternalSettings();
     void resetToConsistentState();
 
-    void setStandardFontFamily(const String& family, const String& script, ExceptionState&);
-    void setSerifFontFamily(const String& family, const String& script, ExceptionState&);
-    void setSansSerifFontFamily(const String& family, const String& script, ExceptionState&);
-    void setFixedFontFamily(const String& family, const String& script, ExceptionState&);
-    void setCursiveFontFamily(const String& family, const String& script, ExceptionState&);
-    void setFantasyFontFamily(const String& family, const String& script, ExceptionState&);
-    void setPictographFontFamily(const String& family, const String& script, ExceptionState&);
+    void setStandardFontFamily(const AtomicString& family, const String& script, ExceptionState&);
+    void setSerifFontFamily(const AtomicString& family, const String& script, ExceptionState&);
+    void setSansSerifFontFamily(const AtomicString& family, const String& script, ExceptionState&);
+    void setFixedFontFamily(const AtomicString& family, const String& script, ExceptionState&);
+    void setCursiveFontFamily(const AtomicString& family, const String& script, ExceptionState&);
+    void setFantasyFontFamily(const AtomicString& family, const String& script, ExceptionState&);
+    void setPictographFontFamily(const AtomicString& family, const String& script, ExceptionState&);
 
     void setDefaultVideoPosterURL(const String& url, ExceptionState&);
     void setEditingBehavior(const String&, ExceptionState&);
