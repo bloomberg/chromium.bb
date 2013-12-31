@@ -19,12 +19,12 @@ class SocketStreamHandleData : public base::SupportsUserData::Data {
  public:
   virtual ~SocketStreamHandleData() {}
 
-  int render_view_id() const { return render_view_id_; }
+  int render_frame_id() const { return render_frame_id_; }
 
-  // Creates SocketStreamHandleData object with |render_view_id| and store it
+  // Creates SocketStreamHandleData object with |render_frame_id| and store it
   // to |handle|.
   static void AddToHandle(
-      blink::WebSocketStreamHandle* handle, int render_view_id);
+      blink::WebSocketStreamHandle* handle, int render_frame_id);
 
   // Retrieves the stored user data from blink::WebSocketStreamHandle object.
   // |handle| must actually be a WebSocketStreamHandleImpl object.
@@ -32,11 +32,11 @@ class SocketStreamHandleData : public base::SupportsUserData::Data {
       blink::WebSocketStreamHandle* handle);
 
  private:
-  explicit SocketStreamHandleData(int render_view_id)
-      : render_view_id_(render_view_id) {
+  explicit SocketStreamHandleData(int render_frame_id)
+      : render_frame_id_(render_frame_id) {
   }
 
-  int render_view_id_;
+  int render_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamHandleData);
 };

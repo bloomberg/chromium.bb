@@ -95,6 +95,10 @@ gfx::NativeView RenderFrameHostImpl::GetNativeView() {
   return view->GetNativeView();
 }
 
+RenderViewHost* RenderFrameHostImpl::GetRenderViewHost() {
+  return render_view_host_;
+}
+
 bool RenderFrameHostImpl::Send(IPC::Message* message) {
   return GetProcess()->Send(message);
 }

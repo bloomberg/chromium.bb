@@ -140,6 +140,10 @@ class RenderViewImplTest : public RenderViewTest {
     return static_cast<RenderViewImpl*>(view_);
   }
 
+  RenderFrameImpl* frame() {
+    return static_cast<RenderFrameImpl*>(view()->GetMainRenderFrame());
+  }
+
   // Sends IPC messages that emulates a key-press event.
   int SendKeyEvent(MockKeyboard::Layout layout,
                    int key_code,
@@ -373,19 +377,19 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
 
   // Navigations to normal HTTP URLs can be handled locally.
   blink::WebURLRequest request(GURL("http://foo.com"));
-  blink::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
-      GetMainFrame(),
-      &state,
-      request,
-      blink::WebNavigationTypeLinkClicked,
-      blink::WebNavigationPolicyCurrentTab,
-      false);
+  blink::WebNavigationPolicy policy = frame()->decidePolicyForNavigation(
+          GetMainFrame(),
+          &state,
+          request,
+          blink::WebNavigationTypeLinkClicked,
+          blink::WebNavigationPolicyCurrentTab,
+          false);
   EXPECT_EQ(blink::WebNavigationPolicyCurrentTab, policy);
 
   // Verify that form posts to WebUI URLs will be sent to the browser process.
   blink::WebURLRequest form_request(GURL("chrome://foo"));
   form_request.setHTTPMethod("POST");
-  policy = view()->decidePolicyForNavigation(
+  policy = frame()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       form_request,
@@ -396,7 +400,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicy) {
 
   // Verify that popup links to WebUI URLs also are sent to browser.
   blink::WebURLRequest popup_request(GURL("chrome://foo"));
-  policy = view()->decidePolicyForNavigation(
+  policy = frame()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       popup_request,
@@ -425,7 +429,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyHandlesAllTopLevel) {
 
   blink::WebURLRequest request(GURL("http://foo.com"));
   for (size_t i = 0; i < arraysize(kNavTypes); ++i) {
-    blink::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
+    blink::WebNavigationPolicy policy = frame()->decidePolicyForNavigation(
         GetMainFrame(),
         &state,
         request,
@@ -445,7 +449,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
 
   // Navigations to normal HTTP URLs will be sent to browser process.
   blink::WebURLRequest request(GURL("http://foo.com"));
-  blink::WebNavigationPolicy policy = view()->decidePolicyForNavigation(
+  blink::WebNavigationPolicy policy = frame()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       request,
@@ -456,7 +460,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
 
   // Navigations to WebUI URLs will also be sent to browser process.
   blink::WebURLRequest webui_request(GURL("chrome://foo"));
-  policy = view()->decidePolicyForNavigation(
+  policy = frame()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       webui_request,
@@ -468,7 +472,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   // Verify that form posts to data URLs will be sent to the browser process.
   blink::WebURLRequest data_request(GURL("data:text/html,foo"));
   data_request.setHTTPMethod("POST");
-  policy = view()->decidePolicyForNavigation(
+  policy = frame()->decidePolicyForNavigation(
       GetMainFrame(),
       &state,
       data_request,
@@ -485,13 +489,14 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
       blink::WebNavigationPolicyNewForegroundTab, false);
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
-  policy = new_view->decidePolicyForNavigation(
-      new_web_view->mainFrame(),
-      &state,
-      popup_request,
-      blink::WebNavigationTypeLinkClicked,
-      blink::WebNavigationPolicyNewForegroundTab,
-      false);
+  policy = static_cast<RenderFrameImpl*>(new_view->GetMainRenderFrame())->
+      decidePolicyForNavigation(
+          new_web_view->mainFrame(),
+          &state,
+          popup_request,
+          blink::WebNavigationTypeLinkClicked,
+          blink::WebNavigationPolicyNewForegroundTab,
+          false);
   EXPECT_EQ(blink::WebNavigationPolicyIgnore, policy);
 
   // Clean up after the new view so we don't leak it.

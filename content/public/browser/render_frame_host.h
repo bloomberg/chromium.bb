@@ -12,6 +12,7 @@
 
 namespace content {
 class RenderProcessHost;
+class RenderViewHost;
 class SiteInstance;
 
 // The interface provides a communication conduit with a frame in the renderer.
@@ -34,6 +35,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
 
   // Returns the associated widget's native view.
   virtual gfx::NativeView GetNativeView() = 0;
+
+  // Temporary until we get rid of RenderViewHost.
+  virtual RenderViewHost* GetRenderViewHost() = 0;
 
  private:
   // This interface should only be implemented inside content.

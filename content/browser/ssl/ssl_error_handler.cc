@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/ssl/ssl_cert_error_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,12 +23,12 @@ SSLErrorHandler::SSLErrorHandler(const base::WeakPtr<Delegate>& delegate,
                                  ResourceType::Type resource_type,
                                  const GURL& url,
                                  int render_process_id,
-                                 int render_view_id)
+                                 int render_frame_id)
     : manager_(NULL),
       request_id_(id),
       delegate_(delegate),
       render_process_id_(render_process_id),
-      render_view_id_(render_view_id),
+      render_frame_id_(render_frame_id),
       request_url_(url),
       resource_type_(resource_type),
       request_has_been_notified_(false) {
@@ -61,10 +61,10 @@ void SSLErrorHandler::Dispatch() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   WebContents* web_contents = NULL;
-  RenderViewHostImpl* render_view_host =
-      RenderViewHostImpl::FromID(render_process_id_, render_view_id_);
-  if (render_view_host)
-    web_contents = render_view_host->GetDelegate()->GetAsWebContents();
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+  if (render_frame_host)
+    web_contents = WebContents::FromRenderFrameHost(render_frame_host);
 
   if (!web_contents) {
     // We arrived on the UI thread, but the tab we're looking for is no longer

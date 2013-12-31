@@ -19,8 +19,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -60,7 +60,7 @@ void AwContentRendererClient::RenderThreadStarted() {
 }
 
 bool AwContentRendererClient::HandleNavigation(
-    content::RenderView* view,
+    content::RenderFrame* render_frame,
     content::DocumentState* document_state,
     int opener_id,
     blink::WebFrame* frame,
@@ -107,9 +107,9 @@ bool AwContentRendererClient::HandleNavigation(
   bool ignore_navigation = false;
   base::string16 url =  request.url().string();
 
-  int routing_id = view->GetRoutingID();
+  int render_frame_id = render_frame->GetRoutingID();
   RenderThread::Get()->Send(new AwViewHostMsg_ShouldOverrideUrlLoading(
-      routing_id, url, &ignore_navigation));
+      render_frame_id, url, &ignore_navigation));
   return ignore_navigation;
 }
 

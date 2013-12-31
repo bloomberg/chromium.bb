@@ -68,6 +68,10 @@ struct WebWindowFeatures;
 typedef unsigned WebColor;
 }
 
+namespace content {
+class RenderFrame;
+}
+
 class SkCanvas;
 
 namespace WebTestRunner {
@@ -491,12 +495,12 @@ public:
     {
         return WebTestProxyBase::runModalBeforeUnloadDialog(frame, message);
     }
-    virtual blink::WebNavigationPolicy decidePolicyForNavigation(blink::WebFrame* frame, blink::WebDataSource::ExtraData* extraData, const blink::WebURLRequest& request, blink::WebNavigationType type, blink::WebNavigationPolicy defaultPolicy, bool isRedirect)
+    virtual blink::WebNavigationPolicy DecidePolicyForNavigation(content::RenderFrame* render_frame, blink::WebFrame* frame, blink::WebDataSource::ExtraData* extraData, const blink::WebURLRequest& request, blink::WebNavigationType type, blink::WebNavigationPolicy defaultPolicy, bool isRedirect)
     {
         blink::WebNavigationPolicy policy = WebTestProxyBase::decidePolicyForNavigation(frame, extraData, request, type, defaultPolicy, isRedirect);
         if (policy == blink::WebNavigationPolicyIgnore)
             return policy;
-        return Base::decidePolicyForNavigation(frame, extraData, request, type, defaultPolicy, isRedirect);
+        return Base::DecidePolicyForNavigation(render_frame, frame, extraData, request, type, defaultPolicy, isRedirect);
     }
     virtual bool willCheckAndDispatchMessageEvent(blink::WebFrame* sourceFrame, blink::WebFrame* targetFrame, blink::WebSecurityOrigin target, blink::WebDOMMessageEvent event)
     {

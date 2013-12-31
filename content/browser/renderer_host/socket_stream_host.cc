@@ -28,13 +28,13 @@ class SocketStreamId : public net::SocketStream::UserData {
 
 SocketStreamHost::SocketStreamHost(
     net::SocketStream::Delegate* delegate,
-    int render_view_id,
+    int render_frame_id,
     int socket_id)
     : delegate_(delegate),
-      render_view_id_(render_view_id),
+      render_frame_id_(render_frame_id),
       socket_id_(socket_id) {
   DCHECK_NE(socket_id_, kNoSocketId);
-  VLOG(1) << "SocketStreamHost: render_view_id=" << render_view_id
+  VLOG(1) << "SocketStreamHost: render_frame_id=" << render_frame_id
           << " socket_id=" << socket_id_;
 }
 
