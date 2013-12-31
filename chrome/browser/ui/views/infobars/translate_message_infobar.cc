@@ -28,10 +28,10 @@ void TranslateMessageInfoBar::Layout() {
       label_size.height());
 
   if (button_) {
-    gfx::Size button_size = button_->GetPreferredSize();
-    button_->SetPosition(
-        gfx::Point(label_->bounds().right() + kButtonInLabelSpacing,
-                   OffsetY(button_)));
+    button_->SetPosition(gfx::Point(
+        label_->text().empty() ?
+            label_->x() : (label_->bounds().right() + kEndOfLabelSpacing),
+        OffsetY(button_)));
   }
 }
 
@@ -65,5 +65,7 @@ void TranslateMessageInfoBar::ButtonPressed(views::Button* sender,
 }
 
 int TranslateMessageInfoBar::ContentMinimumWidth() const {
-  return button_ ? (button_->width() + kButtonInLabelSpacing) : 0;
+  if (!button_)
+    return 0;
+  return button_->width() + (label_->text().empty() ? 0 : kEndOfLabelSpacing);
 }

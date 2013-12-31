@@ -37,28 +37,28 @@ ConfirmInfoBar::~ConfirmInfoBar() {
 void ConfirmInfoBar::Layout() {
   InfoBarView::Layout();
 
-  int available_width = std::max(0, EndX() - StartX() - ContentMinimumWidth());
+  int x = StartX();
+  int available_width = std::max(0, EndX() - x - ContentMinimumWidth());
   gfx::Size label_size = label_->GetPreferredSize();
-  label_->SetBounds(StartX(), OffsetY(label_),
+  label_->SetBounds(x, OffsetY(label_),
                     std::min(label_size.width(), available_width),
                     label_size.height());
   available_width = std::max(0, available_width - label_size.width());
+  if (!label_->text().empty())
+    x = label_->bounds().right() + kEndOfLabelSpacing;
 
-  int button_x = label_->bounds().right() + kEndOfLabelSpacing;
-  if (ok_button_ != NULL) {
-    ok_button_->SetPosition(gfx::Point(button_x, OffsetY(ok_button_)));
-    button_x += ok_button_->width() + kButtonButtonSpacing;
+  if (ok_button_) {
+    ok_button_->SetPosition(gfx::Point(x, OffsetY(ok_button_)));
+    x = ok_button_->bounds().right() + kButtonButtonSpacing;
   }
 
-  if (cancel_button_ != NULL)
-    cancel_button_->SetPosition(gfx::Point(button_x, OffsetY(cancel_button_)));
+  if (cancel_button_)
+    cancel_button_->SetPosition(gfx::Point(x, OffsetY(cancel_button_)));
 
-  if (link_ != NULL) {
-    gfx::Size link_size = link_->GetPreferredSize();
-    int link_width = std::min(link_size.width(), available_width);
-    link_->SetBounds(EndX() - link_width, OffsetY(link_), link_width,
-                     link_size.height());
-  }
+  gfx::Size link_size = link_->GetPreferredSize();
+  int link_width = std::min(link_size.width(), available_width);
+  link_->SetBounds(EndX() - link_width, OffsetY(link_), link_width,
+                   link_size.height());
 }
 
 void ConfirmInfoBar::ViewHierarchyChanged(
@@ -83,10 +83,8 @@ void ConfirmInfoBar::ViewHierarchyChanged(
     }
 
     base::string16 link_text(delegate->GetLinkText());
-    if (!link_text.empty()) {
-      link_ = CreateLink(link_text, this);
-      AddChildView(link_);
-    }
+    link_ = CreateLink(link_text, this);
+    AddChildView(link_);
   }
 
   // This must happen after adding all other children so InfoBarView can ensure
@@ -111,20 +109,17 @@ void ConfirmInfoBar::ButtonPressed(views::Button* sender,
 }
 
 int ConfirmInfoBar::ContentMinimumWidth() const {
-  int width = (link_ == NULL) ? 0 : kEndOfLabelSpacing;  // Space before link
-  int before_cancel_spacing = kEndOfLabelSpacing;
-  if (ok_button_ != NULL) {
-    width += kEndOfLabelSpacing + ok_button_->width();
-    before_cancel_spacing = kButtonButtonSpacing;
-  }
-  return width +
-      (cancel_button_ ? (before_cancel_spacing + cancel_button_->width()) : 0);
+  int width = (label_->text().empty() || (!ok_button_ && !cancel_button_)) ?
+      0 : kEndOfLabelSpacing;
+  if (ok_button_)
+    width += ok_button_->width() + (cancel_button_ ? kButtonButtonSpacing : 0);
+  width += (cancel_button_ ? cancel_button_->width() : 0);
+  return width + ((link_->text().empty() || !width) ? 0 : kEndOfLabelSpacing);
 }
 
 void ConfirmInfoBar::LinkClicked(views::Link* source, int event_flags) {
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
-  DCHECK(link_ != NULL);
   DCHECK_EQ(link_, source);
   if (GetDelegate()->LinkClicked(ui::DispositionFromEventFlags(event_flags)))
     RemoveSelf();
