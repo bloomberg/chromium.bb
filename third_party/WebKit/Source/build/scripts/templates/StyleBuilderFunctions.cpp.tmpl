@@ -234,7 +234,7 @@ namespace WebCore {
 {{ apply_value_border_image_source("CSSPropertyBorderImageSource") }}
 {{ apply_value_border_image_source("CSSPropertyWebkitMaskBoxImageSource") }}
 
-{%- macro apply_color(property_id, default_getter="color", initial_color=none, inherit_color=false) %}
+{%- macro apply_color(property_id, default_getter="color", initial_color=none) %}
 {%- set property = properties[property_id] %}
 {%- set visited_link_setter = "setVisitedLink" + property.camel_case_name %}
 {{ declare_initial_function(property_id) }}
@@ -265,7 +265,8 @@ namespace WebCore {
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
-{%- if inherit_color %}
+{%- if property_id == "CSSPropertyColor" %}
+    // As per the spec, 'color: currentColor' is treated as 'color: inherit'
     if (primitiveValue->getValueID() == CSSValueCurrentcolor) {
         applyInherit{{property_id}}(state);
         return;
@@ -284,7 +285,7 @@ namespace WebCore {
 {{ apply_color("CSSPropertyBorderLeftColor") }}
 {{ apply_color("CSSPropertyBorderRightColor") }}
 {{ apply_color("CSSPropertyBorderTopColor") }}
-{{ apply_color("CSSPropertyColor", inherit_color=true, default_getter="invalidColor", initial_color="RenderStyle::initialColor") }}
+{{ apply_color("CSSPropertyColor", initial_color="RenderStyle::initialColor") }}
 {{ apply_color("CSSPropertyOutlineColor") }}
 {{ apply_color("CSSPropertyTextDecorationColor") }}
 {{ apply_color("CSSPropertyWebkitColumnRuleColor") }}
