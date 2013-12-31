@@ -70,6 +70,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual blink::WebPopupType GetPopupType() OVERRIDE;
   virtual BrowserAccessibilityManager*
       GetBrowserAccessibilityManager() const OVERRIDE;
+  virtual void CreateBrowserAccessibilityManagerIfNeeded() OVERRIDE;
   virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                                       InputEventAckState ack_result) OVERRIDE;
   virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()

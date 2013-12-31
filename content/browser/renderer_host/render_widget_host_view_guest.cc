@@ -447,10 +447,6 @@ void RenderWidgetHostViewGuest::GetScreenInfo(blink::WebScreenInfo* results) {
     embedder_view->GetScreenInfo(results);
 }
 
-void RenderWidgetHostViewGuest::OnAccessibilityEvents(
-    const std::vector<AccessibilityHostMsg_EventParams>& params) {
-}
-
 #if defined(OS_MACOSX)
 void RenderWidgetHostViewGuest::SetActive(bool active) {
   platform_view_->SetActive(active);

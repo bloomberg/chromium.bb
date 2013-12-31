@@ -144,9 +144,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void GetScreenInfo(blink::WebScreenInfo* results) OVERRIDE;
-  virtual void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>&
-          params) OVERRIDE;
 
 #if defined(OS_MACOSX)
   // RenderWidgetHostView implementation.

@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
+#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/cross_site_request_manager.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -2110,8 +2111,13 @@ void RenderViewHostImpl::StopFinding(StopFindAction action) {
 
 void RenderViewHostImpl::OnAccessibilityEvents(
     const std::vector<AccessibilityHostMsg_EventParams>& params) {
-  if (view_ && !is_swapped_out_)
-    view_->OnAccessibilityEvents(params);
+  if (view_ && !is_swapped_out_) {
+    view_->CreateBrowserAccessibilityManagerIfNeeded();
+    BrowserAccessibilityManager* manager =
+        view_->GetBrowserAccessibilityManager();
+    if (manager)
+      manager->OnAccessibilityEvents(params);
+  }
 
   // Always send an ACK or the renderer can be in a bad state.
   Send(new AccessibilityMsg_Events_ACK(GetRoutingID()));

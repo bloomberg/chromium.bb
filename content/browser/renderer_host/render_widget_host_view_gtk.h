@@ -132,9 +132,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
   virtual void ResizeCompositingSurface(const gfx::Size&) OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
-  virtual void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>& params)
-      OVERRIDE;
+  virtual void CreateBrowserAccessibilityManagerIfNeeded() OVERRIDE;
 
   // ActiveWindowWatcherXObserver implementation.
   virtual void ActiveWindowChanged(GdkWindow* active_window) OVERRIDE;

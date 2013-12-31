@@ -540,23 +540,6 @@ RenderWidgetHostViewWin::GetNativeViewAccessible() {
       ToBrowserAccessibilityWin();
 }
 
-void RenderWidgetHostViewWin::CreateBrowserAccessibilityManagerIfNeeded() {
-  if (GetBrowserAccessibilityManager())
-    return;
-
-  HRESULT hr = ::CreateStdAccessibleObject(
-      m_hWnd, OBJID_WINDOW, IID_IAccessible,
-      reinterpret_cast<void **>(&window_iaccessible_));
-  DCHECK(SUCCEEDED(hr));
-
-  SetBrowserAccessibilityManager(
-      new BrowserAccessibilityManagerWin(
-          m_hWnd,
-          window_iaccessible_.get(),
-          BrowserAccessibilityManagerWin::GetEmptyDocument(),
-          this));
-}
-
 void RenderWidgetHostViewWin::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
     const std::vector<WebPluginGeometry>& plugin_window_moves) {
@@ -2381,10 +2364,21 @@ LRESULT RenderWidgetHostViewWin::OnMoveOrSize(
   return 0;
 }
 
-void RenderWidgetHostViewWin::OnAccessibilityEvents(
-    const std::vector<AccessibilityHostMsg_EventParams>& params) {
-  CreateBrowserAccessibilityManagerIfNeeded();
-  GetBrowserAccessibilityManager()->OnAccessibilityEvents(params);
+void RenderWidgetHostViewWin::CreateBrowserAccessibilityManagerIfNeeded() {
+  if (GetBrowserAccessibilityManager())
+    return;
+
+  HRESULT hr = ::CreateStdAccessibleObject(
+      m_hWnd, OBJID_WINDOW, IID_IAccessible,
+      reinterpret_cast<void **>(&window_iaccessible_));
+  DCHECK(SUCCEEDED(hr));
+
+  SetBrowserAccessibilityManager(
+      new BrowserAccessibilityManagerWin(
+          m_hWnd,
+          window_iaccessible_.get(),
+          BrowserAccessibilityManagerWin::GetEmptyDocument(),
+          this));
 }
 
 bool RenderWidgetHostViewWin::LockMouse() {

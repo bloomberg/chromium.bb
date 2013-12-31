@@ -162,8 +162,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       bool has_horizontal_scrollbar) OVERRIDE { }
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE { }
-  virtual void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>& params) OVERRIDE {}
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
 #if defined(OS_WIN) && !defined(USE_AURA)
   virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;

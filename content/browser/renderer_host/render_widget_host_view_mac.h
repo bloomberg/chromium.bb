@@ -290,9 +290,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
   virtual void AcceleratedSurfaceInitialized(int host_id,
                                              int route_id) OVERRIDE;
-  virtual void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>& params
-      ) OVERRIDE;
+  virtual void CreateBrowserAccessibilityManagerIfNeeded() OVERRIDE;
   virtual bool PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) OVERRIDE;
 

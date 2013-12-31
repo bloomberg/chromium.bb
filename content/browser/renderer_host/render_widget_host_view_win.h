@@ -235,9 +235,7 @@ class RenderWidgetHostViewWin
   virtual void AcceleratedSurfaceSuspend() OVERRIDE;
   virtual void AcceleratedSurfaceRelease() OVERRIDE;
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
-  virtual void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>& params
-      ) OVERRIDE;
+  virtual void CreateBrowserAccessibilityManagerIfNeeded() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void SetClickthroughRegion(SkRegion* region) OVERRIDE;
@@ -454,10 +452,6 @@ class RenderWidgetHostViewWin
   // is responsible for managing input scope). Currently input scope will only
   // take effect on Vista+.
   void UpdateInputScopeIfNecessary(ui::TextInputType text_input_type);
-
-  // Create a BrowserAccessibilityManager with an empty document if it
-  // doesn't already exist.
-  void CreateBrowserAccessibilityManagerIfNeeded();
 
   // The associated Model.  While |this| is being Destroyed,
   // |render_widget_host_| is NULL and the Windows message loop is run one last

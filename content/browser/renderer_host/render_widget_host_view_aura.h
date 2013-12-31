@@ -240,9 +240,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void SetScrollOffsetPinning(
       bool is_pinned_to_left, bool is_pinned_to_right) OVERRIDE;
   virtual gfx::GLSurfaceHandle GetCompositingSurface() OVERRIDE;
-  virtual void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>&
-          params) OVERRIDE;
+  virtual void CreateBrowserAccessibilityManagerIfNeeded() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void OnSwapCompositorFrame(
@@ -566,8 +564,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                             unsigned software_frame_id);
 
   void DidReceiveFrameFromRenderer();
-
-  BrowserAccessibilityManager* GetOrCreateBrowserAccessibilityManager();
 
   // Helper function to set keyboard focus to the main window.
   void SetKeyboardFocus();

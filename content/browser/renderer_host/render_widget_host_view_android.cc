@@ -1078,8 +1078,7 @@ void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
   content_view_core_->AddBeginFrameSubscriber();
 }
 
-void RenderWidgetHostViewAndroid::OnAccessibilityEvents(
-    const std::vector<AccessibilityHostMsg_EventParams>& params) {
+void RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManagerIfNeeded() {
   if (!host_ || host_->accessibility_mode() != AccessibilityModeComplete)
     return;
 
@@ -1091,7 +1090,6 @@ void RenderWidgetHostViewAndroid::OnAccessibilityEvents(
         new BrowserAccessibilityManagerAndroid(
             obj, BrowserAccessibilityManagerAndroid::GetEmptyDocument(), this));
   }
-  GetBrowserAccessibilityManager()->OnAccessibilityEvents(params);
 }
 
 void RenderWidgetHostViewAndroid::SetAccessibilityFocus(int acc_obj_id) {

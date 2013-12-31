@@ -1570,8 +1570,7 @@ void RenderWidgetHostViewGtk::FatalAccessibilityTreeError() {
   }
 }
 
-void RenderWidgetHostViewGtk::OnAccessibilityEvents(
-    const std::vector<AccessibilityHostMsg_EventParams>& params) {
+void RenderWidgetHostViewGtk::CreateBrowserAccessibilityManagerIfNeeded() {
   if (!GetBrowserAccessibilityManager()) {
     GtkWidget* parent = gtk_widget_get_parent(view_.get());
     SetBrowserAccessibilityManager(
@@ -1580,7 +1579,6 @@ void RenderWidgetHostViewGtk::OnAccessibilityEvents(
             BrowserAccessibilityManagerGtk::GetEmptyDocument(),
             this));
   }
-  GetBrowserAccessibilityManager()->OnAccessibilityEvents(params);
 }
 
 AtkObject* RenderWidgetHostViewGtk::GetAccessible() {

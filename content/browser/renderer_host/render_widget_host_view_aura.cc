@@ -735,45 +735,14 @@ gfx::NativeViewAccessible RenderWidgetHostViewAura::GetNativeViewAccessible() {
     return static_cast<gfx::NativeViewAccessible>(NULL);
   HWND hwnd = dispatcher->host()->GetAcceleratedWidget();
 
-  BrowserAccessibilityManager* manager =
-      GetOrCreateBrowserAccessibilityManager();
+  CreateBrowserAccessibilityManagerIfNeeded();
+  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
   if (manager)
     return manager->GetRoot()->ToBrowserAccessibilityWin();
 #endif
 
   NOTIMPLEMENTED();
   return static_cast<gfx::NativeViewAccessible>(NULL);
-}
-
-BrowserAccessibilityManager*
-RenderWidgetHostViewAura::GetOrCreateBrowserAccessibilityManager() {
-  BrowserAccessibilityManager* manager = GetBrowserAccessibilityManager();
-  if (manager)
-    return manager;
-
-#if defined(OS_WIN)
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (!dispatcher)
-    return NULL;
-  HWND hwnd = dispatcher->host()->GetAcceleratedWidget();
-
-  // The accessible_parent may be NULL at this point. The WebContents will pass
-  // it down to this instance (by way of the RenderViewHost and
-  // RenderWidgetHost) when it is known. This instance will then set it on its
-  // BrowserAccessibilityManager.
-  gfx::NativeViewAccessible accessible_parent =
-      host_->GetParentNativeViewAccessible();
-
-  manager = new BrowserAccessibilityManagerWin(
-      hwnd, accessible_parent,
-      BrowserAccessibilityManagerWin::GetEmptyDocument(), this);
-#else
-  manager = BrowserAccessibilityManager::Create(
-      BrowserAccessibilityManager::GetEmptyDocument(), this);
-#endif
-
-  SetBrowserAccessibilityManager(manager);
-  return manager;
 }
 
 void RenderWidgetHostViewAura::SetKeyboardFocus() {
@@ -2136,12 +2105,32 @@ void RenderWidgetHostViewAura::SetScrollOffsetPinning(
   // Not needed. Mac-only.
 }
 
-void RenderWidgetHostViewAura::OnAccessibilityEvents(
-    const std::vector<AccessibilityHostMsg_EventParams>& params) {
-  BrowserAccessibilityManager* manager =
-      GetOrCreateBrowserAccessibilityManager();
-  if (manager)
-    manager->OnAccessibilityEvents(params);
+void RenderWidgetHostViewAura::CreateBrowserAccessibilityManagerIfNeeded() {
+  if (GetBrowserAccessibilityManager())
+    return;
+
+#if defined(OS_WIN)
+  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
+  if (!dispatcher)
+    return;
+  HWND hwnd = dispatcher->host()->GetAcceleratedWidget();
+
+  // The accessible_parent may be NULL at this point. The WebContents will pass
+  // it down to this instance (by way of the RenderViewHost and
+  // RenderWidgetHost) when it is known. This instance will then set it on its
+  // BrowserAccessibilityManager.
+  gfx::NativeViewAccessible accessible_parent =
+      host_->GetParentNativeViewAccessible();
+
+  BrowserAccessibilityManager* manager = new BrowserAccessibilityManagerWin(
+      hwnd, accessible_parent,
+      BrowserAccessibilityManagerWin::GetEmptyDocument(), this);
+#else
+  BrowserAccessibilityManager* manager = BrowserAccessibilityManager::Create(
+      BrowserAccessibilityManager::GetEmptyDocument(), this);
+#endif
+
+  SetBrowserAccessibilityManager(manager);
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {

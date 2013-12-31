@@ -493,6 +493,9 @@ BrowserAccessibilityManager*
   return browser_accessibility_manager_.get();
 }
 
+void RenderWidgetHostViewBase::CreateBrowserAccessibilityManagerIfNeeded() {
+}
+
 void RenderWidgetHostViewBase::SetBrowserAccessibilityManager(
     BrowserAccessibilityManager* manager) {
   browser_accessibility_manager_.reset(manager);

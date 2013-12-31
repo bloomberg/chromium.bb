@@ -305,10 +305,13 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual void SetPopupType(blink::WebPopupType popup_type) = 0;
   virtual blink::WebPopupType GetPopupType() = 0;
 
+  // Get the BrowserAccessibilityManager if it exists, may return NULL.
   virtual BrowserAccessibilityManager*
       GetBrowserAccessibilityManager() const = 0;
-  virtual void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>& params) = 0;
+  // Create a BrowserAccessibilityManager for this view if it's possible to
+  // create one and if one doesn't exist already. Some ports may not create
+  // one depending on the current state.
+  virtual void CreateBrowserAccessibilityManagerIfNeeded() = 0;
 
   // Return a value that is incremented each time the renderer swaps a new frame
   // to the view.

@@ -159,9 +159,7 @@ class RenderWidgetHostViewAndroid
   virtual void OnSetNeedsFlushInput() OVERRIDE;
   virtual void GestureEventAck(int gesture_event_type,
                                InputEventAckState ack_result) OVERRIDE;
-  virtual void OnAccessibilityEvents(
-      const std::vector<AccessibilityHostMsg_EventParams>&
-          params) OVERRIDE;
+  virtual void CreateBrowserAccessibilityManagerIfNeeded() OVERRIDE;
   virtual bool LockMouse() OVERRIDE;
   virtual void UnlockMouse() OVERRIDE;
   virtual void HasTouchEventHandlers(bool need_touch_events) OVERRIDE;
