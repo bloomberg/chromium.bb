@@ -290,9 +290,6 @@ void WebView::didExitModalLoop()
 
 void WebViewImpl::setMainFrame(WebFrame* frame)
 {
-    // NOTE: The WebFrameImpl takes a reference to itself within
-    // initializeAsMainFrame() and releases that reference once the
-    // corresponding Frame is destroyed.
     toWebFrameImpl(frame)->initializeAsMainFrame(page());
 }
 

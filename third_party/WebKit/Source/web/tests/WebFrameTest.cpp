@@ -3219,7 +3219,7 @@ TEST_F(WebFrameTest, FindOnDetachedFrame)
     WebFindOptions options;
     WebString searchText = WebString::fromUTF8(kFindString);
     WebFrameImpl* mainFrame = toWebFrameImpl(webViewHelper.webView()->mainFrame());
-    WebFrameImpl* secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
+    RefPtr<WebFrameImpl> secondFrame = toWebFrameImpl(mainFrame->traverseNext(false));
     RefPtr<WebCore::Frame> holdSecondFrame = secondFrame->frame();
 
     // Detach the frame before finding.

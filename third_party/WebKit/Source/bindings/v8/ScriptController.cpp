@@ -97,7 +97,8 @@ ScriptController::ScriptController(Frame* frame)
 
 ScriptController::~ScriptController()
 {
-    clearForClose(true);
+    // V8WindowShell::clearForClose() must be invoked before destruction starts.
+    ASSERT(!m_windowShell->isContextInitialized());
 }
 
 void ScriptController::clearScriptObjects()

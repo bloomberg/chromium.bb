@@ -35,7 +35,6 @@
 
 #include "FrameLoaderClientImpl.h"
 #include "core/frame/Frame.h"
-#include "core/frame/FrameDestructionObserver.h"
 #include "platform/geometry/FloatRect.h"
 #include "public/platform/WebFileSystemType.h"
 #include "wtf/Compiler.h"
@@ -73,8 +72,7 @@ template <typename T> class WebVector;
 // Implementation of WebFrame, note that this is a reference counted object.
 class WebFrameImpl
     : public WebFrame
-    , public RefCounted<WebFrameImpl>
-    , public WebCore::FrameDestructionObserver {
+    , public RefCounted<WebFrameImpl> {
 public:
     // WebFrame methods:
     virtual void close();
@@ -237,8 +235,7 @@ public:
     virtual bool selectionStartHasSpellingMarkerFor(int from, int length) const;
     virtual WebString layerTreeAsText(bool showDebugInfo = false) const;
 
-    // WebCore::FrameDestructionObserver methods.
-    virtual void willDetachFrameHost();
+    void willDetachParent();
 
     static WebFrameImpl* create(WebFrameClient*);
     // FIXME: Move the embedderIdentifier concept fully to the embedder and
@@ -301,6 +298,7 @@ public:
     // Otherwise, disallow scrolling.
     void setCanHaveScrollbars(bool);
 
+    WebCore::Frame* frame() const { return m_frame.get(); }
     WebFrameClient* client() const { return m_client; }
     void setClient(WebFrameClient* client) { m_client = client; }
 
@@ -340,7 +338,7 @@ private:
     WebFrameImpl(WebFrameClient*, long long frame_identifier);
 
     // Sets the local WebCore frame and registers destruction observers.
-    void setWebCoreFrame(WebCore::Frame*);
+    void setWebCoreFrame(PassRefPtr<WebCore::Frame>);
 
     // Notifies the delegate about a new selection rect.
     void reportFindInPageSelection(
@@ -437,6 +435,10 @@ private:
         FrameLoaderClientImpl m_frameLoaderClientImpl;
     };
     RefPtr<WebFrameInit> m_frameInit;
+
+    // The embedder retains a reference to the WebCore Frame while it is active in the DOM. This
+    // reference is released when the frame is removed from the DOM or the entire page is closed.
+    RefPtr<WebCore::Frame> m_frame;
 
     WebFrameClient* m_client;
     WebPermissionClient* m_permissionClient;

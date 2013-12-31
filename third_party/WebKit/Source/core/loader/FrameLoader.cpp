@@ -159,13 +159,9 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
 
 FrameLoader::~FrameLoader()
 {
-    setOpener(0);
-
     HashSet<Frame*>::iterator end = m_openedFrames.end();
     for (HashSet<Frame*>::iterator it = m_openedFrames.begin(); it != end; ++it)
         (*it)->loader().m_opener = 0;
-
-    m_client->frameLoaderDestroyed();
 }
 
 void FrameLoader::init()
@@ -418,7 +414,8 @@ void FrameLoader::finishedParsing()
     // Null-checking the FrameView indicates whether or not we're in the destructor.
     RefPtr<Frame> protector = m_frame->view() ? m_frame : 0;
 
-    m_client->dispatchDidFinishDocumentLoad();
+    if (m_client)
+        m_client->dispatchDidFinishDocumentLoad();
 
     checkCompleted();
 
@@ -823,7 +820,10 @@ void FrameLoader::stopAllLoaders()
 
     m_inStopAllLoaders = false;
 
-    m_client->didStopAllLoaders();
+    // detachFromParent() can be called multiple times on same Frame, which
+    // means we may no longer have a FrameLoaderClient to talk to.
+    if (m_client)
+        m_client->didStopAllLoaders();
 }
 
 DocumentLoader* FrameLoader::activeDocumentLoader() const
@@ -1125,9 +1125,11 @@ void FrameLoader::detachFromParent()
     if (m_documentLoader)
         m_documentLoader->detachFromFrame();
     m_documentLoader = 0;
-    m_client->detachedFromParent();
 
     m_progressTracker.clear();
+
+    if (m_client)
+        m_client->willDetachParent();
 
     // FIXME: All this code belongs up in Page.
     if (Frame* parent = m_frame->tree().parent()) {
@@ -1137,6 +1139,19 @@ void FrameLoader::detachFromParent()
         m_frame->setView(0);
         m_frame->willDetachFrameHost();
         m_frame->detachFromFrameHost();
+    }
+
+    if (m_client) {
+        setOpener(0);
+
+        // Notify ScriptController that the frame is closing, since its cleanup ends up calling
+        // back to FrameLoaderClient via V8WindowShell.
+        m_frame->script().clearForClose();
+
+        // After this, we must no longer talk to the client since this clears
+        // its owning reference back to us.
+        m_client->detachedFromParent();
+        m_client = 0;
     }
 }
 
@@ -1288,6 +1303,10 @@ void FrameLoader::loadWithNavigationAction(const NavigationAction& action, Frame
     // parent frame shouldn't learn the URL.
     const ResourceRequest& request = action.resourceRequest();
     if (!m_stateMachine.committedFirstRealDocumentLoad() && m_frame->ownerElement() && !m_frame->ownerElement()->dispatchBeforeLoadEvent(request.url().string()))
+        return;
+
+    // Dispatching the beforeload event could have blown away the frame.
+    if (!m_client)
         return;
 
     if (!m_stateMachine.startedFirstRealLoad())

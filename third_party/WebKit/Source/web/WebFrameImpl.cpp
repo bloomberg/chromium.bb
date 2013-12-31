@@ -35,24 +35,21 @@
 //
 // WebView (for the toplevel frame only)
 //    O
-//    |
+//    |           WebFrame
+//    |              O
+//    |              |
 //   Page O------- Frame (m_mainFrame) O-------O FrameView
 //                   ||
 //                   ||
-//               FrameLoader O-------- WebFrame (via FrameLoaderClient)
+//               FrameLoader
 //
 // FrameLoader and Frame are formerly one object that was split apart because
 // it got too big. They basically have the same lifetime, hence the double line.
 //
-// WebFrame is refcounted and has one ref on behalf of the FrameLoader/Frame.
-// This is not a normal reference counted pointer because that would require
-// changing WebKit code that we don't control. Instead, it is created with this
-// ref initially and it is removed when the FrameLoader is getting destroyed.
-//
-// WebFrames are created in two places, first in WebViewImpl when the root
-// frame is created, and second in WebFrame::createChildFrame when sub-frames
-// are created. WebKit will hook up this object to the FrameLoader/Frame
-// and the refcount will be correct.
+// From the perspective of the embedder, WebFrame is simply an object that it
+// allocates by calling WebFrame::create() and must be freed by calling close().
+// Internally, WebFrame is actually refcounted and it holds a reference to its
+// corresponding Frame in WebCore.
 //
 // How frames are destroyed
 // ------------------------
@@ -61,12 +58,13 @@
 // and a reference to the main frame is kept by the Page.
 //
 // When frame content is replaced, all subframes are destroyed. This happens
-// in FrameLoader::detachFromParent for each subframe.
-//
-// Frame going away causes the FrameLoader to get deleted. In FrameLoader's
-// destructor, it notifies its client with frameLoaderDestroyed. This derefs
-// the WebFrame and will cause it to be deleted (unless an external someone
-// is also holding a reference).
+// in FrameLoader::detachFromParent for each subframe in a pre-order depth-first
+// traversal. Note that child node order may not match DOM node order!
+// detachFromParent() calls FrameLoaderClient::detachedFromParent(), which calls
+// WebFrame::frameDetached(). This triggers WebFrame to clear its reference to
+// Frame, and also notifies the embedder via WebFrameClient that the frame is
+// detached. Most embedders will invoke close() on the WebFrame at this point,
+// triggering its deletion unless something else is still retaining a reference.
 //
 // Thie client is expected to be set whenever the WebFrameImpl is attached to
 // the DOM.
@@ -2100,8 +2098,7 @@ WebFrameImpl* WebFrameImpl::create(WebFrameClient* client, long long embedderIde
 }
 
 WebFrameImpl::WebFrameImpl(WebFrameClient* client, long long embedderIdentifier)
-    : FrameDestructionObserver(0)
-    , m_frameInit(WebFrameInit::create(this, embedderIdentifier))
+    : m_frameInit(WebFrameInit::create(this, embedderIdentifier))
     , m_client(client)
     , m_permissionClient(0)
     , m_currentActiveMatchFrame(0)
@@ -2131,28 +2128,19 @@ WebFrameImpl::~WebFrameImpl()
     cancelPendingScopingEffort();
 }
 
-void WebFrameImpl::setWebCoreFrame(WebCore::Frame* frame)
+void WebFrameImpl::setWebCoreFrame(PassRefPtr<WebCore::Frame> frame)
 {
-    ASSERT(frame);
-    observeFrame(frame);
+    m_frame = frame;
 }
 
 void WebFrameImpl::initializeAsMainFrame(WebCore::Page* page)
 {
-    // FIXME: This whole function can go away once ownerhip of WebFrame is reversed.
-    // Page should create it's main WebFrame, not have FrameLoader do it only
-    // to have to mark the frame as main later.
     m_frameInit->setFrameHost(&page->frameHost());
-    RefPtr<Frame> mainFrame = Frame::create(m_frameInit);
-    setWebCoreFrame(mainFrame.get());
-
-    // Add reference on behalf of FrameLoader. See comments in
-    // WebFrameLoaderClient::frameLoaderDestroyed for more info.
-    ref();
+    setWebCoreFrame(Frame::create(m_frameInit));
 
     // We must call init() after m_frame is assigned because it is referenced
     // during init().
-    frame()->init();
+    m_frame->init();
 }
 
 PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request, HTMLFrameOwnerElement* ownerElement)
@@ -2160,15 +2148,10 @@ PassRefPtr<Frame> WebFrameImpl::createChildFrame(const FrameLoadRequest& request
     ASSERT(m_client);
     WebFrameImpl* webframe = toWebFrameImpl(m_client->createChildFrame(this, request.frameName()));
 
-    // Add an extra ref on behalf of the page/FrameLoader, which references the
-    // WebFrame via the FrameLoaderClient interface. See the comment at the top
-    // of this file for more info.
-    webframe->ref();
-
     webframe->m_frameInit->setFrameHost(frame()->host());
     webframe->m_frameInit->setOwnerElement(ownerElement);
     RefPtr<Frame> childFrame = Frame::create(webframe->m_frameInit);
-    webframe->setWebCoreFrame(childFrame.get());
+    webframe->setWebCoreFrame(childFrame);
 
     childFrame->tree().setName(request.frameName());
 
@@ -2499,12 +2482,8 @@ void WebFrameImpl::loadJavaScriptURL(const KURL& url)
         frame()->document()->loader()->replaceDocument(scriptResult, ownerDocument.get());
 }
 
-void WebFrameImpl::willDetachFrameHost()
+void WebFrameImpl::willDetachParent()
 {
-    // FIXME: This should never be called if the Frame has already been detached?
-    if (!frame() || !frame()->page())
-        return;
-
     // Do not expect string scoping results from any frames that got detached
     // in the middle of the operation.
     if (m_scopingInProgress) {

@@ -186,10 +186,10 @@ class EmptyFrameLoaderClient : public FrameLoaderClient {
 public:
     EmptyFrameLoaderClient() { }
     virtual ~EmptyFrameLoaderClient() {  }
-    virtual void frameLoaderDestroyed() OVERRIDE { }
 
     virtual bool hasWebView() const OVERRIDE { return true; } // mainly for assertions
 
+    virtual void willDetachParent() OVERRIDE { }
     virtual void detachedFromParent() OVERRIDE { }
 
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) OVERRIDE { }

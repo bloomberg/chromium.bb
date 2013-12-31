@@ -52,8 +52,6 @@ public:
 
     // WebCore::FrameLoaderClient ----------------------------------------------
 
-    virtual void frameLoaderDestroyed();
-
     // Notifies the WebView delegate that the JS window object has been cleared,
     // giving it a chance to bind native objects to the window before script
     // parsing begins.
@@ -72,6 +70,7 @@ public:
 
     virtual bool hasWebView() const;
     virtual bool hasFrameView() const;
+    virtual void willDetachParent();
     virtual void detachedFromParent();
     virtual void dispatchWillRequestAfterPreconnect(WebCore::ResourceRequest&);
     virtual void dispatchWillSendRequest(WebCore::DocumentLoader*, unsigned long identifier, WebCore::ResourceRequest&, const WebCore::ResourceResponse& redirectResponse);

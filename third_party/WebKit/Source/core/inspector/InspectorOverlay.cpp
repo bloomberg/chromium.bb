@@ -681,7 +681,12 @@ bool InspectorOverlay::getBoxModel(Node* node, Vector<FloatQuad>* quads)
 
 void InspectorOverlay::freePage()
 {
-    m_overlayPage.clear();
+    if (m_overlayPage) {
+        // FIXME: This logic is duplicated in SVGImage and WebViewImpl. Perhaps it can be combined
+        // into Page's destructor.
+        m_overlayPage->mainFrame()->loader().frameDetached();
+        m_overlayPage.clear();
+    }
     m_overlayChromeClient.clear();
     m_timer.stop();
 }

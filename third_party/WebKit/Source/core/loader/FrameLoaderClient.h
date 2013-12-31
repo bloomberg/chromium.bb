@@ -88,10 +88,9 @@ class FetchRequest;
     public:
         virtual ~FrameLoaderClient() { }
 
-        virtual void frameLoaderDestroyed() = 0;
-
         virtual bool hasWebView() const = 0; // mainly for assertions
 
+        virtual void willDetachParent() = 0;
         virtual void detachedFromParent() = 0;
 
         virtual void dispatchWillRequestAfterPreconnect(ResourceRequest&) { }

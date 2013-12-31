@@ -110,17 +110,6 @@ FrameLoaderClientImpl::~FrameLoaderClientImpl()
 {
 }
 
-void FrameLoaderClientImpl::frameLoaderDestroyed()
-{
-    // When the WebFrame was created, it had an extra reference given to it on
-    // behalf of the Frame.  Since the WebFrame owns us, this extra ref also
-    // serves to keep us alive until the FrameLoader is done with us.  The
-    // FrameLoader calls this method when it's going away.  Therefore, we balance
-    // out that extra reference, which may cause 'this' to be deleted.
-    ASSERT(!m_webFrame->frame());
-    m_webFrame->deref();
-}
-
 void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*)
 {
     if (m_webFrame->client()) {
@@ -253,24 +242,29 @@ bool FrameLoaderClientImpl::hasFrameView() const
     return m_webFrame->viewImpl();
 }
 
+void FrameLoaderClientImpl::willDetachParent()
+{
+    m_webFrame->willDetachParent();
+}
+
 void FrameLoaderClientImpl::detachedFromParent()
 {
-    // Close down the proxy.  The purpose of this change is to make the
-    // call to ScriptController::clearWindowShell a no-op when called from
-    // Frame::pageDestroyed.  Without this change, this call to clearWindowShell
-    // will cause a crash.  If you remove/modify this, just ensure that you can
-    // go to a page and then navigate to a new page without getting any asserts
-    // or crashes.
-    m_webFrame->frame()->script().clearForClose();
-
     // Alert the client that the frame is being detached. This is the last
     // chance we have to communicate with the client.
-    if (m_webFrame->client())
-        m_webFrame->client()->frameDetached(m_webFrame);
+    m_webFrame->setWebCoreFrame(0);
 
-    // Stop communicating with the WebFrameClient at this point since we are no
-    // longer associated with the Page.
+    // Signal that no further communication with WebFrameClient should take
+    // place at this point since we are no longer associated with the Page.
+    WebFrameClient* client = m_webFrame->client();
     m_webFrame->setClient(0);
+
+    // The call to WebFrameClient::frameDetached() is generally when the embedder will release its
+    // reference to the WebFrame, which may trigger WebFrame destruction. Since WebFrame owns
+    // FrameLoaderClientImpl, we must not access any of our own members after this call, since this
+    // object may have been destroyed.
+    WebFrame* webFrame = m_webFrame;
+    m_webFrame = 0;
+    client->frameDetached(webFrame);
 }
 
 void FrameLoaderClientImpl::dispatchWillRequestAfterPreconnect(ResourceRequest& request)
