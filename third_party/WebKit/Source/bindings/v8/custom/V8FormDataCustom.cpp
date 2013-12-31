@@ -63,7 +63,7 @@ void V8FormData::appendMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
 
         domFormData->append(name, blob, filename);
     } else {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, argString, arg);
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, argString, arg);
         domFormData->append(name, argString);
     }
 }
