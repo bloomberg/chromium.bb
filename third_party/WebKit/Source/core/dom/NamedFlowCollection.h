@@ -48,8 +48,8 @@ public:
     static PassRefPtr<NamedFlowCollection> create(Document* doc) { return adoptRef(new NamedFlowCollection(doc)); }
 
     Vector<RefPtr<NamedFlow> > namedFlows();
-    NamedFlow* flowByName(const String&);
-    PassRefPtr<NamedFlow> ensureFlowWithName(const String&);
+    NamedFlow* flowByName(const AtomicString&);
+    PassRefPtr<NamedFlow> ensureFlowWithName(const AtomicString&);
 
     void discardNamedFlow(NamedFlow*);
 

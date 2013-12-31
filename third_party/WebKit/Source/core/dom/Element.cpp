@@ -2807,7 +2807,7 @@ bool Element::webkitMatchesSelector(const String& selector, ExceptionState& exce
         return false;
     }
 
-    SelectorQuery* selectorQuery = document().selectorQueryCache().add(selector, document(), exceptionState);
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(AtomicString(selector), document(), exceptionState);
     if (!selectorQuery)
         return false;
     return selectorQuery->matches(*this);

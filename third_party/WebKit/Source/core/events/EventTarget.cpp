@@ -195,7 +195,7 @@ void EventTarget::uncaughtExceptionInEventHandler()
 {
 }
 
-static AtomicString legacyType(const Event* event)
+static const AtomicString& legacyType(const Event* event)
 {
     if (event->type() == EventTypeNames::transitionend)
         return EventTypeNames::webkitTransitionEnd;
@@ -212,7 +212,7 @@ static AtomicString legacyType(const Event* event)
     if (event->type() == EventTypeNames::wheel)
         return EventTypeNames::mousewheel;
 
-    return emptyString();
+    return emptyAtom;
 }
 
 void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventListenerVector* listenersVector, EventListenerVector* legacyListenersVector)

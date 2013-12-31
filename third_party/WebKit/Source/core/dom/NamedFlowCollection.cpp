@@ -34,6 +34,7 @@
 #include "core/dom/DOMNamedFlowCollection.h"
 #include "core/dom/Document.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "wtf/text/AtomicString.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
@@ -59,7 +60,8 @@ Vector<RefPtr<NamedFlow> > NamedFlowCollection::namedFlows()
     return namedFlows;
 }
 
-NamedFlow* NamedFlowCollection::flowByName(const String& flowName)
+// Takes an AtomicString in argument because RenderStyle::flowThread() returns an AtomicString.
+NamedFlow* NamedFlowCollection::flowByName(const AtomicString& flowName)
 {
     NamedFlowSet::iterator it = m_namedFlows.find<NamedFlowHashTranslator>(flowName);
     if (it == m_namedFlows.end() || (*it)->flowState() == NamedFlow::FlowStateNull)
@@ -68,7 +70,8 @@ NamedFlow* NamedFlowCollection::flowByName(const String& flowName)
     return *it;
 }
 
-PassRefPtr<NamedFlow> NamedFlowCollection::ensureFlowWithName(const String& flowName)
+// Takes an AtomicString in argument because RenderStyle::flowThread() returns an AtomicString.
+PassRefPtr<NamedFlow> NamedFlowCollection::ensureFlowWithName(const AtomicString& flowName)
 {
     NamedFlowSet::iterator it = m_namedFlows.find<NamedFlowHashTranslator>(flowName);
     if (it != m_namedFlows.end()) {
@@ -117,15 +120,15 @@ PassRefPtr<DOMNamedFlowCollection> NamedFlowCollection::createCSSOMSnapshot()
 // The HashFunctions object used by the HashSet to compare between NamedFlows.
 // It is safe to set safeToCompareToEmptyOrDeleted because the HashSet will never contain null pointers or deleted values.
 struct NamedFlowCollection::NamedFlowHashFunctions {
-    static unsigned hash(NamedFlow* key) { return DefaultHash<String>::Hash::hash(key->name()); }
+    static unsigned hash(NamedFlow* key) { return DefaultHash<AtomicString>::Hash::hash(key->name()); }
     static bool equal(NamedFlow* a, NamedFlow* b) { return a->name() == b->name(); }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
 
 // The HashTranslator is used to lookup a NamedFlow in the set using a name.
 struct NamedFlowCollection::NamedFlowHashTranslator {
-    static unsigned hash(const String& key) { return DefaultHash<String>::Hash::hash(key); }
-    static bool equal(NamedFlow* a, const String& b) { return a->name() == b; }
+    static unsigned hash(const AtomicString& key) { return DefaultHash<AtomicString>::Hash::hash(key); }
+    static bool equal(NamedFlow* a, const AtomicString& b) { return a->name() == b; }
 };
 
 } // namespace WebCore

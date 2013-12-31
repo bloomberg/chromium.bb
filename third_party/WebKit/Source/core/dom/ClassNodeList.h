@@ -39,8 +39,11 @@ namespace WebCore {
 
 class ClassNodeList FINAL : public LiveNodeList {
 public:
-    static PassRefPtr<ClassNodeList> create(PassRefPtr<Node> rootNode, const String& classNames)
+    // classNames argument is an AtomicString because it is common for Elements to share the same class names.
+    // It is also used to construct a SpaceSplitString (m_classNames) and its constructor requires an AtomicString.
+    static PassRefPtr<ClassNodeList> create(PassRefPtr<Node> rootNode, CollectionType type, const AtomicString& classNames)
     {
+        ASSERT_UNUSED(type, type == ClassNodeListType);
         return adoptRef(new ClassNodeList(rootNode, classNames));
     }
 
@@ -49,12 +52,12 @@ public:
     bool nodeMatchesInlined(Element*) const;
 
 private:
-    ClassNodeList(PassRefPtr<Node> rootNode, const String& classNames);
+    ClassNodeList(PassRefPtr<Node> rootNode, const AtomicString& classNames);
 
     virtual bool nodeMatches(Element*) const OVERRIDE;
 
     SpaceSplitString m_classNames;
-    String m_originalClassNames;
+    AtomicString m_originalClassNames;
 };
 
 inline bool ClassNodeList::nodeMatchesInlined(Element* testNode) const

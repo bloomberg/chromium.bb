@@ -319,7 +319,7 @@ Element* TreeScope::findAnchor(const String& name)
 {
     if (name.isEmpty())
         return 0;
-    if (Element* element = getElementById(name))
+    if (Element* element = getElementById(AtomicString(name)))
         return element;
     ASSERT(rootNode());
     for (Element* element = ElementTraversal::firstWithin(*rootNode()); element; element = ElementTraversal::next(*element)) {

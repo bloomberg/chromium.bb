@@ -32,7 +32,7 @@
 
 namespace WebCore {
 
-bool DOMTokenList::validateToken(const AtomicString& token, ExceptionState& exceptionState)
+bool DOMTokenList::validateToken(const String& token, ExceptionState& exceptionState)
 {
     if (token.isEmpty()) {
         exceptionState.throwDOMException(SyntaxError, "The token provided must not be empty.");
@@ -74,6 +74,8 @@ void DOMTokenList::add(const AtomicString& token, ExceptionState& exceptionState
     add(tokens, exceptionState);
 }
 
+// Optimally, this should take a Vector<AtomicString> const ref in argument but the
+// bindings generator does not handle that.
 void DOMTokenList::add(const Vector<String>& tokens, ExceptionState& exceptionState)
 {
     Vector<String> filteredTokens;
@@ -81,7 +83,7 @@ void DOMTokenList::add(const Vector<String>& tokens, ExceptionState& exceptionSt
     for (size_t i = 0; i < tokens.size(); ++i) {
         if (!validateToken(tokens[i], exceptionState))
             return;
-        if (containsInternal(tokens[i]))
+        if (containsInternal(AtomicString(tokens[i])))
             continue;
         if (filteredTokens.contains(tokens[i]))
             continue;
@@ -101,6 +103,8 @@ void DOMTokenList::remove(const AtomicString& token, ExceptionState& exceptionSt
     remove(tokens, exceptionState);
 }
 
+// Optimally, this should take a Vector<AtomicString> const ref in argument but the
+// bindings generator does not handle that.
 void DOMTokenList::remove(const Vector<String>& tokens, ExceptionState& exceptionState)
 {
     if (!validateTokens(tokens, exceptionState))
@@ -110,7 +114,7 @@ void DOMTokenList::remove(const Vector<String>& tokens, ExceptionState& exceptio
     // through the string character by character.
     bool found = false;
     for (size_t i = 0; i < tokens.size(); ++i) {
-        if (containsInternal(tokens[i])) {
+        if (containsInternal(AtomicString(tokens[i]))) {
             found = true;
             break;
         }
@@ -161,14 +165,16 @@ void DOMTokenList::removeInternal(const AtomicString& token)
     setValue(removeToken(value(), token));
 }
 
-String DOMTokenList::addToken(const AtomicString& input, const AtomicString& token)
+AtomicString DOMTokenList::addToken(const AtomicString& input, const AtomicString& token)
 {
     Vector<String> tokens;
     tokens.append(token.string());
     return addTokens(input, tokens);
 }
 
-String DOMTokenList::addTokens(const AtomicString& input, const Vector<String>& tokens)
+// This returns an AtomicString because it is always passed as argument to setValue() and setValue()
+// takes an AtomicString in argument.
+AtomicString DOMTokenList::addTokens(const AtomicString& input, const Vector<String>& tokens)
 {
     bool needsSpace = false;
 
@@ -185,17 +191,19 @@ String DOMTokenList::addTokens(const AtomicString& input, const Vector<String>& 
         needsSpace = true;
     }
 
-    return builder.toString();
+    return builder.toAtomicString();
 }
 
-String DOMTokenList::removeToken(const AtomicString& input, const AtomicString& token)
+AtomicString DOMTokenList::removeToken(const AtomicString& input, const AtomicString& token)
 {
     Vector<String> tokens;
     tokens.append(token.string());
     return removeTokens(input, tokens);
 }
 
-String DOMTokenList::removeTokens(const AtomicString& input, const Vector<String>& tokens)
+// This returns an AtomicString because it is always passed as argument to setValue() and setValue()
+// takes an AtomicString in argument.
+AtomicString DOMTokenList::removeTokens(const AtomicString& input, const Vector<String>& tokens)
 {
     // Algorithm defined at http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#remove-a-token-from-a-string
     // New spec is at http://dom.spec.whatwg.org/#remove-a-token-from-a-string
@@ -238,7 +246,7 @@ String DOMTokenList::removeTokens(const AtomicString& input, const Vector<String
         }
     }
 
-    return output.toString();
+    return output.toAtomicString();
 }
 
 } // namespace WebCore

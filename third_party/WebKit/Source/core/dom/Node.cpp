@@ -1342,14 +1342,18 @@ PassRefPtr<NodeList> Node::getElementsByTagNameNS(const AtomicString& namespaceU
     return ensureRareData().ensureNodeLists().addCacheWithQualifiedName(this, namespaceURI.isEmpty() ? nullAtom : namespaceURI, localName);
 }
 
-PassRefPtr<NodeList> Node::getElementsByName(const String& elementName)
+// Takes an AtomicString in argument because it is common for elements to share the same name attribute.
+// Therefore, the NameNodeList factory function expects an AtomicString type.
+PassRefPtr<NodeList> Node::getElementsByName(const AtomicString& elementName)
 {
     return ensureRareData().ensureNodeLists().addCacheWithAtomicName<NameNodeList>(this, NameNodeListType, elementName);
 }
 
-PassRefPtr<NodeList> Node::getElementsByClassName(const String& classNames)
+// Takes an AtomicString in argument because it is common for elements to share the same set of class names.
+// Therefore, the ClassNodeList factory function expects an AtomicString type.
+PassRefPtr<NodeList> Node::getElementsByClassName(const AtomicString& classNames)
 {
-    return ensureRareData().ensureNodeLists().addCacheWithName<ClassNodeList>(this, ClassNodeListType, classNames);
+    return ensureRareData().ensureNodeLists().addCacheWithAtomicName<ClassNodeList>(this, ClassNodeListType, classNames);
 }
 
 PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name, bool onlyMatchImgElements)

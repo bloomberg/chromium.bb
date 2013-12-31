@@ -58,9 +58,9 @@ void DOMSettableTokenList::add(const Vector<String>& tokens, ExceptionState& exc
 
     for (size_t i = 0; i < tokens.size(); ++i) {
         if (m_tokens.isNull())
-            m_tokens.set(tokens[i], false);
+            m_tokens.set(AtomicString(tokens[i]), false);
         else
-            m_tokens.add(tokens[i]);
+            m_tokens.add(AtomicString(tokens[i]));
     }
 }
 
@@ -77,7 +77,7 @@ void DOMSettableTokenList::remove(const Vector<String>& tokens, ExceptionState& 
 {
     DOMTokenList::remove(tokens, exceptionState);
     for (size_t i = 0; i < tokens.size(); ++i)
-        m_tokens.remove(tokens[i]);
+        m_tokens.remove(AtomicString(tokens[i]));
 }
 
 void DOMSettableTokenList::removeInternal(const AtomicString& token)
