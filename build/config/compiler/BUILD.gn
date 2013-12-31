@@ -32,11 +32,8 @@ config("compiler") {
     ]
 
     # Stack protection.
-    # TODO(brettw) why do we have different values for all of these cases?
     if (is_mac) {
       cflags += "-fstack-protector-all"
-    } else if (is_chromeos) {
-      cflags += "-fstack-protector-strong"
     } else if (is_linux) {
       cflags += [ "-fstack-protector", "--param=ssp-buffer-size=4" ]
     }

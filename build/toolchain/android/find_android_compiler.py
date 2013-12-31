@@ -19,8 +19,18 @@ if len(sys.argv) != 2:
 android_toolchain = sys.argv[1]
 cc = glob.glob(android_toolchain + "/*-gcc")
 cxx = glob.glob(android_toolchain + "/*-g++")
+
+# We tolerate "no matches." In the Android AOSP WebView build, it runs this
+# logic and the directory doesn't exist, giving no matches. But that build runs
+# GYP to generate Android Makefiles which specify the compiler separately. So
+# all we need to do in this case is ignore the error and continue with empty
+# target compilers.
+if len(cc) == 0:
+  cc = [""]
+if len(cxx) == 0:
+  cxx = [""]
 if len(cc) != 1 or len(cxx) != 1:
-  print "Either none or more than one matching compiler."
+  print "More than one matching compiler."
   sys.exit(1)
 
 # Get the host compilers from the current path.

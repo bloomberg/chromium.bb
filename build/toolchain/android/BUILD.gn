@@ -44,10 +44,8 @@ if (is_gyp) {
 
     # This script will find the compilers for the given Android toolchain
     # directory.
-    # TODO(brettw) write this script which locates the Android compilers.
-    #android_compilers = exec_script("find_android_compilers.py",
-    #                                [android_toolchain], "value")
-    android_compilers = ["gcc", "g++", "gcc", "g++"]
+    android_compilers = exec_script("find_android_compiler.py",
+                                    [android_toolchain], "value")
     gyp_header =
       "'make_global_settings': [" +
       "['CC', '" + android_compilers[0] + "']," +
