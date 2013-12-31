@@ -649,7 +649,11 @@ inline void InlineBidiResolver::appendRun()
 
         if (isEndOfLine)
             m_reachedEndOfLine = true;
-        m_eor.increment();
+        // If isolateTrack is inIsolate, the next |start of run| can not be the current isolated renderer.
+        if (isolateTracker.inIsolate())
+            m_eor.moveTo(bidiNextSkippingEmptyInlines(m_eor.root(), m_eor.object()), 0);
+        else
+            m_eor.increment();
         m_sor = m_eor;
     }
 
