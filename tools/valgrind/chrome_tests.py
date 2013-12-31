@@ -29,7 +29,7 @@ class BuildDirAmbiguous(Exception): pass
 
 class ChromeTests:
   SLOW_TOOLS = ["memcheck", "tsan", "tsan_rv", "drmemory"]
-  LAYOUT_TESTS_DEFAULT_CHUNK_SIZE = 500
+  LAYOUT_TESTS_DEFAULT_CHUNK_SIZE = 400
 
   def __init__(self, options, args, test):
     if ':' in test:
@@ -444,7 +444,9 @@ class ChromeTests:
     # http://crbug.com/260627: After the switch to content_shell from DRT, each
     # test now brings up 3 processes.  Under Valgrind, they become memory bound
     # and can eventually OOM if we don't reduce the total count.
-    jobs = max(1, int(multiprocessing.cpu_count() * 0.4))
+    # It'd be nice if content_shell automatically throttled the startup of new
+    # tests if we're low on memory.
+    jobs = max(1, int(multiprocessing.cpu_count() * 0.3))
     script_cmd = ["python", script, "-v",
                   "--run-singly",  # run a separate DumpRenderTree for each test
                   "--fully-parallel",
