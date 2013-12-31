@@ -2728,7 +2728,6 @@
             'platform/mediastream/RTCPeerConnectionHandler.h',
             'platform/mediastream/RTCPeerConnectionHandlerClient.h',
             'platform/mediastream/RTCStatsRequest.h',
-            'platform/mock/GeolocationClientMock.cpp',
         ],
         'webcore_svg_files': [
             'rendering/style/SVGRenderStyle.cpp',

@@ -35,11 +35,8 @@
 #include "../platform/WebPrivateOwnPtr.h"
 #include "WebGeolocationClient.h"
 
-namespace WebCore {
-class GeolocationClientMock;
-}
-
 namespace blink {
+class GeolocationClientMock;
 class WebGeolocationPosition;
 class WebString;
 
@@ -70,7 +67,7 @@ private:
     WebGeolocationClientMock();
     BLINK_EXPORT void reset();
 
-    WebPrivateOwnPtr<WebCore::GeolocationClientMock> m_clientMock;
+    WebPrivateOwnPtr<GeolocationClientMock> m_clientMock;
 };
 }
 

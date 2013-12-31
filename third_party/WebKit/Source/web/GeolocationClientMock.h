@@ -40,21 +40,22 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
-
 class GeolocationController;
 class GeolocationPosition;
+}
 
-// FIXME: this should not be in WebCore. It should be moved to WebKit.
+namespace blink {
+
 // Provides a mock object for the geolocation client.
-class GeolocationClientMock : public GeolocationClient {
+class GeolocationClientMock : public WebCore::GeolocationClient {
 public:
     GeolocationClientMock();
     virtual ~GeolocationClientMock();
 
     void reset();
-    void setController(GeolocationController*);
+    void setController(WebCore::GeolocationController*);
 
-    void setPosition(PassRefPtr<GeolocationPosition>);
+    void setPosition(PassRefPtr<WebCore::GeolocationPosition>);
     void setPositionUnavailableError(const String& errorMessage);
     void setPermission(bool allowed);
     int numberOfPendingPermissionRequests() const;
@@ -64,25 +65,25 @@ public:
     virtual void startUpdating() OVERRIDE;
     virtual void stopUpdating() OVERRIDE;
     virtual void setEnableHighAccuracy(bool) OVERRIDE;
-    virtual GeolocationPosition* lastPosition() OVERRIDE;
-    virtual void requestPermission(Geolocation*) OVERRIDE;
-    virtual void cancelPermissionRequest(Geolocation*) OVERRIDE;
+    virtual WebCore::GeolocationPosition* lastPosition() OVERRIDE;
+    virtual void requestPermission(WebCore::Geolocation*) OVERRIDE;
+    virtual void cancelPermissionRequest(WebCore::Geolocation*) OVERRIDE;
 
 private:
     void asyncUpdateController();
-    void controllerTimerFired(Timer<GeolocationClientMock>*);
+    void controllerTimerFired(WebCore::Timer<GeolocationClientMock>*);
 
     void asyncUpdatePermission();
-    void permissionTimerFired(Timer<GeolocationClientMock>*);
+    void permissionTimerFired(WebCore::Timer<GeolocationClientMock>*);
 
     void clearError();
 
-    GeolocationController* m_controller;
-    RefPtr<GeolocationPosition> m_lastPosition;
+    WebCore::GeolocationController* m_controller;
+    RefPtr<WebCore::GeolocationPosition> m_lastPosition;
     bool m_hasError;
     String m_errorMessage;
-    Timer<GeolocationClientMock> m_controllerTimer;
-    Timer<GeolocationClientMock> m_permissionTimer;
+    WebCore::Timer<GeolocationClientMock> m_controllerTimer;
+    WebCore::Timer<GeolocationClientMock> m_permissionTimer;
     bool m_isActive;
 
     enum PermissionState {
@@ -90,7 +91,7 @@ private:
         PermissionStateAllowed,
         PermissionStateDenied,
     } m_permissionState;
-    typedef WTF::HashSet<RefPtr<Geolocation> > GeolocationSet;
+    typedef WTF::HashSet<RefPtr<WebCore::Geolocation> > GeolocationSet;
     GeolocationSet m_pendingPermission;
 };
 

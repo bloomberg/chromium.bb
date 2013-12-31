@@ -30,13 +30,15 @@
  */
 
 #include "config.h"
-#include "core/platform/mock/GeolocationClientMock.h"
+#include "GeolocationClientMock.h"
 
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
 
-namespace WebCore {
+using namespace WebCore;
+
+namespace blink {
 
 GeolocationClientMock::GeolocationClientMock()
     : m_controller(0)

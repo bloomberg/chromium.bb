@@ -45,6 +45,8 @@
       'FullscreenController.h',
       'GeolocationClientProxy.cpp',
       'GeolocationClientProxy.h',
+      'GeolocationClientMock.cpp',
+      'GeolocationClientMock.h',
       'GraphicsLayerFactoryChromium.cpp',
       'GraphicsLayerFactoryChromium.h',
       'IDBFactoryBackendProxy.cpp',
