@@ -199,7 +199,8 @@ bool Dictionary::convert(ConversionContext& context, const String& key, double& 
     return true;
 }
 
-bool Dictionary::get(const String& key, String& value) const
+template<typename StringType>
+inline bool Dictionary::getStringType(const String& key, StringType& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))
@@ -208,6 +209,16 @@ bool Dictionary::get(const String& key, String& value) const
     V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, v8Value, false);
     value = stringValue;
     return true;
+}
+
+bool Dictionary::get(const String& key, String& value) const
+{
+    return getStringType(key, value);
+}
+
+bool Dictionary::get(const String& key, AtomicString& value) const
+{
+    return getStringType(key, value);
 }
 
 bool Dictionary::convert(ConversionContext& context, const String& key, String& value) const

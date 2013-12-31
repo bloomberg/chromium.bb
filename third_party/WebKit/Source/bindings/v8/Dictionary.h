@@ -72,6 +72,7 @@ public:
     bool get(const String&, double&, bool& hasValue) const;
     bool get(const String&, double&) const;
     bool get(const String&, String&) const;
+    bool get(const String&, AtomicString&) const;
     bool get(const String&, ScriptValue&) const;
     bool get(const String&, short&) const;
     bool get(const String&, unsigned short&) const;
@@ -160,6 +161,9 @@ public:
     bool convert(ConversionContext &, const String&, ArrayValue&) const;
     template<typename T>
     bool convert(ConversionContext &, const String&, RefPtr<T>&) const;
+
+    template<typename StringType>
+    bool getStringType(const String&, StringType&) const;
 
     bool getOwnPropertiesAsStringHashMap(HashMap<String, String>&) const;
     bool getOwnPropertyNames(Vector<String>&) const;

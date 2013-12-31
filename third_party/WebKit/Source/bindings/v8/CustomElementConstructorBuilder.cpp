@@ -88,7 +88,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
             m_prototype->SetPrototype(basePrototype);
     }
 
-    String extends;
+    AtomicString extends;
     bool extendsProvidedAndNonNull = m_options->get("extends", extends);
 
     if (!V8PerContextData::from(m_context)) {
