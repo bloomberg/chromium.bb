@@ -2467,10 +2467,17 @@ struct widget *
 window_frame_create(struct window *window, void *data)
 {
 	struct window_frame *frame;
+	uint32_t buttons;
+
+	if (window->type == TYPE_CUSTOM) {
+		buttons = FRAME_BUTTON_NONE;
+	} else {
+		buttons = FRAME_BUTTON_ALL;
+	}
 
 	frame = xzalloc(sizeof *frame);
 	frame->frame = frame_create(window->display->theme, 0, 0,
-				    FRAME_BUTTON_ALL, window->title);
+				    buttons, window->title);
 
 	frame->widget = window_add_widget(window, frame);
 	frame->child = widget_add_widget(frame->widget, data);
