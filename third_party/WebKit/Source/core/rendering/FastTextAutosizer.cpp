@@ -176,7 +176,7 @@ void FastTextAutosizer::inflate(RenderBlock* block)
 AtomicString FastTextAutosizer::fingerprint(const RenderBlock* block)
 {
     // FIXME(crbug.com/322340): Implement a better fingerprinting algorithm.
-    return String::number((unsigned long long) block);
+    return AtomicString::number((unsigned long long) block);
 }
 
 void FastTextAutosizer::recalcClusterIfNeeded(FastTextAutosizer::Cluster* cluster)

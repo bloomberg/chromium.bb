@@ -42,7 +42,7 @@ public:
     static void setDefaultFontSize(int);
 
 protected:
-    static const WTF::String& defaultGUIFont();
+    static const WTF::AtomicString& defaultGUIFont();
 
     static float s_defaultFontSize;
 };
