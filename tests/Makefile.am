@@ -114,7 +114,7 @@ event_weston_LDADD = libtest-client.la
 button_weston_SOURCES = button-test.c
 button_weston_LDADD = libtest-client.la
 
-text_weston_SOURCES = text-test.c ../clients/text-protocol.c
+text_weston_SOURCES = text-test.c text-protocol.c
 text_weston_LDADD = libtest-client.la
 
 subsurface_weston_SOURCES = subsurface-test.c
@@ -154,7 +154,9 @@ EXTRA_DIST = weston-tests-env
 BUILT_SOURCES =					\
 	wayland-test-protocol.c			\
 	wayland-test-server-protocol.h		\
-	wayland-test-client-protocol.h
+	wayland-test-client-protocol.h		\
+	text-protocol.c				\
+	text-client-protocol.h
 
 CLEANFILES = $(BUILT_SOURCES)
 

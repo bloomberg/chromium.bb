@@ -13,13 +13,6 @@ else
 noinst_PROGRAMS = $(demo_clients)
 endif
 
-libexec_PROGRAMS =				\
-	$(desktop_shell)			\
-	$(screenshooter)			\
-	$(screensaver)				\
-	$(keyboard)				\
-	weston-simple-im
-
 AM_CFLAGS = $(GCC_CFLAGS)
 AM_CPPFLAGS =					\
 	-DDATADIR='"$(datadir)"'		\
@@ -63,6 +56,13 @@ endif
 if BUILD_CLIENTS
 install_clients = weston-terminal weston-info
 
+libexec_PROGRAMS =				\
+	weston-desktop-shell
+	weston-screenshooter			\
+	$(screensaver)				\
+	weston-keyboard				\
+	weston-simple-im
+
 clients_programs =				\
 	weston-flower				\
 	weston-image				\
@@ -80,10 +80,6 @@ clients_programs =				\
 	$(subsurfaces)				\
 	$(full_gl_client_programs)		\
 	$(cairo_glesv2_programs)
-
-desktop_shell = weston-desktop-shell
-
-screenshooter = weston-screenshooter
 
 noinst_LTLIBRARIES = libtoytoolkit.la
 
@@ -182,7 +178,6 @@ weston_editor_LDADD = libtoytoolkit.la $(PANGO_LIBS)
 weston_editor_CPPFLAGS = $(AM_CPPFLAGS) $(PANGO_CFLAGS)
 endif
 
-keyboard = weston-keyboard
 weston_keyboard_SOURCES = 			\
 	keyboard.c				\
 	desktop-shell-client-protocol.h		\
