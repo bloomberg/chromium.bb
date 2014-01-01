@@ -117,10 +117,10 @@ private:
     bool m_discardTrailingNewline;
     bool m_requestInFlight;
 
-    String m_eventName;
+    AtomicString m_eventName;
     Vector<UChar> m_data;
-    String m_currentlyParsedEventId;
-    String m_lastEventId;
+    AtomicString m_currentlyParsedEventId;
+    AtomicString m_lastEventId;
     unsigned long long m_reconnectDelay;
     String m_eventStreamOrigin;
 };

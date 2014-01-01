@@ -163,7 +163,7 @@ void SerializerMarkupAccumulator::appendCustomAttributes(StringBuilder& out, Ele
 
     // We need to give a fake location to blank frames so they can be referenced by the serialized frame.
     url = m_serializer->urlForBlankFrame(frame);
-    appendAttribute(out, element, Attribute(frameOwnerURLAttributeName(*frameOwner), url.string()), namespaces);
+    appendAttribute(out, element, Attribute(frameOwnerURLAttributeName(*frameOwner), AtomicString(url.string())), namespaces);
 }
 
 void SerializerMarkupAccumulator::appendEndTag(Node* node)

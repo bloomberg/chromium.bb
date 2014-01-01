@@ -130,8 +130,8 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
     // For whatever reason, Firefox uses the first frame to determine the outgoingReferrer. We replicate that behavior here.
     String referrer = SecurityPolicy::generateReferrerHeader(firstFrame->document()->referrerPolicy(), completedURL, firstFrame->document()->outgoingReferrer());
 
-    ResourceRequest request(completedURL, referrer);
-    FrameLoader::addHTTPOriginIfNeeded(request, firstFrame->document()->outgoingOrigin());
+    ResourceRequest request(completedURL, AtomicString(referrer));
+    FrameLoader::addHTTPOriginIfNeeded(request, AtomicString(firstFrame->document()->outgoingOrigin()));
     FrameLoadRequest frameRequest(activeWindow->document(), request, frameName);
 
     // We pass the opener frame for the lookupFrame in case the active frame is different from
@@ -151,7 +151,7 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
         function(newFrame->domWindow(), functionContext);
 
     if (created) {
-        FrameLoadRequest request(activeWindow->document(), ResourceRequest(completedURL, referrer));
+        FrameLoadRequest request(activeWindow->document(), ResourceRequest(completedURL, AtomicString(referrer)));
         newFrame->loader().load(request);
     } else if (!urlString.isEmpty()) {
         newFrame->navigationScheduler().scheduleLocationChange(activeWindow->document(), completedURL.string(), referrer, false);

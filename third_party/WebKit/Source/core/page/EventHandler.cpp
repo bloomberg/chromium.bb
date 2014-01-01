@@ -3196,7 +3196,7 @@ void EventHandler::defaultKeyboardEventHandler(KeyboardEvent* event)
         else if (event->keyIdentifier() == "U+001B")
             defaultEscapeEventHandler(event);
         else {
-            FocusDirection direction = focusDirectionForKey(event->keyIdentifier());
+            FocusDirection direction = focusDirectionForKey(AtomicString(event->keyIdentifier()));
             if (direction != FocusDirectionNone)
                 defaultArrowEventHandler(direction, event);
         }

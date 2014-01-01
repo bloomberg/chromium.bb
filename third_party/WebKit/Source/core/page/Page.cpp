@@ -490,7 +490,7 @@ void Page::settingsChanged(SettingsDelegate::ChangeType changeType)
             mainFrame()->document()->updateViewportDescription();
         break;
     case SettingsDelegate::MediaTypeChange:
-        m_mainFrame->view()->setMediaType(settings().mediaTypeOverride());
+        m_mainFrame->view()->setMediaType(AtomicString(settings().mediaTypeOverride()));
         setNeedsRecalcStyleInAllFrames();
         break;
     case SettingsDelegate::DNSPrefetchingChange:
