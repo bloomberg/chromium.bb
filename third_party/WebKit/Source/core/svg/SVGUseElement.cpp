@@ -400,7 +400,7 @@ void SVGUseElement::buildPendingResource()
     if (!inDocument())
         return;
 
-    String id;
+    AtomicString id;
     Element* target = SVGURIReference::targetElementFromIRIString(hrefCurrentValue(), document(), &id, externalDocument());
     if (!target || !target->inDocument()) {
         // If we can't find the target of an external element, just give up.
@@ -826,12 +826,13 @@ void SVGUseElement::associateInstancesWithShadowTreeElements(Node* target, SVGEl
 
     if (originalElement->hasTagName(SVGNames::useTag)) {
         // <use> gets replaced by <g>
-        ASSERT(target->nodeName() == SVGNames::gTag);
+        ASSERT(AtomicString(target->nodeName()) == SVGNames::gTag);
     } else if (originalElement->hasTagName(SVGNames::symbolTag)) {
         // <symbol> gets replaced by <svg>
-        ASSERT(target->nodeName() == SVGNames::svgTag);
-    } else
-        ASSERT(target->nodeName() == originalElement->nodeName());
+        ASSERT(AtomicString(target->nodeName()) == SVGNames::svgTag);
+    } else {
+        ASSERT(AtomicString(target->nodeName()) == originalElement->nodeName());
+    }
 
     SVGElement* element = 0;
     if (target->isSVGElement())

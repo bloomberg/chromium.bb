@@ -36,8 +36,8 @@ public:
     bool isKnownAttribute(const QualifiedName&);
     void addSupportedAttributes(HashSet<QualifiedName>&);
 
-    static String fragmentIdentifierFromIRIString(const String&, const Document&);
-    static Element* targetElementFromIRIString(const String&, const Document&, String* = 0, Document* = 0);
+    static AtomicString fragmentIdentifierFromIRIString(const String&, const Document&);
+    static Element* targetElementFromIRIString(const String&, const Document&, AtomicString* = 0, Document* = 0);
 
     static inline bool isExternalURIReference(const String& uri, const Document& document)
     {

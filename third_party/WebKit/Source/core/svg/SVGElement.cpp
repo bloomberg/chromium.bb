@@ -147,7 +147,7 @@ void SVGElement::buildPendingResourcesIfNeeded()
         return;
 
     SVGDocumentExtensions* extensions = document.accessSVGExtensions();
-    String resourceId = getIdAttribute();
+    AtomicString resourceId = getIdAttribute();
     if (!extensions->hasPendingResource(resourceId))
         return;
 
@@ -279,7 +279,7 @@ String SVGElement::title() const
     return String();
 }
 
-PassRefPtr<CSSValue> SVGElement::getPresentationAttribute(const String& name)
+PassRefPtr<CSSValue> SVGElement::getPresentationAttribute(const AtomicString& name)
 {
     if (!hasAttributesWithoutUpdate())
         return 0;
@@ -314,32 +314,32 @@ AffineTransform SVGElement::localCoordinateSpaceTransform(CTMScope) const
     return AffineTransform();
 }
 
-String SVGElement::xmlbase() const
+const AtomicString& SVGElement::xmlbase() const
 {
     return fastGetAttribute(XMLNames::baseAttr);
 }
 
-void SVGElement::setXMLbase(const String& value)
+void SVGElement::setXMLbase(const AtomicString& value)
 {
     setAttribute(XMLNames::baseAttr, value);
 }
 
-String SVGElement::xmllang() const
+const AtomicString& SVGElement::xmllang() const
 {
     return fastGetAttribute(XMLNames::langAttr);
 }
 
-void SVGElement::setXMLlang(const String& value)
+void SVGElement::setXMLlang(const AtomicString& value)
 {
     setAttribute(XMLNames::langAttr, value);
 }
 
-String SVGElement::xmlspace() const
+const AtomicString& SVGElement::xmlspace() const
 {
     return fastGetAttribute(XMLNames::spaceAttr);
 }
 
-void SVGElement::setXMLspace(const String& value)
+void SVGElement::setXMLspace(const AtomicString& value)
 {
     setAttribute(XMLNames::spaceAttr, value);
 }
@@ -1027,7 +1027,7 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName)
     }
 
     if (attrName == HTMLNames::classAttr) {
-        classAttributeChanged(classNameCurrentValue());
+        classAttributeChanged(AtomicString(classNameCurrentValue()));
         SVGElementInstance::invalidateAllInstancesOfElement(this);
         return;
     }

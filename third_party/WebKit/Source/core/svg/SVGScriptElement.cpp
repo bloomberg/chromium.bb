@@ -137,7 +137,7 @@ void SVGScriptElement::childrenChanged(bool changedByParser, Node* beforeChange,
 
 bool SVGScriptElement::isURLAttribute(const Attribute& attribute) const
 {
-    return attribute.name() == sourceAttributeValue();
+    return attribute.name() == AtomicString(sourceAttributeValue());
 }
 
 void SVGScriptElement::finishParsingChildren()

@@ -52,7 +52,7 @@ PassRefPtr<SVGGlyphRefElement> SVGGlyphRefElement::create(Document& document)
     return adoptRef(new SVGGlyphRefElement(document));
 }
 
-bool SVGGlyphRefElement::hasValidGlyphElement(String& glyphName) const
+bool SVGGlyphRefElement::hasValidGlyphElement(AtomicString& glyphName) const
 {
     // FIXME: We only support xlink:href so far.
     // https://bugs.webkit.org/show_bug.cgi?id=64787

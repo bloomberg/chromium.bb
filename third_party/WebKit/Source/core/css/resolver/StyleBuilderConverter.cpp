@@ -34,12 +34,12 @@
 
 namespace WebCore {
 
-String StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState& state, CSSValue* value)
+AtomicString StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->isURI())
         return SVGURIReference::fragmentIdentifierFromIRIString(primitiveValue->getStringValue(), state.document());
-    return String();
+    return nullAtom;
 }
 
 Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue* value)

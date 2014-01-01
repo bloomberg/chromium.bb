@@ -327,7 +327,7 @@ void SVGPathElement::synchronizeD(SVGElement* contextElement)
     SVGPathElement* ownerType = toSVGPathElement(contextElement);
     if (!ownerType->m_pathSegList.shouldSynchronize)
         return;
-    ownerType->m_pathSegList.synchronize(ownerType, dPropertyInfo()->attributeName, ownerType->m_pathSegList.value.valueAsString());
+    ownerType->m_pathSegList.synchronize(ownerType, dPropertyInfo()->attributeName, AtomicString(ownerType->m_pathSegList.value.valueAsString()));
 }
 
 SVGPathSegListPropertyTearOff* SVGPathElement::pathSegList()

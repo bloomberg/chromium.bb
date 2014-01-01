@@ -56,7 +56,7 @@ public:
     virtual String title() const;
     bool hasRelativeLengths() const { return !m_elementsWithRelativeLengths.isEmpty(); }
     virtual bool supportsMarkers() const { return false; }
-    PassRefPtr<CSSValue> getPresentationAttribute(const String& name);
+    PassRefPtr<CSSValue> getPresentationAttribute(const AtomicString& name);
     static bool isAnimatableCSSProperty(const QualifiedName&);
     enum CTMScope {
         NearestViewportScope, // Used by SVGGraphicsElement::getCTM()
@@ -68,14 +68,14 @@ public:
     bool instanceUpdatesBlocked() const;
     void setInstanceUpdatesBlocked(bool);
 
-    String xmlbase() const;
-    void setXMLbase(const String&);
+    const AtomicString& xmlbase() const;
+    void setXMLbase(const AtomicString&);
 
-    String xmllang() const;
-    void setXMLlang(const String& xmlLang);
+    const AtomicString& xmllang() const;
+    void setXMLlang(const AtomicString&);
 
-    String xmlspace() const;
-    void setXMLspace(const String& xmlSpace);
+    const AtomicString& xmlspace() const;
+    void setXMLspace(const AtomicString&);
 
     SVGSVGElement* ownerSVGElement() const;
     SVGElement* viewportElement() const;

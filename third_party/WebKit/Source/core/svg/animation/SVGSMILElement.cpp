@@ -208,8 +208,8 @@ void SVGSMILElement::buildPendingResource()
         return;
     }
 
-    String id;
-    String href = getAttribute(XLinkNames::hrefAttr);
+    AtomicString id;
+    AtomicString href = getAttribute(XLinkNames::hrefAttr);
     Element* target;
     if (href.isEmpty())
         target = parentNode() && parentNode()->isElementNode() ? toElement(parentNode()) : 0;
@@ -557,7 +557,7 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName)
 
 inline Element* SVGSMILElement::eventBaseFor(const Condition& condition)
 {
-    return condition.m_baseID.isEmpty() ? targetElement() : treeScope().getElementById(condition.m_baseID);
+    return condition.m_baseID.isEmpty() ? targetElement() : treeScope().getElementById(AtomicString(condition.m_baseID));
 }
 
 void SVGSMILElement::connectConditions()
@@ -574,10 +574,10 @@ void SVGSMILElement::connectConditions()
                 continue;
             ASSERT(!condition.m_eventListener);
             condition.m_eventListener = ConditionEventListener::create(this, &condition);
-            eventBase->addEventListener(condition.m_name, condition.m_eventListener, false);
+            eventBase->addEventListener(AtomicString(condition.m_name), condition.m_eventListener, false);
         } else if (condition.m_type == Condition::Syncbase) {
             ASSERT(!condition.m_baseID.isEmpty());
-            condition.m_syncbase = treeScope().getElementById(condition.m_baseID);
+            condition.m_syncbase = treeScope().getElementById(AtomicString(condition.m_baseID));
             if (!condition.m_syncbase || !isSVGSMILElement(*condition.m_syncbase)) {
                 condition.m_syncbase = 0;
                 continue;
@@ -605,7 +605,7 @@ void SVGSMILElement::disconnectConditions()
             // our condition event listener, in case it later fires.
             Element* eventBase = eventBaseFor(condition);
             if (eventBase)
-                eventBase->removeEventListener(condition.m_name, condition.m_eventListener.get(), false);
+                eventBase->removeEventListener(AtomicString(condition.m_name), condition.m_eventListener.get(), false);
             condition.m_eventListener->disconnectAnimation();
             condition.m_eventListener = 0;
         } else if (condition.m_type == Condition::Syncbase) {

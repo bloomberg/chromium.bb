@@ -82,8 +82,7 @@ static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
         eColorInterpolation = svgStyle->colorInterpolationFilters();
     } else {
         // Otherwise, use the slow path by using string comparison (used by external svg files)
-        RefPtr<CSSValue> cssValue = svgElement->getPresentationAttribute(
-            SVGNames::color_interpolation_filtersAttr.toString());
+        RefPtr<CSSValue> cssValue = svgElement->getPresentationAttribute(AtomicString(SVGNames::color_interpolation_filtersAttr.toString()));
         if (cssValue.get() && cssValue->isPrimitiveValue()) {
             const CSSPrimitiveValue& primitiveValue = *((CSSPrimitiveValue*)cssValue.get());
             eColorInterpolation = (EColorInterpolation)primitiveValue;
@@ -169,7 +168,7 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
         ColorSpace colorSpace = filterColorSpace;
         if (useFilterColorSpace || getSVGElementColorSpace(effectElement, colorSpace))
             effect->setOperatingColorSpace(colorSpace);
-        builder->add(effectElement->resultCurrentValue(), effect);
+        builder->add(AtomicString(effectElement->resultCurrentValue()), effect);
     }
     return builder->lastEffect();
 }

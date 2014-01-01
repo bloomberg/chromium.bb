@@ -137,7 +137,7 @@ static HashSet<AtomicString>& chainableResourceTags()
     return s_tagList;
 }
 
-static inline String targetReferenceFromResource(SVGElement* element)
+static inline AtomicString targetReferenceFromResource(SVGElement* element)
 {
     String target;
     if (element->hasTagName(SVGNames::patternTag))
@@ -233,19 +233,19 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
     OwnPtr<SVGResources> resources;
     if (clipperFilterMaskerTags().contains(tagName)) {
         if (style->hasClipper()) {
-            AtomicString id(style->clipperResource());
+            AtomicString id = style->clipperResource();
             if (!ensureResources(resources)->setClipper(getRenderSVGResourceById<RenderSVGResourceClipper>(document, id)))
                 registerPendingResource(extensions, id, element);
         }
 
         if (style->hasFilter()) {
-            AtomicString id(style->filterResource());
+            AtomicString id = style->filterResource();
             if (!ensureResources(resources)->setFilter(getRenderSVGResourceById<RenderSVGResourceFilter>(document, id)))
                 registerPendingResource(extensions, id, element);
         }
 
         if (style->hasMasker()) {
-            AtomicString id(style->maskerResource());
+            AtomicString id = style->maskerResource();
             if (!ensureResources(resources)->setMasker(getRenderSVGResourceById<RenderSVGResourceMasker>(document, id)))
                 registerPendingResource(extensions, id, element);
         }
@@ -286,7 +286,7 @@ PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object
     }
 
     if (chainableResourceTags().contains(tagName)) {
-        AtomicString id(targetReferenceFromResource(element));
+        AtomicString id = targetReferenceFromResource(element);
         if (!ensureResources(resources)->setLinkedResource(getRenderSVGResourceContainerById(document, id)))
             registerPendingResource(extensions, id, element);
     }

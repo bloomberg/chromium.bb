@@ -42,7 +42,7 @@ public:
     const AtomicString& format() const;
     void setFormat(const AtomicString&, ExceptionState&);
 
-    bool hasValidGlyphElements(Vector<String>& glyphNames) const;
+    bool hasValidGlyphElements(Vector<AtomicString>& glyphNames) const;
 
 private:
     explicit SVGAltGlyphElement(Document&);

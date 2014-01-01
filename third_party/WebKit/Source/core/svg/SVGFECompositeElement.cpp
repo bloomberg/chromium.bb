@@ -171,8 +171,8 @@ void SVGFECompositeElement::svgAttributeChanged(const QualifiedName& attrName)
 
 PassRefPtr<FilterEffect> SVGFECompositeElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
-    FilterEffect* input2 = filterBuilder->getEffectById(in2CurrentValue());
+    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(in1CurrentValue()));
+    FilterEffect* input2 = filterBuilder->getEffectById(AtomicString(in2CurrentValue()));
 
     if (!input1 || !input2)
         return 0;

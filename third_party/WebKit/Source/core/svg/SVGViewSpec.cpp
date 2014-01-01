@@ -139,7 +139,7 @@ SVGElement* SVGViewSpec::viewTarget() const
 {
     if (!m_contextElement)
         return 0;
-    Element* element = m_contextElement.get()->treeScope().getElementById(m_viewTargetString);
+    Element* element = m_contextElement.get()->treeScope().getElementById(AtomicString(m_viewTargetString));
     if (!element || !element->isSVGElement())
         return 0;
     return toSVGElement(element);

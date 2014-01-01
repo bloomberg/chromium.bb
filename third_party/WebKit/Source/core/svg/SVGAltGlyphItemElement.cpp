@@ -38,7 +38,7 @@ PassRefPtr<SVGAltGlyphItemElement> SVGAltGlyphItemElement::create(Document& docu
     return adoptRef(new SVGAltGlyphItemElement(document));
 }
 
-bool SVGAltGlyphItemElement::hasValidGlyphElements(Vector<String>& glyphNames) const
+bool SVGAltGlyphItemElement::hasValidGlyphElements(Vector<AtomicString>& glyphNames) const
 {
     // Spec: http://www.w3.org/TR/SVG/text.html#AltGlyphItemElement
     // The ‘altGlyphItem’ element defines a candidate set of possible glyph substitutions.
@@ -50,7 +50,7 @@ bool SVGAltGlyphItemElement::hasValidGlyphElements(Vector<String>& glyphNames) c
     // there is at least one glyph.
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
         if (child->hasTagName(SVGNames::glyphRefTag)) {
-            String referredGlyphName;
+            AtomicString referredGlyphName;
             if (toSVGGlyphRefElement(child)->hasValidGlyphElement(referredGlyphName))
                 glyphNames.append(referredGlyphName);
             else {

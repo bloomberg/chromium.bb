@@ -30,7 +30,7 @@ class SVGAltGlyphItemElement FINAL : public SVGElement {
 public:
     static PassRefPtr<SVGAltGlyphItemElement> create(Document&);
 
-    bool hasValidGlyphElements(Vector<String>& glyphNames) const;
+    bool hasValidGlyphElements(Vector<AtomicString>& glyphNames) const;
 
 private:
     explicit SVGAltGlyphItemElement(Document&);

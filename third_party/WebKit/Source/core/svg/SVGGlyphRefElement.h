@@ -32,7 +32,7 @@ class SVGGlyphRefElement FINAL : public SVGElement,
 public:
     static PassRefPtr<SVGGlyphRefElement> create(Document&);
 
-    bool hasValidGlyphElement(String& glyphName) const;
+    bool hasValidGlyphElement(AtomicString& glyphName) const;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
 
     // DOM interface

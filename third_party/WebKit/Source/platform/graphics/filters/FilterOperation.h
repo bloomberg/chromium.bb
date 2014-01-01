@@ -115,7 +115,7 @@ private:
 
 class PLATFORM_EXPORT ReferenceFilterOperation : public FilterOperation {
 public:
-    static PassRefPtr<ReferenceFilterOperation> create(const String& url, const String& fragment)
+    static PassRefPtr<ReferenceFilterOperation> create(const String& url, const AtomicString& fragment)
     {
         return adoptRef(new ReferenceFilterOperation(url, fragment));
     }
@@ -124,7 +124,7 @@ public:
     virtual bool movesPixels() const { return true; }
 
     const String& url() const { return m_url; }
-    const String& fragment() const { return m_fragment; }
+    const AtomicString& fragment() const { return m_fragment; }
 
     ReferenceFilter* filter() const { return m_filter.get(); }
     void setFilter(PassRefPtr<ReferenceFilter> filter) { m_filter = filter; }
@@ -144,7 +144,7 @@ private:
         return m_url == other->m_url;
     }
 
-    ReferenceFilterOperation(const String& url, const String& fragment)
+    ReferenceFilterOperation(const String& url, const AtomicString& fragment)
         : FilterOperation(REFERENCE)
         , m_url(url)
         , m_fragment(fragment)
@@ -152,7 +152,7 @@ private:
     }
 
     String m_url;
-    String m_fragment;
+    AtomicString m_fragment;
     RefPtr<ReferenceFilter> m_filter;
 };
 

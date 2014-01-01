@@ -235,9 +235,9 @@ namespace WebCore {
             return !(*this == other);
         }
 
-        String clipper;
-        String filter;
-        String masker;
+        AtomicString clipper;
+        AtomicString filter;
+        AtomicString masker;
 
     private:
         StyleResourceData();

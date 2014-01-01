@@ -39,7 +39,7 @@ PassRefPtr<SVGAltGlyphDefElement> SVGAltGlyphDefElement::create(Document& docume
     return adoptRef(new SVGAltGlyphDefElement(document));
 }
 
-bool SVGAltGlyphDefElement::hasValidGlyphElements(Vector<String>& glyphNames) const
+bool SVGAltGlyphDefElement::hasValidGlyphElements(Vector<AtomicString>& glyphNames) const
 {
     // Spec: http://www.w3.org/TR/SVG/text.html#AltGlyphDefElement
     // An 'altGlyphDef' can contain either of the following:
@@ -91,7 +91,7 @@ bool SVGAltGlyphDefElement::hasValidGlyphElements(Vector<String>& glyphNames) co
     for (Node* child = firstChild(); child; child = child->nextSibling()) {
         if (!foundFirstAltGlyphItem && child->hasTagName(SVGNames::glyphRefTag)) {
             fountFirstGlyphRef = true;
-            String referredGlyphName;
+            AtomicString referredGlyphName;
 
             if (toSVGGlyphRefElement(child)->hasValidGlyphElement(referredGlyphName))
                 glyphNames.append(referredGlyphName);
@@ -105,7 +105,7 @@ bool SVGAltGlyphDefElement::hasValidGlyphElements(Vector<String>& glyphNames) co
             }
         } else if (!fountFirstGlyphRef && child->hasTagName(SVGNames::altGlyphItemTag)) {
             foundFirstAltGlyphItem = true;
-            Vector<String> referredGlyphNames;
+            Vector<AtomicString> referredGlyphNames;
 
             // As the spec says "The first 'altGlyphItem' in which all referenced glyphs
             // are available is chosen."

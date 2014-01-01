@@ -139,7 +139,7 @@ void SVGPolyElement::synchronizePoints(SVGElement* contextElement)
     SVGPolyElement* ownerType = toSVGPolyElement(contextElement);
     if (!ownerType->m_points.shouldSynchronize)
         return;
-    ownerType->m_points.synchronize(ownerType, pointsPropertyInfo()->attributeName, ownerType->m_points.value.valueAsString());
+    ownerType->m_points.synchronize(ownerType, pointsPropertyInfo()->attributeName, AtomicString(ownerType->m_points.value.valueAsString()));
 }
 
 PassRefPtr<SVGAnimatedProperty> SVGPolyElement::lookupOrCreatePointsWrapper(SVGElement* contextElement)

@@ -86,9 +86,9 @@ public:
     static float initialFloodOpacity() { return 1; }
     static Color initialFloodColor() { return Color(0, 0, 0); }
     static Color initialLightingColor() { return Color(255, 255, 255); }
-    static String initialClipperResource() { return String(); }
-    static String initialFilterResource() { return String(); }
-    static String initialMaskerResource() { return String(); }
+    static const AtomicString& initialClipperResource() { return nullAtom; }
+    static const AtomicString& initialFilterResource() { return nullAtom; }
+    static const AtomicString& initialMaskerResource() { return nullAtom; }
     static String initialMarkerStartResource() { return String(); }
     static String initialMarkerMidResource() { return String(); }
     static String initialMarkerEndResource() { return String(); }
@@ -263,19 +263,19 @@ public:
     }
 
     // Setters for non-inherited resources
-    void setClipperResource(const String& obj)
+    void setClipperResource(const AtomicString& obj)
     {
         if (!(resources->clipper == obj))
             resources.access()->clipper = obj;
     }
 
-    void setFilterResource(const String& obj)
+    void setFilterResource(const AtomicString& obj)
     {
         if (!(resources->filter == obj))
             resources.access()->filter = obj;
     }
 
-    void setMaskerResource(const String& obj)
+    void setMaskerResource(const AtomicString& obj)
     {
         if (!(resources->masker == obj))
             resources.access()->masker = obj;
@@ -337,9 +337,9 @@ public:
     const Color& floodColor() const { return misc->floodColor; }
     const Color& lightingColor() const { return misc->lightingColor; }
     SVGLength baselineShiftValue() const { return misc->baselineShiftValue; }
-    String clipperResource() const { return resources->clipper; }
-    String filterResource() const { return resources->filter; }
-    String maskerResource() const { return resources->masker; }
+    const AtomicString& clipperResource() const { return resources->clipper; }
+    const AtomicString& filterResource() const { return resources->filter; }
+    const AtomicString& maskerResource() const { return resources->masker; }
     String markerStartResource() const { return inheritedResources->markerStart; }
     String markerMidResource() const { return inheritedResources->markerMid; }
     String markerEndResource() const { return inheritedResources->markerEnd; }

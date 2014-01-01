@@ -165,7 +165,7 @@ bool SVGFontData::applySVGGlyphSelection(WidthIterator& iterator, GlyphData& gly
 
     String language;
     bool isVerticalText = false;
-    Vector<String> altGlyphNames;
+    Vector<AtomicString> altGlyphNames;
 
     if (renderObject) {
         RenderObject* parentRenderObject = renderObject->isText() ? renderObject->parent() : renderObject;

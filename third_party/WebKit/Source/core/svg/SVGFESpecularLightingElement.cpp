@@ -211,7 +211,7 @@ void SVGFESpecularLightingElement::lightElementAttributeChanged(const SVGFELight
 
 PassRefPtr<FilterEffect> SVGFESpecularLightingElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
-    FilterEffect* input1 = filterBuilder->getEffectById(in1CurrentValue());
+    FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(in1CurrentValue()));
 
     if (!input1)
         return 0;

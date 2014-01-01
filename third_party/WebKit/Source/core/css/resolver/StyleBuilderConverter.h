@@ -40,7 +40,7 @@ namespace WebCore {
 
 class StyleBuilderConverter {
 public:
-    static String convertFragmentIdentifier(StyleResolverState&, CSSValue*);
+    static AtomicString convertFragmentIdentifier(StyleResolverState&, CSSValue*);
     template <typename T> static T convertComputedLength(StyleResolverState&, CSSValue*);
     template <typename T> static T convertLineWidth(StyleResolverState&, CSSValue*);
     static Length convertLength(StyleResolverState&, CSSValue*);

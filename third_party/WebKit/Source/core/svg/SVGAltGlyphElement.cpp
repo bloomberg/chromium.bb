@@ -86,9 +86,9 @@ RenderObject* SVGAltGlyphElement::createRenderer(RenderStyle*)
     return new RenderSVGTSpan(this);
 }
 
-bool SVGAltGlyphElement::hasValidGlyphElements(Vector<String>& glyphNames) const
+bool SVGAltGlyphElement::hasValidGlyphElements(Vector<AtomicString>& glyphNames) const
 {
-    String target;
+    AtomicString target;
     Element* element = targetElementFromIRIString(getAttribute(XLinkNames::hrefAttr), document(), &target);
     if (!element)
         return false;

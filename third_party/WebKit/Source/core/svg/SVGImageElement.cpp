@@ -223,7 +223,7 @@ Node::InsertionNotificationRequest SVGImageElement::insertedInto(ContainerNode* 
 
 const AtomicString SVGImageElement::imageSourceURL() const
 {
-    return hrefCurrentValue();
+    return AtomicString(hrefCurrentValue());
 }
 
 void SVGImageElement::didMoveToNewDocument(Document& oldDocument)
