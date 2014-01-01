@@ -9,7 +9,7 @@ demo_clients = \
 	$(simple_clients_programs)		\
 	$(simple_egl_clients_programs)
 
-if ENABLE_DEMO_CLIENTS
+if INSTALL_DEMO_CLIENTS
 bin_PROGRAMS += $(demo_clients)
 else
 noinst_PROGRAMS = $(demo_clients)

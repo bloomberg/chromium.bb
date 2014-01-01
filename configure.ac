@@ -459,11 +459,11 @@ AC_MSG_NOTICE([Weston's default desktop shell client: $WESTON_SHELL_CLIENT])
 AC_DEFINE_UNQUOTED([WESTON_SHELL_CLIENT], ["$WESTON_SHELL_CLIENT"],
 		   [The default desktop shell client to load.])
 
-AC_ARG_ENABLE(demo-clients,
-              AS_HELP_STRING([--enable-demo-clients],
-                             [install demo clients built with weston]),,
-              enable_demo_clients=no)
-AM_CONDITIONAL(ENABLE_DEMO_CLIENTS, [test "x$enable_demo_clients" = "xyes"])
+AC_ARG_ENABLE(demo-clients-install,
+              AS_HELP_STRING([--enable-demo-clients-install],
+                             [Install demo clients built with weston]),,
+              install_demo_clients=no)
+AM_CONDITIONAL(INSTALL_DEMO_CLIENTS, [test "install_demo_clients" = "xyes"])
 
 PKG_CHECK_MODULES(LCMS, lcms2,
                   [have_lcms=yes], [have_lcms=no])
@@ -534,7 +534,7 @@ AC_MSG_RESULT([
 	Build Simple Clients		${enable_simple_clients}
 	Build Simple EGL Clients	${enable_simple_egl_clients}
 
-	Install Demo Clients		${enable_demo_clients}
+	Install Demo Clients		${install_demo_clients}
 
 	Colord Support			${have_colord}
 	GLU Support			${have_glu}
