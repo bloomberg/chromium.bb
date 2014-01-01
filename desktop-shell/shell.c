@@ -1971,10 +1971,11 @@ static struct wl_list *
 shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 {
 	struct workspace *ws;
+	struct weston_view *parent;
 
 	switch (shsurf->type) {
-	case SHELL_SURFACE_POPUP: {
-	case SHELL_SURFACE_TOPLEVEL: {
+	case SHELL_SURFACE_POPUP:
+	case SHELL_SURFACE_TOPLEVEL:
 		if (shsurf->state.fullscreen) {
 			return &shsurf->shell->fullscreen_layer.view_list;
 		} else if (shsurf->parent) {
@@ -1982,7 +1983,6 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 			 * that surfaces which are transient for
 			 * fullscreen surfaces don't get hidden by the
 			 * fullscreen surfaces. */
-			struct weston_view *parent;
 
 			/* TODO: Handle a parent with multiple views */
 			parent = get_default_view(shsurf->parent);
@@ -1990,7 +1990,6 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 				return parent->layer_link.prev;
 		}
 		break;
-	}
 
 	case SHELL_SURFACE_XWAYLAND:
 		return &shsurf->shell->fullscreen_layer.view_list;
