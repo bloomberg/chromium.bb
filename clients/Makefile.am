@@ -1,6 +1,4 @@
-bin_PROGRAMS =					\
-	weston-info				\
-	$(terminal)
+bin_PROGRAMS = $(install_clients)
 
 demo_clients = \
 	$(clients_programs)			\
@@ -63,7 +61,7 @@ weston_simple_egl_LDADD = $(SIMPLE_EGL_CLIENT_LIBS) -lm
 endif
 
 if BUILD_CLIENTS
-terminal = weston-terminal
+install_clients = weston-terminal weston-info
 
 clients_programs =				\
 	weston-flower				\
