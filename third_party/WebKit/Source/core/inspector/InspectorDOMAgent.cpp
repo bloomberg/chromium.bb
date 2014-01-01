@@ -562,7 +562,7 @@ void InspectorDOMAgent::querySelector(ErrorString* errorString, int nodeId, cons
         return;
 
     TrackExceptionState exceptionState;
-    RefPtr<Element> element = node->querySelector(selectors, exceptionState);
+    RefPtr<Element> element = node->querySelector(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
@@ -579,7 +579,7 @@ void InspectorDOMAgent::querySelectorAll(ErrorString* errorString, int nodeId, c
         return;
 
     TrackExceptionState exceptionState;
-    RefPtr<NodeList> nodes = node->querySelectorAll(selectors, exceptionState);
+    RefPtr<NodeList> nodes = node->querySelectorAll(AtomicString(selectors), exceptionState);
     if (exceptionState.hadException()) {
         *errorString = "DOM Error while querying";
         return;
@@ -762,7 +762,7 @@ void InspectorDOMAgent::setNodeName(ErrorString* errorString, int nodeId, const 
         return;
 
     TrackExceptionState exceptionState;
-    RefPtr<Element> newElem = oldNode->document().createElement(tagName, exceptionState);
+    RefPtr<Element> newElem = oldNode->document().createElement(AtomicString(tagName), exceptionState);
     if (exceptionState.hadException())
         return;
 
@@ -1018,7 +1018,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
         for (Vector<Document*>::iterator it = docs.begin(); it != docs.end(); ++it) {
             Document* document = *it;
             TrackExceptionState exceptionState;
-            RefPtr<NodeList> nodeList = document->querySelectorAll(whitespaceTrimmedQuery, exceptionState);
+            RefPtr<NodeList> nodeList = document->querySelectorAll(AtomicString(whitespaceTrimmedQuery), exceptionState);
             if (exceptionState.hadException() || !nodeList)
                 continue;
 

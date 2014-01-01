@@ -299,7 +299,7 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
         for (JSONObject::const_iterator it = headers->begin(); it != end; ++it) {
             String value;
             if (it->value->asString(&value))
-                request.setHTTPHeaderField(it->key, value);
+                request.setHTTPHeaderField(AtomicString(it->key), AtomicString(value));
         }
     }
 
@@ -716,7 +716,7 @@ void InspectorResourceAgent::loadResourceForFrontend(ErrorString* errorString, c
                 *errorString = "Request header \"" + it->key + "\" value is not a string";
                 return;
             }
-            request.addHTTPHeaderField(it->key, value);
+            request.addHTTPHeaderField(AtomicString(it->key), AtomicString(value));
         }
     }
 

@@ -370,12 +370,12 @@ bool DOMEditor::removeChild(Node* parentNode, Node* node, ExceptionState& except
 
 bool DOMEditor::setAttribute(Element* element, const String& name, const String& value, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptPtr(new SetAttributeAction(element, name, value)), exceptionState);
+    return m_history->perform(adoptPtr(new SetAttributeAction(element, AtomicString(name), AtomicString(value))), exceptionState);
 }
 
 bool DOMEditor::removeAttribute(Element* element, const String& name, ExceptionState& exceptionState)
 {
-    return m_history->perform(adoptPtr(new RemoveAttributeAction(element, name)), exceptionState);
+    return m_history->perform(adoptPtr(new RemoveAttributeAction(element, AtomicString(name))), exceptionState);
 }
 
 bool DOMEditor::setOuterHTML(Node* node, const String& html, Node** newNode, ExceptionState& exceptionState)
