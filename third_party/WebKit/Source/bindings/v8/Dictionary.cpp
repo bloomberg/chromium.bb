@@ -326,13 +326,7 @@ bool Dictionary::get(const String& key, RefPtr<DOMWindow>& value) const
 
     // We need to handle a DOMWindow specially, because a DOMWindow wrapper
     // exists on a prototype chain of v8Value.
-    value = 0;
-    if (v8Value->IsObject()) {
-        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(v8Value);
-        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::domTemplate(m_isolate, worldTypeInMainThread(m_isolate)));
-        if (!window.IsEmpty())
-            value = V8Window::toNative(window);
-    }
+    value = toNativeDOMWindow(v8Value, m_isolate);
     return true;
 }
 

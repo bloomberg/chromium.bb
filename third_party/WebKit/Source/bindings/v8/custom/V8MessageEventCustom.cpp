@@ -106,16 +106,8 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     v8::Handle<v8::Value> dataArg = info[3];
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, originArg, info[4]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, lastEventIdArg, info[5]);
-
-    DOMWindow* sourceArg = 0;
-    if (info[6]->IsObject()) {
-        v8::Handle<v8::Object> wrapper = v8::Handle<v8::Object>::Cast(info[6]);
-        v8::Handle<v8::Object> window = wrapper->FindInstanceInPrototypeChain(V8Window::domTemplate(info.GetIsolate(), worldTypeInMainThread(info.GetIsolate())));
-        if (!window.IsEmpty())
-            sourceArg = V8Window::toNative(window);
-    }
+    DOMWindow* sourceArg = toNativeDOMWindow(info[6], info.GetIsolate());
     OwnPtr<MessagePortArray> portArray;
-
     const int portArrayIndex = 7;
     if (!isUndefinedOrNull(info[portArrayIndex])) {
         portArray = adoptPtr(new MessagePortArray);

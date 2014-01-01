@@ -561,6 +561,8 @@ namespace WebCore {
 
     PassRefPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value>, v8::Isolate*);
 
+    DOMWindow* toNativeDOMWindow(v8::Handle<v8::Value>, v8::Isolate*);
+
     inline bool isUndefinedOrNull(v8::Handle<v8::Value> value)
     {
         return value->IsNull() || value->IsUndefined();

@@ -169,6 +169,7 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestInterfaceImplement
 
 static const V8DOMConfiguration::MethodConfiguration V8TestInterfaceImplementedAsMethods[] = {
     {"func1", RealClassV8Internal::func1MethodCallback, 0, 1},
+    {"funcTestInterfaceImplementedAsParam", RealClassV8Internal::funcTestInterfaceImplementedAsParamMethodCallback, 0, 1},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceImplementedAsTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -183,12 +184,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceImplementedAsTem
         isolate, currentWorldType);
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED instanceTemplate = functionTemplate->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> ALLOW_UNUSED prototypeTemplate = functionTemplate->PrototypeTemplate();
-
-    // Custom Signature 'funcTestInterfaceImplementedAsParam'
-    const int funcTestInterfaceImplementedAsParamArgc = 1;
-    v8::Handle<v8::FunctionTemplate> funcTestInterfaceImplementedAsParamArgv[funcTestInterfaceImplementedAsParamArgc] = { V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8TestInterfaceImplementedAs::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> funcTestInterfaceImplementedAsParamSignature = v8::Signature::New(isolate, functionTemplate, funcTestInterfaceImplementedAsParamArgc, funcTestInterfaceImplementedAsParamArgv);
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "funcTestInterfaceImplementedAsParam", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, RealClassV8Internal::funcTestInterfaceImplementedAsParamMethodCallback, v8Undefined(), funcTestInterfaceImplementedAsParamSignature, 1));
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());

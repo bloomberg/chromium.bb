@@ -3377,7 +3377,6 @@ sub IsStandardFunction
     return 0 if $function->isStatic;
     return 0 if $attrExt->{"RuntimeEnabled"};
     return 0 if $attrExt->{"PerContextEnabled"};
-    return 0 if RequiresCustomSignature($function);
     return 0 if $attrExt->{"DoNotCheckSignature"};
     return 0 if ($attrExt->{"DoNotCheckSecurity"} && ($interface->extendedAttributes->{"CheckSecurity"} || $interfaceName eq "Window"));
     return 0 if $attrExt->{"NotEnumerable"};
@@ -3455,10 +3454,6 @@ END
 
     my $conditionalString = GenerateConditionalString($function);
     $code .= "#if ${conditionalString}\n" if $conditionalString;
-    if (RequiresCustomSignature($function)) {
-        $signature = "${name}Signature";
-        $code .= "\n    // Custom Signature '$name'\n" . CreateCustomSignature($function);
-    }
 
     if ($property_attributes eq "v8::DontDelete") {
         $property_attributes = "";
@@ -5503,6 +5498,10 @@ sub JSValueToNative
         return "toNodeFilter($value, $getIsolate)";
     }
 
+    if ($type eq "Window") {
+        return "toNativeDOMWindow($value, $getIsolate)";
+    }
+
     if ($type eq "MediaQueryListListener") {
         AddToImplIncludes("core/css/MediaQueryListListener.h");
         return "MediaQueryListListener::create(ScriptValue(" . $value . ", $getIsolate))";
@@ -5535,80 +5534,6 @@ sub JSValueToNative
 
     AddToImplIncludes("V8${type}.h");
     return "V8${type}::hasInstance($value, $getIsolate, worldType($getIsolate)) ? V8${type}::toNative(v8::Handle<v8::Object>::Cast($value)) : 0";
-}
-
-sub CreateCustomSignature
-{
-    my $function = shift;
-    my $count = @{$function->parameters};
-    my $name = $function->name;
-    my $code = "    const int ${name}Argc = ${count};\n" .
-      "    v8::Handle<v8::FunctionTemplate> ${name}Argv[${name}Argc] = { ";
-    my $first = 1;
-    foreach my $parameter (@{$function->parameters}) {
-        if ($first) { $first = 0; }
-        else { $code .= ", "; }
-        if (IsWrapperType($parameter->type) && not IsTypedArrayType($parameter->type)) {
-            if ($parameter->type eq "XPathNSResolver") {
-                # Special case for XPathNSResolver.  All other browsers accepts a callable,
-                # so, even though it's against IDL, accept objects here.
-                $code .= "v8::Handle<v8::FunctionTemplate>()";
-            } else {
-                my $type = $parameter->type;
-                my $arrayOrSequenceType = GetArrayOrSequenceType($type);
-
-                if ($arrayOrSequenceType) {
-                    if (IsRefPtrType($arrayOrSequenceType)) {
-                        AddIncludesForType($arrayOrSequenceType);
-                    } else {
-                        $code .= "v8::Handle<v8::FunctionTemplate>()";
-                        next;
-                    }
-                } else {
-                    AddIncludesForType($type);
-                }
-                $code .= "V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8${type}::wrapperTypeInfo, currentWorldType)";
-            }
-        } else {
-            $code .= "v8::Handle<v8::FunctionTemplate>()";
-        }
-    }
-    $code .= " };\n";
-    $code .= "    v8::Handle<v8::Signature> ${name}Signature = v8::Signature::New(isolate, functionTemplate, ${name}Argc, ${name}Argv);\n";
-    return $code;
-}
-
-
-sub RequiresCustomSignature
-{
-    my $function = shift;
-    # No signature needed for Custom function
-    if (HasCustomMethod($function->extendedAttributes)) {
-        return 0;
-    }
-    # No signature needed for overloaded function
-    if (@{$function->{overloads}} > 1) {
-        return 0;
-    }
-    if ($function->isStatic) {
-        return 0;
-    }
-    # Type checking is performed in the generated code
-    if ($function->extendedAttributes->{"StrictTypeChecking"}) {
-      return 0;
-    }
-    foreach my $parameter (@{$function->parameters}) {
-        if (($parameter->isOptional && !$parameter->extendedAttributes->{"Default"}) || IsCallbackInterface($parameter->type)) {
-            return 0;
-        }
-    }
-
-    foreach my $parameter (@{$function->parameters}) {
-        if (IsWrapperType($parameter->type)) {
-            return 1;
-        }
-    }
-    return 0;
 }
 
 sub IsUnionType
