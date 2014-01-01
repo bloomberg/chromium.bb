@@ -256,31 +256,31 @@ PassRefPtr<WebSocketHandshakeRequest> WebSocketHandshake::clientHandshakeRequest
     RefPtr<WebSocketHandshakeRequest> request = WebSocketHandshakeRequest::create("GET", m_url);
     request->addHeaderField("Upgrade", "websocket");
     request->addHeaderField("Connection", "Upgrade");
-    request->addHeaderField("Host", hostName(m_url, m_secure));
-    request->addHeaderField("Origin", clientOrigin());
+    request->addHeaderField("Host", AtomicString(hostName(m_url, m_secure)));
+    request->addHeaderField("Origin", AtomicString(clientOrigin()));
     if (!m_clientProtocol.isEmpty())
-        request->addHeaderField("Sec-WebSocket-Protocol", m_clientProtocol);
+        request->addHeaderField("Sec-WebSocket-Protocol", AtomicString(m_clientProtocol));
 
     KURL url = httpURLForAuthenticationAndCookies();
     if (m_context->isDocument()) {
         Document* document = toDocument(m_context);
         String cookie = cookieRequestHeaderFieldValue(document, url);
         if (!cookie.isEmpty())
-            request->addHeaderField("Cookie", cookie);
+            request->addHeaderField("Cookie", AtomicString(cookie));
         // Set "Cookie2: <cookie>" if cookies 2 exists for url?
     }
 
     request->addHeaderField("Pragma", "no-cache");
     request->addHeaderField("Cache-Control", "no-cache");
 
-    request->addHeaderField("Sec-WebSocket-Key", m_secWebSocketKey);
+    request->addHeaderField("Sec-WebSocket-Key", AtomicString(m_secWebSocketKey));
     request->addHeaderField("Sec-WebSocket-Version", "13");
     const String extensionValue = m_extensionDispatcher.createHeaderValue();
     if (extensionValue.length())
-        request->addHeaderField("Sec-WebSocket-Extensions", extensionValue);
+        request->addHeaderField("Sec-WebSocket-Extensions", AtomicString(extensionValue));
 
     // Add a User-Agent header.
-    request->addHeaderField("User-Agent", m_context->userAgent(m_context->url()));
+    request->addHeaderField("User-Agent", AtomicString(m_context->userAgent(m_context->url())));
 
     return request.release();
 }
@@ -520,7 +520,7 @@ const char* WebSocketHandshake::readHTTPHeaders(const char* start, const char* e
 
     String extensions = m_extensionDispatcher.acceptedExtensions();
     if (!extensions.isEmpty())
-        m_response.addHeaderField("Sec-WebSocket-Extensions", extensions);
+        m_response.addHeaderField("Sec-WebSocket-Extensions", AtomicString(extensions));
     return p;
 }
 
