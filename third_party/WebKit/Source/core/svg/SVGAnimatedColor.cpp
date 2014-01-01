@@ -94,7 +94,7 @@ void SVGAnimatedColorAnimator::calculateAnimatedValue(float percentage, unsigned
     float animatedAlpha = animatedColor.alpha();
     m_animationElement->animateAdditiveNumber(percentage, repeatCount, fromColor.alpha(), toColor.alpha(), toAtEndOfDurationColor.alpha(), animatedAlpha);
 
-    animatedColor = ColorDistance::clampColor(static_cast<int>(roundf(animatedRed)), static_cast<int>(roundf(animatedGreen)), static_cast<int>(roundf(animatedBlue)), static_cast<int>(roundf(animatedAlpha)));
+    animatedColor = makeRGBA(static_cast<int>(roundf(animatedRed)), static_cast<int>(roundf(animatedGreen)), static_cast<int>(roundf(animatedBlue)), static_cast<int>(roundf(animatedAlpha)));
 }
 
 float SVGAnimatedColorAnimator::calculateDistance(const String& fromString, const String& toString)
@@ -106,7 +106,7 @@ float SVGAnimatedColorAnimator::calculateDistance(const String& fromString, cons
     Color to = SVGColor::colorFromRGBColorString(toString);
     if (!to.isValid())
         return -1;
-    return ColorDistance(from, to).distance();
+    return ColorDistance::distance(from, to);
 }
 
 }

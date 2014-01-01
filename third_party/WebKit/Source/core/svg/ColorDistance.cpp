@@ -21,54 +21,22 @@
 #include "core/svg/ColorDistance.h"
 
 #include "platform/graphics/Color.h"
-#include "wtf/MathExtras.h"
 
 namespace WebCore {
-
-ColorDistance::ColorDistance()
-    : m_redDiff(0)
-    , m_greenDiff(0)
-    , m_blueDiff(0)
-{
-}
-
-ColorDistance::ColorDistance(const Color& fromColor, const Color& toColor)
-    : m_redDiff(toColor.red() - fromColor.red())
-    , m_greenDiff(toColor.green() - fromColor.green())
-    , m_blueDiff(toColor.blue() - fromColor.blue())
-{
-}
-
-ColorDistance::ColorDistance(int redDiff, int greenDiff, int blueDiff)
-    : m_redDiff(redDiff)
-    , m_greenDiff(greenDiff)
-    , m_blueDiff(blueDiff)
-{
-}
-
-static inline int clampColorValue(int v)
-{
-    if (v > 255)
-        v = 255;
-    else if (v < 0)
-        v = 0;
-    return v;
-}
-
-Color ColorDistance::clampColor(int red, int green, int blue, int alpha)
-{
-    return Color(clampColorValue(red), clampColorValue(green), clampColorValue(blue), clampColorValue(alpha));
-}
 
 Color ColorDistance::addColors(const Color& first, const Color& second)
 {
     return Color(first.red() + second.red(), first.green() + second.green(), first.blue() + second.blue());
 }
 
-float ColorDistance::distance() const
+float ColorDistance::distance(const Color& fromColor, const Color& toColor)
 {
+    int redDiff = toColor.red() - fromColor.red();
+    int greenDiff = toColor.green() - fromColor.green();
+    int blueDiff = toColor.blue() - fromColor.blue();
+
     // This is just a simple distance calculation, not respecting color spaces
-    return sqrtf(m_redDiff * m_redDiff + m_blueDiff * m_blueDiff + m_greenDiff * m_greenDiff);
+    return sqrtf(redDiff * redDiff + blueDiff * blueDiff + greenDiff * greenDiff);
 }
 
 }
