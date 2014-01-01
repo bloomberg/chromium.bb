@@ -246,7 +246,6 @@ public:
             return;
 
         v8::Handle<v8::Object>* wrapper = reinterpret_cast<v8::Handle<v8::Object>*>(value);
-
         ASSERT(V8DOMWrapper::maybeDOMWrapper(*wrapper));
 
         if (value->IsIndependent())
@@ -255,26 +254,13 @@ public:
         const WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
         void* object = toNative(*wrapper);
 
-        if (V8MutationObserver::wrapperTypeInfo.equals(type)) {
-            // FIXME: Allow opaqueRootForGC to operate on multiple roots and move this logic into V8MutationObserverCustom.
-            MutationObserver* observer = static_cast<MutationObserver*>(object);
-            HashSet<Node*> observedNodes = observer->getObservedNodes();
-            for (HashSet<Node*>::iterator it = observedNodes.begin(); it != observedNodes.end(); ++it) {
-                v8::UniqueId id(reinterpret_cast<intptr_t>(V8GCController::opaqueRootForGC(*it, m_isolate)));
-                m_isolate->SetReferenceFromGroup(id, *value);
-            }
-        } else {
-            ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(*wrapper);
-            if (activeDOMObject && activeDOMObject->hasPendingActivity())
-                m_isolate->SetObjectGroupId(*value, liveRootId());
-        }
+        ActiveDOMObject* activeDOMObject = type->toActiveDOMObject(*wrapper);
+        if (activeDOMObject && activeDOMObject->hasPendingActivity())
+            m_isolate->SetObjectGroupId(*value, liveRootId());
 
         if (classId == v8DOMNodeClassId) {
             ASSERT(V8Node::hasInstanceInAnyWorld(*wrapper, m_isolate));
-            ASSERT(!value->IsIndependent());
-
             Node* node = static_cast<Node*>(object);
-
             if (node->hasEventListeners())
                 addReferencesForNodeWithEventListeners(m_isolate, node, v8::Persistent<v8::Object>::Cast(*value));
             Node* root = V8GCController::opaqueRootForGC(node, m_isolate);
@@ -282,7 +268,6 @@ public:
             if (m_constructRetainedObjectInfos)
                 m_groupsWhichNeedRetainerInfo.append(root);
         } else if (classId == v8DOMObjectClassId) {
-            ASSERT(!value->IsIndependent());
             v8::Persistent<v8::Object>* wrapperPersistent = reinterpret_cast<v8::Persistent<v8::Object>*>(value);
             type->visitDOMWrapper(object, *wrapperPersistent, m_isolate);
         } else {

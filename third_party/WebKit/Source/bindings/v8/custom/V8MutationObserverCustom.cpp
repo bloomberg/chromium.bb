@@ -35,6 +35,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8MutationCallback.h"
 #include "bindings/v8/V8Utilities.h"
 #include "core/dom/MutationObserver.h"
@@ -65,6 +66,16 @@ void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Va
 
     V8DOMWrapper::associateObjectWithWrapper<V8MutationObserver>(observer.release(), &wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
     info.GetReturnValue().Set(wrapper);
+}
+
+void V8MutationObserver::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+{
+    MutationObserver* observer = static_cast<MutationObserver*>(object);
+    HashSet<Node*> observedNodes = observer->getObservedNodes();
+    for (HashSet<Node*>::iterator it = observedNodes.begin(); it != observedNodes.end(); ++it) {
+        v8::UniqueId id(reinterpret_cast<intptr_t>(V8GCController::opaqueRootForGC(*it, isolate)));
+        isolate->SetReferenceFromGroup(id, wrapper);
+    }
 }
 
 } // namespace WebCore
