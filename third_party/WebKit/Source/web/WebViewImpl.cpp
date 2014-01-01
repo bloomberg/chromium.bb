@@ -2468,7 +2468,7 @@ void WebViewImpl::setPageEncoding(const WebString& encodingName)
 
     // Only change override encoding, don't change default encoding.
     // Note that the new encoding must be 0 if it isn't supposed to be set.
-    String newEncodingName;
+    AtomicString newEncodingName;
     if (!encodingName.isEmpty())
         newEncodingName = encodingName;
     m_page->mainFrame()->loader().reload(NormalReload, KURL(), newEncodingName);

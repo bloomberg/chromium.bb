@@ -319,7 +319,7 @@ const AtomicString& HTMLLinkElement::rel() const
     return getAttribute(relAttr);
 }
 
-String HTMLLinkElement::target() const
+AtomicString HTMLLinkElement::target() const
 {
     return getAttribute(targetAttr);
 }

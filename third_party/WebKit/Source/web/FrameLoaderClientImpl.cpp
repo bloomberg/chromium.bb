@@ -577,12 +577,12 @@ void FrameLoaderClientImpl::transitionToCommittedForNewPage()
 
 PassRefPtr<Frame> FrameLoaderClientImpl::createFrame(
     const KURL& url,
-    const String& name,
+    const AtomicString& name,
     const String& referrer,
     HTMLFrameOwnerElement* ownerElement)
 {
     FrameLoadRequest frameRequest(m_webFrame->frame()->document(),
-        ResourceRequest(url, referrer), name);
+        ResourceRequest(url, AtomicString(referrer)), name);
     return m_webFrame->createChildFrame(frameRequest, ownerElement);
 }
 

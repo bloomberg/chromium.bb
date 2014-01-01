@@ -72,7 +72,7 @@ bool HTMLBaseElement::isURLAttribute(const Attribute& attribute) const
     return attribute.name().localName() == hrefAttr || HTMLElement::isURLAttribute(attribute);
 }
 
-String HTMLBaseElement::target() const
+AtomicString HTMLBaseElement::target() const
 {
     return fastGetAttribute(targetAttr);
 }

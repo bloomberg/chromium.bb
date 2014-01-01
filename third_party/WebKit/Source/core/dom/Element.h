@@ -375,7 +375,7 @@ public:
     KURL getNonEmptyURLAttribute(const QualifiedName&) const;
 
     virtual const AtomicString imageSourceURL() const;
-    virtual String target() const { return String(); }
+    virtual AtomicString target() const { return nullAtom; }
     virtual Image* imageContents() { return 0; }
 
     virtual void focus(bool restorePreviousSelection = true, FocusDirection = FocusDirectionNone);

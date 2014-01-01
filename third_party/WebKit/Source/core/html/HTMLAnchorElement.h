@@ -98,7 +98,7 @@ private:
     virtual void accessKeyAction(bool sendMouseEvents);
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual bool canStartSelection() const;
-    virtual String target() const;
+    virtual AtomicString target() const OVERRIDE;
     virtual short tabIndex() const;
     virtual bool draggable() const;
     virtual bool isInteractiveContent() const OVERRIDE;

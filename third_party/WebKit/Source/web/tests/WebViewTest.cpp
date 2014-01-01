@@ -1258,7 +1258,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     // Make a request that will open a new window
     WebURLRequest webURLRequest;
     webURLRequest.initialize();
-    WebCore::FrameLoadRequest request(0, webURLRequest.toResourceRequest(), WTF::String("_blank"));
+    WebCore::FrameLoadRequest request(0, webURLRequest.toResourceRequest(), "_blank");
     webViewImpl->page()->mainFrame()->loader().load(request);
     ASSERT_TRUE(client.createdWebView());
     EXPECT_FALSE(client.didFocusCalled());
@@ -1266,7 +1266,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate)
     // Make a request from the new window that will navigate the original window. The original window should be focused.
     WebURLRequest webURLRequestWithTargetStart;
     webURLRequestWithTargetStart.initialize();
-    WebCore::FrameLoadRequest requestWithTargetStart(0, webURLRequestWithTargetStart.toResourceRequest(), WTF::String("_start"));
+    WebCore::FrameLoadRequest requestWithTargetStart(0, webURLRequestWithTargetStart.toResourceRequest(), "_start");
     toWebViewImpl(client.createdWebView())->page()->mainFrame()->loader().load(requestWithTargetStart);
     EXPECT_TRUE(client.didFocusCalled());
 

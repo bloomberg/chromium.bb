@@ -68,8 +68,8 @@ public:
         const String& action() const { return m_action; }
         void parseAction(const String&);
 
-        const String& target() const { return m_target; }
-        void setTarget(const String& target) { m_target = target; }
+        const AtomicString& target() const { return m_target; }
+        void setTarget(const AtomicString& target) { m_target = target; }
 
         const String& encodingType() const { return m_encodingType; }
         static String parseEncodingType(const String&);
@@ -86,7 +86,7 @@ public:
         bool m_isMultiPartForm;
 
         String m_action;
-        String m_target;
+        AtomicString m_target;
         String m_encodingType;
         String m_acceptCharset;
     };
@@ -99,8 +99,8 @@ public:
 
     Method method() const { return m_method; }
     const KURL& action() const { return m_action; }
-    const String& target() const { return m_target; }
-    void clearTarget() { m_target = String(); }
+    const AtomicString& target() const { return m_target; }
+    void clearTarget() { m_target = nullAtom; }
     const String& contentType() const { return m_contentType; }
     FormState* state() const { return m_formState.get(); }
     FormData* data() const { return m_formData.get(); }
@@ -115,14 +115,14 @@ public:
     const String& result() const { return m_result; }
 
 private:
-    FormSubmission(Method, const KURL& action, const String& target, const String& contentType, PassRefPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtr<Event>);
+    FormSubmission(Method, const KURL& action, const AtomicString& target, const String& contentType, PassRefPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtr<Event>);
     // FormSubmission for DialogMethod
     FormSubmission(const String& result);
 
     // FIXME: Hold an instance of Attributes instead of individual members.
     Method m_method;
     KURL m_action;
-    String m_target;
+    AtomicString m_target;
     String m_contentType;
     RefPtr<FormState> m_formState;
     RefPtr<FormData> m_formData;

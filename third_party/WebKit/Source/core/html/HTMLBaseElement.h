@@ -37,7 +37,7 @@ public:
 private:
     explicit HTMLBaseElement(Document&);
 
-    virtual String target() const;
+    virtual AtomicString target() const OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;

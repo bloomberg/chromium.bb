@@ -51,7 +51,7 @@ private:
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool supportsFocus() const;
-    virtual String target() const;
+    virtual AtomicString target() const OVERRIDE;
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual bool isMouseFocusable() const;
     virtual bool rendererIsFocusable() const OVERRIDE;

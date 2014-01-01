@@ -538,7 +538,7 @@ public:
     void setBaseURLOverride(const KURL&);
     const KURL& baseURLOverride() const { return m_baseURLOverride; }
     const KURL& baseElementURL() const { return m_baseElementURL; }
-    const String& baseTarget() const { return m_baseTarget; }
+    const AtomicString& baseTarget() const { return m_baseTarget; }
     void processBaseElement();
 
     KURL completeURL(const String&) const;
@@ -1132,7 +1132,7 @@ private:
     // takes precedence.
     String m_documentURI;
 
-    String m_baseTarget;
+    AtomicString m_baseTarget;
 
     RefPtr<DocumentType> m_docType;
     OwnPtr<DOMImplementation> m_implementation;

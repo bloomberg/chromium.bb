@@ -374,7 +374,7 @@ short HTMLAnchorElement::tabIndex() const
     return Element::tabIndex();
 }
 
-String HTMLAnchorElement::target() const
+AtomicString HTMLAnchorElement::target() const
 {
     return getAttribute(targetAttr);
 }

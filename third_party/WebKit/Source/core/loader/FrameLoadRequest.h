@@ -55,7 +55,7 @@ public:
     {
     }
 
-    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const String& frameName)
+    FrameLoadRequest(Document* originDocument, const ResourceRequest& resourceRequest, const AtomicString& frameName)
         : m_originDocument(originDocument)
         , m_resourceRequest(resourceRequest)
         , m_frameName(frameName)
@@ -80,8 +80,8 @@ public:
     ResourceRequest& resourceRequest() { return m_resourceRequest; }
     const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
 
-    const String& frameName() const { return m_frameName; }
-    void setFrameName(const String& frameName) { m_frameName = frameName; }
+    const AtomicString& frameName() const { return m_frameName; }
+    void setFrameName(const AtomicString& frameName) { m_frameName = frameName; }
 
     const SubstituteData& substituteData() const { return m_substituteData; }
 
@@ -103,7 +103,7 @@ public:
 private:
     RefPtr<Document> m_originDocument;
     ResourceRequest m_resourceRequest;
-    String m_frameName;
+    AtomicString m_frameName;
     SubstituteData m_substituteData;
     bool m_lockBackForwardList;
     ClientRedirectPolicy m_clientRedirect;

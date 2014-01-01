@@ -90,7 +90,7 @@ public:
     String method() const;
     void setMethod(const AtomicString&);
 
-    virtual String target() const;
+    virtual AtomicString target() const OVERRIDE;
 
     bool wasUserSubmitted() const;
 
