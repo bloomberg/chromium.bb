@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -78,7 +77,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -328,6 +326,7 @@ const GdkColor LocationBarViewGtk::kBackgroundColor =
 
 LocationBarViewGtk::LocationBarViewGtk(Browser* browser)
     : OmniboxEditController(browser->command_controller()->command_updater()),
+      LocationBar(browser->profile()),
       zoom_image_(NULL),
       manage_passwords_icon_image_(NULL),
       script_bubble_button_image_(NULL),
@@ -373,8 +372,7 @@ LocationBarViewGtk::~LocationBarViewGtk() {
 void LocationBarViewGtk::Init(bool popup_window_mode) {
   popup_window_mode_ = popup_window_mode;
 
-  Profile* profile = browser_->profile();
-  theme_service_ = GtkThemeService::GetFrom(profile);
+  theme_service_ = GtkThemeService::GetFrom(profile());
 
   // Create the widget first, so we can pass it to the OmniboxViewGtk.
   hbox_.Own(gtk_hbox_new(FALSE, InnerPadding()));
@@ -386,7 +384,7 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_widget_set_redraw_on_allocate(hbox_.get(), TRUE);
 
   // Now initialize the OmniboxViewGtk.
-  omnibox_view_.reset(new OmniboxViewGtk(this, browser_, browser_->profile(),
+  omnibox_view_.reset(new OmniboxViewGtk(this, browser_, profile(),
                                          command_updater(),
                                          popup_window_mode_, hbox_.get()));
   omnibox_view_->Init();
@@ -531,9 +529,9 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                  content::Source<ThemeService>(theme_service_));
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-                 content::Source<Profile>(browser()->profile()));
+                 content::Source<Profile>(profile()));
   edit_bookmarks_enabled_.Init(prefs::kEditBookmarksEnabled,
-                               profile->GetPrefs(),
+                               profile()->GetPrefs(),
                                base::Bind(&LocationBarViewGtk::UpdateStarIcon,
                                           base::Unretained(this)));
 
@@ -574,12 +572,10 @@ void LocationBarViewGtk::ShowStarBubble(const GURL& url,
     return;
 
   if (star_sized_) {
-    BookmarkBubbleGtk::Show(star_.get(), browser_->profile(), url,
-                            newly_bookmarked);
+    BookmarkBubbleGtk::Show(star_.get(), profile(), url, newly_bookmarked);
   } else {
-    on_star_sized_ = base::Bind(&BookmarkBubbleGtk::Show,
-                                star_.get(), browser_->profile(),
-                                url, newly_bookmarked);
+    on_star_sized_ = base::Bind(&BookmarkBubbleGtk::Show, star_.get(),
+                                profile(), url, newly_bookmarked);
   }
 }
 
@@ -645,15 +641,11 @@ void LocationBarViewGtk::OnChanged() {
 }
 
 void LocationBarViewGtk::OnSetFocus() {
-  Profile* profile = browser_->profile();
-  AccessibilityTextBoxInfo info(
-      profile,
-      l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION),
-      std::string(),
-      false);
+  AccessibilityTextBoxInfo info(profile(),
+                                l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION),
+                                std::string(), false);
   ExtensionAccessibilityEventRouter::GetInstance()->HandleControlEvent(
-      ui::AccessibilityTypes::EVENT_FOCUS,
-      &info);
+      ui::AccessibilityTypes::EVENT_FOCUS, &info);
 
   // Update the keyword and search hint states.
   OnChanged();
@@ -1015,8 +1007,7 @@ gboolean LocationBarViewGtk::HandleExpose(GtkWidget* widget,
                                           GdkEventExpose* event) {
   // If we're not using GTK theming, draw our own border over the edge pixels
   // of the background.
-  GtkThemeService* theme_service =
-      GtkThemeService::GetFrom(browser_->profile());
+  GtkThemeService* theme_service = GtkThemeService::GetFrom(profile());
   if (!theme_service->UsingNativeTheme()) {
     // Perform a scoped paint to fill in the background color.
     {
@@ -1137,7 +1128,7 @@ gboolean LocationBarViewGtk::OnIconReleased(GtkWidget* sender,
     }
 
     GURL url;
-    if (!gtk_util::URLFromPrimarySelection(browser_->profile(), &url))
+    if (!gtk_util::URLFromPrimarySelection(profile(), &url))
       return FALSE;
 
     tab->OpenURL(OpenURLParams(
@@ -1242,11 +1233,10 @@ void LocationBarViewGtk::OnStarButtonSizeAllocate(GtkWidget* sender,
 
 gboolean LocationBarViewGtk::OnStarButtonPress(GtkWidget* widget,
                                                GdkEventButton* event) {
-  if (event->button == 1) {
-    chrome::ExecuteCommand(browser_, IDC_BOOKMARK_PAGE);
-    return TRUE;
-  }
-  return FALSE;
+  if (event->button != 1)
+    return FALSE;
+  chrome::ExecuteCommand(browser_, IDC_BOOKMARK_PAGE_FROM_STAR);
+  return TRUE;
 }
 
 gboolean LocationBarViewGtk::OnScriptBubbleButtonExpose(GtkWidget* widget,
@@ -1360,9 +1350,8 @@ void LocationBarViewGtk::SetKeywordLabel(const base::string16& keyword) {
   if (keyword.empty())
     return;
 
-  Profile* profile = browser_->profile();
   TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile);
+      TemplateURLServiceFactory::GetForProfile(profile());
   if (!template_url_service)
     return;
 
@@ -1388,7 +1377,7 @@ void LocationBarViewGtk::SetKeywordLabel(const base::string16& keyword) {
     if (is_extension_keyword) {
       const TemplateURL* template_url =
           template_url_service->GetTemplateURLForKeyword(keyword);
-      gfx::Image image = extensions::OmniboxAPI::Get(profile)->
+      gfx::Image image = extensions::OmniboxAPI::Get(profile())->
           GetOmniboxIcon(template_url->GetExtensionId());
       gtk_image_set_from_pixbuf(GTK_IMAGE(tab_to_search_magnifier_),
                                 image.ToGdkPixbuf());
@@ -1405,7 +1394,7 @@ void LocationBarViewGtk::SetKeywordHintLabel(const base::string16& keyword) {
     return;
 
   TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(browser_->profile());
+      TemplateURLServiceFactory::GetForProfile(profile());
   if (!template_url_service)
     return;
 
@@ -1669,12 +1658,10 @@ void LocationBarViewGtk::UpdateStarIcon() {
   // Indicate the star icon is not correctly sized. It will be marked as sized
   // when the next size-allocate signal is received by the star widget.
   star_sized_ = false;
-  bool star_enabled = !GetToolbarModel()->input_in_progress() &&
-      edit_bookmarks_enabled_.GetValue();
-  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
-                                          star_enabled);
-  if (star_enabled) {
+  if (browser_defaults::bookmarks_enabled && !popup_window_mode_ &&
+      !GetToolbarModel()->input_in_progress() &&
+      edit_bookmarks_enabled_.GetValue() &&
+      !IsBookmarkStarHiddenByExtension()) {
     gtk_widget_show_all(star_.get());
     int id = starred_ ? IDR_STAR_LIT : IDR_STAR;
     gtk_image_set_from_pixbuf(GTK_IMAGE(star_image_),
@@ -1851,14 +1838,13 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
   image_.Own(gtk_image_new());
   gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
 
-  const Extension* extension = owner->browser()->profile()->
-      GetExtensionService()->GetExtensionById(page_action->extension_id(),
-                                              false);
+  const Extension* extension =
+      owner->profile()->GetExtensionService()->GetExtensionById(
+          page_action->extension_id(), false);
   DCHECK(extension);
 
-  icon_factory_.reset(
-      new ExtensionActionIconFactory(
-          owner->browser()->profile(), extension, page_action, this));
+  icon_factory_.reset(new ExtensionActionIconFactory(
+      owner->profile(), extension, page_action, this));
 
   // We set the owner last of all so that we can determine whether we are in
   // the process of initializing this class or not.
@@ -1947,13 +1933,13 @@ void LocationBarViewGtk::PageActionViewGtk::InspectPopup(
 
 void LocationBarViewGtk::PageActionViewGtk::ConnectPageActionAccelerator() {
   const extensions::ExtensionSet* extensions =
-      owner_->browser()->profile()->GetExtensionService()->extensions();
+      owner_->profile()->GetExtensionService()->extensions();
   const Extension* extension =
       extensions->GetByID(page_action_->extension_id());
   window_ = owner_->browser()->window()->GetNativeWindow();
 
   extensions::CommandService* command_service =
-      extensions::CommandService::Get(owner_->browser()->profile());
+      extensions::CommandService::Get(owner_->profile());
 
   extensions::Command command_page_action;
   if (command_service->GetPageActionCommand(
@@ -2042,7 +2028,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     return TRUE;
 
   ExtensionService* extension_service =
-      owner_->browser()->profile()->GetExtensionService();
+      owner_->profile()->GetExtensionService();
   if (!extension_service)
     return TRUE;
 

@@ -157,7 +157,7 @@ class TestBrowserWindow : public BrowserWindow {
  private:
   class TestLocationBar : public LocationBar {
    public:
-    TestLocationBar() {}
+    TestLocationBar() : LocationBar(NULL) {}
     virtual ~TestLocationBar() {}
 
     // LocationBar:

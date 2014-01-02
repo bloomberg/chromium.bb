@@ -49,7 +49,7 @@ bool StarDecoration::AcceptsMousePress() {
 }
 
 bool StarDecoration::OnMousePressed(NSRect frame) {
-  command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE);
+  command_updater_->ExecuteCommand(IDC_BOOKMARK_PAGE_FROM_STAR);
   return true;
 }
 

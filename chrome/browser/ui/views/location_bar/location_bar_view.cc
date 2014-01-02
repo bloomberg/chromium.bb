@@ -18,12 +18,10 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/script_bubble_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -62,12 +60,10 @@
 #include "chrome/browser/ui/views/toolbar/site_chip_view.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
@@ -195,10 +191,10 @@ LocationBarView::LocationBarView(Browser* browser,
                                  CommandUpdater* command_updater,
                                  Delegate* delegate,
                                  bool is_popup_mode)
-    : OmniboxEditController(command_updater),
+    : LocationBar(profile),
+      OmniboxEditController(command_updater),
       browser_(browser),
       omnibox_view_(NULL),
-      profile_(profile),
       delegate_(delegate),
       location_icon_view_(NULL),
       ev_bubble_view_(NULL),
@@ -222,10 +218,8 @@ LocationBarView::LocationBarView(Browser* browser,
       animation_offset_(0),
       weak_ptr_factory_(this) {
   edit_bookmarks_enabled_.Init(
-      prefs::kEditBookmarksEnabled,
-      profile_->GetPrefs(),
-      base::Bind(&LocationBarView::Update,
-                 base::Unretained(this),
+      prefs::kEditBookmarksEnabled, profile->GetPrefs(),
+      base::Bind(&LocationBarView::Update, base::Unretained(this),
                  static_cast<content::WebContents*>(NULL)));
 
   if (browser_)
@@ -294,7 +288,7 @@ void LocationBarView::Init() {
   AddChildView(ev_bubble_view_);
 
   // Initialize the Omnibox view.
-  omnibox_view_ = new OmniboxViewViews(this, profile_, command_updater(),
+  omnibox_view_ = new OmniboxViewViews(this, profile(), command_updater(),
                                        is_popup_mode_, this, font_list);
   omnibox_view_->Init();
   omnibox_view_->SetFocusable(true);
@@ -316,7 +310,7 @@ void LocationBarView::Init() {
 
   const SkColor text_color = GetColor(ToolbarModel::NONE, TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
-      bubble_font_list, text_color, background_color, profile_);
+      bubble_font_list, text_color, background_color, profile());
   AddChildView(selected_keyword_view_);
 
   suggested_text_view_ = new views::Label(base::string16(), font_list);
@@ -328,7 +322,7 @@ void LocationBarView::Init() {
   AddChildView(suggested_text_view_);
 
   keyword_hint_view_ = new KeywordHintView(
-      profile_, font_list,
+      profile(), font_list,
       GetColor(ToolbarModel::NONE, LocationBarView::DEEMPHASIZED_TEXT),
       background_color);
   AddChildView(keyword_hint_view_);
@@ -417,7 +411,7 @@ void LocationBarView::Init() {
   search_button_->SetVisible(false);
   AddChildView(search_button_);
 
-  content::Source<Profile> profile_source = content::Source<Profile>(profile_);
+  content::Source<Profile> profile_source = content::Source<Profile>(profile());
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
                  profile_source);
@@ -639,7 +633,7 @@ void LocationBarView::SetTranslateIconToggled(bool on) {
 
 void LocationBarView::ShowBookmarkPrompt() {
   if (star_view_ && star_view_->visible())
-    BookmarkPromptView::ShowPrompt(star_view_, profile_->GetPrefs());
+    BookmarkPromptView::ShowPrompt(star_view_, profile()->GetPrefs());
 }
 
 void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
@@ -728,11 +722,11 @@ void LocationBarView::Layout() {
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
-          TemplateURLServiceFactory::GetForProfile(profile_)->
+          TemplateURLServiceFactory::GetForProfile(profile())->
           GetTemplateURLForKeyword(keyword);
       if (template_url &&
           (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
-        gfx::Image image = extensions::OmniboxAPI::Get(profile_)->
+        gfx::Image image = extensions::OmniboxAPI::Get(profile())->
             GetOmniboxIcon(template_url->GetExtensionId());
         selected_keyword_view_->SetImage(image.AsImageSkia());
         selected_keyword_view_->set_is_extension_icon(true);
@@ -1031,15 +1025,13 @@ void LocationBarView::Update(const WebContents* contents) {
   open_pdf_in_reader_view_->Update(
       GetToolbarModel()->input_in_progress() ? NULL : GetWebContents());
 
-  bool star_enabled = browser_defaults::bookmarks_enabled && !is_popup_mode_ &&
-      star_view_ && !GetToolbarModel()->input_in_progress() &&
-      edit_bookmarks_enabled_.GetValue() && !IsBookmarkStarHiddenByExtension();
-
-  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, star_enabled);
-  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
-                                          star_enabled);
-  if (star_view_)
-    star_view_->SetVisible(star_enabled);
+  if (star_view_) {
+    star_view_->SetVisible(
+        browser_defaults::bookmarks_enabled && !is_popup_mode_ &&
+        !GetToolbarModel()->input_in_progress() &&
+        edit_bookmarks_enabled_.GetValue() &&
+        !IsBookmarkStarHiddenByExtension());
+  }
 
   if (contents)
     omnibox_view_->OnTabChanged(contents);
@@ -1187,7 +1179,7 @@ bool LocationBarView::CanStartDragForView(View* sender,
 void LocationBarView::ShowFirstRunBubble() {
   // Wait until search engines have loaded to show the first run bubble.
   TemplateURLService* url_service =
-      TemplateURLServiceFactory::GetForProfile(profile_);
+      TemplateURLServiceFactory::GetForProfile(profile());
   if (!url_service->loaded()) {
     template_url_service_ = url_service;
     template_url_service_->AddObserver(this);
@@ -1430,7 +1422,7 @@ bool LocationBarView::RefreshPageActionViews() {
         page_action_views_.begin(),
         page_action_views_.end(),
         IsPageActionViewRightAligned(
-            extensions::ExtensionSystem::Get(profile_)->extension_service()));
+            extensions::ExtensionSystem::Get(profile())->extension_service()));
 
     View* right_anchor = open_pdf_in_reader_view_;
     if (!right_anchor)
@@ -1595,31 +1587,4 @@ void LocationBarView::PaintPageActionBackgrounds(gfx::Canvas* canvas) {
 
 void LocationBarView::AccessibilitySetValue(const base::string16& new_value) {
   omnibox_view_->SetUserText(new_value, new_value, true);
-}
-
-bool LocationBarView::IsBookmarkStarHiddenByExtension() {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::GetForBrowserContext(
-          profile_)->extension_service();
-  // Extension service may be NULL during unit test execution.
-  if (!extension_service)
-    return false;
-
-  const extensions::ExtensionSet* extension_set =
-      extension_service->extensions();
-  for (extensions::ExtensionSet::const_iterator i = extension_set->begin();
-       i != extension_set->end(); ++i) {
-    const extensions::SettingsOverrides* settings_overrides =
-        extensions::SettingsOverrides::Get(i->get());
-    if (settings_overrides &&
-        settings_overrides->RequiresHideBookmarkButtonPermission() &&
-        (extensions::PermissionsData::HasAPIPermission(
-            *i,
-            extensions::APIPermission::kBookmarkManagerPrivate) ||
-         extensions::FeatureSwitch::enable_override_bookmarks_ui()->
-             IsEnabled()))
-      return true;
-  }
-
-  return false;
 }

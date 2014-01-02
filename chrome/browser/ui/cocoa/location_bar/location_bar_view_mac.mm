@@ -12,7 +12,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
@@ -21,10 +20,8 @@
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -56,13 +53,10 @@
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -113,7 +107,8 @@ LocationBarViewMac::LocationBarViewMac(
     CommandUpdater* command_updater,
     Profile* profile,
     Browser* browser)
-    : OmniboxEditController(command_updater),
+    : LocationBar(profile),
+      OmniboxEditController(command_updater),
       omnibox_view_(new OmniboxViewMac(this, profile, command_updater, field)),
       field_(field),
       location_icon_decoration_(new LocationIconDecoration(this)),
@@ -127,7 +122,6 @@ LocationBarViewMac::LocationBarViewMac(
       generated_credit_card_decoration_(
           new GeneratedCreditCardDecoration(this)),
       search_button_decoration_(new SearchButtonDecoration(this)),
-      profile_(profile),
       browser_(browser),
       weak_ptr_factory_(this) {
 
@@ -135,22 +129,20 @@ LocationBarViewMac::LocationBarViewMac(
     DCHECK_EQ(i, content_setting_decorations_.size());
     ContentSettingsType type = static_cast<ContentSettingsType>(i);
     content_setting_decorations_.push_back(
-        new ContentSettingDecoration(type, this, profile_));
+        new ContentSettingDecoration(type, this, profile));
   }
 
-  registrar_.Add(this,
-      chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+  registrar_.Add(
+      this, chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
       content::NotificationService::AllSources());
-  content::Source<Profile> profile_source = content::Source<Profile>(profile_);
-  registrar_.Add(this,
-      chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
-      profile_source);
+  content::Source<Profile> profile_source = content::Source<Profile>(profile);
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
+                 profile_source);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED, profile_source);
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED, profile_source);
 
   edit_bookmarks_enabled_.Init(
-      prefs::kEditBookmarksEnabled,
-      profile_->GetPrefs(),
+      prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarViewMac::OnEditBookmarksEnabledChanged,
                  base::Unretained(this)));
 
@@ -170,9 +162,9 @@ LocationBarViewMac::~LocationBarViewMac() {
 void LocationBarViewMac::ShowFirstRunBubble() {
   // We need the browser window to be shown before we can show the bubble, but
   // we get called before that's happened.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&LocationBarViewMac::ShowFirstRunBubbleInternal,
-          weak_ptr_factory_.GetWeakPtr()));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&LocationBarViewMac::ShowFirstRunBubbleInternal,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 GURL LocationBarViewMac::GetDestinationURL() const {
@@ -333,7 +325,10 @@ void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
 }
 
 bool LocationBarViewMac::IsStarEnabled() const {
-  return IsBookmarkable() &&
+  return browser_defaults::bookmarks_enabled &&
+         [field_ isEditable] &&
+         !GetToolbarModel()->input_in_progress() &&
+         edit_bookmarks_enabled_.GetValue() &&
          !IsBookmarkStarHiddenByExtension();
 }
 
@@ -425,7 +420,7 @@ void LocationBarViewMac::Layout() {
   base::string16 short_name;
   bool is_extension_keyword = false;
   if (!keyword.empty()) {
-    short_name = TemplateURLServiceFactory::GetForProfile(profile_)->
+    short_name = TemplateURLServiceFactory::GetForProfile(profile())->
         GetKeywordShortName(keyword, &is_extension_keyword);
   }
 
@@ -513,9 +508,6 @@ NSPoint LocationBarViewMac::GetPageActionBubblePoint(
 }
 
 void LocationBarViewMac::Update(const WebContents* contents) {
-  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE, IsBookmarkable());
-  command_updater()->UpdateCommandEnabled(IDC_BOOKMARK_PAGE_FROM_STAR,
-                                          IsStarEnabled());
   UpdateStarDecorationVisibility();
   UpdateZoomDecoration();
   RefreshPageActionDecorations();
@@ -583,10 +575,10 @@ const ToolbarModel* LocationBarViewMac::GetToolbarModel() const {
 
 NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
   const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
-      profile_)->GetTemplateURLForKeyword(keyword);
+      profile())->GetTemplateURLForKeyword(keyword);
   if (template_url &&
       (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
-    return extensions::OmniboxAPI::Get(profile_)->
+    return extensions::OmniboxAPI::Get(profile())->
         GetOmniboxIcon(template_url->GetExtensionId()).AsNSImage();
   }
 
@@ -694,7 +686,7 @@ void LocationBarViewMac::RefreshPageActionDecorations() {
         page_action_decorations_.begin(),
         page_action_decorations_.end(),
         IsPageActionViewRightAligned(
-            extensions::ExtensionSystem::Get(profile_)->extension_service()));
+            extensions::ExtensionSystem::Get(profile())->extension_service()));
   }
 
   GURL url = GetToolbarModel()->GetURL();
@@ -732,14 +724,7 @@ void LocationBarViewMac::ShowFirstRunBubbleInternal() {
   [FirstRunBubbleController showForView:field_
                                  offset:kOffset
                                 browser:browser_
-                                profile:profile_];
-}
-
-bool LocationBarViewMac::IsBookmarkable() const {
-  return [field_ isEditable] &&
-         browser_defaults::bookmarks_enabled &&
-         !GetToolbarModel()->input_in_progress() &&
-         edit_bookmarks_enabled_.GetValue();
+                                profile:profile()];
 }
 
 void LocationBarViewMac::UpdateZoomDecoration() {
@@ -761,31 +746,4 @@ bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {
     return false;
   mic_search_decoration_->SetVisible(is_visible);
   return true;
-}
-
-bool LocationBarViewMac::IsBookmarkStarHiddenByExtension() const {
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::GetForBrowserContext(
-          profile_)->extension_service();
-  // Extension service may be NULL during unit test execution.
-  if (!extension_service)
-    return false;
-
-  const extensions::ExtensionSet* extension_set =
-      extension_service->extensions();
-  for (extensions::ExtensionSet::const_iterator i = extension_set->begin();
-       i != extension_set->end(); ++i) {
-    const extensions::SettingsOverrides* settings_overrides =
-        extensions::SettingsOverrides::Get(i->get());
-    if (settings_overrides &&
-        settings_overrides->RequiresHideBookmarkButtonPermission() &&
-        (extensions::PermissionsData::HasAPIPermission(
-            *i,
-            extensions::APIPermission::kBookmarkManagerPrivate) ||
-         extensions::FeatureSwitch::enable_override_bookmarks_ui()->
-             IsEnabled()))
-      return true;
-  }
-
-  return false;
 }

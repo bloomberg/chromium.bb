@@ -21,6 +21,7 @@
 class ExtensionAction;
 class LocationBarTesting;
 class OmniboxView;
+class Profile;
 
 namespace content {
 class WebContents;
@@ -28,6 +29,8 @@ class WebContents;
 
 class LocationBar {
  public:
+  explicit LocationBar(Profile* profile);
+
   // Shows the first run bubble anchored to the location bar.
   virtual void ShowFirstRunBubble() = 0;
 
@@ -80,8 +83,18 @@ class LocationBar {
   // Returns a pointer to the testing interface.
   virtual LocationBarTesting* GetLocationBarForTesting() = 0;
 
+  Profile* profile() { return profile_; }
+
  protected:
-  virtual ~LocationBar() {}
+  virtual ~LocationBar();
+
+  // Checks if any extension has requested that the bookmark star be hidden.
+  bool IsBookmarkStarHiddenByExtension() const;
+
+ private:
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocationBar);
 };
 
 class LocationBarTesting {

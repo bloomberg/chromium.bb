@@ -1412,6 +1412,7 @@
         'browser/ui/ntp_background_util.h',
         'browser/ui/omnibox/alternate_nav_infobar_delegate.cc',
         'browser/ui/omnibox/alternate_nav_infobar_delegate.h',
+        'browser/ui/omnibox/location_bar.cc',
         'browser/ui/omnibox/location_bar.h',
         'browser/ui/omnibox/location_bar_util.cc',
         'browser/ui/omnibox/location_bar_util.h',

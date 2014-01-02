@@ -160,9 +160,6 @@ class LocationBarView : public LocationBar,
   SkColor GetColor(ToolbarModel::SecurityLevel security_level,
                    ColorKind kind) const;
 
-  // Returns corresponding profile.
-  Profile* profile() const { return profile_; }
-
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
 
@@ -423,18 +420,12 @@ class LocationBarView : public LocationBar,
   // don't normally use this). Sets the value and clears the selection.
   void AccessibilitySetValue(const base::string16& new_value);
 
-  // Checks if an extension has specified the bookmark star be hidden.
-  bool IsBookmarkStarHiddenByExtension();
-
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser
   // window, so this may be NULL.
   Browser* browser_;
 
   OmniboxViewViews* omnibox_view_;
-
-  // The profile which corresponds to this View.
-  Profile* profile_;
 
   // Our delegate.
   Delegate* delegate_;
