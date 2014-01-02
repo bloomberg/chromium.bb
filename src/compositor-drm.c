@@ -2107,7 +2107,7 @@ create_sprites(struct drm_compositor *ec)
 		if (!sprite) {
 			weston_log("%s: out of memory\n",
 				__func__);
-			free(plane);
+			drmModeFreePlane(plane);
 			continue;
 		}
 
