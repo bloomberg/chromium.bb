@@ -1955,7 +1955,9 @@ void PepperPluginInstanceImpl::UpdateLayerTransform() {
 
   gfx::RectF backing_store(bound_graphics_2d_platform_->plugin_offset(),
                            bound_graphics_2d_platform_->Size());
-  gfx::PointF scale = bound_graphics_2d_platform_->GetResizeScale();
+  gfx::PointF scale = gfx::ScalePoint(
+      bound_graphics_2d_platform_->GetResizeScale(),
+      bound_graphics_2d_platform_->GetScale());
   backing_store = ScaleRect(backing_store, scale.x(), scale.y());
 
   gfx::Rect layer_rect(ToEnclosingRect(backing_store));
