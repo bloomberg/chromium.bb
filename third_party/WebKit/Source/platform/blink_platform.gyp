@@ -396,7 +396,7 @@
           ['exclude', 'Android\\.cpp$'],
         ],
       }],
-      ['use_x11 == 1', {
+      ['OS=="linux"', {
         'dependencies': [
           '<(DEPTH)/build/linux/system.gyp:fontconfig',
         ],
