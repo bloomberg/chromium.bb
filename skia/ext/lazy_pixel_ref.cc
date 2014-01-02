@@ -6,12 +6,6 @@
 
 namespace skia {
 
-#ifdef SK_SUPPORT_LEGACY_PIXELREF_CONSTRUCTOR
-// DEPRECATED -- will remove after blink updates to pass info
-LazyPixelRef::LazyPixelRef() {
-}
-#endif
-
 LazyPixelRef::LazyPixelRef(const SkImageInfo& info) : SkPixelRef(info) {
 }
 
