@@ -32,11 +32,11 @@
 
 namespace WebCore {
 
-PLATFORM_EXPORT String defaultLanguage();
-PLATFORM_EXPORT Vector<String> userPreferredLanguages();
-PLATFORM_EXPORT Vector<String> userPreferredLanguagesOverride();
-PLATFORM_EXPORT void overrideUserPreferredLanguages(const Vector<String>&);
-PLATFORM_EXPORT size_t indexOfBestMatchingLanguageInList(const String& language, const Vector<String>& languageList);
+PLATFORM_EXPORT AtomicString defaultLanguage();
+PLATFORM_EXPORT Vector<AtomicString> userPreferredLanguages();
+PLATFORM_EXPORT Vector<AtomicString> userPreferredLanguagesOverride();
+PLATFORM_EXPORT void overrideUserPreferredLanguages(const Vector<AtomicString>&);
+PLATFORM_EXPORT size_t indexOfBestMatchingLanguageInList(const AtomicString& language, const Vector<AtomicString>& languageList);
 
 }
 

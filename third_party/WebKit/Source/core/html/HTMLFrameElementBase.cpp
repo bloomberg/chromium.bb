@@ -76,7 +76,7 @@ void HTMLFrameElementBase::openURL(bool lockBackForwardList)
         return;
 
     if (m_URL.isEmpty())
-        m_URL = blankURL().string();
+        m_URL = AtomicString(blankURL().string());
 
     Frame* parentFrame = document().frame();
     if (!parentFrame)

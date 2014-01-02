@@ -301,7 +301,7 @@ VTTParser::ParseState VTTParser::collectCueId(const String& line)
 {
     if (line.contains("-->"))
         return collectTimingsAndSettings(line);
-    m_currentId = line;
+    m_currentId = AtomicString(line);
     return TimingsAndSettings;
 }
 
@@ -439,7 +439,7 @@ void VTTParser::createNewCue()
 
 void VTTParser::resetCueValues()
 {
-    m_currentId = emptyString();
+    m_currentId = emptyAtom;
     m_currentSettings = emptyString();
     m_currentStartTime = 0;
     m_currentEndTime = 0;

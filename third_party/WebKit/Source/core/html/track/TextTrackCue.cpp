@@ -83,7 +83,7 @@ void TextTrackCue::setTrack(TextTrack* track)
     m_track = track;
 }
 
-void TextTrackCue::setId(const String& id)
+void TextTrackCue::setId(const AtomicString& id)
 {
     if (m_id == id)
         return;

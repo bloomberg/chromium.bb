@@ -48,7 +48,7 @@ inline HTMLVideoElement::HTMLVideoElement(Document& document, bool createdByPars
 {
     ScriptWrappable::init(this);
     if (document.settings())
-        m_defaultPosterURL = document.settings()->defaultVideoPosterURL();
+        m_defaultPosterURL = AtomicString(document.settings()->defaultVideoPosterURL());
 }
 
 PassRefPtr<HTMLVideoElement> HTMLVideoElement::create(Document& document, bool createdByParser)

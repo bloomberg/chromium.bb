@@ -46,7 +46,7 @@ public:
     void setValue(const String&);
     String defaultValue() const;
     void setDefaultValue(const String&);
-    void setFor(const String&);
+    void setFor(const AtomicString&);
     DOMSettableTokenList* htmlFor() const;
 
     virtual bool canContainRangeEndPoint() const { return false; }

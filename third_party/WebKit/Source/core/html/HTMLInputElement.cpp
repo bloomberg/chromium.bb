@@ -1804,7 +1804,7 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
         parameters.locale = defaultLanguage();
     else {
         AtomicString computedLocale = computeInheritedLanguage();
-        parameters.locale = computedLocale.isEmpty() ? AtomicString(defaultLanguage()) : computedLocale;
+        parameters.locale = computedLocale.isEmpty() ? defaultLanguage() : computedLocale;
     }
 
     StepRange stepRange = createStepRange(RejectAny);

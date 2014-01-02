@@ -56,8 +56,8 @@ public:
     TextTrack* track() const;
     void setTrack(TextTrack*);
 
-    const String& id() const { return m_id; }
-    void setId(const String&);
+    const AtomicString& id() const { return m_id; }
+    void setId(const AtomicString&);
 
     double startTime() const { return m_startTime; }
     void setStartTime(double, ExceptionState&);
@@ -101,7 +101,7 @@ protected:
     virtual void cueDidChange();
 
 private:
-    String m_id;
+    AtomicString m_id;
     double m_startTime;
     double m_endTime;
     int m_cueIndex;

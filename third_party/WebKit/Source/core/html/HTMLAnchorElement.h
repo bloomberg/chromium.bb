@@ -79,7 +79,7 @@ public:
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
 
     bool hasRel(uint32_t relation) const;
-    void setRel(const String&);
+    void setRel(const AtomicString&);
 
     LinkHash visitedLinkHash() const;
     void invalidateCachedVisitedLinkHash() { m_cachedVisitedLinkHash = 0; }

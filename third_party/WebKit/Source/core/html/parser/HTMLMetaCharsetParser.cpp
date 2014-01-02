@@ -121,7 +121,7 @@ WTF::TextEncoding HTMLMetaCharsetParser::encodingFromMetaAttributes(const Attrib
     String charset;
 
     for (AttributeList::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter) {
-        const AtomicString& attributeName = iter->first;
+        const AtomicString& attributeName = AtomicString(iter->first);
         const String& attributeValue = iter->second;
 
         if (attributeName == http_equivAttr) {

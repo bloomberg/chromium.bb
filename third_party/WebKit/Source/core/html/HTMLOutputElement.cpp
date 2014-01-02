@@ -75,7 +75,7 @@ DOMSettableTokenList* HTMLOutputElement::htmlFor() const
     return m_tokens.get();
 }
 
-void HTMLOutputElement::setFor(const String& value)
+void HTMLOutputElement::setFor(const AtomicString& value)
 {
     m_tokens->setValue(value);
 }

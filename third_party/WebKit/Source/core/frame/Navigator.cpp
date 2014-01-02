@@ -58,7 +58,7 @@ Navigator::~Navigator()
 {
 }
 
-String Navigator::language() const
+AtomicString Navigator::language() const
 {
     return defaultLanguage();
 }

@@ -150,7 +150,7 @@ public:
             ASSERT_NOT_REACHED();
             break;
         case HTMLToken::DOCTYPE:
-            m_name = token.data();
+            m_name = AtomicString(token.data());
             m_doctypeData = adoptPtr(new DoctypeData());
             m_doctypeData->m_hasPublicIdentifier = true;
             append(m_doctypeData->m_publicIdentifier, token.publicIdentifier());
@@ -163,15 +163,15 @@ public:
         case HTMLToken::StartTag:
             m_attributes.reserveInitialCapacity(token.attributes().size());
             for (Vector<CompactHTMLToken::Attribute>::const_iterator it = token.attributes().begin(); it != token.attributes().end(); ++it) {
-                QualifiedName name(nullAtom, it->name, nullAtom);
+                QualifiedName name(nullAtom, AtomicString(it->name), nullAtom);
                 // FIXME: This is N^2 for the number of attributes.
                 if (!findAttributeInVector(m_attributes, name))
-                    m_attributes.append(Attribute(name, it->value));
+                    m_attributes.append(Attribute(name, AtomicString(it->value)));
             }
             // Fall through!
         case HTMLToken::EndTag:
             m_selfClosing = token.selfClosing();
-            m_name = token.data();
+            m_name = AtomicString(token.data());
             break;
         case HTMLToken::Character:
         case HTMLToken::Comment:

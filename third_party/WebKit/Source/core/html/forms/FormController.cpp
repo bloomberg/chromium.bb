@@ -221,7 +221,7 @@ PassOwnPtr<SavedFormState> SavedFormState::deserialize(const Vector<String>& sta
         FormControlState state = FormControlState::deserialize(stateVector, index);
         if (type.isEmpty() || type.find(isNotFormControlTypeCharacter) != kNotFound || state.isFailure())
             return nullptr;
-        savedFormState->appendControlState(name, type, state);
+        savedFormState->appendControlState(AtomicString(name), AtomicString(type), state);
     }
     return savedFormState.release();
 }
@@ -453,7 +453,7 @@ void FormController::formStatesFromStateVector(const Vector<String>& stateVector
         return;
 
     while (i + 1 < stateVector.size()) {
-        AtomicString formKey = stateVector[i++];
+        AtomicString formKey = AtomicString(stateVector[i++]);
         OwnPtr<SavedFormState> state = SavedFormState::deserialize(stateVector, i);
         if (!state) {
             i = 0;

@@ -2081,9 +2081,9 @@ String HTMLMediaElement::preload() const
     return String();
 }
 
-void HTMLMediaElement::setPreload(const String& preload)
+void HTMLMediaElement::setPreload(const AtomicString& preload)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setPreload(%s)", preload.utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::setPreload(%s)", preload.string().utf8().data());
     setAttribute(preloadAttr, preload);
 }
 
@@ -2534,7 +2534,7 @@ void HTMLMediaElement::removeAllInbandTracks()
     }
 }
 
-PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const String& kind, const String& label, const String& language, ExceptionState& exceptionState)
+PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const AtomicString& kind, const AtomicString& label, const AtomicString& language, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::videoTrackEnabled());
 
@@ -2645,7 +2645,7 @@ static int textTrackLanguageSelectionScore(const TextTrack& track)
     if (track.language().isEmpty())
         return 0;
 
-    Vector<String> languages = userPreferredLanguages();
+    Vector<AtomicString> languages = userPreferredLanguages();
     size_t languageMatchIndex = indexOfBestMatchingLanguageInList(track.language(), languages);
     if (languageMatchIndex >= languages.size())
         return 0;

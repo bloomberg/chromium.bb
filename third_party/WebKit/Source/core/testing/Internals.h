@@ -179,7 +179,7 @@ public:
     int lastSpellCheckRequestSequence(Document*, ExceptionState&);
     int lastSpellCheckProcessedSequence(Document*, ExceptionState&);
 
-    Vector<String> userPreferredLanguages() const;
+    Vector<AtomicString> userPreferredLanguages() const;
     void setUserPreferredLanguages(const Vector<String>&);
 
     unsigned wheelEventHandlerCount(Document*, ExceptionState&);

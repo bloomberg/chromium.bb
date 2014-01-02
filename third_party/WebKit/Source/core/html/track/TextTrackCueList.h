@@ -47,7 +47,7 @@ public:
     unsigned long getCueIndex(TextTrackCue*) const;
 
     TextTrackCue* item(unsigned index) const;
-    TextTrackCue* getCueById(const String&) const;
+    TextTrackCue* getCueById(const AtomicString&) const;
     TextTrackCueList* activeCues();
 
     bool add(PassRefPtr<TextTrackCue>);

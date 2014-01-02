@@ -226,7 +226,7 @@ VTTCue::~VTTCue()
 #ifndef NDEBUG
 String VTTCue::toString() const
 {
-    return String::format("%p id=%s interval=%f-->%f cue=%s)", this, id().utf8().data(), startTime(), endTime(), text().utf8().data());
+    return String::format("%p id=%s interval=%f-->%f cue=%s)", this, id().string().utf8().data(), startTime(), endTime(), text().utf8().data());
 }
 #endif
 

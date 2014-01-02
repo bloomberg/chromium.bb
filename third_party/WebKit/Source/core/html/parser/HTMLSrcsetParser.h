@@ -50,7 +50,12 @@ public:
 
     String toString() const
     {
-        return m_string.toString();
+        return String(m_string.toString());
+    }
+
+    AtomicString toAtomicString() const
+    {
+        return AtomicString(m_string.toString());
     }
 
     inline float scaleFactor() const

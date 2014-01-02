@@ -31,48 +31,48 @@
 
 namespace WebCore {
 
-static String platformLanguage()
+static const AtomicString& platformLanguage()
 {
-    DEFINE_STATIC_LOCAL(String, computedDefaultLanguage, ());
+    DEFINE_STATIC_LOCAL(AtomicString, computedDefaultLanguage, ());
     if (computedDefaultLanguage.isEmpty()) {
-        computedDefaultLanguage.append(blink::Platform::current()->defaultLocale());
+        computedDefaultLanguage = blink::Platform::current()->defaultLocale();
         ASSERT(!computedDefaultLanguage.isEmpty());
     }
     return computedDefaultLanguage;
 }
 
-String defaultLanguage()
+AtomicString defaultLanguage()
 {
-    Vector<String> languages = userPreferredLanguages();
-    if (languages.size())
+    Vector<AtomicString> languages = userPreferredLanguages();
+    if (!languages.isEmpty())
         return languages[0];
 
-    return emptyString();
+    return emptyAtom;
 }
 
-static Vector<String>& preferredLanguagesOverride()
+static Vector<AtomicString>& preferredLanguagesOverride()
 {
-    DEFINE_STATIC_LOCAL(Vector<String>, override, ());
+    DEFINE_STATIC_LOCAL(Vector<AtomicString>, override, ());
     return override;
 }
 
-Vector<String> userPreferredLanguagesOverride()
+Vector<AtomicString> userPreferredLanguagesOverride()
 {
     return preferredLanguagesOverride();
 }
 
-void overrideUserPreferredLanguages(const Vector<String>& override)
+void overrideUserPreferredLanguages(const Vector<AtomicString>& override)
 {
     preferredLanguagesOverride() = override;
 }
 
-Vector<String> userPreferredLanguages()
+Vector<AtomicString> userPreferredLanguages()
 {
-    Vector<String>& override = preferredLanguagesOverride();
+    Vector<AtomicString>& override = preferredLanguagesOverride();
     if (!override.isEmpty())
         return override;
 
-    Vector<String> languages;
+    Vector<AtomicString> languages;
     languages.reserveInitialCapacity(1);
     languages.append(platformLanguage());
     return languages;
@@ -88,10 +88,10 @@ static String canonicalLanguageIdentifier(const String& languageCode)
     return lowercaseLanguageCode;
 }
 
-size_t indexOfBestMatchingLanguageInList(const String& language, const Vector<String>& languageList)
+size_t indexOfBestMatchingLanguageInList(const AtomicString& language, const Vector<AtomicString>& languageList)
 {
-    String languageWithoutLocaleMatch;
-    String languageMatchButNotLocale;
+    AtomicString languageWithoutLocaleMatch;
+    AtomicString languageMatchButNotLocale;
     size_t languageWithoutLocaleMatchIndex = 0;
     size_t languageMatchButNotLocaleMatchIndex = 0;
     bool canMatchLanguageOnly = (language.length() == 2 || (language.length() >= 3 && language[2] == '-'));

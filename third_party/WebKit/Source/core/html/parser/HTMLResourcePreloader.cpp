@@ -55,7 +55,7 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
 {
     ASSERT(isMainThread());
     FetchInitiatorInfo initiatorInfo;
-    initiatorInfo.name = m_initiatorName;
+    initiatorInfo.name = AtomicString(m_initiatorName);
     initiatorInfo.position = m_initiatorPosition;
     FetchRequest request(ResourceRequest(completeURL(document)), initiatorInfo);
 

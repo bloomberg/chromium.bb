@@ -196,7 +196,7 @@ void Internals::resetToConsistentState(Page* page)
     page->setPageScaleFactor(1, IntPoint(0, 0));
     page->setPagination(Pagination());
     TextRun::setAllowsRoundingHacks(false);
-    WebCore::overrideUserPreferredLanguages(Vector<String>());
+    WebCore::overrideUserPreferredLanguages(Vector<AtomicString>());
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
     page->chrome().client().resetPagePopupDriver();
@@ -1259,14 +1259,19 @@ int Internals::lastSpellCheckProcessedSequence(Document* document, ExceptionStat
     return requester->lastProcessedSequence();
 }
 
-Vector<String> Internals::userPreferredLanguages() const
+Vector<AtomicString> Internals::userPreferredLanguages() const
 {
     return WebCore::userPreferredLanguages();
 }
 
+// Optimally, the bindings generator would pass a Vector<AtomicString> here but
+// this is not supported yet.
 void Internals::setUserPreferredLanguages(const Vector<String>& languages)
 {
-    WebCore::overrideUserPreferredLanguages(languages);
+    Vector<AtomicString> atomicLanguages;
+    for (size_t i = 0; i < languages.size(); ++i)
+        atomicLanguages.append(AtomicString(languages[i]));
+    WebCore::overrideUserPreferredLanguages(atomicLanguages);
 }
 
 unsigned Internals::wheelEventHandlerCount(Document* document, ExceptionState& exceptionState)

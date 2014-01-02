@@ -249,7 +249,7 @@ void FileInputType::createShadowSubtree()
     ASSERT(element().shadow());
     RefPtr<HTMLInputElement> button = HTMLInputElement::create(element().document(), 0, false);
     button->setType(InputTypeNames::button);
-    button->setAttribute(valueAttr, locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel));
+    button->setAttribute(valueAttr, AtomicString(locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel)));
     button->setShadowPseudoId(AtomicString("-webkit-file-upload-button", AtomicString::ConstructFromLiteral));
     element().userAgentShadowRoot()->appendChild(button.release());
 }
@@ -265,7 +265,7 @@ void FileInputType::multipleAttributeChanged()
 {
     ASSERT(element().shadow());
     if (Element* button = toElement(element().userAgentShadowRoot()->firstChild()))
-        button->setAttribute(valueAttr, locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel));
+        button->setAttribute(valueAttr, AtomicString(locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel)));
 }
 
 void FileInputType::setFiles(PassRefPtr<FileList> files)

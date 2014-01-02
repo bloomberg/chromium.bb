@@ -137,7 +137,7 @@ private:
 
     BufferedLineReader m_lineReader;
     OwnPtr<TextResourceDecoder> m_decoder;
-    String m_currentId;
+    AtomicString m_currentId;
     double m_currentStartTime;
     double m_currentEndTime;
     StringBuilder m_currentContent;

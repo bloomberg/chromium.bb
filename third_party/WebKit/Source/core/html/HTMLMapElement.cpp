@@ -108,7 +108,7 @@ void HTMLMapElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         String mapName = value;
         if (mapName[0] == '#')
             mapName = mapName.substring(1);
-        m_name = document().isHTMLDocument() ? mapName.lower() : mapName;
+        m_name = AtomicString(document().isHTMLDocument() ? mapName.lower() : mapName);
         if (inDocument())
             treeScope().addImageMap(this);
 

@@ -346,7 +346,7 @@ String HTMLAnchorElement::input() const
 
 void HTMLAnchorElement::setInput(const String& value)
 {
-    setHref(value);
+    setHref(AtomicString(value));
 }
 
 bool HTMLAnchorElement::hasRel(uint32_t relation) const
@@ -354,7 +354,7 @@ bool HTMLAnchorElement::hasRel(uint32_t relation) const
     return m_linkRelations & relation;
 }
 
-void HTMLAnchorElement::setRel(const String& value)
+void HTMLAnchorElement::setRel(const AtomicString& value)
 {
     m_linkRelations = 0;
     SpaceSplitString newLinkRelations(value, true);
@@ -424,7 +424,7 @@ void HTMLAnchorElement::handleClick(Event* event)
         if (!hasRel(RelationNoReferrer)) {
             String referrer = SecurityPolicy::generateReferrerHeader(document().referrerPolicy(), completedURL, document().outgoingReferrer());
             if (!referrer.isEmpty())
-                request.setHTTPReferrer(referrer);
+                request.setHTTPReferrer(AtomicString(referrer));
         }
 
         frame->loader().client()->loadURLExternally(request, NavigationPolicyDownload, fastGetAttribute(downloadAttr));

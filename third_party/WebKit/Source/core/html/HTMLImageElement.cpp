@@ -127,7 +127,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
     } else if (name == srcAttr || name == srcsetAttr) {
         if (RuntimeEnabledFeatures::srcsetEnabled()) {
             ImageCandidate candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr));
-            m_bestFitImageURL = candidate.toString();
+            m_bestFitImageURL = candidate.toAtomicString();
             float candidateScaleFactor = candidate.scaleFactor();
             if (candidateScaleFactor > 0)
                 m_imageDevicePixelRatio = 1 / candidateScaleFactor;

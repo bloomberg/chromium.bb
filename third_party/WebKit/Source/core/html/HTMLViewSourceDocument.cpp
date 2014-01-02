@@ -139,21 +139,21 @@ void HTMLViewSourceDocument::processTagToken(const String& source, HTMLToken& to
     while (index < source.length()) {
         if (iter == token.attributes().end()) {
             // We want to show the remaining characters in the token.
-            index = addRange(source, index, source.length(), "");
+            index = addRange(source, index, source.length(), emptyAtom);
             ASSERT(index == source.length());
             break;
         }
 
         AtomicString name(iter->name);
-        String value = StringImpl::create8BitIfPossible(iter->value);
+        AtomicString value(StringImpl::create8BitIfPossible(iter->value));
 
-        index = addRange(source, index, iter->nameRange.start - token.startIndex(), "");
+        index = addRange(source, index, iter->nameRange.start - token.startIndex(), emptyAtom);
         index = addRange(source, index, iter->nameRange.end - token.startIndex(), "webkit-html-attribute-name");
 
         if (tagName == baseTag && name == hrefAttr)
             addBase(value);
 
-        index = addRange(source, index, iter->valueRange.start - token.startIndex(), "");
+        index = addRange(source, index, iter->valueRange.start - token.startIndex(), emptyAtom);
 
         bool isLink = name == srcAttr || name == hrefAttr;
         index = addRange(source, index, iter->valueRange.end - token.startIndex(), "webkit-html-attribute-value", isLink, tagName == aTag, value);
@@ -249,7 +249,7 @@ void HTMLViewSourceDocument::addText(const String& text, const AtomicString& cla
     }
 }
 
-int HTMLViewSourceDocument::addRange(const String& source, int start, int end, const String& className, bool isLink, bool isAnchor, const String& link)
+int HTMLViewSourceDocument::addRange(const String& source, int start, int end, const AtomicString& className, bool isLink, bool isAnchor, const AtomicString& link)
 {
     ASSERT(start <= end);
     if (start == end)

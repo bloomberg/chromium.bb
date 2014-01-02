@@ -224,6 +224,14 @@ namespace WebCore {
     };
 
     template<>
+    struct V8ValueTraits<AtomicString> {
+        static inline v8::Handle<v8::Value> arrayV8Value(const AtomicString& value, v8::Isolate* isolate)
+        {
+            return v8String(isolate, value);
+        }
+    };
+
+    template<>
     struct V8ValueTraits<unsigned> {
         static inline v8::Handle<v8::Value> arrayV8Value(const unsigned& value, v8::Isolate* isolate)
         {

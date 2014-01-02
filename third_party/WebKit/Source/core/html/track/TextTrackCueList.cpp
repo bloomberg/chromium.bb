@@ -51,7 +51,7 @@ TextTrackCue* TextTrackCueList::item(unsigned index) const
     return 0;
 }
 
-TextTrackCue* TextTrackCueList::getCueById(const String& id) const
+TextTrackCue* TextTrackCueList::getCueById(const AtomicString& id) const
 {
     for (size_t i = 0; i < m_list.size(); ++i) {
         if (m_list[i]->id() == id)
