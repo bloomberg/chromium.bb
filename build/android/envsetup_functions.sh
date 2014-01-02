@@ -311,6 +311,10 @@ ${ANDROID_SDK_VERSION}
     DEFINES+=" android_full_debug=1"
     DEFINES+=" android_use_tcmalloc=1"
   fi
+  if [[ -n "$CHROME_ANDROID_WEBVIEW_OFFICIAL_BUILD" ]]; then
+    DEFINES+=" logging_like_official_build=1"
+    DEFINES+=" tracing_like_official_build=1"
+  fi
   export GYP_DEFINES="${DEFINES}"
 
   export GYP_GENERATORS="android"
