@@ -207,8 +207,6 @@ void AutofillDialogControllerAndroid::Show() {
   if (!has_types ||
       !Java_AutofillDialogControllerAndroid_isDialogAllowed(
           env,
-          RequestingCreditCardInfo(),
-          TransmissionWillBeSecure(),
           invoked_from_same_origin_)) {
     callback_.Run(NULL);
     delete this;
@@ -220,11 +218,6 @@ void AutofillDialogControllerAndroid::Show() {
 
   GetMetricLogger().LogDialogSecurityMetric(
       AutofillMetrics::SECURITY_METRIC_DIALOG_SHOWN);
-
-  if (RequestingCreditCardInfo() && !TransmissionWillBeSecure()) {
-    GetMetricLogger().LogDialogSecurityMetric(
-        AutofillMetrics::SECURITY_METRIC_CREDIT_CARD_OVER_HTTP);
-  }
 
   if (!invoked_from_same_origin_) {
     GetMetricLogger().LogDialogSecurityMetric(
@@ -411,22 +404,6 @@ AutofillDialogControllerAndroid::AutofillDialogControllerAndroid(
       weak_ptr_factory_(this),
       was_ui_latency_logged_(false) {
   DCHECK(!callback_.is_null());
-}
-
-bool AutofillDialogControllerAndroid::RequestingCreditCardInfo() const {
-  DCHECK_GT(form_structure_.field_count(), 0U);
-
-  for (size_t i = 0; i < form_structure_.field_count(); ++i) {
-    AutofillType type = form_structure_.field(i)->Type();
-    if (common::IsCreditCardType(type.GetStorableType()))
-      return true;
-  }
-
-  return false;
-}
-
-bool AutofillDialogControllerAndroid::TransmissionWillBeSecure() const {
-  return source_url_.SchemeIs(content::kHttpsScheme);
 }
 
 void AutofillDialogControllerAndroid::LogOnFinishSubmitMetrics() {

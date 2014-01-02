@@ -151,7 +151,6 @@ public class AutofillDialogControllerTest extends ChromiumTestShellTestBase {
         clearAppData();
         CommandLine.init(new String[]{});
         CommandLine.getInstance().appendSwitch(SWITCH_REDUCE_SECURITY_FOR_TESTING);
-        AutofillDialogControllerAndroid.allowInsecureDialogsForTesting();
     }
 
     @MediumTest

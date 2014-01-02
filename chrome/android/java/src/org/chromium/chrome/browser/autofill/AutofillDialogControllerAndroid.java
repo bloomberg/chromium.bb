@@ -17,7 +17,6 @@ import org.chromium.ui.base.WindowAndroid;
 @JNINamespace("autofill")
 public class AutofillDialogControllerAndroid {
     private static AutofillDialogFactory sDialogFactory;
-    private static boolean sAllowInsecureDialogsForTesting = false;
 
     private long mNativeDelegate;  // could be 0 after onDestroy().
     private AutofillDialog mDialog;
@@ -103,10 +102,6 @@ public class AutofillDialogControllerAndroid {
     }
 
     @VisibleForTesting
-    public static void allowInsecureDialogsForTesting() {
-        sAllowInsecureDialogsForTesting = true;
-    }
-
     private AutofillDialogControllerAndroid(
             final long nativeAutofillDialogControllerAndroid,
             final WindowAndroid windowAndroid,
@@ -179,11 +174,10 @@ public class AutofillDialogControllerAndroid {
     }
 
     @CalledByNative
-    private static boolean isDialogAllowed(boolean requestsCreditCardInformation,
-            boolean isTransmissionSecure, boolean isInvokedFromTheSameOrigin) {
-        if (!requestsCreditCardInformation) return true;
-        if (isTransmissionSecure && isInvokedFromTheSameOrigin) return true;
-        return sAllowInsecureDialogsForTesting;
+    private static boolean isDialogAllowed(boolean isInvokedFromTheSameOrigin) {
+        // TODO(aruslan): cross-origin invocations should be allowed with a
+        // warning messge.
+        return isInvokedFromTheSameOrigin;
     }
 
     @CalledByNative

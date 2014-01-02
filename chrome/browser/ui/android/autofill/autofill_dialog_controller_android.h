@@ -66,9 +66,6 @@ class AutofillDialogControllerAndroid : public AutofillDialogController {
   // Logs metrics when the dialog is canceled.
   void LogOnCancelMetrics();
 
-  bool RequestingCreditCardInfo() const;
-  bool TransmissionWillBeSecure() const;
-
   // The |profile| for |contents_|.
   Profile* const profile_;
 
