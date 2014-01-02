@@ -2582,6 +2582,7 @@ set_xwayland(struct shell_surface *shsurf, int x, int y, uint32_t flags)
 	shell_surface_set_parent(shsurf, NULL);
 
 	shsurf->type = SHELL_SURFACE_XWAYLAND;
+	shsurf->state_changed = true;
 }
 
 static const struct weston_pointer_grab_interface popup_grab_interface;
