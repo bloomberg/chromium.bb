@@ -626,11 +626,11 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestProgressNotification) {
   }
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-// Failing after disabling Linux Aura: http://crbug.com/319689
-#define MAYBE_TestPartialUpdate DISABLED_TestPartialUpdate
-#else
+// MessaceCenter-specific test.
+#if defined(RUN_MESSAGE_CENTER_TESTS)
 #define MAYBE_TestPartialUpdate TestPartialUpdate
+#else
+#define MAYBE_TestPartialUpdate DISABLED_TestPartialUpdate
 #endif
 IN_PROC_BROWSER_TEST_F(NotificationsApiTest, MAYBE_TestPartialUpdate) {
   scoped_refptr<Extension> empty_extension(utils::CreateEmptyExtension());
