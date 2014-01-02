@@ -68,7 +68,7 @@ show_input_panels(struct wl_listener *listener, void *data)
 
 	wl_list_for_each_safe(ipsurf, next,
 			      &shell->input_panel.surfaces, link) {
-		if (!ipsurf->surface->buffer_ref.buffer)
+		if (ipsurf->surface->width == 0)
 			continue;
 		wl_list_insert(&shell->input_panel_layer.view_list,
 			       &ipsurf->view->layer_link);
