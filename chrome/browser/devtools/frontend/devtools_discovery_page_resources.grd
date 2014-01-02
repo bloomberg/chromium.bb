@@ -5,10 +5,6 @@
             type="rc_header">
       <emit emit_type="prepend"/>
     </output>
-    <output filename="grit/devtools_discovery_page_resources_map.cc"
-            type="resource_file_map_source"/>
-    <output filename="grit/devtools_discovery_page_resources_map.h"
-            type="resource_map_header"/>
     <output filename="devtools_discovery_page_resources.pak"
             type="data_package"/>
   </outputs>
