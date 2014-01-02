@@ -53,11 +53,11 @@ class BASE_EXPORT RegKey {
   // Transfers ownership away from this object.
   HKEY Take();
 
-  // Returns false if this key does not have the specified value, of if an error
+  // Returns false if this key does not have the specified value, or if an error
   // occurrs while attempting to access it.
   bool HasValue(const wchar_t* value_name) const;
 
-  // Returns the number of values for this key, of 0 if the number cannot be
+  // Returns the number of values for this key, or 0 if the number cannot be
   // determined.
   DWORD GetValueCount() const;
 
