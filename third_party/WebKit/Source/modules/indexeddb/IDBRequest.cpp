@@ -156,7 +156,7 @@ void IDBRequest::setPendingCursor(PassRefPtr<IDBCursor> cursor)
 
     m_hasPendingActivity = true;
     m_pendingCursor = cursor;
-    m_result.clear();
+    setResult(PassRefPtr<IDBAny>(0));
     m_readyState = PENDING;
     m_error.clear();
     m_transaction->registerRequest(this);
