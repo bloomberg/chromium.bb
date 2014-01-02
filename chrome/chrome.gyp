@@ -766,21 +766,11 @@
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_unittests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-            '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
             '../content/content_shell_and_tests.gyp:content_browsertests',
             '../content/content_shell_and_tests.gyp:content_shell',
             '../content/content_shell_and_tests.gyp:content_unittests',
             '../net/net.gyp:net_unittests',
             '../ui/ui_unittests.gyp:ui_unittests',
-          ],
-          'conditions': [
-            ['use_aura==1 or target_arch=="x64"', {
-              'dependencies!': [
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
-              ],
-            }],
           ],
         },
         {

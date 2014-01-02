@@ -154,7 +154,7 @@
                 # TODO(jschuh) Enable Win64 Memory Watcher. crbug.com/176877
                 '../tools/memory_watcher/memory_watcher.gyp:*',
                 # TODO(jschuh) Enable Win64 Chrome Frame. crbug.com/176875
-                '../chrome_frame/chrome_frame.gyp:*',
+                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
               ],
             }],
           ],
@@ -289,15 +289,7 @@
             '../ui/views/views.gyp:views_unittests',
           ],
           'conditions': [
-            ['target_arch!="x64"', {
-              'dependencies': [
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
-              ]
-            }, { # target_arch!="x64"
+            ['target_arch=="x64"', {
               'dependencies!': [
                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',
               ],
@@ -851,15 +843,7 @@
             '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
           ],
           'conditions': [
-             ['target_arch!="x64"', {
-               'dependencies': [
-                 '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
-                 '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
-                 '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
-                 '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-                 '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
-               ]
-             }, { # target_arch!="x64"
+             ['target_arch=="x64"', {
                'dependencies!': [
                  '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                ],
@@ -875,11 +859,6 @@
           'conditions': [
             ['target_arch!="x64"', {
               'dependencies': [
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',
               ],
             }], # target_arch!="x64"
@@ -1024,15 +1003,6 @@
               'dependencies': [
                 '../chrome/chrome.gyp:crash_service',
                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-              ],
-            }],
-            ['OS=="win" and target_arch!="x64"', {
-              'dependencies': [
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_net_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_perftests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_reliability_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_tests',
-                '../chrome_frame/chrome_frame.gyp:chrome_frame_unittests',
               ],
             }],
             ['OS=="win" and target_arch=="x64"', {
