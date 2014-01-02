@@ -62,6 +62,7 @@ body.alternate-logo #logo {
   font-size: 18px;
   height: 36px;
   max-width: 620px;
+  position: relative;
   /* #fakebox width (here and below) should be 2px less than #mv-tiles
      to account for its border. */
   width: 298px;
@@ -78,11 +79,20 @@ body.fakebox-focused #fakebox {
 
 #fakebox > input {
   bottom: 0;
+  box-sizing: border-box;
   left: 0;
+  margin: 0;
   opacity: 0;
+  padding-left: 8px;
   position: absolute;
-  right: 0;
   top: 0;
+  width: 100%;
+}
+
+body.rtl #fakebox > input {
+  padding-left: 0;
+  padding-right: 8px;
+  right: 0;
 }
 
 #cursor {
