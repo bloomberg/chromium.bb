@@ -225,7 +225,6 @@
         'shell/renderer/test_runner/WebFrameTestProxy.h',
         'shell/renderer/test_runner/WebPermissions.cpp',
         'shell/renderer/test_runner/WebPermissions.h',
-        'shell/renderer/test_runner/WebScopedPtr.h',
         'shell/renderer/test_runner/WebTask.cpp',
         'shell/renderer/test_runner/WebTask.h',
         'shell/renderer/test_runner/WebTestDelegate.h',

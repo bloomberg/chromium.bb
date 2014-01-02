@@ -81,9 +81,9 @@ namespace {
 
 class InvokeCallbackTask : public WebMethodTask<TestRunner> {
 public:
-    InvokeCallbackTask(TestRunner* object, WebScopedPtr<CppVariant> callbackArguments)
+    InvokeCallbackTask(TestRunner* object, scoped_ptr<CppVariant> callbackArguments)
         : WebMethodTask<TestRunner>(object)
-        , m_callbackArguments(callbackArguments)
+        , m_callbackArguments(callbackArguments.Pass())
     {
     }
 
@@ -94,7 +94,7 @@ public:
     }
 
 private:
-    WebScopedPtr<CppVariant> m_callbackArguments;
+    scoped_ptr<CppVariant> m_callbackArguments;
 };
 
 }
@@ -1758,10 +1758,11 @@ void TestRunner::setBackingScaleFactor(const CppArgumentList& arguments, CppVari
     m_delegate->setDeviceScaleFactor(value);
     m_proxy->discardBackingStore();
 
-    WebScopedPtr<CppVariant> callbackArguments(new CppVariant());
+    scoped_ptr<CppVariant> callbackArguments(new CppVariant());
     callbackArguments->set(arguments[1]);
     result->setNull();
-    m_delegate->postTask(new InvokeCallbackTask(this, callbackArguments));
+    m_delegate->postTask(
+        new InvokeCallbackTask(this, callbackArguments.Pass()));
 }
 
 void TestRunner::setPOSIXLocale(const CppArgumentList& arguments, CppVariant* result)

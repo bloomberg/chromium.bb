@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "content/shell/renderer/test_runner/WebScopedPtr.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -211,11 +211,11 @@ private:
 
     WebTaskList m_taskList;
 
-    WebScopedPtr<SpellCheckClient> m_spellcheck;
-    WebScopedPtr<WebUserMediaClientMock> m_userMediaClient;
+    scoped_ptr<SpellCheckClient> m_spellcheck;
+    scoped_ptr<WebUserMediaClientMock> m_userMediaClient;
 
     // Painting.
-    WebScopedPtr<SkCanvas> m_canvas;
+    scoped_ptr<SkCanvas> m_canvas;
     blink::WebRect m_paintRect;
     bool m_isPainting;
     bool m_animateScheduled;
@@ -225,10 +225,10 @@ private:
     bool m_logConsoleOutput;
     int m_chooserCount;
 
-    WebScopedPtr<blink::WebGeolocationClientMock> m_geolocationClient;
-    WebScopedPtr<blink::WebMIDIClientMock> m_midiClient;
-    WebScopedPtr<MockWebSpeechRecognizer> m_speechRecognizer;
-    WebScopedPtr<MockWebSpeechInputController> m_speechInputController;
+    scoped_ptr<blink::WebGeolocationClientMock> m_geolocationClient;
+    scoped_ptr<blink::WebMIDIClientMock> m_midiClient;
+    scoped_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
+    scoped_ptr<MockWebSpeechInputController> m_speechInputController;
 
     // FIXME:: We want to move away from this pattern and mark classes
     // as Noncopyable, but this class is marked as WEBTESTRUNNER_EXPORT

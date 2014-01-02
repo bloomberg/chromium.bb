@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "content/shell/renderer/test_runner/WebScopedPtr.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayer.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureMailbox.h"
@@ -122,7 +122,7 @@ private:
     bool m_mailboxChanged;
     unsigned m_framebuffer;
     Scene m_scene;
-    WebScopedPtr<blink::WebExternalTextureLayer> m_layer;
+    scoped_ptr<blink::WebExternalTextureLayer> m_layer;
 
     blink::WebPluginContainer::TouchEventRequestType m_touchEventRequest;
     // Requests touch events from the WebPluginContainerImpl multiple times to tickle webkit.org/b/108381

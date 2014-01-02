@@ -11,8 +11,8 @@
 #ifndef EventSender_h
 #define EventSender_h
 
+#include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/CppBoundClass.h"
-#include "content/shell/renderer/test_runner/WebScopedPtr.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
@@ -166,7 +166,7 @@ private:
     WebTestDelegate* m_delegate;
     blink::WebView* m_webView;
 
-    WebScopedPtr<blink::WebContextMenuData> m_lastContextMenuData;
+    scoped_ptr<blink::WebContextMenuData> m_lastContextMenuData;
 
     // Location of the touch point that initiated a gesture.
     blink::WebPoint m_currentGestureLocation;

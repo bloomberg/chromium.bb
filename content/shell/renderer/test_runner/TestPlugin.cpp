@@ -196,7 +196,7 @@ bool TestPlugin::initialize(WebPluginContainer* container)
     if (!initScene())
         return false;
 
-    m_layer = WebScopedPtr<WebExternalTextureLayer>(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+    m_layer = scoped_ptr<WebExternalTextureLayer>(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
     m_container = container;
     m_container->setWebLayer(m_layer->layer());
     if (m_reRequestTouchEvents) {

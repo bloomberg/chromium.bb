@@ -50,8 +50,8 @@
 #include <map>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/CppVariant.h"
-#include "content/shell/renderer/test_runner/WebScopedPtr.h"
 #include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 namespace blink {
@@ -167,7 +167,7 @@ protected:
 
     // Bind Javascript property |name| to the C++ getter callback |callback|.
     // This can be used to create read-only properties.
-    void bindGetterCallback(const std::string&, WebScopedPtr<GetterCallback>);
+    void bindGetterCallback(const std::string&, scoped_ptr<GetterCallback>);
 
     // A wrapper for BindGetterCallback, to simplify the common case of binding a
     // property on the current object. Though not verified here, the method parameter
@@ -175,8 +175,8 @@ protected:
     template<class T>
     void bindProperty(const std::string& name, void (T::*method)(CppVariant*))
     {
-        WebScopedPtr<GetterCallback> callback(new MemberGetterCallback<T>(static_cast<T*>(this), method));
-        bindGetterCallback(name, callback);
+        scoped_ptr<GetterCallback> callback(new MemberGetterCallback<T>(static_cast<T*>(this), method));
+        bindGetterCallback(name, callback.Pass());
     }
 
     // Bind the Javascript property called |name| to a CppVariant.
@@ -196,9 +196,9 @@ protected:
     // as it may cause unexpected behaviors (a JavaScript object with a
     // fallback always returns true when checked for a method's
     // existence).
-    void bindFallbackCallback(WebScopedPtr<Callback> fallbackCallback)
+    void bindFallbackCallback(scoped_ptr<Callback> fallbackCallback)
     {
-        m_fallbackCallback = fallbackCallback;
+        m_fallbackCallback = fallbackCallback.Pass();
     }
 
     // A wrapper for BindFallbackCallback, to simplify the common case of
@@ -209,9 +209,9 @@ protected:
     void bindFallbackMethod(void (T::*method)(const CppArgumentList&, CppVariant*))
     {
         if (method)
-            bindFallbackCallback(WebScopedPtr<Callback>(new MemberCallback<T>(static_cast<T*>(this), method)));
+            bindFallbackCallback(scoped_ptr<Callback>(new MemberCallback<T>(static_cast<T*>(this), method)).Pass());
         else
-            bindFallbackCallback(WebScopedPtr<Callback>());
+            bindFallbackCallback(scoped_ptr<Callback>().Pass());
     }
 
     // Some fields are protected because some tests depend on accessing them,
@@ -225,7 +225,7 @@ protected:
     MethodList m_methods;
 
     // The callback gets invoked when a call is made to an nonexistent method.
-    WebScopedPtr<Callback> m_fallbackCallback;
+    scoped_ptr<Callback> m_fallbackCallback;
 
 private:
     // NPObject callbacks.

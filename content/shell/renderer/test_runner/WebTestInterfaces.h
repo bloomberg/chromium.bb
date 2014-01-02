@@ -5,7 +5,7 @@
 #ifndef WebTestInterfaces_h
 #define WebTestInterfaces_h
 
-#include "content/shell/renderer/test_runner/WebScopedPtr.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace blink {
 class WebAudioDevice;
@@ -53,7 +53,7 @@ public:
     TestInterfaces* testInterfaces();
 
 private:
-    WebScopedPtr<TestInterfaces> m_interfaces;
+    scoped_ptr<TestInterfaces> m_interfaces;
 };
 
 }

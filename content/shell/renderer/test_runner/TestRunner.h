@@ -41,9 +41,9 @@
 #include <set>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/CppBoundClass.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
-#include "content/shell/renderer/test_runner/WebScopedPtr.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "content/shell/renderer/test_runner/WebTestRunner.h"
 #include "third_party/WebKit/public/platform/WebCanvas.h"
@@ -720,9 +720,9 @@ private:
     blink::WebFrame* m_topLoadingFrame;
 
     // WebPermissionClient mock object.
-    WebScopedPtr<WebPermissions> m_webPermissions;
+    scoped_ptr<WebPermissions> m_webPermissions;
 
-    WebScopedPtr<NotificationPresenter> m_notificationPresenter;
+    scoped_ptr<NotificationPresenter> m_notificationPresenter;
 
     bool m_pointerLocked;
     enum {

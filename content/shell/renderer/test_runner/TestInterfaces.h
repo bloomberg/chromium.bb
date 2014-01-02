@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "content/shell/renderer/test_runner/WebScopedPtr.h"
+#include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 #if defined(USE_DEFAULT_RENDER_THEME)
@@ -60,21 +60,21 @@ public:
     blink::WebThemeEngine* themeEngine();
 
 private:
-    WebScopedPtr<AccessibilityController> m_accessibilityController;
-    WebScopedPtr<EventSender> m_eventSender;
-    WebScopedPtr<GamepadController> m_gamepadController;
-    WebScopedPtr<TextInputController> m_textInputController;
-    WebScopedPtr<TestRunner> m_testRunner;
+    scoped_ptr<AccessibilityController> m_accessibilityController;
+    scoped_ptr<EventSender> m_eventSender;
+    scoped_ptr<GamepadController> m_gamepadController;
+    scoped_ptr<TextInputController> m_textInputController;
+    scoped_ptr<TestRunner> m_testRunner;
     WebTestDelegate* m_delegate;
     WebTestProxyBase* m_proxy;
 
     std::vector<WebTestProxyBase*> m_windowList;
 #if defined(USE_DEFAULT_RENDER_THEME)
-    WebScopedPtr<WebTestThemeEngineMock> m_themeEngine;
+    scoped_ptr<WebTestThemeEngineMock> m_themeEngine;
 #elif defined(WIN32)
-    WebScopedPtr<WebTestThemeEngineWin> m_themeEngine;
+    scoped_ptr<WebTestThemeEngineWin> m_themeEngine;
 #elif defined(__APPLE__)
-    WebScopedPtr<WebTestThemeEngineMac> m_themeEngine;
+    scoped_ptr<WebTestThemeEngineMac> m_themeEngine;
 #endif
 };
 
