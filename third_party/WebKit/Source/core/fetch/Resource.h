@@ -215,6 +215,7 @@ public:
     bool loadFailedOrCanceled() { return !m_error.isNull(); }
 
     DataBufferingPolicy dataBufferingPolicy() const { return m_options.dataBufferingPolicy; }
+    void setDataBufferingPolicy(DataBufferingPolicy);
 
     virtual void destroyDecodedData() { }
 

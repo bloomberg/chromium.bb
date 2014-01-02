@@ -50,6 +50,7 @@ class ImageResource;
 class RawResource;
 class ScriptResource;
 class ShaderResource;
+class SubstituteData;
 class XSLStyleSheetResource;
 class Document;
 class DocumentLoader;
@@ -92,7 +93,7 @@ public:
     ResourcePtr<ScriptResource> fetchScript(FetchRequest&);
     ResourcePtr<FontResource> fetchFont(FetchRequest&);
     ResourcePtr<RawResource> fetchRawResource(FetchRequest&);
-    ResourcePtr<RawResource> fetchMainResource(FetchRequest&);
+    ResourcePtr<RawResource> fetchMainResource(FetchRequest&, const SubstituteData&);
     ResourcePtr<DocumentResource> fetchSVGDocument(FetchRequest&);
     ResourcePtr<XSLStyleSheetResource> fetchXSLStyleSheet(FetchRequest&);
     ResourcePtr<Resource> fetchLinkResource(Resource::Type, FetchRequest&);
@@ -172,6 +173,7 @@ private:
     ResourcePtr<Resource> revalidateResource(const FetchRequest&, Resource*);
     ResourcePtr<Resource> loadResource(Resource::Type, FetchRequest&, const String& charset);
     void preCacheDataURIImage(const FetchRequest&);
+    void preCacheSubstituteDataForMainResource(const FetchRequest&, const SubstituteData&);
     void storeResourceTimingInitiatorInformation(const ResourcePtr<Resource>&, const FetchRequest&);
     void requestPreload(Resource::Type, FetchRequest&, const String& charset);
 

@@ -225,6 +225,13 @@ void Resource::setResourceBuffer(PassRefPtr<SharedBuffer> resourceBuffer)
     setEncodedSize(m_data->size());
 }
 
+void Resource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
+{
+    m_options.dataBufferingPolicy = dataBufferingPolicy;
+    m_data.clear();
+    setEncodedSize(0);
+}
+
 void Resource::error(Resource::Status status)
 {
     if (m_resourceToRevalidate)

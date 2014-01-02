@@ -47,7 +47,7 @@ namespace WebCore {
 
         bool isValid() const { return m_content != 0; }
 
-        const SharedBuffer* content() const { return m_content.get(); }
+        SharedBuffer* content() const { return m_content.get(); }
         const AtomicString& mimeType() const { return m_mimeType; }
         const AtomicString& textEncoding() const { return m_textEncoding; }
         const KURL& failingURL() const { return m_failingURL; }
@@ -57,7 +57,6 @@ namespace WebCore {
         AtomicString m_mimeType;
         AtomicString m_textEncoding;
         KURL m_failingURL;
-        KURL m_responseURL;
     };
 
 }

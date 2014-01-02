@@ -119,12 +119,6 @@ void RawResource::setDefersLoading(bool defers)
         m_loader->setDefersLoading(defers);
 }
 
-void RawResource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
-{
-    m_options.dataBufferingPolicy = dataBufferingPolicy;
-    clear();
-}
-
 static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName)
 {
     // FIXME: This list of headers that don't affect cache policy almost certainly isn't complete.
@@ -183,12 +177,6 @@ bool RawResource::canReuse(const ResourceRequest& newRequest) const
     }
 
     return true;
-}
-
-void RawResource::clear()
-{
-    m_data.clear();
-    setEncodedSize(0);
 }
 
 } // namespace WebCore

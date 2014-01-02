@@ -34,7 +34,6 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParser.h"
 #include "core/events/Event.h"
-#include "core/fetch/FetchContext.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
@@ -82,8 +81,6 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_replacesCurrentHistoryItem(false)
     , m_loadingMainResource(false)
     , m_timeOfLastDataReceived(0.0)
-    , m_identifierForLoadWithoutResourceLoader(0)
-    , m_dataLoadTimer(this, &DocumentLoader::handleSubstituteDataLoadNow)
     , m_applicationCacheHost(adoptPtr(new ApplicationCacheHost(this)))
 {
 }
@@ -107,19 +104,9 @@ DocumentLoader::~DocumentLoader()
     clearMainResourceHandle();
 }
 
-PassRefPtr<SharedBuffer> DocumentLoader::mainResourceData() const
-{
-    ASSERT(isArchiveMIMEType(m_response.mimeType()));
-    if (m_substituteData.isValid())
-        return m_substituteData.content()->copy();
-    if (m_mainResource)
-        return m_mainResource->resourceBuffer();
-    return 0;
-}
-
 unsigned long DocumentLoader::mainResourceIdentifier() const
 {
-    return m_mainResource ? m_mainResource->identifier() : m_identifierForLoadWithoutResourceLoader;
+    return m_mainResource ? m_mainResource->identifier() : 0;
 }
 
 Document* DocumentLoader::document() const
@@ -288,11 +275,6 @@ void DocumentLoader::finishedLoading(double finishTime)
 
     RefPtr<DocumentLoader> protect(this);
 
-    if (m_identifierForLoadWithoutResourceLoader) {
-        m_frame->fetchContext().dispatchDidFinishLoading(this, m_identifierForLoadWithoutResourceLoader, finishTime);
-        m_identifierForLoadWithoutResourceLoader = 0;
-    }
-
     double responseEndTime = finishTime;
     if (!responseEndTime)
         responseEndTime = m_timeOfLastDataReceived;
@@ -339,17 +321,6 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
         return true;
 
     return false;
-}
-
-void DocumentLoader::handleSubstituteDataLoadNow(DocumentLoaderTimer*)
-{
-    RefPtr<DocumentLoader> protect(this);
-    ResourceResponse response(m_request.url(), m_substituteData.mimeType(), m_substituteData.content()->size(), m_substituteData.textEncoding(), emptyString());
-    responseReceived(0, response);
-    if (m_substituteData.content()->size())
-        dataReceived(0, m_substituteData.content()->data(), m_substituteData.content()->size());
-    if (isLoadingMainResource())
-        finishedLoading(0);
 }
 
 bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, PolicyCheckLoadType policyCheckLoadType)
@@ -524,9 +495,6 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
     if (isArchiveMIMEType(m_response.mimeType()) && m_mainResource->dataBufferingPolicy() != BufferData)
         m_mainResource->setDataBufferingPolicy(BufferData);
 
-    if (m_identifierForLoadWithoutResourceLoader)
-        m_frame->fetchContext().dispatchDidReceiveResponse(this, m_identifierForLoadWithoutResourceLoader, m_response, 0);
-
     if (!shouldContinueForResponse()) {
         InspectorInstrumentation::continueWithPolicyIgnore(m_frame, this, m_mainResource->identifier(), m_response);
         cancelMainResourceLoad(ResourceError::cancelledError(m_request.url()));
@@ -585,9 +553,6 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, int leng
     // by starting a new load, so retain temporarily.
     RefPtr<Frame> protectFrame(m_frame);
     RefPtr<DocumentLoader> protectLoader(this);
-
-    if (m_identifierForLoadWithoutResourceLoader)
-        frame()->fetchContext().dispatchDidReceiveData(this, m_identifierForLoadWithoutResourceLoader, data, length, -1);
 
     m_applicationCacheHost->mainResourceDataReceived(data, length);
     m_timeOfLastDataReceived = monotonicallyIncreasingTime();
@@ -686,7 +651,8 @@ bool DocumentLoader::isLoadingInAPISense() const
 
 void DocumentLoader::createArchive()
 {
-    m_archive = MHTMLArchive::create(m_response.url(), mainResourceData().get());
+    ASSERT(m_mainResource);
+    m_archive = MHTMLArchive::create(m_response.url(), m_mainResource->resourceBuffer());
     RELEASE_ASSERT(m_archive);
 
     addAllArchiveResources(m_archive.get());
@@ -820,18 +786,11 @@ void DocumentLoader::startLoadingMainResource()
     m_applicationCacheHost->willStartLoadingMainResource(m_request);
     prepareSubframeArchiveLoadIfNeeded();
 
-    if (m_substituteData.isValid()) {
-        m_identifierForLoadWithoutResourceLoader = createUniqueIdentifier();
-        frame()->fetchContext().dispatchWillSendRequest(this, m_identifierForLoadWithoutResourceLoader, m_request, ResourceResponse());
-        m_dataLoadTimer.startOneShot(0);
-        return;
-    }
-
     ResourceRequest request(m_request);
     DEFINE_STATIC_LOCAL(ResourceLoaderOptions, mainResourceLoadOptions,
         (SniffContent, DoNotBufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, DocumentContext));
     FetchRequest cachedResourceRequest(request, FetchInitiatorTypeNames::document, mainResourceLoadOptions);
-    m_mainResource = m_fetcher->fetchMainResource(cachedResourceRequest);
+    m_mainResource = m_fetcher->fetchMainResource(cachedResourceRequest, m_substituteData);
     if (!m_mainResource) {
         setRequest(ResourceRequest());
         // If the load was aborted by clearing m_request, it's possible the ApplicationCacheHost
@@ -858,7 +817,6 @@ void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
     RefPtr<DocumentLoader> protect(this);
     ResourceError error = resourceError.isNull() ? ResourceError::cancelledError(m_request.url()) : resourceError;
 
-    m_dataLoadTimer.stop();
     if (mainResourceLoader())
         mainResourceLoader()->cancel(error);
 

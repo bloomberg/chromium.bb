@@ -50,6 +50,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
+#include "core/loader/SubstituteData.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/frame/ContentSecurityPolicy.h"
@@ -157,9 +158,8 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request, cons
     Resource* resource = createResource(Resource::Image, request, charset);
     resource->setOptions(resourceOptions);
     resource->responseReceived(response);
-    // FIXME: AppendData causes an unnecessary memcpy.
     if (data->size())
-        resource->appendData(data->data(), data->size());
+        resource->setResourceBuffer(data);
     resource->finish();
     return resource;
 }
@@ -366,9 +366,27 @@ ResourcePtr<RawResource> ResourceFetcher::fetchRawResource(FetchRequest& request
     return toRawResource(requestResource(Resource::Raw, request));
 }
 
-ResourcePtr<RawResource> ResourceFetcher::fetchMainResource(FetchRequest& request)
+ResourcePtr<RawResource> ResourceFetcher::fetchMainResource(FetchRequest& request, const SubstituteData& substituteData)
 {
+    if (substituteData.isValid())
+        preCacheSubstituteDataForMainResource(request, substituteData);
     return toRawResource(requestResource(Resource::MainResource, request));
+}
+
+void ResourceFetcher::preCacheSubstituteDataForMainResource(const FetchRequest& request, const SubstituteData& substituteData)
+{
+    const KURL& url = request.url();
+    ASSERT(!memoryCache()->resourceForURL(url));
+
+    ResourceResponse response(url, substituteData.mimeType(), substituteData.content()->size(), substituteData.textEncoding(), emptyString());
+    ResourcePtr<Resource> resource = createResource(Resource::MainResource, request.resourceRequest(), substituteData.textEncoding());
+    resource->setOptions(request.options());
+    resource->setDataBufferingPolicy(BufferData);
+    resource->responseReceived(response);
+    if (substituteData.content()->size())
+        resource->setResourceBuffer(substituteData.content());
+    resource->finish();
+    memoryCache()->add(resource.get());
 }
 
 bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url, MixedContentBlockingTreatment treatment) const
@@ -662,14 +680,14 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     // Ensure main resources aren't preloaded, and other main resource loads
     // are removed from cache to prevent reuse.
     if (type == Resource::MainResource) {
-        ASSERT(policy != Use);
+        ASSERT(policy != Use || m_documentLoader->substituteData().isValid());
         ASSERT(policy != Revalidate);
         memoryCache()->remove(resource.get());
         if (request.forPreload())
             return 0;
     }
 
-    if (!request.resourceRequest().url().protocolIsData()) {
+    if (!request.resourceRequest().url().protocolIsData() && (!m_documentLoader || !m_documentLoader->substituteData().isValid())) {
         if (policy == Use && !m_validatedURLs.contains(request.resourceRequest().url())) {
             // Resources loaded from memory cache should be reported the first time they're used.
             RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::create(request.options().initiatorInfo.name, monotonicallyIncreasingTime());
@@ -827,6 +845,10 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     // Always use data uris.
     // FIXME: Extend this to non-images.
     if (type == Resource::Image && request.url().protocolIsData())
+        return Use;
+
+    // If a main resource was populated from a SubstituteData load, use it.
+    if (type == Resource::MainResource && m_documentLoader->substituteData().isValid())
         return Use;
 
     if (!existingResource->canReuse(request))

@@ -41,10 +41,6 @@ public:
     // This can be fixed by splitting CORS preflighting out of DocumentThreacableLoader.
     virtual void setDefersLoading(bool);
 
-    virtual void setDataBufferingPolicy(DataBufferingPolicy);
-
-    void clear();
-
     virtual bool canReuse(const ResourceRequest&) const;
 
 private:

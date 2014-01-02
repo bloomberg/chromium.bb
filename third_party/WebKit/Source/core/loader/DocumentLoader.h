@@ -37,7 +37,6 @@
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/NavigationAction.h"
 #include "core/loader/SubstituteData.h"
-#include "platform/Timer.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
@@ -122,7 +121,6 @@ namespace WebCore {
         const AtomicString& overrideEncoding() const { return m_overrideEncoding; }
 
         bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
-        void cancelPendingSubstituteLoad(ResourceLoader*);
 
         enum PolicyCheckLoadType {
             PolicyCheckStandard,
@@ -177,7 +175,6 @@ namespace WebCore {
         void clearMainResourceLoader();
         ResourceLoader* mainResourceLoader() const;
         void clearMainResourceHandle();
-        PassRefPtr<SharedBuffer> mainResourceData() const;
 
         void createArchive();
         void clearArchiveResources();
@@ -198,9 +195,6 @@ namespace WebCore {
         bool isRedirectAfterPost(const ResourceRequest&, const ResourceResponse&);
 
         bool shouldContinueForResponse() const;
-
-        typedef Timer<DocumentLoader> DocumentLoaderTimer;
-        void handleSubstituteDataLoadNow(DocumentLoaderTimer*);
 
         Frame* m_frame;
         RefPtr<ResourceFetcher> m_fetcher;
@@ -247,9 +241,6 @@ namespace WebCore {
         DocumentLoadTiming m_documentLoadTiming;
 
         double m_timeOfLastDataReceived;
-        unsigned long m_identifierForLoadWithoutResourceLoader;
-
-        DocumentLoaderTimer m_dataLoadTimer;
 
         friend class ApplicationCacheHost;  // for substitute resource delivery
         OwnPtr<ApplicationCacheHost> m_applicationCacheHost;
