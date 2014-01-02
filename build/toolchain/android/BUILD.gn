@@ -9,8 +9,6 @@ import("../gcc_toolchain.gni")
 # Get the location of the Android tools in our tree.
 android_ndk_root =
   rebase_path("//third_party/android_tools/ndk", ".", "")
-android_sdk_root =
-  rebase_path("//third_party/android_tools/sdk", ".", "")
 
 # Get the Android version of the name of the build host's architecture.
 if (build_cpu_arch == "x64") {
@@ -39,8 +37,12 @@ if (is_gyp) {
       assert(false, "Need Android toolchain support for your platform.")
     }
 
+    # The extra slash before "toolchains" is because GYP generates this and we
+    # have to match the make_global_settings character-for-character,
+    # TODO(brettw) remove extra slash before toolchains when GYP compat is no
+    # longer necessary.
     android_toolchain =
-      "$android_ndk_root/toolchains/$android_toolchain_arch/prebuilt/$build_os-$android_host_arch/bin"
+      "$android_ndk_root//toolchains/$android_toolchain_arch/prebuilt/$build_os-$android_host_arch/bin"
 
     # This script will find the compilers for the given Android toolchain
     # directory.

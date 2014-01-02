@@ -14,19 +14,18 @@ declare_args() {
   use_goma = false
 
   goma_dir = ""
-
-  # Goma directory used by the Android build. Empty means use the GOMA_DIR
-  # environment variable.
-  #
-  # TODO(brettw) remove this and make it work like regular Linux.
-  android_goma_dir = ""
 }
 
 # The Android GYP build has some logic that automatically turns on goma when
 # the directory is set, but this isn't done for other platforms.
 # TODO(brettw) rationalize all Linux-y platforms.
-if (is_android && android_goma_dir != "") {
-  use_goma = true
+if (is_android) {
+  if (goma_dir == "") {
+    goma_dir = exec_script("android/default_goma_for_android.py", [], "value")
+  }
+  if (goma_dir != "") {
+    use_goma = true
+  }
 }
 
 if (use_goma && goma_dir == "") {
@@ -35,8 +34,6 @@ if (use_goma && goma_dir == "") {
   # won't match and GYP will assert.
   if (is_win) {
     goma_dir = "c:\goma\goma-win"
-  } else if (is_android) {
-    goma_dir = exec_script("android/default_goma_for_android.py", [], "value")
   } else {
     goma_dir = exec_script("get_default_posix_goma_dir.py", [], "value")
   }
@@ -48,7 +45,7 @@ if (use_goma) {
     "'make_global_settings': [" +
     "['CC_wrapper', '$goma_dir/gomacc']," +
     "['CXX_wrapper', '$goma_dir/gomacc']," +
-    "['CC.host_wrapper', '$gomadir/gomacc']," +
-    "['CXX.host_wrapper', '$gomadir/gomacc']," +
+    "['CC.host_wrapper', '$goma_dir/gomacc']," +
+    "['CXX.host_wrapper', '$goma_dir/gomacc']," +
     "],"
 }

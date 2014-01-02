@@ -14,6 +14,7 @@
 #include "tools/gn/build_settings.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/err.h"
+#include "tools/gn/filesystem_utils.h"
 #include "tools/gn/gyp_helper.h"
 #include "tools/gn/gyp_target_writer.h"
 #include "tools/gn/location.h"
@@ -33,6 +34,15 @@ typedef std::map<Label, TargetGroup> CorrelatedTargetsMap;
 typedef std::map<SourceFile, std::vector<TargetGroup> > GroupedTargetsMap;
 typedef std::map<std::string, std::string> StringStringMap;
 typedef std::vector<const BuilderRecord*> RecordVector;
+
+// This function appends a suffix to the given source directory name. We append
+// a suffix to the last directory component rather than adding a new level so
+// that the relative location of the files don't change (i.e. a file
+// relative to the build dir might be "../../foo/bar.cc") and we want these to
+// be the same in all builds, and in particular the GYP build directories.
+SourceDir AppendDirSuffix(const SourceDir& base, const std::string& suffix) {
+  return SourceDir(DirectoryWithNoLastSlash(base) + suffix + "/");
+}
 
 std::vector<const BuilderRecord*> GetAllResolvedTargetRecords(
     const Builder* builder) {
@@ -326,14 +336,17 @@ int RunGyp(const std::vector<std::string>& args) {
     return 1;
   const char kIsDebug[] = "is_debug";
 
+  SourceDir base_build_dir = setup_debug->build_settings().build_dir();
+  setup_debug->build_settings().SetBuildDir(
+      AppendDirSuffix(base_build_dir, ".Debug"));
+
   // Make a release build based on the debug one. We use a new directory for
   // the build output so that they don't stomp on each other.
   DependentSetup* setup_release = new DependentSetup(setup_debug);
   setup_release->build_settings().build_args().AddArgOverride(
       kIsDebug, Value(NULL, false));
   setup_release->build_settings().SetBuildDir(
-      SourceDir(setup_release->build_settings().build_dir().value() +
-                "gn_release.tmp/"));
+      AppendDirSuffix(base_build_dir, ".Release"));
 
   // Host build.
   DependentSetup* setup_host_debug = NULL;
@@ -349,15 +362,13 @@ int RunGyp(const std::vector<std::string>& args) {
   setup_debug64->build_settings().build_args().AddArgOverride(
       kForceWin64, Value(NULL, true));
   setup_debug64->build_settings().SetBuildDir(
-      SourceDir(setup_release->build_settings().build_dir().value() +
-                "gn_debug64.tmp/"));
+      AppendDirSuffix(base_build_dir, ".Debug64"));
 
   setup_release64 = new DependentSetup(setup_release);
   setup_release64->build_settings().build_args().AddArgOverride(
       kForceWin64, Value(NULL, true));
   setup_release64->build_settings().SetBuildDir(
-      SourceDir(setup_release->build_settings().build_dir().value() +
-                "gn_release64.tmp/"));
+      AppendDirSuffix(base_build_dir, ".Release64"));
 #endif
 
   // Run all the builds in parellel.
