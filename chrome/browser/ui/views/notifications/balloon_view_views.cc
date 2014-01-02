@@ -384,7 +384,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   options_menu_button_->set_border(NULL);
   options_menu_button_->SetBoundsRect(GetOptionsButtonBounds());
 
-  source_label_->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
+  source_label_->SetFontList(rb.GetFontList(ui::ResourceBundle::SmallFont));
   source_label_->SetBackgroundColor(kControlBarBackgroundColor);
   source_label_->SetEnabledColor(kControlBarTextColor);
   source_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

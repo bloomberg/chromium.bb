@@ -12,21 +12,21 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/scrollbar/native_scroll_bar.h"
 #include "ui/views/widget/root_view.h"
@@ -101,8 +101,6 @@ class StatusBubbleViews::StatusView : public views::View,
              views::Widget* popup,
              ui::ThemeProvider* theme_provider);
   virtual ~StatusView();
-
-  static const gfx::FontList& GetDefaultFontList();
 
   // Set the bubble text to a certain value, hides the bubble if text is
   // an empty string.  Trigger animation sequence to display if
@@ -191,12 +189,6 @@ StatusBubbleViews::StatusView::~StatusView() {
   set_delegate(NULL);
   Stop();
   CancelTimer();
-}
-
-// static
-const gfx::FontList& StatusBubbleViews::StatusView::GetDefaultFontList() {
-  return ResourceBundle::GetSharedInstance().GetFontList(
-      ResourceBundle::BaseFont);
 }
 
 void StatusBubbleViews::StatusView::SetText(const base::string16& text,
@@ -449,9 +441,9 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   // Draw highlight text and then the text body. In order to make sure the text
   // is aligned to the right on RTL UIs, we mirror the text bounds if the
   // locale is RTL.
-  const gfx::FontList& font_list(GetDefaultFontList());
+  const gfx::FontList font_list;
   int text_width = std::min(
-      font_list.GetStringWidth(text_),
+      gfx::GetStringWidth(text_, font_list),
       width - (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding);
   int text_height = height - (kShadowThickness * 2);
   gfx::Rect body_bounds(kShadowThickness + kTextPositionX,
@@ -608,8 +600,7 @@ void StatusBubbleViews::Reposition() {
 }
 
 gfx::Size StatusBubbleViews::GetPreferredSize() {
-  return gfx::Size(0, ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont).GetHeight() + kTotalVerticalPadding);
+  return gfx::Size(0, gfx::FontList().GetHeight() + kTotalVerticalPadding);
 }
 
 void StatusBubbleViews::SetBounds(int x, int y, int w, int h) {
@@ -670,8 +661,7 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int text_width = static_cast<int>(popup_bounds.width() -
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
-  url_text_ =
-      gfx::ElideUrl(url, view_->GetDefaultFontList(), text_width, languages);
+  url_text_ = gfx::ElideUrl(url, gfx::FontList(), text_width, languages);
 
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
@@ -828,14 +818,15 @@ void StatusBubbleViews::ExpandBubble() {
   // still be too long to fit) before expanding bubble.
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int max_status_bubble_width = GetMaxStatusBubbleWidth();
-  url_text_ = gfx::ElideUrl(url_, view_->GetDefaultFontList(),
+  const gfx::FontList font_list;
+  url_text_ = gfx::ElideUrl(url_, font_list,
                             max_status_bubble_width, languages_);
   int expanded_bubble_width =
       std::max(GetStandardStatusBubbleWidth(),
-               std::min(view_->GetDefaultFontList().GetStringWidth(url_text_) +
+               std::min(gfx::GetStringWidth(url_text_, font_list) +
                             (kShadowThickness * 2) + kTextPositionX +
                             kTextHorizPadding + 1,
-                         max_status_bubble_width));
+                        max_status_bubble_width));
   is_expanded_ = true;
   expand_view_->StartExpansion(url_text_, popup_bounds.width(),
                                expanded_bubble_width);

@@ -37,7 +37,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/path.h"
@@ -134,7 +134,7 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
   }
 
   window_title_ = new views::Label(browser_view->GetWindowTitle(),
-                                   BrowserFrame::GetTitleFont());
+                                   gfx::FontList(BrowserFrame::GetTitleFont()));
   window_title_->SetVisible(browser_view->ShouldShowWindowTitle());
   window_title_->SetEnabledColor(SK_ColorWHITE);
   // TODO(msw): Use a transparent background color as a workaround to use the

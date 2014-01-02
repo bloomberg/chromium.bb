@@ -206,8 +206,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     tab_icon_view_->set_id(VIEW_ID_WINDOW_ICON);
     root_view_->AddChildView(tab_icon_view_);
 
-    window_title_ = new views::Label(delegate_->GetWindowTitle(),
-                                     default_font_);
+    window_title_ = new views::Label(delegate_->GetWindowTitle());
     window_title_->SetVisible(delegate_->ShouldShowWindowTitle());
     window_title_->SetEnabledColor(SK_ColorWHITE);
     window_title_->SetBackgroundColor(0x00000000);
@@ -245,8 +244,6 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
     EXPECT_EQ("453,1 43x18", close_button_->bounds().ToString());
   }
-
-  gfx::Font default_font_;
 
   Widget* widget_;
   views::View* root_view_;

@@ -203,9 +203,8 @@ void ExtensionMessageBubbleView::Init() {
   top_columns->AddPaddingColumn(1, 0);
   layout->StartRow(0, headline_column_set_id);
 
-  headline_ = new views::Label();
-  headline_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
-  headline_->SetText(delegate_->GetTitle());
+  headline_ = new views::Label(delegate_->GetTitle(),
+                               rb.GetFontList(ui::ResourceBundle::MediumFont));
   layout->AddView(headline_);
 
   layout->AddPaddingRow(0, kHeadlineRowPadding);

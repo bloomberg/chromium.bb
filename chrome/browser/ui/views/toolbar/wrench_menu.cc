@@ -39,6 +39,7 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skia_util.h"
@@ -405,7 +406,7 @@ class WrenchMenuView : public views::View,
     button->set_border(
         new MenuButtonBorder(menu_config, menu_->use_new_menu()));
     button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-    button->SetFont(menu_config.font);
+    button->SetFontList(gfx::FontList(menu_config.font));
     ui::NativeTheme* native_theme = button->GetNativeTheme();
     button->SetTextColor(
         views::Button::STATE_DISABLED,
@@ -626,7 +627,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     const MenuConfig& menu_config(menu->GetMenuConfig());
     zoom_label_->set_border(
         new MenuButtonBorder(menu_config, menu->use_new_menu()));
-    zoom_label_->SetFont(menu_config.font);
+    zoom_label_->SetFontList(gfx::FontList(menu_config.font));
 
     AddChildView(zoom_label_);
     zoom_label_width_ = MaxWidthForZoomLabel();
@@ -766,7 +767,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
 
   // Calculates the max width the zoom string can be.
   int MaxWidthForZoomLabel() {
-    gfx::Font font = zoom_label_->font();
+    const gfx::FontList& font_list = zoom_label_->font_list();
     int border_width =
         zoom_label_->border() ? zoom_label_->border()->GetInsets().width() : 0;
 
@@ -780,13 +781,13 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
 
       int step = (max_percent - min_percent) / 10;
       for (int i = min_percent; i <= max_percent; i += step) {
-        int w = font.GetStringWidth(
-            l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, i));
+        int w = gfx::GetStringWidth(
+            l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, i), font_list);
         max_w = std::max(w, max_w);
       }
     } else {
-      max_w = font.GetStringWidth(
-          l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100));
+      max_w = gfx::GetStringWidth(
+          l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, 100), font_list);
     }
 
     return max_w + border_width;

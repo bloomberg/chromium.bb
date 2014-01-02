@@ -35,6 +35,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/skia_util.h"
@@ -392,19 +393,16 @@ class LoadingAnimationView : public views::View,
     container_->SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
-    gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
-        ui::ResourceBundle::BaseFont).DeriveFont(8);
-    animation_.reset(new LoadingAnimation(this, font.GetHeight()));
+    const gfx::FontList& font_list =
+        ui::ResourceBundle::GetSharedInstance().GetFontList(
+            ui::ResourceBundle::LargeFont);
+    animation_.reset(new LoadingAnimation(this, font_list.GetHeight()));
 
-    views::Label* label = new views::Label();
-    label->SetText(text);
-    label->SetFont(font);
+    views::Label* label = new views::Label(text, font_list);
     container_->AddChildView(label);
 
     for (size_t i = 0; i < 3; ++i) {
-      views::Label* dot = new views::Label();
-      dot->SetText(base::ASCIIToUTF16("."));
-      dot->SetFont(font);
+      views::Label* dot = new views::Label(base::ASCIIToUTF16("."), font_list);
       container_->AddChildView(dot);
     }
 
@@ -589,7 +587,7 @@ void AutofillDialogViews::OverlayView::UpdateState() {
 
   message_view_->SetVisible(!state.string.text.empty());
   message_view_->SetText(state.string.text);
-  message_view_->SetFont(state.string.font);
+  message_view_->SetFontList(gfx::FontList(state.string.font));
   message_view_->SetEnabledColor(state.string.text_color);
   message_view_->set_border(
       views::Border::CreateEmptyBorder(kOverlayMessageVerticalPadding,
@@ -789,9 +787,8 @@ AutofillDialogViews::SectionContainer::SectionContainer(
                                               kDialogEdgePadding));
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::FontList default_fonts = rb.GetFontList(ui::ResourceBundle::BaseFont);
-  gfx::FontList bold_fonts = default_fonts.DeriveFontList(gfx::Font::BOLD);
-  views::Label* label_view = new views::Label(label, bold_fonts);
+  views::Label* label_view = new views::Label(
+      label, rb.GetFontList(ui::ResourceBundle::BoldFont));
   label_view->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   views::View* label_bar = new views::View();

@@ -152,7 +152,7 @@ void PasswordGenerationBubbleView::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_label_ = new views::Label(
       l10n_util::GetStringUTF16(IDS_PASSWORD_GENERATION_BUBBLE_TITLE),
-      rb.GetFont(ui::ResourceBundle::MediumFont));
+      rb.GetFontList(ui::ResourceBundle::MediumFont));
   AddChildView(title_label_);
 
   regenerate_button_ = new views::ImageButton(this);

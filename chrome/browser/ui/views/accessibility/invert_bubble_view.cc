@@ -68,30 +68,32 @@ InvertBubbleView::~InvertBubbleView() {
 
 void InvertBubbleView::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::Font& original_font = rb.GetFont(ui::ResourceBundle::MediumFont);
+  const gfx::FontList& original_font_list =
+      rb.GetFontList(ui::ResourceBundle::MediumFont);
 
   views::Label* title = new views::Label(
-      l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_NOTIFICATION));
-  title->SetFont(original_font.DeriveFont(2, gfx::Font::BOLD));
+      l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_NOTIFICATION),
+      original_font_list.DeriveFontListWithSizeDeltaAndStyle(2,
+                                                             gfx::Font::BOLD));
   title->SetMultiLine(true);
   title->SizeToFit(kBubbleWidth);
 
   learn_more_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
-  learn_more_->SetFont(original_font);
+  learn_more_->SetFontList(original_font_list);
   learn_more_->set_listener(this);
 
   high_contrast_ =
       new views::Link(l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_EXT));
-  high_contrast_->SetFont(original_font);
+  high_contrast_->SetFontList(original_font_list);
   high_contrast_->set_listener(this);
 
   dark_theme_ =
       new views::Link(l10n_util::GetStringUTF16(IDS_DARK_THEME));
-  dark_theme_->SetFont(original_font);
+  dark_theme_->SetFontList(original_font_list);
   dark_theme_->set_listener(this);
 
   close_ = new views::Link(l10n_util::GetStringUTF16(IDS_CLOSE));
-  close_->SetFont(original_font);
+  close_->SetFontList(original_font_list);
   close_->set_listener(this);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);

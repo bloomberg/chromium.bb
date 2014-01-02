@@ -11,11 +11,11 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/painter.h"
 
 namespace {
@@ -40,11 +40,11 @@ AvatarLabelBorder::AvatarLabelBorder() {
   const int kHorizontalInsetLeft = 43;
   const int kVerticalInsetTop = 2;
   const int kVerticalInsetBottom = 3;
-  // We want to align with the top of the tab. This works if the BaseFont size
-  // is 13. If it is smaller, we need to increase the TopInset accordingly.
-  gfx::Font font = ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont);
-  int difference = (font.GetFontSize() < 13) ? 13 - font.GetFontSize() : 0;
+  // We want to align with the top of the tab. This works if the default font
+  // size is 13. If it is smaller, we need to increase the TopInset accordingly.
+  const gfx::FontList font_list;
+  int difference =
+      (font_list.GetFontSize() < 13) ? 13 - font_list.GetFontSize() : 0;
   int addToTop = difference / 2;
   int addToBottom = difference - addToTop;
   SetInsets(gfx::Insets(kVerticalInsetTop + addToTop,
@@ -95,8 +95,6 @@ AvatarLabel::AvatarLabel(BrowserView* browser_view)
     : TextButton(NULL,
                  l10n_util::GetStringUTF16(IDS_MANAGED_USER_AVATAR_LABEL)),
       browser_view_(browser_view) {
-  SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont));
   ClearMaxTextSize();
   set_border(new AvatarLabelBorder);
   UpdateLabelStyle();

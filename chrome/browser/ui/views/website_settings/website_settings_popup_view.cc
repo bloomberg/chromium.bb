@@ -29,7 +29,7 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/insets.h"
 #include "ui/views/controls/button/image_button.h"
@@ -57,8 +57,6 @@ const int kConnectionSectionPaddingLeft = 18;
 const int kConnectionSectionPaddingTop = 16;
 const int kConnectionSectionPaddingRight = 18;
 
-// Font size of the label for the site identity.
-const int kIdentityNameFontSize = 14;
 // The text color that is used for the site identity status text, if the site's
 // identity was sucessfully verified.
 const int kIdentityVerifiedTextColor = 0xFF298a27;
@@ -175,14 +173,13 @@ PopupHeaderView::PopupHeaderView(views::ButtonListener* close_button_listener)
   layout->AddPaddingRow(0, kHeaderPaddingTop);
 
   layout->StartRow(0, label_column);
-  name_ = new views::Label(base::string16());
-  gfx::Font headline_font(name_->font().GetFontName(), kIdentityNameFontSize);
-  name_->SetFont(headline_font.DeriveFont(0, gfx::Font::BOLD));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  name_ = new views::Label(
+      base::string16(), rb.GetFontList(ui::ResourceBundle::BoldFont));
   layout->AddView(name_, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::TRAILING);
   views::ImageButton* close_button =
       new views::ImageButton(close_button_listener);
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   close_button->SetImage(views::CustomButton::STATE_NORMAL,
                          rb.GetImageNamed(IDR_CLOSE_2).ToImageSkia());
   close_button->SetImage(views::CustomButton::STATE_HOVERED,
@@ -651,8 +648,9 @@ views::View* WebsiteSettingsPopupView::CreateSection(
 
   layout->AddPaddingRow(1, kPermissionsSectionPaddingTop);
   layout->StartRow(1, content_column);
-  views::Label* headline = new views::Label(headline_text);
-  headline->SetFont(headline->font().DeriveFont(0, gfx::Font::BOLD));
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  views::Label* headline = new views::Label(
+      headline_text, rb.GetFontList(ui::ResourceBundle::BoldFont));
   layout->AddView(headline, 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
 
@@ -721,9 +719,9 @@ void WebsiteSettingsPopupView::ResetConnectionSection(
                                 0,
                                 0);
   if (!headline.empty()) {
-    views::Label* headline_label = new views::Label(headline);
-    headline_label->SetFont(
-        headline_label->font().DeriveFont(0, gfx::Font::BOLD));
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    views::Label* headline_label = new views::Label(
+        headline, rb.GetFontList(ui::ResourceBundle::BoldFont));
     headline_label->SetMultiLine(true);
     headline_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     // Allow linebreaking in the middle of words if necessary, so that extremely

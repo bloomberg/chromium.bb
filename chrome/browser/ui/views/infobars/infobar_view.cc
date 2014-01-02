@@ -80,8 +80,8 @@ InfoBarView::~InfoBarView() {
 
 views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  views::Label* label = new views::Label(text,
-      rb.GetFont(ui::ResourceBundle::MediumFont));
+  views::Label* label = new views::Label(
+      text, rb.GetFontList(ui::ResourceBundle::MediumFont));
   label->SizeToPreferredSize();
   label->SetBackgroundColor(background()->get_color());
   label->SetEnabledColor(SK_ColorBLACK);
@@ -92,9 +92,8 @@ views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
 views::Link* InfoBarView::CreateLink(const base::string16& text,
                                      views::LinkListener* listener) const {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  views::Link* link = new views::Link;
-  link->SetText(text);
-  link->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  views::Link* link = new views::Link(text);
+  link->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   link->SizeToPreferredSize();
   link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   link->set_listener(listener);
@@ -127,7 +126,7 @@ views::MenuButton* InfoBarView::CreateMenuButton(
       rb.GetImageNamed(IDR_INFOBARBUTTON_MENU_DROPARROW).ToImageSkia());
   menu_button->SetEnabledColor(SK_ColorBLACK);
   menu_button->SetHoverColor(SK_ColorBLACK);
-  menu_button->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  menu_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   menu_button->SizeToPreferredSize();
   menu_button->SetFocusable(true);
   return menu_button;
@@ -159,7 +158,7 @@ views::LabelButton* InfoBarView::CreateLabelButton(
   label_button->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLACK);
   label_button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  label_button->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  label_button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
 #if defined(OS_WIN)
   if (needs_elevation &&
       (base::win::GetVersion() >= base::win::VERSION_VISTA) &&

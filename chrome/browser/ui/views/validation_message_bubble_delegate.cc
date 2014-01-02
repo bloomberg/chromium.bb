@@ -28,16 +28,16 @@ ValidationMessageBubbleDelegate::ValidationMessageBubbleDelegate(
   set_arrow(views::BubbleBorder::TOP_LEFT);
   SetAnchorRect(anchor_in_screen);
 
-  ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   views::ImageView* icon = new views::ImageView();
   icon->SetImage(*bundle.GetImageSkiaNamed(IDR_INPUT_ALERT));
   gfx::Size size = icon->GetPreferredSize();
   icon->SetBounds(kPadding, kPadding, size.width(), size.height());
   AddChildView(icon);
 
-  views::Label* label = new views::Label(main_text);
+  views::Label* label = new views::Label(
+      main_text, bundle.GetFontList(ui::ResourceBundle::MediumFont));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetFont(bundle.GetFont(ResourceBundle::MediumFont));
   label->set_directionality_mode(views::Label::AUTO_DETECT_DIRECTIONALITY);
   int text_start_x = kPadding + size.width() + kIconTextMargin;
   int min_available = kWindowMinWidth - text_start_x - kPadding;

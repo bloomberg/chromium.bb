@@ -208,9 +208,9 @@ void ProfileResetBubbleView::SetupLayoutManager(bool report_checked) {
 
   // Bubble title label.
   views::Label* title_label = new views::Label(
-      l10n_util::GetStringFUTF16(IDS_RESET_BUBBLE_TITLE, product_name));
+      l10n_util::GetStringFUTF16(IDS_RESET_BUBBLE_TITLE, product_name),
+      rb.GetFontList(ui::ResourceBundle::BoldFont));
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetFont(rb.GetFont(ui::ResourceBundle::BoldFont));
 
   // Description text label.
   views::Label* text_label = new views::Label(
@@ -235,7 +235,8 @@ void ProfileResetBubbleView::SetupLayoutManager(bool report_checked) {
       this, l10n_util::GetStringUTF16(reset_button_string_id));
   controls_.reset_button->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
   controls_.reset_button->SetIsDefault(true);
-  controls_.reset_button->SetFont(rb.GetFont(ui::ResourceBundle::BoldFont));
+  controls_.reset_button->SetFontList(
+      rb.GetFontList(ui::ResourceBundle::BoldFont));
   controls_.reset_button->SetEnabled(!resetting_);
   // For the Resetting... text to fit.
   gfx::Size reset_button_size = controls_.reset_button->GetPreferredSize();

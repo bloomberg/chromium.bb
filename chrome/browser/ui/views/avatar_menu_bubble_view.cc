@@ -269,9 +269,9 @@ ProfileItemView::ProfileItemView(const AvatarMenu::Item& item,
   // Add a label to show the profile name.
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   name_label_ = new views::Label(item_.name,
-                                 rb->GetFont(item_.active ?
-                                             ui::ResourceBundle::BoldFont :
-                                             ui::ResourceBundle::BaseFont));
+                                 rb->GetFontList(item_.active ?
+                                                 ui::ResourceBundle::BoldFont :
+                                                 ui::ResourceBundle::BaseFont));
   name_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(name_label_);
 
@@ -279,7 +279,8 @@ ProfileItemView::ProfileItemView(const AvatarMenu::Item& item,
   sync_state_label_ = new views::Label(item_.sync_state);
   if (item_.signed_in)
     sync_state_label_->SetElideBehavior(views::Label::ELIDE_AS_EMAIL);
-  sync_state_label_->SetFont(rb->GetFont(ui::ResourceBundle::SmallFont));
+  sync_state_label_->SetFontList(
+      rb->GetFontList(ui::ResourceBundle::SmallFont));
   sync_state_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   sync_state_label_->SetEnabled(false);
   AddChildView(sync_state_label_);
@@ -761,7 +762,7 @@ void AvatarMenuBubbleView::InitManagedUserContents(
   // Add information about managed users.
   managed_user_info_ =
       new views::Label(avatar_menu_->GetManagedUserInformation(),
-                       ui::ResourceBundle::GetSharedInstance().GetFont(
+                       ui::ResourceBundle::GetSharedInstance().GetFontList(
                            ui::ResourceBundle::SmallFont));
   managed_user_info_->SetMultiLine(true);
   managed_user_info_->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -107,11 +107,12 @@ void AppInfoView::Init(const base::string16& title_text,
   icon_->SetImageSize(gfx::Size(kIconPreviewSizePixels,
                                 kIconPreviewSizePixels));
 
-  title_ = new views::Label(title_text);
+  title_ = new views::Label(
+      title_text,
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::BoldFont));
   title_->SetMultiLine(true);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
 
   PrepareDescriptionLabel(description_text);
 

@@ -177,7 +177,7 @@ void CriticalNotificationBubbleView::Init() {
   layout->AddView(image);
 
   headline_ = new views::Label();
-  headline_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  headline_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   UpdateBubbleHeadline(GetRemainingTime());
   layout->AddView(headline_);
 

@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/views/border.h"
 #include "ui/views/painter.h"
@@ -43,8 +44,7 @@ base::string16 GetElidedText(const base::string16& original_text) {
   // Maximum characters the button can be before the text will get elided.
   const int kMaxCharactersToDisplay = 15;
 
-  gfx::FontList font_list = ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::BaseFont);
+  const gfx::FontList font_list;
   return gfx::ElideText(
       original_text,
       font_list,
@@ -64,7 +64,6 @@ NewAvatarButton::NewAvatarButton(
   set_animate_on_state_change(false);
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  SetFont(rb->GetFont(ui::ResourceBundle::BaseFont));
 
   bool is_win8 = false;
 #if defined(OS_WIN)
@@ -124,8 +123,7 @@ void NewAvatarButton::OnPaint(gfx::Canvas* canvas) {
 
   canvas->DrawStringRectWithHalo(
       text(),
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::BaseFont),
+      gfx::FontList(),
       SK_ColorWHITE,
       SK_ColorDKGRAY,
       rect,

@@ -79,7 +79,7 @@ GlobalErrorBubbleView::GlobalErrorBubbleView(
   scoped_ptr<views::Label> title_label(new views::Label(title_string));
   title_label->SetMultiLine(true);
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  title_label->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
 
   std::vector<base::string16> message_strings(error_->GetBubbleViewMessages());
   std::vector<views::Label*> message_labels;

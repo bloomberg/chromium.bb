@@ -30,6 +30,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/gfx/transform.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -568,23 +569,25 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
     layout->AddView(rating);
     prompt.AppendRatingStars(AddResourceIcon, rating);
 
-    views::Label* rating_count = new views::Label(prompt.GetRatingCount());
-    rating_count->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
+    const gfx::FontList& small_font_list =
+        rb.GetFontList(ui::ResourceBundle::SmallFont);
+    views::Label* rating_count =
+        new views::Label(prompt.GetRatingCount(), small_font_list);
     // Add some space between the stars and the rating count.
     rating_count->set_border(views::Border::CreateEmptyBorder(0, 2, 0, 0));
     rating->AddChildView(rating_count);
 
     layout->StartRow(0, column_set_id);
-    views::Label* user_count = new views::Label(prompt.GetUserCount());
+    views::Label* user_count =
+        new views::Label(prompt.GetUserCount(), small_font_list);
     user_count->SetAutoColorReadabilityEnabled(false);
     user_count->SetEnabledColor(SK_ColorGRAY);
-    user_count->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
     layout->AddView(user_count);
 
     layout->StartRow(0, column_set_id);
     views::Link* store_link = new views::Link(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_STORE_LINK));
-    store_link->SetFont(rb.GetFont(ui::ResourceBundle::SmallFont));
+    store_link->SetFontList(small_font_list);
     store_link->set_listener(this);
     layout->AddView(store_link);
   }
@@ -621,12 +624,12 @@ ExtensionInstallDialogView::ExtensionInstallDialogView(
       layout->StartRow(0, column_set_id);
       views::Label* permissions_header = NULL;
       if (is_bundle_install()) {
-        // We need to pass the Font in the constructor, rather than calling
-        // SetFont later, because otherwise SizeToFit mis-judges the width
+        // We need to pass the FontList in the constructor, rather than calling
+        // SetFontList later, because otherwise SizeToFit mis-judges the width
         // of the line.
         permissions_header = new views::Label(
             prompt.GetPermissionsHeading(),
-            rb.GetFont(ui::ResourceBundle::MediumFont));
+            rb.GetFontList(ui::ResourceBundle::MediumFont));
       } else {
         permissions_header = new views::Label(prompt.GetPermissionsHeading());
       }
@@ -894,8 +897,8 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
-  views::Label* heading = new views::Label(prompt_.GetHeading());
-  heading->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  views::Label* heading = new views::Label(
+      prompt_.GetHeading(), rb.GetFontList(ui::ResourceBundle::MediumFont));
   heading->SetMultiLine(true);
   heading->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   heading->SizeToFit(left_column_width);
@@ -1247,10 +1250,12 @@ ExpandableContainerView::ExpandableContainerView(
     // toggle.
     int link_col_width =
         views::kRelatedControlHorizontalSpacing +
-        std::max(link->font_list().GetStringWidth(
-                     l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS)),
-                 link->font_list().GetStringWidth(
-                     l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS)));
+        std::max(gfx::GetStringWidth(
+                     l10n_util::GetStringUTF16(IDS_EXTENSIONS_HIDE_DETAILS),
+                     link->font_list()),
+                 gfx::GetStringWidth(
+                     l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS),
+                     link->font_list()));
 
     column_set = layout->AddColumnSet(++column_set_id);
     // Padding to the left of the More Details column. If the parent is using
@@ -1269,11 +1274,11 @@ ExpandableContainerView::ExpandableContainerView(
                           link_col_width);
     // The Up/Down arrow column.
     column_set->AddColumn(views::GridLayout::LEADING,
-                         views::GridLayout::LEADING,
-                         0,
-                         views::GridLayout::USE_PREF,
-                         0,
-                         0);
+                          views::GridLayout::LEADING,
+                          0,
+                          views::GridLayout::USE_PREF,
+                          0,
+                          0);
 
     // Add the More Details link.
     layout->StartRow(0, column_set_id);

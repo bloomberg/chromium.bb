@@ -107,7 +107,7 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
       (kind_ == chrome::SAD_TAB_KIND_CRASHED) ?
           IDS_SAD_TAB_TITLE : IDS_KILLED_TAB_TITLE));
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  title->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  title->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
   layout->StartRowWithPadding(0, column_set_id, 0, kPadding);
   layout->AddView(title);
 

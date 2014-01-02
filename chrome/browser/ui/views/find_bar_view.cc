@@ -82,7 +82,6 @@ FindBarView::FindBarView(FindBarHost* host)
 
   find_text_ = new views::Textfield;
   find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
-  find_text_->SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->SetController(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
@@ -90,7 +89,6 @@ FindBarView::FindBarView(FindBarHost* host)
   AddChildView(find_text_);
 
   match_count_text_ = new views::Label();
-  match_count_text_->SetFont(rb.GetFont(ui::ResourceBundle::BaseFont));
   AddChildView(match_count_text_);
 
   // Create a focus forwarder view which sends focus to find_text_.

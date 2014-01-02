@@ -16,6 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/path.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -43,10 +44,6 @@ const int kNonAeroBorderThickness = 1;
 // The height and width in pixels of the icon.
 const int kIconSize = 16;
 
-// The font to use to draw the title.
-const char* kTitleFontName = "Arial Bold";
-const int kTitleFontSize = 14;
-
 // The extra padding between the button and the top edge.
 const int kExtraPaddingBetweenButtonAndTop = 1;
 
@@ -73,7 +70,7 @@ const gfx::ImageSkia& GetTopLeftCornerImage(panel::CornerStyle corner_style) {
   static gfx::ImageSkia* rounded_image = NULL;
   static gfx::ImageSkia* non_rounded_image = NULL;
   if (!rounded_image) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     rounded_image = rb.GetImageSkiaNamed(IDR_WINDOW_TOP_LEFT_CORNER);
     non_rounded_image = rb.GetImageSkiaNamed(IDR_PANEL_TOP_LEFT_CORNER);
   }
@@ -85,7 +82,7 @@ const gfx::ImageSkia& GetTopRightCornerImage(panel::CornerStyle corner_style) {
   static gfx::ImageSkia* rounded_image = NULL;
   static gfx::ImageSkia* non_rounded_image = NULL;
   if (!rounded_image) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     rounded_image = rb.GetImageSkiaNamed(IDR_WINDOW_TOP_RIGHT_CORNER);
     non_rounded_image = rb.GetImageSkiaNamed(IDR_PANEL_TOP_RIGHT_CORNER);
   }
@@ -98,7 +95,7 @@ const gfx::ImageSkia& GetBottomLeftCornerImage(
   static gfx::ImageSkia* rounded_image = NULL;
   static gfx::ImageSkia* non_rounded_image = NULL;
   if (!rounded_image) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     rounded_image = rb.GetImageSkiaNamed(IDR_WINDOW_BOTTOM_LEFT_CORNER);
     non_rounded_image = rb.GetImageSkiaNamed(IDR_PANEL_BOTTOM_LEFT_CORNER);
   }
@@ -111,7 +108,7 @@ const gfx::ImageSkia& GetBottomRightCornerImage(
   static gfx::ImageSkia* rounded_image = NULL;
   static gfx::ImageSkia* non_rounded_image = NULL;
   if (!rounded_image) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     rounded_image = rb.GetImageSkiaNamed(IDR_WINDOW_BOTTOM_RIGHT_CORNER);
     non_rounded_image = rb.GetImageSkiaNamed(IDR_PANEL_BOTTOM_RIGHT_CORNER);
   }
@@ -122,7 +119,7 @@ const gfx::ImageSkia& GetBottomRightCornerImage(
 const gfx::ImageSkia& GetTopEdgeImage() {
   static gfx::ImageSkia* image = NULL;
   if (!image) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     image = rb.GetImageSkiaNamed(IDR_WINDOW_TOP_CENTER);
   }
   return *image;
@@ -131,7 +128,7 @@ const gfx::ImageSkia& GetTopEdgeImage() {
 const gfx::ImageSkia& GetBottomEdgeImage() {
   static gfx::ImageSkia* image = NULL;
   if (!image) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     image = rb.GetImageSkiaNamed(IDR_WINDOW_BOTTOM_CENTER);
   }
   return *image;
@@ -140,7 +137,7 @@ const gfx::ImageSkia& GetBottomEdgeImage() {
 const gfx::ImageSkia& GetLeftEdgeImage() {
   static gfx::ImageSkia* image = NULL;
   if (!image) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     image = rb.GetImageSkiaNamed(IDR_WINDOW_LEFT_SIDE);
   }
   return *image;
@@ -149,19 +146,12 @@ const gfx::ImageSkia& GetLeftEdgeImage() {
 const gfx::ImageSkia& GetRightEdgeImage() {
   static gfx::ImageSkia* image = NULL;
   if (!image) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     image = rb.GetImageSkiaNamed(IDR_WINDOW_RIGHT_SIDE);
   }
   return *image;
 }
 #endif  // defined(OS_WIN)
-
-const gfx::Font& GetTitleFont() {
-  static gfx::Font* font = NULL;
-  if (!font)
-    font = new gfx::Font(kTitleFontName, kTitleFontSize);
-  return *font;
-}
 
 const gfx::ImageSkia* GetActiveBackgroundDefaultImage() {
   static gfx::ImageSkia* image = NULL;
@@ -266,7 +256,7 @@ PanelFrameView::~PanelFrameView() {
 }
 
 void PanelFrameView::Init() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
 
   close_button_ = new views::ImageButton(this);
   close_button_->SetImage(views::CustomButton::STATE_NORMAL,
@@ -314,10 +304,11 @@ void PanelFrameView::Init() {
   AddChildView(title_icon_);
   title_icon_->Update();
 
-  title_label_ = new views::Label(panel_view_->panel()->GetWindowTitle());
+  title_label_ = new views::Label(
+      panel_view_->panel()->GetWindowTitle(),
+      rb.GetFontList(ui::ResourceBundle::BoldFont));
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetAutoColorReadabilityEnabled(false);
-  title_label_->SetFont(GetTitleFont());
   AddChildView(title_label_);
 
 #if defined(USE_AURA)
@@ -555,7 +546,7 @@ void PanelFrameView::Layout() {
 
   // Layout the title.
   int title_x = title_icon_->bounds().right() + panel::kIconAndTitlePadding;
-  int title_height = GetTitleFont().GetHeight();
+  int title_height = title_label_->font_list().GetHeight();
   title_label_->SetBounds(
       title_x,
       icon_y + ((kIconSize - title_height - 1) / 2),

@@ -38,21 +38,23 @@ FirstRunBubble* FirstRunBubble::ShowBubble(Browser* browser,
 
 void FirstRunBubble::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::Font& original_font = rb.GetFont(ui::ResourceBundle::MediumFont);
+  const gfx::FontList& original_font_list =
+      rb.GetFontList(ui::ResourceBundle::MediumFont);
 
   views::Label* title = new views::Label(l10n_util::GetStringFUTF16(
       IDS_FR_BUBBLE_TITLE, browser_ ?
           GetDefaultSearchEngineName(browser_->profile()) : base::string16()));
-  title->SetFont(original_font.DeriveFont(2, gfx::Font::BOLD));
+  title->SetFontList(original_font_list.DeriveFontListWithSizeDeltaAndStyle(
+      2, gfx::Font::BOLD));
 
   views::Link* change =
       new views::Link(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_CHANGE));
-  change->SetFont(original_font);
+  change->SetFontList(original_font_list);
   change->set_listener(this);
 
   views::Label* subtext =
       new views::Label(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT));
-  subtext->SetFont(original_font);
+  subtext->SetFontList(original_font_list);
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);

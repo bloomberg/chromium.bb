@@ -131,21 +131,18 @@ gfx::Rect SpeechRecognitionBubbleView::GetAnchorRect() {
 }
 
 void SpeechRecognitionBubbleView::Init() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  const gfx::Font& font = rb.GetFont(ResourceBundle::MediumFont);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const gfx::FontList& font_list =
+      rb.GetFontList(ui::ResourceBundle::MediumFont);
 
   heading_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING));
+      l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING), font_list);
   heading_->set_border(views::Border::CreateEmptyBorder(
       kBubbleHeadingVertMargin, 0, kBubbleHeadingVertMargin, 0));
-  heading_->SetFont(font);
   heading_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
-  heading_->SetText(
-      l10n_util::GetStringUTF16(IDS_SPEECH_INPUT_BUBBLE_HEADING));
   AddChildView(heading_);
 
-  message_ = new views::Label();
-  message_->SetFont(font);
+  message_ = new views::Label(base::string16(), font_list);
   message_->SetMultiLine(true);
   AddChildView(message_);
 

@@ -80,6 +80,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -906,8 +907,8 @@ void LocationBarView::Layout() {
   // Layout |ime_inline_autocomplete_view_| next to the user input.
   if (ime_inline_autocomplete_view_->visible()) {
     int width =
-        ime_inline_autocomplete_view_->font().GetStringWidth(
-            ime_inline_autocomplete_view_->text()) +
+        gfx::GetStringWidth(ime_inline_autocomplete_view_->text(),
+                            ime_inline_autocomplete_view_->font_list()) +
         ime_inline_autocomplete_view_->GetInsets().width();
     // All the target languages (IMEs) are LTR, and we do not need to support
     // RTL so far.  In other words, no testable RTL environment so far.

@@ -135,7 +135,7 @@ class BundleInstalledBubble : public views::BubbleDelegateView,
   void AddHeading(GridLayout* layout, const base::string16& heading) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     views::Label* heading_label = new views::Label(
-        heading, rb.GetFont(ui::ResourceBundle::MediumFont));
+        heading, rb.GetFontList(ui::ResourceBundle::MediumFont));
     heading_label->SetMultiLine(true);
     heading_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     heading_label->SizeToFit(kLeftColumnWidth);

@@ -24,6 +24,8 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
@@ -338,10 +340,11 @@ void ContentSettingBubbleContents::Init() {
     }
   }
 
-  gfx::Font domain_font =
-      views::Label().font().DeriveFont(0, gfx::Font::BOLD);
+  const gfx::FontList& domain_font =
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::BoldFont);
   for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i(
-       bubble_content.domain_lists.begin());
+           bubble_content.domain_lists.begin());
        i != bubble_content.domain_lists.end(); ++i) {
     layout->StartRow(0, kSingleColumnSetId);
     views::Label* section_title = new views::Label(base::UTF8ToUTF16(i->title));

@@ -236,8 +236,9 @@ class EditableProfileName : public views::TextButton,
       : views::TextButton(this, text),
         profile_name_textfield_(NULL) {
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    gfx::Font medium_font = rb->GetFont(ui::ResourceBundle::MediumFont);
-    SetFont(medium_font);
+    const gfx::FontList& medium_font_list =
+        rb->GetFontList(ui::ResourceBundle::MediumFont);
+    SetFontList(medium_font_list);
     set_border(NULL);
 
     if (!is_editing_allowed)
@@ -249,7 +250,7 @@ class EditableProfileName : public views::TextButton,
     // Textfield that overlaps the button.
     profile_name_textfield_ = new views::Textfield();
     profile_name_textfield_->SetController(controller);
-    profile_name_textfield_->SetFont(medium_font);
+    profile_name_textfield_->SetFontList(medium_font_list);
     profile_name_textfield_->SetVisible(false);
     AddChildView(profile_name_textfield_);
   }
@@ -715,7 +716,7 @@ views::View* ProfileChooserView::CreateOtherProfilesView(
     open_other_profile_indexes_map_[button] = index;
     button->SetIcon(*image.ToImageSkia());
     button->set_icon_text_spacing(views::kItemLabelSpacing);
-    button->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
+    button->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
         ui::ResourceBundle::MediumFont));
     button->set_border(NULL);
 
@@ -832,7 +833,6 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
                       width()),
       is_primary_account ? NULL : this,  // Cannot delete the primary account.
       !is_primary_account);
-  email_button->SetFont(rb->GetFont(ui::ResourceBundle::BaseFont));
   email_button->set_border(views::Border::CreateEmptyBorder(0, 0, 0, 0));
   if (!is_primary_account) {
     email_button->set_menu_marker(

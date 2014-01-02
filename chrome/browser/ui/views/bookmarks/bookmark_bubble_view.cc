@@ -134,7 +134,7 @@ void BookmarkBubbleView::Init() {
           newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :
                               IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  title_label->SetFont(rb->GetFont(ui::ResourceBundle::MediumFont));
+  title_label->SetFontList(rb->GetFontList(ui::ResourceBundle::MediumFont));
 
   remove_button_ = new views::LabelButton(this, l10n_util::GetStringUTF16(
       IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));

@@ -291,7 +291,7 @@ void SiteChipView::Init() {
 
   host_label_ = new views::Label();
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  host_label_->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  host_label_->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
 
   AddChildView(location_icon_view_);
   AddChildView(host_label_);
@@ -511,4 +511,3 @@ void SiteChipView::OnSafeBrowsingMatch(
     const SafeBrowsingUIManager::UnsafeResource& resource) {
   OnChanged();
 }
-
