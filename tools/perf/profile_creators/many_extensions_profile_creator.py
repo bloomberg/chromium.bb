@@ -36,4 +36,4 @@ class ManyExtensionsProfileCreator(
         "mgijmajocgfcbeboacabfgobmjgjcoja",
         "ohjkicjidmohhfcjjlahfppkdblibkkb",
         "bfbmjmiodbnnpllbbbfblcplfjjepjdn",
-        "omkhlhllkbneakkokdkjjlojleeppmkf"]
+        "opnbmdkdflhjiclaoiiifmheknpccalb"]
