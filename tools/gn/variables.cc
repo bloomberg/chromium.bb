@@ -42,7 +42,8 @@ const char kCpuArch_Help[] =
     "Possible initial values set by GN:\n"
     "  - \"x86\"\n"
     "  - \"x64\"\n"
-    "  - \"arm\"\n";
+    "  - \"arm\"\n"
+    "  - \"mipsel\"\n";
 
 const char kCurrentToolchain[] = "current_toolchain";
 const char kCurrentToolchain_HelpShort[] =

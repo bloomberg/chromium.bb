@@ -33,6 +33,8 @@ if (is_gyp) {
       android_toolchain_arch = "x86-4.6"
     } else if (cpu_arch == "arm") {
       android_toolchain_arch = "arm-linux-androideabi-4.6"
+    } else if (cpu_arch == "mipsel") {
+      android_toolchain_arch = "mipsel-linux-android-4.6"
     } else {
       assert(false, "Need Android toolchain support for your platform.")
     }
@@ -97,5 +99,16 @@ gcc_toolchain("arm") {
   ld  = cxx
 
   toolchain_cpu_arch = "arm"
+  toolchain_os = "android"
+}
+
+gcc_toolchain("mipsel") {
+  prefix = "$android_ndk_root/toolchains/mipsel-linux-android-4.6/prebuilt/$build_os-$android_host_arch/bin/mipsel-linux-android-"
+  cc  = prefix + "gcc"
+  cxx = prefix + "g++"
+  ar  = prefix + "ar"
+  ld  = cxx
+
+  toolchain_cpu_arch = "mipsel"
   toolchain_os = "android"
 }

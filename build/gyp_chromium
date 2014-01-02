@@ -138,6 +138,7 @@ def GetArgsStringForGN(supplemental_files):
       ('target_arch', 'ia32', 'cpu_arch="x86"'),
       ('target_arch', 'x64', 'cpu_arch="x64"'),
       ('target_arch', 'arm', 'cpu_arch="arm"'),
+      ('target_arch', 'mipsel', 'cpu_arch="mipsel"'),
       ('fastbuild', '0', 'symbol_level=2'),
       ('fastbuild', '1', 'symbol_level=1'),
       ('fastbuild', '2', 'symbol_level=0'),
