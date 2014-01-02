@@ -16,6 +16,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/color_constants.h"
@@ -285,9 +286,9 @@ Combobox::~Combobox() {
 }
 
 // static
-const gfx::Font& Combobox::GetFont() {
+const gfx::FontList& Combobox::GetFontList() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetFont(ui::ResourceBundle::BaseFont);
+  return rb.GetFontList(ui::ResourceBundle::BaseFont);
 }
 
 void Combobox::SetStyle(Style style) {
@@ -586,7 +587,7 @@ void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
 
 void Combobox::UpdateFromModel() {
   int max_width = 0;
-  const gfx::Font& font = Combobox::GetFont();
+  const gfx::FontList& font_list = Combobox::GetFontList();
 
   MenuItemView* menu = new MenuItemView(this);
   // MenuRunner owns |menu|.
@@ -606,10 +607,10 @@ void Combobox::UpdateFromModel() {
     base::i18n::AdjustStringForLocaleDirection(&text);
 
     menu->AppendMenuItem(i + kFirstMenuItemId, text, MenuItemView::NORMAL);
-    max_width = std::max(max_width, font.GetStringWidth(text));
+    max_width = std::max(max_width, gfx::GetStringWidth(text, font_list));
   }
 
-  content_size_.SetSize(max_width, font.GetHeight());
+  content_size_.SetSize(max_width, font_list.GetHeight());
 }
 
 void Combobox::UpdateBorder() {
@@ -647,14 +648,14 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
   int disclosure_arrow_offset = width() - disclosure_arrow_->width() -
       GetDisclosureArrowLeftPadding() - GetDisclosureArrowRightPadding();
 
-  const gfx::Font& font = Combobox::GetFont();
-  int text_width = font.GetStringWidth(text);
+  const gfx::FontList& font_list = Combobox::GetFontList();
+  int text_width = gfx::GetStringWidth(text, font_list);
   if ((text_width + insets.width()) > disclosure_arrow_offset)
     text_width = disclosure_arrow_offset - insets.width();
 
   gfx::Rect text_bounds(x, y, text_width, text_height);
   AdjustBoundsForRTLUI(&text_bounds);
-  canvas->DrawStringInt(text, font, text_color, text_bounds);
+  canvas->DrawStringRect(text, font_list, text_color, text_bounds);
 
   int arrow_x = disclosure_arrow_offset + GetDisclosureArrowLeftPadding();
   gfx::Rect arrow_bounds(arrow_x,

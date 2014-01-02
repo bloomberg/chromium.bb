@@ -16,7 +16,7 @@
 #include "ui/views/controls/prefix_delegate.h"
 
 namespace gfx {
-class Font;
+class FontList;
 class SlideAnimation;
 }
 
@@ -58,7 +58,7 @@ class VIEWS_EXPORT Combobox : public MenuDelegate,
   explicit Combobox(ui::ComboboxModel* model);
   virtual ~Combobox();
 
-  static const gfx::Font& GetFont();
+  static const gfx::FontList& GetFontList();
 
   // Sets the listener which will be called when a selection has been made.
   void set_listener(ComboboxListener* listener) { listener_ = listener; }
