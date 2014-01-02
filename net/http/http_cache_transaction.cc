@@ -962,12 +962,6 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     UpdateTransactionPattern(PATTERN_NOT_COVERED);
     DoneWritingToEntry(false);
   }
-  if (new_response_->headers->response_code() == 416 &&
-      (request_->method == "GET" || request_->method == "POST")) {
-    DCHECK_EQ(NONE, mode_);
-    response_ = *new_response_;
-    return OK;
-  }
 
   if (mode_ == WRITE &&
       transaction_pattern_ != PATTERN_ENTRY_CANT_CONDITIONALIZE) {
@@ -991,6 +985,13 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
   }
 
   RecordVaryHeaderHistogram(new_response);
+
+  if (new_response_->headers->response_code() == 416 &&
+      (request_->method == "GET" || request_->method == "POST")) {
+    // If there is an ective entry it may be destroyed with this transaction.
+    response_ = *new_response_;
+    return OK;
+  }
 
   // Are we expecting a response to a conditional query?
   if (mode_ == READ_WRITE || mode_ == UPDATE) {

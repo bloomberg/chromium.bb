@@ -3262,6 +3262,23 @@ TEST(HttpCache, GET_Crazy206) {
   RemoveMockTransaction(&transaction);
 }
 
+// Tests that receiving 416 for a regular request is handled correctly.
+TEST(HttpCache, GET_Crazy416) {
+  MockHttpCache cache;
+
+  // Write to the cache.
+  MockTransaction transaction(kSimpleGET_Transaction);
+  AddMockTransaction(&transaction);
+  transaction.status = "HTTP/1.1 416 Requested Range Not Satisfiable";
+  RunTransactionTest(cache.http_cache(), transaction);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  RemoveMockTransaction(&transaction);
+}
+
 // Tests that we don't cache partial responses that can't be validated.
 TEST(HttpCache, RangeGET_NoStrongValidators) {
   MockHttpCache cache;
