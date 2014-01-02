@@ -1380,6 +1380,13 @@ internal_paladin.add_config('butterfly-paladin',
   paladin_builder_name='butterfly paladin',
 )
 
+internal_paladin.add_config('clapper-paladin',
+  incompatible_instruction_set,
+  boards=['clapper'],
+  paladin_builder_name='clapper paladin',
+  important=False,
+)
+
 # amd64 full compile
 internal_paladin.add_config('falco-paladin',
   full_paladin,
@@ -1695,6 +1702,14 @@ _release.add_config('butterfly-release',
   boards=['butterfly'],
 )
 
+# clapper-release does not enable vm_tests or unittests due to the compiler
+# flags enabled for baytrail.
+_release.add_config('clapper-release',
+  incompatible_instruction_set,
+  boards=['clapper'],
+  hw_tests=[],
+)
+
 _release.add_config('falco-release',
   boards=['falco'],
 )
@@ -1874,6 +1889,7 @@ _x86_firmware_boards = (
   'bayleybay',
   'beltino',
   'butterfly',
+  'clapper',
   'falco',
   'leon',
   'link',
@@ -1894,6 +1910,7 @@ _x86_firmware_boards = (
 
 _x86_depthcharge_firmware_boards = (
   'bayleybay',
+  'clapper',
   'leon',
   'link',
   'rambi',
