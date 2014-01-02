@@ -805,6 +805,14 @@ full_paladin = _config(
   chrome_binhost_only=True,
 )
 
+# If a board has a newer instruction set, then the unit tests and VM tests
+# cannot run on the builders, at least until we've implemented an emulator.
+# Disable the VM tests and unit tests to be safe.
+incompatible_instruction_set = _config(
+  vm_tests=None,
+  unittests=False,
+)
+
 # Incremental builders are intended to test the developer workflow.
 # For that reason, they don't uprev.
 incremental = _config(
@@ -1409,14 +1417,6 @@ internal_paladin.add_config('parrot-paladin',
   paladin_builder_name='parrot paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
   upload_hw_test_artifacts=True,
-)
-
-incompatible_instruction_set = _config(
-  # If a board has a newer instruction set, then the unit tests and VM tests
-  # cannot run on the builders, at least until we've implemented an emulator.
-  # Disable the VM tests and unit tests to be safe.
-  vm_tests=None,
-  unittests=False,
 )
 
 internal_paladin.add_config('rambi-paladin',
