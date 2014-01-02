@@ -361,7 +361,7 @@ void DocumentThreadableLoader::preflightSuccess()
     OwnPtr<ResourceRequest> actualRequest;
     actualRequest.swap(m_actualRequest);
 
-    actualRequest->setHTTPOrigin(securityOrigin()->toString());
+    actualRequest->setHTTPOrigin(securityOrigin()->toAtomicString());
 
     clearResource();
 

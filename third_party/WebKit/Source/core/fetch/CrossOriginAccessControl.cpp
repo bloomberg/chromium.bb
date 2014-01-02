@@ -102,7 +102,7 @@ void updateRequestForAccessControl(ResourceRequest& request, SecurityOrigin* sec
     request.setAllowCookies(allowCredentials == AllowStoredCredentials);
 
     if (securityOrigin)
-        request.setHTTPOrigin(securityOrigin->toString());
+        request.setHTTPOrigin(securityOrigin->toAtomicString());
 }
 
 ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& request, SecurityOrigin* securityOrigin)
@@ -127,7 +127,7 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
             headerBuffer.append(it->key);
         }
 
-        preflightRequest.setHTTPHeaderField("Access-Control-Request-Headers", headerBuffer.toString().lower());
+        preflightRequest.setHTTPHeaderField("Access-Control-Request-Headers", AtomicString(headerBuffer.toString().lower()));
     }
 
     return preflightRequest;
@@ -149,7 +149,7 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
     if (accessControlOriginString == starAtom && includeCredentials == DoNotAllowStoredCredentials)
         return true;
 
-    if (accessControlOriginString != securityOrigin->toString()) {
+    if (accessControlOriginString != securityOrigin->toAtomicString()) {
         if (accessControlOriginString == starAtom) {
             errorDescription = "A wildcard '*' cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
         } else if (accessControlOriginString.isEmpty()) {

@@ -86,13 +86,13 @@ void FormSubmission::Attributes::parseAction(const String& action)
     m_action = stripLeadingAndTrailingHTMLSpaces(action);
 }
 
-String FormSubmission::Attributes::parseEncodingType(const String& type)
+AtomicString FormSubmission::Attributes::parseEncodingType(const String& type)
 {
     if (equalIgnoringCase(type, "multipart/form-data"))
-        return "multipart/form-data";
+        return AtomicString("multipart/form-data", AtomicString::ConstructFromLiteral);
     if (equalIgnoringCase(type, "text/plain"))
-        return "text/plain";
-    return "application/x-www-form-urlencoded";
+        return AtomicString("text/plain", AtomicString::ConstructFromLiteral);
+    return AtomicString("application/x-www-form-urlencoded", AtomicString::ConstructFromLiteral);
 }
 
 void FormSubmission::Attributes::updateEncodingType(const String& type)
@@ -140,7 +140,7 @@ void FormSubmission::Attributes::copyFrom(const Attributes& other)
     m_acceptCharset = other.m_acceptCharset;
 }
 
-inline FormSubmission::FormSubmission(Method method, const KURL& action, const AtomicString& target, const String& contentType, PassRefPtr<FormState> state, PassRefPtr<FormData> data, const String& boundary, PassRefPtr<Event> event)
+inline FormSubmission::FormSubmission(Method method, const KURL& action, const AtomicString& target, const AtomicString& contentType, PassRefPtr<FormState> state, PassRefPtr<FormData> data, const String& boundary, PassRefPtr<Event> event)
     : m_method(method)
     , m_action(action)
     , m_target(target)
@@ -193,12 +193,12 @@ PassRefPtr<FormSubmission> FormSubmission::create(HTMLFormElement* form, const A
     KURL actionURL = document.completeURL(copiedAttributes.action().isEmpty() ? document.url().string() : copiedAttributes.action());
     bool isMailtoForm = actionURL.protocolIs("mailto");
     bool isMultiPartForm = false;
-    String encodingType = copiedAttributes.encodingType();
+    AtomicString encodingType = copiedAttributes.encodingType();
 
     if (copiedAttributes.method() == PostMethod) {
         isMultiPartForm = copiedAttributes.isMultiPartForm();
         if (isMultiPartForm && isMailtoForm) {
-            encodingType = "application/x-www-form-urlencoded";
+            encodingType = AtomicString("application/x-www-form-urlencoded", AtomicString::ConstructFromLiteral);
             isMultiPartForm = false;
         }
     }
@@ -259,7 +259,7 @@ void FormSubmission::populateFrameLoadRequest(FrameLoadRequest& frameRequest)
         frameRequest.setFrameName(m_target);
 
     if (!m_referrer.isEmpty())
-        frameRequest.resourceRequest().setHTTPReferrer(m_referrer);
+        frameRequest.resourceRequest().setHTTPReferrer(AtomicString(m_referrer));
 
     if (m_method == FormSubmission::PostMethod) {
         frameRequest.resourceRequest().setHTTPMethod("POST");
@@ -273,7 +273,7 @@ void FormSubmission::populateFrameLoadRequest(FrameLoadRequest& frameRequest)
     }
 
     frameRequest.resourceRequest().setURL(requestURL());
-    FrameLoader::addHTTPOriginIfNeeded(frameRequest.resourceRequest(), m_origin);
+    FrameLoader::addHTTPOriginIfNeeded(frameRequest.resourceRequest(), AtomicString(m_origin));
 }
 
 }

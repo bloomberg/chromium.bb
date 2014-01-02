@@ -78,7 +78,7 @@ const String& ScriptResource::script()
         // That's because the MemoryCache thinks that it can clear out decoded data by calling destroyDecodedData(),
         // but we can't destroy script in destroyDecodedData because that's our only copy of the data!
         setEncodedSize(script.sizeInBytes());
-        m_script = script;
+        m_script = AtomicString(script);
     }
 
     return m_script.string();

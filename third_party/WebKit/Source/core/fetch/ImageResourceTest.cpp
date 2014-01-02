@@ -58,7 +58,7 @@ TEST(ImageResourceTest, MultipartImage)
     cachedImage->addClient(&client);
 
     // Send the multipart response. No image or data buffer is created.
-    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, String(), String()));
+    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()));
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);
@@ -67,7 +67,7 @@ TEST(ImageResourceTest, MultipartImage)
     // Send the response for the first real part. No image or data buffer is created.
     const char* svgData = "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect width='1' height='1' fill='green'/></svg>";
     unsigned svgDataLength = strlen(svgData);
-    cachedImage->responseReceived(ResourceResponse(KURL(), "image/svg+xml", svgDataLength, String(), String()));
+    cachedImage->responseReceived(ResourceResponse(KURL(), "image/svg+xml", svgDataLength, nullAtom, String()));
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);

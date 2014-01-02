@@ -107,7 +107,7 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(ExecutionC
     Document* document = toDocument(context);
 
     OwnPtr<ResourceRequest> request(ResourceRequest::adopt(requestData));
-    request->setHTTPReferrer(outgoingReferrer);
+    request->setHTTPReferrer(AtomicString(outgoingReferrer));
     options.requestInitiatorContext = WorkerContext;
     thisPtr->m_mainThreadLoader = DocumentThreadableLoader::create(document, thisPtr, *request, options);
     if (!thisPtr->m_mainThreadLoader) {

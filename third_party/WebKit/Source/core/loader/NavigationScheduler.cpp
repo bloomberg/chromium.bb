@@ -96,7 +96,7 @@ private:
 
 class ScheduledURLNavigation : public ScheduledNavigation {
 protected:
-    ScheduledURLNavigation(double delay, Document* originDocument, const String& url, const String& referrer, bool lockBackForwardList, bool isLocationChange)
+    ScheduledURLNavigation(double delay, Document* originDocument, const String& url, const AtomicString& referrer, bool lockBackForwardList, bool isLocationChange)
         : ScheduledNavigation(delay, lockBackForwardList, isLocationChange)
         , m_originDocument(originDocument)
         , m_url(url)
@@ -115,18 +115,18 @@ protected:
 
     Document* originDocument() const { return m_originDocument.get(); }
     String url() const { return m_url; }
-    String referrer() const { return m_referrer; }
+    const AtomicString& referrer() const { return m_referrer; }
 
 private:
     RefPtr<Document> m_originDocument;
     String m_url;
-    String m_referrer;
+    AtomicString m_referrer;
 };
 
 class ScheduledRedirect : public ScheduledURLNavigation {
 public:
     ScheduledRedirect(double delay, Document* originDocument, const String& url, bool lockBackForwardList)
-        : ScheduledURLNavigation(delay, originDocument, url, String(), lockBackForwardList, false)
+        : ScheduledURLNavigation(delay, originDocument, url, nullAtom, lockBackForwardList, false)
     {
         clearUserGesture();
     }
@@ -147,13 +147,13 @@ public:
 
 class ScheduledLocationChange : public ScheduledURLNavigation {
 public:
-    ScheduledLocationChange(Document* originDocument, const String& url, const String& referrer, bool lockBackForwardList)
+    ScheduledLocationChange(Document* originDocument, const String& url, const AtomicString& referrer, bool lockBackForwardList)
         : ScheduledURLNavigation(0.0, originDocument, url, referrer, lockBackForwardList, true) { }
 };
 
 class ScheduledRefresh : public ScheduledURLNavigation {
 public:
-    ScheduledRefresh(Document* originDocument, const String& url, const String& referrer)
+    ScheduledRefresh(Document* originDocument, const String& url, const AtomicString& referrer)
         : ScheduledURLNavigation(0.0, originDocument, url, referrer, true, true)
     {
     }
@@ -308,7 +308,7 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
     if (originDocument->securityOrigin()->canAccess(m_frame->document()->securityOrigin())) {
         KURL parsedURL(ParsedURLString, url);
         if (parsedURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(m_frame->document()->url(), parsedURL)) {
-            FrameLoadRequest request(originDocument, ResourceRequest(m_frame->document()->completeURL(url), referrer), "_self");
+            FrameLoadRequest request(originDocument, ResourceRequest(m_frame->document()->completeURL(url), AtomicString(referrer)), "_self");
             request.setLockBackForwardList(lockBackForwardList);
             request.setClientRedirect(ClientRedirect);
             m_frame->loader().load(request);
@@ -316,7 +316,7 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
         }
     }
 
-    schedule(adoptPtr(new ScheduledLocationChange(originDocument, url, referrer, lockBackForwardList)));
+    schedule(adoptPtr(new ScheduledLocationChange(originDocument, url, AtomicString(referrer), lockBackForwardList)));
 }
 
 void NavigationScheduler::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)
@@ -333,7 +333,7 @@ void NavigationScheduler::scheduleRefresh()
     if (url.isEmpty())
         return;
 
-    schedule(adoptPtr(new ScheduledRefresh(m_frame->document(), url.string(), m_frame->document()->outgoingReferrer())));
+    schedule(adoptPtr(new ScheduledRefresh(m_frame->document(), url.string(), AtomicString(m_frame->document()->outgoingReferrer()))));
 }
 
 void NavigationScheduler::scheduleHistoryNavigation(int steps)

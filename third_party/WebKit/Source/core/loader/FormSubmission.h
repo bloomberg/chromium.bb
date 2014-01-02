@@ -56,7 +56,7 @@ public:
         Attributes()
             : m_method(GetMethod)
             , m_isMultiPartForm(false)
-            , m_encodingType("application/x-www-form-urlencoded")
+            , m_encodingType("application/x-www-form-urlencoded", AtomicString::ConstructFromLiteral)
         {
         }
 
@@ -71,8 +71,8 @@ public:
         const AtomicString& target() const { return m_target; }
         void setTarget(const AtomicString& target) { m_target = target; }
 
-        const String& encodingType() const { return m_encodingType; }
-        static String parseEncodingType(const String&);
+        const AtomicString& encodingType() const { return m_encodingType; }
+        static AtomicString parseEncodingType(const String&);
         void updateEncodingType(const String&);
         bool isMultiPartForm() const { return m_isMultiPartForm; }
 
@@ -87,7 +87,7 @@ public:
 
         String m_action;
         AtomicString m_target;
-        String m_encodingType;
+        AtomicString m_encodingType;
         String m_acceptCharset;
     };
 
@@ -101,7 +101,7 @@ public:
     const KURL& action() const { return m_action; }
     const AtomicString& target() const { return m_target; }
     void clearTarget() { m_target = nullAtom; }
-    const String& contentType() const { return m_contentType; }
+    const AtomicString& contentType() const { return m_contentType; }
     FormState* state() const { return m_formState.get(); }
     FormData* data() const { return m_formData.get(); }
     const String boundary() const { return m_boundary; }
@@ -115,7 +115,7 @@ public:
     const String& result() const { return m_result; }
 
 private:
-    FormSubmission(Method, const KURL& action, const AtomicString& target, const String& contentType, PassRefPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtr<Event>);
+    FormSubmission(Method, const KURL& action, const AtomicString& target, const AtomicString& contentType, PassRefPtr<FormState>, PassRefPtr<FormData>, const String& boundary, PassRefPtr<Event>);
     // FormSubmission for DialogMethod
     FormSubmission(const String& result);
 
@@ -123,7 +123,7 @@ private:
     Method m_method;
     KURL m_action;
     AtomicString m_target;
-    String m_contentType;
+    AtomicString m_contentType;
     RefPtr<FormState> m_formState;
     RefPtr<FormData> m_formData;
     String m_boundary;

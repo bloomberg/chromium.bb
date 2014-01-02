@@ -642,9 +642,9 @@ void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSen
         argsReferrer = originDocument->outgoingReferrer();
     String referrer = SecurityPolicy::generateReferrerHeader(originDocument->referrerPolicy(), request.url(), argsReferrer);
 
-    request.setHTTPReferrer(referrer);
+    request.setHTTPReferrer(AtomicString(referrer));
     RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
-    addHTTPOriginIfNeeded(request, referrerOrigin->toString());
+    addHTTPOriginIfNeeded(request, referrerOrigin->toAtomicString());
 }
 
 bool FrameLoader::isScriptTriggeredFormSubmissionInChildFrame(const FrameLoadRequest& request) const
@@ -712,7 +712,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     if (!prepareRequestForThisFrame(request))
         return;
 
-    RefPtr<Frame> targetFrame = request.formState() ? 0 : findFrameForNavigation(request.frameName(), request.formState() ? request.formState()->sourceDocument() : m_frame->document());
+    RefPtr<Frame> targetFrame = request.formState() ? 0 : findFrameForNavigation(AtomicString(request.frameName()), request.formState() ? request.formState()->sourceDocument() : m_frame->document());
     if (targetFrame && targetFrame != m_frame) {
         request.setFrameName("_self");
         targetFrame->loader().load(request);
@@ -1167,7 +1167,7 @@ void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const AtomicSt
     if (origin.isEmpty()) {
         // If we don't know what origin header to attach, we attach the value
         // for an empty origin.
-        request.setHTTPOrigin(SecurityOrigin::createUnique()->toString());
+        request.setHTTPOrigin(SecurityOrigin::createUnique()->toAtomicString());
         return;
     }
 
@@ -1365,7 +1365,7 @@ void FrameLoader::applyUserAgent(ResourceRequest& request)
 {
     String userAgent = this->userAgent(request.url());
     ASSERT(!userAgent.isNull());
-    request.setHTTPUserAgent(userAgent);
+    request.setHTTPUserAgent(AtomicString(userAgent));
 }
 
 bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, const KURL& url, unsigned long requestIdentifier)
@@ -1473,7 +1473,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
         request.setHTTPBody(formData);
         request.setHTTPContentType(item->formContentType());
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer());
-        addHTTPOriginIfNeeded(request, securityOrigin->toString());
+        addHTTPOriginIfNeeded(request, securityOrigin->toAtomicString());
     }
 
     loadWithNavigationAction(NavigationAction(request, FrameLoadTypeBackForward, formData), FrameLoadTypeBackForward, 0, SubstituteData());

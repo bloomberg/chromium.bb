@@ -85,12 +85,12 @@ void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destina
     if (frame->document()->securityOrigin()->isSameSchemeHostPort(pingOrigin.get()))
         request.clearHTTPReferrer();
 
-    request.setHTTPHeaderField("Ping-To", destinationURL.string());
+    request.setHTTPHeaderField("Ping-To", AtomicString(destinationURL.string()));
 
     // Ping-From follows the same rules as the default referrer beahavior for subresource requests.
     // FIXME: Should Ping-From obey ReferrerPolicy?
     if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->document()->url().string()))
-        request.setHTTPHeaderField("Ping-From", frame->document()->url().string());
+        request.setHTTPHeaderField("Ping-From", AtomicString(frame->document()->url().string()));
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request));
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
