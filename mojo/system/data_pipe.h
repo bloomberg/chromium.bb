@@ -131,13 +131,40 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
     lock_.AssertAcquired();
     return consumer_open_;
   }
+  uint32_t producer_two_phase_max_num_bytes_written_no_lock() const {
+    lock_.AssertAcquired();
+    return producer_two_phase_max_num_bytes_written_;
+  }
+  uint32_t consumer_two_phase_max_num_bytes_read_no_lock() const {
+    lock_.AssertAcquired();
+    return consumer_two_phase_max_num_bytes_read_;
+  }
+  void set_producer_two_phase_max_num_bytes_written_no_lock(
+      uint32_t num_bytes) {
+    lock_.AssertAcquired();
+    producer_two_phase_max_num_bytes_written_ = num_bytes;
+  }
+  void set_consumer_two_phase_max_num_bytes_read_no_lock(uint32_t num_bytes) {
+    lock_.AssertAcquired();
+    consumer_two_phase_max_num_bytes_read_ = num_bytes;
+  }
 
  private:
   bool has_local_producer_no_lock() const {
+    lock_.AssertAcquired();
     return !!producer_waiter_list_.get();
   }
   bool has_local_consumer_no_lock() const {
+    lock_.AssertAcquired();
     return !!consumer_waiter_list_.get();
+  }
+  bool producer_in_two_phase_write_no_lock() const {
+    lock_.AssertAcquired();
+    return producer_two_phase_max_num_bytes_written_ > 0;
+  }
+  bool consumer_in_two_phase_read_no_lock() const {
+    lock_.AssertAcquired();
+    return consumer_two_phase_max_num_bytes_read_ > 0;
   }
 
   const bool may_discard_;
@@ -151,8 +178,9 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   // Non-null only if the producer or consumer, respectively, is local.
   scoped_ptr<WaiterList> producer_waiter_list_;
   scoped_ptr<WaiterList> consumer_waiter_list_;
-  bool producer_in_two_phase_write_;
-  bool consumer_in_two_phase_read_;
+  // These are nonzero if and only if a two-phase write/read is in progress.
+  uint32_t producer_two_phase_max_num_bytes_written_;
+  uint32_t consumer_two_phase_max_num_bytes_read_;
 
   DISALLOW_COPY_AND_ASSIGN(DataPipe);
 };

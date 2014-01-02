@@ -70,10 +70,6 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
   size_t start_index_;
   size_t current_num_bytes_;
 
-  // TODO(vtl): FIXME -- merge this with bool in superclass
-  uint32_t two_phase_max_num_bytes_written_;
-  uint32_t two_phase_max_num_bytes_read_;
-
   DISALLOW_COPY_AND_ASSIGN(LocalDataPipe);
 };
 

@@ -81,7 +81,7 @@ MojoResult DataPipe::ProducerWriteData(const void* elements,
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
-  if (producer_in_two_phase_write_)
+  if (producer_in_two_phase_write_no_lock())
     return MOJO_RESULT_BUSY;
 
   // Returning "busy" takes priority over "invalid argument".
@@ -100,7 +100,7 @@ MojoResult DataPipe::ProducerBeginWriteData(void** buffer,
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
-  if (producer_in_two_phase_write_)
+  if (producer_in_two_phase_write_no_lock())
     return MOJO_RESULT_BUSY;
 
   MojoResult rv = ProducerBeginWriteDataImplNoLock(buffer, buffer_num_bytes,
@@ -108,7 +108,7 @@ MojoResult DataPipe::ProducerBeginWriteData(void** buffer,
   if (rv != MOJO_RESULT_OK)
     return rv;
 
-  producer_in_two_phase_write_ = true;
+  DCHECK(producer_in_two_phase_write_no_lock());
   return MOJO_RESULT_OK;
 }
 
@@ -116,11 +116,12 @@ MojoResult DataPipe::ProducerEndWriteData(uint32_t num_bytes_written) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_producer_no_lock());
 
-  if (!producer_in_two_phase_write_)
+  if (!producer_in_two_phase_write_no_lock())
     return MOJO_RESULT_FAILED_PRECONDITION;
 
   MojoResult rv = ProducerEndWriteDataImplNoLock(num_bytes_written);
-  producer_in_two_phase_write_ = false;  // End two-phase write even on failure.
+  // Two-phase write ended even on failure.
+  DCHECK(!producer_in_two_phase_write_no_lock());
   return rv;
 }
 
@@ -167,7 +168,7 @@ MojoResult DataPipe::ConsumerReadData(void* elements,
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
-  if (consumer_in_two_phase_read_)
+  if (consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_BUSY;
 
   if (*num_bytes % element_num_bytes_ != 0)
@@ -184,7 +185,7 @@ MojoResult DataPipe::ConsumerDiscardData(uint32_t* num_bytes,
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
-  if (consumer_in_two_phase_read_)
+  if (consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_BUSY;
 
   if (*num_bytes % element_num_bytes_ != 0)
@@ -200,7 +201,7 @@ MojoResult DataPipe::ConsumerQueryData(uint32_t* num_bytes) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
-  if (consumer_in_two_phase_read_)
+  if (consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_BUSY;
 
   // Note: Don't need to validate |*num_bytes| for query.
@@ -213,7 +214,7 @@ MojoResult DataPipe::ConsumerBeginReadData(const void** buffer,
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
-  if (consumer_in_two_phase_read_)
+  if (consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_BUSY;
 
   MojoResult rv = ConsumerBeginReadDataImplNoLock(buffer, buffer_num_bytes,
@@ -221,7 +222,7 @@ MojoResult DataPipe::ConsumerBeginReadData(const void** buffer,
   if (rv != MOJO_RESULT_OK)
     return rv;
 
-  consumer_in_two_phase_read_ = true;
+  DCHECK(consumer_in_two_phase_read_no_lock());
   return MOJO_RESULT_OK;
 }
 
@@ -229,11 +230,12 @@ MojoResult DataPipe::ConsumerEndReadData(uint32_t num_bytes_read) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
-  if (!consumer_in_two_phase_read_)
+  if (!consumer_in_two_phase_read_no_lock())
     return MOJO_RESULT_FAILED_PRECONDITION;
 
   MojoResult rv = ConsumerEndReadDataImplNoLock(num_bytes_read);
-  consumer_in_two_phase_read_ = false;  // End two-phase read even on failure.
+  // Two-phase read ended even on failure.
+  DCHECK(!consumer_in_two_phase_read_no_lock());
   return rv;
 }
 
@@ -269,8 +271,8 @@ DataPipe::DataPipe(bool has_local_producer,
       consumer_open_(true),
       producer_waiter_list_(has_local_producer ? new WaiterList() : NULL),
       consumer_waiter_list_(has_local_consumer ? new WaiterList() : NULL),
-      producer_in_two_phase_write_(false),
-      consumer_in_two_phase_read_(false) {
+      producer_two_phase_max_num_bytes_written_(0),
+      consumer_two_phase_max_num_bytes_read_(0) {
   // Check that the passed in options actually are validated.
   MojoCreateDataPipeOptions unused ALLOW_UNUSED = { 0 };
   DCHECK_EQ(ValidateOptions(&validated_options, &unused), MOJO_RESULT_OK);
