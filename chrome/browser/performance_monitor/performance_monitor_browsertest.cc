@@ -622,13 +622,13 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest,
 #endif  // !defined(OS_WIN)
 
 IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, RendererCrashEvent) {
-  content::WindowedNotificationObserver windowed_observer(
-      content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      content::NotificationService::AllSources());
+  content::RenderProcessHostWatcher observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
   ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUICrashURL));
 
-  windowed_observer.Wait();
+  observer.Wait();
 
   Database::EventVector events = GetEvents();
   ASSERT_EQ(1u, events.size());

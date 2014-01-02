@@ -1821,6 +1821,9 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead) {
       NOTIFICATION_RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),
       Details<RendererClosedDetails>(&details));
+  FOR_EACH_OBSERVER(RenderProcessHostObserver,
+                    observers_,
+                    RenderProcessExited(this, GetHandle(), status, exit_code));
 
   child_process_launcher_.reset();
   channel_.reset();

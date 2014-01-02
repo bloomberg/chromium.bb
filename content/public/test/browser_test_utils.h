@@ -17,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -239,6 +240,39 @@ class WebContentsDestroyedWatcher : public WebContentsObserver {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
+};
+
+// Watches a RenderProcessHost and waits for specified destruction events.
+class RenderProcessHostWatcher : public RenderProcessHostObserver {
+ public:
+  enum WatchType {
+    WATCH_FOR_PROCESS_EXIT,
+    WATCH_FOR_HOST_DESTRUCTION
+  };
+
+  RenderProcessHostWatcher(RenderProcessHost* render_process_host,
+                           WatchType type);
+  // Waits for the render process that contains the specified web contents.
+  RenderProcessHostWatcher(WebContents* web_contents, WatchType type);
+  virtual ~RenderProcessHostWatcher();
+
+  // Waits until the renderer process exits.
+  void Wait();
+
+ private:
+  // Overridden RenderProcessHost::LifecycleObserver methods.
+  virtual void RenderProcessExited(RenderProcessHost* host,
+                                   base::ProcessHandle handle,
+                                   base::TerminationStatus status,
+                                   int exit_code) OVERRIDE;
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE;
+
+  RenderProcessHost* render_process_host_;
+  WatchType type_;
+
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderProcessHostWatcher);
 };
 
 // Watches for responses from the DOMAutomationController and keeps them in a

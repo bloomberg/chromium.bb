@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_OBSERVER_H_
 #define CONTENT_PUBLIC_BROWSER_RENDER_PROCESS_HOST_OBSERVER_H_
 
+#include "base/process/kill.h"
+#include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -15,7 +17,16 @@ class RenderProcessHost;
 // in RenderProcessHost lifecycle events.
 class CONTENT_EXPORT RenderProcessHostObserver {
  public:
-  // Called when the observed RenderProcessHost itself is destroyed.
+  // This method is invoked when a render process exited (either normally or
+  // with a crash). To determine if the process closed normally or crashed,
+  // examine the |status| parameter.
+  virtual void RenderProcessExited(RenderProcessHost* host,
+                                   base::ProcessHandle handle,
+                                   base::TerminationStatus status,
+                                   int exit_code) {}
+
+  // This method is invoked when the observed RenderProcessHost itself is
+  // destroyed.
   virtual void RenderProcessHostDestroyed(RenderProcessHost* host) {}
 
  protected:

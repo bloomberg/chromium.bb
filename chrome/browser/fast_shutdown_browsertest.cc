@@ -61,9 +61,9 @@ IN_PROC_BROWSER_TEST_F(FastShutdown, DISABLED_SlowTermination) {
 
   // Need to wait for the renderer process to shutdown to ensure that we got the
   // set cookies IPC.
-  content::WindowedNotificationObserver renderer_shutdown_observer(
-      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-      content::NotificationService::AllSources());
+  content::RenderProcessHostWatcher renderer_shutdown_observer(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      content::RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   // Close the tab. This should launch the unload handler, which sets a cookie
   // that's stored to disk.
   chrome::CloseTab(browser());

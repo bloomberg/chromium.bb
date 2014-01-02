@@ -19,6 +19,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
@@ -426,10 +427,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
 
   // Make the extension idle again by closing the popup. This should not trigger
   //the delayed install.
-  content::WindowedNotificationObserver terminated_observer(
-      content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-      content::Source<content::RenderProcessHost>(
-          extension_host->render_process_host()));
+  content::RenderProcessHostWatcher terminated_observer(
+      extension_host->render_process_host(),
+      content::RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   extension_host->render_view_host()->ClosePage();
   terminated_observer.Wait();
   ASSERT_EQ(1u, service->delayed_installs()->size());

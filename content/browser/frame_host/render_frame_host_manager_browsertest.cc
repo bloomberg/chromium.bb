@@ -15,10 +15,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -713,9 +709,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // 2) Post a message containing a MessagePort from opener to the the foo
   // window. The foo window will reply via the passed port, causing the opener
   // to update its own title.
-  WindowedNotificationObserver title_observer(
-      NOTIFICATION_WEB_CONTENTS_TITLE_UPDATED,
-      Source<WebContents>(opener_contents));
+  base::string16 expected_title = ASCIIToUTF16("msg-back-via-port");
+  TitleWatcher title_observer(opener_contents, expected_title);
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       opener_contents,
       "window.domAutomationController.send(postWithPortToFoo());",
@@ -723,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(success);
   ASSERT_FALSE(
       opener_manager->GetSwappedOutRenderViewHost(orig_site_instance.get()));
-  title_observer.Wait();
+  ASSERT_EQ(expected_title, title_observer.WaitAndGetTitle());
 
   // Check message counts.
   int opener_received_messages_via_port = 0;
@@ -874,9 +869,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
   // Navigate the first window to a different site as well.  The original
   // process should exit, since all of its views are now swapped out.
-  WindowedNotificationObserver exit_observer(
-      NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-      Source<RenderProcessHost>(orig_process));
+  RenderProcessHostWatcher exit_observer(
+      orig_process,
+      RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   NavigateToURL(shell(), https_server.GetURL("files/title1.html"));
   exit_observer.Wait();
   scoped_refptr<SiteInstance> new_site_instance2(

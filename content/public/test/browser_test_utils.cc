@@ -213,11 +213,10 @@ void WaitForLoadStop(WebContents* web_contents) {
 
 void CrashTab(WebContents* web_contents) {
   RenderProcessHost* rph = web_contents->GetRenderProcessHost();
-  WindowedNotificationObserver observer(
-      NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      Source<RenderProcessHost>(rph));
+  RenderProcessHostWatcher watcher(
+      rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   base::KillProcess(rph->GetHandle(), 0, false);
-  observer.Wait();
+  watcher.Wait();
 }
 
 void SimulateMouseClick(WebContents* web_contents,
@@ -599,6 +598,47 @@ void WebContentsDestroyedWatcher::Wait() {
 void WebContentsDestroyedWatcher::WebContentsDestroyed(
     WebContents* web_contents) {
   message_loop_runner_->Quit();
+}
+
+RenderProcessHostWatcher::RenderProcessHostWatcher(
+    RenderProcessHost* render_process_host, WatchType type)
+    : render_process_host_(render_process_host),
+      type_(type),
+      message_loop_runner_(new MessageLoopRunner) {
+  render_process_host_->AddObserver(this);
+}
+
+RenderProcessHostWatcher::RenderProcessHostWatcher(
+    WebContents* web_contents, WatchType type)
+    : render_process_host_(web_contents->GetRenderProcessHost()),
+      type_(type),
+      message_loop_runner_(new MessageLoopRunner) {
+  render_process_host_->AddObserver(this);
+}
+
+RenderProcessHostWatcher::~RenderProcessHostWatcher() {
+  if (render_process_host_)
+    render_process_host_->RemoveObserver(this);
+}
+
+void RenderProcessHostWatcher::Wait() {
+  message_loop_runner_->Run();
+}
+
+void RenderProcessHostWatcher::RenderProcessExited(
+    RenderProcessHost* host,
+    base::ProcessHandle handle,
+    base::TerminationStatus status,
+    int exit_code) {
+  if (type_ == WATCH_FOR_PROCESS_EXIT)
+    message_loop_runner_->Quit();
+}
+
+void RenderProcessHostWatcher::RenderProcessHostDestroyed(
+    RenderProcessHost* host) {
+  render_process_host_ = NULL;
+  if (type_ == WATCH_FOR_HOST_DESTRUCTION)
+    message_loop_runner_->Quit();
 }
 
 DOMMessageQueue::DOMMessageQueue() : waiting_for_message_(false) {

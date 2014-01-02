@@ -10,10 +10,9 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "url/gurl.h"
 
@@ -54,9 +53,9 @@ IN_PROC_BROWSER_TEST_F(NewTabUIBrowserTest, DISABLED_LoadNTPInExistingProcess) {
   {
     // Wait not just for the navigation to finish, but for the NTP process to
     // exit as well.
-    content::WindowedNotificationObserver process_exited_observer(
-        content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        content::NotificationService::AllSources());
+    content::RenderProcessHostWatcher process_exited_observer(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        content::RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
     browser()->OpenURL(OpenURLParams(
         test_server()->GetURL("files/title1.html"), Referrer(), CURRENT_TAB,
         content::PAGE_TRANSITION_TYPED, false));
