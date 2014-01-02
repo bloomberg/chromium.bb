@@ -68,10 +68,8 @@ void IntranetRedirectDetector::FinishSleep() {
   STLDeleteElements(&fetchers_);
   resulting_origins_.clear();
 
-  // The detector is not needed in Chrome Frame since we have no omnibox there.
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableBackgroundNetworking) ||
-      cmd_line->HasSwitch(switches::kChromeFrame))
+  if (cmd_line->HasSwitch(switches::kDisableBackgroundNetworking))
     return;
 
   DCHECK(fetchers_.empty() && resulting_origins_.empty());

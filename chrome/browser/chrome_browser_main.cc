@@ -576,12 +576,9 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   // Must initialize metrics after labs have been converted into switches,
   // but before field trials are set up (so that client ID is available for
   // one-time randomized field trials).
-#if defined(OS_WIN)
-  if (parsed_command_line_.HasSwitch(switches::kChromeFrame))
-    MetricsLog::set_version_extension("-F");
-#elif defined(ARCH_CPU_64_BITS)
+#if defined(ARCH_CPU_64_BITS)
   MetricsLog::set_version_extension("-64");
-#endif  // defined(OS_WIN)
+#endif  // defined(ARCH_CPU_64_BITS)
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
@@ -1271,11 +1268,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Note this check should only happen here, after all the checks above
   // (uninstall, resource bundle initialization, other chrome browser
   // processes etc).
-  // Do not allow this to occur for Chrome Frame user-to-system handoffs.
-  if (!parsed_command_line().HasSwitch(switches::kChromeFrame) &&
-      ChromeBrowserMainPartsWin::CheckMachineLevelInstall()) {
+  if (ChromeBrowserMainPartsWin::CheckMachineLevelInstall())
     return chrome::RESULT_CODE_MACHINE_LEVEL_INSTALL_EXISTS;
-  }
 #endif
 
   // Create the TranslateManager singleton.

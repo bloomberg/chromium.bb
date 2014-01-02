@@ -141,7 +141,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // Programmatically closes the context menu.
   void Cancel();
 
-  // Provide access to the menu model for ExternalTabContainer.
   const ui::MenuModel& menu_model() const { return menu_model_; }
 
   // SimpleMenuModel::Delegate implementation.
@@ -185,9 +184,6 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
 
   ui::SimpleMenuModel menu_model_;
   extensions::ContextMenuMatcher extension_items_;
-
-  // True if we are showing for an external tab contents. The default is false.
-  bool external_;
 
  private:
   friend class RenderViewContextMenuTest;

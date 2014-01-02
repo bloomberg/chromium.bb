@@ -18,10 +18,6 @@ class RenderViewContextMenuWin : public RenderViewContextMenuViews {
                            const content::ContextMenuParams& params);
   virtual ~RenderViewContextMenuWin();
 
-  // Set this menu to show for an external tab contents. This
-  // only has an effect before Init() is called.
-  void SetExternal();
-
   // SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;

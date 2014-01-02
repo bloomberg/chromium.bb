@@ -1487,12 +1487,11 @@ void TemplateURLService::Init(const Initializer* initializers,
   UpdateDefaultSearch();
 
   // Request a server check for the correct Google URL if Google is the
-  // default search engine, not in headless mode and not in Chrome Frame.
+  // default search engine and not in headless mode.
   if (profile_ && initial_default_search_provider_.get() &&
       initial_default_search_provider_->url_ref().HasGoogleBaseURLs()) {
     scoped_ptr<base::Environment> env(base::Environment::Create());
-    if (!env->HasVar(env_vars::kHeadless) &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame))
+    if (!env->HasVar(env_vars::kHeadless))
       GoogleURLTracker::RequestServerCheck(profile_, false);
   }
 }

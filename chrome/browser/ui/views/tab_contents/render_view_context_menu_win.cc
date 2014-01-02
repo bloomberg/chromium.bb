@@ -76,7 +76,3 @@ void RenderViewContextMenuWin::ExecuteCommand(int command_id,
   }
   RenderViewContextMenu::ExecuteCommand(command_id, event_flags);
 }
-
-void RenderViewContextMenuWin::SetExternal() {
-  external_ = true;
-}

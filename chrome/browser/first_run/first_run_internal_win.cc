@@ -51,11 +51,6 @@ bool LaunchSetupForEula(const base::FilePath::StringType& value,
   CommandLine cl(CommandLine::NO_PROGRAM);
   cl.AppendSwitchNative(installer::switches::kShowEula, value);
 
-  CommandLine* browser_command_line = CommandLine::ForCurrentProcess();
-  if (browser_command_line->HasSwitch(switches::kChromeFrame)) {
-    cl.AppendSwitch(switches::kChromeFrame);
-  }
-
   if (base::win::IsMetroProcess()) {
     cl.AppendSwitch(installer::switches::kShowEulaForMetro);
 

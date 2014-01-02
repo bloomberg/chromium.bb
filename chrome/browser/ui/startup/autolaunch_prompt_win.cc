@@ -154,9 +154,6 @@ bool ShowAutolaunchPrompt(Browser* browser) {
     return false;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kChromeFrame))
-    return false;
-
   if (!command_line.HasSwitch(switches::kAutoLaunchAtStartup) &&
       !first_run::IsChromeFirstRun()) {
     return false;

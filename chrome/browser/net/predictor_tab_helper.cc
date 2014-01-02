@@ -49,9 +49,7 @@ void PredictorTabHelper::DidStartNavigationToPendingEntry(
   chrome_browser_net::Predictor* predictor = profile->GetNetworkPredictor();
   if (!predictor)
     return;
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame) &&
-      (url.SchemeIs(content::kHttpScheme) ||
-       url.SchemeIs(content::kHttpsScheme)))
+  if (url.SchemeIs(content::kHttpScheme) || url.SchemeIs(content::kHttpsScheme))
     predictor->PreconnectUrlAndSubresources(url, GURL());
 }
 

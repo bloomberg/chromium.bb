@@ -48,14 +48,6 @@ BrowserDistribution* g_chrome_frame_distribution = NULL;
 BrowserDistribution* g_binaries_distribution = NULL;
 BrowserDistribution* g_chrome_app_host_distribution = NULL;
 
-// Returns true if currently running in npchrome_frame.dll
-bool IsChromeFrameModule() {
-  base::FilePath module_path;
-  PathService::Get(base::FILE_MODULE, &module_path);
-  return base::FilePath::CompareEqualIgnoreCase(module_path.BaseName().value(),
-                                          installer::kChromeFrameDll);
-}
-
 BrowserDistribution::Type GetCurrentDistributionType() {
   // TODO(erikwright): If the app host is installed, but not Chrome, perhaps
   // this should return CHROME_APP_HOST.

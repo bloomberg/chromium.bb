@@ -723,11 +723,6 @@ bool ElevateAndRegisterChrome(BrowserDistribution* dist,
           installer::switches::kRegisterChromeBrowserSuffix, suffix);
     }
 
-    CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-    if (browser_command_line.HasSwitch(switches::kChromeFrame)) {
-      cmd.AppendSwitch(installer::switches::kChromeFrame);
-    }
-
     if (!protocol.empty()) {
       cmd.AppendSwitchNative(
         installer::switches::kRegisterURLProtocol, protocol);

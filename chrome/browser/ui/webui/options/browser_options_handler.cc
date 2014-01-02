@@ -748,8 +748,7 @@ void BrowserOptionsHandler::InitializeHandler() {
 
 #if defined(OS_WIN)
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kChromeFrame) &&
-      !command_line.HasSwitch(switches::kUserDataDir)) {
+  if (!command_line.HasSwitch(switches::kUserDataDir)) {
     BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
         base::Bind(&BrowserOptionsHandler::CheckAutoLaunch,
                    weak_ptr_factory_.GetWeakPtr(),
