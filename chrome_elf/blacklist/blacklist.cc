@@ -27,10 +27,11 @@ const wchar_t kRegistryBeaconPath[] = L"SOFTWARE\\Google\\Chrome\\BLBeacon";
 
 // Allocate storage for thunks in a RWX page of this module to save on doing
 // an extra allocation at run time.
-#if !defined(_WIN64)
-// 64-bit images appear to not support writeable and executable pages.
+#if !defined(_WIN64) && (_MSC_VER < 1700)
+// 64-bit images or images generated with 2012 and above appear to not support
+// writeable and executable pages.
 // This would yield compile warning C4330.
-// TODO(robertshield): Add 64 bit support.
+// TODO(robertshield): Figure out how / if to do this on 2012.
 #pragma section(".crthunk",read,write,execute)
 __declspec(allocate(".crthunk")) sandbox::ThunkData g_thunk_storage;
 #endif
@@ -249,7 +250,7 @@ bool Initialize(bool force) {
   }
 #endif
 
-#if defined(_WIN64)
+#if defined(_WIN64) || (_MSC_VER >= 1700)
   BYTE* thunk_storage = new BYTE[sizeof(sandbox::ThunkData)];
 #else
   BYTE* thunk_storage = reinterpret_cast<BYTE*>(&g_thunk_storage);
