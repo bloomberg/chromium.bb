@@ -1211,8 +1211,6 @@
           'type': 'static_library',
           'dependencies': [
             'test_support_content',
-            # TODO(jochen): remove this.
-            '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_support',
           ],
           'include_dirs': [
             '..',
