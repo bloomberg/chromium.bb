@@ -479,7 +479,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
     download_end_time - download_start_time_ : base::TimeDelta();
 
   base::FilePath response;
-  BG_FILE_PROGRESS progress = {0};
+  int64 bytes_downloaded = -1;
+  int64 bytes_total = -1;
 
   if (SUCCEEDED(error)) {
     DCHECK(job_);
@@ -487,10 +488,15 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
     GetFilesInJob(job_, &files);
     DCHECK(files.size() == 1);
     base::string16 local_name;
+    BG_FILE_PROGRESS progress = {0};
     HRESULT hr = GetJobFileProperties(files[0], &local_name, NULL, &progress);
     if (SUCCEEDED(hr)) {
       DCHECK(progress.Completed);
       response = base::FilePath(local_name);
+      if (progress.BytesTransferred <= kint64max)
+        bytes_downloaded = progress.BytesTransferred;
+      if (progress.BytesTotal <= kint64max)
+        bytes_total = progress.BytesTotal;
     } else {
       error = hr;
     }
@@ -512,8 +518,8 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   download_metrics.url = url();
   download_metrics.downloader = DownloadMetrics::kBits;
   download_metrics.error = SUCCEEDED(error) ? 0 : error;
-  download_metrics.bytes_downloaded = progress.BytesTransferred;
-  download_metrics.bytes_total = progress.BytesTotal;
+  download_metrics.bytes_downloaded = bytes_downloaded;
+  download_metrics.bytes_total = bytes_total;
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
   // Clean up stale jobs before invoking the callback.

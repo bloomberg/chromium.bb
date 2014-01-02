@@ -19,8 +19,8 @@ CrxDownloader::Result::Result() : error(0) {}
 CrxDownloader::DownloadMetrics::DownloadMetrics()
     : downloader(kNone),
       error(0),
-      bytes_downloaded(0),
-      bytes_total(0),
+      bytes_downloaded(-1),
+      bytes_total(-1),
       download_time_ms(0) {}
 
 // On Windows, the first downloader in the chain is a background downloader,

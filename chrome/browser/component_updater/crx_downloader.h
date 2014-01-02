@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_CRX_DOWNLOADER_H_
 
 #include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -47,8 +48,8 @@ class CrxDownloader {
 
     int error;
 
-    uint64 bytes_downloaded;
-    uint64 bytes_total;
+    int64 bytes_downloaded;   // -1 means that the byte count is unknown.
+    int64 bytes_total;
 
     uint64 download_time_ms;
   };

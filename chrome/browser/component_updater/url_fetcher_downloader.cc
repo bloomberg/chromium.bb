@@ -21,7 +21,9 @@ UrlFetcherDownloader::UrlFetcherDownloader(
     const DownloadCallback& download_callback)
     : CrxDownloader(successor.Pass(), download_callback),
       context_getter_(context_getter),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      downloaded_bytes_(-1),
+      total_bytes_(-1) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
@@ -44,6 +46,9 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
   url_fetcher_->Start();
 
   download_start_time_ = base::Time::Now();
+
+  downloaded_bytes_ = -1;
+  total_bytes_ = -1;
 }
 
 void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -66,14 +71,24 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
     source->GetResponseAsFilePath(true, &result.response);
   }
 
-  // The URLFetcher does not provide accessors for the number of bytes yet.
   DownloadMetrics download_metrics;
   download_metrics.url = url();
   download_metrics.downloader = DownloadMetrics::kUrlFetcher;
   download_metrics.error = fetch_error;
+  download_metrics.bytes_downloaded = downloaded_bytes_;
+  download_metrics.bytes_total = total_bytes_;
   download_metrics.download_time_ms = download_time.InMilliseconds();
 
   CrxDownloader::OnDownloadComplete(is_handled, result, download_metrics);
+}
+
+void UrlFetcherDownloader::OnURLFetchDownloadProgress(
+    const net::URLFetcher* source,
+    int64 current,
+    int64 total) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  downloaded_bytes_ = current;
+  total_bytes_ = total;
 }
 
 }  // namespace component_updater
