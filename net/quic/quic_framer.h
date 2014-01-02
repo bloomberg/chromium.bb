@@ -170,13 +170,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Returns true if the version flag is set in the public flags.
   static bool HasVersionFlag(const QuicEncryptedPacket& packet);
 
-  // Calculates the largest observed packet to advertise in the case an Ack
-  // Frame was truncated.  last_written in this case is the iterator for the
-  // last missing packet which fit in the outgoing ack.
-  static QuicPacketSequenceNumber CalculateLargestObserved(
-      const SequenceNumberSet& missing_packets,
-      SequenceNumberSet::const_iterator last_written);
-
   // Set callbacks to be called from the framer.  A visitor must be set, or
   // else the framer will likely crash.  It is acceptable for the visitor
   // to do nothing.  If this is called multiple times, only the last visitor
@@ -261,10 +254,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   static size_t GetStreamOffsetSize(QuicStreamOffset offset);
   // Size in bytes required for a serialized version negotiation packet
   static size_t GetVersionNegotiationPacketSize(size_t number_versions);
-
-
-  static bool CanTruncate(
-      QuicVersion version, const QuicFrame& frame, size_t free_bytes);
 
   // Returns the number of bytes added to the packet for the specified frame,
   // and 0 if the frame doesn't fit.  Includes the header size for the first
@@ -354,8 +343,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // Return true on success, else false.
   static bool ReadGuidFromPacket(const QuicEncryptedPacket& packet,
                                  QuicGuid* guid);
-
-  static QuicSequenceNumberLength ReadSequenceNumberLength(uint8 flags);
 
   // The minimum sequence number length required to represent |sequence_number|.
   static QuicSequenceNumberLength GetMinSequenceNumberLength(

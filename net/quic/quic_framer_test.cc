@@ -3253,27 +3253,6 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
   EXPECT_TRUE(CheckEncryption(sequence_number, raw.get()));
 }
 
-// TODO(rch): re-enable after https://codereview.chromium.org/11820005/
-// lands.  Currently this is causing valgrind problems, but it should be
-// fixed in the followup CL.
-TEST_P(QuicFramerTest, DISABLED_CalculateLargestReceived) {
-  SequenceNumberSet missing;
-  missing.insert(1);
-  missing.insert(5);
-  missing.insert(7);
-
-  // These two we just walk to the next gap, and return the largest seen.
-  EXPECT_EQ(4u, QuicFramer::CalculateLargestObserved(missing, missing.find(1)));
-  EXPECT_EQ(6u, QuicFramer::CalculateLargestObserved(missing, missing.find(5)));
-
-  missing.insert(2);
-  // For 1, we can't go forward as 2 would be implicitly acked so we return the
-  // largest missing packet.
-  EXPECT_EQ(1u, QuicFramer::CalculateLargestObserved(missing, missing.find(1)));
-  // For 2, we've seen 3 and 4, so can admit to a largest observed.
-  EXPECT_EQ(4u, QuicFramer::CalculateLargestObserved(missing, missing.find(2)));
-}
-
 // TODO(rch) enable after landing the revised truncation CL.
 TEST_P(QuicFramerTest, DISABLED_Truncation) {
   QuicPacketHeader header;

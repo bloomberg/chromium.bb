@@ -108,6 +108,34 @@ QuicPacketSequenceNumber ClosestTo(QuicPacketSequenceNumber target,
   return (Delta(target, a) < Delta(target, b)) ? a : b;
 }
 
+QuicSequenceNumberLength ReadSequenceNumberLength(uint8 flags) {
+  switch (flags & PACKET_FLAGS_6BYTE_SEQUENCE) {
+    case PACKET_FLAGS_6BYTE_SEQUENCE:
+      return PACKET_6BYTE_SEQUENCE_NUMBER;
+    case PACKET_FLAGS_4BYTE_SEQUENCE:
+      return PACKET_4BYTE_SEQUENCE_NUMBER;
+    case PACKET_FLAGS_2BYTE_SEQUENCE:
+      return PACKET_2BYTE_SEQUENCE_NUMBER;
+    case PACKET_FLAGS_1BYTE_SEQUENCE:
+      return PACKET_1BYTE_SEQUENCE_NUMBER;
+    default:
+      LOG(DFATAL) << "Unreachable case statement.";
+      return PACKET_6BYTE_SEQUENCE_NUMBER;
+  }
+}
+
+bool CanTruncate(
+    QuicVersion version, const QuicFrame& frame, size_t free_bytes) {
+  if ((frame.type == ACK_FRAME || frame.type == CONNECTION_CLOSE_FRAME) &&
+      free_bytes >=
+          QuicFramer::GetMinAckFrameSize(version,
+                                         PACKET_6BYTE_SEQUENCE_NUMBER,
+                                         PACKET_6BYTE_SEQUENCE_NUMBER)) {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
@@ -204,18 +232,6 @@ size_t QuicFramer::GetStreamOffsetSize(QuicStreamOffset offset) {
 size_t QuicFramer::GetVersionNegotiationPacketSize(size_t number_versions) {
   return kPublicFlagsSize + PACKET_8BYTE_GUID +
       number_versions * kQuicVersionSize;
-}
-
-// static
-bool QuicFramer::CanTruncate(
-    QuicVersion version, const QuicFrame& frame, size_t free_bytes) {
-  if ((frame.type == ACK_FRAME || frame.type == CONNECTION_CLOSE_FRAME) &&
-      free_bytes >= GetMinAckFrameSize(version,
-                                       PACKET_6BYTE_SEQUENCE_NUMBER,
-                                       PACKET_6BYTE_SEQUENCE_NUMBER)) {
-    return true;
-  }
-  return false;
 }
 
 bool QuicFramer::IsSupportedVersion(const QuicVersion version) const {
@@ -811,23 +827,6 @@ bool QuicFramer::ReadGuidFromPacket(const QuicEncryptedPacket& packet,
   }
 
   return reader.ReadUInt64(guid);
-}
-
-// static
-QuicSequenceNumberLength QuicFramer::ReadSequenceNumberLength(uint8 flags) {
-  switch (flags & PACKET_FLAGS_6BYTE_SEQUENCE) {
-    case PACKET_FLAGS_6BYTE_SEQUENCE:
-      return PACKET_6BYTE_SEQUENCE_NUMBER;
-    case PACKET_FLAGS_4BYTE_SEQUENCE:
-      return PACKET_4BYTE_SEQUENCE_NUMBER;
-    case PACKET_FLAGS_2BYTE_SEQUENCE:
-      return PACKET_2BYTE_SEQUENCE_NUMBER;
-    case PACKET_FLAGS_1BYTE_SEQUENCE:
-      return PACKET_1BYTE_SEQUENCE_NUMBER;
-    default:
-      LOG(DFATAL) << "Unreachable case statement.";
-      return PACKET_6BYTE_SEQUENCE_NUMBER;
-  }
 }
 
 // static
@@ -1772,24 +1771,6 @@ bool QuicFramer::AppendStreamFramePayload(
 bool QuicFramer::HasVersionFlag(const QuicEncryptedPacket& packet) {
   return packet.length() > 0 &&
       (packet.data()[0] & PACKET_PUBLIC_FLAGS_VERSION) != 0;
-}
-
-// static
-QuicPacketSequenceNumber QuicFramer::CalculateLargestObserved(
-    const SequenceNumberSet& missing_packets,
-    SequenceNumberSet::const_iterator largest_written) {
-  SequenceNumberSet::const_iterator it = largest_written;
-  QuicPacketSequenceNumber previous_missing = *it;
-  ++it;
-
-  // See if the next thing is a gap in the missing packets: if it's a
-  // non-missing packet we can return it.
-  if (it != missing_packets.end() && previous_missing + 1 != *it) {
-    return *it - 1;
-  }
-
-  // Otherwise return the largest missing packet, as indirectly observed.
-  return *largest_written;
 }
 
 void QuicFramer::set_version(const QuicVersion version) {
