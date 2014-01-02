@@ -177,7 +177,7 @@ bool TracingControllerImpl::EnableRecording(
   is_recording_ = true;
 
   // Notify all child processes.
-  for (TraceMessageFilterMap::iterator it = trace_message_filters_.begin();
+  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
     it->get()->SendBeginTracing(category_filter, trace_options);
   }
@@ -212,6 +212,7 @@ bool TracingControllerImpl::DisableRecording(
   // Count myself (local trace) in pending_disable_recording_ack_count_,
   // acked below.
   pending_disable_recording_ack_count_ = trace_message_filters_.size() + 1;
+  pending_disable_recording_filters_ = trace_message_filters_;
 
   // Handle special case of zero child processes by immediately flushing the
   // trace log. Once the flush has completed the caller will be notified that
@@ -224,7 +225,7 @@ bool TracingControllerImpl::DisableRecording(
   }
 
   // Notify all child processes.
-  for (TraceMessageFilterMap::iterator it = trace_message_filters_.begin();
+  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
     it->get()->SendEndTracing();
   }
@@ -254,7 +255,7 @@ bool TracingControllerImpl::EnableMonitoring(
       static_cast<TraceLog::Options>(monitoring_tracing_options));
 
   // Notify all child processes.
-  for (TraceMessageFilterMap::iterator it = trace_message_filters_.begin();
+  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
     it->get()->SendEnableMonitoring(category_filter,
         static_cast<TraceLog::Options>(monitoring_tracing_options));
@@ -276,7 +277,7 @@ bool TracingControllerImpl::DisableMonitoring(
   TraceLog::GetInstance()->SetDisabled();
 
   // Notify all child processes.
-  for (TraceMessageFilterMap::iterator it = trace_message_filters_.begin();
+  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
     it->get()->SendDisableMonitoring();
   }
@@ -311,6 +312,7 @@ bool TracingControllerImpl::CaptureMonitoringSnapshot(
   // acked below.
   pending_capture_monitoring_snapshot_ack_count_ =
       trace_message_filters_.size() + 1;
+  pending_capture_monitoring_filters_ = trace_message_filters_;
 
   // Handle special case of zero child processes by immediately flushing the
   // trace log. Once the flush has completed the caller will be notified that
@@ -323,7 +325,7 @@ bool TracingControllerImpl::CaptureMonitoringSnapshot(
   }
 
   // Notify all child processes.
-  for (TraceMessageFilterMap::iterator it = trace_message_filters_.begin();
+  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
     it->get()->SendCaptureMonitoringSnapshot();
   }
@@ -347,6 +349,7 @@ bool TracingControllerImpl::GetTraceBufferPercentFull(
   // Count myself in pending_trace_buffer_percent_full_ack_count_, acked below.
   pending_trace_buffer_percent_full_ack_count_ =
       trace_message_filters_.size() + 1;
+  pending_trace_buffer_percent_full_filters_ = trace_message_filters_;
   maximum_trace_buffer_percent_full_ = 0;
 
   // Handle special case of zero child processes.
@@ -354,11 +357,12 @@ bool TracingControllerImpl::GetTraceBufferPercentFull(
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
                    base::Unretained(this),
+                   scoped_refptr<TraceMessageFilter>(),
                    TraceLog::GetInstance()->GetBufferPercentFull()));
   }
 
   // Notify all child processes.
-  for (TraceMessageFilterMap::iterator it = trace_message_filters_.begin();
+  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
     it->get()->SendGetTraceBufferPercentFull();
   }
@@ -383,7 +387,7 @@ bool TracingControllerImpl::SetWatchEvent(
       base::Bind(&TracingControllerImpl::OnWatchEventMatched,
                  base::Unretained(this)));
 
-  for (TraceMessageFilterMap::iterator it = trace_message_filters_.begin();
+  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
     it->get()->SendSetWatchEvent(category_name, event_name);
   }
@@ -396,7 +400,7 @@ bool TracingControllerImpl::CancelWatchEvent() {
   if (!can_cancel_watch_event())
     return false;
 
-  for (TraceMessageFilterMap::iterator it = trace_message_filters_.begin();
+  for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
       it != trace_message_filters_.end(); ++it) {
     it->get()->SendCancelWatchEvent();
   }
@@ -437,15 +441,54 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
     return;
   }
 
+  // If a filter is removed while a response from that filter is pending then
+  // simulate the response. Otherwise the response count will be wrong and the
+  // completion callback will never be executed.
+  if (pending_disable_recording_ack_count_ > 0) {
+    TraceMessageFilterSet::const_iterator it =
+        pending_disable_recording_filters_.find(trace_message_filter);
+    if (it != pending_disable_recording_filters_.end()) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&TracingControllerImpl::OnDisableRecordingAcked,
+                     base::Unretained(this),
+                     make_scoped_refptr(trace_message_filter),
+                     std::vector<std::string>()));
+    }
+  }
+  if (pending_capture_monitoring_snapshot_ack_count_ > 0) {
+    TraceMessageFilterSet::const_iterator it =
+        pending_capture_monitoring_filters_.find(trace_message_filter);
+    if (it != pending_capture_monitoring_filters_.end()) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&TracingControllerImpl::OnCaptureMonitoringSnapshotAcked,
+                     base::Unretained(this),
+                     make_scoped_refptr(trace_message_filter)));
+    }
+  }
+  if (pending_trace_buffer_percent_full_ack_count_ > 0) {
+    TraceMessageFilterSet::const_iterator it =
+        pending_trace_buffer_percent_full_filters_.find(trace_message_filter);
+    if (it != pending_trace_buffer_percent_full_filters_.end()) {
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+          base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
+                     base::Unretained(this),
+                     make_scoped_refptr(trace_message_filter),
+                     0));
+    }
+  }
+
   trace_message_filters_.erase(trace_message_filter);
 }
 
 void TracingControllerImpl::OnDisableRecordingAcked(
+    TraceMessageFilter* trace_message_filter,
     const std::vector<std::string>& known_category_groups) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::OnDisableRecordingAcked,
-                   base::Unretained(this), known_category_groups));
+                   base::Unretained(this),
+                   make_scoped_refptr(trace_message_filter),
+                   known_category_groups));
     return;
   }
 
@@ -455,6 +498,12 @@ void TracingControllerImpl::OnDisableRecordingAcked(
 
   if (pending_disable_recording_ack_count_ == 0)
     return;
+
+  if (trace_message_filter &&
+      !pending_disable_recording_filters_.erase(trace_message_filter)) {
+    // The response from the specified message filter has already been received.
+    return;
+  }
 
   if (--pending_disable_recording_ack_count_ == 1) {
     // All acks from subprocesses have been received. Now flush the local trace.
@@ -497,16 +546,24 @@ void TracingControllerImpl::OnResultFileClosed() {
   result_file_.reset();
 }
 
-void TracingControllerImpl::OnCaptureMonitoringSnapshotAcked() {
+void TracingControllerImpl::OnCaptureMonitoringSnapshotAcked(
+    TraceMessageFilter* trace_message_filter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::OnCaptureMonitoringSnapshotAcked,
-                   base::Unretained(this)));
+                   base::Unretained(this),
+                   make_scoped_refptr(trace_message_filter)));
     return;
   }
 
   if (pending_capture_monitoring_snapshot_ack_count_ == 0)
     return;
+
+  if (trace_message_filter &&
+      !pending_capture_monitoring_filters_.erase(trace_message_filter)) {
+    // The response from the specified message filter has already been received.
+    return;
+  }
 
   if (--pending_capture_monitoring_snapshot_ack_count_ == 1) {
     // All acks from subprocesses have been received. Now flush the local trace.
@@ -582,7 +639,7 @@ void TracingControllerImpl::OnLocalTraceDataCollected(
   // Simulate an DisableRecordingAcked for the local trace.
   std::vector<std::string> category_groups;
   TraceLog::GetInstance()->GetKnownCategoryGroups(&category_groups);
-  OnDisableRecordingAcked(category_groups);
+  OnDisableRecordingAcked(NULL, category_groups);
 }
 
 void TracingControllerImpl::OnLocalMonitoringTraceDataCollected(
@@ -595,19 +652,29 @@ void TracingControllerImpl::OnLocalMonitoringTraceDataCollected(
     return;
 
   // Simulate an CaptureMonitoringSnapshotAcked for the local trace.
-  OnCaptureMonitoringSnapshotAcked();
+  OnCaptureMonitoringSnapshotAcked(NULL);
 }
 
-void TracingControllerImpl::OnTraceBufferPercentFullReply(float percent_full) {
+void TracingControllerImpl::OnTraceBufferPercentFullReply(
+    TraceMessageFilter* trace_message_filter,
+    float percent_full) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
-                   base::Unretained(this), percent_full));
+                   base::Unretained(this),
+                   make_scoped_refptr(trace_message_filter),
+                   percent_full));
     return;
   }
 
   if (pending_trace_buffer_percent_full_ack_count_ == 0)
     return;
+
+  if (trace_message_filter &&
+      !pending_trace_buffer_percent_full_filters_.erase(trace_message_filter)) {
+    // The response from the specified message filter has already been received.
+    return;
+  }
 
   maximum_trace_buffer_percent_full_ =
       std::max(maximum_trace_buffer_percent_full_, percent_full);
@@ -625,6 +692,7 @@ void TracingControllerImpl::OnTraceBufferPercentFullReply(float percent_full) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::OnTraceBufferPercentFullReply,
                    base::Unretained(this),
+                   make_scoped_refptr(trace_message_filter),
                    TraceLog::GetInstance()->GetBufferPercentFull()));
   }
 }

@@ -55,7 +55,7 @@ class TracingControllerImpl : public TracingController {
   virtual bool CancelWatchEvent() OVERRIDE;
 
  private:
-  typedef std::set<scoped_refptr<TraceMessageFilter> > TraceMessageFilterMap;
+  typedef std::set<scoped_refptr<TraceMessageFilter> > TraceMessageFilterSet;
   class ResultFile;
 
   friend struct base::DefaultLazyInstanceTraits<TracingControllerImpl>;
@@ -107,23 +107,30 @@ class TracingControllerImpl : public TracingController {
       bool has_more_events);
 
   void OnDisableRecordingAcked(
+      TraceMessageFilter* trace_message_filter,
       const std::vector<std::string>& known_category_groups);
   void OnResultFileClosed();
 
-  void OnCaptureMonitoringSnapshotAcked();
+  void OnCaptureMonitoringSnapshotAcked(
+      TraceMessageFilter* trace_message_filter);
   void OnMonitoringSnapshotFileClosed();
 
-  void OnTraceBufferPercentFullReply(float percent_full);
+  void OnTraceBufferPercentFullReply(
+      TraceMessageFilter* trace_message_filter,
+      float percent_full);
 
   void OnWatchEventMatched();
 
-  TraceMessageFilterMap trace_message_filters_;
+  TraceMessageFilterSet trace_message_filters_;
   // Pending acks for DisableRecording.
   int pending_disable_recording_ack_count_;
+  TraceMessageFilterSet pending_disable_recording_filters_;
   // Pending acks for CaptureMonitoringSnapshot.
   int pending_capture_monitoring_snapshot_ack_count_;
+  TraceMessageFilterSet pending_capture_monitoring_filters_;
   // Pending acks for GetTraceBufferPercentFull.
   int pending_trace_buffer_percent_full_ack_count_;
+  TraceMessageFilterSet pending_trace_buffer_percent_full_filters_;
   float maximum_trace_buffer_percent_full_;
 
   bool is_recording_;
