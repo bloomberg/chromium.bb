@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
   std::vector<std::string> args = GetArgs(cmdline);
 
   std::string command;
-  if (cmdline.HasSwitch("help")) {
-    // Make "--help" default to help command.
+  if (cmdline.HasSwitch("help") || cmdline.HasSwitch("h")) {
+    // Make "-h" and "--help" default to help command.
     command = commands::kHelp;
   } else if (cmdline.HasSwitch("version")) {
     // Make "--version" print the version and exit.
