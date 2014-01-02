@@ -253,8 +253,7 @@ MockConnection::MockConnection(IPEndPoint address,
 
 MockConnection::MockConnection(QuicGuid guid,
                                bool is_server)
-    : QuicConnection(guid,
-                     IPEndPoint(Loopback4(), kTestPort),
+    : QuicConnection(guid, IPEndPoint(Loopback4(), kTestPort),
                      new testing::NiceMock<MockHelper>(),
                      new testing::NiceMock<MockPacketWriter>(),
                      is_server, QuicSupportedVersions()),

@@ -127,7 +127,7 @@ int QuicSpdyClientStream::ParseResponseHeaders() {
 
 // Sends body data to the server and returns the number of bytes sent.
 void QuicSpdyClientStream::SendBody(const string& data, bool fin) {
-  return WriteOrBufferData(data, fin);
+  WriteOrBufferData(data, fin);
 }
 
 }  // namespace tools
