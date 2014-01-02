@@ -150,21 +150,6 @@ net::QuicConnection::Force HasForcedFrames(
   return net::QuicConnection::NO_FORCE;
 }
 
-net::IsHandshake HasCryptoHandshake(
-    const RetransmittableFrames* retransmittable_frames) {
-  if (!retransmittable_frames) {
-    return net::NOT_HANDSHAKE;
-  }
-  for (size_t i = 0; i < retransmittable_frames->frames().size(); ++i) {
-    if (retransmittable_frames->frames()[i].type == STREAM_FRAME &&
-        retransmittable_frames->frames()[i].stream_frame->stream_id ==
-            kCryptoStreamId) {
-      return net::IS_HANDSHAKE;
-    }
-  }
-  return net::NOT_HANDSHAKE;
-}
-
 }  // namespace
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
@@ -202,7 +187,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       overall_connection_timeout_(QuicTime::Delta::Infinite()),
       creation_time_(clock_->ApproximateNow()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
-      time_of_last_sent_packet_(clock_->ApproximateNow()),
+      time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       sequence_number_of_last_inorder_packet_(0),
       sent_packet_manager_(is_server, this, clock_, kTCP),
       version_negotiation_state_(START_NEGOTIATION),
@@ -998,7 +983,7 @@ void QuicConnection::WritePendingRetransmissions() {
         sent_packet_manager_.NextPendingRetransmission();
     if (HasForcedFrames(&pending.retransmittable_frames) == NO_FORCE &&
         !CanWrite(pending.transmission_type, HAS_RETRANSMITTABLE_DATA,
-                  HasCryptoHandshake(&pending.retransmittable_frames))) {
+                  pending.retransmittable_frames.HasCryptoHandshake())) {
       break;
     }
 
@@ -1258,7 +1243,6 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   QuicPacketSequenceNumber sequence_number = pending_write_->sequence_number;
   TransmissionType transmission_type  = pending_write_->transmission_type;
   HasRetransmittableData retransmittable = pending_write_->retransmittable;
-  bool is_fec_packet = pending_write_->is_fec_packet;
   size_t length = pending_write_->length;
   pending_write_.reset();
 
@@ -1271,7 +1255,7 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
 
   QuicTime now = clock_->Now();
   if (transmission_type == NOT_RETRANSMISSION) {
-    time_of_last_sent_packet_ = now;
+    time_of_last_sent_new_packet_ = now;
   }
   DVLOG(1) << ENDPOINT << "time of last sent packet: "
            << now.ToDebuggingValue();
@@ -1283,20 +1267,16 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
       sent_packet_manager_.BandwidthEstimate().ToBytesPerPeriod(
           sent_packet_manager_.SmoothedRtt()));
 
-  sent_packet_manager_.OnPacketSent(sequence_number, now, length,
-                                    transmission_type, retransmittable);
+  bool reset_retransmission_alarm =
+      sent_packet_manager_.OnPacketSent(sequence_number, now, length,
+                                        transmission_type, retransmittable);
 
-  // Set the retransmit alarm only when we have sent the packet to the client
-  // and not when it goes to the pending queue, otherwise we will end up adding
-  // an entry to retransmission_timeout_ every time we attempt a write.
-  // Do not set the retransmission alarm if we're already handling one, since
-  // it will be reset when OnRetransmissionTimeout completes.
-  if ((retransmittable == HAS_RETRANSMITTABLE_DATA || is_fec_packet) &&
-      !retransmission_alarm_->IsSet()) {
-    QuicTime retransmission_time =
-        sent_packet_manager_.GetRetransmissionTime();
-    DCHECK(retransmission_time != QuicTime::Zero());
-    retransmission_alarm_->Set(retransmission_time);
+  if (reset_retransmission_alarm) {
+    retransmission_alarm_->Cancel();
+    QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
+    if (retransmission_time != QuicTime::Zero()) {
+      retransmission_alarm_->Set(retransmission_time);
+    }
   }
 
   stats_.bytes_sent += result.bytes_written;
@@ -1332,7 +1312,8 @@ QuicPacketSequenceNumber QuicConnection::GetNextPacketSequenceNumber() {
 bool QuicConnection::SendOrQueuePacket(EncryptionLevel level,
                                        const SerializedPacket& packet,
                                        TransmissionType transmission_type) {
-  IsHandshake handshake = HasCryptoHandshake(packet.retransmittable_frames);
+  IsHandshake handshake = packet.retransmittable_frames == NULL ?
+      NOT_HANDSHAKE : packet.retransmittable_frames->HasCryptoHandshake();
   Force forced = HasForcedFrames(packet.retransmittable_frames);
   HasRetransmittableData retransmittable =
       (transmission_type != NOT_RETRANSMISSION ||
@@ -1607,7 +1588,7 @@ void QuicConnection::SetOverallConnectionTimeout(QuicTime::Delta timeout) {
 bool QuicConnection::CheckForTimeout() {
   QuicTime now = clock_->ApproximateNow();
   QuicTime time_of_last_packet = std::max(time_of_last_received_packet_,
-                                          time_of_last_sent_packet_);
+                                          time_of_last_sent_new_packet_);
 
   // |delta| can be < 0 as |now| is approximate time but |time_of_last_packet|
   // is accurate time. However, this should not change the behavior of

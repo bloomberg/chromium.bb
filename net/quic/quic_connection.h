@@ -685,8 +685,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // This is used for timeouts, and does not indicate the packet was processed.
   QuicTime time_of_last_received_packet_;
 
-  // The time that we last sent a packet for this connection.
-  QuicTime time_of_last_sent_packet_;
+  // The last time a new (non-retransmitted) packet was sent for this
+  // connection.
+  QuicTime time_of_last_sent_new_packet_;
 
   // Sequence number of the last packet guaranteed to be sent in packet sequence
   // number order.  Not set when packets are queued, since that may cause

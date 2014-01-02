@@ -424,6 +424,16 @@ const QuicFrame& RetransmittableFrames::AddNonStreamFrame(
   return frames_.back();
 }
 
+IsHandshake RetransmittableFrames::HasCryptoHandshake() const {
+  for (size_t i = 0; i < frames().size(); ++i) {
+    if (frames()[i].type == STREAM_FRAME &&
+        frames()[i].stream_frame->stream_id == kCryptoStreamId) {
+      return IS_HANDSHAKE;
+    }
+  }
+  return NOT_HANDSHAKE;
+}
+
 void RetransmittableFrames::set_encryption_level(EncryptionLevel level) {
   encryption_level_ = level;
 }

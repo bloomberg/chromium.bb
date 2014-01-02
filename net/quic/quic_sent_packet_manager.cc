@@ -464,7 +464,7 @@ SequenceNumberSet QuicSentPacketManager::GetUnackedPackets() const {
   return unacked_packets;
 }
 
-void QuicSentPacketManager::OnPacketSent(
+bool QuicSentPacketManager::OnPacketSent(
     QuicPacketSequenceNumber sequence_number,
     QuicTime sent_time,
     QuicByteCount bytes,
@@ -480,14 +480,19 @@ void QuicSentPacketManager::OnPacketSent(
                                      has_retransmittable_data)) {
     DCHECK(unacked_packets_[sequence_number].retransmittable_frames == NULL);
     unacked_packets_.erase(sequence_number);
-    return;
+    // Do not reset the retransmission timer, since the packet isn't tracked.
+    return false;
   }
 
+  // Set the retransmission timer for the first pending packet.
+  const bool set_retransmission_timer = pending_packets_.empty();
   unacked_packets_[sequence_number].sent_time = sent_time;
   packet_history_map_[sequence_number] =
       new SendAlgorithmInterface::SentPacket(bytes, sent_time);
   pending_packets_.insert(sequence_number);
   CleanupPacketHistory();
+
+  return set_retransmission_timer;
 }
 
 void QuicSentPacketManager::OnRetransmissionTimeout() {
@@ -662,7 +667,7 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
 // any benefits, but if the delayed ack becomes a significant source
 // of (likely, tail) latency, then consider such a mechanism.
 
-const QuicTime::Delta QuicSentPacketManager::DelayedAckTime() {
+const QuicTime::Delta QuicSentPacketManager::DelayedAckTime() const {
   return QuicTime::Delta::FromMilliseconds(kMinRetransmissionTimeMs/2);
 }
 

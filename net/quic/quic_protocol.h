@@ -887,6 +887,8 @@ class NET_EXPORT_PRIVATE RetransmittableFrames {
   const QuicFrame& AddNonStreamFrame(const QuicFrame& frame);
   const QuicFrames& frames() const { return frames_; }
 
+  IsHandshake HasCryptoHandshake() const;
+
   void set_encryption_level(EncryptionLevel level);
   EncryptionLevel encryption_level() const {
     return encryption_level_;

@@ -140,8 +140,9 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
       const QuicTime& feedback_receive_time);
 
   // Called when we have sent bytes to the peer.  This informs the manager both
-  // the number of bytes sent and if they were retransmitted.
-  virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
+  // the number of bytes sent and if they were retransmitted.  Returns true if
+  // the sender should reset the retransmission timer.
+  virtual bool OnPacketSent(QuicPacketSequenceNumber sequence_number,
                             QuicTime sent_time,
                             QuicByteCount bytes,
                             TransmissionType transmission_type,
@@ -165,11 +166,11 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                                         IsHandshake handshake);
 
   // Returns amount of time for delayed ack timer.
-  const QuicTime::Delta DelayedAckTime();
+  const QuicTime::Delta DelayedAckTime() const;
 
   // Returns the current delay for the retransmission timer, which may send
-  // either a tail loss probe or do a full RTO.  Retrans QuicTime::Zero() if
-  // there are no outstanding packets to abandon or retransmit.
+  // either a tail loss probe or do a full RTO.  Returns QuicTime::Zero() if
+  // there are no retransmittable packets.
   const QuicTime GetRetransmissionTime() const;
 
   // Returns the current RTO delay.
