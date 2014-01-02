@@ -671,7 +671,7 @@ class _config(dict):
     return copy.deepcopy(new_config)
 
   def add_config(self, name, *args, **kwargs):
-    """Derive and add the config to cbuildbots usable config targets
+    """Derive and add the config to cbuildbot's usable config targets
 
     Args:
       name: The name to label this configuration; this is what cbuildbot
