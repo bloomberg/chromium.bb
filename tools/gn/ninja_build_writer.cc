@@ -138,11 +138,12 @@ void NinjaBuildWriter::WriteNinjaRules() {
 
   // This rule will regenerate the ninja files when any input file has changed.
   out_ << "build build.ninja: gn\n"
+       << "  generator = 1\n"
        << "  depfile = build.ninja.d\n";
 
   // Provide a way to force regenerating ninja files if the user is suspicious
   // something is out-of-date. This will be "ninja refresh".
-  out_ << "\nbuild refresh: gn\n";
+  out_ << "\nphony refresh: gn\n";
 
   // Provide a way to see what flags are associated with this build:
   // This will be "ninja show".
