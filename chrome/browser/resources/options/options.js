@@ -101,8 +101,7 @@ function load() {
             $('spelling-confirm-ok'),
             $('spelling-confirm-cancel'),
             $('spelling-enabled-control').pref,
-            $('spelling-enabled-control').metric,
-            'spellcheck.confirm_dialog_shown'),
+            $('spelling-enabled-control').metric),
         BrowserOptions.getInstance());
   }
   OptionsPage.registerOverlay(ContentSettings.getInstance(),
