@@ -370,7 +370,9 @@ void FirstRunBubbleLauncher::Observe(
   // Suppress the first run bubble if a Gaia sign in page, the continue
   // URL for the sign in page or the sync setup page is showing.
   if (contents &&
-      (gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
+      (contents->GetURL().GetOrigin().spec() ==
+           chrome::kChromeUIChromeSigninURL ||
+       gaia::IsGaiaSignonRealm(contents->GetURL().GetOrigin()) ||
        signin::IsContinueUrlForWebBasedSigninFlow(contents->GetURL()) ||
        contents->GetURL() == GURL(std::string(chrome::kChromeUISettingsURL) +
                                   chrome::kSyncSetupSubPage))) {

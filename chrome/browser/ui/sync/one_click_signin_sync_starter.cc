@@ -437,12 +437,17 @@ void OneClickSigninSyncStarter::ShowSettingsPage(bool configure_sync) {
   } else {
     EnsureBrowser();
 
-    // If the sign in tab is showing a blank page and is not about to be
-    // closed, use it to show the settings UI.
+    // If the sign in tab is showing the native signin page or the blank page
+    // for web-based flow, and is not about to be closed, use it to show the
+    // settings UI.
     bool use_same_tab = false;
     if (web_contents()) {
       GURL current_url = web_contents()->GetLastCommittedURL();
-      use_same_tab = signin::IsContinueUrlForWebBasedSigninFlow(current_url) &&
+      bool is_chrome_signin_url =
+          current_url.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL;
+      use_same_tab =
+          (is_chrome_signin_url ||
+           signin::IsContinueUrlForWebBasedSigninFlow(current_url)) &&
           !signin::IsAutoCloseEnabledInURL(current_url);
     }
     if (profile_sync_service) {
