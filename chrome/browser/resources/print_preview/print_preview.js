@@ -706,6 +706,7 @@ cr.define('print_preview', function() {
      onCloudPrintRegisterPromoClick_: function(e) {
        var devicesUrl = 'chrome://devices/register?id=' + e.destination.id;
        this.nativeLayer_.startForceOpenNewTab(devicesUrl);
+       this.destinationStore_.waitForRegister(e.destination.id);
      },
 
     /**

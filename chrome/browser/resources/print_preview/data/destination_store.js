@@ -146,7 +146,6 @@ cr.define('print_preview', function() {
      */
     this.hasLoadedAllPrivetDestinations_ = false;
 
-
     /**
      * ID of a timeout after the start of a privet search to end that privet
      * search.
@@ -154,6 +153,13 @@ cr.define('print_preview', function() {
      * @private
      */
     this.privetSearchTimeout_ = null;
+
+    /**
+     * Map set of IDs of privet register promo destinations click.
+     * @type {!Object.<string, bool>}
+     * @private
+     */
+    this.waitForRegisterDestination_ = null;
 
     this.addEventListeners_();
     this.reset_();
@@ -541,6 +547,14 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Wait for a privet device to be registered.
+     */
+    waitForRegister: function(id) {
+      this.nativeLayer_.startGetPrivetDestinations();
+      this.waitForRegisterDestination_ = id;
+    },
+
+    /**
      * Called when the search for Privet printers is done.
      * @private
      */
@@ -760,8 +774,14 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrivetPrinterAdded_: function(event) {
-      this.insertDestinations(
-          print_preview.PrivetDestinationParser.parse(event.printer));
+      if (event.printer.serviceName == this.waitForRegisterDestination_ &&
+          !event.printer.isUnregistered) {
+        this.waitForRegisterDestination_ = null;
+        this.onDestinationsReload_();
+      } else {
+        this.insertDestinations(
+            print_preview.PrivetDestinationParser.parse(event.printer));
+      }
     },
 
     /**
