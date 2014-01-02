@@ -87,9 +87,11 @@ AndroidVideoEncodeAccelerator::GetSupportedProfiles() {
 
   std::vector<SupportedProfile> profiles;
 
+#if defined(ENABLE_WEBRTC)
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableWebRtcHWEncoding))
     return profiles;
+#endif
 
   for (size_t i = 0; i < codecs_info.size(); ++i) {
     const MediaCodecBridge::CodecsInfo& info = codecs_info[i];
