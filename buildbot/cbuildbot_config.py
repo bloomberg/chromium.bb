@@ -1446,6 +1446,13 @@ internal_paladin.add_config('samus-paladin',
   important=False,
 )
 
+internal_paladin.add_config('squawks-paladin',
+  incompatible_instruction_set,
+  boards=['squawks'],
+  paladin_builder_name='squawks paladin',
+  important=False,
+)
+
 # x86 full unit tests
 internal_paladin.add_config('peppy-paladin',
   boards=['peppy'],
@@ -1800,6 +1807,14 @@ _release.add_config('sonic-release',
   sonic,
 )
 
+# squawks-release does not enable vm_tests or unittests due to the compiler
+# flags enabled for baytrail.
+_release.add_config('squawks-release',
+  incompatible_instruction_set,
+  boards=['squawks'],
+  hw_tests=[],
+)
+
 _release.add_config('stout-release',
   boards=['stout'],
 )
@@ -1916,6 +1931,7 @@ _x86_firmware_boards = (
   'peppy',
   'rambi',
   'samus',
+  'squawks',
   'stout',
   'stout32',
   'slippy',
@@ -1932,6 +1948,7 @@ _x86_depthcharge_firmware_boards = (
   'link',
   'rambi',
   'samus',
+  'squawks',
 )
 
 _arm_firmware_boards = (
