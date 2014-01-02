@@ -51,8 +51,9 @@ public:
 
     PassRefPtr<HistoryItem> copy() const;
 
-    // Resets the HistoryItem to its initial state, as returned by create().
-    void reset();
+    // Used when the frame this item represents was navigated to a different
+    // url but a new item wasn't created.
+    void generateNewSequenceNumbers();
 
     const String& originalURLString() const;
     const String& urlString() const;

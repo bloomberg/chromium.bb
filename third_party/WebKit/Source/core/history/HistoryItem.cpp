@@ -82,19 +82,10 @@ PassRefPtr<HistoryItem> HistoryItem::copy() const
     return adoptRef(new HistoryItem(*this));
 }
 
-void HistoryItem::reset()
+void HistoryItem::generateNewSequenceNumbers()
 {
-    m_urlString = String();
-    m_originalURLString = String();
-    m_referrer = nullAtom;
-    m_target = String();
     m_itemSequenceNumber = generateSequenceNumber();
-    m_stateObject = 0;
     m_documentSequenceNumber = generateSequenceNumber();
-    m_targetFrameID = 0;
-    m_formData = 0;
-    m_formContentType = nullAtom;
-    clearChildren();
 }
 
 const String& HistoryItem::urlString() const
@@ -224,8 +215,6 @@ const AtomicString& HistoryItem::formContentType() const
 
 void HistoryItem::setFormInfoFromRequest(const ResourceRequest& request)
 {
-    m_referrer = request.httpReferrer();
-
     if (equalIgnoringCase(request.httpMethod(), "POST")) {
         // FIXME: Eventually we have to make this smart enough to handle the case where
         // we have a stream for the body to handle the "data interspersed with files" feature.

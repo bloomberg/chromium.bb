@@ -241,7 +241,7 @@ private:
         CreateNewHistoryItem,
         DoNotCreateNewHistoryItem
     };
-    void setHistoryItemStateForCommit(HistoryItemPolicy);
+    void setHistoryItemStateForCommit(HistoryItemPolicy, bool isPushOrReplaceState = false, PassRefPtr<SerializedScriptValue> = 0);
 
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation, ClientRedirectPolicy);
 
@@ -273,6 +273,7 @@ private:
     OwnPtr<FetchContext> m_fetchContext;
 
     RefPtr<HistoryItem> m_currentItem;
+    RefPtr<HistoryItem> m_provisionalItem;
 
     bool m_inStopAllLoaders;
 

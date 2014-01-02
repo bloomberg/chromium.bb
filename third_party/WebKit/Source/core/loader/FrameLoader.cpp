@@ -240,11 +240,7 @@ void FrameLoader::clearScrollPositionAndViewState()
 
 bool FrameLoader::closeURL()
 {
-    // This is done when a back/forward navigation begins (and the current item
-    // changes) in loadHistoryItem(). Saving now will save the state will save
-    // to the wrong item if the navigation is back/forward.
-    if (m_loadType != FrameLoadTypeBackForward)
-        saveDocumentAndScrollState();
+    saveDocumentAndScrollState();
 
     // Should only send the pagehide event here if the current document exists.
     if (m_frame->document())
@@ -313,22 +309,26 @@ void FrameLoader::clear(ClearOptions options)
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
 }
 
-void FrameLoader::setHistoryItemStateForCommit(HistoryItemPolicy historyItemPolicy)
+void FrameLoader::setHistoryItemStateForCommit(HistoryItemPolicy historyItemPolicy, bool isPushOrReplaceState, PassRefPtr<SerializedScriptValue> stateObject)
 {
-    if (!m_currentItem || historyItemPolicy == CreateNewHistoryItem || m_currentItem->url() != m_documentLoader->url()) {
-        if (!m_currentItem || historyItemPolicy == CreateNewHistoryItem)
-            m_currentItem = HistoryItem::create();
-        else
-            m_currentItem->reset();
-        const KURL& unreachableURL = m_documentLoader->unreachableURL();
-        const KURL& url = unreachableURL.isEmpty() ? m_documentLoader->requestURL() : unreachableURL;
-        const KURL& originalURL = unreachableURL.isEmpty() ? m_documentLoader->originalURL() : unreachableURL;
-        m_currentItem->setURL(url);
-        m_currentItem->setTarget(m_frame->tree().uniqueName());
-        m_currentItem->setTargetFrameID(m_frame->frameID());
-        m_currentItem->setOriginalURLString(originalURL.string());
-    }
-    m_currentItem->setFormInfoFromRequest(m_documentLoader->request());
+    if (m_provisionalItem)
+        m_currentItem = m_provisionalItem.release();
+    if (m_currentItem && historyItemPolicy != CreateNewHistoryItem && m_currentItem->url() == m_documentLoader->url() && !isPushOrReplaceState)
+        return;
+    if (!m_currentItem || historyItemPolicy == CreateNewHistoryItem)
+        m_currentItem = HistoryItem::create();
+    else if (!isPushOrReplaceState)
+        m_currentItem->generateNewSequenceNumbers();
+    const KURL& unreachableURL = m_documentLoader->unreachableURL();
+    const KURL& url = unreachableURL.isEmpty() ? m_documentLoader->requestURL() : unreachableURL;
+    const KURL& originalURL = unreachableURL.isEmpty() ? m_documentLoader->originalURL() : unreachableURL;
+    m_currentItem->setURL(url);
+    m_currentItem->setTarget(m_frame->tree().uniqueName());
+    m_currentItem->setTargetFrameID(m_frame->frameID());
+    m_currentItem->setOriginalURLString(originalURL.string());
+    m_currentItem->setStateObject(stateObject);
+    m_currentItem->setReferrer(m_documentLoader->request().httpReferrer());
+    m_currentItem->setFormInfoFromRequest(isPushOrReplaceState ? ResourceRequest() : m_documentLoader->request());
 }
 
 static HistoryCommitType loadTypeToCommitType(FrameLoadType type, bool isStandardLoadWithValidURL)
@@ -371,8 +371,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
     m_isComplete = false;
     m_frame->document()->setReadyState(Document::Loading);
 
-    if (m_currentItem && m_loadType == FrameLoadTypeBackForward)
-        m_frame->domWindow()->statePopped(m_currentItem->stateObject());
+    if (m_provisionalItem && m_loadType == FrameLoadTypeBackForward)
+        m_frame->domWindow()->statePopped(m_provisionalItem->stateObject());
 
     if (dispatch)
         dispatchDidClearWindowObjectsInAllWorlds();
@@ -400,8 +400,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
         }
     }
 
-    if (m_currentItem && m_loadType == FrameLoadTypeBackForward)
-        m_frame->document()->setStateForNewFormElements(m_currentItem->documentState());
+    if (m_provisionalItem && m_loadType == FrameLoadTypeBackForward)
+        m_frame->document()->setStateForNewFormElements(m_provisionalItem->documentState());
 }
 
 void FrameLoader::finishedParsing()
@@ -564,22 +564,14 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
         m_client->postProgressStartedNotification();
 
     HistoryCommitType historyCommitType = HistoryInertCommit;
+    HistoryItemPolicy historyItemPolicy = DoNotCreateNewHistoryItem;
     if (updateBackForwardList == UpdateBackForwardList || (sameDocumentNavigationSource == SameDocumentNavigationPushState && m_currentItem)) {
         historyCommitType = StandardCommit;
-        setHistoryItemStateForCommit(CreateNewHistoryItem);
+        historyItemPolicy = CreateNewHistoryItem;
     }
+    setHistoryItemStateForCommit(historyItemPolicy, sameDocumentNavigationSource != SameDocumentNavigationDefault, data);
     m_client->dispatchDidNavigateWithinPage(m_currentItem.get(), historyCommitType);
     m_client->dispatchDidReceiveTitle(m_frame->document()->title());
-
-    if (m_currentItem) {
-        m_currentItem->setURL(newURL);
-        if (sameDocumentNavigationSource != SameDocumentNavigationDefault) {
-            m_currentItem->setStateObject(data);
-            m_currentItem->setFormData(0);
-            m_currentItem->setFormContentType(nullAtom);
-        }
-    }
-
     if (m_frame->document()->loadEventFinished())
         m_client->postProgressFinishedNotification();
 }
@@ -673,7 +665,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
         return FrameLoadTypeStandard;
     if (request.resourceRequest().cachePolicy() == ReloadIgnoringCacheData)
         return FrameLoadTypeReload;
-    if (shouldTreatURLAsSameAsCurrent(request.substituteData().failingURL()) && m_loadType == FrameLoadTypeBackForward)
+    if (m_provisionalDocumentLoader && request.substituteData().failingURL() == m_provisionalDocumentLoader->url() && m_loadType == FrameLoadTypeBackForward)
         return FrameLoadTypeBackForward;
     if (request.lockBackForwardList() || isScriptTriggeredFormSubmissionInChildFrame(request))
         return FrameLoadTypeRedirectWithLockedBackForwardList;
@@ -1466,8 +1458,7 @@ Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* a
 
 void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType)
 {
-    saveDocumentAndScrollState();
-    m_currentItem = item;
+    m_provisionalItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
         loadInSameDocument(item->url(), item->stateObject(), false, NotClientRedirect);
         restoreScrollPositionAndViewState(ForcedRestoreForSameDocumentHistoryNavigation);
