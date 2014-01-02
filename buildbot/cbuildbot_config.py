@@ -1213,26 +1213,24 @@ internal_paladin = internal.derive(official_chrome, paladin,
 internal_nowithdebug_paladin = internal_paladin.derive(
   useflags=official['useflags'] + ['-cros-debug'],
   description=paladin['description'] + ' (internal, nowithdebug)',
+  prebuilts=False,
 )
 
 internal_nowithdebug_paladin.add_config('x86-generic-nowithdebug-paladin',
   boards=['x86-generic'],
   paladin_builder_name='x86-generic nowithdebug-paladin',
-  prebuilts=False,
   important=False,
 )
 
 internal_nowithdebug_paladin.add_config('amd64-generic-nowithdebug-paladin',
   boards=['amd64-generic'],
   paladin_builder_name='amd64-generic nowithdebug-paladin',
-  prebuilts=False,
   important=False,
 )
 
 internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
   boards=['x86-mario'],
   paladin_builder_name='x86-mario nowithdebug-paladin',
-  prebuilts=False,
   important=False,
 )
 
