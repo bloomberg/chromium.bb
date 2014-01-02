@@ -5,7 +5,6 @@
 #include "cc/resources/worker_pool.h"
 
 #include <algorithm>
-#include <queue>
 
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
@@ -98,18 +97,15 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   void CollectCompletedTasks(TaskVector* completed_tasks);
 
  private:
-  class PriorityComparator {
-   public:
-    bool operator()(const internal::GraphNode* a,
-                    const internal::GraphNode* b) {
-      // In this system, numerically lower priority is run first.
-      if (a->priority() != b->priority())
-        return a->priority() > b->priority();
+  static bool CompareTaskPriority(const internal::GraphNode* a,
+                                  const internal::GraphNode* b) {
+    // In this system, numerically lower priority is run first.
+    if (a->priority() != b->priority())
+      return a->priority() > b->priority();
 
-      // Run task with most dependents first when priority is the same.
-      return a->dependents().size() < b->dependents().size();
-    }
-  };
+    // Run task with most dependents first when priority is the same.
+    return a->dependents().size() < b->dependents().size();
+  }
 
   // Overridden from base::DelegateSimpleThread:
   virtual void Run() OVERRIDE;
@@ -134,11 +130,8 @@ class WorkerPool::Inner : public base::DelegateSimpleThread::Delegate {
   // This set contains all pending tasks.
   GraphNodeMap pending_tasks_;
 
-  // Ordered set of tasks that are ready to run.
-  typedef std::priority_queue<internal::GraphNode*,
-                              std::vector<internal::GraphNode*>,
-                              PriorityComparator> TaskQueue;
-  TaskQueue ready_to_run_tasks_;
+  // Priority queue containing tasks that are ready to run.
+  internal::GraphNode::Vector ready_to_run_tasks_;
 
   // This set contains all currently running tasks.
   GraphNodeMap running_tasks_;
@@ -213,7 +206,6 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
 
   GraphNodeMap new_pending_tasks;
   GraphNodeMap new_running_tasks;
-  TaskQueue new_ready_to_run_tasks;
 
   new_pending_tasks.swap(*graph);
 
@@ -250,7 +242,7 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
     }
 
     // Build new "ready to run" tasks queue.
-    // TODO(reveman): Create this queue when building the task graph instead.
+    ready_to_run_tasks_.clear();
     for (GraphNodeMap::iterator it = new_pending_tasks.begin();
          it != new_pending_tasks.end(); ++it) {
       internal::WorkerPoolTask* task = it->first;
@@ -265,11 +257,17 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
       task->DidSchedule();
 
       if (!node->num_dependencies())
-        new_ready_to_run_tasks.push(node);
+        ready_to_run_tasks_.push_back(node);
 
       // Erase the task from old pending tasks.
       pending_tasks_.erase(task);
     }
+
+    // Rearrange the elements in |ready_to_run_tasks_| in such a way that
+    // they form a heap.
+    std::make_heap(ready_to_run_tasks_.begin(),
+                   ready_to_run_tasks_.end(),
+                   CompareTaskPriority);
 
     completed_tasks_.reserve(completed_tasks_.size() + pending_tasks_.size());
 
@@ -284,7 +282,6 @@ void WorkerPool::Inner::SetTaskGraph(TaskGraph* graph) {
     // Note: old tasks are intentionally destroyed after releasing |lock_|.
     pending_tasks_.swap(new_pending_tasks);
     running_tasks_.swap(new_running_tasks);
-    std::swap(ready_to_run_tasks_, new_ready_to_run_tasks);
 
     // If |ready_to_run_tasks_| is empty, it means we either have
     // running tasks, or we have no pending tasks.
@@ -322,9 +319,12 @@ void WorkerPool::Inner::Run() {
     }
 
     // Take top priority task from |ready_to_run_tasks_|.
+    std::pop_heap(ready_to_run_tasks_.begin(),
+                  ready_to_run_tasks_.end(),
+                  CompareTaskPriority);
     scoped_refptr<internal::WorkerPoolTask> task(
-        ready_to_run_tasks_.top()->task());
-    ready_to_run_tasks_.pop();
+        ready_to_run_tasks_.back()->task());
+    ready_to_run_tasks_.pop_back();
 
     // Move task from |pending_tasks_| to |running_tasks_|.
     DCHECK(pending_tasks_.contains(task.get()));
@@ -359,8 +359,12 @@ void WorkerPool::Inner::Run() {
         dependent_node->remove_dependency();
         // Task is ready if it has no dependencies. Add it to
         // |ready_to_run_tasks_|.
-        if (!dependent_node->num_dependencies())
-          ready_to_run_tasks_.push(dependent_node);
+        if (!dependent_node->num_dependencies()) {
+          ready_to_run_tasks_.push_back(dependent_node);
+          std::push_heap(ready_to_run_tasks_.begin(),
+                         ready_to_run_tasks_.end(),
+                         CompareTaskPriority);
+        }
       }
     }
 
