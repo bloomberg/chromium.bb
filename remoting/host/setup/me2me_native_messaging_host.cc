@@ -99,46 +99,43 @@ void Me2MeNativeMessagingHost::ProcessMessage(
 
   response->SetString("type", type + "Response");
 
-  bool success = false;
   if (type == "hello") {
-    success = ProcessHello(*message, response.Pass());
+    ProcessHello(*message, response.Pass());
   } else if (type == "clearPairedClients") {
-    success = ProcessClearPairedClients(*message, response.Pass());
+    ProcessClearPairedClients(*message, response.Pass());
   } else if (type == "deletePairedClient") {
-    success = ProcessDeletePairedClient(*message, response.Pass());
+    ProcessDeletePairedClient(*message, response.Pass());
   } else if (type == "getHostName") {
-    success = ProcessGetHostName(*message, response.Pass());
+    ProcessGetHostName(*message, response.Pass());
   } else if (type == "getPinHash") {
-    success = ProcessGetPinHash(*message, response.Pass());
+    ProcessGetPinHash(*message, response.Pass());
   } else if (type == "generateKeyPair") {
-    success = ProcessGenerateKeyPair(*message, response.Pass());
+    ProcessGenerateKeyPair(*message, response.Pass());
   } else if (type == "updateDaemonConfig") {
-    success = ProcessUpdateDaemonConfig(*message, response.Pass());
+    ProcessUpdateDaemonConfig(*message, response.Pass());
   } else if (type == "getDaemonConfig") {
-    success = ProcessGetDaemonConfig(*message, response.Pass());
+    ProcessGetDaemonConfig(*message, response.Pass());
   } else if (type == "getPairedClients") {
-    success = ProcessGetPairedClients(*message, response.Pass());
+    ProcessGetPairedClients(*message, response.Pass());
   } else if (type == "getUsageStatsConsent") {
-    success = ProcessGetUsageStatsConsent(*message, response.Pass());
+    ProcessGetUsageStatsConsent(*message, response.Pass());
   } else if (type == "startDaemon") {
-    success = ProcessStartDaemon(*message, response.Pass());
+    ProcessStartDaemon(*message, response.Pass());
   } else if (type == "stopDaemon") {
-    success = ProcessStopDaemon(*message, response.Pass());
+    ProcessStopDaemon(*message, response.Pass());
   } else if (type == "getDaemonState") {
-    success = ProcessGetDaemonState(*message, response.Pass());
+    ProcessGetDaemonState(*message, response.Pass());
   } else if (type == "getHostClientId") {
-    success = ProcessGetHostClientId(*message, response.Pass());
+    ProcessGetHostClientId(*message, response.Pass());
   } else if (type == "getCredentialsFromAuthCode") {
-    success = ProcessGetCredentialsFromAuthCode(*message, response.Pass());
+    ProcessGetCredentialsFromAuthCode(*message, response.Pass());
   } else {
     LOG(ERROR) << "Unsupported request type: " << type;
+    OnError();
   }
-
-  if (!success)
-    channel_->SendMessage(scoped_ptr<base::DictionaryValue>());
 }
 
-bool Me2MeNativeMessagingHost::ProcessHello(
+void Me2MeNativeMessagingHost::ProcessHello(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -149,10 +146,9 @@ bool Me2MeNativeMessagingHost::ProcessHello(
       kSupportedFeatures, kSupportedFeatures + arraysize(kSupportedFeatures)));
   response->Set("supportedFeatures", supported_features_list.release());
   channel_->SendMessage(response.Pass());
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessClearPairedClients(
+void Me2MeNativeMessagingHost::ProcessClearPairedClients(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -164,10 +160,9 @@ bool Me2MeNativeMessagingHost::ProcessClearPairedClients(
   } else {
     SendBooleanResult(response.Pass(), false);
   }
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessDeletePairedClient(
+void Me2MeNativeMessagingHost::ProcessDeletePairedClient(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -176,7 +171,8 @@ bool Me2MeNativeMessagingHost::ProcessDeletePairedClient(
   if (!message.GetString(protocol::PairingRegistry::kClientIdKey, &client_id)) {
     LOG(ERROR) << "'" << protocol::PairingRegistry::kClientIdKey
                << "' string not found.";
-    return false;
+    OnError();
+    return;
   }
 
   if (pairing_registry_) {
@@ -186,20 +182,18 @@ bool Me2MeNativeMessagingHost::ProcessDeletePairedClient(
   } else {
     SendBooleanResult(response.Pass(), false);
   }
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessGetHostName(
+void Me2MeNativeMessagingHost::ProcessGetHostName(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   response->SetString("hostname", net::GetHostName());
   channel_->SendMessage(response.Pass());
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessGetPinHash(
+void Me2MeNativeMessagingHost::ProcessGetPinHash(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -207,19 +201,20 @@ bool Me2MeNativeMessagingHost::ProcessGetPinHash(
   std::string host_id;
   if (!message.GetString("hostId", &host_id)) {
     LOG(ERROR) << "'hostId' not found: " << message;
-    return false;
+    OnError();
+    return;
   }
   std::string pin;
   if (!message.GetString("pin", &pin)) {
     LOG(ERROR) << "'pin' not found: " << message;
-    return false;
+    OnError();
+    return;
   }
   response->SetString("hash", MakeHostPinHash(host_id, pin));
   channel_->SendMessage(response.Pass());
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessGenerateKeyPair(
+void Me2MeNativeMessagingHost::ProcessGenerateKeyPair(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -228,27 +223,27 @@ bool Me2MeNativeMessagingHost::ProcessGenerateKeyPair(
   response->SetString("privateKey", key_pair->ToString());
   response->SetString("publicKey", key_pair->GetPublicKey());
   channel_->SendMessage(response.Pass());
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
+void Me2MeNativeMessagingHost::ProcessUpdateDaemonConfig(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   scoped_ptr<base::DictionaryValue> config_dict =
       ConfigDictionaryFromMessage(message);
-  if (!config_dict)
-    return false;
+  if (!config_dict) {
+    OnError();
+    return;
+  }
 
   daemon_controller_->UpdateConfig(
       config_dict.Pass(),
       base::Bind(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
                  base::Passed(&response)));
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessGetDaemonConfig(
+void Me2MeNativeMessagingHost::ProcessGetDaemonConfig(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -256,10 +251,9 @@ bool Me2MeNativeMessagingHost::ProcessGetDaemonConfig(
   daemon_controller_->GetConfig(
       base::Bind(&Me2MeNativeMessagingHost::SendConfigResponse, weak_ptr_,
                  base::Passed(&response)));
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessGetPairedClients(
+void Me2MeNativeMessagingHost::ProcessGetPairedClients(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -272,10 +266,9 @@ bool Me2MeNativeMessagingHost::ProcessGetPairedClients(
     scoped_ptr<base::ListValue> no_paired_clients(new base::ListValue);
     SendPairedClientsResponse(response.Pass(), no_paired_clients.Pass());
   }
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessGetUsageStatsConsent(
+void Me2MeNativeMessagingHost::ProcessGetUsageStatsConsent(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -283,10 +276,9 @@ bool Me2MeNativeMessagingHost::ProcessGetUsageStatsConsent(
   daemon_controller_->GetUsageStatsConsent(
       base::Bind(&Me2MeNativeMessagingHost::SendUsageStatsConsentResponse,
                  weak_ptr_, base::Passed(&response)));
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessStartDaemon(
+void Me2MeNativeMessagingHost::ProcessStartDaemon(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -294,22 +286,24 @@ bool Me2MeNativeMessagingHost::ProcessStartDaemon(
   bool consent;
   if (!message.GetBoolean("consent", &consent)) {
     LOG(ERROR) << "'consent' not found.";
-    return false;
+    OnError();
+    return;
   }
 
   scoped_ptr<base::DictionaryValue> config_dict =
       ConfigDictionaryFromMessage(message);
-  if (!config_dict)
-    return false;
+  if (!config_dict) {
+    OnError();
+    return;
+  }
 
   daemon_controller_->SetConfigAndStart(
       config_dict.Pass(), consent,
       base::Bind(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
                  base::Passed(&response)));
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessStopDaemon(
+void Me2MeNativeMessagingHost::ProcessStopDaemon(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -317,10 +311,9 @@ bool Me2MeNativeMessagingHost::ProcessStopDaemon(
   daemon_controller_->Stop(
       base::Bind(&Me2MeNativeMessagingHost::SendAsyncResult, weak_ptr_,
                  base::Passed(&response)));
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessGetDaemonState(
+void Me2MeNativeMessagingHost::ProcessGetDaemonState(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -353,10 +346,9 @@ bool Me2MeNativeMessagingHost::ProcessGetDaemonState(
       break;
   }
   channel_->SendMessage(response.Pass());
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessGetHostClientId(
+void Me2MeNativeMessagingHost::ProcessGetHostClientId(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -364,10 +356,9 @@ bool Me2MeNativeMessagingHost::ProcessGetHostClientId(
   response->SetString("clientId", google_apis::GetOAuth2ClientID(
       google_apis::CLIENT_REMOTING_HOST));
   channel_->SendMessage(response.Pass());
-  return true;
 }
 
-bool Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
+void Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
     const base::DictionaryValue& message,
     scoped_ptr<base::DictionaryValue> response) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -375,7 +366,8 @@ bool Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
   std::string auth_code;
   if (!message.GetString("authorizationCode", &auth_code)) {
     LOG(ERROR) << "'authorizationCode' string not found.";
-    return false;
+    OnError();
+    return;
   }
 
   gaia::OAuthClientInfo oauth_client_info = {
@@ -388,8 +380,6 @@ bool Me2MeNativeMessagingHost::ProcessGetCredentialsFromAuthCode(
       oauth_client_info, auth_code, base::Bind(
           &Me2MeNativeMessagingHost::SendCredentialsResponse, weak_ptr_,
           base::Passed(&response)));
-
-  return true;
 }
 
 void Me2MeNativeMessagingHost::SendConfigResponse(
@@ -464,6 +454,11 @@ void Me2MeNativeMessagingHost::SendCredentialsResponse(
   response->SetString("userEmail", user_email);
   response->SetString("refreshToken", refresh_token);
   channel_->SendMessage(response.Pass());
+}
+
+void Me2MeNativeMessagingHost::OnError() {
+  // Trigger a host shutdown by sending a NULL message.
+  channel_->SendMessage(scoped_ptr<base::DictionaryValue>());
 }
 
 }  // namespace remoting

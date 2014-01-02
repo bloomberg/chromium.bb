@@ -48,49 +48,49 @@ class Me2MeNativeMessagingHost {
   // These "Process.." methods handle specific request types. The |response|
   // dictionary is pre-filled by ProcessMessage() with the parts of the
   // response already known ("id" and "type" fields).
-  bool ProcessHello(
+  void ProcessHello(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessClearPairedClients(
+  void ProcessClearPairedClients(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessDeletePairedClient(
+  void ProcessDeletePairedClient(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetHostName(
+  void ProcessGetHostName(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetPinHash(
+  void ProcessGetPinHash(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGenerateKeyPair(
+  void ProcessGenerateKeyPair(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessUpdateDaemonConfig(
+  void ProcessUpdateDaemonConfig(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetDaemonConfig(
+  void ProcessGetDaemonConfig(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetPairedClients(
+  void ProcessGetPairedClients(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetUsageStatsConsent(
+  void ProcessGetUsageStatsConsent(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessStartDaemon(
+  void ProcessStartDaemon(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessStopDaemon(
+  void ProcessStopDaemon(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetDaemonState(
+  void ProcessGetDaemonState(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetHostClientId(
+  void ProcessGetHostClientId(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
-  bool ProcessGetCredentialsFromAuthCode(
+  void ProcessGetCredentialsFromAuthCode(
       const base::DictionaryValue& message,
       scoped_ptr<base::DictionaryValue> response);
 
@@ -112,6 +112,8 @@ class Me2MeNativeMessagingHost {
   void SendCredentialsResponse(scoped_ptr<base::DictionaryValue> response,
                                const std::string& user_email,
                                const std::string& refresh_token);
+
+  void OnError();
 
   scoped_ptr<NativeMessagingChannel> channel_;
   scoped_refptr<DaemonController> daemon_controller_;
