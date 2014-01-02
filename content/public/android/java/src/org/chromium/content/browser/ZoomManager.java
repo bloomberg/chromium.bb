@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
@@ -105,6 +106,11 @@ class ZoomManager {
         mContentViewCore = contentViewCore;
         mMultiTouchListener = new ScaleGestureListener();
         mMultiTouchDetector = new ScaleGestureDetector(context, mMultiTouchListener);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // TODO(jdduke): Enable this and remove the custom double-tap drag
+            // zoom code from ContentViewGestureHandler, crbug/331092.
+            mMultiTouchDetector.setQuickScaleEnabled(false);
+        }
     }
 
     boolean isScaleGestureDetectionInProgress() {
