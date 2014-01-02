@@ -47,10 +47,13 @@ OpaqueRegionSkia::OpaqueRegionSkia()
 IntRect OpaqueRegionSkia::asRect() const
 {
     // Returns the largest enclosed rect.
-    int left = SkScalarCeil(m_opaqueRect.fLeft);
-    int top = SkScalarCeil(m_opaqueRect.fTop);
-    int right = SkScalarFloor(m_opaqueRect.fRight);
-    int bottom = SkScalarFloor(m_opaqueRect.fBottom);
+    // TODO: actually, this logic looks like its returning the smallest.
+    //       to return largest, shouldn't we take floor of left/top
+    //       and the ceil of right/bottom?
+    int left = SkScalarCeilToInt(m_opaqueRect.fLeft);
+    int top = SkScalarCeilToInt(m_opaqueRect.fTop);
+    int right = SkScalarFloorToInt(m_opaqueRect.fRight);
+    int bottom = SkScalarFloorToInt(m_opaqueRect.fBottom);
     return IntRect(left, top, right-left, bottom-top);
 }
 

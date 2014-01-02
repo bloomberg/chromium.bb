@@ -91,8 +91,8 @@ void SimpleFontData::platformInit()
         ascent = vdmxAscent;
         descent = -vdmxDescent;
     } else {
-        ascent = SkScalarRound(-metrics.fAscent);
-        descent = SkScalarRound(metrics.fDescent);
+        ascent = SkScalarRoundToInt(-metrics.fAscent);
+        descent = SkScalarRoundToInt(metrics.fDescent);
 #if OS(LINUX) || OS(ANDROID)
         // When subpixel positioning is enabled, if the descent is rounded down, the descent part
         // of the glyph may be truncated when displayed in a 'overflow: hidden' container.
@@ -135,16 +135,16 @@ void SimpleFontData::platformInit()
     // calculated for us, but we need to calculate m_maxCharWidth and
     // m_avgCharWidth in order for text entry widgets to be sized correctly.
 #if OS(WIN)
-    m_maxCharWidth = SkScalarRound(metrics.fMaxCharWidth);
+    m_maxCharWidth = SkScalarRoundToInt(metrics.fMaxCharWidth);
 #else
     // FIXME: This seems incorrect and should probably use fMaxCharWidth as
     // the code path above.
     SkScalar xRange = metrics.fXMax - metrics.fXMin;
-    m_maxCharWidth = SkScalarRound(xRange * SkScalarRound(m_platformData.size()));
+    m_maxCharWidth = SkScalarRoundToInt(xRange * SkScalarRoundToInt(m_platformData.size()));
 #endif
 
     if (metrics.fAvgCharWidth)
-        m_avgCharWidth = SkScalarRound(metrics.fAvgCharWidth);
+        m_avgCharWidth = SkScalarRoundToInt(metrics.fAvgCharWidth);
     else {
         m_avgCharWidth = xHeight;
 
@@ -265,7 +265,7 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     SkScalar width = paint.measureText(&glyph, 2);
     if (!paint.isSubpixelText())
-        width = SkScalarRound(width);
+        width = SkScalarRoundToInt(width);
     return SkScalarToFloat(width);
 }
 

@@ -766,7 +766,7 @@ void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
     // be the sum of the displacement component vectors give or take 1 -
     // probably worth the speed up of no square root, which also won't be exact.
     FloatSize disp = p2 - p1;
-    int length = SkScalarRound(disp.width() + disp.height());
+    int length = SkScalarRoundToInt(disp.width() + disp.height());
     setupPaintForStroking(&paint, length);
 
     if (strokeStyle() == DottedStroke || strokeStyle() == DashedStroke) {
@@ -1751,8 +1751,8 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& s
 void GraphicsContext::addCornerArc(SkPath* path, const SkRect& rect, const IntSize& size, int startAngle)
 {
     SkIRect ir;
-    int rx = SkMin32(SkScalarRound(rect.width()), size.width());
-    int ry = SkMin32(SkScalarRound(rect.height()), size.height());
+    int rx = SkMin32(SkScalarRoundToInt(rect.width()), size.width());
+    int ry = SkMin32(SkScalarRoundToInt(rect.height()), size.height());
 
     ir.set(-rx, -ry, rx, ry);
     switch (startAngle) {
