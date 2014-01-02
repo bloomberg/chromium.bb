@@ -44,7 +44,11 @@
 #define PNG_NO_READ_DITHER
 #define PNG_NO_READ_INVERT
 #define PNG_NO_READ_SHIFT
+#if defined(CHROME_PNG_READ_PACK_SUPPORT)
+#undef PNG_NO_READ_PACK  // Required by freetype to support png glyphs.
+#else
 #define PNG_NO_READ_PACK
+#endif
 #define PNG_NO_READ_PACKSWAP
 #undef PNG_NO_READ_FILLER
 #define PNG_NO_READ_SWAP

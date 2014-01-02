@@ -15,3 +15,5 @@ stripped.
 
 - One custom patch for bug 112822, to be sent upstream.
 - Also a signedness condition from upstream relating to the above, bug 116162.
+- Unset PNG_NO_READ_PACK on Android in pngusr.h, required by freetype to support
+  color glyphs.

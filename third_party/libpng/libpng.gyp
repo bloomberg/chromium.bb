@@ -71,6 +71,14 @@
         }],
         ['OS=="android"', {
           'toolsets': ['target', 'host'],
+          'defines': [
+            'CHROME_PNG_READ_PACK_SUPPORT',  # Required by freetype.
+          ],
+          'direct_dependent_settings': {
+            'defines': [
+              'CHROME_PNG_READ_PACK_SUPPORT',
+            ],
+          },
         }],
       ],
     },
