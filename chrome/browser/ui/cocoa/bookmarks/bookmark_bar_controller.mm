@@ -762,13 +762,6 @@ void RecordAppLaunch(Profile* profile, GURL url) {
 // Configure the off-the-side button (e.g. specify the node range,
 // check if we should enable or disable it, etc).
 - (void)configureOffTheSideButtonContentsAndVisibility {
-  // If deleting a button while off-the-side is open, buttons may be
-  // promoted from off-the-side to the bar.  Accomodate.
-  if (folderController_ &&
-      ([folderController_ parentButton] == offTheSideButton_)) {
-    [folderController_ reconfigureMenu];
-  }
-
   [[offTheSideButton_ cell] setStartingChildIndex:displayedButtonCount_];
   [[offTheSideButton_ cell]
    setBookmarkNode:bookmarkModel_->bookmark_bar_node()];
