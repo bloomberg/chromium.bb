@@ -810,9 +810,11 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   ComputeContentsSize(frame->metadata);
 
   if (layer_->layer_tree_host()) {
-    scoped_ptr<cc::SwapPromise> swap_promise(
-        new cc::LatencyInfoSwapPromise(frame->metadata.latency_info));
-    layer_->layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
+    for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
+      scoped_ptr<cc::SwapPromise> swap_promise(
+          new cc::LatencyInfoSwapPromise(frame->metadata.latency_info[i]));
+      layer_->layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
+    }
   }
 
   BuffersSwapped(frame->gl_frame_data->mailbox, output_surface_id, callback);

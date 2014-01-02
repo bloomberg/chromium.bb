@@ -1693,7 +1693,9 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
       software_frame_manager_->GetCurrentFrameOutputSurfaceId(),
       render_widget_host_->GetProcess()->GetID(),
       ack);
-  software_latency_info_.push_back(frame->metadata.latency_info);
+  for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
+    software_latency_info_.push_back(frame->metadata.latency_info[i]);
+  }
   software_frame_manager_->SwapToNewFrameComplete(
       !render_widget_host_->is_hidden());
 

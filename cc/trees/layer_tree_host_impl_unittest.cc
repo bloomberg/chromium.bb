@@ -5340,10 +5340,9 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   FakeOutputSurface* fake_output_surface =
       static_cast<FakeOutputSurface*>(host_impl_->output_surface());
 
-  const ui::LatencyInfo& metadata_latency_before =
+  const std::vector<ui::LatencyInfo>& metadata_latency_before =
       fake_output_surface->last_sent_frame().metadata.latency_info;
-  EXPECT_FALSE(metadata_latency_before.FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, NULL));
+  EXPECT_TRUE(metadata_latency_before.empty());
 
   ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(
@@ -5360,9 +5359,10 @@ TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
   host_impl_->DidDrawAllLayers(frame);
   EXPECT_TRUE(host_impl_->SwapBuffers(frame));
 
-  const ui::LatencyInfo& metadata_latency_after =
+  const std::vector<ui::LatencyInfo>& metadata_latency_after =
       fake_output_surface->last_sent_frame().metadata.latency_info;
-  EXPECT_TRUE(metadata_latency_after.FindLatency(
+  EXPECT_EQ(1u, metadata_latency_after.size());
+  EXPECT_TRUE(metadata_latency_after[0].FindLatency(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, NULL));
 }
 

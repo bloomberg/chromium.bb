@@ -131,7 +131,7 @@ class CommandBufferProxyImpl
   void SetOnConsoleMessageCallback(
       const GpuConsoleMessageCallback& callback);
 
-  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
+  void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
 
   // TODO(apatrick): this is a temporary optimization while skia is calling
   // ContentGLContext::MakeCurrent prior to every GL call. It saves returning 6

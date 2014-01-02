@@ -1329,11 +1329,16 @@ void RenderWidgetHostViewAura::AcceleratedSurfaceBuffersSwapped(
       params_in_pixel.route_id,
       gpu_host_id,
       params_in_pixel.mailbox_name);
+  // TODO(miletus) : Pass the params_in_pixel.latency_info directly into
+  // BuffersSwapped() once GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params
+  // is converted to contain std::vector<ui::LatencyInfo>.
+  std::vector<ui::LatencyInfo> latency_info;
+  latency_info.push_back(params_in_pixel.latency_info);
   BuffersSwapped(params_in_pixel.size,
                  gfx::Rect(params_in_pixel.size),
                  params_in_pixel.scale_factor,
                  params_in_pixel.mailbox_name,
-                 params_in_pixel.latency_info,
+                 latency_info,
                  ack_callback);
 }
 
@@ -1341,7 +1346,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::DelegatedFrameData> frame_data,
     float frame_device_scale_factor,
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   DCHECK_NE(0u, frame_data->render_pass_list.size());
 
   cc::RenderPass* root_pass = frame_data->render_pass_list.back();
@@ -1437,7 +1442,8 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   if (!compositor) {
     SendDelegatedFrameAck(output_surface_id);
   } else {
-    compositor->SetLatencyInfo(latency_info);
+    for (size_t i = 0; i < latency_info.size(); i++)
+      compositor->SetLatencyInfo(latency_info[i]);
     AddOnCommitCallbackAndDisableLocks(
         base::Bind(&RenderWidgetHostViewAura::SendDelegatedFrameAck,
                    AsWeakPtr(),
@@ -1491,7 +1497,7 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
     uint32 output_surface_id,
     scoped_ptr<cc::SoftwareFrameData> frame_data,
     float frame_device_scale_factor,
-    const ui::LatencyInfo& latency_info) {
+    const std::vector<ui::LatencyInfo>& latency_info) {
   const gfx::Size& frame_size = frame_data->size;
   const gfx::Rect& damage_rect = frame_data->damage_rect;
   gfx::Size frame_size_in_dip =
@@ -1535,7 +1541,8 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
 
   ui::Compositor* compositor = GetCompositor();
   if (compositor) {
-    compositor->SetLatencyInfo(latency_info);
+    for (size_t i = 0; i < latency_info.size(); i++)
+      compositor->SetLatencyInfo(latency_info[i]);
     AddOnCommitCallbackAndDisableLocks(
         base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
                    AsWeakPtr(),
@@ -1654,7 +1661,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
     const gfx::Rect& damage_rect,
     float surface_scale_factor,
     const std::string& mailbox_name,
-    const ui::LatencyInfo& latency_info,
+    const std::vector<ui::LatencyInfo>& latency_info,
     const BufferPresentedCallback& ack_callback) {
   scoped_refptr<ui::Texture> previous_texture(current_surface_);
   const gfx::Rect surface_rect = gfx::Rect(surface_size);
@@ -1714,7 +1721,8 @@ void RenderWidgetHostViewAura::BuffersSwapped(
     if (paint_observer_)
       paint_observer_->OnUpdateCompositorContent();
     window_->SchedulePaintInRect(rect_to_paint);
-    compositor->SetLatencyInfo(latency_info);
+    for (size_t i = 0; i < latency_info.size(); i++)
+      compositor->SetLatencyInfo(latency_info[i]);
   }
 
   SwapBuffersCompleted(ack_callback, previous_texture);
@@ -1732,11 +1740,16 @@ void RenderWidgetHostViewAura::AcceleratedSurfacePostSubBuffer(
                  params_in_pixel.route_id,
                  gpu_host_id,
                  params_in_pixel.mailbox_name);
+  // TODO(miletus) : Pass the params_in_pixel.latency_info directly into
+  // BuffersSwapped() once GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params
+  // is converted to contain std::vector<ui::LatencyInfo>.
+  std::vector<ui::LatencyInfo> latency_info;
+  latency_info.push_back(params_in_pixel.latency_info);
   BuffersSwapped(params_in_pixel.surface_size,
                  damage_rect,
                  params_in_pixel.surface_scale_factor,
                  params_in_pixel.mailbox_name,
-                 params_in_pixel.latency_info,
+                 latency_info,
                  ack_callback);
 }
 

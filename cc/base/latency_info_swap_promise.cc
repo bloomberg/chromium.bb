@@ -34,9 +34,7 @@ LatencyInfoSwapPromise::~LatencyInfoSwapPromise() {
 
 void LatencyInfoSwapPromise::DidSwap(CompositorFrameMetadata* metadata) {
   DCHECK(!latency_.terminated);
-  // TODO(miletus): Append the |latency_| into metadata's LatencyInfo list
-  // once we remove LatencyInfo merge in GPU side.
-  metadata->latency_info.MergeWith(latency_);
+  metadata->latency_info.push_back(latency_);
 }
 
 void LatencyInfoSwapPromise::DidNotSwap(DidNotSwapReason reason) {

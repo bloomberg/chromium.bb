@@ -35,15 +35,17 @@ SoftwareBrowserCompositorOutputSurface::
 
 void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
-  ui::LatencyInfo latency_info = frame->metadata.latency_info;
-  latency_info.AddLatencyNumber(
-      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &RenderWidgetHostImpl::CompositorFrameDrawn,
-          latency_info));
+  // TODO(miletus) : Convert RenderWidgetHostImpl::CompositorFrameDrawn() to
+  // take std::vector<ui::LatencyInfo> directly so we only post the task once.
+  for (size_t i = 0; i < frame->metadata.latency_info.size(); i++) {
+    frame->metadata.latency_info[i].AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &RenderWidgetHostImpl::CompositorFrameDrawn,
+            frame->metadata.latency_info[i]));
+  }
 
   gfx::VSyncProvider* vsync_provider = software_device()->GetVSyncProvider();
   if (vsync_provider) {

@@ -527,7 +527,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                       const gfx::Rect& damage_rect,
                       float surface_scale_factor,
                       const std::string& mailbox_name,
-                      const ui::LatencyInfo& latency_info,
+                      const std::vector<ui::LatencyInfo>& latency_info,
                       const BufferPresentedCallback& ack_callback);
 
   bool SwapBuffersPrepare(const gfx::Rect& surface_rect,
@@ -544,7 +544,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       uint32 output_surface_id,
       scoped_ptr<cc::DelegatedFrameData> frame_data,
       float frame_device_scale_factor,
-      const ui::LatencyInfo& latency_info);
+      const std::vector<ui::LatencyInfo>& latency_info);
   void SendDelegatedFrameAck(uint32 output_surface_id);
   void SendReturnedDelegatedResources(uint32 output_surface_id);
 
@@ -557,7 +557,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SwapSoftwareFrame(uint32 output_surface_id,
                          scoped_ptr<cc::SoftwareFrameData> frame_data,
                          float frame_device_scale_factor,
-                         const ui::LatencyInfo& latency_info);
+                         const std::vector<ui::LatencyInfo>& latency_info);
   void SendSoftwareFrameAck(uint32 output_surface_id);
   void SendReclaimSoftwareFrames();
   void ReleaseSoftwareFrame(uint32 output_surface_id,
