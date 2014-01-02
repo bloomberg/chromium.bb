@@ -44,8 +44,8 @@ bool DiscardablePixelRefAllocator::allocPixelRef(SkBitmap* dst, SkColorTable* ct
     // It should not be possible to have a non-null color table in Blink.
     ASSERT(!ctable);
 
-    Sk64 size = dst->getSize64();
-    if (size.isNeg() || !size.is32())
+    int64_t size = dst->computeSize64();
+    if (size < 0 || !sk_64_isS32(size))
         return false;
 
     SkImageInfo info;
@@ -53,7 +53,7 @@ bool DiscardablePixelRefAllocator::allocPixelRef(SkBitmap* dst, SkColorTable* ct
         return false;
 
     SkAutoTUnref<DiscardablePixelRef> pixelRef(new DiscardablePixelRef(info, adoptPtr(new SkMutex())));
-    if (pixelRef->allocAndLockDiscardableMemory(size.get32())) {
+    if (pixelRef->allocAndLockDiscardableMemory(sk_64_asS32(size))) {
         pixelRef->setURI(labelDiscardable);
         dst->setPixelRef(pixelRef.get());
         // This method is only called when a DiscardablePixelRef is created to back a SkBitmap.
