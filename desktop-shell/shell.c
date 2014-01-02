@@ -4216,6 +4216,8 @@ click_to_activate_binding(struct weston_seat *seat, uint32_t time, uint32_t butt
 {
 	if (seat->pointer->grab != &seat->pointer->default_grab)
 		return;
+	if (seat->pointer->focus == NULL)
+		return;
 
 	activate_binding(seat, data, seat->pointer->focus->surface);
 }

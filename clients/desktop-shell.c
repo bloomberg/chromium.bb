@@ -765,7 +765,7 @@ background_configure(void *data,
 	struct background *background =
 		(struct background *) window_get_user_data(window);
 
-	widget_schedule_resize(background->widget, width, height);
+	widget_schedule_resize(background->widget, width - 256, height);
 }
 
 static void
