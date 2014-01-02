@@ -285,64 +285,64 @@ GrContext* GraphicsContext3D::grContext()
 DELEGATE_TO_WEBCONTEXT_R(makeContextCurrent, bool)
 DELEGATE_TO_WEBCONTEXT_R(lastFlushID, uint32_t)
 
-DELEGATE_TO_WEBCONTEXT_1(activeTexture, GC3Denum)
+DELEGATE_TO_WEBCONTEXT_1(activeTexture, GLenum)
 DELEGATE_TO_WEBCONTEXT_2(attachShader, Platform3DObject, Platform3DObject)
 
-void GraphicsContext3D::bindAttribLocation(Platform3DObject program, GC3Duint index, const String& name)
+void GraphicsContext3D::bindAttribLocation(Platform3DObject program, GLuint index, const String& name)
 {
     m_impl->bindAttribLocation(program, index, name.utf8().data());
 }
 
-DELEGATE_TO_WEBCONTEXT_2(bindBuffer, GC3Denum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_2(bindFramebuffer, GC3Denum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_2(bindRenderbuffer, GC3Denum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_2(bindTexture, GC3Denum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_4(blendColor, GC3Dclampf, GC3Dclampf, GC3Dclampf, GC3Dclampf)
-DELEGATE_TO_WEBCONTEXT_1(blendEquation, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_2(blendEquationSeparate, GC3Denum, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_2(blendFunc, GC3Denum, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_4(blendFuncSeparate, GC3Denum, GC3Denum, GC3Denum, GC3Denum)
+DELEGATE_TO_WEBCONTEXT_2(bindBuffer, GLenum, Platform3DObject)
+DELEGATE_TO_WEBCONTEXT_2(bindFramebuffer, GLenum, Platform3DObject)
+DELEGATE_TO_WEBCONTEXT_2(bindRenderbuffer, GLenum, Platform3DObject)
+DELEGATE_TO_WEBCONTEXT_2(bindTexture, GLenum, Platform3DObject)
+DELEGATE_TO_WEBCONTEXT_4(blendColor, GLclampf, GLclampf, GLclampf, GLclampf)
+DELEGATE_TO_WEBCONTEXT_1(blendEquation, GLenum)
+DELEGATE_TO_WEBCONTEXT_2(blendEquationSeparate, GLenum, GLenum)
+DELEGATE_TO_WEBCONTEXT_2(blendFunc, GLenum, GLenum)
+DELEGATE_TO_WEBCONTEXT_4(blendFuncSeparate, GLenum, GLenum, GLenum, GLenum)
 
-void GraphicsContext3D::bufferData(GC3Denum target, GC3Dsizeiptr size, GC3Denum usage)
+void GraphicsContext3D::bufferData(GLenum target, GLsizeiptr size, GLenum usage)
 {
     bufferData(target, size, 0, usage);
 }
 
-DELEGATE_TO_WEBCONTEXT_4(bufferData, GC3Denum, GC3Dsizeiptr, const void*, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_4(bufferSubData, GC3Denum, GC3Dintptr, GC3Dsizeiptr, const void*)
+DELEGATE_TO_WEBCONTEXT_4(bufferData, GLenum, GLsizeiptr, const void*, GLenum)
+DELEGATE_TO_WEBCONTEXT_4(bufferSubData, GLenum, GLintptr, GLsizeiptr, const void*)
 
-DELEGATE_TO_WEBCONTEXT_1R(checkFramebufferStatus, GC3Denum, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_1(clear, GC3Dbitfield)
-DELEGATE_TO_WEBCONTEXT_4(clearColor, GC3Dclampf, GC3Dclampf, GC3Dclampf, GC3Dclampf)
-DELEGATE_TO_WEBCONTEXT_1(clearDepth, GC3Dclampf)
-DELEGATE_TO_WEBCONTEXT_1(clearStencil, GC3Dint)
-DELEGATE_TO_WEBCONTEXT_4(colorMask, GC3Dboolean, GC3Dboolean, GC3Dboolean, GC3Dboolean)
+DELEGATE_TO_WEBCONTEXT_1R(checkFramebufferStatus, GLenum, GLenum)
+DELEGATE_TO_WEBCONTEXT_1(clear, GLbitfield)
+DELEGATE_TO_WEBCONTEXT_4(clearColor, GLclampf, GLclampf, GLclampf, GLclampf)
+DELEGATE_TO_WEBCONTEXT_1(clearDepth, GLclampf)
+DELEGATE_TO_WEBCONTEXT_1(clearStencil, GLint)
+DELEGATE_TO_WEBCONTEXT_4(colorMask, GLboolean, GLboolean, GLboolean, GLboolean)
 DELEGATE_TO_WEBCONTEXT_1(compileShader, Platform3DObject)
 
-DELEGATE_TO_WEBCONTEXT_8(compressedTexImage2D, GC3Denum, GC3Dint, GC3Denum, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei, const void*)
-DELEGATE_TO_WEBCONTEXT_9(compressedTexSubImage2D, GC3Denum, GC3Dint, GC3Dint, GC3Dint, GC3Dint, GC3Dint, GC3Denum, GC3Dsizei, const void*)
-DELEGATE_TO_WEBCONTEXT_8(copyTexImage2D, GC3Denum, GC3Dint, GC3Denum, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei, GC3Dint)
-DELEGATE_TO_WEBCONTEXT_8(copyTexSubImage2D, GC3Denum, GC3Dint, GC3Dint, GC3Dint, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei)
-DELEGATE_TO_WEBCONTEXT_1(cullFace, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_1(depthFunc, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_1(depthMask, GC3Dboolean)
-DELEGATE_TO_WEBCONTEXT_2(depthRange, GC3Dclampf, GC3Dclampf)
+DELEGATE_TO_WEBCONTEXT_8(compressedTexImage2D, GLenum, GLint, GLenum, GLint, GLint, GLsizei, GLsizei, const void*)
+DELEGATE_TO_WEBCONTEXT_9(compressedTexSubImage2D, GLenum, GLint, GLint, GLint, GLint, GLint, GLenum, GLsizei, const void*)
+DELEGATE_TO_WEBCONTEXT_8(copyTexImage2D, GLenum, GLint, GLenum, GLint, GLint, GLsizei, GLsizei, GLint)
+DELEGATE_TO_WEBCONTEXT_8(copyTexSubImage2D, GLenum, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)
+DELEGATE_TO_WEBCONTEXT_1(cullFace, GLenum)
+DELEGATE_TO_WEBCONTEXT_1(depthFunc, GLenum)
+DELEGATE_TO_WEBCONTEXT_1(depthMask, GLboolean)
+DELEGATE_TO_WEBCONTEXT_2(depthRange, GLclampf, GLclampf)
 DELEGATE_TO_WEBCONTEXT_2(detachShader, Platform3DObject, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_1(disable, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_1(disableVertexAttribArray, GC3Duint)
-DELEGATE_TO_WEBCONTEXT_3(drawArrays, GC3Denum, GC3Dint, GC3Dsizei)
-DELEGATE_TO_WEBCONTEXT_4(drawElements, GC3Denum, GC3Dsizei, GC3Denum, GC3Dintptr)
+DELEGATE_TO_WEBCONTEXT_1(disable, GLenum)
+DELEGATE_TO_WEBCONTEXT_1(disableVertexAttribArray, GLuint)
+DELEGATE_TO_WEBCONTEXT_3(drawArrays, GLenum, GLint, GLsizei)
+DELEGATE_TO_WEBCONTEXT_4(drawElements, GLenum, GLsizei, GLenum, GLintptr)
 
-DELEGATE_TO_WEBCONTEXT_1(enable, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_1(enableVertexAttribArray, GC3Duint)
+DELEGATE_TO_WEBCONTEXT_1(enable, GLenum)
+DELEGATE_TO_WEBCONTEXT_1(enableVertexAttribArray, GLuint)
 DELEGATE_TO_WEBCONTEXT(finish)
 DELEGATE_TO_WEBCONTEXT(flush)
-DELEGATE_TO_WEBCONTEXT_4(framebufferRenderbuffer, GC3Denum, GC3Denum, GC3Denum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_5(framebufferTexture2D, GC3Denum, GC3Denum, GC3Denum, Platform3DObject, GC3Dint)
-DELEGATE_TO_WEBCONTEXT_1(frontFace, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_1(generateMipmap, GC3Denum)
+DELEGATE_TO_WEBCONTEXT_4(framebufferRenderbuffer, GLenum, GLenum, GLenum, Platform3DObject)
+DELEGATE_TO_WEBCONTEXT_5(framebufferTexture2D, GLenum, GLenum, GLenum, Platform3DObject, GLint)
+DELEGATE_TO_WEBCONTEXT_1(frontFace, GLenum)
+DELEGATE_TO_WEBCONTEXT_1(generateMipmap, GLenum)
 
-bool GraphicsContext3D::getActiveAttrib(Platform3DObject program, GC3Duint index, ActiveInfo& info)
+bool GraphicsContext3D::getActiveAttrib(Platform3DObject program, GLuint index, ActiveInfo& info)
 {
     blink::WebGraphicsContext3D::ActiveInfo webInfo;
     if (!m_impl->getActiveAttrib(program, index, webInfo))
@@ -353,7 +353,7 @@ bool GraphicsContext3D::getActiveAttrib(Platform3DObject program, GC3Duint index
     return true;
 }
 
-bool GraphicsContext3D::getActiveUniform(Platform3DObject program, GC3Duint index, ActiveInfo& info)
+bool GraphicsContext3D::getActiveUniform(Platform3DObject program, GLuint index, ActiveInfo& info)
 {
     blink::WebGraphicsContext3D::ActiveInfo webInfo;
     if (!m_impl->getActiveUniform(program, index, webInfo))
@@ -364,15 +364,15 @@ bool GraphicsContext3D::getActiveUniform(Platform3DObject program, GC3Duint inde
     return true;
 }
 
-DELEGATE_TO_WEBCONTEXT_4(getAttachedShaders, Platform3DObject, GC3Dsizei, GC3Dsizei*, Platform3DObject*)
+DELEGATE_TO_WEBCONTEXT_4(getAttachedShaders, Platform3DObject, GLsizei, GLsizei*, Platform3DObject*)
 
-GC3Dint GraphicsContext3D::getAttribLocation(Platform3DObject program, const String& name)
+GLint GraphicsContext3D::getAttribLocation(Platform3DObject program, const String& name)
 {
     return m_impl->getAttribLocation(program, name.utf8().data());
 }
 
-DELEGATE_TO_WEBCONTEXT_2(getBooleanv, GC3Denum, GC3Dboolean*)
-DELEGATE_TO_WEBCONTEXT_3(getBufferParameteriv, GC3Denum, GC3Denum, GC3Dint*)
+DELEGATE_TO_WEBCONTEXT_2(getBooleanv, GLenum, GLboolean*)
+DELEGATE_TO_WEBCONTEXT_3(getBufferParameteriv, GLenum, GLenum, GLint*)
 
 GraphicsContext3D::Attributes GraphicsContext3D::getContextAttributes()
 {
@@ -388,110 +388,110 @@ GraphicsContext3D::Attributes GraphicsContext3D::getContextAttributes()
     return attributes;
 }
 
-DELEGATE_TO_WEBCONTEXT_R(getError, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_2(getFloatv, GC3Denum, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_4(getFramebufferAttachmentParameteriv, GC3Denum, GC3Denum, GC3Denum, GC3Dint*)
-DELEGATE_TO_WEBCONTEXT_2(getIntegerv, GC3Denum, GC3Dint*)
-DELEGATE_TO_WEBCONTEXT_3(getProgramiv, Platform3DObject, GC3Denum, GC3Dint*)
+DELEGATE_TO_WEBCONTEXT_R(getError, GLenum)
+DELEGATE_TO_WEBCONTEXT_2(getFloatv, GLenum, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_4(getFramebufferAttachmentParameteriv, GLenum, GLenum, GLenum, GLint*)
+DELEGATE_TO_WEBCONTEXT_2(getIntegerv, GLenum, GLint*)
+DELEGATE_TO_WEBCONTEXT_3(getProgramiv, Platform3DObject, GLenum, GLint*)
 DELEGATE_TO_WEBCONTEXT_1R(getProgramInfoLog, Platform3DObject, String)
-DELEGATE_TO_WEBCONTEXT_3(getRenderbufferParameteriv, GC3Denum, GC3Denum, GC3Dint*)
-DELEGATE_TO_WEBCONTEXT_3(getShaderiv, Platform3DObject, GC3Denum, GC3Dint*)
+DELEGATE_TO_WEBCONTEXT_3(getRenderbufferParameteriv, GLenum, GLenum, GLint*)
+DELEGATE_TO_WEBCONTEXT_3(getShaderiv, Platform3DObject, GLenum, GLint*)
 DELEGATE_TO_WEBCONTEXT_1R(getShaderInfoLog, Platform3DObject, String)
-DELEGATE_TO_WEBCONTEXT_4(getShaderPrecisionFormat, GC3Denum, GC3Denum, GC3Dint*, GC3Dint*)
+DELEGATE_TO_WEBCONTEXT_4(getShaderPrecisionFormat, GLenum, GLenum, GLint*, GLint*)
 DELEGATE_TO_WEBCONTEXT_1R(getShaderSource, Platform3DObject, String)
-DELEGATE_TO_WEBCONTEXT_1R(getString, GC3Denum, String)
-DELEGATE_TO_WEBCONTEXT_3(getTexParameterfv, GC3Denum, GC3Denum, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_3(getTexParameteriv, GC3Denum, GC3Denum, GC3Dint*)
-DELEGATE_TO_WEBCONTEXT_3(getUniformfv, Platform3DObject, GC3Dint, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_3(getUniformiv, Platform3DObject, GC3Dint, GC3Dint*)
+DELEGATE_TO_WEBCONTEXT_1R(getString, GLenum, String)
+DELEGATE_TO_WEBCONTEXT_3(getTexParameterfv, GLenum, GLenum, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_3(getTexParameteriv, GLenum, GLenum, GLint*)
+DELEGATE_TO_WEBCONTEXT_3(getUniformfv, Platform3DObject, GLint, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_3(getUniformiv, Platform3DObject, GLint, GLint*)
 
-GC3Dint GraphicsContext3D::getUniformLocation(Platform3DObject program, const String& name)
+GLint GraphicsContext3D::getUniformLocation(Platform3DObject program, const String& name)
 {
     return m_impl->getUniformLocation(program, name.utf8().data());
 }
 
-DELEGATE_TO_WEBCONTEXT_3(getVertexAttribfv, GC3Duint, GC3Denum, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_3(getVertexAttribiv, GC3Duint, GC3Denum, GC3Dint*)
-DELEGATE_TO_WEBCONTEXT_2R(getVertexAttribOffset, GC3Duint, GC3Denum, GC3Dsizeiptr)
+DELEGATE_TO_WEBCONTEXT_3(getVertexAttribfv, GLuint, GLenum, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_3(getVertexAttribiv, GLuint, GLenum, GLint*)
+DELEGATE_TO_WEBCONTEXT_2R(getVertexAttribOffset, GLuint, GLenum, GLsizeiptr)
 
-DELEGATE_TO_WEBCONTEXT_2(hint, GC3Denum, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_1R(isBuffer, Platform3DObject, GC3Dboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isEnabled, GC3Denum, GC3Dboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isFramebuffer, Platform3DObject, GC3Dboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isProgram, Platform3DObject, GC3Dboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isRenderbuffer, Platform3DObject, GC3Dboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isShader, Platform3DObject, GC3Dboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isTexture, Platform3DObject, GC3Dboolean)
-DELEGATE_TO_WEBCONTEXT_1(lineWidth, GC3Dfloat)
+DELEGATE_TO_WEBCONTEXT_2(hint, GLenum, GLenum)
+DELEGATE_TO_WEBCONTEXT_1R(isBuffer, Platform3DObject, GLboolean)
+DELEGATE_TO_WEBCONTEXT_1R(isEnabled, GLenum, GLboolean)
+DELEGATE_TO_WEBCONTEXT_1R(isFramebuffer, Platform3DObject, GLboolean)
+DELEGATE_TO_WEBCONTEXT_1R(isProgram, Platform3DObject, GLboolean)
+DELEGATE_TO_WEBCONTEXT_1R(isRenderbuffer, Platform3DObject, GLboolean)
+DELEGATE_TO_WEBCONTEXT_1R(isShader, Platform3DObject, GLboolean)
+DELEGATE_TO_WEBCONTEXT_1R(isTexture, Platform3DObject, GLboolean)
+DELEGATE_TO_WEBCONTEXT_1(lineWidth, GLfloat)
 DELEGATE_TO_WEBCONTEXT_1(linkProgram, Platform3DObject)
 
-void GraphicsContext3D::pixelStorei(GC3Denum pname, GC3Dint param)
+void GraphicsContext3D::pixelStorei(GLenum pname, GLint param)
 {
     if (pname == GL_PACK_ALIGNMENT)
         m_packAlignment = param;
     m_impl->pixelStorei(pname, param);
 }
 
-DELEGATE_TO_WEBCONTEXT_2(polygonOffset, GC3Dfloat, GC3Dfloat)
+DELEGATE_TO_WEBCONTEXT_2(polygonOffset, GLfloat, GLfloat)
 
-DELEGATE_TO_WEBCONTEXT_7(readPixels, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei, GC3Denum, GC3Denum, void*)
+DELEGATE_TO_WEBCONTEXT_7(readPixels, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void*)
 
 DELEGATE_TO_WEBCONTEXT(releaseShaderCompiler)
-DELEGATE_TO_WEBCONTEXT_4(renderbufferStorage, GC3Denum, GC3Denum, GC3Dsizei, GC3Dsizei)
-DELEGATE_TO_WEBCONTEXT_2(sampleCoverage, GC3Dclampf, GC3Dboolean)
-DELEGATE_TO_WEBCONTEXT_4(scissor, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei)
+DELEGATE_TO_WEBCONTEXT_4(renderbufferStorage, GLenum, GLenum, GLsizei, GLsizei)
+DELEGATE_TO_WEBCONTEXT_2(sampleCoverage, GLclampf, GLboolean)
+DELEGATE_TO_WEBCONTEXT_4(scissor, GLint, GLint, GLsizei, GLsizei)
 
 void GraphicsContext3D::shaderSource(Platform3DObject shader, const String& string)
 {
     m_impl->shaderSource(shader, string.utf8().data());
 }
 
-DELEGATE_TO_WEBCONTEXT_3(stencilFunc, GC3Denum, GC3Dint, GC3Duint)
-DELEGATE_TO_WEBCONTEXT_4(stencilFuncSeparate, GC3Denum, GC3Denum, GC3Dint, GC3Duint)
-DELEGATE_TO_WEBCONTEXT_1(stencilMask, GC3Duint)
-DELEGATE_TO_WEBCONTEXT_2(stencilMaskSeparate, GC3Denum, GC3Duint)
-DELEGATE_TO_WEBCONTEXT_3(stencilOp, GC3Denum, GC3Denum, GC3Denum)
-DELEGATE_TO_WEBCONTEXT_4(stencilOpSeparate, GC3Denum, GC3Denum, GC3Denum, GC3Denum)
+DELEGATE_TO_WEBCONTEXT_3(stencilFunc, GLenum, GLint, GLuint)
+DELEGATE_TO_WEBCONTEXT_4(stencilFuncSeparate, GLenum, GLenum, GLint, GLuint)
+DELEGATE_TO_WEBCONTEXT_1(stencilMask, GLuint)
+DELEGATE_TO_WEBCONTEXT_2(stencilMaskSeparate, GLenum, GLuint)
+DELEGATE_TO_WEBCONTEXT_3(stencilOp, GLenum, GLenum, GLenum)
+DELEGATE_TO_WEBCONTEXT_4(stencilOpSeparate, GLenum, GLenum, GLenum, GLenum)
 
-DELEGATE_TO_WEBCONTEXT_9(texImage2D, GC3Denum, GC3Dint, GC3Denum, GC3Dsizei, GC3Dsizei, GC3Dint, GC3Denum, GC3Denum, const void*)
-DELEGATE_TO_WEBCONTEXT_3(texParameterf, GC3Denum, GC3Denum, GC3Dfloat)
-DELEGATE_TO_WEBCONTEXT_3(texParameteri, GC3Denum, GC3Denum, GC3Dint)
-DELEGATE_TO_WEBCONTEXT_9(texSubImage2D, GC3Denum, GC3Dint, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei, GC3Denum, GC3Denum, const void*)
+DELEGATE_TO_WEBCONTEXT_9(texImage2D, GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLenum, GLenum, const void*)
+DELEGATE_TO_WEBCONTEXT_3(texParameterf, GLenum, GLenum, GLfloat)
+DELEGATE_TO_WEBCONTEXT_3(texParameteri, GLenum, GLenum, GLint)
+DELEGATE_TO_WEBCONTEXT_9(texSubImage2D, GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, const void*)
 
-DELEGATE_TO_WEBCONTEXT_2(uniform1f, GC3Dint, GC3Dfloat)
-DELEGATE_TO_WEBCONTEXT_3(uniform1fv, GC3Dint, GC3Dsizei, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_2(uniform1i, GC3Dint, GC3Dint)
-DELEGATE_TO_WEBCONTEXT_3(uniform1iv, GC3Dint, GC3Dsizei, GC3Dint*)
-DELEGATE_TO_WEBCONTEXT_3(uniform2f, GC3Dint, GC3Dfloat, GC3Dfloat)
-DELEGATE_TO_WEBCONTEXT_3(uniform2fv, GC3Dint, GC3Dsizei, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_3(uniform2i, GC3Dint, GC3Dint, GC3Dint)
-DELEGATE_TO_WEBCONTEXT_3(uniform2iv, GC3Dint, GC3Dsizei, GC3Dint*)
-DELEGATE_TO_WEBCONTEXT_4(uniform3f, GC3Dint, GC3Dfloat, GC3Dfloat, GC3Dfloat)
-DELEGATE_TO_WEBCONTEXT_3(uniform3fv, GC3Dint, GC3Dsizei, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_4(uniform3i, GC3Dint, GC3Dint, GC3Dint, GC3Dint)
-DELEGATE_TO_WEBCONTEXT_3(uniform3iv, GC3Dint, GC3Dsizei, GC3Dint*)
-DELEGATE_TO_WEBCONTEXT_5(uniform4f, GC3Dint, GC3Dfloat, GC3Dfloat, GC3Dfloat, GC3Dfloat)
-DELEGATE_TO_WEBCONTEXT_3(uniform4fv, GC3Dint, GC3Dsizei, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_5(uniform4i, GC3Dint, GC3Dint, GC3Dint, GC3Dint, GC3Dint)
-DELEGATE_TO_WEBCONTEXT_3(uniform4iv, GC3Dint, GC3Dsizei, GC3Dint*)
-DELEGATE_TO_WEBCONTEXT_4(uniformMatrix2fv, GC3Dint, GC3Dsizei, GC3Dboolean, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_4(uniformMatrix3fv, GC3Dint, GC3Dsizei, GC3Dboolean, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_4(uniformMatrix4fv, GC3Dint, GC3Dsizei, GC3Dboolean, GC3Dfloat*)
+DELEGATE_TO_WEBCONTEXT_2(uniform1f, GLint, GLfloat)
+DELEGATE_TO_WEBCONTEXT_3(uniform1fv, GLint, GLsizei, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_2(uniform1i, GLint, GLint)
+DELEGATE_TO_WEBCONTEXT_3(uniform1iv, GLint, GLsizei, GLint*)
+DELEGATE_TO_WEBCONTEXT_3(uniform2f, GLint, GLfloat, GLfloat)
+DELEGATE_TO_WEBCONTEXT_3(uniform2fv, GLint, GLsizei, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_3(uniform2i, GLint, GLint, GLint)
+DELEGATE_TO_WEBCONTEXT_3(uniform2iv, GLint, GLsizei, GLint*)
+DELEGATE_TO_WEBCONTEXT_4(uniform3f, GLint, GLfloat, GLfloat, GLfloat)
+DELEGATE_TO_WEBCONTEXT_3(uniform3fv, GLint, GLsizei, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_4(uniform3i, GLint, GLint, GLint, GLint)
+DELEGATE_TO_WEBCONTEXT_3(uniform3iv, GLint, GLsizei, GLint*)
+DELEGATE_TO_WEBCONTEXT_5(uniform4f, GLint, GLfloat, GLfloat, GLfloat, GLfloat)
+DELEGATE_TO_WEBCONTEXT_3(uniform4fv, GLint, GLsizei, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_5(uniform4i, GLint, GLint, GLint, GLint, GLint)
+DELEGATE_TO_WEBCONTEXT_3(uniform4iv, GLint, GLsizei, GLint*)
+DELEGATE_TO_WEBCONTEXT_4(uniformMatrix2fv, GLint, GLsizei, GLboolean, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_4(uniformMatrix3fv, GLint, GLsizei, GLboolean, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_4(uniformMatrix4fv, GLint, GLsizei, GLboolean, GLfloat*)
 
 DELEGATE_TO_WEBCONTEXT_1(useProgram, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_1(validateProgram, Platform3DObject)
 
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib1f, GC3Duint, GC3Dfloat)
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib1fv, GC3Duint, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_3(vertexAttrib2f, GC3Duint, GC3Dfloat, GC3Dfloat)
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib2fv, GC3Duint, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_4(vertexAttrib3f, GC3Duint, GC3Dfloat, GC3Dfloat, GC3Dfloat)
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib3fv, GC3Duint, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_5(vertexAttrib4f, GC3Duint, GC3Dfloat, GC3Dfloat, GC3Dfloat, GC3Dfloat)
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib4fv, GC3Duint, GC3Dfloat*)
-DELEGATE_TO_WEBCONTEXT_6(vertexAttribPointer, GC3Duint, GC3Dint, GC3Denum, GC3Dboolean, GC3Dsizei, GC3Dintptr)
+DELEGATE_TO_WEBCONTEXT_2(vertexAttrib1f, GLuint, GLfloat)
+DELEGATE_TO_WEBCONTEXT_2(vertexAttrib1fv, GLuint, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_3(vertexAttrib2f, GLuint, GLfloat, GLfloat)
+DELEGATE_TO_WEBCONTEXT_2(vertexAttrib2fv, GLuint, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_4(vertexAttrib3f, GLuint, GLfloat, GLfloat, GLfloat)
+DELEGATE_TO_WEBCONTEXT_2(vertexAttrib3fv, GLuint, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_5(vertexAttrib4f, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)
+DELEGATE_TO_WEBCONTEXT_2(vertexAttrib4fv, GLuint, GLfloat*)
+DELEGATE_TO_WEBCONTEXT_6(vertexAttribPointer, GLuint, GLint, GLenum, GLboolean, GLsizei, GLintptr)
 
-DELEGATE_TO_WEBCONTEXT_4(viewport, GC3Dint, GC3Dint, GC3Dsizei, GC3Dsizei)
+DELEGATE_TO_WEBCONTEXT_4(viewport, GLint, GLint, GLsizei, GLsizei)
 
 void GraphicsContext3D::markContextChanged()
 {
@@ -574,7 +574,7 @@ DELEGATE_TO_WEBCONTEXT_R(createBuffer, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_R(createFramebuffer, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_R(createProgram, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_R(createRenderbuffer, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_1R(createShader, GC3Denum, Platform3DObject)
+DELEGATE_TO_WEBCONTEXT_1R(createShader, GLenum, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_R(createTexture, Platform3DObject)
 
 DELEGATE_TO_WEBCONTEXT_1(deleteBuffer, Platform3DObject)
@@ -584,7 +584,7 @@ DELEGATE_TO_WEBCONTEXT_1(deleteRenderbuffer, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_1(deleteShader, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_1(deleteTexture, Platform3DObject)
 
-DELEGATE_TO_WEBCONTEXT_1(synthesizeGLError, GC3Denum)
+DELEGATE_TO_WEBCONTEXT_1(synthesizeGLError, GLenum)
 
 Extensions3D* GraphicsContext3D::extensions()
 {
@@ -593,17 +593,14 @@ Extensions3D* GraphicsContext3D::extensions()
     return m_extensions.get();
 }
 
-bool GraphicsContext3D::texImage2DResourceSafe(GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, GC3Dint unpackAlignment)
+bool GraphicsContext3D::texImage2DResourceSafe(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, GLint unpackAlignment)
 {
     ASSERT(unpackAlignment == 1 || unpackAlignment == 2 || unpackAlignment == 4 || unpackAlignment == 8);
     texImage2D(target, level, internalformat, width, height, border, format, type, 0);
     return true;
 }
 
-bool GraphicsContext3D::computeFormatAndTypeParameters(GC3Denum format,
-                                                       GC3Denum type,
-                                                       unsigned int* componentsPerPixel,
-                                                       unsigned int* bytesPerComponent)
+bool GraphicsContext3D::computeFormatAndTypeParameters(GLenum format, GLenum type, unsigned* componentsPerPixel, unsigned* bytesPerComponent)
 {
     switch (format) {
     case GL_ALPHA:
@@ -627,26 +624,26 @@ bool GraphicsContext3D::computeFormatAndTypeParameters(GC3Denum format,
     }
     switch (type) {
     case GL_UNSIGNED_BYTE:
-        *bytesPerComponent = sizeof(GC3Dubyte);
+        *bytesPerComponent = sizeof(GLubyte);
         break;
     case GL_UNSIGNED_SHORT:
-        *bytesPerComponent = sizeof(GC3Dushort);
+        *bytesPerComponent = sizeof(GLushort);
         break;
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
     case GL_UNSIGNED_SHORT_5_5_5_1:
         *componentsPerPixel = 1;
-        *bytesPerComponent = sizeof(GC3Dushort);
+        *bytesPerComponent = sizeof(GLushort);
         break;
     case GL_UNSIGNED_INT_24_8_OES:
     case GL_UNSIGNED_INT:
-        *bytesPerComponent = sizeof(GC3Duint);
+        *bytesPerComponent = sizeof(GLuint);
         break;
     case GL_FLOAT: // OES_texture_float
-        *bytesPerComponent = sizeof(GC3Dfloat);
+        *bytesPerComponent = sizeof(GLfloat);
         break;
     case GL_HALF_FLOAT_OES: // OES_texture_half_float
-        *bytesPerComponent = sizeof(GC3Dhalffloat);
+        *bytesPerComponent = sizeof(GLushort);
         break;
     default:
         return false;
@@ -654,14 +651,13 @@ bool GraphicsContext3D::computeFormatAndTypeParameters(GC3Denum format,
     return true;
 }
 
-GC3Denum GraphicsContext3D::computeImageSizeInBytes(GC3Denum format, GC3Denum type, GC3Dsizei width, GC3Dsizei height, GC3Dint alignment,
-                                                    unsigned int* imageSizeInBytes, unsigned int* paddingInBytes)
+GLenum GraphicsContext3D::computeImageSizeInBytes(GLenum format, GLenum type, GLsizei width, GLsizei height, GLint alignment, unsigned* imageSizeInBytes, unsigned* paddingInBytes)
 {
     ASSERT(imageSizeInBytes);
     ASSERT(alignment == 1 || alignment == 2 || alignment == 4 || alignment == 8);
     if (width < 0 || height < 0)
         return GL_INVALID_VALUE;
-    unsigned int bytesPerComponent, componentsPerPixel;
+    unsigned bytesPerComponent, componentsPerPixel;
     if (!computeFormatAndTypeParameters(format, type, &bytesPerComponent, &componentsPerPixel))
         return GL_INVALID_ENUM;
     if (!width || !height) {
@@ -674,9 +670,9 @@ GC3Denum GraphicsContext3D::computeImageSizeInBytes(GC3Denum format, GC3Denum ty
     checkedValue *=  width;
     if (!checkedValue.isValid())
         return GL_INVALID_VALUE;
-    unsigned int validRowSize = checkedValue.value();
-    unsigned int padding = 0;
-    unsigned int residual = validRowSize % alignment;
+    unsigned validRowSize = checkedValue.value();
+    unsigned padding = 0;
+    unsigned residual = validRowSize % alignment;
     if (residual) {
         padding = alignment - residual;
         checkedValue += padding;
@@ -757,7 +753,7 @@ bool GraphicsContext3D::ImageExtractor::extractImage(bool premultiplyAlpha, bool
     return true;
 }
 
-unsigned GraphicsContext3D::getClearBitsByFormat(GC3Denum format)
+unsigned GraphicsContext3D::getClearBitsByFormat(GLenum format)
 {
     switch (format) {
     case GL_ALPHA:
@@ -781,7 +777,7 @@ unsigned GraphicsContext3D::getClearBitsByFormat(GC3Denum format)
     }
 }
 
-unsigned GraphicsContext3D::getChannelBitsByFormat(GC3Denum format)
+unsigned GraphicsContext3D::getChannelBitsByFormat(GLenum format)
 {
     switch (format) {
     case GL_ALPHA:

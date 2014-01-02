@@ -47,7 +47,7 @@ public:
 
     PassRefPtr<WebGLVertexArrayObjectOES> createVertexArrayOES();
     void deleteVertexArrayOES(WebGLVertexArrayObjectOES*);
-    GC3Dboolean isVertexArrayOES(WebGLVertexArrayObjectOES*);
+    GLboolean isVertexArrayOES(WebGLVertexArrayObjectOES*);
     void bindVertexArrayOES(WebGLVertexArrayObjectOES*);
 
 private:

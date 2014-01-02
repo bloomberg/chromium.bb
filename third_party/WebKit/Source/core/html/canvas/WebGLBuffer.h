@@ -39,8 +39,8 @@ public:
 
     static PassRefPtr<WebGLBuffer> create(WebGLRenderingContext*);
 
-    GC3Denum getTarget() const { return m_target; }
-    void setTarget(GC3Denum);
+    GLenum getTarget() const { return m_target; }
+    void setTarget(GLenum);
 
     bool hasEverBeenBound() const { return object() && m_target; }
 
@@ -52,7 +52,7 @@ protected:
 private:
     virtual bool isBuffer() const { return true; }
 
-    GC3Denum m_target;
+    GLenum m_target;
 };
 
 } // namespace WebCore

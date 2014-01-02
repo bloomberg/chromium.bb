@@ -279,11 +279,11 @@ public:
 
     virtual WebGLId createQueryEXT() { return 1; }
     virtual void deleteQueryEXT(WebGLId) { }
-    virtual GC3Dboolean isQueryEXT(WebGLId) { return true; }
-    virtual void beginQueryEXT(GC3Denum, WebGLId) { }
-    virtual void endQueryEXT(GC3Denum) { }
-    virtual void getQueryivEXT(GC3Denum, GC3Denum, GC3Dint*) { }
-    virtual void getQueryObjectuivEXT(WebGLId, GC3Denum, GC3Duint*) { }
+    virtual GLboolean isQueryEXT(WebGLId) { return true; }
+    virtual void beginQueryEXT(GLenum, WebGLId) { }
+    virtual void endQueryEXT(GLenum) { }
+    virtual void getQueryivEXT(GLenum, GLenum, GLint*) { }
+    virtual void getQueryObjectuivEXT(WebGLId, GLenum, GLuint*) { }
 
 protected:
     unsigned m_nextTextureId;

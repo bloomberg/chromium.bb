@@ -65,12 +65,12 @@ const char* WebGLDrawBuffers::extensionName()
     return "WEBGL_draw_buffers";
 }
 
-void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GC3Denum>& buffers)
+void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers)
 {
     if (isLost())
         return;
-    GC3Dsizei n = buffers.size();
-    const GC3Denum* bufs = buffers.data();
+    GLsizei n = buffers.size();
+    const GLenum* bufs = buffers.data();
     if (!m_context->m_framebufferBinding) {
         if (n != 1) {
             m_context->synthesizeGLError(GL_INVALID_VALUE, "drawBuffersWEBGL", "more than one buffer");
@@ -81,7 +81,7 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GC3Denum>& buffers)
             return;
         }
         // Because the backbuffer is simulated on all current WebKit ports, we need to change BACK to COLOR_ATTACHMENT0.
-        GC3Denum value = (bufs[0] == GL_BACK) ? GL_COLOR_ATTACHMENT0 : GL_NONE;
+        GLenum value = (bufs[0] == GL_BACK) ? GL_COLOR_ATTACHMENT0 : GL_NONE;
         m_context->graphicsContext3D()->extensions()->drawBuffersEXT(1, &value);
         m_context->setBackDrawBuffer(bufs[0]);
     } else {
@@ -89,8 +89,8 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GC3Denum>& buffers)
             m_context->synthesizeGLError(GL_INVALID_VALUE, "drawBuffersWEBGL", "more than max draw buffers");
             return;
         }
-        for (GC3Dsizei i = 0; i < n; ++i) {
-            if (bufs[i] != GL_NONE && bufs[i] != static_cast<GC3Denum>(Extensions3D::COLOR_ATTACHMENT0_EXT + i)) {
+        for (GLsizei i = 0; i < n; ++i) {
+            if (bufs[i] != GL_NONE && bufs[i] != static_cast<GLenum>(Extensions3D::COLOR_ATTACHMENT0_EXT + i)) {
                 m_context->synthesizeGLError(GL_INVALID_OPERATION, "drawBuffersWEBGL", "COLOR_ATTACHMENTi_EXT or NONE");
                 return;
             }
@@ -105,8 +105,8 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglCo
     GraphicsContext3D* context = webglContext->graphicsContext3D();
 
     // This is called after we make sure GL_EXT_draw_buffers is supported.
-    GC3Dint maxDrawBuffers = 0;
-    GC3Dint maxColorAttachments = 0;
+    GLint maxDrawBuffers = 0;
+    GLint maxColorAttachments = 0;
     context->getIntegerv(Extensions3D::MAX_DRAW_BUFFERS_EXT, &maxDrawBuffers);
     context->getIntegerv(Extensions3D::MAX_COLOR_ATTACHMENTS_EXT, &maxColorAttachments);
     if (maxDrawBuffers < 4 || maxColorAttachments < 4)
@@ -136,8 +136,8 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContext* webglCo
 
     Vector<Platform3DObject> colors;
     bool ok = true;
-    GC3Dint maxAllowedBuffers = std::min(maxDrawBuffers, maxColorAttachments);
-    for (GC3Dint i = 0; i < maxAllowedBuffers; ++i) {
+    GLint maxAllowedBuffers = std::min(maxDrawBuffers, maxColorAttachments);
+    for (GLint i = 0; i < maxAllowedBuffers; ++i) {
         Platform3DObject color = context->createTexture();
         colors.append(color);
         context->bindTexture(GL_TEXTURE_2D, color);

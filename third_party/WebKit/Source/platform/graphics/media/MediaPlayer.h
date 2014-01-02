@@ -48,6 +48,12 @@ class MediaPlayer;
 class HTMLMediaSource;
 class TimeRanges;
 
+// GL types as defined in OpenGL ES 2.0 header file gl2.h from khronos.org.
+// That header cannot be included directly due to a conflict with NPAPI headers.
+// See crbug.com/328085.
+typedef unsigned GC3Denum;
+typedef int GC3Dint;
+
 class MediaPlayerClient {
 public:
     enum CORSMode { Unspecified, Anonymous, UseCredentials };
