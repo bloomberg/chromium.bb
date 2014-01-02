@@ -354,11 +354,9 @@ void WebRtcLocalAudioTrack::Start() {
     // capturer as its sink otherwise two streams in different clock will be
     // pushed through the same track.
     webaudio_source_->Start(this, capturer_.get());
-    return;
-  }
-
-  if (capturer_.get())
+  } else if (capturer_.get()) {
     capturer_->AddTrack(this);
+  }
 
   SinkList::ItemList sinks;
   {
