@@ -38,12 +38,13 @@ void AfterTranslateInfoBar::Layout() {
   TranslateInfoBarBase::Layout();
 
   int x = StartX();
-  int available_width = std::max(0, EndX() - x - ContentMinimumWidth());
-  gfx::Size label_1_size = label_1_->GetPreferredSize();
-  label_1_->SetBounds(x, OffsetY(label_1_),
-                      std::min(label_1_size.width(), available_width),
-                      label_1_size.height());
-  available_width = std::max(0, available_width - label_1_size.width());
+  Labels labels;
+  labels.push_back(label_1_);
+  labels.push_back(label_2_);
+  labels.push_back(label_3_);
+  AssignWidths(&labels, std::max(0, EndX() - x - ContentMinimumWidth()));
+
+  label_1_->SetPosition(gfx::Point(x, OffsetY(label_1_)));
   if (!label_1_->text().empty())
      x = label_1_->bounds().right() + kButtonInLabelSpacing;
 
@@ -52,11 +53,8 @@ void AfterTranslateInfoBar::Layout() {
   first_button->SetPosition(gfx::Point(x, OffsetY(first_button)));
   x = first_button->bounds().right();
 
-  gfx::Size label_2_size = label_2_->GetPreferredSize();
-  label_2_->SetBounds(x + kButtonInLabelSpacing, OffsetY(label_2_),
-                      std::min(label_2_size.width(), available_width),
-                      label_2_size.height());
-  available_width = std::max(0, available_width - label_2_size.width());
+  label_2_->SetPosition(
+      gfx::Point(x + kButtonInLabelSpacing, OffsetY(label_2_)));
   if (!label_2_->text().empty())
     x = label_2_->bounds().right();
 
@@ -66,10 +64,8 @@ void AfterTranslateInfoBar::Layout() {
     second_button->SetPosition(gfx::Point(x, OffsetY(second_button)));
     x = second_button->bounds().right();
 
-    gfx::Size label_3_size = label_3_->GetPreferredSize();
-    label_3_->SetBounds(x + kButtonInLabelSpacing, OffsetY(label_3_),
-                        std::min(label_3_size.width(), available_width),
-                        label_3_size.height());
+    label_3_->SetPosition(
+        gfx::Point(x + kButtonInLabelSpacing, OffsetY(label_3_)));
     if (!label_3_->text().empty())
       x = label_3_->bounds().right();
   }

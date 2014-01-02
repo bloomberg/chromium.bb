@@ -38,12 +38,12 @@ void ConfirmInfoBar::Layout() {
   InfoBarView::Layout();
 
   int x = StartX();
-  int available_width = std::max(0, EndX() - x - ContentMinimumWidth());
-  gfx::Size label_size = label_->GetPreferredSize();
-  label_->SetBounds(x, OffsetY(label_),
-                    std::min(label_size.width(), available_width),
-                    label_size.height());
-  available_width = std::max(0, available_width - label_size.width());
+  Labels labels;
+  labels.push_back(label_);
+  labels.push_back(link_);
+  AssignWidths(&labels, std::max(0, EndX() - x - ContentMinimumWidth()));
+
+  label_->SetPosition(gfx::Point(x, OffsetY(label_)));
   if (!label_->text().empty())
     x = label_->bounds().right() + kEndOfLabelSpacing;
 
@@ -55,10 +55,7 @@ void ConfirmInfoBar::Layout() {
   if (cancel_button_)
     cancel_button_->SetPosition(gfx::Point(x, OffsetY(cancel_button_)));
 
-  gfx::Size link_size = link_->GetPreferredSize();
-  int link_width = std::min(link_size.width(), available_width);
-  link_->SetBounds(EndX() - link_width, OffsetY(link_), link_width,
-                   link_size.height());
+  link_->SetPosition(gfx::Point(EndX() - link_->width(), OffsetY(link_)));
 }
 
 void ConfirmInfoBar::ViewHierarchyChanged(

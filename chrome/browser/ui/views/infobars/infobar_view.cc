@@ -42,6 +42,18 @@
 #endif
 
 
+// Helpers --------------------------------------------------------------------
+
+namespace {
+
+bool SortLabelsByDecreasingWidth(views::Label* label_1, views::Label* label_2) {
+  return label_1->GetPreferredSize().width() >
+      label_2->GetPreferredSize().width();
+}
+
+}  // namespace
+
+
 // InfoBar --------------------------------------------------------------------
 
 // static
@@ -187,6 +199,12 @@ views::LabelButton* InfoBarView::CreateLabelButton(
   label_button->SizeToPreferredSize();
   label_button->SetFocusable(true);
   return label_button;
+}
+
+// static
+void InfoBarView::AssignWidths(Labels* labels, int available_width) {
+  std::sort(labels->begin(), labels->end(), SortLabelsByDecreasingWidth);
+  AssignWidthsSorted(labels, available_width);
 }
 
 void InfoBarView::Layout() {
@@ -355,6 +373,19 @@ void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
   ignore_result(menu_runner_->RunMenuAt(
       GetWidget(), button, gfx::Rect(screen_point, button->size()), anchor,
       ui::MENU_SOURCE_NONE, views::MenuRunner::HAS_MNEMONICS));
+}
+
+// static
+void InfoBarView::AssignWidthsSorted(Labels* labels, int available_width) {
+  if (labels->empty())
+    return;
+  gfx::Size back_label_size(labels->back()->GetPreferredSize());
+  back_label_size.set_width(
+      std::min(back_label_size.width(),
+               available_width / static_cast<int>(labels->size())));
+  labels->back()->SetSize(back_label_size);
+  labels->pop_back();
+  AssignWidthsSorted(labels, available_width - back_label_size.width());
 }
 
 void InfoBarView::PlatformSpecificShow(bool animate) {

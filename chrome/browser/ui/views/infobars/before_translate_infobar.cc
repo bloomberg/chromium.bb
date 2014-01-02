@@ -35,12 +35,12 @@ void BeforeTranslateInfoBar::Layout() {
   TranslateInfoBarBase::Layout();
 
   int x = StartX();
-  int available_width = std::max(0, EndX() - x - ContentMinimumWidth());
-  gfx::Size label_1_size = label_1_->GetPreferredSize();
-  label_1_->SetBounds(x, OffsetY(label_1_),
-                      std::min(label_1_size.width(), available_width),
-                      label_1_size.height());
-  available_width = std::max(0, available_width - label_1_size.width());
+  Labels labels;
+  labels.push_back(label_1_);
+  labels.push_back(label_2_);
+  AssignWidths(&labels, std::max(0, EndX() - x - ContentMinimumWidth()));
+
+  label_1_->SetPosition(gfx::Point(x, OffsetY(label_1_)));
   if (!label_1_->text().empty())
      x = label_1_->bounds().right() + kButtonInLabelSpacing;
 
@@ -48,10 +48,8 @@ void BeforeTranslateInfoBar::Layout() {
       gfx::Point(x, OffsetY(language_menu_button_)));
   x = language_menu_button_->bounds().right();
 
-  gfx::Size label_2_size = label_2_->GetPreferredSize();
-  label_2_->SetBounds(x + kButtonInLabelSpacing, OffsetY(label_2_),
-                      std::min(label_2_size.width(), available_width),
-                      label_2_size.height());
+  label_2_->SetPosition(
+      gfx::Point(x + kButtonInLabelSpacing, OffsetY(label_2_)));
   x = (label_2_->text().empty() ? x : label_2_->bounds().right()) +
       kEndOfLabelSpacing;
 

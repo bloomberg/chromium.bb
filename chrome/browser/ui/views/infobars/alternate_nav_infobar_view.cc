@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/text_elider.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
@@ -33,25 +34,40 @@ AlternateNavInfoBarView::AlternateNavInfoBarView(
 AlternateNavInfoBarView::~AlternateNavInfoBarView() {
 }
 
+// static
+void AlternateNavInfoBarView::ElideLabels(Labels* labels, int available_width) {
+  views::Label* last_label = labels->back();
+  labels->pop_back();
+  int used_width = 0;
+  for (Labels::iterator i(labels->begin()); i != labels->end(); ++i)
+    used_width += (*i)->GetPreferredSize().width();
+  int last_label_width = std::min(last_label->GetPreferredSize().width(),
+                                  available_width - used_width);
+  if (last_label_width < last_label->GetMinimumSize().width()) {
+    last_label_width = 0;
+    if (!labels->empty())
+      labels->back()->SetText(labels->back()->text() + gfx::kEllipsisUTF16);
+  }
+  last_label->SetSize(gfx::Size(last_label_width, last_label->height()));
+  if (!labels->empty())
+    ElideLabels(labels, available_width - last_label_width);
+}
+
 void AlternateNavInfoBarView::Layout() {
   InfoBarView::Layout();
 
-  // TODO(pkasting): This isn't perfect; there are points when we should elide a
-  // view because its subsequent view will be too small to show an ellipsis.
-  gfx::Size label_1_size = label_1_->GetPreferredSize();
-  int available_width = EndX() - StartX();
-  label_1_->SetBounds(StartX(), OffsetY(label_1_),
-      std::min(label_1_size.width(), available_width), label_1_size.height());
-  available_width = std::max(0, available_width - label_1_size.width());
+  label_1_->SetText(label_1_text_);
+  link_->SetText(link_text_);
+  label_2_->SetText(label_2_text_);
+  Labels labels;
+  labels.push_back(label_1_);
+  labels.push_back(link_);
+  labels.push_back(label_2_);
+  ElideLabels(&labels, EndX() - StartX());
 
-  gfx::Size link_size = link_->GetPreferredSize();
-  link_->SetBounds(label_1_->bounds().right(), OffsetY(link_),
-      std::min(link_size.width(), available_width), link_size.height());
-  available_width = std::max(0, available_width - link_size.width());
-
-  gfx::Size label_2_size = label_2_->GetPreferredSize();
-  label_2_->SetBounds(link_->bounds().right(), OffsetY(label_2_),
-      std::min(label_2_size.width(), available_width), label_2_size.height());
+  label_1_->SetPosition(gfx::Point(StartX(), OffsetY(label_1_)));
+  link_->SetPosition(gfx::Point(label_1_->bounds().right(), OffsetY(link_)));
+  label_2_->SetPosition(gfx::Point(link_->bounds().right(), OffsetY(label_2_)));
 }
 
 void AlternateNavInfoBarView::ViewHierarchyChanged(
@@ -61,13 +77,16 @@ void AlternateNavInfoBarView::ViewHierarchyChanged(
     size_t offset;
     base::string16 message_text = delegate->GetMessageTextWithOffset(&offset);
     DCHECK_NE(base::string16::npos, offset);
-    label_1_ = CreateLabel(message_text.substr(0, offset));
+    label_1_text_ = message_text.substr(0, offset);
+    label_1_ = CreateLabel(label_1_text_);
     AddChildView(label_1_);
 
-    link_ = CreateLink(delegate->GetLinkText(), this);
+    link_text_ = delegate->GetLinkText();
+    link_ = CreateLink(link_text_, this);
     AddChildView(link_);
 
-    label_2_ = CreateLabel(message_text.substr(offset));
+    label_2_text_ = message_text.substr(offset);
+    label_2_ = CreateLabel(label_2_text_);
     AddChildView(label_2_);
   }
 

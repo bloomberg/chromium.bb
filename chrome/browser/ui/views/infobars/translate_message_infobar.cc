@@ -21,18 +21,15 @@ TranslateMessageInfoBar::~TranslateMessageInfoBar() {
 void TranslateMessageInfoBar::Layout() {
   TranslateInfoBarBase::Layout();
 
-  gfx::Size label_size = label_->GetPreferredSize();
-  label_->SetBounds(StartX(), OffsetY(label_),
-      std::min(label_size.width(),
-               std::max(0, EndX() - StartX() - ContentMinimumWidth())),
-      label_size.height());
+  int x = StartX();
+  const int width = std::min(label_->width(),
+                             std::max(0, EndX() - x - ContentMinimumWidth()));
+  label_->SetBounds(x, OffsetY(label_), width, label_->height());
+  if (!label_->text().empty())
+    x = label_->bounds().right() + kEndOfLabelSpacing;
 
-  if (button_) {
-    button_->SetPosition(gfx::Point(
-        label_->text().empty() ?
-            label_->x() : (label_->bounds().right() + kEndOfLabelSpacing),
-        OffsetY(button_)));
-  }
+  if (button_)
+    button_->SetPosition(gfx::Point(x, OffsetY(button_)));
 }
 
 void TranslateMessageInfoBar::ViewHierarchyChanged(

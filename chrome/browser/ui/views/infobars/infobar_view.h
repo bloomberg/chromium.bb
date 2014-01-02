@@ -41,6 +41,8 @@ class InfoBarView : public InfoBar,
   const SkPath& stroke_path() const { return stroke_path_; }
 
  protected:
+  typedef std::vector<views::Label*> Labels;
+
   static const int kButtonButtonSpacing;
   static const int kEndOfLabelSpacing;
 
@@ -65,6 +67,12 @@ class InfoBarView : public InfoBar,
   static views::LabelButton* CreateLabelButton(views::ButtonListener* listener,
                                                const base::string16& text,
                                                bool needs_elevation);
+
+  // Given |labels| and the total |available_width| to display them in, sets
+  // each label's size so that the longest label shrinks until it reaches the
+  // length of the next-longest label, then both shrink until reaching the
+  // length of the next-longest, and so forth.
+  static void AssignWidths(Labels* labels, int available_width);
 
   // views::View:
   virtual void Layout() OVERRIDE;
@@ -105,6 +113,10 @@ class InfoBarView : public InfoBar,
  private:
   static const int kHorizontalPadding;
   static const int kCloseButtonSpacing;
+
+  // Does the actual work for AssignWidths().  Assumes |labels| is sorted by
+  // decreasing preferred width.
+  static void AssignWidthsSorted(Labels* labels, int available_width);
 
   // InfoBar:
   virtual void PlatformSpecificShow(bool animate) OVERRIDE;
