@@ -75,7 +75,7 @@ show_input_panels(struct wl_listener *listener, void *data)
 		weston_view_geometry_dirty(ipsurf->view);
 		weston_view_update_transform(ipsurf->view);
 		weston_surface_damage(ipsurf->surface);
-		weston_slide_run(ipsurf->view, ipsurf->surface->height,
+		weston_slide_run(ipsurf->view, ipsurf->surface->height * 0.9,
 				 0, NULL, NULL);
 	}
 }
@@ -138,7 +138,7 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 			       &ip_surface->view->layer_link);
 		weston_view_update_transform(ip_surface->view);
 		weston_surface_damage(surface);
-		weston_slide_run(ip_surface->view, ip_surface->view->surface->height, 0, NULL, NULL);
+		weston_slide_run(ip_surface->view, ip_surface->view->surface->height * 0.9, 0, NULL, NULL);
 	}
 }
 
