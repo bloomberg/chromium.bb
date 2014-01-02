@@ -201,7 +201,7 @@ class NSSSSLInitSingleton {
   PRFileDesc* model_fd_;
 };
 
-static base::LazyInstance<NSSSSLInitSingleton> g_nss_ssl_init_singleton =
+static base::LazyInstance<NSSSSLInitSingleton>::Leaky g_nss_ssl_init_singleton =
     LAZY_INSTANCE_INITIALIZER;
 
 // Initialize the NSS SSL library if it isn't already initialized.  This must
