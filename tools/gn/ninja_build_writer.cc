@@ -143,7 +143,7 @@ void NinjaBuildWriter::WriteNinjaRules() {
 
   // Provide a way to force regenerating ninja files if the user is suspicious
   // something is out-of-date. This will be "ninja refresh".
-  out_ << "\nphony refresh: gn\n";
+  out_ << "\nbuild refresh: gn\n";
 
   // Provide a way to see what flags are associated with this build:
   // This will be "ninja show".
