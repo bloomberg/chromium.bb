@@ -1098,6 +1098,16 @@ editor_button_handler(struct widget *widget,
 	}
 }
 
+
+static void
+keyboard_focus_handler(struct window *window,
+		       struct input *device, void *data)
+{
+	struct editor *editor = data;
+
+	window_schedule_redraw(editor->window);
+}
+
 static void
 key_handler(struct window *window,
 	    struct input *input, uint32_t time,
@@ -1233,6 +1243,8 @@ main(int argc, char *argv[])
 
 	window_set_title(editor.window, "Text Editor");
 	window_set_key_handler(editor.window, key_handler);
+	window_set_keyboard_focus_handler(editor.window,
+					  keyboard_focus_handler);
 	window_set_user_data(editor.window, &editor);
 
 	widget_set_redraw_handler(editor.widget, redraw_handler);
