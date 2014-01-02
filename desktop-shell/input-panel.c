@@ -117,17 +117,9 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 	struct input_panel_surface *ip_surface = surface->configure_private;
 	struct desktop_shell *shell = ip_surface->shell;
 	float x, y;
-	uint32_t show_surface = 0;
 
 	if (surface->width == 0)
 		return;
-
-	if (!weston_surface_is_mapped(surface)) {
-		if (!shell->showing_input_panels)
-			return;
-
-		show_surface = 1;
-	}
 
 	fprintf(stderr, "%s panel: %d, output: %p\n", __FUNCTION__, ip_surface->panel, ip_surface->output);
 
@@ -141,7 +133,7 @@ input_panel_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 
 	weston_view_set_position(ip_surface->view, x, y);
 
-	if (show_surface) {
+	if (!weston_surface_is_mapped(surface) && shell->showing_input_panels) {
 		wl_list_insert(&shell->input_panel_layer.view_list,
 			       &ip_surface->view->layer_link);
 		weston_view_update_transform(ip_surface->view);
