@@ -1401,6 +1401,13 @@ internal_paladin.add_config('fox_wtm2-paladin',
   important=False,
 )
 
+internal_paladin.add_config('glimmer-paladin',
+  incompatible_instruction_set,
+  boards=['glimmer'],
+  paladin_builder_name='glimmer paladin',
+  important=False,
+)
+
 internal_paladin.add_config('leon-paladin',
   boards=['leon'],
   paladin_builder_name='leon paladin',
@@ -1722,6 +1729,14 @@ _release.add_config('fox_wtm2-release',
   hw_tests=[],
 )
 
+# glimmer-release does not enable vm_tests or unittests due to the compiler
+# flags enabled for baytrail.
+_release.add_config('glimmer-release',
+  incompatible_instruction_set,
+  boards=['glimmer'],
+  hw_tests=[],
+)
+
 _release.add_config('leon-release',
   boards=['leon'],
 )
@@ -1891,6 +1906,7 @@ _x86_firmware_boards = (
   'butterfly',
   'clapper',
   'falco',
+  'glimmer',
   'leon',
   'link',
   'lumpy',
@@ -1911,6 +1927,7 @@ _x86_firmware_boards = (
 _x86_depthcharge_firmware_boards = (
   'bayleybay',
   'clapper',
+  'glimmer',
   'leon',
   'link',
   'rambi',
