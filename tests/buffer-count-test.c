@@ -45,6 +45,7 @@ init_egl(struct test_data *test_data)
 {
 	struct wl_egl_window *native_window;
 	struct surface *surface = test_data->client->surface;
+	const char *str, *mesa;
 
 	static const EGLint context_attribs[] = {
 		EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -95,6 +96,18 @@ init_egl(struct test_data *test_data)
 	ret = eglMakeCurrent(test_data->egl_dpy, test_data->egl_surface,
 			     test_data->egl_surface, test_data->egl_ctx);
 	assert(ret == EGL_TRUE);
+
+	/* This test is specific to mesa 10.0 and later, which is the
+	 * first release that doesn't accidentally triple-buffer. */
+	str = (const char *) glGetString(GL_VERSION);
+	mesa = strstr(str, "Mesa ");
+	if (mesa == NULL)
+		skip("unknown EGL implementation (%s)\n", str);
+	if (sscanf(mesa + 5, "%d.%d", &major, &minor) != 2)
+		skip("unrecognized mesa version (%s)\n", str);
+	if (major < 10)
+		skip("mesa version too old (%s)\n", str);
+
 }
 
 TEST(test_buffer_count)

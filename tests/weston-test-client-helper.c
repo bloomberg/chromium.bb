@@ -496,6 +496,20 @@ static const struct wl_registry_listener registry_listener = {
 	handle_global
 };
 
+void
+skip(const char *fmt, ...)
+{
+	va_list argp;
+
+	va_start(argp, fmt);
+	vfprintf(stderr, fmt, argp);
+	va_end(argp);
+
+	/* automake tests uses exit code 77, but we don't have a good
+	 * way to make weston exit with that from here. */
+	exit(0);
+}
+
 static void
 log_handler(const char *fmt, va_list args)
 {

@@ -124,4 +124,7 @@ frame_callback_wait(struct client *client, int *done);
 int
 get_n_egl_buffers(struct client *client);
 
+void
+skip(const char *fmt, ...);
+
 #endif
