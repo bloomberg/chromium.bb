@@ -64,13 +64,15 @@ BASE_I18N_EXPORT bool ICUIsRTL();
 BASE_I18N_EXPORT TextDirection GetTextDirectionForLocale(
     const char* locale_name);
 
-// Given the string in |text|, returns the directionality of the first
+// Given the string in |text|, returns the directionality of the first or last
 // character with strong directionality in the string. If no character in the
 // text has strong directionality, LEFT_TO_RIGHT is returned. The Bidi
 // character types L, LRE, LRO, R, AL, RLE, and RLO are considered as strong
 // directionality characters. Please refer to http://unicode.org/reports/tr9/
 // for more information.
 BASE_I18N_EXPORT TextDirection GetFirstStrongCharacterDirection(
+    const string16& text);
+BASE_I18N_EXPORT TextDirection GetLastStrongCharacterDirection(
     const string16& text);
 
 // Given the string in |text|, returns LEFT_TO_RIGHT or RIGHT_TO_LEFT if all the

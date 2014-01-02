@@ -163,6 +163,21 @@ TextDirection GetFirstStrongCharacterDirection(const string16& text) {
   return LEFT_TO_RIGHT;
 }
 
+TextDirection GetLastStrongCharacterDirection(const string16& text) {
+  const UChar* string = text.c_str();
+  size_t position = text.length();
+  while (position > 0) {
+    UChar32 character;
+    size_t prev_position = position;
+    U16_PREV(string, 0, prev_position, character);
+    TextDirection direction = GetCharacterDirection(character);
+    if (direction != UNKNOWN_DIRECTION)
+      return direction;
+    position = prev_position;
+  }
+  return LEFT_TO_RIGHT;
+}
+
 TextDirection GetStringDirection(const string16& text) {
   const UChar* string = text.c_str();
   size_t length = text.length();

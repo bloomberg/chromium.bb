@@ -46,6 +46,8 @@ TEST_F(RTLTest, GetFirstStrongCharacterDirection) {
   } cases[] = {
     // Test pure LTR string.
     { L"foo bar", LEFT_TO_RIGHT },
+    // Test pure RTL string.
+    { L"\x05d0\x05d1\x05d2 \x05d3\x0d4\x05d5", RIGHT_TO_LEFT},
     // Test bidi string in which the first character with strong directionality
     // is a character with type L.
     { L"foo \x05d0 bar", LEFT_TO_RIGHT },
@@ -105,6 +107,68 @@ TEST_F(RTLTest, GetFirstStrongCharacterDirection) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
     EXPECT_EQ(cases[i].direction,
               GetFirstStrongCharacterDirection(WideToUTF16(cases[i].text)));
+}
+
+
+// Note that the cases with LRE, LRO, RLE and RLO are invalid for
+// GetLastStrongCharacterDirection because they should be followed by PDF
+// character.
+TEST_F(RTLTest, GetLastStrongCharacterDirection) {
+  struct {
+    const wchar_t* text;
+    TextDirection direction;
+  } cases[] = {
+    // Test pure LTR string.
+    { L"foo bar", LEFT_TO_RIGHT },
+    // Test pure RTL string.
+    { L"\x05d0\x05d1\x05d2 \x05d3\x0d4\x05d5", RIGHT_TO_LEFT},
+    // Test bidi string in which the last character with strong directionality
+    // is a character with type L.
+    { L"foo \x05d0 bar", LEFT_TO_RIGHT },
+    // Test bidi string in which the last character with strong directionality
+    // is a character with type R.
+    { L"\x05d0 foo bar \x05d3", RIGHT_TO_LEFT },
+    // Test bidi string which ends with a character with weak directionality
+    // and in which the last character with strong directionality is a
+    // character with type L.
+    { L"!foo \x05d0 bar!", LEFT_TO_RIGHT },
+    // Test bidi string which ends with a character with weak directionality
+    // and in which the last character with strong directionality is a
+    // character with type R.
+    { L",\x05d0 foo bar \x05d1,", RIGHT_TO_LEFT },
+    // Test bidi string in which the last character with strong directionality
+    // is a character with type AL.
+    { L"\x0622 foo \x05d0 bar \x0622", RIGHT_TO_LEFT },
+    // Test a string without strong directionality characters.
+    { L",!.{}", LEFT_TO_RIGHT },
+    // Test empty string.
+    { L"", LEFT_TO_RIGHT },
+    // Test characters in non-BMP (e.g. Phoenician letters. Please refer to
+    // http://demo.icu-project.org/icu-bin/ubrowse?scr=151&b=10910 for more
+    // information).
+    {
+#if defined(WCHAR_T_IS_UTF32)
+       L"abc 123" L" ! \x10910 !",
+#elif defined(WCHAR_T_IS_UTF16)
+       L"abc 123" L" ! \xd802\xdd10 !",
+#else
+#error wchar_t should be either UTF-16 or UTF-32
+#endif
+      RIGHT_TO_LEFT },
+    {
+#if defined(WCHAR_T_IS_UTF32)
+       L"abc 123" L" ! \x10401 !",
+#elif defined(WCHAR_T_IS_UTF16)
+       L"abc 123" L" ! \xd801\xdc01 !",
+#else
+#error wchar_t should be either UTF-16 or UTF-32
+#endif
+      LEFT_TO_RIGHT },
+   };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i)
+    EXPECT_EQ(cases[i].direction,
+              GetLastStrongCharacterDirection(WideToUTF16(cases[i].text)));
 }
 
 TEST_F(RTLTest, GetStringDirection) {
