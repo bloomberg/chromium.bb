@@ -52,6 +52,7 @@
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/navigation_popup.h"
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
+#include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
 #include "components/autofill/core/browser/android/component_jni_registrar.h"
 #include "components/navigation_interception/component_jni_registrar.h"
@@ -132,6 +133,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "StartupMetricUtils", RegisterStartupMetricUtils },
   { "TabAndroid", TabAndroid::RegisterTabAndroid },
   { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
+  { "ToolbarModelAndroid", ToolbarModelAndroid::RegisterToolbarModelAndroid },
   { "TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate },
   { "TtsPlatformImpl", TtsPlatformImplAndroid::Register },
   { "UmaBridge", RegisterUmaBridge },

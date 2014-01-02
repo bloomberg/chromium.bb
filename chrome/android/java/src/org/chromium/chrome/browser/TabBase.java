@@ -29,6 +29,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.NavigationClient;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageInfo;
+import org.chromium.content.browser.WebContents;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.WindowAndroid;
@@ -419,6 +420,14 @@ public abstract class TabBase implements NavigationClient {
      */
     public int getBackgroundColor() {
         return getPageInfo() != null ? getPageInfo().getBackgroundColor() : Color.WHITE;
+    }
+
+    /**
+     * @return The web contents associated with this tab.
+     */
+    public WebContents getWebContents() {
+        if (mNativeTabAndroid == 0) return null;
+        return nativeGetWebContents(mNativeTabAndroid);
     }
 
     /**
@@ -867,6 +876,7 @@ public abstract class TabBase implements NavigationClient {
             ContentViewCore contentViewCore, ChromeWebContentsDelegateAndroid delegate,
             ContextMenuPopulator contextMenuPopulator);
     private native void nativeDestroyWebContents(long nativeTabAndroid, boolean deleteNative);
+    private native WebContents nativeGetWebContents(long nativeTabAndroid);
     private native Profile nativeGetProfileAndroid(long nativeTabAndroid);
     private native int nativeGetSecurityLevel(long nativeTabAndroid);
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,

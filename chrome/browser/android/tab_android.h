@@ -127,6 +127,8 @@ class TabAndroid : public CoreTabHelperDelegate,
   virtual void DestroyWebContents(JNIEnv* env,
                                   jobject obj,
                                   jboolean delete_native);
+  base::android::ScopedJavaLocalRef<jobject> GetWebContents(JNIEnv* env,
+                                                            jobject obj);
   base::android::ScopedJavaLocalRef<jobject> GetProfileAndroid(JNIEnv* env,
                                                                jobject obj);
   ToolbarModel::SecurityLevel GetSecurityLevel(JNIEnv* env, jobject obj);
