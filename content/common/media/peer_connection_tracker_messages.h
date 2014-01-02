@@ -29,6 +29,14 @@ IPC_MESSAGE_CONTROL3(PeerConnectionTrackerHost_UpdatePeerConnection,
 IPC_MESSAGE_CONTROL2(PeerConnectionTrackerHost_AddStats,
                      int /* lid */,
                      base::ListValue /* value */)
+IPC_MESSAGE_CONTROL5(PeerConnectionTrackerHost_GetUserMedia,
+                     std::string /*origin*/,
+                     bool /*audio*/,
+                     bool /*video*/,
+                     // The constraints strings are for dispaly only and should
+                     // not be parsed by the browser for security reasons.
+                     std::string /* audio_constraints */,
+                     std::string /* video_constraints */)
 
 // Messages sent to PeerConnectionTracker.
 IPC_MESSAGE_CONTROL0(PeerConnectionTracker_GetAllStats)

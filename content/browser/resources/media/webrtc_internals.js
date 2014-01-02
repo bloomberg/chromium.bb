@@ -245,6 +245,27 @@ function addStats(data) {
 
 
 /**
+ * Adds a getUserMedia request.
+ *
+ * @param {!Object} data The object containing rid {number}, pid {number},
+ *     origin {string}, audio {Object<string>}, video {Object<string>}.
+ */
+function addGetUserMedia(data) {
+  // TODO(jiayl): add the getUserMedia info to the tabbed UI.
+}
+
+
+/**
+ * Removes the getUserMedia requests from the specified |rid|.
+ *
+ * @param {!Object} data The object containing rid {number}, the render id.
+ */
+function removeGetUserMediaForRenderer(data) {
+  // TODO(jiayl): remove the getUserMedia info from the tabbed UI.
+}
+
+
+/**
  * Delegates to dumpCreator to update the recording status.
  * @param {!Object.<string>} update Key-value pairs describing the status of the
  *     RTP recording.

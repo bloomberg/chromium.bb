@@ -34,7 +34,6 @@ void WebRTCInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("stopRtpRecording",
       base::Bind(&WebRTCInternalsMessageHandler::OnStopRtpRecording,
                  base::Unretained(this)));
-
   web_ui()->RegisterMessageCallback("enableAecRecording",
       base::Bind(&WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled,
                  base::Unretained(this), true));
@@ -77,7 +76,7 @@ void WebRTCInternalsMessageHandler::OnSetAecRecordingEnabled(
 
 void WebRTCInternalsMessageHandler::OnDOMLoadDone(
     const base::ListValue* /* unused_list */) {
-  WebRTCInternals::GetInstance()->SendAllUpdates();
+  WebRTCInternals::GetInstance()->UpdateObserver(this);
 
   if (WebRTCInternals::GetInstance()->aec_dump_enabled()) {
     std::vector<const base::Value*> args_vector;

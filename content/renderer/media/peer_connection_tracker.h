@@ -19,6 +19,7 @@ class WebFrame;
 class WebRTCICECandidate;
 class WebString;
 class WebRTCSessionDescription;
+class WebUserMediaRequest;
 }  // namespace blink
 
 namespace webrtc {
@@ -147,6 +148,10 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   virtual void TrackCreateDTMFSender(
       RTCPeerConnectionHandler* pc_handler,
       const blink::WebMediaStreamTrack& track);
+
+  // Sends an update when getUserMedia is called.
+  virtual void TrackGetUserMedia(
+      const blink::WebUserMediaRequest& user_media_request);
 
  private:
   // Assign a local ID to a peer connection so that the browser process can

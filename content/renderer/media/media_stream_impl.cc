@@ -15,6 +15,7 @@
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
+#include "content/renderer/media/peer_connection_tracker.h"
 #include "content/renderer/media/rtc_video_renderer.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
@@ -105,6 +106,12 @@ void MediaStreamImpl::requestUserMedia(
   // webGetUserMedia.
   UpdateWebRTCMethodCount(WEBKIT_GET_USER_MEDIA);
   DCHECK(CalledOnValidThread());
+
+  if (RenderThreadImpl::current()) {
+    RenderThreadImpl::current()->peer_connection_tracker()->TrackGetUserMedia(
+        user_media_request);
+  }
+
   int request_id = g_next_request_id++;
   StreamOptions options;
   blink::WebFrame* frame = NULL;

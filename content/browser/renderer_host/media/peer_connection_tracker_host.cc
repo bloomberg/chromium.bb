@@ -23,6 +23,7 @@ bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_UpdatePeerConnection,
                         OnUpdatePeerConnection)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddStats, OnAddStats)
+    IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_GetUserMedia, OnGetUserMedia)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -64,6 +65,21 @@ void PeerConnectionTrackerHost::OnUpdatePeerConnection(
 void PeerConnectionTrackerHost::OnAddStats(int lid,
                                            const base::ListValue& value) {
   WebRTCInternals::GetInstance()->OnAddStats(peer_pid(), lid, value);
+}
+
+void PeerConnectionTrackerHost::OnGetUserMedia(
+    const std::string& origin,
+    bool audio,
+    bool video,
+    const std::string& audio_constraints,
+    const std::string& video_constraints) {
+  WebRTCInternals::GetInstance()->OnGetUserMedia(render_process_id_,
+                                                 peer_pid(),
+                                                 origin,
+                                                 audio,
+                                                 video,
+                                                 audio_constraints,
+                                                 video_constraints);
 }
 
 }  // namespace content

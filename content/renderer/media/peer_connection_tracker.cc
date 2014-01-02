@@ -8,6 +8,7 @@
 #include "content/renderer/media/rtc_media_constraints.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -15,6 +16,7 @@
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandlerClient.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebUserMediaRequest.h"
 
 using std::string;
 using webrtc::MediaConstraintsInterface;
@@ -432,6 +434,19 @@ void PeerConnectionTracker::TrackCreateDTMFSender(
     const blink::WebMediaStreamTrack& track) {
   SendPeerConnectionUpdate(pc_handler, "createDTMFSender",
                            base::UTF16ToUTF8(track.id()));
+}
+
+void PeerConnectionTracker::TrackGetUserMedia(
+    const blink::WebUserMediaRequest& user_media_request) {
+  RTCMediaConstraints audio_constraints(user_media_request.audioConstraints());
+  RTCMediaConstraints video_constraints(user_media_request.videoConstraints());
+
+  RenderThreadImpl::current()->Send(new PeerConnectionTrackerHost_GetUserMedia(
+      user_media_request.securityOrigin().toString().utf8(),
+      user_media_request.audio(),
+      user_media_request.video(),
+      SerializeMediaConstraints(audio_constraints),
+      SerializeMediaConstraints(video_constraints)));
 }
 
 int PeerConnectionTracker::GetNextLocalID() {

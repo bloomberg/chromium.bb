@@ -179,6 +179,30 @@ void WebRTCInternals::OnAddStats(base::ProcessId pid, int lid,
   SendUpdate("addStats", &dict);
 }
 
+void WebRTCInternals::OnGetUserMedia(int rid,
+                                     base::ProcessId pid,
+                                     const std::string& origin,
+                                     bool audio,
+                                     bool video,
+                                     const std::string& audio_constraints,
+                                     const std::string& video_constraints) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("rid", rid);
+  dict->SetInteger("pid", static_cast<int>(pid));
+  dict->SetString("origin", origin);
+  if (audio)
+    dict->SetString("audio", audio_constraints);
+  if (video)
+    dict->SetString("video", video_constraints);
+
+  get_user_media_requests_.Append(dict);
+
+  if (observers_.might_have_observers())
+    SendUpdate("addGetUserMedia", dict);
+}
+
 void WebRTCInternals::AddObserver(WebRTCInternalsUIObserver *observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
@@ -194,9 +218,16 @@ void WebRTCInternals::RemoveObserver(WebRTCInternalsUIObserver *observer) {
     DisableAecDump();
 }
 
-void WebRTCInternals::SendAllUpdates() {
-  if (observers_.might_have_observers())
-    SendUpdate("updateAllPeerConnections", &peer_connection_data_);
+void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (peer_connection_data_.GetSize() > 0)
+    observer->OnUpdate("updateAllPeerConnections", &peer_connection_data_);
+
+  for (base::ListValue::iterator it = get_user_media_requests_.begin();
+       it != get_user_media_requests_.end();
+       ++it) {
+    observer->OnUpdate("addGetUserMedia", *it);
+  }
 }
 
 void WebRTCInternals::StartRtpRecording() {
@@ -299,6 +330,28 @@ void WebRTCInternals::OnRendererExit(int render_process_id) {
       peer_connection_data_.Remove(i, NULL);
     }
   }
+
+  bool found_any = false;
+  // Iterates from the end of the list to remove the getUserMedia requests
+  // created by the exiting renderer.
+  for (int i = get_user_media_requests_.GetSize() - 1; i >= 0; --i) {
+    base::DictionaryValue* record = NULL;
+    get_user_media_requests_.GetDictionary(i, &record);
+
+    int this_rid = 0;
+    record->GetInteger("rid", &this_rid);
+
+    if (this_rid == render_process_id) {
+      get_user_media_requests_.Remove(i, NULL);
+      found_any = true;
+    }
+  }
+
+  if (found_any && observers_.might_have_observers()) {
+    base::DictionaryValue update;
+    update.SetInteger("rid", render_process_id);
+    SendUpdate("removeGetUserMediaForRenderer", &update);
+  }
 }
 
 // TODO(justlin): Calls this method as necessary to update the recording status
@@ -308,6 +361,15 @@ void WebRTCInternals::SendRtpRecordingUpdate() {
   base::DictionaryValue update;
   // TODO(justinlin): Fill in |update| with values as appropriate.
   SendUpdate("updateDumpStatus", &update);
+}
+
+void WebRTCInternals::ResetForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  observers_.Clear();
+  peer_connection_data_.Clear();
+  get_user_media_requests_.Clear();
+  is_recording_rtp_ = false;
+  aec_dump_enabled_ = false;
 }
 
 }  // namespace content
