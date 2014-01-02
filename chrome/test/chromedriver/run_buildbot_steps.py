@@ -436,7 +436,7 @@ def main():
 
   # Add a "cleanup" step so that errors from runtest.py or bb_device_steps.py
   # (which invoke this script) are kept in thier own build step.
-  util.MarkBuildStepStart('cleanup' % release_name)
+  util.MarkBuildStepStart('cleanup')
 
 
 if __name__ == '__main__':
