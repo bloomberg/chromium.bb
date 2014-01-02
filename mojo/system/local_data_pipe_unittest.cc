@@ -4,6 +4,8 @@
 
 #include "mojo/system/local_data_pipe.h"
 
+#include <string.h>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/system/data_pipe.h"
@@ -475,6 +477,87 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
 
 // TODO(vtl): More: discard (with/without "all or none"). More "all or none"
 // tests.
+
+// Tests that |ProducerWriteData()| and |ConsumerReadData()| writes and reads,
+// respectively, as much as possible, even if it has to "wrap around" the
+// internal circular buffer. (Note that the two-phase write and read do not do
+// this.)
+TEST(LocalDataPipeTest, WrapAround) {
+  unsigned char test_data[1000];
+  for (size_t i = 0; i < arraysize(test_data); i++)
+    test_data[i] = static_cast<unsigned char>(i);
+
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+    1u,  // |element_num_bytes|.
+    100u  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+  // This test won't be valid if |ValidateOptions()| decides to give the pipe
+  // more space.
+  ASSERT_EQ(100u, validated_options.capacity_num_bytes);
+
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+  // Write 20 bytes.
+  uint32_t num_bytes = 20u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(&test_data[0], &num_bytes, false));
+  EXPECT_EQ(20u, num_bytes);
+
+  // Read 10 bytes.
+  unsigned char read_buffer[1000] = { 0 };
+  num_bytes = 10u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerReadData(read_buffer, &num_bytes, false));
+  EXPECT_EQ(10u, num_bytes);
+  EXPECT_EQ(0, memcmp(read_buffer, &test_data[0], 10u));
+
+  // Check that a two-phase write can now only write (at most) 80 bytes. (This
+  // checks an implementation detail; this behavior is not guaranteed, but we
+  // need it for this test.)
+  void* write_buffer_ptr = NULL;
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+  EXPECT_TRUE(write_buffer_ptr != NULL);
+  EXPECT_EQ(80u, num_bytes);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(0u));
+
+  // Write as much data as we can (using |ProducerWriteData()|. We should write
+  // 90 bytes.
+  num_bytes = 200u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ProducerWriteData(&test_data[20], &num_bytes, false));
+  EXPECT_EQ(90u, num_bytes);
+
+  // Check that a two-phase read can now only read (at most) 90 bytes. (This
+  // checks an implementation detail; this behavior is not guaranteed, but we
+  // need it for this test.)
+  const void* read_buffer_ptr = NULL;
+  num_bytes = 0u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+  EXPECT_TRUE(read_buffer_ptr != NULL);
+  EXPECT_EQ(90u, num_bytes);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(0u));
+
+  // Read as much as possible (using |ConsumerReadData()|. We should read 100
+  // bytes.
+  num_bytes =
+      static_cast<uint32_t>(arraysize(read_buffer) * sizeof(read_buffer[0]));
+  memset(read_buffer, 0, num_bytes);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dp->ConsumerReadData(read_buffer, &num_bytes, false));
+  EXPECT_EQ(100u, num_bytes);
+  EXPECT_EQ(0, memcmp(read_buffer, &test_data[10], 100u));
+
+  dp->ProducerClose();
+  dp->ConsumerClose();
+}
 
 // TODO(vtl): More.
 

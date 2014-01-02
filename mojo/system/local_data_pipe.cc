@@ -41,25 +41,42 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
   DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
   DCHECK_GT(*num_bytes, 0u);
 
-  // TODO(vtl): This implementation may write less than requested, even if room
-  // is available. Fix this. Note to self: Don't forget to wake up waiters.
-  void* buffer = NULL;
-  uint32_t buffer_num_bytes = *num_bytes;
-  MojoResult rv = ProducerBeginWriteDataImplNoLock(&buffer,
-                                                   &buffer_num_bytes,
-                                                   all_or_none);
-  if (rv != MOJO_RESULT_OK)
-    return rv;
-  DCHECK_EQ(buffer_num_bytes % element_num_bytes(), 0u);
+  // TODO(vtl): Consider this return value.
+  if (all_or_none && *num_bytes > capacity_num_bytes() - current_num_bytes_)
+    return MOJO_RESULT_OUT_OF_RANGE;
 
-  uint32_t num_bytes_to_write = std::min(*num_bytes, buffer_num_bytes);
-  memcpy(buffer, elements, num_bytes_to_write);
+  size_t num_bytes_to_write =
+      std::min(static_cast<size_t>(*num_bytes),
+               capacity_num_bytes() - current_num_bytes_);
+  // TODO(vtl): Change this to "should wait" when we have that error code.
+  if (num_bytes_to_write == 0)
+    return MOJO_RESULT_NOT_FOUND;
 
-  rv = ProducerEndWriteDataImplNoLock(num_bytes_to_write);
-  if (rv != MOJO_RESULT_OK)
-    return rv;
+  // The amount we can write in our first |memcpy()|.
+  size_t num_bytes_to_write_first =
+      std::min(num_bytes_to_write, GetMaxNumBytesToWriteNoLock());
+  // Do the first (and possibly only) |memcpy()|.
+  size_t first_write_index =
+      (start_index_ + current_num_bytes_) % capacity_num_bytes();
+  EnsureBufferNoLock();
+  memcpy(buffer_.get() + first_write_index, elements, num_bytes_to_write_first);
 
-  *num_bytes = num_bytes_to_write;
+  if (num_bytes_to_write_first < num_bytes_to_write) {
+    // The "second write index" is zero.
+    memcpy(buffer_.get(),
+           static_cast<const char*>(elements) + num_bytes_to_write_first,
+           num_bytes_to_write - num_bytes_to_write_first);
+  }
+
+  bool was_empty = (current_num_bytes_ == 0);
+
+  current_num_bytes_ += num_bytes_to_write;
+  DCHECK_LE(current_num_bytes_, capacity_num_bytes());
+
+  if (was_empty && num_bytes_to_write > 0)
+    AwakeConsumerWaitersForStateChangeNoLock();
+
+  *num_bytes = static_cast<uint32_t>(num_bytes_to_write);
   return MOJO_RESULT_OK;
 }
 
@@ -134,24 +151,38 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(void* elements,
   DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
   DCHECK_GT(*num_bytes, 0u);
 
-  // TODO(vtl): This implementation may write less than requested, even if room
-  // is available. Fix this. Note to self: Don't forget to wake up waiters.
-  const void* buffer = NULL;
-  uint32_t buffer_num_bytes = *num_bytes;
-  MojoResult rv = ConsumerBeginReadDataImplNoLock(&buffer, &buffer_num_bytes,
-                                                  all_or_none);
-  if (rv != MOJO_RESULT_OK)
-    return rv;
-  DCHECK_EQ(buffer_num_bytes % element_num_bytes(), 0u);
+  // TODO(vtl): Think about the error code in this case.
+  if (all_or_none && *num_bytes > current_num_bytes_)
+    return MOJO_RESULT_OUT_OF_RANGE;
 
-  uint32_t num_bytes_to_read = std::min(*num_bytes, buffer_num_bytes);
-  memcpy(elements, buffer, num_bytes_to_read);
+  size_t num_bytes_to_read =
+      std::min(static_cast<size_t>(*num_bytes), current_num_bytes_);
+  // TODO(vtl): Change this to "should wait" when we have that error code.
+  if (num_bytes_to_read == 0)
+    return MOJO_RESULT_NOT_FOUND;
 
-  rv = ConsumerEndReadDataImplNoLock(num_bytes_to_read);
-  if (rv != MOJO_RESULT_OK)
-    return rv;
+  // The amount we can read in our first |memcpy()|.
+  size_t num_bytes_to_read_first =
+      std::min(num_bytes_to_read, GetMaxNumBytesToReadNoLock());
+  memcpy(elements, buffer_.get() + start_index_, num_bytes_to_read_first);
 
-  *num_bytes = num_bytes_to_read;
+  if (num_bytes_to_read_first < num_bytes_to_read) {
+    // The "second read index" is zero.
+    memcpy(static_cast<char*>(elements) + num_bytes_to_read_first,
+           buffer_.get(),
+           num_bytes_to_read - num_bytes_to_read_first);
+  }
+
+  bool was_full = (current_num_bytes_ == capacity_num_bytes());
+
+  start_index_ += num_bytes_to_read;
+  start_index_ %= capacity_num_bytes();
+  current_num_bytes_ -= num_bytes_to_read;
+
+  if (was_full && num_bytes_to_read > 0)
+    AwakeProducerWaitersForStateChangeNoLock();
+
+  *num_bytes = static_cast<uint32_t>(num_bytes_to_read);
   return MOJO_RESULT_OK;
 }
 
