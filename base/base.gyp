@@ -377,6 +377,7 @@
         'prefs/scoped_user_pref_update.h',
         'prefs/value_map_pref_store.cc',
         'prefs/value_map_pref_store.h',
+        'prefs/writeable_pref_store.h',
       ],
     },
     {

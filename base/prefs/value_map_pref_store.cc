@@ -28,8 +28,6 @@ bool ValueMapPrefStore::HasObservers() const {
   return observers_.might_have_observers();
 }
 
-ValueMapPrefStore::~ValueMapPrefStore() {}
-
 void ValueMapPrefStore::SetValue(const std::string& key, base::Value* value) {
   if (prefs_.SetValue(key, value))
     FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
@@ -39,6 +37,8 @@ void ValueMapPrefStore::RemoveValue(const std::string& key) {
   if (prefs_.RemoveValue(key))
     FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(key));
 }
+
+ValueMapPrefStore::~ValueMapPrefStore() {}
 
 void ValueMapPrefStore::NotifyInitializationCompleted() {
   FOR_EACH_OBSERVER(Observer, observers_, OnInitializationCompleted(true));

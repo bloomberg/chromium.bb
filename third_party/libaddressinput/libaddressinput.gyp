@@ -49,6 +49,8 @@
         '<(SHARED_INTERMEDIATE_DIR)/libaddressinput/',
       ],
       'sources': [
+        'chromium/chrome_storage_impl.cc',
+        'chromium/chrome_storage_impl.h',
         'chromium/json.cc',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_data.h',
         '<(libaddressinput_dir)/cpp/include/libaddressinput/address_field.h',
@@ -115,6 +117,9 @@
         '<(SHARED_INTERMEDIATE_DIR)/libaddressinput/',
       ],
       'sources': [
+        'chromium/chrome_storage_impl.cc',
+        'chromium/chrome_storage_impl.h',
+        'chromium/chrome_storage_impl_unittest.cc',
         '<(libaddressinput_dir)/cpp/test/address_field_util_test.cc',
         '<(libaddressinput_dir)/cpp/test/address_ui_test.cc',
         '<(libaddressinput_dir)/cpp/test/fake_downloader.cc',
@@ -128,6 +133,8 @@
         '<(libaddressinput_dir)/cpp/test/region_data_constants_test.cc',
         '<(libaddressinput_dir)/cpp/test/retriever_test.cc',
         '<(libaddressinput_dir)/cpp/test/rule_test.cc',
+        '<(libaddressinput_dir)/cpp/test/storage_test_runner.cc',
+        '<(libaddressinput_dir)/cpp/test/storage_test_runner.h',
         '<(libaddressinput_dir)/cpp/test/util/json_test.cc',
         '<(libaddressinput_dir)/cpp/test/util/md5_unittest.cc',
         '<(libaddressinput_dir)/cpp/test/util/scoped_ptr_unittest.cc',
@@ -141,6 +148,7 @@
       ],
       'dependencies': [
         'libaddressinput',
+        '<(DEPTH)/base/base.gyp:base_prefs',
         '<(DEPTH)/base/base.gyp:run_all_unittests',
         '<(DEPTH)/testing/gtest.gyp:gtest',
       ],

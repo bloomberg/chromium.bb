@@ -8,12 +8,12 @@
 #include <string>
 
 #include "base/prefs/base_prefs_export.h"
-#include "base/prefs/pref_store.h"
+#include "base/prefs/writeable_pref_store.h"
 
 // This interface is complementary to the PrefStore interface, declaring
 // additional functionality that adds support for setting values and persisting
 // the data to some backing store.
-class BASE_PREFS_EXPORT PersistentPrefStore : public PrefStore {
+class BASE_PREFS_EXPORT PersistentPrefStore : public WriteablePrefStore {
  public:
   // Unique integer code for each type of error so we can report them
   // distinctly in a histogram.
@@ -50,18 +50,11 @@ class BASE_PREFS_EXPORT PersistentPrefStore : public PrefStore {
   // ReportValueChanged will trigger notifications even if nothing has changed.
   virtual void ReportValueChanged(const std::string& key) = 0;
 
-  // Sets a |value| for |key| in the store. Assumes ownership of |value|, which
-  // must be non-NULL.
-  virtual void SetValue(const std::string& key, base::Value* value) = 0;
-
   // Same as SetValue, but doesn't generate notifications. This is used by
   // PrefService::GetMutableUserPref() in order to put empty entries
   // into the user pref store. Using SetValue is not an option since existing
   // tests rely on the number of notifications generated.
   virtual void SetValueSilently(const std::string& key, base::Value* value) = 0;
-
-  // Removes the value for |key|.
-  virtual void RemoveValue(const std::string& key) = 0;
 
   // Whether the store is in a pseudo-read-only mode where changes are not
   // actually persisted to disk.  This happens in some cases when there are

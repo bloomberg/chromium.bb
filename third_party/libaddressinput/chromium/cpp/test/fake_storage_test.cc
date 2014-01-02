@@ -14,13 +14,11 @@
 
 #include "fake_storage.h"
 
-#include <libaddressinput/callback.h>
-#include <libaddressinput/storage.h>
-#include <libaddressinput/util/scoped_ptr.h>
-
 #include <string>
 
 #include <gtest/gtest.h>
+
+#include "storage_test_runner.h"
 
 namespace i18n {
 namespace addressinput {
@@ -30,54 +28,15 @@ namespace {
 // Tests for FakeStorage object.
 class FakeStorageTest : public testing::Test {
  protected:
-  FakeStorageTest() : storage_(), success_(false), key_(), data_() {}
+  FakeStorageTest() : storage_(), runner_(&storage_) {}
   virtual ~FakeStorageTest() {}
 
-  scoped_ptr<Storage::Callback> BuildCallback() {
-    return ::i18n::addressinput::BuildCallback(
-        this, &FakeStorageTest::OnDataReady);
-  }
-
   FakeStorage storage_;
-  bool success_;
-  std::string key_;
-  std::string data_;
-
- private:
-  void OnDataReady(bool success,
-                   const std::string& key,
-                   const std::string& data) {
-    success_ = success;
-    key_ = key;
-    data_ = data;
-  }
+  StorageTestRunner runner_;
 };
 
-TEST_F(FakeStorageTest, GetWithoutPutReturnsEmptyData) {
-  storage_.Get("key", BuildCallback());
-
-  EXPECT_FALSE(success_);
-  EXPECT_EQ("key", key_);
-  EXPECT_TRUE(data_.empty());
-}
-
-TEST_F(FakeStorageTest, GetReturnsWhatWasPut) {
-  storage_.Put("key", "value");
-  storage_.Get("key", BuildCallback());
-
-  EXPECT_TRUE(success_);
-  EXPECT_EQ("key", key_);
-  EXPECT_EQ("value", data_);
-}
-
-TEST_F(FakeStorageTest, SecondPutOverwritesData) {
-  storage_.Put("key", "bad-value");
-  storage_.Put("key", "good-value");
-  storage_.Get("key", BuildCallback());
-
-  EXPECT_TRUE(success_);
-  EXPECT_EQ("key", key_);
-  EXPECT_EQ("good-value", data_);
+TEST_F(FakeStorageTest, StandardStorageTests) {
+  EXPECT_NO_FATAL_FAILURE(runner_.RunAllTests());
 }
 
 }  // namespace
