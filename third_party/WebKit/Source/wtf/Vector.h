@@ -349,8 +349,7 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
 
         void deallocateBuffer(T* bufferToDeallocate)
         {
-            if (LIKELY(bufferToDeallocate != 0))
-                Allocator::backingFree(bufferToDeallocate);
+            Allocator::backingFree(bufferToDeallocate);
         }
 
         void resetBufferPointer()

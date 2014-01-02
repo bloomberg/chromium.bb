@@ -114,8 +114,7 @@ void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy polic
 
 void ArrayBufferContents::freeMemory(void* data, size_t)
 {
-    if (data)
-        partitionFreeGeneric(WTF::Partitions::getBufferPartition(), data);
+    partitionFreeGeneric(WTF::Partitions::getBufferPartition(), data);
 }
 
 } // namespace WTF
