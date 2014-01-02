@@ -37,6 +37,7 @@ public:
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeSourceInput; }
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
+    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
 private:
     SourceAlpha(Filter* filter)

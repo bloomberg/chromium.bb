@@ -25,6 +25,8 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/text/TextStream.h"
+#include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
+#include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"
 
@@ -62,6 +64,18 @@ void SourceAlpha::applySoftware()
     GraphicsContext* filterContext = resultImage->context();
     filterContext->fillRect(imageRect, Color::black);
     filterContext->drawImageBuffer(filter->sourceImage(), IntPoint(), CompositeDestinationIn);
+}
+
+PassRefPtr<SkImageFilter> SourceAlpha::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkScalar matrix[20] = {
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0,
+        0, 0, 0, SK_Scalar1, 0
+    };
+    RefPtr<SkColorFilter> colorFilter(adoptRef(new SkColorMatrixFilter(matrix)));
+    return adoptRef(SkColorFilterImageFilter::Create(colorFilter.get()));
 }
 
 TextStream& SourceAlpha::externalRepresentation(TextStream& ts, int indent) const
