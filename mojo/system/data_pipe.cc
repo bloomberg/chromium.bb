@@ -281,8 +281,8 @@ DataPipe::DataPipe(bool has_local_producer,
 DataPipe::~DataPipe() {
   DCHECK(!producer_open_);
   DCHECK(!consumer_open_);
-  DCHECK(!has_local_producer_no_lock());
-  DCHECK(!has_local_consumer_no_lock());
+  DCHECK(!producer_waiter_list_.get());
+  DCHECK(!consumer_waiter_list_.get());
 }
 
 void DataPipe::AwakeProducerWaitersForStateChangeNoLock() {
