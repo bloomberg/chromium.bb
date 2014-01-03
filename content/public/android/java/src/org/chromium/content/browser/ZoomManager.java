@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
@@ -106,11 +107,11 @@ class ZoomManager {
         mContentViewCore = contentViewCore;
         mMultiTouchListener = new ScaleGestureListener();
         mMultiTouchDetector = new ScaleGestureDetector(context, mMultiTouchListener);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            // TODO(jdduke): Enable this and remove the custom double-tap drag
-            // zoom code from ContentViewGestureHandler, crbug/331092.
-            mMultiTouchDetector.setQuickScaleEnabled(false);
-        }
+
+        // ScaleGestureDetector's "QuickScale" feature was introduced in KitKat.
+        // As ContentViewGestureHandler already implements this feature,
+        // explicitly disable it to prevent double-handling of the gesture.
+        disableQuickScale(mMultiTouchDetector);
     }
 
     boolean isScaleGestureDetectionInProgress() {
@@ -157,4 +158,10 @@ class ZoomManager {
     void updateMultiTouchSupport(boolean supportsMultiTouchZoom) {
         mMultiTouchListener.setPermanentlyIgnoreDetectorEvents(!supportsMultiTouchZoom);
     }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private static void disableQuickScale(ScaleGestureDetector scaleGestureDetector) {
+       if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
+       scaleGestureDetector.setQuickScaleEnabled(false);
+     }
 }
