@@ -53,7 +53,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling WebRTC
   # and V8 without interference from each other.
-  "webrtc_revision": "5301",
+  "webrtc_revision": "5300",
   "jsoncpp_revision": "248",
   "nss_revision": "239365",
   # Three lines of non-changing comments so that
@@ -203,7 +203,7 @@ deps = {
     Var("ffmpeg_revision"),
 
   "src/third_party/libjingle/source/talk":
-    (Var("googlecode_url") % "webrtc") + "/stable/talk@" +
+    (Var("googlecode_url") % "webrtc") + "/trunk/talk@" +
     Var("webrtc_revision"),
 
   "src/third_party/usrsctp/usrsctplib":
@@ -233,7 +233,7 @@ deps = {
         Var("nacl_tools_revision"),
 
   "src/third_party/webrtc":
-    (Var("googlecode_url") % "webrtc") + "/stable/webrtc@" + Var("webrtc_revision"),
+    (Var("googlecode_url") % "webrtc") + "/trunk/webrtc@" + Var("webrtc_revision"),
 
   "src/third_party/openmax_dl":
     (Var("googlecode_url") % "webrtc") + "/deps/third_party/openmax@5205",
@@ -270,7 +270,7 @@ deps = {
         Var("libphonenumber_revision"),
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@236839",
+    "/trunk/tools/deps2git@238405",
 
   "src/third_party/webpagereplay":
     (Var("googlecode_url") % "web-page-replay") + "/trunk@528",
