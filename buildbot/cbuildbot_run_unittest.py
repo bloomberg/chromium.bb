@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Test the cbuildbot_run module."""
+
 import logging
 import os
 import cPickle
@@ -53,6 +55,7 @@ def _NewChildBuilderRun(child_index, options=None, config=None):
   """Create a ChildBuilderRun objection from options and config values.
 
   Args:
+    child_index: Index of child config to use within config.
     options: Specify options or default to DEFAULT_OPTIONS.
     config: Specify build config or default to DEFAULT_CONFIG.
 
@@ -233,8 +236,7 @@ class GetVersionTest(cros_test_lib.MockTestCase):
 
       # Prepare a real BuilderRun object with a release tag.
       run = _NewBuilderRun()
-      if release_tag is not None:
-        run.attrs.release_tag = 'RT'
+      run.attrs.release_tag = release_tag
 
       # Run the test return the result.
       result = run.GetVersion()

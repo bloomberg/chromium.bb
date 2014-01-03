@@ -136,10 +136,10 @@ class Builder(object):
   This class functions as an abstract parent class for various build types.
   Its intended use is builder_instance.Run().
 
-  Vars:
-    build_config: The configuration dictionary from cbuildbot_config.
-    options: The options provided from optparse in main().
-    release_tag: The associated "chrome os version" of this build.
+  Attributes:
+    _run: The BuilderRun object for this run.
+    archive_stages: Dict of BuildConfig keys to ArchiveStage values.
+    patch_pool: TrybotPatchPool.
   """
 
   def __init__(self, builder_run):
@@ -150,7 +150,6 @@ class Builder(object):
       os.environ['CHROMEOS_OFFICIAL'] = '1'
 
     self.archive_stages = {}
-    self.release_tag = None
     self.patch_pool = trybot_patch_pool.TrybotPatchPool()
 
   def Initialize(self):
@@ -181,6 +180,8 @@ class Builder(object):
     manifest_manager = getattr(self._run.attrs, 'manifest_manager', None)
     if manifest_manager:
       self._run.attrs.release_tag = manifest_manager.current_version
+    else:
+      self._run.attrs.release_tag = None
 
   def _RunStage(self, stage, *args, **kwargs):
     """Wrapper to run a stage.

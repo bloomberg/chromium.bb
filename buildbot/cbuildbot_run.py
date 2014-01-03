@@ -25,7 +25,7 @@ class RunAttributes(object):
 
   __slots__ = (
       'manifest_manager', # Set by ManifestVersionedSyncStage.
-      'release_tag',      # Set by ManifestVersionedSyncStage.
+      'release_tag',      # Set by cbuildbot after sync stage.
   )
 
 
@@ -105,11 +105,24 @@ class BuilderRun(object):
     return manifest_version.VersionInfo.from_repo(buildroot)
 
   def GetVersion(self):
-    """Calculate full R<chrome_version>-<chromeos_version> version string."""
+    """Calculate full R<chrome_version>-<chromeos_version> version string.
+
+    It is required that the sync stage be run before this method is called.
+
+    Returns:
+      The version string for this run.
+
+    Raises:
+      AssertionError if the sync stage has not been run first.
+    """
+    # This method should never be called before the sync stage has run, or
+    # it would return a confusing value.
+    assert hasattr(self.attrs, 'release_tag'), 'Sync stage must run first.'
+
     verinfo = self.GetVersionInfo(self.buildroot)
-    if hasattr(self.attrs, 'release_tag'):
-      calc_version = 'R%s-%s' % (verinfo.chrome_branch,
-                                 self.attrs.release_tag)
+    release_tag = self.attrs.release_tag
+    if release_tag:
+      calc_version = 'R%s-%s' % (verinfo.chrome_branch, release_tag)
     else:
       # Non-versioned builds need the build number to uniquify the image.
       calc_version = 'R%s-%s-b%s' % (verinfo.chrome_branch,

@@ -116,6 +116,7 @@ upstream="old-special-branch"/>
 
 DEFAULT_CHROME_BRANCH = '27'
 
+
 class BuilderRunMock(partial_mock.PartialMock):
   """Partial mock for BuilderRun class."""
 
@@ -1611,6 +1612,7 @@ class DebugSymbolsStageTest(AbstractStageTest):
         'upload_symbols': True,
     }
     self._Prepare(extra_config=extra_config)
+    self.run.attrs.release_tag = BuilderRunMock.VERSION
 
     self.tar_mock.side_effect = '/my/tar/ball'
     stage = self.ConstructStage()
@@ -1628,6 +1630,7 @@ class DebugSymbolsStageTest(AbstractStageTest):
         'upload_symbols': False,
     }
     self._Prepare(extra_config=extra_config)
+    self.run.attrs.release_tag = BuilderRunMock.VERSION
 
     stage = self.ConstructStage()
     stage.PerformStage()
