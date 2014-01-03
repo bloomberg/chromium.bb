@@ -41,11 +41,13 @@ class TestPrerenderContents : public PrerenderContents {
                           PrerenderManager::kNoExperiment),
         child_id_(child_id),
         route_id_(route_id) {
+    PrerenderResourceThrottle::OverridePrerenderContentsForTesting(this);
   }
 
   virtual ~TestPrerenderContents() {
     if (final_status() == FINAL_STATUS_MAX)
       SetFinalStatus(FINAL_STATUS_USED);
+    PrerenderResourceThrottle::OverridePrerenderContentsForTesting(NULL);
   }
 
   virtual bool GetChildId(int* child_id) const OVERRIDE {
@@ -545,6 +547,8 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
   request.Start();
   delegate.Run();
   EXPECT_TRUE(delegate.was_deferred());
+  // This calls WillRedirectRequestOnUI().
+  RunEvents();
 
   // Display the prerendered RenderView and wait for the throttle to
   // notice.
@@ -585,6 +589,8 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectCancel) {
   request.Start();
   delegate.Run();
   EXPECT_TRUE(delegate.was_deferred());
+  // This calls WillRedirectRequestOnUI().
+  RunEvents();
 
   // Display the prerendered RenderView and wait for the throttle to
   // notice.
@@ -625,7 +631,8 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
   // not be deferred.
   request.Start();
   delegate.Run();
-  EXPECT_FALSE(delegate.was_deferred());
+  // This calls WillRedirectRequestOnUI().
+  RunEvents();
 
   // Cleanup work so the prerender is gone.
   test_contents()->Cancel();
@@ -663,11 +670,12 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectSyncXHR) {
   // Start the request and wait for a redirect.
   request.Start();
   delegate.Run();
-  EXPECT_FALSE(delegate.was_deferred());
+  // This calls WillRedirectRequestOnUI().
+  RunEvents();
 
   // We should have cancelled the prerender.
-  EXPECT_EQ(FINAL_STATUS_BAD_DEFERRED_REDIRECT, GetCurrentStatus(
-      kDefaultChildId, kDefaultRouteId));
+  EXPECT_EQ(FINAL_STATUS_BAD_DEFERRED_REDIRECT,
+            test_contents()->final_status());
 
   // Cleanup work so the prerender is gone.
   test_contents()->Cancel();

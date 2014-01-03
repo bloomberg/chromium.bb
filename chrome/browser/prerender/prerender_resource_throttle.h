@@ -9,13 +9,14 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/resource_throttle.h"
+#include "webkit/common/resource_type.h"
 
 namespace net {
 class URLRequest;
 }
 
 namespace prerender {
-
+class PrerenderContents;
 class PrerenderTracker;
 
 // This class implements policy on resource requests in prerenders.  It cancels
@@ -44,10 +45,35 @@ class PrerenderResourceThrottle
   // May only be called if currently throttling the resource.
   void Cancel();
 
+  static void OverridePrerenderContentsForTesting(PrerenderContents* contents);
+
  private:
+  static void WillStartRequestOnUI(
+      const base::WeakPtr<PrerenderResourceThrottle>& throttle,
+      const std::string& method,
+      int render_process_id,
+      int render_frame_id,
+      const GURL& url);
+
+  static void WillRedirectRequestOnUI(
+      const base::WeakPtr<PrerenderResourceThrottle>& throttle,
+      const std::string& follow_only_when_prerender_shown_header,
+      ResourceType::Type resource_type,
+      bool async,
+      int render_process_id,
+      int render_frame_id,
+      const GURL& new_url);
+
+  // Helper to return the PrerenderContents given a render frame id. May return
+  // NULL if it's gone.
+  static PrerenderContents* PrerenderContentsFromRenderFrame(
+      int render_process_id, int render_frame_id);
+
+  // Helper method to call tracker_->AddResourceThrottleOnIOThread.
+  void AddResourceThrottle();
+
   net::URLRequest* request_;
   PrerenderTracker* tracker_;
-  bool throttled_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderResourceThrottle);
 };
