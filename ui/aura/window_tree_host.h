@@ -42,6 +42,8 @@ class AURA_EXPORT RootWindowHost {
 
   void InitHost();
 
+  void InitCompositor();
+
   // TODO(beng): these will become trivial accessors in a future CL.
   aura::Window* window();
   const aura::Window* window() const;

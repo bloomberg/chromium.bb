@@ -82,15 +82,19 @@ RootWindowHost::~RootWindowHost() {
 }
 
 void RootWindowHost::InitHost() {
-  compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
-                               GetBounds().size());
   window()->Init(ui::LAYER_NOT_DRAWN);
-  compositor_->SetRootLayer(window()->layer());
-  transformer_.reset(
-      new SimpleRootWindowTransformer(window(), gfx::Transform()));
+  InitCompositor();
   UpdateRootWindowSize(GetBounds().size());
   Env::GetInstance()->NotifyRootWindowInitialized(delegate_->AsRootWindow());
   window()->Show();
+}
+
+void RootWindowHost::InitCompositor() {
+  compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
+                               GetBounds().size());
+  compositor_->SetRootLayer(window()->layer());
+  transformer_.reset(
+      new SimpleRootWindowTransformer(window(), gfx::Transform()));
 }
 
 aura::Window* RootWindowHost::window() {
