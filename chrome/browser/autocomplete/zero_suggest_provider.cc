@@ -291,12 +291,14 @@ void ZeroSuggestProvider::AddMatchToMap(int relevance,
                                         const base::string16& query_string,
                                         int accepted_suggestion,
                                         SearchProvider::MatchMap* map) {
+  SearchProvider::SuggestResult suggestion(
+      query_string, type, query_string, base::string16(), std::string(),
+      std::string(), false, relevance, true, false);
   // Pass in query_string as the input_text since we don't want any bolding.
   // TODO(samarth|melevin): use the actual omnibox margin here as well instead
   // of passing in -1.
   AutocompleteMatch match = SearchProvider::CreateSearchSuggestion(
-      this, AutocompleteInput(), query_string, relevance, type, false,
-      query_string, base::string16(), template_url, query_string, std::string(),
+      this, AutocompleteInput(), query_string, suggestion, template_url,
       accepted_suggestion, -1, true);
   if (!match.destination_url.is_valid())
     return;

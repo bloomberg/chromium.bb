@@ -399,52 +399,51 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
     AutocompleteProvider* autocomplete_provider,
     const AutocompleteInput& input,
     const base::string16& input_text,
-    int relevance,
-    AutocompleteMatch::Type type,
-    bool is_keyword,
-    const base::string16& match_contents,
-    const base::string16& annotation,
+    const SuggestResult& suggestion,
     const TemplateURL* template_url,
-    const base::string16& query_string,
-    const std::string& suggest_query_params,
     int accepted_suggestion,
     int omnibox_start_margin,
     bool append_extra_query_params) {
-  AutocompleteMatch match(autocomplete_provider, relevance, false, type);
+  AutocompleteMatch match(autocomplete_provider, suggestion.relevance(), false,
+                          suggestion.type());
 
   if (!template_url)
     return match;
   match.keyword = template_url->keyword();
 
-  SetAndClassifyMatchContents(query_string, input_text, match_contents, &match);
+  SetAndClassifyMatchContents(suggestion.suggestion(), input_text,
+                              suggestion.match_contents(), &match);
 
-  if (!annotation.empty())
-    match.description = annotation;
+  if (!suggestion.annotation().empty())
+    match.description = suggestion.annotation();
 
-  match.allowed_to_be_default_match = (input_text == match_contents);
+  match.allowed_to_be_default_match =
+      (input_text == suggestion.match_contents());
 
   // When the user forced a query, we need to make sure all the fill_into_edit
   // values preserve that property.  Otherwise, if the user starts editing a
   // suggestion, non-Search results will suddenly appear.
   if (input.type() == AutocompleteInput::FORCED_QUERY)
     match.fill_into_edit.assign(base::ASCIIToUTF16("?"));
-  if (is_keyword)
+  if (suggestion.from_keyword_provider())
     match.fill_into_edit.append(match.keyword + base::char16(' '));
   if (!input.prevent_inline_autocomplete() &&
-      StartsWith(query_string, input_text, false)) {
-    match.inline_autocompletion = query_string.substr(input_text.length());
+      StartsWith(suggestion.suggestion(), input_text, false)) {
+    match.inline_autocompletion =
+        suggestion.suggestion().substr(input_text.length());
     match.allowed_to_be_default_match = true;
   }
-  match.fill_into_edit.append(query_string);
+  match.fill_into_edit.append(suggestion.suggestion());
 
   const TemplateURLRef& search_url = template_url->url_ref();
   DCHECK(search_url.SupportsReplacement());
   match.search_terms_args.reset(
-      new TemplateURLRef::SearchTermsArgs(query_string));
+      new TemplateURLRef::SearchTermsArgs(suggestion.suggestion()));
   match.search_terms_args->original_query = input_text;
   match.search_terms_args->accepted_suggestion = accepted_suggestion;
   match.search_terms_args->omnibox_start_margin = omnibox_start_margin;
-  match.search_terms_args->suggest_query_params = suggest_query_params;
+  match.search_terms_args->suggest_query_params =
+      suggestion.suggest_query_params();
   match.search_terms_args->append_extra_query_params =
       append_extra_query_params;
   // This is the destination URL sans assisted query stats.  This must be set
@@ -454,7 +453,7 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
       GURL(search_url.ReplaceSearchTerms(*match.search_terms_args.get()));
 
   // Search results don't look like URLs.
-  match.transition = is_keyword ?
+  match.transition = suggestion.from_keyword_provider() ?
       content::PAGE_TRANSITION_KEYWORD : content::PAGE_TRANSITION_GENERATED;
 
   return match;
@@ -1794,10 +1793,8 @@ void SearchProvider::AddMatchToMap(const SuggestResult& result,
   const TemplateURL* template_url = result.from_keyword_provider() ?
       providers_.GetKeywordProviderURL() : providers_.GetDefaultProviderURL();
   AutocompleteMatch match = CreateSearchSuggestion(
-      this, input_, input_text, result.relevance(), result.type(),
-      result.from_keyword_provider(), result.match_contents(),
-      result.annotation(), template_url, result.suggestion(),
-      result.suggest_query_params(), accepted_suggestion, omnibox_start_margin,
+      this, input_, input_text, result, template_url, accepted_suggestion,
+      omnibox_start_margin,
       !result.from_keyword_provider() || providers_.default_provider().empty());
   if (!match.destination_url.is_valid())
     return;

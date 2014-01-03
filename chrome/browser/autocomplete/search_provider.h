@@ -65,39 +65,6 @@ class SearchProvider : public AutocompleteProvider,
 
   SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
 
-  // Returns an AutocompleteMatch with the given |autocomplete_provider|,
-  // |relevance|, and |type|, which represents a search via |template_url| for
-  // |query_string|.  If |template_url| is NULL, returns a match with an invalid
-  // destination URL.
-  //
-  // |input_text| is the original user input, which may differ from
-  // |query_string|; e.g. the user typed "foo" and got a search suggestion of
-  // "food", which we're now marking up.  This is used to highlight portions of
-  // the match contents to distinguish locally-typed text from suggested text.
-  //
-  // |input| and |is_keyword| are necessary for various other details, like
-  // whether we should allow inline autocompletion and what the transition type
-  // should be.  |accepted_suggestion| and |omnibox_start_margin| are used along
-  // with |input_text| to generate Assisted Query Stats.
-  // |append_extra_query_params| should be set if |template_url| is the default
-  // search engine, so the destination URL will contain any
-  // command-line-specified query params.
-  static AutocompleteMatch CreateSearchSuggestion(
-      AutocompleteProvider* autocomplete_provider,
-      const AutocompleteInput& input,
-      const base::string16& input_text,
-      int relevance,
-      AutocompleteMatch::Type type,
-      bool is_keyword,
-      const base::string16& match_contents,
-      const base::string16& annotation,
-      const TemplateURL* template_url,
-      const base::string16& query_string,
-      const std::string& suggest_query_params,
-      int accepted_suggestion,
-      int omnibox_start_margin,
-      bool append_extra_query_params);
-
   // Returns whether the SearchProvider previously flagged |match| as a query
   // that should be prefetched.
   static bool ShouldPrefetch(const AutocompleteMatch& match);
@@ -370,6 +337,31 @@ class SearchProvider : public AutocompleteProvider,
    private:
     DISALLOW_COPY_AND_ASSIGN(Results);
   };
+
+  // Returns an AutocompleteMatch with the given |autocomplete_provider|
+  // for the search |suggestion|, which represents a search via |template_url|.
+  // If |template_url| is NULL, returns a match with an invalid destination URL.
+  //
+  // |input_text| is the original user input.  This is used to highlight
+  // portions of the match contents to distinguish locally-typed text from
+  // suggested text.
+  //
+  // |input| is necessary for various other details, like whether we should
+  // allow inline autocompletion and what the transition type should be.
+  // |accepted_suggestion| and |omnibox_start_margin| are used along with
+  // |input_text| to generate Assisted Query Stats.
+  // |append_extra_query_params| should be set if |template_url| is the default
+  // search engine, so the destination URL will contain any
+  // command-line-specified query params.
+  static AutocompleteMatch CreateSearchSuggestion(
+      AutocompleteProvider* autocomplete_provider,
+      const AutocompleteInput& input,
+      const base::string16& input_text,
+      const SuggestResult& suggestion,
+      const TemplateURL* template_url,
+      int accepted_suggestion,
+      int omnibox_start_margin,
+      bool append_extra_query_params);
 
   // Removes non-inlineable results until either the top result can inline
   // autocomplete the current input or verbatim outscores the top result.
