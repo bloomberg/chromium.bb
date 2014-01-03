@@ -23,16 +23,14 @@ class WebSourceBufferImpl : public blink::WebSourceBuffer {
   virtual ~WebSourceBufferImpl();
 
   // blink::WebSourceBuffer implementation.
-  virtual blink::WebTimeRanges buffered() OVERRIDE;
-  virtual void append(const unsigned char* data, unsigned length) OVERRIDE;
-  virtual void abort() OVERRIDE;
-  // TODO(acolwell): Add OVERRIDE when Blink-side changes land.
+  virtual blink::WebTimeRanges buffered();
+  virtual void append(const unsigned char* data, unsigned length);
+  virtual void abort();
   virtual void remove(double start, double end);
-  virtual bool setTimestampOffset(double offset) OVERRIDE;
-  // TODO(acolwell): Add OVERRIDE when Blink-side changes land.
+  virtual bool setTimestampOffset(double offset);
   virtual void setAppendWindowStart(double start);
   virtual void setAppendWindowEnd(double end);
-  virtual void removedFromMediaSource() OVERRIDE;
+  virtual void removedFromMediaSource();
 
  private:
   std::string id_;
