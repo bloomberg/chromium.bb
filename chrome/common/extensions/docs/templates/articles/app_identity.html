@@ -17,8 +17,10 @@ If your app uses its own server to authenticate users, you will need to use the 
 <p class="note">
 <b>API Samples: </b>
 Want to play with the code?
-Check out the
-<a href="https://github.com/GoogleChrome/chrome-app-samples#authentication-and-user-identification">identity samples</a>.
+Check out 
+<a href="https://github.com/GoogleChrome/chrome-app-samples#_feature_identity">these samples</a>,
+in particular the
+<a href="https://github.com/GoogleChrome/chrome-app-samples/tree/master/identity#readme">identity sample</a>.
 </p>
 
 <h2 id="how">How it works</h2>
@@ -280,16 +282,14 @@ redirect URIs from other providers, you should use:
 <h3 id="permissions_provider">Add permissions for provider</h3>
 
 <p>
-To make cross-origin XHRs to Google API endpoints,
-you need to whitelist those patterns in the permissions:
+To make cross-origin XHRs to the provider API endpoints,
+you need to whitelist the appropriate patterns in the permissions:
 </p>
 
 <pre data-filename="manifest.json">
 "permissions": [
   ...
-  "https://docs.google.com/feeds/",
-  "https://docs.googleusercontent.com/",
-  "https://www.website-of-provider-with-user-photos.com/photos/"
+  "https://www.website-of-provider-with-user-photos.com/photos/*"
 ]
 </pre>
 

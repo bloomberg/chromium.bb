@@ -89,8 +89,10 @@ to the event page and are directly scriptable by the event page.
 </p>
 
 <p>
-Windows have an optional frame with title bar and size controls. They are
-not associated with any Chrome browser windows.
+Windows in Chrome Apps are not associated with any Chrome browser 
+windows. They have an optional frame with title bar and size controls, 
+and a recommended window ID.
+Windows without IDs will not restore to their size and location after restart.
 </p>
 
 <p>Here's a sample window created from <code>background.js</code>:</p>
@@ -98,6 +100,7 @@ not associated with any Chrome browser windows.
 <pre data-filename="background.js">
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('main.html', {
+    id: 'MyWindowID',
     bounds: {
       width: 800,
       height: 600,
