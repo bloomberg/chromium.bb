@@ -5,15 +5,14 @@
 #ifndef CHROME_BROWSER_PREFS_PREF_HASH_FILTER_H_
 #define CHROME_BROWSER_PREFS_PREF_HASH_FILTER_H_
 
-#include <set>
+#include <map>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_filter.h"
-
-class PrefHashStore;
+#include "chrome/browser/prefs/pref_hash_store.h"
 
 namespace base {
 class DictionaryValue;
@@ -25,7 +24,39 @@ class Value;
 // are changed.
 class PrefHashFilter : public PrefFilter {
  public:
-  explicit PrefHashFilter(scoped_ptr<PrefHashStore> pref_hash_store);
+  // Enforcement levels are defined in order of intensity; the next level always
+  // implies the previous one and more.
+  enum EnforcementLevel {
+    NO_ENFORCEMENT,
+    ENFORCE,
+    ENFORCE_NO_SEEDING,
+    ENFORCE_NO_SEEDING_NO_MIGRATION,
+    // ENFORCE_ALL must always remain last; it is meant to be used when the
+    // desired level is underdetermined and the caller wants to enforce the
+    // strongest setting to be safe.
+    ENFORCE_ALL
+  };
+
+  struct TrackedPreference {
+    size_t reporting_id;
+    const char* name;
+    // Whether to actually reset this specific preference when everything else
+    // indicates that it should be.
+    bool allow_enforcement;
+  };
+
+  // Constructs a PrefHashFilter tracking the specified |tracked_preferences|
+  // using |pref_hash_store| to check/store hashes.
+  // |reporting_ids_count| is the count of all possible IDs (possibly greater
+  // than |tracked_preferences_size|). |enforcement_level| determines when this
+  // filter will enforce factory defaults upon detecting an untrusted preference
+  // value.
+  PrefHashFilter(scoped_ptr<PrefHashStore> pref_hash_store,
+                 const TrackedPreference tracked_preferences[],
+                 size_t tracked_preferences_size,
+                 size_t reporting_ids_count,
+                 EnforcementLevel enforcement_level);
+
   virtual ~PrefHashFilter();
 
   // PrefFilter implementation.
@@ -35,8 +66,19 @@ class PrefHashFilter : public PrefFilter {
                             const base::Value* value) OVERRIDE;
 
  private:
+  typedef std::map<std::string, const TrackedPreference> TrackedPreferencesMap;
+
   scoped_ptr<PrefHashStore> pref_hash_store_;
-  std::set<std::string> tracked_paths_;
+  TrackedPreferencesMap tracked_paths_;
+
+  size_t reporting_ids_count_;
+
+  // Prevent setting changes.
+  bool enforce_;
+  // Do not seed unknown values.
+  bool no_seeding_;
+  // Do not migrate values validated by the old MAC algorithm.
+  bool no_migration_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilter);
 };

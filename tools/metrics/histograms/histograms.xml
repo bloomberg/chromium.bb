@@ -16999,10 +16999,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.TrackedPreferenceReset" enum="TrackedPreference">
+  <summary>The id of a tracked preference which was reset by Chrome.</summary>
+</histogram>
+
 <histogram name="Settings.TrackedPreferenceUnchanged" enum="TrackedPreference">
   <summary>
     The id of a tracked preference whose value has not changed since the last
     time Chrome set it.
+  </summary>
+</histogram>
+
+<histogram name="Settings.TrackedPreferenceWantedReset"
+    enum="TrackedPreference">
+  <summary>
+    The id of a tracked preference which Chrome would have reset had the config
+    allowed it.
   </summary>
 </histogram>
 

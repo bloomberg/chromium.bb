@@ -8,6 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/json_pref_store.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/pref_service_syncable_factory.h"
 #include "chrome/browser/ui/profile_error_dialog.h"
+#include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -43,6 +45,75 @@ using content::BrowserContext;
 using content::BrowserThread;
 
 namespace {
+
+// These preferences must be kept in sync with the TrackedPreference enum in
+// tools/metrics/histograms/histograms.xml. To add a new preference, append it
+// to the array and add a corresponding value to the histogram enum. Each
+// tracked preference must be given a unique reporting ID.
+const PrefHashFilter::TrackedPreference kTrackedPrefs[] = {
+  { 0, prefs::kShowHomeButton, true },
+  { 1, prefs::kHomePageIsNewTabPage, true },
+  { 2, prefs::kHomePage, true },
+  { 3, prefs::kRestoreOnStartup, true },
+  { 4, prefs::kURLsToRestoreOnStartup, true },
+  { 5, prefs::kExtensionsPref, false },
+  { 6, prefs::kGoogleServicesLastUsername, true },
+  { 7, prefs::kSearchProviderOverrides, true },
+  { 8, prefs::kDefaultSearchProviderSearchURL, true },
+  { 9, prefs::kDefaultSearchProviderKeyword, true },
+  { 10, prefs::kDefaultSearchProviderName, true },
+#if !defined(OS_ANDROID)
+  { 11, prefs::kPinnedTabs, true },
+#endif
+  { 12, prefs::kExtensionKnownDisabled, true },
+  { 13, prefs::kProfileResetPromptMemento, true },
+};
+
+// The count of tracked preferences IDs across all platforms.
+const size_t kTrackedPrefsReportingIDsCount = 14;
+COMPILE_ASSERT(kTrackedPrefsReportingIDsCount >= arraysize(kTrackedPrefs),
+               need_to_increment_ids_count);
+
+PrefHashFilter::EnforcementLevel GetSettingsEnforcementLevel() {
+  static const char kSettingsEnforcementExperiment[] = "SettingsEnforcement";
+  struct {
+    const char* level_name;
+    PrefHashFilter::EnforcementLevel level;
+  } static const kEnforcementLevelMap[] = {
+    {
+      "no_enforcement",
+      PrefHashFilter::NO_ENFORCEMENT
+    },
+    {
+      "enforce",
+      PrefHashFilter::ENFORCE
+    },
+    {
+      "enforce_no_seeding",
+      PrefHashFilter::ENFORCE_NO_SEEDING
+    },
+    {
+      "enforce_no_seeding_no_migration",
+      PrefHashFilter::ENFORCE_NO_SEEDING_NO_MIGRATION
+    },
+  };
+
+  base::FieldTrial* trial =
+      base::FieldTrialList::Find(kSettingsEnforcementExperiment);
+  if (trial) {
+    const std::string& group_name = trial->group_name();
+    // ARRAYSIZE_UNSAFE must be used since the array is declared locally; it is
+    // only unsafe because it could not trigger a compile error on some
+    // non-array pointer types; this is fine since kEnforcementLevelMap is
+    // clearly an array.
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kEnforcementLevelMap); ++i) {
+      if (kEnforcementLevelMap[i].level_name == group_name)
+        return kEnforcementLevelMap[i].level;
+    }
+  }
+  // TODO(gab): Switch default to ENFORCE_ALL when the field trial config is up.
+  return PrefHashFilter::NO_ENFORCEMENT;
+}
 
 // Shows notifications which correspond to PersistentPrefStore's reading errors.
 void HandleReadError(PersistentPrefStore::PrefReadError error) {
@@ -126,8 +197,13 @@ void PrepareBuilder(
           new CommandLinePrefStore(CommandLine::ForCurrentProcess())));
   factory->set_read_error_callback(base::Bind(&HandleReadError));
   scoped_ptr<PrefFilter> pref_filter;
-  if (pref_hash_store)
-    pref_filter.reset(new PrefHashFilter(pref_hash_store.Pass()));
+  if (pref_hash_store) {
+    pref_filter.reset(new PrefHashFilter(pref_hash_store.Pass(),
+                                         kTrackedPrefs,
+                                         arraysize(kTrackedPrefs),
+                                         kTrackedPrefsReportingIDsCount,
+                                         GetSettingsEnforcementLevel()));
+  }
   factory->set_user_prefs(
       new JsonPrefStore(
           pref_filename,

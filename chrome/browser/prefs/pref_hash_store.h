@@ -9,8 +9,6 @@
 
 #include "base/memory/scoped_ptr.h"
 
-class PrefHashTracker;
-
 namespace base {
 class Value;
 }  // namespace base
@@ -41,7 +39,7 @@ class PrefHashStore {
   virtual ValueState CheckValue(
       const std::string& path, const base::Value* initial_value) const = 0;
 
-  // Stores a hash of the current value of the preference at |path|.
+  // Stores a hash of the current |value| of the preference at |path|.
   virtual void StoreHash(const std::string& path,
                          const base::Value* value) = 0;
 };
