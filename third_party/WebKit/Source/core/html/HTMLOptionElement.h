@@ -87,6 +87,7 @@ private:
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
 
     void didRecalcStyle(StyleRecalcChange) OVERRIDE;
+    void willRecalcStyle(StyleRecalcChange) OVERRIDE;
 
     String collectOptionInnerText() const;
 

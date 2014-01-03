@@ -330,15 +330,6 @@ RenderObject* HTMLSelectElement::createRenderer(RenderStyle*)
     return new RenderListBox(this);
 }
 
-bool HTMLSelectElement::childShouldCreateRenderer(const Node& child) const
-{
-    if (!HTMLFormControlElementWithState::childShouldCreateRenderer(child))
-        return false;
-    if (!usesMenuList())
-        return child.hasTagName(optionTag) || child.hasTagName(optgroupTag);
-    return false;
-}
-
 PassRefPtr<HTMLCollection> HTMLSelectElement::selectedOptions()
 {
     updateListItemSelectedStates();

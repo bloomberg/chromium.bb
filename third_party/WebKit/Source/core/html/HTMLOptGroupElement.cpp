@@ -90,12 +90,8 @@ void HTMLOptGroupElement::recalcSelectOptions()
 
 void HTMLOptGroupElement::attach(const AttachContext& context)
 {
+    updateNonRenderStyle();
     HTMLElement::attach(context);
-    // If after attaching nothing called styleForRenderer() on this node we
-    // manually cache the value. This happens if our parent doesn't have a
-    // renderer like <optgroup> or if it doesn't allow children like <select>.
-    if (!m_style && parentNode()->renderStyle())
-        updateNonRenderStyle();
 }
 
 void HTMLOptGroupElement::detach(const AttachContext& context)
@@ -116,10 +112,13 @@ RenderStyle* HTMLOptGroupElement::nonRendererStyle() const
 
 PassRefPtr<RenderStyle> HTMLOptGroupElement::customStyleForRenderer()
 {
-    // styleForRenderer is called whenever a new style should be associated
-    // with an Element so now is a good time to update our cached style.
-    updateNonRenderStyle();
     return m_style;
+}
+
+void HTMLOptGroupElement::willRecalcStyle(StyleRecalcChange change)
+{
+    if (!needsAttach() && (needsStyleRecalc() || change >= Inherit))
+        updateNonRenderStyle();
 }
 
 String HTMLOptGroupElement::groupLabelText() const

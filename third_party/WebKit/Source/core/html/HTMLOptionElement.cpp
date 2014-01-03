@@ -81,12 +81,8 @@ PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document
 
 void HTMLOptionElement::attach(const AttachContext& context)
 {
+    updateNonRenderStyle();
     HTMLElement::attach(context);
-    // If after attaching nothing called styleForRenderer() on this node we
-    // manually cache the value. This happens if our parent doesn't have a
-    // renderer like <optgroup> or if it doesn't allow children like <select>.
-    if (!m_style && parentNode()->renderStyle())
-        updateNonRenderStyle();
 }
 
 void HTMLOptionElement::detach(const AttachContext& context)
@@ -300,10 +296,13 @@ RenderStyle* HTMLOptionElement::nonRendererStyle() const
 
 PassRefPtr<RenderStyle> HTMLOptionElement::customStyleForRenderer()
 {
-    // styleForRenderer is called whenever a new style should be associated
-    // with an Element so now is a good time to update our cached style.
-    updateNonRenderStyle();
     return m_style;
+}
+
+void HTMLOptionElement::willRecalcStyle(StyleRecalcChange change)
+{
+    if (!needsAttach() && (needsStyleRecalc() || change >= Inherit))
+        updateNonRenderStyle();
 }
 
 void HTMLOptionElement::didRecalcStyle(StyleRecalcChange)
