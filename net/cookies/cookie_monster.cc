@@ -254,40 +254,40 @@ CookieMonster::CookieItVector::iterator LowerBoundAccessDate(
                           LowerBoundAccessDateComparator);
 }
 
-// Mapping between DeletionCause and CookieMonsterDelegate::ChangeCause; the
-// mapping also provides a boolean that specifies whether or not an
-// OnCookieChanged notification ought to be generated.
+// Mapping between DeletionCause and Delegate::ChangeCause; the mapping also
+// provides a boolean that specifies whether or not an OnCookieChanged
+// notification ought to be generated.
 typedef struct ChangeCausePair_struct {
-  CookieMonsterDelegate::ChangeCause cause;
+  CookieMonster::Delegate::ChangeCause cause;
   bool notify;
 } ChangeCausePair;
 ChangeCausePair ChangeCauseMapping[] = {
   // DELETE_COOKIE_EXPLICIT
-  { CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT, true },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, true },
   // DELETE_COOKIE_OVERWRITE
-  { CookieMonsterDelegate::CHANGE_COOKIE_OVERWRITE, true },
+  { CookieMonster::Delegate::CHANGE_COOKIE_OVERWRITE, true },
   // DELETE_COOKIE_EXPIRED
-  { CookieMonsterDelegate::CHANGE_COOKIE_EXPIRED, true },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED, true },
   // DELETE_COOKIE_EVICTED
-  { CookieMonsterDelegate::CHANGE_COOKIE_EVICTED, true },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
   // DELETE_COOKIE_DUPLICATE_IN_BACKING_STORE
-  { CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT, false },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, false },
   // DELETE_COOKIE_DONT_RECORD
-  { CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT, false },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, false },
   // DELETE_COOKIE_EVICTED_DOMAIN
-  { CookieMonsterDelegate::CHANGE_COOKIE_EVICTED, true },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
   // DELETE_COOKIE_EVICTED_GLOBAL
-  { CookieMonsterDelegate::CHANGE_COOKIE_EVICTED, true },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
   // DELETE_COOKIE_EVICTED_DOMAIN_PRE_SAFE
-  { CookieMonsterDelegate::CHANGE_COOKIE_EVICTED, true },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
   // DELETE_COOKIE_EVICTED_DOMAIN_POST_SAFE
-  { CookieMonsterDelegate::CHANGE_COOKIE_EVICTED, true },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true },
   // DELETE_COOKIE_EXPIRED_OVERWRITE
-  { CookieMonsterDelegate::CHANGE_COOKIE_EXPIRED_OVERWRITE, true },
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPIRED_OVERWRITE, true },
   // DELETE_COOKIE_CONTROL_CHAR
-  { CookieMonsterDelegate::CHANGE_COOKIE_EVICTED, true},
+  { CookieMonster::Delegate::CHANGE_COOKIE_EVICTED, true},
   // DELETE_COOKIE_LAST_ENTRY
-  { CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT, false }
+  { CookieMonster::Delegate::CHANGE_COOKIE_EXPLICIT, false }
 };
 
 std::string BuildCookieLine(const CanonicalCookieVector& cookies) {
@@ -308,8 +308,10 @@ std::string BuildCookieLine(const CanonicalCookieVector& cookies) {
 
 }  // namespace
 
-CookieMonster::CookieMonster(PersistentCookieStore* store,
-                             CookieMonsterDelegate* delegate)
+// static
+bool CookieMonster::default_enable_file_scheme_ = false;
+
+CookieMonster::CookieMonster(PersistentCookieStore* store, Delegate* delegate)
     : initialized_(false),
       loaded_(false),
       store_(store),
@@ -324,7 +326,7 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
 }
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
-                             CookieMonsterDelegate* delegate,
+                             Delegate* delegate,
                              int last_access_threshold_milliseconds)
     : initialized_(false),
       loaded_(false),
@@ -1287,6 +1289,11 @@ void CookieMonster::SetKeepExpiredCookies() {
   keep_expired_cookies_ = true;
 }
 
+// static
+void CookieMonster::EnableFileScheme() {
+  default_enable_file_scheme_ = true;
+}
+
 void CookieMonster::FlushStore(const base::Closure& callback) {
   base::AutoLock autolock(lock_);
   if (initialized_ && store_.get())
@@ -1666,9 +1673,9 @@ const int CookieMonster::kDefaultCookieableSchemesCount =
     arraysize(kDefaultCookieableSchemes);
 
 void CookieMonster::SetDefaultCookieableSchemes() {
-  // Always disable file scheme unless SetEnableFileScheme(true) is called.
-  SetCookieableSchemes(kDefaultCookieableSchemes,
-                       kDefaultCookieableSchemesCount - 1);
+  int num_schemes = default_enable_file_scheme_ ?
+      kDefaultCookieableSchemesCount : kDefaultCookieableSchemesCount - 1;
+  SetCookieableSchemes(kDefaultCookieableSchemes, num_schemes);
 }
 
 void CookieMonster::FindCookiesForHostAndDomain(
@@ -1770,7 +1777,7 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
       cookies_.insert(CookieMap::value_type(key, cc));
   if (delegate_.get()) {
     delegate_->OnCookieChanged(
-        *cc, false, CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT);
+        *cc, false, Delegate::CHANGE_COOKIE_EXPLICIT);
   }
 
   return inserted;

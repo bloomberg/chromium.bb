@@ -115,8 +115,8 @@ class MockPersistentCookieStore
   DISALLOW_COPY_AND_ASSIGN(MockPersistentCookieStore);
 };
 
-// Mock for CookieMonsterDelegate
-class MockCookieMonsterDelegate : public CookieMonsterDelegate {
+// Mock for CookieMonster::Delegate
+class MockCookieMonsterDelegate : public CookieMonster::Delegate {
  public:
   typedef std::pair<CanonicalCookie, bool>
       CookieNotification;
@@ -130,7 +130,7 @@ class MockCookieMonsterDelegate : public CookieMonsterDelegate {
   virtual void OnCookieChanged(
       const CanonicalCookie& cookie,
       bool removed,
-      CookieMonsterDelegate::ChangeCause cause) OVERRIDE;
+      CookieMonster::Delegate::ChangeCause cause) OVERRIDE;
 
  private:
   virtual ~MockCookieMonsterDelegate();

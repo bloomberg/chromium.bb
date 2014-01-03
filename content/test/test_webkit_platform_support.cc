@@ -11,7 +11,6 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/common/content_switches.h"
 #include "content/test/mock_webclipboard_impl.h"
 #include "content/test/web_gesture_curve_mock.h"
 #include "content/test/web_layer_tree_view_impl_for_testing.h"
@@ -101,7 +100,7 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
   SetThemeEngine(NULL);
 #endif
 
-  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableFileCookies);
+  net::CookieMonster::EnableFileScheme();
 
   // Test shell always exposes the GC.
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
