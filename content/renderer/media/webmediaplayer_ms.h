@@ -65,53 +65,53 @@ class WebMediaPlayerMS
 
   virtual void load(LoadType load_type,
                     const blink::WebURL& url,
-                    CORSMode cors_mode) OVERRIDE;
+                    CORSMode cors_mode);
 
   // Playback controls.
-  virtual void play() OVERRIDE;
-  virtual void pause() OVERRIDE;
-  virtual bool supportsFullscreen() const OVERRIDE;
-  virtual bool supportsSave() const OVERRIDE;
+  virtual void play();
+  virtual void pause();
+  virtual bool supportsFullscreen() const;
+  virtual bool supportsSave() const;
   virtual void seek(double seconds);
   virtual void setRate(double rate);
   virtual void setVolume(double volume);
-  virtual void setPreload(blink::WebMediaPlayer::Preload preload) OVERRIDE;
-  virtual const blink::WebTimeRanges& buffered() OVERRIDE;
+  virtual void setPreload(blink::WebMediaPlayer::Preload preload);
+  virtual const blink::WebTimeRanges& buffered();
   virtual double maxTimeSeekable() const;
 
   // Methods for painting.
   virtual void paint(blink::WebCanvas* canvas,
                      const blink::WebRect& rect,
-                     unsigned char alpha) OVERRIDE;
+                     unsigned char alpha);
 
   // True if the loaded media has a playable video/audio track.
-  virtual bool hasVideo() const OVERRIDE;
-  virtual bool hasAudio() const OVERRIDE;
+  virtual bool hasVideo() const;
+  virtual bool hasAudio() const;
 
   // Dimensions of the video.
-  virtual blink::WebSize naturalSize() const OVERRIDE;
+  virtual blink::WebSize naturalSize() const;
 
   // Getters of playback state.
-  virtual bool paused() const OVERRIDE;
-  virtual bool seeking() const OVERRIDE;
+  virtual bool paused() const;
+  virtual bool seeking() const;
   virtual double duration() const;
   virtual double currentTime() const;
 
   // Internal states of loading and network.
-  virtual blink::WebMediaPlayer::NetworkState networkState() const OVERRIDE;
-  virtual blink::WebMediaPlayer::ReadyState readyState() const OVERRIDE;
+  virtual blink::WebMediaPlayer::NetworkState networkState() const;
+  virtual blink::WebMediaPlayer::ReadyState readyState() const;
 
-  virtual bool didLoadingProgress() const OVERRIDE;
+  virtual bool didLoadingProgress() const;
 
-  virtual bool hasSingleSecurityOrigin() const OVERRIDE;
-  virtual bool didPassCORSAccessCheck() const OVERRIDE;
+  virtual bool hasSingleSecurityOrigin() const;
+  virtual bool didPassCORSAccessCheck() const;
 
   virtual double mediaTimeForTimeValue(double timeValue) const;
 
-  virtual unsigned decodedFrameCount() const OVERRIDE;
-  virtual unsigned droppedFrameCount() const OVERRIDE;
-  virtual unsigned audioDecodedByteCount() const OVERRIDE;
-  virtual unsigned videoDecodedByteCount() const OVERRIDE;
+  virtual unsigned decodedFrameCount() const;
+  virtual unsigned droppedFrameCount() const;
+  virtual unsigned audioDecodedByteCount() const;
+  virtual unsigned videoDecodedByteCount() const;
 
   // VideoFrameProvider implementation.
   virtual void SetVideoFrameProviderClient(

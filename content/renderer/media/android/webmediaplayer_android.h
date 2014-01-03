@@ -88,12 +88,11 @@ class WebMediaPlayerAndroid
   // Resource loading.
   virtual void load(LoadType load_type,
                     const blink::WebURL& url,
-                    CORSMode cors_mode) OVERRIDE;
+                    CORSMode cors_mode);
 
   // Playback controls.
   virtual void play();
   virtual void pause();
-  virtual void pause(bool is_media_related_action);
   virtual void seek(double seconds);
   virtual bool supportsFullscreen() const;
   virtual bool supportsSave() const;
@@ -201,17 +200,17 @@ class WebMediaPlayerAndroid
   virtual MediaKeyException generateKeyRequest(
       const blink::WebString& key_system,
       const unsigned char* init_data,
-      unsigned init_data_length) OVERRIDE;
+      unsigned init_data_length);
   virtual MediaKeyException addKey(
       const blink::WebString& key_system,
       const unsigned char* key,
       unsigned key_length,
       const unsigned char* init_data,
       unsigned init_data_length,
-      const blink::WebString& session_id) OVERRIDE;
+      const blink::WebString& session_id);
   virtual MediaKeyException cancelKeyRequest(
       const blink::WebString& key_system,
-      const blink::WebString& session_id) OVERRIDE;
+      const blink::WebString& session_id);
 
   void OnKeyAdded(const std::string& session_id);
   void OnKeyError(const std::string& session_id,
@@ -257,6 +256,7 @@ class WebMediaPlayerAndroid
   void SetNeedsEstablishPeer(bool needs_establish_peer);
 
  private:
+  void Pause(bool is_media_related_action);
   void DrawRemotePlaybackIcon();
   void ReallocateVideoFrame();
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame>& frame);

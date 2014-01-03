@@ -91,7 +91,7 @@ class WebMediaPlayerImpl
 
   virtual void load(LoadType load_type,
                     const blink::WebURL& url,
-                    CORSMode cors_mode) OVERRIDE;
+                    CORSMode cors_mode);
 
   // Playback controls.
   virtual void play();

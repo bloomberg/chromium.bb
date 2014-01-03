@@ -349,16 +349,7 @@ void WebMediaPlayerAndroid::play() {
 }
 
 void WebMediaPlayerAndroid::pause() {
-  pause(true);
-}
-
-void WebMediaPlayerAndroid::pause(bool is_media_related_action) {
-#if defined(GOOGLE_TV)
-  if (audio_renderer_ && !paused())
-    audio_renderer_->Pause();
-#endif
-  manager_->Pause(player_id_, is_media_related_action);
-  UpdatePlayingState(false);
+  Pause(true);
 }
 
 void WebMediaPlayerAndroid::seek(double seconds) {
@@ -878,7 +869,7 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
     case WebMediaPlayer::NetworkStateIdle:
     case WebMediaPlayer::NetworkStateLoading:
     case WebMediaPlayer::NetworkStateLoaded:
-      pause(false);
+      Pause(false);
       client_->playbackStateChanged();
       break;
     // If a WebMediaPlayer instance has entered into one of these states,
@@ -913,6 +904,15 @@ void WebMediaPlayerAndroid::Detach() {
   }
   is_remote_ = false;
   manager_ = NULL;
+}
+
+void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
+#if defined(GOOGLE_TV)
+  if (audio_renderer_ && !paused())
+    audio_renderer_->Pause();
+#endif
+  manager_->Pause(player_id_, is_media_related_action);
+  UpdatePlayingState(false);
 }
 
 void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
