@@ -25,16 +25,10 @@ const wchar_t kRegistryBeaconPath[] = L"SOFTWARE\\Google\\Chrome\\BLBeacon";
 
 }  // namespace blacklist
 
-// Allocate storage for thunks in a RWX page of this module to save on doing
+// Allocate storage for thunks in a page of this module to save on doing
 // an extra allocation at run time.
-#if !defined(_WIN64) && (_MSC_VER < 1700)
-// 64-bit images or images generated with 2012 and above appear to not support
-// writeable and executable pages.
-// This would yield compile warning C4330.
-// TODO(robertshield): Figure out how / if to do this on 2012.
-#pragma section(".crthunk",read,write,execute)
+#pragma section(".crthunk",read,execute)
 __declspec(allocate(".crthunk")) sandbox::ThunkData g_thunk_storage;
-#endif
 
 namespace {
 
@@ -250,11 +244,16 @@ bool Initialize(bool force) {
   }
 #endif
 
-#if defined(_WIN64) || (_MSC_VER >= 1700)
-  BYTE* thunk_storage = new BYTE[sizeof(sandbox::ThunkData)];
-#else
   BYTE* thunk_storage = reinterpret_cast<BYTE*>(&g_thunk_storage);
-#endif
+
+  // Mark the thunk storage as readable and writeable, since we
+  // ready to write to it.
+  DWORD old_protect = 0;
+  if (!VirtualProtect(&g_thunk_storage,
+                      sizeof(g_thunk_storage),
+                      PAGE_EXECUTE_READWRITE,
+                      &old_protect))
+    return false;
 
   thunk->AllowLocalPatches();
 
@@ -269,7 +268,14 @@ bool Initialize(bool force) {
                               NULL);
 
   delete thunk;
-  return NT_SUCCESS(ret);
+
+  // Mark the thunk storage as executable and prevent any future writes to it.
+  BOOL page_executable = VirtualProtect(&g_thunk_storage,
+                                        sizeof(g_thunk_storage),
+                                        PAGE_EXECUTE_READ,
+                                        &old_protect);
+
+  return NT_SUCCESS(ret) && page_executable;
 }
 
 }  // namespace blacklist
