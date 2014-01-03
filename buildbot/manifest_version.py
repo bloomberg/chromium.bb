@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""
-A library to generate and store the manifests for cros builders to use.
+"""A library to generate and store the manifests for cros builders to use.
 """
 
 import cPickle
@@ -309,9 +308,6 @@ class BuilderStatus(object):
   STATUS_INFLIGHT = 'inflight'
   COMPLETED_STATUSES = (STATUS_PASSED, STATUS_FAILED)
 
-  # TODO(akeshet): dashboard_url is not currently used,
-  # it is being added to the constructor as a temporary measure
-  # to allow the commit queue to run.
   def __init__(self, status, message, dashboard_url=None):
     self.status = status
     self.message = message
@@ -351,11 +347,15 @@ class BuilderStatus(object):
     """Returns a flat json-able representation of this builder status.
 
     Returns:
-      A dictionary of the form {'status' : status, 'message' : message}
-      where status and message are guaranteed to be strings.
+      A dictionary of the form {'status' : status, 'message' : message,
+      'dashboard_url' : dashboard_url} where all values are guaranteed
+      to be strings. If dashboard_url is None, the key will be excluded.
     """
-    return {'status' : str(self.status),
-            'message' : str(self.message)}
+    flat_dict = {'status' : str(self.status),
+                 'message' : str(self.message)}
+    if self.dashboard_url is not None:
+      flat_dict['dashboard_url'] = str(self.dashboard_url)
+    return flat_dict
 
 
 class BuildSpecsManager(object):
@@ -427,6 +427,8 @@ class BuildSpecsManager(object):
     """Returns the latest buildspec that match '*.xml' in a directory.
 
     Args:
+      version_info: A VersionInfo object which will provide a build prefix
+                    to match for.
       directory: Directory of the buildspecs.
     """
     if os.path.exists(directory):
@@ -660,7 +662,8 @@ class BuildSpecsManager(object):
     """Get the status URL in Google Storage for a given builder / version."""
     return os.path.join(BUILD_STATUS_URL, version, builder)
 
-  def _UploadStatus(self, version, status, message=None, fail_if_exists=False):
+  def _UploadStatus(self, version, status, message=None, fail_if_exists=False,
+                    dashboard_url=None):
     """Upload build status to Google Storage.
 
     Args:
@@ -668,11 +671,13 @@ class BuildSpecsManager(object):
       status: Status string.
       message: Additional message explaining the status.
       fail_if_exists: If set, fail if the status already exists.
+      dashboard_url: Optional url linking to builder dashboard for this build.
     """
     url = BuildSpecsManager._GetStatusUrl(self.build_name, version)
 
-    # Pickle the dictionary needed to create a BuilderStatus object.
-    data = cPickle.dumps(dict(status=status, message=message))
+    # Pickle the dictionary needed to recreate a BuilderStatus object.
+    data = cPickle.dumps(dict(status=status, message=message,
+                              dashboard_url=dashboard_url))
 
     # This HTTP header tells Google Storage to return the PreconditionFailed
     # error message if the file already exists.
@@ -682,15 +687,17 @@ class BuildSpecsManager(object):
     ctx = gs.GSContext(dry_run=self.dry_run)
     ctx.Copy('-', url, input=data, version=gs_version)
 
-  def UploadStatus(self, success, message=None):
+  def UploadStatus(self, success, message=None, dashboard_url=None):
     """Uploads the status of the build for the current build spec.
 
     Args:
       success: True for success, False for failure
       message: Message accompanied with change in status.
+      dashboard_url: Optional url linking to builder dashboard for this build.
     """
     status = BuilderStatus.GetCompletedStatus(success)
-    self._UploadStatus(self.current_version, status, message=message)
+    self._UploadStatus(self.current_version, status, message=message,
+                       dashboard_url=dashboard_url)
 
   def SetInFlight(self, version):
     """Marks the buildspec as inflight in Google Storage."""

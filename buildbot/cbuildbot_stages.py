@@ -1302,7 +1302,8 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   def PerformStage(self):
     # Upload our pass/fail status to Google Storage.
     self._run.attrs.manifest_manager.UploadStatus(
-        success=self.success, message=self.message)
+        success=self.success, message=self.message,
+        dashboard_url=self.ConstructDashboardURL())
 
     statuses = self._FetchSlaveStatuses()
     self._slave_statuses = statuses
