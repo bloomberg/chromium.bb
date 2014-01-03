@@ -73,10 +73,6 @@ void SpellcheckServiceFactory::RegisterProfilePrefs(
       IDS_SPELLCHECK_DICTIONARY,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   user_prefs->RegisterBooleanPref(
-      prefs::kSpellCheckConfirmDialogShown,
-      false,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  user_prefs->RegisterBooleanPref(
       prefs::kSpellCheckUseSpellingService,
       false,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

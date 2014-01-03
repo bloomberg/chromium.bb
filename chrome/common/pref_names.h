@@ -523,7 +523,6 @@ extern const char kHungPluginDetectFrequency[];
 extern const char kPluginMessageResponseTimeout[];
 
 extern const char kSpellCheckDictionary[];
-extern const char kSpellCheckConfirmDialogShown[];
 extern const char kSpellCheckUseSpellingService[];
 
 extern const char kExcludedSchemes[];
