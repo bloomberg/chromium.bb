@@ -412,7 +412,7 @@ redraw(void *data, struct wl_callback *callback, uint32_t time)
 		{ 0, 0, 1, 0 },
 		{ 0, 0, 0, 1 }
 	};
-	static const int32_t speed_div = 5, benchmark_interval = 5;
+	static const uint32_t speed_div = 5, benchmark_interval = 5;
 	struct wl_region *region;
 	EGLint rect[4];
 	EGLint buffer_age = 0;
