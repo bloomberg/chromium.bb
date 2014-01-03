@@ -38,6 +38,7 @@ OobeBaseTest::OobeBaseTest()
     : fake_gaia_(new FakeGaia()),
       network_portal_detector_(NULL) {
   set_exit_when_last_browser_closes(false);
+  set_chromeos_user_ = false;
 }
 
 OobeBaseTest::~OobeBaseTest() {
@@ -54,7 +55,7 @@ void OobeBaseTest::SetUp() {
   // spawning sandbox host process. See crbug.com/322732.
   embedded_test_server()->StopThread();
 
-  InProcessBrowserTest::SetUp();
+  ExtensionApiTest::SetUp();
 }
 
 void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
@@ -63,11 +64,15 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
   network_portal_detector_->SetDefaultNetworkPathForTesting(
       kStubEthernetServicePath);
+
+  ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 }
 
 void OobeBaseTest::SetUpOnMainThread() {
   // Restart the thread as the sandbox host process has already been spawned.
   embedded_test_server()->RestartThreadAndListen();
+
+  ExtensionApiTest::SetUpOnMainThread();
 }
 
 void OobeBaseTest::CleanUpOnMainThread() {
@@ -77,9 +82,12 @@ void OobeBaseTest::CleanUpOnMainThread() {
                                            base::Bind(&chrome::AttemptExit));
     content::RunMessageLoop();
   }
+
+  ExtensionApiTest::CleanUpOnMainThread();
 }
 
 void OobeBaseTest::SetUpCommandLine(CommandLine* command_line) {
+  ExtensionApiTest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   command_line->AppendSwitch(::switches::kDisableBackgroundNetworking);

@@ -57,6 +57,9 @@ using extensions::Manifest;
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
       installed_(false),
+#if defined(OS_CHROMEOS)
+      set_chromeos_user_(true),
+#endif
       current_channel_(chrome::VersionInfo::CHANNEL_DEV),
       override_prompt_for_external_extensions_(
           FeatureSwitch::prompt_for_external_extensions(),
@@ -98,12 +101,14 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   observer_.reset(new ExtensionTestNotificationObserver(browser()));
 
 #if defined(OS_CHROMEOS)
-  // This makes sure that we create the Default profile first, with no
-  // ExtensionService and then the real profile with one, as we do when
-  // running on chromeos.
-  command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
-                                  "TestUser@gmail.com");
-  command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+  if (set_chromeos_user_) {
+    // This makes sure that we create the Default profile first, with no
+    // ExtensionService and then the real profile with one, as we do when
+    // running on chromeos.
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                    "TestUser@gmail.com");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+  }
 #endif
 }
 

@@ -66,7 +66,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   }
 
   // Get the profile to use.
-  Profile* profile();
+  virtual Profile* profile();
 
   static const extensions::Extension* GetExtensionByPath(
       const extensions::ExtensionSet* extensions, const base::FilePath& path);
@@ -278,6 +278,12 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
 
   bool loaded_;
   bool installed_;
+
+#if defined(OS_CHROMEOS)
+  // True if the command line should be tweaked as if ChromeOS user is
+  // already logged in.
+  bool set_chromeos_user_;
+#endif
 
   // test_data/extensions.
   base::FilePath test_data_dir_;

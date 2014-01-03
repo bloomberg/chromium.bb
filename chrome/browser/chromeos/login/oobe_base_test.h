@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
+#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/fake_gaia.h"
@@ -27,7 +28,7 @@ class NetworkPortalDetectorTestImpl;
 class SigninScreenHandler;
 
 // Base class for OOBE and Kiosk tests.
-class OobeBaseTest : public InProcessBrowserTest {
+class OobeBaseTest : public ExtensionApiTest {
  public:
   OobeBaseTest();
   virtual ~OobeBaseTest();
