@@ -18,6 +18,8 @@ from chromite.lib import cros_test_lib
 
 import mock
 
+DEFAULT_ARCHIVE_GS_PATH = 'bogus_bucket/TheArchiveBase'
+DEFAULT_ARCHIVE_BASE = 'gs://%s' % DEFAULT_ARCHIVE_GS_PATH
 DEFAULT_BUILDROOT = '/tmp/foo/bar/buildroot'
 DEFAULT_BUILDNUMBER = 12345
 DEFAULT_BRANCH = 'TheBranch'
@@ -30,10 +32,13 @@ DEFAULT_BOT_NAME = 'TheCoolBot'
 # pylint: disable=W0212
 
 DEFAULT_OPTIONS = cros_test_lib.EasyAttr(
+    archive_base=DEFAULT_ARCHIVE_BASE,
     buildroot=DEFAULT_BUILDROOT,
     buildnumber=DEFAULT_BUILDNUMBER,
+    buildbot=True,
     branch=DEFAULT_BRANCH,
     remote_trybot=False,
+    debug=False,
     postsync_patch=True,
 )
 DEFAULT_CONFIG = cbuildbot_config._config(
@@ -41,9 +46,12 @@ DEFAULT_CONFIG = cbuildbot_config._config(
     master=True,
     boards=[DEFAULT_BOARD],
     postsync_patch=True,
-    child_configs=[cros_test_lib.EasyAttr(name='foo', postsync_patch=False),
-                   cros_test_lib.EasyAttr(name='bar', postsync_patch=False),
-                  ])
+    child_configs=[cbuildbot_config._config(name='foo', postsync_patch=False),
+                   cbuildbot_config._config(name='bar', postsync_patch=False),
+                  ],
+)
+
+DEFAULT_VERSION = '6543.2.1'
 
 
 def _NewBuilderRun(options=None, config=None):
@@ -58,6 +66,7 @@ def _NewBuilderRun(options=None, config=None):
   """
   options = options or DEFAULT_OPTIONS
   config = config or DEFAULT_CONFIG
+
   return cbuildbot_run.BuilderRun(options, config)
 
 
@@ -90,16 +99,26 @@ def _ExtendDefaultConfig(**kwargs):
   return cbuildbot_config._config(**config_kwargs)
 
 
-class BuilderRunPickleTest(cros_test_lib.TestCase):
+class BuilderRunPickleTest(cros_test_lib.MockTestCase):
   """Make sure BuilderRun objects can be pickled."""
 
-  def testPickleBuilderRun(self):
-    run1 = _NewBuilderRun()
+  def setUp(self):
+    self.real_config = cbuildbot_config.config['x86-alex-release-group']
+    self.PatchObject(cbuildbot_run._BuilderRunBase, 'GetVersion',
+                     return_value=DEFAULT_VERSION)
+
+  def _TestPickle(self, run1):
+    self.assertEquals(DEFAULT_VERSION, run1.GetVersion())
     run1.attrs.release_tag = 'TheReleaseTag'
 
     # Accessing a method on BuilderRun has special behavior, so access and
     # use one before pickling.
     patch_after_sync = run1.ShouldPatchAfterSync()
+
+    # Access the archive object before pickling, too.
+    upload_uri = run1.GetArchive().upload_uri
+
+    # Pickle and unpickle run1 into run2.
     run2 = cPickle.loads(cPickle.dumps(run1, cPickle.HIGHEST_PROTOCOL))
 
     self.assertEquals(run1.buildnumber, run2.buildnumber)
@@ -109,42 +128,46 @@ class BuilderRunPickleTest(cros_test_lib.TestCase):
     self.assertRaises(AttributeError, getattr, run1.attrs, 'manifest_manager')
     self.assertRaises(AttributeError, getattr, run2.attrs, 'manifest_manager')
     self.assertEquals(patch_after_sync, run2.ShouldPatchAfterSync())
+    self.assertEquals(upload_uri, run2.GetArchive().upload_uri)
+
+    # The attrs objects should be identical.
+    self.assertTrue(run1.attrs is run2.attrs)
+
+    # And the run objects themselves are different.
+    self.assertFalse(run1 is run2)
+
+  def testPickleBuilderRun(self):
+    self._TestPickle(_NewBuilderRun(config=self.real_config))
 
   def testPickleChildBuilderRun(self):
-    run1 = _NewChildBuilderRun(0)
-    run1.attrs.release_tag = 'TheReleaseTag'
-    patch_after_sync = run1.ShouldPatchAfterSync()
-    run2 = cPickle.loads(cPickle.dumps(run1, cPickle.HIGHEST_PROTOCOL))
-
-    self.assertEquals(run1.buildnumber, run2.buildnumber)
-    self.assertEquals(run1.config.name, run2.config.name)
-    self.assertEquals(run1.options.branch, run2.options.branch)
-    self.assertEquals(run1.attrs.release_tag, run2.attrs.release_tag)
-    self.assertRaises(AttributeError, getattr, run1.attrs, 'manifest_manager')
-    self.assertRaises(AttributeError, getattr, run2.attrs, 'manifest_manager')
-    self.assertEquals(patch_after_sync, run2.ShouldPatchAfterSync())
+    self._TestPickle(_NewChildBuilderRun(0, config=self.real_config))
 
 
 class BuilderRunTest(cros_test_lib.TestCase):
   """Test the BuilderRun class."""
 
   def testInit(self):
-    run = _NewBuilderRun()
-    self.assertEquals(DEFAULT_BUILDROOT, run.buildroot)
-    self.assertEquals(DEFAULT_BUILDNUMBER, run.buildnumber)
-    self.assertEquals(DEFAULT_BRANCH, run.manifest_branch)
-    self.assertEquals(DEFAULT_OPTIONS, run.options)
-    self.assertEquals(DEFAULT_CONFIG, run.config)
-    self.assertTrue(isinstance(run.attrs, cbuildbot_run.RunAttributes))
+    with mock.patch.object(cbuildbot_run._BuilderRunBase, 'GetVersion') as m:
+      m.return_value = DEFAULT_VERSION
 
-    # Make sure methods behave normally, since BuilderRun messes with them.
-    meth1 = run.GetVersion
-    meth2 = run.GetVersion
-    self.assertEqual(meth1.__name__, meth2.__name__)
+      run = _NewBuilderRun()
+      self.assertEquals(DEFAULT_BUILDROOT, run.buildroot)
+      self.assertEquals(DEFAULT_BUILDNUMBER, run.buildnumber)
+      self.assertEquals(DEFAULT_BRANCH, run.manifest_branch)
+      self.assertEquals(DEFAULT_OPTIONS, run.options)
+      self.assertEquals(DEFAULT_CONFIG, run.config)
+      self.assertTrue(isinstance(run.attrs, cbuildbot_run.RunAttributes))
+      self.assertTrue(isinstance(run.GetArchive(),
+                                 cbuildbot_run.cbuildbot_archive.Archive))
 
-    # We actually do not support identity and equality checks right now.
-    self.assertNotEqual(meth1, meth2)
-    self.assertFalse(meth1 is meth2)
+      # Make sure methods behave normally, since BuilderRun messes with them.
+      meth1 = run.GetVersionInfo
+      meth2 = run.GetVersionInfo
+      self.assertEqual(meth1.__name__, meth2.__name__)
+
+      # We actually do not support identity and equality checks right now.
+      self.assertNotEqual(meth1, meth2)
+      self.assertFalse(meth1 is meth2)
 
   def testOptions(self):
     options = _ExtendDefaultOptions(foo=True, bar=10)
@@ -177,6 +200,32 @@ class BuilderRunTest(cros_test_lib.TestCase):
     # accessed or changed.
     self.assertRaises(AttributeError, run.attrs.__getattribute__, 'foobar')
     self.assertRaises(AttributeError, run.attrs.__setattr__, 'foobar', 'foo')
+
+  def testArchive(self):
+    run = _NewBuilderRun()
+
+    with mock.patch.object(cbuildbot_run._BuilderRunBase, 'GetVersion') as m:
+      m.return_value = DEFAULT_VERSION
+
+      archive = run.GetArchive()
+
+      # Check archive.archive_path.
+      expected = ('%s/%s/%s/%s' %
+                  (DEFAULT_BUILDROOT,
+                   cbuildbot_run.cbuildbot_archive.Archive._BUILDBOT_ARCHIVE,
+                   DEFAULT_BOT_NAME, DEFAULT_VERSION))
+      self.assertEqual(expected, archive.archive_path)
+
+      # Check archive.upload_uri.
+      expected = '%s/%s/%s' % (DEFAULT_ARCHIVE_BASE, DEFAULT_BOT_NAME,
+                               DEFAULT_VERSION)
+      self.assertEqual(expected, archive.upload_uri)
+
+      # Check archive.download_url.
+      expected = ('%s%s/%s/%s' %
+                  (cbuildbot_run.cbuildbot_archive.gs.PRIVATE_BASE_HTTPS_URL,
+                   DEFAULT_ARCHIVE_GS_PATH, DEFAULT_BOT_NAME, DEFAULT_VERSION))
+      self.assertEqual(expected, archive.download_url)
 
   def _RunAccessor(self, method_name, options_dict, config_dict):
     """Run the given accessor method of the BuilderRun class.
@@ -291,23 +340,28 @@ class ChildBuilderRunTest(cros_test_lib.TestCase):
   """Test the ChildBuilderRun class"""
 
   def testInit(self):
-    crun = _NewChildBuilderRun(0)
-    self.assertEquals(DEFAULT_BUILDROOT, crun.buildroot)
-    self.assertEquals(DEFAULT_BUILDNUMBER, crun.buildnumber)
-    self.assertEquals(DEFAULT_BRANCH, crun.manifest_branch)
-    self.assertEquals(DEFAULT_OPTIONS, crun.options)
-    self.assertEquals(DEFAULT_CONFIG.child_configs[0], crun.config)
-    self.assertEquals('foo', crun.config.name)
-    self.assertTrue(isinstance(crun.attrs, cbuildbot_run.RunAttributes))
+    with mock.patch.object(cbuildbot_run._BuilderRunBase, 'GetVersion') as m:
+      m.return_value = DEFAULT_VERSION
 
-    # Make sure methods behave normally, since BuilderRun messes with them.
-    meth1 = crun.GetVersion
-    meth2 = crun.GetVersion
-    self.assertEqual(meth1.__name__, meth2.__name__)
+      crun = _NewChildBuilderRun(0)
+      self.assertEquals(DEFAULT_BUILDROOT, crun.buildroot)
+      self.assertEquals(DEFAULT_BUILDNUMBER, crun.buildnumber)
+      self.assertEquals(DEFAULT_BRANCH, crun.manifest_branch)
+      self.assertEquals(DEFAULT_OPTIONS, crun.options)
+      self.assertEquals(DEFAULT_CONFIG.child_configs[0], crun.config)
+      self.assertEquals('foo', crun.config.name)
+      self.assertTrue(isinstance(crun.attrs, cbuildbot_run.RunAttributes))
+      self.assertTrue(isinstance(crun.GetArchive(),
+                                 cbuildbot_run.cbuildbot_archive.Archive))
 
-    # We actually do not support identity and equality checks right now.
-    self.assertNotEqual(meth1, meth2)
-    self.assertFalse(meth1 is meth2)
+      # Make sure methods behave normally, since BuilderRun messes with them.
+      meth1 = crun.GetVersionInfo
+      meth2 = crun.GetVersionInfo
+      self.assertEqual(meth1.__name__, meth2.__name__)
+
+      # We actually do not support identity and equality checks right now.
+      self.assertNotEqual(meth1, meth2)
+      self.assertFalse(meth1 is meth2)
 
 
 if __name__ == '__main__':

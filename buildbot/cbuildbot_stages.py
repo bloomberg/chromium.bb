@@ -161,41 +161,6 @@ class ArchivingStage(BoardSpecificBuilderStage):
   """
 
   PROCESSES = 10
-  _BUILDBOT_ARCHIVE = 'buildbot_archive'
-  _TRYBOT_ARCHIVE = 'trybot_archive'
-
-  @classmethod
-  def GetBaseUploadURL(cls, config, archive_base=None, remote_trybot=False):
-    """Get the base URL where artifacts from this builder are uploaded.
-
-    Each build run stores its artifacts in a subdirectory of the base URL.
-    We also have LATEST files under the base URL which help point to the
-    latest build available for a given builder.
-
-    Args:
-      config: The build config to examine.
-      archive_base: Optional. The root URL under which objects from all
-        builders are uploaded. If not specified, we use the default archive
-        bucket.
-      remote_trybot: Whether this is a remote trybot run. This is used to
-        make sure that uploads from remote trybot runs do not conflict with
-        uploads from production builders.
-    """
-    if archive_base:
-      gs_base = archive_base
-    elif (remote_trybot or
-          config['gs_path'] == cbuildbot_config.GS_PATH_DEFAULT):
-      gs_base = constants.DEFAULT_ARCHIVE_BUCKET
-    else:
-      return config['gs_path']
-    subdir = config.GetBotId(remote_trybot=remote_trybot)
-    return '%s/%s' % (gs_base, subdir)
-
-  @classmethod
-  def GetLocalArchiveRoot(cls, buildroot, trybot):
-    """Return the location on disk where archive images are kept."""
-    archive_base = cls._TRYBOT_ARCHIVE if trybot else cls._BUILDBOT_ARCHIVE
-    return os.path.join(buildroot, archive_base)
 
   @classmethod
   def GetUploadACL(cls, config):
@@ -215,25 +180,15 @@ class ArchivingStage(BoardSpecificBuilderStage):
     else:
       self.debug = self._run.options.debug
 
-    # TODO(mtennant): builder_run.GetVersion() directly instead of
-    # storing in self.version during constructor here.
-    self.version = builder_run.GetVersion()
+    self.archive = builder_run.GetArchive()
 
-    # TODO(mtennant): Candidate for self._run.IsTrybot().
-    trybot = not self._run.options.buildbot or self._run.options.debug
-    archive_root = self.GetLocalArchiveRoot(self._build_root, trybot)
-    self.bot_archive_root = os.path.join(archive_root, self._bot_id)
-    self.archive_path = os.path.join(self.bot_archive_root, self.version)
-    self.base_upload_url = self.GetBaseUploadURL(
-        self._run.config, self._run.options.archive_base,
-        self._run.options.remote_trybot)
-    self.upload_url = '%s/%s' % (self.base_upload_url, self.version)
-
-    if self._run.options.buildbot or self._run.options.remote_trybot:
-      base_download_url = gs.PRIVATE_BASE_HTTPS_URL
-      self.download_url = self.upload_url.replace('gs://', base_download_url)
-    else:
-      self.download_url = self.archive_path
+    # TODO(mtennant): Do away with deprecated access below.
+    self.version = self.archive.version
+    self.archive_path = self.archive.archive_path
+    self.bot_archive_root = os.path.dirname(self.archive_path)
+    self.upload_url = self.archive.upload_uri
+    self.base_upload_url = os.path.dirname(self.upload_url)
+    self.download_url = self.archive.download_url
 
   @contextlib.contextmanager
   def ArtifactUploader(self, queue=None, archive=True, strict=True):
@@ -452,8 +407,7 @@ class CleanUpStage(bs.BuilderStage):
 
   def _DeleteArchivedTrybotImages(self):
     """For trybots, clear all previus archive images to save space."""
-    archive_root = ArchivingStage.GetLocalArchiveRoot(
-        self._build_root, trybot=True)
+    archive_root = self._run.GetArchive().GetLocalArchiveRoot(trybot=True)
     osutils.RmDir(archive_root, ignore_missing=True)
 
   def _DeleteArchivedPerfResults(self):
@@ -3686,7 +3640,7 @@ class ReportStage(bs.BuilderStage):
       head_data = {
           'board': board,
           'config': board_config.name,
-          'version': archive_stage.version,
+          'version': self._run.GetVersion(),
       }
       head = self._HTML_HEAD % head_data
 

@@ -13,6 +13,7 @@ import logging
 import os
 import shutil
 import tempfile
+from chromite.buildbot import cbuildbot_archive
 from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_stages
 from chromite.buildbot import constants
@@ -157,7 +158,7 @@ class ChromeCommitter(object):
       config: The builder config to update.
       versions: Versions of ChromeOS to look at, sorted in descending order.
     """
-    base_url = cbuildbot_stages.ArchivingStage.GetBaseUploadURL(config)
+    base_url = cbuildbot_archive.GetBaseUploadURI(config)
     acl = cbuildbot_stages.ArchivingStage.GetUploadACL(config)
     latest_url = None
     # gs.GSContext skips over all commands (including read-only checks)

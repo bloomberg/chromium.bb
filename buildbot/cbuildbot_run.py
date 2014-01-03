@@ -24,6 +24,7 @@ import functools
 import os
 import types
 
+from chromite.buildbot import cbuildbot_archive
 from chromite.buildbot import manifest_version
 
 
@@ -67,7 +68,7 @@ class _BuilderRunBase(object):
 
       # Run attributes set/accessed by stages during the run.  To add support
       # for a new run attribute add it to the RunAttributes class above.
-      '_attrs_id',
+      '_attrs_id',       # Object ID for looking up self.attrs.
 
       # Some pre-computed run configuration values.
       'buildnumber',     # The build number for this run.
@@ -121,6 +122,18 @@ class _BuilderRunBase(object):
   def attrs(self):
     """Look up the RunAttributes object for this BuilderRun object."""
     return self._ATTRS[self._attrs_id]
+
+  def GetArchive(self):
+    """Create an Archive object for this BuilderRun object."""
+    # The Archive class is very lightweight, and is read-only, so it
+    # is ok to generate a new one on demand.  This also avoids worrying
+    # about whether it can go through pickle.
+    # Almost everything the Archive class does requires GetVersion(),
+    # which means it cannot be used until the version has been settled on.
+    # However, because it does have some use before then we provide
+    # the GetVersion function itself to be called when needed later.
+    return cbuildbot_archive.Archive(self.bot_id, self.GetVersion,
+                                     self.options, self.config)
 
   def ShouldUploadPrebuilts(self):
     """Return True if this run should upload prebuilts."""
