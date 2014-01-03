@@ -284,11 +284,17 @@ bool OmniboxViewViews::OnKeyPressed(const ui::KeyEvent& event) {
         model()->popup_model()->TryDeletingCurrentItem();
       break;
     case ui::VKEY_UP:
-      model()->OnUpOrDownKeyPressed(-1);
-      return true;
+      if (!read_only()) {
+        model()->OnUpOrDownKeyPressed(-1);
+        return true;
+      }
+      break;
     case ui::VKEY_DOWN:
-      model()->OnUpOrDownKeyPressed(1);
-      return true;
+      if (!read_only()) {
+        model()->OnUpOrDownKeyPressed(1);
+        return true;
+      }
+      break;
     case ui::VKEY_PRIOR:
       if (control || alt || shift)
         return false;
