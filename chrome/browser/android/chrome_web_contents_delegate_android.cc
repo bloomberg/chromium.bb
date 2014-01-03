@@ -86,6 +86,13 @@ bool RegisterChromeWebContentsDelegateAndroid(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+void ChromeWebContentsDelegateAndroid::LoadingStateChanged(
+    WebContents* source) {
+  bool has_stopped = source == NULL || !source->IsLoading();
+  WebContentsDelegateAndroid::LoadingStateChanged(source);
+  LoadProgressChanged(source, has_stopped ? 1 : 0);
+}
+
 void ChromeWebContentsDelegateAndroid::RunFileChooser(
     WebContents* web_contents,
     const FileChooserParams& params) {
