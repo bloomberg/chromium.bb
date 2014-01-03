@@ -227,7 +227,7 @@ bool WebHelperPluginImpl::initializePage(const String& pluginType, const WebDocu
     frame->setView(FrameView::create(frame));
     // No need to set a size or make it not transparent.
 
-    writeDocument(pluginType, hostDocument, frame->loader().activeDocumentLoader());
+    writeDocument(pluginType, hostDocument, frame->loader().documentLoader());
 
     return true;
 }

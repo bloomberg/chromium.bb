@@ -99,7 +99,7 @@ ResourceLoader* DocumentLoader::mainResourceLoader() const
 
 DocumentLoader::~DocumentLoader()
 {
-    ASSERT(!m_frame || frameLoader()->activeDocumentLoader() != this || !isLoading());
+    ASSERT(!m_frame || !isLoading());
     m_fetcher->clearDocumentLoader();
     clearMainResourceHandle();
 }
@@ -574,9 +574,6 @@ void DocumentLoader::checkLoadComplete()
 {
     if (!m_frame || isLoading())
         return;
-    // FIXME: This ASSERT is always triggered.
-    // See https://bugs.webkit.org/show_bug.cgi?id=110937
-    // ASSERT(this == frameLoader()->activeDocumentLoader())
     m_frame->domWindow()->finishedLoading();
 }
 
@@ -617,8 +614,7 @@ void DocumentLoader::detachFromFrame()
 void DocumentLoader::clearMainResourceLoader()
 {
     m_loadingMainResource = false;
-    if (this == frameLoader()->activeDocumentLoader())
-        checkLoadComplete();
+    checkLoadComplete();
 }
 
 void DocumentLoader::clearMainResourceHandle()

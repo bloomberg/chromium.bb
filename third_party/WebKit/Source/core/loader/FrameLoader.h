@@ -113,14 +113,12 @@ public:
 
     int numPendingOrLoadingRequests(bool recurse) const;
 
-    DocumentLoader* activeDocumentLoader() const;
     DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
     DocumentLoader* policyDocumentLoader() const { return m_policyDocumentLoader.get(); }
     DocumentLoader* provisionalDocumentLoader() const { return m_provisionalDocumentLoader.get(); }
     FrameState state() const { return m_state; }
     FetchContext& fetchContext() const { return *m_fetchContext; }
 
-    const ResourceRequest& originalRequest() const;
     void receivedMainResourceError(const ResourceError&);
 
     bool isLoadingMainFrame() const;

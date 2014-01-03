@@ -1003,7 +1003,7 @@ void DOMWindow::print()
     if (!host)
         return;
 
-    if (m_frame->loader().activeDocumentLoader()->isLoading()) {
+    if (m_frame->loader().documentLoader()->isLoading()) {
         m_shouldPrintWhenFinishedLoading = true;
         return;
     }

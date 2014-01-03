@@ -123,7 +123,7 @@ PingLoader::PingLoader(Frame* frame, ResourceRequest& request, StoredCredentials
     wrappedRequest.setAllowStoredCredentials(credentialsAllowed == AllowStoredCredentials);
     m_loader->loadAsynchronously(wrappedRequest, this);
 
-    InspectorInstrumentation::continueAfterPingLoader(frame, identifier, frame->loader().activeDocumentLoader(), request, ResourceResponse());
+    InspectorInstrumentation::continueAfterPingLoader(frame, identifier, frame->loader().documentLoader(), request, ResourceResponse());
 
     // If the server never responds, FrameLoader won't be able to cancel this load and
     // we'll sit here waiting forever. Set a very generous timeout, just in case.

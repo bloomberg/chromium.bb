@@ -958,8 +958,8 @@ void WebFrameImpl::loadData(const WebData& data, const WebString& mimeType, cons
     // unreachableURL informs FrameLoader::reload to load unreachableURL
     // instead of the currently loaded URL.
     ResourceRequest request;
-    if (replace && !unreachableURL.isEmpty())
-        request = frame()->loader().originalRequest();
+    if (replace && !unreachableURL.isEmpty() && frame()->loader().provisionalDocumentLoader())
+        request = frame()->loader().provisionalDocumentLoader()->originalRequest();
     request.setURL(baseURL);
 
     FrameLoadRequest frameRequest(0, request, SubstituteData(data, mimeType, textEncoding, unreachableURL));
@@ -1023,7 +1023,7 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
     ASSERT(frame());
 
     // We're shutting down.
-    if (!frame()->loader().activeDocumentLoader())
+    if (!frame()->loader().documentLoader())
         return WebHistoryItem();
 
     // If we are still loading, then we don't want to clobber the current
@@ -1032,7 +1032,7 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
     // FIXME: Can we make this a plain old getter, instead of worrying about
     // clobbering here?
     if (!frame()->page()->historyController().inSameDocumentLoad() && (frame()->loader().loadType() == FrameLoadTypeStandard
-        || !frame()->loader().activeDocumentLoader()->isLoadingInAPISense()))
+        || !frame()->loader().documentLoader()->isLoadingInAPISense()))
         frame()->loader().saveDocumentAndScrollState();
 
     return WebHistoryItem(frame()->page()->historyController().currentItemForExport(frame()));

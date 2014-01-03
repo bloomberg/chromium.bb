@@ -399,10 +399,10 @@ bool SVGImage::dataChanged(bool allDataReceived)
         frame->view()->setCanHaveScrollbars(false); // SVG Images will always synthesize a viewBox, if it's not available, and thus never see scrollbars.
         frame->view()->setTransparent(true); // SVG Images are transparent.
 
-        ASSERT(loader.activeDocumentLoader()); // DocumentLoader should have been created by frame->init().
-        DocumentWriter* writer = loader.activeDocumentLoader()->beginWriting("image/svg+xml", "UTF-8");
+        ASSERT(loader.documentLoader()); // DocumentLoader should have been created by frame->init().
+        DocumentWriter* writer = loader.documentLoader()->beginWriting("image/svg+xml", "UTF-8");
         writer->addData(data()->data(), data()->size());
-        loader.activeDocumentLoader()->endWriting(writer);
+        loader.documentLoader()->endWriting(writer);
         // Set the intrinsic size before a container size is available.
         m_intrinsicSize = containerSize();
     }

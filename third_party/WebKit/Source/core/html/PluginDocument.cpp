@@ -189,7 +189,7 @@ void PluginDocument::cancelManualPluginLoad()
     if (!shouldLoadPluginManually())
         return;
 
-    DocumentLoader* documentLoader = frame()->loader().activeDocumentLoader();
+    DocumentLoader* documentLoader = frame()->loader().documentLoader();
     documentLoader->cancelMainResourceLoad(ResourceError::cancelledError(documentLoader->request().url()));
     setShouldLoadPluginManually(false);
 }

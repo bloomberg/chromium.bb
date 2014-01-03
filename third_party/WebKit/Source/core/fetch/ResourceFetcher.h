@@ -167,7 +167,7 @@ private:
 
     explicit ResourceFetcher(DocumentLoader*);
 
-    bool shouldLoadNewResource() const;
+    bool shouldLoadNewResource(Resource::Type) const;
 
     ResourcePtr<Resource> requestResource(Resource::Type, FetchRequest&);
     ResourcePtr<Resource> revalidateResource(const FetchRequest&, Resource*);

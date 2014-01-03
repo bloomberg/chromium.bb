@@ -573,15 +573,15 @@ bool ResourceFetcher::canAccess(Resource* resource, CORSEnabled corsEnabled, Fet
     return true;
 }
 
-bool ResourceFetcher::shouldLoadNewResource() const
+bool ResourceFetcher::shouldLoadNewResource(Resource::Type type) const
 {
     if (!frame())
         return false;
     if (!m_documentLoader)
         return true;
-    if (m_documentLoader == frame()->loader().activeDocumentLoader())
-        return true;
-    return document() && document()->pageDismissalEventBeingDispatched() != Document::NoDismissal;
+    if (type == Resource::MainResource)
+        return m_documentLoader == frame()->loader().provisionalDocumentLoader();
+    return m_documentLoader == frame()->loader().documentLoader();
 }
 
 bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& request, RevalidationPolicy policy)
@@ -650,7 +650,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
     }
 
     if (resourceNeedsLoad(resource.get(), request, policy)) {
-        if (!shouldLoadNewResource()) {
+        if (!shouldLoadNewResource(type)) {
             if (resource->inCache())
                 memoryCache()->remove(resource.get());
             return 0;

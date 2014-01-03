@@ -7,7 +7,12 @@ if (window.testRunner) {
     testRunner.dumpAsText();
 }
 
+var navigateWasCalled = false;
+
 function navigate() {
+    if (navigateWasCalled)
+        return;
+    navigateWasCalled = true;
     window.location = "resources/wait-then-notify-done.php";
 }
 

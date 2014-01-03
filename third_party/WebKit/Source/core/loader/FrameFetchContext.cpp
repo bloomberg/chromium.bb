@@ -137,7 +137,7 @@ CachePolicy FrameFetchContext::cachePolicy(Document* document) const
 // cannot see imported documents.
 inline DocumentLoader* FrameFetchContext::ensureLoader(DocumentLoader* loader)
 {
-    return loader ? loader : m_frame->loader().activeDocumentLoader();
+    return loader ? loader : m_frame->loader().documentLoader();
 }
 
 void FrameFetchContext::dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority loadPriority)

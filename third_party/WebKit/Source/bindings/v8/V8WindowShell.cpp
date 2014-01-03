@@ -257,9 +257,9 @@ bool V8WindowShell::initializeIfNeeded()
 
 void V8WindowShell::createContext()
 {
-    // The activeDocumentLoader pointer could be 0 during frame shutdown.
+    // The documentLoader pointer could be 0 during frame shutdown.
     // FIXME: Can we remove this check?
-    if (!m_frame->loader().activeDocumentLoader())
+    if (!m_frame->loader().documentLoader())
         return;
 
     // Create a new environment using an empty template for the shadow

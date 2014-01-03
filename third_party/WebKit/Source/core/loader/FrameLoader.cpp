@@ -818,13 +818,6 @@ void FrameLoader::stopAllLoaders()
         m_client->didStopAllLoaders();
 }
 
-DocumentLoader* FrameLoader::activeDocumentLoader() const
-{
-    if (m_state == FrameStateProvisional)
-        return m_provisionalDocumentLoader.get();
-    return m_documentLoader.get();
-}
-
 void FrameLoader::didAccessInitialDocument()
 {
     // We only need to notify the client once, and only for the main frame.
@@ -850,10 +843,9 @@ void FrameLoader::notifyIfInitialDocumentAccessed()
 
 bool FrameLoader::isLoading() const
 {
-    DocumentLoader* docLoader = activeDocumentLoader();
-    if (!docLoader)
-        return false;
-    return docLoader->isLoading();
+    if (m_provisionalDocumentLoader)
+        return true;
+    return m_documentLoader && m_documentLoader->isLoading();
 }
 
 void FrameLoader::commitProvisionalLoad()
@@ -1174,17 +1166,11 @@ void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const AtomicSt
     request.setHTTPOrigin(origin);
 }
 
-const ResourceRequest& FrameLoader::originalRequest() const
-{
-    return activeDocumentLoader()->originalRequestCopy();
-}
-
 void FrameLoader::receivedMainResourceError(const ResourceError& error)
 {
     // Retain because the stop may release the last reference to it.
     RefPtr<Frame> protect(m_frame);
 
-    RefPtr<DocumentLoader> loader = activeDocumentLoader();
     if (m_frame->document()->parser())
         m_frame->document()->parser()->stopParsing();
 

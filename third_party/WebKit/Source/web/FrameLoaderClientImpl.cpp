@@ -381,7 +381,7 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad(Frame* frame, HistoryItem* ite
 void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
     const ResourceError& error)
 {
-    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver();
+    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().provisionalDocumentLoader());
     m_webFrame->didFail(error, true);
     if (observer)
         observer->didFailLoading(error);
@@ -389,7 +389,7 @@ void FrameLoaderClientImpl::dispatchDidFailProvisionalLoad(
 
 void FrameLoaderClientImpl::dispatchDidFailLoad(const ResourceError& error)
 {
-    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver();
+    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().documentLoader());
     m_webFrame->didFail(error, false);
     if (observer)
         observer->didFailLoading(error);
@@ -401,7 +401,7 @@ void FrameLoaderClientImpl::dispatchDidFailLoad(const ResourceError& error)
 
 void FrameLoaderClientImpl::dispatchDidFinishLoad()
 {
-    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver();
+    OwnPtr<WebPluginLoadObserver> observer = pluginLoadObserver(m_webFrame->frame()->loader().documentLoader());
 
     if (m_webFrame->client())
         m_webFrame->client()->didFinishLoad(m_webFrame);
@@ -677,17 +677,9 @@ ObjectContentType FrameLoaderClientImpl::objectContentType(
     return ObjectContentNone;
 }
 
-PassOwnPtr<WebPluginLoadObserver> FrameLoaderClientImpl::pluginLoadObserver()
+PassOwnPtr<WebPluginLoadObserver> FrameLoaderClientImpl::pluginLoadObserver(DocumentLoader* loader)
 {
-    WebDataSourceImpl* ds = WebDataSourceImpl::fromDocumentLoader(
-        m_webFrame->frame()->loader().activeDocumentLoader());
-    if (!ds) {
-        // We can arrive here if a popstate event handler detaches this frame.
-        // FIXME: Remove this code once http://webkit.org/b/36202 is fixed.
-        ASSERT(!m_webFrame->frame()->page());
-        return nullptr;
-    }
-    return ds->releasePluginLoadObserver();
+    return WebDataSourceImpl::fromDocumentLoader(loader)->releasePluginLoadObserver();
 }
 
 WebCookieJar* FrameLoaderClientImpl::cookieJar() const

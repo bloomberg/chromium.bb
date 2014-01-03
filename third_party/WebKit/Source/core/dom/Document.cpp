@@ -458,7 +458,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     if (m_frame) {
         provideContextFeaturesToDocumentFrom(this, m_frame->page());
 
-        m_fetcher = m_frame->loader().activeDocumentLoader()->fetcher();
+        m_fetcher = m_frame->loader().documentLoader()->fetcher();
     }
 
     if (!m_fetcher)

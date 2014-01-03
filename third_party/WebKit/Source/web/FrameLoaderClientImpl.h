@@ -159,7 +159,7 @@ public:
 private:
     virtual bool isFrameLoaderClientImpl() const OVERRIDE { return true; }
 
-    PassOwnPtr<WebPluginLoadObserver> pluginLoadObserver();
+    PassOwnPtr<WebPluginLoadObserver> pluginLoadObserver(WebCore::DocumentLoader*);
 
     // The WebFrame that owns this object and manages its lifetime. Therefore,
     // the web frame object is guaranteed to exist.
