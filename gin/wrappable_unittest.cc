@@ -114,7 +114,7 @@ TEST_F(WrappableTest, UnwrapFailures) {
   v8::HandleScope handle_scope(isolate);
 
   // Something that isn't an object.
-  v8::Handle<v8::Value> thing = v8::Number::New(42);
+  v8::Handle<v8::Value> thing = v8::Number::New(isolate, 42);
   MyObject* unwrapped = NULL;
   EXPECT_FALSE(ConvertFromV8(isolate, thing, &unwrapped));
   EXPECT_FALSE(unwrapped);

@@ -73,8 +73,9 @@ TEST_F(ConverterTest, Int32) {
 
   int test_data_to[] = {-1, 0, 1};
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data_to); ++i) {
-    EXPECT_TRUE(Converter<int32_t>::ToV8(instance_->isolate(),
-        test_data_to[i])->StrictEquals(Integer::New(test_data_to[i])));
+    EXPECT_TRUE(Converter<int32_t>::ToV8(instance_->isolate(), test_data_to[i])
+                    ->StrictEquals(
+                          Integer::New(instance_->isolate(), test_data_to[i])));
   }
 
   struct {
