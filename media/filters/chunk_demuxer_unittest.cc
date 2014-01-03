@@ -1479,6 +1479,45 @@ TEST_F(ChunkDemuxerTest, EndOfStreamDuringCanceledSeek) {
   ASSERT_EQ(status, DemuxerStream::kOk);
 }
 
+// Verify buffered range change behavior for audio/video/text tracks.
+TEST_F(ChunkDemuxerTest, EndOfStreamRangeChanges) {
+  DemuxerStream* text_stream = NULL;
+
+  EXPECT_CALL(host_, AddTextStream(_, _))
+      .WillOnce(SaveArg<0>(&text_stream));
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO | HAS_TEXT));
+
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum, "0K 30");
+  AppendSingleStreamCluster(kSourceId, kAudioTrackNum, "0K 23K");
+
+  // Check expected ranges and verify that an empty text track does not
+  // affect the expected ranges.
+  CheckExpectedRanges(kSourceId, "{ [0,46) }");
+
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(60)));
+  MarkEndOfStream(PIPELINE_OK);
+
+  // Check expected ranges and verify that an empty text track does not
+  // affect the expected ranges.
+  CheckExpectedRanges(kSourceId, "{ [0,60) }");
+
+  // Unmark end of stream state and verify that the ranges return to
+  // their pre-"end of stream" values.
+  demuxer_->UnmarkEndOfStream();
+  CheckExpectedRanges(kSourceId, "{ [0,46) }");
+
+  // Add text track data and verify that the buffered ranges don't change
+  // since the intersection of all the tracks doesn't change.
+  EXPECT_CALL(host_, SetDuration(base::TimeDelta::FromMilliseconds(200)));
+  AppendSingleStreamCluster(kSourceId, kTextTrackNum, "0K 100K");
+  CheckExpectedRanges(kSourceId, "{ [0,46) }");
+
+  // Mark end of stream and verify that text track data is reflected in
+  // the new range.
+  MarkEndOfStream(PIPELINE_OK);
+  CheckExpectedRanges(kSourceId, "{ [0,200) }");
+}
+
 // Make sure AppendData() will accept elements that span multiple calls.
 TEST_F(ChunkDemuxerTest, AppendingInPieces) {
   EXPECT_CALL(*this, DemuxerOpened());
@@ -2089,7 +2128,7 @@ TEST_F(ChunkDemuxerTest, GetBufferedRanges_AudioVideoText) {
   // Add some text cues.
   AppendSingleStreamCluster(kSourceId, kTextTrackNum, "0K 100K");
 
-  // Verify that the new cues did not effect the buffered ranges.
+  // Verify that the new cues did not affect the buffered ranges.
   CheckExpectedRanges("{ [0,46) }");
 
   // Remove the buffered range.
@@ -2789,7 +2828,7 @@ TEST_F(ChunkDemuxerTest, RemoveBeforeInitSegment) {
                      base::TimeDelta::FromMilliseconds(1));
 }
 
-TEST_F(ChunkDemuxerTest, AppendWindow) {
+TEST_F(ChunkDemuxerTest, AppendWindow_Video) {
   ASSERT_TRUE(InitDemuxer(HAS_VIDEO));
   DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
 
@@ -2804,8 +2843,8 @@ TEST_F(ChunkDemuxerTest, AppendWindow) {
                             "0K 30 60 90 120K 150 180 210 240K 270 300 330K");
 
   // Verify that GOPs that start outside the window are not included
-  // in the buffer. Also verify that buffers that extend beyond the
-  // window are not included.
+  // in the buffer. Also verify that buffers that start inside the
+  // window and extend beyond the end of the window are included.
   CheckExpectedRanges(kSourceId, "{ [120,300) }");
   CheckExpectedBuffers(stream, "120 150 180 210 240 270");
 
@@ -2818,6 +2857,80 @@ TEST_F(ChunkDemuxerTest, AppendWindow) {
   AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
                             "360 390 420K 450 480 510 540K 570 600 630K");
   CheckExpectedRanges(kSourceId, "{ [120,300) [420,660) }");
+}
+
+TEST_F(ChunkDemuxerTest, AppendWindow_Audio) {
+  ASSERT_TRUE(InitDemuxer(HAS_AUDIO));
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+
+  // Set the append window to [20,280).
+  demuxer_->SetAppendWindowStart(kSourceId,
+                                 base::TimeDelta::FromMilliseconds(20));
+  demuxer_->SetAppendWindowEnd(kSourceId,
+                               base::TimeDelta::FromMilliseconds(280));
+
+  // Append a cluster that starts before and ends after the append window.
+  AppendSingleStreamCluster(
+      kSourceId, kAudioTrackNum,
+      "0K 30K 60K 90K 120K 150K 180K 210K 240K 270K 300K 330K");
+
+  // Verify that frames that start outside the window are not included
+  // in the buffer. Also verify that buffers that start inside the
+  // window and extend beyond the end of the window are included.
+  CheckExpectedRanges(kSourceId, "{ [30,300) }");
+  CheckExpectedBuffers(stream, "30 60 90 120 150 180 210 240 270");
+
+  // Extend the append window to [20,650).
+  demuxer_->SetAppendWindowEnd(kSourceId,
+                               base::TimeDelta::FromMilliseconds(650));
+
+  // Append more data and verify that a new range is created.
+  AppendSingleStreamCluster(
+      kSourceId, kAudioTrackNum,
+      "360K 390K 420K 450K 480K 510K 540K 570K 600K 630K");
+  CheckExpectedRanges(kSourceId, "{ [30,300) [360,660) }");
+}
+
+TEST_F(ChunkDemuxerTest, AppendWindow_Text) {
+  DemuxerStream* text_stream = NULL;
+  EXPECT_CALL(host_, AddTextStream(_, _))
+      .WillOnce(SaveArg<0>(&text_stream));
+  ASSERT_TRUE(InitDemuxer(HAS_VIDEO | HAS_TEXT));
+  DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
+
+  // Set the append window to [20,280).
+  demuxer_->SetAppendWindowStart(kSourceId,
+                                 base::TimeDelta::FromMilliseconds(20));
+  demuxer_->SetAppendWindowEnd(kSourceId,
+                               base::TimeDelta::FromMilliseconds(280));
+
+  // Append a cluster that starts before and ends after the append
+  // window.
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
+                            "0K 30 60 90 120K 150 180 210 240K 270 300 330K");
+  AppendSingleStreamCluster(kSourceId, kTextTrackNum, "0K 100K 200K 300K");
+
+  // Verify that text cues that start outside the window are not included
+  // in the buffer. Also verify that cues that extend beyond the
+  // window are included.
+  CheckExpectedRanges(kSourceId, "{ [120,300) }");
+  CheckExpectedBuffers(video_stream, "120 150 180 210 240 270");
+  CheckExpectedBuffers(text_stream, "100 200");
+
+  // Extend the append window to [20,650).
+  demuxer_->SetAppendWindowEnd(kSourceId,
+                               base::TimeDelta::FromMilliseconds(650));
+
+  // Append more data and verify that a new range is created.
+  AppendSingleStreamCluster(kSourceId, kVideoTrackNum,
+                            "360 390 420K 450 480 510 540K 570 600 630K");
+  AppendSingleStreamCluster(kSourceId, kTextTrackNum, "400K 500K 600K 700K");
+  CheckExpectedRanges(kSourceId, "{ [120,300) [420,660) }");
+
+  // Seek to the new range and verify that the expected buffers are returned.
+  Seek(base::TimeDelta::FromMilliseconds(420));
+  CheckExpectedBuffers(video_stream, "420 450 480 510 540 570 600 630");
+  CheckExpectedBuffers(text_stream, "400 500 600");
 }
 
 TEST_F(ChunkDemuxerTest, StartWaitingForSeekAfterParseError) {

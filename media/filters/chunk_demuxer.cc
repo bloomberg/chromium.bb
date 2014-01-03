@@ -131,10 +131,20 @@ class SourceState {
   // end of stream range logic needs to be executed.
   Ranges<TimeDelta> GetBufferedRanges(TimeDelta duration, bool ended) const;
 
+  // Returns the highest buffered duration across all streams managed
+  // by this object.
+  // Returns TimeDelta() if none of the streams contain buffered data.
+  TimeDelta GetMaxBufferedDuration() const;
+
+  // Helper methods that call methods with similar names on all the
+  // ChunkDemuxerStreams managed by this object.
   void StartReturningData();
   void AbortReads();
   void Seek(TimeDelta seek_time);
   void CompletePendingReadIfPossible();
+  void OnSetDuration(TimeDelta duration);
+  void MarkEndOfStream();
+  void UnmarkEndOfStream();
 
  private:
   // Called by the |stream_parser_| when a new initialization segment is
@@ -169,6 +179,13 @@ class SourceState {
   // processing the buffers.
   bool OnTextBuffers(int text_track_number,
                      const StreamParser::BufferQueue& buffers);
+
+  // Helper function that appends |buffers| to |stream| and calls
+  // |increase_duration_cb_| to potentially update the duration.
+  // Returns true if the append was successful. Returns false if
+  // |stream| is NULL or something in |buffers| caused the append to fail.
+  bool AppendAndUpdateDuration(ChunkDemuxerStream* stream,
+                               const StreamParser::BufferQueue& buffers);
 
   // Helper function that adds |timestamp_offset_| to each buffer in |buffers|.
   void AdjustBufferTimestamps(const StreamParser::BufferQueue& buffers);
@@ -258,6 +275,10 @@ class ChunkDemuxerStream : public DemuxerStream {
 
   // Returns the range of buffered data in this stream, capped at |duration|.
   Ranges<TimeDelta> GetBufferedRanges(TimeDelta duration) const;
+
+  // Returns the duration of the buffered data.
+  // Returns TimeDelta() if the stream has no buffered data.
+  TimeDelta GetBufferedDuration() const;
 
   // Signal to the stream that buffers handed in through subsequent calls to
   // Append() belong to a media segment that starts at |start_timestamp|.
@@ -414,11 +435,28 @@ Ranges<TimeDelta> SourceState::GetBufferedRanges(TimeDelta duration,
 
   for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
-    ranges_list.push_back(
-        itr->second->GetBufferedRanges(duration));
+    ranges_list.push_back(itr->second->GetBufferedRanges(duration));
   }
 
   return ComputeIntersection(ranges_list, ended);
+}
+
+TimeDelta SourceState::GetMaxBufferedDuration() const {
+  TimeDelta max_duration;
+
+  if (audio_)
+    max_duration = std::max(max_duration, audio_->GetBufferedDuration());
+
+  if (video_)
+    max_duration = std::max(max_duration, video_->GetBufferedDuration());
+
+
+  for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    max_duration = std::max(max_duration, itr->second->GetBufferedDuration());
+  }
+
+  return max_duration;
 }
 
 void SourceState::StartReturningData() {
@@ -470,6 +508,45 @@ void SourceState::CompletePendingReadIfPossible() {
   for (TextStreamMap::iterator itr = text_stream_map_.begin();
        itr != text_stream_map_.end(); ++itr) {
     itr->second->CompletePendingReadIfPossible();
+  }
+}
+
+void SourceState::OnSetDuration(TimeDelta duration) {
+  if (audio_)
+    audio_->OnSetDuration(duration);
+
+  if (video_)
+    video_->OnSetDuration(duration);
+
+  for (TextStreamMap::iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    itr->second->OnSetDuration(duration);
+  }
+}
+
+void SourceState::MarkEndOfStream() {
+  if (audio_)
+    audio_->MarkEndOfStream();
+
+  if (video_)
+    video_->MarkEndOfStream();
+
+  for (TextStreamMap::iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    itr->second->MarkEndOfStream();
+  }
+}
+
+void SourceState::UnmarkEndOfStream() {
+  if (audio_)
+    audio_->UnmarkEndOfStream();
+
+  if (video_)
+    video_->UnmarkEndOfStream();
+
+  for (TextStreamMap::iterator itr = text_stream_map_.begin();
+       itr != text_stream_map_.end(); ++itr) {
+    itr->second->UnmarkEndOfStream();
   }
 }
 
@@ -666,16 +743,14 @@ bool SourceState::OnNewBuffers(const StreamParser::BufferQueue& audio_buffers,
     }
   }
 
-  if (!filtered_audio.empty()) {
-    if (!audio_ || !audio_->Append(filtered_audio))
+  if (!filtered_audio.empty() &&
+      !AppendAndUpdateDuration(audio_, filtered_audio)) {
       return false;
-    increase_duration_cb_.Run(filtered_audio.back()->timestamp(), audio_);
   }
 
-  if (!filtered_video.empty()) {
-    if (!video_ || !video_->Append(filtered_video))
+  if (!filtered_video.empty() &&
+      !AppendAndUpdateDuration(video_, filtered_video)) {
       return false;
-    increase_duration_cb_.Run(filtered_video.back()->timestamp(), video_);
   }
 
   return true;
@@ -692,7 +767,26 @@ bool SourceState::OnTextBuffers(
 
   AdjustBufferTimestamps(buffers);
 
-  return itr->second->Append(buffers);
+  StreamParser::BufferQueue filtered_buffers;
+  bool needs_keyframe;
+  FilterWithAppendWindow(buffers, &needs_keyframe, &filtered_buffers);
+
+  if (filtered_buffers.empty())
+    return true;
+
+  return AppendAndUpdateDuration(itr->second, filtered_buffers);
+}
+
+bool SourceState::AppendAndUpdateDuration(
+    ChunkDemuxerStream* stream,
+    const StreamParser::BufferQueue& buffers) {
+  DCHECK(!buffers.empty());
+
+  if (!stream || !stream->Append(buffers))
+    return false;
+
+  increase_duration_cb_.Run(buffers.back()->timestamp(), stream);
+  return true;
 }
 
 void SourceState::FilterWithAppendWindow(
@@ -856,6 +950,10 @@ Ranges<TimeDelta> ChunkDemuxerStream::GetBufferedRanges(
   Ranges<TimeDelta> valid_time_range;
   valid_time_range.Add(range.start(0), duration);
   return range.IntersectionWith(valid_time_range);
+}
+
+TimeDelta ChunkDemuxerStream::GetBufferedDuration() const {
+  return stream_->GetBufferedDuration();
 }
 
 void ChunkDemuxerStream::OnNewMediaSegment(TimeDelta start_timestamp) {
@@ -1352,11 +1450,10 @@ void ChunkDemuxer::SetDuration(double duration) {
   duration_ = duration_td;
   host_->SetDuration(duration_);
 
-  if (audio_)
-    audio_->OnSetDuration(duration_);
-
-  if (video_)
-    video_->OnSetDuration(duration_);
+  for (SourceStateMap::iterator itr = source_state_map_.begin();
+       itr != source_state_map_.end(); ++itr) {
+    itr->second->OnSetDuration(duration_);
+  }
 }
 
 bool ChunkDemuxer::SetTimestampOffset(const std::string& id, TimeDelta offset) {
@@ -1382,11 +1479,10 @@ void ChunkDemuxer::MarkEndOfStream(PipelineStatus status) {
   }
 
   bool old_waiting_for_data = IsSeekWaitingForData_Locked();
-  if (audio_)
-    audio_->MarkEndOfStream();
-
-  if (video_)
-    video_->MarkEndOfStream();
+  for (SourceStateMap::iterator itr = source_state_map_.begin();
+       itr != source_state_map_.end(); ++itr) {
+    itr->second->MarkEndOfStream();
+  }
 
   CompletePendingReadsIfPossible();
 
@@ -1412,11 +1508,10 @@ void ChunkDemuxer::UnmarkEndOfStream() {
 
   ChangeState_Locked(INITIALIZED);
 
-  if (audio_)
-    audio_->UnmarkEndOfStream();
-
-  if (video_)
-    video_->UnmarkEndOfStream();
+  for (SourceStateMap::iterator itr = source_state_map_.begin();
+       itr != source_state_map_.end(); ++itr) {
+    itr->second->UnmarkEndOfStream();
+  }
 }
 
 void ChunkDemuxer::SetAppendWindowStart(const std::string& id,
@@ -1605,23 +1700,29 @@ void ChunkDemuxer::IncreaseDurationIfNecessary(
   if (last_appended_buffer_timestamp <= duration_)
     return;
 
-  Ranges<TimeDelta> ranges = stream->GetBufferedRanges(kInfiniteDuration());
-  DCHECK_GT(ranges.size(), 0u);
+  TimeDelta stream_duration = stream->GetBufferedDuration();
+  DCHECK(stream_duration > TimeDelta());
 
-  TimeDelta last_timestamp_buffered = ranges.end(ranges.size() - 1);
-  if (last_timestamp_buffered > duration_)
-    UpdateDuration(last_timestamp_buffered);
+  if (stream_duration > duration_)
+    UpdateDuration(stream_duration);
 }
 
 void ChunkDemuxer::DecreaseDurationIfNecessary() {
   lock_.AssertAcquired();
-  Ranges<TimeDelta> ranges = GetBufferedRanges_Locked();
-  if (ranges.size() == 0u)
+
+  TimeDelta max_duration;
+
+  for (SourceStateMap::const_iterator itr = source_state_map_.begin();
+       itr != source_state_map_.end(); ++itr) {
+    max_duration = std::max(max_duration,
+                            itr->second->GetMaxBufferedDuration());
+  }
+
+  if (max_duration == TimeDelta())
     return;
 
-  TimeDelta last_timestamp_buffered = ranges.end(ranges.size() - 1);
-  if (last_timestamp_buffered < duration_)
-    UpdateDuration(last_timestamp_buffered);
+  if (max_duration < duration_)
+    UpdateDuration(max_duration);
 }
 
 Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges() const {

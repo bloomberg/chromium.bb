@@ -102,6 +102,11 @@ class MEDIA_EXPORT SourceBufferStream {
   // Returns a list of the buffered time ranges.
   Ranges<base::TimeDelta> GetBufferedTime() const;
 
+  // Returns the duration of the buffered ranges, which is equivalent
+  // to the end timestamp of the last buffered range. If no data is buffered
+  // then base::TimeDelta() is returned.
+  base::TimeDelta GetBufferedDuration() const;
+
   // Notifies this object that end of stream has been signalled.
   void MarkEndOfStream();
 

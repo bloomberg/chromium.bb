@@ -1204,6 +1204,13 @@ Ranges<base::TimeDelta> SourceBufferStream::GetBufferedTime() const {
   return ranges;
 }
 
+base::TimeDelta SourceBufferStream::GetBufferedDuration() const {
+  if (ranges_.empty())
+    return base::TimeDelta();
+
+  return ranges_.back()->GetBufferedEndTimestamp();
+}
+
 void SourceBufferStream::MarkEndOfStream() {
   DCHECK(!end_of_stream_);
   end_of_stream_ = true;
