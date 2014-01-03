@@ -68,15 +68,6 @@
                     'all_dependent_settings': {
                         'mac_bundle_resources': [
                             '<(ahem_path)',
-                            '<(source_dir)/testing/data/fonts/WebKitWeightWatcher100.ttf',
-                            '<(source_dir)/testing/data/fonts/WebKitWeightWatcher200.ttf',
-                            '<(source_dir)/testing/data/fonts/WebKitWeightWatcher300.ttf',
-                            '<(source_dir)/testing/data/fonts/WebKitWeightWatcher400.ttf',
-                            '<(source_dir)/testing/data/fonts/WebKitWeightWatcher500.ttf',
-                            '<(source_dir)/testing/data/fonts/WebKitWeightWatcher600.ttf',
-                            '<(source_dir)/testing/data/fonts/WebKitWeightWatcher700.ttf',
-                            '<(source_dir)/testing/data/fonts/WebKitWeightWatcher800.ttf',
-                            '<(source_dir)/testing/data/fonts/WebKitWeightWatcher900.ttf',
                             '<(SHARED_INTERMEDIATE_DIR)/webkit/missingImage.png',
                             '<(SHARED_INTERMEDIATE_DIR)/webkit/textAreaResizeCorner.png',
                         ],
