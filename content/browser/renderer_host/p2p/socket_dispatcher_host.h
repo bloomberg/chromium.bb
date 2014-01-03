@@ -80,7 +80,7 @@ class P2PSocketDispatcherHost
   void SendNetworkList(const net::NetworkInterfaceList& list);
 
   void OnAddressResolved(DnsRequest* request,
-                         const net::IPAddressNumber& result);
+                         const net::IPAddressList& addresses);
 
   content::ResourceContext* resource_context_;
   scoped_refptr<net::URLRequestContextGetter> url_context_;

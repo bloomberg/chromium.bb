@@ -26,7 +26,7 @@ const size_t kMaximumPacketSize = 32768;
 
 class P2PSocketDispatcherHost::DnsRequest {
  public:
-  typedef base::Callback<void(const net::IPAddressNumber&)> DoneCallback;
+  typedef base::Callback<void(const net::IPAddressList&)> DoneCallback;
 
   DnsRequest(int32 request_id, net::HostResolver* host_resolver)
       : request_id_(request_id),
@@ -42,7 +42,8 @@ class P2PSocketDispatcherHost::DnsRequest {
 
     // Return an error if it's an empty string.
     if (host_name_.empty()) {
-      done_callback_.Run(net::IPAddressNumber());
+      net::IPAddressList address_list;
+      done_callback_.Run(address_list);
       return;
     }
 
@@ -67,15 +68,20 @@ class P2PSocketDispatcherHost::DnsRequest {
 
  private:
   void OnDone(int result) {
+    net::IPAddressList list;
     if (result != net::OK) {
       LOG(ERROR) << "Failed to resolve address for " << host_name_
                  << ", errorcode: " << result;
-      done_callback_.Run(net::IPAddressNumber());
+      done_callback_.Run(list);
       return;
     }
 
     DCHECK(!addresses_.empty());
-    done_callback_.Run(addresses_.front().address());
+    for (net::AddressList::iterator iter = addresses_.begin();
+         iter != addresses_.end(); ++iter) {
+      list.push_back(iter->address());
+    }
+    done_callback_.Run(list);
   }
 
   int32 request_id_;
@@ -269,8 +275,8 @@ void P2PSocketDispatcherHost::SendNetworkList(
 
 void P2PSocketDispatcherHost::OnAddressResolved(
     DnsRequest* request,
-    const net::IPAddressNumber& result) {
-  Send(new P2PMsg_GetHostAddressResult(request->request_id(), result));
+    const net::IPAddressList& addresses) {
+  Send(new P2PMsg_GetHostAddressResult(request->request_id(), addresses));
 
   dns_requests_.erase(request);
   delete request;

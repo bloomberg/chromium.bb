@@ -31,7 +31,7 @@ IPC_MESSAGE_CONTROL1(P2PMsg_NetworkListChanged,
 
 IPC_MESSAGE_CONTROL2(P2PMsg_GetHostAddressResult,
                      int32 /* request_id */,
-                     net::IPAddressNumber /* address */)
+                     net::IPAddressList /* address list*/)
 
 IPC_MESSAGE_CONTROL2(P2PMsg_OnSocketCreated,
                      int /* socket_id */,

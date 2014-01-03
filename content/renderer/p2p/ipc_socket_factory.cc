@@ -469,8 +469,7 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
 
 talk_base::AsyncResolverInterface*
 IpcPacketSocketFactory::CreateAsyncResolver() {
-  NOTREACHED();
-  return NULL;
+  return new P2PAsyncAddressResolver(socket_dispatcher_);
 }
 
 }  // namespace content

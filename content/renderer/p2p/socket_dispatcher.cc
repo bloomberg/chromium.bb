@@ -109,7 +109,7 @@ void P2PSocketDispatcher::SendP2PMessage(IPC::Message* msg) {
 }
 
 int P2PSocketDispatcher::RegisterHostAddressRequest(
-    P2PHostAddressRequest* request) {
+    P2PAsyncAddressResolver* request) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   return host_address_requests_.Add(request);
 }
@@ -127,14 +127,14 @@ void P2PSocketDispatcher::OnNetworkListChanged(
 
 void P2PSocketDispatcher::OnGetHostAddressResult(
     int32 request_id,
-    const net::IPAddressNumber& address) {
-  P2PHostAddressRequest* request = host_address_requests_.Lookup(request_id);
+    const net::IPAddressList& addresses) {
+  P2PAsyncAddressResolver* request = host_address_requests_.Lookup(request_id);
   if (!request) {
     VLOG(1) << "Received P2P message for socket that doesn't exist.";
     return;
   }
 
-  request->OnResponse(address);
+  request->OnResponse(addresses);
 }
 
 void P2PSocketDispatcher::OnSocketCreated(

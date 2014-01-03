@@ -103,24 +103,6 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
   virtual void GetPortConfigurations() OVERRIDE;
 
  private:
-
-  struct RelayServer {
-    RelayServer();
-    ~RelayServer();
-
-    P2PPortAllocator::Config::RelayServerConfig config;
-    talk_base::SocketAddress resolved_relay_address;
-    scoped_refptr<P2PHostAddressRequest> relay_address_request;
-  };
-
-  void ResolveStunServerAddress();
-  void OnStunServerAddress(const net::IPAddressNumber& address);
-
-  void ResolveRelayServerAddresses();
-  void OnRelayServerAddressResolved(size_t index,
-                                    const net::IPAddressNumber& address);
-  bool IsRelayAddressesResolved() const;
-
   // This method allocates non-TURN relay sessions.
   void AllocateLegacyRelaySession();
   void ParseRelayResponse();
@@ -128,11 +110,6 @@ class P2PPortAllocatorSession : public cricket::BasicPortAllocatorSession,
   void AddConfig();
 
   P2PPortAllocator* allocator_;
-
-  scoped_refptr<P2PHostAddressRequest> stun_address_request_;
-  talk_base::SocketAddress stun_server_address_;
-
-  std::vector<RelayServer> relay_info_;
 
   scoped_ptr<blink::WebURLLoader> relay_session_request_;
   int relay_session_attempts_;

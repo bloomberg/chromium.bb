@@ -44,14 +44,14 @@ class IPEndPoint;
 namespace content {
 
 class NetworkListObserver;
-class RenderViewImpl;
-class P2PHostAddressRequest;
+class P2PAsyncAddressResolver;
 class P2PSocketClientImpl;
+class RenderViewImpl;
 
 class CONTENT_EXPORT P2PSocketDispatcher
     : public IPC::ChannelProxy::MessageFilter {
  public:
-  P2PSocketDispatcher(base::MessageLoopProxy* ipc_message_loop);
+  explicit P2PSocketDispatcher(base::MessageLoopProxy* ipc_message_loop);
 
   // Add a new network list observer. Each observer is called
   // immidiately after it is registered and then later whenever
@@ -67,7 +67,7 @@ class CONTENT_EXPORT P2PSocketDispatcher
   virtual ~P2PSocketDispatcher();
 
  private:
-  friend class P2PHostAddressRequest;
+  friend class P2PAsyncAddressResolver;
   friend class P2PSocketClientImpl;
 
   // Send a message asynchronously.
@@ -88,13 +88,13 @@ class CONTENT_EXPORT P2PSocketDispatcher
   void SendP2PMessage(IPC::Message* msg);
 
   // Called by DnsRequest.
-  int RegisterHostAddressRequest(P2PHostAddressRequest* request);
+  int RegisterHostAddressRequest(P2PAsyncAddressResolver* request);
   void UnregisterHostAddressRequest(int id);
 
   // Incoming message handlers.
   void OnNetworkListChanged(const net::NetworkInterfaceList& networks);
   void OnGetHostAddressResult(int32 request_id,
-                              const net::IPAddressNumber& address);
+                              const net::IPAddressList& addresses);
   void OnSocketCreated(int socket_id, const net::IPEndPoint& address);
   void OnIncomingTcpConnection(int socket_id, const net::IPEndPoint& address);
   void OnSendComplete(int socket_id);
@@ -108,7 +108,7 @@ class CONTENT_EXPORT P2PSocketDispatcher
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   IDMap<P2PSocketClientImpl> clients_;
 
-  IDMap<P2PHostAddressRequest> host_address_requests_;
+  IDMap<P2PAsyncAddressResolver> host_address_requests_;
 
   bool network_notifications_started_;
   scoped_refptr<ObserverListThreadSafe<NetworkListObserver> >
