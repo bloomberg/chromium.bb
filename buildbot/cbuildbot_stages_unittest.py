@@ -557,6 +557,16 @@ class MasterSlaveSyncCompletionStage(AbstractStageTest):
     self.assertTrue(stage._IsFailureFatal(set(['test5']), set(['sanity'])))
     self.assertFalse(stage._IsFailureFatal(set(), set(['sanity'])))
 
+  def testAnnotateFailingBuilders(self):
+    """Tests that _AnnotateFailingBuilders is free of syntax errors."""
+    stage = self.ConstructStage()
+
+    failing = {'a'}
+    inflight = {}
+    status = manifest_version.BuilderStatus('failed', 'message', 'url')
+    statuses = {'a' : status}
+    stage._AnnotateFailingBuilders(failing, inflight, statuses)
+
 
 # pylint: disable=W0223
 class RunCommandAbstractStageTest(AbstractStageTest,

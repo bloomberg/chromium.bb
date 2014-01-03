@@ -1191,7 +1191,11 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     self._slave_statuses = {}
 
   def _FetchSlaveStatuses(self):
-    """Fetch and return build status for this build and any of its slaves."""
+    """Fetch and return build status for this build and any of its slaves.
+
+    Returns:
+      A build-names->status dictionary of build statuses.
+    """
 
     # TODO(mtennant): When testing a master in debug mode, it is actually very
     # helpful to allow this code to check on slave status IF the run was with
@@ -1317,6 +1321,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     fatal = self._IsFailureFatal(failing, inflight)
 
     if fatal:
+      self._AnnotateFailingBuilders(failing, inflight, statuses)
       self.HandleFailure(failing, inflight)
       raise ImportantBuilderFailedException()
     else:
@@ -1336,6 +1341,24 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     sanity_builders = self._run.config.sanity_check_slaves or []
     sanity_builders = set(sanity_builders)
     return not sanity_builders.issuperset(failing | inflight)
+
+  def _AnnotateFailingBuilders(self, failing, inflight, statuses):
+    """Add annotations that link to either failing or inflight builders.
+
+    Adds buildbot links to failing builder dashboards. If no builders are
+    failing, adds links to inflight builders.
+
+    Args:
+      failing: Set of builder names of slave builders that failed.
+      inflight: Set of builder names of slave builders that are inflights.
+      statuses: A builder-name->status dictionary, which will provide
+                the dashboard_url values for any links.
+    """
+    builders_to_link = failing or inflight or []
+    for builder in builders_to_link:
+      if statuses[builder].dashboard_url:
+        cros_build_lib.PrintBuildbotLink(builder,
+                                         statuses[builder].dashboard_url)
 
   def GetSlaveStatuses(self):
     """Returns cached slave status results.
