@@ -146,6 +146,7 @@ class TestGitCl(TestCase):
                    '-M'+similarity, 'fake_ancestor_sha', 'HEAD'],), '+dat')
 
     return [
+      ((['git', 'config', 'rietveld.autoupdate'],), ''),
       ((['git', 'config', 'rietveld.server'],),
        'codereview.example.com'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
@@ -250,6 +251,8 @@ class TestGitCl(TestCase):
           'svn-remote.svn.fetch trunk/src:refs/remotes/origin/master'),
          None),
         0)),
+      ((['git', 'config', 'rietveld.autoupdate'],),
+       ''),
       ((['git',
          'config', 'rietveld.server'],), 'codereview.example.com'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
@@ -382,6 +385,7 @@ class TestGitCl(TestCase):
     private = '--private' in upload_args
 
     self.calls = self._upload_calls(similarity, find_copies, private)
+
     def RunEditor(desc, _, **kwargs):
       self.assertEquals(
           '# Enter a description of the change.\n'
@@ -393,12 +397,14 @@ class TestGitCl(TestCase):
           desc)
       return returned_description
     self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
+
     def check_upload(args):
       cmd_line = self._cmd_line(final_description, reviewers, similarity,
                                 find_copies, private)
       self.assertEquals(cmd_line, args)
       return 1, 2
     self.mock(git_cl.upload, 'RealMain', check_upload)
+
     git_cl.main(['upload'] + upload_args)
 
   def test_no_reviewer(self):
@@ -515,6 +521,8 @@ class TestGitCl(TestCase):
   @classmethod
   def _gerrit_base_calls(cls):
     return [
+        ((['git', 'config', 'rietveld.autoupdate'],),
+         ''),
         ((['git',
            'config', 'rietveld.server'],), 'codereview.example.com'),
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
@@ -651,6 +659,8 @@ class TestGitCl(TestCase):
     self.mock(git_cl, 'urlretrieve', self._mocked_call)
     self.mock(git_cl, 'hasSheBang', self._mocked_call)
     self.calls = [
+        ((['git', 'config', 'rietveld.autoupdate'],),
+         ''),
         ((['git', 'config', 'rietveld.server',
            'gerrit.chromium.org'],), ''),
         ((['git', 'config', '--unset-all', 'rietveld.cc'],), ''),

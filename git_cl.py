@@ -267,9 +267,17 @@ class Settings(object):
   def LazyUpdateIfNeeded(self):
     """Updates the settings from a codereview.settings file, if available."""
     if not self.updated:
+      # The only value that actually changes the behavior is
+      # autoupdate = "false". Everything else means "true".
+      autoupdate = RunGit(['config', 'rietveld.autoupdate'], 
+                          error_ok=True
+                          ).strip().lower()
+
       cr_settings_file = FindCodereviewSettingsFile()
-      if cr_settings_file:
+      if autoupdate != 'false' and cr_settings_file:
         LoadCodereviewSettingsFromFile(cr_settings_file)
+        # set updated to True to avoid infinite calling loop
+        # through DownloadHooks
         self.updated = True
         DownloadHooks(False)
       self.updated = True
@@ -1084,7 +1092,22 @@ def DownloadHooks(force):
 def CMDconfig(parser, args):
   """Edits configuration for this tree."""
 
-  _, args = parser.parse_args(args)
+  parser.add_option('--activate-update', action='store_true',
+                    help='activate auto-updating [rietveld] section in '
+                         '.git/config')
+  parser.add_option('--deactivate-update', action='store_true',
+                    help='deactivate auto-updating [rietveld] section in '
+                         '.git/config')
+  options, args = parser.parse_args(args)
+
+  if options.deactivate_update:
+    RunGit(['config', 'rietveld.autoupdate', 'false'])
+    return
+
+  if options.activate_update:
+    RunGit(['config', '--unset', 'rietveld.autoupdate'])
+    return
+
   if len(args) == 0:
     GetCodereviewSettingsInteractively()
     DownloadHooks(True)
