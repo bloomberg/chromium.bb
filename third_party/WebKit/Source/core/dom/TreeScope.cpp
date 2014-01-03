@@ -53,14 +53,6 @@
 
 namespace WebCore {
 
-struct SameSizeAsTreeScope {
-    virtual ~SameSizeAsTreeScope();
-    void* pointers[8];
-    int ints[1];
-};
-
-COMPILE_ASSERT(sizeof(TreeScope) == sizeof(SameSizeAsTreeScope), treescope_should_stay_small);
-
 using namespace HTMLNames;
 
 TreeScope::TreeScope(ContainerNode* rootNode, Document* document)
@@ -517,6 +509,12 @@ void TreeScope::setNeedsStyleRecalcForViewportUnits()
         if (style && style->hasViewportUnits())
             element->setNeedsStyleRecalc(LocalStyleChange);
     }
+}
+
+KURL TreeScope::completeURL(const String& url) const
+{
+    ASSERT(documentScope());
+    return documentScope()->completeURLWithOverride(url, baseURL());
 }
 
 } // namespace WebCore

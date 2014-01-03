@@ -358,7 +358,7 @@ public:
 
     String documentURI() const { return m_documentURI; }
 
-    virtual KURL baseURI() const;
+    virtual KURL baseURI() const OVERRIDE;
 
     String visibilityState() const;
     bool hidden() const;
@@ -534,15 +534,14 @@ public:
 
     // To understand how these concepts relate to one another, please see the
     // comments surrounding their declaration.
-    const KURL& baseURL() const { return m_baseURL; }
     void setBaseURLOverride(const KURL&);
     const KURL& baseURLOverride() const { return m_baseURLOverride; }
     const KURL& baseElementURL() const { return m_baseElementURL; }
     const AtomicString& baseTarget() const { return m_baseTarget; }
     void processBaseElement();
 
-    KURL completeURL(const String&) const;
-    KURL completeURL(const String&, const KURL& baseURLOverride) const;
+    using TreeScope::completeURL; // Disambiguate between ExecutionContext and TreeScope methods.
+    KURL completeURLWithOverride(const String&, const KURL& baseURLOverride) const;
 
     virtual String userAgent(const KURL&) const;
     virtual void disableEval(const String& errorMessage);
@@ -1124,14 +1123,13 @@ private:
 
     // Document URLs.
     KURL m_url; // Document.URL: The URL from which this document was retrieved.
-    KURL m_baseURL; // Node.baseURI: The URL to use when resolving relative URLs.
-    KURL m_baseURLOverride; // An alternative base URL that takes precedence over m_baseURL (but not m_baseElementURL).
+    KURL m_baseURLOverride; // An alternative base URL that takes precedence over TreeScope::baseURL() (but not m_baseElementURL).
     KURL m_baseElementURL; // The URL set by the <base> element.
     KURL m_cookieURL; // The URL to use for cookie access.
 
     // Document.documentURI:
     // Although URL-like, Document.documentURI can actually be set to any
-    // string by content.  Document.documentURI affects m_baseURL unless the
+    // string by content. Document.documentURI affects TreeScope::baseURL() unless the
     // document contains a <base> element, in which case the <base> element
     // takes precedence.
     String m_documentURI;

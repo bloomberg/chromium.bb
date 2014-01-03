@@ -119,6 +119,10 @@ public:
 
     StyleSheetList* styleSheets();
 
+    // FIXME: Implement baseURI-setting, see http://crbug.com/311682
+    // virtual KURL baseURI() const OVERRIDE;
+    // void setBaseURI(const String&);
+
 private:
     ShadowRoot(Document*, ShadowRootType);
     virtual ~ShadowRoot();

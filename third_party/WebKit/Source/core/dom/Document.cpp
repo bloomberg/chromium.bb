@@ -1161,7 +1161,7 @@ void Document::setXMLStandalone(bool standalone, ExceptionState& exceptionState)
 
 KURL Document::baseURI() const
 {
-    return m_baseURL;
+    return baseURL();
 }
 
 void Document::setContent(const String& content)
@@ -2617,36 +2617,36 @@ void Document::setURL(const KURL& url)
 
 void Document::updateBaseURL()
 {
-    KURL oldBaseURL = m_baseURL;
+    KURL oldBaseURL = baseURL();
     // DOM 3 Core: When the Document supports the feature "HTML" [DOM Level 2 HTML], the base URI is computed using
     // first the value of the href attribute of the HTML BASE element if any, and the value of the documentURI attribute
     // from the Document interface otherwise.
     if (!m_baseElementURL.isEmpty())
-        m_baseURL = m_baseElementURL;
+        setBaseURL(m_baseElementURL);
     else if (!m_baseURLOverride.isEmpty())
-        m_baseURL = m_baseURLOverride;
+        setBaseURL(m_baseURLOverride);
     else {
         // The documentURI attribute is read-only from JavaScript, but writable from Objective C, so we need to retain
         // this fallback behavior. We use a null base URL, since the documentURI attribute is an arbitrary string
         // and DOM 3 Core does not specify how it should be resolved.
         // FIXME: Now that we don't support Objective-C this can probably be removed.
-        m_baseURL = KURL(ParsedURLString, documentURI());
+        setBaseURL(KURL(ParsedURLString, documentURI()));
     }
     selectorQueryCache().invalidate();
 
-    if (!m_baseURL.isValid())
-        m_baseURL = KURL();
+    if (!baseURL().isValid())
+        setBaseURL(KURL());
 
     if (m_elemSheet) {
         // Element sheet is silly. It never contains anything.
         ASSERT(!m_elemSheet->contents()->ruleCount());
         bool usesRemUnits = m_elemSheet->contents()->usesRemUnits();
-        m_elemSheet = CSSStyleSheet::createInline(this, m_baseURL);
+        m_elemSheet = CSSStyleSheet::createInline(this, baseURL());
         // FIXME: So we are not really the parser. The right fix is to eliminate the element sheet completely.
         m_elemSheet->contents()->parserSetUsesRemUnits(usesRemUnits);
     }
 
-    if (!equalIgnoringFragmentIdentifier(oldBaseURL, m_baseURL)) {
+    if (!equalIgnoringFragmentIdentifier(oldBaseURL, baseURL())) {
         // Base URL change changes any relative visited links.
         // FIXME: There are other URLs in the tree that would need to be re-evaluated on dynamic base URL change. Style should be invalidated too.
         for (Element* element = ElementTraversal::firstWithin(*this); element; element = ElementTraversal::next(*element)) {
@@ -2819,7 +2819,7 @@ void Document::executeScriptsWaitingForResourcesIfNeeded()
 CSSStyleSheet* Document::elementSheet()
 {
     if (!m_elemSheet)
-        m_elemSheet = CSSStyleSheet::createInline(this, m_baseURL);
+        m_elemSheet = CSSStyleSheet::createInline(this, baseURL());
     return m_elemSheet.get();
 }
 
@@ -4036,7 +4036,7 @@ void Document::setEncodingData(const DocumentEncodingData& newData)
     m_encodingData = newData;
 }
 
-KURL Document::completeURL(const String& url, const KURL& baseURLOverride) const
+KURL Document::completeURLWithOverride(const String& url, const KURL& baseURLOverride) const
 {
     // Always return a null URL when passed a null string.
     // FIXME: Should we change the KURL constructor to have this behavior?
@@ -4052,11 +4052,6 @@ KURL Document::completeURL(const String& url, const KURL& baseURLOverride) const
     if (!encoding().isValid())
         return KURL(baseURL, url);
     return KURL(baseURL, url, encoding());
-}
-
-KURL Document::completeURL(const String& url) const
-{
-    return completeURL(url, m_baseURL);
 }
 
 // Support for Javascript execCommand, and related methods
