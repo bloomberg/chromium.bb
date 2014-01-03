@@ -3,9 +3,7 @@
 <canvas id="canvas" width="0" height="0"> </canvas>
 <img src="resources/green.jpg" width="0" height="0" id="image"></img>
 <script>
-
-if (window.testRunner)
-    testRunner.waitUntilDone();
+jsTestIsAsync = true;
 
 var gl = create3DContext(document.getElementById("canvas"));
 if (!gl) {
@@ -33,7 +31,6 @@ img.onload = function() {
     } catch (e) {
         testFailed(e.toString());
     }
-    if (window.testRunner)
-        testRunner.notifyDone();
+    finishJSTest();
 }
 </script>
