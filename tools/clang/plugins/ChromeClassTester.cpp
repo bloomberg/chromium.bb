@@ -140,7 +140,6 @@ bool ChromeClassTester::InImplementationFile(SourceLocation record_location) {
 void ChromeClassTester::BuildBannedLists() {
   banned_namespaces_.push_back("std");
   banned_namespaces_.push_back("__gnu_cxx");
-  banned_namespaces_.push_back("WebTestRunner");
 
   // We're in the process of renaming WebKit to blink.
   // TODO(abarth): Remove WebKit once the rename is complete.
