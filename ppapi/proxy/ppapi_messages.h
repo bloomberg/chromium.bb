@@ -379,8 +379,7 @@ IPC_MESSAGE_CONTROL3(PpapiMsg_CreateChannel,
 // Creates a channel to talk to a renderer. This message is only used by the
 // NaCl IPC proxy. It is intercepted by NaClIPCAdapter, which creates the
 // actual channel and rewrites the message for the untrusted side.
-IPC_MESSAGE_CONTROL3(PpapiMsg_CreateNaClChannel,
-                     int /* renderer_id */,
+IPC_MESSAGE_CONTROL2(PpapiMsg_CreateNaClChannel,
                      ppapi::PpapiNaClChannelArgs /* args */,
                      ppapi::proxy::SerializedHandle /* channel_handle */)
 

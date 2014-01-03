@@ -828,7 +828,6 @@ void NaClProcessHost::OnPpapiChannelCreated(
     // a place holder.
     ipc_proxy_channel_->Send(
         new PpapiMsg_CreateNaClChannel(
-            nacl_host_message_filter_->render_process_id(),
             args,
             SerializedHandle(SerializedHandle::CHANNEL_HANDLE,
                              IPC::InvalidPlatformFileForTransit())));

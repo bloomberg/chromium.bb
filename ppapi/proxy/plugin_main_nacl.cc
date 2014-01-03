@@ -90,8 +90,7 @@ class PpapiDispatcher : public ProxyChannel,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
-  void OnMsgCreateNaClChannel(int renderer_id,
-                              const ppapi::PpapiNaClChannelArgs& args,
+  void OnMsgCreateNaClChannel(const ppapi::PpapiNaClChannelArgs& args,
                               SerializedHandle handle);
   void OnPluginDispatcherMessageReceived(const IPC::Message& msg);
 
@@ -194,7 +193,6 @@ bool PpapiDispatcher::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void PpapiDispatcher::OnMsgCreateNaClChannel(
-    int renderer_id,
     const ppapi::PpapiNaClChannelArgs& args,
     SerializedHandle handle) {
   static bool command_line_and_logging_initialized = false;
