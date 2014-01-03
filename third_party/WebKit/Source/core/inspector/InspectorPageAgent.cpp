@@ -166,7 +166,7 @@ static PassOwnPtr<TextResourceDecoder> createXHRTextDecoder(const String& mimeTy
 {
     if (!textEncodingName.isEmpty())
         return TextResourceDecoder::create("text/plain", textEncodingName);
-    if (DOMImplementation::isXMLMIMEType(mimeType.lower())) {
+    if (DOMImplementation::isXMLMIMEType(mimeType)) {
         OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
         decoder->useLenientXMLDecoding();
         return decoder.release();

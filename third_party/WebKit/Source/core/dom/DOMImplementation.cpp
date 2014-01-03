@@ -235,22 +235,19 @@ PassRefPtr<CSSStyleSheet> DOMImplementation::createCSSStyleSheet(const String&, 
 
 bool DOMImplementation::isXMLMIMEType(const String& mimeType)
 {
-    if (mimeType == "text/xml" || mimeType == "application/xml" || mimeType == "text/xsl")
+    if (equalIgnoringCase(mimeType, "text/xml")
+        || equalIgnoringCase(mimeType, "application/xml")
+        || equalIgnoringCase(mimeType, "text/xsl"))
         return true;
 
-    // Per RFCs 3023 and 2045 a mime type is of the form:
+    // Per RFCs 3023 and 2045, an XML MIME type is of the form:
     // ^[0-9a-zA-Z_\\-+~!$\\^{}|.%'`#&*]+/[0-9a-zA-Z_\\-+~!$\\^{}|.%'`#&*]+\+xml$
 
     int length = mimeType.length();
     if (length < 7)
         return false;
 
-    if (mimeType[0] == '/' ||
-        mimeType[length - 5] == '/' ||
-        mimeType[length - 4] != '+' ||
-        mimeType[length - 3] != 'x' ||
-        mimeType[length - 2] != 'm' ||
-        mimeType[length - 1] != 'l')
+    if (mimeType[0] == '/' || mimeType[length - 5] == '/' || !mimeType.endsWith("+xml", false))
         return false;
 
     bool hasSlash = false;

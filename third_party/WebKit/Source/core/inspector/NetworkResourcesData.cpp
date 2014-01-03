@@ -160,18 +160,15 @@ static PassOwnPtr<TextResourceDecoder> createOtherResourceTextDecoder(const Stri
     OwnPtr<TextResourceDecoder> decoder;
     if (!textEncodingName.isEmpty()) {
         decoder = TextResourceDecoder::create("text/plain", textEncodingName);
-    } else {
-        String mimeTypeLower = mimeType.lower();
-        if (DOMImplementation::isXMLMIMEType(mimeTypeLower)) {
-            decoder = TextResourceDecoder::create("application/xml");
-            decoder->useLenientXMLDecoding();
-        } else if (equalIgnoringCase(mimeType, "text/html")) {
-            decoder = TextResourceDecoder::create("text/html", "UTF-8");
-        } else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeTypeLower) || DOMImplementation::isJSONMIMEType(mimeTypeLower)) {
-            decoder = TextResourceDecoder::create("text/plain", "UTF-8");
-        } else if (DOMImplementation::isTextMIMEType(mimeTypeLower)) {
-            decoder = TextResourceDecoder::create("text/plain", "ISO-8859-1");
-        }
+    } else if (DOMImplementation::isXMLMIMEType(mimeType)) {
+        decoder = TextResourceDecoder::create("application/xml");
+        decoder->useLenientXMLDecoding();
+    } else if (equalIgnoringCase(mimeType, "text/html")) {
+        decoder = TextResourceDecoder::create("text/html", "UTF-8");
+    } else if (MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType) || DOMImplementation::isJSONMIMEType(mimeType)) {
+        decoder = TextResourceDecoder::create("text/plain", "UTF-8");
+    } else if (DOMImplementation::isTextMIMEType(mimeType)) {
+        decoder = TextResourceDecoder::create("text/plain", "ISO-8859-1");
     }
     return decoder.release();
 }

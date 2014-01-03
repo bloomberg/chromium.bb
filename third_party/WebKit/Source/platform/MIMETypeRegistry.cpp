@@ -69,7 +69,7 @@ String MIMETypeRegistry::getMIMETypeForPath(const String& path)
 
 bool MIMETypeRegistry::isSupportedImageMIMEType(const String& mimeType)
 {
-    return blink::Platform::current()->mimeRegistry()->supportsImageMIMEType(mimeType)
+    return blink::Platform::current()->mimeRegistry()->supportsImageMIMEType(mimeType.lower())
         != blink::WebMimeRegistry::IsNotSupported;
 }
 
@@ -80,29 +80,29 @@ bool MIMETypeRegistry::isSupportedImageResourceMIMEType(const String& mimeType)
 
 bool MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(const String& mimeType)
 {
-    if (mimeType == "image/jpeg" || mimeType == "image/png")
+    if (equalIgnoringCase(mimeType, "image/jpeg") || equalIgnoringCase(mimeType, "image/png"))
         return true;
-    if (mimeType == "image/webp")
+    if (equalIgnoringCase(mimeType, "image/webp"))
         return true;
     return false;
 }
 
 bool MIMETypeRegistry::isSupportedJavaScriptMIMEType(const String& mimeType)
 {
-    return blink::Platform::current()->mimeRegistry()->supportsJavaScriptMIMEType(mimeType)
+    return blink::Platform::current()->mimeRegistry()->supportsJavaScriptMIMEType(mimeType.lower())
         != blink::WebMimeRegistry::IsNotSupported;
 }
 
 bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType)
 {
-    return blink::Platform::current()->mimeRegistry()->supportsNonImageMIMEType(mimeType)
+    return blink::Platform::current()->mimeRegistry()->supportsNonImageMIMEType(mimeType.lower())
         != blink::WebMimeRegistry::IsNotSupported;
 }
 
 bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType, const String& codecs)
 {
     return !mimeType.isEmpty()
-        && blink::Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(mimeType, codecs);
+        && blink::Platform::current()->mimeRegistry()->supportsMediaSourceMIMEType(mimeType.lower(), codecs);
 }
 
 bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType)

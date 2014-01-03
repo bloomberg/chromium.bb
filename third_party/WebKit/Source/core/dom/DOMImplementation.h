@@ -62,12 +62,12 @@ public:
     PassRefPtr<HTMLDocument> createHTMLDocument(const String& title);
 
     // Other methods (not part of DOM)
-    static PassRefPtr<Document> createDocument(const String& MIMEType, Frame*, const KURL&, bool inViewSourceMode);
-    static PassRefPtr<Document> createDocument(const String& type, const DocumentInit&, bool inViewSourceMode);
+    static PassRefPtr<Document> createDocument(const String& mimeType, Frame*, const KURL&, bool inViewSourceMode);
+    static PassRefPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool inViewSourceMode);
 
-    static bool isXMLMIMEType(const String& MIMEType);
-    static bool isTextMIMEType(const String& MIMEType);
-    static bool isJSONMIMEType(const String& MIMEType);
+    static bool isXMLMIMEType(const String&);
+    static bool isTextMIMEType(const String&);
+    static bool isJSONMIMEType(const String&);
 
 private:
     explicit DOMImplementation(Document&);
