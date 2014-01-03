@@ -725,12 +725,6 @@ void IOThread::CleanUp() {
 }
 
 void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kEnableFileCookies)) {
-    // Enable cookie storage for file:// URLs.  Must do this before the first
-    // Profile (and therefore the first CookieMonster) is created.
-    net::CookieMonster::EnableFileScheme();
-  }
-
   // Only handle use-spdy command line flags if "spdy.disabled" preference is
   // not disabled via policy.
   if (is_spdy_disabled_by_policy_) {
