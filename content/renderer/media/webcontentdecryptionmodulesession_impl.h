@@ -33,12 +33,12 @@ class WebContentDecryptionModuleSessionImpl
   virtual ~WebContentDecryptionModuleSessionImpl();
 
   // blink::WebContentDecryptionModuleSession implementation.
-  virtual blink::WebString sessionId() const OVERRIDE;
+  virtual blink::WebString sessionId() const;
   virtual void generateKeyRequest(const blink::WebString& mime_type,
                                   const uint8* init_data,
-                                  size_t init_data_length) OVERRIDE;
-  virtual void update(const uint8* response, size_t response_length) OVERRIDE;
-  virtual void close() OVERRIDE;
+                                  size_t init_data_length);
+  virtual void update(const uint8* response, size_t response_length);
+  virtual void close();
 
   // Callbacks.
   void OnSessionCreated(const std::string& web_session_id);
