@@ -22,7 +22,6 @@
 
 #include <gtest/gtest.h>
 
-#include "address_field_util.h"
 #include "messages.h"
 #include "region_data_constants.h"
 
@@ -30,8 +29,8 @@ namespace {
 
 using i18n::addressinput::AddressField;
 using i18n::addressinput::ADMIN_AREA;
+using i18n::addressinput::COUNTRY;
 using i18n::addressinput::LOCALITY;
-using i18n::addressinput::NEWLINE;
 using i18n::addressinput::ORGANIZATION;
 using i18n::addressinput::POSTAL_CODE;
 using i18n::addressinput::RECIPIENT;
@@ -39,22 +38,37 @@ using i18n::addressinput::RegionDataConstants;
 using i18n::addressinput::Rule;
 using i18n::addressinput::STREET_ADDRESS;
 
+bool IsFormatEmpty(const std::vector<std::vector<AddressField> >& format) {
+  for (std::vector<std::vector<AddressField> >::const_iterator
+       it = format.begin(); it != format.end(); ++it) {
+    if (!it->empty()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 TEST(RuleTest, CopyOverwritesRule) {
   Rule rule;
-  ASSERT_TRUE(rule.ParseSerializedRule("{"
-                                       "\"fmt\":\"%S%Z\","
-                                       "\"state_name_type\":\"area\","
-                                       "\"zip_name_type\":\"postal\","
-                                       "\"sub_keys\":\"CA~NY~TX\","
-                                       "\"lang\":\"en\","
-                                       "\"languages\":\"en~fr\""
-                                       "}"));
+  ASSERT_TRUE(rule.ParseSerializedRule(
+      "{"
+      "\"fmt\":\"%S%Z\","
+      "\"require\":\"SZ\","
+      "\"state_name_type\":\"area\","
+      "\"zip_name_type\":\"postal\","
+      "\"sub_keys\":\"CA~NY~TX\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en~fr\","
+      "\"zip\":\"\\\\d{5}([ \\\\-]\\\\d{4})?\""
+      "}"));
 
   Rule copy;
   EXPECT_NE(rule.GetFormat(), copy.GetFormat());
+  EXPECT_NE(rule.GetRequired(), copy.GetRequired());
   EXPECT_NE(rule.GetSubKeys(), copy.GetSubKeys());
   EXPECT_NE(rule.GetLanguages(), copy.GetLanguages());
   EXPECT_NE(rule.GetLanguage(), copy.GetLanguage());
+  EXPECT_NE(rule.GetPostalCodeFormat(), copy.GetPostalCodeFormat());
   EXPECT_NE(rule.GetAdminAreaNameMessageId(),
             copy.GetAdminAreaNameMessageId());
   EXPECT_NE(rule.GetPostalCodeNameMessageId(),
@@ -62,9 +76,11 @@ TEST(RuleTest, CopyOverwritesRule) {
 
   copy.CopyFrom(rule);
   EXPECT_EQ(rule.GetFormat(), copy.GetFormat());
+  EXPECT_EQ(rule.GetRequired(), copy.GetRequired());
   EXPECT_EQ(rule.GetSubKeys(), copy.GetSubKeys());
   EXPECT_EQ(rule.GetLanguages(), copy.GetLanguages());
   EXPECT_EQ(rule.GetLanguage(), copy.GetLanguage());
+  EXPECT_EQ(rule.GetPostalCodeFormat(), copy.GetPostalCodeFormat());
   EXPECT_EQ(rule.GetAdminAreaNameMessageId(),
             copy.GetAdminAreaNameMessageId());
   EXPECT_EQ(rule.GetPostalCodeNameMessageId(),
@@ -73,46 +89,158 @@ TEST(RuleTest, CopyOverwritesRule) {
 
 TEST(RuleTest, ParseOverwritesRule) {
   Rule rule;
-  ASSERT_TRUE(rule.ParseSerializedRule("{"
-                                       "\"fmt\":\"%S%Z\","
-                                       "\"state_name_type\":\"area\","
-                                       "\"zip_name_type\":\"postal\","
-                                       "\"sub_keys\":\"CA~NY~TX\","
-                                       "\"lang\":\"en\","
-                                       "\"languages\":\"en~fr\""
-                                       "}"));
-  EXPECT_FALSE(rule.GetFormat().empty());
+  ASSERT_TRUE(rule.ParseSerializedRule(
+      "{"
+      "\"fmt\":\"%S%Z\","
+      "\"require\":\"SZ\","
+      "\"state_name_type\":\"area\","
+      "\"zip_name_type\":\"postal\","
+      "\"sub_keys\":\"CA~NY~TX\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en~fr\","
+      "\"zip\":\"\\\\d{5}([ \\\\-]\\\\d{4})?\""
+      "}"));
+  EXPECT_FALSE(IsFormatEmpty(rule.GetFormat()));
+  EXPECT_FALSE(rule.GetRequired().empty());
   EXPECT_FALSE(rule.GetSubKeys().empty());
   EXPECT_FALSE(rule.GetLanguages().empty());
   EXPECT_FALSE(rule.GetLanguage().empty());
+  EXPECT_FALSE(rule.GetPostalCodeFormat().empty());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_AREA,
             rule.GetAdminAreaNameMessageId());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL,
             rule.GetPostalCodeNameMessageId());
 
-  ASSERT_TRUE(rule.ParseSerializedRule("{"
-                                       "\"fmt\":\"\","
-                                       "\"state_name_type\":\"do_si\","
-                                       "\"zip_name_type\":\"zip\","
-                                       "\"sub_keys\":\"\","
-                                       "\"lang\":\"\","
-                                       "\"languages\":\"\""
-                                       "}"));
-  EXPECT_TRUE(rule.GetFormat().empty());
+  ASSERT_TRUE(rule.ParseSerializedRule(
+      "{"
+      "\"fmt\":\"\","
+      "\"require\":\"\","
+      "\"state_name_type\":\"do_si\","
+      "\"zip_name_type\":\"zip\","
+      "\"sub_keys\":\"\","
+      "\"lang\":\"\","
+      "\"languages\":\"\","
+      "\"zip\":\"\""
+      "}"));
+  EXPECT_TRUE(IsFormatEmpty(rule.GetFormat()));
+  EXPECT_TRUE(rule.GetRequired().empty());
   EXPECT_TRUE(rule.GetSubKeys().empty());
   EXPECT_TRUE(rule.GetLanguages().empty());
   EXPECT_TRUE(rule.GetLanguage().empty());
+  EXPECT_TRUE(rule.GetPostalCodeFormat().empty());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_DO_SI,
             rule.GetAdminAreaNameMessageId());
   EXPECT_EQ(IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL,
             rule.GetPostalCodeNameMessageId());
 }
 
-TEST(RuleTest, ParsesFormatCorrectly) {
+TEST(RuleTest, ParseEmptyDataDoesNotOverwriteRule) {
   Rule rule;
-  ASSERT_TRUE(rule.ParseSerializedRule("{\"fmt\":\"%S\"}"));
-  ASSERT_EQ(1, rule.GetFormat().size());
-  EXPECT_EQ(ADMIN_AREA, rule.GetFormat()[0]);
+  ASSERT_TRUE(rule.ParseSerializedRule(
+      "{"
+      "\"fmt\":\"%S%Z\","
+      "\"require\":\"SZ\","
+      "\"state_name_type\":\"area\","
+      "\"zip_name_type\":\"postal\","
+      "\"sub_keys\":\"CA~NY~TX\","
+      "\"lang\":\"en\","
+      "\"languages\":\"en~fr\","
+      "\"zip\":\"\\\\d{5}([ \\\\-]\\\\d{4})?\""
+      "}"));
+
+  Rule copy;
+  copy.CopyFrom(rule);
+  ASSERT_TRUE(copy.ParseSerializedRule("{}"));
+
+  EXPECT_EQ(rule.GetFormat(), copy.GetFormat());
+  EXPECT_EQ(rule.GetRequired(), copy.GetRequired());
+  EXPECT_EQ(rule.GetSubKeys(), copy.GetSubKeys());
+  EXPECT_EQ(rule.GetLanguages(), copy.GetLanguages());
+  EXPECT_EQ(rule.GetLanguage(), copy.GetLanguage());
+  EXPECT_EQ(rule.GetPostalCodeFormat(), copy.GetPostalCodeFormat());
+  EXPECT_EQ(rule.GetAdminAreaNameMessageId(),
+            copy.GetAdminAreaNameMessageId());
+  EXPECT_EQ(rule.GetPostalCodeNameMessageId(),
+            copy.GetPostalCodeNameMessageId());
+}
+
+TEST(RuleTest, ParseFormatWithNewLines) {
+  Rule rule;
+  ASSERT_TRUE(
+      rule.ParseSerializedRule("{\"fmt\":\"%O%n%N%n%A%nAX-%Z %C%nÅLAND\"}"));
+  std::vector<std::vector<AddressField> > expected_format;
+  expected_format.push_back(std::vector<AddressField>(1, ORGANIZATION));
+  expected_format.push_back(std::vector<AddressField>(1, RECIPIENT));
+  expected_format.push_back(std::vector<AddressField>(1, STREET_ADDRESS));
+  expected_format.push_back(std::vector<AddressField>(1, POSTAL_CODE));
+  expected_format.back().push_back(LOCALITY);
+  expected_format.push_back(std::vector<AddressField>());
+  EXPECT_EQ(expected_format, rule.GetFormat());
+}
+
+TEST(RuleTest, DoubleTokenPrefixDoesNotCrash) {
+  Rule rule;
+  EXPECT_TRUE(rule.ParseSerializedRule("{\"fmt\":\"%%R\"}"));
+}
+
+TEST(RuleTest, DoubleNewlineFormatDoesNotCrash) {
+  Rule rule;
+  EXPECT_TRUE(rule.ParseSerializedRule("{\"fmt\":\"%n%n\"}"));
+}
+
+TEST(RuleTest, FormatTokenWithoutPrefixDoesNotCrash) {
+  Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule("{\"fmt\":\"R\"}"));
+}
+
+TEST(RuleTest, ParseDuplicateTokenInFormatDoesNotCrash) {
+  Rule rule;
+  EXPECT_TRUE(rule.ParseSerializedRule("{\"fmt\":\"%R%R\"}"));
+}
+
+TEST(RuleTest, ParseInvalidFormatFieldsDoesNotCrash) {
+  Rule rule;
+  EXPECT_TRUE(rule.ParseSerializedRule("{\"fmt\":\"%K%L\"}"));
+}
+
+TEST(RuleTest, PrefixWithoutTokenFormatDoesNotCrash) {
+  Rule rule;
+  EXPECT_TRUE(rule.ParseSerializedRule("{\"fmt\":\"%\"}"));
+}
+
+TEST(RuleTest, EmptyStringFormatDoesNotCrash) {
+  Rule rule;
+  EXPECT_TRUE(rule.ParseSerializedRule("{\"fmt\":\"\"}"));
+}
+
+TEST(RuleTest, ParseRequiredFields) {
+  Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule("{\"require\":\"ONAZC\"}"));
+  std::vector<AddressField> expected;
+  expected.push_back(ORGANIZATION);
+  expected.push_back(RECIPIENT);
+  expected.push_back(STREET_ADDRESS);
+  expected.push_back(POSTAL_CODE);
+  expected.push_back(LOCALITY);
+  EXPECT_EQ(expected, rule.GetRequired());
+}
+
+TEST(RuleTest, ParseEmptyStringRequiredFields) {
+  Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule("{\"require\":\"\"}"));
+  EXPECT_TRUE(rule.GetRequired().empty());
+}
+
+TEST(RuleTest, ParseInvalidRequiredFields) {
+  Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule("{\"require\":\"garbage\"}"));
+  EXPECT_TRUE(rule.GetRequired().empty());
+}
+
+TEST(RuleTest, ParseDuplicateRequiredFields) {
+  Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule("{\"require\":\"SSS\"}"));
+  EXPECT_EQ(std::vector<AddressField>(3, ADMIN_AREA), rule.GetRequired());
 }
 
 TEST(RuleTest, ParsesSubKeysCorrectly) {
@@ -139,6 +267,15 @@ TEST(RuleTest, ParsesLanguagesCorrectly) {
   expected.push_back("fr");
   expected.push_back("it");
   EXPECT_EQ(expected, rule.GetLanguages());
+}
+
+TEST(RuleTest, ParsesPostalCodeFormatCorrectly) {
+  Rule rule;
+  ASSERT_TRUE(rule.ParseSerializedRule(
+      "{"
+      "\"zip\":\"\\\\d{5}([ \\\\-]\\\\d{4})?\""
+      "}"));
+  EXPECT_EQ("\\d{5}([ \\-]\\d{4})?", rule.GetPostalCodeFormat());
 }
 
 TEST(RuleTest, EmptyStringIsNotValid) {
@@ -216,13 +353,31 @@ INSTANTIATE_TEST_CASE_P(
 // Tests for rule parsing.
 class RuleParseTest : public testing::TestWithParam<std::string> {
  protected:
+  const std::string& GetData() const {
+    return RegionDataConstants::GetRegionData(GetParam());
+  }
+
   Rule rule_;
 };
 
-// Verifies that a region data can be parsed successfully.
-TEST_P(RuleParseTest, RegionDataParsedSuccessfully) {
-  EXPECT_TRUE(rule_.ParseSerializedRule(
-      RegionDataConstants::GetRegionData(GetParam())));
+// Verifies that an address format does not contain consecutive lines with
+// multiple fields each. Such address format (e.g. {{ELEMENT, ELEMENT},
+// {ELEMENT, ELEMENT}}) will result in incorrect behavior of BuildComponents()
+// public API.
+TEST_P(RuleParseTest, ConsecutiveLinesWithMultipleFields) {
+  ASSERT_TRUE(rule_.ParseSerializedRule(GetData()));
+  bool previous_line_has_single_field = true;
+  for (std::vector<std::vector<AddressField> >::const_iterator
+       line_it = rule_.GetFormat().begin();
+       line_it != rule_.GetFormat().end();
+       ++line_it) {
+    if (line_it->empty()) {
+      continue;
+    }
+    ASSERT_TRUE(line_it->size() == 1 || previous_line_has_single_field)
+        << GetParam() << ": " << GetData();
+    previous_line_has_single_field = line_it->size() == 1;
+  }
 }
 
 // Test parsing all region data.

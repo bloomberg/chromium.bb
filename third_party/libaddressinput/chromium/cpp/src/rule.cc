@@ -17,11 +17,11 @@
 #include <libaddressinput/address_field.h>
 #include <libaddressinput/util/scoped_ptr.h>
 
-#include <map>
+#include <cassert>
+#include <cstddef>
 #include <string>
-#include <utility>
+#include <vector>
 
-#include "address_field_util.h"
 #include "grit.h"
 #include "messages.h"
 #include "util/json.h"
@@ -32,79 +32,140 @@ namespace addressinput {
 
 namespace {
 
-typedef std::map<std::string, int> NameMessageIdMap;
-
-const char kAdminAreaNameTypeKey[] = "state_name_type";
-const char kFormatKey[] = "fmt";
-const char kLanguageKey[] = "lang";
-const char kLanguagesKey[] = "languages";
-const char kPostalCodeNameTypeKey[] = "zip_name_type";
-const char kSubKeysKey[] = "sub_keys";
-
-// Used as a separator in a list of items. For example, the list of supported
-// languages can be "de~fr~it".
-const char kSeparator = '~';
-
-NameMessageIdMap InitAdminAreaMessageIds() {
-  NameMessageIdMap message_ids;
-  message_ids.insert(std::make_pair(
-      "area", IDS_LIBADDRESSINPUT_I18N_AREA));
-  message_ids.insert(std::make_pair(
-      "county", IDS_LIBADDRESSINPUT_I18N_COUNTY_LABEL));
-  message_ids.insert(std::make_pair(
-      "department", IDS_LIBADDRESSINPUT_I18N_DEPARTMENT));
-  message_ids.insert(std::make_pair(
-      "district", IDS_LIBADDRESSINPUT_I18N_DEPENDENT_LOCALITY_LABEL));
-  message_ids.insert(std::make_pair(
-      "do_si", IDS_LIBADDRESSINPUT_I18N_DO_SI));
-  message_ids.insert(std::make_pair(
-      "emirate", IDS_LIBADDRESSINPUT_I18N_EMIRATE));
-  message_ids.insert(std::make_pair(
-      "island", IDS_LIBADDRESSINPUT_I18N_ISLAND));
-  message_ids.insert(std::make_pair(
-      "parish", IDS_LIBADDRESSINPUT_I18N_PARISH));
-  message_ids.insert(std::make_pair(
-      "prefecture", IDS_LIBADDRESSINPUT_I18N_PREFECTURE));
-  message_ids.insert(std::make_pair(
-      "province", IDS_LIBADDRESSINPUT_I18N_PROVINCE));
-  message_ids.insert(std::make_pair(
-      "state", IDS_LIBADDRESSINPUT_I18N_STATE_LABEL));
-  return message_ids;
+bool ParseToken(char c, AddressField* field) {
+  assert(field != NULL);
+  switch (c) {
+    case 'R':
+      *field = COUNTRY;
+      return true;
+    case 'S':
+      *field = ADMIN_AREA;
+      return true;
+    case 'C':
+      *field = LOCALITY;
+      return true;
+    case 'D':
+      *field = DEPENDENT_LOCALITY;
+      return true;
+    case 'X':
+      *field = SORTING_CODE;
+      return true;
+    case 'Z':
+      *field = POSTAL_CODE;
+      return true;
+    case 'A':
+      *field = STREET_ADDRESS;
+      return true;
+    case 'O':
+      *field = ORGANIZATION;
+      return true;
+    case 'N':
+      *field = RECIPIENT;
+      return true;
+    default:
+      return false;
+  }
 }
 
-const NameMessageIdMap& GetAdminAreaMessageIds() {
-  static const NameMessageIdMap kAdminAreaMessageIds(InitAdminAreaMessageIds());
-  return kAdminAreaMessageIds;
+// Clears |fields|, parses |format|, and adds the format address fields to
+// |fields|.
+//
+// For example, the address format in Switzerland is "%O%n%N%n%A%nAX-%Z
+// %C%nÅLAND". It includes the allowed fields prefixed with %, newlines denoted
+// %n, and the extra text that should be included on an envelope. This function
+// parses only the tokens denoted % to determine how an address input form
+// should be laid out.
+//
+// The format string "%O%n%N%n%A%nAX-%Z%C%nÅLAND" is parsed into
+// {{ORGANIZATION}, {RECIPIENT}, {STREET_ADDRESS}, {POSTAL_CODE, LOCALITY}, {}}.
+void ParseAddressFieldsFormat(const std::string& format,
+                              std::vector<std::vector<AddressField> >* fields) {
+  assert(fields != NULL);
+  fields->clear();
+  fields->resize(1);
+  std::vector<std::string> format_parts;
+  SplitString(format, '%', &format_parts);
+  for (size_t i = 1; i < format_parts.size(); ++i) {
+    AddressField field = COUNTRY;
+    if (ParseToken(format_parts[i][0], &field)) {
+      fields->back().push_back(field);
+    } else if (format_parts[i][0] == 'n') {
+      fields->push_back(std::vector<AddressField>());
+    }
+  }
 }
 
-NameMessageIdMap InitPostalCodeMessageIds() {
-  NameMessageIdMap message_ids;
-  message_ids.insert(std::make_pair(
-      "postal", IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL));
-  message_ids.insert(std::make_pair(
-      "zip", IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL));
-  return message_ids;
+// Clears |fields|, parses |required|, and adds the required fields to |fields|.
+// For example, parses "SCDX" into {ADMIN_AREA, LOCALITY, DEPENDENT_LOCALITY,
+// SORTING_CODE}.
+void ParseAddressFieldsRequired(const std::string& required,
+                                std::vector<AddressField>* fields) {
+  assert(fields != NULL);
+  fields->clear();
+  for (size_t i = 0; i < required.length(); ++i) {
+    AddressField field = COUNTRY;
+    if (ParseToken(required[i], &field)) {
+      fields->push_back(field);
+    }
+  }
 }
 
-const NameMessageIdMap& GetPostalCodeMessageIds() {
-  static const NameMessageIdMap kPostalCodeMessageIds(
-      InitPostalCodeMessageIds());
-  return kPostalCodeMessageIds;
+int GetAdminAreaMessageId(const std::string& admin_area_type) {
+  if (admin_area_type == "area") {
+    return IDS_LIBADDRESSINPUT_I18N_AREA;
+  }
+  if (admin_area_type == "county") {
+    return IDS_LIBADDRESSINPUT_I18N_COUNTY_LABEL;
+  }
+  if (admin_area_type == "department") {
+    return IDS_LIBADDRESSINPUT_I18N_DEPARTMENT;
+  }
+  if (admin_area_type == "district") {
+    return IDS_LIBADDRESSINPUT_I18N_DEPENDENT_LOCALITY_LABEL;
+  }
+  if (admin_area_type == "do_si") {
+    return IDS_LIBADDRESSINPUT_I18N_DO_SI;
+  }
+  if (admin_area_type == "emirate") {
+    return IDS_LIBADDRESSINPUT_I18N_EMIRATE;
+  }
+  if (admin_area_type == "island") {
+    return IDS_LIBADDRESSINPUT_I18N_ISLAND;
+  }
+  if (admin_area_type == "parish") {
+    return IDS_LIBADDRESSINPUT_I18N_PARISH;
+  }
+  if (admin_area_type == "prefecture") {
+    return IDS_LIBADDRESSINPUT_I18N_PREFECTURE;
+  }
+  if (admin_area_type == "province") {
+    return IDS_LIBADDRESSINPUT_I18N_PROVINCE;
+  }
+  if (admin_area_type == "state") {
+    return IDS_LIBADDRESSINPUT_I18N_STATE_LABEL;
+  }
+  return INVALID_MESSAGE_ID;
 }
 
-int GetMessageIdFromName(const std::string& name,
-                         const NameMessageIdMap& message_ids) {
-  NameMessageIdMap::const_iterator it = message_ids.find(name);
-  return it != message_ids.end() ? it->second : INVALID_MESSAGE_ID;
+int GetPostalCodeMessageId(const std::string& postal_code_type) {
+  if (postal_code_type == "postal") {
+    return IDS_LIBADDRESSINPUT_I18N_POSTAL_CODE_LABEL;
+  }
+  if (postal_code_type == "zip") {
+    return IDS_LIBADDRESSINPUT_I18N_ZIP_CODE_LABEL;
+  }
+  return INVALID_MESSAGE_ID;
 }
 
 }  // namespace
 
 Rule::Rule()
     : format_(),
+      required_(),
       sub_keys_(),
       languages_(),
       language_(),
+      postal_code_format_(),
       admin_area_name_message_id_(INVALID_MESSAGE_ID),
       postal_code_name_message_id_(INVALID_MESSAGE_ID) {}
 
@@ -112,9 +173,11 @@ Rule::~Rule() {}
 
 void Rule::CopyFrom(const Rule& rule) {
   format_ = rule.format_;
+  required_ = rule.required_;
   sub_keys_ = rule.sub_keys_;
   languages_ = rule.languages_;
   language_ = rule.language_;
+  postal_code_format_ = rule.postal_code_format_;
   admin_area_name_message_id_ = rule.admin_area_name_message_id_;
   postal_code_name_message_id_ = rule.postal_code_name_message_id_;
 }
@@ -125,34 +188,40 @@ bool Rule::ParseSerializedRule(const std::string& serialized_rule) {
     return false;
   }
 
-  std::string format;
-  if (json->GetStringValueForKey(kFormatKey, &format)) {
-    ParseAddressFieldsFormat(format, &format_);
+  std::string value;
+  if (json->GetStringValueForKey("fmt", &value)) {
+    ParseAddressFieldsFormat(value, &format_);
   }
 
-  std::string subkeys;
-  if (json->GetStringValueForKey(kSubKeysKey, &subkeys)) {
-    SplitString(subkeys, kSeparator, &sub_keys_);
+  if (json->GetStringValueForKey("require", &value)) {
+    ParseAddressFieldsRequired(value, &required_);
   }
 
-  std::string languages;
-  if (json->GetStringValueForKey(kLanguagesKey, &languages)) {
-    SplitString(languages, kSeparator, &languages_);
+  // Used as a separator in a list of items. For example, the list of supported
+  // languages can be "de~fr~it".
+  static const char kSeparator = '~';
+  if (json->GetStringValueForKey("sub_keys", &value)) {
+    SplitString(value, kSeparator, &sub_keys_);
   }
 
-  json->GetStringValueForKey(kLanguageKey, &language_);
-
-  std::string area_name_type;
-  if (json->GetStringValueForKey(kAdminAreaNameTypeKey, &area_name_type)) {
-    admin_area_name_message_id_ =
-        GetMessageIdFromName(area_name_type, GetAdminAreaMessageIds());
+  if (json->GetStringValueForKey("languages", &value)) {
+    SplitString(value, kSeparator, &languages_);
   }
 
-  std::string postal_code_name_type;
-  if (json->GetStringValueForKey(kPostalCodeNameTypeKey,
-                                 &postal_code_name_type)) {
-    postal_code_name_message_id_ =
-        GetMessageIdFromName(postal_code_name_type, GetPostalCodeMessageIds());
+  if (json->GetStringValueForKey("lang", &value)) {
+    language_ = value;
+  }
+
+  if (json->GetStringValueForKey("zip", &value)) {
+    postal_code_format_ = value;
+  }
+
+  if (json->GetStringValueForKey("state_name_type", &value)) {
+    admin_area_name_message_id_ = GetAdminAreaMessageId(value);
+  }
+
+  if (json->GetStringValueForKey("zip_name_type", &value)) {
+    postal_code_name_message_id_ = GetPostalCodeMessageId(value);
   }
 
   return true;

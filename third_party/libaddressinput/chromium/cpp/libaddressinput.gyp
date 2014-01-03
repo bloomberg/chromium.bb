@@ -32,7 +32,6 @@
       'type': '<(component)',
       'sources': [
         'src/address_field.cc',
-        'src/address_field_util.cc',
         'src/address_problem.cc',
         'src/address_ui.cc',
         'src/address_validator.cc',
@@ -60,7 +59,6 @@
       'target_name': 'unit_tests',
       'type': 'executable',
       'sources': [
-        'test/address_field_util_test.cc',
         'test/address_ui_test.cc',
         'test/fake_downloader.cc',
         'test/fake_downloader_test.cc',

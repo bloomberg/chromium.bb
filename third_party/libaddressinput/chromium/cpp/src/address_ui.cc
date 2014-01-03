@@ -21,7 +21,6 @@
 #include <string>
 #include <vector>
 
-#include "address_field_util.h"
 #include "grit.h"
 #include "messages.h"
 #include "region_data_constants.h"
@@ -77,11 +76,6 @@ int GetMessageIdForField(AddressField field,
   }
 }
 
-bool IsNewline(AddressField field) {
-  // NEWLINE is an extension for AddressField enum that's used only internally.
-  return field == static_cast<AddressField>(NEWLINE);
-}
-
 }  // namespace
 
 const std::vector<std::string>& GetRegionCodes() {
@@ -100,28 +94,22 @@ std::vector<AddressUiComponent> BuildComponents(
     return result;
   }
 
-  bool previous_field_is_newline = true;
-  bool next_field_is_newline = true;
-  for (std::vector<AddressField>::const_iterator field_it =
-       rule.GetFormat().begin();
-       field_it != rule.GetFormat().end(); ++field_it) {
-    if (IsNewline(*field_it)) {
-      previous_field_is_newline = true;
-      continue;
+  for (std::vector<std::vector<AddressField> >::const_iterator
+       line_it = rule.GetFormat().begin();
+       line_it != rule.GetFormat().end();
+       ++line_it) {
+    for (std::vector<AddressField>::const_iterator field_it = line_it->begin();
+         field_it != line_it->end(); ++field_it) {
+      AddressUiComponent component;
+      component.length_hint =
+          line_it->size() == 1 ? AddressUiComponent::HINT_LONG
+                               : AddressUiComponent::HINT_SHORT;
+      component.field = *field_it;
+      component.name = localization.GetString(
+          GetMessageIdForField(*field_it, rule.GetAdminAreaNameMessageId(),
+                              rule.GetPostalCodeNameMessageId()));
+      result.push_back(component);
     }
-    AddressUiComponent component;
-    std::vector<AddressField>::const_iterator next_field_it = field_it + 1;
-    next_field_is_newline =
-        next_field_it == rule.GetFormat().end() || IsNewline(*next_field_it);
-    component.length_hint = previous_field_is_newline && next_field_is_newline
-                                ? AddressUiComponent::HINT_LONG
-                                : AddressUiComponent::HINT_SHORT;
-    previous_field_is_newline = false;
-    component.field = *field_it;
-    component.name = localization.GetString(
-        GetMessageIdForField(*field_it, rule.GetAdminAreaNameMessageId(),
-                             rule.GetPostalCodeNameMessageId()));
-    result.push_back(component);
   }
 
   return result;

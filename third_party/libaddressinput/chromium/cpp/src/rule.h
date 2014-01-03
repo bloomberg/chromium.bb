@@ -43,9 +43,13 @@ class Rule {
   // format (JSON dictionary).
   bool ParseSerializedRule(const std::string& serialized_rule);
 
-  // Returns the address format for this rule. The format can include the
-  // NEWLINE extension for AddressField enum.
-  const std::vector<AddressField>& GetFormat() const { return format_; }
+  // Returns the address format for this rule.
+  const std::vector<std::vector<AddressField> >& GetFormat() const {
+    return format_;
+  }
+
+  // Returns the required fields for this rule.
+  const std::vector<AddressField>& GetRequired() const { return required_; }
 
   // Returns the sub-keys for this rule, which are the administrative areas of a
   // country, the localities of an administrative area, or the dependent
@@ -60,6 +64,9 @@ class Rule {
   // Returns the language code of this rule, for example "de".
   const std::string& GetLanguage() const { return language_; }
 
+  // Returns the postal code format, for example "\\d{5}([ \\-]\\d{4})?".
+  const std::string& GetPostalCodeFormat() const { return postal_code_format_; }
+
   // The message string identifier for admin area name. If not set, then
   // INVALID_MESSAGE_ID.
   int GetAdminAreaNameMessageId() const { return admin_area_name_message_id_; }
@@ -71,10 +78,12 @@ class Rule {
   }
 
  private:
-  std::vector<AddressField> format_;
+  std::vector<std::vector<AddressField> > format_;
+  std::vector<AddressField> required_;
   std::vector<std::string> sub_keys_;
   std::vector<std::string> languages_;
   std::string language_;
+  std::string postal_code_format_;
   int admin_area_name_message_id_;
   int postal_code_name_message_id_;
 

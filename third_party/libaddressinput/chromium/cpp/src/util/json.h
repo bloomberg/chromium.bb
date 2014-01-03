@@ -24,9 +24,10 @@ namespace addressinput {
 
 // Parses a JSON dictionary of strings. Sample usage:
 //    scoped_ptr<Json> json(Json::Build());
+//    std::string value;
 //    if (json->ParseObject("{'key1':'value1', 'key2':'value2'}") &&
-//        json->HasStringKey("key1")) {
-//      Process(json->GetStringValueForKey("key1"));
+//        json->GetStringValueForKey("key1", &value)) {
+//      Process(value);
 //    }
 class Json {
  public:
