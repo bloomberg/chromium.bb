@@ -500,6 +500,7 @@ int LaunchUnitTestsInternal(int argc,
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(kGTestListTestsFlag) ||
       CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
       force_single_process) {
     return run_test_suite.Run();

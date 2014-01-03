@@ -552,13 +552,6 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
 bool TestLauncher::Init() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  if (command_line->HasSwitch(kGTestListTestsFlag)) {
-    // Child gtest processes would list tests instead of running tests.
-    // TODO(phajdan.jr): Restore support for the flag.
-    LOG(ERROR) << kGTestListTestsFlag << " is not supported.";
-    return false;
-  }
-
   // Initialize sharding. Command line takes precedence over legacy environment
   // variables.
   if (command_line->HasSwitch(switches::kTestLauncherTotalShards) &&
