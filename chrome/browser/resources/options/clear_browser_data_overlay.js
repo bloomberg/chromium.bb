@@ -198,7 +198,9 @@ cr.define('options', function() {
   };
 
   ClearBrowserDataOverlay.dismiss = function() {
-    OptionsPage.closeOverlay();
+    var topmostVisiblePage = OptionsPage.getTopmostVisiblePage();
+    if (topmostVisiblePage && topmostVisiblePage.name == 'clearBrowserData')
+      OptionsPage.closeOverlay();
     this.setClearingState(false);
   };
 
