@@ -1,21 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef BASE_BASICTYPES_H_
 #define BASE_BASICTYPES_H_
 
-#include <limits.h>         // So we can set the bounds of our types
-#include <stddef.h>         // For size_t
-#include <string.h>         // for memcpy
+#include <limits.h>  // So we can set the bounds of our types.
+#include <stddef.h>  // For size_t.
+#include <stdint.h>  // For intptr_t.
+#include <string.h>  // For memcpy.
 
 #include "base/compiler_specific.h"
-#include "base/port.h"    // Types that only need exist on certain systems
-
-#ifndef COMPILER_MSVC
-// stdint.h is part of C99 but MSVC doesn't have it.
-#include <stdint.h>         // For intptr_t.
-#endif
+#include "base/port.h"  // Types that only need exist on certain systems.
 
 typedef signed char         schar;
 typedef signed char         int8;
