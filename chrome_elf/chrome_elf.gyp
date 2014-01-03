@@ -45,7 +45,6 @@
       'type': 'executable',
       'sources': [
         'blacklist/test/blacklist_test.cc',
-        'elf_imports_unittest.cc',
         'ntdll_cache_unittest.cc',
       ],
       'include_dirs': [
