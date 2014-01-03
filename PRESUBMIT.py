@@ -1273,7 +1273,7 @@ def GetDefaultTryConfigs(bots=None):
       'linux_clang': ['compile'],
       'linux_rel': standard_tests + [
           'cc_unittests',
-          'chromedriver2_unittests',
+          'chromedriver_unittests',
           'components_unittests',
           'google_apis_unittests',
           'nacl_integration',
@@ -1285,7 +1285,7 @@ def GetDefaultTryConfigs(bots=None):
       'mac_rel': standard_tests + [
           'app_list_unittests',
           'cc_unittests',
-          'chromedriver2_unittests',
+          'chromedriver_unittests',
           'components_unittests',
           'google_apis_unittests',
           'message_center_unittests',
@@ -1301,7 +1301,7 @@ def GetDefaultTryConfigs(bots=None):
           'aura_unittests',
           'cc_unittests',
           'chrome_elf_unittests',
-          'chromedriver2_unittests',
+          'chromedriver_unittests',
           'components_unittests',
           'compositor_unittests',
           'events_unittests',
