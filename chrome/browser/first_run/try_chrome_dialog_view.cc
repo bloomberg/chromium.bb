@@ -176,8 +176,8 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     return DIALOG_ERROR;
   }
   views::Label* label = new views::Label(
-      l10n_util::GetStringUTF16(experiment.heading));
-  label->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+      l10n_util::GetStringUTF16(experiment.heading),
+      rb.GetFontList(ui::ResourceBundle::MediumFont));
   label->SetMultiLine(true);
   label->SizeToFit(200);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
