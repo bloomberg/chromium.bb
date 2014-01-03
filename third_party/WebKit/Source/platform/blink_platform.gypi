@@ -790,6 +790,8 @@
       'text/BidiContext.h',
       'text/BidiResolver.h',
       'text/BidiRunList.h',
+      'text/BidiTextRun.cpp',
+      'text/BidiTextRun.h',
       'text/DateTimeFormat.cpp',
       'text/DateTimeFormat.h',
       'text/DecodeEscapeSequences.h',

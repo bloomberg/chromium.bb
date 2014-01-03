@@ -54,6 +54,7 @@
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderWordBreak.h"
 #include "platform/text/BidiResolver.h"
+#include "platform/text/BidiTextRun.h"
 #include "platform/text/TextRunIterator.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
@@ -729,15 +730,6 @@ TextDirection HTMLElement::directionalityIfhasDirAutoAttribute(bool& isAuto) con
 
     isAuto = true;
     return directionality();
-}
-
-static TextDirection determineDirectionality(const String& value, bool& hasStrongDirectionality)
-{
-    TextRun run(value);
-    BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
-    bidiResolver.setStatus(BidiStatus(run.direction(), run.directionalOverride()));
-    bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&run, 0));
-    return bidiResolver.determineParagraphDirectionality(&hasStrongDirectionality);
 }
 
 TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) const

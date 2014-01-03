@@ -39,6 +39,7 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
+#include "platform/text/BidiTextRun.h"
 #include "platform/text/StringTruncator.h"
 #include "platform/text/TextRun.h"
 #include "platform/transforms/AffineTransform.h"
@@ -186,9 +187,15 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     if (clipLabelString)
         label = StringTruncator::rightTruncate(label, imageSize.width() - (kDragLabelBorderX * 2.0f), labelFont, StringTruncator::EnableRoundingHacks);
 
+    bool hasStrongDirectionality;
+    TextRun textRun = textRunWithDirectionality(label, hasStrongDirectionality);
     IntPoint textPos(kDragLabelBorderX, kDragLabelBorderY + labelFont.pixelSize());
-    TextRun textRun(label);
-    buffer->context()->drawText(urlFont, TextRunPaintInfo(textRun), textPos);
+    if (hasStrongDirectionality && textRun.direction() == RTL) {
+        float textWidth = urlFont.width(textRun);
+        int availableWidth = imageSize.width() - kDragLabelBorderX * 2;
+        textPos.setX(availableWidth - ceilf(textWidth));
+    }
+    buffer->context()->drawBidiText(urlFont, TextRunPaintInfo(textRun), textPos);
 
     RefPtr<Image> image = buffer->copyImage();
     return DragImage::create(image.get());
