@@ -54,8 +54,6 @@ const int kDisclosureArrowButtonRightPadding = 12;
 // Define the id of the first item in the menu (since it needs to be > 0)
 const int kFirstMenuItemId = 1000;
 
-const SkColor kInvalidTextColor = SK_ColorWHITE;
-
 // Used to indicate that no item is currently selected by the user.
 const int kNoSelection = -1;
 
@@ -81,24 +79,6 @@ const int kFocusedPressedMenuButtonImages[] =
     MENU_IMAGE_GRID(IDR_COMBOBOX_BUTTON_F_P);
 
 #undef MENU_IMAGE_GRID
-
-// The background to use for invalid comboboxes.
-class InvalidBackground : public Background {
- public:
-  InvalidBackground() {}
-  virtual ~InvalidBackground() {}
-
-  // Overridden from Background:
-  virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
-    gfx::Rect bounds(view->GetLocalBounds());
-    // Inset by 2 to leave 1 empty pixel between background and border.
-    bounds.Inset(2, 2, 2, 2);
-    canvas->FillRect(bounds, kWarningColor);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(InvalidBackground);
-};
 
 // The transparent button which holds a button state but is not rendered.
 class TransparentButton : public CustomButton {
@@ -332,7 +312,6 @@ void Combobox::SetInvalid(bool invalid) {
 
   invalid_ = invalid;
 
-  set_background(invalid_ ? new InvalidBackground() : NULL);
   UpdateBorder();
   SchedulePaint();
 }
@@ -635,9 +614,8 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
   int x = insets.left();
   int y = insets.top();
   int text_height = height() - insets.height();
-  SkColor text_color = invalid() ? kInvalidTextColor :
-      GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelEnabledColor);
+  SkColor text_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor);
 
   DCHECK_GE(selected_index_, 0);
   DCHECK_LT(selected_index_, model()->GetItemCount());
@@ -664,12 +642,7 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
                          disclosure_arrow_->height());
   AdjustBoundsForRTLUI(&arrow_bounds);
 
-  SkPaint paint;
-  // This makes the arrow subtractive.
-  if (invalid())
-    paint.setXfermodeMode(SkXfermode::kDstOut_Mode);
-  canvas->DrawImageInt(*disclosure_arrow_, arrow_bounds.x(), arrow_bounds.y(),
-                       paint);
+  canvas->DrawImageInt(*disclosure_arrow_, arrow_bounds.x(), arrow_bounds.y());
 }
 
 void Combobox::PaintButtons(gfx::Canvas* canvas) {
