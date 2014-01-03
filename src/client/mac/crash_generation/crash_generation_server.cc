@@ -33,6 +33,8 @@
 #include "client/mac/handler/minidump_generator.h"
 #include "common/mac/scoped_task_suspend-inl.h"
 
+#include <pthread.h>
+
 namespace google_breakpad {
 
 CrashGenerationServer::CrashGenerationServer(
