@@ -18,6 +18,8 @@
 namespace mojo {
 namespace shell {
 
+class DynamicServiceLoader;
+
 class Context {
  public:
   Context();
@@ -26,7 +28,7 @@ class Context {
   TaskRunners* task_runners() { return &task_runners_; }
   Storage* storage() { return &storage_; }
   Loader* loader() { return &loader_; }
-  ServiceManager* service_manager() { return service_manager_.get(); }
+  ServiceManager* service_manager() { return &service_manager_; }
 
 #if defined(OS_ANDROID)
   jobject activity() const { return activity_.obj(); }
@@ -37,8 +39,9 @@ class Context {
   TaskRunners task_runners_;
   Storage storage_;
   Loader loader_;
+  ServiceManager service_manager_;
   common::BindingsSupportImpl bindings_support_impl_;
-  scoped_ptr<ServiceManager> service_manager_;
+  scoped_ptr<DynamicServiceLoader> dynamic_service_loader_;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> activity_;

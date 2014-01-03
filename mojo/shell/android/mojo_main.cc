@@ -40,7 +40,6 @@ class NativeViewportServiceLoader : public shell::ServiceManager::Loader {
 
  private:
   virtual void Load(const GURL& url,
-                    shell::ServiceManager* manager,
                     ScopedMessagePipeHandle service_handle)
       MOJO_OVERRIDE {
     service_.reset(CreateNativeViewportService(service_handle.Pass()));

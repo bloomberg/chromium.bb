@@ -4,6 +4,7 @@
 
 #include "mojo/shell/context.h"
 
+#include "mojo/shell/dynamic_service_loader.h"
 #include "mojo/shell/network_delegate.h"
 #include "mojo/system/core_impl.h"
 
@@ -20,10 +21,12 @@ Context::Context()
               storage_.profile_path()) {
   system::CoreImpl::Init();
   BindingsSupport::Set(&bindings_support_impl_);
-  service_manager_.reset(new ServiceManager(this));
+  dynamic_service_loader_.reset(new DynamicServiceLoader(this));
+  service_manager_.set_default_loader(dynamic_service_loader_.get());
 }
 
 Context::~Context() {
+  service_manager_.set_default_loader(NULL);
   BindingsSupport::Set(NULL);
 }
 
