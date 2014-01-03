@@ -91,8 +91,8 @@ TEST_F(AnimationElementAnimationTest, CanStartAnAnimation)
     v8::Context::Scope contextScope(context);
 
     Vector<Dictionary> jsKeyframes;
-    v8::Handle<v8::Object> keyframe1 = v8::Object::New();
-    v8::Handle<v8::Object> keyframe2 = v8::Object::New();
+    v8::Handle<v8::Object> keyframe1 = v8::Object::New(isolate);
+    v8::Handle<v8::Object> keyframe2 = v8::Object::New(isolate);
 
     setV8ObjectProperty(keyframe1, "width", "100px");
     setV8ObjectProperty(keyframe1, "offset", "0");
