@@ -745,7 +745,6 @@
    fun:timeout_correct
    fun:event_base_loop
    fun:base::MessagePumpLibevent::Run
-   fun:base::MessageLoop::RunInternal
    fun:base::MessageLoop::RunHandler
 }
 {
