@@ -432,15 +432,14 @@ void BrowserPlugin::OnAttachACK(
 }
 
 void BrowserPlugin::OnBuffersSwapped(
-    int guest_instance_id,
-    const BrowserPluginMsg_BuffersSwapped_Params& params) {
-  DCHECK(guest_instance_id == guest_instance_id_);
+    int instance_id,
+    const FrameMsg_BuffersSwapped_Params& params) {
   EnableCompositing(true);
 
   compositing_helper_->OnBuffersSwapped(params.size,
                                         params.mailbox_name,
-                                        params.route_id,
-                                        params.host_id,
+                                        params.gpu_route_id,
+                                        params.gpu_host_id,
                                         GetDeviceScaleFactor());
 }
 
@@ -449,13 +448,13 @@ void BrowserPlugin::OnCompositorFrameSwapped(const IPC::Message& message) {
   if (!BrowserPluginMsg_CompositorFrameSwapped::Read(&message, &param))
     return;
   scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  param.b.AssignTo(frame.get());
+  param.b.frame.AssignTo(frame.get());
 
   EnableCompositing(true);
   compositing_helper_->OnCompositorFrameSwapped(frame.Pass(),
-                                                param.c /* route_id */,
-                                                param.d /* output_surface_id */,
-                                                param.e /* host_id */);
+                                                param.b.producing_route_id,
+                                                param.b.output_surface_id,
+                                                param.b.producing_host_id);
 }
 
 void BrowserPlugin::OnCopyFromCompositingSurface(int guest_instance_id,

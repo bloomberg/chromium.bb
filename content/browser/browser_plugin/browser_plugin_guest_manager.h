@@ -17,6 +17,7 @@
 
 struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
+struct FrameHostMsg_BuffersSwappedACK_Params;
 class GURL;
 
 namespace gfx {
@@ -117,11 +118,9 @@ class CONTENT_EXPORT BrowserPluginGuestManager :
   SiteInstance* GetGuestSiteInstance(const GURL& guest_site);
 
   // Message handlers.
-  void OnUnhandledSwapBuffersACK(int instance_id,
-                                 int route_id,
-                                 int gpu_host_id,
-                                 const std::string& mailbox_name,
-                                 uint32 sync_point);
+  void OnUnhandledSwapBuffersACK(
+      int instance_id,
+      const FrameHostMsg_BuffersSwappedACK_Params& params);
 
   // Static factory instance (always NULL outside of tests).
   static BrowserPluginHostFactory* factory_;

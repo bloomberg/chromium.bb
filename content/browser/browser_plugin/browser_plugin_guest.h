@@ -45,6 +45,8 @@
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_Attach_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
+struct FrameHostMsg_BuffersSwappedACK_Params;
+struct FrameHostMsg_CompositorFrameSwappedACK_Params;
 struct ViewHostMsg_CreateWindow_Params;
 #if defined(OS_MACOSX)
 struct ViewHostMsg_ShowPopup_Params;
@@ -382,11 +384,9 @@ class CONTENT_EXPORT BrowserPluginGuest
 
   // Message handlers for messages from embedder.
 
-  void OnCompositorFrameACK(int instance_id,
-                            int route_id,
-                            uint32 output_surface_id,
-                            int renderer_host_id,
-                            const cc::CompositorFrameAck& ack);
+  void OnCompositorFrameSwappedACK(
+      int instance_id,
+      const FrameHostMsg_CompositorFrameSwappedACK_Params& params);
   void OnCopyFromCompositingSurfaceAck(int instance_id,
                                        int request_id,
                                        const SkBitmap& bitmap);
@@ -457,10 +457,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnSetVisibility(int instance_id, bool visible);
   // Message from embedder acknowledging last HW buffer.
   void OnSwapBuffersACK(int instance_id,
-                        int route_id,
-                        int gpu_host_id,
-                        const std::string& mailbox_name,
-                        uint32 sync_point);
+                        const FrameHostMsg_BuffersSwappedACK_Params& params);
   void OnUnlockMouse();
   void OnUnlockMouseAck(int instance_id);
   void OnUpdateGeometry(int instance_id, const gfx::Rect& view_rect);

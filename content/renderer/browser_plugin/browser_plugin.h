@@ -25,8 +25,8 @@
 struct BrowserPluginHostMsg_AutoSize_Params;
 struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct BrowserPluginMsg_Attach_ACK_Params;
-struct BrowserPluginMsg_BuffersSwapped_Params;
 struct BrowserPluginMsg_UpdateRect_Params;
+struct FrameMsg_BuffersSwapped_Params;
 
 namespace content {
 
@@ -296,7 +296,7 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnAttachACK(int instance_id,
                    const BrowserPluginMsg_Attach_ACK_Params& ack_params);
   void OnBuffersSwapped(int instance_id,
-                        const BrowserPluginMsg_BuffersSwapped_Params& params);
+                        const FrameMsg_BuffersSwapped_Params& params);
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnCopyFromCompositingSurface(int instance_id,
                                     int request_id,

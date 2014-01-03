@@ -6,13 +6,40 @@
 // Multiply-included message file, hence no include guard.
 
 #include "content/common/content_export.h"
+#include "content/common/frame_param.h"
 #include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
+#include "url/gurl.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START FrameMsgStart
+
+// -----------------------------------------------------------------------------
+// Messages sent from the browser to the renderer.
+
+// When HW accelerated buffers are swapped in an out-of-process child frame
+// renderer, the message is forwarded to the embedding frame to notify it of
+// a new texture available for compositing. When the buffer has finished
+// presenting, a FrameHostMsg_BuffersSwappedACK should be sent back to
+// gpu host that produced this buffer.
+//
+// This is used in the non-ubercomp HW accelerated compositing path.
+IPC_MESSAGE_ROUTED1(FrameMsg_BuffersSwapped,
+                    FrameMsg_BuffersSwapped_Params /* params */)
+
+// Notifies the embedding frame that a new CompositorFrame is ready to be
+// presented. When the frame finishes presenting, a matching
+// FrameHostMsg_CompositorFrameSwappedACK should be sent back to the
+// RenderViewHost that was produced the CompositorFrame.
+//
+// This is used in the ubercomp compositing path.
+IPC_MESSAGE_ROUTED1(FrameMsg_CompositorFrameSwapped,
+                    FrameMsg_CompositorFrameSwapped_Params /* params */)
+
+// -----------------------------------------------------------------------------
+// Messages sent from the renderer to the browser.
 
 // Sent by the renderer when a child frame is created in the renderer. The
 // |parent_frame_id| and |frame_id| are NOT routing ids. They are
@@ -85,3 +112,18 @@ IPC_SYNC_MESSAGE_CONTROL4_2(FrameHostMsg_OpenChannelToPlugin,
                             std::string /* mime_type */,
                             IPC::ChannelHandle /* channel_handle */,
                             content::WebPluginInfo /* info */)
+
+// Acknowledge that we presented a HW buffer and provide a sync point
+// to specify the location in the command stream when the compositor
+// is no longer using it.
+//
+// See FrameMsg_BuffersSwapped.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_BuffersSwappedACK,
+                    FrameHostMsg_BuffersSwappedACK_Params /* params */)
+
+// Acknowledge that we presented an ubercomp frame.
+//
+// See FrameMsg_CompositorFrameSwapped
+IPC_MESSAGE_ROUTED1(FrameHostMsg_CompositorFrameSwappedACK,
+                    FrameHostMsg_CompositorFrameSwappedACK_Params /* params */)
+

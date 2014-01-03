@@ -14,6 +14,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/render_thread_impl.h"
@@ -73,37 +74,38 @@ void BrowserPluginCompositingHelper::CopyFromCompositingSurface(
 
 void BrowserPluginCompositingHelper::DidCommitCompositorFrame() {
   if (software_ack_pending_) {
-    cc::CompositorFrameAck ack;
+    FrameHostMsg_CompositorFrameSwappedACK_Params params;
+    params.producing_host_id = last_host_id_;
+    params.producing_route_id = last_route_id_;
+    params.output_surface_id = last_output_surface_id_;
     if (!unacked_software_frames_.empty()) {
-      ack.last_software_frame_id = unacked_software_frames_.back();
+      params.ack.last_software_frame_id = unacked_software_frames_.back();
       unacked_software_frames_.pop_back();
     }
 
     browser_plugin_manager_->Send(
-        new BrowserPluginHostMsg_CompositorFrameACK(
+        new BrowserPluginHostMsg_CompositorFrameSwappedACK(
             host_routing_id_,
             instance_id_,
-            last_route_id_,
-            last_output_surface_id_,
-            last_host_id_,
-            ack));
+            params));
 
     software_ack_pending_ = false;
   }
   if (!resource_collection_.get() || !ack_pending_)
     return;
 
-  cc::CompositorFrameAck ack;
-  resource_collection_->TakeUnusedResourcesForChildCompositor(&ack.resources);
+  FrameHostMsg_CompositorFrameSwappedACK_Params params;
+  params.producing_host_id = last_host_id_;
+  params.producing_route_id = last_route_id_;
+  params.output_surface_id = last_output_surface_id_;
+  resource_collection_->TakeUnusedResourcesForChildCompositor(
+      &params.ack.resources);
 
   browser_plugin_manager_->Send(
-      new BrowserPluginHostMsg_CompositorFrameACK(
+      new BrowserPluginHostMsg_CompositorFrameSwappedACK(
           host_routing_id_,
           instance_id_,
-          last_route_id_,
-          last_output_surface_id_,
-          last_host_id_,
-          ack));
+          params));
 
   ack_pending_ = false;
 }
@@ -173,31 +175,33 @@ void BrowserPluginCompositingHelper::MailboxReleased(
     case TEXTURE_IMAGE_TRANSPORT: {
       std::string mailbox_name(reinterpret_cast<const char*>(mailbox.name.name),
                                sizeof(mailbox.name.name));
+      FrameHostMsg_BuffersSwappedACK_Params params;
+      params.gpu_host_id = mailbox.host_id;
+      params.gpu_route_id = mailbox.route_id;
+      params.mailbox_name = mailbox_name;
+      params.sync_point = sync_point;
       browser_plugin_manager_->Send(
           new BrowserPluginHostMsg_BuffersSwappedACK(
               host_routing_id_,
               instance_id_,
-              mailbox.route_id,
-              mailbox.host_id,
-              mailbox_name,
-              sync_point));
+              params));
       break;
     }
     case GL_COMPOSITOR_FRAME: {
-      cc::CompositorFrameAck ack;
-      ack.gl_frame_data.reset(new cc::GLFrameData());
-      ack.gl_frame_data->mailbox = mailbox.name;
-      ack.gl_frame_data->size = mailbox.size;
-      ack.gl_frame_data->sync_point = sync_point;
+      FrameHostMsg_CompositorFrameSwappedACK_Params params;
+      params.producing_host_id = mailbox.host_id;
+      params.producing_route_id = mailbox.route_id;
+      params.output_surface_id = mailbox.output_surface_id;
+      params.ack.gl_frame_data.reset(new cc::GLFrameData());
+      params.ack.gl_frame_data->mailbox = mailbox.name;
+      params.ack.gl_frame_data->size = mailbox.size;
+      params.ack.gl_frame_data->sync_point = sync_point;
 
       browser_plugin_manager_->Send(
-         new BrowserPluginHostMsg_CompositorFrameACK(
+         new BrowserPluginHostMsg_CompositorFrameSwappedACK(
              host_routing_id_,
              instance_id_,
-             mailbox.route_id,
-             mailbox.output_surface_id,
-             mailbox.host_id,
-             ack));
+             params));
       break;
     }
     case SOFTWARE_COMPOSITOR_FRAME:

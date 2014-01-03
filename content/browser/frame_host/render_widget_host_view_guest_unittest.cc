@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/render_widget_host_view_guest.h"
+#include "content/browser/frame_host/render_widget_host_view_guest.h"
 
 #include "base/basictypes.h"
 #include "base/message_loop/message_loop.h"

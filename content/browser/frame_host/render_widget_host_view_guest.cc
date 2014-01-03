@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,9 +7,10 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
+#include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_view_guest.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/view_messages.h"
 #include "content/common/webplugin_geometry.h"
@@ -51,24 +52,19 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHost* widget_host,
     BrowserPluginGuest* guest,
     RenderWidgetHostView* platform_view)
-    : host_(RenderWidgetHostImpl::From(widget_host)),
+    : RenderWidgetHostViewChildFrame(widget_host),
       guest_(guest),
       platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
 #if defined(OS_WIN) || defined(USE_AURA)
   gesture_recognizer_.reset(ui::GestureRecognizer::Create());
   gesture_recognizer_->AddGestureEventHelper(this);
 #endif  // defined(OS_WIN) || defined(USE_AURA)
-  host_->SetView(this);
 }
 
 RenderWidgetHostViewGuest::~RenderWidgetHostViewGuest() {
 #if defined(OS_WIN) || defined(USE_AURA)
   gesture_recognizer_->RemoveGestureEventHelper(this);
 #endif  // defined(OS_WIN) || defined(USE_AURA)
-}
-
-RenderWidgetHost* RenderWidgetHostViewGuest::GetRenderWidgetHost() const {
-  return host_;
 }
 
 void RenderWidgetHostViewGuest::WasShown() {
@@ -96,13 +92,8 @@ void RenderWidgetHostViewGuest::SetSize(const gfx::Size& size) {
   host_->WasResized();
 }
 
-gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
-  // We do not have any root window specific parts in this view.
-  return GetViewBounds();
-}
-
-gfx::GLSurfaceHandle RenderWidgetHostViewGuest::GetCompositingSurface() {
-  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
+void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
+  SetSize(rect.size());
 }
 
 #if defined(OS_WIN) || defined(USE_AURA)
@@ -128,18 +119,6 @@ void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
   }
 }
 #endif
-
-void RenderWidgetHostViewGuest::Show() {
-  WasShown();
-}
-
-void RenderWidgetHostViewGuest::Hide() {
-  WasHidden();
-}
-
-bool RenderWidgetHostViewGuest::IsShowing() {
-  return !host_->is_hidden();
-}
 
 gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
   RenderWidgetHostViewPort* rwhv = static_cast<RenderWidgetHostViewPort*>(
@@ -169,13 +148,13 @@ void RenderWidgetHostViewGuest::Destroy() {
   platform_view_->Destroy();
 }
 
+gfx::Size RenderWidgetHostViewGuest::GetPhysicalBackingSize() const {
+  return RenderWidgetHostViewBase::GetPhysicalBackingSize();
+}
+
 void RenderWidgetHostViewGuest::SetTooltipText(
     const base::string16& tooltip_text) {
   platform_view_->SetTooltipText(tooltip_text);
-}
-
-void RenderWidgetHostViewGuest::AcceleratedSurfaceInitialized(int host_id,
-                                                              int route_id) {
 }
 
 void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
@@ -184,13 +163,14 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
   // If accelerated surface buffers are getting swapped then we're not using
   // the software path.
   guest_->clear_damage_buffer();
-  BrowserPluginMsg_BuffersSwapped_Params guest_params;
+  FrameMsg_BuffersSwapped_Params guest_params;
   guest_params.size = params.size;
   guest_params.mailbox_name = params.mailbox_name;
-  guest_params.route_id = params.route_id;
-  guest_params.host_id = gpu_host_id;
+  guest_params.gpu_route_id = params.route_id;
+  guest_params.gpu_host_id = gpu_host_id;
   guest_->SendMessageToEmbedder(
-      new BrowserPluginMsg_BuffersSwapped(guest_->instance_id(), guest_params));
+      new BrowserPluginMsg_BuffersSwapped(guest_->instance_id(),
+                                          guest_params));
 }
 
 void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
@@ -220,17 +200,16 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   }
 
   guest_->clear_damage_buffer();
-  guest_->SendMessageToEmbedder(
-      new BrowserPluginMsg_CompositorFrameSwapped(
-          guest_->instance_id(),
-          *frame,
-          host_->GetRoutingID(),
-          output_surface_id,
-          host_->GetProcess()->GetID()));
-}
 
-void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
-  SetSize(rect.size());
+  FrameMsg_CompositorFrameSwapped_Params guest_params;
+  frame->AssignTo(&guest_params.frame);
+  guest_params.output_surface_id = output_surface_id;
+  guest_params.producing_route_id = host_->GetRoutingID();
+  guest_params.producing_host_id = host_->GetProcess()->GetID();
+
+  guest_->SendMessageToEmbedder(
+      new BrowserPluginMsg_CompositorFrameSwapped(guest_->instance_id(),
+                                                  guest_params));
 }
 
 bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
@@ -272,21 +251,6 @@ void RenderWidgetHostViewGuest::MovePluginWindows(
     const gfx::Vector2d& scroll_offset,
     const std::vector<WebPluginGeometry>& moves) {
   platform_view_->MovePluginWindows(scroll_offset, moves);
-}
-
-void RenderWidgetHostViewGuest::Focus() {
-}
-
-void RenderWidgetHostViewGuest::Blur() {
-}
-
-bool RenderWidgetHostViewGuest::HasFocus() const {
-  return false;
-}
-
-bool RenderWidgetHostViewGuest::IsSurfaceAvailableForCopy() const {
-  NOTIMPLEMENTED();
-  return false;
 }
 
 void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
@@ -367,15 +331,6 @@ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
   rwhv->SelectionBoundsChanged(guest_params);
 }
 
-void RenderWidgetHostViewGuest::ScrollOffsetChanged() {
-}
-
-BackingStore* RenderWidgetHostViewGuest::AllocBackingStore(
-    const gfx::Size& size) {
-  NOTREACHED();
-  return NULL;
-}
-
 void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
@@ -384,38 +339,9 @@ void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
   guest_->CopyFromCompositingSurface(src_subrect, dst_size, callback);
 }
 
-void RenderWidgetHostViewGuest::CopyFromCompositingSurfaceToVideoFrame(
-      const gfx::Rect& src_subrect,
-      const scoped_refptr<media::VideoFrame>& target,
-      const base::Callback<void(bool)>& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(false);
-}
-
-bool RenderWidgetHostViewGuest::CanCopyToVideoFrame() const {
-  return false;
-}
-
-void RenderWidgetHostViewGuest::AcceleratedSurfaceSuspend() {
-  NOTREACHED();
-}
-
-void RenderWidgetHostViewGuest::AcceleratedSurfaceRelease() {
-}
-
-bool RenderWidgetHostViewGuest::HasAcceleratedSurface(
-      const gfx::Size& desired_size) {
-  return false;
-}
-
 void RenderWidgetHostViewGuest::SetBackground(const SkBitmap& background) {
   platform_view_->SetBackground(background);
 }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-void RenderWidgetHostViewGuest::SetClickthroughRegion(SkRegion* region) {
-}
-#endif
 
 void RenderWidgetHostViewGuest::SetHasHorizontalScrollbar(
     bool has_horizontal_scrollbar) {
@@ -426,9 +352,6 @@ void RenderWidgetHostViewGuest::SetScrollOffsetPinning(
     bool is_pinned_to_left, bool is_pinned_to_right) {
   platform_view_->SetScrollOffsetPinning(
       is_pinned_to_left, is_pinned_to_right);
-}
-
-void RenderWidgetHostViewGuest::OnAcceleratedCompositingStateChange() {
 }
 
 bool RenderWidgetHostViewGuest::LockMouse() {

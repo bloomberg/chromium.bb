@@ -1,0 +1,103 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_FRAME_HOST_CROSS_PROCESS_FRAME_CONNECTOR_H_
+#define CONTENT_BROWSER_FRAME_HOST_CROSS_PROCESS_FRAME_CONNECTOR_H_
+
+#include "cc/output/compositor_frame.h"
+#include "ui/gfx/rect.h"
+
+namespace IPC {
+class Message;
+}
+
+struct FrameHostMsg_BuffersSwappedACK_Params;
+struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
+
+namespace content {
+class RenderFrameHostImpl;
+class RenderWidgetHostImpl;
+class RenderWidgetHostViewChildFrame;
+
+// CrossProcessFrameConnector provides the platform view abstraction for
+// RenderWidgetHostViewChildFrame allowing RWHVChildFrame to remain ignorant
+// of RenderFrameHost.
+//
+// The RenderWidgetHostView of an out-of-process child frame needs to
+// communicate with the swapped out RenderFrameHost representing this frame
+// in the process of the parent frame. For example, assume you have this page:
+//
+//   -----------------
+//   | frame 1       |
+//   |  -----------  |
+//   |  | frame 2 |  |
+//   |  -----------  |
+//   -----------------
+//
+// If frames 1 and 2 are in process A and B, there are 4 RenderFrameHosts:
+//   A1 - RFH for frame 1 in process A
+//   B1 - Swapped out RFH for frame 1 in process B
+//   A2 - Swapped out RFH for frame 2 in process A
+//   B2 - RFH for frame 2 in process B
+//
+// B2, having a parent frame in a diferent process, will have a
+// RenderWidgetHostViewChildFrame. This RenderWidgetHostViewChildFrame needs
+// to communicate with A2 so that the painting logic in process A can
+// composite B2's data with A1's. CrossProcessFrameConnector bridges between
+// B2's RenderWidgetHostViewChildFrame and A2 to allow for this communication.
+// (Note: B1 is only mentioned for completeness. It is not needed in this
+// example.)
+//
+// CrossProcessFrameConnector objects are owned by the child frame's
+// RenderFrameHostManager. When a child frame swaps, SetChildFrameView() is
+// called to update to the new view.
+//
+// TODO(kenrb): Double-check this comment's accuracy.
+class CrossProcessFrameConnector {
+ public:
+  // |frame_proxy_in_parent_renderer| corresponds to A2 in the example above.
+  explicit CrossProcessFrameConnector(
+      RenderFrameHostImpl* frame_proxy_in_parent_renderer);
+  virtual ~CrossProcessFrameConnector();
+
+  bool OnMessageReceived(const IPC::Message &msg);
+
+  // |view| corresponds to B2's RenderWidgetHostViewChildFrame in the example
+  // above.
+  void SetView(RenderWidgetHostViewChildFrame* view);
+
+  // 'Platform' functionality exposed to RenderWidgetHostViewChildFrame.
+  // These methods can forward messages to the child frame proxy in the parent
+  // frame renderer or attempt to handle them within the browser process.
+  void ChildFrameBuffersSwapped(
+      const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+      int gpu_host_id);
+
+  void ChildFrameCompositorFrameSwapped(
+      uint32 output_surface_id,
+      scoped_ptr<cc::CompositorFrame> frame);
+
+  gfx::Rect ChildFrameRect();
+
+ private:
+  // Handlers for messages received from the parent frame.
+  void OnBuffersSwappedACK(
+      const FrameHostMsg_BuffersSwappedACK_Params& params);
+
+  // The RenderFrameHost that routes messages to the parent frame's renderer
+  // process.
+  // TODO(kenrb): The type becomes RenderFrameProxyHost when that class comes
+  // to exist.
+  RenderFrameHostImpl* frame_proxy_in_parent_renderer_;
+
+  // The RenderWidgetHostView for the frame. Initially NULL.
+  RenderWidgetHostViewChildFrame* view_;
+
+  gfx::Rect child_frame_rect_;
+};
+
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_FRAME_HOST_CROSS_PROCESS_FRAME_CONNECTOR_H_
+

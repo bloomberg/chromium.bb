@@ -217,14 +217,11 @@ SiteInstance* BrowserPluginGuestManager::GetGuestSiteInstance(
 // otherwise the ACK is handled by the guest.
 void BrowserPluginGuestManager::OnUnhandledSwapBuffersACK(
     int instance_id,
-    int route_id,
-    int gpu_host_id,
-    const std::string& mailbox_name,
-    uint32 sync_point) {
-  BrowserPluginGuest::AcknowledgeBufferPresent(route_id,
-                                               gpu_host_id,
-                                               mailbox_name,
-                                               sync_point);
+    const FrameHostMsg_BuffersSwappedACK_Params& params) {
+  BrowserPluginGuest::AcknowledgeBufferPresent(params.gpu_route_id,
+                                               params.gpu_host_id,
+                                               params.mailbox_name,
+                                               params.sync_point);
 }
 
 void BrowserPluginGuestManager::DidSendScreenRects(

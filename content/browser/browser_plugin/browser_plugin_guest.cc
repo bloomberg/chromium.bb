@@ -507,8 +507,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_BuffersSwappedACK,
                         OnSwapBuffersACK)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CompositorFrameACK,
-                        OnCompositorFrameACK)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CompositorFrameSwappedACK,
+                        OnCompositorFrameSwappedACK)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CopyFromCompositingSurfaceAck,
                         OnCopyFromCompositingSurfaceAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
@@ -1142,7 +1142,7 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     const IPC::Message& message) {
   switch (message.type()) {
     case BrowserPluginHostMsg_BuffersSwappedACK::ID:
-    case BrowserPluginHostMsg_CompositorFrameACK::ID:
+    case BrowserPluginHostMsg_CompositorFrameSwappedACK::ID:
     case BrowserPluginHostMsg_CopyFromCompositingSurfaceAck::ID:
     case BrowserPluginHostMsg_DragStatusUpdate::ID:
     case BrowserPluginHostMsg_ExecuteEditCommand::ID:
@@ -1256,16 +1256,13 @@ void BrowserPluginGuest::Attach(
   RecordAction(UserMetricsAction("BrowserPlugin.Guest.Attached"));
 }
 
-void BrowserPluginGuest::OnCompositorFrameACK(
+void BrowserPluginGuest::OnCompositorFrameSwappedACK(
     int instance_id,
-    int route_id,
-    uint32 output_surface_id,
-    int renderer_host_id,
-    const cc::CompositorFrameAck& ack) {
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(route_id,
-                                                   output_surface_id,
-                                                   renderer_host_id,
-                                                   ack);
+    const FrameHostMsg_CompositorFrameSwappedACK_Params& params) {
+  RenderWidgetHostImpl::SendSwapCompositorFrameAck(params.producing_route_id,
+                                                   params.output_surface_id,
+                                                   params.producing_host_id,
+                                                   params.ack);
 }
 
 void BrowserPluginGuest::OnDragStatusUpdate(int instance_id,
@@ -1575,12 +1572,11 @@ void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {
     GetWebContents()->WasHidden();
 }
 
-void BrowserPluginGuest::OnSwapBuffersACK(int instance_id,
-                                          int route_id,
-                                          int gpu_host_id,
-                                          const std::string& mailbox_name,
-                                          uint32 sync_point) {
-  AcknowledgeBufferPresent(route_id, gpu_host_id, mailbox_name, sync_point);
+void BrowserPluginGuest::OnSwapBuffersACK(
+    int instance_id,
+    const FrameHostMsg_BuffersSwappedACK_Params& params) {
+  AcknowledgeBufferPresent(params.gpu_route_id, params.gpu_host_id,
+                           params.mailbox_name, params.sync_point);
 
 // This is only relevant on MACOSX and WIN when threaded compositing
 // is not enabled. In threaded mode, above ACK is sufficient.

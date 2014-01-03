@@ -6,6 +6,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
@@ -51,6 +52,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     bool is_swapped_out)
     : render_view_host_(render_view_host),
       delegate_(delegate),
+      cross_process_frame_connector_(NULL),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
       routing_id_(routing_id),
