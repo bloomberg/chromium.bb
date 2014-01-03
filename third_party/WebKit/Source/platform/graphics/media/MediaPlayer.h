@@ -28,12 +28,14 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/GraphicsTypes3D.h"
+#include "public/platform/WebMediaPlayer.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 class WebInbandTextTrack;
 class WebLayer;
+class WebMediaSource;
 }
 
 namespace WebCore {
@@ -45,7 +47,6 @@ class IntRect;
 class IntSize;
 class KURL;
 class MediaPlayer;
-class HTMLMediaSource;
 class TimeRanges;
 
 // GL types as defined in OpenGL ES 2.0 header file gl2.h from khronos.org.
@@ -100,6 +101,8 @@ public:
 
     virtual void mediaPlayerDidAddTrack(blink::WebInbandTextTrack*) = 0;
     virtual void mediaPlayerDidRemoveTrack(blink::WebInbandTextTrack*) = 0;
+
+    virtual void mediaPlayerMediaSourceOpened(blink::WebMediaSource*) = 0;
 };
 
 typedef PassOwnPtr<MediaPlayer> (*CreateMediaEnginePlayer)(MediaPlayerClient*);
@@ -115,8 +118,7 @@ public:
     MediaPlayer() { }
     virtual ~MediaPlayer() { }
 
-    virtual void load(const String& url) = 0;
-    virtual void load(const String& url, PassRefPtr<HTMLMediaSource>) = 0;
+    virtual void load(blink::WebMediaPlayer::LoadType, const String& url) = 0;
 
     virtual void prepareToPlay() = 0;
 

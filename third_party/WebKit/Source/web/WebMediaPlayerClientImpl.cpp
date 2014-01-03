@@ -12,7 +12,6 @@
 #include "WebViewImpl.h"
 #include "core/frame/Frame.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/HTMLMediaSource.h"
 #include "core/html/TimeRanges.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
@@ -189,8 +188,7 @@ void WebMediaPlayerClientImpl::removeTextTrack(WebInbandTextTrack* textTrack)
 void WebMediaPlayerClientImpl::mediaSourceOpened(WebMediaSource* webMediaSource)
 {
     ASSERT(webMediaSource);
-    m_mediaSource->setWebMediaSourceAndOpen(adoptPtr(webMediaSource));
-    m_mediaSource = 0;
+    m_client->mediaPlayerMediaSourceOpened(webMediaSource);
 }
 
 void WebMediaPlayerClientImpl::requestFullscreen()
@@ -205,22 +203,11 @@ void WebMediaPlayerClientImpl::requestSeek(double time)
 
 // MediaPlayer -------------------------------------------------
 
-void WebMediaPlayerClientImpl::load(const String& url)
+void WebMediaPlayerClientImpl::load(WebMediaPlayer::LoadType loadType, const WTF::String& url)
 {
     m_url = KURL(ParsedURLString, url);
-    m_mediaSource = 0;
-    loadRequested();
-}
+    m_loadType = loadType;
 
-void WebMediaPlayerClientImpl::load(const String& url, PassRefPtr<WebCore::HTMLMediaSource> mediaSource)
-{
-    m_url = KURL(ParsedURLString, url);
-    m_mediaSource = mediaSource;
-    loadRequested();
-}
-
-void WebMediaPlayerClientImpl::loadRequested()
-{
     if (m_preload == MediaPlayer::None) {
 #if ENABLE(WEB_AUDIO)
         m_audioSourceProvider.wrap(0); // Clear weak reference to m_webMediaPlayer's WebAudioSourceProvider.
@@ -233,8 +220,6 @@ void WebMediaPlayerClientImpl::loadRequested()
 
 void WebMediaPlayerClientImpl::loadInternal()
 {
-    m_isMediaStream = WebCore::MediaStreamRegistry::registry().lookupMediaStreamDescriptor(m_url.string());
-
 #if ENABLE(WEB_AUDIO)
     m_audioSourceProvider.wrap(0); // Clear weak reference to m_webMediaPlayer's WebAudioSourceProvider.
 #endif
@@ -255,15 +240,8 @@ void WebMediaPlayerClientImpl::loadInternal()
         m_audioSourceProvider.wrap(m_webMediaPlayer->audioSourceProvider());
 #endif
 
-        WebMediaPlayer::LoadType loadType = WebMediaPlayer::LoadTypeURL;
-
-        if (m_mediaSource)
-            loadType = WebMediaPlayer::LoadTypeMediaSource;
-        else if (m_isMediaStream)
-            loadType = WebMediaPlayer::LoadTypeMediaStream;
-
         WebMediaPlayer::CORSMode corsMode = static_cast<WebMediaPlayer::CORSMode>(m_client->mediaPlayerCORSMode());
-        m_webMediaPlayer->load(loadType, m_url, corsMode);
+        m_webMediaPlayer->load(m_loadType, m_url, corsMode);
     }
 }
 
@@ -466,7 +444,7 @@ void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& re
         // On Android, video frame is emitted as GL_TEXTURE_EXTERNAL_OES texture. We use a different path to
         // paint the video frame into the context.
 #if OS(ANDROID)
-        if (!m_isMediaStream) {
+        if (m_loadType != WebMediaPlayer::LoadTypeMediaStream) {
             RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
             paintOnAndroid(context, context3D.get(), rect, context->getNormalizedAlpha());
             return;
@@ -621,7 +599,6 @@ void WebMediaPlayerClientImpl::startDelayedLoad()
 
 WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     : m_client(client)
-    , m_isMediaStream(false)
     , m_delayingLoad(false)
     , m_preload(MediaPlayer::Auto)
     , m_helperPlugin(0)
@@ -629,6 +606,7 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     , m_volume(1.0)
     , m_muted(false)
     , m_rate(1.0)
+    , m_loadType(WebMediaPlayer::LoadTypeURL)
 {
     ASSERT(m_client);
 }

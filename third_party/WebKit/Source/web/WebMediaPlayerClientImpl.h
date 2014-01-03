@@ -48,7 +48,6 @@
 
 namespace WebCore {
 class AudioSourceProviderClient;
-class HTMLMediaSource;
 }
 
 namespace blink {
@@ -94,8 +93,7 @@ public:
     virtual void requestSeek(double);
 
     // MediaPlayer methods:
-    virtual void load(const WTF::String& url) OVERRIDE;
-    virtual void load(const WTF::String& url, PassRefPtr<WebCore::HTMLMediaSource>) OVERRIDE;
+    virtual void load(WebMediaPlayer::LoadType, const WTF::String& url) OVERRIDE;
 
     virtual void play() OVERRIDE;
     virtual void pause() OVERRIDE;
@@ -146,7 +144,6 @@ private:
     explicit WebMediaPlayerClientImpl(WebCore::MediaPlayerClient*);
 
     void startDelayedLoad();
-    void loadRequested();
     void loadInternal();
 
 #if OS(ANDROID)
@@ -160,7 +157,6 @@ private:
     WebCore::MediaPlayerClient* m_client;
     OwnPtr<WebMediaPlayer> m_webMediaPlayer;
     WebCore::KURL m_url;
-    bool m_isMediaStream;
     bool m_delayingLoad;
     WebCore::MediaPlayer::Preload m_preload;
     RefPtr<WebHelperPluginImpl> m_helperPlugin;
@@ -217,7 +213,7 @@ private:
     AudioSourceProviderImpl m_audioSourceProvider;
 #endif
 
-    RefPtr<WebCore::HTMLMediaSource> m_mediaSource;
+    WebMediaPlayer::LoadType m_loadType;
 };
 
 } // namespace blink

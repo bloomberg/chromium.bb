@@ -365,6 +365,7 @@ private:
 
     virtual void mediaPlayerSetWebLayer(blink::WebLayer*) OVERRIDE;
     virtual void mediaPlayerSetOpaque(bool) OVERRIDE;
+    virtual void mediaPlayerMediaSourceOpened(blink::WebMediaSource*) OVERRIDE;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);

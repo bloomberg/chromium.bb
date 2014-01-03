@@ -843,8 +843,12 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
     WTF_LOG(Media, "HTMLMediaElement::loadResource - m_currentSrc -> %s", urlForLoggingMedia(m_currentSrc).utf8().data());
 
-    if (MediaStreamRegistry::registry().lookupMediaStreamDescriptor(url.string()))
-      removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
+    blink::WebMediaPlayer::LoadType loadType = blink::WebMediaPlayer::LoadTypeURL;
+
+    if (MediaStreamRegistry::registry().lookupMediaStreamDescriptor(url.string())) {
+        loadType = blink::WebMediaPlayer::LoadTypeMediaStream;
+        removeBehaviorRestriction(RequireUserGestureForRateChangeRestriction);
+    }
 
     startProgressEventTimer();
 
@@ -860,20 +864,25 @@ void HTMLMediaElement::loadResource(const KURL& url, ContentType& contentType, c
 
     ASSERT(!m_mediaSource);
 
-    if (url.protocolIs(mediaSourceBlobProtocol))
+    bool attemptLoad = true;
+
+    if (url.protocolIs(mediaSourceBlobProtocol)) {
         m_mediaSource = HTMLMediaSource::lookup(url.string());
 
-    if (m_mediaSource) {
-        if (m_mediaSource->attachToElement(this)) {
-            m_player->load(url, m_mediaSource);
-        } else {
-            // Forget our reference to the MediaSource, so we leave it alone
-            // while processing remainder of load failure.
-            m_mediaSource = 0;
-            mediaLoadingFailed(MediaPlayer::FormatError);
+        if (m_mediaSource) {
+            loadType = blink::WebMediaPlayer::LoadTypeMediaSource;
+
+            if (!m_mediaSource->attachToElement(this)) {
+                // Forget our reference to the MediaSource, so we leave it alone
+                // while processing remainder of load failure.
+                m_mediaSource = 0;
+                attemptLoad = false;
+            }
         }
-    } else if (canLoadURL(url, contentType, keySystem)) {
-        m_player->load(url);
+    }
+
+    if (attemptLoad && canLoadURL(url, contentType, keySystem)) {
+        m_player->load(loadType, url);
     } else {
         mediaLoadingFailed(MediaPlayer::FormatError);
     }
@@ -3909,6 +3918,11 @@ void HTMLMediaElement::mediaPlayerSetOpaque(bool opaque)
     m_opaque = opaque;
     if (m_webLayer)
         m_webLayer->setOpaque(m_opaque);
+}
+
+void HTMLMediaElement::mediaPlayerMediaSourceOpened(blink::WebMediaSource* webMediaSource)
+{
+    m_mediaSource->setWebMediaSourceAndOpen(adoptPtr(webMediaSource));
 }
 
 bool HTMLMediaElement::isInteractiveContent() const
