@@ -15,6 +15,10 @@
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 
+namespace base {
+class Clock;
+}
+
 namespace net {
 class StreamSocket;
 }
@@ -75,6 +79,13 @@ GCM_EXPORT uint32 GetLastStreamIdReceived(
 GCM_EXPORT void SetLastStreamIdReceived(
     uint32 last_stream_id_received,
     google::protobuf::MessageLite* protobuf);
+
+// Returns whether the TTL (time to live) for this message has expired, based
+// on the |sent| timestamps and base::TimeTicks::Now(). If |protobuf| is not
+// for a DataMessageStanza or the TTL is 0, will return false.
+GCM_EXPORT bool HasTTLExpired(const google::protobuf::MessageLite& protobuf,
+                              base::Clock* clock);
+GCM_EXPORT int GetTTL(const google::protobuf::MessageLite& protobuf);
 
 }  // namespace gcm
 

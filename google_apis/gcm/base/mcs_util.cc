@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
 
 namespace gcm {
 
@@ -43,6 +45,9 @@ const char kLoginDomain[] = "mcs.android.com";
 const char kLoginDeviceIdPrefix[] = "android-";
 const char kLoginSettingName[] = "new_vc";
 const char kLoginSettingValue[] = "1";
+
+// Maximum amount of time to save an unsent outgoing message for.
+const int kMaxTTLSeconds = 4 * 7 * 24 * 60 * 60;  // 4 weeks.
 
 }  // namespace
 
@@ -209,25 +214,50 @@ void SetLastStreamIdReceived(uint32 val,
   if (protobuf->GetTypeName() == kProtoNames[kIqStanzaTag]) {
     reinterpret_cast<mcs_proto::IqStanza*>(protobuf)->
         set_last_stream_id_received(val);
-     return;
+    return;
   } else if (protobuf->GetTypeName() == kProtoNames[kHeartbeatPingTag]) {
     reinterpret_cast<mcs_proto::HeartbeatPing*>(protobuf)->
         set_last_stream_id_received(val);
-     return;
+    return;
   } else if (protobuf->GetTypeName() == kProtoNames[kHeartbeatAckTag]) {
     reinterpret_cast<mcs_proto::HeartbeatAck*>(protobuf)->
         set_last_stream_id_received(val);
-     return;
+    return;
   } else if (protobuf->GetTypeName() == kProtoNames[kDataMessageStanzaTag]) {
     reinterpret_cast<mcs_proto::DataMessageStanza*>(protobuf)->
         set_last_stream_id_received(val);
-     return;
+    return;
   } else if (protobuf->GetTypeName() == kProtoNames[kLoginResponseTag]) {
     reinterpret_cast<mcs_proto::LoginResponse*>(protobuf)->
         set_last_stream_id_received(val);
-     return;
+    return;
   }
   NOTREACHED();
+}
+
+bool HasTTLExpired(const google::protobuf::MessageLite& protobuf,
+                   base::Clock* clock) {
+  if (protobuf.GetTypeName() != kProtoNames[kDataMessageStanzaTag])
+    return false;
+  uint64 ttl = GetTTL(protobuf);
+  uint64 sent =
+      reinterpret_cast<const mcs_proto::DataMessageStanza*>(&protobuf)->sent();
+  DCHECK(sent);
+  return ttl > 0 &&
+      clock->Now() >
+          base::Time::FromInternalValue(
+              (sent + ttl) * base::Time::kMicrosecondsPerSecond);
+}
+
+int GetTTL(const google::protobuf::MessageLite& protobuf) {
+  if (protobuf.GetTypeName() != kProtoNames[kDataMessageStanzaTag])
+    return 0;
+  const mcs_proto::DataMessageStanza* data_message =
+      reinterpret_cast<const mcs_proto::DataMessageStanza*>(&protobuf);
+  if (!data_message->has_ttl())
+    return kMaxTTLSeconds;
+  DCHECK_LE(data_message->ttl(), kMaxTTLSeconds);
+  return data_message->ttl();
 }
 
 }  // namespace gcm

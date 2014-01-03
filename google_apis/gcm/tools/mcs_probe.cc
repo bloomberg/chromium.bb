@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
@@ -171,6 +172,8 @@ class MCSProbe {
                               uint64 restored_android_id,
                               uint64 restored_security_token);
 
+  base::DefaultClock clock_;
+
   CommandLine command_line_;
 
   base::FilePath rmq_path_;
@@ -251,7 +254,8 @@ void MCSProbe::Start() {
                                 network_session_,
                                 &net_log_));
   rmq_store_.reset(new RMQStore(rmq_path_, file_thread_.message_loop_proxy()));
-  mcs_client_.reset(new MCSClient(connection_factory_.get(),
+  mcs_client_.reset(new MCSClient(&clock_,
+                                  connection_factory_.get(),
                                   rmq_store_.get()));
   run_loop_.reset(new base::RunLoop());
   rmq_store_->Load(base::Bind(&MCSClient::Initialize,

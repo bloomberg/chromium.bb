@@ -19,6 +19,10 @@
 #include "google_apis/gcm/engine/heartbeat_manager.h"
 #include "google_apis/gcm/engine/rmq_store.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace google {
 namespace protobuf {
 class MessageLite;
@@ -64,7 +68,9 @@ class GCM_EXPORT MCSClient {
   typedef base::Callback<void(const std::string& message_id)>
       OnMessageSentCallback;
 
-  MCSClient(ConnectionFactory* connection_factory, RMQStore* rmq_store);
+  MCSClient(base::Clock* clock,
+            ConnectionFactory* connection_factory,
+            RMQStore* rmq_store);
   virtual ~MCSClient();
 
   // Initialize the client. Will load any previous id/token information as well
@@ -92,8 +98,12 @@ class GCM_EXPORT MCSClient {
 
   // Sends a message, with or without reliable message queueing (RMQ) support.
   // Will asynchronously invoke the OnMessageSent callback regardless.
-  // TODO(zea): support TTL.
-  void SendMessage(const MCSMessage& message, bool use_rmq);
+  // Whether to use RMQ depends on whether the protobuf has |ttl| set or not.
+  // |ttl == 0| denotes the message should only be sent if the connection is
+  // open. |ttl > 0| will keep the message saved for |ttl| seconds, after which
+  // it will be dropped if it was unable to be sent. When a message is dropped,
+  // |message_sent_callback_| is invoked with a TTL expiration error.
+  void SendMessage(const MCSMessage& message);
 
   // Disconnects the client and permanently destroys the persistent RMQ store.
   // WARNING: This is permanent, and the client must be recreated with new
@@ -154,6 +164,9 @@ class GCM_EXPORT MCSClient {
 
   // Helper for the heartbeat manager to signal a connection reset.
   void OnConnectionResetByHeartbeat();
+
+  // Clock for enforcing TTL. Passed in for testing.
+  base::Clock* const clock_;
 
   // Client state.
   State state_;
