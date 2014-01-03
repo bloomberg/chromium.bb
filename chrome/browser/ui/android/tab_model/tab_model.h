@@ -28,14 +28,10 @@ class TabAndroid;
 // Abstract representation of a Tab Model for Android.  Since Android does
 // not use Browser/BrowserList, this is required to allow Chrome to interact
 // with Android's Tabs and Tab Model.
-class TabModel : public content::NotificationObserver,
-                 public ToolbarModelDelegate {
+class TabModel : public content::NotificationObserver {
  public:
   explicit TabModel(Profile* profile);
   virtual ~TabModel();
-
-  // Implementation of ToolbarDelegate
-  virtual content::WebContents* GetActiveWebContents() const OVERRIDE;
 
   virtual Profile* GetProfile() const;
   virtual bool IsOffTheRecord() const;
@@ -62,16 +58,6 @@ class TabModel : public content::NotificationObserver,
 
   virtual void OpenClearBrowsingData() const = 0;
 
-  // Returns search terms extracted from the current url if possible.
-  base::string16 GetSearchTermsForCurrentTab();
-
-  // Returns the parameter that is used to trigger query extraction.
-  std::string GetQueryExtractionParam();
-
-  // Calls through to the ToolbarModel's GetCorpusNameForMobile -- see
-  // comments in toolbar_model.h.
-  base::string16 GetCorpusNameForCurrentTab();
-
  protected:
   // Instructs the TabModel to broadcast a notification that all tabs are now
   // loaded from storage.
@@ -93,8 +79,6 @@ class TabModel : public content::NotificationObserver,
 
   // The SyncedWindowDelegate associated with this TabModel.
   scoped_ptr<browser_sync::SyncedWindowDelegateAndroid> synced_window_delegate_;
-
-  scoped_ptr<ToolbarModel> toolbar_model_;
 
   // Unique identifier of this TabModel for session restore. This id is only
   // unique within the current session, and is not guaranteed to be unique
