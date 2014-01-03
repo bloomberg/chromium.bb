@@ -87,7 +87,8 @@
           'ENABLE_WEB_AUDIO=1',
         ],
       }],
-      ['OS=="win" or OS=="android" or OS=="linux"', {
+      # Mac OS X has not implemented support for ENABLE(OPENTYPE_VERTICAL) yet
+      ['OS!="mac"', {
         'feature_defines': [
           'ENABLE_OPENTYPE_VERTICAL=1',
         ],
