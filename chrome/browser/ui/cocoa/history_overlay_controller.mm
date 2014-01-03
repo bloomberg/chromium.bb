@@ -89,13 +89,6 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
   return self;
 }
 
-- (void)dealloc {
-  [[BrowserWindowController
-      browserWindowControllerForView:[self view]] onOverlappedViewHidden];
-  [self.view removeFromSuperview];
-  [super dealloc];
-}
-
 - (void)loadView {
   const gfx::Image& image =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
@@ -152,6 +145,8 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
 - (void)dismiss {
   const CGFloat kFadeOutDurationSeconds = 0.4;
 
+  [NSAnimationContext beginGrouping];
+  [NSAnimationContext currentContext].duration = kFadeOutDurationSeconds;
   NSView* overlay = self.view;
 
   base::scoped_nsobject<CAAnimation> animation(
@@ -163,9 +158,13 @@ const CGFloat kShieldHeightCompletionAdjust = 10;
   [dictionary setObject:animation forKey:@"alphaValue"];
   [overlay setAnimations:dictionary];
   [[overlay animator] setAlphaValue:0.0];
+  [NSAnimationContext endGrouping];
 }
 
 - (void)animationDidStop:(CAAnimation*)theAnimation finished:(BOOL)finished {
+  [[BrowserWindowController
+      browserWindowControllerForView:[self view]] onOverlappedViewHidden];
+  [self.view removeFromSuperview];
   // Destroy the CAAnimation and its strong reference to its delegate (this
   // class).
   [self.view setAnimations:nil];

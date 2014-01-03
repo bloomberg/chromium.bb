@@ -246,7 +246,7 @@
                      ? kHistoryOverlayModeForward
                      : kHistoryOverlayModeBack];
   [historyOverlay showPanelForView:[delegate_ viewThatWantsHistoryOverlay]];
-  historyOverlay_ = [historyOverlay retain];
+  historyOverlay_ = historyOverlay;
 
   // Record whether the user was swiping forwards or backwards.
   historySwipeDirection_ = direction;
