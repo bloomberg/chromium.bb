@@ -13,7 +13,7 @@
 
 namespace base {
 
-void File::CreateBaseFileUnsafe(const FilePath& name, uint32 flags) {
+void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsValid());
 
@@ -197,7 +197,17 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
   return WriteAtCurrentPos(data, size);
 }
 
-bool File::Truncate(int64 length) {
+int64 File::GetLength() {
+  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(IsValid());
+  LARGE_INTEGER size;
+  if (!::GetFileSizeEx(file_.Get(), &size))
+    return -1;
+
+  return static_cast<int64>(size.QuadPart);
+}
+
+bool File::SetLength(int64 length) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
 
@@ -218,6 +228,9 @@ bool File::Truncate(int64 length) {
   // Set the new file length and move the file pointer to its old position.
   // This is consistent with ftruncate()'s behavior, even when the file
   // pointer points to a location beyond the end of the file.
+  // TODO(rvargas): Emulating ftruncate details seem suspicious and it is not
+  // promised by the interface (nor was promised by PlatformFile). See if this
+  // implementation detail can be removed.
   return ((::SetEndOfFile(file_) != 0) &&
           (::SetFilePointerEx(file_, file_pointer, NULL, FILE_BEGIN) != 0));
 }

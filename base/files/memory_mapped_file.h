@@ -7,7 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -30,9 +30,10 @@ class BASE_EXPORT MemoryMappedFile {
   // the file does not exist, or the memory mapping fails, it will return false.
   // Later we may want to allow the user to specify access.
   bool Initialize(const FilePath& file_name);
-  // As above, but works with an already-opened file. MemoryMappedFile will take
-  // ownership of |file| and close it when done.
-  bool Initialize(PlatformFile file);
+
+  // As above, but works with an already-opened file. MemoryMappedFile takes
+  // ownership of |file| and closes it when done.
+  bool Initialize(File file);
 
 #if defined(OS_WIN)
   // Opens an existing file and maps it as an image section. Please refer to
@@ -47,26 +48,21 @@ class BASE_EXPORT MemoryMappedFile {
   bool IsValid() const;
 
  private:
-  // Open the given file and pass it to MapFileToMemoryInternal().
-  bool MapFileToMemory(const FilePath& file_name);
-
   // Map the file to memory, set data_ to that memory address. Return true on
   // success, false on any kind of failure. This is a helper for Initialize().
-  bool MapFileToMemoryInternal();
+  bool MapFileToMemory();
 
-  // Closes all open handles. Later we may want to make this public.
+  // Closes all open handles.
   void CloseHandles();
 
-#if defined(OS_WIN)
-  // MapFileToMemoryInternal calls this function. It provides the ability to
-  // pass in flags which control the mapped section.
-  bool MapFileToMemoryInternalEx(int flags);
-
-  HANDLE file_mapping_;
-#endif
-  PlatformFile file_;
+  File file_;
   uint8* data_;
   size_t length_;
+
+#if defined(OS_WIN)
+  win::ScopedHandle file_mapping_;
+  bool image_;  // Map as an image.
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MemoryMappedFile);
 };

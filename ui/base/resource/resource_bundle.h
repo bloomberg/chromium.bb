@@ -11,11 +11,11 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
@@ -135,8 +135,8 @@ class UI_EXPORT ResourceBundle {
   // controls whether or not ResourceBundle::LoadCommonResources is called.
   // This allows the use of this function in a sandbox without local file
   // access (as on Android).
-  static void InitSharedInstanceWithPakFile(
-      base::PlatformFile file, bool should_load_common_resources);
+  static void InitSharedInstanceWithPakFile(base::File file,
+                                            bool should_load_common_resources);
 
   // Initialize the ResourceBundle using given data pack path for testing.
   static void InitSharedInstanceWithPakPath(const base::FilePath& path);
@@ -164,7 +164,7 @@ class UI_EXPORT ResourceBundle {
                            ScaleFactor scale_factor);
 
   // Same as above but using an already open file.
-  void AddDataPackFromFile(base::PlatformFile file, ScaleFactor scale_factor);
+  void AddDataPackFromFile(base::File file, ScaleFactor scale_factor);
 
   // Same as AddDataPackFromPath but does not log an error if the pack fails to
   // load.

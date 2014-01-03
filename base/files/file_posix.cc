@@ -122,7 +122,7 @@ static File::Error CallFctnlFlock(PlatformFile file, bool do_lock) {
 // NaCl doesn't implement system calls to open files directly.
 #if !defined(OS_NACL)
 // TODO(erikkay): does it make sense to support FLAG_EXCLUSIVE_* here?
-void File::CreateBaseFileUnsafe(const FilePath& name, uint32 flags) {
+void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!IsValid());
   DCHECK(!(flags & FLAG_ASYNC));
@@ -341,7 +341,17 @@ int File::WriteAtCurrentPosNoBestEffort(const char* data, int size) {
   return HANDLE_EINTR(write(file_, data, size));
 }
 
-bool File::Truncate(int64 length) {
+int64 File::GetLength() {
+  DCHECK(IsValid());
+
+  stat_wrapper_t file_info;
+  if (CallFstat(file_, &file_info))
+    return false;
+
+  return file_info.st_size;
+}
+
+bool File::SetLength(int64 length) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(IsValid());
   return !CallFtruncate(file_, length);

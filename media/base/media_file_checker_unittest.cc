@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "media/base/media_file_checker.h"
@@ -11,20 +12,14 @@
 namespace media {
 
 static void RunMediaFileChecker(const std::string& filename, bool expectation) {
-  base::PlatformFileError error;
-  base::PlatformFile file = base::CreatePlatformFile(
-      GetTestDataFilePath(filename),
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      NULL,
-      &error);
-  ASSERT_EQ(base::PLATFORM_FILE_OK, error);
+  base::File file(GetTestDataFilePath(filename),
+                  base::File::FLAG_OPEN | base::File::FLAG_READ);
+  ASSERT_TRUE(file.IsValid());
 
-  MediaFileChecker checker(file);
+  MediaFileChecker checker(file.Pass());
   const base::TimeDelta check_time = base::TimeDelta::FromMilliseconds(100);
   bool result = checker.Start(check_time);
   EXPECT_EQ(expectation, result);
-
-  base::ClosePlatformFile(file);
 }
 
 TEST(MediaFileCheckerTest, InvalidFile) {

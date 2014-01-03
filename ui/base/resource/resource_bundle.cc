@@ -162,14 +162,14 @@ std::string ResourceBundle::InitSharedInstanceLocaleOnly(
 
 // static
 void ResourceBundle::InitSharedInstanceWithPakFile(
-    base::PlatformFile pak_file, bool should_load_common_resources) {
+    base::File pak_file, bool should_load_common_resources) {
   InitSharedInstance(NULL);
   if (should_load_common_resources)
     g_shared_instance_->LoadCommonResources();
 
   scoped_ptr<DataPack> data_pack(
       new DataPack(SCALE_FACTOR_100P));
-  if (!data_pack->LoadFromFile(pak_file)) {
+  if (!data_pack->LoadFromFile(pak_file.Pass())) {
     NOTREACHED() << "failed to load pak file";
     return;
   }
@@ -219,11 +219,11 @@ void ResourceBundle::AddOptionalDataPackFromPath(const base::FilePath& path,
   AddDataPackFromPathInternal(path, scale_factor, true);
 }
 
-void ResourceBundle::AddDataPackFromFile(base::PlatformFile file,
+void ResourceBundle::AddDataPackFromFile(base::File file,
                                          ScaleFactor scale_factor) {
   scoped_ptr<DataPack> data_pack(
       new DataPack(scale_factor));
-  if (data_pack->LoadFromFile(file)) {
+  if (data_pack->LoadFromFile(file.Pass())) {
     AddDataPack(data_pack.release());
   } else {
     LOG(ERROR) << "Failed to load data pack from file."

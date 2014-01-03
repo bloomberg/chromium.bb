@@ -667,7 +667,8 @@ void ChromeMainDelegate::PreSandboxStartup() {
     int locale_pak_fd = base::GlobalDescriptors::GetInstance()->MaybeGet(
         kAndroidLocalePakDescriptor);
     CHECK(locale_pak_fd != -1);
-    ResourceBundle::InitSharedInstanceWithPakFile(locale_pak_fd, false);
+    ResourceBundle::InitSharedInstanceWithPakFile(base::File(locale_pak_fd),
+                                                  false);
 
     int extra_pak_keys[] = {
       kAndroidChrome100PercentPakDescriptor,
@@ -678,7 +679,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
           base::GlobalDescriptors::GetInstance()->MaybeGet(extra_pak_keys[i]);
       CHECK(pak_fd != -1);
       ResourceBundle::GetSharedInstance().AddDataPackFromFile(
-          pak_fd, ui::SCALE_FACTOR_100P);
+          base::File(pak_fd), ui::SCALE_FACTOR_100P);
     }
 
     base::i18n::SetICUDefaultLocale(locale);

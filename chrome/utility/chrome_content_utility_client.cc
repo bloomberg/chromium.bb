@@ -752,8 +752,8 @@ void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
 void ChromeContentUtilityClient::OnCheckMediaFile(
     int64 milliseconds_of_decoding,
     const IPC::PlatformFileForTransit& media_file) {
-  media::MediaFileChecker
-      checker(IPC::PlatformFileForTransitToPlatformFile(media_file));
+  media::MediaFileChecker checker(
+      base::File(IPC::PlatformFileForTransitToPlatformFile(media_file)));
   const bool check_success = checker.Start(
       base::TimeDelta::FromMilliseconds(milliseconds_of_decoding));
   Send(new ChromeUtilityHostMsg_CheckMediaFile_Finished(check_success));

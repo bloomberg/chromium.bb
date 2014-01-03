@@ -15,21 +15,19 @@ FileDataSource::FileDataSource()
       force_streaming_(false) {
 }
 
+FileDataSource::FileDataSource(base::File file)
+    : force_read_errors_(false),
+      force_streaming_(false) {
+  if (!file_.Initialize(file.Pass()))
+    return;
+
+  UpdateHostBytes();
+}
+
 bool FileDataSource::Initialize(const base::FilePath& file_path) {
   DCHECK(!file_.IsValid());
 
   if (!file_.Initialize(file_path))
-    return false;
-
-  UpdateHostBytes();
-  return true;
-}
-
-bool FileDataSource::InitializeFromPlatformFile(
-    const base::PlatformFile& file) {
-  DCHECK(!file_.IsValid());
-
-  if (!file_.Initialize(file))
     return false;
 
   UpdateHostBytes();

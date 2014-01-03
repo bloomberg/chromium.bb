@@ -6,8 +6,7 @@
 #define MEDIA_BASE_MEDIA_FILE_CHECKER_H_
 
 #include "base/basictypes.h"
-#include "base/files/scoped_platform_file_closer.h"
-#include "base/platform_file.h"
+#include "base/files/file.h"
 #include "media/base/media_export.h"
 
 namespace base {
@@ -21,7 +20,7 @@ namespace media {
 // file safe to use in the browser process.
 class MEDIA_EXPORT MediaFileChecker {
  public:
-  explicit MediaFileChecker(const base::PlatformFile& file);
+  explicit MediaFileChecker(base::File file);
   ~MediaFileChecker();
 
   // After opening |file|, up to |check_time| amount of wall-clock time is spent
@@ -30,8 +29,7 @@ class MEDIA_EXPORT MediaFileChecker {
   bool Start(base::TimeDelta check_time);
 
  private:
-  base::PlatformFile file_;
-  base::ScopedPlatformFileCloser file_closer_;
+  base::File file_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileChecker);
 };

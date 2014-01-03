@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -62,15 +63,12 @@ TEST(DataPackTest, LoadFromFile) {
   ASSERT_EQ(file_util::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
             static_cast<int>(kSamplePakSize));
 
-  bool created = false;
-  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
-  base::PlatformFile file = base::CreatePlatformFile(
-      data_path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      &created, &error_code);
+  base::File file(data_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  ASSERT_TRUE(file.IsValid());
 
   // Load the file through the data pack API.
   DataPack pack(SCALE_FACTOR_100P);
-  ASSERT_TRUE(pack.LoadFromFile(file));
+  ASSERT_TRUE(pack.LoadFromFile(file.Pass()));
 
   base::StringPiece data;
   ASSERT_TRUE(pack.HasResource(4));
@@ -89,8 +87,6 @@ TEST(DataPackTest, LoadFromFile) {
   // Try looking up an invalid key.
   ASSERT_FALSE(pack.HasResource(140));
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
-
-  base::ClosePlatformFile(file);
 }
 
 INSTANTIATE_TEST_CASE_P(WriteBINARY, DataPackTest, ::testing::Values(

@@ -157,9 +157,12 @@ class BASE_EXPORT File {
   // Move operator= for C++03 move emulation of this type.
   File& operator=(RValue other);
 
+  // Creates or opens the given file.
+  void Initialize(const FilePath& name, uint32 flags);
+
   // Creates or opens the given file, allowing paths with traversal ('..')
   // components. Use only with extreme care.
-  void CreateBaseFileUnsafe(const FilePath& name, uint32 flags);
+  void InitializeUnsafe(const FilePath& name, uint32 flags);
 
   bool IsValid() const;
 
@@ -216,10 +219,13 @@ class BASE_EXPORT File {
   // platforms. Returns the number of bytes written, or -1 on error.
   int WriteAtCurrentPosNoBestEffort(const char* data, int size);
 
+  // Returns the current size of this file, or a negative number on failure.
+  int64 GetLength();
+
   // Truncates the file to the given length. If |length| is greater than the
   // current size of the file, the file is extended with zeros. If the file
   // doesn't exist, |false| is returned.
-  bool Truncate(int64 length);
+  bool SetLength(int64 length);
 
   // Flushes the buffers.
   bool Flush();

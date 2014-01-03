@@ -17,7 +17,14 @@ bool MemoryMappedFile::Initialize(const FilePath& file_name) {
   if (IsValid())
     return false;
 
-  if (!MapFileToMemory(file_name)) {
+  file_.Initialize(file_name, File::FLAG_OPEN | File::FLAG_READ);
+
+  if (!file_.IsValid()) {
+    DLOG(ERROR) << "Couldn't open " << file_name.AsUTF8Unsafe();
+    return false;
+  }
+
+  if (!MapFileToMemory()) {
     CloseHandles();
     return false;
   }
@@ -25,13 +32,13 @@ bool MemoryMappedFile::Initialize(const FilePath& file_name) {
   return true;
 }
 
-bool MemoryMappedFile::Initialize(PlatformFile file) {
+bool MemoryMappedFile::Initialize(File file) {
   if (IsValid())
     return false;
 
-  file_ = file;
+  file_ = file.Pass();
 
-  if (!MapFileToMemoryInternal()) {
+  if (!MapFileToMemory()) {
     CloseHandles();
     return false;
   }
@@ -41,18 +48,6 @@ bool MemoryMappedFile::Initialize(PlatformFile file) {
 
 bool MemoryMappedFile::IsValid() const {
   return data_ != NULL;
-}
-
-bool MemoryMappedFile::MapFileToMemory(const FilePath& file_name) {
-  file_ = CreatePlatformFile(file_name, PLATFORM_FILE_OPEN | PLATFORM_FILE_READ,
-                             NULL, NULL);
-
-  if (file_ == kInvalidPlatformFileValue) {
-    DLOG(ERROR) << "Couldn't open " << file_name.AsUTF8Unsafe();
-    return false;
-  }
-
-  return MapFileToMemoryInternal();
 }
 
 }  // namespace base

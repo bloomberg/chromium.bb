@@ -61,7 +61,9 @@ void HunspellEngine::InitializeHunspell() {
 
   bdict_file_.reset(new base::MemoryMappedFile);
 
-  if (bdict_file_->Initialize(file_)) {
+  // TODO(rvargas): This object should not keep file_ after passing it to
+  // bdict_file_.
+  if (bdict_file_->Initialize(base::File(file_))) {
     TimeTicks debug_start_time = base::Histogram::DebugNow();
 
     hunspell_.reset(

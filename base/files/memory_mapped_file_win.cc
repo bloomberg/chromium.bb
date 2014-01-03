@@ -5,83 +5,52 @@
 #include "base/files/memory_mapped_file.h"
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace base {
 
-MemoryMappedFile::MemoryMappedFile()
-    : file_(INVALID_HANDLE_VALUE),
-      file_mapping_(INVALID_HANDLE_VALUE),
-      data_(NULL),
-      length_(INVALID_FILE_SIZE) {
+MemoryMappedFile::MemoryMappedFile() : data_(NULL), length_(0), image_(false) {
 }
 
 bool MemoryMappedFile::InitializeAsImageSection(const FilePath& file_name) {
-  if (IsValid())
-    return false;
-  file_ = CreatePlatformFile(file_name, PLATFORM_FILE_OPEN | PLATFORM_FILE_READ,
-                             NULL, NULL);
-
-  if (file_ == kInvalidPlatformFileValue) {
-    DLOG(ERROR) << "Couldn't open " << file_name.AsUTF8Unsafe();
-    return false;
-  }
-
-  if (!MapFileToMemoryInternalEx(SEC_IMAGE)) {
-    CloseHandles();
-    return false;
-  }
-
-  return true;
+  image_ = true;
+  return Initialize(file_name);
 }
 
-bool MemoryMappedFile::MapFileToMemoryInternal() {
-  return MapFileToMemoryInternalEx(0);
-}
-
-bool MemoryMappedFile::MapFileToMemoryInternalEx(int flags) {
+bool MemoryMappedFile::MapFileToMemory() {
   ThreadRestrictions::AssertIOAllowed();
 
-  if (file_ == INVALID_HANDLE_VALUE)
+  if (!file_.IsValid())
     return false;
 
-  length_ = ::GetFileSize(file_, NULL);
-  if (length_ == INVALID_FILE_SIZE)
+  int64 len = file_.GetLength();
+  if (len <= 0 || len > kint32max)
+    return false;
+  length_ = static_cast<size_t>(len);
+
+  int flags = image_ ? SEC_IMAGE | PAGE_READONLY : PAGE_READONLY;
+
+  file_mapping_.Set(::CreateFileMapping(file_.GetPlatformFile(), NULL,
+                                        flags, 0, 0, NULL));
+  if (!file_mapping_.IsValid())
     return false;
 
-  file_mapping_ = ::CreateFileMapping(file_, NULL, PAGE_READONLY | flags,
-                                      0, 0, NULL);
-  if (!file_mapping_) {
-    // According to msdn, system error codes are only reserved up to 15999.
-    // http://msdn.microsoft.com/en-us/library/ms681381(v=VS.85).aspx.
-    UMA_HISTOGRAM_ENUMERATION("MemoryMappedFile.CreateFileMapping",
-                              logging::GetLastSystemErrorCode(), 16000);
-    return false;
-  }
-
-  data_ = static_cast<uint8*>(
-      ::MapViewOfFile(file_mapping_, FILE_MAP_READ, 0, 0, 0));
-  if (!data_) {
-    UMA_HISTOGRAM_ENUMERATION("MemoryMappedFile.MapViewOfFile",
-                              logging::GetLastSystemErrorCode(), 16000);
-  }
+  data_ = static_cast<uint8*>(::MapViewOfFile(file_mapping_.Get(),
+                                              FILE_MAP_READ, 0, 0, 0));
   return data_ != NULL;
 }
 
 void MemoryMappedFile::CloseHandles() {
   if (data_)
     ::UnmapViewOfFile(data_);
-  if (file_mapping_ != INVALID_HANDLE_VALUE)
-    ::CloseHandle(file_mapping_);
-  if (file_ != INVALID_HANDLE_VALUE)
-    ::CloseHandle(file_);
+  if (file_mapping_.IsValid())
+    file_mapping_.Close();
+  if (file_.IsValid())
+    file_.Close();
 
   data_ = NULL;
-  file_mapping_ = file_ = INVALID_HANDLE_VALUE;
-  length_ = INVALID_FILE_SIZE;
+  length_ = 0;
 }
 
 }  // namespace base

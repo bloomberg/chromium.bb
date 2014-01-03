@@ -44,6 +44,19 @@ TEST(File, Create) {
   }
 
   {
+    // Open an existing file through Initialize
+    File file;
+    file.Initialize(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    EXPECT_TRUE(file.IsValid());
+    EXPECT_FALSE(file.created());
+    EXPECT_EQ(base::File::FILE_OK, file.error());
+
+    // This time verify closing the file.
+    file.Close();
+    EXPECT_FALSE(file.IsValid());
+  }
+
+  {
     // Create a file that exists.
     File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_READ);
     EXPECT_FALSE(file.IsValid());
@@ -221,7 +234,7 @@ TEST(File, Append) {
 }
 
 
-TEST(File, Truncate) {
+TEST(File, Length) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath file_path = temp_dir.path().AppendASCII("truncate_file");
@@ -229,6 +242,7 @@ TEST(File, Truncate) {
             base::File::FLAG_CREATE | base::File::FLAG_READ |
                 base::File::FLAG_WRITE);
   ASSERT_TRUE(file.IsValid());
+  EXPECT_EQ(0, file.GetLength());
 
   // Write "test" to the file.
   char data_to_write[] = "test";
@@ -239,7 +253,8 @@ TEST(File, Truncate) {
   // Extend the file.
   const int kExtendedFileLength = 10;
   int64 file_size = 0;
-  EXPECT_TRUE(file.Truncate(kExtendedFileLength));
+  EXPECT_TRUE(file.SetLength(kExtendedFileLength));
+  EXPECT_EQ(kExtendedFileLength, file.GetLength());
   EXPECT_TRUE(GetFileSize(file_path, &file_size));
   EXPECT_EQ(kExtendedFileLength, file_size);
 
@@ -254,7 +269,8 @@ TEST(File, Truncate) {
 
   // Truncate the file.
   const int kTruncatedFileLength = 2;
-  EXPECT_TRUE(file.Truncate(kTruncatedFileLength));
+  EXPECT_TRUE(file.SetLength(kTruncatedFileLength));
+  EXPECT_EQ(kTruncatedFileLength, file.GetLength());
   EXPECT_TRUE(GetFileSize(file_path, &file_size));
   EXPECT_EQ(kTruncatedFileLength, file_size);
 

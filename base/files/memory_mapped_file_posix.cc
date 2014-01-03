@@ -13,26 +13,23 @@
 
 namespace base {
 
-MemoryMappedFile::MemoryMappedFile()
-    : file_(kInvalidPlatformFileValue),
-      data_(NULL),
-      length_(0) {
+MemoryMappedFile::MemoryMappedFile() : data_(NULL), length_(0) {
 }
 
-bool MemoryMappedFile::MapFileToMemoryInternal() {
+bool MemoryMappedFile::MapFileToMemory() {
   ThreadRestrictions::AssertIOAllowed();
 
   struct stat file_stat;
-  if (fstat(file_, &file_stat) == kInvalidPlatformFileValue) {
-    DPLOG(ERROR) << "fstat " << file_;
+  if (fstat(file_.GetPlatformFile(), &file_stat) == -1 ) {
+    DPLOG(ERROR) << "fstat " << file_.GetPlatformFile();
     return false;
   }
   length_ = file_stat.st_size;
 
   data_ = static_cast<uint8*>(
-      mmap(NULL, length_, PROT_READ, MAP_SHARED, file_, 0));
+      mmap(NULL, length_, PROT_READ, MAP_SHARED, file_.GetPlatformFile(), 0));
   if (data_ == MAP_FAILED)
-    DPLOG(ERROR) << "mmap " << file_;
+    DPLOG(ERROR) << "mmap " << file_.GetPlatformFile();
 
   return data_ != MAP_FAILED;
 }
@@ -42,12 +39,10 @@ void MemoryMappedFile::CloseHandles() {
 
   if (data_ != NULL)
     munmap(data_, length_);
-  if (file_ != kInvalidPlatformFileValue)
-    close(file_);
+  file_.Close();
 
   data_ = NULL;
   length_ = 0;
-  file_ = kInvalidPlatformFileValue;
 }
 
 }  // namespace base

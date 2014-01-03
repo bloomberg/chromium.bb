@@ -31,13 +31,16 @@ File::File(const FilePath& name, uint32 flags)
       error_(FILE_OK),
       created_(false),
       async_(false) {
-  if (name.ReferencesParent()) {
-    error_ = FILE_ERROR_ACCESS_DENIED;
-    return;
-  }
-  CreateBaseFileUnsafe(name, flags);
+  Initialize(name, flags);
 }
 #endif
+
+File::File(PlatformFile platform_file)
+    : file_(platform_file),
+      error_(FILE_OK),
+      created_(false),
+      async_(false) {
+}
 
 File::File(RValue other)
     : file_(other.object->TakePlatformFile()),
@@ -60,5 +63,15 @@ File& File::operator=(RValue other) {
   }
   return *this;
 }
+
+#if !defined(OS_NACL)
+void File::Initialize(const FilePath& name, uint32 flags) {
+  if (name.ReferencesParent()) {
+    error_ = FILE_ERROR_ACCESS_DENIED;
+    return;
+  }
+  InitializeUnsafe(name, flags);
+}
+#endif
 
 }  // namespace base
