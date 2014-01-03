@@ -45,8 +45,25 @@ class ResourceMessageTestSink : public IPC::TestSink {
       ResourceMessageReplyParams* params,
       IPC::Message* nested_msg);
 
+  // Searches the queue for the next resource call message with a nested
+  // message matching the given ID. On success, returns true and populates the
+  // givem params and nested message. The first time this is called, it is
+  // equivalent to GetFirstResourceCallMatching.
+  bool GetNextResourceCallMatching(
+      uint32 id,
+      ResourceMessageCallParams* params,
+      IPC::Message* nested_msg);
+
+  // Like GetNextResourceCallMatching except for replies.
+  bool GetNextResourceReplyMatching(
+      uint32 id,
+      ResourceMessageReplyParams* params,
+      IPC::Message* nested_msg);
+
  private:
   scoped_ptr<IPC::Message> sync_reply_msg_;
+  int next_resource_call_;
+  int next_resource_reply_;
 };
 
 // This is a message handler which generates reply messages for synchronous

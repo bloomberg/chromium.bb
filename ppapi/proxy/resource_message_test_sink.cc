@@ -15,11 +15,15 @@ namespace {
 
 // Backend for GetFirstResource[Call|Reply]Matching.
 template<class WrapperMessage, class Params>
-bool GetFirstResourceMessageMatching(const ResourceMessageTestSink& sink,
-                                     uint32 id,
-                                     Params* params,
-                                     IPC::Message* nested_msg) {
-  for (size_t i = 0; i < sink.message_count(); i++) {
+int GetNextResourceMessageMatching(const ResourceMessageTestSink& sink,
+                                   uint32 id,
+                                   int start_index,
+                                   Params* params,
+                                   IPC::Message* nested_msg) {
+  if (start_index < 0)
+    return -1;
+  int message_count = static_cast<int>(sink.message_count());
+  for (int i = start_index; i < message_count; i++) {
     const IPC::Message* msg = sink.GetMessageAt(i);
     if (msg->type() == WrapperMessage::ID) {
       Params cur_params;
@@ -28,16 +32,18 @@ bool GetFirstResourceMessageMatching(const ResourceMessageTestSink& sink,
       if (cur_msg.type() == id) {
         *params = cur_params;
         *nested_msg = cur_msg;
-        return true;
+        return i;
       }
     }
   }
-  return false;
+  return -1;
 }
 
 }  // namespace
 
-ResourceMessageTestSink::ResourceMessageTestSink() {
+ResourceMessageTestSink::ResourceMessageTestSink()
+    : next_resource_call_(0),
+      next_resource_reply_(0) {
 }
 
 ResourceMessageTestSink::~ResourceMessageTestSink() {
@@ -71,18 +77,48 @@ bool ResourceMessageTestSink::GetFirstResourceCallMatching(
     uint32 id,
     ResourceMessageCallParams* params,
     IPC::Message* nested_msg) const {
-  return GetFirstResourceMessageMatching<PpapiHostMsg_ResourceCall,
-                                         ResourceMessageCallParams>(
-      *this, id, params, nested_msg);
+  int index = GetNextResourceMessageMatching<PpapiHostMsg_ResourceCall,
+                                             ResourceMessageCallParams>(
+      *this, id, 0 /* start_index */, params, nested_msg);
+  return index >= 0;
 }
 
 bool ResourceMessageTestSink::GetFirstResourceReplyMatching(
     uint32 id,
     ResourceMessageReplyParams* params,
     IPC::Message* nested_msg) {
-  return GetFirstResourceMessageMatching<PpapiPluginMsg_ResourceReply,
-                                         ResourceMessageReplyParams>(
-      *this, id, params, nested_msg);
+  int index = GetNextResourceMessageMatching<PpapiPluginMsg_ResourceReply,
+                                             ResourceMessageReplyParams>(
+      *this, id, 0 /* start_index */, params, nested_msg);
+  return index >= 0;
+}
+
+bool ResourceMessageTestSink::GetNextResourceCallMatching(
+    uint32 id,
+    ResourceMessageCallParams* params,
+    IPC::Message* nested_msg) {
+  int index = GetNextResourceMessageMatching<PpapiHostMsg_ResourceCall,
+                                             ResourceMessageCallParams>(
+      *this, id, next_resource_call_, params, nested_msg);
+  if (index >= 0) {
+    next_resource_call_ = index + 1;
+    return true;
+  }
+  return false;
+}
+
+bool ResourceMessageTestSink::GetNextResourceReplyMatching(
+    uint32 id,
+    ResourceMessageReplyParams* params,
+    IPC::Message* nested_msg) {
+  int index = GetNextResourceMessageMatching<PpapiPluginMsg_ResourceReply,
+                                             ResourceMessageReplyParams>(
+      *this, id, next_resource_reply_, params, nested_msg);
+  if (index >= 0) {
+    next_resource_reply_ = index + 1;
+    return true;
+  }
+  return false;
 }
 
 ResourceSyncCallHandler::ResourceSyncCallHandler(

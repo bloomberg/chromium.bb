@@ -170,6 +170,7 @@
         'native_client/src/trusted/plugin/nacl_http_response_headers_unittest.cc',
         'proxy/device_enumeration_resource_helper_unittest.cc',
         'proxy/file_chooser_resource_unittest.cc',
+        'proxy/file_system_resource_unittest.cc',
         'proxy/flash_resource_unittest.cc',
         'proxy/interface_list_unittest.cc',
         'proxy/mock_resource.cc',
