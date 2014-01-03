@@ -8,9 +8,9 @@
 #include <deque>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/web/WebSpeechRecognizer.h"
 
 namespace blink {
@@ -23,7 +23,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer, public blink::WebNonCopyable {
+class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
 public:
     MockWebSpeechRecognizer();
     ~MockWebSpeechRecognizer();
@@ -77,6 +77,8 @@ private:
         StepTask(MockWebSpeechRecognizer* object) : WebMethodTask<MockWebSpeechRecognizer>(object) { }
         virtual void runIfValid() OVERRIDE;
     };
+
+    DISALLOW_COPY_AND_ASSIGN(MockWebSpeechRecognizer);
 };
 
 }

@@ -21,12 +21,12 @@
 #ifndef WebTestThemeEngineWin_h
 #define WebTestThemeEngineWin_h
 
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
+#include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/win/WebThemeEngine.h"
 
 namespace WebTestRunner {
 
-class WebTestThemeEngineWin : public blink::WebThemeEngine, public blink::WebNonCopyable {
+class WebTestThemeEngineWin : public blink::WebThemeEngine {
 public:
     WebTestThemeEngineWin() { }
     virtual ~WebTestThemeEngineWin() { }
@@ -71,6 +71,9 @@ public:
         bool determinate, double time);
 
     virtual blink::WebSize getSize(int part);
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(WebTestThemeEngineWin);
 };
 
 }

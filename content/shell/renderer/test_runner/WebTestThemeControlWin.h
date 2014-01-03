@@ -13,7 +13,7 @@
 #ifndef WebTestThemeControlWin_h
 #define WebTestThemeControlWin_h
 
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
+#include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkRect.h"
 
@@ -22,7 +22,7 @@ class SkCanvas;
 
 namespace WebTestRunner {
 
-class WebTestThemeControlWin : public blink::WebNonCopyable {
+class WebTestThemeControlWin {
 public:
     // This list of states mostly mirrors the list in WebCore/platform/ThemeTypes.h
     // but is maintained separately since that isn't public and also to minimize
@@ -168,6 +168,8 @@ private:
     const int m_bottom;
     const int m_width;
     const int m_height;
+
+    DISALLOW_COPY_AND_ASSIGN(WebTestThemeControlWin);
 };
 
 }

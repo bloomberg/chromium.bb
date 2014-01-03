@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
+#include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
@@ -20,7 +20,7 @@ namespace WebTestRunner {
 // words in webkit tests and mark them as missspelled.
 // Even though this is sufficent for webkit tests, this class is not suitable
 // for any other usages.
-class MockSpellCheck : public blink::WebNonCopyable {
+class MockSpellCheck {
 public:
     static void fillSuggestionList(const blink::WebString& word, blink::WebVector<blink::WebString>* suggestions);
 
@@ -60,6 +60,8 @@ private:
 
     // A flag representing whether or not this object is initialized.
     bool m_initialized;
+
+    DISALLOW_COPY_AND_ASSIGN(MockSpellCheck);
 };
 
 }

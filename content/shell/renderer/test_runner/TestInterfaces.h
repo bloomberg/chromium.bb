@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
@@ -35,7 +36,7 @@ class TextInputController;
 class WebTestDelegate;
 class WebTestProxyBase;
 
-class TestInterfaces : public blink::WebNonCopyable {
+class TestInterfaces {
 public:
     TestInterfaces();
     ~TestInterfaces();
@@ -76,6 +77,8 @@ private:
 #elif defined(__APPLE__)
     scoped_ptr<WebTestThemeEngineMac> m_themeEngine;
 #endif
+
+    DISALLOW_COPY_AND_ASSIGN(TestInterfaces);
 };
 
 }

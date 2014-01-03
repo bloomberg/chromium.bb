@@ -9,7 +9,7 @@
 #include <set>
 #include <string>
 
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
+#include "base/basictypes.h"
 #include "third_party/WebKit/public/web/WebNotification.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 
@@ -18,7 +18,7 @@ namespace WebTestRunner {
 class WebTestDelegate;
 
 // A class that implements WebNotificationPresenter for the TestRunner library.
-class NotificationPresenter : public blink::WebNotificationPresenter, public blink::WebNonCopyable {
+class NotificationPresenter : public blink::WebNotificationPresenter {
 public:
     NotificationPresenter();
     virtual ~NotificationPresenter();
@@ -54,6 +54,8 @@ private:
 
     // Map of active replacement IDs to the titles of those notifications
     std::map<std::string, std::string> m_replacements;
+
+    DISALLOW_COPY_AND_ASSIGN(NotificationPresenter);
 };
 
 }

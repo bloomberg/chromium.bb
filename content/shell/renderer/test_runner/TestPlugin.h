@@ -7,11 +7,11 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayer.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureLayerClient.h"
 #include "third_party/WebKit/public/platform/WebExternalTextureMailbox.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 
@@ -31,7 +31,7 @@ class WebTestDelegate;
 //
 // Whether the plugin accepts touch events or not can be customized using the
 // 'accepts-touch' plugin parameter (defaults to false).
-class TestPlugin : public blink::WebPlugin, public blink::WebExternalTextureLayerClient, public blink::WebNonCopyable {
+class TestPlugin : public blink::WebPlugin, public blink::WebExternalTextureLayerClient {
 public:
     static TestPlugin* create(blink::WebFrame*, const blink::WebPluginParams&, WebTestDelegate*);
     virtual ~TestPlugin();
@@ -130,6 +130,8 @@ private:
     bool m_printEventDetails;
     bool m_printUserGestureStatus;
     bool m_canProcessDrag;
+
+    DISALLOW_COPY_AND_ASSIGN(TestPlugin);
 };
 
 }

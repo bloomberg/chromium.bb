@@ -8,9 +8,9 @@
 #include <map>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -230,23 +230,14 @@ private:
     scoped_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
     scoped_ptr<MockWebSpeechInputController> m_speechInputController;
 
-    // FIXME:: We want to move away from this pattern and mark classes
-    // as Noncopyable, but this class is marked as WEBTESTRUNNER_EXPORT
-    // while WebNonCopyable is not, so we cannot inherit from WebNonCopyable.
-    // To overcome the problem, for now not inheriting from WebNonCopyable
-    // but plan to fix it when we make the change of making WebNonCopyable
-    // a macro rather than class. We will have a single way to mark all classes
-    // as Noncopyable.
-    // Tracked under: http://code.google.com/p/chromium/issues/detail?id=229178
 private:
-    WebTestProxyBase(WebTestProxyBase&);
-    WebTestProxyBase& operator=(const WebTestProxyBase&);
+    DISALLOW_COPY_AND_ASSIGN(WebTestProxyBase);
 };
 
 // Use this template to inject methods into your WebViewClient/WebFrameClient
 // implementation required for the running layout tests.
 template<class Base, typename T>
-class WebTestProxy : public Base, public WebTestProxyBase, public blink::WebNonCopyable {
+class WebTestProxy : public Base, public WebTestProxyBase {
 public:
     explicit WebTestProxy(T t)
         : Base(t)
@@ -536,6 +527,9 @@ public:
     {
         WebTestProxyBase::postSpellCheckEvent(eventName);
     }
+
+private:
+    DISALLOW_COPY_AND_ASSIGN(WebTestProxy);
 };
 
 }

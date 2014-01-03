@@ -5,15 +5,15 @@
 #ifndef WebFrameTestProxy_h
 #define WebFrameTestProxy_h
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 namespace WebTestRunner {
 
 // Templetized wrapper around RenderFrameImpl objects, which implement
 // the WebFrameClient interface.
 template<class Base, typename P, typename R>
-class WebFrameTestProxy : public Base, public blink::WebNonCopyable {
+class WebFrameTestProxy : public Base {
 public:
     WebFrameTestProxy(P p, R r)
         : Base(p, r)
@@ -147,6 +147,8 @@ private:
     // It is used instead of a #define and is set by layouttest_support when
     // creating this object.
     int m_version;
+
+    DISALLOW_COPY_AND_ASSIGN(WebFrameTestProxy);
 };
 
 }

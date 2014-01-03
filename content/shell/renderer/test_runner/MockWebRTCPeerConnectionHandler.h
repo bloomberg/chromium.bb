@@ -5,9 +5,9 @@
 #ifndef MockWebRTCPeerConnectionHandler_h
 #define MockWebRTCPeerConnectionHandler_h
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/platform/WebRTCPeerConnectionHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescription.h"
 #include "third_party/WebKit/public/platform/WebRTCSessionDescriptionRequest.h"
@@ -21,7 +21,7 @@ namespace WebTestRunner {
 
 class TestInterfaces;
 
-class MockWebRTCPeerConnectionHandler : public blink::WebRTCPeerConnectionHandler, public blink::WebNonCopyable {
+class MockWebRTCPeerConnectionHandler : public blink::WebRTCPeerConnectionHandler {
 public:
     MockWebRTCPeerConnectionHandler(blink::WebRTCPeerConnectionHandlerClient*, TestInterfaces*);
 
@@ -56,6 +56,8 @@ private:
     blink::WebRTCSessionDescription m_remoteDescription;
     int m_streamCount;
     TestInterfaces* m_interfaces;
+
+    DISALLOW_COPY_AND_ASSIGN(MockWebRTCPeerConnectionHandler);
 };
 
 }

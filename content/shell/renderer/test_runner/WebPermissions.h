@@ -5,14 +5,14 @@
 #ifndef WebPermissions_h
 #define WebPermissions_h
 
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
+#include "base/basictypes.h"
 #include "third_party/WebKit/public/web/WebPermissionClient.h"
 
 namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class WebPermissions : public blink::WebPermissionClient, public blink::WebNonCopyable {
+class WebPermissions : public blink::WebPermissionClient {
 public:
     WebPermissions();
     virtual ~WebPermissions();
@@ -49,6 +49,8 @@ private:
     bool m_pluginsAllowed;
     bool m_displayingInsecureContentAllowed;
     bool m_runningInsecureContentAllowed;
+
+    DISALLOW_COPY_AND_ASSIGN(WebPermissions);
 };
 
 }

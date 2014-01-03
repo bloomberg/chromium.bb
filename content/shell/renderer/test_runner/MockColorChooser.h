@@ -5,9 +5,9 @@
 #ifndef MockColorChooser_h
 #define MockColorChooser_h
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/web/WebColorChooser.h"
 #include "third_party/WebKit/public/web/WebColorChooserClient.h"
 
@@ -15,7 +15,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 class WebTestProxyBase;
-class MockColorChooser : public blink::WebColorChooser, public blink::WebNonCopyable {
+class MockColorChooser : public blink::WebColorChooser {
 public:
     MockColorChooser(blink::WebColorChooserClient*, WebTestDelegate*, WebTestProxyBase*);
     virtual ~MockColorChooser();
@@ -31,6 +31,8 @@ private:
     WebTestDelegate* m_delegate;
     WebTestProxyBase* m_proxy;
     WebTaskList m_taskList;
+
+    DISALLOW_COPY_AND_ASSIGN(MockColorChooser);
 };
 
 }

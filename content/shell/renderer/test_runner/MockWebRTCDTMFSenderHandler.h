@@ -5,10 +5,10 @@
 #ifndef MockWebRTCDTMFSenderHandler_h
 #define MockWebRTCDTMFSenderHandler_h
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/platform/WebRTCDTMFSenderHandler.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -16,7 +16,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebRTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandler, public blink::WebNonCopyable {
+class MockWebRTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandler {
 public:
     MockWebRTCDTMFSenderHandler(const blink::WebMediaStreamTrack&, WebTestDelegate*);
 
@@ -39,6 +39,8 @@ private:
     blink::WebString m_toneBuffer;
     WebTaskList m_taskList;
     WebTestDelegate* m_delegate;
+
+    DISALLOW_COPY_AND_ASSIGN(MockWebRTCDTMFSenderHandler);
 };
 
 }

@@ -5,9 +5,9 @@
 #ifndef MockWebMediaStreamCenter_h
 #define MockWebMediaStreamCenter_h
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamCenter.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 namespace blink {
 class WebMediaStreamCenterClient;
@@ -15,7 +15,7 @@ class WebMediaStreamCenterClient;
 
 namespace WebTestRunner {
 
-class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter, public blink::WebNonCopyable {
+class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
 public:
     explicit MockWebMediaStreamCenter(blink::WebMediaStreamCenterClient*);
 
@@ -30,6 +30,8 @@ public:
 
 private:
     MockWebMediaStreamCenter() { }
+
+    DISALLOW_COPY_AND_ASSIGN(MockWebMediaStreamCenter);
 };
 
 }

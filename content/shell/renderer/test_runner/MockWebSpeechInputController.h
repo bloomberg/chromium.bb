@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/web/WebSpeechInputController.h"
 #include "third_party/WebKit/public/web/WebSpeechInputResult.h"
@@ -26,7 +26,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebSpeechInputController : public blink::WebSpeechInputController, public blink::WebNonCopyable {
+class MockWebSpeechInputController : public blink::WebSpeechInputController {
 public:
     explicit MockWebSpeechInputController(blink::WebSpeechInputListener*);
     ~MockWebSpeechInputController();
@@ -70,6 +70,8 @@ private:
     bool m_dumpRect;
 
     WebTestDelegate* m_delegate;
+
+    DISALLOW_COPY_AND_ASSIGN(MockWebSpeechInputController);
 };
 
 }

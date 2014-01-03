@@ -5,10 +5,10 @@
 #ifndef MockWebMIDIAccessor_h
 #define MockWebMIDIAccessor_h
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
 #include "third_party/WebKit/public/platform/WebMIDIAccessor.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 namespace blink {
 class WebMIDIAccessorClient;
@@ -18,7 +18,7 @@ namespace WebTestRunner {
 
 class TestInterfaces;
 
-class MockWebMIDIAccessor : public blink::WebMIDIAccessor, public blink::WebNonCopyable {
+class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
 public:
     explicit MockWebMIDIAccessor(blink::WebMIDIAccessorClient*, TestInterfaces*);
     virtual ~MockWebMIDIAccessor();
@@ -38,6 +38,8 @@ private:
     blink::WebMIDIAccessorClient* m_client;
     WebTaskList m_taskList;
     TestInterfaces* m_interfaces;
+
+    DISALLOW_COPY_AND_ASSIGN(MockWebMIDIAccessor);
 };
 
 } // namespace WebTestRunner

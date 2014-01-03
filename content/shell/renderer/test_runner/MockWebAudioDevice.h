@@ -5,13 +5,13 @@
 #ifndef MockWebAudioDevice_h
 #define MockWebAudioDevice_h
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "third_party/WebKit/public/platform/WebAudioDevice.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 namespace WebTestRunner {
 
-class MockWebAudioDevice : public blink::WebAudioDevice, public blink::WebNonCopyable {
+class MockWebAudioDevice : public blink::WebAudioDevice {
 public:
     explicit MockWebAudioDevice(double sampleRate);
     virtual ~MockWebAudioDevice();
@@ -22,6 +22,8 @@ public:
 
 private:
     double m_sampleRate;
+
+    DISALLOW_COPY_AND_ASSIGN(MockWebAudioDevice);
 };
 
 } // namespace WebTestRunner

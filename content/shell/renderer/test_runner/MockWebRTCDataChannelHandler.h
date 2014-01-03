@@ -5,9 +5,9 @@
 #ifndef MockWebRTCDataChannelHandler_h
 #define MockWebRTCDataChannelHandler_h
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelHandler.h"
 #include "third_party/WebKit/public/platform/WebRTCDataChannelInit.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -16,7 +16,7 @@ namespace WebTestRunner {
 
 class WebTestDelegate;
 
-class MockWebRTCDataChannelHandler : public blink::WebRTCDataChannelHandler, public blink::WebNonCopyable {
+class MockWebRTCDataChannelHandler : public blink::WebRTCDataChannelHandler {
 public:
     MockWebRTCDataChannelHandler(blink::WebString label, const blink::WebRTCDataChannelInit&, WebTestDelegate*);
 
@@ -46,6 +46,8 @@ private:
     bool m_reliable;
     WebTaskList m_taskList;
     WebTestDelegate* m_delegate;
+
+    DISALLOW_COPY_AND_ASSIGN(MockWebRTCDataChannelHandler);
 };
 
 }

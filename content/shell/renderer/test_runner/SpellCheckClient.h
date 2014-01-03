@@ -5,9 +5,9 @@
 #ifndef SpellCheckClient_h
 #define SpellCheckClient_h
 
+#include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/MockSpellCheck.h"
 #include "content/shell/renderer/test_runner/WebTask.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 #include "third_party/WebKit/public/web/WebSpellCheckClient.h"
 
 namespace WebTestRunner {
@@ -15,7 +15,7 @@ namespace WebTestRunner {
 class WebTestDelegate;
 class WebTestProxyBase;
 
-class SpellCheckClient : public blink::WebSpellCheckClient, public blink::WebNonCopyable {
+class SpellCheckClient : public blink::WebSpellCheckClient {
 public:
     explicit SpellCheckClient(WebTestProxyBase*);
     virtual ~SpellCheckClient();
@@ -48,6 +48,8 @@ private:
     WebTestDelegate* m_delegate;
 
     WebTestProxyBase* m_webTestProxy;
+
+    DISALLOW_COPY_AND_ASSIGN(SpellCheckClient);
 };
 
 }

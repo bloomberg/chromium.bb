@@ -50,9 +50,9 @@
 #include <map>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/CppVariant.h"
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
 
 namespace blink {
 class WebFrame;
@@ -65,7 +65,7 @@ typedef std::vector<CppVariant> CppArgumentList;
 
 // CppBoundClass lets you map Javascript method calls and property accesses
 // directly to C++ method calls and CppVariant* variable access.
-class CppBoundClass : public blink::WebNonCopyable {
+class CppBoundClass {
 public:
     class PropertyCallback {
     public:
@@ -244,6 +244,8 @@ private:
     // True if our np_object has been bound to a WebFrame, in which case it must
     // be unregistered with V8 when we delete it.
     bool m_boundToFrame;
+
+    DISALLOW_COPY_AND_ASSIGN(CppBoundClass);
 };
 
 }

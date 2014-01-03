@@ -9,13 +9,14 @@
 #ifndef WebTestThemeEngineMac_h
 #define WebTestThemeEngineMac_h
 
-#include "third_party/WebKit/public/platform/WebNonCopyable.h"
+#include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/mac/WebThemeEngine.h"
 
 namespace WebTestRunner {
 
-class WebTestThemeEngineMac : public blink::WebThemeEngine, public blink::WebNonCopyable {
+class WebTestThemeEngineMac : public blink::WebThemeEngine {
 public:
+    WebTestThemeEngineMac() { }
     virtual ~WebTestThemeEngineMac() { }
 
     virtual void paintScrollbarThumb(
@@ -38,6 +39,8 @@ private:
         blink::WebThemeEngine::Size,
         const blink::WebRect&,
         const blink::WebThemeEngine::ScrollbarInfo&);
+
+    DISALLOW_COPY_AND_ASSIGN(WebTestThemeEngineMac);
 };
 
 }
