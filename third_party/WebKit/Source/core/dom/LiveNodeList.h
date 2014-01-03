@@ -64,7 +64,7 @@ public:
         ASSERT(m_rootType == static_cast<unsigned>(rootType));
         ASSERT(m_invalidationType == static_cast<unsigned>(invalidationType));
         ASSERT(m_collectionType == static_cast<unsigned>(collectionType));
-        ASSERT(!m_overridesItemAfter || !isNodeList(collectionType));
+        ASSERT(!m_overridesItemAfter || !isLiveNodeListType(collectionType));
 
         if (collectionType != ChildNodeListType)
             document().registerNodeList(this);
@@ -79,7 +79,7 @@ public:
     unsigned length() const;
     Node* item(unsigned offset) const;
 
-    ALWAYS_INLINE bool hasIdNameCache() const { return !isNodeList(type()); }
+    ALWAYS_INLINE bool hasIdNameCache() const { return !isLiveNodeListType(type()); }
     ALWAYS_INLINE bool isRootedAtDocument() const { return m_rootType == NodeListIsRootedAtDocument || m_rootType == NodeListIsRootedAtDocumentIfOwnerHasItemrefAttr; }
     ALWAYS_INLINE NodeListInvalidationType invalidationType() const { return static_cast<NodeListInvalidationType>(m_invalidationType); }
     ALWAYS_INLINE CollectionType type() const { return static_cast<CollectionType>(m_collectionType); }
@@ -129,9 +129,7 @@ protected:
 
 private:
     Node* itemBeforeOrAfterCachedItem(unsigned offset, ContainerNode* root) const;
-    Node* traverseChildNodeListForwardToOffset(unsigned offset, Node* currentNode, unsigned& currentOffset) const;
     Element* traverseLiveNodeListFirstElement(ContainerNode& root) const;
-    Element* traverseLiveNodeListForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, ContainerNode* root) const;
     bool isLastItemCloserThanLastOrCachedItem(unsigned offset) const;
     bool isFirstItemCloserThanCachedItem(unsigned offset) const;
     Node* iterateForPreviousNode(Node* current) const;
@@ -190,6 +188,8 @@ public:
     virtual Node* item(unsigned offset) const OVERRIDE FINAL { return LiveNodeListBase::item(offset); }
     virtual Node* namedItem(const AtomicString&) const OVERRIDE FINAL;
     virtual bool nodeMatches(Element*) const = 0;
+
+    Node* traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, ContainerNode* root) const;
 
 private:
     virtual bool isLiveNodeList() const OVERRIDE FINAL { return true; }

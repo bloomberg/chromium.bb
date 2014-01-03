@@ -63,11 +63,11 @@ enum CollectionType {
     LabelsNodeListType,
 };
 
-static const CollectionType FirstNodeListType = ChildNodeListType;
+static const CollectionType FirstLiveNodeListType = ChildNodeListType;
 
-inline bool isNodeList(CollectionType type)
+inline bool isLiveNodeListType(CollectionType type)
 {
-    return type >= FirstNodeListType;
+    return type >= FirstLiveNodeListType;
 }
 
 } // namespace

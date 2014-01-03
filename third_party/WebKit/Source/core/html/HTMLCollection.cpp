@@ -287,7 +287,7 @@ ALWAYS_INLINE Node* LiveNodeListBase::iterateForPreviousNode(Node* current) cons
     CollectionType collectionType = type();
     Node& rootNode = this->rootNode();
     for (; current; current = previousNode(rootNode, *current, onlyIncludeDirectChildren)) {
-        if (isNodeList(collectionType)) {
+        if (isLiveNodeListType(collectionType)) {
             if (current->isElementNode() && isMatchingElement(static_cast<const LiveNodeList*>(this), toElement(current)))
                 return toElement(current);
         } else {
@@ -342,14 +342,13 @@ inline Element* traverseMatchingElementsForwardToOffset(const NodeListType* node
     return 0;
 }
 
-// FIXME: This should be in ChildNodeList
-inline Node* LiveNodeListBase::traverseChildNodeListForwardToOffset(unsigned offset, Node* currentNode, unsigned& currentOffset) const
+static inline Node* traverseSiblingsForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset)
 {
-    ASSERT(type() == ChildNodeListType);
     ASSERT(currentOffset < offset);
-    while ((currentNode = currentNode->nextSibling())) {
+    Node* next = &currentNode;
+    while ((next = next->nextSibling())) {
         if (++currentOffset == offset)
-            return currentNode;
+            return next;
     }
     return 0;
 }
@@ -357,7 +356,7 @@ inline Node* LiveNodeListBase::traverseChildNodeListForwardToOffset(unsigned off
 // FIXME: This should be in LiveNodeList
 inline Element* LiveNodeListBase::traverseLiveNodeListFirstElement(ContainerNode& root) const
 {
-    ASSERT(isNodeList(type()));
+    ASSERT(isLiveNodeListType(type()));
     ASSERT(type() != ChildNodeListType);
     if (type() == HTMLTagNodeListType)
         return firstMatchingElement(static_cast<const HTMLTagNodeList*>(this), root);
@@ -366,16 +365,20 @@ inline Element* LiveNodeListBase::traverseLiveNodeListFirstElement(ContainerNode
     return firstMatchingElement(static_cast<const LiveNodeList*>(this), root);
 }
 
-// FIXME: This should be in LiveNodeList
-inline Element* LiveNodeListBase::traverseLiveNodeListForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, ContainerNode* root) const
+// FIXME: This should be in LiveNodeList.cpp but it needs to stay here until traverseMatchingElementsForwardToOffset()
+// and others are moved to a separate header.
+inline Node* LiveNodeList::traverseForwardToOffset(unsigned offset, Node& currentNode, unsigned& currentOffset, ContainerNode* root) const
 {
-    ASSERT(isNodeList(type()));
-    ASSERT(type() != ChildNodeListType);
-    if (type() == HTMLTagNodeListType)
-        return traverseMatchingElementsForwardToOffset(static_cast<const HTMLTagNodeList*>(this), offset, currentElement, currentOffset, root);
-    if (type() == ClassNodeListType)
-        return traverseMatchingElementsForwardToOffset(static_cast<const ClassNodeList*>(this), offset, currentElement, currentOffset, root);
-    return traverseMatchingElementsForwardToOffset(static_cast<const LiveNodeList*>(this), offset, currentElement, currentOffset, root);
+    switch (type()) {
+    case ChildNodeListType:
+        return traverseSiblingsForwardToOffset(offset, currentNode, currentOffset);
+    case HTMLTagNodeListType:
+        return traverseMatchingElementsForwardToOffset(static_cast<const HTMLTagNodeList*>(this), offset, toElement(currentNode), currentOffset, root);
+    case ClassNodeListType:
+        return traverseMatchingElementsForwardToOffset(static_cast<const ClassNodeList*>(this), offset, toElement(currentNode), currentOffset, root);
+    default:
+        return traverseMatchingElementsForwardToOffset(this, offset, toElement(currentNode), currentOffset, root);
+    }
 }
 
 bool ALWAYS_INLINE LiveNodeListBase::isLastItemCloserThanLastOrCachedItem(unsigned offset) const
@@ -433,7 +436,7 @@ Node* LiveNodeListBase::item(unsigned offset) const
         Node* firstItem;
         if (type() == ChildNodeListType)
             firstItem = root->firstChild();
-        else if (isNodeList(type()))
+        else if (isLiveNodeListType(type()))
             firstItem = traverseLiveNodeListFirstElement(*root);
         else
             firstItem = static_cast<const HTMLCollection*>(this)->traverseFirstElement(*root);
@@ -473,10 +476,8 @@ inline Node* LiveNodeListBase::itemBeforeOrAfterCachedItem(unsigned offset, Cont
         return 0;
     }
 
-    if (type() == ChildNodeListType)
-        currentItem = traverseChildNodeListForwardToOffset(offset, currentItem, currentOffset);
-    else if (isNodeList(type()))
-        currentItem = traverseLiveNodeListForwardToOffset(offset, toElement(*currentItem), currentOffset, root);
+    if (isLiveNodeListType(type()))
+        currentItem = static_cast<const LiveNodeList*>(this)->traverseForwardToOffset(offset, *currentItem, currentOffset, root);
     else
         currentItem = static_cast<const HTMLCollection*>(this)->traverseForwardToOffset(offset, toElement(*currentItem), currentOffset, root);
 
