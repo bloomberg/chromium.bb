@@ -11,6 +11,11 @@
 #import "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/history_overlay_controller.h"
 
+// Once we call `[NSEvent trackSwipeEventWithOptions:]`, we cannot reliably
+// expect NSTouch callbacks. We set this variable to YES and ignore NSTouch
+// callbacks.
+static BOOL forceMagicMouse = NO;
+
 @implementation HistorySwiper
 @synthesize delegate = delegate_;
 
@@ -342,6 +347,7 @@
   // The current UI looks nicer with (1) so that swiping the opposite
   // direction after the initial swipe doesn't cause the shield to move
   // in the wrong direction.
+  forceMagicMouse = YES;
   [theEvent trackSwipeEventWithOptions:NSEventSwipeTrackingLockDirection
     dampenAmountThresholdMin:-1
     max:1
@@ -458,7 +464,7 @@
   if (!inGesture_)
     return NO;
 
-  if (!receivedTouch_) {
+  if (!receivedTouch_ || forceMagicMouse) {
     return [self maybeHandleMagicMouseHistorySwiping:theEvent];
   }
 
