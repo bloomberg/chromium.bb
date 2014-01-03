@@ -67,10 +67,8 @@ class CONTENT_EXPORT RendererAccessibilityComplete
 
   // Check the entire accessibility tree to see if any nodes have
   // changed location, by comparing their locations to the cached
-  // versions. If any have moved, append a event to |events|
-  // that updates the coordinates of these objects.
-  void AppendLocationChangeEvents(
-      std::vector<AccessibilityHostMsg_EventParams>* events);
+  // versions. If any have moved, send an IPC with the new locations.
+  void SendLocationChanges();
 
  private:
   // Serialize the given accessibility object |obj| and append it to

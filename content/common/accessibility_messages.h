@@ -56,6 +56,15 @@ IPC_STRUCT_BEGIN(AccessibilityHostMsg_EventParams)
   IPC_STRUCT_MEMBER(int, id)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(AccessibilityHostMsg_LocationChangeParams)
+  // ID of the object whose location is changing.
+  IPC_STRUCT_MEMBER(int, id)
+
+  // The object's new location, in frame-relative coordinates (same
+  // as the coordinates in AccessibilityNodeData).
+  IPC_STRUCT_MEMBER(gfx::Rect, new_location)
+IPC_STRUCT_END()
+
 // Messages sent from the browser to the renderer.
 
 // Relay a request from assistive technology to set focus to a given node.
@@ -105,3 +114,8 @@ IPC_MESSAGE_ROUTED0(AccessibilityMsg_FatalError)
 IPC_MESSAGE_ROUTED1(
     AccessibilityHostMsg_Events,
     std::vector<AccessibilityHostMsg_EventParams>)
+
+// Sent to update the browser of the location of accessibility objects.
+IPC_MESSAGE_ROUTED1(
+    AccessibilityHostMsg_LocationChanges,
+    std::vector<AccessibilityHostMsg_LocationChangeParams>)

@@ -33,6 +33,7 @@
 class SkBitmap;
 class ViewMsg_Navigate;
 struct AccessibilityHostMsg_EventParams;
+struct AccessibilityHostMsg_LocationChangeParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
 struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
@@ -581,6 +582,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnSwapOutACK();
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params);
+  void OnAccessibilityLocationChanges(
+      const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnScriptEvalResponse(int id, const base::ListValue& result);
   void OnDidZoomURL(double zoom_level, bool remember, const GURL& url);
   void OnRequestDesktopNotificationPermission(const GURL& origin,

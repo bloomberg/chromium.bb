@@ -16,6 +16,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 struct AccessibilityHostMsg_EventParams;
+struct AccessibilityHostMsg_LocationChangeParams;
 
 namespace content {
 class BrowserAccessibility;
@@ -125,9 +126,13 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   gfx::Rect GetViewBounds();
 
   // Called when the renderer process has notified us of about tree changes.
-  // Send a notification to MSAA clients of the change.
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params);
+
+  // Called when the renderer process updates the location of accessibility
+  // objects.
+  void OnLocationChanges(
+      const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
 
 #if defined(OS_WIN)
   BrowserAccessibilityManagerWin* ToBrowserAccessibilityManagerWin();

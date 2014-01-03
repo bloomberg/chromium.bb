@@ -123,10 +123,6 @@ struct CONTENT_EXPORT AccessibilityNodeData {
     // Writeable attributes
     ATTR_CAN_SET_VALUE,
 
-    // If this is set, all of the other fields in this struct should
-    // be ignored and only the locations should change.
-    ATTR_UPDATE_LOCATION_ONLY,
-
     // Set on a canvas element if it has fallback content.
     ATTR_CANVAS_HAS_FALLBACK,
   };

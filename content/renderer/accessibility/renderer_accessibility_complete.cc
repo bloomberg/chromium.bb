@@ -288,13 +288,12 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
 #endif
   }
 
-  AppendLocationChangeEvents(&event_msgs);
-
   Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs));
+
+  SendLocationChanges();
 }
 
-void RendererAccessibilityComplete::AppendLocationChangeEvents(
-    std::vector<AccessibilityHostMsg_EventParams>* event_msgs) {
+void RendererAccessibilityComplete::SendLocationChanges() {
   std::queue<WebAXObject> objs_to_explore;
   std::vector<BrowserTreeNode*> location_changes;
   WebAXObject root_object = GetMainDocument().accessibilityObject();
@@ -320,19 +319,13 @@ void RendererAccessibilityComplete::AppendLocationChangeEvents(
   if (location_changes.size() == 0)
     return;
 
-  AccessibilityHostMsg_EventParams event_msg;
-  event_msg.event_type = static_cast<blink::WebAXEvent>(-1);
-  event_msg.id = root_object.axID();
-  event_msg.nodes.resize(location_changes.size());
+  std::vector<AccessibilityHostMsg_LocationChangeParams> messages;
+  messages.resize(location_changes.size());
   for (size_t i = 0; i < location_changes.size(); i++) {
-    AccessibilityNodeData& serialized_node = event_msg.nodes[i];
-    serialized_node.id = location_changes[i]->id;
-    serialized_node.location = location_changes[i]->location;
-    serialized_node.AddBoolAttribute(
-        AccessibilityNodeData::ATTR_UPDATE_LOCATION_ONLY, true);
+    messages[i].id = location_changes[i]->id;
+    messages[i].new_location = location_changes[i]->location;
   }
-
-  event_msgs->push_back(event_msg);
+  Send(new AccessibilityHostMsg_LocationChanges(routing_id(), messages));
 }
 
 RendererAccessibilityComplete::BrowserTreeNode*

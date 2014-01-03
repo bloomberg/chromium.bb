@@ -179,6 +179,15 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
   }
 }
 
+void BrowserAccessibilityManager::OnLocationChanges(
+    const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
+  for (size_t i = 0; i < params.size(); ++i) {
+    BrowserAccessibility* node = GetFromRendererID(params[i].id);
+    if (node)
+      node->SetLocation(params[i].new_location);
+  }
+}
+
 BrowserAccessibility* BrowserAccessibilityManager::GetFocus(
     BrowserAccessibility* root) {
   if (focus_ && (!root || focus_->IsDescendantOf(root)))
@@ -348,15 +357,6 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
     if (src.role != blink::WebAXRoleRootWebArea)
       return false;
     instance = CreateNode(NULL, src.id, 0);
-  }
-
-  // TODO(dmazzoni): avoid a linear scan here.
-  for (size_t i = 0; i < src.bool_attributes.size(); i++) {
-    if (src.bool_attributes[i].first ==
-        AccessibilityNodeData::ATTR_UPDATE_LOCATION_ONLY) {
-      instance->SetLocation(src.location);
-      return true;
-    }
   }
 
   // Update all of the node-specific data, like its role, state, name, etc.

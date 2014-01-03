@@ -507,9 +507,6 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
       case ATTR_CAN_SET_VALUE:
         result += " can_set_value=" + value;
         break;
-      case ATTR_UPDATE_LOCATION_ONLY:
-        result += " update_location_only=" + value;
-        break;
       case ATTR_CANVAS_HAS_FALLBACK:
         result += " has_fallback=" + value;
         break;

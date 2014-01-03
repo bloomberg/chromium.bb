@@ -1279,6 +1279,8 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
+    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
+                        OnAccessibilityLocationChanges)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(
@@ -2135,6 +2137,17 @@ void RenderViewHostImpl::OnAccessibilityEvents(
       MakeAccessibilityNodeDataTree(param.nodes, &accessibility_tree_);
     }
     accessibility_testing_callback_.Run(src_type);
+  }
+}
+
+void RenderViewHostImpl::OnAccessibilityLocationChanges(
+    const std::vector<AccessibilityHostMsg_LocationChangeParams>& params) {
+  if (view_ && !is_swapped_out_) {
+    view_->CreateBrowserAccessibilityManagerIfNeeded();
+    BrowserAccessibilityManager* manager =
+        view_->GetBrowserAccessibilityManager();
+    if (manager)
+      manager->OnLocationChanges(params);
   }
 }
 
