@@ -62,10 +62,6 @@ const base::FieldTrial::Probability
 const base::FieldTrial::Probability
     kHUPCreateShorterMatchFieldTrialExperimentFraction = 0;
 
-// Experiment group names.
-
-const char kStopTimerExperimentGroupName[] = "UseStopTimer";
-
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
 // ActivateStaticTrials() below.
@@ -244,9 +240,13 @@ bool OmniboxFieldTrial::InHUPCreateShorterMatchFieldTrialExperimentGroup() {
   return group == hup_dont_create_shorter_match_experiment_group;
 }
 
-bool OmniboxFieldTrial::InStopTimerFieldTrialExperimentGroup() {
-  return (base::FieldTrialList::FindFullName(kStopTimerFieldTrialName) ==
-          kStopTimerExperimentGroupName);
+base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
+  int stop_timer_ms;
+  if (base::StringToInt(
+      base::FieldTrialList::FindFullName(kStopTimerFieldTrialName),
+          &stop_timer_ms))
+    return base::TimeDelta::FromMilliseconds(stop_timer_ms);
+  return base::TimeDelta::FromMilliseconds(1500);
 }
 
 bool OmniboxFieldTrial::HasDynamicFieldTrialGroupPrefix(

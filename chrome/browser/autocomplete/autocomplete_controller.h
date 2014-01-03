@@ -224,9 +224,12 @@ class AutocompleteController : public AutocompleteProviderListener {
   // Timer used to tell the providers to Stop() searching for matches.
   base::OneShotTimer<AutocompleteController> stop_timer_;
 
-  // True if the user is in the "stop timer" field trial.  If so, the
-  // controller uses the |stop_timer_|.
-  const bool in_stop_timer_field_trial_;
+  // Amount of time (in ms) between when the user stops typing and
+  // when we send Stop() to every provider.  This is intended to avoid
+  // the disruptive effect of belated omnibox updates, updates that
+  // come after the user has had to time to read the whole dropdown
+  // and doesn't expect it to change.
+  const base::TimeDelta stop_timer_duration_;
 
   // True if a query is not currently running.
   bool done_;

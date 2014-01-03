@@ -152,14 +152,11 @@ class OmniboxFieldTrial {
   // ---------------------------------------------------------
   // For the AutocompleteController "stop timer" field trial.
 
-  // Returns whether the user should get the experimental setup or the
-  // default setup for this field trial.  The experiment group uses
-  // a timer in AutocompleteController to tell the providers to stop
-  // looking for matches after too much time has passed.  In other words,
-  // it tries to tell the providers to stop updating the list of suggested
-  // matches if updating the matches would probably be disruptive because
-  // they're arriving so late.
-  static bool InStopTimerFieldTrialExperimentGroup();
+  // Returns the duration to be used for the AutocompleteController's stop
+  // timer.  Returns the default value of 1.5 seconds if the stop timer
+  // override experiment isn't active or if parsing the experiment-provided
+  // duration fails.
+  static base::TimeDelta StopTimerFieldTrialDuration();
 
   // ---------------------------------------------------------
   // For the ZeroSuggestProvider field trial.

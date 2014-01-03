@@ -162,8 +162,7 @@ AutocompleteController::AutocompleteController(
       keyword_provider_(NULL),
       search_provider_(NULL),
       zero_suggest_provider_(NULL),
-      in_stop_timer_field_trial_(
-          OmniboxFieldTrial::InStopTimerFieldTrialExperimentGroup()),
+      stop_timer_duration_(OmniboxFieldTrial::StopTimerFieldTrialDuration()),
       done_(true),
       in_start_(false),
       in_zero_suggest_(false),
@@ -649,17 +648,8 @@ void AutocompleteController::StartExpireTimer() {
 }
 
 void AutocompleteController::StartStopTimer() {
-  if (!in_stop_timer_field_trial_)
-    return;
-
-  // Amount of time (in ms) between when the user stops typing and
-  // when we send Stop() to every provider.  This is intended to avoid
-  // the disruptive effect of belated omnibox updates, updates that
-  // come after the user has had to time to read the whole dropdown
-  // and doesn't expect it to change.
-  const int kStopTimeMS = 1500;
   stop_timer_.Start(FROM_HERE,
-                    base::TimeDelta::FromMilliseconds(kStopTimeMS),
+                    stop_timer_duration_,
                     base::Bind(&AutocompleteController::Stop,
                                base::Unretained(this),
                                false));
