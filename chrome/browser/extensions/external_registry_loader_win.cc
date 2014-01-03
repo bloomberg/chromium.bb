@@ -146,7 +146,7 @@ void ExternalRegistryLoader::LoadOnFileThread() {
       continue;
     }
 
-    base::Version version(WideToASCII(extension_version));
+    Version version(WideToASCII(extension_version));
     if (!version.IsValid()) {
       LOG(ERROR) << "Invalid version value " << extension_version
                  << " for key " << key_path << ".";

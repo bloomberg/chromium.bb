@@ -126,10 +126,10 @@ void CRLSetFetcher::RegisterComponent(uint32 sequence_of_loaded_crl) {
                            kPublicKeySHA256 + sizeof(kPublicKeySHA256));
   component.installer = this;
   component.name = "CRLSet";
-  component.version = base::Version(base::UintToString(sequence_of_loaded_crl));
+  component.version = Version(base::UintToString(sequence_of_loaded_crl));
   if (!component.version.IsValid()) {
     NOTREACHED();
-    component.version = base::Version("0");
+    component.version = Version("0");
   }
 
   if (cus_->RegisterComponent(component) !=

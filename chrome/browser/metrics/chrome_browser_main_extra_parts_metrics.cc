@@ -73,7 +73,7 @@ void RecordDefaultBrowserUMAStat() {
 
 void RecordLinuxGlibcVersion() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  base::Version version(gnu_get_libc_version());
+  Version version(gnu_get_libc_version());
 
   UMALinuxGlibcVersion glibc_version_result = UMA_LINUX_GLIBC_NOT_PARSEABLE;
   if (version.IsValid() && version.components().size() == 2) {

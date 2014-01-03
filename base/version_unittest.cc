@@ -6,8 +6,6 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::Version;
-
 namespace {
 
 TEST(VersionTest, DefaultConstructor) {

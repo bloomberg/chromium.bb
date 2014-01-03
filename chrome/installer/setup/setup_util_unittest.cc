@@ -102,7 +102,7 @@ TEST_F(SetupUtilTestWithDir, GetMaxVersionFromArchiveDirTest) {
   base::FilePath chrome_dir = test_dir_.path().AppendASCII("1.0.0.0");
   base::CreateDirectory(chrome_dir);
   ASSERT_TRUE(base::PathExists(chrome_dir));
-  scoped_ptr<base::Version> version(
+  scoped_ptr<Version> version(
       installer::GetMaxVersionFromArchiveDir(test_dir_.path()));
   ASSERT_EQ(version->GetString(), "1.0.0.0");
 
@@ -275,9 +275,9 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
       return static_cast<FakeProductState*>(const_cast<ProductState*>(product));
     }
 
-    void set_version(const base::Version& version) {
+    void set_version(const Version& version) {
       if (version.IsValid())
-        version_.reset(new base::Version(version));
+        version_.reset(new Version(version));
       else
         version_.reset();
     }
@@ -289,8 +289,8 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
 
   virtual void SetUp() OVERRIDE {
     SetupUtilTestWithDir::SetUp();
-    product_version_ = base::Version("30.0.1559.0");
-    max_version_ = base::Version("47.0.1559.0");
+    product_version_ = Version("30.0.1559.0");
+    max_version_ = Version("47.0.1559.0");
 
     // Install the product according to the version.
     original_state_.reset(new FakeInstallationState());
@@ -318,7 +318,7 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
     SetupUtilTestWithDir::TearDown();
   }
 
-  base::FilePath GetArchivePath(const base::Version& version) const {
+  base::FilePath GetArchivePath(const Version& version) const {
     return test_dir_.path()
         .AppendASCII(version.GetString())
         .Append(installer::kInstallerDir)
@@ -351,13 +351,13 @@ class FindArchiveToPatchTest : public SetupUtilTestWithDir {
     FakeProductState::FromProductState(
         original_state_->GetNonVersionedProductState(kSystemInstall_,
                                                      kProductType_))
-        ->set_version(base::Version());
+        ->set_version(Version());
   }
 
   static const bool kSystemInstall_;
   static const BrowserDistribution::Type kProductType_;
-  base::Version product_version_;
-  base::Version max_version_;
+  Version product_version_;
+  Version max_version_;
   scoped_ptr<FakeInstallationState> original_state_;
   scoped_ptr<installer::InstallerState> installer_state_;
 };

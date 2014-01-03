@@ -96,7 +96,7 @@ base::FilePath GetPepperFlashBaseDirectory() {
 // |latest_version| returns the corresponding version number. |older_dirs|
 // returns directories of all older versions.
 bool GetPepperFlashDirectory(base::FilePath* latest_dir,
-                             base::Version* latest_version,
+                             Version* latest_version,
                              std::vector<base::FilePath>* older_dirs) {
   base::FilePath base_dir = GetPepperFlashBaseDirectory();
   bool found = false;
@@ -104,7 +104,7 @@ bool GetPepperFlashDirectory(base::FilePath* latest_dir,
       file_enumerator(base_dir, false, base::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
-    base::Version version(path.BaseName().MaybeAsASCII());
+    Version version(path.BaseName().MaybeAsASCII());
     if (!version.IsValid())
       continue;
     if (found) {
@@ -138,7 +138,7 @@ bool SupportsPepperInterface(const char* interface_name) {
 }
 
 bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
-                               const base::Version& flash_version,
+                               const Version& flash_version,
                                bool out_of_process,
                                content::PepperPluginInfo* plugin_info) {
   if (!flash_version.IsValid())
@@ -179,7 +179,7 @@ bool IsPepperFlash(const content::WebPluginInfo& plugin) {
 }
 
 void RegisterPepperFlashWithChrome(const base::FilePath& path,
-                                   const base::Version& version) {
+                                   const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   content::PepperPluginInfo plugin_info;
   if (!MakePepperFlashPluginInfo(path, version, true, &plugin_info))
@@ -193,7 +193,7 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
       continue;
 
     // Do it only if the version we're trying to register is newer.
-    base::Version registered_version(base::UTF16ToUTF8(it->version));
+    Version registered_version(base::UTF16ToUTF8(it->version));
     if (registered_version.IsValid() &&
         version.CompareTo(registered_version) <= 0) {
       return;
@@ -245,7 +245,7 @@ bool CheckPepperFlashInterfaces(const base::DictionaryValue& manifest) {
 
 class PepperFlashComponentInstaller : public ComponentInstaller {
  public:
-  explicit PepperFlashComponentInstaller(const base::Version& version);
+  explicit PepperFlashComponentInstaller(const Version& version);
 
   virtual ~PepperFlashComponentInstaller() {}
 
@@ -258,11 +258,11 @@ class PepperFlashComponentInstaller : public ComponentInstaller {
                                 base::FilePath* installed_file) OVERRIDE;
 
  private:
-  base::Version current_version_;
+  Version current_version_;
 };
 
 PepperFlashComponentInstaller::PepperFlashComponentInstaller(
-    const base::Version& version) : current_version_(version) {
+    const Version& version) : current_version_(version) {
   DCHECK(version.IsValid());
 }
 
@@ -273,7 +273,7 @@ void PepperFlashComponentInstaller::OnUpdateError(int error) {
 bool PepperFlashComponentInstaller::Install(
     const base::DictionaryValue& manifest,
     const base::FilePath& unpack_path) {
-  base::Version version;
+  Version version;
   if (!CheckPepperFlashManifest(manifest, &version))
     return false;
   if (current_version_.CompareTo(version) > 0)
@@ -305,7 +305,7 @@ bool PepperFlashComponentInstaller::GetInstalledFile(
 }
 
 bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
-                              base::Version* version_out) {
+                              Version* version_out) {
   std::string name;
   manifest.GetStringASCII("name", &name);
   // TODO(viettrungluu): Support WinFlapper for now, while we change the format
@@ -316,7 +316,7 @@ bool CheckPepperFlashManifest(const base::DictionaryValue& manifest,
 
   std::string proposed_version;
   manifest.GetStringASCII("version", &proposed_version);
-  base::Version version(proposed_version.c_str());
+  Version version(proposed_version.c_str());
   if (!version.IsValid())
     return false;
 
@@ -347,7 +347,7 @@ namespace {
 
 #if defined(GOOGLE_CHROME_BUILD) && !defined(OS_LINUX)
 void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
-                                         const base::Version& version) {
+                                         const Version& version) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CrxComponent pepflash;
   pepflash.name = "pepper_flash";
@@ -369,7 +369,7 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
     }
   }
 
-  base::Version version(kNullVersion);
+  Version version(kNullVersion);
   std::vector<base::FilePath> older_dirs;
   if (GetPepperFlashDirectory(&path, &version, &older_dirs)) {
     path = path.Append(chrome::kPepperFlashPluginFilename);
@@ -378,7 +378,7 @@ void StartPepperFlashUpdateRegistration(ComponentUpdateService* cus) {
           BrowserThread::UI, FROM_HERE,
           base::Bind(&RegisterPepperFlashWithChrome, path, version));
     } else {
-      version = base::Version(kNullVersion);
+      version = Version(kNullVersion);
     }
   }
 

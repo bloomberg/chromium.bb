@@ -79,7 +79,7 @@ void ExtensionSyncData::PopulateFromExtensionSpecifics(
     LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics.";
   }
 
-  base::Version specifics_version(specifics.version());
+  Version specifics_version(specifics.version());
   if (!specifics_version.IsValid())
     LOG(FATAL) << "Attempt to sync bad ExtensionSpecifics.";
 

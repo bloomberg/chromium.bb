@@ -67,7 +67,7 @@ class VersionedTestInstaller : public TestInstaller {
 
  private:
   base::FilePath install_directory_;
-  base::Version current_version_;
+  Version current_version_;
 };
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_TEST_INSTALLER_H_

@@ -209,7 +209,7 @@ TestConfigurator* ComponentUpdaterTest::test_configurator() {
 ComponentUpdateService::Status ComponentUpdaterTest::RegisterComponent(
     CrxComponent* com,
     TestComponents component,
-    const base::Version& version,
+    const Version& version,
     TestInstaller* installer) {
   if (component == kTestComponent_abag) {
     com->name = "test_abag";
@@ -288,7 +288,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   EXPECT_EQ(ComponentUpdateService::kOk,
             RegisterComponent(&com,
                               kTestComponent_abag,
-                              base::Version("1.1"),
+                              Version("1.1"),
                               &installer));
 
   // We loop twice, but there are no updates so we expect two sleep messages.
@@ -426,13 +426,11 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   TestInstaller installer1;
   CrxComponent com1;
   com1.observer = &observer1;
-  RegisterComponent(
-      &com1, kTestComponent_jebg, base::Version("0.9"), &installer1);
+  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
   TestInstaller installer2;
   CrxComponent com2;
   com2.observer = &observer2;
-  RegisterComponent(
-      &com2, kTestComponent_abag, base::Version("2.2"), &installer2);
+  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
 
   test_configurator()->SetLoopCount(2);
   component_updater()->Start();
@@ -497,8 +495,7 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
 
   TestInstaller installer;
   CrxComponent com;
-  RegisterComponent(
-      &com, kTestComponent_jebg, base::Version("0.9"), &installer);
+  RegisterComponent(&com, kTestComponent_jebg, Version("0.9"), &installer);
 
   test_configurator()->SetLoopCount(1);
   component_updater()->Start();
@@ -588,13 +585,11 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
   TestInstaller installer1;
   CrxComponent com1;
   com1.observer = &observer1;
-  RegisterComponent(
-      &com1, kTestComponent_abag, base::Version("2.2"), &installer1);
+  RegisterComponent(&com1, kTestComponent_abag, Version("2.2"), &installer1);
   TestInstaller installer2;
   CrxComponent com2;
   com2.observer = &observer2;
-  RegisterComponent(
-      &com2, kTestComponent_jebg, base::Version("0.9"), &installer2);
+  RegisterComponent(&com2, kTestComponent_jebg, Version("0.9"), &installer2);
 
   // No update normally.
   test_configurator()->SetLoopCount(1);
@@ -815,13 +810,11 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   TestInstaller installer1;
   CrxComponent com1;
   com1.observer = &observer1;
-  RegisterComponent(
-      &com1, kTestComponent_jebg, base::Version("0.9"), &installer1);
+  RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"), &installer1);
   TestInstaller installer2;
   CrxComponent com2;
   com2.observer = &observer2;
-  RegisterComponent(
-      &com2, kTestComponent_abag, base::Version("2.2"), &installer2);
+  RegisterComponent(&com2, kTestComponent_abag, Version("2.2"), &installer2);
 
   // Loop twice to issue two checks: (1) with original 0.9 version, update to
   // 1.0, and do the second check (2) with the updated 1.0 version.
@@ -891,7 +884,7 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   EXPECT_EQ(ComponentUpdateService::kReplaced,
             RegisterComponent(&com1,
                               kTestComponent_jebg,
-                              base::Version("2.2"),
+                              Version("2.2"),
                               &installer3));
 
   // Loop once just to notice the check happening with the re-register version.
@@ -949,8 +942,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
 
   VersionedTestInstaller installer;
   CrxComponent com;
-  RegisterComponent(
-      &com, kTestComponent_ihfo, base::Version("0.0"), &installer);
+  RegisterComponent(&com, kTestComponent_ihfo, Version("0.0"), &installer);
 
   test_configurator()->SetLoopCount(3);
   component_updater()->Start();
@@ -1021,8 +1013,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
 
   TestInstaller installer;
   CrxComponent com;
-  RegisterComponent(
-      &com, kTestComponent_ihfo, base::Version("1.0"), &installer);
+  RegisterComponent(&com, kTestComponent_ihfo, Version("1.0"), &installer);
 
   test_configurator()->SetLoopCount(2);
   component_updater()->Start();
@@ -1088,8 +1079,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
   // Loop twice to issue two checks: (1) with original 0.9 version
   // and (2), which should retry with 0.9.
   CrxComponent com;
-  RegisterComponent(
-      &com, kTestComponent_jebg, base::Version("0.9"), &installer);
+  RegisterComponent(&com, kTestComponent_jebg, Version("0.9"), &installer);
 
   test_configurator()->SetLoopCount(2);
   component_updater()->Start();
@@ -1177,8 +1167,7 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
 
   VersionedTestInstaller installer;
   CrxComponent com;
-  RegisterComponent(
-      &com, kTestComponent_ihfo, base::Version("0.0"), &installer);
+  RegisterComponent(&com, kTestComponent_ihfo, Version("0.0"), &installer);
 
   test_configurator()->SetLoopCount(3);
   component_updater()->Start();
@@ -1283,7 +1272,7 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleDeletedNoUpdate) {
   EXPECT_EQ(ComponentUpdateService::kOk,
             RegisterComponent(&com,
                               kTestComponent_abag,
-                              base::Version("1.1"),
+                              Version("1.1"),
                               &installer));
   // The following two calls ensure that we don't do an update check via the
   // timer, so the only update check should be the on-demand one.
@@ -1368,7 +1357,7 @@ TEST_F(ComponentUpdaterTest, ResourceThrottleLiveNoUpdate) {
   EXPECT_EQ(ComponentUpdateService::kOk,
             RegisterComponent(&com,
                               kTestComponent_abag,
-                              base::Version("1.1"),
+                              Version("1.1"),
                               &installer));
   // The following two calls ensure that we don't do an update check via the
   // timer, so the only update check should be the on-demand one.

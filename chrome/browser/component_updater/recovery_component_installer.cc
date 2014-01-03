@@ -46,7 +46,7 @@ const char kRecoveryManifestName[] = "ChromeRecovery";
 
 class RecoveryComponentInstaller : public ComponentInstaller {
  public:
-  explicit RecoveryComponentInstaller(const base::Version& version,
+  explicit RecoveryComponentInstaller(const Version& version,
                                       PrefService* prefs);
 
   virtual ~RecoveryComponentInstaller() {}
@@ -60,14 +60,14 @@ class RecoveryComponentInstaller : public ComponentInstaller {
                                 base::FilePath* installed_file) OVERRIDE;
 
  private:
-  base::Version current_version_;
+  Version current_version_;
   PrefService* prefs_;
 };
 
 void RecoveryRegisterHelper(ComponentUpdateService* cus,
                             PrefService* prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  base::Version version(prefs->GetString(prefs::kRecoveryComponentVersion));
+  Version version(prefs->GetString(prefs::kRecoveryComponentVersion));
   if (!version.IsValid()) {
     NOTREACHED();
     return;
@@ -83,14 +83,13 @@ void RecoveryRegisterHelper(ComponentUpdateService* cus,
   }
 }
 
-void RecoveryUpdateVersionHelper(const base::Version& version,
-                                 PrefService* prefs) {
+void RecoveryUpdateVersionHelper(const Version& version, PrefService* prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   prefs->SetString(prefs::kRecoveryComponentVersion, version.GetString());
 }
 
 RecoveryComponentInstaller::RecoveryComponentInstaller(
-      const base::Version& version, PrefService* prefs)
+      const Version& version, PrefService* prefs)
     : current_version_(version), prefs_(prefs){
   DCHECK(version.IsValid());
 }
@@ -107,7 +106,7 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
     return false;
   std::string proposed_version;
   manifest.GetStringASCII("version", &proposed_version);
-  base::Version version(proposed_version.c_str());
+  Version version(proposed_version.c_str());
   if (!version.IsValid())
     return false;
   if (current_version_.CompareTo(version) >= 0)

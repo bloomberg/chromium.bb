@@ -36,17 +36,17 @@ class MockDllRedirector : public DllRedirector {
     return kMockModuleHandle;
   }
 
-  virtual base::Version* GetCurrentModuleVersion() {
-    return new base::Version(kMockVersionString);
+  virtual Version* GetCurrentModuleVersion() {
+    return new Version(kMockVersionString);
   }
 
   virtual HMODULE GetFirstModule() {
     return DllRedirector::GetFirstModule();
   }
 
-  base::Version* GetFirstModuleVersion() {
+  Version* GetFirstModuleVersion() {
     // Lazy man's copy.
-    return new base::Version(dll_version_->GetString());
+    return new Version(dll_version_->GetString());
   }
 
   base::SharedMemory* shared_memory() {
@@ -63,8 +63,8 @@ class MockDllRedirector2 : public MockDllRedirector {
     return kMockModuleHandle2;
   }
 
-  virtual base::Version* GetCurrentModuleVersion() {
-    return new base::Version(kMockVersionString2);
+  virtual Version* GetCurrentModuleVersion() {
+    return new Version(kMockVersionString2);
   }
 };
 
@@ -87,8 +87,8 @@ class DllRedirectorTest : public testing::Test {
  public:
   virtual void SetUp() {
     shared_memory_.reset(new base::SharedMemory);
-    mock_version_.reset(new base::Version(kMockVersionString));
-    mock_version2_.reset(new base::Version(kMockVersionString2));
+    mock_version_.reset(new Version(kMockVersionString));
+    mock_version2_.reset(new Version(kMockVersionString2));
   }
 
   virtual void TearDown() {
@@ -111,7 +111,7 @@ class DllRedirectorTest : public testing::Test {
   }
 
   // Opens the named beacon and returns the version.
-  base::Version* OpenAndReadVersionFromBeacon(const std::string& name) {
+  Version* OpenAndReadVersionFromBeacon(const std::string& name) {
     // Abort the test if we can't open and map the named memory object.
     EXPECT_TRUE(shared_memory_->Open(name, true /* read_only */));
     EXPECT_TRUE(shared_memory_->Map(0));
@@ -119,7 +119,7 @@ class DllRedirectorTest : public testing::Test {
 
     char buffer[kSharedMemorySize] = {0};
     memcpy(buffer, shared_memory_->memory(), kSharedMemorySize - 1);
-    scoped_ptr<base::Version> version(new base::Version(buffer));
+    scoped_ptr<Version> version(new Version(buffer));
     if (!version->IsValid())
       version.reset();
     return version.release();
@@ -131,8 +131,8 @@ class DllRedirectorTest : public testing::Test {
 
   // Shared memory segment that contains the version beacon.
   scoped_ptr<base::SharedMemory> shared_memory_;
-  scoped_ptr<base::Version> mock_version_;
-  scoped_ptr<base::Version> mock_version2_;
+  scoped_ptr<Version> mock_version_;
+  scoped_ptr<Version> mock_version2_;
 };
 
 TEST_F(DllRedirectorTest, RegisterAsFirstModule) {
@@ -143,12 +143,12 @@ TEST_F(DllRedirectorTest, RegisterAsFirstModule) {
   base::SharedMemory* redirector_memory = redirector->shared_memory();
   char buffer[kSharedMemorySize] = {0};
   memcpy(buffer, redirector_memory->memory(), kSharedMemorySize - 1);
-  base::Version redirector_version(buffer);
+  Version redirector_version(buffer);
   ASSERT_TRUE(redirector_version.IsValid());
   EXPECT_TRUE(redirector_version.Equals(*mock_version_.get()));
   redirector_memory = NULL;
 
-  scoped_ptr<base::Version> memory_version(
+  scoped_ptr<Version> memory_version(
       OpenAndReadVersionFromBeacon(kTestVersionBeaconName));
   ASSERT_TRUE(memory_version.get());
   EXPECT_TRUE(redirector_version.Equals(*memory_version.get()));
@@ -167,9 +167,9 @@ TEST_F(DllRedirectorTest, SecondModuleLoading) {
       new MockDllRedirector2(kTestVersionBeaconName));
   EXPECT_FALSE(second_redirector->RegisterAsFirstCFModule());
 
-  scoped_ptr<base::Version> first_redirector_version(
+  scoped_ptr<Version> first_redirector_version(
       first_redirector->GetFirstModuleVersion());
-  scoped_ptr<base::Version> second_redirector_version(
+  scoped_ptr<Version> second_redirector_version(
       second_redirector->GetFirstModuleVersion());
 
   EXPECT_TRUE(
@@ -189,9 +189,9 @@ TEST_F(DllRedirectorTest, TestBeaconOwnershipHandoff) {
       new MockDllRedirector2(kTestVersionBeaconName));
   EXPECT_FALSE(second_redirector->RegisterAsFirstCFModule());
 
-  scoped_ptr<base::Version> first_redirector_version(
+  scoped_ptr<Version> first_redirector_version(
       first_redirector->GetFirstModuleVersion());
-  scoped_ptr<base::Version> second_redirector_version(
+  scoped_ptr<Version> second_redirector_version(
       second_redirector->GetFirstModuleVersion());
 
   EXPECT_TRUE(
@@ -207,7 +207,7 @@ TEST_F(DllRedirectorTest, TestBeaconOwnershipHandoff) {
       new MockDllRedirector2(kTestVersionBeaconName));
   EXPECT_FALSE(third_redirector->RegisterAsFirstCFModule());
 
-  scoped_ptr<base::Version> third_redirector_version(
+  scoped_ptr<Version> third_redirector_version(
       third_redirector->GetFirstModuleVersion());
 
   EXPECT_TRUE(
@@ -224,7 +224,7 @@ TEST_F(DllRedirectorTest, TestBeaconOwnershipHandoff) {
       new MockDllRedirector2(kTestVersionBeaconName));
   EXPECT_TRUE(fourth_redirector->RegisterAsFirstCFModule());
 
-  scoped_ptr<base::Version> fourth_redirector_version(
+  scoped_ptr<Version> fourth_redirector_version(
       fourth_redirector->GetFirstModuleVersion());
 
   EXPECT_TRUE(
@@ -281,7 +281,7 @@ TEST_F(DllRedirectorTest, LockSquatting) {
       new MockDllRedirector2(kTestVersionBeaconName));
   EXPECT_TRUE(second_redirector->RegisterAsFirstCFModule());
 
-  scoped_ptr<base::Version> second_redirector_version(
+  scoped_ptr<Version> second_redirector_version(
       second_redirector->GetFirstModuleVersion());
   EXPECT_TRUE(
       second_redirector_version->Equals(*mock_version2_.get()));

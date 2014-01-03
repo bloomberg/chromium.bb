@@ -57,7 +57,7 @@ class VersionUpdaterWin : public VersionUpdater,
 
   // Got the intalled version so the handling of the UPGRADE_ALREADY_UP_TO_DATE
   // result case can now be completeb on the UI thread.
-  void GotInstalledVersion(const base::Version& version);
+  void GotInstalledVersion(const Version& version);
 
   // Little helper function to create google_updater_.
   void CreateGoogleUpdater();
@@ -119,7 +119,7 @@ class VersionReader
 
   // This is the version that gets read in the FILE thread and set on the
   // the updater in the UI thread.
-  base::Version installed_version_;
+  Version installed_version_;
 };
 
 VersionUpdaterWin::VersionUpdaterWin()
@@ -241,7 +241,7 @@ void VersionUpdaterWin::UpdateStatus(GoogleUpdateUpgradeResult result,
 #endif  //  defined(GOOGLE_CHROME_BUILD)
 }
 
-void VersionUpdaterWin::GotInstalledVersion(const base::Version& version) {
+void VersionUpdaterWin::GotInstalledVersion(const Version& version) {
   // This must be called on the UI thread so that callback_ can be called.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -252,7 +252,7 @@ void VersionUpdaterWin::GotInstalledVersion(const base::Version& version) {
   // may be already up to date on disk though the running app is still
   // out of date.
   chrome::VersionInfo version_info;
-  base::Version running_version(version_info.Version());
+  Version running_version(version_info.Version());
   if (!version.IsValid() || version.CompareTo(running_version) <= 0) {
     content::RecordAction(
         UserMetricsAction("UpgradeCheck_AlreadyUpToDate"));

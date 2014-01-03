@@ -11,7 +11,7 @@ namespace extensions {
 PendingExtensionInfo::PendingExtensionInfo(
     const std::string& id,
     const GURL& update_url,
-    const base::Version& version,
+    const Version& version,
     ShouldAllowInstallPredicate should_allow_install,
     bool is_from_sync,
     bool install_silently,

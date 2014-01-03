@@ -154,8 +154,8 @@ void ProcessOnOsUpgradeWorkItems(
     const installer::Product& product) {
   scoped_ptr<WorkItemList> work_item_list(
       WorkItem::CreateNoRollbackWorkItemList());
-  AddOsUpgradeWorkItems(installer_state, base::FilePath(), base::Version(),
-                       product, work_item_list.get());
+  AddOsUpgradeWorkItems(installer_state, base::FilePath(), Version(), product,
+                        work_item_list.get());
   if (!work_item_list->Do())
     LOG(ERROR) << "Failed to remove on-os-upgrade command.";
 }
@@ -521,9 +521,8 @@ DeleteResult DeleteChromeDirectoriesIfEmpty(
   return result;
 }
 
-DeleteResult DeleteAppHostFilesAndFolders(
-    const InstallerState& installer_state,
-    const base::Version& installed_version) {
+DeleteResult DeleteAppHostFilesAndFolders(const InstallerState& installer_state,
+                                          const Version& installed_version) {
   const base::FilePath& target_path = installer_state.target_path();
   if (target_path.empty()) {
     LOG(ERROR) << "DeleteAppHostFilesAndFolders: no installation destination "
@@ -917,8 +916,8 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
 bool ProcessDelegateExecuteWorkItems(const InstallerState& installer_state,
                                      const Product& product) {
   scoped_ptr<WorkItemList> item_list(WorkItem::CreateNoRollbackWorkItemList());
-  AddDelegateExecuteWorkItems(installer_state, base::FilePath(),
-                              base::Version(), product, item_list.get());
+  AddDelegateExecuteWorkItems(installer_state, base::FilePath(), Version(),
+                              product, item_list.get());
   return item_list->Do();
 }
 

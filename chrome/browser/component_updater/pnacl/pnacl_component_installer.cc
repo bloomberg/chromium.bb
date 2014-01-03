@@ -90,7 +90,7 @@ void OverrideDirPnaclComponent(const base::FilePath& base_path) {
 
 bool GetLatestPnaclDirectory(PnaclComponentInstaller* pci,
                              base::FilePath* latest_dir,
-                             base::Version* latest_version,
+                             Version* latest_version,
                              std::vector<base::FilePath>* older_dirs) {
   // Enumerate all versions starting from the base directory.
   base::FilePath base_dir = pci->GetPnaclBaseDirectory();
@@ -99,7 +99,7 @@ bool GetLatestPnaclDirectory(PnaclComponentInstaller* pci,
       file_enumerator(base_dir, false, base::FileEnumerator::DIRECTORIES);
   for (base::FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
-    base::Version version(path.BaseName().MaybeAsASCII());
+    Version version(path.BaseName().MaybeAsASCII());
     if (!version.IsValid())
       continue;
     if (found) {
@@ -155,7 +155,7 @@ base::DictionaryValue* ReadComponentManifest(
 // PNaCl manifest indicates this is the correct arch-specific package.
 bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
                                  const base::DictionaryValue& pnacl_manifest,
-                                 base::Version* version_out) {
+                                 Version* version_out) {
   // Make sure we have the right |manifest| file.
   std::string name;
   if (!manifest.GetStringASCII("name", &name)) {
@@ -177,7 +177,7 @@ bool CheckPnaclComponentManifest(const base::DictionaryValue& manifest,
     LOG(WARNING) << "'version' field is missing from manifest!";
     return false;
   }
-  base::Version version(proposed_version.c_str());
+  Version version(proposed_version.c_str());
   if (!version.IsValid()) {
     LOG(WARNING) << "'version' field in manifest is invalid "
                  << version.GetString();
@@ -259,7 +259,7 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
     return false;
   }
 
-  base::Version version;
+  Version version;
   if (!CheckPnaclComponentManifest(manifest, *pnacl_manifest, &version)) {
     LOG(WARNING) << "CheckPnaclComponentManifest failed, not installing.";
     return false;
@@ -297,7 +297,7 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
 // |installed_file| actually exists.
 bool PnaclComponentInstaller::GetInstalledFile(
     const std::string& file, base::FilePath* installed_file) {
-  if (current_version().Equals(base::Version(kNullVersion)))
+  if (current_version().Equals(Version(kNullVersion)))
     return false;
 
   *installed_file = GetPnaclBaseDirectory().AppendASCII(
@@ -318,7 +318,7 @@ CrxComponent PnaclComponentInstaller::GetCrxComponent() {
 
 namespace {
 
-void FinishPnaclUpdateRegistration(const base::Version& current_version,
+void FinishPnaclUpdateRegistration(const Version& current_version,
                                    const std::string& current_fingerprint,
                                    PnaclComponentInstaller* pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -347,7 +347,7 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
     }
   }
 
-  base::Version current_version(kNullVersion);
+  Version current_version(kNullVersion);
   std::string current_fingerprint;
   std::vector<base::FilePath> older_dirs;
   if (GetLatestPnaclDirectory(pci, &path, &current_version, &older_dirs)) {
@@ -355,7 +355,7 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
         ReadComponentManifest(path));
     scoped_ptr<base::DictionaryValue> pnacl_manifest(
         ReadPnaclManifest(path));
-    base::Version manifest_version;
+    Version manifest_version;
     // Check that the component manifest and PNaCl manifest files
     // are legit, and that the indicated version matches the one
     // encoded within the path name.
@@ -364,7 +364,7 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
                                         *pnacl_manifest,
                                         &manifest_version)
         || !current_version.Equals(manifest_version)) {
-      current_version = base::Version(kNullVersion);
+      current_version = Version(kNullVersion);
     } else {
       OverrideDirPnaclComponent(path);
       base::ReadFileToString(path.AppendASCII("manifest.fingerprint"),

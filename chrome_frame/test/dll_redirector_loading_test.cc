@@ -46,7 +46,7 @@ class DllRedirectorLoadingTest : public testing::Test {
         FileVersionInfo::CreateFileVersionInfo(build_chrome_frame_dll));
     ASSERT_TRUE(original_version_info != NULL);
     original_version_.reset(
-        new base::Version(WideToASCII(original_version_info->file_version())));
+        new Version(WideToASCII(original_version_info->file_version())));
     ASSERT_TRUE(original_version_->IsValid());
 
     // Make a place for us to run the test from.
@@ -81,7 +81,7 @@ class DllRedirectorLoadingTest : public testing::Test {
         FileVersionInfo::CreateFileVersionInfo(temporary_new_chrome_frame_dll));
     ASSERT_TRUE(new_version_info != NULL);
     new_version_.reset(
-        new base::Version(WideToASCII(new_version_info->file_version())));
+        new Version(WideToASCII(new_version_info->file_version())));
     ASSERT_TRUE(new_version_->IsValid());
 
     // Make sure the new version is larger than the old.
@@ -110,16 +110,16 @@ class DllRedirectorLoadingTest : public testing::Test {
  protected:
   static base::FilePath original_chrome_frame_dll_;
   static base::FilePath new_chrome_frame_dll_;
-  static scoped_ptr<base::Version> original_version_;
-  static scoped_ptr<base::Version> new_version_;
+  static scoped_ptr<Version> original_version_;
+  static scoped_ptr<Version> new_version_;
 
   static base::ScopedTempDir temp_dir_;
 };  // class DllRedirectorLoadingTest
 
 base::FilePath DllRedirectorLoadingTest::original_chrome_frame_dll_;
 base::FilePath DllRedirectorLoadingTest::new_chrome_frame_dll_;
-scoped_ptr<base::Version> DllRedirectorLoadingTest::original_version_;
-scoped_ptr<base::Version> DllRedirectorLoadingTest::new_version_;
+scoped_ptr<Version> DllRedirectorLoadingTest::original_version_;
+scoped_ptr<Version> DllRedirectorLoadingTest::new_version_;
 base::ScopedTempDir DllRedirectorLoadingTest::temp_dir_;
 
 #if defined(COMPONENT_BUILD)
@@ -135,7 +135,7 @@ TEST_F(DllRedirectorLoadingTest, MAYBE_TestDllRedirection) {
   struct TestData {
     base::FilePath first_dll;
     base::FilePath second_dll;
-    base::Version* expected_beacon_version;
+    Version* expected_beacon_version;
   } test_data[] = {
       {
           original_chrome_frame_dll_,
@@ -208,7 +208,7 @@ TEST_F(DllRedirectorLoadingTest, MAYBE_TestDllRedirection) {
 
     char buffer[kSharedMemoryBytes] = {0};
     memcpy(buffer, beacon.memory(), kSharedMemoryBytes - 1);
-    base::Version beacon_version(buffer);
+    Version beacon_version(buffer);
     ASSERT_TRUE(beacon_version.IsValid());
 
     EXPECT_EQ(0,

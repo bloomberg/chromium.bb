@@ -59,7 +59,7 @@ class ExtensionSyncData {
 
   // Version-dependent properties (i.e., should be used only when the
   // version of the currenty-installed extension matches |version|).
-  const base::Version& version() const { return version_; }
+  const Version& version() const { return version_; }
   const GURL& update_url() const { return update_url_; }
   // Used only for debugging.
   const std::string& name() const { return name_; }
@@ -72,7 +72,7 @@ class ExtensionSyncData {
   bool uninstalled_;
   bool enabled_;
   bool incognito_enabled_;
-  base::Version version_;
+  Version version_;
   GURL update_url_;
   std::string name_;
 };

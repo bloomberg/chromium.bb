@@ -246,7 +246,7 @@ void ExternalProviderImpl::SetPrefs(base::DictionaryValue* prefs) {
         path = base_path.Append(external_crx);
       }
 
-      base::Version version(external_version);
+      Version version(external_version);
       if (!version.IsValid()) {
         LOG(WARNING) << "Malformed extension dictionary for extension: "
                      << extension_id.c_str() << ".  Invalid version string \""
@@ -305,7 +305,7 @@ bool ExternalProviderImpl::HasExtension(
 
 bool ExternalProviderImpl::GetExtensionDetails(
     const std::string& id, Manifest::Location* location,
-    scoped_ptr<base::Version>* version) const {
+    scoped_ptr<Version>* version) const {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   CHECK(prefs_.get());
   CHECK(ready_);
@@ -325,7 +325,7 @@ bool ExternalProviderImpl::GetExtensionDetails(
       return false;
 
     if (version)
-      version->reset(new base::Version(external_version));
+      version->reset(new Version(external_version));
 
   } else {
     NOTREACHED();  // Chrome should not allow prefs to get into this state.

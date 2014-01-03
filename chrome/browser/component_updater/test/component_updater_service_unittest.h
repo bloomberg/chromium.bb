@@ -128,7 +128,7 @@ class ComponentUpdaterTest : public testing::Test {
 
   ComponentUpdateService::Status RegisterComponent(CrxComponent* com,
                                                    TestComponents component,
-                                                   const base::Version& version,
+                                                   const Version& version,
                                                    TestInstaller* installer);
 
  protected:

@@ -256,8 +256,8 @@ void SessionStartupPref::MigrateMacDefaultPrefIfNecessary(PrefService* prefs) {
   bool old_profile_version =
       !prefs->FindPreference(
           prefs::kProfileCreatedByVersion)->IsDefaultValue() &&
-      base::Version(prefs->GetString(prefs::kProfileCreatedByVersion)).
-          IsOlderThan("21.0.1180.0");
+      Version(prefs->GetString(prefs::kProfileCreatedByVersion)).IsOlderThan(
+          "21.0.1180.0");
   if (old_profile_version && TypeIsDefault(prefs))
     prefs->SetInteger(prefs::kRestoreOnStartup, kPrefValueLast);
 #endif

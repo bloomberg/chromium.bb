@@ -18,9 +18,7 @@ namespace installer {
 class FakeInstallationState : public InstallationState {
  public:
   // Takes ownership of |version|.
-  void AddChrome(bool system_install,
-                 bool multi_install,
-                 base::Version* version) {
+  void AddChrome(bool system_install, bool multi_install, Version* version) {
     FakeProductState chrome_state;
     chrome_state.set_version(version);
     chrome_state.set_multi_install(multi_install);

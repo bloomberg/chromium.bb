@@ -124,7 +124,7 @@ bool DllRedirector::RegisterAsFirstCFModule() {
   DCHECK(first_module_handle_ == NULL);
 
   // Build our own file version outside of the lock:
-  scoped_ptr<base::Version> our_version(GetCurrentModuleVersion());
+  scoped_ptr<Version> our_version(GetCurrentModuleVersion());
 
   // We sadly can't use the autolock here since we want to have a timeout.
   // Be careful not to return while holding the lock. Also, attempt to do as
@@ -188,7 +188,7 @@ bool DllRedirector::RegisterAsFirstCFModule() {
       } else {
         char buffer[kSharedMemorySize] = {0};
         memcpy(buffer, shared_memory_->memory(), kSharedMemorySize - 1);
-        dll_version_.reset(new base::Version(buffer));
+        dll_version_.reset(new Version(buffer));
 
         if (!dll_version_->IsValid() ||
             dll_version_->Equals(*our_version.get())) {
@@ -239,15 +239,15 @@ LPFNGETCLASSOBJECT DllRedirector::GetDllGetClassObjectPtr() {
   return proc_ptr;
 }
 
-base::Version* DllRedirector::GetCurrentModuleVersion() {
+Version* DllRedirector::GetCurrentModuleVersion() {
   scoped_ptr<FileVersionInfo> file_version_info(
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
   DCHECK(file_version_info.get());
 
-  scoped_ptr<base::Version> current_version;
+  scoped_ptr<Version> current_version;
   if (file_version_info.get()) {
      current_version.reset(
-         new base::Version(WideToASCII(file_version_info->file_version())));
+         new Version(WideToASCII(file_version_info->file_version())));
     DCHECK(current_version->IsValid());
   }
 
@@ -270,7 +270,7 @@ HMODULE DllRedirector::GetFirstModule() {
   return first_module_handle_;
 }
 
-HMODULE DllRedirector::LoadVersionedModule(base::Version* version) {
+HMODULE DllRedirector::LoadVersionedModule(Version* version) {
   DCHECK(version);
 
   HMODULE hmodule = NULL;

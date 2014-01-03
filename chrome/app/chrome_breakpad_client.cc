@@ -171,7 +171,7 @@ bool ChromeBreakpadClient::AboutToRestart() {
 
 bool ChromeBreakpadClient::GetDeferredUploadsSupported(
     bool is_per_user_install) {
-  base::Version update_version = GoogleUpdateSettings::GetGoogleUpdateVersion(
+  Version update_version = GoogleUpdateSettings::GetGoogleUpdateVersion(
       !is_per_user_install);
   if (!update_version.IsValid() ||
       update_version.IsOlderThan(std::string(kMinUpdateVersion)))

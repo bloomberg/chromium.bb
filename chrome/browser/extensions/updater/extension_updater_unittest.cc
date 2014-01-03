@@ -311,7 +311,7 @@ void SetupPendingExtensionManagerForTest(
     pending_extension_manager->AddForTesting(
         PendingExtensionInfo(id,
                              update_url,
-                             base::Version(),
+                             Version(),
                              should_allow_install,
                              kIsFromSync,
                              kInstallSilently,
@@ -987,7 +987,7 @@ class ExtensionUpdaterTest : public testing::Test {
 
     std::string id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     std::string hash;
-    base::Version version("0.0.1");
+    Version version("0.0.1");
     std::set<int> requests;
     requests.insert(0);
     scoped_ptr<ExtensionDownloader::ExtensionFetch> fetch(

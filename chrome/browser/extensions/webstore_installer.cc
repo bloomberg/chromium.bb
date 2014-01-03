@@ -356,7 +356,7 @@ void WebstoreInstaller::Observe(int type,
         CHECK_EQ(extension->id(), id_);
         ReportSuccess();
       } else {
-        const base::Version version_required(info.minimum_version);
+        const Version version_required(info.minimum_version);
         if (version_required.IsValid() &&
             extension->version()->CompareTo(version_required) < 0) {
           // It should not happen, CrxInstaller will make sure the version is
@@ -430,11 +430,11 @@ void WebstoreInstaller::OnDownloadStarted(
     scoped_ptr<Approval> approval = Approval::CreateForSharedModule(profile_);
     const SharedModuleInfo::ImportInfo& info = pending_modules_.front();
     approval->extension_id = info.extension_id;
-    const base::Version version_required(info.minimum_version);
+    const Version version_required(info.minimum_version);
 
     if (version_required.IsValid()) {
       approval->minimum_version.reset(
-          new base::Version(version_required));
+          new Version(version_required));
     }
     download_item_->SetUserData(kApprovalKey, approval.release());
   } else {

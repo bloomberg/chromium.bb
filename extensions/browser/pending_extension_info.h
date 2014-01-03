@@ -30,7 +30,7 @@ class PendingExtensionInfo {
   PendingExtensionInfo(
       const std::string& id,
       const GURL& update_url,
-      const base::Version& version,
+      const Version& version,
       ShouldAllowInstallPredicate should_allow_install,
       bool is_from_sync,
       bool install_silently,
@@ -46,7 +46,7 @@ class PendingExtensionInfo {
 
   const std::string& id() const { return id_; }
   const GURL& update_url() const { return update_url_; }
-  const base::Version& version() const { return version_; }
+  const Version& version() const { return version_; }
 
   // ShouldAllowInstall() returns the result of running constructor argument
   // |should_allow_install| on an extension. After an extension is unpacked,
@@ -74,7 +74,7 @@ class PendingExtensionInfo {
   std::string id_;
 
   GURL update_url_;
-  base::Version version_;
+  Version version_;
 
   // When the extension is about to be installed, this function is
   // called.  If this function returns true, the install proceeds.  If

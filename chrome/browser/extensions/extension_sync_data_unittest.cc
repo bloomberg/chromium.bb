@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/version.h"
 #include "sync/protocol/extension_specifics.pb.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

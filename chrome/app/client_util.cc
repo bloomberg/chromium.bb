@@ -202,7 +202,7 @@ base::string16 GetCurrentModuleVersion() {
       FileVersionInfo::CreateFileVersionInfoForCurrentModule());
   if (file_version_info.get()) {
     base::string16 version_string(file_version_info->file_version());
-    if (base::Version(WideToASCII(version_string)).IsValid())
+    if (Version(WideToASCII(version_string)).IsValid())
       return version_string;
   }
   return base::string16();
@@ -238,7 +238,7 @@ HMODULE MainDllLoader::Load(base::string16* out_version,
       // This is used to support Chrome Frame, see http://crbug.com/88589.
       version_string = cmd_line.GetSwitchValueNative(switches::kChromeVersion);
 
-      if (!base::Version(WideToASCII(version_string)).IsValid()) {
+      if (!Version(WideToASCII(version_string)).IsValid()) {
         // If a bogus command line flag was given, then abort.
         LOG(ERROR) << "Invalid command line version: " << version_string;
         return NULL;

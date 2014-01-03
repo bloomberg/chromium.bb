@@ -59,7 +59,7 @@ bool VersionedTestInstaller::Install(const base::DictionaryValue& manifest,
                                      const base::FilePath& unpack_path) {
   std::string version_string;
   manifest.GetStringASCII("version", &version_string);
-  base::Version version(version_string.c_str());
+  Version version(version_string.c_str());
 
   base::FilePath path;
   path = install_directory_.AppendASCII(version.GetString());

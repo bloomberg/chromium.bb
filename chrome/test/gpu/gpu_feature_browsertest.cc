@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
+#include "base/version.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_paths.h"

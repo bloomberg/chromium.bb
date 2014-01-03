@@ -341,7 +341,7 @@ void ExternalCache::BackendCheckCacheContentsInternal(
       id.clear();
     }
 
-    if (!base::Version(version).IsValid()) {
+    if (!Version(version).IsValid()) {
       LOG(ERROR) << "Bad extension version in ExternalCache: " << version;
       version.clear();
     }
@@ -376,8 +376,8 @@ void ExternalCache::BackendCheckCacheContentsInternal(
                          &prev_version_string) &&
         entry->GetString(extensions::ExternalProviderImpl::kExternalCrx,
                          &prev_crx)) {
-      base::Version prev_version(prev_version_string);
-      base::Version curr_version(version);
+      Version prev_version(prev_version_string);
+      Version curr_version(version);
       DCHECK(prev_version.IsValid());
       DCHECK(curr_version.IsValid());
       if (prev_version.CompareTo(curr_version) <= 0) {
@@ -472,7 +472,7 @@ void ExternalCache::BackendInstallCacheEntry(
     const std::string& id,
     const base::FilePath& path,
     const std::string& version) {
-  base::Version version_validator(version);
+  Version version_validator(version);
   if (!version_validator.IsValid()) {
     LOG(ERROR) << "ExternalCache downloaded extension " << id << " but got bad "
                << "version: " << version;

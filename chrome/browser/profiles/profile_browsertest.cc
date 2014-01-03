@@ -8,6 +8,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
+#include "base/version.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile_impl.h"

@@ -125,8 +125,8 @@ class CrxInstaller
   const std::string& expected_id() const { return expected_id_; }
   void set_expected_id(const std::string& val) { expected_id_ = val; }
 
-  void set_expected_version(const base::Version& val) {
-    expected_version_.reset(new base::Version(val));
+  void set_expected_version(const Version& val) {
+    expected_version_.reset(new Version(val));
     expected_version_strict_checking_ = true;
   }
 
@@ -297,7 +297,7 @@ class CrxInstaller
   // installing.  Important for external sources, where claiming the wrong
   // version could cause unnecessary unpacking of an extension at every
   // restart.
-  scoped_ptr<base::Version> expected_version_;
+  scoped_ptr<Version> expected_version_;
 
   // If true, the actual version should be same with the |expected_version_|,
   // Otherwise the actual version should be equal to or newer than

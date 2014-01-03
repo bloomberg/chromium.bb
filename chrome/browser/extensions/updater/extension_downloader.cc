@@ -96,8 +96,7 @@ bool ShouldRetryRequest(const net::URLRequestStatus& status,
 
 }  // namespace
 
-UpdateDetails::UpdateDetails(const std::string& id,
-                             const base::Version& version)
+UpdateDetails::UpdateDetails(const std::string& id, const Version& version)
     : id(id), version(version) {}
 
 UpdateDetails::~UpdateDetails() {}
@@ -161,7 +160,7 @@ bool ExtensionDownloader::AddPendingExtension(const std::string& id,
   // Use a zero version to ensure that a pending extension will always
   // be updated, and thus installed (assuming all extensions have
   // non-zero versions).
-  base::Version version("0.0.0.0");
+  Version version("0.0.0.0");
   DCHECK(version.IsValid());
 
   return AddExtensionData(id,
@@ -206,7 +205,7 @@ void ExtensionDownloader::StartBlacklistUpdate(
 }
 
 bool ExtensionDownloader::AddExtensionData(const std::string& id,
-                                           const base::Version& version,
+                                           const Version& version,
                                            Manifest::Type extension_type,
                                            const GURL& extension_update_url,
                                            const std::string& update_url_data,
@@ -531,7 +530,7 @@ void ExtensionDownloader::DetermineUpdates(
     std::vector<int>* result) {
   // This will only be valid if one of possible_updates specifies
   // browser_min_version.
-  base::Version browser_version;
+  Version browser_version;
 
   for (size_t i = 0; i < possible_updates.list.size(); i++) {
     const UpdateManifest::Result* update = &possible_updates.list[i];
@@ -562,8 +561,8 @@ void ExtensionDownloader::DetermineUpdates(
 
       VLOG(2) << id << " is at '" << version << "'";
 
-      base::Version existing_version(version);
-      base::Version update_version(update->version);
+      Version existing_version(version);
+      Version update_version(update->version);
 
       if (!update_version.IsValid() ||
           update_version.CompareTo(existing_version) <= 0) {
@@ -577,9 +576,9 @@ void ExtensionDownloader::DetermineUpdates(
       if (!browser_version.IsValid()) {
         chrome::VersionInfo version_info;
         if (version_info.is_valid())
-          browser_version = base::Version(version_info.Version());
+          browser_version = Version(version_info.Version());
       }
-      base::Version browser_min_version(update->browser_min_version);
+      Version browser_min_version(update->browser_min_version);
       if (browser_version.IsValid() && browser_min_version.IsValid() &&
           browser_min_version.CompareTo(browser_version) > 0) {
         // TODO(asargent) - We may want this to show up in the extensions UI
@@ -706,7 +705,7 @@ void ExtensionDownloader::NotifyExtensionsDownloadFailed(
 
 void ExtensionDownloader::NotifyUpdateFound(const std::string& id,
                                             const std::string& version) {
-  UpdateDetails updateInfo(id, base::Version(version));
+  UpdateDetails updateInfo(id, Version(version));
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_UPDATE_FOUND,
       content::NotificationService::AllBrowserContextsAndSources(),
