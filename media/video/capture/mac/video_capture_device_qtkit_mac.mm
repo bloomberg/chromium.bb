@@ -219,8 +219,10 @@
 
 - (void)stopCapture {
   if ([[captureSession_ inputs] count] == 1) {
-    [captureSession_ removeInput:captureDeviceInput_];
+    // |stopRunning| must be called before |removeInput:| to avoid a deadlock
+    // with device enumeration when the active camera is unplugged.
     [captureSession_ stopRunning];
+    [captureSession_ removeInput:captureDeviceInput_];
   }
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
