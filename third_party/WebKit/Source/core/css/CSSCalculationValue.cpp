@@ -65,6 +65,10 @@ static CalculationCategory unitCategory(CSSPrimitiveValue::UnitTypes type)
     case CSSPrimitiveValue::CSS_PC:
     case CSSPrimitiveValue::CSS_REMS:
     case CSSPrimitiveValue::CSS_CHS:
+    case CSSPrimitiveValue::CSS_VW:
+    case CSSPrimitiveValue::CSS_VH:
+    case CSSPrimitiveValue::CSS_VMIN:
+    case CSSPrimitiveValue::CSS_VMAX:
         return CalcLength;
     case CSSPrimitiveValue::CSS_VARIABLE_NAME:
         return CalcVariable;
@@ -742,10 +746,6 @@ PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(const Lengt
 {
     switch (length.type()) {
     case Percent:
-    case ViewportPercentageWidth:
-    case ViewportPercentageHeight:
-    case ViewportPercentageMin:
-    case ViewportPercentageMax:
     case Fixed:
         return createExpressionNode(CSSPrimitiveValue::create(length, zoom), length.value() == trunc(length.value()));
     case Calculated:
@@ -758,6 +758,8 @@ PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(const Lengt
     case FillAvailable:
     case FitContent:
     case ExtendToZoom:
+    case DeviceWidth:
+    case DeviceHeight:
     case Undefined:
         ASSERT_NOT_REACHED();
         return 0;

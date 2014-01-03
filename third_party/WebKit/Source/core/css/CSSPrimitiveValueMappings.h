@@ -4452,8 +4452,6 @@ template<int supported> Length CSSPrimitiveValue::convertToLength(const CSSToLen
         return Length(Auto);
     if ((supported & FixedConversion) && (supported & PercentConversion) && isCalculated())
         return Length(cssCalcValue()->toCalcValue(conversionData));
-    if ((supported & FixedConversion) && isViewportPercentageLength())
-        return viewportPercentageLength();
     ASSERT_NOT_REACHED();
     return Length(0, Fixed);
 }

@@ -34,6 +34,7 @@
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/style/StyleImage.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "platform/LengthFunctions.h"
 #include "platform/fonts/Font.h"
 #include "platform/fonts/FontSelector.h"
 #include "wtf/MathExtras.h"
@@ -233,6 +234,7 @@ void RenderStyle::copyNonInheritedFrom(const RenderStyle* other)
     noninherited_flags._page_break_inside = other->noninherited_flags._page_break_inside;
     noninherited_flags.explicitInheritance = other->noninherited_flags.explicitInheritance;
     noninherited_flags.currentColor = other->noninherited_flags.currentColor;
+    noninherited_flags.hasViewportUnits = other->noninherited_flags.hasViewportUnits;
     if (m_svgStyle != other->m_svgStyle)
         m_svgStyle.access()->copyNonInheritedFrom(other->m_svgStyle.get());
     ASSERT(zoom() == initialZoom());
@@ -879,8 +881,8 @@ void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRec
     float offsetY = transformOriginY().type() == Percent ? boundingBox.y() : 0;
 
     if (applyTransformOrigin) {
-        transform.translate3d(floatValueForLength(transformOriginX(), boundingBox.width(), 0) + offsetX,
-            floatValueForLength(transformOriginY(), boundingBox.height(), 0) + offsetY,
+        transform.translate3d(floatValueForLength(transformOriginX(), boundingBox.width()) + offsetX,
+            floatValueForLength(transformOriginY(), boundingBox.height()) + offsetY,
             transformOriginZ());
     }
 
@@ -889,8 +891,8 @@ void RenderStyle::applyTransform(TransformationMatrix& transform, const FloatRec
         transformOperations[i]->apply(transform, boundingBox.size());
 
     if (applyTransformOrigin) {
-        transform.translate3d(-floatValueForLength(transformOriginX(), boundingBox.width(), 0) - offsetX,
-            -floatValueForLength(transformOriginY(), boundingBox.height(), 0) - offsetY,
+        transform.translate3d(-floatValueForLength(transformOriginX(), boundingBox.width()) - offsetX,
+            -floatValueForLength(transformOriginY(), boundingBox.height()) - offsetY,
             -transformOriginZ());
     }
 }
@@ -905,17 +907,17 @@ void RenderStyle::setBoxShadow(PassRefPtr<ShadowList> s)
     rareNonInheritedData.access()->m_boxShadow = s;
 }
 
-static RoundedRect::Radii calcRadiiFor(const BorderData& border, IntSize size, RenderView* renderView)
+static RoundedRect::Radii calcRadiiFor(const BorderData& border, IntSize size)
 {
     return RoundedRect::Radii(
-        IntSize(valueForLength(border.topLeft().width(), size.width(), renderView),
-                valueForLength(border.topLeft().height(), size.height(), renderView)),
-        IntSize(valueForLength(border.topRight().width(), size.width(), renderView),
-                valueForLength(border.topRight().height(), size.height(), renderView)),
-        IntSize(valueForLength(border.bottomLeft().width(), size.width(), renderView),
-                valueForLength(border.bottomLeft().height(), size.height(), renderView)),
-        IntSize(valueForLength(border.bottomRight().width(), size.width(), renderView),
-                valueForLength(border.bottomRight().height(), size.height(), renderView)));
+        IntSize(valueForLength(border.topLeft().width(), size.width()),
+            valueForLength(border.topLeft().height(), size.height())),
+        IntSize(valueForLength(border.topRight().width(), size.width()),
+            valueForLength(border.topRight().height(), size.height())),
+        IntSize(valueForLength(border.bottomLeft().width(), size.width()),
+            valueForLength(border.bottomLeft().height(), size.height())),
+        IntSize(valueForLength(border.bottomRight().width(), size.width()),
+            valueForLength(border.bottomRight().height(), size.height())));
 }
 
 static float calcConstraintScaleFor(const IntRect& rect, const RoundedRect::Radii& radii)
@@ -967,12 +969,12 @@ short RenderStyle::verticalBorderSpacing() const { return inherited->vertical_bo
 void RenderStyle::setHorizontalBorderSpacing(short v) { SET_VAR(inherited, horizontal_border_spacing, v); }
 void RenderStyle::setVerticalBorderSpacing(short v) { SET_VAR(inherited, vertical_border_spacing, v); }
 
-RoundedRect RenderStyle::getRoundedBorderFor(const LayoutRect& borderRect, RenderView* renderView, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
+RoundedRect RenderStyle::getRoundedBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const
 {
     IntRect snappedBorderRect(pixelSnappedIntRect(borderRect));
     RoundedRect roundedRect(snappedBorderRect);
     if (hasBorderRadius()) {
-        RoundedRect::Radii radii = calcRadiiFor(surround->border, snappedBorderRect.size(), renderView);
+        RoundedRect::Radii radii = calcRadiiFor(surround->border, snappedBorderRect.size());
         radii.scale(calcConstraintScaleFor(snappedBorderRect, radii));
         roundedRect.includeLogicalEdges(radii, isHorizontalWritingMode(), includeLogicalLeftEdge, includeLogicalRightEdge);
     }
@@ -1217,7 +1219,7 @@ Length RenderStyle::lineHeight() const
 }
 void RenderStyle::setLineHeight(Length specifiedLineHeight) { SET_VAR(inherited, line_height, specifiedLineHeight); }
 
-int RenderStyle::computedLineHeight(RenderView* renderView) const
+int RenderStyle::computedLineHeight() const
 {
     const Length& lh = lineHeight();
 
@@ -1227,9 +1229,6 @@ int RenderStyle::computedLineHeight(RenderView* renderView) const
 
     if (lh.isPercent())
         return minimumValueForLength(lh, fontSize());
-
-    if (lh.isViewportPercentage())
-        return valueForLength(lh, 0, renderView);
 
     return lh.value();
 }

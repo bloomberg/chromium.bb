@@ -54,6 +54,7 @@ public:
     void add(const RenderStyle*, const RenderStyle* parentStyle, unsigned hash, const MatchResult&);
 
     void clear();
+    void clearViewportDependent();
 
     static bool isCacheable(const Element*, const RenderStyle*, const RenderStyle* parentStyle);
 

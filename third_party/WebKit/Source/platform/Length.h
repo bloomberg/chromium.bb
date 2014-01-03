@@ -35,13 +35,14 @@
 
 namespace WebCore {
 
+// FIXME: This enum makes it hard to tell in general what values may be
+// appropriate for any given Length.
 enum LengthType {
     Auto, Percent, Fixed,
     Intrinsic, MinIntrinsic,
     MinContent, MaxContent, FillAvailable, FitContent,
     Calculated,
-    ViewportPercentageWidth, ViewportPercentageHeight, ViewportPercentageMin, ViewportPercentageMax,
-    ExtendToZoom,
+    ExtendToZoom, DeviceWidth, DeviceHeight,
     Undefined
 };
 
@@ -229,7 +230,7 @@ public:
     bool isIntrinsicOrAuto() const { return type() == Auto || isLegacyIntrinsic() || isIntrinsic(); }
     bool isLegacyIntrinsic() const { return type() == Intrinsic || type() == MinIntrinsic; }
     bool isIntrinsic() const { return type() == MinContent || type() == MaxContent || type() == FillAvailable || type() == FitContent; }
-    bool isSpecified() const { return type() == Fixed || type() == Percent || type() == Calculated || isViewportPercentage(); }
+    bool isSpecified() const { return type() == Fixed || type() == Percent || type() == Calculated; }
     bool isSpecifiedOrIntrinsic() const { return isSpecified() || isIntrinsic(); }
     bool isCalculated() const { return type() == Calculated; }
     bool isCalculatedEqual(const Length&) const;
@@ -277,16 +278,6 @@ public:
     }
     float nonNanCalculatedValue(int maxValue) const;
 
-    bool isViewportPercentage() const
-    {
-        LengthType lengthType = type();
-        return lengthType >= ViewportPercentageWidth && lengthType <= ViewportPercentageMax;
-    }
-    float viewportPercentageLength() const
-    {
-        ASSERT(isViewportPercentage());
-        return getFloatValue();
-    }
 private:
     int getIntValue() const
     {

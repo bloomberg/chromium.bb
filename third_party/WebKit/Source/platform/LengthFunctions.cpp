@@ -29,8 +29,6 @@
 
 namespace WebCore {
 
-// This method is over-ridden in core/css/CSSLengthFunctions.cpp.
-// Any changes here most likely also need to be applied there.
 float floatValueForLength(const Length& length, float maximumValue)
 {
     switch (length.type()) {
@@ -43,17 +41,14 @@ float floatValueForLength(const Length& length, float maximumValue)
         return static_cast<float>(maximumValue);
     case Calculated:
         return length.nonNanCalculatedValue(maximumValue);
-    case ViewportPercentageWidth:
-    case ViewportPercentageHeight:
-    case ViewportPercentageMin:
-    case ViewportPercentageMax:
-        return 0;
     case Intrinsic:
     case MinIntrinsic:
     case MinContent:
     case MaxContent:
     case FitContent:
     case ExtendToZoom:
+    case DeviceWidth:
+    case DeviceHeight:
     case Undefined:
         ASSERT_NOT_REACHED();
         return 0;

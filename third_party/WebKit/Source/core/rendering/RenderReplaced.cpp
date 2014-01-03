@@ -358,8 +358,8 @@ LayoutRect RenderReplaced::replacedContentRect(const LayoutSize* overriddenIntri
         ASSERT_NOT_REACHED();
     }
 
-    LayoutUnit xOffset = minimumValueForLength(style()->objectPosition().x(), contentRect.width() - finalRect.width(), view());
-    LayoutUnit yOffset = minimumValueForLength(style()->objectPosition().y(), contentRect.height() - finalRect.height(), view());
+    LayoutUnit xOffset = minimumValueForLength(style()->objectPosition().x(), contentRect.width() - finalRect.width());
+    LayoutUnit yOffset = minimumValueForLength(style()->objectPosition().y(), contentRect.height() - finalRect.height());
     finalRect.move(xOffset, yOffset);
 
     return finalRect;

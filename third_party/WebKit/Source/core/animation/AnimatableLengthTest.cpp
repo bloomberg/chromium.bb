@@ -51,8 +51,8 @@ class AnimationAnimatableLengthTest : public ::testing::Test {
 protected:
     AnimationAnimatableLengthTest()
         : style(RenderStyle::createDefaultStyle())
-        , conversionDataZoom1(style.get(), style.get(), 1.0f)
-        , conversionDataZoom3(style.get(), style.get(), 3.0f)
+        , conversionDataZoom1(style.get(), style.get(), 0, 0, 1.0f)
+        , conversionDataZoom3(style.get(), style.get(), 0, 0, 3.0f)
     {
     }
 

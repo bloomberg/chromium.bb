@@ -243,7 +243,13 @@ protected:
         unsigned _table_layout : 1; // ETableLayout
 
         unsigned _unicodeBidi : 3; // EUnicodeBidi
-        // 31 bits
+
+        // This is set if we used viewport units when resolving a length.
+        // It is mutable so we can pass around const RenderStyles to resolve lengths.
+        mutable unsigned hasViewportUnits : 1;
+
+        // 32 bits
+
         unsigned _page_break_before : 2; // EPageBreak
         unsigned _page_break_after : 2; // EPageBreak
         unsigned _page_break_inside : 2; // EPageBreak
@@ -274,7 +280,7 @@ protected:
         unsigned _affectedByDrag : 1;
         unsigned _isLink : 1;
         // If you add more style bits here, you will also need to update RenderStyle::copyNonInheritedFrom()
-        // 60 bits
+        // 63 bits
     } noninherited_flags;
 
 // !END SYNC!
@@ -321,6 +327,7 @@ protected:
         noninherited_flags.emptyState = false;
         noninherited_flags.firstChildState = false;
         noninherited_flags.lastChildState = false;
+        noninherited_flags.hasViewportUnits = false;
         noninherited_flags.setAffectedByFocus(false);
         noninherited_flags.setAffectedByHover(false);
         noninherited_flags.setAffectedByActive(false);
@@ -361,6 +368,9 @@ public:
     void removeCachedPseudoStyle(PseudoId);
 
     const PseudoStyleCache* cachedPseudoStyles() const { return m_cachedPseudoStyles.get(); }
+
+    void setHasViewportUnits(bool hasViewportUnits = true) const { noninherited_flags.hasViewportUnits = hasViewportUnits; }
+    bool hasViewportUnits() const { return noninherited_flags.hasViewportUnits; }
 
     void setVariable(const AtomicString& name, const String& value) { rareInheritedData.access()->m_variables.access()->setVariable(name, value); }
     const HashMap<AtomicString, String>* variables() { return &(rareInheritedData->m_variables->m_data); }
@@ -572,7 +582,7 @@ public:
 
     Length specifiedLineHeight() const;
     Length lineHeight() const;
-    int computedLineHeight(RenderView* = 0) const;
+    int computedLineHeight() const;
 
     EWhiteSpace whiteSpace() const { return static_cast<EWhiteSpace>(inherited_flags._white_space); }
     static bool autoWrap(EWhiteSpace ws)
@@ -1019,7 +1029,7 @@ public:
         setBorderRadius(LengthSize(Length(s.width(), Fixed), Length(s.height(), Fixed)));
     }
 
-    RoundedRect getRoundedBorderFor(const LayoutRect& borderRect, RenderView* = 0, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
+    RoundedRect getRoundedBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
     RoundedRect getRoundedInnerBorderFor(const LayoutRect& borderRect, bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
 
     RoundedRect getRoundedInnerBorderFor(const LayoutRect& borderRect,

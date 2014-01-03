@@ -47,7 +47,7 @@ void testExpression(PassRefPtr<CSSCalcExpressionNode> expression, const RenderSt
     EXPECT_TRUE(
         expression->equals(
             *CSSCalcValue::createExpressionNode(
-                expression->toCalcValue(CSSToLengthConversionData(style, style)).get(),
+                expression->toCalcValue(CSSToLengthConversionData(style, style, 0)).get(),
                 style->effectiveZoom()).get()));
 }
 

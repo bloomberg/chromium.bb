@@ -2895,9 +2895,9 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
             adjustedDescription.maxWidth = Length(); // auto
         const int legacyWidthSnappingMagicNumber = 320;
         if (adjustedDescription.maxWidth.isFixed() && adjustedDescription.maxWidth.value() <= legacyWidthSnappingMagicNumber)
-            adjustedDescription.maxWidth = Length(100, ViewportPercentageWidth);
+            adjustedDescription.maxWidth = Length(DeviceWidth);
         if (adjustedDescription.maxHeight.isFixed() && adjustedDescription.maxWidth.value() <= m_size.height)
-            adjustedDescription.maxHeight = Length(100, ViewportPercentageHeight);
+            adjustedDescription.maxHeight = Length(DeviceHeight);
         adjustedDescription.minWidth = adjustedDescription.maxWidth;
         adjustedDescription.minHeight = adjustedDescription.maxHeight;
     }
@@ -2907,7 +2907,7 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
     if (settingsImpl()->clobberUserAgentInitialScaleQuirk()
         && m_pageScaleConstraintsSet.userAgentConstraints().initialScale != -1
         && m_pageScaleConstraintsSet.userAgentConstraints().initialScale * deviceScaleFactor() <= 1) {
-        if (description.maxWidth == Length(100, ViewportPercentageWidth)
+        if (description.maxWidth == Length(DeviceWidth)
             || (description.maxWidth.type() == ExtendToZoom && m_pageScaleConstraintsSet.pageDefinedConstraints().initialScale == 1.0f))
             setInitialPageScaleOverride(-1);
     }

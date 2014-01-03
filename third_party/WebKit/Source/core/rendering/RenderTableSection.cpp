@@ -619,8 +619,7 @@ int RenderTableSection::calcRowLogicalHeight()
 
     RenderTableCell* cell;
 
-    RenderView* viewRenderer = view();
-    LayoutStateMaintainer statePusher(viewRenderer);
+    LayoutStateMaintainer statePusher(view());
 
     m_rowPos.resize(m_grid.size() + 1);
 
@@ -640,7 +639,7 @@ int RenderTableSection::calcRowLogicalHeight()
         LayoutUnit baselineDescent = 0;
 
         // Our base size is the biggest logical height from our cells' styles (excluding row spanning cells).
-        m_rowPos[r + 1] = max(m_rowPos[r] + minimumValueForLength(m_grid[r].logicalHeight, 0, viewRenderer).round(), 0);
+        m_rowPos[r + 1] = max(m_rowPos[r] + minimumValueForLength(m_grid[r].logicalHeight, 0).round(), 0);
 
         Row& row = m_grid[r].row;
         unsigned totalCols = row.size();

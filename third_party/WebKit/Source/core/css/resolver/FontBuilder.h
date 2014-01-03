@@ -83,6 +83,8 @@ public:
     // FontBuilder calls at the callsite.
     void createFontForDocument(PassRefPtr<FontSelector>, RenderStyle*);
 
+    bool fontSizeHasViewportUnits() { return m_fontSizehasViewportUnits; }
+
     // FIXME: These should not be necessary eventually.
     void setFontDirty(bool fontDirty) { m_fontDirty = fontDirty; }
     // FIXME: This is only used by an ASSERT in StyleResolver. Remove?
@@ -102,6 +104,7 @@ private:
 
     const Document* m_document;
     bool m_useSVGZoomRules;
+    bool m_fontSizehasViewportUnits;
     // FIXME: This member is here on a short-term lease. The plan is to remove
     // any notion of RenderStyle from here, allowing FontBuilder to build Font objects
     // directly, rather than as a byproduct of calling RenderStyle::setFontDescription.

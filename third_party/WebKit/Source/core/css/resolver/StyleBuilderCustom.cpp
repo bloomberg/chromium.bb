@@ -280,8 +280,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyLineHeight(StyleResolverState& 
         lineHeight = Length((state.style()->computedFontSize() * primitiveValue->getIntValue()) / 100.0, Fixed);
     } else if (primitiveValue->isNumber()) {
         lineHeight = Length(primitiveValue->getDoubleValue() * 100.0, Percent);
-    } else if (primitiveValue->isViewportPercentageLength()) {
-        lineHeight = primitiveValue->viewportPercentageLength();
     } else if (primitiveValue->isCalculated()) {
         double multiplier = state.style()->effectiveZoom();
         if (Frame* frame = state.document().frame())

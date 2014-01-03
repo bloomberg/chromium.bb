@@ -51,8 +51,8 @@
             function test(zoomLevel)
             {
                     document.body.style.zoom = zoomLevel;
-                    var windowWidth = "'" + (window.innerWidth / 10 / zoomLevel) + "px'";
-                    var windowHeight = "'" + (window.innerHeight / 10 / zoomLevel) + "px'";
+                    var windowWidth = "'" + (window.innerWidth / 10) + "px'";
+                    var windowHeight = "'" + (window.innerHeight / 10) + "px'";
                     
                     shouldBe("window.getComputedStyle(fixedElement).top", "'100px'");
                     shouldBe("window.getComputedStyle(fixedElement).right", "'100px'");

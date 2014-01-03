@@ -33,6 +33,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/IdTargetObserverRegistry.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -505,6 +506,17 @@ Element* TreeScope::getElementByAccessKey(const String& key) const
         }
     }
     return result;
+}
+
+void TreeScope::setNeedsStyleRecalcForViewportUnits()
+{
+    for (Element* element = ElementTraversal::firstWithin(*rootNode()); element; element = ElementTraversal::nextIncludingPseudo(*element)) {
+        for (ShadowRoot* root = element->youngestShadowRoot(); root; root = root->olderShadowRoot())
+            root->setNeedsStyleRecalcForViewportUnits();
+        RenderStyle* style = element->renderStyle();
+        if (style && style->hasViewportUnits())
+            element->setNeedsStyleRecalc(LocalStyleChange);
+    }
 }
 
 } // namespace WebCore

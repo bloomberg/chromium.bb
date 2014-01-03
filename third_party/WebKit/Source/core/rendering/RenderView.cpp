@@ -320,10 +320,7 @@ void RenderView::layout()
             if ((child->isBox() && toRenderBox(child)->hasRelativeLogicalHeight())
                     || child->style()->logicalHeight().isPercent()
                     || child->style()->logicalMinHeight().isPercent()
-                    || child->style()->logicalMaxHeight().isPercent()
-                    || child->style()->logicalHeight().isViewportPercentage()
-                    || child->style()->logicalMinHeight().isViewportPercentage()
-                    || child->style()->logicalMaxHeight().isViewportPercentage())
+                    || child->style()->logicalMaxHeight().isPercent())
                 layoutScope.setChildNeedsLayout(child);
         }
 
@@ -1213,26 +1210,16 @@ bool RenderView::backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const
     return m_frameView->hasOpaqueBackground();
 }
 
-LayoutUnit RenderView::viewportPercentageWidth(float percentage) const
+double RenderView::layoutViewportWidth() const
 {
-    return viewLogicalWidth(ScrollableArea::IncludeScrollbars) * percentage / 100.f;
+    float scale = m_frameView ? m_frameView->frame().pageZoomFactor() : 1;
+    return viewWidth(ScrollableArea::IncludeScrollbars) / scale;
 }
 
-LayoutUnit RenderView::viewportPercentageHeight(float percentage) const
+double RenderView::layoutViewportHeight() const
 {
-    return viewLogicalHeight(ScrollableArea::IncludeScrollbars) * percentage / 100.f;
-}
-
-LayoutUnit RenderView::viewportPercentageMin(float percentage) const
-{
-    return std::min(viewLogicalWidth(ScrollableArea::IncludeScrollbars), viewLogicalHeight(ScrollableArea::IncludeScrollbars))
-        * percentage / 100.f;
-}
-
-LayoutUnit RenderView::viewportPercentageMax(float percentage) const
-{
-    return std::max(viewLogicalWidth(ScrollableArea::IncludeScrollbars), viewLogicalHeight(ScrollableArea::IncludeScrollbars))
-        * percentage / 100.f;
+    float scale = m_frameView ? m_frameView->frame().pageZoomFactor() : 1;
+    return viewHeight(ScrollableArea::IncludeScrollbars) / scale;
 }
 
 FragmentationDisabler::FragmentationDisabler(RenderObject* root)

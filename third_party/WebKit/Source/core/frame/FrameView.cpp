@@ -862,9 +862,11 @@ void FrameView::performPreLayoutTasks()
         m_inSynchronousPostLayout = false;
     }
 
-    // Viewport-dependent media queries may cause us to need completely different style information.
     Document* document = m_frame->document();
-    if (!document->styleResolver() || document->styleResolver()->affectedByViewportChange()) {
+    document->notifyResizeForViewportUnits();
+
+    // Viewport-dependent media queries may cause us to need completely different style information.
+    if (!document->styleResolver() || document->styleResolver()->mediaQueryAffectedByViewportChange()) {
         document->styleResolverChanged(RecalcStyleDeferred);
         document->mediaQueryAffectingValueChanged();
 

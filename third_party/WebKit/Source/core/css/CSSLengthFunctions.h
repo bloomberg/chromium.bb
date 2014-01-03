@@ -31,11 +31,11 @@ class LayoutUnit;
 class Length;
 class RenderView;
 
-int minimumIntValueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
-int intValueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
-LayoutUnit minimumValueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
-LayoutUnit valueForLength(const Length&, LayoutUnit maximumValue, RenderView* = 0, bool roundPercentages = false);
-float floatValueForLength(const Length&, float maximumValue, RenderView*);
+// FIXME: Move these to platform/LengthFunctions.h
+int minimumIntValueForLength(const Length&, LayoutUnit maximumValue, bool roundPercentages = false);
+int intValueForLength(const Length&, LayoutUnit maximumValue, bool roundPercentages = false);
+LayoutUnit minimumValueForLength(const Length&, LayoutUnit maximumValue, bool roundPercentages = false);
+LayoutUnit valueForLength(const Length&, LayoutUnit maximumValue, bool roundPercentages = false);
 
 } // namespace WebCore
 

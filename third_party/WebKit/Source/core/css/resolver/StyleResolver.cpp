@@ -731,6 +731,9 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     setAnimationUpdateIfNeeded(state, *element);
 
+    if (state.style()->hasViewportUnits())
+        document().setHasViewportUnits();
+
     // Now return the style.
     return state.takeStyle();
 }
@@ -940,6 +943,9 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* element, c
     if (PseudoElement* pseudoElement = element->pseudoElement(pseudoStyleRequest.pseudoId))
         setAnimationUpdateIfNeeded(state, *pseudoElement);
 
+    if (state.style()->hasViewportUnits())
+        document().setHasViewportUnits();
+
     // Now return the style.
     return state.takeStyle();
 }
@@ -1045,6 +1051,8 @@ bool StyleResolver::checkRegionStyle(Element* regionElement)
 void StyleResolver::updateFont(StyleResolverState& state)
 {
     state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.parentStyle(), state.style());
+    if (state.fontBuilder().fontSizeHasViewportUnits())
+        state.style()->setHasViewportUnits();
 }
 
 PassRefPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
@@ -1293,6 +1301,12 @@ void StyleResolver::invalidateMatchedPropertiesCache()
     m_matchedPropertiesCache.clear();
 }
 
+void StyleResolver::notifyResizeForViewportUnits()
+{
+    collectViewportRules();
+    m_matchedPropertiesCache.clearViewportDependent();
+}
+
 void StyleResolver::applyMatchedProperties(StyleResolverState& state, const MatchResult& matchResult)
 {
     const Element* element = state.element();
@@ -1458,7 +1472,7 @@ void StyleResolver::addMediaQueryResults(const MediaQueryResultList& list)
         m_viewportDependentMediaQueryResults.append(list[i]);
 }
 
-bool StyleResolver::affectedByViewportChange() const
+bool StyleResolver::mediaQueryAffectedByViewportChange() const
 {
     for (unsigned i = 0; i < m_viewportDependentMediaQueryResults.size(); ++i) {
         if (m_medium->eval(&m_viewportDependentMediaQueryResults[i]->m_expression) != m_viewportDependentMediaQueryResults[i]->m_result)

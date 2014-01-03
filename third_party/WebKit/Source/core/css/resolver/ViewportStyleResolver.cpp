@@ -31,12 +31,14 @@
 #include "core/css/resolver/ViewportStyleResolver.h"
 
 #include "CSSValueKeywords.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/ViewportDescription.h"
+#include "core/frame/FrameView.h"
 
 namespace WebCore {
 
@@ -183,25 +185,25 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
 
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
 
-    if (primitiveValue->isLength())
-        return primitiveValue->computeLength<Length>(CSSToLengthConversionData(m_document->renderStyle(), m_document->renderStyle(), 1.0f));
-
-    if (primitiveValue->isViewportPercentageLength())
-        return primitiveValue->viewportPercentageLength();
-
-    if (primitiveValue->isPercentage())
-        return Length(primitiveValue->getFloatValue(), Percent);
-
-    switch (primitiveValue->getValueID()) {
-    case CSSValueInternalExtendToZoom:
+    if (primitiveValue->getValueID() == CSSValueInternalExtendToZoom)
         return Length(ExtendToZoom);
-    case CSSValueAuto:
-        return Length();
-    default:
-        // Unrecognized keyword.
-        ASSERT_NOT_REACHED();
-        return Length(0, Fixed);
-    }
+
+    RenderStyle* documentStyle = m_document->renderStyle();
+
+    // If we have viewport units the conversion will mark the document style as having viewport units.
+    bool documentStyleHasViewportUnits = documentStyle->hasViewportUnits();
+    documentStyle->setHasViewportUnits(false);
+
+    FrameView* view = m_document->view();
+    float width = view ? view->width() : 0;
+    float height = view ? view->height() : 0;
+
+    Length result = primitiveValue->convertToLength<AnyConversion>(CSSToLengthConversionData(documentStyle, documentStyle, width, height, 1.0f));
+    if (documentStyle->hasViewportUnits())
+        m_document->setHasViewportUnits();
+    documentStyle->setHasViewportUnits(documentStyleHasViewportUnits);
+
+    return result;
 }
 
 } // namespace WebCore

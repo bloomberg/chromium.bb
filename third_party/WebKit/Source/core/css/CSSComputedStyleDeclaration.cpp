@@ -63,7 +63,6 @@
 #include "core/frame/animation/AnimationController.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderGrid.h"
-#include "core/rendering/RenderView.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CounterContent.h"
 #include "core/rendering/style/CursorList.h"
@@ -615,7 +614,7 @@ static PassRefPtr<CSSValueList> createPositionListForLayer(CSSPropertyID propert
     return positionList.release();
 }
 
-static PassRefPtr<CSSValue> valueForPositionOffset(RenderStyle& style, CSSPropertyID propertyID, const RenderObject* renderer, RenderView* renderView)
+static PassRefPtr<CSSValue> valueForPositionOffset(RenderStyle& style, CSSPropertyID propertyID, const RenderObject* renderer)
 {
     Length l;
     switch (propertyID) {
@@ -639,10 +638,8 @@ static PassRefPtr<CSSValue> valueForPositionOffset(RenderStyle& style, CSSProper
         LayoutUnit containingBlockSize = (propertyID == CSSPropertyLeft || propertyID == CSSPropertyRight) ?
             toRenderBox(renderer)->containingBlockLogicalWidthForContent() :
             toRenderBox(renderer)->containingBlockLogicalHeightForContent(ExcludeMarginBorderPadding);
-        return zoomAdjustedPixelValue(valueForLength(l, containingBlockSize, 0), style);
+        return zoomAdjustedPixelValue(valueForLength(l, containingBlockSize), style);
     }
-    if (l.isViewportPercentage())
-        return zoomAdjustedPixelValue(valueForLength(l, 0, renderView), style);
     if (l.isAuto()) {
         // FIXME: It's not enough to simply return "auto" values for one offset if the other side is defined.
         // In other words if left is auto and right is not auto, then left's computed value is negative right().
@@ -971,7 +968,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
     return list.release();
 }
 
-static PassRefPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const RenderStyle& style, RenderView* renderView)
+static PassRefPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const RenderStyle& style)
 {
     if (!trackBreadth.isLength())
         return cssValuePool().createValue(trackBreadth.flex(), CSSPrimitiveValue::CSS_FR);
@@ -979,20 +976,18 @@ static PassRefPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& 
     const Length& trackBreadthLength = trackBreadth.length();
     if (trackBreadthLength.isAuto())
         return cssValuePool().createIdentifierValue(CSSValueAuto);
-    if (trackBreadthLength.isViewportPercentage())
-        return zoomAdjustedPixelValue(valueForLength(trackBreadthLength, 0, renderView), style);
     return zoomAdjustedPixelValueForLength(trackBreadthLength, style);
 }
 
-static PassRefPtr<CSSValue> specifiedValueForGridTrackSize(const GridTrackSize& trackSize, const RenderStyle& style, RenderView* renderView)
+static PassRefPtr<CSSValue> specifiedValueForGridTrackSize(const GridTrackSize& trackSize, const RenderStyle& style)
 {
     switch (trackSize.type()) {
     case LengthTrackSizing:
-        return specifiedValueForGridTrackBreadth(trackSize.length(), style, renderView);
+        return specifiedValueForGridTrackBreadth(trackSize.length(), style);
     case MinMaxTrackSizing:
         RefPtr<CSSValueList> minMaxTrackBreadths = CSSValueList::createCommaSeparated();
-        minMaxTrackBreadths->append(specifiedValueForGridTrackBreadth(trackSize.minTrackBreadth(), style, renderView));
-        minMaxTrackBreadths->append(specifiedValueForGridTrackBreadth(trackSize.maxTrackBreadth(), style, renderView));
+        minMaxTrackBreadths->append(specifiedValueForGridTrackBreadth(trackSize.minTrackBreadth(), style));
+        minMaxTrackBreadths->append(specifiedValueForGridTrackBreadth(trackSize.maxTrackBreadth(), style));
         return CSSFunctionValue::create("minmax(", minMaxTrackBreadths);
     }
     ASSERT_NOT_REACHED();
@@ -1011,7 +1006,7 @@ static void addValuesForNamedGridLinesAtIndex(const OrderedNamedGridLines& order
     list.append(lineNames.release());
 }
 
-static PassRefPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, RenderObject* renderer, const RenderStyle& style, RenderView* renderView)
+static PassRefPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direction, RenderObject* renderer, const RenderStyle& style)
 {
     const Vector<GridTrackSize>& trackSizes = direction == ForColumns ? style.gridDefinitionColumns() : style.gridDefinitionRows();
     const OrderedNamedGridLines& orderedNamedGridLines = direction == ForColumns ? style.orderedNamedGridColumnLines() : style.orderedNamedGridRowLines();
@@ -1036,7 +1031,7 @@ static PassRefPtr<CSSValue> valueForGridTrackList(GridTrackSizingDirection direc
     } else {
         for (size_t i = 0; i < trackSizes.size(); ++i) {
             addValuesForNamedGridLinesAtIndex(orderedNamedGridLines, i, *list);
-            list->append(specifiedValueForGridTrackSize(trackSizes[i], style, renderView));
+            list->append(specifiedValueForGridTrackSize(trackSizes[i], style));
         }
     }
     // Those are the trailing <string>* allowed in the syntax.
@@ -1492,13 +1487,13 @@ static PassRefPtr<CSSValueList> valueForFontFamily(RenderStyle& style)
     return list.release();
 }
 
-static PassRefPtr<CSSPrimitiveValue> valueForLineHeight(RenderStyle& style, RenderView* renderView)
+static PassRefPtr<CSSPrimitiveValue> valueForLineHeight(RenderStyle& style)
 {
     Length length = style.lineHeight();
     if (length.isNegative())
         return cssValuePool().createIdentifierValue(CSSValueNormal);
 
-    return zoomAdjustedPixelValue(floatValueForLength(length, style.fontDescription().specifiedSize(), renderView), style);
+    return zoomAdjustedPixelValue(floatValueForLength(length, style.fontDescription().specifiedSize()), style);
 }
 
 static PassRefPtr<CSSPrimitiveValue> valueForFontSize(RenderStyle& style)
@@ -1873,7 +1868,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyBorderLeftWidth:
             return zoomAdjustedPixelValue(style->borderLeftWidth(), *style);
         case CSSPropertyBottom:
-            return valueForPositionOffset(*style, CSSPropertyBottom, renderer, m_node->document().renderView());
+            return valueForPositionOffset(*style, CSSPropertyBottom, renderer);
         case CSSPropertyWebkitBoxAlign:
             return cssValuePool().createValue(style->boxAlign());
         case CSSPropertyWebkitBoxDecorationBreak:
@@ -2011,7 +2006,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             computedFont->variant = valueForFontVariant(*style);
             computedFont->weight = valueForFontWeight(*style);
             computedFont->size = valueForFontSize(*style);
-            computedFont->lineHeight = valueForLineHeight(*style, m_node->document().renderView());
+            computedFont->lineHeight = valueForLineHeight(*style);
             computedFont->family = valueForFontFamily(*style);
             return computedFont.release();
         }
@@ -2052,14 +2047,14 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         // depending on the size of the explicit grid or the number of implicit tracks added to the grid. See
         // http://lists.w3.org/Archives/Public/www-style/2013Nov/0014.html
         case CSSPropertyGridAutoColumns:
-            return specifiedValueForGridTrackSize(style->gridAutoColumns(), *style, m_node->document().renderView());
+            return specifiedValueForGridTrackSize(style->gridAutoColumns(), *style);
         case CSSPropertyGridAutoRows:
-            return specifiedValueForGridTrackSize(style->gridAutoRows(), *style, m_node->document().renderView());
+            return specifiedValueForGridTrackSize(style->gridAutoRows(), *style);
 
         case CSSPropertyGridDefinitionColumns:
-            return valueForGridTrackList(ForColumns, renderer, *style, m_node->document().renderView());
+            return valueForGridTrackList(ForColumns, renderer, *style);
         case CSSPropertyGridDefinitionRows:
-            return valueForGridTrackList(ForRows, renderer, *style, m_node->document().renderView());
+            return valueForGridTrackList(ForRows, renderer, *style);
 
         case CSSPropertyGridColumnStart:
             return valueForGridPosition(style->gridColumnStart());
@@ -2110,7 +2105,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyIsolation:
             return cssValuePool().createValue(style->isolation());
         case CSSPropertyLeft:
-            return valueForPositionOffset(*style, CSSPropertyLeft, renderer, m_node->document().renderView());
+            return valueForPositionOffset(*style, CSSPropertyLeft, renderer);
         case CSSPropertyLetterSpacing:
             if (!style->letterSpacing())
                 return cssValuePool().createIdentifierValue(CSSValueNormal);
@@ -2120,7 +2115,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return cssValuePool().createIdentifierValue(CSSValueNone);
             return cssValuePool().createValue(style->lineClamp().value(), style->lineClamp().isPercentage() ? CSSPrimitiveValue::CSS_PERCENTAGE : CSSPrimitiveValue::CSS_NUMBER);
         case CSSPropertyLineHeight:
-            return valueForLineHeight(*style, m_node->document().renderView());
+            return valueForLineHeight(*style);
         case CSSPropertyListStyleImage:
             if (style->listStyleImage())
                 return style->listStyleImage()->cssValue();
@@ -2144,11 +2139,11 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             if (marginRight.isFixed() || !renderer || !renderer->isBox())
                 return zoomAdjustedPixelValueForLength(marginRight, *style);
             float value;
-            if (marginRight.isPercent() || marginRight.isViewportPercentage()) {
+            if (marginRight.isPercent()) {
                 // RenderBox gives a marginRight() that is the distance between the right-edge of the child box
                 // and the right-edge of the containing box, when display == BLOCK. Let's calculate the absolute
                 // value of the specified margin-right % instead of relying on RenderBox's marginRight() value.
-                value = minimumValueForLength(marginRight, toRenderBox(renderer)->containingBlockLogicalWidthForContent(), m_node->document().renderView());
+                value = minimumValueForLength(marginRight, toRenderBox(renderer)->containingBlockLogicalWidthForContent());
             } else {
                 value = toRenderBox(renderer)->marginRight();
             }
@@ -2260,7 +2255,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyPosition:
             return cssValuePool().createValue(style->position());
         case CSSPropertyRight:
-            return valueForPositionOffset(*style, CSSPropertyRight, renderer, m_node->document().renderView());
+            return valueForPositionOffset(*style, CSSPropertyRight, renderer);
         case CSSPropertyWebkitRubyPosition:
             return cssValuePool().createValue(style->rubyPosition());
         case CSSPropertyTableLayout:
@@ -2336,7 +2331,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyTextTransform:
             return cssValuePool().createValue(style->textTransform());
         case CSSPropertyTop:
-            return valueForPositionOffset(*style, CSSPropertyTop, renderer, m_node->document().renderView());
+            return valueForPositionOffset(*style, CSSPropertyTop, renderer);
         case CSSPropertyTouchAction:
             return touchActionFlagsToCSSValue(style->touchAction());
         case CSSPropertyTouchActionDelay:
@@ -2602,9 +2597,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 if (renderer->isBox())
                     box = toRenderBox(renderer)->borderBoxRect();
 
-                RenderView* renderView = m_node->document().renderView();
-                list->append(zoomAdjustedPixelValue(minimumValueForLength(style->perspectiveOriginX(), box.width(), renderView), *style));
-                list->append(zoomAdjustedPixelValue(minimumValueForLength(style->perspectiveOriginY(), box.height(), renderView), *style));
+                list->append(zoomAdjustedPixelValue(minimumValueForLength(style->perspectiveOriginX(), box.width()), *style));
+                list->append(zoomAdjustedPixelValue(minimumValueForLength(style->perspectiveOriginY(), box.height()), *style));
             }
             else {
                 list->append(zoomAdjustedPixelValueForLength(style->perspectiveOriginX(), *style));
@@ -2650,9 +2644,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 if (renderer->isBox())
                     box = toRenderBox(renderer)->borderBoxRect();
 
-                RenderView* renderView = m_node->document().renderView();
-                list->append(zoomAdjustedPixelValue(minimumValueForLength(style->transformOriginX(), box.width(), renderView), *style));
-                list->append(zoomAdjustedPixelValue(minimumValueForLength(style->transformOriginY(), box.height(), renderView), *style));
+                list->append(zoomAdjustedPixelValue(minimumValueForLength(style->transformOriginX(), box.width()), *style));
+                list->append(zoomAdjustedPixelValue(minimumValueForLength(style->transformOriginY(), box.height()), *style));
                 if (style->transformOriginZ() != 0)
                     list->append(zoomAdjustedPixelValue(style->transformOriginZ(), *style));
             } else {

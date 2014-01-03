@@ -62,6 +62,7 @@ private:
 FontBuilder::FontBuilder()
     : m_document(0)
     , m_useSVGZoomRules(false)
+    , m_fontSizehasViewportUnits(false)
     , m_fontDirty(false)
 {
 }
@@ -324,16 +325,22 @@ void FontBuilder::setFontSizeValue(CSSValue* value, RenderStyle* parentStyle, co
         scope.fontDescription().setIsAbsoluteSize(parentIsAbsoluteSize && (valueID == CSSValueLarger || valueID == CSSValueSmaller));
     } else {
         scope.fontDescription().setIsAbsoluteSize(parentIsAbsoluteSize || !(primitiveValue->isPercentage() || primitiveValue->isFontRelativeLength()));
-        if (primitiveValue->isLength())
-            size = primitiveValue->computeLength<float>(CSSToLengthConversionData(parentStyle, rootElementStyle, 1.0, true));
-        else if (primitiveValue->isPercentage())
+        if (primitiveValue->isPercentage()) {
             size = (primitiveValue->getFloatValue() * parentSize) / 100.0f;
-        else if (primitiveValue->isCalculatedPercentageWithLength())
-            size = primitiveValue->cssCalcValue()->toCalcValue(CSSToLengthConversionData(parentStyle, rootElementStyle, 1.0f))->evaluate(parentSize);
-        else if (primitiveValue->isViewportPercentageLength())
-            size = valueForLength(primitiveValue->viewportPercentageLength(), 0, m_document->renderView());
-        else
-            return;
+        } else {
+            // If we have viewport units the conversion will mark the parent style as having viewport units.
+            bool parentHasViewportUnits = parentStyle->hasViewportUnits();
+            parentStyle->setHasViewportUnits(false);
+            CSSToLengthConversionData conversionData(parentStyle, rootElementStyle, m_document->renderView(), 1.0f, true);
+            if (primitiveValue->isLength())
+                size = primitiveValue->computeLength<float>(conversionData);
+            else if (primitiveValue->isCalculatedPercentageWithLength())
+                size = primitiveValue->cssCalcValue()->toCalcValue(conversionData)->evaluate(parentSize);
+            else
+                ASSERT_NOT_REACHED();
+            m_fontSizehasViewportUnits = parentStyle->hasViewportUnits();
+            parentStyle->setHasViewportUnits(parentHasViewportUnits);
+        }
     }
 
     if (size < 0)

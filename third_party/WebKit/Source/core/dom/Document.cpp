@@ -450,6 +450,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_transitionTimeline(TransitionTimeline::create(this))
     , m_templateDocumentHost(0)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
+    , m_hasViewportUnits(false)
 {
     setClient(this);
     ScriptWrappable::init(this);
@@ -1894,7 +1895,6 @@ bool Document::isPageBoxVisible(int pageIndex)
 void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft)
 {
     RefPtr<RenderStyle> style = styleForPage(pageIndex);
-    RenderView* view = renderView();
 
     int width = pageSize.width();
     int height = pageSize.height();
@@ -1913,8 +1913,8 @@ void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int&
         LengthSize size = style->pageSize();
         ASSERT(size.width().isFixed());
         ASSERT(size.height().isFixed());
-        width = valueForLength(size.width(), 0, view);
-        height = valueForLength(size.height(), 0, view);
+        width = valueForLength(size.width(), 0);
+        height = valueForLength(size.height(), 0);
         break;
     }
     default:
@@ -1924,10 +1924,10 @@ void Document::pageSizeAndMarginsInPixels(int pageIndex, IntSize& pageSize, int&
 
     // The percentage is calculated with respect to the width even for margin top and bottom.
     // http://www.w3.org/TR/CSS2/box.html#margin-properties
-    marginTop = style->marginTop().isAuto() ? marginTop : intValueForLength(style->marginTop(), width, view);
-    marginRight = style->marginRight().isAuto() ? marginRight : intValueForLength(style->marginRight(), width, view);
-    marginBottom = style->marginBottom().isAuto() ? marginBottom : intValueForLength(style->marginBottom(), width, view);
-    marginLeft = style->marginLeft().isAuto() ? marginLeft : intValueForLength(style->marginLeft(), width, view);
+    marginTop = style->marginTop().isAuto() ? marginTop : intValueForLength(style->marginTop(), width);
+    marginRight = style->marginRight().isAuto() ? marginRight : intValueForLength(style->marginRight(), width);
+    marginBottom = style->marginBottom().isAuto() ? marginBottom : intValueForLength(style->marginBottom(), width);
+    marginLeft = style->marginLeft().isAuto() ? marginLeft : intValueForLength(style->marginLeft(), width);
 }
 
 void Document::setIsViewSource(bool isViewSource)
@@ -3193,6 +3193,14 @@ void Document::evaluateMediaQueryList()
 {
     if (m_mediaQueryMatcher)
         m_mediaQueryMatcher->styleResolverChanged();
+}
+
+void Document::notifyResizeForViewportUnits()
+{
+    if (!hasViewportUnits())
+        return;
+    ensureStyleResolver().notifyResizeForViewportUnits();
+    setNeedsStyleRecalcForViewportUnits();
 }
 
 void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpdateMode updateMode)

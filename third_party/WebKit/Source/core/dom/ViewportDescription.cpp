@@ -54,17 +54,17 @@ float ViewportDescription::resolveViewportLength(const Length& length, const Flo
     if (length.type() == ExtendToZoom)
         return ViewportDescription::ValueExtendToZoom;
 
-    if ((length.type() == Percent && direction == Horizontal) || length.type() == ViewportPercentageWidth)
+    if (length.type() == Percent && direction == Horizontal)
         return initialViewportSize.width() * length.getFloatValue() / 100.0f;
 
-    if ((length.type() == Percent && direction == Vertical) || length.type() == ViewportPercentageHeight)
+    if (length.type() == Percent && direction == Vertical)
         return initialViewportSize.height() * length.getFloatValue() / 100.0f;
 
-    if (length.type() == ViewportPercentageMin)
-        return min(initialViewportSize.width(), initialViewportSize.height()) * length.viewportPercentageLength() / 100.0f;
+    if (length.type() == DeviceWidth)
+        return initialViewportSize.width();
 
-    if (length.type() == ViewportPercentageMax)
-        return max(initialViewportSize.width(), initialViewportSize.height()) * length.viewportPercentageLength() / 100.0f;
+    if (length.type() == DeviceHeight)
+        return initialViewportSize.height();
 
     ASSERT_NOT_REACHED();
     return ViewportDescription::ValueAuto;

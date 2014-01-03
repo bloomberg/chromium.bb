@@ -61,22 +61,22 @@ PASS: line-height from [4vw] to [14vw] was [7vw] at 0.3
 PASS: line-height from [4vw] to [14vw] was [10vw] at 0.6
 PASS: line-height from [4vw] to [14vw] was [14vw] at 1
 PASS: line-height from [4vw] to [14vw] was [19vw] at 1.5
-FAIL: line-height from [50vmin] to [100px] was [300px] at -0.25, expected [350px]
+PASS: line-height from [50vmin] to [100px] was [350px] at -0.25
 PASS: line-height from [50vmin] to [100px] was [300px] at 0
-FAIL: line-height from [50vmin] to [100px] was [300px] at 0.25, expected [250px]
-FAIL: line-height from [50vmin] to [100px] was [100px] at 0.75, expected [150px]
+PASS: line-height from [50vmin] to [100px] was [250px] at 0.25
+PASS: line-height from [50vmin] to [100px] was [150px] at 0.75
 PASS: line-height from [50vmin] to [100px] was [100px] at 1
-FAIL: line-height from [50vmin] to [100px] was [100px] at 1.5, expected [0px]
-FAIL: line-height from [100px] to [50vmax] was [100px] at -0.25, expected [25px]
+PASS: line-height from [50vmin] to [100px] was [0px] at 1.5
+PASS: line-height from [100px] to [50vmax] was [25px] at -0.25
 PASS: line-height from [100px] to [50vmax] was [100px] at 0
-FAIL: line-height from [100px] to [50vmax] was [100px] at 0.25, expected [175px]
-FAIL: line-height from [100px] to [50vmax] was [400px] at 0.75, expected [325px]
+PASS: line-height from [100px] to [50vmax] was [175px] at 0.25
+PASS: line-height from [100px] to [50vmax] was [325px] at 0.75
 PASS: line-height from [100px] to [50vmax] was [400px] at 1
-FAIL: line-height from [100px] to [50vmax] was [400px] at 1.5, expected [550px]
-FAIL: line-height from [75vw] to [25vh] was [600px] at -0.25, expected [712.5px]
+PASS: line-height from [100px] to [50vmax] was [550px] at 1.5
+PASS: line-height from [75vw] to [25vh] was [712.5px] at -0.25
 PASS: line-height from [75vw] to [25vh] was [600px] at 0
-FAIL: line-height from [75vw] to [25vh] was [600px] at 0.25, expected [487.5px]
-FAIL: line-height from [75vw] to [25vh] was [150px] at 0.75, expected [262.5px]
+PASS: line-height from [75vw] to [25vh] was [487.5px] at 0.25
+PASS: line-height from [75vw] to [25vh] was [262.5px] at 0.75
 PASS: line-height from [75vw] to [25vh] was [150px] at 1
-FAIL: line-height from [75vw] to [25vh] was [150px] at 1.5, expected [0px]
+PASS: line-height from [75vw] to [25vh] was [0px] at 1.5
 

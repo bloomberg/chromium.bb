@@ -1016,6 +1016,10 @@ public:
     void updateSecurityOrigin(PassRefPtr<SecurityOrigin>);
     PassOwnPtr<LifecycleNotifier<Document> > createLifecycleNotifier();
 
+    void setHasViewportUnits() { m_hasViewportUnits = true; }
+    bool hasViewportUnits() const { return m_hasViewportUnits; }
+    void notifyResizeForViewportUnits();
+
 protected:
     Document(const DocumentInit&, DocumentClassFlags = DefaultDocumentClass);
 
@@ -1310,6 +1314,8 @@ private:
 
     Timer<Document> m_didAssociateFormControlsTimer;
     HashSet<RefPtr<Element> > m_associatedFormControls;
+
+    bool m_hasViewportUnits;
 };
 
 inline void Document::notifyRemovePendingSheetIfNeeded()

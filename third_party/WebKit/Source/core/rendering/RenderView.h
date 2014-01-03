@@ -203,10 +203,8 @@ public:
 
     virtual bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const OVERRIDE FINAL;
 
-    LayoutUnit viewportPercentageWidth(float percentage) const;
-    LayoutUnit viewportPercentageHeight(float percentage) const;
-    LayoutUnit viewportPercentageMin(float percentage) const;
-    LayoutUnit viewportPercentageMax(float percentage) const;
+    double layoutViewportWidth() const;
+    double layoutViewportHeight() const;
 
 private:
     virtual void mapLocalToContainer(const RenderLayerModelObject* repaintContainer, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = 0) const OVERRIDE;

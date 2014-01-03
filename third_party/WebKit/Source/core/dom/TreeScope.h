@@ -140,6 +140,8 @@ protected:
 
     bool hasGuardRefCount() const { return m_guardRefCount; }
 
+    void setNeedsStyleRecalcForViewportUnits();
+
 private:
     TreeScope();
 

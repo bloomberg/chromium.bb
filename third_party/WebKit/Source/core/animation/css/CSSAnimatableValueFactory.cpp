@@ -68,14 +68,6 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
         return AnimatableLength::create(adjustFloatForAbsoluteZoom(length.value(), style), AnimatableLength::UnitTypePixels);
     case Percent:
         return AnimatableLength::create(length.value(), AnimatableLength::UnitTypePercentage);
-    case ViewportPercentageWidth:
-        return AnimatableLength::create(length.value(), AnimatableLength::UnitTypeViewportWidth);
-    case ViewportPercentageHeight:
-        return AnimatableLength::create(length.value(), AnimatableLength::UnitTypeViewportHeight);
-    case ViewportPercentageMin:
-        return AnimatableLength::create(length.value(), AnimatableLength::UnitTypeViewportMin);
-    case ViewportPercentageMax:
-        return AnimatableLength::create(length.value(), AnimatableLength::UnitTypeViewportMax);
     case Calculated:
         return AnimatableLength::create(CSSCalcValue::createExpressionNode(length.calculationValue()->expression(), style.effectiveZoom()));
     case Auto:
@@ -89,6 +81,8 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
     case Undefined:
         return AnimatableUnknown::create(CSSValueNone);
     case ExtendToZoom: // Does not apply to elements.
+    case DeviceWidth:
+    case DeviceHeight:
         ASSERT_NOT_REACHED();
         return 0;
     }

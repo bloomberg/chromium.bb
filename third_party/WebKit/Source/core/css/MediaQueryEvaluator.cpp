@@ -350,7 +350,8 @@ static bool computeLength(CSSValue* value, bool strict, RenderStyle* initialStyl
     if (primitiveValue->isLength()) {
         // Relative (like EM) and root relative (like REM) units are always resolved against
         // the initial values for media queries, hence the two initialStyle parameters.
-        result = primitiveValue->computeLength<int>(CSSToLengthConversionData(initialStyle, initialStyle, 1.0 /* zoom */, true /* computingFontSize */));
+        // FIXME: We need to plumb viewport unit support down to here.
+        result = primitiveValue->computeLength<int>(CSSToLengthConversionData(initialStyle, initialStyle, 0, 1.0 /* zoom */, true /* computingFontSize */));
         return true;
     }
 

@@ -191,13 +191,15 @@ public:
     void addMediaQueryResults(const MediaQueryResultList&);
     MediaQueryResultList* viewportDependentMediaQueryResults() { return &m_viewportDependentMediaQueryResults; }
     bool hasViewportDependentMediaQueries() const { return !m_viewportDependentMediaQueryResults.isEmpty(); }
-    bool affectedByViewportChange() const;
+    bool mediaQueryAffectedByViewportChange() const;
 
     // FIXME: Regions should not require special logic in StyleResolver.
     bool checkRegionStyle(Element* regionElement);
 
     // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
     void invalidateMatchedPropertiesCache();
+
+    void notifyResizeForViewportUnits();
 
     // Exposed for RenderStyle::isStyleAvilable().
     static RenderStyle* styleNotYetAvailable() { return s_styleNotYetAvailable; }

@@ -109,6 +109,18 @@ void MatchedPropertiesCache::clear()
     m_cache.clear();
 }
 
+void MatchedPropertiesCache::clearViewportDependent()
+{
+    Vector<unsigned, 16> toRemove;
+    for (Cache::iterator it = m_cache.begin(); it != m_cache.end(); ++it) {
+        CachedMatchedProperties* cacheItem = it->value.get();
+        if (cacheItem->renderStyle->hasViewportUnits())
+            toRemove.append(it->key);
+    }
+    for (size_t i = 0; i < toRemove.size(); ++i)
+        m_cache.remove(toRemove[i]);
+}
+
 void MatchedPropertiesCache::sweep(Timer<MatchedPropertiesCache>*)
 {
     // Look for cache entries containing a style declaration with a single ref and remove them.

@@ -177,10 +177,10 @@ Length HTMLMetaElement::parseViewportValueAsLength(const String& keyString, cons
     DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 13);
     SWITCH(characters, length) {
         CASE("device-width") {
-            return Length(100, ViewportPercentageWidth);
+            return Length(DeviceWidth);
         }
         CASE("device-height") {
-            return Length(100, ViewportPercentageHeight);
+            return Length(DeviceHeight);
         }
     }
 
