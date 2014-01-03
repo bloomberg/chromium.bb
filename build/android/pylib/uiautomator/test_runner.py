@@ -54,10 +54,11 @@ class TestRunner(instr_test_runner.TestRunner):
   #override
   def _RunTest(self, test, timeout):
     self.adb.ClearApplicationState(self._package)
-    if 'Feature:FirstRunExperience' in self.test_pkg.GetTestAnnotations(test):
-      self.flags.RemoveFlags(['--disable-fre'])
-    else:
-      self.flags.AddFlags(['--disable-fre'])
+    if self.flags:
+      if 'Feature:FirstRunExperience' in self.test_pkg.GetTestAnnotations(test):
+        self.flags.RemoveFlags(['--disable-fre'])
+      else:
+        self.flags.AddFlags(['--disable-fre'])
     self.adb.StartActivity(self._package,
                            self._activity,
                            wait_for_completion=True,

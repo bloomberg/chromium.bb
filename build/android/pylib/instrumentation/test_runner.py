@@ -82,10 +82,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
     assert len(cmdline_file) < 2, 'Multiple packages have the same test package'
     if len(cmdline_file) and cmdline_file[0]:
       self.flags = flag_changer.FlagChanger(self.adb, cmdline_file[0])
+      if additional_flags:
+        self.flags.AddFlags(additional_flags)
     else:
-      self.flags = flag_changer.FlagChanger(self.adb)
-    if additional_flags:
-      self.flags.AddFlags(additional_flags)
+      self.flags = None
 
   #override
   def InstallTestPackage(self):
@@ -154,11 +154,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
     # launch lighttpd with same port at same time.
     http_server_ports = self.LaunchTestHttpServer(
         os.path.join(constants.DIR_SOURCE_ROOT), self._lighttp_port)
-    self.flags.AddFlags(['--disable-fre', '--enable-test-intents'])
+    if self.flags:
+      self.flags.AddFlags(['--disable-fre', '--enable-test-intents'])
 
   def TearDown(self):
     """Cleans up the test harness and saves outstanding data from test run."""
-    self.flags.Restore()
+    if self.flags:
+      self.flags.Restore()
     super(TestRunner, self).TearDown()
 
   def TestSetup(self, test):

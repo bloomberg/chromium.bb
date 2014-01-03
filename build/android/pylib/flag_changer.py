@@ -17,8 +17,7 @@ class FlagChanger(object):
     once the tests have completed.
   """
 
-  def __init__(self, adb,
-               cmdline_file=constants.PACKAGE_INFO['chrome'].cmdline_file):
+  def __init__(self, adb, cmdline_file):
     """Initializes the FlagChanger and records the original arguments.
 
     Args:
