@@ -29,13 +29,10 @@
 #  9  Could not get the version, update URL, or channel after update
 # 10  Updated application does not have the version number from the update
 # 11  ksadmin failure
-# 12  dirpatcher failed for versioned directory
-# 13  dirpatcher failed for outer .app bundle
 #
-# The following exit codes are not used by this script, but can be used to
-# convey special meaning to Keystone:
+# The following exit codes can be used to convey special meaning to Keystone:
 # 66  (unused) success, request reboot
-# 77  (unused) try installation again later
+# 77  try installation again later
 
 set -eu
 
@@ -60,6 +57,8 @@ shopt -s nullglob
 
 ME="$(basename "${0}")"
 readonly ME
+
+readonly KS_CHANNEL_KEY="KSChannelID"
 
 # Workaround for http://code.google.com/p/chromium/issues/detail?id=83180#c3
 # In bash 4.0, "declare VAR" no longer initializes VAR if not already set.
@@ -451,6 +450,14 @@ ksadmin_supports_versionpath_versionkey() {
   # return value.
 }
 
+has_32_bit_only_cpu() {
+  local cpu_64_bit_capable="$(sysctl -n hw.cpu64bit_capable 2>/dev/null)"
+  [[ -z "${cpu_64_bit_capable}" || "${cpu_64_bit_capable}" -eq 0 ]]
+
+  # The return value of the comparison is used as this function's return
+  # value.
+}
+
 # Runs "defaults read" to obtain the value of a key in a property list. As
 # with "defaults read", an absolute path to a plist is supplied, without the
 # ".plist" extension.
@@ -484,6 +491,115 @@ infoplist_read() {
   __CFPREFERENCES_AVOID_DAEMON=1 defaults read "${@}"
 }
 
+# When a patch update fails because the old installed copy doesn't match the
+# expected state, mark_failed_patch_update updates the Keystone ticket by
+# adding "-full" to the tag. The server will see this on a subsequent update
+# attempt and will provide a full update (as opposed to a patch) to the
+# client.
+#
+# Even if mark_failed_patch_update fails to modify the tag, the user will
+# eventually be updated. Patch updates are only provided for successive
+# releases on a particular channel, to update version o to version o+1. If a
+# patch update fails in this case, eventually version o+2 will be released,
+# and no patch update will exist to update o to o+2, so the server will
+# provide a full update package.
+mark_failed_patch_update() {
+  local product_id="${1}"
+  local want_full_installer_path="${2}"
+  local old_ks_plist="${3}"
+  local old_version_app="${4}"
+  local system_ticket="${5}"
+
+  set +e
+
+  note "marking failed patch update"
+
+  local channel
+  channel="$(infoplist_read "${old_ks_plist}" "${KS_CHANNEL_KEY}" 2> /dev/null)"
+
+  local tag="${channel}"
+  local tag_key="${KS_CHANNEL_KEY}"
+  if has_32_bit_only_cpu; then
+    tag="${tag}-32bit"
+    tag_key="${tag_key}-32bit"
+  fi
+
+  tag="${tag}-full"
+  tag_key="${tag_key}-full"
+
+  note "tag = ${tag}"
+  note "tag_key = ${tag_key}"
+
+  # ${old_ks_plist}, used for --tag-path, is the Info.plist for the old
+  # version of Chrome. It may not contain the keys for the "-full" tag suffix.
+  # If it doesn't, just bail out without marking the patch update as failed.
+  local read_tag="$(infoplist_read "${old_ks_plist}" "${tag_key}" 2> /dev/null)"
+  note "read_tag = ${read_tag}"
+  if [[ -z "${read_tag}" ]]; then
+    note "couldn't mark failed patch update"
+    return 0
+  fi
+
+  # Chrome can't easily read its Keystone ticket prior to registration, and
+  # when Chrome registers with Keystone, it obliterates old tag values in its
+  # ticket. Therefore, an alternative mechanism is provided to signal to
+  # Chrome that a full installer is desired. If the .want_full_installer file
+  # is present and it contains Chrome's current version number, Chrome will
+  # include "-full" in its tag when it registers with Keystone. This allows
+  # "-full" to persist in the tag even after Chrome is relaunched, which on a
+  # user ticket, triggers a re-registration.
+  #
+  # .want_full_installer is placed immediately inside the .app bundle as a
+  # sibling to the Contents directory. In this location, it's outside of the
+  # view of the code signing and code signature verification machinery. This
+  # file can safely be added, modified, and removed without affecting the
+  # signature.
+  rm -f "${want_full_installer_path}" 2> /dev/null
+  echo "${old_version_app}" > "${want_full_installer_path}"
+
+  # See the comment below in the "setting permissions" section for an
+  # explanation of the groups and modes selected here.
+  local chmod_mode="644"
+  if [[ -z "${system_ticket}" ]] &&
+     [[ "${want_full_installer_path:0:14}" = "/Applications/" ]] &&
+     chgrp admin "${want_full_installer_path}" 2> /dev/null; then
+    chmod_mode="664"
+  fi
+  note "chmod_mode = ${chmod_mode}"
+  chmod "${chmod_mode}" "${want_full_installer_path}" 2> /dev/null
+
+  local old_ks_plist_path="${old_ks_plist}.plist"
+
+  # Using ksadmin without --register only updates specified values in the
+  # ticket, without changing other existing values.
+  local ksadmin_args=(
+    --productid "${product_id}"
+  )
+
+  if ksadmin_supports_tag; then
+    ksadmin_args+=(
+      --tag "${tag}"
+    )
+  fi
+
+  if ksadmin_supports_tagpath_tagkey; then
+    ksadmin_args+=(
+      --tag-path "${old_ks_plist_path}"
+      --tag-key "${tag_key}"
+    )
+  fi
+
+  note "ksadmin_args = ${ksadmin_args[*]}"
+
+  if ! ksadmin "${ksadmin_args[@]}"; then
+    err "ksadmin failed"
+  fi
+
+  note "marked failed patch update"
+
+  set -e
+}
+
 usage() {
   echo "usage: ${ME} update_dmg_mount_point" >& 2
 }
@@ -513,7 +629,6 @@ main() {
   readonly KS_VERSION_KEY="KSVersion"
   readonly KS_PRODUCT_KEY="KSProductID"
   readonly KS_URL_KEY="KSUpdateURL"
-  readonly KS_CHANNEL_KEY="KSChannelID"
   readonly KS_BRAND_KEY="KSBrandID"
 
   readonly QUARANTINE_ATTR="com.apple.quarantine"
@@ -740,6 +855,9 @@ main() {
   fi
   note "installed_app = ${installed_app}"
 
+  local want_full_installer_path="${installed_app}/.want_full_installer"
+  note "want_full_installer_path = ${want_full_installer_path}"
+
   if [[ "${installed_app:0:1}" != "/" ]] ||
      ! [[ -d "${installed_app}" ]]; then
     err "installed_app must be an absolute path to a directory"
@@ -902,7 +1020,12 @@ main() {
                          "${patch_versioned_dir}" \
                          "${versioned_dir_target}"; then
       err "dirpatcher of versioned directory failed, status ${PIPESTATUS[0]}"
-      exit 12
+      mark_failed_patch_update "${product_id}" \
+                               "${want_full_installer_path}" \
+                               "${old_ks_plist}" \
+                               "${old_version_app}" \
+                               "${system_ticket}"
+      exit 77
     fi
   fi
 
@@ -956,7 +1079,12 @@ main() {
                          "${patch_app_dir}" \
                          "${update_app}"; then
       err "dirpatcher of app directory failed, status ${PIPESTATUS[0]}"
-      exit 13
+      mark_failed_patch_update "${product_id}" \
+                               "${want_full_installer_path}" \
+                               "${old_ks_plist}" \
+                               "${old_version_app}" \
+                               "${system_ticket}"
+      exit 77
     fi
   fi
 
@@ -1003,6 +1131,11 @@ main() {
     g_temp_dir=
     note "g_temp_dir = ${g_temp_dir}"
   fi
+
+  # Clean up any old .want_full_installer files from previous dirpatcher
+  # failures. This is not considered a critical step, because this file
+  # normally does not exist at all.
+  rm -f "${want_full_installer_path}" || true
 
   # If necessary, touch the outermost .app so that it appears to the outside
   # world that something was done to the bundle.  This will cause
@@ -1056,6 +1189,15 @@ main() {
   channel="$(infoplist_read "${new_ks_plist}" \
                             "${KS_CHANNEL_KEY}" 2> /dev/null || true)"
   note "channel = ${channel}"
+
+  local tag="${channel}"
+  local tag_key="${KS_CHANNEL_KEY}"
+  if has_32_bit_only_cpu; then
+    tag="${tag}-32bit"
+    tag_key="${tag_key}-32bit"
+  fi
+  note "tag = ${tag}"
+  note "tag_key = ${tag_key}"
 
   # Make sure that the update was successful by comparing the version found in
   # the update with the version now on disk.
@@ -1165,14 +1307,14 @@ main() {
 
   if ksadmin_supports_tag; then
     ksadmin_args+=(
-      --tag "${channel}"
+      --tag "${tag}"
     )
   fi
 
   if ksadmin_supports_tagpath_tagkey; then
     ksadmin_args+=(
       --tag-path "${installed_app_plist_path}"
-      --tag-key "${KS_CHANNEL_KEY}"
+      --tag-key "${tag_key}"
     )
   fi
 

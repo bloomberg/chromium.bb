@@ -204,12 +204,35 @@ def _RemoveBreakpadKeys(plist):
       'BreakpadSkipConfirm')
 
 
+def _TagSuffixes():
+  # Keep this list sorted in the order that tag suffix components are to
+  # appear in a tag value. That is to say, it should be sorted per ASCII.
+  components = ('32bit', 'full')
+  assert tuple(sorted(components)) == components
+
+  components_len = len(components)
+  combinations = 1 << components_len
+  tag_suffixes = []
+  for combination in xrange(0, combinations):
+    tag_suffix = ''
+    for component_index in xrange(0, components_len):
+      if combination & (1 << component_index):
+        tag_suffix += '-' + components[component_index]
+    tag_suffixes.append(tag_suffix)
+  return tag_suffixes
+
+
 def _AddKeystoneKeys(plist, bundle_identifier):
   """Adds the Keystone keys. This must be called AFTER _AddVersionKeys() and
   also requires the |bundle_identifier| argument (com.example.product)."""
   plist['KSVersion'] = plist['CFBundleShortVersionString']
   plist['KSProductID'] = bundle_identifier
   plist['KSUpdateURL'] = 'https://tools.google.com/service/update2'
+
+  _RemoveKeys(plist, 'KSChannelID')
+  for tag_suffix in _TagSuffixes():
+    if tag_suffix:
+      plist['KSChannelID' + tag_suffix] = tag_suffix
 
 
 def _RemoveKeystoneKeys(plist):
@@ -218,6 +241,11 @@ def _RemoveKeystoneKeys(plist):
       'KSVersion',
       'KSProductID',
       'KSUpdateURL')
+
+  tag_keys = []
+  for tag_suffix in _TagSuffixes():
+    tag_keys.append('KSChannelID' + tag_suffix)
+  _RemoveKeys(plist, *tag_keys)
 
 
 def Main(argv):
