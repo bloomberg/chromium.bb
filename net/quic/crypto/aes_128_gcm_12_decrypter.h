@@ -11,7 +11,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 
 #if defined(USE_OPENSSL)
-#include "net/quic/crypto/scoped_evp_cipher_ctx.h"
+#include "net/quic/crypto/scoped_evp_aead_ctx.h"
 #endif
 
 namespace net {
@@ -60,9 +60,7 @@ class NET_EXPORT_PRIVATE Aes128Gcm12Decrypter : public QuicDecrypter {
   unsigned char nonce_prefix_[4];
 
 #if defined(USE_OPENSSL)
-  // TODO(rtenneti): when Chromium's version of OpenSSL has EVP_AEAD_CTX, merge
-  // internal CL 53267501.
-  ScopedEVPCipherCtx ctx_;
+  ScopedEVPAEADCtx ctx_;
 #endif
 };
 

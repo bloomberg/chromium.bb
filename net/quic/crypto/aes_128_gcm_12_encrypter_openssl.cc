@@ -45,16 +45,10 @@ bool Aes128Gcm12Encrypter::SetKey(StringPiece key) {
   }
   memcpy(key_, key.data(), key.size());
 
-  // Set the cipher type and the key.
-  if (EVP_EncryptInit_ex(ctx_.get(), EVP_aes_128_gcm(), NULL, key_,
-                         NULL) == 0) {
-    ClearOpenSslErrors();
-    return false;
-  }
+  EVP_AEAD_CTX_cleanup(ctx_.get());
 
-  // Set the IV (nonce) length.
-  if (EVP_CIPHER_CTX_ctrl(ctx_.get(), EVP_CTRL_GCM_SET_IVLEN, kAESNonceSize,
-                          NULL) == 0) {
+  if (!EVP_AEAD_CTX_init(ctx_.get(), EVP_aead_aes_128_gcm(), key_,
+                         sizeof(key_), kAuthTagSize, NULL)) {
     ClearOpenSslErrors();
     return false;
   }
@@ -80,47 +74,14 @@ bool Aes128Gcm12Encrypter::Encrypt(StringPiece nonce,
     return false;
   }
 
-  // Set the IV (nonce).
-  if (EVP_EncryptInit_ex(
-          ctx_.get(), NULL, NULL, NULL,
-          reinterpret_cast<const unsigned char*>(nonce.data())) == 0) {
-    ClearOpenSslErrors();
-    return false;
-  }
+  ssize_t len = EVP_AEAD_CTX_seal(
+      ctx_.get(), output, plaintext.size() + kAuthTagSize,
+      reinterpret_cast<const uint8_t*>(nonce.data()), nonce.size(),
+      reinterpret_cast<const uint8_t*>(plaintext.data()), plaintext.size(),
+      reinterpret_cast<const uint8_t*>(associated_data.data()),
+      associated_data.size());
 
-  // If we pass a NULL, zero-length associated data to OpenSSL then it breaks.
-  // Thus we only set non-empty associated data.
-  if (!associated_data.empty()) {
-    // Set the associated data. The second argument (output buffer) must be
-    // NULL.
-    int unused_len;
-    if (EVP_EncryptUpdate(
-            ctx_.get(), NULL, &unused_len,
-            reinterpret_cast<const unsigned char*>(associated_data.data()),
-            associated_data.size()) == 0) {
-      ClearOpenSslErrors();
-      return false;
-    }
-  }
-
-  int len;
-  if (EVP_EncryptUpdate(
-          ctx_.get(), output, &len,
-          reinterpret_cast<const unsigned char*>(plaintext.data()),
-          plaintext.size()) == 0) {
-    ClearOpenSslErrors();
-    return false;
-  }
-  output += len;
-
-  if (EVP_EncryptFinal_ex(ctx_.get(), output, &len) == 0) {
-    ClearOpenSslErrors();
-    return false;
-  }
-  output += len;
-
-  if (EVP_CIPHER_CTX_ctrl(ctx_.get(), EVP_CTRL_GCM_GET_TAG, kAuthTagSize,
-                          output) == 0) {
+  if (len < 0) {
     ClearOpenSslErrors();
     return false;
   }
