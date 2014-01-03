@@ -946,11 +946,6 @@ class ContentViewGestureHandler implements LongPressDelegate {
             }
         }
 
-        // TODO(rbyers): Remove this - content should be the one to decide when
-        // to drop touch events (eg. for touch-action).  Need to test / fix
-        // touch-action scenarios with pinch - http://crbug.com/247566
-        if (mPinchInProgress) return EVENT_NOT_FORWARDED;
-
         TouchPoint[] pts = new TouchPoint[event.getPointerCount()];
         int type = TouchPoint.createTouchPoints(event, pts);
 

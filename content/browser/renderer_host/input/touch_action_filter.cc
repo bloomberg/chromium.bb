@@ -16,13 +16,13 @@ namespace content {
 
 TouchActionFilter::TouchActionFilter() :
   drop_scroll_gesture_events_(false),
+  drop_pinch_gesture_events_(false),
   allowed_touch_action_(TOUCH_ACTION_AUTO) {
 }
 
 bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
   // Filter for allowable touch actions first (eg. before the TouchEventQueue
   // can decide to send a touch cancel event).
-  // TODO(rbyers): Add touch-action control over for pinch.  crbug.com/247566.
   switch(gesture_event->type) {
     case WebInputEvent::GestureScrollBegin:
       DCHECK(!drop_scroll_gesture_events_);
@@ -52,10 +52,33 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
         if (allowed_touch_action_ == TOUCH_ACTION_PAN_Y)
           gesture_event->data.flingStart.velocityX = 0;
       }
-      return FilterGestureEnd();
+      return FilterScrollEndingGesture();
 
     case WebInputEvent::GestureScrollEnd:
-      return FilterGestureEnd();
+      return FilterScrollEndingGesture();
+
+    case WebInputEvent::GesturePinchBegin:
+      DCHECK(!drop_pinch_gesture_events_);
+      if (allowed_touch_action_ == TOUCH_ACTION_AUTO) {
+        // Pinch events are always bracketed by scroll events, and the W3C
+        // standard touch-action provides no way to disable scrolling without
+        // also disabling pinching.
+        DCHECK(!drop_scroll_gesture_events_);
+      } else {
+        drop_pinch_gesture_events_ = true;
+      }
+      return drop_pinch_gesture_events_;
+
+    case WebInputEvent::GesturePinchUpdate:
+      return drop_pinch_gesture_events_;
+
+    case WebInputEvent::GesturePinchEnd:
+      if (drop_pinch_gesture_events_) {
+        drop_pinch_gesture_events_ = false;
+        return true;
+      }
+      DCHECK(!drop_scroll_gesture_events_);
+      break;
 
     default:
       // Gesture events unrelated to touch actions (panning/zooming) are left
@@ -66,8 +89,9 @@ bool TouchActionFilter::FilterGestureEvent(WebGestureEvent* gesture_event) {
   return false;
 }
 
-bool TouchActionFilter::FilterGestureEnd() {
+bool TouchActionFilter::FilterScrollEndingGesture() {
   allowed_touch_action_ = TOUCH_ACTION_AUTO;
+  DCHECK(!drop_pinch_gesture_events_);
   if (drop_scroll_gesture_events_) {
     drop_scroll_gesture_events_ = false;
     return true;
@@ -77,10 +101,16 @@ bool TouchActionFilter::FilterGestureEnd() {
 
 void TouchActionFilter::OnSetTouchAction(TouchAction touch_action) {
   // For multiple fingers, we take the intersection of the touch actions for
-  // all fingers that have gone down during this action.
-  // TODO(rbyers): What exact multi-finger semantic do we want?  This is left
-  // as implementation-defined in the pointer events specification.
-  // crbug.com/247566.
+  // all fingers that have gone down during this action.  In the majority of
+  // real-world scenarios the touch action for all fingers will be the same.
+  // This is left as implementation-defined in the pointer events
+  // specification because of the relationship to gestures (which are off
+  // limits for the spec).  I believe the following are desirable properties
+  // of this choice:
+  // 1. Not sensitive to finger touch order.  Behavior of putting two fingers
+  //    down "at once" will be deterministic.
+  // 2. Only subtractive - eg. can't trigger scrolling on a element that
+  //    otherwise has scrolling disabling by the addition of a finger.
   allowed_touch_action_ = Intersect(allowed_touch_action_, touch_action);
 }
 

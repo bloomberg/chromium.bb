@@ -121,7 +121,7 @@ TEST(TouchActionFilterTest, PanX) {
   const float kDY = 10;
   const float kFlingX = 7;
   const float kFlingY = -4;
-  WebGestureEvent scrollEnd = SyntheticWebGestureEventBuilder::Build(
+  WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
 
   {
@@ -138,7 +138,7 @@ TEST(TouchActionFilterTest, PanX) {
     EXPECT_EQ(kDX, scroll_update.data.scrollUpdate.deltaX);
     EXPECT_EQ(0, scroll_update.data.scrollUpdate.deltaY);
 
-    EXPECT_FALSE(filter.FilterGestureEvent(&scrollEnd));
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
   }
 
   {
@@ -180,7 +180,7 @@ TEST(TouchActionFilterTest, PanX) {
     EXPECT_EQ(kDX, scroll_update.data.scrollUpdate.deltaX);
     EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
 
-    EXPECT_TRUE(filter.FilterGestureEvent(&scrollEnd));
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
   }
 }
 
@@ -190,7 +190,7 @@ TEST(TouchActionFilterTest, PanY) {
   const float kDY = 10;
   const float kFlingX = 7;
   const float kFlingY = -4;
-  WebGestureEvent scrollEnd = SyntheticWebGestureEventBuilder::Build(
+  WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
 
   {
@@ -207,7 +207,7 @@ TEST(TouchActionFilterTest, PanY) {
     EXPECT_EQ(0, scroll_update.data.scrollUpdate.deltaX);
     EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
 
-    EXPECT_FALSE(filter.FilterGestureEvent(&scrollEnd));
+    EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
   }
 
   {
@@ -249,7 +249,7 @@ TEST(TouchActionFilterTest, PanY) {
     EXPECT_EQ(kDX, scroll_update.data.scrollUpdate.deltaX);
     EXPECT_EQ(kDY, scroll_update.data.scrollUpdate.deltaY);
 
-    EXPECT_TRUE(filter.FilterGestureEvent(&scrollEnd));
+    EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
   }
 }
 
@@ -331,7 +331,7 @@ TEST(TouchActionFilterTest, MultiTouch) {
   const float kDeltaY = 10;
   WebGestureEvent scroll_update =
       SyntheticWebGestureEventBuilder::BuildScrollUpdate(kDeltaX, kDeltaY, 0);
-  WebGestureEvent scrollEnd = SyntheticWebGestureEventBuilder::Build(
+  WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
       WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
 
   // For multiple points, the intersection is what matters.
@@ -342,7 +342,7 @@ TEST(TouchActionFilterTest, MultiTouch) {
   EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
   EXPECT_EQ(kDeltaX, scroll_update.data.scrollUpdate.deltaX);
   EXPECT_EQ(kDeltaY, scroll_update.data.scrollUpdate.deltaY);
-  EXPECT_TRUE(filter.FilterGestureEvent(&scrollEnd));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
 
   // Intersection of PAN_X and PAN_Y is NONE.
   filter.OnSetTouchAction(TOUCH_ACTION_PAN_X);
@@ -350,7 +350,88 @@ TEST(TouchActionFilterTest, MultiTouch) {
   filter.OnSetTouchAction(TOUCH_ACTION_PAN_X_Y);
   EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
   EXPECT_TRUE(filter.FilterGestureEvent(&scroll_update));
-  EXPECT_TRUE(filter.FilterGestureEvent(&scrollEnd));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
+}
+
+TEST(TouchActionFilterTest, Pinch) {
+  TouchActionFilter filter;
+
+  WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3);
+  WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
+          WebInputEvent::GesturePinchBegin, WebGestureEvent::Touchscreen);
+  WebGestureEvent pinch_update =
+      SyntheticWebGestureEventBuilder::BuildPinchUpdate(1.2f, 5, 5, 0);
+  WebGestureEvent pinch_end = SyntheticWebGestureEventBuilder::Build(
+          WebInputEvent::GesturePinchEnd, WebGestureEvent::Touchscreen);
+  WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::GestureScrollEnd, WebGestureEvent::Touchscreen);
+
+  // Pinch is allowed with touch-action: auto.
+  filter.OnSetTouchAction(TOUCH_ACTION_AUTO);
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
+
+  // Pinch is not allowed with touch-action: none.
+  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_TRUE(filter.FilterGestureEvent(&scroll_end));
+
+  // Pinch is not allowed with touch-action: pan-x pan-y.
+  filter.OnSetTouchAction(TOUCH_ACTION_PAN_X_Y);
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
+
+  // Pinch state is automatically reset at the end of a scroll.
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
+
+  // Pinching can become disallowed during a single scroll gesture, but
+  // can't become allowed again until the scroll terminates.
+  // Note that the current TouchEventQueue design makes this scenario
+  // impossible in practice (no touch events are sent to the renderer
+  // while scrolling) and so no SetTouchAction can occur.  But this
+  // could change in the future, so it's still worth verifying in this
+  // unit test.
+  filter.OnSetTouchAction(TOUCH_ACTION_AUTO);
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_end));
+  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_end));
+  filter.OnSetTouchAction(TOUCH_ACTION_AUTO);
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
+
+  // Once a pinch has started, any change in state won't affect the current
+  // pinch gesture, but can affect a future one within the same scroll.
+  filter.OnSetTouchAction(TOUCH_ACTION_AUTO);
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_begin));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_begin));
+  filter.OnSetTouchAction(TOUCH_ACTION_NONE);
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_FALSE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_begin));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_update));
+  EXPECT_TRUE(filter.FilterGestureEvent(&pinch_end));
+  EXPECT_FALSE(filter.FilterGestureEvent(&scroll_end));
 }
 
 }  // namespace content

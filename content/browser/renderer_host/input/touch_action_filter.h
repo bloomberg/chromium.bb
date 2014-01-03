@@ -36,10 +36,13 @@ public:
 
 private:
   bool ShouldSuppressScroll(const blink::WebGestureEvent& gesture_event);
-  bool FilterGestureEnd();
+  bool FilterScrollEndingGesture();
 
   // Whether GestureScroll events should be discarded due to touch-action.
   bool drop_scroll_gesture_events_;
+
+  // Whether GesturePinch events should be discarded due to touch-action.
+  bool drop_pinch_gesture_events_;
 
   // What touch actions are currently permitted.
   content::TouchAction allowed_touch_action_;
