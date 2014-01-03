@@ -36,5 +36,5 @@ NetworkChangeNotifierWinTest.NetChangeWinBasic
 NetworkChangeNotifierWinTest.NetChangeWinSignal
 NetworkChangeNotifierWinTest.NetChangeWinFailSignal*
 
-# Hang: crbug.com/265647
+# Hang: crbug.com/331468
 MultiThreadedCertVerifierTest.DifferentCACerts
