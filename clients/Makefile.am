@@ -57,7 +57,7 @@ if BUILD_CLIENTS
 install_clients = weston-terminal weston-info
 
 libexec_PROGRAMS =				\
-	weston-desktop-shell
+	weston-desktop-shell			\
 	weston-screenshooter			\
 	$(screensaver)				\
 	weston-keyboard				\
