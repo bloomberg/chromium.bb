@@ -52,14 +52,6 @@ protected:
     virtual ~ExternalStringVisitor() { }
 };
 
-
-class ExternalArrayVisitor {
-public:
-    virtual void visitJSExternalArray(WTF::ArrayBufferView*) = 0;
-protected:
-    virtual ~ExternalArrayVisitor() { }
-};
-
 } // namespace WebCore
 
 #endif // BindingVisitors_h

@@ -41,7 +41,6 @@
 
 namespace WebCore {
 
-class ExternalArrayVisitor;
 class ExternalStringVisitor;
 class WrappedNodeVisitor;
 class Page;
