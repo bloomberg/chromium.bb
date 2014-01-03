@@ -27,8 +27,8 @@
 #include "core/rendering/RenderBoxModelObject.h"
 
 #include "HTMLNames.h"
-#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/rendering/CompositedLayerMapping.h"
 #include "core/rendering/ImageQualityController.h"
@@ -1062,7 +1062,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fil
     int availableWidth = positioningAreaSize.width() - geometry.tileSize().width();
     int availableHeight = positioningAreaSize.height() - geometry.tileSize().height();
 
-    LayoutUnit computedXPosition = minimumValueForLength(fillLayer->xPosition(), availableWidth, true);
+    LayoutUnit computedXPosition = roundedMinimumValueForLength(fillLayer->xPosition(), availableWidth);
     if (backgroundRepeatX == RoundFill && positioningAreaSize.width() > 0 && fillTileSize.width() > 0) {
         long nrTiles = max(1l, lroundf((float)positioningAreaSize.width() / fillTileSize.width()));
 
@@ -1076,7 +1076,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fil
         geometry.setSpaceSize(IntSize());
     }
 
-    LayoutUnit computedYPosition = minimumValueForLength(fillLayer->yPosition(), availableHeight, true);
+    LayoutUnit computedYPosition = roundedMinimumValueForLength(fillLayer->yPosition(), availableHeight);
     if (backgroundRepeatY == RoundFill && positioningAreaSize.height() > 0 && fillTileSize.height() > 0) {
         long nrTiles = max(1l, lroundf((float)positioningAreaSize.height() / fillTileSize.height()));
 
@@ -1098,7 +1098,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fil
         int actualWidth = geometry.tileSize().width() + space;
 
         if (space >= 0) {
-            computedXPosition = minimumValueForLength(Length(), availableWidth, true);
+            computedXPosition = roundedMinimumValueForLength(Length(), availableWidth);
             geometry.setSpaceSize(IntSize(space, 0));
             geometry.setPhaseX(actualWidth ? actualWidth - roundToInt(computedXPosition + left) % actualWidth : 0);
         } else {
@@ -1119,7 +1119,7 @@ void RenderBoxModelObject::calculateBackgroundImageGeometry(const FillLayer* fil
         int actualHeight = geometry.tileSize().height() + space;
 
         if (space >= 0) {
-            computedYPosition = minimumValueForLength(Length(), availableHeight, true);
+            computedYPosition = roundedMinimumValueForLength(Length(), availableHeight);
             geometry.setSpaceSize(IntSize(geometry.spaceSize().width(), space));
             geometry.setPhaseY(actualHeight ? actualHeight - roundToInt(computedYPosition + top) % actualHeight : 0);
         } else {

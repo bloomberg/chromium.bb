@@ -31,24 +31,22 @@
 
 namespace WebCore {
 
-int minimumIntValueForLength(const Length& length, LayoutUnit maximumValue, bool roundPercentages)
+int minimumIntValueForLength(const Length& length, LayoutUnit maximumValue)
 {
-    return static_cast<int>(minimumValueForLength(length, maximumValue, roundPercentages));
+    return static_cast<int>(minimumValueForLength(length, maximumValue));
 }
 
-int intValueForLength(const Length& length, LayoutUnit maximumValue, bool roundPercentages)
+int intValueForLength(const Length& length, LayoutUnit maximumValue)
 {
-    return static_cast<int>(valueForLength(length, maximumValue, roundPercentages));
+    return static_cast<int>(valueForLength(length, maximumValue));
 }
 
-LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue, bool roundPercentages)
+LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue)
 {
     switch (length.type()) {
     case Fixed:
         return length.value();
     case Percent:
-        if (roundPercentages)
-            return static_cast<LayoutUnit>(round(maximumValue * length.percent() / 100.0f));
         // Don't remove the extra cast to float. It is needed for rounding on 32-bit Intel machines that use the FPU stack.
         return static_cast<float>(maximumValue * length.percent() / 100.0f);
     case Calculated:
@@ -72,13 +70,20 @@ LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue, 
     return 0;
 }
 
-LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue, bool roundPercentages)
+LayoutUnit roundedMinimumValueForLength(const Length& length, LayoutUnit maximumValue)
+{
+    if (length.type() == Percent)
+        return static_cast<LayoutUnit>(round(maximumValue * length.percent() / 100.0f));
+    return minimumValueForLength(length, maximumValue);
+}
+
+LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue)
 {
     switch (length.type()) {
     case Fixed:
     case Percent:
     case Calculated:
-        return minimumValueForLength(length, maximumValue, roundPercentages);
+        return minimumValueForLength(length, maximumValue);
     case FillAvailable:
     case Auto:
         return maximumValue;
