@@ -43,8 +43,9 @@ DEFAULT_SIZES = "1600x1200,3840x1600"
 
 SCRIPT_PATH = sys.path[0]
 
-DEFAULT_INSTALL_PATH = "/opt/google/chrome-remote-desktop"
-if SCRIPT_PATH == DEFAULT_INSTALL_PATH:
+IS_INSTALLED = (os.path.basename(sys.argv[0]) != 'me2me_virtual_host.py')
+
+if IS_INSTALLED:
   HOST_BINARY_NAME = "chrome-remote-desktop-host"
 else:
   HOST_BINARY_NAME = "remoting_me2me_host"
@@ -544,10 +545,10 @@ def choose_x_session():
 
 
 def locate_executable(exe_name):
-  if SCRIPT_PATH == DEFAULT_INSTALL_PATH:
-    # If we are installed in the default path, then search the host binary
-    # only in the same directory.
-    paths_to_try = [ DEFAULT_INSTALL_PATH ]
+  if IS_INSTALLED:
+    # If the script is running from its installed location, search the host
+    # binary only in the same directory.
+    paths_to_try = [ SCRIPT_PATH ]
   else:
     paths_to_try = map(lambda p: os.path.join(SCRIPT_PATH, p),
                        [".", "../../out/Debug", "../../out/Release" ])
