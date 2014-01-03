@@ -223,12 +223,6 @@ static inline void getSkiaBoundsForGlyph(SkPaint& paint, Glyph glyph, SkRect& bo
     paint.getTextPath(&glyph, sizeof(glyph), 0, 0, &path);
     bounds = path.getBounds();
 
-    // FIXME(eae): getBounds currently returns an empty rect for bitmap
-    // fonts so fall back on the old behavior. Once fixed in Skia this
-    // fallback can go away.
-    if (bounds.isEmpty())
-        paint.measureText(&glyph, 2, &bounds);
-
     if (!paint.isSubpixelText()) {
         SkIRect ir;
         bounds.round(&ir);
