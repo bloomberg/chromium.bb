@@ -11,12 +11,16 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/models/tree_node_model.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/prefix_delegate.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
+
+namespace gfx {
+class Rect;
+}  // namespace gfx
 
 namespace views {
 
@@ -376,8 +380,8 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
   // Cached preferred size.
   gfx::Size preferred_size_;
 
-  // Font used to display text.
-  gfx::Font font_;
+  // Font list used to display text.
+  gfx::FontList font_list_;
 
   // Height of each row. Based on font and some padding.
   int row_height_;
