@@ -16,14 +16,15 @@ Description:
 
 Local modifications:
 - NSURL+Utils.m was modified to use non-deprecated Cocoa APIs to allow
-  compilation on future versions of Mac OS X.
+  compilation on modern versions of Mac OS X.
 - NSString+Utils.m was renamed to NSString+Utils.mm and modified to use GURL
   for validation in -[NSString isValidURI].
 - NSPasteboard+Utils.mm was modified to add an argument to
   -[NSPasteboard getURLs:andTitles:] to determine whether or not filenames in
   the drag should be converted to file URLs.
-  -[NSPasteboard htmlFromRtf] added to do rtf->html conversion.
+- -[NSPasteboard htmlFromRtf] was added to do rtf->html conversion.
 - NSWorkspace+Utils.m was modified to compile on the x86_64 architecture.
+- MOZILLA_EXPORT was added to some constants in NSPasteboard+Utils.h.
 
 -----------------------------------------------------------------
 
@@ -31,6 +32,6 @@ Also includes IME panel from Gecko, which is based on WebKit's implementation.
 Although it comes from Mozilla (http://mxr.mozilla.org), it uses the original
 WebKit license.
 
-Local modifitations:
-- Add #ifdef'd definifitions of a few symbols to support 10.5 SDK.
-- Added MOZILLA_EXPORT to some constants in NSPasteboard+Utils.h.
+Local modifications:
+- #ifdef'd definitions of a few symbols were added to support the 10.5 SDK.
+- MOZILLA_EXPORT was added to the IME panel class in ComplexTextInputPanel.h.
