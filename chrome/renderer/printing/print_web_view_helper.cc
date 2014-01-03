@@ -529,9 +529,13 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   // blink::WebViewClient override:
   virtual void didStopLoading();
 
-  virtual void CallOnReady();
+  // blink::WebFrameClient override:
+  virtual blink::WebFrame* createChildFrame(blink::WebFrame* parent,
+                                            const blink::WebString& name);
+  virtual void frameDetached(blink::WebFrame* frame);
 
  private:
+  void CallOnReady();
   void ResizeForPrinting();
   void RestoreSize();
   void CopySelection(const WebPreferences& preferences);
@@ -664,6 +668,16 @@ void PrepareFrameAndViewForPrint::didStopLoading() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
+    blink::WebFrame* parent,
+    const blink::WebString& name) {
+  return blink::WebFrame::create(this);
+}
+
+void PrepareFrameAndViewForPrint::frameDetached(blink::WebFrame* frame) {
+  frame->close();
+}
+
 void PrepareFrameAndViewForPrint::CallOnReady() {
   return on_ready_.Run();  // Can delete |this|.
 }
@@ -699,7 +713,6 @@ void PrepareFrameAndViewForPrint::FinishPrinting() {
       DCHECK(!frame->isLoading());
       owns_web_view_ = false;
       web_view->close();
-      frame->close();
     }
   }
   frame_.Reset(NULL);
