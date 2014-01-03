@@ -359,14 +359,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
     bool old_state_;
   };
 
-  // Enables or disables the restoration during an exception of the unhandled
-  // exception filter that was active when Run() was called. This can happen
-  // if some third party code call SetUnhandledExceptionFilter() and never
-  // restores the previous filter.
-  void set_exception_restoration(bool restore) {
-    exception_restoration_ = restore;
-  }
-
   // Returns true if we are currently running a nested message loop.
   bool IsNested();
 
@@ -446,20 +438,8 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Configures various members for the two constructors.
   void Init();
 
-  // A function to encapsulate all the exception handling capability in the
-  // stacks around the running of a main message loop.  It will run the message
-  // loop in a SEH try block or not depending on the set_SEH_restoration()
-  // flag invoking respectively RunInternalInSEHFrame() or RunInternal().
+  // Invokes the actual run loop using the message pump.
   void RunHandler();
-
-#if defined(OS_WIN)
-  __declspec(noinline) void RunInternalInSEHFrame();
-#endif
-
-  // A surrounding stack frame around the running of the message loop that
-  // supports all saving and restoring of state, as is needed for any/all (ugly)
-  // recursive calls.
-  void RunInternal();
 
   // Called to process any delayed non-nestable tasks.
   bool ProcessNextDelayedNonNestableTask();
@@ -526,8 +506,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   TaskQueue deferred_non_nestable_work_queue_;
 
   ObserverList<DestructionObserver> destruction_observers_;
-
-  bool exception_restoration_;
 
   // A recursion block that prevents accidentally running additional tasks when
   // insider a (accidentally induced?) nested message pump.

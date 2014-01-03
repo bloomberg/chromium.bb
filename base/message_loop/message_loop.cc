@@ -102,28 +102,6 @@ bool AlwaysNotifyPump(MessageLoop::Type type) {
 
 //------------------------------------------------------------------------------
 
-#if defined(OS_WIN)
-
-// Upon a SEH exception in this thread, it restores the original unhandled
-// exception filter.
-static int SEHFilter(LPTOP_LEVEL_EXCEPTION_FILTER old_filter) {
-  ::SetUnhandledExceptionFilter(old_filter);
-  return EXCEPTION_CONTINUE_SEARCH;
-}
-
-// Retrieves a pointer to the current unhandled exception filter. There
-// is no standalone getter method.
-static LPTOP_LEVEL_EXCEPTION_FILTER GetTopSEHFilter() {
-  LPTOP_LEVEL_EXCEPTION_FILTER top_filter = NULL;
-  top_filter = ::SetUnhandledExceptionFilter(0);
-  ::SetUnhandledExceptionFilter(top_filter);
-  return top_filter;
-}
-
-#endif  // defined(OS_WIN)
-
-//------------------------------------------------------------------------------
-
 MessageLoop::TaskObserver::TaskObserver() {
 }
 
@@ -137,7 +115,6 @@ MessageLoop::DestructionObserver::~DestructionObserver() {
 
 MessageLoop::MessageLoop(Type type)
     : type_(type),
-      exception_restoration_(false),
       nestable_tasks_allowed_(true),
 #if defined(OS_WIN)
       os_modal_loop_(false),
@@ -152,7 +129,6 @@ MessageLoop::MessageLoop(Type type)
 MessageLoop::MessageLoop(scoped_ptr<MessagePump> pump)
     : pump_(pump.Pass()),
       type_(TYPE_CUSTOM),
-      exception_restoration_(false),
       nestable_tasks_allowed_(true),
 #if defined(OS_WIN)
       os_modal_loop_(false),
@@ -405,34 +381,7 @@ void MessageLoop::Init() {
       new ThreadTaskRunnerHandle(message_loop_proxy_));
 }
 
-// Runs the loop in two different SEH modes:
-// enable_SEH_restoration_ = false : any unhandled exception goes to the last
-// one that calls SetUnhandledExceptionFilter().
-// enable_SEH_restoration_ = true : any unhandled exception goes to the filter
-// that was existed before the loop was run.
 void MessageLoop::RunHandler() {
-#if defined(OS_WIN)
-  if (exception_restoration_) {
-    RunInternalInSEHFrame();
-    return;
-  }
-#endif
-
-  RunInternal();
-}
-
-#if defined(OS_WIN)
-__declspec(noinline) void MessageLoop::RunInternalInSEHFrame() {
-  LPTOP_LEVEL_EXCEPTION_FILTER current_filter = GetTopSEHFilter();
-  __try {
-    RunInternal();
-  } __except(SEHFilter(current_filter)) {
-  }
-  return;
-}
-#endif
-
-void MessageLoop::RunInternal() {
   DCHECK_EQ(this, current());
 
   StartHistogrammer();

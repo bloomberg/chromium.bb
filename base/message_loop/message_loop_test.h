@@ -19,7 +19,6 @@ namespace test {
 typedef MessageLoop::MessagePumpFactory MessagePumpFactory;
 
 void RunTest_PostTask(MessagePumpFactory factory);
-void RunTest_PostTask_SEH(MessagePumpFactory factory);
 void RunTest_PostDelayedTask_Basic(MessagePumpFactory factory);
 void RunTest_PostDelayedTask_InDelayOrder(MessagePumpFactory factory);
 void RunTest_PostDelayedTask_InPostOrder(MessagePumpFactory factory);
@@ -51,9 +50,6 @@ void RunTest_RecursivePosts(MessagePumpFactory factory);
 #define RUN_MESSAGE_LOOP_TESTS(id, factory) \
   TEST(MessageLoopTestType##id, PostTask) { \
     base::test::RunTest_PostTask(factory); \
-  } \
-  TEST(MessageLoopTestType##id, PostTask_SEH) { \
-    base::test::RunTest_PostTask_SEH(factory); \
   } \
   TEST(MessageLoopTestType##id, PostDelayedTask_Basic) { \
     base::test::RunTest_PostDelayedTask_Basic(factory); \
