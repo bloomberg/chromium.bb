@@ -163,7 +163,7 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       }
       // Make sure the size is representable as a signed 32-bit int, so
       // SkBitmap::getSize() won't be truncated.
-      if (bitmap.getSize64().is64())
+      if (!sk_64_isS32(bitmap.computeSize64()))
         return;
 
       // It's OK to cast away constness here since we map the handle as
