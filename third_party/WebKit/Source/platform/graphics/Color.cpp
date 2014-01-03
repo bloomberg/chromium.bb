@@ -177,27 +177,14 @@ int differenceSquared(const Color& c1, const Color& c2)
     return dR * dR + dG * dG + dB * dB;
 }
 
-Color::Color(const String& name)
+bool Color::setFromString(const String& name)
 {
-    if (name[0] == '#') {
-        if (name.is8Bit())
-            m_valid = parseHexColor(name.characters8() + 1, name.length() - 1, m_color);
-        else
-            m_valid = parseHexColor(name.characters16() + 1, name.length() - 1, m_color);
-    } else {
-        setNamedColor(name);
-    }
-}
-
-Color::Color(const char* name)
-{
-    if (name[0] == '#') {
-        m_valid = parseHexColor(&name[1], m_color);
-    } else {
-        const NamedColor* foundColor = findColor(name, strlen(name));
-        m_color = foundColor ? foundColor->ARGBValue : 0;
-        m_valid = foundColor;
-    }
+    if (name[0] != '#')
+        return setNamedColor(name);
+    m_valid = true;
+    if (name.is8Bit())
+        return parseHexColor(name.characters8() + 1, name.length() - 1, m_color);
+    return parseHexColor(name.characters16() + 1, name.length() - 1, m_color);
 }
 
 String Color::serializedAsCSSComponentValue() const
@@ -289,11 +276,12 @@ static inline const NamedColor* findNamedColor(const String& name)
     return findColor(buffer, length);
 }
 
-void Color::setNamedColor(const String& name)
+bool Color::setNamedColor(const String& name)
 {
     const NamedColor* foundColor = findNamedColor(name);
     m_color = foundColor ? foundColor->ARGBValue : 0;
-    m_valid = foundColor;
+    m_valid = true;
+    return foundColor;
 }
 
 Color Color::light() const

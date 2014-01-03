@@ -6275,12 +6275,10 @@ bool BisonCSSParser::fastParseColor(RGBA32& rgb, const StringType& name, bool st
 
     // Try named colors.
     Color tc;
-    tc.setNamedColor(name);
-    if (tc.isValid()) {
-        rgb = tc.rgb();
-        return true;
-    }
-    return false;
+    if (!tc.setNamedColor(name))
+        return false;
+    rgb = tc.rgb();
+    return true;
 }
 
 inline double BisonCSSParser::parsedDouble(CSSParserValue *v, ReleaseParsedCalcValueCondition releaseCalc)

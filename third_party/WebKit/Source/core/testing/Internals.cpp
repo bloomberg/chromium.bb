@@ -712,7 +712,10 @@ void Internals::selectColorInColorChooser(Element* element, const String& colorV
 {
     if (!element->hasTagName(inputTag))
         return;
-    toHTMLInputElement(element)->selectColorInColorChooser(Color(colorValue));
+    Color color;
+    if (!color.setFromString(colorValue))
+        return;
+    toHTMLInputElement(element)->selectColorInColorChooser(color);
 }
 
 Vector<String> Internals::formControlStateOfHistoryItem(ExceptionState& exceptionState)

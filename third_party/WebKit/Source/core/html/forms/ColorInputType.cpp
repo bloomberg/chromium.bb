@@ -68,8 +68,8 @@ static bool isValidColorString(const String& value)
     // We don't accept #rgb and #aarrggbb formats.
     if (value.length() != 7)
         return false;
-    Color color(value);
-    return color.isValid() && !color.hasAlpha();
+    Color color;
+    return color.setFromString(value) && !color.hasAlpha();
 }
 
 PassRefPtr<InputType> ColorInputType::create(HTMLInputElement& element)
@@ -117,7 +117,10 @@ String ColorInputType::sanitizeValue(const String& proposedValue) const
 
 Color ColorInputType::valueAsColor() const
 {
-    return Color(element().value());
+    Color color;
+    bool success = color.setFromString(element().value());
+    ASSERT_UNUSED(success, success);
+    return color;
 }
 
 void ColorInputType::createShadowSubtree()
@@ -240,8 +243,8 @@ Vector<ColorSuggestion> ColorInputType::suggestions() const
             for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); i++) {
                 if (!element().isValidValue(option->value()))
                     continue;
-                Color color(option->value());
-                if (!color.isValid())
+                Color color;
+                if (!color.setFromString(option->value()))
                     continue;
                 ColorSuggestion suggestion(color, option->label().left(maxSuggestionLabelLength));
                 suggestions.append(suggestion);

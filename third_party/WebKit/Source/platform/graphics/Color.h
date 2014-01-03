@@ -70,8 +70,6 @@ public:
     Color(float r, float g, float b, float a) : m_color(makeRGBA32FromFloats(r, g, b, a)), m_valid(true) { }
     // Creates a new color from the specific CMYK and alpha values.
     Color(float c, float m, float y, float k, float a) : m_color(makeRGBAFromCMYKA(c, m, y, k, a)), m_valid(true) { }
-    explicit Color(const String&);
-    explicit Color(const char*);
 
     static Color createUnchecked(int r, int g, int b)
     {
@@ -96,7 +94,10 @@ public:
     // The latter format is not a valid CSS color, and should only be seen in DRT dumps.
     String nameForRenderTreeAsText() const;
 
-    void setNamedColor(const String&);
+    // Returns whether parsing succeeded. The resulting Color is arbitrary
+    // if parsing fails.
+    bool setFromString(const String&);
+    bool setNamedColor(const String&);
 
     bool isValid() const { return m_valid; }
 

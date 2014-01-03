@@ -54,7 +54,7 @@ void TextLinkColors::resetVisitedLinkColor()
 
 void TextLinkColors::resetActiveLinkColor()
 {
-    m_activeLinkColor.setNamedColor("red");
+    m_activeLinkColor = Color(255, 0, 0);
 }
 
 static Color colorForCSSValue(CSSValueID cssValueId)

@@ -930,8 +930,10 @@ void AXNodeObject::colorValue(int& r, int& g, int& b) const
     if (!equalIgnoringCase(type, "color"))
         return;
 
-    // HTMLInputElement::value always returns a string parseable by Color().
-    Color color(input->value());
+    // HTMLInputElement::value always returns a string parseable by Color.
+    Color color;
+    bool success = color.setFromString(input->value());
+    ASSERT_UNUSED(success, success);
     r = color.red();
     g = color.green();
     b = color.blue();
