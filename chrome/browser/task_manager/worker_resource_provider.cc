@@ -185,8 +185,8 @@ WorkerResourceProvider::~WorkerResourceProvider() {
 
 Resource* WorkerResourceProvider::GetResource(
     int origin_pid,
-    int render_process_host_id,
-    int routing_id) {
+    int child_id,
+    int route_id) {
   return NULL;
 }
 

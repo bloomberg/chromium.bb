@@ -133,8 +133,8 @@ NotificationResourceProvider::~NotificationResourceProvider() {
 
 Resource* NotificationResourceProvider::GetResource(
     int origin_pid,
-    int render_process_host_id,
-    int routing_id) {
+    int child_id,
+    int route_id) {
   // TODO(johnnyg): provide resources by pid if necessary.
   return NULL;
 }

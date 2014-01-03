@@ -32,8 +32,8 @@ class TabContentsResourceProvider : public ResourceProvider,
   explicit TabContentsResourceProvider(TaskManager* task_manager);
 
   virtual Resource* GetResource(int origin_pid,
-                                int render_process_host_id,
-                                int routing_id) OVERRIDE;
+                                int child_id,
+                                int route_id) OVERRIDE;
   virtual void StartUpdating() OVERRIDE;
   virtual void StopUpdating() OVERRIDE;
 

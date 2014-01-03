@@ -219,8 +219,8 @@ ChildProcessResourceProvider::~ChildProcessResourceProvider() {
 
 Resource* ChildProcessResourceProvider::GetResource(
     int origin_pid,
-    int render_process_host_id,
-    int routing_id) {
+    int child_id,
+    int route_id) {
   PidResourceMap::iterator iter = pid_to_resources_.find(origin_pid);
   if (iter != pid_to_resources_.end())
     return iter->second;

@@ -429,22 +429,22 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // This struct is used to exchange information between the io and ui threads.
   struct BytesReadParam {
     BytesReadParam(int origin_pid,
-                   int render_process_host_child_id,
-                   int routing_id,
+                   int child_id,
+                   int route_id,
                    int byte_count)
         : origin_pid(origin_pid),
-          render_process_host_child_id(render_process_host_child_id),
-          routing_id(routing_id),
+          child_id(child_id),
+          route_id(route_id),
           byte_count(byte_count) {}
 
     // The process ID that triggered the request.  For plugin requests this
     // will differ from the renderer process ID.
     int origin_pid;
 
-    // The child ID of the RenderProcessHost this request was routed through.
-    int render_process_host_child_id;
+    // The child ID of the process this request was routed through.
+    int child_id;
 
-    int routing_id;
+    int route_id;
     int byte_count;
   };
 

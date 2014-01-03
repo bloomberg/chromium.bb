@@ -143,9 +143,9 @@ BrowserProcessResourceProvider::~BrowserProcessResourceProvider() {
 
 Resource* BrowserProcessResourceProvider::GetResource(
     int origin_pid,
-    int render_process_host_id,
-    int routing_id) {
-  if (origin_pid || render_process_host_id != -1) {
+    int child_id,
+    int route_id) {
+  if (origin_pid || child_id != -1) {
     return NULL;
   }
 

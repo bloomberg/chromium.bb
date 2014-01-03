@@ -19,6 +19,7 @@
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -133,19 +134,21 @@ BackgroundContentsResourceProvider::~BackgroundContentsResourceProvider() {
 
 Resource* BackgroundContentsResourceProvider::GetResource(
     int origin_pid,
-    int render_process_host_id,
-    int routing_id) {
+    int child_id,
+    int route_id) {
   // If an origin PID was specified, the request is from a plugin, not the
   // render view host process
   if (origin_pid)
     return NULL;
 
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(child_id, route_id);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+
   for (Resources::iterator i = resources_.begin(); i != resources_.end(); i++) {
-    WebContents* tab = i->first->web_contents();
-    if (tab->GetRenderProcessHost()->GetID() == render_process_host_id
-        && tab->GetRenderViewHost()->GetRoutingID() == routing_id) {
+    if (web_contents == i->first->web_contents())
       return i->second;
-    }
   }
 
   // Can happen if the page went away while a network request was being

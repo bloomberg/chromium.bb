@@ -1246,16 +1246,14 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Only net::URLRequestJob instances created by the ResourceDispatcherHost
-  // have an associated ResourceRequestInfo.
+  // have an associated ResourceRequestInfo and a render frame associated.
+  // All other jobs will have -1 returned for the render process child and
+  // routing ids - the jobs may still match a resource based on their origin id,
+  // otherwise BytesRead() will attribute the activity to the Browser resource.
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(&request);
-
-  // have a render view associated.  All other jobs will have -1 returned for
-  // the render process child and routing ids - the jobs may still match a
-  // resource based on their origin id, otherwise BytesRead() will attribute
-  // the activity to the Browser resource.
-  int render_process_host_child_id = -1, routing_id = -1;
+  int child_id = -1, route_id = -1;
   if (info)
-    info->GetAssociatedRenderView(&render_process_host_child_id, &routing_id);
+    info->GetAssociatedRenderFrame(&child_id, &route_id);
 
   // Get the origin PID of the request's originator.  This will only be set for
   // plugins - for renderer or browser initiated requests it will be zero.
@@ -1271,8 +1269,7 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
   }
 
   bytes_read_buffer_.push_back(
-      BytesReadParam(origin_pid, render_process_host_child_id,
-                     routing_id, byte_count));
+      BytesReadParam(origin_pid, child_id, route_id, byte_count));
 }
 
 // This is called on the UI thread.
@@ -1343,8 +1340,8 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
   for (ResourceProviderList::iterator iter = providers_.begin();
        iter != providers_.end(); ++iter) {
     resource = (*iter)->GetResource(param.origin_pid,
-                                    param.render_process_host_child_id,
-                                    param.routing_id);
+                                    param.child_id,
+                                    param.route_id);
     if (resource)
       break;
   }
@@ -1354,9 +1351,9 @@ void TaskManagerModel::BytesRead(BytesReadParam param) {
     // tab that started a download was closed, or the request may have had
     // no originating resource associated with it in the first place.
     // We attribute orphaned/unaccounted activity to the Browser process.
-    CHECK(param.origin_pid || (param.render_process_host_child_id != -1));
+    CHECK(param.origin_pid || (param.child_id != -1));
     param.origin_pid = 0;
-    param.render_process_host_child_id = param.routing_id = -1;
+    param.child_id = param.route_id = -1;
     BytesRead(param);
     return;
   }

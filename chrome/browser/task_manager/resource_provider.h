@@ -157,9 +157,9 @@ class ResourceProvider : public base::RefCountedThreadSafe<ResourceProvider> {
  public:
   // Should return the resource associated to the specified ids, or NULL if
   // the resource does not belong to this provider.
-  virtual Resource* GetResource(int process_id,
-                                int render_process_host_id,
-                                int routing_id) = 0;
+  virtual Resource* GetResource(int origin_pid,
+                                int child_id,
+                                int route_id) = 0;
   virtual void StartUpdating() = 0;
   virtual void StopUpdating() = 0;
 

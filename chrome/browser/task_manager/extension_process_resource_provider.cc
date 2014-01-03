@@ -18,6 +18,7 @@
 #include "chrome/browser/task_manager/task_manager_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
@@ -177,18 +178,23 @@ ExtensionProcessResourceProvider::~ExtensionProcessResourceProvider() {
 
 Resource* ExtensionProcessResourceProvider::GetResource(
     int origin_pid,
-    int render_process_host_id,
-    int routing_id) {
+    int child_id,
+    int route_id) {
   // If an origin PID was specified, the request is from a plugin, not the
   // render view host process
   if (origin_pid)
     return NULL;
 
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(child_id, route_id);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+
   for (ExtensionRenderViewHostMap::iterator i = resources_.begin();
        i != resources_.end(); i++) {
-    if (i->first->GetSiteInstance()->GetProcess()->GetID() ==
-            render_process_host_id &&
-        i->first->GetRoutingID() == routing_id)
+    content::WebContents* view_contents =
+        content::WebContents::FromRenderViewHost(i->first);
+    if (web_contents == view_contents)
       return i->second;
   }
 

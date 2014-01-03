@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tab_contents/tab_contents_iterator.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
@@ -183,12 +184,12 @@ TabContentsResourceProvider::~TabContentsResourceProvider() {
 
 Resource* TabContentsResourceProvider::GetResource(
     int origin_pid,
-    int render_process_host_id,
-    int routing_id) {
-  WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_host_id, routing_id);
-  if (!web_contents)  // Not one of our resource.
-    return NULL;
+    int child_id,
+    int route_id) {
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(child_id, route_id);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
 
   // If an origin PID was specified then the request originated in a plugin
   // working on the WebContents's behalf, so ignore it.
