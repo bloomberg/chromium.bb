@@ -32,7 +32,7 @@ class WebTestDelegate;
 class EventSender : public CppBoundClass {
 public:
     explicit EventSender(TestInterfaces*);
-    ~EventSender();
+    virtual ~EventSender();
 
     void setDelegate(WebTestDelegate* delegate) { m_delegate = delegate; }
     void setWebView(blink::WebView* webView) { m_webView = webView; }

@@ -531,9 +531,18 @@ WebAXObjectProxy::WebAXObjectProxy(const WebAXObject& object, Factory* factory)
     bindFallbackMethod(&WebAXObjectProxy::fallbackCallback);
 }
 
+WebAXObjectProxy::~WebAXObjectProxy()
+{
+}
+
 WebAXObjectProxy* WebAXObjectProxy::getChildAtIndex(unsigned index)
 {
     return m_factory->getOrCreate(accessibilityObject().childAt(index));
+}
+
+bool WebAXObjectProxy::isRoot() const
+{
+    return false;
 }
 
 bool WebAXObjectProxy::isEqual(const blink::WebAXObject& other)
@@ -1122,8 +1131,16 @@ WebAXObjectProxy* RootWebAXObjectProxy::getChildAtIndex(unsigned index)
     return factory()->getOrCreate(accessibilityObject());
 }
 
+bool RootWebAXObjectProxy::isRoot() const
+{
+    return true;
+}
 
-WebAXObjectProxyList ::~WebAXObjectProxyList()
+WebAXObjectProxyList::WebAXObjectProxyList()
+{
+}
+
+WebAXObjectProxyList::~WebAXObjectProxyList()
 {
     clear();
 }

@@ -41,13 +41,13 @@ public:
     // WebPlugin methods:
     virtual bool initialize(blink::WebPluginContainer*);
     virtual void destroy();
-    virtual NPObject* scriptableObject() { return 0; }
-    virtual bool canProcessDrag() const { return m_canProcessDrag; }
+    virtual NPObject* scriptableObject();
+    virtual bool canProcessDrag() const;
     virtual void paint(blink::WebCanvas*, const blink::WebRect&) { }
     virtual void updateGeometry(const blink::WebRect& frameRect, const blink::WebRect& clipRect, const blink::WebVector<blink::WebRect>& cutOutsRects, bool isVisible);
     virtual void updateFocus(bool) { }
     virtual void updateVisibility(bool) { }
-    virtual bool acceptsInputEvents() { return true; }
+    virtual bool acceptsInputEvents();
     virtual bool handleInputEvent(const blink::WebInputEvent&, blink::WebCursorInfo&);
     virtual bool handleDragStatusUpdate(blink::WebDragStatus, const blink::WebDragData&, blink::WebDragOperationsMask, const blink::WebPoint& position, const blink::WebPoint& screenPosition);
     virtual void didReceiveResponse(const blink::WebURLResponse&) { }
@@ -56,10 +56,10 @@ public:
     virtual void didFailLoading(const blink::WebURLError&) { }
     virtual void didFinishLoadingFrameRequest(const blink::WebURL&, void* notifyData) { }
     virtual void didFailLoadingFrameRequest(const blink::WebURL&, void* notifyData, const blink::WebURLError&) { }
-    virtual bool isPlaceholder() { return false; }
+    virtual bool isPlaceholder();
 
     // WebExternalTextureLayerClient methods:
-    virtual blink::WebGraphicsContext3D* context() { return 0; }
+    virtual blink::WebGraphicsContext3D* context();
     virtual bool prepareMailbox(blink::WebExternalTextureMailbox*, blink::WebExternalBitmap*);
     virtual void mailboxReleased(const blink::WebExternalTextureMailbox&);
 

@@ -25,7 +25,7 @@ public:
         , m_callback(callback)
     { }
 
-    virtual void runIfValid() { (m_object->*m_callback)(); }
+    virtual void runIfValid() OVERRIDE { (m_object->*m_callback)(); }
 
 private:
     CallbackMethodType m_callback;

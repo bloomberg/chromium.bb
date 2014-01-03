@@ -45,7 +45,7 @@ struct WebPreferences {
     bool shouldRespectImageOrientation;
     bool asynchronousSpellCheckingEnabled;
 
-    WebPreferences() { reset(); }
+    WebPreferences();
     void reset();
 };
 

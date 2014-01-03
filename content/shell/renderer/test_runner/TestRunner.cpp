@@ -87,7 +87,7 @@ public:
     {
     }
 
-    virtual void runIfValid()
+    virtual void runIfValid() OVERRIDE
     {
         CppVariant invokeResult;
         m_callbackArguments->invokeDefault(m_callbackArguments.get(), 1, invokeResult);
@@ -97,6 +97,12 @@ private:
     scoped_ptr<CppVariant> m_callbackArguments;
 };
 
+}
+
+TestRunner::WorkQueue::WorkQueue(TestRunner* controller)
+    : m_frozen(false)
+    , m_controller(controller)
+{
 }
 
 TestRunner::WorkQueue::~WorkQueue()
@@ -149,6 +155,21 @@ void TestRunner::WorkQueue::addWork(WorkItem* work)
     m_queue.push_back(work);
 }
 
+void TestRunner::WorkQueue::WorkQueueTask::runIfValid()
+{
+    m_object->processWork();
+}
+
+TestRunner::HostMethodTask::HostMethodTask(TestRunner* object, TestRunner::HostMethodTask::CallbackMethodType callback)
+    : WebMethodTask<TestRunner>(object)
+    , m_callback(callback)
+{
+}
+
+void TestRunner::HostMethodTask::runIfValid()
+{
+    (m_object->*m_callback)();
+}
 
 TestRunner::TestRunner(TestInterfaces* interfaces)
     : m_testIsRunning(false)
@@ -814,7 +835,7 @@ void TestRunner::completeNotifyDone()
 class WorkItemBackForward : public TestRunner::WorkItem {
 public:
     WorkItemBackForward(int distance) : m_distance(distance) { }
-    bool run(WebTestDelegate* delegate, WebView*)
+    virtual bool run(WebTestDelegate* delegate, WebView*) OVERRIDE
     {
         delegate->goToOffset(m_distance);
         return true; // FIXME: Did it really start a navigation?
@@ -840,7 +861,7 @@ void TestRunner::queueForwardNavigation(const CppArgumentList& arguments, CppVar
 
 class WorkItemReload : public TestRunner::WorkItem {
 public:
-    bool run(WebTestDelegate* delegate, WebView*)
+    virtual bool run(WebTestDelegate* delegate, WebView*) OVERRIDE
     {
         delegate->reload();
         return true;
@@ -856,7 +877,7 @@ void TestRunner::queueReload(const CppArgumentList&, CppVariant* result)
 class WorkItemLoadingScript : public TestRunner::WorkItem {
 public:
     WorkItemLoadingScript(const string& script) : m_script(script) { }
-    bool run(WebTestDelegate*, WebView* webView)
+    virtual bool run(WebTestDelegate*, WebView* webView) OVERRIDE
     {
         webView->mainFrame()->executeScript(WebScriptSource(WebString::fromUTF8(m_script)));
         return true; // FIXME: Did it really start a navigation?
@@ -869,7 +890,7 @@ private:
 class WorkItemNonLoadingScript : public TestRunner::WorkItem {
 public:
     WorkItemNonLoadingScript(const string& script) : m_script(script) { }
-    bool run(WebTestDelegate*, WebView* webView)
+    virtual bool run(WebTestDelegate*, WebView* webView) OVERRIDE
     {
         webView->mainFrame()->executeScript(WebScriptSource(WebString::fromUTF8(m_script)));
         return false;
@@ -898,7 +919,7 @@ public:
     WorkItemLoad(const WebURL& url, const string& target)
         : m_url(url)
         , m_target(target) { }
-    bool run(WebTestDelegate* delegate, WebView*)
+    virtual bool run(WebTestDelegate* delegate, WebView*) OVERRIDE
     {
         delegate->loadURLForFrame(m_url, m_target);
         return true; // FIXME: Did it really start a navigation?
@@ -934,7 +955,7 @@ public:
         : m_html(html)
         , m_baseURL(baseURL)
         , m_unreachableURL(unreachableURL) { }
-    bool run(WebTestDelegate*, WebView* webView)
+    virtual bool run(WebTestDelegate*, WebView* webView) OVERRIDE
     {
         webView->mainFrame()->loadHTMLString(
             blink::WebData(m_html.data(), m_html.length()), m_baseURL, m_unreachableURL);

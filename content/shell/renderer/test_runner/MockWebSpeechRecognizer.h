@@ -26,7 +26,7 @@ class WebTestDelegate;
 class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
 public:
     MockWebSpeechRecognizer();
-    ~MockWebSpeechRecognizer();
+    virtual ~MockWebSpeechRecognizer();
 
     void setDelegate(WebTestDelegate*);
 

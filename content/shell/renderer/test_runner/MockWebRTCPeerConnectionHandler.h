@@ -47,7 +47,7 @@ public:
     WebTaskList* taskList() { return &m_taskList; }
 
 private:
-    MockWebRTCPeerConnectionHandler() { }
+    MockWebRTCPeerConnectionHandler();
 
     blink::WebRTCPeerConnectionHandlerClient* m_client;
     bool m_stopped;

@@ -895,7 +895,7 @@ class MouseDownTask: public WebMethodTask<EventSender> {
 public:
     MouseDownTask(EventSender* obj, const CppArgumentList& arg)
         : WebMethodTask<EventSender>(obj), m_arguments(arg) { }
-    virtual void runIfValid() { m_object->mouseDown(m_arguments, 0); }
+    virtual void runIfValid() OVERRIDE { m_object->mouseDown(m_arguments, 0); }
 
 private:
     CppArgumentList m_arguments;
@@ -905,7 +905,7 @@ class MouseUpTask: public WebMethodTask<EventSender> {
 public:
     MouseUpTask(EventSender* obj, const CppArgumentList& arg)
         : WebMethodTask<EventSender>(obj), m_arguments(arg) { }
-    virtual void runIfValid() { m_object->mouseUp(m_arguments, 0); }
+    virtual void runIfValid() OVERRIDE { m_object->mouseUp(m_arguments, 0); }
 
 private:
     CppArgumentList m_arguments;
@@ -922,7 +922,7 @@ class KeyDownTask : public WebMethodTask<EventSender> {
 public:
     KeyDownTask(EventSender* obj, const CppArgumentList& arg)
         : WebMethodTask<EventSender>(obj), m_arguments(arg) { }
-    virtual void runIfValid() { m_object->keyDown(m_arguments, 0); }
+    virtual void runIfValid() OVERRIDE { m_object->keyDown(m_arguments, 0); }
 
 private:
     CppArgumentList m_arguments;

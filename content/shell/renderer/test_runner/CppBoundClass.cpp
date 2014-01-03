@@ -61,13 +61,13 @@ class CppVariantPropertyCallback : public CppBoundClass::PropertyCallback {
 public:
     CppVariantPropertyCallback(CppVariant* value) : m_value(value) { }
 
-    virtual bool getValue(CppVariant* value)
+    virtual bool getValue(CppVariant* value) OVERRIDE
     {
         value->set(*m_value);
         return true;
     }
 
-    virtual bool setValue(const CppVariant& value)
+    virtual bool setValue(const CppVariant& value) OVERRIDE
     {
         m_value->set(value);
         return true;
@@ -84,13 +84,13 @@ public:
     {
     }
 
-    virtual bool getValue(CppVariant* value)
+    virtual bool getValue(CppVariant* value) OVERRIDE
     {
         m_callback->run(value);
         return true;
     }
 
-    virtual bool setValue(const CppVariant& value) { return false; }
+    virtual bool setValue(const CppVariant& value) OVERRIDE { return false; }
 
 private:
     scoped_ptr<CppBoundClass::GetterCallback> m_callback;
@@ -206,6 +206,11 @@ bool CppNPObject::setProperty(NPObject* npObj, NPIdentifier ident, const NPVaria
 {
     CppNPObject* obj = reinterpret_cast<CppNPObject*>(npObj);
     return obj->boundClass->setProperty(ident, value);
+}
+
+CppBoundClass::CppBoundClass()
+    : m_boundToFrame(false)
+{
 }
 
 CppBoundClass::~CppBoundClass()

@@ -50,6 +50,16 @@ void MockWebRTCDataChannelHandler::setClient(WebRTCDataChannelHandlerClient* cli
         m_delegate->postTask(new DataChannelReadyStateTask(this, m_client, WebRTCDataChannelHandlerClient::ReadyStateOpen));
 }
 
+blink::WebString MockWebRTCDataChannelHandler::label()
+{
+    return m_label;
+}
+
+bool MockWebRTCDataChannelHandler::isReliable()
+{
+    return m_reliable;
+}
+
 bool MockWebRTCDataChannelHandler::ordered() const
 {
     return m_init.ordered;

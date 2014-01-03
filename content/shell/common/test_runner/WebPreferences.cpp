@@ -8,6 +8,11 @@ using namespace blink;
 
 namespace WebTestRunner {
 
+WebPreferences::WebPreferences()
+{
+    reset();
+}
+
 void WebPreferences::reset()
 {
     defaultFontSize = 16;

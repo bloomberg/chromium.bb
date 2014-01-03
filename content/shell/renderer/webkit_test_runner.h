@@ -49,54 +49,59 @@ class WebKitTestRunner : public RenderViewObserver,
       blink::WebFrame* frame, const blink::WebURLError& error) OVERRIDE;
 
   // WebTestDelegate implementation.
-  virtual void clearEditCommand();
+  virtual void clearEditCommand() OVERRIDE;
   virtual void setEditCommand(const std::string& name,
-                              const std::string& value);
-  virtual void setGamepadData(const blink::WebGamepads& gamepads);
-  virtual void setDeviceMotionData(const blink::WebDeviceMotionData& data);
+                              const std::string& value) OVERRIDE;
+  virtual void setGamepadData(const blink::WebGamepads& gamepads) OVERRIDE;
+  virtual void setDeviceMotionData(
+      const blink::WebDeviceMotionData& data) OVERRIDE;
   virtual void setDeviceOrientationData(
-      const blink::WebDeviceOrientationData& data);
-  virtual void printMessage(const std::string& message);
-  virtual void postTask(::WebTestRunner::WebTask* task);
+      const blink::WebDeviceOrientationData& data) OVERRIDE;
+  virtual void printMessage(const std::string& message) OVERRIDE;
+  virtual void postTask(::WebTestRunner::WebTask* task) OVERRIDE;
   virtual void postDelayedTask(::WebTestRunner::WebTask* task,
-                               long long ms);
+                               long long ms) OVERRIDE;
   virtual blink::WebString registerIsolatedFileSystem(
-      const blink::WebVector<blink::WebString>& absolute_filenames);
-  virtual long long getCurrentTimeInMillisecond();
+      const blink::WebVector<blink::WebString>& absolute_filenames) OVERRIDE;
+  virtual long long getCurrentTimeInMillisecond() OVERRIDE;
   virtual blink::WebString getAbsoluteWebStringFromUTF8Path(
-      const std::string& utf8_path);
-  virtual blink::WebURL localFileToDataURL(const blink::WebURL& file_url);
-  virtual blink::WebURL rewriteLayoutTestsURL(const std::string& utf8_url);
-  virtual ::WebTestRunner::WebPreferences* preferences();
-  virtual void applyPreferences();
+      const std::string& utf8_path) OVERRIDE;
+  virtual blink::WebURL localFileToDataURL(
+      const blink::WebURL& file_url) OVERRIDE;
+  virtual blink::WebURL rewriteLayoutTestsURL(
+      const std::string& utf8_url) OVERRIDE;
+  virtual ::WebTestRunner::WebPreferences* preferences() OVERRIDE;
+  virtual void applyPreferences() OVERRIDE;
   virtual std::string makeURLErrorDescription(const blink::WebURLError& error);
-  virtual void useUnfortunateSynchronousResizeMode(bool enable);
+  virtual void useUnfortunateSynchronousResizeMode(bool enable) OVERRIDE;
   virtual void enableAutoResizeMode(const blink::WebSize& min_size,
-                                    const blink::WebSize& max_size);
-  virtual void disableAutoResizeMode(const blink::WebSize& new_size);
-  virtual void showDevTools();
-  virtual void closeDevTools();
-  virtual void evaluateInWebInspector(long call_id, const std::string& script);
-  virtual void clearAllDatabases();
-  virtual void setDatabaseQuota(int quota);
-  virtual void setDeviceScaleFactor(float factor);
-  virtual void setFocus(WebTestRunner::WebTestProxyBase* proxy, bool focus);
-  virtual void setAcceptAllCookies(bool accept);
-  virtual std::string pathToLocalResource(const std::string& resource);
-  virtual void setLocale(const std::string& locale);
-  virtual void testFinished();
-  virtual void closeRemainingWindows();
-  virtual void deleteAllCookies();
-  virtual int navigationEntryCount();
-  virtual void goToOffset(int offset);
-  virtual void reload();
+                                    const blink::WebSize& max_size) OVERRIDE;
+  virtual void disableAutoResizeMode(const blink::WebSize& new_size) OVERRIDE;
+  virtual void showDevTools() OVERRIDE;
+  virtual void closeDevTools() OVERRIDE;
+  virtual void evaluateInWebInspector(long call_id,
+                                      const std::string& script) OVERRIDE;
+  virtual void clearAllDatabases() OVERRIDE;
+  virtual void setDatabaseQuota(int quota) OVERRIDE;
+  virtual void setDeviceScaleFactor(float factor) OVERRIDE;
+  virtual void setFocus(WebTestRunner::WebTestProxyBase* proxy,
+                        bool focus) OVERRIDE;
+  virtual void setAcceptAllCookies(bool accept) OVERRIDE;
+  virtual std::string pathToLocalResource(const std::string& resource) OVERRIDE;
+  virtual void setLocale(const std::string& locale) OVERRIDE;
+  virtual void testFinished() OVERRIDE;
+  virtual void closeRemainingWindows() OVERRIDE;
+  virtual void deleteAllCookies() OVERRIDE;
+  virtual int navigationEntryCount() OVERRIDE;
+  virtual void goToOffset(int offset) OVERRIDE;
+  virtual void reload() OVERRIDE;
   virtual void loadURLForFrame(const blink::WebURL& url,
-                               const std::string& frame_name);
-  virtual bool allowExternalPages();
+                               const std::string& frame_name) OVERRIDE;
+  virtual bool allowExternalPages() OVERRIDE;
   virtual void captureHistoryForWindow(
       WebTestRunner::WebTestProxyBase* proxy,
       blink::WebVector<blink::WebHistoryItem>* history,
-      size_t* currentEntryIndex);
+      size_t* currentEntryIndex) OVERRIDE;
 
   void Reset();
 

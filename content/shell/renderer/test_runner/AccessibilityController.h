@@ -21,6 +21,7 @@ class WebTestDelegate;
 class AccessibilityController : public CppBoundClass {
 public:
     AccessibilityController();
+    virtual ~AccessibilityController();
 
     // Shadow to include accessibility initialization.
     void bindToJavascript(blink::WebFrame*, const blink::WebString& classname);

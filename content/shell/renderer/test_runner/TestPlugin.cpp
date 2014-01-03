@@ -226,6 +226,16 @@ void TestPlugin::destroy()
     Platform::current()->callOnMainThread(deferredDelete, this);
 }
 
+NPObject* TestPlugin::scriptableObject()
+{
+    return 0;
+}
+
+bool TestPlugin::canProcessDrag() const
+{
+    return m_canProcessDrag;
+}
+
 void TestPlugin::updateGeometry(const WebRect& frameRect, const WebRect& clipRect, const WebVector<WebRect>& cutOutsRects, bool isVisible)
 {
     if (clipRect == m_rect)
@@ -254,6 +264,21 @@ void TestPlugin::updateGeometry(const WebRect& frameRect, const WebRect& clipRec
     m_context->flush();
     m_layer->layer()->invalidate();
     m_mailboxChanged = true;
+}
+
+bool TestPlugin::acceptsInputEvents()
+{
+    return true;
+}
+
+bool TestPlugin::isPlaceholder()
+{
+    return false;
+}
+
+blink::WebGraphicsContext3D* TestPlugin::context()
+{
+    return 0;
 }
 
 bool TestPlugin::prepareMailbox(blink::WebExternalTextureMailbox* mailbox, blink::WebExternalBitmap*)

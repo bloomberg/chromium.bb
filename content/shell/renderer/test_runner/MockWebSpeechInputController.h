@@ -29,7 +29,7 @@ class WebTestDelegate;
 class MockWebSpeechInputController : public blink::WebSpeechInputController {
 public:
     explicit MockWebSpeechInputController(blink::WebSpeechInputListener*);
-    ~MockWebSpeechInputController();
+    virtual ~MockWebSpeechInputController();
 
     void addMockRecognitionResult(const blink::WebString& result, double confidence, const blink::WebString& language);
     void setDumpRect(bool);

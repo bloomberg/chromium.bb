@@ -20,7 +20,7 @@ class WebTestDelegate;
 class WebUserMediaClientMock : public blink::WebUserMediaClient {
 public:
     explicit WebUserMediaClientMock(WebTestDelegate*);
-    ~WebUserMediaClientMock() { }
+    virtual ~WebUserMediaClientMock() { }
 
     virtual void requestUserMedia(const blink::WebUserMediaRequest&) OVERRIDE;
     virtual void cancelUserMediaRequest(const blink::WebUserMediaRequest&) OVERRIDE;

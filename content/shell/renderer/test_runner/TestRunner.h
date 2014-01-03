@@ -156,7 +156,7 @@ private:
     // queueScript.
     class WorkQueue {
     public:
-        WorkQueue(TestRunner* controller) : m_frozen(false), m_controller(controller) { }
+        explicit WorkQueue(TestRunner* controller);
         virtual ~WorkQueue();
         void processWorkSoon();
 
@@ -174,7 +174,7 @@ private:
         class WorkQueueTask: public WebMethodTask<WorkQueue> {
         public:
             WorkQueueTask(WorkQueue* object): WebMethodTask<WorkQueue>(object) { }
-            virtual void runIfValid() { m_object->processWork(); }
+            virtual void runIfValid() OVERRIDE;
         };
 
         WebTaskList m_taskList;
@@ -522,12 +522,9 @@ private:
     class HostMethodTask : public WebMethodTask<TestRunner> {
     public:
         typedef void (TestRunner::*CallbackMethodType)();
-        HostMethodTask(TestRunner* object, CallbackMethodType callback)
-            : WebMethodTask<TestRunner>(object)
-            , m_callback(callback)
-        { }
+        HostMethodTask(TestRunner* object, CallbackMethodType callback);
 
-        virtual void runIfValid() { (m_object->*m_callback)(); }
+        virtual void runIfValid() OVERRIDE;
 
     private:
         CallbackMethodType m_callback;

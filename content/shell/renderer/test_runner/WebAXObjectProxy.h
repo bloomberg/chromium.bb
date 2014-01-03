@@ -21,9 +21,10 @@ public:
     };
 
     WebAXObjectProxy(const blink::WebAXObject&, Factory*);
+    virtual ~WebAXObjectProxy();
 
     virtual WebAXObjectProxy* getChildAtIndex(unsigned);
-    virtual bool isRoot() const { return false; }
+    virtual bool isRoot() const;
     virtual bool isEqual(const blink::WebAXObject&);
 
     virtual void notificationReceived(const char *notificationName);
@@ -118,8 +119,8 @@ class RootWebAXObjectProxy : public WebAXObjectProxy {
 public:
     RootWebAXObjectProxy(const blink::WebAXObject&, Factory*);
 
-    virtual WebAXObjectProxy* getChildAtIndex(unsigned);
-    virtual bool isRoot() const { return true; }
+    virtual WebAXObjectProxy* getChildAtIndex(unsigned) OVERRIDE;
+    virtual bool isRoot() const OVERRIDE;
 };
 
 
@@ -128,11 +129,11 @@ public:
 // a list and cleared explicitly.
 class WebAXObjectProxyList : public WebAXObjectProxy::Factory {
 public:
-    WebAXObjectProxyList() { }
+    WebAXObjectProxyList();
     virtual ~WebAXObjectProxyList();
 
     void clear();
-    virtual WebAXObjectProxy* getOrCreate(const blink::WebAXObject&);
+    virtual WebAXObjectProxy* getOrCreate(const blink::WebAXObject&) OVERRIDE;
     WebAXObjectProxy* createRoot(const blink::WebAXObject&);
 
 private:

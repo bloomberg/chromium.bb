@@ -145,6 +145,10 @@ private:
 
 /////////////////////
 
+MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler()
+{
+}
+
 MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler(WebRTCPeerConnectionHandlerClient* client, TestInterfaces* interfaces)
     : m_client(client)
     , m_stopped(false)

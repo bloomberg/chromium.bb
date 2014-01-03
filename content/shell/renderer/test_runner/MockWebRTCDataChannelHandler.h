@@ -21,8 +21,8 @@ public:
     MockWebRTCDataChannelHandler(blink::WebString label, const blink::WebRTCDataChannelInit&, WebTestDelegate*);
 
     virtual void setClient(blink::WebRTCDataChannelHandlerClient*) OVERRIDE;
-    virtual blink::WebString label() OVERRIDE { return m_label; }
-    virtual bool isReliable() OVERRIDE { return m_reliable; }
+    virtual blink::WebString label() OVERRIDE;
+    virtual bool isReliable() OVERRIDE;
     virtual bool ordered() const OVERRIDE;
     virtual unsigned short maxRetransmitTime() const OVERRIDE;
     virtual unsigned short maxRetransmits() const OVERRIDE;
