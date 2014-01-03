@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockWebAudioDevice_h
-#define MockWebAudioDevice_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBAUDIODEVICE_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBAUDIODEVICE_H_
 
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
@@ -28,4 +28,4 @@ private:
 
 } // namespace WebTestRunner
 
-#endif // MockWebAudioDevice_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBAUDIODEVICE_H_

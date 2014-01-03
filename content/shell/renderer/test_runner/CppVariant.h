@@ -13,8 +13,8 @@
   string values.
 */
 
-#ifndef CppVariant_h
-#define CppVariant_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_CPPVARIANT_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_CPPVARIANT_H_
 
 #include <string>
 #include <vector>
@@ -116,4 +116,4 @@ public:
 
 }
 
-#endif // CppVariant_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_CPPVARIANT_H_

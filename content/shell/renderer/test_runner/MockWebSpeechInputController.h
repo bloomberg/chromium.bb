@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockWebSpeechInputController_h
-#define MockWebSpeechInputController_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBSPEECHINPUTCONTROLLER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBSPEECHINPUTCONTROLLER_H_
 
 #include <map>
 #include <string>
@@ -76,4 +76,4 @@ private:
 
 }
 
-#endif // MockWebSpeechInputController_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBSPEECHINPUTCONTROLLER_H_

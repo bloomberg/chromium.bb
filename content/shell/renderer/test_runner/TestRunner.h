@@ -34,8 +34,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TestRunner_h
-#define TestRunner_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_TESTRUNNER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_TESTRUNNER_H_
 
 #include <deque>
 #include <set>
@@ -734,4 +734,4 @@ private:
 
 }
 
-#endif // TestRunner_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_TESTRUNNER_H_

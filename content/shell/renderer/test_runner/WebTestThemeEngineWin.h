@@ -18,8 +18,8 @@
 // choose to do so at some point.
 //
 
-#ifndef WebTestThemeEngineWin_h
-#define WebTestThemeEngineWin_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEWIN_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEWIN_H_
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/win/WebThemeEngine.h"
@@ -78,4 +78,4 @@ private:
 
 }
 
-#endif // WebTestThemeEngineWin_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEWIN_H_

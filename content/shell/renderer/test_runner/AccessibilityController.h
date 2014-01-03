@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef AccessibilityController_h
-#define AccessibilityController_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_ACCESSIBILITYCONTROLLER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_ACCESSIBILITYCONTROLLER_H_
 
 #include "content/shell/renderer/test_runner/CppBoundClass.h"
 #include "content/shell/renderer/test_runner/WebAXObjectProxy.h"
@@ -67,4 +67,4 @@ private:
 
 }
 
-#endif // AccessibilityController_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_ACCESSIBILITYCONTROLLER_H_

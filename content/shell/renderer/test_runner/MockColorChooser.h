@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockColorChooser_h
-#define MockColorChooser_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCOLORCHOOSER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCOLORCHOOSER_H_
 
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
@@ -37,4 +37,4 @@ private:
 
 }
 
-#endif // MockColorChooser_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKCOLORCHOOSER_H_

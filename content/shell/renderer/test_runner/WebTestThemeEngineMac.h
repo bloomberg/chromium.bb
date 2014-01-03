@@ -6,8 +6,8 @@
 // port rendering more than usual Chromium path, thus allowing us to share
 // more pixel baselines.
 
-#ifndef WebTestThemeEngineMac_h
-#define WebTestThemeEngineMac_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMAC_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMAC_H_
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/mac/WebThemeEngine.h"
@@ -45,4 +45,4 @@ private:
 
 }
 
-#endif // WebTestThemeEngineMac_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMAC_H_

@@ -44,8 +44,8 @@
   that object.
 */
 
-#ifndef CppBoundClass_h
-#define CppBoundClass_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_CPPBOUNDCLASS_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_CPPBOUNDCLASS_H_
 
 #include <map>
 #include <vector>
@@ -250,4 +250,4 @@ private:
 
 }
 
-#endif // CppBoundClass_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_CPPBOUNDCLASS_H_

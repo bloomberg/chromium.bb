@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebTestThemeEngineMock_h
-#define WebTestThemeEngineMock_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMOCK_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMOCK_H_
 
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/default/WebThemeEngine.h"
@@ -29,4 +29,4 @@ public:
 
 } // namespace WebTestRunner
 
-#endif // WebTestThemeEngineMock_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMEENGINEMOCK_H_

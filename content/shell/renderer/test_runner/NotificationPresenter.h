@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NotificationPresenter_h
-#define NotificationPresenter_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_NOTIFICATIONPRESENTER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_NOTIFICATIONPRESENTER_H_
 
 #include <map>
 #include <set>
@@ -60,4 +60,4 @@ private:
 
 }
 
-#endif // NotificationPresenter_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_NOTIFICATIONPRESENTER_H_

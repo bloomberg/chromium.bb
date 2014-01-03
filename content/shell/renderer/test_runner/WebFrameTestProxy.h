@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFrameTestProxy_h
-#define WebFrameTestProxy_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBFRAMETESTPROXY_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBFRAMETESTPROXY_H_
 
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/WebTestProxy.h"

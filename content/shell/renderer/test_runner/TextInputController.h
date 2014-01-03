@@ -6,8 +6,8 @@
 // when DRT is running. Layout tests use it to exercise various corners of
 // text input.
 
-#ifndef TextInputController_h
-#define TextInputController_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_TEXTINPUTCONTROLLER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_TEXTINPUTCONTROLLER_H_
 
 #include "content/shell/renderer/test_runner/CppBoundClass.h"
 
@@ -39,4 +39,4 @@ private:
 
 }
 
-#endif // TextInputController_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_TEXTINPUTCONTROLLER_H_

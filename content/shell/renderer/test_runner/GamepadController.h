@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GamepadController_h
-#define GamepadController_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_GAMEPADCONTROLLER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_GAMEPADCONTROLLER_H_
 
 #include "content/shell/renderer/test_runner/CppBoundClass.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
@@ -43,4 +43,4 @@ private:
 
 }
 
-#endif // GamepadController_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_GAMEPADCONTROLLER_H_

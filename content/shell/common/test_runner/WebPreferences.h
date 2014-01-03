@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebPreferences_h
-#define WebPreferences_h
+#ifndef CONTENT_SHELL_COMMON_TEST_RUNNER_WEBPREFERENCES_H_
+#define CONTENT_SHELL_COMMON_TEST_RUNNER_WEBPREFERENCES_H_
 
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -51,4 +51,4 @@ struct WebPreferences {
 
 }
 
-#endif // WebPreferences_h
+#endif  // CONTENT_SHELL_COMMON_TEST_RUNNER_WEBPREFERENCES_H_

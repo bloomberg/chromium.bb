@@ -10,8 +10,8 @@
 // are optimized for testability, not a pleasing appearance.
 //
 
-#ifndef WebTestThemeControlWin_h
-#define WebTestThemeControlWin_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMECONTROLWIN_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMECONTROLWIN_H_
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -174,4 +174,4 @@ private:
 
 }
 
-#endif // WebTestThemeControlWin_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTTHEMECONTROLWIN_H_

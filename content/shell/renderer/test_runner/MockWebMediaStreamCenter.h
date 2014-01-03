@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MockWebMediaStreamCenter_h
-#define MockWebMediaStreamCenter_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBMEDIASTREAMCENTER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBMEDIASTREAMCENTER_H_
 
 #include "base/basictypes.h"
 #include "content/shell/renderer/test_runner/TestCommon.h"
@@ -36,4 +36,4 @@ private:
 
 }
 
-#endif // MockWebMediaStreamCenter_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_MOCKWEBMEDIASTREAMCENTER_H_

@@ -8,8 +8,8 @@
   CppBoundClass::bindToJavascript(), this allows layout tests to fire DOM events.
 */
 
-#ifndef EventSender_h
-#define EventSender_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_EVENTSENDER_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_EVENTSENDER_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "content/shell/renderer/test_runner/CppBoundClass.h"
@@ -185,4 +185,4 @@ private:
 
 }
 
-#endif // EventSender_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_EVENTSENDER_H_

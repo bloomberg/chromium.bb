@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebTestProxy_h
-#define WebTestProxy_h
+#ifndef CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTPROXY_H_
+#define CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTPROXY_H_
 
 #include <map>
 #include <string>
@@ -534,4 +534,4 @@ private:
 
 }
 
-#endif // WebTestProxy_h
+#endif  // CONTENT_SHELL_RENDERER_TEST_RUNNER_WEBTESTPROXY_H_
