@@ -183,6 +183,7 @@ public:
     PassRefPtr<CSSBasicShape> parseBasicShapeCircle(CSSParserValueList* args);
     PassRefPtr<CSSBasicShape> parseDeprecatedBasicShapeCircle(CSSParserValueList* args);
     PassRefPtr<CSSBasicShape> parseBasicShapeEllipse(CSSParserValueList* args);
+    PassRefPtr<CSSBasicShape> parseDeprecatedBasicShapeEllipse(CSSParserValueList*);
     PassRefPtr<CSSBasicShape> parseBasicShapePolygon(CSSParserValueList* args);
     PassRefPtr<CSSBasicShape> parseBasicShapeInsetRectangle(CSSParserValueList* args);
 

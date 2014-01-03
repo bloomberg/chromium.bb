@@ -49,6 +49,7 @@ public:
     enum Type {
         BasicShapeRectangleType,
         DeprecatedBasicShapeCircleType,
+        DeprecatedBasicShapeEllipseType,
         BasicShapeEllipseType,
         BasicShapePolygonType,
         BasicShapeInsetRectangleType,
@@ -242,6 +243,36 @@ class BasicShapeEllipse : public BasicShape {
 public:
     static PassRefPtr<BasicShapeEllipse> create() { return adoptRef(new BasicShapeEllipse); }
 
+    const BasicShapeCenterCoordinate& centerX() const { return m_centerX; }
+    const BasicShapeCenterCoordinate& centerY() const { return m_centerY; }
+    const BasicShapeRadius& radiusX() const { return m_radiusX; }
+    const BasicShapeRadius& radiusY() const { return m_radiusY; }
+
+    void setCenterX(BasicShapeCenterCoordinate centerX) { m_centerX = centerX; }
+    void setCenterY(BasicShapeCenterCoordinate centerY) { m_centerY = centerY; }
+    void setRadiusX(BasicShapeRadius radiusX) { m_radiusX = radiusX; }
+    void setRadiusY(BasicShapeRadius radiusY) { m_radiusY = radiusY; }
+
+    virtual void path(Path&, const FloatRect&) OVERRIDE;
+    virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
+    virtual bool operator==(const BasicShape&) const OVERRIDE;
+
+    virtual Type type() const { return BasicShapeEllipseType; }
+private:
+    BasicShapeEllipse() { }
+
+    BasicShapeCenterCoordinate m_centerX;
+    BasicShapeCenterCoordinate m_centerY;
+    BasicShapeRadius m_radiusX;
+    BasicShapeRadius m_radiusY;
+};
+
+DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeEllipse);
+
+class DeprecatedBasicShapeEllipse : public BasicShape {
+public:
+    static PassRefPtr<DeprecatedBasicShapeEllipse> create() { return adoptRef(new DeprecatedBasicShapeEllipse); }
+
     Length centerX() const { return m_centerX; }
     Length centerY() const { return m_centerY; }
     Length radiusX() const { return m_radiusX; }
@@ -256,9 +287,9 @@ public:
     virtual PassRefPtr<BasicShape> blend(const BasicShape*, double) const OVERRIDE;
     virtual bool operator==(const BasicShape&) const OVERRIDE;
 
-    virtual Type type() const { return BasicShapeEllipseType; }
+    virtual Type type() const { return DeprecatedBasicShapeEllipseType; }
 private:
-    BasicShapeEllipse() { }
+    DeprecatedBasicShapeEllipse() { }
 
     Length m_centerX;
     Length m_centerY;
@@ -266,7 +297,7 @@ private:
     Length m_radiusY;
 };
 
-DEFINE_BASICSHAPE_TYPE_CASTS(BasicShapeEllipse);
+DEFINE_BASICSHAPE_TYPE_CASTS(DeprecatedBasicShapeEllipse);
 
 class BasicShapePolygon : public BasicShape {
 public:

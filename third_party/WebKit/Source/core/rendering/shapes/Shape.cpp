@@ -159,8 +159,8 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         break;
     }
 
-    case BasicShape::BasicShapeEllipseType: {
-        const BasicShapeEllipse* ellipse = static_cast<const BasicShapeEllipse*>(basicShape);
+    case BasicShape::DeprecatedBasicShapeEllipseType: {
+        const DeprecatedBasicShapeEllipse* ellipse = static_cast<const DeprecatedBasicShapeEllipse*>(basicShape);
         float centerX = floatValueForLength(ellipse->centerX(), boxWidth);
         float centerY = floatValueForLength(ellipse->centerY(), boxHeight);
         float radiusX = floatValueForLength(ellipse->radiusX(), boxWidth);
@@ -169,6 +169,12 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
         FloatSize logicalRadii = physicalSizeToLogical(FloatSize(radiusX, radiusY), writingMode);
 
         shape = createEllipseShape(logicalCenter, logicalRadii);
+        break;
+    }
+
+    case BasicShape::BasicShapeEllipseType: {
+        // FIXME implement layout.
+        shape = createRectangleShape(FloatRect(0, 0, boxWidth, boxHeight), FloatSize(0, 0));
         break;
     }
 

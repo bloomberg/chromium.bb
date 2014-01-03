@@ -173,7 +173,8 @@ bool CSSBasicShapeCircle::hasVariableReference() const
 {
     return (m_centerX && m_centerX->hasVariableReference())
         || (m_centerY && m_centerY->hasVariableReference())
-        || (m_radius && m_radius->hasVariableReference());
+        || (m_radius && m_radius->hasVariableReference())
+        || (m_layoutBox && m_layoutBox->hasVariableReference());
 }
 
 static String buildDeprecatedCircleString(const String& x, const String& y, const String& radius)
@@ -212,31 +213,47 @@ bool CSSDeprecatedBasicShapeCircle::hasVariableReference() const
         || (m_layoutBox && m_layoutBox->hasVariableReference());
 }
 
-static String buildEllipseString(const String& x, const String& y, const String& radiusX, const String& radiusY, const String& layoutBox)
+static String buildEllipseString(const String& radiusX, const String& radiusY, const String& centerX, const String& centerY, const String& box)
 {
+    char at[] = "at";
+    char separator[] = " ";
     StringBuilder result;
-    const char separator[] = ", ";
     result.appendLiteral("ellipse(");
-    result.append(x);
-    result.appendLiteral(separator);
-    result.append(y);
-    result.appendLiteral(separator);
-    result.append(radiusX);
-    result.appendLiteral(separator);
-    result.append(radiusY);
-    if (!layoutBox.isEmpty()) {
-        result.append(' ');
-        result.append(layoutBox);
+    bool needsSeparator = false;
+    if (!radiusX.isNull()) {
+        result.append(radiusX);
+        needsSeparator = true;
     }
-    result.append(')');
+    if (!radiusY.isNull()) {
+        if (needsSeparator)
+            result.appendLiteral(separator);
+        result.append(radiusY);
+        needsSeparator = true;
+    }
+
+    if (!centerX.isNull() || !centerY.isNull()) {
+        if (needsSeparator)
+            result.appendLiteral(separator);
+        result.appendLiteral(at);
+        result.appendLiteral(separator);
+        result.append(centerX);
+        result.appendLiteral(separator);
+        result.append(centerY);
+    }
+    result.append(")");
+    if (box.length()) {
+        result.appendLiteral(separator);
+        result.append(box);
+    }
     return result.toString();
 }
 
 String CSSBasicShapeEllipse::cssText() const
 {
-    return buildEllipseString(m_centerX->cssText(),
-        m_centerY->cssText(), m_radiusX->cssText(),
-        m_radiusY->cssText(),
+    return buildEllipseString(m_radiusX ? m_radiusX->cssText() : String(),
+        m_radiusY ? m_radiusY->cssText() : String(),
+        m_centerX ? m_centerX->cssText() : String(),
+        m_centerY ? m_centerY->cssText() : String(),
         m_layoutBox ? m_layoutBox->cssText() : String());
 }
 
@@ -255,14 +272,53 @@ bool CSSBasicShapeEllipse::equals(const CSSBasicShape& shape) const
 
 String CSSBasicShapeEllipse::serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
-    return buildEllipseString(m_centerX->serializeResolvingVariables(variables),
-        m_centerY->serializeResolvingVariables(variables),
-        m_radiusX->serializeResolvingVariables(variables),
-        m_radiusY->serializeResolvingVariables(variables),
-        m_layoutBox ? m_layoutBox->serializeResolvingVariables(variables) : String());
+    return buildEllipseString(m_radiusX.get() ? m_radiusX->serializeResolvingVariables(variables) : String(),
+        m_radiusY.get() ? m_radiusY->serializeResolvingVariables(variables) : String(),
+        m_centerX.get() ? m_centerX->serializeResolvingVariables(variables) : String(),
+        m_centerY.get() ? m_centerY->serializeResolvingVariables(variables) : String(),
+        m_layoutBox.get() ? m_layoutBox->serializeResolvingVariables(variables) : String());
 }
 
 bool CSSBasicShapeEllipse::hasVariableReference() const
+{
+    return (m_centerX && m_centerX->hasVariableReference())
+        || (m_centerY && m_centerY->hasVariableReference())
+        || (m_radiusX && m_radiusX->hasVariableReference())
+        || (m_radiusY && m_radiusY->hasVariableReference())
+        || (m_layoutBox && m_layoutBox->hasVariableReference());
+}
+
+static String buildDeprecatedEllipseString(const String& x, const String& y, const String& radiusX, const String& radiusY)
+{
+    return "ellipse(" + x + ", " + y + ", " + radiusX + ", " + radiusY + ')';
+}
+
+String CSSDeprecatedBasicShapeEllipse::cssText() const
+{
+    return buildDeprecatedEllipseString(m_centerX->cssText(), m_centerY->cssText(), m_radiusX->cssText(), m_radiusY->cssText());
+}
+
+bool CSSDeprecatedBasicShapeEllipse::equals(const CSSBasicShape& shape) const
+{
+    if (shape.type() != CSSDeprecatedBasicShapeEllipseType)
+        return false;
+
+    const CSSDeprecatedBasicShapeEllipse& other = static_cast<const CSSDeprecatedBasicShapeEllipse&>(shape);
+    return compareCSSValuePtr(m_centerX, other.m_centerX)
+        && compareCSSValuePtr(m_centerY, other.m_centerY)
+        && compareCSSValuePtr(m_radiusX, other.m_radiusX)
+        && compareCSSValuePtr(m_radiusY, other.m_radiusY);
+}
+
+String CSSDeprecatedBasicShapeEllipse::serializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
+{
+    return buildDeprecatedEllipseString(m_centerX->serializeResolvingVariables(variables),
+        m_centerY->serializeResolvingVariables(variables),
+        m_radiusX->serializeResolvingVariables(variables),
+        m_radiusY->serializeResolvingVariables(variables));
+}
+
+bool CSSDeprecatedBasicShapeEllipse::hasVariableReference() const
 {
     return m_centerX->hasVariableReference()
         || m_centerY->hasVariableReference()
