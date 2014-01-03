@@ -188,8 +188,7 @@ void ShellBrowserContext::RequestMIDISysExPermission(
     callback.Run(false);
     return;
   }
-  // TODO(toyoshim): Implement. http://crbug.com/257618 .
-  callback.Run(false);
+  callback.Run(true);
 }
 
 void ShellBrowserContext::CancelMIDISysExPermissionRequest(
