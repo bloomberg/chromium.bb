@@ -1056,8 +1056,14 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
   component_updater()->Stop();
 }
 
+// Test is flakey on Android bots. See crbug.com/331420.
+#if defined(OS_ANDROID)
+#define MAYBE_CheckFailedInstallPing DISABLED_CheckFailedInstallPing
+#else
+#define MAYBE_CheckFailedInstallPing CheckFailedInstallPing
+#endif
 // Verify that a failed installation causes an install failure ping.
-TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
+  TEST_F(ComponentUpdaterTest, MAYBE_CheckFailedInstallPing) {
   // This test installer reports installation failure.
   class : public TestInstaller {
     virtual bool Install(const base::DictionaryValue& manifest,
