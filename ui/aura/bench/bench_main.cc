@@ -21,7 +21,6 @@
 #include "ui/aura/test/test_screen.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/debug_utils.h"
@@ -297,7 +296,6 @@ int main(int argc, char** argv) {
   ui::InitializeContextFactoryForTests(allow_test_contexts);
 
   base::i18n::InitializeICU();
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   base::MessageLoopForUI message_loop;
   aura::Env::CreateInstance();

@@ -4,12 +4,13 @@
 
 #include "base/bind.h"
 #include "base/test/launcher/unit_test_launcher.h"
-#include "ui/aura/test/test_suite.h"
+#include "base/test/test_suite.h"
 
 int main(int argc, char** argv) {
-  aura::test::AuraTestSuite test_suite(argc, argv);
+  base::TestSuite test_suite(argc, argv);
 
   return base::LaunchUnitTests(
-      argc, argv, base::Bind(&aura::test::AuraTestSuite::Run,
-                             base::Unretained(&test_suite)));
+      argc,
+      argv,
+      base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

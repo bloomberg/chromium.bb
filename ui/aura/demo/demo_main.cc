@@ -17,7 +17,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -165,7 +164,6 @@ int main(int argc, char** argv) {
   base::AtExitManager exit_manager;
 
   base::i18n::InitializeICU();
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
 
   return DemoMain();
 }
