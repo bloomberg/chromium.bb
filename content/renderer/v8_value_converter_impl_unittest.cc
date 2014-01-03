@@ -154,7 +154,7 @@ class V8ValueConverterImplTest : public testing::Test {
       EXPECT_FALSE(raw.get());
     }
 
-    v8::Handle<v8::Object> object(v8::Object::New());
+    v8::Handle<v8::Object> object(v8::Object::New(isolate_));
     object->Set(v8::String::NewFromUtf8(isolate_, "test"), val);
     scoped_ptr<base::DictionaryValue> dictionary(
         static_cast<base::DictionaryValue*>(
@@ -455,7 +455,7 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
 
   V8ValueConverterImpl converter;
 
-  v8::Handle<v8::Object> object = v8::Object::New().As<v8::Object>();
+  v8::Handle<v8::Object> object = v8::Object::New(isolate_).As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
   object->Set(v8::String::NewFromUtf8(isolate_, "foo"),
               v8::String::NewFromUtf8(isolate_, "bar"));
@@ -636,7 +636,7 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
 
   // Now create a recursive object
   const std::string key("key");
-  v8::Handle<v8::Object> recursive_object(v8::Object::New());
+  v8::Handle<v8::Object> recursive_object(v8::Object::New(isolate_));
   v8::TryCatch try_catch;
   recursive_object->Set(
       v8::String::NewFromUtf8(
@@ -666,11 +666,11 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
   int kDepth = 1000;
   const char kKey[] = "key";
 
-  v8::Local<v8::Object> deep_object = v8::Object::New();
+  v8::Local<v8::Object> deep_object = v8::Object::New(isolate_);
 
   v8::Local<v8::Object> leaf = deep_object;
   for (int i = 0; i < kDepth; ++i) {
-    v8::Local<v8::Object> new_object = v8::Object::New();
+    v8::Local<v8::Object> new_object = v8::Object::New(isolate_);
     leaf->Set(v8::String::NewFromUtf8(isolate_, kKey), new_object);
     leaf = new_object;
   }

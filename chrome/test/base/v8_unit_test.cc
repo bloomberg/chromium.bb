@@ -167,7 +167,7 @@ void V8UnitTest::SetUp() {
   v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate_);
   v8::Handle<v8::String> logString = v8::String::NewFromUtf8(isolate_, "log");
   v8::Handle<v8::FunctionTemplate> logFunction =
-      v8::FunctionTemplate::New(&V8UnitTest::Log);
+      v8::FunctionTemplate::New(isolate_, &V8UnitTest::Log);
   global->Set(logString, logFunction);
 
   // Set up chrome object for chrome.send().

@@ -259,7 +259,8 @@ gfx::Rect RenderViewTest::GetElementBounds(const std::string& element_id) {
   std::string script =
       ReplaceStringPlaceholders(kGetCoordinatesScript, params, NULL);
 
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
   v8::Handle<v8::Value>  value = GetMainFrame()->executeScriptAndReturnValue(
       WebScriptSource(WebString::fromUTF8(script)));
   if (value.IsEmpty() || !value->IsArray())
@@ -270,7 +271,7 @@ gfx::Rect RenderViewTest::GetElementBounds(const std::string& element_id) {
     return gfx::Rect();
   std::vector<int> coords;
   for (int i = 0; i < 4; ++i) {
-    v8::Handle<v8::Number> index = v8::Number::New(i);
+    v8::Handle<v8::Number> index = v8::Number::New(isolate, i);
     v8::Local<v8::Value> value = array->Get(index);
     if (value.IsEmpty() || !value->IsInt32())
       return gfx::Rect();
