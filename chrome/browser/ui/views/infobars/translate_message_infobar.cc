@@ -22,8 +22,8 @@ void TranslateMessageInfoBar::Layout() {
   TranslateInfoBarBase::Layout();
 
   int x = StartX();
-  const int width = std::min(label_->width(),
-                             std::max(0, EndX() - x - ContentMinimumWidth()));
+  const int width =
+      std::min(label_->width(), std::max(0, EndX() - x - NonLabelWidth()));
   label_->SetBounds(x, OffsetY(label_), width, label_->height());
   if (!label_->text().empty())
     x = label_->bounds().right() + kEndOfLabelSpacing;
@@ -61,7 +61,11 @@ void TranslateMessageInfoBar::ButtonPressed(views::Button* sender,
     TranslateInfoBarBase::ButtonPressed(sender, event);
 }
 
-int TranslateMessageInfoBar::ContentMinimumWidth() const {
+int TranslateMessageInfoBar::ContentMinimumWidth() {
+  return label_->GetMinimumSize().width() + NonLabelWidth();
+}
+
+int TranslateMessageInfoBar::NonLabelWidth() const {
   if (!button_)
     return 0;
   return button_->width() + (label_->text().empty() ? 0 : kEndOfLabelSpacing);

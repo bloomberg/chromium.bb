@@ -335,7 +335,7 @@ void InfoBarView::ButtonPressed(views::Button* sender,
   }
 }
 
-int InfoBarView::ContentMinimumWidth() const {
+int InfoBarView::ContentMinimumWidth() {
   return 0;
 }
 

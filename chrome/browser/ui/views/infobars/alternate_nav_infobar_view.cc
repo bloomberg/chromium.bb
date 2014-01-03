@@ -95,6 +95,11 @@ void AlternateNavInfoBarView::ViewHierarchyChanged(
   InfoBarView::ViewHierarchyChanged(details);
 }
 
+int AlternateNavInfoBarView::ContentMinimumWidth() {
+  int label_1_width = label_1_->GetMinimumSize().width();
+  return label_1_width ? label_1_width : link_->GetMinimumSize().width();
+}
+
 void AlternateNavInfoBarView::LinkClicked(views::Link* source,
                                           int event_flags) {
   if (!owner())

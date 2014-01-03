@@ -42,7 +42,7 @@ void AfterTranslateInfoBar::Layout() {
   labels.push_back(label_1_);
   labels.push_back(label_2_);
   labels.push_back(label_3_);
-  AssignWidths(&labels, std::max(0, EndX() - x - ContentMinimumWidth()));
+  AssignWidths(&labels, std::max(0, EndX() - x - NonLabelWidth()));
 
   label_1_->SetPosition(gfx::Point(x, OffsetY(label_1_)));
   if (!label_1_->text().empty())
@@ -150,21 +150,10 @@ void AfterTranslateInfoBar::ButtonPressed(views::Button* sender,
     TranslateInfoBarBase::ButtonPressed(sender, event);
 }
 
-int AfterTranslateInfoBar::ContentMinimumWidth() const {
-  views::MenuButton* first_button, *second_button;
-  GetButtons(&first_button, &second_button);
-  int width = (label_1_->text().empty() ? 0 : kButtonInLabelSpacing) +
-      first_button->width() +
-      (label_2_->text().empty() ? 0 : kButtonInLabelSpacing);
-  if (!autodetermined_source_language_) {
-    width +=
-        (label_2_->text().empty() ?
-            kButtonButtonSpacing : kButtonInLabelSpacing) +
-        second_button->width() +
-        (label_3_->text().empty() ? 0 : kButtonInLabelSpacing);
-  }
-  return width + kEndOfLabelSpacing + revert_button_->width() +
-      kEndOfLabelSpacing + options_menu_button_->width();
+int AfterTranslateInfoBar::ContentMinimumWidth() {
+  return label_1_->GetMinimumSize().width() +
+      label_2_->GetMinimumSize().width() + label_3_->GetMinimumSize().width() +
+      NonLabelWidth();
 }
 
 void AfterTranslateInfoBar::OnMenuButtonClicked(views::View* source,
@@ -191,4 +180,21 @@ void AfterTranslateInfoBar::GetButtons(
   *second_button = target_language_menu_button_;
   if (swapped_language_buttons_ || autodetermined_source_language_)
     std::swap(*first_button, *second_button);
+}
+
+int AfterTranslateInfoBar::NonLabelWidth() const {
+  views::MenuButton* first_button, *second_button;
+  GetButtons(&first_button, &second_button);
+  int width = (label_1_->text().empty() ? 0 : kButtonInLabelSpacing) +
+      first_button->width() +
+      (label_2_->text().empty() ? 0 : kButtonInLabelSpacing);
+  if (!autodetermined_source_language_) {
+    width +=
+        (label_2_->text().empty() ?
+            kButtonButtonSpacing : kButtonInLabelSpacing) +
+        second_button->width() +
+        (label_3_->text().empty() ? 0 : kButtonInLabelSpacing);
+  }
+  return width + kEndOfLabelSpacing + revert_button_->width() +
+      kEndOfLabelSpacing + options_menu_button_->width();
 }

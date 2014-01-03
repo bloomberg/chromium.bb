@@ -38,7 +38,7 @@ void BeforeTranslateInfoBar::Layout() {
   Labels labels;
   labels.push_back(label_1_);
   labels.push_back(label_2_);
-  AssignWidths(&labels, std::max(0, EndX() - x - ContentMinimumWidth()));
+  AssignWidths(&labels, std::max(0, EndX() - x - NonLabelWidth()));
 
   label_1_->SetPosition(gfx::Point(x, OffsetY(label_1_)));
   if (!label_1_->text().empty())
@@ -138,17 +138,9 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(
       delegate->language_name_at(delegate->original_language_index()));
 }
 
-int BeforeTranslateInfoBar::ContentMinimumWidth() const {
-  return (label_1_->text().empty() ? 0 : kButtonInLabelSpacing) +
-      language_menu_button_->width() +
-      (label_2_->text().empty() ? 0 : kButtonInLabelSpacing) +
-      kEndOfLabelSpacing + accept_button_->width() + kButtonButtonSpacing +
-      deny_button_->width() +
-      (never_translate_button_ ?
-          (kButtonButtonSpacing + never_translate_button_->width()) : 0) +
-      (always_translate_button_ ?
-          (kButtonButtonSpacing + always_translate_button_->width()) : 0) +
-      kEndOfLabelSpacing + options_menu_button_->width();
+int BeforeTranslateInfoBar::ContentMinimumWidth() {
+  return label_1_->GetMinimumSize().width() +
+      label_2_->GetMinimumSize().width() + NonLabelWidth();
 }
 
 void BeforeTranslateInfoBar::ButtonPressed(views::Button* sender,
@@ -182,4 +174,17 @@ void BeforeTranslateInfoBar::OnMenuButtonClicked(views::View* source,
     RunMenuAt(options_menu_model_.get(), options_menu_button_,
               views::MenuItemView::TOPRIGHT);
   }
+}
+
+int BeforeTranslateInfoBar::NonLabelWidth() const {
+  return (label_1_->text().empty() ? 0 : kButtonInLabelSpacing) +
+      language_menu_button_->width() +
+      (label_2_->text().empty() ? 0 : kButtonInLabelSpacing) +
+      kEndOfLabelSpacing + accept_button_->width() + kButtonButtonSpacing +
+      deny_button_->width() +
+      (never_translate_button_ ?
+          (kButtonButtonSpacing + never_translate_button_->width()) : 0) +
+      (always_translate_button_ ?
+          (kButtonButtonSpacing + always_translate_button_->width()) : 0) +
+      kEndOfLabelSpacing + options_menu_button_->width();
 }

@@ -41,7 +41,7 @@ void ConfirmInfoBar::Layout() {
   Labels labels;
   labels.push_back(label_);
   labels.push_back(link_);
-  AssignWidths(&labels, std::max(0, EndX() - x - ContentMinimumWidth()));
+  AssignWidths(&labels, std::max(0, EndX() - x - NonLabelWidth()));
 
   label_->SetPosition(gfx::Point(x, OffsetY(label_)));
   if (!label_->text().empty())
@@ -105,13 +105,9 @@ void ConfirmInfoBar::ButtonPressed(views::Button* sender,
   }
 }
 
-int ConfirmInfoBar::ContentMinimumWidth() const {
-  int width = (label_->text().empty() || (!ok_button_ && !cancel_button_)) ?
-      0 : kEndOfLabelSpacing;
-  if (ok_button_)
-    width += ok_button_->width() + (cancel_button_ ? kButtonButtonSpacing : 0);
-  width += (cancel_button_ ? cancel_button_->width() : 0);
-  return width + ((link_->text().empty() || !width) ? 0 : kEndOfLabelSpacing);
+int ConfirmInfoBar::ContentMinimumWidth() {
+  return label_->GetMinimumSize().width() + link_->GetMinimumSize().width() +
+      NonLabelWidth();
 }
 
 void ConfirmInfoBar::LinkClicked(views::Link* source, int event_flags) {
@@ -124,4 +120,13 @@ void ConfirmInfoBar::LinkClicked(views::Link* source, int event_flags) {
 
 ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
   return delegate()->AsConfirmInfoBarDelegate();
+}
+
+int ConfirmInfoBar::NonLabelWidth() const {
+  int width = (label_->text().empty() || (!ok_button_ && !cancel_button_)) ?
+      0 : kEndOfLabelSpacing;
+  if (ok_button_)
+    width += ok_button_->width() + (cancel_button_ ? kButtonButtonSpacing : 0);
+  width += (cancel_button_ ? cancel_button_->width() : 0);
+  return width + ((link_->text().empty() || !width) ? 0 : kEndOfLabelSpacing);
 }

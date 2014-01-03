@@ -21,7 +21,11 @@ class TranslateMessageInfoBar : public TranslateInfoBarBase {
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
-  virtual int ContentMinimumWidth() const OVERRIDE;
+  virtual int ContentMinimumWidth() OVERRIDE;
+
+  // Returns the width of all content other than the label.  Layout() uses this
+  // to determine how much space the label can take.
+  int NonLabelWidth() const;
 
   views::Label* label_;
   views::LabelButton* button_;

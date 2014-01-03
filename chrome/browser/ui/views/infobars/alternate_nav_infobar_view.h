@@ -34,6 +34,7 @@ class AlternateNavInfoBarView : public InfoBarView,
   virtual void Layout() OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
+  virtual int ContentMinimumWidth() OVERRIDE;
 
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;

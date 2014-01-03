@@ -31,11 +31,15 @@ class BeforeTranslateInfoBar : public TranslateInfoBarBase,
                              const ui::Event& event) OVERRIDE;
   virtual void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) OVERRIDE;
-  virtual int ContentMinimumWidth() const OVERRIDE;
+  virtual int ContentMinimumWidth() OVERRIDE;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
                                    const gfx::Point& point) OVERRIDE;
+
+  // Returns the width of all content other than the labels.  Layout() uses this
+  // to determine how much space the labels can take.
+  int NonLabelWidth() const;
 
   // The text displayed in the infobar is something like:
   // "The page is in <lang>. Would you like to translate it?"

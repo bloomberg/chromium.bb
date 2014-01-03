@@ -33,12 +33,16 @@ class ConfirmInfoBar : public InfoBarView,
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
-  virtual int ContentMinimumWidth() const OVERRIDE;
+  virtual int ContentMinimumWidth() OVERRIDE;
 
   // views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
   ConfirmInfoBarDelegate* GetDelegate();
+
+  // Returns the width of all content other than the label and link.  Layout()
+  // uses this to determine how much space the label and link can take.
+  int NonLabelWidth() const;
 
   views::Label* label_;
   views::LabelButton* ok_button_;

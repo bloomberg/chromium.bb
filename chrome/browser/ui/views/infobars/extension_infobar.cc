@@ -107,7 +107,7 @@ void ExtensionInfoBar::Layout() {
   // call in InfoBarView::PaintChildren(), so we have to manually clamp the size
   // here.
   extension_view->SetSize(
-      gfx::Size(std::max(0, EndX() - StartX() - ContentMinimumWidth()),
+      gfx::Size(std::max(0, EndX() - StartX() - NonExtensionViewWidth()),
                 std::min(height() - kSeparatorLineHeight - arrow_height(),
                          GetDelegate()->height())));
   // We do SetPosition() separately after SetSize() so OffsetY() will work.
@@ -169,9 +169,9 @@ void ExtensionInfoBar::ViewHierarchyChanged(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-int ExtensionInfoBar::ContentMinimumWidth() const {
-  return infobar_icon_->GetPreferredSize().width() + kIconHorizontalMargin;
-
+int ExtensionInfoBar::ContentMinimumWidth() {
+  return NonExtensionViewWidth() +
+      GetDelegate()->extension_view_host()->view()->GetMinimumSize().width();
 }
 
 void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
@@ -221,4 +221,8 @@ void ExtensionInfoBar::OnImageLoaded(const gfx::Image& image) {
 
 ExtensionInfoBarDelegate* ExtensionInfoBar::GetDelegate() {
   return delegate()->AsExtensionInfoBarDelegate();
+}
+
+int ExtensionInfoBar::NonExtensionViewWidth() const {
+  return infobar_icon_->width() + kIconHorizontalMargin;
 }

@@ -30,7 +30,7 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
       const ViewHierarchyChangedDetails& details) OVERRIDE;
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
-  virtual int ContentMinimumWidth() const OVERRIDE;
+  virtual int ContentMinimumWidth() OVERRIDE;
 
   // views::MenuButtonListener:
   virtual void OnMenuButtonClicked(views::View* source,
@@ -41,6 +41,10 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
   // correct visual order, as opposed to adding conditionals in multiple places.
   void GetButtons(views::MenuButton** first_button,
                   views::MenuButton** second_button) const;
+
+  // Returns the width of all content other than the labels.  Layout() uses this
+  // to determine how much space the labels can take.
+  int NonLabelWidth() const;
 
   // The text displayed in the infobar is something like:
   // "Translated from <lang1> to <lang2> [more text in some languages]"
