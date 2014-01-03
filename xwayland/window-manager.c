@@ -2179,6 +2179,7 @@ xserver_map_shell_surface(struct weston_wm *wm,
 	struct weston_shell_interface *shell_interface =
 		&wm->server->compositor->shell_interface;
 	struct weston_output *output;
+	struct weston_wm_window *parent;
 
 	if (!shell_interface->create_shell_surface)
 		return;
@@ -2208,14 +2209,19 @@ xserver_map_shell_surface(struct weston_wm *wm,
 		shell_interface->set_fullscreen(window->shsurf,
 						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 						0, output);
-	} else if (!window->override_redirect && !window->transient_for) {
-		shell_interface->set_toplevel(window->shsurf);
-		return;
-	} else {
+	} else if (window->override_redirect) {
 		shell_interface->set_xwayland(window->shsurf,
 					      window->x,
 					      window->y,
 					      WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
+	} else if (window->transient_for) {
+		parent = window->transient_for;
+		shell_interface->set_transient(window->shsurf,
+					       parent->surface,
+					       parent->x - window->x,
+					       parent->y - window->y, 0);
+	} else {
+		shell_interface->set_toplevel(window->shsurf);
 	}
 }
 

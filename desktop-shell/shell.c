@@ -2127,6 +2127,10 @@ set_transient(struct shell_surface *shsurf,
 {
 	assert(parent != NULL);
 
+	shell_surface_set_parent(shsurf, parent);
+
+	surface_clear_next_states(shsurf);
+
 	shsurf->transient.x = x;
 	shsurf->transient.y = y;
 	shsurf->transient.flags = flags;
@@ -2149,9 +2153,6 @@ shell_surface_set_transient(struct wl_client *client,
 	struct weston_surface *parent =
 		wl_resource_get_user_data(parent_resource);
 
-	shell_surface_set_parent(shsurf, parent);
-
-	surface_clear_next_states(shsurf);
 	set_transient(shsurf, parent, x, y, flags);
 }
 
