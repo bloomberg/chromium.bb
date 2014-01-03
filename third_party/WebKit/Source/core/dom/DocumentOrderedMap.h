@@ -62,11 +62,6 @@ private:
     template<bool keyMatches(StringImpl*, Element*)> Element* get(StringImpl*, const TreeScope*) const;
 
     struct MapEntry {
-        MapEntry()
-            : element(0)
-            , count(0)
-        { }
-
         explicit MapEntry(Element* firstElement)
             : element(firstElement)
             , count(1)
@@ -77,7 +72,7 @@ private:
         Vector<Element*> orderedList;
     };
 
-    typedef HashMap<StringImpl*, MapEntry> Map;
+    typedef HashMap<StringImpl*, OwnPtr<MapEntry> > Map;
 
     mutable Map m_map;
 };
@@ -90,7 +85,7 @@ inline bool DocumentOrderedMap::contains(StringImpl* id) const
 inline bool DocumentOrderedMap::containsMultiple(StringImpl* id) const
 {
     Map::const_iterator it = m_map.find(id);
-    return it != m_map.end() && it->value.count > 1;
+    return it != m_map.end() && it->value->count > 1;
 }
 
 } // namespace WebCore

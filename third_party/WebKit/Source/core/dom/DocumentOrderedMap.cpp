@@ -71,15 +71,15 @@ void DocumentOrderedMap::add(StringImpl* key, Element* element)
     ASSERT(key);
     ASSERT(element);
 
-    Map::AddResult addResult = m_map.add(key, MapEntry(element));
+    Map::AddResult addResult = m_map.add(key, adoptPtr(new MapEntry(element)));
     if (addResult.isNewEntry)
         return;
 
-    MapEntry& entry = addResult.iterator->value;
-    ASSERT(entry.count);
-    entry.element = 0;
-    entry.count++;
-    entry.orderedList.clear();
+    OwnPtr<MapEntry>& entry = addResult.iterator->value;
+    ASSERT(entry->count);
+    entry->element = 0;
+    entry->count++;
+    entry->orderedList.clear();
 }
 
 void DocumentOrderedMap::remove(StringImpl* key, Element* element)
@@ -91,18 +91,18 @@ void DocumentOrderedMap::remove(StringImpl* key, Element* element)
     if (it == m_map.end())
         return;
 
-    MapEntry& entry = it->value;
-    ASSERT(entry.count);
-    if (entry.count == 1) {
-        ASSERT(!entry.element || entry.element == element);
+    OwnPtr<MapEntry>& entry = it->value;
+    ASSERT(entry->count);
+    if (entry->count == 1) {
+        ASSERT(!entry->element || entry->element == element);
         m_map.remove(it);
     } else {
-        if (entry.element == element) {
-            ASSERT(entry.orderedList.isEmpty() || entry.orderedList.first() == element);
-            entry.element = entry.orderedList.size() > 1 ? entry.orderedList[1] : 0;
+        if (entry->element == element) {
+            ASSERT(entry->orderedList.isEmpty() || entry->orderedList.first() == element);
+            entry->element = entry->orderedList.size() > 1 ? entry->orderedList[1] : 0;
         }
-        entry.count--;
-        entry.orderedList.clear();
+        entry->count--;
+        entry->orderedList.clear();
     }
 }
 
@@ -112,20 +112,19 @@ inline Element* DocumentOrderedMap::get(StringImpl* key, const TreeScope* scope)
     ASSERT(key);
     ASSERT(scope);
 
-    Map::iterator it = m_map.find(key);
-    if (it == m_map.end())
+    MapEntry* entry = m_map.get(key);
+    if (!entry)
         return 0;
 
-    MapEntry& entry = it->value;
-    ASSERT(entry.count);
-    if (entry.element)
-        return entry.element;
+    ASSERT(entry->count);
+    if (entry->element)
+        return entry->element;
 
     // We know there's at least one node that matches; iterate to find the first one.
     for (Element* element = ElementTraversal::firstWithin(*scope->rootNode()); element; element = ElementTraversal::next(*element)) {
         if (!keyMatches(key, element))
             continue;
-        entry.element = element;
+        entry->element = element;
         return element;
     }
     ASSERT_NOT_REACHED();
@@ -147,22 +146,22 @@ const Vector<Element*>& DocumentOrderedMap::getAllElementsById(StringImpl* key, 
     if (it == m_map.end())
         return emptyVector;
 
-    MapEntry& entry = it->value;
-    ASSERT(entry.count);
+    OwnPtr<MapEntry>& entry = it->value;
+    ASSERT(entry->count);
 
-    if (entry.orderedList.isEmpty()) {
-        entry.orderedList.reserveCapacity(entry.count);
-        for (Element* element = entry.element ? entry.element : ElementTraversal::firstWithin(*scope->rootNode()); entry.orderedList.size() < entry.count; element = ElementTraversal::next(*element)) {
+    if (entry->orderedList.isEmpty()) {
+        entry->orderedList.reserveCapacity(entry->count);
+        for (Element* element = entry->element ? entry->element : ElementTraversal::firstWithin(*scope->rootNode()); entry->orderedList.size() < entry->count; element = ElementTraversal::next(*element)) {
             ASSERT(element);
             if (!keyMatchesId(key, element))
                 continue;
-            entry.orderedList.uncheckedAppend(element);
+            entry->orderedList.uncheckedAppend(element);
         }
-        if (!entry.element)
-            entry.element = entry.orderedList.first();
+        if (!entry->element)
+            entry->element = entry->orderedList.first();
     }
 
-    return entry.orderedList;
+    return entry->orderedList;
 }
 
 Element* DocumentOrderedMap::getElementByMapName(StringImpl* key, const TreeScope* scope) const
