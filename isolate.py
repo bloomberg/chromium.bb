@@ -51,7 +51,7 @@ KEY_TRACKED = 'isolate_dependency_tracked'
 KEY_UNTRACKED = 'isolate_dependency_untracked'
 
 # Valid variable name.
-VALID_VARIABLE = '[A-Za-z_]+'
+VALID_VARIABLE = '[A-Za-z_][A-Za-z_0-9]*'
 
 
 class ExecutionError(Exception):
