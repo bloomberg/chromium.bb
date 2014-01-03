@@ -29,10 +29,22 @@
 
 #include "core/dom/PseudoElement.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 
 namespace NodeRenderingTraversal {
+
+static bool isRendererReparented(const RenderObject* renderer)
+{
+    if (!renderer->node()->isElementNode())
+        return false;
+    if (renderer->style() && !renderer->style()->flowThread().isEmpty())
+        return true;
+    if (toElement(renderer->node())->shouldBeReparentedUnderRenderView(renderer->style()))
+        return true;
+    return false;
+}
 
 void ParentDetails::didTraverseInsertionPoint(const InsertionPoint* insertionPoint)
 {
@@ -94,6 +106,26 @@ Node* previousSibling(const Node* node)
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(BEFORE);
 
+    return 0;
+}
+
+RenderObject* nextSiblingRenderer(const Node* node)
+{
+    for (Node* sibling = NodeRenderingTraversal::nextSibling(node); sibling; sibling = NodeRenderingTraversal::nextSibling(sibling)) {
+        RenderObject* renderer = sibling->renderer();
+        if (renderer && !isRendererReparented(renderer))
+            return renderer;
+    }
+    return 0;
+}
+
+RenderObject* previousSiblingRenderer(const Node* node)
+{
+    for (Node* sibling = NodeRenderingTraversal::previousSibling(node); sibling; sibling = NodeRenderingTraversal::previousSibling(sibling)) {
+        RenderObject* renderer = sibling->renderer();
+        if (renderer && !isRendererReparented(renderer))
+            return renderer;
+    }
     return 0;
 }
 

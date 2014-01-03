@@ -29,6 +29,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeRenderingContext.h"
+#include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -239,7 +240,7 @@ PassRefPtr<Node> Text::cloneNode(bool /*deep*/)
     return cloneWithData(data());
 }
 
-bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
+bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& parent)
 {
     if (isEditingText())
         return true;
@@ -247,39 +248,38 @@ bool Text::textRendererIsNeeded(const NodeRenderingContext& context)
     if (!length())
         return false;
 
-    if (context.style()->display() == NONE)
+    if (style.display() == NONE)
         return false;
 
     if (!containsOnlyWhitespace())
         return true;
 
-    RenderObject* parent = context.parentRenderer();
-    if (!parent->canHaveWhitespaceChildren())
+    if (!parent.canHaveWhitespaceChildren())
         return false;
 
-    if (context.style()->preserveNewline()) // pre/pre-wrap/pre-line always make renderers.
+    if (style.preserveNewline()) // pre/pre-wrap/pre-line always make renderers.
         return true;
 
-    RenderObject* prev = context.previousRenderer();
+    const RenderObject* prev = NodeRenderingTraversal::previousSiblingRenderer(this);
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;
 
-    if (parent->isRenderInline()) {
+    if (parent.isRenderInline()) {
         // <span><div/> <div/></span>
         if (prev && !prev->isInline())
             return false;
     } else {
-        if (parent->isRenderBlock() && !parent->childrenInline() && (!prev || !prev->isInline()))
+        if (parent.isRenderBlock() && !parent.childrenInline() && (!prev || !prev->isInline()))
             return false;
 
         // Avoiding creation of a Renderer for the text node is a non-essential memory optimization.
         // So to avoid blowing up on very wide DOMs, we limit the number of siblings to visit.
         unsigned maxSiblingsToVisit = 50;
 
-        RenderObject* first = parent->firstChild();
+        RenderObject* first = parent.firstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
-        if (!first || context.nextRenderer() == first)
+        if (!first || NodeRenderingTraversal::nextSiblingRenderer(this) == first)
             // Whitespace at the start of a block just goes away.  Don't even
             // make a render object for this text.
             return false;
@@ -339,7 +339,7 @@ void Text::updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfRe
     if (!inActiveDocument())
         return;
     RenderText* textRenderer = toRenderText(renderer());
-    if (!textRenderer || !textRendererIsNeeded(NodeRenderingContext(this, textRenderer->style()))) {
+    if (!textRenderer || !textRendererIsNeeded(*textRenderer->style(), *textRenderer->parent())) {
         lazyReattachIfAttached();
         // FIXME: Editing should be updated so this is not neccesary.
         if (recalcStyleBehavior == DeprecatedRecalcStyleImmediatlelyForEditing)

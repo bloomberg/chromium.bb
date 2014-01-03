@@ -32,6 +32,7 @@
 namespace WebCore {
 
 class InsertionPoint;
+class RenderObject;
 
 namespace NodeRenderingTraversal {
 
@@ -63,6 +64,8 @@ ContainerNode* parent(const Node*);
 ContainerNode* parent(const Node*, ParentDetails*);
 Node* nextSibling(const Node*);
 Node* previousSibling(const Node*);
+RenderObject* nextSiblingRenderer(const Node*);
+RenderObject* previousSiblingRenderer(const Node*);
 
 inline ContainerNode* parent(const Node* node)
 {

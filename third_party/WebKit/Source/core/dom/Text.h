@@ -49,7 +49,7 @@ public:
     PassRefPtr<Text> replaceWholeText(const String&);
 
     void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
-    bool textRendererIsNeeded(const NodeRenderingContext&);
+    bool textRendererIsNeeded(const RenderStyle&, const RenderObject& parent);
     RenderText* createTextRenderer(RenderStyle*);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 

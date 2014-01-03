@@ -28,11 +28,9 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/dom/ContainerNode.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/InsertionPoint.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/RenderFullScreen.h"
 #include "core/rendering/RenderNamedFlowThread.h"
@@ -42,22 +40,8 @@
 
 namespace WebCore {
 
-static bool isRendererReparented(const RenderObject* renderer)
-{
-    if (!renderer->node()->isElementNode())
-        return false;
-    if (renderer->style() && !renderer->style()->flowThread().isEmpty())
-        return true;
-    if (toElement(renderer->node())->shouldBeReparentedUnderRenderView(renderer->style()))
-        return true;
-    return false;
-}
-
 RenderObject* NodeRenderingContext::nextRenderer() const
 {
-    if (RenderObject* renderer = m_node->renderer())
-        return renderer->nextSibling();
-
     Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
     if (element && element->shouldBeReparentedUnderRenderView(m_style.get())) {
         // FIXME: Reparented renderers not in the top layer should probably be
@@ -86,20 +70,11 @@ RenderObject* NodeRenderingContext::nextRenderer() const
     if (m_renderingParent && m_renderingParent->needsAttach())
         return 0;
 
-    for (Node* sibling = NodeRenderingTraversal::nextSibling(m_node); sibling; sibling = NodeRenderingTraversal::nextSibling(sibling)) {
-        RenderObject* renderer = sibling->renderer();
-        if (renderer && !isRendererReparented(renderer))
-            return renderer;
-    }
-
-    return 0;
+    return NodeRenderingTraversal::nextSiblingRenderer(m_node);
 }
 
 RenderObject* NodeRenderingContext::previousRenderer() const
 {
-    if (RenderObject* renderer = m_node->renderer())
-        return renderer->previousSibling();
-
     // FIXME: This doesn't work correctly for reparented elements that are
     // display: none. We'd need to duplicate the logic in nextRenderer, but since
     // nothing needs that yet just assert.
@@ -110,20 +85,12 @@ RenderObject* NodeRenderingContext::previousRenderer() const
 
     // FIXME: We should have the same O(N^2) avoidance as nextRenderer does
     // however, when I tried adding it, several tests failed.
-    for (Node* sibling = NodeRenderingTraversal::previousSibling(m_node); sibling; sibling = NodeRenderingTraversal::previousSibling(sibling)) {
-        RenderObject* renderer = sibling->renderer();
-        if (renderer && !isRendererReparented(renderer))
-            return renderer;
-    }
 
-    return 0;
+    return NodeRenderingTraversal::previousSiblingRenderer(m_node);
 }
 
 RenderObject* NodeRenderingContext::parentRenderer() const
 {
-    if (RenderObject* renderer = m_node->renderer())
-        return renderer->parent();
-
     if (m_node->isElementNode() && toElement(m_node)->shouldBeReparentedUnderRenderView(m_style.get())) {
         // The parent renderer of reparented elements is the RenderView, but only
         // if the normal parent would have had a renderer.
@@ -258,7 +225,7 @@ void NodeRenderingContext::createRendererForTextIfNeeded()
     else
         m_style = parentRenderer->style();
 
-    if (!textNode->textRendererIsNeeded(*this))
+    if (!textNode->textRendererIsNeeded(*m_style, *parentRenderer))
         return;
 
     RenderText* newRenderer = textNode->createTextRenderer(m_style.get());
