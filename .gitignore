@@ -80,6 +80,7 @@ v8.log
 /chrome/common/extensions/api/api.xml
 /chrome/Hammer
 /chrome/installer/linux/debian_wheezy_amd64-sysroot/
+/chrome/installer/linux/debian_wheezy_i386-sysroot/
 /chrome/installer/linux/internal
 /chrome/installer/mac/internal
 /chrome/installer/mac/third_party/xz/xz
