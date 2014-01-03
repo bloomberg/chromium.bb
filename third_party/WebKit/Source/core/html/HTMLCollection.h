@@ -35,6 +35,7 @@ class HTMLCollection : public ScriptWrappable, public RefCounted<HTMLCollection>
 public:
     static PassRefPtr<HTMLCollection> create(Node* base, CollectionType);
     virtual ~HTMLCollection();
+    virtual void invalidateCache() const OVERRIDE;
 
     // DOM API
     virtual Node* namedItem(const AtomicString& name) const;
@@ -58,10 +59,10 @@ public:
         return item(0) && !item(1);
     }
 
-    virtual Element* virtualItemAfter(unsigned& offsetInArray, Element*) const;
+    virtual Element* virtualItemAfter(Element*) const;
 
-    Element* traverseFirstElement(unsigned& offsetInArray, ContainerNode& root) const;
-    Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, unsigned& offsetInArray, ContainerNode* root) const;
+    Element* traverseFirstElement(ContainerNode& root) const;
+    Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, ContainerNode* root) const;
 
 protected:
     HTMLCollection(Node* base, CollectionType, ItemAfterOverrideType);
@@ -76,13 +77,17 @@ protected:
 
 private:
     bool checkForNameMatch(Element*, bool checkName, const AtomicString& name) const;
-    Element* traverseNextElement(unsigned& offsetInArray, Element& previous, ContainerNode* root) const;
+    Element* traverseNextElement(Element& previous, ContainerNode* root) const;
 
     static void append(NodeCacheMap&, const AtomicString&, Element*);
+    void invalidateIdNameCacheMaps() const
+    {
+        m_idCache.clear();
+        m_nameCache.clear();
+    }
 
     mutable NodeCacheMap m_idCache;
     mutable NodeCacheMap m_nameCache;
-    mutable unsigned m_cachedElementsArrayOffset;
 
     friend class LiveNodeListBase;
 };

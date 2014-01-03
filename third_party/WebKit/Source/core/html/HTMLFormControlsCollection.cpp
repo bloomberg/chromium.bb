@@ -37,6 +37,8 @@ using namespace HTMLNames;
 
 HTMLFormControlsCollection::HTMLFormControlsCollection(Node* ownerNode)
     : HTMLCollection(ownerNode, FormControls, OverridesItemAfter)
+    , m_cachedElement(0)
+    , m_cachedElementOffsetInArray(0)
 {
     ASSERT(ownerNode->hasTagName(formTag) || ownerNode->hasTagName(fieldsetTag));
     ScriptWrappable::init(this);
@@ -66,18 +68,44 @@ const Vector<HTMLImageElement*>& HTMLFormControlsCollection::formImageElements()
     return toHTMLFormElement(ownerNode())->imageElements();
 }
 
-Element* HTMLFormControlsCollection::virtualItemAfter(unsigned& offset, Element* previousItem) const
+static unsigned findFormAssociatedElement(const Vector<FormAssociatedElement*>& associatedElements, Element* element)
 {
-    const Vector<FormAssociatedElement*>& elementsArray = formControlElements();
-    if (previousItem)
-        offset++;
-    while (offset < elementsArray.size()) {
-        FormAssociatedElement* element = elementsArray[offset];
-        if (element->isEnumeratable())
-            return toHTMLElement(element);
-        offset++;
+    unsigned i = 0;
+    for (; i < associatedElements.size(); ++i) {
+        FormAssociatedElement* associatedElement = associatedElements[i];
+        if (associatedElement->isEnumeratable() && toHTMLElement(associatedElement) == element)
+            break;
+    }
+    return i;
+}
+
+Element* HTMLFormControlsCollection::virtualItemAfter(Element* previous) const
+{
+    const Vector<FormAssociatedElement*>& associatedElements = formControlElements();
+    unsigned offset;
+    if (!previous)
+        offset = 0;
+    else if (m_cachedElement == previous)
+        offset = m_cachedElementOffsetInArray + 1;
+    else
+        offset = findFormAssociatedElement(associatedElements, previous) + 1;
+
+    for (unsigned i = offset; i < associatedElements.size(); ++i) {
+        FormAssociatedElement* associatedElement = associatedElements[i];
+        if (associatedElement->isEnumeratable()) {
+            m_cachedElement = toHTMLElement(associatedElement);
+            m_cachedElementOffsetInArray = i;
+            return m_cachedElement;
+        }
     }
     return 0;
+}
+
+void HTMLFormControlsCollection::invalidateCache() const
+{
+    HTMLCollection::invalidateCache();
+    m_cachedElement = 0;
+    m_cachedElementOffsetInArray = 0;
 }
 
 static HTMLElement* firstNamedItem(const Vector<FormAssociatedElement*>& elementsArray,

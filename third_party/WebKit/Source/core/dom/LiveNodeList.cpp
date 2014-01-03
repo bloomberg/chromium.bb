@@ -49,21 +49,12 @@ void LiveNodeListBase::invalidateCache() const
     m_isLengthCacheValid = false;
     m_isItemCacheValid = false;
     m_isNameCacheValid = false;
-    if (isNodeList(type()))
-        return;
-
-    const HTMLCollection* cacheBase = static_cast<const HTMLCollection*>(this);
-    cacheBase->m_idCache.clear();
-    cacheBase->m_nameCache.clear();
-    cacheBase->m_cachedElementsArrayOffset = 0;
 }
 
 void LiveNodeListBase::invalidateIdNameCacheMaps() const
 {
     ASSERT(hasIdNameCache());
-    const HTMLCollection* cacheBase = static_cast<const HTMLCollection*>(this);
-    cacheBase->m_idCache.clear();
-    cacheBase->m_nameCache.clear();
+    static_cast<const HTMLCollection*>(this)->invalidateIdNameCacheMaps();
 }
 
 Node* LiveNodeList::namedItem(const AtomicString& elementId) const

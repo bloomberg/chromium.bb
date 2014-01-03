@@ -162,9 +162,8 @@ PassRefPtr<HTMLTableRowsCollection> HTMLTableRowsCollection::create(Node* table,
     return adoptRef(new HTMLTableRowsCollection(table));
 }
 
-Element* HTMLTableRowsCollection::virtualItemAfter(unsigned& offsetInArray, Element* previous) const
+Element* HTMLTableRowsCollection::virtualItemAfter(Element* previous) const
 {
-    ASSERT_UNUSED(offsetInArray, !offsetInArray);
     return rowAfter(toHTMLTableElement(ownerNode()), toHTMLTableRowElement(previous));
 }
 

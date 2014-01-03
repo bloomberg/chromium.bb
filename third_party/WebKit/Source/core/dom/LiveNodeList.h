@@ -91,8 +91,7 @@ public:
         else if (hasIdNameCache() && (*attrName == HTMLNames::idAttr || *attrName == HTMLNames::nameAttr))
             invalidateIdNameCacheMaps();
     }
-    void invalidateCache() const;
-    void invalidateIdNameCacheMaps() const;
+    virtual void invalidateCache() const;
 
     static bool shouldInvalidateTypeOnAttributeChange(NodeListInvalidationType, const QualifiedName&);
 
@@ -120,7 +119,6 @@ protected:
         m_cachedItemOffset = offset;
         m_isItemCacheValid = true;
     }
-    void setItemCache(Node* item, unsigned offset, unsigned elementsArrayOffset) const;
 
     ALWAYS_INLINE NodeListRootType rootType() const { return static_cast<NodeListRootType>(m_rootType); }
 
@@ -138,6 +136,7 @@ private:
     bool isFirstItemCloserThanCachedItem(unsigned offset) const;
     Node* iterateForPreviousNode(Node* current) const;
     Node* itemBefore(Node* previousItem) const;
+    void invalidateIdNameCacheMaps() const;
 
     RefPtr<Node> m_ownerNode;
     mutable Node* m_cachedItem;

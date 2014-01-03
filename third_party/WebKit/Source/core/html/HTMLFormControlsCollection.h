@@ -52,7 +52,11 @@ private:
 
     const Vector<FormAssociatedElement*>& formControlElements() const;
     const Vector<HTMLImageElement*>& formImageElements() const;
-    virtual Element* virtualItemAfter(unsigned& offsetInArray, Element*) const OVERRIDE;
+    virtual Element* virtualItemAfter(Element*) const OVERRIDE;
+    virtual void invalidateCache() const OVERRIDE;
+
+    mutable Element* m_cachedElement;
+    mutable unsigned m_cachedElementOffsetInArray;
 };
 
 } // namespace

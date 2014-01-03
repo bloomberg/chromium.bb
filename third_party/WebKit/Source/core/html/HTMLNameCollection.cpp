@@ -49,9 +49,8 @@ HTMLNameCollection::~HTMLNameCollection()
     ownerNode()->nodeLists()->removeCacheWithAtomicName(this, type(), m_name);
 }
 
-Element* HTMLNameCollection::virtualItemAfter(unsigned& offsetInArray, Element* previous) const
+Element* HTMLNameCollection::virtualItemAfter(Element* previous) const
 {
-    ASSERT_UNUSED(offsetInArray, !offsetInArray);
     ASSERT(previous != ownerNode());
 
     Element* current;
