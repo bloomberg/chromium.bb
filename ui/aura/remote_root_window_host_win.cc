@@ -174,6 +174,9 @@ void RemoteRootWindowHostWin::Connected(IPC::Sender* host, HWND remote_window) {
   CHECK(host_ == NULL);
   host_ = host;
   remote_window_ = remote_window;
+  // Recreate the compositor for the target surface represented by the
+  // remote_window HWND
+  CreateCompositor(remote_window_);
 }
 
 void RemoteRootWindowHostWin::Disconnected() {
