@@ -117,7 +117,9 @@ void ConnectionFactoryImpl::Connect() {
 }
 
 bool ConnectionFactoryImpl::IsEndpointReachable() const {
-  return connection_handler_ && connection_handler_->CanSendMessage();
+  return connection_handler_ &&
+      connection_handler_->CanSendMessage() &&
+      !connecting_;
 }
 
 void ConnectionFactoryImpl::SignalConnectionReset() {
@@ -164,6 +166,10 @@ void ConnectionFactoryImpl::OnIPAddressChanged() {
 void ConnectionFactoryImpl::ConnectImpl() {
   DCHECK(!IsEndpointReachable());
 
+  if (socket_handle_.socket() && socket_handle_.socket()->IsConnected())
+    socket_handle_.socket()->Disconnect();
+  socket_handle_.Reset();
+
   // TODO(zea): resolve proxies.
   net::ProxyInfo proxy_info;
   proxy_info.UseDirect();
@@ -193,7 +199,7 @@ void ConnectionFactoryImpl::InitHandler() {
     DCHECK(login_request.IsInitialized());
   }
 
-  connection_handler_->Init(login_request, socket_handle_.PassSocket());
+  connection_handler_->Init(login_request, socket_handle_.socket());
 }
 
 scoped_ptr<net::BackoffEntry> ConnectionFactoryImpl::CreateBackoffEntry(

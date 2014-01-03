@@ -32,7 +32,7 @@ ConnectionHandler* FakeConnectionFactory::GetConnectionHandler() const {
 void FakeConnectionFactory::Connect() {
   mcs_proto::LoginRequest login_request;
   request_builder_.Run(&login_request);
-  connection_handler_->Init(login_request, scoped_ptr<net::StreamSocket>());
+  connection_handler_->Init(login_request, NULL);
 }
 
 bool FakeConnectionFactory::IsEndpointReachable() const {

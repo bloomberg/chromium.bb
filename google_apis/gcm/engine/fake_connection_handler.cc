@@ -39,7 +39,7 @@ FakeConnectionHandler::~FakeConnectionHandler() {
 }
 
 void FakeConnectionHandler::Init(const mcs_proto::LoginRequest& login_request,
-                                 scoped_ptr<net::StreamSocket> socket) {
+                                 net::StreamSocket* socket) {
   EXPECT_EQ(expected_outgoing_messages_.front().SerializeAsString(),
             login_request.SerializeAsString());
   expected_outgoing_messages_.pop_front();

@@ -34,7 +34,7 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
 
   // ConnectionHandler implementation.
   virtual void Init(const mcs_proto::LoginRequest& login_request,
-                    scoped_ptr<net::StreamSocket> socket) OVERRIDE;
+                    net::StreamSocket* socket) OVERRIDE;
   virtual bool CanSendMessage() const OVERRIDE;
   virtual void SendMessage(const google::protobuf::MessageLite& message)
       OVERRIDE;
@@ -96,7 +96,7 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
   base::OneShotTimer<ConnectionHandlerImpl> read_timeout_timer_;
 
   // This connection's socket and the input/output streams attached to it.
-  scoped_ptr<net::StreamSocket> socket_;
+  net::StreamSocket* socket_;
   scoped_ptr<SocketInputStream> input_stream_;
   scoped_ptr<SocketOutputStream> output_stream_;
 

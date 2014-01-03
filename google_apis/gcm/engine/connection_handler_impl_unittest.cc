@@ -199,7 +199,7 @@ void GCMConnectionHandlerImplTest::Connect(
                      base::Unretained(this))));
   EXPECT_FALSE(connection_handler()->CanSendMessage());
   connection_handler_->Init(*BuildLoginRequest(kAuthId, kAuthToken),
-                            socket_.Pass());
+                            socket_.get());
 }
 
 void GCMConnectionHandlerImplTest::ReadContinuation(

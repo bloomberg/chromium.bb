@@ -20,9 +20,6 @@ namespace {
 
 typedef scoped_ptr<google::protobuf::MessageLite> MCSProto;
 
-// TODO(zea): get these values from MCS settings.
-const int64 kHeartbeatDefaultSeconds = 60 * 15;  // 15 minutes.
-
 // The category of messages intended for the GCM client itself from MCS.
 const char kMCSCategory[] = "com.google.android.gsf.gtalkservice";
 
@@ -30,8 +27,8 @@ const char kMCSCategory[] = "com.google.android.gsf.gtalkservice";
 const char kGCMFromField[] = "gcm@android.com";
 
 // MCS status message types.
+// TODO(zea): handle these at the GCMClient layer.
 const char kIdleNotification[] = "IdleNotification";
-// TODO(zea): consume the following message types:
 // const char kAlwaysShowOnIdle[] = "ShowAwayOnIdle";
 // const char kPowerNotification[] = "PowerNotification";
 // const char kDataActiveNotification[] = "DataActiveNotification";
@@ -97,9 +94,6 @@ MCSClient::MCSClient(ConnectionFactory* connection_factory, RMQStore* rmq_store)
       stream_id_out_(0),
       stream_id_in_(0),
       rmq_store_(rmq_store),
-      heartbeat_interval_(
-          base::TimeDelta::FromSeconds(kHeartbeatDefaultSeconds)),
-      heartbeat_timer_(true, true),
       weak_ptr_factory_(this) {
 }
 
@@ -183,7 +177,6 @@ void MCSClient::Initialize(
 }
 
 void MCSClient::Login(uint64 android_id, uint64 security_token) {
-  DCHECK_EQ(state_, LOADED);
   if (android_id != android_id_ && security_token != security_token_) {
     DCHECK(android_id);
     DCHECK(security_token);
@@ -257,6 +250,8 @@ void MCSClient::ResetStateAndBuildLoginRequest(
   last_device_to_server_stream_id_received_ = 0;
   last_server_to_device_stream_id_received_ = 0;
 
+  heartbeat_manager_.Stop();
+
   // TODO(zea): expire all messages older than their TTL.
 
   // Add any pending acknowledgments to the list of ids.
@@ -299,8 +294,6 @@ void MCSClient::ResetStateAndBuildLoginRequest(
            << " incoming acks pending, and " << to_send_.size()
            << " pending outgoing messages.";
 
-  heartbeat_timer_.Stop();
-
   state_ = CONNECTING;
 }
 
@@ -332,8 +325,6 @@ void MCSClient::MaybeSendMessage() {
 }
 
 void MCSClient::SendPacketToWire(ReliablePacketInfo* packet_info) {
-  // Reset the heartbeat interval.
-  heartbeat_timer_.Reset();
   packet_info->stream_id = ++stream_id_out_;
   DVLOG(1) << "Sending packet of type " << packet_info->protobuf->GetTypeName();
 
@@ -447,6 +438,9 @@ void MCSClient::HandlePacketFromWire(
                 false);
   }
 
+  // The connection is alive, treat this message as a heartbeat ack.
+  heartbeat_manager_.OnHeartbeatAcked();
+
   switch (tag) {
     case kLoginResponseTag: {
       DCHECK_EQ(CONNECTING, state_);
@@ -455,12 +449,17 @@ void MCSClient::HandlePacketFromWire(
       DVLOG(1) << "Received login response:";
       DVLOG(1) << "  Id: " << login_response->id();
       DVLOG(1) << "  Timestamp: " << login_response->server_timestamp();
-      if (login_response->has_error()) {
+      if (login_response->has_error() && login_response->error().code() != 0) {
         state_ = UNINITIALIZED;
         DVLOG(1) << "  Error code: " << login_response->error().code();
         DVLOG(1) << "  Error message: " << login_response->error().message();
         initialization_callback_.Run(false, 0, 0);
         return;
+      }
+
+      if (login_response->has_heartbeat_config()) {
+        heartbeat_manager_.UpdateHeartbeatConfig(
+            login_response->heartbeat_config());
       }
 
       state_ = CONNECTED;
@@ -483,10 +482,11 @@ void MCSClient::HandlePacketFromWire(
                        weak_ptr_factory_.GetWeakPtr()));
       }
 
-      heartbeat_timer_.Start(FROM_HERE,
-                             heartbeat_interval_,
-                             base::Bind(&MCSClient::SendHeartbeat,
-                                        weak_ptr_factory_.GetWeakPtr()));
+      heartbeat_manager_.Start(
+          base::Bind(&MCSClient::SendHeartbeat,
+                     weak_ptr_factory_.GetWeakPtr()),
+          base::Bind(&MCSClient::OnConnectionResetByHeartbeat,
+                     weak_ptr_factory_.GetWeakPtr()));
       return;
     }
     case kHeartbeatPingTag:
@@ -498,8 +498,7 @@ void MCSClient::HandlePacketFromWire(
     case kHeartbeatAckTag:
       DCHECK_GE(stream_id_in_, 1U);
       DVLOG(1) << "Received heartbeat ack.";
-      // TODO(zea): add logic to reconnect if no ack received within a certain
-      // timeout (with backoff).
+      // Do nothing else, all messages act as heartbeat acks.
       return;
     case kCloseTag:
       LOG(ERROR) << "Received close command, resetting connection.";
@@ -655,6 +654,10 @@ void MCSClient::HandleServerConfirmedReceipt(StreamId device_stream_id) {
 
 MCSClient::PersistentId MCSClient::GetNextPersistentId() {
   return base::Uint64ToString(base::TimeTicks::Now().ToInternalValue());
+}
+
+void MCSClient::OnConnectionResetByHeartbeat() {
+  connection_factory_->SignalConnectionReset();
 }
 
 } // namespace gcm

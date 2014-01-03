@@ -52,6 +52,8 @@
         'engine/connection_handler.cc',
         'engine/connection_handler_impl.h',
         'engine/connection_handler_impl.cc',
+        'engine/heartbeat_manager.h',
+        'engine/heartbeat_manager.cc',
         'engine/mcs_client.h',
         'engine/mcs_client.cc',
         'engine/rmq_store.h',
@@ -118,6 +120,7 @@
         'engine/fake_connection_factory.cc',
         'engine/fake_connection_handler.h',
         'engine/fake_connection_handler.cc',
+        'engine/heartbeat_manager_unittest.cc',
         'engine/mcs_client_unittest.cc',
         'engine/rmq_store_unittest.cc',
       ]

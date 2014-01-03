@@ -52,7 +52,7 @@ ConnectionHandlerImpl::~ConnectionHandlerImpl() {
 
 void ConnectionHandlerImpl::Init(
     const mcs_proto::LoginRequest& login_request,
-    scoped_ptr<net::StreamSocket> socket) {
+    net::StreamSocket* socket) {
   DCHECK(!read_callback_.is_null());
   DCHECK(!write_callback_.is_null());
   DCHECK(!connection_callback_.is_null());
@@ -63,9 +63,9 @@ void ConnectionHandlerImpl::Init(
   handshake_complete_ = false;
   message_tag_ = 0;
   message_size_ = 0;
-  socket_ = socket.Pass();
-  input_stream_.reset(new SocketInputStream(socket_.get()));
-  output_stream_.reset(new SocketOutputStream(socket_.get()));
+  socket_ = socket;
+  input_stream_.reset(new SocketInputStream(socket_));
+  output_stream_.reset(new SocketOutputStream(socket_));
 
   Login(login_request);
 }
@@ -393,8 +393,6 @@ void ConnectionHandlerImpl::OnTimeout() {
 
 void ConnectionHandlerImpl::CloseConnection() {
   DVLOG(1) << "Closing connection.";
-  read_callback_.Reset();
-  write_callback_.Reset();
   read_timeout_timer_.Stop();
   socket_->Disconnect();
   input_stream_.reset();

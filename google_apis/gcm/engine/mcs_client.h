@@ -13,10 +13,10 @@
 #include "base/files/file_path.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/engine/connection_handler.h"
+#include "google_apis/gcm/engine/heartbeat_manager.h"
 #include "google_apis/gcm/engine/rmq_store.h"
 
 namespace google {
@@ -152,6 +152,9 @@ class GCM_EXPORT MCSClient {
   // Virtual for testing.
   virtual PersistentId GetNextPersistentId();
 
+  // Helper for the heartbeat manager to signal a connection reset.
+  void OnConnectionResetByHeartbeat();
+
   // Client state.
   State state_;
 
@@ -209,11 +212,8 @@ class GCM_EXPORT MCSClient {
   // The reliable message queue persistent store. Owned by the caller.
   RMQStore* rmq_store_;
 
-  // ----- Heartbeats -----
-  // The current heartbeat interval.
-  base::TimeDelta heartbeat_interval_;
-  // Timer for triggering heartbeats.
-  base::Timer heartbeat_timer_;
+  // Manager to handle triggering/detecting heartbeats.
+  HeartbeatManager heartbeat_manager_;
 
   base::WeakPtrFactory<MCSClient> weak_ptr_factory_;
 

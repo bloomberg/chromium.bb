@@ -48,7 +48,7 @@ class GCM_EXPORT ConnectionHandler {
   // Note: It is correct and expected to call Init more than once, as connection
   // issues are encountered and new connections must be made.
   virtual void Init(const mcs_proto::LoginRequest& login_request,
-                    scoped_ptr<net::StreamSocket> socket) = 0;
+                    net::StreamSocket* socket) = 0;
 
   // Checks that a handshake has been completed and a message is not already
   // in flight.
