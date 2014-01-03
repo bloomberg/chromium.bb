@@ -148,6 +148,14 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
     lock_.AssertAcquired();
     consumer_two_phase_max_num_bytes_read_ = num_bytes;
   }
+  bool producer_in_two_phase_write_no_lock() const {
+    lock_.AssertAcquired();
+    return producer_two_phase_max_num_bytes_written_ > 0;
+  }
+  bool consumer_in_two_phase_read_no_lock() const {
+    lock_.AssertAcquired();
+    return consumer_two_phase_max_num_bytes_read_ > 0;
+  }
 
  private:
   bool has_local_producer_no_lock() const {
@@ -157,14 +165,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe :
   bool has_local_consumer_no_lock() const {
     lock_.AssertAcquired();
     return !!consumer_waiter_list_.get();
-  }
-  bool producer_in_two_phase_write_no_lock() const {
-    lock_.AssertAcquired();
-    return producer_two_phase_max_num_bytes_written_ > 0;
-  }
-  bool consumer_in_two_phase_read_no_lock() const {
-    lock_.AssertAcquired();
-    return consumer_two_phase_max_num_bytes_read_ > 0;
   }
 
   const bool may_discard_;

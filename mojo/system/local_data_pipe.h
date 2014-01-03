@@ -58,6 +58,7 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
   virtual MojoWaitFlags ConsumerSatisfiableFlagsNoLock() OVERRIDE;
 
   void EnsureBufferNoLock();
+  void DestroyBufferNoLock();
 
   // Get the maximum (single) write/read size right now (in number of elements);
   // result fits in a |uint32_t|.

@@ -10,6 +10,8 @@
 
 #include "mojo/system/local_data_pipe.h"
 
+#include <string.h>
+
 #include <algorithm>
 
 #include "base/logging.h"
@@ -30,8 +32,16 @@ LocalDataPipe::~LocalDataPipe() {
 }
 
 void LocalDataPipe::ProducerCloseImplNoLock() {
-  if (!current_num_bytes_)
-    buffer_.reset();
+  // If the consumer is still open and we still have data, we have to keep the
+  // buffer around. Currently, we won't free it even if it empties later. (We
+  // could do this -- requiring a check on every read -- but that seems to be
+  // optimizing for the uncommon case.)
+  if (!consumer_open_no_lock() || !current_num_bytes_) {
+    // Note: There can only be a two-phase *read* (by the consumer) if we still
+    // have data.
+    DCHECK(!consumer_in_two_phase_read_no_lock());
+    DestroyBufferNoLock();
+  }
   AwakeConsumerWaitersForStateChangeNoLock();
 }
 
@@ -139,8 +149,11 @@ MojoWaitFlags LocalDataPipe::ProducerSatisfiableFlagsNoLock() {
 }
 
 void LocalDataPipe::ConsumerCloseImplNoLock() {
-  // TODO(vtl): FIXME -- broken if two-phase write ongoing
-  buffer_.reset();
+  // If the producer is around and in a two-phase write, we have to keep the
+  // buffer around. (We then don't free it until the producer is closed. This
+  // could be rectified, but again seems like optimizing for the uncommon case.)
+  if (!producer_open_no_lock() || !producer_in_two_phase_write_no_lock())
+    DestroyBufferNoLock();
   current_num_bytes_ = 0;
   AwakeProducerWaitersForStateChangeNoLock();
 }
@@ -157,9 +170,12 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(void* elements,
 
   size_t num_bytes_to_read =
       std::min(static_cast<size_t>(*num_bytes), current_num_bytes_);
-  // TODO(vtl): Change this to "should wait" when we have that error code.
-  if (num_bytes_to_read == 0)
-    return MOJO_RESULT_NOT_FOUND;
+  if (num_bytes_to_read == 0) {
+    // TODO(vtl): Change "not found" to "should wait" when we have that error
+    // code.
+    return producer_open_no_lock() ? MOJO_RESULT_NOT_FOUND :
+                                     MOJO_RESULT_FAILED_PRECONDITION;
+  }
 
   // The amount we can read in our first |memcpy()|.
   size_t num_bytes_to_read_first =
@@ -196,9 +212,12 @@ MojoResult LocalDataPipe::ConsumerDiscardDataImplNoLock(uint32_t* num_bytes,
     return MOJO_RESULT_OUT_OF_RANGE;
 
   // Be consistent with other operations; error if no data available.
-  // TODO(vtl): Change this to "should wait" when we have that error code.
-  if (current_num_bytes_ == 0)
-    return MOJO_RESULT_NOT_FOUND;
+  if (current_num_bytes_ == 0) {
+    // TODO(vtl): Change "not found" to "should wait" when we have that error
+    // code.
+    return producer_open_no_lock() ? MOJO_RESULT_NOT_FOUND :
+                                     MOJO_RESULT_FAILED_PRECONDITION;
+  }
 
   bool was_full = (current_num_bytes_ == capacity_num_bytes());
 
@@ -230,9 +249,12 @@ MojoResult LocalDataPipe::ConsumerBeginReadDataImplNoLock(
     return MOJO_RESULT_OUT_OF_RANGE;
 
   // Don't go into a two-phase read if there's no data.
-  // TODO(vtl): Change this to "should wait" when we have that error code.
-  if (max_num_bytes_to_read == 0)
-    return MOJO_RESULT_NOT_FOUND;
+  if (max_num_bytes_to_read == 0) {
+    // TODO(vtl): Change "not found" to "should wait" when we have that error
+    // code.
+    return producer_open_no_lock() ? MOJO_RESULT_NOT_FOUND :
+                                     MOJO_RESULT_FAILED_PRECONDITION;
+  }
 
   *buffer = buffer_.get() + start_index_;
   *buffer_num_bytes = static_cast<uint32_t>(max_num_bytes_to_read);
@@ -284,6 +306,16 @@ void LocalDataPipe::EnsureBufferNoLock() {
     return;
   buffer_.reset(static_cast<char*>(
       base::AlignedAlloc(capacity_num_bytes(), kDataPipeBufferAlignmentBytes)));
+}
+
+void LocalDataPipe::DestroyBufferNoLock() {
+#ifndef NDEBUG
+  // Scribble on the buffer to help detect use-after-frees. (This also helps the
+  // unit test detect certain bugs without needing ASAN or similar.)
+  if (buffer_.get())
+    memset(buffer_.get(), 0xcd, capacity_num_bytes());
+#endif
+  buffer_.reset();
 }
 
 size_t LocalDataPipe::GetMaxNumBytesToWriteNoLock() {

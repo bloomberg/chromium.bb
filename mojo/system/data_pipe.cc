@@ -71,7 +71,10 @@ void DataPipe::ProducerClose() {
   producer_open_ = false;
   DCHECK(has_local_producer_no_lock());
   producer_waiter_list_.reset();
-  // TODO(vtl): FIXME -- "cancel" any two-phase write (do we need to do this?)
+  // Not a bug, except possibly in "user" code.
+  DVLOG_IF(2, producer_in_two_phase_write_no_lock())
+      << "Producer closed with active two-phase write";
+  producer_two_phase_max_num_bytes_written_ = 0;
   ProducerCloseImplNoLock();
 }
 
@@ -83,6 +86,8 @@ MojoResult DataPipe::ProducerWriteData(const void* elements,
 
   if (producer_in_two_phase_write_no_lock())
     return MOJO_RESULT_BUSY;
+  if (!consumer_open_no_lock())
+    return MOJO_RESULT_FAILED_PRECONDITION;
 
   // Returning "busy" takes priority over "invalid argument".
   if (*num_bytes % element_num_bytes_ != 0)
@@ -102,6 +107,8 @@ MojoResult DataPipe::ProducerBeginWriteData(void** buffer,
 
   if (producer_in_two_phase_write_no_lock())
     return MOJO_RESULT_BUSY;
+  if (!consumer_open_no_lock())
+    return MOJO_RESULT_FAILED_PRECONDITION;
 
   MojoResult rv = ProducerBeginWriteDataImplNoLock(buffer, buffer_num_bytes,
                                                    all_or_none);
@@ -118,6 +125,8 @@ MojoResult DataPipe::ProducerEndWriteData(uint32_t num_bytes_written) {
 
   if (!producer_in_two_phase_write_no_lock())
     return MOJO_RESULT_FAILED_PRECONDITION;
+  // Note: Allow successful completion of the two-phase write even if the
+  // consumer has been closed.
 
   MojoResult rv = ProducerEndWriteDataImplNoLock(num_bytes_written);
   // Two-phase write ended even on failure.
@@ -158,7 +167,10 @@ void DataPipe::ConsumerClose() {
   consumer_open_ = false;
   DCHECK(has_local_consumer_no_lock());
   consumer_waiter_list_.reset();
-  // TODO(vtl): FIXME -- "cancel" any two-phase read (do we need to do this?)
+  // Not a bug, except possibly in "user" code.
+  DVLOG_IF(2, consumer_in_two_phase_read_no_lock())
+      << "Consumer closed with active two-phase read";
+  consumer_two_phase_max_num_bytes_read_ = 0;
   ConsumerCloseImplNoLock();
 }
 

@@ -559,6 +559,181 @@ TEST(LocalDataPipeTest, WrapAround) {
   dp->ConsumerClose();
 }
 
+// Tests the behavior of closing the producer or consumer with respect to
+// writes and reads (simple and two-phase).
+TEST(LocalDataPipeTest, CloseWriteRead) {
+  const char kTestData[] = "hello world";
+  const uint32_t kTestDataSize = static_cast<uint32_t>(sizeof(kTestData));
+
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+    1u,  // |element_num_bytes|.
+    1000u  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  // Close producer first, then consumer.
+  {
+    scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+    // Write some data, so we'll have something to read.
+    uint32_t num_bytes = kTestDataSize;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ProducerWriteData(kTestData, &num_bytes, false));
+    EXPECT_EQ(kTestDataSize, num_bytes);
+
+    // Write it again, so we'll have something left over.
+    num_bytes = kTestDataSize;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ProducerWriteData(kTestData, &num_bytes, false));
+    EXPECT_EQ(kTestDataSize, num_bytes);
+
+    // Start two-phase write.
+    void* write_buffer_ptr = NULL;
+    num_bytes = 0u;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+    EXPECT_TRUE(write_buffer_ptr != NULL);
+    EXPECT_GT(num_bytes, 0u);
+
+    // Start two-phase read.
+    const void* read_buffer_ptr = NULL;
+    num_bytes = 0u;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+    EXPECT_TRUE(read_buffer_ptr != NULL);
+    EXPECT_EQ(2u * kTestDataSize, num_bytes);
+
+    // Close the producer.
+    dp->ProducerClose();
+
+    // The consumer can finish its two-phase read.
+    EXPECT_EQ(0, memcmp(read_buffer_ptr, kTestData, kTestDataSize));
+    EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerEndReadData(kTestDataSize));
+
+    // And start another.
+    read_buffer_ptr = NULL;
+    num_bytes = 0u;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+    EXPECT_TRUE(read_buffer_ptr != NULL);
+    EXPECT_EQ(kTestDataSize, num_bytes);
+
+    // Close the consumer, which cancels the two-phase read.
+    dp->ConsumerClose();
+  }
+
+  // Close consumer first, then producer.
+  {
+    scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+    // Write some data, so we'll have something to read.
+    uint32_t num_bytes = kTestDataSize;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ProducerWriteData(kTestData, &num_bytes, false));
+    EXPECT_EQ(kTestDataSize, num_bytes);
+
+    // Start two-phase write.
+    void* write_buffer_ptr = NULL;
+    num_bytes = 0u;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+    EXPECT_TRUE(write_buffer_ptr != NULL);
+    ASSERT_GT(num_bytes, kTestDataSize);
+
+    // Start two-phase read.
+    const void* read_buffer_ptr = NULL;
+    num_bytes = 0u;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+    EXPECT_TRUE(read_buffer_ptr != NULL);
+    EXPECT_EQ(kTestDataSize, num_bytes);
+
+    // Close the consumer.
+    dp->ConsumerClose();
+
+    // Actually write some data. (Note: Premature freeing of the buffer would
+    // probably only be detected under ASAN or similar.)
+    memcpy(write_buffer_ptr, kTestData, kTestDataSize);
+    // Note: Even though the consumer has been closed, ending the two-phase
+    // write will report success.
+    EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerEndWriteData(kTestDataSize));
+
+    // But trying to write should result in failure.
+    num_bytes = kTestDataSize;
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+              dp->ProducerWriteData(kTestData, &num_bytes, false));
+
+    // As will trying to start another two-phase write.
+    write_buffer_ptr = NULL;
+    num_bytes = 0u;
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+              dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+
+    dp->ProducerClose();
+  }
+
+  // Test closing the consumer first, then the producer, with an active
+  // two-phase write.
+  {
+    scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+    // Start two-phase write.
+    void* write_buffer_ptr = NULL;
+    uint32_t num_bytes = 0u;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ProducerBeginWriteData(&write_buffer_ptr, &num_bytes, false));
+    EXPECT_TRUE(write_buffer_ptr != NULL);
+    ASSERT_GT(num_bytes, kTestDataSize);
+
+    dp->ConsumerClose();
+    dp->ProducerClose();
+  }
+
+  // Test closing the producer and then trying to read (with no data).
+  {
+    scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+    // Write some data, so we'll have something to read.
+    uint32_t num_bytes = kTestDataSize;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ProducerWriteData(kTestData, &num_bytes, false));
+    EXPECT_EQ(kTestDataSize, num_bytes);
+
+    // Close the producer.
+    dp->ProducerClose();
+
+    // Read that data.
+    char buffer[1000];
+    num_bytes = static_cast<uint32_t>(sizeof(buffer));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              dp->ConsumerReadData(buffer, &num_bytes, false));
+    EXPECT_EQ(kTestDataSize, num_bytes);
+    EXPECT_EQ(0, memcmp(buffer, kTestData, kTestDataSize));
+
+    // A second read should fail.
+    num_bytes = static_cast<uint32_t>(sizeof(buffer));
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+              dp->ConsumerReadData(buffer, &num_bytes, false));
+
+    // A two-phase read should also fail.
+    const void* read_buffer_ptr = NULL;
+    num_bytes = 0u;
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+              dp->ConsumerBeginReadData(&read_buffer_ptr, &num_bytes, false));
+
+    // Ditto for discard.
+    num_bytes = 10u;
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+              dp->ConsumerDiscardData(&num_bytes, false));
+
+    dp->ConsumerClose();
+  }
+}
+
 // TODO(vtl): More.
 
 }  // namespace
