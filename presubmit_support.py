@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.7.0'
+__version__ = '1.8.0'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -1430,6 +1430,8 @@ def Main(argv):
   parser.add_option("--rietveld_password", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_fetch", action='store_true', default=False,
                     help=optparse.SUPPRESS_HELP)
+  parser.add_option("--trybot-json",
+                    help="Output trybot information to the file specified.")
   options, args = parser.parse_args(argv)
   if options.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
@@ -1454,6 +1456,31 @@ def Main(argv):
       options.description = props['description']
       logging.info('Got author: "%s"', options.author)
       logging.info('Got description: """\n%s\n"""', options.description)
+  if options.trybot_json:
+    with open(options.trybot_json, 'w') as f:
+      # Python's sets aren't JSON-encodable, so we convert them to lists here.
+      class SetEncoder(json.JSONEncoder):
+        # pylint: disable=E0202
+        def default(self, obj):
+          if isinstance(obj, set):
+            return sorted(obj)
+          return json.JSONEncoder.default(self, obj)
+      change = change_class(options.name,
+                      options.description,
+                      options.root,
+                      files,
+                      options.issue,
+                      options.patchset,
+                      options.author)
+      trybots = DoGetTrySlaves(
+          change,
+          change.LocalPaths(),
+          change.RepositoryRoot(),
+          None,
+          None,
+          options.verbose,
+          sys.stdout)
+      json.dump(trybots, f, cls=SetEncoder)
   try:
     with canned_check_filter(options.skip_canned):
       results = DoPresubmitChecks(
