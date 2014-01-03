@@ -4229,6 +4229,8 @@ touch_to_activate_binding(struct weston_seat *seat, uint32_t time, void *data)
 {
 	if (seat->touch->grab != &seat->touch->default_grab)
 		return;
+	if (seat->touch->focus == NULL)
+		return;
 
 	activate_binding(seat, data, seat->touch->focus->surface);
 }
