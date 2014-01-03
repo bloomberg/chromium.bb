@@ -2194,6 +2194,9 @@ weston_seat_release(struct weston_seat *seat)
 {
 	wl_list_remove(&seat->link);
 
+	if (seat->saved_kbd_focus)
+		wl_list_remove(&seat->saved_kbd_focus_listener.link);
+
 	if (seat->pointer)
 		weston_pointer_destroy(seat->pointer);
 	if (seat->keyboard)
