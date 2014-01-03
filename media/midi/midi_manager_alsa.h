@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MIDI_MIDI_MANAGER_LINUX_H_
-#define MEDIA_MIDI_MIDI_MANAGER_LINUX_H_
+#ifndef MEDIA_MIDI_MIDI_MANAGER_ALSA_H_
+#define MEDIA_MIDI_MIDI_MANAGER_ALSA_H_
 
 #include <vector>
 
@@ -14,10 +14,10 @@
 
 namespace media {
 
-class MIDIManagerLinux : public MIDIManager {
+class MIDIManagerAlsa : public MIDIManager {
  public:
-  MIDIManagerLinux();
-  virtual ~MIDIManagerLinux();
+  MIDIManagerAlsa();
+  virtual ~MIDIManagerAlsa();
 
   // MIDIManager implementation.
   virtual bool Initialize() OVERRIDE;
@@ -31,9 +31,9 @@ class MIDIManagerLinux : public MIDIManager {
   std::vector<scoped_refptr<MIDIDeviceInfo> > in_devices_;
   std::vector<scoped_refptr<MIDIDeviceInfo> > out_devices_;
   base::Thread send_thread_;
-  DISALLOW_COPY_AND_ASSIGN(MIDIManagerLinux);
+  DISALLOW_COPY_AND_ASSIGN(MIDIManagerAlsa);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_MIDI_MIDI_MANAGER_LINUX_H_
+#endif  // MEDIA_MIDI_MIDI_MANAGER_ALSA_H_

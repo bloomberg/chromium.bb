@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/midi/midi_manager_linux.h"
+#include "media/midi/midi_manager_alsa.h"
 
 #include <alsa/asoundlib.h>
 
@@ -20,10 +20,10 @@ namespace {
 const char kUnknown[] = "[unknown]";
 }  // namespace
 
-class MIDIManagerLinux::MIDIDeviceInfo
+class MIDIManagerAlsa::MIDIDeviceInfo
     : public base::RefCounted<MIDIDeviceInfo> {
  public:
-  MIDIDeviceInfo(MIDIManagerLinux* manager,
+  MIDIDeviceInfo(MIDIManagerAlsa* manager,
                  const std::string& card,
                  const snd_rawmidi_info_t* midi,
                  int device) {
@@ -69,11 +69,11 @@ class MIDIManagerLinux::MIDIDeviceInfo
   DISALLOW_COPY_AND_ASSIGN(MIDIDeviceInfo);
 };
 
-MIDIManagerLinux::MIDIManagerLinux()
+MIDIManagerAlsa::MIDIManagerAlsa()
     : send_thread_("MIDISendThread") {
 }
 
-bool MIDIManagerLinux::Initialize() {
+bool MIDIManagerAlsa::Initialize() {
   // TODO(toyoshim): Make Initialize() asynchronous.
   TRACE_EVENT0("midi", "MIDIManagerMac::Initialize");
 
@@ -133,14 +133,14 @@ bool MIDIManagerLinux::Initialize() {
   return true;
 }
 
-MIDIManagerLinux::~MIDIManagerLinux() {
+MIDIManagerAlsa::~MIDIManagerAlsa() {
   send_thread_.Stop();
 }
 
-void MIDIManagerLinux::DispatchSendMIDIData(MIDIManagerClient* client,
-                                            uint32 port_index,
-                                            const std::vector<uint8>& data,
-                                            double timestamp) {
+void MIDIManagerAlsa::DispatchSendMIDIData(MIDIManagerClient* client,
+                                           uint32 port_index,
+                                           const std::vector<uint8>& data,
+                                           double timestamp) {
   if (out_devices_.size() <= port_index)
     return;
 
@@ -163,7 +163,7 @@ void MIDIManagerLinux::DispatchSendMIDIData(MIDIManagerClient* client,
 }
 
 MIDIManager* MIDIManager::Create() {
-  return new MIDIManagerLinux();
+  return new MIDIManagerAlsa();
 }
 
 }  // namespace media

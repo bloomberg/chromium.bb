@@ -408,8 +408,8 @@
         'filters/wsola_internals.h',
         'midi/midi_manager.cc',
         'midi/midi_manager.h',
-        'midi/midi_manager_linux.cc',
-        'midi/midi_manager_linux.h',
+        'midi/midi_manager_alsa.cc',
+        'midi/midi_manager_alsa.h',
         'midi/midi_manager_mac.cc',
         'midi/midi_manager_mac.h',
         'midi/midi_message_queue.cc',
@@ -598,7 +598,10 @@
             'USE_ALSA',
           ],
         }, { # use_alsa==0
-          'sources/': [ ['exclude', '(^|/)alsa/'], ],
+          'sources/': [
+            ['exclude', '(^|/)alsa/'],
+            ['exclude', '_alsa\\.(h|cc)$'],
+          ],
         }],
         ['OS!="openbsd"', {
           'sources!': [
