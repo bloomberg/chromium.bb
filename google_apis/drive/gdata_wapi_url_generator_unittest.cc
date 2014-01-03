@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/url_util.h"
 
 namespace google_apis {
 
@@ -148,6 +149,8 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrlWithoutParams) {
 }
 
 TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrlWithEmbedOrigin) {
+  url_util::AddStandardScheme("chrome-extension");
+
   EXPECT_EQ(
       "https://docs.google.com/feeds/default/private/full/XXX?v=3&alt=json"
       "&showroot=true&embedOrigin=chrome-extension%3A%2F%2Ftest",

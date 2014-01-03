@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "base/run_loop.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -90,12 +90,14 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
     : request_context_getter_(new net::TestURLRequestContextGetter(
           base::MessageLoopProxy::current())),
       fetcher_(&consumer_, request_context_getter_) {
+    base::RunLoop().RunUntilIdle();
   }
 
   virtual ~OAuth2AccessTokenFetcherTest() {}
 
-  virtual TestURLFetcher* SetupGetAccessToken(
-      bool fetch_succeeds, int response_code, const std::string& body) {
+  virtual TestURLFetcher* SetupGetAccessToken(bool fetch_succeeds,
+                                              int response_code,
+                                              const std::string& body) {
     GURL url(GaiaUrls::GetInstance()->oauth2_token_url());
     TestURLFetcher* url_fetcher = new TestURLFetcher(0, url, &fetcher_);
     URLRequestStatus::Status status =
@@ -114,7 +116,7 @@ class OAuth2AccessTokenFetcherTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   MockUrlFetcherFactory factory_;
   MockOAuth2AccessTokenConsumer consumer_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;

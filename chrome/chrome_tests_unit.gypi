@@ -44,10 +44,6 @@
         '../extensions/common/extension_builder.h',
         '../extensions/common/value_builder.cc',
         '../extensions/common/value_builder.h',
-        '../google_apis/drive/dummy_auth_service.cc',
-        '../google_apis/drive/dummy_auth_service.h',
-        '../google_apis/drive/test_util.cc',
-        '../google_apis/drive/test_util.h',
         'app/chrome_main_delegate.cc',
         'app/chrome_main_delegate.h',
         'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
@@ -303,6 +299,7 @@
             '../content/content.gyp:content_worker',
             '../components/components.gyp:autofill_core_test_support',
             '../components/components.gyp:sessions_test_support',
+            '../google_apis/google_apis.gyp:google_apis_test_support',
             '../ipc/ipc.gyp:test_support_ipc',
             '../media/media.gyp:media_test_support',
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
@@ -497,11 +494,6 @@
         '../ui/ui_unittests.gyp:ui_test_support',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
-      ],
-      # TODO(joi): Remove this section once the google_apis tests are
-      # a separate unit test binary.
-      'includes': [
-        '../google_apis/determine_use_official_keys.gypi',
       ],
       'include_dirs': [
         '..',
@@ -1992,33 +1984,6 @@
         '../components/webdata/common/web_data_service_test_util.cc',
         '../components/webdata/common/web_data_service_test_util.h',
 
-        # TODO(joi): Move the google_apis tests to a separate
-        # google_apis_unittests executable.
-        '../google_apis/google_api_keys_unittest.cc',
-        '../google_apis/cup/client_update_protocol_unittest.cc',
-        '../google_apis/drive/base_requests_unittest.cc',
-        '../google_apis/drive/base_requests_server_unittest.cc',
-        '../google_apis/drive/drive_api_requests_unittest.cc',
-        '../google_apis/drive/drive_api_parser_unittest.cc',
-        '../google_apis/drive/drive_api_url_generator_unittest.cc',
-        '../google_apis/drive/gdata_wapi_parser_unittest.cc',
-        '../google_apis/drive/gdata_wapi_requests_unittest.cc',
-        '../google_apis/drive/gdata_wapi_url_generator_unittest.cc',
-        '../google_apis/drive/request_sender_unittest.cc',
-        '../google_apis/drive/request_util_unittest.cc',
-        '../google_apis/drive/time_util_unittest.cc',
-        '../google_apis/gaia/mock_url_fetcher_factory.h',
-        '../google_apis/gaia/gaia_auth_fetcher_unittest.cc',
-        '../google_apis/gaia/gaia_auth_util_unittest.cc',
-        '../google_apis/gaia/gaia_oauth_client_unittest.cc',
-        '../google_apis/gaia/google_service_auth_error_unittest.cc',
-        '../google_apis/gaia/oauth_request_signer_unittest.cc',
-        '../google_apis/gaia/oauth2_access_token_fetcher_unittest.cc',
-        '../google_apis/gaia/oauth2_api_call_flow_unittest.cc',
-        '../google_apis/gaia/oauth2_mint_token_flow_unittest.cc',
-        '../google_apis/gaia/oauth2_token_service_test_util.cc',
-        '../google_apis/gaia/oauth2_token_service_test_util.h',
-        '../google_apis/gaia/oauth2_token_service_unittest.cc',
         '../skia/ext/analysis_canvas_unittest.cc',
         '../skia/ext/bitmap_platform_device_mac_unittest.cc',
         '../skia/ext/convolver_unittest.cc',
@@ -2623,11 +2588,6 @@
             'browser/drive/fake_drive_service_unittest.cc',
             'browser/sync_file_system/drive_backend/api_util_unittest.cc',
             'browser/sync_file_system/drive_backend/drive_file_sync_service_sync_unittest.cc',
-            '../google_apis/drive/base_requests_server_unittest.cc',
-            '../google_apis/drive/drive_api_parser_unittest.cc',
-            '../google_apis/drive/drive_api_requests_unittest.cc',
-            '../google_apis/drive/gdata_wapi_parser_unittest.cc',
-            '../google_apis/drive/gdata_wapi_requests_unittest.cc',
 
             # The autofill popup is implemented in mostly native code on
             # Android.
