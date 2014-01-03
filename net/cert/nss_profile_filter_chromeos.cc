@@ -48,7 +48,7 @@ bool NSSProfileFilterChromeOS::IsModuleAllowed(PK11SlotInfo* slot) const {
   if (slot == public_slot_.get() || slot == private_slot_.get())
     return true;
   // If it's from the read-only slot, allow it.
-  if (slot == PK11_GetInternalKeySlot())
+  if (PK11_IsInternalKeySlot(slot))
     return true;
   // If this is not the internal (file-system) module or the TPM module, allow
   // it.

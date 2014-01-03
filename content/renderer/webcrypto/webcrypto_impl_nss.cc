@@ -289,8 +289,9 @@ bool ImportKeyInternalRaw(
       key_data_size
   };
 
+  crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
   crypto::ScopedPK11SymKey pk11_sym_key(
-      PK11_ImportSymKeyWithFlags(PK11_GetInternalSlot(),
+      PK11_ImportSymKeyWithFlags(slot.get(),
                                  mechanism,
                                  PK11_OriginUnwrap,
                                  CKA_FLAGS_ONLY,
@@ -454,8 +455,9 @@ bool ImportKeyInternalPkcs8(
   SECItem pki_der = {siBuffer, const_cast<uint8*>(key_data), key_data_size};
 
   SECKEYPrivateKey* seckey_private_key = NULL;
+  crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
   if (PK11_ImportDERPrivateKeyInfoAndReturnKey(
-          PK11_GetInternalSlot(),
+          slot.get(),
           &pki_der,
           NULL,  // nickname
           NULL,  // publicValue
