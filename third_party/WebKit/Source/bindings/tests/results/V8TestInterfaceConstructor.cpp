@@ -149,7 +149,7 @@ void V8TestInterfaceConstructor::constructorCallback(const v8::FunctionCallbackI
     TestInterfaceConstructorV8Internal::constructor(info);
 }
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceConstructorTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void configureV8TestInterfaceConstructorTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
 
@@ -166,7 +166,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceConstructorTempl
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
-    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestInterfaceConstructor::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -178,8 +177,8 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceConstructor::domTemplate(v8::Iso
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
-    v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestInterfaceConstructorTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
+    configureV8TestInterfaceConstructorTemplate(templ, isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

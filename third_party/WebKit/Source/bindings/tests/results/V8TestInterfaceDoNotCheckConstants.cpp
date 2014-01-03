@@ -36,6 +36,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "platform/TraceEvent.h"
@@ -70,7 +71,7 @@ template <typename T> void V8_USE(T) { }
 
 } // namespace TestInterfaceDoNotCheckConstantsV8Internal
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceDoNotCheckConstantsTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void configureV8TestInterfaceDoNotCheckConstantsTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
 
@@ -90,7 +91,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfaceDoNotCheckConsta
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
-    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestInterfaceDoNotCheckConstants::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -102,8 +102,8 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceDoNotCheckConstants::domTemplate
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
-    v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestInterfaceDoNotCheckConstantsTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
+    configureV8TestInterfaceDoNotCheckConstantsTemplate(templ, isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

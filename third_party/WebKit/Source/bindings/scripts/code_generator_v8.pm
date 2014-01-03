@@ -1216,7 +1216,7 @@ sub GenerateDomainSafeFunctionGetter
     my $funcName = $function->name;
 
     my $functionLength = GetFunctionLength($function);
-    my $signature = "v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawDOMTemplate(&" . $v8ClassName . "::wrapperTypeInfo, currentWorldType))";
+    my $signature = "v8::Signature::New(info.GetIsolate(), ${v8ClassName}::domTemplate(info.GetIsolate(), currentWorldType))";
     if ($function->extendedAttributes->{"DoNotCheckSignature"}) {
         $signature = "v8::Local<v8::Signature>()";
     }
@@ -4486,7 +4486,7 @@ END
     # configuration method.
     if ($interfaceName eq "Window") {
         $implementation{nameSpaceWebCore}->add(<<END);
-static void ConfigureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void configureShadowObjectTemplate(v8::Handle<v8::ObjectTemplate> templ, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8DOMConfiguration::installAttributes(templ, v8::Handle<v8::ObjectTemplate>(), shadowAttributes, WTF_ARRAY_LENGTH(shadowAttributes), isolate, currentWorldType);
 
@@ -4503,7 +4503,7 @@ END
 
     # Generate the template configuration method
     $code =  <<END;
-static v8::Handle<v8::FunctionTemplate> Configure${v8ClassName}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void configure${v8ClassName}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
 
@@ -4642,12 +4642,12 @@ END
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
-    return functionTemplate;
 }
 
 END
     $implementation{nameSpaceWebCore}->add($code);
 
+    AddToImplIncludes("bindings/v8/V8ObjectConstructor.h");
     $implementation{nameSpaceWebCore}->add(<<END);
 v8::Handle<v8::FunctionTemplate> ${v8ClassName}::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
@@ -4658,8 +4658,8 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}::domTemplate(v8::Isolate* isolat
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
-    v8::Local<v8::FunctionTemplate> templ =
-        Configure${v8ClassName}Template(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
+    configure${v8ClassName}Template(templ, isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }
@@ -4771,7 +4771,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
         if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-            ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
+            configureShadowObjectTemplate(templ, isolate, currentWorldType);
             V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
             return templ;
         }
@@ -4781,7 +4781,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
         if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
             v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
-            ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
+            configureShadowObjectTemplate(templ, isolate, currentWorldType);
             V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);
             return templ;
         }

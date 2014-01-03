@@ -629,8 +629,6 @@ namespace WebCore {
     }
 
 
-    v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate*);
-
     PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
 
     v8::Handle<v8::Object> toInnerGlobalObject(v8::Handle<v8::Context>);

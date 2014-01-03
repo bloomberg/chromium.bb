@@ -66,13 +66,6 @@ public:
 
     typedef HashMap<const void*, UnsafePersistent<v8::FunctionTemplate> > TemplateMap;
 
-    TemplateMap& rawDOMTemplateMap(WrapperWorldType worldType)
-    {
-        if (worldType == MainWorld)
-            return m_rawDOMTemplatesForMainWorld;
-        return m_rawDOMTemplatesForNonMainWorld;
-    }
-
     TemplateMap& templateMap(WrapperWorldType worldType)
     {
         if (worldType == MainWorld)
@@ -134,8 +127,6 @@ public:
     v8::Handle<v8::FunctionTemplate> privateTemplateIfExists(WrapperWorldType, void* privatePointer);
     void setPrivateTemplate(WrapperWorldType, void* privatePointer, v8::Handle<v8::FunctionTemplate>);
 
-    v8::Handle<v8::FunctionTemplate> rawDOMTemplate(const WrapperTypeInfo*, WrapperWorldType);
-
     bool hasInstance(const WrapperTypeInfo*, v8::Handle<v8::Value>, WrapperWorldType);
 
     v8::Local<v8::Context> ensureRegexContext();
@@ -149,8 +140,6 @@ private:
     static void constructorOfToString(const v8::FunctionCallbackInfo<v8::Value>&);
 
     v8::Isolate* m_isolate;
-    TemplateMap m_rawDOMTemplatesForMainWorld;
-    TemplateMap m_rawDOMTemplatesForNonMainWorld;
     TemplateMap m_templatesForMainWorld;
     TemplateMap m_templatesForNonMainWorld;
     ScopedPersistent<v8::FunctionTemplate> m_toStringTemplate;

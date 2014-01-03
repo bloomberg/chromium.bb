@@ -39,6 +39,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -84,7 +85,7 @@ void V8TestInterfacePython2::visitDOMWrapper(void* object, const v8::Persistent<
     setObjectGroup(object, wrapper, isolate);
 }
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfacePython2Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void configureV8TestInterfacePython2Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
 
@@ -99,7 +100,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfacePython2Template(
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
-    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestInterfacePython2::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -111,8 +111,8 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfacePython2::domTemplate(v8::Isolate
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
-    v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestInterfacePython2Template(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
+    configureV8TestInterfacePython2Template(templ, isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }

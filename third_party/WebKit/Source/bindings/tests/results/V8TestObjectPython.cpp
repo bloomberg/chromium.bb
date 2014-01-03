@@ -65,6 +65,7 @@
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8EventListenerList.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/v8/custom/V8Float32ArrayCustom.h"
@@ -6417,7 +6418,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"treatReturnedNullStringAsUndefinedStringMethod", TestObjectPythonV8Internal::treatReturnedNullStringAsUndefinedStringMethodMethodCallback, 0, 0},
 };
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+static void configureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
 
@@ -6507,7 +6508,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
-    return functionTemplate;
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestObjectPython::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -6519,8 +6519,8 @@ v8::Handle<v8::FunctionTemplate> V8TestObjectPython::domTemplate(v8::Isolate* is
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
-    v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestObjectPythonTemplate(data->rawDOMTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+    v8::Local<v8::FunctionTemplate> templ = v8::FunctionTemplate::New(isolate, V8ObjectConstructor::isValidConstructorMode);
+    configureV8TestObjectPythonTemplate(templ, isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }
