@@ -253,13 +253,9 @@ void FrameLoaderClientImpl::detachedFromParent()
     // chance we have to communicate with the client.
     m_webFrame->setWebCoreFrame(0);
 
-    WebFrameClient* client = m_webFrame->client();
-
-    if (!client)
-        return;
-
     // Signal that no further communication with WebFrameClient should take
     // place at this point since we are no longer associated with the Page.
+    WebFrameClient* client = m_webFrame->client();
     m_webFrame->setClient(0);
 
     // The call to WebFrameClient::frameDetached() is generally when the embedder will release its
