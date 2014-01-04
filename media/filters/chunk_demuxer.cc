@@ -768,7 +768,7 @@ bool SourceState::OnTextBuffers(
   AdjustBufferTimestamps(buffers);
 
   StreamParser::BufferQueue filtered_buffers;
-  bool needs_keyframe;
+  bool needs_keyframe = false;
   FilterWithAppendWindow(buffers, &needs_keyframe, &filtered_buffers);
 
   if (filtered_buffers.empty())
