@@ -91,13 +91,14 @@ def CompileMultipleHLSLShadersToOneHeaderFile(fxc_compiler_path,
                '/Vn', cpp_global_var_name,  # Into a C++ constant thus named
                '/Fh', target_header_file,   # Declared in this C++ header file.
                '/O3']                       # Fast is better than slow.
-    (out, err) = subprocess.Popen(command,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE,
-                                  shell=False).communicate()
-    if err:
-      print 'Error while compiling %s in file %s' % (
-          hlsl_function_name, source_hlsl_file)
+    child = subprocess.Popen(command,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             shell=False)
+    (out, err) = child.communicate()
+    if err or child.returncode:
+      print 'Error (%d) while compiling %s in file %s' % (
+          child.returncode, hlsl_function_name, source_hlsl_file)
       print err
       sys.exit(1)
     with open(target_header_file, 'r') as header:
