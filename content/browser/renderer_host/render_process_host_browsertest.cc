@@ -4,11 +4,10 @@
 
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_messages.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_notification_tracker.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
@@ -29,7 +28,26 @@ int RenderProcessHostCount() {
   return count;
 }
 
-class RenderProcessHostTest : public ContentBrowserTest {};
+class RenderProcessHostTest : public ContentBrowserTest,
+                              public RenderProcessHostObserver {
+ public:
+  RenderProcessHostTest() : process_exits_(0), host_destructions_(0) {}
+
+ protected:
+  // RenderProcessHostObserver:
+  virtual void RenderProcessExited(RenderProcessHost* host,
+                                   base::ProcessHandle handle,
+                                   base::TerminationStatus status,
+                                   int exit_code) OVERRIDE {
+    ++process_exits_;
+  }
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE {
+    ++host_destructions_;
+  }
+
+  int process_exits_;
+  int host_destructions_;
+};
 
 // Sometimes the renderer process's ShutdownRequest (corresponding to the
 // ViewMsg_WasSwappedOut from a previous navigation) doesn't arrive until after
@@ -45,9 +63,9 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   RenderProcessHost* rph =
       shell()->web_contents()->GetRenderViewHost()->GetProcess();
 
-  TestNotificationTracker termination_watcher;
-  termination_watcher.ListenFor(NOTIFICATION_RENDERER_PROCESS_CLOSED,
-                                Source<RenderProcessHost>(rph));
+  host_destructions_ = 0;
+  process_exits_ = 0;
+  rph->AddObserver(this);
   ChildProcessHostMsg_ShutdownRequest msg;
   rph->OnMessageReceived(msg);
 
@@ -56,7 +74,9 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   // that time to happen.
   NavigateToURL(CreateBrowser(), test_url);
 
-  EXPECT_EQ(0U, termination_watcher.size());
+  EXPECT_EQ(0, process_exits_);
+  if (!host_destructions_)
+    rph->RemoveObserver(this);
 }
 
 IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
