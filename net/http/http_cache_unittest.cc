@@ -179,8 +179,7 @@ void RunTransactionTestAndGetTiming(net::HttpCache* cache,
 
 void RunTransactionTest(net::HttpCache* cache,
                         const MockTransaction& trans_info) {
-  RunTransactionTestAndGetTiming(
-      cache, trans_info, net::BoundNetLog(), NULL);
+  RunTransactionTestAndGetTiming(cache, trans_info, net::BoundNetLog(), NULL);
 }
 
 void RunTransactionTestWithResponseInfo(net::HttpCache* cache,
@@ -325,6 +324,13 @@ void RangeTransactionServer::RangeHandler(const net::HttpRequestInfo* request,
 
   // We want to make sure we don't delete extra headers.
   EXPECT_TRUE(request->extra_headers.HasHeader(kExtraHeaderKey));
+
+  if (request->extra_headers.HasHeader("X-Require-Mock-Auth") &&
+      !request->extra_headers.HasHeader("Authorization")) {
+    response_status->assign("HTTP/1.1 401 Unauthorized");
+    response_data->assign("WWW-Authenticate: Foo\n");
+    return;
+  }
 
   if (not_modified_) {
     response_status->assign("HTTP/1.1 304 Not Modified");
@@ -5122,6 +5128,56 @@ TEST(HttpCache, GET_IncompleteResource3) {
   RemoveMockTransaction(&kRangeGET_TransactionOK);
 }
 
+// Tests that we handle 401s for truncated resources.
+TEST(HttpCache, GET_IncompleteResourceWithAuth) {
+  MockHttpCache cache;
+  AddMockTransaction(&kRangeGET_TransactionOK);
+
+  std::string raw_headers("HTTP/1.1 200 OK\n"
+                          "Last-Modified: Sat, 18 Apr 2007 01:10:43 GMT\n"
+                          "ETag: \"foo\"\n"
+                          "Accept-Ranges: bytes\n"
+                          "Content-Length: 80\n");
+  CreateTruncatedEntry(raw_headers, &cache);
+
+  // Now make a regular request.
+  MockTransaction transaction(kRangeGET_TransactionOK);
+  transaction.request_headers = "X-Require-Mock-Auth: dummy\r\n"
+                                EXTRA_HEADER;
+  transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 rg: 30-39 rg: 40-49 "
+                     "rg: 50-59 rg: 60-69 rg: 70-79 ";
+  RangeTransactionServer handler;
+
+  scoped_ptr<Context> c(new Context);
+  int rv = cache.CreateTransaction(&c->trans);
+  ASSERT_EQ(net::OK, rv);
+
+  MockHttpRequest request(transaction);
+  rv = c->trans->Start(&request, c->callback.callback(), net::BoundNetLog());
+  EXPECT_EQ(net::OK, c->callback.GetResult(rv));
+
+  const net::HttpResponseInfo* response = c->trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_EQ(401, response->headers->response_code());
+  rv = c->trans->RestartWithAuth(net::AuthCredentials(),
+                                 c->callback.callback());
+  EXPECT_EQ(net::OK, c->callback.GetResult(rv));
+  response = c->trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_EQ(200, response->headers->response_code());
+
+  ReadAndVerifyTransaction(c->trans.get(), transaction);
+  c.reset();  // The destructor could delete the entry.
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+
+  // Verify that the entry was not deleted.
+  disk_cache::Entry* entry;
+  ASSERT_TRUE(cache.OpenBackendEntry(kRangeGET_TransactionOK.url, &entry));
+  entry->Close();
+
+  RemoveMockTransaction(&kRangeGET_TransactionOK);
+}
+
 // Tests that we cache a 200 response to the validation request.
 TEST(HttpCache, GET_IncompleteResource4) {
   MockHttpCache cache;
@@ -6218,7 +6274,7 @@ int64 RunTransactionAndGetReceivedBytes(
   return received_bytes;
 }
 
-int64 TransactionSize(MockTransaction& transaction) {
+int64 TransactionSize(const MockTransaction& transaction) {
   return strlen(transaction.status) + strlen(transaction.response_headers) +
          strlen(transaction.data);
 }

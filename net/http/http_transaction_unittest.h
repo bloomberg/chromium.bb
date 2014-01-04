@@ -217,10 +217,14 @@ class MockNetworkTransaction
   net::RequestPriority priority() const { return priority_; }
 
  private:
+  int StartInternal(const net::HttpRequestInfo* request,
+                    const net::CompletionCallback& callback,
+                    const net::BoundNetLog& net_log);
   void CallbackLater(const net::CompletionCallback& callback, int result);
   void RunCallback(const net::CompletionCallback& callback, int result);
 
   base::WeakPtrFactory<MockNetworkTransaction> weak_factory_;
+  const net::HttpRequestInfo* request_;
   net::HttpResponseInfo response_;
   std::string data_;
   int data_cursor_;

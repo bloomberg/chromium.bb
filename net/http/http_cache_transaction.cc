@@ -936,15 +936,37 @@ int HttpCache::Transaction::DoSendRequestComplete(int result) {
 int HttpCache::Transaction::DoSuccessfulSendRequest() {
   DCHECK(!new_response_);
   const HttpResponseInfo* new_response = network_trans_->GetResponseInfo();
+  bool authentication_failure = false;
 
   if (new_response->headers->response_code() == 401 ||
       new_response->headers->response_code() == 407) {
     auth_response_ = *new_response;
-    return OK;
+    if (!reading_)
+      return OK;
+
+    // We initiated a second request the caller doesn't know about. We should be
+    // able to authenticate this request because we should have authenticated
+    // this URL moments ago.
+    if (IsReadyToRestartForAuth()) {
+      DCHECK(!response_.auth_challenge.get());
+      next_state_ = STATE_SEND_REQUEST_COMPLETE;
+      // In theory we should check to see if there are new cookies, but there
+      // is no way to do that from here.
+      return network_trans_->RestartWithAuth(AuthCredentials(), io_callback_);
+    }
+
+    // We have to perform cleanup at this point so that at least the next
+    // request can succeed.
+    authentication_failure = true;
+    if (entry_)
+      DoomPartialEntry(false);
+    mode_ = NONE;
+    partial_.reset();
   }
 
   new_response_ = new_response;
-  if (!ValidatePartialResponse() && !auth_response_.headers.get()) {
+  if (authentication_failure ||
+      (!ValidatePartialResponse() && !auth_response_.headers.get())) {
     // Something went wrong with this request and we have to restart it.
     // If we have an authentication response, we are exposed to weird things
     // hapenning if the user cancels the authentication before we receive
@@ -956,6 +978,7 @@ int HttpCache::Transaction::DoSuccessfulSendRequest() {
     next_state_ = STATE_SEND_REQUEST;
     return OK;
   }
+
   if (handling_206_ && mode_ == READ_WRITE && !truncated_ && !is_sparse_) {
     // We have stored the full entry, but it changed and the server is
     // sending a range. We have to delete the old entry.

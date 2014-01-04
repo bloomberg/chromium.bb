@@ -226,6 +226,7 @@ MockNetworkTransaction::MockNetworkTransaction(
     net::RequestPriority priority,
     MockNetworkLayer* factory)
     : weak_factory_(this),
+      request_(NULL),
       data_cursor_(0),
       priority_(priority),
       websocket_handshake_stream_create_helper_(NULL),
@@ -239,55 +240,11 @@ MockNetworkTransaction::~MockNetworkTransaction() {}
 int MockNetworkTransaction::Start(const net::HttpRequestInfo* request,
                                   const net::CompletionCallback& callback,
                                   const net::BoundNetLog& net_log) {
-  const MockTransaction* t = FindMockTransaction(request->url);
-  if (!t)
+  if (request_)
     return net::ERR_FAILED;
 
-  test_mode_ = t->test_mode;
-
-  // Return immediately if we're returning an error.
-  if (net::OK != t->return_code) {
-    if (test_mode_ & TEST_MODE_SYNC_NET_START)
-      return t->return_code;
-    CallbackLater(callback, t->return_code);
-    return net::ERR_IO_PENDING;
-  }
-
-  std::string resp_status = t->status;
-  std::string resp_headers = t->response_headers;
-  std::string resp_data = t->data;
-  received_bytes_ = resp_status.size() + resp_headers.size() + resp_data.size();
-  if (t->handler)
-    (t->handler)(request, &resp_status, &resp_headers, &resp_data);
-
-  std::string header_data = base::StringPrintf(
-      "%s\n%s\n", resp_status.c_str(), resp_headers.c_str());
-  std::replace(header_data.begin(), header_data.end(), '\n', '\0');
-
-  response_.request_time = base::Time::Now();
-  if (!t->request_time.is_null())
-    response_.request_time = t->request_time;
-
-  response_.was_cached = false;
-  response_.network_accessed = true;
-
-  response_.response_time = base::Time::Now();
-  if (!t->response_time.is_null())
-    response_.response_time = t->response_time;
-
-  response_.headers = new net::HttpResponseHeaders(header_data);
-  response_.vary_data.Init(*request, *response_.headers.get());
-  response_.ssl_info.cert_status = t->cert_status;
-  data_ = resp_data;
-
-  if (net_log.net_log())
-    socket_log_id_ = net_log.net_log()->NextID();
-
-  if (test_mode_ & TEST_MODE_SYNC_NET_START)
-    return net::OK;
-
-  CallbackLater(callback, net::OK);
-  return net::ERR_IO_PENDING;
+  request_ = request;
+  return StartInternal(request, callback, net_log);
 }
 
 int MockNetworkTransaction::RestartIgnoringLastError(
@@ -304,11 +261,24 @@ int MockNetworkTransaction::RestartWithCertificate(
 int MockNetworkTransaction::RestartWithAuth(
     const net::AuthCredentials& credentials,
     const net::CompletionCallback& callback) {
-  return net::ERR_FAILED;
+  if (!IsReadyToRestartForAuth())
+    return net::ERR_FAILED;
+
+  net::HttpRequestInfo auth_request_info = *request_;
+  auth_request_info.extra_headers.AddHeaderFromString("Authorization: Bar");
+
+  // Let the MockTransactionHandler worry about this: the only way for this
+  // test to succeed is by using an explicit handler for the transaction so
+  // that server behavior can be simulated.
+  return StartInternal(&auth_request_info, callback, net::BoundNetLog());
 }
 
 bool MockNetworkTransaction::IsReadyToRestartForAuth() {
-  return false;
+  if (!request_)
+    return false;
+
+  // Only mock auth when the test asks for it.
+  return request_->extra_headers.HasHeader("X-Require-Mock-Auth");
 }
 
 int MockNetworkTransaction::Read(net::IOBuffer* buf, int buf_len,
@@ -385,6 +355,61 @@ void MockNetworkTransaction::SetPriority(net::RequestPriority priority) {
 void MockNetworkTransaction::SetWebSocketHandshakeStreamCreateHelper(
     net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) {
   websocket_handshake_stream_create_helper_ = create_helper;
+}
+
+int MockNetworkTransaction::StartInternal(
+    const net::HttpRequestInfo* request,
+    const net::CompletionCallback& callback,
+    const net::BoundNetLog& net_log) {
+  const MockTransaction* t = FindMockTransaction(request->url);
+  if (!t)
+    return net::ERR_FAILED;
+
+  test_mode_ = t->test_mode;
+
+  // Return immediately if we're returning an error.
+  if (net::OK != t->return_code) {
+    if (test_mode_ & TEST_MODE_SYNC_NET_START)
+      return t->return_code;
+    CallbackLater(callback, t->return_code);
+    return net::ERR_IO_PENDING;
+  }
+
+  std::string resp_status = t->status;
+  std::string resp_headers = t->response_headers;
+  std::string resp_data = t->data;
+  received_bytes_ = resp_status.size() + resp_headers.size() + resp_data.size();
+  if (t->handler)
+    (t->handler)(request, &resp_status, &resp_headers, &resp_data);
+
+  std::string header_data = base::StringPrintf(
+      "%s\n%s\n", resp_status.c_str(), resp_headers.c_str());
+  std::replace(header_data.begin(), header_data.end(), '\n', '\0');
+
+  response_.request_time = base::Time::Now();
+  if (!t->request_time.is_null())
+    response_.request_time = t->request_time;
+
+  response_.was_cached = false;
+  response_.network_accessed = true;
+
+  response_.response_time = base::Time::Now();
+  if (!t->response_time.is_null())
+    response_.response_time = t->response_time;
+
+  response_.headers = new net::HttpResponseHeaders(header_data);
+  response_.vary_data.Init(*request, *response_.headers.get());
+  response_.ssl_info.cert_status = t->cert_status;
+  data_ = resp_data;
+
+  if (net_log.net_log())
+    socket_log_id_ = net_log.net_log()->NextID();
+
+  if (test_mode_ & TEST_MODE_SYNC_NET_START)
+    return net::OK;
+
+  CallbackLater(callback, net::OK);
+  return net::ERR_IO_PENDING;
 }
 
 void MockNetworkTransaction::CallbackLater(
