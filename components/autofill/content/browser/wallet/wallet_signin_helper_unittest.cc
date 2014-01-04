@@ -11,6 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_signin_helper_delegate.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -125,7 +126,8 @@ TEST_F(WalletSigninHelperTest, PassiveSigninFailedSigninNo) {
 
 TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
   EXPECT_CALL(mock_delegate_, OnDidFetchWalletCookieValue("gdToken"));
-  net::CookieMonster* cookie_monster = new net::CookieMonster(NULL, NULL);
+  net::CookieMonster* cookie_monster =
+      content::CreateInMemoryCookieStore(NULL)->GetCookieMonster();
   net::CookieOptions httponly_options;
   httponly_options.set_include_httponly();
   scoped_ptr<net::CanonicalCookie> cookie(
@@ -145,7 +147,8 @@ TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
 
 TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenMissing) {
   EXPECT_CALL(mock_delegate_, OnDidFetchWalletCookieValue(std::string()));
-  net::CookieMonster* cookie_monster = new net::CookieMonster(NULL, NULL);
+  net::CookieMonster* cookie_monster =
+      content::CreateInMemoryCookieStore(NULL)->GetCookieMonster();
   net::CookieOptions httponly_options;
   httponly_options.set_include_httponly();
   scoped_ptr<net::CanonicalCookie> cookie(

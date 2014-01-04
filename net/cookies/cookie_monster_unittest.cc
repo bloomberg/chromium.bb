@@ -1546,7 +1546,7 @@ TEST_F(CookieMonsterTest, DontImportDuplicateCreationTimes) {
   EXPECT_NE(name1, name2);
 }
 
-TEST_F(CookieMonsterTest, Delegate) {
+TEST_F(CookieMonsterTest, CookieMonsterDelegate) {
   scoped_refptr<MockPersistentCookieStore> store(
       new MockPersistentCookieStore);
   scoped_refptr<MockCookieMonsterDelegate> delegate(

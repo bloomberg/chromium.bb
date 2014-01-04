@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -28,6 +29,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
@@ -1264,7 +1266,25 @@ net::CookieStore* CreatePersistentCookieStore(
           restore_old_session_cookies,
           storage_policy,
           crypto_delegate.Pass());
-  return new net::CookieMonster(persistent_store, cookie_monster_delegate);
+
+  net::CookieMonster* cookie_monster =
+      new net::CookieMonster(persistent_store, cookie_monster_delegate);
+
+  // In the case of Android WebView, the cookie store may be created
+  // before the browser process fully initializes -- certainly before
+  // the main loop ever runs. In this situation, the CommandLine singleton
+  // will not have been set up. Android tests do not need file cookies
+  // so always ignore them here.
+  //
+  // TODO(ajwong): Remove the InitializedForCurrentProcess() check
+  // once http://crbug.com/331424 is resolved.
+  if (CommandLine::InitializedForCurrentProcess() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFileCookies)) {
+    cookie_monster->SetEnableFileScheme(true);
+  }
+
+  return cookie_monster;
 }
 
 net::CookieStore* CreatePersistentCookieStore(
@@ -1282,6 +1302,18 @@ net::CookieStore* CreatePersistentCookieStore(
       BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
           BrowserThread::GetBlockingPool()->GetSequenceToken()),
       crypto_delegate.Pass());
+}
+
+net::CookieStore* CreateInMemoryCookieStore(
+    net::CookieMonster::Delegate* cookie_monster_delegate) {
+  net::CookieMonster* cookie_monster =
+      new net::CookieMonster(NULL, cookie_monster_delegate);
+  if (CommandLine::InitializedForCurrentProcess() &&
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableFileCookies)) {
+    cookie_monster->SetEnableFileScheme(true);
+  }
+  return cookie_monster;
 }
 
 }  // namespace content

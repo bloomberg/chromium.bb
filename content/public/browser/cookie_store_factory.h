@@ -38,6 +38,9 @@ CONTENT_EXPORT net::CookieStore* CreatePersistentCookieStore(
     net::CookieMonster::Delegate* cookie_monster_delegate,
     scoped_ptr<CookieCryptoDelegate> crypto_delegate);
 
+CONTENT_EXPORT net::CookieStore* CreateInMemoryCookieStore(
+    net::CookieMonster::Delegate* cookie_monster_delegate);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_BROWSER_COOKIE_STORE_FACTORY_H_

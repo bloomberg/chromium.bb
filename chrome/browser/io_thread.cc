@@ -45,6 +45,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_util.h"
 #include "net/base/network_time_notifier.h"
@@ -52,7 +53,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_verifier.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
@@ -594,7 +594,7 @@ void IOThread::InitAsync() {
   globals_->proxy_script_fetcher_proxy_service.reset(
       net::ProxyService::CreateDirectWithNetLog(net_log_));
   // In-memory cookie store.
-  globals_->system_cookie_store = new net::CookieMonster(NULL, NULL);
+  globals_->system_cookie_store = content::CreateInMemoryCookieStore(NULL);
   // In-memory server bound cert store.
   globals_->system_server_bound_cert_service.reset(
       new net::ServerBoundCertService(
@@ -725,12 +725,6 @@ void IOThread::CleanUp() {
 }
 
 void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kEnableFileCookies)) {
-    // Enable cookie storage for file:// URLs.  Must do this before the first
-    // Profile (and therefore the first CookieMonster) is created.
-    net::CookieMonster::EnableFileScheme();
-  }
-
   // Only handle use-spdy command line flags if "spdy.disabled" preference is
   // not disabled via policy.
   if (is_spdy_disabled_by_policy_) {

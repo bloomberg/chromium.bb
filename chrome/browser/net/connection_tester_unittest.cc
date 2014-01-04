@@ -6,8 +6,8 @@
 
 #include "base/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "net/cert/mock_cert_verifier.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -148,7 +148,7 @@ class ConnectionTesterTest : public PlatformTest {
         http_transaction_factory_.get());
     // In-memory cookie store.
     proxy_script_fetcher_context_->set_cookie_store(
-        new net::CookieMonster(NULL, NULL));
+        content::CreateInMemoryCookieStore(NULL));
   }
 };
 

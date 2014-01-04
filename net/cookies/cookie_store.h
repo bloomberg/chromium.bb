@@ -33,7 +33,6 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   typedef base::Callback<void(bool success)> SetCookiesCallback;
   typedef base::Callback<void(int num_deleted)> DeleteCallback;
 
-
   // Sets a single cookie.  Expects a cookie line, like "a=1; domain=b.com".
   //
   // Fails either if the cookie is invalid or if this is a non-HTTPONLY cookie

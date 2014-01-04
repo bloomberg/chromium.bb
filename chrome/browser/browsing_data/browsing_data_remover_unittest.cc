@@ -42,13 +42,13 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/ssl/server_bound_cert_service.h"
 #include "net/ssl/server_bound_cert_store.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -298,7 +298,7 @@ class RemoveSafeBrowsingCookieTester : public RemoveCookieTester {
 
     // Create a cookiemonster that does not have persistant storage, and replace
     // the SafeBrowsingService created one with it.
-    net::CookieStore* monster = new net::CookieMonster(NULL, NULL);
+    net::CookieStore* monster = content::CreateInMemoryCookieStore(NULL);
     sb_service->url_request_context()->GetURLRequestContext()->
         set_cookie_store(monster);
     SetMonster(monster);

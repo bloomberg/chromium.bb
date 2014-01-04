@@ -426,8 +426,8 @@ void ProfileImplIOData::InitializeInternal(
   net::ServerBoundCertService* server_bound_cert_service = NULL;
   if (record_mode || playback_mode) {
     // Don't use existing cookies and use an in-memory store.
-    cookie_store = new net::CookieMonster(
-        NULL, profile_params->cookie_monster_delegate.get());
+    cookie_store = content::CreateInMemoryCookieStore(
+        profile_params->cookie_monster_delegate.get());
     // Don't use existing server-bound certs and use an in-memory store.
     server_bound_cert_service = new net::ServerBoundCertService(
         new net::DefaultServerBoundCertStore(NULL),
@@ -606,13 +606,13 @@ ProfileImplIOData::InitializeAppRequestContext(
 
   scoped_refptr<net::CookieStore> cookie_store = NULL;
   if (partition_descriptor.in_memory) {
-    cookie_store = new net::CookieMonster(NULL, NULL);
+    cookie_store = content::CreateInMemoryCookieStore(NULL);
   } else if (record_mode || playback_mode) {
     // Don't use existing cookies and use an in-memory store.
     // TODO(creis): We should have a cookie delegate for notifying the cookie
     // extensions API, but we need to update it to understand isolated apps
     // first.
-    cookie_store = new net::CookieMonster(NULL, NULL);
+    cookie_store = content::CreateInMemoryCookieStore(NULL);
     app_http_cache->set_mode(
         record_mode ? net::HttpCache::RECORD : net::HttpCache::PLAYBACK);
   }

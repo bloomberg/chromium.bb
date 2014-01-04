@@ -15,12 +15,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/cert/cert_verifier.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
@@ -132,7 +132,7 @@ class ExperimentURLRequestContext : public net::URLRequestContext {
     storage_.set_http_transaction_factory(new net::HttpCache(
         network_session.get(), net::HttpCache::DefaultBackend::InMemory(0)));
     // In-memory cookie store.
-    storage_.set_cookie_store(new net::CookieMonster(NULL, NULL));
+    storage_.set_cookie_store(content::CreateInMemoryCookieStore(NULL));
 
     return net::OK;
   }
