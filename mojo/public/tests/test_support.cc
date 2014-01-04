@@ -32,7 +32,7 @@ bool ReadTextMessage(MessagePipeHandle handle, std::string* text) {
                         NULL,
                         &num_handles,
                         MOJO_READ_MESSAGE_FLAG_NONE);
-    if (rv == MOJO_RESULT_NOT_FOUND) {
+    if (rv == MOJO_RESULT_SHOULD_WAIT) {
       if (did_wait) {
         assert(false);  // Looping endlessly!?
         return false;

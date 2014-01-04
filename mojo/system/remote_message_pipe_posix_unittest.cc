@@ -300,19 +300,19 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
 
   // Make sure there's nothing on MP 0, port 0 or MP 1, port 1 or MP 2, port 0.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp_0->ReadMessage(0,
                               buffer, &buffer_size,
                               NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp_1->ReadMessage(1,
                               buffer, &buffer_size,
                               NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp_2->ReadMessage(0,
                               buffer, &buffer_size,
                               NULL, NULL,
@@ -345,19 +345,19 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
 
   // Make sure there's nothing on the other ports.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp_0->ReadMessage(0,
                               buffer, &buffer_size,
                               NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp_2->ReadMessage(0,
                               buffer, &buffer_size,
                               NULL, NULL,
                               MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp_3->ReadMessage(1,
                               buffer, &buffer_size,
                               NULL, NULL,

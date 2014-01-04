@@ -80,7 +80,7 @@ void Connector::ReadMore() {
                         NULL,
                         &num_handles,
                         MOJO_READ_MESSAGE_FLAG_NONE);
-    if (rv == MOJO_RESULT_NOT_FOUND) {
+    if (rv == MOJO_RESULT_SHOULD_WAIT) {
       WaitToReadMore();
       break;
     }

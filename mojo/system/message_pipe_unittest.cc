@@ -38,7 +38,7 @@ TEST(MessagePipeTest, Basic) {
   buffer[0] = 123;
   buffer[1] = 456;
   buffer_size = kBufferSize;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp->ReadMessage(0,
                             buffer, &buffer_size,
                             0, NULL,
@@ -51,7 +51,7 @@ TEST(MessagePipeTest, Basic) {
   buffer[0] = 123;
   buffer[1] = 456;
   buffer_size = kBufferSize;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp->ReadMessage(1,
                             buffer, &buffer_size,
                             0, NULL,
@@ -81,7 +81,7 @@ TEST(MessagePipeTest, Basic) {
 
   // Read again from port 0 -- it should be empty.
   buffer_size = kBufferSize;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp->ReadMessage(0,
                             buffer, &buffer_size,
                             0, NULL,
@@ -155,7 +155,7 @@ TEST(MessagePipeTest, Basic) {
 
   // Read again from port 1 -- it should be empty.
   buffer_size = kBufferSize;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp->ReadMessage(1,
                             buffer, &buffer_size,
                             0, NULL,
@@ -264,7 +264,7 @@ TEST(MessagePipeTest, DiscardMode) {
 
   // Read again from port 0 -- it should be empty.
   buffer_size = kBufferSize;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp->ReadMessage(0,
                             buffer, &buffer_size,
                             0, NULL,
@@ -294,7 +294,7 @@ TEST(MessagePipeTest, DiscardMode) {
 
   // Read again from port 0 -- it should be empty.
   buffer_size = kBufferSize;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp->ReadMessage(0,
                             buffer, &buffer_size,
                             0, NULL,
@@ -320,7 +320,7 @@ TEST(MessagePipeTest, DiscardMode) {
 
   // Read again from port 0 -- it should be empty.
   buffer_size = kBufferSize;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp->ReadMessage(0,
                             buffer, &buffer_size,
                             0, NULL,
@@ -345,7 +345,7 @@ TEST(MessagePipeTest, DiscardMode) {
 
   // Read again from port 0 -- it should be empty.
   buffer_size = kBufferSize;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             mp->ReadMessage(0,
                             buffer, &buffer_size,
                             0, NULL,

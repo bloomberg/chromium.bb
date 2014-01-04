@@ -63,7 +63,7 @@ define([
     for (;;) {
       var read = core.readMessage(this.handle_,
                                   core.READ_MESSAGE_FLAG_NONE);
-      if (read.result == core.RESULT_NOT_FOUND) {
+      if (read.result == core.RESULT_SHOULD_WAIT) {
         this.waitToReadMore_();
         return;
       }

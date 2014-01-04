@@ -58,9 +58,8 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
   size_t num_bytes_to_write =
       std::min(static_cast<size_t>(*num_bytes),
                capacity_num_bytes() - current_num_bytes_);
-  // TODO(vtl): Change this to "should wait" when we have that error code.
   if (num_bytes_to_write == 0)
-    return MOJO_RESULT_NOT_FOUND;
+    return MOJO_RESULT_SHOULD_WAIT;
 
   // The amount we can write in our first |memcpy()|.
   size_t num_bytes_to_write_first =
@@ -100,9 +99,8 @@ MojoResult LocalDataPipe::ProducerBeginWriteDataImplNoLock(
     return MOJO_RESULT_OUT_OF_RANGE;
 
   // Don't go into a two-phase write if there's no room.
-  // TODO(vtl): Change this to "should wait" when we have that error code.
   if (max_num_bytes_to_write == 0)
-    return MOJO_RESULT_NOT_FOUND;
+    return MOJO_RESULT_SHOULD_WAIT;
 
   size_t write_index =
       (start_index_ + current_num_bytes_) % capacity_num_bytes();
@@ -171,9 +169,7 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(void* elements,
   size_t num_bytes_to_read =
       std::min(static_cast<size_t>(*num_bytes), current_num_bytes_);
   if (num_bytes_to_read == 0) {
-    // TODO(vtl): Change "not found" to "should wait" when we have that error
-    // code.
-    return producer_open_no_lock() ? MOJO_RESULT_NOT_FOUND :
+    return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT :
                                      MOJO_RESULT_FAILED_PRECONDITION;
   }
 
@@ -213,9 +209,7 @@ MojoResult LocalDataPipe::ConsumerDiscardDataImplNoLock(uint32_t* num_bytes,
 
   // Be consistent with other operations; error if no data available.
   if (current_num_bytes_ == 0) {
-    // TODO(vtl): Change "not found" to "should wait" when we have that error
-    // code.
-    return producer_open_no_lock() ? MOJO_RESULT_NOT_FOUND :
+    return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT :
                                      MOJO_RESULT_FAILED_PRECONDITION;
   }
 
@@ -250,9 +244,7 @@ MojoResult LocalDataPipe::ConsumerBeginReadDataImplNoLock(
 
   // Don't go into a two-phase read if there's no data.
   if (max_num_bytes_to_read == 0) {
-    // TODO(vtl): Change "not found" to "should wait" when we have that error
-    // code.
-    return producer_open_no_lock() ? MOJO_RESULT_NOT_FOUND :
+    return producer_open_no_lock() ? MOJO_RESULT_SHOULD_WAIT :
                                      MOJO_RESULT_FAILED_PRECONDITION;
   }
 

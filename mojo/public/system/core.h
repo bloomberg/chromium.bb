@@ -77,13 +77,16 @@ const MojoHandle MOJO_HANDLE_INVALID = 0;
 //       (possibly on another thread) in a way that prevents the current
 //       operation from proceeding, e.g., if the other operation may result in
 //       the resource being invalidated.
+//   |MOJO_RESULT_SHOULD_WAIT| - The request cannot currently be completed
+//       (e.g., if the data requested is not yet available). The caller should
+//       wait for it to be feasible using |MojoWait()| or |MojoWaitMany()|.
 //
 // Note that positive values are also available as success codes.
 //
 // The codes from |MOJO_RESULT_OK| to |MOJO_RESULT_DATA_LOSS| come from
 // Google3's canonical error codes.
 //
-// TODO(vtl): Add a |MOJO_RESULT_SHOULD_WAIT|.
+// TODO(vtl): Add a |MOJO_RESULT_UNSATISFIABLE|?
 
 typedef int32_t MojoResult;
 
@@ -105,6 +108,7 @@ const MojoResult MOJO_RESULT_INTERNAL = -13;
 const MojoResult MOJO_RESULT_UNAVAILABLE = -14;
 const MojoResult MOJO_RESULT_DATA_LOSS = -15;
 const MojoResult MOJO_RESULT_BUSY = -16;
+const MojoResult MOJO_RESULT_SHOULD_WAIT = -17;
 #else
 #define MOJO_RESULT_OK ((MojoResult) 0)
 #define MOJO_RESULT_CANCELLED ((MojoResult) -1)
@@ -123,6 +127,7 @@ const MojoResult MOJO_RESULT_BUSY = -16;
 #define MOJO_RESULT_UNAVAILABLE ((MojoResult) -14)
 #define MOJO_RESULT_DATA_LOSS ((MojoResult) -15)
 #define MOJO_RESULT_BUSY ((MojoResult) -16)
+#define MOJO_RESULT_SHOULD_WAIT ((MojoResult) -17)
 #endif
 
 // |MojoDeadline|: Used to specify deadlines (timeouts), in microseconds (except
@@ -416,14 +421,13 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
 // Returns:
 //   |MOJO_RESULT_OK| on success (i.e., a message was actually read).
 //   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid.
-//   |MOJO_RESULT_NOT_FOUND| if no message was available to be read (TODO(vtl):
-//       change this to |MOJO_RESULT_SHOULD_WAIT|).
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the other endpoint has been closed.
 //   |MOJO_RESULT_RESOURCE_EXHAUSTED| if one of the buffers to receive the
 //       message/attached handles (|bytes|/|*num_bytes| or
 //       |handles|/|*num_handles|) was too small. (TODO(vtl): Reconsider this
 //       error code; should distinguish this from the hitting-system-limits
 //       case.)
+//   |MOJO_RESULT_SHOULD_WAIT| if no message was available to be read.
 MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
                                               void* bytes,
                                               uint32_t* num_bytes,

@@ -119,9 +119,8 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
   const uint32_t max_bytes = num_bytes ? *num_bytes : 0;
   const uint32_t max_num_dispatchers = num_dispatchers ? *num_dispatchers : 0;
 
-  // TODO(vtl): Change "not found" to "should wait".
   if (message_queue_.empty()) {
-    return is_peer_open_ ? MOJO_RESULT_NOT_FOUND :
+    return is_peer_open_ ? MOJO_RESULT_SHOULD_WAIT :
                            MOJO_RESULT_FAILED_PRECONDITION;
   }
 

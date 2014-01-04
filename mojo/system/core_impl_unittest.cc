@@ -339,7 +339,7 @@ TEST_F(CoreImplTest, MessagePipe) {
   // Try to read anyway.
   char buffer[1] = { 'a' };
   uint32_t buffer_size = 1;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             core()->ReadMessage(h[0], buffer, &buffer_size, NULL, NULL,
                                 MOJO_READ_MESSAGE_FLAG_NONE));
   // Check that it left its inputs alone.

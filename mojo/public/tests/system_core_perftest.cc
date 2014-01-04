@@ -53,7 +53,7 @@ class SystemPerftest : public testing::Test {
                              NULL, NULL,
                              NULL, NULL,
                              MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
-    DCHECK_EQ(result, MOJO_RESULT_NOT_FOUND);
+    DCHECK_EQ(result, MOJO_RESULT_SHOULD_WAIT);
   }
 
  protected:

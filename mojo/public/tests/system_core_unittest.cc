@@ -57,7 +57,7 @@ TEST(SystemTest, Basic) {
             MojoWait(h_0, MOJO_WAIT_FLAG_WRITABLE, 0));
 
   // Try to read.
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             MojoReadMessage(h_0,
                             buffer, &buffer_size,
                             NULL, NULL,

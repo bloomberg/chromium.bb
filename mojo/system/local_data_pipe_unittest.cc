@@ -110,7 +110,7 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
 
   // Try reading; nothing there yet.
   num_bytes = static_cast<uint32_t>(arraysize(elements) * sizeof(elements[0]));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
             dp->ConsumerReadData(elements, &num_bytes, false));
 
   // Query; nothing there yet.
@@ -120,7 +120,8 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
 
   // Discard; nothing there yet.
   num_bytes = static_cast<uint32_t>(5u * sizeof(elements[0]));
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND, dp->ConsumerDiscardData(&num_bytes, false));
+  EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
+            dp->ConsumerDiscardData(&num_bytes, false));
 
   // Read with invalid |num_bytes|.
   num_bytes = sizeof(elements[0]) + 1;

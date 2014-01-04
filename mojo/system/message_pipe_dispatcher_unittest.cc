@@ -185,7 +185,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     // Try reading from |d_1|; should fail (nothing to read).
     buffer[0] = 0;
     buffer_size = kBufferSize;
-    EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+    EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
               d_1->ReadMessage(buffer, &buffer_size,
                                0, NULL,
                                MOJO_READ_MESSAGE_FLAG_NONE));
@@ -478,9 +478,9 @@ class ReaderThread : public base::SimpleThread {
                                              0, NULL,
                                              MOJO_READ_MESSAGE_FLAG_NONE);
       EXPECT_TRUE(result == MOJO_RESULT_OK ||
-                  result == MOJO_RESULT_NOT_FOUND) << "result: " << result;
+                  result == MOJO_RESULT_SHOULD_WAIT) << "result: " << result;
       // We're racing with others to read, so maybe we failed.
-      if (result == MOJO_RESULT_NOT_FOUND)
+      if (result == MOJO_RESULT_SHOULD_WAIT)
         continue;  // In which case, try again.
       // Check for quit.
       if (buffer_size == 4 && memcmp("quit", buffer, 4) == 0)
