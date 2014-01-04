@@ -3452,7 +3452,8 @@ TEST_P(QuicFramerTest, FecEntropyTest) {
   EXPECT_EQ(1 << 4, visitor_.header_->entropy_hash);
 };
 
-TEST_P(QuicFramerTest, StopPacketProcessing) {
+// http://crbug.com/331630. TODO(rtenneti): fix the uninitialized memory issue.
+TEST_P(QuicFramerTest, DISABLED_StopPacketProcessing) {
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
