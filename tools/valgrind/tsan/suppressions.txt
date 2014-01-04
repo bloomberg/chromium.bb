@@ -740,12 +740,12 @@
   fun:content::WebRTCAudioDeviceTest_PlayLocalFile_Test::TestBody
 }
 {
-   bug_104769
-   ThreadSanitizer:Race
-   fun:timeout_correct
-   fun:event_base_loop
-   fun:base::MessagePumpLibevent::Run
-   fun:base::MessageLoop::RunHandler
+  bug_104769
+  ThreadSanitizer:Race
+  fun:timeout_correct
+  fun:event_base_loop
+  fun:base::MessagePumpLibevent::Run
+  fun:base::MessageLoop::RunHandler
 }
 {
   bug_104776_maybe_benign
@@ -767,31 +767,31 @@
   fun:DispatchToMethod
 }
 {
-   bug_107903_a
-   ThreadSanitizer:Race
-   ...
-   fun:TestProfileSyncService::~TestProfileSyncService
-   fun:scoped_ptr::reset
-   fun:ProfileSyncServiceAutofillTest::TearDown
+  bug_107903_a
+  ThreadSanitizer:Race
+  ...
+  fun:TestProfileSyncService::~TestProfileSyncService
+  fun:scoped_ptr::reset
+  fun:ProfileSyncServiceAutofillTest::TearDown
 }
 {
-   bug_107903_b
-   ThreadSanitizer:Race
-   ...
-   fun:syncer::SyncManager::SyncInternal::ShutdownOnSyncThread
-   fun:syncer::SyncManager::ShutdownOnSyncThread
-   fun:browser_sync::SyncBackendHost::Core::DoShutdown
-   fun:base::internal::RunnableAdapter::Run
+  bug_107903_b
+  ThreadSanitizer:Race
+  ...
+  fun:syncer::SyncManager::SyncInternal::ShutdownOnSyncThread
+  fun:syncer::SyncManager::ShutdownOnSyncThread
+  fun:browser_sync::SyncBackendHost::Core::DoShutdown
+  fun:base::internal::RunnableAdapter::Run
 }
 {
-   bug_107903_c
-   ThreadSanitizer:Race
-   fun:syncable::DirectoryChangeDelegate::~DirectoryChangeDelegate
-   fun:syncer::SyncManager::SyncInternal::~SyncInternal
-   fun:syncer::SyncManager::~SyncManager
-   fun:scoped_ptr::reset
-   fun:browser_sync::SyncBackendHost::Core::DoShutdown
-   fun:base::internal::RunnableAdapter::Run
+  bug_107903_c
+  ThreadSanitizer:Race
+  fun:syncable::DirectoryChangeDelegate::~DirectoryChangeDelegate
+  fun:syncer::SyncManager::SyncInternal::~SyncInternal
+  fun:syncer::SyncManager::~SyncManager
+  fun:scoped_ptr::reset
+  fun:browser_sync::SyncBackendHost::Core::DoShutdown
+  fun:base::internal::RunnableAdapter::Run
 }
 {
   bug_108408
@@ -963,11 +963,11 @@
   fun:base::internal::RunnableAdapter::Run
 }
 {
-   bug_137701
-   ThreadSanitizer:Race
-   ...
-   fun:_output_*
-   fun:_vsnprintf_helper
+  bug_137701
+  ThreadSanitizer:Race
+  ...
+  fun:_output_*
+  fun:_vsnprintf_helper
 }
 {
   bug_137973_a
@@ -1037,19 +1037,19 @@
   fun:content::RenderViewHostTestHarness::SetUp
 }
 {
-   bug_178433a
-   ThreadSanitizer:Race
-   fun:scoped_refptr::operator->
-   fun:base::WaitableEvent::Signal
-   fun:base::debug::TraceSamplingThread::ThreadMain
-   fun:base::::ThreadFunc
+  bug_178433a
+  ThreadSanitizer:Race
+  fun:scoped_refptr::operator->
+  fun:base::WaitableEvent::Signal
+  fun:base::debug::TraceSamplingThread::ThreadMain
+  fun:base::::ThreadFunc
 }
 {
-   bug_178433b
-   ThreadSanitizer:Race
-   fun:base::internal::scoped_ptr_impl::get
-   ...
-   fun:base::debug::TraceSamplingThread::ThreadMain
+  bug_178433b
+  ThreadSanitizer:Race
+  fun:base::internal::scoped_ptr_impl::get
+  ...
+  fun:base::debug::TraceSamplingThread::ThreadMain
 }
 {
   bug_225123
@@ -1133,10 +1133,10 @@
   fun:base::::ThreadFunc
 }
 {
-   bug_313726
-   ThreadSanitizer:Race
-   fun:MessageLoopHelper::TimerExpired
-   fun:base::internal::RunnableAdapter::Run
+  bug_313726
+  ThreadSanitizer:Race
+  fun:MessageLoopHelper::TimerExpired
+  fun:base::internal::RunnableAdapter::Run
 }
 {
   bug_329253
