@@ -10,6 +10,7 @@ import logging
 import os
 import shutil
 import stat
+import tempfile
 import time
 
 from chromite.lib import cros_build_lib
@@ -127,20 +128,6 @@ class RemoteAccess(object):
         raise
 
     return result
-
-  def LearnBoard(self):
-    """Grab the board reported by the remote device.
-
-    in the case of multiple matches, uses the first one.  In the case of no
-    entry, returns an empty string.
-    """
-    result = self.RemoteSh('grep CHROMEOS_RELEASE_BOARD /etc/lsb-release')
-    # In the case of multiple matches, use the first one.
-    output = result.output.splitlines()
-    if len(output) > 1:
-      logging.debug('More than one board entry found!  Using the first one.')
-
-    return output[0].strip().partition('=')[-1]
 
   def _CheckIfRebooted(self):
     """"Checks whether a remote device has rebooted successfully.
@@ -299,6 +286,22 @@ class RemoteDeviceHandler(object):
     self.device.Cleanup()
 
 
+class ChromiumOSDeviceHandler(object):
+  """A wrapper of ChromiumOSDevice."""
+
+  def __init__(self, *args, **kwargs):
+    """Creates a RemoteDevice object."""
+    self.device = ChromiumOSDevice(*args, **kwargs)
+
+  def __enter__(self):
+    """Return the temporary directory."""
+    return self.device
+
+  def __exit__(self, _type, _value, _traceback):
+    """Cleans up the device."""
+    self.device.Cleanup()
+
+
 class RemoteDevice(object):
   """Handling basic SSH communication with a remote device."""
 
@@ -313,23 +316,38 @@ class RemoteDevice(object):
       work_dir: The default working directory on the device.
     """
     self.hostname = hostname
-    # The tempdir is only for storing the rsa key on the host.
+    # The tempdir is for storing the rsa key and/or some temp files.
     self.tempdir = osutils.TempDir(prefix='ssh-tmp')
     self.agent = self._SetupSSH()
-    self.board = self.agent.LearnBoard()
     self.debug_level = debug_level
     # Setup a working directory on the device.
     self.work_dir = self.DEFAULT_WORK_DIR if work_dir is None else work_dir
     self.RunCommand(['rm', '-r', self.work_dir], error_code_ok=True)
     self.RunCommand(['mkdir', '-p', self.work_dir])
+    self.cleanup_cmds = []
+    self.RegisterCleanupCmd(['rm', '-rf', self.work_dir])
 
   def _SetupSSH(self):
     """Setup the ssh connection with device."""
     return RemoteAccess(self.hostname, self.tempdir.tempdir)
 
+  def RegisterCleanupCmd(self, cmd, **kwargs):
+    """Register a cleanup command to be run on the device in Cleanup().
+
+    Args:
+      cmd: command to run. See RemoteAccess.RemoteSh documentation.
+      **kwargs: keyword arguments to pass along with cmd. See
+        RemoteAccess.RemoteSh documentation.
+    """
+    self.cleanup_cmds.append((cmd, kwargs))
+
   def Cleanup(self):
-    """Clean up the working/temp directories."""
-    self.RunCommand(['rm', '-rf', self.work_dir], error_code_ok=True)
+    """Remove work/temp directories and run all registered cleanup commands."""
+    for cmd, kwargs in self.cleanup_cmds:
+      # We want to run through all cleanup commands even if there are errors.
+      kwargs.setdefault('error_code_ok', True)
+      self.RunCommand(cmd, **kwargs)
+
     self.tempdir.Cleanup()
 
   def CopyToDevice(self, src, dest, **kwargs):
@@ -358,6 +376,104 @@ class RemoteDevice(object):
     self.agent.RemoteReboot()
 
   def RunCommand(self, cmd, **kwargs):
-    """Executes a shell command on the device with output captured."""
+    """Executes a shell command on the device with output captured.
+
+    Args:
+      cmd: command to run. See RemoteAccess.RemoteSh documentation.
+      **kwargs: keyword arguments to pass along with cmd. See
+        RemoteAccess.RemoteSh documentation.
+    """
     kwargs.setdefault('debug_level', self.debug_level)
+
+    # Handle setting environment variables on the device by copying
+    # and sourcing a temporary environment file.
+    extra_env = kwargs.pop('extra_env', None)
+    if extra_env:
+      env_list = ['export %s=%s' % (k, cros_build_lib.ShellQuote(v))
+                  for k, v in extra_env.iteritems()]
+      with tempfile.NamedTemporaryFile(dir=self.tempdir.tempdir,
+                                       prefix='env') as f:
+        osutils.WriteFile(f.name, '\n'.join(env_list))
+        self.CopyToWorkDir(f.name)
+        env_file = os.path.join(self.work_dir, os.path.basename(f.name))
+        cmd = ['source', '%s;' % env_file] + cmd
+
     return self.agent.RemoteSh(cmd, **kwargs)
+
+
+class ChromiumOSDevice(RemoteDevice):
+  """Basic commands to interact with a ChromiumOS device over SSH connection."""
+
+  MAKE_DEV_SSD_BIN = '/usr/share/vboot/bin/make_dev_ssd.sh'
+  MOUNT_ROOTFS_RW_CMD = ['mount', '-o', 'remount,rw', '/']
+  LIST_MOUNTS_CMD = ['cat', '/proc/mounts']
+  GET_BOARD_CMD = ['grep', 'CHROMEOS_RELEASE_BOARD', '/etc/lsb-release']
+
+  def __init__(self, *args, **kwargs):
+    super(ChromiumOSDevice, self).__init__(*args, **kwargs)
+    self.board = self._LearnBoard()
+
+  def _RemountRootfsAsWritable(self):
+    """Attempts to Remount the root partition."""
+    logging.debug("Temporarily remount '/' with rw")
+    self.RunCommand(self.MOUNT_ROOTFS_RW_CMD, error_code_ok=True)
+
+  def _RootfsIsReadOnly(self):
+    """Returns True if rootfs on is mounted as read-only."""
+    r = self.RunCommand(self.LIST_MOUNTS_CMD)
+    for line in r.output.splitlines():
+      if not line:
+        continue
+
+      chunks = line.split()
+      if chunks[1] == '/' and 'ro' in chunks[3].split(','):
+        return True
+
+    return False
+
+  def _DisableRootfsVerification(self):
+    """Disables device rootfs verification."""
+    logging.debug('Disable rootfs verification on device.')
+    self.RunCommand(
+        [self.MAKE_DEV_SSD_BIN, '--remove_rootfs_verification', '--force'],
+        error_code_ok=True)
+    # Need to reboot in order for the action to take effect.
+    # TODO(yjhong): Make sure an update is not pending.
+    self.Reboot()
+
+  def MountRootfsReadWrite(self):
+    """Checks mount types and remounts them as read-write if needed.
+
+    Returns:
+      True if rootfs is mounted as read-write. False otherwise.
+    """
+    if not self._RootfsIsReadOnly():
+      return True
+
+    # If the image on the device is built with rootfs verification
+    # disabled, we can simply remount '/' as read-write.
+    self._RemountRootfsAsWritable()
+
+    if not self._RootfsIsReadOnly():
+      return True
+
+    # If the image is built with rootfs verification, turn off the
+    # rootfs verification. After reboot, the rootfs will be mounted as
+    # read-write (there is no need to remount).
+    self._DisableRootfsVerification()
+
+    return not self._RootfsIsReadOnly()
+
+  def _LearnBoard(self):
+    """Grab the board reported by the remote device.
+
+    In the case of multiple matches, uses the first one.  In the case of no
+    entry, returns an empty string.
+    """
+    result = self.RunCommand(self.GET_BOARD_CMD)
+    # In the case of multiple matches, use the first one.
+    output = result.output.splitlines()
+    if len(output) > 1:
+      logging.debug('More than one board entry found!  Using the first one.')
+
+    return output[0].strip().partition('=')[-1]

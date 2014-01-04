@@ -224,6 +224,7 @@ class DeployChrome(object):
     Args:
       error_code_ok: See remote.RemoteAccess.RemoteSh for details.
     """
+    # TODO: Should migrate to use the remount functions in remote_access.
     result = self.host.RemoteSh(MOUNT_RW_COMMAND if not self.content_shell
                                 else MOUNT_RW_COMMAND_ANDROID,
                                 error_code_ok=error_code_ok)

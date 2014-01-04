@@ -173,7 +173,7 @@ class RunTest(cros_test_lib.MockTempDirTestCase,
                      return_value='xbuddy/local/latest')
     self.PatchObject(dev_server_wrapper, 'DevServerWrapper')
     self.PatchObject(remote_access, 'CHECK_INTERVAL', new=0)
-    self.PatchObject(remote_access.RemoteAccess, 'LearnBoard',
+    self.PatchObject(remote_access.ChromiumOSDevice, '_LearnBoard',
                      return_value='peppy')
 
   def testUpdateAll(self):

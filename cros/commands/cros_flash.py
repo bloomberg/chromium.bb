@@ -187,7 +187,7 @@ following three options.
     in the status.
 
     Args:
-      device: A RemoteDevice object.
+      device: A ChromiumOSDevice object.
       keys: the keys to look for in the status result (defaults to
         ['CURRENT_OP']).
 
@@ -218,7 +218,7 @@ following three options.
     """Update the stateful partition of the device.
 
     Args:
-      device: The RemoteDevice object to update.
+      device: The ChromiumOSDevice object to update.
       payload: The path to the update payload.
       clobber: Clobber stateful partition (defaults to False).
     """
@@ -239,7 +239,7 @@ following three options.
     """Copy devserver package to work directory of device.
 
     Args:
-      device: The RemoteDevice object to copy the package to.
+      device: The ChromiumOSDevice object to copy the package to.
       tempdir: The directory to temporarily store devserver package.
     """
     logging.info('Copying devserver package to device...')
@@ -255,7 +255,7 @@ following three options.
     """Update the rootfs partition of the device.
 
     Args:
-      device: The RemoteDevice object to update.
+      device: The ChromiumOSDevice object to update.
       payload: The path to the update payload.
       tempdir: The directory to store temporary files.
     """
@@ -447,7 +447,7 @@ following three options.
     self._ReadOptions()
 
     try:
-      with remote_access.RemoteDeviceHandler(
+      with remote_access.ChromiumOSDeviceHandler(
           self.options.device, work_dir=self.DEVICE_WORK_DIR) as device:
 
         if not device.board:
