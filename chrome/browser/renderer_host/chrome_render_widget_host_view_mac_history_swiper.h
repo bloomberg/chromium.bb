@@ -115,4 +115,9 @@ enum NavigationDirection {
 
 @end
 
+// Exposed only for unit testing, do not call directly.
+@interface HistorySwiper (PrivateExposedForTesting)
++ (void)resetMagicMouseState;
+@end
+
 #endif // CHROME_BROWSER_RENDERER_HOST_CHROME_RENDER_WIDGET_HOST_VIEW_MAC_HISTORY_SWIPER_

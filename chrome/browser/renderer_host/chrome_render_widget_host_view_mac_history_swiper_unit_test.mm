@@ -22,12 +22,16 @@
         (history_swiper::NavigationDirection)goForward
                                event:(NSEvent*)event;
 - (void)navigateBrowserInDirection:(history_swiper::NavigationDirection)forward;
+- (void)initiateMagicMouseHistorySwipe:(BOOL)isRightScroll
+                                 event:(NSEvent*)event;
 @end
 
 class MacHistorySwiperTest : public CocoaTest {
  public:
   virtual void SetUp() OVERRIDE {
     CocoaTest::SetUp();
+
+    [HistorySwiper resetMagicMouseState];
 
     view_ = [[NSView alloc] init];
     id mockDelegate =
@@ -69,12 +73,21 @@ class MacHistorySwiperTest : public CocoaTest {
     [[[mockHistorySwiper stub] andDo:^(NSInvocation* invocation) {
         navigated_left_ = true;
     }] navigateBrowserInDirection:history_swiper::kBackwards];
+
+    [[[mockHistorySwiper stub] andDo:^(NSInvocation* invocation) {
+        magic_mouse_history_swipe_ = true;
+    }] initiateMagicMouseHistorySwipe:YES event:[OCMArg any]];
+    [[[mockHistorySwiper stub] andDo:^(NSInvocation* invocation) {
+        magic_mouse_history_swipe_ = true;
+    }] initiateMagicMouseHistorySwipe:NO event:[OCMArg any]];
+
     historySwiper_ = [mockHistorySwiper retain];
 
     begin_count_ = 0;
     end_count_ = 0;
     navigated_right_ = false;
     navigated_left_ = false;
+    magic_mouse_history_swipe_ = false;
   }
 
   virtual void TearDown() OVERRIDE {
@@ -95,6 +108,7 @@ class MacHistorySwiperTest : public CocoaTest {
   int end_count_;
   bool navigated_right_;
   bool navigated_left_;
+  bool magic_mouse_history_swipe_;
 };
 
 NSPoint makePoint(CGFloat x, CGFloat y) {
@@ -117,13 +131,25 @@ id mockEventWithPoint(NSPoint point, NSEventType type) {
   return mockEvent;
 }
 
-id scrollWheelEventWithPhase(NSEventPhase phase, NSEventPhase momentumPhase) {
+id scrollWheelEventWithPhase(NSEventPhase phase,
+                             NSEventPhase momentumPhase,
+                             CGFloat scrollingDeltaX,
+                             CGFloat scrollingDeltaY) {
   // The point isn't used, so we pass in bogus data.
   id event = mockEventWithPoint(makePoint(0,0), NSScrollWheel);
   [(NSEvent*)[[event stub] andReturnValue:OCMOCK_VALUE(phase)] phase];
   [(NSEvent*)
       [[event stub] andReturnValue:OCMOCK_VALUE(momentumPhase)] momentumPhase];
+  [(NSEvent*)[[event stub]
+       andReturnValue:OCMOCK_VALUE(scrollingDeltaX)] scrollingDeltaX];
+  [(NSEvent*)[[event stub]
+       andReturnValue:OCMOCK_VALUE(scrollingDeltaY)] scrollingDeltaY];
   return event;
+}
+
+id scrollWheelEventWithPhase(NSEventPhase phase,
+                             NSEventPhase momentumPhase) {
+  return scrollWheelEventWithPhase(phase, momentumPhase, 0, 0);
 }
 
 id scrollWheelEventWithPhase(NSEventPhase phase) {
@@ -311,6 +337,33 @@ TEST_F(MacHistorySwiperTest, MomentumSwipeLeft) {
   EXPECT_EQ(end_count_, 1);
   EXPECT_FALSE(navigated_right_);
   EXPECT_TRUE(navigated_left_);
+}
+
+// Momentum scroll events for magic mouse should not attempt to trigger the
+// `trackSwipeEventWithOptions:` api, as that throws an exception.
+TEST_F(MacHistorySwiperTest, MagicMouseMomentumSwipe) {
+  // These tests require 10.7+ APIs.
+  if (![NSEvent
+          respondsToSelector:@selector(isSwipeTrackingFromScrollEventsEnabled)])
+    return;
+
+  // Magic mouse events don't generate 'touches*' callbacks.
+  NSEvent* event = mockEventWithPoint(makePoint(0.5, 0.5), NSEventTypeGesture);
+  [historySwiper_ beginGestureWithEvent:event];
+  NSEvent* scrollEvent = scrollWheelEventWithPhase(NSEventPhaseBegan);
+  [historySwiper_ handleEvent:scrollEvent];
+
+  // Callbacks from blink to set the relevant state for history swiping.
+  [historySwiper_ gotUnhandledWheelEvent];
+  [historySwiper_ scrollOffsetPinnedToLeft:YES toRight:YES];
+  [historySwiper_ setHasHorizontalScrollbar:NO];
+
+  // Send a momentum move gesture.
+  scrollEvent =
+      scrollWheelEventWithPhase(NSEventPhaseNone, NSEventPhaseChanged, 5.0, 0);
+  [historySwiper_ handleEvent:scrollEvent];
+
+  EXPECT_FALSE(magic_mouse_history_swipe_);
 }
 
 // User starts a swipe but doesn't move.

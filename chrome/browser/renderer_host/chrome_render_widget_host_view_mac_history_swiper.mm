@@ -295,6 +295,10 @@ static BOOL forceMagicMouse = NO;
 // We use an entirely different set of logic for magic mouse swipe events,
 // since we do not get NSTouch callbacks.
 - (BOOL)maybeHandleMagicMouseHistorySwiping:(NSEvent*)theEvent {
+  // The 'trackSwipeEventWithOptions:' api doesn't handle momentum events.
+  if ([theEvent phase] == NSEventPhaseNone)
+    return NO;
+
   mouseScrollDelta_.width += [theEvent scrollingDeltaX];
   mouseScrollDelta_.height += [theEvent scrollingDeltaY];
 
@@ -319,6 +323,12 @@ static BOOL forceMagicMouse = NO;
       return NO;
   }
 
+  [self initiateMagicMouseHistorySwipe:isRightScroll event:theEvent];
+  return YES;
+}
+
+- (void)initiateMagicMouseHistorySwipe:(BOOL)isRightScroll
+                                 event:(NSEvent*)event {
   // Released by the tracking handler once the gesture is complete.
   HistoryOverlayController* historyOverlay = [[HistoryOverlayController alloc]
       initForMode:isRightScroll ? kHistoryOverlayModeForward
@@ -348,7 +358,7 @@ static BOOL forceMagicMouse = NO;
   // direction after the initial swipe doesn't cause the shield to move
   // in the wrong direction.
   forceMagicMouse = YES;
-  [theEvent trackSwipeEventWithOptions:NSEventSwipeTrackingLockDirection
+  [event trackSwipeEventWithOptions:NSEventSwipeTrackingLockDirection
     dampenAmountThresholdMin:-1
     max:1
     usingHandler:^(CGFloat gestureAmount,
@@ -386,7 +396,6 @@ static BOOL forceMagicMouse = NO;
         if (isComplete)
           [historyOverlay release];
   }];
-  return YES;
 }
 
 // Checks if |theEvent| should trigger history swiping, and if so, does
@@ -505,5 +514,10 @@ static BOOL forceMagicMouse = NO;
   [self beginHistorySwipeInDirection:direction event:theEvent];
   return YES;
 }
+@end
 
+@implementation HistorySwiper (PrivateExposedForTesting)
++ (void)resetMagicMouseState {
+  forceMagicMouse = NO;
+}
 @end
