@@ -81,6 +81,7 @@ WalletClient::ErrorType StringToErrorType(const std::string& error_type) {
   if (LowerCaseEqualsASCII(trimmed, "unsupported_api_version"))
     return WalletClient::UNSUPPORTED_API_VERSION;
 
+  DVLOG(1) << "Unknown wallet error string: \"" << error_type << '"';
   return WalletClient::UNKNOWN_ERROR;
 }
 
