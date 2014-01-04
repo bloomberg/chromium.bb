@@ -810,11 +810,7 @@ void NaClProcessHost::OnPpapiChannelCreated(
     args.permissions = permissions_;
     CommandLine* cmdline = CommandLine::ForCurrentProcess();
     DCHECK(cmdline);
-    std::string flag_whitelist[] = {
-      switches::kPpapiKeepAliveThrottle,
-      switches::kV,
-      switches::kVModule,
-    };
+    std::string flag_whitelist[] = {switches::kV, switches::kVModule};
     for (size_t i = 0; i < arraysize(flag_whitelist); ++i) {
       std::string value = cmdline->GetSwitchValueASCII(flag_whitelist[i]);
       if (!value.empty()) {
