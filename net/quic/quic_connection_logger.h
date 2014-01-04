@@ -72,6 +72,10 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Number of times that the current received packet sequence number is
   // smaller than the last received packet sequence number.
   size_t out_of_order_recieved_packet_count_;
+  // Number of times a truncated ACK frame was sent.
+  size_t num_truncated_acks_sent_;
+  // Number of times a truncated ACK frame was received.
+  size_t num_truncated_acks_received_;
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionLogger);
 };
 

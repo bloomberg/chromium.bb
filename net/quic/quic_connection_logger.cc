@@ -96,6 +96,7 @@ base::Value* NetLogQuicAckFrameCallback(const QuicAckFrame* frame,
   received_info->SetString(
       "largest_observed",
       base::Uint64ToString(frame->received_info.largest_observed));
+  received_info->SetBoolean("truncated", frame->received_info.is_truncated);
   base::ListValue* missing = new base::ListValue();
   received_info->Set("missing_packets", missing);
   const SequenceNumberSet& missing_packets =
@@ -205,12 +206,18 @@ QuicConnectionLogger::QuicConnectionLogger(const BoundNetLog& net_log)
       last_received_packet_sequence_number_(0),
       largest_received_packet_sequence_number_(0),
       largest_received_missing_packet_sequence_number_(0),
-      out_of_order_recieved_packet_count_(0) {
+      out_of_order_recieved_packet_count_(0),
+      num_truncated_acks_sent_(0),
+      num_truncated_acks_received_(0) {
 }
 
 QuicConnectionLogger::~QuicConnectionLogger() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.OutOfOrderPacketsReceived",
                        out_of_order_recieved_packet_count_);
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksSent",
+                       num_truncated_acks_sent_);
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.TruncatedAcksReceived",
+                       num_truncated_acks_received_);
 }
 
 void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
@@ -226,6 +233,8 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const QuicFrame& frame) {
       net_log_.AddEvent(
           NetLog::TYPE_QUIC_SESSION_ACK_FRAME_SENT,
           base::Bind(&NetLogQuicAckFrameCallback, frame.ack_frame));
+      if (frame.ack_frame->received_info.is_truncated)
+        ++num_truncated_acks_sent_;
       break;
     case CONGESTION_FEEDBACK_FRAME:
       net_log_.AddEvent(
@@ -323,6 +332,9 @@ void QuicConnectionLogger::OnAckFrame(const QuicAckFrame& frame) {
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_ACK_FRAME_RECEIVED,
       base::Bind(&NetLogQuicAckFrameCallback, &frame));
+
+  if (frame.received_info.is_truncated)
+    ++num_truncated_acks_received_;
 
   if (frame.received_info.missing_packets.empty())
     return;

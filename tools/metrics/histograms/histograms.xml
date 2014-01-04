@@ -9393,6 +9393,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.TruncatedAcksReceived">
+  <summary>The number of truncated ACK frames received.</summary>
+</histogram>
+
+<histogram name="Net.QuicSession.TruncatedAcksSent">
+  <summary>The number of truncated ACK frames sent.</summary>
+</histogram>
+
 <histogram name="Net.QuicSession.WriteError" enum="NetErrorCodes">
   <summary>
     The network error code returned when attempting to write to a QUIC
