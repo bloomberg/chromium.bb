@@ -92,8 +92,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
 }
 
 // http://crbug.com/177163
-// http://crbug.com/326328
-#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_MACOSX)
+#if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd
