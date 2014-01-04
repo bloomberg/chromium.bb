@@ -60,6 +60,7 @@ enum CastLoggingEvent {
   kPacketRetransmited,
   // Receive-side packet events.
   kPacketReceived,
+  kDuplicatePacketReceived,
 
   kNumOfLoggingEvents,
 };

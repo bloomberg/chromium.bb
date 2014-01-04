@@ -41,8 +41,6 @@ void FrameBuffer::InsertPacket(const uint8* payload_data,
 
   // Insert every packet only once.
   if (packets_.find(rtp_header.packet_id) != packets_.end()) {
-    VLOG(3) << "Packet already received, ignored: frame "
-            << frame_id_ << ", packet " << rtp_header.packet_id;
     return;
   }
 

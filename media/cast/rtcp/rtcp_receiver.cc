@@ -24,6 +24,8 @@ media::cast::CastLoggingEvent TranslateToLogEventFromWireFormat(uint8 event) {
       return media::cast::kVideoRenderDelay;
     case 6:
       return media::cast::kPacketReceived;
+    case 7:
+      return media::cast::kDuplicatePacketReceived;
     default:
       // If the sender adds new log messages we will end up here until we add
       // the new messages in the receiver.

@@ -71,6 +71,8 @@ std::string CastLoggingToString(CastLoggingEvent event) {
       return "PacketRetransmited";
     case(kPacketReceived):
       return "PacketReceived";
+    case(kDuplicatePacketReceived):
+      return "DuplicatePacketReceived";
     default:
       NOTREACHED();
       return "";

@@ -117,9 +117,8 @@ void AudioDecoder::IncomingParsedRtpPacket(const uint8* payload_data,
   uint32 last_played_out_timestamp = last_played_out_timestamp_;
   lock_.Release();
 
-  bool complete = false;
-  if (!frame_id_map_.InsertPacket(rtp_header, &complete)) return;
-  if (!complete) return;
+  PacketType packet_type = frame_id_map_.InsertPacket(rtp_header);
+  if (packet_type != kNewPacketCompletingFrame) return;
 
   cast_message_builder_.CompleteFrameReceived(rtp_header.frame_id,
                                               rtp_header.is_key_frame);

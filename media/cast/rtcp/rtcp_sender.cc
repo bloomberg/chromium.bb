@@ -50,6 +50,9 @@ uint16 MergeEventTypeAndTimestampForWireFormat(
     case media::cast::kPacketReceived:
       event_type = 6;
       break;
+    case media::cast::kDuplicatePacketReceived:
+      event_type = 7;
+      break;
     default:
       NOTREACHED();
   }
@@ -637,6 +640,7 @@ void RtcpSender::BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
           big_endian_writer.WriteU16(event_type_and_timestamp_delta);
           break;
         case kPacketReceived:
+        case kDuplicatePacketReceived:
           big_endian_writer.WriteU16(event_message.packet_id);
           big_endian_writer.WriteU16(event_type_and_timestamp_delta);
           break;

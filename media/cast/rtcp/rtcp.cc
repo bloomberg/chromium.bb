@@ -99,8 +99,9 @@ class LocalRtcpReceiverFeedback : public RtcpReceiverFeedback {
       for (; event_it != it->event_log_messages_.end(); ++event_it) {
         switch (event_it->type) {
           case kPacketReceived:
+          case kDuplicatePacketReceived:
             cast_environment_->Logging()->InsertPacketEvent(
-                event_it->event_timestamp, kPacketReceived, rtp_timestamp,
+                event_it->event_timestamp, event_it->type, rtp_timestamp,
                 kFrameIdUnknown, event_it->packet_id, 0, 0);
             break;
           case kAckSent:

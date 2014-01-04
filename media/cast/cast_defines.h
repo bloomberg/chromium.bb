@@ -41,6 +41,13 @@ enum DefaultSettings {
   kDefaultRtpMaxDelayMs = 100,
 };
 
+enum PacketType {
+  kNewPacket,
+  kNewPacketCompletingFrame,
+  kDuplicatePacket,
+  kTooOldPacket,
+};
+
 const uint16 kRtcpCastAllPacketsLost = 0xffff;
 
 const size_t kMinLengthOfRtcp = 8;

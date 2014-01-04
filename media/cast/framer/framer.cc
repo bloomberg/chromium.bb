@@ -27,9 +27,20 @@ Framer::~Framer() {}
 
 bool Framer::InsertPacket(const uint8* payload_data,
                           size_t payload_size,
-                          const RtpCastHeader& rtp_header) {
-  bool complete = false;
-  if (!frame_id_map_.InsertPacket(rtp_header, &complete)) return false;
+                          const RtpCastHeader& rtp_header,
+                          bool* duplicate) {
+  *duplicate = false;
+  PacketType packet_type = frame_id_map_.InsertPacket(rtp_header);
+  if (packet_type == kTooOldPacket) {
+    return false;
+  }
+  if (packet_type == kDuplicatePacket) {
+    VLOG(3) << "Packet already received, ignored: frame "
+            << static_cast<int>(rtp_header.frame_id) << ", packet "
+            << rtp_header.packet_id;
+    *duplicate = true;
+    return false;
+  }
 
   // Does this packet belong to a new frame?
   FrameList::iterator it = frames_.find(rtp_header.frame_id);
@@ -43,6 +54,7 @@ bool Framer::InsertPacket(const uint8* payload_data,
     it->second->InsertPacket(payload_data, payload_size, rtp_header);
   }
 
+  bool complete = (packet_type == kNewPacketCompletingFrame);
   if (complete) {
     // ACK as soon as possible.
     VLOG(1) << "Complete frame " << static_cast<int>(rtp_header.frame_id);

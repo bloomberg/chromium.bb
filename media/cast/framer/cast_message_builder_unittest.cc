@@ -116,9 +116,8 @@ class CastMessageBuilderTest : public ::testing::Test {
   }
 
   void InsertPacket() {
-    bool complete = false;
-    frame_id_map_.InsertPacket(rtp_header_, &complete);
-    if (complete) {
+    PacketType packet_type = frame_id_map_.InsertPacket(rtp_header_);
+    if (packet_type == kNewPacketCompletingFrame) {
       cast_msg_builder_->CompleteFrameReceived(rtp_header_.frame_id,
                                                rtp_header_.is_key_frame);
     }

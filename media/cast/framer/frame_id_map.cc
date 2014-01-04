@@ -18,23 +18,24 @@ FrameInfo::FrameInfo(uint32 frame_id,
       frame_id_(frame_id),
       referenced_frame_id_(referenced_frame_id),
       max_received_packet_id_(0) {
-  if (max_packet_id > 0) {
-    // Create the set with all packets missing.
-    for (uint16 i = 0; i <= max_packet_id; i++) {
-      missing_packets_.insert(i);
-    }
+  // Create the set with all packets missing.
+  for (uint16 i = 0; i <= max_packet_id; i++) {
+    missing_packets_.insert(i);
   }
 }
 
 FrameInfo::~FrameInfo() {}
 
-bool FrameInfo::InsertPacket(uint16 packet_id) {
+PacketType FrameInfo::InsertPacket(uint16 packet_id) {
+  if (missing_packets_.find(packet_id) == missing_packets_.end()) {
+    return kDuplicatePacket;
+  }
   // Update the last received packet id.
   if (IsNewerPacketId(packet_id, max_received_packet_id_)) {
     max_received_packet_id_ = packet_id;
   }
   missing_packets_.erase(packet_id);
-  return missing_packets_.empty();
+  return missing_packets_.empty() ? kNewPacketCompletingFrame : kNewPacket;
 }
 
 bool FrameInfo::Complete() const {
@@ -62,7 +63,7 @@ FrameIdMap::FrameIdMap()
 
 FrameIdMap::~FrameIdMap() {}
 
-bool FrameIdMap::InsertPacket(const RtpCastHeader& rtp_header, bool* complete) {
+PacketType FrameIdMap::InsertPacket(const RtpCastHeader& rtp_header) {
   uint32 frame_id = rtp_header.frame_id;
   uint32 reference_frame_id;
   if (rtp_header.is_reference) {
@@ -81,7 +82,7 @@ bool FrameIdMap::InsertPacket(const RtpCastHeader& rtp_header, bool* complete) {
           << " max packet:" << static_cast<int>(rtp_header.max_packet_id);
 
   if (IsOlderFrameId(frame_id, last_released_frame_) && !waiting_for_key_) {
-    return false;
+    return kTooOldPacket;
   }
 
   // Update the last received frame id.
@@ -91,6 +92,7 @@ bool FrameIdMap::InsertPacket(const RtpCastHeader& rtp_header, bool* complete) {
 
   // Does this packet belong to a new frame?
   FrameMap::iterator it = frame_map_.find(frame_id);
+  PacketType packet_type;
   if (it == frame_map_.end()) {
     // New frame.
     linked_ptr<FrameInfo> frame_info(new FrameInfo(frame_id,
@@ -100,12 +102,12 @@ bool FrameIdMap::InsertPacket(const RtpCastHeader& rtp_header, bool* complete) {
     std::pair<FrameMap::iterator, bool> retval =
         frame_map_.insert(std::make_pair(frame_id, frame_info));
 
-    *complete = retval.first->second->InsertPacket(rtp_header.packet_id);
+    packet_type = retval.first->second->InsertPacket(rtp_header.packet_id);
   } else {
     // Insert packet to existing frame.
-    *complete = it->second->InsertPacket(rtp_header.packet_id);
+    packet_type = it->second->InsertPacket(rtp_header.packet_id);
   }
-  return true;
+  return packet_type;
 }
 
 void FrameIdMap::RemoveOldFrames(uint32 frame_id) {

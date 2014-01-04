@@ -406,8 +406,18 @@ void VideoReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
       rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
       rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
 
-  bool complete = framer_->InsertPacket(payload_data, payload_size, rtp_header);
+  bool duplicate = false;
+  bool complete = framer_->InsertPacket(payload_data, payload_size, rtp_header,
+                                        &duplicate);
 
+  if (duplicate) {
+    cast_environment_->Logging()->InsertPacketEvent(now,
+        kDuplicatePacketReceived,
+        rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
+        rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
+    // Duplicate packets are ignored.
+    return;
+  }
   if (!complete) return;  // Video frame not complete; wait for more packets.
   if (queued_encoded_callbacks_.empty()) return;  // No pending callback.
 

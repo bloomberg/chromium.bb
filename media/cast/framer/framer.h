@@ -33,10 +33,12 @@ class Framer {
   ~Framer();
 
   // Return true when receiving the last packet in a frame, creating a
-  // complete frame.
+  // complete frame. If a duplicate packet for an already complete frame is
+  // received, the function returns false but sets |duplicate| to true.
   bool InsertPacket(const uint8* payload_data,
                     size_t payload_size,
-                    const RtpCastHeader& rtp_header);
+                    const RtpCastHeader& rtp_header,
+                    bool* duplicate);
 
   // Extracts a complete encoded frame - will only return a complete continuous
   // frame.

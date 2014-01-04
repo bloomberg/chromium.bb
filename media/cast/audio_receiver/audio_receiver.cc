@@ -203,8 +203,17 @@ void AudioReceiver::IncomingParsedRtpPacket(const uint8* payload_data,
   DCHECK(audio_buffer_) << "Invalid internal state";
   DCHECK(!audio_decoder_) << "Invalid internal state";
 
+  bool duplicate = false;
   bool complete = audio_buffer_->InsertPacket(payload_data, payload_size,
-                                              rtp_header);
+                                              rtp_header, &duplicate);
+  if (duplicate) {
+    cast_environment_->Logging()->InsertPacketEvent(now,
+        kDuplicatePacketReceived,
+        rtp_header.webrtc.header.timestamp, rtp_header.frame_id,
+        rtp_header.packet_id, rtp_header.max_packet_id, payload_size);
+    // Duplicate packets are ignored.
+    return;
+  }
   if (!complete) return;  // Audio frame not complete; wait for more packets.
   if (queued_encoded_callbacks_.empty()) return;
   AudioFrameEncodedCallback callback = queued_encoded_callbacks_.front();
