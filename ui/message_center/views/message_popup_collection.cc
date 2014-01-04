@@ -140,24 +140,6 @@ void MessagePopupCollection::ExpandNotification(
   message_center_->ExpandNotification(notification_id);
 }
 
-void MessagePopupCollection::GroupBodyClicked(
-    const std::string& last_notification_id) {
-  // No group views in popup collection.
-  NOTREACHED();
-}
-
-// When clicked on the "N more" button, perform some reasonable action.
-// TODO(dimich): find out what the reasonable action could be.
-void MessagePopupCollection::ExpandGroup(const NotifierId& notifier_id) {
-  // No group views in popup collection.
-  NOTREACHED();
-}
-
-void MessagePopupCollection::RemoveGroup(const NotifierId& notifier_id) {
-  // No group views in popup collection.
-  NOTREACHED();
-}
-
 void MessagePopupCollection::MarkAllPopupsShown() {
   std::set<std::string> closed_ids = CloseAllWidgets();
   for (std::set<std::string>::iterator iter = closed_ids.begin();

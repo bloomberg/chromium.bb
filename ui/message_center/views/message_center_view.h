@@ -25,7 +25,6 @@ class Button;
 
 namespace message_center {
 
-class GroupView;
 class MessageCenter;
 class MessageCenterBubble;
 class NotificationCenterButton;
@@ -90,10 +89,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) OVERRIDE;
   virtual void ExpandNotification(const std::string& notification_id) OVERRIDE;
-  virtual void GroupBodyClicked(const std::string& last_notification_id)
-      OVERRIDE;
-  virtual void ExpandGroup(const NotifierId& notifier_id) OVERRIDE;
-  virtual void RemoveGroup(const NotifierId& notifier_id) OVERRIDE;
 
   // Overridden from gfx::AnimationDelegate:
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE;
@@ -104,11 +99,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   friend class MessageCenterViewTest;
 
   void AddMessageViewAt(MessageView* view, int index);
-  void AddGroupPlaceholder(const NotifierId& group_id,
-                           const Notification& notification,
-                           const gfx::ImageSkia& group_icon,
-                           int group_size,
-                           int index);
   void AddNotificationAt(const Notification& notification, int index);
   void NotificationsChanged();
   void SetNotificationViewForTest(MessageView* view);
@@ -120,11 +110,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   // currently displayed in MessageCenter.
   typedef std::map<std::string, NotificationView*> NotificationViewsMap;
   NotificationViewsMap notification_views_;  // Weak.
-
-  // List of all GroupViews. GroupView is responsible for multiple Notifications
-  // from the same source.
-  typedef std::list<GroupView*> GroupViews;
-  GroupViews group_views_;  // Weak.
 
   // Child views.
   views::ScrollView* scroller_;

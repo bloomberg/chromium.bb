@@ -105,10 +105,6 @@ class MessageCenterViewTest : public testing::Test,
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) OVERRIDE;
   virtual void ExpandNotification(const std::string& notification_id) OVERRIDE;
-  virtual void GroupBodyClicked(const std::string& last_notification_id)
-      OVERRIDE;
-  virtual void ExpandGroup(const NotifierId& notifier_id) OVERRIDE;
-  virtual void RemoveGroup(const NotifierId& notifier_id) OVERRIDE;
 
   // Overridden from MockNotificationView::Test
   virtual void RegisterCall(CallType type) OVERRIDE;
@@ -213,22 +209,6 @@ void MessageCenterViewTest::ClickOnNotificationButton(
 
 void MessageCenterViewTest::ExpandNotification(
     const std::string& notification_id) {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
-}
-
-void MessageCenterViewTest::GroupBodyClicked(
-    const std::string& last_notification_id) {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
-}
-
-void MessageCenterViewTest::ExpandGroup(const NotifierId& notifier_id) {
-  // For this test, this method should not be invoked.
-  NOTREACHED();
-}
-
-void MessageCenterViewTest::RemoveGroup(const NotifierId& notifier_id) {
   // For this test, this method should not be invoked.
   NOTREACHED();
 }

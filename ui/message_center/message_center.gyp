@@ -73,8 +73,6 @@
         'notifier_settings.h',
         'views/bounded_label.cc',
         'views/bounded_label.h',
-        'views/group_view.cc',
-        'views/group_view.h',
         'views/constants.h',
         'views/message_bubble_base.cc',
         'views/message_bubble_base.h',

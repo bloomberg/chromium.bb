@@ -30,9 +30,6 @@ class MessageCenterController {
   virtual void ClickOnNotificationButton(const std::string& notification_id,
                                          int button_index) = 0;
   virtual void ExpandNotification(const std::string& notification_id) = 0;
-  virtual void GroupBodyClicked(const std::string& last_notification_id) = 0;
-  virtual void ExpandGroup(const NotifierId& notifier_id) = 0;
-  virtual void RemoveGroup(const NotifierId& notifier_id) = 0;
 };
 
 }  // namespace message_center
