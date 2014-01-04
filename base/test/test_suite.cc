@@ -226,6 +226,19 @@ int TestSuite::Run() {
 
 // static
 void TestSuite::UnitTestAssertHandler(const std::string& str) {
+#if defined(OS_ANDROID)
+  // Correlating test stdio with logcat can be difficult, so we emit this
+  // helpful little hint about what was running.  Only do this for Android
+  // because other platforms don't separate out the relevant logs in the same
+  // way.
+  const ::testing::TestInfo* const test_info =
+      ::testing::UnitTest::GetInstance()->current_test_info();
+  if (test_info) {
+    LOG(ERROR) << "Currently running: " << test_info->test_case_name() << "."
+               << test_info->name();
+    fflush(stderr);
+  }
+#endif  // defined(OS_ANDROID)
   RAW_LOG(FATAL, str.c_str());
 }
 
