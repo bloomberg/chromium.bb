@@ -29,6 +29,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/autofill/content/browser/wallet/mock_wallet_client.h"
+#include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "components/autofill/content/browser/wallet/wallet_test_util.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -130,10 +131,6 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     return GURL(chrome::kChromeUIVersionURL);
   }
 
-  GURL SignInContinueUrl() const {
-    return GURL(content::kAboutBlankURL);
-  }
-
   virtual void ViewClosed() OVERRIDE {
     message_loop_runner_->Quit();
     AutofillDialogControllerImpl::ViewClosed();
@@ -221,7 +218,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   virtual bool IsSignInContinueUrl(const GURL& url, size_t* user_index) const
       OVERRIDE {
     *user_index = sign_in_user_index_;
-    return url == SignInContinueUrl();
+    return url == wallet::GetSignInContinueUrl();
   }
 
  private:
@@ -1086,7 +1083,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
   sign_in_page_observer.Wait();
 
   NavEntryCommittedObserver continue_page_observer(
-      controller()->SignInContinueUrl(),
+      wallet::GetSignInContinueUrl(),
       content::NotificationService::AllSources());
 
   EXPECT_EQ(sign_in_contents->GetURL(), controller()->SignInUrl());
@@ -1095,11 +1092,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
       controller()->AccountChooserModelForTesting();
   EXPECT_FALSE(account_chooser_model->WalletIsSelected());
 
-  sign_in_contents->GetController().LoadURL(
-      controller()->SignInContinueUrl(),
-      content::Referrer(),
-      content::PAGE_TRANSITION_FORM_SUBMIT,
-      std::string());
+  content::OpenURLParams params(wallet::GetSignInContinueUrl(),
+                                content::Referrer(),
+                                CURRENT_TAB,
+                                content::PAGE_TRANSITION_LINK,
+                                true);
+  sign_in_contents->GetDelegate()->OpenURLFromTab(sign_in_contents, params);
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
   continue_page_observer.Wait();
@@ -1146,7 +1144,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
   sign_in_page_observer.Wait();
 
   NavEntryCommittedObserver continue_page_observer(
-      controller()->SignInContinueUrl(),
+      wallet::GetSignInContinueUrl(),
       content::NotificationService::AllSources());
 
   EXPECT_EQ(sign_in_contents->GetURL(), controller()->SignInUrl());
@@ -1155,11 +1153,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddAccount) {
 
   // User signs into new account, account 3.
   controller()->set_sign_in_user_index(3U);
-  sign_in_contents->GetController().LoadURL(
-      controller()->SignInContinueUrl(),
-      content::Referrer(),
-      content::PAGE_TRANSITION_FORM_SUBMIT,
-      std::string());
+  content::OpenURLParams params(wallet::GetSignInContinueUrl(),
+                                content::Referrer(),
+                                CURRENT_TAB,
+                                content::PAGE_TRANSITION_LINK,
+                                true);
+  sign_in_contents->GetDelegate()->OpenURLFromTab(sign_in_contents, params);
 
   EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
   continue_page_observer.Wait();

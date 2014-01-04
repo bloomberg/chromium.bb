@@ -21,8 +21,7 @@ using content::OpenURLParams;
 
 // Signals if |params| require opening inside the current WebContents.
 bool IsInPageTransition(const OpenURLParams& params) {
-  return params.transition == content::PAGE_TRANSITION_LINK &&
-      params.disposition == CURRENT_TAB;
+  return params.disposition == CURRENT_TAB;
 }
 
 // Indicates if the open action specified by |params| should happen in the

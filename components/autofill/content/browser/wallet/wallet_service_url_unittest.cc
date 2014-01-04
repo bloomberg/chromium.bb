@@ -98,6 +98,8 @@ TEST(WalletServiceUrl, IsUsingProd) {
 }
 
 TEST(WalletServiceUrl, IsSignInContinueUrl) {
+  EXPECT_TRUE(GetSignInContinueUrl().SchemeIsSecure());
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
 
@@ -129,6 +131,9 @@ TEST(WalletServiceUrl, IsSignInContinueUrl) {
 
 TEST(WalletServiceUrl, IsSignInRelatedUrl) {
   EXPECT_TRUE(IsSignInRelatedUrl(GetSignInUrl()));
+  EXPECT_TRUE(IsSignInRelatedUrl(GURL("https://accounts.youtube.com")));
+  EXPECT_TRUE(IsSignInRelatedUrl(GURL("https://accounts.youtube.com/")));
+  EXPECT_TRUE(IsSignInRelatedUrl(GURL("https://accounts.google.com")));
   EXPECT_FALSE(IsSignInRelatedUrl(GURL("http://google.com")));
 }
 
