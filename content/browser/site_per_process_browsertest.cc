@@ -526,9 +526,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FrameTreeAfterCrash) {
                 test_server()->GetURL("files/frame_tree/top.html"));
 
   // Crash the renderer so that it doesn't send any FrameDetached messages.
-  WindowedNotificationObserver crash_observer(
-      NOTIFICATION_RENDERER_PROCESS_CLOSED,
-      NotificationService::AllSources());
+  RenderProcessHostWatcher crash_observer(
+      shell()->web_contents(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   NavigateToURL(shell(), GURL(kChromeUICrashURL));
   crash_observer.Wait();
 
