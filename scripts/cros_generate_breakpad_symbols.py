@@ -188,7 +188,7 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
   if breakpad_dir is None:
     breakpad_dir = FindBreakpadDir(board)
   if sysroot is None:
-    sysroot = os.path.join('/build', board)
+    sysroot = cros_build_lib.GetSysroot(board=board)
   if clean_breakpad:
     cros_build_lib.Info('cleaning out %s first', breakpad_dir)
     osutils.RmDir(breakpad_dir, ignore_missing=True, sudo=True)
@@ -285,7 +285,8 @@ def GenerateBreakpadSymbols(board, breakpad_dir=None, strip_cfi=False,
 
 def FindDebugDir(board):
   """Given a |board|, return the path to the split debug dir for it"""
-  return os.path.join('/build', board, 'usr', 'lib', 'debug')
+  sysroot = cros_build_lib.GetSysroot(board=board)
+  return os.path.join(sysroot, 'usr', 'lib', 'debug')
 
 
 def FindBreakpadDir(board):

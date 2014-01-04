@@ -1812,7 +1812,7 @@ class Upgrader(object):
 
 def _BoardIsSetUp(board):
   """Return true if |board| has been setup."""
-  return os.path.isdir('/build/%s' % board)
+  return os.path.isdir(cros_build_lib.GetSysroot(board=board))
 
 def _CreateOptParser():
   """Create the optparser.parser object for command-line args."""

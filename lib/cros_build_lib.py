@@ -1476,3 +1476,8 @@ def GetIPv4Address(dev=None, global_ip=True):
     return matches[0]
   Warning('Failed to find ip address in %r', result.output)
   return None
+
+
+def GetSysroot(board=None):
+  """Returns the sysroot for |board| or '/' if |board| is None."""
+  return '/' if board is None else os.path.join('/build', board)

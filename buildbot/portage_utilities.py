@@ -838,14 +838,14 @@ def BestVisible(atom, board=None, buildroot=constants.SOURCE_ROOT):
     A CPV object.
   """
   portageq = 'portageq' if board is None else 'portageq-%s' % board
-  root = '/' if board is None else '/build/%s' % board
+  root = cros_build_lib.GetSysroot(board=board)
   cmd = [portageq, 'best_visible', root, 'ebuild', atom]
   result = cros_build_lib.RunCommandCaptureOutput(
       cmd, cwd=buildroot, enter_chroot=True, debug_level=logging.DEBUG)
   return SplitCPV(result.output.strip())
 
 
-def IsPackageInstalled(package, sysroot=constants.SOURCE_ROOT):
+def IsPackageInstalled(package, sysroot='/'):
   """Return whether a portage package is in a given portage-managed root.
 
   Args:

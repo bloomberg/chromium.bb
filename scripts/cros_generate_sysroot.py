@@ -77,7 +77,7 @@ class GenerateSysroot(object):
 
   def _InstallBuildDependencies(self):
     # Calculate buildtime deps that are not runtime deps.
-    raw_sysroot = '/build/%s' % (self.options.board,)
+    raw_sysroot = cros_build_lib.GetSysroot(board=self.options.board)
     cmd = ['qdepends', '-q', '-C', self.options.package]
     output = cros_build_lib.RunCommandCaptureOutput(
         cmd, extra_env={'ROOT': raw_sysroot}).output

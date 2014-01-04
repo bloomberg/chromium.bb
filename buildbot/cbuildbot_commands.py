@@ -738,8 +738,8 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
   cmd = ['tar', 'xf', test_tarball, '--directory=%s' % temp_dir, '--wildcards']
   cros_build_lib.RunCommand(cmd + ['*.dmp', '*asan_log.*'],
                             debug_level=logging.DEBUG, error_code_ok=True)
-  symbol_dir = os.path.join('/build', board, 'usr', 'lib', 'debug', 'breakpad')
-  board_path = os.path.join('/build', board)
+  board_path = cros_build_lib.GetSysroot(board=board)
+  symbol_dir = os.path.join(board_path, 'usr', 'lib', 'debug', 'breakpad')
   for curr_dir, _subdirs, files in os.walk(temp_dir):
     for curr_file in files:
       full_file_path = os.path.join(curr_dir, curr_file)

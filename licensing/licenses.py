@@ -76,7 +76,7 @@ The detailed process is listed below.
   "Edit issue".  (A quick reference:
   http://www.chromium.org/developers/quick-reference)
 
-* After receiving LGTMs, commit your change with 'svn commit'.
+* After receiving LGTMs, commit your change with 'gcl commit <change_name>'.
 
 If you don't get this in before the freeze window, it'll need to be merged into
 the branch being released, which is done by adding a Merge-Requested label to
@@ -703,8 +703,9 @@ being scraped currently).""",
     logging.debug("%s -> %s", " ".join(args), path)
     if not path:
       raise AssertionError('GetEbuildPath for %s failed.\n'
-                           'Is your tree clean? Delete /build/%s and rebuild' %
-                           (self.name, self.board))
+                           'Is your tree clean? Delete %s and rebuild' %
+                           (self.name,
+                            cros_build_lib.GetSysroot(board=self.board)))
 
     if not os.access(path, os.F_OK):
       raise AssertionError("Can't access %s", path)
@@ -712,8 +713,9 @@ being scraped currently).""",
     self.ebuild_dir = os.path.dirname(path)
     self.ebuild_path = path
 
-    args = ['portageq-%s' % self.board, 'metadata', '/build/%s' % self.board,
-            'ebuild', self.fullnamerev, 'HOMEPAGE', 'LICENSE', 'DESCRIPTION']
+    args = ['portageq-%s' % self.board, 'metadata',
+            cros_build_lib.GetSysroot(board=self.board), 'ebuild',
+            self.fullnamerev, 'HOMEPAGE', 'LICENSE', 'DESCRIPTION']
     lines = cros_build_lib.RunCommand(args, print_cmd=debug,
                                       redirect_stdout=True).output.splitlines()
     # Runs:
@@ -1210,7 +1212,8 @@ def main(args):
   if not output_file and not packages_mode:
     logging.warning('No output file is specified.')
 
-  builddir = "/build/%s/tmp/portage" % board
+  builddir = os.path.join(cros_build_lib.GetSysroot(board=board),
+                          'tmp', 'portage')
   if not os.path.exists(builddir):
     raise AssertionError(
         "FATAL: %s missing.\n"

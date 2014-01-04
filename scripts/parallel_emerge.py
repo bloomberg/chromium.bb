@@ -278,9 +278,10 @@ class DepGraphGenerator(object):
     # point our tools at /build/BOARD and to setup cross compiles to the
     # appropriate board as configured in toolchain.conf.
     if self.board:
-      os.environ["PORTAGE_CONFIGROOT"] = "/build/" + self.board
-      os.environ["PORTAGE_SYSROOT"] = "/build/" + self.board
-      os.environ["SYSROOT"] = "/build/" + self.board
+      sysroot = cros_build_lib.GetSysroot(board=self.board)
+      os.environ["PORTAGE_CONFIGROOT"] = sysroot
+      os.environ["PORTAGE_SYSROOT"] = sysroot
+      os.environ["SYSROOT"] = sysroot
 
       # Although CHROMEOS_ROOT isn't specific to boards, it's normally setup
       # inside emerge-${BOARD}, so we set it up here for compatibility. It

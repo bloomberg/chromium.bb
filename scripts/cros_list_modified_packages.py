@@ -154,7 +154,7 @@ def ListWorkonPackagesInfo(board, host):
   if not packages:
     return []
   results = {}
-  install_root = '/' if host else '/build/%s' % board
+  install_root = cros_build_lib.GetSysroot(board=board)
   vdb_path = os.path.join(install_root, portage.const.VDB_PATH)
   buildroot, both = constants.SOURCE_ROOT, constants.BOTH_OVERLAYS
   for overlay in portage_utilities.FindOverlays(both, board, buildroot):

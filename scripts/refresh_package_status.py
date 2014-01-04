@@ -38,7 +38,7 @@ def PrepareBoards(boards):
   """Run setup_board for any boards that need it."""
   scripts_dir = os.path.join(SCRIPT_DIR, '..', '..', 'src', 'scripts')
   for board in boards.split(':'):
-    if not os.path.isdir('/build/%s' % board):
+    if not os.path.isdir(cros_build_lib.GetSysroot(board=board)):
       oper.Info('Running setup_board for board=%s' % board)
       cros_build_lib.RunCommand(['./setup_board', '--board=%s' % board],
                                 cwd=scripts_dir)
