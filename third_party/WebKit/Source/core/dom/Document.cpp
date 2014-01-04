@@ -2610,7 +2610,6 @@ void Document::setURL(const KURL& url)
         return;
 
     m_url = newURL;
-    m_documentURI = m_url.string();
     updateBaseURL();
     contextFeatures()->urlDidChange(this);
 }
@@ -2620,18 +2619,14 @@ void Document::updateBaseURL()
     KURL oldBaseURL = baseURL();
     // DOM 3 Core: When the Document supports the feature "HTML" [DOM Level 2 HTML], the base URI is computed using
     // first the value of the href attribute of the HTML BASE element if any, and the value of the documentURI attribute
-    // from the Document interface otherwise.
+    // from the Document interface otherwise (which we store, preparsed, in m_url).
     if (!m_baseElementURL.isEmpty())
         setBaseURL(m_baseElementURL);
     else if (!m_baseURLOverride.isEmpty())
         setBaseURL(m_baseURLOverride);
-    else {
-        // The documentURI attribute is read-only from JavaScript, but writable from Objective C, so we need to retain
-        // this fallback behavior. We use a null base URL, since the documentURI attribute is an arbitrary string
-        // and DOM 3 Core does not specify how it should be resolved.
-        // FIXME: Now that we don't support Objective-C this can probably be removed.
-        setBaseURL(KURL(ParsedURLString, documentURI()));
-    }
+    else
+        setBaseURL(m_url);
+
     selectorQueryCache().invalidate();
 
     if (!baseURL().isValid())

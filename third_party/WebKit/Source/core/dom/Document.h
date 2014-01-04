@@ -51,6 +51,7 @@
 #include "core/page/PageVisibilityState.h"
 #include "core/rendering/HitTestRequest.h"
 #include "platform/Timer.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -355,8 +356,6 @@ public:
     void setXMLVersion(const String&, ExceptionState&);
     void setXMLStandalone(bool, ExceptionState&);
     void setHasXMLDeclaration(bool hasXMLDeclaration) { m_hasXMLDeclaration = hasXMLDeclaration ? 1 : 0; }
-
-    String documentURI() const { return m_documentURI; }
 
     virtual KURL baseURI() const OVERRIDE;
 
@@ -1126,13 +1125,6 @@ private:
     KURL m_baseURLOverride; // An alternative base URL that takes precedence over TreeScope::baseURL() (but not m_baseElementURL).
     KURL m_baseElementURL; // The URL set by the <base> element.
     KURL m_cookieURL; // The URL to use for cookie access.
-
-    // Document.documentURI:
-    // Although URL-like, Document.documentURI can actually be set to any
-    // string by content. Document.documentURI affects TreeScope::baseURL() unless the
-    // document contains a <base> element, in which case the <base> element
-    // takes precedence.
-    String m_documentURI;
 
     AtomicString m_baseTarget;
 

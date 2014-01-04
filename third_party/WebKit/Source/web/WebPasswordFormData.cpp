@@ -159,7 +159,7 @@ WebPasswordFormData::WebPasswordFormData(const WebFormElement& webForm)
     findPasswordFormFields(form.get(), &fields);
 
     // Get the document URL
-    KURL fullOrigin(ParsedURLString, form->document().documentURI());
+    KURL fullOrigin = form->document().url();
 
     // Calculate the canonical action URL
     String action = form->action();

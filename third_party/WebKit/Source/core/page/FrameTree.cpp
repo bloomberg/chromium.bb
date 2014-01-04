@@ -371,7 +371,7 @@ static void printFrames(const WebCore::Frame* frame, const WebCore::Frame* targe
     printIndent(indent);
     printf("  document=%p\n", frame->document());
     printIndent(indent);
-    printf("  uri=%s\n\n", frame->document()->documentURI().utf8().data());
+    printf("  uri=%s\n\n", frame->document()->url().string().utf8().data());
 
     for (WebCore::Frame* child = frame->tree().firstChild(); child; child = child->tree().nextSibling())
         printFrames(child, targetFrame, indent + 1);
