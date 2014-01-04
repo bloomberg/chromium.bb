@@ -120,7 +120,7 @@ class SdkToolsTestCase(unittest.TestCase):
     archive.size = archive_size
     return archive
 
-  def _Run(self, args):
+  def _Run(self, args, expect_error=False):
     naclsdk_shell_script = os.path.join(self.basedir, 'nacl_sdk', 'naclsdk')
     if getos.GetPlatform() == 'win':
       naclsdk_shell_script += '.bat'
@@ -129,11 +129,11 @@ class SdkToolsTestCase(unittest.TestCase):
     cmd.extend(['-U', self.server.GetURL(MANIFEST_BASENAME)])
     process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     stdout, _ = process.communicate()
-    try:
-      self.assertEqual(process.returncode, 0)
-    except Exception:
-      print stdout
-      raise
+
+    if ((expect_error and process.returncode == 0) or
+        (not expect_error and process.returncode != 0)):
+      self.fail('Error running nacl_sdk:\n"""\n%s\n"""' % stdout)
+
     return stdout
 
   def _RunAndExtractRevision(self):

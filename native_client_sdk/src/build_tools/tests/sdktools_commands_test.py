@@ -285,6 +285,26 @@ class TestCommands(SdkToolsTestCase):
     self.assertTrue(os.path.exists(
         os.path.join(self.basedir, 'nacl_sdk', 'pepper_26', 'dummy2.txt')))
 
+  def testUpdateBadSize(self):
+    """If an archive has a bad size, print an error.
+    """
+    bundle = self._AddDummyBundle(self.manifest, 'pepper_26')
+    archive = bundle.GetHostOSArchive();
+    archive.size = -1
+    self._WriteManifest()
+    stdout = self._Run(['update', 'pepper_26'], expect_error=True)
+    self.assertTrue('Size mismatch' in stdout)
+
+  def testUpdateBadSHA(self):
+    """If an archive has a bad SHA, print an error.
+    """
+    bundle = self._AddDummyBundle(self.manifest, 'pepper_26')
+    archive = bundle.GetHostOSArchive();
+    archive.checksum = 0
+    self._WriteManifest()
+    stdout = self._Run(['update', 'pepper_26'], expect_error=True)
+    self.assertTrue('SHA1 checksum mismatch' in stdout)
+
   def testUninstall(self):
     """The uninstall command should remove the installed bundle, if it
     exists.

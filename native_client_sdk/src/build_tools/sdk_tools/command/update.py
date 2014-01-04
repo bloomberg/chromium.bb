@@ -383,7 +383,7 @@ def _GetFilenameFromURL(url):
 def _ValidateArchive(archive, actual_sha1, actual_size):
   if actual_size != archive.size:
     raise Error('Size mismatch on "%s".  Expected %s but got %s bytes' % (
-        archive.name, archive.size, actual_size))
+        archive.url, archive.size, actual_size))
   if actual_sha1 != archive.GetChecksum():
     raise Error('SHA1 checksum mismatch on "%s".  Expected %s but got %s' % (
-        archive.name, archive.GetChecksum(), actual_sha1))
+        archive.url, archive.GetChecksum(), actual_sha1))
