@@ -9324,6 +9324,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.HandshakeRoundTrips" units="RTTs">
+  <summary>
+    Samples of the number of round-trips needed by a QUIC connection before a
+    request could be sent by the client.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.NumOpenStreams">
   <summary>
     The number of QUIC streams opened when a new QUIC stream is created.
@@ -33613,6 +33620,12 @@ other types of suffix sets.
   <group name="4" label="N = 4"/>
   <group name="5" label="N = 5"/>
   <affected-histogram name="Omnibox.QueryTime"/>
+</fieldtrial>
+
+<fieldtrial name="QuicRttCount" separator="">
+  <group name="ForHTTP" label="Only insecure HTTP connections are counted."/>
+  <group name="ForHTTPS" label="Only secure HTTPS connections are counted."/>
+  <affected-histogram name="Net.QuicSession.HandshakeRoundTrips"/>
 </fieldtrial>
 
 <fieldtrial name="RemoteProcessWarmStartFast" separator="">
