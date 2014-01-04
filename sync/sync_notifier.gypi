@@ -48,6 +48,8 @@
   'conditions': [
     ['OS != "android"', {
       'sources': [
+        'notifier/gcm_network_channel.cc',
+        'notifier/gcm_network_channel.h',
         'notifier/invalidation_notifier.cc',
         'notifier/invalidation_notifier.h',
         'notifier/non_blocking_invalidator.cc',

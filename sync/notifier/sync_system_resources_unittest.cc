@@ -188,6 +188,10 @@ class TestSyncNetworkChannel : public SyncNetworkChannel {
     last_encoded_message_ = encoded_message;
   }
 
+  virtual void UpdateCredentials(const std::string& email,
+      const std::string& token) OVERRIDE {
+  }
+
   std::string last_encoded_message_;
 };
 

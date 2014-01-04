@@ -16,6 +16,7 @@
 #include "sync/notifier/fake_invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidator_test_template.h"
+#include "sync/notifier/push_client_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -36,9 +37,13 @@ class InvalidationNotifierTestDelegate {
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker) {
     DCHECK(!invalidator_.get());
+    scoped_ptr<notifier::PushClient> push_client(
+        new notifier::FakePushClient());
+    scoped_ptr<SyncNetworkChannel> network_channel(
+        new PushClientChannel(push_client.Pass()));
     invalidator_.reset(
         new InvalidationNotifier(
-            scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
+            network_channel.Pass(),
             invalidator_client_id,
             UnackedInvalidationsMap(),
             initial_state,

@@ -35,7 +35,8 @@ class SYNC_EXPORT_PRIVATE PushClientChannel
   // If not connected, connects with the given credentials.  If
   // already connected, the next connection attempt will use the given
   // credentials.
-  void UpdateCredentials(const std::string& email, const std::string& token);
+  virtual void UpdateCredentials(const std::string& email,
+      const std::string& token) OVERRIDE;
 
   // SyncNetworkChannel implementation.
   virtual void SendEncodedMessage(const std::string& encoded_message) OVERRIDE;

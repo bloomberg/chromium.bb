@@ -269,17 +269,21 @@ int SyncClientMain(int argc, char* argv[]) {
       new MyTestURLRequestContextGetter(io_thread.message_loop_proxy());
   const notifier::NotifierOptions& notifier_options =
       ParseNotifierOptions(command_line, context_getter);
+  syncer::NetworkChannelCreator network_channel_creator =
+      syncer::NonBlockingInvalidator::MakePushClientChannelCreator(
+          notifier_options);
   const char kClientInfo[] = "standalone_sync_client";
   std::string invalidator_id = base::RandBytesAsString(8);
   NullInvalidationStateTracker null_invalidation_state_tracker;
   scoped_ptr<Invalidator> invalidator(new NonBlockingInvalidator(
-      notifier_options,
+      network_channel_creator,
       invalidator_id,
       null_invalidation_state_tracker.GetSavedInvalidations(),
       null_invalidation_state_tracker.GetBootstrapData(),
       WeakHandle<InvalidationStateTracker>(
           null_invalidation_state_tracker.AsWeakPtr()),
-      kClientInfo));
+      kClientInfo,
+      notifier_options.request_context_getter));
 
   // Set up database directory for the syncer.
   base::ScopedTempDir database_dir;

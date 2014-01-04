@@ -93,10 +93,15 @@ class TiclInvalidationService
   friend class TiclInvalidationServiceTestDelegate;
 
  private:
+  enum InvalidationNetworkChannel {
+    PUSH_CLIENT_CHANNEL = 0,
+    GCM_NETWORK_CHANNEL = 1
+  };
+
   bool IsReadyToStart();
   bool IsStarted();
 
-  void StartInvalidator();
+  void StartInvalidator(InvalidationNetworkChannel network_channel);
   void UpdateInvalidatorCredentials();
   void StopInvalidator();
   void Logout();

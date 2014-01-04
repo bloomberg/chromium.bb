@@ -81,7 +81,7 @@ void TiclInvalidationService::Init() {
   }
 
   if (IsReadyToStart()) {
-    StartInvalidator();
+    StartInvalidator(PUSH_CLIENT_CHANNEL);
   }
 
   notification_registrar_.Add(this,
@@ -190,7 +190,7 @@ void TiclInvalidationService::OnGetTokenSuccess(
   request_access_token_backoff_.Reset();
   access_token_ = access_token;
   if (!IsStarted() && IsReadyToStart()) {
-    StartInvalidator();
+    StartInvalidator(PUSH_CLIENT_CHANNEL);
   } else {
     UpdateInvalidatorCredentials();
   }
@@ -230,7 +230,7 @@ void TiclInvalidationService::OnRefreshTokenAvailable(
     const std::string& account_id) {
   if (oauth2_token_service_->GetPrimaryAccountId() == account_id) {
     if (!IsStarted() && IsReadyToStart()) {
-      StartInvalidator();
+      StartInvalidator(PUSH_CLIENT_CHANNEL);
     }
   }
 }
@@ -313,7 +313,8 @@ bool TiclInvalidationService::IsStarted() {
   return invalidator_.get() != NULL;
 }
 
-void TiclInvalidationService::StartInvalidator() {
+void TiclInvalidationService::StartInvalidator(
+    InvalidationNetworkChannel network_channel) {
   DCHECK(CalledOnValidThread());
   DCHECK(!invalidator_);
   DCHECK(invalidator_storage_);
@@ -327,18 +328,38 @@ void TiclInvalidationService::StartInvalidator() {
     return;
   }
 
-  notifier::NotifierOptions options =
-      ParseNotifierOptions(*CommandLine::ForCurrentProcess());
-  options.request_context_getter = profile_->GetRequestContext();
-  options.auth_mechanism = "X-OAUTH2";
+  syncer::NetworkChannelCreator network_channel_creator;
+
+  switch (network_channel) {
+    case PUSH_CLIENT_CHANNEL: {
+      notifier::NotifierOptions options =
+          ParseNotifierOptions(*CommandLine::ForCurrentProcess());
+      options.request_context_getter = profile_->GetRequestContext();
+      options.auth_mechanism = "X-OAUTH2";
+      DCHECK_EQ(notifier::NOTIFICATION_SERVER, options.notification_method);
+      network_channel_creator =
+          syncer::NonBlockingInvalidator::MakePushClientChannelCreator(options);
+      break;
+    }
+    case GCM_NETWORK_CHANNEL: {
+      network_channel_creator =
+          syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator();
+      break;
+    }
+    default: {
+      NOTREACHED();
+      return;
+    }
+  }
   invalidator_.reset(new syncer::NonBlockingInvalidator(
-          options,
+          network_channel_creator,
           invalidator_storage_->GetInvalidatorClientId(),
           invalidator_storage_->GetSavedInvalidations(),
           invalidator_storage_->GetBootstrapData(),
           syncer::WeakHandle<syncer::InvalidationStateTracker>(
               invalidator_storage_->AsWeakPtr()),
-          content::GetUserAgent(GURL())));
+          content::GetUserAgent(GURL()),
+          profile_->GetRequestContext()));
 
   UpdateInvalidatorCredentials();
 

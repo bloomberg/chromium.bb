@@ -177,17 +177,21 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
       ParseNotifierOptions(
           command_line,
           new MyTestURLRequestContextGetter(io_thread.message_loop_proxy()));
+  syncer::NetworkChannelCreator network_channel_creator =
+      syncer::NonBlockingInvalidator::MakePushClientChannelCreator(
+          notifier_options);
   const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationStateTracker null_invalidation_state_tracker;
   scoped_ptr<Invalidator> invalidator(
       new NonBlockingInvalidator(
-          notifier_options,
+          network_channel_creator,
           base::RandBytesAsString(8),
           null_invalidation_state_tracker.GetSavedInvalidations(),
           null_invalidation_state_tracker.GetBootstrapData(),
           WeakHandle<InvalidationStateTracker>(
               null_invalidation_state_tracker.AsWeakPtr()),
-          kClientInfo));
+          kClientInfo,
+          notifier_options.request_context_getter));
 
   NotificationPrinter notification_printer;
 

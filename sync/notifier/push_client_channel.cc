@@ -5,7 +5,6 @@
 #include "sync/notifier/push_client_channel.h"
 
 #include "base/stl_util.h"
-#include "google/cacheinvalidation/client_gateway.pb.h"
 #include "jingle/notifier/listener/push_client.h"
 
 namespace syncer {

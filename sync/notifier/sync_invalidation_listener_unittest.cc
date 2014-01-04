@@ -19,6 +19,7 @@
 #include "sync/notifier/fake_invalidation_state_tracker.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/object_id_invalidation_map.h"
+#include "sync/notifier/push_client_channel.h"
 #include "sync/notifier/sync_invalidation_listener.h"
 #include "sync/notifier/unacked_invalidation_set_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -279,7 +280,8 @@ class SyncInvalidationListenerTest : public testing::Test {
         kAppsId_(kChromeSyncSourceId, "APP"),
         fake_push_client_(new notifier::FakePushClient()),
         fake_invalidation_client_(NULL),
-        listener_(scoped_ptr<notifier::PushClient>(fake_push_client_)),
+        listener_(scoped_ptr<SyncNetworkChannel>(new PushClientChannel(
+            scoped_ptr<notifier::PushClient>(fake_push_client_)))),
         fake_delegate_(&listener_) {}
 
   virtual void SetUp() {

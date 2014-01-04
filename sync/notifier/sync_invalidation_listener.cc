@@ -30,20 +30,20 @@ namespace syncer {
 SyncInvalidationListener::Delegate::~Delegate() {}
 
 SyncInvalidationListener::SyncInvalidationListener(
-    scoped_ptr<notifier::PushClient> push_client)
-    : push_client_channel_(push_client.Pass()),
-      sync_system_resources_(&push_client_channel_, this),
+    scoped_ptr<SyncNetworkChannel> network_channel)
+    : sync_network_channel_(network_channel.Pass()),
+      sync_system_resources_(sync_network_channel_.get(), this),
       delegate_(NULL),
       ticl_state_(DEFAULT_INVALIDATION_ERROR),
       push_client_state_(DEFAULT_INVALIDATION_ERROR),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
-  push_client_channel_.AddObserver(this);
+  sync_network_channel_->AddObserver(this);
 }
 
 SyncInvalidationListener::~SyncInvalidationListener() {
   DCHECK(CalledOnValidThread());
-  push_client_channel_.RemoveObserver(this);
+  sync_network_channel_->RemoveObserver(this);
   Stop();
   DCHECK(!delegate_);
 }
@@ -94,7 +94,7 @@ void SyncInvalidationListener::Start(
 void SyncInvalidationListener::UpdateCredentials(
     const std::string& email, const std::string& token) {
   DCHECK(CalledOnValidThread());
-  push_client_channel_.UpdateCredentials(email, token);
+  sync_network_channel_->UpdateCredentials(email, token);
 }
 
 void SyncInvalidationListener::UpdateRegisteredIds(const ObjectIdSet& ids) {

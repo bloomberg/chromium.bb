@@ -40,7 +40,7 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
  public:
   // |invalidation_state_tracker| must be initialized.
   InvalidationNotifier(
-      scoped_ptr<notifier::PushClient> push_client,
+      scoped_ptr<SyncNetworkChannel> network_channel,
       const std::string& invalidator_client_id,
       const UnackedInvalidationsMap& saved_invalidations,
       const std::string& invalidation_bootstrap_data,

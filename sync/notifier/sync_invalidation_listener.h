@@ -22,7 +22,6 @@
 #include "sync/notifier/ack_handler.h"
 #include "sync/notifier/invalidation_state_tracker.h"
 #include "sync/notifier/invalidator_state.h"
-#include "sync/notifier/push_client_channel.h"
 #include "sync/notifier/state_writer.h"
 #include "sync/notifier/sync_system_resources.h"
 #include "sync/notifier/unacked_invalidation_set.h"
@@ -67,7 +66,7 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
   };
 
   explicit SyncInvalidationListener(
-      scoped_ptr<notifier::PushClient> push_client);
+      scoped_ptr<SyncNetworkChannel> network_channel);
 
   // Calls Stop().
   virtual ~SyncInvalidationListener();
@@ -167,7 +166,7 @@ class SYNC_EXPORT_PRIVATE SyncInvalidationListener
 
   WeakHandle<AckHandler> GetThisAsAckHandler();
 
-  PushClientChannel push_client_channel_;
+  scoped_ptr<SyncNetworkChannel> sync_network_channel_;
   SyncSystemResources sync_system_resources_;
   UnackedInvalidationsMap unacked_invalidations_map_;
   WeakHandle<InvalidationStateTracker> invalidation_state_tracker_;

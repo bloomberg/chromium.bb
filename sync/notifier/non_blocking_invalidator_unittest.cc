@@ -42,16 +42,19 @@ class NonBlockingInvalidatorTestDelegate {
     io_thread_.StartWithOptions(options);
     request_context_getter_ =
         new net::TestURLRequestContextGetter(io_thread_.message_loop_proxy());
-    notifier::NotifierOptions invalidator_options;
-    invalidator_options.request_context_getter = request_context_getter_;
+    notifier::NotifierOptions notifier_options;
+    notifier_options.request_context_getter = request_context_getter_;
+    NetworkChannelCreator network_channel_creator =
+        NonBlockingInvalidator::MakePushClientChannelCreator(notifier_options);
     invalidator_.reset(
         new NonBlockingInvalidator(
-            invalidator_options,
+            network_channel_creator,
             invalidator_client_id,
             UnackedInvalidationsMap(),
             initial_state,
             MakeWeakHandle(invalidation_state_tracker),
-            "fake_client_info"));
+            "fake_client_info",
+            request_context_getter_));
   }
 
   Invalidator* GetInvalidator() {

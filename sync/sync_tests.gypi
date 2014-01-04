@@ -317,6 +317,7 @@
           ['OS != "android"', {
             'sources': [
               'notifier/fake_invalidator_unittest.cc',
+              'notifier/gcm_network_channel_unittest.cc',
               'notifier/invalidation_notifier_unittest.cc',
               'notifier/invalidator_registrar_unittest.cc',
               'notifier/non_blocking_invalidator_unittest.cc',
