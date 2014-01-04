@@ -10,8 +10,6 @@
 #include "base/memory/singleton.h"
 #include "base/platform_file.h"
 #include "base/process/process.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ipc/ipc_platform_file.h"
 
 namespace base {
@@ -19,9 +17,10 @@ class FilePath;
 }
 
 namespace content {
+
 class WebContents;
 
-class MHTMLGenerationManager : public NotificationObserver {
+class MHTMLGenerationManager {
  public:
   static MHTMLGenerationManager* GetInstance();
 
@@ -47,23 +46,7 @@ class MHTMLGenerationManager : public NotificationObserver {
 
  private:
   friend struct DefaultSingletonTraits<MHTMLGenerationManager>;
-
-  struct Job{
-    Job();
-    ~Job();
-
-    // The handles to file the MHTML is saved to, for the browser and renderer
-    // processes.
-    base::PlatformFile browser_file;
-    IPC::PlatformFileForTransit renderer_file;
-
-    // The IDs mapping to a specific contents.
-    int process_id;
-    int routing_id;
-
-    // The callback to call once generation is complete.
-    GenerateMHTMLCallback callback;
-  };
+  class Job;
 
   MHTMLGenerationManager();
   virtual ~MHTMLGenerationManager();
@@ -92,14 +75,11 @@ class MHTMLGenerationManager : public NotificationObserver {
   // Creates an register a new job.
   int NewJob(WebContents* web_contents, const GenerateMHTMLCallback& callback);
 
-  // Implementation of NotificationObserver.
-  virtual void Observe(int type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) OVERRIDE;
+  // Called when the render process connected to a job exits.
+  void RenderProcessExited(Job* job);
 
   typedef std::map<int, Job> IDToJobMap;
   IDToJobMap id_to_job_;
-  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(MHTMLGenerationManager);
 };

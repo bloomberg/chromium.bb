@@ -6,24 +6,84 @@
 
 #include "base/bind.h"
 #include "base/platform_file.h"
-#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/common/view_messages.h"
-#include "content/public/browser/notification_types.h"
 
 namespace content {
 
+class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
+ public:
+  Job();
+  virtual ~Job();
+
+  void SetWebContents(WebContents* web_contents);
+
+  base::PlatformFile browser_file() { return browser_file_; }
+  void set_browser_file(base::PlatformFile file) { browser_file_ = file; }
+
+  int process_id() { return process_id_; }
+  int routing_id() { return routing_id_; }
+
+  GenerateMHTMLCallback callback() { return callback_; }
+  void set_callback(GenerateMHTMLCallback callback) { callback_ = callback; }
+
+  // RenderProcessHostObserver:
+  virtual void RenderProcessExited(RenderProcessHost* host,
+                                   base::ProcessHandle handle,
+                                   base::TerminationStatus status,
+                                   int exit_code) OVERRIDE;
+  virtual void RenderProcessHostDestroyed(RenderProcessHost* host) OVERRIDE;
+
+
+ private:
+  // The handle to the file the MHTML is saved to for the browser process.
+  base::PlatformFile browser_file_;
+
+  // The IDs mapping to a specific contents.
+  int process_id_;
+  int routing_id_;
+
+  // The callback to call once generation is complete.
+  GenerateMHTMLCallback callback_;
+
+  // The RenderProcessHost being observed, or NULL if none is.
+  RenderProcessHost* host_;
+};
+
 MHTMLGenerationManager::Job::Job()
-    : browser_file(base::kInvalidPlatformFileValue),
-      renderer_file(IPC::InvalidPlatformFileForTransit()),
-      process_id(-1),
-      routing_id(-1) {
+    : browser_file_(base::kInvalidPlatformFileValue),
+      process_id_(-1),
+      routing_id_(-1),
+      host_(NULL) {
 }
 
 MHTMLGenerationManager::Job::~Job() {
+  if (host_)
+    host_->RemoveObserver(this);
+}
+
+void MHTMLGenerationManager::Job::SetWebContents(WebContents* web_contents) {
+  process_id_ = web_contents->GetRenderProcessHost()->GetID();
+  routing_id_ = web_contents->GetRenderViewHost()->GetRoutingID();
+  host_ = web_contents->GetRenderProcessHost();
+  host_->AddObserver(this);
+}
+
+void MHTMLGenerationManager::Job::RenderProcessExited(
+    RenderProcessHost* host,
+    base::ProcessHandle handle,
+    base::TerminationStatus status,
+    int exit_code) {
+  MHTMLGenerationManager::GetInstance()->RenderProcessExited(this);
+}
+
+void MHTMLGenerationManager::Job::RenderProcessHostDestroyed(
+    RenderProcessHost* host) {
+  host_ = NULL;
 }
 
 MHTMLGenerationManager* MHTMLGenerationManager::GetInstance() {
@@ -96,7 +156,8 @@ void MHTMLGenerationManager::CreateFile(
                  renderer_file));
 }
 
-void MHTMLGenerationManager::FileHandleAvailable(int job_id,
+void MHTMLGenerationManager::FileHandleAvailable(
+    int job_id,
     base::PlatformFile browser_file,
     IPC::PlatformFileForTransit renderer_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -113,11 +174,10 @@ void MHTMLGenerationManager::FileHandleAvailable(int job_id,
   }
 
   Job& job = iter->second;
-  job.browser_file = browser_file;
-  job.renderer_file = renderer_file;
+  job.set_browser_file(browser_file);
 
-  RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(
-      job.process_id, job.routing_id);
+  RenderViewHost* rvh = RenderViewHost::FromID(
+      job.process_id(), job.routing_id());
   if (!rvh) {
     // The contents went away.
     JobFinished(job_id, -1);
@@ -129,6 +189,7 @@ void MHTMLGenerationManager::FileHandleAvailable(int job_id,
 }
 
 void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   IDToJobMap::iterator iter = id_to_job_.find(job_id);
   if (iter == id_to_job_.end()) {
     NOTREACHED();
@@ -136,11 +197,11 @@ void MHTMLGenerationManager::JobFinished(int job_id, int64 file_size) {
   }
 
   Job& job = iter->second;
-  job.callback.Run(file_size);
+  job.callback().Run(file_size);
 
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
       base::Bind(&MHTMLGenerationManager::CloseFile, base::Unretained(this),
-                 job.browser_file));
+                 job.browser_file()));
 
   id_to_job_.erase(job_id);
 }
@@ -155,41 +216,21 @@ int MHTMLGenerationManager::NewJob(WebContents* web_contents,
   static int id_counter = 0;
   int job_id = id_counter++;
   Job& job = id_to_job_[job_id];
-  job.process_id = web_contents->GetRenderProcessHost()->GetID();
-  job.routing_id = web_contents->GetRenderViewHost()->GetRoutingID();
-  job.callback = callback;
-  if (!registrar_.IsRegistered(
-          this,
-          NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-          Source<RenderProcessHost>(web_contents->GetRenderProcessHost()))) {
-    registrar_.Add(
-        this,
-        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-        Source<RenderProcessHost>(web_contents->GetRenderProcessHost()));
-  }
+  job.SetWebContents(web_contents);
+  job.set_callback(callback);
   return job_id;
 }
 
-void MHTMLGenerationManager::Observe(int type,
-                                     const NotificationSource& source,
-                                     const NotificationDetails& details) {
-  DCHECK(type == NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  RenderProcessHost* host = Source<RenderProcessHost>(source).ptr();
-  registrar_.Remove(
-      this,
-      NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-      source);
-  std::set<int> job_to_delete;
+void MHTMLGenerationManager::RenderProcessExited(Job* job) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   for (IDToJobMap::iterator it = id_to_job_.begin(); it != id_to_job_.end();
        ++it) {
-    if (it->second.process_id == host->GetID())
-      job_to_delete.insert(it->first);
+    if (&it->second == job) {
+      JobFinished(it->first, -1);
+      return;
+    }
   }
-  for (std::set<int>::iterator it = job_to_delete.begin();
-       it != job_to_delete.end();
-       ++it) {
-    JobFinished(*it, -1);
-  }
+  NOTREACHED();
 }
 
 }  // namespace content

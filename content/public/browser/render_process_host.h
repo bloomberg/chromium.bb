@@ -150,12 +150,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // |partition|.
   virtual bool InSameStoragePartition(StoragePartition* partition) const = 0;
 
-  // Returns the unique ID for this child process. This can be used later in
-  // a call to FromID() to get back to this object (this is used to avoid
+  // Returns the unique ID for this child process host. This can be used later
+  // in a call to FromID() to get back to this object (this is used to avoid
   // sending non-threadsafe pointers to other threads).
   //
-  // This ID will be unique for all child processes, including workers, plugins,
-  // etc.
+  // This ID will be unique across all child process hosts, including workers,
+  // plugins, etc.
   virtual int GetID() const = 0;
 
   // Returns true iff channel_ has been set to non-NULL. Use this for checking
