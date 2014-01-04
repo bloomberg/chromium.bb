@@ -1031,7 +1031,19 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   // LoginState::Observer overrides.
   virtual void LoggedInStateChanged() OVERRIDE {
-    UpdateClockType();
+    // It apparently sometimes takes a while after login before the current user
+    // is recognized as the owner. Make sure that the system-wide clock setting
+    // is updated when the recognition eventually happens
+    // (http://crbug.com/278601).
+    //
+    // Note that it isn't safe to blindly call UpdateClockType() from this
+    // method, as LoggedInStateChanged() is also called before the logged-in
+    // user's profile has actually been loaded (http://crbug.com/317745). The
+    // system tray's time format is updated at login via SetProfile().
+    if (chromeos::UserManager::Get()->IsCurrentUserOwner()) {
+      CrosSettings::Get()->SetBoolean(kSystemUse24HourClock,
+                                      ShouldUse24HourClock());
+    }
   }
 
   // Overridden from SessionManagerClient::Observer.
