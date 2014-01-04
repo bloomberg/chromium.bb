@@ -259,10 +259,6 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   CGFloat buttonHeight =
       NSHeight([[[buttonContainer_ subviews] objectAtIndex:1] frame]);
 
-  // Account for a rendering issue in BlueLabelButton.
-  // TODO(groby): Fix that rendering instead.
-  buttonHeight -= 1.0;
-
   // Force first button to be the same height.
   NSView* button = [[buttonContainer_ subviews] objectAtIndex:0];
   NSSize buttonSize = [button frame].size;

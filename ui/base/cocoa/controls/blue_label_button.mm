@@ -13,8 +13,8 @@
 const CGFloat kCornerRadius = 2;
 
 const CGFloat kButtonFontSizeDelta = -1;
-const CGFloat kTopBottomTextPadding = 8;
-const CGFloat kLeftRightTextPadding = 16;
+const CGFloat kTopBottomTextPadding = 7;
+const CGFloat kLeftRightTextPadding = 15;
 const SkColor kTextShadowColor = SkColorSetRGB(0x53, 0x8c, 0xea);
 
 const SkColor kShadowColor = SkColorSetRGB(0xe9, 0xe9, 0xe9);
@@ -60,10 +60,16 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
       [[NSMutableParagraphStyle alloc] init]);
   [buttonTextParagraphStyle setAlignment:NSCenterTextAlignment];
 
+  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
+  [shadow setShadowOffset:NSMakeSize(0, -1)];
+  [shadow setShadowBlurRadius:0];
+  [shadow setShadowColor:gfx::SkColorToSRGBNSColor(kTextShadowColor)];
+
   NSDictionary* buttonTextAttributes = @{
     NSParagraphStyleAttributeName : buttonTextParagraphStyle,
     NSFontAttributeName : buttonFont,
-    NSForegroundColorAttributeName : [NSColor whiteColor]
+    NSForegroundColorAttributeName : [NSColor whiteColor],
+    NSShadowAttributeName : shadow.get()
   };
   base::scoped_nsobject<NSAttributedString> attributedButtonText(
       [[NSAttributedString alloc] initWithString:buttonText
@@ -75,7 +81,9 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
   NSAttributedString* attributedTitle =
       [[self class] generateAttributedString:[self title]];
   NSSize textSize = [attributedTitle size];
-  textSize.height += 2 * kTopBottomTextPadding;
+
+  // Add 1 to maintain identical height w/ previous drawing code.
+  textSize.height += 2 * kTopBottomTextPadding + 1;
   textSize.width += 2 * kLeftRightTextPadding;
   return textSize;
 }
@@ -83,15 +91,12 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
 - (NSRect)drawTitle:(NSAttributedString*)title
           withFrame:(NSRect)frame
              inView:(NSView*)controlView {
+  // Fuzz factor to adjust for the drop shadow. Based on visual inspection.
+  frame.origin.y -= 1;
+
   NSAttributedString* attributedTitle =
       [[self class] generateAttributedString:[self title]];
-  // Draw the text with a drop shadow.
-  base::scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
   gfx::ScopedNSGraphicsContextSaveGState context;
-  [shadow setShadowOffset:NSMakeSize(0, -1)];
-  [shadow setShadowBlurRadius:0];
-  [shadow setShadowColor:gfx::SkColorToSRGBNSColor(kTextShadowColor)];
-  [shadow set];
   [attributedTitle drawInRect:frame];
   return frame;
 }
@@ -103,6 +108,8 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
   NSColor* outerColor;
   HoverState hoverState =
       [base::mac::ObjCCastStrict<HoverButton>(controlView) hoverState];
+  // Leave a sliver of height 1 for the button drop shadow.
+  frame.size.height -= 1;
 
   if (hoverState == kHoverStateMouseDown && [self isHighlighted]) {
     centerColor = gfx::SkColorToSRGBNSColor(kPressedColor);
@@ -126,18 +133,17 @@ const SkColor kPressOuterRingColor = SkColorSetRGB(0x23, 0x52, 0xa2);
     [shadow set];
     [outerColor set];
 
-    // Inset by 1 initially for the button drop shadow.
-    [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 1, 1)
+    [[NSBezierPath bezierPathWithRoundedRect:frame
                                      xRadius:kCornerRadius
                                      yRadius:kCornerRadius] fill];
   }
 
   [innerColor set];
-  [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 2, 2)
+  [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 1, 1)
                                    xRadius:kCornerRadius
                                    yRadius:kCornerRadius] fill];
   [centerColor set];
-  [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 3, 3)
+  [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(frame, 2, 2)
                                    xRadius:kCornerRadius
                                    yRadius:kCornerRadius] fill];
 }
