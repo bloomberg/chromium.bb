@@ -23,6 +23,7 @@
 #include "base/files/file_path.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_util.h"
+#include "base/threading/platform_thread.h"
 // Linux/glibc doesn't natively have setproctitle().
 #include "content/common/set_process_title_linux.h"
 #endif  // defined(OS_LINUX)
@@ -41,6 +42,8 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
   bool have_argv0 = false;
 
 #if defined(OS_LINUX)
+  DCHECK_EQ(base::PlatformThread::CurrentId(), getpid());
+
   if (main_argv)
     setproctitle_init(main_argv);
 
@@ -58,13 +61,12 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
     const std::string kDeletedSuffix = " (deleted)";
     if (EndsWith(title, kDeletedSuffix, true))
       title.resize(title.size() - kDeletedSuffix.size());
-#if defined(PR_SET_NAME)
-    // If PR_SET_NAME is available at compile time, we try using it. We ignore
-    // any errors if the kernel does not support it at runtime though. When
-    // available, this lets us set the short process name that shows when the
-    // full command line is not being displayed in most process listings.
+
+    // PR_SET_NAME is available in Linux 2.6.9 and newer.
+    // When available at run time, this sets the short process name that shows
+    // when the full command line is not being displayed in most process
+    // listings.
     prctl(PR_SET_NAME, base::FilePath(title).BaseName().value().c_str());
-#endif  // defined(PR_SET_NAME)
   }
 #endif  // defined(OS_LINUX)
 
