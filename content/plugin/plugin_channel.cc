@@ -219,7 +219,12 @@ void PluginChannel::CleanUp() {
   // called twice.
   scoped_refptr<PluginChannel> me(this);
 
-  plugin_stubs_.clear();
+  while (!plugin_stubs_.empty()) {
+    // Separate vector::erase and ~WebPluginDelegateStub.
+    // See https://code.google.com/p/chromium/issues/detail?id=314088
+    scoped_refptr<WebPluginDelegateStub> stub = plugin_stubs_[0];
+    plugin_stubs_.erase(plugin_stubs_.begin());
+  }
 }
 
 bool PluginChannel::Init(base::MessageLoopProxy* ipc_message_loop,
@@ -279,7 +284,12 @@ void PluginChannel::OnDestroyInstance(int instance_id,
       scoped_refptr<MessageFilter> filter(filter_);
       int render_view_id =
           plugin_stubs_[i]->webplugin()->host_render_view_routing_id();
+      // Separate vector::erase and ~WebPluginDelegateStub.
+      // See https://code.google.com/p/chromium/issues/detail?id=314088
+      scoped_refptr<WebPluginDelegateStub> stub = plugin_stubs_[i];
       plugin_stubs_.erase(plugin_stubs_.begin() + i);
+      stub = NULL;
+
       Send(reply_msg);
       RemoveRoute(instance_id);
       // NOTE: *this* might be deleted as a result of calling RemoveRoute.
