@@ -283,6 +283,7 @@ SiteChipView::~SiteChipView() {
 
 void SiteChipView::Init() {
   ToolbarButton::Init();
+  image()->EnableCanvasFlippingForRTLUI(false);
 
   // TODO(gbillock): Would be nice to just use stock LabelButton stuff here.
   location_icon_view_ = new LocationIconView(toolbar_view_->location_bar());

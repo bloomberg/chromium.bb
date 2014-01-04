@@ -177,6 +177,7 @@ void ToolbarView::Init() {
   back_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_->set_id(VIEW_ID_BACK_BUTTON);
+  back_->Init();
 
   forward_ = new ToolbarButton(this, new BackForwardMenuModel(
       browser_, BackForwardMenuModel::FORWARD_MENU));
@@ -186,6 +187,7 @@ void ToolbarView::Init() {
   forward_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_FORWARD));
   forward_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FORWARD));
   forward_->set_id(VIEW_ID_FORWARD_BUTTON);
+  forward_->Init();
 
   // Have to create this before |reload_| as |reload_|'s constructor needs it.
   location_bar_ = new LocationBarView(
@@ -201,6 +203,7 @@ void ToolbarView::Init() {
   reload_->set_tag(IDC_RELOAD);
   reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload_->set_id(VIEW_ID_RELOAD_BUTTON);
+  reload_->Init();
 
   home_ = new HomeButton(this, browser_);
   home_->set_triggerable_event_flags(
@@ -209,6 +212,7 @@ void ToolbarView::Init() {
   home_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_HOME));
   home_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_HOME));
   home_->set_id(VIEW_ID_HOME_BUTTON);
+  home_->Init();
 
   browser_actions_ = new BrowserActionsContainer(browser_, this);
 
