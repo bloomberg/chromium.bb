@@ -169,6 +169,7 @@ SyncSchedulerImpl::SyncSchedulerImpl(const std::string& name,
       session_context_(context),
       no_scheduling_allowed_(false),
       do_poll_after_credentials_updated_(false),
+      next_sync_session_job_priority_(NORMAL_PRIORITY),
       weak_ptr_factory_(this),
       weak_ptr_factory_for_weak_handle_(this) {
   weak_handle_this_ = MakeWeakHandle(
@@ -237,7 +238,7 @@ void SyncSchedulerImpl::Start(Mode mode) {
       CanRunNudgeJobNow(NORMAL_PRIORITY)) {
     // We just got back to normal mode.  Let's try to run the work that was
     // queued up while we were configuring.
-    TrySyncSessionJob(NORMAL_PRIORITY);
+    TrySyncSessionJob();
   }
 }
 
@@ -297,7 +298,7 @@ void SyncSchedulerImpl::ScheduleConfiguration(
   // Only reconfigure if we have types to download.
   if (!params.types_to_download.Empty()) {
     pending_configure_params_.reset(new ConfigurationParams(params));
-    TrySyncSessionJob(NORMAL_PRIORITY);
+    TrySyncSessionJob();
   } else {
     SDVLOG(2) << "No change in routing info, calling ready task directly.";
     params.ready_task.Run();
@@ -660,19 +661,22 @@ void SyncSchedulerImpl::Stop() {
 // This is the only place where we invoke DoSyncSessionJob with canary
 // privileges.  Everyone else should use NORMAL_PRIORITY.
 void SyncSchedulerImpl::TryCanaryJob() {
-  TrySyncSessionJob(CANARY_PRIORITY);
+  next_sync_session_job_priority_ = CANARY_PRIORITY;
+  TrySyncSessionJob();
 }
 
-void SyncSchedulerImpl::TrySyncSessionJob(JobPriority priority) {
+void SyncSchedulerImpl::TrySyncSessionJob() {
   // Post call to TrySyncSessionJobImpl on current thread. Later request for
   // access token will be here.
   base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &SyncSchedulerImpl::TrySyncSessionJobImpl,
-      weak_ptr_factory_.GetWeakPtr(),
-      priority));
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SyncSchedulerImpl::TrySyncSessionJobImpl(JobPriority priority) {
+void SyncSchedulerImpl::TrySyncSessionJobImpl() {
+  JobPriority priority = next_sync_session_job_priority_;
+  next_sync_session_job_priority_ = NORMAL_PRIORITY;
+
   DCHECK(CalledOnValidThread());
   if (mode_ == CONFIGURATION_MODE) {
     if (pending_configure_params_) {
@@ -730,7 +734,7 @@ void SyncSchedulerImpl::PollTimerCallback() {
     return;
   }
 
-  TrySyncSessionJob(NORMAL_PRIORITY);
+  TrySyncSessionJob();
 }
 
 void SyncSchedulerImpl::Unthrottle() {
@@ -767,14 +771,14 @@ void SyncSchedulerImpl::TypeUnthrottle(base::TimeTicks unthrottle_time) {
 
   // Maybe this is a good time to run a nudge job.  Let's try it.
   if (nudge_tracker_.IsSyncRequired() && CanRunNudgeJobNow(NORMAL_PRIORITY))
-    TrySyncSessionJob(NORMAL_PRIORITY);
+    TrySyncSessionJob();
 }
 
 void SyncSchedulerImpl::PerformDelayedNudge() {
   // Circumstances may have changed since we scheduled this delayed nudge.
   // We must check to see if it's OK to run the job before we do so.
   if (CanRunNudgeJobNow(NORMAL_PRIORITY))
-    TrySyncSessionJob(NORMAL_PRIORITY);
+    TrySyncSessionJob();
 
   // We're not responsible for setting up any retries here.  The functions that
   // first put us into a state that prevents successful sync cycles (eg. global

@@ -209,8 +209,8 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
 
   // At the moment TrySyncSessionJob just posts call to TrySyncSessionJobImpl on
   // current thread. In the future it will request access token here.
-  void TrySyncSessionJob(JobPriority priority);
-  void TrySyncSessionJobImpl(JobPriority priority);
+  void TrySyncSessionJob();
+  void TrySyncSessionJobImpl();
 
   // Transitions out of the THROTTLED WaitInterval then calls TryCanaryJob().
   void Unthrottle();
@@ -321,6 +321,14 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // DoPollSyncSessionJob after some time since the last attempt.
   // last_poll_reset_ keeps track of when was last attempt.
   base::TimeTicks last_poll_reset_;
+
+  // next_sync_session_job_priority_ defines which priority will be used next
+  // time TrySyncSessionJobImpl is called. CANARY_PRIORITY allows syncer to run
+  // even if scheduler is in exponential backoff. This is needed for events that
+  // have chance of resolving previous error (e.g. network connection change
+  // after NETWORK_UNAVAILABLE error).
+  // It is reset back to NORMAL_PRIORITY on every call to TrySyncSessionJobImpl.
+  JobPriority next_sync_session_job_priority_;
 
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
 
