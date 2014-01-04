@@ -517,7 +517,7 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, Exception
 
 void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool async, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p open('%s', '%s', %d)", this, method.string().utf8().data(), url.elidedString().utf8().data(), async);
+    WTF_LOG(Network, "XMLHttpRequest %p open('%s', '%s', %d)", this, method.utf8().data(), url.elidedString().utf8().data(), async);
 
     if (!internalAbort())
         return;

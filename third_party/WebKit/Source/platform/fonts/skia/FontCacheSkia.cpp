@@ -132,7 +132,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
         }
     } else {
         // convert the name to utf8
-        name = family.string().utf8();
+        name = family.utf8();
     }
 
     int style = SkTypeface::kNormal;

@@ -1968,11 +1968,12 @@ void Node::showNodePathForThis() const
                     if (previous->nodeName() == node->nodeName())
                         ++count;
                 if (hasIdAttr)
-                    fprintf(stderr, "[@id=\"%s\" and position()=%d]", idattr.string().utf8().data(), count);
+                    fprintf(stderr, "[@id=\"%s\" and position()=%d]", idattr.utf8().data(), count);
                 else
                     fprintf(stderr, "[%d]", count);
-            } else if (hasIdAttr)
-                fprintf(stderr, "[@id=\"%s\"]", idattr.string().utf8().data());
+            } else if (hasIdAttr) {
+                fprintf(stderr, "[@id=\"%s\"]", idattr.utf8().data());
+            }
             break;
         }
         case TEXT_NODE:

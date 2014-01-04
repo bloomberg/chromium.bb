@@ -369,7 +369,7 @@ void IDBTransaction::stop()
 
 void IDBTransaction::enqueueEvent(PassRefPtr<Event> event)
 {
-    ASSERT_WITH_MESSAGE(m_state != Finished, "A finished transaction tried to enqueue an event of type %s.", event->type().string().utf8().data());
+    ASSERT_WITH_MESSAGE(m_state != Finished, "A finished transaction tried to enqueue an event of type %s.", event->type().utf8().data());
     if (m_contextStopped || !executionContext())
         return;
 

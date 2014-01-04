@@ -254,7 +254,7 @@ void NewWebSocketChannelImpl::resume()
 
 NewWebSocketChannelImpl::Message::Message(const String& text)
     : type(MessageTypeText)
-    , text(text.utf8(String::StrictConversionReplacingUnpairedSurrogatesWithFFFD)) { }
+    , text(text.utf8(StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD)) { }
 
 NewWebSocketChannelImpl::Message::Message(PassRefPtr<BlobDataHandle> blobDataHandle)
     : type(MessageTypeBlob)

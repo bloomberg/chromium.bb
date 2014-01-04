@@ -128,7 +128,7 @@ String MainThreadWebSocketChannel::extensions()
 WebSocketChannel::SendResult MainThreadWebSocketChannel::send(const String& message)
 {
     WTF_LOG(Network, "MainThreadWebSocketChannel %p send() Sending String '%s'", this, message.utf8().data());
-    CString utf8 = message.utf8(String::StrictConversionReplacingUnpairedSurrogatesWithFFFD);
+    CString utf8 = message.utf8(StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD);
     enqueueTextFrame(utf8);
     processOutgoingFrameQueue();
     // m_channel->send() may happen later, thus it's not always possible to know whether

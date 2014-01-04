@@ -23,6 +23,7 @@
 
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/WTFExport.h"
+#include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 // Define 'NO_IMPLICIT_ATOMICSTRING' before including this header,
@@ -163,6 +164,10 @@ public:
     // the input data contains invalid UTF-8 sequences.
     static AtomicString fromUTF8(const char*, size_t);
     static AtomicString fromUTF8(const char*);
+
+    CString ascii() const { return m_string.ascii(); }
+    CString latin1() const { return m_string.latin1(); }
+    CString utf8(UTF8ConversionMode mode = LenientUTF8Conversion) const { return m_string.utf8(mode); }
 
 #ifndef NDEBUG
     void show() const;

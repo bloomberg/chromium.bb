@@ -792,7 +792,7 @@ static inline void putUTF8Triple(char*& buffer, UChar ch)
     *buffer++ = static_cast<char>((ch & 0x3F) | 0x80);
 }
 
-CString String::utf8(ConversionMode mode) const
+CString String::utf8(UTF8ConversionMode mode) const
 {
     unsigned length = this->length();
 
@@ -823,7 +823,7 @@ CString String::utf8(ConversionMode mode) const
     } else {
         const UChar* characters = this->characters16();
 
-        if (mode == StrictConversionReplacingUnpairedSurrogatesWithFFFD) {
+        if (mode == StrictUTF8ConversionReplacingUnpairedSurrogatesWithFFFD) {
             const UChar* charactersEnd = characters + length;
             char* bufferEnd = buffer + bufferVector.size();
             while (characters < charactersEnd) {
@@ -841,7 +841,7 @@ CString String::utf8(ConversionMode mode) const
                 }
             }
         } else {
-            bool strict = mode == StrictConversion;
+            bool strict = mode == StrictUTF8Conversion;
             ConversionResult result = convertUTF16ToUTF8(&characters, characters + length, &buffer, buffer + bufferVector.size(), strict);
             ASSERT(result != targetExhausted); // (length * 3) should be sufficient for any conversion
 

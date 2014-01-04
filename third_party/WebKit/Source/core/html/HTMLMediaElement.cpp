@@ -548,7 +548,7 @@ void HTMLMediaElement::scheduleNextSourceChild()
 void HTMLMediaElement::scheduleEvent(const AtomicString& eventName)
 {
 #if LOG_MEDIA_EVENTS
-    WTF_LOG(Media, "HTMLMediaElement::scheduleEvent - scheduling '%s'", eventName.string().ascii().data());
+    WTF_LOG(Media, "HTMLMediaElement::scheduleEvent - scheduling '%s'", eventName.ascii().data());
 #endif
     m_asyncEventQueue->enqueueEvent(Event::createCancelable(eventName));
 }
@@ -2092,7 +2092,7 @@ String HTMLMediaElement::preload() const
 
 void HTMLMediaElement::setPreload(const AtomicString& preload)
 {
-    WTF_LOG(Media, "HTMLMediaElement::setPreload(%s)", preload.string().utf8().data());
+    WTF_LOG(Media, "HTMLMediaElement::setPreload(%s)", preload.utf8().data());
     setAttribute(preloadAttr, preload);
 }
 
@@ -2888,7 +2888,7 @@ KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType, String* k
             RefPtr<MediaQuerySet> media = MediaQuerySet::create(source->media());
 #if !LOG_DISABLED
             if (shouldLog)
-                WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'media' is %s", source->media().string().utf8().data());
+                WTF_LOG(Media, "HTMLMediaElement::selectNextSourceChild - 'media' is %s", source->media().utf8().data());
 #endif
             if (!screenEval.eval(media.get())) {
                 UseCounter::count(document(), UseCounter::SourceElementNonMatchingMedia);

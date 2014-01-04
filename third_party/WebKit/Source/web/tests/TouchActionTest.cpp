@@ -189,7 +189,7 @@ void TouchActionTest::runTestOnTree(WebCore::Node* root, WebView* webView, Touch
 
         std::string failureContext("Test case: ");
         if (element->hasID()) {
-            failureContext.append(element->getIdAttribute().string().ascii().data());
+            failureContext.append(element->getIdAttribute().ascii().data());
         } else if (element->firstChild()) {
             failureContext.append("\"");
             failureContext.append(element->firstChild()->textContent(false).stripWhiteSpace().ascii().data());
@@ -269,7 +269,7 @@ void TouchActionTest::runTestOnTree(WebCore::Node* root, WebView* webView, Touch
                     } else if (expectedAction == "pan-x-y") {
                         EXPECT_EQ((WebTouchActionPanX | WebTouchActionPanY), client.lastTouchAction()) << failureContextPos;
                     } else {
-                        FAIL() << "Unrecognized expected-action \"" << expectedAction.string().ascii().data()
+                        FAIL() << "Unrecognized expected-action \"" << expectedAction.ascii().data()
                             << "\" " << failureContextPos;
                     }
                 }
