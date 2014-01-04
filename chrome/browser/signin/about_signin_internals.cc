@@ -238,7 +238,7 @@ void AboutSigninInternals::OnFetchAccessTokenComplete(
     base::Time expiration_time) {
   TokenInfo* token = signin_status_.FindToken(account_id, consumer_id, scopes);
   if (!token) {
-    NOTREACHED();
+    DVLOG(1) << "Can't find token: " << account_id << ", " << consumer_id;
     return;
   }
 
