@@ -2291,13 +2291,14 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   if (service) {
-    const GURL& url = rvh->GetSiteInstance()->GetSiteURL();
-    const Extension* extension = service->extensions()->GetByID(url.host());
+    const GURL& site_url = rvh->GetSiteInstance()->GetSiteURL();
+    const Extension* extension =
+        service->extensions()->GetByID(site_url.host());
     // Ensure that we are only granting extension preferences to URLs with
     // the correct scheme. Without this check, chrome-guest:// schemes used by
     // webview tags as well as hosts that happen to match the id of an
     // installed extension would get the wrong preferences.
-    if (url.SchemeIs(extensions::kExtensionScheme)) {
+    if (site_url.SchemeIs(extensions::kExtensionScheme)) {
       extension_webkit_preferences::SetPreferences(
           extension, view_type, web_prefs);
     }
