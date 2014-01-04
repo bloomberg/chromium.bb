@@ -116,13 +116,15 @@ void ChromeMetroViewerProcessHost::OnChannelConnected(int32 /*peer_pid*/) {
 
 void ChromeMetroViewerProcessHost::OnSetTargetSurface(
     gfx::NativeViewId target_surface) {
-  HWND hwnd = reinterpret_cast<HWND>(target_surface);
-  // Tell our root window host that the viewer has connected.
-  aura::RemoteRootWindowHostWin::Instance()->Connected(this, hwnd);
   // Now start the Ash shell environment.
   chrome::OpenAsh();
   ash::Shell::GetInstance()->CreateShelf();
   ash::Shell::GetInstance()->ShowShelf();
+
+  HWND hwnd = reinterpret_cast<HWND>(target_surface);
+  // Tell our root window host that the viewer has connected.
+  aura::RemoteRootWindowHostWin::Instance()->Connected(this, hwnd);
+
   // On Windows 8 ASH we default to SHOW_STATE_MAXIMIZED for the browser
   // window. This is to ensure that we honor metro app conventions by default.
   ash::WindowPositioner::SetMaximizeFirstWindow(true);
