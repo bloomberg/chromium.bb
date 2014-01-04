@@ -759,29 +759,52 @@ def SplitEbuildPath(path):
   return os.path.splitext(path)[0].rsplit('/', 3)[-3:]
 
 
-def SplitPV(pv):
+def SplitPV(pv, strict=True):
   """Takes a PV value and splits it into individual components.
+
+  Args:
+    pv: Package name and version.
+    strict: If True, returns None if version or package name is missing.
+      Otherwise, only package name is mandatory.
 
   Returns:
     A collection with named members:
       pv, package, version, version_no_rev, rev
   """
   m = _pvr_re.match(pv)
-  if m is None:
+
+  if m is None and strict:
     return None
+
+  if m is None:
+    return PV(**{'pv': None, 'package': pv, 'version': None,
+                 'version_no_rev': None, 'rev': None})
+
   return PV(**m.groupdict())
 
 
-def SplitCPV(cpv):
+def SplitCPV(cpv, strict=True):
   """Splits a CPV value into components.
+
+  Args:
+    cpv: Category, package name, and version of a package.
+    strict: If True, returns None if any of the components is missing.
+      Otherwise, only package name is mandatory.
 
   Returns:
     A collection with named members:
       category, pv, package, version, version_no_rev, rev
   """
-  (category, pv) = cpv.split('/', 1)
-  m = SplitPV(pv)
-  if m is None:
+  chunks = cpv.split('/')
+  if len(chunks) > 2:
+    raise ValueError('Unexpected package format %s' % cpv)
+  if len(chunks) == 1:
+    category = None
+  else:
+    category = chunks[0]
+
+  m = SplitPV(chunks[-1], strict=strict)
+  if strict and (category is None or m is None):
     return None
   # pylint: disable=W0212
   return CPV(category=category, **m._asdict())
@@ -826,12 +849,14 @@ def ListInstalledPackages(sysroot):
   return packages
 
 
-def BestVisible(atom, board=None, buildroot=constants.SOURCE_ROOT):
+def BestVisible(atom, board=None, pkg_type='ebuild',
+                buildroot=constants.SOURCE_ROOT):
   """Get the best visible ebuild CPV for the given atom.
 
   Args:
     atom: Portage atom.
     board: Board to look at. By default, look in chroot.
+    pkg_type: Package type (ebuild, binary, or installed).
     buildroot: Directory
 
   Returns:
@@ -839,7 +864,7 @@ def BestVisible(atom, board=None, buildroot=constants.SOURCE_ROOT):
   """
   portageq = 'portageq' if board is None else 'portageq-%s' % board
   root = cros_build_lib.GetSysroot(board=board)
-  cmd = [portageq, 'best_visible', root, 'ebuild', atom]
+  cmd = [portageq, 'best_visible', root, pkg_type, atom]
   result = cros_build_lib.RunCommandCaptureOutput(
       cmd, cwd=buildroot, enter_chroot=True, debug_level=logging.DEBUG)
   return SplitCPV(result.output.strip())
@@ -857,3 +882,46 @@ def IsPackageInstalled(package, sysroot='/'):
       return True
 
   return False
+
+
+def FindPackageNameMatches(package, sysroot='/'):
+  """Finds a list of installed packages matching |package|.
+
+  Args:
+    package: The package name (e.g. $PN).
+    sysroot: The root being inspected.
+
+  Returns:
+    A list of CPV objects where P matches |package|.
+  """
+  matches = []
+  for cp, v in ListInstalledPackages(sysroot):
+    if cp.split(os.path.sep)[-1] == package:
+      matches.append(SplitCPV('%s-%s' % (cp, v)))
+
+  return matches
+
+
+def GetBinaryPackageDir(sysroot='/'):
+  """Returns the binary package directory of |sysroot|."""
+  return os.path.join(sysroot, 'packages')
+
+
+def GetBinaryPackagePath(c, p, v, sysroot='/'):
+  """Returns the path to the binary package.
+
+  Args:
+    c: category.
+    p: package.
+    v: version.
+    sysroot: The root being inspected.
+
+  Returns:
+    The path to the binary package.
+  """
+  pkgdir = GetBinaryPackageDir(sysroot=sysroot)
+  path = os.path.join(pkgdir, c, '%s-%s.tbz2' % (p, v))
+  if not os.path.exists(path):
+    raise ValueError('Cannot find the binary package %s!' % path)
+
+  return path

@@ -10,6 +10,7 @@ complete sysroot from extracted prebuilt packages.
 
 import os
 
+from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
 from chromite.lib import commandline
@@ -107,7 +108,8 @@ def GenerateSysroot(sysroot, board, build_tests, unpack_only=False):
   if not build_tests:
     cmd.append('--nowithautotest')
   env = {'USE': os.environ.get('USE', ''),
-         'PORTAGE_BINHOST': 'file://localhost/build/%s/packages' % board}
+         'PORTAGE_BINHOST': 'file://localhost%s' %
+         portage_utilities.GetBinaryPackageDir(board)}
   cros_build_lib.RunCommand(cmd, extra_env=env)
 
 

@@ -848,6 +848,39 @@ def GetInput(prompt):
   return raw_input(prompt)
 
 
+def GetChoice(prompt, options):
+  """Ask user to choose an option from the list.
+
+  Args:
+    prompt: The text to display before listing options.
+    options: The list of options to display.
+
+  Returns:
+    An integer.
+  """
+  prompt = prompt[:]
+
+  for opt, i in zip(options, xrange(len(options))):
+    prompt += '\n  [%d]: %s' % (i, opt)
+
+  prompt = '%s\nEnter your choice to continue [0-%d]: ' % (
+      prompt, len(options) - 1)
+
+  while True:
+    try:
+      choice = int(GetInput(prompt))
+    except ValueError:
+      print 'Input value is not an integer'
+      continue
+
+    if choice < 0 or choice >= len(options):
+      print 'Input value is out of range'
+    else:
+      break
+
+  return choice
+
+
 def BooleanPrompt(prompt="Do you want to continue?", default=True,
                   true_value='yes', false_value='no', prolog=None):
   """Helper function for processing boolean choice prompts.
