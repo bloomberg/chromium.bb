@@ -10,6 +10,7 @@
 namespace switches {
 
 PPAPI_SHARED_EXPORT extern const char kEnablePepperTesting[];
+PPAPI_SHARED_EXPORT extern const char kPpapiKeepAliveThrottle[];
 
 }  // namespace switches
 
