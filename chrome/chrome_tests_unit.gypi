@@ -757,6 +757,7 @@
         'browser/component_updater/test/component_updater_service_unittest.cc',
         'browser/component_updater/test/crx_downloader_unittest.cc',
         'browser/component_updater/test/test_installer.cc',
+        'browser/component_updater/test/update_checker_unittest.cc',
         'browser/component_updater/test/update_response_unittest.cc',
         'browser/component_updater/test/url_request_post_interceptor.cc',
         'browser/content_settings/content_settings_default_provider_unittest.cc',

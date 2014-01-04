@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,10 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
@@ -30,18 +26,12 @@
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/crx_downloader.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
+#include "chrome/browser/component_updater/update_checker.h"
 #include "chrome/browser/component_updater/update_response.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
-#include "extensions/common/extension.h"
-#include "net/base/escape.h"
-#include "net/base/load_flags.h"
-#include "net/base/net_errors.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -54,54 +44,10 @@ using component_updater::CrxUpdateItem;
 
 namespace {
 
-// Produces an extension-like friendly |id|. This might be removed in the
-// future if we roll our on packing tools.
-static std::string HexStringToID(const std::string& hexstr) {
-  std::string id;
-  for (size_t i = 0; i < hexstr.size(); ++i) {
-    int val(0);
-    if (base::HexStringToInt(base::StringPiece(hexstr.begin() + i,
-                                               hexstr.begin() + i + 1),
-                             &val)) {
-      id.append(1, val + 'a');
-    } else {
-      id.append(1, 'a');
-    }
-  }
-  DCHECK(extensions::Extension::IdIsValid(id));
-  return id;
-}
-
 // Returns true if the |proposed| version is newer than |current| version.
 bool IsVersionNewer(const Version& current, const std::string& proposed) {
   Version proposed_ver(proposed);
   return proposed_ver.IsValid() && current.CompareTo(proposed_ver) < 0;
-}
-
-// Helper template class that allows our main class to have separate
-// OnURLFetchComplete() callbacks for different types of url requests
-// they are differentiated by the |Ctx| type.
-template <typename Del, typename Ctx>
-class DelegateWithContext : public net::URLFetcherDelegate {
- public:
-  DelegateWithContext(Del* delegate, Ctx* context)
-    : delegate_(delegate), context_(context) {}
-
-  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
-    delegate_->OnURLFetchComplete(source, context_);
-    delete this;
-  }
-
- private:
-  ~DelegateWithContext() {}
-
-  Del* delegate_;
-  Ctx* context_;
-};
-// This function creates the right DelegateWithContext using template inference.
-template <typename Del, typename Ctx>
-net::URLFetcherDelegate* MakeContextDelegate(Del* delegate, Ctx* context) {
-  return new DelegateWithContext<Del, Ctx>(delegate, context);
 }
 
 // Returns true if a differential update is available, it has not failed yet,
@@ -142,11 +88,6 @@ CrxComponent::CrxComponent()
 }
 
 CrxComponent::~CrxComponent() {
-}
-
-std::string GetCrxComponentID(const CrxComponent& component) {
-  return HexStringToID(StringToLowerASCII(base::HexEncode(&component.pk_hash[0],
-                                          component.pk_hash.size()/2)));
 }
 
 CrxComponentInfo::CrxComponentInfo() {
@@ -231,23 +172,14 @@ class CrxUpdateService : public ComponentUpdateService {
   virtual content::ResourceThrottle* GetOnDemandResourceThrottle(
       net::URLRequest* request, const std::string& crx_id) OVERRIDE;
 
-  // Context for a update check url request. See DelegateWithContext above.
-  struct UpdateContext {
-    base::Time start;
-    UpdateContext() : start(base::Time::Now()) {}
-  };
-
-  // Context for a crx download url request. See DelegateWithContext above.
-  struct CRXContext {
-    ComponentInstaller* installer;
-    std::vector<uint8> pk_hash;
-    std::string id;
-    std::string fingerprint;
-    CRXContext() : installer(NULL) {}
-  };
-
-  void OnURLFetchComplete(const net::URLFetcher* source,
-                          UpdateContext* context);
+   // Context for a crx download url request.
+   struct CRXContext {
+     ComponentInstaller* installer;
+     std::vector<uint8> pk_hash;
+     std::string id;
+     std::string fingerprint;
+     CRXContext() : installer(NULL) {}
+   };
 
  private:
   enum ErrorCategory {
@@ -263,9 +195,13 @@ class CrxUpdateService : public ComponentUpdateService {
     kStepDelayLong,
   };
 
-  void OnParseUpdateResponseSucceeded(
+  void UpdateCheckComplete(
+      int error,
+      const std::string& error_message,
       const component_updater::UpdateResponse::Results& results);
-  void OnParseUpdateResponseFailed(const std::string& error_message);
+  void OnUpdateCheckSucceeded(
+      const component_updater::UpdateResponse::Results& results);
+  void OnUpdateCheckFailed(int error, const std::string& error_message);
 
   void DownloadComplete(
       scoped_ptr<CRXContext> crx_context,
@@ -275,16 +211,15 @@ class CrxUpdateService : public ComponentUpdateService {
 
   void ProcessPendingItems();
 
-  CrxUpdateItem* FindReadyComponent();
+  // Find a component that is ready to update.
+  CrxUpdateItem* FindReadyComponent() const;
+
+  // Prepares the components for an update check and initiates the request.
+  // Returns true if an update check request has been made. Returns false if
+  // no update check was needed or an error occured.
+  bool CheckForUpdates();
 
   void UpdateComponent(CrxUpdateItem* workitem);
-
-  void AddItemToUpdateCheck(CrxUpdateItem* item,
-                            std::string* update_check_items);
-
-  void AddUpdateCheckItems(std::string* update_check_items);
-
-  void DoUpdateCheck(const std::string& update_check_items);
 
   void ScheduleNextRun(StepDelayInterval step_delay);
 
@@ -315,11 +250,11 @@ class CrxUpdateService : public ComponentUpdateService {
 
   scoped_ptr<ComponentPatcher> component_patcher_;
 
-  scoped_ptr<net::URLFetcher> url_fetcher_;
+  scoped_ptr<component_updater::UpdateChecker> update_checker_;
 
   scoped_ptr<component_updater::PingManager> ping_manager_;
 
-  scoped_ptr<CrxDownloader> crx_downloader_;
+  scoped_ptr<component_updater::CrxDownloader> crx_downloader_;
 
   // A collection of every work item.
   typedef std::vector<CrxUpdateItem*> UpdateItems;
@@ -405,7 +340,7 @@ bool CrxUpdateService::HasOnDemandItems() const {
 //    components.
 void CrxUpdateService::ScheduleNextRun(StepDelayInterval step_delay) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(url_fetcher_.get() == NULL);
+  DCHECK(!update_checker_);
   CHECK(!timer_.IsRunning());
   // It could be the case that Stop() had been called while a url request
   // or unpacking was in flight, if so we arrive here but |running_| is
@@ -451,9 +386,7 @@ CrxUpdateItem* CrxUpdateService::FindUpdateItemById(const std::string& id) {
   UpdateItems::iterator it = std::find_if(work_items_.begin(),
                                           work_items_.end(),
                                           finder);
-  if (it == work_items_.end())
-    return NULL;
-  return (*it);
+  return it != work_items_.end() ? *it : NULL;
 }
 
 // Changes a component's status, clearing on_demand and firing notifications as
@@ -515,18 +448,16 @@ size_t CrxUpdateService::ChangeItemStatus(CrxUpdateItem::Status from,
   for (UpdateItems::iterator it = work_items_.begin();
        it != work_items_.end(); ++it) {
     CrxUpdateItem* item = *it;
-    if (item->status != from)
-      continue;
-    ChangeItemState(item, to);
-    ++count;
+    if (item->status == from) {
+      ChangeItemState(item, to);
+      ++count;
+    }
   }
   return count;
 }
 
 // Adds a component to be checked for upgrades. If the component exists it
 // it will be replaced and the return code is kReplaced.
-//
-// TODO(cpu): Evaluate if we want to support un-registration.
 ComponentUpdateService::Status CrxUpdateService::RegisterComponent(
     const CrxComponent& component) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -535,11 +466,8 @@ ComponentUpdateService::Status CrxUpdateService::RegisterComponent(
       !component.installer)
     return kError;
 
-  std::string id =
-    HexStringToID(StringToLowerASCII(base::HexEncode(&component.pk_hash[0],
-                                     component.pk_hash.size()/2)));
-  CrxUpdateItem* uit;
-  uit = FindUpdateItemById(id);
+  std::string id(component_updater::GetCrxComponentID(component));
+  CrxUpdateItem* uit = FindUpdateItemById(id);
   if (uit) {
     uit->component = component;
     return kReplaced;
@@ -617,32 +545,30 @@ void CrxUpdateService::GetComponents(
        it != work_items_.end(); ++it) {
     const CrxUpdateItem* item = *it;
     CrxComponentInfo info;
-    info.id = GetCrxComponentID(item->component);
+    info.id = component_updater::GetCrxComponentID(item->component);
     info.version = item->component.version.GetString();
     info.name = item->component.name;
     components->push_back(info);
   }
 }
 
-// This is the main loop of the component updater.
+// This is the main loop of the component updater. It updates one component
+// at a time if updates are available. Otherwise, it does an update check or
+// takes a long sleep until the loop runs again.
 void CrxUpdateService::ProcessPendingItems() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   CrxUpdateItem* ready_upgrade = FindReadyComponent();
   if (ready_upgrade) {
     UpdateComponent(ready_upgrade);
     return;
   }
-  std::string update_check_items;
-  AddUpdateCheckItems(&update_check_items);
-  if (!update_check_items.empty()) {
-    DoUpdateCheck(update_check_items);
-    return;
-  }
-  // No components to update. The next check will be after a long sleep.
-  ScheduleNextRun(kStepDelayLong);
+
+  if (!CheckForUpdates())
+    ScheduleNextRun(kStepDelayLong);
 }
 
-CrxUpdateItem* CrxUpdateService::FindReadyComponent() {
+CrxUpdateItem* CrxUpdateService::FindReadyComponent() const {
   class Helper {
    public:
     static bool IsReadyOnDemand(CrxUpdateItem* item) {
@@ -653,7 +579,7 @@ CrxUpdateItem* CrxUpdateService::FindReadyComponent() {
     }
   };
 
-  std::vector<CrxUpdateItem*>::iterator it = std::find_if(
+  std::vector<CrxUpdateItem*>::const_iterator it = std::find_if(
       work_items_.begin(), work_items_.end(), Helper::IsReadyOnDemand);
   if (it != work_items_.end())
     return *it;
@@ -661,6 +587,52 @@ CrxUpdateItem* CrxUpdateService::FindReadyComponent() {
   if (it != work_items_.end())
     return *it;
   return NULL;
+}
+
+// Prepares the components for an update check and initiates the request.
+bool CrxUpdateService::CheckForUpdates() {
+  // All components are selected for the update check, regardless of when they
+  // were last checked. More selective algorithms could be implemented in the
+  // future.
+  std::vector<CrxUpdateItem*> items_to_check;
+  for (size_t i = 0; i != work_items_.size(); ++i) {
+    CrxUpdateItem* item = work_items_[i];
+    DCHECK(item->status == CrxUpdateItem::kNew ||
+           item->status == CrxUpdateItem::kNoUpdate ||
+           item->status == CrxUpdateItem::kUpToDate ||
+           item->status == CrxUpdateItem::kUpdated);
+
+    ChangeItemState(item, CrxUpdateItem::kChecking);
+
+    item->last_check = base::Time::Now();
+    item->crx_urls.clear();
+    item->crx_diffurls.clear();
+    item->previous_version = item->component.version;
+    item->next_version = Version();
+    item->previous_fp = item->component.fingerprint;
+    item->next_fp.clear();
+    item->diff_update_failed = false;
+    item->error_category = 0;
+    item->error_code = 0;
+    item->extra_code1 = 0;
+    item->diff_error_category = 0;
+    item->diff_error_code = 0;
+    item->diff_extra_code1 = 0;
+    item->download_metrics.clear();
+
+    items_to_check.push_back(item);
+  }
+
+  if (items_to_check.empty())
+    return false;
+
+  update_checker_ = component_updater::UpdateChecker::Create(
+      config_->UpdateUrl(),
+      config_->RequestContext(),
+      base::Bind(&CrxUpdateService::UpdateCheckComplete,
+                 base::Unretained(this))).Pass();
+  return update_checker_->CheckForUpdates(items_to_check,
+                                          config_->ExtraRequestParams());
 }
 
 void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
@@ -692,122 +664,24 @@ void CrxUpdateService::UpdateComponent(CrxUpdateItem* workitem) {
   crx_downloader_->StartDownload(*urls);
 }
 
-// Sets the state of the component to be checked for updates. After the
-// function is called, the <app> element corresponding to the |item| parameter
-// is appended to the |update_check_items|.
-void CrxUpdateService::AddItemToUpdateCheck(CrxUpdateItem* item,
-                                            std::string* update_check_items) {
-  // The app element corresponding to an update items looks like this:
-  //    <app appid="hnimpnehoodheedghdeeijklkeaacbdc"
-  //         version="0.1.2.3" installsource="ondemand">
-  //    <updatecheck />
-  //    <packages>
-  //        <package fp="abcd" />
-  //    </packages>
-  //    </app>
-  std::string app_attributes;
-  base::StringAppendF(&app_attributes,
-                      "appid=\"%s\" version=\"%s\"",
-                      item->id.c_str(),
-                      item->component.version.GetString().c_str());
-  if (item->on_demand)
-    base::StringAppendF(&app_attributes, " installsource=\"ondemand\"");
-
-  std::string app;
-  if (item->component.fingerprint.empty())
-    base::StringAppendF(&app,
-                        "<app %s>"
-                        "<updatecheck />"
-                        "</app>",
-                        app_attributes.c_str());
-  else
-    base::StringAppendF(&app,
-                        "<app %s>"
-                        "<updatecheck />"
-                        "<packages>"
-                        "<package fp=\"%s\"/>"
-                        "</packages>"
-                        "</app>",
-                        app_attributes.c_str(),
-                        item->component.fingerprint.c_str());
-
-  update_check_items->append(app);
-
-  ChangeItemState(item, CrxUpdateItem::kChecking);
-  item->last_check = base::Time::Now();
-  item->crx_urls.clear();
-  item->crx_diffurls.clear();
-  item->previous_version = item->component.version;
-  item->next_version = Version();
-  item->previous_fp = item->component.fingerprint;
-  item->next_fp.clear();
-  item->diff_update_failed = false;
-  item->error_category = 0;
-  item->error_code = 0;
-  item->extra_code1 = 0;
-  item->diff_error_category = 0;
-  item->diff_error_code = 0;
-  item->diff_extra_code1 = 0;
-  item->download_metrics.clear();
-}
-
-// Builds the sequence of <app> elements in the update check and returns it
-// in the |update_check_items| parameter.
-void CrxUpdateService::AddUpdateCheckItems(std::string* update_check_items) {
-  // All items are added to a single update check.
-  for (UpdateItems::const_iterator it = work_items_.begin();
-       it != work_items_.end(); ++it) {
-    CrxUpdateItem* item = *it;
-    DCHECK(item->status == CrxUpdateItem::kNew ||
-           item->status == CrxUpdateItem::kNoUpdate ||
-           item->status == CrxUpdateItem::kUpToDate ||
-           item->status == CrxUpdateItem::kUpdated);
-    AddItemToUpdateCheck(item, update_check_items);
-  }
-}
-
-// Sends an update request. The |update_check_items| parameter
-// contains the sequence of <app> xml elements of the update check.
-void CrxUpdateService::DoUpdateCheck(const std::string& update_check_items) {
-  using component_updater::BuildProtocolRequest;
-  url_fetcher_.reset(component_updater::SendProtocolRequest(
-      config_->UpdateUrl(),
-      BuildProtocolRequest(update_check_items, config_->ExtraRequestParams()),
-      MakeContextDelegate(this, new UpdateContext()),
-      config_->RequestContext()));
-}
-
-// Called when we got a response from the update server. It consists of an xml
-// document following the omaha update scheme.
-void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
-                                          UpdateContext* context) {
+void CrxUpdateService::UpdateCheckComplete(
+    int error,
+    const std::string& error_message,
+    const component_updater::UpdateResponse::Results& results) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (component_updater::FetchSuccess(*source)) {
-    std::string xml;
-    source->GetResponseAsString(&xml);
-    url_fetcher_.reset();
-    ParseResponse(xml);
-  } else {
-    url_fetcher_.reset();
-    CrxUpdateService::OnParseUpdateResponseFailed("network error");
-  }
-  delete context;
-}
-
-void CrxUpdateService::ParseResponse(const std::string& xml) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  component_updater::UpdateResponse update_response;
-  if (update_response.Parse(xml))
-    CrxUpdateService::OnParseUpdateResponseSucceeded(update_response.results());
+  update_checker_.reset();
+  if (!error)
+    OnUpdateCheckSucceeded(results);
   else
-    CrxUpdateService::OnParseUpdateResponseFailed(update_response.errors());
+    OnUpdateCheckFailed(error, error_message);
 }
 
-// A valid Omaha update check has arrived, from only the list of components that
-// we are currently upgrading we check for a match in which the server side
-// version is newer, if so we queue them for an upgrade. The next time we call
-// ProcessPendingItems() one of them will be drafted for the upgrade process.
-void CrxUpdateService::OnParseUpdateResponseSucceeded(
+// Handles a valid Omaha update check response by matching the results with
+// the registered components which were checked for updates.
+// If updates are found, prepare the components for the actual version upgrade.
+// One of these components will be drafted for the upgrade next time
+// ProcessPendingItems is called.
+void CrxUpdateService::OnUpdateCheckSucceeded(
     const component_updater::UpdateResponse::Results& results) {
   size_t num_updates_pending = 0;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -881,9 +755,11 @@ void CrxUpdateService::OnParseUpdateResponseSucceeded(
   ScheduleNextRun(num_updates_pending > 0 ? kStepDelayShort : kStepDelayMedium);
 }
 
-void CrxUpdateService::OnParseUpdateResponseFailed(
-    const std::string& error_message) {
+// TODO: record UMA stats.
+void CrxUpdateService::OnUpdateCheckFailed(int error,
+                                           const std::string& error_message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(error);
   size_t count = ChangeItemStatus(CrxUpdateItem::kChecking,
                                   CrxUpdateItem::kNoUpdate);
   DCHECK_GT(count, 0ul);

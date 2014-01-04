@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/component_updater/component_updater_ping_manager.h"
+
+#include "base/compiler_specific.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"

@@ -6,12 +6,17 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/guid.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
+#include "extensions/common/extension.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -138,6 +143,29 @@ bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath) {
     return true;
 
   return base::DeleteFile(dirname, false);
+}
+
+// Produces an extension-like friendly id.
+std::string HexStringToID(const std::string& hexstr) {
+  std::string id;
+  for (size_t i = 0; i < hexstr.size(); ++i) {
+    int val = 0;
+    if (base::HexStringToInt(base::StringPiece(hexstr.begin() + i,
+                                               hexstr.begin() + i + 1),
+                             &val)) {
+      id.append(1, val + 'a');
+    } else {
+      id.append(1, 'a');
+    }
+  }
+  DCHECK(extensions::Extension::IdIsValid(id));
+  return id;
+}
+
+std::string GetCrxComponentID(const CrxComponent& component) {
+  return component_updater::HexStringToID(
+      StringToLowerASCII(base::HexEncode(&component.pk_hash[0],
+                         component.pk_hash.size()/2)));
 }
 
 }  // namespace component_updater

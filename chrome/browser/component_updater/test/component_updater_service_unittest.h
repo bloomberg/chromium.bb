@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -41,6 +42,16 @@ class InterceptorFactory : public URLRequestPostInterceptorFactory {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InterceptorFactory);
+};
+
+class PartialMatch : public URLRequestPostInterceptor::RequestMatcher {
+ public:
+  explicit PartialMatch(const std::string& expected) : expected_(expected) {}
+  virtual bool Match(const std::string& actual) const OVERRIDE;
+ private:
+  const std::string expected_;
+
+  DISALLOW_COPY_AND_ASSIGN(PartialMatch);
 };
 
 // component 1 has extension id "jebgalgnebhfojomionfpkfelancnnkf", and

@@ -7,6 +7,7 @@
 
 #include <string>
 
+struct CrxComponent;
 class GURL;
 
 namespace base {
@@ -40,7 +41,8 @@ struct CrxUpdateItem;
 // Builds a protocol request string by creating the outer envelope for
 // the request and including the request body specified as a parameter.
 // If specified, |additional_attributes| are appended as attributes of the
-// request element.
+// request element. The additional attributes have to be well-formed for
+// insertion in the request element.
 std::string BuildProtocolRequest(const std::string& request_body,
                                  const std::string& additional_attributes);
 
@@ -72,6 +74,10 @@ bool IsHttpServerError(int status_code);
 // parent directory is not empty, the function ignores deleting the directory.
 // Returns true if the file and the empty directory are deleted.
 bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath);
+
+// Returns the component id of the |component|. The component id is in a
+// format similar with the format of an extension id.
+std::string GetCrxComponentID(const CrxComponent& component);
 
 }  // namespace component_updater
 

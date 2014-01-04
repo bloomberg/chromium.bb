@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_PING_MANAGER_H_
 
 #include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "url/gurl.h"
 
 namespace net {

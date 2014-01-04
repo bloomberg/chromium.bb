@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/test/test_installer.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -37,6 +38,10 @@ MockComponentObserver::MockComponentObserver() {
 }
 
 MockComponentObserver::~MockComponentObserver() {
+}
+
+bool PartialMatch::Match(const std::string& actual) const {
+  return actual.find(expected_) != std::string::npos;
 }
 
 TestConfigurator::TestConfigurator()
@@ -147,19 +152,6 @@ URLRequestPostInterceptor* InterceptorFactory::CreateInterceptor() {
   return URLRequestPostInterceptorFactory::CreateInterceptor(
     base::FilePath::FromUTF8Unsafe(POST_INTERCEPT_PATH));
 }
-
-class PartialMatch : public URLRequestPostInterceptor::RequestMatcher {
- public:
-  explicit PartialMatch(const std::string& expected) : expected_(expected) {}
-  virtual bool Match(const std::string& actual) const OVERRIDE {
-    return actual.find(expected_) != std::string::npos;
-  }
-
- private:
-  const std::string expected_;
-
-  DISALLOW_COPY_AND_ASSIGN(PartialMatch);
-};
 
 ComponentUpdaterTest::ComponentUpdaterTest()
     : test_config_(NULL),

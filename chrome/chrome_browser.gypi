@@ -463,6 +463,8 @@
         'browser/component_updater/recovery_component_installer.h',
         'browser/component_updater/swiftshader_component_installer.cc',
         'browser/component_updater/swiftshader_component_installer.h',
+        'browser/component_updater/update_checker.cc',
+        'browser/component_updater/update_checker.h',
         'browser/component_updater/update_response.cc',
         'browser/component_updater/update_response.h',
         'browser/component_updater/url_fetcher_downloader.cc',
