@@ -8,19 +8,14 @@
 
 using content::BrowserThread;
 
-namespace {
-
-static base::LazyInstance<extensions::GlobalShortcutListenerChromeOS> instance =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
 namespace extensions {
 
 // static
 GlobalShortcutListener* GlobalShortcutListener::GetInstance() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return instance.Pointer();
+  static GlobalShortcutListenerChromeOS* instance =
+      new GlobalShortcutListenerChromeOS();
+  return instance;
 }
 
 GlobalShortcutListenerChromeOS::GlobalShortcutListenerChromeOS()
@@ -48,28 +43,22 @@ void GlobalShortcutListenerChromeOS::StopListening() {
   is_listening_ = false;
 }
 
-void GlobalShortcutListenerChromeOS::RegisterAccelerator(
-    const ui::Accelerator& accelerator,
-    GlobalShortcutListener::Observer* observer) {
+bool GlobalShortcutListenerChromeOS::RegisterAcceleratorImpl(
+    const ui::Accelerator& accelerator) {
   NOTIMPLEMENTED();
   // To implement:
   // 1) Convert modifiers to platform specific modifiers.
   // 2) Register for the hotkey.
-  // 3) If not successful, log why.
-  // 4) Else, call base class RegisterAccelerator.
+  // 3) If not successful, return false.
+  // 4) Else, return true.
 
-  GlobalShortcutListener::RegisterAccelerator(accelerator, observer);
+  return false;
 }
 
-void GlobalShortcutListenerChromeOS::UnregisterAccelerator(
-    const ui::Accelerator& accelerator,
-    GlobalShortcutListener::Observer* observer) {
+void GlobalShortcutListenerChromeOS::UnregisterAcceleratorImpl(
+    const ui::Accelerator& accelerator) {
   NOTIMPLEMENTED();
-  // To implement:
-  // 1) Unregister for the hotkey.
-  // 2) Call base class UnregisterAccelerator.
-
-  GlobalShortcutListener::UnregisterAccelerator(accelerator, observer);
+  // To implement: Unregister for the hotkey.
 }
 
 }  // namespace extensions

@@ -7,9 +7,8 @@
 
 #include <map>
 
-#include "base/observer_list.h"
+#include "base/basictypes.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 class Accelerator;
@@ -18,7 +17,7 @@ class Accelerator;
 namespace extensions {
 
 // Platform-neutral implementation of a class that keeps track of observers and
-// monitors keystrokes. It relays messages to the appropriate observers when a
+// monitors keystrokes. It relays messages to the appropriate observer when a
 // global shortcut has been struck by the user.
 class GlobalShortcutListener {
  public:
@@ -32,31 +31,47 @@ class GlobalShortcutListener {
 
   static GlobalShortcutListener* GetInstance();
 
-  // Implemented by platform-specific implementations of this class.
-  virtual void StartListening() = 0;
-  virtual void StopListening() = 0;
-
-  // Register an observer for when a certain |accelerator| is struck.
-  virtual void RegisterAccelerator(
-      const ui::Accelerator& accelerator, Observer* observer);
+  // Register an observer for when a certain |accelerator| is struck. Returns
+  // true if register successfully, or false if the specificied |accelerator|
+  // has been registered by another caller or other native applications. Note
+  // that we do not support recognizing that an accelerator has been registered
+  // by another application on all platforms. This is a per-platform
+  // consideration.
+  bool RegisterAccelerator(const ui::Accelerator& accelerator,
+                           Observer* observer);
   // Stop listening for the given |accelerator|.
-  virtual void UnregisterAccelerator(
-      const ui::Accelerator& accelerator, Observer* observer);
+  void UnregisterAccelerator(const ui::Accelerator& accelerator,
+                             Observer* observer);
 
  protected:
   GlobalShortcutListener();
 
   // Called by platform specific implementations of this class whenever a key
-  // is struck. Only called for keys that have observers registered.
+  // is struck. Only called for keys that have an observer registered.
   void NotifyKeyPressed(const ui::Accelerator& accelerator);
 
+ private:
+  // The following methods are implemented by platform-specific implementations
+  // of this class.
+  //
+  // Start/StopListening are called when transitioning between zero and nonzero
+  // registered accelerators. StartListening will be called after
+  // RegisterAcceleratorImpl and StopListening will be called after
+  // UnregisterAcceleratorImpl.
+  //
+  // For RegisterAcceleratorImpl, implementations return false if registration
+  // did not complete successfully.
+  virtual void StartListening() = 0;
+  virtual void StopListening() = 0;
+  virtual bool RegisterAcceleratorImpl(const ui::Accelerator& accelerator) = 0;
+  virtual void UnregisterAcceleratorImpl(
+      const ui::Accelerator& accelerator) = 0;
+
   // The map of accelerators that have been successfully registered as global
-  // shortcuts and their observer lists.
-  typedef ObserverList<Observer> Observers;
-  typedef std::map< ui::Accelerator, Observers* > AcceleratorMap;
+  // shortcuts and their observer.
+  typedef std::map<ui::Accelerator, Observer*> AcceleratorMap;
   AcceleratorMap accelerator_map_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(GlobalShortcutListener);
 };
 

@@ -45,7 +45,7 @@ namespace extensions {
 // static
 GlobalShortcutListener* GlobalShortcutListener::GetInstance() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  static GlobalShortcutListenerMac *instance =
+  static GlobalShortcutListenerMac* instance =
       new GlobalShortcutListenerMac();
   return instance;
 }
@@ -120,16 +120,10 @@ bool GlobalShortcutListenerMac::OnMediaKeyEvent(int media_key_code) {
   return false;
 }
 
-void GlobalShortcutListenerMac::RegisterAccelerator(
-    const ui::Accelerator& accelerator,
-    GlobalShortcutListener::Observer* observer) {
+bool GlobalShortcutListenerMac::RegisterAcceleratorImpl(
+    const ui::Accelerator& accelerator) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (accelerator_ids_.find(accelerator) != accelerator_ids_.end()) {
-    // The shortcut has already been registered. Some shortcuts, such as
-    // MediaKeys can have multiple targets, all keyed off of the same
-    // accelerator.
-    return;
-  }
+  DCHECK(accelerator_ids_.find(accelerator) == accelerator_ids_.end());
 
   if (CommandService::IsMediaKey(accelerator)) {
     if (!IsAnyMediaKeyRegistered()) {
@@ -138,7 +132,9 @@ void GlobalShortcutListenerMac::RegisterAccelerator(
     }
   } else {
     // Register hot_key if they are non-media keyboard shortcuts.
-    RegisterHotKey(accelerator, hot_key_id_);
+    if (!RegisterHotKey(accelerator, hot_key_id_))
+      return false;
+
     if (!IsAnyHotKeyRegistered()) {
       StartWatchingHotKeys();
     }
@@ -148,20 +144,13 @@ void GlobalShortcutListenerMac::RegisterAccelerator(
   id_accelerators_[hot_key_id_] = accelerator;
   accelerator_ids_[accelerator] = hot_key_id_;
   ++hot_key_id_;
-  GlobalShortcutListener::RegisterAccelerator(accelerator, observer);
+  return true;
 }
 
-void GlobalShortcutListenerMac::UnregisterAccelerator(
-    const ui::Accelerator& accelerator,
-    GlobalShortcutListener::Observer* observer) {
+void GlobalShortcutListenerMac::UnregisterAcceleratorImpl(
+    const ui::Accelerator& accelerator) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  // We may get asked to unregister something that we couldn't register (for
-  // example if the shortcut was already taken by another app), so we
-  // need to handle that gracefully.
-  AcceleratorIdMap::iterator it = accelerator_ids_.find(accelerator);
-  if (it == accelerator_ids_.end())
-    return;
+  DCHECK(accelerator_ids_.find(accelerator) != accelerator_ids_.end());
 
   // Unregister the hot_key if it's a keyboard shortcut.
   if (!CommandService::IsMediaKey(accelerator))
@@ -171,7 +160,6 @@ void GlobalShortcutListenerMac::UnregisterAccelerator(
   KeyId key_id = accelerator_ids_[accelerator];
   id_accelerators_.erase(key_id);
   accelerator_ids_.erase(accelerator);
-  GlobalShortcutListener::UnregisterAccelerator(accelerator, observer);
 
   if (CommandService::IsMediaKey(accelerator)) {
     // If we unregistered a media key, and now no media keys are registered,
@@ -187,7 +175,7 @@ void GlobalShortcutListenerMac::UnregisterAccelerator(
   }
 }
 
-void GlobalShortcutListenerMac::RegisterHotKey(
+bool GlobalShortcutListenerMac::RegisterHotKey(
     const ui::Accelerator& accelerator, KeyId hot_key_id) {
   EventHotKeyID event_hot_key_id;
 
@@ -207,10 +195,13 @@ void GlobalShortcutListenerMac::RegisterHotKey(
 
   // Register the event hot key.
   EventHotKeyRef hot_key_ref;
-  RegisterEventHotKey(key_code, modifiers, event_hot_key_id,
+  OSStatus status = RegisterEventHotKey(key_code, modifiers, event_hot_key_id,
       GetApplicationEventTarget(), 0, &hot_key_ref);
+  if (status != noErr)
+    return false;
 
   id_hot_key_refs_[hot_key_id] = hot_key_ref;
+  return true;
 }
 
 void GlobalShortcutListenerMac::UnregisterHotKey(

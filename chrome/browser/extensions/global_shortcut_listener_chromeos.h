@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_CHROMEOS_H_
 #define CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_CHROMEOS_H_
 
-#include "base/lazy_instance.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 
 // TODO(finnur): Figure out what to do on ChromeOS, where the Commands API kind
@@ -18,24 +17,17 @@ namespace extensions {
 // forwards its output to the base class for processing.
 class GlobalShortcutListenerChromeOS : public GlobalShortcutListener {
  public:
+  GlobalShortcutListenerChromeOS();
   virtual ~GlobalShortcutListenerChromeOS();
 
+ private:
+  // GlobalShortcutListener implementation.
   virtual void StartListening() OVERRIDE;
   virtual void StopListening() OVERRIDE;
-
- private:
-  friend struct base::DefaultLazyInstanceTraits<GlobalShortcutListenerChromeOS>;
-
-  GlobalShortcutListenerChromeOS();
-
-  // Register an |accelerator| with the particular |observer|.
-  virtual void RegisterAccelerator(
-      const ui::Accelerator& accelerator,
-      GlobalShortcutListener::Observer* observer) OVERRIDE;
-  // Unregister an |accelerator| with the particular |observer|.
-  virtual void UnregisterAccelerator(
-      const ui::Accelerator& accelerator,
-      GlobalShortcutListener::Observer* observer) OVERRIDE;
+  virtual bool RegisterAcceleratorImpl(
+      const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void UnregisterAcceleratorImpl(
+      const ui::Accelerator& accelerator) OVERRIDE;
 
   // Whether this object is listening for global shortcuts.
   bool is_listening_;

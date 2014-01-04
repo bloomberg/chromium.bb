@@ -5,10 +5,7 @@
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
-#include "chrome/browser/extensions/extension_keybinding_registry.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/common/extension.h"
@@ -48,7 +45,6 @@ ExtensionCommandsGlobalRegistry::Get(Profile* profile) {
       ExtensionCommandsGlobalRegistry>::GetForProfile(profile);
 }
 
-
 void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(
     const extensions::Extension* extension,
     const std::string& command_name) {
@@ -71,20 +67,24 @@ void ExtensionCommandsGlobalRegistry::AddExtensionKeybinding(
   for (; iter != commands.end(); ++iter) {
     if (!command_name.empty() && (iter->second.command_name() != command_name))
       continue;
+    const ui::Accelerator& accelerator = iter->second.accelerator();
 
     VLOG(0) << "Adding global keybinding for " << extension->name().c_str()
             << " " << command_name.c_str()
-            << " key: " << iter->second.accelerator().GetShortcutText();
+            << " key: " << accelerator.GetShortcutText();
 
-    event_targets_[iter->second.accelerator()].push_back(
+    if (event_targets_.find(accelerator) == event_targets_.end()) {
+      if (!GlobalShortcutListener::GetInstance()->RegisterAccelerator(
+              accelerator, this))
+        continue;
+    }
+
+    event_targets_[accelerator].push_back(
         std::make_pair(extension->id(), iter->second.command_name()));
     // Shortcuts except media keys have only one target in the list. See comment
     // about |event_targets_|.
-    if (!extensions::CommandService::IsMediaKey(iter->second.accelerator()))
-      DCHECK(event_targets_[iter->second.accelerator()].size() == 1);
-
-    GlobalShortcutListener::GetInstance()->RegisterAccelerator(
-      iter->second.accelerator(), this);
+    if (!extensions::CommandService::IsMediaKey(accelerator))
+      DCHECK_EQ(1u, event_targets_[accelerator].size());
   }
 }
 

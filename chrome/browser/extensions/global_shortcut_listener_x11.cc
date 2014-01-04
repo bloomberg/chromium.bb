@@ -20,14 +20,11 @@ using content::BrowserThread;
 
 namespace {
 
-static base::LazyInstance<extensions::GlobalShortcutListenerX11> instance =
-    LAZY_INSTANCE_INITIALIZER;
-
 // The modifiers masks used for grabing keys. Due to XGrabKey only working on
 // exact modifiers, we need to grab all key combination including zero or more
 // of the following: Num lock, Caps lock and Scroll lock. So that we can make
 // sure the behavior of global shortcuts is consistent on all platforms.
-static const unsigned int kModifiersMasks[] = {
+const unsigned int kModifiersMasks[] = {
   0,                                // No additional modifier.
   Mod2Mask,                         // Num lock
   LockMask,                         // Caps lock
@@ -54,7 +51,9 @@ namespace extensions {
 // static
 GlobalShortcutListener* GlobalShortcutListener::GetInstance() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return instance.Pointer();
+  static GlobalShortcutListenerX11* instance =
+      new GlobalShortcutListenerX11();
+  return instance;
 }
 
 GlobalShortcutListenerX11::GlobalShortcutListenerX11()
@@ -100,25 +99,22 @@ void GlobalShortcutListenerX11::StopListening() {
   is_listening_ = false;
 }
 
+#if !defined(TOOLKIT_GTK)
 bool GlobalShortcutListenerX11::Dispatch(const base::NativeEvent& event) {
   if (event->type == KeyPress)
     OnXKeyPressEvent(event);
 
   return true;
 }
+#endif
 
-void GlobalShortcutListenerX11::RegisterAccelerator(
-    const ui::Accelerator& accelerator,
-    GlobalShortcutListener::Observer* observer) {
-  if (registered_hot_keys_.find(accelerator) != registered_hot_keys_.end()) {
-    // The shortcut has already been registered. Some shortcuts, such as
-    // MediaKeys can have multiple targets, all keyed off of the same
-    // accelerator.
-    return;
-  }
+bool GlobalShortcutListenerX11::RegisterAcceleratorImpl(
+    const ui::Accelerator& accelerator) {
+  DCHECK(registered_hot_keys_.find(accelerator) == registered_hot_keys_.end());
 
   int modifiers = GetNativeModifiers(accelerator);
-  KeyCode keycode = XKeysymToKeycode(x_display_, accelerator.key_code());
+  KeyCode keycode = XKeysymToKeycode(x_display_,
+      XKeysymForWindowsKeyCode(accelerator.key_code(), false));
   base::X11ErrorTracker err_tracker;
 
   // Because XGrabKey only works on the exact modifiers mask, we should register
@@ -130,35 +126,32 @@ void GlobalShortcutListenerX11::RegisterAccelerator(
   }
 
   if (err_tracker.FoundNewError()) {
-    LOG(ERROR) << "X failed to grab global hotkey: "
-               << accelerator.GetShortcutText();
-
     // We may have part of the hotkeys registered, clean up.
     for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
       XUngrabKey(x_display_, keycode, modifiers | kModifiersMasks[i],
                  x_root_window_);
     }
-  } else {
-    registered_hot_keys_.insert(accelerator);
-    GlobalShortcutListener::RegisterAccelerator(accelerator, observer);
+
+    return false;
   }
+
+  registered_hot_keys_.insert(accelerator);
+  return true;
 }
 
-void GlobalShortcutListenerX11::UnregisterAccelerator(
-    const ui::Accelerator& accelerator,
-    GlobalShortcutListener::Observer* observer) {
-  if (registered_hot_keys_.find(accelerator) == registered_hot_keys_.end())
-    return;
+void GlobalShortcutListenerX11::UnregisterAcceleratorImpl(
+    const ui::Accelerator& accelerator) {
+  DCHECK(registered_hot_keys_.find(accelerator) != registered_hot_keys_.end());
 
   int modifiers = GetNativeModifiers(accelerator);
-  KeyCode keycode = XKeysymToKeycode(x_display_, accelerator.key_code());
+  KeyCode keycode = XKeysymToKeycode(x_display_,
+      XKeysymForWindowsKeyCode(accelerator.key_code(), false));
 
   for (size_t i = 0; i < arraysize(kModifiersMasks); ++i) {
     XUngrabKey(x_display_, keycode, modifiers | kModifiersMasks[i],
                x_root_window_);
   }
   registered_hot_keys_.erase(accelerator);
-  GlobalShortcutListener::UnregisterAccelerator(accelerator, observer);
 }
 
 #if defined(TOOLKIT_GTK)
@@ -182,7 +175,7 @@ void GlobalShortcutListenerX11::OnXKeyPressEvent(::XEvent* x_event) {
   ui::Accelerator accelerator(
       ui::KeyboardCodeFromXKeyEvent(x_event), modifiers);
   if (registered_hot_keys_.find(accelerator) != registered_hot_keys_.end())
-    instance.Get().NotifyKeyPressed(accelerator);
+    NotifyKeyPressed(accelerator);
 }
 
 }  // namespace extensions

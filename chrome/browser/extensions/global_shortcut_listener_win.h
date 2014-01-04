@@ -7,7 +7,6 @@
 
 #include <windows.h>
 
-#include "base/lazy_instance.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 #include "ui/gfx/win/singleton_hwnd.h"
 
@@ -19,36 +18,29 @@ namespace extensions {
 class GlobalShortcutListenerWin : public GlobalShortcutListener,
                                   public gfx::SingletonHwnd::Observer {
  public:
+  GlobalShortcutListenerWin();
   virtual ~GlobalShortcutListenerWin();
 
-  virtual void StartListening() OVERRIDE;
-  virtual void StopListening() OVERRIDE;
-
  private:
-  friend struct base::DefaultLazyInstanceTraits<GlobalShortcutListenerWin>;
-
-  GlobalShortcutListenerWin();
-
   // The implementation of our Window Proc, called by SingletonHwnd.
   virtual void OnWndProc(HWND hwnd,
                          UINT message,
                          WPARAM wparam,
                          LPARAM lparam) OVERRIDE;
 
-  // Register an |accelerator| with the particular |observer|.
-  virtual void RegisterAccelerator(
-      const ui::Accelerator& accelerator,
-      GlobalShortcutListener::Observer* observer) OVERRIDE;
-  // Unregister an |accelerator| with the particular |observer|.
-  virtual void UnregisterAccelerator(
-      const ui::Accelerator& accelerator,
-      GlobalShortcutListener::Observer* observer) OVERRIDE;
+  // GlobalShortcutListener implementation.
+  virtual void StartListening() OVERRIDE;
+  virtual void StopListening() OVERRIDE;
+  virtual bool RegisterAcceleratorImpl(
+      const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void UnregisterAcceleratorImpl(
+      const ui::Accelerator& accelerator) OVERRIDE;
 
   // Whether this object is listening for global shortcuts.
   bool is_listening_;
 
   // A map of registered accelerators and their registration ids.
-  typedef std::map< ui::Accelerator, int > HotkeyIdMap;
+  typedef std::map<ui::Accelerator, int> HotkeyIdMap;
   HotkeyIdMap hotkey_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalShortcutListenerWin);

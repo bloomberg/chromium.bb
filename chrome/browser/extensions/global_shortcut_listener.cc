@@ -3,45 +3,61 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/global_shortcut_listener.h"
-#include "chrome/browser/profiles/profile.h"
+
+#include "base/logging.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/accelerators/accelerator.h"
+
+using content::BrowserThread;
 
 namespace extensions {
 
 GlobalShortcutListener::GlobalShortcutListener() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 GlobalShortcutListener::~GlobalShortcutListener() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(accelerator_map_.empty());  // Make sure we've cleaned up.
 }
 
-void GlobalShortcutListener::RegisterAccelerator(
+bool GlobalShortcutListener::RegisterAccelerator(
     const ui::Accelerator& accelerator, Observer* observer) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   AcceleratorMap::const_iterator it = accelerator_map_.find(accelerator);
-  if (it == accelerator_map_.end()) {
-    if (accelerator_map_.empty())
-      GlobalShortcutListener::GetInstance()->StartListening();
-    Observers* observers = new Observers;
-    observers->AddObserver(observer);
-    accelerator_map_[accelerator] = observers;
-  } else {
-    // Make sure we don't register the same accelerator twice.
-    DCHECK(!accelerator_map_[accelerator]->HasObserver(observer));
-    accelerator_map_[accelerator]->AddObserver(observer);
+  if (it != accelerator_map_.end()) {
+    // The accelerator has been registered.
+    return false;
   }
+
+  if (!RegisterAcceleratorImpl(accelerator)) {
+    // If the platform-specific registration fails, mostly likely the shortcut
+    // has been registered by other native applications.
+    return false;
+  }
+
+  if (accelerator_map_.empty())
+    StartListening();
+
+  accelerator_map_[accelerator] = observer;
+  return true;
 }
 
 void GlobalShortcutListener::UnregisterAccelerator(
     const ui::Accelerator& accelerator, Observer* observer) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   AcceleratorMap::iterator it = accelerator_map_.find(accelerator);
+  // We should never get asked to unregister something that we didn't register.
   DCHECK(it != accelerator_map_.end());
-  DCHECK(it->second->HasObserver(observer));
-  it->second->RemoveObserver(observer);
-  if (!it->second->might_have_observers()) {
-    accelerator_map_.erase(it);
-    if (accelerator_map_.empty())
-      GlobalShortcutListener::GetInstance()->StopListening();
-  }
+  // The caller should call this function with the right observer.
+  DCHECK(it->second == observer);
+
+  UnregisterAcceleratorImpl(accelerator);
+  accelerator_map_.erase(it);
+  if (accelerator_map_.empty())
+    StopListening();
 }
 
 void GlobalShortcutListener::NotifyKeyPressed(
@@ -53,10 +69,8 @@ void GlobalShortcutListener::NotifyKeyPressed(
     NOTREACHED();
     return;  // No-one is listening to this key.
   }
-  // The observer list should not be empty.
-  DCHECK(iter->second->might_have_observers());
 
-  FOR_EACH_OBSERVER(Observer, *(iter->second), OnKeyPressed(accelerator));
+  iter->second->OnKeyPressed(accelerator);
 }
 
 }  // namespace extensions

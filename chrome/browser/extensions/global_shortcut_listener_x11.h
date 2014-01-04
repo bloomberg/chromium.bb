@@ -5,10 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_X11_H_
 #define CHROME_BROWSER_EXTENSIONS_GLOBAL_SHORTCUT_LISTENER_X11_H_
 
-#include <set>
 #include <X11/Xlib.h>
+#include <set>
 
-#include "base/lazy_instance.h"
 #include "base/message_loop/message_pump_dispatcher.h"
 #include "chrome/browser/extensions/global_shortcut_listener.h"
 
@@ -22,31 +21,29 @@ namespace extensions {
 // X11-specific implementation of the GlobalShortcutListener class that
 // listens for global shortcuts. Handles basic keyboard intercepting and
 // forwards its output to the base class for processing.
-class GlobalShortcutListenerX11 : public GlobalShortcutListener,
-                                  public base::MessagePumpDispatcher {
+class GlobalShortcutListenerX11
+    :
+#if !defined(TOOLKIT_GTK)
+      public base::MessagePumpDispatcher,
+#endif
+      public GlobalShortcutListener {
  public:
+  GlobalShortcutListenerX11();
   virtual ~GlobalShortcutListenerX11();
 
+#if !defined(TOOLKIT_GTK)
+  // base::MessagePumpDispatcher implementation.
+  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
+#endif
+
+ private:
   // GlobalShortcutListener implementation.
   virtual void StartListening() OVERRIDE;
   virtual void StopListening() OVERRIDE;
-
-  // base::MessagePumpDispatcher implementation.
-  virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
-
- private:
-  friend struct base::DefaultLazyInstanceTraits<GlobalShortcutListenerX11>;
-
-  GlobalShortcutListenerX11();
-
-  // Register an |accelerator| with the particular |observer|.
-  virtual void RegisterAccelerator(
-      const ui::Accelerator& accelerator,
-      GlobalShortcutListener::Observer* observer) OVERRIDE;
-  // Unregister an |accelerator| with the particular |observer|.
-  virtual void UnregisterAccelerator(
-      const ui::Accelerator& accelerator,
-      GlobalShortcutListener::Observer* observer) OVERRIDE;
+  virtual bool RegisterAcceleratorImpl(
+      const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void UnregisterAcceleratorImpl(
+      const ui::Accelerator& accelerator) OVERRIDE;
 
 #if defined(TOOLKIT_GTK)
   // Callback for XEvents of the default root window.

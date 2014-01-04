@@ -30,9 +30,6 @@ class GlobalShortcutListenerMac : public GlobalShortcutListener {
   GlobalShortcutListenerMac();
   virtual ~GlobalShortcutListenerMac();
 
-  virtual void StartListening() OVERRIDE;
-  virtual void StopListening() OVERRIDE;
-
  private:
   typedef int KeyId;
   typedef std::map<ui::Accelerator, KeyId> AcceleratorIdMap;
@@ -43,17 +40,16 @@ class GlobalShortcutListenerMac : public GlobalShortcutListener {
   void OnHotKeyEvent(EventHotKeyID hot_key_id);
   bool OnMediaKeyEvent(int key_code);
 
-  // Register an |accelerator| with the particular |observer|.
-  virtual void RegisterAccelerator(
-      const ui::Accelerator& accelerator,
-      GlobalShortcutListener::Observer* observer) OVERRIDE;
-  // Unregister an |accelerator| with the particular |observer|.
-  virtual void UnregisterAccelerator(
-      const ui::Accelerator& accelerator,
-      GlobalShortcutListener::Observer* observer) OVERRIDE;
+  // GlobalShortcutListener implementation.
+  virtual void StartListening() OVERRIDE;
+  virtual void StopListening() OVERRIDE;
+  virtual bool RegisterAcceleratorImpl(
+      const ui::Accelerator& accelerator) OVERRIDE;
+  virtual void UnregisterAcceleratorImpl(
+      const ui::Accelerator& accelerator) OVERRIDE;
 
   // Mac-specific functions for registering hot keys with modifiers.
-  void RegisterHotKey(const ui::Accelerator& accelerator, KeyId hot_key_id);
+  bool RegisterHotKey(const ui::Accelerator& accelerator, KeyId hot_key_id);
   void UnregisterHotKey(const ui::Accelerator& accelerator);
 
   // Enable and disable the media key event tap.
