@@ -100,6 +100,9 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   MOCK_METHOD0(OnRevivedPacket, void());
   // The constructor sets this up to return true by default.
   MOCK_METHOD1(OnUnauthenticatedHeader, bool(const QuicPacketHeader& header));
+  // The constructor sets this up to return true by default.
+  MOCK_METHOD1(OnUnauthenticatedPublicHeader, bool(
+      const QuicPacketPublicHeader& header));
   MOCK_METHOD1(OnPacketHeader, bool(const QuicPacketHeader& header));
   MOCK_METHOD1(OnFecProtectedPayload, void(base::StringPiece payload));
   MOCK_METHOD1(OnStreamFrame, bool(const QuicStreamFrame& frame));
@@ -130,6 +133,8 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   virtual void OnRevivedPacket() OVERRIDE {}
   virtual bool OnProtocolVersionMismatch(QuicVersion version) OVERRIDE;
   virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) OVERRIDE;
+  virtual bool OnUnauthenticatedPublicHeader(
+      const QuicPacketPublicHeader& header) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE {}
   virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE;

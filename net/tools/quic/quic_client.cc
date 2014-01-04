@@ -153,7 +153,8 @@ bool QuicClient::Connect() {
 }
 
 bool QuicClient::StartConnect() {
-  DCHECK(!connected() && initialized_);
+  DCHECK(initialized_);
+  DCHECK(!connected());
 
   QuicPacketWriter* writer = CreateQuicPacketWriter();
   if (writer_.get() != writer) {
@@ -304,18 +305,6 @@ bool QuicClient::ReadAndProcessPacket() {
   }
 
   QuicEncryptedPacket packet(buf, bytes_read, false);
-  QuicGuid our_guid = session_->connection()->guid();
-  QuicGuid packet_guid;
-
-  if (!QuicFramer::ReadGuidFromPacket(packet, &packet_guid)) {
-    DLOG(INFO) << "Could not read GUID from packet";
-    return true;
-  }
-  if (packet_guid != our_guid) {
-    DLOG(INFO) << "Ignoring packet from unexpected GUID: "
-               << packet_guid << " instead of " << our_guid;
-    return true;
-  }
 
   IPEndPoint client_address(client_ip, client_address_.port());
   session_->connection()->ProcessUdpPacket(

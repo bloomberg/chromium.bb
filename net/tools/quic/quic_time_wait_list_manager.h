@@ -36,8 +36,7 @@ class QuicTimeWaitListManagerPeer;
 // with the guid in time wait state.  After the guid expires its time wait
 // period, a new connection/session will be created if a packet is received
 // for this guid.
-class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
-                                public QuicFramerVisitorInterface {
+class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
  public:
   // writer - the entity that writes to the socket. (Owned by the dispatcher)
   // epoll_server - used to run clean up alarms. (Owned by the dispatcher)
@@ -68,7 +67,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
   virtual void ProcessPacket(const IPEndPoint& server_address,
                              const IPEndPoint& client_address,
                              QuicGuid guid,
-                             const QuicEncryptedPacket& packet);
+                             QuicPacketSequenceNumber sequence_number);
 
   // Called by the dispatcher when the underlying socket becomes writable again,
   // since we might need to send pending public reset packets which we didn't
@@ -78,31 +77,9 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
   // Used to delete guid entries that have outlived their time wait period.
   void CleanUpOldGuids();
 
-  // QuicFramerVisitorInterface
-  virtual void OnError(QuicFramer* framer) OVERRIDE;
-  virtual bool OnProtocolVersionMismatch(QuicVersion received_version) OVERRIDE;
-  virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) OVERRIDE;
-  virtual void OnPacket() OVERRIDE {}
-  virtual void OnPublicResetPacket(
-      const QuicPublicResetPacket& /*packet*/) OVERRIDE {}
-  virtual void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& /*packet*/) OVERRIDE {}
-
-  virtual void OnPacketComplete() OVERRIDE {}
-  // The following methods should never get called because we always return
-  // false from OnUnauthenticatedHeader(). We never process the encrypted bytes.
-  virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
-  virtual void OnRevivedPacket() OVERRIDE;
-  virtual void OnFecProtectedPayload(base::StringPiece /*payload*/) OVERRIDE;
-  virtual bool OnStreamFrame(const QuicStreamFrame& /*frame*/) OVERRIDE;
-  virtual bool OnAckFrame(const QuicAckFrame& /*frame*/) OVERRIDE;
-  virtual bool OnCongestionFeedbackFrame(
-      const QuicCongestionFeedbackFrame& /*frame*/) OVERRIDE;
-  virtual bool OnRstStreamFrame(const QuicRstStreamFrame& /*frame*/) OVERRIDE;
-  virtual bool OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame & /*frame*/) OVERRIDE;
-  virtual bool OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) OVERRIDE;
-  virtual void OnFecData(const QuicFecData& /*fec*/) OVERRIDE;
+  // Given a GUID that exists in the time wait list, returns the QuicVersion
+  // associated with it.
+  QuicVersion GetQuicVersionFromGuid(QuicGuid guid);
 
  private:
   friend class test::QuicTimeWaitListManagerPeer;
@@ -115,11 +92,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
   // Decides if a packet should be sent for this guid based on the number of
   // received packets.
   bool ShouldSendResponse(int received_packet_count);
-
-  // Given a GUID that exists in the time wait list, returns the QuicVersion
-  // associated with it. Used internally to set the framer version before
-  // writing the public reset packet.
-  QuicVersion GetQuicVersionFromGuid(QuicGuid guid);
 
   // Creates a public reset packet and sends it or queues it to be sent later.
   void SendPublicReset(const IPEndPoint& server_address,
@@ -163,13 +135,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface,
   // Pending public reset packets that need to be sent out to the client
   // when we are given a chance to write by the dispatcher.
   std::deque<QueuedPacket*> pending_packets_queue_;
-
-  // Used to parse incoming packets.
-  QuicFramer framer_;
-
-  // Server and client address of the last packet processed.
-  IPEndPoint server_address_;
-  IPEndPoint client_address_;
 
   // Used to schedule alarms to delete old guids which have been in the list for
   // too long. Owned by the dispatcher.

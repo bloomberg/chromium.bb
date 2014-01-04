@@ -123,6 +123,10 @@ class QuicClient : public EpollCallbackInterface,
 
   int fd() { return fd_; }
 
+  string server_hostname() {
+    return server_hostname_;
+  }
+
   // This should only be set before the initial Connect()
   void set_server_hostname(const string& hostname) {
     server_hostname_ = hostname;

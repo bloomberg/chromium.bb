@@ -20,6 +20,19 @@ using std::string;
 namespace net {
 namespace test {
 
+class QuicCryptoServerConfigPeer {
+ public:
+  explicit QuicCryptoServerConfigPeer(QuicCryptoServerConfig* server_config)
+      : server_config_(server_config) {}
+
+  base::Lock* GetStrikeRegisterClientLock() {
+    return &server_config_->strike_register_client_lock_;
+  }
+
+ private:
+  QuicCryptoServerConfig* server_config_;
+};
+
 class CryptoServerTest : public ::testing::Test {
  public:
   CryptoServerTest()
@@ -91,6 +104,15 @@ class CryptoServerTest : public ::testing::Test {
 
     virtual void RunImpl(const CryptoHandshakeMessage& client_hello,
                          const Result& result) OVERRIDE {
+      {
+        // Ensure that the strike register client lock is not held.
+        QuicCryptoServerConfigPeer peer(&test_->config_);
+        base::Lock* m = peer.GetStrikeRegisterClientLock();
+        // In Chromium, we will dead lock if the lock is held by the current
+        // thread. Chromium doesn't have AssertNotHeld API call.
+        // m->AssertNotHeld();
+        base::AutoLock lock(*m);
+      }
       ASSERT_FALSE(*called_);
       test_->ProcessValidationResult(
           client_hello, result, should_succeed_, error_substr_);
@@ -106,15 +128,14 @@ class CryptoServerTest : public ::testing::Test {
 
   void ShouldSucceed(const CryptoHandshakeMessage& message) {
     bool called = false;
-    ShouldSucceed(message, &called);
+    RunValidate(message, new ValidateCallback(this, true, "", &called));
     EXPECT_TRUE(called);
   }
 
-  void ShouldSucceed(const CryptoHandshakeMessage& message,
-                     bool* called) {
-    config_.ValidateClientHello(
-        message, addr_, &clock_,
-        new ValidateCallback(this, true, "", called));
+  void RunValidate(
+      const CryptoHandshakeMessage& message,
+      ValidateClientHelloResultCallback* cb) {
+    config_.ValidateClientHello(message, addr_, &clock_, cb);
   }
 
   void ShouldFailMentioning(const char* error_substr,
@@ -447,7 +468,7 @@ TEST_F(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
   out_.set_tag(0);
 
   bool called = false;
-  ShouldSucceed(msg, &called);
+  RunValidate(msg, new ValidateCallback(this, true, "", &called));
   // The verification request was queued.
   ASSERT_FALSE(called);
   EXPECT_EQ(0u, out_.tag());
@@ -461,7 +482,7 @@ TEST_F(AsyncStrikeServerVerificationTest, AsyncReplayProtection) {
   EXPECT_EQ(kSHLO, out_.tag());
 
   // Rejected if replayed.
-  ShouldSucceed(msg, &called);
+  RunValidate(msg, new ValidateCallback(this, true, "", &called));
   // The verification request was queued.
   ASSERT_FALSE(called);
   EXPECT_EQ(1, strike_register_client_->PendingVerifications());

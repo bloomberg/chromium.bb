@@ -848,20 +848,24 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   }
 
   // Use the client nonce to establish uniqueness.
-  base::AutoLock locked(strike_register_client_lock_);
+  StrikeRegisterClient* strike_register_client;
+  {
+    base::AutoLock locked(strike_register_client_lock_);
 
-  if (strike_register_client_.get() == NULL) {
-    strike_register_client_.reset(new LocalStrikeRegisterClient(
-        strike_register_max_entries_,
-        static_cast<uint32>(info->now.ToUNIXSeconds()),
-        strike_register_window_secs_,
-        primary_orbit,
-        strike_register_no_startup_period_ ?
-        StrikeRegister::NO_STARTUP_PERIOD_NEEDED :
-        StrikeRegister::DENY_REQUESTS_AT_STARTUP));
+    if (strike_register_client_.get() == NULL) {
+      strike_register_client_.reset(new LocalStrikeRegisterClient(
+          strike_register_max_entries_,
+          static_cast<uint32>(info->now.ToUNIXSeconds()),
+          strike_register_window_secs_,
+          primary_orbit,
+          strike_register_no_startup_period_ ?
+          StrikeRegister::NO_STARTUP_PERIOD_NEEDED :
+          StrikeRegister::DENY_REQUESTS_AT_STARTUP));
+    }
+    strike_register_client = strike_register_client_.get();
   }
 
-  strike_register_client_->VerifyNonceIsValidAndUnique(
+  strike_register_client->VerifyNonceIsValidAndUnique(
       info->client_nonce,
       info->now,
       new VerifyNonceIsValidAndUniqueCallback(client_hello_state, done_cb));
@@ -1009,9 +1013,14 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
   memcpy(config->orbit, orbit.data(), sizeof(config->orbit));
 
   {
-    base::AutoLock locked(strike_register_client_lock_);
-    if (strike_register_client_.get()) {
-      const string& orbit = strike_register_client_->orbit();
+    StrikeRegisterClient* strike_register_client;
+    {
+      base::AutoLock locked(strike_register_client_lock_);
+      strike_register_client = strike_register_client_.get();
+    }
+
+    if (strike_register_client != NULL) {
+      const string& orbit = strike_register_client->orbit();
       if (0 != memcmp(orbit.data(), config->orbit, kOrbitSize)) {
         LOG(WARNING)
             << "Server config has different orbit than current config. "

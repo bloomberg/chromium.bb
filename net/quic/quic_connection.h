@@ -278,6 +278,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   virtual void OnVersionNegotiationPacket(
       const QuicVersionNegotiationPacket& packet) OVERRIDE;
   virtual void OnRevivedPacket() OVERRIDE;
+  virtual bool OnUnauthenticatedPublicHeader(
+      const QuicPacketPublicHeader& header) OVERRIDE;
   virtual bool OnUnauthenticatedHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE;
   virtual void OnFecProtectedPayload(base::StringPiece payload) OVERRIDE;
@@ -529,10 +531,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();
-
-  bool IsRetransmission(QuicPacketSequenceNumber sequence_number);
-
-  void SetupAbandonFecTimer(QuicPacketSequenceNumber sequence_number);
 
   // Clears any accumulated frames from the last received packet.
   void ClearLastFrames();

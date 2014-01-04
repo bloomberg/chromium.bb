@@ -82,6 +82,11 @@ class NET_EXPORT_PRIVATE QuicFramerVisitorInterface {
   // before it has been processed.
   virtual void OnRevivedPacket() = 0;
 
+  // Called when the public header has been parsed, but has not been
+  // authenticated. If it returns false, framing for this packet will cease.
+  virtual bool OnUnauthenticatedPublicHeader(
+      const QuicPacketPublicHeader& header) = 0;
+
   // Called when the unauthenticated portion of the header has been parsed.
   // If OnUnauthenticatedHeader returns false, framing for this packet will
   // cease.
@@ -166,9 +171,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   // Returns true if |version| is a supported protocol version.
   bool IsSupportedVersion(const QuicVersion version) const;
-
-  // Returns true if the version flag is set in the public flags.
-  static bool HasVersionFlag(const QuicEncryptedPacket& packet);
 
   // Set callbacks to be called from the framer.  A visitor must be set, or
   // else the framer will likely crash.  It is acceptable for the visitor
@@ -338,11 +340,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   size_t GetMaxPlaintextSize(size_t ciphertext_size);
 
   const std::string& detailed_error() { return detailed_error_; }
-
-  // Read the full 8 byte guid from a packet header.
-  // Return true on success, else false.
-  static bool ReadGuidFromPacket(const QuicEncryptedPacket& packet,
-                                 QuicGuid* guid);
 
   // The minimum sequence number length required to represent |sequence_number|.
   static QuicSequenceNumberLength GetMinSequenceNumberLength(

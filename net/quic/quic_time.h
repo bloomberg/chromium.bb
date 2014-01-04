@@ -58,6 +58,12 @@ class NET_EXPORT_PRIVATE QuicTime {
 
     Delta Subtract(const Delta& delta) const;
 
+    Delta Multiply(int i) const;
+    Delta Multiply(double d) const;
+
+    // Returns the later delta of time1 and time2.
+    static Delta Max(Delta delta1, Delta delta2);
+
     bool IsZero() const;
 
     bool IsInfinite() const;
@@ -74,6 +80,9 @@ class NET_EXPORT_PRIVATE QuicTime {
   // Creates a new QuicTime with an internal value of 0.  IsInitialized()
   // will return false for these times.
   static QuicTime Zero();
+
+  // Returns the later time of time1 and time2.
+  static QuicTime Max(QuicTime time1, QuicTime time2);
 
   // Produce the internal value to be used when logging.  This value
   // represents the number of microseconds since some epoch.  It may

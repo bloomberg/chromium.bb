@@ -76,8 +76,6 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   // an existing session, or passing it to the TimeWaitListManager.
   virtual void ProcessPacket(const IPEndPoint& server_address,
                              const IPEndPoint& client_address,
-                             QuicGuid guid,
-                             bool has_version_flag,
                              const QuicEncryptedPacket& packet);
 
   // Called when the underyling connection becomes writable to allow
@@ -128,12 +126,35 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
     return supported_versions_;
   }
 
+ protected:
+  // Called by |framer_visitor_| when the public header has been parsed.
+  virtual bool OnUnauthenticatedPublicHeader(
+      const QuicPacketPublicHeader& header);
+
+  // Information about the packet currently being dispatched.
+  const IPEndPoint& current_client_address() {
+    return current_client_address_;
+  }
+  const IPEndPoint& current_server_address() {
+    return current_server_address_;
+  }
+  const QuicEncryptedPacket& current_packet() {
+    return *current_packet_;
+  }
+
  private:
+  class QuicFramerVisitor;
   friend class net::tools::test::QuicDispatcherPeer;
+
+  // Called by |framer_visitor_| when the private header has been parsed
+  // of a data packet that is destined for the time wait manager.
+  void OnUnauthenticatedHeader(const QuicPacketHeader& header);
 
   // Removes the session from the session map and write blocked list, and
   // adds the GUID to the time-wait list.
   void CleanUpSession(SessionMap::iterator it);
+
+  bool HandlePacketForTimeWait(const QuicPacketPublicHeader& header);
 
   // The list of connections waiting to write.
   WriteBlockedList write_blocked_list_;
@@ -169,6 +190,14 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   // element, with subsequent elements in descending order (versions can be
   // skipped as necessary).
   const QuicVersionVector supported_versions_;
+
+  // Information about the packet currently being handled.
+  IPEndPoint current_client_address_;
+  IPEndPoint current_server_address_;
+  const QuicEncryptedPacket* current_packet_;
+
+  QuicFramer framer_;
+  scoped_ptr<QuicFramerVisitor> framer_visitor_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicDispatcher);
 };

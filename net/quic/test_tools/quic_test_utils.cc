@@ -49,6 +49,9 @@ MockFramerVisitor::MockFramerVisitor() {
   ON_CALL(*this, OnUnauthenticatedHeader(_))
       .WillByDefault(testing::Return(true));
 
+  ON_CALL(*this, OnUnauthenticatedPublicHeader(_))
+      .WillByDefault(testing::Return(true));
+
   ON_CALL(*this, OnPacketHeader(_))
       .WillByDefault(testing::Return(true));
 
@@ -76,6 +79,11 @@ MockFramerVisitor::~MockFramerVisitor() {
 
 bool NoOpFramerVisitor::OnProtocolVersionMismatch(QuicVersion version) {
   return false;
+}
+
+bool NoOpFramerVisitor::OnUnauthenticatedPublicHeader(
+    const QuicPacketPublicHeader& header) {
+  return true;
 }
 
 bool NoOpFramerVisitor::OnUnauthenticatedHeader(

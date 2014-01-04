@@ -217,7 +217,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Returns the stream id for a new stream.
   QuicStreamId GetNextStreamId();
 
-  QuicDataStream* GetIncomingReliableStream(QuicStreamId stream_id);
+  QuicDataStream* GetIncomingDataStream(QuicStreamId stream_id);
 
   QuicDataStream* GetDataStream(const QuicStreamId stream_id);
 

@@ -103,6 +103,9 @@ class QuicTestClient :  public QuicDataStream::Visitor {
   // or the empty string if no certificate was presented.
   const string& cert_common_name() const;
 
+  // Get the server config map.
+  QuicTagValueMap GetServerConfig() const;
+
   const string& response_body() {return response_;}
   bool connected() const;
 

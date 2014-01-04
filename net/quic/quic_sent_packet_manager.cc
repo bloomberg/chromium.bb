@@ -10,6 +10,7 @@
 #include "net/quic/quic_ack_notifier_manager.h"
 
 using std::make_pair;
+using std::max;
 using std::min;
 
 // TODO(rtenneti): Remove this.
@@ -44,14 +45,24 @@ static const int kMinRetransmissionTimeMs = 200;
 static const int kMaxRetransmissionTimeMs = 60000;
 static const size_t kMaxRetransmissions = 10;
 
-// We only retransmit 2 packets per ack.
+// We retransmit at most 2 packets per ack.
 static const size_t kMaxRetransmissionsPerAck = 2;
 
 // TCP retransmits after 3 nacks.
 static const size_t kNumberOfNacksBeforeRetransmission = 3;
 
+// Only exponentially back off the handshake timer 5 times due to a timeout.
+static const size_t kMaxHandshakeRetransmissionBackoffs = 5;
+static const size_t kMinHandshakeTimeoutMs = 10;
+
+// Sends up to two tail loss probes before firing an RTO,
+// per draft RFC draft-dukkipati-tcpm-tcp-loss-probe.
+static const size_t kDefaultMaxTailLossProbes = 2;
+static const int64 kMinTailLossProbeTimeoutMs = 10;
+
 COMPILE_ASSERT(kHistoryPeriodMs >= kBitrateSmoothingPeriodMs,
                history_must_be_longer_or_equal_to_the_smoothing_period);
+
 }  // namespace
 
 #define ENDPOINT (is_server_ ? "Server: " : " Client: ")
@@ -68,7 +79,11 @@ QuicSentPacketManager::QuicSentPacketManager(bool is_server,
       clock_(clock),
       send_algorithm_(SendAlgorithmInterface::Create(clock, type)),
       rtt_sample_(QuicTime::Delta::Infinite()),
+      pending_crypto_packet_count_(0),
       consecutive_rto_count_(0),
+      consecutive_tlp_count_(0),
+      consecutive_crypto_retransmission_count_(0),
+      max_tail_loss_probes_(kDefaultMaxTailLossProbes),
       using_pacing_(false) {
 }
 
@@ -110,6 +125,11 @@ void QuicSentPacketManager::OnSerializedPacket(
     const SerializedPacket& serialized_packet) {
   if (serialized_packet.retransmittable_frames) {
     ack_notifier_manager_.OnSerializedPacket(serialized_packet);
+
+    if (serialized_packet.retransmittable_frames->HasCryptoHandshake()
+            == IS_HANDSHAKE) {
+      ++pending_crypto_packet_count_;
+    }
   }
 
   DCHECK(unacked_packets_.empty() ||
@@ -168,6 +188,8 @@ bool QuicSentPacketManager::OnIncomingAck(
   // Determine if the least unacked sequence number is being acked.
   QuicPacketSequenceNumber least_unacked_sent_before =
       GetLeastUnackedSentPacket();
+  // TODO(ianswett): Consider a non-TCP metric for determining the connection
+  // is making progress, since QUIC has out of order delivery.
   bool new_least_unacked = !IsAwaitingPacket(received_info,
                                              least_unacked_sent_before);
 
@@ -176,10 +198,15 @@ bool QuicSentPacketManager::OnIncomingAck(
   MaybeRetransmitOnAckFrame(received_info, ack_receive_time);
 
   if (new_least_unacked) {
+    // Reset all retransmit counters any time a new packet is acked.
     consecutive_rto_count_ = 0;
+    consecutive_tlp_count_ = 0;
+    consecutive_crypto_retransmission_count_ = 0;
   }
 
-  return new_least_unacked;
+  // Always reset the retransmission alarm when an ack comes in, since we now
+  // have a better estimate of the current rtt than when it was set.
+  return true;
 }
 
 void QuicSentPacketManager::DiscardUnackedPacket(
@@ -246,6 +273,7 @@ void QuicSentPacketManager::ClearPreviousRetransmissions(size_t num_to_clear) {
       unacked_packets_[newest_transmission].previous_transmissions = NULL;
       delete previous_transmissions;
     }
+    DCHECK(!ContainsKey(pending_packets_, it->first));
     unacked_packets_.erase(it++);
     --num_to_clear;
   }
@@ -253,12 +281,14 @@ void QuicSentPacketManager::ClearPreviousRetransmissions(size_t num_to_clear) {
 
 bool QuicSentPacketManager::HasRetransmittableFrames(
     QuicPacketSequenceNumber sequence_number) const {
-  if (!ContainsKey(unacked_packets_, sequence_number)) {
+  UnackedPacketMap::const_iterator it = unacked_packets_.find(sequence_number);
+  if (it == unacked_packets_.end()) {
     return false;
   }
+  const TransmissionInfo* transmission_info = &it->second;
+  DCHECK(transmission_info);
 
-  return unacked_packets_.find(
-      sequence_number)->second.retransmittable_frames != NULL;
+  return transmission_info->retransmittable_frames != NULL;
 }
 
 void QuicSentPacketManager::RetransmitUnackedPackets(
@@ -337,6 +367,16 @@ bool QuicSentPacketManager::IsPreviousTransmission(
   return *previous_transmissions->rbegin() != sequence_number;
 }
 
+// static
+bool QuicSentPacketManager::HasCryptoHandshake(
+    const TransmissionInfo& transmission_info) {
+  if (transmission_info.retransmittable_frames == NULL) {
+    return false;
+  }
+  return transmission_info.retransmittable_frames->HasCryptoHandshake() ==
+      IS_HANDSHAKE;
+}
+
 QuicSentPacketManager::UnackedPacketMap::iterator
 QuicSentPacketManager::MarkPacketHandled(
     QuicPacketSequenceNumber sequence_number, ReceivedByPeer received_by_peer) {
@@ -354,14 +394,12 @@ QuicSentPacketManager::MarkPacketHandled(
   }
 
   // If this packet has never been retransmitted, then simply drop it.
-  UnackedPacketMap::const_iterator previous_it =
+  UnackedPacketMap::iterator previous_it =
       unacked_packets_.find(sequence_number);
   if (previous_it->second.previous_transmissions == NULL) {
-    UnackedPacketMap::iterator next_unacked =
-        unacked_packets_.find(sequence_number);
-    ++next_unacked;
+    ++previous_it;
     DiscardPacket(sequence_number);
-    return next_unacked;
+    return previous_it;
   }
 
   SequenceNumberSet* previous_transmissions =
@@ -373,12 +411,17 @@ QuicSentPacketManager::MarkPacketHandled(
   if (newest_transmission == sequence_number) {
     DiscardPacket(newest_transmission);
   } else {
+    UnackedPacketMap::iterator newest_it =
+        unacked_packets_.find(newest_transmission);
+    if (HasCryptoHandshake(newest_it->second)) {
+      --pending_crypto_packet_count_;
+    }
     // If we have received an ack for a previous transmission of a packet,
     // we want to keep the "new" transmission of the packet unacked,
     // but prevent the data from being retransmitted.
-    delete unacked_packets_[newest_transmission].retransmittable_frames;
-    unacked_packets_[newest_transmission].retransmittable_frames = NULL;
-    unacked_packets_[newest_transmission].previous_transmissions = NULL;
+    delete newest_it->second.retransmittable_frames;
+    newest_it->second.retransmittable_frames = NULL;
+    newest_it->second.previous_transmissions = NULL;
     pending_retransmissions_.erase(newest_transmission);
   }
 
@@ -387,6 +430,12 @@ QuicSentPacketManager::MarkPacketHandled(
   while (previous_transmissions_it != previous_transmissions->rend()) {
     QuicPacketSequenceNumber previous_transmission = *previous_transmissions_it;
     ++previous_transmissions_it;
+    // If the packet was TLP retransmitted, the old copy was not yet considered
+    // lost or abandoned, so do that now.
+    if (ContainsKey(pending_packets_, previous_transmission)) {
+      send_algorithm_->OnPacketLost(previous_transmission, clock_->Now());
+      OnPacketAbandoned(previous_transmission);
+    }
     DiscardPacket(previous_transmission);
   }
 
@@ -404,13 +453,18 @@ void QuicSentPacketManager::DiscardPacket(
     QuicPacketSequenceNumber sequence_number) {
   UnackedPacketMap::iterator unacked_it =
       unacked_packets_.find(sequence_number);
-  // Packet was not meant to be retransmitted.
-  if (unacked_it == unacked_packets_.end()) {
-    return;
+  DCHECK(unacked_it != unacked_packets_.end());
+  // Ensure the packet is no longer pending when it's discarded.
+  DCHECK(!ContainsKey(pending_packets_, sequence_number));
+
+  RetransmittableFrames* retransmittable_frames =
+      unacked_it->second.retransmittable_frames;
+  if (HasCryptoHandshake(unacked_it->second)) {
+    --pending_crypto_packet_count_;
   }
 
   // Delete the retransmittable frames.
-  delete unacked_it->second.retransmittable_frames;
+  delete retransmittable_frames;
   unacked_packets_.erase(unacked_it);
   pending_retransmissions_.erase(sequence_number);
   return;
@@ -473,6 +527,9 @@ bool QuicSentPacketManager::OnPacketSent(
   DCHECK_LT(0u, sequence_number);
   DCHECK(!ContainsKey(pending_packets_, sequence_number));
   DCHECK(ContainsKey(unacked_packets_, sequence_number));
+  if (has_retransmittable_data == HAS_RETRANSMITTABLE_DATA) {
+    DCHECK(unacked_packets_[sequence_number].retransmittable_frames);
+  }
 
   // Only track packets the send algorithm wants us to track.
   if (!send_algorithm_->OnPacketSent(sent_time, sequence_number, bytes,
@@ -492,23 +549,94 @@ bool QuicSentPacketManager::OnPacketSent(
   pending_packets_.insert(sequence_number);
   CleanupPacketHistory();
 
-  return set_retransmission_timer;
+  // Reset the retransmission timer anytime a packet is sent in tail loss probe
+  // mode or before the crypto handshake has completed.
+  return GetRetransmissionMode() != RTO_MODE || set_retransmission_timer;
 }
 
 void QuicSentPacketManager::OnRetransmissionTimeout() {
-  // Abandon all pending packets to ensure the congestion window
-  // opens up before we attempt to retransmit packets.
+  DCHECK(!pending_packets_.empty());
+  // Handshake retransmission, TLP, and RTO are implemented with a single alarm.
+  // The handshake alarm is set when the handshake has not completed, and the
+  // TLP and RTO alarms are set after that.
+  // The TLP alarm is always set to run for under an RTO.
+  switch (GetRetransmissionMode()) {
+    case HANDSHAKE_MODE:
+      RetransmitCryptoPackets();
+      return;
+    case TLP_MODE:
+      // If no tail loss probe can be sent, because there are no retransmittable
+      // packets, execute a conventional RTO to abandon old packets.
+      RetransmitOldestPacket();
+      return;
+    case RTO_MODE:
+      RetransmitAllPackets();
+      return;
+  }
+}
+
+void QuicSentPacketManager::RetransmitCryptoPackets() {
+  DCHECK_EQ(HANDSHAKE_MODE, GetRetransmissionMode());
+  // TODO(ianswett): Typical TCP implementations only retransmit 5 times.
+  consecutive_crypto_retransmission_count_ =
+      min(kMaxHandshakeRetransmissionBackoffs,
+          consecutive_crypto_retransmission_count_ + 1);
+  bool packet_retransmitted = false;
+  for (SequenceNumberSet::iterator it = pending_packets_.begin();
+       it != pending_packets_.end(); ) {
+    QuicPacketSequenceNumber sequence_number = *it;
+    DCHECK(ContainsKey(packet_history_map_, sequence_number));
+    DCHECK(ContainsKey(unacked_packets_, sequence_number));
+    const RetransmittableFrames* frames =
+        unacked_packets_[sequence_number].retransmittable_frames;
+    if (frames == NULL || frames->HasCryptoHandshake() != IS_HANDSHAKE) {
+      ++it;
+      continue;
+    }
+    packet_retransmitted = true;
+    MarkForRetransmission(sequence_number, TLP_RETRANSMISSION);
+    // Abandon all the crypto retransmissions now so they're not lost later.
+    send_algorithm_->OnPacketAbandoned(
+        sequence_number, packet_history_map_[sequence_number]->bytes_sent());
+    pending_packets_.erase(it++);
+  }
+  DCHECK(packet_retransmitted) << "No crypto packets found to retransmit.";
+}
+
+void QuicSentPacketManager::RetransmitOldestPacket() {
+  DCHECK_EQ(TLP_MODE, GetRetransmissionMode());
+  ++consecutive_tlp_count_;
+  for (SequenceNumberSet::const_iterator it = pending_packets_.begin();
+       it != pending_packets_.end(); ++it) {
+    QuicPacketSequenceNumber sequence_number = *it;
+    DCHECK(ContainsKey(unacked_packets_, sequence_number));
+    const RetransmittableFrames* frames =
+        unacked_packets_[sequence_number].retransmittable_frames;
+    if (frames == NULL) {
+      continue;
+    }
+    DCHECK_NE(IS_HANDSHAKE, frames->HasCryptoHandshake());
+    MarkForRetransmission(sequence_number, TLP_RETRANSMISSION);
+    return;
+  }
+  DLOG(FATAL)
+    << "No retransmittable packets, so RetransmitOldestPacket failed.";
+}
+
+void QuicSentPacketManager::RetransmitAllPackets() {
+  // Abandon all retransmittable packets and packets older than the
+  // retransmission delay.
   QuicTime::Delta retransmission_delay = GetRetransmissionDelay();
   QuicTime max_send_time =
       clock_->ApproximateNow().Subtract(retransmission_delay);
 
-  // Attempt to send all the unacked packets when the RTO fires, let the
-  // congestion manager decide how many to send immediately and the remaining
-  // packets will be queued for future sending.
   DVLOG(1) << "OnRetransmissionTimeout() fired with "
            << unacked_packets_.size() << " unacked packets.";
 
-  // Retransmit any packet with retransmittable frames and abandon the rest.
+  // Request retransmission of all retransmittable packets when the RTO
+  // fires, and let the congestion manager decide how many to send
+  // immediately and the remaining packets will be queued.
+  // Abandon any non-retransmittable packets that are sufficiently old.
   bool packets_retransmitted = false;
   for (UnackedPacketMap::const_iterator it = unacked_packets_.begin();
        it != unacked_packets_.end(); ++it) {
@@ -521,11 +649,29 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
     }
   }
 
-  // Only inform the sent packet manager of an RTO if data was retransmitted.
+  // Only inform the send algorithm of an RTO if data was retransmitted.
   if (packets_retransmitted) {
     ++consecutive_rto_count_;
     send_algorithm_->OnRetransmissionTimeout();
   }
+}
+
+QuicSentPacketManager::RetransmissionTimeoutMode
+    QuicSentPacketManager::GetRetransmissionMode() const {
+  DCHECK(!pending_packets_.empty());
+  if (pending_crypto_packet_count_ > 0) {
+    return HANDSHAKE_MODE;
+  }
+  if (consecutive_tlp_count_ < max_tail_loss_probes_) {
+    // Ensure there are retransmittable frames.
+    for (SequenceNumberSet::const_iterator it = pending_packets_.begin();
+         it != pending_packets_.end(); ++it) {
+      if (HasRetransmittableFrames(*it)) {
+        return TLP_MODE;
+      }
+    }
+  }
+  return RTO_MODE;
 }
 
 void QuicSentPacketManager::OnPacketAbandoned(
@@ -579,6 +725,10 @@ void QuicSentPacketManager::MaybeRetransmitOnAckFrame(
     size_t num_nacks_needed = kNumberOfNacksBeforeRetransmission;
     // Check for early retransmit(RFC5827) when the last packet gets acked and
     // the there are fewer than 4 pending packets.
+    // TODO(ianswett): Consider setting a retransmission timer instead of
+    // losing the packet and retransmitting immediately.  Also consider only
+    // invoking OnPacketLost and OnPacketAbandoned when they're actually
+    // retransmitted in case they arrive while queued.
     if (pending_packets_.size() <= kNumberOfNacksBeforeRetransmission &&
         transmission_info.retransmittable_frames &&
         packet_history_map_.rbegin()->first == received_info.largest_observed) {
@@ -672,14 +822,65 @@ const QuicTime::Delta QuicSentPacketManager::DelayedAckTime() const {
 }
 
 const QuicTime QuicSentPacketManager::GetRetransmissionTime() const {
+  // There can't be any retransmittable packets if there are none pending.
   if (pending_packets_.empty()) {
     return QuicTime::Zero();
   }
-  return clock_->ApproximateNow().Add(GetRetransmissionDelay());
+  switch (GetRetransmissionMode()) {
+    case HANDSHAKE_MODE:
+      return clock_->ApproximateNow().Add(GetCryptoRetransmissionDelay());
+    case TLP_MODE: {
+      // TODO(ianswett): When CWND is available, it would be preferable to
+      // set the timer based on the earliest retransmittable packet.
+      // Base the updated timer on the send time of the last packet.
+      QuicPacketSequenceNumber last_pending_packet = *pending_packets_.rbegin();
+      const QuicTime& sent_time = packet_history_map_.find(
+          last_pending_packet)->second->send_timestamp();
+      const QuicTime tlp_time = sent_time.Add(GetTailLossProbeDelay());
+      // Ensure the tlp timer never gets set to a time in the past.
+      return QuicTime::Max(clock_->ApproximateNow(), tlp_time);
+    }
+    case RTO_MODE: {
+      QuicPacketSequenceNumber first_pending_packet = *pending_packets_.begin();
+      const QuicTime& sent_time = packet_history_map_.find(
+          first_pending_packet)->second->send_timestamp();
+      // Always wait at least 1.5 * RTT after the first sent packet.
+      QuicTime min_timeout = clock_->ApproximateNow().Add(
+          SmoothedRtt().Multiply(1.5));
+      QuicTime rto_timeout = sent_time.Add(GetRetransmissionDelay());
+
+      return QuicTime::Max(min_timeout, rto_timeout);
+    }
+    default:
+      DCHECK(false);
+  }
+  return QuicTime::Zero();
+}
+
+const QuicTime::Delta
+QuicSentPacketManager::GetCryptoRetransmissionDelay() const {
+  // This is equivalent to the TailLossProbeDelay, but slightly more aggressive
+  // because crypto handshake messages don't incur a delayed ack time.
+  int64 delay_ms = max<int64>(kMinHandshakeTimeoutMs,
+                              1.5 * SmoothedRtt().ToMilliseconds());
+  return QuicTime::Delta::FromMilliseconds(
+      delay_ms << consecutive_crypto_retransmission_count_);
+}
+
+const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
+  QuicTime::Delta srtt = SmoothedRtt();
+  if (pending_packets_.size() == 1) {
+    return QuicTime::Delta::Max(
+        srtt.Multiply(1.5).Add(DelayedAckTime()), srtt.Multiply(2));
+  }
+  return QuicTime::Delta::FromMilliseconds(
+      max(kMinTailLossProbeTimeoutMs,
+          static_cast<int64>(2 * srtt.ToMilliseconds())));
 }
 
 const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
   size_t number_retransmissions = consecutive_rto_count_;
+  // TODO(ianswett): Remove this flag now that EndToEndTest is no longer flaky.
   if (FLAGS_limit_rto_increase_for_tests) {
     const size_t kTailDropWindowSize = 5;
     const size_t kTailDropMaxRetransmissions = 4;
@@ -703,9 +904,8 @@ const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
         QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
   }
   // Calculate exponential back off.
-  retransmission_delay = QuicTime::Delta::FromMilliseconds(
-      retransmission_delay.ToMilliseconds() * static_cast<size_t>(
-          (1 << min<size_t>(number_retransmissions, kMaxRetransmissions))));
+  retransmission_delay = retransmission_delay.Multiply(
+      1 << min<size_t>(number_retransmissions, kMaxRetransmissions));
 
   // TODO(rch): This code should move to |send_algorithm_|.
   if (retransmission_delay.ToMilliseconds() < kMinRetransmissionTimeMs) {

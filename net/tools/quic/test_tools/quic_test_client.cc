@@ -15,6 +15,7 @@
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
 #include "net/tools/quic/test_tools/http_message_test_utils.h"
+#include "net/tools/quic/test_tools/quic_client_peer.h"
 #include "url/gurl.h"
 
 using base::StringPiece;
@@ -276,6 +277,19 @@ QuicSpdyClientStream* QuicTestClient::GetOrCreateStream() {
 const string& QuicTestClient::cert_common_name() const {
   return reinterpret_cast<RecordingProofVerifier*>(proof_verifier_)
       ->common_name();
+}
+
+QuicTagValueMap QuicTestClient::GetServerConfig() const {
+  net::QuicCryptoClientConfig* config =
+      QuicClientPeer::GetCryptoConfig(client_.get());
+  net::QuicCryptoClientConfig::CachedState* state =
+      config->LookupOrCreate(client_->server_hostname());
+  const net::CryptoHandshakeMessage* handshake_msg = state->GetServerConfig();
+  if (handshake_msg != NULL) {
+    return handshake_msg->tag_value_map();
+  } else {
+    return QuicTagValueMap();
+  }
 }
 
 bool QuicTestClient::connected() const {

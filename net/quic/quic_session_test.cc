@@ -114,8 +114,8 @@ class TestSession : public QuicSession {
     return QuicSession::IsClosedStream(id);
   }
 
-  QuicDataStream* GetIncomingReliableStream(QuicStreamId stream_id) {
-    return QuicSession::GetIncomingReliableStream(stream_id);
+  QuicDataStream* GetIncomingDataStream(QuicStreamId stream_id) {
+    return QuicSession::GetIncomingDataStream(stream_id);
   }
 
   TestCryptoStream crypto_stream_;
@@ -198,12 +198,12 @@ TEST_P(QuicSessionTest, IsClosedStreamDefault) {
 }
 
 TEST_P(QuicSessionTest, ImplicitlyCreatedStreams) {
-  ASSERT_TRUE(session_.GetIncomingReliableStream(7) != NULL);
+  ASSERT_TRUE(session_.GetIncomingDataStream(7) != NULL);
   // Both 3 and 5 should be implicitly created.
   EXPECT_FALSE(session_.IsClosedStream(3));
   EXPECT_FALSE(session_.IsClosedStream(5));
-  ASSERT_TRUE(session_.GetIncomingReliableStream(5) != NULL);
-  ASSERT_TRUE(session_.GetIncomingReliableStream(3) != NULL);
+  ASSERT_TRUE(session_.GetIncomingDataStream(5) != NULL);
+  ASSERT_TRUE(session_.GetIncomingDataStream(3) != NULL);
 }
 
 TEST_P(QuicSessionTest, IsClosedStreamLocallyCreated) {
@@ -226,9 +226,9 @@ TEST_P(QuicSessionTest, IsClosedStreamLocallyCreated) {
 TEST_P(QuicSessionTest, IsClosedStreamPeerCreated) {
   QuicStreamId stream_id1 = GetParam() > QUIC_VERSION_12 ? 5 : 3;
   QuicStreamId stream_id2 = stream_id1 + 2;
-  QuicDataStream* stream1 = session_.GetIncomingReliableStream(stream_id1);
+  QuicDataStream* stream1 = session_.GetIncomingDataStream(stream_id1);
   QuicDataStreamPeer::SetHeadersDecompressed(stream1, true);
-  QuicDataStream* stream2 = session_.GetIncomingReliableStream(stream_id2);
+  QuicDataStream* stream2 = session_.GetIncomingDataStream(stream_id2);
   QuicDataStreamPeer::SetHeadersDecompressed(stream2, true);
 
   CheckClosedStreams();
@@ -236,7 +236,7 @@ TEST_P(QuicSessionTest, IsClosedStreamPeerCreated) {
   CheckClosedStreams();
   CloseStream(stream_id2);
   // Create a stream explicitly, and another implicitly.
-  QuicDataStream* stream3 = session_.GetIncomingReliableStream(stream_id2 + 4);
+  QuicDataStream* stream3 = session_.GetIncomingDataStream(stream_id2 + 4);
   QuicDataStreamPeer::SetHeadersDecompressed(stream3, true);
   CheckClosedStreams();
   // Close one, but make sure the other is still not closed
@@ -246,9 +246,9 @@ TEST_P(QuicSessionTest, IsClosedStreamPeerCreated) {
 
 TEST_P(QuicSessionTest, StreamIdTooLarge) {
   QuicStreamId stream_id = GetParam() > QUIC_VERSION_12 ? 5 : 3;
-  session_.GetIncomingReliableStream(stream_id);
+  session_.GetIncomingDataStream(stream_id);
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
-  session_.GetIncomingReliableStream(stream_id + 102);
+  session_.GetIncomingDataStream(stream_id + 102);
 }
 
 TEST_P(QuicSessionTest, DecompressionError) {
@@ -268,7 +268,7 @@ TEST_P(QuicSessionTest, DecompressionError) {
     stream->ProcessRawData(reinterpret_cast<const char*>(data),
                            arraysize(data));
   } else {
-    ReliableQuicStream* stream = session_.GetIncomingReliableStream(3);
+    ReliableQuicStream* stream = session_.GetIncomingDataStream(3);
     const char data[] =
         "\0\0\0\0"   // priority
         "\1\0\0\0"   // headers id
@@ -406,7 +406,7 @@ TEST_P(QuicSessionTest, SendGoAway) {
   EXPECT_TRUE(session_.goaway_sent());
 
   EXPECT_CALL(*connection_, SendRstStream(3u, QUIC_STREAM_PEER_GOING_AWAY));
-  EXPECT_FALSE(session_.GetIncomingReliableStream(3u));
+  EXPECT_FALSE(session_.GetIncomingDataStream(3u));
 }
 
 TEST_P(QuicSessionTest, IncreasedTimeoutAfterCryptoHandshake) {

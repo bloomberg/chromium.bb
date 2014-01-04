@@ -151,10 +151,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Called when the retransmission timer expires.
   virtual void OnRetransmissionTimeout();
 
-  // Called when a packet is timed out, such as an RTO.  Removes the bytes from
-  // the congestion manager, but does not change the congestion window size.
-  virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number);
-
   // Calculate the time until we can send the next packet to the wire.
   // Note 1: When kUnknownWaitTime is returned, there is no need to poll
   // TimeUntilSend again until we receive an OnIncomingAckFrame event.
@@ -172,9 +168,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // either a tail loss probe or do a full RTO.  Returns QuicTime::Zero() if
   // there are no retransmittable packets.
   const QuicTime GetRetransmissionTime() const;
-
-  // Returns the current RTO delay.
-  const QuicTime::Delta GetRetransmissionDelay() const;
 
   // Returns the estimated smoothed RTT calculated by the congestion algorithm.
   const QuicTime::Delta SmoothedRtt() const;
@@ -201,6 +194,12 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   enum ReceivedByPeer {
     RECEIVED_BY_PEER,
     NOT_RECEIVED_BY_PEER,
+  };
+
+  enum RetransmissionTimeoutMode {
+    RTO_MODE,
+    TLP_MODE,
+    HANDSHAKE_MODE,
   };
 
   struct TransmissionInfo {
@@ -231,8 +230,35 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   typedef linked_hash_map<QuicPacketSequenceNumber,
                           TransmissionType> PendingRetransmissionMap;
 
+  static bool HasCryptoHandshake(const TransmissionInfo& transmission_info);
+
   // Process the incoming ack looking for newly ack'd data packets.
   void HandleAckForSentPackets(const ReceivedPacketInfo& received_info);
+
+  // Called when a packet is timed out, such as an RTO.  Removes the bytes from
+  // the congestion manager, but does not change the congestion window size.
+  virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number);
+
+  // Returns the current retransmission mode.
+  RetransmissionTimeoutMode GetRetransmissionMode() const;
+
+  // Retransmits all crypto stream packets.
+  void RetransmitCryptoPackets();
+
+  // Retransmits the oldest pending packet.
+  void RetransmitOldestPacket();
+
+  // Retransmits all the packets and abandons by invoking a full RTO.
+  void RetransmitAllPackets();
+
+  // Returns the timer for retransmitting crypto handshake packets.
+  const QuicTime::Delta GetCryptoRetransmissionDelay() const;
+
+  // Returns the timer for a new tail loss probe.
+  const QuicTime::Delta GetTailLossProbeDelay() const;
+
+  // Returns the retransmission timeout, after which a full RTO occurs.
+  const QuicTime::Delta GetRetransmissionDelay() const;
 
   // Update the RTT if the ack is for the largest acked sequence number.
   void MaybeUpdateRTT(const ReceivedPacketInfo& received_info,
@@ -301,8 +327,16 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Packets that are outstanding and have not been abandoned or lost.
   SequenceNumberSet pending_packets_;
   QuicTime::Delta rtt_sample_;  // RTT estimate from the most recent ACK.
+  // Number of outstanding crypto handshake packets.
+  size_t pending_crypto_packet_count_;
   // Number of times the RTO timer has fired in a row without receiving an ack.
   size_t consecutive_rto_count_;
+  // Number of times the tail loss probe has been sent.
+  size_t consecutive_tlp_count_;
+  // Number of times the crypto handshake has been retransmitted.
+  size_t consecutive_crypto_retransmission_count_;
+  // Maximum number of tail loss probes to send before firing an RTO.
+  size_t max_tail_loss_probes_;
   bool using_pacing_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);

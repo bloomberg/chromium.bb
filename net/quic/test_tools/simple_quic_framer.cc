@@ -41,14 +41,17 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
       const QuicVersionNegotiationPacket& packet) OVERRIDE {}
   virtual void OnRevivedPacket() OVERRIDE {}
 
+  virtual bool OnUnauthenticatedPublicHeader(
+      const QuicPacketPublicHeader& header) OVERRIDE {
+    return true;
+  }
+  virtual bool OnUnauthenticatedHeader(
+      const QuicPacketHeader& header) OVERRIDE {
+    return true;
+  }
   virtual bool OnPacketHeader(const QuicPacketHeader& header) OVERRIDE {
     has_header_ = true;
     header_ = header;
-    return true;
-  }
-
-  virtual bool OnUnauthenticatedHeader(
-      const QuicPacketHeader& header) OVERRIDE {
     return true;
   }
 

@@ -23,8 +23,8 @@ class QuicSessionPeer {
   static QuicHeadersStream* GetHeadersStream(QuicSession* session);
   static WriteBlockedList<QuicStreamId>* GetWriteblockedStreams(
       QuicSession* session);
-  static QuicDataStream* GetIncomingReliableStream(QuicSession* session,
-                                                   QuicStreamId stream_id);
+  static QuicDataStream* GetIncomingDataStream(QuicSession* session,
+                                               QuicStreamId stream_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicSessionPeer);

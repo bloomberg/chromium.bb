@@ -188,7 +188,8 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
         fec_count_(0),
         complete_packets_(0),
         revived_packets_(0),
-        accept_packet_(true) {
+        accept_packet_(true),
+        accept_public_header_(true) {
   }
 
   virtual ~TestQuicVisitor() {
@@ -230,6 +231,12 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
     packet_count_++;
     header_.reset(new QuicPacketHeader(header));
     return accept_packet_;
+  }
+
+  virtual bool OnUnauthenticatedPublicHeader(
+      const QuicPacketPublicHeader& header) OVERRIDE {
+    public_header_.reset(new QuicPacketPublicHeader(header));
+    return accept_public_header_;
   }
 
   virtual bool OnUnauthenticatedHeader(
@@ -295,8 +302,10 @@ class TestQuicVisitor : public ::net::QuicFramerVisitorInterface {
   int complete_packets_;
   int revived_packets_;
   bool accept_packet_;
+  bool accept_public_header_;
 
   scoped_ptr<QuicPacketHeader> header_;
+  scoped_ptr<QuicPacketPublicHeader> public_header_;
   scoped_ptr<QuicPublicResetPacket> public_reset_packet_;
   scoped_ptr<QuicVersionNegotiationPacket> version_negotiation_packet_;
   vector<QuicStreamFrame*> stream_frames_;
@@ -1489,6 +1498,25 @@ TEST_P(QuicFramerTest, RejectPacket) {
 
   ASSERT_EQ(0u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
+}
+
+TEST_P(QuicFramerTest, RejectPublicHeader) {
+  visitor_.accept_public_header_ = false;
+
+  unsigned char packet[] = {
+    // public flags (8 byte guid)
+    0x3C,
+    // guid
+    0x10, 0x32, 0x54, 0x76,
+    0x98, 0xBA, 0xDC, 0xFE,
+  };
+
+  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
+  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
+
+  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
+  ASSERT_TRUE(visitor_.public_header_.get());
+  ASSERT_FALSE(visitor_.header_.get());
 }
 
 TEST_P(QuicFramerTest, RevivedStreamFrame) {

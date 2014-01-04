@@ -11,6 +11,7 @@
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/crypto/strike_register_client.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -41,6 +42,10 @@ class QuicCryptoServerConfigPeer {
                                   IPEndPoint ip,
                                   QuicWallTime now) {
     return server_config_->ValidateSourceAddressToken(srct, ip, now);
+  }
+
+  base::Lock* GetStrikeRegisterClientLock() {
+    return &server_config_->strike_register_client_lock_;
   }
 
   // CheckConfigs compares the state of the Configs in |server_config_| to the
@@ -144,6 +149,39 @@ class QuicCryptoServerConfigPeer {
   const QuicCryptoServerConfig* server_config_;
 };
 
+class TestStrikeRegisterClient : public StrikeRegisterClient {
+ public:
+  TestStrikeRegisterClient(QuicCryptoServerConfig* config, string orbit)
+      : config_(config), orbit_(orbit), orbit_called_(false) {}
+
+  virtual string orbit() OVERRIDE {
+    // Ensure that the strike register client lock is not held.
+    QuicCryptoServerConfigPeer peer(config_);
+    base::Lock* m = peer.GetStrikeRegisterClientLock();
+    // In Chromium, we will dead lock if the lock is held by the current thread.
+    // Chromium doesn't have AssertNotHeld API call.
+    // m->AssertNotHeld();
+    base::AutoLock lock(*m);
+
+    orbit_called_ = true;
+    return orbit_;
+  }
+
+  virtual void VerifyNonceIsValidAndUnique(
+      StringPiece nonce,
+      QuicWallTime now,
+      ResultCallback* cb) OVERRIDE {
+    LOG(FATAL) << "Not implemented";
+  }
+
+  bool orbit_called() { return orbit_called_; }
+
+ private:
+  QuicCryptoServerConfig* config_;
+  string orbit_;
+  bool orbit_called_;
+};
+
 TEST(QuicCryptoServerConfigTest, ServerConfig) {
   QuicRandom* rand = QuicRandom::GetInstance();
   QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand);
@@ -152,6 +190,24 @@ TEST(QuicCryptoServerConfigTest, ServerConfig) {
   scoped_ptr<CryptoHandshakeMessage>(
       server.AddDefaultConfig(rand, &clock,
                               QuicCryptoServerConfig::ConfigOptions()));
+}
+
+TEST(QuicCryptoServerConfigTest, GetOrbitIsCalledWithoutTheStrikeRegisterLock) {
+  QuicRandom* rand = QuicRandom::GetInstance();
+  QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand);
+  MockClock clock;
+
+  const char kOrbit[] = "12345678";
+
+  TestStrikeRegisterClient* strike_register =
+      new TestStrikeRegisterClient(&server, kOrbit);
+  server.SetStrikeRegisterClient(strike_register);
+
+  QuicCryptoServerConfig::ConfigOptions options;
+  options.orbit = kOrbit;
+  scoped_ptr<CryptoHandshakeMessage>(
+      server.AddDefaultConfig(rand, &clock, options));
+  EXPECT_TRUE(strike_register->orbit_called());
 }
 
 TEST(QuicCryptoServerConfigTest, SourceAddressTokens) {

@@ -482,6 +482,12 @@ bool QuicFramer::ProcessPacket(const QuicEncryptedPacket& packet) {
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
+  if (!visitor_->OnUnauthenticatedPublicHeader(public_header)) {
+    // The visitor suppresses further processing of the packet.
+    reader_.reset(NULL);
+    return true;
+  }
+
   if (is_server_ && public_header.version_flag &&
       public_header.versions[0] != quic_version_) {
     if (!visitor_->OnProtocolVersionMismatch(public_header.versions[0])) {
@@ -810,23 +816,6 @@ bool QuicFramer::ProcessPublicHeader(
     public_header->versions.push_back(version);
   }
   return true;
-}
-
-// static
-bool QuicFramer::ReadGuidFromPacket(const QuicEncryptedPacket& packet,
-                                    QuicGuid* guid) {
-  QuicDataReader reader(packet.data(), packet.length());
-  uint8 public_flags;
-  if (!reader.ReadBytes(&public_flags, 1)) {
-    return false;
-  }
-  // Ensure it's an 8 byte guid.
-  if ((public_flags & PACKET_PUBLIC_FLAGS_8BYTE_GUID) !=
-          PACKET_PUBLIC_FLAGS_8BYTE_GUID) {
-    return false;
-  }
-
-  return reader.ReadUInt64(guid);
 }
 
 // static
@@ -1768,11 +1757,6 @@ bool QuicFramer::AppendStreamFramePayload(
 }
 
 // static
-bool QuicFramer::HasVersionFlag(const QuicEncryptedPacket& packet) {
-  return packet.length() > 0 &&
-      (packet.data()[0] & PACKET_PUBLIC_FLAGS_VERSION) != 0;
-}
-
 void QuicFramer::set_version(const QuicVersion version) {
   DCHECK(IsSupportedVersion(version));
   quic_version_ = version;

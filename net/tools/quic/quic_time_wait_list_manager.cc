@@ -95,16 +95,12 @@ QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
     EpollServer* epoll_server,
     const QuicVersionVector& supported_versions)
-    : framer_(supported_versions,
-              QuicTime::Zero(),  // unused
-              true),
-      epoll_server_(epoll_server),
+    : epoll_server_(epoll_server),
       kTimeWaitPeriod_(QuicTime::Delta::FromSeconds(kTimeWaitSeconds)),
       guid_clean_up_alarm_(new GuidCleanUpAlarm(this)),
-      clock_(epoll_server),
+      clock_(epoll_server_),
       writer_(writer),
       is_write_blocked_(false) {
-  framer_.set_visitor(this);
   SetGuidCleanUpAlarm();
 }
 
@@ -127,26 +123,11 @@ void QuicTimeWaitListManager::AddGuidToTimeWait(
   guid_map_.insert(make_pair(guid, data));
   time_ordered_guid_list_.push_back(new GuidAddTime(guid,
                                                     clock_.ApproximateNow()));
+  DCHECK(IsGuidInTimeWait(guid));
 }
 
 bool QuicTimeWaitListManager::IsGuidInTimeWait(QuicGuid guid) const {
   return guid_map_.find(guid) != guid_map_.end();
-}
-
-void QuicTimeWaitListManager::ProcessPacket(
-    const IPEndPoint& server_address,
-    const IPEndPoint& client_address,
-    QuicGuid guid,
-    const QuicEncryptedPacket& packet) {
-  DCHECK(IsGuidInTimeWait(guid));
-  server_address_ = server_address;
-  client_address_ = client_address;
-
-  // Set the framer to the appropriate version for this GUID, before processing.
-  QuicVersion version = GetQuicVersionFromGuid(guid);
-  framer_.set_version(version);
-
-  framer_.ProcessPacket(packet);
 }
 
 QuicVersion QuicTimeWaitListManager::GetQuicVersionFromGuid(QuicGuid guid) {
@@ -169,99 +150,31 @@ bool QuicTimeWaitListManager::OnCanWrite() {
   return !is_write_blocked_;
 }
 
-void QuicTimeWaitListManager::OnError(QuicFramer* framer) {
-  DLOG(INFO) << QuicUtils::ErrorToString(framer->error());
-}
-
-bool QuicTimeWaitListManager::OnProtocolVersionMismatch(
-    QuicVersion received_version) {
-  if (!framer_.IsSupportedVersion(received_version)) {
-    // Drop such packets whose version don't match.
-    return false;
-  }
-  // Allow the framer to continue processing this packet.
-  framer_.set_version(received_version);
-  return true;
-}
-
-bool QuicTimeWaitListManager::OnUnauthenticatedHeader(
-    const QuicPacketHeader& header) {
+void QuicTimeWaitListManager::ProcessPacket(
+    const IPEndPoint& server_address,
+    const IPEndPoint& client_address,
+    QuicGuid guid,
+    QuicPacketSequenceNumber sequence_number) {
+  DCHECK(IsGuidInTimeWait(guid));
   // TODO(satyamshekhar): Think about handling packets from different client
   // addresses.
-  GuidMapIterator it = guid_map_.find(header.public_header.guid);
+  GuidMapIterator it = guid_map_.find(guid);
   DCHECK(it != guid_map_.end());
   // Increment the received packet count.
   ++((it->second).num_packets);
   if (!ShouldSendResponse((it->second).num_packets)) {
-    return false;
+    return;
   }
   if (it->second.close_packet) {
      QueuedPacket* queued_packet =
-         new QueuedPacket(server_address_,
-                          client_address_,
+         new QueuedPacket(server_address,
+                          client_address,
                           it->second.close_packet->Clone());
      // Takes ownership of the packet.
      SendOrQueuePacket(queued_packet);
   } else {
-    // We don't need the packet anymore. Just tell the client what sequence
-    // number we rejected.
-    SendPublicReset(server_address_,
-                    client_address_,
-                    header.public_header.guid,
-                    header.packet_sequence_number);
+    SendPublicReset(server_address, client_address, guid, sequence_number);
   }
-  // Never process the body of the packet in time wait state.
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnPacketHeader(const QuicPacketHeader& header) {
-  DCHECK(false);
-  return false;
-}
-
-void QuicTimeWaitListManager::OnRevivedPacket() {
-  DCHECK(false);
-}
-
-void QuicTimeWaitListManager::OnFecProtectedPayload(StringPiece /*payload*/) {
-  DCHECK(false);
-}
-
-bool QuicTimeWaitListManager::OnStreamFrame(const QuicStreamFrame& /*frame*/) {
-  DCHECK(false);
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnAckFrame(const QuicAckFrame& /*frame*/) {
-  DCHECK(false);
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnCongestionFeedbackFrame(
-    const QuicCongestionFeedbackFrame& /*frame*/) {
-  DCHECK(false);
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnRstStreamFrame(
-    const QuicRstStreamFrame& /*frame*/) {
-  DCHECK(false);
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnConnectionCloseFrame(
-    const QuicConnectionCloseFrame & /*frame*/) {
-  DCHECK(false);
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) {
-  DCHECK(false);
-  return false;
-}
-
-void QuicTimeWaitListManager::OnFecData(const QuicFecData& /*fec*/) {
-  DCHECK(false);
 }
 
 // Returns true if the number of packets received for this guid is a power of 2
@@ -315,7 +228,6 @@ void QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
       queued_packet->server_address().address(),
       queued_packet->client_address(),
       this);
-
   if (result.status == WRITE_STATUS_BLOCKED) {
     is_write_blocked_ = true;
   } else if (result.status == WRITE_STATUS_ERROR) {

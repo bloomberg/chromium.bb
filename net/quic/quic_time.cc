@@ -62,6 +62,20 @@ QuicTime::Delta QuicTime::Delta::Subtract(const Delta& delta) const {
                                            delta.ToMicroseconds());
 }
 
+QuicTime::Delta QuicTime::Delta::Multiply(int i) const {
+  return QuicTime::Delta::FromMicroseconds(ToMicroseconds() * i);
+}
+
+QuicTime::Delta QuicTime::Delta::Multiply(double d) const {
+  return QuicTime::Delta::FromMicroseconds(ToMicroseconds() * d);
+}
+
+// static
+QuicTime::Delta QuicTime::Delta::Max(QuicTime::Delta delta1,
+                                     QuicTime::Delta delta2) {
+  return delta1 < delta2 ? delta2 : delta1;
+}
+
 bool QuicTime::Delta::IsZero() const {
   return delta_.InMicroseconds() == 0;
 }
@@ -73,6 +87,11 @@ bool QuicTime::Delta::IsInfinite() const {
 // static
 QuicTime QuicTime::Zero() {
   return QuicTime(base::TimeTicks());
+}
+
+// static
+QuicTime QuicTime::Max(QuicTime time1, QuicTime time2) {
+  return time1 > time2 ? time1 : time2;
 }
 
 QuicTime::QuicTime(base::TimeTicks ticks)

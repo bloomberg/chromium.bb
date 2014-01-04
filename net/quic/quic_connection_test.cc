@@ -21,6 +21,7 @@
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_packet_creator_peer.h"
+#include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -391,6 +392,9 @@ class TestConnection : public QuicConnection {
                        QuicSupportedVersions()),
         helper_(helper),
         writer_(writer) {
+    // Disable tail loss probes for most tests.
+    QuicSentPacketManagerPeer::SetMaxTailLossProbes(
+        QuicConnectionPeer::GetSentPacketManager(this), 0);
     writer_->set_is_server(is_server);
   }
 
@@ -1313,7 +1317,7 @@ TEST_F(QuicConnectionTest, AbandonFECFromCongestionWindow) {
   connection_.options()->max_packets_per_fec_group = 1;
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(2);
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
 
   const QuicTime::Delta retransmission_time =
       QuicTime::Delta::FromMilliseconds(5000);
@@ -1333,10 +1337,10 @@ TEST_F(QuicConnectionTest, DontAbandonAckedFEC) {
 
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
   // Send some more data afterwards to ensure early retransmit doesn't trigger.
-  connection_.SendStreamDataWithString(1, "foo", 3, !kFin, NULL);
-  connection_.SendStreamDataWithString(1, "foo", 6, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 3, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 6, !kFin, NULL);
 
   QuicAckFrame ack_fec = InitAckFrame(2, 1);
   // Data packet missing.
@@ -1362,12 +1366,12 @@ TEST_F(QuicConnectionTest, DontAbandonAllFEC) {
 
   // 1 Data and 1 FEC packet.
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(6);
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
   // Send some more data afterwards to ensure early retransmit doesn't trigger.
-  connection_.SendStreamDataWithString(1, "foo", 3, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 3, !kFin, NULL);
   // Advance the time so not all the FEC packets are abandoned.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
-  connection_.SendStreamDataWithString(1, "foo", 6, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 6, !kFin, NULL);
 
   QuicAckFrame ack_fec = InitAckFrame(5, 1);
   // Ack all data packets, but no fec packets.
@@ -1736,7 +1740,7 @@ TEST_F(QuicConnectionTest, RetransmitNackedLargestObserved) {
 TEST_F(QuicConnectionTest, QueueAfterTwoRTOs) {
   for (int i = 0; i < 10; ++i) {
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
-    connection_.SendStreamDataWithString(1, "foo", i * 3, !kFin, NULL);
+    connection_.SendStreamDataWithString(3, "foo", i * 3, !kFin, NULL);
   }
 
   // Block the congestion window and ensure they're queued.
@@ -1929,7 +1933,7 @@ TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPackets) {
 TEST_F(QuicConnectionTest, RTO) {
   QuicTime default_retransmission_time = clock_.ApproximateNow().Add(
       DefaultRetransmissionTime());
-  SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
+  SendStreamDataToPeer(3, "foo", 0, !kFin, NULL);
   EXPECT_EQ(1u, outgoing_ack()->sent_info.least_unacked);
 
   EXPECT_EQ(1u, last_header()->packet_sequence_number);
@@ -1954,12 +1958,12 @@ TEST_F(QuicConnectionTest, RTOWithSameEncryptionLevel) {
   // A TaggingEncrypter puts kTagSize copies of the given byte (0x01 here) at
   // the end of the packet. We can test this to check which encrypter was used.
   connection_.SetEncrypter(ENCRYPTION_NONE, new TaggingEncrypter(0x01));
-  SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
+  SendStreamDataToPeer(3, "foo", 0, !kFin, NULL);
   EXPECT_EQ(0x01010101u, final_bytes_of_last_packet());
 
   connection_.SetEncrypter(ENCRYPTION_INITIAL, new TaggingEncrypter(0x02));
   connection_.SetDefaultEncryptionLevel(ENCRYPTION_INITIAL);
-  SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
+  SendStreamDataToPeer(3, "foo", 0, !kFin, NULL);
   EXPECT_EQ(0x02020202u, final_bytes_of_last_packet());
 
   EXPECT_EQ(default_retransmission_time,
@@ -2020,7 +2024,7 @@ TEST_F(QuicConnectionTest,
   use_tagging_decrypter();
   connection_.SetEncrypter(ENCRYPTION_NONE, new TaggingEncrypter(0x01));
   QuicPacketSequenceNumber sequence_number;
-  SendStreamDataToPeer(1, "foo", 0, !kFin, &sequence_number);
+  SendStreamDataToPeer(3, "foo", 0, !kFin, &sequence_number);
 
   connection_.SetEncrypter(ENCRYPTION_FORWARD_SECURE,
                            new TaggingEncrypter(0x02));
@@ -2128,7 +2132,7 @@ TEST_F(QuicConnectionTest, RetransmissionCountCalculation) {
   QuicPacketSequenceNumber original_sequence_number;
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, NOT_RETRANSMISSION, _))
       .WillOnce(DoAll(SaveArg<1>(&original_sequence_number), Return(true)));
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
 
   EXPECT_TRUE(QuicConnectionPeer::IsSavedForRetransmission(
       &connection_, original_sequence_number));
@@ -2192,8 +2196,8 @@ TEST_F(QuicConnectionTest, DelayRTOWithAckReceipt) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, NOT_RETRANSMISSION, _))
       .Times(2);
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
-  connection_.SendStreamDataWithString(2, "bar", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(2, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "bar", 0, !kFin, NULL);
   QuicAlarm* retransmission_alarm = connection_.GetRetransmissionAlarm();
   EXPECT_TRUE(retransmission_alarm->IsSet());
 
@@ -2210,8 +2214,6 @@ TEST_F(QuicConnectionTest, DelayRTOWithAckReceipt) {
 
   // Ensure the second packet gets retransmitted when it finally fires.
   EXPECT_TRUE(retransmission_alarm->IsSet());
-  EXPECT_GE(retransmission_alarm->deadline(), clock_.ApproximateNow());
-  clock_.AdvanceTime(DefaultRetransmissionTime());
   EXPECT_LT(retransmission_alarm->deadline(), clock_.ApproximateNow());
   EXPECT_CALL(*send_algorithm_, OnRetransmissionTimeout());
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, RTO_RETRANSMISSION, _));
@@ -2223,9 +2225,9 @@ TEST_F(QuicConnectionTest, DelayRTOWithAckReceipt) {
   // than previously.
   EXPECT_TRUE(retransmission_alarm->IsSet());
   QuicTime next_rto_time = retransmission_alarm->deadline();
-  QuicTime::Delta expected_rto =
-      connection_.sent_packet_manager().GetRetransmissionDelay();
-  EXPECT_EQ(next_rto_time, clock_.ApproximateNow().Add(expected_rto));
+  QuicTime expected_rto_time =
+      connection_.sent_packet_manager().GetRetransmissionTime();
+  EXPECT_EQ(next_rto_time, expected_rto_time);
 }
 
 TEST_F(QuicConnectionTest, TestQueued) {
@@ -2427,7 +2429,7 @@ TEST_F(QuicConnectionTest, SendSchedulerDelayThenRetransmit) {
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(1, _)).Times(1);
   EXPECT_CALL(*send_algorithm_,
               OnPacketSent(_, 1, _, NOT_RETRANSMISSION, _));
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, NULL);
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, NULL);
   EXPECT_EQ(0u, connection_.NumQueuedPackets());
   // Advance the time for retransmission of lost packet.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(501));

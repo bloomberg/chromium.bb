@@ -360,6 +360,11 @@ void QuicConnection::OnVersionNegotiationPacket(
 void QuicConnection::OnRevivedPacket() {
 }
 
+bool QuicConnection::OnUnauthenticatedPublicHeader(
+    const QuicPacketPublicHeader& header) {
+  return true;
+}
+
 bool QuicConnection::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   return true;
 }
@@ -1271,7 +1276,7 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
       sent_packet_manager_.OnPacketSent(sequence_number, now, length,
                                         transmission_type, retransmittable);
 
-  if (reset_retransmission_alarm) {
+  if (reset_retransmission_alarm || !retransmission_alarm_->IsSet()) {
     retransmission_alarm_->Cancel();
     QuicTime retransmission_time = sent_packet_manager_.GetRetransmissionTime();
     if (retransmission_time != QuicTime::Zero()) {

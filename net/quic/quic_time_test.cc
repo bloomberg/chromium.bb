@@ -48,6 +48,21 @@ TEST(QuicTimeDeltaTest, Subtract) {
                 QuicTime::Delta::FromMilliseconds(1)));
 }
 
+TEST(QuicTimeDeltaTest, Multiply) {
+  int i = 2;
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(4000),
+            QuicTime::Delta::FromMilliseconds(2).Multiply(i));
+  double d = 2;
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(4000),
+            QuicTime::Delta::FromMilliseconds(2).Multiply(d));
+}
+
+TEST(QuicTimeDeltaTest, Max) {
+  EXPECT_EQ(QuicTime::Delta::FromMicroseconds(2000),
+            QuicTime::Delta::Max(QuicTime::Delta::FromMicroseconds(1000),
+                                 QuicTime::Delta::FromMicroseconds(2000)));
+}
+
 TEST(QuicTimeDeltaTest, NotEqual) {
   EXPECT_TRUE(QuicTime::Delta::FromSeconds(0) !=
               QuicTime::Delta::FromSeconds(1));
@@ -93,6 +108,15 @@ TEST_F(QuicTimeTest, SubtractDelta) {
       QuicTime::Delta::FromMilliseconds(2));
   EXPECT_EQ(QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(1)),
             time.Subtract(QuicTime::Delta::FromMilliseconds(1)));
+}
+
+TEST_F(QuicTimeTest, Max) {
+  QuicTime time_1 = QuicTime::Zero().Add(
+      QuicTime::Delta::FromMilliseconds(1));
+  QuicTime time_2 = QuicTime::Zero().Add(
+      QuicTime::Delta::FromMilliseconds(2));
+
+  EXPECT_EQ(time_2, QuicTime::Max(time_1, time_2));
 }
 
 TEST_F(QuicTimeTest, MockClock) {

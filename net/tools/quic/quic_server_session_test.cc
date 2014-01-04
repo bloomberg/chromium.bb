@@ -30,9 +30,9 @@ namespace test {
 
 class QuicServerSessionPeer {
  public:
-  static QuicDataStream* GetIncomingReliableStream(
+  static QuicDataStream* GetIncomingDataStream(
       QuicServerSession* s, QuicStreamId id) {
-    return s->GetIncomingReliableStream(id);
+    return s->GetIncomingDataStream(id);
   }
   static QuicDataStream* GetDataStream(QuicServerSession* s, QuicStreamId id) {
     return s->GetDataStream(id);
@@ -224,34 +224,33 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
 TEST_P(QuicServerSessionTest, MaxNumConnections) {
   QuicStreamId stream_id = GetParam() == QUIC_VERSION_12 ? 3 : 5;
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
-  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingReliableStream(session_.get(),
-                                                               stream_id));
-  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingReliableStream(session_.get(),
-                                                               stream_id + 2));
-  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingReliableStream(session_.get(),
-                                                               stream_id + 4));
+  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
+                                                           stream_id));
+  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
+                                                           stream_id + 2));
+  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
+                                                           stream_id + 4));
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
-  EXPECT_FALSE(QuicServerSessionPeer::GetIncomingReliableStream(session_.get(),
-                                                                stream_id + 6));
+  EXPECT_FALSE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
+                                                            stream_id + 6));
 }
 
 TEST_P(QuicServerSessionTest, MaxNumConnectionsImplicit) {
   QuicStreamId stream_id = GetParam() == QUIC_VERSION_12 ? 3 : 5;
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
-  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingReliableStream(session_.get(),
-                                                               stream_id));
+  EXPECT_TRUE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
+                                                           stream_id));
   // Implicitly opens two more streams.
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_TOO_MANY_OPEN_STREAMS));
-  EXPECT_FALSE(QuicServerSessionPeer::GetIncomingReliableStream(session_.get(),
-                                                                stream_id + 6));
+  EXPECT_FALSE(QuicServerSessionPeer::GetIncomingDataStream(session_.get(),
+                                                            stream_id + 6));
 }
 
 TEST_P(QuicServerSessionTest, GetEvenIncomingError) {
   // Incoming streams on the server session must be odd.
   EXPECT_CALL(*connection_, SendConnectionClose(QUIC_INVALID_STREAM_ID));
   EXPECT_EQ(NULL,
-            QuicServerSessionPeer::GetIncomingReliableStream(
-                session_.get(), 4));
+            QuicServerSessionPeer::GetIncomingDataStream(session_.get(), 4));
 }
 
 }  // namespace

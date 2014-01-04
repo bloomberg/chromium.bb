@@ -511,11 +511,10 @@ QuicDataStream* QuicSession::GetDataStream(const QuicStreamId stream_id) {
     return NULL;
   }
 
-  return GetIncomingReliableStream(stream_id);
+  return GetIncomingDataStream(stream_id);
 }
 
-QuicDataStream* QuicSession::GetIncomingReliableStream(
-    QuicStreamId stream_id) {
+QuicDataStream* QuicSession::GetIncomingDataStream(QuicStreamId stream_id) {
   if (IsClosedStream(stream_id)) {
     return NULL;
   }

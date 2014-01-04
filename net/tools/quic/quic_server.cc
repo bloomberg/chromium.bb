@@ -191,21 +191,6 @@ void QuicServer::OnEvent(int fd, EpollEvent* event) {
 }
 
 /* static */
-void QuicServer::MaybeDispatchPacket(QuicDispatcher* dispatcher,
-                                     const QuicEncryptedPacket& packet,
-                                     const IPEndPoint& server_address,
-                                     const IPEndPoint& client_address) {
-  QuicGuid guid;
-  if (!QuicFramer::ReadGuidFromPacket(packet, &guid)) {
-    return;
-  }
-
-  bool has_version_flag = QuicFramer::HasVersionFlag(packet);
-
-  dispatcher->ProcessPacket(
-      server_address, client_address, guid, has_version_flag, packet);
-}
-
 bool QuicServer::ReadAndDispatchSinglePacket(int fd,
                                              int port,
                                              QuicDispatcher* dispatcher,
@@ -228,7 +213,7 @@ bool QuicServer::ReadAndDispatchSinglePacket(int fd,
   QuicEncryptedPacket packet(buf, bytes_read, false);
 
   IPEndPoint server_address(server_ip, port);
-  MaybeDispatchPacket(dispatcher, packet, server_address, client_address);
+  dispatcher->ProcessPacket(server_address, client_address, packet);
 
   return true;
 }

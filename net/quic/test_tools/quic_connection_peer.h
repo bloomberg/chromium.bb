@@ -23,6 +23,7 @@ class QuicFramer;
 class QuicPacketCreator;
 class QuicPacketWriter;
 class QuicReceivedPacketManager;
+class QuicSentPacketManager;
 class ReceiveAlgorithmInterface;
 class SendAlgorithmInterface;
 
@@ -47,6 +48,9 @@ class QuicConnectionPeer {
       QuicConnection* connection);
 
   static QuicPacketCreator* GetPacketCreator(QuicConnection* connection);
+
+  static QuicSentPacketManager* GetSentPacketManager(
+      QuicConnection* connection);
 
   static QuicReceivedPacketManager* GetReceivedPacketManager(
       QuicConnection* connection);

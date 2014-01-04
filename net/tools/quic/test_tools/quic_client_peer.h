@@ -6,6 +6,9 @@
 #define NET_TOOLS_QUIC_TEST_TOOLS_QUIC_CLIENT_PEER_H_
 
 namespace net {
+
+class QuicCryptoClientConfig;
+
 namespace tools {
 
 class QuicClient;
@@ -15,6 +18,7 @@ namespace test {
 class QuicClientPeer {
  public:
   static int GetFd(QuicClient* client);
+  static QuicCryptoClientConfig* GetCryptoConfig(QuicClient* client);
 };
 
 }  // namespace test

@@ -378,6 +378,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // active config will be promoted to primary.
   mutable QuicWallTime next_config_promotion_time_;
 
+  // Protects access to the pointer held by strike_register_client_.
   mutable base::Lock strike_register_client_lock_;
   // strike_register_ contains a data structure that keeps track of previously
   // observed client nonces in order to prevent replay attacks.

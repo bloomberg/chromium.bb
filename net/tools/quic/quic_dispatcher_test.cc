@@ -105,17 +105,52 @@ class QuicDispatcherTest : public ::testing::Test {
     return reinterpret_cast<MockConnection*>(session2_->connection());
   }
 
+  QuicEncryptedPacket* ConstructEncryptedPacket(
+      QuicGuid guid,
+      bool version_flag,
+      bool reset_flag,
+      QuicPacketSequenceNumber sequence_number,
+      const string& data) {
+    QuicPacketHeader header;
+    header.public_header.guid = guid;
+    header.public_header.guid_length = PACKET_8BYTE_GUID;
+    header.public_header.version_flag = version_flag;
+    header.public_header.reset_flag = reset_flag;
+    header.public_header.sequence_number_length = PACKET_6BYTE_SEQUENCE_NUMBER;
+    header.packet_sequence_number = sequence_number;
+    header.entropy_flag = false;
+    header.entropy_hash = 0;
+    header.fec_flag = false;
+    header.is_in_fec_group = NOT_IN_FEC_GROUP;
+    header.fec_group = 0;
+    QuicStreamFrame stream_frame(1, false, 0, MakeIOVector(data));
+    QuicFrame frame(&stream_frame);
+    QuicFrames frames;
+    frames.push_back(frame);
+    QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
+    scoped_ptr<QuicPacket> packet(
+        framer.BuildUnsizedDataPacket(header, frames).packet);
+    EXPECT_TRUE(packet != NULL);
+    QuicEncryptedPacket* encrypted = framer.EncryptPacket(ENCRYPTION_NONE,
+                                                          sequence_number,
+                                                          *packet);
+    EXPECT_TRUE(encrypted != NULL);
+    data_ = string(encrypted->data(), encrypted->length());
+    return encrypted;
+  }
+
   void ProcessPacket(IPEndPoint addr,
                      QuicGuid guid,
                      bool has_version_flag,
                      const string& data) {
-    dispatcher_.ProcessPacket(
-        IPEndPoint(), addr, guid, has_version_flag,
-        QuicEncryptedPacket(data.data(), data.length()));
+    scoped_ptr<QuicEncryptedPacket> packet(
+        ConstructEncryptedPacket(guid, has_version_flag, false, 1, data));
+    dispatcher_.ProcessPacket(IPEndPoint(), addr, *packet.get());
   }
 
   void ValidatePacket(const QuicEncryptedPacket& packet) {
-    EXPECT_TRUE(packet.AsStringPiece().find(data_) != StringPiece::npos);
+    EXPECT_EQ(data_.length(), packet.AsStringPiece().length());
+    EXPECT_EQ(data_, packet.AsStringPiece());
   }
 
   EpollServer eps_;
@@ -140,7 +175,6 @@ TEST_F(QuicDispatcherTest, ProcessPackets) {
                     &dispatcher_, 2, addr, &session2_)));
   ProcessPacket(addr, 2, true, "bar");
 
-  data_ = "eep";
   EXPECT_CALL(*reinterpret_cast<MockConnection*>(session1_->connection()),
               ProcessUdpPacket(_, _, _)).Times(1).
       WillOnce(testing::WithArgs<2>(Invoke(
@@ -173,7 +207,7 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
   MOCK_METHOD4(ProcessPacket, void(const IPEndPoint& server_address,
                                    const IPEndPoint& client_address,
                                    QuicGuid guid,
-                                   const QuicEncryptedPacket& packet));
+                                   QuicPacketSequenceNumber sequence_number));
 };
 
 TEST_F(QuicDispatcherTest, TimeWaitListManager) {
@@ -209,7 +243,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
       .WillOnce(Invoke(
           reinterpret_cast<MockConnection*>(session1_->connection()),
           &MockConnection::ReallyProcessUdpPacket));
-  dispatcher_.ProcessPacket(IPEndPoint(), addr, guid, true, *encrypted);
+  dispatcher_.ProcessPacket(IPEndPoint(), addr, *encrypted);
   EXPECT_TRUE(time_wait_list_manager->IsGuidInTimeWait(guid));
 
   // Dispatcher forwards subsequent packets for this guid to the time wait list

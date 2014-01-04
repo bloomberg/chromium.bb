@@ -23,11 +23,9 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
       : crypto_config_("blah", QuicRandom::GetInstance()),
         dispatcher_(config_, crypto_config_, 1234, &eps_) {}
 
-
-  void MaybeDispatchPacket(const QuicEncryptedPacket& packet) {
+  void DispatchPacket(const QuicEncryptedPacket& packet) {
     IPEndPoint client_addr, server_addr;
-    QuicServer::MaybeDispatchPacket(&dispatcher_, packet,
-                                    client_addr, server_addr);
+    dispatcher_.ProcessPacket(server_addr, client_addr, packet);
   }
 
  protected:
@@ -37,19 +35,7 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
   MockQuicDispatcher dispatcher_;
 };
 
-TEST_F(QuicServerDispatchPacketTest, DoNotDispatchPacketWithoutGUID) {
-  // Packet too short to be considered valid.
-  unsigned char invalid_packet[] = { 0x00 };
-  QuicEncryptedPacket encrypted_invalid_packet(
-      QuicUtils::AsChars(invalid_packet), arraysize(invalid_packet), false);
-
-  // We expect the invalid packet to be dropped, and ProcessPacket should never
-  // be called.
-  EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _, _, _)).Times(0);
-  MaybeDispatchPacket(encrypted_invalid_packet);
-}
-
-TEST_F(QuicServerDispatchPacketTest, DispatchValidPacket) {
+TEST_F(QuicServerDispatchPacketTest, DispatchPacket) {
   unsigned char valid_packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -64,8 +50,8 @@ TEST_F(QuicServerDispatchPacketTest, DispatchValidPacket) {
   QuicEncryptedPacket encrypted_valid_packet(QuicUtils::AsChars(valid_packet),
                                              arraysize(valid_packet), false);
 
-  EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _, _, _)).Times(1);
-  MaybeDispatchPacket(encrypted_valid_packet);
+  EXPECT_CALL(dispatcher_, ProcessPacket(_, _, _)).Times(1);
+  DispatchPacket(encrypted_valid_packet);
 }
 
 }  // namespace

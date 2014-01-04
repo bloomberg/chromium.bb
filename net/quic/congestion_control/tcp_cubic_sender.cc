@@ -170,12 +170,16 @@ QuicTime::Delta TcpCubicSender::TimeUntilSend(
     HasRetransmittableData has_retransmittable_data,
     IsHandshake handshake) {
   if (transmission_type == NACK_RETRANSMISSION ||
+      transmission_type == TLP_RETRANSMISSION ||
       has_retransmittable_data == NO_RETRANSMITTABLE_DATA ||
       handshake == IS_HANDSHAKE) {
     // For TCP we can always send an ACK immediately.
     // We also immediately send any handshake packet (CHLO, etc.).  We provide
     // this special dispensation for handshake messages in QUIC, although the
     // concept is not present in TCP.
+    // We also allow nack based retransmissions and tail loss probes to be
+    // sent immediately, in keeping with TCP's limited transmit (RFC3042) and
+    // tail loss probe (draft-dukkipati-tcpm-tcp-loss-probe-01).
     return QuicTime::Delta::Zero();
   }
   if (AvailableSendWindow() == 0) {

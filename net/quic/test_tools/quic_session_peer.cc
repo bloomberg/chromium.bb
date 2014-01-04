@@ -33,10 +33,10 @@ WriteBlockedList<QuicStreamId>* QuicSessionPeer::GetWriteblockedStreams(
 }
 
 // static
-QuicDataStream* QuicSessionPeer::GetIncomingReliableStream(
+QuicDataStream* QuicSessionPeer::GetIncomingDataStream(
     QuicSession* session,
     QuicStreamId stream_id) {
-  return session->GetIncomingReliableStream(stream_id);
+  return session->GetIncomingDataStream(stream_id);
 }
 
 }  // namespace test

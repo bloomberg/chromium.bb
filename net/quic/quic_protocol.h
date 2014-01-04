@@ -125,6 +125,7 @@ enum TransmissionType {
   NOT_RETRANSMISSION,
   NACK_RETRANSMISSION,
   RTO_RETRANSMISSION,
+  TLP_RETRANSMISSION,
 };
 
 enum RetransmissionType {
