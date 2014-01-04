@@ -578,7 +578,7 @@ int CertVerifyProcMac::VerifyInternal(
   // the CSSMERR_TP_VERIFY_ACTION_FAILED to CERT_STATUS_INVALID if the only
   // error was due to an unsupported key size.
   bool policy_failed = false;
-  bool weak_key = false;
+  bool weak_key_or_signature_algorithm = false;
 
   // Evaluate the results
   OSStatus cssm_result;
@@ -622,14 +622,31 @@ int CertVerifyProcMac::VerifyInternal(
         for (uint32 status_code_index = 0;
              status_code_index < chain_info[index].NumStatusCodes;
              ++status_code_index) {
-          CertStatus mapped_status = CertStatusFromOSStatus(
-              chain_info[index].StatusCodes[status_code_index]);
-          if (mapped_status == CERT_STATUS_WEAK_KEY)
-            weak_key = true;
+          // As of OS X 10.9, attempting to verify a certificate chain that
+          // contains a weak signature algorithm (MD2, MD5) in an intermediate
+          // or leaf cert will be treated as a (recoverable) policy validation
+          // failure, with the status code CSSMERR_TP_INVALID_CERTIFICATE
+          // added to the Status Codes. Don't treat this code as an invalid
+          // certificate; instead, map it to a weak key. Any truly invalid
+          // certificates will have the major error (cssm_result) set to
+          // CSSMERR_TP_INVALID_CERTIFICATE, rather than
+          // CSSMERR_TP_VERIFY_ACTION_FAILED.
+          CertStatus mapped_status = 0;
+          if (policy_failed &&
+              chain_info[index].StatusCodes[status_code_index] ==
+                  CSSMERR_TP_INVALID_CERTIFICATE) {
+              mapped_status = CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
+              weak_key_or_signature_algorithm = true;
+          } else {
+              mapped_status = CertStatusFromOSStatus(
+                  chain_info[index].StatusCodes[status_code_index]);
+              if (mapped_status == CERT_STATUS_WEAK_KEY)
+                weak_key_or_signature_algorithm = true;
+          }
           verify_result->cert_status |= mapped_status;
         }
       }
-      if (policy_failed && !weak_key) {
+      if (policy_failed && !weak_key_or_signature_algorithm) {
         // If CSSMERR_TP_VERIFY_ACTION_FAILED wasn't returned due to a weak
         // key, map it back to an appropriate error code.
         verify_result->cert_status |= CertStatusFromOSStatus(cssm_result);
