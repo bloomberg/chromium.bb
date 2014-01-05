@@ -126,7 +126,7 @@ void FileTemplate::Apply(const Value& sources,
 
     ApplyString(sources_list[i].string_value(), &string_output);
     for (size_t out_i = 0; out_i < string_output.size(); out_i++)
-      dest->push_back(Value(origin, string_output[i]));
+      dest->push_back(Value(origin, string_output[out_i]));
   }
 }
 
