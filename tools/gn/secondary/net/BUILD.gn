@@ -905,9 +905,14 @@ component("net") {
     "spdy/spdy_write_queue.h",
     "spdy/write_blocked_list.h",
     "ssl/client_cert_store.h",
-    "ssl/client_cert_store_impl.h",
-    "ssl/client_cert_store_impl_mac.cc",
-    "ssl/client_cert_store_impl_win.cc",
+    "ssl/client_cert_store_chromeos.cc",
+    "ssl/client_cert_store_chromeos.h",
+    "ssl/client_cert_store_mac.cc",
+    "ssl/client_cert_store_mac.h",
+    "ssl/client_cert_store_nss.cc",
+    "ssl/client_cert_store_nss.h",
+    "ssl/client_cert_store_win.cc",
+    "ssl/client_cert_store_win.h",
     "ssl/default_server_bound_cert_store.cc",
     "ssl/default_server_bound_cert_store.h",
     "ssl/openssl_client_key_store.cc",
@@ -1068,7 +1073,8 @@ component("net") {
       "http/http_auth_handler_ntlm_portable.cc",
       "socket/tcp_socket_libevent.cc",
       "socket/tcp_socket_libevent.h",
-      "ssl/client_cert_store_impl_nss.cc",
+      "ssl/client_cert_store_nss.cc",
+      "ssl/client_cert_store_nss.h",
       "udp/udp_socket_libevent.cc",
       "udp/udp_socket_libevent.h",
     ]
@@ -1090,7 +1096,8 @@ component("net") {
 
   if (is_mac) {
     sources -= [
-      "ssl/client_cert_store_impl_nss.cc",
+      "ssl/client_cert_store_nss.cc",
+      "ssl/client_cert_store_nss.h",
     ]
     deps += [
       #"//net/third_party/nss:ssl",
@@ -1140,7 +1147,7 @@ component("net") {
       "socket/ssl_client_socket_nss.h",
       "socket/ssl_server_socket_nss.cc",
       "socket/ssl_server_socket_nss.h",
-      "ssl/client_cert_store_impl_nss.cc",
+      "ssl/client_cert_store_nss.cc",
       "third_party/mozilla_security_manager/nsKeygenHandler.cpp",
       "third_party/mozilla_security_manager/nsKeygenHandler.h",
       "third_party/mozilla_security_manager/nsNSSCertificateDB.cpp",
