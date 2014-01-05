@@ -33,6 +33,7 @@ component("url") {
     "url_canon_stdstring.cc",
     "url_canon_stdstring.h",
     "url_canon_stdurl.cc",
+    "url_export.h",
     "url_file.h",
     "url_parse_file.cc",
     "url_parse_internal.h",
@@ -41,6 +42,11 @@ component("url") {
   ]
 
   defines = [ "URL_IMPLEMENTATION" ]
+
+  # if (is_win) {
+  #   TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  #   'msvs_disabled_warnings': [ 4267, ]
+  # }
 
   deps = [
     "//base",
@@ -59,6 +65,17 @@ test("url_unittests") {
     "url_test_utils.h",
     "url_util_unittest.cc",
   ]
+
+  #if (is_posix && !is_mac && !is_ios) {
+  #  if (linux_use_tcmalloc) {
+  #    deps += "//base/allocator"
+  #  }
+  #}
+
+  # if (is_win) {
+  #   TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  #   'msvs_disabled_warnings': [ 4267, ]
+  # }
 
   deps = [
     ":url",

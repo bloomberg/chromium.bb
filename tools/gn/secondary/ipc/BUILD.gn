@@ -134,7 +134,7 @@ test("ipc_perftests") {
   #}
   #if (is_posix && !is_mac && !is_android) {
   #  if (linux_use_tcmalloc) {
-  #    deps += "/base/allocator"
+  #    deps += "//base/allocator"
   #  }
   #}
 
