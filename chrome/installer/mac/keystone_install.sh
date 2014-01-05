@@ -29,10 +29,13 @@
 #  9  Could not get the version, update URL, or channel after update
 # 10  Updated application does not have the version number from the update
 # 11  ksadmin failure
+# 12  dirpatcher failed for versioned directory
+# 13  dirpatcher failed for outer .app bundle
 #
-# The following exit codes can be used to convey special meaning to Keystone:
+# The following exit codes can be used to convey special meaning to Keystone.
+# KeystoneRegistration will present these codes to Chrome as "success."
 # 66  (unused) success, request reboot
-# 77  try installation again later
+# 77  (unused) try installation again later
 
 set -eu
 
@@ -1025,7 +1028,7 @@ main() {
                                "${old_ks_plist}" \
                                "${old_version_app}" \
                                "${system_ticket}"
-      exit 77
+      exit 12
     fi
   fi
 
@@ -1084,7 +1087,7 @@ main() {
                                "${old_ks_plist}" \
                                "${old_version_app}" \
                                "${system_ticket}"
-      exit 77
+      exit 13
     fi
   fi
 
