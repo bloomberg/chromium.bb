@@ -192,14 +192,14 @@
         'shell/renderer/test_runner/MockSpellCheck.h',
         'shell/renderer/test_runner/MockWebAudioDevice.cpp',
         'shell/renderer/test_runner/MockWebAudioDevice.h',
-        'shell/renderer/test_runner/MockWebMediaStreamCenter.cpp',
-        'shell/renderer/test_runner/MockWebMediaStreamCenter.h',
         'shell/renderer/test_runner/MockWebMIDIAccessor.cpp',
         'shell/renderer/test_runner/MockWebMIDIAccessor.h',
-        'shell/renderer/test_runner/MockWebRTCDataChannelHandler.cpp',
-        'shell/renderer/test_runner/MockWebRTCDataChannelHandler.h',
+        'shell/renderer/test_runner/MockWebMediaStreamCenter.cpp',
+        'shell/renderer/test_runner/MockWebMediaStreamCenter.h',
         'shell/renderer/test_runner/MockWebRTCDTMFSenderHandler.cpp',
         'shell/renderer/test_runner/MockWebRTCDTMFSenderHandler.h',
+        'shell/renderer/test_runner/MockWebRTCDataChannelHandler.cpp',
+        'shell/renderer/test_runner/MockWebRTCDataChannelHandler.h',
         'shell/renderer/test_runner/MockWebRTCPeerConnectionHandler.cpp',
         'shell/renderer/test_runner/MockWebRTCPeerConnectionHandler.h',
         'shell/renderer/test_runner/MockWebSpeechInputController.cpp',
@@ -615,6 +615,23 @@
       'type': 'none',
       'dependencies': [
         'content_shell',
+      ],
+    },
+    {
+      'target_name': 'layout_test_helper',
+      'type': 'executable',
+      'sources': [
+        'shell/renderer/test_runner/helper/layout_test_helper_mac.mm',
+        'shell/renderer/test_runner/helper/layout_test_helper_win.cc',
+      ],
+      'conditions': [
+        ['OS=="mac"', {
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
+            ],
+          },
+        }],
       ],
     },
   ],

@@ -399,6 +399,7 @@
             ['OS=="win"', {
               'dependencies': [
                 '../content/content_shell_and_tests.gyp:content_shell_crash_service',
+                '../content/content_shell_and_tests.gyp:layout_test_helper',
               ],
             }, {  # OS!="win"
               'dependencies': [
@@ -408,6 +409,7 @@
             ['OS=="mac"', {
               'dependencies': [
                 '../breakpad/breakpad.gyp:dump_syms#host',
+                '../content/content_shell_and_tests.gyp:layout_test_helper',
               ],
             }],
             ['OS=="linux"', {
