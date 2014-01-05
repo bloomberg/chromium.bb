@@ -35,8 +35,6 @@ namespace net {
 
 namespace {
 
-const int kTCPKeepAliveSeconds = 45;
-
 // SetTCPNoDelay turns on/off buffering in the kernel. By default, TCP sockets
 // will wait up to 200ms for more data to complete a packet before transmitting.
 // After calling this function, the kernel will not wait. See TCP_NODELAY in
@@ -54,6 +52,11 @@ bool SetTCPKeepAlive(int fd, bool enable, int delay) {
     PLOG(ERROR) << "Failed to set SO_KEEPALIVE on fd: " << fd;
     return false;
   }
+
+  // If we disabled TCP keep alive, our work is done here.
+  if (!enable)
+    return true;
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // Set seconds until first TCP keep alive.
   if (setsockopt(fd, SOL_TCP, TCP_KEEPIDLE, &delay, sizeof(delay))) {
@@ -455,7 +458,23 @@ void TCPSocketLibevent::SetDefaultOptionsForClient() {
   // This mirrors the behaviour on Windows. See the comment in
   // tcp_socket_win.cc after searching for "NODELAY".
   SetTCPNoDelay(socket_, true);  // If SetTCPNoDelay fails, we don't care.
+
+  // TCP keep alive wakes up the radio, which is expensive on mobile. Do not
+  // enable it there. It's useful to prevent TCP middleboxes from timing out
+  // connection mappings. Packets for timed out connection mappings at
+  // middleboxes will either lead to:
+  // a) Middleboxes sending TCP RSTs. It's up to higher layers to check for this
+  // and retry. The HTTP network transaction code does this.
+  // b) Middleboxes just drop the unrecognized TCP packet. This leads to the TCP
+  // stack retransmitting packets per TCP stack retransmission timeouts, which
+  // are very high (on the order of seconds). Given the number of
+  // retransmissions required before killing the connection, this can lead to
+  // tens of seconds or even minutes of delay, depending on OS.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  const int kTCPKeepAliveSeconds = 45;
+
   SetTCPKeepAlive(socket_, true, kTCPKeepAliveSeconds);
+#endif
 }
 
 int TCPSocketLibevent::SetAddressReuse(bool allow) {
