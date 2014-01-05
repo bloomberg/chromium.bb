@@ -99,7 +99,10 @@ base::string16 ManagePasswordItemView::GetPasswordDisplayString(
                   kPasswordBullet);
 }
 
-ManagePasswordItemView::~ManagePasswordItemView() {}
+ManagePasswordItemView::~ManagePasswordItemView() {
+  if (delete_password_)
+    manage_passwords_bubble_model_->DeleteFromBestMatches(password_form_);
+}
 
 void ManagePasswordItemView::Refresh() {
   if (delete_password_) {

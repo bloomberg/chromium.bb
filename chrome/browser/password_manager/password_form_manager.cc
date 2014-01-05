@@ -42,8 +42,7 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
       web_contents_(web_contents),
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
-      submit_result_(kSubmitResultNotSubmitted),
-      manage_passwords_bubble_request_(false) {
+      submit_result_(kSubmitResultNotSubmitted) {
   DCHECK(profile_);
   if (observed_form_.origin.is_valid())
     base::SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
@@ -268,12 +267,6 @@ void PasswordFormManager::FetchMatchingLoginsFromPasswordStore(
   password_store->GetLogins(observed_form_, prompt_policy, this);
 }
 
-void PasswordFormManager::FetchMatchingLoginsFromPasswordStoreForBubble() {
-  manage_passwords_bubble_request_ = true;
-  FetchMatchingLoginsFromPasswordStore(
-      PasswordStore::ALLOW_PROMPT);
-}
-
 bool PasswordFormManager::HasCompletedMatching() {
   return state_ == POST_MATCHING_PHASE;
 }
@@ -343,13 +336,6 @@ void PasswordFormManager::OnRequestDone(
   // We're done matching now.
   state_ = POST_MATCHING_PHASE;
 
-  if (manage_passwords_bubble_request_) {
-    DCHECK(manage_passwords_bubble_request_);
-    password_manager_->SendBestMatchesToManagePasswordsBubble(best_matches_);
-    manage_passwords_bubble_request_ = false;
-    return;
-  }
-
   if (best_score <= 0) {
     return;
   }
@@ -412,17 +398,14 @@ void PasswordFormManager::OnGetPasswordStoreResults(
       const std::vector<autofill::PasswordForm*>& results) {
   DCHECK_EQ(state_, MATCHING_PHASE);
 
-  if (results.empty() && !manage_passwords_bubble_request_) {
+  if (results.empty()) {
     state_ = POST_MATCHING_PHASE;
-    // No result means that we visit this site the first time or a request from
-    // the ManagePasswordsBubble. If it's not a request from the bubble we don't
-    // need to check whether this site is blacklisted or not. Just send a
-    // message to allow password generation.
+    // No result means that we visit this site the first time so we don't need
+    // to check whether this site is blacklisted or not. Just send a message
+    // to allow password generation.
     SendNotBlacklistedToRenderer();
     return;
   }
-  // When the results are empty, the call to OnRequestDone() is still necessary
-  // to update the credentials for the ManagePasswordsBubble.
   OnRequestDone(results);
 }
 
