@@ -3747,9 +3747,14 @@ get_shell_surface_type(struct weston_surface *surface)
 static void
 move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
 {
-	struct weston_surface *focus = seat->pointer->focus->surface;
+	struct weston_surface *focus;
 	struct weston_surface *surface;
 	struct shell_surface *shsurf;
+
+	if (seat->pointer->focus == NULL)
+		return;
+
+	focus = seat->pointer->focus->surface;
 
 	surface = weston_surface_get_main_surface(focus);
 	if (surface == NULL)
@@ -3833,11 +3838,16 @@ touch_move_binding(struct weston_seat *seat, uint32_t time, void *data)
 static void
 resize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
 {
-	struct weston_surface *focus = seat->pointer->focus->surface;
+	struct weston_surface *focus;
 	struct weston_surface *surface;
 	uint32_t edges = 0;
 	int32_t x, y;
 	struct shell_surface *shsurf;
+
+	if (seat->pointer->focus == NULL)
+		return;
+
+	focus = seat->pointer->focus->surface;
 
 	surface = weston_surface_get_main_surface(focus);
 	if (surface == NULL)
@@ -4107,9 +4117,14 @@ static void
 rotate_binding(struct weston_seat *seat, uint32_t time, uint32_t button,
 	       void *data)
 {
-	struct weston_surface *focus = seat->pointer->focus->surface;
+	struct weston_surface *focus;
 	struct weston_surface *base_surface;
 	struct shell_surface *surface;
+
+	if (seat->pointer->focus == NULL)
+		return;
+
+	focus = seat->pointer->focus->surface;
 
 	base_surface = weston_surface_get_main_surface(focus);
 	if (base_surface == NULL)
