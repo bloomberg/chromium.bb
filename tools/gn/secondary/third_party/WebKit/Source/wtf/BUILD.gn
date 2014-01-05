@@ -128,8 +128,6 @@ component("wtf") {
     "PageAllocator.cpp",
     "PageAllocator.h",
     "ParallelJobs.h",
-    "ParallelJobsGeneric.cpp",
-    "ParallelJobsGeneric.h",
     "ParallelJobsLibdispatch.h",
     "PartitionAlloc.cpp",
     "PartitionAlloc.h",
