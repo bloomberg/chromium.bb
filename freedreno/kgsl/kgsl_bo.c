@@ -85,6 +85,13 @@ static int kgsl_bo_cpu_prep(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op)
 		uint32_t current;
 		int ret;
 
+		/* special case for is_idle().. we can't really handle that
+		 * properly in kgsl (perhaps we need a way to just disable
+		 * the bo-cache for kgsl?)
+		 */
+		if (!pipe)
+			return -EBUSY;
+
 		ret = kgsl_pipe_timestamp(to_kgsl_pipe(pipe), &current);
 		if (ret)
 			return ret;
