@@ -66,7 +66,7 @@ const char kTemplate_Help[] =
     "    }\n"
     "\n"
     "    # Name the static library the same as the template invocation so\n"
-    "    # instanting this template produces something that other targets\n"
+    "    # instancing this template produces something that other targets\n"
     "    # can link to in their deps.\n"
     "    static_library(target_name) {\n"
     "      # Generates the list of sources.\n"

@@ -171,8 +171,9 @@ const char kRebasePath_Help[] =
     "\n"
     "  input\n"
     "      A string or list of strings representing file or directory names\n"
-    "      These can be relative paths (\"foo/bar.txt\", system absolte paths\n"
-    "      (\"/foo/bar.txt\"), or source absolute paths (\"//foo/bar.txt\").\n"
+    "      These can be relative paths (\"foo/bar.txt\"), system absolute\n"
+    "      paths (\"/foo/bar.txt\"), or source absolute paths\n"
+    "      (\"//foo/bar.txt\").\n"
     "\n"
     "  current_base\n"
     "      Directory representing the base for relative paths in the input.\n"
@@ -282,7 +283,7 @@ Value RunRebasePath(Scope* scope,
     if (convert_to_system_absolute) {
       *err = Err(function, "Can't specify slash conversion.",
           "You specified absolute system path output by using an empty string "
-          "for the desination directory on rebase_path(). In this case, you "
+          "for the destination directory on rebase_path(). In this case, you "
           "can't specify slash conversion.");
       return result;
     }

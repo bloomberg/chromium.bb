@@ -53,7 +53,7 @@ const char kToolchain_Help[] =
     "\n"
     "  By default, when a target depends on another, there is an implicit\n"
     "  toolchain label that is inherited, so the dependee has the same one\n"
-    "  as the dependant.\n"
+    "  as the dependent.\n"
     "\n"
     "  You can override this and refer to any other toolchain by explicitly\n"
     "  labeling the toolchain to use. For example:\n"

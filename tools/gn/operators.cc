@@ -293,7 +293,7 @@ void ValueMinusEquals(const BinaryOpNode* op_node,
       break;
   }
 
-  *err = Err(op_node->op(), "Incompatible types to add.",
+  *err = Err(op_node->op(), "Incompatible types to subtract.",
       std::string("I see a ") + Value::DescribeType(left->type()) + " and a " +
       Value::DescribeType(right.type()) + ".");
 }
@@ -514,8 +514,8 @@ Value ExecuteBinaryOperator(Scope* scope,
       op.type() == Token::MINUS_EQUALS) {
     const IdentifierNode* left_id = left->AsIdentifier();
     if (!left_id) {
-      *err = Err(op, "Operator requires an lvalue.",
-                 "This thing on the left is not an idenfitier.");
+      *err = Err(op, "Operator requires a lvalue.",
+                 "This thing on the left is not an identifier.");
       err->AppendRange(left->GetRange());
       return Value();
     }
@@ -525,7 +525,7 @@ Value ExecuteBinaryOperator(Scope* scope,
     if (err->has_error())
       return Value();
     if (right_value.type() == Value::NONE) {
-      *err = Err(op, "Operator requires an rvalue.",
+      *err = Err(op, "Operator requires a rvalue.",
                  "This thing on the right does not evaluate to a value.");
       err->AppendRange(right->GetRange());
       return Value();
@@ -546,7 +546,7 @@ Value ExecuteBinaryOperator(Scope* scope,
   if (err->has_error())
     return Value();
   if (left_value.type() == Value::NONE) {
-    *err = Err(op, "Operator requires an value.",
+    *err = Err(op, "Operator requires a value.",
                "This thing on the left does not evaluate to a value.");
     err->AppendRange(left->GetRange());
     return Value();
@@ -558,7 +558,7 @@ Value ExecuteBinaryOperator(Scope* scope,
   if (err->has_error())
     return Value();
   if (right_value.type() == Value::NONE) {
-    *err = Err(op, "Operator requires an value.",
+    *err = Err(op, "Operator requires a value.",
                "This thing on the right does not evaluate to a value.");
     err->AppendRange(right->GetRange());
     return Value();

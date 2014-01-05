@@ -50,7 +50,7 @@ const char kBuildArgs_Help[] =
     "\n"
     "  Often, the root build config file will declare global arguments that\n"
     "  will be passed to all buildfiles. Individual build files can also\n"
-    "  specify arguments that apply only to those files. It is also usedful\n"
+    "  specify arguments that apply only to those files. It is also useful\n"
     "  to specify build args in an \"import\"-ed file if you want such\n"
     "  arguments to apply to multiple buildfiles.\n";
 
@@ -109,7 +109,7 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
     if (previously_declared != declared_arguments_.end()) {
       if (previously_declared->second.origin() != i->second.origin()) {
         // Declaration location mismatch.
-        *err = Err(i->second.origin(), "Duplicate build arg declaration.",
+        *err = Err(i->second.origin(), "Duplicate build argument declaration.",
             "Here you're declaring an argument that was already declared "
             "elsewhere.\nYou can only declare each argument once in the entire "
             "build so there is one\ncanonical place for documentation and the "
@@ -119,14 +119,14 @@ bool Args::DeclareArgs(const Scope::KeyValueMap& args,
         err->AppendSubErr(Err(previously_declared->second.origin(),
                               "Previous declaration.",
                               "See also \"gn help buildargs\" for more on how "
-                              "build args work."));
+                              "build arguments work."));
         return false;
       } else if (previously_declared->second != i->second) {
         // Default value mismatch.
         *err = Err(i->second.origin(),
-            "Non-constant default value for build arg.",
-            "Each build arg should have one default value so we report it "
-            "nicely in the\n\"gn args\" command. Please make this value "
+            "Non-constant default value for build argument.",
+            "Each build argument should have one default value so we report "
+            "it nicely in the\n\"gn args\" command. Please make this value "
             "constant.");
         return false;
       }
@@ -152,8 +152,8 @@ bool Args::VerifyAllOverridesUsed(Err* err) const {
   for (Scope::KeyValueMap::const_iterator i = all_overrides_.begin();
        i != all_overrides_.end(); ++i) {
     if (declared_arguments_.find(i->first) == declared_arguments_.end()) {
-      *err = Err(i->second.origin(), "Build arg has no effect.",
-          "The value \"" + i->first.as_string() + "\" was set a build "
+      *err = Err(i->second.origin(), "Build argument has no effect.",
+          "The variable \"" + i->first.as_string() + "\" was set as a build "
           "argument\nbut never appeared in a declare_args() block in any "
           "buildfile.");
       return false;

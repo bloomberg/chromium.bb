@@ -742,7 +742,7 @@ const char kSourcePrereqs_Help[] =
     "  listed in the \"outputs\" section of another target. There is no\n"
     "  reason to declare static source files as source prerequisites since\n"
     "  the normal include file dependency management will handle them more\n"
-    "  efficiently anwyay.\n"
+    "  efficiently anyway.\n"
     "\n"
     "  For custom script targets that don't generate \".d\" files, the\n"
     "  \"source_prereqs\" section is how you can list known compile-time\n"

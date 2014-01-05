@@ -34,7 +34,8 @@ void PrintToplevelHelp() {
       "\n"
       "Common switches:\n");
   PrintShortHelp(
-      "--args: Specifies build args overrides. See \"gn help buildargs\".");
+      "--args: Specifies build arguments overrides. "
+      "See \"gn help buildargs\".");
   PrintShortHelp(
       "--no-exec: Skips exec_script calls (for performance testing).");
   PrintShortHelp(

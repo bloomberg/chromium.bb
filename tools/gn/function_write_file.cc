@@ -42,7 +42,7 @@ Value RunWriteFile(Scope* scope,
                    const std::vector<Value>& args,
                    Err* err) {
   if (args.size() != 2) {
-    *err = Err(function->function(), "Wrong number of args to write_file",
+    *err = Err(function->function(), "Wrong number of arguments to write_file",
                "I expected two arguments.");
     return Value();
   }

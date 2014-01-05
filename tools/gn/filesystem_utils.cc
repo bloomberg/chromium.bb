@@ -287,9 +287,9 @@ bool EnsureStringIsInOutputDir(const SourceDir& dir,
   const std::string& dir_str = dir.value();
   if (str.compare(0, dir_str.length() - 1, dir_str, 0, dir_str.length() - 1)
       != 0) {
-    *err = Err(originating, "File not inside output directory.",
+    *err = Err(originating, "File is not inside output directory.",
         "The given file should be in the output directory. Normally you would "
-        "specify\n\"$target_output_dir/foo\" or "
+        "specify\n\"$target_out_dir/foo\" or "
         "\"$target_gen_dir/foo\". I interpreted this as\n\""
         + str + "\".");
     return false;

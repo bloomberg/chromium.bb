@@ -279,7 +279,7 @@ BuilderRecord* Builder::GetResolvedRecordOfType(const Label& label,
   if (!record) {
     *err = Err(origin, "Item not found",
         "\"" + label.GetUserVisibleName(false) + "\" doesn't\n"
-        "refer to an existant thing.");
+        "refer to an existent thing.");
     return NULL;
   }
 

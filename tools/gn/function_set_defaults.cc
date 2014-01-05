@@ -35,7 +35,7 @@ const char kSetDefaults_Help[] =
     "  static_library(\"mylib\")\n"
     "    # The configs will be auto-populated as above. You can remove it if\n"
     "    # you don't want the default for a particular default:\n"
-    "    configs -= \"//tools/mything:setgings\"\n"
+    "    configs -= \"//tools/mything:settings\"\n"
     "  }\n";
 
 Value RunSetDefaults(Scope* scope,

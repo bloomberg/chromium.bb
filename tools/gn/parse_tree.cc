@@ -193,7 +193,7 @@ Value BlockNode::ExecuteBlockInScope(Scope* our_scope, Err* err) const {
     if (cur->AsList() || cur->AsLiteral() || cur->AsUnaryOp() ||
         cur->AsIdentifier()) {
       *err = cur->MakeErrorDescribing(
-          "This statment has no effect.",
+          "This statement has no effect.",
           "Either delete it or do something with the result.");
       return Value();
     }

@@ -42,7 +42,7 @@ Value RunReadFile(Scope* scope,
                   const std::vector<Value>& args,
                   Err* err) {
   if (args.size() != 2) {
-    *err = Err(function->function(), "Wrong number of args to read_file",
+    *err = Err(function->function(), "Wrong number of arguments to read_file",
                "I expected two arguments.");
     return Value();
   }

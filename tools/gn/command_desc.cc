@@ -288,7 +288,7 @@ const char kDesc_Help[] =
     "  but when directories and source paths are written to the build file,\n"
     "  they will be adjusted to be relative to the build directory. So the\n"
     "  values for paths displayed by this command won't match (but should\n"
-    "  mean the same thing.\n"
+    "  mean the same thing).\n"
     "\n"
     "Examples:\n"
     "  gn desc //base:base\n"

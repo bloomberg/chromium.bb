@@ -58,7 +58,7 @@ extern const char kDotfile_Help[] =
     "      (which would contain a parallel directory hierarchy).\n"
     "\n"
     "      This behavior is intended to be used when BUILD.gn files can't be\n"
-    "      checked in to certain source directories for whaever reason.\n"
+    "      checked in to certain source directories for whatever reason.\n"
     "\n"
     "      The secondary source root must be inside the main source tree.\n"
     "\n"

@@ -245,8 +245,8 @@ const char kExecScript_Help[] =
     "\n"
     "  The current directory when executing the script will be the root\n"
     "  build directory. If you are passing file names, you will want to use\n"
-    "  the to_build_dir() function to make file names relative to this\n"
-    "  path (see \"gn help to_build_dir\").\n"
+    "  the rebase_path() function to make file names relative to this\n"
+    "  path (see \"gn help rebase_path\").\n"
     "\n"
     "Arguments:\n"
     "\n"
@@ -273,14 +273,15 @@ const char kExecScript_Help[] =
     "Example:\n"
     "\n"
     "  all_lines = exec_script(\"myscript.py\", [some_input], \"list lines\",\n"
-    "                          [ to_build_dir(\"data_file.txt\") ])\n";
+    "                          [ rebase_path(\"data_file.txt\", \".\","
+    "                                        root_build_dir) ])\n";
 
 Value RunExecScript(Scope* scope,
                     const FunctionCallNode* function,
                     const std::vector<Value>& args,
                     Err* err) {
   if (args.size() != 3 && args.size() != 4) {
-    *err = Err(function->function(), "Wrong number of args to write_file",
+    *err = Err(function->function(), "Wrong number of arguments to exec_script",
                "I expected three or four arguments.");
     return Value();
   }

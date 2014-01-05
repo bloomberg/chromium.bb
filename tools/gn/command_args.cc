@@ -106,10 +106,10 @@ extern const char kArgs_Help[] =
     "gn args [arg name]\n"
     "  Displays all arguments declared by buildfiles along with their\n"
     "  description. Build arguments are anything in a declare_args() block\n"
-    "  in any buildfile. The comment preceeding the declaration will be\n"
+    "  in any buildfile. The comment preceding the declaration will be\n"
     "  displayed here (so comment well!).\n"
     "\n"
-    "  These arguments can be overriden on the command-line:\n"
+    "  These arguments can be overridden on the command-line:\n"
     "    --args=\"doom_melon_setting=5 component_build=1\"\n"
     "  or in a toolchain definition (see \"gn help buildargs\" for more on\n"
     "  how this all works).\n"
@@ -130,7 +130,7 @@ int RunArgs(const std::vector<std::string>& args) {
     // Get help on a specific command.
     Scope::KeyValueMap::const_iterator found_arg = build_args.find(args[0]);
     if (found_arg == build_args.end()) {
-      Err(Location(), "Unknown build arg.",
+      Err(Location(), "Unknown build argument.",
           "You asked for \"" + args[0] + "\" which I didn't find in any "
           "buildfile\nassociated with this build.");
       return 1;
