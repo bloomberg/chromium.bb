@@ -4319,22 +4319,6 @@
    fun:_ZN4base18MessagePumpAuraX1118GetDefaultXDisplayEv
 }
 {
-   bug_147755_a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12PluginFinder18GetPluginInstallerERKN6webkit13WebPluginInfoE
-   fun:_ZN11PluginPrefs30EnablePluginIfPossibleCallbackE*
-}
-{
-   bug_147755_b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN12PluginFinder17GetPluginMetadataERKN6webkit13WebPluginInfoE
-   fun:_ZN11PluginPrefs12EnablePluginE*
-   fun:_ZN15PluginPrefsTest25EnablePluginSynchronouslyE*
-   fun:_ZN44PluginPrefsTest_UnifiedPepperFlashState_Test8TestBodyEv
-}
-{
    bug_149734a
    Memcheck:Leak
    fun:malloc

@@ -36,5 +36,8 @@ NetworkChangeNotifierWinTest.NetChangeWinBasic
 NetworkChangeNotifierWinTest.NetChangeWinSignal
 NetworkChangeNotifierWinTest.NetChangeWinFailSignal*
 
+# Fails frequently. crbug.com/310348
+EmbeddedTestServerThreadingTestInstantiation.*
+
 # Hang: crbug.com/331468
 MultiThreadedCertVerifierTest.DifferentCACerts
