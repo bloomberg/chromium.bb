@@ -682,6 +682,7 @@
     { "name": "mnsure.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "getcloak.com", "mode": "force-https" },
     { "name": "www.getcloak.com", "mode": "force-https" },
+    { "name": "matteomarescotti.name", "include_subdomains": true, "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
