@@ -797,6 +797,10 @@ class MyActivity(object):
       print "No %s in committers.py, skipping WebKit checks." % email
       self.webkit_repo = None
 
+  def print_heading(self, heading):
+    print
+    print self.options.output_format_heading.format(heading=heading)
+
   def print_change(self, change):
     optional_values = {
         'reviewers': ', '.join(change['reviewers'])
@@ -894,7 +898,7 @@ class MyActivity(object):
 
   def print_changes(self):
     if self.changes:
-      print '\nChanges:'
+      self.print_heading('Changes')
       for change in self.changes:
         self.print_change(change)
 
@@ -912,7 +916,7 @@ class MyActivity(object):
 
   def print_reviews(self):
     if self.reviews:
-      print '\nReviews:'
+      self.print_heading('Reviews')
       for review in self.reviews:
         self.print_review(review)
 
@@ -925,7 +929,7 @@ class MyActivity(object):
 
   def print_issues(self):
     if self.issues:
-      print '\nIssues:'
+      self.print_heading('Issues')
       for issue in self.issues:
         self.print_issue(issue)
 
@@ -1031,6 +1035,14 @@ def main():
       '--output-format-reviews', metavar='<format>',
       default=None,
       help='Specifies the format to use when printing reviews.')
+  output_format_group.add_option(
+      '--output-format-heading', metavar='<format>',
+      default=u'{heading}:',
+      help='Specifies the format to use when printing headings.')
+  output_format_group.add_option(
+      '-m', '--markdown', action='store_true',
+      help='Use markdown-friendly output (overrides --output-format '
+           'and --output-format-heading)')
   parser.add_option_group(output_format_group)
 
   # Remove description formatting
@@ -1062,6 +1074,10 @@ def main():
     else:
       end = datetime.today()
   options.begin, options.end = begin, end
+
+  if options.markdown:
+    options.output_format = ' * [{title}]({url})'
+    options.output_format_heading = '### {heading} ###'
 
   print 'Searching for activity by %s' % options.user
   print 'Using range %s to %s' % (options.begin, options.end)
