@@ -32,16 +32,18 @@ EventTarget* EventTargeter::FindTargetForLocatedEvent(EventTarget* root,
     EventTarget* target = root;
     EventTarget* child = NULL;
     while ((child = iter->GetNextTarget())) {
-      if (!SubtreeShouldBeExploredForEvent(child, *event))
+      EventTargeter* targeter = child->GetEventTargeter();
+      if (!targeter)
+        targeter = this;
+      if (!targeter->SubtreeShouldBeExploredForEvent(child, *event))
         continue;
       target->ConvertEventToTarget(child, event);
-      EventTargeter* targeter = child->GetEventTargeter();
+      target = child;
       EventTarget* child_target = targeter ?
           targeter->FindTargetForLocatedEvent(child, event) :
           FindTargetForLocatedEvent(child, event);
       if (child_target)
         return child_target;
-      target = child;
     }
     target->ConvertEventToTarget(root, event);
   }
