@@ -29,9 +29,6 @@ class VideoCaptureResource
   }
 
   // PPB_VideoCapture_API implementation.
-  virtual int32_t EnumerateDevices0_2(
-      PP_Resource* devices,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t EnumerateDevices(
       const PP_ArrayOutput& output,
       scoped_refptr<TrackedCallback> callback) OVERRIDE;

@@ -35,18 +35,15 @@ class AudioInputResource : public PluginResource,
                                const IPC::Message& msg) OVERRIDE;
 
   // PPB_AudioInput_API implementation.
-  virtual int32_t EnumerateDevices0_2(
-      PP_Resource* devices,
-      scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t EnumerateDevices(
       const PP_ArrayOutput& output,
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t MonitorDeviceChange(
       PP_MonitorDeviceChangeCallback callback,
       void* user_data) OVERRIDE;
-  virtual int32_t Open0_2(PP_Resource device_ref,
+  virtual int32_t Open0_3(PP_Resource device_ref,
                           PP_Resource config,
-                          PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+                          PPB_AudioInput_Callback_0_3 audio_input_callback_0_3,
                           void* user_data,
                           scoped_refptr<TrackedCallback> callback) OVERRIDE;
   virtual int32_t Open(PP_Resource device_ref,
@@ -90,7 +87,7 @@ class AudioInputResource : public PluginResource,
 
   int32_t CommonOpen(PP_Resource device_ref,
                      PP_Resource config,
-                     PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+                     PPB_AudioInput_Callback_0_3 audio_input_callback_0_3,
                      PPB_AudioInput_Callback audio_input_callback,
                      void* user_data,
                      scoped_refptr<TrackedCallback> callback);
@@ -116,7 +113,7 @@ class AudioInputResource : public PluginResource,
   scoped_ptr<base::DelegateSimpleThread> audio_input_thread_;
 
   // Callback to call when new samples are available.
-  PPB_AudioInput_Callback_0_2 audio_input_callback_0_2_;
+  PPB_AudioInput_Callback_0_3 audio_input_callback_0_3_;
   PPB_AudioInput_Callback audio_input_callback_;
 
   // User data pointer passed verbatim to the callback function.

@@ -9,7 +9,6 @@
  */
 
 label Chrome {
-  M19 = 0.2,
   M25 = 0.3,
   M30 = 0.4
 };
@@ -71,33 +70,6 @@ interface PPB_AudioInput_Dev {
    */
   PP_Bool IsAudioInput(
       [in] PP_Resource resource);
-
-  /**
-   * Enumerates audio input devices.
-   *
-   * Please note that:
-   * - this method ignores the previous value pointed to by <code>devices</code>
-   *   (won't release reference even if it is not 0);
-   * - <code>devices</code> must be valid until <code>callback</code> is called,
-   *   if the method returns <code>PP_OK_COMPLETIONPENDING</code>;
-   * - the ref count of the returned <code>devices</code> has already been
-   *   increased by 1 for the caller.
-   *
-   * @param[in] audio_input A <code>PP_Resource</code> corresponding to an audio
-   * input resource.
-   * @param[out] devices Once the operation is completed successfully,
-   * <code>devices</code> will be set to a <code>PPB_ResourceArray_Dev</code>
-   * resource, which holds a list of <code>PPB_DeviceRef_Dev</code> resources.
-   * @param[in] callback A <code>PP_CompletionCallback</code> to run on
-   * completion.
-   *
-   * @return An error code from <code>pp_errors.h</code>.
-   */
-  [deprecate=0.3]
-  int32_t EnumerateDevices(
-      [in] PP_Resource audio_input,
-      [out] PP_Resource devices,
-      [in] PP_CompletionCallback callback);
 
   /**
    * Enumerates audio input devices.

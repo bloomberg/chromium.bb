@@ -29,7 +29,7 @@ AudioInputResource::AudioInputResource(
       open_state_(BEFORE_OPEN),
       capturing_(false),
       shared_memory_size_(0),
-      audio_input_callback_0_2_(NULL),
+      audio_input_callback_0_3_(NULL),
       audio_input_callback_(NULL),
       user_data_(NULL),
       enumeration_helper_(this),
@@ -52,12 +52,6 @@ void AudioInputResource::OnReplyReceived(
     PluginResource::OnReplyReceived(params, msg);
 }
 
-int32_t AudioInputResource::EnumerateDevices0_2(
-    PP_Resource* devices,
-    scoped_refptr<TrackedCallback> callback) {
-  return enumeration_helper_.EnumerateDevices0_2(devices, callback);
-}
-
 int32_t AudioInputResource::EnumerateDevices(
     const PP_ArrayOutput& output,
     scoped_refptr<TrackedCallback> callback) {
@@ -70,13 +64,13 @@ int32_t AudioInputResource::MonitorDeviceChange(
   return enumeration_helper_.MonitorDeviceChange(callback, user_data);
 }
 
-int32_t AudioInputResource::Open0_2(
+int32_t AudioInputResource::Open0_3(
     PP_Resource device_ref,
     PP_Resource config,
-    PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+    PPB_AudioInput_Callback_0_3 audio_input_callback_0_3,
     void* user_data,
     scoped_refptr<TrackedCallback> callback) {
-  return CommonOpen(device_ref, config, audio_input_callback_0_2, NULL,
+  return CommonOpen(device_ref, config, audio_input_callback_0_3, NULL,
                     user_data, callback);
 }
 
@@ -207,7 +201,7 @@ void AudioInputResource::SetStreamInfo(
 
 void AudioInputResource::StartThread() {
   // Don't start the thread unless all our state is set up correctly.
-  if ((!audio_input_callback_0_2_ && !audio_input_callback_) ||
+  if ((!audio_input_callback_0_3_ && !audio_input_callback_) ||
       !socket_.get() || !capturing_ || !shared_memory_->memory()) {
     return;
   }
@@ -249,7 +243,7 @@ void AudioInputResource::Run() {
         audio_input_callback_(&buffer->audio[0], buffer->params.size, latency,
                               user_data_);
       } else {
-        audio_input_callback_0_2_(&buffer->audio[0], buffer->params.size,
+        audio_input_callback_0_3_(&buffer->audio[0], buffer->params.size,
                                   user_data_);
       }
     }
@@ -259,7 +253,7 @@ void AudioInputResource::Run() {
 int32_t AudioInputResource::CommonOpen(
     PP_Resource device_ref,
     PP_Resource config,
-    PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+    PPB_AudioInput_Callback_0_3 audio_input_callback_0_3,
     PPB_AudioInput_Callback audio_input_callback,
     void* user_data,
     scoped_refptr<TrackedCallback> callback) {
@@ -279,7 +273,7 @@ int32_t AudioInputResource::CommonOpen(
   if (open_state_ != BEFORE_OPEN)
     return PP_ERROR_FAILED;
 
-  if (!audio_input_callback_0_2 && !audio_input_callback)
+  if (!audio_input_callback_0_3 && !audio_input_callback)
     return PP_ERROR_BADARGUMENT;
   thunk::EnterResourceNoLock<thunk::PPB_AudioConfig_API> enter_config(config,
                                                                       true);
@@ -287,7 +281,7 @@ int32_t AudioInputResource::CommonOpen(
     return PP_ERROR_BADARGUMENT;
 
   config_ = config;
-  audio_input_callback_0_2_ = audio_input_callback_0_2;
+  audio_input_callback_0_3_ = audio_input_callback_0_3;
   audio_input_callback_ = audio_input_callback;
   user_data_ = user_data;
   open_callback_ = callback;

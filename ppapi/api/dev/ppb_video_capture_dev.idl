@@ -7,7 +7,6 @@
  * This file defines the <code>PPB_VideoCapture_Dev</code> interface.
  */
 label Chrome {
-  M19 = 0.2,
   M25 = 0.3
 };
 
@@ -52,25 +51,6 @@ interface PPB_VideoCapture_Dev {
    */
   PP_Bool IsVideoCapture(
       [in] PP_Resource video_capture);
-
-  /**
-   * Enumerates video capture devices. Once the operation is completed
-   * successfully, |devices| will be set to a PPB_ResourceArray_Dev resource,
-   * which holds a list of PPB_DeviceRef_Dev resources.
-   *
-   * Please note that:
-   * - this method ignores the previous value pointed to by |devices| (won't
-   *   release reference even if it is not 0);
-   * - |devices| must be valid until |callback| is called, if the method
-   *   returns PP_OK_COMPLETIONPENDING;
-   * - the ref count of the returned |devices| has already been increased by 1
-   *   for the caller.
-   */
-  [deprecate=0.3]
-  int32_t EnumerateDevices(
-      [in] PP_Resource video_capture,
-      [out] PP_Resource devices,
-      [in] PP_CompletionCallback callback);
 
   /**
    * Enumerates video capture devices.

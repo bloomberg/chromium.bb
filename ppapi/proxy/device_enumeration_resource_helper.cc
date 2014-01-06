@@ -36,24 +36,6 @@ DeviceEnumerationResourceHelper::DeviceEnumerationResourceHelper(
 DeviceEnumerationResourceHelper::~DeviceEnumerationResourceHelper() {
 }
 
-int32_t DeviceEnumerationResourceHelper::EnumerateDevices0_2(
-    PP_Resource* devices,
-    scoped_refptr<TrackedCallback> callback) {
-  if (pending_enumerate_devices_)
-    return PP_ERROR_INPROGRESS;
-  if (!devices)
-    return PP_ERROR_BADARGUMENT;
-
-  pending_enumerate_devices_ = true;
-  PpapiHostMsg_DeviceEnumeration_EnumerateDevices msg;
-  owner_->Call<PpapiPluginMsg_DeviceEnumeration_EnumerateDevicesReply>(
-      PluginResource::RENDERER, msg,
-      base::Bind(
-          &DeviceEnumerationResourceHelper::OnPluginMsgEnumerateDevicesReply0_2,
-          AsWeakPtr(), devices, callback));
-  return PP_OK_COMPLETIONPENDING;
-}
-
 int32_t DeviceEnumerationResourceHelper::EnumerateDevices(
     const PP_ArrayOutput& output,
     scoped_refptr<TrackedCallback> callback) {
@@ -130,27 +112,6 @@ void DeviceEnumerationResourceHelper::LastPluginRefWasDeleted() {
   // There is no need to do anything with pending callback of
   // EnumerateDevices(), because OnPluginMsgEnumerateDevicesReply*() will handle
   // that properly.
-}
-
-void DeviceEnumerationResourceHelper::OnPluginMsgEnumerateDevicesReply0_2(
-    PP_Resource* devices_resource,
-    scoped_refptr<TrackedCallback> callback,
-    const ResourceMessageReplyParams& params,
-    const std::vector<DeviceRefData>& devices) {
-  pending_enumerate_devices_ = false;
-
-  // We shouldn't access |devices_resource| if the callback has been called,
-  // which is possible if the last plugin reference to the corresponding
-  // resource has gone away, and the callback has been aborted.
-  if (!TrackedCallback::IsPending(callback))
-    return;
-
-  if (params.result() == PP_OK) {
-    *devices_resource = PPB_DeviceRef_Shared::CreateResourceArray(
-        OBJECT_IS_PROXY, owner_->pp_instance(), devices);
-  }
-
-  callback->Run(params.result());
 }
 
 void DeviceEnumerationResourceHelper::OnPluginMsgEnumerateDevicesReply(

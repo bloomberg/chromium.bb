@@ -50,10 +50,10 @@ class AudioInput_Dev : public Resource {
                void* user_data,
                const CompletionCallback& callback);
 
-  /// Requires <code>PPB_AudioInput_Dev</code> version 0.2 or 0.3.
+  /// Requires <code>PPB_AudioInput_Dev</code> version 0.3.
   int32_t Open(const DeviceRef_Dev& device_ref,
                const AudioConfig& config,
-               PPB_AudioInput_Callback_0_2 audio_input_callback_0_2,
+               PPB_AudioInput_Callback_0_3 audio_input_callback_0_3,
                void* user_data,
                const CompletionCallback& callback);
 

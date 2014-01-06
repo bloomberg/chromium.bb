@@ -23,9 +23,6 @@ class PPB_VideoCapture_API {
  public:
   virtual ~PPB_VideoCapture_API() {}
 
-  virtual int32_t EnumerateDevices0_2(
-      PP_Resource* devices,
-      scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t EnumerateDevices(const PP_ArrayOutput& output,
                                    scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t MonitorDeviceChange(PP_MonitorDeviceChangeCallback callback,

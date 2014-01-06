@@ -62,12 +62,6 @@ void VideoCaptureResource::OnReplyReceived(
   IPC_END_MESSAGE_MAP()
 }
 
-int32_t VideoCaptureResource::EnumerateDevices0_2(
-    PP_Resource* devices,
-    scoped_refptr<TrackedCallback> callback) {
-  return enumeration_helper_.EnumerateDevices0_2(devices, callback);
-}
-
 int32_t VideoCaptureResource::EnumerateDevices(
     const PP_ArrayOutput& output,
     scoped_refptr<TrackedCallback> callback) {

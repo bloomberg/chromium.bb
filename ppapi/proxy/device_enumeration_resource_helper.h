@@ -37,8 +37,6 @@ class PPAPI_PROXY_EXPORT DeviceEnumerationResourceHelper
   explicit DeviceEnumerationResourceHelper(PluginResource* owner);
   ~DeviceEnumerationResourceHelper();
 
-  int32_t EnumerateDevices0_2(PP_Resource* devices,
-                              scoped_refptr<TrackedCallback> callback);
   int32_t EnumerateDevices(const PP_ArrayOutput& output,
                            scoped_refptr<TrackedCallback> callback);
   int32_t EnumerateDevicesSync(const PP_ArrayOutput& output);
@@ -52,11 +50,6 @@ class PPAPI_PROXY_EXPORT DeviceEnumerationResourceHelper
   void LastPluginRefWasDeleted();
 
  private:
-  void OnPluginMsgEnumerateDevicesReply0_2(
-      PP_Resource* devices_resource,
-      scoped_refptr<TrackedCallback> callback,
-      const ResourceMessageReplyParams& params,
-      const std::vector<DeviceRefData>& devices);
   void OnPluginMsgEnumerateDevicesReply(
       const PP_ArrayOutput& output,
       scoped_refptr<TrackedCallback> callback,
