@@ -1976,18 +1976,6 @@
    fun:_ZN16RenderWidgetHost9WasHiddenEv
 }
 {
-   bug_80663
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base4BindIMN3net17URLRequestHttpJobEFvPSsPSt6vectorINS1_11CookieStore10CookieInfoESaIS6_EEEPS2_EENS_8internal20InvokerStorageHolderINSD_15InvokerStorage1IT_T0_EEEESG_RKSH_
-   fun:_ZN3net17URLRequestHttpJob23AddCookieHeaderAndStartEv
-   fun:_ZN3net17URLRequestHttpJob5StartEv
-   fun:_ZN3net10URLRequest8StartJobEPNS_13URLRequestJobE
-   fun:_ZN3net10URLRequest5StartEv
-   fun:_ZN10URLFetcher4Core15StartURLRequestEv
-   fun:_ZN10URLFetcher4Core30StartURLRequestWhenAppropriateEv
-}
-{
    bug_82717
    Memcheck:Leak
    fun:_Znw*
@@ -6365,4 +6353,13 @@
    fun:_ZN7WebCore30PasswordGeneratorButtonElement11updateImageEv
    fun:_ZN7WebCore30PasswordGeneratorButtonElement6attachERKNS_4Node13AttachContextE
    fun:_ZN7WebCore13ContainerNode14attachChildrenERKNS_4Node13AttachContextE
+}
+{
+   bug_331925
+   Memcheck:Leak
+   ...
+   fun:_ZN3net27TestURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN3net14URLFetcherCore30StartURLRequestWhenAppropriateEv
+   fun:_ZN3net14URLFetcherCore19DidInitializeWriterEi
+   fun:_ZN3net14URLFetcherCore15StartOnIOThreadEv
 }
