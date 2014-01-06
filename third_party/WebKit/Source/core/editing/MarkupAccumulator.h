@@ -53,8 +53,8 @@ enum EntityMask {
     EntityMaskInCDATA = 0,
     EntityMaskInPCDATA = EntityAmp | EntityLt | EntityGt,
     EntityMaskInHTMLPCDATA = EntityMaskInPCDATA | EntityNbsp,
-    EntityMaskInAttributeValue = EntityAmp | EntityLt | EntityGt | EntityQuot,
-    EntityMaskInHTMLAttributeValue = EntityMaskInAttributeValue | EntityNbsp,
+    EntityMaskInAttributeValue = EntityAmp | EntityQuot | EntityLt | EntityGt,
+    EntityMaskInHTMLAttributeValue = EntityAmp | EntityQuot | EntityNbsp,
 };
 
 struct EntityDescription {
