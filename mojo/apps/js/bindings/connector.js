@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 define([
-  "console",
   "mojo/apps/js/bindings/codec",
   "mojo/apps/js/bindings/core",
   "mojo/apps/js/bindings/support",
-], function(console, codec, core, support) {
+], function(codec, core, support) {
 
   function Connector(handle) {
     this.handle_ = handle;

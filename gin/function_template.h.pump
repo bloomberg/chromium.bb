@@ -140,6 +140,11 @@ inline bool GetNextArgument(Arguments* args, int create_flags, bool is_first,
   *result = *args;
   return true;
 }
+inline bool GetNextArgument(Arguments* args, int create_flags, bool is_first,
+                            Arguments** result) {
+  *result = args;
+  return true;
+}
 
 // It's common for clients to just need the isolate, so we make that easy.
 inline bool GetNextArgument(Arguments* args, int create_flags,
@@ -205,6 +210,7 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
   gin::Handle<HolderT> holder = CreateHandle(
       isolate, new HolderT(callback, callback_flags));
   return v8::FunctionTemplate::New(
+      isolate,
       &internal::Dispatcher<Sig>::DispatchToCallback,
       ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
 }

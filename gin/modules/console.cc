@@ -19,7 +19,12 @@ namespace gin {
 
 namespace {
 
-void Log(const std::vector<std::string>& messages) {
+void Log(Arguments* args) {
+  std::vector<std::string> messages;
+  if (!args->GetRemaining(&messages)) {
+    args->ThrowError();
+    return;
+  }
   std::cout << JoinString(messages, ' ') << std::endl;
 }
 

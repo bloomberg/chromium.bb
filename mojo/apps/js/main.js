@@ -180,10 +180,10 @@ define([
       Object.create(nativeViewport.NativeViewportClientStub.prototype);
 
   NativeViewportClientImpl.prototype.onCreated = function() {
-    console.log(['NativeViewportClientImpl.prototype.OnCreated']);
+    console.log('NativeViewportClientImpl.prototype.OnCreated');
   };
   NativeViewportClientImpl.prototype.didOpen = function() {
-    console.log(['NativeViewportClientImpl.prototype.DidOpen']);
+    console.log('NativeViewportClientImpl.prototype.DidOpen');
   };
 
 
@@ -211,7 +211,7 @@ define([
   };
 
   GLES2ClientImpl.prototype.contextLost = function() {
-    console.log(['GLES2ClientImpl.prototype.contextLost']);
+    console.log('GLES2ClientImpl.prototype.contextLost');
   };
 
 

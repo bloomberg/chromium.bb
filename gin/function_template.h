@@ -62,7 +62,6 @@ struct CallbackParamTraits<const T*> {
 class GIN_EXPORT CallbackHolderBase : public Wrappable<CallbackHolderBase> {
  public:
   static WrapperInfo kWrapperInfo;
-
  protected:
   virtual ~CallbackHolderBase() {}
 };
@@ -267,6 +266,11 @@ bool GetNextArgument(Arguments* args, int create_flags, bool is_first,
 inline bool GetNextArgument(Arguments* args, int create_flags, bool is_first,
                             Arguments* result) {
   *result = *args;
+  return true;
+}
+inline bool GetNextArgument(Arguments* args, int create_flags, bool is_first,
+                            Arguments** result) {
+  *result = args;
   return true;
 }
 
