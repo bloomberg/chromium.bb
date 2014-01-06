@@ -201,27 +201,6 @@ DirectoryModel.prototype.getCurrentDirEntry = function() {
 };
 
 /**
- * TODO(hirono): Remove the method.
- * @return {string} URL of the current directory. or null if unavailable.
- */
-DirectoryModel.prototype.getCurrentDirectoryURL = function() {
-  var entry = this.currentDirContents_.getDirectoryEntry();
-  if (!entry)
-    return null;
-  return util.isFakeEntry(entry) ?
-      util.makeFilesystemUrl(entry.fullPath) : entry.toURL();
-};
-
-/**
- * @return {string} Path for the current directory, or empty string if the
- *     current directory is not yet set.
- */
-DirectoryModel.prototype.getCurrentDirPath = function() {
-  var entry = this.currentDirContents_.getDirectoryEntry();
-  return entry ? entry.fullPath : '';
-};
-
-/**
  * @return {Array.<string>} File paths of selected files.
  * @private
  */
@@ -912,8 +891,8 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   // since the current directory is initializing now.
   // TODO(mtomasz): DEFAULT_MOUNT_POINT is deprecated. Use VolumeManager::
   // getDefaultVolume() after it is implemented.
-  if (this.getCurrentDirPath() &&
-      !this.volumeManager_.getVolumeInfo(this.getCurrentDirPath()))
+  if (this.getCurrentDirEntry() &&
+      !this.volumeManager_.getVolumeInfo(this.getCurrentDirEntry()))
     this.changeDirectory(PathUtil.DEFAULT_MOUNT_POINT);
 };
 

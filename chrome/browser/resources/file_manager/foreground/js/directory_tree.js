@@ -374,8 +374,11 @@ DirectoryItem.prototype.doDropTargetAction = function() {
  * Executes the assigned action. DirectoryItem performs changeDirectory.
  */
 DirectoryItem.prototype.doAction = function() {
-  if (this.fullPath !== this.directoryModel_.getCurrentDirPath())
+  // TODO(mtomasz, yoshiki): Do not use fullPaths here, but Entry instead.
+  if (!this.directoryModel_.getCurrentDirEntry() ||
+      this.fullPath !== this.directoryModel_.getCurrentDirEntry().fullPath) {
     this.directoryModel_.changeDirectory(this.fullPath);
+  }
 };
 
 /**

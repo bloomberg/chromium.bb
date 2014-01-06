@@ -1932,23 +1932,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Return full path of the current directory or null.
-   * @return {?string} The full path of the current directory.
-   */
-  FileManager.prototype.getCurrentDirectory = function() {
-    return this.directoryModel_ && this.directoryModel_.getCurrentDirPath();
-  };
-
-  /**
-   * Return URL of the current directory or null.
-   * @return {string} URL representing the current directory.
-   */
-  FileManager.prototype.getCurrentDirectoryURL = function() {
-    return this.directoryModel_ &&
-           this.directoryModel_.getCurrentDirectoryURL();
-  };
-
-  /**
    * Return DirectoryEntry of the current directory or null.
    * @return {DirectoryEntry} DirectoryEntry of the current directory. Returns
    *     null if the directory model is not ready or the current directory is
@@ -2199,7 +2182,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.dialogType != DialogType.FULL_PAGE)
       return;
 
-    var path = this.getCurrentDirectory();
+    // TODO(mtomasz): Use VolumeInfo.root instead.
+    var path = this.getCurrentDirectoryEntry().fullPath;
     var rootPath = PathUtil.getRootPath(path);
     this.document_.title = PathUtil.getRootLabel(rootPath) +
                            path.substring(rootPath.length);
@@ -2271,7 +2255,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.onDirectoryChanged_ = function(event) {
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.searchBox.clear();
-    util.updateAppState(this.getCurrentDirectory());
+    // TODO(mtomasz): Use Entry.toURL() instead of fullPath.
+    util.updateAppState(
+        this.getCurrentDirectoryEntry() &&
+        this.getCurrentDirectoryEntry().fullPath);
 
     // If the current directory is moved from the device's volume, do not
     // automatically close the window on device removal.
@@ -2485,10 +2472,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           }.bind(this));
     };
 
-    // TODO(haruki): this.getCurrentDirectoryURL() might not return the actual
+    // TODO(haruki): this.getCurrentDirectoryEntry() might not return the actual
     // parent if the directory content is a search result. Fix it to do proper
     // validation.
-    this.validateFileName_(this.getCurrentDirectoryURL(),
+    this.validateFileName_(this.getCurrentDirectoryEntry(),
                            newName,
                            validationDone.bind(this));
   };
@@ -2833,7 +2820,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     switch (util.getKeyModifiers(event) + event.keyCode) {
       case '8':  // Backspace => Up one directory.
         event.preventDefault();
-        var path = this.getCurrentDirectory();
+        // TODO(mtomasz): Use Entry.getParent() instead.
+        if (!this.getCurrentDirectoryEntry())
+          break;
+        var path = this.getCurrentDirectoryEntry().fullPath;
         if (path && !PathUtil.isRootPath(path)) {
           var path = path.replace(/\/[^\/]+$/, '');
           this.directoryModel_.changeDirectory(path);
@@ -3124,10 +3114,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         throw new Error('Missing filename!');
 
       var directory = this.getCurrentDirectoryEntry();
-      var currentDirUrl = directory.toURL();
-      if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
-        currentDirUrl += '/';
-      this.validateFileName_(currentDirUrl, filename, function(isValid) {
+      this.validateFileName_(directory, filename, function(isValid) {
         if (!isValid)
           return;
 
@@ -3137,6 +3124,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         }
 
         var selectFileAndClose = function() {
+          // TODO(mtomasz): Clean this up by avoiding constructing a URL
+          //                via string concatenation.
+          var currentDirUrl = directory.toURL();
+          if (currentDirUrl.charAt(currentDirUrl.length - 1) != '/')
+          currentDirUrl += '/';
           this.selectFilesAndClose_({
             urls: [currentDirUrl + encodeURIComponent(filename)],
             multiple: false,
@@ -3178,7 +3170,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     if (DialogType.isFolderDialog(this.dialogType) &&
         selectedIndexes.length == 0) {
-      var url = this.getCurrentDirectoryURL();
+      var url = this.getCurrentDirectoryEntry().toURL();
       var singleSelection = {
         urls: [url],
         multiple: false,
@@ -3247,14 +3239,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    *
    * It also verifies if the name length is in the limit of the filesystem.
    *
-   * @param {string} parentUrl The URL of the parent directory entry.
+   * @param {DirectoryEntry} parentEntry The URL of the parent directory entry.
    * @param {string} name New file or folder name.
    * @param {function} onDone Function to invoke when user closes the
    *    warning box or immediatelly if file name is correct. If the name was
    *    valid it is passed true, and false otherwise.
    * @private
    */
-  FileManager.prototype.validateFileName_ = function(parentUrl, name, onDone) {
+  FileManager.prototype.validateFileName_ = function(
+      parentEntry, name, onDone) {
     var msg;
     var testResult = /[\/\\\<\>\:\?\*\"\|]/.exec(name);
     if (testResult) {
@@ -3276,7 +3269,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var self = this;
     chrome.fileBrowserPrivate.validatePathNameLength(
-        parentUrl, name, function(valid) {
+        parentEntry.toURL(), name, function(valid) {
           if (!valid) {
             self.alert.show(str('ERROR_LONG_NAME'),
                             function() { onDone(false); });

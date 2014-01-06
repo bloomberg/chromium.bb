@@ -217,8 +217,11 @@ NavigationList.prototype.renderRoot_ = function(modelItem) {
   item.setModelItem(modelItem, volumeInfo && volumeInfo.deviceType);
 
   var handleClick = function() {
+    // TODO(mtomasz, yoshiki): Do not use fullPath here, but Entry.
     if (item.selected &&
-        modelItem.path !== this.directoryModel_.getCurrentDirPath()) {
+        (!this.directoryModel_.getCurrentDirEntry() ||
+         modelItem.path !==
+             this.directoryModel_.getCurrentDirEntry().fullPath)) {
       metrics.recordUserAction('FolderShortcut.Navigate');
       this.changeDirectory_(modelItem);
     }
