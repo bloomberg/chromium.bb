@@ -1631,13 +1631,11 @@ sub parseExtendedAttributeRest3
     my $next = $self->nextToken();
     if ($next->value() eq "&") {
         $self->assertTokenValue($self->getToken(), "&", __LINE__);
-        my $rightValue = $self->parseScopedName();
-        return $name . "&" . $rightValue;
+        return $name . "&" . $self->parseExtendedAttributeRest2();
     }
     if ($next->value() eq "|") {
         $self->assertTokenValue($self->getToken(), "|", __LINE__);
-        my $rightValue = $self->parseScopedName();
-        return $name . "|" . $rightValue;
+        return $name . "|" . $self->parseExtendedAttributeRest2();
     }
     if ($next->value() eq "(") {
         my $attr = {};

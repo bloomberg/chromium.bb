@@ -179,7 +179,7 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     // 'Conditional' extended attribute
     [Conditional=Condition1] attribute long conditionalAttr1;
     [Conditional=Condition1&Condition2] attribute long conditionalAttr2;
-    [Conditional=Condition1|Condition2] attribute long conditionalAttr3;
+    [Conditional=Condition1|Condition2|Condition3] attribute long conditionalAttr3;
 
     // 'Conditional' extended method
     [Conditional=Condition1] DOMString conditionalMethod1();

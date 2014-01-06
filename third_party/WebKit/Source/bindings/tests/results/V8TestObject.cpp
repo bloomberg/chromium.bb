@@ -1616,40 +1616,40 @@ static void conditionalAttr2AttributeSetterCallback(v8::Local<v8::String>, v8::L
 }
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
 
-#if ENABLE(Condition1) || ENABLE(Condition2)
+#if ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 static void conditionalAttr3AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     v8SetReturnValueInt(info, imp->conditionalAttr3());
 }
-#endif // ENABLE(Condition1) || ENABLE(Condition2)
+#endif // ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 
-#if ENABLE(Condition1) || ENABLE(Condition2)
+#if ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 static void conditionalAttr3AttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestObjV8Internal::conditionalAttr3AttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-#endif // ENABLE(Condition1) || ENABLE(Condition2)
+#endif // ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 
-#if ENABLE(Condition1) || ENABLE(Condition2)
+#if ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 static void conditionalAttr3AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
     imp->setConditionalAttr3(cppValue);
 }
-#endif // ENABLE(Condition1) || ENABLE(Condition2)
+#endif // ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 
-#if ENABLE(Condition1) || ENABLE(Condition2)
+#if ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 static void conditionalAttr3AttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjV8Internal::conditionalAttr3AttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
-#endif // ENABLE(Condition1) || ENABLE(Condition2)
+#endif // ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 
 static void cachedAttribute1AttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
@@ -5166,9 +5166,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
 #if ENABLE(Condition1) && ENABLE(Condition2)
     {"conditionalAttr2", TestObjV8Internal::conditionalAttr2AttributeGetterCallback, TestObjV8Internal::conditionalAttr2AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
-#if ENABLE(Condition1) || ENABLE(Condition2)
+#if ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
     {"conditionalAttr3", TestObjV8Internal::conditionalAttr3AttributeGetterCallback, TestObjV8Internal::conditionalAttr3AttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-#endif // ENABLE(Condition1) || ENABLE(Condition2)
+#endif // ENABLE(Condition1) || ENABLE(Condition2) || ENABLE(Condition3)
 #if ENABLE(Condition1)
     {"conditionalAttr4", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttributeSetterCallback, 0, 0, const_cast<WrapperTypeInfo*>(&V8TestObjectectA::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), 0 /* on instance */},
 #endif // ENABLE(Condition1)
