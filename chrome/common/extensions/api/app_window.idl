@@ -135,7 +135,13 @@ namespace app.window {
     // Focus the window.
     static void focus();
 
-    // Fullscreens the window.
+    // Fullscreens the window.<br>
+    // The user will be able to restore the window by pressing ESC. An
+    // application can prevent the fullscreen state to be left when ESC is
+    // pressed by requesting the <b>overrideEscFullscreen</b> permission and
+    // canceling the event by calling .preventDefault(), like this:<br>
+    // <code>window.onKeyDown = function(e) { if (e.keyCode == 27 /* ESC */) {
+    // e.preventDefault(); } };</code>
     static void fullscreen();
 
     // Is the window fullscreen?
