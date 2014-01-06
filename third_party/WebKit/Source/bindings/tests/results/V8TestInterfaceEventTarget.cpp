@@ -114,7 +114,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceEventTargetConstructor::domTempl
 
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(V8TestInterfaceEventTarget::internalFieldCount);
-    result->SetClassName(v8::String::NewFromUtf8(isolate, "TestInterfaceEventTarget", v8::String::kInternalizedString));
+    result->SetClassName(v8AtomicString(isolate, "TestInterfaceEventTarget"));
     result->Inherit(V8TestInterfaceEventTarget::domTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
 

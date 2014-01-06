@@ -154,7 +154,7 @@ v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolat
 
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount({{v8_class}}::internalFieldCount);
-    result->SetClassName(v8::String::NewFromUtf8(isolate, "{{cpp_class}}", v8::String::kInternalizedString));
+    result->SetClassName(v8AtomicString(isolate, "{{cpp_class}}"));
     result->Inherit({{v8_class}}::domTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
 
@@ -500,7 +500,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% for attribute in attributes if attribute.is_static %}
     {% set getter_callback = '%sV8Internal::%sAttributeGetterCallback' %
            (interface_name, attribute.name) %}
-    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "{{attribute.name}}", v8::String::kInternalizedString), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "{{attribute.name}}"), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     {% endfor %}
     {% if has_custom_legacy_call_as_function %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
@@ -511,7 +511,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {% endif %}
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());
 }
 
 {% endblock %}
@@ -533,7 +533,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
 {% set property_attribute =
     'static_cast<v8::PropertyAttribute>(%s)' %
     ' | '.join(method.property_attributes or ['v8::DontDelete']) %}
-{{method.function_template}}->SetAccessor(v8::String::NewFromUtf8(isolate, "{{method.name}}", v8::String::kInternalizedString), {{getter_callback}}, {{setter_callback}}, v8Undefined(), v8::ALL_CAN_READ, {{property_attribute}});
+{{method.function_template}}->SetAccessor(v8AtomicString(isolate, "{{method.name}}"), {{getter_callback}}, {{setter_callback}}, v8Undefined(), v8::ALL_CAN_READ, {{property_attribute}});
 {%- endmacro %}
 
 
@@ -544,7 +544,7 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
                          (interface_name, method.name, world_suffix) %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(method.property_attributes) %}
-{{method.function_template}}->Set(v8::String::NewFromUtf8(isolate, "{{method.name}}", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, {{method_callback}}, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+{{method.function_template}}->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{method_callback}}, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
 {%- endmacro %}
 
 
@@ -642,7 +642,7 @@ void {{v8_class}}::installPerContextEnabledMethods(v8::Handle<v8::Object> protot
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
     {% for method in methods if method.per_context_enabled_function %}
     if (context && context->isDocument() && {{method.per_context_enabled_function}}(toDocument(context)))
-        prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "{{method.name}}", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, {{cpp_class}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
+        prototypeTemplate->Set(v8AtomicString(isolate, "{{method.name}}"), v8::FunctionTemplate::New(isolate, {{cpp_class}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
     {% endfor %}
 }
 

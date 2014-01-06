@@ -202,6 +202,18 @@ namespace WebCore {
         return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(string.impl(), isolate);
     }
 
+    inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str)
+    {
+        ASSERT(isolate);
+        return v8::String::NewFromUtf8(isolate, str, v8::String::kInternalizedString, strlen(str));
+    }
+
+    inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, size_t length)
+    {
+        ASSERT(isolate);
+        return v8::String::NewFromUtf8(isolate, str, v8::String::kInternalizedString, length);
+    }
+
     inline v8::Handle<v8::Value> v8Undefined()
     {
         return v8::Handle<v8::Value>();
@@ -549,7 +561,7 @@ namespace WebCore {
 
         v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
         v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
-        v8::Local<v8::String> lengthSymbol = v8::String::NewFromUtf8(isolate, "length", v8::String::kInternalizedString, 6);
+        v8::Local<v8::String> lengthSymbol = v8AtomicString(isolate, "length");
 
         // FIXME: The specification states that the length property should be used as fallback, if value
         // is not a platform object that supports indexed properties. If it supports indexed properties,
@@ -615,19 +627,6 @@ namespace WebCore {
         ASSERT(isolate);
         return std::isfinite(value) ? v8::Date::New(isolate, value) : v8::Handle<v8::Value>::Cast(v8::Null(isolate));
     }
-
-    inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str)
-    {
-        ASSERT(isolate);
-        return v8::String::NewFromUtf8(isolate, str, v8::String::kInternalizedString, strlen(str));
-    }
-
-    inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, size_t length)
-    {
-        ASSERT(isolate);
-        return v8::String::NewFromUtf8(isolate, str, v8::String::kInternalizedString, length);
-    }
-
 
     PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
 

@@ -542,7 +542,7 @@ bool _NPN_Enumerate(NPP npp, NPObject* npObject, NPIdentifier** identifier, uint
             "  }"
             "  return props;"
             "});";
-        v8::Handle<v8::String> source = v8::String::NewFromUtf8(isolate, enumeratorCode);
+        v8::Handle<v8::String> source = v8AtomicString(isolate, enumeratorCode);
         v8::Handle<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(source, context->GetIsolate());
         ASSERT(!result.IsEmpty());
         ASSERT(result->IsFunction());

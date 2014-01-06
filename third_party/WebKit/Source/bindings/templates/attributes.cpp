@@ -15,7 +15,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "{{attribute.name}}", v8::String::kInternalizedString);
+    v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
     {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     if (!imp->{{attribute.cached_attribute_validation_method}}()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
@@ -166,7 +166,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     exceptionState.throwIfNeeded();
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
-    info.Holder()->DeleteHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "{{attribute.name}}", v8::String::kInternalizedString)); // Invalidate the cached value.
+    info.Holder()->DeleteHiddenValue(v8AtomicString(info.GetIsolate(), "{{attribute.name}}")); // Invalidate the cached value.
     {% endif %}
 }
 {% endfilter %}

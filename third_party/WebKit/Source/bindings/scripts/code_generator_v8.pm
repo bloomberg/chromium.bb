@@ -1248,7 +1248,7 @@ static void ${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(const v8::Pro
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "${funcName}", v8::String::kInternalizedString));
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "${funcName}"));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -1523,7 +1523,7 @@ END
         if ($attrCached) {
             $imp = 1;
             $code .= <<END;
-    v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "${attrName}", v8::String::kInternalizedString);
+    v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "${attrName}");
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
     if (!imp->$attrCached()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
@@ -2143,7 +2143,7 @@ END
 
     if ($attrCached) {
         $code .= <<END;
-    info.Holder()->DeleteHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "${attrName}", v8::String::kInternalizedString)); // Invalidate the cached value.
+    info.Holder()->DeleteHiddenValue(v8AtomicString(info.GetIsolate(), "${attrName}")); // Invalidate the cached value.
 END
     }
 
@@ -3181,7 +3181,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::domTemplate(v8::Isol
 
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(${v8ClassName}::internalFieldCount);
-    result->SetClassName(v8::String::NewFromUtf8(isolate, "${implClassName}", v8::String::kInternalizedString));
+    result->SetClassName(v8AtomicString(isolate, "${implClassName}"));
     result->Inherit(${v8ClassName}::domTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
 
@@ -3366,7 +3366,7 @@ sub GenerateStaticAttribute
     my $conditionalString = GenerateConditionalString($attribute);
 
     $code .= "#if ${conditionalString}\n" if $conditionalString;
-    $code .= "    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, \"$attrName\", v8::String::kInternalizedString), $getter, $setter, v8::External::New(isolate, $data), $propAttribute, v8::Handle<v8::AccessorSignature>(), $accessControl);\n";
+    $code .= "    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, \"$attrName\"), $getter, $setter, v8::External::New(isolate, $data), $propAttribute, v8::Handle<v8::AccessorSignature>(), $accessControl);\n";
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
 
     return $code;

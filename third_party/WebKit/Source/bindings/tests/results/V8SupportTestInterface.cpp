@@ -433,10 +433,10 @@ static void configureV8SupportTestInterfaceTemplate(v8::Handle<v8::FunctionTempl
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "supplementalMethod4", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, SupportTestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "supplementalStaticReadOnlyAttr", v8::String::kInternalizedString), SupportTestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "supplementalStaticReadOnlyAttr"), SupportTestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "supplementalStaticAttr", v8::String::kInternalizedString), SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeGetterCallback, SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "supplementalStaticAttr"), SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeGetterCallback, SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
     // Custom toString template

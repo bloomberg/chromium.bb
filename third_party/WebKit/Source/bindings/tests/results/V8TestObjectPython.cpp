@@ -1535,7 +1535,7 @@ static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallbac
 
 static void cachedAttributeAnyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "cachedAttributeAnyAttribute", v8::String::kInternalizedString);
+    v8::Handle<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "cachedAttributeAnyAttribute");
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     if (!imp->isValueDirty()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
@@ -1561,7 +1561,7 @@ static void cachedAttributeAnyAttributeAttributeSetter(v8::Local<v8::Value> jsVa
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(ScriptValue, cppValue, ScriptValue(jsValue, info.GetIsolate()));
     imp->setCachedAttributeAnyAttribute(cppValue);
-    info.Holder()->DeleteHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "cachedAttributeAnyAttribute", v8::String::kInternalizedString)); // Invalidate the cached value.
+    info.Holder()->DeleteHiddenValue(v8AtomicString(info.GetIsolate(), "cachedAttributeAnyAttribute")); // Invalidate the cached value.
 }
 
 static void cachedAttributeAnyAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -6503,8 +6503,8 @@ static void configureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate>
             prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "perWorldBindingsRuntimeEnabledVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
     }
     instanceTemplate->Set(v8::String::NewFromUtf8(isolate, "unforgeableVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::unforgeableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
-    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "staticStringAttribute", v8::String::kInternalizedString), TestObjectPythonV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "staticLongAttribute", v8::String::kInternalizedString), TestObjectPythonV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticLongAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "staticStringAttribute"), TestObjectPythonV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "staticLongAttribute"), TestObjectPythonV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticLongAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());

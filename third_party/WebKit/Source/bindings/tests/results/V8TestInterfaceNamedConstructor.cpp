@@ -127,7 +127,7 @@ v8::Handle<v8::FunctionTemplate> V8TestInterfaceNamedConstructorConstructor::dom
 
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(V8TestInterfaceNamedConstructor::internalFieldCount);
-    result->SetClassName(v8::String::NewFromUtf8(isolate, "TestInterfaceNamedConstructor", v8::String::kInternalizedString));
+    result->SetClassName(v8AtomicString(isolate, "TestInterfaceNamedConstructor"));
     result->Inherit(V8TestInterfaceNamedConstructor::domTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
 

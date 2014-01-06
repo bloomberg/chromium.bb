@@ -61,7 +61,7 @@ void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototy
             setter = v8::FunctionTemplate::New(isolate, setterCallback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 1);
             setter->RemovePrototype();
         }
-        prototype->SetAccessorProperty(v8::String::NewFromUtf8(isolate, accessors[i].name, v8::String::kInternalizedString), getter, setter, accessors[i].attribute, accessors[i].settings);
+        prototype->SetAccessorProperty(v8AtomicString(isolate, accessors[i].name), getter, setter, accessors[i].attribute, accessors[i].settings);
     }
 }
 
@@ -69,8 +69,9 @@ void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> funct
 {
     for (size_t i = 0; i < constantCount; ++i) {
         const ConstantConfiguration* constant = &constants[i];
-        functionDescriptor->Set(v8::String::NewFromUtf8(isolate, constant->name, v8::String::kInternalizedString), v8::Integer::New(isolate, constant->value), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
-        prototype->Set(v8::String::NewFromUtf8(isolate, constant->name, v8::String::kInternalizedString), v8::Integer::New(isolate, constant->value), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+        v8::Handle<v8::String> constantName = v8AtomicString(isolate, constant->name);
+        functionDescriptor->Set(constantName, v8::Integer::New(isolate, constant->value), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+        prototype->Set(constantName, v8::Integer::New(isolate, constant->value), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
     }
 }
 
@@ -82,7 +83,7 @@ void V8DOMConfiguration::installCallbacks(v8::Handle<v8::ObjectTemplate> prototy
             callback = callbacks[i].callbackForMainWorld;
         v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8Undefined(), signature, callbacks[i].length);
         functionTemplate->RemovePrototype();
-        prototype->Set(v8::String::NewFromUtf8(isolate, callbacks[i].name, v8::String::kInternalizedString), functionTemplate, attributes);
+        prototype->Set(v8AtomicString(isolate, callbacks[i].name), functionTemplate, attributes);
     }
 }
 
@@ -92,7 +93,7 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
     const MethodConfiguration* callbacks, size_t callbackCount,
     v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    functionDescriptor->SetClassName(v8::String::NewFromUtf8(isolate, interfaceName, v8::String::kInternalizedString));
+    functionDescriptor->SetClassName(v8AtomicString(isolate, interfaceName));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(fieldCount);
     if (!parentClass.IsEmpty()) {

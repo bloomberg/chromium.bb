@@ -63,7 +63,7 @@ void V8PerContextData::dispose()
 #define V8_STORE_PRIMORDIAL(name, Name) \
 { \
     ASSERT(m_##name##Prototype.isEmpty()); \
-    v8::Handle<v8::String> symbol = v8::String::NewFromUtf8(m_isolate, #Name, v8::String::kInternalizedString); \
+    v8::Handle<v8::String> symbol = v8AtomicString(m_isolate, #Name); \
     if (symbol.IsEmpty()) \
         return false; \
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(v8::Local<v8::Context>::New(m_isolate, m_context)->Global()->Get(symbol)); \

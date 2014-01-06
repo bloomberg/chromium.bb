@@ -75,11 +75,11 @@ public:
     static inline void installAttribute(v8::Handle<ObjectOrTemplate> instanceTemplate, v8::Handle<ObjectOrTemplate> prototype, const AttributeConfiguration& attribute, v8::Isolate* isolate)
     {
         (attribute.onPrototype ? prototype : instanceTemplate)->SetAccessor(v8::String::NewFromUtf8(isolate, attribute.name, v8::String::kInternalizedString),
-                                                                    attribute.getter,
-                                                                    attribute.setter,
-                                                                    v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data)),
-                                                                    attribute.settings,
-                                                                    attribute.attribute);
+            attribute.getter,
+            attribute.setter,
+            v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data)),
+            attribute.settings,
+            attribute.attribute);
     }
 
     template<class ObjectOrTemplate>

@@ -107,7 +107,7 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyStringValue)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    object->Set(v8::String::NewFromUtf8(isolate, "foo"), v8::String::NewFromUtf8(isolate, "zoo"));
+    object->Set(v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"));
 
     ScriptValue scriptValue(object, isolate);
 
@@ -119,7 +119,7 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, TopLevelPropertyNumberValue)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    object->Set(v8::String::NewFromUtf8(isolate, "foo"), v8::Number::New(isolate, 456));
+    object->Set(v8AtomicString(isolate, "foo"), v8::Number::New(isolate, 456));
 
     ScriptValue scriptValue(object, isolate);
 
@@ -132,8 +132,8 @@ TEST_F(IDBKeyFromValueAndKeyPathTest, SubProperty)
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     v8::Local<v8::Object> subProperty = v8::Object::New(isolate);
-    subProperty->Set(v8::String::NewFromUtf8(isolate, "bar"), v8::String::NewFromUtf8(isolate, "zee"));
-    object->Set(v8::String::NewFromUtf8(isolate, "foo"), subProperty);
+    subProperty->Set(v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"));
+    object->Set(v8AtomicString(isolate, "foo"), subProperty);
 
     ScriptValue scriptValue(object, isolate);
 
@@ -148,7 +148,7 @@ TEST_F(InjectIDBKeyTest, TopLevelPropertyStringValue)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
-    object->Set(v8::String::NewFromUtf8(isolate, "foo"), v8::String::NewFromUtf8(isolate, "zoo"));
+    object->Set(v8AtomicString(isolate, "foo"), v8AtomicString(isolate, "zoo"));
 
     ScriptValue foozoo(object, isolate);
     checkInjection(IDBKey::createString("myNewKey"), foozoo, "bar");
@@ -162,8 +162,8 @@ TEST_F(InjectIDBKeyTest, SubProperty)
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::Local<v8::Object> object = v8::Object::New(isolate);
     v8::Local<v8::Object> subProperty = v8::Object::New(isolate);
-    subProperty->Set(v8::String::NewFromUtf8(isolate, "bar"), v8::String::NewFromUtf8(isolate, "zee"));
-    object->Set(v8::String::NewFromUtf8(isolate, "foo"), subProperty);
+    subProperty->Set(v8AtomicString(isolate, "bar"), v8AtomicString(isolate, "zee"));
+    object->Set(v8AtomicString(isolate, "foo"), subProperty);
 
     ScriptValue scriptObject(object, isolate);
     checkInjection(IDBKey::createString("myNewKey"), scriptObject, "foo.baz");
