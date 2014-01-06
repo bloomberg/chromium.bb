@@ -209,6 +209,7 @@ table_files = \
 	Se-Se-g1.utb \
 	sk-sk-g1.utb \
 	sk-sk.utb \
+	sl-si-comp8.ctb \
 	sl-si-g1.utb \
 	spaces.ctb \
 	sr-chardefs.cti \

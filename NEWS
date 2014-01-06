@@ -20,12 +20,12 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      http://address.com, words including after, capsigns. thanks to Ken Perry.
    - Further corrections and testcases to the Hungarian tables thanks
      to Hammer Attila
-   - UEB chardefs - correct title and fixed a long standing bug where
-     dots 46 was inserted between letters (especialy for web
-     addresses). Thanks to Joseph Lee.
    - Fixed letter sign in en-us and en-ueb tables. Thanks to John
      Boyer and Ken Perry.
    - UEB Fixes thanks to Mesar Hameed, Ken Perry and Joseph Lee:
+     - chardefs - correct title and fixed a long standing bug
+       where dots 46 was inserted between letters (especialy for web
+       addresses).
      - Fix problem with at sign.
      - Removed section of accented letters, that were left behind from
        US table.
@@ -47,7 +47,9 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - The Esperanto table has additional punctuation characters and a
      test harness. Thanks to Aaron Cannon.
    - Added missing symbols to the US English BRF display table. Thanks
-     to Aaron Cannon. 
+     to Aaron Cannon.
+   - Improvements to the slovenian table and a new slovenian eight dot
+     computer table provided by Jožef Gregorc.
 
 ** Backwards incompatible changes
    - Delete the table chardefs-ueb.cti as these rules are now
