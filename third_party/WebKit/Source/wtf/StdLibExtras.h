@@ -65,15 +65,6 @@
 #define DEFINE_DEBUG_ONLY_GLOBAL(type, name, arguments)
 #endif // NDEBUG
 
-// OBJECT_OFFSETOF: Like the C++ offsetof macro, but you can use it with classes.
-// The magic number 0x4000 is insignificant. We use it to avoid using NULL, since
-// NULL can cause compiler problems, especially in cases of multiple inheritance.
-#define OBJECT_OFFSETOF(class, field) (reinterpret_cast<ptrdiff_t>(&(reinterpret_cast<class*>(0x4000)->field)) - 0x4000)
-
-// STRINGIZE: Can convert any value to quoted string, even expandable macros
-#define STRINGIZE(exp) #exp
-#define STRINGIZE_VALUE_OF(exp) STRINGIZE(exp)
-
 /*
  * The reinterpret_cast<Type1*>([pointer to Type2]) expressions - where
  * sizeof(Type1) > sizeof(Type2) - cause the following warning on ARM with GCC:
@@ -115,19 +106,6 @@ bool isPointerTypeAlignmentOkay(Type*)
 
 namespace WTF {
 
-static const size_t KB = 1024;
-static const size_t MB = 1024 * 1024;
-
-inline bool isPointerAligned(void* p)
-{
-    return !((intptr_t)(p) & (sizeof(char*) - 1));
-}
-
-inline bool is8ByteAligned(void* p)
-{
-    return !((uintptr_t)(p) & (sizeof(double) - 1));
-}
-
 /*
  * C++'s idea of a reinterpret_cast lacks sufficient cojones.
  */
@@ -150,14 +128,6 @@ inline To safeCast(From value)
     return static_cast<To>(value);
 }
 
-// Returns a count of the number of bits set in 'bits'.
-inline size_t bitCount(unsigned bits)
-{
-    bits = bits - ((bits >> 1) & 0x55555555);
-    bits = (bits & 0x33333333) + ((bits >> 2) & 0x33333333);
-    return (((bits + (bits >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
-}
-
 // Macro that returns a compile time constant with the length of an array, but gives an error if passed a non-array.
 template<typename T, size_t Size> char (&ArrayLengthHelperFunction(T (&)[Size]))[Size];
 // GCC needs some help to deduce a 0 length array.
@@ -165,19 +135,6 @@ template<typename T, size_t Size> char (&ArrayLengthHelperFunction(T (&)[Size]))
 template<typename T> char (&ArrayLengthHelperFunction(T (&)[0]))[0];
 #endif
 #define WTF_ARRAY_LENGTH(array) sizeof(::WTF::ArrayLengthHelperFunction(array))
-
-// Efficient implementation that takes advantage of powers of two.
-inline size_t roundUpToMultipleOf(size_t divisor, size_t x)
-{
-    ASSERT(divisor && !(divisor & (divisor - 1)));
-    size_t remainderMask = divisor - 1;
-    return (x + remainderMask) & ~remainderMask;
-}
-template<size_t divisor> inline size_t roundUpToMultipleOf(size_t x)
-{
-    COMPILE_ASSERT(divisor && !(divisor & (divisor - 1)), divisor_is_a_power_of_two);
-    return roundUpToMultipleOf(divisor, x);
-}
 
 enum BinarySearchMode {
     KeyMustBePresentInArray,
@@ -272,10 +229,6 @@ inline void* operator new(size_t, NotNullTag, void* location)
     return location;
 }
 
-using WTF::KB;
-using WTF::MB;
-using WTF::isPointerAligned;
-using WTF::is8ByteAligned;
 using WTF::binarySearch;
 using WTF::tryBinarySearch;
 using WTF::approximateBinarySearch;
