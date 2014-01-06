@@ -1781,18 +1781,13 @@ void ChromeContentBrowserClient::AllowCertificateError(
     NOTREACHED();
     return;
   }
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(tab->GetBrowserContext()));
-  if (prerender_manager && prerender_manager->IsWebContentsPrerendering(tab,
-                                                                        NULL)) {
-    if (prerender_manager->prerender_tracker()->TryCancel(
-            render_process_id,
-            render_frame_host->GetRenderViewHost()->GetRoutingID(),
-            prerender::FINAL_STATUS_SSL_ERROR)) {
-      *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
-      return;
-    }
+
+  prerender::PrerenderContents* prerender_contents =
+        prerender::PrerenderContents::FromWebContents(tab);
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_SSL_ERROR);
+    *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
+    return;
   }
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)

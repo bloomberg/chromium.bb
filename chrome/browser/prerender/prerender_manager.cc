@@ -1754,12 +1754,11 @@ void PrerenderManager::OnCreatingAudioStream(int render_process_id,
   if (!tab)
     return;
 
-  if (!IsWebContentsPrerendering(tab, NULL))
+  PrerenderContents* prerender_contents = GetPrerenderContents(tab);
+  if (!prerender_contents)
     return;
 
-  prerender_tracker()->TryCancel(
-      render_process_id, render_view_id,
-      prerender::FINAL_STATUS_CREATING_AUDIO_STREAM);
+  prerender_contents->Destroy(prerender::FINAL_STATUS_CREATING_AUDIO_STREAM);
 }
 
 void PrerenderManager::RecordLikelyLoginOnURL(const GURL& url) {
