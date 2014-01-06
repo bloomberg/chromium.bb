@@ -4,6 +4,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_danger_prompt.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -130,6 +131,8 @@ DownloadDangerPromptViews::DownloadDangerPromptViews(
 
   layout->StartRow(0, 0);
   layout->AddView(message_body_label);
+
+  RecordOpenedDangerousConfirmDialog(download_->GetDangerType());
 }
 
 // DownloadDangerPrompt methods:
