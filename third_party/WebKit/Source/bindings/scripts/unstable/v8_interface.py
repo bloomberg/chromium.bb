@@ -52,6 +52,7 @@ INTERFACE_CPP_INCLUDES = set([
     'RuntimeEnabledFeatures.h',
     'bindings/v8/ExceptionState.h',
     'bindings/v8/V8DOMConfiguration.h',
+    'bindings/v8/V8ObjectConstructor.h',
     'core/dom/ContextFeatures.h',
     'core/dom/Document.h',
     'platform/TraceEvent.h',
