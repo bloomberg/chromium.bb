@@ -9,16 +9,22 @@ from metrics import Metric
 
 _HISTOGRAMS = [
     {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent',
+     'display_name': 'V8_MemoryExternalFragmentationTotal',
      'type': histogram_util.RENDERER_HISTOGRAM},
     {'name': 'V8.MemoryHeapSampleTotalCommitted', 'units': 'kb',
+     'display_name': 'V8_MemoryHeapSampleTotalCommitted',
      'type': histogram_util.RENDERER_HISTOGRAM},
     {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb',
+     'display_name': 'V8_MemoryHeapSampleTotalUsed',
      'type': histogram_util.RENDERER_HISTOGRAM},
     {'name': 'V8.MemoryHeapSampleMaximumCommitted', 'units': 'kb',
+     'display_name': 'V8_MemoryHeapSampleMaximumCommitted',
      'type': histogram_util.RENDERER_HISTOGRAM},
     {'name': 'Memory.RendererUsed', 'units': 'kb',
+     'display_name': 'Memory_RendererUsed',
      'type': histogram_util.RENDERER_HISTOGRAM},
     {'name': 'Memory.BrowserUsed', 'units': 'kb',
+     'display_name': 'Memory_BrowserUsed',
      'type': histogram_util.BROWSER_HISTOGRAM}]
 
 class MemoryMetric(Metric):
@@ -87,7 +93,8 @@ class MemoryMetric(Metric):
       # Histogram data may not be available
       if h['name'] not in self._histogram_start:
         continue
-      results.Add(h['name'], h['units'], self._histogram_delta[h['name']],
+      results.Add(h['display_name'], h['units'],
+                  self._histogram_delta[h['name']],
                   data_type='unimportant-histogram')
     self._memory_stats = self._browser.memory_stats
     if not self._memory_stats['Browser']:

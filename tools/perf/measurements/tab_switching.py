@@ -48,6 +48,7 @@ class TabSwitching(page_measurement.PageMeasurement):
 
     histogram_name = 'MPArch.RWH_TabSwitchPaintDuration'
     histogram_type = histogram_util.BROWSER_HISTOGRAM
+    display_name = 'MPArch_RWH_TabSwitchPaintDuration'
     first_histogram = histogram_util.GetHistogram(
         histogram_type, histogram_name, tab)
     prev_histogram = first_histogram
@@ -70,5 +71,5 @@ class TabSwitching(page_measurement.PageMeasurement):
     diff_histogram = histogram_util.SubtractHistogram(last_histogram,
         first_histogram)
 
-    results.AddSummary(histogram_name, '', diff_histogram,
+    results.AddSummary(display_name, '', diff_histogram,
         data_type='unimportant-histogram')
