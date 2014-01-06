@@ -288,9 +288,7 @@ void PowerPolicyInSessionBrowserTest::SetUpOnMainThread() {
 }
 
 // Verifies that device policy is applied on the login screen.
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest,
-                       DISABLED_SetDevicePolicy) {
+IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest, SetDevicePolicy) {
   pm::PowerManagementPolicy power_management_policy =
       power_manager_client_->get_policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);
@@ -316,9 +314,7 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyLoginScreenBrowserTest,
 }
 
 // Verifies that device policy is ignored during a session.
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest,
-                       DISABLED_SetDevicePolicy) {
+IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetDevicePolicy) {
   pm::PowerManagementPolicy power_management_policy =
       power_manager_client_->get_policy();
 
@@ -331,9 +327,7 @@ IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest,
 }
 
 // Verifies that user policy is applied during a session.
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest,
-                       DISABLED_SetUserPolicy) {
+IN_PROC_BROWSER_TEST_F(PowerPolicyInSessionBrowserTest, SetUserPolicy) {
   pm::PowerManagementPolicy power_management_policy =
       power_manager_client_->get_policy();
   power_management_policy.mutable_ac_delays()->set_screen_dim_ms(5000);

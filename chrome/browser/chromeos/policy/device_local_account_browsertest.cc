@@ -431,8 +431,7 @@ static bool IsKnownUser(const std::string& account_id) {
   return chromeos::UserManager::Get()->IsKnownUser(account_id);
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_LoginScreen) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LoginScreen) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
@@ -457,8 +456,7 @@ static bool DisplayNameMatches(const std::string& account_id,
   return true;
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DisplayName) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -467,8 +465,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DisplayName) {
       base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_PolicyDownload) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyDownload) {
   UploadDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -488,8 +485,7 @@ static bool IsNotKnownUser(const std::string& account_id) {
   return !IsKnownUser(account_id);
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_DevicePolicyChange) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DevicePolicyChange) {
   AddPublicSessionToDevicePolicy(kAccountId1);
   AddPublicSessionToDevicePolicy(kAccountId2);
 
@@ -528,8 +524,7 @@ static bool IsSessionStarted() {
   return chromeos::UserManager::Get()->IsSessionStarted();
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_StartSession) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
   // Specify startup pages.
   device_local_account_policy_.payload().mutable_restoreonstartup()->set_value(
       SessionStartupPref::kPrefValueURLs);
@@ -587,8 +582,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_StartSession) {
   }
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_FullscreenDisallowed) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
   UploadAndInstallDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
@@ -643,8 +637,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_FullscreenDisallowed) {
   EXPECT_FALSE(browser_window->IsFullscreen());
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExtensionsUncached) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Make it possible to force-install a hosted app and an extension.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   TestingUpdateManifestProvider testing_update_manifest_provider(
@@ -742,8 +735,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExtensionsUncached) {
       kAccountId1, kGoodExtensionID, kGoodExtensionVersion)));
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_ExtensionsCached) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   // Pre-populate the device local account's extension cache with a hosted app
@@ -960,8 +952,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
   EXPECT_EQ(kExternalData, *fetched_external_data);
 }
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, DISABLED_UserAvatarImage) {
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, UserAvatarImage) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
 
   UploadDeviceLocalAccountPolicy();
@@ -1043,8 +1034,7 @@ class TermsOfServiceTest : public DeviceLocalAccountTest,
                            public testing::WithParamInterface<bool> {
 };
 
-// http://crbug.com/330454
-IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, DISABLED_TermsOfServiceScreen) {
+IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
   // Specify Terms of Service URL.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   device_local_account_policy_.payload().mutable_termsofserviceurl()->set_value(
