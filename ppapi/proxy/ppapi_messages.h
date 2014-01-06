@@ -737,6 +737,8 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_Keepalive)
 // initialize properly.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_ChannelCreated,
                      IPC::ChannelHandle /* handle */)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_NaClChannelCreated,
+                     IPC::ChannelHandle /* handle */)
 
 // Logs the given message to the console of all instances.
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_LogWithSource,

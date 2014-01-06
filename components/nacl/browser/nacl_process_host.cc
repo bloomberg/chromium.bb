@@ -572,7 +572,7 @@ bool NaClProcessHost::OnMessageReceived(const IPC::Message& msg) {
                                     OnAttachDebugExceptionHandler)
 #endif
     IPC_MESSAGE_HANDLER(NaClProcessHostMsg_PpapiChannelCreated,
-                        OnPpapiChannelCreated)
+                        OnPpapiBrowserChannelCreated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -778,14 +778,11 @@ bool NaClProcessHost::SendStart() {
 }
 
 // This method is called when NaClProcessHostMsg_PpapiChannelCreated is
-// received or PpapiHostMsg_ChannelCreated is forwarded by our plugin
-// listener.
-void NaClProcessHost::OnPpapiChannelCreated(
+// received.
+void NaClProcessHost::OnPpapiBrowserChannelCreated(
     const IPC::ChannelHandle& channel_handle) {
   // Only renderer processes should create a channel.
   DCHECK(enable_ppapi_proxy());
-  // If the proxy channel is null, this must be the initial NaCl-Browser IPC
-  // channel.
   if (!ipc_proxy_channel_.get()) {
     DCHECK_EQ(PROCESS_TYPE_NACL_LOADER, process_->GetData().process_type);
 
@@ -833,11 +830,19 @@ void NaClProcessHost::OnPpapiChannelCreated(
             args,
             SerializedHandle(SerializedHandle::CHANNEL_HANDLE,
                              IPC::InvalidPlatformFileForTransit())));
-  } else if (reply_msg_) {
-    // Otherwise, this must be a renderer channel.
+  } else {
+    // Attempt to open more than 1 browser channel is not supported.
+    // Shut down the NaCl process.
+    process_->GetHost()->ForceShutdown();
+  }
+}
+
+void NaClProcessHost::OnPpapiRendererChannelCreated(
+    const IPC::ChannelHandle& channel_handle) {
+  if (reply_msg_) {
     ReplyToRenderer(channel_handle);
   } else {
-    // Attempt to open more than 1 renderer channel is not supported.
+    // Attempt to open more than 1 NaCl renderer channel is not supported.
     // Shut down the NaCl process.
     process_->GetHost()->ForceShutdown();
   }
@@ -848,8 +853,8 @@ bool NaClProcessHost::OnUntrustedMessageForwarded(const IPC::Message& msg) {
   // These messages come from untrusted code so should be handled with care.
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(NaClProcessHost, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_ChannelCreated,
-                        OnPpapiChannelCreated)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_NaClChannelCreated,
+                        OnPpapiRendererChannelCreated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

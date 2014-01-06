@@ -176,8 +176,11 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
                                    IPC::Message* reply_msg);
 #endif
 
-  // Called when a PPAPI IPC channel has been created.
-  void OnPpapiChannelCreated(const IPC::ChannelHandle& channel_handle);
+  // Called when the PPAPI IPC channel to the browser has been created.
+  void OnPpapiBrowserChannelCreated(const IPC::ChannelHandle& channel_handle);
+  // Called when the PPAPI IPC channel to the renderer has been created.
+  void OnPpapiRendererChannelCreated(const IPC::ChannelHandle& channel_handle);
+
   // Called by PluginListener, so messages from the untrusted side of
   // the IPC proxy can be handled.
   bool OnUntrustedMessageForwarded(const IPC::Message& msg);

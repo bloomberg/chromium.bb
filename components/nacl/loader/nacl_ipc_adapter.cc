@@ -521,7 +521,7 @@ bool NaClIPCAdapter::OnMessageReceived(const IPC::Message& msg) {
           nacl_desc.reset(new NaClDescWrapper(ipc_adapter->MakeNaClDesc()));
           // Send back a message that the channel was created.
           scoped_ptr<IPC::Message> response(
-              new PpapiHostMsg_ChannelCreated(channel_handle));
+              new PpapiHostMsg_NaClChannelCreated(channel_handle));
           task_runner_->PostTask(FROM_HERE,
               base::Bind(&NaClIPCAdapter::SendMessageOnIOThread, this,
                          base::Passed(&response)));
