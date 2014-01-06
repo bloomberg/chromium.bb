@@ -2412,6 +2412,10 @@ void RenderViewImpl::initializeHelperPluginWebFrame(
   plugin->initializeFrame(main_render_frame_.get());
 }
 
+void RenderViewImpl::didStartLoading(bool to_different_document) {
+  didStartLoading();
+}
+
 void RenderViewImpl::didStartLoading() {
   if (is_loading_) {
     DVLOG(1) << "didStartLoading called while loading";

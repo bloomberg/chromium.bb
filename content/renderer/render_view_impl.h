@@ -420,6 +420,8 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebString& path,
       blink::WebFileChooserCompletion* chooser_completion);
   virtual void initializeHelperPluginWebFrame(blink::WebHelperPlugin*);
+  virtual void didStartLoading(bool to_different_document);
+  // DEPRECATED
   virtual void didStartLoading();
   virtual void didStopLoading();
   virtual void didChangeLoadProgress(blink::WebFrame* frame,
