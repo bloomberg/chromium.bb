@@ -365,6 +365,17 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #if defined(ENABLE_PLUGINS)
   new PepperHelper(render_frame);
 #endif
+
+  // TODO(jam): when a RenderFrame is per WebFrame, this can be simplified by
+  // getting a RenderFrame's WebFrame and calling its parent() method.
+  if (render_frame->GetRenderView()->GetMainRenderFrame() != render_frame) {
+    // Avoid any race conditions from having the browser tell subframes that
+    // they're prerendering.
+    if (prerender::PrerenderHelper::IsPrerendering(
+            render_frame->GetRenderView()->GetMainRenderFrame())) {
+      new prerender::PrerenderHelper(render_frame);
+    }
+  }
 }
 
 void ChromeContentRendererClient::RenderViewCreated(
