@@ -70,6 +70,17 @@ private:
         return new RenderDetailsMarker(this);
     }
 
+    virtual void* preDispatchEventHandler(Event* event) OVERRIDE
+    {
+        // Chromium opens autofill popup in a mousedown event listener
+        // associated to the document. We don't want to open it in this case
+        // because we opens a datalist chooser later.
+        // FIXME: We should dispatch mousedown events even in such case.
+        if (event->type() == EventTypeNames::mousedown)
+            event->stopPropagation();
+        return 0;
+    }
+
     virtual void defaultEventHandler(Event* event) OVERRIDE
     {
         ASSERT(document().isActive());
