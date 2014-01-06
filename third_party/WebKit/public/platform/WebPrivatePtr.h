@@ -72,7 +72,7 @@ namespace blink {
 //    };
 //
 //    // WebFoo.cpp
-//    void WebFoo::~WebFoo() { m_private.reset(); }
+//    WebFoo::~WebFoo() { m_private.reset(); }
 //    void WebFoo::assign(const WebFoo& other) { ... }
 //
 template <typename T>
