@@ -35,13 +35,13 @@ namespace ui {
 namespace {
 
 void OnFrameScalingFinished(
-    const GrapWindowSnapshotAsyncCallback& callback,
+    const GrabWindowSnapshotAsyncCallback& callback,
     const SkBitmap& scaled_bitmap) {
   callback.Run(gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(scaled_bitmap)));
 }
 
 void ScaleCopyOutputResult(
-    const GrapWindowSnapshotAsyncCallback& callback,
+    const GrabWindowSnapshotAsyncCallback& callback,
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
     scoped_ptr<cc::CopyOutputResult> result) {
@@ -136,12 +136,12 @@ bool GrabWindowSnapshot(gfx::NativeWindow window,
       png_representation);
 }
 
-SNAPSHOT_EXPORT void GrapWindowSnapshotAsync(
+SNAPSHOT_EXPORT void GrabWindowSnapshotAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
-    const GrapWindowSnapshotAsyncCallback& callback) {
+    const GrabWindowSnapshotAsyncCallback& callback) {
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateBitmapRequest(
           base::Bind(&ScaleCopyOutputResult, callback, target_size,
