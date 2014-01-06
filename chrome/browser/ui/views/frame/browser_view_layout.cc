@@ -67,7 +67,7 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
   }
 
   virtual ~WebContentsModalDialogHostViews() {
-    FOR_EACH_OBSERVER(web_modal::ModalDialogHostObserver,
+    FOR_EACH_OBSERVER(ModalDialogHostObserver,
                       observer_list_,
                       OnHostDestroying());
   }
@@ -78,49 +78,33 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
                       OnPositionRequiresUpdate());
   }
 
-  // Center horizontally over the content area, with the top overlapping the
-  // browser chrome.
   virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE {
-    int top_y = browser_view_layout_->web_contents_modal_dialog_top_y_;
-    views::View* contents_container =
-        browser_view_layout_->contents_container_;
-    gfx::Rect contents_container_bounds_in_widget =
-        contents_container->ConvertRectToWidget(
-            contents_container->GetLocalBounds());
-    int middle_x = contents_container_bounds_in_widget.x() +
-        contents_container_bounds_in_widget.width() / 2;
-    return gfx::Point(middle_x - size.width() / 2, top_y);
+    views::View* view = browser_view_layout_->delegate_->GetContentsWebView();
+    gfx::Rect content_area = view->ConvertRectToWidget(view->GetLocalBounds());
+    const int middle_x = content_area.x() + content_area.width() / 2;
+    const int top = browser_view_layout_->web_contents_modal_dialog_top_y_;
+    return gfx::Point(middle_x - size.width() / 2, top);
+  }
+
+  virtual gfx::Size GetMaximumDialogSize() OVERRIDE {
+    views::View* view = browser_view_layout_->delegate_->GetContentsWebView();
+    gfx::Rect content_area = view->ConvertRectToWidget(view->GetLocalBounds());
+    const int top = browser_view_layout_->web_contents_modal_dialog_top_y_;
+    return gfx::Size(content_area.width(), content_area.bottom() - top);
   }
 
  private:
   virtual gfx::NativeView GetHostView() const OVERRIDE {
-    gfx::NativeWindow native_window =
+    gfx::NativeWindow window =
         browser_view_layout_->browser()->window()->GetNativeWindow();
-    return views::Widget::GetWidgetForNativeWindow(native_window)->
-        GetNativeView();
-  }
-
-  virtual gfx::Size GetMaximumDialogSize() OVERRIDE {
-    gfx::Rect content_area =
-        browser_view_layout_->contents_container_->ConvertRectToWidget(
-            browser_view_layout_->contents_container_->GetLocalBounds());
-
-    gfx::Size max_dialog_size = content_area.size();
-    // Adjust for difference in alignment between the dialog top and the top of
-    // the content area.
-    int height_offset = content_area.y() -
-        browser_view_layout_->web_contents_modal_dialog_top_y_;
-    max_dialog_size.Enlarge(0, height_offset);
-    return max_dialog_size;
+    return views::Widget::GetWidgetForNativeWindow(window)->GetNativeView();
   }
 
   // Add/remove observer.
-  virtual void AddObserver(
-      ModalDialogHostObserver* observer) OVERRIDE {
+  virtual void AddObserver(ModalDialogHostObserver* observer) OVERRIDE {
     observer_list_.AddObserver(observer);
   }
-  virtual void RemoveObserver(
-      ModalDialogHostObserver* observer) OVERRIDE {
+  virtual void RemoveObserver(ModalDialogHostObserver* observer) OVERRIDE {
     observer_list_.RemoveObserver(observer);
   }
 
@@ -388,9 +372,11 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   if (fullscreen_exit_bubble)
     fullscreen_exit_bubble->RepositionIfVisible();
 
-  // Adjust any hosted dialogs if the browser's dialog positioning has changed.
-  if (dialog_host_->GetDialogPosition(gfx::Size()) != latest_dialog_position_) {
-    latest_dialog_position_ = dialog_host_->GetDialogPosition(gfx::Size());
+  // Adjust any hosted dialogs if the browser's dialog hosting bounds changed.
+  const gfx::Rect dialog_bounds(dialog_host_->GetDialogPosition(gfx::Size()),
+                                dialog_host_->GetMaximumDialogSize());
+  if (latest_dialog_bounds_ != dialog_bounds) {
+    latest_dialog_bounds_ = dialog_bounds;
     dialog_host_->NotifyPositionRequiresUpdate();
   }
 }

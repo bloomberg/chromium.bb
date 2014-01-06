@@ -159,8 +159,8 @@ class BrowserViewLayout : public views::LayoutManager {
   // The host for use in positioning the web contents modal dialog.
   scoped_ptr<WebContentsModalDialogHostViews> dialog_host_;
 
-  // The latest dialog position applied during a layout pass.
-  gfx::Point latest_dialog_position_;
+  // The latest dialog bounds applied during a layout pass.
+  gfx::Rect latest_dialog_bounds_;
 
   // The distance the web contents modal dialog is from the top of the window,
   // in pixels.

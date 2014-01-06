@@ -15,8 +15,9 @@
 
 class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
  public:
-  MockBrowserViewLayoutDelegate()
-      : tab_strip_visible_(true),
+  explicit MockBrowserViewLayoutDelegate(views::View* contents_web_view)
+      : contents_web_view_(contents_web_view),
+        tab_strip_visible_(true),
         toolbar_visible_(true),
         bookmark_bar_visible_(true),
         download_shelf_needs_layout_(false) {
@@ -37,6 +38,9 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   }
 
   // BrowserViewLayout::Delegate overrides:
+  virtual views::View* GetContentsWebView() const OVERRIDE {
+    return contents_web_view_;
+  }
   virtual views::View* GetWindowSwitcherButton() const OVERRIDE {
     // TODO(jamescook): Add a test for Windows that exercises the layout for
     // this button.
@@ -69,6 +73,7 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   }
 
  private:
+  views::View* contents_web_view_;
   bool tab_strip_visible_;
   bool toolbar_visible_;
   bool bookmark_bar_visible_;
@@ -182,7 +187,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
 
     // TODO(jamescook): Attach |layout_| to |root_view_|?
     layout_.reset(new BrowserViewLayout);
-    delegate_ = new MockBrowserViewLayoutDelegate;
+    delegate_ = new MockBrowserViewLayoutDelegate(contents_web_view_);
     layout_->Init(delegate_,
                   browser(),
                   NULL,  // BrowserView.

@@ -265,6 +265,10 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
   virtual ~BrowserViewLayoutDelegateImpl() {}
 
   // BrowserViewLayoutDelegate overrides:
+  virtual views::View* GetContentsWebView() const OVERRIDE {
+    return browser_view_->contents_web_view_;
+  }
+
   virtual views::View* GetWindowSwitcherButton() const OVERRIDE {
     return browser_view_->window_switcher_button();
   }
