@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
+  # This file is an unused, a mostly empty placeholder which should go away
+  # eventually -- http://crbug.com/52609
   'action_name': 'repack_chrome',
   'variables': {
     'pak_inputs': [

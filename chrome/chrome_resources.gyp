@@ -409,12 +409,6 @@
             {
               'destination': '<(PRODUCT_DIR)',
               'files': [
-                '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak'
-              ],
-            },
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
                 '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak'
               ],
             },
