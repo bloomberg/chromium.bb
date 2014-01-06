@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+
+<script>
+description("Test that calling createElementNS() throws an error when http://www.w3.org/TR/dom/#dom-document-createelementns says it should.");
+
+// Spec: http://www.w3.org/TR/dom/#dom-document-createelementns
+
+// Step 5.
+shouldThrow("document.createElementNS(null, 'foo:bar', 'baz')", '"NamespaceError: Failed to execute \'createElementNS\' on \'Document\': The namespace URI provided (\'\') is not valid for the qualified name provided (\'foo:bar\')."');
+
+// Step 6.
+shouldNotThrow("document.createElementNS('http://www.w3.org/XML/1998/namespace', 'xml:abc', 'foo')");
+shouldThrow("document.createElementNS('http://www.w3.org/not-XML/1998/namespace', 'xml:abc', 'foo')", '"NamespaceError: Failed to execute \'createElementNS\' on \'Document\': The namespace URI provided (\'http://www.w3.org/not-XML/1998/namespace\') is not valid for the qualified name provided (\'xml:abc\')."');
+
+// Step 7.
+shouldNotThrow("document.createElementNS('http://www.w3.org/2000/xmlns/', 'xmlns', 'http://wwww.example.org')");
+shouldThrow("document.createElementNS('http://www.w3.org/2000/not-xmlns/', 'xmlns', 'http://wwww.example.org')", '"NamespaceError: Failed to execute \'createElementNS\' on \'Document\': The namespace URI provided (\'http://www.w3.org/2000/not-xmlns/\') is not valid for the qualified name provided (\'xmlns\')."');
+shouldNotThrow("document.createElementNS('http://www.w3.org/2000/xmlns/', 'xmlns:abc', 'http://wwww.example.org')");
+shouldThrow("document.createElementNS('http://www.w3.org/2000/not-xmlns/', 'xmlns:abc', 'http://wwww.example.org')", '"NamespaceError: Failed to execute \'createElementNS\' on \'Document\': The namespace URI provided (\'http://www.w3.org/2000/not-xmlns/\') is not valid for the qualified name provided (\'xmlns:abc\')."');
+
+// Step 8.
+shouldThrow("document.createElementNS('http://www.w3.org/2000/xmlns/', 'badprefix:xmlns', 'http://wwww.example.org')", '"NamespaceError: Failed to execute \'createElementNS\' on \'Document\': The namespace URI provided (\'http://www.w3.org/2000/xmlns/\') is not valid for the qualified name provided (\'badprefix:xmlns\')."');
+shouldThrow("document.createElementNS('http://www.w3.org/2000/xmlns/', 'notxmlns', 'http://wwww.example.org')", '"NamespaceError: Failed to execute \'createElementNS\' on \'Document\': The namespace URI provided (\'http://www.w3.org/2000/xmlns/\') is not valid for the qualified name provided (\'notxmlns\')."');
+</script>
+
