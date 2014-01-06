@@ -173,7 +173,10 @@ pass2 @56[$d1-5]@5!$d *
 # insert another superscript ind. on doube superscripts
 pass2 @45[]$d@5-5 @45
 #get rid of extra baseline inds.
-pass2 @5-5 @5 pass2 @5-0 @0 pass2 @5-a @a pass2 @5-1b-15 @1b-15
+pass2 @5-5 @5 
+pass2 @5-0 @0 
+pass2 @5-a @a 
+pass2 @5-1b-15 @1b-15
 # get rid rid of superscript ind. on prime sign
 pass2 @45-3-5 @3
 # Put 456 in mixed numbers
@@ -209,4 +212,5 @@ pass2 @1256-4-6-12356 @4-6-12356
 # take off baseline ind. comma space
 pass2 [@5-6]!$l @6
 pass2 @1b-12[]$d @3456 number sign before digit at beginning
+pass2 @1b-12-36[]$d @3456 number sign before minus before digit at beginning
 

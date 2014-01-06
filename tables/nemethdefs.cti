@@ -1,4 +1,9 @@
-math \x020A a
+# liblouis Nemeth character definitions
+# Copyright 2006-2024 Via"{Plus Technologies and Abilitiessoft
+#
+# Spaces must be unbreakable, 0xA0, dot pattern a
+
+math \x200A a
 math \x02BC 12
 math \x2146 145
 math \x2147 15
