@@ -242,33 +242,26 @@ bool FrameLoaderClientImpl::hasFrameView() const
     return m_webFrame->viewImpl();
 }
 
-void FrameLoaderClientImpl::willDetachParent()
-{
-    m_webFrame->willDetachParent();
-}
-
 void FrameLoaderClientImpl::detachedFromParent()
 {
     // Alert the client that the frame is being detached. This is the last
     // chance we have to communicate with the client.
-    m_webFrame->setWebCoreFrame(0);
+    RefPtr<WebFrameImpl> protector(m_webFrame);
 
     WebFrameClient* client = m_webFrame->client();
-
     if (!client)
         return;
+
+    m_webFrame->willDetachParent();
 
     // Signal that no further communication with WebFrameClient should take
     // place at this point since we are no longer associated with the Page.
     m_webFrame->setClient(0);
 
-    // The call to WebFrameClient::frameDetached() is generally when the embedder will release its
-    // reference to the WebFrame, which may trigger WebFrame destruction. Since WebFrame owns
-    // FrameLoaderClientImpl, we must not access any of our own members after this call, since this
-    // object may have been destroyed.
-    WebFrame* webFrame = m_webFrame;
-    m_webFrame = 0;
-    client->frameDetached(webFrame);
+    client->frameDetached(m_webFrame);
+    // Clear our reference to WebCore::Frame at the very end, in case the client
+    // refers to it.
+    m_webFrame->setWebCoreFrame(0);
 }
 
 void FrameLoaderClientImpl::dispatchWillRequestAfterPreconnect(ResourceRequest& request)

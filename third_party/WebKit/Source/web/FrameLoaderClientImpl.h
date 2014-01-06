@@ -70,7 +70,6 @@ public:
 
     virtual bool hasWebView() const;
     virtual bool hasFrameView() const;
-    virtual void willDetachParent();
     virtual void detachedFromParent();
     virtual void dispatchWillRequestAfterPreconnect(WebCore::ResourceRequest&);
     virtual void dispatchWillSendRequest(WebCore::DocumentLoader*, unsigned long identifier, WebCore::ResourceRequest&, const WebCore::ResourceResponse& redirectResponse);

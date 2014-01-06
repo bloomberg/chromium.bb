@@ -135,7 +135,6 @@ public:
 
     void checkLoadComplete(DocumentLoader*);
     void checkLoadComplete();
-    void detachFromParent();
 
     static void addHTTPOriginIfNeeded(ResourceRequest&, const AtomicString& origin);
 
@@ -230,8 +229,10 @@ private:
     void loadWithNavigationAction(const NavigationAction&, FrameLoadType, PassRefPtr<FormState>,
         const SubstituteData&, ClientRedirectPolicy = NotClientRedirect, const AtomicString& overrideEncoding = nullAtom);
 
+    void detachFromParent();
     void detachChildren();
     void closeAndRemoveChild(Frame*);
+    void detachClient();
 
     enum HistoryItemPolicy {
         CreateNewHistoryItem,

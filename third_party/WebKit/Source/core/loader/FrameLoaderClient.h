@@ -90,7 +90,6 @@ class FetchRequest;
 
         virtual bool hasWebView() const = 0; // mainly for assertions
 
-        virtual void willDetachParent() = 0;
         virtual void detachedFromParent() = 0;
 
         virtual void dispatchWillRequestAfterPreconnect(ResourceRequest&) { }

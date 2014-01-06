@@ -1018,14 +1018,11 @@ void FrameLoader::detachChildren()
 
 void FrameLoader::closeAndRemoveChild(Frame* child)
 {
-    // FIXME: All this code belongs up in Page!
-    child->tree().detachFromParent();
-
     child->setView(0);
     if (child->ownerElement() && child->page())
         child->page()->decrementSubframeCount();
     child->willDetachFrameHost();
-    child->detachFromFrameHost();
+    child->loader().detachClient();
 
     m_frame->tree().removeChild(child);
 }
@@ -1098,10 +1095,8 @@ void FrameLoader::detachFromParent()
         m_documentLoader->detachFromFrame();
     m_documentLoader = 0;
 
-    m_progressTracker.clear();
-
-    if (m_client)
-        m_client->willDetachParent();
+    if (!m_client)
+        return;
 
     // FIXME: All this code belongs up in Page.
     if (Frame* parent = m_frame->tree().parent()) {
@@ -1110,21 +1105,27 @@ void FrameLoader::detachFromParent()
     } else {
         m_frame->setView(0);
         m_frame->willDetachFrameHost();
-        m_frame->detachFromFrameHost();
+        detachClient();
     }
+    m_progressTracker.clear();
+    m_frame->detachFromFrameHost();
 
-    if (m_client) {
-        setOpener(0);
+}
 
-        // Notify ScriptController that the frame is closing, since its cleanup ends up calling
-        // back to FrameLoaderClient via V8WindowShell.
-        m_frame->script().clearForClose();
+void FrameLoader::detachClient()
+{
+    ASSERT(m_client);
 
-        // After this, we must no longer talk to the client since this clears
-        // its owning reference back to us.
-        m_client->detachedFromParent();
-        m_client = 0;
-    }
+    setOpener(0);
+
+    // Notify ScriptController that the frame is closing, since its cleanup ends up calling
+    // back to FrameLoaderClient via V8WindowShell.
+    m_frame->script().clearForClose();
+
+    // After this, we must no longer talk to the client since this clears
+    // its owning reference back to us.
+    m_client->detachedFromParent();
+    m_client = 0;
 }
 
 void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const AtomicString& origin)
