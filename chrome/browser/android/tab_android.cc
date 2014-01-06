@@ -222,6 +222,41 @@ void TabAndroid::SetSyncId(int sync_id) {
   Java_TabBase_setSyncId(env, obj.obj(), sync_id);
 }
 
+void TabAndroid::HandlePopupNavigation(chrome::NavigateParams* params) {
+  NOTIMPLEMENTED();
+}
+
+void TabAndroid::OnReceivedHttpAuthRequest(jobject auth_handler,
+                                           const base::string16& host,
+                                           const base::string16& realm) {
+  NOTIMPLEMENTED();
+}
+
+void TabAndroid::AddShortcutToBookmark(const GURL& url,
+                                       const base::string16& title,
+                                       const SkBitmap& skbitmap,
+                                       int r_value,
+                                       int g_value,
+                                       int b_value) {
+  NOTREACHED();
+}
+
+void TabAndroid::EditBookmark(int64 node_id,
+                              const base::string16& node_title,
+                              bool is_folder,
+                              bool is_partner_bookmark) {
+  NOTREACHED();
+}
+
+void TabAndroid::OnNewTabPageReady() {
+  NOTREACHED();
+}
+
+bool TabAndroid::ShouldWelcomePageLinkToTermsOfService() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void TabAndroid::SwapTabContents(content::WebContents* old_contents,
                                  content::WebContents* new_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -277,6 +312,10 @@ void TabAndroid::Observe(int type,
       NOTREACHED() << "Unexpected notification " << type;
       break;
   }
+}
+
+void TabAndroid::Destroy(JNIEnv* env, jobject obj) {
+  delete this;
 }
 
 void TabAndroid::InitWebContents(JNIEnv* env,
@@ -417,6 +456,12 @@ bool TabAndroid::Print(JNIEnv* env, jobject obj) {
 
   print_view_manager->PrintNow();
   return true;
+}
+
+static void Init(JNIEnv* env, jobject obj) {
+  TRACE_EVENT0("native", "TabAndroid::Init");
+  // This will automatically bind to the Java object and pass ownership there.
+  new TabAndroid(env, obj);
 }
 
 bool TabAndroid::RegisterTabAndroid(JNIEnv* env) {

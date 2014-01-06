@@ -14,8 +14,6 @@ class ChromeMainDelegateTestShellAndroid : public ChromeMainDelegateAndroid {
 
   virtual bool BasicStartupComplete(int* exit_code) OVERRIDE;
 
-  virtual bool RegisterApplicationNativeMethods(JNIEnv* env) OVERRIDE;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeMainDelegateTestShellAndroid);
 };

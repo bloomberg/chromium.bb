@@ -8,13 +8,13 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.TabBase;
+import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.LoadUrlParams;
-import org.chromium.content.common.CleanupReference;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -22,10 +22,6 @@ import org.chromium.ui.base.WindowAndroid;
  * and extends {@link TabBase}.
  */
 public class TestShellTab extends TabBase {
-    private long mNativeTestShellTab;
-
-    private CleanupReference mCleanupReference;
-
     // Tab state
     private boolean mIsLoading;
 
@@ -44,24 +40,6 @@ public class TestShellTab extends TabBase {
         loadUrlWithSanitization(url);
     }
 
-    @Override
-    public void initialize() {
-        super.initialize();
-
-        mNativeTestShellTab = nativeInit();
-        mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeTestShellTab));
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-
-        if (mNativeTestShellTab != 0) {
-            mCleanupReference.cleanupNow();
-            mNativeTestShellTab = 0;
-        }
-    }
-
     /**
      * @return Whether or not the tab is currently loading.
      */
@@ -78,7 +56,7 @@ public class TestShellTab extends TabBase {
         if (url == null) return;
 
         // Sanitize the URL.
-        url = nativeFixupUrl(mNativeTestShellTab, url);
+        url = UrlUtilities.fixupUrl(url);
 
         // Invalid URLs will just return empty.
         if (TextUtils.isEmpty(url)) return;
@@ -106,17 +84,6 @@ public class TestShellTab extends TabBase {
     @Override
     protected TabBaseChromeWebContentsDelegateAndroid createWebContentsDelegate() {
         return new TestShellTabBaseChromeWebContentsDelegateAndroid();
-    }
-
-    private static final class DestroyRunnable implements Runnable {
-        private final long mNativeTestShellTab;
-        private DestroyRunnable(long nativeTestShellTab) {
-            mNativeTestShellTab = nativeTestShellTab;
-        }
-        @Override
-        public void run() {
-            nativeDestroy(mNativeTestShellTab);
-        }
     }
 
     @Override
@@ -153,8 +120,4 @@ public class TestShellTab extends TabBase {
             mIsLoading = false;
         }
     }
-
-    private native long nativeInit();
-    private static native void nativeDestroy(long nativeTestShellTab);
-    private native String nativeFixupUrl(long nativeTestShellTab, String url);
 }

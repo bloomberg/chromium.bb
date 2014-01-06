@@ -40,12 +40,17 @@ import java.util.concurrent.atomic.AtomicInteger;
  * The basic Java representation of a tab.  Contains and manages a {@link ContentView}.
  *
  * TabBase provides common functionality for ChromiumTestshell's Tab as well as Chrome on Android's
- * tab. It's intended to be extended both on Java and C++, with ownership managed by the subclass.
- * Because of the inner-workings of JNI, the subclass is responsible for constructing the native
- * subclass which in turn constructs TabAndroid (the native counterpart to TabBase) which in turn
- * sets the native pointer for TabBase. The same is true for destruction. The Java subclass must be
- * destroyed which will call into the native subclass and finally lead to the destruction of the
- * parent classes.
+ * tab. It is intended to be extended either on Java or both Java and C++, with ownership managed
+ * by this base class.
+ *
+ * Extending just Java:
+ *  - Just extend the class normally.  Do not override initializeNative().
+ * Extending Java and C++:
+ *  - Because of the inner-workings of JNI, the subclass is responsible for constructing the native
+ *    subclass, which in turn constructs TabAndroid (the native counterpart to TabBase), which in
+ *    turn sets the native pointer for TabBase.  For destruction, subclasses in Java must clear
+ *    their own native pointer reference, but TabBase#destroy() will handle deleting the native
+ *    object.
  */
 public abstract class TabBase implements NavigationClient {
     public static final int INVALID_TAB_ID = -1;
@@ -604,7 +609,19 @@ public abstract class TabBase implements NavigationClient {
     /**
      * Initializes this {@link TabBase}.
      */
-    public void initialize() { }
+    public void initialize() {
+        initializeNative();
+    }
+
+    /**
+     * Builds the native counterpart to this class.  Meant to be overridden by subclasses to build
+     * subclass native counterparts instead.  Subclasses should not call this via super and instead
+     * rely on the native class to create the JNI association.
+     */
+    protected void initializeNative() {
+        if (mNativeTabAndroid == 0) nativeInit();
+        assert mNativeTabAndroid != 0;
+    }
 
     /**
      * A helper method to initialize a {@link ContentView} without any native WebContents pointer.
@@ -656,8 +673,9 @@ public abstract class TabBase implements NavigationClient {
 
     /**
      * Cleans up all internal state, destroying any {@link NativePage} or {@link ContentView}
-     * currently associated with this {@link TabBase}.  Typically, pnce this call is made this
-     * {@link TabBase} should no longer be used as subclasses usually destroy the native component.
+     * currently associated with this {@link TabBase}.  This also destroys the native counterpart
+     * to this class, which means that all subclasses should erase their native pointers after
+     * this method is called.  Once this call is made this {@link TabBase} should no longer be used.
      */
     public void destroy() {
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
@@ -666,6 +684,15 @@ public abstract class TabBase implements NavigationClient {
         mNativePage = null;
         destroyNativePageInternal(currentNativePage);
         destroyContentView(true);
+
+        // Destroys the native tab after destroying the ContentView but before destroying the
+        // InfoBarContainer. The native tab should be destroyed before the infobar container as
+        // destroying the native tab cleanups up any remaining infobars. The infobar container
+        // expects all infobars to be cleaned up before its own destruction.
+        assert mNativeTabAndroid != 0;
+        nativeDestroy(mNativeTabAndroid);
+        assert mNativeTabAndroid == 0;
+
         if (mInfoBarContainer != null) {
             mInfoBarContainer.destroy();
             mInfoBarContainer = null;
@@ -872,6 +899,8 @@ public abstract class TabBase implements NavigationClient {
         sIdCounter.addAndGet(diff);
     }
 
+    private native void nativeInit();
+    private native void nativeDestroy(long nativeTabAndroid);
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
             ContentViewCore contentViewCore, ChromeWebContentsDelegateAndroid delegate,
             ContextMenuPopulator contextMenuPopulator);
