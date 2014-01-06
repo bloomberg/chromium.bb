@@ -8,7 +8,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.os.Build;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.view.ContextMenu;
 
@@ -41,9 +40,7 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
         assertWaitForPageScaleFactorMatch(0.5f);
     }
 
-    // http://crbug.com/326769
-    @FlakyTest
-    // @LargeTest
+    @LargeTest
     @Feature({"Browser", "Main"})
     public void testCopyLinkURL() throws InterruptedException, TimeoutException {
         TabBase tab = getActivity().getActiveTab();
@@ -54,9 +51,7 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
         assertStringContains("test_link.html", getClipboardText());
     }
 
-    // http://crbug.com/326769
-    @FlakyTest
-    // @LargeTest
+    @LargeTest
     @Feature({"Browser"})
     public void testCopyImageLinkCopiesLinkURL() throws InterruptedException, TimeoutException {
         TabBase tab = getActivity().getActiveTab();
@@ -67,9 +62,7 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
         assertStringContains("test_link.html", getClipboardText());
     }
 
-    // http://crbug.com/326769
-    @FlakyTest
-    // @LargeTest
+    @LargeTest
     @Feature({"Browser"})
     public void testCopyLinkTextSimple() throws InterruptedException, TimeoutException {
         TabBase tab = getActivity().getActiveTab();
@@ -81,9 +74,7 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
                 getClipboardText());
     }
 
-    // http://crbug.com/326769
-    @FlakyTest
-    // @LargeTest
+    @LargeTest
     @Feature({"Browser"})
     public void testCopyLinkTextComplex() throws InterruptedException, TimeoutException {
         TabBase tab = getActivity().getActiveTab();
@@ -95,9 +86,7 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
                 "This is pretty   extreme \n(newline). ", getClipboardText());
     }
 
-    // http://crbug.com/326769
-    @FlakyTest
-    // @LargeTest
+    @LargeTest
     @Feature({"Browser"})
     public void testCopyImageToClipboard() throws InterruptedException, TimeoutException {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) return;
@@ -113,9 +102,7 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
         assertEquals("Clipboard text is not correct", expectedUrl, getClipboardText());
     }
 
-    // http://crbug.com/326769
-    @FlakyTest
-    // @LargeTest
+    @LargeTest
     @Feature({"Browser"})
     public void testLongPressOnImage() throws InterruptedException, TimeoutException {
         final TabBase tab = getActivity().getActiveTab();
@@ -145,9 +132,7 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
         assertEquals("Failed to navigate to the image", expectedUrl, actualUrl.get());
     }
 
-    // http://crbug.com/326769
-    @FlakyTest
-    // @LargeTest
+    @LargeTest
     @Feature({"Browser"})
     public void testLongPressOnImageLink() throws InterruptedException, TimeoutException {
         final TabBase tab = getActivity().getActiveTab();
@@ -174,9 +159,7 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
         assertTrue("Navigated to the wrong page.", actualTitle.get().startsWith("test_image.png"));
     }
 
-    // http://crbug.com/326769
-    @FlakyTest
-    // @LargeTest
+    @LargeTest
     @Feature({"Browser"})
     public void testDismissContextMenuOnBack() throws InterruptedException, TimeoutException {
         TabBase tab = getActivity().getActiveTab();
@@ -196,9 +179,7 @@ public class ContextMenuTest extends ChromiumTestShellTestBase {
                 }));
     }
 
-    // http://crbug.com/326769
-    @FlakyTest
-    // @LargeTest
+    @LargeTest
     @Feature({"Browser"})
     public void testDismissContextMenuOnClick() throws InterruptedException, TimeoutException {
         TabBase tab = getActivity().getActiveTab();
