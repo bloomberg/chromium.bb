@@ -28,11 +28,11 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/NodeRenderingContext.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/events/ScopedEventQueue.h"
+#include "core/dom/RenderTreeBuilder.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/rendering/RenderCombineText.h"
 #include "core/rendering/RenderText.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
@@ -306,7 +306,7 @@ RenderText* Text::createTextRenderer(RenderStyle* style)
 
 void Text::attach(const AttachContext& context)
 {
-    NodeRenderingContext(this, context.resolvedStyle).createRendererForTextIfNeeded();
+    RenderTreeBuilder(this, context.resolvedStyle).createRendererForTextIfNeeded();
     CharacterData::attach(context);
 }
 

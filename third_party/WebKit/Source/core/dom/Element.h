@@ -507,7 +507,7 @@ public:
 
     bool isSpellCheckingEnabled() const;
 
-    // FIXME: public for NodeRenderingContext, we shouldn't expose this though.
+    // FIXME: public for RenderTreeBuilder, we shouldn't expose this though.
     PassRefPtr<RenderStyle> styleForRenderer();
 
     RenderRegion* renderRegion() const;

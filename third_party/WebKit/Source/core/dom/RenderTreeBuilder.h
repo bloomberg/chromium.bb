@@ -23,44 +23,50 @@
  *
  */
 
-#ifndef NodeRenderingContext_h
-#define NodeRenderingContext_h
+#ifndef RenderTreeBuilder_h
+#define RenderTreeBuilder_h
 
+#include "core/dom/Document.h"
+#include "core/dom/Node.h"
 #include "core/dom/NodeRenderingTraversal.h"
-
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
 
 class ContainerNode;
-class Node;
 class RenderNamedFlowThread;
 class RenderObject;
 class RenderStyle;
 
-class NodeRenderingContext {
+class RenderTreeBuilder {
 public:
-    explicit NodeRenderingContext(Node* node, RenderStyle* style = 0)
+    RenderTreeBuilder(Node* node, RenderStyle* style)
         : m_node(node)
         , m_renderingParent(0)
         , m_style(style)
         , m_parentFlowRenderer(0)
     {
+        ASSERT(!node->renderer());
+        ASSERT(node->needsAttach());
+        ASSERT(node->document().inStyleRecalc());
+
+        // FIXME: We should be able to ASSERT(node->inActiveDocument()) but childrenChanged is called
+        // before ChildNodeInsertionNotifier in ContainerNode's methods and some implementations
+        // will trigger a layout inside childrenChanged.
+        // Mainly HTMLTextAreaElement::childrenChanged calls HTMLTextFormControlElement::setSelectionRange
+        // which does an updateLayoutIgnorePendingStylesheets.
+
         m_renderingParent = NodeRenderingTraversal::parent(node, &m_parentDetails);
     }
 
     void createRendererForTextIfNeeded();
     void createRendererForElementIfNeeded();
 
-    Node* node() const { return m_node; }
+private:
     RenderObject* parentRenderer() const;
     RenderObject* nextRenderer() const;
-    RenderObject* previousRenderer() const;
-
-    const RenderStyle* style() const { return m_style.get(); }
-
-private:
     bool shouldCreateRenderer() const;
+
     void moveToFlowThreadIfNeeded();
     bool elementInsideRegionNeedsRenderer();
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/dom/NodeRenderingContext.h"
+#include "core/dom/RenderTreeBuilder.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-RenderObject* NodeRenderingContext::nextRenderer() const
+RenderObject* RenderTreeBuilder::nextRenderer() const
 {
     Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
     if (element && element->shouldBeReparentedUnderRenderView(m_style.get())) {
@@ -73,23 +73,7 @@ RenderObject* NodeRenderingContext::nextRenderer() const
     return NodeRenderingTraversal::nextSiblingRenderer(m_node);
 }
 
-RenderObject* NodeRenderingContext::previousRenderer() const
-{
-    // FIXME: This doesn't work correctly for reparented elements that are
-    // display: none. We'd need to duplicate the logic in nextRenderer, but since
-    // nothing needs that yet just assert.
-    ASSERT(!m_node->isElementNode() || !toElement(m_node)->shouldBeReparentedUnderRenderView(m_style.get()));
-
-    if (m_parentFlowRenderer)
-        return m_parentFlowRenderer->previousRendererForNode(m_node);
-
-    // FIXME: We should have the same O(N^2) avoidance as nextRenderer does
-    // however, when I tried adding it, several tests failed.
-
-    return NodeRenderingTraversal::previousSiblingRenderer(m_node);
-}
-
-RenderObject* NodeRenderingContext::parentRenderer() const
+RenderObject* RenderTreeBuilder::parentRenderer() const
 {
     if (m_node->isElementNode() && toElement(m_node)->shouldBeReparentedUnderRenderView(m_style.get())) {
         // The parent renderer of reparented elements is the RenderView, but only
@@ -109,7 +93,7 @@ RenderObject* NodeRenderingContext::parentRenderer() const
     return m_renderingParent ? m_renderingParent->renderer() : 0;
 }
 
-bool NodeRenderingContext::shouldCreateRenderer() const
+bool RenderTreeBuilder::shouldCreateRenderer() const
 {
     if (!m_renderingParent)
         return false;
@@ -124,7 +108,7 @@ bool NodeRenderingContext::shouldCreateRenderer() const
 }
 
 // Check the specific case of elements that are children of regions but are flowed into a flow thread themselves.
-bool NodeRenderingContext::elementInsideRegionNeedsRenderer()
+bool RenderTreeBuilder::elementInsideRegionNeedsRenderer()
 {
     Element* element = toElement(m_node);
     bool elementInsideRegionNeedsRenderer = false;
@@ -145,7 +129,7 @@ bool NodeRenderingContext::elementInsideRegionNeedsRenderer()
     return elementInsideRegionNeedsRenderer;
 }
 
-void NodeRenderingContext::moveToFlowThreadIfNeeded()
+void RenderTreeBuilder::moveToFlowThreadIfNeeded()
 {
     if (!RuntimeEnabledFeatures::cssRegionsEnabled())
         return;
@@ -161,7 +145,7 @@ void NodeRenderingContext::moveToFlowThreadIfNeeded()
     flowThreadController->registerNamedFlowContentNode(m_node, m_parentFlowRenderer);
 }
 
-void NodeRenderingContext::createRendererForElementIfNeeded()
+void RenderTreeBuilder::createRendererForElementIfNeeded()
 {
     ASSERT(!m_node->renderer());
 
@@ -209,7 +193,7 @@ void NodeRenderingContext::createRendererForElementIfNeeded()
     parentRenderer->addChild(newRenderer, nextRenderer);
 }
 
-void NodeRenderingContext::createRendererForTextIfNeeded()
+void RenderTreeBuilder::createRendererForTextIfNeeded()
 {
     ASSERT(!m_node->renderer());
 
