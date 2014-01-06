@@ -124,7 +124,7 @@ PlatformBitmapPixelRef::PlatformBitmapPixelRef(const SkImageInfo& info,
     : SkPixelRef(info),
       bitmap_handle_(bitmap_handle),
       pixels_(pixels) {
-  setPreLocked(pixels, NULL);
+  setPreLocked(pixels, info.minRowBytes(), NULL);
 }
 
 PlatformBitmapPixelRef::~PlatformBitmapPixelRef() {
