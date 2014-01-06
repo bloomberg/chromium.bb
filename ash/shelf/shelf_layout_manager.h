@@ -315,6 +315,7 @@ class ASH_EXPORT ShelfLayoutManager :
       ShelfVisibilityState visibility_state) const;
 
   // Updates the hit test bounds override for shelf and status area.
+  // TODO(sad): Remove this (crbug.com/318879)
   void UpdateHitTestBounds();
 
   // Returns true if |window| is a descendant of the shelf.
@@ -336,6 +337,7 @@ class ASH_EXPORT ShelfLayoutManager :
       DockedWindowLayoutManagerObserver::Reason reason) OVERRIDE;
 
   // Generates insets for inward edge based on the current shelf alignment.
+  // TODO(sad): Remove this (crbug.com/318879)
   gfx::Insets GetInsetsForAlignment(int distance) const;
 
   // The RootWindow is cached so that we don't invoke Shell::GetInstance() from

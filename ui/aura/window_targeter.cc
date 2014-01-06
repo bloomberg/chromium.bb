@@ -17,6 +17,29 @@ namespace aura {
 WindowTargeter::WindowTargeter() {}
 WindowTargeter::~WindowTargeter() {}
 
+bool WindowTargeter::WindowCanAcceptEvent(aura::Window* window,
+                                          const ui::LocatedEvent& event) const {
+  if (!window->IsVisible())
+    return false;
+  if (window->ignore_events())
+    return false;
+  client::EventClient* client = client::GetEventClient(window->GetRootWindow());
+  if (client && !client->CanProcessEventsWithinSubtree(window))
+    return false;
+
+  Window* parent = window->parent();
+  if (parent && parent->delegate_ && !parent->delegate_->
+      ShouldDescendIntoChildForEventHandling(window, event.location())) {
+    return false;
+  }
+  return true;
+}
+
+bool WindowTargeter::EventLocationInsideBounds(
+    aura::Window* window, const ui::LocatedEvent& event) const {
+  return window->bounds().Contains(event.location());
+}
+
 ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
                                                     ui::Event* event) {
   if (event->IsKeyEvent()) {
@@ -42,20 +65,10 @@ bool WindowTargeter::SubtreeShouldBeExploredForEvent(
     ui::EventTarget* root,
     const ui::LocatedEvent& event) {
   Window* window = static_cast<Window*>(root);
-  if (!window->IsVisible())
-    return false;
-  if (window->ignore_events())
-    return false;
-  client::EventClient* client = client::GetEventClient(window->GetRootWindow());
-  if (client && !client->CanProcessEventsWithinSubtree(window))
+  if (!WindowCanAcceptEvent(window, event))
     return false;
 
-  Window* parent = window->parent();
-  if (parent && parent->delegate_ && !parent->delegate_->
-      ShouldDescendIntoChildForEventHandling(window, event.location())) {
-    return false;
-  }
-  return window->bounds().Contains(event.location());
+  return EventLocationInsideBounds(window, event);
 }
 
 ui::EventTarget* WindowTargeter::FindTargetForLocatedEvent(

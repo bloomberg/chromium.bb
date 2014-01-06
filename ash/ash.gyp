@@ -42,6 +42,7 @@
         '../ui/views/controls/webview/webview.gyp:webview',
         '../ui/views/views.gyp:views',
         '../ui/web_dialogs/web_dialogs.gyp:web_dialogs',
+        '../ui/wm/wm.gyp:wm_public',
         '../url/url.gyp:url_lib',
         'ash_strings.gyp:ash_strings',
         'ash_resources',

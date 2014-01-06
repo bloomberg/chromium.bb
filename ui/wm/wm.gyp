@@ -10,7 +10,14 @@
     {
       'target_name': 'wm_public',
       'type': 'static_library',
+      'dependencies': [
+        '../../skia/skia.gyp:skia',
+        '../aura/aura.gyp:aura',
+        '../gfx/gfx.gyp:gfx_geometry',
+      ],
       'sources': [
+        'core/easy_resize_window_targeter.cc',
+        'public/easy_resize_window_targeter.h',
         'public/window_types.h',
       ],
     },
@@ -20,7 +27,6 @@
       'dependencies': [
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
-        '../views/views.gyp:views',
       ],
       'sources': [
         'test/wm_test_helper.cc',

@@ -2,18 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/aura/aura_export.h"
 #include "ui/events/event_targeter.h"
 
 namespace aura {
 
 class Window;
 
-class WindowTargeter : public ui::EventTargeter {
+class AURA_EXPORT WindowTargeter : public ui::EventTargeter {
  public:
   WindowTargeter();
   virtual ~WindowTargeter();
 
  protected:
+  bool WindowCanAcceptEvent(aura::Window* window,
+                            const ui::LocatedEvent& event) const;
+
+  // Returns whether the location of the event is in an actionable region of the
+  // window. Note that the location etc. of |event| is in the |window|'s
+  // parent's coordinate system.
+  virtual bool EventLocationInsideBounds(aura::Window* window,
+                                         const ui::LocatedEvent& event) const;
+
   // ui::EventTargeter:
   virtual ui::EventTarget* FindTargetForEvent(ui::EventTarget* root,
                                               ui::Event* event) OVERRIDE;

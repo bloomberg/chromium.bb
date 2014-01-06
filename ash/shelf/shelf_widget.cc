@@ -37,6 +37,7 @@
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/public/easy_resize_window_targeter.h"
 
 namespace {
 // Size of black border at bottom (or side) of shelf.
@@ -232,6 +233,77 @@ void DimmerView::DimmerEventFilter::OnTouchEvent(ui::TouchEvent* event) {
     owner_->SetHovered(mouse_inside_ || touch_inside);
   touch_inside_ = touch_inside;
 }
+
+using ash::internal::ShelfLayoutManager;
+
+// ShelfWindowTargeter makes it easier to resize windows with the mouse when the
+// window-edge slightly overlaps with the shelf edge. The targeter also makes it
+// easier to drag the shelf out with touch while it is hidden.
+class ShelfWindowTargeter : public wm::EasyResizeWindowTargeter,
+                            public ash::ShelfLayoutManagerObserver {
+ public:
+  ShelfWindowTargeter(aura::Window* container,
+                      ShelfLayoutManager* shelf)
+      : wm::EasyResizeWindowTargeter(container, gfx::Insets(), gfx::Insets()),
+        shelf_(shelf) {
+    WillChangeVisibilityState(shelf_->visibility_state());
+    shelf_->AddObserver(this);
+  }
+
+  virtual ~ShelfWindowTargeter() {
+    // |shelf_| may have been destroyed by this time.
+    if (shelf_)
+      shelf_->RemoveObserver(this);
+  }
+
+ private:
+  gfx::Insets GetInsetsForAlignment(int distance,
+                                    ash::ShelfAlignment alignment) {
+    switch (alignment) {
+      case ash::SHELF_ALIGNMENT_BOTTOM:
+        return gfx::Insets(distance, 0, 0, 0);
+      case ash::SHELF_ALIGNMENT_LEFT:
+        return gfx::Insets(0, 0, 0, distance);
+      case ash::SHELF_ALIGNMENT_RIGHT:
+        return gfx::Insets(0, distance, 0, 0);
+      case ash::SHELF_ALIGNMENT_TOP:
+        return gfx::Insets(0, 0, distance, 0);
+    }
+    NOTREACHED();
+    return gfx::Insets();
+  }
+
+  // ash::ShelfLayoutManagerObserver:
+  virtual void WillDeleteShelf() OVERRIDE {
+    shelf_ = NULL;
+  }
+
+  virtual void WillChangeVisibilityState(
+      ash::ShelfVisibilityState new_state) OVERRIDE {
+    gfx::Insets mouse_insets;
+    gfx::Insets touch_insets;
+    if (new_state == ash::SHELF_VISIBLE) {
+      // Let clicks at the very top of the shelf through so windows can be
+      // resized with the bottom-right corner and bottom edge.
+      mouse_insets = GetInsetsForAlignment(
+          ShelfLayoutManager::kWorkspaceAreaVisibleInset,
+          shelf_->GetAlignment());
+    } else if (new_state == ash::SHELF_AUTO_HIDE) {
+      // Extend the touch hit target out a bit to allow users to drag shelf out
+      // while hidden.
+      touch_insets = GetInsetsForAlignment(
+          -ShelfLayoutManager::kWorkspaceAreaAutoHideInset,
+          shelf_->GetAlignment());
+    }
+
+    set_mouse_extend(mouse_insets);
+    set_touch_extend(touch_insets);
+  }
+
+  ShelfLayoutManager* shelf_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfWindowTargeter);
+};
 
 }  // namespace
 
@@ -563,6 +635,11 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
 
   status_container->SetLayoutManager(
       new internal::StatusAreaLayoutManager(this));
+
+  shelf_container->set_event_targeter(scoped_ptr<ui::EventTargeter>(new
+      ShelfWindowTargeter(shelf_container, shelf_layout_manager_)));
+  status_container->set_event_targeter(scoped_ptr<ui::EventTargeter>(new
+      ShelfWindowTargeter(status_container, shelf_layout_manager_)));
 
   views::Widget::AddObserver(this);
 }
