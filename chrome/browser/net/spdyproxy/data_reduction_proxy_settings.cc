@@ -37,49 +37,18 @@
 
 using base::FieldTrialList;
 using base::StringPrintf;
+using spdyproxy::ProbeURLFetchResult;
+using spdyproxy::ProxyStartupState;
 
 namespace {
 
 // Key of the UMA DataReductionProxy.StartupState histogram.
 const char kUMAProxyStartupStateHistogram[] =
     "DataReductionProxy.StartupState";
-// Values of the UMA DataReductionProxy.StartupState histogram.
-enum ProxyStartupState {
-  PROXY_NOT_AVAILABLE = 0,
-  PROXY_DISABLED,
-  PROXY_ENABLED,
-  PROXY_STARTUP_STATE_COUNT,
-};
 
 // Key of the UMA DataReductionProxy.ProbeURL histogram.
 const char kUMAProxyProbeURL[] = "DataReductionProxy.ProbeURL";
-// Values of the UMA DataReductionProxy.ProbeURL histogram.
-// This enum must remain synchronized with DataReductionProxyProbeURLFetchResult
-// in metrics/histograms/histograms.xml.
-enum ProbeURLFetchResult {
-  // The probe failed because the internet was disconnected.
-  INTERNET_DISCONNECTED = 0,
 
-  // The probe failed for any other reason, and as a result, the proxy was
-  // disabled.
-  FAILED_PROXY_DISABLED,
-
-  // The probe failed, but the proxy was already disabled.
-  FAILED_PROXY_ALREADY_DISABLED,
-
-  // THe probe succeeded, and as a result the proxy was enabled.
-  SUCCEEDED_PROXY_ENABLED,
-
-  // The probe succeeded, but the proxy was already enabled.
-  SUCCEEDED_PROXY_ALREADY_ENABLED,
-
-  // This must always be last.
-  FETCH_RESULT_COUNT
-};
-
-void RecordProbeURLFetchResult(ProbeURLFetchResult result) {
-  UMA_HISTOGRAM_ENUMERATION(kUMAProxyProbeURL, result, FETCH_RESULT_COUNT);
-}
 
 const char kEnabled[] = "Enabled";
 
@@ -126,6 +95,7 @@ void DataReductionProxySettings::InitPrefMembers() {
 
 void DataReductionProxySettings::InitDataReductionProxySettings() {
   InitPrefMembers();
+  RecordDataReductionInit();
 
   // Disable the proxy if it is not allowed to be used.
   if (!IsDataReductionProxyAllowed())
@@ -140,7 +110,6 @@ void DataReductionProxySettings::InitDataReductionProxySettings() {
   // the feature via settings, in that once set, the preference will be sticky
   // across instances of Chrome. Disabling the feature can only be done through
   // the settings menu.
-  RecordDataReductionInit();
   if (spdy_proxy_auth_enabled_.GetValue() ||
       command_line.HasSwitch(switches::kEnableSpdyProxyAuth)) {
     MaybeActivateDataReductionProxy(true);
@@ -381,7 +350,7 @@ void DataReductionProxySettings::OnURLFetchComplete(
   net::URLRequestStatus status = source->GetStatus();
   if (status.status() == net::URLRequestStatus::FAILED &&
       status.error() == net::ERR_INTERNET_DISCONNECTED) {
-    RecordProbeURLFetchResult(INTERNET_DISCONNECTED);
+    RecordProbeURLFetchResult(spdyproxy::INTERNET_DISCONNECTED);
     return;
   }
 
@@ -400,9 +369,9 @@ void DataReductionProxySettings::OnURLFetchComplete(
         SetProxyConfigs(true /* enabled */,
                         false /* restricted */,
                         false /* at_startup */);
-        RecordProbeURLFetchResult(SUCCEEDED_PROXY_ENABLED);
+        RecordProbeURLFetchResult(spdyproxy::SUCCEEDED_PROXY_ENABLED);
       } else {
-        RecordProbeURLFetchResult(SUCCEEDED_PROXY_ALREADY_ENABLED);
+        RecordProbeURLFetchResult(spdyproxy::SUCCEEDED_PROXY_ALREADY_ENABLED);
       }
     }
     restricted_by_carrier_ = false;
@@ -417,9 +386,9 @@ void DataReductionProxySettings::OnURLFetchComplete(
       SetProxyConfigs(true /* enabled */,
                       true /* restricted */,
                       false /* at_startup */);
-      RecordProbeURLFetchResult(FAILED_PROXY_DISABLED);
+      RecordProbeURLFetchResult(spdyproxy::FAILED_PROXY_DISABLED);
     } else {
-      RecordProbeURLFetchResult(FAILED_PROXY_ALREADY_DISABLED);
+      RecordProbeURLFetchResult(spdyproxy::FAILED_PROXY_ALREADY_DISABLED);
     }
   }
   restricted_by_carrier_ = true;
@@ -553,12 +522,28 @@ void DataReductionProxySettings::SetProxyConfigs(
 
 // Metrics methods
 void DataReductionProxySettings::RecordDataReductionInit() {
-  ProxyStartupState state = PROXY_NOT_AVAILABLE;
-  if (IsDataReductionProxyAllowed())
-    state = IsDataReductionProxyEnabled() ? PROXY_ENABLED : PROXY_DISABLED;
+  ProxyStartupState state = spdyproxy::PROXY_NOT_AVAILABLE;
+  if (IsDataReductionProxyAllowed()) {
+    if (IsDataReductionProxyEnabled())
+      state = spdyproxy::PROXY_ENABLED;
+    else
+      state = spdyproxy::PROXY_DISABLED;
+  }
+
+  RecordStartupState(state);
+}
+
+void DataReductionProxySettings::RecordProbeURLFetchResult(
+    ProbeURLFetchResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kUMAProxyProbeURL,
+                            result,
+                            spdyproxy::PROBE_URL_FETCH_RESULT_COUNT);
+}
+
+void DataReductionProxySettings::RecordStartupState(ProxyStartupState state) {
   UMA_HISTOGRAM_ENUMERATION(kUMAProxyStartupStateHistogram,
                             state,
-                            PROXY_STARTUP_STATE_COUNT);
+                            spdyproxy::PROXY_STARTUP_STATE_COUNT);
 }
 
 DataReductionProxySettings::ContentLengthList
