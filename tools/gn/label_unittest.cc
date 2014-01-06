@@ -43,6 +43,7 @@ TEST(Label, Resolve) {
       { "//chrome/", "//base",                    true,  "//base/",            "base", "//t/",   "d" },
       { "//chrome/", "//base/i18n",               true,  "//base/i18n/",       "i18n", "//t/",   "d" },
       { "//chrome/", "//base/i18n:foo",           true,  "//base/i18n/",       "foo",  "//t/",   "d" },
+      { "//chrome/", "//",                        false, "",                   "",     "",       "" },
       // Toolchain parsing.
       { "//chrome/", "//chrome:bar(//t:n)",       true,  "//chrome/",          "bar",  "//t/",   "n" },
       { "//chrome/", "//chrome:bar(//t)",         true,  "//chrome/",          "bar",  "//t/",   "t" },
