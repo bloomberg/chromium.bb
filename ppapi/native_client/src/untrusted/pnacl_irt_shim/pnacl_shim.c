@@ -59,6 +59,7 @@
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_media_stream_video_track.h"
 #include "ppapi/c/ppb_message_loop.h"
 #include "ppapi/c/ppb_messaging.h"
 #include "ppapi/c/ppb_mouse_cursor.h"
@@ -77,6 +78,7 @@
 #include "ppapi/c/ppb_var_array.h"
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/c/ppb_var_dictionary.h"
+#include "ppapi/c/ppb_video_frame.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -153,6 +155,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WheelInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Messaging_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MouseLock_1_0;
@@ -915,6 +918,45 @@ static void Pnacl_M13_PPB_IMEInputEvent_GetSelection(PP_Resource ime_event, uint
 
 /* Not generating wrapper methods for PPB_Instance_1_0 */
 
+/* Begin wrapper methods for PPB_MediaStreamVideoTrack_0_1 */
+
+static PP_Bool Pnacl_M34_PPB_MediaStreamVideoTrack_IsMediaStreamVideoTrack(PP_Resource resource) {
+  const struct PPB_MediaStreamVideoTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1.real_iface;
+  return iface->IsMediaStreamVideoTrack(resource);
+}
+
+static int32_t Pnacl_M34_PPB_MediaStreamVideoTrack_Configure(PP_Resource video_track, uint32_t max_buffered_frames) {
+  const struct PPB_MediaStreamVideoTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1.real_iface;
+  return iface->Configure(video_track, max_buffered_frames);
+}
+
+static void Pnacl_M34_PPB_MediaStreamVideoTrack_GetId(struct PP_Var* _struct_result, PP_Resource video_track) {
+  const struct PPB_MediaStreamVideoTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1.real_iface;
+  *_struct_result = iface->GetId(video_track);
+}
+
+static PP_Bool Pnacl_M34_PPB_MediaStreamVideoTrack_HasEnded(PP_Resource video_track) {
+  const struct PPB_MediaStreamVideoTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1.real_iface;
+  return iface->HasEnded(video_track);
+}
+
+static int32_t Pnacl_M34_PPB_MediaStreamVideoTrack_GetFrame(PP_Resource video_track, PP_Resource* frame, struct PP_CompletionCallback* callback) {
+  const struct PPB_MediaStreamVideoTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1.real_iface;
+  return iface->GetFrame(video_track, frame, *callback);
+}
+
+static int32_t Pnacl_M34_PPB_MediaStreamVideoTrack_RecycleFrame(PP_Resource video_track, PP_Resource frame) {
+  const struct PPB_MediaStreamVideoTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1.real_iface;
+  return iface->RecycleFrame(video_track, frame);
+}
+
+static void Pnacl_M34_PPB_MediaStreamVideoTrack_Close(PP_Resource video_track) {
+  const struct PPB_MediaStreamVideoTrack_0_1 *iface = Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1.real_iface;
+  iface->Close(video_track);
+}
+
+/* End wrapper methods for PPB_MediaStreamVideoTrack_0_1 */
+
 /* Begin wrapper methods for PPB_MessageLoop_1_0 */
 
 static PP_Resource Pnacl_M25_PPB_MessageLoop_Create(PP_Instance instance) {
@@ -1507,6 +1549,8 @@ static void Pnacl_M29_PPB_VarDictionary_GetKeys(struct PP_Var* _struct_result, s
 }
 
 /* End wrapper methods for PPB_VarDictionary_1_0 */
+
+/* Not generating wrapper methods for PPB_VideoFrame_0_1 */
 
 /* Not generating wrapper methods for PPB_View_1_0 */
 
@@ -4256,6 +4300,16 @@ struct PPB_IMEInputEvent_1_0 Pnacl_Wrappers_PPB_IMEInputEvent_1_0 = {
 
 /* Not generating wrapper interface for PPB_Instance_1_0 */
 
+struct PPB_MediaStreamVideoTrack_0_1 Pnacl_Wrappers_PPB_MediaStreamVideoTrack_0_1 = {
+    .IsMediaStreamVideoTrack = (PP_Bool (*)(PP_Resource resource))&Pnacl_M34_PPB_MediaStreamVideoTrack_IsMediaStreamVideoTrack,
+    .Configure = (int32_t (*)(PP_Resource video_track, uint32_t max_buffered_frames))&Pnacl_M34_PPB_MediaStreamVideoTrack_Configure,
+    .GetId = (struct PP_Var (*)(PP_Resource video_track))&Pnacl_M34_PPB_MediaStreamVideoTrack_GetId,
+    .HasEnded = (PP_Bool (*)(PP_Resource video_track))&Pnacl_M34_PPB_MediaStreamVideoTrack_HasEnded,
+    .GetFrame = (int32_t (*)(PP_Resource video_track, PP_Resource* frame, struct PP_CompletionCallback callback))&Pnacl_M34_PPB_MediaStreamVideoTrack_GetFrame,
+    .RecycleFrame = (int32_t (*)(PP_Resource video_track, PP_Resource frame))&Pnacl_M34_PPB_MediaStreamVideoTrack_RecycleFrame,
+    .Close = (void (*)(PP_Resource video_track))&Pnacl_M34_PPB_MediaStreamVideoTrack_Close
+};
+
 struct PPB_MessageLoop_1_0 Pnacl_Wrappers_PPB_MessageLoop_1_0 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M25_PPB_MessageLoop_Create,
     .GetForMainThread = (PP_Resource (*)(void))&Pnacl_M25_PPB_MessageLoop_GetForMainThread,
@@ -4417,6 +4471,8 @@ struct PPB_VarDictionary_1_0 Pnacl_Wrappers_PPB_VarDictionary_1_0 = {
     .HasKey = (PP_Bool (*)(struct PP_Var dict, struct PP_Var key))&Pnacl_M29_PPB_VarDictionary_HasKey,
     .GetKeys = (struct PP_Var (*)(struct PP_Var dict))&Pnacl_M29_PPB_VarDictionary_GetKeys
 };
+
+/* Not generating wrapper interface for PPB_VideoFrame_0_1 */
 
 /* Not generating wrapper interface for PPB_View_1_0 */
 
@@ -5246,6 +5302,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1 = {
+  .iface_macro = PPB_MEDIASTREAMVIDEOTRACK_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_MediaStreamVideoTrack_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_MessageLoop_1_0 = {
   .iface_macro = PPB_MESSAGELOOP_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_MessageLoop_1_0,
@@ -5768,6 +5830,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_KeyboardInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_TouchInputEvent_1_0,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_1_0,
+  &Pnacl_WrapperInfo_PPB_MediaStreamVideoTrack_0_1,
   &Pnacl_WrapperInfo_PPB_MessageLoop_1_0,
   &Pnacl_WrapperInfo_PPB_Messaging_1_0,
   &Pnacl_WrapperInfo_PPB_MouseLock_1_0,
