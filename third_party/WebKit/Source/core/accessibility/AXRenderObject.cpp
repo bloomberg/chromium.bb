@@ -651,6 +651,9 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
     if (isHeading())
         return false;
 
+    if (isLandmarkRelated())
+        return false;
+
     if (isLink())
         return false;
 

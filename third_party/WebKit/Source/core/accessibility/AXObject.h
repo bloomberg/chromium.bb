@@ -322,6 +322,7 @@ public:
     virtual bool isImage() const { return false; }
     virtual bool isImageMapLink() const { return false; }
     virtual bool isInputImage() const { return false; }
+    bool isLandmarkRelated() const;
     virtual bool isLink() const { return false; }
     virtual bool isList() const { return false; }
     bool isListItem() const { return roleValue() == ListItemRole; }
