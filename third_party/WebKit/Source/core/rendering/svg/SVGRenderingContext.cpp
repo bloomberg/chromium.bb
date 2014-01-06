@@ -119,6 +119,7 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     if (opacity < 1 || hasBlendMode || style->hasIsolation()) {
         FloatRect repaintRect = m_object->repaintRectInLocalCoordinates();
         m_paintInfo->context->clip(repaintRect);
+
         if (hasBlendMode) {
             if (!(m_renderingFlags & RestoreGraphicsContext)) {
                 m_paintInfo->context->save();
@@ -126,7 +127,12 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
             }
             m_paintInfo->context->setCompositeOperation(CompositeSourceOver, style->blendMode());
         }
+
         m_paintInfo->context->beginTransparencyLayer(opacity);
+
+        if (hasBlendMode)
+            m_paintInfo->context->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
+
         m_renderingFlags |= EndOpacityLayer;
     }
 
