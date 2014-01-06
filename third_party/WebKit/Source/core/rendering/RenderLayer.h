@@ -84,6 +84,8 @@ class RenderLayer {
 public:
     friend class RenderReplica;
     // FIXME: Needed until we move all the necessary bits to the new class.
+    friend class RenderLayerClipper;
+    // FIXME: Needed until we move all the necessary bits to the new class.
     friend class RenderLayerStackingNode;
     // FIXME: Needed until we move all the necessary bits to the new class.
     friend class RenderLayerScrollableArea;
@@ -263,17 +265,6 @@ public:
     bool hitTest(const HitTestRequest&, const HitTestLocation&, HitTestResult&);
     void paintOverlayScrollbars(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior, RenderObject* paintingRoot = 0);
 
-    // This method figures out our layerBounds in coordinates relative to
-    // |rootLayer}.  It also computes our background and foreground clip rects
-    // for painting/event handling.
-    // Pass offsetFromRoot if known.
-    void calculateRects(const ClipRectsContext&, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
-        ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot = 0) const;
-
-    LayoutRect childrenClipRect() const; // Returns the foreground clip rect of the layer in the document's coordinate space.
-    LayoutRect selfClipRect() const; // Returns the background clip rect of the layer in the document's coordinate space.
-    LayoutRect localClipRect() const; // Returns the background clip rect of the layer in the local coordinate space.
-
     // Pass offsetFromRoot if known.
     bool intersectsDamageRect(const LayoutRect& layerBounds, const LayoutRect& damageRect, const RenderLayer* rootLayer, const LayoutPoint* offsetFromRoot = 0) const;
 
@@ -433,6 +424,7 @@ public:
     RenderLayerScrollableArea* scrollableArea() const { return m_scrollableArea.get(); }
     RenderLayerRepainter& repainter() { return m_repainter; }
     RenderLayerClipper& clipper() { return m_clipper; }
+    const RenderLayerClipper& clipper() const { return m_clipper; }
 
     inline bool isPositionedContainer() const
     {

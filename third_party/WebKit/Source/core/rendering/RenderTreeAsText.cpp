@@ -667,7 +667,7 @@ void RenderTreeAsText::writeLayers(TextStream& ts, const RenderLayer* rootLayer,
     // Calculate the clip rects we should use.
     LayoutRect layerBounds;
     ClipRect damageRect, clipRectToApply, outlineRect;
-    layer->calculateRects(ClipRectsContext(rootLayer, 0, TemporaryClipRects), paintDirtyRect, layerBounds, damageRect, clipRectToApply, outlineRect);
+    layer->clipper().calculateRects(ClipRectsContext(rootLayer, 0, TemporaryClipRects), paintDirtyRect, layerBounds, damageRect, clipRectToApply, outlineRect);
 
     // Ensure our lists are up-to-date.
     layer->stackingNode()->updateLayerListsIfNeeded();

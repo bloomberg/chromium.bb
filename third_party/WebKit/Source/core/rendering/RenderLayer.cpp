@@ -2250,7 +2250,7 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
         // For unpaginated layers, there is only one fragment.
         LayerFragment fragment;
         ClipRectsContext clipRectsContext(rootLayer, region, clipRectsType, inOverlayScrollbarSizeRelevancy, respectOverflowClip);
-        calculateRects(clipRectsContext, dirtyRect, fragment.layerBounds, fragment.backgroundRect, fragment.foregroundRect, fragment.outlineRect, offsetFromRoot);
+        clipper().calculateRects(clipRectsContext, dirtyRect, fragment.layerBounds, fragment.backgroundRect, fragment.foregroundRect, fragment.outlineRect, offsetFromRoot);
         fragments.append(fragment);
         return;
     }
@@ -2266,7 +2266,7 @@ void RenderLayer::collectFragments(LayerFragments& fragments, const RenderLayer*
     ClipRect backgroundRectInFlowThread;
     ClipRect foregroundRectInFlowThread;
     ClipRect outlineRectInFlowThread;
-    calculateRects(paginationClipRectsContext, PaintInfo::infiniteRect(), layerBoundsInFlowThread, backgroundRectInFlowThread, foregroundRectInFlowThread,
+    clipper().calculateRects(paginationClipRectsContext, PaintInfo::infiniteRect(), layerBoundsInFlowThread, backgroundRectInFlowThread, foregroundRectInFlowThread,
         outlineRectInFlowThread, &offsetWithinPaginatedLayer);
 
     // Take our bounding box within the flow thread and clip it.
@@ -3269,114 +3269,6 @@ ClipRect RenderLayer::backgroundClipRect(const ClipRectsContext& clipRectsContex
     return backgroundClipRect;
 }
 
-void RenderLayer::calculateRects(const ClipRectsContext& clipRectsContext, const LayoutRect& paintDirtyRect, LayoutRect& layerBounds,
-    ClipRect& backgroundRect, ClipRect& foregroundRect, ClipRect& outlineRect, const LayoutPoint* offsetFromRoot) const
-{
-    if (clipRectsContext.rootLayer != this && parent()) {
-        backgroundRect = backgroundClipRect(clipRectsContext);
-        backgroundRect.intersect(paintDirtyRect);
-    } else
-        backgroundRect = paintDirtyRect;
-
-    foregroundRect = backgroundRect;
-    outlineRect = backgroundRect;
-
-    LayoutPoint offset;
-    if (offsetFromRoot)
-        offset = *offsetFromRoot;
-    else
-        convertToLayerCoords(clipRectsContext.rootLayer, offset);
-    layerBounds = LayoutRect(offset, size());
-
-    // Update the clip rects that will be passed to child layers.
-    if (renderer()->hasOverflowClip()) {
-        // This layer establishes a clip of some kind.
-        if (this != clipRectsContext.rootLayer || clipRectsContext.respectOverflowClip == RespectOverflowClip) {
-            foregroundRect.intersect(toRenderBox(renderer())->overflowClipRect(offset, clipRectsContext.region, clipRectsContext.overlayScrollbarSizeRelevancy));
-            if (renderer()->style()->hasBorderRadius())
-                foregroundRect.setHasRadius(true);
-        }
-
-        // If we establish an overflow clip at all, then go ahead and make sure our background
-        // rect is intersected with our layer's bounds including our visual overflow,
-        // since any visual overflow like box-shadow or border-outset is not clipped by overflow:auto/hidden.
-        if (renderBox()->hasVisualOverflow()) {
-            // FIXME: Perhaps we should be propagating the borderbox as the clip rect for children, even though
-            //        we may need to inflate our clip specifically for shadows or outsets.
-            // FIXME: Does not do the right thing with CSS regions yet, since we don't yet factor in the
-            // individual region boxes as overflow.
-            LayoutRect layerBoundsWithVisualOverflow = renderBox()->visualOverflowRect();
-            renderBox()->flipForWritingMode(layerBoundsWithVisualOverflow); // Layers are in physical coordinates, so the overflow has to be flipped.
-            layerBoundsWithVisualOverflow.moveBy(offset);
-            if (this != clipRectsContext.rootLayer || clipRectsContext.respectOverflowClip == RespectOverflowClip)
-                backgroundRect.intersect(layerBoundsWithVisualOverflow);
-        } else {
-            // Shift the bounds to be for our region only.
-            LayoutRect bounds = renderBox()->borderBoxRectInRegion(clipRectsContext.region);
-            bounds.moveBy(offset);
-            if (this != clipRectsContext.rootLayer || clipRectsContext.respectOverflowClip == RespectOverflowClip)
-                backgroundRect.intersect(bounds);
-        }
-    }
-
-    // CSS clip (different than clipping due to overflow) can clip to any box, even if it falls outside of the border box.
-    if (renderer()->hasClip()) {
-        // Clip applies to *us* as well, so go ahead and update the damageRect.
-        LayoutRect newPosClip = toRenderBox(renderer())->clipRect(offset, clipRectsContext.region);
-        backgroundRect.intersect(newPosClip);
-        foregroundRect.intersect(newPosClip);
-        outlineRect.intersect(newPosClip);
-    }
-}
-
-LayoutRect RenderLayer::childrenClipRect() const
-{
-    // FIXME: border-radius not accounted for.
-    // FIXME: Regions not accounted for.
-    RenderView* renderView = renderer()->view();
-    RenderLayer* clippingRootLayer = clippingRootForPainting();
-    LayoutRect layerBounds;
-    ClipRect backgroundRect, foregroundRect, outlineRect;
-    ClipRectsContext clipRectsContext(clippingRootLayer, 0, TemporaryClipRects);
-    // Need to use temporary clip rects, because the value of 'dontClipToOverflow' may be different from the painting path (<rdar://problem/11844909>).
-    calculateRects(clipRectsContext, renderView->unscaledDocumentRect(), layerBounds, backgroundRect, foregroundRect, outlineRect);
-    return clippingRootLayer->renderer()->localToAbsoluteQuad(FloatQuad(foregroundRect.rect())).enclosingBoundingBox();
-}
-
-LayoutRect RenderLayer::selfClipRect() const
-{
-    // FIXME: border-radius not accounted for.
-    // FIXME: Regions not accounted for.
-    RenderView* renderView = renderer()->view();
-    RenderLayer* clippingRootLayer = clippingRootForPainting();
-    LayoutRect layerBounds;
-    ClipRect backgroundRect, foregroundRect, outlineRect;
-    ClipRectsContext clipRectsContext(clippingRootLayer, 0, PaintingClipRects);
-    calculateRects(clipRectsContext, renderView->documentRect(), layerBounds, backgroundRect, foregroundRect, outlineRect);
-    return clippingRootLayer->renderer()->localToAbsoluteQuad(FloatQuad(backgroundRect.rect())).enclosingBoundingBox();
-}
-
-LayoutRect RenderLayer::localClipRect() const
-{
-    // FIXME: border-radius not accounted for.
-    // FIXME: Regions not accounted for.
-    RenderLayer* clippingRootLayer = clippingRootForPainting();
-    LayoutRect layerBounds;
-    ClipRect backgroundRect, foregroundRect, outlineRect;
-    ClipRectsContext clipRectsContext(clippingRootLayer, 0, PaintingClipRects);
-    calculateRects(clipRectsContext, PaintInfo::infiniteRect(), layerBounds, backgroundRect, foregroundRect, outlineRect);
-
-    LayoutRect clipRect = backgroundRect.rect();
-    if (clipRect == PaintInfo::infiniteRect())
-        return clipRect;
-
-    LayoutPoint clippingRootOffset;
-    convertToLayerCoords(clippingRootLayer, clippingRootOffset);
-    clipRect.moveBy(-clippingRootOffset);
-
-    return clipRect;
-}
-
 void RenderLayer::addBlockSelectionGapsBounds(const LayoutRect& bounds)
 {
     m_blockSelectionGapsBounds.unite(enclosingIntRect(bounds));
@@ -3569,7 +3461,7 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     bool shouldIncludeTransform = paintsWithTransform(PaintBehaviorNormal) || (transform() && flags & PretendLayerHasOwnBacking);
 
     if (flags & UseLocalClipRectIfPossible) {
-        LayoutRect localClipRect = this->localClipRect();
+        LayoutRect localClipRect = clipper().localClipRect();
         if (localClipRect != PaintInfo::infiniteRect()) {
             if ((flags & IncludeSelfTransform) && shouldIncludeTransform)
                 localClipRect = transform()->mapRect(localClipRect);

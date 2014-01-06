@@ -2535,9 +2535,9 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
     // Apply the clip from the layer.
     IntRect clipRect;
     if (clipToLayerContents)
-        clipRect = pixelSnappedIntRect(enclosingLayer->childrenClipRect());
+        clipRect = pixelSnappedIntRect(enclosingLayer->clipper().childrenClipRect());
     else
-        clipRect = pixelSnappedIntRect(enclosingLayer->selfClipRect());
+        clipRect = pixelSnappedIntRect(enclosingLayer->clipper().selfClipRect());
     clipRect = contentsToWindow(clipRect);
     return intersection(clipRect, windowClipRect());
 }

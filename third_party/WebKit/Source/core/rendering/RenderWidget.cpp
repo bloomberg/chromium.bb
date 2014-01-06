@@ -138,7 +138,7 @@ bool RenderWidget::setWidgetGeometry(const LayoutRect& frame)
     if (!node())
         return false;
 
-    IntRect clipRect = roundedIntRect(enclosingLayer()->childrenClipRect());
+    IntRect clipRect = roundedIntRect(enclosingLayer()->clipper().childrenClipRect());
     IntRect newFrame = roundedIntRect(frame);
     bool clipChanged = m_clipRect != clipRect;
     bool frameRectChanged = m_widget->frameRect() != newFrame;
