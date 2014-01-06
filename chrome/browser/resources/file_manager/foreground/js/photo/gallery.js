@@ -274,8 +274,7 @@ Gallery.prototype.createToolbarButton_ = function(className, title) {
  * Loads the content.
  *
  * @param {Array.<Entry>} entries Array of entries.
- * @param {Array.<Entry>} selectedEntries Array of selected entries. Must be a
- *     subset of {@code entries}.
+ * @param {Array.<Entry>} selectedEntries Array of selected entries.
  */
 Gallery.prototype.load = function(entries, selectedEntries) {
   var items = [];
@@ -286,9 +285,15 @@ Gallery.prototype.load = function(entries, selectedEntries) {
 
   this.selectionModel_.adjustLength(this.dataModel_.length);
 
+  // Comparing Entries by reference is not safe. Therefore we have to use URLs.
+  var entryIndexesByURLs = {};
+  for (var index = 0; index < entries.length; index++) {
+    entryIndexesByURLs[entries[index].toURL()] = index;
+  }
+
   for (var i = 0; i !== selectedEntries.length; i++) {
-    var selectedIndex = entries.indexOf(selectedEntries[i]);
-    if (selectedIndex >= 0)
+    var selectedIndex = entryIndexesByURLs[selectedEntries[i].toURL()];
+    if (selectedIndex !== undefined)
       this.selectionModel_.setIndexSelected(selectedIndex, true);
     else
       console.error('Cannot select ' + selectedEntries[i]);
