@@ -18,8 +18,6 @@
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate_impl.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_tab_helper.h"
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 #include "chrome/browser/printing/print_view_manager_basic.h"
 #include "chrome/browser/profiles/profile.h"
@@ -112,11 +110,6 @@ void BrowserTabContents::AttachTabHelpers(content::WebContents* contents) {
   TabSpecificContentSettings::CreateForWebContents(contents);
   TranslateTabHelper::CreateForWebContents(contents);
   WindowAndroidHelper::CreateForWebContents(contents);
-
-  if (predictors::ResourcePrefetchPredictorFactory::GetForProfile(profile)) {
-    predictors::ResourcePrefetchPredictorTabHelper::CreateForWebContents(
-        contents);
-  }
 
 #if defined(ENABLE_MANAGED_USERS)
   if (profile->IsManaged())

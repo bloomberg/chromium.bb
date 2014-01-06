@@ -21,7 +21,6 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
-#include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/prefetch/prefetch_field_trial.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_pending_swap_throttle.h"
@@ -343,11 +342,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
                                     resource_type,
                                     throttles);
   }
-
-  if (io_data->resource_prefetch_predictor_observer()) {
-    io_data->resource_prefetch_predictor_observer()->OnRequestStarted(
-        request, resource_type, child_id, route_id);
-  }
 }
 
 void ChromeResourceDispatcherHostDelegate::WillTransferRequestToNewProcess(
@@ -641,9 +635,6 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
     }
   }
 
-  if (io_data->resource_prefetch_predictor_observer())
-    io_data->resource_prefetch_predictor_observer()->OnResponseStarted(request);
-
   prerender::URLRequestResponseStarted(request);
 }
 
@@ -672,9 +663,4 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // management UI is built on top of it.
   signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data,
       info->GetChildID(), info->GetRouteID());
-
-  if (io_data->resource_prefetch_predictor_observer()) {
-    io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(
-        redirect_url, request);
-  }
 }

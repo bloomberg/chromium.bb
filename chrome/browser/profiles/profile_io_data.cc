@@ -43,9 +43,6 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/evicted_domain_cookie_counter.h"
 #include "chrome/browser/net/proxy_service_factory.h"
-#include "chrome/browser/net/resource_prefetch_predictor_observer.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor.h"
-#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
@@ -381,13 +378,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
           new ChromeCookieMonsterDelegate(profile_getter));
   params->extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
-
-  if (predictors::ResourcePrefetchPredictor* predictor =
-          predictors::ResourcePrefetchPredictorFactory::GetForProfile(
-              profile)) {
-    resource_prefetch_predictor_observer_.reset(
-        new chrome_browser_net::ResourcePrefetchPredictorObserver(predictor));
-  }
 
   ProtocolHandlerRegistry* protocol_handler_registry =
       ProtocolHandlerRegistryFactory::GetForProfile(profile);
@@ -1018,11 +1008,6 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
 
   resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();
   resource_context_->request_context_ = main_request_context_.get();
-
-  if (profile_params_->resource_prefetch_predictor_observer_) {
-    resource_prefetch_predictor_observer_.reset(
-        profile_params_->resource_prefetch_predictor_observer_.release());
-  }
 
 #if defined(ENABLE_MANAGED_USERS)
   managed_mode_url_filter_ = profile_params_->managed_mode_url_filter;
