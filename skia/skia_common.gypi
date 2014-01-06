@@ -147,6 +147,7 @@
       'GR_GL_IGNORE_ES3_MSAA=0',
       'SK_SUPPORT_DEPRECATED_SCALARROUND',
       'SK_SUPPORT_LEGACY_SK64',
+      'SK_SUPPORT_LEGACY_ONLOCKPIXELS',
     ],
 
     'default_font_cache_limit%': '(20*1024*1024)',
