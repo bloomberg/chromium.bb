@@ -4,6 +4,7 @@
 
 #include "gin/modules/timer.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
@@ -28,8 +29,8 @@ class Result : public Wrappable<Result> {
   int count() const { return count_; }
   void set_count(int count) { count_ = count; }
 
-  void quit() {
-    base::MessageLoop::current()->Quit();
+  void Quit() {
+    base::MessageLoop::current()->QuitNow();
   }
 
  private:
@@ -43,7 +44,7 @@ class Result : public Wrappable<Result> {
       v8::Isolate* isolate) OVERRIDE {
     return Wrappable<Result>::GetObjectTemplateBuilder(isolate)
         .SetProperty("count", &Result::count, &Result::set_count)
-        .SetMethod("quit", &Result::quit);
+        .SetMethod("quit", &Result::Quit);
   }
 
   int count_;
@@ -51,74 +52,105 @@ class Result : public Wrappable<Result> {
 
 WrapperInfo Result::kWrapperInfo = { gin::kEmbedderNativeGin };
 
+struct TestHelper {
+  TestHelper(v8::Isolate* isolate)
+      : runner(new Runner(&delegate, isolate)),
+        scope(runner.get()),
+        timer_module(TimerModule::Create(isolate)),
+        result(Result::Create(isolate)),
+        loop(base::MessageLoop::TYPE_DEFAULT) {
+    EXPECT_FALSE(runner->global().IsEmpty());
+    runner->global()->Set(StringToV8(isolate, "timer"),
+                          timer_module->GetWrapper(isolate));
+    runner->global()->Set(StringToV8(isolate, "result"),
+                          result->GetWrapper(isolate));
+  }
+
+  void QuitSoon() {
+    loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+                         base::TimeDelta::FromMilliseconds(0));
+  }
+
+  RunnerDelegate delegate;
+  scoped_ptr<Runner> runner;
+  Runner::Scope scope;
+  Handle<TimerModule> timer_module;
+  Handle<Result> result;
+  base::MessageLoop loop;
+};
+
 }  // namespace
 
 typedef V8Test TimerUnittest;
 
 TEST_F(TimerUnittest, OneShot) {
-  v8::Isolate* isolate = instance_->isolate();
-
-  RunnerDelegate delegate;
-  Runner runner(&delegate, isolate);
-  Runner::Scope scope(&runner);
-
-  Handle<TimerModule> timer_module = TimerModule::Create(isolate);
-  Handle<Result> result = Result::Create(isolate);
-
-  EXPECT_FALSE(runner.global().IsEmpty());
-  runner.global()->Set(StringToV8(isolate, "timer"),
-                       timer_module->GetWrapper(isolate));
-  runner.global()->Set(StringToV8(isolate, "result"),
-                       result->GetWrapper(isolate));
-
+  TestHelper helper(instance_->isolate());
   std::string source =
-     "timer.createOneShot(100, function() {"
+     "timer.createOneShot(0, function() {"
      "  result.count++;"
-     "  result.quit();"
      "});";
 
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
-  runner.Run(source, "script");
-  EXPECT_EQ(0, result->count());
+  helper.runner->Run(source, "script");
+  EXPECT_EQ(0, helper.result->count());
 
-  loop.Run();
-  loop.RunUntilIdle();
+  helper.QuitSoon();
+  helper.loop.Run();
+  EXPECT_EQ(1, helper.result->count());
+}
 
-  EXPECT_EQ(1, result->count());
+TEST_F(TimerUnittest, OneShotCancel) {
+  TestHelper helper(instance_->isolate());
+  std::string source =
+     "var t = timer.createOneShot(0, function() {"
+     "  result.count++;"
+     "});"
+     "t.cancel()";
+
+  helper.runner->Run(source, "script");
+  EXPECT_EQ(0, helper.result->count());
+
+  helper.QuitSoon();
+  helper.loop.Run();
+  EXPECT_EQ(0, helper.result->count());
 }
 
 TEST_F(TimerUnittest, Repeating) {
-  v8::Isolate* isolate = instance_->isolate();
-
-  RunnerDelegate delegate;
-  Runner runner(&delegate, isolate);
-  Runner::Scope scope(&runner);
-
-  Handle<TimerModule> timer_module = TimerModule::Create(isolate);
-  Handle<Result> result = Result::Create(isolate);
-
-  EXPECT_FALSE(runner.global().IsEmpty());
-  runner.global()->Set(StringToV8(isolate, "timer"),
-                       timer_module->GetWrapper(isolate));
-  runner.global()->Set(StringToV8(isolate, "result"),
-                       result->GetWrapper(isolate));
+  TestHelper helper(instance_->isolate());
 
   // TODO(aa): Cannot do: if (++result.count == 3) because of v8 bug. Create
   // test case and report.
   std::string source =
-     "timer.createRepeating(10, function() {"
+     "timer.createRepeating(0, function() {"
      "  result.count++;"
      "  if (result.count == 3) {"
      "    result.quit();"
      "  }"
      "});";
 
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
-  runner.Run(source, "script");
-  EXPECT_EQ(0, result->count());
+  helper.runner->Run(source, "script");
+  EXPECT_EQ(0, helper.result->count());
 
-  loop.Run();
-  EXPECT_EQ(3, result->count());
+  helper.loop.Run();
+  EXPECT_EQ(3, helper.result->count());
+}
+
+TEST_F(TimerUnittest, TimerCallbackToDestroyedRunner) {
+  TestHelper helper(instance_->isolate());
+  std::string source =
+     "timer.createOneShot(0, function() {"
+     "  result.count++;"
+     "});";
+
+  helper.runner->Run(source, "script");
+  EXPECT_EQ(0, helper.result->count());
+
+  // Destroy runner, which should destroy the timer object we created.
+  helper.QuitSoon();
+  helper.runner.reset(NULL);
+  helper.loop.Run();
+
+  // Timer should not have run because it was deleted.
+  EXPECT_EQ(0, helper.result->count());
 }
 
 }  // namespace gin

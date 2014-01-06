@@ -18,7 +18,7 @@ v8::Handle<v8::String> GetHiddenPropertyName(v8::Isolate* isolate) {
 
 }  // namespace
 
-// Timer
+// Timer =======================================================================
 
 gin::WrapperInfo Timer::kWrapperInfo = { gin::kEmbedderNativeGin };
 
@@ -30,6 +30,8 @@ Handle<Timer> Timer::Create(TimerType type, v8::Isolate* isolate, int delay_ms,
 }
 
 ObjectTemplateBuilder Timer::GetObjectTemplateBuilder(v8::Isolate* isolate) {
+  // We use Unretained() here because we directly own timer_, so we know it will
+  // be alive when these methods are called.
   return Wrappable<Timer>::GetObjectTemplateBuilder(isolate)
       .SetMethod("cancel",
                  base::Bind(&base::Timer::Stop, base::Unretained(&timer_)))
@@ -53,8 +55,13 @@ Timer::~Timer() {
 }
 
 void Timer::OnTimerFired() {
-  if (!runner_)
+  // This can happen in spite of the weak callback because it is possible for
+  // a gin::Handle<> to keep this object alive past when the isolate it is part
+  // of is destroyed.
+  if (!runner_.get()) {
     return;
+  }
+
   Runner::Scope scope(runner_.get());
   v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(
       GetWrapper(runner_->isolate())->GetHiddenValue(
@@ -63,7 +70,7 @@ void Timer::OnTimerFired() {
 }
 
 
-// TimerModule
+// TimerModule =================================================================
 
 WrapperInfo TimerModule::kWrapperInfo = { kEmbedderNativeGin };
 
