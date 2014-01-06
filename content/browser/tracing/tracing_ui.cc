@@ -120,15 +120,14 @@ void BeginReadingRecordingResult(
       base::Bind(ReadRecordingResult, callback, path));
 }
 
-bool OnBeginRequest(const std::string& path,
-                    const WebUIDataSource::GotDataCallback& callback) {
+bool OnBeginJSONRequest(const std::string& path,
+                        const WebUIDataSource::GotDataCallback& callback) {
   if (path == "json/categories") {
-    TracingController::GetInstance()->GetCategories(
+    return TracingController::GetInstance()->GetCategories(
         base::Bind(OnGotCategories, callback));
-    return true;
   }
   const char* beginRecordingPath = "json/begin_recording?";
-  if (path.find(beginRecordingPath) == 0) {
+  if (StartsWithASCII(path, beginRecordingPath, true)) {
     std::string data = path.substr(strlen(beginRecordingPath));
     return OnBeginRecording(data, callback);
   }
@@ -140,8 +139,19 @@ bool OnBeginRequest(const std::string& path,
     return TracingController::GetInstance()->DisableRecording(
         base::FilePath(), base::Bind(BeginReadingRecordingResult, callback));
   }
-  if (StartsWithASCII(path, "json/", true))
-    LOG(ERROR) << "Unhandled request to " << path;
+  LOG(ERROR) << "Unhandled request to " << path;
+  return false;
+}
+
+bool OnBeginRequest(const std::string& path,
+                    const WebUIDataSource::GotDataCallback& callback) {
+  if (StartsWithASCII(path, "json/", true)) {
+    if (!OnBeginJSONRequest(path, callback)) {
+      std::string error("##ERROR##");
+      callback.Run(base::RefCountedString::TakeString(&error));
+    }
+    return true;
+  }
   return false;
 }
 
