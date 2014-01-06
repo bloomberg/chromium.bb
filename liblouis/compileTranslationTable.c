@@ -1592,7 +1592,7 @@ parseChars (FileInfo * nested, CharsString * result, CharsString * token)
 	}
       lastOutSize = out;
       lastIn = in;
-      for (numBytes = MAXBYTES - 1; numBytes >= 0; numBytes--)
+      for (numBytes = MAXBYTES - 1; numBytes > 0; numBytes--)
 	if (ch >= first0Bit[numBytes])
 	  break;
       utf32 = ch & (0XFF - first0Bit[numBytes]);

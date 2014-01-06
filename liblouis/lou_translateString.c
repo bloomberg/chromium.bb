@@ -563,8 +563,8 @@ brailleIndicatorDefined (TranslationTableOffset offset)
   return 1;
 }
 
-static typeforms prevType = plain_text;
-static typeforms curType = plain_text;
+static int prevType = plain_text;
+static int curType = plain_text;
 
 typedef enum
 {

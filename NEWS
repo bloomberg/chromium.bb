@@ -10,6 +10,7 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
      number and strings such as 5-inch-diameter and 25-year-old-man
      should now back-translate correctly. Thanks to John Boyer.
    - Fixed a problem with syllable opcode. Thanks to John Boyer.
+   - Fix warnings with gcc 4.8.2. Thanks to Peter Lundblad.
 
 ** Braille Table Improvements
    - fr-bfu-comp8.utb: corrections, zero was wrongly displayed in some
