@@ -9,6 +9,7 @@
 
 #include "build/build_config.h"
 #include "ui/gfx/geometry/insets_base.h"
+#include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/gfx_export.h"
 
 #if defined(TOOLKIT_GTK)
@@ -37,6 +38,10 @@ class GFX_EXPORT Insets : public InsetsBase<Insets, int> {
                   static_cast<int>(left() * x_scale),
                   static_cast<int>(bottom() * y_scale),
                   static_cast<int>(right() * x_scale));
+  }
+
+  operator InsetsF() const {
+    return InsetsF(top(), left(), bottom(), right());
   }
 
   // Returns a string representation of the insets.
