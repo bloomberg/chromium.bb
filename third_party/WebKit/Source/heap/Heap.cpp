@@ -412,8 +412,9 @@ template<typename Header>
 ThreadHeap<Header>::~ThreadHeap()
 {
     clearFreeLists();
-    // FIXME(oilpan): at the moment we can't finalize all objects owned by the main thread eagerly
-    // because there are tangled destruction order dependencies there.
+    // FIXME(oilpan): at the moment we can't finalize all objects
+    // owned by the main thread eagerly because there are tangled
+    // destruction order dependencies there.
     if (!ThreadState::isMainThread())
         finalizeAll();
     deletePages();
@@ -1015,6 +1016,21 @@ void Heap::init(intptr_t* startOfStack)
 void Heap::shutdown()
 {
     ThreadState::shutdown();
+}
+
+void Heap::getStats(HeapStats* stats)
+{
+    stats->clear();
+    // FIXME: It's unsafe to iterate threads outside of GC. Enable the
+    // ASSERT.
+    // ASSERT(ThreadState::isAnyThreadInGC());
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
+    for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        HeapStats temp;
+        (*it)->getStats(temp);
+        stats->add(&temp);
+    }
 }
 
 // Force template instantiations for the types that we need.

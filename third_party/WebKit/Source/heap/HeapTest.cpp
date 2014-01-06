@@ -38,9 +38,61 @@ using namespace WebCore;
 
 namespace {
 
+class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
+    DECLARE_GC_INFO
+public:
+    HeapAllocatedArray()
+    {
+        for (int i = 0; i < s_arraySize; ++i) {
+            m_array[i] = i % 128;
+        }
+    }
+
+    int8_t at(size_t i) { return m_array[i]; }
+    void trace(Visitor*) { }
+private:
+    static const int s_arraySize = 1000;
+    int8_t m_array[s_arraySize];
+};
+
+DEFINE_GC_INFO(HeapAllocatedArray);
+
 TEST(HeapTest, Init)
 {
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner. This test can be removed
+    // when that is done.
     Heap::init(0);
+    Heap::shutdown();
+}
+
+TEST(HeapTest, SimpleAllocation)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    // Get initial heap stats.
+    //
+    // FIXME: We should put in a testing GCScope object that will make
+    // the test thread reach a safepoint so that we can enable
+    // threading asserts in getStats.
+    HeapStats initialHeapStats;
+    Heap::getStats(&initialHeapStats);
+    EXPECT_EQ(0ul, initialHeapStats.totalObjectSpace());
+
+    // Allocate an object in the heap.
+    HeapAllocatedArray* a = new HeapAllocatedArray();
+    HeapStats statsAfterAllocation;
+    Heap::getStats(&statsAfterAllocation);
+    EXPECT_TRUE(statsAfterAllocation.totalObjectSpace() >= sizeof(HeapAllocatedArray));
+
+    // Sanity check of the contents in the heap.
+    EXPECT_EQ(0, a->at(0));
+    EXPECT_EQ(42, a->at(42));
+    EXPECT_EQ(0, a->at(128));
+    EXPECT_EQ(999 % 128, a->at(999));
+
     Heap::shutdown();
 }
 

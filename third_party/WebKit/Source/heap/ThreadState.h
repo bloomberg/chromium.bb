@@ -31,6 +31,7 @@
 #ifndef ThreadState_h
 #define ThreadState_h
 
+#include "heap/HeapExport.h"
 #include "wtf/HashSet.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
@@ -38,10 +39,13 @@
 namespace WebCore {
 
 class BaseHeap;
+class BaseHeapPage;
 class FinalizedHeapObjectHeader;
 class HeapContainsCache;
 class HeapObjectHeader;
 template<typename Header> class ThreadHeap;
+
+typedef uint8_t* Address;
 
 // ThreadAffinity indicates which threads objects can be used on. We
 // distinguish between objects that can be used on the main thread
@@ -142,7 +146,11 @@ public:
         m_totalAllocatedSpace = 0;
     }
 
-    bool operator==(const HeapStats& other);
+    bool operator==(const HeapStats& other)
+    {
+        return m_totalAllocatedSpace == other.m_totalAllocatedSpace
+            && m_totalObjectSpace == other.m_totalObjectSpace;
+    }
 
 private:
     size_t m_totalObjectSpace; // Actually contains objects that may be live, not including headers.
@@ -151,7 +159,7 @@ private:
     friend class HeapTester;
 };
 
-class ThreadState {
+class HEAP_EXPORT ThreadState {
 public:
     // When garbage collecting we need to know whether or not there
     // can be pointers to Blink GC managed objects on the stack for
@@ -161,6 +169,11 @@ public:
         NoHeapPointersOnStack,
         HeapPointersOnStack
     };
+
+    // The set of ThreadStates for all threads attached to the Blink
+    // garbage collector.
+    typedef HashSet<ThreadState*> AttachedThreadStateSet;
+    static AttachedThreadStateSet& attachedThreads();
 
     // Initialize threading infrastructure. Should be called from the main
     // thread.
@@ -211,6 +224,10 @@ public:
     void enterNoAllocationScope() { m_noAllocationCount++; }
     void leaveNoAllocationScope() { m_noAllocationCount--; }
 
+    // Before performing GC the thread-specific heap state should be
+    // made consistent for garbage collection.
+    bool isConsistentForGC();
+
     bool isAtSafePoint() const { return m_atSafePoint; }
 
     // Get one of the heap structures for this thread.
@@ -220,17 +237,25 @@ public:
     // HeapTrait<Type>::index.
     BaseHeap* heap(int index) const { return m_heaps[index]; }
 
+    // Infrastructure to determine if an address is within one of the
+    // address ranges for the Blink heap.
     HeapContainsCache* heapContainsCache() { return m_heapContainsCache; }
+    bool contains(Address);
+    bool contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
+    bool contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
 
+    // Finds the Blink HeapPage in this thread-specific heap
+    // corresponding to a given address. Return 0 if the address is
+    // not contained in any of the pages.
+    BaseHeapPage* heapPageFromAddress(Address);
+
+    void getStats(HeapStats&);
     HeapStats& stats() { return m_stats; }
     HeapStats& statsAfterLastGC() { return m_statsAfterLastGC; }
 
 private:
     explicit ThreadState(intptr_t* startOfStack);
     ~ThreadState();
-
-    typedef HashSet<ThreadState*> AttachedThreadStateSet;
-    static AttachedThreadStateSet& attachedThreads();
 
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
 

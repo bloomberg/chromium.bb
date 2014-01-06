@@ -70,6 +70,8 @@ ThreadState::ThreadState(intptr_t* startOfStack)
 ThreadState::~ThreadState()
 {
     checkThread();
+    for (int i = GeneralHeap; i < NumberOfHeaps; i++)
+        delete m_heaps[i];
     **s_threadSpecific = 0;
 }
 
@@ -150,6 +152,64 @@ void ThreadState::clearGCRequested()
 {
     checkThread();
     m_gcRequested = false;
+}
+
+bool ThreadState::isConsistentForGC()
+{
+    for (int i = 0; i < NumberOfHeaps; i++) {
+        if (!m_heaps[i]->isConsistentForGC())
+            return false;
+    }
+    return true;
+}
+
+BaseHeapPage* ThreadState::heapPageFromAddress(Address address)
+{
+    BaseHeapPage* page;
+    bool found = heapContainsCache()->lookup(address, &page);
+    if (found)
+        return page;
+
+    for (int i = 0; i < NumberOfHeaps; i++) {
+        page = m_heaps[i]->heapPageFromAddress(address);
+#ifndef NDEBUG
+        Address blinkPageAddr = roundToBlinkPageStart(address);
+#endif
+        ASSERT(page == m_heaps[i]->heapPageFromAddress(blinkPageAddr));
+        ASSERT(page == m_heaps[i]->heapPageFromAddress(blinkPageAddr + blinkPageSize - 1));
+        if (page)
+            break;
+    }
+    heapContainsCache()->addEntry(address, page);
+    return page; // 0 if not found.
+}
+
+bool ThreadState::contains(Address address)
+{
+    // Check heap contains cache first.
+    BaseHeapPage* page = heapPageFromAddress(address);
+    if (page)
+        return true;
+    // If no heap page was found check large objects.
+    for (int i = 0; i < NumberOfHeaps; i++) {
+        if (m_heaps[i]->largeHeapObjectFromAddress(address))
+            return true;
+    }
+    return false;
+}
+
+void ThreadState::getStats(HeapStats& stats)
+{
+    stats = m_stats;
+#ifndef NDEBUG
+    if (isConsistentForGC()) {
+        HeapStats scannedStats;
+        scannedStats.clear();
+        for (int i = 0; i < NumberOfHeaps; i++)
+            m_heaps[i]->getScannedStats(scannedStats);
+        ASSERT(scannedStats == stats);
+    }
+#endif
 }
 
 ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()

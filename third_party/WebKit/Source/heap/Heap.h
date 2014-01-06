@@ -106,8 +106,6 @@ const size_t sizeMask = ~7;
 const uint8_t freelistZapValue = 42;
 const uint8_t finalizedZapValue = 24;
 
-typedef uint8_t* Address;
-
 class HeapStats;
 class PageMemory;
 template <typename Header> class ThreadHeap;
@@ -331,39 +329,6 @@ private:
 
 const size_t objectHeaderSize = sizeof(HeapObjectHeader);
 
-NO_SANITIZE_ADDRESS
-void HeapObjectHeader::checkHeader() const
-{
-    // FIXME: with ThreadLocalHeaps Heap::contains is not thread safe
-    // but introducing locks in this place does not seem like a good
-    // idea.
-#ifndef NDEBUG
-    ASSERT(m_magic == magic);
-#endif
-}
-
-Address HeapObjectHeader::payload()
-{
-    return reinterpret_cast<Address>(this) + objectHeaderSize;
-}
-
-size_t HeapObjectHeader::payloadSize()
-{
-    return size() - objectHeaderSize;
-}
-
-Address HeapObjectHeader::payloadEnd()
-{
-    return reinterpret_cast<Address>(this) + size();
-}
-
-NO_SANITIZE_ADDRESS
-void HeapObjectHeader::mark()
-{
-    checkHeader();
-    m_size |= markBitMask;
-}
-
 // Each object on the GeneralHeap needs to carry a pointer to its
 // own GCInfo structure for tracing and potential finalization.
 class FinalizedHeapObjectHeader : public HeapObjectHeader {
@@ -409,16 +374,6 @@ private:
 };
 
 const size_t finalizedHeaderSize = sizeof(FinalizedHeapObjectHeader);
-
-Address FinalizedHeapObjectHeader::payload()
-{
-    return reinterpret_cast<Address>(this) + finalizedHeaderSize;
-}
-
-size_t FinalizedHeapObjectHeader::payloadSize()
-{
-    return size() - finalizedHeaderSize;
-}
 
 class FreeListEntry : public HeapObjectHeader {
 public:
@@ -568,11 +523,11 @@ public:
     //
     // If lookup returns true the argument address was found in the
     // cache. In that case, the address is in the heap if the base
-    // heap page out parameter is non-NULL and is not in the heap if
-    // the base heap page out parameter is NULL.
+    // heap page out parameter is different from 0 and is not in the
+    // heap if the base heap page out parameter is 0.
     bool lookup(Address, BaseHeapPage**);
 
-    // Add an entry to the cache. Use a NULL base heap page pointer to
+    // Add an entry to the cache. Use a 0 base heap page pointer to
     // add a negative entry.
     void addEntry(Address, BaseHeapPage*);
 
@@ -615,12 +570,12 @@ public:
     virtual ~BaseHeap() { }
 
     // Find the page in this thread heap containing the given
-    // address. Returns NULL if the address is not contained in any
+    // address. Returns 0 if the address is not contained in any
     // page in this thread heap.
     virtual BaseHeapPage* heapPageFromAddress(Address) = 0;
 
     // Find the large object in this thread heap containing the given
-    // address. Returns NULL if the address is not contained in any
+    // address. Returns 0 if the address is not contained in any
     // page in this thread heap.
     virtual BaseHeapPage* largeHeapObjectFromAddress(Address) = 0;
 
@@ -697,7 +652,7 @@ public:
     HeapStats& stats() { return m_threadState->stats(); }
     HeapContainsCache* heapContainsCache() { return m_threadState->heapContainsCache(); }
 
-    inline Address allocate(size_t, const GCInfo*);
+    HEAP_EXPORT inline Address allocate(size_t, const GCInfo*);
     void addToFreeList(Address, size_t);
     void addPageToPool(HeapPage<Header>*);
 
@@ -728,7 +683,7 @@ private:
 
     Address outOfLineAllocate(size_t, const GCInfo*);
     void addPageToHeap(const GCInfo*);
-    Address allocateLargeObject(size_t, const GCInfo*);
+    HEAP_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
     size_t remainingAllocationSize() const { return m_remainingAllocationSize; }
     bool ownsNonEmptyAllocationArea() const { return currentAllocationPoint() && remainingAllocationSize(); }
@@ -739,7 +694,7 @@ private:
         m_currentAllocationPoint = point;
         m_remainingAllocationSize = size;
     }
-    void ensureCurrentAllocation(size_t, const GCInfo*);
+    HEAP_EXPORT void ensureCurrentAllocation(size_t, const GCInfo*);
     bool allocateFromFreeList(size_t);
 
     void setFinalizeAll(bool finalizingAll) { m_inFinalizeAll = finalizingAll; }
@@ -778,60 +733,130 @@ public:
     static void init(intptr_t* startOfStack);
     static void shutdown();
 
-    template<typename T> Address allocate(size_t);
-    template<typename T> Address reallocate(void* previous, size_t);
+    template<typename T> static Address allocate(size_t);
+    template<typename T> static Address reallocate(void* previous, size_t);
 
     static void collectGarbage(ThreadState::StackState, GCType = Normal)
     {
         // FIXME: Implement.
         ASSERT_NOT_REACHED();
     }
+
+    // Collect heap stats for all threads attached to the Blink
+    // garbage collector. Should only be called during garbage
+    // collection where threads are known to be at safe points.
+    static void getStats(HeapStats*);
 };
 
-// FIXME: Allocate objects that do not need finalization separately
-// and use separate sweeping to not have to check for finalizers.
+// Base class for objects allocated in the Blink garbage-collected
+// heap.
+//
+// Defines a 'new' operator that allocates the memory in the
+// heap. 'delete' should not be called on objects that inherit from
+// GarbageCollected.
+//
+// Instances of GarbageCollected will *NOT* get finalized. Their
+// destructor will not be called. Therefore, only classes that have
+// trivial destructors with no semantic meaning (including all their
+// subclasses) should inherit from GarbageCollected. If there are
+// non-trival destructors in a given class or any of its subclasses,
+// GarbageCollectedFinalized should be used which guarantees that the
+// destructor is called on an instance when the garbage collector
+// determines that it is no longer reachable.
 template<typename T>
-Address Heap::allocate(size_t size)
+class GarbageCollected {
+    WTF_MAKE_NONCOPYABLE(GarbageCollected);
+
+    // For now direct allocation of arrays on the heap is not allowed.
+    void* operator new[](size_t size);
+    void operator delete[](void* p);
+public:
+    void* operator new(size_t size)
+    {
+        return Heap::allocate<T>(size);
+    }
+
+    void operator delete(void* p)
+    {
+        ASSERT_NOT_REACHED();
+    }
+
+protected:
+    GarbageCollected()
+    {
+        ASSERT(ThreadStateFor<ThreadingTrait<T>::Affinity>::state()->contains(reinterpret_cast<Address>(this)));
+    }
+    ~GarbageCollected() { }
+};
+
+// Base class for objects allocated in the Blink garbage-collected
+// heap.
+//
+// Defines a 'new' operator that allocates the memory in the
+// heap. 'delete' should not be called on objects that inherit from
+// GarbageCollected.
+//
+// Instances of GarbageCollectedFinalized will have their destructor
+// called when the garbage collector determines that the object is no
+// longer reachable.
+template<typename T>
+class GarbageCollectedFinalized : public GarbageCollected<T> {
+    WTF_MAKE_NONCOPYABLE(GarbageCollectedFinalized);
+
+protected:
+    // Finalize is called when the object is freed from the heap. By
+    // default finalization means calling the destructor on the
+    // object. Finalize can be overridden to support calling the
+    // destructor of a subclass. This is useful for objects without
+    // vtables that require explicit dispatching.
+    void finalize()
+    {
+        static_cast<T*>(this)->~T();
+    }
+
+    GarbageCollectedFinalized() { }
+    ~GarbageCollectedFinalized() { }
+
+    template<typename U> friend struct HasFinalizer;
+    template<typename U, bool> friend struct FinalizerTraitImpl;
+};
+
+NO_SANITIZE_ADDRESS
+void HeapObjectHeader::checkHeader() const
 {
-    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::State();
-    ASSERT(state->isAllocationAllowed());
-    BaseHeap* heap = state->heap(HeapTrait<T>::index);
-    Address addr =
-        static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::get());
-    return addr;
+    ASSERT(m_magic == magic);
 }
 
-// FIXME: Allocate objects that do not need finalization separately
-// and use separate sweeping to not have to check for finalizers.
-template<typename T>
-Address Heap::reallocate(void* previous, size_t size)
+Address HeapObjectHeader::payload()
 {
-    if (!size) {
-        // If the new size is 0 this is equivalent to either
-        // free(previous) or malloc(0). In both cases we do
-        // nothing and return 0.
-        return 0;
-    }
-    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::State();
-    ASSERT(state->isAllocationAllowed());
-    // FIXME: Currently only supports raw allocation on the
-    // GeneralHeap. Hence we assume the header is a
-    // FinalizedHeapObjectHeader.
-    ASSERT(HeapTrait<T>::index == GeneralHeap);
-    BaseHeap* heap = state->heap(HeapTrait<T>::index);
-    Address address = static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::get());
-    if (!previous) {
-        // This is equivalent to malloc(size).
-        return address;
-    }
-    FinalizedHeapObjectHeader* previousHeader = FinalizedHeapObjectHeader::fromPayload(previous);
-    ASSERT(!previousHeader->hasFinalizer());
-    ASSERT(previousHeader->gcInfo() == GCInfoTrait<T>::get());
-    size_t copySize = previousHeader->payloadSize();
-    if (copySize > size)
-        copySize = size;
-    memcpy(address, previous, copySize);
-    return address;
+    return reinterpret_cast<Address>(this) + objectHeaderSize;
+}
+
+size_t HeapObjectHeader::payloadSize()
+{
+    return size() - objectHeaderSize;
+}
+
+Address HeapObjectHeader::payloadEnd()
+{
+    return reinterpret_cast<Address>(this) + size();
+}
+
+NO_SANITIZE_ADDRESS
+void HeapObjectHeader::mark()
+{
+    checkHeader();
+    m_size |= markBitMask;
+}
+
+Address FinalizedHeapObjectHeader::payload()
+{
+    return reinterpret_cast<Address>(this) + finalizedHeaderSize;
+}
+
+size_t FinalizedHeapObjectHeader::payloadSize()
+{
+    return size() - finalizedHeaderSize;
 }
 
 template<typename Header>
@@ -887,6 +912,62 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
     ASSERT(heapPageFromAddress(headerAddress + allocationSize - 1));
     return result;
 }
+
+// FIXME: Allocate objects that do not need finalization separately
+// and use separate sweeping to not have to check for finalizers.
+template<typename T>
+Address Heap::allocate(size_t size)
+{
+    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::state();
+    ASSERT(state->isAllocationAllowed());
+    BaseHeap* heap = state->heap(HeapTrait<T>::index);
+    Address addr =
+        static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::get());
+    return addr;
+}
+
+// FIXME: Allocate objects that do not need finalization separately
+// and use separate sweeping to not have to check for finalizers.
+template<typename T>
+Address Heap::reallocate(void* previous, size_t size)
+{
+    if (!size) {
+        // If the new size is 0 this is equivalent to either
+        // free(previous) or malloc(0). In both cases we do
+        // nothing and return 0.
+        return 0;
+    }
+    ThreadState* state = ThreadStateFor<ThreadingTrait<T>::Affinity>::State();
+    ASSERT(state->isAllocationAllowed());
+    // FIXME: Currently only supports raw allocation on the
+    // GeneralHeap. Hence we assume the header is a
+    // FinalizedHeapObjectHeader.
+    ASSERT(HeapTrait<T>::index == GeneralHeap);
+    BaseHeap* heap = state->heap(HeapTrait<T>::index);
+    Address address = static_cast<typename HeapTrait<T>::HeapType*>(heap)->allocate(size, GCInfoTrait<T>::get());
+    if (!previous) {
+        // This is equivalent to malloc(size).
+        return address;
+    }
+    FinalizedHeapObjectHeader* previousHeader = FinalizedHeapObjectHeader::fromPayload(previous);
+    ASSERT(!previousHeader->hasFinalizer());
+    ASSERT(previousHeader->gcInfo() == GCInfoTrait<T>::get());
+    size_t copySize = previousHeader->payloadSize();
+    if (copySize > size)
+        copySize = size;
+    memcpy(address, previous, copySize);
+    return address;
+}
+
+#if !defined(WIN32)
+// With GCC and clang we need to declare which specializations will be
+// implemented in the implementation file in order to be able to
+// export them when using the component build.
+template<> void ThreadHeap<FinalizedHeapObjectHeader>::addPageToHeap(const GCInfo*);
+template<> void ThreadHeap<HeapObjectHeader>::addPageToHeap(const GCInfo*);
+extern template class EXTERN_TEMPLATE_HEAP_EXPORT ThreadHeap<FinalizedHeapObjectHeader>;
+extern template class EXTERN_TEMPLATE_HEAP_EXPORT ThreadHeap<HeapObjectHeader>;
+#endif
 
 }
 
