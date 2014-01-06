@@ -31,6 +31,7 @@
 # 11  ksadmin failure
 # 12  dirpatcher failed for versioned directory
 # 13  dirpatcher failed for outer .app bundle
+# 14  The update is incompatible with the system
 #
 # The following exit codes can be used to convey special meaning to Keystone.
 # KeystoneRegistration will present these codes to Chrome as "success."
@@ -494,6 +495,79 @@ infoplist_read() {
   __CFPREFERENCES_AVOID_DAEMON=1 defaults read "${@}"
 }
 
+# Adjust the tag to contain the -32bit tag suffix. This is intended to be used
+# as a last resort, if sanity checks show that a non-32-bit update is about to
+# be applied to a 32-bit-only system. If this happens, it means that the
+# server delivered a non-32-bit update to a 32-bit-only system, most likely
+# because the tag was never updated to include the -32bit tag suffix.
+#
+# This mechanism takes a heavy-handed approach, clearing --tag-path and
+# --tag-key so that the channel identity will no longer follow the installed
+# application. However, it's expected that once -32bit is added to the tag,
+# the server will deliver a 32-bit update (possibly the final 32-bit version),
+# and once installed, that update will restore the --tag-path and --tag-key.
+# In any event, channel identity in this case may be moot, if 32-bit builds
+# are no longer being produced.
+#
+# This provides some resilience in the update system for old 32-bit-only
+# systems that aren't used during the window between when the -32bit tag
+# suffix begins being used and 32-bit releases end.
+mark_32_bit_only_system() {
+  local product_id="${1}"
+
+  # This step isn't critical.
+  local set_e=
+  if [[ "${-}" =~ e ]]; then
+    set_e="y"
+    set +e
+  fi
+
+  note "marking 32-bit-only system"
+
+  if ! ksadmin_supports_tagpath_tagkey; then
+    note "couldn't mark 32-bit-only system, no ksadmin support"
+    if [[ -n "${set_e}" ]]; then
+      set -e
+    fi
+    return 0
+  fi
+
+  local current_tag="$(ksadmin --productid "${product_id}" --print-tag)"
+  note "current_tag = ${current_tag}"
+
+  if grep -Eq -- '-32bit(-|$)' <<< "${current_tag}"; then
+    note "current tag already has -32bit"
+    if [[ -n "${set_e}" ]]; then
+      set -e
+    fi
+    return 0
+  fi
+
+  # This clears any other tag suffix, but that shouldn't be a problem. The
+  # only other currently-defined tag suffix component is -full, but -full and
+  # -32bit were introduced at the same time, so if -full appears, whatever set
+  # it would have already had enough knowledge to set -32bit as well, and this
+  # codepath wouldn't be entered.
+  local current_channel="$(sed -e 's/-.*//' <<< "${current_tag}")"
+  local new_tag="${current_channel}-32bit"
+  note "new_tag = ${new_tag}"
+
+  # Using ksadmin without --register only updates specified values in the
+  # ticket, without changing other existing values. Giving empty values for
+  # --tag-path and --tag-key clears those fields.
+  if ! ksadmin --productid "${product_id}" \
+               --tag "${new_tag}" --tag-path '' --tag-key ''; then
+    err "ksadmin failed to mark 32-bit-only system"
+  else
+    note "marked 32-bit-only system"
+  fi
+
+  # Go back to how things were.
+  if [[ -n "${set_e}" ]]; then
+    set -e
+  fi
+}
+
 # When a patch update fails because the old installed copy doesn't match the
 # expected state, mark_failed_patch_update updates the Keystone ticket by
 # adding "-full" to the tag. The server will see this on a subsequent update
@@ -513,7 +587,12 @@ mark_failed_patch_update() {
   local old_version_app="${4}"
   local system_ticket="${5}"
 
-  set +e
+  # This step isn't critical.
+  local set_e=
+  if [[ "${-}" =~ e ]]; then
+    set_e="y"
+    set +e
+  fi
 
   note "marking failed patch update"
 
@@ -540,6 +619,9 @@ mark_failed_patch_update() {
   note "read_tag = ${read_tag}"
   if [[ -z "${read_tag}" ]]; then
     note "couldn't mark failed patch update"
+    if [[ -n "${set_e}" ]]; then
+      set -e
+    fi
     return 0
   fi
 
@@ -595,12 +677,15 @@ mark_failed_patch_update() {
   note "ksadmin_args = ${ksadmin_args[*]}"
 
   if ! ksadmin "${ksadmin_args[@]}"; then
-    err "ksadmin failed"
+    err "ksadmin failed to mark failed patch update"
+  else
+    note "marked failed patch update"
   fi
 
-  note "marked failed patch update"
-
-  set -e
+  # Go back to how things were.
+  if [[ -n "${set_e}" ]]; then
+    set -e
+  fi
 }
 
 usage() {
@@ -949,6 +1034,34 @@ main() {
                               "${KS_BRAND_KEY}" 2> /dev/null ||
                true)"
   note "old_brand = ${old_brand}"
+
+  if has_32_bit_only_cpu; then
+    # On a 32-bit-only system, make sure that the update contains 32-bit code.
+    note "system is 32-bit-only"
+
+    local test_binary
+    if [[ -z "${is_patch}" ]]; then
+      # For a full installer, the framework is available, so check it for
+      # 32-bit code.
+      local old_framework_dir="${old_versioned_dir}/${FRAMEWORK_DIR}"
+      test_binary="${old_framework_dir}/${FRAMEWORK_NAME}"
+    else
+      # No application code is guaranteed to be available at this point for a
+      # patch updater, but goobspatch is built alongside and will have the
+      # same bitness of the product that this updater will install, so it's a
+      # reasonable proxy.
+      test_binary="${patch_dir}/goobspatch"
+    fi
+    note "test_binary = ${test_binary}"
+
+    if ! file "${test_binary}" | grep -q 'i386$'; then
+      err "can't install non-32-bit update on 32-bit-only system"
+      mark_32_bit_only_system "${product_id}"
+      exit 14
+    else
+      note "update will run on a 32-bit-only system"
+    fi
+  fi
 
   ensure_writable_symlinks_recursive "${installed_app}"
 
