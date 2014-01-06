@@ -605,6 +605,10 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRootGeneric* root, void* ptr)
     free(ptr);
 #else
     ASSERT(root->initialized);
+
+    if (UNLIKELY(!ptr))
+        return;
+
     if (LIKELY(partitionPointerIsValid(root, ptr))) {
         ptr = partitionCookieFreePointerAdjust(ptr);
         PartitionPage* page = partitionPointerToPage(ptr);
