@@ -1,54 +1,70 @@
-Welcome to Native Client's documentation!
-=========================================
+########################
+Welcome to Native Client
+########################
 
-Contents:
+.. raw:: html
 
-.. toctree::
-   :maxdepth: 2
+  <div id="home">
+  <a class="button-nacl button-download" href="/native-client/dev/sdk/download">Download SDK</a>
+  <div class="big-intro">
 
-   overview.rst
-   quick-start.rst
-   nacl-and-pnacl.rst
-   glossary.rst
-   sdk/index.rst
-   sdk/download.rst
-   sdk/examples.rst
-   sdk/release-notes.rst
-   devguide/index.rst
-   devguide/tutorial/index.rst
-   devguide/tutorial/tutorial-part1.rst
-   devguide/tutorial/tutorial-part2.rst
-   devguide/devcycle/index.rst
-   devguide/devcycle/building.rst
-   devguide/devcycle/running.rst
-   devguide/devcycle/debugging.rst
-   devguide/devcycle/vs-addin.rst
-   devguide/devcycle/dynamic-loading.rst
-   devguide/coding/index.rst
-   devguide/coding/3D-graphics.rst
-   devguide/coding/audio.rst
-   devguide/coding/application-structure.rst
-   devguide/coding/native-client-modules.rst
-   devguide/coding/file-io.rst
-   devguide/coding/nacl_io.rst
-   devguide/coding/message-system.rst
-   devguide/coding/progress-events.rst
-   devguide/coding/url-loading.rst
-   devguide/coding/view-focus-input-events.rst
-   devguide/distributing.rst
-   community/index.rst
-   community/application-gallery.rst
-   community/middleware.rst
-   community/security-contest/index.rst
-   community/security-contest/contest-announcement.rst
-   community/security-contest/contest-terms.rst
-   community/security-contest/contest-faq.rst
-   peppercpp/index.rst
-   reference/index.rst
-   reference/pnacl-bitcode-abi.rst
-   reference/pnacl-c-cpp-language-support.rst
-   reference/nacl-manifest-format.rst
-   publications-and-presentations.rst
-   faq.rst
-   help.rst
-   version.rst
+**Native Client** is a sandbox for running compiled C and C++ code in the
+browser efficiently and securely, independent of the user's operating system.
+**Portable Native Client** extends that technology with
+architecture independence, letting developers compile their code once to run
+in any website and on any architecture.
+
+In short, Native Client brings the **performance** and **low-level control**
+of native code to modern web browsers, without sacrificing the **security** and
+**portability** of the web. Watch the video below for an overview of
+Native Client, including its goals, how it works, and how
+Portable Native Client lets developers run native compiled code on the web.
+
+.. raw:: html
+
+  </div>
+
+  <iframe class="video" width="640" height="360"
+  src="//www.youtube.com/embed/MvKEomoiKBA?rel=0" frameborder="0"></iframe>
+
+  <div class="right-side">
+  <div class="right-side-inner">
+  <h2>Guiding principles of Native Client</h2>
+  <div class="big-intro">
+  <ul>
+    <li>Developer flexibility to program in any language.</li>
+    <li>Running close to the metal to allow access to performance gains.</li>
+    <li>Protecting users from malicious code and malware.</li>
+    <li>Write-once, run-anywhere code portability across all user architectures.</li>
+  </ul>
+
+.. raw:: html
+
+  </div>
+  </div>
+  </div>
+
+Get started with Native Client
+==============================
+
+.. raw:: html
+
+  <div class="big-intro">
+
+#. :doc:`Download the Native Client SDK <sdk/download>`.
+#. Read the :doc:`Technical Overview <overview>`.
+#. Learn how to use the SDK and build both a web app and a Chrome app in the
+   :doc:`Getting Started Tutorial <devguide/tutorial/tutorial-part1>`.
+
+.. raw:: html
+
+  </div>
+  <div class="big-intro" style="clear: both;">
+
+Send us questions, comments, and feedback:
+`native-client-discuss <https://groups.google.com/forum/#!forum/native-client-discuss>`_.
+
+.. raw:: html
+
+  </div>
+  </div>

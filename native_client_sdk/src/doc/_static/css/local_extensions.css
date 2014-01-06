@@ -47,6 +47,58 @@ th.center {text-align: center;}
 .features section p    {margin-bottom: 0;}
 p.date                 {margin-top: 0; margin-bottom: 0.5em; font-style: italic;}
 blockquote.indent-only {font-style: normal; color: #000; }
+#home .button-nacl {
+    border-top: 1px solid #96d1f8;
+    background: #65a9d7;
+    background: -webkit-gradient(linear, left top, left bottom, from(#3e779d), to(#65a9d7));
+    background: -webkit-linear-gradient(top, #3e779d, #65a9d7);
+    background: -moz-linear-gradient(top, #3e779d, #65a9d7);
+    background: -ms-linear-gradient(top, #3e779d, #65a9d7);
+    background: -o-linear-gradient(top, #3e779d, #65a9d7);
+    padding: 5px 10px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+    -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+    box-shadow: rgba(0,0,0,1) 0 1px 0;
+    text-shadow: rgba(0,0,0,.4) 0 1px 0;
+    color: white;
+    font-size: 18px;
+    text-decoration: none;
+    vertical-align: middle;
+    }
+#home .button-nacl:visited {
+    color: #fff;
+    }
+#home .button-nacl:hover {
+    border-top-color: #28597a;
+    background: #28597a;
+    color: #ccc;
+    }
+#home .button-nacl:active {
+    border-top-color: #1b435e;
+    background: #1b435e;
+    }
+#home .button-download {
+    float: right;
+    margin: 2em 4em;
+    }
+#home .big-intro {
+    font-size: 16px;
+    }
+#home iframe.video {
+    display: block;
+    margin: 1em auto 0;
+    }
+#home .right-side {
+    float: right;
+    width: 54%;
+    background-color: #FFF;
+    }
+#home .right-side-inner {
+    padding-left: 40px;
+    }
 
 /* ======================== */
 /* OLD STYLES FROM CODESITE */
