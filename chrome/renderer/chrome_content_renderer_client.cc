@@ -466,13 +466,11 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   render_frame->Send(new ChromeViewHostMsg_GetPluginInfo(
       render_frame->GetRoutingID(), GURL(params.url),
       frame->top()->document().url(), orig_mime_type, &output));
-  *plugin = CreatePlugin(render_frame, frame, params, output);
-  return true;
 #else
   output.status.value = ChromeViewHostMsg_GetPluginInfo_Status::kNotFound;
-  *plugin = NULL;
-  return false;
 #endif
+  *plugin = CreatePlugin(render_frame, frame, params, output);
+  return true;
 }
 
 WebPlugin* ChromeContentRendererClient::CreatePluginReplacement(
