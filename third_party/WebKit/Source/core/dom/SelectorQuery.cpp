@@ -337,6 +337,8 @@ void SelectorDataList::executeQueryAll(Node& rootNode, Vector<RefPtr<Node> >& ma
             for (size_t i = 0; i < count; ++i) {
                 Element* element = elements[i];
                 ASSERT(element);
+                if (!(isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
+                    continue;
                 if (selectorMatches(selector, *element, rootNode))
                     matchedElements.append(element);
             }
@@ -463,6 +465,8 @@ Element* SelectorDataList::executeQueryFirst(Node& rootNode) const
             for (size_t i = 0; i < count; ++i) {
                 Element* element = elements[i];
                 ASSERT(element);
+                if (!(isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
+                    continue;
                 if (selectorMatches(selector, *element, rootNode))
                     return element;
             }
