@@ -9,7 +9,7 @@ import android.view.View;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
-import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.content.browser.test.util.TouchCommon;
 
 /**
  * Utility functions for dealing with InfoBars.
@@ -23,7 +23,7 @@ public class InfoBarUtil {
             InfoBar infoBar, int buttonId, boolean click) {
         View button = infoBar.getContentWrapper().findViewById(buttonId);
         if (button == null) return false;
-        if (click) TestTouchUtils.singleClickView(test.getInstrumentation(), button);
+        if (click) new TouchCommon(test).singleClickView(button);
         return true;
     }
 
