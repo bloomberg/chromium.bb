@@ -1152,6 +1152,9 @@ void RenderBlock::removeChild(RenderObject* oldChild)
 
 bool RenderBlock::isSelfCollapsingBlock() const
 {
+    // FIXME: Add ASSERT(!selfNeedsLayout()) when clearFloatsIfNeeded() and skipLeadingWhitespace() no
+    // longer call here when the block requires layout.
+
     // We are not self-collapsing if we
     // (a) have a non-zero height according to layout (an optimization to avoid wasting time)
     // (b) are a table,
@@ -1184,6 +1187,8 @@ bool RenderBlock::isSelfCollapsingBlock() const
 
         // Whether or not we collapse is dependent on whether all our normal flow children
         // are also self-collapsing.
+        if (m_hasOnlySelfCollapsingChildren)
+            return true;
         for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
             if (child->isFloatingOrOutOfFlowPositioned())
                 continue;

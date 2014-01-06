@@ -382,6 +382,7 @@ private:
     LayoutUnit m_repaintLogicalTop;
     LayoutUnit m_repaintLogicalBottom;
 
+    virtual bool isSelfCollapsingBlock() const OVERRIDE FINAL;
 protected:
     OwnPtr<RenderBlockFlowRareData> m_rareData;
     OwnPtr<FloatingObjects> m_floatingObjects;
