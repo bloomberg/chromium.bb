@@ -73,13 +73,6 @@ class FileSystemDispatcher::CallbackDispatcher {
     dispatcher->error_callback_ = error_callback;
     return dispatcher;
   }
-  static CallbackDispatcher* Create(const OpenFileCallback& callback,
-                                    const StatusCallback& error_callback) {
-    CallbackDispatcher* dispatcher = new CallbackDispatcher;
-    dispatcher->open_callback_ = callback;
-    dispatcher->error_callback_ = error_callback;
-    return dispatcher;
-  }
 
   ~CallbackDispatcher() {}
 
