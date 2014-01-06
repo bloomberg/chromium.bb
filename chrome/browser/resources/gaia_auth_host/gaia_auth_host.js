@@ -354,7 +354,7 @@ cr.define('cr.login', function() {
             history.pushState({src: msg.src}, '', newUrl);
           }
         } else {
-          history.replaceState({src: msg.src}, '', newUrl);
+          history.replaceState({src: msg.src});
         }
         return;
       }

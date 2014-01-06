@@ -94,16 +94,7 @@ Authenticator.prototype = {
 
   /** Callback when all loads in the gaia webview is complete. */
   onWebviewLoadstop_: function(gaiaFrame) {
-    // Report the current state to the parent which will then update the
-    // browser history so that later it could respond properly to back/forward.
-    var msg = {
-      'method': 'reportState',
-      'src': gaiaFrame.src
-    };
-    window.parent.postMessage(msg, this.parentPage_);
-
-    if (gaiaFrame.src.lastIndexOf(
-        this.continueUrlWithoutParams_, 0) == 0) {
+    if (gaiaFrame.src.lastIndexOf(this.continueUrlWithoutParams_, 0) == 0) {
       // Detect when login is finished by the load stop event of the continue
       // URL. Cannot reuse the login complete flow in success.html, because
       // webview does not support extension pages yet.
@@ -116,8 +107,18 @@ Authenticator.prototype = {
         'skipForNow': skipForNow
       };
       window.parent.postMessage(msg, this.parentPage_);
+      // Do no report state to the parent for the continue URL, since it is a
+      // blank page.
       return;
     }
+
+    // Report the current state to the parent which will then update the
+    // browser history so that later it could respond properly to back/forward.
+    var msg = {
+      'method': 'reportState',
+      'src': gaiaFrame.src
+    };
+    window.parent.postMessage(msg, this.parentPage_);
 
     if (gaiaFrame.src.lastIndexOf(this.gaiaUrl_, 0) == 0) {
       gaiaFrame.executeScript({file: 'inline_injected.js'}, function() {
