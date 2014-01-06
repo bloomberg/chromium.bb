@@ -153,8 +153,6 @@
               'dependencies': [
                 # TODO(jschuh) Enable Win64 Memory Watcher. crbug.com/176877
                 '../tools/memory_watcher/memory_watcher.gyp:*',
-                # TODO(jschuh) Enable Win64 Chrome Frame. crbug.com/176875
-                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
               ],
             }],
           ],
@@ -279,7 +277,6 @@
             # defined in installer.gyp.
             '../chrome/installer/mini_installer.gyp:mini_installer',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_unittests',
-            '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             '../courgette/courgette.gyp:courgette_unittests',
             '../sandbox/sandbox.gyp:sbox_integration_tests',
             '../sandbox/sandbox.gyp:sbox_unittests',
@@ -289,14 +286,6 @@
             '../ui/views/views.gyp:views_unittests',
           ],
           'conditions': [
-            ['target_arch=="x64"', {
-              'dependencies!': [
-                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-              ],
-              'defines': [
-                'OMIT_CHROME_FRAME',
-              ],
-            }], # target_arch=="x64"
             # remoting_host_installation uses lots of non-trivial GYP that tend
             # to break because of differences between ninja and msbuild. Make
             # sure this target is built by the builders on the main waterfall.
@@ -820,7 +809,6 @@
             # mini_installer_tests depends on mini_installer. This should be
             # defined in installer.gyp.
             '../chrome/installer/mini_installer.gyp:mini_installer',
-            '../chrome_frame/chrome_frame.gyp:npchrome_frame',
             '../courgette/courgette.gyp:courgette_unittests',
             '../device/device_tests.gyp:device_unittests',
             '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
@@ -844,27 +832,10 @@
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
             '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
           ],
-          'conditions': [
-             ['target_arch=="x64"', {
-               'dependencies!': [
-                 '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-               ],
-               'defines': [
-                 'OMIT_CHROME_FRAME',
-               ],
-             }], # target_arch=="x64"
-          ],
         },
         {
           'target_name': 'chromium_builder_win_cf',
           'type': 'none',
-          'conditions': [
-            ['target_arch!="x64"', {
-              'dependencies': [
-                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-              ],
-            }], # target_arch!="x64"
-          ],
         },
         {
           'target_name': 'chromium_builder_dbg_tsan_win',
@@ -949,7 +920,6 @@
                 ['target_arch=="ia32"', {
                   'dependencies': [
                     '../chrome/chrome.gyp:crash_service_win64',
-                    '../chrome_frame/chrome_frame.gyp:npchrome_frame',
                   ],
                 }],
                 ['component != "shared_library" and wix_exists == "True" and \
@@ -958,11 +928,6 @@
                     '../remoting/remoting.gyp:remoting_host_installation',
                   ],
                 }], # component != "shared_library"
-                ['target_arch=="x64"', {
-                  'defines': [
-                    'OMIT_CHROME_FRAME',
-                  ],
-                }], # target_arch=="x64"
               ]
             },
           ], # targets
@@ -1004,15 +969,6 @@
             ['OS=="win"', {
               'dependencies': [
                 '../chrome/chrome.gyp:crash_service',
-                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-              ],
-            }],
-            ['OS=="win" and target_arch=="x64"', {
-              'dependencies!': [
-                '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-              ],
-              'defines': [
-                'OMIT_CHROME_FRAME',
               ],
             }],
             ['OS=="win" and target_arch=="ia32"', {

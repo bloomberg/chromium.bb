@@ -163,7 +163,6 @@ def main():
       os.path.join(src_dir, 'app'),
       os.path.join(src_dir, 'ash'),
       os.path.join(src_dir, 'chrome'),
-      os.path.join(src_dir, 'chrome_frame'),
       os.path.join(src_dir, 'components'),
       os.path.join(src_dir, 'content'),
       os.path.join(src_dir, 'device'),

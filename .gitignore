@@ -118,9 +118,6 @@ v8.log
 /chrome/tools/memory
 /chrome/tools/test/reference_build
 /chrome/unit_tests_run.xml
-/chrome_frame/chrome_frame_ie.xml
-/chrome_frame/chrome_frame_launcher_version_resources.xml
-/chrome_frame/chrome_frame_version_resources.xml
 /chrome_frame/tools/test/reference_build
 /cloud_print/cloud_print_version_resources.xml
 /components/variations.xml
