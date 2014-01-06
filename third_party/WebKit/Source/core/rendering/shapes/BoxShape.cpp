@@ -85,6 +85,14 @@ void BoxShape::getExcludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHei
         return;
     }
 
+    float topCornerMaxY = std::max<float>(marginBounds.topLeftCorner().maxY(), marginBounds.topRightCorner().maxY());
+    float bottomCornerMinY = std::min<float>(marginBounds.bottomLeftCorner().y(), marginBounds.bottomRightCorner().y());
+
+    if (y1 <= topCornerMaxY && y2 >= bottomCornerMinY) {
+        result.append(LineSegment(rect.x(), rect.maxX()));
+        return;
+    }
+
     float x1 = rect.maxX();
     float x2 = rect.x();
     float minXIntercept;
@@ -110,13 +118,34 @@ void BoxShape::getIncludedIntervals(LayoutUnit logicalTop, LayoutUnit logicalHei
     if (paddingBounds.isEmpty())
         return;
 
+    float y1 = logicalTop;
+    float y2 = logicalTop + logicalHeight;
     const FloatRect& rect = paddingBounds.rect();
-    if (logicalTop < rect.y() || logicalTop + logicalHeight > rect.maxY())
+
+    if (y1 < rect.y() || y2 > rect.maxY())
         return;
 
-    // FIXME: this method is only a stub, https://bugs.webkit.org/show_bug.cgi?id=124605.
+    if (!paddingBounds.isRounded()) {
+        result.append(LineSegment(rect.x(), rect.maxX()));
+        return;
+    }
 
-    result.append(LineSegment(rect.x(), rect.maxX()));
+    float x1 = rect.x();
+    float x2 = rect.maxX();
+    float minXIntercept;
+    float maxXIntercept;
+
+    if (paddingBounds.xInterceptsAtY(y1, minXIntercept, maxXIntercept)) {
+        x1 = std::max<float>(x1, minXIntercept);
+        x2 = std::min<float>(x2, maxXIntercept);
+    }
+
+    if (paddingBounds.xInterceptsAtY(y2, minXIntercept, maxXIntercept)) {
+        x1 = std::max<float>(x1, minXIntercept);
+        x2 = std::min<float>(x2, maxXIntercept);
+    }
+
+    result.append(LineSegment(x1, x2));
 }
 
 bool BoxShape::firstIncludedIntervalLogicalTop(LayoutUnit minLogicalIntervalTop, const LayoutSize&, LayoutUnit& result) const
