@@ -258,7 +258,7 @@ WalletClient::WalletClient(net::URLRequestContextGetter* context_getter,
       delegate_(delegate),
       user_index_(0U),
       source_url_(source_url),
-      request_type_(NO_PENDING_REQUEST),
+      request_type_(NO_REQUEST),
       one_time_pad_(kOneTimePadLength),
       weak_ptr_factory_(this) {
   DCHECK(context_getter_.get());
@@ -476,16 +476,13 @@ bool WalletClient::HasRequestInProgress() const {
   return request_;
 }
 
-void WalletClient::CancelRequests() {
+void WalletClient::CancelRequest() {
   request_.reset();
-  request_type_ = NO_PENDING_REQUEST;
-  while (!pending_requests_.empty()) {
-    pending_requests_.pop();
-  }
+  request_type_ = NO_REQUEST;
 }
 
 void WalletClient::SetUserIndex(size_t user_index) {
-  CancelRequests();
+  CancelRequest();
   user_index_ = user_index;
 }
 
@@ -518,17 +515,7 @@ void WalletClient::MakeWalletRequest(const GURL& url,
                                      const std::string& post_body,
                                      const std::string& mime_type,
                                      RequestType request_type) {
-  if (HasRequestInProgress()) {
-    pending_requests_.push(base::Bind(&WalletClient::MakeWalletRequest,
-                                      base::Unretained(this),
-                                      url,
-                                      post_body,
-                                      mime_type,
-                                      request_type));
-    return;
-  }
-
-  DCHECK_EQ(request_type_, NO_PENDING_REQUEST);
+  DCHECK_EQ(request_type_, NO_REQUEST);
   request_type_ = request_type;
 
   request_.reset(net::URLFetcher::Create(
@@ -563,14 +550,6 @@ void WalletClient::OnURLFetchComplete(
   // |method, but should be freed once control leaves the method.
   scoped_ptr<net::URLFetcher> scoped_request(request_.Pass());
 
-  // Prepare to start the next pending request.  This is queued up as an
-  // asynchronous message because |this| WalletClient instance can be destroyed
-  // before the end of the method in response to the current incoming request.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&WalletClient::StartNextPendingRequest,
-                 weak_ptr_factory_.GetWeakPtr()));;
-
   std::string data;
   source->GetResponseAsString(&data);
   DVLOG(1) << "Response body: " << data;
@@ -583,7 +562,7 @@ void WalletClient::OnURLFetchComplete(
   switch (response_code) {
     // HTTP_BAD_REQUEST means the arguments are invalid. No point retrying.
     case net::HTTP_BAD_REQUEST: {
-      request_type_ = NO_PENDING_REQUEST;
+      request_type_ = NO_REQUEST;
       HandleWalletError(BAD_REQUEST);
       return;
     }
@@ -598,7 +577,7 @@ void WalletClient::OnURLFetchComplete(
             static_cast<base::DictionaryValue*>(message_value.release()));
       }
       if (response_code == net::HTTP_INTERNAL_SERVER_ERROR) {
-        request_type_ = NO_PENDING_REQUEST;
+        request_type_ = NO_REQUEST;
 
         std::string error_type_string;
         if (!response_dict->GetString(kErrorTypeKey, &error_type_string)) {
@@ -627,13 +606,13 @@ void WalletClient::OnURLFetchComplete(
 
     // Anything else is an error.
     default:
-      request_type_ = NO_PENDING_REQUEST;
+      request_type_ = NO_REQUEST;
       HandleWalletError(NETWORK_ERROR);
       return;
   }
 
   RequestType type = request_type_;
-  request_type_ = NO_PENDING_REQUEST;
+  request_type_ = NO_REQUEST;
 
   if (type != ACCEPT_LEGAL_DOCUMENTS && !response_dict) {
     HandleMalformedResponse(type, scoped_request.get());
@@ -708,18 +687,9 @@ void WalletClient::OnURLFetchComplete(
       break;
     }
 
-    case NO_PENDING_REQUEST:
+    case NO_REQUEST:
       NOTREACHED();
   }
-}
-
-void WalletClient::StartNextPendingRequest() {
-  if (pending_requests_.empty())
-    return;
-
-  base::Closure next_request = pending_requests_.front();
-  pending_requests_.pop();
-  next_request.Run();
 }
 
 void WalletClient::HandleMalformedResponse(RequestType request_type,
@@ -802,7 +772,7 @@ AutofillMetrics::WalletApiCallMetric WalletClient::RequestTypeToUmaMetric(
       return AutofillMetrics::GET_WALLET_ITEMS;
     case SAVE_TO_WALLET:
       return AutofillMetrics::SAVE_TO_WALLET;
-    case NO_PENDING_REQUEST:
+    case NO_REQUEST:
       NOTREACHED();
       return AutofillMetrics::UNKNOWN_API_CALL;
   }

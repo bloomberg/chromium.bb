@@ -178,8 +178,8 @@ class WalletClient : public net::URLFetcherDelegate {
 
   bool HasRequestInProgress() const;
 
-  // Cancels and clears the current |request_| and |pending_requests_| (if any).
-  void CancelRequests();
+  // Cancels and clears the current |request_|.
+  void CancelRequest();
 
   // Sets the user index and cancels any pending requests.
   void SetUserIndex(size_t user_index);
@@ -190,7 +190,7 @@ class WalletClient : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(WalletClientTest, CancelRequests);
 
   enum RequestType {
-    NO_PENDING_REQUEST,
+    NO_REQUEST,
     ACCEPT_LEGAL_DOCUMENTS,
     AUTHENTICATE_INSTRUMENT,
     GET_FULL_WALLET,
@@ -215,9 +215,6 @@ class WalletClient : public net::URLFetcherDelegate {
                                net::URLFetcher* request);
   void HandleNetworkError(int response_code);
   void HandleWalletError(ErrorType error_type);
-
-  // Start the next pending request (if any).
-  void StartNextPendingRequest();
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
@@ -248,15 +245,12 @@ class WalletClient : public net::URLFetcherDelegate {
   // The current request object.
   scoped_ptr<net::URLFetcher> request_;
 
-  // The type of the current request. Must be NO_PENDING_REQUEST for a request
+  // The type of the current request. Must be NO_REQUEST for a request
   // to be initiated as only one request may be running at a given time.
   RequestType request_type_;
 
   // The one time pad used for GetFullWallet encryption.
   std::vector<uint8> one_time_pad_;
-
-  // Requests that are waiting to be run.
-  std::queue<base::Closure> pending_requests_;
 
   // When the current request started. Used to track client side latency.
   base::Time request_started_timestamp_;

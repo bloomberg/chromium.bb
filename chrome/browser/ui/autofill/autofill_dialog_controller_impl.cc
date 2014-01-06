@@ -883,7 +883,7 @@ void AutofillDialogControllerImpl::GetWalletItems() {
 
   wallet_items_requested_ = true;
   wallet::WalletClient* wallet_client = GetWalletClient();
-  wallet_client->CancelRequests();
+  wallet_client->CancelRequest();
 
   previously_selected_instrument_id_.clear();
   previously_selected_shipping_address_id_.clear();
@@ -2429,7 +2429,7 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
   wallet::WalletClient* client = GetWalletClient();
 
   if (is_submitting_)
-    client->CancelRequests();
+    client->CancelRequest();
 
   SetIsSubmitting(false);
 
@@ -2633,7 +2633,7 @@ bool AutofillDialogControllerImpl::IsManuallyEditingSection(
 
 void AutofillDialogControllerImpl::OnWalletSigninError() {
   account_chooser_model_->SetHadWalletSigninError();
-  GetWalletClient()->CancelRequests();
+  GetWalletClient()->CancelRequest();
   LogDialogLatencyToShow();
 }
 
@@ -2642,7 +2642,7 @@ void AutofillDialogControllerImpl::DisableWallet(
   signin_helper_.reset();
   wallet_items_.reset();
   wallet_errors_.clear();
-  GetWalletClient()->CancelRequests();
+  GetWalletClient()->CancelRequest();
   SetIsSubmitting(false);
   wallet_error_notification_ = GetWalletError(error_type);
   account_chooser_model_->SetHadWalletError();

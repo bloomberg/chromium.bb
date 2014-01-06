@@ -1702,25 +1702,11 @@ TEST_F(WalletClientTest, HasRequestInProgress) {
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
 }
 
-TEST_F(WalletClientTest, PendingRequest) {
-  EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
-
-  // Shouldn't queue the first request.
+TEST_F(WalletClientTest, ErrorResponse) {
+  EXPECT_FALSE(wallet_client_->HasRequestInProgress());
   delegate_.ExpectBaselineMetrics();
   wallet_client_->GetWalletItems();
-  EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
-  testing::Mock::VerifyAndClear(delegate_.metric_logger());
-
-  wallet_client_->GetWalletItems();
-  EXPECT_EQ(1U, wallet_client_->pending_requests_.size());
-
-  delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
-                                           1);
-  delegate_.ExpectBaselineMetrics();
-  VerifyAndFinishRequest(net::HTTP_OK,
-                         kGetWalletItemsValidRequest,
-                         kGetWalletItemsValidResponse);
-  EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
+  EXPECT_TRUE(wallet_client_->HasRequestInProgress());
   testing::Mock::VerifyAndClear(delegate_.metric_logger());
 
   EXPECT_CALL(delegate_, OnWalletError(
@@ -1730,25 +1716,20 @@ TEST_F(WalletClientTest, PendingRequest) {
   delegate_.ExpectWalletErrorMetric(
       AutofillMetrics::WALLET_SERVICE_UNAVAILABLE);
 
-  // Finish the second request.
   VerifyAndFinishRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                          kGetWalletItemsValidRequest,
                          kErrorResponse);
 }
 
-TEST_F(WalletClientTest, CancelRequests) {
-  ASSERT_EQ(0U, wallet_client_->pending_requests_.size());
+TEST_F(WalletClientTest, CancelRequest) {
+  EXPECT_FALSE(wallet_client_->HasRequestInProgress());
   delegate_.ExpectLogWalletApiCallDuration(AutofillMetrics::GET_WALLET_ITEMS,
                                            0);
   delegate_.ExpectBaselineMetrics();
 
   wallet_client_->GetWalletItems();
-  wallet_client_->GetWalletItems();
-  wallet_client_->GetWalletItems();
-  EXPECT_EQ(2U, wallet_client_->pending_requests_.size());
-
-  wallet_client_->CancelRequests();
-  EXPECT_EQ(0U, wallet_client_->pending_requests_.size());
+  EXPECT_TRUE(wallet_client_->HasRequestInProgress());
+  wallet_client_->CancelRequest();
   EXPECT_FALSE(wallet_client_->HasRequestInProgress());
 }
 
