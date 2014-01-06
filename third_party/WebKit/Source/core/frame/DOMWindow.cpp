@@ -1069,6 +1069,10 @@ bool DOMWindow::find(const String& string, bool caseSensitive, bool backwards, b
     if (!isCurrentlyDisplayedInFrame())
         return false;
 
+    // |m_frame| can be destructed during |Editor::findString()| via
+    // |Document::updateLayou()|, e.g. event handler removes a frame.
+    RefPtr<Frame> protectFrame(m_frame);
+
     // FIXME (13016): Support wholeWord, searchInFrames and showDialog
     return m_frame->editor().findString(string, !backwards, caseSensitive, wrap, false);
 }

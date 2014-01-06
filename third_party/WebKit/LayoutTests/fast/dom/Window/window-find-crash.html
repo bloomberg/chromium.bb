@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+
+function find() {
+  document.getElementById('find').contentWindow.find('g', false, true, true);
+}
+
+function pass() {
+  document.write('PASS; NOT CRASHED');
+}
+</script>
+<iframe id="find"></iframe>
+<input autofocus onfocusin="pass()">
+<iframe onbeforeload="find()"></iframe>
