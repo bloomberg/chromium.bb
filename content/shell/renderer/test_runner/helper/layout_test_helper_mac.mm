@@ -57,7 +57,7 @@ void InstallLayoutTestColorProfile() {
   // This causes a change the user can see.
 
   CFUUIDRef main_display_id =
-      CGDisplayCreateUUIDFromDisplayID(CGmain_display_id());
+      CGDisplayCreateUUIDFromDisplayID(CGMainDisplayID());
 
   if (!user_color_profile_url) {
     CFDictionaryRef device_info = ColorSyncDeviceCopyDeviceInfo(
