@@ -271,7 +271,7 @@ void DocumentLoader::notifyFinished(Resource* resource)
 
 void DocumentLoader::finishedLoading(double finishTime)
 {
-    ASSERT(!m_frame->page()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
+    ASSERT(!mainResourceLoader() || !mainResourceLoader()->defersLoading() || InspectorInstrumentation::isDebuggerPaused(m_frame));
 
     RefPtr<DocumentLoader> protect(this);
 
