@@ -31,9 +31,9 @@ INITIAL_ENV = {
   'BUILD_ARCH'      : '${@GetBuildArch}',      # "x86_64" or "i686" or "i386"
 
   # Directories
-  'BASE_HOST'       : '${BASE}/host_${HOST_ARCH}',
-  'BASE_LLVM'       : '${BASE_HOST}',
-  'BASE_BINUTILS'   : '${BASE_HOST}',
+  'BPREFIXES'       : '', # Prefixes specified using the -B flag.
+  'BASE_LLVM'       : '${@FindBaseHost:clang}',
+  'BASE_BINUTILS'   : '${@FindBaseHost:le32-nacl-ar}',
 
   'BASE_LIB_NATIVE' : '${BASE}/lib-',
 

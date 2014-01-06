@@ -12,6 +12,7 @@ import unittest
 
 import driver_env
 import driver_log
+import driver_tools
 
 def CanRunHost():
   # Some of the test+tools require running the host binaries, but that
@@ -32,7 +33,8 @@ def _SetupLinuxHostDir(env, nacl_dir):
                               'host_%s')
   dir_32 = dir_template % 'x86_32'
   dir_64 = dir_template % 'x86_64'
-  env.set('BASE_HOST', dir_32 if os.path.exists(dir_32) else dir_64)
+  driver_tools.AddHostBinarySearchPath(
+    dir_32 if os.path.exists(dir_32) else dir_64)
 
 def SetupNaClDir(env):
   test_dir = os.path.abspath(dirname(__file__))
@@ -46,8 +48,9 @@ def SetupToolchainDir(env):
   env.set('BASE_TOOLCHAIN', toolchain_dir)
 
 def SetupHostDir(env):
-  # Some of the tools require 'BASE_HOST' to be set, because they end up
-  # running one of the host binaries.
+  # Some of the tools end up running one of the host binaries. Find the host
+  # dir on the test system and inject it into the search path using the
+  # implementation of -B
   test_dir = os.path.abspath(dirname(__file__))
   nacl_dir = dirname(dirname(dirname(test_dir)))
   if sys.platform == 'darwin':
@@ -62,7 +65,7 @@ def SetupHostDir(env):
   host_dir = os.path.join(nacl_dir, 'toolchain',
                           'pnacl_%s_x86' % os_shortname,
                           'host_%s' % host_arch)
-  env.set('BASE_HOST', host_dir)
+  driver_tools.AddHostBinarySearchPath(host_dir)
 
 # A collection of override methods that mock driver_env.Environment.
 

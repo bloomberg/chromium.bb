@@ -191,6 +191,28 @@ def FindBasePNaCl():
   basedir = pathtools.dirname(bindir)
   return shell.escape(basedir)
 
+def AddHostBinarySearchPath(prefix):
+  """ Add a path to the list searched for host binaries. """
+  prefix = pathtools.normalize(prefix)
+  if pathtools.isdir(prefix) and not prefix.endswith('/'):
+    prefix += '/'
+
+  env.append('BPREFIXES', prefix)
+
+@env.register
+def FindBaseHost(tool):
+  """ Find the base directory for host binaries (i.e. llvm/binutils) """
+  if env.has('BPREFIXES'):
+    for prefix in env.get('BPREFIXES'):
+      if os.path.exists(pathtools.join(prefix, 'bin', tool)):
+        return prefix
+
+  base_pnacl = FindBasePNaCl()
+  base_host = pathtools.join(base_pnacl, 'host_' + env.getone('HOST_ARCH'))
+  if not pathtools.exists(pathtools.join(base_host, 'bin', tool)):
+    Log.Fatal('Could not find PNaCl host directory for ' + tool)
+  return base_host
+
 def ReadConfig():
   # Mock out ReadConfig if running unittests.  Settings are applied directly
   # by DriverTestEnv rather than reading this configuration file.
@@ -226,7 +248,7 @@ def AddPrefix(prefix, varname):
 ######################################################################
 
 DriverArgPatterns = [
-  ( '--pnacl-driver-verbose',             "env.set('LOG_VERBOSE', '1')"),
+  ( '--pnacl-driver-verbose',          "env.set('LOG_VERBOSE', '1')"),
   ( ('-arch', '(.+)'),                 "SetArch($0)"),
   ( '--pnacl-sb',                      "env.set('SANDBOXED', '1')"),
   ( '--pnacl-use-emulator',            "env.set('USE_EMULATOR', '1')"),
@@ -239,6 +261,7 @@ DriverArgPatterns = [
   ( '--pnacl-default-command-line',    "env.set('USE_DEFAULT_CMD_LINE', '1')"),
   ( '-save-temps',                     "env.set('SAVE_TEMPS', '1')"),
   ( '-no-save-temps',                  "env.set('SAVE_TEMPS', '0')"),
+  ( ('-B', '(.*)'),  AddHostBinarySearchPath),
  ]
 
 DriverArgPatternsNotInherited = [

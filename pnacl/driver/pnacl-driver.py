@@ -120,9 +120,7 @@ EXTRA_ENV = {
                '${PIC ? -fPIC} ${@AddPrefix:-L:SEARCH_DIRS} ' +
                '--pnacl-exceptions=${CXX_EH_MODE}',
 
-  'SEARCH_DIRS'      : '${SEARCH_DIRS_USER} ${PREFIXES}',
-  'SEARCH_DIRS_USER' : '', # Directories specified using -L
-  'PREFIXES'         : '', # Prefixes specified by using the -B flag.
+  'SEARCH_DIRS' : '', # Directories specified using -L
 
   # Library Strings
   'EMITMODE'         : '${!USE_STDLIB ? nostdlib : static}',
@@ -183,18 +181,6 @@ def AddDiagnosticFlag(*args):
   env.append('CC_FLAGS', *args)
   env.set('DIAGNOSTIC', '1')
 
-def AddBPrefix(prefix):
-  prefix = pathtools.normalize(prefix)
-  if pathtools.isdir(prefix) and not prefix.endswith('/'):
-    prefix += '/'
-
-  env.append('PREFIXES', prefix)
-
-  # Add prefix/include to isystem if it exists
-  include_dir = prefix + 'include'
-  if pathtools.isdir(include_dir):
-    env.append('ISYSTEM_USER', include_dir)
-
 def SetTarget(*args):
   arch = ParseTriple(args[0])
   env.set('FRONTEND_TRIPLE', args[0])
@@ -244,6 +230,22 @@ def HandleDashX(arg):
     filetype.SetForcedFileType(None)
     return
   filetype.SetForcedFileType(filetype.GCCTypeToFileType(arg))
+
+def AddBPrefix(prefix):
+  """ Add a path to the list searched for host binaries and include dirs. """
+  AddHostBinarySearchPath(prefix)
+  prefix = pathtools.normalize(prefix)
+  if pathtools.isdir(prefix) and not prefix.endswith('/'):
+    prefix += '/'
+
+  # Add prefix/ to the library search dir if it exists
+  if pathtools.isdir(prefix):
+    env.append('SEARCH_DIRS', prefix)
+
+  # Add prefix/include to isystem if it exists
+  include_dir = prefix + 'include'
+  if pathtools.isdir(include_dir):
+    env.append('ISYSTEM_USER', include_dir)
 
 CustomPatterns = [
   ( '--driver=(.+)',                "env.set('CC', pathtools.normalize($0))\n"),
@@ -351,8 +353,8 @@ GCCPatterns = [
   ( ('-B','(.*)'),            AddBPrefix),
   ( ('-B(.+)'),               AddBPrefix),
 
-  ( ('-L','(.+)'), "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
-  ( '-L(.+)',      "env.append('SEARCH_DIRS_USER', pathtools.normalize($0))"),
+  ( ('-L','(.+)'), "env.append('SEARCH_DIRS', pathtools.normalize($0))"),
+  ( '-L(.+)',      "env.append('SEARCH_DIRS', pathtools.normalize($0))"),
 
   ( '(-Wp,.*)', AddCCFlag),
   ( '(-Xpreprocessor .*)', AddCCFlag),
