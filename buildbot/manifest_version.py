@@ -309,9 +309,13 @@ class BuilderStatus(object):
   STATUS_INFLIGHT = 'inflight'
   COMPLETED_STATUSES = (STATUS_PASSED, STATUS_FAILED)
 
-  def __init__(self, status, message):
+  # TODO(akeshet): dashboard_url is not currently used,
+  # it is being added to the constructor as a temporary measure
+  # to allow the commit queue to run.
+  def __init__(self, status, message, dashboard_url=None):
     self.status = status
     self.message = message
+    self.dashboard_url = dashboard_url
 
   # Helper methods to make checking the status object easy.
 
