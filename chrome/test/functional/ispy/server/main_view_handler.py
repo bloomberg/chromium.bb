@@ -11,8 +11,9 @@ import re
 import sys
 import webapp2
 
-from ..common import constants
-from ..common import ispy_utils
+from common import chrome_utils
+from common import constants
+from common import ispy_utils
 
 import gs_bucket
 import views
@@ -67,19 +68,19 @@ class MainViewHandler(webapp2.RequestHandler):
     """
     paths = set([path for path in ispy.GetAllPaths('failures/' + test_run)
                  if path.endswith('actual.png')])
+    can_rebaseline = chrome_utils.ChromeUtils(
+        ispy.cloud_bucket).CanRebaselineToTestRun(test_run)
     rows = [self._CreateRow(test_run, path, ispy) for path in paths]
-    if rows:
-      # Function that sorts by the different_pixels field in the failure-info.
-      def _Sorter(a, b):
-        return cmp(b['percent_different'],
-                   a['percent_different'])
-      template = JINJA.get_template('main_view.html')
-      self.response.write(
-          template.render({'comparisons': sorted(rows, _Sorter),
-                           'test_run': test_run}))
-    else:
-      template = JINJA.get_template('empty_view.html')
-      self.response.write(template.render())
+
+    # Function that sorts by the different_pixels field in the failure-info.
+    def _Sorter(a, b):
+      return cmp(b['percent_different'],
+                 a['percent_different'])
+    template = JINJA.get_template('main_view.html')
+    self.response.write(
+        template.render({'comparisons': sorted(rows, _Sorter),
+                         'test_run': test_run,
+                         'can_rebaseline': can_rebaseline}))
 
   def _CreateRow(self, test_run, path, ispy):
     """Creates one failure-row.

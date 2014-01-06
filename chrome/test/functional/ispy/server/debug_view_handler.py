@@ -9,7 +9,7 @@ import os
 import sys
 import webapp2
 
-from ..common import ispy_utils
+from common import ispy_utils
 
 import views
 
