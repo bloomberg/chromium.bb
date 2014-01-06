@@ -8,7 +8,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {

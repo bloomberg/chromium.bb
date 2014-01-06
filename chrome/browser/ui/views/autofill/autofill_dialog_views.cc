@@ -1924,10 +1924,9 @@ void AutofillDialogViews::CreateDetailsSection(DialogSection section) {
 
   DetailsGroup* group = GroupForSection(section);
   // Container (holds label + inputs).
-  group->container = new SectionContainer(
-      delegate_->LabelForSection(section),
-      inputs_container,
-      group->suggested_button);
+  group->container = new SectionContainer(delegate_->LabelForSection(section),
+                                          inputs_container,
+                                          group->suggested_button);
   DCHECK(group->suggested_button->parent());
   UpdateDetailsGroupState(*group);
 }

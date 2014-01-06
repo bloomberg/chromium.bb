@@ -149,7 +149,6 @@ class AutofillDialogViewDelegate {
                                         ServerFieldType type,
                                         const base::string16& value) = 0;
 
-
   // Decides whether the combination of all |inputs| is valid, returns a
   // map of field types to validity messages.
   virtual ValidityMessages InputsAreValid(DialogSection section,

@@ -615,8 +615,7 @@ void AutofillDialogControllerImpl::Show() {
   // Test whether we need to show the shipping section. If filling that section
   // would be a no-op, don't show it.
   const DetailInputs& inputs = RequestedFieldsForSection(SECTION_SHIPPING);
-  EmptyDataModelWrapper empty_wrapper;
-  cares_about_shipping_ = empty_wrapper.FillFormStructure(
+  cares_about_shipping_ = EmptyDataModelWrapper().FillFormStructure(
       inputs,
       base::Bind(common::DetailInputMatchesField, SECTION_SHIPPING),
       &form_structure_);
@@ -2759,7 +2758,6 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     std::vector<base::string16> labels;
     AutofillProfile::CreateDifferentiatingLabels(profiles, &labels);
     DCHECK_EQ(labels.size(), profiles.size());
-    const std::string app_locale = g_browser_process->GetApplicationLocale();
     for (size_t i = 0; i < profiles.size(); ++i) {
       const AutofillProfile& profile = *profiles[i];
       if (!HasCompleteAndVerifiedData(profile, requested_shipping_fields_) ||
@@ -2845,11 +2843,10 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     DialogSection section,
     const InputFieldComparator& compare) {
-  const DetailInputs& inputs = RequestedFieldsForSection(section);
-
   if (!SectionIsActive(section))
     return;
 
+  const DetailInputs& inputs = RequestedFieldsForSection(section);
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   if (wrapper) {
     // Only fill in data that is associated with this section.
