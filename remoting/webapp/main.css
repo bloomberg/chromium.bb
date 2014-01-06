@@ -278,7 +278,7 @@ section h2 {
 }
 
 header {
-  display: -webkit-flex;
+  display: flex;
   width: 100%;
 }
 
@@ -310,7 +310,7 @@ section {
 }
 
 .box-spacer {
-  -webkit-flex: 1;
+  flex: 1;
 }
 
 .centered {
@@ -318,9 +318,9 @@ section {
 }
 
 .button-row {
-  display: -webkit-flex;
-  -webkit-flex-direction: row;
-  -webkit-justify-content: flex-end;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
   margin-top: 20px;
 }
 
@@ -337,7 +337,7 @@ section {
 }
 
 .box {
-  display: -webkit-flex;
+  display: flex;
 }
 
 .host-list-empty-instructions {
@@ -361,7 +361,7 @@ section {
 }
 
 .section-row {
-  display: -webkit-flex;
+  display: flex;
   -webkit-align-items: center;
   padding: 10px 0;
   border-top: 1px solid #EBEBEB;
@@ -445,8 +445,8 @@ section {
 #butter-bar > p {
   background-color: #f9edbe;
   border: 1px solid #f0c36d;
-  -webkit-border-radius: 2px;
-  -webkit-box-shadow: 0px 2px 4px rgba(0,0,0,0.2);
+  border-radius: 2px;
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.2);
   color: #222;
   font-size: 12px;
   padding: 4px 16px;
@@ -617,7 +617,7 @@ button {
   top: 200px;
   left: 0;
   width: 100%;
-  display: -webkit-flex;
+  display: flex;
 }
 
 .dialog-screen {
@@ -679,7 +679,7 @@ html.apps-v2.scrollable {
 
 .session-client-inactive {
   -webkit-filter: grayscale(70%);
-  -webkit-transition: -webkit-filter 0.218s;
+  transition: -webkit-filter 0.218s;
 }
 
 #set-pin-table td {
@@ -711,11 +711,11 @@ html.apps-v2.scrollable {
 }
 
 .horizontally-centered {
-  display: -webkit-flex;
+  display: flex;
 }
 
 .vertically-centered {
-  display: -webkit-flex;
+  display: flex;
   flex-direction: column;
   height: 100%
 }
@@ -725,7 +725,7 @@ html.apps-v2.scrollable {
 .vertically-centered::before,
 .vertically-centered::after {
   content: "";
-  -webkit-flex: 1;
+  flex: 1;
 }
 
 /* Bump-scrolling is currently implemented by adjusting the margins, which is
