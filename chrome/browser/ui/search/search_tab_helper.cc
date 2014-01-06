@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/search_ipc_router_policy_impl.h"
+#include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_utils.h"
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
@@ -122,6 +123,19 @@ void UpdateLocationBar(content::WebContents* contents) {
     return;
   browser->OnWebContentsInstantSupportDisabled(contents);
 #endif
+}
+
+// Called when an NTP finishes loading. If the load start time was noted,
+// calculates and logs the total load time.
+void RecordNewTabLoadTime(content::WebContents* contents) {
+  CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(contents);
+  if (core_tab_helper->new_tab_start_time().is_null())
+    return;
+
+  base::TimeDelta duration =
+      base::TimeTicks::Now() - core_tab_helper->new_tab_start_time();
+  UMA_HISTOGRAM_TIMES("Tab.NewTabOnload", duration);
+  core_tab_helper->set_new_tab_start_time(base::TimeTicks());
 }
 
 }  // namespace
@@ -294,8 +308,12 @@ void SearchTabHelper::DidFinishLoad(
     const GURL&  /* validated_url */,
     bool is_main_frame,
     content::RenderViewHost* /* render_view_host */) {
-  if (is_main_frame)
+  if (is_main_frame) {
+    if (chrome::IsInstantNTP(web_contents_))
+      RecordNewTabLoadTime(web_contents_);
+
     DetermineIfPageSupportsInstant();
+  }
 }
 
 void SearchTabHelper::NavigationEntryCommitted(
