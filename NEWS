@@ -1,6 +1,6 @@
 liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 
-* Noteworthy changes in release 2.5.4 (2013-?-??)
+* Noteworthy changes in release 2.5.4 (2014-1-17)
 ** Bug Fixes
    - Fixed ENDSEGMENT indicator in computer Braille thanks to John
      Boyer.
@@ -41,6 +41,13 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
    - en-gb-g1.utb: Fixes thanks to Paul Wood
    - Fix for the lich sign in the German tables. Thanks to Halim
      Sahin.
+   - Spaces in nemethdefs.cti were changed to unbreakable spaces. This
+     was done so that nemeth expressions would not be broken between
+     lines. Thanks to John Boyer.
+   - The Esperanto table has additional punctuation characters and a
+     test harness. Thanks to Aaron Cannon.
+   - Added missing symbols to the US English BRF display table. Thanks
+     to Aaron Cannon. 
 
 ** Backwards incompatible changes
    - Delete the table chardefs-ueb.cti as these rules are now
