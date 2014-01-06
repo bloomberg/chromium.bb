@@ -10,7 +10,7 @@
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/observer_list.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/vector2d_f.h"
 
 namespace ui {
@@ -18,7 +18,7 @@ namespace ui {
 class WindowAndroidObserver;
 
 // Android implementation of the activity window.
-class UI_EXPORT WindowAndroid {
+class UI_BASE_EXPORT WindowAndroid {
  public:
   WindowAndroid(JNIEnv* env, jobject obj);
 

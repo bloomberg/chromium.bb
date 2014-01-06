@@ -6,12 +6,12 @@
 #define UI_BASE_ACCELERATORS_PLATFORM_ACCELERATOR_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
 // Abstract base class for platform specific accelerator keys.
-class UI_EXPORT PlatformAccelerator {
+class UI_BASE_EXPORT PlatformAccelerator {
  public:
   virtual ~PlatformAccelerator() {}
 

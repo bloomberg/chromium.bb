@@ -14,7 +14,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
@@ -25,7 +25,7 @@ namespace ui {
 // The selection owner object keeps track of which xwindow is the current
 // owner, and when its |xwindow_|, offers different data types to other
 // processes.
-class UI_EXPORT SelectionOwner {
+class UI_BASE_EXPORT SelectionOwner {
  public:
   SelectionOwner(Display* xdisplay,
                  ::Window xwindow,

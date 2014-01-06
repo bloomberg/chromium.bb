@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace gfx {
 class ImageSkia;
@@ -31,7 +31,7 @@ class TreeModelNode {
 };
 
 // Observer for the TreeModel. Notified of significant events to the model.
-class UI_EXPORT TreeModelObserver {
+class UI_BASE_EXPORT TreeModelObserver {
  public:
   // Notification that nodes were added to the specified parent.
   virtual void TreeNodesAdded(TreeModel* model,
@@ -55,7 +55,7 @@ class UI_EXPORT TreeModelObserver {
 // TreeModel ------------------------------------------------------------------
 
 // The model for TreeView.
-class UI_EXPORT TreeModel {
+class UI_BASE_EXPORT TreeModel {
  public:
   // Returns the root of the tree. This may or may not be shown in the tree,
   // see SetRootShown for details.

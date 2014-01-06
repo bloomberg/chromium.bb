@@ -11,7 +11,7 @@
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 
@@ -22,7 +22,7 @@ class Rect;
 namespace ui {
 
 // An interface implemented by a View that needs text input support.
-class UI_EXPORT TextInputClient {
+class UI_BASE_EXPORT TextInputClient {
  public:
   virtual ~TextInputClient();
 

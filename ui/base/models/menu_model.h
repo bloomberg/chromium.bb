@@ -8,7 +8,7 @@
 #include "base/strings/string16.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/base/models/menu_separator_types.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -23,7 +23,7 @@ class Accelerator;
 class ButtonMenuItemModel;
 
 // An interface implemented by an object that provides the content of a menu.
-class UI_EXPORT MenuModel {
+class UI_BASE_EXPORT MenuModel {
  public:
   // The type of item.
   enum ItemType {

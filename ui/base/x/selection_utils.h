@@ -15,7 +15,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted_memory.h"
 #include "ui/base/clipboard/clipboard.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
@@ -28,30 +28,32 @@ extern const char kText[];
 extern const char kUtf8String[];
 
 // Returns a list of all text atoms that we handle.
-UI_EXPORT std::vector< ::Atom> GetTextAtomsFrom(const X11AtomCache* atom_cache);
+UI_BASE_EXPORT std::vector< ::Atom> GetTextAtomsFrom(
+    const X11AtomCache* atom_cache);
 
-UI_EXPORT std::vector< ::Atom> GetURLAtomsFrom(const X11AtomCache* atom_cache);
+UI_BASE_EXPORT std::vector< ::Atom> GetURLAtomsFrom(
+    const X11AtomCache* atom_cache);
 
 // Places the intersection of |desired| and |offered| into |output|.
-UI_EXPORT void GetAtomIntersection(const std::vector< ::Atom>& desired,
+UI_BASE_EXPORT void GetAtomIntersection(const std::vector< ::Atom>& desired,
                                    const std::vector< ::Atom>& offered,
                                    std::vector< ::Atom>* output);
 
 // Takes the raw bytes of the base::string16 and copies them into |bytes|.
-UI_EXPORT void AddString16ToVector(const base::string16& str,
+UI_BASE_EXPORT void AddString16ToVector(const base::string16& str,
                                    std::vector<unsigned char>* bytes);
 
-UI_EXPORT std::string RefCountedMemoryToString(
+UI_BASE_EXPORT std::string RefCountedMemoryToString(
     const scoped_refptr<base::RefCountedMemory>& memory);
 
-UI_EXPORT base::string16 RefCountedMemoryToString16(
+UI_BASE_EXPORT base::string16 RefCountedMemoryToString16(
     const scoped_refptr<base::RefCountedMemory>& memory);
 
 ///////////////////////////////////////////////////////////////////////////////
 
 // Represents the selection in different data formats. Binary data passed in is
 // assumed to be allocated with new char[], and is owned by SelectionFormatMap.
-class UI_EXPORT SelectionFormatMap {
+class UI_BASE_EXPORT SelectionFormatMap {
  public:
   // Our internal data store, which we only expose through iterators.
   typedef std::map< ::Atom, scoped_refptr<base::RefCountedMemory> > InternalMap;
@@ -85,7 +87,7 @@ class UI_EXPORT SelectionFormatMap {
 ///////////////////////////////////////////////////////////////////////////////
 
 // A holder for data with optional X11 deletion semantics.
-class UI_EXPORT SelectionData {
+class UI_BASE_EXPORT SelectionData {
  public:
   // |atom_cache| is still owned by caller.
   SelectionData();

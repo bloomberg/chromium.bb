@@ -5,14 +5,14 @@
 #ifndef UI_BASE_COCOA_WINDOW_SIZE_CONSTANTS_H_
 #define UI_BASE_COCOA_WINDOW_SIZE_CONSTANTS_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 #import <Foundation/Foundation.h>
 
 namespace ui {
 
 // It is not valid to make a zero-sized window. Use this constant instead.
-UI_EXPORT extern const NSRect kWindowSizeDeterminedLater;
+UI_BASE_EXPORT extern const NSRect kWindowSizeDeterminedLater;
 
 }  // namespace ui
 

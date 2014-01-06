@@ -5,14 +5,14 @@
 #ifndef UI_BASE_WORK_AREA_WATCHER_OBSERVER_H_
 #define UI_BASE_WORK_AREA_WATCHER_OBSERVER_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
 // This interface should be implemented by classes that want to be notified
 // when the work area has changed due to something like screen resolution or
 // taskbar changes.
-class UI_EXPORT WorkAreaWatcherObserver {
+class UI_BASE_EXPORT WorkAreaWatcherObserver {
  public:
   virtual void WorkAreaChanged() = 0;
 

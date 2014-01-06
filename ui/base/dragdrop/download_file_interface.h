@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 #if defined(OS_WIN)
 #include <objidl.h>
@@ -25,7 +25,7 @@ namespace ui {
 // TODO(benjhayden, anybody): Do these need to be RefCountedThreadSafe?
 
 // Defines the interface to observe the status of file download.
-class UI_EXPORT DownloadFileObserver
+class UI_BASE_EXPORT DownloadFileObserver
     : public base::RefCountedThreadSafe<DownloadFileObserver> {
  public:
   virtual void OnDownloadCompleted(const base::FilePath& file_path) = 0;
@@ -37,7 +37,7 @@ class UI_EXPORT DownloadFileObserver
 };
 
 // Defines the interface to control how a file is downloaded.
-class UI_EXPORT DownloadFileProvider
+class UI_BASE_EXPORT DownloadFileProvider
     : public base::RefCountedThreadSafe<DownloadFileProvider> {
  public:
   // Starts the download asynchronously and returns immediately.

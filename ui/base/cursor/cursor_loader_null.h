@@ -7,11 +7,11 @@
 
 #include "base/compiler_specific.h"
 #include "ui/base/cursor/cursor_loader.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
-class UI_EXPORT CursorLoaderNull : public CursorLoader {
+class UI_BASE_EXPORT CursorLoaderNull : public CursorLoader {
  public:
   CursorLoaderNull();
   virtual ~CursorLoaderNull();

@@ -13,11 +13,11 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
-class UI_EXPORT ClipboardUtil {
+class UI_BASE_EXPORT ClipboardUtil {
  public:
   /////////////////////////////////////////////////////////////////////////////
   // These methods check to see if |data_object| has the requested type.

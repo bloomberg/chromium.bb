@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -16,12 +16,12 @@ namespace ui {
 // Simple call to return a byte quantity as a string in human-readable format.
 // Ex: FormatBytes(512) => "512 B"
 // Ex: FormatBytes(101479) => "99.1 kB"
-UI_EXPORT base::string16 FormatBytes(int64 bytes);
+UI_BASE_EXPORT base::string16 FormatBytes(int64 bytes);
 
 // Simple call to return a speed as a string in human-readable format.
 // Ex: FormatSpeed(512) => "512 B/s"
 // Ex: FormatSpeed(101479) => "99.1 kB/s"
-UI_EXPORT base::string16 FormatSpeed(int64 bytes);
+UI_BASE_EXPORT base::string16 FormatSpeed(int64 bytes);
 
 // Less-Simple API -------------------------------------------------------------
 
@@ -37,15 +37,15 @@ enum DataUnits {
 // Return the unit type that is appropriate for displaying the amount of bytes
 // passed in. Most of the time, an explicit call to this isn't necessary; just
 // use FormatBytes()/FormatSpeed() above.
-UI_EXPORT DataUnits GetByteDisplayUnits(int64 bytes);
+UI_BASE_EXPORT DataUnits GetByteDisplayUnits(int64 bytes);
 
 // Return a byte quantity as a string in human-readable format with an optional
 // unit suffix. Specify in the |units| argument the units to be used.
 // Ex: FormatBytes(512, DATA_UNITS_KIBIBYTE, true) => "0.5 kB"
 // Ex: FormatBytes(10*1024, DATA_UNITS_MEBIBYTE, false) => "0.1"
-UI_EXPORT base::string16 FormatBytesWithUnits(int64 bytes,
-                                              DataUnits units,
-                                              bool show_units);
+UI_BASE_EXPORT base::string16 FormatBytesWithUnits(int64 bytes,
+                                                   DataUnits units,
+                                                   bool show_units);
 
 // As above, but with "/s" units for speed values.
 // Ex: FormatSpeed(512, DATA_UNITS_KIBIBYTE, true) => "0.5 kB/s"

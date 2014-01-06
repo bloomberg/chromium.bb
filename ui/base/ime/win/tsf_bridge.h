@@ -5,12 +5,12 @@
 #ifndef UI_BASE_IME_WIN_TSF_BRIDGE_H_
 #define UI_BASE_IME_WIN_TSF_BRIDGE_H_
 
-#include <Windows.h>
 #include <msctf.h>
+#include <windows.h>
 
 #include "base/basictypes.h"
 #include "base/win/scoped_comptr.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 class TextInputClient;
@@ -26,7 +26,7 @@ class TextInputClient;
 // of text inputting and current focused TextInputClient.
 //
 // All methods in this class must be used in UI thread.
-class UI_EXPORT TSFBridge {
+class UI_BASE_EXPORT TSFBridge {
  public:
   virtual ~TSFBridge();
 

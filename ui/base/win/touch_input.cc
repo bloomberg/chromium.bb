@@ -6,10 +6,10 @@
 
 namespace ui {
 
-UI_EXPORT BOOL GetTouchInputInfoWrapper(HTOUCHINPUT handle,
-                                        UINT count,
-                                        PTOUCHINPUT pointer,
-                                        int size) {
+BOOL GetTouchInputInfoWrapper(HTOUCHINPUT handle,
+                              UINT count,
+                              PTOUCHINPUT pointer,
+                              int size) {
   typedef BOOL(WINAPI *GetTouchInputInfoPtr)(HTOUCHINPUT, UINT,
                                              PTOUCHINPUT, int);
   static GetTouchInputInfoPtr get_touch_input_info_func =

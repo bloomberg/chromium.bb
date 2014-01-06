@@ -17,7 +17,7 @@
 namespace ui {
 
 // A common InputMethod implementation shared between IMM32 and TSF.
-class UI_EXPORT InputMethodWin : public InputMethodBase {
+class UI_BASE_EXPORT InputMethodWin : public InputMethodBase {
  public:
   InputMethodWin(internal::InputMethodDelegate* delegate,
                  HWND toplevel_window_handle);

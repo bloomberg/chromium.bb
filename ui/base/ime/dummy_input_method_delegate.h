@@ -8,12 +8,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 namespace internal {
 
-class UI_EXPORT DummyInputMethodDelegate
+class UI_BASE_EXPORT DummyInputMethodDelegate
     : NON_EXPORTED_BASE(public InputMethodDelegate) {
  public:
   DummyInputMethodDelegate();

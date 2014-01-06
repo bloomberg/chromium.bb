@@ -8,10 +8,10 @@
 #import <Cocoa/Cocoa.h>
 
 #import "ui/base/cocoa/tracking_area.h"
-#import "ui/base/ui_export.h"
+#import "ui/base/ui_base_export.h"
 
 // A button that changes when you hover over it and click it.
-UI_EXPORT
+UI_BASE_EXPORT
 @interface HoverButton : NSButton {
  @protected
   // Enumeration of the hover states that the close button can be in at any one

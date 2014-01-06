@@ -26,7 +26,7 @@ class IBusText;
 namespace ui {
 
 // A ui::InputMethod implementation based on IBus.
-class UI_EXPORT InputMethodIBus
+class UI_BASE_EXPORT InputMethodIBus
     : public InputMethodBase,
       public chromeos::IBusInputContextHandlerInterface {
  public:

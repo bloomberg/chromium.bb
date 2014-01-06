@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 #if defined(OS_MACOSX)
 #ifdef __OBJC__
@@ -46,7 +46,7 @@ namespace ui {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class UI_EXPORT ThemeProvider {
+class UI_BASE_EXPORT ThemeProvider {
  public:
   virtual ~ThemeProvider();
 

@@ -19,7 +19,7 @@ namespace ui {
 class Clipboard;
 
 // OSExchangeData::Provider implementation for aura on linux.
-class UI_EXPORT OSExchangeDataProviderAura
+class UI_BASE_EXPORT OSExchangeDataProviderAura
     : public OSExchangeData::Provider {
  public:
   OSExchangeDataProviderAura();

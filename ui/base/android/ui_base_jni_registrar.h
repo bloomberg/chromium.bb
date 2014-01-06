@@ -7,13 +7,13 @@
 
 #include <jni.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 namespace android {
 
 // Register all JNI bindings necessary for chrome.
-UI_EXPORT bool RegisterJni(JNIEnv* env);
+UI_BASE_EXPORT bool RegisterJni(JNIEnv* env);
 
 }  // namespace android
 }  // namespace ui

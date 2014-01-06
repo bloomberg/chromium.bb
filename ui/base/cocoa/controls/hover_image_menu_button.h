@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "ui/base/cocoa/tracking_area.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 @class HoverImageMenuButtonCell;
 
@@ -16,7 +16,7 @@
 // [[self cell] setHovered:flag] when the hover state changes. Uses
 // HoverImageMenuButtonCell as the default cellClass. Note that the menu item at
 // index 0 is ignored and client code should populate it with a dummy item.
-UI_EXPORT
+UI_BASE_EXPORT
 @interface HoverImageMenuButton : NSPopUpButton {
  @private
   ui::ScopedCrTrackingArea trackingArea_;

@@ -10,7 +10,7 @@
 
 namespace ui {
 
-class UI_EXPORT CursorLoaderWin : public CursorLoader {
+class UI_BASE_EXPORT CursorLoaderWin : public CursorLoader {
  public:
   CursorLoaderWin();
   virtual ~CursorLoaderWin();

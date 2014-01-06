@@ -16,7 +16,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
@@ -29,7 +29,7 @@ class SelectionData;
 // drop. This class interprets messages from the statefull selection request
 // API. SelectionRequestor should only deal with the X11 details; it does not
 // implement per-component fast-paths.
-class UI_EXPORT SelectionRequestor {
+class UI_BASE_EXPORT SelectionRequestor {
  public:
   SelectionRequestor(Display* xdisplay,
                      ::Window xwindow,

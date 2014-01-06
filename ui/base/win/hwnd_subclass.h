@@ -5,19 +5,19 @@
 #ifndef UI_BASE_WIN_HWND_SUBCLASS_H_
 #define UI_BASE_WIN_HWND_SUBCLASS_H_
 
-#include <vector>
 #include <windows.h>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/base/view_prop.h"
 
 namespace ui {
 
 // Classes implementing this interface get the opportunity to handle and consume
 // messages before they are sent to their target HWND.
-class UI_EXPORT HWNDMessageFilter {
+class UI_BASE_EXPORT HWNDMessageFilter {
  public:
   virtual ~HWNDMessageFilter();
 
@@ -38,7 +38,7 @@ class UI_EXPORT HWNDMessageFilter {
 
 // An object that instance-subclasses a window. If the window has already been
 // instance-subclassed, that subclassing is lost.
-class UI_EXPORT HWNDSubclass {
+class UI_BASE_EXPORT HWNDSubclass {
  public:
   ~HWNDSubclass();
 

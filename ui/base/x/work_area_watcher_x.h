@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/base/x/x11_util.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -22,7 +22,7 @@ class RootWindowPropertyWatcherX;
 
 // This is a helper class that is used to keep track of changes to work area.
 // Add an observer to track changes.
-class UI_EXPORT WorkAreaWatcherX {
+class UI_BASE_EXPORT WorkAreaWatcherX {
  public:
   static WorkAreaWatcherX* GetInstance();
   static void AddObserver(WorkAreaWatcherObserver* observer);

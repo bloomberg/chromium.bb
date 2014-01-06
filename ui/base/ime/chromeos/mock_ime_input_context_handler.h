@@ -7,11 +7,11 @@
 
 #include "chromeos/ime/ibus_text.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace chromeos {
 
-class UI_EXPORT MockIMEInputContextHandler
+class UI_BASE_EXPORT MockIMEInputContextHandler
     : public IBusInputContextHandlerInterface {
  public:
   struct UpdatePreeditTextArg {

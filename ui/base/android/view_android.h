@@ -8,7 +8,7 @@
 #include <jni.h>
 #include "base/android/jni_helper.h"
 #include "base/android/scoped_java_ref.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -16,7 +16,7 @@ class WindowAndroid;
 
 // This class is the native counterpart for ViewAndroid. It is owned by the
 // Java ViewAndroid object.
-class UI_EXPORT ViewAndroid {
+class UI_BASE_EXPORT ViewAndroid {
  public:
   ViewAndroid(JNIEnv* env, jobject obj, WindowAndroid* window);
 

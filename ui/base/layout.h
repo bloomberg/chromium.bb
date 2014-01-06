@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -26,7 +26,7 @@ enum DisplayLayout {
 // the .pak file of theme resources to load.
 // WARNING: this is deprecated and will be nuked as soon as aura is the default
 // on windows.
-UI_EXPORT DisplayLayout GetDisplayLayout();
+UI_BASE_EXPORT DisplayLayout GetDisplayLayout();
 
 // Supported UI scale factors for the platform. This is used as an index
 // into the array |kScaleFactorScales| which maps the enum value to a float.
@@ -50,37 +50,37 @@ enum ScaleFactor {
 // Changes the value of GetSupportedScaleFactors() to |scale_factors|.
 // Use ScopedSetSupportedScaleFactors for unit tests as not to affect the
 // state of other tests.
-UI_EXPORT void SetSupportedScaleFactors(
+UI_BASE_EXPORT void SetSupportedScaleFactors(
     const std::vector<ScaleFactor>& scale_factors);
 
 // Returns a vector with the scale factors which are supported by this
 // platform, in ascending order.
-UI_EXPORT const std::vector<ScaleFactor>& GetSupportedScaleFactors();
+UI_BASE_EXPORT const std::vector<ScaleFactor>& GetSupportedScaleFactors();
 
 // Returns the float scale value for |scale_factor|.
-UI_EXPORT float GetImageScale(ScaleFactor scale_factor);
+UI_BASE_EXPORT float GetImageScale(ScaleFactor scale_factor);
 
 // Returns the supported ScaleFactor which most closely matches |scale|.
 // Converting from float to ScaleFactor is inefficient and should be done as
 // little as possible.
 // TODO(oshima): Make ScaleFactor a class and remove this.
-UI_EXPORT ScaleFactor GetSupportedScaleFactor(float image_scale);
+UI_BASE_EXPORT ScaleFactor GetSupportedScaleFactor(float image_scale);
 
 // Returns the ScaleFactor used by |view|.
-UI_EXPORT ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view);
+UI_BASE_EXPORT ScaleFactor GetScaleFactorForNativeView(gfx::NativeView view);
 
 // Returns true if |scale_factor| is supported by this platform.
-UI_EXPORT bool IsScaleFactorSupported(ScaleFactor scale_factor);
+UI_BASE_EXPORT bool IsScaleFactorSupported(ScaleFactor scale_factor);
 
 // Returns the scale factor closest to |scale| from the full list of factors.
 // Note that it does NOT rely on the list of supported scale factors.
 // Finding the closest match is inefficient and shouldn't be done frequently.
-UI_EXPORT ScaleFactor FindClosestScaleFactorUnsafe(float scale);
+UI_BASE_EXPORT ScaleFactor FindClosestScaleFactorUnsafe(float scale);
 
 namespace test {
 // Class which changes the value of GetSupportedScaleFactors() to
 // |new_scale_factors| for the duration of its lifetime.
-class UI_EXPORT ScopedSetSupportedScaleFactors {
+class UI_BASE_EXPORT ScopedSetSupportedScaleFactors {
  public:
   explicit ScopedSetSupportedScaleFactors(
       const std::vector<ui::ScaleFactor>& new_scale_factors);

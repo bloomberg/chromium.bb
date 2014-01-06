@@ -18,7 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_checker.h"
 #include "ui/base/clipboard/clipboard_types.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 #if defined(TOOLKIT_GTK)
 #include <gdk/gdk.h>
@@ -64,7 +64,7 @@ class NSString;
 namespace ui {
 class ClipboardTest;
 
-class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
+class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
  public:
   // MIME type constants.
   static const char kMimeTypeText[];
@@ -75,7 +75,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   static const char kMimeTypePNG[];
 
   // Platform neutral holder for native data representation of a clipboard type.
-  struct UI_EXPORT FormatType {
+  struct UI_BASE_EXPORT FormatType {
     FormatType();
     ~FormatType();
 

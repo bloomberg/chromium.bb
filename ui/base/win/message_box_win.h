@@ -8,7 +8,7 @@
 #include <windows.h>
 
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -16,10 +16,10 @@ namespace ui {
 // MessageBox function allows us to control certain RTL locale flags so that
 // callers don't have to worry about adding these flags when running in a
 // right-to-left locale.
-UI_EXPORT int MessageBox(HWND hwnd,
-                         const base::string16& text,
-                         const base::string16& caption,
-                         UINT flags);
+UI_BASE_EXPORT int MessageBox(HWND hwnd,
+                              const base::string16& text,
+                              const base::string16& caption,
+                              UINT flags);
 
 }  // namespace ui
 

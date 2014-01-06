@@ -13,7 +13,7 @@ namespace ui {
 
 // An interface implemented by widget that has text that can be selected/edited
 // using touch.
-class UI_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
+class UI_BASE_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
  public:
   // Select everything between start and end (points are in view's local
   // coordinate system). |start| is the logical start and |end| is the logical
@@ -57,7 +57,7 @@ class UI_EXPORT TouchEditable : public ui::SimpleMenuModel::Delegate {
 
 // This defines the callback interface for other code to be notified of changes
 // in the state of a TouchEditable.
-class UI_EXPORT TouchSelectionController {
+class UI_BASE_EXPORT TouchSelectionController {
  public:
   virtual ~TouchSelectionController() {}
 
@@ -72,7 +72,7 @@ class UI_EXPORT TouchSelectionController {
   virtual bool IsHandleDragInProgress() = 0;
 };
 
-class UI_EXPORT TouchSelectionControllerFactory {
+class UI_BASE_EXPORT TouchSelectionControllerFactory {
  public:
   static void SetInstance(TouchSelectionControllerFactory* instance);
 

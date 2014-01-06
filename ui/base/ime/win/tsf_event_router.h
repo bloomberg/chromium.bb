@@ -15,7 +15,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/range/range.h"
 
 struct ITfDocumentMgr;
@@ -48,7 +48,7 @@ class TSFEventRouterObserver {
 
 // This class monitores TSF related events and forwards them to given
 // |observer|.
-class UI_EXPORT TSFEventRouter {
+class UI_BASE_EXPORT TSFEventRouter {
  public:
   // Do not pass NULL to |observer|.
   explicit TSFEventRouter(TSFEventRouterObserver* observer);

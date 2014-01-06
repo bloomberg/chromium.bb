@@ -29,7 +29,7 @@
         'resources/ui_resources.gyp:ui_resources',
       ],
       'defines': [
-        'UI_IMPLEMENTATION',
+        'UI_BASE_IMPLEMENTATION',
       ],
       'export_dependent_settings': [
         '../net/net.gyp:net',
@@ -271,7 +271,7 @@
         'base/ui_base_switches_util.h',
         'base/ui_base_types.cc',
         'base/ui_base_types.h',
-        'base/ui_export.h',
+        'base/ui_base_export.h',
         'base/view_prop.cc',
         'base/view_prop.h',
         'base/webui/jstemplate_builder.cc',

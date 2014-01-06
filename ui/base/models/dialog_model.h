@@ -6,15 +6,15 @@
 #define UI_BASE_MODELS_DIALOG_MODEL_H_
 
 #include "base/strings/string16.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/base/ui_export.h"
 
 namespace ui {
 
 // A model representing a dialog window. The model provides the content to show
 // to the user (i.e. label, title), and the ways the user can interact with it
 // (i.e. the buttons).
-class UI_EXPORT DialogModel {
+class UI_BASE_EXPORT DialogModel {
  public:
   virtual ~DialogModel();
 

@@ -17,7 +17,7 @@
 #include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_handle.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace base {
 class FilePath;
@@ -27,7 +27,7 @@ class RefCountedStaticMemory;
 
 namespace ui {
 
-class UI_EXPORT DataPack : public ResourceHandle {
+class UI_BASE_EXPORT DataPack : public ResourceHandle {
  public:
   DataPack(ui::ScaleFactor scale_factor);
   virtual ~DataPack();

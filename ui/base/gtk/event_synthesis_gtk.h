@@ -13,24 +13,25 @@
 #include <gdk/gdkkeysyms.h>
 #include <vector>
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
 
 // Creates and returns a key event. Passes ownership to the caller.
-UI_EXPORT GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
-                                       bool press,
-                                       guint gdk_key,
-                                       guint state);
+UI_BASE_EXPORT GdkEvent* SynthesizeKeyEvent(GdkWindow* event_window,
+                                            bool press,
+                                            guint gdk_key,
+                                            guint state);
 
 // Creates the proper sequence of key events for a key press + release.
 // Ownership of the events in the vector is passed to the caller.
-UI_EXPORT void SynthesizeKeyPressEvents(
-    GdkWindow* window,
-    KeyboardCode key,
-    bool control, bool shift, bool alt,
-    std::vector<GdkEvent*>* events);
+UI_BASE_EXPORT void SynthesizeKeyPressEvents(GdkWindow* window,
+                                             KeyboardCode key,
+                                             bool control,
+                                             bool shift,
+                                             bool alt,
+                                             std::vector<GdkEvent*>* events);
 
 }  // namespace ui
 

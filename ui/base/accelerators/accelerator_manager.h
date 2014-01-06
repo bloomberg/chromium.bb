@@ -11,13 +11,13 @@
 
 #include "base/basictypes.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/events/event_constants.h"
 
 namespace ui {
 
 // The AcceleratorManger is used to handle keyboard accelerators.
-class UI_EXPORT AcceleratorManager {
+class UI_BASE_EXPORT AcceleratorManager {
  public:
   enum HandlerPriority {
     kNormalPriority,

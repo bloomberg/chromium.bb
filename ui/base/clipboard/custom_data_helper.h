@@ -14,7 +14,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 class Pickle;
 
@@ -29,24 +29,24 @@ class NSString;
 namespace ui {
 
 #if defined(OS_MACOSX)
-UI_EXPORT extern NSString* const kWebCustomDataPboardType;
+UI_BASE_EXPORT extern NSString* const kWebCustomDataPboardType;
 #elif (!defined(OS_WIN) && defined(USE_AURA)) || defined(TOOLKIT_GTK)
-UI_EXPORT extern const char kMimeTypeWebCustomData[];
+UI_BASE_EXPORT extern const char kMimeTypeWebCustomData[];
 #endif
 
-UI_EXPORT void ReadCustomDataTypes(const void* data,
-                                   size_t data_length,
-                                   std::vector<base::string16>* types);
-UI_EXPORT void ReadCustomDataForType(const void* data,
-                                     size_t data_length,
-                                     const base::string16& type,
-                                     base::string16* result);
-UI_EXPORT void ReadCustomDataIntoMap(
+UI_BASE_EXPORT void ReadCustomDataTypes(const void* data,
+                                        size_t data_length,
+                                        std::vector<base::string16>* types);
+UI_BASE_EXPORT void ReadCustomDataForType(const void* data,
+                                          size_t data_length,
+                                          const base::string16& type,
+                                          base::string16* result);
+UI_BASE_EXPORT void ReadCustomDataIntoMap(
     const void* data,
     size_t data_length,
     std::map<base::string16, base::string16>* result);
 
-UI_EXPORT void WriteCustomDataToPickle(
+UI_BASE_EXPORT void WriteCustomDataToPickle(
     const std::map<base::string16, base::string16>& data,
     Pickle* pickle);
 

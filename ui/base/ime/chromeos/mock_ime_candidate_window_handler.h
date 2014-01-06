@@ -7,11 +7,11 @@
 
 #include "chromeos/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace chromeos {
 
-class UI_EXPORT MockIMECandidateWindowHandler
+class UI_BASE_EXPORT MockIMECandidateWindowHandler
     : public IBusPanelCandidateWindowHandlerInterface {
  public:
   struct UpdateLookupTableArg {

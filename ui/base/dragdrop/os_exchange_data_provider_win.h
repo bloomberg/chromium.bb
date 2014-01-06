@@ -21,7 +21,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/vector2d.h"
 
@@ -124,7 +124,8 @@ class DataObjectImpl : public DownloadFileObserver,
   Observer* observer_;
 };
 
-class UI_EXPORT OSExchangeDataProviderWin : public OSExchangeData::Provider {
+class UI_BASE_EXPORT OSExchangeDataProviderWin
+    : public OSExchangeData::Provider {
  public:
   // Returns true if source has plain text that is a valid url.
   static bool HasPlainTextURL(IDataObject* source);

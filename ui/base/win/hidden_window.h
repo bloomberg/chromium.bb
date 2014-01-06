@@ -7,13 +7,13 @@
 
 #include <windows.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
 // Returns an HWND that can be used as a temporary parent. The returned HWND is
 // never destroyed.
-UI_EXPORT HWND GetHiddenWindow();
+UI_BASE_EXPORT HWND GetHiddenWindow();
 
 }  // namespace ui
 

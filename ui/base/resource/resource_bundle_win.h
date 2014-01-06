@@ -10,16 +10,16 @@
 #include <windows.h>
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
 // NOTE: This needs to be called before initializing ResourceBundle if your
 // resources are not stored in the executable.
-UI_EXPORT void SetResourcesDataDLL(HINSTANCE handle);
+UI_BASE_EXPORT void SetResourcesDataDLL(HINSTANCE handle);
 
 // Loads and returns an icon from the app module.
-UI_EXPORT HICON LoadThemeIconFromResourcesDataDLL(int icon_id);
+UI_BASE_EXPORT HICON LoadThemeIconFromResourcesDataDLL(int icon_id);
 
 }  // namespace ui
 

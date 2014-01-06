@@ -10,7 +10,7 @@
 
 namespace ui {
 
-class UI_EXPORT DropTargetEvent : public LocatedEvent {
+class UI_BASE_EXPORT DropTargetEvent : public LocatedEvent {
  public:
   DropTargetEvent(const OSExchangeData& data,
                   const gfx::Point& location,

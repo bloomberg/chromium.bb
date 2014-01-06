@@ -10,18 +10,18 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace l10n_util {
 
 // Return the current default locale of the device.
-UI_EXPORT std::string GetDefaultLocale();
+UI_BASE_EXPORT std::string GetDefaultLocale();
 
-UI_EXPORT base::string16 GetDisplayNameForLocale(
+UI_BASE_EXPORT base::string16 GetDisplayNameForLocale(
     const std::string& locale,
     const std::string& display_locale);
 
-UI_EXPORT bool RegisterLocalizationUtil(JNIEnv* env);
+UI_BASE_EXPORT bool RegisterLocalizationUtil(JNIEnv* env);
 
 }  // namespace l10n_util
 

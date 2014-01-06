@@ -7,13 +7,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 // A view where the Y axis is flipped such that the origin is at the top left
 // and Y value increases downwards. Drawing is flipped so that layout of the
 // sections is easier. Apple recommends flipping the coordinate origin when
 // doing a lot of text layout because it's more natural.
-UI_EXPORT
+UI_BASE_EXPORT
 @interface FlippedView : NSView
 @end
 

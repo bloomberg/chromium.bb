@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 // A HyperlinkButtonCell is used to create an NSButton that looks and acts
 // like a hyperlink. The default styling is to look like blue, underlined text
@@ -23,7 +23,7 @@
 //
 // Use this if all of your text is a link. If you need text that contains
 // embedded links but also regular text, use HyperlinkTextView.
-UI_EXPORT
+UI_BASE_EXPORT
 @interface HyperlinkButtonCell : NSButtonCell {
   base::scoped_nsobject<NSColor> textColor_;
   BOOL shouldUnderline_;

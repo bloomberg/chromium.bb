@@ -5,7 +5,7 @@
 #ifndef UI_BASE_TOUCH_TOUCH_DEVICE_H_
 #define UI_BASE_TOUCH_TOUCH_DEVICE_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -15,7 +15,7 @@ namespace ui {
 const int kMaxTouchPointsUnknown = -1;
 
 // Returns true if a touch device is available.
-UI_EXPORT bool IsTouchDevicePresent();
+UI_BASE_EXPORT bool IsTouchDevicePresent();
 
 // Returns the maximum number of simultaneous touch contacts supported
 // by the device. In the case of devices with multiple digitizers (e.g.
@@ -24,7 +24,7 @@ UI_EXPORT bool IsTouchDevicePresent();
 // For example, suppose a device has 3 touchscreens, which support 2, 5,
 // and 10 simultaneous touch contacts, respectively. This returns 10.
 // http://www.w3.org/TR/pointerevents/#widl-Navigator-maxTouchPoints
-UI_EXPORT int MaxTouchPoints();
+UI_BASE_EXPORT int MaxTouchPoints();
 
 }  // namespace ui
 

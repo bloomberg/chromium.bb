@@ -9,7 +9,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 class MenuModel;
@@ -21,7 +21,7 @@ class MenuModel;
 // allow for hierarchical menus). The tag is the index into that model for
 // that particular item. It is important that the model outlives this object
 // as it only maintains weak references.
-UI_EXPORT
+UI_BASE_EXPORT
 @interface MenuController : NSObject<NSMenuDelegate> {
  @protected
   ui::MenuModel* model_;  // weak

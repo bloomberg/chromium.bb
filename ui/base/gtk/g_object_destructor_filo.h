@@ -10,7 +10,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -48,7 +48,7 @@ namespace ui {
 // TODO(glotov): Probably worth adding ScopedGObjectDtor<T>.
 //
 // This class is a singleton. Not thread safe. Must be called within UI thread.
-class UI_EXPORT GObjectDestructorFILO {
+class UI_BASE_EXPORT GObjectDestructorFILO {
  public:
   typedef void (*DestructorHook)(void* context, GObject* where_the_object_was);
 

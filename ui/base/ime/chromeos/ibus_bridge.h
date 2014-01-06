@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace gfx {
 class Rect;
@@ -28,7 +28,7 @@ class CandidateWindow;
 
 class IBusText;
 
-class UI_EXPORT IBusInputContextHandlerInterface {
+class UI_BASE_EXPORT IBusInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
   virtual void CommitText(const std::string& text) = 0;
@@ -44,7 +44,7 @@ class UI_EXPORT IBusInputContextHandlerInterface {
 
 
 // A interface to handle the engine handler method call.
-class UI_EXPORT IBusEngineHandlerInterface {
+class UI_BASE_EXPORT IBusEngineHandlerInterface {
  public:
   typedef base::Callback<void (bool consumed)> KeyEventDoneCallback;
 
@@ -106,7 +106,7 @@ class UI_EXPORT IBusEngineHandlerInterface {
 };
 
 // A interface to handle the candidate window related method call.
-class UI_EXPORT IBusPanelCandidateWindowHandlerInterface {
+class UI_BASE_EXPORT IBusPanelCandidateWindowHandlerInterface {
  public:
   virtual ~IBusPanelCandidateWindowHandlerInterface() {}
 
@@ -135,7 +135,7 @@ class UI_EXPORT IBusPanelCandidateWindowHandlerInterface {
 
 // IBusBridge provides access of each IME related handler. This class
 // is used for IME implementation.
-class UI_EXPORT IBusBridge {
+class UI_BASE_EXPORT IBusBridge {
  public:
   virtual ~IBusBridge();
 

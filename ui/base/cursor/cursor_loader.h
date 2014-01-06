@@ -7,14 +7,14 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
 
-class UI_EXPORT CursorLoader {
+class UI_BASE_EXPORT CursorLoader {
  public:
   CursorLoader() : scale_(1.f) {}
   virtual ~CursorLoader() {}

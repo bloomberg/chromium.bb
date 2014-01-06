@@ -12,13 +12,13 @@
 // when needed.
 
 extern "C" {
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/XShm.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <X11/extensions/XShm.h>
-#include <X11/extensions/Xrender.h>
 }
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -32,22 +32,22 @@ XRenderPictFormat* GetRenderARGB32Format(Display* dpy);
 
 // Get the XRENDER format id for the default visual on the first screen. This
 // is the format which our GTK window will have.
-UI_EXPORT XRenderPictFormat* GetRenderVisualFormat(Display* dpy,
-                                                   Visual* visual);
+UI_BASE_EXPORT XRenderPictFormat* GetRenderVisualFormat(Display* dpy,
+                                                        Visual* visual);
 
 // --------------------------------------------------------------------------
 // X11 error handling.
 // Sets the X Error Handlers. Passing NULL for either will enable the default
 // error handler, which if called will log the error and abort the process.
-UI_EXPORT void SetX11ErrorHandlers(XErrorHandler error_handler,
-                                   XIOErrorHandler io_error_handler);
+UI_BASE_EXPORT void SetX11ErrorHandlers(XErrorHandler error_handler,
+                                        XIOErrorHandler io_error_handler);
 
 // NOTE: This function should not be called directly from the
 // X11 Error handler because it queries the server to decode the
 // error message, which may trigger other errors. A suitable workaround
 // is to post a task in the error handler to call this function.
-UI_EXPORT void LogErrorEventDescription(Display* dpy,
-                                        const XErrorEvent& error_event);
+UI_BASE_EXPORT void LogErrorEventDescription(Display* dpy,
+                                             const XErrorEvent& error_event);
 
 }  // namespace ui
 

@@ -6,7 +6,7 @@
 #define UI_BASE_IME_INPUT_METHOD_DELEGATE_H_
 
 #include "base/event_types.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -15,7 +15,7 @@ namespace internal {
 
 // An interface implemented by the object that handles events sent back from an
 // ui::InputMethod implementation.
-class UI_EXPORT InputMethodDelegate {
+class UI_BASE_EXPORT InputMethodDelegate {
  public:
   virtual ~InputMethodDelegate() {}
 

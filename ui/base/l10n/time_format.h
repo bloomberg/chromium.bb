@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace base {
 class Time;
@@ -17,7 +17,7 @@ class TimeDelta;
 namespace ui {
 
 // Methods to format time values as strings.
-class UI_EXPORT TimeFormat {
+class UI_BASE_EXPORT TimeFormat {
  public:
   // TimeElapsed, TimeRemaining and TimeRemainingShort functions:
   // These functions return a localized string of approximate time duration. The

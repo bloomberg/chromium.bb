@@ -7,13 +7,13 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
 // Given the name of a nib file, gets an unowned reference to the NSView in the
 // nib. Requires a nib with just a single root view.
-UI_EXPORT NSView* GetViewFromNib(NSString* name);
+UI_BASE_EXPORT NSView* GetViewFromNib(NSString* name);
 
 }  // namespace ui
 

@@ -9,7 +9,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "ui/base/accessibility/accessibility_types.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -21,7 +21,7 @@ namespace ui {
 //   that should be provided about any UI view to assistive technology (AT).
 //
 ////////////////////////////////////////////////////////////////////////////////
-struct UI_EXPORT AccessibleViewState {
+struct UI_BASE_EXPORT AccessibleViewState {
  public:
   AccessibleViewState();
   ~AccessibleViewState();

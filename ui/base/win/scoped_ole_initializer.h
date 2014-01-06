@@ -8,11 +8,11 @@
 #include <ole2.h>
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
-class UI_EXPORT ScopedOleInitializer {
+class UI_BASE_EXPORT ScopedOleInitializer {
  public:
   ScopedOleInitializer();
   ~ScopedOleInitializer();

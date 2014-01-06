@@ -6,13 +6,13 @@
 #define UI_BASE_GTK_FOCUS_STORE_GTK_H_
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 typedef struct _GtkWidget GtkWidget;
 
 namespace ui {
 
-class UI_EXPORT FocusStoreGtk {
+class UI_BASE_EXPORT FocusStoreGtk {
  public:
   FocusStoreGtk();
   ~FocusStoreGtk();

@@ -13,7 +13,7 @@
 namespace ui {
 
 // This is a Mac specific class for specifing accelerator keys.
-class UI_EXPORT PlatformAcceleratorCocoa : public PlatformAccelerator {
+class UI_BASE_EXPORT PlatformAcceleratorCocoa : public PlatformAccelerator {
  public:
   PlatformAcceleratorCocoa();
   PlatformAcceleratorCocoa(NSString* key_code, NSUInteger modifier_mask);

@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -24,11 +24,11 @@ struct NinePartImageIds {
 };
 
 // Utility method to draw a nine part image using image ids.
-UI_EXPORT void DrawNinePartImage(NSRect frame,
-                                 const NinePartImageIds& image_ids,
-                                 NSCompositingOperation operation,
-                                 CGFloat alpha,
-                                 BOOL flipped);
+UI_BASE_EXPORT void DrawNinePartImage(NSRect frame,
+                                      const NinePartImageIds& image_ids,
+                                      NSCompositingOperation operation,
+                                      CGFloat alpha,
+                                      BOOL flipped);
 
 }  // namespace ui
 

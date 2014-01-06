@@ -8,7 +8,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 // A specialized container, which is a cross between a GtkBin and a
 // GtkFixed. This container dervies from GtkBin and the implementation of
@@ -76,9 +76,9 @@ struct _GtkFloatingContainerChild {
   gint y;
 };
 
-UI_EXPORT GType      gtk_floating_container_get_type() G_GNUC_CONST;
-UI_EXPORT GtkWidget* gtk_floating_container_new();
-UI_EXPORT void       gtk_floating_container_add_floating(
+UI_BASE_EXPORT GType      gtk_floating_container_get_type() G_GNUC_CONST;
+UI_BASE_EXPORT GtkWidget* gtk_floating_container_new();
+UI_BASE_EXPORT void       gtk_floating_container_add_floating(
     GtkFloatingContainer* container,
     GtkWidget* widget);
 // Use gtk_container_remove to remove all widgets; both widgets added with

@@ -19,7 +19,7 @@ namespace ui {
 
 // Provides an interface to perform actions on windows, and query window
 // state.
-class UI_EXPORT BaseWindow {
+class UI_BASE_EXPORT BaseWindow {
  public:
   // Returns true if the window is currently the active/focused window.
   virtual bool IsActive() const = 0;

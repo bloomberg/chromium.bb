@@ -17,7 +17,7 @@ namespace ui {
 class TSFEventRouter;
 
 // An InputMethod implementation based on Windows TSF API.
-class UI_EXPORT InputMethodTSF : public InputMethodWin {
+class UI_BASE_EXPORT InputMethodTSF : public InputMethodWin {
  public:
   InputMethodTSF(internal::InputMethodDelegate* delegate,
                  HWND toplevel_window_handle);

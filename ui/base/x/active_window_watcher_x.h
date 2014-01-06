@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/observer_list.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/base/x/x11_util.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -23,7 +23,7 @@ class RootWindowPropertyWatcherX;
 // This is a helper class that is used to keep track of which window the X
 // window manager thinks is active. Add an Observer to listen for changes to
 // the active window.
-class UI_EXPORT ActiveWindowWatcherX {
+class UI_BASE_EXPORT ActiveWindowWatcherX {
  public:
   static ActiveWindowWatcherX* GetInstance();
   static void AddObserver(ActiveWindowWatcherXObserver* observer);

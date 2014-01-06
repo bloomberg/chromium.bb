@@ -19,7 +19,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
@@ -38,7 +38,7 @@ class ResourceHandle;
 
 // ResourceBundle is a central facility to load images and other resources,
 // such as theme graphics. Every resource is loaded only once.
-class UI_EXPORT ResourceBundle {
+class UI_BASE_EXPORT ResourceBundle {
  public:
   // An enumeration of the various font styles used throughout Chrome.
   // The following holds true for the font sizes:

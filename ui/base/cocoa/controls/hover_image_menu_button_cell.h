@@ -8,13 +8,13 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 // A custom NSPopUpButtonCell that permits a hover image, and draws only an
 // image in its frame; no border, bezel or drop-down arrow. Use setDefaultImage:
 // to set the default image, setAlternateImage: to set the button shown while
 // the menu is active, and setHoverImage: for the mouseover hover image.
-UI_EXPORT
+UI_BASE_EXPORT
 @interface HoverImageMenuButtonCell : NSPopUpButtonCell {
  @private
   base::scoped_nsobject<NSImage> hoverImage_;

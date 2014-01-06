@@ -8,7 +8,7 @@
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 // A specialized container derived from GtkFixed, which expands the size of its
 // children to fill the container, in one or both directions. The usage of this
@@ -57,16 +57,20 @@ struct _GtkExpandedContainerClass {
   GtkFixedClass parent_class;
 };
 
-UI_EXPORT GType gtk_expanded_container_get_type() G_GNUC_CONST;
-UI_EXPORT GtkWidget* gtk_expanded_container_new();
-UI_EXPORT void gtk_expanded_container_put(GtkExpandedContainer* container,
-                                          GtkWidget* widget, gint x, gint y);
-UI_EXPORT void gtk_expanded_container_move(GtkExpandedContainer* container,
-                                           GtkWidget* widget, gint x, gint y);
-UI_EXPORT void gtk_expanded_container_set_has_window(
+UI_BASE_EXPORT GType gtk_expanded_container_get_type() G_GNUC_CONST;
+UI_BASE_EXPORT GtkWidget* gtk_expanded_container_new();
+UI_BASE_EXPORT void gtk_expanded_container_put(GtkExpandedContainer* container,
+                                               GtkWidget* widget,
+                                               gint x,
+                                               gint y);
+UI_BASE_EXPORT void gtk_expanded_container_move(GtkExpandedContainer* container,
+                                                GtkWidget* widget,
+                                                gint x,
+                                                gint y);
+UI_BASE_EXPORT void gtk_expanded_container_set_has_window(
     GtkExpandedContainer* container,
     gboolean has_window);
-UI_EXPORT gboolean gtk_expanded_container_get_has_window(
+UI_BASE_EXPORT gboolean gtk_expanded_container_get_has_window(
     GtkExpandedContainer* container);
 
 G_END_DECLS

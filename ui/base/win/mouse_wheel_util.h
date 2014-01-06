@@ -7,7 +7,7 @@
 
 #include <windows.h>
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -17,7 +17,7 @@ class ViewProp;
 // We reroute the mouse wheel messages to such HWND when they are under the
 // mouse pointer (but are not the active window). Callers own the returned
 // object.
-UI_EXPORT ViewProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd);
+UI_BASE_EXPORT ViewProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd);
 
 // Forwards mouse wheel messages to the window under it.
 // Windows sends mouse wheel messages to the currently active window.
@@ -26,8 +26,9 @@ UI_EXPORT ViewProp* SetWindowSupportsRerouteMouseWheel(HWND hwnd);
 // mouse wheel in order to scroll that window. This is arguably a better user
 // experience.  The returns value says whether the mouse wheel message was
 // successfully redirected.
-UI_EXPORT bool RerouteMouseWheel(HWND window, WPARAM w_param,
-                                 LPARAM l_param);
+UI_BASE_EXPORT bool RerouteMouseWheel(HWND window,
+                                      WPARAM w_param,
+                                      LPARAM l_param);
 
 }  // namespace ui
 

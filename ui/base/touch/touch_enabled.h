@@ -5,13 +5,13 @@
 #ifndef UI_BASE_TOUCH_TOUCH_ENABLED_H_
 #define UI_BASE_TOUCH_TOUCH_ENABLED_H_
 
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
 // Returns true if the touch-enabled flag is enabled, or if it is set to auto
 // and a touch device is present.
-UI_EXPORT bool AreTouchEventsEnabled();
+UI_BASE_EXPORT bool AreTouchEventsEnabled();
 
 }  // namespace ui
 

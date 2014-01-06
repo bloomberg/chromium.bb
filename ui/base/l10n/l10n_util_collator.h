@@ -13,7 +13,7 @@
 #include "base/i18n/string_compare.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace l10n_util {
 
@@ -106,7 +106,7 @@ class StringComparator : public std::binary_function<const Element&,
 };
 
 // Specialization of operator() method for base::string16 version.
-template <> UI_EXPORT
+template <> UI_BASE_EXPORT
 bool StringComparator<base::string16>::operator()(const base::string16& lhs,
                                                   const base::string16& rhs);
 

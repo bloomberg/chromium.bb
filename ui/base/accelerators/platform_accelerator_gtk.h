@@ -16,7 +16,7 @@ namespace ui {
 class Accelerator;
 
 // This is a GTK specific class for specifing accelerator keys.
-class UI_EXPORT PlatformAcceleratorGtk : public PlatformAccelerator {
+class UI_BASE_EXPORT PlatformAcceleratorGtk : public PlatformAccelerator {
  public:
   PlatformAcceleratorGtk();
   PlatformAcceleratorGtk(guint gdk_key_code, GdkModifierType gdk_modifier);
@@ -36,11 +36,12 @@ class UI_EXPORT PlatformAcceleratorGtk : public PlatformAccelerator {
   DISALLOW_COPY_AND_ASSIGN(PlatformAcceleratorGtk);
 };
 
-UI_EXPORT Accelerator AcceleratorForGdkKeyCodeAndModifier(
+UI_BASE_EXPORT Accelerator AcceleratorForGdkKeyCodeAndModifier(
     guint gdk_key_code,
     GdkModifierType gdk_modifier);
-UI_EXPORT guint GetGdkKeyCodeForAccelerator(const Accelerator& accelerator);
-UI_EXPORT GdkModifierType GetGdkModifierForAccelerator(
+UI_BASE_EXPORT guint
+    GetGdkKeyCodeForAccelerator(const Accelerator& accelerator);
+UI_BASE_EXPORT GdkModifierType GetGdkModifierForAccelerator(
     const Accelerator& accelerator);
 
 }  // namespace ui

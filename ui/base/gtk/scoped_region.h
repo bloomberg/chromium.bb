@@ -6,7 +6,7 @@
 #define UI_BASE_GTK_SCOPED_REGION_H_
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 typedef struct _GdkRegion GdkRegion;
 
@@ -14,7 +14,7 @@ namespace ui {
 
 // Wraps a GdkRegion. This class provides the same methods as ScopedGDIObject in
 // base/win/scoped_gdi_object.h.
-class UI_EXPORT ScopedRegion {
+class UI_BASE_EXPORT ScopedRegion {
  public:
   ScopedRegion();
   explicit ScopedRegion(GdkRegion* region);

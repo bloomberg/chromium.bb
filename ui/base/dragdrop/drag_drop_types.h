@@ -6,11 +6,11 @@
 #define UI_BASE_DRAGDROP_DRAG_DROP_TYPES_H_
 
 #include "base/basictypes.h"
-#include "ui/base/ui_export.h"
+#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
-class UI_EXPORT DragDropTypes {
+class UI_BASE_EXPORT DragDropTypes {
  public:
   enum DragOperation {
     DRAG_NONE = 0,
