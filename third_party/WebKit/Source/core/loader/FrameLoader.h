@@ -226,8 +226,6 @@ private:
 
     void checkLoadCompleteForThisFrame();
 
-    void closeOldDataSources();
-
     // Calls continueLoadAfterNavigationPolicy
     void loadWithNavigationAction(const NavigationAction&, FrameLoadType, PassRefPtr<FormState>,
         const SubstituteData&, ClientRedirectPolicy = NotClientRedirect, const AtomicString& overrideEncoding = nullAtom);

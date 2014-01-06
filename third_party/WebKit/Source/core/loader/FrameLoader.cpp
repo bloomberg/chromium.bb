@@ -855,8 +855,6 @@ void FrameLoader::commitProvisionalLoad()
     RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
     RefPtr<Frame> protect(m_frame);
 
-    closeOldDataSources();
-
     // Check if the destination page is allowed to access the previous page's timing information.
     if (m_frame->document()) {
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(pdl->request().url());
@@ -867,8 +865,10 @@ void FrameLoader::commitProvisionalLoad()
     // JavaScript. If the script initiates a new load, we need to abandon the current load,
     // or the two will stomp each other.
     // detachChildren will similarly trigger child frame unload event handlers.
-    if (m_documentLoader)
+    if (m_documentLoader) {
+        m_client->dispatchWillClose();
         closeURL();
+    }
     detachChildren();
     if (pdl != m_provisionalDocumentLoader)
         return;
@@ -893,18 +893,6 @@ void FrameLoader::commitProvisionalLoad()
         window->setDefaultStatus(String());
     }
     started();
-}
-
-void FrameLoader::closeOldDataSources()
-{
-    // FIXME: Is it important for this traversal to be postorder instead of preorder?
-    // If so, add helpers for postorder traversal, and use them. If not, then lets not
-    // use a recursive algorithm here.
-    for (Frame* child = m_frame->tree().firstChild(); child; child = child->tree().nextSibling())
-        child->loader().closeOldDataSources();
-
-    if (m_documentLoader)
-        m_client->dispatchWillClose();
 }
 
 bool FrameLoader::isLoadingMainFrame() const
