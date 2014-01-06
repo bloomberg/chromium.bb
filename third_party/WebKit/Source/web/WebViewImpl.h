@@ -757,9 +757,7 @@ private:
 
     UserMediaClientImpl m_userMediaClientImpl;
     OwnPtr<MIDIClientProxy> m_midiClientProxy;
-#if ENABLE(NAVIGATOR_CONTENT_UTILS)
     OwnPtr<NavigatorContentUtilsClientImpl> m_navigatorContentUtilsClient;
-#endif
     OwnPtr<WebActiveGestureAnimation> m_gestureAnimation;
     WebPoint m_positionOnFlingStart;
     WebPoint m_globalPositionOnFlingStart;

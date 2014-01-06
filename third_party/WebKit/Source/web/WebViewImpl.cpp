@@ -371,9 +371,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_geolocationClientProxy(adoptPtr(new GeolocationClientProxy(client ? client->geolocationClient() : 0)))
     , m_userMediaClientImpl(this)
     , m_midiClientProxy(adoptPtr(new MIDIClientProxy(client ? client->webMIDIClient() : 0)))
-#if ENABLE(NAVIGATOR_CONTENT_UTILS)
     , m_navigatorContentUtilsClient(NavigatorContentUtilsClientImpl::create(this))
-#endif
     , m_flingModifier(0)
     , m_flingSourceDevice(false)
     , m_fullscreenController(FullscreenController::create(this))
@@ -404,9 +402,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 #endif
     provideSpeechRecognitionTo(m_page.get(), m_speechRecognitionClient.get());
     provideNotification(m_page.get(), notificationPresenterImpl());
-#if ENABLE(NAVIGATOR_CONTENT_UTILS)
     provideNavigatorContentUtilsTo(m_page.get(), m_navigatorContentUtilsClient.get());
-#endif
 
     provideContextFeaturesTo(m_page.get(), m_featureSwitchClient.get());
     provideGeolocationTo(m_page.get(), m_geolocationClientProxy.get());

@@ -26,8 +26,6 @@
 #ifndef NavigatorContentUtilsClient_h
 #define NavigatorContentUtilsClient_h
 
-#if ENABLE(NAVIGATOR_CONTENT_UTILS)
-
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -55,5 +53,4 @@ void provideNavigatorContentUtilsTo(Page*, NavigatorContentUtilsClient*);
 
 }
 
-#endif // ENABLE(NAVIGATOR_CONTENT_UTILS)
 #endif // NavigatorContentUtilsClient_h

@@ -27,8 +27,6 @@
 #ifndef NavigatorContentUtils_h
 #define NavigatorContentUtils_h
 
-#if ENABLE(NAVIGATOR_CONTENT_UTILS)
-
 #include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "platform/RefCountedSupplement.h"
 #include "wtf/PassRefPtr.h"
@@ -67,7 +65,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(NAVIGATOR_CONTENT_UTILS)
 
 #endif // NavigatorContentUtils_h

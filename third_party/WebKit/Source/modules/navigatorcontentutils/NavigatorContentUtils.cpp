@@ -27,8 +27,6 @@
 #include "config.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtils.h"
 
-#if ENABLE(NAVIGATOR_CONTENT_UTILS)
-
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -224,6 +222,3 @@ void provideNavigatorContentUtilsTo(Page* page, NavigatorContentUtilsClient* cli
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(NAVIGATOR_CONTENT_UTILS)
-

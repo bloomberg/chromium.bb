@@ -212,7 +212,6 @@ private:
     WebCore::PagePopupDriver* m_pagePopupDriver;
 };
 
-#if ENABLE(NAVIGATOR_CONTENT_UTILS)
 class NavigatorContentUtilsClientImpl : public WebCore::NavigatorContentUtilsClient {
 public:
     static PassOwnPtr<NavigatorContentUtilsClientImpl> create(WebViewImpl*);
@@ -225,7 +224,6 @@ private:
 
     WebViewImpl* m_webView;
 };
-#endif
 
 DEFINE_TYPE_CASTS(ChromeClientImpl, WebCore::ChromeClient, client, client->isChromeClientImpl(), client.isChromeClientImpl());
 

@@ -1015,7 +1015,6 @@ void ChromeClientImpl::openTextDataListChooser(HTMLInputElement& input)
         m_webView->autofillClient()->openTextDataListChooser(WebInputElement(&input));
 }
 
-#if ENABLE(NAVIGATOR_CONTENT_UTILS)
 PassOwnPtr<NavigatorContentUtilsClientImpl> NavigatorContentUtilsClientImpl::create(WebViewImpl* webView)
 {
     return adoptPtr(new NavigatorContentUtilsClientImpl(webView));
@@ -1030,6 +1029,5 @@ void NavigatorContentUtilsClientImpl::registerProtocolHandler(const String& sche
 {
     m_webView->client()->registerProtocolHandler(scheme, baseURL, url, title);
 }
-#endif
 
 } // namespace blink
