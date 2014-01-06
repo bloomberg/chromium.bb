@@ -109,7 +109,7 @@ SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
   SkScalar text_width = paint->measureText(badge_text.c_str(),
                                            badge_text.size());
 
-  if (SkScalarRound(text_width) > (icon.width() - kMinPadding * 2)) {
+  if (SkScalarRoundToInt(text_width) > (icon.width() - kMinPadding * 2)) {
     // String is too large - use the alternate text.
     badge_text = base::UTF16ToUTF8(fallback);
     text_width = paint->measureText(badge_text.c_str(), badge_text.size());
@@ -119,7 +119,7 @@ SkBitmap DrawBadgeIconOverlay(const SkBitmap& icon,
   // of pixels on each side as otherwise the text looks off-center. So if the
   // padding would be uneven, clip one pixel off the right side.
   int badge_width = icon.width();
-  if ((SkScalarRound(text_width) % 1) != (badge_width % 1))
+  if ((SkScalarRoundToInt(text_width) % 1) != (badge_width % 1))
     badge_width--;
 
   // Render the badge bitmap and overlay into a canvas.
@@ -165,7 +165,7 @@ void PaintBadge(gfx::Canvas* canvas,
 
   // Calculate text width. We clamp it to a max size.
   SkScalar sk_text_width = text_paint->measureText(text.c_str(), text.size());
-  int text_width = std::min(kMaxTextWidth, SkScalarFloor(sk_text_width));
+  int text_width = std::min(kMaxTextWidth, SkScalarFloorToInt(sk_text_width));
 
   // Calculate badge size. It is clamped to a min width just because it looks
   // silly if it is too skinny.

@@ -34,7 +34,9 @@ COMPILE_ASSERT(sizeof(RECT) == sizeof(SkIRect), o9);
 namespace skia {
 
 POINT SkPointToPOINT(const SkPoint& point) {
-  POINT win_point = { SkScalarRound(point.fX), SkScalarRound(point.fY) };
+  POINT win_point = {
+      SkScalarRoundToInt(point.fX), SkScalarRoundToInt(point.fY)
+  };
   return win_point;
 }
 

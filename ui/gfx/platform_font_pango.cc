@@ -190,7 +190,7 @@ int PlatformFontPango::GetCapHeight() const {
 
 int PlatformFontPango::GetAverageCharacterWidth() const {
   const_cast<PlatformFontPango*>(this)->InitPangoMetrics();
-  return SkScalarRound(average_width_pixels_);
+  return SkScalarRoundToInt(average_width_pixels_);
 }
 
 int PlatformFontPango::GetStringWidth(const base::string16& text) const {
@@ -337,9 +337,9 @@ void PlatformFontPango::InitWithTypefaceNameSizeAndStyle(
   PaintSetup(&paint);
   paint.getFontMetrics(&metrics);
 
-  ascent_pixels_ = SkScalarCeil(-metrics.fAscent);
-  height_pixels_ = ascent_pixels_ + SkScalarCeil(metrics.fDescent);
-  cap_height_pixels_ = SkScalarCeil(metrics.fCapHeight);
+  ascent_pixels_ = SkScalarCeilToInt(-metrics.fAscent);
+  height_pixels_ = ascent_pixels_ + SkScalarCeilToInt(metrics.fDescent);
+  cap_height_pixels_ = SkScalarCeilToInt(metrics.fCapHeight);
 }
 
 void PlatformFontPango::InitFromPlatformFont(const PlatformFontPango* other) {

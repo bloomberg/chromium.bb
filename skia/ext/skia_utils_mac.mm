@@ -134,10 +134,10 @@ CGRect SkRectToCGRect(const SkRect& rect) {
 SkColor CGColorRefToSkColor(CGColorRef color) {
   DCHECK(CGColorGetNumberOfComponents(color) == 4);
   const CGFloat* components = CGColorGetComponents(color);
-  return SkColorSetARGB(SkScalarRound(255.0 * components[3]), // alpha
-                        SkScalarRound(255.0 * components[0]), // red
-                        SkScalarRound(255.0 * components[1]), // green
-                        SkScalarRound(255.0 * components[2])); // blue
+  return SkColorSetARGB(SkScalarRoundToInt(255.0 * components[3]), // alpha
+                        SkScalarRoundToInt(255.0 * components[0]), // red
+                        SkScalarRoundToInt(255.0 * components[1]), // green
+                        SkScalarRoundToInt(255.0 * components[2])); // blue
 }
 
 // Converts ARGB to CGColorRef.
@@ -155,10 +155,10 @@ SkColor NSDeviceColorToSkColor(NSColor* color) {
   CGFloat red, green, blue, alpha;
   color = [color colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];
   [color getRed:&red green:&green blue:&blue alpha:&alpha];
-  return SkColorSetARGB(SkScalarRound(255.0 * alpha),
-                        SkScalarRound(255.0 * red),
-                        SkScalarRound(255.0 * green),
-                        SkScalarRound(255.0 * blue));
+  return SkColorSetARGB(SkScalarRoundToInt(255.0 * alpha),
+                        SkScalarRoundToInt(255.0 * red),
+                        SkScalarRoundToInt(255.0 * green),
+                        SkScalarRoundToInt(255.0 * blue));
 }
 
 // Converts ARGB to NSColor.

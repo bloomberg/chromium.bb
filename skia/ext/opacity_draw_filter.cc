@@ -9,7 +9,7 @@ namespace skia {
 
 OpacityDrawFilter::OpacityDrawFilter(float opacity,
                                      bool disable_image_filtering)
-    : alpha_(SkScalarRound(opacity * 255)),
+    : alpha_(SkScalarRoundToInt(opacity * 255)),
       disable_image_filtering_(disable_image_filtering) {}
 
 OpacityDrawFilter::~OpacityDrawFilter() {}

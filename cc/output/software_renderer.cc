@@ -36,7 +36,7 @@ namespace cc {
 namespace {
 
 static inline bool IsScalarNearlyInteger(SkScalar scalar) {
-  return SkScalarNearlyZero(scalar - SkScalarRound(scalar));
+  return SkScalarNearlyZero(scalar - SkScalarRoundToScalar(scalar));
 }
 
 bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {

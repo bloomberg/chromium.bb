@@ -24,8 +24,8 @@ GdkRegion* Path::CreateNativeRegion() const {
 
   scoped_ptr<GdkPoint[]> gdk_points(new GdkPoint[point_count]);
   for (int i = 0; i < point_count; ++i) {
-    gdk_points[i].x = SkScalarRound(points[i].fX);
-    gdk_points[i].y = SkScalarRound(points[i].fY);
+    gdk_points[i].x = SkScalarRoundToInt(points[i].fX);
+    gdk_points[i].y = SkScalarRoundToInt(points[i].fY);
   }
 
   return gdk_region_polygon(gdk_points.get(), point_count, GDK_EVEN_ODD_RULE);
