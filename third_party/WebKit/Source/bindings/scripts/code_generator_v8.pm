@@ -1504,8 +1504,14 @@ END
         if ($reflect && !$url && InheritsInterface($interface, "Node") && $attrType eq "DOMString") {
             # Generate super-compact call for regular attribute getter:
             my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
+            my $getterExpression = "imp->${functionName}(" . join(", ", @arguments) . ")";
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
-            $code .= "    v8SetReturnValueString(info, imp->${functionName}(" . join(", ", @arguments) . "), info.GetIsolate());\n";
+            if ($attribute->extendedAttributes->{"ReflectOnly"}) {
+                $code .= "    String resultValue = ${getterExpression};\n";
+                $code .= GenerateReflectOnlyCheck($attribute->extendedAttributes->{"ReflectOnly"}, "    ");
+                $getterExpression = "resultValue";
+            }
+            $code .= "    v8SetReturnValueString(info, ${getterExpression}, info.GetIsolate());\n";
             $code .= "}\n";
             $code .= "#endif // ${conditionalString}\n" if $conditionalString;
             $code .= "\n";
@@ -5696,6 +5702,13 @@ sub NativeToJSValue
         return "$indent$receiver v8::Number::New($getIsolate, static_cast<double>($nativeValue));";
     }
 
+    if ($type eq "DOMString" && $extendedAttributes->{"ReflectOnly"}) {
+        my $code = "${indent}String resultValue = ${nativeValue};\n";
+        $code .= GenerateReflectOnlyCheck($extendedAttributes->{"ReflectOnly"}, ${indent});
+        return "${code}${indent}v8SetReturnValueString(${getCallbackInfo}, resultValue, $getIsolate);" if $isReturnValue;
+        return "${code}$indent$receiver resultValue";
+    }
+
     my $conv = $extendedAttributes->{"TreatReturnedNullStringAs"};
     if (($type eq "DOMString" || IsEnumType($type)) && $isReturnValue) {
         my $functionSuffix = "";
@@ -6241,6 +6254,35 @@ sub GenerateCompileTimeCheckForEnumsIfNeeded
         }
     }
     return @checks;
+}
+
+sub GenerateReflectOnlyCheck
+{
+    my $knownValueString = shift;
+    my $indent = shift;
+
+    my @knownValues = split(quotemeta("|"), $knownValueString);
+
+    # Attribute is limited to only known values: check that the attribute
+    # value is one of those..and if not, set it to the empty string.
+    # ( http://www.whatwg.org/specs/web-apps/current-work/#limited-to-only-known-values )
+    #
+    my @normalizeAttributeCode = ();
+    my $code = "";
+    foreach my $knownValue (@knownValues) {
+        push(@normalizeAttributeCode, "${indent}} else if (equalIgnoringCase(resultValue, \"$knownValue\")) {");
+        push(@normalizeAttributeCode, "${indent}    resultValue = \"$knownValue\";");
+    }
+    my $normalizeAttributeValue = join("\n", @normalizeAttributeCode);
+    $code .= <<END;
+${indent}if (resultValue.isEmpty()) {
+${indent}    ;
+${normalizeAttributeValue}
+${indent}} else {
+${indent}    resultValue = "";
+${indent}}
+END
+        return "${code}";
 }
 
 sub ExtendedAttributeContains
