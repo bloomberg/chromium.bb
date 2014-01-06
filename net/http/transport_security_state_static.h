@@ -390,7 +390,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {17, true, "\004goto\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {18, true, "\005cloud\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {18, true, "\005glass\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
-  {17, true, "\004play\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
+  {17, false, "\004play\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
   {20, true, "\006market\007android\003com", true, kGooglePins, DOMAIN_ANDROID_COM },
   {26, true, "\003ssl\020google-analytics\003com", true, kGooglePins, DOMAIN_GOOGLE_ANALYTICS_COM },
   {18, true, "\005drive\006google\003com", true, kGooglePins, DOMAIN_GOOGLE_COM },
