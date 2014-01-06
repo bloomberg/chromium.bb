@@ -121,7 +121,22 @@ class TracingControllerImpl : public TracingController {
 
   void OnWatchEventMatched();
 
+  void SetEnabledOnFileThread(const std::string& category_filter,
+                              int options,
+                              const base::Closure& callback);
+  void SetDisabledOnFileThread(const base::Closure& callback);
+  void OnEnableRecordingDone(const std::string& category_filter,
+                             int trace_options,
+                             const EnableRecordingDoneCallback& callback);
+  void OnDisableRecordingDone(const base::FilePath& result_file_path,
+                              const TracingFileResultCallback& callback);
+  void OnEnableMonitoringDone(const std::string& category_filter,
+                              int trace_options,
+                              const EnableMonitoringDoneCallback& callback);
+  void OnDisableMonitoringDone(const DisableMonitoringDoneCallback& callback);
+
   TraceMessageFilterSet trace_message_filters_;
+
   // Pending acks for DisableRecording.
   int pending_disable_recording_ack_count_;
   TraceMessageFilterSet pending_disable_recording_filters_;

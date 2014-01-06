@@ -34,7 +34,6 @@ class InProcessTraceController {
     return content::TracingController::GetInstance()->EnableRecording(
         category_patterns, content::TracingController::DEFAULT_OPTIONS,
         content::TracingController::EnableRecordingDoneCallback());
-    return true;
   }
 
   bool BeginTracingWithWatch(const std::string& category_patterns,
@@ -44,11 +43,22 @@ class InProcessTraceController {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(num_occurrences > 0);
     watch_notification_count_ = num_occurrences;
-    return content::TracingController::GetInstance()->SetWatchEvent(
-        category_name, event_name,
-        base::Bind(&InProcessTraceController::OnWatchEventMatched,
-                   base::Unretained(this))) &&
-        BeginTracing(category_patterns);
+    if (!content::TracingController::GetInstance()->SetWatchEvent(
+            category_name, event_name,
+            base::Bind(&InProcessTraceController::OnWatchEventMatched,
+                       base::Unretained(this)))) {
+      return false;
+    }
+    if (!content::TracingController::GetInstance()->EnableRecording(
+            category_patterns, content::TracingController::DEFAULT_OPTIONS,
+            base::Bind(&InProcessTraceController::OnEnableTracingComplete,
+                       base::Unretained(this)))) {
+      return false;
+    }
+
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    return true;
   }
 
   bool WaitForWatchEvent(base::TimeDelta timeout) {
@@ -92,6 +102,10 @@ class InProcessTraceController {
 
  private:
   friend struct DefaultSingletonTraits<InProcessTraceController>;
+
+  void OnEnableTracingComplete() {
+    message_loop_runner_->Quit();
+  }
 
   void OnEndTracingComplete() {
     message_loop_runner_->Quit();
