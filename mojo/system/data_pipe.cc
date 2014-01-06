@@ -37,6 +37,9 @@ MojoResult DataPipe::ValidateOptions(
     return MOJO_RESULT_INVALID_ARGUMENT;
   out_options->struct_size = static_cast<uint32_t>(sizeof(*out_options));
 
+  // All flags are okay (unrecognized flags will be ignored).
+  out_options->flags = in_options->flags;
+
   if (in_options->element_num_bytes == 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
   out_options->element_num_bytes = in_options->element_num_bytes;

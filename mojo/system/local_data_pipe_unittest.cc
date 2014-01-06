@@ -476,8 +476,110 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
   }
 }
 
-// TODO(vtl): More: discard (with/without "all or none"). More "all or none"
-// tests.
+void Seq(int32_t start, size_t count, int32_t* out) {
+  for (size_t i = 0; i < count; i++)
+    out[i] = start + static_cast<int32_t>(i);
+}
+
+TEST(LocalDataPipeTest, MayDiscard) {
+  const MojoCreateDataPipeOptions options = {
+    kSizeOfOptions,  // |struct_size|.
+    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD,  // |flags|.
+    static_cast<uint32_t>(sizeof(int32_t)),  // |element_num_bytes|.
+    10 * sizeof(int32_t)  // |capacity_num_bytes|.
+  };
+  MojoCreateDataPipeOptions validated_options = { 0 };
+  EXPECT_EQ(MOJO_RESULT_OK,
+            DataPipe::ValidateOptions(&options, &validated_options));
+
+  scoped_refptr<LocalDataPipe> dp(new LocalDataPipe(validated_options));
+
+  int32_t buffer[100] = { 0 };
+  uint32_t num_bytes = 0;
+
+  num_bytes = 20u * sizeof(int32_t);
+  Seq(0, arraysize(buffer), buffer);
+  // Try writing more than capacity. (This test relies on the implementation
+  // enforcing the capacity strictly.)
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, false));
+  EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
+
+  // Read half of what we wrote.
+  num_bytes = 5u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(buffer, &num_bytes, false));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+  int32_t expected_buffer[100];
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  Seq(0, 5u, expected_buffer);
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+  // Internally, a circular buffer would now look like:
+  //   -, -, -, -, -, 5, 6, 7, 8, 9
+
+  // Write a bit more than the space that's available.
+  num_bytes = 8u * sizeof(int32_t);
+  Seq(100, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, false));
+  EXPECT_EQ(8u * sizeof(int32_t), num_bytes);
+  // Internally, a circular buffer would now look like:
+  //   100, 101, 102, 103, 104, 105, 106, 107, 8, 9
+
+  // Read half of what's available.
+  num_bytes = 5u * sizeof(int32_t);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(buffer, &num_bytes, false));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  expected_buffer[0] = 8;
+  expected_buffer[1] = 9;
+  expected_buffer[2] = 100;
+  expected_buffer[3] = 101;
+  expected_buffer[4] = 102;
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+  // Internally, a circular buffer would now look like:
+  //   -, -, -, 103, 104, 105, 106, 107, -, -
+
+  // Write one integer.
+  num_bytes = 1u * sizeof(int32_t);
+  Seq(200, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, false));
+  EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
+  // Internally, a circular buffer would now look like:
+  //   -, -, -, 103, 104, 105, 106, 107, 200, -
+
+  // Write five more.
+  num_bytes = 5u * sizeof(int32_t);
+  Seq(300, arraysize(buffer), buffer);
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ProducerWriteData(buffer, &num_bytes, false));
+  EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
+  // Internally, a circular buffer would now look like:
+  //   301, 302, 303, 304, 104, 105, 106, 107, 200, 300
+
+  // Read it all.
+  num_bytes = sizeof(buffer);
+  memset(buffer, 0xab, sizeof(buffer));
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerReadData(buffer, &num_bytes, false));
+  EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
+  memset(expected_buffer, 0xab, sizeof(expected_buffer));
+  expected_buffer[0] = 104;
+  expected_buffer[1] = 105;
+  expected_buffer[2] = 106;
+  expected_buffer[3] = 107;
+  expected_buffer[4] = 200;
+  expected_buffer[5] = 300;
+  expected_buffer[6] = 301;
+  expected_buffer[7] = 302;
+  expected_buffer[8] = 303;
+  expected_buffer[9] = 304;
+  EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
+
+  // TODO(vtl): Test two-phase write when it supports "may discard".
+
+  dp->ProducerClose();
+  dp->ConsumerClose();
+}
+
+// TODO(vtl): More "all or none" tests (without and with "may discard").
 
 // Tests that |ProducerWriteData()| and |ConsumerReadData()| writes and reads,
 // respectively, as much as possible, even if it has to "wrap around" the

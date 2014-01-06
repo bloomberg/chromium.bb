@@ -51,13 +51,30 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
   DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
   DCHECK_GT(*num_bytes, 0u);
 
-  // TODO(vtl): Consider this return value.
-  if (all_or_none && *num_bytes > capacity_num_bytes() - current_num_bytes_)
-    return MOJO_RESULT_OUT_OF_RANGE;
+  size_t num_bytes_to_write = 0;
+  if (may_discard()) {
+    if (all_or_none && *num_bytes > capacity_num_bytes())
+      return MOJO_RESULT_OUT_OF_RANGE;
 
-  size_t num_bytes_to_write =
-      std::min(static_cast<size_t>(*num_bytes),
-               capacity_num_bytes() - current_num_bytes_);
+    num_bytes_to_write = std::min(static_cast<size_t>(*num_bytes),
+                                  capacity_num_bytes());
+    if (num_bytes_to_write > capacity_num_bytes() - current_num_bytes_) {
+      // Discard as much as needed (discard oldest first).
+      size_t num_bytes_to_discard =
+          num_bytes_to_write - (capacity_num_bytes() - current_num_bytes_);
+      start_index_ += num_bytes_to_discard;
+      start_index_ %= capacity_num_bytes();
+      current_num_bytes_ -= num_bytes_to_discard;
+    }
+  } else {
+    if (all_or_none && *num_bytes > capacity_num_bytes() - current_num_bytes_) {
+      return (*num_bytes > capacity_num_bytes()) ? MOJO_RESULT_OUT_OF_RANGE :
+                                                   MOJO_RESULT_SHOULD_WAIT;
+    }
+
+    num_bytes_to_write = std::min(static_cast<size_t>(*num_bytes),
+                                  capacity_num_bytes() - current_num_bytes_);
+  }
   if (num_bytes_to_write == 0)
     return MOJO_RESULT_SHOULD_WAIT;
 
