@@ -712,6 +712,8 @@ bool NaClProcessHost::StartNaClExecution() {
   params.enable_ipc_proxy = enable_ppapi_proxy();
   params.uses_irt = uses_irt_;
   params.enable_dyncode_syscalls = enable_dyncode_syscalls_;
+  params.enable_nonsfi_mode = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNaClNonSfiMode);
 
   const ChildProcessData& data = process_->GetData();
   if (!ShareHandleToSelLdr(data.handle,

@@ -13,7 +13,8 @@ NaClStartParams::NaClStartParams()
       enable_debug_stub(false),
       enable_ipc_proxy(false),
       uses_irt(false),
-      enable_dyncode_syscalls(false) {
+      enable_dyncode_syscalls(false),
+      enable_nonsfi_mode(false) {
 }
 
 NaClStartParams::~NaClStartParams() {

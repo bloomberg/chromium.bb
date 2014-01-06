@@ -32,6 +32,7 @@
 #endif
 
 #if defined(OS_LINUX)
+#include "components/nacl/loader/nonsfi/nonsfi_main.h"
 #include "content/public/common/child_process_sandbox_support_linux.h"
 #endif
 
@@ -330,6 +331,14 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
 #endif
 #if defined(OS_LINUX)
   args->prereserved_sandbox_size = prereserved_sandbox_size_;
+#endif
+
+#if defined(OS_LINUX)
+  if (params.enable_nonsfi_mode) {
+    nacl::nonsfi::MainStart(args->imc_bootstrap_handle);
+    NOTREACHED();
+    return;
+  }
 #endif
   NaClChromeMainStart(args);
   NOTREACHED();

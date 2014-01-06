@@ -15,6 +15,10 @@ const char kDisablePnaclInstall[]           = "disable-pnacl-install";
 // Enables debugging via RSP over a socket.
 const char kEnableNaClDebug[]               = "enable-nacl-debug";
 
+// Enables Non-SFI mode, in which programs can be run without NaCl's SFI
+// sandbox.
+const char kEnableNaClNonSfiMode[]          = "enable-nacl-nonsfi-mode";
+
 // Causes the process to run as a NativeClient broker
 // (used for launching NaCl loader processes on 64-bit Windows).
 const char kNaClBrokerProcess[]             = "nacl-broker";
