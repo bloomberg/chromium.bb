@@ -229,6 +229,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     return DROP_EVENT;
   } else if (WebInputEvent::isKeyboardEventType(event.type)) {
     CancelCurrentFling();
+  } else if (event.type == WebInputEvent::MouseMove) {
+    const WebMouseEvent& mouse_event =
+        *static_cast<const WebMouseEvent*>(&event);
+    // TODO(tony): Ignore when mouse buttons are down?
+    // TODO(davemoore): This should never happen, but bug #326635 showed some
+    // surprising crashes.
+    CHECK(input_handler_);
+    input_handler_->MouseMoveAt(gfx::Point(mouse_event.x, mouse_event.y));
   }
 
   return DID_NOT_HANDLE;
