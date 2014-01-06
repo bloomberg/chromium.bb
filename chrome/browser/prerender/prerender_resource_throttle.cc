@@ -6,10 +6,8 @@
 
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_controller.h"
@@ -180,16 +178,7 @@ PrerenderContents* PrerenderResourceThrottle::PrerenderContentsFromRenderFrame(
       render_process_id, render_frame_id);
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(rfh);
-  if (!web_contents)
-    return NULL;
-
-  PrerenderManager* prerender_manager =
-      PrerenderManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  if (!prerender_manager)
-    return NULL;
-
-  return prerender_manager->GetPrerenderContents(web_contents);
+  return PrerenderContents::FromWebContents(web_contents);
 }
 
 void PrerenderResourceThrottle::AddResourceThrottle() {

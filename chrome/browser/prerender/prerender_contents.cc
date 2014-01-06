@@ -17,6 +17,7 @@
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -235,6 +236,18 @@ bool PrerenderContents::Init() {
 // static
 PrerenderContents::Factory* PrerenderContents::CreateFactory() {
   return new PrerenderContentsFactoryImpl();
+}
+
+// static
+PrerenderContents* PrerenderContents::FromWebContents(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return NULL;
+  PrerenderManager* prerender_manager = PrerenderManagerFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (!prerender_manager)
+    return NULL;
+  return prerender_manager->GetPrerenderContents(web_contents);
 }
 
 void PrerenderContents::StartPrerendering(

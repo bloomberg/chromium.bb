@@ -497,7 +497,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
         // might not get created properly.
         web_contents()->GetController().DiscardNonCommittedEntries();
       }
-      ui_manager_->DoDisplayBlockingPage(resource);
+      ui_manager_->DisplayBlockingPage(resource);
     }
     // If there is true phishing verdict, invalidate weakptr so that no longer
     // consider the malware vedict.
@@ -528,7 +528,7 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
         // might not get created properly.
         web_contents()->GetController().DiscardNonCommittedEntries();
       }
-      ui_manager_->DoDisplayBlockingPage(resource);
+      ui_manager_->DisplayBlockingPage(resource);
     }
     // If there is true malware verdict, invalidate weakptr so that no longer
     // consider the phishing vedict.

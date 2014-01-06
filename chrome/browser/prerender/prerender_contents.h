@@ -148,6 +148,11 @@ class PrerenderContents : public content::NotificationObserver,
 
   static Factory* CreateFactory();
 
+  // Returns a PrerenderContents from the given web_contents, if it's used for
+  // prerendering. Otherwise returns NULL. Handles a NULL input for
+  // convenience.
+  static PrerenderContents* FromWebContents(content::WebContents* web_contents);
+
   // Start rendering the contents in the prerendered state. If
   // |is_control_group| is true, this will go through some of the mechanics of
   // starting a prerender, without actually creating the RenderView.

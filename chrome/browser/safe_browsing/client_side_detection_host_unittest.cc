@@ -133,7 +133,7 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
   explicit MockSafeBrowsingUIManager(SafeBrowsingService* service)
       : SafeBrowsingUIManager(service) { }
 
-  MOCK_METHOD1(DoDisplayBlockingPage, void(const UnsafeResource& resource));
+  MOCK_METHOD1(DisplayBlockingPage, void(const UnsafeResource& resource));
 
   // Helper function which calls OnBlockingPageComplete for this client
   // object.
@@ -465,8 +465,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneNotPhishing) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   ASSERT_FALSE(cb.is_null());
 
-  // Make sure DoDisplayBlockingPage is not going to be called.
-  EXPECT_CALL(*ui_manager_.get(), DoDisplayBlockingPage(_)).Times(0);
+  // Make sure DisplayBlockingPage is not going to be called.
+  EXPECT_CALL(*ui_manager_.get(), DisplayBlockingPage(_)).Times(0);
   cb.Run(GURL(verdict.url()), false);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
@@ -506,8 +506,8 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneDisabled) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   ASSERT_FALSE(cb.is_null());
 
-  // Make sure DoDisplayBlockingPage is not going to be called.
-  EXPECT_CALL(*ui_manager_.get(), DoDisplayBlockingPage(_)).Times(0);
+  // Make sure DisplayBlockingPage is not going to be called.
+  EXPECT_CALL(*ui_manager_.get(), DisplayBlockingPage(_)).Times(0);
   cb.Run(GURL(verdict.url()), false);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(Mock::VerifyAndClear(ui_manager_.get()));
@@ -547,7 +547,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneShowInterstitial) {
   ASSERT_FALSE(cb.is_null());
 
   UnsafeResource resource;
-  EXPECT_CALL(*ui_manager_.get(), DoDisplayBlockingPage(_))
+  EXPECT_CALL(*ui_manager_.get(), DisplayBlockingPage(_))
       .WillOnce(SaveArg<0>(&resource));
   cb.Run(phishing_url, true);
 
@@ -640,7 +640,7 @@ TEST_F(ClientSideDetectionHostTest, OnPhishingDetectionDoneMultiplePings) {
   // We expect that the interstitial is shown for the second phishing URL and
   // not for the first phishing URL.
   UnsafeResource resource;
-  EXPECT_CALL(*ui_manager_.get(), DoDisplayBlockingPage(_))
+  EXPECT_CALL(*ui_manager_.get(), DisplayBlockingPage(_))
       .WillOnce(SaveArg<0>(&resource));
 
   cb.Run(phishing_url, true);  // Should have no effect.
@@ -970,7 +970,7 @@ TEST_F(ClientSideDetectionHostTest,
   ASSERT_FALSE(cb.is_null());
 
   UnsafeResource resource;
-  EXPECT_CALL(*ui_manager_.get(), DoDisplayBlockingPage(_))
+  EXPECT_CALL(*ui_manager_.get(), DisplayBlockingPage(_))
       .WillOnce(SaveArg<0>(&resource));
   cb.Run(malware_landing_url, malware_ip_url, true);
 
@@ -1153,7 +1153,7 @@ TEST_F(ClientSideDetectionHostTest, ShouldClassifyUrl) {
                                 NULL);
 
   UnsafeResource resource;
-  EXPECT_CALL(*ui_manager_.get(), DoDisplayBlockingPage(_))
+  EXPECT_CALL(*ui_manager_.get(), DisplayBlockingPage(_))
       .WillOnce(SaveArg<0>(&resource));
 
   NavigateAndCommit(url);

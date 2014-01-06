@@ -6,11 +6,14 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/prerender/prerender_tracker.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 
@@ -94,54 +97,72 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
 
     // Continue the request.
     ResumeRequest();
-  } else {
-    bool should_show_blocking_page = true;
-    if (request_->load_flags() & net::LOAD_PREFETCH) {
-      // Don't prefetch resources that fail safe browsing, disallow
-      // them.
-      controller()->Cancel();
-      should_show_blocking_page = false;
-    } else {
-      ChromeURLRequestUserData* user_data =
-          ChromeURLRequestUserData::Get(request_);
-      if (user_data && user_data->is_prerender()) {
-        const content::ResourceRequestInfo* info =
-            content::ResourceRequestInfo::ForRequest(request_);
-        prerender::PrerenderTracker* prerender_tracker = g_browser_process->
-            prerender_tracker();
-        if (prerender_tracker->TryCancelOnIOThread(
-                info->GetChildID(),
-                info->GetRouteID(),
-                prerender::FINAL_STATUS_SAFE_BROWSING)) {
-          controller()->Cancel();
-          should_show_blocking_page = false;
-        }
-      }
-    }
-    if (should_show_blocking_page)
-      StartDisplayingBlockingPage(url, threat_type);
+    return;
   }
-}
 
-void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
-    const GURL& url, SBThreatType threat_type) {
-  CHECK(state_ == STATE_NONE);
-  CHECK(defer_state_ != DEFERRED_NONE);
-
-  state_ = STATE_DISPLAYING_BLOCKING_PAGE;
+  if (request_->load_flags() & net::LOAD_PREFETCH) {
+    // Don't prefetch resources that fail safe browsing, disallow
+    // them.
+    controller()->Cancel();
+    return;
+  }
 
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
-  ui_manager_->DisplayBlockingPage(
-      url,
-      request_->original_url(),
-      redirect_urls_,
-      is_subresource_,
-      threat_type,
-      base::Bind(
-          &SafeBrowsingResourceThrottle::OnBlockingPageComplete, AsWeakPtr()),
-      info->GetChildID(),
-      info->GetRouteID());
+
+  SafeBrowsingUIManager::UnsafeResource resource;
+  resource.url = url;
+  resource.original_url = request_->original_url();
+  resource.redirect_urls = redirect_urls_;
+  resource.is_subresource = is_subresource_;
+  resource.threat_type = threat_type;
+  resource.callback = base::Bind(
+      &SafeBrowsingResourceThrottle::OnBlockingPageComplete, AsWeakPtr());
+  resource.render_process_host_id = info->GetChildID();
+  resource.render_view_id =  info->GetRouteID();
+
+  state_ = STATE_DISPLAYING_BLOCKING_PAGE;
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&SafeBrowsingResourceThrottle::StartDisplayingBlockingPage,
+                 AsWeakPtr(), ui_manager_, resource));
+}
+
+void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
+    const base::WeakPtr<SafeBrowsingResourceThrottle>& throttle,
+    scoped_refptr<SafeBrowsingUIManager> ui_manager,
+    const SafeBrowsingUIManager::UnsafeResource& resource) {
+  bool should_show_blocking_page = true;
+
+  content::RenderViewHost* rvh = content::RenderViewHost::FromID(
+      resource.render_process_host_id, resource.render_view_id);
+  if (rvh) {
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderViewHost(rvh);
+    prerender::PrerenderContents* prerender_contents =
+        prerender::PrerenderContents::FromWebContents(web_contents);
+    if (prerender_contents) {
+      prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
+      should_show_blocking_page = false;
+    }
+
+    if (should_show_blocking_page)  {
+      ui_manager->DisplayBlockingPage(resource);
+      return;
+    }
+  }
+
+  // Tab is gone or it's being prerendered.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&SafeBrowsingResourceThrottle::Cancel, throttle));
+}
+
+void SafeBrowsingResourceThrottle::Cancel() {
+  controller()->Cancel();
 }
 
 // SafeBrowsingService::UrlCheckCallback implementation, called on the IO

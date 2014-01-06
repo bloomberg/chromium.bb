@@ -90,8 +90,16 @@ class SafeBrowsingResourceThrottle
   // StartCheckingUrl()) has taken longer than kCheckUrlTimeoutMs.
   void OnCheckUrlTimeout();
 
-  // Starts displaying the safe browsing interstitial page.
-  void StartDisplayingBlockingPage(const GURL& url, SBThreatType threat_type);
+  // Starts displaying the safe browsing interstitial page if it's not
+  // prerendering. Called on the UI thread.
+  static void StartDisplayingBlockingPage(
+      const base::WeakPtr<SafeBrowsingResourceThrottle>& throttle,
+      scoped_refptr<SafeBrowsingUIManager> ui_manager,
+      const SafeBrowsingUIManager::UnsafeResource& resource);
+
+  // Called on the IO thread if the request turned out to be for a prerendered
+  // page.
+  void Cancel();
 
   // Resumes the request, by continuing the deferred action (either starting the
   // request, or following a redirect).
