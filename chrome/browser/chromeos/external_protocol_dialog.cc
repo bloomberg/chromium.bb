@@ -35,7 +35,6 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     const GURL& url, int render_process_host_id, int routing_id) {
   WebContents* web_contents = tab_util::GetWebContentsByID(
       render_process_host_id, routing_id);
-  DCHECK(web_contents);
   new ExternalProtocolDialog(web_contents, url);
 }
 

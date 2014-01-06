@@ -48,6 +48,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/stream_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_response.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
@@ -154,6 +155,24 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
     return;
   streams_private->ExecuteMimeTypeHandler(
       extension_id, web_contents, stream.Pass(), expected_content_size);
+}
+
+void LaunchURL(const GURL& url, int render_process_id, int render_view_id) {
+  content::RenderViewHost* rvh = content::RenderViewHost::FromID(
+      render_process_id, render_view_id);
+  if (rvh) {
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderViewHost(rvh);
+    prerender::PrerenderContents* prerender_contents =
+        prerender::PrerenderContents::FromWebContents(web_contents);
+    if (prerender_contents) {
+      prerender_contents->Destroy(prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
+      prerender::ReportPrerenderExternalURL();
+      return;
+    }
+  }
+
+  ExternalProtocolHandler::LaunchUrl(url, render_process_id, render_view_id);
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -439,13 +458,6 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
   return false;
 #else
 
-  if (prerender_tracker_->IsPrerenderingOnIOThread(child_id, route_id) &&
-      prerender_tracker_->TryCancel(
-          child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME)) {
-    prerender::ReportPrerenderExternalURL();
-    return false;
-  }
-
   ExtensionRendererState::WebViewInfo info;
   if (ExtensionRendererState::GetInstance()->GetWebViewInfo(child_id,
                                                             route_id,
@@ -455,7 +467,7 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExternalProtocolHandler::LaunchUrl, url, child_id, route_id));
+      base::Bind(&LaunchURL, url, child_id, route_id));
   return true;
 #endif
 }
