@@ -26,6 +26,11 @@ class NavigatorDelegate {
       bool is_error_page,
       bool is_iframe_srcdoc) {}
 
+  // A provisional load in |render_frame_host| failed.
+  virtual void DidFailProvisionalLoadWithError(
+      RenderFrameHostImpl* render_frame_host,
+      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
+
   // Notification to the Navigator embedder that navigation state has
   // changed. This method corresponds to
   // WebContents::NotifyNavigationStateChanged.

@@ -208,9 +208,6 @@ class CONTENT_EXPORT RenderFrameHostManager
                         bool swapped_out,
                         bool hidden);
 
-  // Called when a provisional load on the given renderer is aborted.
-  void RendererAbortedProvisionalLoad(RenderViewHost* render_view_host);
-
   // Sets the passed passed interstitial as the currently showing interstitial.
   // |interstitial_page| should be non NULL (use the remove_interstitial_page
   // method to unset the interstitial) and no interstitial page should be set

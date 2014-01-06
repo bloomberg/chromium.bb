@@ -402,20 +402,6 @@ void RenderFrameHostManager::DidDisownOpener(RenderViewHost* render_view_host) {
   }
 }
 
-void RenderFrameHostManager::RendererAbortedProvisionalLoad(
-    RenderViewHost* render_view_host) {
-  // We used to cancel the pending renderer here for cross-site downloads.
-  // However, it's not safe to do that because the download logic repeatedly
-  // looks for this WebContents based on a render view ID.  Instead, we just
-  // leave the pending renderer around until the next navigation event
-  // (Navigate, DidNavigate, etc), which will clean it up properly.
-  // TODO(creis): All of this will go away when we move the cross-site logic
-  // to ResourceDispatcherHost, so that we intercept responses rather than
-  // navigation events.  (That's necessary to support onunload anyway.)  Once
-  // we've made that change, we won't create a pending renderer until we know
-  // the response is not a download.
-}
-
 void RenderFrameHostManager::RendererProcessClosing(
     RenderProcessHost* render_process_host) {
   // Remove any swapped out RVHs from this process, so that we don't try to

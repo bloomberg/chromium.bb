@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 
 class GURL;
+struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace content {
 
@@ -31,6 +32,11 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
                                        int64 parent_frame_id,
                                        bool main_frame,
                                        const GURL& url) {};
+
+  // The RenderFrameHostImpl has failed a provisional load.
+  virtual void DidFailProvisionalLoadWithError(
+      RenderFrameHostImpl* render_frame_host,
+      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {};
 
  protected:
   friend class base::RefCounted<Navigator>;

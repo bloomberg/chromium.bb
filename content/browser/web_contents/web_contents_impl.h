@@ -326,10 +326,6 @@ class CONTENT_EXPORT WebContentsImpl
       int32 page_id,
       const GURL& source_url,
       const GURL& target_url) OVERRIDE;
-  virtual void DidFailProvisionalLoadWithError(
-      RenderViewHost* render_view_host,
-      const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params)
-          OVERRIDE;
   virtual void DidNavigate(
       RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
@@ -460,6 +456,10 @@ class CONTENT_EXPORT WebContentsImpl
       const GURL& validated_url,
       bool is_error_page,
       bool is_iframe_srcdoc) OVERRIDE;
+  virtual void DidFailProvisionalLoadWithError(
+      RenderFrameHostImpl* render_frame_host,
+      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
+      OVERRIDE;
   virtual void NotifyChangedNavigationState(
       InvalidateTypes changed_flags) OVERRIDE;
 

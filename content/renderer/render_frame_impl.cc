@@ -915,13 +915,103 @@ void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
 void RenderFrameImpl::didFailProvisionalLoad(
     blink::WebFrame* frame,
     const blink::WebURLError& error) {
-  // TODO(nasko): Move implementation here. Needed state:
-  // * page_id_
-  // * pending_navigation_params_
-  // Needed methods
-  // * MaybeLoadAlternateErrorPage
-  // * LoadNavigationErrorPage
+  WebDataSource* ds = frame->provisionalDataSource();
+  DCHECK(ds);
+
+  const WebURLRequest& failed_request = ds->request();
+
+  // Call out to RenderViewImpl, so observers are notified.
   render_view_->didFailProvisionalLoad(frame, error);
+
+  bool show_repost_interstitial =
+      (error.reason == net::ERR_CACHE_MISS &&
+       EqualsASCII(failed_request.httpMethod(), "POST"));
+
+  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
+  params.frame_id = frame->identifier();
+  params.frame_unique_name = frame->uniqueName();
+  params.is_main_frame = !frame->parent();
+  params.error_code = error.reason;
+  GetContentClient()->renderer()->GetNavigationErrorStrings(
+      frame,
+      failed_request,
+      error,
+      render_view_->renderer_preferences_.accept_languages,
+      NULL,
+      &params.error_description);
+  params.url = error.unreachableURL;
+  params.showing_repost_interstitial = show_repost_interstitial;
+  Send(new FrameHostMsg_DidFailProvisionalLoadWithError(
+      routing_id_, params));
+
+  // Don't display an error page if this is simply a cancelled load.  Aside
+  // from being dumb, WebCore doesn't expect it and it will cause a crash.
+  if (error.reason == net::ERR_ABORTED)
+    return;
+
+  // Don't display "client blocked" error page if browser has asked us not to.
+  if (error.reason == net::ERR_BLOCKED_BY_CLIENT &&
+      render_view_->renderer_preferences_.disable_client_blocked_error_page) {
+    return;
+  }
+
+  // Allow the embedder to suppress an error page.
+  if (GetContentClient()->renderer()->ShouldSuppressErrorPage(
+          error.unreachableURL)) {
+    return;
+  }
+
+  if (RenderThreadImpl::current() &&
+      RenderThreadImpl::current()->layout_test_mode()) {
+    return;
+  }
+
+  // Make sure we never show errors in view source mode.
+  frame->enableViewSourceMode(false);
+
+  DocumentState* document_state = DocumentState::FromDataSource(ds);
+  NavigationState* navigation_state = document_state->navigation_state();
+
+  // If this is a failed back/forward/reload navigation, then we need to do a
+  // 'replace' load.  This is necessary to avoid messing up session history.
+  // Otherwise, we do a normal load, which simulates a 'go' navigation as far
+  // as session history is concerned.
+  //
+  // AUTO_SUBFRAME loads should always be treated as loads that do not advance
+  // the page id.
+  //
+  // TODO(davidben): This should also take the failed navigation's replacement
+  // state into account, if a location.replace() failed.
+  bool replace =
+      navigation_state->pending_page_id() != -1 ||
+      PageTransitionCoreTypeIs(navigation_state->transition_type(),
+                               PAGE_TRANSITION_AUTO_SUBFRAME);
+
+  // If we failed on a browser initiated request, then make sure that our error
+  // page load is regarded as the same browser initiated request.
+  if (!navigation_state->is_content_initiated()) {
+    render_view_->pending_navigation_params_.reset(new ViewMsg_Navigate_Params);
+    render_view_->pending_navigation_params_->page_id =
+        navigation_state->pending_page_id();
+    render_view_->pending_navigation_params_->pending_history_list_offset =
+        navigation_state->pending_history_list_offset();
+    render_view_->pending_navigation_params_->should_clear_history_list =
+        navigation_state->history_list_was_cleared();
+    render_view_->pending_navigation_params_->transition =
+        navigation_state->transition_type();
+    render_view_->pending_navigation_params_->request_time =
+        document_state->request_time();
+    render_view_->pending_navigation_params_->should_replace_current_entry =
+        replace;
+  }
+
+  // Provide the user with a more helpful error page?
+  if (render_view_->MaybeLoadAlternateErrorPage(frame, error, replace))
+    return;
+
+  // Fallback to a local error page.
+  render_view_->LoadNavigationErrorPage(
+      frame, failed_request, error, std::string(), replace);
 }
 
 void RenderFrameImpl::didCommitProvisionalLoad(blink::WebFrame* frame,

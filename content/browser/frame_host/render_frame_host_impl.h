@@ -12,6 +12,7 @@
 #include "content/public/browser/render_frame_host.h"
 
 class GURL;
+struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 
 namespace base {
 class FilePath;
@@ -54,7 +55,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
 
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
-
+  FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
   // This function is called when this is a swapped out RenderFrameHost that
   // lives in the same process as the parent frame. The
@@ -99,6 +100,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                                          int64 parent_frame_id,
                                          bool main_frame,
                                          const GURL& url);
+  void OnDidFailProvisionalLoadWithError(
+      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnSwapOutACK();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
@@ -123,7 +126,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   // This will move to RenderFrameProxyHost when that class is created.
   CrossProcessFrameConnector* cross_process_frame_connector_;
 
-  // Reference to the whole frame tree that this RenderFrameHost belongs too.
+  // Reference to the whole frame tree that this RenderFrameHost belongs to.
   // Allows this RenderFrameHost to add and remove nodes in response to
   // messages from the renderer requesting DOM manipulation.
   FrameTree* frame_tree_;

@@ -415,25 +415,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_DateTimeDialogValue_Params)
   IPC_STRUCT_MEMBER(std::vector<content::DateTimeSuggestion>, suggestions)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewHostMsg_DidFailProvisionalLoadWithError_Params)
-  // The frame ID for the failure report.
-  IPC_STRUCT_MEMBER(int64, frame_id)
-  // The WebFrame's uniqueName().
-  IPC_STRUCT_MEMBER(base::string16, frame_unique_name)
-  // True if this is the top-most frame.
-  IPC_STRUCT_MEMBER(bool, is_main_frame)
-  // Error code as reported in the DidFailProvisionalLoad callback.
-  IPC_STRUCT_MEMBER(int, error_code)
-  // An error message generated from the error_code. This can be an empty
-  // string if we were unable to find a meaningful description.
-  IPC_STRUCT_MEMBER(base::string16, error_description)
-  // The URL that the error is reported for.
-  IPC_STRUCT_MEMBER(GURL, url)
-  // True if the failure is the result of navigating to a POST again
-  // and we're going to show the POST interstitial.
-  IPC_STRUCT_MEMBER(bool, showing_repost_interstitial)
-IPC_STRUCT_END()
-
 // Parameters structure for ViewHostMsg_FrameNavigate, which has too many data
 // parameters to be reasonably put in a predefined IPC message.
 IPC_STRUCT_BEGIN_WITH_PARENT(ViewHostMsg_FrameNavigate_Params,
@@ -1653,10 +1634,6 @@ IPC_MESSAGE_ROUTED5(ViewHostMsg_DidFailLoadWithError,
                     bool /* is_main_frame */,
                     int /* error_code */,
                     base::string16 /* error_description */)
-
-// Sent when the renderer fails a provisional load with an error.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_DidFailProvisionalLoadWithError,
-                    ViewHostMsg_DidFailProvisionalLoadWithError_Params)
 
 // Tells the render view that a ViewHostMsg_PaintAtSize message was
 // processed, and the DIB is ready for use. |tag| has the same value that

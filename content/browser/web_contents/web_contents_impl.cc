@@ -2164,6 +2164,22 @@ void WebContentsImpl::DidStartProvisionalLoad(
   }
 }
 
+void WebContentsImpl::DidFailProvisionalLoadWithError(
+    RenderFrameHostImpl* render_frame_host,
+    const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
+  GURL validated_url(params.url);
+  FOR_EACH_OBSERVER(
+      WebContentsObserver,
+      observers_,
+      DidFailProvisionalLoad(params.frame_id,
+                             params.frame_unique_name,
+                             params.is_main_frame,
+                             validated_url,
+                             params.error_code,
+                             params.error_description,
+                             render_frame_host->render_view_host()));
+}
+
 void WebContentsImpl::NotifyChangedNavigationState(
     InvalidateTypes changed_flags) {
   NotifyNavigationStateChanged(changed_flags);
@@ -2197,71 +2213,6 @@ void WebContentsImpl::DidRedirectProvisionalLoad(
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     ProvisionalChangeToMainFrameUrl(validated_target_url,
                                                     render_view_host));
-}
-
-void WebContentsImpl::DidFailProvisionalLoadWithError(
-    RenderViewHost* render_view_host,
-    const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {
-  VLOG(1) << "Failed Provisional Load: " << params.url.possibly_invalid_spec()
-          << ", error_code: " << params.error_code
-          << ", error_description: " << params.error_description
-          << ", is_main_frame: " << params.is_main_frame
-          << ", showing_repost_interstitial: " <<
-            params.showing_repost_interstitial
-          << ", frame_id: " << params.frame_id;
-  GURL validated_url(params.url);
-  RenderProcessHost* render_process_host =
-      render_view_host->GetProcess();
-  render_process_host->FilterURL(false, &validated_url);
-
-  if (net::ERR_ABORTED == params.error_code) {
-    // EVIL HACK ALERT! Ignore failed loads when we're showing interstitials.
-    // This means that the interstitial won't be torn down properly, which is
-    // bad. But if we have an interstitial, go back to another tab type, and
-    // then load the same interstitial again, we could end up getting the first
-    // interstitial's "failed" message (as a result of the cancel) when we're on
-    // the second one.
-    //
-    // We can't tell this apart, so we think we're tearing down the current page
-    // which will cause a crash later one. There is also some code in
-    // RenderFrameHostManager::RendererAbortedProvisionalLoad that is commented
-    // out because of this problem.
-    //
-    // http://code.google.com/p/chromium/issues/detail?id=2855
-    // Because this will not tear down the interstitial properly, if "back" is
-    // back to another tab type, the interstitial will still be somewhat alive
-    // in the previous tab type. If you navigate somewhere that activates the
-    // tab with the interstitial again, you'll see a flash before the new load
-    // commits of the interstitial page.
-    if (ShowingInterstitialPage()) {
-      LOG(WARNING) << "Discarding message during interstitial.";
-      return;
-    }
-
-    GetRenderManager()->RendererAbortedProvisionalLoad(render_view_host);
-  }
-
-  // Do not usually clear the pending entry if one exists, so that the user's
-  // typed URL is not lost when a navigation fails or is aborted.  However, in
-  // cases that we don't show the pending entry (e.g., renderer-initiated
-  // navigations in an existing tab), we don't keep it around.  That prevents
-  // spoofs on in-page navigations that don't go through
-  // DidStartProvisionalLoadForFrame.
-  // In general, we allow the view to clear the pending entry and typed URL if
-  // the user requests (e.g., hitting Escape with focus in the address bar).
-  // Note: don't touch the transient entry, since an interstitial may exist.
-  if (controller_.GetPendingEntry() != controller_.GetVisibleEntry())
-    controller_.DiscardPendingEntry();
-
-  FOR_EACH_OBSERVER(WebContentsObserver,
-                    observers_,
-                    DidFailProvisionalLoad(params.frame_id,
-                                           params.frame_unique_name,
-                                           params.is_main_frame,
-                                           validated_url,
-                                           params.error_code,
-                                           params.error_description,
-                                           render_view_host));
 }
 
 void WebContentsImpl::OnDidLoadResourceFromMemoryCache(

@@ -115,6 +115,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFailProvisionalLoadWithError,
+                        OnDidFailProvisionalLoadWithError)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SwapOut_ACK, OnSwapOutACK)
   IPC_END_MESSAGE_MAP_EX()
 
@@ -153,6 +155,11 @@ void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
     const GURL& url) {
   frame_tree_node_->navigator()->DidStartProvisionalLoad(
       this, frame_id, parent_frame_id, is_main_frame, url);
+}
+
+void RenderFrameHostImpl::OnDidFailProvisionalLoadWithError(
+    const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params) {
+  frame_tree_node_->navigator()->DidFailProvisionalLoadWithError(this, params);
 }
 
 void RenderFrameHostImpl::SwapOut() {

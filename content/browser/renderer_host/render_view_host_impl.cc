@@ -1211,8 +1211,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RenderProcessGone, OnRenderProcessGone)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidRedirectProvisionalLoad,
                         OnDidRedirectProvisionalLoad)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFailProvisionalLoadWithError,
-                        OnDidFailProvisionalLoadWithError)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_FrameNavigate, OnNavigate(msg))
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateTitle, OnUpdateTitle)
@@ -1434,11 +1432,6 @@ void RenderViewHostImpl::OnDidRedirectProvisionalLoad(
     const GURL& target_url) {
   delegate_->DidRedirectProvisionalLoad(
       this, page_id, source_url, target_url);
-}
-
-void RenderViewHostImpl::OnDidFailProvisionalLoadWithError(
-    const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {
-  delegate_->DidFailProvisionalLoadWithError(this, params);
 }
 
 // Called when the renderer navigates.  For every frame loaded, we'll get this

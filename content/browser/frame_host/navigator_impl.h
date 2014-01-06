@@ -27,6 +27,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                                        int64 parent_frame_id,
                                        bool main_frame,
                                        const GURL& url) OVERRIDE;
+  virtual void DidFailProvisionalLoadWithError(
+      RenderFrameHostImpl* render_frame_host,
+      const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)
+      OVERRIDE;
 
  private:
   virtual ~NavigatorImpl() {}

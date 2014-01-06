@@ -17,6 +17,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_registrar.h"
@@ -954,16 +955,16 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
-  ViewHostMsg_DidFailProvisionalLoadWithError_Params params;
+  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.frame_id = 1;
   params.is_main_frame = true;
   params.error_code = net::ERR_ABORTED;
   params.error_description = base::string16();
   params.url = kNewURL;
   params.showing_repost_interstitial = false;
-  test_rvh()->OnMessageReceived(
-          ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
-                                                      params));
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+                                                   params));
 
   // This should not clear the pending entry or notify of a navigation state
   // change, so that we keep displaying kNewURL (until the user clears it).
@@ -1032,16 +1033,16 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
-  ViewHostMsg_DidFailProvisionalLoadWithError_Params params;
+  FrameHostMsg_DidFailProvisionalLoadWithError_Params params;
   params.frame_id = 1;
   params.is_main_frame = true;
   params.error_code = net::ERR_ABORTED;
   params.error_description = base::string16();
   params.url = kRedirectURL;
   params.showing_repost_interstitial = false;
-  test_rvh()->OnMessageReceived(
-          ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
-                                                      params));
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+                                                   params));
 
   // Because the pending entry is renderer initiated and not visible, we
   // clear it when it fails.
@@ -2412,15 +2413,15 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   // which causes the pending entry to be cleared.
   TestRenderViewHost* rvh =
       static_cast<TestRenderViewHost*>(our_contents->GetRenderViewHost());
-  ViewHostMsg_DidFailProvisionalLoadWithError_Params fail_load_params;
+  FrameHostMsg_DidFailProvisionalLoadWithError_Params fail_load_params;
   fail_load_params.frame_id = 1;
   fail_load_params.is_main_frame = true;
   fail_load_params.error_code = net::ERR_ABORTED;
   fail_load_params.error_description = base::string16();
   fail_load_params.url = url;
   fail_load_params.showing_repost_interstitial = false;
-  rvh->OnMessageReceived(
-      ViewHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
+  main_test_rfh()->OnMessageReceived(
+      FrameHostMsg_DidFailProvisionalLoadWithError(0,  // routing_id
                                                   fail_load_params));
 
   // Now the pending restored entry commits.

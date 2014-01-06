@@ -24,7 +24,6 @@ class GURL;
 class SkBitmap;
 class WebKeyboardEvent;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct ViewMsg_PostMessage_Params;
 struct WebPreferences;
@@ -159,11 +158,6 @@ class CONTENT_EXPORT RenderViewHostDelegate {
       int32 page_id,
       const GURL& source_url,
       const GURL& target_url) {}
-
-  // A provisional load in the RenderView failed.
-  virtual void DidFailProvisionalLoadWithError(
-      RenderViewHost* render_view_host,
-      const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params) {}
 
   // The RenderView was navigated to a different page.
   virtual void DidNavigate(RenderViewHost* render_view_host,

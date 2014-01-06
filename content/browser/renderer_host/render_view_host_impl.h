@@ -36,7 +36,6 @@ struct AccessibilityHostMsg_EventParams;
 struct AccessibilityHostMsg_LocationChangeParams;
 struct MediaPlayerAction;
 struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_DidFailProvisionalLoadWithError_Params;
 struct ViewHostMsg_OpenURL_Params;
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_ShowPopup_Params;
@@ -517,8 +516,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidRedirectProvisionalLoad(int32 page_id,
                                     const GURL& source_url,
                                     const GURL& target_url);
-  void OnDidFailProvisionalLoadWithError(
-      const ViewHostMsg_DidFailProvisionalLoadWithError_Params& params);
   void OnNavigate(const IPC::Message& msg);
   void OnUpdateState(int32 page_id, const PageState& state);
   void OnUpdateTitle(int32 page_id,

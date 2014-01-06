@@ -1559,7 +1559,7 @@ TEST_F(RenderViewImplTest, DISABLED_DidFailProvisionalLoadWithErrorForError) {
   view()->OnNavigate(params);
 
   // An error occurred.
-  view()->didFailProvisionalLoad(web_frame, error);
+  view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
   // Frame should exit view-source mode.
   EXPECT_FALSE(web_frame->isViewSourceModeEnabled());
 }
@@ -1581,7 +1581,7 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
   view()->OnNavigate(params);
 
   // A cancellation occurred.
-  view()->didFailProvisionalLoad(web_frame, error);
+  view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->isViewSourceModeEnabled());
 }
@@ -2113,7 +2113,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_Suppresses) {
   view()->OnNavigate(params);
 
   // An error occurred.
-  view()->didFailProvisionalLoad(web_frame, error);
+  view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("", UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
 }
@@ -2141,7 +2141,7 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
   view()->OnNavigate(params);
 
   // An error occurred.
-  view()->didFailProvisionalLoad(web_frame, error);
+  view()->main_render_frame()->didFailProvisionalLoad(web_frame, error);
   ProcessPendingMessages();
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",

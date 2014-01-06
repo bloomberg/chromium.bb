@@ -16,6 +16,25 @@
 
 #define IPC_MESSAGE_START FrameMsgStart
 
+IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
+  // The frame ID for the failure report.
+  IPC_STRUCT_MEMBER(int64, frame_id)
+  // The WebFrame's uniqueName().
+  IPC_STRUCT_MEMBER(base::string16, frame_unique_name)
+  // True if this is the top-most frame.
+  IPC_STRUCT_MEMBER(bool, is_main_frame)
+  // Error code as reported in the DidFailProvisionalLoad callback.
+  IPC_STRUCT_MEMBER(int, error_code)
+  // An error message generated from the error_code. This can be an empty
+  // string if we were unable to find a meaningful description.
+  IPC_STRUCT_MEMBER(base::string16, error_description)
+  // The URL that the error is reported for.
+  IPC_STRUCT_MEMBER(GURL, url)
+  // True if the failure is the result of navigating to a POST again
+  // and we're going to show the POST interstitial.
+  IPC_STRUCT_MEMBER(bool, showing_repost_interstitial)
+IPC_STRUCT_END()
+
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
 
@@ -69,6 +88,10 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidStartProvisionalLoadForFrame,
                     int64 /* parent_frame_id */,
                     bool /* true if it is the main frame */,
                     GURL /* url */)
+
+// Sent when the renderer fails a provisional load with an error.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFailProvisionalLoadWithError,
+                    FrameHostMsg_DidFailProvisionalLoadWithError_Params)
 
 // Sent to the browser when the renderer detects it is blocked on a pepper
 // plugin message for too long. This is also sent when it becomes unhung
