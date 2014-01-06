@@ -55,15 +55,6 @@ bool WebKitTestPlatformInitialize() {
   // Load font files in the resource folder.
   static const char* const fontFileNames[] = {
       "AHEM____.TTF",
-      "WebKitWeightWatcher100.ttf",
-      "WebKitWeightWatcher200.ttf",
-      "WebKitWeightWatcher300.ttf",
-      "WebKitWeightWatcher400.ttf",
-      "WebKitWeightWatcher500.ttf",
-      "WebKitWeightWatcher600.ttf",
-      "WebKitWeightWatcher700.ttf",
-      "WebKitWeightWatcher800.ttf",
-      "WebKitWeightWatcher900.ttf",
   };
 
   // mainBundle is Content Shell Helper.app.  Go two levels up to find
