@@ -43,13 +43,6 @@ typedef long long int64;
 typedef unsigned long long uint64;
 #endif
 
-// A type to represent a Unicode code-point value. As of Unicode 4.0,
-// such values require up to 21 bits.
-// (For type-checking on pointers, make this explicitly signed,
-// and it should always be the signed version of whatever int32 is.)
-// TODO(vtl): This is almost completely unused in Chromium. Delete it?
-typedef signed int char32;
-
 const uint8  kuint8max  = (( uint8) 0xFF);
 const uint16 kuint16max = ((uint16) 0xFFFF);
 const uint32 kuint32max = ((uint32) 0xFFFFFFFF);
