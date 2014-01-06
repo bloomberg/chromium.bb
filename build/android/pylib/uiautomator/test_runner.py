@@ -5,6 +5,7 @@
 """Class for running uiautomator tests on a single device."""
 
 from pylib import constants
+from pylib import flag_changer
 from pylib.instrumentation import test_options as instr_test_options
 from pylib.instrumentation import test_runner as instr_test_runner
 
@@ -40,6 +41,10 @@ class TestRunner(instr_test_runner.TestRunner):
     super(TestRunner, self).__init__(instrumentation_options, device,
                                      shard_index, test_pkg)
 
+    cmdline_file = constants.PACKAGE_INFO[test_options.package].cmdline_file
+    self.flags = None
+    if cmdline_file:
+      self.flags = flag_changer.FlagChanger(self.adb, cmdline_file)
     self._package = constants.PACKAGE_INFO[test_options.package].package
     self._activity = constants.PACKAGE_INFO[test_options.package].activity
 
