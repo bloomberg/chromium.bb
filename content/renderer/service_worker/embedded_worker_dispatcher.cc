@@ -12,7 +12,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker_messages.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/renderer/service_worker/service_worker_context_client.h"
+#include "content/renderer/service_worker/embedded_worker_context_client.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebEmbeddedWorker.h"
@@ -44,8 +44,8 @@ bool EmbeddedWorkerDispatcher::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerDispatcher, message)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_StartWorker, OnStartWorker)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_TerminateWorker, OnTerminateWorker)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_StartWorker, OnStartWorker)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerMsg_StopWorker, OnStopWorker)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -53,6 +53,8 @@ bool EmbeddedWorkerDispatcher::OnMessageReceived(
 
 void EmbeddedWorkerDispatcher::WorkerContextDestroyed(
     int embedded_worker_id) {
+  RenderThreadImpl::current()->thread_safe_sender()->Send(
+      new EmbeddedWorkerHostMsg_WorkerStopped(embedded_worker_id));
   workers_.Remove(embedded_worker_id);
 }
 
@@ -63,7 +65,7 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
   DCHECK(!workers_.Lookup(embedded_worker_id));
   scoped_ptr<WorkerWrapper> wrapper(new WorkerWrapper(
       blink::WebEmbeddedWorker::create(
-          new ServiceWorkerContextClient(
+          new EmbeddedWorkerContextClient(
               embedded_worker_id,
               service_worker_version_id,
               script_url),
@@ -78,10 +80,10 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
   workers_.AddWithID(wrapper.release(), embedded_worker_id);
 }
 
-void EmbeddedWorkerDispatcher::OnTerminateWorker(int embedded_worker_id) {
+void EmbeddedWorkerDispatcher::OnStopWorker(int embedded_worker_id) {
   WorkerWrapper* wrapper = workers_.Lookup(embedded_worker_id);
   if (!wrapper) {
-    LOG(WARNING) << "Got OnTerminateWorker for nonexistent worker";
+    LOG(WARNING) << "Got OnStopWorker for nonexistent worker";
     return;
   }
 

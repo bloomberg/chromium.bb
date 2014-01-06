@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/service_worker/service_worker_context_client.h"
+#include "content/renderer/service_worker/embedded_worker_context_client.h"
 
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/pickle.h"
 #include "base/threading/thread_local.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/service_worker_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "ipc/ipc_message_macros.h"
@@ -24,7 +25,7 @@ namespace {
 // For now client must be a per-thread instance.
 // TODO(kinuko): This needs to be refactored when we start using thread pool
 // or having multiple clients per one thread.
-base::LazyInstance<base::ThreadLocalPointer<ServiceWorkerContextClient> >::
+base::LazyInstance<base::ThreadLocalPointer<EmbeddedWorkerContextClient> >::
     Leaky g_worker_client_tls = LAZY_INSTANCE_INITIALIZER;
 
 void CallWorkerContextDestroyedOnMainThread(int embedded_worker_id) {
@@ -37,12 +38,12 @@ void CallWorkerContextDestroyedOnMainThread(int embedded_worker_id) {
 
 }  // namespace
 
-ServiceWorkerContextClient*
-ServiceWorkerContextClient::ThreadSpecificInstance() {
+EmbeddedWorkerContextClient*
+EmbeddedWorkerContextClient::ThreadSpecificInstance() {
   return g_worker_client_tls.Pointer()->Get();
 }
 
-ServiceWorkerContextClient::ServiceWorkerContextClient(
+EmbeddedWorkerContextClient::EmbeddedWorkerContextClient(
     int embedded_worker_id,
     int64 service_worker_version_id,
     const GURL& script_url)
@@ -54,19 +55,22 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       proxy_(NULL) {
 }
 
-ServiceWorkerContextClient::~ServiceWorkerContextClient() {
+EmbeddedWorkerContextClient::~EmbeddedWorkerContextClient() {
   DCHECK(g_worker_client_tls.Pointer()->Get() != NULL);
   g_worker_client_tls.Pointer()->Set(NULL);
 }
 
-bool ServiceWorkerContextClient::OnMessageReceived(
+bool EmbeddedWorkerContextClient::OnMessageReceived(
     const IPC::Message& msg) {
-  NOTIMPLEMENTED();
-  return false;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerContextClient, msg)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerContextMsg_FetchEvent, OnFetchEvent)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
-void ServiceWorkerContextClient::workerContextFailedToStart()
-{
+void EmbeddedWorkerContextClient::workerContextFailedToStart() {
   DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
   DCHECK(!proxy_);
 
@@ -74,25 +78,34 @@ void ServiceWorkerContextClient::workerContextFailedToStart()
       WorkerContextDestroyed(embedded_worker_id_);
 }
 
-void ServiceWorkerContextClient::workerContextStarted(
+void EmbeddedWorkerContextClient::workerContextStarted(
     blink::WebServiceWorkerContextProxy* proxy) {
   DCHECK_NE(0, WorkerTaskRunner::Instance()->CurrentWorkerId());
   DCHECK(g_worker_client_tls.Pointer()->Get() == NULL);
   g_worker_client_tls.Pointer()->Set(this);
   proxy_ = proxy;
 
-  // TODO(kinuko): Send WorkerStarted message to the browser with the
-  // current thread ID so that the browser can start sending embedded worker
-  // messages directly to this client.
+  sender_->Send(new EmbeddedWorkerHostMsg_WorkerStarted(
+      WorkerTaskRunner::Instance()->CurrentWorkerId(),
+      embedded_worker_id_));
 }
 
-void ServiceWorkerContextClient::workerContextDestroyed() {
+void EmbeddedWorkerContextClient::workerContextDestroyed() {
   DCHECK_NE(0, WorkerTaskRunner::Instance()->CurrentWorkerId());
   proxy_ = NULL;
   main_thread_proxy_->PostTask(
       FROM_HERE,
       base::Bind(&CallWorkerContextDestroyedOnMainThread,
                  embedded_worker_id_));
+}
+
+void EmbeddedWorkerContextClient::OnFetchEvent(
+    int thread_id,
+    int embedded_worker_id,
+    const ServiceWorkerFetchRequest& request) {
+  // TODO(kinuko): Implement.
+  // This is to call WebServiceWorkerContextProxy's dispatchFetchEvent method.
+  NOTIMPLEMENTED();
 }
 
 }  // namespace content

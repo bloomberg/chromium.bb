@@ -19,6 +19,7 @@ class GURL;
 namespace content {
 
 class EmbeddedWorkerRegistry;
+struct ServiceWorkerFetchRequest;
 
 // This gives an interface to control one EmbeddedWorker instance, which
 // may be 'in-waiting' or running in one of the child processes added by
@@ -46,6 +47,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // This returns false if stopping a worker fails immediately, e.g. when
   // IPC couldn't be sent to the worker.
   bool Stop();
+
+  // Sends |request| to the embedded worker running in the child process.
+  // This returns false if sending IPC fails.
+  // It is invalid to call this while the worker is not in RUNNING status.
+  bool SendFetchRequest(const ServiceWorkerFetchRequest& request);
 
   // Add or remove |process_id| to the internal process set where this
   // worker can be started.

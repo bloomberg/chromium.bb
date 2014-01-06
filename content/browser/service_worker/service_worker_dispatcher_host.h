@@ -46,6 +46,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
                                  const GURL& pattern);
   void OnProviderCreated(int provider_id);
   void OnProviderDestroyed(int provider_id);
+  void OnWorkerStarted(int thread_id,
+                       int embedded_worker_id);
+  void OnWorkerStopped(int embedded_worker_id);
 
   // Callbacks from ServiceWorkerContextCore
   void RegistrationComplete(int32 thread_id,

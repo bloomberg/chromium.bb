@@ -17,23 +17,24 @@ class MessageLoopProxy;
 
 namespace content {
 
+struct ServiceWorkerFetchRequest;
 class ThreadSafeSender;
 
 // This class provides access to/from an embedded worker's WorkerGlobalScope.
 // All methods other than the constructor (it's created on the main thread)
 // are called on the worker thread.
-class ServiceWorkerContextClient
+class EmbeddedWorkerContextClient
     : public blink::WebServiceWorkerContextClient {
  public:
   // Returns a thread-specific client instance.  This does NOT create a
   // new instance.
-  static ServiceWorkerContextClient* ThreadSpecificInstance();
+  static EmbeddedWorkerContextClient* ThreadSpecificInstance();
 
-  ServiceWorkerContextClient(int embedded_worker_id,
-                             int64 service_worker_version_id,
-                             const GURL& script_url);
+  EmbeddedWorkerContextClient(int embedded_worker_id,
+                              int64 service_worker_version_id,
+                              const GURL& script_url);
 
-  virtual ~ServiceWorkerContextClient();
+  virtual ~EmbeddedWorkerContextClient();
 
   bool OnMessageReceived(const IPC::Message& msg);
 
@@ -47,6 +48,10 @@ class ServiceWorkerContextClient
   int embedded_worker_id() const { return embedded_worker_id_; }
 
  private:
+  void OnFetchEvent(int thread_id,
+                    int embedded_worker_id,
+                    const ServiceWorkerFetchRequest& request);
+
   const int embedded_worker_id_;
   const int64 service_worker_version_id_;
   const GURL script_url_;
@@ -55,7 +60,7 @@ class ServiceWorkerContextClient
 
   blink::WebServiceWorkerContextProxy* proxy_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
+  DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerContextClient);
 };
 
 }  // namespace content

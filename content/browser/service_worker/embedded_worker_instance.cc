@@ -5,12 +5,13 @@
 #include "content/browser/service_worker/embedded_worker_instance.h"
 
 #include "content/browser/service_worker/embedded_worker_registry.h"
+#include "content/common/service_worker_messages.h"
 #include "url/gurl.h"
 
 namespace content {
 
 EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
-  registry_->RemoveWorker(embedded_worker_id_);
+  registry_->RemoveWorker(process_id_, embedded_worker_id_);
 }
 
 bool EmbeddedWorkerInstance::Start(
@@ -38,6 +39,16 @@ bool EmbeddedWorkerInstance::Stop() {
   if (success)
     status_ = STOPPING;
   return success;
+}
+
+bool EmbeddedWorkerInstance::SendFetchRequest(
+    const ServiceWorkerFetchRequest& request) {
+  DCHECK(status_ == RUNNING);
+  // TODO: Refine this code, the code around FetchEvent is currently very
+  // rough, mainly just for a placeholder for now.
+  return registry_->Send(process_id_,
+                         new EmbeddedWorkerContextMsg_FetchEvent(
+                             thread_id_, embedded_worker_id_, request));
 }
 
 void EmbeddedWorkerInstance::AddProcessReference(int process_id) {
@@ -68,6 +79,9 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
 }
 
 void EmbeddedWorkerInstance::OnStarted(int thread_id) {
+  // Stop is requested before OnStarted is sent back from the worker.
+  if (status_ == STOPPING)
+    return;
   DCHECK(status_ == STARTING);
   status_ = RUNNING;
   thread_id_ = thread_id;

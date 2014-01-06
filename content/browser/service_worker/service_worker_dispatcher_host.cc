@@ -61,9 +61,6 @@ void ServiceWorkerDispatcherHost::OnDestruct() const {
 bool ServiceWorkerDispatcherHost::OnMessageReceived(
     const IPC::Message& message,
     bool* message_was_ok) {
-  if (IPC_MESSAGE_CLASS(message) != ServiceWorkerMsgStart)
-    return false;
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(
     ServiceWorkerDispatcherHost, message, *message_was_ok)
@@ -75,6 +72,10 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnProviderCreated)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ProviderDestroyed,
                         OnProviderDestroyed)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStarted,
+                        OnWorkerStarted)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStopped,
+                        OnWorkerStopped)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -174,6 +175,21 @@ void ServiceWorkerDispatcherHost::RegistrationComplete(
 
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
       thread_id, request_id, registration_id));
+}
+
+void ServiceWorkerDispatcherHost::OnWorkerStarted(
+    int thread_id, int embedded_worker_id) {
+  if (!context_)
+    return;
+  context_->embedded_worker_registry()->OnWorkerStarted(
+      render_process_id_, thread_id, embedded_worker_id);
+}
+
+void ServiceWorkerDispatcherHost::OnWorkerStopped(int embedded_worker_id) {
+  if (!context_)
+    return;
+  context_->embedded_worker_registry()->OnWorkerStopped(
+      render_process_id_, embedded_worker_id);
 }
 
 void ServiceWorkerDispatcherHost::UnregistrationComplete(

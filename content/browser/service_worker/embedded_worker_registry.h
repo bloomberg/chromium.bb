@@ -39,7 +39,6 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   // Creates and removes a new worker instance entry for bookkeeping.
   // This doesn't actually start or stop the worker.
   scoped_ptr<EmbeddedWorkerInstance> CreateWorker();
-  void RemoveWorker(int embedded_worker_id);
 
   // Called from EmbeddedWorkerInstance, relayed to the child process.
   bool StartWorker(int process_id,
@@ -49,23 +48,37 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   bool StopWorker(int process_id,
                   int embedded_worker_id);
 
+  // Called back from EmbeddedWorker in the child process, relayed via
+  // ServiceWorkerDispatcherHost.
+  void OnWorkerStarted(int process_id, int thread_id, int embedded_worker_id);
+  void OnWorkerStopped(int process_id, int embedded_worker_id);
+
   // Keeps a map from process_id to sender information.
   void AddChildProcessSender(int process_id, IPC::Sender* sender);
   void RemoveChildProcessSender(int process_id);
 
  private:
   friend class base::RefCounted<EmbeddedWorkerRegistry>;
+  friend class EmbeddedWorkerInstance;
+
+  typedef std::map<int, EmbeddedWorkerInstance*> WorkerInstanceMap;
+  typedef std::map<int, IPC::Sender*> ProcessToSenderMap;
 
   ~EmbeddedWorkerRegistry();
   bool Send(int process_id, IPC::Message* message);
 
-  typedef std::map<int, EmbeddedWorkerInstance*> WorkerInstanceMap;
-  typedef std::map<int, IPC::Sender*> ProcessToSenderMap;
+  // RemoveWorker is called when EmbeddedWorkerInstance is destructed.
+  // |process_id| could be invalid (i.e. -1) if it's not running.
+  void RemoveWorker(int process_id, int embedded_worker_id);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
   WorkerInstanceMap worker_map_;
   ProcessToSenderMap process_sender_map_;
+
+  // Map from process_id to embedded_worker_id.
+  // This map only contains running workers.
+  std::map<int, int> worker_process_map_;
 
   int next_embedded_worker_id_;
 

@@ -81,6 +81,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "grit/content_resources.h"
@@ -92,7 +93,6 @@
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebColorName.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
@@ -106,6 +106,7 @@
 #include "third_party/WebKit/public/web/WebScriptController.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/base/layout.h"
 #include "ui/base/ui_base_switches.h"
 #include "v8/include/v8.h"
@@ -374,6 +375,8 @@ void RenderThreadImpl::Init() {
   AddFilter(midi_message_filter_.get());
 
   AddFilter((new IndexedDBMessageFilter(thread_safe_sender()))->GetFilter());
+
+  AddFilter((new EmbeddedWorkerContextMessageFilter())->GetFilter());
 
   GetContentClient()->renderer()->RenderThreadStarted();
 

@@ -36,7 +36,7 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
   void OnStartWorker(int embedded_worker_id,
                      int64 service_worker_version_id,
                      const GURL& script_url);
-  void OnTerminateWorker(int embedded_worker_id);
+  void OnStopWorker(int embedded_worker_id);
 
   IDMap<WorkerWrapper, IDMapOwnPointer> workers_;
   base::WeakPtrFactory<EmbeddedWorkerDispatcher> weak_factory_;

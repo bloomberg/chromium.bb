@@ -105,8 +105,8 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   // Verify that we've sent two messages to start and terminate the worker.
   const MessageList& messages = fake_sender.sent_messages();
   ASSERT_EQ(2U, messages.size());
-  ASSERT_EQ(ServiceWorkerMsg_StartWorker::ID, messages[0]->type());
-  ASSERT_EQ(ServiceWorkerMsg_TerminateWorker::ID, messages[1]->type());
+  ASSERT_EQ(EmbeddedWorkerMsg_StartWorker::ID, messages[0]->type());
+  ASSERT_EQ(EmbeddedWorkerMsg_StopWorker::ID, messages[1]->type());
 }
 
 TEST_F(EmbeddedWorkerInstanceTest, ChooseProcess) {
