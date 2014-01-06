@@ -358,8 +358,6 @@ void CompositingIOSurfaceShaderPrograms::Reset() {
   for (size_t i = 0; i < arraysize(shader_programs_); ++i) {
     if (shader_programs_[i] != 0u) {
       glDeleteProgram(shader_programs_[i]);
-      DCHECK(glGetError() == GL_NO_ERROR)
-          << "when calling glDeleteProgram(shader_programs_[" << i << "])";
       shader_programs_[i] = 0u;
     }
   }
