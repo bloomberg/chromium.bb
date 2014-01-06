@@ -2023,7 +2023,7 @@ static void measureAsLongAttributeAttributeGetter(const v8::PropertyCallbackInfo
 static void measureAsLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::count(activeDOMWindow(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
     TestObjectPythonV8Internal::measureAsLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -2038,7 +2038,7 @@ static void measureAsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, 
 static void measureAsLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::count(activeDOMWindow(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
     TestObjectPythonV8Internal::measureAsLongAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -5820,7 +5820,7 @@ static void measureAsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 static void measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::count(activeDOMWindow(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
     TestObjectPythonV8Internal::measureAsVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }

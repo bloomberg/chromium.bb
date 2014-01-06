@@ -577,12 +577,11 @@ void UseCounter::count(const Document& document, Feature feature)
     host->useCounter().recordMeasurement(feature);
 }
 
-void UseCounter::count(const DOMWindow* domWindow, Feature feature)
+void UseCounter::count(const ExecutionContext* context, Feature feature)
 {
-    ASSERT(domWindow);
-    if (!domWindow->document())
+    if (!context || !context->isDocument())
         return;
-    count(*domWindow->document(), feature);
+    count(*toDocument(context), feature);
 }
 
 void UseCounter::countDeprecation(ExecutionContext* context, Feature feature)

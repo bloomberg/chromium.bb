@@ -96,7 +96,7 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::count(activeDOMWindow(), UseCounter::{{attribute.measure_as}});
+    UseCounter::count(activeExecutionContext(), UseCounter::{{attribute.measure_as}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
@@ -191,7 +191,7 @@ v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackI
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{attribute.deprecate_as}});
     {% endif %}
     {% if attribute.measure_as %}
-    UseCounter::count(activeDOMWindow(), UseCounter::{{attribute.measure_as}});
+    UseCounter::count(activeExecutionContext(), UseCounter::{{attribute.measure_as}});
     {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
     V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());

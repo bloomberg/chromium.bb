@@ -248,11 +248,11 @@ void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventLis
         if (DOMWindow* executingWindow = this->executingWindow()) {
             if (legacyListenersVector) {
                 if (listenersVector)
-                    UseCounter::count(executingWindow, prefixedAndUnprefixedFeature);
+                    UseCounter::count(executingWindow->document(), prefixedAndUnprefixedFeature);
                 else
-                    UseCounter::count(executingWindow, prefixedFeature);
+                    UseCounter::count(executingWindow->document(), prefixedFeature);
             } else if (listenersVector) {
-                UseCounter::count(executingWindow, unprefixedFeature);
+                UseCounter::count(executingWindow->document(), unprefixedFeature);
             }
         }
     }
@@ -303,12 +303,12 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     if (event->type() == EventTypeNames::beforeunload) {
         if (DOMWindow* executingWindow = this->executingWindow()) {
             if (executingWindow->top())
-                UseCounter::count(executingWindow, UseCounter::SubFrameBeforeUnloadFired);
-            UseCounter::count(executingWindow, UseCounter::DocumentBeforeUnloadFired);
+                UseCounter::count(executingWindow->document(), UseCounter::SubFrameBeforeUnloadFired);
+            UseCounter::count(executingWindow->document(), UseCounter::DocumentBeforeUnloadFired);
         }
     } else if (event->type() == EventTypeNames::unload) {
         if (DOMWindow* executingWindow = this->executingWindow())
-            UseCounter::count(executingWindow, UseCounter::DocumentUnloadFired);
+            UseCounter::count(executingWindow->document(), UseCounter::DocumentUnloadFired);
     }
 
     bool userEventWasHandled = false;

@@ -59,7 +59,7 @@ PassRefPtr<SharedWorker> SharedWorker::create(ExecutionContext* context, const S
     ASSERT(isMainThread());
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
 
-    UseCounter::count(toDocument(context)->domWindow(), UseCounter::SharedWorkerStart);
+    UseCounter::count(context, UseCounter::SharedWorkerStart);
 
     RefPtr<SharedWorker> worker = adoptRef(new SharedWorker(context));
 

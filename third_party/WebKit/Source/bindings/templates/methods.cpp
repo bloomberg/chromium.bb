@@ -219,7 +219,7 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     {% if method.measure_as %}
-    UseCounter::count(activeDOMWindow(), UseCounter::{{method.measure_as}});
+    UseCounter::count(activeExecutionContext(), UseCounter::{{method.measure_as}});
     {% endif %}
     {% if method.deprecate_as %}
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{method.deprecate_as}});

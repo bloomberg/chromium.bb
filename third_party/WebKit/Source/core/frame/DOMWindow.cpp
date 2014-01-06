@@ -642,7 +642,7 @@ History* DOMWindow::history() const
 
 BarProp* DOMWindow::locationbar() const
 {
-    UseCounter::count(this, UseCounter::BarPropLocationbar);
+    UseCounter::count(document(), UseCounter::BarPropLocationbar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_locationbar)
@@ -652,7 +652,7 @@ BarProp* DOMWindow::locationbar() const
 
 BarProp* DOMWindow::menubar() const
 {
-    UseCounter::count(this, UseCounter::BarPropMenubar);
+    UseCounter::count(document(), UseCounter::BarPropMenubar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_menubar)
@@ -662,7 +662,7 @@ BarProp* DOMWindow::menubar() const
 
 BarProp* DOMWindow::personalbar() const
 {
-    UseCounter::count(this, UseCounter::BarPropPersonalbar);
+    UseCounter::count(document(), UseCounter::BarPropPersonalbar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_personalbar)
@@ -672,7 +672,7 @@ BarProp* DOMWindow::personalbar() const
 
 BarProp* DOMWindow::scrollbars() const
 {
-    UseCounter::count(this, UseCounter::BarPropScrollbars);
+    UseCounter::count(document(), UseCounter::BarPropScrollbars);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_scrollbars)
@@ -682,7 +682,7 @@ BarProp* DOMWindow::scrollbars() const
 
 BarProp* DOMWindow::statusbar() const
 {
-    UseCounter::count(this, UseCounter::BarPropStatusbar);
+    UseCounter::count(document(), UseCounter::BarPropStatusbar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_statusbar)
@@ -692,7 +692,7 @@ BarProp* DOMWindow::statusbar() const
 
 BarProp* DOMWindow::toolbar() const
 {
-    UseCounter::count(this, UseCounter::BarPropToolbar);
+    UseCounter::count(document(), UseCounter::BarPropToolbar);
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_toolbar)
@@ -1326,7 +1326,7 @@ PassRefPtr<CSSStyleDeclaration> DOMWindow::getComputedStyle(Element* elt, const 
 
 PassRefPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const String& pseudoElement) const
 {
-    UseCounter::count(this, UseCounter::GetMatchedCSSRules);
+    UseCounter::count(document(), UseCounter::GetMatchedCSSRules);
     if (!element)
         return 0;
 
@@ -1527,10 +1527,10 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
     lifecycleNotifier().notifyAddEventListener(this, eventType);
 
     if (eventType == EventTypeNames::unload) {
-        UseCounter::count(this, UseCounter::DocumentUnloadRegistered);
+        UseCounter::count(document(), UseCounter::DocumentUnloadRegistered);
         addUnloadEventListener(this);
     } else if (eventType == EventTypeNames::beforeunload) {
-        UseCounter::count(this, UseCounter::DocumentBeforeUnloadRegistered);
+        UseCounter::count(document(), UseCounter::DocumentBeforeUnloadRegistered);
         if (allowsBeforeUnloadListeners(this)) {
             // This is confusingly named. It doesn't actually add the listener. It just increments a count
             // so that we know we have listeners registered for the purposes of determining if we can
@@ -1538,7 +1538,7 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
             addBeforeUnloadEventListener(this);
         } else {
             // Subframes return false from allowsBeforeUnloadListeners.
-            UseCounter::count(this, UseCounter::SubFrameBeforeUnloadRegistered);
+            UseCounter::count(document(), UseCounter::SubFrameBeforeUnloadRegistered);
         }
     }
 

@@ -54,7 +54,7 @@ PassRefPtr<Worker> Worker::create(ExecutionContext* context, const String& url, 
 {
     ASSERT(isMainThread());
     Document* document = toDocument(context);
-    UseCounter::count(document->domWindow(), UseCounter::WorkerStart);
+    UseCounter::count(context, UseCounter::WorkerStart);
     ASSERT(document->page());
     WorkerGlobalScopeProxyProvider* proxyProvider = WorkerGlobalScopeProxyProvider::from(document->page());
     ASSERT(proxyProvider);

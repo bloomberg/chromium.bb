@@ -1330,7 +1330,7 @@ sub GenerateFeatureObservation
 
     if ($measureAs) {
         AddToImplIncludes("core/frame/UseCounter.h");
-        return "    UseCounter::count(activeDOMWindow(), UseCounter::${measureAs});\n";
+        return "    UseCounter::count(activeExecutionContext(), UseCounter::${measureAs});\n";
     }
 
     return "";

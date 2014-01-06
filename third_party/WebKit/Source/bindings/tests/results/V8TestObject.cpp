@@ -481,7 +481,7 @@ static void testObjAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>
 static void testObjAttrAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    UseCounter::count(activeDOMWindow(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
     TestObjV8Internal::testObjAttrAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -496,7 +496,7 @@ static void testObjAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::P
 static void testObjAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    UseCounter::count(activeDOMWindow(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
     TestObjV8Internal::testObjAttrAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -3021,7 +3021,7 @@ static void objMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 static void objMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::count(activeDOMWindow(), UseCounter::TestFeature);
+    UseCounter::count(activeExecutionContext(), UseCounter::TestFeature);
     TestObjV8Internal::objMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -3242,7 +3242,7 @@ static void methodWithExceptionMethodCallback(const v8::FunctionCallbackInfo<v8:
 static void customMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    UseCounter::count(activeDOMWindow(), UseCounter::CustomTestFeature);
+    UseCounter::count(activeExecutionContext(), UseCounter::CustomTestFeature);
     V8TestObject::customMethodMethodCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }

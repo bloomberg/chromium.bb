@@ -290,7 +290,7 @@ public:
 
     // "count" sets the bit for this feature to 1. Repeated calls are ignored.
     static void count(const Document&, Feature);
-    static void count(const DOMWindow*, Feature);
+    static void count(const ExecutionContext*, Feature);
     void count(CSSParserContext, CSSPropertyID);
     void count(Feature);
 
