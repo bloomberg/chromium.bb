@@ -16,17 +16,12 @@ ShellResourceDispatcherHostDelegate::ShellResourceDispatcherHostDelegate() {
 ShellResourceDispatcherHostDelegate::~ShellResourceDispatcherHostDelegate() {
 }
 
-bool ShellResourceDispatcherHostDelegate::AcceptAuthRequest(
-    net::URLRequest* request,
-    net::AuthChallengeInfo* auth_info) {
-  bool accept_auth_request =
-      !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
-  return accept_auth_request;
-}
-
 ResourceDispatcherHostLoginDelegate*
 ShellResourceDispatcherHostDelegate::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info, net::URLRequest* request) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree))
+    return NULL;
+
   if (!login_request_callback_.is_null()) {
     login_request_callback_.Run();
     login_request_callback_.Reset();

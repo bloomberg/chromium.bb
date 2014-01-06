@@ -67,11 +67,6 @@ class ChromeResourceDispatcherHostDelegate
       bool is_content_initiated,
       bool must_download,
       ScopedVector<content::ResourceThrottle>* throttles) OVERRIDE;
-  virtual bool AcceptSSLClientCertificateRequest(
-        net::URLRequest* request,
-        net::SSLCertRequestInfo* cert_request_info) OVERRIDE;
-  virtual bool AcceptAuthRequest(net::URLRequest* request,
-                                 net::AuthChallengeInfo* auth_info) OVERRIDE;
   virtual content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info, net::URLRequest* request) OVERRIDE;
   virtual bool HandleExternalProtocol(const GURL& url,

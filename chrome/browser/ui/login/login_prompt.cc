@@ -12,6 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_manager.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_registrar.h"
@@ -424,6 +425,13 @@ void LoginDialogCallback(const GURL& request_url,
     // not hosted by a tab (e.g. an extension). Cancel just in case
     // (cancelling twice is a no-op).
     handler->CancelAuth();
+    return;
+  }
+
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(parent_contents);
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_AUTH_NEEDED);
     return;
   }
 

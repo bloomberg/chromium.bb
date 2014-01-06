@@ -32,6 +32,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -69,7 +70,10 @@
 #include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "net/cert/x509_certificate.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/ssl/client_cert_store.h"
+#include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
@@ -2515,10 +2519,34 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 #define MAYBE_PrerenderSSLClientCertTopLevel PrerenderSSLClientCertTopLevel
 #endif
 
+class TestClientCertStore : public net::ClientCertStore {
+ public:
+  TestClientCertStore() {}
+  virtual ~TestClientCertStore() {}
+
+  // net::ClientCertStore:
+  virtual void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
+                              net::CertificateList* selected_certs,
+                              const base::Closure& callback) OVERRIDE {
+    *selected_certs = net::CertificateList(
+        1, scoped_refptr<net::X509Certificate>(
+        new net::X509Certificate("test", "test", base::Time(), base::Time())));
+    callback.Run();
+  }
+};
+
+scoped_ptr<net::ClientCertStore> CreateCertStore() {
+  return scoped_ptr<net::ClientCertStore>(new TestClientCertStore);
+}
+
 // Checks that a top-level page which would normally request an SSL client
 // certificate will never be seen since it's an https top-level resource.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        MAYBE_PrerenderSSLClientCertTopLevel) {
+  ProfileIOData::FromResourceContext(
+      current_browser()->profile()->GetResourceContext())->
+          set_client_cert_store_factory_for_testing(
+              base::Bind(&CreateCertStore));
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
   net::SpawnedTestServer https_server(
@@ -2533,6 +2561,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // subresource will cancel the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSSLClientCertSubresource) {
+  ProfileIOData::FromResourceContext(
+      current_browser()->profile()->GetResourceContext())->
+          set_client_cert_store_factory_for_testing(
+              base::Bind(&CreateCertStore));
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
   net::SpawnedTestServer https_server(
@@ -2556,6 +2588,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 // Checks that an SSL Client Certificate request that originates from an
 // iframe will cancel the prerendered page.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertIframe) {
+  ProfileIOData::FromResourceContext(
+      current_browser()->profile()->GetResourceContext())->
+          set_client_cert_store_factory_for_testing(
+              base::Bind(&CreateCertStore));
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
   net::SpawnedTestServer https_server(

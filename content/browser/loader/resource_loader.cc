@@ -239,11 +239,6 @@ void ResourceLoader::OnAuthRequired(net::URLRequest* unused,
     return;
   }
 
-  if (!delegate_->AcceptAuthRequest(this, auth_info)) {
-    request_->CancelAuth();
-    return;
-  }
-
   // Create a login dialog on the UI thread to get authentication data, or pull
   // from cache and continue on the IO thread.
 
@@ -259,7 +254,7 @@ void ResourceLoader::OnCertificateRequested(
     net::SSLCertRequestInfo* cert_info) {
   DCHECK_EQ(request_.get(), unused);
 
-  if (!delegate_->AcceptSSLClientCertificateRequest(this, cert_info)) {
+  if (request_->load_flags() & net::LOAD_PREFETCH) {
     request_->Cancel();
     return;
   }

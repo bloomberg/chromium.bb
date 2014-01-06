@@ -33,7 +33,6 @@ class Sender;
 
 namespace net {
 class AuthChallengeInfo;
-class SSLCertRequestInfo;
 class URLRequest;
 }
 
@@ -85,19 +84,6 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
       bool is_content_initiated,
       bool must_download,
       ScopedVector<ResourceThrottle>* throttles);
-
-  // Called when an SSL Client Certificate is requested. If false is returned,
-  // the request is canceled. Otherwise, the certificate is chosen.
-  virtual bool AcceptSSLClientCertificateRequest(
-      net::URLRequest* request,
-      net::SSLCertRequestInfo* cert_request_info);
-
-  // Called when authentication is required and credentials are needed. If
-  // false is returned, CancelAuth() is called on the URLRequest and the error
-  // page is shown. If true is returned, the user will be prompted for
-  // authentication credentials.
-  virtual bool AcceptAuthRequest(net::URLRequest* request,
-                                 net::AuthChallengeInfo* auth_info);
 
   // Creates a ResourceDispatcherHostLoginDelegate that asks the user for a
   // username and password.

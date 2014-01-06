@@ -48,18 +48,6 @@ void ResourceDispatcherHostDelegate::DownloadStarting(
     ScopedVector<ResourceThrottle>* throttles) {
 }
 
-bool ResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(
-    net::URLRequest* request,
-    net::SSLCertRequestInfo* cert_request_info) {
-  return false;
-}
-
-bool ResourceDispatcherHostDelegate::AcceptAuthRequest(
-    net::URLRequest* request,
-    net::AuthChallengeInfo* auth_info) {
-  return false;
-}
-
 ResourceDispatcherHostLoginDelegate*
     ResourceDispatcherHostDelegate::CreateLoginDelegate(
         net::AuthChallengeInfo* auth_info,

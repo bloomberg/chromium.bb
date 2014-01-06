@@ -179,16 +179,6 @@ class ResourceLoaderTest : public testing::Test,
       net::AuthChallengeInfo* auth_info) OVERRIDE {
     return NULL;
   }
-  virtual bool AcceptAuthRequest(
-      ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) OVERRIDE {
-    return false;
-  };
-  virtual bool AcceptSSLClientCertificateRequest(
-      ResourceLoader* loader,
-      net::SSLCertRequestInfo* cert_info) OVERRIDE {
-    return true;
-  }
   virtual bool HandleExternalProtocol(ResourceLoader* loader,
                                       const GURL& url) OVERRIDE {
     return false;

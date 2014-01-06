@@ -1783,7 +1783,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
   }
 
   prerender::PrerenderContents* prerender_contents =
-        prerender::PrerenderContents::FromWebContents(tab);
+      prerender::PrerenderContents::FromWebContents(tab);
   if (prerender_contents) {
     prerender_contents->Destroy(prerender::FINAL_STATUS_SSL_ERROR);
     *result = content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
@@ -1810,14 +1810,17 @@ void ChromeContentBrowserClient::SelectClientCertificate(
     const base::Callback<void(net::X509Certificate*)>& callback) {
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       render_process_id, render_frame_id);
-  if (!rfh) {
+  WebContents* tab = WebContents::FromRenderFrameHost(rfh);
+  if (!tab) {
     NOTREACHED();
     return;
   }
 
-  WebContents* tab = WebContents::FromRenderFrameHost(rfh);
-  if (!tab) {
-    NOTREACHED();
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(tab);
+  if (prerender_contents) {
+    prerender_contents->Destroy(
+        prerender::FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED);
     return;
   }
 

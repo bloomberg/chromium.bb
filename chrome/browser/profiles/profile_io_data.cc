@@ -852,6 +852,8 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
 
 scoped_ptr<net::ClientCertStore>
 ProfileIOData::ResourceContext::CreateClientCertStore() {
+  if (!io_data_->client_cert_store_factory_.is_null())
+    return io_data_->client_cert_store_factory_.Run();
 #if defined(OS_CHROMEOS)
   return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreChromeOS(
       io_data_->username_hash(),

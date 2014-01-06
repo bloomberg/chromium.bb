@@ -208,6 +208,11 @@ class ProfileIOData {
   // should only be called from there.
   bool GetMetricsEnabledStateOnIOThread() const;
 
+  void set_client_cert_store_factory_for_testing(
+    const base::Callback<scoped_ptr<net::ClientCertStore>()>& factory) {
+      client_cert_store_factory_ = factory;
+  }
+
  protected:
   // A URLRequestContext for media that owns its HTTP factory, to ensure
   // it is deleted.
@@ -451,6 +456,10 @@ class ProfileIOData {
 
   // Provides access to the email addresses of all signed in profiles.
   mutable scoped_ptr<SigninNamesOnIOThread> signin_names_;
+
+  // Used for testing.
+  mutable base::Callback<scoped_ptr<net::ClientCertStore>()>
+      client_cert_store_factory_;
 
   mutable StringPrefMember google_services_user_account_id_;
   mutable StringPrefMember google_services_username_;

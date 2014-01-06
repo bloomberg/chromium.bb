@@ -653,26 +653,6 @@ ResourceDispatcherHostImpl::CreateLoginDelegate(
   return delegate_->CreateLoginDelegate(auth_info, loader->request());
 }
 
-bool ResourceDispatcherHostImpl::AcceptAuthRequest(
-    ResourceLoader* loader,
-    net::AuthChallengeInfo* auth_info) {
-  if (delegate_ && !delegate_->AcceptAuthRequest(loader->request(), auth_info))
-    return false;
-
-  return true;
-}
-
-bool ResourceDispatcherHostImpl::AcceptSSLClientCertificateRequest(
-    ResourceLoader* loader,
-    net::SSLCertRequestInfo* cert_info) {
-  if (delegate_ && !delegate_->AcceptSSLClientCertificateRequest(
-          loader->request(), cert_info)) {
-    return false;
-  }
-
-  return true;
-}
-
 bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
                                                         const GURL& url) {
   if (!delegate_)

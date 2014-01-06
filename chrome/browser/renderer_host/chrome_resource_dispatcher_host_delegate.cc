@@ -395,49 +395,6 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
   }
 }
 
-bool ChromeResourceDispatcherHostDelegate::AcceptSSLClientCertificateRequest(
-    net::URLRequest* request, net::SSLCertRequestInfo* cert_request_info) {
-  if (request->load_flags() & net::LOAD_PREFETCH)
-    return false;
-
-  ChromeURLRequestUserData* user_data = ChromeURLRequestUserData::Get(request);
-  if (user_data && user_data->is_prerender()) {
-    int child_id, route_id;
-    if (ResourceRequestInfo::ForRequest(request)->GetAssociatedRenderView(
-            &child_id, &route_id)) {
-      if (prerender_tracker_->TryCancel(
-              child_id, route_id,
-              prerender::FINAL_STATUS_SSL_CLIENT_CERTIFICATE_REQUESTED)) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-}
-
-bool ChromeResourceDispatcherHostDelegate::AcceptAuthRequest(
-    net::URLRequest* request,
-    net::AuthChallengeInfo* auth_info) {
-  ChromeURLRequestUserData* user_data = ChromeURLRequestUserData::Get(request);
-  if (!user_data || !user_data->is_prerender())
-    return true;
-
-  int child_id, route_id;
-  if (!ResourceRequestInfo::ForRequest(request)->GetAssociatedRenderView(
-          &child_id, &route_id)) {
-    NOTREACHED();
-    return true;
-  }
-
-  if (!prerender_tracker_->TryCancelOnIOThread(
-          child_id, route_id, prerender::FINAL_STATUS_AUTH_NEEDED)) {
-    return true;
-  }
-
-  return false;
-}
-
 ResourceDispatcherHostLoginDelegate*
     ChromeResourceDispatcherHostDelegate::CreateLoginDelegate(
         net::AuthChallengeInfo* auth_info, net::URLRequest* request) {

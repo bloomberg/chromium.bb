@@ -9,7 +9,6 @@
 
 namespace net {
 class AuthChallengeInfo;
-class SSLCertRequestInfo;
 }
 
 namespace content {
@@ -21,12 +20,6 @@ class CONTENT_EXPORT ResourceLoaderDelegate {
   virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       ResourceLoader* loader,
       net::AuthChallengeInfo* auth_info) = 0;
-
-  virtual bool AcceptAuthRequest(ResourceLoader* loader,
-                                 net::AuthChallengeInfo* auth_info) = 0;
-  virtual bool AcceptSSLClientCertificateRequest(
-      ResourceLoader* loader,
-      net::SSLCertRequestInfo* cert_info) = 0;
 
   virtual bool HandleExternalProtocol(ResourceLoader* loader,
                                       const GURL& url) = 0;

@@ -256,12 +256,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   virtual ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       ResourceLoader* loader,
       net::AuthChallengeInfo* auth_info) OVERRIDE;
-  virtual bool AcceptAuthRequest(
-      ResourceLoader* loader,
-      net::AuthChallengeInfo* auth_info) OVERRIDE;
-  virtual bool AcceptSSLClientCertificateRequest(
-      ResourceLoader* loader,
-      net::SSLCertRequestInfo* cert_info) OVERRIDE;
   virtual bool HandleExternalProtocol(ResourceLoader* loader,
                                       const GURL& url) OVERRIDE;
   virtual void DidStartRequest(ResourceLoader* loader) OVERRIDE;
