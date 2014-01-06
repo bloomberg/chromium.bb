@@ -31,49 +31,38 @@ CandidateWindowControllerImpl::CandidateWindowControllerImpl()
     : candidate_window_view_(NULL),
       infolist_window_(NULL) {
   IBusBridge::Get()->SetCandidateWindowHandler(this);
-  CreateView();
-}
-
-CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
-  IBusBridge::Get()->SetCandidateWindowHandler(NULL);
-  candidate_window_view_->RemoveObserver(this);
-}
-
-void CandidateWindowControllerImpl::CreateView() {
-  // Create a non-decorated frame.
-  frame_.reset(new views::Widget);
-  // The size is initially zero.
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
-  // |frame_| is owned by controller impl so
-  // they should use WIDGET_OWNS_NATIVE_WIDGET ownership.
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  // Show the candidate window always on top
-  params.parent = ash::Shell::GetContainer(
-      ash::Shell::GetTargetRootWindow(),
-      ash::internal::kShellWindowId_InputMethodContainer);
-  frame_->Init(params);
-
-  views::corewm::SetWindowVisibilityAnimationType(
-      frame_->GetNativeView(),
-      views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
-
-  // Create the candidate window.
-  candidate_window_view_ = new CandidateWindowView(frame_.get());
-  candidate_window_view_->Init();
-  candidate_window_view_->AddObserver(this);
-
-  frame_->SetContentsView(candidate_window_view_);
-
   // Create the mode indicator controller.
   mode_indicator_controller_.reset(
       new ModeIndicatorController(InputMethodManager::Get()));
 }
 
+CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
+  IBusBridge::Get()->SetCandidateWindowHandler(NULL);
+  if (candidate_window_view_) {
+    candidate_window_view_->RemoveObserver(this);
+    candidate_window_view_->GetWidget()->RemoveObserver(this);
+  }
+}
+
+void CandidateWindowControllerImpl::InitCandidateWindowView() {
+  if (candidate_window_view_)
+    return;
+
+  candidate_window_view_ = new CandidateWindowView(ash::Shell::GetContainer(
+      ash::Shell::GetTargetRootWindow(),
+      ash::internal::kShellWindowId_InputMethodContainer));
+  candidate_window_view_->AddObserver(this);
+  candidate_window_view_->SetCursorBounds(cursor_bounds_, composition_head_);
+  views::Widget* widget = candidate_window_view_->InitWidget();
+  widget->AddObserver(this);
+  widget->Show();
+  FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
+                    CandidateWindowOpened());
+}
+
 void CandidateWindowControllerImpl::Hide() {
-  // To hide the candidate window we have to call HideLookupTable and
-  // HideAuxiliaryText. Without calling HideAuxiliaryText the
-  // auxiliary text area will remain.
-  candidate_window_view_->HideLookupTable();
+  if (candidate_window_view_)
+    candidate_window_view_->GetWidget()->Close();
   if (infolist_window_)
     infolist_window_->HideImmediately();
 }
@@ -84,8 +73,10 @@ void CandidateWindowControllerImpl::SetCursorBounds(
   // A workaround for http://crosbug.com/6460. We should ignore very short Y
   // move to prevent the window from shaking up and down.
   const int kKeepPositionThreshold = 2;  // px
-  const gfx::Rect& last_bounds =
-      candidate_window_view_->cursor_bounds();
+  gfx::Rect last_bounds;
+  if (candidate_window_view_)
+    last_bounds = candidate_window_view_->GetAnchorRect();
+
   const int delta_y = abs(last_bounds.y() - cursor_bounds.y());
   if ((last_bounds.x() == cursor_bounds.x()) &&
       (delta_y <= kKeepPositionThreshold)) {
@@ -93,11 +84,12 @@ void CandidateWindowControllerImpl::SetCursorBounds(
     return;
   }
 
+  cursor_bounds_ = cursor_bounds;
+  composition_head_ = composition_head;
+
   // Remember the cursor bounds.
-  candidate_window_view_->set_cursor_bounds(cursor_bounds);
-  candidate_window_view_->set_composition_head_bounds(composition_head);
-  // Move the window per the cursor bounds.
-  candidate_window_view_->ResizeAndMoveParentFrame();
+  if (candidate_window_view_)
+    candidate_window_view_->SetCursorBounds(cursor_bounds, composition_head);
 
   // Mode indicator controller also needs the cursor bounds.
   mode_indicator_controller_->SetCursorBounds(cursor_bounds);
@@ -141,7 +133,8 @@ void CandidateWindowControllerImpl::UpdateLookupTable(
     bool visible) {
   // If it's not visible, hide the lookup table and return.
   if (!visible) {
-    candidate_window_view_->HideLookupTable();
+    if (candidate_window_view_)
+      candidate_window_view_->HideLookupTable();
     if (infolist_window_)
       infolist_window_->HideImmediately();
     // TODO(nona): Introduce unittests for crbug.com/170036.
@@ -149,6 +142,8 @@ void CandidateWindowControllerImpl::UpdateLookupTable(
     return;
   }
 
+  if (!candidate_window_view_)
+    InitCandidateWindowView();
   candidate_window_view_->UpdateCandidates(candidate_window);
   candidate_window_view_->ShowLookupTable();
 
@@ -191,9 +186,12 @@ void CandidateWindowControllerImpl::UpdatePreeditText(
     const std::string& utf8_text, unsigned int cursor, bool visible) {
   // If it's not visible, hide the preedit text and return.
   if (!visible || utf8_text.empty()) {
-    candidate_window_view_->HidePreeditText();
+    if (candidate_window_view_)
+      candidate_window_view_->HidePreeditText();
     return;
   }
+  if (!candidate_window_view_)
+    InitCandidateWindowView();
   candidate_window_view_->UpdatePreeditText(utf8_text);
   candidate_window_view_->ShowPreeditText();
 }
@@ -203,20 +201,17 @@ void CandidateWindowControllerImpl::OnCandidateCommitted(int index) {
                     CandidateClicked(index));
 }
 
-void CandidateWindowControllerImpl::OnCandidateWindowOpened() {
-  FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
-                    CandidateWindowOpened());
-}
-
-void CandidateWindowControllerImpl::OnCandidateWindowClosed() {
-  FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
-                    CandidateWindowClosed());
-}
-
 void CandidateWindowControllerImpl::OnWidgetClosing(views::Widget* widget) {
   if (infolist_window_ && widget == infolist_window_->GetWidget()) {
     widget->RemoveObserver(this);
     infolist_window_ = NULL;
+  } else if (candidate_window_view_ &&
+             widget == candidate_window_view_->GetWidget()) {
+    widget->RemoveObserver(this);
+    candidate_window_view_->RemoveObserver(this);
+    candidate_window_view_ = NULL;
+    FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
+                      CandidateWindowClosed());
   }
 }
 

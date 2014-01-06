@@ -7,77 +7,45 @@
 
 #include "base/gtest_prod_util.h"
 #include "chromeos/ime/candidate_window.h"
+#include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 
 namespace chromeos {
 namespace input_method {
 
-class CandidateWindowView;
-
 // CandidateView renderes a row of a candidate.
-class CandidateView : public views::View {
+class CandidateView : public views::CustomButton {
  public:
-  CandidateView(CandidateWindowView* parent_candidate_window,
-                int index_in_page,
+  CandidateView(views::ButtonListener* listener,
                 CandidateWindow::Orientation orientation);
   virtual ~CandidateView() {}
-  // Initializes the candidate view with the given column widths.
-  // A width of 0 means that the column is resizable.
-  void Init(int shortcut_column_width,
-            int candidate_column_width,
-            int annotation_column_width,
-            int column_height);
 
-  // Sets candidate text to the given text.
-  void SetCandidateText(const base::string16& text);
+  void GetPreferredWidths(int* shortcut_width,
+                          int* candidate_width);
 
-  // Sets shortcut text to the given text.
-  void SetShortcutText(const base::string16& text);
+  void SetWidths(int shortcut_width,
+                 int candidate_width);
 
-  // Sets annotation text to the given text.
-  void SetAnnotationText(const base::string16& text);
+  void SetEntry(const CandidateWindow::Entry& entry);
 
   // Sets infolist icon.
   void SetInfolistIcon(bool enable);
 
-  // Selects the candidate row. Changes the appearance to make it look
-  // like a selected candidate.
-  void Select();
-
-  // Unselects the candidate row. Changes the appearance to make it look
-  // like an unselected candidate.
-  void Unselect();
-
-  // Enables or disables the candidate row based on |enabled|. Changes the
-  // appearance to make it look like unclickable area.
-  void SetRowEnabled(bool enabled);
-
-  // Returns the relative position of the candidate label.
-  gfx::Point GetCandidateLabelPosition() const;
-
  private:
   friend class CandidateWindowViewTest;
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
+
+  // Overridden from views::CustomButton:
+  virtual void StateChanged() OVERRIDE;
+
   // Overridden from View:
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-
-  // Selects the candidate located at the point.
-  void SelectCandidateAt(const gfx::Point& location);
-
-  // Notifies labels of their new background colors.  Called whenever the view's
-  // background color changes.
-  void UpdateLabelBackgroundColors();
-
-  // Zero-origin index in the current page.
-  int index_in_page_;
+  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
+  virtual void Layout() OVERRIDE;
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   // The orientation of the candidate view.
   CandidateWindow::Orientation orientation_;
-
-  // The parent candidate window that contains this view.
-  CandidateWindowView* parent_candidate_window_;
 
   // Views created in the class will be part of tree of |this|, so these
   // child views will be deleted when |this| is deleted.
@@ -89,9 +57,11 @@ class CandidateView : public views::View {
   // The annotation label renders annotations.
   views::Label* annotation_label_;
 
+  int shortcut_width_;
+  int candidate_width_;
+
   // The infolist icon.
   views::View* infolist_icon_;
-  bool infolist_icon_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(CandidateView);
 };

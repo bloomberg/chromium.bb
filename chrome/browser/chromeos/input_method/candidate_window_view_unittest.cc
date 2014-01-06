@@ -63,7 +63,41 @@ void InitCandidateWindowWithCandidatesFilled(
 }  // namespace
 
 class CandidateWindowViewTest : public views::ViewsTestBase {
+ public:
+  CandidateWindowViewTest() {}
+  virtual ~CandidateWindowViewTest() {}
+
  protected:
+  virtual void SetUp() {
+    views::ViewsTestBase::SetUp();
+    candidate_window_view_ = new CandidateWindowView(GetContext());
+    candidate_window_view_->InitWidget();
+  }
+
+  CandidateWindowView* candidate_window_view() {
+    return candidate_window_view_;
+  }
+
+  int selected_candidate_index_in_page() {
+    return candidate_window_view_->selected_candidate_index_in_page_;
+  }
+
+  size_t GetCandidatesSize() const {
+    return candidate_window_view_->candidate_views_.size();
+  }
+
+  CandidateView* GetCandidateAt(size_t i) {
+    return candidate_window_view_->candidate_views_[i];
+  }
+
+  void SelectCandidateAt(int index_in_page) {
+    candidate_window_view_->SelectCandidateAt(index_in_page);
+  }
+
+  void MaybeInitializeCandidateViews(const CandidateWindow& candidate_window) {
+    candidate_window_view_->MaybeInitializeCandidateViews(candidate_window);
+  }
+
   void ExpectLabels(const std::string& shortcut,
                     const std::string& candidate,
                     const std::string& annotation,
@@ -72,61 +106,50 @@ class CandidateWindowViewTest : public views::ViewsTestBase {
     EXPECT_EQ(candidate, base::UTF16ToUTF8(row->candidate_label_->text()));
     EXPECT_EQ(annotation, base::UTF16ToUTF8(row->annotation_label_->text()));
   }
+
+ private:
+  // owned by |parent_|.
+  CandidateWindowView* candidate_window_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(CandidateWindowViewTest);
 };
 
 TEST_F(CandidateWindowViewTest, UpdateCandidatesTest_CursorVisibility) {
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-  widget->Init(params);
-
-  CandidateWindowView candidate_window_view(widget);
-  candidate_window_view.Init();
-
   // Visible (by default) cursor.
   CandidateWindow candidate_window;
   const int candidate_window_size = 9;
   InitCandidateWindowWithCandidatesFilled(candidate_window_size,
                                           &candidate_window);
-  candidate_window_view.UpdateCandidates(candidate_window);
-  EXPECT_EQ(0, candidate_window_view.selected_candidate_index_in_page_);
+  candidate_window_view()->UpdateCandidates(candidate_window);
+  EXPECT_EQ(0, selected_candidate_index_in_page());
 
   // Invisible cursor.
   candidate_window.set_is_cursor_visible(false);
-  candidate_window_view.UpdateCandidates(candidate_window);
-  EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
+  candidate_window_view()->UpdateCandidates(candidate_window);
+  EXPECT_EQ(-1, selected_candidate_index_in_page());
 
   // Move the cursor to the end.
   candidate_window.set_cursor_position(candidate_window_size - 1);
-  candidate_window_view.UpdateCandidates(candidate_window);
-  EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
+  candidate_window_view()->UpdateCandidates(candidate_window);
+  EXPECT_EQ(-1, selected_candidate_index_in_page());
 
   // Change the cursor to visible.  The cursor must be at the end.
   candidate_window.set_is_cursor_visible(true);
-  candidate_window_view.UpdateCandidates(candidate_window);
-  EXPECT_EQ(candidate_window_size - 1,
-            candidate_window_view.selected_candidate_index_in_page_);
+  candidate_window_view()->UpdateCandidates(candidate_window);
+  EXPECT_EQ(candidate_window_size - 1, selected_candidate_index_in_page());
 }
 
 TEST_F(CandidateWindowViewTest, SelectCandidateAtTest) {
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-  widget->Init(params);
-
-  CandidateWindowView candidate_window_view(widget);
-  candidate_window_view.Init();
-
   // Set 9 candidates.
   CandidateWindow candidate_window_large;
   const int candidate_window_large_size = 9;
   InitCandidateWindowWithCandidatesFilled(candidate_window_large_size,
                                           &candidate_window_large);
   candidate_window_large.set_cursor_position(candidate_window_large_size - 1);
-  candidate_window_view.UpdateCandidates(candidate_window_large);
+  candidate_window_view()->UpdateCandidates(candidate_window_large);
 
   // Select the last candidate.
-  candidate_window_view.SelectCandidateAt(candidate_window_large_size - 1);
+  SelectCandidateAt(candidate_window_large_size - 1);
 
   // Reduce the number of candidates to 3.
   CandidateWindow candidate_window_small;
@@ -136,8 +159,8 @@ TEST_F(CandidateWindowViewTest, SelectCandidateAtTest) {
   candidate_window_small.set_cursor_position(candidate_window_small_size - 1);
   // Make sure the test doesn't crash if the candidate window reduced
   // its size. (crbug.com/174163)
-  candidate_window_view.UpdateCandidates(candidate_window_small);
-  candidate_window_view.SelectCandidateAt(candidate_window_small_size - 1);
+  candidate_window_view()->UpdateCandidates(candidate_window_small);
+  SelectCandidateAt(candidate_window_small_size - 1);
 }
 
 TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
@@ -145,22 +168,14 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
   const char* kCustomizedLabel[] = { "a", "s", "d" };
   const char* kExpectedHorizontalCustomizedLabel[] = { "a.", "s.", "d." };
 
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-  widget->Init(params);
-
-  CandidateWindowView candidate_window_view(widget);
-  candidate_window_view.Init();
-
   {
     SCOPED_TRACE("candidate_views allocation test");
     const size_t kMaxPageSize = 16;
     for (size_t i = 1; i < kMaxPageSize; ++i) {
       CandidateWindow candidate_window;
       InitCandidateWindow(i, &candidate_window);
-      candidate_window_view.UpdateCandidates(candidate_window);
-      EXPECT_EQ(i, candidate_window_view.candidate_views_.size());
+      candidate_window_view()->UpdateCandidates(candidate_window);
+      EXPECT_EQ(i, GetCandidatesSize());
     }
   }
   {
@@ -180,12 +195,12 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
       candidate_window.mutable_candidates()->push_back(entry);
     }
 
-    candidate_window_view.UpdateCandidates(candidate_window);
+    candidate_window_view()->UpdateCandidates(candidate_window);
 
-    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    ASSERT_EQ(kPageSize, GetCandidatesSize());
     for (size_t i = 0; i < kPageSize; ++i) {
       ExpectLabels(kEmptyLabel, kSampleCandidate[i], kSampleAnnotation[i],
-                   candidate_window_view.candidate_views_[i]);
+                   GetCandidateAt(i));
     }
   }
   {
@@ -206,13 +221,13 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
       candidate_window.mutable_candidates()->push_back(entry);
     }
 
-    candidate_window_view.UpdateCandidates(candidate_window);
+    candidate_window_view()->UpdateCandidates(candidate_window);
 
-    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    ASSERT_EQ(kPageSize, GetCandidatesSize());
     // Confirm actual labels not containing ".".
     for (size_t i = 0; i < kPageSize; ++i) {
       ExpectLabels(kEmptyLabel, kSampleCandidate[i], kSampleAnnotation[i],
-                   candidate_window_view.candidate_views_[i]);
+                   GetCandidateAt(i));
     }
   }
   {
@@ -232,15 +247,15 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
       candidate_window.mutable_candidates()->push_back(entry);
     }
 
-    candidate_window_view.UpdateCandidates(candidate_window);
+    candidate_window_view()->UpdateCandidates(candidate_window);
 
-    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    ASSERT_EQ(kPageSize, GetCandidatesSize());
     // Confirm actual labels not containing ".".
     for (size_t i = 0; i < kPageSize; ++i) {
       ExpectLabels(kCustomizedLabel[i],
                    kSampleCandidate[i],
                    kSampleAnnotation[i],
-                   candidate_window_view.candidate_views_[i]);
+                   GetCandidateAt(i));
     }
   }
   {
@@ -260,20 +275,17 @@ TEST_F(CandidateWindowViewTest, ShortcutSettingTest) {
       candidate_window.mutable_candidates()->push_back(entry);
     }
 
-    candidate_window_view.UpdateCandidates(candidate_window);
+    candidate_window_view()->UpdateCandidates(candidate_window);
 
-    ASSERT_EQ(kPageSize, candidate_window_view.candidate_views_.size());
+    ASSERT_EQ(kPageSize, GetCandidatesSize());
     // Confirm actual labels not containing ".".
     for (size_t i = 0; i < kPageSize; ++i) {
       ExpectLabels(kExpectedHorizontalCustomizedLabel[i],
                    kSampleCandidate[i],
                    kSampleAnnotation[i],
-                   candidate_window_view.candidate_views_[i]);
+                   GetCandidateAt(i));
     }
   }
-
-  // We should call CloseNow method, otherwise this test will leak memory.
-  widget->CloseNow();
 }
 
 TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
@@ -292,17 +304,6 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
   const char kSampleAnnotation1[] = "Sample Annotation 1";
   const char kSampleAnnotation2[] = "\xE3\x81\x82";  // multi byte string.
   const char kSampleAnnotation3[] = "......";
-
-  // For testing, we have to prepare empty widget.
-  // We should NOT manually free widget by default, otherwise double free will
-  // be occurred. So, we should instantiate widget class with "new" operation.
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
-  widget->Init(params);
-
-  CandidateWindowView candidate_window_view(widget);
-  candidate_window_view.Init();
 
   // Create CandidateWindow object.
   InitCandidateWindow(kPageSize, &candidate_window);
@@ -336,64 +337,46 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
 
   // Test for shortcut mode to no-shortcut mode.
   // Initialize with a shortcut mode candidate window.
-  candidate_window_view.MaybeInitializeCandidateViews(candidate_window);
-  ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
+  MaybeInitializeCandidateViews(candidate_window);
+  ASSERT_EQ(3UL, GetCandidatesSize());
   // Check the selected index is invalidated.
-  EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
+  EXPECT_EQ(-1, selected_candidate_index_in_page());
   before_height =
-      candidate_window_view.candidate_views_[0]->GetContentsBounds().height();
+      GetCandidateAt(0)->GetContentsBounds().height();
   // Checks all entry have same row height.
-  for (size_t i = 1; i < candidate_window_view.candidate_views_.size(); ++i) {
-    const CandidateView* view = candidate_window_view.candidate_views_[i];
-    EXPECT_EQ(before_height, view->GetContentsBounds().height());
-  }
+  for (size_t i = 1; i < GetCandidatesSize(); ++i)
+    EXPECT_EQ(before_height, GetCandidateAt(i)->GetContentsBounds().height());
 
   // Initialize with a no shortcut mode candidate window.
-  candidate_window_view.MaybeInitializeCandidateViews(
-      no_shortcut_candidate_window);
-  ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
+  MaybeInitializeCandidateViews(no_shortcut_candidate_window);
+  ASSERT_EQ(3UL, GetCandidatesSize());
   // Check the selected index is invalidated.
-  EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
-  EXPECT_EQ(before_height,
-            candidate_window_view.candidate_views_[0]->GetContentsBounds()
-                .height());
+  EXPECT_EQ(-1, selected_candidate_index_in_page());
+  EXPECT_EQ(before_height, GetCandidateAt(0)->GetContentsBounds().height());
   // Checks all entry have same row height.
-  for (size_t i = 1; i < candidate_window_view.candidate_views_.size(); ++i) {
-    const CandidateView* view = candidate_window_view.candidate_views_[i];
-    EXPECT_EQ(before_height, view->GetContentsBounds().height());
-  }
+  for (size_t i = 1; i < GetCandidatesSize(); ++i)
+    EXPECT_EQ(before_height, GetCandidateAt(i)->GetContentsBounds().height());
 
   // Test for no-shortcut mode to shortcut mode.
   // Initialize with a no shortcut mode candidate window.
-  candidate_window_view.MaybeInitializeCandidateViews(
-      no_shortcut_candidate_window);
-  ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
+  MaybeInitializeCandidateViews(no_shortcut_candidate_window);
+  ASSERT_EQ(3UL, GetCandidatesSize());
   // Check the selected index is invalidated.
-  EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
-  before_height =
-      candidate_window_view.candidate_views_[0]->GetContentsBounds().height();
+  EXPECT_EQ(-1, selected_candidate_index_in_page());
+  before_height = GetCandidateAt(0)->GetContentsBounds().height();
   // Checks all entry have same row height.
-  for (size_t i = 1; i < candidate_window_view.candidate_views_.size(); ++i) {
-    const CandidateView* view = candidate_window_view.candidate_views_[i];
-    EXPECT_EQ(before_height, view->GetContentsBounds().height());
-  }
+  for (size_t i = 1; i < GetCandidatesSize(); ++i)
+    EXPECT_EQ(before_height, GetCandidateAt(i)->GetContentsBounds().height());
 
   // Initialize with a shortcut mode candidate window.
-  candidate_window_view.MaybeInitializeCandidateViews(candidate_window);
-  ASSERT_EQ(3UL, candidate_window_view.candidate_views_.size());
+  MaybeInitializeCandidateViews(candidate_window);
+  ASSERT_EQ(3UL, GetCandidatesSize());
   // Check the selected index is invalidated.
-  EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
-  EXPECT_EQ(before_height,
-            candidate_window_view.candidate_views_[0]->GetContentsBounds()
-                .height());
+  EXPECT_EQ(-1, selected_candidate_index_in_page());
+  EXPECT_EQ(before_height, GetCandidateAt(0)->GetContentsBounds().height());
   // Checks all entry have same row height.
-  for (size_t i = 1; i < candidate_window_view.candidate_views_.size(); ++i) {
-    const CandidateView* view = candidate_window_view.candidate_views_[i];
-    EXPECT_EQ(before_height, view->GetContentsBounds().height());
-  }
-
-  // We should call CloseNow method, otherwise this test will leak memory.
-  widget->CloseNow();
+  for (size_t i = 1; i < GetCandidatesSize(); ++i)
+    EXPECT_EQ(before_height, GetCandidateAt(i)->GetContentsBounds().height());
 }
 }  // namespace input_method
 }  // namespace chromeos

@@ -55,8 +55,6 @@ class CandidateWindowControllerImpl
  private:
   // CandidateWindowView::Observer implementation.
   virtual void OnCandidateCommitted(int index) OVERRIDE;
-  virtual void OnCandidateWindowOpened() OVERRIDE;
-  virtual void OnCandidateWindowClosed() OVERRIDE;
 
   // views::WidgetObserver implementation.
   virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
@@ -70,18 +68,16 @@ class CandidateWindowControllerImpl
                                  unsigned int cursor, bool visible) OVERRIDE;
   virtual void FocusStateChanged(bool is_focused) OVERRIDE;
 
-  // Creates the candidate window view.
-  void CreateView();
+  void InitCandidateWindowView();
 
   // The candidate window view.
   CandidateWindowView* candidate_window_view_;
 
-  // This is the outer frame of the candidate window view. The frame will
-  // own |candidate_window_|.
-  scoped_ptr<views::Widget> frame_;
-
   // This is the outer frame of the infolist window view. Owned by the widget.
   InfolistWindow* infolist_window_;
+
+  gfx::Rect cursor_bounds_;
+  gfx::Rect composition_head_;
 
   // This is the controller of the IME mode indicator.
   scoped_ptr<ModeIndicatorController> mode_indicator_controller_;
