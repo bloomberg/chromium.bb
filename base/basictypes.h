@@ -13,46 +13,33 @@
 #include "base/compiler_specific.h"
 #include "base/port.h"  // Types that only need exist on certain systems.
 
-typedef signed char         schar;
-typedef signed char         int8;
-typedef short               int16;
-typedef int                 int32;
+// TODO(vtl): We get conflicts with other definitions of |int8|/|uint8| if we
+// try to define them as |int8_t|/|uint8_t|, at least on Windows.
+#ifdef _MSC_VER
+typedef signed char int8;
+typedef unsigned char uint8;
+#else
+typedef int8_t int8;
+typedef uint8_t uint8;
+#endif
 
+typedef int16_t int16;
+typedef int32_t int32;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+
+// TODO(vtl): Figure what's up with the 64-bit types. Can we just define them as
+// |int64_t|/|uint64_t|?
 // The NSPR system headers define 64-bit as |long| when possible, except on
 // Mac OS X.  In order to not have typedef mismatches, we do the same on LP64.
 //
 // On Mac OS X, |long long| is used for 64-bit types for compatibility with
 // <inttypes.h> format macros even in the LP64 model.
 #if defined(__LP64__) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
-typedef long                int64;
-#else
-typedef long long           int64;
-#endif
-
-// NOTE: It is DANGEROUS to compare signed with unsigned types in loop
-// conditions and other conditional expressions, and it is DANGEROUS to
-// compute object/allocation sizes, indices, and offsets with signed types.
-// Integer overflow behavior for signed types is UNDEFINED in the C/C++
-// standards, but is defined for unsigned types.
-//
-// Use the unsigned types if your variable represents a bit pattern (e.g. a
-// hash value), object or allocation size, object count, offset,
-// array/vector index, etc.
-//
-// Do NOT use 'unsigned' to express "this value should always be positive";
-// use assertions for this.
-//
-// See the Chromium style guide for more information.
-// https://sites.google.com/a/chromium.org/dev/developers/coding-style
-
-typedef unsigned char      uint8;
-typedef unsigned short     uint16;
-typedef unsigned int       uint32;
-
-// See the comment above about NSPR and 64-bit.
-#if defined(__LP64__) && !defined(OS_MACOSX) && !defined(OS_OPENBSD)
+typedef long int64;
 typedef unsigned long uint64;
 #else
+typedef long long int64;
 typedef unsigned long long uint64;
 #endif
 
@@ -60,7 +47,8 @@ typedef unsigned long long uint64;
 // such values require up to 21 bits.
 // (For type-checking on pointers, make this explicitly signed,
 // and it should always be the signed version of whatever int32 is.)
-typedef signed int         char32;
+// TODO(vtl): This is almost completely unused in Chromium. Delete it?
+typedef signed int char32;
 
 const uint8  kuint8max  = (( uint8) 0xFF);
 const uint16 kuint16max = ((uint16) 0xFFFF);
