@@ -4,13 +4,24 @@
 
 #import "chrome/browser/ui/cocoa/browser/profile_chooser_controller.h"
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+
+const std::string kEmail = "user@gmail.com";
+const std::string kSecondaryEmail = "user2@gmail.com";
+const std::string kLoginToken = "oauth2_login_token";
 
 class ProfileChooserControllerTest : public CocoaProfileTest {
  public:
@@ -19,11 +30,16 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
 
   virtual void SetUp() OVERRIDE {
     CocoaProfileTest::SetUp();
+    ASSERT_TRUE(browser()->profile());
 
+    TestingProfile::TestingFactories factories;
+    factories.push_back(
+        std::make_pair(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                       FakeProfileOAuth2TokenService::Build));
     testing_profile_manager()->
         CreateTestingProfile("test1", scoped_ptr<PrefServiceSyncable>(),
                              base::ASCIIToUTF16("Test 1"), 0, std::string(),
-                             TestingProfile::TestingFactories());
+                             factories);
     testing_profile_manager()->
         CreateTestingProfile("test2", scoped_ptr<PrefServiceSyncable>(),
                              base::ASCIIToUTF16("Test 2"), 1, std::string(),
@@ -39,23 +55,24 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
 
   virtual void TearDown() OVERRIDE {
     [controller() close];
+    controller_.reset();
     CocoaProfileTest::TearDown();
   }
 
   void StartProfileChooserController() {
     NSRect frame = [test_window() frame];
     NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
-    controller_ = [[ProfileChooserController alloc] initWithBrowser:browser()
-                                                         anchoredAt:point];
-    [controller() showWindow:nil];
+    controller_.reset(
+        [[ProfileChooserController alloc] initWithBrowser:browser()
+                                               anchoredAt:point]);
+    [controller_ showWindow:nil];
   }
 
   ProfileChooserController* controller() { return controller_; }
   AvatarMenu* menu() { return menu_; }
 
  private:
-  // Weak; releases self.
-  ProfileChooserController* controller_;
+  base::scoped_nsobject<ProfileChooserController> controller_;
 
   // Weak; owned by |controller_|.
   AvatarMenu* menu_;
@@ -67,7 +84,7 @@ TEST_F(ProfileChooserControllerTest, InitialLayout) {
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
 
-  // Three profiles means we shoud have one active card, two "other" profiles,
+  // Three profiles means we should have one active card, two "other" profiles,
   // one separator and one option buttons view.
   EXPECT_EQ(5U, [subviews count]);
 
@@ -97,10 +114,10 @@ TEST_F(ProfileChooserControllerTest, InitialLayout) {
     EXPECT_EQ(controller(), [button target]);
   }
 
-  // There should be at least profile avatar and a name in the active card view.
-  // The links displayed in this subview are checked in separate tests.
+  // There should be the profile avatar, name and links container in the active
+  // card view. The links displayed in the container are checked separately.
   NSArray* activeCardSubviews = [[subviews objectAtIndex:4] subviews];
-  EXPECT_TRUE([activeCardSubviews count] > 2);
+  EXPECT_EQ(3U, [activeCardSubviews count]);
 
   NSView* activeProfileImage = [activeCardSubviews objectAtIndex:0];
   EXPECT_TRUE([activeProfileImage isKindOfClass:[NSImageView class]]);
@@ -117,11 +134,12 @@ TEST_F(ProfileChooserControllerTest, LocalProfileActiveCardLinks) {
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
   NSArray* activeCardSubviews = [[subviews objectAtIndex:4] subviews];
+  NSArray* activeCardLinks = [[activeCardSubviews objectAtIndex:1] subviews];
 
-  // There are 2 items for the profile name/photo, and a "sign in" link.
-  EXPECT_EQ(3U, [activeCardSubviews count]);
+  // There should be one "sign in" link.
+  EXPECT_EQ(1U, [activeCardLinks count]);
   NSButton* signinLink =
-      static_cast<NSButton*>([activeCardSubviews objectAtIndex:1]);
+      static_cast<NSButton*>([activeCardLinks objectAtIndex:0]);
   EXPECT_EQ(@selector(showSigninPage:), [signinLink action]);
   EXPECT_EQ(controller(), [signinLink target]);
 }
@@ -129,22 +147,102 @@ TEST_F(ProfileChooserControllerTest, LocalProfileActiveCardLinks) {
 TEST_F(ProfileChooserControllerTest, SignedInProfileActiveCardLinks) {
   // Sign in the first profile.
   ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
-  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16("user_name"));
+  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
 
   StartProfileChooserController();
   NSArray* subviews = [[[controller() window] contentView] subviews];
   NSArray* activeCardSubviews = [[subviews objectAtIndex:4] subviews];
+  NSArray* activeCardLinks = [[activeCardSubviews objectAtIndex:1] subviews];
 
-  // There are 2 items for the profile name/photo, and two links.
-  EXPECT_EQ(4U, [activeCardSubviews count]);
+  // There are two links: lock and manage accounts.
+  EXPECT_EQ(2U, [activeCardLinks count]);
   NSButton* manageAccountsLink =
-      static_cast<NSButton*>([activeCardSubviews objectAtIndex:1]);
+      static_cast<NSButton*>([activeCardLinks objectAtIndex:0]);
   EXPECT_EQ(@selector(showAccountManagement:), [manageAccountsLink action]);
   EXPECT_EQ(controller(), [manageAccountsLink target]);
 
   NSButton* lockLink =
-      static_cast<NSButton*>([activeCardSubviews objectAtIndex:2]);
+      static_cast<NSButton*>([activeCardLinks objectAtIndex:1]);
   EXPECT_EQ(@selector(lockProfile:), [lockLink action]);
   EXPECT_EQ(controller(), [lockLink target]);
 }
 
+TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
+  // Sign in the first profile.
+  ProfileInfoCache* cache = testing_profile_manager()->profile_info_cache();
+  cache->SetUserNameOfProfileAtIndex(0, base::ASCIIToUTF16(kEmail));
+
+  // Set up the signin manager and the OAuth2Tokens.
+  Profile* profile = browser()->profile();
+  SigninManagerFactory::GetForProfile(profile)->
+      SetAuthenticatedUsername(kEmail);
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+      UpdateCredentials(kEmail, kLoginToken);
+  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
+      UpdateCredentials(kSecondaryEmail, kLoginToken);
+
+  StartProfileChooserController();
+  [controller() initMenuContentsWithView:ACCOUNT_MANAGEMENT_VIEW];
+
+  NSArray* subviews = [[[controller() window] contentView] subviews];
+
+  // There should be one active card, one accounts container, two separators
+  // and one option buttons view.
+  EXPECT_EQ(5U, [subviews count]);
+
+  // There should be three buttons in the option buttons view.
+  NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
+  const SEL buttonSelectors[] = { @selector(showUserManager:),
+                                  @selector(addNewProfile:),
+                                  @selector(switchToGuestProfile:) };
+  EXPECT_EQ(3U, [buttonSubviews count]);
+  for (NSUInteger i = 0; i < [buttonSubviews count]; ++i) {
+    NSButton* button = static_cast<NSButton*>([buttonSubviews objectAtIndex:i]);
+    EXPECT_EQ(buttonSelectors[i], [button action]);
+    EXPECT_EQ(controller(), [button target]);
+  }
+
+  // There should be a separator.
+  EXPECT_TRUE([[subviews objectAtIndex:1] isKindOfClass:[NSBox class]]);
+
+  // In the accounts view, there should be the account list container
+  // accounts and one "add accounts" button.
+  NSArray* accountsSubviews = [[subviews objectAtIndex:2] subviews];
+  EXPECT_EQ(2U, [accountsSubviews count]);
+
+  NSButton* addAccountsButton =
+      static_cast<NSButton*>([accountsSubviews objectAtIndex:0]);
+  EXPECT_EQ(@selector(addAccount:), [addAccountsButton action]);
+  EXPECT_EQ(controller(), [addAccountsButton target]);
+
+  // There should be two accounts in the account list container.
+  NSArray* accountsListSubviews = [[accountsSubviews objectAtIndex:1] subviews];
+  EXPECT_EQ(2U, [accountsListSubviews count]);
+
+  NSButton* genericAccount =
+      static_cast<NSButton*>([accountsListSubviews objectAtIndex:0]);
+  EXPECT_EQ(@selector(removeAccount:), [genericAccount action]);
+  EXPECT_EQ(controller(), [genericAccount target]);
+
+  // Primary accounts are always last and can't be deleted.
+  NSButton* primaryAccount =
+      static_cast<NSButton*>([accountsListSubviews objectAtIndex:1]);
+  EXPECT_EQ(nil, [primaryAccount action]);
+  EXPECT_EQ(nil, [primaryAccount target]);
+
+  // There should be another separator.
+  EXPECT_TRUE([[subviews objectAtIndex:3] isKindOfClass:[NSBox class]]);
+
+  // There should be the profile avatar, name and no links container in the
+  // active card view.
+  NSArray* activeCardSubviews = [[subviews objectAtIndex:4] subviews];
+  EXPECT_EQ(2U, [activeCardSubviews count]);
+
+  NSView* activeProfileImage = [activeCardSubviews objectAtIndex:0];
+  EXPECT_TRUE([activeProfileImage isKindOfClass:[NSImageView class]]);
+
+  NSView* activeProfileName = [activeCardSubviews objectAtIndex:1];
+  EXPECT_TRUE([activeProfileName isKindOfClass:[NSTextField class]]);
+  EXPECT_EQ(menu()->GetItemAt(0).name, base::SysNSStringToUTF16(
+      [static_cast<NSTextField*>(activeProfileName) stringValue]));
+}

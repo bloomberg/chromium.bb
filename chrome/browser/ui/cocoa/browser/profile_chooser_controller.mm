@@ -7,13 +7,20 @@
 #import "chrome/browser/ui/cocoa/browser/profile_chooser_controller.h"
 
 #include "base/mac/bundle_locations.h"
+#include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/avatar_menu.h"
+#include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -23,17 +30,22 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "google_apis/gaia/oauth2_token_service.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/cocoa_event_utils.h"
+#import "ui/base/cocoa/controls/blue_label_button.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 
@@ -49,6 +61,10 @@ const CGFloat kHorizontalSpacing = 20.0;
 const CGFloat kTitleFontSize = 15.0;
 const CGFloat kTextFontSize = 12.0;
 
+// Minimum size for embedded sign in pages as defined in Gaia.
+const CGFloat kMinGaiaViewWidth = 320;
+const CGFloat kMinGaiaViewHeight = 440;
+
 gfx::Image CreateProfileImage(const gfx::Image& icon, int imageSize) {
   return profiles::GetSizedAvatarIconWithBorder(
       icon, true /* image is a square */,
@@ -56,22 +72,82 @@ gfx::Image CreateProfileImage(const gfx::Image& icon, int imageSize) {
       imageSize + profiles::kAvatarIconPadding);
 }
 
-// Should only be called before the window is shown, as that sets the window
-// position.
+// Updates the window size and position.
 void SetWindowSize(NSWindow* window, NSSize size) {
   NSRect frame = [window frame];
+  frame.origin.x += frame.size.width - size.width;
+  frame.origin.y += frame.size.height - size.height;
   frame.size = size;
   [window setFrame:frame display:YES];
 }
 
+NSString* ElideEmail(const std::string& email, CGFloat width) {
+  base::string16 elidedEmail = gfx::ElideEmail(
+      base::UTF8ToUTF16(email),
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::BaseFont),
+      width);
+  return base::SysUTF16ToNSString(elidedEmail);
+}
+
 }  // namespace
+
+// Class that listens to changes to the OAuth2Tokens for the active profile, or
+// changes to the avatar menu model.
+// TODO(noms): The avatar menu model changes can only be triggered by modifying
+// the name or avatar for the active profile, but this is not currently
+// implemented.
+class ActiveProfileObserverBridge : public AvatarMenuObserver,
+                                    public OAuth2TokenService::Observer {
+ public:
+  explicit ActiveProfileObserverBridge(ProfileChooserController* controller)
+      : controller_(controller) {
+  }
+
+  virtual ~ActiveProfileObserverBridge() {
+  }
+
+  // OAuth2TokenService::Observer:
+  virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE {
+    // Tokens can only be added by adding an account through the inline flow,
+    // which is started from the account management view. Refresh it to show the
+    // update.
+    BubbleViewMode viewMode = [controller_ viewMode];
+    if (viewMode == ACCOUNT_MANAGEMENT_VIEW ||
+        viewMode == GAIA_SIGNIN_VIEW ||
+        viewMode == GAIA_ADD_ACCOUNT_VIEW) {
+      [controller_ initMenuContentsWithView:ACCOUNT_MANAGEMENT_VIEW];
+    }
+  }
+
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE {
+    // Tokens can only be removed from the account management view. Refresh it
+    // to show the update.
+    if ([controller_ viewMode] == ACCOUNT_MANAGEMENT_VIEW)
+      [controller_ initMenuContentsWithView:ACCOUNT_MANAGEMENT_VIEW];
+  }
+
+  // AvatarMenuObserver:
+  virtual void OnAvatarMenuChanged(AvatarMenu* avatar_menu) OVERRIDE {
+    // While the bubble is open, the avatar menu can only change from the
+    // profile chooser view by modifying the current profile's photo or name.
+    [controller_ initMenuContentsWithView:PROFILE_CHOOSER_VIEW];
+  }
+
+ private:
+  ProfileChooserController* controller_;  // Weak; owns this.
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveProfileObserverBridge);
+};
 
 @interface ProfileChooserController (Private)
 // Creates the main profile card for the profile |item| at the top of
-// the bubble. |isGuestView| is used to control which links/buttons are
-// displayed.
-- (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item
-                            isGuest:(BOOL)isGuestView;
+// the bubble.
+- (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item;
+
+// Creates the possible links for the main profile card with profile |item|.
+- (NSView*)createCurrentProfileLinksForItem:(const AvatarMenu::Item&)item
+                                withXOffset:(CGFloat)xOffset;
 
 // Creates a main profile card for the guest user.
 - (NSView*)createGuestProfileView;
@@ -80,10 +156,17 @@ void SetWindowSize(NSWindow* window, NSSize size) {
 // switcher in the middle of the bubble.
 - (NSButton*)createOtherProfileView:(int)itemIndex;
 
-// Creates the Guest / Add person / View all persons buttons. |isGuestView| is
-// used to determine the text and functionality of the Guest button.
-- (NSView*)createOptionsViewWithRect:(NSRect)rect
-                         isGuestView:(BOOL)isGuestView;
+// Creates the Guest / Add person / View all persons buttons.
+- (NSView*)createOptionsViewWithRect:(NSRect)rect;
+
+// Creates the account management view for the active profile.
+- (NSView*)createCurrentProfileAccountsView:(NSRect)rect;
+
+// Creates the list of accounts for the active profile.
+- (NSView*)createAccountsListWithRect:(NSRect)rect;
+
+// Creates the Gaia sign-in/add account view.
+- (NSView*)createGaiaEmbeddedView;
 
 // Creates a generic button with text given by |textResourceId|, an icon
 // given by |imageResourceId| and with |action|.
@@ -98,11 +181,20 @@ void SetWindowSize(NSWindow* window, NSSize size) {
                      frameOrigin:(NSPoint)frameOrigin
                           action:(SEL)action;
 
-// Creates all the subviews of the avatar bubble.
-- (void)initMenuContents;
+// Creates an email account button with |title|. If |canBeDeleted| is YES, then
+// the button is clickable and has a remove icon.
+- (NSButton*)makeAccountButtonWithRect:(NSRect)rect
+                                 title:(const std::string&)title
+                          canBeDeleted:(BOOL)canBeDeleted;
+
+- (void)dealloc;
+
 @end
 
 @implementation ProfileChooserController
+- (BubbleViewMode) viewMode {
+  return viewMode_;
+}
 
 - (IBAction)addNewProfile:(id)sender {
   profiles::CreateAndSwitchToNewProfile(
@@ -138,7 +230,7 @@ void SetWindowSize(NSWindow* window, NSSize size) {
 }
 
 - (IBAction)showAccountManagement:(id)sender {
-  NOTIMPLEMENTED();
+  [self initMenuContentsWithView:ACCOUNT_MANAGEMENT_VIEW];
 }
 
 - (IBAction)lockProfile:(id)sender {
@@ -146,101 +238,155 @@ void SetWindowSize(NSWindow* window, NSSize size) {
 }
 
 - (IBAction)showSigninPage:(id)sender {
-  GURL page = signin::GetPromoURL(signin::SOURCE_MENU, false);
-  chrome::ShowSingletonTab(browser_, page);
+  [self initMenuContentsWithView:GAIA_SIGNIN_VIEW];
+}
+
+- (IBAction)addAccount:(id)sender {
+  [self initMenuContentsWithView:GAIA_ADD_ACCOUNT_VIEW];
+}
+
+- (IBAction)removeAccount:(id)sender {
+  DCHECK(!isGuestSession_);
+  DCHECK_GE([sender tag], 0);  // Should not be called for the primary account.
+  DCHECK(ContainsKey(currentProfileAccounts_, [sender tag]));
+  std::string account = currentProfileAccounts_[[sender tag]];
+  ProfileOAuth2TokenServiceFactory::GetForProfile(
+      browser_->profile())->RevokeCredentials(account);
 }
 
 - (id)initWithBrowser:(Browser*)browser anchoredAt:(NSPoint)point {
-  browser_ = browser;
-  // TODO(noms): Add an observer when profile name editing is implemented.
-  avatarMenu_.reset(new AvatarMenu(
-      &g_browser_process->profile_manager()->GetProfileInfoCache(),
-      NULL,
-      browser));
-  avatarMenu_->RebuildMenu();
-
   base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
       initWithContentRect:ui::kWindowSizeDeterminedLater
                 styleMask:NSBorderlessWindowMask
                   backing:NSBackingStoreBuffered
                     defer:NO]);
+
   if ((self = [super initWithWindow:window
                        parentWindow:browser->window()->GetNativeWindow()
                          anchoredAt:point])) {
+    browser_ = browser;
+    viewMode_ = PROFILE_CHOOSER_VIEW;
+    observer_.reset(new ActiveProfileObserverBridge(self));
+
+    avatarMenu_.reset(new AvatarMenu(
+        &g_browser_process->profile_manager()->GetProfileInfoCache(),
+        observer_.get(),
+        browser_));
+    avatarMenu_->RebuildMenu();
+
+    // Guest profiles do not have a token service.
+    isGuestSession_ = browser_->profile()->IsGuestSession();
+    if (!isGuestSession_) {
+      ProfileOAuth2TokenService* oauth2TokenService =
+          ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+      DCHECK(oauth2TokenService);
+      oauth2TokenService->AddObserver(observer_.get());
+    }
+
     [[self bubble] setArrowLocation:info_bubble::kTopRight];
-    [self initMenuContents];
+    [self initMenuContentsWithView:viewMode_];
   }
+
   return self;
 }
 
-- (void)initMenuContents {
-  NSView* contentView = [[self window] contentView];
+- (void)dealloc {
+  if (!isGuestSession_) {
+    ProfileOAuth2TokenService* oauth2TokenService =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+    DCHECK(oauth2TokenService);
+    oauth2TokenService->RemoveObserver(observer_.get());
+  }
+  [super dealloc];
+}
 
-  // Separate items into active and other profiles.
+- (void)initMenuContentsWithView:(BubbleViewMode)viewToDisplay {
+  viewMode_ = viewToDisplay;
+  NSView* contentView = [[self window] contentView];
+  [contentView setSubviews:[NSArray array]];
+
+  if (viewMode_ == GAIA_SIGNIN_VIEW || viewMode_ == GAIA_ADD_ACCOUNT_VIEW) {
+    [contentView addSubview:[self createGaiaEmbeddedView]];
+    SetWindowSize([self window],
+                  NSMakeSize(kMinGaiaViewWidth, kMinGaiaViewHeight));
+    return;
+  }
+
   NSView* currentProfileView = nil;
   base::scoped_nsobject<NSMutableArray> otherProfiles(
       [[NSMutableArray alloc] init]);
-  BOOL isGuestView = YES;
 
+  // Separate items into active and other profiles.
   for (size_t i = 0; i < avatarMenu_->GetNumberOfItems(); ++i) {
     const AvatarMenu::Item& item = avatarMenu_->GetItemAt(i);
     if (item.active) {
-      currentProfileView = [self createCurrentProfileView:item isGuest:NO];
-      // The avatar menu only contains non-guest profiles, so an active profile
-      // implies this is not a guest session browser.
-      isGuestView = NO;
+      currentProfileView = [self createCurrentProfileView:item];
     } else {
       [otherProfiles addObject:[self createOtherProfileView:i]];
     }
   }
   if (!currentProfileView)  // Guest windows don't have an active profile.
     currentProfileView = [self createGuestProfileView];
-  CGFloat updatedMenuWidth =
+
+  CGFloat contentsWidth =
       std::max(kMinMenuWidth, NSWidth([currentProfileView frame]));
+  CGFloat contentsWidthWithSpacing = contentsWidth + 2 * kHorizontalSpacing;
 
   // |yOffset| is the next position at which to draw in |contentView|
   // coordinates.
   CGFloat yOffset = kVerticalSpacing;
+  NSRect viewRect = NSMakeRect(kHorizontalSpacing, yOffset, contentsWidth, 0);
 
   // Guest / Add Person / View All Persons buttons.
-  NSRect viewRect = NSMakeRect(kHorizontalSpacing, yOffset,
-                               updatedMenuWidth, 0);
-  NSView* optionsView = [self createOptionsViewWithRect:viewRect
-                                            isGuestView:isGuestView];
+  NSView* optionsView = [self createOptionsViewWithRect:viewRect];
   [contentView addSubview:optionsView];
   yOffset = NSMaxY([optionsView frame]) + kVerticalSpacing;
 
-  NSBox* separator =
-      [self separatorWithFrame:NSMakeRect(0, yOffset, updatedMenuWidth, 0)];
+  NSBox* separator = [self separatorWithFrame:NSMakeRect(
+      0, yOffset, contentsWidthWithSpacing, 0)];
   [contentView addSubview:separator];
   yOffset = NSMaxY([separator frame]) + kVerticalSpacing;
 
-  // Other profiles switcher.
-  for (NSView *otherProfileView in otherProfiles.get()) {
-    [otherProfileView setFrameOrigin:NSMakePoint(kHorizontalSpacing, yOffset)];
-    [contentView addSubview:otherProfileView];
-    yOffset = NSMaxY([otherProfileView frame]) + kSmallVerticalSpacing;
-  }
+  if (viewToDisplay == PROFILE_CHOOSER_VIEW) {
+    // Other profiles switcher.
+    for (NSView *otherProfileView in otherProfiles.get()) {
+      [otherProfileView setFrameOrigin:NSMakePoint(kHorizontalSpacing,
+                                                   yOffset)];
+      [contentView addSubview:otherProfileView];
+      yOffset = NSMaxY([otherProfileView frame]) + kSmallVerticalSpacing;
+    }
 
-  // If we displayed other profiles, ensure the spacing between the last item
-  // and the active profile card is the same as the spacing between the active
-  // profile card and the bottom of the bubble.
-  if ([otherProfiles.get() count] > 0)
-    yOffset += kSmallVerticalSpacing;
+    // If we displayed other profiles, ensure the spacing between the last item
+    // and the active profile card is the same as the spacing between the active
+    // profile card and the bottom of the bubble.
+    if ([otherProfiles.get() count] > 0)
+      yOffset += kSmallVerticalSpacing;
+  } else if (viewToDisplay == ACCOUNT_MANAGEMENT_VIEW) {
+    // Reuse the same view area as for the option buttons.
+    viewRect.origin.y = yOffset;
+    NSView* currentProfileAccountsView =
+        [self createCurrentProfileAccountsView:viewRect];
+    [contentView addSubview:currentProfileAccountsView];
+    yOffset = NSMaxY([currentProfileAccountsView frame]) + kVerticalSpacing;
+
+    NSBox* accountsSeparator = [self separatorWithFrame:NSMakeRect(
+        0, yOffset, contentsWidthWithSpacing, 0)];
+    [contentView addSubview:accountsSeparator];
+    yOffset = NSMaxY([accountsSeparator frame]) + kVerticalSpacing;
+  }
 
   // Active profile card.
   if (currentProfileView) {
-    // Don't need to size this view, as it was done at its creation.
-    [currentProfileView setFrameOrigin:NSMakePoint(0, yOffset)];
+    [currentProfileView setFrameOrigin:NSMakePoint(kHorizontalSpacing,
+                                                   yOffset)];
     [contentView addSubview:currentProfileView];
     yOffset = NSMaxY([currentProfileView frame]) + kVerticalSpacing;
   }
 
-  SetWindowSize([self window], NSMakeSize(updatedMenuWidth, yOffset));
+  SetWindowSize([self window], NSMakeSize(contentsWidthWithSpacing, yOffset));
 }
 
-- (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item
-                            isGuest:(BOOL)isGuestView {
+- (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item {
   base::scoped_nsobject<NSView> container([[NSView alloc]
       initWithFrame:NSZeroRect]);
 
@@ -249,21 +395,48 @@ void SetWindowSize(NSWindow* window, NSSize size) {
       initWithFrame:NSMakeRect(0, 0, kLargeImageSide, kLargeImageSide)]);
   [iconView setImage:CreateProfileImage(
       item.icon, kLargeImageSide).ToNSImage()];
-  // Position the image correctly so that the width of the container can be
-  // used to correctly resize the bubble if needed.
-  [iconView setFrameOrigin:NSMakePoint(kHorizontalSpacing, 0)];
+  [iconView setFrameOrigin:NSMakePoint(0, 0)];
   [container addSubview:iconView];
 
   CGFloat xOffset = NSMaxX([iconView frame]) + kHorizontalSpacing;
+  CGFloat yOffset = kVerticalSpacing;
+  CGFloat maxXLinksContainer = 0;
+  if (!isGuestSession_ && viewMode_ == PROFILE_CHOOSER_VIEW) {
+    NSView* linksContainer =
+        [self createCurrentProfileLinksForItem:item withXOffset:xOffset];
+    [container addSubview:linksContainer];
+    yOffset = NSMaxY([linksContainer frame]);
+    maxXLinksContainer = NSMaxX([linksContainer frame]);
+  }
+
+  // Profile name.
+  base::scoped_nsobject<NSTextField> profileName([[NSTextField alloc]
+      initWithFrame:NSZeroRect]);
+  [profileName setStringValue:base::SysUTF16ToNSString(item.name)];
+  [profileName setFont:[NSFont labelFontOfSize:kTitleFontSize]];
+  [profileName setEditable:NO];
+  [profileName setDrawsBackground:NO];
+  [profileName setBezeled:NO];
+  [profileName setFrameOrigin:NSMakePoint(xOffset, yOffset)];
+  [profileName sizeToFit];
+  [container addSubview:profileName];
+
+  CGFloat maxX = std::max(maxXLinksContainer,
+                          NSMaxX([profileName frame]));
+
+  [container setFrameSize:NSMakeSize(maxX, NSHeight([iconView frame]))];
+  return container.autorelease();
+}
+
+- (NSView*)createCurrentProfileLinksForItem:(const AvatarMenu::Item&)item
+                                withXOffset:(CGFloat)xOffset {
+  base::scoped_nsobject<NSView> container([[NSView alloc]
+      initWithFrame:NSZeroRect]);
+  CGFloat maxX = 0;  // Ensure the container is wide enough for all the links.
   CGFloat yOffset;
-  // Since the bubble hasn't been sized yet, keep track of the widest
-  // link (or profile name), to make sure everything fits.
-  CGFloat maxXOfLinksColumn = 0;
 
   // The available links depend on the type of profile that is active.
-  if (isGuestView) {
-    yOffset = kVerticalSpacing;
-  } else if (item.signed_in) {
+  if (item.signed_in) {
     yOffset = 0;
     // We need to display 2 links instead of 1, so make the padding in between
     // the links even smaller to fit.
@@ -282,7 +455,7 @@ void SetWindowSize(NSWindow* window, NSSize size) {
                            action:@selector(lockProfile:)];
     yOffset = NSMaxY([signOutLink frame]) + kLinkSpacing;
 
-    maxXOfLinksColumn = std::max(NSMaxX([manageAccountsLink frame]),
+    maxX = std::max(NSMaxX([manageAccountsLink frame]),
                                  NSMaxX([signOutLink frame]));
     [container addSubview:manageAccountsLink];
     [container addSubview:signOutLink];
@@ -295,26 +468,12 @@ void SetWindowSize(NSWindow* window, NSSize size) {
                       frameOrigin:NSMakePoint(xOffset, yOffset)
                            action:@selector(showSigninPage:)];
     yOffset = NSMaxY([signInLink frame]) + kSmallVerticalSpacing;
-    maxXOfLinksColumn = NSMaxX([signInLink frame]);
+    maxX = NSMaxX([signInLink frame]);
+
     [container addSubview:signInLink];
   }
 
-  // Profile name.
-  base::scoped_nsobject<NSTextField> profileName([[NSTextField alloc]
-      initWithFrame:NSZeroRect]);
-  [profileName setStringValue:base::SysUTF16ToNSString(item.name)];
-  [profileName setFont:[NSFont labelFontOfSize:kTitleFontSize]];
-  [profileName setEditable:NO];
-  [profileName setDrawsBackground:NO];
-  [profileName setBezeled:NO];
-  [profileName setFrameOrigin:NSMakePoint(xOffset, yOffset)];
-  [profileName sizeToFit];
-  maxXOfLinksColumn = std::max(maxXOfLinksColumn, NSMaxX([profileName frame]));
-
-  [container addSubview:profileName];
-
-  [container setFrameSize:NSMakeSize(maxXOfLinksColumn + kHorizontalSpacing,
-                                     NSHeight([iconView frame]))];
+  [container setFrameSize:NSMakeSize(maxX, yOffset)];
   return container.autorelease();
 }
 
@@ -329,7 +488,7 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   guestItem.name = base::SysNSStringToUTF16(
       l10n_util::GetNSString(IDS_PROFILES_GUEST_PROFILE_NAME));
 
-  return [self createCurrentProfileView:guestItem isGuest:YES];
+  return [self createCurrentProfileView:guestItem];
 }
 
 - (NSButton*)createOtherProfileView:(int)itemIndex {
@@ -352,8 +511,7 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   return profileButton.autorelease();
 }
 
-- (NSView*)createOptionsViewWithRect:(NSRect)rect
-                         isGuestView:(BOOL)isGuestView {
+- (NSView*)createOptionsViewWithRect:(NSRect)rect {
   CGFloat yOffset = 0;
   base::scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:rect]);
 
@@ -371,10 +529,10 @@ void SetWindowSize(NSWindow* window, NSSize size) {
                     action:@selector(addNewProfile:)];
   yOffset = NSMaxY([addUserButton frame]) + kSmallVerticalSpacing;
 
-  int guestButtonText = isGuestView ? IDS_PROFILES_EXIT_GUEST_BUTTON :
-                                      IDS_PROFILES_GUEST_BUTTON;
-  SEL guestButtonAction = isGuestView ? @selector(exitGuestProfile:) :
-                                        @selector(switchToGuestProfile:);
+  int guestButtonText = isGuestSession_ ? IDS_PROFILES_EXIT_GUEST_BUTTON :
+                                          IDS_PROFILES_GUEST_BUTTON;
+  SEL guestButtonAction = isGuestSession_ ? @selector(exitGuestProfile:) :
+                                            @selector(switchToGuestProfile:);
   NSButton* guestButton =
       [self buttonWithRect:NSMakeRect(0, yOffset, 0, 0)
             textResourceId:guestButtonText
@@ -385,6 +543,100 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   [container setSubviews:@[allUsersButton, addUserButton, guestButton]];
   [container setFrameSize:NSMakeSize(NSWidth([container frame]), yOffset)];
   return container.autorelease();
+}
+
+- (NSView*)createCurrentProfileAccountsView:(NSRect)rect {
+  const CGFloat kBlueButtonHeight = 30;
+  const CGFloat kAccountButtonHeight = 15;
+
+  const AvatarMenu::Item& item =
+      avatarMenu_->GetItemAt(avatarMenu_->GetActiveProfileIndex());
+  DCHECK(item.signed_in);
+
+  base::scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:rect]);
+
+  NSRect viewRect = NSMakeRect(0, 0, rect.size.width, kBlueButtonHeight);
+  base::scoped_nsobject<NSButton> addAccountsButton([[BlueLabelButton alloc]
+      initWithFrame:viewRect]);
+  [addAccountsButton setTitle:l10n_util::GetNSStringFWithFixup(
+      IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, item.name)];
+  [addAccountsButton setTarget:self];
+  [addAccountsButton setAction:@selector(addAccount:)];
+  [container addSubview:addAccountsButton];
+
+  // Update the height of the email account buttons. This is needed so that the
+  // all the buttons span the entire width of the bubble.
+  viewRect.origin.y = NSMaxY([addAccountsButton frame]) + kVerticalSpacing;
+  viewRect.size.height = kAccountButtonHeight;
+
+  NSView* accountEmails = [self createAccountsListWithRect:viewRect];
+  [container addSubview:accountEmails];
+  [container setFrameSize:NSMakeSize(
+      NSWidth([container frame]), NSMaxY([accountEmails frame]))];
+  return container.autorelease();
+}
+
+- (NSView*)createAccountsListWithRect:(NSRect)rect {
+  base::scoped_nsobject<NSView> container([[NSView alloc] initWithFrame:rect]);
+  currentProfileAccounts_.clear();
+
+  // The primary account should always be listed first.  However, the vector
+  // returned by ProfileOAuth2TokenService::GetAccounts() will contain the
+  // primary account too.  Ignore it when it appears later.
+  // TODO(rogerta): we still need to further differentiate the primary account
+  // from the others, so more work is likely required here: crbug.com/311124.
+  Profile* profile = browser_->profile();
+
+  // TODO(noms): This code is duplicated by the views implementation. See
+  // crbug.com/331805.
+  std::string primaryAccount =
+      SigninManagerFactory::GetForProfile(profile)->GetAuthenticatedUsername();
+  DCHECK(!primaryAccount.empty());
+  std::vector<std::string> accounts =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->GetAccounts();
+  DCHECK_EQ(1, std::count_if(accounts.begin(), accounts.end(),
+                             std::bind1st(std::equal_to<std::string>(),
+                                          primaryAccount)));
+  rect.origin.y = 0;
+  for (size_t i = 0; i < accounts.size(); ++i) {
+    // Save the original email address, as the button text could be elided.
+    currentProfileAccounts_[i] = accounts[i];
+    if (primaryAccount != accounts[i]) {
+      NSButton* accountButton = [self makeAccountButtonWithRect:rect
+                                                          title:accounts[i]
+                                                   canBeDeleted:true];
+      [accountButton setTag:i];
+      [container addSubview:accountButton];
+      rect.origin.y = NSMaxY([accountButton frame]) + kSmallVerticalSpacing;
+    }
+  }
+
+  // Add the primary account button. It doesn't need a tag, as it cannot be
+  // removed.
+  NSButton* accountButton = [self makeAccountButtonWithRect:rect
+                                                      title:primaryAccount
+                                               canBeDeleted:false];
+  [container addSubview:accountButton];
+  [container setFrameSize:NSMakeSize(NSWidth([container frame]),
+                                     NSMaxY([accountButton frame]))];
+  return container.autorelease();
+}
+
+- (NSView*) createGaiaEmbeddedView {
+  signin::Source source = (viewMode_ == GAIA_SIGNIN_VIEW) ?
+      signin::SOURCE_AVATAR_BUBBLE_SIGN_IN :
+      signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT;
+
+  webContents_.reset(content::WebContents::Create(
+      content::WebContents::CreateParams(browser_->profile())));
+  webContents_->GetController().LoadURL(
+      signin::GetPromoURL(source, false),
+      content::Referrer(),
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      std::string());
+  NSView* webview = webContents_->GetView()->GetNativeView();
+  [webview setFrameSize:NSMakeSize(kMinGaiaViewWidth, kMinGaiaViewHeight)];
+  return webview;
 }
 
 - (NSButton*)buttonWithRect:(NSRect)rect
@@ -424,6 +676,25 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   [link sizeToFit];
 
   return link.autorelease();
+}
+
+- (NSButton*)makeAccountButtonWithRect:(NSRect)rect
+                                 title:(const std::string&)title
+                          canBeDeleted:(BOOL)canBeDeleted {
+  base::scoped_nsobject<NSButton> button([[NSButton alloc] initWithFrame:rect]);
+  [button setTitle:ElideEmail(title, rect.size.width)];
+  [button setAlignment:NSLeftTextAlignment];
+  [button setBordered:NO];
+
+  if (canBeDeleted) {
+    [button setImage:ui::ResourceBundle::GetSharedInstance().
+        GetNativeImageNamed(IDR_CLOSE_1).ToNSImage()];
+    [button setImagePosition:NSImageRight];
+    [button setTarget:self];
+    [button setAction:@selector(removeAccount:)];
+  }
+
+  return button.autorelease();
 }
 
 @end
