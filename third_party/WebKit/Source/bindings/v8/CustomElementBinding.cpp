@@ -43,7 +43,7 @@ CustomElementBinding::CustomElementBinding(v8::Isolate* isolate, v8::Handle<v8::
     , m_prototype(isolate, prototype)
     , m_wrapperType(wrapperType)
 {
-    ASSERT(m_prototype.value());
+    ASSERT(!m_prototype.isEmpty());
     ASSERT(m_wrapperType);
 }
 

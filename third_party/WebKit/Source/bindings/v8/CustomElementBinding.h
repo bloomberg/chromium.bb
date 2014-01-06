@@ -31,9 +31,8 @@
 #ifndef CustomElementBinding_h
 #define CustomElementBinding_h
 
-#include "bindings/v8/UnsafePersistent.h"
+#include "bindings/v8/ScopedPersistent.h"
 #include "wtf/PassOwnPtr.h"
-#include <v8.h>
 
 namespace WebCore {
 
@@ -43,7 +42,7 @@ class CustomElementBinding {
 public:
     static PassOwnPtr<CustomElementBinding> create(v8::Isolate*, v8::Handle<v8::Object> prototype, const WrapperTypeInfo*);
 
-    ~CustomElementBinding() { m_prototype.dispose(); }
+    ~CustomElementBinding() { }
 
     v8::Handle<v8::Object> prototype() { return m_prototype.newLocal(m_isolate); }
     const WrapperTypeInfo* wrapperType() { return m_wrapperType; }
@@ -52,7 +51,7 @@ private:
     CustomElementBinding(v8::Isolate*, v8::Handle<v8::Object> prototype, const WrapperTypeInfo*);
 
     v8::Isolate* m_isolate;
-    UnsafePersistent<v8::Object> m_prototype;
+    ScopedPersistent<v8::Object> m_prototype;
     const WrapperTypeInfo* m_wrapperType;
 };
 
