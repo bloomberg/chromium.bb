@@ -199,7 +199,7 @@ void FFmpegVideoDecoder::Stop(const base::Closure& closure) {
     return;
 
   if (!decode_cb_.is_null()) {
-    base::ResetAndReturn(&decode_cb_).Run(kOk, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kAborted, NULL);
     // Reset is pending only when decode is pending.
     if (!reset_cb_.is_null())
       base::ResetAndReturn(&reset_cb_).Run();

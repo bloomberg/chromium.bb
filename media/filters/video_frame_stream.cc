@@ -245,18 +245,17 @@ void VideoFrameStream::OnFrameReady(int buffer_size,
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
   DCHECK(!read_cb_.is_null());
   DCHECK(stop_cb_.is_null());
+  DCHECK_EQ(status == VideoDecoder::kOk, frame != NULL);
 
   TRACE_EVENT_ASYNC_END0("media", "VideoFrameStream::Decode", this);
 
   if (status == VideoDecoder::kDecodeError) {
-    DCHECK(!frame.get());
     state_ = STATE_ERROR;
     SatisfyRead(DECODE_ERROR, NULL);
     return;
   }
 
   if (status == VideoDecoder::kDecryptError) {
-    DCHECK(!frame.get());
     state_ = STATE_ERROR;
     SatisfyRead(DECRYPT_ERROR, NULL);
     return;

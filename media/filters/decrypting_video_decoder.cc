@@ -116,7 +116,7 @@ void DecryptingVideoDecoder::Reset(const base::Closure& closure) {
   if (state_ == kWaitingForKey) {
     DCHECK(!decode_cb_.is_null());
     pending_buffer_to_decode_ = NULL;
-    base::ResetAndReturn(&decode_cb_).Run(kOk, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kAborted, NULL);
   }
 
   DCHECK(decode_cb_.is_null());
@@ -142,7 +142,7 @@ void DecryptingVideoDecoder::Stop(const base::Closure& closure) {
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(DECODER_ERROR_NOT_SUPPORTED);
   if (!decode_cb_.is_null())
-    base::ResetAndReturn(&decode_cb_).Run(kOk, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kAborted, NULL);
   if (!reset_cb_.is_null())
     base::ResetAndReturn(&reset_cb_).Run();
   state_ = kStopped;
@@ -247,7 +247,7 @@ void DecryptingVideoDecoder::DeliverFrame(
   pending_buffer_to_decode_ = NULL;
 
   if (!reset_cb_.is_null()) {
-    base::ResetAndReturn(&decode_cb_).Run(kOk, NULL);
+    base::ResetAndReturn(&decode_cb_).Run(kAborted, NULL);
     DoReset();
     return;
   }

@@ -211,7 +211,7 @@ class VideoRendererImplTest : public ::testing::Test {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     scoped_refptr<VideoFrame> null_frame;
     decode_results_.push_back(std::make_pair(
-        VideoDecoder::kOk, null_frame));
+        VideoDecoder::kAborted, null_frame));
   }
 
   void QueuePrerollFrames(int timestamp_ms) {

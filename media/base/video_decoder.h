@@ -22,6 +22,7 @@ class MEDIA_EXPORT VideoDecoder {
   // Status codes for decode operations on VideoDecoder.
   enum Status {
     kOk,  // Everything went as planned.
+    kAborted,  // Decode was aborted as a result of Reset() being called.
     kNotEnoughData,  // Not enough data to produce a video frame.
     kDecodeError,  // Decoding error happened.
     kDecryptError  // Decrypting error happened.
@@ -52,8 +53,6 @@ class MEDIA_EXPORT VideoDecoder {
   // If the returned status is kOk:
   // - Non-EOS (end of stream) frame contains decoded video data.
   // - EOS frame indicates the end of the stream.
-  // - NULL frame indicates an aborted decode. This can happen if Reset() or
-  //   Stop() is called during the decoding process.
   // Otherwise the returned frame must be NULL.
   typedef base::Callback<void(Status,
                               const scoped_refptr<VideoFrame>&)> DecodeCB;

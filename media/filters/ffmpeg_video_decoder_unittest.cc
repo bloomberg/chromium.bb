@@ -149,6 +149,8 @@ class FFmpegVideoDecoderTest : public testing::Test {
         case VideoDecoder::kNotEnoughData:
           DCHECK(!frame);
           continue;
+        case VideoDecoder::kAborted:
+          NOTREACHED();
         case VideoDecoder::kDecodeError:
         case VideoDecoder::kDecryptError:
           DCHECK(!frame);
