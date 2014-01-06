@@ -80,6 +80,26 @@ enum SearchType { EXCLUDE_DIRECTORIES, SHARED_WITH_ME, OFFLINE, ALL };
 // Zooming mode.
 enum ZoomOperationType { in, out, reset };
 
+// Device event type.
+enum DeviceEventType {
+  // Device is added.
+  added,
+  // If the device is disabled by preference, the disabled event is published
+  // instead of the added event.
+  disabled,
+  // Device is added, but scan for the device is canceled. The event is
+  // published after the added event.
+  scan_canceled,
+  // Device is removed.
+  removed,
+  // Format started.
+  format_start,
+  // Format succeeded.
+  format_success,
+  // Format failed.
+  format_fail
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -315,6 +335,15 @@ dictionary DriveConnectionState {
 
   // Reasons of offline.
   DOMString? reason;
+};
+
+// Device event dispatched to listeners of onDeviceChaged.  See also
+// DeviceEventType to know when the event dispatched.
+dictionary DeviceEvent {
+  // Event type of the device event.
+  DeviceEventType type;
+  // Device path to identify the device.
+  DOMString devicePath;
 };
 
 // |success| True of task execution was successfully initiated.
@@ -637,5 +666,7 @@ interface Events {
   static void onPreferencesChanged();
 
   static void onDriveConnectionStatusChanged();
+
+  static void onDeviceChanged(DeviceEvent event);
 };
 };

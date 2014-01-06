@@ -29,7 +29,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/extensions/api/file_browser_private.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
@@ -646,6 +645,17 @@ void EventRouter::ShowRemovableDeviceInFileManager(
       base::Bind(&util::OpenRemovableDrive, profile_, mount_path));
 }
 
+void EventRouter::DispatchDeviceEvent(
+    file_browser_private::DeviceEventType type,
+    const std::string& device_path) {
+  file_browser_private::DeviceEvent event;
+  event.type = type;
+  event.device_path = device_path;
+  BroadcastEvent(profile_,
+                 file_browser_private::OnDeviceChanged::kEventName,
+                 file_browser_private::OnDeviceChanged::Create(event));
+}
+
 void EventRouter::OnDiskAdded(
     const DiskMountManager::Disk& disk, bool mounting) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -653,8 +663,9 @@ void EventRouter::OnDiskAdded(
   if (!mounting) {
     // If the disk is not being mounted, we don't want the Scanning
     // notification to persist.
-    notifications_->HideNotification(DesktopNotifications::DEVICE,
-                                     disk.system_path_prefix());
+    DispatchDeviceEvent(
+        file_browser_private::DEVICE_EVENT_TYPE_SCAN_CANCELED,
+        disk.system_path_prefix());
   }
 }
 
@@ -669,26 +680,23 @@ void EventRouter::OnDeviceAdded(const std::string& device_path) {
   // If the policy is set instead of showing the new device notification,
   // we show a notification that the operation is not permitted.
   if (profile_->GetPrefs()->GetBoolean(prefs::kExternalStorageDisabled)) {
-    notifications_->ShowNotification(
-        DesktopNotifications::DEVICE_EXTERNAL_STORAGE_DISABLED,
+    DispatchDeviceEvent(
+        file_browser_private::DEVICE_EVENT_TYPE_DISABLED,
         device_path);
     return;
   }
 
-  notifications_->RegisterDevice(device_path);
-  notifications_->ShowNotificationDelayed(DesktopNotifications::DEVICE,
-                                          device_path,
-                                          base::TimeDelta::FromSeconds(5));
+  DispatchDeviceEvent(
+      file_browser_private::DEVICE_EVENT_TYPE_ADDED,
+      device_path);
 }
 
 void EventRouter::OnDeviceRemoved(const std::string& device_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  notifications_->HideNotification(DesktopNotifications::DEVICE,
-                                   device_path);
-  notifications_->HideNotification(DesktopNotifications::DEVICE_FAIL,
-                                   device_path);
-  notifications_->UnregisterDevice(device_path);
+  DispatchDeviceEvent(
+      file_browser_private::DEVICE_EVENT_TYPE_REMOVED,
+      device_path);
 }
 
 void EventRouter::OnVolumeMounted(chromeos::MountError error_code,
@@ -737,34 +745,21 @@ void EventRouter::OnFormatStarted(const std::string& device_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (success) {
-    notifications_->ShowNotification(DesktopNotifications::FORMAT_START,
-                                     device_path);
+    DispatchDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_FORMAT_START,
+                        device_path);
   } else {
-    notifications_->ShowNotification(
-        DesktopNotifications::FORMAT_START_FAIL, device_path);
+    DispatchDeviceEvent(file_browser_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
+                        device_path);
   }
 }
 
 void EventRouter::OnFormatCompleted(const std::string& device_path,
                                     bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (success) {
-    notifications_->HideNotification(DesktopNotifications::FORMAT_START,
-                                     device_path);
-    notifications_->ShowNotification(DesktopNotifications::FORMAT_SUCCESS,
-                                     device_path);
-    // Hide it after a couple of seconds.
-    notifications_->HideNotificationDelayed(
-        DesktopNotifications::FORMAT_SUCCESS,
-        device_path,
-        base::TimeDelta::FromSeconds(4));
-  } else {
-    notifications_->HideNotification(DesktopNotifications::FORMAT_START,
-                                     device_path);
-    notifications_->ShowNotification(DesktopNotifications::FORMAT_FAIL,
-                                     device_path);
-  }
+  DispatchDeviceEvent(success ?
+                      file_browser_private::DEVICE_EVENT_TYPE_FORMAT_SUCCESS :
+                      file_browser_private::DEVICE_EVENT_TYPE_FORMAT_FAIL,
+                      device_path);
 }
 
 }  // namespace file_manager

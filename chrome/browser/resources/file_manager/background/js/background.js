@@ -62,6 +62,13 @@ function Background() {
   this.fileOperationHandler_ = new FileOperationHandler(this);
 
   /**
+   * Event handler for C++ sides notifications.
+   * @type {DeviceHandler}
+   * @private
+   */
+  this.deviceHandler_ = new DeviceHandler();
+
+  /**
    * String assets.
    * @type {Object.<string, string>}
    */

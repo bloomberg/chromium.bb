@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/file_manager/file_watcher.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
+#include "chrome/common/extensions/api/file_browser_private.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "webkit/browser/fileapi/file_system_operation.h"
@@ -137,6 +138,12 @@ class EventRouter
   // |mount_path|. Disk.mount_path() is empty, since it is being filled out
   // after calling notifying observers by DiskMountManager.
   void ShowRemovableDeviceInFileManager(const base::FilePath& mount_path);
+
+  // Dispatches an onDeviceChanged event containing |type| and |path| to
+  // extensions.
+  void DispatchDeviceEvent(
+      extensions::api::file_browser_private::DeviceEventType type,
+      const std::string& path);
 
   // Sends onFileTranferUpdated to extensions if needed. If |always| is true,
   // it sends the event always. Otherwise, it sends the event if enough time has
