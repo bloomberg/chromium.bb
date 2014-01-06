@@ -58,10 +58,10 @@ public:
         return adoptRef<LoadFontPromiseResolver>(new LoadFontPromiseResolver(numFamilies, promise, context));
     }
 
-    virtual void notifyLoaded(CSSSegmentedFontFace*) OVERRIDE;
-    virtual void notifyError(CSSSegmentedFontFace*) OVERRIDE;
-    void loaded(Document*);
-    void error(Document*);
+    virtual void notifyLoaded(CSSSegmentedFontFace*) OVERRIDE { loaded(); }
+    virtual void notifyError(CSSSegmentedFontFace*) OVERRIDE { error(); }
+    void loaded();
+    void error();
 
 private:
     LoadFontPromiseResolver(int numLoading, ScriptPromise promise, ExecutionContext* context)
@@ -77,10 +77,10 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-void LoadFontPromiseResolver::loaded(Document* document)
+void LoadFontPromiseResolver::loaded()
 {
     m_numLoading--;
-    if (m_numLoading || !document)
+    if (m_numLoading)
         return;
 
     ScriptScope scope(m_scriptState);
@@ -90,20 +90,10 @@ void LoadFontPromiseResolver::loaded(Document* document)
         m_resolver->resolve(ScriptValue::createNull());
 }
 
-void LoadFontPromiseResolver::error(Document* document)
+void LoadFontPromiseResolver::error()
 {
     m_errorOccured = true;
-    loaded(document);
-}
-
-void LoadFontPromiseResolver::notifyLoaded(CSSSegmentedFontFace* face)
-{
-    loaded(face->fontSelector()->document());
-}
-
-void LoadFontPromiseResolver::notifyError(CSSSegmentedFontFace* face)
-{
-    error(face->fontSelector()->document());
+    loaded();
 }
 
 class FontsReadyPromiseResolver {
@@ -331,7 +321,7 @@ ScriptPromise FontFaceSet::load(const String& fontString, const String& text, Ex
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = d->styleEngine()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face) {
-            resolver->error(d);
+            resolver->error();
             continue;
         }
         face->loadFont(font.fontDescription(), nullToSpace(text), resolver);
