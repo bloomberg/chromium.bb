@@ -583,6 +583,9 @@ const char kEnableAsyncDns[]                = "enable-async-dns";
 // HttpAuthHandlerNegotiate::CreateSPN for more background.
 const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 
+// Enables the i18n address input widget for the requestAutocomplete() dialog.
+const char kEnableAutofillAddressI18n[]     = "enable-autofill-address-i18n";
+
 // Enable using a public suffix based domain matching for autofill of passwords.
 const char kEnablePasswordAutofillPublicSuffixDomainMatching[] =
     "enable-password-autofill-public-suffix-domain-matching";

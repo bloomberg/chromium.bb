@@ -364,6 +364,8 @@
         'browser/ui/autofill/autofill_dialog_controller.h',
         'browser/ui/autofill/autofill_dialog_controller_impl.cc',
         'browser/ui/autofill/autofill_dialog_controller_impl.h',
+        'browser/ui/autofill/autofill_dialog_i18n_input.cc',
+        'browser/ui/autofill/autofill_dialog_i18n_input.h',
         'browser/ui/autofill/autofill_dialog_models.cc',
         'browser/ui/autofill/autofill_dialog_models.h',
         'browser/ui/autofill/autofill_dialog_sign_in_delegate.cc',
@@ -3342,10 +3344,24 @@
             ['include', '^browser/ui/app_list/app_list_service_disabled.cc'],
           ],
         }],
-        ['enable_autofill_dialog!=1 or OS=="android"', {
+        ['enable_autofill_dialog!=1', {
+          'sources!': [
+            'browser/ui/autofill/autofill_dialog_common.cc',
+            'browser/ui/autofill/autofill_dialog_common.h',
+            'browser/ui/autofill/data_model_wrapper.cc',
+            'browser/ui/autofill/data_model_wrapper.h',
+          ],
+        }],
+        ['enable_autofill_dialog==1 and OS!="android"', {
+          'dependencies': [
+            '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
+          ],
+        }, { # enable_autofill_dialog!=1 or OS=="android"
           'sources!': [
             'browser/ui/autofill/autofill_dialog_controller_impl.cc',
             'browser/ui/autofill/autofill_dialog_controller_impl.h',
+            'browser/ui/autofill/autofill_dialog_i18n_input.cc',
+            'browser/ui/autofill/autofill_dialog_i18n_input.h',
             'browser/ui/autofill/autofill_dialog_view.h',
             'browser/ui/autofill/autofill_dialog_view.cc',
             'browser/ui/autofill/autofill_dialog_view_delegate.h',

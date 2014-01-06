@@ -621,7 +621,7 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
       base::scoped_nsobject<AutofillTextField> field(
           [[AutofillTextField alloc] init]);
       [[field cell] setPlaceholderString:
-          l10n_util::GetNSStringWithFixup(input.placeholder_text_rid)];
+          l10n_util::FixUpWindowsStyleLabel(input.placeholder_text)];
       NSString* tooltipText =
           base::SysUTF16ToNSString(delegate_->TooltipForField(input.type));
       if ([tooltipText length] > 0) {
@@ -652,8 +652,10 @@ bool ShouldOverwriteComboboxes(autofill::DialogSection section,
     }
     layout->AddView(control);
 
-    if (input.length == autofill::DetailInput::LONG)
+    if (input.length == autofill::DetailInput::LONG ||
+        input.length == autofill::DetailInput::SHORT_EOL) {
       ++column_set_id;
+    }
   }
 
   [self updateFieldIcons];

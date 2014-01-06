@@ -1978,11 +1978,9 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
       SelectComboboxValueOrSetToDefault(combobox, input.initial_value);
       view_to_add.reset(combobox);
     } else {
-      DecoratedTextfield* field = new DecoratedTextfield(
-          input.initial_value,
-          l10n_util::GetStringUTF16(input.placeholder_text_rid),
-          this);
-
+      DecoratedTextfield* field = new DecoratedTextfield(input.initial_value,
+                                                         input.placeholder_text,
+                                                         this);
       textfields->insert(std::make_pair(input.type, field));
       view_to_add.reset(field);
     }
@@ -2025,8 +2023,10 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
                     views::GridLayout::FILL, views::GridLayout::FILL,
                     1, 0);
 
-    if (input.length == DetailInput::LONG)
+    if (input.length == DetailInput::LONG ||
+        input.length == DetailInput::SHORT_EOL) {
       ++column_set_id;
+    }
   }
 
   SetIconsForSection(section);

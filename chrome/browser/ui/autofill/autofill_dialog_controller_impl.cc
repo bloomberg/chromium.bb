@@ -29,6 +29,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_common.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #if !defined(OS_ANDROID)
@@ -603,13 +604,20 @@ void AutofillDialogControllerImpl::Show() {
         AutofillMetrics::SECURITY_METRIC_CROSS_ORIGIN_FRAME);
   }
 
+  // TODO(dbeam): use GetManager()->GetDefaultCountryCodeForNewAddress()
+  // instead when the country combobox is visible. http://crbug.com/331544
+  std::string country_code = "US";
   common::BuildInputsForSection(SECTION_CC,
+                                country_code,
                                 &requested_cc_fields_);
   common::BuildInputsForSection(SECTION_BILLING,
+                                country_code,
                                 &requested_billing_fields_);
   common::BuildInputsForSection(SECTION_CC_BILLING,
+                                country_code,
                                 &requested_cc_billing_fields_);
   common::BuildInputsForSection(SECTION_SHIPPING,
+                                country_code,
                                 &requested_shipping_fields_);
 
   // Test whether we need to show the shipping section. If filling that section

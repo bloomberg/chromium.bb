@@ -13,6 +13,11 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/autofill/autofill_dialog_i18n_input.h"
+#endif  // !defined(OS_ANDROID)
 
 namespace autofill {
 namespace common {
@@ -71,79 +76,107 @@ void BuildInputs(const DetailInput* input_template,
   }
 }
 
+bool IsI18nInputEnabled() {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return i18ninput::Enabled();
+#endif
+}
+
+void BuildI18nAddressInputs(AddressType address_type,
+                            const std::string& country_code,
+                            DetailInputs* inputs) {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+#else
+  i18ninput::BuildAddressInputs(address_type, country_code, inputs);
+#endif
+}
+
 // Constructs |inputs| from template data for a given |dialog_section|.
 void BuildInputsForSection(DialogSection dialog_section,
+                           const std::string& country_code,
                            DetailInputs* inputs) {
+  using l10n_util::GetStringUTF16;
+
   const DetailInput kCCInputs[] = {
     { DetailInput::LONG,
       CREDIT_CARD_NUMBER,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARD_NUMBER) },
     { DetailInput::SHORT,
       CREDIT_CARD_EXP_MONTH,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH) },
     { DetailInput::SHORT,
       CREDIT_CARD_EXP_4_DIGIT_YEAR,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR },
-    { DetailInput::SHORT,
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_YEAR) },
+    { DetailInput::SHORT_EOL,
       CREDIT_CARD_VERIFICATION_CODE,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC,
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC),
       1.5 },
   };
 
   const DetailInput kBillingInputs[] = {
     { DetailInput::LONG,
       NAME_BILLING_FULL,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CARDHOLDER_NAME) },
     { DetailInput::LONG,
       ADDRESS_BILLING_LINE1,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1 },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1) },
     { DetailInput::LONG,
       ADDRESS_BILLING_LINE2,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2 },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2) },
     { DetailInput::LONG,
       ADDRESS_BILLING_CITY,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY },
-    // TODO(estade): state placeholder should depend on locale.
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY) },
     { DetailInput::SHORT,
       ADDRESS_BILLING_STATE,
-      IDS_AUTOFILL_FIELD_LABEL_STATE },
-    { DetailInput::SHORT,
+      GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_STATE) },
+    { DetailInput::SHORT_EOL,
       ADDRESS_BILLING_ZIP,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE) },
     // We don't allow the user to change the country: http://crbug.com/247518
-    { DetailInput::NONE, ADDRESS_BILLING_COUNTRY, 0 },
+    { DetailInput::NONE, ADDRESS_BILLING_COUNTRY },
+  };
+
+  const DetailInput kBillingPhoneInputs[] = {
     { DetailInput::LONG,
       PHONE_BILLING_WHOLE_NUMBER,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER) },
   };
 
   const DetailInput kEmailInputs[] = {
-    { DetailInput::LONG, EMAIL_ADDRESS, IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL },
+    { DetailInput::LONG,
+      EMAIL_ADDRESS,
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_EMAIL) },
   };
 
   const DetailInput kShippingInputs[] = {
     { DetailInput::LONG,
       NAME_FULL,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESSEE_NAME) },
     { DetailInput::LONG,
       ADDRESS_HOME_LINE1,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1 },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_1) },
     { DetailInput::LONG,
       ADDRESS_HOME_LINE2,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2 },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_ADDRESS_LINE_2) },
     { DetailInput::LONG,
       ADDRESS_HOME_CITY,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_LOCALITY) },
     { DetailInput::SHORT,
       ADDRESS_HOME_STATE,
-      IDS_AUTOFILL_FIELD_LABEL_STATE },
-    { DetailInput::SHORT,
+      GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_STATE) },
+    { DetailInput::SHORT_EOL,
       ADDRESS_HOME_ZIP,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE },
-    { DetailInput::NONE, ADDRESS_HOME_COUNTRY, 0 },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_POSTAL_CODE) },
+    { DetailInput::NONE, ADDRESS_HOME_COUNTRY },
+  };
+
+  const DetailInput kShippingPhoneInputs[] = {
     { DetailInput::LONG,
       PHONE_HOME_WHOLE_NUMBER,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER },
+      GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_PHONE_NUMBER) },
   };
 
   switch (dialog_section) {
@@ -152,17 +185,34 @@ void BuildInputsForSection(DialogSection dialog_section,
       break;
 
     case SECTION_BILLING:
-      BuildInputs(kBillingInputs, arraysize(kBillingInputs), inputs);
+      if (IsI18nInputEnabled())
+        BuildI18nAddressInputs(ADDRESS_TYPE_BILLING, country_code, inputs);
+      else
+        BuildInputs(kBillingInputs, arraysize(kBillingInputs), inputs);
+
+      BuildInputs(kBillingPhoneInputs, arraysize(kBillingPhoneInputs), inputs);
       BuildInputs(kEmailInputs, arraysize(kEmailInputs), inputs);
       break;
 
     case SECTION_CC_BILLING:
       BuildInputs(kCCInputs, arraysize(kCCInputs), inputs);
-      BuildInputs(kBillingInputs, arraysize(kBillingInputs), inputs);
+
+      if (IsI18nInputEnabled())
+        BuildI18nAddressInputs(ADDRESS_TYPE_BILLING, country_code, inputs);
+      else
+        BuildInputs(kBillingInputs, arraysize(kBillingInputs), inputs);
+
+      BuildInputs(kBillingPhoneInputs, arraysize(kBillingPhoneInputs), inputs);
       break;
 
     case SECTION_SHIPPING:
-      BuildInputs(kShippingInputs, arraysize(kShippingInputs), inputs);
+      if (IsI18nInputEnabled())
+        BuildI18nAddressInputs(ADDRESS_TYPE_SHIPPING, country_code, inputs);
+      else
+        BuildInputs(kShippingInputs, arraysize(kShippingInputs), inputs);
+
+      BuildInputs(
+          kShippingPhoneInputs, arraysize(kShippingPhoneInputs), inputs);
       break;
   }
 }

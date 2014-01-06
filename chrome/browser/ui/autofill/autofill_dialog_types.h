@@ -28,9 +28,11 @@ class AutofillField;
 // dialog.
 struct DetailInput {
   enum Length {
-    SHORT,  // Short inputs share a line with other short inputs. [ CVC ][ Zip ]
-    LONG,   // Long inputs will be given their own full line.     [ City       ]
-    NONE,   // Input will not be shown.
+    SHORT,     // Shares a line with other short inputs, like display: inline.
+    SHORT_EOL, // Like SHORT but starts a new line directly afterward. Used to
+               // separate groups of short inputs into different lines.
+    LONG,      // Will be given its own full line, like display: block.
+    NONE,      // Input will not be shown.
   };
 
   // Used to determine which inputs share lines when laying out.
@@ -38,8 +40,8 @@ struct DetailInput {
 
   ServerFieldType type;
 
-  // Placeholder text resource ID.
-  int placeholder_text_rid;
+  // Text shown when the input is at its default state (e.g. empty).
+  base::string16 placeholder_text;
 
   // A number between 0 and 1.0 that describes how much of the horizontal space
   // in the row should be allotted to this input. 0 is equivalent to 1.

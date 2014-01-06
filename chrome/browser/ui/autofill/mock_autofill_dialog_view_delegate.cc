@@ -39,7 +39,7 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
   const DetailInput kCreditCardInputs[] = {
     { DetailInput::SHORT,
       CREDIT_CARD_VERIFICATION_CODE,
-      IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC }
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC) }
   };
   cc_default_inputs_.push_back(kCreditCardInputs[0]);
   ON_CALL(*this, RequestedFieldsForSection(SECTION_CC))

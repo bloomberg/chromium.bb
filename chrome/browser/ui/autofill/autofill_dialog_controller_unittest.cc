@@ -304,6 +304,7 @@ class TestAutofillDialogController
   using AutofillDialogControllerImpl::AccountChooserModelForTesting;
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
   using AutofillDialogControllerImpl::IsEditingExistingData;
+  using AutofillDialogControllerImpl::IsManuallyEditingSection;
   using AutofillDialogControllerImpl::IsSubmitPausedOn;
   using AutofillDialogControllerImpl::NOT_CHECKED;
   using AutofillDialogControllerImpl::SignedInState;
@@ -551,6 +552,44 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   SuggestionsMenuModel* GetMenuModelForSection(DialogSection section) {
     ui::MenuModel* model = controller()->MenuModelForSection(section);
     return static_cast<SuggestionsMenuModel*>(model);
+  }
+
+  void SubmitAndVerifyShippingAndBillingResults() {
+    // Test after setting use billing for shipping.
+    UseBillingForShipping();
+
+    controller()->OnAccept();
+
+    ASSERT_EQ(20U, form_structure()->field_count());
+    EXPECT_EQ(ADDRESS_HOME_COUNTRY,
+              form_structure()->field(11)->Type().GetStorableType());
+    EXPECT_EQ(ADDRESS_BILLING, form_structure()->field(11)->Type().group());
+    EXPECT_EQ(ADDRESS_HOME_COUNTRY,
+              form_structure()->field(18)->Type().GetStorableType());
+    EXPECT_EQ(ADDRESS_HOME, form_structure()->field(18)->Type().group());
+    base::string16 billing_country = form_structure()->field(11)->value;
+    EXPECT_EQ(2U, billing_country.size());
+    base::string16 shipping_country = form_structure()->field(18)->value;
+    EXPECT_EQ(2U, shipping_country.size());
+    EXPECT_FALSE(billing_country.empty());
+    EXPECT_FALSE(shipping_country.empty());
+    EXPECT_EQ(billing_country, shipping_country);
+
+    EXPECT_EQ(CREDIT_CARD_NAME,
+              form_structure()->field(1)->Type().GetStorableType());
+    base::string16 cc_name = form_structure()->field(1)->value;
+    EXPECT_EQ(NAME_FULL, form_structure()->field(6)->Type().GetStorableType());
+    EXPECT_EQ(NAME_BILLING, form_structure()->field(6)->Type().group());
+    base::string16 billing_name = form_structure()->field(6)->value;
+    EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().GetStorableType());
+    EXPECT_EQ(NAME, form_structure()->field(13)->Type().group());
+    base::string16 shipping_name = form_structure()->field(13)->value;
+
+    EXPECT_FALSE(cc_name.empty());
+    EXPECT_FALSE(billing_name.empty());
+    EXPECT_FALSE(shipping_name.empty());
+    EXPECT_EQ(cc_name, billing_name);
+    EXPECT_EQ(cc_name, shipping_name);
   }
 
   TestAutofillDialogController* controller() { return controller_.get(); }
@@ -1095,45 +1134,35 @@ TEST_F(AutofillDialogControllerTest, DontUseBillingAsShipping) {
 // Test selecting UseBillingForShipping.
 TEST_F(AutofillDialogControllerTest, UseBillingAsShipping) {
   SwitchToAutofill();
+
   AutofillProfile full_profile(test::GetVerifiedProfile());
-  AutofillProfile full_profile2(test::GetVerifiedProfile2());
-  CreditCard credit_card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  AutofillProfile full_profile2(test::GetVerifiedProfile2());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile2);
+
+  CreditCard credit_card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
 
-  // Test after setting use billing for shipping.
-  UseBillingForShipping();
+  ASSERT_FALSE(controller()->IsManuallyEditingSection(SECTION_CC));
+  ASSERT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
 
-  controller()->OnAccept();
-  ASSERT_EQ(20U, form_structure()->field_count());
-  EXPECT_EQ(ADDRESS_HOME_STATE,
-            form_structure()->field(9)->Type().GetStorableType());
-  EXPECT_EQ(ADDRESS_BILLING, form_structure()->field(9)->Type().group());
-  EXPECT_EQ(ADDRESS_HOME_STATE,
-            form_structure()->field(16)->Type().GetStorableType());
-  EXPECT_EQ(ADDRESS_HOME, form_structure()->field(16)->Type().group());
-  base::string16 billing_state = form_structure()->field(9)->value;
-  base::string16 shipping_state = form_structure()->field(16)->value;
-  EXPECT_FALSE(billing_state.empty());
-  EXPECT_FALSE(shipping_state.empty());
-  EXPECT_EQ(billing_state, shipping_state);
+  SubmitAndVerifyShippingAndBillingResults();
+}
 
-  EXPECT_EQ(CREDIT_CARD_NAME,
-            form_structure()->field(1)->Type().GetStorableType());
-  base::string16 cc_name = form_structure()->field(1)->value;
-  EXPECT_EQ(NAME_FULL, form_structure()->field(6)->Type().GetStorableType());
-  EXPECT_EQ(NAME_BILLING, form_structure()->field(6)->Type().group());
-  base::string16 billing_name = form_structure()->field(6)->value;
-  EXPECT_EQ(NAME_FULL, form_structure()->field(13)->Type().GetStorableType());
-  EXPECT_EQ(NAME, form_structure()->field(13)->Type().group());
-  base::string16 shipping_name = form_structure()->field(13)->value;
+TEST_F(AutofillDialogControllerTest, UseBillingAsShippingManualInput) {
+  SwitchToAutofill();
 
-  EXPECT_FALSE(cc_name.empty());
-  EXPECT_FALSE(billing_name.empty());
-  EXPECT_FALSE(shipping_name.empty());
-  EXPECT_EQ(cc_name, billing_name);
-  EXPECT_EQ(cc_name, shipping_name);
+  ASSERT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC));
+  ASSERT_TRUE(controller()->IsManuallyEditingSection(SECTION_BILLING));
+
+  CreditCard credit_card(test::GetVerifiedCreditCard());
+  FillInputs(SECTION_CC, credit_card);
+
+  AutofillProfile full_profile(test::GetVerifiedProfile());
+  FillInputs(SECTION_BILLING, full_profile);
+
+  SubmitAndVerifyShippingAndBillingResults();
 }
 
 // Tests that shipping and billing telephone fields are supported, and filled

@@ -168,6 +168,7 @@ extern const char kEnableAppWindowControls[];
 extern const char kEnableAppsShowOnFirstPaint[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableAuthNegotiatePort[];
+extern const char kEnableAutofillAddressI18n[];
 extern const char kEnableAutologin[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableClientHints[];

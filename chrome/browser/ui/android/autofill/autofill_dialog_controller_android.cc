@@ -92,7 +92,7 @@ void FillOutputForSection(
     wallet::FullWallet* full_wallet,
     const base::string16& email_address) {
   DetailInputs inputs;
-  common::BuildInputsForSection(section, &inputs);
+  common::BuildInputsForSection(section, "US", &inputs);
 
   FillOutputForSectionWithComparator(
       section, inputs,
@@ -250,7 +250,7 @@ void AutofillDialogControllerAndroid::Show() {
   bool request_shipping_address = false;
   {
     DetailInputs inputs;
-    common::BuildInputsForSection(SECTION_SHIPPING, &inputs);
+    common::BuildInputsForSection(SECTION_SHIPPING, "US", &inputs);
     EmptyDataModelWrapper empty_wrapper;
     request_shipping_address = empty_wrapper.FillFormStructure(
         inputs,
