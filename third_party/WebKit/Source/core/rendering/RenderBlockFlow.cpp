@@ -244,14 +244,12 @@ bool RenderBlockFlow::isSelfCollapsingBlock() const
 void RenderBlockFlow::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeight)
 {
     ASSERT(needsLayout());
+    ASSERT(isInlineBlockOrInlineTable() || !isInline());
 
     // If we are self-collapsing with self-collapsing descendants this will get set to save us burrowing through our
     // descendants every time in |isSelfCollapsingBlock|. We reset it here so that |isSelfCollapsingBlock| attempts to burrow
     // at least once and so that it always gives a reliable result reflecting the latest layout.
     m_hasOnlySelfCollapsingChildren = false;
-
-    if (isInline() && !isInlineBlockOrInlineTable()) // Inline <form>s inside various table elements can cause us to come in here. Bail.
-        return;
 
     if (!relayoutChildren && simplifiedLayout())
         return;
