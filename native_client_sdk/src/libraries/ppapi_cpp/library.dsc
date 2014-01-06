@@ -60,6 +60,7 @@
         'websocket.cc',
 
         # ppapi/cpp/dev
+        'alarms_dev.cc',
         'widget_client_dev.cc',
         'resource_array_dev.cc',
         'video_capture_client_dev.cc',
@@ -85,6 +86,7 @@
         'scriptable_object_deprecated.cc',
         'audio_input_dev.cc',
         'scrollbar_dev.cc',
+        'string_wrapper_dev.cc',
         'graphics_2d_dev.cc',
         'widget_dev.cc',
         'var_resource_dev.cc',
@@ -163,6 +165,8 @@
     },
     {
       'FILES': [
+        'alarms_dev.h',
+        'array_dev.h',
         'audio_input_dev.h',
         'buffer_dev.h',
         'crypto_dev.h',
@@ -173,13 +177,18 @@
         'font_dev.h',
         'graphics_2d_dev.h',
         'ime_input_event_dev.h',
+        'may_own_ptr_dev.h',
         'memory_dev.h',
+        'optional_dev.h',
         'printing_dev.h',
         'resource_array_dev.h',
         'scriptable_object_deprecated.h',
         'scrollbar_dev.h',
         'selection_dev.h',
+        'string_wrapper_dev.h',
+        'struct_wrapper_output_traits_dev.h',
         'text_input_dev.h',
+        'to_c_type_converter_dev.h',
         'truetype_font_dev.h',
         'url_util_dev.h',
         'var_resource_dev.h',
