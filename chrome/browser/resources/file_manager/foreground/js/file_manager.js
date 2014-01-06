@@ -2216,11 +2216,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.document_.getElementById('drive-separator').hidden =
         hideItemsForDrive;
 
+    var currentVolumeInfo = this.volumeManager_.getVolumeInfo(
+        this.directoryModel_.getCurrentDirEntry());
+
     // If volume has changed, then fetch remaining space data.
-    if (this.previousRootUrl_ != this.directoryModel_.getCurrentMountPointUrl())
+    if (this.previousVolumeInfo_ !== currentVolumeInfo)
       this.refreshRemainingSpace_(true);  // Show loading caption.
 
-    this.previousRootUrl_ = this.directoryModel_.getCurrentMountPointUrl();
+    this.previousVolumeInfo_ = currentVolumeInfo;
   };
 
   /**
@@ -2243,11 +2246,14 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       volumeSpaceInnerBar.style.width = '100%';
     }
 
-    var currentMountPointUrl = this.directoryModel_.getCurrentMountPointUrl();
+    var currentVolumeInfo = this.volumeManager_.getVolumeInfo(
+        this.directoryModel_.getCurrentDirEntry());
+
     chrome.fileBrowserPrivate.getSizeStats(
-        currentMountPointUrl, function(result) {
-          if (this.directoryModel_.getCurrentMountPointUrl() !=
-              currentMountPointUrl)
+        currentVolumeInfo.root.toURL(), function(result) {
+          var volumeInfo = this.volumeManager_.getVolumeInfo(
+              this.directoryModel_.getCurrentDirEntry());
+          if (currentVolumeInfo !== volumeInfo)
             return;
           updateSpaceInfo(result,
                           volumeSpaceInnerBar,

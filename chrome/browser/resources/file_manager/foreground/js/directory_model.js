@@ -111,20 +111,6 @@ DirectoryModel.prototype.getCurrentRootPath = function() {
 };
 
 /**
- * @return {string} Filesystem URL representing the mountpoint for the current
- *     contents.
- */
-DirectoryModel.prototype.getCurrentMountPointUrl = function() {
-  var rootPath = this.getCurrentRootPath();
-  // Special search roots are just showing a search results from DRIVE.
-  if (PathUtil.getRootType(rootPath) == RootType.DRIVE ||
-      PathUtil.isSpecialSearchRoot(rootPath))
-    return util.makeFilesystemUrl(RootDirectory.DRIVE);
-
-  return util.makeFilesystemUrl(rootPath);
-};
-
-/**
  * @return {boolean} True if the current directory is read only. If there is
  *     no entry set, then returns true.
  */
