@@ -55,6 +55,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
 
+
   // This function is called when this is a swapped out RenderFrameHost that
   // lives in the same process as the parent frame. The
   // |cross_process_frame_connector| allows the non-swapped-out
@@ -65,6 +66,15 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
   void set_cross_process_frame_connector(
       CrossProcessFrameConnector* cross_process_frame_connector) {
     cross_process_frame_connector_ = cross_process_frame_connector;
+  }
+
+  // Hack to get this subframe to swap out, without yet moving over all the
+  // SwapOut state and machinery from RenderViewHost.
+  void SwapOut();
+  void OnSwappedOut(bool timed_out);
+  bool is_swapped_out() { return is_swapped_out_; }
+  void set_swapped_out(bool is_swapped_out) {
+    is_swapped_out_ = is_swapped_out;
   }
 
  protected:
@@ -89,8 +99,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                                          int64 parent_frame_id,
                                          bool main_frame,
                                          const GURL& url);
-
-  bool is_swapped_out() { return is_swapped_out_; }
+  void OnSwapOutACK();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

@@ -190,6 +190,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   // network response and allow the pending RenderViewHost to commit.
   void SwappedOut(RenderViewHost* render_view_host);
 
+  // The RenderFrameHost has been swapped out, so we should resume the pending
+  // network response and allow the pending RenderFrameHost to commit.
+  void SwappedOutFrame(RenderFrameHostImpl* render_frame_host);
+
   // Called when a renderer's main frame navigates.
   void DidNavigateMainFrame(RenderViewHost* render_view_host);
 

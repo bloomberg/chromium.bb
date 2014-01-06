@@ -952,6 +952,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   // RenderViewImpl::frameDetached().
   webview()->setMainFrame(WebFrame::create(main_render_frame_.get()));
   main_render_frame_->MainWebFrameCreated(webview()->mainFrame());
+  main_render_frame_->SetWebFrame(webview()->mainFrame());
 
   if (switches::IsTouchDragDropEnabled())
     webview()->settings()->setTouchDragDropEnabled(true);
@@ -2009,7 +2010,11 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
     DCHECK(!navigation_state->history_list_was_cleared());
     params.history_list_was_cleared = false;
 
-    Send(new ViewHostMsg_FrameNavigate(routing_id_, params));
+    // Don't send this message while the subframe is swapped out.
+    // TODO(creis): This whole method should move to RenderFrame.
+    RenderFrameImpl* rf = RenderFrameImpl::FindByWebFrame(frame);
+    if (!rf || !rf->is_swapped_out())
+      Send(new ViewHostMsg_FrameNavigate(routing_id_, params));
   }
 
   last_page_id_sent_to_browser_ =
@@ -3848,6 +3853,12 @@ void RenderViewImpl::didFinishLoad(WebFrame* frame) {
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFinishLoad(frame));
 
+  // Don't send this message while the subframe is swapped out.
+  // TODO(creis): This whole method should move to RenderFrame.
+  RenderFrameImpl* rf = RenderFrameImpl::FindByWebFrame(frame);
+  if (rf && rf->is_swapped_out())
+    return;
+
   Send(new ViewHostMsg_DidFinishLoad(routing_id_,
                                      frame->identifier(),
                                      ds->request().url(),
@@ -5300,7 +5311,10 @@ void RenderViewImpl::NavigateToSwappedOutURL(blink::WebFrame* frame) {
   // synchronously.  Otherwise a new navigation can interrupt the navigation
   // to kSwappedOutURL. If that happens to be to the page we had been
   // showing, then WebKit will never send a commit and we'll be left spinning.
-  CHECK(is_swapped_out_);
+  // TODO(creis): Until we move this to RenderFrame, we may call this from a
+  // swapped out RenderFrame while our own is_swapped_out_ is false.
+  RenderFrameImpl* rf = RenderFrameImpl::FindByWebFrame(frame);
+  CHECK(is_swapped_out_ || rf->is_swapped_out());
   GURL swappedOutURL(kSwappedOutURL);
   WebURLRequest request(swappedOutURL);
   frame->loadRequest(request);

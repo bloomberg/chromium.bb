@@ -114,6 +114,16 @@ RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
     return new RenderFrameImpl(render_view, routing_id);
 }
 
+RenderFrameImpl* RenderFrameImpl::FindByWebFrame(blink::WebFrame* web_frame) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    FrameMap::iterator iter = g_child_frame_map.Get().find(web_frame);
+    if (iter != g_child_frame_map.Get().end())
+      return iter->second;
+  }
+
+  return NULL;
+}
+
 // static
 void RenderFrameImpl::InstallCreateHook(
     RenderFrameImpl* (*create_render_frame_impl)(RenderViewImpl*, int32)) {
@@ -123,7 +133,8 @@ void RenderFrameImpl::InstallCreateHook(
 
 // RenderFrameImpl ----------------------------------------------------------
 RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
-    : render_view_(render_view),
+    : frame_(NULL),
+      render_view_(render_view),
       routing_id_(routing_id),
       is_swapped_out_(false),
       is_detaching_(false),
@@ -146,6 +157,12 @@ RenderFrameImpl::~RenderFrameImpl() {
 void RenderFrameImpl::MainWebFrameCreated(blink::WebFrame* frame) {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
                     WebFrameCreated(frame));
+}
+
+void RenderFrameImpl::SetWebFrame(blink::WebFrame* web_frame) {
+  DCHECK(!frame_);
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
+    frame_ = web_frame;
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
@@ -462,9 +479,54 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
       return true;
   }
 
-  // TODO(ajwong): Fill in with message handlers as various components
-  // are migrated over to understand frames.
-  return false;
+  bool handled = true;
+  bool msg_is_ok = true;
+  IPC_BEGIN_MESSAGE_MAP_EX(RenderFrameImpl, msg, msg_is_ok)
+    IPC_MESSAGE_HANDLER(FrameMsg_SwapOut, OnSwapOut)
+  IPC_END_MESSAGE_MAP_EX()
+
+  if (!msg_is_ok) {
+    // The message had a handler, but its deserialization failed.
+    // Kill the renderer to avoid potential spoofing attacks.
+    CHECK(false) << "Unable to deserialize message in RenderFrameImpl.";
+  }
+
+  return handled;
+ }
+
+void RenderFrameImpl::OnSwapOut() {
+  // Only run unload if we're not swapped out yet, but send the ack either way.
+  if (!is_swapped_out_) {
+    // Swap this RenderView out so the tab can navigate to a page rendered by a
+    // different process.  This involves running the unload handler and clearing
+    // the page.  Once WasSwappedOut is called, we also allow this process to
+    // exit if there are no other active RenderViews in it.
+
+    // Send an UpdateState message before we get swapped out.
+    render_view_->SyncNavigationState();
+
+    // Synchronously run the unload handler before sending the ACK.
+    // TODO(creis): Add a WebFrame::dispatchUnloadEvent and call it here.
+
+    // Swap out and stop sending any IPC messages that are not ACKs.
+    is_swapped_out_ = true;
+
+    // Now that we're swapped out and filtering IPC messages, stop loading to
+    // ensure that no other in-progress navigation continues.  We do this here
+    // to avoid sending a DidStopLoading message to the browser process.
+    // TODO(creis): Should we be stopping all frames here and using
+    // StopAltErrorPageFetcher with RenderView::OnStop, or just stopping this
+    // frame?
+    frame_->stopLoading();
+
+    // Replace the page with a blank dummy URL. The unload handler will not be
+    // run a second time, thanks to a check in FrameLoader::stopLoading.
+    // TODO(creis): Need to add a better way to do this that avoids running the
+    // beforeunload handler. For now, we just run it a second time silently.
+    render_view_->NavigateToSwappedOutURL(frame_);
+  }
+
+  Send(new FrameHostMsg_SwapOut_ACK(routing_id_));
 }
 
 RenderView* RenderFrameImpl::GetRenderView() {
@@ -620,6 +682,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
                                                 child_frame_identifier);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    child_render_frame->SetWebFrame(web_frame);
     g_child_frame_map.Get().insert(
         std::make_pair(web_frame, child_render_frame));
   } else {
@@ -805,6 +868,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebFrame* frame) {
 
   // We should only navigate to swappedout:// when is_swapped_out_ is true.
   CHECK((ds->request().url() != GURL(kSwappedOutURL)) ||
+        is_swapped_out_ ||
         render_view_->is_swapped_out()) <<
         "Heard swappedout:// when not swapped out.";
 

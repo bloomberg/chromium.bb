@@ -256,7 +256,7 @@ bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   return false;
 }
 
-// TODO(creis): This should take in a RenderFrameHost.
+// TODO(creis): Remove this in favor of SwappedOutFrame.
 void RenderFrameHostManager::SwappedOut(RenderViewHost* render_view_host) {
   // Make sure this is from our current RVH, and that we have a pending
   // navigation from OnCrossSiteResponse.  (There may be no pending navigation
@@ -292,6 +292,56 @@ void RenderFrameHostManager::SwappedOut(RenderViewHost* render_view_host) {
         pending_nav_params_->frame_id,
         pending_nav_params_->global_request_id,
         pending_nav_params_->should_replace_current_entry,
+        true);
+  } else if (pending_render_frame_host_) {
+    RenderProcessHostImpl* pending_process =
+        static_cast<RenderProcessHostImpl*>(
+            pending_render_frame_host_->GetProcess());
+    pending_process->ResumeDeferredNavigation(
+        pending_nav_params_->global_request_id);
+  }
+  pending_nav_params_.reset();
+}
+
+void RenderFrameHostManager::SwappedOutFrame(
+    RenderFrameHostImpl* render_frame_host) {
+  // Make sure this is from our current RFH, and that we have a pending
+  // navigation from OnCrossSiteResponse.  (There may be no pending navigation
+  // for data URLs that don't make network requests, for example.)   If not,
+  // just return early and ignore.
+  if (render_frame_host != render_frame_host_ || !pending_nav_params_.get()) {
+    pending_nav_params_.reset();
+    return;
+  }
+
+  // Sanity check that this is for the correct frame.
+  DCHECK_EQ(frame_tree_node_->frame_id(), pending_nav_params_->frame_id);
+
+  // Now that the unload handler has run, we need to either initiate the
+  // pending transfer (if there is one) or resume the paused response (if not).
+  // TODO(creis): The blank swapped out page is visible during this time, but
+  // we can shorten this by delivering the response directly, rather than
+  // forcing an identical request to be made.
+  if (pending_nav_params_->is_transfer) {
+    // Treat the last URL in the chain as the destination and the remainder as
+    // the redirect chain.
+    CHECK(pending_nav_params_->transfer_url_chain.size());
+    GURL transfer_url = pending_nav_params_->transfer_url_chain.back();
+    pending_nav_params_->transfer_url_chain.pop_back();
+
+    // We don't know whether the original request had |user_action| set to true.
+    // However, since we force the navigation to be in the current tab, it
+    // doesn't matter.
+    // TODO(creis): Move RequestTransferURL to RenderFrameHost's navigator.
+    render_frame_host->render_view_host()->GetDelegate()->RequestTransferURL(
+        transfer_url,
+        pending_nav_params_->transfer_url_chain,
+        pending_nav_params_->referrer,
+        pending_nav_params_->page_transition,
+        CURRENT_TAB,
+        pending_nav_params_->frame_id,
+        pending_nav_params_->global_request_id,
+        false,
         true);
   } else if (pending_render_frame_host_) {
     RenderProcessHostImpl* pending_process =
@@ -482,17 +532,16 @@ void RenderFrameHostManager::SwapOutOldPage() {
   // unload handler finishes and the navigation completes, we will send a
   // message to the ResourceDispatcherHost, allowing the pending RVH's response
   // to resume.
-  // TODO(creis): We should do this on the RFH or else we'll swap out the
-  // top-level page when subframes navigate.  Until then, we skip swapping out
-  // for subframes.
+  // Note: This must be done on the RFH or else we'll swap out the top-level
+  // page when subframes navigate.
   if (frame_tree_node_->IsMainFrame())
     render_frame_host_->render_view_host()->SwapOut();
   else
-    SwappedOut(render_frame_host_->render_view_host());
+    render_frame_host_->SwapOut();
 
   // ResourceDispatcherHost has told us to run the onunload handler, which
   // means it is not a download or unsafe page, and we are going to perform the
-  // navigation.  Thus, we no longer need to remember that the RenderViewHost
+  // navigation.  Thus, we no longer need to remember that the RenderFrameHost
   // is part of a pending cross-site request.
   if (pending_render_frame_host_) {
     pending_render_frame_host_->render_view_host()->
@@ -956,8 +1005,8 @@ void RenderFrameHostManager::CommitPending() {
       old_render_frame_host->render_view_host()->GetView()->Hide();
       old_render_frame_host->render_view_host()->WasSwappedOut();
     } else {
-      // TODO(creis): Swap out the subframe. We'll need to swap it back in when
-      // navigating back.
+      // TODO(creis): We'll need to set this back to false if we navigate back.
+      old_render_frame_host->set_swapped_out(true);
     }
   }
 
@@ -991,7 +1040,9 @@ void RenderFrameHostManager::CommitPending() {
     // it in case we navigate back to it.
     // TODO(creis): Swap out the subframe in --site-per-process.
     if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess))
-      DCHECK(old_render_frame_host->render_view_host()->is_swapped_out());
+      DCHECK(old_render_frame_host->is_swapped_out() ||
+             old_render_frame_host->render_view_host()->is_swapped_out());
+
     // Temp fix for http://crbug.com/90867 until we do a better cleanup to make
     // sure we don't get different rvh instances for the same site instance
     // in the same rvhmgr.

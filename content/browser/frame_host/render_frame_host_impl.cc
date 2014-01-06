@@ -115,6 +115,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SwapOut_ACK, OnSwapOutACK)
   IPC_END_MESSAGE_MAP_EX()
 
   if (!msg_is_ok) {
@@ -152,6 +153,24 @@ void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
     const GURL& url) {
   frame_tree_node_->navigator()->DidStartProvisionalLoad(
       this, frame_id, parent_frame_id, is_main_frame, url);
+}
+
+void RenderFrameHostImpl::SwapOut() {
+  if (render_view_host_->IsRenderViewLive()) {
+    Send(new FrameMsg_SwapOut(routing_id()));
+  } else {
+    // Our RenderViewHost doesn't have a live renderer, so just skip the unload
+    // event.
+    OnSwappedOut(true);
+  }
+}
+
+void RenderFrameHostImpl::OnSwapOutACK() {
+  OnSwappedOut(false);
+}
+
+void RenderFrameHostImpl::OnSwappedOut(bool timed_out) {
+  frame_tree_node_->render_manager()->SwappedOutFrame(this);
 }
 
 }  // namespace content

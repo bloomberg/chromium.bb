@@ -47,7 +47,16 @@ class CONTENT_EXPORT RenderFrameImpl
  public:
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to.
+  // Callers *must* call |SetWebFrame| immediately after creation.
+  // TODO(creis): We should structure this so that |SetWebFrame| isn't needed.
   static RenderFrameImpl* Create(RenderViewImpl* render_view, int32 routing_id);
+
+  // For subframes, look up the RenderFrameImpl for the given WebFrame.  Returns
+  // NULL for main frames.
+  // This only works when using --site-per-process, and returns NULL otherwise.
+  // TODO(creis): Remove this when the RenderView methods dealing with frames
+  // have moved to RenderFrame.
+  static RenderFrameImpl* FindByWebFrame(blink::WebFrame* web_frame);
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderFrameImpls.
@@ -55,6 +64,10 @@ class CONTENT_EXPORT RenderFrameImpl
       RenderFrameImpl* (*create_render_frame_impl)(RenderViewImpl*, int32));
 
   virtual ~RenderFrameImpl();
+
+  bool is_swapped_out() const {
+    return is_swapped_out_;
+  }
 
   // TODO(jam): this is a temporary getter until all the code is transitioned
   // to using RenderFrame instead of RenderView.
@@ -68,6 +81,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // Called by RenderView right after creating this object when the
   // blink::WebFrame has been created.
   void MainWebFrameCreated(blink::WebFrame* frame);
+
+  // In --site-per-process mode, we keep track of which WebFrame this
+  // RenderFrameImpl is for.
+  void SetWebFrame(blink::WebFrame* web_frame);
 
 #if defined(ENABLE_PLUGINS)
   // Notification that a PPAPI plugin has been created.
@@ -328,6 +345,16 @@ class CONTENT_EXPORT RenderFrameImpl
   // Functions to add and remove observers for this object.
   void AddObserver(RenderFrameObserver* observer);
   void RemoveObserver(RenderFrameObserver* observer);
+
+  // IPC message handlers ------------------------------------------------------
+  //
+  // The documentation for these functions should be in
+  // content/common/*_messages.h for the message that the function is handling.
+  void OnSwapOut();
+
+  // In --site-per-process mode, stores the WebFrame we are associated with.
+  // NULL otherwise.
+  blink::WebFrame* frame_;
 
   RenderViewImpl* render_view_;
   int routing_id_;
