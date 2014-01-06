@@ -151,8 +151,23 @@ bool ImageWriterPrivateDestroyPartitionsFunction::RunImpl() {
       image_writer_api::DestroyPartitions::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  SendResponse(true);
+  image_writer::OperationManager::Get(GetProfile())->DestroyPartitions(
+      extension_id(),
+      params->storage_unit_id,
+      base::Bind(
+          &ImageWriterPrivateDestroyPartitionsFunction::OnDestroyComplete,
+          this));
   return true;
+}
+
+void ImageWriterPrivateDestroyPartitionsFunction::OnDestroyComplete(
+    bool success,
+    const std::string& error) {
+  if (!success) {
+    error_ = error;
+  }
+
+  SendResponse(success);
 }
 
 ImageWriterPrivateListRemovableStorageDevicesFunction::
