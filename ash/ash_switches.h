@@ -25,16 +25,17 @@ ASH_EXPORT extern const char kAshDebugShowPreferredNetworks[];
 ASH_EXPORT extern const char kAshDefaultWallpaperIsOem[];
 ASH_EXPORT extern const char kAshDefaultWallpaperLarge[];
 ASH_EXPORT extern const char kAshDefaultWallpaperSmall[];
+ASH_EXPORT extern const char kAshDisableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshDisableAlternateShelfLayout[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshDisableAudioDeviceMenu[];
 #endif
-ASH_EXPORT extern const char kAshDisableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshDisableAutoMaximizing[];
 ASH_EXPORT extern const char kAshDisableDisplayChangeLimiter[];
+ASH_EXPORT extern const char kAshDisableDockedWindows[];
+ASH_EXPORT extern const char kAshDisableDragAndDropAppListToLauncher[];
 ASH_EXPORT extern const char kAshDisableDragOffShelf[];
 ASH_EXPORT extern const char kAshDisableOverviewMode[];
-ASH_EXPORT extern const char kAshDisableDragAndDropAppListToLauncher[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshDisableUsbChargerNotification[];
 ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
@@ -42,7 +43,6 @@ ASH_EXPORT extern const char kAshEnableAudioDeviceMenu[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableAlternateFrameCaptionButtonStyle[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
-ASH_EXPORT extern const char kAshEnableDockedWindows[];
 ASH_EXPORT extern const char kAshEnableImmersiveFullscreenForAllWindows[];
 #if defined(OS_CHROMEOS)
 ASH_EXPORT extern const char kAshEnableFullMultiProfileMode[];
@@ -101,9 +101,6 @@ ASH_EXPORT bool UseOverviewMode();
 ASH_EXPORT bool UseDockedWindows();
 
 #if defined(OS_CHROMEOS)
-// Returns true if new audio handler should be used.
-ASH_EXPORT bool UseNewAudioHandler();
-
 // Returns true if we should show the audio device switching UI.
 ASH_EXPORT bool ShowAudioDeviceMenu();
 

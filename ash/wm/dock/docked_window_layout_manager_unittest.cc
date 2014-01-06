@@ -46,8 +46,6 @@ class DockedWindowLayoutManagerTest
   virtual ~DockedWindowLayoutManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableDockedWindows);
     AshTestBase::SetUp();
     UpdateDisplay("600x600");
     ASSERT_TRUE(test::TestShelfDelegate::instance());

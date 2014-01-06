@@ -66,6 +66,19 @@ const char kAshDisableAutoMaximizing[] = "ash-disable-auto-maximizing";
 const char kAshDisableDisplayChangeLimiter[] =
     "ash-disable-display-change-limiter";
 
+// Disable ability to dock windows at the desktop edge.
+const char kAshDisableDockedWindows[] = "ash-disable-docked-windows";
+
+// Disallow items to be dragged from the app launcher list into the launcher.
+const char kAshDisableDragAndDropAppListToLauncher[] =
+    "ash-disable-drag-and-drop-applist-to-launcher";
+
+// Disable dragging items off the shelf to unpin them.
+const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
+
+// Disables overview mode for window switching.
+const char kAshDisableOverviewMode[] = "ash-disable-overview-mode";
+
 #if defined(OS_CHROMEOS)
 // Disable the notification when a low-power USB charger is connected.
 const char kAshDisableUsbChargerNotification[] =
@@ -91,12 +104,6 @@ const char kAshEnableAlternateFrameCaptionButtonStyle[] =
 // main monitor as internal.
 const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 
-// Enable ability to dock windows at the desktop edge.
-const char kAshEnableDockedWindows[] = "ash-enable-docked-windows";
-
-// Disable dragging items off the shelf to unpin them.
-const char kAshDisableDragOffShelf[] = "ash-disable-drag-off-shelf";
-
 // Enables putting all windows into immersive fullscreen via <F4>.
 const char kAshEnableImmersiveFullscreenForAllWindows[] =
     "ash-enable-immersive-all-windows";
@@ -119,9 +126,6 @@ const char kAshEnableMultiUserTray[] = "ash-enable-multi-user-tray";
 
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
-
-// Disables overview mode for window switching.
-const char kAshDisableOverviewMode[] = "ash-disable-overview-mode";
 
 // Enables software based mirroring.
 const char kAshEnableSoftwareMirroring[] = "ash-enable-software-mirroring";
@@ -177,10 +181,6 @@ const char kAshTouchHud[] = "ash-touch-hud";
 // crbug's [244983, 244990, 244994, 245005, 245012]
 const char kAshUseAlternateShelfLayout[] = "ash-use-alternate-shelf";
 
-// Flags explicitly show or hide the shelf alignment menu.
-const char kShowShelfAlignmentMenu[] = "show-launcher-alignment-menu";
-const char kHideShelfAlignmentMenu[] = "hide-launcher-alignment-menu";
-
 // Uses the 1st display in --ash-host-window-bounds as internal display.
 // This is for debugging on linux desktop.
 const char kAshUseFirstDisplayAsInternal[] =
@@ -199,9 +199,9 @@ const char kForceAshToDesktop[] = "ash-force-desktop";
 
 #endif
 
-// Disallow items to be dragged from the app launcher list into the launcher.
-const char kAshDisableDragAndDropAppListToLauncher[] =
-    "ash-disable-drag-and-drop-applist-to-launcher";
+// Flags explicitly show or hide the shelf alignment menu.
+const char kShowShelfAlignmentMenu[] = "show-launcher-alignment-menu";
+const char kHideShelfAlignmentMenu[] = "hide-launcher-alignment-menu";
 
 bool UseAlternateFrameCaptionButtonStyle() {
   // For the sake of simplicity, the alternate caption button style is only
@@ -251,7 +251,7 @@ bool UseOverviewMode() {
 }
 
 bool UseDockedWindows() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(kAshEnableDockedWindows);
+  return !CommandLine::ForCurrentProcess()->HasSwitch(kAshDisableDockedWindows);
 }
 
 #if defined(OS_CHROMEOS)

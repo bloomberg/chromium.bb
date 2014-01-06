@@ -1253,9 +1253,9 @@ class WorkspaceControllerTestDragging
   // testing::Test:
   virtual void SetUp() OVERRIDE {
     WorkspaceControllerTest::SetUp();
-    if (docked_windows_enabled()) {
+    if (!docked_windows_enabled()) {
       CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshEnableDockedWindows);
+          ash::switches::kAshDisableDockedWindows);
     }
   }
 
