@@ -49,7 +49,6 @@ def generate_method(interface, method):
     name = method.name
 
     this_cpp_value = cpp_value(interface, method, len(arguments))
-    this_custom_signature = custom_signature(method, arguments)
 
     def function_template():
         if is_static:
@@ -57,13 +56,6 @@ def generate_method(interface, method):
         if 'Unforgeable' in extended_attributes:
             return 'instanceTemplate'
         return 'prototypeTemplate'
-
-    def signature():
-        if this_custom_signature:
-            return name + 'Signature'
-        if is_static or 'DoNotCheckSignature' in extended_attributes:
-            return 'v8::Local<v8::Signature>()'
-        return 'defaultSignature'
 
     is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
     if is_call_with_script_arguments:
@@ -95,9 +87,8 @@ def generate_method(interface, method):
         'conditional_string': v8_utilities.conditional_string(method),
         'cpp_type': v8_types.cpp_type(idl_type),
         'cpp_value': this_cpp_value,
-        'custom_signature': this_custom_signature,
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
-        'do_not_check_signature': not(this_custom_signature or is_static or
+        'do_not_check_signature': not(is_static or
             v8_utilities.has_extended_attribute(method,
                 ['DoNotCheckSecurity', 'DoNotCheckSignature', 'NotEnumerable',
                  'ReadOnly', 'RuntimeEnabled', 'Unforgeable'])),
@@ -134,7 +125,7 @@ def generate_method(interface, method):
         'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
         'property_attributes': property_attributes(method),
         'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
-        'signature': signature(),
+        'signature': 'v8::Local<v8::Signature>()' if is_static or 'DoNotCheckSignature' in extended_attributes else 'defaultSignature',
         'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
     }
@@ -190,28 +181,6 @@ def v8_set_return_value(method, cpp_value):
     if has_extended_attribute_value(method, 'CallWith', 'ScriptState'):
         cpp_value = 'result'  # use local variable for value
     return v8_types.v8_set_return_value(idl_type, cpp_value, method.extended_attributes)
-
-
-def custom_signature(method, arguments):
-    def argument_template(argument):
-        idl_type = argument.idl_type
-        if (v8_types.is_wrapper_type(idl_type) and
-            not v8_types.is_typed_array_type(idl_type) and
-            # Compatibility: all other browsers accepts a callable for
-            # XPathNSResolver, despite it being against spec.
-            not idl_type == 'XPathNSResolver'):
-            return 'V8PerIsolateData::from(isolate)->rawDOMTemplate(&V8{idl_type}::wrapperTypeInfo, currentWorldType)'.format(idl_type=idl_type)
-        return 'v8::Handle<v8::FunctionTemplate>()'
-
-    if (any(argument.is_optional and
-            'Default' not in argument.extended_attributes
-            for argument in arguments) or
-        all(not v8_types.is_wrapper_type(argument.idl_type)
-            for argument in arguments) or
-        # For [StrictTypeChecking], type checking is done in the generated code
-        'StrictTypeChecking' in method.extended_attributes):
-        return None
-    return ', '.join([argument_template(argument) for argument in arguments])
 
 
 # [NotEnumerable]

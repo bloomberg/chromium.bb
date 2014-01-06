@@ -463,15 +463,6 @@ static void configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> funct
     {{install_constants() | indent}}
     {% endif %}
     {% for method in methods if not method.do_not_check_signature %}
-    {% if method.custom_signature and not method.overload_index %}
-    {# No custom signature needed for overloaded methods;
-       separate check because depends on global check for overloads #}
-
-    // Custom Signature '{{method.name}}'
-    const int {{method.name}}Argc = {{method.arguments | length}};
-    v8::Handle<v8::FunctionTemplate> {{method.name}}Argv[{{method.name}}Argc] = { {{method.custom_signature}} };
-    v8::Handle<v8::Signature> {{method.name}}Signature = v8::Signature::New(isolate, functionTemplate, {{method.name}}Argc, {{method.name}}Argv);
-    {% endif %}
     {# install_custom_signature #}
     {% if not method.overload_index or method.overload_index == 1 %}
     {# For overloaded methods, only generate one accessor #}
