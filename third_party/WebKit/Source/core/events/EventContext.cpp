@@ -46,26 +46,28 @@ EventContext::~EventContext()
 {
 }
 
-void EventContext::adoptEventPath(Vector<RefPtr<Node> >& nodes)
+void TreeScopeEventContext::adoptEventPath(Vector<RefPtr<Node> >& nodes)
 {
     m_eventPath = StaticNodeList::adopt(nodes);
 }
 
 void EventContext::handleLocalEvents(Event* event) const
 {
-    if (m_touchEventContext) {
-        m_touchEventContext->handleLocalEvents(event);
-    } else if (m_relatedTarget && event->isMouseEvent()) {
-        toMouseEvent(event)->setRelatedTarget(m_relatedTarget.get());
-    } else if (m_relatedTarget && event->isFocusEvent()) {
-        toFocusEvent(event)->setRelatedTarget(m_relatedTarget.get());
+    if (touchEventContext()) {
+        touchEventContext()->handleLocalEvents(event);
+    } else if (relatedTarget()) {
+        if (event->isMouseEvent()) {
+            toMouseEvent(event)->setRelatedTarget(relatedTarget());
+        } else if (event->isFocusEvent()) {
+            toFocusEvent(event)->setRelatedTarget(relatedTarget());
+        }
     }
-    event->setTarget(m_target);
+    event->setTarget(target());
     event->setCurrentTarget(m_currentTarget.get());
     m_node->handleLocalEvents(event);
 }
 
-TouchEventContext* EventContext::ensureTouchEventContext()
+TouchEventContext* TreeScopeEventContext::ensureTouchEventContext()
 {
     if (!m_touchEventContext)
         m_touchEventContext = TouchEventContext::create();
@@ -95,6 +97,20 @@ void TouchEventContext::handleLocalEvents(Event* event) const
     touchEvent->setTouches(m_touches);
     touchEvent->setTargetTouches(m_targetTouches);
     touchEvent->setChangedTouches(m_changedTouches);
+}
+
+PassRefPtr<TreeScopeEventContext> TreeScopeEventContext::create(TreeScope& treeScope)
+{
+    return adoptRef(new TreeScopeEventContext(treeScope));
+}
+
+TreeScopeEventContext::TreeScopeEventContext(TreeScope& treeScope)
+    : m_treeScope(treeScope)
+{
+}
+
+TreeScopeEventContext::~TreeScopeEventContext()
+{
 }
 
 }

@@ -2133,8 +2133,6 @@
             'events/EventPath.cpp',
             'events/EventPath.h',
             'events/EventQueue.h',
-            'events/EventRetargeter.cpp',
-            'events/EventRetargeter.h',
             'events/EventSender.h',
             'events/EventTarget.cpp',
             'events/FocusEvent.cpp',

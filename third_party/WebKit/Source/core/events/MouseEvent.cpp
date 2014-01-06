@@ -26,7 +26,6 @@
 #include "core/dom/Clipboard.h"
 #include "core/dom/Element.h"
 #include "core/events/EventDispatcher.h"
-#include "core/events/EventRetargeter.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "platform/PlatformMouseEvent.h"
 
@@ -251,7 +250,7 @@ MouseEvent* MouseEventDispatchMediator::event() const
 bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
     if (isSyntheticMouseEvent()) {
-        EventRetargeter::adjustForMouseEvent(dispatcher->node(), *event());
+        event()->eventPath().adjustForRelatedTarget(dispatcher->node(), event()->relatedTarget());
         return dispatcher->dispatch();
     }
 
@@ -264,7 +263,7 @@ bool MouseEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) cons
     ASSERT(!event()->target() || event()->target() != event()->relatedTarget());
 
     EventTarget* relatedTarget = event()->relatedTarget();
-    EventRetargeter::adjustForMouseEvent(dispatcher->node(), *event());
+    event()->eventPath().adjustForRelatedTarget(dispatcher->node(), relatedTarget);
 
     dispatcher->dispatch();
     bool swallowEvent = event()->defaultHandled() || event()->defaultPrevented();

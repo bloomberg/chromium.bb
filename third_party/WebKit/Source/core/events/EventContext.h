@@ -43,9 +43,9 @@ public:
     static PassRefPtr<TouchEventContext> create();
     ~TouchEventContext();
     void handleLocalEvents(Event*) const;
-    TouchList* touches() { return m_touches.get(); }
-    TouchList* targetTouches() { return m_targetTouches.get(); }
-    TouchList* changedTouches() { return m_changedTouches.get(); }
+    TouchList& touches() { return *m_touches; }
+    TouchList& targetTouches() { return *m_targetTouches; }
+    TouchList& changedTouches() { return *m_changedTouches; }
 
 private:
     TouchEventContext();
@@ -55,14 +55,12 @@ private:
     RefPtr<TouchList> m_changedTouches;
 };
 
-class EventContext {
+class TreeScopeEventContext : public RefCounted<TreeScopeEventContext> {
 public:
-    // FIXME: Use ContainerNode instead of Node.
-    EventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget);
-    ~EventContext();
+    static PassRefPtr<TreeScopeEventContext> create(TreeScope&);
+    ~TreeScopeEventContext();
 
-    Node* node() const { return m_node.get(); }
-    EventTarget* currentTarget() const { return m_currentTarget.get(); }
+    TreeScope& treeScope() const { return m_treeScope; }
 
     EventTarget* target() const { return m_target.get(); }
     void setTarget(PassRefPtr<EventTarget>);
@@ -75,38 +73,62 @@ public:
 
     PassRefPtr<NodeList> eventPath() const { return m_eventPath; }
     void adoptEventPath(Vector<RefPtr<Node> >&);
-    void setEventPath(PassRefPtr<NodeList> nodeList) { m_eventPath = nodeList; }
 
-    bool currentTargetSameAsTarget() const { return m_currentTarget.get() == m_target.get(); }
-    void handleLocalEvents(Event*) const;
+private:
+    TreeScopeEventContext(TreeScope&);
 
-protected:
 #ifndef NDEBUG
     bool isUnreachableNode(EventTarget*);
 #endif
-    RefPtr<Node> m_node;
-    RefPtr<EventTarget> m_currentTarget;
+
+    TreeScope& m_treeScope;
     RefPtr<EventTarget> m_target;
     RefPtr<EventTarget> m_relatedTarget;
     RefPtr<NodeList> m_eventPath;
     RefPtr<TouchEventContext> m_touchEventContext;
 };
 
+class EventContext {
+public:
+    // FIXME: Use ContainerNode instead of Node.
+    EventContext(PassRefPtr<Node>, PassRefPtr<EventTarget> currentTarget);
+    ~EventContext();
+
+    Node* node() const { return m_node.get(); }
+    EventTarget* currentTarget() const { return m_currentTarget.get(); }
+
+    TreeScopeEventContext* sharedEventContext() const { return m_sharedEventContext.get(); }
+    void setSharedEventContext(PassRefPtr<TreeScopeEventContext> sharedEventContext) { m_sharedEventContext = sharedEventContext; }
+
+    EventTarget* target() const { return m_sharedEventContext->target(); }
+    EventTarget* relatedTarget() const { return m_sharedEventContext->relatedTarget(); }
+    TouchEventContext* touchEventContext() const { return m_sharedEventContext->touchEventContext(); }
+    PassRefPtr<NodeList> eventPath() const { return m_sharedEventContext->eventPath(); }
+
+    bool currentTargetSameAsTarget() const { return m_currentTarget.get() == target(); }
+    void handleLocalEvents(Event*) const;
+
+private:
+    RefPtr<Node> m_node;
+    RefPtr<EventTarget> m_currentTarget;
+    RefPtr<TreeScopeEventContext> m_sharedEventContext;
+};
+
 #ifndef NDEBUG
-inline bool EventContext::isUnreachableNode(EventTarget* target)
+inline bool TreeScopeEventContext::isUnreachableNode(EventTarget* target)
 {
     // FIXME: Checks also for SVG elements.
-    return target && target->toNode() && !target->toNode()->isSVGElement() && !target->toNode()->treeScope().isInclusiveAncestorOf(m_node->treeScope());
+    return target && target->toNode() && !target->toNode()->isSVGElement() && !target->toNode()->treeScope().isInclusiveAncestorOf(m_treeScope);
 }
 #endif
 
-inline void EventContext::setTarget(PassRefPtr<EventTarget> target)
+inline void TreeScopeEventContext::setTarget(PassRefPtr<EventTarget> target)
 {
     ASSERT(!isUnreachableNode(target.get()));
     m_target = target;
 }
 
-inline void EventContext::setRelatedTarget(PassRefPtr<EventTarget> relatedTarget)
+inline void TreeScopeEventContext::setRelatedTarget(PassRefPtr<EventTarget> relatedTarget)
 {
     ASSERT(!isUnreachableNode(relatedTarget.get()));
     m_relatedTarget = relatedTarget;

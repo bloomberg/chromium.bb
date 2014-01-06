@@ -29,7 +29,6 @@
 #include "core/events/TouchEvent.h"
 
 #include "core/events/EventDispatcher.h"
-#include "core/events/EventRetargeter.h"
 #include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
@@ -106,7 +105,7 @@ TouchEvent* TouchEventDispatchMediator::event() const
 
 bool TouchEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
-    EventRetargeter::adjustForTouchEvent(dispatcher->node(), *event());
+    event()->eventPath().adjustForTouchEvent(dispatcher->node(), *event());
     return dispatcher->dispatch();
 }
 

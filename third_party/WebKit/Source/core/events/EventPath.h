@@ -29,7 +29,7 @@
 
 #include "core/events/EventContext.h"
 
-#include "wtf/OwnPtr.h"
+#include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -37,6 +37,9 @@ namespace WebCore {
 class Event;
 class EventTarget;
 class Node;
+class TouchEvent;
+class TouchList;
+class TreeScope;
 
 enum EventDispatchBehavior {
     RetargetEvent,
@@ -56,7 +59,8 @@ public:
     bool isEmpty() const { return m_eventContexts.isEmpty(); }
     size_t size() const { return m_eventContexts.size(); }
 
-    void shrink(size_t newSize) { m_eventContexts.shrink(newSize); }
+    void adjustForRelatedTarget(Node*, EventTarget* relatedTarget);
+    void adjustForTouchEvent(Node*, TouchEvent&);
 
     static Node* parent(Node*);
     static EventTarget* eventTargetRespectingTargetRules(Node*);
@@ -70,11 +74,26 @@ private:
 
     void calculatePath();
     void calculateAdjustedTargets();
-    void calculateAdjustedEventPathForEachNode();
+    void calculateAdjustedEventPath();
+
+    void shrink(size_t newSize) { m_eventContexts.shrink(newSize); }
+    void shrinkIfNeeded(const Node* target, const EventTarget* relatedTarget);
+
+    void adjustTouchList(const Node*, const TouchList*, Vector<TouchList*> adjustedTouchList, const Vector<TreeScope*>& treeScopes);
+
+    typedef HashMap<TreeScope*, EventTarget*> RelatedTargetMap;
+
+    static void buildRelatedNodeMap(const Node*, RelatedTargetMap&);
+    static EventTarget* findRelatedNode(TreeScope*, RelatedTargetMap&);
+
+#ifndef NDEBUG
+    static void checkReachability(TreeScope&, TouchList&);
+#endif
 
     Vector<EventContext, 64> m_eventContexts;
     Node* m_node;
     Event* m_event;
+    Vector<RefPtr<TreeScopeEventContext> > m_sharedEventContexts;
 };
 
 } // namespace
