@@ -2237,6 +2237,7 @@ class BisectPerformanceMetrics(object):
           max_revision -= 1
 
         if self.opts.output_buildbot_annotations:
+          self._PrintPartialResults(results)
           bisect_utils.OutputAnnotationStepClosed()
     else:
       # Weren't able to sync and retrieve the revision range.
@@ -2244,6 +2245,19 @@ class BisectPerformanceMetrics(object):
                          'range: [%s..%s]' % (good_revision, bad_revision)
 
     return results
+
+  def _PrintPartialResults(self, results_dict):
+    revision_data = results_dict['revision_data']
+    revision_data_sorted = sorted(revision_data.iteritems(),
+                                  key = lambda x: x[1]['sort'])
+    results_dict = self._GetResultsDict(revision_data, revision_data_sorted)
+    first_working_revision = results_dict['first_working_revision']
+    last_broken_revision = results_dict['last_broken_revision']
+
+    self._PrintTestedCommitsTable(revision_data_sorted,
+                                  results_dict['first_working_revision'],
+                                  results_dict['last_broken_revision'],
+                                  100, final_step=False)
 
   def _PrintConfidence(self, results_dict):
     # The perf dashboard specifically looks for the string
@@ -2295,9 +2309,13 @@ class BisectPerformanceMetrics(object):
     print 'Date    : %s' % info['date']
 
   def _PrintTestedCommitsTable(self, revision_data_sorted,
-      first_working_revision, last_broken_revision, confidence):
+      first_working_revision, last_broken_revision, confidence,
+      final_step=True):
     print
-    print 'Tested commits:'
+    if final_step:
+      print 'Tested commits:'
+    else:
+      print 'Partial results:'
     print '  %20s  %40s  %12s %14s %13s' % ('Depot'.center(20, ' '),
         'Commit SHA'.center(40, ' '), 'Mean'.center(12, ' '),
         'Std. Error'.center(14, ' '), 'State'.center(13, ' '))
@@ -2308,12 +2326,15 @@ class BisectPerformanceMetrics(object):
             current_id == first_working_revision):
           # If confidence is too low, don't add this empty line since it's
           # used to put focus on a suspected CL.
-          if confidence:
+          if confidence and final_step:
             print
           state += 1
+          if state == 2 and not final_step:
+            # Just want a separation between "bad" and "good" cl's.
+            print
 
         state_str = 'Bad'
-        if state == 1:
+        if state == 1 and final_step:
           state_str = 'Suspected CL'
         elif state == 2:
           state_str = 'Good'
@@ -2381,7 +2402,7 @@ class BisectPerformanceMetrics(object):
       return
     print
     print 'WARNINGS:'
-    for w in self.warnings:
+    for w in set(self.warnings):
       print '  !!! %s' % w
 
   def _GetResultsDict(self, revision_data, revision_data_sorted):
