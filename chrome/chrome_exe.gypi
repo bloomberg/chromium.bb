@@ -41,12 +41,6 @@
         'INFOPLIST_FILE': 'app/app-Info.plist',
       },
       'conditions': [
-        ['OS == "win" ', {
-          'dependencies': [
-            # Note that chrome_elf must be listed first. Do not reorder it.
-            '../chrome_elf/chrome_elf.gyp:chrome_elf',
-          ],
-        }],
         ['component == "shared_library"', {
           'variables': {
             'win_use_external_manifest': 1,
@@ -474,6 +468,8 @@
         }],
         ['OS=="win"', {
           'dependencies': [
+            # Note that chrome_elf must be listed first. Do not reorder it.
+            '../chrome_elf/chrome_elf.gyp:chrome_elf',
             'chrome_dll',
             'chrome_nacl_win64',
             'chrome_process_finder',
