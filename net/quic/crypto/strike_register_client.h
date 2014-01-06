@@ -38,8 +38,8 @@ class NET_EXPORT_PRIVATE StrikeRegisterClient {
   StrikeRegisterClient() {}
   virtual ~StrikeRegisterClient() {}
 
-  // Returns the strike server orbit if known, else empty string.
-  virtual std::string orbit() = 0;
+  // Returns true iff the strike register knows about the given orbit.
+  virtual bool IsKnownOrbit(base::StringPiece orbit) const = 0;
   // Validate a nonce for freshness and uniqueness.
   // Will invoke cb->Run(ValidateResponse::nonce_is_valid_and_unique())
   // once the asynchronous operation is complete.

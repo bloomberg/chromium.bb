@@ -25,13 +25,13 @@ class NET_EXPORT_PRIVATE LocalStrikeRegisterClient
                             const uint8 orbit[8],
                             StrikeRegister::StartupType startup);
 
-  virtual std::string orbit() OVERRIDE;
+  virtual bool IsKnownOrbit(base::StringPiece orbit) const OVERRIDE;
   virtual void VerifyNonceIsValidAndUnique(base::StringPiece nonce,
                                            QuicWallTime now,
                                            ResultCallback* cb) OVERRIDE;
 
  private:
-  base::Lock m_;
+  mutable base::Lock m_;
   StrikeRegister strike_register_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalStrikeRegisterClient);

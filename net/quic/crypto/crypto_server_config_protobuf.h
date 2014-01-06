@@ -85,6 +85,18 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
     primary_time_ = primary_time;
   }
 
+  bool has_priority() const {
+    return priority_ > 0;
+  }
+
+  int64 priority() const {
+    return priority_;
+  }
+
+  void set_priority(int64 priority) {
+    priority_ = priority;
+  }
+
  private:
   std::vector<PrivateKey*> keys_;
 
@@ -94,6 +106,11 @@ class NET_EXPORT_PRIVATE QuicServerConfigProtobuf {
   // primary_time_ contains a UNIX epoch seconds value that indicates when this
   // config should become primary.
   int64 primary_time_;
+
+  // Relative priority of this config vs other configs with the same
+  // primary time.  For use as a secondary sort key when selecting the
+  // primary config.
+  uint64 priority_;
 };
 
 }  // namespace net

@@ -10,7 +10,8 @@
 namespace net {
 
 QuicServerConfigProtobuf::QuicServerConfigProtobuf()
-    : primary_time_(QuicWallTime::Zero().ToUNIXSeconds()) {
+    : primary_time_(QuicWallTime::Zero().ToUNIXSeconds()),
+      priority_(0) {
 }
 
 QuicServerConfigProtobuf::~QuicServerConfigProtobuf() {

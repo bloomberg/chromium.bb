@@ -200,7 +200,7 @@ QuicCryptoServerConfig::~QuicCryptoServerConfig() {
 }
 
 // static
-QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
+QuicServerConfigProtobuf* QuicCryptoServerConfig::GenerateConfig(
     QuicRandom* rand,
     const QuicClock* clock,
     const ConfigOptions& options) {
@@ -331,6 +331,7 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddConfig(
     configs_[config->id] = config;
     SelectNewPrimaryConfig(now);
     DCHECK(primary_config_.get());
+    DCHECK_EQ(configs_.find(primary_config_->id)->second, primary_config_);
   }
 
   return msg.release();
@@ -341,14 +342,14 @@ CryptoHandshakeMessage* QuicCryptoServerConfig::AddDefaultConfig(
     const QuicClock* clock,
     const ConfigOptions& options) {
   scoped_ptr<QuicServerConfigProtobuf> config(
-      DefaultConfig(rand, clock, options));
+      GenerateConfig(rand, clock, options));
   return AddConfig(config.get(), clock->WallNow());
 }
 
 bool QuicCryptoServerConfig::SetConfigs(
     const vector<QuicServerConfigProtobuf*>& protobufs,
     const QuicWallTime now) {
-  vector<scoped_refptr<Config> > new_configs;
+  vector<scoped_refptr<Config> > parsed_configs;
   bool ok = true;
 
   for (vector<QuicServerConfigProtobuf*>::const_iterator i = protobufs.begin();
@@ -358,61 +359,57 @@ bool QuicCryptoServerConfig::SetConfigs(
       ok = false;
       break;
     }
-    new_configs.push_back(config);
+
+    parsed_configs.push_back(config);
+  }
+
+  if (parsed_configs.empty()) {
+    LOG(WARNING) << "New config list is empty.";
+    ok = false;
   }
 
   if (!ok) {
     LOG(WARNING) << "Rejecting QUIC configs because of above errors";
   } else {
+    VLOG(1) << "Updating configs:";
+
     base::AutoLock locked(configs_lock_);
-    typedef ConfigMap::iterator ConfigMapIterator;
-    vector<ConfigMapIterator> to_delete;
+    ConfigMap new_configs;
 
-    DCHECK_EQ(protobufs.size(), new_configs.size());
-
-    // First, look for any configs that have been removed.
-    for (ConfigMapIterator i = configs_.begin();
-         i != configs_.end(); ++i) {
-      const scoped_refptr<Config> old_config = i->second;
-      bool found = false;
-
-      for (vector<scoped_refptr<Config> >::const_iterator j =
-               new_configs.begin();
-           j != new_configs.end(); ++j) {
-        if ((*j)->id == old_config->id) {
-          found = true;
-          break;
-        }
-      }
-
-      if (!found) {
-        // We cannot remove the primary config. This has probably happened
-        // because our source of config information failed for a time and we're
-        // suddenly seeing a jump in time. No matter - we'll configure a new
-        // primary config and then we'll be able to delete it next time.
-        if (!old_config->is_primary) {
-          to_delete.push_back(i);
-        }
+    for (vector<scoped_refptr<Config> >::const_iterator i =
+             parsed_configs.begin();
+         i != parsed_configs.end(); ++i) {
+      scoped_refptr<Config> config = *i;
+      ConfigMap::iterator it = configs_.find(config->id);
+      if (it != configs_.end()) {
+        VLOG(1)
+            << "Keeping scid: " << base::HexEncode(
+                config->id.data(), config->id.size())
+            << " orbit: " << base::HexEncode(
+                reinterpret_cast<const char *>(config->orbit), kOrbitSize)
+            << " new primary_time " << config->primary_time.ToUNIXSeconds()
+            << " old primary_time " << it->second->primary_time.ToUNIXSeconds()
+            << " new priority " << config->priority
+            << " old priority " << it->second->priority;
+        // Update primary_time and priority.
+        it->second->primary_time = config->primary_time;
+        it->second->priority = config->priority;
+        new_configs.insert(*it);
+      } else {
+        VLOG(1) << "Adding scid: " << base::HexEncode(
+                    config->id.data(), config->id.size())
+                << " orbit: " << base::HexEncode(
+                    reinterpret_cast<const char *>(config->orbit), kOrbitSize)
+                << " primary_time " << config->primary_time.ToUNIXSeconds()
+                << " priority " << config->priority;
+        new_configs.insert(make_pair(config->id, config));
       }
     }
 
-    for (vector<ConfigMapIterator>::const_iterator i = to_delete.begin();
-         i != to_delete.end(); ++i) {
-      configs_.erase(*i);
-    }
-
-    // Find any configs that need to be added.
-    for (vector<scoped_refptr<Config> >::const_iterator i = new_configs.begin();
-         i != new_configs.end(); ++i) {
-      const scoped_refptr<Config> new_config = *i;
-      if (configs_.find(new_config->id) != configs_.end()) {
-        continue;
-      }
-
-      configs_[new_config->id] = new_config;
-    }
-
+    configs_.swap(new_configs);
     SelectNewPrimaryConfig(now);
+    DCHECK(primary_config_);
+    DCHECK_EQ(configs_.find(primary_config_->id)->second, primary_config_);
   }
 
   return ok;
@@ -424,6 +421,7 @@ void QuicCryptoServerConfig::ValidateClientHello(
     const QuicClock* clock,
     ValidateClientHelloResultCallback* done_cb) const {
   const QuicWallTime now(clock->WallNow());
+
   ValidateClientHelloResultCallback::Result* result =
       new ValidateClientHelloResultCallback::Result(
           client_hello, client_ip, now);
@@ -432,13 +430,15 @@ void QuicCryptoServerConfig::ValidateClientHello(
   {
     base::AutoLock locked(configs_lock_);
 
-    if (!primary_config_) {
+    if (!primary_config_.get()) {
       result->error_code = QUIC_CRYPTO_INTERNAL_ERROR;
       result->error_details = "No configurations loaded";
     } else {
       if (!next_config_promotion_time_.IsZero() &&
           next_config_promotion_time_.IsAfter(now)) {
         SelectNewPrimaryConfig(now);
+        DCHECK(primary_config_);
+        DCHECK(configs_.find(primary_config_->id)->second == primary_config_);
       }
 
       memcpy(primary_orbit, primary_config_->orbit, sizeof(primary_orbit));
@@ -507,6 +507,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     if (!next_config_promotion_time_.IsZero() &&
         next_config_promotion_time_.IsAfter(now)) {
       SelectNewPrimaryConfig(now);
+      DCHECK(primary_config_);
+      DCHECK(configs_.find(primary_config_->id)->second == primary_config_);
     }
 
     primary_config = primary_config_;
@@ -709,54 +711,57 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
 bool QuicCryptoServerConfig::ConfigPrimaryTimeLessThan(
     const scoped_refptr<Config>& a,
     const scoped_refptr<Config>& b) {
-  return a->primary_time.IsBefore(b->primary_time);
+  if (a->primary_time.IsBefore(b->primary_time) ||
+      b->primary_time.IsBefore(a->primary_time)) {
+    // Primary times differ.
+    return a->primary_time.IsBefore(b->primary_time);
+  } else if (a->priority != b->priority) {
+    // Primary times are equal, sort backwards by priority.
+    return a->priority < b->priority;
+  } else {
+    // Primary times and priorities are equal, sort by config id.
+    return a->id < b->id;
+  }
 }
 
 void QuicCryptoServerConfig::SelectNewPrimaryConfig(
     const QuicWallTime now) const {
   vector<scoped_refptr<Config> > configs;
   configs.reserve(configs_.size());
-  scoped_refptr<Config> first_config = NULL;
 
   for (ConfigMap::const_iterator it = configs_.begin();
        it != configs_.end(); ++it) {
-    const scoped_refptr<Config> config(it->second);
-    if (!first_config.get()) {
-      first_config = config;
-    }
-    if (config->primary_time.IsZero()) {
-      continue;
-    }
+    // TODO(avd) Exclude expired configs?
     configs.push_back(it->second);
   }
 
   if (configs.empty()) {
-    // Tests don't set |primary_time_|. For that case we promote the first
-    // Config and leave it as primary forever.
-    if (!primary_config_.get() && first_config.get()) {
-      primary_config_ = first_config;
-      primary_config_->is_primary = true;
+    if (primary_config_.get()) {
+      LOG(DFATAL) << "No valid QUIC server config. Keeping the current config.";
+    } else {
+      LOG(DFATAL) << "No valid QUIC server config.";
     }
     return;
   }
 
   std::sort(configs.begin(), configs.end(), ConfigPrimaryTimeLessThan);
 
+  Config* best_candidate = configs[0];
+
   for (size_t i = 0; i < configs.size(); ++i) {
     const scoped_refptr<Config> config(configs[i]);
-
     if (!config->primary_time.IsAfter(now)) {
+      if (config->primary_time.IsAfter(best_candidate->primary_time)) {
+        best_candidate = config;
+      }
       continue;
     }
 
     // This is the first config with a primary_time in the future. Thus the
     // previous Config should be the primary and this one should determine the
     // next_config_promotion_time_.
-    scoped_refptr<Config> new_primary;
+    scoped_refptr<Config> new_primary(best_candidate);
     if (i == 0) {
-      // There was no previous Config, so this will have to be primary.
-      new_primary = config;
-
       // We need the primary_time of the next config.
       if (configs.size() > 1) {
         next_config_promotion_time_ = configs[1]->primary_time;
@@ -764,7 +769,6 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
         next_config_promotion_time_ = QuicWallTime::Zero();
       }
     } else {
-      new_primary = configs[i - 1];
       next_config_promotion_time_ = config->primary_time;
     }
 
@@ -773,18 +777,26 @@ void QuicCryptoServerConfig::SelectNewPrimaryConfig(
     }
     primary_config_ = new_primary;
     new_primary->is_primary = true;
+    DVLOG(1) << "New primary config.  orbit: "
+             << base::HexEncode(
+                 reinterpret_cast<const char*>(primary_config_->orbit),
+                 kOrbitSize);
 
     return;
   }
 
   // All config's primary times are in the past. We should make the most recent
-  // primary.
-  scoped_refptr<Config> new_primary = configs[configs.size() - 1];
+  // most recent and highest priority candidate primary.
+  scoped_refptr<Config> new_primary(best_candidate);
   if (primary_config_.get()) {
     primary_config_->is_primary = false;
   }
   primary_config_ = new_primary;
   new_primary->is_primary = true;
+  DVLOG(1) << "New primary config.  orbit: "
+           << base::HexEncode(
+               reinterpret_cast<const char*>(primary_config_->orbit),
+               kOrbitSize);
   next_config_promotion_time_ = QuicWallTime::Zero();
 }
 
@@ -976,6 +988,8 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
         QuicWallTime::FromUNIXSeconds(protobuf->primary_time());
   }
 
+  config->priority = protobuf->priority();
+
   StringPiece scid;
   if (!msg->GetStringPiece(kSCID, &scid)) {
     LOG(WARNING) << "Server config message is missing SCID";
@@ -1019,14 +1033,12 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
       strike_register_client = strike_register_client_.get();
     }
 
-    if (strike_register_client != NULL) {
-      const string& orbit = strike_register_client->orbit();
-      if (0 != memcmp(orbit.data(), config->orbit, kOrbitSize)) {
-        LOG(WARNING)
-            << "Server config has different orbit than current config. "
-               "Switching orbits at run-time is not supported.";
-        return NULL;
-      }
+    if (strike_register_client != NULL &&
+        !strike_register_client->IsKnownOrbit(orbit)) {
+      LOG(WARNING)
+          << "Rejecting server config with orbit that the strike register "
+          "client doesn't know about.";
+      return NULL;
     }
   }
 
@@ -1288,7 +1300,8 @@ bool QuicCryptoServerConfig::ValidateServerNonce(StringPiece token,
 QuicCryptoServerConfig::Config::Config()
     : channel_id_enabled(false),
       is_primary(false),
-      primary_time(QuicWallTime::Zero()) {}
+      primary_time(QuicWallTime::Zero()),
+      priority(0) {}
 
 QuicCryptoServerConfig::Config::~Config() { STLDeleteElements(&key_exchanges); }
 

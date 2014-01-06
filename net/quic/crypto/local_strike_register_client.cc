@@ -21,10 +21,12 @@ LocalStrikeRegisterClient::LocalStrikeRegisterClient(
                        orbit, startup) {
 }
 
-string LocalStrikeRegisterClient::orbit() {
+bool LocalStrikeRegisterClient::IsKnownOrbit(StringPiece orbit) const {
   base::AutoLock lock(m_);
-  return string(reinterpret_cast<const char*>(strike_register_.orbit()),
-                kOrbitSize);
+  if (orbit.length() != kOrbitSize) {
+    return false;
+  }
+  return memcmp(orbit.data(), strike_register_.orbit(), kOrbitSize) == 0;
 }
 
 void LocalStrikeRegisterClient::VerifyNonceIsValidAndUnique(

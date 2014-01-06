@@ -101,9 +101,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // TESTING is a magic parameter for passing to the constructor in tests.
   static const char TESTING[];
 
-  // DefaultConfig generates a QuicServerConfigProtobuf protobuf suitable for
-  // using in tests.
-  static QuicServerConfigProtobuf* DefaultConfig(
+  // Generates a QuicServerConfigProtobuf protobuf suitable for
+  // AddConfig and SetConfigs.
+  static QuicServerConfigProtobuf* GenerateConfig(
       QuicRandom* rand,
       const QuicClock* clock,
       const ConfigOptions& options);
@@ -295,6 +295,11 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
     // primary config. A value of QuicWallTime::Zero() means that this config
     // will not be promoted at a specific time.
     QuicWallTime primary_time;
+
+    // Secondary sort key for use when selecting primary configs and
+    // there are multiple configs with the same primary time.
+    // Smaller numbers mean higher priority.
+    uint64 priority;
 
    private:
     friend class base::RefCounted<Config>;

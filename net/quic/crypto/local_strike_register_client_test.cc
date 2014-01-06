@@ -63,15 +63,21 @@ class LocalStrikeRegisterClientTest : public ::testing::Test {
 };
 
 TEST_F(LocalStrikeRegisterClientTest, CheckOrbit) {
-  EXPECT_EQ(StringPiece(reinterpret_cast<const char*>(kOrbit), kOrbitSize),
-            strike_register_->orbit());
+  EXPECT_TRUE(strike_register_->IsKnownOrbit(
+      StringPiece(reinterpret_cast<const char*>(kOrbit), kOrbitSize)));
+  EXPECT_FALSE(strike_register_->IsKnownOrbit(
+      StringPiece(reinterpret_cast<const char*>(kOrbit), kOrbitSize - 1)));
+  EXPECT_FALSE(strike_register_->IsKnownOrbit(
+      StringPiece(reinterpret_cast<const char*>(kOrbit), kOrbitSize + 1)));
+  EXPECT_FALSE(strike_register_->IsKnownOrbit(
+      StringPiece(reinterpret_cast<const char*>(kOrbit) + 1, kOrbitSize)));
 }
 
 TEST_F(LocalStrikeRegisterClientTest, IncorrectNonceLength) {
   string valid_nonce;
   uint32 norder = htonl(kCurrentTimeExternalSecs);
   valid_nonce.assign(reinterpret_cast<const char*>(&norder), sizeof(norder));
-  valid_nonce.append(strike_register_->orbit());
+  valid_nonce.append(string(reinterpret_cast<const char*>(kOrbit), kOrbitSize));
   valid_nonce.append(string(20, '\x17'));  // 20 'random' bytes.
 
   {
