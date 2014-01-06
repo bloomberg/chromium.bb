@@ -10,9 +10,9 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-#include "content/common/accessibility_node_data.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/native_widget_types.h"
 
 struct AccessibilityHostMsg_EventParams;
@@ -60,18 +60,18 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // Creates the platform-specific BrowserAccessibilityManager, but
   // with no parent window pointer. Only useful for unit tests.
   static BrowserAccessibilityManager* Create(
-      const AccessibilityNodeData& src,
+      const ui::AXNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   virtual ~BrowserAccessibilityManager();
 
-  void Initialize(const AccessibilityNodeData src);
+  void Initialize(const ui::AXNodeData src);
 
-  static AccessibilityNodeData GetEmptyDocument();
+  static ui::AXNodeData GetEmptyDocument();
 
   virtual void NotifyAccessibilityEvent(
-      blink::WebAXEvent event_type, BrowserAccessibility* node) { }
+      ui::AXEvent event_type, BrowserAccessibility* node) { }
 
   // Return a pointer to the root of the tree, does not make a new reference.
   BrowserAccessibility* GetRoot();
@@ -159,13 +159,13 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
   // Takes up to 7 nodes at once so tests don't need to create a vector
   // each time.
   void UpdateNodesForTesting(
-      const AccessibilityNodeData& node,
-      const AccessibilityNodeData& node2 = AccessibilityNodeData(),
-      const AccessibilityNodeData& node3 = AccessibilityNodeData(),
-      const AccessibilityNodeData& node4 = AccessibilityNodeData(),
-      const AccessibilityNodeData& node5 = AccessibilityNodeData(),
-      const AccessibilityNodeData& node6 = AccessibilityNodeData(),
-      const AccessibilityNodeData& node7 = AccessibilityNodeData());
+      const ui::AXNodeData& node,
+      const ui::AXNodeData& node2 = ui::AXNodeData(),
+      const ui::AXNodeData& node3 = ui::AXNodeData(),
+      const ui::AXNodeData& node4 = ui::AXNodeData(),
+      const ui::AXNodeData& node5 = ui::AXNodeData(),
+      const ui::AXNodeData& node6 = ui::AXNodeData(),
+      const ui::AXNodeData& node7 = ui::AXNodeData());
 
  protected:
   BrowserAccessibilityManager(
@@ -173,7 +173,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
       BrowserAccessibilityFactory* factory);
 
   BrowserAccessibilityManager(
-      const AccessibilityNodeData& src,
+      const ui::AXNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory);
 
@@ -206,11 +206,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager {
 
   // Update a set of nodes using data received from the renderer
   // process.
-  bool UpdateNodes(const std::vector<AccessibilityNodeData>& nodes);
+  bool UpdateNodes(const std::vector<ui::AXNodeData>& nodes);
 
   // Update one node from the tree using data received from the renderer
   // process. Returns true on success, false on fatal error.
-  bool UpdateNode(const AccessibilityNodeData& src);
+  bool UpdateNode(const ui::AXNodeData& src);
 
   void SetRoot(BrowserAccessibility* root);
 

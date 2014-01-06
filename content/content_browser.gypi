@@ -13,6 +13,7 @@
     '../third_party/re2/re2.gyp:re2',
     '../third_party/zlib/google/zip.gyp:zip',
     '../third_party/zlib/zlib.gyp:zlib',
+    '../ui/accessibility/accessibility.gyp:accessibility',
     '../ui/events/events.gyp:events_base',
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',

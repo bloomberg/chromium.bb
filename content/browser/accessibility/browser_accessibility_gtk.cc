@@ -105,7 +105,7 @@ static void browser_accessibility_get_current_value(
     return;
 
   float float_val;
-  if (obj->GetFloatAttribute(AccessibilityNodeData::ATTR_VALUE_FOR_RANGE,
+  if (obj->GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE,
                              &float_val)) {
     memset(value, 0, sizeof(*value));
     g_value_init(value, G_TYPE_FLOAT);
@@ -120,7 +120,7 @@ static void browser_accessibility_get_minimum_value(
     return;
 
   float float_val;
-  if (obj->GetFloatAttribute(AccessibilityNodeData::ATTR_MIN_VALUE_FOR_RANGE,
+  if (obj->GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE,
                              &float_val)) {
     memset(value, 0, sizeof(*value));
     g_value_init(value, G_TYPE_FLOAT);
@@ -135,7 +135,7 @@ static void browser_accessibility_get_maximum_value(
     return;
 
   float float_val;
-  if (obj->GetFloatAttribute(AccessibilityNodeData::ATTR_MAX_VALUE_FOR_RANGE,
+  if (obj->GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE,
                              &float_val)) {
     memset(value, 0, sizeof(*value));
     g_value_init(value, G_TYPE_FLOAT);
@@ -179,7 +179,7 @@ static const gchar* browser_accessibility_get_name(AtkObject* atk_object) {
   if (!obj)
     return NULL;
 
-  return obj->GetStringAttribute(AccessibilityNodeData::ATTR_NAME).c_str();
+  return obj->GetStringAttribute(ui::AX_ATTR_NAME).c_str();
 }
 
 static const gchar* browser_accessibility_get_description(
@@ -189,7 +189,7 @@ static const gchar* browser_accessibility_get_description(
     return NULL;
 
   return obj->GetStringAttribute(
-      AccessibilityNodeData::ATTR_DESCRIPTION).c_str();
+      ui::AX_ATTR_DESCRIPTION).c_str();
 }
 
 static AtkObject* browser_accessibility_get_parent(AtkObject* atk_object) {
@@ -255,7 +255,7 @@ static AtkStateSet* browser_accessibility_ref_state_set(AtkObject* atk_object) {
           ref_state_set(atk_object);
   int32 state = obj->state();
 
-  if (state & (1 << blink::WebAXStateFocusable))
+  if (state & (1 << ui::AX_STATE_FOCUSABLE))
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSABLE);
   if (obj->manager()->GetFocus(NULL) == obj)
     atk_state_set_add_state(state_set, ATK_STATE_FOCUSED);
@@ -364,9 +364,9 @@ static int GetInterfaceMaskFromObject(BrowserAccessibilityGtk* obj) {
   interface_mask |= 1 << ATK_COMPONENT_INTERFACE;
 
   int role = obj->role();
-  if (role == blink::WebAXRoleProgressIndicator ||
-      role == blink::WebAXRoleScrollBar ||
-      role == blink::WebAXRoleSlider) {
+  if (role == ui::AX_ROLE_PROGRESS_INDICATOR ||
+      role == ui::AX_ROLE_SCROLL_BAR ||
+      role == ui::AX_ROLE_SLIDER) {
     interface_mask |= 1 << ATK_VALUE_INTERFACE;
   }
 
@@ -476,37 +476,37 @@ bool BrowserAccessibilityGtk::IsNative() const {
 
 void BrowserAccessibilityGtk::InitRoleAndState() {
   switch(role()) {
-    case blink::WebAXRoleDocument:
-    case blink::WebAXRoleRootWebArea:
-    case blink::WebAXRoleWebArea:
+    case ui::AX_ROLE_DOCUMENT:
+    case ui::AX_ROLE_ROOT_WEB_AREA:
+    case ui::AX_ROLE_WEB_AREA:
       atk_role_ = ATK_ROLE_DOCUMENT_WEB;
       break;
-    case blink::WebAXRoleGroup:
-    case blink::WebAXRoleDiv:
+    case ui::AX_ROLE_GROUP:
+    case ui::AX_ROLE_DIV:
       atk_role_ = ATK_ROLE_SECTION;
       break;
-    case blink::WebAXRoleButton:
+    case ui::AX_ROLE_BUTTON:
       atk_role_ = ATK_ROLE_PUSH_BUTTON;
       break;
-    case blink::WebAXRoleCheckBox:
+    case ui::AX_ROLE_CHECK_BOX:
       atk_role_ = ATK_ROLE_CHECK_BOX;
       break;
-    case blink::WebAXRoleComboBox:
+    case ui::AX_ROLE_COMBO_BOX:
       atk_role_ = ATK_ROLE_COMBO_BOX;
       break;
-    case blink::WebAXRoleLink:
+    case ui::AX_ROLE_LINK:
       atk_role_ = ATK_ROLE_LINK;
       break;
-    case blink::WebAXRoleRadioButton:
+    case ui::AX_ROLE_RADIO_BUTTON:
       atk_role_ = ATK_ROLE_RADIO_BUTTON;
       break;
-    case blink::WebAXRoleStaticText:
+    case ui::AX_ROLE_STATIC_TEXT:
       atk_role_ = ATK_ROLE_TEXT;
       break;
-    case blink::WebAXRoleTextArea:
+    case ui::AX_ROLE_TEXT_AREA:
       atk_role_ = ATK_ROLE_ENTRY;
       break;
-    case blink::WebAXRoleTextField:
+    case ui::AX_ROLE_TEXT_FIELD:
       atk_role_ = ATK_ROLE_ENTRY;
       break;
     default:

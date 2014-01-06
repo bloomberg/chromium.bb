@@ -16,15 +16,15 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
  public:
   BrowserAccessibilityManagerMac(
       NSView* parent_view,
-      const AccessibilityNodeData& src,
+      const ui::AXNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
-  static AccessibilityNodeData GetEmptyDocument();
+  static ui::AXNodeData GetEmptyDocument();
 
   // Implementation of BrowserAccessibilityManager.
   virtual void NotifyAccessibilityEvent(
-      blink::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
+      ui::AXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   NSView* parent_view() { return parent_view_; }
 

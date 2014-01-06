@@ -21,20 +21,20 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
  public:
   BrowserAccessibilityManagerAndroid(
       base::android::ScopedJavaLocalRef<jobject> content_view_core,
-      const AccessibilityNodeData& src,
+      const ui::AXNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   virtual ~BrowserAccessibilityManagerAndroid();
 
-  static AccessibilityNodeData GetEmptyDocument();
+  static ui::AXNodeData GetEmptyDocument();
 
   void SetContentViewCore(
       base::android::ScopedJavaLocalRef<jobject> content_view_core);
 
   // Implementation of BrowserAccessibilityManager.
   virtual void NotifyAccessibilityEvent(
-      blink::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
+      ui::AXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   // --------------------------------------------------------------------------
   // Methods called from Java via JNI

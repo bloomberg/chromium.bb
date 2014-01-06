@@ -149,7 +149,7 @@ void AccessibilityWinBrowserTest::LoadInitialAccessibilityTreeFromHtml(
     const std::string& html) {
   AccessibilityNotificationWaiter waiter(
       shell(), AccessibilityModeComplete,
-      blink::WebAXEventLoadComplete);
+      ui::AX_EVENT_LOAD_COMPLETE);
   GURL html_data_url("data:text/html," + html);
   NavigateToURL(shell(), html_data_url);
   waiter.WaitForNotification();
@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   scoped_ptr<AccessibilityNotificationWaiter> waiter(
       new AccessibilityNotificationWaiter(
           shell(), AccessibilityModeComplete,
-          blink::WebAXEventFocus));
+          ui::AX_EVENT_FOCUS));
   ExecuteScript(L"document.body.children[0].focus()");
   waiter->WaitForNotification();
 
@@ -517,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Set the active descendant of the radio group
   waiter.reset(new AccessibilityNotificationWaiter(
       shell(), AccessibilityModeComplete,
-      blink::WebAXEventFocus));
+      ui::AX_EVENT_FOCUS));
   ExecuteScript(
       L"document.body.children[0].setAttribute('aria-activedescendant', 'li')");
   waiter->WaitForNotification();
@@ -550,7 +550,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   scoped_ptr<AccessibilityNotificationWaiter> waiter(
       new AccessibilityNotificationWaiter(
           shell(), AccessibilityModeComplete,
-          blink::WebAXEventCheckedStateChanged));
+          ui::AX_EVENT_CHECKED_STATE_CHANGED));
   ExecuteScript(L"document.body.children[0].checked=true");
   waiter->WaitForNotification();
 
@@ -578,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       new AccessibilityNotificationWaiter(
           shell(),
           AccessibilityModeComplete,
-          blink::WebAXEventChildrenChanged));
+          ui::AX_EVENT_CHILDREN_CHANGED));
   ExecuteScript(L"document.body.innerHTML='<b>new text</b>'");
   waiter->WaitForNotification();
 
@@ -603,7 +603,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   scoped_ptr<AccessibilityNotificationWaiter> waiter(
       new AccessibilityNotificationWaiter(
           shell(), AccessibilityModeComplete,
-          blink::WebAXEventChildrenChanged));
+          ui::AX_EVENT_CHILDREN_CHANGED));
   ExecuteScript(L"document.body.children[0].style.visibility='visible'");
   waiter->WaitForNotification();
 
@@ -636,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   scoped_ptr<AccessibilityNotificationWaiter> waiter(
       new AccessibilityNotificationWaiter(
           shell(), AccessibilityModeComplete,
-          blink::WebAXEventFocus));
+          ui::AX_EVENT_FOCUS));
   ExecuteScript(L"document.body.children[0].focus()");
   waiter->WaitForNotification();
 
@@ -650,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   waiter.reset(
       new AccessibilityNotificationWaiter(
           shell(), AccessibilityModeComplete,
-          blink::WebAXEventBlur));
+          ui::AX_EVENT_BLUR));
   base::win::ScopedComPtr<IAccessible> document_accessible(
       GetRendererAccessible());
   ASSERT_NE(document_accessible.get(), reinterpret_cast<IAccessible*>(NULL));
@@ -686,7 +686,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   scoped_ptr<AccessibilityNotificationWaiter> waiter(
       new AccessibilityNotificationWaiter(
           shell(), AccessibilityModeComplete,
-          blink::WebAXEventValueChanged));
+          ui::AX_EVENT_VALUE_CHANGE));
   ExecuteScript(L"document.body.children[0].value='new value'");
   waiter->WaitForNotification();
 

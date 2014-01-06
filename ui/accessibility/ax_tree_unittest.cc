@@ -16,6 +16,8 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   AXNodeData root;
   root.id = 1;
   root.role = AX_ROLE_ROOT_WEB_AREA;
+  root.state = (1 << AX_STATE_FOCUSABLE) | (1 << AX_STATE_FOCUSED);
+  root.location = gfx::Rect(0, 0, 800, 600);
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -23,10 +25,13 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   button.id = 2;
   button.role = AX_ROLE_BUTTON;
   button.state = 0;
+  button.location = gfx::Rect(20, 20, 200, 30);
 
   AXNodeData checkbox;
   checkbox.id = 3;
   checkbox.role = AX_ROLE_CHECK_BOX;
+  checkbox.state = 0;
+  checkbox.location = gfx::Rect(20, 50, 200, 30);
 
   AXTreeUpdate initial_state;
   initial_state.nodes.push_back(root);
@@ -57,6 +62,12 @@ TEST(AXTreeTest, SerializeSimpleAXTree) {
   AXNode* checkbox_node = root_node->ChildAtIndex(1);
   EXPECT_EQ(checkbox.id, checkbox_node->id());
   EXPECT_EQ(checkbox.role, checkbox_node->data().role);
+
+  EXPECT_EQ(
+      "id=1 ROOT_WEB_AREA FOCUSABLE FOCUSED (0, 0)-(800, 600) child_ids=2,3\n"
+      "  id=2 BUTTON (20, 20)-(200, 30)\n"
+      "  id=3 CHECKBOX (20, 50)-(200, 30)\n",
+      dst_tree.ToString());
 }
 
 TEST(AXTreeTest, DeleteUnknownSubtreeFails) {

@@ -23,13 +23,13 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   BrowserAccessibilityManagerWin(
       HWND parent_hwnd,
       IAccessible* parent_iaccessible,
-      const AccessibilityNodeData& src,
+      const ui::AXNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   virtual ~BrowserAccessibilityManagerWin();
 
-  static AccessibilityNodeData GetEmptyDocument();
+  static ui::AXNodeData GetEmptyDocument();
 
   // Get the closest containing HWND.
   HWND parent_hwnd() { return parent_hwnd_; }
@@ -47,7 +47,7 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   virtual void AddNodeToMap(BrowserAccessibility* node);
   virtual void RemoveNode(BrowserAccessibility* node) OVERRIDE;
   virtual void NotifyAccessibilityEvent(
-      blink::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
+      ui::AXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   // Track this object and post a VISIBLE_DATA_CHANGED notification when
   // its container scrolls.

@@ -44,59 +44,59 @@ WebDocument RendererAccessibility::GetMainDocument() {
 
 #ifndef NDEBUG
 const std::string RendererAccessibility::AccessibilityEventToString(
-    blink::WebAXEvent event) {
+    ui::AXEvent event) {
   switch (event) {
-    case blink::WebAXEventActiveDescendantChanged:
+    case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
       return "active descendant changed";
-    case blink::WebAXEventAriaAttributeChanged:
+    case ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED:
       return "aria attribute changed";
-    case blink::WebAXEventAutocorrectionOccured:
+    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
       return "autocorrection occurred";
-    case blink::WebAXEventBlur:
+    case ui::AX_EVENT_BLUR:
       return "blur";
-    case blink::WebAXEventAlert:
+    case ui::AX_EVENT_ALERT:
       return "alert";
-    case blink::WebAXEventCheckedStateChanged:
+    case ui::AX_EVENT_CHECKED_STATE_CHANGED:
       return "check state changed";
-    case blink::WebAXEventChildrenChanged:
+    case ui::AX_EVENT_CHILDREN_CHANGED:
       return "children changed";
-    case blink::WebAXEventFocus:
+    case ui::AX_EVENT_FOCUS:
       return "focus changed";
-    case blink::WebAXEventInvalidStatusChanged:
+    case ui::AX_EVENT_INVALID_STATUS_CHANGED:
       return "invalid status changed";
-    case blink::WebAXEventLayoutComplete:
+    case ui::AX_EVENT_LAYOUT_COMPLETE:
       return "layout complete";
-    case blink::WebAXEventLiveRegionChanged:
+    case ui::AX_EVENT_LIVE_REGION_CHANGED:
       return "live region changed";
-    case blink::WebAXEventLoadComplete:
+    case ui::AX_EVENT_LOAD_COMPLETE:
       return "load complete";
-    case blink::WebAXEventMenuListItemSelected:
+    case ui::AX_EVENT_MENU_LIST_ITEM_SELECTED:
       return "menu list item selected";
-    case blink::WebAXEventMenuListValueChanged:
+    case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
       return "menu list changed";
-    case blink::WebAXEventShow:
+    case ui::AX_EVENT_SHOW:
       return "object show";
-    case blink::WebAXEventHide:
+    case ui::AX_EVENT_HIDE:
       return "object hide";
-    case blink::WebAXEventRowCountChanged:
+    case ui::AX_EVENT_ROW_COUNT_CHANGED:
       return "row count changed";
-    case blink::WebAXEventRowCollapsed:
+    case ui::AX_EVENT_ROW_COLLAPSED:
       return "row collapsed";
-    case blink::WebAXEventRowExpanded:
+    case ui::AX_EVENT_ROW_EXPANDED:
       return "row expanded";
-    case blink::WebAXEventScrolledToAnchor:
+    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
       return "scrolled to anchor";
-    case blink::WebAXEventSelectedChildrenChanged:
+    case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
       return "selected children changed";
-    case blink::WebAXEventSelectedTextChanged:
+    case ui::AX_EVENT_SELECTED_TEXT_CHANGED:
       return "selected text changed";
-    case blink::WebAXEventTextChanged:
+    case ui::AX_EVENT_TEXT_CHANGED:
       return "text changed";
-    case blink::WebAXEventTextInserted:
+    case ui::AX_EVENT_TEXT_INSERTED:
       return "text inserted";
-    case blink::WebAXEventTextRemoved:
+    case ui::AX_EVENT_TEXT_REMOVED:
       return "text removed";
-    case blink::WebAXEventValueChanged:
+    case ui::AX_EVENT_VALUE_CHANGED:
       return "value changed";
     default:
       NOTREACHED();

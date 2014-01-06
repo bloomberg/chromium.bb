@@ -12,9 +12,9 @@
 #include "base/basictypes.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "content/common/accessibility_node_data.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebAXEnums.h"
+#include "ui/accessibility/ax_node_data.h"
 
 #if defined(OS_MACOSX) && __OBJC__
 @class BrowserAccessibilityCocoa;
@@ -70,7 +70,7 @@ class CONTENT_EXPORT BrowserAccessibility {
       int32 index_in_parent);
 
   // Initialize this object's data.
-  void InitializeData(const AccessibilityNodeData& src);
+  void InitializeData(const ui::AXNodeData& src);
 
   virtual void SwapChildren(std::vector<BrowserAccessibility*>& children);
 
@@ -197,43 +197,37 @@ class CONTENT_EXPORT BrowserAccessibility {
   // attribute is not present. In addition, strings can be returned as
   // either std::string or base::string16, for convenience.
 
-  bool HasBoolAttribute(AccessibilityNodeData::BoolAttribute attr) const;
-  bool GetBoolAttribute(AccessibilityNodeData::BoolAttribute attr) const;
-  bool GetBoolAttribute(AccessibilityNodeData::BoolAttribute attr,
-                        bool* value) const;
+  bool HasBoolAttribute(ui::AXBoolAttribute attr) const;
+  bool GetBoolAttribute(ui::AXBoolAttribute attr) const;
+  bool GetBoolAttribute(ui::AXBoolAttribute attr, bool* value) const;
 
-  bool HasFloatAttribute(AccessibilityNodeData::FloatAttribute attr) const;
-  float GetFloatAttribute(AccessibilityNodeData::FloatAttribute attr) const;
-  bool GetFloatAttribute(AccessibilityNodeData::FloatAttribute attr,
-                         float* value) const;
+  bool HasFloatAttribute(ui::AXFloatAttribute attr) const;
+  float GetFloatAttribute(ui::AXFloatAttribute attr) const;
+  bool GetFloatAttribute(ui::AXFloatAttribute attr, float* value) const;
 
-  bool HasIntAttribute(AccessibilityNodeData::IntAttribute attribute) const;
-  int GetIntAttribute(AccessibilityNodeData::IntAttribute attribute) const;
-  bool GetIntAttribute(AccessibilityNodeData::IntAttribute attribute,
-                       int* value) const;
+  bool HasIntAttribute(ui::AXIntAttribute attribute) const;
+  int GetIntAttribute(ui::AXIntAttribute attribute) const;
+  bool GetIntAttribute(ui::AXIntAttribute attribute, int* value) const;
 
   bool HasStringAttribute(
-      AccessibilityNodeData::StringAttribute attribute) const;
-  const std::string& GetStringAttribute(
-      AccessibilityNodeData::StringAttribute attribute) const;
-  bool GetStringAttribute(AccessibilityNodeData::StringAttribute attribute,
+      ui::AXStringAttribute attribute) const;
+  const std::string& GetStringAttribute(ui::AXStringAttribute attribute) const;
+  bool GetStringAttribute(ui::AXStringAttribute attribute,
                           std::string* value) const;
 
-  bool GetString16Attribute(AccessibilityNodeData::StringAttribute attribute,
+  bool GetString16Attribute(ui::AXStringAttribute attribute,
                             base::string16* value) const;
   base::string16 GetString16Attribute(
-      AccessibilityNodeData::StringAttribute attribute) const;
+      ui::AXStringAttribute attribute) const;
 
-  bool HasIntListAttribute(
-      AccessibilityNodeData::IntListAttribute attribute) const;
+  bool HasIntListAttribute(ui::AXIntListAttribute attribute) const;
   const std::vector<int32>& GetIntListAttribute(
-      AccessibilityNodeData::IntListAttribute attribute) const;
-  bool GetIntListAttribute(AccessibilityNodeData::IntListAttribute attribute,
+      ui::AXIntListAttribute attribute) const;
+  bool GetIntListAttribute(ui::AXIntListAttribute attribute,
                            std::vector<int32>* value) const;
 
-  void SetStringAttribute(
-      AccessibilityNodeData::StringAttribute attribute,
-      const std::string& value);
+  void SetStringAttribute(ui::AXStringAttribute attribute,
+                          const std::string& value);
 
   // Retrieve the value of a html attribute from the attribute map and
   // returns true if found.
@@ -257,7 +251,7 @@ class CONTENT_EXPORT BrowserAccessibility {
                        bool* is_mixed) const;
 
   // Returns true if the bit corresponding to the given state enum is 1.
-  bool HasState(blink::WebAXState state_enum) const;
+  bool HasState(ui::AXState state_enum) const;
 
   // Returns true if this node is an editable text field of any kind.
   bool IsEditableText() const;
@@ -299,15 +293,15 @@ class CONTENT_EXPORT BrowserAccessibility {
   std::string name_;
   std::string value_;
   std::vector<std::pair<
-      AccessibilityNodeData::BoolAttribute, bool> > bool_attributes_;
+      ui::AXBoolAttribute, bool> > bool_attributes_;
   std::vector<std::pair<
-      AccessibilityNodeData::FloatAttribute, float> > float_attributes_;
+      ui::AXFloatAttribute, float> > float_attributes_;
   std::vector<std::pair<
-      AccessibilityNodeData::IntAttribute, int> > int_attributes_;
+      ui::AXIntAttribute, int> > int_attributes_;
   std::vector<std::pair<
-      AccessibilityNodeData::StringAttribute, std::string> > string_attributes_;
+      ui::AXStringAttribute, std::string> > string_attributes_;
   std::vector<std::pair<
-      AccessibilityNodeData::IntListAttribute, std::vector<int32> > >
+      ui::AXIntListAttribute, std::vector<int32> > >
           intlist_attributes_;
   std::vector<std::pair<std::string, std::string> > html_attributes_;
   int32 role_;

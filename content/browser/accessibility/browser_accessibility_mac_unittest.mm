@@ -64,28 +64,28 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
 
  protected:
   void RebuildAccessibilityTree() {
-    AccessibilityNodeData root;
+    ui::AXNodeData root;
     root.id = 1000;
     root.location.set_width(500);
     root.location.set_height(100);
-    root.role = blink::WebAXRoleRootWebArea;
-    root.AddStringAttribute(AccessibilityNodeData::ATTR_HELP, "HelpText");
+    root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+    root.AddStringAttribute(ui::AX_ATTR_HELP, "HelpText");
     root.child_ids.push_back(1001);
     root.child_ids.push_back(1002);
 
-    AccessibilityNodeData child1;
+    ui::AXNodeData child1;
     child1.id = 1001;
     child1.SetName("Child1");
     child1.location.set_width(250);
     child1.location.set_height(100);
-    child1.role = blink::WebAXRoleButton;
+    child1.role = ui::AX_ROLE_BUTTON;
 
-    AccessibilityNodeData child2;
+    ui::AXNodeData child2;
     child2.id = 1002;
     child2.location.set_x(250);
     child2.location.set_width(250);
     child2.location.set_height(100);
-    child2.role = blink::WebAXRoleHeading;
+    child2.role = ui::AX_ROLE_HEADING;
 
     delegate_.reset([[MockAccessibilityDelegate alloc] init]);
     manager_.reset(

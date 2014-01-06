@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/accessibility/accessibility_node_serializer.h"
+#include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -16,6 +17,7 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/accessibility/ax_tree.h"
 
 using blink::WebAXObject;
 using blink::WebDocument;
@@ -49,8 +51,8 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
     // It's possible that the webview has already loaded a webpage without
     // accessibility being enabled. Initialize the browser's cached
     // accessibility tree by sending it a notification.
-    HandleWebAccessibilityEvent(document.accessibilityObject(),
-                                blink::WebAXEventLayoutComplete);
+    HandleAXEvent(document.accessibilityObject(),
+                  ui::AX_EVENT_LAYOUT_COMPLETE);
   }
 }
 
@@ -92,8 +94,7 @@ void RendererAccessibilityComplete::FocusedNodeChanged(const WebNode& node) {
   if (node.isNull()) {
     // When focus is cleared, implicitly focus the document.
     // TODO(dmazzoni): Make WebKit send this notification instead.
-    HandleWebAccessibilityEvent(document.accessibilityObject(),
-                                blink::WebAXEventBlur);
+    HandleAXEvent(document.accessibilityObject(), ui::AX_EVENT_BLUR);
   }
 }
 
@@ -108,12 +109,17 @@ void RendererAccessibilityComplete::DidFinishLoad(blink::WebFrame* frame) {
   // TODO(dmazzoni): remove this once rdar://5794454 is fixed.
   WebAXObject new_root = document.accessibilityObject();
   if (!browser_root_ || new_root.axID() != browser_root_->id)
-    HandleWebAccessibilityEvent(new_root, blink::WebAXEventLayoutComplete);
+    HandleAXEvent(new_root, ui::AX_EVENT_LAYOUT_COMPLETE);
 }
 
+
 void RendererAccessibilityComplete::HandleWebAccessibilityEvent(
-    const blink::WebAXObject& obj,
-    blink::WebAXEvent event) {
+    const blink::WebAXObject& obj, blink::WebAXEvent event) {
+  HandleAXEvent(obj, AXEventFromBlink(event));
+}
+
+void RendererAccessibilityComplete::HandleAXEvent(
+    const blink::WebAXObject& obj, ui::AXEvent event) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -127,9 +133,8 @@ void RendererAccessibilityComplete::HandleWebAccessibilityEvent(
     // https://bugs.webkit.org/show_bug.cgi?id=73460 is fixed.
     last_scroll_offset_ = scroll_offset;
     if (!obj.equals(document.accessibilityObject())) {
-      HandleWebAccessibilityEvent(
-          document.accessibilityObject(),
-          blink::WebAXEventLayoutComplete);
+      HandleAXEvent(document.accessibilityObject(),
+                    ui::AX_EVENT_LAYOUT_COMPLETE);
     }
   }
 
@@ -201,7 +206,7 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     // doesn't also send us events for each child that changed
     // selection state, so make sure we re-send that whole subtree.
     if (event.event_type ==
-        blink::WebAXEventSelectedChildrenChanged) {
+        ui::AX_EVENT_SELECTED_CHILDREN_CHANGED) {
       base::hash_map<int32, BrowserTreeNode*>::iterator iter =
           browser_id_map_.find(obj.axID());
       if (iter != browser_id_map_.end())
@@ -220,16 +225,15 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
            obj.axID() != root_id) {
       obj = obj.parentObject();
       if (event.event_type ==
-          blink::WebAXEventChildrenChanged) {
+          ui::AX_EVENT_CHILDREN_CHANGED) {
         event.id = obj.axID();
       }
     }
 
     if (obj.isDetached()) {
 #ifndef NDEBUG
-      if (logging_)
-        LOG(WARNING) << "Got event on object that is invalid or has"
-                     << " invalid ancestor. Id: " << obj.axID();
+      LOG(WARNING) << "Got event on object that is invalid or has"
+                   << " invalid ancestor. Id: " << obj.axID();
 #endif
       continue;
     }
@@ -276,15 +280,15 @@ void RendererAccessibilityComplete::SendPendingAccessibilityEvents() {
     event_msgs.push_back(event_msg);
 
 #ifndef NDEBUG
-    if (logging_) {
-      AccessibilityNodeDataTreeNode tree;
-      MakeAccessibilityNodeDataTree(event_msg.nodes, &tree);
-      VLOG(0) << "Accessibility update: \n"
-          << "routing id=" << routing_id()
-          << " event="
-          << AccessibilityEventToString(event.event_type)
-          << "\n" << tree.DebugString(true);
-    }
+    ui::AXTree tree;
+    ui::AXTreeUpdate update;
+    update.nodes = event_msg.nodes;
+    tree.Unserialize(update);
+    VLOG(0) << "Accessibility update: \n"
+            << "routing id=" << routing_id()
+            << " event="
+            << AccessibilityEventToString(event.event_type)
+            << "\n" << tree.ToString();
 #endif
   }
 
@@ -335,14 +339,14 @@ RendererAccessibilityComplete::CreateBrowserTreeNode() {
 
 void RendererAccessibilityComplete::SerializeChangedNodes(
     const blink::WebAXObject& obj,
-    std::vector<AccessibilityNodeData>* dst,
+    std::vector<ui::AXNodeData>* dst,
     std::set<int>* ids_serialized) {
   if (ids_serialized->find(obj.axID()) != ids_serialized->end())
     return;
   ids_serialized->insert(obj.axID());
 
   // This method has three responsibilities:
-  // 1. Serialize |obj| into an AccessibilityNodeData, and append it to
+  // 1. Serialize |obj| into an ui::AXNodeData, and append it to
   //    the end of the |dst| vector to be send to the browser process.
   // 2. Determine if |obj| has any new children that the browser doesn't
   //    know about yet, and call SerializeChangedNodes recursively on those.
@@ -432,12 +436,12 @@ void RendererAccessibilityComplete::SerializeChangedNodes(
   }
 
   // Serialize this node. This fills in all of the fields in
-  // AccessibilityNodeData except child_ids, which we handle below.
-  dst->push_back(AccessibilityNodeData());
-  AccessibilityNodeData* serialized_node = &dst->back();
+  // ui::AXNodeData except child_ids, which we handle below.
+  dst->push_back(ui::AXNodeData());
+  ui::AXNodeData* serialized_node = &dst->back();
   SerializeAccessibilityNode(obj, serialized_node);
   if (serialized_node->id == browser_root_->id)
-    serialized_node->role = blink::WebAXRoleRootWebArea;
+    serialized_node->role = ui::AX_ROLE_ROOT_WEB_AREA;
 
   // Iterate over the children, make note of the ones that are new
   // and need to be serialized, and update the BrowserTreeNode
@@ -498,8 +502,7 @@ void RendererAccessibilityComplete::OnDoDefaultAction(int acc_obj_id) {
   WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
-    if (logging_)
-      LOG(WARNING) << "DoDefaultAction on invalid object id " << acc_obj_id;
+    LOG(WARNING) << "DoDefaultAction on invalid object id " << acc_obj_id;
 #endif
     return;
   }
@@ -516,8 +519,7 @@ void RendererAccessibilityComplete::OnScrollToMakeVisible(
   WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
-    if (logging_)
-      LOG(WARNING) << "ScrollToMakeVisible on invalid object id " << acc_obj_id;
+    LOG(WARNING) << "ScrollToMakeVisible on invalid object id " << acc_obj_id;
 #endif
     return;
   }
@@ -530,9 +532,8 @@ void RendererAccessibilityComplete::OnScrollToMakeVisible(
   // position actually changes.
   // TODO(dmazzoni): remove this once this bug is fixed:
   // https://bugs.webkit.org/show_bug.cgi?id=73460
-  HandleWebAccessibilityEvent(
-      document.accessibilityObject(),
-      blink::WebAXEventLayoutComplete);
+  HandleAXEvent(document.accessibilityObject(),
+                ui::AX_EVENT_LAYOUT_COMPLETE);
 }
 
 void RendererAccessibilityComplete::OnScrollToPoint(
@@ -544,8 +545,7 @@ void RendererAccessibilityComplete::OnScrollToPoint(
   WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
-    if (logging_)
-      LOG(WARNING) << "ScrollToPoint on invalid object id " << acc_obj_id;
+    LOG(WARNING) << "ScrollToPoint on invalid object id " << acc_obj_id;
 #endif
     return;
   }
@@ -556,9 +556,8 @@ void RendererAccessibilityComplete::OnScrollToPoint(
   // position actually changes.
   // TODO(dmazzoni): remove this once this bug is fixed:
   // https://bugs.webkit.org/show_bug.cgi?id=73460
-  HandleWebAccessibilityEvent(
-      document.accessibilityObject(),
-      blink::WebAXEventLayoutComplete);
+  HandleAXEvent(document.accessibilityObject(),
+                ui::AX_EVENT_LAYOUT_COMPLETE);
 }
 
 void RendererAccessibilityComplete::OnSetTextSelection(
@@ -570,8 +569,7 @@ void RendererAccessibilityComplete::OnSetTextSelection(
   WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
-    if (logging_)
-      LOG(WARNING) << "SetTextSelection on invalid object id " << acc_obj_id;
+    LOG(WARNING) << "SetTextSelection on invalid object id " << acc_obj_id;
 #endif
     return;
   }
@@ -601,10 +599,8 @@ void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
   WebAXObject obj = document.accessibilityObjectFromID(acc_obj_id);
   if (obj.isDetached()) {
 #ifndef NDEBUG
-    if (logging_) {
-      LOG(WARNING) << "OnSetAccessibilityFocus on invalid object id "
-                   << acc_obj_id;
-    }
+    LOG(WARNING) << "OnSetAccessibilityFocus on invalid object id "
+                 << acc_obj_id;
 #endif
     return;
   }
@@ -612,9 +608,7 @@ void RendererAccessibilityComplete::OnSetFocus(int acc_obj_id) {
   WebAXObject root = document.accessibilityObject();
   if (root.isDetached()) {
 #ifndef NDEBUG
-    if (logging_) {
-      LOG(WARNING) << "OnSetAccessibilityFocus but root is invalid";
-    }
+    LOG(WARNING) << "OnSetAccessibilityFocus but root is invalid";
 #endif
     return;
   }

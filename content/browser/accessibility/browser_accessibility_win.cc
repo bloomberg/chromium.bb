@@ -380,7 +380,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accDefaultAction(VARIANT var_id,
     return E_INVALIDARG;
 
   return target->GetStringAttributeAsBstr(
-      AccessibilityNodeData::ATTR_SHORTCUT, def_action);
+      ui::AX_ATTR_SHORTCUT, def_action);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accDescription(VARIANT var_id,
@@ -396,7 +396,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accDescription(VARIANT var_id,
     return E_INVALIDARG;
 
   return target->GetStringAttributeAsBstr(
-      AccessibilityNodeData::ATTR_DESCRIPTION, desc);
+      ui::AX_ATTR_DESCRIPTION, desc);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accFocus(VARIANT* focus_child) {
@@ -433,7 +433,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accHelp(VARIANT var_id, BSTR* help) {
     return E_INVALIDARG;
 
   return target->GetStringAttributeAsBstr(
-      AccessibilityNodeData::ATTR_HELP, help);
+      ui::AX_ATTR_HELP, help);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
@@ -449,7 +449,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accKeyboardShortcut(VARIANT var_id,
     return E_INVALIDARG;
 
   return target->GetStringAttributeAsBstr(
-      AccessibilityNodeData::ATTR_SHORTCUT, acc_key);
+      ui::AX_ATTR_SHORTCUT, acc_key);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
@@ -468,7 +468,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accName(VARIANT var_id, BSTR* name) {
   // If the name is empty, see if it's labeled by another element.
   if (name_str.empty()) {
     int title_elem_id;
-    if (target->GetIntAttribute(AccessibilityNodeData::ATTR_TITLE_UI_ELEMENT,
+    if (target->GetIntAttribute(ui::AX_ATTR_TITLE_UI_ELEMENT,
                                 &title_elem_id)) {
       BrowserAccessibility* title_elem =
           manager()->GetFromRendererID(title_elem_id);
@@ -577,11 +577,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_accValue(VARIANT var_id,
   // Expose color well value.
   if (target->ia2_role() == IA2_ROLE_COLOR_CHOOSER) {
     int r = target->GetIntAttribute(
-        AccessibilityNodeData::ATTR_COLOR_VALUE_RED);
+        ui::AX_ATTR_COLOR_VALUE_RED);
     int g = target->GetIntAttribute(
-        AccessibilityNodeData::ATTR_COLOR_VALUE_GREEN);
+        ui::AX_ATTR_COLOR_VALUE_GREEN);
     int b = target->GetIntAttribute(
-        AccessibilityNodeData::ATTR_COLOR_VALUE_BLUE);
+        ui::AX_ATTR_COLOR_VALUE_BLUE);
     base::string16 value_text;
     value_text = base::IntToString16((r * 100) / 255) + L"% red " +
                  base::IntToString16((g * 100) / 255) + L"% green " +
@@ -606,12 +606,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
   if (!instance_active())
     return E_FAIL;
 
-  if (blink_role() != blink::WebAXRoleListBox)
+  if (blink_role() != ui::AX_ROLE_LIST_BOX)
     return E_NOTIMPL;
 
   unsigned long selected_count = 0;
   for (size_t i = 0; i < children().size(); ++i) {
-    if (children()[i]->HasState(blink::WebAXStateSelected))
+    if (children()[i]->HasState(ui::AX_STATE_SELECTED))
       ++selected_count;
   }
 
@@ -622,7 +622,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
 
   if (selected_count == 1) {
     for (size_t i = 0; i < children().size(); ++i) {
-      if (children()[i]->HasState(blink::WebAXStateSelected)) {
+      if (children()[i]->HasState(ui::AX_STATE_SELECTED)) {
         selected->vt = VT_DISPATCH;
         selected->pdispVal =
             children()[i]->ToBrowserAccessibilityWin()->NewReference();
@@ -637,7 +637,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accSelection(VARIANT* selected) {
   enum_variant->AddRef();
   unsigned long index = 0;
   for (size_t i = 0; i < children().size(); ++i) {
-    if (children()[i]->HasState(blink::WebAXStateSelected)) {
+    if (children()[i]->HasState(ui::AX_STATE_SELECTED)) {
       enum_variant->ItemAt(index)->vt = VT_DISPATCH;
       enum_variant->ItemAt(index)->pdispVal =
         children()[i]->ToBrowserAccessibilityWin()->NewReference();
@@ -875,9 +875,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
   if (!group_level || !similar_items_in_group || !position_in_group)
     return E_INVALIDARG;
 
-  if (blink_role() == blink::WebAXRoleListBoxOption &&
+  if (blink_role() == ui::AX_ROLE_LIST_BOX_OPTION &&
       parent() &&
-      parent()->role() == blink::WebAXRoleListBox) {
+      parent()->role() == ui::AX_ROLE_LIST_BOX) {
     *group_level = 0;
     *similar_items_in_group = parent()->PlatformChildCount();
     *position_in_group = index_in_parent() + 1;
@@ -971,7 +971,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_description(BSTR* desc) {
     return E_INVALIDARG;
 
   return GetStringAttributeAsBstr(
-      AccessibilityNodeData::ATTR_DESCRIPTION, desc);
+      ui::AX_ATTR_DESCRIPTION, desc);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_imagePosition(
@@ -1034,9 +1034,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_accessibleAt(
   int columns;
   int rows;
   if (!GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+          ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns) ||
       !GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
+          ui::AX_ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -1046,7 +1046,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accessibleAt(
     return E_INVALIDARG;
 
   const std::vector<int32>& cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_CELL_IDS);
+      ui::AX_ATTR_CELL_IDS);
   DCHECK_EQ(columns * rows, static_cast<int>(cell_ids.size()));
 
   int cell_id = cell_ids[row * columns + column];
@@ -1083,9 +1083,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_childIndex(long row,
   int columns;
   int rows;
   if (!GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+          ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns) ||
       !GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
+          ui::AX_ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -1095,9 +1095,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_childIndex(long row,
     return E_INVALIDARG;
 
   const std::vector<int32>& cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_CELL_IDS);
+      ui::AX_ATTR_CELL_IDS);
   const std::vector<int32>& unique_cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_UNIQUE_CELL_IDS);
+      ui::AX_ATTR_UNIQUE_CELL_IDS);
   DCHECK_EQ(columns * rows, static_cast<int>(cell_ids.size()));
   int cell_id = cell_ids[row * columns + column];
   for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
@@ -1121,8 +1121,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(long column,
   int columns;
   int rows;
   if (!GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
+          ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -1132,21 +1132,21 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(long column,
     return E_INVALIDARG;
 
   const std::vector<int32>& cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_CELL_IDS);
+      ui::AX_ATTR_CELL_IDS);
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
     BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
         manager()->GetFromRendererID(cell_id));
-    if (cell && cell->blink_role() == blink::WebAXRoleColumnHeader) {
+    if (cell && cell->blink_role() == ui::AX_ROLE_COLUMN_HEADER) {
       base::string16 cell_name = cell->GetString16Attribute(
-          AccessibilityNodeData::ATTR_NAME);
+          ui::AX_ATTR_NAME);
       if (cell_name.size() > 0) {
         *description = SysAllocString(cell_name.c_str());
         return S_OK;
       }
 
       return cell->GetStringAttributeAsBstr(
-          AccessibilityNodeData::ATTR_DESCRIPTION, description);
+          ui::AX_ATTR_DESCRIPTION, description);
     }
   }
 
@@ -1166,8 +1166,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtentAt(
   int columns;
   int rows;
   if (!GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
+          ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -1177,14 +1177,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtentAt(
     return E_INVALIDARG;
 
   const std::vector<int32>& cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_CELL_IDS);
+      ui::AX_ATTR_CELL_IDS);
   int cell_id = cell_ids[row * columns + column];
   BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
       manager()->GetFromRendererID(cell_id));
   int colspan;
   if (cell &&
       cell->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
+          ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
       colspan >= 1) {
     *n_columns_spanned = colspan;
     return S_OK;
@@ -1209,7 +1209,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long cell_index,
     return E_INVALIDARG;
 
   const std::vector<int32>& unique_cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_UNIQUE_CELL_IDS);
+      ui::AX_ATTR_UNIQUE_CELL_IDS);
   int cell_id_count = static_cast<int>(unique_cell_ids.size());
   if (cell_index < 0)
     return E_INVALIDARG;
@@ -1222,7 +1222,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long cell_index,
   int col_index;
   if (cell &&
       cell->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &col_index)) {
+          ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX, &col_index)) {
     *column_index = col_index;
     return S_OK;
   }
@@ -1239,7 +1239,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nColumns(long* column_count) {
 
   int columns;
   if (GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns)) {
+          ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns)) {
     *column_count = columns;
     return S_OK;
   }
@@ -1255,7 +1255,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nRows(long* row_count) {
     return E_INVALIDARG;
 
   int rows;
-  if (GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows)) {
+  if (GetIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, &rows)) {
     *row_count = rows;
     return S_OK;
   }
@@ -1308,8 +1308,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(long row,
   int columns;
   int rows;
   if (!GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
+          ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -1319,21 +1319,21 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(long row,
     return E_INVALIDARG;
 
   const std::vector<int32>& cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_CELL_IDS);
+      ui::AX_ATTR_CELL_IDS);
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
     BrowserAccessibilityWin* cell =
         manager()->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->blink_role() == blink::WebAXRoleRowHeader) {
+    if (cell && cell->blink_role() == ui::AX_ROLE_ROW_HEADER) {
       base::string16 cell_name = cell->GetString16Attribute(
-          AccessibilityNodeData::ATTR_NAME);
+          ui::AX_ATTR_NAME);
       if (cell_name.size() > 0) {
         *description = SysAllocString(cell_name.c_str());
         return S_OK;
       }
 
       return cell->GetStringAttributeAsBstr(
-          AccessibilityNodeData::ATTR_DESCRIPTION, description);
+          ui::AX_ATTR_DESCRIPTION, description);
     }
   }
 
@@ -1352,8 +1352,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtentAt(long row,
   int columns;
   int rows;
   if (!GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
-      !GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows) ||
+          ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns) ||
+      !GetIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, &rows) ||
       columns <= 0 ||
       rows <= 0) {
     return S_FALSE;
@@ -1363,14 +1363,14 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtentAt(long row,
     return E_INVALIDARG;
 
   const std::vector<int32>& cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_CELL_IDS);
+      ui::AX_ATTR_CELL_IDS);
   int cell_id = cell_ids[row * columns + column];
   BrowserAccessibilityWin* cell =
       manager()->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
   int rowspan;
   if (cell &&
       cell->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
+          ui::AX_ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
       rowspan >= 1) {
     *n_rows_spanned = rowspan;
     return S_OK;
@@ -1395,7 +1395,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long cell_index,
     return E_INVALIDARG;
 
   const std::vector<int32>& unique_cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_UNIQUE_CELL_IDS);
+      ui::AX_ATTR_UNIQUE_CELL_IDS);
   int cell_id_count = static_cast<int>(unique_cell_ids.size());
   if (cell_index < 0)
     return E_INVALIDARG;
@@ -1408,7 +1408,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long cell_index,
   int cell_row_index;
   if (cell &&
       cell->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &cell_row_index)) {
+          ui::AX_ATTR_TABLE_CELL_ROW_INDEX, &cell_row_index)) {
     *row_index = cell_row_index;
     return S_OK;
   }
@@ -1524,7 +1524,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtentsAtIndex(
     return E_INVALIDARG;
 
   const std::vector<int32>& unique_cell_ids = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_UNIQUE_CELL_IDS);
+      ui::AX_ATTR_UNIQUE_CELL_IDS);
   int cell_id_count = static_cast<int>(unique_cell_ids.size());
   if (index < 0)
     return E_INVALIDARG;
@@ -1538,9 +1538,9 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtentsAtIndex(
   int colspan;
   if (cell &&
       cell->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
+          ui::AX_ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
       cell->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
+          ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
       rowspan >= 1 &&
       colspan >= 1) {
     *row_extents = rowspan;
@@ -1620,7 +1620,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnExtent(
 
   int colspan;
   if (GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
+          ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN, &colspan) &&
       colspan >= 1) {
     *n_columns_spanned = colspan;
     return S_OK;
@@ -1642,12 +1642,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
 
   int column;
   if (!GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column)) {
+          ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX, &column)) {
     return S_FALSE;
   }
 
   BrowserAccessibility* table = parent();
-  while (table && table->role() != blink::WebAXRoleTable)
+  while (table && table->role() != ui::AX_ROLE_TABLE)
     table = table->parent();
   if (!table) {
     NOTREACHED();
@@ -1657,22 +1657,22 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
   int columns;
   int rows;
   if (!table->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+          ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns) ||
       !table->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows)) {
+          ui::AX_ATTR_TABLE_ROW_COUNT, &rows)) {
     return S_FALSE;
   }
   if (columns <= 0 || rows <= 0 || column < 0 || column >= columns)
     return S_FALSE;
 
   const std::vector<int32>& cell_ids = table->GetIntListAttribute(
-      AccessibilityNodeData::ATTR_CELL_IDS);
+      ui::AX_ATTR_CELL_IDS);
 
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
     BrowserAccessibilityWin* cell =
         manager()->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
-    if (cell && cell->blink_role() == blink::WebAXRoleColumnHeader)
+    if (cell && cell->blink_role() == ui::AX_ROLE_COLUMN_HEADER)
       (*n_column_header_cells)++;
   }
 
@@ -1682,7 +1682,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnHeaderCells(
   for (int i = 0; i < rows; ++i) {
     int cell_id = cell_ids[i * columns + column];
     BrowserAccessibility* cell = manager()->GetFromRendererID(cell_id);
-    if (cell && cell->role() == blink::WebAXRoleColumnHeader) {
+    if (cell && cell->role() == ui::AX_ROLE_COLUMN_HEADER) {
       (*cell_accessibles)[index] = static_cast<IAccessible*>(
           cell->ToBrowserAccessibilityWin()->NewReference());
       ++index;
@@ -1701,7 +1701,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnIndex(long* column_index) {
 
   int column;
   if (GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column)) {
+          ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX, &column)) {
     *column_index = column;
     return S_OK;
   }
@@ -1718,7 +1718,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowExtent(long* n_rows_spanned) {
 
   int rowspan;
   if (GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
+          ui::AX_ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
       rowspan >= 1) {
     *n_rows_spanned = rowspan;
     return S_OK;
@@ -1740,12 +1740,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
 
   int row;
   if (!GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &row)) {
+          ui::AX_ATTR_TABLE_CELL_ROW_INDEX, &row)) {
     return S_FALSE;
   }
 
   BrowserAccessibility* table = parent();
-  while (table && table->role() != blink::WebAXRoleTable)
+  while (table && table->role() != ui::AX_ROLE_TABLE)
     table = table->parent();
   if (!table) {
     NOTREACHED();
@@ -1755,21 +1755,21 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
   int columns;
   int rows;
   if (!table->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_COLUMN_COUNT, &columns) ||
+          ui::AX_ATTR_TABLE_COLUMN_COUNT, &columns) ||
       !table->GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_ROW_COUNT, &rows)) {
+          ui::AX_ATTR_TABLE_ROW_COUNT, &rows)) {
     return S_FALSE;
   }
   if (columns <= 0 || rows <= 0 || row < 0 || row >= rows)
     return S_FALSE;
 
   const std::vector<int32>& cell_ids = table->GetIntListAttribute(
-      AccessibilityNodeData::ATTR_CELL_IDS);
+      ui::AX_ATTR_CELL_IDS);
 
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
     BrowserAccessibility* cell = manager()->GetFromRendererID(cell_id);
-    if (cell && cell->role() == blink::WebAXRoleRowHeader)
+    if (cell && cell->role() == ui::AX_ROLE_ROW_HEADER)
       (*n_row_header_cells)++;
   }
 
@@ -1779,7 +1779,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowHeaderCells(
   for (int i = 0; i < columns; ++i) {
     int cell_id = cell_ids[row * columns + i];
     BrowserAccessibility* cell = manager()->GetFromRendererID(cell_id);
-    if (cell && cell->role() == blink::WebAXRoleRowHeader) {
+    if (cell && cell->role() == ui::AX_ROLE_ROW_HEADER) {
       (*cell_accessibles)[index] = static_cast<IAccessible*>(
           cell->ToBrowserAccessibilityWin()->NewReference());
       ++index;
@@ -1797,7 +1797,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowIndex(long* row_index) {
     return E_INVALIDARG;
 
   int row;
-  if (GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &row)) {
+  if (GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX, &row)) {
     *row_index = row;
     return S_OK;
   }
@@ -1836,13 +1836,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowColumnExtents(
   int column;
   int rowspan;
   int colspan;
-  if (GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &row) &&
+  if (GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX, &row) &&
       GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column) &&
+          ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX, &column) &&
       GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
+          ui::AX_ATTR_TABLE_CELL_ROW_SPAN, &rowspan) &&
       GetIntAttribute(
-          AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_SPAN, &colspan)) {
+          ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN, &colspan)) {
     *row_index = row;
     *column_index = column;
     *row_extents = rowspan;
@@ -1864,11 +1864,11 @@ STDMETHODIMP BrowserAccessibilityWin::get_table(IUnknown** table) {
 
   int row;
   int column;
-  GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_ROW_INDEX, &row);
-  GetIntAttribute(AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX, &column);
+  GetIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX, &row);
+  GetIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX, &column);
 
   BrowserAccessibility* find_table = parent();
-  while (find_table && find_table->role() != blink::WebAXRoleTable)
+  while (find_table && find_table->role() != ui::AX_ROLE_TABLE)
     find_table = find_table->parent();
   if (!find_table) {
     NOTREACHED();
@@ -1904,10 +1904,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_caretOffset(LONG* offset) {
     return E_INVALIDARG;
 
   *offset = 0;
-  if (blink_role() == blink::WebAXRoleTextField ||
-      blink_role() == blink::WebAXRoleTextArea) {
+  if (blink_role() == ui::AX_ROLE_TEXT_FIELD ||
+      blink_role() == ui::AX_ROLE_TEXT_AREA) {
     int sel_start = 0;
-    if (GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START,
+    if (GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START,
                         &sel_start))
       *offset = sel_start;
   }
@@ -1960,13 +1960,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_nSelections(LONG* n_selections) {
     return E_INVALIDARG;
 
   *n_selections = 0;
-  if (blink_role() == blink::WebAXRoleTextField ||
-      blink_role() == blink::WebAXRoleTextArea) {
+  if (blink_role() == ui::AX_ROLE_TEXT_FIELD ||
+      blink_role() == ui::AX_ROLE_TEXT_AREA) {
     int sel_start = 0;
     int sel_end = 0;
-    if (GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_START,
+    if (GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START,
                         &sel_start) &&
-        GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_END, &sel_end) &&
+        GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END, &sel_end) &&
         sel_start != sel_end)
       *n_selections = 1;
   }
@@ -1985,13 +1985,13 @@ STDMETHODIMP BrowserAccessibilityWin::get_selection(LONG selection_index,
 
   *start_offset = 0;
   *end_offset = 0;
-  if (blink_role() == blink::WebAXRoleTextField ||
-      blink_role() == blink::WebAXRoleTextArea) {
+  if (blink_role() == ui::AX_ROLE_TEXT_FIELD ||
+      blink_role() == ui::AX_ROLE_TEXT_AREA) {
     int sel_start = 0;
     int sel_end = 0;
     if (GetIntAttribute(
-            AccessibilityNodeData::ATTR_TEXT_SEL_START, &sel_start) &&
-        GetIntAttribute(AccessibilityNodeData::ATTR_TEXT_SEL_END, &sel_end)) {
+            ui::AX_ATTR_TEXT_SEL_START, &sel_start) &&
+        GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END, &sel_end)) {
       *start_offset = sel_start;
       *end_offset = sel_end;
     }
@@ -2311,7 +2311,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_currentValue(VARIANT* value) {
 
   float float_val;
   if (GetFloatAttribute(
-          AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &float_val)) {
+          ui::AX_ATTR_VALUE_FOR_RANGE, &float_val)) {
     value->vt = VT_R8;
     value->dblVal = float_val;
     return S_OK;
@@ -2329,7 +2329,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_minimumValue(VARIANT* value) {
     return E_INVALIDARG;
 
   float float_val;
-  if (GetFloatAttribute(AccessibilityNodeData::ATTR_MIN_VALUE_FOR_RANGE,
+  if (GetFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE,
                         &float_val)) {
     value->vt = VT_R8;
     value->dblVal = float_val;
@@ -2348,7 +2348,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_maximumValue(VARIANT* value) {
     return E_INVALIDARG;
 
   float float_val;
-  if (GetFloatAttribute(AccessibilityNodeData::ATTR_MAX_VALUE_FOR_RANGE,
+  if (GetFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE,
                         &float_val)) {
     value->vt = VT_R8;
     value->dblVal = float_val;
@@ -2375,7 +2375,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_URL(BSTR* url) {
   if (!url)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(AccessibilityNodeData::ATTR_DOC_URL, url);
+  return GetStringAttributeAsBstr(ui::AX_ATTR_DOC_URL, url);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_title(BSTR* title) {
@@ -2385,7 +2385,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_title(BSTR* title) {
   if (!title)
     return E_INVALIDARG;
 
-  return GetStringAttributeAsBstr(AccessibilityNodeData::ATTR_DOC_TITLE, title);
+  return GetStringAttributeAsBstr(ui::AX_ATTR_DOC_TITLE, title);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_mimeType(BSTR* mime_type) {
@@ -2396,7 +2396,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_mimeType(BSTR* mime_type) {
     return E_INVALIDARG;
 
   return GetStringAttributeAsBstr(
-      AccessibilityNodeData::ATTR_DOC_MIMETYPE, mime_type);
+      ui::AX_ATTR_DOC_MIMETYPE, mime_type);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
@@ -2407,7 +2407,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_docType(BSTR* doc_type) {
     return E_INVALIDARG;
 
   return GetStringAttributeAsBstr(
-      AccessibilityNodeData::ATTR_DOC_DOCTYPE, doc_type);
+      ui::AX_ATTR_DOC_DOCTYPE, doc_type);
 }
 
 //
@@ -2430,7 +2430,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nodeInfo(
   }
 
   base::string16 tag;
-  if (GetString16Attribute(AccessibilityNodeData::ATTR_HTML_TAG, &tag))
+  if (GetString16Attribute(ui::AX_ATTR_HTML_TAG, &tag))
     *node_name = SysAllocString(tag.c_str());
   else
     *node_name = NULL;
@@ -2524,7 +2524,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyle(
 
   base::string16 display;
   if (max_style_properties == 0 ||
-      !GetString16Attribute(AccessibilityNodeData::ATTR_DISPLAY, &display)) {
+      !GetString16Attribute(ui::AX_ATTR_DISPLAY, &display)) {
     *num_style_properties = 0;
     return S_OK;
   }
@@ -2554,7 +2554,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyleForProperties(
     StringToLowerASCII(&name);
     if (name == L"display") {
       base::string16 display = GetString16Attribute(
-          AccessibilityNodeData::ATTR_DISPLAY);
+          ui::AX_ATTR_DISPLAY);
       style_values[i] = SysAllocString(display.c_str());
     } else {
       style_values[i] = NULL;
@@ -2684,7 +2684,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_domText(BSTR* dom_text) {
     return E_INVALIDARG;
 
   return GetStringAttributeAsBstr(
-      AccessibilityNodeData::ATTR_NAME, dom_text);
+      ui::AX_ATTR_NAME, dom_text);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_clippedSubstringBounds(
@@ -2898,17 +2898,17 @@ void BrowserAccessibilityWin::PreInitialize() {
   InitRoleAndState();
 
   // Expose the "display" and "tag" attributes.
-  StringAttributeToIA2(AccessibilityNodeData::ATTR_DISPLAY, "display");
-  StringAttributeToIA2(AccessibilityNodeData::ATTR_HTML_TAG, "tag");
-  StringAttributeToIA2(AccessibilityNodeData::ATTR_ROLE, "xml-roles");
+  StringAttributeToIA2(ui::AX_ATTR_DISPLAY, "display");
+  StringAttributeToIA2(ui::AX_ATTR_HTML_TAG, "tag");
+  StringAttributeToIA2(ui::AX_ATTR_ROLE, "xml-roles");
 
   // Expose "level" attribute for headings, trees, etc.
-  IntAttributeToIA2(AccessibilityNodeData::ATTR_HIERARCHICAL_LEVEL, "level");
+  IntAttributeToIA2(ui::AX_ATTR_HIERARCHICAL_LEVEL, "level");
 
   // Expose the set size and position in set for listbox options.
-  if (blink_role() == blink::WebAXRoleListBoxOption &&
+  if (blink_role() == ui::AX_ROLE_LIST_BOX_OPTION &&
       parent() &&
-      parent()->role() == blink::WebAXRoleListBox) {
+      parent()->role() == ui::AX_ROLE_LIST_BOX) {
     ia2_attributes_.push_back(
         L"setsize:" + base::IntToString16(parent()->PlatformChildCount()));
     ia2_attributes_.push_back(
@@ -2922,19 +2922,19 @@ void BrowserAccessibilityWin::PreInitialize() {
   }
 
   // Expose live region attributes.
-  StringAttributeToIA2(AccessibilityNodeData::ATTR_LIVE_STATUS, "live");
-  StringAttributeToIA2(AccessibilityNodeData::ATTR_LIVE_RELEVANT, "relevant");
-  BoolAttributeToIA2(AccessibilityNodeData::ATTR_LIVE_ATOMIC, "atomic");
-  BoolAttributeToIA2(AccessibilityNodeData::ATTR_LIVE_BUSY, "busy");
+  StringAttributeToIA2(ui::AX_ATTR_LIVE_STATUS, "live");
+  StringAttributeToIA2(ui::AX_ATTR_LIVE_RELEVANT, "relevant");
+  BoolAttributeToIA2(ui::AX_ATTR_LIVE_ATOMIC, "atomic");
+  BoolAttributeToIA2(ui::AX_ATTR_LIVE_BUSY, "busy");
 
   // Expose container live region attributes.
-  StringAttributeToIA2(AccessibilityNodeData::ATTR_CONTAINER_LIVE_STATUS,
+  StringAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_STATUS,
                        "container-live");
-  StringAttributeToIA2(AccessibilityNodeData::ATTR_CONTAINER_LIVE_RELEVANT,
+  StringAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_RELEVANT,
                        "container-relevant");
-  BoolAttributeToIA2(AccessibilityNodeData::ATTR_CONTAINER_LIVE_ATOMIC,
+  BoolAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_ATOMIC,
                      "container-atomic");
-  BoolAttributeToIA2(AccessibilityNodeData::ATTR_CONTAINER_LIVE_BUSY,
+  BoolAttributeToIA2(ui::AX_ATTR_CONTAINER_LIVE_BUSY,
                      "container-busy");
 
   // Expose slider value.
@@ -2947,11 +2947,11 @@ void BrowserAccessibilityWin::PreInitialize() {
   // Expose table cell index.
   if (ia_role_ == ROLE_SYSTEM_CELL) {
     BrowserAccessibility* table = parent();
-    while (table && table->role() != blink::WebAXRoleTable)
+    while (table && table->role() != ui::AX_ROLE_TABLE)
       table = table->parent();
     if (table) {
       const std::vector<int32>& unique_cell_ids = table->GetIntListAttribute(
-          AccessibilityNodeData::ATTR_UNIQUE_CELL_IDS);
+          ui::AX_ATTR_UNIQUE_CELL_IDS);
       for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
         if (unique_cell_ids[i] == renderer_id()) {
           ia2_attributes_.push_back(
@@ -2983,10 +2983,10 @@ void BrowserAccessibilityWin::PreInitialize() {
   // if any, in "description".
 
   int title_elem_id = GetIntAttribute(
-      AccessibilityNodeData::ATTR_TITLE_UI_ELEMENT);
-  std::string help = GetStringAttribute(AccessibilityNodeData::ATTR_HELP);
+      ui::AX_ATTR_TITLE_UI_ELEMENT);
+  std::string help = GetStringAttribute(ui::AX_ATTR_HELP);
   std::string description = GetStringAttribute(
-      AccessibilityNodeData::ATTR_DESCRIPTION);
+      ui::AX_ATTR_DESCRIPTION);
 
   // WebKit annoyingly puts the title in the description if there's no other
   // description, which just confuses the rest of the logic. Put it back.
@@ -3017,8 +3017,8 @@ void BrowserAccessibilityWin::PreInitialize() {
 
   // If it's a text field, also consider the placeholder.
   std::string placeholder;
-  if (blink_role() == blink::WebAXRoleTextField &&
-      HasState(blink::WebAXStateFocusable) &&
+  if (blink_role() == ui::AX_ROLE_TEXT_FIELD &&
+      HasState(ui::AX_STATE_FOCUSABLE) &&
       GetHtmlAttribute("placeholder", &placeholder)) {
     if (name().empty() && !title_elem_id) {
       set_name(placeholder);
@@ -3027,22 +3027,22 @@ void BrowserAccessibilityWin::PreInitialize() {
     }
   }
 
-  SetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION, description);
-  SetStringAttribute(AccessibilityNodeData::ATTR_HELP, help);
+  SetStringAttribute(ui::AX_ATTR_DESCRIPTION, description);
+  SetStringAttribute(ui::AX_ATTR_HELP, help);
 
   // On Windows, the value of a document should be its url.
-  if (blink_role() == blink::WebAXRoleRootWebArea ||
-      blink_role() == blink::WebAXRoleWebArea) {
-    set_value(GetStringAttribute(AccessibilityNodeData::ATTR_DOC_URL));
+  if (blink_role() == ui::AX_ROLE_ROOT_WEB_AREA ||
+      blink_role() == ui::AX_ROLE_WEB_AREA) {
+    set_value(GetStringAttribute(ui::AX_ATTR_DOC_URL));
   }
 
   // For certain roles (listbox option, static text, and list marker)
   // WebKit stores the main accessible text in the "value" - swap it so
   // that it's the "name".
   if (name().empty() &&
-      (blink_role() == blink::WebAXRoleListBoxOption ||
-       blink_role() == blink::WebAXRoleStaticText ||
-       blink_role() == blink::WebAXRoleListMarker)) {
+      (blink_role() == ui::AX_ROLE_LIST_BOX_OPTION ||
+       blink_role() == ui::AX_ROLE_STATIC_TEXT ||
+       blink_role() == ui::AX_ROLE_LIST_MARKER)) {
     std::string tmp = value();
     set_value(name());
     set_name(tmp);
@@ -3051,7 +3051,7 @@ void BrowserAccessibilityWin::PreInitialize() {
   // If this doesn't have a value and is linked then set its value to the url
   // attribute. This allows screen readers to read an empty link's destination.
   if (value().empty() && (ia_state_ & STATE_SYSTEM_LINKED))
-    set_value(GetStringAttribute(AccessibilityNodeData::ATTR_URL));
+    set_value(GetStringAttribute(ui::AX_ATTR_URL));
 
   // Clear any old relationships between this node and other nodes.
   for (size_t i = 0; i < relations_.size(); ++i)
@@ -3081,7 +3081,7 @@ void BrowserAccessibilityWin::PostInitialize() {
   hypertext_.clear();
   for (unsigned int i = 0; i < PlatformChildCount(); ++i) {
     BrowserAccessibility* child = PlatformGetChild(i);
-    if (child->role() == blink::WebAXRoleStaticText) {
+    if (child->role() == ui::AX_ROLE_STATIC_TEXT) {
       hypertext_ += base::UTF8ToUTF16(child->name());
     } else {
       hyperlink_offset_to_index_[hypertext_.size()] = hyperlinks_.size();
@@ -3092,15 +3092,15 @@ void BrowserAccessibilityWin::PostInitialize() {
   DCHECK_EQ(hyperlink_offset_to_index_.size(), hyperlinks_.size());
 
   // Fire an event when an alert first appears.
-  if (blink_role() == blink::WebAXRoleAlert && first_time_)
-    manager()->NotifyAccessibilityEvent(blink::WebAXEventAlert, this);
+  if (blink_role() == ui::AX_ROLE_ALERT && first_time_)
+    manager()->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, this);
 
   // Fire events if text has changed.
   base::string16 text = TextForIAccessibleText();
   if (previous_text_ != text) {
     if (!previous_text_.empty() && !text.empty()) {
       manager()->NotifyAccessibilityEvent(
-          blink::WebAXEventShow, this);
+          ui::AX_EVENT_SHOW, this);
     }
 
     // TODO(dmazzoni): Look into HIDE events, too.
@@ -3118,7 +3118,7 @@ void BrowserAccessibilityWin::PostInitialize() {
     // focus for managed descendants is platform-specific.
     // Fire a focus event if the focused descendant in a multi-select
     // list box changes.
-    if (blink_role() == blink::WebAXRoleListBoxOption &&
+    if (blink_role() == ui::AX_ROLE_LIST_BOX_OPTION &&
         (ia_state_ & STATE_SYSTEM_FOCUSABLE) &&
         (ia_state_ & STATE_SYSTEM_SELECTABLE) &&
         (ia_state_ & STATE_SYSTEM_FOCUSED) &&
@@ -3142,8 +3142,8 @@ void BrowserAccessibilityWin::PostInitialize() {
   // Fire an event if this container object has scrolled.
   int sx = 0;
   int sy = 0;
-  if (GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_X, &sx) &&
-      GetIntAttribute(AccessibilityNodeData::ATTR_SCROLL_Y, &sy)) {
+  if (GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
+      GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
     if (!first_time_ &&
         (sx != previous_scroll_x_ || sy != previous_scroll_y_)) {
       manager->MaybeCallNotifyWinEvent(EVENT_SYSTEM_SCROLLINGEND,
@@ -3196,7 +3196,7 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::GetTargetFromChildID(
 }
 
 HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(
-    AccessibilityNodeData::StringAttribute attribute,
+    ui::AXStringAttribute attribute,
     BSTR* value_bstr) {
   base::string16 str;
 
@@ -3213,7 +3213,7 @@ HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(
 }
 
 void BrowserAccessibilityWin::StringAttributeToIA2(
-    AccessibilityNodeData::StringAttribute attribute,
+    ui::AXStringAttribute attribute,
     const char* ia2_attr) {
   base::string16 value;
   if (GetString16Attribute(attribute, &value))
@@ -3221,7 +3221,7 @@ void BrowserAccessibilityWin::StringAttributeToIA2(
 }
 
 void BrowserAccessibilityWin::BoolAttributeToIA2(
-    AccessibilityNodeData::BoolAttribute attribute,
+    ui::AXBoolAttribute attribute,
     const char* ia2_attr) {
   bool value;
   if (GetBoolAttribute(attribute, &value)) {
@@ -3231,7 +3231,7 @@ void BrowserAccessibilityWin::BoolAttributeToIA2(
 }
 
 void BrowserAccessibilityWin::IntAttributeToIA2(
-    AccessibilityNodeData::IntAttribute attribute,
+    ui::AXIntAttribute attribute,
     const char* ia2_attr) {
   int value;
   if (GetIntAttribute(attribute, &value)) {
@@ -3245,7 +3245,7 @@ base::string16 BrowserAccessibilityWin::GetValueText() {
   base::string16 value = base::UTF8ToUTF16(this->value());
 
   if (value.empty() &&
-      GetFloatAttribute(AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &fval)) {
+      GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, &fval)) {
     value = base::UTF8ToUTF16(base::DoubleToString(fval));
   }
   return value;
@@ -3254,7 +3254,7 @@ base::string16 BrowserAccessibilityWin::GetValueText() {
 base::string16 BrowserAccessibilityWin::TextForIAccessibleText() {
   if (IsEditableText())
     return base::UTF8ToUTF16(value());
-  return (blink_role() == blink::WebAXRoleStaticText) ?
+  return (blink_role() == ui::AX_ROLE_STATIC_TEXT) ?
       base::UTF8ToUTF16(name()) : hypertext_;
 }
 
@@ -3290,7 +3290,7 @@ LONG BrowserAccessibilityWin::FindBoundary(
   HandleSpecialTextOffset(text, &start_offset);
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
   const std::vector<int32>& line_breaks = GetIntListAttribute(
-      AccessibilityNodeData::ATTR_LINE_BREAKS);
+      ui::AX_ATTR_LINE_BREAKS);
   return ui::FindAccessibleTextBoundary(
       text, line_breaks, boundary, start_offset, direction);
 }
@@ -3305,95 +3305,95 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   ia2_state_ = IA2_STATE_OPAQUE;
   ia2_attributes_.clear();
 
-  if (HasState(blink::WebAXStateBusy))
+  if (HasState(ui::AX_STATE_BUSY))
     ia_state_ |= STATE_SYSTEM_BUSY;
-  if (HasState(blink::WebAXStateChecked))
+  if (HasState(ui::AX_STATE_CHECKED))
     ia_state_ |= STATE_SYSTEM_CHECKED;
-  if (HasState(blink::WebAXStateCollapsed))
+  if (HasState(ui::AX_STATE_COLLAPSED))
     ia_state_ |= STATE_SYSTEM_COLLAPSED;
-  if (HasState(blink::WebAXStateExpanded))
+  if (HasState(ui::AX_STATE_EXPANDED))
     ia_state_ |= STATE_SYSTEM_EXPANDED;
-  if (HasState(blink::WebAXStateFocusable))
+  if (HasState(ui::AX_STATE_FOCUSABLE))
     ia_state_ |= STATE_SYSTEM_FOCUSABLE;
-  if (HasState(blink::WebAXStateHaspopup))
+  if (HasState(ui::AX_STATE_HASPOPUP))
     ia_state_ |= STATE_SYSTEM_HASPOPUP;
-  if (HasState(blink::WebAXStateHovered))
+  if (HasState(ui::AX_STATE_HOVERED))
     ia_state_ |= STATE_SYSTEM_HOTTRACKED;
-  if (HasState(blink::WebAXStateIndeterminate))
+  if (HasState(ui::AX_STATE_INDETERMINATE))
     ia_state_ |= STATE_SYSTEM_INDETERMINATE;
-  if (HasState(blink::WebAXStateInvisible))
+  if (HasState(ui::AX_STATE_INVISIBLE))
     ia_state_ |= STATE_SYSTEM_INVISIBLE;
-  if (HasState(blink::WebAXStateLinked))
+  if (HasState(ui::AX_STATE_LINKED))
     ia_state_ |= STATE_SYSTEM_LINKED;
-  if (HasState(blink::WebAXStateMultiselectable)) {
+  if (HasState(ui::AX_STATE_MULTISELECTABLE)) {
     ia_state_ |= STATE_SYSTEM_EXTSELECTABLE;
     ia_state_ |= STATE_SYSTEM_MULTISELECTABLE;
   }
   // TODO(ctguil): Support STATE_SYSTEM_EXTSELECTABLE/accSelect.
-  if (HasState(blink::WebAXStateOffscreen))
+  if (HasState(ui::AX_STATE_OFFSCREEN))
     ia_state_ |= STATE_SYSTEM_OFFSCREEN;
-  if (HasState(blink::WebAXStatePressed))
+  if (HasState(ui::AX_STATE_PRESSED))
     ia_state_ |= STATE_SYSTEM_PRESSED;
-  if (HasState(blink::WebAXStateProtected))
+  if (HasState(ui::AX_STATE_PROTECTED))
     ia_state_ |= STATE_SYSTEM_PROTECTED;
-  if (HasState(blink::WebAXStateRequired))
+  if (HasState(ui::AX_STATE_REQUIRED))
     ia2_state_ |= IA2_STATE_REQUIRED;
-  if (HasState(blink::WebAXStateSelectable))
+  if (HasState(ui::AX_STATE_SELECTABLE))
     ia_state_ |= STATE_SYSTEM_SELECTABLE;
-  if (HasState(blink::WebAXStateSelected))
+  if (HasState(ui::AX_STATE_SELECTED))
     ia_state_ |= STATE_SYSTEM_SELECTED;
-  if (HasState(blink::WebAXStateVisited))
+  if (HasState(ui::AX_STATE_VISITED))
     ia_state_ |= STATE_SYSTEM_TRAVERSED;
-  if (!HasState(blink::WebAXStateEnabled))
+  if (!HasState(ui::AX_STATE_ENABLED))
     ia_state_ |= STATE_SYSTEM_UNAVAILABLE;
-  if (HasState(blink::WebAXStateVertical)) {
+  if (HasState(ui::AX_STATE_VERTICAL)) {
     ia2_state_ |= IA2_STATE_VERTICAL;
   } else {
     ia2_state_ |= IA2_STATE_HORIZONTAL;
   }
-  if (HasState(blink::WebAXStateVisited))
+  if (HasState(ui::AX_STATE_VISITED))
     ia_state_ |= STATE_SYSTEM_TRAVERSED;
 
   // WebKit marks everything as readonly unless it's editable text, so if it's
   // not readonly, mark it as editable now. The final computation of the
   // READONLY state for MSAA is below, after the switch.
-  if (!HasState(blink::WebAXStateReadonly))
+  if (!HasState(ui::AX_STATE_READONLY))
     ia2_state_ |= IA2_STATE_EDITABLE;
 
   base::string16 invalid;
   if (GetHtmlAttribute("aria-invalid", &invalid))
     ia2_state_ |= IA2_STATE_INVALID_ENTRY;
 
-  if (GetBoolAttribute(AccessibilityNodeData::ATTR_BUTTON_MIXED))
+  if (GetBoolAttribute(ui::AX_ATTR_BUTTON_MIXED))
     ia_state_ |= STATE_SYSTEM_MIXED;
 
-  if (GetBoolAttribute(AccessibilityNodeData::ATTR_CAN_SET_VALUE))
+  if (GetBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE))
     ia2_state_ |= IA2_STATE_EDITABLE;
 
   base::string16 html_tag = GetString16Attribute(
-      AccessibilityNodeData::ATTR_HTML_TAG);
+      ui::AX_ATTR_HTML_TAG);
   ia_role_ = 0;
   ia2_role_ = 0;
   switch (blink_role()) {
-    case blink::WebAXRoleAlert:
+    case ui::AX_ROLE_ALERT:
       ia_role_ = ROLE_SYSTEM_ALERT;
       break;
-    case blink::WebAXRoleAlertDialog:
+    case ui::AX_ROLE_ALERT_DIALOG:
       ia_role_ = ROLE_SYSTEM_DIALOG;
       break;
-    case blink::WebAXRoleApplication:
+    case ui::AX_ROLE_APPLICATION:
       ia_role_ = ROLE_SYSTEM_APPLICATION;
       break;
-    case blink::WebAXRoleArticle:
+    case ui::AX_ROLE_ARTICLE:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleBusyIndicator:
+    case ui::AX_ROLE_BUSY_INDICATOR:
       ia_role_ = ROLE_SYSTEM_ANIMATION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleButton:
+    case ui::AX_ROLE_BUTTON:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
       bool is_aria_pressed_defined;
       bool is_mixed;
@@ -3404,88 +3404,88 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       if (is_mixed)
         ia_state_ |= STATE_SYSTEM_MIXED;
       break;
-    case blink::WebAXRoleCanvas:
-      if (GetBoolAttribute(AccessibilityNodeData::ATTR_CANVAS_HAS_FALLBACK)) {
+    case ui::AX_ROLE_CANVAS:
+      if (GetBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK)) {
         role_name_ = L"canvas";
         ia2_role_ = IA2_ROLE_CANVAS;
       } else {
         ia_role_ = ROLE_SYSTEM_GRAPHIC;
       }
       break;
-    case blink::WebAXRoleCell:
+    case ui::AX_ROLE_CELL:
       ia_role_ = ROLE_SYSTEM_CELL;
       break;
-    case blink::WebAXRoleCheckBox:
+    case ui::AX_ROLE_CHECK_BOX:
       ia_role_ = ROLE_SYSTEM_CHECKBUTTON;
       break;
-    case blink::WebAXRoleColorWell:
+    case ui::AX_ROLE_COLOR_WELL:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_COLOR_CHOOSER;
       break;
-    case blink::WebAXRoleColumn:
+    case ui::AX_ROLE_COLUMN:
       ia_role_ = ROLE_SYSTEM_COLUMN;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleColumnHeader:
+    case ui::AX_ROLE_COLUMN_HEADER:
       ia_role_ = ROLE_SYSTEM_COLUMNHEADER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleComboBox:
+    case ui::AX_ROLE_COMBO_BOX:
       ia_role_ = ROLE_SYSTEM_COMBOBOX;
       break;
-    case blink::WebAXRoleDiv:
+    case ui::AX_ROLE_DIV:
       role_name_ = L"div";
       ia2_role_ = IA2_ROLE_SECTION;
       break;
-    case blink::WebAXRoleDefinition:
+    case ui::AX_ROLE_DEFINITION:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleDescriptionListDetail:
+    case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleDescriptionListTerm:
+    case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleDialog:
+    case ui::AX_ROLE_DIALOG:
       ia_role_ = ROLE_SYSTEM_DIALOG;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleDisclosureTriangle:
+    case ui::AX_ROLE_DISCLOSURE_TRIANGLE:
       ia_role_ = ROLE_SYSTEM_OUTLINEBUTTON;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleDocument:
-    case blink::WebAXRoleRootWebArea:
-    case blink::WebAXRoleWebArea:
+    case ui::AX_ROLE_DOCUMENT:
+    case ui::AX_ROLE_ROOT_WEB_AREA:
+    case ui::AX_ROLE_WEB_AREA:
       ia_role_ = ROLE_SYSTEM_DOCUMENT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       ia_state_ |= STATE_SYSTEM_FOCUSABLE;
       break;
-    case blink::WebAXRoleEditableText:
+    case ui::AX_ROLE_EDITABLE_TEXT:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       break;
-    case blink::WebAXRoleForm:
+    case ui::AX_ROLE_FORM:
       role_name_ = L"form";
       ia2_role_ = IA2_ROLE_FORM;
       break;
-    case blink::WebAXRoleFooter:
+    case ui::AX_ROLE_FOOTER:
       ia_role_ = IA2_ROLE_FOOTER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleGrid:
+    case ui::AX_ROLE_GRID:
       ia_role_ = ROLE_SYSTEM_TABLE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleGroup: {
+    case ui::AX_ROLE_GROUP: {
       base::string16 aria_role = GetString16Attribute(
-          AccessibilityNodeData::ATTR_ROLE);
+          ui::AX_ATTR_ROLE);
       if (aria_role == L"group" || html_tag == L"fieldset") {
         ia_role_ = ROLE_SYSTEM_GROUPING;
       } else if (html_tag == L"li") {
@@ -3500,190 +3500,190 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     }
-    case blink::WebAXRoleGrowArea:
+    case ui::AX_ROLE_GROW_AREA:
       ia_role_ = ROLE_SYSTEM_GRIP;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleHeading:
+    case ui::AX_ROLE_HEADING:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_HEADING;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleHorizontalRule:
+    case ui::AX_ROLE_HORIZONTAL_RULE:
       ia_role_ = ROLE_SYSTEM_SEPARATOR;
       break;
-    case blink::WebAXRoleImage:
+    case ui::AX_ROLE_IMAGE:
       ia_role_ = ROLE_SYSTEM_GRAPHIC;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleImageMap:
+    case ui::AX_ROLE_IMAGE_MAP:
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_IMAGE_MAP;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleImageMapLink:
+    case ui::AX_ROLE_IMAGE_MAP_LINK:
       ia_role_ = ROLE_SYSTEM_LINK;
       ia_state_ |= STATE_SYSTEM_LINKED;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleLabel:
+    case ui::AX_ROLE_LABEL:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_role_ = IA2_ROLE_LABEL;
       break;
-    case blink::WebAXRoleBanner:
-    case blink::WebAXRoleComplementary:
-    case blink::WebAXRoleContentInfo:
-    case blink::WebAXRoleMain:
-    case blink::WebAXRoleNavigation:
-    case blink::WebAXRoleSearch:
+    case ui::AX_ROLE_BANNER:
+    case ui::AX_ROLE_COMPLEMENTARY:
+    case ui::AX_ROLE_CONTENT_INFO:
+    case ui::AX_ROLE_MAIN:
+    case ui::AX_ROLE_NAVIGATION:
+    case ui::AX_ROLE_SEARCH:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleLink:
+    case ui::AX_ROLE_LINK:
       ia_role_ = ROLE_SYSTEM_LINK;
       ia_state_ |= STATE_SYSTEM_LINKED;
       break;
-    case blink::WebAXRoleList:
+    case ui::AX_ROLE_LIST:
       ia_role_ = ROLE_SYSTEM_LIST;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleListBox:
+    case ui::AX_ROLE_LIST_BOX:
       ia_role_ = ROLE_SYSTEM_LIST;
       break;
-    case blink::WebAXRoleListBoxOption:
+    case ui::AX_ROLE_LIST_BOX_OPTION:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
         ia_state_ |= STATE_SYSTEM_FOCUSABLE;
-        if (HasState(blink::WebAXStateFocused))
+        if (HasState(ui::AX_STATE_FOCUSED))
           ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
       break;
-    case blink::WebAXRoleListItem:
+    case ui::AX_ROLE_LIST_ITEM:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleListMarker:
+    case ui::AX_ROLE_LIST_MARKER:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleMath:
+    case ui::AX_ROLE_MATH_ELEMENT:
       ia_role_ = ROLE_SYSTEM_EQUATION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleMenu:
-    case blink::WebAXRoleMenuButton:
+    case ui::AX_ROLE_MENU:
+    case ui::AX_ROLE_MENU_BUTTON:
       ia_role_ = ROLE_SYSTEM_MENUPOPUP;
       break;
-    case blink::WebAXRoleMenuBar:
+    case ui::AX_ROLE_MENU_BAR:
       ia_role_ = ROLE_SYSTEM_MENUBAR;
       break;
-    case blink::WebAXRoleMenuItem:
+    case ui::AX_ROLE_MENU_ITEM:
       ia_role_ = ROLE_SYSTEM_MENUITEM;
       break;
-    case blink::WebAXRoleMenuListPopup:
+    case ui::AX_ROLE_MENU_LIST_POPUP:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       break;
-    case blink::WebAXRoleMenuListOption:
+    case ui::AX_ROLE_MENU_LIST_OPTION:
       ia_role_ = ROLE_SYSTEM_LISTITEM;
       if (ia_state_ & STATE_SYSTEM_SELECTABLE) {
         ia_state_ |= STATE_SYSTEM_FOCUSABLE;
-        if (HasState(blink::WebAXStateFocused))
+        if (HasState(ui::AX_STATE_FOCUSED))
           ia_state_ |= STATE_SYSTEM_FOCUSED;
       }
       break;
-    case blink::WebAXRoleNote:
+    case ui::AX_ROLE_NOTE:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_NOTE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleOutline:
+    case ui::AX_ROLE_OUTLINE:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleParagraph:
+    case ui::AX_ROLE_PARAGRAPH:
       role_name_ = L"P";
       ia2_role_ = IA2_ROLE_PARAGRAPH;
       break;
-    case blink::WebAXRolePopUpButton:
+    case ui::AX_ROLE_POP_UP_BUTTON:
       if (html_tag == L"select") {
         ia_role_ = ROLE_SYSTEM_COMBOBOX;
       } else {
         ia_role_ = ROLE_SYSTEM_BUTTONMENU;
       }
       break;
-    case blink::WebAXRoleProgressIndicator:
+    case ui::AX_ROLE_PROGRESS_INDICATOR:
       ia_role_ = ROLE_SYSTEM_PROGRESSBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleRadioButton:
+    case ui::AX_ROLE_RADIO_BUTTON:
       ia_role_ = ROLE_SYSTEM_RADIOBUTTON;
       break;
-    case blink::WebAXRoleRadioGroup:
+    case ui::AX_ROLE_RADIO_GROUP:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       break;
-    case blink::WebAXRoleRegion:
+    case ui::AX_ROLE_REGION:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleRow:
+    case ui::AX_ROLE_ROW:
       ia_role_ = ROLE_SYSTEM_ROW;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleRowHeader:
+    case ui::AX_ROLE_ROW_HEADER:
       ia_role_ = ROLE_SYSTEM_ROWHEADER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleRuler:
+    case ui::AX_ROLE_RULER:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_RULER;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleScrollArea:
+    case ui::AX_ROLE_SCROLL_AREA:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_SCROLL_PANE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleScrollBar:
+    case ui::AX_ROLE_SCROLL_BAR:
       ia_role_ = ROLE_SYSTEM_SCROLLBAR;
       break;
-    case blink::WebAXRoleSlider:
+    case ui::AX_ROLE_SLIDER:
       ia_role_ = ROLE_SYSTEM_SLIDER;
       break;
-    case blink::WebAXRoleSpinButton:
+    case ui::AX_ROLE_SPIN_BUTTON:
       ia_role_ = ROLE_SYSTEM_SPINBUTTON;
       break;
-    case blink::WebAXRoleSpinButtonPart:
+    case ui::AX_ROLE_SPIN_BUTTON_PART:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
       break;
-    case blink::WebAXRoleSplitGroup:
+    case ui::AX_ROLE_SPLIT_GROUP:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_SPLIT_PANE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleAnnotation:
-    case blink::WebAXRoleStaticText:
+    case ui::AX_ROLE_ANNOTATION:
+    case ui::AX_ROLE_STATIC_TEXT:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleStatus:
+    case ui::AX_ROLE_STATUS:
       ia_role_ = ROLE_SYSTEM_STATUSBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleSplitter:
+    case ui::AX_ROLE_SPLITTER:
       ia_role_ = ROLE_SYSTEM_SEPARATOR;
       break;
-    case blink::WebAXRoleSVGRoot:
+    case ui::AX_ROLE_SVG_ROOT:
       ia_role_ = ROLE_SYSTEM_GRAPHIC;
       break;
-    case blink::WebAXRoleTab:
+    case ui::AX_ROLE_TAB:
       ia_role_ = ROLE_SYSTEM_PAGETAB;
       break;
-    case blink::WebAXRoleTable: {
+    case ui::AX_ROLE_TABLE: {
       base::string16 aria_role = GetString16Attribute(
-          AccessibilityNodeData::ATTR_ROLE);
+          ui::AX_ATTR_ROLE);
       if (aria_role == L"treegrid") {
         ia_role_ = ROLE_SYSTEM_OUTLINE;
       } else {
@@ -3692,77 +3692,77 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       }
       break;
     }
-    case blink::WebAXRoleTableHeaderContainer:
+    case ui::AX_ROLE_TABLE_HEADER_CONTAINER:
       ia_role_ = ROLE_SYSTEM_GROUPING;
       ia2_role_ = IA2_ROLE_SECTION;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleTabList:
+    case ui::AX_ROLE_TAB_LIST:
       ia_role_ = ROLE_SYSTEM_PAGETABLIST;
       break;
-    case blink::WebAXRoleTabPanel:
+    case ui::AX_ROLE_TAB_PANEL:
       ia_role_ = ROLE_SYSTEM_PROPERTYPAGE;
       break;
-    case blink::WebAXRoleToggleButton:
+    case ui::AX_ROLE_TOGGLE_BUTTON:
       ia_role_ = ROLE_SYSTEM_PUSHBUTTON;
       ia2_role_ = IA2_ROLE_TOGGLE_BUTTON;
       break;
-    case blink::WebAXRoleTextArea:
+    case ui::AX_ROLE_TEXT_AREA:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_MULTI_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       ia2_state_ |= IA2_STATE_SELECTABLE_TEXT;
       break;
-    case blink::WebAXRoleTextField:
+    case ui::AX_ROLE_TEXT_FIELD:
       ia_role_ = ROLE_SYSTEM_TEXT;
       ia2_state_ |= IA2_STATE_SINGLE_LINE;
       ia2_state_ |= IA2_STATE_EDITABLE;
       ia2_state_ |= IA2_STATE_SELECTABLE_TEXT;
       break;
-    case blink::WebAXRoleTimer:
+    case ui::AX_ROLE_TIMER:
       ia_role_ = ROLE_SYSTEM_CLOCK;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleToolbar:
+    case ui::AX_ROLE_TOOLBAR:
       ia_role_ = ROLE_SYSTEM_TOOLBAR;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleUserInterfaceTooltip:
+    case ui::AX_ROLE_TOOLTIP:
       ia_role_ = ROLE_SYSTEM_TOOLTIP;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleTree:
+    case ui::AX_ROLE_TREE:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleTreeGrid:
+    case ui::AX_ROLE_TREE_GRID:
       ia_role_ = ROLE_SYSTEM_OUTLINE;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleTreeItem:
+    case ui::AX_ROLE_TREE_ITEM:
       ia_role_ = ROLE_SYSTEM_OUTLINEITEM;
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
-    case blink::WebAXRoleWindow:
+    case ui::AX_ROLE_WINDOW:
       ia_role_ = ROLE_SYSTEM_WINDOW;
       break;
 
     // TODO(dmazzoni): figure out the proper MSAA role for all of these.
-    case blink::WebAXRoleBrowser:
-    case blink::WebAXRoleDirectory:
-    case blink::WebAXRoleDrawer:
-    case blink::WebAXRoleHelpTag:
-    case blink::WebAXRoleIgnored:
-    case blink::WebAXRoleIncrementor:
-    case blink::WebAXRoleLog:
-    case blink::WebAXRoleMarquee:
-    case blink::WebAXRoleMatte:
-    case blink::WebAXRolePresentational:
-    case blink::WebAXRoleRulerMarker:
-    case blink::WebAXRoleSheet:
-    case blink::WebAXRoleSliderThumb:
-    case blink::WebAXRoleSystemWide:
-    case blink::WebAXRoleValueIndicator:
+    case ui::AX_ROLE_BROWSER:
+    case ui::AX_ROLE_DIRECTORY:
+    case ui::AX_ROLE_DRAWER:
+    case ui::AX_ROLE_HELP_TAG:
+    case ui::AX_ROLE_IGNORED:
+    case ui::AX_ROLE_INCREMENTOR:
+    case ui::AX_ROLE_LOG:
+    case ui::AX_ROLE_MARQUEE:
+    case ui::AX_ROLE_MATTE:
+    case ui::AX_ROLE_PRESENTATIONAL:
+    case ui::AX_ROLE_RULER_MARKER:
+    case ui::AX_ROLE_SHEET:
+    case ui::AX_ROLE_SLIDER_THUMB:
+    case ui::AX_ROLE_SYSTEM_WIDE:
+    case ui::AX_ROLE_VALUE_INDICATOR:
     default:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       break;
@@ -3774,13 +3774,13 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   // aria-readonly attribute and for a few roles (in the switch above).
   // We clear the READONLY state on focusable controls and on a document.
   // Everything else, the majority of objects, do not have this state set.
-  if (HasState(blink::WebAXStateFocusable) &&
+  if (HasState(ui::AX_STATE_FOCUSABLE) &&
       ia_role_ != ROLE_SYSTEM_DOCUMENT) {
     ia_state_ &= ~(STATE_SYSTEM_READONLY);
   }
-  if (!HasState(blink::WebAXStateReadonly))
+  if (!HasState(ui::AX_STATE_READONLY))
     ia_state_ &= ~(STATE_SYSTEM_READONLY);
-  if (GetBoolAttribute(AccessibilityNodeData::ATTR_ARIA_READONLY))
+  if (GetBoolAttribute(ui::AX_ATTR_ARIA_READONLY))
     ia_state_ |= STATE_SYSTEM_READONLY;
 
   // The role should always be set.

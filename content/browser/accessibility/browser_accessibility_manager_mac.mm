@@ -12,7 +12,7 @@ namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const AccessibilityNodeData& src,
+    const ui::AXNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerMac(NULL, src, delegate, factory);
@@ -20,7 +20,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 
 BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     NSView* parent_view,
-    const AccessibilityNodeData& src,
+    const ui::AXNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(src, delegate, factory),
@@ -28,17 +28,17 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
 }
 
 // static
-AccessibilityNodeData BrowserAccessibilityManagerMac::GetEmptyDocument() {
-  AccessibilityNodeData empty_document;
+ui::AXNodeData BrowserAccessibilityManagerMac::GetEmptyDocument() {
+  ui::AXNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = blink::WebAXRoleRootWebArea;
+  empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
   empty_document.state =
-      1 << blink::WebAXStateReadonly;
+      1 << ui::AX_STATE_READONLY;
   return empty_document;
 }
 
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
-    blink::WebAXEvent event_type,
+    ui::AXEvent event_type,
     BrowserAccessibility* node) {
   if (!node->IsNative())
     return;
@@ -46,88 +46,88 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   // Refer to AXObjectCache.mm (webkit).
   NSString* event_id = @"";
   switch (event_type) {
-    case blink::WebAXEventActiveDescendantChanged:
-      if (node->role() == blink::WebAXRoleTree)
+    case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
+      if (node->role() == ui::AX_ROLE_TREE)
         event_id = NSAccessibilitySelectedRowsChangedNotification;
       else
         event_id = NSAccessibilityFocusedUIElementChangedNotification;
       break;
-    case blink::WebAXEventAlert:
+    case ui::AX_EVENT_ALERT:
       // Not used on Mac.
       return;
-    case blink::WebAXEventBlur:
+    case ui::AX_EVENT_BLUR:
       // A no-op on Mac.
       return;
-    case blink::WebAXEventCheckedStateChanged:
+    case ui::AX_EVENT_CHECKED_STATE_CHANGED:
       // Not used on Mac.
       return;
-    case blink::WebAXEventChildrenChanged:
+    case ui::AX_EVENT_CHILDREN_CHANGED:
       // TODO(dtseng): no clear equivalent on Mac.
       return;
-    case blink::WebAXEventFocus:
+    case ui::AX_EVENT_FOCUS:
       event_id = NSAccessibilityFocusedUIElementChangedNotification;
       break;
-    case blink::WebAXEventLayoutComplete:
+    case ui::AX_EVENT_LAYOUT_COMPLETE:
       event_id = @"AXLayoutComplete";
       break;
-    case blink::WebAXEventLiveRegionChanged:
+    case ui::AX_EVENT_LIVE_REGION_CHANGED:
       event_id = @"AXLiveRegionChanged";
       break;
-    case blink::WebAXEventLoadComplete:
+    case ui::AX_EVENT_LOAD_COMPLETE:
       event_id = @"AXLoadComplete";
       break;
-    case blink::WebAXEventMenuListValueChanged:
+    case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
       // Not used on Mac.
       return;
-    case blink::WebAXEventShow:
+    case ui::AX_EVENT_SHOW:
       // Not used on Mac.
       return;
-    case blink::WebAXEventHide:
+    case ui::AX_EVENT_HIDE:
       // Not used on Mac.
       return;
-    case blink::WebAXEventRowCountChanged:
+    case ui::AX_EVENT_ROW_COUNT_CHANGED:
       event_id = NSAccessibilityRowCountChangedNotification;
       break;
-    case blink::WebAXEventRowCollapsed:
+    case ui::AX_EVENT_ROW_COLLAPSED:
       event_id = @"AXRowCollapsed";
       break;
-    case blink::WebAXEventRowExpanded:
+    case ui::AX_EVENT_ROW_EXPANDED:
       event_id = @"AXRowExpanded";
       break;
-    case blink::WebAXEventScrolledToAnchor:
+    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
       // Not used on Mac.
       return;
-    case blink::WebAXEventSelectedChildrenChanged:
+    case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
       event_id = NSAccessibilitySelectedChildrenChangedNotification;
       break;
-    case blink::WebAXEventSelectedTextChanged:
+    case ui::AX_EVENT_SELECTED_TEXT_CHANGED:
       event_id = NSAccessibilitySelectedTextChangedNotification;
       break;
-    case blink::WebAXEventTextInserted:
+    case ui::AX_EVENT_TEXT_INSERTED:
       // Not used on Mac.
       return;
-    case blink::WebAXEventTextRemoved:
+    case ui::AX_EVENT_TEXT_REMOVED:
       // Not used on Mac.
       return;
-    case blink::WebAXEventValueChanged:
+    case ui::AX_EVENT_VALUE_CHANGED:
       event_id = NSAccessibilityValueChangedNotification;
       break;
-    case blink::WebAXEventAriaAttributeChanged:
+    case ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED:
       // Not used on Mac.
       return;
-    case blink::WebAXEventAutocorrectionOccured:
+    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
       // Not used on Mac.
       return;
-    case blink::WebAXEventInvalidStatusChanged:
+    case ui::AX_EVENT_INVALID_STATUS_CHANGED:
       // Not used on Mac.
       return;
-    case blink::WebAXEventLocationChanged:
+    case ui::AX_EVENT_LOCATION_CHANGED:
       // Not used on Mac.
       return;
-    case blink::WebAXEventMenuListItemSelected:
+    case ui::AX_EVENT_MENU_LIST_ITEM_SELECTED:
       // Not used on Mac.
       return;
-    case blink::WebAXEventTextChanged:
+    case ui::AX_EVENT_TEXT_CHANGED:
       // Not used on Mac.
       return;
     default:

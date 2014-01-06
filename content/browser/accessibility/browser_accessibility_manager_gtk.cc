@@ -11,7 +11,7 @@ namespace content {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-     const AccessibilityNodeData& src,
+     const ui::AXNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerGtk(
@@ -23,7 +23,7 @@ BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
 
 BrowserAccessibilityManagerGtk::BrowserAccessibilityManagerGtk(
     GtkWidget* parent_widget,
-    const AccessibilityNodeData& src,
+    const ui::AXNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory),
@@ -35,27 +35,27 @@ BrowserAccessibilityManagerGtk::~BrowserAccessibilityManagerGtk() {
 }
 
 // static
-AccessibilityNodeData BrowserAccessibilityManagerGtk::GetEmptyDocument() {
-  AccessibilityNodeData empty_document;
+ui::AXNodeData BrowserAccessibilityManagerGtk::GetEmptyDocument() {
+  ui::AXNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = blink::WebAXRoleRootWebArea;
+  empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
   empty_document.state =
-      1 << blink::WebAXStateReadonly;
+      1 << ui::AX_STATE_READONLY;
   return empty_document;
 }
 
 void BrowserAccessibilityManagerGtk::NotifyAccessibilityEvent(
-    blink::WebAXEvent event_type,
+    ui::AXEvent event_type,
     BrowserAccessibility* node) {
   if (!node->IsNative())
     return;
   AtkObject* atk_object = node->ToBrowserAccessibilityGtk()->GetAtkObject();
 
   switch (event_type) {
-    case blink::WebAXEventChildrenChanged:
+    case ui::AX_EVENT_CHILDREN_CHANGED:
       RecursivelySendChildrenChanged(GetRoot()->ToBrowserAccessibilityGtk());
       break;
-    case blink::WebAXEventFocus:
+    case ui::AX_EVENT_FOCUS:
       // Note: the focus-event was deprecated in ATK 2.9.4
       // See https://bugzilla.gnome.org/show_bug.cgi?id=649575#c8
       g_signal_emit_by_name(atk_object, "focus-event", true);

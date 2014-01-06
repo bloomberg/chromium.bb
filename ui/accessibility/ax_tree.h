@@ -35,6 +35,9 @@ class AX_EXPORT AXTree {
   // should not be trusted any longer.
   virtual bool Unserialize(const AXTreeUpdate& update);
 
+  // Return a multi-line indented string representation, for logging.
+  std::string ToString() const;
+
   // A string describing the error from an unsuccessful Unserialize,
   // for testing and debugging.
   const std::string& error() { return error_; }

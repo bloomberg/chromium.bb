@@ -12,6 +12,20 @@
 
 namespace ui {
 
+namespace {
+
+std::string TreeToStringHelper(AXNode* node, int indent) {
+  std::string result;
+  for (int i = 0; i < indent; i++)
+    result += "  ";
+  result += node->data().ToString() + "\n";
+  for (int i = 0; i < node->child_count(); ++i)
+    result += TreeToStringHelper(node->ChildAtIndex(i), indent + 1);
+  return result;
+}
+
+}  // anonymous namespace
+
 AXTree::AXTree()
     : root_(NULL) {
   AXNodeData root;
@@ -79,6 +93,10 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
   }
 
   return true;
+}
+
+std::string AXTree::ToString() const {
+  return TreeToStringHelper(root_, 0);
 }
 
 AXNode* AXTree::CreateNode(AXNode* parent, int32 id, int32 index_in_parent) {

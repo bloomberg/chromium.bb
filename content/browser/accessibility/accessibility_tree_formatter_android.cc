@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
-#include "content/common/accessibility_node_data.h"
 
 using base::StringPrintf;
 

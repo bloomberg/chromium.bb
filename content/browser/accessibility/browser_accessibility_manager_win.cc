@@ -97,7 +97,7 @@ class AccessibleHWND
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const AccessibilityNodeData& src,
+    const ui::AXNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerWin(
@@ -112,7 +112,7 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerWin() {
 BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
     HWND parent_hwnd,
     IAccessible* parent_iaccessible,
-    const AccessibilityNodeData& src,
+    const ui::AXNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(src, delegate, factory),
@@ -134,14 +134,14 @@ BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
 }
 
 // static
-AccessibilityNodeData BrowserAccessibilityManagerWin::GetEmptyDocument() {
-  AccessibilityNodeData empty_document;
+ui::AXNodeData BrowserAccessibilityManagerWin::GetEmptyDocument() {
+  ui::AXNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = blink::WebAXRoleRootWebArea;
+  empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
   empty_document.state =
       (1 << blink::WebAXStateEnabled) |
-      (1 << blink::WebAXStateReadonly) |
-      (1 << blink::WebAXStateBusy);
+      (1 << ui::AX_STATE_READONLY) |
+      (1 << ui::AX_STATE_BUSY);
   return empty_document;
 }
 
@@ -184,82 +184,82 @@ void BrowserAccessibilityManagerWin::RemoveNode(BrowserAccessibility* node) {
 }
 
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
-    blink::WebAXEvent event_type,
+    ui::AXEvent event_type,
     BrowserAccessibility* node) {
-  if (node->role() == blink::WebAXRoleInlineTextBox)
+  if (node->role() == ui::AX_ROLE_INLINE_TEXT_BOX)
     return;
 
   LONG event_id = EVENT_MIN;
   switch (event_type) {
-    case blink::WebAXEventActiveDescendantChanged:
+    case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
       event_id = IA2_EVENT_ACTIVE_DESCENDANT_CHANGED;
       break;
-    case blink::WebAXEventAlert:
+    case ui::AX_EVENT_ALERT:
       event_id = EVENT_SYSTEM_ALERT;
       break;
-    case blink::WebAXEventAriaAttributeChanged:
+    case ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED:
       event_id = IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED;
       break;
-    case blink::WebAXEventAutocorrectionOccured:
+    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
       event_id = IA2_EVENT_OBJECT_ATTRIBUTE_CHANGED;
       break;
-    case blink::WebAXEventBlur:
+    case ui::AX_EVENT_BLUR:
       // Equivalent to focus on the root.
       event_id = EVENT_OBJECT_FOCUS;
       node = GetRoot();
       break;
-    case blink::WebAXEventCheckedStateChanged:
+    case ui::AX_EVENT_CHECKED_STATE_CHANGED:
       event_id = EVENT_OBJECT_STATECHANGE;
       break;
-    case blink::WebAXEventChildrenChanged:
+    case ui::AX_EVENT_CHILDREN_CHANGED:
       event_id = EVENT_OBJECT_REORDER;
       break;
-    case blink::WebAXEventFocus:
+    case ui::AX_EVENT_FOCUS:
       event_id = EVENT_OBJECT_FOCUS;
       break;
-    case blink::WebAXEventInvalidStatusChanged:
+    case ui::AX_EVENT_INVALID_STATUS_CHANGED:
       event_id = EVENT_OBJECT_STATECHANGE;
       break;
-    case blink::WebAXEventLiveRegionChanged:
+    case ui::AX_EVENT_LIVE_REGION_CHANGED:
       // TODO: try not firing a native notification at all, since
       // on Windows, each individual item in a live region that changes
       // already gets its own notification.
       event_id = EVENT_OBJECT_REORDER;
       break;
-    case blink::WebAXEventLoadComplete:
+    case ui::AX_EVENT_LOAD_COMPLETE:
       event_id = IA2_EVENT_DOCUMENT_LOAD_COMPLETE;
       break;
-    case blink::WebAXEventMenuListItemSelected:
+    case ui::AX_EVENT_MENU_LIST_ITEM_SELECTED:
       event_id = EVENT_OBJECT_FOCUS;
       break;
-    case blink::WebAXEventMenuListValueChanged:
+    case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
       event_id = EVENT_OBJECT_VALUECHANGE;
       break;
-    case blink::WebAXEventHide:
+    case ui::AX_EVENT_HIDE:
       event_id = EVENT_OBJECT_HIDE;
       break;
-    case blink::WebAXEventShow:
+    case ui::AX_EVENT_SHOW:
       event_id = EVENT_OBJECT_SHOW;
       break;
-    case blink::WebAXEventScrolledToAnchor:
+    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
       event_id = EVENT_SYSTEM_SCROLLINGSTART;
       break;
-    case blink::WebAXEventSelectedChildrenChanged:
+    case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
       event_id = EVENT_OBJECT_SELECTIONWITHIN;
       break;
-    case blink::WebAXEventSelectedTextChanged:
+    case ui::AX_EVENT_SELECTED_TEXT_CHANGED:
       event_id = IA2_EVENT_TEXT_CARET_MOVED;
       break;
-    case blink::WebAXEventTextChanged:
+    case ui::AX_EVENT_TEXT_CHANGED:
       event_id = EVENT_OBJECT_NAMECHANGE;
       break;
-    case blink::WebAXEventTextInserted:
+    case ui::AX_EVENT_TEXT_INSERTED:
       event_id = IA2_EVENT_TEXT_INSERTED;
       break;
-    case blink::WebAXEventTextRemoved:
+    case ui::AX_EVENT_TEXT_REMOVED:
       event_id = IA2_EVENT_TEXT_REMOVED;
       break;
-    case blink::WebAXEventValueChanged:
+    case ui::AX_EVENT_VALUE_CHANGED:
       event_id = EVENT_OBJECT_VALUECHANGE;
       break;
     default:
@@ -280,7 +280,7 @@ void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
   // If this is a layout complete notification (sent when a container scrolls)
   // and there is a descendant tracked object, send a notification on it.
   // TODO(dmazzoni): remove once http://crbug.com/113483 is fixed.
-  if (event_type == blink::WebAXEventLayoutComplete &&
+  if (event_type == ui::AX_EVENT_LAYOUT_COMPLETE &&
       tracked_scroll_object_ &&
       tracked_scroll_object_->IsDescendantOf(node)) {
     MaybeCallNotifyWinEvent(

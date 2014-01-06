@@ -15,7 +15,6 @@
 #include "base/process/kill.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/common/accessibility_node_data.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/render_view_host.h"
@@ -28,6 +27,7 @@
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/window_open_disposition.h"
 
 class SkBitmap;
@@ -53,6 +53,7 @@ class Range;
 }
 
 namespace ui {
+class AXTree;
 struct SelectedFileInfo;
 }
 
@@ -437,14 +438,15 @@ class CONTENT_EXPORT RenderViewHostImpl
   // renderer process, and the accessibility tree it sent can be
   // retrieved using accessibility_tree_for_testing().
   void SetAccessibilityCallbackForTesting(
-      const base::Callback<void(blink::WebAXEvent)>& callback);
+      const base::Callback<void(ui::AXEvent)>& callback);
 
   // Only valid if SetAccessibilityCallbackForTesting was called and
   // the callback was run at least once. Returns a snapshot of the
   // accessibility tree received from the renderer as of the last time
-  // a LoadComplete or LayoutComplete accessibility notification was received.
-  const AccessibilityNodeDataTreeNode& accessibility_tree_for_testing() {
-    return accessibility_tree_;
+  // an accessibility notification was received.
+  const ui::AXTree& ax_tree_for_testing() {
+    CHECK(ax_tree_.get());
+    return *ax_tree_.get();
   }
 
   // Set accessibility callbacks.
@@ -693,10 +695,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   std::map<int, JavascriptResultCallback> javascript_callbacks_;
 
   // Accessibility callback for testing.
-  base::Callback<void(blink::WebAXEvent)> accessibility_testing_callback_;
+  base::Callback<void(ui::AXEvent)> accessibility_testing_callback_;
 
   // The most recently received accessibility tree - for testing only.
-  AccessibilityNodeDataTreeNode accessibility_tree_;
+  scoped_ptr<ui::AXTree> ax_tree_;
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_;

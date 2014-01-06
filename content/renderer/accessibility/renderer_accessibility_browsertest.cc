@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/common/accessibility_node_data.h"
 #include "content/common/view_messages.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/accessibility/renderer_accessibility_complete.h"
@@ -13,6 +12,7 @@
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/accessibility/ax_node_data.h"
 
 using blink::WebAXObject;
 using blink::WebDocument;
@@ -125,16 +125,16 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     AccessibilityHostMsg_EventParams event;
     GetLastAccEvent(&event);
     EXPECT_EQ(event.event_type,
-              blink::WebAXEventLayoutComplete);
+              ui::AX_EVENT_LAYOUT_COMPLETE);
     EXPECT_EQ(event.id, 1);
     EXPECT_EQ(event.nodes.size(), 2U);
     EXPECT_EQ(event.nodes[0].id, 1);
     EXPECT_EQ(event.nodes[0].role,
-              blink::WebAXRoleRootWebArea);
+              ui::AX_ROLE_ROOT_WEB_AREA);
     EXPECT_EQ(event.nodes[0].state,
-              (1U << blink::WebAXStateReadonly) |
-              (1U << blink::WebAXStateFocusable) |
-              (1U << blink::WebAXStateFocused));
+              (1U << ui::AX_STATE_READONLY) |
+              (1U << ui::AX_STATE_FOCUSABLE) |
+              (1U << ui::AX_STATE_FOCUSED));
     EXPECT_EQ(event.nodes[0].child_ids.size(), 1U);
   }
 
@@ -146,21 +146,21 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     AccessibilityHostMsg_EventParams event;
     GetLastAccEvent(&event);
     EXPECT_EQ(event.event_type,
-              blink::WebAXEventFocus);
+              ui::AX_EVENT_FOCUS);
     EXPECT_EQ(event.id, 3);
     EXPECT_EQ(event.nodes[0].id, 1);
     EXPECT_EQ(event.nodes[0].role,
-              blink::WebAXRoleRootWebArea);
+              ui::AX_ROLE_ROOT_WEB_AREA);
     EXPECT_EQ(event.nodes[0].state,
-              (1U << blink::WebAXStateReadonly) |
-              (1U << blink::WebAXStateFocusable));
+              (1U << ui::AX_STATE_READONLY) |
+              (1U << ui::AX_STATE_FOCUSABLE));
     EXPECT_EQ(event.nodes[0].child_ids.size(), 1U);
     EXPECT_EQ(event.nodes[1].id, 3);
     EXPECT_EQ(event.nodes[1].role,
-              blink::WebAXRoleGroup);
+              ui::AX_ROLE_GROUP);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << blink::WebAXStateFocusable) |
-              (1U << blink::WebAXStateFocused));
+              (1U << ui::AX_STATE_FOCUSABLE) |
+              (1U << ui::AX_STATE_FOCUSED));
   }
 
   // Check other editable text nodes.
@@ -172,8 +172,8 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 4);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << blink::WebAXStateFocusable) |
-              (1U << blink::WebAXStateFocused));
+              (1U << ui::AX_STATE_FOCUSABLE) |
+              (1U << ui::AX_STATE_FOCUSED));
   }
 
   {
@@ -184,8 +184,8 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 5);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << blink::WebAXStateFocusable) |
-              (1U << blink::WebAXStateFocused));
+              (1U << ui::AX_STATE_FOCUSABLE) |
+              (1U << ui::AX_STATE_FOCUSED));
   }
 
   {
@@ -196,8 +196,8 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 6);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << blink::WebAXStateFocusable) |
-              (1U << blink::WebAXStateFocused));
+              (1U << ui::AX_STATE_FOCUSABLE) |
+              (1U << ui::AX_STATE_FOCUSED));
   }
 
   // Try focusing things that aren't editable text.
@@ -209,9 +209,9 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 7);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << blink::WebAXStateFocusable) |
-              (1U << blink::WebAXStateFocused) |
-              (1U << blink::WebAXStateReadonly));
+              (1U << ui::AX_STATE_FOCUSABLE) |
+              (1U << ui::AX_STATE_FOCUSED) |
+              (1U << ui::AX_STATE_READONLY));
   }
 
   {
@@ -222,9 +222,9 @@ TEST_F(RendererAccessibilityTest, EditableTextModeFocusEvents) {
     GetLastAccEvent(&event);
     EXPECT_EQ(event.id, 8);
     EXPECT_EQ(event.nodes[1].state,
-              (1U << blink::WebAXStateFocusable) |
-              (1U << blink::WebAXStateFocused) |
-              (1U << blink::WebAXStateReadonly));
+              (1U << ui::AX_STATE_FOCUSABLE) |
+              (1U << ui::AX_STATE_FOCUSED) |
+              (1U << ui::AX_STATE_READONLY));
   }
 
   // Clear focus.
@@ -267,9 +267,9 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   sink_->ClearMessages();
   WebDocument document = view()->GetWebView()->mainFrame()->document();
   WebAXObject root_obj = document.accessibilityObject();
-  accessibility->HandleWebAccessibilityEvent(
+  accessibility->HandleAXEvent(
       root_obj,
-      blink::WebAXEventLayoutComplete);
+      ui::AX_EVENT_LAYOUT_COMPLETE);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, accessibility->browser_tree_node_count());
   EXPECT_EQ(1, CountAccessibilityNodesSentToBrowser());
@@ -287,9 +287,9 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   document = view()->GetWebView()->mainFrame()->document();
   root_obj = document.accessibilityObject();
   sink_->ClearMessages();
-  accessibility->HandleWebAccessibilityEvent(
+  accessibility->HandleAXEvent(
       root_obj,
-      blink::WebAXEventLayoutComplete);
+      ui::AX_EVENT_LAYOUT_COMPLETE);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, accessibility->browser_tree_node_count());
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
@@ -302,9 +302,9 @@ TEST_F(RendererAccessibilityTest, SendFullAccessibilityTreeOnReload) {
   root_obj = document.accessibilityObject();
   sink_->ClearMessages();
   const WebAXObject& first_child = root_obj.childAt(0);
-  accessibility->HandleWebAccessibilityEvent(
+  accessibility->HandleAXEvent(
       first_child,
-      blink::WebAXEventLiveRegionChanged);
+      ui::AX_EVENT_LIVE_REGION_CHANGED);
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, accessibility->browser_tree_node_count());
   EXPECT_EQ(4, CountAccessibilityNodesSentToBrowser());
@@ -341,9 +341,9 @@ TEST_F(RendererAccessibilityTest,
   sink_->ClearMessages();
   WebDocument document = view()->GetWebView()->mainFrame()->document();
   WebAXObject root_obj = document.accessibilityObject();
-  accessibility->HandleWebAccessibilityEvent(
+  accessibility->HandleAXEvent(
       root_obj,
-      blink::WebAXEventValueChanged);
+      ui::AX_EVENT_VALUE_CHANGED);
   view()->OnSwapOut();
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_FALSE(sink_->GetUniqueMessageMatching(
@@ -403,9 +403,9 @@ TEST_F(RendererAccessibilityTest, HideAccessibilityObject) {
 
   // Send a childrenChanged on 'A'.
   sink_->ClearMessages();
-  accessibility->HandleWebAccessibilityEvent(
+  accessibility->HandleAXEvent(
       node_a,
-      blink::WebAXEventChildrenChanged);
+      ui::AX_EVENT_CHILDREN_CHANGED);
 
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(3, accessibility->browser_tree_node_count());
@@ -453,9 +453,9 @@ TEST_F(RendererAccessibilityTest, ShowAccessibilityObject) {
   WebDocument document = view()->GetWebView()->mainFrame()->document();
   WebAXObject root_obj = document.accessibilityObject();
   WebAXObject node_a = root_obj.childAt(0);
-  accessibility->HandleWebAccessibilityEvent(
+  accessibility->HandleAXEvent(
       node_a,
-      blink::WebAXEventChildrenChanged);
+      ui::AX_EVENT_CHILDREN_CHANGED);
 
   accessibility->SendPendingAccessibilityEvents();
   EXPECT_EQ(4, accessibility->browser_tree_node_count());
@@ -507,9 +507,9 @@ TEST_F(RendererAccessibilityTest, DetachAccessibilityObject) {
 
   // Send a childrenChanged on the body.
   sink_->ClearMessages();
-  accessibility->HandleWebAccessibilityEvent(
+  accessibility->HandleAXEvent(
       body,
-      blink::WebAXEventChildrenChanged);
+      ui::AX_EVENT_CHILDREN_CHANGED);
 
   accessibility->SendPendingAccessibilityEvents();
 

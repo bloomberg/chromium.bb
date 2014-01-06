@@ -87,7 +87,7 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
 
   void NotifyLiveRegionUpdate(base::string16& aria_live);
 
-  int CountChildrenWithRole(blink::WebAXRole role) const;
+  int CountChildrenWithRole(ui::AXRole role) const;
 
   base::string16 cached_text_;
   bool first_time_;

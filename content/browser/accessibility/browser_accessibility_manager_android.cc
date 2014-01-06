@@ -42,7 +42,7 @@ namespace aria_strings {
 
 // static
 BrowserAccessibilityManager* BrowserAccessibilityManager::Create(
-    const AccessibilityNodeData& src,
+    const ui::AXNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory) {
   return new BrowserAccessibilityManagerAndroid(ScopedJavaLocalRef<jobject>(),
@@ -56,7 +56,7 @@ BrowserAccessibilityManager::ToBrowserAccessibilityManagerAndroid() {
 
 BrowserAccessibilityManagerAndroid::BrowserAccessibilityManagerAndroid(
     ScopedJavaLocalRef<jobject> content_view_core,
-    const AccessibilityNodeData& src,
+    const ui::AXNodeData& src,
     BrowserAccessibilityDelegate* delegate,
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(src, delegate, factory) {
@@ -73,11 +73,11 @@ BrowserAccessibilityManagerAndroid::~BrowserAccessibilityManagerAndroid() {
 }
 
 // static
-AccessibilityNodeData BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
-  AccessibilityNodeData empty_document;
+ui::AXNodeData BrowserAccessibilityManagerAndroid::GetEmptyDocument() {
+  ui::AXNodeData empty_document;
   empty_document.id = 0;
-  empty_document.role = blink::WebAXRoleRootWebArea;
-  empty_document.state = 1 << blink::WebAXStateReadonly;
+  empty_document.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  empty_document.state = 1 << ui::AX_STATE_READONLY;
   return empty_document;
 }
 
@@ -94,14 +94,14 @@ void BrowserAccessibilityManagerAndroid::SetContentViewCore(
 }
 
 void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
-    blink::WebAXEvent event_type,
+    ui::AXEvent event_type,
     BrowserAccessibility* node) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
 
-  if (event_type == blink::WebAXEventHide)
+  if (event_type == ui::AX_EVENT_HIDE)
     return;
 
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
@@ -111,26 +111,26 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
       env, obj.obj(), node->renderer_id());
 
   switch (event_type) {
-    case blink::WebAXEventLoadComplete:
+    case ui::AX_EVENT_LOAD_COMPLETE:
       Java_BrowserAccessibilityManager_handlePageLoaded(
           env, obj.obj(), focus_->renderer_id());
       break;
-    case blink::WebAXEventFocus:
+    case ui::AX_EVENT_FOCUS:
       Java_BrowserAccessibilityManager_handleFocusChanged(
           env, obj.obj(), node->renderer_id());
       break;
-    case blink::WebAXEventCheckedStateChanged:
+    case ui::AX_EVENT_CHECKED_STATE_CHANGED:
       Java_BrowserAccessibilityManager_handleCheckStateChanged(
           env, obj.obj(), node->renderer_id());
       break;
-    case blink::WebAXEventScrolledToAnchor:
+    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
       Java_BrowserAccessibilityManager_handleScrolledToAnchor(
           env, obj.obj(), node->renderer_id());
       break;
-    case blink::WebAXEventAlert:
+    case ui::AX_EVENT_ALERT:
       // An alert is a special case of live region. Fall through to the
       // next case to handle it.
-    case blink::WebAXEventShow: {
+    case ui::AX_EVENT_SHOW: {
       // This event is fired when an object appears in a live region.
       // Speak its text.
       BrowserAccessibilityAndroid* android_node =
@@ -141,13 +141,13 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
               env, android_node->GetText()).obj());
       break;
     }
-    case blink::WebAXEventSelectedTextChanged:
+    case ui::AX_EVENT_SELECTED_TEXT_CHANGED:
       Java_BrowserAccessibilityManager_handleTextSelectionChanged(
           env, obj.obj(), node->renderer_id());
       break;
-    case blink::WebAXEventChildrenChanged:
-    case blink::WebAXEventTextChanged:
-    case blink::WebAXEventValueChanged:
+    case ui::AX_EVENT_CHILDREN_CHANGED:
+    case ui::AX_EVENT_TEXT_CHANGED:
+    case ui::AX_EVENT_VALUE_CHANGED:
       if (node->IsEditableText()) {
         Java_BrowserAccessibilityManager_handleEditableTextChanged(
             env, obj.obj(), node->renderer_id());

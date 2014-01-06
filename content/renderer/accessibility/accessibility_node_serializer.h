@@ -5,14 +5,14 @@
 #ifndef CONTENT_RENDERER_ACCESSIBILITY_ACCESSIBILITY_NODE_SERIALIZER_H_
 #define CONTENT_RENDERER_ACCESSIBILITY_ACCESSIBILITY_NODE_SERIALIZER_H_
 
-#include "content/common/accessibility_node_data.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
+#include "ui/accessibility/ax_node_data.h"
 
 namespace content {
 
 void SerializeAccessibilityNode(
     const blink::WebAXObject& src,
-    AccessibilityNodeData* dst);
+    ui::AXNodeData* dst);
 
 bool ShouldIncludeChildNode(
     const blink::WebAXObject& parent,

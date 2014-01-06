@@ -63,7 +63,7 @@ class CONTENT_EXPORT RendererAccessibility : public RenderViewObserver {
   blink::WebDocument GetMainDocument();
 
 #ifndef NDEBUG
-  const std::string AccessibilityEventToString(blink::WebAXEvent event);
+  const std::string AccessibilityEventToString(ui::AXEvent event);
 #endif
 
   // The RenderViewImpl that owns us.

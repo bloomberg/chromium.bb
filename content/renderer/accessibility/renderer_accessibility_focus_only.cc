@@ -4,13 +4,13 @@
 
 #include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
 
-#include "content/common/accessibility_node_data.h"
 #include "content/renderer/render_view_impl.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "ui/accessibility/ax_node_data.h"
 
 using blink::WebDocument;
 using blink::WebElement;
@@ -87,31 +87,29 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   // native focus changed event, we can send a LayoutComplete
   // event, which doesn't post a native event on Windows.
   event.event_type =
-      send_focus_event ?
-      blink::WebAXEventFocus :
-      blink::WebAXEventLayoutComplete;
+      send_focus_event ? ui::AX_EVENT_FOCUS : ui::AX_EVENT_LAYOUT_COMPLETE;
 
   // Set the id that the event applies to: the root node if nothing
   // has focus, otherwise the focused node.
   event.id = node_has_focus ? next_id_ : 1;
 
   event.nodes.resize(2);
-  AccessibilityNodeData& root = event.nodes[0];
-  AccessibilityNodeData& child = event.nodes[1];
+  ui::AXNodeData& root = event.nodes[0];
+  ui::AXNodeData& child = event.nodes[1];
 
   // Always include the root of the tree, the document. It always has id 1.
   root.id = 1;
-  root.role = blink::WebAXRoleRootWebArea;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
   root.state =
-      (1 << blink::WebAXStateReadonly) |
-      (1 << blink::WebAXStateFocusable);
+      (1 << ui::AX_STATE_READONLY) |
+      (1 << ui::AX_STATE_FOCUSABLE);
   if (!node_has_focus)
-    root.state |= (1 << blink::WebAXStateFocused);
+    root.state |= (1 << ui::AX_STATE_FOCUSED);
   root.location = gfx::Rect(render_view_->size());
   root.child_ids.push_back(next_id_);
 
   child.id = next_id_;
-  child.role = blink::WebAXRoleGroup;
+  child.role = ui::AX_ROLE_GROUP;
 
   if (!node.isNull() && node.isElementNode()) {
     child.location = gfx::Rect(
@@ -124,13 +122,14 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
 
   if (node_has_focus) {
     child.state =
-        (1 << blink::WebAXStateFocusable) |
-        (1 << blink::WebAXStateFocused);
+        (1 << ui::AX_STATE_FOCUSABLE) |
+        (1 << ui::AX_STATE_FOCUSED);
     if (!node_is_editable_text)
-      child.state |= (1 << blink::WebAXStateReadonly);
+      child.state |= (1 << ui::AX_STATE_READONLY);
   }
 
 #ifndef NDEBUG
+  /**
   if (logging_) {
     VLOG(0) << "Accessibility update: \n"
         << "routing id=" << routing_id()
@@ -138,6 +137,7 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
         << AccessibilityEventToString(event.event_type)
         << "\n" << event.nodes[0].DebugString(true);
   }
+  **/
 #endif
 
   Send(new AccessibilityHostMsg_Events(routing_id(), events));

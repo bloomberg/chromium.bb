@@ -72,6 +72,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
@@ -2014,7 +2015,7 @@ void RenderViewHostImpl::DisownOpener() {
 }
 
 void RenderViewHostImpl::SetAccessibilityCallbackForTesting(
-    const base::Callback<void(blink::WebAXEvent)>& callback) {
+    const base::Callback<void(ui::AXEvent)>& callback) {
   accessibility_testing_callback_ = callback;
 }
 
@@ -2131,12 +2132,15 @@ void RenderViewHostImpl::OnAccessibilityEvents(
 
   for (unsigned i = 0; i < params.size(); i++) {
     const AccessibilityHostMsg_EventParams& param = params[i];
-    blink::WebAXEvent src_type = param.event_type;
-    if (src_type == blink::WebAXEventLayoutComplete ||
-        src_type == blink::WebAXEventLoadComplete) {
-      MakeAccessibilityNodeDataTree(param.nodes, &accessibility_tree_);
-    }
-    accessibility_testing_callback_.Run(src_type);
+    if (static_cast<int>(param.event_type) < 0)
+      continue;
+    ui::AXTreeUpdate update;
+    update.nodes = param.nodes;
+    if (!ax_tree_)
+      ax_tree_.reset(new ui::AXTree(update));
+    else
+      CHECK(ax_tree_->Unserialize(update)) << ax_tree_->error();
+    accessibility_testing_callback_.Run(param.event_type);
   }
 }
 

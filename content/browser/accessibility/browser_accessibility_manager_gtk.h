@@ -18,17 +18,17 @@ class CONTENT_EXPORT BrowserAccessibilityManagerGtk
  public:
   BrowserAccessibilityManagerGtk(
       GtkWidget* parent_widget,
-      const AccessibilityNodeData& src,
+      const ui::AXNodeData& src,
       BrowserAccessibilityDelegate* delegate,
       BrowserAccessibilityFactory* factory = new BrowserAccessibilityFactory());
 
   virtual ~BrowserAccessibilityManagerGtk();
 
-  static AccessibilityNodeData GetEmptyDocument();
+  static ui::AXNodeData GetEmptyDocument();
 
   // BrowserAccessibilityManager methods
   virtual void NotifyAccessibilityEvent(
-      blink::WebAXEvent event_type, BrowserAccessibility* node) OVERRIDE;
+      ui::AXEvent event_type, BrowserAccessibility* node) OVERRIDE;
 
   GtkWidget* parent_widget() { return parent_widget_; }
 
