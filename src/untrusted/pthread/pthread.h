@@ -75,8 +75,12 @@ typedef struct {
    */
   int mutex_type;
 
-  /** ID of the thread that owns the mutex */
-  struct __nc_basic_thread_data *owner_thread_id;
+  /**
+   * ID of the thread that owns the mutex.  This is volatile because
+   * it is accessed concurrently, and "volatile" is a way to make
+   * loads and stores atomic in PNaCl.
+   */
+  struct __nc_basic_thread_data *volatile owner_thread_id;
 
   /** Recursion depth counter for recursive mutexes */
   uint32_t recursion_counter;

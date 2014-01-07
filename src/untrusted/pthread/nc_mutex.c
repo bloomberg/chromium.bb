@@ -138,17 +138,17 @@ static int mutex_lock(pthread_mutex_t *mutex, int try_only,
   }
 
   /*
-   * Checking mutex's owner_thread_id without synchronization is safe:
-   * - We are checking whether the owner's id is equal to the current thread id,
-   * and this can happen only if the current thread is actually the owner,
-   * otherwise the owner id will hold an illegal value or an id of a different
-   * thread.
-   * - The value we read from the owner id cannot be a combination of two
-   * values, since properly aligned 32-bit values are updated
-   * by a single machine instruction, so the current thread can only read
-   * a value that it or some other thread wrote.
-   * - Cache is not an issue since a thread will always update its own cache
-   * when unlocking a mutex (see pthread_mutex_unlock implementation).
+   * Reading owner_thread_id here must be done atomically, because
+   * this read may be concurrent with pthread_mutex_unlock()'s write.
+   * PNaCl's memory model requires these accesses to be declared as
+   * atomic, which under PNaCl is achieved by declaring
+   * owner_thread_id as "volatile".
+   *
+   * Checking the mutex's owner_thread_id without further
+   * synchronization is safe.  We are checking whether the owner's id
+   * is equal to the current thread id, and this can happen only if
+   * the current thread is actually the owner, otherwise the owner id
+   * will hold an illegal value or an id of a different thread.
    */
   pthread_t self = pthread_self();
   if (mutex->owner_thread_id == self) {
@@ -197,6 +197,7 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
       /* Error - releasing a mutex that's free or owned by another thread. */
       return EPERM;
     }
+    /* Writing to owner_thread_id here must be done atomically. */
     mutex->owner_thread_id = NACL_PTHREAD_ILLEGAL_THREAD_ID;
     mutex->recursion_counter = 0;
   }
