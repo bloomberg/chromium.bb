@@ -534,7 +534,6 @@ TEST_F(TransportSecurityStateTest, BuiltinCertPins) {
   EXPECT_TRUE(HasPublicKeyPins("business.twitter.com"));
   EXPECT_TRUE(HasPublicKeyPins("platform.twitter.com"));
   EXPECT_TRUE(HasPublicKeyPins("si0.twimg.com"));
-  EXPECT_TRUE(HasPublicKeyPins("twimg0-a.akamaihd.net"));
 }
 
 static bool AddHash(const std::string& type_and_base64,

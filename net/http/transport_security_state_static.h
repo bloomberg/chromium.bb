@@ -214,6 +214,18 @@ static const char kSPKIHash_Libertylavabitcom[] =
     "\x41\xbb\x3b\x8b\xc7\xcf\x3d\x13\x3f\x17"
     "\xb3\x25\x7e\xe4\x03\xca\x8a\x5c\x6d\x36";
 
+static const char kSPKIHash_GlobalSignRootCA[] =
+    "\x87\xdb\xd4\x5f\xb0\x92\x8d\x4e\x1d\xf8"
+    "\x15\x67\xe7\xf2\xab\xaf\xd6\x2b\x67\x75";
+
+static const char kSPKIHash_GlobalSignRootCA_R2[] =
+    "\xa5\x06\x8a\x78\xcf\x84\xbd\x74\x32\xdd"
+    "\x58\xf9\x65\xeb\x3a\x55\xe7\xc7\x80\xdc";
+
+static const char kSPKIHash_GlobalSignRootCA_R3[] =
+    "\xf7\x93\x19\xef\xdf\xc1\xf5\x20\xfb\xac"
+    "\x85\x55\x2c\xf2\xd2\x8f\x5a\xb9\xca\x0b";
+
 // The following is static data describing the hosts that are hardcoded with
 // certificate pins or HSTS information.
 
@@ -325,6 +337,9 @@ static const char* const kTwitterCDNAcceptableCerts[] = {
   kSPKIHash_UTNUSERFirstObject,
   kSPKIHash_GTECyberTrustGlobalRoot,
   kSPKIHash_BaltimoreCyberTrustRoot,
+  kSPKIHash_GlobalSignRootCA,
+  kSPKIHash_GlobalSignRootCA_R2,
+  kSPKIHash_GlobalSignRootCA_R3,
   NULL,
 };
 #define kTwitterCDNPins { \
@@ -714,8 +729,7 @@ static const struct HSTSPreload kPreloadedSTS[] = {
   {17, true, "\003dev\007twitter\003com", false, kTwitterComPins, DOMAIN_TWITTER_COM },
   {22, true, "\010business\007twitter\003com", false, kTwitterComPins, DOMAIN_TWITTER_COM },
   {22, true, "\010platform\007twitter\003com", false, kTwitterCDNPins, DOMAIN_TWITTER_COM },
-  {15, true, "\003si0\005twimg\003com", false, kTwitterCDNPins, DOMAIN_TWIMG_COM },
-  {23, true, "\010twimg0-a\010akamaihd\003net", false, kTwitterCDNPins, DOMAIN_AKAMAIHD_NET },
+  {11, true, "\005twimg\003com", false, kTwitterCDNPins, DOMAIN_TWIMG_COM },
   {22, true, "\020braintreegateway\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {23, false, "\021braintreepayments\003com", true, kNoPins, DOMAIN_NOT_PINNED },
   {27, false, "\003www\021braintreepayments\003com", true, kNoPins, DOMAIN_NOT_PINNED },
