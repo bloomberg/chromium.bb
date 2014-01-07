@@ -14,9 +14,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/browser_test_utils.h"
 #include "url/gurl.h"
 #include "ipc/ipc_message_macros.h"
 
@@ -209,11 +208,9 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // Reload the initiator. Make sure reloading destroys the print preview
   // dialog.
   PrintPreviewDialogDestroyedObserver dialog_destroyed_observer(preview_dialog);
-  content::WindowedNotificationObserver notification_observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::NotificationService::AllSources());
   chrome::Reload(browser(), CURRENT_TAB);
-  notification_observer.Wait();
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
   ASSERT_TRUE(dialog_destroyed_observer.dialog_destroyed());
 
   // Try printing again.
