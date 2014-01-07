@@ -131,9 +131,6 @@ static bool rulesApplicableInCurrentTreeScope(const Element* element, const Cont
     // d) the rules comes from a scoped style sheet within an active shadow root whose host is the given element
     if (element->isInShadowTree() && (behaviorAtBoundary & SelectorChecker::ScopeIsShadowHost) && scopingNode == element->containingShadowRoot()->host())
         return true;
-    // e) the rules can cross boundaries
-    if ((behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) == SelectorChecker::CrossesBoundary)
-        return true;
     return false;
 }
 

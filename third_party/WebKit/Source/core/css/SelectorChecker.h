@@ -49,14 +49,14 @@ public:
     explicit SelectorChecker(Document&, Mode);
     enum BehaviorAtBoundary {
         DoesNotCrossBoundary = 0,
-        CrossesBoundary = 1,
+        // FIXME: refactor to remove BoundaryBehavior (i.e. DoesNotCrossBoundary and StaysWithinTreeScope).
         StaysWithinTreeScope = 2,
         BoundaryBehaviorMask = 3, // 2bit for boundary behavior
         ScopeContainsLastMatchedElement = 4,
         ScopeIsShadowHost = 8,
         TreatShadowHostAsNormalScope = 16,
 
-        ScopeIsShadowHostInPseudoHostParameter = CrossesBoundary | ScopeIsShadowHost | TreatShadowHostAsNormalScope
+        ScopeIsShadowHostInPseudoHostParameter = ScopeIsShadowHost | TreatShadowHostAsNormalScope
     };
 
     enum MatchingTagType {
@@ -133,7 +133,7 @@ private:
     Match matchForShadowDistributed(const Element*, const SiblingTraversalStrategy&, SelectorCheckingContext& nextContext, MatchResult* = 0) const;
 
     bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector*) const;
-    Element* parentElement(const SelectorCheckingContext&) const;
+    Element* parentElement(const SelectorCheckingContext&, bool allowToCrossBoundary = false) const;
     bool scopeContainsLastMatchedElement(const SelectorCheckingContext&) const;
 
     static bool isFrameFocused(const Element&);

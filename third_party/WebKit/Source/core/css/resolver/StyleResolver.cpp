@@ -420,7 +420,7 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
         --it;
         const ContainerNode* scopingNode = toContainerNode(*it);
         RuleSet* ruleSet = m_treeBoundaryCrossingRules.ruleSetScopedBy(scopingNode);
-        unsigned boundaryBehavior = SelectorChecker::CrossesBoundary | SelectorChecker::ScopeContainsLastMatchedElement;
+        unsigned boundaryBehavior = SelectorChecker::ScopeContainsLastMatchedElement;
 
         // If a given scoping node is a shadow root and a given element is in a descendant tree of tree hosted by
         // the scoping node's shadow host, we should use ScopeIsShadowHost.

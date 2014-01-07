@@ -76,10 +76,10 @@ static bool matchesCustomPseudoElement(const Element* element, const CSSSelector
     return true;
 }
 
-Element* SelectorChecker::parentElement(const SelectorCheckingContext& context) const
+Element* SelectorChecker::parentElement(const SelectorCheckingContext& context, bool allowToCrossBoundary) const
 {
     // CrossesBoundary means we don't care any context.scope. So we can walk up from a shadow root to its shadow host.
-    if ((context.behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) == SelectorChecker::CrossesBoundary)
+    if (allowToCrossBoundary)
         return context.element->parentOrShadowHostElement();
 
     // If context.scope is not a shadow host, we cannot walk up from a shadow root to its shadow host.
@@ -307,7 +307,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
         {
             nextContext.isSubSelector = false;
             nextContext.elementStyle = 0;
-            for (nextContext.element = parentElement(context); nextContext.element; nextContext.element = parentElement(nextContext)) {
+            for (nextContext.element = parentElement(context, true); nextContext.element; nextContext.element = parentElement(nextContext, true)) {
                 Match match = this->match(nextContext, siblingTraversalStrategy, result);
                 if (match == SelectorMatches || match == SelectorFailsCompletely)
                     return match;
@@ -836,7 +836,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
 
         case CSSSelector::PseudoScope:
             {
-                const Node* contextualReferenceNode = !context.scope || (context.behaviorAtBoundary & BoundaryBehaviorMask) == CrossesBoundary ? element.document().documentElement() : context.scope;
+                const Node* contextualReferenceNode = !context.scope ? element.document().documentElement() : context.scope;
                 if (element == contextualReferenceNode)
                     return true;
                 break;
@@ -878,7 +878,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                             maxSpecificity = std::max(maxSpecificity, subContext.selector->specificity() + subResult.specificity);
                             break;
                         }
-                        subContext.behaviorAtBoundary = CrossesBoundary;
+                        subContext.behaviorAtBoundary = DoesNotCrossBoundary;
                         subContext.scope = 0;
                     }
                 }

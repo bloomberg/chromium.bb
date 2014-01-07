@@ -368,6 +368,22 @@ borderColorShouldNotBe('child', 'rgb(255, 0, 0)');
 
 cleanUp();
 
+// Test for crbug.com/331871. 'div#inner h1' should not cross TreeScope boundary.
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div#outer ^^ div#inner h1 { border: 1px solid red; }')),
+        createDOM('div', {'id': 'outer'},
+            createDOM('div', {'id': 'inner'},
+                createShadowRoot(
+                    createDOM('h1', {'id': 'target'},
+                        document.createTextNode('no red border')))))));
+
+borderColorShouldNotBe('inner/target', 'rgb(255, 0, 0)');
+
+cleanUp();
+
 </script>
 </html>
 
