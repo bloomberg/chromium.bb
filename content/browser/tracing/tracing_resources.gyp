@@ -63,7 +63,6 @@
           'outputs': [
             '<(grit_out_dir)/grit/tracing_resources.h',
             '<(grit_out_dir)/tracing_resources.pak',
-            '<(grit_out_dir)/tracing_resources.rc',
           ],
           'action': ['<@(grit_cmd)',
                      '-i', '<(grit_grd_file)', 'build',

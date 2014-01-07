@@ -22,7 +22,6 @@ kGrdTemplate = '''<?xml version="1.0" encoding="UTF-8"?>
       <emit emit_type='prepend'></emit>
     </output>
     <output filename="tracing_resources.pak" type="data_package" />
-    <output filename="tracing_resources.rc" type="rc_all" />
   </outputs>
   <release seq="1">
     <includes>
