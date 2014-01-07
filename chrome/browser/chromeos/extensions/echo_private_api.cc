@@ -170,7 +170,7 @@ bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileThread() {
 
   const char kOobeTimestampFile[] = "/home/chronos/.oobe_completed";
   std::string timestamp = "";
-  base::PlatformFileInfo fileInfo;
+  base::File::Info fileInfo;
   if (base::GetFileInfo(base::FilePath(kOobeTimestampFile), &fileInfo)) {
     base::Time::Exploded ctime;
     fileInfo.creation_time.UTCExplode(&ctime);

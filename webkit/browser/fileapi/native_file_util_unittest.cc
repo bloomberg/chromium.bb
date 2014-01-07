@@ -36,7 +36,7 @@ class NativeFileUtilTest : public testing::Test {
   }
 
   int64 GetSize(const base::FilePath& path) {
-    base::PlatformFileInfo info;
+    base::File::Info info;
     base::GetFileInfo(path, &info);
     return info.size;
   }
@@ -125,7 +125,7 @@ TEST_F(NativeFileUtilTest, TouchFileAndGetFileInfo) {
             NativeFileUtil::EnsureFileExists(file_name, &created));
   ASSERT_TRUE(created);
 
-  base::PlatformFileInfo info;
+  base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(file_name, &info));
   ASSERT_EQ(base::PLATFORM_FILE_OK,
             NativeFileUtil::GetFileInfo(file_name, &native_info));

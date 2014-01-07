@@ -91,7 +91,7 @@ bool DeleteFile(const FilePath& path, bool recursive) {
   if (!recursive) {
     // If not recursing, then first check to see if |path| is a directory.
     // If it is, then remove it with RemoveDirectory.
-    PlatformFileInfo file_info;
+    File::Info file_info;
     if (GetFileInfo(path, &file_info) && file_info.is_directory)
       return RemoveDirectory(path.value().c_str()) != 0;
 
@@ -143,7 +143,7 @@ bool DeleteFileAfterReboot(const FilePath& path) {
 
 bool ReplaceFile(const FilePath& from_path,
                  const FilePath& to_path,
-                 PlatformFileError* error) {
+                 File::Error* error) {
   ThreadRestrictions::AssertIOAllowed();
   // Try a simple move first.  It will only succeed when |to_path| doesn't
   // already exist.
@@ -158,7 +158,7 @@ bool ReplaceFile(const FilePath& from_path,
     return true;
   }
   if (error)
-    *error = LastErrorToPlatformFileError(GetLastError());
+    *error = File::OSErrorToFileError(GetLastError());
   return false;
 }
 
@@ -328,7 +328,7 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
 }
 
 bool CreateDirectoryAndGetError(const FilePath& full_path,
-                                PlatformFileError* error) {
+                                File::Error* error) {
   ThreadRestrictions::AssertIOAllowed();
 
   // If the path exists, we've succeeded if it's a directory, failed otherwise.
@@ -343,7 +343,7 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
     DLOG(WARNING) << "CreateDirectory(" << full_path_str << "), "
                   << "conflicts with existing file.";
     if (error) {
-      *error = PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+      *error = File::FILE_ERROR_NOT_A_DIRECTORY;
     }
     return false;
   }
@@ -356,14 +356,14 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   FilePath parent_path(full_path.DirName());
   if (parent_path.value() == full_path.value()) {
     if (error) {
-      *error = PLATFORM_FILE_ERROR_NOT_FOUND;
+      *error = File::FILE_ERROR_NOT_FOUND;
     }
     return false;
   }
   if (!CreateDirectoryAndGetError(parent_path, error)) {
     DLOG(WARNING) << "Failed to create one of the parent directories.";
     if (error) {
-      DCHECK(*error != PLATFORM_FILE_OK);
+      DCHECK(*error != File::FILE_OK);
     }
     return false;
   }
@@ -378,7 +378,7 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
       return true;
     } else {
       if (error)
-        *error = LastErrorToPlatformFileError(error_code);
+        *error = File::OSErrorToFileError(error_code);
       DLOG(WARNING) << "Failed to create directory " << full_path_str
                     << ", last error is " << error_code << ".";
       return false;
@@ -505,7 +505,7 @@ bool IsLink(const FilePath& file_path) {
   return false;
 }
 
-bool GetFileInfo(const FilePath& file_path, PlatformFileInfo* results) {
+bool GetFileInfo(const FilePath& file_path, File::Info* results) {
   ThreadRestrictions::AssertIOAllowed();
 
   WIN32_FILE_ATTRIBUTE_DATA attr;

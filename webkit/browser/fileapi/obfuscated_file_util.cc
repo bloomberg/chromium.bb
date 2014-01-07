@@ -647,7 +647,7 @@ PlatformFileError ObfuscatedFileUtil::CopyInForeignFile(
   if (!db)
     return base::PLATFORM_FILE_ERROR_FAILED;
 
-  base::PlatformFileInfo src_platform_file_info;
+  base::File::Info src_platform_file_info;
   if (!base::GetFileInfo(src_file_path, &src_platform_file_info))
     return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 

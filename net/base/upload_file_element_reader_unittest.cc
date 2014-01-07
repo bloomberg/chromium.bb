@@ -204,7 +204,7 @@ TEST_F(UploadFileElementReaderTest, Range) {
 }
 
 TEST_F(UploadFileElementReaderTest, FileChanged) {
-  base::PlatformFileInfo info;
+  base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(temp_file_path_, &info));
 
   // Expect one second before the actual modification time to simulate change.
@@ -349,7 +349,7 @@ TEST_F(UploadFileElementReaderSyncTest, Range) {
 }
 
 TEST_F(UploadFileElementReaderSyncTest, FileChanged) {
-  base::PlatformFileInfo info;
+  base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(temp_file_path_, &info));
 
   // Expect one second before the actual modification time to simulate change.

@@ -337,7 +337,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestFlush) {
   // File timestamps don't work well on all platforms, so we'll determine
   // whether the DB file has been modified by checking its size.
   base::FilePath path = temp_dir_.path().Append(kCookieFilename);
-  base::PlatformFileInfo info;
+  base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(path, &info));
   int64 base_size = info.size;
 

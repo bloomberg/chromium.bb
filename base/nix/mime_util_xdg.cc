@@ -387,7 +387,7 @@ bool IconTheme::SetDirectories(const std::string& dirs) {
 bool CheckDirExistsAndGetMtime(const FilePath& dir, Time* last_modified) {
   if (!DirectoryExists(dir))
     return false;
-  PlatformFileInfo file_info;
+  File::Info file_info;
   if (!GetFileInfo(dir, &file_info))
     return false;
   *last_modified = file_info.last_modified;

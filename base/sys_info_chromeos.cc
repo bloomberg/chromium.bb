@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/environment.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
@@ -71,7 +72,7 @@ class ChromeOSVersionInfo {
       ThreadRestrictions::ScopedAllowIO allow_io;
       FilePath path(kLinuxStandardBaseReleaseFile);
       ReadFileToString(path, &lsb_release);
-      PlatformFileInfo fileinfo;
+      File::Info fileinfo;
       if (GetFileInfo(path, &fileinfo))
         lsb_release_time_ = fileinfo.creation_time;
     }

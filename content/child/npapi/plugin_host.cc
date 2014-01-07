@@ -469,7 +469,7 @@ static NPError PostURLNotify(NPP id,
       file_path = base::FilePath::FromUTF8Unsafe(file_path_ascii);
     }
 
-    base::PlatformFileInfo post_file_info;
+    base::File::Info post_file_info;
     if (!base::GetFileInfo(file_path, &post_file_info) ||
         post_file_info.is_directory)
       return NPERR_FILE_NOT_FOUND;

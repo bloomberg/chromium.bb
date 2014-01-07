@@ -485,25 +485,6 @@ TEST_F(FileUtilTest, DevicePathToDriveLetter) {
       &win32_path));
 }
 
-TEST_F(FileUtilTest, GetPlatformFileInfoForDirectory) {
-  FilePath empty_dir = temp_dir_.path().Append(FPL("gpfi_test"));
-  ASSERT_TRUE(CreateDirectory(empty_dir));
-  win::ScopedHandle dir(
-      ::CreateFile(empty_dir.value().c_str(),
-                   FILE_ALL_ACCESS,
-                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                   NULL,
-                   OPEN_EXISTING,
-                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
-                   NULL));
-  ASSERT_TRUE(dir.IsValid());
-  PlatformFileInfo info;
-  EXPECT_TRUE(GetPlatformFileInfo(dir.Get(), &info));
-  EXPECT_TRUE(info.is_directory);
-  EXPECT_FALSE(info.is_symbolic_link);
-  EXPECT_EQ(0, info.size);
-}
-
 TEST_F(FileUtilTest, CreateTemporaryFileInDirLongPathTest) {
   // Test that CreateTemporaryFileInDir() creates a path and returns a long path
   // if it is available. This test requires that:
@@ -1912,7 +1893,7 @@ TEST_F(FileUtilTest, TouchFile) {
               &modification_time));
 
   ASSERT_TRUE(TouchFile(foobar, access_time, modification_time));
-  PlatformFileInfo file_info;
+  File::Info file_info;
   ASSERT_TRUE(GetFileInfo(foobar, &file_info));
   EXPECT_EQ(file_info.last_accessed.ToInternalValue(),
             access_time.ToInternalValue());

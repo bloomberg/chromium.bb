@@ -554,7 +554,7 @@ TEST_F(UploadDataStreamTest, FileChanged) {
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   ASSERT_TRUE(base::GetFileInfo(temp_file_path, &file_info));
 
   // Test file not changed.

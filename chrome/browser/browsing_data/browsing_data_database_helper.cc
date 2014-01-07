@@ -87,7 +87,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoOnFileThread() {
            db != databases.end(); ++db) {
         base::FilePath file_path =
             tracker_->GetFullDBFilePath(ori->GetOriginIdentifier(), *db);
-        base::PlatformFileInfo file_info;
+        base::File::Info file_info;
         if (base::GetFileInfo(file_path, &file_info)) {
           database_info_.push_back(DatabaseInfo(
                 identifier,

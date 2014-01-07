@@ -56,7 +56,7 @@ void FindMostRecentDatabase(
     if (db_path.empty())
       continue;
 
-    base::PlatformFileInfo file_info;
+    base::File::Info file_info;
     if (!base::GetFileInfo(db_path, &file_info))
       continue;
 

@@ -158,7 +158,7 @@ base::PlatformFileError ITunesFileUtil::ReadDirectorySync(
   fileapi::VirtualPath::GetComponentsUTF8Unsafe(url.path(), &components);
 
   if (components.size() == 0) {
-    base::PlatformFileInfo xml_info;
+    base::File::Info xml_info;
     if (!base::GetFileInfo(GetDataProvider()->library_path(), &xml_info))
       return base::PLATFORM_FILE_ERROR_IO;
     file_list->push_back(DirectoryEntry(kITunesLibraryXML,
@@ -225,7 +225,7 @@ base::PlatformFileError ITunesFileUtil::ReadDirectorySync(
       return base::PLATFORM_FILE_ERROR_NOT_FOUND;
     ITunesDataProvider::Album::const_iterator it;
     for (it = album.begin(); it != album.end(); ++it) {
-      base::PlatformFileInfo file_info;
+      base::File::Info file_info;
       if (media_path_filter()->Match(it->second) &&
           base::GetFileInfo(it->second, &file_info)) {
         file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,

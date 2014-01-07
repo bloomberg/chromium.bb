@@ -48,7 +48,8 @@ void FileUtilitiesMessageFilter::OnGetFileInfo(
     return;
   }
 
-  if (!base::GetFileInfo(path, result))
+  // TODO(rvargas): convert this code to use base::File.
+  if (!base::GetFileInfo(path, reinterpret_cast<base::File::Info*>(result)))
     *status = base::PLATFORM_FILE_ERROR_FAILED;
 }
 

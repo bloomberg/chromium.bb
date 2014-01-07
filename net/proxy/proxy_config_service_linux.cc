@@ -884,8 +884,8 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
         base::FilePath kde4_config = KDEHomeToConfigPath(kde4_path);
         bool use_kde4 = false;
         if (base::DirectoryExists(kde4_path)) {
-          base::PlatformFileInfo kde3_info;
-          base::PlatformFileInfo kde4_info;
+          base::File::Info kde3_info;
+          base::File::Info kde4_info;
           if (base::GetFileInfo(kde4_config, &kde4_info)) {
             if (base::GetFileInfo(kde3_config, &kde3_info)) {
               use_kde4 = kde4_info.last_modified >= kde3_info.last_modified;

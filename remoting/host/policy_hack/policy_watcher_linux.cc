@@ -100,7 +100,7 @@ class PolicyWatcherLinux : public PolicyWatcher {
   base::Time GetLastModification() {
     DCHECK(OnPolicyWatcherThread());
     base::Time last_modification = base::Time();
-    base::PlatformFileInfo file_info;
+    base::File::Info file_info;
 
     // If the path does not exist or points to a directory, it's safe to load.
     if (!base::GetFileInfo(config_dir_, &file_info) ||

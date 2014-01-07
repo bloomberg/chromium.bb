@@ -374,3 +374,28 @@ TEST(File, ReadFileAtCurrentPosition) {
   EXPECT_EQ(std::string(buffer, buffer + kDataSize),
             std::string(kData));
 }
+
+#if defined(OS_WIN)
+TEST(File, GetInfoForDirectory) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath empty_dir = temp_dir.path().Append(FILE_PATH_LITERAL("gpfi_test"));
+  ASSERT_TRUE(CreateDirectory(empty_dir));
+
+  base::File dir(
+      ::CreateFile(empty_dir.value().c_str(),
+                   FILE_ALL_ACCESS,
+                   FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+                   NULL,
+                   OPEN_EXISTING,
+                   FILE_FLAG_BACKUP_SEMANTICS,  // Needed to open a directory.
+                   NULL));
+  ASSERT_TRUE(dir.IsValid());
+
+  base::File::Info info;
+  EXPECT_TRUE(dir.GetInfo(&info));
+  EXPECT_TRUE(info.is_directory);
+  EXPECT_FALSE(info.is_symbolic_link);
+  EXPECT_EQ(0, info.size);
+}
+#endif  // defined(OS_WIN)

@@ -841,11 +841,15 @@ Status ChromiumEnv::DeleteFile(const std::string& fname) {
 
 Status ChromiumEnv::CreateDir(const std::string& name) {
   Status result;
+  // TODO(rvargas): convert this code to base::File::Error.
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   Retrier retrier(kCreateDir, this);
   do {
-    if (base::CreateDirectoryAndGetError(CreateFilePath(name), &error))
+    if (base::CreateDirectoryAndGetError(
+            CreateFilePath(name),
+            reinterpret_cast<base::File::Error*>(&error))) {
       return result;
+    }
   } while (retrier.ShouldKeepTrying(error));
   result = MakeIOError(name, "Could not create directory.", kCreateDir, error);
   RecordOSError(kCreateDir, error);
@@ -883,10 +887,13 @@ Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
   base::FilePath destination = CreateFilePath(dst);
 
   Retrier retrier(kRenameFile, this);
+  // TODO(rvargas): convert this code to base::File::Error.
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   do {
-    if (base::ReplaceFile(src_file_path, destination, &error))
+    if (base::ReplaceFile(src_file_path, destination, 
+                          reinterpret_cast<base::File::Error*>(&error))) {
       return result;
+    }
   } while (retrier.ShouldKeepTrying(error));
 
   DCHECK(error != base::PLATFORM_FILE_OK);

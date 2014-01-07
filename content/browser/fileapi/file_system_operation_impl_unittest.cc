@@ -158,7 +158,7 @@ class FileSystemOperationImplTest
   }
 
   int64 GetFileSize(const std::string& path) {
-    base::PlatformFileInfo info;
+    base::File::Info info;
     EXPECT_TRUE(base::GetFileInfo(PlatformPath(path), &info));
     return info.size;
   }
@@ -1106,7 +1106,7 @@ TEST_F(FileSystemOperationImplTest, TestTouchFile) {
   FileSystemURL file(CreateFile("file"));
   base::FilePath platform_path = PlatformPath("file");
 
-  base::PlatformFileInfo info;
+  base::File::Info info;
   EXPECT_TRUE(base::GetFileInfo(platform_path, &info));
   EXPECT_FALSE(info.is_directory);
   EXPECT_EQ(0, info.size);

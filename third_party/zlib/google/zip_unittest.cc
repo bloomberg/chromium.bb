@@ -144,7 +144,7 @@ class ZipTest : public PlatformTest {
     EXPECT_TRUE(zip::Zip(src_dir, zip_file, true));
     ASSERT_TRUE(zip::Unzip(zip_file, out_dir));
 
-    base::PlatformFileInfo file_info;
+    base::File::Info file_info;
     EXPECT_TRUE(base::GetFileInfo(out_file, &file_info));
     EXPECT_EQ(file_info.size, 1);
 

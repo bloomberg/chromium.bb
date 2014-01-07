@@ -1635,7 +1635,7 @@ TEST_F(SafeBrowsingDatabaseTest, EmptyUpdate) {
 
   // Get an older time to reset the lastmod time for detecting whether
   // the file has been updated.
-  base::PlatformFileInfo before_info, after_info;
+  base::File::Info before_info, after_info;
   ASSERT_TRUE(base::GetFileInfo(filename, &before_info));
   const base::Time old_last_modified =
       before_info.last_modified - base::TimeDelta::FromSeconds(10);

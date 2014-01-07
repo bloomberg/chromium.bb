@@ -13,8 +13,8 @@ namespace installer {
 
 bool IsIdenticalFileHierarchy(const base::FilePath& src_path,
                               const base::FilePath& dest_path) {
-  base::PlatformFileInfo src_info;
-  base::PlatformFileInfo dest_info;
+  base::File::Info src_info;
+  base::File::Info dest_info;
 
   bool is_identical = false;
   if (base::GetFileInfo(src_path, &src_info) &&

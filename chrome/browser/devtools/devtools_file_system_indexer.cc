@@ -28,7 +28,6 @@ using base::TimeTicks;
 using base::PassPlatformFile;
 using base::PlatformFile;
 using base::PlatformFileError;
-using base::PlatformFileInfo;
 using content::BrowserThread;
 using std::map;
 using std::set;

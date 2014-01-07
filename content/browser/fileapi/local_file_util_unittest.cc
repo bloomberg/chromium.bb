@@ -84,7 +84,7 @@ class LocalFileUtilTest : public testing::Test {
   }
 
   int64 GetSize(const char *file_name) {
-    base::PlatformFileInfo info;
+    base::File::Info info;
     base::GetFileInfo(LocalPath(file_name), &info);
     return info.size;
   }
@@ -191,7 +191,7 @@ TEST_F(LocalFileUtilTest, TouchFile) {
 
   scoped_ptr<FileSystemOperationContext> context(NewContext());
 
-  base::PlatformFileInfo info;
+  base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(LocalPath(file_name), &info));
   const base::Time new_accessed =
       info.last_accessed + base::TimeDelta::FromHours(10);
@@ -219,7 +219,7 @@ TEST_F(LocalFileUtilTest, TouchDirectory) {
                                         false /* exclusive */,
                                         false /* recursive */));
 
-  base::PlatformFileInfo info;
+  base::File::Info info;
   ASSERT_TRUE(base::GetFileInfo(LocalPath(dir_name), &info));
   const base::Time new_accessed =
       info.last_accessed + base::TimeDelta::FromHours(10);

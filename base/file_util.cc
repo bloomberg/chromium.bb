@@ -166,7 +166,7 @@ bool CreateDirectory(const FilePath& full_path) {
 }
 
 bool GetFileSize(const FilePath& file_path, int64* file_size) {
-  PlatformFileInfo info;
+  File::Info info;
   if (!GetFileInfo(file_path, &info))
     return false;
   *file_size = info.size;
@@ -176,22 +176,19 @@ bool GetFileSize(const FilePath& file_path, int64* file_size) {
 bool TouchFile(const FilePath& path,
                const Time& last_accessed,
                const Time& last_modified) {
-  int flags = PLATFORM_FILE_OPEN | PLATFORM_FILE_WRITE_ATTRIBUTES;
+  int flags = File::FLAG_OPEN | File::FLAG_WRITE_ATTRIBUTES;
 
 #if defined(OS_WIN)
   // On Windows, FILE_FLAG_BACKUP_SEMANTICS is needed to open a directory.
   if (DirectoryExists(path))
-    flags |= PLATFORM_FILE_BACKUP_SEMANTICS;
+    flags |= File::FLAG_BACKUP_SEMANTICS;
 #endif  // OS_WIN
 
-  const PlatformFile file = CreatePlatformFile(path, flags, NULL, NULL);
-  if (file != kInvalidPlatformFileValue) {
-    bool result = TouchPlatformFile(file, last_accessed, last_modified);
-    ClosePlatformFile(file);
-    return result;
-  }
+  File file(path, flags);
+  if (!file.IsValid())
+    return false;
 
-  return false;
+  return file.SetTimes(last_accessed, last_modified);
 }
 
 bool CloseFile(FILE* file) {

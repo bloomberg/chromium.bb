@@ -3099,7 +3099,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheCreateDoomRace) {
   for (int i = 0; i < disk_cache::kSimpleEntryFileCount; ++i) {
     base::FilePath entry_file_path = cache_path_.AppendASCII(
         disk_cache::simple_util::GetFilenameFromKeyAndFileIndex(key, i));
-    base::PlatformFileInfo info;
+    base::File::Info info;
     EXPECT_FALSE(base::GetFileInfo(entry_file_path, &info));
   }
 }

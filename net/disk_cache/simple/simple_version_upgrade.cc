@@ -11,6 +11,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/pickle.h"
+#include "base/platform_file.h"
 #include "net/disk_cache/simple/simple_backend_version.h"
 #include "net/disk_cache/simple/simple_entry_format_history.h"
 #include "third_party/zlib/zlib.h"

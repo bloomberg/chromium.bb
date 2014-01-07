@@ -297,7 +297,7 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const GURL& origin_url) {
   if (data_path_.empty() || !IsInOriginSet(origin_url))
     return base::Time();
   base::FilePath idb_directory = GetFilePath(origin_url);
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   if (!base::GetFileInfo(idb_directory, &file_info))
     return base::Time();
   return file_info.last_modified;

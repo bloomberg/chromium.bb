@@ -239,7 +239,7 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     const FileSystemURL& url = file_urls[i];
 
     // Check if this file system entry exists first.
-    base::PlatformFileInfo file_info;
+    base::File::Info file_info;
 
     base::FilePath local_path = url.path();
     base::FilePath virtual_path = url.virtual_path();

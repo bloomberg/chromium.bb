@@ -225,7 +225,7 @@ TEST_F(FileUtilProxyTest, CreateTemporary) {
 TEST_F(FileUtilProxyTest, GetFileInfo_File) {
   // Setup.
   ASSERT_EQ(4, file_util::WriteFile(test_path(), "test", 4));
-  PlatformFileInfo expected_info;
+  File::Info expected_info;
   GetFileInfo(test_path(), &expected_info);
 
   // Run.
@@ -248,7 +248,7 @@ TEST_F(FileUtilProxyTest, GetFileInfo_File) {
 TEST_F(FileUtilProxyTest, GetFileInfo_Directory) {
   // Setup.
   ASSERT_TRUE(base::CreateDirectory(test_path()));
-  PlatformFileInfo expected_info;
+  File::Info expected_info;
   GetFileInfo(test_path(), &expected_info);
 
   // Run.
@@ -341,7 +341,7 @@ TEST_F(FileUtilProxyTest, Touch) {
   MessageLoop::current()->Run();
   EXPECT_EQ(PLATFORM_FILE_OK, error_);
 
-  PlatformFileInfo info;
+  File::Info info;
   GetFileInfo(test_path(), &info);
 
   // The returned values may only have the seconds precision, so we cast
@@ -356,7 +356,7 @@ TEST_F(FileUtilProxyTest, Truncate_Shrink) {
   // Setup.
   const char kTestData[] = "0123456789";
   ASSERT_EQ(10, file_util::WriteFile(test_path(), kTestData, 10));
-  PlatformFileInfo info;
+  File::Info info;
   GetFileInfo(test_path(), &info);
   ASSERT_EQ(10, info.size);
 
@@ -383,7 +383,7 @@ TEST_F(FileUtilProxyTest, Truncate_Expand) {
   // Setup.
   const char kTestData[] = "9876543210";
   ASSERT_EQ(10, file_util::WriteFile(test_path(), kTestData, 10));
-  PlatformFileInfo info;
+  File::Info info;
   GetFileInfo(test_path(), &info);
   ASSERT_EQ(10, info.size);
 

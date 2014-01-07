@@ -53,7 +53,7 @@ zip_fileinfo TimeToZipFileInfo(const base::Time& file_time) {
 // Returns a zip_fileinfo with the last modification date of |path| set.
 zip_fileinfo GetFileInfoForZipping(const base::FilePath& path) {
   base::Time file_time;
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   if (base::GetFileInfo(path, &file_info))
     file_time = file_info.last_modified;
   return TimeToZipFileInfo(file_time);

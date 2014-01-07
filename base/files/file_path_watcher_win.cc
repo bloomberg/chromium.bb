@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -148,7 +149,7 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
   }
 
   // Check whether the event applies to |target_| and notify the callback.
-  PlatformFileInfo file_info;
+  File::Info file_info;
   bool file_exists = GetFileInfo(target_, &file_info);
   if (file_exists && (last_modified_.is_null() ||
       last_modified_ != file_info.last_modified)) {
@@ -229,7 +230,7 @@ bool FilePathWatcherImpl::UpdateWatch() {
   if (handle_ != INVALID_HANDLE_VALUE)
     DestroyWatch();
 
-  PlatformFileInfo file_info;
+  File::Info file_info;
   if (GetFileInfo(target_, &file_info)) {
     last_modified_ = file_info.last_modified;
     first_notification_ = Time::Now();

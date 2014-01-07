@@ -230,7 +230,7 @@ class GeneratedBackgroundPageJob : public net::URLRequestSimpleJob {
 
 base::Time GetFileLastModifiedTime(const base::FilePath& filename) {
   if (base::PathExists(filename)) {
-    base::PlatformFileInfo info;
+    base::File::Info info;
     if (base::GetFileInfo(filename, &info))
       return info.last_modified;
   }
@@ -239,7 +239,7 @@ base::Time GetFileLastModifiedTime(const base::FilePath& filename) {
 
 base::Time GetFileCreationTime(const base::FilePath& filename) {
   if (base::PathExists(filename)) {
-    base::PlatformFileInfo info;
+    base::File::Info info;
     if (base::GetFileInfo(filename, &info))
       return info.creation_time;
   }

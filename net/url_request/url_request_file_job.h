@@ -17,7 +17,6 @@
 #include "net/url_request/url_request_job.h"
 
 namespace base{
-struct PlatformFileInfo;
 class TaskRunner;
 }
 namespace file_util {

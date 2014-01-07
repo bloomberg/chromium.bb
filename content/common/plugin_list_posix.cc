@@ -545,7 +545,7 @@ void PluginList::GetPluginsInDir(
     }
 
     // Get mtime.
-    base::PlatformFileInfo info;
+    base::File::Info info;
     if (!base::GetFileInfo(path, &info))
       continue;
 

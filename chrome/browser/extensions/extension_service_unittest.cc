@@ -554,7 +554,7 @@ void ExtensionServiceTestBase::InitializeInstalledExtensionService(
   base::FilePath path = temp_dir_.path();
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
   EXPECT_TRUE(base::DeleteFile(path, true));
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   EXPECT_TRUE(base::CreateDirectoryAndGetError(path, &error)) << error;
   base::FilePath temp_prefs = path.Append(FILE_PATH_LITERAL("Preferences"));
   EXPECT_TRUE(base::CopyFile(prefs_file, temp_prefs));
@@ -632,7 +632,7 @@ ExtensionServiceTestBase::CreateDefaultInitParamsInTempDir(
   base::FilePath path = temp_dir->path();
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
   EXPECT_TRUE(base::DeleteFile(path, true));
-  base::PlatformFileError error = base::PLATFORM_FILE_OK;
+  base::File::Error error = base::File::FILE_OK;
   EXPECT_TRUE(base::CreateDirectoryAndGetError(path, &error)) << error;
   base::FilePath prefs_filename =
       path.Append(FILE_PATH_LITERAL("TestPreferences"));

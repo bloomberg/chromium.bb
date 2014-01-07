@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/task_runner.h"
@@ -111,7 +112,8 @@ class GetFileInfoHelper {
       error_ = PLATFORM_FILE_ERROR_NOT_FOUND;
       return;
     }
-    if (!GetFileInfo(file_path, &file_info_))
+    // TODO(rvargas): switch this file to base::File.
+    if (!GetFileInfo(file_path, reinterpret_cast<File::Info*>(&file_info_)))
       error_ = PLATFORM_FILE_ERROR_FAILED;
   }
 

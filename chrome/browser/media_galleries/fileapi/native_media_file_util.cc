@@ -653,7 +653,7 @@ NativeMediaFileUtil::GetFilteredLocalFilePathForExistingFileOrDirectory(
 
   if (!base::PathExists(file_path))
     return failure_error;
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   if (!base::GetFileInfo(file_path, &file_info))
     return base::PLATFORM_FILE_ERROR_FAILED;
 

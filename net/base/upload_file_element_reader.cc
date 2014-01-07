@@ -61,7 +61,7 @@ int InitInternal(const base::FilePath& path,
   // from WebKit is based on time_t precision. So we have to convert both to
   // time_t to compare. This check is used for sliced files.
   if (!expected_modification_time.is_null()) {
-    base::PlatformFileInfo info;
+    base::File::Info info;
     if (!base::GetFileInfo(path, &info)) {
       DLOG(WARNING) << "Failed to get file info of \"" << path.value() << "\"";
       return ERR_FILE_NOT_FOUND;

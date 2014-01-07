@@ -95,7 +95,7 @@ void ProcessEntryFile(SimpleIndex::EntrySet* entries,
     return;
   }
 
-  base::PlatformFileInfo file_info;
+  base::File::Info file_info;
   if (!base::GetFileInfo(file_path, &file_info)) {
     LOG(ERROR) << "Could not get file info for " << file_path.value();
     return;
@@ -434,7 +434,7 @@ void SimpleIndexFile::SyncRestoreFromDisk(
     const base::FilePath& cache_directory,
     const base::FilePath& index_file_path,
     SimpleIndexLoadResult* out_result) {
-  LOG(INFO) << "Simple Cache Index is being restored from disk.";
+  VLOG(1) << "Simple Cache Index is being restored from disk.";
   base::DeleteFile(index_file_path, /* recursive = */ false);
   out_result->Reset();
   SimpleIndex::EntrySet* entries = &out_result->entries;

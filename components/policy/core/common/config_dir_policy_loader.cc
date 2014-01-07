@@ -92,7 +92,7 @@ base::Time ConfigDirPolicyLoader::LastModificationTime() {
   };
 
   base::Time last_modification = base::Time();
-  base::PlatformFileInfo info;
+  base::File::Info info;
 
   for (size_t i = 0; i < arraysize(kConfigDirSuffixes); ++i) {
     base::FilePath path(config_dir_.Append(kConfigDirSuffixes[i]));

@@ -248,7 +248,7 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
       for (std::map<std::string, base::FilePath>::const_iterator it =
                locations.begin();
            it != locations.end(); it++) {
-        base::PlatformFileInfo info;
+        base::File::Info info;
         if (!base::GetFileInfo(it->second, &info))
           return base::PLATFORM_FILE_ERROR_IO;
         file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,
@@ -263,7 +263,7 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
       for (std::map<std::string, base::FilePath>::const_iterator it =
                originals.begin();
            it != originals.end(); it++) {
-        base::PlatformFileInfo info;
+        base::File::Info info;
         if (!base::GetFileInfo(it->second, &info))
           return base::PLATFORM_FILE_ERROR_IO;
         file_list->push_back(DirectoryEntry(it->first, DirectoryEntry::FILE,

@@ -197,11 +197,11 @@ URLRequestFileJob::~URLRequestFileJob() {
 
 void URLRequestFileJob::FetchMetaInfo(const base::FilePath& file_path,
                                       FileMetaInfo* meta_info) {
-  base::PlatformFileInfo platform_info;
-  meta_info->file_exists = base::GetFileInfo(file_path, &platform_info);
+  base::File::Info file_info;
+  meta_info->file_exists = base::GetFileInfo(file_path, &file_info);
   if (meta_info->file_exists) {
-    meta_info->file_size = platform_info.size;
-    meta_info->is_directory = platform_info.is_directory;
+    meta_info->file_size = file_info.size;
+    meta_info->is_directory = file_info.is_directory;
   }
   // On Windows GetMimeTypeFromFile() goes to the registry. Thus it should be
   // done in WorkerPool.

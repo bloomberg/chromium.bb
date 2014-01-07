@@ -25,9 +25,9 @@
 
 #include "base/base_export.h"
 #include "base/basictypes.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/platform_file.h"
 #include "base/strings/string16.h"
 
 #if defined(OS_POSIX)
@@ -93,7 +93,7 @@ BASE_EXPORT bool Move(const FilePath& from_path, const FilePath& to_path);
 // Returns false on failure and sets *error appropriately, if it is non-NULL.
 BASE_EXPORT bool ReplaceFile(const FilePath& from_path,
                              const FilePath& to_path,
-                             PlatformFileError* error);
+                             File::Error* error);
 
 // Copies a single file. Use CopyDirectory to copy directories.
 // This function fails if either path contains traversal components ('..').
@@ -256,7 +256,7 @@ BASE_EXPORT bool CreateTemporaryDirInDir(const FilePath& base_dir,
 // Returns true on success, leaving *error unchanged.
 // Returns false on failure and sets *error appropriately, if it is non-NULL.
 BASE_EXPORT bool CreateDirectoryAndGetError(const FilePath& full_path,
-                                            PlatformFileError* error);
+                                            File::Error* error);
 
 // Backward-compatible convenience method for the above.
 BASE_EXPORT bool CreateDirectory(const FilePath& full_path);
@@ -292,7 +292,7 @@ BASE_EXPORT bool NormalizeToNativeFilePath(const FilePath& path,
 BASE_EXPORT bool IsLink(const FilePath& file_path);
 
 // Returns information about the given file path.
-BASE_EXPORT bool GetFileInfo(const FilePath& file_path, PlatformFileInfo* info);
+BASE_EXPORT bool GetFileInfo(const FilePath& file_path, File::Info* info);
 
 // Sets the time of the last access and the time of the last modification.
 BASE_EXPORT bool TouchFile(const FilePath& path,
@@ -311,7 +311,7 @@ BASE_EXPORT bool TruncateFile(FILE* file);
 
 // Reads the given number of bytes from the file into the buffer.  Returns
 // the number of read bytes, or -1 on error.
-BASE_EXPORT int ReadFile(const base::FilePath& filename, char* data, int size);
+BASE_EXPORT int ReadFile(const FilePath& filename, char* data, int size);
 
 }  // namespace base
 

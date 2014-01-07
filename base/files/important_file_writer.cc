@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/critical_closure.h"
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -63,25 +64,18 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
     return false;
   }
 
-  int flags = PLATFORM_FILE_OPEN | PLATFORM_FILE_WRITE;
-  PlatformFile tmp_file =
-      CreatePlatformFile(tmp_file_path, flags, NULL, NULL);
-  if (tmp_file == kInvalidPlatformFileValue) {
+  File tmp_file(tmp_file_path, File::FLAG_OPEN | File::FLAG_WRITE);
+  if (!tmp_file.IsValid()) {
     LogFailure(path, FAILED_OPENING, "could not open temporary file");
     return false;
   }
 
   // If this happens in the wild something really bad is going on.
   CHECK_LE(data.length(), static_cast<size_t>(kint32max));
-  int bytes_written = WritePlatformFile(
-      tmp_file, 0, data.data(), static_cast<int>(data.length()));
-  FlushPlatformFile(tmp_file);  // Ignore return value.
-
-  if (!ClosePlatformFile(tmp_file)) {
-    LogFailure(path, FAILED_CLOSING, "failed to close temporary file");
-    base::DeleteFile(tmp_file_path, false);
-    return false;
-  }
+  int bytes_written = tmp_file.Write(0, data.data(),
+                                     static_cast<int>(data.length()));
+  tmp_file.Flush();  // Ignore return value.
+  tmp_file.Close();
 
   if (bytes_written < static_cast<int>(data.length())) {
     LogFailure(path, FAILED_WRITING, "error writing, bytes_written=" +

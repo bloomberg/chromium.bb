@@ -40,7 +40,7 @@ double GetLastModifiedTimeOfExe() {
     LOG(WARNING) << "Failed to get base::FilePath object for FILE_EXE.";
     return saved_last_modified_time_of_exe;
   }
-  base::PlatformFileInfo exe_file_info;
+  base::File::Info exe_file_info;
   if (!base::GetFileInfo(exe_file_path, &exe_file_info)) {
     LOG(WARNING) << "Failed to get FileInfo object for FILE_EXE - "
                  << exe_file_path.value();

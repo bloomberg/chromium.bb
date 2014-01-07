@@ -611,7 +611,7 @@ void SafeBrowsingDatabaseNew::Init(const base::FilePath& filename_base) {
              << side_effect_free_whitelist_filename_.value();
 
     // If there is no database, the filter cannot be used.
-    base::PlatformFileInfo db_info;
+    base::File::Info db_info;
     if (base::GetFileInfo(side_effect_free_whitelist_filename_, &db_info)
         && db_info.size != 0) {
       const base::TimeTicks before = base::TimeTicks::Now();
@@ -1608,7 +1608,7 @@ void SafeBrowsingDatabaseNew::LoadPrefixSet() {
   DCHECK(!browse_prefix_set_filename_.empty());
 
   // If there is no database, the filter cannot be used.
-  base::PlatformFileInfo db_info;
+  base::File::Info db_info;
   if (!base::GetFileInfo(browse_filename_, &db_info) || db_info.size == 0)
     return;
 

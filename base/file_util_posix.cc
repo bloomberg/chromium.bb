@@ -244,12 +244,12 @@ bool DeleteFile(const FilePath& path, bool recursive) {
 
 bool ReplaceFile(const FilePath& from_path,
                  const FilePath& to_path,
-                 PlatformFileError* error) {
+                 File::Error* error) {
   ThreadRestrictions::AssertIOAllowed();
   if (rename(from_path.value().c_str(), to_path.value().c_str()) == 0)
     return true;
   if (error)
-    *error = ErrnoToPlatformFileError(errno);
+    *error = File::OSErrorToFileError(errno);
   return false;
 }
 
@@ -589,7 +589,7 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
 }
 
 bool CreateDirectoryAndGetError(const FilePath& full_path,
-                                PlatformFileError* error) {
+                                File::Error* error) {
   ThreadRestrictions::AssertIOAllowed();  // For call to mkdir().
   std::vector<FilePath> subpaths;
 
@@ -616,7 +616,7 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
     int saved_errno = errno;
     if (!DirectoryExists(*i)) {
       if (error)
-        *error = ErrnoToPlatformFileError(saved_errno);
+        *error = File::OSErrorToFileError(saved_errno);
       return false;
     }
   }
@@ -654,7 +654,7 @@ bool IsLink(const FilePath& file_path) {
     return false;
 }
 
-bool GetFileInfo(const FilePath& file_path, PlatformFileInfo* results) {
+bool GetFileInfo(const FilePath& file_path, File::Info* results) {
   stat_wrapper_t file_info;
 #if defined(OS_ANDROID)
   if (file_path.IsContentUri()) {

@@ -243,7 +243,7 @@ bool DatabaseCheckHelper::ScanDatabase() {
           return false;
 
         // Ensure the backing file exists as a normal file.
-        base::PlatformFileInfo platform_file_info;
+        base::File::Info platform_file_info;
         if (!base::GetFileInfo(
                 path_.Append(file_info.data_path), &platform_file_info) ||
             platform_file_info.is_directory ||
