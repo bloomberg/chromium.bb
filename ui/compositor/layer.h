@@ -56,8 +56,8 @@ class Texture;
 // Coordinate system used in layers is DIP (Density Independent Pixel)
 // coordinates unless explicitly mentioned as pixel coordinates.
 //
-// NOTE: unlike Views, each Layer does *not* own its children views. If you
-// delete a Layer and it has children, the parent of each child layer is set to
+// NOTE: Unlike Views, each Layer does *not* own its child Layers. If you
+// delete a Layer and it has children, the parent of each child Layer is set to
 // NULL, but the children are not deleted.
 class COMPOSITOR_EXPORT Layer
     : public LayerAnimationDelegate,
