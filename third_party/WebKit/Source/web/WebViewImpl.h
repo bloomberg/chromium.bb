@@ -434,9 +434,9 @@ public:
     // Returns the provider of desktop notifications.
     NotificationPresenterImpl* notificationPresenterImpl();
 
-    // Tries to scroll a frame or any parent of a frame. Returns true if the view
-    // was scrolled.
-    bool propagateScroll(WebCore::ScrollDirection, WebCore::ScrollGranularity);
+    // Tries to scroll the currently focused element and bubbles up through the
+    // DOM and frame hierarchies. Returns true if something was scrolled.
+    bool bubblingScroll(WebCore::ScrollDirection, WebCore::ScrollGranularity);
 
     // Notification that a popup was opened/closed.
     void popupOpened(WebCore::PopupContainer* popupContainer);

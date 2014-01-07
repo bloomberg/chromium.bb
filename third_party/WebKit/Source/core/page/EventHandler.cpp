@@ -255,43 +255,6 @@ static inline ScrollGranularity wheelGranularityToScrollGranularity(unsigned del
     }
 }
 
-static inline bool scrollNode(float delta, ScrollGranularity granularity, ScrollDirection direction, Node* node, Node** stopNode, IntPoint absolutePoint = IntPoint())
-{
-    if (!delta)
-        return false;
-    if (!node->renderer())
-        return false;
-
-    RenderBox* curBox = node->renderer()->enclosingBox();
-
-    while (curBox && !curBox->isRenderView()) {
-        ScrollDirection physicalDirection = toPhysicalDirection(
-            direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
-
-        if (curBox->scroll(physicalDirection, granularity, delta)) {
-            if (stopNode)
-                *stopNode = curBox->node();
-            return true;
-        }
-
-        if (stopNode && *stopNode && curBox->node() == *stopNode)
-            return true;
-
-        // FIXME: This should probably move to a virtual method on RenderBox, something like RenderBox::scrollAncestor, and specialized for RenderFlowThread
-        curBox = curBox->containingBlock();
-        if (curBox && curBox->isRenderNamedFlowThread()) {
-            RenderBox* flowedBox = curBox;
-
-            if (RenderBox* startBox = node->renderBox())
-                flowedBox = startBox;
-
-            curBox = toRenderFlowThread(curBox)->regionFromAbsolutePointAndBox(absolutePoint, flowedBox);
-        }
-    }
-
-    return false;
-}
-
 // Refetch the event target node if it is removed or currently is the shadow node inside an <input> element.
 // If a mouse event handler changes the input element type to one that has a widget associated,
 // we'd like to EventHandler::handleMousePressEvent to pass the event to the widget and thus the
@@ -963,9 +926,12 @@ Node* EventHandler::mousePressNode() const
     return m_mousePressNode.get();
 }
 
-bool EventHandler::scrollOverflow(ScrollDirection direction, ScrollGranularity granularity, Node* startingNode)
+bool EventHandler::scroll(ScrollDirection direction, ScrollGranularity granularity, Node* startNode, Node** stopNode, float delta, IntPoint absolutePoint)
 {
-    Node* node = startingNode;
+    if (!delta)
+        return false;
+
+    Node* node = startNode;
 
     if (!node)
         node = m_frame->document()->focusedElement();
@@ -973,23 +939,48 @@ bool EventHandler::scrollOverflow(ScrollDirection direction, ScrollGranularity g
     if (!node)
         node = m_mousePressNode.get();
 
-    if (node) {
-        RenderObject* r = node->renderer();
-        if (r && !r->isListBox() && scrollNode(1.0f, granularity, direction, node, 0)) {
+    if (!node || !node->renderer())
+        return false;
+
+    RenderBox* curBox = node->renderer()->enclosingBox();
+    while (curBox && !curBox->isRenderView()) {
+        ScrollDirection physicalDirection = toPhysicalDirection(
+            direction, curBox->isHorizontalWritingMode(), curBox->style()->isFlippedBlocksWritingMode());
+
+        // If we're at the stopNode, we should try to scroll it but we shouldn't bubble past it
+        bool shouldStopBubbling = stopNode && *stopNode && curBox->node() == *stopNode;
+        bool didScroll = curBox->scroll(physicalDirection, granularity, delta);
+
+        if (didScroll && stopNode)
+            *stopNode = curBox->node();
+
+        if (didScroll || shouldStopBubbling) {
             setFrameWasScrolledByUser();
             return true;
+        }
+
+        // FIXME: This should probably move to a virtual method on RenderBox, something like
+        // RenderBox::scrollAncestor, and specialized for RenderFlowThread
+        curBox = curBox->containingBlock();
+        if (curBox && curBox->isRenderNamedFlowThread()) {
+            RenderBox* flowedBox = curBox;
+
+            if (RenderBox* startBox = node->renderBox())
+                flowedBox = startBox;
+
+            curBox = toRenderFlowThread(curBox)->regionFromAbsolutePointAndBox(absolutePoint, flowedBox);
         }
     }
 
     return false;
 }
 
-bool EventHandler::scrollRecursively(ScrollDirection direction, ScrollGranularity granularity, Node* startingNode)
+bool EventHandler::bubblingScroll(ScrollDirection direction, ScrollGranularity granularity, Node* startingNode)
 {
     // The layout needs to be up to date to determine if we can scroll. We may be
     // here because of an onLoad event, in which case the final layout hasn't been performed yet.
     m_frame->document()->updateLayoutIgnorePendingStylesheets();
-    if (scrollOverflow(direction, granularity, startingNode))
+    if (scroll(direction, granularity, startingNode))
         return true;
     Frame* frame = m_frame;
     FrameView* view = frame->view();
@@ -998,7 +989,7 @@ bool EventHandler::scrollRecursively(ScrollDirection direction, ScrollGranularit
     frame = frame->tree().parent();
     if (!frame)
         return false;
-    return frame->eventHandler().scrollRecursively(direction, granularity, m_frame->ownerElement());
+    return frame->eventHandler().bubblingScroll(direction, granularity, m_frame->ownerElement());
 }
 
 IntPoint EventHandler::lastKnownMousePosition() const
@@ -2223,10 +2214,10 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
 
     // Break up into two scrolls if we need to.  Diagonal movement on
     // a MacBook pro is an example of a 2-dimensional mouse wheel event (where both deltaX and deltaY can be set).
-    if (scrollNode(wheelEvent->deltaX(), granularity, ScrollRight, startNode, &stopNode, roundedIntPoint(wheelEvent->absoluteLocation())))
+    if (scroll(ScrollRight, granularity, startNode, &stopNode, wheelEvent->deltaX(), roundedIntPoint(wheelEvent->absoluteLocation())))
         wheelEvent->setDefaultHandled();
 
-    if (scrollNode(wheelEvent->deltaY(), granularity, ScrollDown, startNode, &stopNode, roundedIntPoint(wheelEvent->absoluteLocation())))
+    if (scroll(ScrollDown, granularity, startNode, &stopNode, wheelEvent->deltaY(), roundedIntPoint(wheelEvent->absoluteLocation())))
         wheelEvent->setDefaultHandled();
 
     if (!m_latchedWheelEventNode)
@@ -2625,8 +2616,8 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
     // First try to scroll the closest scrollable RenderBox ancestor of |node|.
     ScrollGranularity granularity = ScrollByPixel;
-    bool horizontalScroll = scrollNode(delta.width(), granularity, ScrollLeft, node, &stopNode);
-    bool verticalScroll = scrollNode(delta.height(), granularity, ScrollUp, node, &stopNode);
+    bool horizontalScroll = scroll(ScrollLeft, granularity, node, &stopNode, delta.width());
+    bool verticalScroll = scroll(ScrollUp, granularity, node, &stopNode, delta.height());
 
     if (scrollShouldNotPropagate)
         m_previousGestureScrolledNode = stopNode;
@@ -3429,7 +3420,7 @@ void EventHandler::defaultSpaceEventHandler(KeyboardEvent* event)
         return;
 
     ScrollDirection direction = event->shiftKey() ? ScrollBlockDirectionBackward : ScrollBlockDirectionForward;
-    if (scrollOverflow(direction, ScrollByPage)) {
+    if (scroll(direction, ScrollByPage)) {
         event->setDefaultHandled();
         return;
     }

@@ -975,32 +975,32 @@ static bool executeRemoveFormat(Frame& frame, Event*, EditorCommandSource, const
 
 static bool executeScrollPageBackward(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().scrollRecursively(ScrollBlockDirectionBackward, ScrollByPage);
+    return frame.eventHandler().bubblingScroll(ScrollBlockDirectionBackward, ScrollByPage);
 }
 
 static bool executeScrollPageForward(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().scrollRecursively(ScrollBlockDirectionForward, ScrollByPage);
+    return frame.eventHandler().bubblingScroll(ScrollBlockDirectionForward, ScrollByPage);
 }
 
 static bool executeScrollLineUp(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().scrollRecursively(ScrollUp, ScrollByLine);
+    return frame.eventHandler().bubblingScroll(ScrollUp, ScrollByLine);
 }
 
 static bool executeScrollLineDown(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().scrollRecursively(ScrollDown, ScrollByLine);
+    return frame.eventHandler().bubblingScroll(ScrollDown, ScrollByLine);
 }
 
 static bool executeScrollToBeginningOfDocument(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().scrollRecursively(ScrollBlockDirectionBackward, ScrollByDocument);
+    return frame.eventHandler().bubblingScroll(ScrollBlockDirectionBackward, ScrollByDocument);
 }
 
 static bool executeScrollToEndOfDocument(Frame& frame, Event*, EditorCommandSource, const String&)
 {
-    return frame.eventHandler().scrollRecursively(ScrollBlockDirectionForward, ScrollByDocument);
+    return frame.eventHandler().bubblingScroll(ScrollBlockDirectionForward, ScrollByDocument);
 }
 
 static bool executeSelectAll(Frame& frame, Event*, EditorCommandSource, const String&)

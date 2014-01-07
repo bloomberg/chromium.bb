@@ -129,8 +129,9 @@ public:
     IntPoint lastKnownMousePosition() const;
     Cursor currentMouseCursor() const { return m_currentMouseCursor; }
 
-    bool scrollOverflow(ScrollDirection, ScrollGranularity, Node* startingNode = 0);
-    bool scrollRecursively(ScrollDirection, ScrollGranularity, Node* startingNode = 0);
+    // Attempts to scroll the DOM tree. If that fails, scrolls the view.
+    // If the view can't be scrolled either, recursively bubble to the parent frame.
+    bool bubblingScroll(ScrollDirection, ScrollGranularity, Node* startingNode = 0);
 
     bool handleMouseMoveEvent(const PlatformMouseEvent&);
     void handleMouseLeaveEvent(const PlatformMouseEvent&);
@@ -226,6 +227,19 @@ private:
     bool isInsideScrollbar(const IntPoint&) const;
 
     ScrollableArea* associatedScrollableArea(const RenderLayer*) const;
+
+    // Scrolls the elements of the DOM tree. Returns true if a node was scrolled.
+    // False if we reached the root and couldn't scroll anything.
+    // direction - The direction to scroll in. If this is a logicl direction, it will be
+    //             converted to the physical direction based on a node's writing mode.
+    // granularity - The units that the  scroll delta parameter is in.
+    // startNode - The node to start bubbling the scroll from. If a node can't scroll,
+    //             the scroll bubbles up to the containing block.
+    // stopNode - On input, if provided and non-null, the node at which we should stop bubbling on input.
+    //            On output, if provided and a node was scrolled stopNode will point to that node.
+    // delta - The delta to scroll by, in the units of the granularity parameter. (e.g. pixels, lines, pages, etc.)
+    // absolutePoint - For wheel scrolls - the location, in absolute coordinates, where the event occured.
+    bool scroll(ScrollDirection, ScrollGranularity, Node* startNode = 0, Node** stopNode = 0, float delta = 1.0f, IntPoint absolutePoint = IntPoint());
 
     bool dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent&);
 

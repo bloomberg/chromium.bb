@@ -1202,10 +1202,10 @@ bool WebFrameImpl::executeCommand(const WebString& name, const WebString& value,
 
     // moveToBeginningOfDocument and moveToEndfDocument are only handled by WebKit for editable nodes.
     if (!frame()->editor().canEdit() && webName == "moveToBeginningOfDocument")
-        return viewImpl()->propagateScroll(ScrollUp, ScrollByDocument);
+        return viewImpl()->bubblingScroll(ScrollUp, ScrollByDocument);
 
     if (!frame()->editor().canEdit() && webName == "moveToEndOfDocument")
-        return viewImpl()->propagateScroll(ScrollDown, ScrollByDocument);
+        return viewImpl()->bubblingScroll(ScrollDown, ScrollByDocument);
 
     if (webName == "showGuessPanel") {
         frame()->spellChecker().showSpellingGuessPanel();
