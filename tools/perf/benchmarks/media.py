@@ -38,6 +38,7 @@ class MediaAndroid(test.Test):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
   tag = 'android'
+  # Disable media-tests on Android: crbug/329691
   enabled = not sys.platform.startswith('linux')
   page_set = 'page_sets/tough_video_cases.json'
   # Exclude crowd* media files (50fps 2160p).
@@ -50,9 +51,25 @@ class MediaAndroid(test.Test):
     options.AppendExtraBrowserArgs(
         '--disable-gesture-requirement-for-media-playback')
 
+class MediaChromeOS(test.Test):
+  """Obtains media metrics for key user scenarios on ChromeOS."""
+  test = media.Media
+  tag = 'chromeOS'
+  page_set = 'page_sets/tough_video_cases.json'
+  # Exclude crowd* media files (50fps 2160p): crbug/331816
+  options = {
+      'page_filter_exclude': '.*crowd.*'
+  }
+
+  def CustomizeBrowserOptions(self, options):
+    # Needed to run media actions in JS in Android.
+    options.AppendExtraBrowserArgs(
+        '--disable-gesture-requirement-for-media-playback')
+
 class MediaSourceExtensions(test.Test):
   """Obtains media metrics for key media source extensions functions."""
   test = media.Media
+  # Disable MSE media-tests on Android and linux: crbug/329691
   enabled = not sys.platform.startswith('linux')
   test = MSEMeasurement
   page_set = 'page_sets/mse_cases.json'
