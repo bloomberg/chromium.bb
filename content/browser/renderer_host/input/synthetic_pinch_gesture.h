@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_PINCH_GESTURE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_PINCH_GESTURE_H_
 
+#include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/common/content_export.h"
@@ -20,7 +21,8 @@ class CONTENT_EXPORT SyntheticPinchGesture : public SyntheticGesture {
   virtual ~SyntheticPinchGesture();
 
   virtual SyntheticGesture::Result ForwardInputEvents(
-      const base::TimeDelta& interval, SyntheticGestureTarget* target) OVERRIDE;
+      const base::TimeTicks& timestamp,
+      SyntheticGestureTarget* target) OVERRIDE;
 
  private:
   enum GestureState {
@@ -30,29 +32,34 @@ class CONTENT_EXPORT SyntheticPinchGesture : public SyntheticGesture {
     DONE
   };
 
-  void ForwardTouchInputEvents(
-      const base::TimeDelta& interval, SyntheticGestureTarget* target);
+  void ForwardTouchInputEvents(const base::TimeTicks& timestamp,
+                               SyntheticGestureTarget* target);
 
-  void UpdateTouchPoints(base::TimeDelta interval);
-  void PressTouchPoints(SyntheticGestureTarget* target);
-  void MoveTouchPoints(SyntheticGestureTarget* target);
-  void ReleaseTouchPoints(SyntheticGestureTarget* target);
-  void ForwardTouchEvent(SyntheticGestureTarget* target) const;
+  void UpdateTouchPoints(const base::TimeTicks& timestamp);
+  void PressTouchPoints(SyntheticGestureTarget* target,
+                        const base::TimeTicks& timestamp);
+  void MoveTouchPoints(SyntheticGestureTarget* target, float delta,
+                       const base::TimeTicks& timestamp);
+  void ReleaseTouchPoints(SyntheticGestureTarget* target,
+                          const base::TimeTicks& timestamp);
+  void ForwardTouchEvent(SyntheticGestureTarget* target,
+                         const base::TimeTicks& timestamp);
 
-  void SetupCoordinates(SyntheticGestureTarget* target);
-  float GetDeltaForPointer0(const base::TimeDelta& interval) const;
-  float ComputeAbsoluteRemainingDistance() const;
-  bool HasReachedTarget() const;
+  void SetupCoordinatesAndStopTime(SyntheticGestureTarget* target);
+  float GetDeltaForPointer0AtTime(const base::TimeTicks& timestamp) const;
+  base::TimeTicks ClampTimestamp(const base::TimeTicks& timestamp) const;
+  bool HasReachedTarget(const base::TimeTicks& timestamp) const;
 
   SyntheticPinchGestureParams params_;
-  float current_y_0_;
-  float current_y_1_;
-  float target_y_0_;
-  float target_y_1_;
+  float start_y_0_;
+  float start_y_1_;
   SyntheticGestureParams::GestureSourceType gesture_source_type_;
   GestureState state_;
   SyntheticWebTouchEvent touch_event_;
+  base::TimeTicks start_time_;
+  base::TimeTicks stop_time_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SyntheticPinchGesture);
 };
 

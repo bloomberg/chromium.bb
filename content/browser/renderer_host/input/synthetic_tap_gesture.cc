@@ -31,7 +31,7 @@ SyntheticTapGesture::SyntheticTapGesture(
 SyntheticTapGesture::~SyntheticTapGesture() {}
 
 SyntheticGesture::Result SyntheticTapGesture::ForwardInputEvents(
-    const base::TimeDelta& interval, SyntheticGestureTarget* target) {
+    const base::TimeTicks& timestamp, SyntheticGestureTarget* target) {
   if (state_ == SETUP) {
     gesture_source_type_ = params_.gesture_source_type;
     if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
@@ -46,7 +46,7 @@ SyntheticGesture::Result SyntheticTapGesture::ForwardInputEvents(
   DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
   if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT ||
       gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT)
-    ForwardTouchOrMouseInputEvents(interval, target);
+    ForwardTouchOrMouseInputEvents(timestamp, target);
   else
     return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
 
@@ -55,23 +55,22 @@ SyntheticGesture::Result SyntheticTapGesture::ForwardInputEvents(
 }
 
 void SyntheticTapGesture::ForwardTouchOrMouseInputEvents(
-    const base::TimeDelta& interval, SyntheticGestureTarget* target) {
+    const base::TimeTicks& timestamp, SyntheticGestureTarget* target) {
   switch (state_) {
     case PRESS:
-      Press(target);
+      Press(target, timestamp);
       // Release immediately if duration is 0.
       if (params_.duration_ms == 0) {
-        Release(target);
+        Release(target, timestamp);
         state_ = DONE;
       } else {
+        start_time_ = timestamp;
         state_ = WAITING_TO_RELEASE;
       }
       break;
     case WAITING_TO_RELEASE:
-      total_waiting_time_ += interval;
-      if (total_waiting_time_ >=
-          base::TimeDelta::FromMilliseconds(params_.duration_ms)) {
-        Release(target);
+      if (timestamp - start_time_ >= GetDuration()) {
+        Release(target, start_time_ + GetDuration());
         state_ = DONE;
       }
       break;
@@ -82,9 +81,11 @@ void SyntheticTapGesture::ForwardTouchOrMouseInputEvents(
   }
 }
 
-void SyntheticTapGesture::Press(SyntheticGestureTarget* target) {
+void SyntheticTapGesture::Press(SyntheticGestureTarget* target,
+                                const base::TimeTicks& timestamp) {
   if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT) {
     touch_event_.PressPoint(params_.position.x(), params_.position.y());
+    touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
     DispatchEventToPlatform(target, touch_event_);
   } else if (gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT) {
     blink::WebMouseEvent mouse_event =
@@ -93,15 +94,18 @@ void SyntheticTapGesture::Press(SyntheticGestureTarget* target) {
                                              params_.position.y(),
                                              0);
     mouse_event.clickCount = 1;
+    mouse_event.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
     DispatchEventToPlatform(target, mouse_event);
   } else {
     NOTREACHED() << "Invalid gesture source type for synthetic tap gesture.";
   }
 }
 
-void SyntheticTapGesture::Release(SyntheticGestureTarget* target) {
+void SyntheticTapGesture::Release(SyntheticGestureTarget* target,
+                                  const base::TimeTicks& timestamp) {
   if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT) {
     touch_event_.ReleasePoint(0);
+    touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
     DispatchEventToPlatform(target, touch_event_);
   } else if (gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT) {
     blink::WebMouseEvent mouse_event =
@@ -110,10 +114,15 @@ void SyntheticTapGesture::Release(SyntheticGestureTarget* target) {
                                              params_.position.y(),
                                              0);
     mouse_event.clickCount = 1;
+    mouse_event.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
     DispatchEventToPlatform(target, mouse_event);
   } else {
     NOTREACHED() << "Invalid gesture source type for synthetic tap gesture.";
   }
+}
+
+base::TimeDelta SyntheticTapGesture::GetDuration() const {
+  return base::TimeDelta::FromMilliseconds(params_.duration_ms);
 }
 
 }  // namespace content

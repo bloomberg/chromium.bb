@@ -43,4 +43,10 @@ scoped_ptr<SyntheticGesture> SyntheticGesture::Create(
   return scoped_ptr<SyntheticGesture>();
 }
 
+// static
+double SyntheticGesture::ConvertTimestampToSeconds(
+    const base::TimeTicks& timestamp) {
+  return (timestamp - base::TimeTicks()).InSecondsF();
+}
+
 }  // namespace content

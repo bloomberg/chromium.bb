@@ -46,9 +46,11 @@ class CONTENT_EXPORT SyntheticGesture {
   // platform. This function is called repeatedly by the synthetic gesture
   // controller until it stops returning GESTURE_RUNNING.
   virtual Result ForwardInputEvents(
-      const base::TimeDelta& interval, SyntheticGestureTarget* target) = 0;
+      const base::TimeTicks& timestamp, SyntheticGestureTarget* target) = 0;
 
- private:
+ protected:
+  static double ConvertTimestampToSeconds(const base::TimeTicks& timestamp);
+
   DISALLOW_COPY_AND_ASSIGN(SyntheticGesture);
 };
 

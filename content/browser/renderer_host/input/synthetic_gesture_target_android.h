@@ -46,7 +46,8 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
   };
 
   void TouchSetPointer(JNIEnv* env, int index, int x, int y, int id);
-  void TouchInject(JNIEnv* env, Action action, int pointer_count);
+  void TouchInject(
+      JNIEnv* env, Action action, int pointer_count, long time_in_ms);
 
   base::android::ScopedJavaGlobalRef<jobject> touch_event_synthesizer_;
 

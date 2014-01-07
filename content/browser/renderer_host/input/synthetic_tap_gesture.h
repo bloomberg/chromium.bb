@@ -19,7 +19,8 @@ class CONTENT_EXPORT SyntheticTapGesture : public SyntheticGesture {
   virtual ~SyntheticTapGesture();
 
   virtual SyntheticGesture::Result ForwardInputEvents(
-      const base::TimeDelta& interval, SyntheticGestureTarget* target) OVERRIDE;
+      const base::TimeTicks& timestamp,
+      SyntheticGestureTarget* target) OVERRIDE;
 
  private:
   enum GestureState {
@@ -29,14 +30,17 @@ class CONTENT_EXPORT SyntheticTapGesture : public SyntheticGesture {
     DONE
   };
 
-  void ForwardTouchOrMouseInputEvents(const base::TimeDelta& interval,
+  void ForwardTouchOrMouseInputEvents(const base::TimeTicks& timestamp,
                                       SyntheticGestureTarget* target);
 
-  void Press(SyntheticGestureTarget* target);
-  void Release(SyntheticGestureTarget* target);
+  void Press(SyntheticGestureTarget* target, const base::TimeTicks& timestamp);
+  void Release(SyntheticGestureTarget* target,
+               const base::TimeTicks& timestamp);
+
+  base::TimeDelta GetDuration() const;
 
   SyntheticTapGestureParams params_;
-  base::TimeDelta total_waiting_time_;
+  base::TimeTicks start_time_;
   SyntheticWebTouchEvent touch_event_;
   SyntheticGestureParams::GestureSourceType gesture_source_type_;
   GestureState state_;

@@ -43,7 +43,7 @@ class MockSyntheticGesture : public SyntheticGesture {
   }
   virtual ~MockSyntheticGesture() {}
 
-  virtual Result ForwardInputEvents(const base::TimeDelta& interval,
+  virtual Result ForwardInputEvents(const base::TimeTicks& timestamp,
                                     SyntheticGestureTarget* target) OVERRIDE {
     step_count_++;
     if (step_count_ == num_steps_) {
@@ -271,6 +271,7 @@ class MockSyntheticTapGestureTarget : public MockSyntheticGestureTarget {
 
   bool GestureFinished() const { return state_ == FINISHED; }
   gfx::Point position() const { return position_; }
+  base::TimeDelta GetDuration() const { return stop_time_ - start_time_; }
 
  protected:
   enum GestureState {
@@ -280,6 +281,8 @@ class MockSyntheticTapGestureTarget : public MockSyntheticGestureTarget {
   };
 
   gfx::Point position_;
+  base::TimeDelta start_time_;
+  base::TimeDelta stop_time_;
   GestureState state_;
 };
 
@@ -299,11 +302,15 @@ class MockSyntheticTapTouchTarget : public MockSyntheticTapGestureTarget {
       case NOT_STARTED:
         EXPECT_EQ(touch_event->type, blink::WebInputEvent::TouchStart);
         position_ = gfx::Point(touch_event->touches[0].position);
+        start_time_ = base::TimeDelta::FromMilliseconds(
+            static_cast<int64>(touch_event->timeStampSeconds * 1000));
         state_ = STARTED;
         break;
       case STARTED:
         EXPECT_EQ(touch_event->type, blink::WebInputEvent::TouchEnd);
         EXPECT_EQ(position_, gfx::Point(touch_event->touches[0].position));
+        stop_time_ = base::TimeDelta::FromMilliseconds(
+            static_cast<int64>(touch_event->timeStampSeconds * 1000));
         state_ = FINISHED;
         break;
       case FINISHED:
@@ -330,6 +337,8 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
         EXPECT_EQ(mouse_event->button, blink::WebMouseEvent::ButtonLeft);
         EXPECT_EQ(mouse_event->clickCount, 1);
         position_ = gfx::Point(mouse_event->x, mouse_event->y);
+        start_time_ = base::TimeDelta::FromMilliseconds(
+            static_cast<int64>(mouse_event->timeStampSeconds * 1000));
         state_ = STARTED;
         break;
       case STARTED:
@@ -337,6 +346,8 @@ class MockSyntheticTapMouseTarget : public MockSyntheticTapGestureTarget {
         EXPECT_EQ(mouse_event->button, blink::WebMouseEvent::ButtonLeft);
         EXPECT_EQ(mouse_event->clickCount, 1);
         EXPECT_EQ(position_, gfx::Point(mouse_event->x, mouse_event->y));
+        stop_time_ = base::TimeDelta::FromMilliseconds(
+            static_cast<int64>(mouse_event->timeStampSeconds * 1000));
         state_ = FINISHED;
         break;
       case FINISHED:
@@ -783,6 +794,7 @@ TEST_F(SyntheticGestureControllerTest, TapGestureTouch) {
   EXPECT_EQ(0, target_->num_failure());
   EXPECT_TRUE(tap_target->GestureFinished());
   EXPECT_EQ(tap_target->position(), params.position);
+  EXPECT_EQ(tap_target->GetDuration().InMilliseconds(), params.duration_ms);
   EXPECT_GE(GetTotalTime(),
             base::TimeDelta::FromMilliseconds(params.duration_ms));
 }
@@ -805,6 +817,7 @@ TEST_F(SyntheticGestureControllerTest, TapGestureMouse) {
   EXPECT_EQ(0, target_->num_failure());
   EXPECT_TRUE(tap_target->GestureFinished());
   EXPECT_EQ(tap_target->position(), params.position);
+  EXPECT_EQ(tap_target->GetDuration().InMilliseconds(), params.duration_ms);
   EXPECT_GE(GetTotalTime(),
             base::TimeDelta::FromMilliseconds(params.duration_ms));
 }

@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
@@ -27,7 +26,7 @@ public class TouchEventSynthesizer {
     private final ContentViewCore mContentViewCore;
     private final PointerProperties[] mPointerProperties;
     private final PointerCoords[] mPointerCoords;
-    private long mDownTime;
+    private long mDownTimeInMs;
 
     TouchEventSynthesizer(ContentViewCore contentViewCore) {
         mContentViewCore = contentViewCore;
@@ -54,14 +53,12 @@ public class TouchEventSynthesizer {
     }
 
     @CalledByNative
-    void inject(int action, int pointerCount) {
-        long time = SystemClock.uptimeMillis();
-
+    void inject(int action, int pointerCount, long timeInMs) {
         switch (action) {
             case ACTION_START: {
-                mDownTime = time;
+                mDownTimeInMs = timeInMs;
                 MotionEvent event = MotionEvent.obtain(
-                        mDownTime, time, MotionEvent.ACTION_DOWN, 1,
+                        mDownTimeInMs, timeInMs, MotionEvent.ACTION_DOWN, 1,
                         mPointerProperties, mPointerCoords,
                         0, 0, 1, 1, 0, 0, 0, 0);
                 mContentViewCore.onTouchEvent(event);
@@ -69,8 +66,9 @@ public class TouchEventSynthesizer {
 
                 if (pointerCount > 1) {
                     event = MotionEvent.obtain(
-                            mDownTime, time, MotionEvent.ACTION_POINTER_DOWN,
-                            pointerCount, mPointerProperties, mPointerCoords,
+                            mDownTimeInMs, timeInMs,
+                            MotionEvent.ACTION_POINTER_DOWN, pointerCount,
+                            mPointerProperties, mPointerCoords,
                             0, 0, 1, 1, 0, 0, 0, 0);
                     mContentViewCore.onTouchEvent(event);
                     event.recycle();
@@ -78,7 +76,7 @@ public class TouchEventSynthesizer {
                 break;
             }
             case ACTION_MOVE: {
-                MotionEvent event = MotionEvent.obtain(mDownTime, time,
+                MotionEvent event = MotionEvent.obtain(mDownTimeInMs, timeInMs,
                         MotionEvent.ACTION_MOVE,
                         pointerCount, mPointerProperties, mPointerCoords,
                         0, 0, 1, 1, 0, 0, 0, 0);
@@ -88,7 +86,7 @@ public class TouchEventSynthesizer {
             }
             case ACTION_CANCEL: {
                 MotionEvent event = MotionEvent.obtain(
-                        mDownTime, time, MotionEvent.ACTION_CANCEL, 1,
+                        mDownTimeInMs, timeInMs, MotionEvent.ACTION_CANCEL, 1,
                         mPointerProperties, mPointerCoords,
                         0, 0, 1, 1, 0, 0, 0, 0);
                 mContentViewCore.onTouchEvent(event);
@@ -98,7 +96,7 @@ public class TouchEventSynthesizer {
             case ACTION_END: {
                 if (pointerCount > 1) {
                     MotionEvent event = MotionEvent.obtain(
-                        mDownTime, time, MotionEvent.ACTION_POINTER_UP,
+                        mDownTimeInMs, timeInMs, MotionEvent.ACTION_POINTER_UP,
                         pointerCount, mPointerProperties, mPointerCoords,
                         0, 0, 1, 1, 0, 0, 0, 0);
                     mContentViewCore.onTouchEvent(event);
@@ -106,7 +104,7 @@ public class TouchEventSynthesizer {
                 }
 
                 MotionEvent event = MotionEvent.obtain(
-                        mDownTime, time, MotionEvent.ACTION_UP, 1,
+                        mDownTimeInMs, timeInMs, MotionEvent.ACTION_UP, 1,
                         mPointerProperties, mPointerCoords,
                         0, 0, 1, 1, 0, 0, 0, 0);
                 mContentViewCore.onTouchEvent(event);

@@ -37,9 +37,10 @@ void SyntheticGestureTargetAndroid::TouchSetPointer(
 }
 
 void SyntheticGestureTargetAndroid::TouchInject(
-    JNIEnv* env, Action action, int pointer_count) {
+    JNIEnv* env, Action action, int pointer_count, long time_in_ms) {
   Java_TouchEventSynthesizer_inject(env, touch_event_synthesizer_.obj(),
-                                  static_cast<int>(action), pointer_count);
+                                    static_cast<int>(action), pointer_count,
+                                    time_in_ms);
 }
 
 void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
@@ -70,7 +71,8 @@ void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
     TouchSetPointer(env, i, point->position.x, point->position.y, point->id);
   }
 
-  TouchInject(env, action, num_touches);
+  TouchInject(env, action, num_touches,
+              static_cast<long>(web_touch.timeStampSeconds * 1000.0));
 }
 
 SyntheticGestureParams::GestureSourceType

@@ -39,8 +39,6 @@ class CONTENT_EXPORT SyntheticGestureController {
   scoped_ptr<SyntheticGestureTarget> gesture_target_;
   ScopedVector<SyntheticGesture> pending_gesture_queue_;
 
-  base::TimeTicks last_tick_time_;
-
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureController);
 };
 
