@@ -49,7 +49,6 @@ class RenderObject;
 // so that the Node destructor no longer does problematic NodeList cache manipulation in
 // the destructor.
 class TreeScope {
-    friend class Document;
     friend class TreeScopeAdopter;
 
 public:

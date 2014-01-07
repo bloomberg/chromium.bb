@@ -493,7 +493,7 @@ Document::~Document()
 {
     ASSERT(!renderView());
     ASSERT(m_ranges.isEmpty());
-    ASSERT(!m_parentTreeScope);
+    ASSERT(!parentTreeScope());
     ASSERT(!hasGuardRefCount());
 
     if (m_templateDocument)
