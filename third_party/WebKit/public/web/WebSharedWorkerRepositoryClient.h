@@ -35,6 +35,7 @@
 
 namespace blink {
 
+enum WebContentSecurityPolicyType;
 class WebString;
 class WebURL;
 
@@ -44,7 +45,12 @@ public:
     typedef unsigned long long DocumentID;
 
     // Creates a new shared worker connector. This may return null.
+    // FIXME(horo): Remove createSharedWorkerConnector of 3 arguments.
     virtual WebSharedWorkerConnector* createSharedWorkerConnector(const WebURL& url, const WebString& name, DocumentID id) { return 0; }
+    virtual WebSharedWorkerConnector* createSharedWorkerConnector(const WebURL& url, const WebString& name, DocumentID id, const WebString& contentSecurityPolicy, WebContentSecurityPolicyType)
+    {
+        return createSharedWorkerConnector(url, name, id);
+    }
 
     // Invoked when a document has been detached. DocumentID can be re-used after documentDetached() is invoked.
     virtual void documentDetached(DocumentID) { }

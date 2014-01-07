@@ -159,7 +159,7 @@ void SharedWorkerRepositoryClientImpl::connect(PassRefPtr<SharedWorker> worker, 
     // No nested workers (for now) - connect() should only be called from document context.
     ASSERT(worker->executionContext()->isDocument());
     Document* document = toDocument(worker->executionContext());
-    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document)));
+    OwnPtr<WebSharedWorkerConnector> webWorkerConnector = adoptPtr(m_client->createSharedWorkerConnector(url, name, getId(document), worker->executionContext()->contentSecurityPolicy()->deprecatedHeader(), static_cast<blink::WebContentSecurityPolicyType>(worker->executionContext()->contentSecurityPolicy()->deprecatedHeaderType())));
     if (!webWorkerConnector) {
         // Existing worker does not match this url, so return an error back to the caller.
         exceptionState.throwDOMException(URLMismatchError, "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "').");

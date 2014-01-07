@@ -68,6 +68,9 @@ public:
 
     virtual void dispatchDevToolsMessage(const WebString&) { }
     virtual void saveDevToolsAgentState(const WebString&) { }
+    virtual void workerScriptLoaded() { }
+    virtual void workerScriptLoadFailed() { }
+    virtual void selectAppCacheID(long long appCacheID) { }
 
 protected:
     ~WebSharedWorkerClient() { }

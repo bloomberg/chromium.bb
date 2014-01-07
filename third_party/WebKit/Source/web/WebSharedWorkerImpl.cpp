@@ -248,6 +248,9 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
     setWorkerThread(SharedWorkerThread::create(name, *this, *this, startupData.release()));
 
     workerThread()->start();
+    // FIXME(horo): This call will be moved when we implement script loading in WebSharedWorkerImpl.
+    if (client())
+        client()->workerScriptLoaded();
 }
 
 void WebSharedWorkerImpl::terminateWorkerContext()
