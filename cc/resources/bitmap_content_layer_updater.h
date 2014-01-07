@@ -18,8 +18,9 @@ class LayerPainter;
 class RenderingStatsInstrumenation;
 
 // This class rasterizes the content_rect into a skia bitmap canvas. It then
-// updates textures by copying from the canvas into the texture, using
-// MapSubImage if possible.
+// creates a ResourceUpdate with this bitmap canvas and inserts the
+// ResourceBundle to the provided ResourceUpdateQueue. Actual texture uploading
+// is done by ResourceUpdateController.
 class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
  public:
   class Resource : public LayerUpdater::Resource {
