@@ -129,6 +129,7 @@ namespace {
 
 // Duration of the bookmark bar animations.
 const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
+const NSTimeInterval kDragAndDropAnimationDuration = 0.25;
 
 void RecordAppLaunch(Profile* profile, GURL url) {
   DCHECK(profile->GetExtensionService());
@@ -1939,6 +1940,9 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     }
     // Put all the buttons where they belong, with all buttons to the right
     // of the insertion point shuffling right to make space for it.
+    [NSAnimationContext beginGrouping];
+    [[NSAnimationContext currentContext]
+        setDuration:kDragAndDropAnimationDuration];
     for (NSButton* button in buttons_.get()) {
       // Hidden buttons get no space.
       if ([button isHidden])
@@ -1955,6 +1959,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       else
         [button setFrame:buttonFrame];
     }
+    [NSAnimationContext endGrouping];
   }
 }
 
