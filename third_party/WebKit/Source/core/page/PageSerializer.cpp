@@ -99,16 +99,16 @@ static const QualifiedName& frameOwnerURLAttributeName(const HTMLFrameOwnerEleme
     return frameOwner.hasTagName(HTMLNames::objectTag) ? HTMLNames::dataAttr : HTMLNames::srcAttr;
 }
 
-class SerializerMarkupAccumulator : public WebCore::MarkupAccumulator {
+class SerializerMarkupAccumulator FINAL : public MarkupAccumulator {
 public:
     SerializerMarkupAccumulator(PageSerializer*, Document*, Vector<Node*>*);
     virtual ~SerializerMarkupAccumulator();
 
 protected:
-    virtual void appendText(StringBuilder& out, Text*);
-    virtual void appendElement(StringBuilder& out, Element*, Namespaces*);
-    virtual void appendCustomAttributes(StringBuilder& out, Element*, Namespaces*);
-    virtual void appendEndTag(Node*);
+    virtual void appendText(StringBuilder& out, Text*) OVERRIDE;
+    virtual void appendElement(StringBuilder& out, Element*, Namespaces*) OVERRIDE;
+    virtual void appendCustomAttributes(StringBuilder& out, Element*, Namespaces*) OVERRIDE;
+    virtual void appendEndTag(Node*) OVERRIDE;
 
 private:
     PageSerializer* m_serializer;

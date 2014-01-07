@@ -112,13 +112,13 @@ static void completeURLs(DocumentFragment& fragment, const String& baseURL)
         changes[i].apply();
 }
 
-class StyledMarkupAccumulator : public MarkupAccumulator {
+class StyledMarkupAccumulator FINAL : public MarkupAccumulator {
 public:
     enum RangeFullySelectsNode { DoesFullySelectNode, DoesNotFullySelectNode };
 
     StyledMarkupAccumulator(Vector<Node*>* nodes, EAbsoluteURLs, EAnnotateForInterchange, const Range*, Node* highestNodeToBeSerialized = 0);
     Node* serializeNodes(Node* startNode, Node* pastEnd);
-    virtual void appendString(const String& s) { return MarkupAccumulator::appendString(s); }
+    void appendString(const String& s) { return MarkupAccumulator::appendString(s); }
     void wrapWithNode(Node*, bool convertBlocksToInlines = false, RangeFullySelectsNode = DoesFullySelectNode);
     void wrapWithStyleNode(StylePropertySet*, Document*, bool isBlock = false);
     String takeResults();
@@ -126,11 +126,11 @@ public:
 private:
     void appendStyleNodeOpenTag(StringBuilder&, StylePropertySet*, Document*, bool isBlock = false);
     const String& styleNodeCloseTag(bool isBlock = false);
-    virtual void appendText(StringBuilder& out, Text*);
+    virtual void appendText(StringBuilder& out, Text*) OVERRIDE;
     String renderedText(const Node*, const Range*);
     String stringValueForRange(const Node*, const Range*);
     void appendElement(StringBuilder& out, Element*, bool addDisplayInline, RangeFullySelectsNode);
-    void appendElement(StringBuilder& out, Element* element, Namespaces*) { appendElement(out, element, false, DoesFullySelectNode); }
+    void appendElement(StringBuilder& out, Element* element, Namespaces*) OVERRIDE { appendElement(out, element, false, DoesFullySelectNode); }
 
     enum NodeTraversalMode { EmitString, DoNotEmitString };
     Node* traverseNodesForSerialization(Node* startNode, Node* pastEnd, NodeTraversalMode);

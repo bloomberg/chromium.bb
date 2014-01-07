@@ -77,7 +77,7 @@ public:
     static void appendCharactersReplacingEntities(StringBuilder&, const String&, unsigned, unsigned, EntityMask);
 
 protected:
-    virtual void appendString(const String&);
+    void appendString(const String&);
     void appendStartTag(Node*, Namespaces* = 0);
     virtual void appendEndTag(Node*);
     static size_t totalLength(const Vector<String>&);
