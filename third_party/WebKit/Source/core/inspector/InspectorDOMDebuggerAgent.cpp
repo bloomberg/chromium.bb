@@ -62,6 +62,7 @@ static const char animationFrameFiredEventName[] = "animationFrameFired";
 static const char setTimerEventName[] = "setTimer";
 static const char clearTimerEventName[] = "clearTimer";
 static const char timerFiredEventName[] = "timerFired";
+static const char customElementCallbackName[] = "customElementCallback";
 static const char webglErrorFiredEventName[] = "webglErrorFired";
 static const char webglWarningFiredEventName[] = "webglWarningFired";
 static const char webglErrorNameProperty[] = "webglErrorName";
@@ -437,6 +438,11 @@ void InspectorDOMDebuggerAgent::willFireAnimationFrame(Document*, int)
 void InspectorDOMDebuggerAgent::willHandleEvent(EventTarget*, const AtomicString& eventType, EventListener*, bool)
 {
     pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(true, eventType), false);
+}
+
+void InspectorDOMDebuggerAgent::willExecuteCustomElementCallback(Element*)
+{
+    pauseOnNativeEventIfNeeded(preparePauseOnNativeEventData(false, customElementCallbackName), false);
 }
 
 void InspectorDOMDebuggerAgent::didFireWebGLError(const String& errorName)

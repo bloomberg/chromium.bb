@@ -88,6 +88,7 @@ public:
     void didFireWebGLError(const String& errorName);
     void didFireWebGLWarning();
     void didFireWebGLErrorOrWarning(const String& message);
+    void willExecuteCustomElementCallback(Element*);
 
     void didProcessTask();
 

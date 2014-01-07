@@ -464,6 +464,9 @@ interface InspectorInstrumentation {
 
     [DOM, Inline=FastReturn]
     void pseudoElementDestroyed([Keep] PseudoElement*);
+    
+    [DOMDebugger, Inline=FastReturn]
+    void willExecuteCustomElementCallback([Keep] Element*);
 }
 
 interface InspectorConsoleInstrumentation {
