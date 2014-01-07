@@ -71,6 +71,8 @@
     'res_extra_files': [],
     'res_v14_verify_only%': 0,
     'resource_input_paths': ['>@(res_extra_files)'],
+    'mirror_images%': 0,
+    'mirror_images_args': [],
     'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
     'classes_dir': '<(intermediate_dir)/classes',
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
@@ -171,9 +173,24 @@
             },
           ],
         }],
+        ['mirror_images == 1', {
+          'variables': {
+            'res_mirrored_dir': '<(intermediate_dir)/res_mirrored',
+            'mirror_images_config': '<(java_in_dir)/mirror_images_config',
+            'mirror_images_args': ['--mirror-config', '<(mirror_images_config)',
+                                   '--mirror-output-dir', '<(res_mirrored_dir)'],
+            'resource_input_paths': ['<(mirror_images_config)',
+                                     '<(DEPTH)/build/android/gyp/mirror_images.py'],
+          },
+          'all_dependent_settings': {
+            'variables': {
+              'additional_res_dirs': ['<(res_mirrored_dir)'],
+            },
+          },
+        }],
       ],
       'actions': [
-        # Generate R.java and crunch image resources.
+        # Generate R.java; mirror and crunch image resources.
         {
           'action_name': 'process_resources',
           'message': 'processing resources for <(_target_name)',
@@ -203,12 +220,13 @@
             '--android-sdk-tools', '<(android_sdk_tools)',
             '--R-dir', '<(R_dir)',
             '--res-dirs', '>(all_res_dirs)',
-            '--crunch-input-dir', '>(res_dir)',
+            '--image-input-dir', '>(res_dir)',
             '--crunch-output-dir', '<(res_crunched_dir)',
             '--android-manifest', '<(android_manifest)',
             '--non-constant-id',
             '--custom-package', '<(R_package)',
             '--stamp', '<(R_stamp)',
+            '<@(mirror_images_args)',
 
             # Add hash of inputs to the command line, so if inputs change
             # (e.g. if a resource if removed), the command will be re-run.
