@@ -99,8 +99,15 @@ void CopyFromCompositingSurfaceFinished(
 }
 
 bool UsingDelegatedRenderer() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDelegatedRenderer);
+  bool using_delegated_renderer = false;
+
+  using_delegated_renderer |= CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableDelegatedRenderer);
+
+  using_delegated_renderer &= !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDelegatedRenderer);
+
+  return using_delegated_renderer;
 }
 
 }  // anonymous namespace
