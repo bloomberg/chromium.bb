@@ -1944,14 +1944,6 @@ void View::BoundsChanged(const gfx::Rect& previous_bounds) {
       } else {
         SetLayerBounds(bounds_);
       }
-      // TODO(beng): this seems redundant with the SchedulePaint at the top of
-      //             this function. explore collapsing.
-      if (previous_bounds.size() != bounds_.size() &&
-          !layer()->layer_updated_externally()) {
-        // If our bounds have changed then we need to update the complete
-        // texture.
-        layer()->SchedulePaint(GetLocalBounds());
-      }
     } else {
       // If our bounds have changed, then any descendant layer bounds may
       // have changed. Update them accordingly.
