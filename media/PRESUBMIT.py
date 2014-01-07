@@ -8,14 +8,14 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
+def _FilterFile(affected_file):
+  """Return true if the file could contain code requiring a presubmit check."""
+  return affected_file.LocalPath().endswith(
+      ('.h', '.cc', '.cpp', '.cxx', '.mm'))
+
 
 def _CheckForUseOfWrongClock(input_api, output_api):
   """Make sure new lines of media code don't use a clock susceptible to skew."""
-
-  def FilterFile(affected_file):
-    """Return true if the file could contain code referencing base::Time."""
-    return affected_file.LocalPath().endswith(
-        ('.h', '.cc', '.cpp', '.cxx', '.mm'))
 
   # Regular expression that should detect any explicit references to the
   # base::Time type (or base::Clock/DefaultClock), whether in using decls,
@@ -45,7 +45,7 @@ def _CheckForUseOfWrongClock(input_api, output_api):
       r'(' + using_base_time_decl_pattern + r')|(' +
       base_time_konstant_pattern + r')')
   problems = []
-  for f in input_api.AffectedSourceFiles(FilterFile):
+  for f in input_api.AffectedSourceFiles(_FilterFile):
     for line_number, line in f.ChangedContents():
       if problem_re.search(line):
         if not exception_re.search(line):
@@ -64,9 +64,33 @@ def _CheckForUseOfWrongClock(input_api, output_api):
     return []
 
 
+def _CheckForMessageLoopProxy(input_api, output_api):
+  """Make sure media code only uses MessageLoopProxy for accessing the current
+  loop."""
+
+  message_loop_proxy_re = input_api.re.compile(
+      r'\bMessageLoopProxy(?!::current\(\))')
+
+  problems = []
+  for f in input_api.AffectedSourceFiles(_FilterFile):
+    for line_number, line in f.ChangedContents():
+      if message_loop_proxy_re.search(line):
+        problems.append('%s:%d' % (f.LocalPath(), line_number))
+
+  if problems:
+    return [output_api.PresubmitError(
+      'MessageLoopProxy should only be used for accessing the current loop.\n'
+      'Use the TaskRunner interfaces instead as they are more explicit about\n'
+      'the run-time characteristics. In most cases, SingleThreadTaskRunner\n'
+      'is a drop-in replacement for MessageLoopProxy.', problems)]
+
+  return []
+
+
 def _CheckChange(input_api, output_api):
   results = []
   results.extend(_CheckForUseOfWrongClock(input_api, output_api))
+  results.extend(_CheckForMessageLoopProxy(input_api, output_api))
   return results
 
 
