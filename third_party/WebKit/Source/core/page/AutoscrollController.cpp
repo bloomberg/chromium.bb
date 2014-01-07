@@ -36,6 +36,7 @@
 #include "core/page/Page.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderListBox.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {
@@ -72,6 +73,8 @@ void AutoscrollController::startAutoscrollForSelection(RenderObject* renderer)
     if (m_autoscrollType != NoAutoscroll)
         return;
     RenderBox* scrollable = RenderBox::findAutoscrollable(renderer);
+    if (!scrollable)
+        scrollable = renderer->isListBox() ? toRenderListBox(renderer) : 0;
     if (!scrollable)
         return;
     m_autoscrollType = AutoscrollForSelection;
