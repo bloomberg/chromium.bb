@@ -54,8 +54,6 @@ public:
     virtual bool tooLong() const OVERRIDE;
     bool isValidValue(const String&) const;
 
-    void rendererWillBeDestroyed();
-
     void setCols(int);
     void setRows(int);
 

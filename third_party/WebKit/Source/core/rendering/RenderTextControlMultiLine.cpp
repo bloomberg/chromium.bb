@@ -35,8 +35,6 @@ RenderTextControlMultiLine::RenderTextControlMultiLine(HTMLTextAreaElement* elem
 
 RenderTextControlMultiLine::~RenderTextControlMultiLine()
 {
-    if (node() && node()->inDocument())
-        toHTMLTextAreaElement(node())->rendererWillBeDestroyed();
 }
 
 bool RenderTextControlMultiLine::nodeAtPoint(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)

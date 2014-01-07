@@ -312,11 +312,6 @@ String HTMLTextAreaElement::sanitizeUserInputValue(const String& proposedValue, 
     return proposedValue.left(maxLength);
 }
 
-void HTMLTextAreaElement::rendererWillBeDestroyed()
-{
-    updateValue();
-}
-
 void HTMLTextAreaElement::updateValue() const
 {
     if (formControlValueMatchesRenderer())
