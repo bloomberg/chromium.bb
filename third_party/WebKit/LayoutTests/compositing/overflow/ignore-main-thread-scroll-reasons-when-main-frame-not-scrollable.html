@@ -61,7 +61,7 @@ if (window.internals) {
 
 window.jsTestIsAsync = true;
 
-function shouldIgnore() {
+function checkThatWeHaveIgnored() {
     if (window.internals) {
         var reasons = internals.mainThreadScrollingReasons(document);
         if (reasons === '')
@@ -77,10 +77,16 @@ function shouldIgnore() {
     }
 }
 
-function shouldNotIgnore() {
-    document.body.style.height = "3000px";
+function shouldIgnore() {
+    checkThatWeHaveIgnored(); 
+
+    document.body.style.overflow = "hidden";
     document.body.offsetTop;
-    
+
+    checkThatWeHaveIgnored(); 
+}
+
+function checkThatWeHaveNotIgnored() {
     if (window.internals) {
         var reasons = internals.mainThreadScrollingReasons(document);
         if (reasons === '')
@@ -93,6 +99,14 @@ function shouldNotIgnore() {
                     "scrolled, we ignore reasons for scrolling on the main " +
                     "thread that only matter when the main frame scrolls");
     }
+}
+
+function shouldNotIgnore() {
+    document.body.style.overflow = "";
+    document.body.style.height = "3000px";
+    document.body.offsetTop;
+
+    checkThatWeHaveNotIgnored(); 
 }
 
 function runTests() {

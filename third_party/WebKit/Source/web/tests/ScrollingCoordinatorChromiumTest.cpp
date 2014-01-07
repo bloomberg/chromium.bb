@@ -129,9 +129,29 @@ private:
     FrameTestHelpers::WebViewHelper m_helper;
 };
 
-TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefault)
+TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefaultBodyNotScrollable)
 {
     navigateTo("about:blank");
+    forceFullCompositingUpdate();
+
+    // Make sure the scrolling coordinator is active.
+    FrameView* frameView = frame()->view();
+    Page* page = frame()->page();
+    ASSERT_TRUE(page->scrollingCoordinator());
+    ASSERT_TRUE(page->scrollingCoordinator()->coordinatesScrollingForFrameView(frameView));
+
+    // Fast scrolling should be enabled by default, BUT if the main frame is
+    // not scrollable, then the rootScrollLayer shouldn't be scrollable either.
+    WebLayer* rootScrollLayer = getRootScrollLayer();
+    ASSERT_FALSE(rootScrollLayer->scrollable());
+    ASSERT_FALSE(rootScrollLayer->shouldScrollOnMainThread());
+    ASSERT_FALSE(rootScrollLayer->haveWheelEventHandlers());
+}
+
+TEST_F(ScrollingCoordinatorChromiumTest, fastScrollingByDefaultBodyScrollable)
+{
+    registerMockedHttpURLLoad("body-overflow-visible.html");
+    navigateTo(m_baseURL + "body-overflow-visible.html");
     forceFullCompositingUpdate();
 
     // Make sure the scrolling coordinator is active.
