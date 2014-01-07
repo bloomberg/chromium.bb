@@ -111,11 +111,6 @@ MarkupAccumulator::~MarkupAccumulator()
 {
 }
 
-String MarkupAccumulator::serializeNodes(Node* targetNode, EChildrenOnly childrenOnly)
-{
-    return serializeNodes(targetNode, childrenOnly, 0);
-}
-
 String MarkupAccumulator::serializeNodes(Node* targetNode, EChildrenOnly childrenOnly, Vector<QualifiedName>* tagNamesToSkip)
 {
     serializeNodesWithNamespaces(targetNode, childrenOnly, 0, tagNamesToSkip);

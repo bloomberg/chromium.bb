@@ -70,8 +70,7 @@ public:
     MarkupAccumulator(Vector<Node*>*, EAbsoluteURLs, const Range* = 0);
     virtual ~MarkupAccumulator();
 
-    String serializeNodes(Node* targetNode, EChildrenOnly);
-    String serializeNodes(Node* targetNode, EChildrenOnly, Vector<QualifiedName>* tagNamesToSkip);
+    String serializeNodes(Node* targetNode, EChildrenOnly, Vector<QualifiedName>* tagNamesToSkip = 0);
 
     static void appendComment(StringBuilder&, const String&);
 
