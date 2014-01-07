@@ -3015,6 +3015,20 @@
     ['test_isolation_mode != "noop"', {
       'targets': [
         {
+          'target_name': 'angle_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            '../gpu/gpu.gyp:angle_unittests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'angle_unittests.isolate',
+          ],
+          'sources': [
+            'angle_unittests.isolate',
+          ],
+        },
+        {
           'target_name': 'browser_tests_run',
           'type': 'none',
           'dependencies': [
@@ -3028,6 +3042,49 @@
           ],
           'sources': [
             'browser_tests.isolate',
+          ],
+        },
+        {
+          'target_name': 'content_gl_tests_run',
+          'type': 'none',
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:content_gl_tests',
+            'chrome_run',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'content_gl_tests.isolate',
+          ],
+          'sources': [
+            'content_gl_tests.isolate',
+          ],
+        },
+        {
+          'target_name': 'gles2_conform_test_run',
+          'type': 'none',
+          'dependencies': [
+            '../gpu/gles2_conform_support/gles2_conform_test.gyp:gles2_conform_test',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'gles2_conform_test.isolate',
+          ],
+          'sources': [
+            'gles2_conform_test.isolate',
+          ],
+        },
+        {
+          'target_name': 'gl_tests_run',
+          'type': 'none',
+          'dependencies': [
+            '../gpu/gpu.gyp:gl_tests',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'gl_tests.isolate',
+          ],
+          'sources': [
+            'gl_tests.isolate',
           ],
         },
         {
@@ -3070,6 +3127,21 @@
           ],
           'sources': [
             'sync_integration_tests.isolate',
+          ],
+        },
+        {
+          'target_name': 'tab_capture_performance_tests_run',
+          'type': 'none',
+          'dependencies': [
+            'performance_browser_tests',
+            'chrome_run',
+          ],
+          'includes': [
+            '../build/isolate.gypi',
+            'tab_capture_performance_tests.isolate',
+          ],
+          'sources': [
+            'tab_capture_performance_tests.isolate',
           ],
         },
         {

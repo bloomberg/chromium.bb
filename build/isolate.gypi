@@ -70,6 +70,10 @@
         # like '0' or '1', aren't stripped out by GYP.
         '--path-variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
         '--config-variable', 'OS=<(OS)',
+        # TODO(kbr): move this to chrome_tests.gypi:gles2_conform_tests_run
+        # once support for user-defined config variables is added.
+        '--config-variable',
+        'internal_gles2_conform_tests=<(internal_gles2_conform_tests)',
         '--result', '<@(_outputs)',
         '--isolate', '<(RULE_INPUT_PATH)',
       ],
