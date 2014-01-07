@@ -133,6 +133,7 @@
         'base/cursor/cursor_loader_x11.cc',
         'base/cursor/cursor_loader_x11.h',
         'base/cursor/cursor_null.cc',
+        'base/cursor/cursor_mac.mm',
         'base/cursor/cursor_win.cc',
         'base/cursor/cursor_x11.cc',
         'base/cursor/cursors_aura.cc',
@@ -356,6 +357,8 @@
         }],
         ['use_aura==1', {
           'sources/': [
+            ['exclude', 'base/clipboard/clipboard_mac.mm'],
+            ['exclude', 'base/layout_mac.mm'],
             ['exclude', 'base/work_area_watcher_observer.h'],
             ['exclude', 'base/x/active_window_watcher_x.cc'],
             ['exclude', 'base/x/active_window_watcher_x.h'],
@@ -374,6 +377,7 @@
             'base/cursor/cursor.h',
             'base/cursor/cursor_loader_x11.cc',
             'base/cursor/cursor_loader_x11.h',
+            'base/cursor/cursor_mac.mm',
             'base/cursor/cursor_win.cc',
             'base/cursor/cursor_x11.cc',
             'base/x/selection_owner.cc',

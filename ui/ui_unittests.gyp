@@ -54,6 +54,7 @@
         }],
         ['use_aura==1', {
           'sources!': [
+            'base/test/ui_controls_mac.mm',
             'base/test/ui_controls_win.cc',
           ],
         }],

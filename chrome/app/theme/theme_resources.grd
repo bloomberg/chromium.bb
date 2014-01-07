@@ -631,7 +631,7 @@
           </if>
         </if>
       </if>
-      <if expr="is_macosx or is_ios">
+      <if expr="(is_macosx or is_ios) and not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_OTR_ICON" file="mac/otr_icon.png" />
       </if>
       <if expr="context.startswith('default_')">
@@ -944,7 +944,7 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="common/tab_active_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="common/tab_active_right.png" />
       </if>
-      <if expr="is_macosx or is_ios">
+      <if expr="(is_macosx or is_ios) and not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_CENTER" file="mac/tab_active_center.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_LEFT" file="mac/tab_active_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ACTIVE_RIGHT" file="mac/tab_active_right.png" />
@@ -963,7 +963,7 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="common/tab_alpha_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="common/tab_alpha_right.png" />
       </if>
-      <if expr="is_macosx or is_ios">
+      <if expr="(is_macosx or is_ios) and not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_LEFT" file="mac/tab_alpha_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_ALPHA_RIGHT" file="mac/tab_alpha_right.png" />
       </if>
@@ -985,7 +985,7 @@
         <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_LEFT" file="common/tab_inactive_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_RIGHT" file="common/tab_inactive_right.png" />
       </if>
-      <if expr="is_macosx or is_ios">
+      <if expr="(is_macosx or is_ios) and not pp_ifdef('toolkit_views')">
         <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_CENTER" file="mac/tab_inactive_center.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_LEFT" file="mac/tab_inactive_left.png" />
         <structure type="chrome_scaled_image" name="IDR_TAB_INACTIVE_RIGHT" file="mac/tab_inactive_right.png" />

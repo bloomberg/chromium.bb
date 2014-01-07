@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/event_types.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/base/cursor/cursor.h"

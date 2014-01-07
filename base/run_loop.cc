@@ -17,14 +17,12 @@ RunLoop::RunLoop()
       running_(false),
       quit_when_idle_received_(false),
       weak_factory_(this) {
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
-    !defined(USE_GTK_MESSAGE_PUMP)
+#if defined(USE_AURA)
    dispatcher_ = NULL;
 #endif
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
-    !defined(USE_GTK_MESSAGE_PUMP)
+#if defined(USE_AURA)
 RunLoop::RunLoop(MessageLoop::Dispatcher* dispatcher)
     : loop_(MessageLoop::current()),
       previous_run_loop_(NULL),

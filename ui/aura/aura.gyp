@@ -93,6 +93,8 @@
         'layout_manager.h',
         'remote_root_window_host_win.cc',
         'remote_root_window_host_win.h',
+        'root_window_host_mac.mm',
+        'root_window_host_mac.h',
         'root_window_host_ozone.cc',
         'root_window_host_ozone.h',
         'root_window_host_win.cc',

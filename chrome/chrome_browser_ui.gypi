@@ -3273,12 +3273,8 @@
             ['exclude', '^browser/ui/webui/set_as_default_browser_ui.h'],
           ],
           'conditions': [
-            ['use_aura==1',{
+            ['use_aura==1', {
               'dependencies': [
-                '../build/linux/system.gyp:dbus',
-                '../build/linux/system.gyp:fontconfig',
-                '../build/linux/system.gyp:x11',
-                '../dbus/dbus.gyp:dbus',
                 '../ui/views/controls/webview/webview.gyp:webview',
                 '../ui/views/views.gyp:views',
               ],
@@ -3287,6 +3283,7 @@
                 '<(INTERMEDIATE_DIR)/chrome',
               ],
               'sources/': [
+                ['exclude', '^browser/ui/cocoa/*'],
                 ['exclude', '^browser/ui/views/frame/app_panel_browser_frame_view.cc'],
                 ['exclude', '^browser/ui/views/frame/app_panel_browser_frame_view.h'],
                 ['exclude', '^browser/ui/views/uninstall_view.cc'],
@@ -3302,6 +3299,18 @@
                 # Exclude all of views.
                 ['exclude', '^browser/ui/views/'],
               ]
+            }],
+          ],
+        }],
+        ['OS=="linux"', {
+          'conditions': [
+            ['use_aura==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:dbus',
+                '../build/linux/system.gyp:fontconfig',
+                '../build/linux/system.gyp:x11',
+                '../dbus/dbus.gyp:dbus',
+              ],
             }],
             # GTK build only
             ['toolkit_uses_gtk==1', {

@@ -90,12 +90,12 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
 
 #if defined(OS_WIN)
     const FORMATETC& ToFormatEtc() const { return data_; }
+#elif defined(USE_AURA)
+    const std::string& ToString() const { return data_; }
 #elif defined(OS_MACOSX)
     // Custom copy and assignment constructor to handle NSString.
     FormatType(const FormatType& other);
     FormatType& operator=(const FormatType& other);
-#elif defined(USE_AURA)
-    const std::string& ToString() const { return data_; }
 #endif
 
    private:
@@ -116,13 +116,13 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
     FormatType(UINT native_format, LONG index);
     UINT ToUINT() const { return data_.cfFormat; }
     FORMATETC data_;
+#elif defined(USE_AURA)
+    explicit FormatType(const std::string& native_format);
+    std::string data_;
 #elif defined(OS_MACOSX)
     explicit FormatType(NSString* native_format);
     NSString* ToNSString() const { return data_; }
     NSString* data_;
-#elif defined(USE_AURA)
-    explicit FormatType(const std::string& native_format);
-    std::string data_;
 #elif defined(TOOLKIT_GTK)
     explicit FormatType(const std::string& native_format);
     explicit FormatType(const GdkAtom& native_format);

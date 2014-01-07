@@ -154,7 +154,10 @@ class ScreenMac : public gfx::Screen {
 
   virtual gfx::Display GetDisplayNearestWindow(
       gfx::NativeView view) const OVERRIDE {
-    NSWindow* window = [view window];
+    NSWindow* window = nil;
+#if !defined(USE_AURA)
+    window = [view window];
+#endif
     if (!window)
       return GetPrimaryDisplay();
     NSScreen* match_screen = [window screen];
@@ -209,8 +212,10 @@ class ScreenMac : public gfx::Screen {
 
 namespace gfx {
 
+#if !defined(USE_AURA)
 Screen* CreateNativeScreen() {
   return new ScreenMac;
 }
+#endif
 
 }

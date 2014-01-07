@@ -96,11 +96,11 @@ class WaitableEvent;
 class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
  public:
 
-#if defined(USE_GTK_MESSAGE_PUMP)
-  typedef MessagePumpGdkObserver Observer;
-#elif !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(USE_AURA)
   typedef MessagePumpDispatcher Dispatcher;
   typedef MessagePumpObserver Observer;
+#elif defined(USE_GTK_MESSAGE_PUMP)
+  typedef MessagePumpGdkObserver Observer;
 #endif
 
   // A MessageLoop has a particular type, which indicates the set of

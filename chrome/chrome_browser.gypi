@@ -3336,7 +3336,7 @@
             }],
           ],
         }, {  # 'OS!="win"
-          'sources/': [
+          'sources/': [ 
             # Exclude files that should be excluded for all non-Windows platforms.
             ['exclude', '^browser/first_run/try_chrome_dialog_view.cc'],
             ['exclude', '^browser/first_run/try_chrome_dialog_view.h'],
@@ -3347,10 +3347,6 @@
           'conditions': [
             ['use_aura==1', {
               'dependencies': [
-                '../build/linux/system.gyp:dbus',
-                '../build/linux/system.gyp:fontconfig',
-                '../build/linux/system.gyp:x11',
-                '../dbus/dbus.gyp:dbus',
                 '../ui/views/controls/webview/webview.gyp:webview',
                 '../ui/views/views.gyp:views',
               ],
@@ -3359,15 +3355,8 @@
                 '<(INTERMEDIATE_DIR)/chrome',
               ],
               'sources/': [
-                ['exclude', '^browser/platform_util_common_linux.cc'],
                 ['include', '^browser/printing/print_dialog_cloud.cc'],
                 ['include', '^browser/printing/print_dialog_cloud.h'],
-              ],
-            }],
-            # GTK build only
-            ['toolkit_uses_gtk==1', {
-              'sources/': [
-                ['exclude', '^browser/lifetime/application_lifetime_stub.cc'],
               ],
             }],
             ['gcc_version == 45', {
@@ -3375,6 +3364,27 @@
               # as per http://crbug.com/41887
               'cflags': [
                 '-fno-ipa-cp',
+              ],
+            }],
+          ],
+        }],
+        ['OS=="linux"', {
+          'conditions': [
+            ['use_aura==1', {
+              'dependencies': [
+                '../build/linux/system.gyp:dbus',
+                '../build/linux/system.gyp:fontconfig',
+                '../build/linux/system.gyp:x11',
+                '../dbus/dbus.gyp:dbus',
+              ],
+              'sources/': [
+                ['exclude', '^browser/platform_util_common_linux.cc'],
+              ],
+            }],
+            # GTK build only
+            ['toolkit_uses_gtk==1', {
+              'sources/': [
+                ['exclude', '^browser/lifetime/application_lifetime_stub.cc'],
               ],
             }],
           ],

@@ -47,7 +47,7 @@ class ClipboardData {
   virtual ~ClipboardData() {}
 
   // Bitmask of AuraClipboardFormat types.
-  const int format() const { return format_; }
+  int format() const { return format_; }
 
   const std::string& text() const { return text_; }
   void set_text(const std::string& text) {

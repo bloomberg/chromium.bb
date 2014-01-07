@@ -9,6 +9,10 @@
 namespace ui {
 
 // TODO(dcheng): This name is temporary. See crbug.com/106449.
+#if defined(USE_AURA)
+const char kMimeTypeWebCustomData[] = "chromium/x-web-custom-data";
+#else
 NSString* const kWebCustomDataPboardType = @"org.chromium.web-custom-data";
+#endif
 
 }  // namespace ui
