@@ -1223,8 +1223,6 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 // Handles setting the title of the tab based on the given |contents|. Uses
 // a canned string if |contents| is NULL.
 - (void)setTabTitle:(TabController*)tab withContents:(WebContents*)contents {
-  // TODO(miu): Rectify inconsistent tooltip behavior.  http://crbug.com/310947
-
   base::string16 title;
   if (contents)
     title = contents->GetTitle();

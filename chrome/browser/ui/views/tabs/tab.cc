@@ -927,22 +927,10 @@ void Tab::GetHitTestMask(HitTestSource source, gfx::Path* path) const {
 }
 
 bool Tab::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
-  // TODO(miu): Rectify inconsistent tooltip behavior.  http://crbug.com/310947
-
-  if (data_.media_state != TAB_MEDIA_STATE_NONE) {
-    *tooltip = chrome::AssembleTabTooltipText(data_.title, data_.media_state);
-    return true;
-  }
-
-  if (data_.title.empty())
-    return false;
-
-  // Only show the tooltip if the title is truncated.
-  if (font_->GetStringWidth(data_.title) > GetTitleBounds().width()) {
-    *tooltip = data_.title;
-    return true;
-  }
-  return false;
+  // Note: Anything that affects the tooltip text should be accounted for when
+  // calling TooltipTextChanged() from Tab::DataChanged().
+  *tooltip = chrome::AssembleTabTooltipText(data_.title, data_.media_state);
+  return !tooltip->empty();
 }
 
 bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
@@ -1128,6 +1116,9 @@ void Tab::MaybeAdjustLeftForMiniTab(gfx::Rect* bounds) const {
 }
 
 void Tab::DataChanged(const TabRendererData& old) {
+  if (data().media_state != old.media_state || data().title != old.title)
+    TooltipTextChanged();
+
   if (data().blocked == old.blocked)
     return;
 
