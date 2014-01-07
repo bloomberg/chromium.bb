@@ -604,9 +604,9 @@ public:
         LayoutUnit m_paginationStrut;
         LayoutUnit m_pageLogicalOffset;
 
-        int m_lineBreakToAvoidWidow;
         OwnPtr<ShapeInsideInfo> m_shapeInsideInfo;
-        bool m_didBreakAtLineToAvoidWidow : 1;
+        int m_lineBreakToAvoidWidow : 31;
+        unsigned m_didBreakAtLineToAvoidWidow : 1;
      };
 
 protected:
