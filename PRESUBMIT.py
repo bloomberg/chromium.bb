@@ -667,7 +667,7 @@ def _CheckIncludeOrderInFile(input_api, f, changed_linenums):
   for line in contents[line_num:]:
     line_num += 1
     if uncheckable_includes_pattern.match(line):
-      return []
+      continue
     if if_pattern.match(line):
       scopes.append(current_scope)
       current_scope = []
