@@ -12,7 +12,7 @@ body.uber-frame > .page.big-topbar-page {
 
 #top-container {
   margin-top: 16px;
-  overflow: auto;
+  overflow: hidden;
 }
 
 #editing-controls,
