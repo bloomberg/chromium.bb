@@ -781,80 +781,6 @@ void RenderBlockFlow::computeBlockDirectionPositionsForLine(RootInlineBox* lineB
     lineBox->markDirty(false);
 }
 
-static inline bool isCollapsibleSpace(UChar character, RenderText* renderer)
-{
-    if (character == ' ' || character == '\t' || character == softHyphen)
-        return true;
-    if (character == '\n')
-        return !renderer->style()->preserveNewline();
-    return false;
-}
-
-template <typename CharacterType>
-static inline int findFirstTrailingSpace(RenderText* lastText, const CharacterType* characters, int start, int stop)
-{
-    int firstSpace = stop;
-    while (firstSpace > start) {
-        UChar current = characters[firstSpace - 1];
-        if (!isCollapsibleSpace(current, lastText))
-            break;
-        firstSpace--;
-    }
-
-    return firstSpace;
-}
-
-inline BidiRun* RenderBlockFlow::handleTrailingSpaces(BidiRunList<BidiRun>& bidiRuns, BidiContext* currentContext)
-{
-    if (!bidiRuns.runCount()
-        || !bidiRuns.logicallyLastRun()->m_object->style()->breakOnlyAfterWhiteSpace()
-        || !bidiRuns.logicallyLastRun()->m_object->style()->autoWrap())
-        return 0;
-
-    BidiRun* trailingSpaceRun = bidiRuns.logicallyLastRun();
-    RenderObject* lastObject = trailingSpaceRun->m_object;
-    if (!lastObject->isText())
-        return 0;
-
-    RenderText* lastText = toRenderText(lastObject);
-    int firstSpace;
-    if (lastText->is8Bit())
-        firstSpace = findFirstTrailingSpace(lastText, lastText->characters8(), trailingSpaceRun->start(), trailingSpaceRun->stop());
-    else
-        firstSpace = findFirstTrailingSpace(lastText, lastText->characters16(), trailingSpaceRun->start(), trailingSpaceRun->stop());
-
-    if (firstSpace == trailingSpaceRun->stop())
-        return 0;
-
-    TextDirection direction = style()->direction();
-    bool shouldReorder = trailingSpaceRun != (direction == LTR ? bidiRuns.lastRun() : bidiRuns.firstRun());
-    if (firstSpace != trailingSpaceRun->start()) {
-        BidiContext* baseContext = currentContext;
-        while (BidiContext* parent = baseContext->parent())
-            baseContext = parent;
-
-        BidiRun* newTrailingRun = new BidiRun(firstSpace, trailingSpaceRun->m_stop, trailingSpaceRun->m_object, baseContext, OtherNeutral);
-        trailingSpaceRun->m_stop = firstSpace;
-        if (direction == LTR)
-            bidiRuns.addRun(newTrailingRun);
-        else
-            bidiRuns.prependRun(newTrailingRun);
-        trailingSpaceRun = newTrailingRun;
-        return trailingSpaceRun;
-    }
-    if (!shouldReorder)
-        return trailingSpaceRun;
-
-    if (direction == LTR) {
-        bidiRuns.moveRunToEnd(trailingSpaceRun);
-        trailingSpaceRun->m_level = 0;
-    } else {
-        bidiRuns.moveRunToBeginning(trailingSpaceRun);
-        trailingSpaceRun->m_level = 1;
-    }
-    return trailingSpaceRun;
-}
-
 void RenderBlockFlow::appendFloatingObjectToLastLine(FloatingObject* floatingObject)
 {
     ASSERT(!floatingObject->originatingLine());
@@ -1458,7 +1384,6 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
                 lastRootBox()->setLineBreakInfo(endOfLine.object(), endOfLine.offset(), resolver.status());
         } else {
             VisualDirectionOverride override = (styleToUse->rtlOrdering() == VisualOrder ? (styleToUse->direction() == LTR ? VisualLeftToRightOverride : VisualRightToLeftOverride) : NoVisualOverride);
-
             if (isNewUBAParagraph && styleToUse->unicodeBidi() == Plaintext && !resolver.context()->parent()) {
                 TextDirection direction = determinePlaintextDirectionality(resolver.position().root(), resolver.position().object(), resolver.position().offset());
                 resolver.setStatus(BidiStatus(direction, isOverride(styleToUse->unicodeBidi())));
@@ -1468,7 +1393,7 @@ void RenderBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState, I
             constructBidiRunsForLine(this, resolver, bidiRuns, endOfLine, override, layoutState.lineInfo().previousLineBrokeCleanly(), isNewUBAParagraph);
             ASSERT(resolver.position() == endOfLine);
 
-            BidiRun* trailingSpaceRun = !layoutState.lineInfo().previousLineBrokeCleanly() ? handleTrailingSpaces(bidiRuns, resolver.context()) : 0;
+            BidiRun* trailingSpaceRun = resolver.trailingSpaceRun();
 
             if (bidiRuns.runCount() && lineBreaker.lineWasHyphenated()) {
                 bidiRuns.logicallyLastRun()->m_hasHyphen = true;

@@ -172,6 +172,7 @@ public:
         , m_reachedEndOfLine(false)
         , m_emptyRun(true)
         , m_nestedIsolateCount(0)
+        , m_trailingSpaceRun(0)
     {
     }
 
@@ -203,6 +204,7 @@ public:
     {
         ASSERT(s.context);
         m_status = s;
+        m_paragraphDirectionality = s.context->dir() == WTF::Unicode::LeftToRight ? LTR : RTL;
     }
 
     MidpointState<Iterator>& midpointState() { return m_midpointState; }
@@ -236,12 +238,15 @@ public:
 
     Iterator endOfLine() const { return m_endOfLine; }
 
+    Run* trailingSpaceRun() const { return m_trailingSpaceRun; }
+
 protected:
     void increment() { m_current.increment(); }
     // FIXME: Instead of InlineBidiResolvers subclassing this method, we should
     // pass in some sort of Traits object which knows how to create runs for appending.
     void appendRun();
 
+    Run* addTrailingRun(int, int, Run*, BidiContext*, TextDirection) { return 0; }
     Iterator m_current;
     // sor and eor are "start of run" and "end of run" respectively and correpond
     // to abreviations used in UBA spec: http://unicode.org/reports/tr9/#BD7
@@ -265,6 +270,8 @@ protected:
 
     unsigned m_nestedIsolateCount;
     Vector<Run*> m_isolatedRuns;
+    Run* m_trailingSpaceRun;
+    TextDirection m_paragraphDirectionality;
 
 private:
     void raiseExplicitEmbeddingLevel(WTF::Unicode::Direction from, WTF::Unicode::Direction to);
@@ -273,6 +280,11 @@ private:
 
     void updateStatusLastFromCurrentDirection(WTF::Unicode::Direction);
     void reorderRunsFromLevels();
+
+    bool needsToApplyL1Rule() { return false; }
+    int findFirstTrailingSpaceAtRun(Run*) { return 0; }
+    // http://www.unicode.org/reports/tr9/#L1
+    void applyL1Rule();
 
     Vector<BidiEmbedding, 8> m_currentExplicitEmbeddingSequence;
     HashMap<Run *, MidpointState<Iterator> > m_midpointStateForIsolatedRun;
@@ -414,6 +426,45 @@ void BidiResolver<Iterator, Run>::raiseExplicitEmbeddingLevel(WTF::Unicode::Dire
     setLastDir(to);
     setLastStrongDir(to);
     m_eor = Iterator();
+}
+
+template <class Iterator, class Run>
+void BidiResolver<Iterator, Run>::applyL1Rule()
+{
+    ASSERT(m_runs.runCount());
+    if (!needsToApplyL1Rule())
+        return;
+
+    Run* trailingSpaceRun = m_runs.logicallyLastRun();
+
+    int firstSpace = findFirstTrailingSpaceAtRun(trailingSpaceRun);
+    if (firstSpace == trailingSpaceRun->stop())
+        return;
+
+    bool shouldReorder = trailingSpaceRun != (m_paragraphDirectionality == LTR ? m_runs.lastRun() : m_runs.firstRun());
+    if (firstSpace != trailingSpaceRun->start()) {
+        BidiContext* baseContext = context();
+        while (BidiContext* parent = baseContext->parent())
+            baseContext = parent;
+
+        m_trailingSpaceRun = addTrailingRun(firstSpace, trailingSpaceRun->m_stop, trailingSpaceRun, baseContext, m_paragraphDirectionality);
+        ASSERT(m_trailingSpaceRun);
+        trailingSpaceRun->m_stop = firstSpace;
+        return;
+    }
+    if (!shouldReorder) {
+        m_trailingSpaceRun = trailingSpaceRun;
+        return;
+    }
+
+    if (m_paragraphDirectionality == LTR) {
+        m_runs.moveRunToEnd(trailingSpaceRun);
+        trailingSpaceRun->m_level = 0;
+    } else {
+        m_runs.moveRunToBeginning(trailingSpaceRun);
+        trailingSpaceRun->m_level = 1;
+    }
+    m_trailingSpaceRun = trailingSpaceRun;
 }
 
 template <class Iterator, class Run>
@@ -589,6 +640,7 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
     using namespace WTF::Unicode;
 
     ASSERT(m_direction == OtherNeutral);
+    m_trailingSpaceRun = 0;
 
     m_endOfLine = end;
 
@@ -985,6 +1037,9 @@ void BidiResolver<Iterator, Run>::createBidiRunsForLine(const Iterator& end, Vis
     reorderRunsFromLevels();
     m_endOfRunAtEndOfLine = Iterator();
     m_endOfLine = Iterator();
+
+    if (!hardLineBreak && m_runs.runCount())
+        applyL1Rule();
 }
 
 template <class Iterator, class Run>

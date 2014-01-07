@@ -451,6 +451,67 @@ inline bool InlineBidiResolver::isEndOfLine(const InlineIterator& end)
     return inEndOfLine;
 }
 
+static inline bool isCollapsibleSpace(UChar character, RenderText* renderer)
+{
+    if (character == ' ' || character == '\t' || character == softHyphen)
+        return true;
+    if (character == '\n')
+        return !renderer->style()->preserveNewline();
+    return false;
+}
+
+template <typename CharacterType>
+static inline int findFirstTrailingSpace(RenderText* lastText, const CharacterType* characters, int start, int stop)
+{
+    int firstSpace = stop;
+    while (firstSpace > start) {
+        UChar current = characters[firstSpace - 1];
+        if (!isCollapsibleSpace(current, lastText))
+            break;
+        firstSpace--;
+    }
+
+    return firstSpace;
+}
+
+template <>
+inline int InlineBidiResolver::findFirstTrailingSpaceAtRun(BidiRun* run)
+{
+    ASSERT(run);
+    RenderObject* lastObject = run->m_object;
+    if (!lastObject->isText())
+        return run->m_stop;
+
+    RenderText* lastText = toRenderText(lastObject);
+    int firstSpace;
+    if (lastText->is8Bit())
+        firstSpace = findFirstTrailingSpace(lastText, lastText->characters8(), run->start(), run->stop());
+    else
+        firstSpace = findFirstTrailingSpace(lastText, lastText->characters16(), run->start(), run->stop());
+    return firstSpace;
+}
+
+template <>
+inline BidiRun* InlineBidiResolver::addTrailingRun(int start, int stop, BidiRun* run, BidiContext* context, TextDirection direction)
+{
+    BidiRun* newTrailingRun = new BidiRun(start, stop, run->m_object, context, WTF::Unicode::OtherNeutral);
+    if (direction == LTR)
+        m_runs.addRun(newTrailingRun);
+    else
+        m_runs.prependRun(newTrailingRun);
+
+    return newTrailingRun;
+}
+
+template <>
+inline bool InlineBidiResolver::needsToApplyL1Rule()
+{
+    if (!m_runs.logicallyLastRun()->m_object->style()->breakOnlyAfterWhiteSpace()
+        || !m_runs.logicallyLastRun()->m_object->style()->autoWrap())
+        return false;
+    return true;
+}
+
 static inline bool isIsolatedInline(RenderObject* object)
 {
     ASSERT(object);
