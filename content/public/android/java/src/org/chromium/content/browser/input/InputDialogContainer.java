@@ -28,6 +28,9 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Opens the approprate date/time picker dialog for the given dialog type.
+ */
 public class InputDialogContainer {
 
     interface InputActionDelegate {
@@ -169,15 +172,6 @@ public class InputDialogContainer {
         mDialog = new AlertDialog.Builder(mContext)
             .setTitle(dialogTitleId)
             .setView(suggestionListView)
-            .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    if (mDialog == dialog && !mDialogAlreadyDismissed) {
-                        mDialogAlreadyDismissed = true;
-                        mInputActionDelegate.cancelDateTimeDialog();
-                    }
-                }
-            })
             .setNegativeButton(mContext.getText(android.R.string.cancel),
                 new DialogInterface.OnClickListener() {
                     @Override
@@ -187,6 +181,15 @@ public class InputDialogContainer {
                 })
             .create();
 
+        mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (mDialog == dialog && !mDialogAlreadyDismissed) {
+                    mDialogAlreadyDismissed = true;
+                    mInputActionDelegate.cancelDateTimeDialog();
+                }
+            }
+        });
         mDialogAlreadyDismissed = false;
         mDialog.show();
     }
