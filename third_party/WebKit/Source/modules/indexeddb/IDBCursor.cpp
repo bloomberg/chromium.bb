@@ -391,7 +391,7 @@ IndexedDB::CursorDirection IDBCursor::stringToDirection(const String& directionS
     if (directionString == IDBCursor::directionPrevUnique())
         return IndexedDB::CursorPrevNoDuplicate;
 
-    exceptionState.throwUninformativeAndGenericTypeError();
+    exceptionState.throwTypeError("The direction provided ('" + directionString + "') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.");
     return IndexedDB::CursorNext;
 }
 

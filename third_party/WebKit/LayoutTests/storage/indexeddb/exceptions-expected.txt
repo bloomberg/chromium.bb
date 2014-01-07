@@ -106,7 +106,7 @@ Exception message: Failed to execute 'transaction' on 'IDBDatabase': One of the 
 The value for the mode parameter is invalid.
 Expecting TypeError exception from db.transaction('store', 'invalid-mode')
 PASS Exception was thrown.
-PASS db.transaction('store', 'invalid-mode') threw TypeError: Type error
+PASS db.transaction('store', 'invalid-mode') threw TypeError: Failed to execute 'transaction' on 'IDBDatabase': The mode provided ('invalid-mode') is not one of 'readonly' or 'readwrite'.
 The function was called with an empty list of store names
 Expecting exception from db.transaction([])
 PASS Exception was thrown.
@@ -254,7 +254,7 @@ Exception message: Failed to execute 'openCursor' on 'IDBObjectStore': The trans
 The value for the direction parameter is invalid.
 Expecting TypeError exception from store.openCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS store.openCursor(0, 'invalid-direction') threw TypeError: Type error
+PASS store.openCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openCursor' on 'IDBObjectStore': The direction provided ('invalid-direction') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.
 
 IDBObjectStore.openKeyCursor()
 If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.
@@ -272,7 +272,7 @@ Exception message: Failed to execute 'openKeyCursor' on 'IDBObjectStore': The tr
 The value for the direction parameter is invalid.
 Expecting TypeError exception from store.openKeyCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS store.openKeyCursor(0, 'invalid-direction') threw TypeError: Type error
+PASS store.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBObjectStore': The direction provided ('invalid-direction') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.
 
 IDBObjectStore.put()
 This method throws a DOMException of type ReadOnlyError if the transaction which this IDBObjectStore belongs to is has its mode set to "readonly".
@@ -409,7 +409,7 @@ Exception message: Failed to execute 'openCursor' on 'IDBIndex': The transaction
 The value for the direction parameter is invalid.
 Expecting TypeError exception from index.openCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS index.openCursor(0, 'invalid-direction') threw TypeError: Type error
+PASS index.openCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openCursor' on 'IDBIndex': The direction provided ('invalid-direction') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.
 
 IDBIndex.openKeyCursor()
 If the range parameter is specified but is not a valid key or a key range, this method throws a DOMException of type DataError.
@@ -427,7 +427,7 @@ Exception message: Failed to execute 'openKeyCursor' on 'IDBIndex': The transact
 The value for the direction parameter is invalid.
 Expecting TypeError exception from index.openKeyCursor(0, 'invalid-direction')
 PASS Exception was thrown.
-PASS index.openKeyCursor(0, 'invalid-direction') threw TypeError: Type error
+PASS index.openKeyCursor(0, 'invalid-direction') threw TypeError: Failed to execute 'openKeyCursor' on 'IDBIndex': The direction provided ('invalid-direction') is not one of 'next', 'nextunique', 'prev', or 'prevunique'.
 
 3.2.7 Cursor
 transaction = db.transaction(['store', 'inlineKeyStore'], 'readwrite')

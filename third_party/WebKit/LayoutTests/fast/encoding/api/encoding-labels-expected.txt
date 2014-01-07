@@ -10,10 +10,10 @@ PASS new TextDecoder("utf-8").encoding is "utf-8"
 PASS new TextDecoder("utf8").encoding is "utf-8"
 
 name = "ibm866"
-FAIL new TextDecoder("866").encoding should be ibm866. Threw exception TypeError: Type error
-FAIL new TextDecoder("cp866").encoding should be ibm866. Threw exception TypeError: Type error
-FAIL new TextDecoder("csibm866").encoding should be ibm866. Threw exception TypeError: Type error
-FAIL new TextDecoder("ibm866").encoding should be ibm866. Threw exception TypeError: Type error
+FAIL new TextDecoder("866").encoding should be ibm866. Threw exception TypeError: Failed to construct 'TextDecoder': The encoding label provided ('866') is invalid.
+FAIL new TextDecoder("cp866").encoding should be ibm866. Threw exception TypeError: Failed to construct 'TextDecoder': The encoding label provided ('cp866') is invalid.
+FAIL new TextDecoder("csibm866").encoding should be ibm866. Threw exception TypeError: Failed to construct 'TextDecoder': The encoding label provided ('csibm866') is invalid.
+FAIL new TextDecoder("ibm866").encoding should be ibm866. Threw exception TypeError: Failed to construct 'TextDecoder': The encoding label provided ('ibm866') is invalid.
 
 name = "iso-8859-2"
 PASS new TextDecoder("csisolatin2").encoding is "iso-8859-2"

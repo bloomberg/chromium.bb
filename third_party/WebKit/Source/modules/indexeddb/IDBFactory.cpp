@@ -97,7 +97,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::open(ExecutionContext* context, const S
 {
     IDB_TRACE("IDBFactory::open");
     if (!version) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The version provided must not be 0.");
         return 0;
     }
     return openInternal(context, name, version, exceptionState);
@@ -108,7 +108,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ExecutionContext* context,
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBOpenCall, IDBMethodsMax);
     ASSERT(version >= 1 || version == IDBDatabaseMetadata::NoIntVersion);
     if (name.isNull()) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The name provided must not be empty.");
         return 0;
     }
     if (!isContextValid(context))
@@ -142,7 +142,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ExecutionContext* contex
     IDB_TRACE("IDBFactory::deleteDatabase");
     blink::Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteDatabaseCall, IDBMethodsMax);
     if (name.isNull()) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The name provided must not be empty.");
         return 0;
     }
     if (!isContextValid(context))

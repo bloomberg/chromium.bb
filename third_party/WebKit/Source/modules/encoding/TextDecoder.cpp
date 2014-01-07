@@ -44,7 +44,7 @@ PassRefPtr<TextDecoder> TextDecoder::create(const String& label, const Dictionar
 
     WTF::TextEncoding encoding(encodingLabel);
     if (!encoding.isValid()) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The encoding label provided ('" + encodingLabel + "') is invalid.");
         return 0;
     }
 

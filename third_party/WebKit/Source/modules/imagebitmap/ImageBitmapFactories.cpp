@@ -83,7 +83,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
     ASSERT(eventTarget->toDOMWindow());
 
     if (!image) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The image element provided is invalid.");
         return ScriptPromise();
     }
     if (!image->cachedImage()) {
@@ -123,7 +123,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
     ASSERT(eventTarget->toDOMWindow());
 
     if (!video) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The video element provided is invalid.");
         return ScriptPromise();
     }
     if (!video->player()) {
@@ -175,7 +175,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
     ASSERT(eventTarget->toDOMWindow());
 
     if (!canvas) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The canvas element provided is invalid.");
         return ScriptPromise();
     }
     if (!canvas->originClean()) {
@@ -230,7 +230,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, ImageData* data, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
 {
     if (!data) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The ImageData provided is invalid.");
         return ScriptPromise();
     }
     if (!sw || !sh) {
@@ -249,7 +249,7 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
 ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, ImageBitmap* bitmap, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
 {
     if (!bitmap) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The ImageBitmap provided is invalid.");
         return ScriptPromise();
     }
     if (!sw || !sh) {

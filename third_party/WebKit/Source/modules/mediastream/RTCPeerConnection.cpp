@@ -504,7 +504,7 @@ PassRefPtr<RTCDTMFSender> RTCPeerConnection::createDTMFSender(PassRefPtr<MediaSt
     }
 
     if (!prpTrack) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The MediaStreamTrack provided is invalid.");
         return 0;
     }
 

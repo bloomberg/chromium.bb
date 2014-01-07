@@ -289,7 +289,7 @@ IndexedDB::TransactionMode IDBTransaction::stringToMode(const String& modeString
     if (modeString == IDBTransaction::modeReadWrite())
         return IndexedDB::TransactionReadWrite;
 
-    exceptionState.throwUninformativeAndGenericTypeError();
+    exceptionState.throwTypeError("The mode provided ('" + modeString + "') is not one of 'readonly' or 'readwrite'.");
     return IndexedDB::TransactionReadOnly;
 }
 

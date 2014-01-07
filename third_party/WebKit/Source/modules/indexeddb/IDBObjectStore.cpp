@@ -396,7 +396,7 @@ PassRefPtr<IDBIndex> IDBObjectStore::createIndex(ExecutionContext* context, cons
         return 0;
     }
     if (name.isNull()) {
-        exceptionState.throwUninformativeAndGenericTypeError();
+        exceptionState.throwTypeError("The name provided is null.");
         return 0;
     }
     if (containsIndex(name)) {
