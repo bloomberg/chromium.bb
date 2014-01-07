@@ -186,8 +186,7 @@ void StyledMarkupAccumulator::appendStyleNodeOpenTag(StringBuilder& out, StylePr
     else
         out.appendLiteral("<span style=\"");
     appendAttributeValue(out, style->asText(), document->isHTMLDocument());
-    out.append('\"');
-    out.append('>');
+    out.appendLiteral("\">");
 }
 
 const String& StyledMarkupAccumulator::styleNodeCloseTag(bool isBlock)
@@ -930,11 +929,11 @@ String createFullMarkup(const Range* range)
 String urlToMarkup(const KURL& url, const String& title)
 {
     StringBuilder markup;
-    markup.append("<a href=\"");
+    markup.appendLiteral("<a href=\"");
     markup.append(url.string());
-    markup.append("\">");
+    markup.appendLiteral("\">");
     MarkupAccumulator::appendCharactersReplacingEntities(markup, title, 0, title.length(), EntityMaskInPCDATA);
-    markup.append("</a>");
+    markup.appendLiteral("</a>");
     return markup.toString();
 }
 

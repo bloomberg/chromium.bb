@@ -289,8 +289,7 @@ void MarkupAccumulator::appendNamespace(StringBuilder& result, const AtomicStrin
             result.append(prefix);
         }
 
-        result.append('=');
-        result.append('"');
+        result.appendLiteral("=\"");
         appendAttributeValue(result, namespaceURI, false);
         result.append('"');
     }
@@ -358,8 +357,7 @@ void MarkupAccumulator::appendDocumentType(StringBuilder& result, const Document
         result.append(n->publicId());
         result.append('"');
         if (!n->systemId().isEmpty()) {
-            result.append(' ');
-            result.append('"');
+            result.appendLiteral(" \"");
             result.append(n->systemId());
             result.append('"');
         }
@@ -369,8 +367,7 @@ void MarkupAccumulator::appendDocumentType(StringBuilder& result, const Document
         result.append('"');
     }
     if (!n->internalSubset().isEmpty()) {
-        result.append(' ');
-        result.append('[');
+        result.appendLiteral(" [");
         result.append(n->internalSubset());
         result.append(']');
     }
@@ -380,13 +377,11 @@ void MarkupAccumulator::appendDocumentType(StringBuilder& result, const Document
 void MarkupAccumulator::appendProcessingInstruction(StringBuilder& result, const String& target, const String& data)
 {
     // FIXME: PI data is not escaped, but XMLSerializer (and possibly other callers) this should raise an exception if it includes "?>".
-    result.append('<');
-    result.append('?');
+    result.appendLiteral("<?");
     result.append(target);
     result.append(' ');
     result.append(data);
-    result.append('?');
-    result.append('>');
+    result.appendLiteral("?>");
 }
 
 void MarkupAccumulator::appendElement(StringBuilder& result, Element* element, Namespaces* namespaces)
@@ -543,8 +538,7 @@ void MarkupAccumulator::appendEndMarkup(StringBuilder& result, const Node* node)
     if (!node->isElementNode() || shouldSelfClose(node) || (!node->hasChildNodes() && elementCannotHaveEndTag(node)))
         return;
 
-    result.append('<');
-    result.append('/');
+    result.appendLiteral("</");
     result.append(toElement(node)->nodeNamePreservingCase());
     result.append('>');
 }
