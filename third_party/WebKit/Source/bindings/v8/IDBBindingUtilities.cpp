@@ -27,12 +27,14 @@
 #include "bindings/v8/IDBBindingUtilities.h"
 
 #include "V8DOMStringList.h"
+#include "V8HiddenPropertyName.h"
 #include "V8IDBCursor.h"
 #include "V8IDBCursorWithValue.h"
 #include "V8IDBDatabase.h"
 #include "V8IDBIndex.h"
 #include "V8IDBKeyRange.h"
 #include "V8IDBObjectStore.h"
+#include "V8IDBRequest.h"
 #include "V8IDBTransaction.h"
 #include "bindings/v8/DOMRequestState.h"
 #include "bindings/v8/SerializedScriptValue.h"
@@ -116,10 +118,22 @@ v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> creationCo
         return v8::Null(isolate);
     case IDBAny::DOMStringListType:
         return toV8(impl->domStringList(), creationContext, isolate);
-    case IDBAny::IDBCursorType:
-        return toV8(impl->idbCursor(), creationContext, isolate);
-    case IDBAny::IDBCursorWithValueType:
-        return toV8(impl->idbCursorWithValue(), creationContext, isolate);
+    case IDBAny::IDBCursorType: {
+        // Ensure request wrapper is kept alive at least as long as the cursor wrapper,
+        // so that event listeners are retained.
+        v8::Handle<v8::Value> cursor = toV8(impl->idbCursor(), creationContext, isolate);
+        v8::Handle<v8::Value> request = toV8(impl->idbCursor()->request(), creationContext, isolate);
+        cursor->ToObject()->SetHiddenValue(V8HiddenPropertyName::idbCursorRequest(isolate), request);
+        return cursor;
+    }
+    case IDBAny::IDBCursorWithValueType: {
+        // Ensure request wrapper is kept alive at least as long as the cursor wrapper,
+        // so that event listeners are retained.
+        v8::Handle<v8::Value> cursor = toV8(impl->idbCursorWithValue(), creationContext, isolate);
+        v8::Handle<v8::Value> request = toV8(impl->idbCursorWithValue()->request(), creationContext, isolate);
+        cursor->ToObject()->SetHiddenValue(V8HiddenPropertyName::idbCursorRequest(isolate), request);
+        return cursor;
+    }
     case IDBAny::IDBDatabaseType:
         return toV8(impl->idbDatabase(), creationContext, isolate);
     case IDBAny::IDBIndexType:

@@ -54,6 +54,7 @@ namespace WebCore {
     V(document) \
     V(event) \
     V(error) \
+    V(idbCursorRequest) \
     V(listener) \
     V(scriptState) \
     V(sleepFunction) \
