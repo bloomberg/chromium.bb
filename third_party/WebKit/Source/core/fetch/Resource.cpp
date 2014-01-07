@@ -115,6 +115,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_switchingClientsToRevalidatedResource(false)
     , m_type(type)
     , m_status(Pending)
+    , m_wasPurged(false)
 #ifndef NDEBUG
     , m_deleted(false)
     , m_lruIndex(0)
@@ -820,8 +821,10 @@ bool Resource::makePurgeable(bool purgeable)
     ASSERT(!m_data);
     ASSERT(!hasClients());
 
-    if (!m_purgeableData->lock())
+    if (!m_purgeableData->lock()) {
+        m_wasPurged = true;
         return false;
+    }
 
     m_data = SharedBuffer::adoptPurgeableBuffer(m_purgeableData.release());
     return true;
@@ -829,12 +832,12 @@ bool Resource::makePurgeable(bool purgeable)
 
 bool Resource::isPurgeable() const
 {
-    return m_purgeableData && m_purgeableData->isPurgeable();
+    return m_purgeableData && !m_purgeableData->isLocked();
 }
 
 bool Resource::wasPurged() const
 {
-    return m_purgeableData && m_purgeableData->wasPurged();
+    return m_wasPurged;
 }
 
 size_t Resource::overheadSize() const

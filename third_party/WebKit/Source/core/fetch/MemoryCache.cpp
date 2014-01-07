@@ -139,7 +139,8 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL)
     Resource* resource = m_resources.get(url);
     if (resource && !resource->makePurgeable(false)) {
         ASSERT(!resource->hasClients());
-        evict(resource);
+        bool didEvict = evict(resource);
+        ASSERT_UNUSED(didEvict, didEvict);
         return 0;
     }
     return resource;
@@ -291,7 +292,7 @@ void MemoryCache::setCapacities(size_t minDeadBytes, size_t maxDeadBytes, size_t
     prune();
 }
 
-void MemoryCache::evict(Resource* resource)
+bool MemoryCache::evict(Resource* resource)
 {
     ASSERT(WTF::isMainThread());
     WTF_LOG(ResourceLoading, "Evicting resource %p for '%s' from cache", resource, resource->url().string().latin1().data());
@@ -310,7 +311,7 @@ void MemoryCache::evict(Resource* resource)
         ASSERT(m_resources.get(resource->url()) != resource);
     }
 
-    resource->deleteIfPossible();
+    return resource->deleteIfPossible();
 }
 
 MemoryCache::LRUList* MemoryCache::lruListFor(Resource* resource)

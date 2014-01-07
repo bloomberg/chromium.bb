@@ -173,7 +173,7 @@ private:
     void pruneLiveResources();
     void pruneNow(double currentTime);
 
-    void evict(Resource*);
+    bool evict(Resource*);
 
     static void removeURLFromCacheInternal(ExecutionContext*, const KURL&);
 

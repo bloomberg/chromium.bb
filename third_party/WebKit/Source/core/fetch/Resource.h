@@ -361,6 +361,8 @@ private:
     unsigned m_type : 4; // Type
     unsigned m_status : 3; // Status
 
+    unsigned m_wasPurged : 1;
+
 #ifndef NDEBUG
     bool m_deleted;
     unsigned m_lruIndex;

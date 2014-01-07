@@ -205,7 +205,7 @@ PassRefPtr<SharedBuffer> SharedBuffer::adoptVector(Vector<char>& vector)
 
 PassRefPtr<SharedBuffer> SharedBuffer::adoptPurgeableBuffer(PassOwnPtr<PurgeableBuffer> purgeableBuffer)
 {
-    ASSERT(!purgeableBuffer->isPurgeable());
+    ASSERT(purgeableBuffer->isLocked());
     RefPtr<SharedBuffer> buffer = create();
     buffer->m_purgeableBuffer = purgeableBuffer;
     return buffer.release();

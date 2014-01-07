@@ -52,44 +52,32 @@ PassOwnPtr<PurgeableBuffer> PurgeableBuffer::create(const char* data, size_t siz
 
 PurgeableBuffer::~PurgeableBuffer()
 {
-    if (m_state == Locked)
-        m_memory->unlock();
 }
 
 const char* PurgeableBuffer::data() const
 {
-    ASSERT(m_state == Locked);
+    ASSERT(m_isLocked);
     return static_cast<const char*>(m_memory->data());
-}
-
-bool PurgeableBuffer::wasPurged() const
-{
-    return m_state == Purged;
 }
 
 bool PurgeableBuffer::lock()
 {
-    ASSERT(m_state == Unlocked);
-    if (!m_memory->lock()) {
-        m_state = Purged;
-        m_memory = nullptr;
-        return false;
-    }
-    m_state = Locked;
-    return true;
+    ASSERT(!m_isLocked);
+    m_isLocked = true;
+    return m_memory->lock();
 }
 
 void PurgeableBuffer::unlock()
 {
-    ASSERT(m_state == Locked);
+    ASSERT(m_isLocked);
+    m_isLocked = false;
     m_memory->unlock();
-    m_state = Unlocked;
 }
 
 PurgeableBuffer::PurgeableBuffer(PassOwnPtr<blink::WebDiscardableMemory> memory, const char* data, size_t size)
     : m_memory(memory)
     , m_size(size)
-    , m_state(Locked)
+    , m_isLocked(true)
 {
     memcpy(m_memory->data(), data, size);
 }
