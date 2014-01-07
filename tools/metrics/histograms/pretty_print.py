@@ -17,11 +17,14 @@ from __future__ import with_statement
 import diffutil
 import json
 import logging
+import os
 import shutil
 import sys
 import textwrap
 import xml.dom.minidom
 
+sys.path.insert(1, os.path.join(sys.path[0], '..', '..', 'python'))
+from google import path_utils
 
 WRAP_COLUMN = 80
 
@@ -316,14 +319,23 @@ def main():
 
   presubmit = ('--presubmit' in sys.argv)
 
-  logging.info('Loading histograms.xml...')
-  with open('histograms.xml', 'rb') as f:
+  histograms_filename = 'histograms.xml'
+  histograms_backup_filename = 'histograms.before.pretty-print.xml'
+
+  script_dir = path_utils.ScriptDir()
+
+  histograms_pathname = os.path.join(script_dir, histograms_filename)
+  histograms_backup_pathname = os.path.join(script_dir,
+                                            histograms_backup_filename)
+
+  logging.info('Loading %s...' % histograms_filename)
+  with open(histograms_pathname, 'rb') as f:
     xml = f.read()
 
   # Check there are no CR ('\r') characters in the file.
   if '\r' in xml:
     logging.info('DOS-style line endings (CR characters) detected - these are '
-                 'not allowed. Please run dos2unix histograms.xml')
+                 'not allowed. Please run dos2unix %s' % histograms_filename)
     sys.exit(1)
 
   logging.info('Pretty-printing...')
@@ -334,11 +346,11 @@ def main():
     sys.exit(1)
 
   if xml == pretty:
-    logging.info('histograms.xml is correctly pretty-printed.')
+    logging.info('%s is correctly pretty-printed.' % histograms_filename)
     sys.exit(0)
   if presubmit:
-    logging.info('histograms.xml is not formatted correctly; run '
-                 'pretty_print.py to fix.')
+    logging.info('%s is not formatted correctly; run pretty_print.py to fix.' %
+                 histograms_filename)
     sys.exit(1)
   if not diffutil.PromptUserToAcceptDiff(
       xml, pretty,
@@ -346,11 +358,11 @@ def main():
     logging.error('Aborting')
     return
 
-  logging.info('Creating backup file histograms.before.pretty-print.xml')
-  shutil.move('histograms.xml', 'histograms.before.pretty-print.xml')
+  logging.info('Creating backup file %s' % histograms_backup_filename)
+  shutil.move(histograms_pathname, histograms_backup_pathname)
 
-  logging.info('Writing new histograms.xml file')
-  with open('histograms.xml', 'wb') as f:
+  logging.info('Writing new %s file' % histograms_filename)
+  with open(histograms_pathname, 'wb') as f:
     f.write(pretty)
 
 
