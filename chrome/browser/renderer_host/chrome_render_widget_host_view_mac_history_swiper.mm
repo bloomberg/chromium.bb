@@ -379,8 +379,6 @@ static BOOL forceMagicMouse = NO;
         progress = MAX(0.0, progress);
         progress = MIN(1.0, progress);
         [historyOverlay setProgress:progress finished:finished];
-        if (ended)
-          [historyOverlay dismiss];
 
         // |gestureAmount| obeys -[NSEvent isDirectionInvertedFromDevice]
         // automatically.
@@ -393,8 +391,10 @@ static BOOL forceMagicMouse = NO;
             chrome::GoBack(browser, CURRENT_TAB);
         }
 
-        if (isComplete)
+        if (isComplete) {
+          [historyOverlay dismiss];
           [historyOverlay release];
+        }
   }];
 }
 
