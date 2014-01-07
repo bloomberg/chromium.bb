@@ -2022,14 +2022,12 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
     handling_use_wallet_link_click_ = true;
     account_chooser_model_->SelectWalletAccount(0);
     FetchWalletCookie();
-    view_->UpdateAccountChooser();
   } else if (signin_registrar_.IsEmpty()) {
     // Start sign in.
     waiting_for_explicit_sign_in_response_ = true;
     content::Source<content::NavigationController> source(view_->ShowSignIn());
     signin_registrar_.Add(
         this, content::NOTIFICATION_NAV_ENTRY_COMMITTED, source);
-    view_->UpdateAccountChooser();
 
     GetMetricLogger().LogDialogUiEvent(
         AutofillMetrics::DIALOG_UI_SIGNIN_SHOWN);
@@ -2037,6 +2035,9 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
     waiting_for_explicit_sign_in_response_ = false;
     HideSignIn();
   }
+
+  view_->UpdateAccountChooser();
+  view_->UpdateButtonStrip();
 }
 
 void AutofillDialogControllerImpl::NotificationCheckboxStateChanged(

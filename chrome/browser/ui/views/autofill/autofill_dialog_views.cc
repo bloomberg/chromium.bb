@@ -1398,7 +1398,6 @@ const content::NavigationController* AutofillDialogViews::ShowSignIn() {
 
   ShowDialogInMode(SIGN_IN);
 
-  UpdateButtonStrip();
   ContentsPreferredSizeChanged();
 
   return &sign_in_web_view_->web_contents()->GetController();
@@ -1415,7 +1414,6 @@ void AutofillDialogViews::HideSignIn() {
   }
   DCHECK(!sign_in_web_view_->visible());
 
-  UpdateButtonStrip();
   ContentsPreferredSizeChanged();
 }
 
