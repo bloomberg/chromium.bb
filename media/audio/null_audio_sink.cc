@@ -5,18 +5,18 @@
 #include "media/audio/null_audio_sink.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/fake_audio_consumer.h"
 #include "media/base/audio_hash.h"
 
 namespace media {
 
 NullAudioSink::NullAudioSink(
-    const scoped_refptr<base::MessageLoopProxy>& message_loop)
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : initialized_(false),
       playing_(false),
       callback_(NULL),
-      message_loop_(message_loop) {
+      task_runner_(task_runner) {
 }
 
 NullAudioSink::~NullAudioSink() {}
@@ -24,18 +24,18 @@ NullAudioSink::~NullAudioSink() {}
 void NullAudioSink::Initialize(const AudioParameters& params,
                                RenderCallback* callback) {
   DCHECK(!initialized_);
-  fake_consumer_.reset(new FakeAudioConsumer(message_loop_, params));
+  fake_consumer_.reset(new FakeAudioConsumer(task_runner_, params));
   callback_ = callback;
   initialized_ = true;
 }
 
 void NullAudioSink::Start() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!playing_);
 }
 
 void NullAudioSink::Stop() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Stop may be called at any time, so we have to check before stopping.
   if (fake_consumer_)
@@ -43,7 +43,7 @@ void NullAudioSink::Stop() {
 }
 
 void NullAudioSink::Play() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(initialized_);
 
   if (playing_)
@@ -55,7 +55,7 @@ void NullAudioSink::Play() {
 }
 
 void NullAudioSink::Pause() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!playing_)
     return;
@@ -70,7 +70,7 @@ bool NullAudioSink::SetVolume(double volume) {
 }
 
 void NullAudioSink::CallRender(AudioBus* audio_bus) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   int frames_received = callback_->Render(audio_bus, 0);
   if (!audio_hash_ || frames_received <= 0)

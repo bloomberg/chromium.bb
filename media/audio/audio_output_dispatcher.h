@@ -26,7 +26,7 @@
 #include "media/audio/audio_parameters.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -83,7 +83,7 @@ class MEDIA_EXPORT AudioOutputDispatcher
   // A no-reference-held pointer (we don't want circular references) back to the
   // AudioManager that owns this object.
   AudioManager* audio_manager_;
-  const scoped_refptr<base::MessageLoopProxy> message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const AudioParameters params_;
   std::string output_device_id_;
   const std::string input_device_id_;

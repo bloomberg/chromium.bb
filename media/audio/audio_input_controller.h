@@ -165,7 +165,7 @@ class MEDIA_EXPORT AudioInputController
   // OnCreated() call from that same thread. |user_input_monitor| is used for
   // typing detection and can be NULL.
   static scoped_refptr<AudioInputController> CreateForStream(
-      const scoped_refptr<base::MessageLoopProxy>& message_loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       EventHandler* event_handler,
       AudioInputStream* stream,
       // External synchronous writer for audio controller.
@@ -241,11 +241,11 @@ class MEDIA_EXPORT AudioInputController
   void SetDataIsActive(bool enabled);
   bool GetDataIsActive();
 
-  // Gives access to the message loop of the creating thread.
-  scoped_refptr<base::MessageLoopProxy> creator_loop_;
+  // Gives access to the task runner of the creating thread.
+  scoped_refptr<base::SingleThreadTaskRunner> creator_task_runner_;
 
-  // The message loop of audio-manager thread that this object runs on.
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  // The task runner of audio-manager thread that this object runs on.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Contains the AudioInputController::EventHandler which receives state
   // notifications from this class.

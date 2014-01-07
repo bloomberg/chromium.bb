@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "content/browser/renderer_host/media/mock_media_observer.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "ipc/ipc_listener.h"
@@ -151,7 +150,8 @@ class MAYBE_WebRTCAudioDeviceTest : public ::testing::Test,
   // Posts a final task to the IO message loop and waits for completion.
   void WaitForIOThreadCompletion();
   void WaitForAudioManagerCompletion();
-  void WaitForMessageLoopCompletion(base::MessageLoopProxy* loop);
+  void WaitForTaskRunnerCompletion(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   std::string GetTestDataPath(const base::FilePath::StringType& file_name);
 

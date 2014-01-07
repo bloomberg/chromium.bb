@@ -281,7 +281,7 @@ void WebContentsAudioInputStream::Impl::OnTargetChanged(int render_process_id,
 WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
     const std::string& device_id,
     const media::AudioParameters& params,
-    const scoped_refptr<base::MessageLoopProxy>& worker_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
     AudioMirroringManager* audio_mirroring_manager) {
   int render_process_id;
   int render_view_id;
@@ -295,7 +295,7 @@ WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
       audio_mirroring_manager,
       new WebContentsTracker(),
       new media::VirtualAudioInputStream(
-          params, worker_loop,
+          params, worker_task_runner,
           media::VirtualAudioInputStream::AfterCloseCallback()));
 }
 

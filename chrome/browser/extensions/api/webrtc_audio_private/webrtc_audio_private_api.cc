@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 
 #include "base/lazy_instance.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
@@ -99,7 +98,7 @@ void WebrtcAudioPrivateEventService::SignalEvent() {
 bool WebrtcAudioPrivateGetSinksFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  AudioManager::Get()->GetMessageLoop()->PostTaskAndReply(
+  AudioManager::Get()->GetTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WebrtcAudioPrivateGetSinksFunction::DoQuery, this),
       base::Bind(&WebrtcAudioPrivateGetSinksFunction::DoneOnUIThread, this));
@@ -107,7 +106,7 @@ bool WebrtcAudioPrivateGetSinksFunction::RunImpl() {
 }
 
 void WebrtcAudioPrivateGetSinksFunction::DoQuery() {
-  DCHECK(AudioManager::Get()->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
 
   AudioDeviceNames device_names;
   AudioManager::Get()->GetAudioOutputDeviceNames(&device_names);
@@ -198,7 +197,7 @@ void WebrtcAudioPrivateGetActiveSinkFunction::OnSinkId(const std::string& id) {
 
 WebrtcAudioPrivateSetActiveSinkFunction::
 WebrtcAudioPrivateSetActiveSinkFunction()
-    : message_loop_(base::MessageLoopProxy::current()),
+    : task_runner_(base::MessageLoopProxy::current()),
       tab_id_(0),
       num_remaining_sink_ids_(0) {
 }
@@ -244,7 +243,7 @@ void WebrtcAudioPrivateSetActiveSinkFunction::OnControllerList(
 
 void WebrtcAudioPrivateSetActiveSinkFunction::SwitchDone() {
   if (--num_remaining_sink_ids_ == 0) {
-    message_loop_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&WebrtcAudioPrivateSetActiveSinkFunction::DoneOnUIThread,
                    this));
@@ -268,7 +267,7 @@ bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   EXTENSION_FUNCTION_VALIDATE(params_.get());
 
-  AudioManager::Get()->GetMessageLoop()->PostTaskAndReply(
+  AudioManager::Get()->GetTaskRunner()->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
                  GetDevicesOnDeviceThread, this),
@@ -280,7 +279,7 @@ bool WebrtcAudioPrivateGetAssociatedSinkFunction::RunImpl() {
 }
 
 void WebrtcAudioPrivateGetAssociatedSinkFunction::GetDevicesOnDeviceThread() {
-  DCHECK(AudioManager::Get()->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   AudioManager::Get()->GetAudioInputDeviceNames(&source_devices_);
 }
 
@@ -332,7 +331,7 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::OnGetRawSourceIDDone(
     const std::string& raw_source_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::PostTaskAndReplyWithResult(
-      AudioManager::Get()->GetMessageLoop(),
+      AudioManager::Get()->GetTaskRunner(),
       FROM_HERE,
       base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
                  GetAssociatedSinkOnDeviceThread,
@@ -346,7 +345,7 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::OnGetRawSourceIDDone(
 std::string
 WebrtcAudioPrivateGetAssociatedSinkFunction::GetAssociatedSinkOnDeviceThread(
     const std::string& raw_source_id) {
-  DCHECK(AudioManager::Get()->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
 
   // We return an empty string if there is no associated output device.
   std::string result;

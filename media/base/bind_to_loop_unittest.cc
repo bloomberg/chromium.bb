@@ -43,7 +43,7 @@ class BindToLoopTest : public ::testing::Test {
 
  protected:
   base::MessageLoop loop_;
-  scoped_refptr<base::MessageLoopProxy> proxy_;
+  scoped_refptr<base::SingleThreadTaskRunner> proxy_;
 };
 
 TEST_F(BindToLoopTest, Closure) {

@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
@@ -105,8 +104,9 @@ class MockAudioManager : public AudioManagerBase {
   MOCK_METHOD2(MakeAudioInputStream, AudioInputStream*(
       const AudioParameters& params, const std::string& device_id));
   MOCK_METHOD0(ShowAudioInputSettings, void());
-  MOCK_METHOD0(GetMessageLoop, scoped_refptr<base::MessageLoopProxy>());
-  MOCK_METHOD0(GetWorkerLoop, scoped_refptr<base::MessageLoopProxy>());
+  MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
+  MOCK_METHOD0(GetWorkerTaskRunner,
+               scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD1(GetAudioInputDeviceNames, void(
       media::AudioDeviceNames* device_name));
 
@@ -146,9 +146,9 @@ namespace media {
 class AudioOutputProxyTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    EXPECT_CALL(manager_, GetMessageLoop())
+    EXPECT_CALL(manager_, GetTaskRunner())
         .WillRepeatedly(Return(message_loop_.message_loop_proxy()));
-    EXPECT_CALL(manager_, GetWorkerLoop())
+    EXPECT_CALL(manager_, GetWorkerTaskRunner())
         .WillRepeatedly(Return(message_loop_.message_loop_proxy()));
     // Use a low sample rate and large buffer size when testing otherwise the
     // FakeAudioOutputStream will keep the message loop busy indefinitely; i.e.,

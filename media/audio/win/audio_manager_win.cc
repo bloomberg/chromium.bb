@@ -141,14 +141,14 @@ AudioManagerWin::AudioManagerWin(AudioLogFactory* audio_log_factory)
 
   // Task must be posted last to avoid races from handing out "this" to the
   // audio thread.
-  GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
+  GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
       &AudioManagerWin::CreateDeviceListener, base::Unretained(this)));
 }
 
 AudioManagerWin::~AudioManagerWin() {
   // It's safe to post a task here since Shutdown() will wait for all tasks to
   // complete before returning.
-  GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
+  GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
       &AudioManagerWin::DestroyDeviceListener, base::Unretained(this)));
   Shutdown();
 }
@@ -166,7 +166,7 @@ void AudioManagerWin::CreateDeviceListener() {
   // be used if WASAPI / Core Audio is supported.
   if (CoreAudioUtil::IsSupported()) {
     output_device_listener_.reset(new AudioDeviceListenerWin(BindToLoop(
-        GetMessageLoop(), base::Bind(
+        GetTaskRunner(), base::Bind(
             &AudioManagerWin::NotifyAllOutputDeviceChangeListeners,
             base::Unretained(this)))));
   }

@@ -5,14 +5,14 @@
 #include "media/audio/mock_audio_manager.h"
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/audio_parameters.h"
 
 namespace media {
 
-MockAudioManager::MockAudioManager(base::MessageLoopProxy* message_loop_proxy)
-    : message_loop_proxy_(message_loop_proxy) {
-}
+MockAudioManager::MockAudioManager(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : task_runner_(task_runner) {}
 
 MockAudioManager::~MockAudioManager() {
 }
@@ -68,12 +68,13 @@ media::AudioInputStream* MockAudioManager::MakeAudioInputStream(
   return NULL;
 }
 
-scoped_refptr<base::MessageLoopProxy> MockAudioManager::GetMessageLoop() {
-  return message_loop_proxy_;
+scoped_refptr<base::SingleThreadTaskRunner> MockAudioManager::GetTaskRunner() {
+  return task_runner_;
 }
 
-scoped_refptr<base::MessageLoopProxy> MockAudioManager::GetWorkerLoop() {
-  return message_loop_proxy_;
+scoped_refptr<base::SingleThreadTaskRunner>
+MockAudioManager::GetWorkerTaskRunner() {
+  return task_runner_;
 }
 
 void MockAudioManager::AddOutputDeviceChangeListener(

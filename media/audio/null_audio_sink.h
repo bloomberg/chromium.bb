@@ -11,7 +11,7 @@
 #include "media/base/audio_renderer_sink.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -22,7 +22,7 @@ class FakeAudioConsumer;
 class MEDIA_EXPORT NullAudioSink
     : NON_EXPORTED_BASE(public AudioRendererSink) {
  public:
-  NullAudioSink(const scoped_refptr<base::MessageLoopProxy>& message_loop);
+  NullAudioSink(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // AudioRendererSink implementation.
   virtual void Initialize(const AudioParameters& params,
@@ -53,7 +53,7 @@ class MEDIA_EXPORT NullAudioSink
   // Controls whether or not a running hash is computed for audio frames.
   scoped_ptr<AudioHash> audio_hash_;
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_ptr<FakeAudioConsumer> fake_consumer_;
 
   DISALLOW_COPY_AND_ASSIGN(NullAudioSink);

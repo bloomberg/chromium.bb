@@ -39,7 +39,6 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "media/audio/alsa/alsa_util.h"
@@ -159,7 +158,7 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
       volume_(1.0f),
       source_callback_(NULL),
       audio_bus_(AudioBus::Create(params)) {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK_EQ(audio_bus_->frames() * bytes_per_frame_, packet_size_);
 
   // Sanity check input values.

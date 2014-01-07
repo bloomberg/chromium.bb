@@ -23,7 +23,7 @@
 #include "media/audio/audio_io.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -55,13 +55,13 @@ class CONTENT_EXPORT WebContentsAudioInputStream
   // WebContentsCaptureUtil::ExtractTabCaptureTarget().  The caller must
   // guarantee Close() is called on the returned object so that it may
   // self-destruct.
-  // |worker_loop| is the loop on which AudioInputCallback methods are called
-  // and may or may not be the single thread that invokes the AudioInputStream
-  // methods.
+  // |worker_task_runner| is the task runner on which AudioInputCallback methods
+  // are called and may or may not be the single thread that invokes the
+  // AudioInputStream methods.
   static WebContentsAudioInputStream* Create(
       const std::string& device_id,
       const media::AudioParameters& params,
-      const scoped_refptr<base::MessageLoopProxy>& worker_loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
       AudioMirroringManager* audio_mirroring_manager);
 
  private:

@@ -294,7 +294,7 @@ void AudioManagerAndroid::Close() {
 }
 
 void AudioManagerAndroid::SetMute(JNIEnv* env, jobject obj, jboolean muted) {
-  GetMessageLoop()->PostTask(
+  GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(
           &AudioManagerAndroid::DoSetMuteOnAudioThread,

@@ -10,7 +10,7 @@
 #include "media/video/capture/video_capture.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -36,7 +36,7 @@ class MEDIA_EXPORT VideoCaptureHandlerProxy
   // Called on main thread.
   VideoCaptureHandlerProxy(
       VideoCapture::EventHandler* proxied,
-      scoped_refptr<base::MessageLoopProxy> main_message_loop);
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner);
   virtual ~VideoCaptureHandlerProxy();
 
   // Retrieves the state of the VideoCapture. Must be called on main thread.
@@ -77,7 +77,7 @@ class MEDIA_EXPORT VideoCaptureHandlerProxy
   VideoCapture::EventHandler* proxied_;
   VideoCaptureState state_;
 
-  scoped_refptr<base::MessageLoopProxy> main_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 };
 
 }  // namespace media

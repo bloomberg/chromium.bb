@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
@@ -99,13 +98,13 @@ AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
   if (!cmd_line->HasSwitch(switches::kDisableMainThreadAudio) &&
       base::MessageLoopProxy::current().get() &&
       base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_UI)) {
-    message_loop_ = base::MessageLoopProxy::current();
+    task_runner_ = base::MessageLoopProxy::current();
     return;
   }
 #endif
 
   CHECK(audio_thread_.Start());
-  message_loop_ = audio_thread_.message_loop_proxy();
+  task_runner_ = audio_thread_.message_loop_proxy();
 }
 
 AudioManagerBase::~AudioManagerBase() {
@@ -125,11 +124,12 @@ base::string16 AudioManagerBase::GetAudioInputDeviceModel() {
   return base::string16();
 }
 
-scoped_refptr<base::MessageLoopProxy> AudioManagerBase::GetMessageLoop() {
-  return message_loop_;
+scoped_refptr<base::SingleThreadTaskRunner> AudioManagerBase::GetTaskRunner() {
+  return task_runner_;
 }
 
-scoped_refptr<base::MessageLoopProxy> AudioManagerBase::GetWorkerLoop() {
+scoped_refptr<base::SingleThreadTaskRunner>
+AudioManagerBase::GetWorkerTaskRunner() {
   // Lazily start the worker thread.
   if (!audio_thread_.IsRunning())
     CHECK(audio_thread_.Start());
@@ -143,7 +143,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     const std::string& input_device_id) {
   // TODO(miu): Fix ~50 call points across several unit test modules to call
   // this method on the audio thread, then uncomment the following:
-  // DCHECK(message_loop_->BelongsToCurrentThread());
+  // DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!params.IsValid()) {
     DLOG(ERROR) << "Audio parameters are invalid";
@@ -192,7 +192,7 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
     const std::string& device_id) {
   // TODO(miu): Fix ~20 call points across several unit test modules to call
   // this method on the audio thread, then uncomment the following:
-  // DCHECK(message_loop_->BelongsToCurrentThread());
+  // DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (!params.IsValid() || (params.channels() > kMaxInputChannels) ||
       device_id.empty()) {
@@ -234,7 +234,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStreamProxy(
     const AudioParameters& params,
     const std::string& device_id,
     const std::string& input_device_id) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // If the caller supplied an empty device id to select the default device,
   // we fetch the actual device id of the default device so that the lookup
@@ -332,10 +332,10 @@ void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
 void AudioManagerBase::Shutdown() {
   // Only true when we're sharing the UI message loop with the browser.  The UI
   // loop is no longer running at this time and browser destruction is imminent.
-  if (message_loop_->BelongsToCurrentThread()) {
+  if (task_runner_->BelongsToCurrentThread()) {
     ShutdownOnAudioThread();
   } else {
-    message_loop_->PostTask(FROM_HERE, base::Bind(
+    task_runner_->PostTask(FROM_HERE, base::Bind(
         &AudioManagerBase::ShutdownOnAudioThread, base::Unretained(this)));
   }
 
@@ -344,7 +344,7 @@ void AudioManagerBase::Shutdown() {
 }
 
 void AudioManagerBase::ShutdownOnAudioThread() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   AudioOutputDispatchers::iterator it = output_dispatchers_.begin();
   for (; it != output_dispatchers_.end(); ++it) {
@@ -365,18 +365,18 @@ void AudioManagerBase::ShutdownOnAudioThread() {
 
 void AudioManagerBase::AddOutputDeviceChangeListener(
     AudioDeviceListener* listener) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   output_listeners_.AddObserver(listener);
 }
 
 void AudioManagerBase::RemoveOutputDeviceChangeListener(
     AudioDeviceListener* listener) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   output_listeners_.RemoveObserver(listener);
 }
 
 void AudioManagerBase::NotifyAllOutputDeviceChangeListeners() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(1) << "Firing OnDeviceChange() notifications.";
   FOR_EACH_OBSERVER(AudioDeviceListener, output_listeners_, OnDeviceChange());
 }
@@ -425,7 +425,7 @@ scoped_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
 }
 
 void AudioManagerBase::FixWedgedAudio() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 #if defined(OS_MACOSX)
   // Through trial and error, we've found that one way to restore audio after a
   // hang is to close all outstanding audio streams.  Once all streams have been

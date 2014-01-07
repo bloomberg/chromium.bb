@@ -230,17 +230,17 @@ AudioManagerMac::AudioManagerMac(AudioLogFactory* audio_log_factory)
   // Task must be posted last to avoid races from handing out "this" to the
   // audio thread.  Always PostTask even if we're on the right thread since
   // AudioManager creation is on the startup path and this may be slow.
-  GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
+  GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
       &AudioManagerMac::CreateDeviceListener, base::Unretained(this)));
 }
 
 AudioManagerMac::~AudioManagerMac() {
-  if (GetMessageLoop()->BelongsToCurrentThread()) {
+  if (GetTaskRunner()->BelongsToCurrentThread()) {
     DestroyDeviceListener();
   } else {
     // It's safe to post a task here since Shutdown() will wait for all tasks to
     // complete before returning.
-    GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
+    GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
         &AudioManagerMac::DestroyDeviceListener, base::Unretained(this)));
   }
 
@@ -693,7 +693,7 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
 }
 
 void AudioManagerMac::CreateDeviceListener() {
-  DCHECK(GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   // Get a baseline for the sample-rate and current device,
   // so we can intelligently handle device notifications only when necessary.
@@ -706,13 +706,13 @@ void AudioManagerMac::CreateDeviceListener() {
 }
 
 void AudioManagerMac::DestroyDeviceListener() {
-  DCHECK(GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   output_device_listener_.reset();
 }
 
 void AudioManagerMac::HandleDeviceChanges() {
-  if (!GetMessageLoop()->BelongsToCurrentThread()) {
-    GetMessageLoop()->PostTask(FROM_HERE, base::Bind(
+  if (!GetTaskRunner()->BelongsToCurrentThread()) {
+    GetTaskRunner()->PostTask(FROM_HERE, base::Bind(
         &AudioManagerMac::HandleDeviceChanges, base::Unretained(this)));
     return;
   }

@@ -14,11 +14,14 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
 
 @protocol PlatformVideoCapturingMac;
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace media {
 
@@ -66,7 +69,7 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
   bool tried_to_square_pixels_;
 
   // Only read and write state_ from inside this loop.
-  const scoped_refptr<base::MessageLoopProxy> loop_proxy_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   InternalState state_;
 
   // Used with Bind and PostTask to ensure that methods aren't called

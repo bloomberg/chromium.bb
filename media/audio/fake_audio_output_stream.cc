@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/audio_manager_base.h"
 
 namespace media {
@@ -22,7 +22,7 @@ FakeAudioOutputStream::FakeAudioOutputStream(AudioManagerBase* manager,
                                              const AudioParameters& params)
     : audio_manager_(manager),
       callback_(NULL),
-      fake_consumer_(manager->GetWorkerLoop(), params) {
+      fake_consumer_(manager->GetWorkerTaskRunner(), params) {
 }
 
 FakeAudioOutputStream::~FakeAudioOutputStream() {
@@ -30,26 +30,26 @@ FakeAudioOutputStream::~FakeAudioOutputStream() {
 }
 
 bool FakeAudioOutputStream::Open() {
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   return true;
 }
 
 void FakeAudioOutputStream::Start(AudioSourceCallback* callback)  {
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   callback_ = callback;
   fake_consumer_.Start(base::Bind(
       &FakeAudioOutputStream::CallOnMoreData, base::Unretained(this)));
 }
 
 void FakeAudioOutputStream::Stop() {
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   fake_consumer_.Stop();
   callback_ = NULL;
 }
 
 void FakeAudioOutputStream::Close() {
   DCHECK(!callback_);
-  DCHECK(audio_manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   audio_manager_->ReleaseOutputStream(this);
 }
 
@@ -60,7 +60,7 @@ void FakeAudioOutputStream::GetVolume(double* volume) {
 };
 
 void FakeAudioOutputStream::CallOnMoreData(AudioBus* audio_bus) {
-  DCHECK(audio_manager_->GetWorkerLoop()->BelongsToCurrentThread());
+  DCHECK(audio_manager_->GetWorkerTaskRunner()->BelongsToCurrentThread());
   callback_->OnMoreData(audio_bus, AudioBuffersState());
 }
 

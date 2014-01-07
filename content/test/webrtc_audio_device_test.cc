@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -399,20 +398,21 @@ bool MAYBE_WebRTCAudioDeviceTest::OnMessageReceived(
 
 // Posts a final task to the IO message loop and waits for completion.
 void MAYBE_WebRTCAudioDeviceTest::WaitForIOThreadCompletion() {
-  WaitForMessageLoopCompletion(
-      ChildProcess::current()->io_message_loop()->message_loop_proxy().get());
+  WaitForTaskRunnerCompletion(
+      ChildProcess::current()->io_message_loop()->message_loop_proxy());
 }
 
 void MAYBE_WebRTCAudioDeviceTest::WaitForAudioManagerCompletion() {
   if (audio_manager_)
-    WaitForMessageLoopCompletion(audio_manager_->GetMessageLoop().get());
+    WaitForTaskRunnerCompletion(audio_manager_->GetTaskRunner());
 }
 
-void MAYBE_WebRTCAudioDeviceTest::WaitForMessageLoopCompletion(
-    base::MessageLoopProxy* loop) {
+void MAYBE_WebRTCAudioDeviceTest::WaitForTaskRunnerCompletion(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   base::WaitableEvent* event = new base::WaitableEvent(false, false);
-  loop->PostTask(FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
-                 base::Unretained(event)));
+  task_runner->PostTask(
+      FROM_HERE,
+      base::Bind(&base::WaitableEvent::Signal, base::Unretained(event)));
   if (event->TimedWait(TestTimeouts::action_max_timeout())) {
     delete event;
   } else {

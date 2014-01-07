@@ -6,7 +6,6 @@
 #include "base/environment.h"
 #include "base/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/synchronization/lock.h"
 #include "base/test/test_timeouts.h"
@@ -88,7 +87,7 @@ class MockAudioManager : public AudioManagerAnyPlatform {
   MockAudioManager() : AudioManagerAnyPlatform(&fake_audio_log_factory_) {}
   virtual ~MockAudioManager() {}
 
-  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE {
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() OVERRIDE {
     return base::MessageLoop::current()->message_loop_proxy();
   }
 

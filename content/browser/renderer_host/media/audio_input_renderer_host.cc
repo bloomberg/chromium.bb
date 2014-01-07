@@ -273,12 +273,13 @@ void AudioInputRendererHost::OnCreateStream(
   entry->writer.reset(writer.release());
   if (WebContentsCaptureUtil::IsWebContentsDeviceId(device_id)) {
     entry->controller = media::AudioInputController::CreateForStream(
-        audio_manager_->GetMessageLoop(),
+        audio_manager_->GetTaskRunner(),
         this,
-        WebContentsAudioInputStream::Create(device_id,
-                                            audio_params,
-                                            audio_manager_->GetWorkerLoop(),
-                                            audio_mirroring_manager_),
+        WebContentsAudioInputStream::Create(
+            device_id,
+            audio_params,
+            audio_manager_->GetWorkerTaskRunner(),
+            audio_mirroring_manager_),
         entry->writer.get(),
         user_input_monitor_);
   } else {

@@ -18,7 +18,7 @@
 #include "media/base/audio_converter.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -36,12 +36,12 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
       AfterCloseCallback;
 
   // Construct a target for audio loopback which mixes multiple data streams
-  // into a single stream having the given |params|.  |worker_loop| is the loop
-  // on which AudioInputCallback methods are called and may or may not be the
-  // single thread that invokes the AudioInputStream methods.
+  // into a single stream having the given |params|.  |worker_task_runner| is
+  // the task runner on which AudioInputCallback methods are called and may or
+  // may not be the single thread that invokes the AudioInputStream methods.
   VirtualAudioInputStream(
       const AudioParameters& params,
-      const scoped_refptr<base::MessageLoopProxy>& worker_loop,
+      const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
       const AfterCloseCallback& after_close_cb);
 
   virtual ~VirtualAudioInputStream();
@@ -78,7 +78,7 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   // Invoked on the worker thread.
   void PumpAudio(AudioBus* audio_bus);
 
-  const scoped_refptr<base::MessageLoopProxy> worker_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
 
   AfterCloseCallback after_close_cb_;
 

@@ -108,21 +108,22 @@ static void SaveStatusAndSignal(base::WaitableEvent* event,
 }
 
 // TODO(vrk): Re-enabled audio. (crbug.com/112159)
-void InitPipeline(media::Pipeline* pipeline,
-                  const scoped_refptr<base::MessageLoopProxy>& message_loop,
-                  media::Demuxer* demuxer,
-                  const PaintCB& paint_cb,
-                  bool /* enable_audio */,
-                  base::MessageLoop* paint_message_loop) {
+void InitPipeline(
+    media::Pipeline* pipeline,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    media::Demuxer* demuxer,
+    const PaintCB& paint_cb,
+    bool /* enable_audio */,
+    base::MessageLoop* paint_message_loop) {
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
   collection->SetDemuxer(demuxer);
 
   ScopedVector<media::VideoDecoder> video_decoders;
-  video_decoders.push_back(new media::FFmpegVideoDecoder(message_loop));
+  video_decoders.push_back(new media::FFmpegVideoDecoder(task_runner));
   scoped_ptr<media::VideoRenderer> video_renderer(new media::VideoRendererImpl(
-      message_loop,
+      task_runner,
       video_decoders.Pass(),
       media::SetDecryptorReadyCB(),
       base::Bind(&Paint, paint_message_loop, paint_cb),
@@ -131,10 +132,10 @@ void InitPipeline(media::Pipeline* pipeline,
   collection->SetVideoRenderer(video_renderer.Pass());
 
   ScopedVector<media::AudioDecoder> audio_decoders;
-  audio_decoders.push_back(new media::FFmpegAudioDecoder(message_loop));
+  audio_decoders.push_back(new media::FFmpegAudioDecoder(task_runner));
   scoped_ptr<media::AudioRenderer> audio_renderer(new media::AudioRendererImpl(
-      message_loop,
-      new media::NullAudioSink(message_loop),
+      task_runner,
+      new media::NullAudioSink(task_runner),
       audio_decoders.Pass(),
       media::SetDecryptorReadyCB()));
   collection->SetAudioRenderer(audio_renderer.Pass());

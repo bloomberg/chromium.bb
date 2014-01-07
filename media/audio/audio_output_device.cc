@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/debug/trace_event.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_output_controller.h"
@@ -40,8 +39,8 @@ class AudioOutputDevice::AudioThreadCallback
 
 AudioOutputDevice::AudioOutputDevice(
     scoped_ptr<AudioOutputIPC> ipc,
-    const scoped_refptr<base::MessageLoopProxy>& io_loop)
-    : ScopedLoopObserver(io_loop),
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    : ScopedTaskRunnerObserver(io_task_runner),
       callback_(NULL),
       ipc_(ipc.Pass()),
       state_(IDLE),
@@ -81,7 +80,7 @@ AudioOutputDevice::~AudioOutputDevice() {
 
 void AudioOutputDevice::Start() {
   DCHECK(callback_) << "Initialize hasn't been called";
-  message_loop()->PostTask(FROM_HERE,
+  task_runner()->PostTask(FROM_HERE,
       base::Bind(&AudioOutputDevice::CreateStreamOnIOThread, this,
                  audio_parameters_));
 }
@@ -93,17 +92,17 @@ void AudioOutputDevice::Stop() {
     stopping_hack_ = true;
   }
 
-  message_loop()->PostTask(FROM_HERE,
+  task_runner()->PostTask(FROM_HERE,
       base::Bind(&AudioOutputDevice::ShutDownOnIOThread, this));
 }
 
 void AudioOutputDevice::Play() {
-  message_loop()->PostTask(FROM_HERE,
+  task_runner()->PostTask(FROM_HERE,
       base::Bind(&AudioOutputDevice::PlayOnIOThread, this));
 }
 
 void AudioOutputDevice::Pause() {
-  message_loop()->PostTask(FROM_HERE,
+  task_runner()->PostTask(FROM_HERE,
       base::Bind(&AudioOutputDevice::PauseOnIOThread, this));
 }
 
@@ -111,7 +110,7 @@ bool AudioOutputDevice::SetVolume(double volume) {
   if (volume < 0 || volume > 1.0)
     return false;
 
-  if (!message_loop()->PostTask(FROM_HERE,
+  if (!task_runner()->PostTask(FROM_HERE,
           base::Bind(&AudioOutputDevice::SetVolumeOnIOThread, this, volume))) {
     return false;
   }
@@ -120,7 +119,7 @@ bool AudioOutputDevice::SetVolume(double volume) {
 }
 
 void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   if (state_ == IDLE) {
     state_ = CREATING_STREAM;
     ipc_->CreateStream(this, params, session_id_);
@@ -128,7 +127,7 @@ void AudioOutputDevice::CreateStreamOnIOThread(const AudioParameters& params) {
 }
 
 void AudioOutputDevice::PlayOnIOThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   if (state_ == PAUSED) {
     ipc_->PlayStream();
     state_ = PLAYING;
@@ -139,7 +138,7 @@ void AudioOutputDevice::PlayOnIOThread() {
 }
 
 void AudioOutputDevice::PauseOnIOThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   if (state_ == PLAYING) {
     ipc_->PauseStream();
     state_ = PAUSED;
@@ -148,7 +147,7 @@ void AudioOutputDevice::PauseOnIOThread() {
 }
 
 void AudioOutputDevice::ShutDownOnIOThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Close the stream, if we haven't already.
   if (state_ >= CREATING_STREAM) {
@@ -172,13 +171,13 @@ void AudioOutputDevice::ShutDownOnIOThread() {
 }
 
 void AudioOutputDevice::SetVolumeOnIOThread(double volume) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   if (state_ >= CREATING_STREAM)
     ipc_->SetVolume(volume);
 }
 
 void AudioOutputDevice::OnStateChanged(AudioOutputIPCDelegate::State state) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
   if (state_ < CREATING_STREAM)
@@ -211,7 +210,7 @@ void AudioOutputDevice::OnStreamCreated(
     base::SharedMemoryHandle handle,
     base::SyncSocket::Handle socket_handle,
     int length) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
 #if defined(OS_WIN)
   DCHECK(handle);
   DCHECK(socket_handle);
@@ -254,7 +253,7 @@ void AudioOutputDevice::OnStreamCreated(
 }
 
 void AudioOutputDevice::OnIPCClosed() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   state_ = IPC_CLOSED;
   ipc_.reset();
 }

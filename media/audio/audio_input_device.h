@@ -62,7 +62,7 @@
 #include "media/audio/audio_device_thread.h"
 #include "media/audio/audio_input_ipc.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/scoped_loop_observer.h"
+#include "media/audio/scoped_task_runner_observer.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/media_export.h"
 
@@ -77,11 +77,12 @@ namespace media {
 class MEDIA_EXPORT AudioInputDevice
     : NON_EXPORTED_BASE(public AudioCapturerSource),
       NON_EXPORTED_BASE(public AudioInputIPCDelegate),
-      NON_EXPORTED_BASE(public ScopedLoopObserver) {
+      NON_EXPORTED_BASE(public ScopedTaskRunnerObserver) {
  public:
   // NOTE: Clients must call Initialize() before using.
-  AudioInputDevice(scoped_ptr<AudioInputIPC> ipc,
-                   const scoped_refptr<base::MessageLoopProxy>& io_loop);
+  AudioInputDevice(
+      scoped_ptr<AudioInputIPC> ipc,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // AudioCapturerSource implementation.
   virtual void Initialize(const AudioParameters& params,

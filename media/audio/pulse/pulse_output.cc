@@ -6,7 +6,7 @@
 
 #include <pulse/pulseaudio.h>
 
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/pulse/pulse_util.h"
@@ -47,7 +47,7 @@ PulseAudioOutputStream::PulseAudioOutputStream(const AudioParameters& params,
       pa_stream_(NULL),
       volume_(1.0f),
       source_callback_(NULL) {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   CHECK(params_.IsValid());
   audio_bus_ = AudioBus::Create(params_);
@@ -62,7 +62,7 @@ PulseAudioOutputStream::~PulseAudioOutputStream() {
 }
 
 bool PulseAudioOutputStream::Open() {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   return pulse::CreateOutputStream(&pa_mainloop_, &pa_context_, &pa_stream_,
                                    params_, &StreamNotifyCallback,
                                    &StreamRequestCallback, this);
@@ -107,7 +107,7 @@ void PulseAudioOutputStream::Reset() {
 }
 
 void PulseAudioOutputStream::Close() {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   Reset();
 
@@ -157,7 +157,7 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
 }
 
 void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   CHECK(callback);
   CHECK(pa_stream_);
 
@@ -179,7 +179,7 @@ void PulseAudioOutputStream::Start(AudioSourceCallback* callback) {
 }
 
 void PulseAudioOutputStream::Stop() {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   // Cork (pause) the stream.  Waiting for the main loop lock will ensure
   // outstanding callbacks have completed.
@@ -202,13 +202,13 @@ void PulseAudioOutputStream::Stop() {
 }
 
 void PulseAudioOutputStream::SetVolume(double volume) {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   volume_ = static_cast<float>(volume);
 }
 
 void PulseAudioOutputStream::GetVolume(double* volume) {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   *volume = volume_;
 }

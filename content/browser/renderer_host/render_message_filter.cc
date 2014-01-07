@@ -464,7 +464,7 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
 #if defined(OS_MACOSX)
   // OSX CoreAudio calls must all happen on the main thread.
   if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
-    return audio_manager_->GetMessageLoop().get();
+    return audio_manager_->GetTaskRunner().get();
 #endif
   return NULL;
 }

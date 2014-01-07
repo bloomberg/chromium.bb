@@ -4,7 +4,7 @@
 
 #include "media/audio/pulse/pulse_unified.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
@@ -54,7 +54,7 @@ PulseAudioUnifiedStream::PulseAudioUnifiedStream(
       output_stream_(NULL),
       volume_(1.0f),
       source_callback_(NULL) {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   CHECK(params_.IsValid());
   input_bus_ = AudioBus::Create(params_);
   output_bus_ = AudioBus::Create(params_);
@@ -70,7 +70,7 @@ PulseAudioUnifiedStream::~PulseAudioUnifiedStream() {
 }
 
 bool PulseAudioUnifiedStream::Open() {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   // Prepare the recording buffers for the callbacks.
   fifo_.reset(new media::SeekableBuffer(
       0, kFifoSizeInPackets * params_.GetBytesPerBuffer()));
@@ -138,7 +138,7 @@ void PulseAudioUnifiedStream::Reset() {
 }
 
 void PulseAudioUnifiedStream::Close() {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   Reset();
 
   // Signal to the manager that we're closed and can be removed.
@@ -211,7 +211,7 @@ void PulseAudioUnifiedStream::ReadData() {
 }
 
 void PulseAudioUnifiedStream::Start(AudioSourceCallback* callback) {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   CHECK(callback);
   CHECK(input_stream_);
   CHECK(output_stream_);
@@ -244,7 +244,7 @@ void PulseAudioUnifiedStream::Start(AudioSourceCallback* callback) {
 }
 
 void PulseAudioUnifiedStream::Stop() {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   // Cork (pause) the stream.  Waiting for the main loop lock will ensure
   // outstanding callbacks have completed.
@@ -278,13 +278,13 @@ void PulseAudioUnifiedStream::Stop() {
 }
 
 void PulseAudioUnifiedStream::SetVolume(double volume) {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   volume_ = static_cast<float>(volume);
 }
 
 void PulseAudioUnifiedStream::GetVolume(double* volume) {
-  DCHECK(manager_->GetMessageLoop()->BelongsToCurrentThread());
+  DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
 
   *volume = volume_;
 }

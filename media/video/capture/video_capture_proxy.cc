@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/base/video_frame.h"
 
 namespace {
@@ -27,16 +27,16 @@ namespace media {
 
 VideoCaptureHandlerProxy::VideoCaptureHandlerProxy(
     VideoCapture::EventHandler* proxied,
-    scoped_refptr<base::MessageLoopProxy> main_message_loop)
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner)
     : proxied_(proxied),
-      main_message_loop_(main_message_loop) {
+      main_task_runner_(main_task_runner) {
 }
 
 VideoCaptureHandlerProxy::~VideoCaptureHandlerProxy() {
 }
 
 void VideoCaptureHandlerProxy::OnStarted(VideoCapture* capture) {
-  main_message_loop_->PostTask(FROM_HERE, base::Bind(
+  main_task_runner_->PostTask(FROM_HERE, base::Bind(
         &VideoCaptureHandlerProxy::OnStartedOnMainThread,
         base::Unretained(this),
         capture,
@@ -44,7 +44,7 @@ void VideoCaptureHandlerProxy::OnStarted(VideoCapture* capture) {
 }
 
 void VideoCaptureHandlerProxy::OnStopped(VideoCapture* capture) {
-  main_message_loop_->PostTask(FROM_HERE, base::Bind(
+  main_task_runner_->PostTask(FROM_HERE, base::Bind(
         &VideoCaptureHandlerProxy::OnStoppedOnMainThread,
         base::Unretained(this),
         capture,
@@ -52,7 +52,7 @@ void VideoCaptureHandlerProxy::OnStopped(VideoCapture* capture) {
 }
 
 void VideoCaptureHandlerProxy::OnPaused(VideoCapture* capture) {
-  main_message_loop_->PostTask(FROM_HERE, base::Bind(
+  main_task_runner_->PostTask(FROM_HERE, base::Bind(
       &VideoCaptureHandlerProxy::OnPausedOnMainThread,
       base::Unretained(this),
       capture,
@@ -60,7 +60,7 @@ void VideoCaptureHandlerProxy::OnPaused(VideoCapture* capture) {
 }
 
 void VideoCaptureHandlerProxy::OnError(VideoCapture* capture, int error_code) {
-  main_message_loop_->PostTask(FROM_HERE, base::Bind(
+  main_task_runner_->PostTask(FROM_HERE, base::Bind(
       &VideoCaptureHandlerProxy::OnErrorOnMainThread,
       base::Unretained(this),
       capture,
@@ -69,7 +69,7 @@ void VideoCaptureHandlerProxy::OnError(VideoCapture* capture, int error_code) {
 }
 
 void VideoCaptureHandlerProxy::OnRemoved(VideoCapture* capture) {
-  main_message_loop_->PostTask(FROM_HERE, base::Bind(
+  main_task_runner_->PostTask(FROM_HERE, base::Bind(
       &VideoCaptureHandlerProxy::OnRemovedOnMainThread,
       base::Unretained(this),
       capture,
@@ -79,7 +79,7 @@ void VideoCaptureHandlerProxy::OnRemoved(VideoCapture* capture) {
 void VideoCaptureHandlerProxy::OnFrameReady(
     VideoCapture* capture,
     const scoped_refptr<VideoFrame>& frame) {
-  main_message_loop_->PostTask(
+  main_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VideoCaptureHandlerProxy::OnFrameReadyOnMainThread,
                  base::Unretained(this),

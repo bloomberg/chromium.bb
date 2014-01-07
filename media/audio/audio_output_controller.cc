@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner_util.h"
 #include "base/threading/platform_thread.h"
@@ -51,7 +50,7 @@ AudioOutputController::AudioOutputController(
       state_(kEmpty),
       num_allowed_io_(0),
       sync_reader_(sync_reader),
-      message_loop_(audio_manager->GetMessageLoop()),
+      message_loop_(audio_manager->GetTaskRunner()),
 #if defined(AUDIO_POWER_MONITORING)
       power_monitor_(
           params.sample_rate(),

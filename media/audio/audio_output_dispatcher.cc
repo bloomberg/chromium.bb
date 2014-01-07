@@ -4,7 +4,7 @@
 
 #include "media/audio/audio_output_dispatcher.h"
 
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 
 namespace media {
 
@@ -14,17 +14,17 @@ AudioOutputDispatcher::AudioOutputDispatcher(
     const std::string& output_device_id,
     const std::string& input_device_id)
     : audio_manager_(audio_manager),
-      message_loop_(audio_manager->GetMessageLoop()),
+      task_runner_(audio_manager->GetTaskRunner()),
       params_(params),
       output_device_id_(output_device_id),
       input_device_id_(input_device_id) {
   // We expect to be instantiated on the audio thread.  Otherwise the
-  // message_loop_ member will point to the wrong message loop!
-  DCHECK(audio_manager->GetMessageLoop()->BelongsToCurrentThread());
+  // |task_runner_| member will point to the wrong message loop!
+  DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
 }
 
 AudioOutputDispatcher::~AudioOutputDispatcher() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
 }  // namespace media

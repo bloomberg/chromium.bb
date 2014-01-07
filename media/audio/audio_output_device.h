@@ -62,11 +62,10 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop/message_loop.h"
 #include "media/audio/audio_device_thread.h"
 #include "media/audio/audio_output_ipc.h"
 #include "media/audio/audio_parameters.h"
-#include "media/audio/scoped_loop_observer.h"
+#include "media/audio/scoped_task_runner_observer.h"
 #include "media/base/audio_renderer_sink.h"
 #include "media/base/media_export.h"
 
@@ -75,11 +74,12 @@ namespace media {
 class MEDIA_EXPORT AudioOutputDevice
     : NON_EXPORTED_BASE(public AudioRendererSink),
       NON_EXPORTED_BASE(public AudioOutputIPCDelegate),
-      NON_EXPORTED_BASE(public ScopedLoopObserver) {
+      NON_EXPORTED_BASE(public ScopedTaskRunnerObserver) {
  public:
   // NOTE: Clients must call Initialize() before using.
-  AudioOutputDevice(scoped_ptr<AudioOutputIPC> ipc,
-                    const scoped_refptr<base::MessageLoopProxy>& io_loop);
+  AudioOutputDevice(
+      scoped_ptr<AudioOutputIPC> ipc,
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
 
   // Initialize function for clients wishing to have unified input and
   // output, |params| may specify |input_channels| > 0, representing a

@@ -5,8 +5,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
@@ -93,7 +91,7 @@ class MockClient : public media::VideoCaptureDevice::Client {
   }
 
  private:
-  scoped_refptr<base::MessageLoopProxy> main_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   base::Callback<void(const VideoCaptureFormat&)> frame_cb_;
 };
 

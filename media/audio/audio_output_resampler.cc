@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
@@ -174,7 +174,7 @@ void AudioOutputResampler::Initialize() {
 }
 
 bool AudioOutputResampler::OpenStream() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (dispatcher_->OpenStream()) {
     // Only record the UMA statistic if we didn't fallback during construction
@@ -233,7 +233,7 @@ bool AudioOutputResampler::OpenStream() {
 bool AudioOutputResampler::StartStream(
     AudioOutputStream::AudioSourceCallback* callback,
     AudioOutputProxy* stream_proxy) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   OnMoreDataConverter* resampler_callback = NULL;
   CallbackMap::iterator it = callbacks_.find(stream_proxy);
@@ -253,12 +253,12 @@ bool AudioOutputResampler::StartStream(
 
 void AudioOutputResampler::StreamVolumeSet(AudioOutputProxy* stream_proxy,
                                            double volume) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   dispatcher_->StreamVolumeSet(stream_proxy, volume);
 }
 
 void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   dispatcher_->StopStream(stream_proxy);
 
   // Now that StopStream() has completed the underlying physical stream should
@@ -270,7 +270,7 @@ void AudioOutputResampler::StopStream(AudioOutputProxy* stream_proxy) {
 }
 
 void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   dispatcher_->CloseStream(stream_proxy);
 
   // We assume that StopStream() is always called prior to CloseStream(), so
@@ -283,7 +283,7 @@ void AudioOutputResampler::CloseStream(AudioOutputProxy* stream_proxy) {
 }
 
 void AudioOutputResampler::Shutdown() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // No AudioOutputProxy objects should hold a reference to us when we get
   // to this stage.
@@ -294,7 +294,7 @@ void AudioOutputResampler::Shutdown() {
 }
 
 void AudioOutputResampler::CloseStreamsForWedgeFix() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Stop and close all active streams.  Once all streams across all dispatchers
   // have been closed the AudioManager will call RestartStreamsForWedgeFix().
@@ -310,7 +310,7 @@ void AudioOutputResampler::CloseStreamsForWedgeFix() {
 }
 
 void AudioOutputResampler::RestartStreamsForWedgeFix() {
-  DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   // By opening all streams first and then starting them one by one we ensure
   // the dispatcher only opens streams for those which will actually be used.
   for (CallbackMap::iterator it = callbacks_.begin(); it != callbacks_.end();

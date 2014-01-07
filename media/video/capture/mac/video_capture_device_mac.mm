@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/time/time.h"
 #import "media/video/capture/mac/avfoundation_glue.h"
 #import "media/video/capture/mac/platform_video_capturing_mac.h"
@@ -117,7 +118,7 @@ VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
     : device_name_(device_name),
       sent_frame_info_(false),
       tried_to_square_pixels_(false),
-      loop_proxy_(base::MessageLoopProxy::current()),
+      task_runner_(base::MessageLoopProxy::current()),
       state_(kNotInitialized),
       weak_factory_(this),
       weak_this_(weak_factory_.GetWeakPtr()),
@@ -125,14 +126,14 @@ VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
 }
 
 VideoCaptureDeviceMac::~VideoCaptureDeviceMac() {
-  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   [capture_device_ release];
 }
 
 void VideoCaptureDeviceMac::AllocateAndStart(
     const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
-  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   if (state_ != kIdle) {
     return;
   }
@@ -188,7 +189,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
 }
 
 void VideoCaptureDeviceMac::StopAndDeAllocate() {
-  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kCapturing || state_ == kError) << state_;
   [capture_device_ stopCapture];
 
@@ -200,7 +201,7 @@ void VideoCaptureDeviceMac::StopAndDeAllocate() {
 }
 
 bool VideoCaptureDeviceMac::Init() {
-  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kNotInitialized);
 
   // TODO(mcasas): The following check might not be necessary; if the device has
@@ -312,13 +313,13 @@ void VideoCaptureDeviceMac::ReceiveFrame(
 }
 
 void VideoCaptureDeviceMac::ReceiveError(const std::string& reason) {
-  loop_proxy_->PostTask(FROM_HERE,
+  task_runner_->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureDeviceMac::SetErrorState, weak_this_,
           reason));
 }
 
 void VideoCaptureDeviceMac::SetErrorState(const std::string& reason) {
-  DCHECK_EQ(loop_proxy_, base::MessageLoopProxy::current());
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DLOG(ERROR) << reason;
   state_ = kError;
   client_->OnError();

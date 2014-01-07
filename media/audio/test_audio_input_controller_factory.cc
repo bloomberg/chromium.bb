@@ -18,7 +18,7 @@ TestAudioInputController::TestAudioInputController(
       audio_parameters_(audio_parameters),
       factory_(factory),
       event_handler_(event_handler) {
-  message_loop_ = audio_manager->GetMessageLoop();
+  task_runner_ = audio_manager->GetTaskRunner();
 }
 
 TestAudioInputController::~TestAudioInputController() {
@@ -32,7 +32,7 @@ void TestAudioInputController::Record() {
 }
 
 void TestAudioInputController::Close(const base::Closure& closed_task) {
-  message_loop_->PostTask(FROM_HERE, closed_task);
+  task_runner_->PostTask(FROM_HERE, closed_task);
   if (factory_->delegate_)
     factory_->delegate_->TestAudioControllerClosed(this);
 }

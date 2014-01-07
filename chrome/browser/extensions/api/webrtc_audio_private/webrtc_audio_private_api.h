@@ -16,7 +16,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace extensions {
@@ -107,8 +107,8 @@ class WebrtcAudioPrivateSetActiveSinkFunction
   void SwitchDone();
   void DoneOnUIThread();
 
-  // Message loop of the thread this class is constructed on.
-  const scoped_refptr<base::MessageLoopProxy> message_loop_;
+  // Task runner of the thread this class is constructed on.
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   int tab_id_;
   std::string sink_id_;

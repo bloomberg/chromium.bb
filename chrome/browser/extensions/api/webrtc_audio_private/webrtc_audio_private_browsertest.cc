@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -103,8 +102,8 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
       AudioDeviceNames* device_names) {
     AudioManager* audio_manager = AudioManager::Get();
 
-    if (!audio_manager->GetMessageLoop()->BelongsToCurrentThread()) {
-      audio_manager->GetMessageLoop()->PostTask(
+    if (!audio_manager->GetTaskRunner()->BelongsToCurrentThread()) {
+      audio_manager->GetTaskRunner()->PostTask(
           FROM_HERE,
           base::Bind(&WebrtcAudioPrivateTest::GetAudioDeviceNames, this,
                      EnumerationFunc, device_names));

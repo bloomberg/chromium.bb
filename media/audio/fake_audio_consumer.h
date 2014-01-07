@@ -10,7 +10,7 @@
 #include "media/base/media_export.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -21,12 +21,13 @@ class AudioParameters;
 // simulate a real time consumer of audio data.
 class MEDIA_EXPORT FakeAudioConsumer {
  public:
-  // |worker_loop| is the loop on which the ReadCB provided to Start() will be
-  // executed on.  This may or may not be the be for the same thread that
-  // invokes the Start/Stop methods.
+  // |worker_task_runner| is the task runner on which the ReadCB provided to
+  // Start() will be executed on.  This may or may not be the be for the same
+  // thread that invokes the Start/Stop methods.
   // |params| is used to determine the frequency of callbacks.
-  FakeAudioConsumer(const scoped_refptr<base::MessageLoopProxy>& worker_loop,
-                    const AudioParameters& params);
+  FakeAudioConsumer(
+      const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
+      const AudioParameters& params);
   ~FakeAudioConsumer();
 
   // Start executing |read_cb| at a regular intervals.  Stop() must be called by

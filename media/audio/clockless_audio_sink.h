@@ -10,7 +10,7 @@
 #include "media/base/audio_renderer_sink.h"
 
 namespace base {
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {

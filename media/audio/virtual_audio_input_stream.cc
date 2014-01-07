@@ -8,8 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/virtual_audio_output_stream.h"
 
 namespace media {
@@ -50,18 +49,18 @@ class LoopbackAudioConverter : public AudioConverter::InputCallback {
 
 VirtualAudioInputStream::VirtualAudioInputStream(
     const AudioParameters& params,
-    const scoped_refptr<base::MessageLoopProxy>& worker_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
     const AfterCloseCallback& after_close_cb)
-    : worker_loop_(worker_loop),
+    : worker_task_runner_(worker_task_runner),
       after_close_cb_(after_close_cb),
       callback_(NULL),
       buffer_(new uint8[params.GetBytesPerBuffer()]),
       params_(params),
       mixer_(params_, params_, false),
       num_attached_output_streams_(0),
-      fake_consumer_(worker_loop_, params_) {
+      fake_consumer_(worker_task_runner_, params_) {
   DCHECK(params_.IsValid());
-  DCHECK(worker_loop_.get());
+  DCHECK(worker_task_runner_.get());
 
   // VAIS can be constructed on any thread, but will DCHECK that all
   // AudioInputStream methods are called from the same thread.
@@ -134,7 +133,7 @@ void VirtualAudioInputStream::RemoveOutputStream(
 }
 
 void VirtualAudioInputStream::PumpAudio(AudioBus* audio_bus) {
-  DCHECK(worker_loop_->BelongsToCurrentThread());
+  DCHECK(worker_task_runner_->BelongsToCurrentThread());
 
   {
     base::AutoLock scoped_lock(converter_network_lock_);

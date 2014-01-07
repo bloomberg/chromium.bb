@@ -261,7 +261,7 @@ class MEDIA_EXPORT AudioOutputController
   SyncReader* const sync_reader_;
 
   // The message loop of audio manager thread that this object runs on.
-  const scoped_refptr<base::MessageLoopProxy> message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> message_loop_;
 
 #if defined(AUDIO_POWER_MONITORING)
   // Scans audio samples from OnMoreIOData() as input to compute power levels.

@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/cancelable_callback.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -22,7 +22,7 @@ namespace media {
 class FakeAudioConsumer::Worker
     : public base::RefCountedThreadSafe<FakeAudioConsumer::Worker> {
  public:
-  Worker(const scoped_refptr<base::MessageLoopProxy>& worker_loop,
+  Worker(const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
          const AudioParameters& params);
 
   bool IsStopped();
@@ -44,7 +44,7 @@ class FakeAudioConsumer::Worker
   // the worker loop.
   void DoRead();
 
-  const scoped_refptr<base::MessageLoopProxy> worker_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner_;
   const scoped_ptr<AudioBus> audio_bus_;
   const base::TimeDelta buffer_duration_;
 
@@ -61,9 +61,9 @@ class FakeAudioConsumer::Worker
 };
 
 FakeAudioConsumer::FakeAudioConsumer(
-    const scoped_refptr<base::MessageLoopProxy>& worker_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
     const AudioParameters& params)
-    : worker_(new Worker(worker_loop, params)) {
+    : worker_(new Worker(worker_task_runner, params)) {
 }
 
 FakeAudioConsumer::~FakeAudioConsumer() {
@@ -80,9 +80,9 @@ void FakeAudioConsumer::Stop() {
 }
 
 FakeAudioConsumer::Worker::Worker(
-    const scoped_refptr<base::MessageLoopProxy>& worker_loop,
+    const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner,
     const AudioParameters& params)
-    : worker_loop_(worker_loop),
+    : worker_task_runner_(worker_task_runner),
       audio_bus_(AudioBus::Create(params)),
       buffer_duration_(base::TimeDelta::FromMicroseconds(
           params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
@@ -111,11 +111,11 @@ void FakeAudioConsumer::Worker::Start(const ReadCB& read_cb)  {
     DCHECK(read_cb_.is_null());
     read_cb_ = read_cb;
   }
-  worker_loop_->PostTask(FROM_HERE, base::Bind(&Worker::DoStart, this));
+  worker_task_runner_->PostTask(FROM_HERE, base::Bind(&Worker::DoStart, this));
 }
 
 void FakeAudioConsumer::Worker::DoStart() {
-  DCHECK(worker_loop_->BelongsToCurrentThread());
+  DCHECK(worker_task_runner_->BelongsToCurrentThread());
   next_read_time_ = base::TimeTicks::Now();
   read_task_cb_.Reset(base::Bind(&Worker::DoRead, this));
   read_task_cb_.callback().Run();
@@ -129,16 +129,16 @@ void FakeAudioConsumer::Worker::Stop() {
       return;
     read_cb_.Reset();
   }
-  worker_loop_->PostTask(FROM_HERE, base::Bind(&Worker::DoCancel, this));
+  worker_task_runner_->PostTask(FROM_HERE, base::Bind(&Worker::DoCancel, this));
 }
 
 void FakeAudioConsumer::Worker::DoCancel() {
-  DCHECK(worker_loop_->BelongsToCurrentThread());
+  DCHECK(worker_task_runner_->BelongsToCurrentThread());
   read_task_cb_.Cancel();
 }
 
 void FakeAudioConsumer::Worker::DoRead() {
-  DCHECK(worker_loop_->BelongsToCurrentThread());
+  DCHECK(worker_task_runner_->BelongsToCurrentThread());
 
   {
     base::AutoLock scoped_lock(read_cb_lock_);
@@ -156,7 +156,8 @@ void FakeAudioConsumer::Worker::DoRead() {
     delay += buffer_duration_ * (-delay / buffer_duration_ + 1);
   next_read_time_ = now + delay;
 
-  worker_loop_->PostDelayedTask(FROM_HERE, read_task_cb_.callback(), delay);
+  worker_task_runner_->PostDelayedTask(
+      FROM_HERE, read_task_cb_.callback(), delay);
 }
 
 }  // namespace media

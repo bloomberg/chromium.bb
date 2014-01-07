@@ -166,7 +166,7 @@ class AudioOutputControllerTest : public testing::Test {
 
     // Simulate a device change event to AudioOutputController from the
     // AudioManager.
-    audio_manager_->GetMessageLoop()->PostTask(
+    audio_manager_->GetTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&AudioOutputController::OnDeviceChange, controller_));
   }

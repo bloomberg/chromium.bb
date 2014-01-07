@@ -15,8 +15,7 @@
 #include "media/audio/audio_parameters.h"
 
 namespace base {
-class MessageLoop;
-class MessageLoopProxy;
+class SingleThreadTaskRunner;
 }
 
 namespace media {
@@ -68,14 +67,14 @@ class MEDIA_EXPORT AudioManager {
   // recording.
   //
   // Not threadsafe; in production this should only be called from the
-  // Audio IO thread (see GetMessageLoop).
+  // Audio IO thread (see GetTaskRunner()).
   virtual void GetAudioInputDeviceNames(AudioDeviceNames* device_names) = 0;
 
   // Appends a list of available output devices to |device_names|,
   // which must initially be empty.
   //
   // Not threadsafe; in production this should only be called from the
-  // Audio IO thread (see GetMessageLoop).
+  // Audio IO thread (see GetTaskRunner()).
   virtual void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) = 0;
 
   // Factory for all the supported stream formats. |params| defines parameters
@@ -133,13 +132,13 @@ class MEDIA_EXPORT AudioManager {
   virtual AudioInputStream* MakeAudioInputStream(
       const AudioParameters& params, const std::string& device_id) = 0;
 
-  // Returns message loop used for audio IO.
-  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() = 0;
+  // Returns the task runner used for audio IO.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
 
-  // Heavyweight tasks should use GetWorkerLoop() instead of GetMessageLoop().
-  // On most platforms they are the same, but some share the UI loop with the
-  // audio IO loop.
-  virtual scoped_refptr<base::MessageLoopProxy> GetWorkerLoop() = 0;
+  // Heavyweight tasks should use GetWorkerTaskRunner() instead of
+  // GetTaskRunner(). On most platforms they are the same, but some share the
+  // UI loop with the audio IO loop.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetWorkerTaskRunner() = 0;
 
   // Allows clients to listen for device state changes; e.g. preferred sample
   // rate or channel layout changes.  The typical response to receiving this

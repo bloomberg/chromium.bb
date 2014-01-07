@@ -6,7 +6,6 @@
 
 #include "base/basictypes.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "media/audio/audio_manager_base.h"
@@ -47,8 +46,8 @@ class AudioInputDevice::AudioThreadCallback
 
 AudioInputDevice::AudioInputDevice(
     scoped_ptr<AudioInputIPC> ipc,
-    const scoped_refptr<base::MessageLoopProxy>& io_loop)
-    : ScopedLoopObserver(io_loop),
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    : ScopedTaskRunnerObserver(io_task_runner),
       callback_(NULL),
       ipc_(ipc.Pass()),
       state_(IDLE),
@@ -78,7 +77,7 @@ void AudioInputDevice::Initialize(const AudioParameters& params,
 void AudioInputDevice::Start() {
   DCHECK(callback_) << "Initialize hasn't been called";
   DVLOG(1) << "Start()";
-  message_loop()->PostTask(FROM_HERE,
+  task_runner()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::StartUpOnIOThread, this));
 }
 
@@ -91,7 +90,7 @@ void AudioInputDevice::Stop() {
     stopping_hack_ = true;
   }
 
-  message_loop()->PostTask(FROM_HERE,
+  task_runner()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::ShutDownOnIOThread, this));
 }
 
@@ -101,13 +100,13 @@ void AudioInputDevice::SetVolume(double volume) {
     return;
   }
 
-  message_loop()->PostTask(FROM_HERE,
+  task_runner()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::SetVolumeOnIOThread, this, volume));
 }
 
 void AudioInputDevice::SetAutomaticGainControl(bool enabled) {
   DVLOG(1) << "SetAutomaticGainControl(enabled=" << enabled << ")";
-  message_loop()->PostTask(FROM_HERE,
+  task_runner()->PostTask(FROM_HERE,
       base::Bind(&AudioInputDevice::SetAutomaticGainControlOnIOThread,
           this, enabled));
 }
@@ -117,7 +116,7 @@ void AudioInputDevice::OnStreamCreated(
     base::SyncSocket::Handle socket_handle,
     int length,
     int total_segments) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
 #if defined(OS_WIN)
   DCHECK(handle);
   DCHECK(socket_handle);
@@ -153,7 +152,7 @@ void AudioInputDevice::OnVolume(double volume) {
 
 void AudioInputDevice::OnStateChanged(
     AudioInputIPCDelegate::State state) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Do nothing if the stream has been closed.
   if (state_ < CREATING_STREAM)
@@ -186,7 +185,7 @@ void AudioInputDevice::OnStateChanged(
 }
 
 void AudioInputDevice::OnIPCClosed() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   state_ = IPC_CLOSED;
   ipc_.reset();
 }
@@ -198,7 +197,7 @@ AudioInputDevice::~AudioInputDevice() {
 }
 
 void AudioInputDevice::StartUpOnIOThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Make sure we don't call Start() more than once.
   if (state_ != IDLE)
@@ -215,7 +214,7 @@ void AudioInputDevice::StartUpOnIOThread() {
 }
 
 void AudioInputDevice::ShutDownOnIOThread() {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
 
   // Close the stream, if we haven't already.
   if (state_ >= CREATING_STREAM) {
@@ -240,13 +239,13 @@ void AudioInputDevice::ShutDownOnIOThread() {
 }
 
 void AudioInputDevice::SetVolumeOnIOThread(double volume) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
   if (state_ >= CREATING_STREAM)
     ipc_->SetVolume(volume);
 }
 
 void AudioInputDevice::SetAutomaticGainControlOnIOThread(bool enabled) {
-  DCHECK(message_loop()->BelongsToCurrentThread());
+  DCHECK(task_runner()->BelongsToCurrentThread());
 
   if (state_ >= CREATING_STREAM) {
     DLOG(WARNING) << "The AGC state can not be modified after starting.";

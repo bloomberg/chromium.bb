@@ -4,8 +4,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "media/audio/audio_manager.h"
@@ -27,10 +25,10 @@ const AudioParameters kParams(
 class MockVirtualAudioInputStream : public VirtualAudioInputStream {
  public:
   explicit MockVirtualAudioInputStream(
-      const scoped_refptr<base::MessageLoopProxy>& worker_loop)
+      const scoped_refptr<base::SingleThreadTaskRunner>& worker_task_runner)
       : VirtualAudioInputStream(
             kParams,
-            worker_loop,
+            worker_task_runner,
             base::Bind(&base::DeletePointer<VirtualAudioInputStream>)) {}
   ~MockVirtualAudioInputStream() {}
 
@@ -53,16 +51,16 @@ class VirtualAudioOutputStreamTest : public testing::Test {
   VirtualAudioOutputStreamTest()
       : audio_thread_(new base::Thread("AudioThread")) {
     audio_thread_->Start();
-    audio_message_loop_ = audio_thread_->message_loop_proxy();
+    audio_task_runner_ = audio_thread_->message_loop_proxy();
   }
 
-  const scoped_refptr<base::MessageLoopProxy>& audio_message_loop() const {
-    return audio_message_loop_;
+  const scoped_refptr<base::SingleThreadTaskRunner>& audio_task_runner() const {
+    return audio_task_runner_;
   }
 
   void SyncWithAudioThread() {
     base::WaitableEvent done(false, false);
-    audio_message_loop()->PostTask(
+    audio_task_runner()->PostTask(
         FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
                               base::Unretained(&done)));
     done.Wait();
@@ -70,7 +68,7 @@ class VirtualAudioOutputStreamTest : public testing::Test {
 
  private:
   scoped_ptr<base::Thread> audio_thread_;
-  scoped_refptr<base::MessageLoopProxy> audio_message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualAudioOutputStreamTest);
 };
@@ -79,8 +77,8 @@ TEST_F(VirtualAudioOutputStreamTest, StartStopStartStop) {
   static const int kCycles = 3;
 
   MockVirtualAudioInputStream* const input_stream =
-      new MockVirtualAudioInputStream(audio_message_loop());
-  audio_message_loop()->PostTask(
+      new MockVirtualAudioInputStream(audio_task_runner());
+  audio_task_runner()->PostTask(
       FROM_HERE, base::Bind(
           base::IgnoreResult(&MockVirtualAudioInputStream::Open),
           base::Unretained(input_stream)));
@@ -95,24 +93,24 @@ TEST_F(VirtualAudioOutputStreamTest, StartStopStartStop) {
   EXPECT_CALL(*input_stream, RemoveOutputStream(output_stream, _))
       .Times(kCycles);
 
-  audio_message_loop()->PostTask(
+  audio_task_runner()->PostTask(
       FROM_HERE, base::Bind(base::IgnoreResult(&VirtualAudioOutputStream::Open),
                             base::Unretained(output_stream)));
   SineWaveAudioSource source(CHANNEL_LAYOUT_STEREO, 200.0, 128);
   for (int i = 0; i < kCycles; ++i) {
-    audio_message_loop()->PostTask(
+    audio_task_runner()->PostTask(
         FROM_HERE, base::Bind(&VirtualAudioOutputStream::Start,
                               base::Unretained(output_stream),
                               &source));
-    audio_message_loop()->PostTask(
+    audio_task_runner()->PostTask(
         FROM_HERE, base::Bind(&VirtualAudioOutputStream::Stop,
                               base::Unretained(output_stream)));
   }
-  audio_message_loop()->PostTask(
+  audio_task_runner()->PostTask(
       FROM_HERE, base::Bind(&VirtualAudioOutputStream::Close,
                             base::Unretained(output_stream)));
 
-  audio_message_loop()->PostTask(
+  audio_task_runner()->PostTask(
       FROM_HERE, base::Bind(&MockVirtualAudioInputStream::Close,
                             base::Unretained(input_stream)));
 

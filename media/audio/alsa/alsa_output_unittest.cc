@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "media/audio/alsa/alsa_output.h"
 #include "media/audio/alsa/alsa_wrapper.h"
@@ -102,8 +101,8 @@ class MockAudioManagerAlsa : public AudioManagerAlsa {
   }
 
   // We don't mock this method since all tests will do the same thing
-  // and use the current message loop.
-  virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE {
+  // and use the current task runner.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() OVERRIDE {
     return base::MessageLoop::current()->message_loop_proxy();
   }
 

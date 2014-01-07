@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/message_loop/message_loop_proxy.h"
+#include "base/single_thread_task_runner.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/channel_layout.h"
@@ -39,11 +39,11 @@ class AudioStreamHandler::AudioStreamContainer
   }
 
   virtual ~AudioStreamContainer() {
-    DCHECK(AudioManager::Get()->GetMessageLoop()->BelongsToCurrentThread());
+    DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   }
 
   void Play() {
-    DCHECK(AudioManager::Get()->GetMessageLoop()->BelongsToCurrentThread());
+    DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
 
     if (!stream_) {
       stream_ = AudioManager::Get()->MakeAudioOutputStreamProxy(params_,
@@ -70,7 +70,7 @@ class AudioStreamHandler::AudioStreamContainer
   }
 
   void Stop() {
-    DCHECK(AudioManager::Get()->GetMessageLoop()->BelongsToCurrentThread());
+    DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
     if (!stream_)
       return;
     stream_->Stop();
@@ -89,7 +89,7 @@ class AudioStreamHandler::AudioStreamContainer
     size_t bytes_written = 0;
     if (wav_audio_.AtEnd(cursor_) ||
         !wav_audio_.CopyTo(dest, cursor_, &bytes_written)) {
-      AudioManager::Get()->GetMessageLoop()->PostTask(
+      AudioManager::Get()->GetTaskRunner()->PostTask(
           FROM_HERE,
           base::Bind(&AudioStreamContainer::Stop, base::Unretained(this)));
       return 0;
@@ -142,10 +142,10 @@ AudioStreamHandler::AudioStreamHandler(const base::StringPiece& wav_data)
 
 AudioStreamHandler::~AudioStreamHandler() {
   DCHECK(CalledOnValidThread());
-  AudioManager::Get()->GetMessageLoop()->PostTask(
+  AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&AudioStreamContainer::Stop, base::Unretained(stream_.get())));
-  AudioManager::Get()->GetMessageLoop()->DeleteSoon(FROM_HERE,
+  AudioManager::Get()->GetTaskRunner()->DeleteSoon(FROM_HERE,
                                                     stream_.release());
 }
 
@@ -160,7 +160,7 @@ bool AudioStreamHandler::Play() {
   if (!IsInitialized())
     return false;
 
-  AudioManager::Get()->GetMessageLoop()->PostTask(
+  AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&AudioStreamContainer::Play),
                  base::Unretained(stream_.get())));
@@ -169,7 +169,7 @@ bool AudioStreamHandler::Play() {
 
 void AudioStreamHandler::Stop() {
   DCHECK(CalledOnValidThread());
-  AudioManager::Get()->GetMessageLoop()->PostTask(
+  AudioManager::Get()->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&AudioStreamContainer::Stop, base::Unretained(stream_.get())));
 }
