@@ -41,6 +41,13 @@ class TestResultsTracker {
   // Called when a test iteration is starting.
   void OnTestIterationStarting();
 
+  // Adds |test_name| to the set of discovered tests (this includes all tests
+  // present in the executable, not necessarily run).
+  void AddTest(const std::string& test_name);
+
+  // Adds |test_name| to the set of disabled tests.
+  void AddDisabledTest(const std::string& test_name);
+
   // Adds |result| to the stored test results.
   void AddTestResult(const TestResult& result);
 
@@ -80,6 +87,12 @@ class TestResultsTracker {
   // Set of global tags, i.e. strings indicating conditions that apply to
   // the entire test run.
   std::set<std::string> global_tags_;
+
+  // Set of all test names discovered in the current executable.
+  std::set<std::string> all_tests_;
+
+  // Set of all disabled tests in the current executable.
+  std::set<std::string> disabled_tests_;
 
   // Store test results for each iteration.
   std::vector<PerIterationData> per_iteration_data_;

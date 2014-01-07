@@ -12,6 +12,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/values.h"
@@ -45,6 +46,12 @@ void PrintTests(InputIterator first,
   for (InputIterator i = first; i != last; ++i)
     fprintf(stdout, "    %s\n", (*i).c_str());
   fflush(stdout);
+}
+
+std::string TestNameWithoutDisabledPrefix(const std::string& test_name) {
+  std::string test_name_no_disabled(test_name);
+  ReplaceSubstringsAfterOffset(&test_name_no_disabled, 0, "DISABLED_", "");
+  return test_name_no_disabled;
 }
 
 }  // namespace
@@ -155,6 +162,18 @@ void TestResultsTracker::OnTestIterationStarting() {
   per_iteration_data_.push_back(PerIterationData());
 }
 
+void TestResultsTracker::AddTest(const std::string& test_name) {
+  // Record disabled test names without DISABLED_ prefix so that they are easy
+  // to compare with regular test names, e.g. before or after disabling.
+  all_tests_.insert(TestNameWithoutDisabledPrefix(test_name));
+}
+
+void TestResultsTracker::AddDisabledTest(const std::string& test_name) {
+  // Record disabled test names without DISABLED_ prefix so that they are easy
+  // to compare with regular test names, e.g. before or after disabling.
+  disabled_tests_.insert(TestNameWithoutDisabledPrefix(test_name));
+}
+
 void TestResultsTracker::AddTestResult(const TestResult& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -250,6 +269,24 @@ bool TestResultsTracker::SaveSummaryAsJSON(const FilePath& path) const {
        i != global_tags_.end();
        ++i) {
     global_tags->AppendString(*i);
+  }
+
+  ListValue* all_tests = new ListValue;
+  summary_root->Set("all_tests", all_tests);
+
+  for (std::set<std::string>::const_iterator i = all_tests_.begin();
+       i != all_tests_.end();
+       ++i) {
+    all_tests->AppendString(*i);
+  }
+
+  ListValue* disabled_tests = new ListValue;
+  summary_root->Set("disabled_tests", disabled_tests);
+
+  for (std::set<std::string>::const_iterator i = disabled_tests_.begin();
+       i != disabled_tests_.end();
+       ++i) {
+    disabled_tests->AppendString(*i);
   }
 
   ListValue* per_iteration_data = new ListValue;

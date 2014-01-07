@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/launcher/test_results_tracker.h"
@@ -685,6 +686,68 @@ bool TestLauncher::Init() {
     return 1;
   }
 
+#if defined(NDEBUG)
+  results_tracker_.AddGlobalTag("MODE_RELEASE");
+#else
+  results_tracker_.AddGlobalTag("MODE_DEBUG");
+#endif
+
+  // Operating systems (sorted alphabetically).
+  // Note that they can deliberately overlap, e.g. OS_LINUX is a subset
+  // of OS_POSIX.
+#if defined(OS_ANDROID)
+  results_tracker_.AddGlobalTag("OS_ANDROID");
+#endif
+
+#if defined(OS_BSD)
+  results_tracker_.AddGlobalTag("OS_BSD");
+#endif
+
+#if defined(OS_FREEBSD)
+  results_tracker_.AddGlobalTag("OS_FREEBSD");
+#endif
+
+#if defined(OS_IOS)
+  results_tracker_.AddGlobalTag("OS_IOS");
+#endif
+
+#if defined(OS_LINUX)
+  results_tracker_.AddGlobalTag("OS_LINUX");
+#endif
+
+#if defined(OS_MACOSX)
+  results_tracker_.AddGlobalTag("OS_MACOSX");
+#endif
+
+#if defined(OS_NACL)
+  results_tracker_.AddGlobalTag("OS_NACL");
+#endif
+
+#if defined(OS_OPENBSD)
+  results_tracker_.AddGlobalTag("OS_OPENBSD");
+#endif
+
+#if defined(OS_POSIX)
+  results_tracker_.AddGlobalTag("OS_POSIX");
+#endif
+
+#if defined(OS_SOLARIS)
+  results_tracker_.AddGlobalTag("OS_SOLARIS");
+#endif
+
+#if defined(OS_WIN)
+  results_tracker_.AddGlobalTag("OS_WIN");
+#endif
+
+  // CPU-related tags.
+#if defined(ARCH_CPU_32_BITS)
+  results_tracker_.AddGlobalTag("CPU_32_BITS");
+#endif
+
+#if defined(ARCH_CPU_64_BITS)
+  results_tracker_.AddGlobalTag("CPU_64_BITS");
+#endif
+
   return true;
 }
 
@@ -703,11 +766,15 @@ void TestLauncher::RunTests() {
       test_name.append(".");
       test_name.append(test_info->name());
 
-      // Skip disabled tests.
+      results_tracker_.AddTest(test_name);
+
       const CommandLine* command_line = CommandLine::ForCurrentProcess();
-      if (test_name.find("DISABLED") != std::string::npos &&
-          !command_line->HasSwitch(kGTestRunDisabledTestsFlag)) {
-        continue;
+      if (test_name.find("DISABLED") != std::string::npos) {
+        results_tracker_.AddDisabledTest(test_name);
+
+        // Skip disabled tests unless explicitly requested.
+        if (!command_line->HasSwitch(kGTestRunDisabledTestsFlag))
+          continue;
       }
 
       std::string filtering_test_name =
