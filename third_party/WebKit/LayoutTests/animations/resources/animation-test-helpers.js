@@ -71,42 +71,25 @@ function parseCrossFade(s)
 
 function parseBasicShape(s)
 {
-    var shapeFunction = s.match(/(\w+)\((.+)\)/);
-    if (!shapeFunction)
+    var functionParse = s.match(/(\w+)\((.+)\)/);
+    if (!functionParse)
         return null;
 
-    var matches;
-    switch (shapeFunction[1]) {
-    case "rectangle":
-        matches = s.match("rectangle\\((.*)\\s*,\\s*(.*)\\s*,\\s*(.*)\\,\\s*(.*)\\)");
-        break;
-    case "circle":
-        matches = s.match("circle\\((.*)\\s*,\\s*(.*)\\s*,\\s*(.*)\\)");
-        break;
-    case "ellipse":
-        matches = s.match("ellipse\\((.*)\\s*,\\s*(.*)\\s*,\\s*(.*)\\,\\s*(.*)\\)");
-        break;
-    case "polygon":
-        matches = s.match("polygon\\(nonzero, (.*)\\s+(.*)\\s*,\\s*(.*)\\s+(.*)\\s*,\\s*(.*)\\s+(.*)\\s*,\\s*(.*)\\s+(.*)\\)");
-        break;
-    default:
-        return null;
-    }
+    var name = functionParse[1];
+    var params = functionParse[2];
+    params = params.split(/\s*[,\s]\s*/);
 
-    if (!matches)
-        return null;
-
-    matches.shift();
-
-    // Normalize percentage values.
-    for (var i = 0; i < matches.length; ++i) {
-        var param = matches[i];
-        matches[i] = parseFloat(matches[i]);
+    // Parse numbers and normalize percentages
+    for (var i = 0; i < params.length; ++i) {
+        var param = params[i];
+        if (!/$\d/.test(param))
+            continue;
+        params[i] = parseFloat(params[i]);
         if (param.indexOf('%') != -1)
-            matches[i] = matches[i] / 100;
+            params[i] = params[i] / 100;
     }
 
-    return {"shape": shapeFunction[1], "params": matches};
+    return {"shape": name, "params": params};
 }
 
 function basicShapeParametersMatch(paramList1, paramList2, tolerance)
@@ -360,6 +343,11 @@ function checkExpectedTransitionValue(expected, index)
                     break;
             }
         }
+    } else if (property === "shape-inside" || property === "shape-outside") {
+        computedValue = window.getComputedStyle(document.getElementById(elementId)).getPropertyValue(property);
+        var actualShape = parseBasicShape(computedValue);
+        var expectedShape = parseBasicShape(expectedValue);
+        pass = basicShapeParametersMatch(actualShape, expectedShape, tolerance);
     } else {
         var computedStyle = window.getComputedStyle(document.getElementById(elementId)).getPropertyCSSValue(property);
         if (computedStyle.cssValueType == CSSValue.CSS_VALUE_LIST) {

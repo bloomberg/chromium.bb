@@ -82,7 +82,7 @@ public:
     LayoutBox layoutBox() const { return m_layoutBox; }
     void setLayoutBox(LayoutBox layoutBox) { m_layoutBox = layoutBox; }
 
-    bool operator==(const ShapeValue& other) const { return type() == other.type(); }
+    bool operator==(const ShapeValue& other) const;
 
 private:
     ShapeValue(PassRefPtr<BasicShape> shape)
@@ -114,6 +114,26 @@ private:
     RefPtr<StyleImage> m_image;
     LayoutBox m_layoutBox;
 };
+
+inline bool ShapeValue::operator==(const ShapeValue& other) const
+{
+    if (type() != other.type())
+        return false;
+
+    switch (type()) {
+    case Shape:
+        return shape() == other.shape() && layoutBox() == other.layoutBox();
+    case Box:
+        return layoutBox() == other.layoutBox();
+    case Outside:
+        return true;
+    case Image:
+        return image() == other.image();
+    }
+
+    ASSERT_NOT_REACHED();
+    return false;
+}
 
 }
 
