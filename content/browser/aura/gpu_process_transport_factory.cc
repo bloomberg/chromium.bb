@@ -185,6 +185,11 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
 
+  // Software fallback does not happen on Chrome OS.
+#if defined(OS_CHROMEOS)
+  software_fallback = false;
+#endif
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing) &&
       !software_fallback) {
