@@ -80,7 +80,8 @@ cr.define('cr.ui.overlay', function() {
    * height.
    */
   function setMaxHeightAllPages() {
-    var pages = document.querySelectorAll('.overlay .page');
+    var pages = document.querySelectorAll(
+        '.overlay .page:not(.not-resizable)');
 
     var maxHeight = Math.min(0.9 * window.innerHeight, 640) + 'px';
     for (var i = 0; i < pages.length; i++)
