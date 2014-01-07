@@ -46,7 +46,7 @@ class BrowsingDataFileSystemHelper
   // Detailed information about a file system, including it's origin GURL,
   // the amount of data (in bytes) for each sandboxed filesystem type.
   struct FileSystemInfo {
-    FileSystemInfo(const GURL& origin);
+    explicit FileSystemInfo(const GURL& origin);
     ~FileSystemInfo();
 
     // The origin for which the information is relevant.
@@ -143,10 +143,6 @@ class CannedBrowsingDataFileSystemHelper
   // Used by Clone() to create an object without a Profile
   CannedBrowsingDataFileSystemHelper();
   virtual ~CannedBrowsingDataFileSystemHelper();
-
-  // Triggers the success callback as the end of a StartFetching workflow. This
-  // must be called on the UI thread.
-  void NotifyOnUIThread();
 
   // Holds the current list of filesystems returned to the client. Access to
   // |file_system_info_| is triggered indirectly via the UI thread and guarded

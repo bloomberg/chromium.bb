@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/file_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -191,20 +190,16 @@ CannedBrowsingDataDatabaseHelper::GetPendingDatabaseInfo() {
 void CannedBrowsingDataDatabaseHelper::StartFetching(
     const base::Callback<void(const std::list<DatabaseInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!is_fetching_);
-  DCHECK_EQ(false, callback.is_null());
+  DCHECK(!callback.is_null());
 
-  is_fetching_ = true;
-  completion_callback_ = callback;
-
-  database_info_.clear();
+  std::list<DatabaseInfo> result;
   for (std::set<PendingDatabaseInfo>::const_iterator
        info = pending_database_info_.begin();
        info != pending_database_info_.end(); ++info) {
     DatabaseIdentifier identifier =
         DatabaseIdentifier::CreateFromOrigin(info->origin);
 
-    database_info_.push_back(DatabaseInfo(
+    result.push_back(DatabaseInfo(
         identifier,
         info->name,
         info->description,
@@ -213,8 +208,24 @@ void CannedBrowsingDataDatabaseHelper::StartFetching(
   }
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&CannedBrowsingDataDatabaseHelper::NotifyInUIThread, this));
+      BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
+}
+
+void CannedBrowsingDataDatabaseHelper::DeleteDatabase(
+    const std::string& origin_identifier,
+    const std::string& name) {
+  GURL origin =
+      webkit_database::DatabaseIdentifier::Parse(origin_identifier).ToOrigin();
+  for (std::set<PendingDatabaseInfo>::iterator it =
+           pending_database_info_.begin();
+       it != pending_database_info_.end();
+       ++it) {
+    if (it->origin == origin && it->name == name) {
+      pending_database_info_.erase(it);
+      break;
+    }
+  }
+  BrowsingDataDatabaseHelper::DeleteDatabase(origin_identifier, name);
 }
 
 CannedBrowsingDataDatabaseHelper::~CannedBrowsingDataDatabaseHelper() {}

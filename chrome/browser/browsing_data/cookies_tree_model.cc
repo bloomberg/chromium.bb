@@ -397,6 +397,10 @@ void CookieTreeSessionStorageNode::DeleteStoredObjects() {
   LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
   if (container) {
+    // TODO(rsesek): There's no easy way to get the namespace_id for a session
+    // storage, nor is there an easy way to clear session storage just by
+    // origin. This is probably okay since session storage is not persistent.
+    // http://crbug.com/168996
     container->session_storage_info_list_.erase(session_storage_info_);
   }
 }

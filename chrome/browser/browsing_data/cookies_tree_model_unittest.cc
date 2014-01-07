@@ -58,7 +58,7 @@ class CookiesTreeModelTest : public testing::Test {
     mock_browsing_data_appcache_helper_ =
         new MockBrowsingDataAppCacheHelper(profile_.get());
     mock_browsing_data_indexed_db_helper_ =
-        new MockBrowsingDataIndexedDBHelper();
+        new MockBrowsingDataIndexedDBHelper(profile_.get());
     mock_browsing_data_file_system_helper_ =
         new MockBrowsingDataFileSystemHelper(profile_.get());
     mock_browsing_data_quota_helper_ =

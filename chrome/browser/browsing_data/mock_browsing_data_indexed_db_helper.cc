@@ -6,8 +6,15 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
+#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 
-MockBrowsingDataIndexedDBHelper::MockBrowsingDataIndexedDBHelper() {
+MockBrowsingDataIndexedDBHelper::MockBrowsingDataIndexedDBHelper(
+    Profile* profile)
+    : BrowsingDataIndexedDBHelper(
+        content::BrowserContext::GetDefaultStoragePartition(profile)->
+            GetIndexedDBContext()) {
 }
 
 MockBrowsingDataIndexedDBHelper::~MockBrowsingDataIndexedDBHelper() {

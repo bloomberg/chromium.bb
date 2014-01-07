@@ -81,6 +81,7 @@ class CannedBrowsingDataAppCacheHelper : public BrowsingDataAppCacheHelper {
 
   // BrowsingDataAppCacheHelper methods.
   virtual void StartFetching(const base::Closure& completion_callback) OVERRIDE;
+  virtual void DeleteAppCacheGroup(const GURL& manifest_url) OVERRIDE;
 
  private:
   virtual ~CannedBrowsingDataAppCacheHelper();

@@ -30,21 +30,51 @@ class BrowsingDataIndexedDBHelper
  public:
   // Create a BrowsingDataIndexedDBHelper instance for the indexed databases
   // stored in |profile|'s user data directory.
-  static BrowsingDataIndexedDBHelper* Create(
-      content::IndexedDBContext* context);
+  explicit BrowsingDataIndexedDBHelper(content::IndexedDBContext* content);
 
   // Starts the fetching process, which will notify its completion via
   // callback.
   // This must be called only in the UI thread.
   virtual void StartFetching(
       const base::Callback<void(const std::list<content::IndexedDBInfo>&)>&
-          callback) = 0;
+          callback);
   // Requests a single indexed database to be deleted in the IndexedDB thread.
-  virtual void DeleteIndexedDB(const GURL& origin) = 0;
+  virtual void DeleteIndexedDB(const GURL& origin);
 
  protected:
+  virtual ~BrowsingDataIndexedDBHelper();
+
+  scoped_refptr<content::IndexedDBContext> indexed_db_context_;
+
+  // Access to |indexed_db_info_| is triggered indirectly via the UI thread and
+  // guarded by |is_fetching_|. This means |indexed_db_info_| is only accessed
+  // while |is_fetching_| is true. The flag |is_fetching_| is only accessed on
+  // the UI thread.
+  // In the context of this class |indexed_db_info_| is only accessed on the
+  // context's IndexedDB thread.
+  std::list<content::IndexedDBInfo> indexed_db_info_;
+
+  // This only mutates on the UI thread.
+  base::Callback<void(const std::list<content::IndexedDBInfo>&)>
+      completion_callback_;
+
+  // Indicates whether or not we're currently fetching information:
+  // it's true when StartFetching() is called in the UI thread, and it's reset
+  // after we notified the callback in the UI thread.
+  // This only mutates on the UI thread.
+  bool is_fetching_;
+
+ private:
   friend class base::RefCountedThreadSafe<BrowsingDataIndexedDBHelper>;
-  virtual ~BrowsingDataIndexedDBHelper() {}
+
+  // Enumerates all indexed database files in the IndexedDB thread.
+  void FetchIndexedDBInfoInIndexedDBThread();
+  // Notifies the completion callback in the UI thread.
+  void NotifyInUIThread();
+  // Delete a single indexed database in the IndexedDB thread.
+  void DeleteIndexedDBInIndexedDBThread(const GURL& origin);
+
+  DISALLOW_COPY_AND_ASSIGN(BrowsingDataIndexedDBHelper);
 };
 
 // This class is an implementation of BrowsingDataIndexedDBHelper that does
@@ -64,7 +94,8 @@ class CannedBrowsingDataIndexedDBHelper
     base::string16 name;
   };
 
-  CannedBrowsingDataIndexedDBHelper();
+  explicit CannedBrowsingDataIndexedDBHelper(
+      content::IndexedDBContext* context);
 
   // Return a copy of the IndexedDB helper. Only one consumer can use the
   // StartFetching method at a time, so we need to create a copy of the helper
@@ -93,34 +124,12 @@ class CannedBrowsingDataIndexedDBHelper
   virtual void StartFetching(
       const base::Callback<void(const std::list<content::IndexedDBInfo>&)>&
           callback) OVERRIDE;
-
-  virtual void DeleteIndexedDB(const GURL& origin) OVERRIDE {}
+  virtual void DeleteIndexedDB(const GURL& origin) OVERRIDE;
 
  private:
   virtual ~CannedBrowsingDataIndexedDBHelper();
 
-  // Convert the pending indexed db info to indexed db info objects.
-  void ConvertPendingInfo();
-
   std::set<PendingIndexedDBInfo> pending_indexed_db_info_;
-
-  // Access to |indexed_db_info_| is triggered indirectly via the UI thread and
-  // guarded by |is_fetching_|. This means |indexed_db_info_| is only accessed
-  // while |is_fetching_| is true. The flag |is_fetching_| is only accessed on
-  // the UI thread.
-  // In the context of this class |indexed_db_info_| is only accessed on the UI
-  // thread.
-  std::list<content::IndexedDBInfo> indexed_db_info_;
-
-  // This only mutates on the UI thread.
-  base::Callback<void(const std::list<content::IndexedDBInfo>&)>
-      completion_callback_;
-
-  // Indicates whether or not we're currently fetching information:
-  // it's true when StartFetching() is called in the UI thread, and it's reset
-  // after we notified the callback in the UI thread.
-  // This only mutates on the UI thread.
-  bool is_fetching_;
 
   DISALLOW_COPY_AND_ASSIGN(CannedBrowsingDataIndexedDBHelper);
 };

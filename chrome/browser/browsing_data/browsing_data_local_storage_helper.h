@@ -100,12 +100,10 @@ class CannedBrowsingDataLocalStorageHelper
   virtual void StartFetching(
       const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback)
           OVERRIDE;
+  virtual void DeleteOrigin(const GURL& origin) OVERRIDE;
 
  private:
   virtual ~CannedBrowsingDataLocalStorageHelper();
-
-  // Convert the pending local storage info to local storage info objects.
-  void ConvertPendingInfo();
 
   std::set<GURL> pending_local_storage_info_;
 

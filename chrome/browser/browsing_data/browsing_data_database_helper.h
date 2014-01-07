@@ -142,6 +142,8 @@ class CannedBrowsingDataDatabaseHelper : public BrowsingDataDatabaseHelper {
   virtual void StartFetching(
       const base::Callback<void(const std::list<DatabaseInfo>&)>& callback)
           OVERRIDE;
+  virtual void DeleteDatabase(const std::string& origin_identifier,
+                              const std::string& name) OVERRIDE;
 
  private:
   virtual ~CannedBrowsingDataDatabaseHelper();

@@ -31,6 +31,10 @@ class TestCompletionCallback {
 }  // namespace
 
 class CannedBrowsingDataAppCacheHelperTest : public testing::Test {
+ public:
+  CannedBrowsingDataAppCacheHelperTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
@@ -106,6 +110,28 @@ TEST_F(CannedBrowsingDataAppCacheHelperTest, Empty) {
   ASSERT_FALSE(helper->empty());
   helper->Reset();
   ASSERT_TRUE(helper->empty());
+}
+
+TEST_F(CannedBrowsingDataAppCacheHelperTest, Delete) {
+  TestingProfile profile;
+
+  GURL manifest1("http://example.com/manifest1.xml");
+  GURL manifest2("http://foo.example.com/manifest2.xml");
+  GURL manifest3("http://bar.example.com/manifest3.xml");
+
+  scoped_refptr<CannedBrowsingDataAppCacheHelper> helper(
+      new CannedBrowsingDataAppCacheHelper(&profile));
+
+  EXPECT_TRUE(helper->empty());
+  helper->AddAppCache(manifest1);
+  helper->AddAppCache(manifest2);
+  helper->AddAppCache(manifest3);
+  EXPECT_FALSE(helper->empty());
+  EXPECT_EQ(3u, helper->GetAppCacheCount());
+  helper->DeleteAppCacheGroup(manifest2);
+  EXPECT_EQ(2u, helper->GetAppCacheCount());
+  EXPECT_TRUE(helper->GetOriginAppCacheInfoMap().find(manifest2) ==
+              helper->GetOriginAppCacheInfoMap().end());
 }
 
 TEST_F(CannedBrowsingDataAppCacheHelperTest, IgnoreExtensionsAndDevTools) {

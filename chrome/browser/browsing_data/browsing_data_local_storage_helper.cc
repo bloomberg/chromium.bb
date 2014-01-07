@@ -5,7 +5,6 @@
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -121,31 +120,23 @@ CannedBrowsingDataLocalStorageHelper::GetLocalStorageInfo() const {
 
 void CannedBrowsingDataLocalStorageHelper::StartFetching(
     const base::Callback<void(const std::list<LocalStorageInfo>&)>& callback) {
-  DCHECK(!is_fetching_);
-  DCHECK_EQ(false, callback.is_null());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
 
-  is_fetching_ = true;
-  completion_callback_ = callback;
+  std::list<LocalStorageInfo> result;
+  for (std::set<GURL>::iterator iter = pending_local_storage_info_.begin();
+       iter != pending_local_storage_info_.end(); ++iter) {
+    result.push_back(
+        LocalStorageInfo(*iter, 0,  base::Time()));
+  }
 
-  // We post a task to emulate async fetching behavior.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&CannedBrowsingDataLocalStorageHelper::ConvertPendingInfo,
-                 this));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::Bind(callback, result));
+}
+
+void CannedBrowsingDataLocalStorageHelper::DeleteOrigin(const GURL& origin) {
+  pending_local_storage_info_.erase(origin);
+  BrowsingDataLocalStorageHelper::DeleteOrigin(origin);
 }
 
 CannedBrowsingDataLocalStorageHelper::~CannedBrowsingDataLocalStorageHelper() {}
-
-void CannedBrowsingDataLocalStorageHelper::ConvertPendingInfo() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  local_storage_info_.clear();
-  for (std::set<GURL>::iterator iter = pending_local_storage_info_.begin();
-       iter != pending_local_storage_info_.end(); ++iter) {
-    local_storage_info_.push_back(
-        LocalStorageInfo(*iter, 0,  base::Time()));
-  }
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&CannedBrowsingDataLocalStorageHelper::CallCompletionCallback,
-                 this));
-}

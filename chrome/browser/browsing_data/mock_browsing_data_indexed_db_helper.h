@@ -12,13 +12,15 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 
+class Profile;
+
 // Mock for BrowsingDataIndexedDBHelper.
 // Use AddIndexedDBSamples() or add directly to response_ list, then
 // call Notify().
 class MockBrowsingDataIndexedDBHelper
     : public BrowsingDataIndexedDBHelper {
  public:
-  MockBrowsingDataIndexedDBHelper();
+  explicit MockBrowsingDataIndexedDBHelper(Profile* profile);
 
   // Adds some IndexedDBInfo samples.
   void AddIndexedDBSamples();

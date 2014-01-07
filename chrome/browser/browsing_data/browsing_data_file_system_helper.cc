@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -255,20 +254,8 @@ size_t CannedBrowsingDataFileSystemHelper::GetFileSystemCount() const {
 void CannedBrowsingDataFileSystemHelper::StartFetching(
     const base::Callback<void(const std::list<FileSystemInfo>&)>& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!is_fetching_);
-  DCHECK_EQ(false, callback.is_null());
-  is_fetching_ = true;
-  completion_callback_ = callback;
+  DCHECK(!callback.is_null());
 
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&CannedBrowsingDataFileSystemHelper::NotifyOnUIThread, this));
-}
-
-void CannedBrowsingDataFileSystemHelper::NotifyOnUIThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(is_fetching_);
-  completion_callback_.Run(file_system_info_);
-  completion_callback_.Reset();
-  is_fetching_ = false;
+      BrowserThread::UI, FROM_HERE, base::Bind(callback, file_system_info_));
 }

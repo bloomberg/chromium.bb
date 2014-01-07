@@ -217,6 +217,35 @@ TEST_F(BrowsingDataCookieHelperTest, DeleteCookie) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(BrowsingDataCookieHelperTest, CannedDeleteCookie) {
+  CreateCookiesForTest();
+  scoped_refptr<CannedBrowsingDataCookieHelper> helper(
+      new CannedBrowsingDataCookieHelper(
+          testing_profile_->GetRequestContext()));
+
+  ASSERT_TRUE(helper->empty());
+
+  const GURL origin1("http://www.google.com");
+  const GURL origin2("http://www.gmail.google.com");
+  helper->AddChangedCookie(origin1, origin1, "A=1", net::CookieOptions());
+  helper->AddChangedCookie(origin2, origin2, "B=1", net::CookieOptions());
+
+  helper->StartFetching(
+      base::Bind(&BrowsingDataCookieHelperTest::FetchCallback,
+                 base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2u, helper->GetCookieCount());
+
+  helper->DeleteCookie(cookie_list_[0]);
+
+  EXPECT_EQ(1u, helper->GetCookieCount());
+  helper->StartFetching(
+      base::Bind(&BrowsingDataCookieHelperTest::DeleteCallback,
+                 base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+}
+
 TEST_F(BrowsingDataCookieHelperTest, CannedDomainCookie) {
   const GURL origin("http://www.google.com");
   net::CookieList cookie;

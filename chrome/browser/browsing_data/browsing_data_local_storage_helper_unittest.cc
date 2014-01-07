@@ -29,6 +29,27 @@ TEST_F(CannedBrowsingDataLocalStorageTest, Empty) {
   ASSERT_TRUE(helper->empty());
 }
 
+TEST_F(CannedBrowsingDataLocalStorageTest, Delete) {
+  TestingProfile profile;
+
+  const GURL origin1("http://host1:9000");
+  const GURL origin2("http://example.com");
+  const GURL origin3("http://foo.example.com");
+
+  scoped_refptr<CannedBrowsingDataLocalStorageHelper> helper(
+      new CannedBrowsingDataLocalStorageHelper(&profile));
+
+  EXPECT_TRUE(helper->empty());
+  helper->AddLocalStorage(origin1);
+  helper->AddLocalStorage(origin2);
+  helper->AddLocalStorage(origin3);
+  EXPECT_EQ(3u, helper->GetLocalStorageCount());
+  helper->DeleteOrigin(origin2);
+  EXPECT_EQ(2u, helper->GetLocalStorageCount());
+  helper->DeleteOrigin(origin1);
+  EXPECT_EQ(1u, helper->GetLocalStorageCount());
+}
+
 TEST_F(CannedBrowsingDataLocalStorageTest, IgnoreExtensionsAndDevTools) {
   TestingProfile profile;
 

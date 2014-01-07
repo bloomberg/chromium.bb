@@ -13,6 +13,7 @@
 #include "chrome/browser/browsing_data/browsing_data_server_bound_cert_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
@@ -29,7 +30,7 @@ bool SamePublicDomainOrHost(const GURL& gurl1, const GURL& gurl2) {
       net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
 }
 
-}
+}  // namespace
 
 LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
     : appcaches_(new CannedBrowsingDataAppCacheHelper(profile)),
@@ -37,7 +38,9 @@ LocalSharedObjectsContainer::LocalSharedObjectsContainer(Profile* profile)
           profile->GetRequestContext())),
       databases_(new CannedBrowsingDataDatabaseHelper(profile)),
       file_systems_(new CannedBrowsingDataFileSystemHelper(profile)),
-      indexed_dbs_(new CannedBrowsingDataIndexedDBHelper()),
+      indexed_dbs_(new CannedBrowsingDataIndexedDBHelper(
+          content::BrowserContext::GetDefaultStoragePartition(profile)->
+              GetIndexedDBContext())),
       local_storages_(new CannedBrowsingDataLocalStorageHelper(profile)),
       server_bound_certs_(new CannedBrowsingDataServerBoundCertHelper()),
       session_storages_(new CannedBrowsingDataLocalStorageHelper(profile)) {
@@ -183,15 +186,15 @@ size_t LocalSharedObjectsContainer::GetObjectCountForDomain(
 scoped_ptr<CookiesTreeModel>
 LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
   LocalDataContainer* container = new LocalDataContainer(
-      cookies()->Clone(),
-      databases()->Clone(),
-      local_storages()->Clone(),
-      session_storages()->Clone(),
-      appcaches()->Clone(),
-      indexed_dbs()->Clone(),
-      file_systems()->Clone(),
+      cookies(),
+      databases(),
+      local_storages(),
+      session_storages(),
+      appcaches(),
+      indexed_dbs(),
+      file_systems(),
       NULL,
-      server_bound_certs()->Clone(),
+      server_bound_certs(),
       NULL);
 
   return make_scoped_ptr(new CookiesTreeModel(container, NULL, true));

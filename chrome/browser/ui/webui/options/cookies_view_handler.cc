@@ -194,7 +194,7 @@ void CookiesViewHandler::EnsureCookiesTreeModelCreated() {
         new BrowsingDataLocalStorageHelper(profile),
         NULL,
         new BrowsingDataAppCacheHelper(profile),
-        BrowsingDataIndexedDBHelper::Create(indexed_db_context),
+        new BrowsingDataIndexedDBHelper(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile),
         BrowsingDataServerBoundCertHelper::Create(profile),

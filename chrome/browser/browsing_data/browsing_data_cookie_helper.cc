@@ -187,6 +187,16 @@ void CannedBrowsingDataCookieHelper::StartFetching(
   callback.Run(cookie_list);
 }
 
+void CannedBrowsingDataCookieHelper::DeleteCookie(
+    const net::CanonicalCookie& cookie) {
+  for (OriginCookieListMap::iterator it = origin_cookie_list_map_.begin();
+       it != origin_cookie_list_map_.end();
+       ++it) {
+    DeleteMatchingCookie(cookie, it->second);
+  }
+  BrowsingDataCookieHelper::DeleteCookie(cookie);
+}
+
 bool CannedBrowsingDataCookieHelper::DeleteMatchingCookie(
     const net::CanonicalCookie& add_cookie,
     net::CookieList* cookie_list) {
