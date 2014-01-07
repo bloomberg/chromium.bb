@@ -733,7 +733,7 @@ private:
         PagePoolEntry* m_next;
     };
 
-    HEAP_EXPORT Address outOfLineAllocate(size_t, const GCInfo*);
+    Address outOfLineAllocate(size_t, const GCInfo*);
     void addPageToHeap(const GCInfo*);
     HEAP_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
