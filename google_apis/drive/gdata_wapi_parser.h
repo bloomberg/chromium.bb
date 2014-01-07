@@ -509,6 +509,9 @@ class ResourceEntry : public CommonMetadata {
     KIND_OF_FILE = 1 << 4,
   };
 
+  // Returns the kind enum corresponding to the extension in form ".xxx".
+  static DriveEntryKind GetEntryKindFromExtension(const std::string& extension);
+
   // Classifies the EntryKind. The returned value is a bitmask of
   // EntryKindClass. For example, DOCUMENT is classified as
   // KIND_OF_HOSTED_DOCUMENT and KIND_OF_GOOGLE_DOCUMENT, hence the returned

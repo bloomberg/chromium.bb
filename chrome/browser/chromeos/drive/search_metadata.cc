@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/gdata_wapi_parser.h"
 #include "net/base/escape.h"
 
 using content::BrowserThread;
@@ -161,11 +162,24 @@ bool IsEligibleEntry(const ResourceEntry& entry,
     return entry.shared_with_me();
 
   if (options & SEARCH_METADATA_OFFLINE) {
-    if (entry.file_specific_info().is_hosted_document())
-      return true;
-    FileCacheEntry cache_entry;
-    it->GetCacheEntry(&cache_entry);
-    return cache_entry.is_present();
+    if (entry.file_specific_info().is_hosted_document()) {
+      // Not all hosted documents are cached by Drive offline app.
+      // http://support.google.com/drive/bin/answer.py?hl=en&answer=1628467
+      switch (google_apis::ResourceEntry::GetEntryKindFromExtension(
+          entry.file_specific_info().document_extension())) {
+        case google_apis::ENTRY_KIND_DOCUMENT:
+        case google_apis::ENTRY_KIND_SPREADSHEET:
+        case google_apis::ENTRY_KIND_PRESENTATION:
+        case google_apis::ENTRY_KIND_DRAWING:
+          return true;
+        default:
+          return false;
+      }
+    } else {
+      FileCacheEntry cache_entry;
+      it->GetCacheEntry(&cache_entry);
+      return cache_entry.is_present();
+    }
   }
 
   // Exclude "drive", "drive/root", and "drive/other".
