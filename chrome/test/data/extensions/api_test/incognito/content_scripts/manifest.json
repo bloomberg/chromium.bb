@@ -8,7 +8,7 @@
     {
       "matches": ["http://*/*", "https://*/*"],
       "js": ["change_page_title.js"],
-      "run_at": "document_start"
+      "run_at": "document_end"
     }
   ]
 }
