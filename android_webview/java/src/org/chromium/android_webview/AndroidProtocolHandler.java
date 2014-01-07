@@ -10,7 +10,7 @@ import android.net.Uri;
 import android.util.Log;
 import android.util.TypedValue;
 
-import org.chromium.base.CalledByNativeUnchecked;
+import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 import java.io.IOException;
@@ -37,23 +37,25 @@ public class AndroidProtocolHandler {
      * @param url The url to load.
      * @return An InputStream to the Android resource.
      */
-    // TODO(bulach): this should have either a throw clause, or
-    // handle the exception in the java side rather than the native side.
-    @CalledByNativeUnchecked
+    @CalledByNative
     public static InputStream open(Context context, String url) {
         Uri uri = verifyUrl(url);
         if (uri == null) {
             return null;
         }
-        String path = uri.getPath();
-        if (uri.getScheme().equals(FILE_SCHEME)) {
-            if (path.startsWith(nativeGetAndroidAssetPath())) {
-                return openAsset(context, uri);
-            } else if (path.startsWith(nativeGetAndroidResourcePath())) {
-                return openResource(context, uri);
+        try {
+            String path = uri.getPath();
+            if (uri.getScheme().equals(FILE_SCHEME)) {
+                if (path.startsWith(nativeGetAndroidAssetPath())) {
+                    return openAsset(context, uri);
+                } else if (path.startsWith(nativeGetAndroidResourcePath())) {
+                    return openResource(context, uri);
+                }
+            } else if (uri.getScheme().equals(CONTENT_SCHEME)) {
+                return openContent(context, uri);
             }
-        } else if (uri.getScheme().equals(CONTENT_SCHEME)) {
-            return openContent(context, uri);
+        } catch (Exception ex) {
+            Log.e(TAG, "Error opening inputstream: " + url);
         }
         return null;
     }
@@ -152,25 +154,28 @@ public class AndroidProtocolHandler {
      * @param url The url from which the stream was opened.
      * @return The mime type or null if the type is unknown.
      */
-    // TODO(bulach): this should have either a throw clause, or
-    // handle the exception in the java side rather than the native side.
-    @CalledByNativeUnchecked
+    @CalledByNative
     public static String getMimeType(Context context, InputStream stream, String url) {
         Uri uri = verifyUrl(url);
         if (uri == null) {
             return null;
         }
-        String path = uri.getPath();
-        // The content URL type can be queried directly.
-        if (uri.getScheme().equals(CONTENT_SCHEME)) {
-            return context.getContentResolver().getType(uri);
-        // Asset files may have a known extension.
-        } else if (uri.getScheme().equals(FILE_SCHEME) &&
-                   path.startsWith(nativeGetAndroidAssetPath())) {
-            String mimeType = URLConnection.guessContentTypeFromName(path);
-            if (mimeType != null) {
-                return mimeType;
+        try {
+            String path = uri.getPath();
+            // The content URL type can be queried directly.
+            if (uri.getScheme().equals(CONTENT_SCHEME)) {
+                return context.getContentResolver().getType(uri);
+                // Asset files may have a known extension.
+            } else if (uri.getScheme().equals(FILE_SCHEME) &&
+                       path.startsWith(nativeGetAndroidAssetPath())) {
+                String mimeType = URLConnection.guessContentTypeFromName(path);
+                if (mimeType != null) {
+                    return mimeType;
+                }
             }
+        } catch (Exception ex) {
+            Log.e(TAG, "Unable to get mime type" + url);
+            return null;
         }
         // Fall back to sniffing the type from the stream.
         try {
