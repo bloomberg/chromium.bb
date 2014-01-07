@@ -4031,8 +4031,14 @@ KURL Document::completeURLWithOverride(const String& url, const KURL& baseURLOve
     // See also [CSS]StyleSheet::completeURL(const String&)
     if (url.isNull())
         return KURL();
+    // This logic is deliberately spread over many statements in an attempt to track down http://crbug.com/312410.
     const KURL* baseURLFromParent = 0;
-    if (baseURLOverride.isEmpty() || baseURLOverride == blankURL()) {
+    bool shouldUseParentBaseURL = baseURLOverride.isEmpty();
+    if (!shouldUseParentBaseURL) {
+        const KURL& aboutBlankURL = blankURL();
+        shouldUseParentBaseURL = (baseURLOverride == aboutBlankURL);
+    }
+    if (shouldUseParentBaseURL) {
         if (Document* parent = parentDocument())
             baseURLFromParent = &parent->baseURL();
     }
