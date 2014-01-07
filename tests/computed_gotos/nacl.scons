@@ -5,11 +5,14 @@
 
 Import('env')
 
-if not env.AllowNonStableBitcode():
-  Return()
-if env.Bit('bitcode'):
-  # Computed gotos are currently not allowed by PNaCl's bitcode ABI.
-  env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
+if env['TOOLCHAIN_FEATURE_VERSION'] < 4:
+  # In old versions of the PNaCl toolchain, computed gotos are left as
+  # "indirectbr" and "blockaddress", which are not allowed by PNaCl's
+  # stable ABI.
+  if not env.AllowNonStableBitcode():
+    Return()
+  if env.Bit('bitcode'):
+    env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
 
 # We are testing a GNU C extension which is disallowed by "-pedantic" mode.
 env.FilterOut(CCFLAGS=['-pedantic'])
