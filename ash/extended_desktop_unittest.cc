@@ -351,8 +351,8 @@ TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
   // Zero origin.
   EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(0, 0)));
 
-  // Out of range point should return the primary root window
-  EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(-600, 0)));
+  // Out of range point should return the nearest root window
+  EXPECT_EQ(root_windows[1], wm::GetRootWindowAt(gfx::Point(-600, 0)));
   EXPECT_EQ(root_windows[0], wm::GetRootWindowAt(gfx::Point(701, 100)));
 }
 

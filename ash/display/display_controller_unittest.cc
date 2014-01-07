@@ -641,7 +641,7 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_EQ(secondary_display.id(),
             Shell::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_EQ(primary_display.id(), ScreenAsh::GetSecondaryDisplay().id());
-  EXPECT_EQ(secondary_display.id(),
+  EXPECT_EQ(primary_display.id(),
             Shell::GetScreen()->GetDisplayNearestPoint(
                 gfx::Point(-100, -100)).id());
   EXPECT_EQ(secondary_display.id(),
@@ -682,6 +682,49 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_TRUE(tracker.Contains(primary_root));
   EXPECT_FALSE(tracker.Contains(secondary_root));
   EXPECT_TRUE(primary_root->Contains(shelf_window));
+}
+
+TEST_F(DisplayControllerTest, FindNearestDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  DisplayController* display_controller =
+      Shell::GetInstance()->display_controller();
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+
+  UpdateDisplay("200x200,300x300");
+  DisplayLayout display_layout(DisplayLayout::RIGHT, 50);
+  display_manager->SetLayoutForCurrentDisplays(display_layout);
+
+  gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display secondary_display = ScreenAsh::GetSecondaryDisplay();
+  EXPECT_NE(primary_display.id(), secondary_display.id());
+  aura::Window* primary_root =
+      display_controller->GetRootWindowForDisplayId(primary_display.id());
+  aura::Window* secondary_root =
+      display_controller->GetRootWindowForDisplayId(secondary_display.id());
+  EXPECT_NE(primary_root, secondary_root);
+
+  // Test that points outside of any display return the nearest display.
+  EXPECT_EQ(primary_display.id(), Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(-100, 0)).id());
+  EXPECT_EQ(primary_display.id(), Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(0, -100)).id());
+  EXPECT_EQ(primary_display.id(), Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(100, 100)).id());
+  EXPECT_EQ(primary_display.id(), Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(224, 25)).id());
+  EXPECT_EQ(secondary_display.id(), Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(226, 25)).id());
+  EXPECT_EQ(secondary_display.id(), Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(600, 100)).id());
+  EXPECT_EQ(primary_display.id(), Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(174, 225)).id());
+  EXPECT_EQ(secondary_display.id(), Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(176, 225)).id());
+  EXPECT_EQ(secondary_display.id(), Shell::GetScreen()->GetDisplayNearestPoint(
+      gfx::Point(300, 400)).id());
 }
 
 TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
@@ -735,7 +778,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryForLegacyShelfLayout) {
   EXPECT_EQ(secondary_display.id(),
             Shell::GetScreen()->GetPrimaryDisplay().id());
   EXPECT_EQ(primary_display.id(), ScreenAsh::GetSecondaryDisplay().id());
-  EXPECT_EQ(secondary_display.id(),
+  EXPECT_EQ(primary_display.id(),
             Shell::GetScreen()->GetDisplayNearestPoint(
                 gfx::Point(-100, -100)).id());
   EXPECT_EQ(secondary_display.id(),

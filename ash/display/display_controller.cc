@@ -567,11 +567,27 @@ const gfx::Display& DisplayController::GetDisplayNearestWindow(
 
 const gfx::Display& DisplayController::GetDisplayNearestPoint(
     const gfx::Point& point) const {
-  // Fallback to the primary display if there is no root display containing
-  // the |point|.
   const gfx::Display& display =
       GetDisplayManager()->FindDisplayContainingPoint(point);
-  return display.is_valid() ? display : GetPrimaryDisplay();
+  if (display.is_valid())
+    return display;
+
+  // Fallback to the display that has the shortest Manhattan distance from
+  // the |point|. This is correct in the only areas that matter, namely in the
+  // corners between the physical screens.
+  int min_distance = INT_MAX;
+  const gfx::Display* nearest_display = NULL;
+  for (size_t i = 0; i < GetDisplayManager()->GetNumDisplays(); ++i) {
+    const gfx::Display& display = GetDisplayManager()->GetDisplayAt(i);
+    int distance = display.bounds().ManhattanDistanceToPoint(point);
+    if (distance < min_distance) {
+      min_distance = distance;
+      nearest_display = &display;
+    }
+  }
+  // There should always be at least one display that is less than INT_MAX away.
+  DCHECK(nearest_display);
+  return *nearest_display;
 }
 
 const gfx::Display& DisplayController::GetDisplayMatching(
@@ -707,8 +723,7 @@ void DisplayController::PreDisplayConfigurationChange(bool clear_focus) {
   focus_activation_store_->Store(clear_focus);
 
   gfx::Point point_in_screen = Shell::GetScreen()->GetCursorScreenPoint();
-  gfx::Display display =
-      Shell::GetScreen()->GetDisplayNearestPoint(point_in_screen);
+  gfx::Display display = GetDisplayNearestPoint(point_in_screen);
   aura::Window* root_window = GetRootWindowForDisplayId(display.id());
 
   aura::client::ScreenPositionClient* client =
