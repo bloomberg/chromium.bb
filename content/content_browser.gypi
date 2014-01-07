@@ -266,6 +266,8 @@
     'browser/android/devtools_auth.cc',
     'browser/android/edge_effect.h',
     'browser/android/edge_effect.cc',
+    'browser/android/in_process/synchronous_compositor_factory_impl.cc',
+    'browser/android/in_process/synchronous_compositor_factory_impl.h',
     'browser/android/in_process/synchronous_compositor_impl.cc',
     'browser/android/in_process/synchronous_compositor_impl.h',
     'browser/android/in_process/synchronous_compositor_output_surface.cc',

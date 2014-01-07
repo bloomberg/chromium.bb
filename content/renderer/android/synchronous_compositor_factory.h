@@ -50,7 +50,7 @@ class SynchronousCompositorFactory {
 
  protected:
   SynchronousCompositorFactory() {}
-  ~SynchronousCompositorFactory() {}
+  virtual ~SynchronousCompositorFactory() {}
 };
 
 }

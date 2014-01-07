@@ -6,29 +6,20 @@
 
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
-#include "base/synchronization/lock.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/layer_scroll_offset_delegate.h"
+#include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 #include "content/browser/android/in_process/synchronous_input_event_filter.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/renderer/android/synchronous_compositor_factory.h"
-#include "content/renderer/media/android/stream_texture_factory_android_synchronous_impl.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
-#include "gpu/command_buffer/service/stream_texture_manager_in_process_android.h"
-#include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
-#include "webkit/common/gpu/context_provider_in_process.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace content {
 
 namespace {
-
-using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
 
 int GetInProcessRendererId() {
   content::RenderProcessHost::iterator it =
@@ -43,223 +34,6 @@ int GetInProcessRendererId() {
   it.Advance();
   DCHECK(it.IsAtEnd());  // Not multiprocess compatible.
   return id;
-}
-
-class VideoContextProvider
-    : public StreamTextureFactorySynchronousImpl::ContextProvider {
- public:
-  VideoContextProvider(
-      const scoped_refptr<cc::ContextProvider>& context_provider,
-      gpu::GLInProcessContext* gl_in_process_context)
-      : context_provider_(context_provider),
-        gl_in_process_context_(gl_in_process_context) {}
-
-  virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture(
-      uint32 stream_id) OVERRIDE {
-    return gl_in_process_context_->GetSurfaceTexture(stream_id);
-  }
-
-  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE {
-    return context_provider_->Context3d();
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<VideoContextProvider>;
-  virtual ~VideoContextProvider() {}
-
-  scoped_refptr<cc::ContextProvider> context_provider_;
-  gpu::GLInProcessContext* gl_in_process_context_;
-
-  DISALLOW_COPY_AND_ASSIGN(VideoContextProvider);
-};
-
-class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
- public:
-  SynchronousCompositorFactoryImpl()
-      : wrapped_gl_context_for_main_thread_(NULL),
-        num_hardware_compositors_(0) {
-    SynchronousCompositorFactory::SetInstance(this);
-  }
-
-  // SynchronousCompositorFactory
-  virtual scoped_refptr<base::MessageLoopProxy>
-      GetCompositorMessageLoop() OVERRIDE {
-    return BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
-  }
-
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      int routing_id) OVERRIDE {
-    scoped_ptr<SynchronousCompositorOutputSurface> output_surface(
-        new SynchronousCompositorOutputSurface(routing_id));
-    return output_surface.PassAs<cc::OutputSurface>();
-  }
-
-  virtual InputHandlerManagerClient* GetInputHandlerManagerClient() OVERRIDE {
-    return synchronous_input_event_filter();
-  }
-
-  SynchronousInputEventFilter* synchronous_input_event_filter() {
-    return &synchronous_input_event_filter_;
-  }
-
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
-  CreateOffscreenContext() {
-    if (!gfx::GLSurface::InitializeOneOff())
-      return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
-
-    const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
-
-    blink::WebGraphicsContext3D::Attributes attributes;
-    attributes.antialias = false;
-    attributes.shareResources = true;
-    attributes.noAutomaticFlushes = true;
-
-    gpu::GLInProcessContextAttribs in_process_attribs;
-    WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
-        attributes, &in_process_attribs);
-    scoped_ptr<gpu::GLInProcessContext> context(
-        gpu::GLInProcessContext::CreateContext(true,
-                                               NULL,
-                                               gfx::Size(1, 1),
-                                               attributes.shareResources,
-                                               in_process_attribs,
-                                               gpu_preference));
-
-    wrapped_gl_context_for_main_thread_ = context.get();
-    if (!context.get())
-      return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
-
-    return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>(
-        WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
-            context.Pass(), attributes));
-  }
-
-  virtual scoped_refptr<cc::ContextProvider>
-  GetOffscreenContextProviderForMainThread() OVERRIDE {
-    // This check only guarantees the main thread context is created after
-    // a compositor did successfully initialize hardware draw in the past.
-    // In particular this does not guarantee that the main thread context
-    // will fail creation when all compositors release hardware draw.
-    bool failed = !CanCreateMainThreadContext();
-    if (!failed &&
-        (!offscreen_context_for_main_thread_.get() ||
-         offscreen_context_for_main_thread_->DestroyedOnMainThread())) {
-      offscreen_context_for_main_thread_ =
-          webkit::gpu::ContextProviderInProcess::Create(
-              CreateOffscreenContext(),
-              "Compositor-Offscreen");
-      failed = !offscreen_context_for_main_thread_.get() ||
-               !offscreen_context_for_main_thread_->BindToCurrentThread();
-    }
-
-    if (failed) {
-      offscreen_context_for_main_thread_ = NULL;
-      wrapped_gl_context_for_main_thread_ = NULL;
-    }
-    return offscreen_context_for_main_thread_;
-  }
-
-  // This is called on both renderer main thread (offscreen context creation
-  // path shared between cross-process and in-process platforms) and renderer
-  // compositor impl thread (InitializeHwDraw) in order to support Android
-  // WebView synchronously enable and disable hardware mode multiple times in
-  // the same task. This is ok because in-process WGC3D creation may happen on
-  // any thread and is lightweight.
-  virtual scoped_refptr<cc::ContextProvider>
-      GetOffscreenContextProviderForCompositorThread() OVERRIDE {
-    base::AutoLock lock(offscreen_context_for_compositor_thread_lock_);
-    if (!offscreen_context_for_compositor_thread_.get() ||
-        offscreen_context_for_compositor_thread_->DestroyedOnMainThread()) {
-      offscreen_context_for_compositor_thread_ =
-          webkit::gpu::ContextProviderInProcess::CreateOffscreen();
-    }
-    return offscreen_context_for_compositor_thread_;
-  }
-
-  virtual scoped_ptr<StreamTextureFactory> CreateStreamTextureFactory(
-      int view_id) OVERRIDE {
-    scoped_ptr<StreamTextureFactorySynchronousImpl> factory(
-        new StreamTextureFactorySynchronousImpl(
-            base::Bind(&SynchronousCompositorFactoryImpl::
-                            TryCreateStreamTextureFactory,
-                       base::Unretained(this)),
-            view_id));
-    return factory.PassAs<StreamTextureFactory>();
-  }
-
-  void CompositorInitializedHardwareDraw(SynchronousCompositorImpl* compositor);
-  void CompositorReleasedHardwareDraw(SynchronousCompositorImpl* compositor);
-
- private:
-  void ReleaseGlobalHardwareResources();
-  bool CanCreateMainThreadContext();
-  scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
-      TryCreateStreamTextureFactory();
-
-  SynchronousInputEventFilter synchronous_input_event_filter_;
-
-  // Only guards construction and destruction of
-  // |offscreen_context_for_compositor_thread_|, not usage.
-  base::Lock offscreen_context_for_compositor_thread_lock_;
-  scoped_refptr<cc::ContextProvider> offscreen_context_for_main_thread_;
-  // This is a pointer to the context owned by
-  // |offscreen_context_for_main_thread_|.
-  gpu::GLInProcessContext* wrapped_gl_context_for_main_thread_;
-  scoped_refptr<cc::ContextProvider> offscreen_context_for_compositor_thread_;
-
-  // |num_hardware_compositor_lock_| is updated on UI thread only but can be
-  // read on renderer main thread.
-  base::Lock num_hardware_compositor_lock_;
-  unsigned int num_hardware_compositors_;
-};
-
-void SynchronousCompositorFactoryImpl::CompositorInitializedHardwareDraw(
-    SynchronousCompositorImpl* compositor) {
-  base::AutoLock lock(num_hardware_compositor_lock_);
-  num_hardware_compositors_++;
-}
-
-void SynchronousCompositorFactoryImpl::CompositorReleasedHardwareDraw(
-    SynchronousCompositorImpl* compositor) {
-  bool should_release_resources = false;
-  {
-    base::AutoLock lock(num_hardware_compositor_lock_);
-    DCHECK_GT(num_hardware_compositors_, 0u);
-    num_hardware_compositors_--;
-    should_release_resources = num_hardware_compositors_ == 0u;
-  }
-  if (should_release_resources)
-    ReleaseGlobalHardwareResources();
-}
-
-void SynchronousCompositorFactoryImpl::ReleaseGlobalHardwareResources() {
-  {
-    base::AutoLock lock(offscreen_context_for_compositor_thread_lock_);
-    offscreen_context_for_compositor_thread_ = NULL;
-  }
-
-  // TODO(boliu): Properly clean up command buffer server of main thread
-  // context here.
-}
-
-bool SynchronousCompositorFactoryImpl::CanCreateMainThreadContext() {
-  base::AutoLock lock(num_hardware_compositor_lock_);
-  return num_hardware_compositors_ > 0;
-}
-
-scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
-SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
-  scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
-      context_provider;
-  if (CanCreateMainThreadContext() &&
-      GetOffscreenContextProviderForMainThread()) {
-    DCHECK(offscreen_context_for_main_thread_);
-    DCHECK(wrapped_gl_context_for_main_thread_);
-    context_provider =
-        new VideoContextProvider(offscreen_context_for_main_thread_,
-                                 wrapped_gl_context_for_main_thread_);
-  }
-  return context_provider;
 }
 
 base::LazyInstance<SynchronousCompositorFactoryImpl>::Leaky g_factory =
@@ -316,7 +90,7 @@ bool SynchronousCompositorImpl::InitializeHwDraw(
       surface,
       g_factory.Get().GetOffscreenContextProviderForCompositorThread());
   if (success)
-    g_factory.Get().CompositorInitializedHardwareDraw(this);
+    g_factory.Get().CompositorInitializedHardwareDraw();
   return success;
 }
 
@@ -324,7 +98,7 @@ void SynchronousCompositorImpl::ReleaseHwDraw() {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
   output_surface_->ReleaseHwDraw();
-  g_factory.Get().CompositorReleasedHardwareDraw(this);
+  g_factory.Get().CompositorReleasedHardwareDraw();
 }
 
 bool SynchronousCompositorImpl::DemandDrawHw(
