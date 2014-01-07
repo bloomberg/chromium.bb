@@ -38,13 +38,13 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ShadowTreeStyleSheetCollection.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLImport.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
-#include "core/frame/Settings.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/URLPatternMatcher.h"
 
@@ -353,7 +353,7 @@ void StyleEngine::collectDocumentActiveStyleSheets(StyleSheetCollectionBase& col
     ASSERT(isMaster());
 
     if (HTMLImport* rootImport = m_document.import()) {
-        for (HTMLImport* import = traverseFirstPostOrder(rootImport); import; import = traverseNextPostOrder(import)) {
+        for (HTMLImport* import = traverseFirstPostOrder(*rootImport); import; import = traverseNextPostOrder(*import)) {
             Document* document = import->document();
             if (!document)
                 continue;

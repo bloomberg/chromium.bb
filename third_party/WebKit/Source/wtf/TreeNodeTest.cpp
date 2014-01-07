@@ -53,8 +53,8 @@ TEST(WTF, TreeNodeAppendChild)
     root->appendChild(lastChild.get());
     ASSERT_EQ(root->firstChild(), firstChild.get());
     ASSERT_EQ(root->lastChild(), lastChild.get());
-    ASSERT_EQ(lastChild->previous(), firstChild.get());
-    ASSERT_EQ(firstChild->next(), lastChild.get());
+    ASSERT_EQ(lastChild->previousSibling(), firstChild.get());
+    ASSERT_EQ(firstChild->nextSibling(), lastChild.get());
     ASSERT_EQ(lastChild->parent(), root.get());
 }
 
@@ -76,18 +76,18 @@ TEST(WTF, TreeNodeInsertBefore)
     ASSERT_EQ(firstChild->parent(), root.get());
     ASSERT_EQ(root->firstChild(), firstChild.get());
     ASSERT_EQ(root->lastChild(), lastChild.get());
-    ASSERT_EQ(firstChild->next(), lastChild.get());
-    ASSERT_EQ(firstChild.get(), lastChild->previous());
+    ASSERT_EQ(firstChild->nextSibling(), lastChild.get());
+    ASSERT_EQ(firstChild.get(), lastChild->previousSibling());
 
     // Inserting in the middle
     root->insertBefore(middleChild.get(), lastChild.get());
     ASSERT_EQ(middleChild->parent(), root.get());
     ASSERT_EQ(root->firstChild(), firstChild.get());
     ASSERT_EQ(root->lastChild(), lastChild.get());
-    ASSERT_EQ(middleChild->previous(), firstChild.get());
-    ASSERT_EQ(middleChild->next(), lastChild.get());
-    ASSERT_EQ(firstChild->next(), middleChild.get());
-    ASSERT_EQ(lastChild->previous(), middleChild.get());
+    ASSERT_EQ(middleChild->previousSibling(), firstChild.get());
+    ASSERT_EQ(middleChild->nextSibling(), lastChild.get());
+    ASSERT_EQ(firstChild->nextSibling(), middleChild.get());
+    ASSERT_EQ(lastChild->previousSibling(), middleChild.get());
 
 }
 
@@ -99,8 +99,8 @@ TEST(WTF, TreeNodeRemoveSingle)
 
     root->appendChild(child.get());
     root->removeChild(child.get());
-    ASSERT_EQ(child->next(), nullNode.get());
-    ASSERT_EQ(child->previous(), nullNode.get());
+    ASSERT_EQ(child->nextSibling(), nullNode.get());
+    ASSERT_EQ(child->previousSibling(), nullNode.get());
     ASSERT_EQ(child->parent(), nullNode.get());
     ASSERT_EQ(root->firstChild(), nullNode.get());
     ASSERT_EQ(root->lastChild(), nullNode.get());
@@ -136,8 +136,8 @@ TEST(WTF, TreeNodeRemoveMiddle)
 
     trio.root->removeChild(trio.middleChild.get());
     ASSERT_TRUE(trio.middleChild->orphan());
-    ASSERT_EQ(trio.firstChild->next(), trio.lastChild.get());
-    ASSERT_EQ(trio.lastChild->previous(), trio.firstChild.get());
+    ASSERT_EQ(trio.firstChild->nextSibling(), trio.lastChild.get());
+    ASSERT_EQ(trio.lastChild->previousSibling(), trio.firstChild.get());
     ASSERT_EQ(trio.root->firstChild(), trio.firstChild.get());
     ASSERT_EQ(trio.root->lastChild(), trio.lastChild.get());
 }
@@ -150,7 +150,7 @@ TEST(WTF, TreeNodeRemoveLast)
 
     trio.root->removeChild(trio.lastChild.get());
     ASSERT_TRUE(trio.lastChild->orphan());
-    ASSERT_EQ(trio.middleChild->next(), nullNode.get());
+    ASSERT_EQ(trio.middleChild->nextSibling(), nullNode.get());
     ASSERT_EQ(trio.root->firstChild(), trio.firstChild.get());
     ASSERT_EQ(trio.root->lastChild(), trio.middleChild.get());
 }
@@ -163,7 +163,7 @@ TEST(WTF, TreeNodeRemoveFirst)
 
     trio.root->removeChild(trio.firstChild.get());
     ASSERT_TRUE(trio.firstChild->orphan());
-    ASSERT_EQ(trio.middleChild->previous(), nullNode.get());
+    ASSERT_EQ(trio.middleChild->previousSibling(), nullNode.get());
     ASSERT_EQ(trio.root->firstChild(), trio.middleChild.get());
     ASSERT_EQ(trio.root->lastChild(), trio.lastChild.get());
 }
@@ -195,7 +195,7 @@ TEST(WTF, TreeNodeTraverseNext)
     };
 
     unsigned orderIndex = 0;
-    for (TestTree* node = trio.root.get(); node; node = traverseNext(node), orderIndex++)
+    for (TestTree* node = trio.root.get(); node; node = traverseNext(*node), orderIndex++)
         ASSERT_EQ(node, order[orderIndex]);
     ASSERT_EQ(orderIndex, sizeof(order) / sizeof(TestTree*));
 }
@@ -212,7 +212,7 @@ TEST(WTF, TreeNodeTraverseNextPostORder)
     };
 
     unsigned orderIndex = 0;
-    for (TestTree* node = traverseFirstPostOrder(trio.root.get()); node; node = traverseNextPostOrder(node), orderIndex++)
+    for (TestTree* node = traverseFirstPostOrder(*trio.root.get()); node; node = traverseNextPostOrder(*node), orderIndex++)
         ASSERT_EQ(node, order[orderIndex]);
     ASSERT_EQ(orderIndex, sizeof(order) / sizeof(TestTree*));
 

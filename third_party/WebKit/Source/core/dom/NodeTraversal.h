@@ -26,6 +26,7 @@
 #define NodeTraversal_h
 
 #include "core/dom/Node.h"
+#include "wtf/TreeNode.h"
 
 namespace WebCore {
 
@@ -66,53 +67,17 @@ Node* nextIncludingPseudoSkippingChildren(const Node&, const Node* stayWithin = 
 Node* nextAncestorSibling(const Node&);
 Node* nextAncestorSibling(const Node&, const Node* stayWithin);
 
-template <class NodeType>
-inline Node* traverseNextTemplate(NodeType& current)
-{
-    if (current.firstChild())
-        return current.firstChild();
-    if (current.nextSibling())
-        return current.nextSibling();
-    return nextAncestorSibling(current);
-}
-inline Node* next(const Node& current) { return traverseNextTemplate(current); }
-inline Node* next(const ContainerNode& current) { return traverseNextTemplate(current); }
+inline Node* next(const Node& current) { return traverseNext(current); }
+inline Node* next(const ContainerNode& current) { return traverseNext<Node>(current); }
 
-template <class NodeType>
-inline Node* traverseNextTemplate(NodeType& current, const Node* stayWithin)
-{
-    if (current.firstChild())
-        return current.firstChild();
-    if (current == stayWithin)
-        return 0;
-    if (current.nextSibling())
-        return current.nextSibling();
-    return nextAncestorSibling(current, stayWithin);
-}
-inline Node* next(const Node& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
-inline Node* next(const ContainerNode& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
+inline Node* next(const Node& current, const Node* stayWithin) { return traverseNext(current, stayWithin); }
+inline Node* next(const ContainerNode& current, const Node* stayWithin) { return traverseNext<Node>(current, stayWithin); }
 
-template <class NodeType>
-inline Node* traverseNextSkippingChildrenTemplate(NodeType& current)
-{
-    if (current.nextSibling())
-        return current.nextSibling();
-    return nextAncestorSibling(current);
-}
-inline Node* nextSkippingChildren(const Node& current) { return traverseNextSkippingChildrenTemplate(current); }
-inline Node* nextSkippingChildren(const ContainerNode& current) { return traverseNextSkippingChildrenTemplate(current); }
+inline Node* nextSkippingChildren(const Node& current) { return traverseNextSkippingChildren(current); }
+inline Node* nextSkippingChildren(const ContainerNode& current) { return traverseNextSkippingChildren<Node>(current); }
 
-template <class NodeType>
-inline Node* traverseNextSkippingChildrenTemplate(NodeType& current, const Node* stayWithin)
-{
-    if (current == stayWithin)
-        return 0;
-    if (current.nextSibling())
-        return current.nextSibling();
-    return nextAncestorSibling(current, stayWithin);
-}
-inline Node* nextSkippingChildren(const Node& current, const Node* stayWithin) { return traverseNextSkippingChildrenTemplate(current, stayWithin); }
-inline Node* nextSkippingChildren(const ContainerNode& current, const Node* stayWithin) { return traverseNextSkippingChildrenTemplate(current, stayWithin); }
+inline Node* nextSkippingChildren(const Node& current, const Node* stayWithin) { return traverseNextSkippingChildren(current, stayWithin); }
+inline Node* nextSkippingChildren(const ContainerNode& current, const Node* stayWithin) { return traverseNextSkippingChildren<Node>(current, stayWithin); }
 
 }
 
