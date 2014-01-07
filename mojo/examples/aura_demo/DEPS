@@ -1,0 +1,11 @@
+include_rules = [
+  "+cc",
+  "+cc",
+  "+gpu/command_buffer/client",
+  "+ui/aura",
+  "+ui/base/hit_test.h",
+  "+ui/compositor",
+  "+ui/gfx",
+  "+ui/gl",
+  "+webkit/common/gpu",
+]

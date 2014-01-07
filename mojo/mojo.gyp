@@ -36,6 +36,13 @@
         'mojo_utility',
         'mojo_utility_unittests',
       ],
+      'conditions': [
+        ['use_aura==1', {
+          'dependencies': [
+            'mojo_aura_demo',
+          ],
+        }],
+      ]
     },
     {
       'target_name': 'mojo_run_all_unittests',

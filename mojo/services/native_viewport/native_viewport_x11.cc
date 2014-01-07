@@ -19,7 +19,7 @@ class NativeViewportX11 : public NativeViewport,
  public:
   NativeViewportX11(NativeViewportDelegate* delegate)
       : delegate_(delegate),
-        bounds_(10, 10, 500, 500) {
+        bounds_(10, 10, 800, 600) {
   }
 
   virtual ~NativeViewportX11() {

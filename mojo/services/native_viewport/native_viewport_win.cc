@@ -30,7 +30,7 @@ class NativeViewportWin : public gfx::WindowImpl,
   }
 
   virtual void Init() OVERRIDE {
-    gfx::WindowImpl::Init(NULL, gfx::Rect(10, 10, 500, 500));
+    gfx::WindowImpl::Init(NULL, gfx::Rect(10, 10, 800, 600));
     ShowWindow(hwnd(), SW_SHOWNORMAL);
     SetWindowText(hwnd(), L"native_viewport::NativeViewportWin!");
   }
