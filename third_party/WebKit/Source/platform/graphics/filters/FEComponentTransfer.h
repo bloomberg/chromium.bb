@@ -88,6 +88,9 @@ private:
     virtual void applySoftware() OVERRIDE;
     virtual bool applySkia() OVERRIDE;
 
+    virtual void determineAbsolutePaintRect() OVERRIDE;
+    bool affectsTransparentPixels();
+
     void getValues(unsigned char rValues[256], unsigned char gValues[256], unsigned char bValues[256], unsigned char aValues[256]);
 
     ComponentTransferFunction m_redFunc;

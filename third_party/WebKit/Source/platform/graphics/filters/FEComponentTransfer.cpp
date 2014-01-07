@@ -189,14 +189,52 @@ bool FEComponentTransfer::applySkia()
     unsigned char rValues[256], gValues[256], bValues[256], aValues[256];
     getValues(rValues, gValues, bValues, aValues);
 
-    SkRect skSrc = requestedRegionOfInputImageData(in->absolutePaintRect());
-    SkRect skDst = IntRect(IntPoint(), absolutePaintRect().size());
+    IntRect destRect = drawingRegionOfInputImage(in->absolutePaintRect());
     SkPaint paint;
     paint.setColorFilter(SkTableColorFilter::CreateARGB(aValues, rValues, gValues, bValues))->unref();
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    resultImage->context()->drawBitmapRect(nativeImage->bitmap(), &skSrc, skDst, &paint);
+    resultImage->context()->drawBitmap(nativeImage->bitmap(), destRect.x(), destRect.y(), &paint);
+
+    if (affectsTransparentPixels()) {
+        IntRect fullRect = IntRect(IntPoint(), absolutePaintRect().size());
+        resultImage->context()->clipOut(destRect);
+        resultImage->context()->fillRect(fullRect, Color(rValues[0], gValues[0], bValues[0], aValues[0]));
+    }
 
     return true;
+}
+
+void FEComponentTransfer::determineAbsolutePaintRect()
+{
+    if (affectsTransparentPixels()) {
+        // We have output for pixels that are transparent in the input, this primitive
+        // should apply for the whole filter region.
+        setAbsolutePaintRect(enclosingIntRect(maxEffectRect()));
+    } else {
+        FilterEffect::determineAbsolutePaintRect();
+    }
+}
+
+bool FEComponentTransfer::affectsTransparentPixels()
+{
+    double intercept = 0;
+    switch (m_alphaFunc.type) {
+    case FECOMPONENTTRANSFER_TYPE_UNKNOWN:
+    case FECOMPONENTTRANSFER_TYPE_IDENTITY:
+        break;
+    case FECOMPONENTTRANSFER_TYPE_TABLE:
+    case FECOMPONENTTRANSFER_TYPE_DISCRETE:
+        if (m_alphaFunc.tableValues.size() > 0)
+            intercept = m_alphaFunc.tableValues[0];
+        break;
+    case FECOMPONENTTRANSFER_TYPE_LINEAR:
+        intercept = m_alphaFunc.intercept;
+        break;
+    case FECOMPONENTTRANSFER_TYPE_GAMMA:
+        intercept = m_alphaFunc.offset;
+        break;
+    }
+    return 255 * intercept >= 1;
 }
 
 PassRefPtr<SkImageFilter> FEComponentTransfer::createImageFilter(SkiaImageFilterBuilder* builder)

@@ -1,0 +1,57 @@
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x400
+  RenderSVGRoot {svg} at (0,80) size 700x240
+    RenderSVGContainer {g} at (0,80) size 700x240 [transform={m=((2.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
+      RenderSVGContainer {use} at (0,80) size 241x240 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,150.00)}]
+        [filter="ct"] RenderSVGResourceFilter {filter} at (-10,-110) size 120x120
+        RenderSVGContainer {g} at (20,100) size 200x200
+          RenderSVGRect {rect} at (20,100) size 200x200 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=-100.00] [width=100.00] [height=100.00]
+          RenderSVGRect {rect} at (34,114) size 186x186 [fill={[type=SOLID] [color=#008000]}] [x=7.00] [y=-93.00] [width=93.00] [height=93.00]
+      RenderSVGContainer {use} at (230,80) size 240x240 [transform={m=((1.00,0.00)(0.00,1.00)) t=(125.00,150.00)}]
+        [filter="cm"] RenderSVGResourceFilter {filter} at (-10,-110) size 120x120
+        RenderSVGContainer {g} at (250,100) size 200x200
+          RenderSVGRect {rect} at (250,100) size 200x200 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=-100.00] [width=100.00] [height=100.00]
+          RenderSVGRect {rect} at (264,114) size 186x186 [fill={[type=SOLID] [color=#008000]}] [x=7.00] [y=-93.00] [width=93.00] [height=93.00]
+      RenderSVGContainer {use} at (460,80) size 240x240 [transform={m=((1.00,0.00)(0.00,1.00)) t=(240.00,150.00)}]
+        [filter="ar"] RenderSVGResourceFilter {filter} at (-10,-110) size 120x120
+        RenderSVGContainer {g} at (480,100) size 200x200
+          RenderSVGRect {rect} at (480,100) size 200x200 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=-100.00] [width=100.00] [height=100.00]
+          RenderSVGRect {rect} at (494,114) size 186x186 [fill={[type=SOLID] [color=#008000]}] [x=7.00] [y=-93.00] [width=93.00] [height=93.00]
+    RenderSVGHiddenContainer {defs} at (0,0) size 0x0
+      RenderSVGContainer {g} at (0,0) size 0x0
+        RenderSVGRect {rect} at (0,0) size 0x0 [fill={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=-100.00] [width=100.00] [height=100.00]
+        RenderSVGRect {rect} at (0,0) size 0x0 [fill={[type=SOLID] [color=#008000]}] [x=7.00] [y=-93.00] [width=93.00] [height=93.00]
+      RenderSVGResourceFilter {filter} [id="ct"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+        [feComposite operation="ATOP"]
+          [feComponentTransfer 
+              {red: type="LINEAR" slope="0.00" intercept="0.00" amplitude="1.00" exponent="1.00" offset="0.00"}
+              {green: type="LINEAR" slope="0.00" intercept="0.00" amplitude="1.00" exponent="1.00" offset="0.00"}
+              {blue: type="LINEAR" slope="0.00" intercept="0.00" amplitude="1.00" exponent="1.00" offset="0.00"}
+              {alpha: type="LINEAR" slope="-1.00" intercept="1.00" amplitude="1.00" exponent="1.00" offset="0.00"}]
+            [feGaussianBlur stdDeviation="1.00, 1.00"]
+              [feOffset dx="10.00" dy="10.00"]
+                [SourceGraphic]
+          [SourceGraphic]
+      RenderSVGResourceFilter {filter} [id="cm"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+        [feComposite operation="ATOP"]
+          [feColorMatrix type="MATRIX" values="0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 0.00 -1.00 1.00"]
+            [feGaussianBlur stdDeviation="1.00, 1.00"]
+              [feOffset dx="10.00" dy="10.00"]
+                [SourceGraphic]
+          [SourceGraphic]
+      RenderSVGResourceFilter {filter} [id="ar"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+        [feComposite operation="ATOP"]
+          [feComponentTransfer 
+              {red: type="LINEAR" slope="0.00" intercept="0.00" amplitude="1.00" exponent="1.00" offset="0.00"}
+              {green: type="LINEAR" slope="0.00" intercept="0.00" amplitude="1.00" exponent="1.00" offset="0.00"}
+              {blue: type="LINEAR" slope="0.00" intercept="0.00" amplitude="1.00" exponent="1.00" offset="0.00"}
+              {alpha: type="UNKNOWN" slope="0.00" intercept="0.00" amplitude="0.00" exponent="0.00" offset="0.00"}]
+            [feComposite operation="ARITHMETIC" k1="0.00" k2="-1.00" k3="0.00" k4="1.00"]
+              [feGaussianBlur stdDeviation="1.00, 1.00"]
+                [feOffset dx="10.00" dy="10.00"]
+                  [SourceGraphic]
+              [feGaussianBlur stdDeviation="1.00, 1.00"]
+                [feOffset dx="10.00" dy="10.00"]
+                  [SourceGraphic]
+          [SourceGraphic]

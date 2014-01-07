@@ -260,7 +260,7 @@ bool FEColorMatrix::applySkia()
 
     FilterEffect* in = inputEffect(0);
 
-    SkRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
+    IntRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
 
     SkAutoTUnref<SkColorFilter> filter(createColorFilter(m_type, m_values.data()));
 
@@ -272,8 +272,32 @@ bool FEColorMatrix::applySkia()
     SkPaint paint;
     paint.setColorFilter(filter);
     paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-    resultImage->context()->drawBitmap(nativeImage->bitmap(), drawingRegion.fLeft, drawingRegion.fTop, &paint);
+    resultImage->context()->drawBitmap(nativeImage->bitmap(), drawingRegion.x(), drawingRegion.y(), &paint);
+
+    if (affectsTransparentPixels()) {
+        IntRect fullRect = IntRect(IntPoint(), absolutePaintRect().size());
+        resultImage->context()->clipOut(drawingRegion);
+        resultImage->context()->fillRect(fullRect, Color(m_values[4], m_values[9], m_values[14], m_values[19]));
+    }
     return true;
+}
+
+void FEColorMatrix::determineAbsolutePaintRect()
+{
+    if (affectsTransparentPixels()) {
+        // We have output for pixels that are transparent in the input, this primitive
+        // should apply for the whole filter region.
+        setAbsolutePaintRect(enclosingIntRect(maxEffectRect()));
+    } else {
+        FilterEffect::determineAbsolutePaintRect();
+    }
+}
+
+bool FEColorMatrix::affectsTransparentPixels()
+{
+    // Because the input pixels are premultiplied, the only way clear pixels can be
+    // painted is if the additive component for the alpha is not 0.
+    return m_type == FECOLORMATRIX_TYPE_MATRIX && m_values[19] > 0;
 }
 
 PassRefPtr<SkImageFilter> FEColorMatrix::createImageFilter(SkiaImageFilterBuilder* builder)

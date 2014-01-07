@@ -855,6 +855,10 @@ crbug.com/331576 [ Mac ] fullscreen/parent-flow-inline-with-block-child.html [ P
 # This test will pass once we implement SVG animation events using SVGDocumentExtensions
 crbug.com/323915 svg/animations/repeatn-remove-add-animation.html [ Failure ]
 
+crbug.com/330602 svg/filters/feColorMatrix-offset.svg [ NeedsRebaseline ]
+crbug.com/330602 svg/filters/color-clear-input.svg [ NeedsRebaseline ]
+crbug.com/330602 svg/filters/innershadow.svg [ NeedsRebaseline ]
+
 crbug.com/328112 http/tests/inspector/resource-tree/resource-tree-reload.html [ Pass Failure ]
 
 crbug.com/326524 virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Pass ImageOnlyFailure ]
