@@ -4,8 +4,6 @@
 
 #include "base/debug/trace_event_synthetic_delay.h"
 #include "base/memory/singleton.h"
-#include "base/threading/platform_thread.h"
-#include "base/threading/thread_local.h"
 
 namespace {
 const int kMaxSyntheticDelays = 32;
@@ -17,24 +15,12 @@ namespace debug {
 TraceEventSyntheticDelayClock::TraceEventSyntheticDelayClock() {}
 TraceEventSyntheticDelayClock::~TraceEventSyntheticDelayClock() {}
 
-// Thread-local state for each synthetic delay point. This allows the same delay
-// to be applied to multiple threads simultaneously.
-struct ThreadState {
-  ThreadState();
-
-  base::TimeTicks start_time;
-  unsigned trigger_count;
-  int generation;
-};
-
-ThreadState::ThreadState() : trigger_count(0u), generation(0) {}
-
 class TraceEventSyntheticDelayRegistry : public TraceEventSyntheticDelayClock {
  public:
   static TraceEventSyntheticDelayRegistry* GetInstance();
 
   TraceEventSyntheticDelay* GetOrCreateDelay(const char* name);
-  ThreadState* GetThreadState(int index);
+  void ResetAllDelays();
 
   // TraceEventSyntheticDelayClock implementation.
   virtual base::TimeTicks Now() OVERRIDE;
@@ -49,13 +35,11 @@ class TraceEventSyntheticDelayRegistry : public TraceEventSyntheticDelayClock {
   TraceEventSyntheticDelay dummy_delay_;
   base::subtle::Atomic32 delay_count_;
 
-  ThreadLocalPointer<ThreadState> thread_states_;
-
   DISALLOW_COPY_AND_ASSIGN(TraceEventSyntheticDelayRegistry);
 };
 
 TraceEventSyntheticDelay::TraceEventSyntheticDelay()
-    : mode_(STATIC), generation_(0), thread_state_index_(0), clock_(NULL) {}
+    : mode_(STATIC), begin_count_(0), trigger_count_(0), clock_(NULL) {}
 
 TraceEventSyntheticDelay::~TraceEventSyntheticDelay() {}
 
@@ -67,33 +51,30 @@ TraceEventSyntheticDelay* TraceEventSyntheticDelay::Lookup(
 
 void TraceEventSyntheticDelay::Initialize(
     const std::string& name,
-    TraceEventSyntheticDelayClock* clock,
-    int thread_state_index) {
+    TraceEventSyntheticDelayClock* clock) {
   name_ = name;
   clock_ = clock;
-  thread_state_index_ = thread_state_index;
 }
 
 void TraceEventSyntheticDelay::SetTargetDuration(
     base::TimeDelta target_duration) {
   AutoLock lock(lock_);
   target_duration_ = target_duration;
-  generation_++;
+  trigger_count_ = 0;
+  begin_count_ = 0;
 }
 
 void TraceEventSyntheticDelay::SetMode(Mode mode) {
   AutoLock lock(lock_);
   mode_ = mode;
-  generation_++;
 }
 
 void TraceEventSyntheticDelay::SetClock(TraceEventSyntheticDelayClock* clock) {
   AutoLock lock(lock_);
   clock_ = clock;
-  generation_++;
 }
 
-void TraceEventSyntheticDelay::Activate() {
+void TraceEventSyntheticDelay::Begin() {
   // Note that we check for a non-zero target duration without locking to keep
   // things quick for the common case when delays are disabled. Since the delay
   // calculation is done with a lock held, it will always be correct. The only
@@ -103,45 +84,59 @@ void TraceEventSyntheticDelay::Activate() {
   if (!target_duration_.ToInternalValue())
     return;
 
-  ThreadState* thread_state =
-      TraceEventSyntheticDelayRegistry::GetInstance()->
-          GetThreadState(thread_state_index_);
-  if (!thread_state->start_time.ToInternalValue())
-    thread_state->start_time = clock_->Now();
+  base::TimeTicks start_time = clock_->Now();
+  {
+    AutoLock lock(lock_);
+    if (++begin_count_ != 1)
+      return;
+    end_time_ = CalculateEndTimeLocked(start_time);
+  }
 }
 
-void TraceEventSyntheticDelay::Apply() {
+void TraceEventSyntheticDelay::BeginParallel(base::TimeTicks* out_end_time) {
+  // See note in Begin().
+  ANNOTATE_BENIGN_RACE(&target_duration_, "Synthetic delay duration");
+  if (!target_duration_.ToInternalValue()) {
+    *out_end_time = base::TimeTicks();
+    return;
+  }
+
+  base::TimeTicks start_time = clock_->Now();
+  {
+    AutoLock lock(lock_);
+    *out_end_time = CalculateEndTimeLocked(start_time);
+  }
+}
+
+void TraceEventSyntheticDelay::End() {
+  // See note in Begin().
   ANNOTATE_BENIGN_RACE(&target_duration_, "Synthetic delay duration");
   if (!target_duration_.ToInternalValue())
     return;
 
-  ThreadState* thread_state =
-      TraceEventSyntheticDelayRegistry::GetInstance()->
-          GetThreadState(thread_state_index_);
-  if (!thread_state->start_time.ToInternalValue())
-    return;
-  base::TimeTicks now = clock_->Now();
-  base::TimeTicks start_time = thread_state->start_time;
   base::TimeTicks end_time;
-  thread_state->start_time = base::TimeTicks();
-
   {
     AutoLock lock(lock_);
-    if (thread_state->generation != generation_) {
-      thread_state->trigger_count = 0;
-      thread_state->generation = generation_;
-    }
-
-    if (mode_ == ONE_SHOT && thread_state->trigger_count++)
+    if (!begin_count_ || --begin_count_ != 0)
       return;
-    else if (mode_ == ALTERNATING && thread_state->trigger_count++ % 2)
-      return;
-
-    end_time = start_time + target_duration_;
-    if (now >= end_time)
-      return;
+    end_time = end_time_;
   }
-  ApplyDelay(end_time);
+  if (!end_time.is_null())
+    ApplyDelay(end_time);
+}
+
+void TraceEventSyntheticDelay::EndParallel(base::TimeTicks end_time) {
+  if (!end_time.is_null())
+    ApplyDelay(end_time);
+}
+
+base::TimeTicks TraceEventSyntheticDelay::CalculateEndTimeLocked(
+    base::TimeTicks start_time) {
+  if (mode_ == ONE_SHOT && trigger_count_++)
+    return base::TimeTicks();
+  else if (mode_ == ALTERNATING && trigger_count_++ % 2)
+    return base::TimeTicks();
+  return start_time + target_duration_;
 }
 
 void TraceEventSyntheticDelay::ApplyDelay(base::TimeTicks end_time) {
@@ -183,26 +178,24 @@ TraceEventSyntheticDelay* TraceEventSyntheticDelayRegistry::GetOrCreateDelay(
   if (delay_count >= kMaxSyntheticDelays)
     return &dummy_delay_;
 
-  delays_[delay_count].Initialize(std::string(name), this, delay_count);
+  delays_[delay_count].Initialize(std::string(name), this);
   base::subtle::Release_Store(&delay_count_, delay_count + 1);
   return &delays_[delay_count];
 }
 
-ThreadState* TraceEventSyntheticDelayRegistry::GetThreadState(int index) {
-  DCHECK(index >= 0 && index < kMaxSyntheticDelays);
-  if (index < 0 || index >= kMaxSyntheticDelays)
-    return NULL;
-
-  // Note that these thread states are leaked at program exit. They will only
-  // get allocated if synthetic delays are actually used.
-  ThreadState* thread_states = thread_states_.Get();
-  if (!thread_states)
-    thread_states_.Set((thread_states = new ThreadState[kMaxSyntheticDelays]));
-  return &thread_states[index];
-}
-
 base::TimeTicks TraceEventSyntheticDelayRegistry::Now() {
   return base::TimeTicks::HighResNow();
+}
+
+void TraceEventSyntheticDelayRegistry::ResetAllDelays() {
+  AutoLock lock(lock_);
+  int delay_count = base::subtle::Acquire_Load(&delay_count_);
+  for (int i = 0; i < delay_count; ++i)
+    delays_[i].SetTargetDuration(base::TimeDelta());
+}
+
+void ResetTraceEventSyntheticDelays() {
+  TraceEventSyntheticDelayRegistry::GetInstance()->ResetAllDelays();
 }
 
 }  // namespace debug
@@ -213,10 +206,12 @@ namespace trace_event_internal {
 ScopedSyntheticDelay::ScopedSyntheticDelay(const char* name,
                                            base::subtle::AtomicWord* impl_ptr)
     : delay_impl_(GetOrCreateDelay(name, impl_ptr)) {
-  delay_impl_->Activate();
+  delay_impl_->BeginParallel(&end_time_);
 }
 
-ScopedSyntheticDelay::~ScopedSyntheticDelay() { delay_impl_->Apply(); }
+ScopedSyntheticDelay::~ScopedSyntheticDelay() {
+  delay_impl_->EndParallel(end_time_);
+}
 
 base::debug::TraceEventSyntheticDelay* GetOrCreateDelay(
     const char* name,

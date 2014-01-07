@@ -17,18 +17,17 @@
 //
 // For delaying operations that span multiple scopes, use:
 //
-//   TRACE_EVENT_SYNTHETIC_DELAY_ACTIVATE("cc.Scheduler.BeginMainFrame");
+//   TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("cc.Scheduler.BeginMainFrame");
 //   ...
-//   TRACE_EVENT_SYNTHETIC_DELAY_APPLY("cc.Scheduler.BeginMainFrame");
+//   TRACE_EVENT_SYNTHETIC_DELAY_END("cc.Scheduler.BeginMainFrame");
 //
-// Here ACTIVATE establishes the start time for the delay and APPLY executes the
-// delay based on the remaining time. ACTIVATE may be called one or multiple
-// times before APPLY. Only the first call will have an effect. If ACTIVATE
-// hasn't been called since the last call to APPLY, APPLY will be a no-op.
+// Here BEGIN establishes the start time for the delay and END executes the
+// delay based on the remaining time. If BEGIN is called multiple times in a
+// row, END should be called a corresponding number of times. Only the last
+// call to END will have an effect.
 //
-// Note that while the same delay can be applied in several threads
-// simultaneously, a single delay operation cannot begin on one thread and end
-// on another.
+// Note that a single delay may begin on one thread and end on another. This
+// implies that a single delay cannot not be applied in several threads at once.
 
 #ifndef BASE_DEBUG_TRACE_EVENT_SYNTHETIC_DELAY_H_
 #define BASE_DEBUG_TRACE_EVENT_SYNTHETIC_DELAY_H_
@@ -44,21 +43,22 @@
   trace_event_internal::ScopedSyntheticDelay INTERNAL_TRACE_EVENT_UID(delay)( \
       name, &INTERNAL_TRACE_EVENT_UID(impl_ptr));
 
-// Activate a named delay, establishing its timing start point. May be called
-// multiple times, but only the first call will have an effect.
-#define TRACE_EVENT_SYNTHETIC_DELAY_ACTIVATE(name)                       \
+// Begin a named delay, establishing its timing start point. May be called
+// multiple times as long as the calls to TRACE_EVENT_SYNTHETIC_DELAY_END are
+// balanced. Only the first call records the timing start point.
+#define TRACE_EVENT_SYNTHETIC_DELAY_BEGIN(name)                          \
   do {                                                                   \
     static base::subtle::AtomicWord impl_ptr = 0;                        \
-    trace_event_internal::GetOrCreateDelay(name, &impl_ptr)->Activate(); \
+    trace_event_internal::GetOrCreateDelay(name, &impl_ptr)->Begin();    \
   } while (false)
 
-// Apply a named delay. If TRACE_EVENT_SYNTHETIC_DELAY_ACTIVATE was called for
-// the same delay, that point in time is used as the delay start point. If not,
-// this call will be a no-op.
-#define TRACE_EVENT_SYNTHETIC_DELAY_APPLY(name)                       \
+// End a named delay. The delay is applied only if this call matches the
+// first corresponding call to TRACE_EVENT_SYNTHETIC_DELAY_BEGIN with the
+// same delay.
+#define TRACE_EVENT_SYNTHETIC_DELAY_END(name)                         \
   do {                                                                \
     static base::subtle::AtomicWord impl_ptr = 0;                     \
-    trace_event_internal::GetOrCreateDelay(name, &impl_ptr)->Apply(); \
+    trace_event_internal::GetOrCreateDelay(name, &impl_ptr)->End();   \
   } while (false)
 
 template <typename Type>
@@ -94,14 +94,24 @@ class TRACE_EVENT_API_CLASS_EXPORT TraceEventSyntheticDelay {
   void SetMode(Mode mode);
   void SetClock(TraceEventSyntheticDelayClock* clock);
 
-  // Establish the timing start point for the delay. No-op if the start point
-  // was already set.
-  void Activate();
+  // Begin the delay, establishing its timing start point. May be called
+  // multiple times as long as the calls to End() are balanced. Only the first
+  // call records the timing start point.
+  void Begin();
 
-  // Execute the delay based on the current time and how long ago the start
-  // point was established. If Activate wasn't called, this call will be a
-  // no-op.
-  void Apply();
+  // End the delay. The delay is applied only if this call matches the first
+  // corresponding call to Begin() with the same delay.
+  void End();
+
+  // Begin a parallel instance of the delay. Several parallel instances may be
+  // active simultaneously and will complete independently. The computed end
+  // time for the delay is stored in |out_end_time|, which should later be
+  // passed to EndParallel().
+  void BeginParallel(base::TimeTicks* out_end_time);
+
+  // End a previously started parallel delay. |end_time| is the delay end point
+  // computed by BeginParallel().
+  void EndParallel(base::TimeTicks end_time);
 
  private:
   TraceEventSyntheticDelay();
@@ -109,20 +119,24 @@ class TRACE_EVENT_API_CLASS_EXPORT TraceEventSyntheticDelay {
   friend class TraceEventSyntheticDelayRegistry;
 
   void Initialize(const std::string& name,
-                  TraceEventSyntheticDelayClock* clock,
-                  int thread_state_index);
+                  TraceEventSyntheticDelayClock* clock);
+  base::TimeTicks CalculateEndTimeLocked(base::TimeTicks start_time);
   void ApplyDelay(base::TimeTicks end_time);
 
   Lock lock_;
   Mode mode_;
   std::string name_;
-  int generation_;
+  int begin_count_;
+  int trigger_count_;
+  base::TimeTicks end_time_;
   base::TimeDelta target_duration_;
-  int thread_state_index_;
   TraceEventSyntheticDelayClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventSyntheticDelay);
 };
+
+// Set the target durations of all registered synthetic delay points to zero.
+TRACE_EVENT_API_CLASS_EXPORT void ResetTraceEventSyntheticDelays();
 
 }  // namespace debug
 }  // namespace base
@@ -138,6 +152,7 @@ class TRACE_EVENT_API_CLASS_EXPORT ScopedSyntheticDelay {
 
  private:
   base::debug::TraceEventSyntheticDelay* delay_impl_;
+  base::TimeTicks end_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedSyntheticDelay);
 };

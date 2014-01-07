@@ -44,15 +44,15 @@ class TraceEventSyntheticDelayTest : public testing::Test,
     return (Now() - start).InMilliseconds();
   }
 
-  int AsyncTestFunctionActivate() {
+  int AsyncTestFunctionBegin() {
     base::TimeTicks start = Now();
-    { TRACE_EVENT_SYNTHETIC_DELAY_ACTIVATE("test.AsyncDelay"); }
+    { TRACE_EVENT_SYNTHETIC_DELAY_BEGIN("test.AsyncDelay"); }
     return (Now() - start).InMilliseconds();
   }
 
-  int AsyncTestFunctionApply() {
+  int AsyncTestFunctionEnd() {
     base::TimeTicks start = Now();
-    { TRACE_EVENT_SYNTHETIC_DELAY_APPLY("test.AsyncDelay"); }
+    { TRACE_EVENT_SYNTHETIC_DELAY_END("test.AsyncDelay"); }
     return (Now() - start).InMilliseconds();
   }
 
@@ -90,28 +90,63 @@ TEST_F(TraceEventSyntheticDelayTest, AlternatingDelay) {
 
 TEST_F(TraceEventSyntheticDelayTest, AsyncDelay) {
   ConfigureDelay("test.AsyncDelay");
-  EXPECT_LT(AsyncTestFunctionActivate(), kShortDurationMs);
-  EXPECT_GE(AsyncTestFunctionApply(), kTargetDurationMs / 2);
+  EXPECT_LT(AsyncTestFunctionBegin(), kShortDurationMs);
+  EXPECT_GE(AsyncTestFunctionEnd(), kTargetDurationMs / 2);
 }
 
 TEST_F(TraceEventSyntheticDelayTest, AsyncDelayExceeded) {
   ConfigureDelay("test.AsyncDelay");
-  EXPECT_LT(AsyncTestFunctionActivate(), kShortDurationMs);
+  EXPECT_LT(AsyncTestFunctionBegin(), kShortDurationMs);
   AdvanceTime(base::TimeDelta::FromMilliseconds(kTargetDurationMs));
-  EXPECT_LT(AsyncTestFunctionApply(), kShortDurationMs);
+  EXPECT_LT(AsyncTestFunctionEnd(), kShortDurationMs);
 }
 
 TEST_F(TraceEventSyntheticDelayTest, AsyncDelayNoActivation) {
   ConfigureDelay("test.AsyncDelay");
-  EXPECT_LT(AsyncTestFunctionApply(), kShortDurationMs);
+  EXPECT_LT(AsyncTestFunctionEnd(), kShortDurationMs);
 }
 
-TEST_F(TraceEventSyntheticDelayTest, AsyncDelayMultipleActivations) {
+TEST_F(TraceEventSyntheticDelayTest, AsyncDelayNested) {
   ConfigureDelay("test.AsyncDelay");
-  EXPECT_LT(AsyncTestFunctionActivate(), kShortDurationMs);
-  AdvanceTime(base::TimeDelta::FromMilliseconds(kTargetDurationMs));
-  EXPECT_LT(AsyncTestFunctionActivate(), kShortDurationMs);
-  EXPECT_LT(AsyncTestFunctionApply(), kShortDurationMs);
+  EXPECT_LT(AsyncTestFunctionBegin(), kShortDurationMs);
+  EXPECT_LT(AsyncTestFunctionBegin(), kShortDurationMs);
+  EXPECT_LT(AsyncTestFunctionEnd(), kShortDurationMs);
+  EXPECT_GE(AsyncTestFunctionEnd(), kTargetDurationMs / 2);
+}
+
+TEST_F(TraceEventSyntheticDelayTest, AsyncDelayUnbalanced) {
+  ConfigureDelay("test.AsyncDelay");
+  EXPECT_LT(AsyncTestFunctionBegin(), kShortDurationMs);
+  EXPECT_GE(AsyncTestFunctionEnd(), kTargetDurationMs / 2);
+  EXPECT_LT(AsyncTestFunctionEnd(), kShortDurationMs);
+
+  EXPECT_LT(AsyncTestFunctionBegin(), kShortDurationMs);
+  EXPECT_GE(AsyncTestFunctionEnd(), kTargetDurationMs / 2);
+}
+
+TEST_F(TraceEventSyntheticDelayTest, ResetDelays) {
+  ConfigureDelay("test.Delay");
+  ResetTraceEventSyntheticDelays();
+  EXPECT_LT(TestFunction(), kShortDurationMs);
+}
+
+TEST_F(TraceEventSyntheticDelayTest, BeginParallel) {
+  TraceEventSyntheticDelay* delay = ConfigureDelay("test.AsyncDelay");
+  base::TimeTicks end_times[2];
+  base::TimeTicks start_time = Now();
+
+  delay->BeginParallel(&end_times[0]);
+  EXPECT_FALSE(end_times[0].is_null());
+
+  delay->BeginParallel(&end_times[1]);
+  EXPECT_FALSE(end_times[1].is_null());
+
+  delay->EndParallel(end_times[0]);
+  EXPECT_GE((Now() - start_time).InMilliseconds(), kTargetDurationMs);
+
+  start_time = Now();
+  delay->EndParallel(end_times[1]);
+  EXPECT_LT((Now() - start_time).InMilliseconds(), kShortDurationMs);
 }
 
 }  // namespace debug
