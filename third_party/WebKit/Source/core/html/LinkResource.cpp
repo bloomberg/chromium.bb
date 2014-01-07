@@ -58,7 +58,7 @@ Frame* LinkResource::loadingFrame() const
     HTMLImport* import = m_owner->document().import();
     if (!import)
         return m_owner->document().frame();
-    return import->master()->document().frame();
+    return import->master()->frame();
 }
 
 LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)

@@ -690,7 +690,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& name, ExceptionS
     }
 
     if (isXHTMLDocument() || isHTMLDocument())
-        return HTMLElementFactory::createHTMLElement(isHTMLDocument() ? name.lower() : name, document(), 0, false);
+        return HTMLElementFactory::createHTMLElement(isHTMLDocument() ? name.lower() : name, *this, 0, false);
 
     return createElement(QualifiedName(nullAtom, name, nullAtom), false);
 }
@@ -780,7 +780,7 @@ bool Document::haveImportsLoaded() const
 
 PassRefPtr<DocumentFragment> Document::createDocumentFragment()
 {
-    return DocumentFragment::create(document());
+    return DocumentFragment::create(*this);
 }
 
 PassRefPtr<Text> Document::createTextNode(const String& data)
@@ -983,14 +983,14 @@ PassRefPtr<Element> Document::createElement(const QualifiedName& qName, bool cre
 
     // FIXME: Use registered namespaces and look up in a hash to find the right factory.
     if (qName.namespaceURI() == xhtmlNamespaceURI)
-        e = HTMLElementFactory::createHTMLElement(qName.localName(), document(), 0, createdByParser);
+        e = HTMLElementFactory::createHTMLElement(qName.localName(), *this, 0, createdByParser);
     else if (qName.namespaceURI() == SVGNames::svgNamespaceURI)
-        e = SVGElementFactory::createSVGElement(qName.localName(), document(), createdByParser);
+        e = SVGElementFactory::createSVGElement(qName.localName(), *this, createdByParser);
 
     if (e)
         m_sawElementsInKnownNamespaces = true;
     else
-        e = Element::create(qName, &document());
+        e = Element::create(qName, this);
 
     if (e->prefix() != qName.prefix())
         e->setTagNameForCreateElementNS(qName);

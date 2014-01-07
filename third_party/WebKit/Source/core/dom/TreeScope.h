@@ -63,10 +63,10 @@ public:
     void addElementById(const AtomicString& elementId, Element*);
     void removeElementById(const AtomicString& elementId, Element*);
 
-    Document& documentScope() const
+    Document& document() const
     {
-        ASSERT(m_documentScope);
-        return *m_documentScope;
+        ASSERT(m_document);
+        return *m_document;
     }
 
     Node* ancestorInThisScope(Node*) const;
@@ -138,7 +138,7 @@ protected:
     virtual ~TreeScope();
 
     void destroyTreeScopeData();
-    void setDocumentScope(Document& document) { m_documentScope = &document; }
+    void setDocument(Document& document) { m_document = &document; }
 
     bool hasGuardRefCount() const { return m_guardRefCount; }
 
@@ -161,7 +161,7 @@ private:
     bool rootNodeHasTreeSharedParent() const;
 
     Node* m_rootNode;
-    Document* m_documentScope;
+    Document* m_document;
     TreeScope* m_parentTreeScope;
     int m_guardRefCount;
 

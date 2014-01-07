@@ -44,7 +44,7 @@ public:
     HTMLStyleElement* getNamedItem(const AtomicString&) const;
 
     // FIXME: Should return a reference.
-    Document* document() { return &m_treeScope->documentScope(); }
+    Document* document() { return &m_treeScope->document(); }
 
     void detachFromDocument();
     CSSStyleSheet* anonymousNamedGetter(const AtomicString&);

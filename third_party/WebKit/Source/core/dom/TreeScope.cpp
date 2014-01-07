@@ -57,7 +57,7 @@ using namespace HTMLNames;
 
 TreeScope::TreeScope(ContainerNode* rootNode, Document* document)
     : m_rootNode(rootNode)
-    , m_documentScope(document)
+    , m_document(document)
     , m_parentTreeScope(document)
     , m_guardRefCount(0)
     , m_idTargetObserverRegistry(IdTargetObserverRegistry::create())
@@ -71,7 +71,7 @@ TreeScope::TreeScope(ContainerNode* rootNode, Document* document)
 
 TreeScope::TreeScope(Document* document)
     : m_rootNode(document)
-    , m_documentScope(document)
+    , m_document(document)
     , m_parentTreeScope(0)
     , m_guardRefCount(0)
     , m_idTargetObserverRegistry(IdTargetObserverRegistry::create())
@@ -117,7 +117,7 @@ void TreeScope::setParentTreeScope(TreeScope* newParentScope)
     if (m_parentTreeScope)
         m_parentTreeScope->guardDeref();
     m_parentTreeScope = newParentScope;
-    setDocumentScope(newParentScope->documentScope());
+    setDocument(newParentScope->document());
 }
 
 Element* TreeScope::getElementById(const AtomicString& elementId) const
@@ -499,7 +499,7 @@ void TreeScope::setNeedsStyleRecalcForViewportUnits()
 
 KURL TreeScope::completeURL(const String& url) const
 {
-    return documentScope().completeURLWithOverride(url, baseURL());
+    return document().completeURLWithOverride(url, baseURL());
 }
 
 } // namespace WebCore

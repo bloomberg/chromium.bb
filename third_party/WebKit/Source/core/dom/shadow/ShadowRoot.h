@@ -61,6 +61,9 @@ public:
 
     void recalcStyle(StyleRecalcChange);
 
+    // Disambiguate between Node and TreeScope hierarchies; TreeScope's implementation is simpler.
+    using TreeScope::document;
+
     Element* host() const { return toElement(parentOrShadowHostNode()); }
     ElementShadow* owner() const { return host() ? host()->shadow() : 0; }
 

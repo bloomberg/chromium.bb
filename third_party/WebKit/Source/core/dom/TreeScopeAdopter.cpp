@@ -44,8 +44,8 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
     // that element may contain stale data as changes made to it will have updated the DOMTreeVersion
     // of the document it was moved to. By increasing the DOMTreeVersion of the donating document here
     // we ensure that the collection cache will be invalidated as needed when the element is moved back.
-    Document& oldDocument = m_oldScope.documentScope();
-    Document& newDocument = m_newScope.documentScope();
+    Document& oldDocument = m_oldScope.document();
+    Document& newDocument = m_newScope.document();
     bool willMoveToNewDocument = oldDocument != newDocument;
     if (willMoveToNewDocument)
         oldDocument.incDOMTreeVersion();
@@ -123,7 +123,7 @@ inline void TreeScopeAdopter::moveNodeToNewDocument(Node& node, Document& oldDoc
     oldDocument.moveNodeIteratorsToNewDocument(node, newDocument);
 
     if (node.isShadowRoot())
-        toShadowRoot(node).setDocumentScope(newDocument);
+        toShadowRoot(node).setDocument(newDocument);
 
 #ifndef NDEBUG
     didMoveToNewDocumentWasCalled = false;
