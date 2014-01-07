@@ -5,20 +5,24 @@
   'includes': [
     'telemetry.isolate',
   ],
-  # This isolate allows any of the GPU tests, including the WebGL
-  # conformance tests, to be run. However, extra command line arguments
-  # must be supplied in order to run any one of them.
-  'variables': {
-    'isolate_dependency_untracked': [
-      '../content/test/gpu/',
-      '../content/test/data/gpu/',
-      # For GpuProcess.video
-      '../content/test/data/media/bear.ogv',
-      # For webgl_conformance
-      '../third_party/webgl/',
-    ],
-    'command': [
-      '../content/test/gpu/run_gpu_test',
-    ],
-  },
+  'conditions': [
+    ['OS=="android" or OS=="linux" or OS=="mac" or OS=="win"', {
+      # This isolate allows any of the GPU tests, including the WebGL
+      # conformance tests, to be run. However, extra command line arguments
+      # must be supplied in order to run any one of them.
+      'variables': {
+        'isolate_dependency_untracked': [
+          '../content/test/gpu/',
+          '../content/test/data/gpu/',
+          # For GpuProcess.video
+          '../content/test/data/media/bear.ogv',
+          # For webgl_conformance
+          '../third_party/webgl/',
+        ],
+        'command': [
+          '../content/test/gpu/run_gpu_test',
+        ],
+      },
+    }],
+  ]
 }
