@@ -56,6 +56,7 @@ cr.define('options.passwordManager', function() {
       var usernameLabel = this.ownerDocument.createElement('div');
       usernameLabel.className = 'name';
       usernameLabel.textContent = this.username;
+      usernameLabel.title = this.username;
       this.contentElement.appendChild(usernameLabel);
 
       // The stored password.
