@@ -120,7 +120,7 @@ class FetchRequest;
         virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) = 0;
 
         // Maybe these should go into a ProgressTrackerClient some day
-        virtual void postProgressStartedNotification() = 0;
+        virtual void postProgressStartedNotification(LoadStartType) = 0;
         virtual void postProgressEstimateChangedNotification() = 0;
         virtual void postProgressFinishedNotification() = 0;
 

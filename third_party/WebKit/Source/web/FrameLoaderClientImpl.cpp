@@ -447,11 +447,11 @@ void FrameLoaderClientImpl::dispatchWillSubmitForm(PassRefPtr<FormState> formSta
         m_webFrame->client()->willSubmitForm(m_webFrame, WebFormElement(formState->form()));
 }
 
-void FrameLoaderClientImpl::postProgressStartedNotification()
+void FrameLoaderClientImpl::postProgressStartedNotification(LoadStartType loadStartType)
 {
     WebViewImpl* webview = m_webFrame->viewImpl();
     if (webview && webview->client())
-        webview->client()->didStartLoading();
+        webview->client()->didStartLoading(loadStartType == NavigationToDifferentDocument);
 }
 
 void FrameLoaderClientImpl::postProgressEstimateChangedNotification()

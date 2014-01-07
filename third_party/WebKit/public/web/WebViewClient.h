@@ -154,7 +154,7 @@ public:
     // Navigational --------------------------------------------------------
 
     // These notifications bracket any loading that occurs in the WebView.
-    virtual void didStartLoading() { }
+    virtual void didStartLoading(bool toDifferentDocument) { }
     virtual void didStopLoading() { }
 
     // Notification that some progress was made loading the current page.

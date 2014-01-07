@@ -88,6 +88,11 @@ enum ReloadPolicy {
     EndToEndReload
 };
 
+enum LoadStartType {
+    NavigationToDifferentDocument,
+    NavigationWithinSameDocument
+};
+
 enum SameDocumentNavigationSource {
     SameDocumentNavigationDefault,
     SameDocumentNavigationPushState,

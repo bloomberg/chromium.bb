@@ -214,7 +214,7 @@ public:
     virtual void dispatchWillSendSubmitEvent(PassRefPtr<FormState>) OVERRIDE;
     virtual void dispatchWillSubmitForm(PassRefPtr<FormState>) OVERRIDE;
 
-    virtual void postProgressStartedNotification() OVERRIDE { }
+    virtual void postProgressStartedNotification(LoadStartType) OVERRIDE { }
     virtual void postProgressEstimateChangedNotification() OVERRIDE { }
     virtual void postProgressFinishedNotification() OVERRIDE { }
 

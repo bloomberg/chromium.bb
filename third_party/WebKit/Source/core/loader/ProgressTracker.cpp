@@ -111,7 +111,7 @@ void ProgressTracker::progressStarted(Frame* frame)
         m_progressValue = initialProgressValue;
         m_originatingProgressFrame = frame;
 
-        m_originatingProgressFrame->loader().client()->postProgressStartedNotification();
+        m_originatingProgressFrame->loader().client()->postProgressStartedNotification(NavigationToDifferentDocument);
     }
     m_numProgressTrackedFrames++;
     InspectorInstrumentation::frameStartedLoading(frame);

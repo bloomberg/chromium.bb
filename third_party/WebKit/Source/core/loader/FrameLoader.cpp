@@ -561,7 +561,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     // don't fire them for fragment redirection that happens in window.onload handler.
     // See https://bugs.webkit.org/show_bug.cgi?id=31838
     if (m_frame->document()->loadEventFinished())
-        m_client->postProgressStartedNotification();
+        m_client->postProgressStartedNotification(NavigationWithinSameDocument);
 
     HistoryCommitType historyCommitType = HistoryInertCommit;
     HistoryItemPolicy historyItemPolicy = DoNotCreateNewHistoryItem;

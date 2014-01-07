@@ -4794,25 +4794,30 @@ public:
     TestStartStopCallbackWebViewClient()
         : m_startLoadingCount(0)
         , m_stopLoadingCount(0)
+        , m_differentDocumentStartCount(0)
     {
     }
 
-    virtual void didStartLoading()
+    virtual void didStartLoading(bool toDifferentDocument) OVERRIDE
     {
         m_startLoadingCount++;
+        if (toDifferentDocument)
+            m_differentDocumentStartCount++;
     }
 
-    virtual void didStopLoading()
+    virtual void didStopLoading() OVERRIDE
     {
         m_stopLoadingCount++;
     }
 
     int startLoadingCount() const { return m_startLoadingCount; }
     int stopLoadingCount() const { return m_stopLoadingCount; }
+    int differentDocumentStartCount() const { return m_differentDocumentStartCount; }
 
 private:
     int m_startLoadingCount;
     int m_stopLoadingCount;
+    int m_differentDocumentStartCount;
 };
 
 TEST_F(WebFrameTest, PushStateStartsAndStops)
@@ -4825,6 +4830,7 @@ TEST_F(WebFrameTest, PushStateStartsAndStops)
 
     EXPECT_EQ(client.startLoadingCount(), 2);
     EXPECT_EQ(client.stopLoadingCount(), 2);
+    EXPECT_EQ(client.differentDocumentStartCount(), 1);
 }
 
 class TestHistoryWebFrameClient : public WebFrameClient {
