@@ -27,6 +27,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
@@ -73,24 +74,24 @@ const char kUninstallUrl[] = "uninstall_url";
 // with the equivalent Pepper API.
 const char kPackageDirectoryPath[] = "crxfs";
 
-static void DispatchOnStartupEventImpl(
-    Profile* profile,
-    const std::string& extension_id,
-    bool first_call,
-    ExtensionHost* host) {
+void DispatchOnStartupEventImpl(BrowserContext* browser_context,
+                                const std::string& extension_id,
+                                bool first_call,
+                                ExtensionHost* host) {
   // A NULL host from the LazyBackgroundTaskQueue means the page failed to
   // load. Give up.
   if (!host && !first_call)
     return;
 
-  // Don't send onStartup events to incognito profiles.
-  if (profile->IsOffTheRecord())
+  // Don't send onStartup events to incognito browser contexts.
+  if (browser_context->IsOffTheRecord())
     return;
 
-  if (g_browser_process->IsShuttingDown() ||
-      !g_browser_process->profile_manager()->IsValidProfile(profile))
+  if (ExtensionsBrowserClient::Get()->IsShuttingDown() ||
+      !ExtensionsBrowserClient::Get()->IsValidContext(browser_context))
     return;
-  ExtensionSystem* system = ExtensionSystem::Get(profile);
+  ExtensionSystem* system =
+      ExtensionSystem::GetForBrowserContext(browser_context);
   if (!system)
     return;
 
@@ -98,15 +99,16 @@ static void DispatchOnStartupEventImpl(
   // (it might not be ready, since this is startup). But only enqueue once.
   // If it fails to load the first time, don't bother trying again.
   const Extension* extension =
-      system->extension_service()->extensions()->GetByID(extension_id);
+      ExtensionRegistry::Get(browser_context)->enabled_extensions().GetByID(
+          extension_id);
   if (extension && BackgroundInfo::HasPersistentBackgroundPage(extension) &&
       first_call &&
       system->lazy_background_task_queue()->
-          ShouldEnqueueTask(profile, extension)) {
+          ShouldEnqueueTask(browser_context, extension)) {
     system->lazy_background_task_queue()->AddPendingTask(
-        profile, extension_id,
+        browser_context, extension_id,
         base::Bind(&DispatchOnStartupEventImpl,
-                   profile, extension_id, false));
+                   browser_context, extension_id, false));
     return;
   }
 
@@ -260,9 +262,7 @@ void RuntimeAPI::OnChromeUpdateAvailable() {
 // static
 void RuntimeEventRouter::DispatchOnStartupEvent(
     content::BrowserContext* context, const std::string& extension_id) {
-  // TODO(jamescook): Convert to BrowserContext all the way down.
-  Profile* profile = static_cast<Profile*>(context);
-  DispatchOnStartupEventImpl(profile, extension_id, true, NULL);
+  DispatchOnStartupEventImpl(context, extension_id, true, NULL);
 }
 
 // static

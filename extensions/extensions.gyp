@@ -25,6 +25,8 @@
         '<(INTERMEDIATE_DIR)',
       ],
       'sources': [
+        'common/common_manifest_handlers.cc',
+        'common/common_manifest_handlers.h',
         'common/crx_file.cc',
         'common/crx_file.h',
         'common/csp_validator.cc',

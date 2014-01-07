@@ -4,10 +4,19 @@
 
 #include "apps/shell/shell_extension_system.h"
 
+#include <string>
+
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
 
@@ -22,6 +31,42 @@ ShellExtensionSystem::ShellExtensionSystem(BrowserContext* browser_context)
 ShellExtensionSystem::~ShellExtensionSystem() {
 }
 
+bool ShellExtensionSystem::LoadAndLaunchApp(const base::FilePath& app_dir) {
+  std::string load_error;
+  scoped_refptr<Extension> extension =
+      extension_file_util::LoadExtension(app_dir,
+                                         extensions::Manifest::COMMAND_LINE,
+                                         Extension::NO_FLAGS,
+                                         &load_error);
+  if (!extension) {
+    LOG(ERROR) << "Loading extension at " << app_dir.value()
+        << " failed with: " << load_error;
+    return false;
+  }
+
+  ExtensionRegistry::Get(browser_context_)->AddEnabled(extension);
+
+  // TODO(jamescook): If RegisterExtensionWithRequestContexts() did something,
+  // this would be the place to call it.
+
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSION_LOADED,
+      content::Source<BrowserContext>(browser_context_),
+      content::Details<const Extension>(extension));
+
+  // Inform the rest of the extensions system to start.
+  ready_.Signal();
+  LOG(WARNING) << "-----------------------------------";
+  LOG(WARNING) << "app_shell is expected to crash now.";
+  LOG(WARNING) << "-----------------------------------";
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_EXTENSIONS_READY,
+      content::Source<BrowserContext>(browser_context_),
+      content::NotificationService::NoDetails());
+
+  return true;
+}
+
 void ShellExtensionSystem::Shutdown() {
 }
 
@@ -34,7 +79,7 @@ void ShellExtensionSystem::InitForRegularProfile(bool extensions_enabled) {
 }
 
 ExtensionService* ShellExtensionSystem::extension_service() {
-  // This class only has an ExtensionServiceInterface.
+  NOTREACHED();
   return NULL;
 }
 

@@ -16,6 +16,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 
@@ -59,8 +60,7 @@ void ExtensionWebContentsObserver::RenderViewCreated(
   // Some extensions use file:// URLs.
   if (type == Manifest::TYPE_EXTENSION ||
       type == Manifest::TYPE_LEGACY_PACKAGED_APP) {
-    if (ExtensionSystem::Get(profile_)->extension_service()->
-            extension_prefs()->AllowFileAccess(extension->id())) {
+    if (ExtensionPrefs::Get(profile_)->AllowFileAccess(extension->id())) {
       content::ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
           process->GetID(), content::kFileScheme);
     }
@@ -119,7 +119,8 @@ const Extension* ExtensionWebContentsObserver::GetExtension(
   if (!site.SchemeIs(kExtensionScheme))
     return NULL;
 
-  ExtensionService* service = profile_->GetExtensionService();
+  ExtensionService* service =
+      ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return NULL;
 
@@ -132,7 +133,8 @@ const Extension* ExtensionWebContentsObserver::GetExtension(
 
   // May be null if the extension doesn't exist, for example if somebody typos
   // a chrome-extension:// URL.
-  return service->extensions()->GetByID(site.host());
+  return ExtensionRegistry::Get(profile_)->enabled_extensions().GetByID(
+      site.host());
 }
 
 }  // namespace extensions

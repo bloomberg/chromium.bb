@@ -610,9 +610,9 @@ void ProcessManager::Observe(int type,
 
     case chrome::NOTIFICATION_EXTENSION_LOADED: {
       BrowserContext* context = content::Source<BrowserContext>(source).ptr();
-      ExtensionService* service =
-          ExtensionSystem::GetForBrowserContext(context)->extension_service();
-      if (service->is_ready()) {
+      ExtensionSystem* system = ExtensionSystem::GetForBrowserContext(context);
+      if (system->ready().is_signaled()) {
+        // The extension system is ready, so create the background host.
         const Extension* extension =
             content::Details<const Extension>(details).ptr();
         CreateBackgroundHostForExtensionLoad(this, extension);

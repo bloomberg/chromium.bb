@@ -15,10 +15,6 @@ namespace aura {
 class TestScreen;
 }
 
-namespace base {
-class FilePath;
-}
-
 namespace content {
 class ShellBrowserContext;
 struct MainFunctionParams;
@@ -72,10 +68,6 @@ class ShellBrowserMainParts : public content::BrowserMainParts,
 
   // Creates and initializes the ExtensionSystem.
   void CreateExtensionSystem();
-
-  // Loads an unpacked application from a directory and attempts to launch it.
-  // Returns true on success.
-  bool LoadAndLaunchApp(const base::FilePath& app_dir);
 
   scoped_ptr<ShellBrowserContext> browser_context_;
   scoped_ptr<ShellExtensionsClient> extensions_client_;

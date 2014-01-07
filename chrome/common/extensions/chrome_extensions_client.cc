@@ -10,8 +10,10 @@
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/switches.h"
@@ -38,7 +40,13 @@ ChromeExtensionsClient::~ChromeExtensionsClient() {
 }
 
 void ChromeExtensionsClient::Initialize() {
-  RegisterChromeManifestHandlers();
+  // Registration could already be finalized in unit tests, where the utility
+  // thread runs in-process.
+  if (!ManifestHandler::IsRegistrationFinalized()) {
+    RegisterCommonManifestHandlers();
+    RegisterChromeManifestHandlers();
+    ManifestHandler::FinalizeRegistration();
+  }
 
   // Set up the scripting whitelist.
   // Whitelist ChromeVox, an accessibility extension from Google that needs

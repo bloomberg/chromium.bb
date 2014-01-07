@@ -9,6 +9,10 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "extensions/common/one_shot_event.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 class BrowserContext;
 }
@@ -25,6 +29,10 @@ class ShellExtensionSystem : public ExtensionSystem {
  public:
   explicit ShellExtensionSystem(content::BrowserContext* browser_context);
   virtual ~ShellExtensionSystem();
+
+  // Loads an unpacked application from a directory and attempts to launch it.
+  // Returns true on success.
+  bool LoadAndLaunchApp(const base::FilePath& app_dir);
 
   // BrowserContextKeyedService implementation:
   virtual void Shutdown() OVERRIDE;

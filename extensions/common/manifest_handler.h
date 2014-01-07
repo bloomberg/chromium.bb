@@ -62,7 +62,7 @@ class ManifestHandler {
   // for multiple keys. The global registry takes ownership of this;
   // if it has an existing handler for |key|, it replaces it with this.
   // Manifest handlers must be registered at process startup in
-  // chrome_manifest_handlers.cc:
+  // common_manifest_handlers.cc or chrome_manifest_handlers.cc:
   // (new MyManifestHandler)->Register();
   void Register();
 

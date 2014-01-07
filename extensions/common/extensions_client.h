@@ -28,6 +28,8 @@ class ExtensionsClient {
  public:
   typedef std::vector<std::string> ScriptingWhitelist;
 
+  virtual ~ExtensionsClient() {}
+
   // Initializes global state. Not done in the constructor because unit tests
   // can create additional ExtensionsClients because the utility thread runs
   // in-process.

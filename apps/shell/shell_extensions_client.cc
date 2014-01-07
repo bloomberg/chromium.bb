@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
+#include "extensions/common/common_manifest_handlers.h"
+#include "extensions/common/manifest_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_provider.h"
 #include "extensions/common/url_pattern_set.h"
@@ -91,6 +93,9 @@ ShellExtensionsClient::~ShellExtensionsClient() {
 }
 
 void ShellExtensionsClient::Initialize() {
+  extensions::RegisterCommonManifestHandlers();
+  extensions::ManifestHandler::FinalizeRegistration();
+
   // TODO(jamescook): Do we need to whitelist any extensions?
 }
 

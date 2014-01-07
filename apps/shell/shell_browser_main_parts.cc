@@ -15,7 +15,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chromeos/chromeos_paths.h"
 #include "content/public/common/result_codes.h"
 #include "extensions/common/extension_paths.h"
@@ -94,7 +93,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kAppSwitch)) {
     base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));
-    LoadAndLaunchApp(app_dir);
+    extension_system_->LoadAndLaunchApp(app_dir);
   } else {
     // TODO(jamescook): For demo purposes create a window with a WebView just
     // to ensure that the content module is properly initialized.
@@ -157,26 +156,6 @@ void ShellBrowserMainParts::CreateExtensionSystem() {
   // Must occur after setting the instance above, as it will end up calling
   // ExtensionSystem::Get().
   extension_system_->InitForRegularProfile(true);
-}
-
-bool ShellBrowserMainParts::LoadAndLaunchApp(const base::FilePath& app_dir) {
-  DCHECK(extension_system_);
-  std::string load_error;
-  scoped_refptr<Extension> extension =
-      extension_file_util::LoadExtension(app_dir,
-                                         extensions::Manifest::COMMAND_LINE,
-                                         Extension::NO_FLAGS,
-                                         &load_error);
-  if (!extension) {
-    LOG(ERROR) << "Loading extension at " << app_dir.value()
-        << " failed with: " << load_error;
-    return false;
-  }
-
-  // TODO(jamescook): Add to ExtensionRegistry.
-  // TODO(jamescook): Set ExtensionSystem ready.
-  // TODO(jamescook): Send NOTIFICATION_EXTENSION_LOADED.
-  return true;
 }
 
 }  // namespace apps
