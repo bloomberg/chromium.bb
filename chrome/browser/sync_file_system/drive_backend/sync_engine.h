@@ -126,6 +126,7 @@ class SyncEngine : public RemoteFileSyncService,
   virtual base::SequencedTaskRunner* GetBlockingTaskRunner() OVERRIDE;
 
  private:
+  friend class DriveBackendSyncTest;
   friend class SyncEngineTest;
 
   SyncEngine(const base::FilePath& base_dir,
