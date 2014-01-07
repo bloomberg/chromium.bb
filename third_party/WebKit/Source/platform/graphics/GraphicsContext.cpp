@@ -39,6 +39,7 @@
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"

@@ -40,8 +40,6 @@
 #include "platform/graphics/GraphicsContextState.h"
 #include "platform/graphics/skia/OpaqueRegionSkia.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-// TODO(robertphillips): replace this include with "class SkBaseDevice;"
-#include "third_party/skia/include/core/SkDevice.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
