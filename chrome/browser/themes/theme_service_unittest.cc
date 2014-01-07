@@ -19,14 +19,18 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using extensions::ExtensionRegistry;
 
 namespace theme_service_internal {
 
 class ThemeServiceTest : public ExtensionServiceTestBase {
  public:
   ThemeServiceTest() : is_managed_(false),
+                       registry_(NULL),
                        manager_(TestingBrowserProcess::GetGlobal()) {}
   virtual ~ThemeServiceTest() {}
 
@@ -85,6 +89,8 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
     InitializeExtensionService(params);
     service_->Init();
     ASSERT_TRUE(manager_.SetUp());
+    registry_ = ExtensionRegistry::Get(profile_.get());
+    ASSERT_TRUE(registry_);
   }
 
   const CustomThemeSupplier* get_theme_supplier(ThemeService* theme_service) {
@@ -97,6 +103,7 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
 
  protected:
   bool is_managed_;
+  ExtensionRegistry* registry_;
 
  private:
   TestingProfileManager manager_;
@@ -149,16 +156,16 @@ TEST_F(ThemeServiceTest, DisableUnusedTheme) {
   const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.path());
   EXPECT_EQ(extension2_id, theme_service->GetThemeID());
   EXPECT_TRUE(service_->IsExtensionEnabled(extension2_id));
-  EXPECT_TRUE(service_->GetExtensionById(extension1_id,
-      ExtensionService::INCLUDE_DISABLED));
+  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
+                                          ExtensionRegistry::DISABLED));
 
   // 2) Enabling a disabled theme extension should swap the current theme.
   service_->EnableExtension(extension1_id);
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(extension1_id, theme_service->GetThemeID());
   EXPECT_TRUE(service_->IsExtensionEnabled(extension1_id));
-  EXPECT_TRUE(service_->GetExtensionById(extension2_id,
-      ExtensionService::INCLUDE_DISABLED));
+  EXPECT_TRUE(registry_->GetExtensionById(extension2_id,
+                                          ExtensionRegistry::DISABLED));
 
   // 3) Using SetTheme() with a disabled theme should enable and set the
   // theme. This is the case when the user reverts to the previous theme
@@ -169,8 +176,8 @@ TEST_F(ThemeServiceTest, DisableUnusedTheme) {
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(extension2_id, theme_service->GetThemeID());
   EXPECT_TRUE(service_->IsExtensionEnabled(extension2_id));
-  EXPECT_TRUE(service_->GetExtensionById(extension1_id,
-      ExtensionService::INCLUDE_DISABLED));
+  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
+                                          ExtensionRegistry::DISABLED));
 
   // 4) Disabling the current theme extension should revert to the default theme
   // and uninstall any installed theme extensions.
@@ -204,8 +211,8 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
   const std::string& extension2_id = LoadUnpackedThemeAt(temp_dir2.path());
 
   // Test the initial state.
-  EXPECT_TRUE(service_->GetExtensionById(extension1_id,
-      ExtensionService::INCLUDE_DISABLED));
+  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
+                                          ExtensionRegistry::DISABLED));
   EXPECT_EQ(extension2_id, theme_service->GetThemeID());
 
   // 1) Upgrading the current theme should not revert to the default theme.
@@ -219,14 +226,14 @@ TEST_F(ThemeServiceTest, ThemeUpgrade) {
   theme_change_observer.Wait();
 
   EXPECT_EQ(extension2_id, theme_service->GetThemeID());
-  EXPECT_TRUE(service_->GetExtensionById(extension1_id,
-      ExtensionService::INCLUDE_DISABLED));
+  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
+                                          ExtensionRegistry::DISABLED));
 
   // 2) Upgrading a disabled theme should not change the current theme.
   UpdateUnpackedTheme(extension1_id);
   EXPECT_EQ(extension2_id, theme_service->GetThemeID());
-  EXPECT_TRUE(service_->GetExtensionById(extension1_id,
-      ExtensionService::INCLUDE_DISABLED));
+  EXPECT_TRUE(registry_->GetExtensionById(extension1_id,
+                                          ExtensionRegistry::DISABLED));
 }
 
 class ThemeServiceManagedUserTest : public ThemeServiceTest {

@@ -86,5 +86,84 @@ TEST_F(ExtensionRegistryTest, AddExtensionToRegistryTwice) {
   EXPECT_EQ(0u, registry.blacklisted_extensions().size());
 }
 
+TEST_F(ExtensionRegistryTest, GetExtensionById) {
+  ExtensionRegistry registry;
+
+  // Trying to get an extension fails cleanly when the sets are empty.
+  EXPECT_FALSE(
+      registry.GetExtensionById("id", ExtensionRegistry::EVERYTHING));
+
+  scoped_refptr<Extension> enabled =
+      test_util::CreateExtensionWithID("enabled");
+  scoped_refptr<Extension> disabled =
+      test_util::CreateExtensionWithID("disabled");
+  scoped_refptr<Extension> terminated =
+      test_util::CreateExtensionWithID("terminated");
+  scoped_refptr<Extension> blacklisted =
+      test_util::CreateExtensionWithID("blacklisted");
+
+  // Add an extension to each set.
+  registry.AddEnabled(enabled);
+  registry.AddDisabled(disabled);
+  registry.AddTerminated(terminated);
+  registry.AddBlacklisted(blacklisted);
+
+  // Enabled is part of everything and the enabled list.
+  EXPECT_TRUE(
+      registry.GetExtensionById("enabled", ExtensionRegistry::EVERYTHING));
+  EXPECT_TRUE(
+      registry.GetExtensionById("enabled", ExtensionRegistry::ENABLED));
+  EXPECT_FALSE(
+      registry.GetExtensionById("enabled", ExtensionRegistry::DISABLED));
+  EXPECT_FALSE(
+      registry.GetExtensionById("enabled", ExtensionRegistry::TERMINATED));
+  EXPECT_FALSE(
+      registry.GetExtensionById("enabled", ExtensionRegistry::BLACKLISTED));
+
+  // Disabled is part of everything and the disabled list.
+  EXPECT_TRUE(
+      registry.GetExtensionById("disabled", ExtensionRegistry::EVERYTHING));
+  EXPECT_FALSE(
+      registry.GetExtensionById("disabled", ExtensionRegistry::ENABLED));
+  EXPECT_TRUE(
+      registry.GetExtensionById("disabled", ExtensionRegistry::DISABLED));
+  EXPECT_FALSE(
+      registry.GetExtensionById("disabled", ExtensionRegistry::TERMINATED));
+  EXPECT_FALSE(
+      registry.GetExtensionById("disabled", ExtensionRegistry::BLACKLISTED));
+
+  // Terminated is part of everything and the terminated list.
+  EXPECT_TRUE(
+      registry.GetExtensionById("terminated", ExtensionRegistry::EVERYTHING));
+  EXPECT_FALSE(
+      registry.GetExtensionById("terminated", ExtensionRegistry::ENABLED));
+  EXPECT_FALSE(
+      registry.GetExtensionById("terminated", ExtensionRegistry::DISABLED));
+  EXPECT_TRUE(
+      registry.GetExtensionById("terminated", ExtensionRegistry::TERMINATED));
+  EXPECT_FALSE(
+      registry.GetExtensionById("terminated", ExtensionRegistry::BLACKLISTED));
+
+  // Blacklisted is part of everything and the blacklisted list.
+  EXPECT_TRUE(
+      registry.GetExtensionById("blacklisted", ExtensionRegistry::EVERYTHING));
+  EXPECT_FALSE(
+      registry.GetExtensionById("blacklisted", ExtensionRegistry::ENABLED));
+  EXPECT_FALSE(
+      registry.GetExtensionById("blacklisted", ExtensionRegistry::DISABLED));
+  EXPECT_FALSE(
+      registry.GetExtensionById("blacklisted", ExtensionRegistry::TERMINATED));
+  EXPECT_TRUE(
+      registry.GetExtensionById("blacklisted", ExtensionRegistry::BLACKLISTED));
+
+  // Enabled can be found with multiple flags set.
+  EXPECT_TRUE(registry.GetExtensionById(
+      "enabled", ExtensionRegistry::ENABLED | ExtensionRegistry::TERMINATED));
+
+  // Enabled isn't found if the wrong flags are set.
+  EXPECT_FALSE(registry.GetExtensionById(
+      "enabled", ExtensionRegistry::DISABLED | ExtensionRegistry::BLACKLISTED));
+}
+
 }  // namespace
 }  // namespace extensions

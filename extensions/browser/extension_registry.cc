@@ -4,6 +4,7 @@
 
 #include "extensions/browser/extension_registry.h"
 
+#include "base/strings/string_util.h"
 #include "extensions/browser/extension_registry_factory.h"
 
 namespace extensions {
@@ -14,6 +15,32 @@ ExtensionRegistry::~ExtensionRegistry() {}
 // static
 ExtensionRegistry* ExtensionRegistry::Get(content::BrowserContext* context) {
   return ExtensionRegistryFactory::GetForBrowserContext(context);
+}
+
+const Extension* ExtensionRegistry::GetExtensionById(const std::string& id,
+                                                     int include_mask) const {
+  std::string lowercase_id = StringToLowerASCII(id);
+  if (include_mask & ENABLED) {
+    const Extension* extension = enabled_extensions_.GetByID(lowercase_id);
+    if (extension)
+      return extension;
+  }
+  if (include_mask & DISABLED) {
+    const Extension* extension = disabled_extensions_.GetByID(lowercase_id);
+    if (extension)
+      return extension;
+  }
+  if (include_mask & TERMINATED) {
+    const Extension* extension = terminated_extensions_.GetByID(lowercase_id);
+    if (extension)
+      return extension;
+  }
+  if (include_mask & BLACKLISTED) {
+    const Extension* extension = blacklisted_extensions_.GetByID(lowercase_id);
+    if (extension)
+      return extension;
+  }
+  return NULL;
 }
 
 bool ExtensionRegistry::AddEnabled(

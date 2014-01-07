@@ -24,6 +24,16 @@ class Extension;
 // share a single registry.
 class ExtensionRegistry : public BrowserContextKeyedService {
  public:
+  // Flags to pass to GetExtensionById() to select which sets to look in.
+  enum IncludeFlag {
+    NONE        = 0,
+    ENABLED     = 1 << 0,
+    DISABLED    = 1 << 1,
+    TERMINATED  = 1 << 2,
+    BLACKLISTED = 1 << 3,
+    EVERYTHING = (1 << 4) - 1,
+  };
+
   ExtensionRegistry();
   virtual ~ExtensionRegistry();
 
@@ -44,6 +54,15 @@ class ExtensionRegistry : public BrowserContextKeyedService {
   const ExtensionSet& blacklisted_extensions() const {
     return blacklisted_extensions_;
   }
+
+  // Find an extension by ID using |include_mask| to pick the sets to search:
+  //  * enabled_extensions()     --> ExtensionRegistry::ENABLED
+  //  * disabled_extensions()    --> ExtensionRegistry::DISABLED
+  //  * terminated_extensions()  --> ExtensionRegistry::TERMINATED
+  //  * blacklisted_extensions() --> ExtensionRegistry::BLACKLISTED
+  // Returns NULL if the extension is not found in the selected sets.
+  const Extension* GetExtensionById(const std::string& id,
+                                    int include_mask) const;
 
   // Adds the specified extension to the enabled set. The registry becomes an
   // owner. Any previous extension with the same ID is removed.

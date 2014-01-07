@@ -229,33 +229,20 @@ class ExtensionService
   virtual const extensions::Extension* GetExtensionById(
       const std::string& id, bool include_disabled) const OVERRIDE;
 
-  enum IncludeFlag {
-    INCLUDE_NONE        = 0,
-    INCLUDE_ENABLED     = 1 << 0,
-    INCLUDE_DISABLED    = 1 << 1,
-    INCLUDE_TERMINATED  = 1 << 2,
-    INCLUDE_BLACKLISTED = 1 << 3,
-    INCLUDE_EVERYTHING = (1 << 4) - 1,
-  };
-
-  // Look up an extension by ID, selecting which sets to look in:
-  //  * extensions()             --> INCLUDE_ENABLED
-  //  * disabled_extensions()    --> INCLUDE_DISABLED
-  //  * terminated_extensions()  --> INCLUDE_TERMINATED
-  //  * blacklisted_extensions() --> INCLUDE_BLACKLISTED
-  const extensions::Extension* GetExtensionById(const std::string& id,
-                                                int include_mask) const;
-
   // Returns the site of the given |extension_id|. Suitable for use with
   // BrowserContext::GetStoragePartitionForSite().
   GURL GetSiteForExtensionId(const std::string& extension_id);
 
   // Looks up a terminated (crashed) extension by ID.
+  // DEPRECATED: Replace with:
+  // ExtensionRegistry::GetExtensionById(id, ExtensionRegistry::TERMINATED).
   const extensions::Extension*
       GetTerminatedExtension(const std::string& id) const;
 
   // Looks up an extension by ID, regardless of whether it's enabled,
   // disabled, blacklisted, or terminated.
+  // DEPRECATED: Replace with:
+  // ExtensionRegistry::GetExtensionById(id, ExtensionRegistry::EVERYTHING).
   virtual const extensions::Extension* GetInstalledExtension(
       const std::string& id) const OVERRIDE;
 
@@ -438,6 +425,9 @@ class ExtensionService
   }
 
   Profile* profile();
+
+  // Returns profile_ as a BrowserContext.
+  content::BrowserContext* GetBrowserContext() const;
 
   // TODO(skerner): Change to const ExtensionPrefs& extension_prefs() const,
   // ExtensionPrefs* mutable_extension_prefs().

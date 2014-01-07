@@ -115,6 +115,7 @@ using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
+using extensions::ExtensionRegistry;
 using extensions::ExtensionSet;
 using extensions::FeatureSwitch;
 using extensions::InstallVerifier;
@@ -456,50 +457,21 @@ void ExtensionService::Shutdown() {
 
 const Extension* ExtensionService::GetExtensionById(
     const std::string& id, bool include_disabled) const {
-  int include_mask = INCLUDE_ENABLED;
+  int include_mask = ExtensionRegistry::ENABLED;
   if (include_disabled) {
     // Include blacklisted extensions here because there are hundreds of
     // callers of this function, and many might assume that this includes those
     // that have been disabled due to blacklisting.
-    include_mask |= INCLUDE_DISABLED | INCLUDE_BLACKLISTED;
+    include_mask |= ExtensionRegistry::DISABLED |
+                    ExtensionRegistry::BLACKLISTED;
   }
-  return GetExtensionById(id, include_mask);
+  return registry_->GetExtensionById(id, include_mask);
 }
 
 GURL ExtensionService::GetSiteForExtensionId(const std::string& extension_id) {
   return content::SiteInstance::GetSiteForURL(
       profile_,
       Extension::GetBaseURLFromExtensionId(extension_id));
-}
-
-const Extension* ExtensionService::GetExtensionById(
-    const std::string& id, int include_mask) const {
-  std::string lowercase_id = StringToLowerASCII(id);
-  if (include_mask & INCLUDE_ENABLED) {
-    const Extension* extension =
-        registry_->enabled_extensions().GetByID(lowercase_id);
-    if (extension)
-      return extension;
-  }
-  if (include_mask & INCLUDE_DISABLED) {
-    const Extension* extension =
-        registry_->disabled_extensions().GetByID(lowercase_id);
-    if (extension)
-      return extension;
-  }
-  if (include_mask & INCLUDE_TERMINATED) {
-    const Extension* extension =
-        registry_->terminated_extensions().GetByID(lowercase_id);
-    if (extension)
-      return extension;
-  }
-  if (include_mask & INCLUDE_BLACKLISTED) {
-    const Extension* extension =
-        registry_->blacklisted_extensions().GetByID(lowercase_id);
-    if (extension)
-      return extension;
-  }
-  return NULL;
 }
 
 void ExtensionService::Init() {
@@ -1017,8 +989,9 @@ void ExtensionService::DisableExtension(
   extension_prefs_->SetExtensionState(extension_id, Extension::DISABLED);
   extension_prefs_->AddDisableReason(extension_id, disable_reason);
 
-  int include_mask = INCLUDE_EVERYTHING & ~INCLUDE_DISABLED;
-  extension = GetExtensionById(extension_id, include_mask);
+  int include_mask =
+      ExtensionRegistry::EVERYTHING & ~ExtensionRegistry::DISABLED;
+  extension = registry_->GetExtensionById(extension_id, include_mask);
   if (!extension)
     return;
 
@@ -1226,6 +1199,12 @@ void ExtensionService::NotifyExtensionUnloaded(
 }
 
 Profile* ExtensionService::profile() {
+  return profile_;
+}
+
+content::BrowserContext* ExtensionService::GetBrowserContext() const {
+  // Implemented in the .cc file to avoid adding a profile.h dependency to
+  // extension_service.h.
   return profile_;
 }
 
@@ -1606,9 +1585,10 @@ void ExtensionService::UnloadExtension(
     const std::string& extension_id,
     UnloadedExtensionInfo::Reason reason) {
   // Make sure the extension gets deleted after we return from this function.
-  int include_mask = INCLUDE_EVERYTHING & ~INCLUDE_TERMINATED;
+  int include_mask =
+      ExtensionRegistry::EVERYTHING & ~ExtensionRegistry::TERMINATED;
   scoped_refptr<const Extension> extension(
-      GetExtensionById(extension_id, include_mask));
+      registry_->GetExtensionById(extension_id, include_mask));
 
   // This method can be called via PostTask, so the extension may have been
   // unloaded by the time this runs.
@@ -2363,16 +2343,12 @@ void ExtensionService::UntrackTerminatedExtension(const std::string& id) {
 
 const Extension* ExtensionService::GetTerminatedExtension(
     const std::string& id) const {
-  return GetExtensionById(id, INCLUDE_TERMINATED);
+  return registry_->GetExtensionById(id, ExtensionRegistry::TERMINATED);
 }
 
 const Extension* ExtensionService::GetInstalledExtension(
     const std::string& id) const {
-  int include_mask = INCLUDE_ENABLED |
-                     INCLUDE_DISABLED |
-                     INCLUDE_TERMINATED |
-                     INCLUDE_BLACKLISTED;
-  return GetExtensionById(id, include_mask);
+  return registry_->GetExtensionById(id, ExtensionRegistry::EVERYTHING);
 }
 
 bool ExtensionService::ExtensionBindingsAllowed(const GURL& url) {

@@ -12,12 +12,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "content/public/browser/site_instance.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionRegistry;
 
 namespace extension_util {
 
@@ -134,8 +136,10 @@ bool IsAppLaunchable(const std::string& extension_id,
 
 bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
                                     const ExtensionService* service) {
-  const Extension* launchable_extension = service->GetExtensionById(
-      extension_id, ExtensionService::INCLUDE_ENABLED);
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(service->GetBrowserContext());
+  const Extension* launchable_extension = registry->GetExtensionById(
+      extension_id, ExtensionRegistry::ENABLED);
   return launchable_extension != NULL;
 }
 

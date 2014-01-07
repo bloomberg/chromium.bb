@@ -39,6 +39,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/common/renderer_preferences.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "grit/generated_resources.h"
@@ -57,6 +58,7 @@
 using content::WebContents;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionRegistry;
 
 namespace {
 
@@ -121,15 +123,11 @@ class EnableViaAppListFlow : public ExtensionEnableFlowDelegate {
 const Extension* GetExtension(const AppLaunchParams& params) {
   if (params.extension_id.empty())
     return NULL;
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(params.profile)->extension_service();
-  const Extension* extension = service->GetExtensionById(
-      params.extension_id,
-      ExtensionService::INCLUDE_ENABLED | ExtensionService::INCLUDE_DISABLED |
-          ExtensionService::INCLUDE_TERMINATED);
-  if (!extension)
-    extension = service->GetTerminatedExtension(params.extension_id);
-  return extension;
+  ExtensionRegistry* registry = ExtensionRegistry::Get(params.profile);
+  return registry->GetExtensionById(params.extension_id,
+                                    ExtensionRegistry::ENABLED |
+                                        ExtensionRegistry::DISABLED |
+                                        ExtensionRegistry::TERMINATED);
 }
 
 // Get the launch URL for a given extension, with optional override/fallback.
