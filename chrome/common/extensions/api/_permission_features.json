@@ -762,10 +762,6 @@
       "32A1BA997F8AB8DE29ED1BA94AAF00CF2A3FEFA7"
     ]
   }],
-  "sockets.udp": {
-    "channel": "dev",
-    "extension_types": ["platform_app"]
-  },
   "syncFileSystem": {
     "channel": "stable",
     "extension_types": ["platform_app"]

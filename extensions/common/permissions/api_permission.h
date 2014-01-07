@@ -132,7 +132,6 @@ class APIPermission {
     kSessions,
     kSignedInDevices,
     kSocket,
-    kSocketsUdp,
     kStartupPages,
     kStorage,
     kStreamsPrivate,
