@@ -130,7 +130,7 @@ PassOwnPtr<DragImage> DragImage::create(const KURL& url, const String& inLabel, 
     bool clipLabelString = false;
 
     String urlString = url.string();
-    String label = inLabel;
+    String label = inLabel.stripWhiteSpace();
     if (label.isEmpty()) {
         drawURLString = false;
         label = urlString;

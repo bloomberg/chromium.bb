@@ -32,9 +32,12 @@
 
 #include "platform/DragImage.h"
 
+#include "URLTestHelpers.h"
+#include "core/rendering/RenderTheme.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
+#include "platform/weborigin/KURL.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -44,6 +47,7 @@
 #include <gtest/gtest.h>
 
 using namespace WebCore;
+using blink::URLTestHelpers::toKURL;
 
 namespace {
 
@@ -138,6 +142,23 @@ TEST(DragImageTest, CreateDragImage)
         SkAutoLockPixels lock1(dragImage->bitmap()), lock2(testImage->nativeImageForCurrentFrame()->bitmap());
         EXPECT_NE(dragImage->bitmap().getPixels(), testImage->nativeImageForCurrentFrame()->bitmap().getPixels());
     }
+}
+
+TEST(DragImageTest, TrimWhitspace)
+{
+    KURL url = toKURL("http://www.example.com/");
+    String testLabel = "          Example Example Example      \n    ";
+    String expectedLabel = "Example Example Example";
+    float deviceScaleFactor = 1.0f;
+    FontDescription fontDescription;
+    RenderTheme::theme().systemFont(WebCore::CSSValueNone, fontDescription);
+
+    OwnPtr<DragImage> testImage =
+        DragImage::create(url, testLabel, fontDescription, deviceScaleFactor);
+    OwnPtr<DragImage> expectedImage =
+        DragImage::create(url, expectedLabel, fontDescription, deviceScaleFactor);
+
+    EXPECT_EQ(testImage->size().width(), expectedImage->size().width());
 }
 
 } // anonymous namespace
