@@ -1,4 +1,4 @@
 This page tests calling document.importNode(null). If it passes, you'll see a "PASS" message below.
 
-caught exception: NotSupportedError: The implementation did not support the requested type of object or operation.
+caught exception: NotSupportedError: Failed to execute 'importNode' on 'Document': The node provided is invalid.
 PASS: importNode(null) didn't crash

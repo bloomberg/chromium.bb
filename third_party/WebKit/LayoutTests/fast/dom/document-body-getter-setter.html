@@ -9,7 +9,7 @@ onload = function() {
     frame = document.createElement('iframe');
     document.body.appendChild(frame);
 
-    shouldThrow('frame.contentDocument.body = document.createElement("div")',  "'HierarchyRequestError: A Node was inserted somewhere it doesn\\'t belong.'");
+    shouldThrow('frame.contentDocument.body = document.createElement("div")', '"HierarchyRequestError: Failed to set the \'body\' property on \'Document\': The new body element is of type \'DIV\'. It must be either a \'BODY\' or \'FRAMESET\' element."');
     shouldNotThrow('frame.contentDocument.body = document.createElement("frameset")');
     shouldBe('frame.contentDocument.documentElement.childNodes.length', '2');
     shouldNotThrow('frame.contentDocument.body = document.createElement("body")');

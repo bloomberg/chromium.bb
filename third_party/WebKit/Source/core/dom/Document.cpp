@@ -754,7 +754,7 @@ ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicS
 ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionState& exceptionState, CustomElement::NameSet validNames)
 {
     if (!registrationContext()) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "No element registration context is available.");
         return ScriptValue();
     }
 
@@ -828,7 +828,7 @@ PassRefPtr<Text> Document::createEditingTextNode(const String& text)
 PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionState& exceptionState)
 {
     if (!importedNode) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The node provided is invalid.");
         return 0;
     }
 
@@ -850,7 +850,7 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
         // FIXME: The following check might be unnecessary. Is it possible that
         // oldElement has mismatched prefix/namespace?
         if (!hasValidNamespaceForElements(oldElement->tagQName())) {
-            exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
+            exceptionState.throwDOMException(NamespaceError, "The imported node has an invalid namespace.");
             return 0;
         }
         RefPtr<Element> newElement = createElement(oldElement->tagQName(), false);
@@ -901,14 +901,15 @@ PassRefPtr<Node> Document::importNode(Node* importedNode, bool deep, ExceptionSt
     case XPATH_NAMESPACE_NODE:
         break;
     }
-    exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+    Element* el = toElement(importedNode);
+    exceptionState.throwDOMException(NotSupportedError, "The node to import is of type '" + el->tagName() + "', which may not be imported.");
     return 0;
 }
 
 PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& exceptionState)
 {
     if (!source) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The node provided is invalid.");
         return 0;
     }
 
@@ -920,7 +921,7 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& ex
     case DOCUMENT_NODE:
     case DOCUMENT_TYPE_NODE:
     case XPATH_NAMESPACE_NODE:
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The node provided is of type '" + source->nodeName() + "', which may not be adopted.");
         return 0;
     case ATTRIBUTE_NODE: {
         Attr* attr = toAttr(source.get());
@@ -931,14 +932,14 @@ PassRefPtr<Node> Document::adoptNode(PassRefPtr<Node> source, ExceptionState& ex
     default:
         if (source->isShadowRoot()) {
             // ShadowRoot cannot disconnect itself from the host node.
-            exceptionState.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+            exceptionState.throwDOMException(HierarchyRequestError, "The node provided is a shadow root, which may not be adopted.");
             return 0;
         }
 
         if (source->isFrameOwnerElement()) {
             HTMLFrameOwnerElement* frameOwnerElement = toHTMLFrameOwnerElement(source.get());
             if (frame() && frame()->tree().isDescendantOf(frameOwnerElement->contentFrame())) {
-                exceptionState.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+                exceptionState.throwDOMException(HierarchyRequestError, "The node provided is a frame which contains this document.");
                 return 0;
             }
         }
@@ -1031,8 +1032,8 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
 
     QualifiedName qName(prefix, localName, namespaceURI);
     if (!hasValidNamespaceForElements(qName)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NamespaceError);
         exceptionState.throwDOMException(NamespaceError, "The namespace URI provided ('" + namespaceURI + "') is not valid for the qualified name provided ('" + qualifiedName + "').");
+        return 0;
     }
 
     return createElement(qName, false);
@@ -1130,12 +1131,12 @@ void Document::setContentLanguage(const AtomicString& language)
 void Document::setXMLVersion(const String& version, ExceptionState& exceptionState)
 {
     if (!implementation()->hasFeature("XML", String())) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "This document does not support XML.");
         return;
     }
 
     if (!XMLDocumentParser::supportsXMLVersion(version)) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "This document does not support the XML version '" + version + "'.");
         return;
     }
 
@@ -1145,7 +1146,7 @@ void Document::setXMLVersion(const String& version, ExceptionState& exceptionSta
 void Document::setXMLStandalone(bool standalone, ExceptionState& exceptionState)
 {
     if (!implementation()->hasFeature("XML", String())) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "This document does not support XML.");
         return;
     }
 
@@ -1447,7 +1448,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionState
 {
     // FIXME: Probably this should be handled within the bindings layer and TypeError should be thrown.
     if (!root) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
         return 0;
     }
     return NodeIterator::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
@@ -1456,7 +1457,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, ExceptionState
 PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
         return 0;
     }
     // FIXME: It might be a good idea to emit a warning if |whatToShow| contains a bit that is not defined in
@@ -1467,7 +1468,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
 PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
         return 0;
     }
     // FIXME: Ditto.
@@ -1477,7 +1478,7 @@ PassRefPtr<NodeIterator> Document::createNodeIterator(Node* root, unsigned whatT
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
         return 0;
     }
     return TreeWalker::create(root, NodeFilter::SHOW_ALL, PassRefPtr<NodeFilter>());
@@ -1486,7 +1487,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, ExceptionState& ex
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
         return 0;
     }
     return TreeWalker::create(root, whatToShow, PassRefPtr<NodeFilter>());
@@ -1495,7 +1496,7 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
 PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToShow, PassRefPtr<NodeFilter> filter, ExceptionState& exceptionState)
 {
     if (!root) {
-        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwDOMException(NotSupportedError, "The provided node is invalid.");
         return 0;
     }
     return TreeWalker::create(root, whatToShow, filter);
@@ -2234,13 +2235,17 @@ void Document::setBody(PassRefPtr<HTMLElement> prpNewBody, ExceptionState& excep
 {
     RefPtr<HTMLElement> newBody = prpNewBody;
 
-    if (!newBody || !documentElement()) {
-        exceptionState.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+    if (!newBody) {
+        exceptionState.throwDOMException(HierarchyRequestError, "The node provided is invalid.");
+        return;
+    }
+    if (!documentElement()) {
+        exceptionState.throwDOMException(HierarchyRequestError, "No document element exists.");
         return;
     }
 
     if (!newBody->hasTagName(bodyTag) && !newBody->hasTagName(framesetTag)) {
-        exceptionState.throwUninformativeAndGenericDOMException(HierarchyRequestError);
+        exceptionState.throwDOMException(HierarchyRequestError, "The new body element is of type '" + newBody->tagName() + "'. It must be either a 'BODY' or 'FRAMESET' element.");
         return;
     }
 
@@ -3659,7 +3664,7 @@ PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionState&
     if (event)
         return event.release();
 
-    exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
+    exceptionState.throwDOMException(NotSupportedError, "The provided event type ('" + eventType + "') is invalid.");
     return 0;
 }
 
