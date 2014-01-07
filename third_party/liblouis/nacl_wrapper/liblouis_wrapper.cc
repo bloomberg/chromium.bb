@@ -121,12 +121,13 @@ bool LibLouisWrapper::Translate(const TranslationParams& params,
     // TODO(jbroman): log this
     return false;
   }
+  // To avoid unsigned/signed comparison warnings.
+  int inbufsize = inbuf.size();
 
-  int inlen = inbuf.size();
-  int outlen = inlen * 2;  // TODO(jbroman): choose this size more accurately.
-  std::vector<widechar> outbuf(outlen);
-  std::vector<int> text_to_braille(inlen);
-  std::vector<int> braille_to_text(outlen);
+  std::vector<widechar> outbuf;
+  std::vector<int> text_to_braille(inbuf.size());
+  std::vector<int> braille_to_text;
+  int outlen;
 
   // Compute the cursor position pointer to pass to liblouis.
   int out_cursor_position;
@@ -139,15 +140,36 @@ bool LibLouisWrapper::Translate(const TranslationParams& params,
     out_cursor_position_ptr = &out_cursor_position;
   }
 
-  // Invoke liblouis.
-  int result = lou_translate(params.table_name.c_str(),
-      &inbuf[0], &inlen, &outbuf[0], &outlen,
-      NULL /* typeform */, NULL /* spacing */,
-      &text_to_braille[0], &braille_to_text[0],
-      out_cursor_position_ptr, dotsIO /* mode */);
-  if (result == 0) {
-    // TODO(jbroman): log this
-    return false;
+  // Invoke liblouis.  Do this in a loop since we can't precalculate the
+  // translated size.  We add an extra slot in the output buffer so that
+  // common cases like single digits or capital letters won't always trigger
+  // retranslations (see the comments above the second exit condition inside
+  // the loop).  We also set an arbitrary upper bound for the allocation
+  // to make sure the loop exits without running out of memory.
+  for (int outalloc = (inbufsize + 1) * 2, maxoutalloc = (inbufsize + 1) * 8;
+       outalloc <= maxoutalloc; outalloc *= 2) {
+    int inlen = inbufsize;
+    outlen = outalloc;
+    outbuf.resize(outalloc);
+    braille_to_text.resize(outalloc);
+    int result = lou_translate(params.table_name.c_str(),
+                               &inbuf[0], &inlen, &outbuf[0], &outlen,
+                               NULL /* typeform */, NULL /* spacing */,
+                               &text_to_braille[0], &braille_to_text[0],
+                               out_cursor_position_ptr, dotsIO /* mode */);
+    if (result == 0) {
+      // TODO(jbroman): log this
+      return false;
+    }
+    // If all of inbuf was not consumed, the output buffer must be too small
+    // and we have to retry with a larger buffer.
+    // In addition, if all of outbuf was exhausted, there's no way to know if
+    // more space was needed, so we'll have to retry the translation in that
+    // corner case as well.
+    if (inlen == inbufsize && outlen < outalloc)
+      break;
+    outbuf.clear();
+    braille_to_text.clear();
   }
 
   // Massage the result.

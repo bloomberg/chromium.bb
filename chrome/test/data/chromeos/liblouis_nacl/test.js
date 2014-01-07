@@ -42,7 +42,7 @@ function rpc(command, args, callback) {
   var messageId = '' + nextMessageId++;
   args['command'] = command;
   args['message_id'] = messageId;
-  var json = JSON.stringify(args)
+  var json = JSON.stringify(args);
   console.log('Message to liblouis: ' + json);
   naclEmbed.postMessage(json);
   pendingCallback = callback;
@@ -73,6 +73,17 @@ loadLibrary(function() {
     rpc('Translate', { 'table_name': TABLE_NAME, 'text': TEXT},
         pass(expectSuccessReply(function(reply) {
           chrome.test.assertEq(CELLS, reply['cells']);
+        })));
+  },
+
+  // Regression test for the case where the translated result is more than
+  // the double size of the input.  In this particular case, a single capital
+  // letter 'T' should be translated to 3 cells in US English grade 2
+  // braille (dots 56, 6, 2345).
+  function testTranslateGrade2SingleCapital() {
+    rpc('Translate', { 'table_name': 'en-us-g2.ctb', 'text': 'T'},
+        pass(expectSuccessReply(function(reply) {
+          chrome.test.assertEq('30201e', reply['cells']);
         })));
   },
 
