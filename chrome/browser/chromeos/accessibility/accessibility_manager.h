@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_ACCESSIBILITY_MANAGER_H_
 
+#include <set>
+
 #include "ash/accessibility_delegate.h"
 #include "ash/session_state_observer.h"
 #include "base/memory/weak_ptr.h"
@@ -176,10 +178,9 @@ class AccessibilityManager : public content::NotificationObserver,
   virtual void OnListenerRemoved(
       const extensions::EventListenerInfo& details) OVERRIDE;
 
-  // Plays sound identified by |sound_key| if |system_sounds_enabled_|.
-  // |sound_key| must be an ID for sound registered by
-  // AccessibilityManager.  If there is no such sound or
-  // !|system_sounds_enabled_|, sound isn't played.
+  // Plays sound identified by |sound_key|.  |sound_key| must be an ID for sound
+  // registered by AccessibilityManager.  If there is no such sound, sound isn't
+  // played.
   void PlaySound(int sound_key) const;
 
   // Profile which has the current a11y context.
@@ -189,6 +190,9 @@ class AccessibilityManager : public content::NotificationObserver,
   // loaded to any profile.
   bool chrome_vox_loaded_on_lock_screen_;
   bool chrome_vox_loaded_on_user_screen_;
+
+  // Set of profiles ChromeVox is loaded to.
+  std::set<Profile*> chromevox_profiles_;
 
   content::NotificationRegistrar notification_registrar_;
   scoped_ptr<PrefChangeRegistrar> pref_change_registrar_;

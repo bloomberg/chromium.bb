@@ -343,8 +343,10 @@ AccessibilityManager::~AccessibilityManager() {
 
   // Component extensions don't always notify us when they're unloaded. Ensure
   // we clean up ChromeVox observers here.
-  if (profile_) {
-    extensions::ExtensionSystem::Get(profile_)->
+  for (std::set<Profile*>::iterator it = chromevox_profiles_.begin();
+       it != chromevox_profiles_.end();
+       it++) {
+    extensions::ExtensionSystem::Get(*it)->
         event_router()->UnregisterObserver(this);
   }
 }
@@ -742,11 +744,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   autoclick_pref_handler_.HandleProfileChanged(profile_, profile);
   autoclick_delay_pref_handler_.HandleProfileChanged(profile_, profile);
 
-  if (!profile && profile_) {
-    extensions::ExtensionSystem::Get(profile_)->
-        event_router()->UnregisterObserver(this);
-  }
-
   if (profile && spoken_feedback_enabled_)
     SetUpPreLoadChromeVox(profile);
 
@@ -856,6 +853,9 @@ void AccessibilityManager::Observe(
       Profile* profile = content::Source<Profile>(source).ptr();
       if (profile_ == profile)
         SetProfile(NULL);
+
+      if (IsSpokenFeedbackEnabled())
+        TearDownPostUnloadChromeVox(profile);
       break;
     }
     case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
@@ -944,6 +944,7 @@ void AccessibilityManager::SetUpPreLoadChromeVox(Profile* profile) {
         event_router()->RegisterObserver(this,
             extensions::api::experimental_accessibility::
                 OnChromeVoxLoadStateChanged::kEventName);
+    chromevox_profiles_.insert(profile);
   }
 }
 
@@ -952,12 +953,12 @@ void AccessibilityManager::TearDownPostUnloadChromeVox(Profile* profile) {
   if (profile) {
     extensions::ExtensionSystem::Get(profile)->
         event_router()->UnregisterObserver(this);
+    chromevox_profiles_.erase(profile);
   }
 }
 
 void AccessibilityManager::PlaySound(int sound_key) const {
-  if (system_sounds_enabled_)
-    media::SoundsManager::Get()->Play(sound_key);
+  media::SoundsManager::Get()->Play(sound_key);
 }
 
 }  // namespace chromeos
