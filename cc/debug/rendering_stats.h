@@ -49,7 +49,6 @@ struct CC_EXPORT ImplThreadRenderingStats {
 
   int64 frame_count;
   base::TimeDelta rasterize_time;
-  base::TimeDelta analysis_time;
   int64 rasterized_pixel_count;
 
   ImplThreadRenderingStats();

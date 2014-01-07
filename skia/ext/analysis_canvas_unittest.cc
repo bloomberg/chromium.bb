@@ -18,6 +18,7 @@ void TransparentFill(skia::AnalysisCanvas& canvas) {
 }
 
 } // namespace
+
 namespace skia {
 
 TEST(AnalysisCanvasTest, EmptyCanvas) {
@@ -342,15 +343,6 @@ TEST(AnalysisCanvasTest, HasText) {
     EXPECT_TRUE(canvas.HasText());
   }
   {
-    // Text under opaque rect.
-    skia::AnalysisDevice device(bitmap);
-    skia::AnalysisCanvas canvas(&device);
-    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-    canvas.drawRect(SkRect::MakeWH(width, height), paint);
-    EXPECT_FALSE(canvas.HasText());
-  }
-  {
     // Text under translucent rect.
     skia::AnalysisDevice device(bitmap);
     skia::AnalysisCanvas canvas(&device);
@@ -360,17 +352,6 @@ TEST(AnalysisCanvasTest, HasText) {
     translucentPaint.setColor(0x88FFFFFF);
     canvas.drawRect(SkRect::MakeWH(width, height), translucentPaint);
     EXPECT_TRUE(canvas.HasText());
-  }
-  {
-    // Text under rect in clear mode.
-    skia::AnalysisDevice device(bitmap);
-    skia::AnalysisCanvas canvas(&device);
-    canvas.drawText(text, byteLength, point.fX, point.fY, paint);
-    EXPECT_TRUE(canvas.HasText());
-    SkPaint clearModePaint;
-    clearModePaint.setXfermodeMode(SkXfermode::kClear_Mode);
-    canvas.drawRect(SkRect::MakeWH(width, height), clearModePaint);
-    EXPECT_FALSE(canvas.HasText());
   }
   {
     // Clear.

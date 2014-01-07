@@ -74,20 +74,9 @@ void PicturePileImpl::RasterDirect(
     float contents_scale,
     RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   RasterCommon(canvas,
-               NULL,
                canvas_rect,
                contents_scale,
-               rendering_stats_instrumentation,
-               false);
-}
-
-void PicturePileImpl::RasterForAnalysis(
-    skia::AnalysisCanvas* canvas,
-    gfx::Rect canvas_rect,
-    float contents_scale,
-    RenderingStatsInstrumentation* stats_instrumentation) {
-  RasterCommon(
-      canvas, canvas, canvas_rect, contents_scale, stats_instrumentation, true);
+               rendering_stats_instrumentation);
 }
 
 void PicturePileImpl::RasterToBitmap(
@@ -138,11 +127,9 @@ void PicturePileImpl::RasterToBitmap(
   }
 
   RasterCommon(canvas,
-               NULL,
                canvas_rect,
                contents_scale,
-               rendering_stats_instrumentation,
-               false);
+               rendering_stats_instrumentation);
 }
 
 void PicturePileImpl::CoalesceRasters(gfx::Rect canvas_rect,
@@ -206,11 +193,9 @@ void PicturePileImpl::CoalesceRasters(gfx::Rect canvas_rect,
 
 void PicturePileImpl::RasterCommon(
     SkCanvas* canvas,
-    SkDrawPictureCallback* callback,
     gfx::Rect canvas_rect,
     float contents_scale,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    bool is_analysis) {
+    RenderingStatsInstrumentation* rendering_stats_instrumentation) {
   DCHECK(contents_scale >= min_contents_scale_);
 
   canvas->translate(-canvas_rect.x(), -canvas_rect.y());
@@ -256,7 +241,7 @@ void PicturePileImpl::RasterCommon(
         start_time = rendering_stats_instrumentation->StartRecording();
 
       rasterized_pixel_count = picture->Raster(
-          canvas, callback, negated_clip_region, contents_scale);
+          canvas, negated_clip_region, contents_scale);
 
       if (rendering_stats_instrumentation) {
         base::TimeDelta duration =
@@ -266,13 +251,8 @@ void PicturePileImpl::RasterCommon(
     }
 
     if (rendering_stats_instrumentation) {
-      if (is_analysis) {
-        rendering_stats_instrumentation->AddAnalysis(best_duration,
-                                                     rasterized_pixel_count);
-      } else {
-        rendering_stats_instrumentation->AddRaster(best_duration,
-                                                   rasterized_pixel_count);
-      }
+      rendering_stats_instrumentation->AddRaster(best_duration,
+                                                 rasterized_pixel_count);
     }
   }
 
@@ -306,39 +286,6 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   picture->endRecording();
 
   return picture;
-}
-
-void PicturePileImpl::AnalyzeInRect(
-    gfx::Rect content_rect,
-    float contents_scale,
-    PicturePileImpl::Analysis* analysis) {
-  AnalyzeInRect(content_rect, contents_scale, analysis, NULL);
-}
-
-void PicturePileImpl::AnalyzeInRect(
-    gfx::Rect content_rect,
-    float contents_scale,
-    PicturePileImpl::Analysis* analysis,
-    RenderingStatsInstrumentation* stats_instrumentation) {
-  DCHECK(analysis);
-  TRACE_EVENT0("cc", "PicturePileImpl::AnalyzeInRect");
-
-  gfx::Rect layer_rect = gfx::ScaleToEnclosingRect(
-      content_rect, 1.0f / contents_scale);
-
-  layer_rect.Intersect(gfx::Rect(tiling_.total_size()));
-
-  SkBitmap empty_bitmap;
-  empty_bitmap.setConfig(SkBitmap::kNo_Config,
-                         layer_rect.width(),
-                         layer_rect.height());
-  skia::AnalysisDevice device(empty_bitmap);
-  skia::AnalysisCanvas canvas(&device);
-
-  RasterForAnalysis(&canvas, layer_rect, 1.0f, stats_instrumentation);
-
-  analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
-  analysis->has_text = canvas.HasText();
 }
 
 PicturePileImpl::Analysis::Analysis()
@@ -395,6 +342,19 @@ void PicturePileImpl::PixelRefIterator::AdvanceToTilePictureWithPixelRefs() {
     if (pixel_ref_iterator_)
       break;
   }
+}
+
+gfx::Rect PicturePileImpl::AnalysisRectForRaster(gfx::Rect content_rect,
+                                                 float contents_scale) const {
+  // Bound the analysis rect to just the pile content.
+  gfx::Rect content_bounds(
+      gfx::ScaleToEnclosingRect(gfx::Rect(size()), contents_scale));
+  gfx::Rect analysis_rect(content_rect);
+  analysis_rect.Intersect(content_bounds);
+  // Move to canvas space.
+  analysis_rect.set_origin(gfx::Point());
+
+  return analysis_rect;
 }
 
 void PicturePileImpl::DidBeginTracing() {
