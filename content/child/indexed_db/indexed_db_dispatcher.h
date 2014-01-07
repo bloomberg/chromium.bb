@@ -98,9 +98,10 @@ class CONTENT_EXPORT IndexedDBDispatcher
                                         blink::WebIDBCallbacks* callbacks_ptr,
                                         int32 ipc_cursor_id);
 
-  void RequestIDBCursorPrefetchReset(int used_prefetches,
-                                     int unused_prefetches,
-                                     int32 ipc_cursor_id);
+  // This method is virtual so it can be overridden in unit tests.
+  virtual void RequestIDBCursorPrefetchReset(int used_prefetches,
+                                             int unused_prefetches,
+                                             int32 ipc_cursor_id);
 
   void RequestIDBDatabaseClose(int32 ipc_database_id,
                                int32 ipc_database_callbacks_id);
