@@ -63,7 +63,11 @@ public:
     void addElementById(const AtomicString& elementId, Element*);
     void removeElementById(const AtomicString& elementId, Element*);
 
-    Document* documentScope() const { return m_documentScope; }
+    Document& documentScope() const
+    {
+        ASSERT(m_documentScope);
+        return *m_documentScope;
+    }
 
     Node* ancestorInThisScope(Node*) const;
 
@@ -134,12 +138,7 @@ protected:
     virtual ~TreeScope();
 
     void destroyTreeScopeData();
-    void clearDocumentScope();
-    void setDocumentScope(Document* document)
-    {
-        ASSERT(document);
-        m_documentScope = document;
-    }
+    void setDocumentScope(Document& document) { m_documentScope = &document; }
 
     bool hasGuardRefCount() const { return m_guardRefCount; }
 
@@ -148,8 +147,6 @@ protected:
     void setBaseURL(const KURL& baseURL) { m_baseURL = baseURL; }
 
 private:
-    TreeScope();
-
     virtual void dispose() { }
 
     int refCount() const;

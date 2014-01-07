@@ -456,8 +456,7 @@ public:
     // Returns the document associated with this node. A Document node returns itself.
     Document& document() const
     {
-        ASSERT(treeScope().documentScope());
-        return *treeScope().documentScope();
+        return treeScope().documentScope();
     }
 
     TreeScope& treeScope() const

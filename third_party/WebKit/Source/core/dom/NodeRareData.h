@@ -176,7 +176,7 @@ public:
         invalidateCaches();
     }
 
-    void adoptDocument(Document* oldDocument, Document* newDocument)
+    void adoptDocument(Document& oldDocument, Document& newDocument)
     {
         invalidateCaches();
 
@@ -184,23 +184,23 @@ public:
             NodeListAtomicNameCacheMap::const_iterator atomicNameCacheEnd = m_atomicNameCaches.end();
             for (NodeListAtomicNameCacheMap::const_iterator it = m_atomicNameCaches.begin(); it != atomicNameCacheEnd; ++it) {
                 LiveNodeListBase* list = it->value;
-                oldDocument->unregisterNodeList(list);
-                newDocument->registerNodeList(list);
+                oldDocument.unregisterNodeList(list);
+                newDocument.registerNodeList(list);
             }
 
             NodeListNameCacheMap::const_iterator nameCacheEnd = m_nameCaches.end();
             for (NodeListNameCacheMap::const_iterator it = m_nameCaches.begin(); it != nameCacheEnd; ++it) {
                 LiveNodeListBase* list = it->value;
-                oldDocument->unregisterNodeList(list);
-                newDocument->registerNodeList(list);
+                oldDocument.unregisterNodeList(list);
+                newDocument.registerNodeList(list);
             }
 
             TagNodeListCacheNS::const_iterator tagEnd = m_tagNodeListCacheNS.end();
             for (TagNodeListCacheNS::const_iterator it = m_tagNodeListCacheNS.begin(); it != tagEnd; ++it) {
                 LiveNodeListBase* list = it->value;
                 ASSERT(!list->isRootedAtDocument());
-                oldDocument->unregisterNodeList(list);
-                newDocument->registerNodeList(list);
+                oldDocument.unregisterNodeList(list);
+                newDocument.registerNodeList(list);
             }
         }
     }

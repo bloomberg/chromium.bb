@@ -547,7 +547,6 @@ Document::~Document()
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(m_nodeListCounts); i++)
         ASSERT(!m_nodeListCounts[i]);
 
-    clearDocumentScope();
     setClient(0);
 
     InspectorCounters::decrementCounter(InspectorCounters::DocumentCounter);
@@ -3500,14 +3499,14 @@ void Document::detachNodeIterator(NodeIterator* ni)
     m_nodeIterators.remove(ni);
 }
 
-void Document::moveNodeIteratorsToNewDocument(Node* node, Document* newDocument)
+void Document::moveNodeIteratorsToNewDocument(Node& node, Document& newDocument)
 {
     HashSet<NodeIterator*> nodeIteratorsList = m_nodeIterators;
     HashSet<NodeIterator*>::const_iterator nodeIteratorsEnd = nodeIteratorsList.end();
     for (HashSet<NodeIterator*>::const_iterator it = nodeIteratorsList.begin(); it != nodeIteratorsEnd; ++it) {
         if ((*it)->root() == node) {
             detachNodeIterator(*it);
-            newDocument->attachNodeIterator(*it);
+            newDocument.attachNodeIterator(*it);
         }
     }
 }

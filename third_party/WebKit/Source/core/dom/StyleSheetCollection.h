@@ -93,7 +93,8 @@ public:
 protected:
     explicit StyleSheetCollection(TreeScope&);
 
-    Document* document() { return m_treeScope.documentScope(); }
+    // FIXME: Should return a reference.
+    Document* document() { return &m_treeScope.documentScope(); }
 
     enum StyleResolverUpdateType {
         Reconstruct,

@@ -80,14 +80,6 @@ TreeScope::TreeScope(Document* document)
     m_rootNode->setTreeScope(this);
 }
 
-TreeScope::TreeScope()
-    : m_rootNode(0)
-    , m_documentScope(0)
-    , m_parentTreeScope(0)
-    , m_guardRefCount(0)
-{
-}
-
 TreeScope::~TreeScope()
 {
     ASSERT(!m_guardRefCount);
@@ -112,12 +104,6 @@ void TreeScope::destroyTreeScopeData()
     m_elementsById.clear();
     m_imageMapsByName.clear();
     m_labelsByForAttribute.clear();
-}
-
-void TreeScope::clearDocumentScope()
-{
-    ASSERT(rootNode()->isDocumentNode());
-    m_documentScope = 0;
 }
 
 void TreeScope::setParentTreeScope(TreeScope* newParentScope)
@@ -513,8 +499,7 @@ void TreeScope::setNeedsStyleRecalcForViewportUnits()
 
 KURL TreeScope::completeURL(const String& url) const
 {
-    ASSERT(documentScope());
-    return documentScope()->completeURLWithOverride(url, baseURL());
+    return documentScope().completeURLWithOverride(url, baseURL());
 }
 
 } // namespace WebCore
