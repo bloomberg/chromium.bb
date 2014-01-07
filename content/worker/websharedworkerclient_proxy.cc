@@ -86,22 +86,6 @@ WebSharedWorkerClientProxy::createWorkerPermissionClientProxy(
       ChildThread::current()->thread_safe_sender());
 }
 
-// TODO(kinuko): Deprecate these methods.
-bool WebSharedWorkerClientProxy::allowDatabase(WebFrame* frame,
-                                         const WebString& name,
-                                         const WebString& display_name,
-                                         unsigned long estimated_size) {
-  return false;
-}
-
-bool WebSharedWorkerClientProxy::allowFileSystem() {
-  return false;
-}
-
-bool WebSharedWorkerClientProxy::allowIndexedDB(const blink::WebString& name) {
-  return false;
-}
-
 void WebSharedWorkerClientProxy::dispatchDevToolsMessage(
     const WebString& message) {
   if (devtools_agent_)

@@ -44,14 +44,6 @@ class WebSharedWorkerClientProxy : public blink::WebSharedWorkerClient {
       createWorkerPermissionClientProxy(
           const blink::WebSecurityOrigin& origin);
 
-  // TODO(kinuko): Deprecate these methods.
-  virtual bool allowDatabase(blink::WebFrame* frame,
-                             const blink::WebString& name,
-                             const blink::WebString& display_name,
-                             unsigned long estimated_size);
-  virtual bool allowFileSystem();
-  virtual bool allowIndexedDB(const blink::WebString&);
-
   virtual void dispatchDevToolsMessage(const blink::WebString&);
   virtual void saveDevToolsAgentState(const blink::WebString&);
 
