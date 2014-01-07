@@ -74,6 +74,10 @@ class _BuilderRunBase(object):
       'buildroot',       # The build root path for this run.
       'manifest_branch', # The manifest branch to build and test for this run.
 
+      # Some attributes are available as properties.  In particular, attributes
+      # that use self.config must be determined after __init__.
+      # self.bot_id      # Effective name of builder for this run.
+
       # TODO(mtennant): Other candidates here include:
       # trybot, buildbot, remote_trybot, chrome_root, chrome_version,
       # test = (config build_tests AND option tests)
@@ -107,6 +111,11 @@ class _BuilderRunBase(object):
     # Certain run attributes have sensible defaults which can be set here.
     # This allows all code to safely assume that the run attribute exists.
     attrs.chrome_version = None
+
+  @property
+  def bot_id(self):
+    """Return the bot_id for this run."""
+    return self.config.GetBotId(remote_trybot=self.options.remote_trybot)
 
   @property
   def attrs(self):

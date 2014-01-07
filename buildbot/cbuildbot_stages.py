@@ -187,7 +187,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
       gs_base = constants.DEFAULT_ARCHIVE_BUCKET
     else:
       return config['gs_path']
-    subdir = cls.GetBotId(config['name'], remote_trybot)
+    subdir = config.GetBotId(remote_trybot=remote_trybot)
     return '%s/%s' % (gs_base, subdir)
 
   @classmethod

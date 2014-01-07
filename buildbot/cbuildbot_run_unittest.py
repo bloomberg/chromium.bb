@@ -12,6 +12,7 @@ import cPickle
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
+from chromite.buildbot import cbuildbot_config
 from chromite.buildbot import cbuildbot_run
 from chromite.lib import cros_test_lib
 
@@ -23,13 +24,20 @@ DEFAULT_BRANCH = 'TheBranch'
 DEFAULT_CHROME_BRANCH = 'TheChromeBranch'
 DEFAULT_VERSION_STRING = 'TheVersionString'
 DEFAULT_BOARD = 'TheBoard'
+DEFAULT_BOT_NAME = 'TheCoolBot'
 
-DEFAULT_OPTIONS = cros_test_lib.EasyAttr(buildroot=DEFAULT_BUILDROOT,
-                                         buildnumber=DEFAULT_BUILDNUMBER,
-                                         branch=DEFAULT_BRANCH,
-                                         postsync_patch=True,
-                                        )
-DEFAULT_CONFIG = cros_test_lib.EasyAttr(
+# Access to protected member.
+# pylint: disable=W0212
+
+DEFAULT_OPTIONS = cros_test_lib.EasyAttr(
+    buildroot=DEFAULT_BUILDROOT,
+    buildnumber=DEFAULT_BUILDNUMBER,
+    branch=DEFAULT_BRANCH,
+    remote_trybot=False,
+    postsync_patch=True,
+)
+DEFAULT_CONFIG = cbuildbot_config._config(
+    name=DEFAULT_BOT_NAME,
     master=True,
     boards=[DEFAULT_BOARD],
     postsync_patch=True,
@@ -79,7 +87,7 @@ def _ExtendDefaultConfig(**kwargs):
   """Extend DEFAULT_CONFIG with keys/values in kwargs."""
   config_kwargs = DEFAULT_CONFIG.copy()
   config_kwargs.update(kwargs)
-  return cros_test_lib.EasyAttr(**config_kwargs)
+  return cbuildbot_config._config(**config_kwargs)
 
 
 class BuilderRunPickleTest(cros_test_lib.TestCase):
@@ -147,7 +155,7 @@ class BuilderRunTest(cros_test_lib.TestCase):
     self.assertRaises(AttributeError, run.options.__getattr__, 'baz')
 
   def testConfig(self):
-    config = _ExtendDefaultOptions(foo=True, bar=10)
+    config = _ExtendDefaultConfig(foo=True, bar=10)
     run = _NewBuilderRun(config=config)
 
     self.assertEquals(True, run.config.foo)

@@ -46,20 +46,6 @@ class BuilderStage(object):
   config_name = None
 
   @classmethod
-  def GetBotId(cls, bot_name, remote_trybot):
-    """Get the 'bot id' of a particular bot.
-
-    The bot id is used to specify the subdirectory where artifacts are stored
-    in Google Storage. To avoid conflicts between remote trybots and regular
-    bots, we add a 'trybot-' prefix to any remote trybot runs.
-
-    Args:
-      bot_name: The name of the bot.
-      remote_trybot: Whether this run is a remote trybot run.
-    """
-    return 'trybot-%s' % bot_name if remote_trybot else bot_name
-
-  @classmethod
   def StageNamePrefix(cls):
     """Return cls.__name__ with any 'Stage' suffix removed."""
     match = cls.name_stage_re.match(cls.__name__)
@@ -91,9 +77,8 @@ class BuilderStage(object):
     if suffix:
       self.name += suffix
 
-    # See GetBotId for details.
-    self._bot_id = self.GetBotId(self._run.config.name,
-                                 self._run.options.remote_trybot)
+    # TODO(mtennant): Phase this out and use self._run.bot_id directly.
+    self._bot_id = self._run.bot_id
 
     # self._boards holds list of boards involved in this run.
     # TODO(mtennant): Replace self._boards with a self._run.boards?
