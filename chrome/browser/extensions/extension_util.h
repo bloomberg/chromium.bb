@@ -59,6 +59,10 @@ bool IsAppLaunchableWithoutEnabling(const std::string& extension_id,
 bool IsExtensionIdle(const std::string& extension_id,
                      extensions::ExtensionSystem* extension_system);
 
+// Whether an extension is installed permanently and not ephemerally.
+bool IsExtensionInstalledPermanently(const std::string& extension_id,
+                                     const ExtensionService* service);
+
 }  // namespace extension_util
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_UTIL_H_

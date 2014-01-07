@@ -13,6 +13,7 @@
 #include "chrome/browser/apps/ephemeral_app_launcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -125,12 +126,9 @@ scoped_ptr<ChromeSearchResult> WebstoreResult::Duplicate() {
 void WebstoreResult::UpdateActions() {
   Actions actions;
 
-  const extensions::Extension* extension =
-      extensions::ExtensionSystem::Get(profile_)->extension_service()->
-          GetInstalledExtension(app_id_);
-
   const bool is_otr = profile_->IsOffTheRecord();
-  const bool is_installed = extension && !extension->is_ephemeral();
+  const bool is_installed = extension_util::IsExtensionInstalledPermanently(
+      app_id_, extensions::ExtensionSystem::Get(profile_)->extension_service());
 
   if (!is_otr && !is_installed && !is_installing()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(

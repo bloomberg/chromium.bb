@@ -159,4 +159,11 @@ bool IsExtensionIdle(const std::string& extension_id,
   return process_manager->GetRenderViewHostsForExtension(extension_id).empty();
 }
 
+bool IsExtensionInstalledPermanently(const std::string& extension_id,
+                                     const ExtensionService* service) {
+  DCHECK(service);
+  const Extension* extension = service->GetInstalledExtension(extension_id);
+  return extension && !extension->is_ephemeral();
+}
+
 }  // namespace extension_util

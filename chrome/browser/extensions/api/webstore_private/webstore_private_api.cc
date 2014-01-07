@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/gpu/gpu_feature_checker.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -299,9 +300,10 @@ bool WebstorePrivateBeginInstallWithManifest3Function::RunImpl() {
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(GetProfile())->extension_service();
-  if (service->GetInstalledExtension(params_->details.id) ||
-      !g_pending_installs.Get().InsertInstall(GetProfile(),
-                                              params_->details.id)) {
+  if (extension_util::IsExtensionInstalledPermanently(params_->details.id,
+                                                      service)
+      || !g_pending_installs.Get().InsertInstall(GetProfile(),
+                                                 params_->details.id)) {
     SetResultCode(ALREADY_INSTALLED);
     error_ = kAlreadyInstalledError;
     return false;
@@ -578,7 +580,7 @@ void WebstorePrivateCompleteInstallFunction::OnExtensionInstallSuccess(
   if (test_webstore_installer_delegate)
     test_webstore_installer_delegate->OnExtensionInstallSuccess(id);
 
-  LOG(INFO) << "Install success, sending response";
+  VLOG(1) << "Install success, sending response";
   g_pending_installs.Get().EraseInstall(GetProfile(), id);
   SendResponse(true);
 
@@ -598,7 +600,7 @@ void WebstorePrivateCompleteInstallFunction::OnExtensionInstallFailure(
   }
 
   error_ = error;
-  LOG(INFO) << "Install failed, sending response";
+  VLOG(1) << "Install failed, sending response";
   g_pending_installs.Get().EraseInstall(GetProfile(), id);
   SendResponse(false);
 
