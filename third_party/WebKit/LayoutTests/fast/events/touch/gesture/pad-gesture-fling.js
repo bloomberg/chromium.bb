@@ -4,9 +4,14 @@ var actualWheelEventsOccurred = 0;
 var cumulativeScrollX = 0;
 var cumulativeScrollY = 0;
 
-var minimumWheelEventsExpected = "40";
+var minimumWheelEventsExpected = 40;
 var minimumScrollXExpected = "200";
 var minimumScrollYExpected = "200";
+
+var positionX = 10;
+var positionY = 11;
+var velocityX = 10000;
+var velocityY = 10000;
 
 function recordWheelEvent(event)
 {
@@ -19,28 +24,23 @@ function recordWheelEvent(event)
     actualWheelEventsOccurred++;
     cumulativeScrollX += event.wheelDeltaX;
     cumulativeScrollY += event.wheelDeltaY;
+
+    if (actualWheelEventsOccurred == minimumWheelEventsExpected) {
+      shouldBeGreaterThanOrEqual('cumulativeScrollX', minimumScrollXExpected);
+      shouldBeGreaterThanOrEqual('cumulativeScrollY', minimumScrollYExpected);
+
+      isSuccessfullyParsed();
+      if (window.testRunner)
+          testRunner.notifyDone();
+    }
 }
 
 document.addEventListener("mousewheel", recordWheelEvent);
 
 if (window.testRunner && window.eventSender && window.eventSender.gestureFlingStart) {
-    eventSender.gestureFlingStart(10, 11, 10000, 10000);
-    testRunner.display();
-    testRunner.display();
-    testRunner.display();
+    eventSender.gestureFlingStart(positionX, positionY, velocityX, velocityY);
 }
-
-setTimeout(function() {
-    shouldBeGreaterThanOrEqual('actualWheelEventsOccurred', minimumWheelEventsExpected);
-    shouldBeGreaterThanOrEqual('cumulativeScrollX', minimumScrollXExpected);
-    shouldBeGreaterThanOrEqual('cumulativeScrollY', minimumScrollYExpected);
-}, 100);
 
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-setTimeout(function() {
-    isSuccessfullyParsed();
-    if (window.testRunner)
-        testRunner.notifyDone();
-}, 200);
