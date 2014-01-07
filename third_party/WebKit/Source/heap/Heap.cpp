@@ -312,12 +312,6 @@ HeapObjectHeader* HeapObjectHeader::fromPayload(const void* payload)
 void HeapObjectHeader::finalize(const GCInfo* gcInfo, Address object, size_t objectSize)
 {
     ASSERT(gcInfo);
-#if TRACE_GC_FINALIZATION
-    const char* className = 0;
-    if (gcInfo->m_classOf)
-        className = gcInfo->m_classOf(object);
-    printf("%11s %30s <: %s\n", gcInfo->hasFinalizer() ? "Finalizer" : "NoFinalizer", className ? className : "?", gcInfo->m_typeMarker);
-#endif
     if (gcInfo->hasFinalizer()) {
         gcInfo->m_finalize(object);
     }
@@ -351,9 +345,6 @@ template<typename Header>
 bool LargeHeapObject<Header>::checkAndMarkPointer(Visitor* visitor, Address address)
 {
     if (contains(address)) {
-#if defined(TRACE_GC_MARKING) && TRACE_GC_MARKING
-        visitor->setHostInfo(&address, "stack");
-#endif
         mark(visitor);
         return true;
     }
@@ -906,9 +897,6 @@ bool HeapPage<Header>::checkAndMarkPointer(Visitor* visitor, Address addr)
     if (header->isFree())
         return false;
 
-#if defined(TRACE_GC_MARKING) && TRACE_GC_MARKING
-    visitor->setHostInfo(&addr, "stack");
-#endif
     visitor->mark(header, traceCallback(header));
     return true;
 }
@@ -1008,21 +996,177 @@ void HeapContainsCache::addEntry(Address address, BaseHeapPage* page)
     m_entries[index] = Entry(cachePage, page);
 }
 
+void CallbackStack::init(CallbackStack** first)
+{
+    // The stacks are chained, so we start by setting this to null as terminator.
+    *first = 0;
+    *first = new CallbackStack(first);
+}
+
+void CallbackStack::shutdown(CallbackStack** first)
+{
+    CallbackStack* next;
+    for (CallbackStack* current = *first; current; current = next) {
+        next = current->m_next;
+        delete current;
+    }
+    *first = 0;
+}
+
+CallbackStack::~CallbackStack()
+{
+#ifndef NDEBUG
+    clearUnused();
+#endif
+}
+
+void CallbackStack::clearUnused()
+{
+    ASSERT(m_current == &(m_buffer[0]));
+    for (int i = 0; i < bufferSize; i++)
+        m_buffer[i] = Item(0, 0);
+}
+
+void CallbackStack::assertIsEmpty()
+{
+    ASSERT(m_current == &(m_buffer[0]));
+    ASSERT(!m_next);
+}
+
+bool CallbackStack::popAndInvokeCallback(CallbackStack** first, Visitor* visitor, CallbackTrampoline trampoline)
+{
+    if (m_current == &(m_buffer[0])) {
+        if (!m_next) {
+#ifndef NDEBUG
+            clearUnused();
+#endif
+            return false;
+        }
+        CallbackStack* nextStack = m_next;
+        *first = nextStack;
+        delete this;
+        return nextStack->popAndInvokeCallback(first, visitor, trampoline);
+    }
+    Item* item = --m_current;
+    trampoline(item->callback(), visitor, item->object());
+
+    return true;
+}
+
+class MarkingVisitor : public Visitor {
+public:
+    inline void visitHeader(HeapObjectHeader* header, const void* objectPointer, TraceCallback callback)
+    {
+        ASSERT(header);
+        ASSERT(objectPointer);
+        if (header->isMarked())
+            return;
+        header->mark();
+        if (callback)
+            Heap::pushTraceCallback(const_cast<void*>(objectPointer), callback);
+    }
+
+    virtual void mark(HeapObjectHeader* header, TraceCallback callback)
+    {
+        // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
+        // version to correctly find the payload.
+        visitHeader(header, header->payload(), callback);
+    }
+
+    virtual void mark(FinalizedHeapObjectHeader* header, TraceCallback callback)
+    {
+        // We need both the HeapObjectHeader and FinalizedHeapObjectHeader
+        // version to correctly find the payload.
+        visitHeader(header, header->payload(), callback);
+    }
+
+    virtual void mark(const void* objectPointer, TraceCallback callback)
+    {
+        if (!objectPointer)
+            return;
+        FinalizedHeapObjectHeader* header = FinalizedHeapObjectHeader::fromPayload(objectPointer);
+        visitHeader(header, header->payload(), callback);
+    }
+};
+
 void Heap::init(intptr_t* startOfStack)
 {
     ThreadState::init(startOfStack);
+    CallbackStack::init(&s_markingStack);
 }
 
 void Heap::shutdown()
 {
     ThreadState::shutdown();
+    CallbackStack::shutdown(&s_markingStack);
+}
+
+bool Heap::contains(Address address)
+{
+    // FIXME: It's unsafe to iterate threads outside of GC. Enable the ASSERT.
+    // ASSERT(ThreadState::isAnyThreadInGC());
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+        if ((*it)->contains(address))
+            return true;
+    }
+    return false;
+}
+
+static void markingTrampoline(VisitorCallback callback, Visitor* visitor, void* object)
+{
+    callback(visitor, object);
+}
+
+bool Heap::popAndInvokeTraceCallback(Visitor* visitor)
+{
+    return s_markingStack->popAndInvokeCallback(&s_markingStack, visitor, markingTrampoline);
+}
+
+void Heap::prepareForGC()
+{
+    // FIXME: It's unsafe to iterate threads outside of GC. Enable the ASSERT.
+    // ASSERT(ThreadState::isAnyThreadInGC());
+    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+    for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
+        (*it)->prepareForGC();
+}
+
+void Heap::collectGarbage(ThreadState::StackState stackState, GCType gcType)
+{
+    ThreadState::current()->clearGCRequested();
+    // FIXME: Move GCScope to trunk.
+    // GCScope gcScope(stackState);
+
+    // FIXME: Move NoAllocation to trunk.
+    // NoAllocation<AnyThread> noAllocationScope;
+    prepareForGC();
+    MarkingVisitor marker;
+
+    ThreadState::visitRoots(&marker);
+    // Recursively mark all objects that are reachable from the roots.
+    while (popAndInvokeTraceCallback(&marker)) { }
+
+    // Call weak callbacks on objects that may now be pointing to dead
+    // objects.
+    while (popAndInvokeWeakPointerCallback(&marker)) { }
+
+    // It is not permitted to trace pointers of live objects in the weak
+    // callback phase, so the marking stack should still be empty here.
+    s_markingStack->assertIsEmpty();
+}
+
+void Heap::pushTraceCallback(void* object, TraceCallback callback)
+{
+    ASSERT(Heap::contains(object));
+    CallbackStack::Item* slot = s_markingStack->allocateEntry(&s_markingStack);
+    *slot = CallbackStack::Item(object, callback);
 }
 
 void Heap::getStats(HeapStats* stats)
 {
     stats->clear();
-    // FIXME: It's unsafe to iterate threads outside of GC. Enable the
-    // ASSERT.
+    // FIXME: It's unsafe to iterate threads outside of GC. Enable the ASSERT.
     // ASSERT(ThreadState::isAnyThreadInGC());
     ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
     typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
@@ -1039,4 +1183,5 @@ template class HeapPage<HeapObjectHeader>;
 template class ThreadHeap<FinalizedHeapObjectHeader>;
 template class ThreadHeap<HeapObjectHeader>;
 
+CallbackStack* Heap::s_markingStack;
 }

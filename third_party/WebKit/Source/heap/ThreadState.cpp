@@ -31,6 +31,7 @@
 #include "config.h"
 #include "heap/ThreadState.h"
 
+#include "heap/Handle.h"
 #include "heap/Heap.h"
 #include "wtf/ThreadingPrimitives.h"
 
@@ -56,11 +57,15 @@ ThreadState::ThreadState(intptr_t* startOfStack)
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
 
+    m_persistents = new PersistentAnchor();
+
     // First allocate the general heap, second iterate through to
     // allocate the type specific heaps
     m_heaps[GeneralHeap] = new ThreadHeap<FinalizedHeapObjectHeader>(this);
     for (int i = GeneralHeap + 1; i < NumberOfHeaps; i++)
         m_heaps[i] = new ThreadHeap<HeapObjectHeader>(this);
+    clearGCRequested();
+    clearSweepRequested();
 
     // FIXME: This is to silence clang that complains about unused private
     // member. Remove once we implement stack scanning that uses it.
@@ -100,6 +105,25 @@ void ThreadState::detach()
     MutexLocker locker(threadAttachMutex());
     attachedThreads().remove(state);
     delete state;
+}
+
+void ThreadState::visitRoots(Visitor* visitor)
+{
+    AttachedThreadStateSet& threads = attachedThreads();
+    for (AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it)
+        (*it)->trace(visitor);
+}
+
+void ThreadState::visitPersistents(Visitor* visitor)
+{
+    for (PersistentNode* current = m_persistents->m_next; current != m_persistents; current = current->m_next) {
+        current->trace(visitor);
+    }
+}
+
+void ThreadState::trace(Visitor* visitor)
+{
+    visitPersistents(visitor);
 }
 
 // Trigger garbage collection on a 50% increase in size, but not for
@@ -161,6 +185,41 @@ bool ThreadState::isConsistentForGC()
             return false;
     }
     return true;
+}
+
+void ThreadState::prepareForGC()
+{
+    for (int i = 0; i < NumberOfHeaps; i++) {
+        BaseHeap* heap = m_heaps[i];
+        heap->makeConsistentForGC();
+        // If there are parked threads with outstanding sweep requests, clear their mark bits.
+        // This happens if a thread did not have time to wake up and sweep,
+        // before the next GC arrived.
+        if (sweepRequested())
+            heap->clearMarks();
+    }
+    setSweepRequested();
+}
+
+bool ThreadState::sweepRequested()
+{
+    checkThread();
+    return m_sweepRequested;
+}
+
+void ThreadState::setSweepRequested()
+{
+    // Sweep requested is set from the thread that initiates garbage
+    // collection which could be different from the thread for this
+    // thread state. Therefore the setting of m_sweepRequested needs a
+    // barrier.
+    atomicTestAndSetToOne(&m_sweepRequested);
+}
+
+void ThreadState::clearSweepRequested()
+{
+    checkThread();
+    m_sweepRequested = 0;
 }
 
 BaseHeapPage* ThreadState::heapPageFromAddress(Address address)

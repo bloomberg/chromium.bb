@@ -359,16 +359,6 @@ public:
 
     static FinalizedHeapObjectHeader* fromPayload(const void*);
 
-#if TRACE_GC_USING_CLASSOF
-    const char* classOf()
-    {
-        const char* className = 0;
-        if (m_gcInfo->m_classOf)
-            className = m_gcInfo->m_classOf(payload());
-        return className ? className : typeMarker();
-    }
-#endif
-
 private:
     const GCInfo* m_gcInfo;
 };
@@ -564,6 +554,68 @@ private:
     friend class ThreadState;
 };
 
+typedef void (*CallbackTrampoline)(VisitorCallback, Visitor*, void*);
+
+// The CallbackStack contains all the visitor callbacks used to trace and mark
+// objects. A specific CallbackStack instance contains at most bufferSize elements.
+// If more space is needed a new CallbackStack instance is created and chained
+// together with the former instance. I.e. a logical CallbackStack can be made of
+// multiple chained CallbackStack object instances.
+// There are two logical callback stacks. One containing all the marking callbacks and
+// one containing the weak pointer callbacks.
+class CallbackStack {
+public:
+    CallbackStack(CallbackStack** first)
+        : m_limit(&(m_buffer[bufferSize]))
+        , m_current(&(m_buffer[0]))
+        , m_next(*first)
+    {
+#ifndef NDEBUG
+        clearUnused();
+#endif
+        *first = this;
+    }
+
+    ~CallbackStack();
+    void clearUnused();
+
+    void assertIsEmpty();
+
+    class Item {
+    public:
+        Item() { }
+        Item(void* object, VisitorCallback callback)
+            : m_object(object)
+            , m_callback(callback)
+        {
+        }
+        void* object() { return m_object; }
+        VisitorCallback callback() { return m_callback; }
+
+    private:
+        void* m_object;
+        VisitorCallback m_callback;
+    };
+
+    static void init(CallbackStack** first);
+    static void shutdown(CallbackStack** first);
+    bool popAndInvokeCallback(CallbackStack** first, Visitor*, CallbackTrampoline);
+
+    Item* allocateEntry(CallbackStack** first)
+    {
+        if (m_current < m_limit)
+            return m_current++;
+        return (new CallbackStack(first))->allocateEntry(first);
+    }
+
+private:
+    static const int bufferSize = 8000;
+    Item m_buffer[bufferSize];
+    Item* m_limit;
+    Item* m_current;
+    CallbackStack* m_next;
+};
+
 // Non-template super class used to pass a heap around to other classes.
 class BaseHeap {
 public:
@@ -733,19 +785,38 @@ public:
     static void init(intptr_t* startOfStack);
     static void shutdown();
 
+    static bool contains(Address);
+    static bool contains(void* pointer) { return contains(reinterpret_cast<Address>(pointer)); }
+    static bool contains(const void* pointer) { return contains(const_cast<void*>(pointer)); }
+
+    // Push a trace callback on the marking stack.
+    static void pushTraceCallback(void* containerObject, TraceCallback);
+
+    // Pop the top of the marking stack and call the callback with the visitor
+    // and the object. Returns false when there is nothing more to do.
+    static bool popAndInvokeTraceCallback(Visitor*);
+
+    // Pop the top of the weak callback stack and call the callback with the visitor
+    // and the object. Returns false when there is nothing more to do.
+    static bool popAndInvokeWeakPointerCallback(Visitor*)
+    {
+        // FIXME: Change when moving weak pointers to trunk.
+        return false;
+    }
+
     template<typename T> static Address allocate(size_t);
     template<typename T> static Address reallocate(void* previous, size_t);
 
-    static void collectGarbage(ThreadState::StackState, GCType = Normal)
-    {
-        // FIXME: Implement.
-        ASSERT_NOT_REACHED();
-    }
+    static void collectGarbage(ThreadState::StackState, GCType = Normal);
+
+    static void prepareForGC();
 
     // Collect heap stats for all threads attached to the Blink
     // garbage collector. Should only be called during garbage
     // collection where threads are known to be at safe points.
     static void getStats(HeapStats*);
+
+    static CallbackStack* s_markingStack;
 };
 
 // Base class for objects allocated in the Blink garbage-collected

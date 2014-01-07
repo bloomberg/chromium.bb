@@ -31,22 +31,15 @@
 #ifndef Visitor_h
 #define Visitor_h
 
+#include "heap/HeapExport.h"
 #include "wtf/Assertions.h"
-
-#define TRACE_GC_MARKING 0
-#define TRACE_GC_FINALIZATION 0
-
-#if TRACE_GC_MARKING || TRACE_GC_FINALIZATION
-#define TRACE_GC_USING_CLASSOF 1
-#else
-#define TRACE_GC_USING_CLASSOF 0
-#endif
 
 namespace WebCore {
 
 class FinalizedHeapObjectHeader;
 template<typename T> class GarbageCollectedFinalized;
 class HeapObjectHeader;
+template<typename T> class Member;
 class Visitor;
 
 typedef void (*FinalizationCallback)(void*);
@@ -54,9 +47,15 @@ typedef void (*VisitorCallback)(Visitor*, void* self);
 typedef VisitorCallback TraceCallback;
 typedef VisitorCallback WeakPointerCallback;
 
-#if TRACE_GC_USING_CLASSOF
-typedef const char* (*ClassOfCallback)(void*);
-#endif
+// The TraceMethodDelegate is used to convert a trace method for type T to a TraceCallback.
+// This allows us to pass a type's trace method as a parameter to the PersistentNode
+// constructor. The PersistentNode constructor needs the specific trace method due an issue
+// with the Windows compiler which instantiates even unused variables. This causes problems
+// in header files where we have only forward declarations of classes.
+template<typename T, void (T::*method)(Visitor*)>
+struct TraceMethodDelegate {
+    static void trampoline(Visitor* visitor, void* self) { (reinterpret_cast<T*>(self)->*method)(visitor); }
+};
 
 // GCInfo contains meta-data associated with objects allocated in the
 // Blink heap. This meta-data consists of a function pointer used to
@@ -72,56 +71,7 @@ struct GCInfo {
     TraceCallback m_trace;
     FinalizationCallback m_finalize;
     bool m_nonTrivialFinalizer;
-#if TRACE_GC_USING_CLASSOF
-    ClassOfCallback m_classOf;
-#endif
 };
-
-#if TRACE_GC_USING_CLASSOF
-// Template struct to detect whether type T has a className member.
-template<typename T>
-struct HasClassName {
-    typedef char TrueType;
-    struct FalseType {
-        char dummy[2];
-    };
-
-    template <size_t> struct F;
-
-    template <typename U> static TrueType has(F<sizeof(&U::className)>*);
-    template <typename U> static FalseType has(...);
-
-    static bool const value = sizeof(has<T>(0)) == sizeof(TrueType);
-};
-
-
-// Trait to define a classOf method to extract a class name string
-// from an object of a given type. By default, it uses the className
-// method if it exists and return 0 otherwise. The trait can be
-// specialized to provide class names for types that do not provide
-// the className method. This is only used for debugging purposes.
-template<typename T, bool hasClassOf> struct ClassOfTraitImpl;
-
-template<typename T> struct ClassOfTraitImpl<T, false> {
-    static const char* classOf(T*) { return 0; };
-};
-
-template<typename T> struct ClassOfTraitImpl<T, true> {
-    static const char* classOf(T* obj) { return obj->className(); };
-};
-
-template<typename T>
-struct ClassOfTrait {
-    static const char* classOf(void* obj)
-    {
-        return ClassOfTraitImpl<T, HasClassName<T>::value>::classOf(reinterpret_cast<T*>(obj));
-    }
-};
-#  define CLASSOF_FUNC(Type) ClassOfTrait<Type>::classOf
-#else
-#  define CLASSOF_FUNC(Type)
-#endif
-
 
 // Template struct to detect whether type T inherits from
 // GarbageCollectedFinalized.
@@ -180,7 +130,6 @@ const GCInfo Type::s_gcInfo = {                                               \
     TraceTrait<Type>::trace,                                                  \
     FinalizerTrait<Type>::finalize,                                           \
     FinalizerTrait<Type>::nonTrivialFinalizer,                                \
-    CLASSOF_FUNC(Type)                                                        \
 };                                                                            \
 
 // Trait to get the GCInfo structure for types that have their
@@ -238,13 +187,28 @@ template<typename T> class TraceTrait<const T> : public TraceTrait<T> { };
 // Pointers within objects are traced by calling the |trace| methods
 // with the object as an argument. Tracing objects will mark all of the
 // contained pointers and push them on the marking stack.
-class Visitor {
+class HEAP_EXPORT Visitor {
 public:
+    // One-argument templated mark method. This uses the static type of
+    // the argument to get the TraceTrait. By default, the mark method
+    // of the TraceTrait just calls the virtual two-argument mark method on this
+    // visitor, where the second argument is the static trace method of the trait.
     template<typename T>
     void mark(T* t)
     {
-        // FIXME: Implement.
-        ASSERT_NOT_REACHED();
+        if (!t)
+            return;
+#ifndef NDEBUG
+        TraceTrait<T>::checkTypeMarker(this, t);
+#endif
+        TraceTrait<T>::mark(this, t);
+    }
+
+    // Member version of the one-argument templated trace method.
+    template<typename T>
+    void trace(const Member<T>& t)
+    {
+        mark(t.raw());
     }
 
     // This method marks an object and adds it to the set of objects
@@ -258,7 +222,28 @@ public:
     // Used to mark objects during conservative scanning.
     virtual void mark(HeapObjectHeader*, TraceCallback) = 0;
     virtual void mark(FinalizedHeapObjectHeader*, TraceCallback) = 0;
+
+#ifndef NDEBUG
+    void checkTypeMarker(const void*, const char* marker);
+#endif
 };
+
+
+#ifndef NDEBUG
+template<typename T> void TraceTrait<T>::checkTypeMarker(Visitor* visitor, const T* t)
+{
+    visitor->checkTypeMarker(const_cast<T*>(t), getTypeMarker<T>());
+}
+#endif
+
+template<typename T> void TraceTrait<T>::mark(Visitor* visitor, const T* t)
+{
+    // Default mark method of the trait just calls the two-argument mark
+    // method on the visitor. The second argument is the static trace method
+    // of the trait, which by default calls the instance method
+    // trace(Visitor*) on the object.
+    visitor->mark(const_cast<T*>(t), &trace);
+}
 
 }
 

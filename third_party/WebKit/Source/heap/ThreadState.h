@@ -43,6 +43,8 @@ class BaseHeapPage;
 class FinalizedHeapObjectHeader;
 class HeapContainsCache;
 class HeapObjectHeader;
+class PersistentNode;
+class Visitor;
 template<typename Header> class ThreadHeap;
 
 typedef uint8_t* Address;
@@ -180,6 +182,9 @@ public:
     static void init(intptr_t* startOfStack);
     static void shutdown();
 
+    // Trace all GC roots, called when marking the managed heap objects.
+    static void visitRoots(Visitor*);
+
     // Associate ThreadState object with the current thread. After this
     // call thread can start using the garbage collected heap infrastructure.
     // It also has to periodically check for safepoints.
@@ -228,6 +233,12 @@ public:
     // made consistent for garbage collection.
     bool isConsistentForGC();
 
+    void prepareForGC();
+
+    bool sweepRequested();
+    void setSweepRequested();
+    void clearSweepRequested();
+
     bool isAtSafePoint() const { return m_atSafePoint; }
 
     // Get one of the heap structures for this thread.
@@ -249,6 +260,12 @@ public:
     // not contained in any of the pages.
     BaseHeapPage* heapPageFromAddress(Address);
 
+    // List of persistent roots allocated on the given thread.
+    PersistentNode* roots() const { return m_persistents; }
+
+    // Visit all persistents allocated on this thread.
+    void visitPersistents(Visitor*);
+
     void getStats(HeapStats&);
     HeapStats& stats() { return m_stats; }
     HeapStats& statsAfterLastGC() { return m_statsAfterLastGC; }
@@ -268,10 +285,14 @@ private:
     // and lazily construct ThreadState in it using placement new.
     static uint8_t s_mainThreadStateStorage[];
 
+    void trace(Visitor*);
+
     ThreadIdentifier m_thread;
+    PersistentNode* m_persistents;
     intptr_t* m_startOfStack;
     bool m_gcRequested;
     size_t m_noAllocationCount;
+    volatile int m_sweepRequested;
     bool m_atSafePoint;
     BaseHeap* m_heaps[NumberOfHeaps];
     HeapContainsCache* m_heapContainsCache;

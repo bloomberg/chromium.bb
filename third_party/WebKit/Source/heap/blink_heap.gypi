@@ -31,11 +31,14 @@
 {
   'variables': {
     'heap_files': [
+      'Handle.h',
       'Heap.cpp',
       'Heap.h',
       'HeapExport.h',
       'ThreadState.cpp',
       'ThreadState.h',
+      'Visitor.cpp',
+      'Visitor.h',
     ],
     'heap_test_files': [
       'HeapTest.cpp',

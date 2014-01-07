@@ -30,7 +30,9 @@
 
 #include "config.h"
 
+#include "heap/Handle.h"
 #include "heap/Heap.h"
+#include "heap/ThreadState.h"
 
 #include <gtest/gtest.h>
 
@@ -92,6 +94,73 @@ TEST(HeapTest, SimpleAllocation)
     EXPECT_EQ(42, a->at(42));
     EXPECT_EQ(0, a->at(128));
     EXPECT_EQ(999 % 128, a->at(999));
+
+    Heap::shutdown();
+}
+
+class TraceCounter : public GarbageCollectedFinalized<TraceCounter> {
+    DECLARE_GC_INFO
+public:
+    static TraceCounter* create()
+    {
+        return new TraceCounter();
+    }
+
+    void trace(Visitor*) { m_traceCount++; }
+
+    int traceCount() { return m_traceCount; }
+
+private:
+    TraceCounter()
+        : m_traceCount(0)
+    {
+    }
+
+    int m_traceCount;
+};
+
+DEFINE_GC_INFO(TraceCounter);
+
+class ClassWithMember : public GarbageCollected<ClassWithMember> {
+    DECLARE_GC_INFO
+public:
+    static ClassWithMember* create()
+    {
+        return new ClassWithMember();
+    }
+
+    void trace(Visitor* visitor) { visitor->trace(m_traceCounter); }
+
+    int traceCount() { return m_traceCounter->traceCount(); }
+
+private:
+    ClassWithMember()
+        : m_traceCounter(TraceCounter::create())
+    { }
+
+    Member<TraceCounter> m_traceCounter;
+};
+
+DEFINE_GC_INFO(ClassWithMember);
+
+TEST(HeapTest, SimplePersistent)
+{
+    // FIXME: init and shutdown should be called via Blink
+    // initialization in the test runner.
+    Heap::init(0);
+
+    Persistent<TraceCounter> traceCounter = TraceCounter::create();
+    EXPECT_EQ(0, traceCounter->traceCount());
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1, traceCounter->traceCount());
+
+    Persistent<ClassWithMember> classWithMember = ClassWithMember::create();
+    EXPECT_EQ(0, classWithMember->traceCount());
+
+    Heap::collectGarbage(ThreadState::NoHeapPointersOnStack);
+    EXPECT_EQ(1, classWithMember->traceCount());
+    EXPECT_EQ(2, traceCounter->traceCount());
 
     Heap::shutdown();
 }
