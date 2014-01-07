@@ -25,8 +25,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 
-// TODO(dconnelly): change VLOG to DVLOG (crbug.com/240195)
-
 namespace {
 
 const int kHistoryEntriesBeforeNewProfilePrompt = 10;
@@ -43,8 +41,8 @@ class HasTypedURLsTask : public history::HistoryDBTask {
     history::URLRows rows;
     backend->GetAllTypedURLs(&rows);
     if (!rows.empty()) {
-      VLOG(1) << "ProfileSigninConfirmationHelper: profile contains "
-              << rows.size() << " typed URLs";
+      DVLOG(1) << "ProfileSigninConfirmationHelper: profile contains "
+               << rows.size() << " typed URLs";
       has_typed_urls_ = true;
     }
     return true;
@@ -64,7 +62,7 @@ bool HasBookmarks(Profile* profile) {
   BookmarkModel* bookmarks = BookmarkModelFactory::GetForProfile(profile);
   bool has_bookmarks = bookmarks && bookmarks->HasBookmarks();
   if (has_bookmarks)
-    VLOG(1) << "ProfileSigninConfirmationHelper: profile contains bookmarks";
+    DVLOG(1) << "ProfileSigninConfirmationHelper: profile contains bookmarks";
   return has_bookmarks;
 }
 
@@ -127,8 +125,8 @@ void ProfileSigninConfirmationHelper::OnHistoryQueryResults(
   results->Swap(&owned_results);
   bool too_much_history = owned_results.size() >= max_entries;
   if (too_much_history) {
-    VLOG(1) << "ProfileSigninConfirmationHelper: profile contains "
-            << owned_results.size() << " history entries";
+    DVLOG(1) << "ProfileSigninConfirmationHelper: profile contains "
+             << owned_results.size() << " history entries";
   }
   ReturnResult(too_much_history);
 }
@@ -192,7 +190,7 @@ SkColor GetSigninConfirmationPromptBarColor(SkAlpha alpha) {
 bool HasBeenShutdown(Profile* profile) {
   bool has_been_shutdown = !profile->IsNewProfile();
   if (has_been_shutdown)
-    VLOG(1) << "ProfileSigninConfirmationHelper: profile is not new";
+    DVLOG(1) << "ProfileSigninConfirmationHelper: profile is not new";
   return has_been_shutdown;
 }
 
@@ -210,8 +208,8 @@ bool HasSyncedExtensions(Profile* profile) {
       if (extensions::sync_helper::IsSyncable(iter->get()) &&
           (*iter)->id() != extension_misc::kWebStoreAppId &&
           (*iter)->id() != extension_misc::kChromeAppId) {
-        VLOG(1) << "ProfileSigninConfirmationHelper: "
-                << "profile contains a synced extension: " << (*iter)->id();
+        DVLOG(1) << "ProfileSigninConfirmationHelper: "
+                 << "profile contains a synced extension: " << (*iter)->id();
         return true;
       }
     }
