@@ -52,6 +52,22 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>xhtml</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>document.icns</string>
+			<key>CFBundleTypeMIMETypes</key>
+			<array>
+				<string>text/xhtml</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>XHTML document</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
 				<string>js</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
