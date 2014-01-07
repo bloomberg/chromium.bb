@@ -29,7 +29,6 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/signin_header_helper.h"
@@ -247,12 +246,9 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     int child_id,
     int route_id,
     ScopedVector<content::ResourceThrottle>* throttles) {
-  ChromeURLRequestUserData* user_data =
-      ChromeURLRequestUserData::Create(request);
   bool is_prerendering = prerender_tracker_->IsPrerenderingOnIOThread(
       child_id, route_id);
   if (is_prerendering) {
-    user_data->set_is_prerender(true);
     // Requests with the IGNORE_LIMITS flag set (i.e., sync XHRs)
     // should remain at MAXIMUM_PRIORITY.
     if (request->load_flags() & net::LOAD_IGNORE_LIMITS) {

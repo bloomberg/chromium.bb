@@ -1765,8 +1765,6 @@
         'browser/renderer_host/chrome_render_widget_host_view_mac_history_swiper.mm',
         'browser/renderer_host/chrome_resource_dispatcher_host_delegate.cc',
         'browser/renderer_host/chrome_resource_dispatcher_host_delegate.h',
-        'browser/renderer_host/chrome_url_request_user_data.cc',
-        'browser/renderer_host/chrome_url_request_user_data.h',
         'browser/renderer_host/offline_resource_throttle.cc',
         'browser/renderer_host/offline_resource_throttle.h',
         'browser/renderer_host/pepper/chrome_browser_pepper_host_factory.cc',

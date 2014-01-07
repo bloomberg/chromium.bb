@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_contents.h"
-#include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
