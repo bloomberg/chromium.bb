@@ -53,14 +53,16 @@ DriveAppInfo::DriveAppInfo(
     const std::string& web_store_id,
     const std::string& app_name,
     const std::string& object_type,
-    bool is_primary_selector)
+    bool is_primary_selector,
+    const GURL& create_url)
     : app_id(app_id),
       app_icons(app_icons),
       document_icons(document_icons),
       web_store_id(web_store_id),
       app_name(app_name),
       object_type(object_type),
-      is_primary_selector(is_primary_selector) {
+      is_primary_selector(is_primary_selector),
+      create_url(create_url) {
 }
 
 DriveAppInfo::~DriveAppInfo() {
@@ -167,6 +169,7 @@ void DriveAppRegistry::UpdateFromAppList(
                        app.object_type(),
                        app.application_id(),
                        true,   // primary
+                       app.create_url(),
                        app.primary_mimetypes(),
                        &app_mimetypes_map_);
     AddAppSelectorList(web_store_id,
@@ -176,6 +179,7 @@ void DriveAppRegistry::UpdateFromAppList(
                        app.object_type(),
                        app.application_id(),
                        false,   // primary
+                       app.create_url(),
                        app.secondary_mimetypes(),
                        &app_mimetypes_map_);
     AddAppSelectorList(web_store_id,
@@ -185,6 +189,7 @@ void DriveAppRegistry::UpdateFromAppList(
                        app.object_type(),
                        app.application_id(),
                        true,   // primary
+                       app.create_url(),
                        app.primary_file_extensions(),
                        &app_extension_map_);
     AddAppSelectorList(web_store_id,
@@ -194,6 +199,7 @@ void DriveAppRegistry::UpdateFromAppList(
                        app.object_type(),
                        app.application_id(),
                        false,   // primary
+                       app.create_url(),
                        app.secondary_file_extensions(),
                        &app_extension_map_);
   }
@@ -208,6 +214,7 @@ void DriveAppRegistry::AddAppSelectorList(
     const std::string& object_type,
     const std::string& app_id,
     bool is_primary_selector,
+    const GURL& create_url,
     const ScopedVector<std::string>& selectors,
     DriveAppFileSelectorMap* map) {
   for (ScopedVector<std::string>::const_iterator it = selectors.begin();
@@ -220,7 +227,8 @@ void DriveAppRegistry::AddAppSelectorList(
                                  web_store_id,
                                  app_name,
                                  object_type,
-                                 is_primary_selector)));
+                                 is_primary_selector,
+                                 create_url)));
   }
 }
 

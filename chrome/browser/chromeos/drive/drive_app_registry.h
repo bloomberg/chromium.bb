@@ -36,7 +36,8 @@ struct DriveAppInfo {
                const std::string& web_store_id,
                const std::string& app_name,
                const std::string& object_type,
-               bool is_primary_selector);
+               bool is_primary_selector,
+               const GURL& create_url);
   ~DriveAppInfo();
 
   // Drive app id.
@@ -55,6 +56,8 @@ struct DriveAppInfo {
   std::string object_type;
   // Is app the primary selector for file (default open action).
   bool is_primary_selector;
+  // URL for opening a new file in the app.
+  GURL create_url;
 };
 
 // Keeps the track of installed drive applications in-memory.
@@ -96,6 +99,7 @@ class DriveAppRegistry {
       const std::string& object_type,
       const std::string& app_id,
       bool is_primary_selector,
+      const GURL& create_url,
       const ScopedVector<std::string>& selectors,
       DriveAppFileSelectorMap* map);
 

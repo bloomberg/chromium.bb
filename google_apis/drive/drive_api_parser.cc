@@ -107,6 +107,7 @@ const char kSecondaryMimeTypes[] = "secondaryMimeTypes";
 const char kPrimaryFileExtensions[] = "primaryFileExtensions";
 const char kSecondaryFileExtensions[] = "secondaryFileExtensions";
 const char kIcons[] = "icons";
+const char kCreateUrl[] = "createUrl";
 
 // Apps List
 // https://developers.google.com/drive/v2/reference/apps/list
@@ -328,6 +329,9 @@ void AppResource::RegisterJSONConverter(
   converter->RegisterRepeatedString(kSecondaryFileExtensions,
                                     &AppResource::secondary_file_extensions_);
   converter->RegisterRepeatedMessage(kIcons, &AppResource::icons_);
+  converter->RegisterCustomField<GURL>(kCreateUrl,
+                                       &AppResource::create_url_,
+                                       GetGURLFromString);
 }
 
 // static

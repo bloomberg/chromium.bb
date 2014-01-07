@@ -13,6 +13,7 @@
    "installed": true,
    "authorized": false,
    "productUrl": "https://chrome.google.com/webstore/detail/abcdefghabcdefghabcdefghabcdefgh",
+   "createUrl": "https://www.example.com/createForApp1",
    "primaryMimeTypes": [
     "application/vnd.google-apps.drive-sdk.123456788192"
    ],
@@ -67,6 +68,7 @@
    "installed": true,
    "authorized": false,
    "productUrl": "https://chrome.google.com/webstore/detail/hgfedcbahgfedcbahgfedcbahgfedcba",
+   "createUrl": "https://www.example.com/createForApp2",
    "primaryMimeTypes": [
     "image/jpeg",
     "image/png",

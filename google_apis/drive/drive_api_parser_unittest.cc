@@ -82,6 +82,8 @@ TEST(DriveAPIParserTest, AppListParser) {
   EXPECT_EQ(16, icon6.icon_side_length());
   EXPECT_EQ("http://www.example.com/ds16.png", icon6.icon_url().spec());
 
+  EXPECT_EQ("https://www.example.com/createForApp1", app1.create_url().spec());
+
   // Check Drive app 2
   const AppResource& app2 = *applist->items()[1];
   EXPECT_EQ("876543210000", app2.application_id());
@@ -110,6 +112,8 @@ TEST(DriveAPIParserTest, AppListParser) {
   EXPECT_EQ(DriveAppIcon::DOCUMENT, icon2.category());
   EXPECT_EQ(10, icon2.icon_side_length());
   EXPECT_EQ("http://www.example.com/d10.png", icon2.icon_url().spec());
+
+  EXPECT_EQ("https://www.example.com/createForApp2", app2.create_url().spec());
 }
 
 // Test file list parsing.

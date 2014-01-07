@@ -184,6 +184,9 @@ class AppResource {
   // Returns the product URL, e.g. at Chrome Web Store.
   const GURL& product_url() const { return product_url_; }
 
+  // Returns the create URL, i.e., the URL for opening a new file by the app.
+  const GURL& create_url() const { return create_url_; }
+
   // List of primary mime types supported by this WebApp. Primary status should
   // trigger this WebApp becoming the default handler of file instances that
   // have these mime types.
@@ -256,6 +259,9 @@ class AppResource {
   void set_icons(ScopedVector<DriveAppIcon> icons) {
     icons_ = icons.Pass();
   }
+  void set_create_url(const GURL& url) {
+    create_url_ = url;
+  }
 
  private:
   friend class base::internal::RepeatedMessageConverter<AppResource>;
@@ -273,6 +279,7 @@ class AppResource {
   bool installed_;
   bool authorized_;
   GURL product_url_;
+  GURL create_url_;
   ScopedVector<std::string> primary_mimetypes_;
   ScopedVector<std::string> secondary_mimetypes_;
   ScopedVector<std::string> primary_file_extensions_;
