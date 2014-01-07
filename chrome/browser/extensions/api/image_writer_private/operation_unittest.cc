@@ -8,7 +8,6 @@
 
 namespace extensions {
 namespace image_writer {
-namespace {
 
 class ImageWriterOperationTest : public ImageWriterUnitTestBase {
 };
@@ -26,15 +25,13 @@ class DummyOperation : public Operation {
 
 TEST_F(ImageWriterOperationTest, Create) {
   MockOperationManager manager;
-  scoped_refptr<Operation> op(
-      new DummyOperation(manager.AsWeakPtr(),
-                         kDummyExtensionId,
-                         test_device_path_.AsUTF8Unsafe()));
+  scoped_refptr<Operation> op(new DummyOperation(manager.AsWeakPtr(),
+                                                 kDummyExtensionId,
+                                                 test_device_.AsUTF8Unsafe()));
 
   EXPECT_EQ(0, op->GetProgress());
   EXPECT_EQ(image_writer_api::STAGE_UNKNOWN, op->GetStage());
 }
 
-}  // namespace
 }  // namespace image_writer
 }  // namespace extensions

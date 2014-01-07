@@ -5,8 +5,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
-#include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
+#include "chrome/browser/extensions/api/image_writer_private/write_from_file_operation.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/test/base/testing_profile.h"
@@ -24,8 +24,6 @@ using testing::_;
 using testing::Lt;
 using testing::AnyNumber;
 using testing::AtLeast;
-
-namespace {
 
 class ImageWriterOperationManagerTest
     : public ImageWriterUnitTestBase {
@@ -70,8 +68,8 @@ TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {
 
   manager.StartWriteFromFile(
     kDummyExtensionId,
-    test_image_path_,
-    test_device_path_.AsUTF8Unsafe(),
+    test_image_,
+    test_device_.AsUTF8Unsafe(),
     base::Bind(&ImageWriterOperationManagerTest::StartCallback,
                base::Unretained(this)));
 
@@ -80,20 +78,5 @@ TEST_F(ImageWriterOperationManagerTest, WriteFromFile) {
   EXPECT_EQ("", start_error_);
 }
 
-TEST_F(ImageWriterOperationManagerTest, DestroyPartitions) {
-  OperationManager manager(&test_profile_);
-
-  manager.DestroyPartitions(
-      kDummyExtensionId,
-      test_device_path_.AsUTF8Unsafe(),
-      base::Bind(&ImageWriterOperationManagerTest::StartCallback,
-                 base::Unretained(this)));
-
-  EXPECT_TRUE(started_);
-  EXPECT_TRUE(start_success_);
-  EXPECT_EQ("", start_error_);
-}
-
-} // namespace
-} // namespace image_writer
-} // namespace extensions
+}  // namespace image_writer
+}  // namespace extensions
