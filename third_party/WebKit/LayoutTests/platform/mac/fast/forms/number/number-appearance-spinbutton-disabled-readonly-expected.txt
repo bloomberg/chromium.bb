@@ -41,7 +41,9 @@ layer at (13,113) size 191x23
       text run at (0,0) width 13: "0"
 layer at (205,46) size 19x25
   RenderBlock (relative positioned) {DIV} at (192,-1) size 19x25
-layer at (205,79) size 19x25
+layer at (205,79) size 19x25 transparent
   RenderBlock (relative positioned) {DIV} at (192,-1) size 19x25
-layer at (205,112) size 19x25
+layer at (205,112) size 19x25 transparent
   RenderBlock (relative positioned) {DIV} at (192,-1) size 19x25
+selection start: position 0 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 0 {LABEL} of child 7 {DIV} of body
+selection end:   position 1 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 0 {LABEL} of child 7 {DIV} of body

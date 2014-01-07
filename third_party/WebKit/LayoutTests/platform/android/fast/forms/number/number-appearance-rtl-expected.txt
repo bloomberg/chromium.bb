@@ -78,20 +78,20 @@ layer at (27,315) size 134x16
   RenderBlock {DIV} at (0,0) size 134x16
     RenderText {#text} at (127,0) size 7x16
       text run at (127,0) width 7: "8"
-layer at (639,20) size 15x18 transparent
+layer at (639,20) size 15x18
   RenderBlock (relative positioned) {DIV} at (0,-1) size 15x18
-layer at (639,62) size 15x18 transparent
+layer at (639,62) size 15x18
   RenderBlock (relative positioned) {DIV} at (0,-1) size 15x18
-layer at (12,104) size 15x18 transparent
+layer at (12,104) size 15x18
   RenderBlock (relative positioned) {DIV} at (0,-1) size 15x18
 layer at (12,146) size 15x18
   RenderBlock (relative positioned) {DIV} at (0,-1) size 15x18
-layer at (146,188) size 15x18 transparent
+layer at (146,188) size 15x18
   RenderBlock (relative positioned) {DIV} at (134,-1) size 15x18
-layer at (146,230) size 15x18 transparent
+layer at (146,230) size 15x18
   RenderBlock (relative positioned) {DIV} at (134,-1) size 15x18
-layer at (12,272) size 15x18 transparent
+layer at (12,272) size 15x18
   RenderBlock (relative positioned) {DIV} at (0,-1) size 15x18
-layer at (12,314) size 15x18 transparent
+layer at (12,314) size 15x18
   RenderBlock (relative positioned) {DIV} at (0,-1) size 15x18
 caret: position 4 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 6 {P} of body
