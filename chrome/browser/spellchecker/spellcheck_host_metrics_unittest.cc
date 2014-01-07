@@ -7,10 +7,10 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/statistics_delta_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -18,17 +18,16 @@
 #include "base/win/windows_version.h"
 #endif
 
-using base::HistogramBase;
-using base::HistogramSamples;
-using base::StatisticsRecorder;
-
 class SpellcheckHostMetricsTest : public testing::Test {
  public:
   SpellcheckHostMetricsTest() : loop_(base::MessageLoop::TYPE_DEFAULT) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  static void SetUpTestCase() {
     base::StatisticsRecorder::Initialize();
+  }
+
+  virtual void SetUp() OVERRIDE {
     metrics_.reset(new SpellCheckHostMetrics);
   }
 
@@ -41,32 +40,22 @@ class SpellcheckHostMetricsTest : public testing::Test {
 };
 
 TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
-  scoped_ptr<HistogramSamples> baseline;
-  HistogramBase* histogram =
-      StatisticsRecorder::FindHistogram("SpellCheck.Enabled");
-  if (histogram)
-    baseline = histogram->SnapshotSamples();
+  const char kMetricName[] = "SpellCheck.Enabled";
+  base::StatisticsDeltaReader statistics_delta_reader1;
 
   metrics()->RecordEnabledStats(false);
 
-  histogram =
-      StatisticsRecorder::FindHistogram("SpellCheck.Enabled");
-  ASSERT_TRUE(histogram != NULL);
-  scoped_ptr<HistogramSamples> samples(histogram->SnapshotSamples());
-  if (baseline.get())
-    samples->Subtract(*baseline);
+  scoped_ptr<base::HistogramSamples> samples(
+      statistics_delta_reader1.GetHistogramSamplesSinceCreation(kMetricName));
   EXPECT_EQ(1, samples->GetCount(0));
   EXPECT_EQ(0, samples->GetCount(1));
 
-  baseline.reset(samples.release());
+  base::StatisticsDeltaReader statistics_delta_reader2;
 
   metrics()->RecordEnabledStats(true);
 
-  histogram =
-      StatisticsRecorder::FindHistogram("SpellCheck.Enabled");
-  ASSERT_TRUE(histogram != NULL);
-  samples = histogram->SnapshotSamples();
-  samples->Subtract(*baseline);
+  samples =
+      statistics_delta_reader2.GetHistogramSamplesSinceCreation(kMetricName);
   EXPECT_EQ(0, samples->GetCount(0));
   EXPECT_EQ(1, samples->GetCount(1));
 }
@@ -81,21 +70,16 @@ TEST_F(SpellcheckHostMetricsTest, CustomWordStats) {
 
   // Determine if test failures are due the statistics recorder not being
   // available or because the histogram just isn't there: crbug.com/230534.
-  EXPECT_TRUE(StatisticsRecorder::IsActive());
+  EXPECT_TRUE(base::StatisticsRecorder::IsActive());
 
-  HistogramBase* histogram =
-      StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
-  ASSERT_TRUE(histogram != NULL);
-  scoped_ptr<HistogramSamples> baseline = histogram->SnapshotSamples();
+  base::StatisticsDeltaReader statistics_delta_reader;
 
   SpellCheckHostMetrics::RecordCustomWordCountStats(23);
-  histogram =
-      StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
-  ASSERT_TRUE(histogram != NULL);
-  scoped_ptr<HistogramSamples> samples = histogram->SnapshotSamples();
 
-  samples->Subtract(*baseline);
-  EXPECT_EQ(23,samples->sum());
+  scoped_ptr<base::HistogramSamples> samples(
+      statistics_delta_reader.GetHistogramSamplesSinceCreation(
+          "SpellCheck.CustomWords"));
+  EXPECT_EQ(23, samples->sum());
 }
 
 TEST_F(SpellcheckHostMetricsTest, RecordWordCountsDiscardsDuplicates) {
@@ -113,59 +97,38 @@ TEST_F(SpellcheckHostMetricsTest, RecordWordCountsDiscardsDuplicates) {
   metrics()->RecordCheckedWordStats(base::ASCIIToUTF16("test"), false);
   RecordWordCountsForTesting();
 
-  // Get baselines for all affected histograms.
-  scoped_ptr<HistogramSamples> baselines[arraysize(histogramName)];
-  for (size_t i = 0; i < arraysize(histogramName); ++i) {
-    HistogramBase* histogram =
-        StatisticsRecorder::FindHistogram(histogramName[i]);
-    if (histogram)
-      baselines[i] = histogram->SnapshotSamples();
-  }
+  // Start the reader.
+  base::StatisticsDeltaReader statistics_delta_reader;
 
   // Nothing changed, so this invocation should not affect any histograms.
   RecordWordCountsForTesting();
 
   // Get samples for all affected histograms.
-  scoped_ptr<HistogramSamples> samples[arraysize(histogramName)];
+  scoped_ptr<base::HistogramSamples> samples;
   for (size_t i = 0; i < arraysize(histogramName); ++i) {
-    HistogramBase* histogram =
-        StatisticsRecorder::FindHistogram(histogramName[i]);
-    ASSERT_TRUE(histogram != NULL);
-    samples[i] = histogram->SnapshotSamples();
-    if (baselines[i].get())
-      samples[i]->Subtract(*baselines[i]);
-
-    EXPECT_EQ(0, samples[i]->TotalCount());
+    samples = statistics_delta_reader.GetHistogramSamplesSinceCreation(
+        histogramName[i]);
+    EXPECT_EQ(0, samples->TotalCount());
   }
 }
 
 TEST_F(SpellcheckHostMetricsTest, RecordSpellingServiceStats) {
   const char kMetricName[] = "SpellCheck.SpellingService.Enabled";
-  scoped_ptr<HistogramSamples> baseline;
-  HistogramBase* histogram = StatisticsRecorder::FindHistogram(kMetricName);
-  if (histogram)
-    baseline = histogram->SnapshotSamples();
+  base::StatisticsDeltaReader statistics_delta_reader1;
 
   metrics()->RecordSpellingServiceStats(false);
 
-  histogram =
-      StatisticsRecorder::FindHistogram(kMetricName);
-  ASSERT_TRUE(histogram != NULL);
-  scoped_ptr<HistogramSamples> samples(histogram->SnapshotSamples());
-  if (baseline.get())
-    samples->Subtract(*baseline);
+  scoped_ptr<base::HistogramSamples> samples(
+      statistics_delta_reader1.GetHistogramSamplesSinceCreation(kMetricName));
   EXPECT_EQ(1, samples->GetCount(0));
   EXPECT_EQ(0, samples->GetCount(1));
 
-  baseline.reset(samples.release());
+  base::StatisticsDeltaReader statistics_delta_reader2;
 
   metrics()->RecordSpellingServiceStats(true);
 
-  histogram =
-      StatisticsRecorder::FindHistogram(kMetricName);
-  ASSERT_TRUE(histogram != NULL);
-  samples = histogram->SnapshotSamples();
-  samples->Subtract(*baseline);
+  samples =
+      statistics_delta_reader2.GetHistogramSamplesSinceCreation(kMetricName);
   EXPECT_EQ(0, samples->GetCount(0));
   EXPECT_EQ(1, samples->GetCount(1));
 }

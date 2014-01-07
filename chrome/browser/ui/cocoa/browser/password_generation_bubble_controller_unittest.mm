@@ -5,18 +5,14 @@
 #import "chrome/browser/ui/cocoa/browser/password_generation_bubble_controller.h"
 
 #include "base/logging.h"
-#include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/test/statistics_delta_reader.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "components/autofill/core/browser/password_generator.h"
 #include "components/autofill/core/common/password_form.h"
 #include "testing/gtest_mac.h"
-
-using base::HistogramBase;
-using base::HistogramSamples;
-using base::StatisticsRecorder;
 
 const char kHistogramName[] = "PasswordGeneration.UserActions";
 
@@ -26,18 +22,13 @@ class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
       : controller_(nil) {}
 
   static void SetUpTestCase() {
-    StatisticsRecorder::Initialize();
+    base::StatisticsRecorder::Initialize();
   }
 
   virtual void SetUp() {
     CocoaProfileTest::SetUp();
 
     generator_.reset(new autofill::PasswordGenerator(20));
-
-    HistogramBase* histogram =
-        StatisticsRecorder::FindHistogram(kHistogramName);
-    if (histogram)
-      original_ = histogram->SnapshotSamples();
 
     SetUpController();
   }
@@ -65,26 +56,9 @@ class PasswordGenerationBubbleControllerTest : public CocoaProfileTest {
     controller_ = nil;
   }
 
-  HistogramSamples* GetHistogramSamples() {
-    HistogramBase* histogram =
-        StatisticsRecorder::FindHistogram(kHistogramName);
-    if (histogram) {
-      current_ = histogram->SnapshotSamples();
-      if (original_.get())
-        current_->Subtract(*original_.get());
-    }
-    return current_.get();
-  }
-
  protected:
   // Weak.
   PasswordGenerationBubbleController* controller_;
-
-  // Used to determine the histogram changes made just for this specific
-  // test run.
-  scoped_ptr<HistogramSamples> original_;
-
-  scoped_ptr<HistogramSamples> current_;
 
   scoped_ptr<autofill::PasswordGenerator> generator_;
 };
@@ -107,12 +81,14 @@ TEST_F(PasswordGenerationBubbleControllerTest, Regenerate) {
 }
 
 TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
+  base::StatisticsDeltaReader statistics_delta_reader;
   [controller() showWindow:nil];
 
   // Do nothing.
   CloseController();
 
-  HistogramSamples* samples = GetHistogramSamples();
+  scoped_ptr<base::HistogramSamples> samples(
+      statistics_delta_reader.GetHistogramSamplesSinceCreation(kHistogramName));
   EXPECT_EQ(
       1,
       samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
@@ -131,7 +107,8 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
   [controller() fillPassword:nil];
   CloseController();
 
-  samples = GetHistogramSamples();
+  samples =
+      statistics_delta_reader.GetHistogramSamplesSinceCreation(kHistogramName);
   EXPECT_EQ(
       1,
       samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
@@ -149,7 +126,8 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
   [controller() fillPassword:nil];
   CloseController();
 
-  samples = GetHistogramSamples();
+  samples =
+      statistics_delta_reader.GetHistogramSamplesSinceCreation(kHistogramName);
   EXPECT_EQ(
       1,
       samples->GetCount(autofill::password_generation::IGNORE_FEATURE));
@@ -160,5 +138,4 @@ TEST_F(PasswordGenerationBubbleControllerTest, UMALogging) {
       1,
       samples->GetCount(
           autofill::password_generation::ACCEPT_ORIGINAL_PASSWORD));
-
 }
