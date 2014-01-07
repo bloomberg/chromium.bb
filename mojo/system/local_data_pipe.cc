@@ -50,6 +50,7 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
                                                       bool all_or_none) {
   DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
   DCHECK_GT(*num_bytes, 0u);
+  DCHECK(consumer_open_no_lock());
 
   size_t num_bytes_to_write = 0;
   if (may_discard()) {
@@ -68,8 +69,9 @@ MojoResult LocalDataPipe::ProducerWriteDataImplNoLock(const void* elements,
     }
   } else {
     if (all_or_none && *num_bytes > capacity_num_bytes() - current_num_bytes_) {
-      return (*num_bytes > capacity_num_bytes()) ? MOJO_RESULT_OUT_OF_RANGE :
-                                                   MOJO_RESULT_SHOULD_WAIT;
+      // Don't return "should wait" since you can't wait for a specified amount
+      // of data.
+      return MOJO_RESULT_OUT_OF_RANGE;
     }
 
     num_bytes_to_write = std::min(static_cast<size_t>(*num_bytes),
@@ -110,10 +112,14 @@ MojoResult LocalDataPipe::ProducerBeginWriteDataImplNoLock(
     void** buffer,
     uint32_t* buffer_num_bytes,
     bool all_or_none) {
+  DCHECK(consumer_open_no_lock());
+
   size_t max_num_bytes_to_write = GetMaxNumBytesToWriteNoLock();
-  // TODO(vtl): Consider this return value.
-  if (all_or_none && *buffer_num_bytes > max_num_bytes_to_write)
+  if (all_or_none && *buffer_num_bytes > max_num_bytes_to_write) {
+    // Don't return "should wait" since you can't wait for a specified amount of
+    // data.
     return MOJO_RESULT_OUT_OF_RANGE;
+  }
 
   // Don't go into a two-phase write if there's no room.
   if (max_num_bytes_to_write == 0)
@@ -179,9 +185,12 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(void* elements,
   DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
   DCHECK_GT(*num_bytes, 0u);
 
-  // TODO(vtl): Think about the error code in this case.
-  if (all_or_none && *num_bytes > current_num_bytes_)
-    return MOJO_RESULT_OUT_OF_RANGE;
+  if (all_or_none && *num_bytes > current_num_bytes_) {
+    // Don't return "should wait" since you can't wait for a specified amount of
+    // data.
+    return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE :
+                                     MOJO_RESULT_FAILED_PRECONDITION;
+  }
 
   size_t num_bytes_to_read =
       std::min(static_cast<size_t>(*num_bytes), current_num_bytes_);
@@ -220,9 +229,12 @@ MojoResult LocalDataPipe::ConsumerDiscardDataImplNoLock(uint32_t* num_bytes,
   DCHECK_EQ(*num_bytes % element_num_bytes(), 0u);
   DCHECK_GT(*num_bytes, 0u);
 
-  // TODO(vtl): Think about the error code in this case.
-  if (all_or_none && *num_bytes > current_num_bytes_)
-    return MOJO_RESULT_OUT_OF_RANGE;
+  if (all_or_none && *num_bytes > current_num_bytes_) {
+    // Don't return "should wait" since you can't wait for a specified amount of
+    // data.
+    return producer_open_no_lock() ? MOJO_RESULT_OUT_OF_RANGE :
+                                     MOJO_RESULT_FAILED_PRECONDITION;
+  }
 
   // Be consistent with other operations; error if no data available.
   if (current_num_bytes_ == 0) {
@@ -255,9 +267,11 @@ MojoResult LocalDataPipe::ConsumerBeginReadDataImplNoLock(
     uint32_t* buffer_num_bytes,
     bool all_or_none) {
   size_t max_num_bytes_to_read = GetMaxNumBytesToReadNoLock();
-  // TODO(vtl): Consider this return value.
-  if (all_or_none && *buffer_num_bytes > max_num_bytes_to_read)
+  if (all_or_none && *buffer_num_bytes > max_num_bytes_to_read) {
+    // Don't return "should wait" since you can't wait for a specified amount of
+    // data.
     return MOJO_RESULT_OUT_OF_RANGE;
+  }
 
   // Don't go into a two-phase read if there's no data.
   if (max_num_bytes_to_read == 0) {

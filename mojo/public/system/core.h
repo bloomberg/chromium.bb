@@ -438,17 +438,75 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
 // Data pipe:
 // TODO(vtl): Moar docs.
 
+// Creates a data pipe, which is a unidirectional communication channel for
+// unframed data, with the given options. Data is unframed, but must come as
+// (multiples of) discrete elements, of the size given in |options|. See
+// |MojoCreateDataPipeOptions| for a description of the different options
+// available for data pipes.
+//
+// |options| may be set to null for a data pipe with the default options (which
+// will have an element size of one byte and have some system-dependent
+// capacity).
+//
+// On success, |*data_pipe_producer_handle| will be set to the handle for the
+// producer and |*data_pipe_consumer_handle| will be set to the handle for the
+// consumer. (On failure, they are not modified.)
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
+//       |*options| is invalid or one of the pointer handles looks invalid).
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if a process/system/quota/etc. limit has
+//       been reached (e.g., if the requested capacity was too large, or if the
+//       maximum number of handles was exceeded).
 MOJO_SYSTEM_EXPORT MojoResult MojoCreateDataPipe(
     const struct MojoCreateDataPipeOptions* options,
     MojoHandle* data_pipe_producer_handle,
     MojoHandle* data_pipe_consumer_handle);
 
+// Writes the given data to the data pipe producer given by
+// |data_pipe_producer_handle|. |elements| points to data of size |*num_bytes|;
+// |*num_bytes| should be a multiple of the data pipe's element size. If
+// |MOJO_WRITE_DATA_FLAG_ALL_OR_NONE| is set in |flags|, either all the data
+// will be written or none is.
+//
+// On success, |*num_bytes| is set to the amount of data that was actually
+// written.
+//
+// Note: If the data pipe has the "may discard" option flag (specified on
+// creation), this will discard as much data as required to write the given
+// data, starting with the earliest written data that has not been consumed.
+// However, even with "may discard", if |*num_bytes| is greater than the data
+// pipe's capacity (and |MOJO_WRITE_DATA_FLAG_ALL_OR_NONE| is not set), this
+// will write the maximum amount possible (namely, the data pipe's capacity) and
+// set |*num_bytes| to that amount. It will *not* discard data from |elements|.
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
+//       |data_pipe_producer_dispatcher| is not a handle to a data pipe
+//       producer, |elements| does not look like a valid pointer, or
+//       |*num_bytes| is not a multiple of the data pipe's element size).
+//   |MOJO_RESULT_FAILED_PRECONDITION| if the data pipe consumer handle has been
+//       closed.
+//   |MOJO_RESULT_OUT_OF_RANGE| if |flags| has
+//       |MOJO_WRITE_DATA_FLAG_ALL_OR_NONE| set and the required amount of data
+//       (specified by |*num_bytes|) could not be written.
+//   |MOJO_RESULT_BUSY| if there is a two-phase write ongoing with
+//       |data_pipe_producer_handle| (i.e., |MojoBeginWriteData()| has been
+//       called, but not yet the matching |MojoEndWriteData()|).
+//   |MOJO_RESULT_SHOULD_WAIT| if no data can currently be written (and the
+//       consumer is still open) and |flags| does *not* have
+//       |MOJO_WRITE_DATA_FLAG_ALL_OR_NONE| set.
+//
+// TODO(vtl): Should there be a way of querying how much data can be written?
 MOJO_SYSTEM_EXPORT MojoResult MojoWriteData(
     MojoHandle data_pipe_producer_handle,
     const void* elements,
     uint32_t* num_bytes,
     MojoWriteDataFlags flags);
 
+// TODO(vtl): Document me.
 // TODO(vtl): Note to self: |buffer_num_bytes| is an "in-out" parameter: on the
 // "in" side, |*buffer_num_bytes| is the number requested; on success, on the
 // "out" side, it's the number available (which may be GREATER or LESS than the
@@ -460,10 +518,54 @@ MOJO_SYSTEM_EXPORT MojoResult MojoBeginWriteData(
     uint32_t* buffer_num_bytes,
     MojoWriteDataFlags flags);
 
+// TODO(vtl): Document me.
 MOJO_SYSTEM_EXPORT MojoResult MojoEndWriteData(
     MojoHandle data_pipe_producer_handle,
     uint32_t num_bytes_written);
 
+// Reads data from the data pipe consumer given by |data_pipe_consumer_handle|.
+// May also be used to discard data or query the amount of data available.
+//
+// If |flags| has neither |MOJO_READ_DATA_FLAG_DISCARD| nor
+// |MOJO_READ_DATA_FLAG_QUERY| set, this tries to read up to |*num_bytes| (which
+// must be a multiple of the data pipe's element size) bytes of data to
+// |elements| and set |*num_bytes| to the amount actually read. If flags has
+// |MOJO_READ_DATA_FLAG_ALL_OR_NONE| set, it will either read exactly
+// |*num_bytes| bytes of data or none.
+//
+// If flags has |MOJO_READ_DATA_FLAG_DISCARD| set, it discards up to
+// |*num_bytes| (which again be a multiple of the element size) bytes of data,
+// setting |*num_bytes| to the amount actually discarded. If flags has
+// |MOJO_READ_DATA_FLAG_ALL_OR_NONE|, it will either discard exactly
+// |*num_bytes| bytes of data or none. In this case, |MOJO_READ_DATA_FLAG_QUERY|
+// must not be set, and |elements| is ignored (and should typically be set to
+// null).
+//
+// If flags has |MOJO_READ_DATA_FLAG_QUERY| set, it queries the amount of data
+// available, setting |*num_bytes| to the number of bytes available. In this
+// case, |MOJO_READ_DATA_FLAG_DISCARD| must not be set, and
+// |MOJO_READ_DATA_FLAG_ALL_OR_NONE| is ignored, as are |elements| and the input
+// value of |*num_bytes|.
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success (see above for a description of the different
+//       operations).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g.,
+//       |data_pipe_consumer_handle| is invalid, the combination of flags in
+//       |flags| is invalid, etc.).
+//   |MOJO_RESULT_FAILED_PRECONDITION| if the data pipe producer handle has been
+//       closed and data (or the required amount of data) was not available to
+//       be read or discarded.
+//   |MOJO_RESULT_OUT_OF_RANGE| if |flags| has |MOJO_READ_DATA_FLAG_ALL_OR_NONE|
+//       set and the required amount of data is not available to be read or
+//       discarded (and the producer is still open).
+//   |MOJO_RESULT_BUSY| if there is a two-phase read ongoing with
+//       |data_pipe_consumer_handle| (i.e., |MojoBeginReadData()| has been
+//       called, but not yet the matching |MojoEndReadData()|).
+//   |MOJO_RESULT_SHOULD_WAIT| if there is no data to be read or discarded (and
+//       the producer is still open) and |flags| does *not* have
+//       |MOJO_READ_DATA_FLAG_ALL_OR_NONE| set.
+//
 // TODO(vtl): Note to self: If |MOJO_READ_DATA_FLAG_QUERY| is set, then
 // |elements| must be null (and nothing will be read).
 MOJO_SYSTEM_EXPORT MojoResult MojoReadData(
@@ -472,12 +574,14 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadData(
     uint32_t* num_bytes,
     MojoReadDataFlags flags);
 
+// TODO(vtl): Document me.
 MOJO_SYSTEM_EXPORT MojoResult MojoBeginReadData(
     MojoHandle data_pipe_consumer_handle,
     const void** buffer,
     uint32_t* buffer_num_bytes,
     MojoReadDataFlags flags);
 
+// TODO(vtl): Document me.
 MOJO_SYSTEM_EXPORT MojoResult MojoEndReadData(
     MojoHandle data_pipe_consumer_handle,
     uint32_t num_bytes_read);
