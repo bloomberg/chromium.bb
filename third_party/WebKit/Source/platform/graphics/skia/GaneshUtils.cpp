@@ -62,7 +62,7 @@ bool ensureTextureBackedSkBitmap(GrContext* gr, SkBitmap& bitmap, const IntSize&
         if (!pixelRef)
             return false;
         bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-        bitmap.setPixelRef(pixelRef, 0)->unref();
+        bitmap.setPixelRef(pixelRef)->unref();
     }
 
     return true;
