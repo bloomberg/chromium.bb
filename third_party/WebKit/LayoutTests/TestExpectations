@@ -775,12 +775,6 @@ crbug.com/315913 [ Win7 Debug ] editing/spelling/inline-spelling-markers-hidpi.h
 
 crbug.com/316349 [ Mac Debug ] inspector-protocol/page/enable-disable.html [ Failure Pass ]
 
-crbug.com/318035 [ Linux Win Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-center.html [ NeedsRebaseline ]
-crbug.com/318035 [ Linux Win Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-justify.html [ NeedsRebaseline ]
-crbug.com/318035 [ Linux Win Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-left.html [ NeedsRebaseline ]
-crbug.com/318035 [ Linux Win Mac ] fast/css/vertical-text-overflow-ellipsis-text-align-right.html [ NeedsRebaseline ]
-crbug.com/318035 [ Linux Win Mac ] editing/selection/select-text-overflow-ellipsis.html [ NeedsRebaseline ]
-
 crbug.com/316380 fast/frames/seamless/seamless-form-post.html [ Failure Pass ]
 
 crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ Failure Pass ]
