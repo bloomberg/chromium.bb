@@ -97,13 +97,13 @@ public:
     Node* node() const { return m_node.get(); }
     EventTarget* currentTarget() const { return m_currentTarget.get(); }
 
-    TreeScopeEventContext* sharedEventContext() const { return m_sharedEventContext.get(); }
-    void setSharedEventContext(PassRefPtr<TreeScopeEventContext> sharedEventContext) { m_sharedEventContext = sharedEventContext; }
+    TreeScopeEventContext* treeScopeEventContext() const { return m_treeScopeEventContext.get(); }
+    void setTreeScopeEventContext(PassRefPtr<TreeScopeEventContext> prpTreeScopeEventContext) { m_treeScopeEventContext = prpTreeScopeEventContext; }
 
-    EventTarget* target() const { return m_sharedEventContext->target(); }
-    EventTarget* relatedTarget() const { return m_sharedEventContext->relatedTarget(); }
-    TouchEventContext* touchEventContext() const { return m_sharedEventContext->touchEventContext(); }
-    PassRefPtr<NodeList> eventPath() const { return m_sharedEventContext->eventPath(); }
+    EventTarget* target() const { return m_treeScopeEventContext->target(); }
+    EventTarget* relatedTarget() const { return m_treeScopeEventContext->relatedTarget(); }
+    TouchEventContext* touchEventContext() const { return m_treeScopeEventContext->touchEventContext(); }
+    PassRefPtr<NodeList> eventPath() const { return m_treeScopeEventContext->eventPath(); }
 
     bool currentTargetSameAsTarget() const { return m_currentTarget.get() == target(); }
     void handleLocalEvents(Event*) const;
@@ -111,7 +111,7 @@ public:
 private:
     RefPtr<Node> m_node;
     RefPtr<EventTarget> m_currentTarget;
-    RefPtr<TreeScopeEventContext> m_sharedEventContext;
+    RefPtr<TreeScopeEventContext> m_treeScopeEventContext;
 };
 
 #ifndef NDEBUG

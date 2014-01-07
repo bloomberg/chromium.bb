@@ -126,7 +126,7 @@ void EventPath::resetWith(Node* node)
     ASSERT(node);
     m_node = node;
     m_eventContexts.clear();
-    m_sharedEventContexts.clear();
+    m_treeScopeEventContexts.clear();
     calculatePath();
     calculateAdjustedTargets();
     calculateAdjustedEventPath();
@@ -181,15 +181,15 @@ void EventPath::calculateAdjustedEventPath()
 {
     if (!RuntimeEnabledFeatures::shadowDOMEnabled())
         return;
-    for (size_t i = 0; i < m_sharedEventContexts.size(); ++i) {
-        TreeScopeEventContext* sharedEventContext = m_sharedEventContexts[i].get();
+    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
+        TreeScopeEventContext* treeScopeEventContext = m_treeScopeEventContexts[i].get();
         Vector<RefPtr<Node> > nodes;
         nodes.reserveInitialCapacity(size());
         for (size_t i = 0; i < size(); ++i) {
-            if (at(i).node()->treeScope().isInclusiveAncestorOf(sharedEventContext->treeScope()))
+            if (at(i).node()->treeScope().isInclusiveAncestorOf(treeScopeEventContext->treeScope()))
                 nodes.append(at(i).node());
         }
-        sharedEventContext->adoptEventPath(nodes);
+        treeScopeEventContext->adoptEventPath(nodes);
     }
 }
 
@@ -223,8 +223,8 @@ void EventPath::calculateAdjustedTargets()
     const TreeScope* lastTreeScope = 0;
     bool isSVGElement = at(0).node()->isSVGElement();
 
-    typedef HashMap<const TreeScope*, RefPtr<TreeScopeEventContext> > SharedEventContextMap;
-    SharedEventContextMap sharedEventContextMap;
+    typedef HashMap<const TreeScope*, RefPtr<TreeScopeEventContext> > TreeScopeEventContextMap;
+    TreeScopeEventContextMap treeScopeEventContextMap;
     TreeScopeEventContext* lastSharedEventContext = 0;
 
     for (size_t i = 0; i < size(); ++i) {
@@ -251,15 +251,15 @@ void EventPath::calculateAdjustedTargets()
             }
         }
         if (lastTreeScope != &currentTreeScope) {
-            SharedEventContextMap::AddResult addResult = sharedEventContextMap.add(&currentTreeScope, TreeScopeEventContext::create(currentTreeScope));
+            TreeScopeEventContextMap::AddResult addResult = treeScopeEventContextMap.add(&currentTreeScope, TreeScopeEventContext::create(currentTreeScope));
             lastSharedEventContext = addResult.iterator->value.get();
             if (addResult.isNewEntry)
                 lastSharedEventContext->setTarget(eventTargetRespectingTargetRules(targetStack.last()));
         }
-        at(i).setSharedEventContext(lastSharedEventContext);
+        at(i).setTreeScopeEventContext(lastSharedEventContext);
         lastTreeScope = &currentTreeScope;
     }
-    m_sharedEventContexts.appendRange(sharedEventContextMap.values().begin(), sharedEventContextMap.values().end());
+    m_treeScopeEventContexts.appendRange(treeScopeEventContextMap.values().begin(), treeScopeEventContextMap.values().end());
 }
 
 void EventPath::buildRelatedNodeMap(const Node* relatedNode, RelatedTargetMap& relatedTargetMap)
@@ -304,9 +304,9 @@ void EventPath::adjustForRelatedTarget(Node* target, EventTarget* relatedTarget)
     RelatedTargetMap relatedNodeMap;
     buildRelatedNodeMap(relatedNode, relatedNodeMap);
 
-    for (size_t i = 0; i < m_sharedEventContexts.size(); ++i) {
-        TreeScopeEventContext* sharedEventContext = m_sharedEventContexts[i].get();
-        sharedEventContext->setRelatedTarget(findRelatedNode(&sharedEventContext->treeScope(), relatedNodeMap));
+    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
+        TreeScopeEventContext* treeScopeEventContext = m_treeScopeEventContexts[i].get();
+        treeScopeEventContext->setRelatedTarget(findRelatedNode(&treeScopeEventContext->treeScope(), relatedNodeMap));
     }
 
     shrinkIfNeeded(target, relatedTarget);
@@ -338,12 +338,12 @@ void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
     Vector<TouchList*> adjustedChangedTouches;
     Vector<TreeScope*> treeScopes;
 
-    for (size_t i = 0; i < m_sharedEventContexts.size(); ++i) {
-        TouchEventContext* touchEventContext = m_sharedEventContexts[i]->ensureTouchEventContext();
+    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
+        TouchEventContext* touchEventContext = m_treeScopeEventContexts[i]->ensureTouchEventContext();
         adjustedTouches.append(&touchEventContext->touches());
         adjustedTargetTouches.append(&touchEventContext->targetTouches());
         adjustedChangedTouches.append(&touchEventContext->changedTouches());
-        treeScopes.append(&m_sharedEventContexts[i]->treeScope());
+        treeScopes.append(&m_treeScopeEventContexts[i]->treeScope());
     }
 
     adjustTouchList(node, touchEvent.touches(), adjustedTouches, treeScopes);
@@ -351,9 +351,9 @@ void EventPath::adjustForTouchEvent(Node* node, TouchEvent& touchEvent)
     adjustTouchList(node, touchEvent.changedTouches(), adjustedChangedTouches, treeScopes);
 
 #ifndef NDEBUG
-    for (size_t i = 0; i < m_sharedEventContexts.size(); ++i) {
-        TreeScope& treeScope = m_sharedEventContexts[i]->treeScope();
-        TouchEventContext* touchEventContext = m_sharedEventContexts[i]->touchEventContext();
+    for (size_t i = 0; i < m_treeScopeEventContexts.size(); ++i) {
+        TreeScope& treeScope = m_treeScopeEventContexts[i]->treeScope();
+        TouchEventContext* touchEventContext = m_treeScopeEventContexts[i]->touchEventContext();
         checkReachability(treeScope, touchEventContext->touches());
         checkReachability(treeScope, touchEventContext->targetTouches());
         checkReachability(treeScope, touchEventContext->changedTouches());

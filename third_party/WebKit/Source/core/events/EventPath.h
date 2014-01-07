@@ -93,7 +93,7 @@ private:
     Vector<EventContext, 64> m_eventContexts;
     Node* m_node;
     Event* m_event;
-    Vector<RefPtr<TreeScopeEventContext> > m_sharedEventContexts;
+    Vector<RefPtr<TreeScopeEventContext> > m_treeScopeEventContexts;
 };
 
 } // namespace
