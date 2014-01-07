@@ -510,11 +510,6 @@ void DocumentLoader::responseReceived(Resource* resource, const ResourceResponse
     }
 }
 
-void DocumentLoader::ensureWriter()
-{
-    ensureWriter(m_response.mimeType());
-}
-
 void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& overridingURL)
 {
     if (m_writer)
@@ -534,7 +529,7 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& over
 
 void DocumentLoader::commitData(const char* bytes, size_t length)
 {
-    ensureWriter();
+    ensureWriter(m_response.mimeType());
     ASSERT(m_frame->document()->parsing());
     m_writer->addData(bytes, length);
 }
@@ -854,10 +849,7 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
     // the network load. See also SecurityContext::isSecureTransitionTo.
     bool shouldReuseDefaultView = frame->loader().stateMachine()->isDisplayingInitialEmptyDocument() && frame->document()->isSecureTransitionTo(url);
 
-    ClearOptions options = 0;
-    if (!shouldReuseDefaultView)
-        options = ClearWindowProperties | ClearScriptObjects;
-    frame->loader().clear(options);
+    frame->loader().clear();
 
     if (frame->document())
         frame->document()->prepareForDestruction();

@@ -147,7 +147,8 @@ PassRefPtr<Frame> Frame::create(PassRefPtr<FrameInit> frameInit)
 Frame::~Frame()
 {
     setView(0);
-    loader().clear(ClearScriptObjects | ClearWindowObject);
+    loader().clear();
+    setDOMWindow(0);
 
     // FIXME: We should not be doing all this work inside the destructor
 
@@ -291,6 +292,11 @@ FloatSize Frame::resizePageRectsKeepingRatio(const FloatSize& originalSize, cons
 
 void Frame::setDOMWindow(PassRefPtr<DOMWindow> domWindow)
 {
+    InspectorInstrumentation::frameWindowDiscarded(this, m_domWindow.get());
+    if (m_domWindow)
+        m_domWindow->reset();
+    if (domWindow)
+        script().clearWindowShell();
     m_domWindow = domWindow;
 }
 

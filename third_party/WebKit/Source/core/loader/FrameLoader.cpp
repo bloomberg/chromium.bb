@@ -267,7 +267,7 @@ void FrameLoader::didExplicitOpen()
     m_frame->navigationScheduler().cancel();
 }
 
-void FrameLoader::clear(ClearOptions options)
+void FrameLoader::clear()
 {
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
@@ -277,26 +277,10 @@ void FrameLoader::clear(ClearOptions options)
     m_frame->document()->prepareForDestruction();
     m_frame->document()->removeFocusedElementOfSubtree(m_frame->document());
 
-    // Do this after detaching the document so that the unload event works.
-    if (options & ClearWindowProperties) {
-        InspectorInstrumentation::frameWindowDiscarded(m_frame, m_frame->domWindow());
-        m_frame->domWindow()->reset();
-        m_frame->script().clearWindowShell();
-    }
-
     m_frame->selection().prepareForDestruction();
     m_frame->eventHandler().clear();
     if (m_frame->view())
         m_frame->view()->clear();
-
-    if (options & ClearWindowObject) {
-        // Do not drop the DOMWindow (and Document) before the ScriptController and view are cleared
-        // as some destructors might still try to access the document.
-        m_frame->setDOMWindow(0);
-    }
-
-    if (options & ClearScriptObjects)
-        m_frame->script().clearScriptObjects();
 
     m_frame->script().enableEval();
 

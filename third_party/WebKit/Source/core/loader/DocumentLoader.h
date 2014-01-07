@@ -162,7 +162,6 @@ namespace WebCore {
     private:
         static PassRefPtr<DocumentWriter> createWriterFor(Frame*, const Document* ownerDocument, const KURL&, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch);
 
-        void ensureWriter();
         void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
 
         Document* document() const;

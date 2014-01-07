@@ -493,6 +493,7 @@ void ScriptController::clearWindowShell()
     m_windowShell->clearForNavigation();
     for (IsolatedWorldMap::iterator iter = m_isolatedWorlds.begin(); iter != m_isolatedWorlds.end(); ++iter)
         iter->value->clearForNavigation();
+    clearScriptObjects();
     V8GCController::hintForCollectGarbage();
     blink::Platform::current()->histogramCustomCounts("WebCore.ScriptController.clearWindowShell", (currentTime() - start) * 1000, 0, 10000, 50);
 }

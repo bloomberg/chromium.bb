@@ -66,13 +66,6 @@ enum ObjectContentType {
     ObjectContentOtherPlugin
 };
 
-enum ClearOption {
-    ClearWindowProperties = 1 << 0,
-    ClearScriptObjects = 1 << 1,
-    ClearWindowObject = 1 << 2,
-};
-typedef int ClearOptions;
-
 enum ShouldSendReferrer {
     MaybeSendReferrer,
     NeverSendReferrer
