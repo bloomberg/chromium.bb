@@ -42,6 +42,12 @@ class Layer;
 class Texture;
 }
 
+// TODO(sky): nuke. Temporary while moving transients out of Window.
+namespace views {
+namespace corewm {
+class TransientWindowManager;
+}
+}
 namespace aura {
 
 class LayoutManager;
@@ -211,22 +217,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Returns true if this Window contains |other| somewhere in its children.
   bool Contains(const Window* other) const;
 
-  // Adds or removes |child| as a transient child of this window. Transient
-  // children get the following behavior:
-  // . The transient parent destroys any transient children when it is
-  //   destroyed. This means a transient child is destroyed if either its parent
-  //   or transient parent is destroyed.
-  // . If a transient child and its transient parent share the same parent, then
-  //   transient children are always ordered above the transient parent.
-  // Transient windows are typically used for popups and menus.
-  void AddTransientChild(Window* child);
-  void RemoveTransientChild(Window* child);
-
-  const Windows& transient_children() const { return transient_children_; }
-
-  Window* transient_parent() { return transient_parent_; }
-  const Window* transient_parent() const { return transient_parent_; }
-
   // Retrieves the first-level child with the specified id, or NULL if no first-
   // level child is found matching |id|.
   Window* GetChildById(int id);
@@ -383,6 +373,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
  private:
   friend class test::WindowTestApi;
+  // TODO(sky): temporary until TransientWindowManager gets its own observer.
+  friend class views::corewm::TransientWindowManager;
   friend class LayoutManager;
   friend class RootWindow;
   friend class WindowTargeter;
@@ -445,26 +437,12 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Called when this window's parent has changed.
   void OnParentChanged();
 
-  // Returns true when |ancestor| is a transient ancestor of |this|.
-  bool HasTransientAncestor(const Window* ancestor) const;
-
-  // Adjusts |target| so that we don't attempt to stack on top of a window with
-  // a NULL delegate. See implementation for details.
-  void SkipNullDelegatesForStacking(StackDirection direction,
-                                    Window** target) const;
-
-  // Determines the real location for stacking |child| and invokes
-  // StackChildRelativeToImpl().
+  // The various stacking functions call into this to do the actual stacking.
   void StackChildRelativeTo(Window* child,
                             Window* target,
                             StackDirection direction);
 
-  // Implementation of StackChildRelativeTo().
-  void StackChildRelativeToImpl(Window* child,
-                                Window* target,
-                                StackDirection direction);
-
-  // Invoked from StackChildRelativeToImpl() to stack the layers appropriately
+  // Invoked from StackChildRelativeTo() to stack the layers appropriately
   // when stacking |child| relative to |target|.
   void StackChildLayerRelativeTo(Window* child,
                                  Window* target,
@@ -561,11 +539,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   // Child windows. Topmost is last.
   Windows children_;
-
-  // Transient windows.
-  Windows transient_children_;
-
-  Window* transient_parent_;
 
   // The visibility state of the window as set by Show()/Hide(). This may differ
   // from the visibility of the underlying layer, which may remain visible after

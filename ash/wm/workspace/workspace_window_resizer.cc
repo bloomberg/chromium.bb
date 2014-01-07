@@ -36,6 +36,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/transform.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/wm/public/window_types.h"
 
 namespace ash {
@@ -97,7 +98,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
   }
   if (switches::UseDockedWindows() &&
       window_resizer && window->parent() &&
-      !window->transient_parent() &&
+      !views::corewm::GetTransientParent(window) &&
       (window->parent()->id() == internal::kShellWindowId_DefaultContainer ||
        window->parent()->id() == internal::kShellWindowId_DockedContainer ||
        window->parent()->id() == internal::kShellWindowId_PanelContainer)) {

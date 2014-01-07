@@ -71,7 +71,7 @@ class ASH_EXPORT MruWindowTracker
                                  aura::Window* lost_active) OVERRIDE;
 
   // Overridden from WindowObserver:
-  virtual void OnWindowDestroying(aura::Window* window) OVERRIDE;
+  virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
   // List of windows that have been activated in containers that we cycle
   // through, sorted by most recently used.

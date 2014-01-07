@@ -19,6 +19,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/views/corewm/shadow.h"
 #include "ui/views/corewm/shadow_types.h"
+#include "ui/views/corewm/window_util.h"
 
 using std::make_pair;
 
@@ -59,10 +60,10 @@ Shadow::Style GetShadowStyleForWindowLosingActive(
     aura::Window* gaining_active) {
   if (gaining_active && aura::client::GetHideOnDeactivate(gaining_active)) {
     aura::Window::Windows::const_iterator it =
-        std::find(losing_active->transient_children().begin(),
-                  losing_active->transient_children().end(),
+        std::find(GetTransientChildren(losing_active).begin(),
+                  GetTransientChildren(losing_active).end(),
                   gaining_active);
-    if (it != losing_active->transient_children().end())
+    if (it != GetTransientChildren(losing_active).end())
       return Shadow::STYLE_ACTIVE;
   }
   return Shadow::STYLE_INACTIVE;

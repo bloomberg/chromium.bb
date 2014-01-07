@@ -11,6 +11,7 @@
 namespace views {
 namespace corewm {
 
+class TransientWindowController;
 class TransientWindowStackingClient;
 
 // Installs state needed by the window manager.
@@ -22,6 +23,7 @@ class VIEWS_EXPORT WMState {
   // WindowStackingClient:
  private:
   scoped_ptr<TransientWindowStackingClient> window_stacking_client_;
+  scoped_ptr<TransientWindowController> transient_window_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WMState);
 };

@@ -7,6 +7,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/compositor/test/test_layers.h"
+#include "ui/views/corewm/window_util.h"
 
 using aura::test::ChildWindowIDsAsString;
 using aura::test::CreateTestWindowWithId;
@@ -49,12 +51,12 @@ TEST_F(TransientWindowStackingClientTest, TransientChildrenGroupAbove) {
   Window* w22 = CreateTestWindowWithId(22, parent.get());
   ASSERT_EQ(8u, parent->children().size());
 
-  w1->AddTransientChild(w11);  // w11 is now owned by w1.
-  w2->AddTransientChild(w21);  // w21 is now owned by w2.
-  w2->AddTransientChild(w22);  // w22 is now owned by w2.
-  w21->AddTransientChild(w211);  // w211 is now owned by w21.
-  w21->AddTransientChild(w212);  // w212 is now owned by w21.
-  w21->AddTransientChild(w213);  // w213 is now owned by w21.
+  AddTransientChild(w1.get(), w11);  // w11 is now owned by w1.
+  AddTransientChild(w2.get(), w21);  // w21 is now owned by w2.
+  AddTransientChild(w2.get(), w22);  // w22 is now owned by w2.
+  AddTransientChild(w21, w211);  // w211 is now owned by w21.
+  AddTransientChild(w21, w212);  // w212 is now owned by w21.
+  AddTransientChild(w21, w213);  // w213 is now owned by w21.
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
   // Stack w1 at the top (end), this should force w11 to be last (on top of w1).
@@ -119,12 +121,12 @@ TEST_F(TransientWindowStackingClientTest, TransientChildrenGroupBelow) {
   Window* w22 = CreateTestWindowWithId(22, parent.get());
   ASSERT_EQ(8u, parent->children().size());
 
-  w1->AddTransientChild(w11);  // w11 is now owned by w1.
-  w2->AddTransientChild(w21);  // w21 is now owned by w2.
-  w2->AddTransientChild(w22);  // w22 is now owned by w2.
-  w21->AddTransientChild(w211);  // w211 is now owned by w21.
-  w21->AddTransientChild(w212);  // w212 is now owned by w21.
-  w21->AddTransientChild(w213);  // w213 is now owned by w21.
+  AddTransientChild(w1.get(), w11);  // w11 is now owned by w1.
+  AddTransientChild(w2.get(), w21);  // w21 is now owned by w2.
+  AddTransientChild(w2.get(), w22);  // w22 is now owned by w2.
+  AddTransientChild(w21, w211);  // w211 is now owned by w21.
+  AddTransientChild(w21, w212);  // w212 is now owned by w21.
+  AddTransientChild(w21, w213);  // w213 is now owned by w21.
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
   // Stack w2 at the bottom, this should force w11 to be last (on top of w1).
@@ -171,6 +173,44 @@ TEST_F(TransientWindowStackingClientTest, TransientChildrenGroupBelow) {
   parent->StackChildBelow(w213, w11);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
+}
+
+TEST_F(TransientWindowStackingClientTest,
+       StackWindowsWhoseLayersHaveNoDelegate) {
+  scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
+  window1->layer()->set_name("1");
+  scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
+  window2->layer()->set_name("2");
+  scoped_ptr<Window> window3(CreateTestWindowWithId(3, root_window()));
+  window3->layer()->set_name("3");
+
+  // This brings |window1| (and its layer) to the front.
+  root_window()->StackChildAbove(window1.get(), window3.get());
+  EXPECT_EQ("2 3 1", ChildWindowIDsAsString(root_window()));
+  EXPECT_EQ("2 3 1",
+            ui::test::ChildLayerNamesAsString(*root_window()->layer()));
+
+  // Since |window1| does not have a delegate, |window2| should not move in
+  // front of it, nor should its layer.
+  window1->layer()->set_delegate(NULL);
+  root_window()->StackChildAbove(window2.get(), window1.get());
+  EXPECT_EQ("3 2 1", ChildWindowIDsAsString(root_window()));
+  EXPECT_EQ("3 2 1",
+            ui::test::ChildLayerNamesAsString(*root_window()->layer()));
+
+  // It should still be possible to stack |window3| immediately below |window1|.
+  root_window()->StackChildBelow(window3.get(), window1.get());
+  EXPECT_EQ("2 3 1", ChildWindowIDsAsString(root_window()));
+  EXPECT_EQ("2 3 1",
+            ui::test::ChildLayerNamesAsString(*root_window()->layer()));
+
+  // Since neither |window3| nor |window1| have a delegate, |window2| should
+  // not move in front of either.
+  window3->layer()->set_delegate(NULL);
+  root_window()->StackChildBelow(window2.get(), window1.get());
+  EXPECT_EQ("2 3 1", ChildWindowIDsAsString(root_window()));
+  EXPECT_EQ("2 3 1",
+            ui::test::ChildLayerNamesAsString(*root_window()->layer()));
 }
 
 }  // namespace corewm

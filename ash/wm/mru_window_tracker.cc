@@ -190,7 +190,10 @@ void MruWindowTracker::OnWindowActivated(aura::Window* gained_active,
     SetActiveWindow(gained_active);
 }
 
-void MruWindowTracker::OnWindowDestroying(aura::Window* window) {
+void MruWindowTracker::OnWindowDestroyed(aura::Window* window) {
+  // It's possible for OnWindowActivated() to be called after
+  // OnWindowDestroying(). This means we need to override OnWindowDestroyed()
+  // else we may end up with a deleted window in |mru_windows_|.
   mru_windows_.remove(window);
   window->RemoveObserver(this);
 }

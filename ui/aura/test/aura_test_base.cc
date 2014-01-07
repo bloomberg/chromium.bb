@@ -97,16 +97,6 @@ Window* AuraTestBase::CreateNormalWindow(int id, Window* parent,
   return window;
 }
 
-Window* AuraTestBase::CreateTransientChild(int id, Window* parent) {
-  Window* window = new Window(NULL);
-  window->set_id(id);
-  window->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  window->Init(ui::LAYER_TEXTURED);
-  aura::client::ParentWindowWithContext(window, root_window(), gfx::Rect());
-  parent->AddTransientChild(window);
-  return window;
-}
-
 void AuraTestBase::RunAllPendingInMessageLoop() {
   helper_->RunAllPendingInMessageLoop();
 }

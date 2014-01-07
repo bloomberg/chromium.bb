@@ -14,6 +14,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/views/corewm/window_animations.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -63,7 +64,8 @@ void SetTransformOnWindowAndAllTransientChildren(
     bool animate) {
   SetTransformOnWindow(window, transform, animate);
 
-  aura::Window::Windows transient_children = window->transient_children();
+  aura::Window::Windows transient_children =
+      views::corewm::GetTransientChildren(window);
   for (aura::Window::Windows::iterator iter = transient_children.begin();
        iter != transient_children.end(); ++iter) {
     aura::Window* transient_child = *iter;
@@ -78,7 +80,7 @@ void SetTransformOnWindowAndAllTransientChildren(
 
 aura::Window* GetModalTransientParent(aura::Window* window) {
   if (window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_WINDOW)
-    return window->transient_parent();
+    return views::corewm::GetTransientParent(window);
   return NULL;
 }
 
@@ -237,8 +239,8 @@ void ScopedTransformOverviewWindow::SetTransformOnWindowAndTransientChildren(
     bool animate) {
   gfx::Point origin(GetBoundsInScreen().origin());
   aura::Window* window = window_;
-  while (window->transient_parent())
-    window = window->transient_parent();
+  while (views::corewm::GetTransientParent(window))
+    window = views::corewm::GetTransientParent(window);
   for (ScopedVector<ScopedWindowCopy>::const_iterator iter =
       window_copies_.begin(); iter != window_copies_.end(); ++iter) {
     SetTransformOnWindow(

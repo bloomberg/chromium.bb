@@ -9,6 +9,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/views/corewm/window_modality_controller.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace views {
 namespace corewm {
@@ -120,15 +121,15 @@ aura::Window* BaseFocusRules::GetActivatableWindow(aura::Window* window) const {
     if (modal_transient)
       return GetActivatableWindow(modal_transient);
 
-    if (child->transient_parent()) {
+    if (views::corewm::GetTransientParent(child)) {
       // To avoid infinite recursion, if |child| has a transient parent
       // whose own modal transient is |child| itself, just return |child|.
       aura::Window* parent_modal_transient =
-          GetModalTransient(child->transient_parent());
+          GetModalTransient(views::corewm::GetTransientParent(child));
       if (parent_modal_transient == child)
         return child;
 
-      return GetActivatableWindow(child->transient_parent());
+      return GetActivatableWindow(views::corewm::GetTransientParent(child));
     }
 
     parent = parent->parent();

@@ -56,6 +56,7 @@
 #include "ui/aura/client/scoped_tooltip_disabler.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/tooltip_client.h"
+#include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -505,6 +506,9 @@ void RenderWidgetHostViewAura::InitAsPopup(
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
 
+  // TransientWindowClient may be NULL during tests.
+  aura::client::TransientWindowClient* transient_window_client =
+      aura::client::GetTransientWindowClient();
   RenderWidgetHostViewAura* old_child =
       popup_parent_host_view_->popup_child_host_view_;
   if (old_child) {
@@ -512,7 +516,10 @@ void RenderWidgetHostViewAura::InitAsPopup(
     // similar mechanism to ensure a second popup doesn't cause the first one
     // to never get a chance to filter events. See crbug.com/160589.
     DCHECK(old_child->popup_parent_host_view_ == popup_parent_host_view_);
-    popup_parent_host_view_->window_->RemoveTransientChild(old_child->window_);
+    if (transient_window_client) {
+      transient_window_client->RemoveTransientChild(
+        popup_parent_host_view_->window_, old_child->window_);
+    }
     old_child->popup_parent_host_view_ = NULL;
   }
   popup_parent_host_view_->popup_child_host_view_ = this;
@@ -525,7 +532,10 @@ void RenderWidgetHostViewAura::InitAsPopup(
   // Setting the transient child allows for the popup to get mouse events when
   // in a system modal dialog.
   // This fixes crbug.com/328593.
-  popup_parent_host_view_->window_->AddTransientChild(window_);
+  if (transient_window_client) {
+    transient_window_client->AddTransientChild(
+        popup_parent_host_view_->window_, window_);
+  }
 
   SetBounds(bounds_in_screen);
   Show();

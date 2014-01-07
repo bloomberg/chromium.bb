@@ -22,6 +22,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
@@ -84,7 +85,7 @@ class DragWindowResizerTest : public test::AshTestBase {
     transient_parent_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
     transient_parent_->Init(ui::LAYER_NOT_DRAWN);
     ParentWindowInPrimaryRootWindow(transient_parent_.get());
-    transient_parent_->AddTransientChild(transient_child_);
+    views::corewm::AddTransientChild(transient_parent_.get(), transient_child_);
     transient_parent_->set_id(5);
 
     panel_window_.reset(new aura::Window(&delegate6_));

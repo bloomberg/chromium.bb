@@ -27,6 +27,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 
@@ -400,7 +401,7 @@ void WindowSelector::OnWindowAdded(aura::Window* new_window) {
 
   for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
     if (new_window->parent()->id() == kSwitchableWindowContainerIds[i] &&
-        !new_window->transient_parent()) {
+        !views::corewm::GetTransientParent(new_window)) {
       // The new window is in one of the switchable containers, abort overview.
       CancelSelection();
       return;

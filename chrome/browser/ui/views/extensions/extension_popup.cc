@@ -32,6 +32,7 @@
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/corewm/window_animations.h"
+#include "ui/views/corewm/window_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -197,7 +198,7 @@ void ExtensionPopup::OnWindowActivated(aura::Window* gained_active,
   if (!inspect_with_devtools_ && anchor_window == gained_active &&
       host_desktop_type != chrome::HOST_DESKTOP_TYPE_ASH &&
       this_window->GetRootWindow() == anchor_window->GetRootWindow() &&
-      gained_active->transient_parent() != this_window)
+      views::corewm::GetTransientParent(gained_active) != this_window)
     GetWidget()->Close();
 }
 #endif

@@ -36,6 +36,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace {
 
@@ -562,8 +563,8 @@ void MultiUserWindowManagerChromeOS::SetWindowVisibility(
 void MultiUserWindowManagerChromeOS::ShowWithTransientChildrenRecursive(
     aura::Window* window) {
   aura::Window::Windows::const_iterator it =
-      window->transient_children().begin();
-  for (; it !=  window->transient_children().end(); ++it)
+      views::corewm::GetTransientChildren(window).begin();
+  for (; it != views::corewm::GetTransientChildren(window).end(); ++it)
     ShowWithTransientChildrenRecursive(*it);
 
   // We show all children which were not explicitly hidden.
@@ -577,11 +578,11 @@ aura::Window* MultiUserWindowManagerChromeOS::GetOwningWindowInTransientChain(
     aura::Window* window) {
   if (!GetWindowOwner(window).empty())
     return NULL;
-  aura::Window* parent = window->transient_parent();
+  aura::Window* parent = views::corewm::GetTransientParent(window);
   while (parent) {
     if (!GetWindowOwner(parent).empty())
       return parent;
-    parent = parent->transient_parent();
+    parent = views::corewm::GetTransientParent(parent);
   }
   return NULL;
 }
@@ -591,8 +592,8 @@ void MultiUserWindowManagerChromeOS::AddTransientOwnerRecursive(
     aura::Window* owned_parent) {
   // First add all child windows.
   aura::Window::Windows::const_iterator it =
-      window->transient_children().begin();
-  for (; it !=  window->transient_children().end(); ++it)
+      views::corewm::GetTransientChildren(window).begin();
+  for (; it != views::corewm::GetTransientChildren(window).end(); ++it)
     AddTransientOwnerRecursive(*it, owned_parent);
 
   // If this window is the owned window, we do not have to handle it again.
@@ -618,8 +619,8 @@ void MultiUserWindowManagerChromeOS::RemoveTransientOwnerRecursive(
     aura::Window* window) {
   // First remove all child windows.
   aura::Window::Windows::const_iterator it =
-      window->transient_children().begin();
-  for (; it !=  window->transient_children().end(); ++it)
+      views::corewm::GetTransientChildren(window).begin();
+  for (; it != views::corewm::GetTransientChildren(window).end(); ++it)
     RemoveTransientOwnerRecursive(*it);
 
   // Find from transient window storage the visibility for the given window,

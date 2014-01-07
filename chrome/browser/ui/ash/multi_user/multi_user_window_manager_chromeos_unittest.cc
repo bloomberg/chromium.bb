@@ -19,6 +19,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 namespace test {
@@ -465,15 +466,15 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TransientWindows) {
   //    3                      - ..
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
   multi_user_window_manager()->SetWindowOwner(window(4), "B");
-  window(0)->AddTransientChild(window(1));
+  views::corewm::AddTransientChild(window(0), window(1));
   // We first attach 2->3 and then 1->2 to see that the ownership gets
   // properly propagated through the sub tree upon assigning.
-  window(2)->AddTransientChild(window(3));
-  window(1)->AddTransientChild(window(2));
-  window(4)->AddTransientChild(window(5));
-  window(4)->AddTransientChild(window(6));
-  window(7)->AddTransientChild(window(8));
-  window(7)->AddTransientChild(window(9));
+  views::corewm::AddTransientChild(window(2), window(3));
+  views::corewm::AddTransientChild(window(1), window(2));
+  views::corewm::AddTransientChild(window(4), window(5));
+  views::corewm::AddTransientChild(window(4), window(6));
+  views::corewm::AddTransientChild(window(7), window(8));
+  views::corewm::AddTransientChild(window(7), window(9));
 
   // By now the hierarchy should have updated itself to show all windows of A
   // and hide all windows of B. Unowned windows should remain in what ever state
@@ -510,15 +511,15 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TransientWindows) {
   //    1      5       8
   //                   |
   //                   9
-  window(2)->RemoveTransientChild(window(3));
-  window(4)->RemoveTransientChild(window(6));
+  views::corewm::RemoveTransientChild(window(2), window(3));
+  views::corewm::RemoveTransientChild(window(4), window(6));
   EXPECT_EQ("S[A], S[], H[], H[], H[B], H[], S[], S[], S[], H[]", GetStatus());
   // Before we leave we need to reverse all transient window ownerships.
-  window(0)->RemoveTransientChild(window(1));
-  window(1)->RemoveTransientChild(window(2));
-  window(4)->RemoveTransientChild(window(5));
-  window(7)->RemoveTransientChild(window(8));
-  window(7)->RemoveTransientChild(window(9));
+  views::corewm::RemoveTransientChild(window(0), window(1));
+  views::corewm::RemoveTransientChild(window(1), window(2));
+  views::corewm::RemoveTransientChild(window(4), window(5));
+  views::corewm::RemoveTransientChild(window(7), window(8));
+  views::corewm::RemoveTransientChild(window(7), window(9));
 }
 
 // Test that the initial visibility state gets remembered.

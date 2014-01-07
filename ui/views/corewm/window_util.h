@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_COREWM_WINDOW_UTIL_H_
 #define UI_VIEWS_COREWM_WINDOW_UTIL_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "ui/views/views_export.h"
 
@@ -46,6 +48,22 @@ VIEWS_EXPORT void DeepDeleteLayers(ui::Layer* layer);
 // true as the second argument to let the function do that.
 VIEWS_EXPORT ui::Layer* RecreateWindowLayers(aura::Window* window,
                                             bool set_bounds) WARN_UNUSED_RESULT;
+
+// Convenience functions that get the TransientWindowManager for the window and
+// redirect appropriately. These are preferable to calling functions on
+// TransientWindowManager as they handle the appropriate NULL checks.
+VIEWS_EXPORT aura::Window* GetTransientParent(aura::Window* window);
+VIEWS_EXPORT const aura::Window* GetTransientParent(const aura::Window* window);
+VIEWS_EXPORT const std::vector<aura::Window*>& GetTransientChildren(
+    const aura::Window* window);
+VIEWS_EXPORT void AddTransientChild(aura::Window* parent, aura::Window* child);
+VIEWS_EXPORT void RemoveTransientChild(aura::Window* parent,
+                                       aura::Window* child);
+
+// Returns true if |window| has |ancestor| as a transient ancestor. A transient
+// ancestor is found by following the transient parent chain of the window.
+VIEWS_EXPORT bool HasTransientAncestor(const aura::Window* window,
+                                       const aura::Window* ancestor);
 
 }  // namespace corewm
 }  // namespace views

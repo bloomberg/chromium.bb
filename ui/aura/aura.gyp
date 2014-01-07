@@ -67,6 +67,8 @@
         'client/screen_position_client.h',
         'client/tooltip_client.cc',
         'client/tooltip_client.h',
+        'client/transient_window_client.cc',
+        'client/transient_window_client.h',
         'client/user_action_client.cc',
         'client/user_action_client.h',
         'client/visibility_client.cc',

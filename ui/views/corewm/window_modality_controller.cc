@@ -63,13 +63,13 @@ bool IsModalTransientChild(aura::Window* transient, aura::Window* original) {
 aura::Window* GetModalTransientChild(
     aura::Window* activatable,
     aura::Window* original) {
-  aura::Window::Windows::const_iterator it;
-  for (it = activatable->transient_children().begin();
-       it != activatable->transient_children().end();
+  for (aura::Window::Windows::const_iterator it =
+           GetTransientChildren(activatable).begin();
+       it != GetTransientChildren(activatable).end();
        ++it) {
     aura::Window* transient = *it;
     if (IsModalTransientChild(transient, original)) {
-      return transient->transient_children().empty() ?
+      return GetTransientChildren(transient).empty() ?
           transient : GetModalTransientChild(transient, original);
     }
   }
@@ -153,8 +153,8 @@ void WindowModalityController::OnWindowPropertyChanged(aura::Window* window,
       window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE &&
       window->IsVisible()) {
     ActivateWindow(window);
-    ui::GestureRecognizer::Get()->TransferEventsTo(
-        window->transient_parent(), NULL);
+    ui::GestureRecognizer::Get()->TransferEventsTo(GetTransientParent(window),
+                                                   NULL);
   }
 }
 
@@ -163,8 +163,8 @@ void WindowModalityController::OnWindowVisibilityChanged(
     bool visible) {
   if (visible && window->GetProperty(aura::client::kModalKey) !=
       ui::MODAL_TYPE_NONE) {
-    ui::GestureRecognizer::Get()->TransferEventsTo(
-        window->transient_parent(), NULL);
+    ui::GestureRecognizer::Get()->TransferEventsTo(GetTransientParent(window),
+                                                   NULL);
     // Make sure no other window has capture, otherwise |window| won't get mouse
     // events.
     aura::Window* capture_window = aura::client::GetCaptureWindow(window);

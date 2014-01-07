@@ -8,6 +8,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
+#include "ui/views/corewm/transient_window_manager.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -135,6 +136,43 @@ ui::Layer* RecreateWindowLayers(aura::Window* window, bool set_bounds) {
   if (set_bounds)
     window->SetBounds(bounds);
   return old_layer;
+}
+
+aura::Window* GetTransientParent(aura::Window* window) {
+  return const_cast<aura::Window*>(GetTransientParent(
+                                 const_cast<const aura::Window*>(window)));
+}
+
+const aura::Window* GetTransientParent(const aura::Window* window) {
+  const TransientWindowManager* manager = TransientWindowManager::Get(window);
+  return manager ? manager->transient_parent() : NULL;
+}
+
+const std::vector<aura::Window*>& GetTransientChildren(
+    const aura::Window* window) {
+  const TransientWindowManager* manager = TransientWindowManager::Get(window);
+  if (manager)
+    return manager->transient_children();
+
+  static std::vector<aura::Window*>* shared = new std::vector<aura::Window*>;
+  return *shared;
+}
+
+void AddTransientChild(aura::Window* parent, aura::Window* child) {
+  TransientWindowManager::Get(parent)->AddTransientChild(child);
+}
+
+void RemoveTransientChild(aura::Window* parent, aura::Window* child) {
+  TransientWindowManager::Get(parent)->RemoveTransientChild(child);
+}
+
+bool HasTransientAncestor(const aura::Window* window,
+                          const aura::Window* ancestor) {
+  const aura::Window* transient_parent = GetTransientParent(window);
+  if (transient_parent == ancestor)
+    return true;
+  return transient_parent ?
+      HasTransientAncestor(transient_parent, ancestor) : false;
 }
 
 }  // namespace corewm

@@ -22,6 +22,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 namespace internal {
@@ -232,9 +233,9 @@ void DragWindowResizer::UpdateDragWindow(const gfx::Rect& bounds,
 
 bool DragWindowResizer::ShouldAllowMouseWarp() {
   return (details_.window_component == HTCAPTION) &&
-         !GetTarget()->transient_parent() &&
-         (GetTarget()->type() == ui::wm::WINDOW_TYPE_NORMAL ||
-          GetTarget()->type() == ui::wm::WINDOW_TYPE_PANEL);
+      !views::corewm::GetTransientParent(GetTarget()) &&
+      (GetTarget()->type() == ui::wm::WINDOW_TYPE_NORMAL ||
+       GetTarget()->type() == ui::wm::WINDOW_TYPE_PANEL);
 }
 
 TrayUser* DragWindowResizer::GetTrayUserItemAtPoint(
@@ -245,7 +246,7 @@ TrayUser* DragWindowResizer::GetTrayUserItemAtPoint(
 
   // Check that this is a drag move operation from a suitable window.
   if (details_.window_component != HTCAPTION ||
-      GetTarget()->transient_parent() ||
+      views::corewm::GetTransientParent(GetTarget()) ||
       (GetTarget()->type() != ui::wm::WINDOW_TYPE_NORMAL &&
        GetTarget()->type() != ui::wm::WINDOW_TYPE_PANEL &&
        GetTarget()->type() != ui::wm::WINDOW_TYPE_POPUP))

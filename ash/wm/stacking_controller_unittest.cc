@@ -10,6 +10,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/views/corewm/window_util.h"
 
 using aura::Window;
 
@@ -48,7 +49,7 @@ TEST_F(StackingControllerTest, TransientParent) {
 
   // Window with a transient parent.
   scoped_ptr<Window> w1(CreateTestWindow());
-  w2->AddTransientChild(w1.get());
+  views::corewm::AddTransientChild(w2.get(), w1.get());
   w1->SetBounds(gfx::Rect(10, 11, 250, 251));
   ParentWindowInPrimaryRootWindow(w1.get());
   w1->Show();

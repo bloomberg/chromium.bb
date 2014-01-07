@@ -133,7 +133,7 @@ bool WindowState::CanActivate() const {
 
 bool WindowState::CanSnap() const {
   if (!CanResize() || window_->type() == ui::wm::WINDOW_TYPE_PANEL ||
-      window_->transient_parent())
+      views::corewm::GetTransientParent(window_))
     return false;
   // If a window has a maximum size defined, snapping may make it too big.
   return window_->delegate() ? window_->delegate()->GetMaximumSize().IsEmpty() :

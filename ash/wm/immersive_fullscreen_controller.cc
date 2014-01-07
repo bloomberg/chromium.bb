@@ -23,6 +23,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -88,7 +89,7 @@ bool IsWindowTransientChildOf(aura::Window* maybe_transient,
     return false;
 
   for (aura::Window* window = maybe_transient; window;
-       window = window->transient_parent()) {
+       window = views::corewm::GetTransientParent(window)) {
     if (window == toplevel)
       return true;
   }
@@ -472,8 +473,9 @@ void ImmersiveFullscreenController::AnimationProgressed(
 ////////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 
-void ImmersiveFullscreenController::OnAddTransientChild(aura::Window* window,
-                                                     aura::Window* transient) {
+void ImmersiveFullscreenController::OnAddTransientChild(
+    aura::Window* window,
+    aura::Window* transient) {
   views::BubbleDelegateView* bubble_delegate = AsBubbleDelegate(transient);
   if (bubble_delegate &&
       bubble_delegate->GetAnchorView() &&
@@ -915,7 +917,7 @@ bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
 void ImmersiveFullscreenController::RecreateBubbleManager() {
   bubble_manager_.reset(new BubbleManager(this));
   const std::vector<aura::Window*> transient_children =
-      native_window_->transient_children();
+      views::corewm::GetTransientChildren(native_window_);
   for (size_t i = 0; i < transient_children.size(); ++i) {
     aura::Window* transient_child = transient_children[i];
     views::BubbleDelegateView* bubble_delegate =

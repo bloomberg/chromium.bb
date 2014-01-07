@@ -37,6 +37,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/background.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 namespace internal {
@@ -189,7 +190,7 @@ namespace {
 // Returns true if a window is a popup or a transient child.
 bool IsPopupOrTransient(const aura::Window* window) {
   return (window->type() == ui::wm::WINDOW_TYPE_POPUP ||
-          window->transient_parent());
+          views::corewm::GetTransientParent(window));
 }
 
 // Certain windows (minimized, hidden or popups) do not matter to docking.

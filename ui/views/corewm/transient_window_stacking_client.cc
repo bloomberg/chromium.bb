@@ -6,6 +6,9 @@
 
 #include <algorithm>
 
+#include "ui/views/corewm/transient_window_manager.h"
+#include "ui/views/corewm/window_util.h"
+
 using aura::Window;
 
 namespace views {
@@ -17,7 +20,7 @@ namespace {
 // siblings of |window|. Returns true if any ancestors were found, false if not.
 bool GetAllTransientAncestors(Window* window, Window::Windows* ancestors) {
   Window* parent = window->parent();
-  for (; window; window = window->transient_parent()) {
+  for (; window; window = GetTransientParent(window)) {
     if (window->parent() == parent)
       ancestors->push_back(window);
   }
@@ -51,27 +54,53 @@ void FindCommonTransientAncestor(Window** window1, Window** window2) {
   }
 }
 
-// Returns true if |window| has |ancestor| as a transient ancestor. A transient
-// ancestor is found by following the transient parent chain of the window.
-bool HasTransientAncestor(const Window* window, const Window* ancestor) {
-  if (window->transient_parent() == ancestor)
-    return true;
-  return window->transient_parent() ?
-      HasTransientAncestor(window->transient_parent(), ancestor) : false;
+// Adjusts |target| so that we don't attempt to stack on top of a window with a
+// NULL delegate.
+void SkipNullDelegates(Window::StackDirection direction, Window** target) {
+  const Window::Windows& children((*target)->parent()->children());
+  size_t target_i =
+      std::find(children.begin(), children.end(), *target) -
+      children.begin();
+
+  // By convention we don't stack on top of windows with layers with NULL
+  // delegates.  Walk backward to find a valid target window.  See tests
+  // TransientWindowManagerTest.StackingMadrigal and StackOverClosingTransient
+  // for an explanation of this.
+  while (target_i > 0) {
+    const size_t index = direction == Window::STACK_ABOVE ?
+        target_i : target_i - 1;
+    if (!children[index]->layer() ||
+        children[index]->layer()->delegate() != NULL)
+      break;
+    --target_i;
+  }
+  *target = children[target_i];
 }
 
 }  // namespace
 
+// static
+TransientWindowStackingClient* TransientWindowStackingClient::instance_ = NULL;
+
 TransientWindowStackingClient::TransientWindowStackingClient() {
+  instance_ = this;
 }
 
 TransientWindowStackingClient::~TransientWindowStackingClient() {
+  if (instance_ == this)
+    instance_ = NULL;
 }
 
 bool TransientWindowStackingClient::AdjustStacking(
     Window** child,
     Window** target,
     Window::StackDirection* direction) {
+  const TransientWindowManager* transient_manager =
+      TransientWindowManager::Get((*child)->parent());
+  if (transient_manager &&
+      transient_manager->IsStackingTransient(*child, *target))
+    return true;
+
   // For windows that have transient children stack the transient ancestors that
   // are siblings. This prevents one transient group from being inserted in the
   // middle of another.
@@ -89,7 +118,16 @@ bool TransientWindowStackingClient::AdjustStacking(
     }
     *target = siblings[target_i];
   }
-  return true;
+
+  SkipNullDelegates(*direction, target);
+
+  // If we couldn't find a valid target position, don't move anything.
+  if (*direction == Window::STACK_ABOVE &&
+      ((*target)->layer() && (*target)->layer()->delegate() == NULL)) {
+    return false;
+  }
+
+  return *child != *target;
 }
 
 }  // namespace corewm

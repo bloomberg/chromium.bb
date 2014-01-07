@@ -11,6 +11,8 @@
 namespace views {
 namespace corewm {
 
+class TransientWindowManager;
+
 class VIEWS_EXPORT TransientWindowStackingClient
     : public aura::client::WindowStackingClient {
  public:
@@ -23,6 +25,11 @@ class VIEWS_EXPORT TransientWindowStackingClient
                               aura::Window::StackDirection* direction) OVERRIDE;
 
  private:
+  // Purely for DCHECKs.
+  friend class TransientWindowManager;
+
+  static TransientWindowStackingClient* instance_;
+
   DISALLOW_COPY_AND_ASSIGN(TransientWindowStackingClient);
 };
 

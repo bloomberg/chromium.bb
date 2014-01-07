@@ -14,6 +14,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/test/capture_tracking_view.h"
 #include "ui/views/test/child_modal_window.h"
 #include "ui/views/widget/widget.h"
@@ -50,14 +51,14 @@ TEST_F(WindowModalityControllerTest, BasicActivation) {
   scoped_ptr<aura::Window> w12(
       CreateTestWindowInShellWithDelegate(&d, -12, gfx::Rect()));
 
-  w1->AddTransientChild(w11.get());
+  views::corewm::AddTransientChild(w1.get(), w11.get());
   wm::ActivateWindow(w1.get());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
   wm::ActivateWindow(w11.get());
   EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
 
   w12->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  w1->AddTransientChild(w12.get());
+  views::corewm::AddTransientChild(w1.get(), w12.get());
   wm::ActivateWindow(w12.get());
   EXPECT_TRUE(wm::IsActiveWindow(w12.get()));
 
@@ -97,8 +98,8 @@ TEST_F(WindowModalityControllerTest, NestedModals) {
   scoped_ptr<aura::Window> w2(
       CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
 
-  w1->AddTransientChild(w11.get());
-  w11->AddTransientChild(w111.get());
+  views::corewm::AddTransientChild(w1.get(), w11.get());
+  views::corewm::AddTransientChild(w11.get(), w111.get());
 
   wm::ActivateWindow(w1.get());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
@@ -151,8 +152,8 @@ TEST_F(WindowModalityControllerTest, NestedModalsOuterClosed) {
   scoped_ptr<aura::Window> w2(
       CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
 
-  w1->AddTransientChild(w11.get());
-  w11->AddTransientChild(w111);
+  views::corewm::AddTransientChild(w1.get(), w11.get());
+  views::corewm::AddTransientChild(w11.get(), w111);
 
   wm::ActivateWindow(w1.get());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
@@ -185,7 +186,7 @@ TEST_F(WindowModalityControllerTest, Events) {
   scoped_ptr<aura::Window> w11(CreateTestWindowInShellWithDelegate(&d, -11,
       gfx::Rect(20, 20, 50, 50)));
 
-  w1->AddTransientChild(w11.get());
+  views::corewm::AddTransientChild(w1.get(), w11.get());
 
   {
     // Clicking a point within w1 should activate that window.
@@ -224,7 +225,7 @@ TEST_F(WindowModalityControllerTest, GetModalTransient) {
   ASSERT_EQ(static_cast<aura::Window*>(NULL), wt);
 
   // Parent w2 to w1. It should get parented to the parent of w1.
-  w1->AddTransientChild(w2.get());
+  views::corewm::AddTransientChild(w1.get(), w2.get());
   ASSERT_EQ(2U, w1->parent()->children().size());
   EXPECT_EQ(-2, w1->parent()->children().at(1)->id());
 
@@ -326,7 +327,7 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                        gfx::Point(10, 10));
 
-  w1->AddTransientChild(w11.get());
+  views::corewm::AddTransientChild(w1.get(), w11.get());
   d1.reset();
   d11.reset();
 
@@ -515,7 +516,7 @@ TEST_F(WindowModalityControllerTest, WindowModalAncestor) {
   scoped_ptr<aura::Window> w4(
       CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
   w4->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
-  w1->AddTransientChild(w4.get());
+  views::corewm::AddTransientChild(w1.get(), w4.get());
 
   wm::ActivateWindow(w1.get());
   EXPECT_TRUE(wm::IsActiveWindow(w4.get()));
@@ -544,7 +545,7 @@ TEST_F(WindowModalityControllerTest, ChildModalAncestor) {
       CreateTestWindowInShellWithDelegate(&d, -2, gfx::Rect()));
   w4->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_CHILD);
   views::corewm::SetModalParent(w4.get(), w2.get());
-  w1->AddTransientChild(w4.get());
+  views::corewm::AddTransientChild(w1.get(), w4.get());
 
   wm::ActivateWindow(w1.get());
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));

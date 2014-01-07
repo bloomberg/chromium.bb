@@ -26,6 +26,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -470,10 +471,10 @@ TEST_P(PanelWindowResizerTransientTest, PanelWithTransientChild) {
   scoped_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   scoped_ptr<aura::Window> child(CreateTestWindowInShellWithDelegateAndType(
       NULL, transient_window_type_, 0, gfx::Rect(20, 20, 150, 40)));
-  window->AddTransientChild(child.get());
+  views::corewm::AddTransientChild(window.get(), child.get());
   if (window->parent() != child->parent())
     window->parent()->AddChild(child.get());
-  EXPECT_EQ(window.get(), child->transient_parent());
+  EXPECT_EQ(window.get(), views::corewm::GetTransientParent(child.get()));
 
   // Drag the child to the shelf. Its new position should not be overridden.
   const gfx::Rect attached_bounds(window->GetBoundsInScreen());

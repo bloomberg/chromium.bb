@@ -37,6 +37,7 @@
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "ui/views/corewm/tooltip_aura.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_delegate.h"
@@ -241,8 +242,9 @@ void DesktopRootWindowHostX11::OnRootWindowCreated(
   // If we're given a parent, we need to mark ourselves as transient to another
   // window. Otherwise activation gets screwy.
   gfx::NativeView parent = params.parent;
-  if (!params.child && params.parent)
-    parent->AddTransientChild(content_window_);
+  if (!params.child && params.parent) {
+    corewm::AddTransientChild(parent, content_window_);
+  }
 
   // Ensure that the X11DesktopHandler exists so that it dispatches activation
   // messages to us.
@@ -366,9 +368,9 @@ void DesktopRootWindowHostX11::CenterWindow(const gfx::Size& size) {
 
   // If |window_|'s transient parent bounds are big enough to contain |size|,
   // use them instead.
-  if (content_window_->transient_parent()) {
+  if (corewm::GetTransientParent(content_window_)) {
     gfx::Rect transient_parent_rect =
-        content_window_->transient_parent()->GetBoundsInScreen();
+        corewm::GetTransientParent(content_window_)->GetBoundsInScreen();
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width()) {
       parent_bounds = transient_parent_rect;

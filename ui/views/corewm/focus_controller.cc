@@ -13,6 +13,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/events/event.h"
 #include "ui/views/corewm/focus_rules.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace views {
 namespace corewm {
@@ -25,10 +26,10 @@ void StackTransientParentsBelowModalWindow(aura::Window* window) {
   if (window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_WINDOW)
     return;
 
-  aura::Window* transient_parent = window->transient_parent();
+  aura::Window* transient_parent = views::corewm::GetTransientParent(window);
   while (transient_parent) {
     transient_parent->parent()->StackChildAtTop(transient_parent);
-    transient_parent = transient_parent->transient_parent();
+    transient_parent = views::corewm::GetTransientParent(transient_parent);
   }
 }
 
@@ -37,7 +38,7 @@ void StackWindowLayerAbove(aura::Window* window, aura::Window* relative_to) {
   // Stack |window| above the last transient child of |relative_to| that shares
   // the same parent.
   const aura::Window::Windows& window_transients(
-      relative_to->transient_children());
+      GetTransientChildren(relative_to));
   for (aura::Window::Windows::const_iterator i = window_transients.begin();
        i != window_transients.end(); ++i) {
     aura::Window* transient = *i;

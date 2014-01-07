@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -218,7 +217,6 @@ Window::Window(WindowDelegate* delegate)
       owned_by_parent_(true),
       delegate_(delegate),
       parent_(NULL),
-      transient_parent_(NULL),
       visible_(false),
       id_(-1),
       transparent_(false),
@@ -249,24 +247,11 @@ Window::~Window() {
   // Then destroy the children.
   RemoveOrDestroyChildren();
 
-  // Removes ourselves from our transient parent (if it hasn't been done by the
-  // RootWindow).
-  if (transient_parent_)
-    transient_parent_->RemoveTransientChild(this);
-
   // The window needs to be removed from the parent before calling the
   // WindowDestroyed callbacks of delegate and the observers.
   if (parent_)
     parent_->RemoveChild(this);
 
-  // Destroy transient children, only after we've removed ourselves from our
-  // parent, as destroying an active transient child may otherwise attempt to
-  // refocus us.
-  Windows transient_children(transient_children_);
-  STLDeleteElements(&transient_children);
-  DCHECK(transient_children_.empty());
-
-  // Delegate and observers need to be notified after transients are deleted.
   if (delegate_)
     delegate_->OnWindowDestroyed();
   ObserverListBase<WindowObserver>::Iterator iter(observers_);
@@ -391,10 +376,6 @@ void Window::Show() {
 }
 
 void Window::Hide() {
-  for (Windows::iterator it = transient_children_.begin();
-       it != transient_children_.end(); ++it) {
-    (*it)->Hide();
-  }
   SetVisible(false);
   ReleaseCapture();
 }
@@ -603,28 +584,6 @@ bool Window::Contains(const Window* other) const {
       return true;
   }
   return false;
-}
-
-void Window::AddTransientChild(Window* child) {
-  if (child->transient_parent_)
-    child->transient_parent_->RemoveTransientChild(child);
-  DCHECK(std::find(transient_children_.begin(), transient_children_.end(),
-                   child) == transient_children_.end());
-  transient_children_.push_back(child);
-  child->transient_parent_ = this;
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnAddTransientChild(this, child));
-}
-
-void Window::RemoveTransientChild(Window* child) {
-  Windows::iterator i =
-      std::find(transient_children_.begin(), transient_children_.end(), child);
-  DCHECK(i != transient_children_.end());
-  transient_children_.erase(i);
-  if (child->transient_parent_ == this)
-    child->transient_parent_ = NULL;
-  FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnRemoveTransientChild(this, child));
 }
 
 Window* Window::GetChildById(int id) {
@@ -1160,34 +1119,6 @@ void Window::OnParentChanged() {
       WindowObserver, observers_, OnWindowParentChanged(this, parent_));
 }
 
-bool Window::HasTransientAncestor(const Window* ancestor) const {
-  if (transient_parent_ == ancestor)
-    return true;
-  return transient_parent_ ?
-      transient_parent_->HasTransientAncestor(ancestor) : false;
-}
-
-void Window::SkipNullDelegatesForStacking(StackDirection direction,
-                                          Window** target) const {
-  DCHECK_EQ(this, (*target)->parent());
-  size_t target_i =
-      std::find(children_.begin(), children_.end(), *target) -
-      children_.begin();
-
-  // By convention we don't stack on top of windows with layers with NULL
-  // delegates.  Walk backward to find a valid target window.
-  // See tests WindowTest.StackingMadrigal and StackOverClosingTransient
-  // for an explanation of this.
-  while (target_i > 0) {
-    const size_t index = direction == STACK_ABOVE ? target_i : target_i - 1;
-    if (!children_[index]->layer_ ||
-        children_[index]->layer_->delegate() != NULL)
-      break;
-    --target_i;
-  }
-  *target = children_[target_i];
-}
-
 void Window::StackChildRelativeTo(Window* child,
                                   Window* target,
                                   StackDirection direction) {
@@ -1199,46 +1130,9 @@ void Window::StackChildRelativeTo(Window* child,
 
   client::WindowStackingClient* stacking_client =
       client::GetWindowStackingClient();
-  if (stacking_client)
-    stacking_client->AdjustStacking(&child, &target, &direction);
-
-  SkipNullDelegatesForStacking(direction, &target);
-
-  // If we couldn't find a valid target position, don't move anything.
-  if (direction == STACK_ABOVE &&
-      (target->layer_ && target->layer_->delegate() == NULL))
+  if (stacking_client &&
+      !stacking_client->AdjustStacking(&child, &target, &direction))
     return;
-
-  // Don't try to stack a child above itself.
-  if (child == target)
-    return;
-
-  // Move the child.
-  StackChildRelativeToImpl(child, target, direction);
-
-  // Stack any transient children that share the same parent to be in front of
-  // 'child'. Preserve the existing stacking order by iterating in the order
-  // those children appear in children_ array.
-  Window* last_transient = child;
-  Windows children(children_);
-  for (Windows::iterator it = children.begin(); it != children.end(); ++it) {
-    Window* transient_child = *it;
-    if (transient_child != last_transient &&
-        transient_child->HasTransientAncestor(child)) {
-      StackChildRelativeToImpl(transient_child, last_transient, STACK_ABOVE);
-      last_transient = transient_child;
-    }
-  }
-}
-
-void Window::StackChildRelativeToImpl(Window* child,
-                                      Window* target,
-                                      StackDirection direction) {
-  DCHECK_NE(child, target);
-  DCHECK(child);
-  DCHECK(target);
-  DCHECK_EQ(this, child->parent());
-  DCHECK_EQ(this, target->parent());
 
   const size_t child_i =
       std::find(children_.begin(), children_.end(), child) - children_.begin();

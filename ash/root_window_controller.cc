@@ -65,6 +65,7 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/corewm/capture_controller.h"
 #include "ui/views/corewm/visibility_controller.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 #include "ui/wm/public/easy_resize_window_targeter.h"
@@ -589,7 +590,7 @@ const aura::Window* RootWindowController::GetWindowForFullscreenMode() const {
   while (topmost_window) {
     if (wm::GetWindowState(topmost_window)->IsFullscreen())
       return topmost_window;
-    topmost_window = topmost_window->transient_parent();
+    topmost_window = views::corewm::GetTransientParent(topmost_window);
   }
   return NULL;
 }

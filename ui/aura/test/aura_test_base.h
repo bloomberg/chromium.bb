@@ -32,9 +32,6 @@ class AuraTestBase : public testing::Test {
   aura::Window* CreateNormalWindow(int id, Window* parent,
                                    aura::WindowDelegate* delegate);
 
-  // Creates a transient window that is transient to |parent|.
-  aura::Window* CreateTransientChild(int id, aura::Window* parent);
-
  protected:
   void RunAllPendingInMessageLoop();
 

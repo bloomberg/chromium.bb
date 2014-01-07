@@ -17,6 +17,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/test/capture_tracking_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -161,7 +162,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, NonModalTransient) {
   TransientWindowObserver destruction_observer;
   transient->AddObserver(&destruction_observer);
 
-  EXPECT_EQ(parent.get(), transient->transient_parent());
+  EXPECT_EQ(parent.get(), views::corewm::GetTransientParent(transient));
   EXPECT_EQ(parent->parent(), transient->parent());
 
   // The transient should be destroyed with its parent.
@@ -178,7 +179,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
   TransientWindowObserver do1;
   t1->AddObserver(&do1);
 
-  EXPECT_EQ(parent.get(), t1->transient_parent());
+  EXPECT_EQ(parent.get(), views::corewm::GetTransientParent(t1));
   EXPECT_EQ(GetModalContainer(), t1->parent());
 
   // t1 should now be active.
@@ -196,7 +197,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransient) {
 
   EXPECT_TRUE(wm::IsActiveWindow(t2));
 
-  EXPECT_EQ(t1, t2->transient_parent());
+  EXPECT_EQ(t1, views::corewm::GetTransientParent(t2));
   EXPECT_EQ(GetModalContainer(), t2->parent());
 
   // t2 should still be active, even after clicking on t1.
@@ -217,7 +218,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
   TransientWindowObserver do1;
   t1->AddObserver(&do1);
 
-  EXPECT_EQ(NULL, t1->transient_parent());
+  EXPECT_EQ(NULL, views::corewm::GetTransientParent(t1.get()));
   EXPECT_EQ(GetModalContainer(), t1->parent());
 
   // t1 should now be active.
@@ -236,7 +237,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalNonTransient) {
 
   EXPECT_TRUE(wm::IsActiveWindow(t2));
 
-  EXPECT_EQ(t1, t2->transient_parent());
+  EXPECT_EQ(t1, views::corewm::GetTransientParent(t2));
   EXPECT_EQ(GetModalContainer(), t2->parent());
 
   // t2 should still be active, even after clicking on t1.

@@ -134,10 +134,13 @@ void ReparentChildWithTransientChildren(aura::Window* child,
 void ReparentTransientChildrenOfChild(aura::Window* child,
                                       aura::Window* old_parent,
                                       aura::Window* new_parent) {
-  for (size_t i = 0; i < child->transient_children().size(); ++i) {
-    ReparentChildWithTransientChildren(child->transient_children()[i],
-                                       old_parent,
-                                       new_parent);
+  for (size_t i = 0;
+       i < views::corewm::GetTransientChildren(child).size();
+       ++i) {
+    ReparentChildWithTransientChildren(
+        views::corewm::GetTransientChildren(child)[i],
+        old_parent,
+        new_parent);
   }
 }
 

@@ -19,6 +19,7 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace ash {
 namespace {
@@ -37,7 +38,8 @@ void MoveAllTransientChildrenToNewRoot(const gfx::Display& display,
                                        aura::Window* window) {
   aura::Window* dst_root = Shell::GetInstance()->display_controller()->
       GetRootWindowForDisplayId(display.id());
-  aura::Window::Windows transient_children = window->transient_children();
+  aura::Window::Windows transient_children =
+      views::corewm::GetTransientChildren(window);
   for (aura::Window::Windows::iterator iter = transient_children.begin();
        iter != transient_children.end(); ++iter) {
     aura::Window* transient_child = *iter;
@@ -162,7 +164,7 @@ void ScreenPositionController::SetBounds(aura::Window* window,
   // b) if the window or its ancestor has kStayInSameRootWindowkey. It's
   //    intentionally kept in the same root window even if the bounds is
   //    outside of the display.
-  if (!window->transient_parent() &&
+  if (!views::corewm::GetTransientParent(window) &&
       !ShouldStayInSameRootWindow(window)) {
     aura::Window* dst_root =
         Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(

@@ -16,6 +16,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/views/corewm/shadow.h"
 #include "ui/views/corewm/shadow_types.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/corewm/wm_state.h"
 
 namespace views {
@@ -205,7 +206,7 @@ TEST_F(ShadowControllerTest, TransientParentKeepsActiveShadow) {
   window2->Init(ui::LAYER_TEXTURED);
   ParentWindow(window2.get());
   window2->SetBounds(gfx::Rect(11, 21, 301, 401));
-  window1->AddTransientChild(window2.get());
+  AddTransientChild(window1.get(), window2.get());
   aura::client::SetHideOnDeactivate(window2.get(), true);
   window2->Show();
   ActivateWindow(window2.get());

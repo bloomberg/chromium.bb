@@ -27,6 +27,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme_aura.h"
+#include "ui/views/corewm/window_util.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/ime/input_method_bridge.h"
 #include "ui/views/views_delegate.h"
@@ -131,7 +132,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     // Set up the transient child before the window is added. This way the
     // LayoutManager knows the window has a transient parent.
     if (parent && parent->type() != ui::wm::WINDOW_TYPE_UNKNOWN) {
-      parent->AddTransientChild(window_);
+      corewm::AddTransientChild(parent, window_);
       if (!context)
         context = parent;
       parent = NULL;
@@ -310,9 +311,9 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
 
   // If |window_|'s transient parent's bounds are big enough to fit it, then we
   // center it with respect to the transient parent.
-  if (window_->transient_parent()) {
-    gfx::Rect transient_parent_rect = window_->transient_parent()->
-        GetBoundsInRootWindow();
+  if (views::corewm::GetTransientParent(window_)) {
+    gfx::Rect transient_parent_rect =
+        views::corewm::GetTransientParent(window_)->GetBoundsInRootWindow();
     transient_parent_rect.Intersect(work_area);
     if (transient_parent_rect.height() >= size.height() &&
         transient_parent_rect.width() >= size.width())
@@ -1082,7 +1083,7 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
 void NativeWidgetPrivate::GetAllOwnedWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* owned) {
   const aura::Window::Windows& transient_children =
-      native_view->transient_children();
+      views::corewm::GetTransientChildren(native_view);
   for (aura::Window::Windows::const_iterator i = transient_children.begin();
        i != transient_children.end(); ++i) {
     NativeWidgetPrivate* native_widget = static_cast<NativeWidgetPrivate*>(

@@ -11,6 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/models/table_model_observer.h"
 #include "ui/oak/oak_pretty_print.h"
+#include "ui/views/corewm/window_util.h"
 
 namespace oak {
 namespace internal {
@@ -131,11 +132,12 @@ base::string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
     case ROW_ROOTWINDOW:
       return PropertyWithVoidStar("Root Window: ", window_->GetRootWindow());
     case ROW_TRANSIENTCHILDREN:
-      return PropertyWithInteger("Transient Children: ",
-                                 window_->transient_children().size());
+      return PropertyWithInteger(
+          "Transient Children: ",
+          views::corewm::GetTransientChildren(window_).size());
     case ROW_TRANSIENTPARENT:
       return PropertyWithVoidStar("Transient Parent: ",
-                                  window_->transient_parent());
+                                  views::corewm::GetTransientParent(window_));
     case ROW_USERDATA:
       return PropertyWithVoidStar("User Data: ", window_->user_data());
     case ROW_IGNOREEVENTS:
