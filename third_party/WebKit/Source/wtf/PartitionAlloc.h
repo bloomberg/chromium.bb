@@ -496,8 +496,8 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionRootBase* root, size_t size, P
         ASSERT(partitionPointerToPage(ret));
         PartitionFreelistEntry* newHead = partitionFreelistMask(static_cast<PartitionFreelistEntry*>(ret)->next);
         partitionPageSetFreelistHead(page, newHead);
-        ASSERT(!partitionPageFreelistHead(page) || partitionPointerIsValid(bucket->root, partitionPageFreelistHead(page)));
-        ASSERT(!partitionPageFreelistHead(page) || partitionPointerToPage(partitionPageFreelistHead(page)));
+        ASSERT(!ret || partitionPointerIsValid(bucket->root, ret));
+        ASSERT(!ret || partitionPointerToPage(ret));
         page->numAllocatedSlots++;
     } else {
         ret = partitionAllocSlowPath(root, size, bucket);
@@ -545,12 +545,13 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
     ASSERT(*(static_cast<uintptr_t*>(ptrEnd) - 1) == kCookieValue);
     memset(ptr, kFreedByte, bucketSize);
 #endif
-    ASSERT(!partitionPageFreelistHead(page) || partitionPointerIsValid(page->bucket->root, partitionPageFreelistHead(page)));
-    ASSERT(!partitionPageFreelistHead(page) || partitionPointerToPage(partitionPageFreelistHead(page)));
-    RELEASE_ASSERT(ptr != partitionPageFreelistHead(page)); // Catches an immediate double free.
-    ASSERT(!partitionPageFreelistHead(page) || ptr != partitionFreelistMask(partitionPageFreelistHead(page)->next)); // Look for double free one level deeper in debug.
+    PartitionFreelistEntry* freelistHead = partitionPageFreelistHead(page);
+    ASSERT(!freelistHead || partitionPointerIsValid(page->bucket->root, freelistHead));
+    ASSERT(!freelistHead || partitionPointerToPage(freelistHead));
+    RELEASE_ASSERT(ptr != freelistHead); // Catches an immediate double free.
+    ASSERT(!freelistHead || ptr != partitionFreelistMask(freelistHead->next)); // Look for double free one level deeper in debug.
     PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
-    entry->next = partitionFreelistMask(partitionPageFreelistHead(page));
+    entry->next = partitionFreelistMask(freelistHead);
     partitionPageSetFreelistHead(page, entry);
     --page->numAllocatedSlots;
     if (UNLIKELY(page->numAllocatedSlots <= 0))
