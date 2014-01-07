@@ -205,6 +205,10 @@
                   '|Source/bindings/scripts/code_generator_v8.pm' \
                   '|Source/web/WebDOMActivityLogger.cpp'
     },
+    'webp': {
+      'filepath': 'Source/platform/image-decoders/webp' \
+                  '|Source/platform/image-encoders/skia/WEBP'
+    },
   },
 
   'WATCHLISTS': {
@@ -296,5 +300,9 @@
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
     'device_orientation': [ 'timvolodine@chromium.org', 'mvanouwerkerk@chromium.org', 'ch.dumez@samsung.com' ],
     'activity_logger': [ 'watchdog-blink-watchlist@google.com' ],
+    'webp': [ 'urvang@google.com',
+              'jzern@chromium.org',
+              'skal@google.com',
+              'vikasa@google.com' ],
   },
 }
