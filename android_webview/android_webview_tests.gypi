@@ -74,6 +74,7 @@
         '../testing/gtest.gyp:gtest',
         '../ui/ui.gyp:ui_base_jni_headers',
         'android_webview_common',
+        'android_webview_unittests_jni',
       ],
       'include_dirs': [
         '..',
@@ -119,7 +120,6 @@
       'dependencies': [
         'android_webview_unittest_java',
         'android_webview_unittests',
-        'android_webview_unittests_jni',
       ],
       'variables': {
         'test_suite_name': 'android_webview_unittests',
