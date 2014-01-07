@@ -521,6 +521,9 @@ input_set_pointer_image(struct input *input, int pointer);
 void
 input_get_position(struct input *input, int32_t *x, int32_t *y);
 
+int
+input_get_touch(struct input *input, int32_t id, float *x, float *y);
+
 #define MOD_SHIFT_MASK		0x01
 #define MOD_ALT_MASK		0x02
 #define MOD_CONTROL_MASK	0x04

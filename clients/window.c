@@ -289,6 +289,7 @@ struct widget {
 
 struct touch_point {
 	int32_t id;
+	float x, y;
 	struct widget *widget;
 	struct wl_list link;
 };
@@ -3019,6 +3020,8 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 		if (tp) {
 			tp->id = id;
 			tp->widget = widget;
+			tp->x = sx;
+			tp->y = sy;
 			wl_list_insert(&input->touch_point_list, &tp->link);
 
 			if (widget->touch_down_handler)
@@ -3078,6 +3081,8 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
 		if (tp->id != id)
 			continue;
 
+		tp->x = sx;
+		tp->y = sy;
 		if (tp->widget->touch_motion_handler)
 			(*tp->widget->touch_motion_handler)(tp->widget, input, time,
 							    id, sx, sy,
@@ -3193,6 +3198,23 @@ input_get_position(struct input *input, int32_t *x, int32_t *y)
 {
 	*x = input->sx;
 	*y = input->sy;
+}
+
+int
+input_get_touch(struct input *input, int32_t id, float *x, float *y)
+{
+	struct touch_point *tp;
+
+	wl_list_for_each(tp, &input->touch_point_list, link) {
+		if (tp->id != id)
+			continue;
+
+		*x = tp->x;
+		*y = tp->y;
+		return 0;
+	}
+
+	return -1;
 }
 
 struct display *
