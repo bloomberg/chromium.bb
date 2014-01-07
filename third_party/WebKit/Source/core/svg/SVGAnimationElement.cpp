@@ -242,6 +242,8 @@ void SVGAnimationElement::animationAttributeChanged()
 {
     // Assumptions may not hold after an attribute change.
     m_animationValid = false;
+    m_lastValuesAnimationFrom = String();
+    m_lastValuesAnimationTo = String();
     setInactive();
 }
 
