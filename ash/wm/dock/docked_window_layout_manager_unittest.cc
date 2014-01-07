@@ -417,9 +417,9 @@ TEST_P(DockedWindowLayoutManagerTest, AddTwoWindows) {
   int gap1 = w1->GetBoundsInScreen().y();
   int gap2 = w2->GetBoundsInScreen().y() - w1->GetBoundsInScreen().bottom();
   int gap3 = work_area.bottom() - w2->GetBoundsInScreen().bottom();
-  EXPECT_NEAR(gap1, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap1);
   EXPECT_NEAR(gap2, min_dock_gap(), 1);
-  EXPECT_NEAR(gap3, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap3);
 }
 
 // Adds two non-overlapping windows and tests layout after a drag.
@@ -451,9 +451,9 @@ TEST_P(DockedWindowLayoutManagerTest, TwoWindowsDragging) {
   int gap1 = w2->GetBoundsInScreen().y() - work_area.y();
   int gap2 = w1->GetBoundsInScreen().y() - w2->GetBoundsInScreen().bottom();
   int gap3 = work_area.bottom() - w1->GetBoundsInScreen().bottom();
-  EXPECT_NEAR(gap1, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap1);
   EXPECT_NEAR(gap2, min_dock_gap(), 1);
-  EXPECT_NEAR(gap3, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap3);
 }
 
 // Adds three overlapping windows and tests layout after a drag.
@@ -488,10 +488,10 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDragging) {
   int gap2 = w2->GetBoundsInScreen().y() - w1->GetBoundsInScreen().bottom();
   int gap3 = w3->GetBoundsInScreen().y() - w2->GetBoundsInScreen().bottom();
   int gap4 = work_area.bottom() - w3->GetBoundsInScreen().bottom();
-  EXPECT_NEAR(gap1, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap1);
   EXPECT_NEAR(gap2, min_dock_gap(), 1);
   EXPECT_NEAR(gap3, min_dock_gap(), 1);
-  EXPECT_NEAR(gap4, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap4);
 
   // Drag w1 below the point where w1 and w2 would swap places. This point is
   // half way between the tops of those two windows.
@@ -501,11 +501,10 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDragging) {
   DragMove(0, min_dock_gap() + w2->bounds().height() / 2 + 10);
 
   // During the drag the windows get rearranged and the top and the bottom
-  // should be limited by the work area + |kMinDockGap|.
-  EXPECT_EQ(min_dock_gap(), w2->GetBoundsInScreen().y());
+  // should be limited by the work area.
+  EXPECT_EQ(work_area.y(), w2->GetBoundsInScreen().y());
   EXPECT_GT(w1->GetBoundsInScreen().y(), w2->GetBoundsInScreen().y());
-  EXPECT_EQ(min_dock_gap(),
-            work_area.bottom() - w3->GetBoundsInScreen().bottom());
+  EXPECT_EQ(work_area.bottom(), w3->GetBoundsInScreen().bottom());
   DragEnd();
 
   // Test the new windows order and that the gaps differ at most by a pixel.
@@ -513,10 +512,10 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDragging) {
   gap2 = w1->GetBoundsInScreen().y() - w2->GetBoundsInScreen().bottom();
   gap3 = w3->GetBoundsInScreen().y() - w1->GetBoundsInScreen().bottom();
   gap4 = work_area.bottom() - w3->GetBoundsInScreen().bottom();
-  EXPECT_NEAR(gap1, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap1);
   EXPECT_NEAR(gap2, min_dock_gap(), 1);
   EXPECT_NEAR(gap3, min_dock_gap(), 1);
-  EXPECT_NEAR(gap4, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap4);
 }
 
 // Adds three windows in bottom display and tests layout after a drag.
@@ -558,10 +557,10 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
   int gap2 = w2->GetBoundsInScreen().y() - w1->GetBoundsInScreen().bottom();
   int gap3 = w3->GetBoundsInScreen().y() - w2->GetBoundsInScreen().bottom();
   int gap4 = work_area.bottom() - w3->GetBoundsInScreen().bottom();
-  EXPECT_NEAR(gap1, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap1);
   EXPECT_NEAR(gap2, min_dock_gap(), 1);
   EXPECT_NEAR(gap3, min_dock_gap(), 1);
-  EXPECT_NEAR(gap4, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap4);
 
   // Drag w1 below the point where w1 and w2 would swap places. This point is
   // half way between the tops of those two windows.
@@ -571,11 +570,10 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
   DragMove(0, min_dock_gap() + w2->bounds().height() / 2 + 10);
 
   // During the drag the windows get rearranged and the top and the bottom
-  // should be limited by the work area + |kMinDockGap|.
-  EXPECT_EQ(work_area.y() + min_dock_gap(), w2->GetBoundsInScreen().y());
+  // should be limited by the work area.
+  EXPECT_EQ(work_area.y(), w2->GetBoundsInScreen().y());
   EXPECT_GT(w1->GetBoundsInScreen().y(), w2->GetBoundsInScreen().y());
-  EXPECT_EQ(min_dock_gap(),
-            work_area.bottom() - w3->GetBoundsInScreen().bottom());
+  EXPECT_EQ(work_area.bottom(), w3->GetBoundsInScreen().bottom());
   DragEnd();
 
   // Test the new windows order and that the overlaps differ at most by a pixel.
@@ -583,10 +581,10 @@ TEST_P(DockedWindowLayoutManagerTest, ThreeWindowsDraggingSecondScreen) {
   gap2 = w1->GetBoundsInScreen().y() - w2->GetBoundsInScreen().bottom();
   gap3 = w3->GetBoundsInScreen().y() - w1->GetBoundsInScreen().bottom();
   gap4 = work_area.bottom() - w3->GetBoundsInScreen().bottom();
-  EXPECT_NEAR(gap1, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap1);
   EXPECT_NEAR(gap2, min_dock_gap(), 1);
   EXPECT_NEAR(gap3, min_dock_gap(), 1);
-  EXPECT_NEAR(gap4, min_dock_gap(), 1);
+  EXPECT_EQ(0, gap4);
 }
 
 // Tests that a second window added to the dock is resized to match.

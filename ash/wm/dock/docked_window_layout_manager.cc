@@ -550,10 +550,8 @@ bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
   // then it cannot be docked.
   const gfx::Rect work_area =
       Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
-  if (GetWindowHeightCloseTo(window, work_area.height() - 2 * kMinDockGap) >
-      work_area.height() - 2 * kMinDockGap) {
+  if (GetWindowHeightCloseTo(window, work_area.height()) > work_area.height())
     return false;
-  }
   // Cannot dock on the other size from an existing dock.
   const DockedAlignment alignment = CalculateAlignment();
   if ((edge == SNAP_LEFT && alignment == DOCKED_ALIGNMENT_RIGHT) ||
@@ -818,9 +816,10 @@ void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
   // Minimize any windows that don't fit without overlap.
   const gfx::Rect work_area =
       Shell::GetScreen()->GetDisplayNearestWindow(dock_container_).work_area();
-  int available_room = work_area.height() - kMinDockGap;
+  int available_room = work_area.height();
+  bool gap_needed = !!child;
   if (child)
-    available_room -= (GetWindowHeightCloseTo(child, 0) + kMinDockGap);
+    available_room -= GetWindowHeightCloseTo(child, 0);
   // Use a copy of children array because a call to Minimize can change order.
   aura::Window::Windows children(dock_container_->children());
   aura::Window::Windows::const_reverse_iterator iter = children.rbegin();
@@ -828,7 +827,9 @@ void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
     aura::Window* window(*iter++);
     if (window == child || !IsUsedByLayout(window))
       continue;
-    int room_needed = GetWindowHeightCloseTo(window, 0) + kMinDockGap;
+    int room_needed = GetWindowHeightCloseTo(window, 0) +
+        (gap_needed ? kMinDockGap : 0);
+    gap_needed = true;
     if (available_room > room_needed) {
       available_room -= room_needed;
     } else {
@@ -1008,8 +1009,9 @@ void DockedWindowLayoutManager::Relayout() {
 int DockedWindowLayoutManager::CalculateWindowHeightsAndRemainingRoom(
     const gfx::Rect work_area,
     std::vector<WindowWithHeight>* visible_windows) {
-  int available_room = work_area.height() - kMinDockGap;
+  int available_room = work_area.height();
   int remaining_windows = visible_windows->size();
+  int gap_height = remaining_windows > 1 ? kMinDockGap : 0;
 
   // Sort windows by their minimum heights and calculate target heights.
   std::sort(visible_windows->begin(), visible_windows->end(),
@@ -1023,11 +1025,12 @@ int DockedWindowLayoutManager::CalculateWindowHeightsAndRemainingRoom(
            visible_windows->rbegin();
       iter != visible_windows->rend(); ++iter) {
     iter->height_ = GetWindowHeightCloseTo(
-        iter->window(), available_room / remaining_windows - kMinDockGap);
-    available_room -= (iter->height_ + kMinDockGap);
+        iter->window(),
+        (available_room + gap_height) / remaining_windows - gap_height);
+    available_room -= (iter->height_ + gap_height);
     remaining_windows--;
   }
-  return available_room;
+  return available_room + gap_height;
 }
 
 int DockedWindowLayoutManager::CalculateIdealWidth(
@@ -1067,10 +1070,10 @@ void DockedWindowLayoutManager::FanOutChildren(
 
   // Calculate initial vertical offset and the gap or overlap between windows.
   const int num_windows = visible_windows->size();
-  const float delta = kMinDockGap + (float)available_room /
+  const float delta = static_cast<float>(available_room) /
       ((available_room > 0 || num_windows <= 1) ?
           num_windows + 1 : num_windows - 1);
-  float y_pos = work_area.y() + ((delta > 0) ? delta : kMinDockGap);
+  float y_pos = work_area.y() + ((delta > 0) ? delta : 0);
 
   // Docked area is shown only if there is at least one non-dragged visible
   // docked window.
@@ -1113,7 +1116,7 @@ void DockedWindowLayoutManager::FanOutChildren(
     bounds.set_y(std::max(work_area.y(),
                           std::min(work_area.bottom() - bounds.height(),
                                    static_cast<int>(y_pos + 0.5))));
-    y_pos += bounds.height() + delta;
+    y_pos += bounds.height() + delta + kMinDockGap;
 
     // All docked windows other than the one currently dragged remain stuck
     // to the screen edge (flush with the edge or centered in the dock area).
