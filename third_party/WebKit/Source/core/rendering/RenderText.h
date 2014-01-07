@@ -24,6 +24,7 @@
 #define RenderText_h
 
 #include "core/rendering/RenderObject.h"
+#include "platform/LengthFunctions.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 

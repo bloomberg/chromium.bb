@@ -28,6 +28,7 @@
 #include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderTableSection.h"
+#include "platform/LengthFunctions.h"
 
 namespace WebCore {
 

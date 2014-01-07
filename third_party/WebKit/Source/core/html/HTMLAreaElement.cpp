@@ -28,6 +28,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderView.h"
+#include "platform/LengthFunctions.h"
 #include "platform/graphics/Path.h"
 #include "platform/transforms/AffineTransform.h"
 

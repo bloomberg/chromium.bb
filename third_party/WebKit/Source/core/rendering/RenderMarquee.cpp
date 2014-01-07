@@ -52,6 +52,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
+#include "platform/LengthFunctions.h"
 
 using namespace std;
 

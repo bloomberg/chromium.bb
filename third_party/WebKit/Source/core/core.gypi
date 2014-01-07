@@ -670,8 +670,6 @@
             'css/CSSKeyframeRule.h',
             'css/CSSKeyframesRule.cpp',
             'css/CSSKeyframesRule.h',
-            'css/CSSLengthFunctions.cpp',
-            'css/CSSLengthFunctions.h',
             'css/CSSLineBoxContainValue.cpp',
             'css/CSSMatrix.cpp',
             'css/CSSMatrix.h',

@@ -31,6 +31,7 @@
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderScrollbarTheme.h"
 #include "core/rendering/RenderView.h"
+#include "platform/LengthFunctions.h"
 
 using namespace std;
 

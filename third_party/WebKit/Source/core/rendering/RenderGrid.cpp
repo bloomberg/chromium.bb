@@ -30,6 +30,7 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/GridCoordinate.h"
+#include "platform/LengthFunctions.h"
 
 namespace WebCore {
 
