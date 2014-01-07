@@ -148,13 +148,6 @@ void Link::OnEnabledChanged() {
   View::OnEnabledChanged();
 }
 
-void Link::OnPaint(gfx::Canvas* canvas) {
-  Label::OnPaint(canvas);
-
-  if (HasFocus())
-    canvas->DrawFocusRect(GetLocalBounds());
-}
-
 void Link::OnFocus() {
   Label::OnFocus();
   // We render differently focused.

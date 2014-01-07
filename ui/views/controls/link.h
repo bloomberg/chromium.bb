@@ -47,7 +47,6 @@ class VIEWS_EXPORT Link : public Label {
       const ui::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual void OnEnabledChanged() OVERRIDE;
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
   virtual void SetFontList(const gfx::FontList& font_list) OVERRIDE;
