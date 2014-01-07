@@ -3692,6 +3692,10 @@ class ReportStage(bs.BuilderStage):
             dry_run=archive_stage.debug)
         if (self._run.config['health_alert_recipients'] and
             streak_value == -self._run.config['health_threshold']):
+          logging.info('Builder failed %i consecutive times, sending health '
+                       'alert email to %s.',
+                       self._run.config['health_threshold'],
+                       self._run.config['health_alert_recipients'])
           alerts.SendEmail('%s health alert' % self._run.config['name'],
                            self._run.config['health_alert_recipients'],
                            message=self._HealthAlertMessage(),
