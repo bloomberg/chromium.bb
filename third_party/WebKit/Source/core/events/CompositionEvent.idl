@@ -29,6 +29,10 @@
 
     [InitializedByEventConstructor] readonly attribute DOMString data;
 
+    [RuntimeEnabled=IMEAPI] readonly attribute long activeSegmentStart;
+    [RuntimeEnabled=IMEAPI] readonly attribute long activeSegmentEnd;
+    [RuntimeEnabled=IMEAPI] sequence<unsigned long> getSegments();
+
     void initCompositionEvent([Default=Undefined] optional DOMString typeArg,
                               [Default=Undefined] optional boolean canBubbleArg,
                               [Default=Undefined] optional boolean cancelableArg,
@@ -36,4 +40,3 @@
                               [Default=Undefined] optional DOMString dataArg);
 
 };
-

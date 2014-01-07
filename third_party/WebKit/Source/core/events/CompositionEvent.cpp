@@ -36,22 +36,41 @@ CompositionEventInit::CompositionEventInit()
 }
 
 CompositionEvent::CompositionEvent()
+    : m_activeSegmentStart(0)
+    , m_activeSegmentEnd(0)
 {
     ScriptWrappable::init(this);
+    initializeSegments();
 }
 
 CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data)
     : UIEvent(type, true, true, view, 0)
     , m_data(data)
+    , m_activeSegmentStart(0)
+    , m_activeSegmentEnd(0)
 {
     ScriptWrappable::init(this);
+    initializeSegments();
+}
+
+CompositionEvent::CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
+    : UIEvent(type, true, true, view, 0)
+    , m_data(data)
+    , m_activeSegmentStart(0)
+    , m_activeSegmentEnd(0)
+{
+    ScriptWrappable::init(this);
+    initializeSegments(&underlines);
 }
 
 CompositionEvent::CompositionEvent(const AtomicString& type, const CompositionEventInit& initializer)
     : UIEvent(type, initializer)
     , m_data(initializer.data)
+    , m_activeSegmentStart(0)
+    , m_activeSegmentEnd(0)
 {
     ScriptWrappable::init(this);
+    initializeSegments();
 }
 
 CompositionEvent::~CompositionEvent()
@@ -66,6 +85,29 @@ void CompositionEvent::initCompositionEvent(const AtomicString& type, bool canBu
     initUIEvent(type, canBubble, cancelable, view, 0);
 
     m_data = data;
+    initializeSegments();
+}
+
+void CompositionEvent::initializeSegments(const Vector<CompositionUnderline>* underlines)
+{
+    m_activeSegmentStart = 0;
+    m_activeSegmentEnd = m_data.length();
+
+    if (!underlines || !underlines->size()) {
+        m_segments.append(0);
+        return;
+    }
+
+    for (size_t i = 0; i < underlines->size(); ++i) {
+        if (underlines->at(i).thick) {
+            m_activeSegmentStart = underlines->at(i).startOffset;
+            m_activeSegmentEnd = underlines->at(i).endOffset;
+            break;
+        }
+    }
+
+    for (size_t i = 0; i < underlines->size(); ++i)
+        m_segments.append(underlines->at(i).startOffset);
 }
 
 const AtomicString& CompositionEvent::interfaceName() const

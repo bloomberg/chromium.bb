@@ -33,7 +33,6 @@
 
 #include "core/dom/Text.h"
 #include "core/editing/InputMethodController.h"
-#include "core/html/ime/Composition.h"
 #include "core/frame/Frame.h"
 
 namespace WebCore {
@@ -51,13 +50,6 @@ InputMethodContext::InputMethodContext(HTMLElement* element)
 
 InputMethodContext::~InputMethodContext()
 {
-}
-
-Composition* InputMethodContext::composition()
-{
-    if (!m_composition)
-        m_composition = Composition::create(this);
-    return m_composition.get();
 }
 
 String InputMethodContext::locale() const

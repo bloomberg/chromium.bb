@@ -30,7 +30,6 @@
 
 // http://www.w3.org/TR/ime-api/
 interface InputMethodContext : EventTarget {
-    readonly attribute Composition composition;
     readonly attribute DOMString locale;
     readonly attribute HTMLElement target;
     readonly attribute unsigned long compositionStartOffset;

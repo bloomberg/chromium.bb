@@ -27,6 +27,7 @@
 #ifndef CompositionEvent_h
 #define CompositionEvent_h
 
+#include "core/editing/CompositionUnderline.h"
 #include "core/events/UIEvent.h"
 
 namespace WebCore {
@@ -49,6 +50,11 @@ public:
         return adoptRef(new CompositionEvent(type, view, data));
     }
 
+    static PassRefPtr<CompositionEvent> create(const AtomicString& type, PassRefPtr<AbstractView> view, const String& data, const Vector<CompositionUnderline>& underlines)
+    {
+        return adoptRef(new CompositionEvent(type, view, data, underlines));
+    }
+
     static PassRefPtr<CompositionEvent> create(const AtomicString& type, const CompositionEventInit& initializer)
     {
         return adoptRef(new CompositionEvent(type, initializer));
@@ -59,15 +65,23 @@ public:
     void initCompositionEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>, const String& data);
 
     String data() const { return m_data; }
+    int activeSegmentStart() const { return m_activeSegmentStart; }
+    int activeSegmentEnd() const { return m_activeSegmentEnd; }
+    const Vector<unsigned>& getSegments() const { return m_segments; }
 
     virtual const AtomicString& interfaceName() const;
 
 private:
     CompositionEvent();
     CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView>, const String&);
+    CompositionEvent(const AtomicString& type, PassRefPtr<AbstractView>, const String&, const Vector<CompositionUnderline>& underlines);
     CompositionEvent(const AtomicString& type, const CompositionEventInit&);
+    void initializeSegments(const Vector<CompositionUnderline>* = 0);
 
     String m_data;
+    int m_activeSegmentStart;
+    int m_activeSegmentEnd;
+    Vector<unsigned> m_segments;
 };
 
 } // namespace WebCore
