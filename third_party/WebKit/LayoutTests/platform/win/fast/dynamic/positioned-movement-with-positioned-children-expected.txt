@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 92: "You should not"
           text run at (0,20) width 91: "see this. Resize"
           text run at (0,40) width 74: "the window."
-layer at (8,8) size 100x126
+hidden layer at (8,8) size 100x126
   RenderBlock (positioned) {DIV} at (0,0) size 100x126
     RenderBlock {DIV} at (0,0) size 100x100 [bgcolor=#008000]
     RenderBlock (anonymous) at (0,100) size 100x26

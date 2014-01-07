@@ -8,7 +8,7 @@ layer at (0,0) size 800x600
           text run at (0,0) width 245: "You should see one green square below."
 layer at (20,40) size 100x100
   RenderBlock (positioned) {DIV} at (20,40) size 100x100 [bgcolor=#FF0000]
-hidden layer at (20,40) size 100x100
+layer at (20,40) size 100x100
   RenderBlock (positioned) {DIV} at (20,40) size 100x100
 layer at (20,40) size 100x100
   RenderBlock (relative positioned) {DIV} at (0,0) size 100x100 [bgcolor=#008000]
