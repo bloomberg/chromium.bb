@@ -13,13 +13,19 @@ import sys
 import tempfile
 import threading
 import time
+import urlparse
 
+import download_from_google_storage
 import gclient_utils
 import scm
 import subprocess2
 
 
 THIS_FILE_PATH = os.path.abspath(__file__)
+
+GSUTIL_DEFAULT_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    'third_party', 'gsutil', 'gsutil')
 
 
 class DiffFiltererWrapper(object):
@@ -1170,7 +1176,67 @@ class SVNWrapper(SCMWrapper):
                  'present. Delete the directory and try again.')
           raise gclient_utils.Error(msg % self.checkout_path)
 
+    BASE_URLS = {
+        '/chrome/trunk/src': 'gs://chromium-svn-checkout/chrome/',
+        '/blink/trunk': 'gs://chromium-svn-checkout/blink/',
+    }
     if not exists:
+      try:
+        # Split out the revision number since it's not useful for us.
+        base_path = urlparse.urlparse(url).path.split('@')[0]
+        if ('CHROME_HEADLESS' in os.environ
+            and sys.platform == 'linux2'  # TODO(hinoka): Enable for win/mac.
+            and base_path in BASE_URLS):
+          # Use a tarball for initial sync if we are on a bot.
+          # Get an unauthenticated gsutil instance.
+          gsutil = download_from_google_storage.Gsutil(
+              GSUTIL_DEFAULT_PATH, boto_path=os.devnull)
+
+          gs_path = BASE_URLS[base_path]
+          _, out, _ = gsutil.check_call('ls', gs_path)
+          # So that we can get the most recent revision.
+          sorted_items = sorted(out.splitlines())
+          latest_checkout = sorted_items[-1]
+
+          tempdir = tempfile.mkdtemp()
+          print 'Downloading %s...' % latest_checkout
+          code, out, err = gsutil.check_call('cp', latest_checkout, tempdir)
+          if code:
+            print '%s\n%s' % (out, err)
+            raise Exception()
+          filename = latest_checkout.split('/')[-1]
+          tarball = os.path.join(tempdir, filename)
+          print 'Unpacking into %s...' % self.checkout_path
+          gclient_utils.safe_makedirs(self.checkout_path)
+          # TODO(hinoka): Use 7z for windows.
+          cmd = ['tar', '--extract', '--ungzip',
+                  '--directory', self.checkout_path,
+                  '--file', tarball]
+          gclient_utils.CheckCallAndFilter(
+              cmd, stdout=sys.stdout, print_stdout=True)
+
+          print 'Deleting temp file'
+          gclient_utils.rmtree(tempdir)
+
+          # Rewrite the repository root to match.
+          tarball_url = scm.SVN.CaptureLocalInfo(
+              ['.'], self.checkout_path)['Repository Root']
+          tarball_parsed = urlparse.urlparse(tarball_url)
+          tarball_root = '%s://%s' % (tarball_parsed.scheme,
+                                      tarball_parsed.netloc)
+          local_parsed = urlparse.urlparse(url)
+          local_root = '%s://%s' % (local_parsed.scheme, local_parsed.netloc)
+
+          if tarball_root != local_root:
+            print 'Switching repository root to %s' % local_root
+            self._Run(['switch', '--relocate', tarball_root,
+                       local_root, self.checkout_path],
+                      options)
+      except Exception as e:
+        print 'We tried to get a source tarball but failed.'
+        print 'Resuming normal operations.'
+        print str(e)
+
       gclient_utils.safe_makedirs(os.path.dirname(self.checkout_path))
       # We need to checkout.
       command = ['checkout', url, self.checkout_path]
