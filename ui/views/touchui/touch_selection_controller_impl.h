@@ -21,6 +21,8 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
       public TouchEditingMenuController,
       public WidgetObserver {
  public:
+  class EditingHandleView;
+
   // Use TextSelectionController::create().
   explicit TouchSelectionControllerImpl(
       ui::TouchEditable* client_view);
@@ -33,7 +35,6 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
 
  private:
   friend class TouchSelectionControllerImplTest;
-  class EditingHandleView;
 
   void SetDraggingHandle(EditingHandleView* handle);
 

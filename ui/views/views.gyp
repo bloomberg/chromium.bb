@@ -37,6 +37,7 @@
         '../native_theme/native_theme.gyp:native_theme',
         '../resources/ui_resources.gyp:ui_resources',
         '../ui.gyp:ui',
+        '../wm/wm.gyp:wm_public',
       ],
       'defines': [
         'VIEWS_IMPLEMENTATION',

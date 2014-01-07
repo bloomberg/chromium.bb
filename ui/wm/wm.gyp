@@ -17,7 +17,9 @@
       ],
       'sources': [
         'core/easy_resize_window_targeter.cc',
+        'core/masked_window_targeter.cc',
         'public/easy_resize_window_targeter.h',
+        'public/masked_window_targeter.h',
         'public/window_types.h',
       ],
     },
