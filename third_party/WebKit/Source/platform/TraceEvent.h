@@ -504,7 +504,7 @@
 #define TRACE_EVENT_CATEGORY_GROUP_ENABLED(categoryGroup, ret) \
     do { \
         INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(categoryGroup);  \
-        if (*INTERNALTRACEEVENTUID(categoryGroupEnabled)) {     \
+        if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
             *ret = true;                                        \
         } else {                                                \
             *ret = false;                                       \
@@ -580,7 +580,7 @@
 #define INTERNAL_TRACE_EVENT_ADD(phase, category, name, flags, ...) \
     do { \
         INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
-        if (*INTERNALTRACEEVENTUID(categoryGroupEnabled)) { \
+        if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
             WebCore::TraceEvent::addTraceEvent( \
                 phase, INTERNALTRACEEVENTUID(categoryGroupEnabled), name, \
                 WebCore::TraceEvent::noEventId, flags, ##__VA_ARGS__); \
@@ -593,7 +593,7 @@
 #define INTERNAL_TRACE_EVENT_ADD_SCOPED(category, name, ...) \
     INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
     WebCore::TraceEvent::ScopedTracer INTERNALTRACEEVENTUID(scopedTracer); \
-    if (*INTERNALTRACEEVENTUID(categoryGroupEnabled)) { \
+    if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
         WebCore::TraceEvent::TraceEventHandle h = \
             WebCore::TraceEvent::addTraceEvent( \
                 TRACE_EVENT_PHASE_COMPLETE, \
@@ -610,7 +610,7 @@
                                          ...) \
     do { \
         INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(category); \
-        if (*INTERNALTRACEEVENTUID(categoryGroupEnabled)) { \
+        if (INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE()) { \
             unsigned char traceEventFlags = flags | TRACE_EVENT_FLAG_HAS_ID; \
             WebCore::TraceEvent::TraceID traceEventTraceID( \
                 id, &traceEventFlags); \
@@ -658,6 +658,12 @@
 #define TRACE_VALUE_TYPE_STRING       (static_cast<unsigned char>(6))
 #define TRACE_VALUE_TYPE_COPY_STRING  (static_cast<unsigned char>(7))
 
+// These values must be in sync with base::debug::TraceLog::CategoryGroupEnabledFlags.
+#define ENABLED_FOR_RECORDING (1 << 0)
+#define ENABLED_FOR_EVENT_CALLBACK (1 << 2)
+
+#define INTERNAL_TRACE_EVENT_CATEGORY_GROUP_ENABLED_FOR_RECORDING_MODE() \
+    (*INTERNALTRACEEVENTUID(categoryGroupEnabled) & (ENABLED_FOR_RECORDING | ENABLED_FOR_EVENT_CALLBACK))
 
 namespace WebCore {
 
