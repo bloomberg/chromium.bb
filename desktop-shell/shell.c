@@ -222,6 +222,13 @@ struct shell_seat {
 	} popup_grab;
 };
 
+void
+set_alpha_if_fullscreen(struct shell_surface *shsurf)
+{
+	if (shsurf && shsurf->state.fullscreen)
+		shsurf->fullscreen.black_view->alpha = 0.25;
+}
+
 static struct desktop_shell *
 shell_surface_get_shell(struct shell_surface *shsurf);
 

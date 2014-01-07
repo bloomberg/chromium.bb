@@ -286,6 +286,8 @@ exposay_layout(struct desktop_shell *shell)
 		if (shell->exposay.focus_current == esurface->view)
 			highlight = esurface;
 
+		set_alpha_if_fullscreen(get_shell_surface(view->surface));
+
 		exposay_animate_in(esurface);
 
 		i++;

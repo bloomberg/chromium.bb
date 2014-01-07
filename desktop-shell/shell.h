@@ -188,6 +188,9 @@ struct desktop_shell {
 	char *client;
 };
 
+void
+set_alpha_if_fullscreen(struct shell_surface *shsurf);
+
 struct weston_output *
 get_default_output(struct weston_compositor *compositor);
 
