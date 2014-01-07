@@ -290,7 +290,7 @@ void InspectorBackendDispatcherImpl::dispatch(const String& message)
     long callId = 0;
 
     if (dispatchMap.isEmpty()) {
-        static CallHandler handlers[] = {
+        static const CallHandler handlers[] = {
 $messageHandlers
         };
         for (size_t i = 0; i < kMethodNamesEnumSize; ++i)
