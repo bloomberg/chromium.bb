@@ -32,6 +32,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
@@ -120,6 +121,9 @@ void WorkerThread::workerThread()
     // The corresponding call to didStopWorkerRunLoop is in
     // ~WorkerScriptController.
     blink::Platform::current()->didStartWorkerRunLoop(blink::WebWorkerRunLoop(&m_runLoop));
+
+    // Notify proxy that a new WorkerGlobalScope has been created and started.
+    m_workerReportingProxy.workerGlobalScopeStarted();
 
     WorkerScriptController* script = m_workerGlobalScope->script();
     InspectorInstrumentation::willEvaluateWorkerScript(workerGlobalScope(), startMode);

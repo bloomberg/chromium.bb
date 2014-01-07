@@ -65,6 +65,10 @@ private:
     class LoaderProxy;
 
     void prepareShadowPageForLoader();
+
+    // WebFrameClient overrides.
+    virtual void didFinishDocumentLoad(WebFrame*) OVERRIDE;
+
     void onScriptLoaderFinished();
 
     WebEmbeddedWorkerStartData m_workerStartData;

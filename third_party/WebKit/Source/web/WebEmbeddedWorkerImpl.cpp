@@ -58,14 +58,23 @@ namespace blink {
 // A thin wrapper for one-off script loading.
 class WebEmbeddedWorkerImpl::Loader : public WorkerScriptLoaderClient {
 public:
-    static PassOwnPtr<Loader> create(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& callback)
+    static PassOwnPtr<Loader> create()
     {
-        return adoptPtr(new Loader(loadingContext, scriptURL, callback));
+        return adoptPtr(new Loader());
     }
 
     virtual ~Loader()
     {
         m_scriptLoader->setClient(0);
+    }
+
+    void load(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& callback)
+    {
+        m_callback = callback;
+        // FIXME: Use TargetIsServiceWorker when chromium side becomes ready.
+        m_scriptLoader->setTargetType(ResourceRequest::TargetIsSharedWorker);
+        m_scriptLoader->loadAsynchronously(
+            loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
 
     virtual void notifyFinished() OVERRIDE
@@ -83,13 +92,8 @@ public:
     String script() const { return m_scriptLoader->script(); }
 
 private:
-    Loader(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& callback)
-        : m_scriptLoader(WorkerScriptLoader::create())
-        , m_callback(callback)
+    Loader() : m_scriptLoader(WorkerScriptLoader::create())
     {
-        m_scriptLoader->setTargetType(ResourceRequest::TargetIsServiceWorker);
-        m_scriptLoader->loadAsynchronously(
-            loadingContext, scriptURL, DenyCrossOriginRequests, this);
     }
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
@@ -137,6 +141,8 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     PassOwnPtr<WebWorkerPermissionClientProxy> permissionClient)
     : m_workerContextClient(client)
     , m_permissionClient(permissionClient)
+    , m_webView(0)
+    , m_mainFrame(0)
     , m_askedToTerminate(false)
 {
 }
@@ -160,11 +166,6 @@ void WebEmbeddedWorkerImpl::startWorkerContext(
     m_workerStartData = data;
 
     prepareShadowPageForLoader();
-
-    m_mainScriptLoader = Loader::create(
-        toWebFrameImpl(m_mainFrame)->frame()->document(),
-        data.scriptURL,
-        bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
 }
 
 void WebEmbeddedWorkerImpl::terminateWorkerContext()
@@ -199,6 +200,17 @@ void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
     int length = static_cast<int>(content.length());
     RefPtr<SharedBuffer> buffer(SharedBuffer::create(content.data(), length));
     webFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(m_workerStartData.scriptURL), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
+}
+
+void WebEmbeddedWorkerImpl::didFinishDocumentLoad(WebFrame* frame)
+{
+    ASSERT(!m_mainScriptLoader);
+    ASSERT(m_mainFrame);
+    m_mainScriptLoader = Loader::create();
+    m_mainScriptLoader->load(
+        toWebFrameImpl(m_mainFrame)->frame()->document(),
+        m_workerStartData.scriptURL,
+        bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
 }
 
 void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
