@@ -184,12 +184,13 @@ class Parser(object):
     p[0] = ('ATTRIBUTE', p[1], p[3])
 
   def p_struct(self, p):
-    """struct : attribute_section STRUCT NAME LCURLY fields RCURLY SEMICOLON"""
+    """struct : attribute_section STRUCT NAME LCURLY struct_body RCURLY SEMICOLON"""
     p[0] = ('STRUCT', p[3], p[1], p[5])
 
-  def p_fields(self, p):
-    """fields : field fields
-              |"""
+  def p_struct_body(self, p):
+    """struct_body : field struct_body
+                   | enum struct_body
+                   |"""
     if len(p) > 1:
       p[0] = ListFromConcat(p[1], p[2])
 
@@ -198,12 +199,13 @@ class Parser(object):
     p[0] = ('FIELD', p[1], p[2], p[3])
 
   def p_interface(self, p):
-    """interface : attribute_section INTERFACE NAME LCURLY methods RCURLY SEMICOLON"""
+    """interface : attribute_section INTERFACE NAME LCURLY interface_body RCURLY SEMICOLON"""
     p[0] = ('INTERFACE', p[3], p[1], p[5])
 
-  def p_methods(self, p):
-    """methods : method methods
-               | """
+  def p_interface_body(self, p):
+    """interface_body : method interface_body
+                      | enum interface_body
+                      | """
     if len(p) > 1:
       p[0] = ListFromConcat(p[1], p[2])
 

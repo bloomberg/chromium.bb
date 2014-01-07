@@ -35,7 +35,11 @@ struct Foo {
 
 [Peer=ServiceClient]
 interface Service {
-  void Frobinate(Foo foo @0, bool baz @1, handle<message_pipe> port @2) @0;
+  enum BazOptions {
+    BAZ_REGULAR = 0,
+    BAZ_EXTRA
+  };
+  void Frobinate(Foo foo @0, int32 baz @1, handle<message_pipe> port @2) @0;
 };
 
 [Peer=Service]

@@ -77,6 +77,7 @@ def MapMethods(methods):
                   'ordinal': MapOrdinal(method[3])})
   return out
 
+
 def MapEnumFields(fields):
   out = []
   for field in fields:
@@ -85,24 +86,36 @@ def MapEnumFields(fields):
                   'value': field[2]})
   return out
 
+
+def MapEnums(enums):
+  out = []
+  for enum in enums:
+    if enum[0] == 'ENUM':
+      out.append({'name': enum[1],
+                  'fields': MapEnumFields(enum[2])})
+  return out
+
+
 class MojomBuilder():
 
   def __init__(self):
     self.mojom = {}
 
-  def AddStruct(self, name, attributes, fields):
+  def AddStruct(self, name, attributes, body):
     struct = {}
     struct['name'] = name
     # TODO(darin): Add support for |attributes|
     #struct['attributes'] = MapAttributes(attributes)
-    struct['fields'] = MapFields(fields)
+    struct['fields'] = MapFields(body)
+    struct['enums'] = MapEnums(body)
     self.mojom['structs'].append(struct)
 
-  def AddInterface(self, name, attributes, methods):
+  def AddInterface(self, name, attributes, body):
     interface = {}
     interface['name'] = name
     interface['peer'] = GetAttribute(attributes, 'Peer')
-    interface['methods'] = MapMethods(methods)
+    interface['methods'] = MapMethods(body)
+    interface['enums'] = MapEnums(body)
     self.mojom['interfaces'].append(interface)
 
   def AddEnum(self, name, fields):
@@ -121,9 +134,9 @@ class MojomBuilder():
     self.mojom['enums'] = []
     for item in contents:
       if item[0] == 'STRUCT':
-        self.AddStruct(name=item[1], attributes=item[2], fields=item[3])
+        self.AddStruct(name=item[1], attributes=item[2], body=item[3])
       elif item[0] == 'INTERFACE':
-        self.AddInterface(name=item[1], attributes=item[2], methods=item[3])
+        self.AddInterface(name=item[1], attributes=item[2], body=item[3])
       elif item[0] == 'ENUM':
         self.AddEnum(name=item[1], fields=item[2])
 

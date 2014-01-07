@@ -4,6 +4,13 @@
 {%- endfor %}
   }
 
+{#--- Enums #}
+{%- from "enum_definition.tmpl" import enum_def -%}
+{%  for enum in struct.enums %}
+{{  enum_def("%s.%s"|format(struct.name, enum.name), enum)}}
+{%  endfor %}
+
+{#--- Encoding and decoding #}
   {{struct.name}}.encodedSize = codec.kStructHeaderSize + {{struct.packed|payload_size}};
 
   {{struct.name}}.decode = function(decoder) {

@@ -15,37 +15,28 @@
 namespace {{namespace}} {
 
 {#--- Enums #}
-{%- for enum in enums %}
-
-enum {{enum.name}} {
-{%-   for field in enum.fields %}
-{%-      if field.value %}
-  {{field.name}} = {{field.value}},
-{%-      else %}
-  {{field.name}},
-{%-      endif %}
-{%-   endfor %}
-};
+{%  for enum in enums %}
+{%    include "enum_declaration.tmpl" %}
 {%- endfor %}
 
 {#--- Structs #}
 {%  for struct in structs %}
-{%    include "wrapper_class_declaration.tmpl" -%}
+{%    include "wrapper_class_declaration.tmpl" %}
 {%- endfor %}
 
 {#--- Interfaces -#}
 {%  for interface in interfaces %}
-{%    include "interface_declaration.tmpl" -%}
+{%    include "interface_declaration.tmpl" %}
 {%- endfor %}
 
 {#--- Interface Proxies -#}
 {%  for interface in interfaces %}
-{%    include "interface_proxy_declaration.tmpl" -%}
+{%    include "interface_proxy_declaration.tmpl" %}
 {%- endfor %}
 
 {#--- Interface Stubs -#}
 {%  for interface in interfaces %}
-{%    include "interface_stub_declaration.tmpl" -%}
+{%    include "interface_stub_declaration.tmpl" %}
 {%- endfor %}
 
 }  // namespace {{namespace}}

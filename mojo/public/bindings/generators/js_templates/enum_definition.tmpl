@@ -1,0 +1,12 @@
+{%- macro enum_def(enum_init, enum) %}
+  {{enum_init}} = {
+{%- set next_value = 0 %}
+{%- for field in enum.fields %}
+{%-   if field.value %}
+{%-     set next_value = field.value|int  %}
+{%-   endif %}
+    {{field.name}}: {{next_value}},
+{%-   set next_value = next_value + 1 %}
+{%- endfor %}
+  };
+{%- endmacro %}

@@ -240,14 +240,14 @@ static void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
 
 class ServiceImpl : public ServiceStub {
  public:
-  virtual void Frobinate(const Foo& foo, bool baz,
+  virtual void Frobinate(const Foo& foo, int32_t baz,
                          mojo::ScopedMessagePipeHandle port)
       MOJO_OVERRIDE {
     // Users code goes here to handle the incoming Frobinate message.
 
     // We mainly check that we're given the expected arguments.
     CheckFoo(foo);
-    EXPECT_TRUE(baz);
+    EXPECT_EQ(BAZ_EXTRA, baz);
 
     // Also dump the Foo structure and all of its members.
     // TODO(vtl): Make it optional, so that the test spews less?
@@ -299,7 +299,7 @@ TEST(BindingsSampleTest, Basic) {
   mojo::ScopedMessagePipeHandle port0, port1;
   mojo::CreateMessagePipe(&port0, &port1);
 
-  service->Frobinate(foo, true, port0.Pass());
+  service->Frobinate(foo, Service::BAZ_EXTRA, port0.Pass());
 }
 
 }  // namespace sample

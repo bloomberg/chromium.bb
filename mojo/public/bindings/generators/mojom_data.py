@@ -66,6 +66,7 @@ def StructFromData(kinds, data):
   struct.spec = 'x:' + struct.name
   kinds[struct.spec] = struct
   struct.fields = map(lambda field: FieldFromData(kinds, field), data['fields'])
+  struct.enums = map(lambda enum: EnumFromData(kinds, enum), data['enums'])
   return struct
 
 def FieldToData(field):
@@ -137,6 +138,7 @@ def InterfaceFromData(kinds, data):
   interface.peer = data['peer']
   interface.methods = map(
     lambda method: MethodFromData(kinds, method), data['methods'])
+  interface.enums = map(lambda enum: EnumFromData(kinds, enum), data['enums'])
   return interface
 
 def EnumFieldFromData(kinds, data):

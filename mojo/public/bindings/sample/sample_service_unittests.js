@@ -92,7 +92,7 @@ define([
 
   ServiceImpl.prototype.frobinate = function(foo, baz, port) {
     checkFoo(foo);
-    expect(baz).toBeTruthy();
+    expect(baz).toBe(sample.ServiceStub.BazOptions.BAZ_EXTRA);
     expect(port).toBe(10);
     global.result = "PASS";
   };
@@ -115,5 +115,5 @@ define([
   checkFoo(foo);
 
   var port = 10;
-  serviceProxy.frobinate(foo, true, port);
+  serviceProxy.frobinate(foo, sample.ServiceProxy.BazOptions.BAZ_EXTRA, port);
 });

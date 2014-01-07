@@ -8,21 +8,13 @@ define([
   ], function(core, codec) {
 
 {#--- Enums #}
+{%- from "enum_definition.tmpl" import enum_def -%}
 {%  for enum in enums %}
-  var {{enum.name}} = {
-{%-   set next_value = 0 %}
-{%-   for field in enum.fields %}
-{%-     if field.value %}
-{%-       set next_value = field.value|int  %}
-{%-     endif %}
-    {{field.name}}: {{next_value}},
-{%-     set next_value = next_value + 1 %}
-{%-   endfor %}
-  };
-{%  endfor %}
+{{    enum_def("var %s"|format(enum.name), enum) }}
+{%-  endfor %}
 
 {#--- Struct definitions #}
-{%- for struct in structs %}
+{%  for struct in structs %}
 {%    include "struct_definition.tmpl" %}
 {%- endfor %}
 

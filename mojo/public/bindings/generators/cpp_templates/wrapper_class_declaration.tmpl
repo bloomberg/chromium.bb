@@ -1,6 +1,9 @@
 class {{struct.name}} {
  public:
   typedef internal::{{struct.name}}_Data Data;
+{%- for enum in struct.enums %}
+  typedef internal::{{enum.name}} {{enum.name}};
+{%- endfor %}
 
   {{struct.name}}() : data_(NULL) {
   }

@@ -23,7 +23,7 @@ namespace internal {
 
 {#--- Class declarations #}
 {%  for struct in structs %}
-{%    include "struct_declaration.tmpl" -%}
+{%    include "struct_declaration.tmpl" %}
 {%- endfor %}
 
 #pragma pack(pop)
@@ -36,7 +36,7 @@ namespace internal {
 
 {#--- Serialization traits #}
 {%  for struct in structs %}
-{%    include "struct_serialization_traits.tmpl" -%}
+{%    include "struct_serialization_traits.tmpl" %}
 {%- endfor %}
 
 }  // namespace internal
