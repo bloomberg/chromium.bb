@@ -496,9 +496,7 @@ void ApplyStyleCommand::removeEmbeddingUpToEnclosingBlock(Node* node, Node* unsp
     if (!block)
         return;
 
-    Node* parent = 0;
-    for (Node* n = node->parentNode(); n != block && n != unsplitAncestor; n = parent) {
-        parent = n->parentNode();
+    for (Node* n = node->parentNode(); n != block && n != unsplitAncestor; n = n->parentNode()) {
         if (!n->isStyledElement())
             continue;
 
@@ -1333,12 +1331,11 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(PassRefPtr<Node> passedStar
     ASSERT(passedStartNode);
     ASSERT(endNode);
     ASSERT(elementToInsert);
-    RefPtr<Node> startNode = passedStartNode;
+    RefPtr<Node> node = passedStartNode;
     RefPtr<Element> element = elementToInsert;
 
-    insertNodeBefore(element, startNode);
+    insertNodeBefore(element, node);
 
-    RefPtr<Node> node = startNode;
     while (node) {
         RefPtr<Node> next = node->nextSibling();
         if (node->isContentEditable(Node::UserSelectAllIsAlwaysNonEditable)) {
