@@ -259,8 +259,19 @@ def WriteData(data, dst):
       f.write(data)
   return Runnable(writedata, dst, data)
 
-def SyncGitRepo(url, destination, revision, reclone=False, clean=False):
-  def sync(subst, url, dest, rev, reclone, clean):
+
+def SyncGitRepo(url, destination, revision, reclone=False, clean=False,
+                pathspec=None):
+  def sync(subst, url, dest, rev, reclone, clean, pathspec):
     repo_tools.SyncGitRepo(url, subst.SubstituteAbsPaths(dest), revision,
-                           reclone, clean)
-  return Runnable(sync, url, destination, revision, reclone, clean)
+                           reclone, clean, pathspec)
+  return Runnable(sync, url, destination, revision, reclone, clean, pathspec)
+
+
+def CleanGitWorkingDir(directory, path):
+  """Clean a path in a git checkout, if the checkout directory exists."""
+  def clean(subst, directory, path):
+    directory = subst.SubstituteAbsPaths(directory)
+    if os.path.exists(directory) and len(os.listdir(directory)) > 0:
+      repo_tools.CleanGitWorkingDir(directory, path)
+  return Runnable(clean, directory, path)

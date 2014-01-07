@@ -21,6 +21,7 @@ import command
 import file_tools
 import platform_tools
 import pnacl_commands
+import pnacl_targetlibs
 import repo_tools
 import toolchain_main
 
@@ -47,7 +48,6 @@ GIT_REPOS = {
     }
 
 GIT_BASE_URL = 'https://chromium.googlesource.com/native_client/'
-
 GIT_DEPS_FILE = os.path.join(NACL_DIR, 'pnacl', 'COMPONENT_REVISIONS')
 
 CONFIGURE_CMD = ['sh', '%(src)s/configure']
@@ -67,17 +67,50 @@ elif platform_tools.IsWindows():
   MAKE_BINUTILS_EXTRA = ['-j1']
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
-def HostTools(revisions):
-  tools = {
+def GetGitSyncCmdCallback(revisions):
+  """Return a callback which returns the git sync command for a component.
+
+     This allows all the revision information to be processed here while giving
+     other modules like pnacl_targetlibs.py the ability to define their own
+     source targets with minimal boilerplate.
+  """
+  def GetGitSyncCmd(component):
+    return command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS[component],
+                             '%(output)s',
+                             revisions[component])
+  return GetGitSyncCmd
+
+def HostToolsSources(GetGitSyncCmd):
+  sources = {
       'binutils_pnacl_src': {
           'type': 'source',
           'output_dirname': 'binutils',
           'commands': [
-              command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS['binutils'],
-                                  '%(output)s',
-                                  revisions['binutils']),
+              GetGitSyncCmd('binutils'),
           ],
       },
+      # For some reason, the llvm build using --with-clang-srcdir chokes if the
+      # clang source directory is named something other than 'clang', so don't
+      # change output_dirname for clang.
+      'clang_src': {
+          'type': 'source',
+          'output_dirname': 'clang',
+          'commands': [
+              GetGitSyncCmd('clang'),
+          ],
+      },
+      'llvm_src': {
+          'type': 'source',
+          'output_dirname': 'llvm',
+          'commands': [
+              GetGitSyncCmd('llvm'),
+          ],
+      },
+  }
+  return sources
+
+def HostTools():
+  tools = {
       'binutils_pnacl': {
           'dependencies': ['binutils_pnacl_src'],
           'type': 'build',
@@ -105,27 +138,6 @@ def HostTools(revisions):
               [command.RemoveDirectory(command.path.join('%(abs_output)s', dir))
                for dir in ('arm-pc-nacl', 'lib', 'lib32')]
           },
-      # For some reason, the llvm build using --with-clang-srcdir chokes if the
-      # clang source directory is named something other than 'clang', so don't
-      # change output_dirname for clang.
-      'clang_src': {
-          'type': 'source',
-          'output_dirname': 'clang',
-          'commands': [
-              command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS['clang'],
-                                  '%(output)s',
-                                  revisions['clang']),
-          ],
-      },
-      'llvm_src': {
-          'type': 'source',
-          'output_dirname': 'llvm',
-          'commands': [
-              command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS['llvm'],
-                                  '%(output)s',
-                                  revisions['llvm']),
-          ],
-      },
       'llvm': {
           'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
           'type': 'build',
@@ -215,7 +227,12 @@ if __name__ == '__main__':
   if args.legacy_repo_sync:
     SyncPNaClRepos(revisions)
     sys.exit(0)
-  packages = HostTools(revisions)
+  packages = {}
+  packages.update(HostToolsSources(GetGitSyncCmdCallback(revisions)))
+  packages.update(pnacl_targetlibs.TargetLibsSrc(
+      GetGitSyncCmdCallback(revisions)))
+  packages.update(HostTools())
+
   tb = toolchain_main.PackageBuilder(packages,
                                      leftover_args)
   tb.Main()
