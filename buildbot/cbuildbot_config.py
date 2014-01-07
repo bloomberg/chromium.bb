@@ -649,7 +649,8 @@ class _config(dict):
     if name in self:
       return self[name]
 
-    return super(_config, self).__getattr__(name)
+    # Super class (dict) has no __getattr__ method, so use __getattribute__.
+    return super(_config, self).__getattribute__(name)
 
   def derive(self, *args, **kwargs):
     """Create a new config derived from this one.

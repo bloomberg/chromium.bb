@@ -37,7 +37,20 @@ class ConfigPickleTest(cros_test_lib.TestCase):
     self.assertEquals(bc1.name, bc2.name)
 
 
+class ConfigClassTest(cros_test_lib.TestCase):
+  """Tests of the config class itself."""
+
+  def testValueAccess(self):
+    cfg = cbuildbot_config.config['x86-mario-paladin']
+
+    self.assertTrue(cfg.name)
+    self.assertEqual(cfg.name, cfg['name'])
+
+    self.assertRaises(AttributeError, getattr, cfg, 'foobar')
+
+
 class CBuildBotTest(cros_test_lib.MoxTestCase):
+  """General tests of cbuildbot_config with respect to cbuildbot."""
 
   def testConfigsKeysMismatch(self):
     """Verify that all configs contain exactly the default keys.
