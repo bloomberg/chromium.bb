@@ -105,6 +105,7 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
         top_level_handler->top_level_widget_->GetNativeView();
     child_window->AddObserver(top_level_handler);
     native_window->AddObserver(top_level_handler);
+    top_level_handler->child_window_ = child_window;
     return native_window;
   }
 
@@ -132,13 +133,22 @@ class DesktopNativeWidgetTopLevelHandler : public aura::WindowObserver {
     delete this;
   }
 
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE {
+    if (top_level_widget_ && window == child_window_)
+      top_level_widget_->SetSize(new_bounds.size());
+  }
+
  private:
   DesktopNativeWidgetTopLevelHandler()
-      : top_level_widget_(NULL) {}
+      : top_level_widget_(NULL),
+        child_window_(NULL) {}
 
   virtual ~DesktopNativeWidgetTopLevelHandler() {}
 
   Widget* top_level_widget_;
+  aura::Window* child_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetTopLevelHandler);
 };
