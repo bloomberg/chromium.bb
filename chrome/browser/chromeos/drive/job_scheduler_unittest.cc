@@ -437,6 +437,7 @@ TEST_F(JobSchedulerTest, UpdateResource) {
       "New Document",  // new title
       base::Time(),
       base::Time(),
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   base::RunLoop().RunUntilIdle();
 

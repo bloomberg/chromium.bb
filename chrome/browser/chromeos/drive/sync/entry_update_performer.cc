@@ -150,6 +150,7 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
   scheduler_->UpdateResource(
       entry->resource_id(), parent_resource_id,
       entry->title(), last_modified, last_accessed,
+      ClientContext(BACKGROUND),
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                  weak_ptr_factory_.GetWeakPtr(), callback, entry->local_id()));
 }

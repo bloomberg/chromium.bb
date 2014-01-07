@@ -471,11 +471,13 @@ void JobScheduler::UpdateResource(
     const std::string& new_title,
     const base::Time& last_modified,
     const base::Time& last_viewed_by_me,
+    const ClientContext& context,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   JobEntry* new_job = CreateNewJob(TYPE_UPDATE_RESOURCE);
+  new_job->context = context;
   new_job->task = base::Bind(
       &DriveServiceInterface::UpdateResource,
       base::Unretained(drive_service_),
