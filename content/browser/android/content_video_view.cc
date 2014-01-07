@@ -199,12 +199,12 @@ JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
   ContentViewCoreImpl* content_view_core = manager_->GetContentViewCore();
   JNIEnv *env = AttachCurrentThread();
   return JavaObjectWeakGlobalRef(
-             env,
-             Java_ContentVideoView_createContentVideoView(
-                 env,
-                 content_view_core->GetContext().obj(),
-                 reinterpret_cast<intptr_t>(this),
-                 content_view_core->GetContentVideoViewClient().obj()).obj());
+      env,
+      Java_ContentVideoView_createContentVideoView(
+          env,
+          content_view_core->GetContext().obj(),
+          reinterpret_cast<intptr_t>(this),
+          content_view_core->GetContentVideoViewClient().obj()).obj());
 }
 
 void ContentVideoView::DestroyContentVideoView(bool native_view_destroyed) {

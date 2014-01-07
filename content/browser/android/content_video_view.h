@@ -31,7 +31,7 @@ class ContentVideoView {
       const base::android::ScopedJavaLocalRef<jobject>& client,
       BrowserMediaPlayerManager* manager);
 
-  ContentVideoView(BrowserMediaPlayerManager* manager);
+  explicit ContentVideoView(BrowserMediaPlayerManager* manager);
 
   ~ContentVideoView();
 
