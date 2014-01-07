@@ -3,10 +3,32 @@
 # found in the LICENSE file.
 
 config("gtest_config") {
-  defines = [ "UNIT_TEST" ]
-  include_dirs = [ "include" ]  # Gtest headers need to be able to find themselves.
+  defines = [
+    "UNIT_TEST",
+
+    # In order to allow regex matches in gtest to be shared between Windows
+    # and other systems, we tell gtest to always use it's internal engine.
+    "GTEST_HAS_POSIX_RE=0",
+  ]
+
+  # Gtest headers need to be able to find themselves.
+  include_dirs = [ "include" ]
+
   if (is_win) {
     cflags = [ "/wd4800" ]  # Unused variable warning.
+  }
+
+  if (is_posix) {
+    defines += [
+      # gtest isn't able to figure out when RTTI is disabled for gcc
+      # versions older than 4.3.2, and assumes it's enabled.  Our Mac
+      # and Linux builds disable RTTI, and cannot guarantee that the
+      # compiler will be 4.3.2. or newer.  The Mac, for example, uses
+      # 4.2.1 as that is the latest available on that platform.  gtest
+      # must be instructed that RTTI is disabled here, and for any
+      # direct dependents that might include gtest headers.
+      "GTEST_HAS_RTTI=0",
+    ]
   }
 }
 
@@ -56,7 +78,8 @@ static_library("gtest") {
   }
 
   include_dirs = [ "." ]
-  direct_dependent_configs = [ ":gtest_config" ]
+
+  all_dependent_configs = [ ":gtest_config" ]
 
   configs -= "//build/config/compiler:chromium_code"
   configs += "//build/config/compiler:no_chromium_code"
