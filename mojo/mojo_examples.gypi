@@ -69,32 +69,5 @@
       },
       'includes': [ 'build/package_app.gypi' ],
     },
-    {
-      'target_name': 'mojo_hello_world_bindings',
-      'type': 'static_library',
-      'sources': [
-        'examples/hello_world_service/hello_world_service.mojom',
-      ],
-      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
-      'export_dependent_settings': [
-        'mojo_bindings',
-        'mojo_system',
-      ],
-    },
-    {
-      'target_name': 'mojo_hello_world_service',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        'mojo_hello_world_bindings',
-      ],
-      'export_dependent_settings': [
-        'mojo_hello_world_bindings',
-      ],
-      'sources': [
-        'examples/hello_world_service/hello_world_service_impl.cc',
-        'examples/hello_world_service/hello_world_service_impl.h',
-      ],
-    },
   ],
 }

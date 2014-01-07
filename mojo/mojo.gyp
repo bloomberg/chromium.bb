@@ -21,7 +21,6 @@
         'mojo_bindings_unittests',
         'mojo_common_lib',
         'mojo_common_unittests',
-        'mojo_hello_world_service',
         'mojo_js',
         'mojo_js_unittests',
         'mojo_public_perftests',
