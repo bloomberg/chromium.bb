@@ -1547,19 +1547,6 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, View) {
                  LIST_TEST(View_ClipChange));
 }
 
-IN_PROC_BROWSER_TEST_F(PPAPITest, ResourceArray) {
-  RunTest(LIST_TEST(ResourceArray_Basics)
-          LIST_TEST(ResourceArray_OutOfRangeAccess)
-          LIST_TEST(ResourceArray_EmptyArray)
-          LIST_TEST(ResourceArray_InvalidElement));
-}
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, ResourceArray) {
-  RunTest(LIST_TEST(ResourceArray_Basics)
-          LIST_TEST(ResourceArray_OutOfRangeAccess)
-          LIST_TEST(ResourceArray_EmptyArray)
-          LIST_TEST(ResourceArray_InvalidElement));
-}
-
 IN_PROC_BROWSER_TEST_F(PPAPITest, FlashMessageLoop) {
   RunTest(LIST_TEST(FlashMessageLoop_Basics)
           LIST_TEST(FlashMessageLoop_RunWithoutQuit));

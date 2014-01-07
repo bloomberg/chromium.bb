@@ -105,9 +105,6 @@ class ResourceCreationImpl : public ppapi::thunk::ResourceCreationAPI {
   virtual PP_Resource CreateNetworkMonitor(PP_Instance instance) OVERRIDE;
   virtual PP_Resource CreatePlatformVerificationPrivate(
       PP_Instance instance) OVERRIDE;
-  virtual PP_Resource CreateResourceArray(PP_Instance instance,
-                                          const PP_Resource elements[],
-                                          uint32_t size) OVERRIDE;
   virtual PP_Resource CreateScrollbar(PP_Instance instance,
                                       PP_Bool vertical) OVERRIDE;
   virtual PP_Resource CreateOutputProtectionPrivate(

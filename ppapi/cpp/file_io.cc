@@ -9,7 +9,6 @@
 #include "ppapi/c/ppb_file_io.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
-#include "ppapi/cpp/dev/resource_array_dev.h"
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/module.h"

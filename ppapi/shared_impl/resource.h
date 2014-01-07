@@ -62,7 +62,6 @@
   F(PPB_PDF_API) \
   F(PPB_PlatformVerification_API) \
   F(PPB_Printing_API) \
-  F(PPB_ResourceArray_API) \
   F(PPB_Scrollbar_API) \
   F(PPB_Talk_Private_API) \
   F(PPB_TrueTypeFont_API) \

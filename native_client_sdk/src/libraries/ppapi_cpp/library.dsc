@@ -62,7 +62,6 @@
         # ppapi/cpp/dev
         'alarms_dev.cc',
         'widget_client_dev.cc',
-        'resource_array_dev.cc',
         'video_capture_client_dev.cc',
         'video_decoder_client_dev.cc',
         'crypto_dev.cc',
@@ -181,7 +180,6 @@
         'memory_dev.h',
         'optional_dev.h',
         'printing_dev.h',
-        'resource_array_dev.h',
         'scriptable_object_deprecated.h',
         'scrollbar_dev.h',
         'selection_dev.h',

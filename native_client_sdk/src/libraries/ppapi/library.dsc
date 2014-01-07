@@ -106,7 +106,6 @@
         'ppb_memory_dev.h',
         'ppb_opengles2ext_dev.h',
         'ppb_printing_dev.h',
-        'ppb_resource_array_dev.h',
         'ppb_scrollbar_dev.h',
         'ppb_text_input_dev.h',
         'ppb_trace_event_dev.h',

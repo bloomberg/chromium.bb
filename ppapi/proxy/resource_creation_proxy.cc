@@ -54,7 +54,6 @@
 #include "ppapi/shared_impl/ppb_audio_config_shared.h"
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
-#include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
@@ -141,15 +140,6 @@ PP_Resource ResourceCreationProxy::CreateTouchInputEvent(
     uint32_t modifiers) {
   return PPB_InputEvent_Shared::CreateTouchInputEvent(
       OBJECT_IS_PROXY, instance, type, time_stamp, modifiers);
-}
-
-PP_Resource ResourceCreationProxy::CreateResourceArray(
-    PP_Instance instance,
-    const PP_Resource elements[],
-    uint32_t size) {
-  PPB_ResourceArray_Shared* object = new PPB_ResourceArray_Shared(
-      OBJECT_IS_PROXY, instance, elements, size);
-  return object->GetReference();
 }
 
 PP_Resource ResourceCreationProxy::CreateTrueTypeFont(

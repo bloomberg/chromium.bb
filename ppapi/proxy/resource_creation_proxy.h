@@ -73,9 +73,6 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_InputEvent_Type type,
       PP_TimeTicks time_stamp,
       uint32_t modifiers) OVERRIDE;
-  virtual PP_Resource CreateResourceArray(PP_Instance instance,
-                                          const PP_Resource elements[],
-                                          uint32_t size) OVERRIDE;
   virtual PP_Resource CreateTrueTypeFont(
       PP_Instance instance,
       const PP_TrueTypeFontDesc_Dev* desc) OVERRIDE;

@@ -18,12 +18,10 @@
 #include "ppapi/shared_impl/ppb_audio_shared.h"
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
-#include "ppapi/shared_impl/ppb_resource_array_shared.h"
 #include "ppapi/shared_impl/var.h"
 
 using ppapi::InputEventData;
 using ppapi::PPB_InputEvent_Shared;
-using ppapi::PPB_ResourceArray_Shared;
 using ppapi::StringVar;
 
 namespace content {
@@ -233,15 +231,6 @@ PP_Resource ResourceCreationImpl::CreateScrollbar(PP_Instance instance,
 
 PP_Resource ResourceCreationImpl::CreateTalk(PP_Instance /* instance */) {
   return 0;  // Not supported in-process.
-}
-
-PP_Resource ResourceCreationImpl::CreateResourceArray(
-    PP_Instance instance,
-    const PP_Resource elements[],
-    uint32_t size) {
-  PPB_ResourceArray_Shared* object = new PPB_ResourceArray_Shared(
-      ppapi::OBJECT_IS_IMPL, instance, elements, size);
-  return object->GetReference();
 }
 
 PP_Resource ResourceCreationImpl::CreateTCPServerSocketPrivate(
