@@ -352,8 +352,11 @@ void PrerenderContents::StartPrerendering(
       prerender_url_);
   load_url_params.referrer = referrer_;
   load_url_params.transition_type =
-      ((origin_ == ORIGIN_OMNIBOX || origin_ == ORIGIN_INSTANT) ?
-          content::PAGE_TRANSITION_TYPED : content::PAGE_TRANSITION_LINK);
+      (origin_ == ORIGIN_OMNIBOX || origin_ == ORIGIN_INSTANT)
+          ? content::PageTransitionFromInt(
+                content::PAGE_TRANSITION_TYPED |
+                content::PAGE_TRANSITION_FROM_ADDRESS_BAR)
+          : content::PAGE_TRANSITION_LINK;
   load_url_params.override_user_agent =
       prerender_manager_->config().is_overriding_user_agent ?
       content::NavigationController::UA_OVERRIDE_TRUE :
