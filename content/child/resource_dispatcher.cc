@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -118,19 +117,6 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.first_party_for_cookies = request_info.first_party_for_cookies;
   request_.referrer = request_info.referrer;
   request_.referrer_policy = request_info.referrer_policy;
-  if (request_info.referrer_policy == blink::WebReferrerPolicyDefault &&
-      request_info.referrer.SchemeIsSecure() &&
-      !request_info.url.SchemeIsSecure()) {
-    // TODO(jochen): Remove before beta branches. http://crbug.com/331097
-    char url_buf[128];
-    base::strlcpy(url_buf, request_info.url.spec().c_str(), arraysize(url_buf));
-    base::debug::Alias(url_buf);
-    char ref_buf[128];
-    base::strlcpy(
-        ref_buf, request_info.referrer.spec().c_str(), arraysize(ref_buf));
-    base::debug::Alias(ref_buf);
-    base::debug::DumpWithoutCrashing();
-  }
   request_.headers = request_info.headers;
   request_.load_flags = request_info.load_flags;
   request_.origin_pid = request_info.requestor_pid;
