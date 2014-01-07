@@ -614,6 +614,13 @@ crbug.com/309184 crbug.com/303419 crbug.com/284782 http/tests/media/media-source
 # 323284 tracks Android-specific flaky failure
 crbug.com/323284 crbug.com/324120 http/tests/media/media-source/webkitmediasource-removesourcebuffer-texttrack.html [ Pass Crash Failure ]
 
+# After libwebp 0.4.0 lands in Chrome, these tests need to be updated.
+crbug.com/331619 http/tests/images/webp-partial-load.html [ Skip ]
+crbug.com/331619 http/tests/images/webp-progressive-load.html [ Skip ]
+crbug.com/331619 fast/canvas/canvas-toDataURL-webp.html [ Skip ]
+crbug.com/331619 fast/images/webp-color-profile-lossy.html [ Skip ]
+crbug.com/331619 fast/images/webp-color-profile-lossy-alpha.html [ Skip ]
+
 crbug.com/323301 [ Android ] http/tests/media/media-source/mediasource-play-then-seek-back.html [ Pass Crash ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-during-pending-seek.html [ Failure ]
 crbug.com/302729 [ Android ] http/tests/media/media-source/mediasource-seek-beyond-duration.html [ Failure ]
@@ -823,7 +830,10 @@ crbug.com/313219 traversal/node-iterator-004.html [ Crash Pass ]
 crbug.com/313338 inspector/debugger/debugger-proto-property.html [ Pass Timeout ]
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash Pass ]
-crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
+
+# Uncomment after crbug.com/331619 is finished.
+# crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
+
 crbug.com/316150 inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 
 crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer-sync.html [ Failure ]
