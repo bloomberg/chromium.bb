@@ -27,6 +27,7 @@
 #include "core/dom/RenderTreeBuilder.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "SVGNames.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
@@ -96,6 +97,9 @@ RenderObject* RenderTreeBuilder::parentRenderer() const
 bool RenderTreeBuilder::shouldCreateRenderer() const
 {
     if (!m_renderingParent)
+        return false;
+    // SVG elements only render when inside <svg>, or if the element is an <svg> itself.
+    if (m_node->isSVGElement() && !m_node->hasTagName(SVGNames::svgTag) && !m_renderingParent->isSVGElement())
         return false;
     RenderObject* parentRenderer = this->parentRenderer();
     if (!parentRenderer)

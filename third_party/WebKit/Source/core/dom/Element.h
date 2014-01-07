@@ -481,7 +481,6 @@ public:
 
     virtual bool shouldBeReparentedUnderRenderView(const RenderStyle*) const { return isInTopLayer(); }
 
-    virtual bool childShouldCreateRenderer(const Node& child) const;
     bool hasPendingResources() const;
     void setHasPendingResources();
     void clearHasPendingResources();
