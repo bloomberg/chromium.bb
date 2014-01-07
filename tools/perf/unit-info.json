@@ -81,6 +81,9 @@
   "relocs": {
     "improvement_direction": "down"
   },
+  "runs/ms": {
+    "improvement_direction": "up"
+  },
   "runs/s": {
     "improvement_direction": "up"
   },
