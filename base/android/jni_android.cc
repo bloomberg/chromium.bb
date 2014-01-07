@@ -17,10 +17,6 @@ using base::android::MethodID;
 using base::android::ScopedJavaLocalRef;
 
 JavaVM* g_jvm = NULL;
-
-// NOTE: This variable is only used for debugging http://crbug.com/322200
-const JNIInvokeInterface* g_jvm_functions = NULL;
-
 // Leak the global app context, as it is used from a non-joinable worker thread
 // that may still be running at shutdown. There is no harm in doing this.
 base::LazyInstance<base::android::ScopedJavaGlobalRef<jobject> >::Leaky
@@ -80,10 +76,7 @@ namespace android {
 JNIEnv* AttachCurrentThread() {
   DCHECK(g_jvm);
   JNIEnv* env = NULL;
-  // See http://crbug.com/322200 for the reasons for these CHECKs.
-  CHECK(g_jvm);
-  CHECK_EQ(g_jvm_functions, g_jvm->functions);
-  jint ret = g_jvm_functions->AttachCurrentThread(g_jvm, &env, NULL);
+  jint ret = g_jvm->AttachCurrentThread(&env, NULL);
   DCHECK_EQ(JNI_OK, ret);
   return env;
 }
@@ -91,18 +84,13 @@ JNIEnv* AttachCurrentThread() {
 void DetachFromVM() {
   // Ignore the return value, if the thread is not attached, DetachCurrentThread
   // will fail. But it is ok as the native thread may never be attached.
-  if (g_jvm) {
-    // See http://crbug.com/322200 for the reasons for these CHECKs.
-    CHECK(g_jvm);
-    CHECK_EQ(g_jvm_functions, g_jvm->functions);
+  if (g_jvm)
     g_jvm->DetachCurrentThread();
-  }
 }
 
 void InitVM(JavaVM* vm) {
   DCHECK(!g_jvm);
   g_jvm = vm;
-  g_jvm_functions = vm->functions;
 }
 
 bool IsVMInitialized() {
