@@ -1349,7 +1349,7 @@ inline bool operator!=(const Document* a, const Document& b) { return !(a == b);
 
 inline bool Node::isDocumentNode() const
 {
-    return this == documentInternal();
+    return this == document();
 }
 
 Node* eventTargetNodeForDocument(Document*);

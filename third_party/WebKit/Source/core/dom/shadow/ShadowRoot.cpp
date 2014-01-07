@@ -84,7 +84,7 @@ ShadowRoot::~ShadowRoot()
     if (m_shadowRootRareData && m_shadowRootRareData->styleSheets())
         m_shadowRootRareData->styleSheets()->detachFromDocument();
 
-    documentInternal()->styleEngine()->didRemoveShadowRoot(this);
+    document().styleEngine()->didRemoveShadowRoot(this);
 
     // We cannot let ContainerNode destructor call willBeDeletedFromDocument()
     // for this ShadowRoot instance because TreeScope destructor

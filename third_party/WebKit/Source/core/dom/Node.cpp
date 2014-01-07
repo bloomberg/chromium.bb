@@ -1051,10 +1051,8 @@ void Node::attach(const AttachContext&)
 
     clearNeedsStyleRecalc();
 
-    if (Document* doc = documentInternal()) {
-        if (AXObjectCache* cache = doc->axObjectCache())
-            cache->updateCacheAfterNodeIsAttached(this);
-    }
+    if (AXObjectCache* cache = document().axObjectCache())
+        cache->updateCacheAfterNodeIsAttached(this);
 }
 
 #ifndef NDEBUG

@@ -456,9 +456,8 @@ public:
     // Returns the document associated with this node. A Document node returns itself.
     Document& document() const
     {
-        ASSERT(this);
-        ASSERT(documentInternal());
-        return *documentInternal();
+        ASSERT(treeScope().documentScope());
+        return *treeScope().documentScope();
     }
 
     TreeScope& treeScope() const
@@ -473,7 +472,6 @@ public:
     // node tree, false otherwise.
     bool inDocument() const
     {
-        ASSERT(documentInternal() || !getFlag(InDocumentFlag));
         return getFlag(InDocumentFlag);
     }
     bool isInShadowTree() const { return getFlag(IsInShadowTreeFlag); }
@@ -790,7 +788,6 @@ protected:
 
     void setHasCustomStyleCallbacks() { setFlag(true, HasCustomStyleCallbacksFlag); }
 
-    Document* documentInternal() const { return treeScope().documentScope(); }
     void setTreeScope(TreeScope* scope) { m_treeScope = scope; }
 
     // isTreeScopeInitialized() can be false
