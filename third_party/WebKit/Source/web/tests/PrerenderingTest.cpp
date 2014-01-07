@@ -261,7 +261,6 @@ TEST_F(PrerenderingTest, SinglePrerender)
     WebPrerender webPrerender = prerendererClient()->releaseWebPrerender();
     EXPECT_FALSE(webPrerender.isNull());
     EXPECT_EQ(toWebURL("http://prerender.com/"), webPrerender.url());
-    EXPECT_EQ(PrerenderRelTypePrerender, webPrerender.relTypes());
 
     EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
     EXPECT_EQ(1u, prerenderingSupport()->totalCount());
@@ -490,19 +489,6 @@ TEST_F(PrerenderingTest, MutateRel)
     executeScript("mutateRel()");
     EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
     EXPECT_EQ(2u, prerenderingSupport()->totalCount());
-}
-
-TEST_F(PrerenderingTest, RelNext)
-{
-    initialize("http://www.foo.com/", "prerender/rel_next_prerender.html");
-
-    WebPrerender relNextOnly = prerendererClient()->releaseWebPrerender();
-    EXPECT_EQ(toWebURL("http://rel-next-only.com/"), relNextOnly.url());
-    EXPECT_EQ(PrerenderRelTypeNext, relNextOnly.relTypes());
-
-    WebPrerender relNextAndPrerender = prerendererClient()->releaseWebPrerender();
-    EXPECT_EQ(toWebURL("http://rel-next-and-prerender.com/"), relNextAndPrerender.url());
-    EXPECT_EQ(static_cast<unsigned>(PrerenderRelTypeNext | PrerenderRelTypePrerender), relNextAndPrerender.relTypes());
 }
 
 } // namespace

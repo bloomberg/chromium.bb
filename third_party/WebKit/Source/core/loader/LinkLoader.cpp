@@ -36,24 +36,12 @@
 #include "core/dom/Document.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/frame/Settings.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/loader/PrerenderHandle.h"
-#include "platform/Prerender.h"
+#include "core/frame/Settings.h"
 #include "platform/network/DNS.h"
 
 namespace WebCore {
-
-static unsigned prerenderRelTypesFromRelAttribute(const LinkRelAttribute& relAttribute)
-{
-    unsigned result = 0;
-    if (relAttribute.isLinkPrerender())
-        result |= PrerenderRelTypePrerender;
-    if (relAttribute.isLinkNext())
-        result |= PrerenderRelTypeNext;
-
-    return result;
-}
 
 LinkLoader::LinkLoader(LinkLoaderClient* client)
     : m_client(client)
@@ -129,14 +117,13 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
         setResource(document.fetcher()->fetchLinkResource(type, linkRequest));
     }
 
-    if (const unsigned prerenderRelTypes = prerenderRelTypesFromRelAttribute(relAttribute)) {
+    if (relAttribute.isLinkPrerender()) {
         if (!m_prerender) {
-            m_prerender = PrerenderHandle::create(document, this, href, prerenderRelTypes);
+            m_prerender = PrerenderHandle::create(document, this, href);
         } else if (m_prerender->url() != href) {
             m_prerender->cancel();
-            m_prerender = PrerenderHandle::create(document, this, href, prerenderRelTypes);
+            m_prerender = PrerenderHandle::create(document, this, href);
         }
-        // TODO(gavinp): Handle changes to rel types of existing prerenders.
     } else if (m_prerender) {
         m_prerender->cancel();
         m_prerender.clear();

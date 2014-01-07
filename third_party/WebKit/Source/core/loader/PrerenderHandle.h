@@ -46,7 +46,7 @@ class PrerenderClient;
 class PrerenderHandle : public DocumentLifecycleObserver {
     WTF_MAKE_NONCOPYABLE(PrerenderHandle);
 public:
-    static PassOwnPtr<PrerenderHandle> create(Document&, PrerenderClient*, const KURL&, unsigned prerenderRelTypes);
+    static PassOwnPtr<PrerenderHandle> create(Document&, PrerenderClient*, const KURL&);
 
     virtual ~PrerenderHandle();
 

@@ -42,7 +42,7 @@
 namespace WebCore {
 
 // static
-PassOwnPtr<PrerenderHandle> PrerenderHandle::create(Document& document, PrerenderClient* client, const KURL& url, const unsigned prerenderRelTypes)
+PassOwnPtr<PrerenderHandle> PrerenderHandle::create(Document& document, PrerenderClient* client, const KURL& url)
 {
     // Prerenders are unlike requests in most ways (for instance, they pass down fragments, and they don't return data),
     // but they do have referrers.
@@ -53,7 +53,7 @@ PassOwnPtr<PrerenderHandle> PrerenderHandle::create(Document& document, Prerende
 
     const String referrer = SecurityPolicy::generateReferrerHeader(referrerPolicy, url, document.outgoingReferrer());
 
-    RefPtr<Prerender> prerender = Prerender::create(client, url, prerenderRelTypes, referrer, referrerPolicy);
+    RefPtr<Prerender> prerender = Prerender::create(client, url, referrer, referrerPolicy);
 
     PrerendererClient* prerendererClient = PrerendererClient::from(document.page());
     if (prerendererClient)
