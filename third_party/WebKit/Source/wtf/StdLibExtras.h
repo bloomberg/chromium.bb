@@ -136,89 +136,6 @@ template<typename T> char (&ArrayLengthHelperFunction(T (&)[0]))[0];
 #endif
 #define WTF_ARRAY_LENGTH(array) sizeof(::WTF::ArrayLengthHelperFunction(array))
 
-enum BinarySearchMode {
-    KeyMustBePresentInArray,
-    KeyMightNotBePresentInArray,
-    ReturnAdjacentElementIfKeyIsNotPresent
-};
-
-template<typename ArrayElementType, typename KeyType, typename ArrayType, typename ExtractKey, BinarySearchMode mode>
-inline ArrayElementType* binarySearchImpl(ArrayType& array, size_t size, KeyType key, const ExtractKey& extractKey = ExtractKey())
-{
-    size_t offset = 0;
-    while (size > 1) {
-        size_t pos = (size - 1) >> 1;
-        KeyType val = extractKey(&array[offset + pos]);
-
-        if (val == key)
-            return &array[offset + pos];
-        // The item we are looking for is smaller than the item being check; reduce the value of 'size',
-        // chopping off the right hand half of the array.
-        if (key < val)
-            size = pos;
-        // Discard all values in the left hand half of the array, up to and including the item at pos.
-        else {
-            size -= (pos + 1);
-            offset += (pos + 1);
-        }
-
-        ASSERT(mode != KeyMustBePresentInArray || size);
-    }
-
-    if (mode == KeyMightNotBePresentInArray && !size)
-        return 0;
-
-    ArrayElementType* result = &array[offset];
-
-    if (mode == KeyMightNotBePresentInArray && key != extractKey(result))
-        return 0;
-
-    if (mode == KeyMustBePresentInArray) {
-        ASSERT(size == 1);
-        ASSERT(key == extractKey(result));
-    }
-
-    return result;
-}
-
-// If the element is not found, crash if asserts are enabled, and behave like approximateBinarySearch in release builds.
-template<typename ArrayElementType, typename KeyType, typename ArrayType, typename ExtractKey>
-inline ArrayElementType* binarySearch(ArrayType& array, size_t size, KeyType key, ExtractKey extractKey = ExtractKey())
-{
-    return binarySearchImpl<ArrayElementType, KeyType, ArrayType, ExtractKey, KeyMustBePresentInArray>(array, size, key, extractKey);
-}
-
-// Return zero if the element is not found.
-template<typename ArrayElementType, typename KeyType, typename ArrayType, typename ExtractKey>
-inline ArrayElementType* tryBinarySearch(ArrayType& array, size_t size, KeyType key, ExtractKey extractKey = ExtractKey())
-{
-    return binarySearchImpl<ArrayElementType, KeyType, ArrayType, ExtractKey, KeyMightNotBePresentInArray>(array, size, key, extractKey);
-}
-
-// Return the element that is either to the left, or the right, of where the element would have been found.
-template<typename ArrayElementType, typename KeyType, typename ArrayType, typename ExtractKey>
-inline ArrayElementType* approximateBinarySearch(ArrayType& array, size_t size, KeyType key, ExtractKey extractKey = ExtractKey())
-{
-    return binarySearchImpl<ArrayElementType, KeyType, ArrayType, ExtractKey, ReturnAdjacentElementIfKeyIsNotPresent>(array, size, key, extractKey);
-}
-
-// Variants of the above that use const.
-template<typename ArrayElementType, typename KeyType, typename ArrayType, typename ExtractKey>
-inline ArrayElementType* binarySearch(const ArrayType& array, size_t size, KeyType key, ExtractKey extractKey = ExtractKey())
-{
-    return binarySearchImpl<ArrayElementType, KeyType, ArrayType, ExtractKey, KeyMustBePresentInArray>(const_cast<ArrayType&>(array), size, key, extractKey);
-}
-template<typename ArrayElementType, typename KeyType, typename ArrayType, typename ExtractKey>
-inline ArrayElementType* tryBinarySearch(const ArrayType& array, size_t size, KeyType key, ExtractKey extractKey = ExtractKey())
-{
-    return binarySearchImpl<ArrayElementType, KeyType, ArrayType, ExtractKey, KeyMightNotBePresentInArray>(const_cast<ArrayType&>(array), size, key, extractKey);
-}
-template<typename ArrayElementType, typename KeyType, typename ArrayType, typename ExtractKey>
-inline ArrayElementType* approximateBinarySearch(const ArrayType& array, size_t size, KeyType key, ExtractKey extractKey = ExtractKey())
-{
-    return binarySearchImpl<ArrayElementType, KeyType, ArrayType, ExtractKey, ReturnAdjacentElementIfKeyIsNotPresent>(const_cast<ArrayType&>(array), size, key, extractKey);
-}
-
 } // namespace WTF
 
 // This version of placement new omits a 0 check.
@@ -229,9 +146,6 @@ inline void* operator new(size_t, NotNullTag, void* location)
     return location;
 }
 
-using WTF::binarySearch;
-using WTF::tryBinarySearch;
-using WTF::approximateBinarySearch;
 using WTF::bitwise_cast;
 using WTF::safeCast;
 

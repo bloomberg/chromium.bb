@@ -368,14 +368,14 @@ Font::CodePath Font::codePath(const TextRun& run) const
     return characterRangeCodePath(run.characters16(), run.length());
 }
 
-static inline UChar keyExtractorUChar(const UChar* value)
+// Takes a flattened list of closed intervals
+template <class T, size_t size>
+bool valueInIntervalList(const T (&intervalList)[size], const T& value)
 {
-    return *value;
-}
-
-static inline UChar32 keyExtractorUChar32(const UChar32* value)
-{
-    return *value;
+    const T* bound = std::upper_bound(&intervalList[0], &intervalList[size], value);
+    if ((bound - intervalList) % 2 == 1)
+        return true;
+    return bound > intervalList && *(bound - 1) == value;
 }
 
 Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned len)
@@ -428,7 +428,6 @@ Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned le
         // U+FE20 through U+FE2F Combining half marks
         0xFE20, 0xFE2F
     };
-    static size_t complexCodePathRangesCount = WTF_ARRAY_LENGTH(complexCodePathRanges);
 
     CodePath result = Simple;
     for (unsigned i = 0; i < len; i++) {
@@ -472,21 +471,7 @@ Font::CodePath Font::characterRangeCodePath(const UChar* characters, unsigned le
         }
 
         // Search for other Complex cases
-        UChar* boundingCharacter = approximateBinarySearch<UChar, UChar>(
-            (UChar*)complexCodePathRanges, complexCodePathRangesCount, c, keyExtractorUChar);
-        // Exact matches are complex
-        if (*boundingCharacter == c)
-            return Complex;
-        bool isEndOfRange = ((boundingCharacter - complexCodePathRanges) % 2);
-        if (*boundingCharacter < c) {
-            // Determine if we are in a range or out
-            if (!isEndOfRange)
-                return Complex;
-            continue;
-        }
-        ASSERT(*boundingCharacter > c);
-        // Determine if we are in a range or out - opposite condition to above
-        if (isEndOfRange)
+        if (valueInIntervalList(complexCodePathRanges, c))
             return Complex;
     }
 
@@ -520,15 +505,7 @@ bool Font::isCJKIdeograph(UChar32 c)
     if (c < cjkIdeographRanges[0] || c > cjkIdeographRanges[cjkIdeographRangesCount - 1])
         return false;
 
-    UChar32* boundingCharacter = approximateBinarySearch<UChar32, UChar32>(
-        (UChar32*)cjkIdeographRanges, cjkIdeographRangesCount, c, keyExtractorUChar32);
-    // Exact matches are CJK
-    if (*boundingCharacter == c)
-        return true;
-    bool isEndOfRange = ((boundingCharacter - cjkIdeographRanges) % 2);
-    if (*boundingCharacter < c)
-        return !isEndOfRange;
-    return isEndOfRange;
+    return valueInIntervalList(cjkIdeographRanges, c);
 }
 
 bool Font::isCJKIdeographOrSymbol(UChar32 c)
@@ -587,17 +564,8 @@ bool Font::isCJKIdeographOrSymbol(UChar32 c)
         0x1F170, 0x1F189,
         0x1F200, 0x1F6FF
     };
-    static size_t cjkSymbolRangesCount = WTF_ARRAY_LENGTH(cjkSymbolRanges);
 
-    UChar32* boundingCharacter = approximateBinarySearch<UChar32, UChar32>(
-        (UChar32*)cjkSymbolRanges, cjkSymbolRangesCount, c, keyExtractorUChar32);
-    // Exact matches are CJK Symbols
-    if (*boundingCharacter == c)
-        return true;
-    bool isEndOfRange = ((boundingCharacter - cjkSymbolRanges) % 2);
-    if (*boundingCharacter < c)
-        return !isEndOfRange;
-    return isEndOfRange;
+    return valueInIntervalList(cjkSymbolRanges, c);
 }
 
 unsigned Font::expansionOpportunityCount(const LChar* characters, size_t length, TextDirection direction, bool& isAfterExpansion)

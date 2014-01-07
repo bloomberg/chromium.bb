@@ -765,9 +765,9 @@ void SVGSMILElement::addEndTime(SMILTime eventTime, SMILTime endTime, SMILTimeWi
     endListChanged(eventTime);
 }
 
-inline SMILTime extractTimeFromVector(const SMILTimeWithOrigin* position)
+inline bool compareTimes(const SMILTimeWithOrigin& left, const SMILTimeWithOrigin& right)
 {
-    return position->time();
+    return left.time() < right.time();
 }
 
 SMILTime SVGSMILElement::findInstanceTime(BeginOrEnd beginOrEnd, SMILTime minimumTime, bool equalsMinimumOK) const
@@ -778,21 +778,17 @@ SMILTime SVGSMILElement::findInstanceTime(BeginOrEnd beginOrEnd, SMILTime minimu
     if (!sizeOfList)
         return beginOrEnd == Begin ? SMILTime::unresolved() : SMILTime::indefinite();
 
-    const SMILTimeWithOrigin* result = approximateBinarySearch<const SMILTimeWithOrigin, SMILTime>(list, sizeOfList, minimumTime, extractTimeFromVector);
+    const SMILTimeWithOrigin dummyTimeWithOrigin(minimumTime, SMILTimeWithOrigin::ParserOrigin);
+    const SMILTimeWithOrigin* result = std::lower_bound(list.begin(), list.end(), dummyTimeWithOrigin, compareTimes);
     int indexOfResult = result - list.begin();
-    ASSERT_WITH_SECURITY_IMPLICATION(indexOfResult < sizeOfList);
-
-    if (list[indexOfResult].time() < minimumTime && indexOfResult < sizeOfList - 1)
-        ++indexOfResult;
-
+    if (indexOfResult == sizeOfList)
+        return SMILTime::unresolved();
     const SMILTime& currentTime = list[indexOfResult].time();
 
     // The special value "indefinite" does not yield an instance time in the begin list.
     if (currentTime.isIndefinite() && beginOrEnd == Begin)
         return SMILTime::unresolved();
 
-    if (currentTime < minimumTime)
-        return SMILTime::unresolved();
     if (currentTime > minimumTime)
         return currentTime;
 
