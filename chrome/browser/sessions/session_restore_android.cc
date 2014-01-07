@@ -39,15 +39,15 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
       content::NavigationController::RESTORE_LAST_SESSION_EXITED_CLEANLY,
       &entries);
 
+  TabAndroid* current_tab = TabAndroid::FromWebContents(web_contents);
+  DCHECK(current_tab);
   if (disposition == CURRENT_TAB) {
-    TabAndroid* current_tab = TabAndroid::FromWebContents(web_contents);
-    DCHECK(current_tab);
     current_tab->SwapTabContents(web_contents, new_web_contents);
     delete web_contents;
   } else {
     DCHECK(disposition == NEW_FOREGROUND_TAB ||
         disposition == NEW_BACKGROUND_TAB);
-    tab_model->CreateTab(new_web_contents);
+    tab_model->CreateTab(new_web_contents, current_tab->GetAndroidId());
   }
   return new_web_contents;
 }
