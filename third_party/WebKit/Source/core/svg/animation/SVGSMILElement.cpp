@@ -29,6 +29,7 @@
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/ScriptEventListener.h"
 #include "core/dom/Document.h"
 #include "core/events/EventListener.h"
 #include "core/events/EventSender.h"
@@ -517,6 +518,12 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
         parseBeginOrEnd(value.string(), End);
         if (inDocument())
             connectConditions();
+    } else if (name == SVGNames::onbeginAttr) {
+        setAttributeEventListener(EventTypeNames::beginEvent, createAttributeEventListener(this, name, value));
+    } else if (name == SVGNames::onendAttr) {
+        setAttributeEventListener(EventTypeNames::endEvent, createAttributeEventListener(this, name, value));
+    } else if (name == SVGNames::onrepeatAttr) {
+        setAttributeEventListener(EventTypeNames::repeatEvent, createAttributeEventListener(this, name, value));
     } else
         SVGElement::parseAttribute(name, value);
 }
