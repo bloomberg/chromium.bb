@@ -15,6 +15,8 @@
         # api resources compiled into the chrome resource bundle.
         # http://crbug.com/162530
         '../chrome/chrome_resources.gyp:chrome_resources',
+        # TODO(jamescook|derat): Pull strings into extensions module.
+        '../chrome/chrome_resources.gyp:chrome_strings',
         '../chrome/common/extensions/api/api.gyp:api',
         '../components/components.gyp:url_matcher',
         '../content/content.gyp:content_common',
@@ -203,6 +205,30 @@
         'browser/update_observer.h',
         'browser/view_type_utils.cc',
         'browser/view_type_utils.h',
+      ],
+      # Disable c4267 warnings until we fix size_t to int truncations.
+      'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
+      'target_name': 'extensions_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'extensions_browser',
+        'extensions_common',
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'browser/test_management_policy.cc',
+        'browser/test_management_policy.h',
+        'common/extension_builder.cc',
+        'common/extension_builder.h',
+        'common/test_util.cc',
+        'common/test_util.h',
+        'common/value_builder.cc',
+        'common/value_builder.h',
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],

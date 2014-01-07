@@ -10,48 +10,13 @@
 #include "base/values.h"
 #include "chrome/common/chrome_paths.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using extensions::DictionaryBuilder;
 using extensions::Extension;
-using extensions::ExtensionBuilder;
-using extensions::ListBuilder;
 using extensions::Manifest;
 
-namespace extensions {
 namespace extension_test_util {
-
-ExtensionBuilder& BuildExtension(ExtensionBuilder& builder) {
-  return builder
-         .SetManifest(DictionaryBuilder()
-                      .Set("name", "Test extension")
-                      .Set("version", "1.0")
-                      .Set("manifest_version", 2));
-}
-
-ExtensionBuilder& BuildExtensionWithPermissions(ExtensionBuilder& builder,
-                                                ListBuilder& permissions) {
-  return
-      BuildExtension(builder)
-      .MergeManifest(
-           DictionaryBuilder().Set("permissions", permissions));
-}
-
-}  // namespace extension_test_util
-}  // namespace extensions
-
-namespace extension_test_util {
-
-scoped_refptr<Extension> CreateExtensionWithID(std::string id) {
-  base::DictionaryValue values;
-  values.SetString(extensions::manifest_keys::kName, "test");
-  values.SetString(extensions::manifest_keys::kVersion, "0.1");
-  std::string error;
-  return Extension::Create(base::FilePath(), extensions::Manifest::INTERNAL,
-                           values, Extension::NO_FLAGS, id, &error);
-}
 
 scoped_refptr<Extension> LoadManifestUnchecked(const std::string& dir,
                                                const std::string& test_file,

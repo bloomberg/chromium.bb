@@ -7,8 +7,8 @@
 #include "chrome/browser/media_galleries/media_galleries_dialog_controller_mock.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
-#include "chrome/common/extensions/extension_test_util.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -32,7 +32,7 @@ class MediaGalleriesDialogTest : public testing::Test {
   MediaGalleriesDialogTest() {}
   virtual ~MediaGalleriesDialogTest() {}
   virtual void SetUp() OVERRIDE {
-    dummy_extension_ = extension_test_util::CreateExtensionWithID("dummy");
+    dummy_extension_ = extensions::test_util::CreateExtensionWithID("dummy");
   }
   virtual void TearDown() OVERRIDE {
     dummy_extension_ = NULL;

@@ -8,27 +8,14 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
 
 namespace extensions {
 class Extension;
+}
 
-// Newer functions go here.
-// TODO(mpcomplete): migrate older functions over.
+// Newer functions go in extensions/common/test_util.h.
 namespace extension_test_util {
-
-ExtensionBuilder& BuildExtension(ExtensionBuilder& builder);
-ExtensionBuilder& BuildExtensionWithPermissions(ExtensionBuilder& builder,
-                                                ListBuilder& permissions);
-
-}  // namespace extension_test_util
-}  // namespace extensions
-
-namespace extension_test_util {
-
-// Return a very simple extension with id |id|.
-scoped_refptr<extensions::Extension> CreateExtensionWithID(std::string id);
 
 // Helpers for loading manifests, |dir| is relative to chrome::DIR_TEST_DATA
 // followed by "extensions".

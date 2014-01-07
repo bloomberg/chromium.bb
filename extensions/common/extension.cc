@@ -34,7 +34,6 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/chromium_strings.h"
-#include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "url/url_util.h"
 

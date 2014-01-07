@@ -8,11 +8,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::NiceMock;
@@ -27,7 +27,7 @@ class MediaGalleriesDialogBrowserTest : public InProcessBrowserTest {
 // the sheet.
 IN_PROC_BROWSER_TEST_F(MediaGalleriesDialogBrowserTest, Close) {
   scoped_refptr<extensions::Extension> dummy_extension =
-      extension_test_util::CreateExtensionWithID("dummy");
+      extensions::test_util::CreateExtensionWithID("dummy");
   NiceMock<MediaGalleriesDialogControllerMock> controller(*dummy_extension);
 
   content::WebContents* web_contents =

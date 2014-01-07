@@ -6,34 +6,22 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/values.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_builder.h"
-#include "extensions/common/value_builder.h"
+#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 namespace {
 
-// Creates a very simple extension.
-scoped_refptr<Extension> CreateExtensionWithID(const std::string& id) {
-  return ExtensionBuilder()
-      .SetManifest(
-           DictionaryBuilder().Set("name", "Echo").Set("version", "1.0"))
-      .SetID(id)
-      .Build();
-}
-
 typedef testing::Test ExtensionRegistryTest;
 
 TEST_F(ExtensionRegistryTest, FillAndClearRegistry) {
   ExtensionRegistry registry;
-  scoped_refptr<Extension> extension1 = CreateExtensionWithID("id1");
-  scoped_refptr<Extension> extension2 = CreateExtensionWithID("id2");
-  scoped_refptr<Extension> extension3 = CreateExtensionWithID("id3");
-  scoped_refptr<Extension> extension4 = CreateExtensionWithID("id4");
+  scoped_refptr<Extension> extension1 = test_util::CreateExtensionWithID("id1");
+  scoped_refptr<Extension> extension2 = test_util::CreateExtensionWithID("id2");
+  scoped_refptr<Extension> extension3 = test_util::CreateExtensionWithID("id3");
+  scoped_refptr<Extension> extension4 = test_util::CreateExtensionWithID("id4");
 
   // All the sets start empty.
   EXPECT_EQ(0u, registry.enabled_extensions().size());
@@ -66,7 +54,7 @@ TEST_F(ExtensionRegistryTest, AddAndRemoveExtensionFromRegistry) {
   ExtensionRegistry registry;
 
   // Adding an extension works.
-  scoped_refptr<Extension> extension = CreateExtensionWithID("id");
+  scoped_refptr<Extension> extension = test_util::CreateExtensionWithID("id");
   EXPECT_TRUE(registry.AddEnabled(extension));
   EXPECT_EQ(1u, registry.enabled_extensions().size());
 
@@ -85,7 +73,7 @@ TEST_F(ExtensionRegistryTest, AddAndRemoveExtensionFromRegistry) {
 
 TEST_F(ExtensionRegistryTest, AddExtensionToRegistryTwice) {
   ExtensionRegistry registry;
-  scoped_refptr<Extension> extension = CreateExtensionWithID("id");
+  scoped_refptr<Extension> extension = test_util::CreateExtensionWithID("id");
 
   // An extension can exist in two sets at once. It would be nice to eliminate
   // this functionality, but some users of ExtensionRegistry need it.
