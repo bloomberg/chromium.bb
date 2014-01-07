@@ -1051,8 +1051,8 @@ void RenderBlock::removeChild(RenderObject* oldChild)
     bool canMergeAnonymousBlocks = canMergeContiguousAnonymousBlocks(oldChild, prev, next);
     if (canMergeAnonymousBlocks && prev && next) {
         prev->setNeedsLayoutAndPrefWidthsRecalc();
-        RenderBlock* nextBlock = toRenderBlock(next);
-        RenderBlock* prevBlock = toRenderBlock(prev);
+        RenderBlockFlow* nextBlock = toRenderBlockFlow(next);
+        RenderBlockFlow* prevBlock = toRenderBlockFlow(prev);
 
         if (prev->childrenInline() != next->childrenInline()) {
             RenderBlock* inlineChildrenBlock = prev->childrenInline() ? prevBlock : nextBlock;
