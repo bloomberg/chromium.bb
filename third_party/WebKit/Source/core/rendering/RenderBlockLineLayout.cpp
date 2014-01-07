@@ -135,7 +135,7 @@ static TextDirection determinePlaintextDirectionality(RenderObject* root, Render
 static inline InlineBox* createInlineBoxForRenderer(RenderObject* obj, bool isRootLineBox, bool isOnlyRun = false)
 {
     if (isRootLineBox)
-        return toRenderBlock(obj)->createAndAppendRootInlineBox();
+        return toRenderBlockFlow(obj)->createAndAppendRootInlineBox();
 
     if (obj->isText()) {
         InlineTextBox* textBox = toRenderText(obj)->createInlineTextBox();

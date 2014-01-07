@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/rendering/RenderBlockFlow.h"
 
+#include "core/accessibility/AXObjectCache.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/LayoutRectRecorder.h"
@@ -1538,6 +1539,19 @@ void RenderBlockFlow::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomp
     RenderBlock::computeOverflow(oldClientAfterEdge, recomputeFloats);
     if (!hasColumns() && (recomputeFloats || isRoot() || expandsToEncloseOverhangingFloats() || hasSelfPaintingLayer()))
         addOverflowFromFloats();
+}
+
+RootInlineBox* RenderBlockFlow::createAndAppendRootInlineBox()
+{
+    RootInlineBox* rootBox = createRootInlineBox();
+    m_lineBoxes.appendLineBox(rootBox);
+
+    if (UNLIKELY(AXObjectCache::accessibilityEnabled()) && m_lineBoxes.firstLineBox() == rootBox) {
+        if (AXObjectCache* cache = document().existingAXObjectCache())
+            cache->recomputeIsIgnored(this);
+    }
+
+    return rootBox;
 }
 
 void RenderBlockFlow::deleteLineBoxTree()

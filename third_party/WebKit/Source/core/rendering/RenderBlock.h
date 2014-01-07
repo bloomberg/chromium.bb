@@ -141,8 +141,6 @@ public:
     bool hasMarginBeforeQuirk(const RenderBox* child) const;
     bool hasMarginAfterQuirk(const RenderBox* child) const;
 
-    RootInlineBox* createAndAppendRootInlineBox();
-
     void markShapeInsideDescendantsForLayout();
     void markPositionedObjectsForLayout();
     // FIXME: Do we really need this to be virtual? It's just so we can call this on
@@ -434,8 +432,6 @@ private:
 
     void insertIntoTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
     static void removeFromTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
-
-    virtual RootInlineBox* createRootInlineBox() { return 0; } // Subclassed by RenderBlockFlow, SVG and Ruby.
 
     // Called to lay out the legend for a fieldset or the ruby text of a ruby run.
     virtual RenderObject* layoutSpecialExcludedChild(bool /*relayoutChildren*/, SubtreeLayoutScope&) { return 0; }
