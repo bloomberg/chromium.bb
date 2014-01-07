@@ -8,15 +8,13 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "net/base/net_export.h"
 #include "net/cert/sct_status_flags.h"
+#include "net/cert/signed_certificate_timestamp.h"
 
 namespace net {
 
-namespace ct {
-struct SignedCertificateTimestamp;
-}
-
-struct SignedCertificateTimestampAndStatus {
+struct NET_EXPORT SignedCertificateTimestampAndStatus {
   SignedCertificateTimestampAndStatus(
       const scoped_refptr<ct::SignedCertificateTimestamp>& sct,
       ct::SCTVerifyStatus status);
