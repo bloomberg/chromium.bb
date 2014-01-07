@@ -301,7 +301,7 @@ void TooltipController::UpdateIfRequired() {
     } else {
       gfx::Point widget_loc = curr_mouse_loc_ +
           tooltip_window_->GetBoundsInScreen().OffsetFromOrigin();
-      tooltip_->SetText(tooltip_window_, trimmed_text, widget_loc);
+      tooltip_->SetText(tooltip_window_, whitespace_removed_text, widget_loc);
       tooltip_->Show();
       int timeout = GetTooltipShownTimeout();
       if (timeout > 0) {

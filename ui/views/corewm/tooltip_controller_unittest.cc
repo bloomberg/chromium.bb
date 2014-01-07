@@ -13,6 +13,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_screen.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font.h"
@@ -652,6 +653,92 @@ TEST_F(TooltipControllerTest, TooltipAtTopOfZOrderAfterActivation) {
       ui::wm::WINDOW_TYPE_TOOLTIP);
 }
 #endif
+
+namespace {
+
+class TestTooltip : public Tooltip {
+ public:
+  TestTooltip() : is_visible_(false) {}
+  virtual ~TestTooltip() {}
+
+  const base::string16& tooltip_text() const { return tooltip_text_; }
+
+  // Tooltip:
+  virtual void SetText(aura::Window* window,
+                       const base::string16& tooltip_text,
+                       const gfx::Point& location) OVERRIDE {
+    tooltip_text_ = tooltip_text;
+  }
+  virtual void Show() OVERRIDE {
+    is_visible_ = true;
+  }
+  virtual void Hide() OVERRIDE {
+    is_visible_ = false;
+  }
+  virtual bool IsVisible() OVERRIDE {
+    return is_visible_;
+  }
+
+ private:
+  bool is_visible_;
+  base::string16 tooltip_text_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestTooltip);
+};
+
+}  // namespace
+
+// Use for tests that don't depend upon views.
+class TooltipControllerTest2 : public aura::test::AuraTestBase {
+ public:
+  TooltipControllerTest2() : test_tooltip_(new TestTooltip) {}
+  virtual ~TooltipControllerTest2() {}
+
+  virtual void SetUp() OVERRIDE {
+    wm_state_.reset(new views::corewm::WMState);
+    aura::test::AuraTestBase::SetUp();
+    controller_.reset(new TooltipController(
+                          scoped_ptr<views::corewm::Tooltip>(test_tooltip_)));
+    root_window()->AddPreTargetHandler(controller_.get());
+    SetTooltipClient(root_window(), controller_.get());
+    helper_.reset(new TooltipControllerTestHelper(controller_.get()));
+    generator_.reset(new aura::test::EventGenerator(root_window()));
+  }
+
+  virtual void TearDown() OVERRIDE {
+    root_window()->RemovePreTargetHandler(controller_.get());
+    aura::client::SetTooltipClient(root_window(), NULL);
+    controller_.reset();
+    generator_.reset();
+    helper_.reset();
+    aura::test::AuraTestBase::TearDown();
+    wm_state_.reset();
+  }
+
+ protected:
+  // Owned by |controller_|.
+  TestTooltip* test_tooltip_;
+  scoped_ptr<TooltipControllerTestHelper> helper_;
+  scoped_ptr<aura::test::EventGenerator> generator_;
+
+ private:
+  scoped_ptr<TooltipController> controller_;
+  scoped_ptr<views::corewm::WMState> wm_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(TooltipControllerTest2);
+};
+
+TEST_F(TooltipControllerTest2, VerifyLeadingTrailingWhitespaceStripped) {
+  aura::test::TestWindowDelegate test_delegate;
+  scoped_ptr<aura::Window> window(
+      CreateNormalWindow(100, root_window(), &test_delegate));
+  window->SetBounds(gfx::Rect(0, 0, 300, 300));
+  base::string16 tooltip_text(ASCIIToUTF16(" \nx  "));
+  aura::client::SetTooltipText(window.get(), &tooltip_text);
+  generator_->MoveMouseToCenterOf(window.get());
+  helper_->FireTooltipTimer();
+  EXPECT_EQ(ASCIIToUTF16("x"), test_tooltip_->tooltip_text());
+}
 
 }  // namespace test
 }  // namespace corewm
