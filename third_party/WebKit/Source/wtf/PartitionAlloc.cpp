@@ -68,9 +68,6 @@ static size_t partitionBucketNumSystemPages(size_t size)
     double bestWasteRatio = 1.0f;
     size_t bestPages = 0;
     ASSERT(size <= kMaxSystemPagesPerSlotSpan * kSystemPageSize);
-    size_t startPages = kNumSystemPagesPerPartitionPage - 1;
-    while (startPages * kSystemPageSize < size)
-        startPages++;
     for (size_t i = kNumSystemPagesPerPartitionPage - 1; i <= kMaxSystemPagesPerSlotSpan; ++i) {
         size_t pageSize = kSystemPageSize * i;
         size_t numSlots = pageSize / size;
