@@ -52,6 +52,9 @@ Examples:
   Try a change against a particular revision:
     %(prog)s -r 123
 
+  Try a change including changes to a sub repository:
+    %(prog)s -s third_party/WebKit
+
   A git patch off a web site (git inserts a/ and b/) and fix the base dir:
     %(prog)s --url http://url/to/patch.diff --patchlevel 1 --root src
 
