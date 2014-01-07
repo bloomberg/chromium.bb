@@ -234,6 +234,9 @@
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
           ],
+          'export_dependent_settings': [
+            '../third_party/WebKit/public/blink.gyp:blink',
+          ],
         }],
         ['OS == "win" or toolkit_uses_gtk == 1', {
           'dependencies': [

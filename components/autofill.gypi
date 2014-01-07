@@ -376,6 +376,7 @@
             '../content/content.gyp:content_common',
             '../ipc/ipc.gyp:ipc',
             '../skia/skia.gyp:skia',
+            '../third_party/WebKit/public/blink.gyp:blink',
 
             'component_strings.gyp:component_strings',
           ],

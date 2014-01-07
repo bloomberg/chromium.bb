@@ -33,6 +33,7 @@
       ],
       'export_dependent_settings': [
         '../base/base.gyp:test_support_base',
+        '../content/content_shell_and_tests.gyp:test_support_content',
       ],
       'include_dirs': [
         '..',

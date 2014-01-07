@@ -151,6 +151,7 @@
           ],
           'dependencies': [
             '../content/content.gyp:content_renderer',
+            '../third_party/WebKit/public/blink.gyp:blink',
             '../webkit/common/webkit_common.gyp:webkit_common',
           ],
           'defines': [
