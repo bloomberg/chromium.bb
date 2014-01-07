@@ -90,7 +90,7 @@ static void configureV8TestInterfaceDoNotCheckConstantsTemplate(v8::Handle<v8::F
     V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestInterfaceDoNotCheckConstantsConstants, WTF_ARRAY_LENGTH(V8TestInterfaceDoNotCheckConstantsConstants), isolate);
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestInterfaceDoNotCheckConstants::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)

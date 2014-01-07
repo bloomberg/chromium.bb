@@ -3445,13 +3445,13 @@ sub GenerateNonStandardFunction
         if ($function->extendedAttributes->{"PerWorldBindings"}) {
             $code .= <<END;
     if (currentWorldType == MainWorld) {
-        ${conditional8}$template->SetAccessor(v8::String::NewFromUtf8(isolate, "$name", v8::String::kInternalizedString), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallbackForMainWorld, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+        ${conditional8}$template->SetAccessor(v8AtomicString(isolate, "$name"), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallbackForMainWorld, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
     } else {
-        ${conditional8}$template->SetAccessor(v8::String::NewFromUtf8(isolate, "$name", v8::String::kInternalizedString), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+        ${conditional8}$template->SetAccessor(v8AtomicString(isolate, "$name"), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
     }
 END
         } else {
-            $code .= "    ${conditional4}$template->SetAccessor(v8::String::NewFromUtf8(isolate, \"$name\", v8::String::kInternalizedString), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
+            $code .= "    ${conditional4}$template->SetAccessor(v8AtomicString(isolate, \"$name\"), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
         }
 
         return $code;
@@ -3479,12 +3479,12 @@ END
 
     if ($function->extendedAttributes->{"PerWorldBindings"}) {
         $code .= "    if (currentWorldType == MainWorld) {\n";
-        $code .= "        ${conditional8}$template->Set(v8::String::NewFromUtf8(isolate, \"$name\", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
+        $code .= "        ${conditional8}$template->Set(v8AtomicString(isolate, \"$name\"), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
         $code .= "    } else {\n";
-        $code .= "        ${conditional8}$template->Set(v8::String::NewFromUtf8(isolate, \"$name\", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
+        $code .= "        ${conditional8}$template->Set(v8AtomicString(isolate, \"$name\"), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
         $code .= "    }\n";
     } else {
-        $code .= "    ${conditional4}$template->Set(v8::String::NewFromUtf8(isolate, \"$name\", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
+        $code .= "    ${conditional4}$template->Set(v8AtomicString(isolate, \"$name\"), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
     }
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     return $code;
@@ -4662,7 +4662,7 @@ END
     $code .= <<END;
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());
 }
 
 END
@@ -4751,7 +4751,7 @@ END
             $code .= "    if (context && context->isDocument() && ${contextEnabledFunction}(toDocument(context)))\n";
             my $name = $perContextEnabledFunction->name;
             $code .= <<END;
-        prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "${name}", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
+        prototypeTemplate->Set(v8AtomicString(isolate, "$name"), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
 END
             $code .= "#endif // ${conditionalString}\n" if $conditionalString;
         }

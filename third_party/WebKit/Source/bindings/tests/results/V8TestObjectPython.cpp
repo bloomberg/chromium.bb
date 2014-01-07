@@ -6595,30 +6595,30 @@ static void configureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate>
     COMPILE_ASSERT(1 == TestObjectPython::DEPRECATED_CONSTANT, TheValueOfTestObjectPython_DEPRECATED_CONSTANTDoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestObjectPython::FEATURE_ENABLED_CONST, TheValueOfTestObjectPython_FEATURE_ENABLED_CONSTDoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestObjectPython::CONST_IMPL, TheValueOfTestObjectPython_CONST_IMPLDoesntMatchWithImplementation);
-    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "staticVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::staticVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
-    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "overloadedStaticMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::overloadedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
+    functionTemplate->Set(v8AtomicString(isolate, "staticVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::staticVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    functionTemplate->Set(v8AtomicString(isolate, "overloadedStaticMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::overloadedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
 #if ENABLE(CONDITION)
-    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "conditionalConditionStaticVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::conditionalConditionStaticVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    functionTemplate->Set(v8AtomicString(isolate, "conditionalConditionStaticVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::conditionalConditionStaticVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #endif // ENABLE(CONDITION)
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "doNotCheckSignatureVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::doNotCheckSignatureVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "notEnumerableVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::notEnumerableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum));
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "readOnlyVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::readOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
-    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "notEnumerableReadOnlyVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::notEnumerableReadOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum | v8::ReadOnly));
+    prototypeTemplate->Set(v8AtomicString(isolate, "doNotCheckSignatureVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::doNotCheckSignatureVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    prototypeTemplate->Set(v8AtomicString(isolate, "notEnumerableVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::notEnumerableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum));
+    prototypeTemplate->Set(v8AtomicString(isolate, "readOnlyVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::readOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
+    prototypeTemplate->Set(v8AtomicString(isolate, "notEnumerableReadOnlyVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::notEnumerableReadOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum | v8::ReadOnly));
     if (RuntimeEnabledFeatures::featureNameEnabled())
-        prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "runtimeEnabledVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::runtimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
+        prototypeTemplate->Set(v8AtomicString(isolate, "runtimeEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::runtimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
     if (currentWorldType == MainWorld) {
         if (RuntimeEnabledFeatures::featureNameEnabled())
-            prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "perWorldBindingsRuntimeEnabledVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, v8Undefined(), defaultSignature, 0));
+            prototypeTemplate->Set(v8AtomicString(isolate, "perWorldBindingsRuntimeEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, v8Undefined(), defaultSignature, 0));
     } else {
         if (RuntimeEnabledFeatures::featureNameEnabled())
-            prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "perWorldBindingsRuntimeEnabledVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
+            prototypeTemplate->Set(v8AtomicString(isolate, "perWorldBindingsRuntimeEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
     }
-    instanceTemplate->Set(v8::String::NewFromUtf8(isolate, "unforgeableVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::unforgeableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
+    instanceTemplate->Set(v8AtomicString(isolate, "unforgeableVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::unforgeableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "staticStringAttribute"), TestObjectPythonV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     functionTemplate->SetNativeDataProperty(v8AtomicString(isolate, "staticLongAttribute"), TestObjectPythonV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticLongAttributeAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8AtomicString(isolate, "toString"), V8PerIsolateData::current()->toStringTemplate());
 }
 
 v8::Handle<v8::FunctionTemplate> V8TestObjectPython::domTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -6664,7 +6664,7 @@ void V8TestObjectPython::installPerContextEnabledMethods(v8::Handle<v8::Object> 
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
     if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context)))
-        prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "perContextEnabledVoidMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::perContextEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
+        prototypeTemplate->Set(v8AtomicString(isolate, "perContextEnabledVoidMethod"), v8::FunctionTemplate::New(isolate, TestObjectPythonV8Internal::perContextEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
 }
 
 v8::Handle<v8::Object> V8TestObjectPython::createWrapper(PassRefPtr<TestObjectPython> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
