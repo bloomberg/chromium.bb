@@ -343,7 +343,7 @@ class BuilderStatus(object):
     else:
       return cls.STATUS_FAILED
 
-  def AsDict(self):
+  def AsFlatDict(self):
     """Returns a flat json-able representation of this builder status.
 
     Returns:
@@ -669,13 +669,17 @@ class BuildSpecsManager(object):
     Args:
       version: Version number to use. Must be a string.
       status: Status string.
-      message: Additional message explaining the status.
+      message: A validation_pool.ValidationFailedMessage object with details
+               of builder failure, or None (default).
       fail_if_exists: If set, fail if the status already exists.
       dashboard_url: Optional url linking to builder dashboard for this build.
     """
     url = BuildSpecsManager._GetStatusUrl(self.build_name, version)
 
     # Pickle the dictionary needed to recreate a BuilderStatus object.
+    # NOTE: It's important here not to use BuilderStatus.AsFlatDict to create
+    # the pickle dictionary, because that would flatten non-flat fields (like
+    # message) into strings.
     data = cPickle.dumps(dict(status=status, message=message,
                               dashboard_url=dashboard_url))
 
@@ -692,7 +696,8 @@ class BuildSpecsManager(object):
 
     Args:
       success: True for success, False for failure
-      message: Message accompanied with change in status.
+      message: A validation_pool.ValidationFailedMessage object with details
+               of builder failure, or None (default).
       dashboard_url: Optional url linking to builder dashboard for this build.
     """
     status = BuilderStatus.GetCompletedStatus(success)

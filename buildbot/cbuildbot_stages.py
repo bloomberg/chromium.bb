@@ -399,7 +399,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
                           'to report. Will not add slave status to metadata.')
         metadata['slave_targets'] = {}
         for builder, status in statuses.iteritems():
-          metadata['slave_targets'][builder] = status.AsDict()
+          metadata['slave_targets'][builder] = status.AsFlatDict()
 
     return metadata
 
