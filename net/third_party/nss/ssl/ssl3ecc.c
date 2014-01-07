@@ -38,15 +38,6 @@
 
 #ifdef NSS_ENABLE_ECC
 
-/*
- * In NSS 3.13.2 the definition of the EC_POINT_FORM_UNCOMPRESSED macro
- * was moved from the internal header ec.h to the public header blapit.h.
- * Define the macro here when compiling against older system NSS headers.
- */
-#ifndef EC_POINT_FORM_UNCOMPRESSED
-#define EC_POINT_FORM_UNCOMPRESSED 0x04
-#endif
-
 #ifndef PK11_SETATTRS
 #define PK11_SETATTRS(x,id,v,l) (x)->type = (id); \
 		(x)->pValue=(v); (x)->ulValueLen = (l);

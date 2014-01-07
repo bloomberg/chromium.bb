@@ -1,6 +1,6 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2013-07-31 12:29:35.584231452 -0700
-+++ b/nss/lib/ssl/ssl3con.c	2013-07-31 12:31:22.785789376 -0700
+--- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:28:03.550814608 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:30:09.722877211 -0800
 @@ -43,6 +43,7 @@
  
  static SECStatus ssl3_AuthCertificate(sslSocket *ss);
@@ -9,7 +9,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  static PK11SymKey *ssl3_GenerateRSAPMS(sslSocket *ss, ssl3CipherSpec *spec,
                                         PK11SlotInfo * serverKeySlot);
  static SECStatus ssl3_DeriveMasterSecret(sslSocket *ss, PK11SymKey *pms);
-@@ -6141,6 +6142,7 @@ ssl3_HandleServerHello(sslSocket *ss, SS
+@@ -6451,6 +6452,7 @@ ssl3_HandleServerHello(sslSocket *ss, SS
  	/* copy the peer cert from the SID */
  	if (sid->peerCert != NULL) {
  	    ss->sec.peerCert = CERT_DupCertificate(sid->peerCert);
@@ -17,7 +17,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  	}
  
  	/* NULL value for PMS signifies re-use of the old MS */
-@@ -7538,6 +7540,7 @@ compression_found:
+@@ -8025,6 +8027,7 @@ compression_found:
  	ss->sec.ci.sid = sid;
  	if (sid->peerCert != NULL) {
  	    ss->sec.peerCert = CERT_DupCertificate(sid->peerCert);
@@ -25,7 +25,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  	}
  
  	/*
-@@ -9147,6 +9150,44 @@ ssl3_CleanupPeerCerts(sslSocket *ss)
+@@ -9639,6 +9642,44 @@ ssl3_CleanupPeerCerts(sslSocket *ss)
      ss->ssl3.peerCertChain = NULL;
  }
  
@@ -70,7 +70,7 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
  /* Called from ssl3_HandleHandshakeMessage() when it has deciphered a complete
   * ssl3 CertificateStatus message.
   * Caller must hold Handshake and RecvBuf locks.
-@@ -9432,6 +9473,7 @@ ssl3_AuthCertificate(sslSocket *ss)
+@@ -9917,6 +9958,7 @@ ssl3_AuthCertificate(sslSocket *ss)
      }
  
      ss->sec.ci.sid->peerCert = CERT_DupCertificate(ss->sec.peerCert);
@@ -79,16 +79,19 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      if (!ss->sec.isServer) {
          CERTCertificate *cert = ss->sec.peerCert;
 diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
---- a/nss/lib/ssl/sslimpl.h	2013-07-31 12:07:10.974699609 -0700
-+++ b/nss/lib/ssl/sslimpl.h	2013-07-31 12:31:22.785789376 -0700
-@@ -572,10 +572,13 @@ typedef enum {	never_cached,
+--- a/nss/lib/ssl/sslimpl.h	2014-01-03 19:28:03.550814608 -0800
++++ b/nss/lib/ssl/sslimpl.h	2014-01-03 19:30:09.722877211 -0800
+@@ -586,6 +586,8 @@ typedef enum {	never_cached,
  		invalid_cache		/* no longer in any cache. */
  } Cached;
  
 +#define MAX_PEER_CERT_CHAIN_SIZE 8
 +
  struct sslSessionIDStr {
-     sslSessionID *        next;   /* chain used for client sockets, only */
+     /* The global cache lock must be held when accessing these members when the
+      * sid is in any cache.
+@@ -600,6 +602,7 @@ struct sslSessionIDStr {
+      */
  
      CERTCertificate *     peerCert;
 +    CERTCertificate *     peerCertChain[MAX_PEER_CERT_CHAIN_SIZE];
@@ -96,8 +99,8 @@ diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
      const char *          peerID;     /* client only */
      const char *          urlSvrName; /* client only */
 diff -pu a/nss/lib/ssl/sslnonce.c b/nss/lib/ssl/sslnonce.c
---- a/nss/lib/ssl/sslnonce.c	2013-07-31 12:07:10.974699609 -0700
-+++ b/nss/lib/ssl/sslnonce.c	2013-07-31 12:31:22.785789376 -0700
+--- a/nss/lib/ssl/sslnonce.c	2014-01-03 19:28:03.550814608 -0800
++++ b/nss/lib/ssl/sslnonce.c	2014-01-03 19:30:09.782878192 -0800
 @@ -164,6 +164,7 @@ lock_cache(void)
  static void
  ssl_DestroySID(sslSessionID *sid)
@@ -106,7 +109,7 @@ diff -pu a/nss/lib/ssl/sslnonce.c b/nss/lib/ssl/sslnonce.c
      SSL_TRC(8, ("SSL: destroy sid: sid=0x%x cached=%d", sid, sid->cached));
      PORT_Assert((sid->references == 0));
  
-@@ -183,6 +184,9 @@ ssl_DestroySID(sslSessionID *sid)
+@@ -196,6 +197,9 @@ ssl_DestroySID(sslSessionID *sid)
      if ( sid->peerCert ) {
  	CERT_DestroyCertificate(sid->peerCert);
      }

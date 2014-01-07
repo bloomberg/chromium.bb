@@ -1,7 +1,6 @@
-diff --git a/net/third_party/nss/ssl/sslnonce.c b/net/third_party/nss/ssl/sslnonce.c
-index 758aa4e..a3e6e0a 100644
---- a/net/third_party/nss/ssl/sslnonce.c
-+++ b/net/third_party/nss/ssl/sslnonce.c
+diff -pu a/nss/lib/ssl/sslnonce.c b/nss/lib/ssl/sslnonce.c
+--- a/nss/lib/ssl/sslnonce.c	2014-01-03 19:08:32.451674629 -0800
++++ b/nss/lib/ssl/sslnonce.c	2014-01-03 19:10:33.483652358 -0800
 @@ -21,8 +21,8 @@
  PRUint32 ssl_sid_timeout = 100;
  PRUint32 ssl3_sid_timeout = 86400L; /* 24 hours */

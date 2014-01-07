@@ -1,7 +1,7 @@
 diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
---- a/nss/lib/ssl/ssl3con.c	2013-07-31 14:17:20.669282120 -0700
-+++ b/nss/lib/ssl/ssl3con.c	2013-07-31 14:28:56.549496061 -0700
-@@ -9912,8 +9912,10 @@ ssl3_SendNextProto(sslSocket *ss)
+--- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:41:44.744240754 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:41:52.234363230 -0800
+@@ -10458,8 +10458,10 @@ ssl3_SendNextProto(sslSocket *ss)
      int padding_len;
      static const unsigned char padding[32] = {0};
  
@@ -14,9 +14,9 @@ diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
      PORT_Assert( ss->opt.noLocks || ssl_HaveXmitBufLock(ss));
      PORT_Assert( ss->opt.noLocks || ssl_HaveSSL3HandshakeLock(ss));
 diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
---- a/nss/lib/ssl/ssl3ext.c	2013-07-31 14:10:00.342814862 -0700
-+++ b/nss/lib/ssl/ssl3ext.c	2013-07-31 14:28:56.549496061 -0700
-@@ -53,8 +53,12 @@ static SECStatus ssl3_HandleRenegotiationInfoXtn(sslSocket *ss,
+--- a/nss/lib/ssl/ssl3ext.c	2014-01-03 19:39:28.442012014 -0800
++++ b/nss/lib/ssl/ssl3ext.c	2014-01-03 19:41:52.234363230 -0800
+@@ -52,8 +52,12 @@ static SECStatus ssl3_HandleRenegotiatio
      PRUint16 ex_type, SECItem *data);
  static SECStatus ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss,
  			PRUint16 ex_type, SECItem *data);
@@ -29,7 +29,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
  static PRInt32 ssl3_ClientSendNextProtoNegoXtn(sslSocket *ss, PRBool append,
  					       PRUint32 maxBytes);
  static PRInt32 ssl3_SendUseSRTPXtn(sslSocket *ss, PRBool append,
-@@ -252,6 +256,7 @@ static const ssl3HelloExtensionHandler serverHelloHandlersTLS[] = {
+@@ -251,6 +255,7 @@ static const ssl3HelloExtensionHandler s
      { ssl_session_ticket_xtn,     &ssl3_ClientHandleSessionTicketXtn },
      { ssl_renegotiation_info_xtn, &ssl3_HandleRenegotiationInfoXtn },
      { ssl_next_proto_nego_xtn,    &ssl3_ClientHandleNextProtoNegoXtn },
@@ -37,7 +37,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
      { ssl_use_srtp_xtn,           &ssl3_HandleUseSRTPXtn },
      { ssl_channel_id_xtn,         &ssl3_ClientHandleChannelIDXtn },
      { ssl_cert_status_xtn,        &ssl3_ClientHandleStatusRequestXtn },
-@@ -271,18 +276,19 @@ static const ssl3HelloExtensionHandler serverHelloHandlersSSL3[] = {
+@@ -270,18 +275,19 @@ static const ssl3HelloExtensionHandler s
   */
  static const 
  ssl3HelloExtensionSender clientHelloSendersTLS[SSL_MAX_EXTENSIONS] = {
@@ -67,7 +67,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
      /* any extra entries will appear as { 0, NULL }    */
  };
  
-@@ -606,6 +612,11 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
+@@ -614,6 +620,11 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSoc
  
      PORT_Assert(!ss->firstHsDone);
  
@@ -79,7 +79,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
      rv = ssl3_ValidateNextProtoNego(data->data, data->len);
      if (rv != SECSuccess)
  	return rv;
-@@ -639,6 +650,44 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSocket *ss, PRUint16 ex_type,
+@@ -647,6 +658,44 @@ ssl3_ClientHandleNextProtoNegoXtn(sslSoc
      return SECITEM_CopyItem(NULL, &ss->ssl3.nextProto, &result);
  }
  
@@ -124,7 +124,7 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
  static PRInt32
  ssl3_ClientSendNextProtoNegoXtn(sslSocket * ss, PRBool append,
  				PRUint32 maxBytes)
-@@ -672,6 +721,70 @@ loser:
+@@ -680,6 +729,70 @@ loser:
      return -1;
  }
  
@@ -196,9 +196,9 @@ diff -pu a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
  ssl3_ClientHandleChannelIDXtn(sslSocket *ss, PRUint16 ex_type,
  			     SECItem *data)
 diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
---- a/nss/lib/ssl/ssl.h	2013-07-31 14:10:35.113325316 -0700
-+++ b/nss/lib/ssl/ssl.h	2013-07-31 14:28:56.589496647 -0700
-@@ -203,6 +203,16 @@ SSL_IMPORT SECStatus SSL_SetNextProtoCal
+--- a/nss/lib/ssl/ssl.h	2014-01-03 19:40:03.522585625 -0800
++++ b/nss/lib/ssl/ssl.h	2014-01-03 19:41:52.234363230 -0800
+@@ -206,6 +206,16 @@ SSL_IMPORT SECStatus SSL_SetNextProtoCal
   * protocol in server-preference order. If no matching protocol is found it
   * selects the first supported protocol.
   *
@@ -215,7 +215,7 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
   * The supported protocols are specified in |data| in wire-format (8-bit
   * length-prefixed). For example: "\010http/1.1\006spdy/2". */
  SSL_IMPORT SECStatus SSL_SetNextProtoNego(PRFileDesc *fd,
-@@ -212,7 +217,8 @@ SSL_IMPORT SECStatus SSL_SetNextProtoNeg
+@@ -215,7 +225,8 @@ SSL_IMPORT SECStatus SSL_SetNextProtoNeg
  typedef enum SSLNextProtoState { 
    SSL_NEXT_PROTO_NO_SUPPORT = 0, /* No peer support                */
    SSL_NEXT_PROTO_NEGOTIATED = 1, /* Mutual agreement               */
@@ -226,16 +226,16 @@ diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
  
  /* SSL_GetNextProto can be used in the HandshakeCallback or any time after
 diff -pu a/nss/lib/ssl/sslt.h b/nss/lib/ssl/sslt.h
---- a/nss/lib/ssl/sslt.h	2013-07-31 14:13:43.806096237 -0700
-+++ b/nss/lib/ssl/sslt.h	2013-07-31 14:28:56.609496941 -0700
-@@ -195,12 +195,13 @@ typedef enum {
+--- a/nss/lib/ssl/sslt.h	2014-01-03 19:41:26.443941511 -0800
++++ b/nss/lib/ssl/sslt.h	2014-01-03 19:41:52.234363230 -0800
+@@ -200,12 +200,13 @@ typedef enum {
  #endif
      ssl_signature_algorithms_xtn     = 13,
      ssl_use_srtp_xtn                 = 14,
 +    ssl_app_layer_protocol_xtn       = 16,
      ssl_session_ticket_xtn           = 35,
      ssl_next_proto_nego_xtn          = 13172,
-     ssl_channel_id_xtn               = 30031,
+     ssl_channel_id_xtn               = 30032,
      ssl_renegotiation_info_xtn       = 0xff01	/* experimental number */
  } SSLExtensionType;
  

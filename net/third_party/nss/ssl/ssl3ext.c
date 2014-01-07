@@ -501,6 +501,7 @@ ssl3_SendSessionTicketXtn(
 {
     PRInt32 extension_length;
     NewSessionTicket *session_ticket = NULL;
+    sslSessionID *sid = ss->sec.ci.sid;
 
     /* Ignore the SessionTicket extension if processing is disabled. */
     if (!ss->opt.enableSessionTickets)
@@ -516,8 +517,15 @@ ssl3_SendSessionTicketXtn(
      * the extension always respond with an empty extension.
      */
     if (!ss->sec.isServer) {
-	sslSessionID *sid = ss->sec.ci.sid;
-	session_ticket = &sid->u.ssl3.sessionTicket;
+	/* The caller must be holding sid->u.ssl3.lock for reading. We cannot
+	 * just acquire and release the lock within this function because the
+	 * caller will call this function twice, and we need the inputs to be
+	 * consistent between the two calls. Note that currently the caller
+	 * will only be holding the lock when we are the client and when we're
+	 * attempting to resume an existing session.
+	 */
+
+	session_ticket = &sid->u.ssl3.locked.sessionTicket;
 	if (session_ticket->ticket.data) {
 	    if (ss->xtnData.ticketTimestampVerified) {
 		extension_length += session_ticket->ticket.len;
@@ -542,6 +550,7 @@ ssl3_SendSessionTicketXtn(
 	    rv = ssl3_AppendHandshakeVariable(ss, session_ticket->ticket.data,
 		session_ticket->ticket.len, 2);
 	    ss->xtnData.ticketTimestampVerified = PR_FALSE;
+	    ss->xtnData.sentSessionTicketInClientHello = PR_TRUE;
 	} else {
 	    rv = ssl3_AppendHandshakeNumber(ss, 0, 2);
 	}
@@ -1595,7 +1604,7 @@ ssl3_ServerHandleSessionTicketXtn(sslSocket *ss, PRUint16 ex_type,
 	    goto no_ticket;
 	
 	/* Allow for the wrapped master secret to be longer. */
-	if (buffer_len < sizeof(SSL3_MASTER_SECRET_LENGTH))
+	if (buffer_len < parsed_session_ticket->ms_length)
 	    goto no_ticket;
 	PORT_Memcpy(parsed_session_ticket->master_secret, buffer,
 	    parsed_session_ticket->ms_length);

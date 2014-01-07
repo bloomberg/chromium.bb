@@ -1,26 +1,7 @@
-diff --git a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
-index 4cf02aa..24627ed 100644
---- a/nss/lib/ssl/ssl.h
-+++ b/nss/lib/ssl/ssl.h
-@@ -265,6 +265,13 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDefault(PRInt32 cipher, PRBool *enabled);
- SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
- SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
- 
-+/* SSL_CipherOrderSet sets the cipher suite preference order from |ciphers|,
-+ * which must be an array of cipher suite ids of length |len|. All the given
-+ * cipher suite ids must appear in the array that is returned by
-+ * |SSL_GetImplementedCiphers| and may only appear once, at most. */
-+SSL_IMPORT SECStatus SSL_CipherOrderSet(PRFileDesc *fd, const PRUint16 *ciphers,
-+                                        unsigned int len);
-+
- /* SSLChannelBindingType enumerates the types of supported channel binding
-  * values. See RFC 5929. */
- typedef enum SSLChannelBindingType {
-diff --git a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
-index c2d9eeb..350d09c 100644
---- a/nss/lib/ssl/ssl3con.c
-+++ b/nss/lib/ssl/ssl3con.c
-@@ -12423,6 +12423,46 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *enabled)
+diff -pu a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
+--- a/nss/lib/ssl/ssl3con.c	2014-01-03 19:44:16.406720764 -0800
++++ b/nss/lib/ssl/ssl3con.c	2014-01-03 19:44:24.516853386 -0800
+@@ -12539,6 +12539,46 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3Ci
      return rv;
  }
  
@@ -67,11 +48,27 @@ index c2d9eeb..350d09c 100644
  /* copy global default policy into socket. */
  void
  ssl3_InitSocketPolicy(sslSocket *ss)
-diff --git a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
-index 1e4655f..7521dba 100644
---- a/nss/lib/ssl/sslimpl.h
-+++ b/nss/lib/ssl/sslimpl.h
-@@ -1711,6 +1711,8 @@ extern SECStatus ssl3_CipherPrefSet(sslSocket *ss, ssl3CipherSuite which, PRBool
+diff -pu a/nss/lib/ssl/ssl.h b/nss/lib/ssl/ssl.h
+--- a/nss/lib/ssl/ssl.h	2014-01-03 19:44:16.416720928 -0800
++++ b/nss/lib/ssl/ssl.h	2014-01-03 19:44:24.516853386 -0800
+@@ -265,6 +265,13 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDe
+ SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
+ SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
+ 
++/* SSL_CipherOrderSet sets the cipher suite preference order from |ciphers|,
++ * which must be an array of cipher suite ids of length |len|. All the given
++ * cipher suite ids must appear in the array that is returned by
++ * |SSL_GetImplementedCiphers| and may only appear once, at most. */
++SSL_IMPORT SECStatus SSL_CipherOrderSet(PRFileDesc *fd, const PRUint16 *ciphers,
++                                        unsigned int len);
++
+ /* SSLChannelBindingType enumerates the types of supported channel binding
+  * values. See RFC 5929. */
+ typedef enum SSLChannelBindingType {
+diff -pu a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
+--- a/nss/lib/ssl/sslimpl.h	2014-01-03 19:44:16.416720928 -0800
++++ b/nss/lib/ssl/sslimpl.h	2014-01-03 19:44:24.516853386 -0800
+@@ -1741,6 +1741,8 @@ extern SECStatus ssl3_CipherPrefSet(sslS
  extern SECStatus ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *on);
  extern SECStatus ssl2_CipherPrefSet(sslSocket *ss, PRInt32 which, PRBool enabled);
  extern SECStatus ssl2_CipherPrefGet(sslSocket *ss, PRInt32 which, PRBool *enabled);
@@ -80,11 +77,10 @@ index 1e4655f..7521dba 100644
  
  extern SECStatus ssl3_SetPolicy(ssl3CipherSuite which, PRInt32 policy);
  extern SECStatus ssl3_GetPolicy(ssl3CipherSuite which, PRInt32 *policy);
-diff --git a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
-index 965215d..9f8286c 100644
---- a/nss/lib/ssl/sslsock.c
-+++ b/nss/lib/ssl/sslsock.c
-@@ -1344,6 +1344,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt32 which, PRBool enabled)
+diff -pu a/nss/lib/ssl/sslsock.c b/nss/lib/ssl/sslsock.c
+--- a/nss/lib/ssl/sslsock.c	2014-01-03 19:44:16.416720928 -0800
++++ b/nss/lib/ssl/sslsock.c	2014-01-03 19:44:24.516853386 -0800
+@@ -1256,6 +1256,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt3
      return rv;
  }
  

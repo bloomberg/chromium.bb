@@ -1,6 +1,6 @@
 Name: Network Security Services (NSS)
 URL: http://www.mozilla.org/projects/security/pki/nss/
-Version: 3.15.1
+Version: 3.15.4
 Security Critical: Yes
 License: MPL 2
 License File: NOT_SHIPPED
@@ -11,30 +11,16 @@ This directory includes a copy of NSS's libssl from the hg repo at:
 The same module appears in crypto/third_party/nss (and third_party/nss on some
 platforms), so we don't repeat the license file here.
 
-The snapshot was updated to the hg tag: NSS_3_15_1_RTM
+The snapshot was updated to the hg tag: NSS_3_15_4_RTM
 
 Patches:
-
-  * Commenting out a couple of functions because they need NSS symbols
-    which may not exist in the system NSS library.
-    patches/versionskew.patch
-
-  * Send empty renegotiation info extension instead of SCSV unless TLS is
-    disabled.
-    patches/renegoscsv.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=549042
 
   * Cache the peer's intermediate CA certificates in session ID, so that
     they're available when we resume a session.
     patches/cachecerts.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=731478
 
-  * Add the SSL_PeerCertificateChain function
-    patches/peercertchain.patch
-    patches/peercertchain2.patch
-    https://bugzilla.mozilla.org/show_bug.cgi?id=731485
-
-  * Add support for client auth with native crypto APIs on Mac and Windows
+  * Add support for client auth with native crypto APIs on Mac and Windows.
     patches/clientauth.patch
     ssl/sslplatf.c
 
@@ -42,11 +28,6 @@ Patches:
     previous session.
     patches/didhandshakeresume.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=731798
-
-  * Allow SSL_HandshakeNegotiatedExtension to be called before the handshake
-    is finished.
-    https://bugzilla.mozilla.org/show_bug.cgi?id=681839
-    patches/negotiatedextension.patch
 
   * Add function to retrieve TLS client cert types requested by server.
     https://bugzilla.mozilla.org/show_bug.cgi?id=51413
@@ -57,27 +38,14 @@ Patches:
 
   * Add support for TLS Channel IDs
     patches/channelid.patch
-    patches/channelid2.patch
 
   * Add support for extracting the tls-unique channel binding value
     patches/tlsunique.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=563276
 
-  * Define the EC_POINT_FORM_UNCOMPRESSED macro. In NSS 3.13.2 the macro
-    definition was moved from the internal header ec.h to blapit.h. When
-    compiling against older system NSS headers, we need to define the macro.
-    patches/ecpointform.patch
-
   * SSL_ExportKeyingMaterial should get the RecvBufLock and SSL3HandshakeLock.
     This change was made in https://chromiumcodereview.appspot.com/10454066.
     patches/secretexporterlocks.patch
-
-  * Allow the constant-time CBC processing code to be compiled against older
-    NSS that doesn't contain the CBC constant-time changes.
-    patches/cbc.patch
-    https://code.google.com/p/chromium/issues/detail?id=172658#c12
-    TODO(wtc): remove this patch now that NSS 3.14.3 is the minimum
-    compile-time and run-time version.
 
   * Change ssl3_SuiteBOnly to always return PR_TRUE. The softoken in NSS
     versions older than 3.15 report an EC key size range of 112 bits to 571
@@ -97,25 +65,10 @@ Patches:
   * Add the Application Layer Protocol Negotiation extension.
     patches/alpn.patch
 
-  * Fix an issue with allocating an SSL socket when under memory pressure.
-    https://bugzilla.mozilla.org/show_bug.cgi?id=903565
-    patches/sslsock_903565.patch
-
-  * Implement the AES GCM cipher suites.
-    https://bugzilla.mozilla.org/show_bug.cgi?id=880543
-    patches/aesgcm.patch
-
   * Add Chromium-specific code to detect AES GCM support in the system NSS
-    libraries at run time.
+    libraries at run time. Remove this patch when all system NSS packages are
+    NSS 3.15 or later.
     patches/aesgcmchromium.patch
-
-  * Support generating SHA-1 signatures for TLS 1.2 client authentication. Use
-    SHA-1 instead of SHA-256 if the server's preferences do not allow for
-    SHA-256 or if the client private key may only support SHA-1 signatures. The
-    latter happens when the key is in a CAPI service provider on Windows or if
-    it is a 1024-bit RSA or DSA key.
-    patches/tls12backuphash.patch
-    patches/tls12backuphash2.patch
 
   * Support ChaCha20+Poly1305 ciphersuites
     http://tools.ietf.org/html/draft-agl-tls-chacha20poly1305-01
@@ -125,43 +78,23 @@ Patches:
     patches/cachelocks.patch
     https://bugzilla.mozilla.org/show_bug.cgi?id=764646
 
-  * Don't advertise TLS 1.2-only cipher suites in a TLS 1.1 ClientHello.
-    https://bugzilla.mozilla.org/show_bug.cgi?id=919677
-    patches/ciphersuiteversion.patch
-
-  * Don't use record versions greater than 0x0301 in resumption ClientHello
-    records either.
-    https://bugzilla.mozilla.org/show_bug.cgi?id=923696
-    https://code.google.com/p/chromium/issues/detail?id=303398
-    patches/resumeclienthelloversion.patch
-
-  * Make SSL False Start work with asynchronous certificate validation.
-    https://bugzilla.mozilla.org/show_bug.cgi?id=713933
-    patches/canfalsestart.patch
-
-  * Have the Null Cipher limit output to the maximum allowed
-    https://bugzilla.mozilla.org/show_bug.cgi?id=934016
-    patches/nullcipher_934016.patch
-
   * In the case that a ClientHello record is between 256 and 511 bytes long,
     add an extension to make it 512 bytes. This works around a bug in F5
     terminators.
     patches/paddingextension.patch
     patches/paddingextensionall.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=944157
 
   * Support the Certificate Transparency (RFC 6962) TLS extension
     signed_certificate_timestamp (client only).
     patches/signedcertificatetimestamps.patch
+    https://bugzilla.mozilla.org/show_bug.cgi?id=944175
 
   * Add a function to allow the cipher suites preference order to be set.
     patches/cipherorder.patch
 
   * Add TLS_FALLBACK_SCSV cipher suite to version fallback connections.
     patches/fallbackscsv.patch
-
-  * Disable session ticket renewal.
-    https://bugzilla.mozilla.org/show_bug.cgi?id=930857
-    patches/disableticketrenewal.patch
 
   * Add explicit functions for managing the SSL/TLS session cache.
     This is a temporary workaround until Chromium migrates to NSS's
