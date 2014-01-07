@@ -30,6 +30,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/widget/widget.h"
@@ -1299,6 +1300,63 @@ TEST_P(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
 
 INSTANTIATE_TEST_CASE_P(DockedOrNot, WorkspaceControllerTestDragging,
                         ::testing::Bool());
+
+// Verifies that events are targeted properly just outside the window edges.
+TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
+  aura::test::TestWindowDelegate d_first, d_second;
+  scoped_ptr<Window> first(aura::test::CreateTestWindowWithDelegate(&d_first,
+      123, gfx::Rect(20, 10, 100, 50), NULL));
+  ParentWindowInPrimaryRootWindow(first.get());
+  first->Show();
+
+  scoped_ptr<Window> second(aura::test::CreateTestWindowWithDelegate(&d_second,
+      234, gfx::Rect(30, 40, 40, 10), NULL));
+  ParentWindowInPrimaryRootWindow(second.get());
+  second->Show();
+
+  ui::EventTarget* root = first->GetRootWindow();
+  ui::EventTargeter* targeter = root->GetEventTargeter();
+
+  // The windows overlap, and |second| is on top of |first|. Events targetted
+  // slightly outside the edges of the |second| window should still be targetted
+  // to |second| to allow resizing the windows easily.
+
+  const int kNumPoints = 4;
+  struct {
+    const char *direction;
+    gfx::Point location;
+  } points[kNumPoints] = {
+    { "left", gfx::Point(28, 45) },  // outside the left edge.
+    { "top", gfx::Point(50, 38) },  // outside the top edge.
+    { "right", gfx::Point(72, 45) },  // outside the right edge.
+    { "bottom", gfx::Point(50, 52) },  // outside the bottom edge.
+  };
+  // Do two iterations, first without any transform on |second|, and the second
+  // time after applying some transform on |second| so that it doesn't get
+  // targetted.
+  for (int times = 0; times < 2; ++times) {
+    SCOPED_TRACE(times == 0 ? "Without transform" : "With transform");
+    aura::Window* expected_target = times == 0 ? second.get() : first.get();
+    for (int i = 0; i < kNumPoints; ++i) {
+      SCOPED_TRACE(points[i].direction);
+      const gfx::Point& location = points[i].location;
+      ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location, ui::EF_NONE,
+                           ui::EF_NONE);
+      ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
+      EXPECT_EQ(expected_target, target);
+
+      ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, location, 0,
+                           ui::EventTimeForNow());
+      target = targeter->FindTargetForEvent(root, &touch);
+      EXPECT_EQ(expected_target, target);
+    }
+    // Apply a transform on |second|. After the transform is applied, the window
+    // should no longer be targetted.
+    gfx::Transform transform;
+    transform.Translate(70, 40);
+    second->SetTransform(transform);
+  }
+}
 
 }  // namespace internal
 }  // namespace ash

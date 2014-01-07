@@ -67,6 +67,7 @@
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
+#include "ui/wm/public/easy_resize_window_targeter.h"
 #include "ui/wm/public/window_types.h"
 
 #if defined(OS_CHROMEOS)
@@ -187,6 +188,18 @@ void SetUsesScreenCoordinates(aura::Window* container) {
 // say in the same root window regardless of the bounds specified.
 void DescendantShouldStayInSameRootWindow(aura::Window* container) {
   container->SetProperty(internal::kStayInSameRootWindowKey, true);
+}
+
+void SetUsesEasyResizeTargeter(aura::Window* container) {
+  gfx::Insets mouse_extend(-kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize);
+  gfx::Insets touch_extend = mouse_extend.Scale(
+      kResizeOutsideBoundsScaleForTouch);
+  container->set_event_targeter(scoped_ptr<ui::EventTargeter>(
+      new ::wm::EasyResizeWindowTargeter(container, mouse_extend,
+                                         touch_extend)));
 }
 
 // A window delegate which does nothing. Used to create a window that
@@ -827,6 +840,7 @@ void RootWindowController::CreateContainersInRootWindow(
       non_lock_screen_containers);
   views::corewm::SetChildWindowVisibilityChangesAnimated(default_container);
   SetUsesScreenCoordinates(default_container);
+  SetUsesEasyResizeTargeter(default_container);
 
   aura::Window* always_on_top_container = CreateContainer(
       kShellWindowId_AlwaysOnTopContainer,
@@ -857,6 +871,7 @@ void RootWindowController::CreateContainersInRootWindow(
       "PanelContainer",
       non_lock_screen_containers);
   SetUsesScreenCoordinates(panel_container);
+  SetUsesEasyResizeTargeter(panel_container);
 
   aura::Window* shelf_bubble_container =
       CreateContainer(kShellWindowId_ShelfBubbleContainer,
@@ -881,6 +896,7 @@ void RootWindowController::CreateContainersInRootWindow(
       new SystemModalContainerLayoutManager(modal_container));
   views::corewm::SetChildWindowVisibilityChangesAnimated(modal_container);
   SetUsesScreenCoordinates(modal_container);
+  SetUsesEasyResizeTargeter(modal_container);
 
   aura::Window* input_method_container = CreateContainer(
       kShellWindowId_InputMethodContainer,
@@ -911,6 +927,7 @@ void RootWindowController::CreateContainersInRootWindow(
       new SystemModalContainerLayoutManager(lock_modal_container));
   views::corewm::SetChildWindowVisibilityChangesAnimated(lock_modal_container);
   SetUsesScreenCoordinates(lock_modal_container);
+  SetUsesEasyResizeTargeter(lock_modal_container);
 
   aura::Window* status_container =
       CreateContainer(kShellWindowId_StatusContainer,
