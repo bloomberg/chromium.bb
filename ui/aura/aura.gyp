@@ -61,6 +61,8 @@
         'client/focus_change_observer.h',
         'client/focus_client.cc',
         'client/focus_client.h',
+        'client/scoped_tooltip_disabler.cc',
+        'client/scoped_tooltip_disabler.h',
         'client/screen_position_client.cc',
         'client/screen_position_client.h',
         'client/tooltip_client.cc',

@@ -10,6 +10,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/scoped_tooltip_disabler.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/cursor/cursor_loader_win.h"
@@ -915,6 +916,15 @@ void DesktopRootWindowHostWin::HandleTooltipMouseMove(UINT message,
                                                       LPARAM l_param) {
   // TooltipWin implementation doesn't need this.
   // TODO(sky): remove from HWNDMessageHandler once non-aura path nuked.
+}
+
+void DesktopRootWindowHostWin::HandleMenuLoop(bool in_menu_loop) {
+  if (in_menu_loop) {
+    tooltip_disabler_.reset(
+        new aura::client::ScopedTooltipDisabler(root_window_->window()));
+  } else {
+    tooltip_disabler_.reset();
+  }
 }
 
 bool DesktopRootWindowHostWin::PreHandleMSG(UINT message,

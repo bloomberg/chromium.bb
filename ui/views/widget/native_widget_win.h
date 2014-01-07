@@ -228,6 +228,7 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   virtual void HandleTooltipMouseMove(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) OVERRIDE;
+  virtual void HandleMenuLoop(bool in_menu_loop) OVERRIDE;
   virtual bool PreHandleMSG(UINT message,
                             WPARAM w_param,
                             LPARAM l_param,

@@ -388,6 +388,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       layered_alpha_(255),
       waiting_for_redraw_layered_window_contents_(false),
       is_first_nccalc_(true),
+      menu_depth_(0),
       autohide_factory_(this),
       id_generator_(0) {
 }
@@ -1367,6 +1368,11 @@ LRESULT HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
   return 0;
 }
 
+void HWNDMessageHandler::OnEnterMenuLoop(BOOL from_track_popup_menu) {
+  if (menu_depth_++ == 0)
+    delegate_->HandleMenuLoop(true);
+}
+
 void HWNDMessageHandler::OnEnterSizeMove() {
   delegate_->HandleBeginWMSizeMove();
   SetMsgHandled(FALSE);
@@ -1375,6 +1381,12 @@ void HWNDMessageHandler::OnEnterSizeMove() {
 LRESULT HWNDMessageHandler::OnEraseBkgnd(HDC dc) {
   // Needed to prevent resize flicker.
   return 1;
+}
+
+void HWNDMessageHandler::OnExitMenuLoop(BOOL is_shortcut_menu) {
+  if (--menu_depth_ == 0)
+    delegate_->HandleMenuLoop(false);
+  DCHECK_GE(0, menu_depth_);
 }
 
 void HWNDMessageHandler::OnExitSizeMove() {

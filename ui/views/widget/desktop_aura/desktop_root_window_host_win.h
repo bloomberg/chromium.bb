@@ -15,6 +15,7 @@ namespace aura {
 namespace client {
 class DragDropClient;
 class FocusClient;
+class ScopedTooltipDisabler;
 }
 }
 
@@ -201,6 +202,7 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
   virtual void HandleTooltipMouseMove(UINT message,
                                       WPARAM w_param,
                                       LPARAM l_param) OVERRIDE;
+  virtual void HandleMenuLoop(bool in_menu_loop) OVERRIDE;
   virtual bool PreHandleMSG(UINT message,
                             WPARAM w_param,
                             LPARAM l_param,
@@ -268,6 +270,8 @@ class VIEWS_EXPORT DesktopRootWindowHostWin
 
   // State of the cursor.
   bool is_cursor_visible_;
+
+  scoped_ptr<aura::client::ScopedTooltipDisabler> tooltip_disabler_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopRootWindowHostWin);
 };

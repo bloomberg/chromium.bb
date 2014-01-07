@@ -217,6 +217,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
                                       WPARAM w_param,
                                       LPARAM l_param) = 0;
 
+  // Invoked on entering/exiting a menu loop.
+  virtual void HandleMenuLoop(bool in_menu_loop) = 0;
+
   // Catch-all message handling and filtering. Called before
   // HWNDMessageHandler's built-in handling, which may pre-empt some
   // expectations in Views/Aura if messages are consumed. Returns true if the

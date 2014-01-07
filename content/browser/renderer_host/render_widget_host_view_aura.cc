@@ -53,6 +53,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/cursor_client_observer.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/scoped_tooltip_disabler.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/client/window_tree_client.h"
@@ -2179,14 +2180,15 @@ bool RenderWidgetHostViewAura::LockMouse() {
     synthetic_move_sent_ = true;
     window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
   }
-  if (aura::client::GetTooltipClient(root_window))
-    aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(false);
+  tooltip_disabler_.reset(new aura::client::ScopedTooltipDisabler(root_window));
 
   root_window->GetDispatcher()->host()->ConfineCursorToRootWindow();
   return true;
 }
 
 void RenderWidgetHostViewAura::UnlockMouse() {
+  tooltip_disabler_.reset();
+
   aura::Window* root_window = window_->GetRootWindow();
   if (!mouse_locked_ || !root_window)
     return;
@@ -2203,9 +2205,6 @@ void RenderWidgetHostViewAura::UnlockMouse() {
     cursor_client->UnlockCursor();
     cursor_client->ShowCursor();
   }
-
-  if (aura::client::GetTooltipClient(root_window))
-    aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(true);
 
   host_->LostMouseLock();
   root_window->GetDispatcher()->host()->UnConfineCursor();

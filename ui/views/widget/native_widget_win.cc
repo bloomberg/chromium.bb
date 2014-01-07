@@ -852,6 +852,9 @@ void NativeWidgetWin::HandleTooltipMouseMove(UINT message,
     tooltip_manager_->OnMouse(message, w_param, l_param);
 }
 
+void NativeWidgetWin::HandleMenuLoop(bool in_menu_loop) {
+}
+
 bool NativeWidgetWin::PreHandleMSG(UINT message,
                                    WPARAM w_param,
                                    LPARAM l_param,

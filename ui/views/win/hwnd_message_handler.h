@@ -342,6 +342,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
     MSG_WM_CREATE(OnCreate)
     MSG_WM_DESTROY(OnDestroy)
     MSG_WM_DISPLAYCHANGE(OnDisplayChange)
+    MSG_WM_ENTERMENULOOP(OnEnterMenuLoop)
+    MSG_WM_EXITMENULOOP(OnExitMenuLoop)
     MSG_WM_ENTERSIZEMOVE(OnEnterSizeMove)
     MSG_WM_ERASEBKGND(OnEraseBkgnd)
     MSG_WM_EXITSIZEMOVE(OnExitSizeMove)
@@ -383,8 +385,10 @@ class VIEWS_EXPORT HWNDMessageHandler :
   void OnDestroy();
   void OnDisplayChange(UINT bits_per_pixel, const CSize& screen_size);
   LRESULT OnDwmCompositionChanged(UINT msg, WPARAM w_param, LPARAM l_param);
+  void OnEnterMenuLoop(BOOL from_track_popup_menu);
   void OnEnterSizeMove();
   LRESULT OnEraseBkgnd(HDC dc);
+  void OnExitMenuLoop(BOOL is_shortcut_menu);
   void OnExitSizeMove();
   void OnGetMinMaxInfo(MINMAXINFO* minmax_info);
   LRESULT OnGetObject(UINT message, WPARAM w_param, LPARAM l_param);
@@ -520,6 +524,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
 
   // Copy of custom window region specified via SetRegion(), if any.
   base::win::ScopedRegion custom_window_region_;
+
+  // If > 0 indicates a menu is running (we're showing a native menu).
+  int menu_depth_;
 
   // A factory used to lookup appbar autohide edges.
   base::WeakPtrFactory<HWNDMessageHandler> autohide_factory_;

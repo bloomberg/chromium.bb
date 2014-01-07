@@ -12,6 +12,8 @@ namespace aura {
 class Window;
 namespace client {
 
+class ScopedTooltipDisabler;
+
 class AURA_EXPORT TooltipClient {
  public:
   // Informs the shell tooltip manager of change in tooltip for window |target|.
@@ -21,8 +23,13 @@ class AURA_EXPORT TooltipClient {
   // |timeout_in_ms| is <= 0, the tooltip is shown indefinitely.
   virtual void SetTooltipShownTimeout(Window* target, int timeout_in_ms) = 0;
 
-  // Enables/Disables tooltips.
+ protected:
+  // Enables/Disables tooltips. This is treated as a reference count. Consumers
+  // must use ScopedTooltipDisabler to enable/disabled tooltips.
   virtual void SetTooltipsEnabled(bool enable) = 0;
+
+ private:
+  friend class ScopedTooltipDisabler;
 };
 
 AURA_EXPORT void SetTooltipClient(Window* root_window,

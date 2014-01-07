@@ -42,6 +42,9 @@
 
 namespace aura {
 class WindowTracker;
+namespace client {
+class ScopedTooltipDisabler;
+}
 }
 
 namespace cc {
@@ -779,6 +782,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   };
   scoped_ptr<ReleasedFrameInfo> released_software_frame_;
   scoped_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
+
+  scoped_ptr<aura::client::ScopedTooltipDisabler> tooltip_disabler_;
 
   base::WeakPtrFactory<RenderWidgetHostViewAura> weak_ptr_factory_;
 
