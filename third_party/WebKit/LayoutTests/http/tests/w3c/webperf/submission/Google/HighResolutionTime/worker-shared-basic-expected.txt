@@ -4,6 +4,8 @@ This test validates that performance.now() exists in shared workers and reports 
 
 
 
+PASS workerStart is defined on the SharedWorker object 
+PASS Time of worker start was after the navigation start for the document 
 PASS self.performance is defined 
 PASS self.performance.now is defined 
 PASS Time since origin time should be greater in the main document than the worker 

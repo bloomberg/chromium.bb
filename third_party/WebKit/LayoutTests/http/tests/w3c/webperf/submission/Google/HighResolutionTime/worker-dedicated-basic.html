@@ -32,6 +32,7 @@ worker.onmessage = function(event) {
 }
 
 function start() {
+    test_true(!("workerStart" in worker), "workerStart not defined on the Worker object");
     worker.postMessage(tests);
 }
 

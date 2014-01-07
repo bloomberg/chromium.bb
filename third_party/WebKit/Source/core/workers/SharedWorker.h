@@ -33,12 +33,13 @@
 #define SharedWorker_h
 
 #include "core/workers/AbstractWorker.h"
+#include "platform/Supplementable.h"
 
 namespace WebCore {
 
 class ExceptionState;
 
-class SharedWorker : public AbstractWorker, public ScriptWrappable {
+class SharedWorker : public AbstractWorker, public ScriptWrappable, public Supplementable<SharedWorker> {
 public:
     static PassRefPtr<SharedWorker> create(ExecutionContext*, const String& url, const String& name, ExceptionState&);
     virtual ~SharedWorker();

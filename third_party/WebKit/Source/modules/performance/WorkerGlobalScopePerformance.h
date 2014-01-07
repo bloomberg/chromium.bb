@@ -47,7 +47,7 @@ public:
 private:
     WorkerGlobalScopePerformance();
 
-    WorkerPerformance* getPerformance(WorkerGlobalScope*);
+    WorkerPerformance* performance();
     static const char* supplementName();
 
     RefPtr<WorkerPerformance> m_performance;
