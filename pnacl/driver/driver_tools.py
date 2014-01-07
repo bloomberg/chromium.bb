@@ -209,7 +209,8 @@ def FindBaseHost(tool):
 
   base_pnacl = FindBasePNaCl()
   base_host = pathtools.join(base_pnacl, 'host_' + env.getone('HOST_ARCH'))
-  if not pathtools.exists(pathtools.join(base_host, 'bin', tool)):
+  if not pathtools.exists(pathtools.join(base_host, 'bin',
+                          tool + env.getone('EXEC_EXT'))):
     Log.Fatal('Could not find PNaCl host directory for ' + tool)
   return base_host
 
