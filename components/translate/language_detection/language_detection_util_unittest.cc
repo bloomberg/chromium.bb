@@ -6,7 +6,7 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/translate/common/translate_constants.h"
+#include "components/translate/core/common/translate_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef testing::Test LanguageDetectionUtilTest;

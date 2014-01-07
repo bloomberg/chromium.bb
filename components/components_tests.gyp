@@ -48,8 +48,8 @@
             'precache/core/precache_url_table_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
             'test/run_all_unittests.cc',
-            'translate/common/translate_metrics_unittest.cc',
-            'translate/common/translate_util_unittest.cc',
+            'translate/core/common/translate_metrics_unittest.cc',
+            'translate/core/common/translate_util_unittest.cc',
             'translate/language_detection/language_detection_util_unittest.cc',
             'url_matcher/regex_set_matcher_unittest.cc',
             'url_matcher/string_pattern_unittest.cc',
@@ -104,7 +104,7 @@
             'components.gyp:precache_core',
 
             # Dependencies of translate.
-            'components.gyp:translate_common',
+            'components.gyp:translate_core_common',
             'components.gyp:translate_language_detection',
 
             # Dependencies of variations
@@ -116,11 +116,11 @@
                 # Dependencies of browser_context_keyed_service
                 'components.gyp:browser_context_keyed_service',
 
-                # Dependencies of 
+                # Dependencies of
                 # intercept_navigation_resource_throttle_unittest.cc
                 '../skia/skia.gyp:skia',
                 'components.gyp:navigation_interception',
-                
+
                 # Dependencies of precache/content
                 'components.gyp:precache_content',
 

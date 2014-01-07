@@ -15,7 +15,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
-#include "chrome/common/translate/translate_errors.h"
+#include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

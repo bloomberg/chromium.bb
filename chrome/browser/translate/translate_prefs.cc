@@ -15,7 +15,7 @@
 #include "chrome/browser/translate/translate_accept_languages.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/translate/common/translate_util.h"
+#include "components/translate/core/common/translate_util.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 const char TranslatePrefs::kPrefTranslateLanguageBlacklist[] =

@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_TRANSLATE_TRANSLATE_ERRORS_H_
-#define CHROME_COMMON_TRANSLATE_TRANSLATE_ERRORS_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_ERRORS_H_
+#define COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_ERRORS_H_
 
 #include "base/basictypes.h"
 
@@ -38,4 +38,4 @@ class TranslateErrors {
   DISALLOW_COPY_AND_ASSIGN(TranslateErrors);
 };
 
-#endif  // CHROME_COMMON_TRANSLATE_TRANSLATE_ERRORS_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_ERRORS_H_

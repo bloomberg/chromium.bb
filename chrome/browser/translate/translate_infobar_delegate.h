@@ -14,8 +14,8 @@
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/translate/translate_ui_delegate.h"
-#include "chrome/common/translate/translate_errors.h"
-#include "components/translate/common/translate_constants.h"
+#include "components/translate/core/common/translate_constants.h"
+#include "components/translate/core/common/translate_errors.h"
 
 class PrefService;
 

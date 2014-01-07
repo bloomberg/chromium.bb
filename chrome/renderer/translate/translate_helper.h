@@ -10,7 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/common/translate/translate_errors.h"
+#include "components/translate/core/common/translate_errors.h"
 #include "content/public/renderer/render_view_observer.h"
 
 namespace blink {

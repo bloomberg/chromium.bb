@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/translate/common/translate_util.h"
+#include "components/translate/core/common/translate_util.h"
 #include "content/public/browser/notification_source.h"
 #include "net/url_request/url_fetcher.h"
 #include "ui/base/l10n/l10n_util.h"

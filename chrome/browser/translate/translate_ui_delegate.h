@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/translate/translate_errors.h"
+#include "components/translate/core/common/translate_errors.h"
 
 class TranslatePrefs;
 

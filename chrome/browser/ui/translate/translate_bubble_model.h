@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "chrome/common/translate/translate_errors.h"
+#include "components/translate/core/common/translate_errors.h"
 
 // The model for the Translate bubble UX. This manages the user's manipulation
 // of the bubble and offers the data to show on the bubble.

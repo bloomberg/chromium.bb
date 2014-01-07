@@ -2,18 +2,37 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("translate_common") {
+static_library("translate_core_browser") {
   external = true
 
   sources = [
-    "common/translate_constants.cc",
-    "common/translate_constants.h",
-    "common/translate_metrics.cc",
-    "common/translate_metrics.h",
-    "common/translate_switches.cc",
-    "common/translate_switches.h",
-    "common/translate_util.cc",
-    "common/translate_util.h",
+    "core/browser/page_translated_details.h",
+    "core/browser/translate_error_details.h",
+    "core/browser/translate_event_details.cc",
+    "core/browser/translate_event_details.h",
+  ]
+
+  deps = [
+    "//base",
+    "//url",
+  ]
+}
+
+static_library("translate_core_common") {
+  external = true
+
+  sources = [
+    "core/common/language_detection_details.cc",
+    "core/common/language_detection_details.h",
+    "core/common/translate_constants.cc",
+    "core/common/translate_constants.h",
+    "core/common/translate_errors.h",
+    "core/common/translate_metrics.cc",
+    "core/common/translate_metrics.h",
+    "core/common/translate_switches.cc",
+    "core/common/translate_switches.h",
+    "core/common/translate_util.cc",
+    "core/common/translate_util.h",
   ]
 
   deps = [

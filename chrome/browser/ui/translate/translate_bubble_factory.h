@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_TRANSLATE_TRANSLATE_BUBBLE_FACTORY_H_
 
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
-#include "chrome/common/translate/translate_errors.h"
+#include "components/translate/core/common/translate_errors.h"
 
 class BrowserWindow;
 

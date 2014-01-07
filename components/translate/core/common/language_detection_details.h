@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_DETAILS_H_
-#define CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_DETAILS_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_COMMON_LANGUAGE_DETECTION_DETAILS_H_
+#define COMPONENTS_TRANSLATE_CORE_COMMON_LANGUAGE_DETECTION_DETAILS_H_
 
 #include <string>
 
@@ -40,4 +40,4 @@ struct LanguageDetectionDetails {
   base::string16 contents;
 };
 
-#endif  // CHROME_COMMON_TRANSLATE_LANGUAGE_DETECTION_DETAILS_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_COMMON_LANGUAGE_DETECTION_DETAILS_H_

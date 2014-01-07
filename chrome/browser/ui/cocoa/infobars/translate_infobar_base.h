@@ -12,7 +12,7 @@
 #include "chrome/browser/translate/options_menu_model.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
-#include "chrome/common/translate/translate_errors.h"
+#include "components/translate/core/common/translate_errors.h"
 
 // The base class for the three translate infobars.  This class does all of the
 // heavy UI lifting, while deferring to the subclass to tell it what views

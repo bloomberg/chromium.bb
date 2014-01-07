@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_TAB_HELPER_H_
 
 #include "chrome/browser/tab_contents/language_state.h"
-#include "chrome/common/translate/translate_errors.h"
+#include "components/translate/core/common/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 

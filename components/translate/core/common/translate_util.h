@@ -1,9 +1,9 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRANSLATE_COMMON_TRANSLATE_UTIL_H_
-#define COMPONENTS_TRANSLATE_COMMON_TRANSLATE_UTIL_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_UTIL_H_
+#define COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_UTIL_H_
 
 #include <string>
 
@@ -25,4 +25,4 @@ GURL GetTranslateSecurityOrigin();
 
 }  // namespace translate
 
-#endif  // COMPONENTS_TRANSLATE_COMMON_TRANSLATE_UTIL_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_UTIL_H_

@@ -6,6 +6,7 @@ include_rules = [
   "+components/autofill/core/common",
   "+components/nacl/common",
   "+components/policy/core/common",
+  "+components/translate/core/common",
   "+extensions/common",
   "+grit",  # For generated headers
   "+ppapi/shared_impl",

@@ -1,13 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TRANSLATE_PAGE_TRANSLATED_DETAILS_H_
-#define CHROME_BROWSER_TRANSLATE_PAGE_TRANSLATED_DETAILS_H_
+#ifndef COMPONENTS_TRANSLATE_CORE_BROWSER_PAGE_TRANSLATED_DETAILS_H_
+#define COMPONENTS_TRANSLATE_CORE_BROWSER_PAGE_TRANSLATED_DETAILS_H_
 
 #include <string>
 
-#include "chrome/common/translate/translate_errors.h"
+#include "components/translate/core/common/translate_errors.h"
 
 // Used when sending a notification about a page that has been translated.
 struct PageTranslatedDetails {
@@ -16,4 +16,4 @@ struct PageTranslatedDetails {
   TranslateErrors::Type error_type;
 };
 
-#endif  // CHROME_BROWSER_TRANSLATE_PAGE_TRANSLATED_DETAILS_H_
+#endif  // COMPONENTS_TRANSLATE_CORE_BROWSER_PAGE_TRANSLATED_DETAILS_H_

@@ -14,7 +14,7 @@
 #include "chrome/browser/translate/translate_url_fetcher.h"
 #include "chrome/browser/translate/translate_url_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/translate/common/translate_util.h"
+#include "components/translate/core/common/translate_util.h"
 #include "google_apis/google_api_keys.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
