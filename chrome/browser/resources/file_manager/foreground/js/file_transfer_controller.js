@@ -154,10 +154,12 @@ FileTransferController.prototype = {
    *     |dataTransfer.effectAllowed| property ('move', 'copy', 'copyMove').
    */
   cutOrCopy_: function(dataTransfer, effectAllowed) {
+    // Existence of the volumeInfo is checked in canXXX methods.
+    var volumeInfo = this.volumeManager_.getVolumeInfo(
+        this.currentDirectoryContentEntry);
     // Tag to check it's filemanager data.
     dataTransfer.setData('fs/tag', 'filemanager-data');
-    dataTransfer.setData('fs/sourceRoot',
-                         this.directoryModel_.getCurrentRootPath());
+    dataTransfer.setData('fs/sourceRootURL', volumeInfo.root.toURL());
     var sourceURLs = util.entriesToURLs(this.selectedEntries_);
     dataTransfer.setData('fs/sources', sourceURLs.join('\n'));
     dataTransfer.effectAllowed = effectAllowed;
@@ -169,26 +171,26 @@ FileTransferController.prototype = {
   },
 
   /**
-   * Extracts source root from the |dataTransfer| object.
+   * Extracts source root URL from the |dataTransfer| object.
    *
    * @this {FileTransferController}
    * @param {DataTransfer} dataTransfer DataTransfer object from the event.
-   * @return {string} Path or empty string (if unknown).
+   * @return {string} URL or an empty string (if unknown).
    */
-  getSourceRoot_: function(dataTransfer) {
-    var sourceRoot = dataTransfer.getData('fs/sourceRoot');
-    if (sourceRoot)
-      return sourceRoot;
+  getSourceRootURL_: function(dataTransfer) {
+    var sourceRootURL = dataTransfer.getData('fs/sourceRootURL');
+    if (sourceRootURL)
+      return sourceRootURL;
 
     // |dataTransfer| in protected mode.
     if (window[DRAG_AND_DROP_GLOBAL_DATA])
-      return window[DRAG_AND_DROP_GLOBAL_DATA].sourceRoot;
+      return window[DRAG_AND_DROP_GLOBAL_DATA].sourceRootURL;
 
     // Dragging from other tabs/windows.
     var views = chrome && chrome.extension ? chrome.extension.getViews() : [];
     for (var i = 0; i < views.length; i++) {
       if (views[i][DRAG_AND_DROP_GLOBAL_DATA])
-        return views[i][DRAG_AND_DROP_GLOBAL_DATA].sourceRoot;
+        return views[i][DRAG_AND_DROP_GLOBAL_DATA].sourceRootURL;
     }
 
     // Unknown source.
@@ -337,8 +339,12 @@ FileTransferController.prototype = {
     var dragThumbnail = this.renderThumbnail_();
     dt.setDragImage(dragThumbnail, 1000, 1000);
 
+    // The volume must be available, since canCopyOrDrag() and/or canCutOrDrag()
+    // are called before this.
+    var volumeInfo = this.volumeManager_.getVolumeInfo(
+        this.currentDirectoryContentEntry);
     window[DRAG_AND_DROP_GLOBAL_DATA] = {
-      sourceRoot: this.directoryModel_.getCurrentRootPath()
+      sourceRootURL: volumeInfo.root.toURL()
     };
   },
 
@@ -578,6 +584,12 @@ FileTransferController.prototype = {
    *     on drive is available to be copied. Otherwise, returns false.
    */
   canCopyOrDrag_: function() {
+    if (!this.currentDirectoryContentEntry)
+      return false;
+    var volumeInfo = this.volumeManager_.getVolumeInfo(
+        this.currentDirectoryContentEntry);
+    if (!volumeInfo)
+      return false;
     var isDriveOffline = this.volumeManager_.getDriveConnectionState().type ===
         util.DriveConnectionType.OFFLINE;
     if (this.isOnDrive &&
@@ -768,14 +780,12 @@ FileTransferController.prototype = {
   },
 
   /**
-   * Obains directory that is displaying now. If search result is displaying
-   * now, then returns null.
+   * Obains directory that is displaying now.
    * @this {FileTransferController}
    * @return {DirectoryEntry} Entry of directry that is displaying now.
    */
   get currentDirectoryContentEntry() {
-    return this.directoryModel_.isSearching() ?
-        null : this.directoryModel_.getCurrentDirEntry();
+    return this.directoryModel_.getCurrentDirEntry();
   },
 
   /**
@@ -791,7 +801,13 @@ FileTransferController.prototype = {
    * @return {boolean} True if the current directory is on Drive.
    */
   get isOnDrive() {
-    return PathUtil.isDriveBasedPath(this.directoryModel_.getCurrentRootPath());
+    var currentDir = this.directoryModel_.getCurrentDirEntry();
+    if (!currentDir)
+      return false;
+    var locationInfo = this.volumeManager_.getLocationInfo(currentDir);
+    if (!locationInfo)
+      return false;
+    return locationInfo.isDriveBased;
   },
 
   /**
@@ -836,13 +852,19 @@ FileTransferController.prototype = {
    *     or copy') to the current modifiers status and the destination.
    */
   selectDropEffect_: function(event, destinationEntry) {
-    if (!destinationEntry ||
-        this.volumeManager_.getLocationInfo(destinationEntry).isReadOnly) {
+    if (!destinationEntry)
       return 'none';
-    }
+    var destinationLocationInfo =
+        this.volumeManager_.getLocationInfo(destinationEntry);
+    if (!destinationLocationInfo)
+      return 'none';
+    if (destinationLocationInfo.isReadOnly)
+      return 'none';
+    // TODO(mtomasz): Use volumeId instead of comparing roots, as soon as
+    // volumeId gets unique.
     if (event.dataTransfer.effectAllowed === 'copyMove' &&
-        this.getSourceRoot_(event.dataTransfer) ===
-            PathUtil.getRootPath(destinationEntry.fullPath) &&
+        this.getSourceRootURL_(event.dataTransfer) ===
+            destinationLocationInfo.volumeInfo.root.toURL() &&
         !event.ctrlKey) {
       return 'move';
     }

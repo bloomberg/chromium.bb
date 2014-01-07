@@ -121,7 +121,7 @@ FileWatcher.prototype.dispatchMetadataEvent_ = function(
  * @param {function()} callback Completion callback.
  */
 FileWatcher.prototype.changeWatchedDirectory = function(entry, callback) {
-  if (entry && entry.toURL) {
+  if (!util.isFakeEntry(entry)) {
     this.changeWatchedEntry_(
         entry,
         callback,

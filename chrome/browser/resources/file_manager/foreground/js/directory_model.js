@@ -103,14 +103,6 @@ DirectoryModel.prototype.getCurrentRootType = function() {
 };
 
 /**
- * @return {string} Root path.
- */
-DirectoryModel.prototype.getCurrentRootPath = function() {
-  var entry = this.currentDirContents_.getDirectoryEntry();
-  return entry ? PathUtil.getRootPath(entry.fullPath) : '';
-};
-
-/**
  * @return {boolean} True if the current directory is read only. If there is
  *     no entry set, then returns true.
  */

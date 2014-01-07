@@ -37,6 +37,13 @@ function FileManager() {
    * @private
    */
   this.selectionHandler_ = null;
+
+  /**
+   * VolumeInfo of the current volume.
+   * @type {VolumeInfo}
+   * @private
+   */
+  this.currentVolumeInfo_ = null;
 }
 
 /**
@@ -1842,7 +1849,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onExternallyUnmounted_ = function(event) {
-    if (event.mountPath == this.directoryModel_.getCurrentRootPath()) {
+    if (event.volumeInfo === this.currentVolumeInfo_) {
       if (this.closeOnUnmount_) {
         // If the file manager opened automatically when a usb drive inserted,
         // user have never changed current volume (that implies the current
@@ -2199,15 +2206,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.hostedButton.hidden = hideItemsForDrive;
     this.document_.getElementById('drive-separator').hidden =
         hideItemsForDrive;
-
-    var currentVolumeInfo = this.volumeManager_.getVolumeInfo(
-        this.directoryModel_.getCurrentDirEntry());
-
-    // If volume has changed, then fetch remaining space data.
-    if (this.previousVolumeInfo_ !== currentVolumeInfo)
-      this.refreshRemainingSpace_(true);  // Show loading caption.
-
-    this.previousVolumeInfo_ = currentVolumeInfo;
+    this.refreshRemainingSpace_(true);  // Show loading caption.
   };
 
   /**
@@ -2216,6 +2215,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.refreshRemainingSpace_ = function(showLoadingCaption) {
+    if (!this.currentVolumeInfo_)
+      return;
+
     var volumeSpaceInfoLabel =
         this.dialogDom_.querySelector('#volume-space-info-label');
     var volumeSpaceInnerBar =
@@ -2230,14 +2232,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       volumeSpaceInnerBar.style.width = '100%';
     }
 
-    var currentVolumeInfo = this.volumeManager_.getVolumeInfo(
-        this.directoryModel_.getCurrentDirEntry());
-
+    var currentVolumeInfo = this.currentVolumeInfo_;
     chrome.fileBrowserPrivate.getSizeStats(
         currentVolumeInfo.root.toURL(), function(result) {
           var volumeInfo = this.volumeManager_.getVolumeInfo(
               this.directoryModel_.getCurrentDirEntry());
-          if (currentVolumeInfo !== volumeInfo)
+          if (currentVolumeInfo !== this.currentVolumeInfo_)
             return;
           updateSpaceInfo(result,
                           volumeSpaceInnerBar,
@@ -2269,12 +2269,20 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     if (this.commandHandler)
       this.commandHandler.updateAvailability();
+
     this.updateUnformattedVolumeStatus_();
     this.updateTitle_();
-    this.updateGearMenu_();
+    var newCurrentVolumeInfo = this.volumeManager_.getVolumeInfo(
+        event.newDirEntry);
+    // If volume has changed, then update the gear menu.
+    if (this.currentVolumeInfo_ !== newCurrentVolumeInfo)
+      this.updateGearMenu_();
     var currentEntry = this.getCurrentDirectoryEntry();
     this.previewPanel_.currentEntry = util.isFakeEntry(currentEntry) ?
         null : currentEntry;
+
+    // Remember the current volume info.
+    this.currentVolumeInfo_ = newCurrentVolumeInfo;
   };
 
   FileManager.prototype.updateUnformattedVolumeStatus_ = function() {
