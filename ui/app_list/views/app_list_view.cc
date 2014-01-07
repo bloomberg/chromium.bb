@@ -51,7 +51,7 @@ void (*g_next_paint_callback)();
 const int kSpeechUIMargin = 12;
 
 // The vertical position for the appearing animation of the speech UI.
-const float kSpeechUIApearingPosition =12;
+const float kSpeechUIAppearingPosition = 12;
 
 // The distance between the arrow tip and edge of the anchor view.
 const int kArrowOffset = 10;
@@ -427,7 +427,7 @@ void AppListView::OnSpeechRecognitionStateChanged(
 #if defined(USE_AURA)
   gfx::Transform speech_transform;
   speech_transform.Translate(
-      0, SkFloatToMScalar(kSpeechUIApearingPosition));
+      0, SkFloatToMScalar(kSpeechUIAppearingPosition));
   if (recognizing)
     speech_view_->layer()->SetTransform(speech_transform);
 
