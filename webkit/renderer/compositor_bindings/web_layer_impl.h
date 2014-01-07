@@ -52,6 +52,8 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
       scoped_refptr<cc::Layer>);
   virtual ~WebLayerImpl();
 
+  static bool UsingPictureLayer();
+
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT cc::Layer* layer() const;
 
   // WebLayer implementation.

@@ -74,7 +74,6 @@ CC_EXPORT extern const char kCCRebaselinePixeltests[];
 
 CC_EXPORT bool IsLCDTextEnabled();
 CC_EXPORT bool IsImplSidePaintingEnabled();
-CC_EXPORT bool IsGPURasterizationEnabled();
 CC_EXPORT bool IsMapImageEnabled();
 
 }  // namespace switches

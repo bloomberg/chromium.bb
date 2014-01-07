@@ -165,8 +165,7 @@ bool IsLCDTextEnabled() {
 #endif
 }
 
-namespace {
-bool CheckImplSidePaintingStatus() {
+bool IsImplSidePaintingEnabled() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   if (command_line.HasSwitch(switches::kDisableImplSidePainting))
@@ -179,23 +178,6 @@ bool CheckImplSidePaintingStatus() {
 #else
   return false;
 #endif
-}
-
-bool CheckGPURasterizationStatus() {
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kEnableGPURasterization);
-}
-
-}  // namespace
-
-bool IsImplSidePaintingEnabled() {
-  static bool enabled = CheckImplSidePaintingStatus();
-  return enabled;
-}
-
-bool IsGPURasterizationEnabled() {
-  static bool enabled = CheckGPURasterizationStatus();
-  return enabled;
 }
 
 bool IsMapImageEnabled() {

@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event_impl.h"
+#include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "cc/animation/animation.h"
 #include "cc/base/region.h"
+#include "cc/base/switches.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "third_party/WebKit/public/platform/WebCompositingReasons.h"
@@ -37,6 +39,18 @@ using blink::WebColor;
 using blink::WebFilterOperations;
 
 namespace webkit {
+namespace {
+
+struct ImplSidePaintingStatus {
+  ImplSidePaintingStatus()
+      : enabled(cc::switches::IsImplSidePaintingEnabled()) {
+  }
+  bool enabled;
+};
+base::LazyInstance<ImplSidePaintingStatus> g_impl_side_painting_status =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 WebLayerImpl::WebLayerImpl() : layer_(Layer::Create()) {
   web_layer_client_ = NULL;
@@ -52,6 +66,11 @@ WebLayerImpl::~WebLayerImpl() {
   layer_->ClearRenderSurface();
   layer_->set_layer_animation_delegate(NULL);
   web_layer_client_ = NULL;
+}
+
+// static
+bool WebLayerImpl::UsingPictureLayer() {
+  return g_impl_side_painting_status.Get().enabled;
 }
 
 int WebLayerImpl::id() const { return layer_->id(); }
