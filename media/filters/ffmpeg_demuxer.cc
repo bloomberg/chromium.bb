@@ -792,21 +792,22 @@ void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {
   }
 
   if (result < 0) {
-    // Update the duration based on the audio stream if
-    // it was previously unknown http://crbug.com/86830
+    // Update the duration based on the highest elapsed time across all streams
+    // if it was previously unknown.
     if (!duration_known_) {
-      // Search streams for AUDIO one.
+      base::TimeDelta max_duration;
+
       for (StreamVector::iterator iter = streams_.begin();
            iter != streams_.end();
            ++iter) {
-        if (*iter && (*iter)->type() == DemuxerStream::AUDIO) {
-          base::TimeDelta duration = (*iter)->GetElapsedTime();
-          if (duration != kNoTimestamp() && duration > base::TimeDelta()) {
-            host_->SetDuration(duration);
-            duration_known_ = true;
-          }
-          break;
-        }
+        base::TimeDelta duration = (*iter)->GetElapsedTime();
+        if (duration != kNoTimestamp() && duration > max_duration)
+          max_duration = duration;
+      }
+
+      if (max_duration > base::TimeDelta()) {
+        host_->SetDuration(max_duration);
+        duration_known_ = true;
       }
     }
     // If we have reached the end of stream, tell the downstream filters about
