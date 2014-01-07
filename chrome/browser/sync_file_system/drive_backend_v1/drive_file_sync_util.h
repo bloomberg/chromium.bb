@@ -10,10 +10,6 @@
 
 namespace sync_file_system {
 
-// Translates GDataErrorCode to SyncStatusCode.
-SyncStatusCode GDataErrorCodeToSyncStatusCode(
-    google_apis::GDataErrorCode error);
-
 // Enables or disables Drive API in Sync FileSystem API.
 // TODO(nhiroki): This method should go away when we completely migrate to
 // DriveAPI. (http://crbug.com/234557)

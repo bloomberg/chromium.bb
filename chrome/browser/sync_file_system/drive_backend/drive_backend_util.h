@@ -10,6 +10,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
+#include "chrome/browser/sync_file_system/sync_status_code.h"
+#include "google_apis/drive/gdata_errorcode.h"
 #include "webkit/common/blob/scoped_file.h"
 
 namespace google_apis {
@@ -55,6 +57,9 @@ std::string GetMimeTypeFromTitle(const base::FilePath& title);
 
 scoped_ptr<google_apis::ResourceEntry> GetOldestCreatedFolderResource(
     ScopedVector<google_apis::ResourceEntry> list);
+
+SyncStatusCode GDataErrorCodeToSyncStatusCode(
+    google_apis::GDataErrorCode error);
 
 }  // namespace drive_backend
 }  // namespace sync_file_system

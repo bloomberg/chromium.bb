@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/api_util.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_metadata_store.h"
@@ -445,7 +446,8 @@ void DriveFileSyncService::UpdateServiceStateFromLastOperationStatus(
     case SYNC_STATUS_OK:
       // If the last Drive-related operation was successful we can
       // change the service state to OK.
-      if (GDataErrorCodeToSyncStatusCode(gdata_error) == SYNC_STATUS_OK)
+      if (drive_backend::GDataErrorCodeToSyncStatusCode(gdata_error) ==
+          SYNC_STATUS_OK)
         UpdateServiceState(REMOTE_SERVICE_OK, std::string());
       break;
 
@@ -1147,7 +1149,7 @@ void DriveFileSyncService::NotifyConflict(
 SyncStatusCode DriveFileSyncService::GDataErrorCodeToSyncStatusCodeWrapper(
     google_apis::GDataErrorCode error) {
   last_gdata_error_ = error;
-  SyncStatusCode status = GDataErrorCodeToSyncStatusCode(error);
+  SyncStatusCode status = drive_backend::GDataErrorCodeToSyncStatusCode(error);
   if (status != SYNC_STATUS_OK && !api_util_->IsAuthenticated())
     return SYNC_STATUS_AUTHENTICATION_FAILED;
   return status;
