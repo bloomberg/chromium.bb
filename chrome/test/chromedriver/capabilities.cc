@@ -265,6 +265,7 @@ Status ParseChromeOptions(
     parser_map["androidUseRunningApp"] =
         base::Bind(&ParseBoolean, &capabilities->android_use_running_app);
     parser_map["args"] = base::Bind(&ParseSwitches);
+    parser_map["loadAsync"] = base::Bind(&IgnoreDeprecatedOption, "loadAsync");
   } else if (is_existing) {
     parser_map["debuggerAddress"] = base::Bind(&ParseUseExistingBrowser);
   } else {
