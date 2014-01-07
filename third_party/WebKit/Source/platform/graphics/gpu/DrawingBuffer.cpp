@@ -222,14 +222,14 @@ bool DrawingBuffer::prepareMailbox(blink::WebExternalTextureMailbox* outMailbox,
 void DrawingBuffer::mailboxReleased(const blink::WebExternalTextureMailbox& mailbox)
 {
     for (size_t i = 0; i < m_textureMailboxes.size(); i++) {
-         RefPtr<MailboxInfo> mailboxInfo = m_textureMailboxes[i];
-         if (!memcmp(mailboxInfo->mailbox.name, mailbox.name, sizeof(mailbox.name))) {
-             mailboxInfo->mailbox.syncPoint = mailbox.syncPoint;
-             m_recycledMailboxes.append(mailboxInfo.release());
-             return;
-         }
-     }
-     ASSERT_NOT_REACHED();
+        RefPtr<MailboxInfo> mailboxInfo = m_textureMailboxes[i];
+        if (!memcmp(mailboxInfo->mailbox.name, mailbox.name, sizeof(mailbox.name))) {
+            mailboxInfo->mailbox.syncPoint = mailbox.syncPoint;
+            m_recycledMailboxes.prepend(mailboxInfo.release());
+            return;
+        }
+    }
+    ASSERT_NOT_REACHED();
 }
 
 PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::recycledMailbox()

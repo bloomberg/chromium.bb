@@ -112,7 +112,7 @@ protected:
     {
         RefPtr<FakeContextEvictionManager> contextEvictionManager = adoptRef(new FakeContextEvictionManager());
         RefPtr<GraphicsContext3D> context = GraphicsContext3D::createGraphicsContextFromWebContext(adoptPtr(new WebGraphicsContext3DForTests));
-        m_drawingBuffer = DrawingBuffer::create(context.get(), IntSize(initialWidth, initialHeight), DrawingBuffer::Discard, contextEvictionManager.release());
+        m_drawingBuffer = DrawingBuffer::create(context.get(), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve, contextEvictionManager.release());
     }
 
     WebGraphicsContext3DForTests* webContext()
@@ -170,6 +170,62 @@ TEST_F(DrawingBufferTest, verifyResizingProperlyAffectsMailboxes)
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
     EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
+}
+
+class TextureMailboxWrapper {
+public:
+    explicit TextureMailboxWrapper(const blink::WebExternalTextureMailbox& mailbox)
+        : m_mailbox(mailbox)
+    { }
+
+    bool operator==(const TextureMailboxWrapper& other) const
+    {
+        return !memcmp(m_mailbox.name, other.m_mailbox.name, sizeof(m_mailbox.name));
+    }
+
+private:
+    blink::WebExternalTextureMailbox m_mailbox;
+};
+
+TEST_F(DrawingBufferTest, verifyRecyclingMailboxesByFIFO)
+{
+    blink::WebExternalTextureMailbox mailbox1;
+    blink::WebExternalTextureMailbox mailbox2;
+    blink::WebExternalTextureMailbox mailbox3;
+
+    IntSize initialSize(initialWidth, initialHeight);
+
+    // Produce mailboxes.
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox1, 0));
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox2, 0));
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox3, 0));
+
+    // Release mailboxes by specific order; 2, 3, 1.
+    m_drawingBuffer->markContentsChanged();
+    m_drawingBuffer->mailboxReleased(mailbox2);
+    m_drawingBuffer->markContentsChanged();
+    m_drawingBuffer->mailboxReleased(mailbox3);
+    m_drawingBuffer->markContentsChanged();
+    m_drawingBuffer->mailboxReleased(mailbox1);
+
+    // The first recycled mailbox must be 2.
+    blink::WebExternalTextureMailbox recycledMailbox;
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&recycledMailbox, 0));
+    EXPECT_EQ(TextureMailboxWrapper(mailbox2), TextureMailboxWrapper(recycledMailbox));
+
+    // The second recycled mailbox must be 3.
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&recycledMailbox, 0));
+    EXPECT_EQ(TextureMailboxWrapper(mailbox3), TextureMailboxWrapper(recycledMailbox));
+
+    // The third recycled mailbox must be 1.
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&recycledMailbox, 0));
+    EXPECT_EQ(TextureMailboxWrapper(mailbox1), TextureMailboxWrapper(recycledMailbox));
 }
 
 } // namespace
