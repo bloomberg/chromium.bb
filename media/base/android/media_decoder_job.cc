@@ -350,14 +350,7 @@ void MediaDecoderJob::DecodeInternal(
   else if (input_status == MEDIA_CODEC_INPUT_END_OF_STREAM)
     status = MEDIA_CODEC_INPUT_END_OF_STREAM;
 
-  // Check whether we need to render the output.
-  // TODO(qinmin): comparing most recently queued input's |unit.timestamp| with
-  // |preroll_timestamp_| is not accurate due to data reordering and possible
-  // input queueing without immediate dequeue when |input_status| !=
-  // |MEDIA_CODEC_OK|. Need to use the |presentation_timestamp| for video, and
-  // use |size| to calculate the timestamp for audio. See
-  // http://crbug.com/310823 and http://b/11356652.
-  bool render_output  = unit.timestamp >= preroll_timestamp_ &&
+  bool render_output  = presentation_timestamp >= preroll_timestamp_ &&
       (status != MEDIA_CODEC_OUTPUT_END_OF_STREAM || size != 0u);
   base::TimeDelta time_to_render;
   DCHECK(!start_time_ticks.is_null());
