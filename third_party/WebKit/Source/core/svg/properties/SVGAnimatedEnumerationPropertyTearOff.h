@@ -32,8 +32,13 @@ public:
     virtual void setBaseVal(const unsigned& property, ExceptionState& exceptionState)
     {
         // All SVG enumeration values, that are allowed to be set via SVG DOM start with 1, 0 corresponds to unknown and is not settable through SVG DOM.
-        if (!property || property > SVGPropertyTraits<EnumType>::highestEnumValue()) {
-            exceptionState.throwUninformativeAndGenericTypeError();
+        if (!property) {
+            exceptionState.throwTypeError("The enumeration value provided is 0, which is not settable.");
+            return;
+        }
+
+        if (property > SVGPropertyTraits<EnumType>::highestEnumValue()) {
+            exceptionState.throwTypeError("The enumeration value provided (" + String::number(property) + ") is larger than the largest allowed value (" + String::number(SVGPropertyTraits<EnumType>::highestEnumValue()) + ").");
             return;
         }
         SVGAnimatedStaticPropertyTearOff<unsigned>::setBaseVal(property, exceptionState);

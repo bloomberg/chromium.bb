@@ -75,7 +75,7 @@ public:
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            exceptionState.throwUninformativeAndGenericTypeError();
+            exceptionState.throwTypeError("The PassListItemType provided is invalid.");
             return 0;
         }
 
@@ -90,7 +90,7 @@ public:
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            exceptionState.throwUninformativeAndGenericTypeError();
+            exceptionState.throwTypeError("The PassListItemType provided is invalid.");
             return 0;
         }
 
@@ -106,7 +106,7 @@ public:
     {
         // Not specified, but FF/Opera do it this way, and it's just sane.
         if (!passNewItem) {
-            exceptionState.throwUninformativeAndGenericTypeError();
+            exceptionState.throwTypeError("The PassListItemType provided is invalid.");
             return 0;
         }
 

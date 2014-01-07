@@ -1,2 +1,2 @@
-Caught exception: TypeError: Type error
+Caught exception: TypeError: Failed to execute 'appendItem' on 'SVGPointList': The PassListItemType provided is invalid.
 PASSED -- WebKit did not crash!

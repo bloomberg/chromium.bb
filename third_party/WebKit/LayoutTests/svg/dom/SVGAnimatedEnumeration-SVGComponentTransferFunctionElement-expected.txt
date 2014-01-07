@@ -30,13 +30,13 @@ PASS feFuncRElement.type.baseVal is SVGComponentTransferFunctionElement.SVG_FECO
 PASS feFuncRElement.getAttribute('type') is "gamma"
 
 Try setting invalid values
-PASS feFuncRElement.type.baseVal = 6 threw exception TypeError: Type error.
+PASS feFuncRElement.type.baseVal = 6 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (6) is larger than the largest allowed value (5)..
 PASS feFuncRElement.type.baseVal is SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_GAMMA
 PASS feFuncRElement.getAttribute('type') is "gamma"
-PASS feFuncRElement.type.baseVal = -1 threw exception TypeError: Type error.
+PASS feFuncRElement.type.baseVal = -1 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (65535) is larger than the largest allowed value (5)..
 PASS feFuncRElement.type.baseVal is SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_GAMMA
 PASS feFuncRElement.getAttribute('type') is "gamma"
-PASS feFuncRElement.type.baseVal = 0 threw exception TypeError: Type error.
+PASS feFuncRElement.type.baseVal = 0 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable..
 PASS feFuncRElement.type.baseVal is SVGComponentTransferFunctionElement.SVG_FECOMPONENTTRANSFER_TYPE_GAMMA
 PASS feFuncRElement.getAttribute('type') is "gamma"
 

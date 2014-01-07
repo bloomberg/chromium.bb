@@ -15,13 +15,13 @@ PASS filterElement.filterUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUND
 PASS filterElement.getAttribute('filterUnits') is "objectBoundingBox"
 
 Try setting invalid values
-PASS filterElement.filterUnits.baseVal = 3 threw exception TypeError: Type error.
+PASS filterElement.filterUnits.baseVal = 3 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (3) is larger than the largest allowed value (2)..
 PASS filterElement.filterUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS filterElement.getAttribute('filterUnits') is "objectBoundingBox"
-PASS filterElement.filterUnits.baseVal = -1 threw exception TypeError: Type error.
+PASS filterElement.filterUnits.baseVal = -1 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (65535) is larger than the largest allowed value (2)..
 PASS filterElement.filterUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS filterElement.getAttribute('filterUnits') is "objectBoundingBox"
-PASS filterElement.filterUnits.baseVal = 0 threw exception TypeError: Type error.
+PASS filterElement.filterUnits.baseVal = 0 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable..
 PASS filterElement.filterUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS filterElement.getAttribute('filterUnits') is "objectBoundingBox"
 
@@ -41,13 +41,13 @@ PASS filterElement.primitiveUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBO
 PASS filterElement.getAttribute('primitiveUnits') is "objectBoundingBox"
 
 Try setting invalid values
-PASS filterElement.primitiveUnits.baseVal = 3 threw exception TypeError: Type error.
+PASS filterElement.primitiveUnits.baseVal = 3 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (3) is larger than the largest allowed value (2)..
 PASS filterElement.primitiveUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS filterElement.getAttribute('primitiveUnits') is "objectBoundingBox"
-PASS filterElement.primitiveUnits.baseVal = -1 threw exception TypeError: Type error.
+PASS filterElement.primitiveUnits.baseVal = -1 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (65535) is larger than the largest allowed value (2)..
 PASS filterElement.primitiveUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS filterElement.getAttribute('primitiveUnits') is "objectBoundingBox"
-PASS filterElement.primitiveUnits.baseVal = 0 threw exception TypeError: Type error.
+PASS filterElement.primitiveUnits.baseVal = 0 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable..
 PASS filterElement.primitiveUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS filterElement.getAttribute('primitiveUnits') is "objectBoundingBox"
 

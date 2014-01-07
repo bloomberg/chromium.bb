@@ -30,13 +30,13 @@ PASS feBlendElement.mode.baseVal is SVGFEBlendElement.SVG_FEBLEND_MODE_LIGHTEN
 PASS feBlendElement.getAttribute('mode') is "lighten"
 
 Try setting invalid values
-PASS feBlendElement.mode.baseVal = 6 threw exception TypeError: Type error.
+PASS feBlendElement.mode.baseVal = 6 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (6) is larger than the largest allowed value (5)..
 PASS feBlendElement.mode.baseVal is SVGFEBlendElement.SVG_FEBLEND_MODE_LIGHTEN
 PASS feBlendElement.getAttribute('mode') is "lighten"
-PASS feBlendElement.mode.baseVal = -1 threw exception TypeError: Type error.
+PASS feBlendElement.mode.baseVal = -1 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (65535) is larger than the largest allowed value (5)..
 PASS feBlendElement.mode.baseVal is SVGFEBlendElement.SVG_FEBLEND_MODE_LIGHTEN
 PASS feBlendElement.getAttribute('mode') is "lighten"
-PASS feBlendElement.mode.baseVal = 0 threw exception TypeError: Type error.
+PASS feBlendElement.mode.baseVal = 0 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable..
 PASS feBlendElement.mode.baseVal is SVGFEBlendElement.SVG_FEBLEND_MODE_LIGHTEN
 PASS feBlendElement.getAttribute('mode') is "lighten"
 

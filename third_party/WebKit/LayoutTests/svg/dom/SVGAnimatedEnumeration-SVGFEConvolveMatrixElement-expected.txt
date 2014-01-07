@@ -20,13 +20,13 @@ PASS feConvolveMatrixElement.edgeMode.baseVal is SVGFEConvolveMatrixElement.SVG_
 PASS feConvolveMatrixElement.getAttribute('edgeMode') is "none"
 
 Try setting invalid values
-PASS feConvolveMatrixElement.edgeMode.baseVal = 4 threw exception TypeError: Type error.
+PASS feConvolveMatrixElement.edgeMode.baseVal = 4 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (4) is larger than the largest allowed value (3)..
 PASS feConvolveMatrixElement.edgeMode.baseVal is SVGFEConvolveMatrixElement.SVG_EDGEMODE_NONE
 PASS feConvolveMatrixElement.getAttribute('edgeMode') is "none"
-PASS feConvolveMatrixElement.edgeMode.baseVal = -1 threw exception TypeError: Type error.
+PASS feConvolveMatrixElement.edgeMode.baseVal = -1 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (65535) is larger than the largest allowed value (3)..
 PASS feConvolveMatrixElement.edgeMode.baseVal is SVGFEConvolveMatrixElement.SVG_EDGEMODE_NONE
 PASS feConvolveMatrixElement.getAttribute('edgeMode') is "none"
-PASS feConvolveMatrixElement.edgeMode.baseVal = 0 threw exception TypeError: Type error.
+PASS feConvolveMatrixElement.edgeMode.baseVal = 0 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable..
 PASS feConvolveMatrixElement.edgeMode.baseVal is SVGFEConvolveMatrixElement.SVG_EDGEMODE_NONE
 PASS feConvolveMatrixElement.getAttribute('edgeMode') is "none"
 

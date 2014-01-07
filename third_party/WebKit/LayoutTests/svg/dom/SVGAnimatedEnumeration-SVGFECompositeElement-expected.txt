@@ -35,13 +35,13 @@ PASS feCompositeElement.operator.baseVal is SVGFECompositeElement.SVG_FECOMPOSIT
 PASS feCompositeElement.getAttribute('operator') is "arithmetic"
 
 Try setting invalid values
-PASS feCompositeElement.operator.baseVal = 7 threw exception TypeError: Type error.
+PASS feCompositeElement.operator.baseVal = 7 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (7) is larger than the largest allowed value (6)..
 PASS feCompositeElement.operator.baseVal is SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_ARITHMETIC
 PASS feCompositeElement.getAttribute('operator') is "arithmetic"
-PASS feCompositeElement.operator.baseVal = -1 threw exception TypeError: Type error.
+PASS feCompositeElement.operator.baseVal = -1 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (65535) is larger than the largest allowed value (6)..
 PASS feCompositeElement.operator.baseVal is SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_ARITHMETIC
 PASS feCompositeElement.getAttribute('operator') is "arithmetic"
-PASS feCompositeElement.operator.baseVal = 0 threw exception TypeError: Type error.
+PASS feCompositeElement.operator.baseVal = 0 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable..
 PASS feCompositeElement.operator.baseVal is SVGFECompositeElement.SVG_FECOMPOSITE_OPERATOR_ARITHMETIC
 PASS feCompositeElement.getAttribute('operator') is "arithmetic"
 

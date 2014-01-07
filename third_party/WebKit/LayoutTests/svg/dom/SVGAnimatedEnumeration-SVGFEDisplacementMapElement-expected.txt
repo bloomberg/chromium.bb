@@ -25,13 +25,13 @@ PASS feDisplacementMapElement.xChannelSelector.baseVal is SVGFEDisplacementMapEl
 PASS feDisplacementMapElement.getAttribute('xChannelSelector') is "A"
 
 Try setting invalid values
-PASS feDisplacementMapElement.xChannelSelector.baseVal = 5 threw exception TypeError: Type error.
+PASS feDisplacementMapElement.xChannelSelector.baseVal = 5 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (5) is larger than the largest allowed value (4)..
 PASS feDisplacementMapElement.xChannelSelector.baseVal is SVGFEDisplacementMapElement.SVG_CHANNEL_A
 PASS feDisplacementMapElement.getAttribute('xChannelSelector') is "A"
-PASS feDisplacementMapElement.xChannelSelector.baseVal = -1 threw exception TypeError: Type error.
+PASS feDisplacementMapElement.xChannelSelector.baseVal = -1 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (65535) is larger than the largest allowed value (4)..
 PASS feDisplacementMapElement.xChannelSelector.baseVal is SVGFEDisplacementMapElement.SVG_CHANNEL_A
 PASS feDisplacementMapElement.getAttribute('xChannelSelector') is "A"
-PASS feDisplacementMapElement.xChannelSelector.baseVal = 0 threw exception TypeError: Type error.
+PASS feDisplacementMapElement.xChannelSelector.baseVal = 0 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable..
 PASS feDisplacementMapElement.xChannelSelector.baseVal is SVGFEDisplacementMapElement.SVG_CHANNEL_A
 PASS feDisplacementMapElement.getAttribute('xChannelSelector') is "A"
 
@@ -61,13 +61,13 @@ PASS feDisplacementMapElement.yChannelSelector.baseVal is SVGFEDisplacementMapEl
 PASS feDisplacementMapElement.getAttribute('yChannelSelector') is "A"
 
 Try setting invalid values
-PASS feDisplacementMapElement.yChannelSelector.baseVal = 5 threw exception TypeError: Type error.
+PASS feDisplacementMapElement.yChannelSelector.baseVal = 5 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (5) is larger than the largest allowed value (4)..
 PASS feDisplacementMapElement.yChannelSelector.baseVal is SVGFEDisplacementMapElement.SVG_CHANNEL_A
 PASS feDisplacementMapElement.getAttribute('yChannelSelector') is "A"
-PASS feDisplacementMapElement.yChannelSelector.baseVal = -1 threw exception TypeError: Type error.
+PASS feDisplacementMapElement.yChannelSelector.baseVal = -1 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (65535) is larger than the largest allowed value (4)..
 PASS feDisplacementMapElement.yChannelSelector.baseVal is SVGFEDisplacementMapElement.SVG_CHANNEL_A
 PASS feDisplacementMapElement.getAttribute('yChannelSelector') is "A"
-PASS feDisplacementMapElement.yChannelSelector.baseVal = 0 threw exception TypeError: Type error.
+PASS feDisplacementMapElement.yChannelSelector.baseVal = 0 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable..
 PASS feDisplacementMapElement.yChannelSelector.baseVal is SVGFEDisplacementMapElement.SVG_CHANNEL_A
 PASS feDisplacementMapElement.getAttribute('yChannelSelector') is "A"
 

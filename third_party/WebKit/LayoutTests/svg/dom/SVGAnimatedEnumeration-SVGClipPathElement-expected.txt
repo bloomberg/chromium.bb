@@ -15,13 +15,13 @@ PASS clipPathElement.clipPathUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTB
 PASS clipPathElement.getAttribute('clipPathUnits') is "objectBoundingBox"
 
 Try setting invalid values
-PASS clipPathElement.clipPathUnits.baseVal = 3 threw exception TypeError: Type error.
+PASS clipPathElement.clipPathUnits.baseVal = 3 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (3) is larger than the largest allowed value (2)..
 PASS clipPathElement.clipPathUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS clipPathElement.getAttribute('clipPathUnits') is "objectBoundingBox"
-PASS clipPathElement.clipPathUnits.baseVal = -1 threw exception TypeError: Type error.
+PASS clipPathElement.clipPathUnits.baseVal = -1 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided (65535) is larger than the largest allowed value (2)..
 PASS clipPathElement.clipPathUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS clipPathElement.getAttribute('clipPathUnits') is "objectBoundingBox"
-PASS clipPathElement.clipPathUnits.baseVal = 0 threw exception TypeError: Type error.
+PASS clipPathElement.clipPathUnits.baseVal = 0 threw exception TypeError: Failed to set the 'baseVal' property on 'SVGAnimatedEnumeration': The enumeration value provided is 0, which is not settable..
 PASS clipPathElement.clipPathUnits.baseVal is SVGUnitTypes.SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
 PASS clipPathElement.getAttribute('clipPathUnits') is "objectBoundingBox"
 
