@@ -12,7 +12,6 @@
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/base/socket_stream.h"
 #include "google_apis/gcm/engine/connection_factory.h"
-#include "google_apis/gcm/engine/rmq_store.h"
 
 using namespace google::protobuf::io;
 
@@ -87,7 +86,7 @@ ReliablePacketInfo::~ReliablePacketInfo() {}
 
 MCSClient::MCSClient(base::Clock* clock,
                      ConnectionFactory* connection_factory,
-                     RMQStore* rmq_store)
+                     GCMStore* gcm_store)
     : clock_(clock),
       state_(UNINITIALIZED),
       android_id_(0),
@@ -98,7 +97,7 @@ MCSClient::MCSClient(base::Clock* clock,
       last_server_to_device_stream_id_received_(0),
       stream_id_out_(0),
       stream_id_in_(0),
-      rmq_store_(rmq_store),
+      gcm_store_(gcm_store),
       weak_ptr_factory_(this) {
 }
 
@@ -109,7 +108,7 @@ void MCSClient::Initialize(
     const InitializationCompleteCallback& initialization_callback,
     const OnMessageReceivedCallback& message_received_callback,
     const OnMessageSentCallback& message_sent_callback,
-    const RMQStore::LoadResult& load_result) {
+    const GCMStore::LoadResult& load_result) {
   DCHECK_EQ(state_, UNINITIALIZED);
   initialization_callback_ = initialization_callback;
   message_received_callback_ = message_received_callback;
@@ -176,9 +175,9 @@ void MCSClient::Initialize(
   }
 
   if (!expired_ttl_ids.empty()) {
-    rmq_store_->RemoveOutgoingMessages(
+    gcm_store_->RemoveOutgoingMessages(
         expired_ttl_ids,
-        base::Bind(&MCSClient::OnRMQUpdateFinished,
+        base::Bind(&MCSClient::OnGCMUpdateFinished,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -205,10 +204,10 @@ void MCSClient::Login(uint64 android_id, uint64 security_token) {
     DCHECK(restored_unackeds_server_ids_.empty());
     android_id_ = android_id;
     security_token_ = security_token;
-    rmq_store_->SetDeviceCredentials(
+    gcm_store_->SetDeviceCredentials(
         android_id_,
         security_token_,
-        base::Bind(&MCSClient::OnRMQUpdateFinished,
+        base::Bind(&MCSClient::OnGCMUpdateFinished,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -237,10 +236,10 @@ void MCSClient::SendMessage(const MCSMessage& message) {
     packet_info->persistent_id = persistent_id;
     SetPersistentId(persistent_id,
                     packet_info->protobuf.get());
-    rmq_store_->AddOutgoingMessage(persistent_id,
+    gcm_store_->AddOutgoingMessage(persistent_id,
                                    MCSMessage(message.tag(),
                                               *(packet_info->protobuf)),
-                                   base::Bind(&MCSClient::OnRMQUpdateFinished,
+                                   base::Bind(&MCSClient::OnGCMUpdateFinished,
                                               weak_ptr_factory_.GetWeakPtr()));
   } else if (!connection_factory_->IsEndpointReachable()) {
     DVLOG(1) << "No active connection, dropping message.";
@@ -252,7 +251,7 @@ void MCSClient::SendMessage(const MCSMessage& message) {
 }
 
 void MCSClient::Destroy() {
-  rmq_store_->Destroy(base::Bind(&MCSClient::OnRMQUpdateFinished,
+  gcm_store_->Destroy(base::Bind(&MCSClient::OnGCMUpdateFinished,
                                  weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -325,9 +324,9 @@ void MCSClient::ResetStateAndBuildLoginRequest(
   if (!expired_ttl_ids.empty()) {
     DVLOG(1) << "Connection reset, " << expired_ttl_ids.size()
              << " messages expired.";
-    rmq_store_->RemoveOutgoingMessages(
+    gcm_store_->RemoveOutgoingMessages(
         expired_ttl_ids,
-        base::Bind(&MCSClient::OnRMQUpdateFinished,
+        base::Bind(&MCSClient::OnGCMUpdateFinished,
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -344,8 +343,8 @@ void MCSClient::SendHeartbeat() {
   SendMessage(MCSMessage(kHeartbeatPingTag, mcs_proto::HeartbeatPing()));
 }
 
-void MCSClient::OnRMQUpdateFinished(bool success) {
-  LOG_IF(ERROR, !success) << "RMQ Update failed!";
+void MCSClient::OnGCMUpdateFinished(bool success) {
+  LOG_IF(ERROR, !success) << "GCM Update failed!";
   // TODO(zea): Rebuild the store from scratch in case of persistence failure?
 }
 
@@ -366,9 +365,9 @@ void MCSClient::MaybeSendMessage() {
     DCHECK(!packet->persistent_id.empty());
     DVLOG(1) << "Dropping expired message " << packet->persistent_id << ".";
     message_sent_callback_.Run("TTL expired for " + packet->persistent_id);
-    rmq_store_->RemoveOutgoingMessage(
+    gcm_store_->RemoveOutgoingMessage(
         packet->persistent_id,
-        base::Bind(&MCSClient::OnRMQUpdateFinished,
+        base::Bind(&MCSClient::OnGCMUpdateFinished,
                    weak_ptr_factory_.GetWeakPtr()));
     base::MessageLoop::current()->PostTask(
             FROM_HERE,
@@ -479,8 +478,8 @@ void MCSClient::HandlePacketFromWire(
   ++stream_id_in_;
   if (!persistent_id.empty()) {
     unacked_server_ids_[stream_id_in_] = persistent_id;
-    rmq_store_->AddIncomingMessage(persistent_id,
-                                   base::Bind(&MCSClient::OnRMQUpdateFinished,
+    gcm_store_->AddIncomingMessage(persistent_id,
+                                   base::Bind(&MCSClient::OnGCMUpdateFinished,
                                               weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -627,9 +626,9 @@ void MCSClient::HandleStreamAck(StreamId last_stream_id_received) {
   DVLOG(1) << "Server acked " << acked_outgoing_persistent_ids.size()
            << " outgoing messages, " << to_resend_.size()
            << " remaining unacked";
-  rmq_store_->RemoveOutgoingMessages(
+  gcm_store_->RemoveOutgoingMessages(
       acked_outgoing_persistent_ids,
-      base::Bind(&MCSClient::OnRMQUpdateFinished,
+      base::Bind(&MCSClient::OnGCMUpdateFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 
   HandleServerConfirmedReceipt(last_stream_id_received);
@@ -671,9 +670,9 @@ void MCSClient::HandleSelectiveAck(const PersistentIdList& id_list) {
 
   DVLOG(1) << "Server acked " << id_list.size()
            << " messages, " << to_resend_.size() << " remaining unacked.";
-  rmq_store_->RemoveOutgoingMessages(
+  gcm_store_->RemoveOutgoingMessages(
       id_list,
-      base::Bind(&MCSClient::OnRMQUpdateFinished,
+      base::Bind(&MCSClient::OnGCMUpdateFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 
   // Resend any remaining outgoing messages, as they were not received by the
@@ -705,9 +704,9 @@ void MCSClient::HandleServerConfirmedReceipt(StreamId device_stream_id) {
 
   DVLOG(1) << "Server confirmed receipt of " << acked_incoming_ids.size()
            << " acknowledged server messages.";
-  rmq_store_->RemoveIncomingMessages(
+  gcm_store_->RemoveIncomingMessages(
       acked_incoming_ids,
-      base::Bind(&MCSClient::OnRMQUpdateFinished,
+      base::Bind(&MCSClient::OnGCMUpdateFinished,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 

@@ -16,8 +16,8 @@
 #include "google_apis/gcm/base/gcm_export.h"
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/engine/connection_handler.h"
+#include "google_apis/gcm/engine/gcm_store.h"
 #include "google_apis/gcm/engine/heartbeat_manager.h"
-#include "google_apis/gcm/engine/rmq_store.h"
 
 namespace base {
 class Clock;
@@ -45,10 +45,10 @@ struct ReliablePacketInfo;
 class GCM_EXPORT MCSClient {
  public:
   enum State {
-    UNINITIALIZED,    // Uninitialized.
-    LOADED,           // RMQ Load finished, waiting to connect.
-    CONNECTING,       // Connection in progress.
-    CONNECTED,        // Connected and running.
+    UNINITIALIZED,  // Uninitialized.
+    LOADED,         // GCM Load finished, waiting to connect.
+    CONNECTING,     // Connection in progress.
+    CONNECTED,      // Connected and running.
   };
 
   // Callback for informing MCSClient status. It is valid for this to be
@@ -70,22 +70,22 @@ class GCM_EXPORT MCSClient {
 
   MCSClient(base::Clock* clock,
             ConnectionFactory* connection_factory,
-            RMQStore* rmq_store);
+            GCMStore* gcm_store);
   virtual ~MCSClient();
 
   // Initialize the client. Will load any previous id/token information as well
-  // as unacknowledged message information from the RMQ storage, if it exists,
+  // as unacknowledged message information from the GCM storage, if it exists,
   // passing the id/token information back via |initialization_callback| along
-  // with a |success == true| result. If no RMQ information is present (and
-  // this is therefore a fresh client), a clean RMQ store will be created and
+  // with a |success == true| result. If no GCM information is present (and
+  // this is therefore a fresh client), a clean GCM store will be created and
   // values of 0 will be returned via |initialization_callback| with
   // |success == true|.
-  /// If an error loading the RMQ store is encountered,
+  /// If an error loading the GCM store is encountered,
   // |initialization_callback| will be invoked with |success == false|.
   void Initialize(const InitializationCompleteCallback& initialization_callback,
                   const OnMessageReceivedCallback& message_received_callback,
                   const OnMessageSentCallback& message_sent_callback,
-                  const RMQStore::LoadResult& load_result);
+                  const GCMStore::LoadResult& load_result);
 
   // Logs the client into the server. Client must be initialized.
   // |android_id| and |security_token| are optional if this is not a new
@@ -105,7 +105,7 @@ class GCM_EXPORT MCSClient {
   // |message_sent_callback_| is invoked with a TTL expiration error.
   void SendMessage(const MCSMessage& message);
 
-  // Disconnects the client and permanently destroys the persistent RMQ store.
+  // Disconnects the client and permanently destroys the persistent GCM store.
   // WARNING: This is permanent, and the client must be recreated with new
   // credentials afterwards.
   void Destroy();
@@ -130,8 +130,8 @@ class GCM_EXPORT MCSClient {
   // Send a heartbeat to the MCS server.
   void SendHeartbeat();
 
-  // RMQ Store callback.
-  void OnRMQUpdateFinished(bool success);
+  // GCM Store callback.
+  void OnGCMUpdateFinished(bool success);
 
   // Attempt to send a message.
   void MaybeSendMessage();
@@ -222,8 +222,8 @@ class GCM_EXPORT MCSClient {
   // acknowledged on the next login attempt.
   PersistentIdList restored_unackeds_server_ids_;
 
-  // The reliable message queue persistent store. Owned by the caller.
-  RMQStore* rmq_store_;
+  // The GCM persistent store. Not owned.
+  GCMStore* gcm_store_;
 
   // Manager to handle triggering/detecting heartbeats.
   HeartbeatManager heartbeat_manager_;

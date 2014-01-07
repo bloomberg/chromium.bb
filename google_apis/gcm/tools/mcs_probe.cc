@@ -25,6 +25,7 @@
 #include "google_apis/gcm/base/mcs_message.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/connection_factory_impl.h"
+#include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "google_apis/gcm/engine/mcs_client.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/net_log_logger.h"
@@ -176,7 +177,7 @@ class MCSProbe {
 
   CommandLine command_line_;
 
-  base::FilePath rmq_path_;
+  base::FilePath gcm_store_path_;
   uint64 android_id_;
   uint64 secret_;
   std::string server_host_;
@@ -198,7 +199,7 @@ class MCSProbe {
   scoped_refptr<net::HttpNetworkSession> network_session_;
   scoped_ptr<net::ProxyService> proxy_service_;
 
-  scoped_ptr<RMQStore> rmq_store_;
+  scoped_ptr<GCMStore> gcm_store_;
   scoped_ptr<MCSClient> mcs_client_;
 
   scoped_ptr<ConnectionFactoryImpl> connection_factory_;
@@ -212,14 +213,14 @@ MCSProbe::MCSProbe(
     const CommandLine& command_line,
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter)
     : command_line_(command_line),
-      rmq_path_(base::FilePath(FILE_PATH_LITERAL("gcm_rmq_store"))),
+      gcm_store_path_(base::FilePath(FILE_PATH_LITERAL("gcm_store"))),
       android_id_(0),
       secret_(0),
       server_port_(0),
       url_request_context_getter_(url_request_context_getter),
       file_thread_("FileThread") {
   if (command_line.HasSwitch(kRMQFileName)) {
-    rmq_path_ = command_line.GetSwitchValuePath(kRMQFileName);
+    gcm_store_path_ = command_line.GetSwitchValuePath(kRMQFileName);
   }
   if (command_line.HasSwitch(kAndroidIdSwitch)) {
     base::StringToUint64(command_line.GetSwitchValueASCII(kAndroidIdSwitch),
@@ -253,17 +254,18 @@ void MCSProbe::Start() {
                                     server_host_, server_port_).ToString()),
                                 network_session_,
                                 &net_log_));
-  rmq_store_.reset(new RMQStore(rmq_path_, file_thread_.message_loop_proxy()));
+  gcm_store_.reset(
+      new GCMStoreImpl(gcm_store_path_, file_thread_.message_loop_proxy()));
   mcs_client_.reset(new MCSClient(&clock_,
                                   connection_factory_.get(),
-                                  rmq_store_.get()));
+                                  gcm_store_.get()));
   run_loop_.reset(new base::RunLoop());
-  rmq_store_->Load(base::Bind(&MCSClient::Initialize,
-                              base::Unretained(mcs_client_.get()),
-                              base::Bind(&MCSProbe::InitializationCallback,
-                                         base::Unretained(this)),
-                              base::Bind(&MessageReceivedCallback),
-                              base::Bind(&MessageSentCallback)));
+  gcm_store_->Load(base::Bind(
+      &MCSClient::Initialize,
+      base::Unretained(mcs_client_.get()),
+      base::Bind(&MCSProbe::InitializationCallback, base::Unretained(this)),
+      base::Bind(&MessageReceivedCallback),
+      base::Bind(&MessageSentCallback)));
   run_loop_->Run();
 }
 

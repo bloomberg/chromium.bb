@@ -13,6 +13,7 @@
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_factory.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
+#include "google_apis/gcm/engine/gcm_store_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
@@ -57,8 +58,8 @@ class TestMCSClient : public MCSClient {
  public:
   TestMCSClient(base::Clock* clock,
                 ConnectionFactory* connection_factory,
-                RMQStore* rmq_store)
-    : MCSClient(clock, connection_factory, rmq_store),
+                GCMStore* gcm_store)
+    : MCSClient(clock, connection_factory, gcm_store),
       next_id_(0) {
   }
 
@@ -107,7 +108,7 @@ class MCSClientTest : public testing::Test {
   base::ScopedTempDir temp_directory_;
   base::MessageLoop message_loop_;
   scoped_ptr<base::RunLoop> run_loop_;
-  scoped_ptr<RMQStore> rmq_store_;
+  scoped_ptr<GCMStore> gcm_store_;
 
   FakeConnectionFactory connection_factory_;
   scoped_ptr<TestMCSClient> mcs_client_;
@@ -135,23 +136,22 @@ MCSClientTest::MCSClientTest()
 MCSClientTest::~MCSClientTest() {}
 
 void MCSClientTest::BuildMCSClient() {
-  rmq_store_.reset(new RMQStore(temp_directory_.path(),
-                                message_loop_.message_loop_proxy()));
+  gcm_store_.reset(new GCMStoreImpl(temp_directory_.path(),
+                                    message_loop_.message_loop_proxy()));
   mcs_client_.reset(new TestMCSClient(&clock_,
                                       &connection_factory_,
-                                      rmq_store_.get()));
+                                      gcm_store_.get()));
 }
 
 void MCSClientTest::InitializeClient() {
-  rmq_store_->Load(
-      base::Bind(&MCSClient::Initialize,
-                 base::Unretained(mcs_client_.get()),
-                 base::Bind(&MCSClientTest::InitializationCallback,
-                            base::Unretained(this)),
-                 base::Bind(&MCSClientTest::MessageReceivedCallback,
-                            base::Unretained(this)),
-                 base::Bind(&MCSClientTest::MessageSentCallback,
-                            base::Unretained(this))));
+  gcm_store_->Load(base::Bind(
+      &MCSClient::Initialize,
+      base::Unretained(mcs_client_.get()),
+      base::Bind(&MCSClientTest::InitializationCallback,
+                 base::Unretained(this)),
+      base::Bind(&MCSClientTest::MessageReceivedCallback,
+                 base::Unretained(this)),
+      base::Bind(&MCSClientTest::MessageSentCallback, base::Unretained(this))));
   run_loop_->Run();
   run_loop_.reset(new base::RunLoop());
 }
@@ -223,7 +223,7 @@ TEST_F(MCSClientTest, InitializeExisting) {
   InitializeClient();
   LoginClient(std::vector<std::string>());
 
-  // Rebuild the client, to reload from the RMQ.
+  // Rebuild the client, to reload from the GCM store.
   BuildMCSClient();
   InitializeClient();
   EXPECT_EQ(kAndroidId, restored_android_id());

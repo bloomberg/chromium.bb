@@ -1,0 +1,97 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef GOOGLE_APIS_GCM_ENGINE_GCM_STORE_H_
+#define GOOGLE_APIS_GCM_ENGINE_GCM_STORE_H_
+
+#include <map>
+#include <string>
+#include <vector>
+
+#include "base/basictypes.h"
+#include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
+#include "google_apis/gcm/base/gcm_export.h"
+
+namespace google {
+namespace protobuf {
+class MessageLite;
+}  // namespace protobuf
+}  // namespace google
+
+namespace gcm {
+
+class MCSMessage;
+
+// A GCM data store interface. GCM Store will handle persistence portion of RMQ,
+// as well as store device and user checkin information.
+class GCM_EXPORT GCMStore {
+ public:
+  // Container for Load(..) results.
+  struct GCM_EXPORT LoadResult {
+    LoadResult();
+    ~LoadResult();
+
+    bool success;
+    uint64 device_android_id;
+    uint64 device_security_token;
+    std::vector<std::string> incoming_messages;
+    std::map<std::string, google::protobuf::MessageLite*> outgoing_messages;
+    int64 next_serial_number;
+    std::map<std::string, int64> user_serial_numbers;
+  };
+
+  typedef std::vector<std::string> PersistentIdList;
+  // Note: callee receives ownership of |outgoing_messages|' values.
+  typedef base::Callback<void(const LoadResult& result)> LoadCallback;
+  typedef base::Callback<void(bool success)> UpdateCallback;
+
+  GCMStore();
+  virtual ~GCMStore();
+
+  // Load the data from persistent store and pass the initial state back to
+  // caller.
+  virtual void Load(const LoadCallback& callback) = 0;
+
+  // Clears the GCM store of all data.
+  virtual void Destroy(const UpdateCallback& callback) = 0;
+
+  // Sets this device's messaging credentials.
+  virtual void SetDeviceCredentials(uint64 device_android_id,
+                                    uint64 device_security_token,
+                                    const UpdateCallback& callback) = 0;
+
+  // Unacknowledged incoming message handling.
+  virtual void AddIncomingMessage(const std::string& persistent_id,
+                                  const UpdateCallback& callback) = 0;
+  virtual void RemoveIncomingMessage(const std::string& persistent_id,
+                                     const UpdateCallback& callback) = 0;
+  virtual void RemoveIncomingMessages(const PersistentIdList& persistent_ids,
+                                      const UpdateCallback& callback) = 0;
+
+  // Unacknowledged outgoing messages handling.
+  virtual void AddOutgoingMessage(const std::string& persistent_id,
+                                  const MCSMessage& message,
+                                  const UpdateCallback& callback) = 0;
+  virtual void RemoveOutgoingMessage(const std::string& persistent_id,
+                                     const UpdateCallback& callback) = 0;
+  virtual void RemoveOutgoingMessages(const PersistentIdList& persistent_ids,
+                                      const UpdateCallback& callback) = 0;
+
+  // User serial number handling.
+  virtual void SetNextSerialNumber(int64 next_serial_number,
+                                   const UpdateCallback& callback) = 0;
+  virtual void AddUserSerialNumber(const std::string& username,
+                                   int64 serial_number,
+                                   const UpdateCallback& callback) = 0;
+  virtual void RemoveUserSerialNumber(const std::string& username,
+                                      const UpdateCallback& callback) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GCMStore);
+};
+
+}  // namespace gcm
+
+#endif  // GOOGLE_APIS_GCM_ENGINE_GCM_STORE_H_
