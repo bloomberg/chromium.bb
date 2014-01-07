@@ -102,6 +102,23 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
   if (capture_window)
     return capture_window;
 
+  if (event.IsTouchEvent()) {
+    // Query the gesture-recognizer to find targets for touch events.
+    const ui::TouchEvent& touch = static_cast<const ui::TouchEvent&>(event);
+    ui::GestureConsumer* consumer =
+        ui::GestureRecognizer::Get()->GetTouchLockedTarget(touch);
+    if (consumer)
+      return static_cast<Window*>(consumer);
+    consumer =
+        ui::GestureRecognizer::Get()->GetTargetForLocation(event.location());
+    if (consumer)
+      return static_cast<Window*>(consumer);
+
+    // If the initial touch is outside the root window, target the root.
+    if (!root_window->bounds().Contains(event.location()))
+      return root_window;
+  }
+
   return NULL;
 }
 

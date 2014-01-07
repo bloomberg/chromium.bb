@@ -80,7 +80,18 @@ RootWindowHost* CreateHost(RootWindow* root_window,
 
 bool IsUsingEventProcessorForDispatch(const ui::Event& event) {
   return event.IsKeyEvent() ||
-         event.IsScrollEvent();
+         event.IsScrollEvent() ||
+         event.IsTouchEvent();
+}
+
+bool IsEventCandidateForHold(const ui::Event& event) {
+  if (event.type() == ui::ET_TOUCH_MOVED)
+    return true;
+  if (event.type() == ui::ET_MOUSE_DRAGGED)
+    return true;
+  if (event.IsMouseEvent() && (event.flags() & ui::EF_IS_SYNTHESIZED))
+    return true;
+  return false;
 }
 
 }  // namespace
@@ -581,14 +592,20 @@ bool RootWindow::CanDispatchToTarget(ui::EventTarget* target) {
 ui::EventDispatchDetails RootWindow::PreDispatchEvent(ui::EventTarget* target,
                                                       ui::Event* event) {
   if (!dispatching_held_event_ && IsUsingEventProcessorForDispatch(*event)) {
-    DispatchDetails details = DispatchHeldEvents();
-    if (details.dispatcher_destroyed || details.target_destroyed)
-      return details;
+    if (!move_hold_count_ || !IsEventCandidateForHold(*event)) {
+      if (IsEventCandidateForHold(*event))
+        held_move_event_.reset();
+      DispatchDetails details = DispatchHeldEvents();
+      if (details.dispatcher_destroyed || details.target_destroyed)
+        return details;
+    }
 
     Window* target_window = static_cast<Window*>(target);
     if (event->IsScrollEvent()) {
       PreDispatchLocatedEvent(target_window,
                               static_cast<ui::ScrollEvent*>(event));
+    } else if (event->IsTouchEvent()) {
+      PreDispatchTouchEvent(target_window, static_cast<ui::TouchEvent*>(event));
     }
   }
   old_dispatch_target_ = event_dispatch_target_;
@@ -606,6 +623,18 @@ ui::EventDispatchDetails RootWindow::PostDispatchEvent(ui::EventTarget* target,
 #ifndef NDEBUG
   DCHECK(!event_dispatch_target_ || window()->Contains(event_dispatch_target_));
 #endif
+
+  if (event.IsTouchEvent() && !details.target_destroyed) {
+    ui::TouchEvent orig_event(static_cast<const ui::TouchEvent&>(event),
+                              static_cast<Window*>(event.target()), window());
+    // Get the list of GestureEvents from GestureRecognizer.
+    scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
+    gestures.reset(ui::GestureRecognizer::Get()->
+        ProcessTouchEventForGesture(orig_event, event.result(),
+                                    static_cast<Window*>(target)));
+    return ProcessGestures(gestures.get());
+  }
+
   return details;
 }
 
@@ -664,25 +693,9 @@ bool RootWindow::OnHostScrollEvent(ui::ScrollEvent* event) {
 }
 
 bool RootWindow::OnHostTouchEvent(ui::TouchEvent* event) {
-  if ((event->type() == ui::ET_TOUCH_MOVED)) {
-    if (move_hold_count_) {
-      Window* null_window = static_cast<Window*>(NULL);
-      held_move_event_.reset(
-          new ui::TouchEvent(*event, null_window, null_window));
-      return true;
-    } else {
-      // We may have a held event for a period between the time move_hold_count_
-      // fell to 0 and the DispatchHeldEvents executes. Since we're going to
-      // dispatch the new event directly below, we can reset the old one.
-      held_move_event_.reset();
-    }
-  }
-  DispatchDetails details = DispatchHeldEvents();
+  DispatchDetails details = OnEventFromSource(event);
   if (details.dispatcher_destroyed)
-    return false;
-  details = DispatchTouchEventImpl(event);
-  if (details.dispatcher_destroyed)
-    return true;
+    event->SetHandled();
   return event->handled();
 }
 
@@ -746,8 +759,7 @@ ui::EventProcessor* RootWindow::GetEventProcessor() {
 
 ui::EventDispatchDetails RootWindow::OnHostMouseEventImpl(
     ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_DRAGGED ||
-      (event->flags() & ui::EF_IS_SYNTHESIZED)) {
+  if (IsEventCandidateForHold(*event)) {
     if (move_hold_count_) {
       Window* null_window = static_cast<Window*>(NULL);
       held_move_event_.reset(
@@ -877,75 +889,6 @@ ui::EventDispatchDetails RootWindow::DispatchMouseEventToTarget(
   return DispatchDetails();
 }
 
-ui::EventDispatchDetails RootWindow::DispatchTouchEventImpl(
-    ui::TouchEvent* event) {
-  switch (event->type()) {
-    case ui::ET_TOUCH_PRESSED:
-      touch_ids_down_ |= (1 << event->touch_id());
-      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
-      break;
-
-      // Handle ET_TOUCH_CANCELLED only if it has a native event.
-    case ui::ET_TOUCH_CANCELLED:
-      if (!event->HasNativeEvent())
-        break;
-      // fallthrough
-    case ui::ET_TOUCH_RELEASED:
-      touch_ids_down_ = (touch_ids_down_ | (1 << event->touch_id())) ^
-            (1 << event->touch_id());
-      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
-      break;
-
-    default:
-      break;
-  }
-  TransformEventForDeviceScaleFactor(event);
-  Window* target = client::GetCaptureWindow(window());
-  if (!target) {
-    target = ConsumerToWindow(
-        ui::GestureRecognizer::Get()->GetTouchLockedTarget(*event));
-    if (!target) {
-      target = ConsumerToWindow(ui::GestureRecognizer::Get()->
-          GetTargetForLocation(event->location()));
-    }
-  }
-
-  // The gesture recognizer processes touch events in the system coordinates. So
-  // keep a copy of the touch event here before possibly converting the event to
-  // a window's local coordinate system.
-  ui::TouchEvent event_for_gr(*event);
-
-  ui::EventResult result = ui::ER_UNHANDLED;
-  if (!target && !window()->bounds().Contains(event->location())) {
-    // If the initial touch is outside the root window, target the root.
-    target = window();
-    DispatchDetails details = DispatchEvent(target ? target : NULL, event);
-    if (details.dispatcher_destroyed)
-      return details;
-    result = event->result();
-  } else {
-    // We only come here when the first contact was within the root window.
-    if (!target) {
-      target = window()->GetEventHandlerForPoint(event->location());
-      if (!target)
-        return DispatchDetails();
-    }
-
-    event->ConvertLocationToTarget(window(), target);
-    DispatchDetails details = DispatchEvent(target, event);
-    if (details.dispatcher_destroyed)
-      return details;
-    result = event->result();
-  }
-
-  // Get the list of GestureEvents from GestureRecognizer.
-  scoped_ptr<ui::GestureRecognizer::Gestures> gestures;
-  gestures.reset(ui::GestureRecognizer::Get()->
-      ProcessTouchEventForGesture(event_for_gr, result, target));
-
-  return ProcessGestures(gestures.get());
-}
-
 ui::EventDispatchDetails RootWindow::DispatchHeldEvents() {
   if (!held_repostable_event_ && !held_move_event_)
     return DispatchDetails();
@@ -977,7 +920,7 @@ ui::EventDispatchDetails RootWindow::DispatchHeldEvents() {
     if (!dispatch_details.dispatcher_destroyed)
       held_move_event_.reset();
   } else if (held_move_event_ && held_move_event_->IsTouchEvent()) {
-    dispatch_details = DispatchTouchEventImpl(
+    dispatch_details = OnEventFromSource(
         static_cast<ui::TouchEvent*>(held_move_event_.get()));
     if (!dispatch_details.dispatcher_destroyed)
       held_move_event_.reset();
@@ -1034,6 +977,40 @@ void RootWindow::PreDispatchLocatedEvent(Window* target,
     SetLastMouseLocation(window(), event->location());
     synthesize_mouse_move_ = false;
   }
+}
+
+void RootWindow::PreDispatchTouchEvent(Window* target,
+                                       ui::TouchEvent* event) {
+  switch (event->type()) {
+    case ui::ET_TOUCH_PRESSED:
+      touch_ids_down_ |= (1 << event->touch_id());
+      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
+      break;
+
+      // Handle ET_TOUCH_CANCELLED only if it has a native event.
+    case ui::ET_TOUCH_CANCELLED:
+      if (!event->HasNativeEvent())
+        break;
+      // fallthrough
+    case ui::ET_TOUCH_RELEASED:
+      touch_ids_down_ = (touch_ids_down_ | (1 << event->touch_id())) ^
+            (1 << event->touch_id());
+      Env::GetInstance()->set_touch_down(touch_ids_down_ != 0);
+      break;
+
+    case ui::ET_TOUCH_MOVED:
+      if (move_hold_count_) {
+        held_move_event_.reset(new ui::TouchEvent(*event));
+        event->SetHandled();
+        return;
+      }
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+  PreDispatchLocatedEvent(target, event);
 }
 
 }  // namespace aura

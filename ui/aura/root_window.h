@@ -304,8 +304,6 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   ui::EventDispatchDetails DispatchMouseEventToTarget(ui::MouseEvent* event,
                                                       Window* target)
       WARN_UNUSED_RESULT;
-  ui::EventDispatchDetails DispatchTouchEventImpl(ui::TouchEvent* event)
-      WARN_UNUSED_RESULT;
   ui::EventDispatchDetails DispatchHeldEvents() WARN_UNUSED_RESULT;
   // Creates and dispatches synthesized mouse move event using the
   // current mouse location.
@@ -318,6 +316,7 @@ class AURA_EXPORT RootWindow : public ui::EventProcessor,
   void PostMouseMoveEventAfterWindowChange();
 
   void PreDispatchLocatedEvent(Window* target, ui::LocatedEvent* event);
+  void PreDispatchTouchEvent(Window* target, ui::TouchEvent* event);
 
   // TODO(beng): evaluate the ideal ownership model.
   scoped_ptr<Window> window_;
