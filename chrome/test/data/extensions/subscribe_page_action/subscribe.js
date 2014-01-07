@@ -9,9 +9,16 @@ var queryString = location.search.substring(1).split("&");
 // The feed URL is the first component and always present.
 var feedUrl = decodeURIComponent(queryString[0]);
 
-// We allow synchronous requests for testing. This component is only present
-// if true.
-var synchronousRequest = queryString[1] == "synchronous";
+// This extension's ID.
+var extension_id = chrome.i18n.getMessage("@@extension_id");
+
+// During testing, we cannot load the iframe and stylesheet from an external
+// source, so we allow loading them synchronously and stuff the frame with the
+// results. Since this is only allowed during testing, it isn't supported for
+// the official extension ID.
+var synchronousRequest =
+    extension_id != "nlbjncdgjeocebhnmkbbbdekmmmcbfjd" ?
+        queryString[1] == "synchronous" : false;
 
 // The XMLHttpRequest object that tries to load and parse the feed, and (if
 // testing) also the style sheet and the frame js.
@@ -33,6 +40,9 @@ var unknownName = chrome.i18n.getMessage("rss_subscription_unknown_feed_name");
 // A list of feed readers, populated by localStorage if available, otherwise
 // hard coded.
 var feedReaderList;
+
+// The token to use during communications with the iframe.
+var token = "";
 
 // Navigates to the reader of the user's choice (for subscribing to the feed).
 function navigate() {
@@ -81,6 +91,11 @@ function main() {
     document.getElementById('alwaysUseSpan').style.display = "block";
   }
 
+  // Set the token.
+  var tokenArray  = new Uint32Array(4);
+  crypto.getRandomValues(tokenArray);
+  token = [].join.call(tokenArray);
+
   // Now fetch the data.
   req = new XMLHttpRequest();
   if (synchronousRequest) {
@@ -95,14 +110,19 @@ function main() {
     req.open("GET", "iframe.js", false);
     req.send(null);
 
-    frameScript = "<script>" + req.responseText +
+    if (req.responseText.indexOf('//') != -1) {
+      console.log('Error: Single-line comment(s) found in iframe.js');
+    } else {
+      frameScript = "<script>" +
+                    req.responseText +
                     "<" + "/script>";
+    }
   } else {
     // Normal loading just requires links to the css and the js file.
     styleSheet = "<link rel='stylesheet' type='text/css' href='" +
                     chrome.extension.getURL("style.css") + "'>";
     frameScript = "<script src='" + chrome.extension.getURL("iframe.js") +
-                    "'></" + "script>";
+                  "'></" + "script>";
   }
 
   req.onload = handleResponse;
@@ -144,28 +164,22 @@ function handleFeedParsingFailed(error) {
 }
 
 function createFrame(frame_id, html) {
-  var csp = '<meta http-equiv="content-security-policy" ' +
-            'value="script-src \'self\'; object-src \'none\'">';
+  // During testing, we stuff the iframe with the script directly, so we relax
+  // the policy on running scripts under that scenario.
+  var csp = synchronousRequest ?
+      '<meta http-equiv="content-security-policy" ' +
+          'content="object-src \'none\'">' :
+      '<meta http-equiv="content-security-policy" ' +
+          'content="object-src \'none\'; script-src \'self\'">';
   frame = document.createElement('iframe');
   frame.id = frame_id;
-  frame.src = "data:text/html;charset=utf-8,<html>" + csp + styleSheet + html +
-                "</html>";
+  frame.src = "data:text/html;charset=utf-8,<html>" + csp +
+              "<!--Token:" + extension_id + token +
+              "-->" + html + "</html>";
   frame.scrolling = "auto";
   frame.frameBorder = "0";
   frame.marginWidth = "0";
   return frame;
-}
-
-function embedAsIframe(rssText) {
-  var itemsTag = document.getElementById('items');
-
-  // TODO(aa): Add base URL tag
-  iframe = createFrame('rss', styleSheet + frameScript);
-  itemsTag.appendChild(iframe);
-
-  iframe.onload = function() {
-    iframe.contentWindow.postMessage(rssText, "*");
-  }
 }
 
 // Handles parsing the feed data we got back from XMLHttpRequest.
@@ -207,8 +221,11 @@ function handleResponse() {
   else
     setFeedTitle(unknownName);
 
-  // Add an IFRAME with the html contents.
-  embedAsIframe(req.responseText);
+  // Embed the iframe.
+  var itemsTag = document.getElementById('items');
+  // TODO(aa): Add base URL tag
+  iframe = createFrame('rss', styleSheet + frameScript);
+  itemsTag.appendChild(iframe);
 }
 
 /**
@@ -241,3 +258,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   main();
 });
+
+window.addEventListener("message", function(e) {
+  if (e.ports[0] && e.data === token)
+    e.ports[0].postMessage(req.responseText);
+}, false);

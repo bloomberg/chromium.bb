@@ -6,7 +6,7 @@
 /* Use only multi-line comments in this file, since during testing
    its contents will get read from disk and stuffed into the
    iframe .src tag, which is a process that doesn't preserve line
-   breaks and makes single-line comment out the rest of the code.
+   breaks and makes single-line comments comment out the rest of the code.
 */
 
 /* The maximum number of feed items to show in the preview. */
@@ -15,16 +15,40 @@ var maxFeedItems = 10;
 /* The maximum number of characters to show in the feed item title. */
 var maxTitleCount = 1024;
 
-window.addEventListener("message", function(e) {
-  var parser = new DOMParser();
-  var doc = parser.parseFromString(e.data, "text/xml");
+/* Find the token and target origin for this conversation from the HTML. The
+   token is used for secure communication, and is generated and stuffed into the
+   frame by subscribe.js.
+*/
+var token = '';
+var targetOrigin = '';
+var html = document.documentElement.outerHTML;
+var startTag = '<!--Token:';
+var tokenStart = html.indexOf(startTag);
+if (tokenStart > -1) {
+  tokenStart += startTag.length;
+  targetOrigin = html.substring(tokenStart, tokenStart+32);
+  tokenStart += 32;
+  var tokenEnd = html.indexOf('-->', tokenStart);
+  if (tokenEnd > tokenStart)
+    token = html.substring(tokenStart, tokenEnd);
+}
 
-  if (doc) {
-    buildPreview(doc);
-  } else {
-    /* Already handled in subscribe.html */
+if (token.length > 0) {
+  var mc = new MessageChannel();
+  window.parent.postMessage(
+      token,
+      'chrome-extension:/' + '/' + targetOrigin,
+      [mc.port2]);
+  mc.port1.onmessage = function(event) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(event.data, "text/xml");
+    if (doc) {
+      buildPreview(doc);
+    } else {
+      /* Already handled in subscribe.html */
+    }
   }
-}, false);
+}
 
 function buildPreview(doc) {
   /* Start building the part we render inside an IFRAME. We use a table to
