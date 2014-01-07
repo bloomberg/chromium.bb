@@ -13,29 +13,27 @@ class BookmarkTagModelObserver;
 typedef base::string16 BookmarkTag;
 
 // BookmarTagModel provides a way to access and manipulate bookmarks in a
-// non-hierarchical way. BookmarkTagModel view the bookmarks as a flat list,
+// non-hierarchical way. BookmarkTagModel views the bookmarks as a flat list,
 // and each one can be marked with a collection of tags (tags are simply
 // strings).
 //
 // BookmarkTagModel converts on demand the data from an existing BookmarkModel
-// to its view of the world by considering all the titles of all the ancestors
-// as tags. This view is frozen on an individual bookmarks when the
-// BookmarkTagModel performs a change on the tags of this bookmarks.
+// to its view of the world. To do so it implicitly tags bookmarks with the
+// title of their ancestor folders. This implicit tagging is made explicit on a
+// bookmark when the BookmarkTagModel performs a change on the tags of this
+// bookmark.
 //
 // The Bookmark's meta info is used for storage.
 //
 // An observer may be attached to a BookmarkTagModel to observe relevant events.
-//
-// TODO(noyau): The meta info data is not preserved by copy/paste or drag and
-// drop, this means that bookmarks will loose their tag information if
-// manipulated that way.
 //
 class BookmarkTagModel : public BookmarkModelObserver {
  public:
   explicit BookmarkTagModel(BookmarkModel* bookmark_model);
   virtual ~BookmarkTagModel();
 
-  // Returns true if the model finished loading.
+  // Returns true once the model finishes loading. If any problems occurs during
+  // load an empty model is created instead.
   bool loaded() const { return loaded_; }
 
   // Add and remove observers on this object.
@@ -64,7 +62,8 @@ class BookmarkTagModel : public BookmarkModelObserver {
   // state during their own initializer.
   bool IsDoingExtensiveChanges() const;
 
-  // Removes the given |BookmarkNode|. Observers are notified immediately.
+  // Removes the given |BookmarkNode|. Observers are notified immediately. The
+  // bookmark must be in the model.
   void Remove(const BookmarkNode* bookmark);
 
   // Removes all the bookmark nodes. Observers are only notified when all nodes
