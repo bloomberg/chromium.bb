@@ -44,7 +44,7 @@ void V8SVGLength::valueAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "value", "SVGLength", info.Holder(), info.GetIsolate());
     SVGLengthContext lengthContext(wrapper->contextElement());
     float value = imp.value(lengthContext, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -66,7 +66,7 @@ void V8SVGLength::valueAttributeSetterCustom(v8::Local<v8::Value> value, const v
     }
 
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "Value", "SVGLength", info.Holder(), info.GetIsolate());
     SVGLengthContext lengthContext(wrapper->contextElement());
     imp.setValue(static_cast<float>(value->NumberValue()), lengthContext, exceptionState);
     if (exceptionState.throwIfNeeded())

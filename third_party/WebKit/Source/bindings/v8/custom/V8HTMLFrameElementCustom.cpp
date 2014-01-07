@@ -47,7 +47,7 @@ void V8HTMLFrameElement::locationAttributeSetterCustom(v8::Local<v8::Value> valu
     HTMLFrameElement* frame = V8HTMLFrameElement::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, locationValue, value);
 
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "location", "HTMLFrameElement", info.Holder(), info.GetIsolate());
     if (protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(locationValue)) && !BindingSecurity::shouldAllowAccessToFrame(frame->contentFrame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;

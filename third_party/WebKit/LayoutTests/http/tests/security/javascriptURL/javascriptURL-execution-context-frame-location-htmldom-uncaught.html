@@ -14,7 +14,7 @@
         });
 
         window.onerror = function (msg) {
-            var jsErrorMessage = 'Uncaught SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.';
+            var jsErrorMessage = 'Uncaught SecurityError: Failed to set the \'location\' property on \'HTMLFrameElement\': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.';
             if (msg == jsErrorMessage) 
                 console.log("PASS: Exception was '" + msg + "'.");
             else

@@ -33,6 +33,7 @@
 
 #include "V8SQLStatementCallback.h"
 #include "V8SQLStatementErrorCallback.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"
@@ -46,8 +47,10 @@ namespace WebCore {
 
 void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "executeSql", "SQLTransaction", info.Holder(), info.GetIsolate());
     if (!info.Length()) {
-        setDOMException(SyntaxError, info.GetIsolate());
+        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::notEnoughArguments(1, 0));
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -57,7 +60,8 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
 
     if (info.Length() > 1 && !isUndefinedOrNull(info[1])) {
         if (!info[1]->IsObject()) {
-            setDOMException(TypeMismatchError, info.GetIsolate());
+            exceptionState.throwDOMException(TypeMismatchError, "The 'arguments' (2nd) argument provided is not an object.");
+            exceptionState.throwIfNeeded();
             return;
         }
 
@@ -93,7 +97,8 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
     OwnPtr<SQLStatementCallback> callback;
     if (info.Length() > 2 && !isUndefinedOrNull(info[2])) {
         if (!info[2]->IsFunction()) {
-            setDOMException(TypeMismatchError, info.GetIsolate());
+            exceptionState.throwDOMException(TypeMismatchError, "The 'callback' (2nd) argument provided is not a function.");
+            exceptionState.throwIfNeeded();
             return;
         }
         callback = V8SQLStatementCallback::create(v8::Handle<v8::Function>::Cast(info[2]), executionContext);
@@ -102,13 +107,13 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
     OwnPtr<SQLStatementErrorCallback> errorCallback;
     if (info.Length() > 3 && !isUndefinedOrNull(info[3])) {
         if (!info[3]->IsFunction()) {
-            setDOMException(TypeMismatchError, info.GetIsolate());
+            exceptionState.throwDOMException(TypeMismatchError, "The 'errorCallback' (3rd) argument provided is not a function.");
+            exceptionState.throwIfNeeded();
             return;
         }
         errorCallback = V8SQLStatementErrorCallback::create(v8::Handle<v8::Function>::Cast(info[3]), executionContext);
     }
 
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     transaction->executeSQL(statement, sqlValues, callback.release(), errorCallback.release(), exceptionState);
     exceptionState.throwIfNeeded();
 }

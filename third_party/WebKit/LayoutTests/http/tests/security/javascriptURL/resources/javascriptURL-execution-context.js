@@ -12,7 +12,7 @@ window.addEventListener('message', function() {
 
 setFrameLocation = function(url) {
     var frame = document.getElementById('aFrame');
-    var jsErrorMessage = 'Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.';
+    var jsErrorMessage = 'Failed to set the \'location\' property on \'HTMLFrameElement\': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.';
     try {
         setter(frame, url);
     } catch (e) {
