@@ -69,12 +69,6 @@ struct ASH_EXPORT LauncherItem {
 
 typedef std::vector<LauncherItem> LauncherItems;
 
-// The direction of the focus cycling.
-enum CycleDirection {
-  CYCLE_FORWARD,
-  CYCLE_BACKWARD
-};
-
 // LauncherItemDetails may be set on Window (by way of
 // SetShelfItemDetailsForWindow) to make the window appear in the shelf. See
 // ShelfWindowWatcher for details.

@@ -6,7 +6,7 @@
 #define ASH_SHELF_SHELF_H_
 
 #include "ash/ash_export.h"
-#include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"

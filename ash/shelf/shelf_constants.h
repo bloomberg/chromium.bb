@@ -23,6 +23,12 @@ extern const int kInvalidShelfID;
 // Animation duration for switching black shelf and dock background on and off.
 ASH_EXPORT extern const int kTimeToSwitchBackgroundMs;
 
+// The direction of the focus cycling.
+enum CycleDirection {
+  CYCLE_FORWARD,
+  CYCLE_BACKWARD
+};
+
 }  // namespace ash
 
 #endif  // ASH_SHELF_SHELF_CONSTANTS_H_
