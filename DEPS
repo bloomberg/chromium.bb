@@ -501,6 +501,10 @@ deps_os = {
       Var("chromium_git") +
       "/external/liblouis.git@3c2daee56250162e5a75830871601d74328d39f5",
 
+    # Used for embedded builds. CrOS & Linux use the system version.
+    "src/third_party/fontconfig/src":
+      Var("chromium_git") + "/external/fontconfig.git" +
+      "@4f944971dac3c0bbc6fdd3bf3123e3c8378a3acb",
   },
   "android": {
     "src/third_party/android_tools":
