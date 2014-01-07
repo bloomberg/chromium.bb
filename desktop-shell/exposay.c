@@ -187,7 +187,7 @@ exposay_layout(struct desktop_shell *shell)
 	struct weston_compositor *compositor = shell->compositor;
 	struct weston_output *output = get_default_output(compositor);
 	struct weston_view *view;
-	struct exposay_surface *esurface;
+	struct exposay_surface *esurface, *highlight = NULL;
 	int w, h;
 	int i;
 	int last_row_removed = 0;
@@ -284,12 +284,15 @@ exposay_layout(struct desktop_shell *shell)
 		esurface->height = view->surface->height * esurface->scale;
 
 		if (shell->exposay.focus_current == esurface->view)
-			exposay_highlight_surface(shell, esurface);
+			highlight = esurface;
 
 		exposay_animate_in(esurface);
 
 		i++;
 	}
+
+	if (highlight)
+		exposay_highlight_surface(shell, highlight);
 
 	weston_compositor_schedule_repaint(shell->compositor);
 
