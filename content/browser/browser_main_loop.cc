@@ -230,6 +230,8 @@ static void GLibLogHandler(const gchar* log_domain,
   } else if (strstr(message, "Attempting to store changes into") ||
              strstr(message, "Attempting to set the permissions of")) {
     LOG(ERROR) << message << " (http://bugs.chromium.org/161366)";
+  } else if (strstr(message, "drawable is not a native X11 window")) {
+    LOG(ERROR) << message << " (http://bugs.chromium.org/329991)";
   } else {
     LOG(DFATAL) << log_domain << ": " << message;
   }
