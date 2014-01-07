@@ -5,7 +5,7 @@ The examples and libraries that ship with the Native Client SDK use a
 build system based on GNU Make.
 
 Each example or library is contained in its own directory along with a
-Makefile.  The Makefiles are capable of building Native Client
+Makefile. The Makefiles are capable of building Native Client
 applications and libraries using any of the available toolchains as well
 as building host applications with the host's toolchain. In order to
 keep the top-level Makefiles simple, most of actual build rules are
