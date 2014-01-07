@@ -201,7 +201,9 @@ bool StickyKeysHandler::HandleKeyEvent(ui::KeyEvent* event) {
 }
 
 bool StickyKeysHandler::HandleMouseEvent(ui::MouseEvent* event) {
-  preparing_to_enable_ = false;
+  if (ShouldModifyMouseEvent(event))
+    preparing_to_enable_ = false;
+
   if (event_from_myself_ || current_state_ == DISABLED
       || !ShouldModifyMouseEvent(event)) {
     return false;

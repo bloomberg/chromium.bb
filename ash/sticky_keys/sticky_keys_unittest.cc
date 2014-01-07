@@ -242,6 +242,19 @@ class StickyKeysTest : public test::AshTestBase,
     return event;
   }
 
+  // Creates a synthesized ET_MOUSE_MOVED event.
+  ui::MouseEvent* GenerateSynthesizedMouseEvent(int x, int y) {
+    ui::MouseEvent* event = new ui::MouseEvent(
+        ui::ET_MOUSE_MOVED,
+        gfx::Point(x, y),
+        gfx::Point(x, y),
+        ui::EF_LEFT_MOUSE_BUTTON,
+        ui::EF_LEFT_MOUSE_BUTTON);
+    ui::Event::DispatcherApi dispatcher(event);
+    dispatcher.set_target(target_);
+    return event;
+  }
+
   void SendActivateStickyKeyPattern(StickyKeysHandler* handler,
                                     ui::KeyboardCode key_code) {
     scoped_ptr<ui::KeyEvent> ev;
@@ -447,6 +460,29 @@ TEST_F(StickyKeysTest, NormalModifiedClickTest) {
   kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
   sticky_key.HandleKeyEvent(kev.get());
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+}
+
+TEST_F(StickyKeysTest, MouseMovedModifierTest) {
+  scoped_ptr<ui::KeyEvent> kev;
+  scoped_ptr<ui::MouseEvent> mev;
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
+
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+
+  // Press ctrl and handle mouse move events.
+  kev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
+  mev.reset(GenerateSynthesizedMouseEvent(0, 0));
+  sticky_key.HandleMouseEvent(mev.get());
+  mev.reset(GenerateSynthesizedMouseEvent(100, 100));
+  sticky_key.HandleMouseEvent(mev.get());
+
+  // Sticky keys should be enabled afterwards.
+  kev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(kev.get());
+  EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
 }
 
 TEST_F(StickyKeysTest, NormalModifiedScrollTest) {
