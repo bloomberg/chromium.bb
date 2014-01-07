@@ -1053,7 +1053,7 @@ static PassRefPtr<CSSValueList> parseTranslateTransformList(CharType*& pos, Char
 {
     RefPtr<CSSValueList> transformList;
     while (pos < end) {
-        while (isCSSSpace(*pos) && pos < end)
+        while (pos < end && isCSSSpace(*pos))
             ++pos;
         RefPtr<CSSTransformValue> transformValue = parseTranslateTransformValue(pos, end);
         if (!transformValue)
