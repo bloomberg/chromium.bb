@@ -40,6 +40,9 @@ def __lldb_init_module(debugger, dict):
     debugger.HandleCommand('type summary add --expand -F lldb_webkit.WTFHashTable_SummaryProvider -x "WTF::HashTable<.+>$"')
     debugger.HandleCommand('type synthetic add -x "WTF::Vector<.+>$" --python-class lldb_webkit.WTFVectorProvider')
     debugger.HandleCommand('type synthetic add -x "WTF::HashTable<.+>$" --python-class lldb_webkit.WTFHashTableProvider')
+    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutUnit_SummaryProvider WebCore::LayoutUnit')
+    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutSize_SummaryProvider WebCore::LayoutSize')
+    debugger.HandleCommand('type summary add -F lldb_webkit.WebCoreLayoutPoint_SummaryProvider WebCore::LayoutPoint')
 
 
 def WTFString_SummaryProvider(valobj, dict):
@@ -64,6 +67,21 @@ def WTFVector_SummaryProvider(valobj, dict):
 def WTFHashTable_SummaryProvider(valobj, dict):
     provider = WTFHashTableProvider(valobj, dict)
     return "{ tableSize = %d, keyCount = %d }" % (provider.tableSize(), provider.keyCount())
+
+
+def WebCoreLayoutUnit_SummaryProvider(valobj, dict):
+    provider = WebCoreLayoutUnitProvider(valobj, dict)
+    return "{ %s }" % provider.to_string()
+
+
+def WebCoreLayoutSize_SummaryProvider(valobj, dict):
+    provider = WebCoreLayoutSizeProvider(valobj, dict)
+    return "{ width = %s, height = %s }" % (provider.get_width(), provider.get_height())
+
+
+def WebCoreLayoutPoint_SummaryProvider(valobj, dict):
+    provider = WebCoreLayoutPointProvider(valobj, dict)
+    return "{ x = %s, y = %s }" % (provider.get_x(), provider.get_y())
 
 # FIXME: Provide support for the following types:
 # def WTFVector_SummaryProvider(valobj, dict):
@@ -157,6 +175,39 @@ class WTFStringProvider:
         if not impl:
             return u""
         return impl.to_string()
+
+
+class WebCoreLayoutUnitProvider:
+    "Print a WebCore::LayoutUnit"
+    def __init__(self, valobj, dict):
+        self.valobj = valobj
+
+    def to_string(self):
+        return "%gpx" % (self.valobj.GetChildMemberWithName('m_value').GetValueAsUnsigned(0) / 64.0)
+
+
+class WebCoreLayoutSizeProvider:
+    "Print a WebCore::LayoutSize"
+    def __init__(self, valobj, dict):
+        self.valobj = valobj
+
+    def get_width(self):
+        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('m_width'), dict).to_string()
+
+    def get_height(self):
+        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('m_height'), dict).to_string()
+
+
+class WebCoreLayoutPointProvider:
+    "Print a WebCore::LayoutPoint"
+    def __init__(self, valobj, dict):
+        self.valobj = valobj
+
+    def get_x(self):
+        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('m_x'), dict).to_string()
+
+    def get_y(self):
+        return WebCoreLayoutUnitProvider(self.valobj.GetChildMemberWithName('m_y'), dict).to_string()
 
 
 class WTFVectorProvider:
