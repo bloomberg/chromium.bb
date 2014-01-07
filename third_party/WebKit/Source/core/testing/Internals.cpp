@@ -291,6 +291,21 @@ unsigned Internals::updateStyleAndReturnAffectedElementCount(ExceptionState& exc
     return document->styleEngine()->resolverAccessCount() - beforeCount;
 }
 
+unsigned Internals::needsLayoutCount(ExceptionState& exceptionState) const
+{
+    Frame* contextFrame = frame();
+    if (!contextFrame) {
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    bool isPartial;
+    unsigned needsLayoutObjects;
+    unsigned totalObjects;
+    contextFrame->countObjectsNeedingLayout(needsLayoutObjects, totalObjects, isPartial);
+    return needsLayoutObjects;
+}
+
 bool Internals::isPreloaded(const String& url)
 {
     Document* document = contextDocument();

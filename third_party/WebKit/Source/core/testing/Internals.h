@@ -127,6 +127,7 @@ public:
     Node* previousNodeByWalker(Node*, ExceptionState&);
 
     unsigned updateStyleAndReturnAffectedElementCount(ExceptionState&) const;
+    unsigned needsLayoutCount(ExceptionState&) const;
 
     String visiblePlaceholder(Element*);
     void selectColorInColorChooser(Element*, const String& colorValue);

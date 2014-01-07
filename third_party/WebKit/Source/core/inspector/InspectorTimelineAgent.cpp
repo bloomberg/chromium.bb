@@ -483,20 +483,12 @@ void InspectorTimelineAgent::didInvalidateLayout(Frame* frame)
 
 bool InspectorTimelineAgent::willLayout(Frame* frame)
 {
-    RenderObject* root = frame->view()->layoutRoot();
-    bool partialLayout = !!root;
+    bool isPartial;
+    unsigned needsLayoutObjects;
+    unsigned totalObjects;
+    frame->countObjectsNeedingLayout(needsLayoutObjects, totalObjects, isPartial);
 
-    if (!partialLayout)
-        root = frame->contentRenderer();
-
-    unsigned dirtyObjects = 0;
-    unsigned totalObjects = 0;
-    for (RenderObject* o = root; o; o = o->nextInPreOrder(root)) {
-        ++totalObjects;
-        if (o->needsLayout())
-            ++dirtyObjects;
-    }
-    pushCurrentRecord(TimelineRecordFactory::createLayoutData(dirtyObjects, totalObjects, partialLayout), TimelineRecordType::Layout, true, frame);
+    pushCurrentRecord(TimelineRecordFactory::createLayoutData(needsLayoutObjects, totalObjects, isPartial), TimelineRecordType::Layout, true, frame);
     return true;
 }
 
