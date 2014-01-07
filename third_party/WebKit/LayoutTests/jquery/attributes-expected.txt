@@ -1,2 +1,3 @@
+CONSOLE WARNING: Attr.specified is deprecated. Its value is always true.
 ALERT: 339 tests of 339 passed, 0 failed.
 

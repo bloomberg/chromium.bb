@@ -22,7 +22,6 @@ shouldBe("attributes[0]", "attributes.item(0)");
 shouldBe("attributes.getNamedItem('a')", "attributes.item(0)");
 
 shouldBe("attributes.item(0).name", "'a'");
-shouldBe("attributes.item(0).specified", "true");
 shouldBe("attributes.item(0).value", "'b'");
 shouldBe("attributes.item(0).ownerElement.tagName", "'P'");
 
@@ -42,7 +41,6 @@ element = null;
 gc();
 
 shouldBe("attr.name", "'a'");
-shouldBe("attr.specified", "true");
 shouldBe("attr.value", "'b'");
 shouldBe("attr.ownerElement.tagName", "'P'");
 

@@ -191,12 +191,10 @@ Markup._get = function(node, depth, shadowRootList)
             var attrNames = [];
             var attrPos = {};
             for (var j = 0; j < node.attributes.length; j += 1) {
-                if (node.attributes[j].specified) {
-                    var name = Markup._namespace(node.attributes[j])
-                    name += node.attributes[j].localName || node.attributes[j].nodeName;
-                    attrNames.push(name);
-                    attrPos[name] = j;
-                }
+                var name = Markup._namespace(node.attributes[j])
+                name += node.attributes[j].localName || node.attributes[j].nodeName;
+                attrNames.push(name);
+                attrPos[name] = j;
             }
             if (attrNames.length > 0) {
               attrNames.sort();

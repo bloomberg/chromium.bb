@@ -681,6 +681,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case CSSStyleSheetInsertRuleOptionalArg:
         return "Calling CSSStyleSheet.insertRule() with one argument is deprecated. Please pass the index argument as well: insertRule(x, 0).";
 
+    case AttributeSpecified:
+        return "Attr.specified is deprecated. Its value is always true.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
