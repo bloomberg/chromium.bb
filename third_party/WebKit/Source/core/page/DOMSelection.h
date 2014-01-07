@@ -61,7 +61,6 @@ public:
     int extentOffset() const;
     String type() const;
     void setBaseAndExtent(Node* baseNode, int baseOffset, Node* extentNode, int extentOffset, ExceptionState&);
-    void setPosition(Node*, int offset, ExceptionState&);
     void modify(const String& alter, const String& direction, const String& granularity);
 
     // Mozilla Selection Object API
