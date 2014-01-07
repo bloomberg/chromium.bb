@@ -666,7 +666,6 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
         return false;
     // What is this code really trying to do?
     RenderObject* o = renderer();
-    RenderObject* p = o;
 
     if (!o->isInline() || o->isReplaced()) {
         point = o->localToAbsolute(FloatPoint(), UseTransforms);
@@ -675,7 +674,7 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
 
     // find the next text/image child, to get a position
     while (o) {
-        p = o;
+        RenderObject* p = o;
         if (o->firstChild()) {
             o = o->firstChild();
         } else if (o->nextSibling()) {

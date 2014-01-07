@@ -211,8 +211,6 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
     StringBuilder charactersWithHyphen;
     bool respectHyphen = ePos == m_len && hasHyphen();
     TextRun textRun = constructTextRun(styleToUse, font, respectHyphen ? &charactersWithHyphen : 0);
-    if (respectHyphen)
-        endPos = textRun.length();
 
     FloatPoint startingPoint = FloatPoint(logicalLeft(), selTop);
     LayoutRect r;

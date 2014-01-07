@@ -790,7 +790,6 @@ void CompositeEditCommand::deleteInsignificantText(PassRefPtr<Text> textNode, un
         int gapLen = gapEnd - gapStart;
         if (indicesIntersect && gapLen > 0) {
             gapStart = max(gapStart, start);
-            gapEnd = min(gapEnd, end);
             if (str.isNull())
                 str = textNode->data().substring(start, end - start);
             // remove text in the gap

@@ -262,7 +262,6 @@ void CSSGradientValue::addStops(Gradient* gradient, const CSSToLengthConversionD
             stops.first().offset = 0;
             stops.first().color = stops.last().color;
             stops.shrink(1);
-            numStops = 1;
         } else {
             float maxExtent = 1;
 

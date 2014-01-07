@@ -2076,10 +2076,8 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
         LayoutRect filterRepaintRect = filterInfo->dirtySourceRect();
         filterRepaintRect.move(offsetFromRoot.x(), offsetFromRoot.y());
 
-        if (!rootRelativeBoundsComputed) {
+        if (!rootRelativeBoundsComputed)
             rootRelativeBounds = calculateLayerBounds(paintingInfo.rootLayer, &offsetFromRoot, 0);
-            rootRelativeBoundsComputed = true;
-        }
 
         if (filterPainter.prepareFilterEffect(this, rootRelativeBounds, paintingInfo.paintDirtyRect, filterRepaintRect)) {
             // Now we know for sure, that the source image will be updated, so we can revert our tracking repaint rect back to zero.

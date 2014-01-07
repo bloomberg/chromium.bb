@@ -156,10 +156,8 @@ static void paintSliderRangeHighlight(const IntRect& rect, const RenderStyle* st
     // Make sure the range width is bigger than border radius at the edges to retain rounded corners.
     if (startOffset < borderRadius && rangeWidth < borderRadius)
         rangeWidth = borderRadius;
-    if (endOffset < borderRadius && rangeWidth < borderRadius) {
-        startPosition -= borderRadius - rangeWidth;
+    if (endOffset < borderRadius && rangeWidth < borderRadius)
         rangeWidth = borderRadius;
-    }
 
     // Set rectangle to highlight range.
     IntRect highlightRect = rect;

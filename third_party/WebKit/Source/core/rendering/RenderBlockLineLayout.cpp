@@ -845,7 +845,7 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
         LineMidpointState& isolatedLineMidpointState = isolatedResolver.midpointState();
         isolatedLineMidpointState = topResolver.midpointStateForIsolatedRun(isolatedRun);
         EUnicodeBidi unicodeBidi = isolatedInline->style()->unicodeBidi();
-        TextDirection direction = isolatedInline->style()->direction();
+        TextDirection direction;
         if (unicodeBidi == Plaintext) {
             if (isNewUBAParagraph)
                 direction = determinePlaintextDirectionality(isolatedInline, startObj);

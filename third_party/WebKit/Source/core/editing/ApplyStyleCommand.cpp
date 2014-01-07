@@ -1265,7 +1265,6 @@ bool ApplyStyleCommand::mergeStartWithPreviousIfIdentical(const Position& start,
             return false;
 
         startNode = startNode->parentNode();
-        startOffset = 0;
     }
 
     if (!startNode->isElementNode())

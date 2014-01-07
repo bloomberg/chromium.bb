@@ -1320,7 +1320,6 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers)
             m_squashingLayer = createGraphicsLayer(CompositingReasonOverlap);
             m_squashingLayer->setDrawsContent(true);
             m_squashingLayer->setNeedsDisplay();
-            layersChanged = true;
 
             // FIXME: containment layer needs a new CompositingReason, CompositingReasonOverlap is not appropriate.
             m_squashingContainmentLayer = createGraphicsLayer(CompositingReasonOverlap);
@@ -1335,7 +1334,6 @@ bool CompositedLayerMapping::updateSquashingLayers(bool needsSquashingLayers)
         if (m_squashingLayer) {
             m_squashingLayer->removeFromParent();
             m_squashingLayer = nullptr;
-            layersChanged = true;
             // FIXME: do we need to invalidate something here?
 
             ASSERT(m_squashingContainmentLayer);
