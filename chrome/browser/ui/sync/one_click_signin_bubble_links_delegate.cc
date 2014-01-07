@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 
 OneClickSigninBubbleLinksDelegate::OneClickSigninBubbleLinksDelegate(
@@ -23,9 +24,5 @@ void OneClickSigninBubbleLinksDelegate::OnLearnMoreLinkClicked(
 }
 
 void OneClickSigninBubbleLinksDelegate::OnAdvancedLinkClicked() {
-  chrome::NavigateParams params(browser_,
-                                GURL(chrome::kChromeUISettingsURL),
-                                content::PAGE_TRANSITION_LINK);
-  params.disposition = CURRENT_TAB;
-  chrome::Navigate(&params);
+  chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
 }
