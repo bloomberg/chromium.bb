@@ -6385,6 +6385,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_CONTACTS_DESCRIPTION" desc="Description of the 'Enable contacts' lab.">
         Enables downloading Google contacts and displaying them in the App List.
       </message>
+      <message name="IDS_FLAGS_ENABLE_VIEWPORT_META_NAME" desc="Name of the flag to turn on viewport meta tag support.">
+        Enable viewport meta tag.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_VIEWPORT_META_DESCRIPTION" desc="Description of the flag to turn on viewport meta tag support.">
+        Enables handling of the viewport meta tag to allow pages to set the layout width and user zoom properties.
+      </message>
 
       <if expr="pp_ifdef('chromeos')">
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME" desc="Name for the flag to enable touchpad three finger click as middle button.">
