@@ -126,6 +126,11 @@ public:
         return LayoutSize(width(), width() * aspectRatio.height() / aspectRatio.width());
     }
 
+    LayoutSize fraction() const
+    {
+        return LayoutSize(m_width.fraction(), m_height.fraction());
+    }
+
 private:
     LayoutUnit m_width, m_height;
 };

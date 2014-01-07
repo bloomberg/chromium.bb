@@ -347,7 +347,7 @@ void CompositedLayerMapping::updateCompositedBounds()
     // on whether or not descendands will paint into our backing). Update this value now.
     updateDrawsContent(isSimpleContainerCompositingLayer());
 
-    IntRect layerBounds = compositor()->calculateCompositedBounds(m_owningLayer, m_owningLayer);
+    LayoutRect layerBounds = compositor()->calculateCompositedBounds(m_owningLayer, m_owningLayer);
 
     // Clip to the size of the document or enclosing overflow-scroll layer.
     // If this or an ancestor is transformed, we can't currently compute the correct rect to intersect with.
@@ -369,7 +369,7 @@ void CompositedLayerMapping::updateCompositedBounds()
         m_owningLayer->convertToLayerCoords(rootLayer, delta);
         clippingBounds.move(-delta.x(), -delta.y());
 
-        layerBounds.intersect(pixelSnappedIntRect(clippingBounds));
+        layerBounds.intersect(clippingBounds);
         m_boundsConstrainedByClipping = true;
     } else {
         m_boundsConstrainedByClipping = false;
@@ -394,7 +394,9 @@ void CompositedLayerMapping::updateAfterWidgetResize()
     if (renderer()->isRenderPart()) {
         if (RenderLayerCompositor* innerCompositor = RenderLayerCompositor::frameContentsCompositor(toRenderPart(renderer()))) {
             innerCompositor->frameViewDidChangeSize();
-            innerCompositor->frameViewDidChangeLocation(contentsBox().location());
+            // We can floor this point because our frameviews are always aligned to pixel boundaries.
+            ASSERT(contentsBox().location() == flooredIntPoint(contentsBox().location()));
+            innerCompositor->frameViewDidChangeLocation(flooredIntPoint(contentsBox().location()));
         }
     }
 }
@@ -545,6 +547,23 @@ static IntRect clipBox(RenderBox* renderer)
     return pixelSnappedIntRect(result);
 }
 
+void CompositedLayerMapping::adjustBoundsForSubPixelAccumulation(const RenderLayer* compositedAncestor, IntRect& localBounds, IntRect& relativeBounds, IntPoint& delta)
+{
+    LayoutRect localRawCompositingBounds = compositedBounds();
+    LayoutPoint rawDelta;
+    m_owningLayer->convertToLayerCoords(compositedAncestor, rawDelta);
+    delta = flooredIntPoint(rawDelta);
+    m_subpixelAccumulation = toLayoutSize(rawDelta).fraction();
+    RELEASE_ASSERT(m_subpixelAccumulation.width() < 1 && m_subpixelAccumulation.height() < 1);
+
+    // Move the bounds by the subpixel accumulation so that it pixel-snaps relative to absolute pixels instead of local coordinates.
+    localRawCompositingBounds.move(m_subpixelAccumulation);
+    localBounds = pixelSnappedIntRect(localRawCompositingBounds);
+
+    relativeBounds = localBounds;
+    relativeBounds.moveBy(delta);
+}
+
 void CompositedLayerMapping::updateGraphicsLayerGeometry()
 {
     // If we haven't built z-order lists yet, wait until later.
@@ -594,12 +613,10 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         ancestorCompositingBounds = pixelSnappedIntRect(compAncestor->compositedLayerMapping()->compositedBounds());
     }
 
-    IntRect localCompositingBounds = pixelSnappedIntRect(compositedBounds());
-
-    IntRect relativeCompositingBounds(localCompositingBounds);
+    IntRect localCompositingBounds;
+    IntRect relativeCompositingBounds;
     IntPoint delta;
-    m_owningLayer->convertToPixelSnappedLayerCoords(compAncestor, delta);
-    relativeCompositingBounds.moveBy(delta);
+    adjustBoundsForSubPixelAccumulation(compAncestor, localCompositingBounds, relativeCompositingBounds, delta);
 
     IntPoint graphicsLayerParentLocation;
     if (compAncestor && compAncestor->compositedLayerMapping()->hasClippingLayer()) {
@@ -679,7 +696,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         const IntRect borderBox = toRenderBox(renderer())->pixelSnappedBorderBoxRect();
 
         // Get layout bounds in the coords of compAncestor to match relativeCompositingBounds.
-        IntRect layerBounds = IntRect(delta, borderBox.size());
+        IntRect layerBounds(delta, borderBox.size());
 
         // Update properties that depend on layer dimensions
         FloatPoint3D transformOrigin = computeTransformOrigin(borderBox);
@@ -764,7 +781,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
             clientBox.move(renderBox->verticalScrollbarWidth(), 0);
 
         IntSize adjustedScrollOffset = m_owningLayer->scrollableArea()->adjustedScrollOffset();
-        m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location()));
+        m_scrollingLayer->setPosition(FloatPoint(clientBox.location() - localCompositingBounds.location() + roundedIntSize(m_subpixelAccumulation)));
         m_scrollingLayer->setSize(clientBox.size());
 
         IntSize oldScrollingLayerOffset = m_scrollingLayer->offsetFromRenderer();
@@ -807,9 +824,9 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
     if (m_squashingLayer) {
         ASSERT(compositor()->layerSquashingEnabled());
 
-        IntRect totalSquashBounds;
+        LayoutRect totalSquashBounds;
         for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
-            IntRect squashedBounds = compositor()->calculateCompositedBounds(m_squashedLayers[i].renderLayer, m_squashedLayers[i].renderLayer);
+            LayoutRect squashedBounds = compositor()->calculateCompositedBounds(m_squashedLayers[i].renderLayer, m_squashedLayers[i].renderLayer);
 
             // Store the composited bounds before applying the offset.
             // FIXME: consider whether it is more efficient or clarifies the math to store the compositedBounds after applying the offset.
@@ -941,13 +958,13 @@ void CompositedLayerMapping::updateInternalHierarchy()
 
 void CompositedLayerMapping::updateContentsRect(bool isSimpleContainer)
 {
-    IntRect contentsRect;
+    LayoutRect contentsRect;
     if (isSimpleContainer && renderer()->hasBackground())
         contentsRect = backgroundBox();
     else
         contentsRect = contentsBox();
 
-    m_graphicsLayer->setContentsRect(contentsRect);
+    m_graphicsLayer->setContentsRect(pixelSnappedIntRect(contentsRect));
 }
 
 void CompositedLayerMapping::updateDrawsContent(bool isSimpleContainer)
@@ -1074,7 +1091,7 @@ bool CompositedLayerMapping::updateOverflowControlsLayers(bool needsHorizontalSc
 
 void CompositedLayerMapping::positionOverflowControlsLayers(const IntSize& offsetFromRoot)
 {
-    IntSize offsetFromRenderer = m_graphicsLayer->offsetFromRenderer();
+    IntSize offsetFromRenderer = m_graphicsLayer->offsetFromRenderer() - roundedIntSize(m_subpixelAccumulation);
     if (GraphicsLayer* layer = layerForHorizontalScrollbar()) {
         Scrollbar* hBar = m_owningLayer->scrollableArea()->horizontalScrollbar();
         if (hBar) {
@@ -1645,23 +1662,23 @@ FloatPoint CompositedLayerMapping::computePerspectiveOrigin(const IntRect& borde
 }
 
 // Return the offset from the top-left of this compositing layer at which the renderer's contents are painted.
-IntSize CompositedLayerMapping::contentOffsetInCompostingLayer() const
+LayoutSize CompositedLayerMapping::contentOffsetInCompostingLayer() const
 {
-    return IntSize(-m_compositedBounds.x(), -m_compositedBounds.y());
+    return LayoutSize(-m_compositedBounds.x(), -m_compositedBounds.y());
 }
 
-IntRect CompositedLayerMapping::contentsBox() const
+LayoutRect CompositedLayerMapping::contentsBox() const
 {
-    IntRect contentsBox = contentsRect(renderer());
+    LayoutRect contentsBox = contentsRect(renderer());
     contentsBox.move(contentOffsetInCompostingLayer());
     return contentsBox;
 }
 
 IntRect CompositedLayerMapping::backgroundBox() const
 {
-    IntRect backgroundBox = backgroundRect(renderer());
+    LayoutRect backgroundBox = backgroundRect(renderer());
     backgroundBox.move(contentOffsetInCompostingLayer());
-    return backgroundBox;
+    return pixelSnappedIntRect(backgroundBox);
 }
 
 GraphicsLayer* CompositedLayerMapping::parentForSublayers() const
@@ -1836,15 +1853,20 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
     // assuming that the context's space was not affected by the RenderLayer
     // painting code.
 
-    LayoutSize offset = paintInfo.offsetFromRenderer;
+    IntSize offset = paintInfo.offsetFromRenderer;
     context->translate(-offset);
-    LayoutRect relativeClip(clip);
-    relativeClip.move(offset);
 
     // The dirtyRect is in the coords of the painting root.
-    IntRect dirtyRect = pixelSnappedIntRect(relativeClip);
-    if (!(paintInfo.paintingPhase & GraphicsLayerPaintOverflowContents))
-        dirtyRect.intersect(paintInfo.compositedBounds);
+    IntRect dirtyRect(clip);
+    dirtyRect.move(offset);
+
+    if (!(paintInfo.paintingPhase & GraphicsLayerPaintOverflowContents)) {
+        LayoutRect bounds = paintInfo.compositedBounds;
+        bounds.move(m_subpixelAccumulation);
+        dirtyRect.intersect(pixelSnappedIntRect(bounds));
+    } else {
+        dirtyRect.move(roundedIntSize(m_subpixelAccumulation));
+    }
 
 #ifndef NDEBUG
     paintInfo.renderLayer->renderer()->assertSubtreeIsLaidOut();
@@ -1852,7 +1874,7 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
 
     if (paintInfo.renderLayer->compositingState() != PaintsIntoGroupedBacking) {
         // FIXME: GraphicsLayers need a way to split for RenderRegions.
-        LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, LayoutSize());
+        LayerPaintingInfo paintingInfo(paintInfo.renderLayer, dirtyRect, PaintBehaviorNormal, m_subpixelAccumulation);
         paintInfo.renderLayer->paintLayerContents(context, paintingInfo, paintFlags);
 
         ASSERT(!paintInfo.isBackgroundLayer || paintFlags & PaintLayerPaintingRootBackgroundOnly);
@@ -2083,12 +2105,12 @@ void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double
         renderer()->animation().notifyAnimationStarted(renderer(), wallClockTime);
 }
 
-IntRect CompositedLayerMapping::compositedBounds() const
+LayoutRect CompositedLayerMapping::compositedBounds() const
 {
     return m_compositedBounds;
 }
 
-void CompositedLayerMapping::setCompositedBounds(const IntRect& bounds)
+void CompositedLayerMapping::setCompositedBounds(const LayoutRect& bounds)
 {
     m_compositedBounds = bounds;
 }

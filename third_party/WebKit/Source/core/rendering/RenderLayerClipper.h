@@ -54,18 +54,20 @@ class RenderLayer;
 class RenderRegion;
 
 struct ClipRectsContext {
-    ClipRectsContext(const RenderLayer* inRootLayer, RenderRegion* inRegion, ClipRectsType inClipRectsType, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize, ShouldRespectOverflowClip inRespectOverflowClip = RespectOverflowClip)
+    ClipRectsContext(const RenderLayer* inRootLayer, RenderRegion* inRegion, ClipRectsType inClipRectsType, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize, ShouldRespectOverflowClip inRespectOverflowClip = RespectOverflowClip, const LayoutSize& inSubPixelAccumulation = LayoutSize())
         : rootLayer(inRootLayer)
         , region(inRegion)
         , clipRectsType(inClipRectsType)
         , overlayScrollbarSizeRelevancy(inOverlayScrollbarSizeRelevancy)
         , respectOverflowClip(inRespectOverflowClip)
+        , subPixelAccumulation(inSubPixelAccumulation)
     { }
     const RenderLayer* rootLayer;
     RenderRegion* region;
     ClipRectsType clipRectsType;
     OverlayScrollbarSizeRelevancy overlayScrollbarSizeRelevancy;
     ShouldRespectOverflowClip respectOverflowClip;
+    const LayoutSize& subPixelAccumulation;
 };
 
 class RenderLayerClipper {

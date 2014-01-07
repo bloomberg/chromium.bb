@@ -365,7 +365,7 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     m_repaintRect = dirtyRect;
 
     FilterEffectRenderer* filter = renderLayer->filterRenderer();
-    LayoutRect filterSourceRect = filter->computeSourceImageRectForDirtyRect(filterBoxRect, dirtyRect);
+    IntRect filterSourceRect = pixelSnappedIntRect(filter->computeSourceImageRectForDirtyRect(filterBoxRect, dirtyRect));
 
     if (filterSourceRect.isEmpty()) {
         // The dirty rect is not in view, just bail out.

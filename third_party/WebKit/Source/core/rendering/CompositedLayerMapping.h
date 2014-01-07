@@ -50,7 +50,7 @@ enum CompositingLayerType {
 struct GraphicsLayerPaintInfo {
     RenderLayer* renderLayer;
 
-    IntRect compositedBounds;
+    LayoutRect compositedBounds;
 
     // A temporary offset used for squashing layers, when the origin of the
     // squashing layer is not yet known.
@@ -150,8 +150,8 @@ public:
     void animationPaused(double timeOffset, const String& name);
     void animationFinished(const String& name);
 
-    IntRect compositedBounds() const;
-    void setCompositedBounds(const IntRect&);
+    LayoutRect compositedBounds() const;
+    void setCompositedBounds(const LayoutRect&);
     void updateCompositedBounds();
 
     void updateAfterWidgetResize();
@@ -172,7 +172,7 @@ public:
     virtual void verifyNotPainting();
 #endif
 
-    IntRect contentsBox() const;
+    LayoutRect contentsBox() const;
     IntRect backgroundBox() const;
 
     // For informative purposes only.
@@ -192,6 +192,7 @@ public:
 
     virtual String debugName(const GraphicsLayer*) OVERRIDE;
 
+    LayoutSize subpixelAccumulation() const { return m_subpixelAccumulation; }
 private:
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
@@ -218,11 +219,13 @@ private:
     void updateDrawsContent(bool isSimpleContainer);
     void registerScrollingLayers();
 
+    void adjustBoundsForSubPixelAccumulation(const RenderLayer* compositedAncestor, IntRect& localCompositingBounds, IntRect& relativeCompositingBounds, IntPoint& delta);
+
     void setBackgroundLayerPaintsFixedRootBackground(bool);
 
     GraphicsLayerPaintingPhase paintingPhaseForPrimaryLayer() const;
 
-    IntSize contentOffsetInCompostingLayer() const;
+    LayoutSize contentOffsetInCompostingLayer() const;
     // Result is transform origin in pixels.
     FloatPoint3D computeTransformOrigin(const IntRect& borderBox) const;
     // Result is perspective origin in pixels.
@@ -338,7 +341,8 @@ private:
     OwnPtr<GraphicsLayer> m_squashingLayer; // Only used if any squashed layers exist, this is the backing that squashed layers paint into.
     Vector<GraphicsLayerPaintInfo> m_squashedLayers;
 
-    IntRect m_compositedBounds;
+    LayoutRect m_compositedBounds;
+    LayoutSize m_subpixelAccumulation; // The accumulated subpixel offset of the compositedBounds compared to absolute coordinates.
 
     bool m_artificiallyInflatedBounds; // bounds had to be made non-zero to make transform-origin work
     bool m_boundsConstrainedByClipping;
