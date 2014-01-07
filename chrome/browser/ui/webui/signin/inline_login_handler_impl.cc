@@ -6,6 +6,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -64,10 +66,10 @@ void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   params.SetString("continueUrl",
       signin::GetLandingURL("source", static_cast<int>(source)).spec());
 
-  std::string email;
-  net::GetValueForKeyInQuery(current_url, "Email", &email);
-  if (!email.empty())
-    params.SetString("email", email);
+  std::string last_email = Profile::FromWebUI(web_ui())->GetPrefs()->GetString(
+      prefs::kGoogleServicesLastUsername);
+  if (!last_email.empty())
+    params.SetString("email", last_email);
 
   std::string frame_url;
   net::GetValueForKeyInQuery(current_url, "frameUrl", &frame_url);
