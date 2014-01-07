@@ -77,6 +77,9 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [Reflect, ReflectOnly=unique] attribute DOMString limitedToOnlyOneAttribute;
     [Reflect, ReflectOnly=Per|Paal|Espen] attribute DOMString limitedToOnlyAttribute;
     [Reflect=Other, ReflectOnly=Value1|Value2] attribute DOMString limitedToOnlyOtherAttribute;
+    [Reflect, ReflectOnly=rsa|dsa, ReflectMissing=rsa] attribute DOMString limitedWithMissingDefaultAttribute;
+    [Reflect, ReflectOnly=ltr|rtl|auto, ReflectMissing=auto, ReflectInvalid=ltr] attribute DOMString limitedWithInvalidMissingDefaultAttribute;
+    [Reflect, ReflectOnly=left|right, ReflectMissing=left, ReflectInvalid=left] attribute DOMString limitedWithInvalidAndMissingDefaultAttribute;
 
     // TypedArray attribute
     attribute Float32Array typedArrayAttr;

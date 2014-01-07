@@ -1508,7 +1508,7 @@ END
             $code .= "    Element* imp = V8Element::toNative(info.Holder());\n";
             if ($attribute->extendedAttributes->{"ReflectOnly"}) {
                 $code .= "    String resultValue = ${getterExpression};\n";
-                $code .= GenerateReflectOnlyCheck($attribute->extendedAttributes->{"ReflectOnly"}, "    ");
+                $code .= GenerateReflectOnlyCheck($attribute->extendedAttributes, "    ");
                 $getterExpression = "resultValue";
             }
             $code .= "    v8SetReturnValueString(info, ${getterExpression}, info.GetIsolate());\n";
@@ -5717,7 +5717,7 @@ sub NativeToJSValue
 
     if ($type eq "DOMString" && $extendedAttributes->{"ReflectOnly"}) {
         my $code = "${indent}String resultValue = ${nativeValue};\n";
-        $code .= GenerateReflectOnlyCheck($extendedAttributes->{"ReflectOnly"}, ${indent});
+        $code .= GenerateReflectOnlyCheck($extendedAttributes, ${indent});
         return "${code}${indent}v8SetReturnValueString(${getCallbackInfo}, resultValue, $getIsolate);" if $isReturnValue;
         return "${code}$indent$receiver resultValue";
     }
@@ -6272,10 +6272,31 @@ sub GenerateCompileTimeCheckForEnumsIfNeeded
 
 sub GenerateReflectOnlyCheck
 {
-    my $knownValueString = shift;
+    my $extendedAttributes = shift;
     my $indent = shift;
 
+    my $knownValueString = $extendedAttributes->{"ReflectOnly"};
     my @knownValues = split(quotemeta("|"), $knownValueString);
+
+    my $missingValueDefault = $extendedAttributes->{"ReflectMissing"};
+    if ($missingValueDefault) {
+        if (!grep { $_ eq $missingValueDefault } @knownValues) {
+            die "Missing attribute value is not a known value " . $missingValueDefault;
+        }
+        $missingValueDefault = "resultValue = \"${missingValueDefault}\"";
+    } else {
+        $missingValueDefault = "";
+    }
+
+    my $invalidValueDefault = $extendedAttributes->{"ReflectInvalid"};
+    if ($invalidValueDefault) {
+        if (!grep { $_ eq $invalidValueDefault } @knownValues) {
+            die "Invalid attribute value is not a known value " . $invalidValueDefault;
+        }
+        $invalidValueDefault = "\"${invalidValueDefault}\"";
+    } else {
+        $invalidValueDefault = "\"\"";
+    }
 
     # Attribute is limited to only known values: check that the attribute
     # value is one of those..and if not, set it to the empty string.
@@ -6290,10 +6311,10 @@ sub GenerateReflectOnlyCheck
     my $normalizeAttributeValue = join("\n", @normalizeAttributeCode);
     $code .= <<END;
 ${indent}if (resultValue.isEmpty()) {
-${indent}    ;
+${indent}    $missingValueDefault;
 ${normalizeAttributeValue}
 ${indent}} else {
-${indent}    resultValue = "";
+${indent}    resultValue = $invalidValueDefault;
 ${indent}}
 END
         return "${code}";

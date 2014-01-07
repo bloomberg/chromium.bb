@@ -1000,6 +1000,125 @@ static void limitedToOnlyOtherAttributeAttributeSetterCallback(v8::Local<v8::Str
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void limitedWithMissingDefaultAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    String resultValue = imp->fastGetAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr);
+    if (resultValue.isEmpty()) {
+        resultValue = "rsa";
+    } else if (equalIgnoringCase(resultValue, "rsa")) {
+        resultValue = "rsa";
+    } else if (equalIgnoringCase(resultValue, "dsa")) {
+        resultValue = "dsa";
+    } else {
+        resultValue = "";
+    }
+    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+}
+
+static void limitedWithMissingDefaultAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::limitedWithMissingDefaultAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void limitedWithMissingDefaultAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::limitedwithmissingdefaultattributeAttr, cppValue);
+}
+
+static void limitedWithMissingDefaultAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::limitedWithMissingDefaultAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void limitedWithInvalidMissingDefaultAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    String resultValue = imp->fastGetAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr);
+    if (resultValue.isEmpty()) {
+        resultValue = "auto";
+    } else if (equalIgnoringCase(resultValue, "ltr")) {
+        resultValue = "ltr";
+    } else if (equalIgnoringCase(resultValue, "rtl")) {
+        resultValue = "rtl";
+    } else if (equalIgnoringCase(resultValue, "auto")) {
+        resultValue = "auto";
+    } else {
+        resultValue = "ltr";
+    }
+    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+}
+
+static void limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void limitedWithInvalidMissingDefaultAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::limitedwithinvalidmissingdefaultattributeAttr, cppValue);
+}
+
+static void limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void limitedWithInvalidAndMissingDefaultAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    String resultValue = imp->fastGetAttribute(HTMLNames::limitedwithinvalidandmissingdefaultattributeAttr);
+    if (resultValue.isEmpty()) {
+        resultValue = "left";
+    } else if (equalIgnoringCase(resultValue, "left")) {
+        resultValue = "left";
+    } else if (equalIgnoringCase(resultValue, "right")) {
+        resultValue = "right";
+    } else {
+        resultValue = "left";
+    }
+    v8SetReturnValueString(info, resultValue, info.GetIsolate());
+}
+
+static void limitedWithInvalidAndMissingDefaultAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::limitedWithInvalidAndMissingDefaultAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void limitedWithInvalidAndMissingDefaultAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    imp->setAttribute(HTMLNames::limitedwithinvalidandmissingdefaultattributeAttr, cppValue);
+}
+
+static void limitedWithInvalidAndMissingDefaultAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
+    CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
+    TestObjV8Internal::limitedWithInvalidAndMissingDefaultAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void typedArrayAttrAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -5383,6 +5502,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
     {"limitedToOnlyOneAttribute", TestObjV8Internal::limitedToOnlyOneAttributeAttributeGetterCallback, TestObjV8Internal::limitedToOnlyOneAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedToOnlyAttribute", TestObjV8Internal::limitedToOnlyAttributeAttributeGetterCallback, TestObjV8Internal::limitedToOnlyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"limitedToOnlyOtherAttribute", TestObjV8Internal::limitedToOnlyOtherAttributeAttributeGetterCallback, TestObjV8Internal::limitedToOnlyOtherAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"limitedWithMissingDefaultAttribute", TestObjV8Internal::limitedWithMissingDefaultAttributeAttributeGetterCallback, TestObjV8Internal::limitedWithMissingDefaultAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"limitedWithInvalidMissingDefaultAttribute", TestObjV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback, TestObjV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"limitedWithInvalidAndMissingDefaultAttribute", TestObjV8Internal::limitedWithInvalidAndMissingDefaultAttributeAttributeGetterCallback, TestObjV8Internal::limitedWithInvalidAndMissingDefaultAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"typedArrayAttr", TestObjV8Internal::typedArrayAttrAttributeGetterCallback, TestObjV8Internal::typedArrayAttrAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"attrWithGetterException", TestObjV8Internal::attrWithGetterExceptionAttributeGetterCallback, TestObjV8Internal::attrWithGetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"attrWithSetterException", TestObjV8Internal::attrWithSetterExceptionAttributeGetterCallback, TestObjV8Internal::attrWithSetterExceptionAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

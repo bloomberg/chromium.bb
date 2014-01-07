@@ -77,6 +77,8 @@ PutForwards=*
 RaisesException=|Getter|Setter|Constructor
 ReadOnly
 Reflect=|*
+ReflectInvalid=*
+ReflectMissing=*
 ReflectOnly=*
 Replaceable
 # Valid values for [RuntimeEnabled] are the Runtime Enabled Features, listed in
