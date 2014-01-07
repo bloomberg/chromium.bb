@@ -94,7 +94,7 @@ AtomicString StyleBuilderConverter::convertString(StyleResolverState&, CSSValue*
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     if (primitiveValue->getValueID() == IdForNone)
         return nullAtom;
-    return primitiveValue->getStringValue();
+    return AtomicString(primitiveValue->getStringValue());
 }
 
 } // namespace WebCore

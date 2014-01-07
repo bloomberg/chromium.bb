@@ -172,9 +172,9 @@ void SVGAElement::defaultEventHandler(Event* event)
                     return;
             }
 
-            String target = this->target();
+            AtomicString target = this->target();
             if (target.isEmpty() && fastGetAttribute(XLinkNames::showAttr) == "new")
-                target = "_blank";
+                target = AtomicString("_blank", AtomicString::ConstructFromLiteral);
             event->setDefaultHandled();
 
             Frame* frame = document().frame();

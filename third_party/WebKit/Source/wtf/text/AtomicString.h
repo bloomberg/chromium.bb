@@ -26,14 +26,6 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
-// Define 'NO_IMPLICIT_ATOMICSTRING' before including this header,
-// to disallow (expensive) implicit String-->AtomicString conversions.
-#ifdef NO_IMPLICIT_ATOMICSTRING
-#define ATOMICSTRING_CONVERSION explicit
-#else
-#define ATOMICSTRING_CONVERSION
-#endif
-
 namespace WTF {
 
 struct AtomicStringHash;
@@ -56,8 +48,11 @@ public:
     {
     }
 
+    // Constructing an AtomicString from a String / StringImpl can be expensive if
+    // the StringImpl is not already atomic.
     explicit AtomicString(StringImpl* imp) : m_string(add(imp)) { }
-    ATOMICSTRING_CONVERSION AtomicString(const String& s) : m_string(add(s.impl())) { }
+    explicit AtomicString(const String& s) : m_string(add(s.impl())) { }
+
     AtomicString(StringImpl* baseString, unsigned start, unsigned length) : m_string(add(baseString, start, length)) { }
 
     enum ConstructFromLiteralTag { ConstructFromLiteral };

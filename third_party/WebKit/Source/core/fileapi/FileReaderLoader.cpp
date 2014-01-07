@@ -102,7 +102,7 @@ void FileReaderLoader::startInternal(ExecutionContext* executionContext, const S
     ResourceRequest request(m_urlForReading);
     request.setHTTPMethod("GET");
     if (m_hasRange)
-        request.setHTTPHeaderField("Range", String::format("bytes=%d-%d", m_rangeStart, m_rangeEnd));
+        request.setHTTPHeaderField("Range", AtomicString(String::format("bytes=%d-%d", m_rangeStart, m_rangeEnd)));
 
     ThreadableLoaderOptions options;
     options.sniffContent = DoNotSniffContent;
