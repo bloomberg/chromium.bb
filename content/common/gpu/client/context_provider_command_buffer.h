@@ -30,6 +30,15 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
       scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d,
       const std::string& debug_name);
 
+  CommandBufferProxyImpl* GetCommandBufferProxy();
+  int GetGPUProcessID();
+
+  void set_leak_on_destroy() {
+    base::AutoLock lock(main_thread_lock_);
+    leak_on_destroy_ = true;
+  }
+
+  // cc::ContextProvider implementation.
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual WebGraphicsContext3DCommandBufferImpl* Context3d() OVERRIDE;
   virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
@@ -45,11 +54,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   virtual void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& memory_policy_changed_callback)
       OVERRIDE;
-
-  void set_leak_on_destroy() {
-    base::AutoLock lock(main_thread_lock_);
-    leak_on_destroy_ = true;
-  }
 
  protected:
   ContextProviderCommandBuffer(

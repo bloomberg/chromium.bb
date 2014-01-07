@@ -16,6 +16,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_sync_channel.h"
 
@@ -120,13 +121,12 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   }
 
   if (frame->gl_frame_data) {
-    WebGraphicsContext3DCommandBufferImpl* command_buffer_context =
-        static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-            context_provider_->Context3d());
+    ContextProviderCommandBuffer* provider_command_buffer =
+        static_cast<ContextProviderCommandBuffer*>(context_provider_.get());
     CommandBufferProxyImpl* command_buffer_proxy =
-        command_buffer_context->GetCommandBufferProxy();
+        provider_command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
-    context_provider_->Context3d()->shallowFlushCHROMIUM();
+    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
     command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
   }
 

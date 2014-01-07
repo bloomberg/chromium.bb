@@ -6,7 +6,7 @@
 
 #include "cc/output/context_provider.h"
 #include "content/common/gpu/client/gl_helper.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/compositor/compositor.h"
 
 namespace content {
@@ -19,7 +19,9 @@ class FakeTexture : public ui::Texture {
               float device_scale_factor)
       : ui::Texture(false, gfx::Size(), device_scale_factor),
         context_provider_(context_provider),
-        texture_(context_provider_->Context3d()->createTexture()) {}
+        texture_(0u) {
+    context_provider_->ContextGL()->GenTextures(1, &texture_);
+  }
 
   virtual unsigned int PrepareTexture() OVERRIDE { return texture_; }
 
@@ -30,7 +32,7 @@ class FakeTexture : public ui::Texture {
 
  private:
   virtual ~FakeTexture() {
-    context_provider_->Context3d()->deleteTexture(texture_);
+    context_provider_->ContextGL()->DeleteTextures(1, &texture_);
   }
 
   scoped_refptr<cc::ContextProvider> context_provider_;

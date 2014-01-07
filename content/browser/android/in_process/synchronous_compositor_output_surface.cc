@@ -14,6 +14,7 @@
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -174,7 +175,7 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
   DCHECK(CalledOnValidThread());
   if (!ForcedDrawToSoftwareDevice()) {
     DCHECK(context_provider_);
-    context_provider_->Context3d()->shallowFlushCHROMIUM();
+    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   }
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)

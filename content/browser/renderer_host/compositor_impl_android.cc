@@ -35,6 +35,7 @@
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/browser/android/compositor_client.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -64,26 +65,25 @@ class DirectOutputSurface : public cc::OutputSurface {
     surface_size_ = size;
   }
   virtual void SwapBuffers(cc::CompositorFrame*) OVERRIDE {
-    context_provider_->Context3d()->shallowFlushCHROMIUM();
+    context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   }
 };
 
 // Used to override capabilities_.adjust_deadline_for_parent to false
 class OutputSurfaceWithoutParent : public cc::OutputSurface {
  public:
-  OutputSurfaceWithoutParent(
-      const scoped_refptr<
-        content::ContextProviderCommandBuffer>& context_provider)
+  OutputSurfaceWithoutParent(const scoped_refptr<
+      content::ContextProviderCommandBuffer>& context_provider)
       : cc::OutputSurface(context_provider) {
     capabilities_.adjust_deadline_for_parent = false;
   }
 
   virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE {
-    content::WebGraphicsContext3DCommandBufferImpl* command_buffer_context =
-        static_cast<content::WebGraphicsContext3DCommandBufferImpl*>(
-            context_provider_->Context3d());
+    content::ContextProviderCommandBuffer* provider_command_buffer =
+        static_cast<content::ContextProviderCommandBuffer*>(
+            context_provider_.get());
     content::CommandBufferProxyImpl* command_buffer_proxy =
-        command_buffer_context->GetCommandBufferProxy();
+        provider_command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
     command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
 

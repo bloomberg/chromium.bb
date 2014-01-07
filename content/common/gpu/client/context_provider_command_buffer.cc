@@ -78,6 +78,15 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
   }
 }
 
+
+CommandBufferProxyImpl* ContextProviderCommandBuffer::GetCommandBufferProxy() {
+  return context3d_->GetCommandBufferProxy();
+}
+
+int ContextProviderCommandBuffer::GetGPUProcessID() {
+  return context3d_->GetGPUProcessID();
+}
+
 bool ContextProviderCommandBuffer::BindToCurrentThread() {
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());

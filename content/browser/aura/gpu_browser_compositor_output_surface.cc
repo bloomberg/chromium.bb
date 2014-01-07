@@ -6,7 +6,8 @@
 
 #include "cc/output/compositor_frame.h"
 #include "content/browser/aura/reflector_impl.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace content {
 
@@ -28,13 +29,12 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   DCHECK(frame->gl_frame_data);
 
-  WebGraphicsContext3DCommandBufferImpl* command_buffer_context =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-          context_provider_->Context3d());
+  ContextProviderCommandBuffer* provider_command_buffer =
+      static_cast<ContextProviderCommandBuffer*>(context_provider_.get());
   CommandBufferProxyImpl* command_buffer_proxy =
-      command_buffer_context->GetCommandBufferProxy();
+      provider_command_buffer->GetCommandBufferProxy();
   DCHECK(command_buffer_proxy);
-  context_provider_->Context3d()->shallowFlushCHROMIUM();
+  context_provider_->ContextGL()->ShallowFlushCHROMIUM();
   command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
 
   if (reflector_.get()) {

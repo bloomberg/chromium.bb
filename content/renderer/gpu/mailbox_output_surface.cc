@@ -9,7 +9,7 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/gl_frame_data.h"
 #include "cc/resources/resource_provider.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
@@ -17,6 +17,7 @@ using cc::CompositorFrame;
 using cc::GLFrameData;
 using cc::ResourceProvider;
 using gpu::Mailbox;
+using gpu::gles2::GLES2Interface;
 
 namespace content {
 
@@ -43,8 +44,8 @@ MailboxOutputSurface::~MailboxOutputSurface() {
   DiscardBackbuffer();
   while (!pending_textures_.empty()) {
     if (pending_textures_.front().texture_id) {
-      context_provider_->Context3d()->deleteTexture(
-          pending_textures_.front().texture_id);
+      context_provider_->ContextGL()->DeleteTextures(
+          1, &pending_textures_.front().texture_id);
     }
     pending_textures_.pop_front();
   }
@@ -53,7 +54,7 @@ MailboxOutputSurface::~MailboxOutputSurface() {
 void MailboxOutputSurface::EnsureBackbuffer() {
   is_backbuffer_discarded_ = false;
 
-  blink::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+  GLES2Interface* gl = context_provider_->ContextGL();
 
   if (!current_backing_.texture_id) {
     // Find a texture of matching size to recycle.
@@ -62,40 +63,34 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       if (texture.size == surface_size_) {
         current_backing_ = texture;
         if (current_backing_.sync_point)
-          context3d->waitSyncPoint(current_backing_.sync_point);
+          gl->WaitSyncPointCHROMIUM(current_backing_.sync_point);
         returned_textures_.pop();
         break;
       }
 
-      context3d->deleteTexture(texture.texture_id);
+      gl->DeleteTextures(1, &texture.texture_id);
       returned_textures_.pop();
     }
 
     if (!current_backing_.texture_id) {
-      current_backing_.texture_id = context3d->createTexture();
+      gl->GenTextures(1, &current_backing_.texture_id);
       current_backing_.size = surface_size_;
-      context3d->bindTexture(GL_TEXTURE_2D, current_backing_.texture_id);
-      context3d->texParameteri(
-          GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      context3d->texParameteri(
-          GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      context3d->texParameteri(
-          GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      context3d->texParameteri(
-          GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      context3d->texImage2D(
-          GL_TEXTURE_2D,
-          0,
-          GLInternalFormat(format_),
-          surface_size_.width(),
-          surface_size_.height(),
-          0,
-          GLDataFormat(format_),
-          GLDataType(format_),
-          NULL);
-      context3d->genMailboxCHROMIUM(current_backing_.mailbox.name);
-      context3d->produceTextureCHROMIUM(
-          GL_TEXTURE_2D, current_backing_.mailbox.name);
+      gl->BindTexture(GL_TEXTURE_2D, current_backing_.texture_id);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+      gl->TexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GLInternalFormat(format_),
+                     surface_size_.width(),
+                     surface_size_.height(),
+                     0,
+                     GLDataFormat(format_),
+                     GLDataType(format_),
+                     NULL);
+      gl->GenMailboxCHROMIUM(current_backing_.mailbox.name);
+      gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, current_backing_.mailbox.name);
     }
   }
 }
@@ -103,22 +98,22 @@ void MailboxOutputSurface::EnsureBackbuffer() {
 void MailboxOutputSurface::DiscardBackbuffer() {
   is_backbuffer_discarded_ = true;
 
-  blink::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+  GLES2Interface* gl = context_provider_->ContextGL();
 
   if (current_backing_.texture_id) {
-    context3d->deleteTexture(current_backing_.texture_id);
+    gl->DeleteTextures(1, &current_backing_.texture_id);
     current_backing_ = TransferableFrame();
   }
 
   while (!returned_textures_.empty()) {
     const TransferableFrame& frame = returned_textures_.front();
-    context3d->deleteTexture(frame.texture_id);
+    gl->DeleteTextures(1, &frame.texture_id);
     returned_textures_.pop();
   }
 
   if (fbo_) {
-    context3d->bindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    context3d->deleteFramebuffer(fbo_);
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    gl->DeleteFramebuffers(1, &fbo_);
     fbo_ = 0;
   }
 }
@@ -137,14 +132,16 @@ void MailboxOutputSurface::BindFramebuffer() {
   EnsureBackbuffer();
   DCHECK(current_backing_.texture_id);
 
-  blink::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+  GLES2Interface* gl = context_provider_->ContextGL();
 
   if (!fbo_)
-    fbo_ = context3d->createFramebuffer();
-  context3d->bindFramebuffer(GL_FRAMEBUFFER, fbo_);
-  context3d->framebufferTexture2D(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
-      current_backing_.texture_id, 0);
+    gl->GenFramebuffers(1, &fbo_);
+  gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+  gl->FramebufferTexture2D(GL_FRAMEBUFFER,
+                           GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D,
+                           current_backing_.texture_id,
+                           0);
 }
 
 void MailboxOutputSurface::OnSwapAck(uint32 output_surface_id,
@@ -175,7 +172,7 @@ void MailboxOutputSurface::OnSwapAck(uint32 output_surface_id,
     if (!is_backbuffer_discarded_) {
       returned_textures_.push(*it);
     } else {
-      context_provider_->Context3d()->deleteTexture(it->texture_id);
+      context_provider_->ContextGL()->DeleteTextures(1, &it->texture_id);
     }
 
     pending_textures_.erase(it);
@@ -186,7 +183,7 @@ void MailboxOutputSurface::OnSwapAck(uint32 output_surface_id,
     // the oldest texture we sent.
     uint32 texture_id = pending_textures_.front().texture_id;
     if (texture_id)
-      context_provider_->Context3d()->deleteTexture(texture_id);
+      context_provider_->ContextGL()->DeleteTextures(1, &texture_id);
     pending_textures_.pop_front();
   }
   CompositorOutputSurface::OnSwapAck(output_surface_id, ack);
@@ -198,12 +195,12 @@ void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   DCHECK(surface_size_ == current_backing_.size);
   DCHECK(frame->gl_frame_data->size == current_backing_.size);
   DCHECK(!current_backing_.mailbox.IsZero() ||
-         context_provider_->Context3d()->isContextLost());
+         context_provider_->IsContextLost());
 
   frame->gl_frame_data->mailbox = current_backing_.mailbox;
-  context_provider_->Context3d()->flush();
+  context_provider_->ContextGL()->Flush();
   frame->gl_frame_data->sync_point =
-      context_provider_->Context3d()->insertSyncPoint();
+      context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
   CompositorOutputSurface::SwapBuffers(frame);
 
   pending_textures_.push_back(current_backing_);

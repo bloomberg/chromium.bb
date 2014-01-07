@@ -293,11 +293,11 @@ gfx::GLSurfaceHandle GpuProcessTransportFactory::CreateSharedSurfaceHandle() {
       SharedMainThreadContextProvider();
   if (!provider.get())
     return gfx::GLSurfaceHandle();
-  typedef WebGraphicsContext3DCommandBufferImpl WGC3DCBI;
-  WGC3DCBI* context = static_cast<WGC3DCBI*>(provider->Context3d());
+  ContextProviderCommandBuffer* provider_command_buffer =
+      static_cast<ContextProviderCommandBuffer*>(provider.get());
   gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
       gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
-  handle.parent_gpu_process_id = context->GetGPUProcessID();
+  handle.parent_gpu_process_id = provider_command_buffer->GetGPUProcessID();
   handle.parent_client_id =
       BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   return handle;
@@ -349,7 +349,7 @@ uint32 GpuProcessTransportFactory::InsertSyncPoint() {
       SharedMainThreadContextProvider();
   if (!provider.get())
     return 0;
-  return provider->Context3d()->insertSyncPoint();
+  return provider->ContextGL()->InsertSyncPointCHROMIUM();
 }
 
 void GpuProcessTransportFactory::WaitSyncPoint(uint32 sync_point) {
@@ -357,7 +357,7 @@ void GpuProcessTransportFactory::WaitSyncPoint(uint32 sync_point) {
       SharedMainThreadContextProvider();
   if (!provider.get())
     return;
-  provider->Context3d()->waitSyncPoint(sync_point);
+  provider->ContextGL()->WaitSyncPointCHROMIUM(sync_point);
 }
 
 void GpuProcessTransportFactory::AddObserver(
