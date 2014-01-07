@@ -30,6 +30,10 @@
 #include "grit/content_resources.h"
 #include "third_party/angle/src/common/version.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -118,8 +122,15 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
     basic_info->Append(NewDescriptionValuePair(
         "DisplayLink Version", gpu_info.display_link_version.GetString()));
   }
-  basic_info->Append(NewDescriptionValuePair("Driver vendor",
-                                             gpu_info.driver_vendor));
+#if defined(OS_WIN)
+  std::string compositor =
+      ui::win::IsAeroGlassEnabled() ? "Aero Glass" : "none";
+  basic_info->Append(
+      NewDescriptionValuePair("Desktop compositing", compositor));
+#endif
+
+  basic_info->Append(
+      NewDescriptionValuePair("Driver vendor", gpu_info.driver_vendor));
   basic_info->Append(NewDescriptionValuePair("Driver version",
                                              gpu_info.driver_version));
   basic_info->Append(NewDescriptionValuePair("Driver date",
