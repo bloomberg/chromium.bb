@@ -983,6 +983,13 @@ TEST_F(AppsGridControllerTest, ContextMenus) {
   menu = [page menuForEvent:mouse_at_cell_1];
   EXPECT_EQ(1, [menu numberOfItems]);
   EXPECT_NSEQ(@"Menu For: Item Two", [[menu itemAtIndex:0] title]);
+
+  // Test that a button being held down with the left button does not also show
+  // a context menu.
+  [GetItemViewAt(0) highlight:YES];
+  EXPECT_FALSE([page menuForEvent:mouse_at_cell_0]);
+  [GetItemViewAt(0) highlight:NO];
+  EXPECT_TRUE([page menuForEvent:mouse_at_cell_0]);
 }
 
 }  // namespace test

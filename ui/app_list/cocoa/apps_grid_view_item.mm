@@ -345,6 +345,10 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
 }
 
 - (NSMenu*)contextMenu {
+  // Don't show the menu if button is already held down, e.g. with a left-click.
+  if ([[[self button] cell] isHighlighted])
+    return nil;
+
   [self setSelected:YES];
   return observerBridge_->GetContextMenu();
 }
