@@ -100,11 +100,6 @@ class ResourceRequestInfo {
   // the requested URL may be being loaded by an external program.
   virtual bool WasIgnoredByHandler() const = 0;
 
-  // Returns false if there is NOT an associated render view.
-  // TODO(jam): remove this. http://crbug.com/304341
-  virtual bool GetAssociatedRenderView(int* render_process_id,
-                                       int* render_view_id) const = 0;
-
   // Returns false if there is NOT an associated render frame.
   virtual bool GetAssociatedRenderFrame(int* render_process_id,
                                         int* render_frame_id) const = 0;

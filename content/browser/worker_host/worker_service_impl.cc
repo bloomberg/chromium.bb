@@ -320,7 +320,7 @@ void WorkerServiceImpl::CreateWorker(
   instance.AddFilter(filter, route_id);
   instance.worker_document_set()->Add(
       filter, params.document_id, filter->render_process_id(),
-      params.render_view_route_id, params.render_frame_route_id);
+      params.render_frame_route_id);
 
   CreateWorkerFromInstance(instance);
 }
@@ -365,7 +365,7 @@ void WorkerServiceImpl::LookupSharedWorker(
     // worker's document set for nested workers.
     instance->worker_document_set()->Add(
         filter, params.document_id, filter->render_process_id(),
-        params.render_view_route_id, params.render_frame_route_id);
+        params.render_frame_route_id);
   }
 }
 
@@ -579,7 +579,6 @@ void WorkerServiceImpl::TryStartingQueuedWorker() {
 
 bool WorkerServiceImpl::GetRendererForWorker(int worker_process_id,
                                              int* render_process_id,
-                                             int* render_view_id,
                                              int* render_frame_id) const {
   for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter.GetData().id != worker_process_id)
@@ -594,7 +593,6 @@ bool WorkerServiceImpl::GetRendererForWorker(int worker_process_id,
     WorkerDocumentSet::DocumentInfoSet::const_iterator info =
         first_instance->worker_document_set()->documents().begin();
     *render_process_id = info->render_process_id();
-    *render_view_id = info->render_view_id();
     *render_frame_id = info->render_frame_id();
     return true;
   }

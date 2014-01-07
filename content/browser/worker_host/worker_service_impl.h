@@ -62,13 +62,12 @@ class CONTENT_EXPORT WorkerServiceImpl
   int next_worker_route_id() { return ++next_worker_route_id_; }
 
   // Given a worker's process id, return the IDs of the renderer process and
-  // render view that created it.  For shared workers, this returns the first
+  // render frame that created it.  For shared workers, this returns the first
   // parent.
   // TODO(dimich): This code assumes there is 1 worker per worker process, which
   // is how it is today until V8 can run in separate threads.
   bool GetRendererForWorker(int worker_process_id,
                             int* render_process_id,
-                            int* render_view_id,
                             int* render_frame_id) const;
   const WorkerProcessHost::WorkerInstance* FindWorkerInstance(
       int worker_process_id);

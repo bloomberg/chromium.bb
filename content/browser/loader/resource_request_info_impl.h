@@ -79,8 +79,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual PageTransition GetPageTransition() const OVERRIDE;
   virtual bool HasUserGesture() const OVERRIDE;
   virtual bool WasIgnoredByHandler() const OVERRIDE;
-  virtual bool GetAssociatedRenderView(int* render_process_id,
-                                       int* render_view_id) const OVERRIDE;
   virtual bool GetAssociatedRenderFrame(int* render_process_id,
                                         int* render_frame_id) const OVERRIDE;
   virtual bool IsAsync() const OVERRIDE;

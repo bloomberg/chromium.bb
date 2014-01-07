@@ -17,10 +17,8 @@ WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
                                            unsigned long long document_id,
                                            bool exists,
                                            int route_id,
-                                           int render_view_route_id,
                                            int render_frame_route_id)
     : route_id_(exists ? route_id : MSG_ROUTING_NONE),
-      render_view_route_id_(render_view_route_id),
       render_frame_route_id_(render_frame_route_id),
       child_thread_(child_thread),
       document_id_(document_id),
@@ -65,7 +63,6 @@ void WebSharedWorkerProxy::CreateWorkerContext(
   params.url = script_url;
   params.name = name;
   params.document_id = document_id_;
-  params.render_view_route_id = render_view_route_id_;
   params.render_frame_route_id = render_frame_route_id_;
   params.route_id = pending_route_id;
   params.script_resource_appcache_id = script_resource_appcache_id;

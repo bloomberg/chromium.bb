@@ -31,7 +31,6 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
                        unsigned long long document_id,
                        bool exists,
                        int route_id,
-                       int render_view_route_id,
                        int render_frame_route_id);
   virtual ~WebSharedWorkerProxy();
 
@@ -87,8 +86,7 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
   // routing ids).
   int route_id_;
 
-  // The routing id for the RenderView and RenderFrame that created this worker.
-  int render_view_route_id_;
+  // The routing id for the RenderFrame that created this worker.
   int render_frame_route_id_;
 
   ChildThread* child_thread_;

@@ -198,31 +198,6 @@ bool ResourceRequestInfoImpl::WasIgnoredByHandler() const {
   return was_ignored_by_handler_;
 }
 
-bool ResourceRequestInfoImpl::GetAssociatedRenderView(
-    int* render_process_id,
-    int* render_view_id) const {
-  // If the request is from the worker process, find a content that owns the
-  // worker.
-  if (process_type_ == PROCESS_TYPE_WORKER) {
-    // Need to display some related UI for this network request - pick an
-    // arbitrary parent to do so.
-    int unused;
-    if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
-            child_id_, render_process_id, render_view_id, &unused)) {
-      *render_process_id = -1;
-      *render_view_id = -1;
-      return false;
-    }
-  } else if (process_type_ == PROCESS_TYPE_PLUGIN) {
-    *render_process_id = origin_pid_;
-    *render_view_id = route_id_;
-  } else {
-    *render_process_id = child_id_;
-    *render_view_id = route_id_;
-  }
-  return true;
-}
-
 bool ResourceRequestInfoImpl::GetAssociatedRenderFrame(
     int* render_process_id,
     int* render_frame_id) const {
@@ -231,9 +206,8 @@ bool ResourceRequestInfoImpl::GetAssociatedRenderFrame(
   if (process_type_ == PROCESS_TYPE_WORKER) {
     // Need to display some related UI for this network request - pick an
     // arbitrary parent to do so.
-    int unused;
     if (!WorkerServiceImpl::GetInstance()->GetRendererForWorker(
-            child_id_, render_process_id, &unused, render_frame_id)) {
+            child_id_, render_process_id, render_frame_id)) {
       *render_process_id = -1;
       *render_frame_id = -1;
       return false;
