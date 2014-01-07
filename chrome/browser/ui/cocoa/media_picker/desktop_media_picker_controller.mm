@@ -229,6 +229,10 @@ const int kExcessButtonPadding = 6;
   // Report the result if it hasn't been reported yet. |reportResult:| ensures
   // that the result is only reported once.
   [self reportResult:content::DesktopMediaID()];
+
+  // Remove self from the parent.
+  NSWindow* window = [self window];
+  [[window parentWindow] removeChildWindow:window];
 }
 
 #pragma mark IKImageBrowserDataSource
