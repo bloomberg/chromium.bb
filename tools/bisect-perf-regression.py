@@ -2362,22 +2362,16 @@ class BisectPerformanceMetrics(object):
   def _PrintOtherRegressions(self, other_regressions, revision_data):
     print
     print 'Other regressions may have occurred:'
+    print '  %8s  %82s  %10s' % ('Depot'.center(8, ' '),
+        'Range'.center(82, ' '), 'Confidence'.center(10, ' '))
     for regression in other_regressions:
-      current_id, previous_id, percent_change, deviations = regression
+      current_id, previous_id, confidence = regression
       current_data = revision_data[current_id]
       previous_data = revision_data[previous_id]
 
-      if deviations is None:
-        deviations = 'N/A'
-      else:
-        deviations = '%.2f' % deviations
-
-      if percent_change is None:
-        percent_change = 0
-
-      print '  %8s  %s  [%.2f%%, %s x std.dev]' % (
-          previous_data['depot'], previous_id, 100 * percent_change, deviations)
-      print '  %8s  %s' % (current_data['depot'], current_id)
+      print '  %8s  %s..%s %s' % (
+          current_data['depot'], current_id, previous_id,
+          ('%d%%' % confidence).center(10, ' '))
       print
 
   def _PrintStepTime(self, revision_data_sorted):
@@ -2405,6 +2399,65 @@ class BisectPerformanceMetrics(object):
     for w in set(self.warnings):
       print '  !!! %s' % w
 
+  def _FindOtherRegressions(self, revision_data_sorted, bad_greater_than_good):
+    other_regressions = []
+    previous_values = []
+    previous_id = None
+    for current_id, current_data in revision_data_sorted:
+      current_values = current_data['value']
+      if current_values:
+        current_values = current_values['values']
+        if previous_values:
+          confidence = self._CalculateConfidence(previous_values,
+              [current_values])
+          mean_of_prev_runs = CalculateTruncatedMean(
+              sum(previous_values, []), 0)
+          mean_of_current_runs = CalculateTruncatedMean(current_values, 0)
+
+          # Check that the potential regression is in the same direction as
+          # the overall regression. If the mean of the previous runs < the
+          # mean of the current runs, this local regression is in same
+          # direction.
+          prev_less_than_current = mean_of_prev_runs < mean_of_current_runs
+          is_same_direction = (prev_less_than_current if
+              bad_greater_than_good else not prev_less_than_current)
+
+          # Only report potential regressions with high confidence.
+          if is_same_direction and confidence > 50:
+            other_regressions.append([current_id, previous_id, confidence])
+        previous_values.append(current_values)
+        previous_id = current_id
+    return other_regressions
+
+  def _CalculateConfidence(self, working_means, broken_means):
+    bounds_working = []
+    bounds_broken = []
+    for m in working_means:
+      current_mean = CalculateTruncatedMean(m, 0)
+      if bounds_working:
+        bounds_working[0] = min(current_mean, bounds_working[0])
+        bounds_working[1] = max(current_mean, bounds_working[0])
+      else:
+        bounds_working = [current_mean, current_mean]
+    for m in broken_means:
+      current_mean = CalculateTruncatedMean(m, 0)
+      if bounds_broken:
+        bounds_broken[0] = min(current_mean, bounds_broken[0])
+        bounds_broken[1] = max(current_mean, bounds_broken[0])
+      else:
+        bounds_broken = [current_mean, current_mean]
+    dist_between_groups = min(math.fabs(bounds_broken[1] - bounds_working[0]),
+        math.fabs(bounds_broken[0] - bounds_working[1]))
+    working_mean = sum(working_means, [])
+    broken_mean = sum(broken_means, [])
+    len_working_group = CalculateStandardDeviation(working_mean)
+    len_broken_group = CalculateStandardDeviation(broken_mean)
+
+    confidence = (dist_between_groups / (
+        max(0.0001, (len_broken_group + len_working_group ))))
+    confidence = int(min(1.0, max(confidence, 0.0)) * 100.0)
+    return confidence
+
   def _GetResultsDict(self, revision_data, revision_data_sorted):
     # Find range where it possibly broke.
     first_working_revision = None
@@ -2424,27 +2477,19 @@ class BisectPerformanceMetrics(object):
         last_broken_revision_index = i
 
     if last_broken_revision != None and first_working_revision != None:
-      bounds_broken = [revision_data[last_broken_revision]['value']['mean'],
-          revision_data[last_broken_revision]['value']['mean']]
-      broken_mean = []
+      broken_means = []
       for i in xrange(0, last_broken_revision_index + 1):
         if revision_data_sorted[i][1]['value']:
-          bounds_broken[0] = min(bounds_broken[0],
-              revision_data_sorted[i][1]['value']['mean'])
-          bounds_broken[1] = max(bounds_broken[1],
-              revision_data_sorted[i][1]['value']['mean'])
-          broken_mean.extend(revision_data_sorted[i][1]['value']['values'])
+          broken_means.append(revision_data_sorted[i][1]['value']['values'])
 
-      bounds_working = [revision_data[first_working_revision]['value']['mean'],
-          revision_data[first_working_revision]['value']['mean']]
-      working_mean = []
+      working_means = []
       for i in xrange(first_working_revision_index, len(revision_data_sorted)):
         if revision_data_sorted[i][1]['value']:
-          bounds_working[0] = min(bounds_working[0],
-              revision_data_sorted[i][1]['value']['mean'])
-          bounds_working[1] = max(bounds_working[1],
-              revision_data_sorted[i][1]['value']['mean'])
-          working_mean.extend(revision_data_sorted[i][1]['value']['values'])
+          working_means.append(revision_data_sorted[i][1]['value']['values'])
+
+      # Flatten the lists to calculate mean of all values.
+      working_mean = sum(working_means, [])
+      broken_mean = sum(broken_means, [])
 
       # Calculate the approximate size of the regression
       mean_of_bad_runs = CalculateTruncatedMean(broken_mean, 0.0)
@@ -2460,14 +2505,7 @@ class BisectPerformanceMetrics(object):
       # Give a "confidence" in the bisect. At the moment we use how distinct the
       # values are before and after the last broken revision, and how noisy the
       # overall graph is.
-      dist_between_groups = min(math.fabs(bounds_broken[1] - bounds_working[0]),
-          math.fabs(bounds_broken[0] - bounds_working[1]))
-      len_working_group = CalculateStandardDeviation(working_mean)
-      len_broken_group = CalculateStandardDeviation(broken_mean)
-
-      confidence = (dist_between_groups / (
-          max(0.0001, (len_broken_group + len_working_group ))))
-      confidence = int(min(1.0, max(confidence, 0.0)) * 100.0)
+      confidence = self._CalculateConfidence(working_means, broken_means)
 
       culprit_revisions = []
 
@@ -2518,39 +2556,8 @@ class BisectPerformanceMetrics(object):
       os.chdir(cwd)
 
       # Check for any other possible regression ranges
-      good_std_dev = revision_data[first_working_revision]['value']['std_err']
-      good_mean = revision_data[first_working_revision]['value']['mean']
-      bad_mean = revision_data[last_broken_revision]['value']['mean']
-      prev_revision_data = revision_data_sorted[0][1]
-      prev_revision_id = revision_data_sorted[0][0]
-      other_regressions = []
-      for current_id, current_data in revision_data_sorted:
-        if current_data['value']:
-          prev_mean = prev_revision_data['value']['mean']
-          cur_mean = current_data['value']['mean']
-
-          if good_std_dev:
-            deviations = math.fabs(prev_mean - cur_mean) / good_std_dev
-          else:
-            deviations = None
-
-          if good_mean:
-            percent_change = (prev_mean - cur_mean) / good_mean
-
-            # If the "good" valuse are supposed to be higher than the "bad"
-            # values (ie. scores), flip the sign of the percent change so that
-            # a positive value always represents a regression.
-            if bad_mean < good_mean:
-              percent_change *= -1.0
-          else:
-            percent_change = None
-
-          if deviations >= 1.5 or percent_change > 0.01:
-            if current_id != first_working_revision:
-              other_regressions.append(
-                  [current_id, prev_revision_id, percent_change, deviations])
-          prev_revision_data = current_data
-          prev_revision_id = current_id
+      other_regressions = self._FindOtherRegressions(revision_data_sorted,
+          mean_of_bad_runs > mean_of_good_runs)
 
     # Check for warnings:
     if len(culprit_revisions) > 1:
