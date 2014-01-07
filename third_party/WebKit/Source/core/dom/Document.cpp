@@ -1294,21 +1294,18 @@ void Document::updateTitle(const String& title)
     m_frame->loader().client()->dispatchDidReceiveTitle(m_title);
 }
 
-// http://www.whatwg.org/specs/web-apps/current-work/multipage/dom.html#document.title
 void Document::setTitle(const String& title)
 {
+    // Title set by JavaScript -- overrides any title elements.
+    m_titleSetExplicitly = true;
     if (!isHTMLDocument() && !isXHTMLDocument())
         m_titleElement = 0;
     else if (!m_titleElement) {
         if (HTMLElement* headElement = head()) {
             m_titleElement = createElement(titleTag, false);
             headElement->appendChild(m_titleElement);
-        } else {
-            // "If the title element is null and the head element is null, then the attribute must do nothing."
-            return;
         }
     }
-    m_titleSetExplicitly = true;
 
     if (m_titleElement)
         m_titleElement->removeChildren();
