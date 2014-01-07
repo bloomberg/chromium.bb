@@ -1623,7 +1623,7 @@ class BisectPerformanceMetrics(object):
 
             if not external_revisions is None:
               return (results[0], results[1], external_revisions,
-                  time.time() - after_build_time, time.time() -
+                  time.time() - after_build_time, after_build_time -
                   start_build_time)
             else:
               return ('Failed to parse DEPS file for external revisions.',
@@ -2379,9 +2379,10 @@ class BisectPerformanceMetrics(object):
     step_build_time_avg = 0.0
     step_count = 0.0
     for _, current_data in revision_data_sorted:
-      step_perf_time_avg += current_data['perf_time']
-      step_build_time_avg += current_data['build_time']
-      step_count += 1
+      if current_data['value']:
+        step_perf_time_avg += current_data['perf_time']
+        step_build_time_avg += current_data['build_time']
+        step_count += 1
     if step_count:
       step_perf_time_avg = step_perf_time_avg / step_count
       step_build_time_avg = step_build_time_avg / step_count
