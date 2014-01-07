@@ -116,13 +116,6 @@ def CheckPassByValue(input_api,
   # Well-defined simple classes containing only <= 4 ints, or <= 2 floats.
   pass_by_value_types = ['base::Time',
                          'base::TimeTicks',
-                         'gfx::Point',
-                         'gfx::PointF',
-                         'gfx::Rect',
-                         'gfx::Size',
-                         'gfx::SizeF',
-                         'gfx::Vector2d',
-                         'gfx::Vector2dF',
                          ]
 
   for f in input_api.AffectedSourceFiles(source_file_filter):
