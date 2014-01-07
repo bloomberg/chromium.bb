@@ -13,3 +13,7 @@ The ios directory contains a config.h generated from a run of configure
   CPPFLAGS=-isysroot /Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS4.3.sdk
   CXX=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/gcc-4.2 -x c++ -arch armv6
   CXXFLAGS=-mno-thumb -miphoneos-version-min=4.2
+
+The win directory contains a config.h that forwards to one provided with
+open-vcdiff. We have this to avoid putting open-vcdiff's minimal stdint.h hack
+into our include path.

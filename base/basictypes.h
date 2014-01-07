@@ -13,16 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/port.h"  // Types that only need exist on certain systems.
 
-// TODO(vtl): We get conflicts with other definitions of |int8|/|uint8| if we
-// try to define them as |int8_t|/|uint8_t|, at least on Windows.
-#ifdef _MSC_VER
-typedef signed char int8;
-typedef unsigned char uint8;
-#else
 typedef int8_t int8;
 typedef uint8_t uint8;
-#endif
-
 typedef int16_t int16;
 typedef int32_t int32;
 typedef uint16_t uint16;

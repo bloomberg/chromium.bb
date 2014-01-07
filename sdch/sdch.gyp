@@ -57,7 +57,7 @@
         [ 'os_bsd==1 or OS=="solaris"', { 'include_dirs': [ 'bsd' ] } ],
         [ 'OS == "ios"', { 'include_dirs': [ 'ios' ] } ],
         [ 'OS == "mac"', { 'include_dirs': [ 'mac' ] } ],
-        [ 'OS == "win"', { 'include_dirs': [ 'open-vcdiff/vsprojects' ] } ],
+        [ 'OS == "win"', { 'include_dirs': [ 'win' ] } ],
         # TODO(mark): Remove usage of the deprecated auto_ptr.
         [ 'clang == 1', { 'cflags': [ '-Wno-deprecated-declarations' ] } ],
       ],
