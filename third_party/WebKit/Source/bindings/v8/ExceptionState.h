@@ -127,9 +127,19 @@ private:
     v8::Isolate* m_isolate;
 };
 
+// Used if exceptions can/should not be directly thrown.
+class NonThrowableExceptionState : public ExceptionState {
+public:
+    NonThrowableExceptionState(): ExceptionState(v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
+    virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE FINAL;
+    virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
+    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE FINAL;
+};
+
+// Used if any exceptions thrown are ignorable.
 class TrackExceptionState : public ExceptionState {
 public:
-    TrackExceptionState(): ExceptionState(v8::Handle<v8::Object>(), 0) { }
+    TrackExceptionState(): ExceptionState(v8::Handle<v8::Object>(), v8::Isolate::GetCurrent()) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE FINAL;
     virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE FINAL;

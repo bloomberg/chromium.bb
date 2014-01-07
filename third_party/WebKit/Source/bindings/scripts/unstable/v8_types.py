@@ -57,7 +57,13 @@ BASIC_TYPES = set([
     # unrestricted float is not supported
     'double',
     # unrestricted double is not supported
-    # integer types
+    # http://www.w3.org/TR/WebIDL/#idl-types
+    'DOMString',
+    'Date',
+    # http://www.w3.org/TR/WebIDL/#es-type-mapping
+    'void',
+])
+INTEGER_TYPES = set([
     # http://www.w3.org/TR/WebIDL/#dfn-integer-type
     'byte',
     'octet',
@@ -68,12 +74,8 @@ BASIC_TYPES = set([
     'unsigned long',
     'long long',
     'unsigned long long',
-    # http://www.w3.org/TR/WebIDL/#idl-types
-    'DOMString',
-    'Date',
-    # http://www.w3.org/TR/WebIDL/#es-type-mapping
-    'void',
 ])
+BASIC_TYPES.update(INTEGER_TYPES)
 
 enum_types = {}  # name -> values
 callback_function_types = set()
@@ -90,6 +92,10 @@ def array_type(idl_type):
 
 def is_basic_type(idl_type):
     return idl_type in BASIC_TYPES
+
+
+def is_integer_type(idl_type):
+    return idl_type in INTEGER_TYPES
 
 
 def is_callback_function_type(idl_type):
@@ -377,8 +383,10 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index):
     add_includes_for_type(idl_type)
 
     if 'EnforceRange' in extended_attributes:
-        arguments = ', '.join([v8_value, 'EnforceRange', 'ok'])
-    else:  # NormalConversion
+        arguments = ', '.join([v8_value, 'EnforceRange', 'exceptionState'])
+    elif is_integer_type(idl_type):  # NormalConversion
+        arguments = ', '.join([v8_value, 'exceptionState'])
+    else:
         arguments = v8_value
 
     if idl_type in V8_VALUE_TO_CPP_VALUE:
@@ -421,8 +429,8 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
     idl_type = preprocess_idl_type(idl_type)
     if idl_type == 'DOMString':
         format_string = 'V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID({cpp_type}, {variable_name}, {cpp_value})'
-    elif 'EnforceRange' in extended_attributes:
-        format_string = 'V8TRYCATCH_WITH_TYPECHECK_VOID({cpp_type}, {variable_name}, {cpp_value}, info.GetIsolate())'
+    elif is_integer_type(idl_type):
+        format_string = 'V8TRYCATCH_EXCEPTION_VOID({cpp_type}, {variable_name}, {cpp_value}, exceptionState)'
     else:
         format_string = 'V8TRYCATCH_VOID({cpp_type}, {variable_name}, {cpp_value})'
 

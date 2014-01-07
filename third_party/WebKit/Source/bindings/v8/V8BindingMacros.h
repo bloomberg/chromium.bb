@@ -33,13 +33,13 @@
 
 namespace WebCore {
 
-#define V8TRYCATCH(type, var, value) \
-    type var;                             \
-    {                                     \
-        v8::TryCatch block;               \
-        var = (value);                    \
-        if (block.HasCaught())            \
-            return block.ReThrow();       \
+#define V8TRYCATCH(type, var, value)     \
+    type var;                            \
+    {                                    \
+        v8::TryCatch block;              \
+        var = (value);                   \
+        if (UNLIKELY(block.HasCaught())) \
+            return block.ReThrow();      \
     }
 
 #define V8TRYCATCH_RETURN(type, var, value, retVal) \
@@ -47,49 +47,53 @@ namespace WebCore {
     {                                               \
         v8::TryCatch block;                         \
         var = (value);                              \
-        if (block.HasCaught()) {                    \
+        if (UNLIKELY(block.HasCaught())) {          \
             block.ReThrow();                        \
             return retVal;                          \
         }                                           \
     }
 
-#define V8TRYCATCH_VOID(type, var, value) \
-    type var;                             \
-    {                                     \
-        v8::TryCatch block;               \
-        var = (value);                    \
-        if (block.HasCaught()) {          \
-            block.ReThrow();              \
-            return;                       \
-        }                                 \
+#define V8TRYCATCH_EXCEPTION_RETURN(type, var, value, exceptionState, retVal) \
+    type var;                                                                 \
+    {                                                                         \
+        v8::TryCatch block;                                                   \
+        var = (value);                                                        \
+        if (UNLIKELY(block.HasCaught()))                                      \
+            exceptionState.rethrowV8Exception(block.Exception());             \
+        if (UNLIKELY(exceptionState.throwIfNeeded()))                         \
+            return retVal;                                                    \
     }
 
-#define V8TRYCATCH_WITH_TYPECHECK_VOID(type, var, value, isolate) \
-    type var;                                                     \
-    {                                                             \
-        bool ok = true;                                           \
-        {                                                         \
-            v8::TryCatch block;                                   \
-            var = (value);                                        \
-            if (block.HasCaught()) {                              \
-                block.ReThrow();                                  \
-                return;                                           \
-            }                                                     \
-        }                                                         \
-        if (UNLIKELY(!ok)) {                                      \
-            throwUninformativeAndGenericTypeError(isolate);       \
-            return;                                               \
-        }                                                         \
+#define V8TRYCATCH_VOID(type, var, value)  \
+    type var;                              \
+    {                                      \
+        v8::TryCatch block;                \
+        var = (value);                     \
+        if (UNLIKELY(block.HasCaught())) { \
+            block.ReThrow();               \
+            return;                        \
+        }                                  \
+    }
+
+#define V8TRYCATCH_EXCEPTION_VOID(type, var, value, exceptionState) \
+    type var;                                                       \
+    {                                                               \
+        v8::TryCatch block;                                         \
+        var = (value);                                              \
+        if (UNLIKELY(block.HasCaught()))                            \
+            exceptionState.rethrowV8Exception(block.Exception());   \
+        if (UNLIKELY(exceptionState.throwIfNeeded()))               \
+            return;                                                 \
     }
 
 #define V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(type, var, value, retVal) \
     type var(value);                                                     \
-    if (!var.prepare())                                                  \
+    if (UNLIKELY(!var.prepare()))                                        \
         return retVal;
 
 #define V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(type, var, value) \
-    type var(value);                                                 \
-    if (!var.prepare())                                              \
+    type var(value);                                           \
+    if (UNLIKELY(!var.prepare()))                              \
         return;
 
 } // namespace WebCore

@@ -83,6 +83,24 @@ void ExceptionState::throwTypeError(const String& message)
     setException(V8ThrowException::createTypeError(addExceptionContext(message), m_isolate));
 }
 
+void NonThrowableExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)
+{
+    ASSERT_NOT_REACHED();
+    m_code = ec;
+}
+
+void NonThrowableExceptionState::throwTypeError(const String&)
+{
+    ASSERT_NOT_REACHED();
+    m_code = TypeError;
+}
+
+void NonThrowableExceptionState::throwSecurityError(const String&, const String&)
+{
+    ASSERT_NOT_REACHED();
+    m_code = SecurityError;
+}
+
 void TrackExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)
 {
     m_code = ec;

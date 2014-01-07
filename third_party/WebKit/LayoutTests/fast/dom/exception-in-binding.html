@@ -1,52 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <script src="../../resources/js-test.js"></script>
-    <script>
-    description("Tests to ensure that attributes are not set when an exceptions is raised while converting argument to JSValue.");
-    function setName(select) {
-        var stringLike = {
-            toString: function() {
-                throw new Error("error");
-            }
-        };
-        select.name = stringLike;;
-    }
-
-    function setSelectedIndex(select) {
-        var integerLike = {
-            valueOf: function() {
-                throw new Error("error");
-            }
-        };
-        select.selectedIndex = integerLike;;
-    }
-
-    function runTest() {
-        var select = document.getElementById("select");
-        try {
-            setName(select);
-        } catch(e) {
+<script src="../../resources/js-test.js"></script>
+<script>
+description("Tests to ensure that attributes are not set when an exceptions is raised while converting argument to JSValue.");
+window.jsTestIsAsync = true;
+function setName(select) {
+    var stringLike = {
+        toString: function() {
+            throw new Error("error");
         }
-        shouldBe('select.name', '"select"');
+    };
+    select.name = stringLike;
+}
 
-        try {
-            setSelectedIndex(select);
-        } catch(e) {
+function setSelectedIndex(select) {
+    var integerLike = {
+        valueOf: function() {
+            throw new Error("error");
         }
-        shouldBe('select.selectedIndex', '1');
-    }
-    </script>
+    };
+    select.selectedIndex = integerLike;
+}
 
-    </head>
-    <body onload="runTest()">
-    <select id="select" name="select">
-        <option value="value1">Value 1</option>
-        <option value="value2" selected>Value 2</option>
-        <option value="value3">Value 3</option>
-    </select>
-    <p id="description"></p>
-    <script src="../../resources/js-test.js"></script>
+function runTest() {
+    shouldThrow('setName(select)');
+    shouldBe('select.name', '"select"');
+
+    shouldThrow('setSelectedIndex(select)');
+    shouldBe('select.selectedIndex', '1');
+    finishJSTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<select id="select" name="select">
+ <option value="value1">Value 1</option>
+ <option value="value2" selected>Value 2</option>
+ <option value="value3">Value 3</option>
+</select>
 </body>
 </html>

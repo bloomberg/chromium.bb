@@ -148,6 +148,24 @@ my %header;
 #     NameSpaceInternal   ... namespace ${implClassName}V8Internal in case of non-callback
 my %implementation;
 
+# The integer primitive types, a map from an IDL integer type to its
+# binding-level type name.
+#
+# NOTE: For the unsigned types, the "UI" prefix is used (and not
+# "Ui"), so as to match onto the naming of V8Binding conversion
+# methods (and not the Typed Array naming scheme for unsigned types.)
+my %integerTypeHash = ("byte" => "Int8",
+                       "octet" => "UInt8",
+                       "short" => "Int16",
+                       "long" => "Int32",
+                       "long long" => "Int64",
+                       "unsigned short" => "UInt16",
+                       "unsigned long" => "UInt32",
+                       "unsigned long long" => "UInt64"
+                      );
+
+# Other primitive types
+#
 # Promise is not yet in the Web IDL spec but is going to be speced
 # as primitive types in the future.
 # Since V8 dosn't provide Promise primitive object currently,
@@ -157,27 +175,9 @@ my %primitiveTypeHash = ("Date" => 1,
                          "DOMTimeStamp" => 1,  # typedef unsigned long long
                          "boolean" => 1,
                          "void" => 1,
-                         "byte" => 1,
-                         "octet" => 1,
-                         "short" => 1,
-                         "long" => 1,
-                         "long long" => 1,
-                         "unsigned short" => 1,
-                         "unsigned long" => 1,
-                         "unsigned long long" => 1,
                          "float" => 1,
                          "double" => 1,
                         );
-
-my %integerTypeHash = ("byte" => 1,
-                       "octet" => 1,
-                       "short" => 1,
-                       "long" => 1,
-                       "long long" => 1,
-                       "unsigned short" => 1,
-                       "unsigned long" => 1,
-                       "unsigned long long" => 1,
-                      );
 
 my %nonWrapperTypes = ("CompareHow" => 1,
                        "Dictionary" => 1,
@@ -1935,11 +1935,14 @@ sub GenerateNormalAttributeSetter
     my $useExceptions = 1 if $raisesException && ($raisesException eq "VALUE_IS_MISSING" or $raisesException eq "Setter");
     my $hasStrictTypeChecking = 1 if $attribute->extendedAttributes->{"StrictTypeChecking"} && IsWrapperType($attrType);  # Currently only actually check interface types
 
+    # Can throw exceptions from accessors or during type conversion.
+    my $isIntegerType = IsIntegerType($attribute->type);
+
     # We throw exceptions using 'ExceptionState' if the attribute explicitly
     # claims that exceptions may be raised, or if a strict type check might
     # fail, or if we're dealing with SVG, which does strange things with
     # tearoffs and read-only wrappers.
-    if ($useExceptions or $hasStrictTypeChecking or GetSVGTypeNeedingTearOff($interfaceName) or GetSVGTypeNeedingTearOff($attrType)) {
+    if ($useExceptions or $hasStrictTypeChecking or GetSVGTypeNeedingTearOff($interfaceName) or GetSVGTypeNeedingTearOff($attrType) or $isIntegerType) {
         $code .= "    ExceptionState exceptionState(ExceptionState::SetterContext, \"${attrName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
 
@@ -2366,18 +2369,22 @@ sub GenerateFunction
     $code .= "static void ${name}Method${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
 
-    # We throw exceptions using 'ExceptionState' if the function explicitly claims that exceptions
-    # may be raised, or for event listeners, or for security-checking, and for weird SVG stuff.
+    # We throw exceptions using 'ExceptionState' for a function if:
+    #   - it explicitly claims that exceptions may be raised (or should be if type checks fail.)
+    #   - event listeners.
+    #   - security-checking.
+    #   - weird SVG stuff.
+    #   - takes a parameter that might raise an exception on conversion.
+    #
     my $isEventListener = $name eq "addEventListener" || $name eq "removeEventListener";
     my $isSecurityCheckNecessary = $interface->extendedAttributes->{"CheckSecurity"} && !$function->extendedAttributes->{"DoNotCheckSecurity"};
     my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
     my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
     my $isNonListSVGType = $svgNativeType && !($interfaceName =~ /List$/);
 
-    my $hasExceptionState = 0;
-    if ($raisesExceptions || $isEventListener || $isSecurityCheckNecessary || $isNonListSVGType || HasSerializedScriptValueParameter($function)) {
+    my $hasExceptionState = $raisesExceptions || $isEventListener || $isSecurityCheckNecessary || $isNonListSVGType || HasExceptionRaisingParameter($function);
+    if ($hasExceptionState) {
         $code .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${unoverloadedName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
-        $hasExceptionState = 1;
     }
 
     if ($isEventListener) {
@@ -2465,7 +2472,7 @@ END
     $code .= $parameterCheckString;
 
     # Build the function call string.
-    $code .= GenerateFunctionCallString($function, $paramIndex, "    ", $interface, $forMainWorldSuffix, %replacements);
+    $code .= GenerateFunctionCallString($function, $paramIndex, "    ", $interface, $forMainWorldSuffix, $hasExceptionState, %replacements);
     $code .= "}\n";
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     $code .= "\n";
@@ -2573,7 +2580,7 @@ sub GenerateParametersCheck
             $parameterCheckString .= <<END;
     if (UNLIKELY(info.Length() <= $paramIndex)) {
 END
-            $parameterCheckString .= GenerateFunctionCallString($function, $paramIndex, "    " x 2, $interface, $forMainWorldSuffix, %replacements);
+            $parameterCheckString .= GenerateFunctionCallString($function, $paramIndex, "    " x 2, $interface, $forMainWorldSuffix, $hasExceptionState, %replacements);
             $parameterCheckString .= <<END;
         return;
     }
@@ -2784,7 +2791,7 @@ sub GenerateSingleConstructorCallback
     }
 
     my $constructorRaisesException = $interface->extendedAttributes->{"RaisesException"} && $interface->extendedAttributes->{"RaisesException"} eq "Constructor";
-    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException || HasSerializedScriptValueParameter($function);
+    my $hasExceptionState = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException || HasExceptionRaisingParameter($function);
 
     my @beforeArgumentList;
     my @afterArgumentList;
@@ -2794,17 +2801,15 @@ static void constructor${overloadedIndexString}(const v8::FunctionCallbackInfo<v
 {
 END
 
+    if ($hasExceptionState) {
+        $code .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
+    }
     if ($function->overloadedIndex == 0) {
-        my $hasExceptionState = 0;
         $code .= GenerateArgumentsCountCheck($function, $interface, $hasExceptionState);
     }
 
-    if ($raisesExceptions) {
-        $code .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
-    }
-
     # FIXME: Currently [Constructor(...)] does not yet support optional arguments without [Default=...]
-    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, "", $raisesExceptions);
+    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, "", $hasExceptionState);
     $code .= $parameterCheckString;
 
     if ($interface->extendedAttributes->{"ConstructorCallWith"}) {
@@ -3078,7 +3083,7 @@ sub GenerateNamedConstructor
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $constructorRaisesException = $interface->extendedAttributes->{"RaisesException"} && $interface->extendedAttributes->{"RaisesException"} eq "Constructor";
-    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException || HasSerializedScriptValueParameter($function);
+    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException || HasExceptionRaisingParameter($function);
 
     my $maybeObserveFeature = GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
     my $maybeDeprecateFeature = GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
@@ -3119,14 +3124,13 @@ END
 
 END
 
-    if ($raisesExceptions) {
+    my $hasExceptionState = $raisesExceptions;
+    if ($hasExceptionState) {
         $code .= "    ExceptionState exceptionState(ExceptionState::ConstructionContext, \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
     }
-
-    my $hasExceptionState = $raisesExceptions;
     $code .= GenerateArgumentsCountCheck($function, $interface, $hasExceptionState);
 
-    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, "", $raisesExceptions);
+    my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface, "", $hasExceptionState);
     $code .= $parameterCheckString;
 
     push(@beforeArgumentList, "*document");
@@ -3708,23 +3712,28 @@ sub GenerateImplementationIndexedPropertySetter
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($indexedSetterFunction);
+    my $interfaceName = $interface->name;
 
     my $type = $indexedSetterFunction->parameters->[1]->type;
     my $raisesExceptions = $indexedSetterFunction->extendedAttributes->{"RaisesException"};
     my $treatNullAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
     my $treatUndefinedAs = $indexedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
-    my $asSetterValue = 0;
 
     my $code = "static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
+
+    my $extraArguments = "";
+    if ($raisesExceptions || IsIntegerType($type)) {
+        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        if ($raisesExceptions) {
+            $extraArguments = ", exceptionState";
+        }
+    }
+
+    my $asSetterValue = 0;
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= JSValueToNativeStatement($indexedSetterFunction->parameters->[1]->type, $indexedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
 
-    my $extraArguments = "";
-    if ($raisesExceptions) {
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
-        $extraArguments = ", exceptionState";
-    }
     my @conditions = ();
     my @statements = ();
     if ($treatNullAs && $treatNullAs ne "NullString") {
@@ -4013,11 +4022,12 @@ sub GenerateImplementationNamedPropertySetter
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $methodName = GetImplName($namedSetterFunction);
+    my $interfaceName = $interface->name;
 
+    my $type = $namedSetterFunction->parameters->[1]->type;
     my $raisesExceptions = $namedSetterFunction->extendedAttributes->{"RaisesException"};
     my $treatNullAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatNullAs"};
     my $treatUndefinedAs = $namedSetterFunction->parameters->[1]->extendedAttributes->{"TreatUndefinedAs"};
-    my $asSetterValue = 0;
 
     my $code = "static void namedPropertySetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
@@ -4029,14 +4039,19 @@ sub GenerateImplementationNamedPropertySetter
         $code .= "    if (info.Holder()->HasRealNamedProperty(name))\n";
         $code .= "        return;\n";
     }
+
+    my $extraArguments = "";
+    if ($raisesExceptions || IsIntegerType($type)) {
+        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        if ($raisesExceptions) {
+            $extraArguments = ", exceptionState";
+        }
+    }
+
+    my $asSetterValue = 0;
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[0]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "name", "propertyName", "    ", "info.GetIsolate()");
     $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
-    my $extraArguments = "";
-    if ($raisesExceptions) {
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
-        $extraArguments = ", exceptionState";
-    }
 
     my @conditions = ();
     my @statements = ();
@@ -5188,6 +5203,7 @@ sub GenerateFunctionCallString
     my $indent = shift;
     my $interface = shift;
     my $forMainWorldSuffix = shift;
+    my $hasExceptionState = shift;
     my %replacements = @_;
 
     my $interfaceName = $interface->name;
@@ -5237,12 +5253,22 @@ sub GenerateFunctionCallString
             push @arguments, $replacements{$paramName};
         } elsif (IsSVGTypeNeedingTearOff($parameter->type) and not $interfaceName =~ /List$/) {
             push @arguments, "$paramName->propertyReference()";
-            $code .= <<END;
+            if ($hasExceptionState) {
+                $code .= <<END;
+    if (!$paramName) {
+        exceptionState.throwTypeError(\"parameter $humanFriendlyIndex is not of type '${ \$parameter->type }'.\");
+        exceptionState.throwIfNeeded();
+        return;
+    }
+END
+            } else {
+                $code .= <<END;
     if (!$paramName) {
         throwTypeError(ExceptionMessages::failedToExecute(\"$name\", \"$interfaceName\", \"parameter $humanFriendlyIndex is not of type '${ \$parameter->type }'.\"), info.GetIsolate());
         return;
     }
 END
+           }
         } elsif ($parameter->type eq "SVGMatrix" and $interfaceName eq "SVGTransformList") {
             push @arguments, "$paramName.get()";
         } elsif (IsNullableParameter($parameter)) {
@@ -5431,8 +5457,8 @@ sub JSValueToNativeStatement
         } else {
             $code .= $indent . "$nativeType $variableName($native_value, true);\n";
         }
-    } elsif ($extendedAttributes->{"EnforceRange"}) {
-        $code .= $indent . "V8TRYCATCH_WITH_TYPECHECK_VOID($nativeType, $variableName, $native_value, $getIsolate);\n";
+    } elsif (IsIntegerType($type)) {
+        $code .= $indent . "V8TRYCATCH_EXCEPTION_VOID($nativeType, $variableName, $native_value, exceptionState);\n";
     } else {
         $code .= $indent . "V8TRYCATCH_VOID($nativeType, $variableName, $native_value);\n";
     }
@@ -5449,29 +5475,16 @@ sub JSValueToNative
     my $value = shift;
     my $getIsolate = shift;
 
-    my $intConversion = $extendedAttributes->{"EnforceRange"} ? "EnforceRange" : "NormalConversion";
-
     return "$value->BooleanValue()" if $type eq "boolean";
     return "static_cast<$type>($value->NumberValue())" if $type eq "float" or $type eq "double";
 
-    if ($intConversion ne "NormalConversion") {
-        return "toInt8($value, $intConversion, ok)" if $type eq "byte";
-        return "toUInt8($value, $intConversion, ok)" if $type eq "octet";
-        return "toInt16($value, $intConversion, ok)" if $type eq "short";
-        return "toUInt16($value, $intConversion, ok)" if $type eq "unsigned short";
-        return "toInt32($value, $intConversion, ok)" if $type eq "long";
-        return "toUInt32($value, $intConversion, ok)" if $type eq "unsigned long";
-        return "toInt64($value, $intConversion, ok)" if $type eq "long long";
-        return "toUInt64($value, $intConversion, ok)" if $type eq "unsigned long long";
-    } else {
-        return "toInt8($value)" if $type eq "byte";
-        return "toUInt8($value)" if $type eq "octet";
-        return "toInt16($value)" if $type eq "short";
-        return "toUInt16($value)" if $type eq "unsigned short";
-        return "toInt32($value)" if $type eq "long";
-        return "toUInt32($value)" if $type eq "unsigned long";
-        return "toInt64($value)" if $type eq "long long";
-        return "toUInt64($value)" if $type eq "unsigned long long";
+    if (IsIntegerType($type)) {
+        my $conversion = "to" . $integerTypeHash{$type} . "($value";
+        if ($extendedAttributes->{"EnforceRange"}) {
+            return "${conversion}, EnforceRange, exceptionState)";
+        } else {
+            return "${conversion}, exceptionState)";
+        }
     }
     return "static_cast<Range::CompareHow>($value->Int32Value())" if $type eq "CompareHow";
     return "toWebCoreDate($value)" if $type eq "Date";
@@ -5902,6 +5915,7 @@ sub IsPrimitiveType
 {
     my $type = shift;
 
+    return 1 if $integerTypeHash{$type};
     return 1 if $primitiveTypeHash{$type};
     return 0;
 }
@@ -6343,12 +6357,14 @@ sub NeedsSpecialWrap
     return 0;
 }
 
-sub HasSerializedScriptValueParameter
+sub HasExceptionRaisingParameter
 {
     my $function = shift;
 
     foreach my $parameter (@{$function->parameters}) {
         if ($parameter->type eq "SerializedScriptValue") {
+            return 1;
+        } elsif (IsIntegerType($parameter->type)) {
             return 1;
         }
     }

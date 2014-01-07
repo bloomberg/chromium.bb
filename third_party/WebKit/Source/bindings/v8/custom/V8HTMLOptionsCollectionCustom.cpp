@@ -34,7 +34,6 @@
 #include "V8HTMLOptionElement.h"
 #include "V8Node.h"
 #include "V8NodeList.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/ExceptionCode.h"
@@ -83,12 +82,11 @@ void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8:
         if (info.Length() < 2) {
             imp->add(option, exceptionState);
         } else {
-            bool ok;
-            V8TRYCATCH_VOID(int, index, toInt32(info[1], ok));
-            if (!ok)
-                exceptionState.throwTypeError("The index provided could not be interpreted as an integer.");
-            else
-                imp->add(option, index, exceptionState);
+            int index = toInt32(info[1], exceptionState);
+            if (exceptionState.throwIfNeeded())
+                return;
+
+            imp->add(option, index, exceptionState);
         }
     }
 

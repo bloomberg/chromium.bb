@@ -37,6 +37,7 @@
 #include "V8WorkerGlobalScope.h"
 #include "V8XPathNSResolver.h"
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8BindingMacros.h"
 #include "bindings/v8/V8NodeFilterCondition.h"
 #include "bindings/v8/V8ObjectConstructor.h"
 #include "bindings/v8/V8WindowShell.h"
@@ -154,15 +155,15 @@ const int32_t kMinInt32 = -kMaxInt32 - 1;
 const uint32_t kMaxUInt32 = 0xffffffff;
 const int64_t kJSMaxInteger = 0x20000000000000LL - 1; // 2^53 - 1, maximum integer exactly representable in ECMAScript.
 
-static double enforceRange(double x, double minimum, double maximum, bool& ok)
+static double enforceRange(double x, double minimum, double maximum, const char* typeName, ExceptionState& exceptionState)
 {
     if (std::isnan(x) || std::isinf(x)) {
-        ok = false;
+        exceptionState.throwTypeError("Value is" + String(std::isinf(x) ? " infinite and" : "") + " not of type '" + String(typeName) + "'.");
         return 0;
     }
     x = trunc(x);
     if (x < minimum || x > maximum) {
-        ok = false;
+        exceptionState.throwTypeError("Value is outside the '" + String(typeName) + "' value range.");
         return 0;
     }
     return x;
@@ -199,10 +200,9 @@ struct IntTypeLimits<uint16_t> {
 };
 
 template <typename T>
-static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, const char* typeName, ExceptionState& exceptionState)
 {
     typedef IntTypeLimits<T> LimitsTrait;
-    ok = true;
 
     // Fast case. The value is already a 32-bit integer in the right range.
     if (value->IsInt32()) {
@@ -210,7 +210,7 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
         if (result >= LimitsTrait::minValue && result <= LimitsTrait::maxValue)
             return static_cast<T>(result);
         if (configuration == EnforceRange) {
-            ok = false;
+            exceptionState.throwTypeError("Value is outside the '" + String(typeName) + "' value range.");
             return 0;
         }
         result %= LimitsTrait::numberOfValues;
@@ -218,14 +218,14 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
     }
 
     // Can the value be converted to a number?
-    v8::Local<v8::Number> numberObject = value->ToNumber();
+    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
-        ok = false;
+        exceptionState.throwTypeError("Not convertible to a number value (of type '" + String(typeName) + "'.");
         return 0;
     }
 
     if (configuration == EnforceRange)
-        return enforceRange(numberObject->Value(), LimitsTrait::minValue, LimitsTrait::maxValue, ok);
+        return enforceRange(numberObject->Value(), LimitsTrait::minValue, LimitsTrait::maxValue, typeName, exceptionState);
 
     double numberValue = numberObject->Value();
     if (std::isnan(numberValue) || std::isinf(numberValue) || !numberValue)
@@ -238,10 +238,9 @@ static inline T toSmallerInt(v8::Handle<v8::Value> value, IntegerConversionConfi
 }
 
 template <typename T>
-static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, const char* typeName, ExceptionState& exceptionState)
 {
     typedef IntTypeLimits<T> LimitsTrait;
-    ok = true;
 
     // Fast case. The value is a 32-bit signed integer - possibly positive?
     if (value->IsInt32()) {
@@ -249,21 +248,21 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
         if (result >= 0 && result <= LimitsTrait::maxValue)
             return static_cast<T>(result);
         if (configuration == EnforceRange) {
-            ok = false;
+            exceptionState.throwTypeError("Value is outside the '" + String(typeName) + "' value range.");
             return 0;
         }
         return static_cast<T>(result);
     }
 
     // Can the value be converted to a number?
-    v8::Local<v8::Number> numberObject = value->ToNumber();
+    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
-        ok = false;
+        exceptionState.throwTypeError("Not convertible to a number value (of type '" + String(typeName) + "'.");
         return 0;
     }
 
     if (configuration == EnforceRange)
-        return enforceRange(numberObject->Value(), 0, LimitsTrait::maxValue, ok);
+        return enforceRange(numberObject->Value(), 0, LimitsTrait::maxValue, typeName, exceptionState);
 
     // Does the value convert to nan or to an infinity?
     double numberValue = numberObject->Value();
@@ -277,44 +276,65 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
     return static_cast<T>(fmod(numberValue, LimitsTrait::numberOfValues));
 }
 
-int8_t toInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+int8_t toInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
-    return toSmallerInt<int8_t>(value, configuration, ok);
+    return toSmallerInt<int8_t>(value, configuration, "byte", exceptionState);
 }
 
-uint8_t toUInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+int8_t toInt8(v8::Handle<v8::Value> value)
 {
-    return toSmallerUInt<uint8_t>(value, configuration, ok);
+    NonThrowableExceptionState exceptionState;
+    return toInt8(value, NormalConversion, exceptionState);
 }
 
-int16_t toInt16(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+uint8_t toUInt8(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
-    return toSmallerInt<int16_t>(value, configuration, ok);
+    return toSmallerUInt<uint8_t>(value, configuration, "octet", exceptionState);
 }
 
-uint16_t toUInt16(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+uint8_t toUInt8(v8::Handle<v8::Value> value)
 {
-    return toSmallerUInt<uint16_t>(value, configuration, ok);
+    NonThrowableExceptionState exceptionState;
+    return toUInt8(value, NormalConversion, exceptionState);
 }
 
-int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+int16_t toInt16(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
 {
-    ok = true;
+    return toSmallerInt<int16_t>(value, configuration, "short", exceptionState);
+}
 
+int16_t toInt16(v8::Handle<v8::Value> value)
+{
+    NonThrowableExceptionState exceptionState;
+    return toInt16(value, NormalConversion, exceptionState);
+}
+
+uint16_t toUInt16(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
+    return toSmallerUInt<uint16_t>(value, configuration, "unsigned short", exceptionState);
+}
+
+uint16_t toUInt16(v8::Handle<v8::Value> value)
+{
+    NonThrowableExceptionState exceptionState;
+    return toUInt16(value, NormalConversion, exceptionState);
+}
+
+int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
     // Fast case. The value is already a 32-bit integer.
     if (value->IsInt32())
         return value->Int32Value();
 
     // Can the value be converted to a number?
-    ok = false;
-    V8TRYCATCH_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), 0);
+    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
+        exceptionState.throwTypeError("Not convertible to a number value (of type 'long'.)");
         return 0;
     }
-    ok = true;
 
     if (configuration == EnforceRange)
-        return enforceRange(numberObject->Value(), kMinInt32, kMaxInt32, ok);
+        return enforceRange(numberObject->Value(), kMinInt32, kMaxInt32, "long", exceptionState);
 
     // Does the value convert to nan or to an infinity?
     double numberValue = numberObject->Value();
@@ -324,14 +344,18 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     if (configuration == Clamp)
         return clampTo<int32_t>(numberObject->Value());
 
-    V8TRYCATCH_RETURN(int32_t, result, numberObject->Int32Value(), 0);
+    V8TRYCATCH_EXCEPTION_RETURN(int32_t, result, numberObject->Int32Value(), exceptionState, 0);
     return result;
 }
 
-uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+int32_t toInt32(v8::Handle<v8::Value> value)
 {
-    ok = true;
+    NonThrowableExceptionState exceptionState;
+    return toInt32(value, NormalConversion, exceptionState);
+}
 
+uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
     // Fast case. The value is already a 32-bit unsigned integer.
     if (value->IsUint32())
         return value->Uint32Value();
@@ -342,22 +366,21 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
         if (result >= 0)
             return result;
         if (configuration == EnforceRange) {
-            ok = false;
+            exceptionState.throwTypeError("Value is outside the 'unsigned long' value range.");
             return 0;
         }
         return result;
     }
 
     // Can the value be converted to a number?
-    ok = false;
-    V8TRYCATCH_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), 0);
+    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
+        exceptionState.throwTypeError("Not convertible to a number value (of type 'unsigned long'.)");
         return 0;
     }
-    ok = true;
 
     if (configuration == EnforceRange)
-        return enforceRange(numberObject->Value(), 0, kMaxUInt32, ok);
+        return enforceRange(numberObject->Value(), 0, kMaxUInt32, "unsigned long", exceptionState);
 
     // Does the value convert to nan or to an infinity?
     double numberValue = numberObject->Value();
@@ -371,25 +394,29 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     return result;
 }
 
-int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+uint32_t toUInt32(v8::Handle<v8::Value> value)
 {
-    ok = true;
+    NonThrowableExceptionState exceptionState;
+    return toUInt32(value, NormalConversion, exceptionState);
+}
 
+int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
     // Fast case. The value is a 32-bit integer.
     if (value->IsInt32())
         return value->Int32Value();
 
     // Can the value be converted to a number?
-    v8::Local<v8::Number> numberObject = value->ToNumber();
+    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
-        ok = false;
+        exceptionState.throwTypeError("Not convertible to a number value (of type 'long long'.)");
         return 0;
     }
 
     double x = numberObject->Value();
 
     if (configuration == EnforceRange)
-        return enforceRange(x, -kJSMaxInteger, kJSMaxInteger, ok);
+        return enforceRange(x, -kJSMaxInteger, kJSMaxInteger, "long long", exceptionState);
 
     // Does the value convert to nan or to an infinity?
     if (std::isnan(x) || std::isinf(x))
@@ -401,10 +428,14 @@ int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     return integer;
 }
 
-uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
+int64_t toInt64(v8::Handle<v8::Value> value)
 {
-    ok = true;
+    NonThrowableExceptionState exceptionState;
+    return toInt64(value, NormalConversion, exceptionState);
+}
 
+uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, ExceptionState& exceptionState)
+{
     // Fast case. The value is a 32-bit unsigned integer.
     if (value->IsUint32())
         return value->Uint32Value();
@@ -415,23 +446,23 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
         if (result >= 0)
             return result;
         if (configuration == EnforceRange) {
-            ok = false;
+            exceptionState.throwTypeError("Value is outside the 'unsigned long long' value range.");
             return 0;
         }
         return result;
     }
 
     // Can the value be converted to a number?
-    v8::Local<v8::Number> numberObject = value->ToNumber();
+    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
     if (numberObject.IsEmpty()) {
-        ok = false;
+        exceptionState.throwTypeError("Not convertible to a number value (of type 'unsigned long long'.)");
         return 0;
     }
 
     double x = numberObject->Value();
 
     if (configuration == EnforceRange)
-        return enforceRange(x, 0, kJSMaxInteger, ok);
+        return enforceRange(x, 0, kJSMaxInteger, "unsigned long long", exceptionState);
 
     // Does the value convert to nan or to an infinity?
     if (std::isnan(x) || std::isinf(x))
@@ -441,6 +472,18 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     unsigned long long integer;
     doubleToInteger(x, integer);
     return integer;
+}
+
+uint64_t toUInt64(v8::Handle<v8::Value> value)
+{
+    NonThrowableExceptionState exceptionState;
+    return toUInt64(value, NormalConversion, exceptionState);
+}
+
+float toFloat(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+{
+    V8TRYCATCH_EXCEPTION_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), exceptionState, 0);
+    return numberObject->NumberValue();
 }
 
 PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)

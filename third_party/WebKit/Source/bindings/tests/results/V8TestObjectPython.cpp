@@ -265,8 +265,9 @@ static void byteAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8
 
 static void byteAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "byteAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt8(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt8(jsValue, exceptionState), exceptionState);
     imp->setByteAttribute(cppValue);
 }
 
@@ -346,8 +347,9 @@ static void longAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8
 
 static void longAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "longAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setLongAttribute(cppValue);
 }
 
@@ -373,8 +375,9 @@ static void longLongAttributeAttributeGetterCallback(v8::Local<v8::String>, cons
 
 static void longLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "longLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(long long, cppValue, toInt64(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(long long, cppValue, toInt64(jsValue, exceptionState), exceptionState);
     imp->setLongLongAttribute(cppValue);
 }
 
@@ -400,8 +403,9 @@ static void octetAttributeAttributeGetterCallback(v8::Local<v8::String>, const v
 
 static void octetAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "octetAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, cppValue, toUInt8(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt8(jsValue, exceptionState), exceptionState);
     imp->setOctetAttribute(cppValue);
 }
 
@@ -427,8 +431,9 @@ static void shortAttributeAttributeGetterCallback(v8::Local<v8::String>, const v
 
 static void shortAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "shortAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt16(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt16(jsValue, exceptionState), exceptionState);
     imp->setShortAttribute(cppValue);
 }
 
@@ -454,8 +459,9 @@ static void unsignedLongAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void unsignedLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, cppValue, toUInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt32(jsValue, exceptionState), exceptionState);
     imp->setUnsignedLongAttribute(cppValue);
 }
 
@@ -481,8 +487,9 @@ static void unsignedLongLongAttributeAttributeGetterCallback(v8::Local<v8::Strin
 
 static void unsignedLongLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedLongLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned long long, cppValue, toUInt64(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned long long, cppValue, toUInt64(jsValue, exceptionState), exceptionState);
     imp->setUnsignedLongLongAttribute(cppValue);
 }
 
@@ -508,8 +515,9 @@ static void unsignedShortAttributeAttributeGetterCallback(v8::Local<v8::String>,
 
 static void unsignedShortAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedShortAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, cppValue, toUInt16(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt16(jsValue, exceptionState), exceptionState);
     imp->setUnsignedShortAttribute(cppValue);
 }
 
@@ -616,8 +624,9 @@ static void cssAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8:
 
 static void cssAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "cssAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setCSSAttribute(cppValue);
 }
 
@@ -643,8 +652,9 @@ static void imeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8:
 
 static void imeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "imeAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setIMEAttribute(cppValue);
 }
 
@@ -670,8 +680,9 @@ static void svgAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8:
 
 static void svgAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "svgAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setSVGAttribute(cppValue);
 }
 
@@ -697,8 +708,9 @@ static void xmlAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8:
 
 static void xmlAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "xmlAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setXMLAttribute(cppValue);
 }
 
@@ -1316,8 +1328,9 @@ static void nullableLongAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 
 static void nullableLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "nullableLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setNullableLongAttribute(cppValue);
 }
 
@@ -1397,7 +1410,8 @@ static void staticLongAttributeAttributeGetterCallback(v8::Local<v8::String>, co
 
 static void staticLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    ExceptionState exceptionState(ExceptionState::SetterContext, "staticLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     TestObjectPython::setStaticLongAttribute(cppValue);
 }
 
@@ -1454,8 +1468,9 @@ static void activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallbac
 
 static void activityLoggingAccessForAllWorldsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingAccessForAllWorldsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingAccessForAllWorldsLongAttribute(cppValue);
 }
 
@@ -1489,8 +1504,9 @@ static void activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallbac
 
 static void activityLoggingGetterForAllWorldsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingGetterForAllWorldsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingGetterForAllWorldsLongAttribute(cppValue);
 }
 
@@ -1516,8 +1532,9 @@ static void activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallbac
 
 static void activityLoggingSetterForAllWorldsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingSetterForAllWorldsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingSetterForAllWorldsLongAttribute(cppValue);
 }
 
@@ -1639,8 +1656,9 @@ static void conditionalLongAttributeAttributeGetterCallback(v8::Local<v8::String
 #if ENABLE(CONDITION)
 static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setConditionalLongAttribute(cppValue);
 }
 #endif // ENABLE(CONDITION)
@@ -1674,8 +1692,9 @@ static void conditionalAndLongAttributeAttributeGetterCallback(v8::Local<v8::Str
 #if ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
 static void conditionalAndLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalAndLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setConditionalAndLongAttribute(cppValue);
 }
 #endif // ENABLE(CONDITION_1) && ENABLE(CONDITION_2)
@@ -1709,8 +1728,9 @@ static void conditionalOrLongAttributeAttributeGetterCallback(v8::Local<v8::Stri
 #if ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
 static void conditionalOrLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalOrLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setConditionalOrLongAttribute(cppValue);
 }
 #endif // ENABLE(CONDITION_1) || ENABLE(CONDITION_2)
@@ -1747,8 +1767,9 @@ static void customGetterLongAttributeAttributeGetterCallback(v8::Local<v8::Strin
 
 static void customGetterLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "customGetterLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setCustomGetterLongAttribute(cppValue);
 }
 
@@ -1833,8 +1854,9 @@ static void deprecatedLongAttributeAttributeGetterCallback(v8::Local<v8::String>
 
 static void deprecatedLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "deprecatedLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setDeprecatedLongAttribute(cppValue);
 }
 
@@ -1861,8 +1883,9 @@ static void enforceRangeLongAttributeAttributeGetterCallback(v8::Local<v8::Strin
 
 static void enforceRangeLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "enforceRangeLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_WITH_TYPECHECK_VOID(int, cppValue, toInt32(jsValue, EnforceRange, ok), info.GetIsolate());
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, EnforceRange, exceptionState), exceptionState);
     imp->setEnforceRangeLongAttribute(cppValue);
 }
 
@@ -1888,8 +1911,9 @@ static void exposeJSAccessorsLongAttributeAttributeGetterCallback(const v8::Func
 
 static void exposeJSAccessorsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "exposeJSAccessorsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setExposeJSAccessorsLongAttribute(cppValue);
 }
 
@@ -1920,8 +1944,9 @@ static void getterRaisesExceptionLongAttributeAttributeGetterCallback(v8::Local<
 
 static void getterRaisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "getterRaisesExceptionLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setGetterRaisesExceptionLongAttribute(cppValue);
 }
 
@@ -1947,8 +1972,9 @@ static void implementedAsLongAttributeAttributeGetterCallback(v8::Local<v8::Stri
 
 static void implementedAsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "implementedAsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setImplementedAsName(cppValue);
 }
 
@@ -1982,8 +2008,9 @@ static void customGetterImplementedAsLongAttributeAttributeGetterCallback(v8::Lo
 
 static void customGetterImplementedAsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "customGetterImplementedAsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setImplementedAsNameWithCustomGetter(cppValue);
 }
 
@@ -2030,8 +2057,9 @@ static void measureAsLongAttributeAttributeGetterCallback(v8::Local<v8::String>,
 
 static void measureAsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "measureAsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setMeasureAsLongAttribute(cppValue);
 }
 
@@ -2058,8 +2086,9 @@ static void notEnumerableLongAttributeAttributeGetterCallback(v8::Local<v8::Stri
 
 static void notEnumerableLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "notEnumerableLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setNotEnumerableLongAttribute(cppValue);
 }
 
@@ -2085,8 +2114,9 @@ static void perContextEnabledLongAttributeAttributeGetterCallback(v8::Local<v8::
 
 static void perContextEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "perContextEnabledLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setPerContextEnabledLongAttribute(cppValue);
 }
 
@@ -2112,8 +2142,9 @@ static void perWorldBindingsLongAttributeAttributeGetterCallback(v8::Local<v8::S
 
 static void perWorldBindingsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "perWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2139,8 +2170,9 @@ static void perWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld(v8:
 
 static void perWorldBindingsLongAttributeAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "perWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2195,8 +2227,9 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCal
 
 static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingAccessPerWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingAccessPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2230,8 +2263,9 @@ static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCal
 
 static void activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingAccessPerWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingAccessPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2265,8 +2299,9 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
 
 static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2297,8 +2332,9 @@ static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
 
 static void activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2327,8 +2363,9 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCal
 
 static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingGetterPerWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingGetterPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2357,8 +2394,9 @@ static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCal
 
 static void activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingGetterPerWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingGetterPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2387,8 +2425,9 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
 
 static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2414,8 +2453,9 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
 
 static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterForMainWorld(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setActivityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute(cppValue);
 }
 
@@ -2447,7 +2487,7 @@ static void raisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Value> jsV
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "raisesExceptionLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setRaisesExceptionLongAttribute(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -2561,8 +2601,9 @@ static void reflectLongAttributeAttributeGetterCallback(v8::Local<v8::String>, c
 
 static void reflectLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setIntegralAttribute(HTMLNames::reflectlongattributeAttr, cppValue);
 }
@@ -2590,8 +2631,9 @@ static void reflectUnsignedShortAttributeAttributeGetterCallback(v8::Local<v8::S
 
 static void reflectUnsignedShortAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectUnsignedShortAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, cppValue, toUInt16(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt16(jsValue, exceptionState), exceptionState);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::reflectunsignedshortattributeAttr, cppValue);
 }
@@ -2619,8 +2661,9 @@ static void reflectUnsignedLongAttributeAttributeGetterCallback(v8::Local<v8::St
 
 static void reflectUnsignedLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "reflectUnsignedLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, cppValue, toUInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned, cppValue, toUInt32(jsValue, exceptionState), exceptionState);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setUnsignedIntegralAttribute(HTMLNames::reflectunsignedlongattributeAttr, cppValue);
 }
@@ -2835,8 +2878,9 @@ static void runtimeEnabledLongAttributeAttributeGetterCallback(v8::Local<v8::Str
 
 static void runtimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "runtimeEnabledLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setRuntimeEnabledLongAttribute(cppValue);
 }
 
@@ -2867,8 +2911,9 @@ static void conditionalRuntimeEnabledLongAttributeAttributeGetterCallback(v8::Lo
 #if ENABLE(CONDITION)
 static void conditionalRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalRuntimeEnabledLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setConditionalRuntimeEnabledLongAttribute(cppValue);
 }
 #endif // ENABLE(CONDITION)
@@ -2926,7 +2971,7 @@ static void setterRaisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Valu
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "setterRaisesExceptionLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setSetterRaisesExceptionLongAttribute(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -3155,8 +3200,9 @@ static void unforgeableLongAttributeAttributeGetterCallback(v8::Local<v8::String
 
 static void unforgeableLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unforgeableLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setUnforgeableLongAttribute(cppValue);
 }
 
@@ -3450,12 +3496,14 @@ static void voidMethodBooleanArgMethodCallback(const v8::FunctionCallbackInfo<v8
 
 static void voidMethodByteArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodByteArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodByteArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, byteArg, toInt8(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, byteArg, toInt8(info[0], exceptionState), exceptionState);
     imp->voidMethodByteArg(byteArg);
 }
 
@@ -3504,12 +3552,14 @@ static void voidMethodFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::
 
 static void voidMethodLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     imp->voidMethodLongArg(longArg);
 }
 
@@ -3522,12 +3572,14 @@ static void voidMethodLongArgMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void voidMethodLongLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(long long, longLongArg, toInt64(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(long long, longLongArg, toInt64(info[0], exceptionState), exceptionState);
     imp->voidMethodLongLongArg(longLongArg);
 }
 
@@ -3540,12 +3592,14 @@ static void voidMethodLongLongArgMethodCallback(const v8::FunctionCallbackInfo<v
 
 static void voidMethodOctetArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodOctetArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodOctetArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, octetArg, toUInt8(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned, octetArg, toUInt8(info[0], exceptionState), exceptionState);
     imp->voidMethodOctetArg(octetArg);
 }
 
@@ -3558,12 +3612,14 @@ static void voidMethodOctetArgMethodCallback(const v8::FunctionCallbackInfo<v8::
 
 static void voidMethodShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodShortArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodShortArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, shortArg, toInt16(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, shortArg, toInt16(info[0], exceptionState), exceptionState);
     imp->voidMethodShortArg(shortArg);
 }
 
@@ -3576,12 +3632,14 @@ static void voidMethodShortArgMethodCallback(const v8::FunctionCallbackInfo<v8::
 
 static void voidMethodUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnsignedLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodUnsignedLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, unsignedLongArg, toUInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned, unsignedLongArg, toUInt32(info[0], exceptionState), exceptionState);
     imp->voidMethodUnsignedLongArg(unsignedLongArg);
 }
 
@@ -3594,12 +3652,14 @@ static void voidMethodUnsignedLongArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodUnsignedLongLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnsignedLongLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodUnsignedLongLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned long long, unsignedLongLongArg, toUInt64(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned long long, unsignedLongLongArg, toUInt64(info[0], exceptionState), exceptionState);
     imp->voidMethodUnsignedLongLongArg(unsignedLongLongArg);
 }
 
@@ -3612,12 +3672,14 @@ static void voidMethodUnsignedLongLongArgMethodCallback(const v8::FunctionCallba
 
 static void voidMethodUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodUnsignedShortArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodUnsignedShortArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, unsignedShortArg, toUInt16(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned, unsignedShortArg, toUInt16(info[0], exceptionState), exceptionState);
     imp->voidMethodUnsignedShortArg(unsignedShortArg);
 }
 
@@ -3661,12 +3723,14 @@ static void voidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgTestInterfaceEmptyArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongArgTestInterfaceEmptyArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     imp->voidMethodLongArgTestInterfaceEmptyArg(longArg, testInterfaceEmptyArg);
 }
@@ -4492,13 +4556,15 @@ static void voidMethodSequenceDictionaryArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodStringArgLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodStringArgLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodStringArgLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, stringArg, info[0]);
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[1]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[1], exceptionState), exceptionState);
     imp->voidMethodStringArgLongArg(stringArg, longArg);
 }
 
@@ -4547,12 +4613,13 @@ static void voidMethodOptionalTestInterfaceEmptyArgMethodCallback(const v8::Func
 
 static void voidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodOptionalLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     if (UNLIKELY(info.Length() <= 0)) {
         imp->voidMethodOptionalLongArg();
         return;
     }
-    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     imp->voidMethodOptionalLongArg(optionalLongArg);
 }
 
@@ -4565,12 +4632,13 @@ static void voidMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackIn
 
 static void stringMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "stringMethodOptionalLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     if (UNLIKELY(info.Length() <= 0)) {
         v8SetReturnValueString(info, imp->stringMethodOptionalLongArg(), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     v8SetReturnValueString(info, imp->stringMethodOptionalLongArg(optionalLongArg), info.GetIsolate());
 }
 
@@ -4583,12 +4651,13 @@ static void stringMethodOptionalLongArgMethodCallback(const v8::FunctionCallback
 
 static void testInterfaceEmptyMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "testInterfaceEmptyMethodOptionalLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     if (UNLIKELY(info.Length() <= 0)) {
         v8SetReturnValue(info, imp->testInterfaceEmptyMethodOptionalLongArg());
         return;
     }
-    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     v8SetReturnValue(info, imp->testInterfaceEmptyMethodOptionalLongArg(optionalLongArg));
 }
 
@@ -4601,12 +4670,13 @@ static void testInterfaceEmptyMethodOptionalLongArgMethodCallback(const v8::Func
 
 static void longMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "longMethodOptionalLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     if (UNLIKELY(info.Length() <= 0)) {
         v8SetReturnValueInt(info, imp->longMethodOptionalLongArg());
         return;
     }
-    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     v8SetReturnValueInt(info, imp->longMethodOptionalLongArg(optionalLongArg));
 }
 
@@ -4619,17 +4689,19 @@ static void longMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackIn
 
 static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgOptionalLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongArgOptionalLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     if (UNLIKELY(info.Length() <= 1)) {
         imp->voidMethodLongArgOptionalLongArg(longArg);
         return;
     }
-    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(info[1]));
+    V8TRYCATCH_EXCEPTION_VOID(int, optionalLongArg, toInt32(info[1], exceptionState), exceptionState);
     imp->voidMethodLongArgOptionalLongArg(longArg, optionalLongArg);
 }
 
@@ -4642,22 +4714,24 @@ static void voidMethodLongArgOptionalLongArgMethodCallback(const v8::FunctionCal
 
 static void voidMethodLongArgOptionalLongArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgOptionalLongArgOptionalLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongArgOptionalLongArgOptionalLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     if (UNLIKELY(info.Length() <= 1)) {
         imp->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg);
         return;
     }
-    V8TRYCATCH_VOID(int, optionalLongArg1, toInt32(info[1]));
+    V8TRYCATCH_EXCEPTION_VOID(int, optionalLongArg1, toInt32(info[1], exceptionState), exceptionState);
     if (UNLIKELY(info.Length() <= 2)) {
         imp->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1);
         return;
     }
-    V8TRYCATCH_VOID(int, optionalLongArg2, toInt32(info[2]));
+    V8TRYCATCH_EXCEPTION_VOID(int, optionalLongArg2, toInt32(info[2], exceptionState), exceptionState);
     imp->voidMethodLongArgOptionalLongArgOptionalLongArg(longArg, optionalLongArg1, optionalLongArg2);
 }
 
@@ -4670,12 +4744,14 @@ static void voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback(const 
 
 static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodLongArgOptionalTestInterfaceEmptyArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodLongArgOptionalTestInterfaceEmptyArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     if (UNLIKELY(info.Length() <= 1)) {
         imp->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
         return;
@@ -4693,8 +4769,10 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethodCallback(const v
 
 static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodTestInterfaceEmptyArgOptionalLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArgOptionalLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -4703,7 +4781,7 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
         imp->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
         return;
     }
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[1]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[1], exceptionState), exceptionState);
     imp->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty, longArg);
 }
 
@@ -4814,24 +4892,28 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCa
 
 static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     imp->overloadedMethodA(longArg);
 }
 
 static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodA", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObjectPython", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg1, toInt32(info[0]));
-    V8TRYCATCH_VOID(int, longArg2, toInt32(info[1]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg1, toInt32(info[0], exceptionState), exceptionState);
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg2, toInt32(info[1], exceptionState), exceptionState);
     imp->overloadedMethodA(longArg1, longArg2);
 }
 
@@ -4864,28 +4946,32 @@ static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     imp->overloadedMethodB(longArg);
 }
 
 static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodB", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg1, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg1, toInt32(info[0], exceptionState), exceptionState);
     if (UNLIKELY(info.Length() <= 1)) {
         imp->overloadedMethodB(longArg1);
         return;
     }
-    V8TRYCATCH_VOID(int, longArg2, toInt32(info[1]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg2, toInt32(info[1], exceptionState), exceptionState);
     imp->overloadedMethodB(longArg1, longArg2);
 }
 
@@ -4918,23 +5004,27 @@ static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     imp->overloadedMethodC(longArg);
 }
 
 static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodC", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     V8TRYCATCH_VOID(Vector<int>, longArgs, toNativeArguments<int>(info, 1));
     imp->overloadedMethodC(longArg, longArgs);
 }
@@ -4968,12 +5058,14 @@ static void overloadedMethodCMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodD1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodD", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodD", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     imp->overloadedMethodD(longArg);
 }
 
@@ -5017,12 +5109,14 @@ static void overloadedMethodDMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodE1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodE", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodE", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     imp->overloadedMethodE(longArg);
 }
 
@@ -5066,12 +5160,14 @@ static void overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::V
 
 static void overloadedMethodF1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedMethodF", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodF", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     imp->overloadedMethodF(longArg);
 }
 
@@ -5164,12 +5260,14 @@ static void overloadedPerWorldBindingsMethod1MethodForMainWorld(const v8::Functi
 
 static void overloadedPerWorldBindingsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldBindingsMethod", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     imp->overloadedPerWorldBindingsMethod(longArg);
 }
 
@@ -5195,12 +5293,14 @@ static void overloadedPerWorldBindingsMethodMethodCallback(const v8::FunctionCal
 
 static void overloadedPerWorldBindingsMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedPerWorldBindingsMethod", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldBindingsMethod", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     imp->overloadedPerWorldBindingsMethod(longArg);
 }
 
@@ -5226,22 +5326,26 @@ static void overloadedPerWorldBindingsMethodMethodCallbackForMainWorld(const v8:
 
 static void overloadedStaticMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedStaticMethod", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg, toInt32(info[0], exceptionState), exceptionState);
     TestObjectPython::overloadedStaticMethod(longArg);
 }
 
 static void overloadedStaticMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "overloadedStaticMethod", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedStaticMethod", "TestObjectPython", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
-    V8TRYCATCH_VOID(int, longArg1, toInt32(info[0]));
-    V8TRYCATCH_VOID(int, longArg2, toInt32(info[1]));
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg1, toInt32(info[0], exceptionState), exceptionState);
+    V8TRYCATCH_EXCEPTION_VOID(int, longArg2, toInt32(info[1], exceptionState), exceptionState);
     TestObjectPython::overloadedStaticMethod(longArg1, longArg2);
 }
 
@@ -5330,8 +5434,10 @@ static void removeEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8:
 
 static void voidMethodClampUnsignedShortArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodClampUnsignedShortArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodClampUnsignedShortArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -5351,8 +5457,10 @@ static void voidMethodClampUnsignedShortArgMethodCallback(const v8::FunctionCall
 
 static void voidMethodClampUnsignedLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodClampUnsignedLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodClampUnsignedLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -5386,8 +5494,9 @@ static void voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback(const 
 
 static void voidMethodDefaultUndefinedLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultUndefinedLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, defaultUndefinedLongArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, defaultUndefinedLongArg, toInt32(info[0], exceptionState), exceptionState);
     imp->voidMethodDefaultUndefinedLongArg(defaultUndefinedLongArg);
 }
 
@@ -5428,12 +5537,14 @@ static void voidMethodDefaultNullStringStringArgMethodCallback(const v8::Functio
 
 static void voidMethodEnforceRangeLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodEnforceRangeLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodEnforceRangeLongArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_WITH_TYPECHECK_VOID(int, enforceRangeLongArg, toInt32(info[0], EnforceRange, ok), info.GetIsolate());
+    V8TRYCATCH_EXCEPTION_VOID(int, enforceRangeLongArg, toInt32(info[0], EnforceRange, exceptionState), exceptionState);
     imp->voidMethodEnforceRangeLongArg(enforceRangeLongArg);
 }
 
@@ -6006,7 +6117,7 @@ static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCal
             return;
         return;
     }
-    V8TRYCATCH_VOID(int, optionalLongArg, toInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(int, optionalLongArg, toInt32(info[0], exceptionState), exceptionState);
     imp->raisesExceptionVoidMethodOptionalLongArg(optionalLongArg, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

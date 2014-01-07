@@ -90,8 +90,9 @@ static void unsignedLongLongAttrAttributeGetterCallback(v8::Local<v8::String>, c
 
 static void unsignedLongLongAttrAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "unsignedLongLongAttr", "TestTypedefs", info.Holder(), info.GetIsolate());
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned long long, cppValue, toUInt64(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned long long, cppValue, toUInt64(jsValue, exceptionState), exceptionState);
     imp->setUnsignedLongLongAttr(cppValue);
 }
 
@@ -148,8 +149,9 @@ static void attrWithGetterExceptionAttributeGetterCallback(v8::Local<v8::String>
 
 static void attrWithGetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithGetterException", "TestTypedefs", info.Holder(), info.GetIsolate());
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setAttrWithGetterException(cppValue);
 }
 
@@ -177,7 +179,7 @@ static void attrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue,
 {
     ExceptionState exceptionState(ExceptionState::SetterContext, "attrWithSetterException", "TestTypedefs", info.Holder(), info.GetIsolate());
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
+    V8TRYCATCH_EXCEPTION_VOID(int, cppValue, toInt32(jsValue, exceptionState), exceptionState);
     imp->setAttrWithSetterException(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }

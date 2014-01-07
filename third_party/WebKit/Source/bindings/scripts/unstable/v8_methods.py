@@ -71,10 +71,6 @@ def generate_method(interface, method):
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
 
-    # Used for 'has_exception_state' (do we have an ExceptionState variable?)
-    has_serialized_script_value_argument = any(
-        argument for argument in arguments
-        if argument.idl_type == 'SerializedScriptValue')
     is_check_security_for_frame = (
         'CheckSecurity' in interface.extended_attributes and
         'DoNotCheckSecurity' not in extended_attributes)
@@ -95,10 +91,12 @@ def generate_method(interface, method):
         'function_template': function_template(),
         'idl_type': idl_type,
         'has_exception_state':
-            is_raises_exception or is_check_security_for_frame or
-            has_serialized_script_value_argument or
+            is_raises_exception or
+            is_check_security_for_frame or
+            any(argument for argument in arguments
+                if argument.idl_type == 'SerializedScriptValue' or
+                   v8_types.is_integer_type(argument.idl_type)) or
             name in ['addEventListener', 'removeEventListener'],
-        'has_serialized_script_value_argument': has_serialized_script_value_argument,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
         'is_call_with_script_state': is_call_with_script_state,

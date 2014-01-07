@@ -445,7 +445,7 @@ Calling this method more than once before new cursor data has been loaded is not
 If the value for count is 0 (zero) or a negative number, this method must throw a JavaScript TypeError exception.
 Expecting TypeError exception from cursor.advance(0)
 PASS Exception was thrown.
-PASS cursor.advance(0) threw TypeError: Type error
+PASS cursor.advance(0) threw TypeError: Failed to execute 'advance' on 'IDBCursor': A count argument with value 0 (zero) was supplied, must be greater than 0.
 cursor.advance(1)
 Expecting exception from cursor.advance(1)
 PASS Exception was thrown.

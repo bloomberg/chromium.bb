@@ -142,6 +142,10 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
 void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::advance");
+    if (!count) {
+        exceptionState.throwTypeError("A count argument with value 0 (zero) was supplied, must be greater than 0.");
+        return;
+    }
     if (!m_gotValue) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::noValueErrorMessage);
         return;
@@ -157,11 +161,6 @@ void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
     }
     if (!m_transaction->isActive()) {
         exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
-        return;
-    }
-
-    if (!count) {
-        exceptionState.throwUninformativeAndGenericTypeError();
         return;
     }
 

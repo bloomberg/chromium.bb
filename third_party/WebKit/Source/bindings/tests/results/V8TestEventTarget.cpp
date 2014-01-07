@@ -74,12 +74,14 @@ template <typename T> void V8_USE(T) { }
 
 static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "item", "TestEventTarget", info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("item", "TestEventTarget", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+        exceptionState.throwIfNeeded();
         return;
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(info.Holder());
-    V8TRYCATCH_VOID(unsigned, index, toUInt32(info[0]));
+    V8TRYCATCH_EXCEPTION_VOID(unsigned, index, toUInt32(info[0], exceptionState), exceptionState);
     v8SetReturnValue(info, imp->item(index));
 }
 

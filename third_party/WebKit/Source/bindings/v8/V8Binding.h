@@ -47,6 +47,7 @@ namespace WebCore {
 
     class DOMWindow;
     class Document;
+    class ExceptionState;
     class Frame;
     class NodeFilter;
     class ExecutionContext;
@@ -297,105 +298,103 @@ namespace WebCore {
     // Convert a value to a 8-bit signed integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-byte
-    int8_t toInt8(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
-    inline int8_t toInt8(v8::Handle<v8::Value> value, bool& ok) { return toInt8(value, NormalConversion, ok); }
+    int8_t toInt8(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+    inline int8_t toInt8(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+    {
+        return toInt8(value, NormalConversion, exceptionState);
+    }
 
     // Convert a value to a 8-bit integer assuming the conversion cannot fail.
-    inline int8_t toInt8(v8::Handle<v8::Value> value)
-    {
-        bool ok;
-        return toInt8(value, NormalConversion, ok);
-    }
+    int8_t toInt8(v8::Handle<v8::Value>);
 
     // Convert a value to a 8-bit unsigned integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-octet
-    uint8_t toUInt8(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
-    inline uint8_t toUInt8(v8::Handle<v8::Value> value, bool& ok) { return toUInt8(value, NormalConversion, ok); }
+    uint8_t toUInt8(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+    inline uint8_t toUInt8(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+    {
+        return toUInt8(value, NormalConversion, exceptionState);
+    }
 
     // Convert a value to a 8-bit unsigned integer assuming the conversion cannot fail.
-    inline uint8_t toUInt8(v8::Handle<v8::Value> value)
-    {
-        bool ok;
-        return toUInt8(value, NormalConversion, ok);
-    }
+    uint8_t toUInt8(v8::Handle<v8::Value>);
 
     // Convert a value to a 16-bit signed integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-short
-    int16_t toInt16(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
-    inline int16_t toInt16(v8::Handle<v8::Value> value, bool& ok) { return toInt16(value, NormalConversion, ok); }
+    int16_t toInt16(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+    inline int16_t toInt16(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+    {
+        return toInt16(value, NormalConversion, exceptionState);
+    }
 
     // Convert a value to a 16-bit integer assuming the conversion cannot fail.
-    inline int16_t toInt16(v8::Handle<v8::Value> value)
-    {
-        bool ok;
-        return toInt16(value, NormalConversion, ok);
-    }
+    int16_t toInt16(v8::Handle<v8::Value>);
 
     // Convert a value to a 16-bit unsigned integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-unsigned-short
-    uint16_t toUInt16(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
-    inline uint16_t toUInt16(v8::Handle<v8::Value> value, bool& ok) { return toUInt16(value, NormalConversion, ok); }
+    uint16_t toUInt16(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+    inline uint16_t toUInt16(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+    {
+        return toUInt16(value, NormalConversion, exceptionState);
+    }
 
     // Convert a value to a 16-bit unsigned integer assuming the conversion cannot fail.
-    inline uint16_t toUInt16(v8::Handle<v8::Value> value)
-    {
-        bool ok;
-        return toUInt16(value, NormalConversion, ok);
-    }
+    uint16_t toUInt16(v8::Handle<v8::Value>);
 
     // Convert a value to a 32-bit signed integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-long
-    int32_t toInt32(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
-    inline int32_t toInt32(v8::Handle<v8::Value> value, bool& ok) { return toInt32(value, NormalConversion, ok); }
+    int32_t toInt32(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+    inline int32_t toInt32(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+    {
+        return toInt32(value, NormalConversion, exceptionState);
+    }
 
     // Convert a value to a 32-bit integer assuming the conversion cannot fail.
-    inline int32_t toInt32(v8::Handle<v8::Value> value)
-    {
-        bool ok;
-        return toInt32(value, NormalConversion, ok);
-    }
+    int32_t toInt32(v8::Handle<v8::Value>);
 
     // Convert a value to a 32-bit unsigned integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-unsigned-long
-    uint32_t toUInt32(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
-    inline uint32_t toUInt32(v8::Handle<v8::Value> value, bool& ok) { return toUInt32(value, NormalConversion, ok); }
+    uint32_t toUInt32(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+    inline uint32_t toUInt32(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+    {
+        return toUInt32(value, NormalConversion, exceptionState);
+    }
 
     // Convert a value to a 32-bit unsigned integer assuming the conversion cannot fail.
-    inline uint32_t toUInt32(v8::Handle<v8::Value> value)
-    {
-        bool ok;
-        return toUInt32(value, NormalConversion, ok);
-    }
+    uint32_t toUInt32(v8::Handle<v8::Value>);
 
     // Convert a value to a 64-bit signed integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-long-long
-    int64_t toInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
+    int64_t toInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+    inline int64_t toInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
+    {
+        return toInt64(value, NormalConversion, exceptionState);
+    }
 
     // Convert a value to a 64-bit integer assuming the conversion cannot fail.
-    inline int64_t toInt64(v8::Handle<v8::Value> value)
-    {
-        bool ok;
-        return toInt64(value, NormalConversion, ok);
-    }
+    int64_t toInt64(v8::Handle<v8::Value>);
 
     // Convert a value to a 64-bit unsigned integer. The conversion fails if the
     // value cannot be converted to a number or the range violated per WebIDL:
     // http://www.w3.org/TR/WebIDL/#es-unsigned-long-long
-    uint64_t toUInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, bool& ok);
-
-    // Convert a value to a 64-bit unsigned integer assuming the conversion cannot fail.
-    inline uint64_t toUInt64(v8::Handle<v8::Value> value)
+    uint64_t toUInt64(v8::Handle<v8::Value>, IntegerConversionConfiguration, ExceptionState&);
+    inline uint64_t toUInt64(v8::Handle<v8::Value> value, ExceptionState& exceptionState)
     {
-        bool ok;
-        return toUInt64(value, NormalConversion, ok);
+        return toUInt64(value, NormalConversion, exceptionState);
     }
 
+    // Convert a value to a 64-bit unsigned integer assuming the conversion cannot fail.
+    uint64_t toUInt64(v8::Handle<v8::Value>);
+
+    // Convert a value to a single precision float, which might fail.
+    float toFloat(v8::Handle<v8::Value>, ExceptionState&);
+
+    // Convert a value to a single precision float assuming the conversion cannot fail.
     inline float toFloat(v8::Local<v8::Value> value)
     {
         return static_cast<float>(value->NumberValue());

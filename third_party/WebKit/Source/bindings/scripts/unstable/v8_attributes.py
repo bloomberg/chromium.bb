@@ -57,6 +57,15 @@ def generate_attribute(interface, attribute):
     has_custom_setter = (not attribute.is_read_only and
                          'Custom' in extended_attributes and
                          extended_attributes['Custom'] in [None, 'Setter'])
+
+    has_strict_type_checking = (
+        'StrictTypeChecking' in extended_attributes and
+        v8_types.is_interface_type(idl_type))
+
+    is_setter_raises_exception = (
+        'RaisesException' in extended_attributes and
+        extended_attributes['RaisesException'] in [None, 'Setter'])
+
     # [Reflect]
     is_reflect = 'Reflect' in extended_attributes
     if is_reflect:
@@ -82,9 +91,7 @@ def generate_attribute(interface, attribute):
             v8_utilities.enum_validation_expression(idl_type),
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
-        'has_strict_type_checking': (
-            'StrictTypeChecking' in extended_attributes and
-            v8_types.is_interface_type(idl_type)),
+        'has_strict_type_checking': has_strict_type_checking,
         'idl_type': idl_type,
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_check_security_for_node': is_check_security_for_node,
@@ -100,9 +107,10 @@ def generate_attribute(interface, attribute):
         'is_read_only': attribute.is_read_only,
         'is_reflect': is_reflect,
         'is_replaceable': 'Replaceable' in attribute.extended_attributes,
-        'is_setter_raises_exception': (
-            'RaisesException' in extended_attributes and
-            extended_attributes['RaisesException'] in [None, 'Setter']),
+        'is_setter_raises_exception': is_setter_raises_exception,
+        'has_setter_exception_state': (
+            is_setter_raises_exception or has_strict_type_checking or
+            v8_types.is_integer_type(idl_type)),
         'is_static': attribute.is_static,
         'is_unforgeable': 'Unforgeable' in extended_attributes,
         'measure_as': v8_utilities.measure_as(attribute),  # [MeasureAs]

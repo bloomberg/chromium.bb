@@ -124,8 +124,7 @@ v8::Local<v8::Value> jsValue, const v8::FunctionCallbackInfo<v8::Value>& info
 v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
 {%- endif %})
 {
-    {% if attribute.is_setter_raises_exception or
-          attribute.has_strict_type_checking %}
+    {% if attribute.has_setter_exception_state %}
     ExceptionState exceptionState(ExceptionState::SetterContext, "{{attribute.name}}", "{{interface_name}}", info.Holder(), info.GetIsolate());
     {% endif %}
     {% if attribute.has_strict_type_checking %}

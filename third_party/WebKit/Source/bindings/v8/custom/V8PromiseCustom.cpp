@@ -628,9 +628,8 @@ v8::Local<v8::Object> V8PromiseCustom::getInternal(v8::Handle<v8::Object> promis
 V8PromiseCustom::PromiseState V8PromiseCustom::getState(v8::Handle<v8::Object> internal)
 {
     v8::Handle<v8::Value> value = internal->GetInternalField(V8PromiseCustom::InternalStateIndex);
-    bool ok = false;
-    uint32_t number = toInt32(value, ok);
-    ASSERT(ok && (number == Pending || number == Fulfilled || number == Rejected || number == Following));
+    uint32_t number = toInt32(value);
+    ASSERT(number == Pending || number == Fulfilled || number == Rejected || number == Following);
     return static_cast<PromiseState>(number);
 }
 
