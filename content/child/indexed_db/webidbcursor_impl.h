@@ -47,6 +47,7 @@ class CONTENT_EXPORT WebIDBCursorImpl
  private:
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchTest);
   FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, AdvancePrefetchTest);
+  FRIEND_TEST_ALL_PREFIXES(WebIDBCursorImplTest, PrefetchReset);
 
   int32 ipc_cursor_id_;
 

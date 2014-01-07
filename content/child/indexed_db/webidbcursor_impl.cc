@@ -161,6 +161,14 @@ void WebIDBCursorImpl::CachedContinue(WebIDBCallbacks* callbacks) {
 
   ++pending_onsuccess_callbacks_;
 
+  if (!continue_count_) {
+    // The cache was invalidated by a call to ResetPrefetchCache()
+    // after the RequestIDBCursorPrefetch() was made. Now that the
+    // initiating continue() call has been satisfied, discard
+    // the rest of the cache.
+    ResetPrefetchCache();
+  }
+
   callbacks->onSuccess(WebIDBKeyBuilder::Build(key),
                        WebIDBKeyBuilder::Build(primary_key),
                        value);
