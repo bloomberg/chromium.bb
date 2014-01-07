@@ -32,25 +32,13 @@
 #include "platform/PlatformExport.h"
 #include "platform/audio/AudioArray.h"
 
-#if OS(MACOSX) && !USE(WEBAUDIO_FFMPEG)
-#define USE_ACCELERATE_FFT 1
-#else
-#define USE_ACCELERATE_FFT 0
-#endif
-
-#if USE_ACCELERATE_FFT
+#if OS(MACOSX)
 #include <Accelerate/Accelerate.h>
-#endif
-
-#if !USE_ACCELERATE_FFT
-
-#if USE(WEBAUDIO_OPENMAX_DL_FFT)
+#elif USE(WEBAUDIO_OPENMAX_DL_FFT)
 #include <dl/sp/api/omxSP.h>
 #elif USE(WEBAUDIO_FFMPEG)
 struct RDFTContext;
 #endif
-
-#endif // !USE_ACCELERATE_FFT
 
 #if USE(WEBAUDIO_IPP)
 #include <ipps.h>
@@ -104,7 +92,7 @@ private:
 
     void interpolateFrequencyComponents(const FFTFrame& frame1, const FFTFrame& frame2, double x);
 
-#if USE_ACCELERATE_FFT
+#if OS(MACOSX)
     DSPSplitComplex& dspSplitComplex() { return m_frame; }
     DSPSplitComplex dspSplitComplex() const { return m_frame; }
 
@@ -117,7 +105,7 @@ private:
     DSPSplitComplex m_frame;
     AudioFloatArray m_realData;
     AudioFloatArray m_imagData;
-#else // !USE_ACCELERATE_FFT
+#else // !OS(MACOSX)
 
 #if USE(WEBAUDIO_FFMPEG)
     static RDFTContext* contextForSize(unsigned fftSize, int trans);
@@ -152,7 +140,7 @@ private:
     AudioFloatArray m_imagData;
 #endif
 
-#endif // !USE_ACCELERATE_FFT
+#endif // !OS(MACOSX)
 };
 
 } // namespace WebCore

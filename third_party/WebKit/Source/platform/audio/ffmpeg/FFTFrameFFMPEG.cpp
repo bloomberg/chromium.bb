@@ -265,6 +265,6 @@ RDFTContext* FFTFrame::contextForSize(unsigned fftSize, int trans)
 
 } // namespace WebCore
 
-#endif // !OS(MACOSX) && USE(WEBAUDIO_FFMPEG)
+#endif // USE(WEBAUDIO_FFMPEG)
 
 #endif // ENABLE(WEB_AUDIO)
