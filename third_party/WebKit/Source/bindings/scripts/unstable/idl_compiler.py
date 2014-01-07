@@ -60,7 +60,7 @@ def parse_options():
     parser.add_option('--idl-attributes-file')
     parser.add_option('--include', dest='idl_directories', action='append')
     parser.add_option('--output-directory')
-    parser.add_option('--interface-dependencies-file')
+    parser.add_option('--interfaces-info-file')
     parser.add_option('--verbose', action='store_true', default=False)
     parser.add_option('--write-file-only-if-changed', type='int')
     # ensure output comes last, so command line easy to parse via regexes
@@ -111,7 +111,7 @@ def main():
         print idl_filename
     relative_dir_posix = get_relative_dir_posix(idl_filename)
 
-    reader = idl_reader.IdlReader(options.interface_dependencies_file, options.additional_idl_files, options.idl_attributes_file, output_directory, verbose)
+    reader = idl_reader.IdlReader(options.interfaces_info_file, options.additional_idl_files, options.idl_attributes_file, output_directory, verbose)
     definitions = reader.read_idl_definitions(idl_filename)
     code_generator = code_generator_v8.CodeGeneratorV8(definitions, interface_name, options.output_directory, relative_dir_posix, options.idl_directories, verbose)
     if not definitions:

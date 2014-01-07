@@ -90,6 +90,7 @@ class BindingsTests(object):
         self.verbose = verbose
         self.executive = executive
         _, self.interface_dependencies_filename = provider.newtempfile()
+        _, self.interfaces_filename = provider.newtempfile()
         _, self.derived_sources_list_filename = provider.newtempfile()
         # Generate output into the reference directory if resetting results, or
         # a temp directory if not.
@@ -132,8 +133,7 @@ class BindingsTests(object):
                '--output-dir', self.output_directory_py,
                '--idl-attributes-file', 'bindings/IDLExtendedAttributes.txt',
                '--include', '.',
-               '--interface-dependencies-file',
-               self.interface_dependencies_filename,
+               '--interfaces-info-file', self.interfaces_filename,
                idl_file]
         try:
             self.run_command(cmd)
@@ -170,6 +170,7 @@ class BindingsTests(object):
                '--main-idl-files-list', main_idl_files_list_filename,
                '--support-idl-files-list', support_idl_files_list_filename,
                '--interface-dependencies-file', self.interface_dependencies_filename,
+               '--interfaces-info-file', self.interfaces_filename,
                '--bindings-derived-sources-file', self.derived_sources_list_filename,
                '--window-constructors-file', window_constructors_file,
                '--workerglobalscope-constructors-file', workerglobalscope_constructors_file,

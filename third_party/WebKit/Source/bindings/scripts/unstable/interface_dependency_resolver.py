@@ -38,6 +38,7 @@ instead it is just a dependency.
 """
 
 import os.path
+import cPickle as pickle
 
 
 class InterfaceNotFoundError(Exception):
@@ -51,13 +52,12 @@ class InvalidPartialInterfaceError(Exception):
 
 
 class InterfaceDependencyResolver:
-    def __init__(self, interface_dependencies_filename, additional_idl_filenames, reader):
+    def __init__(self, interfaces_info_filename, additional_idl_filenames, reader):
         """Inits dependency resolver.
 
         Args:
-            interface_dependencies_filename:
-                filename of dependencies file (produced by
-                compute_dependencies.py)
+            interfaces_info_filename:
+                interfaces information file, output by compute_dependencies.py
             additional_idl_filenames:
                 list of additional files, not listed in
                 interface_dependencies_file, for which bindings should
@@ -65,7 +65,8 @@ class InterfaceDependencyResolver:
             reader:
                 IdlReader, used for reading dependency files
         """
-        self.interface_dependencies = read_interface_dependencies_file(interface_dependencies_filename)
+        with open(interfaces_info_filename, 'r') as interfaces_info_file:
+            self.interface_dependencies = pickle.load(interfaces_info_file)
         self.additional_interfaces = set()
         for filename in additional_idl_filenames:
             basename = os.path.basename(filename)
@@ -129,45 +130,6 @@ class InterfaceDependencyResolver:
             return []
 
         return None
-
-
-def read_interface_dependencies_file(interface_dependencies_filename):
-    """Reads the interface dependencies file, returns a dict for resolving dependencies.
-
-    The format of the interface dependencies file is:
-
-    Document.idl P.idl
-    Event.idl
-    Window.idl Q.idl R.idl S.idl
-    ...
-
-    The above indicates that:
-    Document.idl depends on P.idl,
-    Event.idl depends on no other IDL files, and
-    Window.idl depends on Q.idl, R.idl, and S.idl.
-
-    The head entries (first IDL file on a line) are the files that should
-    have bindings generated.
-
-    An IDL file that is a dependency of another IDL file (e.g., P.idl in the
-    above example) does not have its own line in the dependency file:
-    dependencies do not have bindings generated, and do not have their
-    own dependencies.
-
-    Args:
-        interface_dependencies_filename: filename of file in above format
-    Returns:
-        dict of interface_name -> dependency_filenames
-    """
-    interface_dependencies = {}
-    with open(interface_dependencies_filename) as interface_dependencies_file:
-        for line in interface_dependencies_file:
-            idl_filename, _, dependency_filenames_string = line.partition(' ')
-            idl_basename = os.path.basename(idl_filename)
-            interface_name, _ = os.path.splitext(idl_basename)
-            dependency_filenames = dependency_filenames_string.split()
-            interface_dependencies[interface_name] = dependency_filenames
-    return interface_dependencies
 
 
 def merge_interface_dependencies(target_interface, dependency_idl_filenames, reader):

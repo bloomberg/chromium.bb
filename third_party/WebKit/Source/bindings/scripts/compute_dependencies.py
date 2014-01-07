@@ -30,6 +30,7 @@
 
 import optparse
 import os
+import cPickle as pickle
 import posixpath
 import re
 import string
@@ -51,6 +52,7 @@ def parse_options():
     parser.add_option('--main-idl-files-list', help='file listing main (compiled to Blink) IDL files')
     parser.add_option('--support-idl-files-list', help='file listing support IDL files (not compiled to Blink, e.g. testing)')
     parser.add_option('--interface-dependencies-file', help='output file')
+    parser.add_option('--interfaces-info-file', help='output pickle file')
     parser.add_option('--bindings-derived-sources-file', help='output file')
     parser.add_option('--window-constructors-file', help='output file')
     parser.add_option('--workerglobalscope-constructors-file', help='output file')
@@ -63,6 +65,8 @@ def parse_options():
         parser.error('Must specify an output file using --event-names-file.')
     if options.interface_dependencies_file is None:
         parser.error('Must specify an output file using --interface-dependencies-file.')
+    if options.interfaces_info_file is None:
+        parser.error('Must specify an output file using --interfaces-info-file.')
     if options.bindings_derived_sources_file is None:
         parser.error('Must specify an output file using --bindings-derived-sources-file.')
     if options.window_constructors_file is None:
@@ -352,7 +356,7 @@ def parse_idl_files(main_idl_files, support_idl_files, global_constructors_filen
     return interfaces, dependencies, bindings_derived_sources, global_constructors, event_names
 
 
-def write_dependency_file(filename, dependencies, only_if_changed):
+def write_dependency_file(dependencies_filename, interfaces_info_filename, dependencies, only_if_changed):
     """Write the interface dependencies file.
 
     The format is as follows:
@@ -370,9 +374,28 @@ def write_dependency_file(filename, dependencies, only_if_changed):
     An IDL that is a dependency of another IDL (e.g. P.idl) does not have its
     own line in the dependency file.
     """
+    # FIXME: remove text format once Perl gone (Python uses pickle)
     lines = ['%s %s\n' % (idl_file, ' '.join(sorted(dependency_files)))
              for idl_file, dependency_files in sorted(dependencies.iteritems())]
-    write_file(lines, filename, only_if_changed)
+    write_file(lines, dependencies_filename, only_if_changed)
+
+    if not interfaces_info_filename:
+        return
+    interfaces = {}
+    for idl_filename, dependency_files in dependencies.iteritems():
+        idl_basename = os.path.basename(idl_filename)
+        interface_name, _ = os.path.splitext(idl_basename)
+        interfaces[interface_name] = dependency_files
+
+    if only_if_changed and os.path.isfile(interfaces_info_filename):
+        with open(interfaces_info_filename, 'r+') as pickle_file:
+            if pickle.load(pickle_file) == interfaces:
+                return
+            pickle_file.seek(0)
+            pickle.dump(interfaces, pickle_file)
+        return
+    with open(interfaces_info_filename, 'w') as pickle_file:
+        pickle.dump(interfaces, pickle_file)
 
 
 def main():
@@ -392,8 +415,8 @@ def main():
 
     interfaces, dependencies, bindings_derived_sources, global_constructors, event_names = parse_idl_files(main_idl_files, support_idl_files, global_constructors_filenames)
 
-    write_dependency_file(options.interface_dependencies_file, dependencies, only_if_changed)
-    write_dependency_file(options.bindings_derived_sources_file, bindings_derived_sources, only_if_changed)
+    write_dependency_file(options.interface_dependencies_file, options.interfaces_info_file, dependencies, only_if_changed)
+    write_dependency_file(options.bindings_derived_sources_file, None, bindings_derived_sources, only_if_changed)
     for interface_name, filename in global_constructors_filenames.iteritems():
         if interface_name in interfaces:
             generate_global_constructors_partial_interface(interface_name, filename, global_constructors[interface_name], only_if_changed)

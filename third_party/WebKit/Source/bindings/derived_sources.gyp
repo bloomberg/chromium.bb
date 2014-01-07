@@ -162,6 +162,7 @@
        ],
        'outputs': [
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
          '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
          '<@(generated_global_constructors_idl_files)',
          '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.in',
@@ -176,6 +177,8 @@
          '<(support_idl_files_list)',
          '--interface-dependencies-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
+         '--interfaces-info-file',
+         '<(SHARED_INTERMEDIATE_DIR)/blink/InterfacesInfo.pickle',
          '--bindings-derived-sources-file',
          '<(SHARED_INTERMEDIATE_DIR)/blink/BindingsDerivedSources.txt',
          '--window-constructors-file',
