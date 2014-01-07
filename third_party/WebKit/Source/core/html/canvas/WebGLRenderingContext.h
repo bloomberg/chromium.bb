@@ -34,12 +34,16 @@
 #include "platform/graphics/GraphicsContext3D.h"
 #include "platform/graphics/ImageBuffer.h"
 
+#include "public/platform/WebGraphicsContext3D.h"
+
 #include "wtf/Float32Array.h"
 #include "wtf/Int32Array.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
-namespace blink { class WebLayer; }
+namespace blink {
+class WebLayer;
+}
 
 namespace WebCore {
 
@@ -84,6 +88,9 @@ class WebGLSharedObject;
 class WebGLTexture;
 class WebGLUniformLocation;
 class WebGLVertexArrayObjectOES;
+
+class WebGLRenderingContextLostCallback;
+class WebGLRenderingContextErrorMessageCallback;
 
 class WebGLRenderingContext : public CanvasRenderingContext, public ActiveDOMObject, private Page::MultisamplingChangedObserver {
 public:
@@ -311,7 +318,8 @@ public:
     void forceRestoreContext();
     void loseContextImpl(LostContextMode);
 
-    GraphicsContext3D* graphicsContext3D() const { return m_context.get(); }
+    blink::WebGraphicsContext3D* webGraphicsContext3D() const { return m_context.get(); }
+    GraphicsContext3D* graphicsContext3D() const { return m_contextSupport.get(); }
     WebGLContextGroup* contextGroup() const { return m_contextGroup.get(); }
     virtual blink::WebLayer* platformLayer() const;
 
@@ -342,7 +350,7 @@ public:
     friend class WebGLRenderingContextErrorMessageCallback;
     friend class WebGLVertexArrayObjectOES;
 
-    WebGLRenderingContext(HTMLCanvasElement*, PassRefPtr<GraphicsContext3D>, GraphicsContext3D::Attributes, GraphicsContext3D::Attributes);
+    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<blink::WebGraphicsContext3D>, PassRefPtr<GraphicsContext3D>, blink::WebGraphicsContext3D::Attributes, blink::WebGraphicsContext3D::Attributes requestedAttributes, bool preserveDrawingBuffer);
     void initializeNewContext();
     void setupFlags();
 
@@ -377,7 +385,10 @@ public:
 
     WebGLRenderbuffer* ensureEmulatedStencilBuffer(GLenum target, WebGLRenderbuffer*);
 
-    RefPtr<GraphicsContext3D> m_context;
+
+
+    OwnPtr<blink::WebGraphicsContext3D> m_context;
+    RefPtr<GraphicsContext3D> m_contextSupport;
     RefPtr<WebGLContextGroup> m_contextGroup;
 
     // Structure for rendering to a DrawingBuffer, instead of directly
@@ -396,6 +407,9 @@ public:
     bool m_needsUpdate;
     bool m_markedCanvasDirty;
     HashSet<WebGLContextObject*> m_contextObjects;
+
+    OwnPtr<WebGLRenderingContextLostCallback> m_contextLostCallbackAdapter;
+    OwnPtr<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;
 
     // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and stored values for ELEMENT_ARRAY_BUFFER
     RefPtr<WebGLBuffer> m_boundArrayBuffer;
@@ -484,8 +498,8 @@ public:
     GLenum m_unpackColorspaceConversion;
     bool m_contextLost;
     LostContextMode m_contextLostMode;
-    GraphicsContext3D::Attributes m_attributes;
-    GraphicsContext3D::Attributes m_requestedAttributes;
+    blink::WebGraphicsContext3D::Attributes m_attributes;
+    blink::WebGraphicsContext3D::Attributes m_requestedAttributes;
 
     bool m_layerCleared;
     GLfloat m_clearColor[4];
@@ -511,6 +525,8 @@ public:
 
     GLuint m_onePlusMaxEnabledAttribIndex;
     unsigned long m_onePlusMaxNonDefaultTextureUnit;
+
+    bool m_preserveDrawingBuffer;
 
     // Enabled extension objects.
     RefPtr<ANGLEInstancedArrays> m_angleInstancedArrays;

@@ -81,6 +81,16 @@ GraphicsContext3D::GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvi
 {
 }
 
+GraphicsContext3D::GraphicsContext3D(blink::WebGraphicsContext3D* webContext)
+    : m_impl(webContext)
+    , m_initializedAvailableExtensions(false)
+    , m_layerComposited(false)
+    , m_preserveDrawingBuffer(false)
+    , m_packAlignment(4)
+    , m_grContext(0)
+{
+}
+
 GraphicsContext3D::~GraphicsContext3D()
 {
     setContextLostCallback(nullptr);
@@ -120,34 +130,16 @@ void GraphicsContext3D::name(t1 a1, t2 a2) \
     m_impl->name(a1, a2); \
 }
 
-#define DELEGATE_TO_WEBCONTEXT_2R(name, t1, t2, rt) \
-rt GraphicsContext3D::name(t1 a1, t2 a2) \
-{ \
-    return m_impl->name(a1, a2); \
-}
-
 #define DELEGATE_TO_WEBCONTEXT_3(name, t1, t2, t3) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3) \
 { \
     m_impl->name(a1, a2, a3); \
 }
 
-#define DELEGATE_TO_WEBCONTEXT_3R(name, t1, t2, t3, rt) \
-rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3) \
-{ \
-    return m_impl->name(a1, a2, a3); \
-}
-
 #define DELEGATE_TO_WEBCONTEXT_4(name, t1, t2, t3, t4) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4) \
 { \
     m_impl->name(a1, a2, a3, a4); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_4R(name, t1, t2, t3, t4, rt) \
-rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4) \
-{ \
-    return m_impl->name(a1, a2, a3, a4); \
 }
 
 #define DELEGATE_TO_WEBCONTEXT_5(name, t1, t2, t3, t4, t5) \
@@ -162,40 +154,16 @@ void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) \
     m_impl->name(a1, a2, a3, a4, a5, a6); \
 }
 
-#define DELEGATE_TO_WEBCONTEXT_6R(name, t1, t2, t3, t4, t5, t6, rt) \
-rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6) \
-{ \
-    return m_impl->name(a1, a2, a3, a4, a5, a6); \
-}
-
 #define DELEGATE_TO_WEBCONTEXT_7(name, t1, t2, t3, t4, t5, t6, t7) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7) \
 { \
     m_impl->name(a1, a2, a3, a4, a5, a6, a7); \
 }
 
-#define DELEGATE_TO_WEBCONTEXT_7R(name, t1, t2, t3, t4, t5, t6, t7, rt) \
-rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7) \
-{ \
-    return m_impl->name(a1, a2, a3, a4, a5, a6, a7); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_8(name, t1, t2, t3, t4, t5, t6, t7, t8) \
-void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8) \
-{ \
-    m_impl->name(a1, a2, a3, a4, a5, a6, a7, a8); \
-}
-
 #define DELEGATE_TO_WEBCONTEXT_9(name, t1, t2, t3, t4, t5, t6, t7, t8, t9) \
 void GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8, t9 a9) \
 { \
     m_impl->name(a1, a2, a3, a4, a5, a6, a7, a8, a9); \
-}
-
-#define DELEGATE_TO_WEBCONTEXT_9R(name, t1, t2, t3, t4, t5, t6, t7, t8, t9, rt) \
-rt GraphicsContext3D::name(t1 a1, t2 a2, t3 a3, t4 a4, t5 a5, t6 a6, t7 a7, t8 a8, t9 a9) \
-{ \
-    return m_impl->name(a1, a2, a3, a4, a5, a6, a7, a8, a9); \
 }
 
 class GraphicsContext3DContextLostCallbackAdapter : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
@@ -244,6 +212,13 @@ void GraphicsContext3D::setErrorMessageCallback(PassOwnPtr<GraphicsContext3D::Er
     }
 }
 
+PassRefPtr<GraphicsContext3D> GraphicsContext3D::createContextSupport(blink::WebGraphicsContext3D* webContext)
+{
+    RefPtr<GraphicsContext3D> context = adoptRef(new GraphicsContext3D(webContext));
+    return context.release();
+}
+
+// The following three creation methods are obsolete and should not be used by new code. They will be removed soon.
 PassRefPtr<GraphicsContext3D> GraphicsContext3D::create(GraphicsContext3D::Attributes attrs)
 {
     blink::WebGraphicsContext3D::Attributes webAttributes;
@@ -288,28 +263,12 @@ DELEGATE_TO_WEBCONTEXT_R(lastFlushID, uint32_t)
 DELEGATE_TO_WEBCONTEXT_1(activeTexture, GLenum)
 DELEGATE_TO_WEBCONTEXT_2(attachShader, Platform3DObject, Platform3DObject)
 
-void GraphicsContext3D::bindAttribLocation(Platform3DObject program, GLuint index, const String& name)
-{
-    m_impl->bindAttribLocation(program, index, name.utf8().data());
-}
-
 DELEGATE_TO_WEBCONTEXT_2(bindBuffer, GLenum, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_2(bindFramebuffer, GLenum, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_2(bindRenderbuffer, GLenum, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_2(bindTexture, GLenum, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_4(blendColor, GLclampf, GLclampf, GLclampf, GLclampf)
-DELEGATE_TO_WEBCONTEXT_1(blendEquation, GLenum)
-DELEGATE_TO_WEBCONTEXT_2(blendEquationSeparate, GLenum, GLenum)
-DELEGATE_TO_WEBCONTEXT_2(blendFunc, GLenum, GLenum)
-DELEGATE_TO_WEBCONTEXT_4(blendFuncSeparate, GLenum, GLenum, GLenum, GLenum)
-
-void GraphicsContext3D::bufferData(GLenum target, GLsizeiptr size, GLenum usage)
-{
-    bufferData(target, size, 0, usage);
-}
 
 DELEGATE_TO_WEBCONTEXT_4(bufferData, GLenum, GLsizeiptr, const void*, GLenum)
-DELEGATE_TO_WEBCONTEXT_4(bufferSubData, GLenum, GLintptr, GLsizeiptr, const void*)
 
 DELEGATE_TO_WEBCONTEXT_1R(checkFramebufferStatus, GLenum, GLenum)
 DELEGATE_TO_WEBCONTEXT_1(clear, GLbitfield)
@@ -319,18 +278,9 @@ DELEGATE_TO_WEBCONTEXT_1(clearStencil, GLint)
 DELEGATE_TO_WEBCONTEXT_4(colorMask, GLboolean, GLboolean, GLboolean, GLboolean)
 DELEGATE_TO_WEBCONTEXT_1(compileShader, Platform3DObject)
 
-DELEGATE_TO_WEBCONTEXT_8(compressedTexImage2D, GLenum, GLint, GLenum, GLint, GLint, GLsizei, GLsizei, const void*)
-DELEGATE_TO_WEBCONTEXT_9(compressedTexSubImage2D, GLenum, GLint, GLint, GLint, GLint, GLint, GLenum, GLsizei, const void*)
-DELEGATE_TO_WEBCONTEXT_8(copyTexImage2D, GLenum, GLint, GLenum, GLint, GLint, GLsizei, GLsizei, GLint)
-DELEGATE_TO_WEBCONTEXT_8(copyTexSubImage2D, GLenum, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei)
-DELEGATE_TO_WEBCONTEXT_1(cullFace, GLenum)
-DELEGATE_TO_WEBCONTEXT_1(depthFunc, GLenum)
 DELEGATE_TO_WEBCONTEXT_1(depthMask, GLboolean)
-DELEGATE_TO_WEBCONTEXT_2(depthRange, GLclampf, GLclampf)
-DELEGATE_TO_WEBCONTEXT_2(detachShader, Platform3DObject, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_1(disable, GLenum)
 DELEGATE_TO_WEBCONTEXT_1(disableVertexAttribArray, GLuint)
-DELEGATE_TO_WEBCONTEXT_3(drawArrays, GLenum, GLint, GLsizei)
 DELEGATE_TO_WEBCONTEXT_4(drawElements, GLenum, GLsizei, GLenum, GLintptr)
 
 DELEGATE_TO_WEBCONTEXT_1(enable, GLenum)
@@ -339,8 +289,6 @@ DELEGATE_TO_WEBCONTEXT(finish)
 DELEGATE_TO_WEBCONTEXT(flush)
 DELEGATE_TO_WEBCONTEXT_4(framebufferRenderbuffer, GLenum, GLenum, GLenum, Platform3DObject)
 DELEGATE_TO_WEBCONTEXT_5(framebufferTexture2D, GLenum, GLenum, GLenum, Platform3DObject, GLint)
-DELEGATE_TO_WEBCONTEXT_1(frontFace, GLenum)
-DELEGATE_TO_WEBCONTEXT_1(generateMipmap, GLenum)
 
 bool GraphicsContext3D::getActiveAttrib(Platform3DObject program, GLuint index, ActiveInfo& info)
 {
@@ -353,26 +301,10 @@ bool GraphicsContext3D::getActiveAttrib(Platform3DObject program, GLuint index, 
     return true;
 }
 
-bool GraphicsContext3D::getActiveUniform(Platform3DObject program, GLuint index, ActiveInfo& info)
-{
-    blink::WebGraphicsContext3D::ActiveInfo webInfo;
-    if (!m_impl->getActiveUniform(program, index, webInfo))
-        return false;
-    info.name = webInfo.name;
-    info.type = webInfo.type;
-    info.size = webInfo.size;
-    return true;
-}
-
-DELEGATE_TO_WEBCONTEXT_4(getAttachedShaders, Platform3DObject, GLsizei, GLsizei*, Platform3DObject*)
-
 GLint GraphicsContext3D::getAttribLocation(Platform3DObject program, const String& name)
 {
     return m_impl->getAttribLocation(program, name.utf8().data());
 }
-
-DELEGATE_TO_WEBCONTEXT_2(getBooleanv, GLenum, GLboolean*)
-DELEGATE_TO_WEBCONTEXT_3(getBufferParameteriv, GLenum, GLenum, GLint*)
 
 GraphicsContext3D::Attributes GraphicsContext3D::getContextAttributes()
 {
@@ -389,40 +321,16 @@ GraphicsContext3D::Attributes GraphicsContext3D::getContextAttributes()
 }
 
 DELEGATE_TO_WEBCONTEXT_R(getError, GLenum)
-DELEGATE_TO_WEBCONTEXT_2(getFloatv, GLenum, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_4(getFramebufferAttachmentParameteriv, GLenum, GLenum, GLenum, GLint*)
 DELEGATE_TO_WEBCONTEXT_2(getIntegerv, GLenum, GLint*)
 DELEGATE_TO_WEBCONTEXT_3(getProgramiv, Platform3DObject, GLenum, GLint*)
-DELEGATE_TO_WEBCONTEXT_1R(getProgramInfoLog, Platform3DObject, String)
-DELEGATE_TO_WEBCONTEXT_3(getRenderbufferParameteriv, GLenum, GLenum, GLint*)
 DELEGATE_TO_WEBCONTEXT_3(getShaderiv, Platform3DObject, GLenum, GLint*)
-DELEGATE_TO_WEBCONTEXT_1R(getShaderInfoLog, Platform3DObject, String)
-DELEGATE_TO_WEBCONTEXT_4(getShaderPrecisionFormat, GLenum, GLenum, GLint*, GLint*)
-DELEGATE_TO_WEBCONTEXT_1R(getShaderSource, Platform3DObject, String)
 DELEGATE_TO_WEBCONTEXT_1R(getString, GLenum, String)
-DELEGATE_TO_WEBCONTEXT_3(getTexParameterfv, GLenum, GLenum, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_3(getTexParameteriv, GLenum, GLenum, GLint*)
-DELEGATE_TO_WEBCONTEXT_3(getUniformfv, Platform3DObject, GLint, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_3(getUniformiv, Platform3DObject, GLint, GLint*)
 
 GLint GraphicsContext3D::getUniformLocation(Platform3DObject program, const String& name)
 {
     return m_impl->getUniformLocation(program, name.utf8().data());
 }
 
-DELEGATE_TO_WEBCONTEXT_3(getVertexAttribfv, GLuint, GLenum, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_3(getVertexAttribiv, GLuint, GLenum, GLint*)
-DELEGATE_TO_WEBCONTEXT_2R(getVertexAttribOffset, GLuint, GLenum, GLsizeiptr)
-
-DELEGATE_TO_WEBCONTEXT_2(hint, GLenum, GLenum)
-DELEGATE_TO_WEBCONTEXT_1R(isBuffer, Platform3DObject, GLboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isEnabled, GLenum, GLboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isFramebuffer, Platform3DObject, GLboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isProgram, Platform3DObject, GLboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isRenderbuffer, Platform3DObject, GLboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isShader, Platform3DObject, GLboolean)
-DELEGATE_TO_WEBCONTEXT_1R(isTexture, Platform3DObject, GLboolean)
-DELEGATE_TO_WEBCONTEXT_1(lineWidth, GLfloat)
 DELEGATE_TO_WEBCONTEXT_1(linkProgram, Platform3DObject)
 
 void GraphicsContext3D::pixelStorei(GLenum pname, GLint param)
@@ -432,63 +340,30 @@ void GraphicsContext3D::pixelStorei(GLenum pname, GLint param)
     m_impl->pixelStorei(pname, param);
 }
 
-DELEGATE_TO_WEBCONTEXT_2(polygonOffset, GLfloat, GLfloat)
-
 DELEGATE_TO_WEBCONTEXT_7(readPixels, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void*)
 
-DELEGATE_TO_WEBCONTEXT(releaseShaderCompiler)
 DELEGATE_TO_WEBCONTEXT_4(renderbufferStorage, GLenum, GLenum, GLsizei, GLsizei)
-DELEGATE_TO_WEBCONTEXT_2(sampleCoverage, GLclampf, GLboolean)
-DELEGATE_TO_WEBCONTEXT_4(scissor, GLint, GLint, GLsizei, GLsizei)
 
 void GraphicsContext3D::shaderSource(Platform3DObject shader, const String& string)
 {
     m_impl->shaderSource(shader, string.utf8().data());
 }
 
-DELEGATE_TO_WEBCONTEXT_3(stencilFunc, GLenum, GLint, GLuint)
-DELEGATE_TO_WEBCONTEXT_4(stencilFuncSeparate, GLenum, GLenum, GLint, GLuint)
-DELEGATE_TO_WEBCONTEXT_1(stencilMask, GLuint)
 DELEGATE_TO_WEBCONTEXT_2(stencilMaskSeparate, GLenum, GLuint)
-DELEGATE_TO_WEBCONTEXT_3(stencilOp, GLenum, GLenum, GLenum)
-DELEGATE_TO_WEBCONTEXT_4(stencilOpSeparate, GLenum, GLenum, GLenum, GLenum)
 
 DELEGATE_TO_WEBCONTEXT_9(texImage2D, GLenum, GLint, GLenum, GLsizei, GLsizei, GLint, GLenum, GLenum, const void*)
-DELEGATE_TO_WEBCONTEXT_3(texParameterf, GLenum, GLenum, GLfloat)
 DELEGATE_TO_WEBCONTEXT_3(texParameteri, GLenum, GLenum, GLint)
-DELEGATE_TO_WEBCONTEXT_9(texSubImage2D, GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, const void*)
 
 DELEGATE_TO_WEBCONTEXT_2(uniform1f, GLint, GLfloat)
 DELEGATE_TO_WEBCONTEXT_3(uniform1fv, GLint, GLsizei, GLfloat*)
 DELEGATE_TO_WEBCONTEXT_2(uniform1i, GLint, GLint)
-DELEGATE_TO_WEBCONTEXT_3(uniform1iv, GLint, GLsizei, GLint*)
 DELEGATE_TO_WEBCONTEXT_3(uniform2f, GLint, GLfloat, GLfloat)
-DELEGATE_TO_WEBCONTEXT_3(uniform2fv, GLint, GLsizei, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_3(uniform2i, GLint, GLint, GLint)
-DELEGATE_TO_WEBCONTEXT_3(uniform2iv, GLint, GLsizei, GLint*)
 DELEGATE_TO_WEBCONTEXT_4(uniform3f, GLint, GLfloat, GLfloat, GLfloat)
-DELEGATE_TO_WEBCONTEXT_3(uniform3fv, GLint, GLsizei, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_4(uniform3i, GLint, GLint, GLint, GLint)
-DELEGATE_TO_WEBCONTEXT_3(uniform3iv, GLint, GLsizei, GLint*)
 DELEGATE_TO_WEBCONTEXT_5(uniform4f, GLint, GLfloat, GLfloat, GLfloat, GLfloat)
-DELEGATE_TO_WEBCONTEXT_3(uniform4fv, GLint, GLsizei, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_5(uniform4i, GLint, GLint, GLint, GLint, GLint)
-DELEGATE_TO_WEBCONTEXT_3(uniform4iv, GLint, GLsizei, GLint*)
-DELEGATE_TO_WEBCONTEXT_4(uniformMatrix2fv, GLint, GLsizei, GLboolean, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_4(uniformMatrix3fv, GLint, GLsizei, GLboolean, GLfloat*)
 DELEGATE_TO_WEBCONTEXT_4(uniformMatrix4fv, GLint, GLsizei, GLboolean, GLfloat*)
 
 DELEGATE_TO_WEBCONTEXT_1(useProgram, Platform3DObject)
-DELEGATE_TO_WEBCONTEXT_1(validateProgram, Platform3DObject)
 
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib1f, GLuint, GLfloat)
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib1fv, GLuint, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_3(vertexAttrib2f, GLuint, GLfloat, GLfloat)
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib2fv, GLuint, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_4(vertexAttrib3f, GLuint, GLfloat, GLfloat, GLfloat)
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib3fv, GLuint, GLfloat*)
-DELEGATE_TO_WEBCONTEXT_5(vertexAttrib4f, GLuint, GLfloat, GLfloat, GLfloat, GLfloat)
-DELEGATE_TO_WEBCONTEXT_2(vertexAttrib4fv, GLuint, GLfloat*)
 DELEGATE_TO_WEBCONTEXT_6(vertexAttribPointer, GLuint, GLint, GLenum, GLboolean, GLsizei, GLintptr)
 
 DELEGATE_TO_WEBCONTEXT_4(viewport, GLint, GLint, GLsizei, GLsizei)
@@ -568,6 +443,11 @@ void GraphicsContext3D::readBackFramebuffer(unsigned char* pixels, int width, in
     } else if (op != AlphaDoNothing) {
         ASSERT_NOT_REACHED();
     }
+}
+
+void GraphicsContext3D::setPackAlignment(GLint param)
+{
+    m_packAlignment = param;
 }
 
 DELEGATE_TO_WEBCONTEXT_R(createBuffer, Platform3DObject)

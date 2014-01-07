@@ -118,13 +118,19 @@ public:
     void setContextLostCallback(PassOwnPtr<ContextLostCallback>);
     void setErrorMessageCallback(PassOwnPtr<ErrorMessageCallback>);
 
-    static PassRefPtr<GraphicsContext3D> create(Attributes);
+    // This is the preferred method for creating an instance of this class. When created this way the webContext
+    // is not owned by the GraphicsContext3D
+    static PassRefPtr<GraphicsContext3D> createContextSupport(blink::WebGraphicsContext3D* webContext);
+
+    // The following three creation methods are obsolete and should not be used by new code. They will be removed soon.
 
     // Callers must make the context current before using it AND check that the context was created successfully
     // via ContextLost before using the context in any way. Once made current on a thread, the context cannot
     // be used on any other thread.
+    static PassRefPtr<GraphicsContext3D> create(Attributes);
     static PassRefPtr<GraphicsContext3D> createGraphicsContextFromWebContext(PassOwnPtr<blink::WebGraphicsContext3D>, bool preserveDrawingBuffer = false);
     static PassRefPtr<GraphicsContext3D> createGraphicsContextFromProvider(PassOwnPtr<blink::WebGraphicsContext3DProvider>, bool preserveDrawingBuffer = false);
+
 
     ~GraphicsContext3D();
 
@@ -197,24 +203,18 @@ public:
 
     //----------------------------------------------------------------------
     // Entry points for WebGL.
+    // These are obsolete and should not be called by new code.
+    // Prefer calling WebGraphicsContext3D methods directly instead.
     //
 
     void activeTexture(GLenum texture);
     void attachShader(Platform3DObject program, Platform3DObject shader);
-    void bindAttribLocation(Platform3DObject, GLuint index, const String& name);
     void bindBuffer(GLenum target, Platform3DObject);
     void bindFramebuffer(GLenum target, Platform3DObject);
     void bindRenderbuffer(GLenum target, Platform3DObject);
     void bindTexture(GLenum target, Platform3DObject);
-    void blendColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
-    void blendEquation(GLenum mode);
-    void blendEquationSeparate(GLenum modeRGB, GLenum modeAlpha);
-    void blendFunc(GLenum sfactor, GLenum dfactor);
-    void blendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
 
-    void bufferData(GLenum target, GLsizeiptr, GLenum usage);
     void bufferData(GLenum target, GLsizeiptr, const void* data, GLenum usage);
-    void bufferSubData(GLenum target, GLintptr offset, GLsizeiptr, const void* data);
 
     GLenum checkFramebufferStatus(GLenum target);
     void clear(GLbitfield mask);
@@ -224,18 +224,9 @@ public:
     void colorMask(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
     void compileShader(Platform3DObject);
 
-    void compressedTexImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data);
-    void compressedTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data);
-    void copyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
-    void copyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
-    void cullFace(GLenum mode);
-    void depthFunc(GLenum func);
     void depthMask(GLboolean flag);
-    void depthRange(GLclampf zNear, GLclampf zFar);
-    void detachShader(Platform3DObject, Platform3DObject);
     void disable(GLenum cap);
     void disableVertexAttribArray(GLuint index);
-    void drawArrays(GLenum mode, GLint first, GLsizei count);
     void drawElements(GLenum mode, GLsizei count, GLenum type, GLintptr offset);
 
     void enable(GLenum cap);
@@ -244,101 +235,39 @@ public:
     void flush();
     void framebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, Platform3DObject);
     void framebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, Platform3DObject, GLint level);
-    void frontFace(GLenum mode);
-    void generateMipmap(GLenum target);
 
     bool getActiveAttrib(Platform3DObject program, GLuint index, ActiveInfo&);
-    bool getActiveUniform(Platform3DObject program, GLuint index, ActiveInfo&);
-    void getAttachedShaders(Platform3DObject program, GLsizei maxCount, GLsizei* count, Platform3DObject* shaders);
     GLint getAttribLocation(Platform3DObject, const String& name);
-    void getBooleanv(GLenum pname, GLboolean* value);
-    void getBufferParameteriv(GLenum target, GLenum pname, GLint* value);
     Attributes getContextAttributes();
     GLenum getError();
-    void getFloatv(GLenum pname, GLfloat* value);
-    void getFramebufferAttachmentParameteriv(GLenum target, GLenum attachment, GLenum pname, GLint* value);
     void getIntegerv(GLenum pname, GLint* value);
     void getProgramiv(Platform3DObject program, GLenum pname, GLint* value);
-    String getProgramInfoLog(Platform3DObject);
-    void getRenderbufferParameteriv(GLenum target, GLenum pname, GLint* value);
     void getShaderiv(Platform3DObject, GLenum pname, GLint* value);
-    String getShaderInfoLog(Platform3DObject);
-    void getShaderPrecisionFormat(GLenum shaderType, GLenum precisionType, GLint* range, GLint* precision);
-    String getShaderSource(Platform3DObject);
     String getString(GLenum name);
-    void getTexParameterfv(GLenum target, GLenum pname, GLfloat* value);
-    void getTexParameteriv(GLenum target, GLenum pname, GLint* value);
-    void getUniformfv(Platform3DObject program, GLint location, GLfloat* value);
-    void getUniformiv(Platform3DObject program, GLint location, GLint* value);
     GLint getUniformLocation(Platform3DObject, const String& name);
-    void getVertexAttribfv(GLuint index, GLenum pname, GLfloat* value);
-    void getVertexAttribiv(GLuint index, GLenum pname, GLint* value);
-    GLsizeiptr getVertexAttribOffset(GLuint index, GLenum pname);
 
-    void hint(GLenum target, GLenum mode);
-    GLboolean isBuffer(Platform3DObject);
-    GLboolean isEnabled(GLenum cap);
-    GLboolean isFramebuffer(Platform3DObject);
-    GLboolean isProgram(Platform3DObject);
-    GLboolean isRenderbuffer(Platform3DObject);
-    GLboolean isShader(Platform3DObject);
-    GLboolean isTexture(Platform3DObject);
-    void lineWidth(GLfloat);
     void linkProgram(Platform3DObject);
     void pixelStorei(GLenum pname, GLint param);
-    void polygonOffset(GLfloat factor, GLfloat units);
 
     void readPixels(GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void* data);
 
-    void releaseShaderCompiler();
-
     void renderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
-    void sampleCoverage(GLclampf value, GLboolean invert);
-    void scissor(GLint x, GLint y, GLsizei width, GLsizei height);
     void shaderSource(Platform3DObject, const String& string);
-    void stencilFunc(GLenum func, GLint ref, GLuint mask);
-    void stencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask);
-    void stencilMask(GLuint mask);
     void stencilMaskSeparate(GLenum face, GLuint mask);
-    void stencilOp(GLenum fail, GLenum zfail, GLenum zpass);
-    void stencilOpSeparate(GLenum face, GLenum fail, GLenum zfail, GLenum zpass);
 
     void texImage2D(GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels);
-    void texParameterf(GLenum target, GLenum pname, GLfloat param);
     void texParameteri(GLenum target, GLenum pname, GLint param);
-    void texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels);
 
     void uniform1f(GLint location, GLfloat x);
     void uniform1fv(GLint location, GLsizei, GLfloat* v);
     void uniform1i(GLint location, GLint x);
-    void uniform1iv(GLint location, GLsizei, GLint* v);
     void uniform2f(GLint location, GLfloat x, GLfloat y);
-    void uniform2fv(GLint location, GLsizei, GLfloat* v);
-    void uniform2i(GLint location, GLint x, GLint y);
-    void uniform2iv(GLint location, GLsizei, GLint* v);
     void uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z);
-    void uniform3fv(GLint location, GLsizei, GLfloat* v);
-    void uniform3i(GLint location, GLint x, GLint y, GLint z);
-    void uniform3iv(GLint location, GLsizei, GLint* v);
     void uniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void uniform4fv(GLint location, GLsizei, GLfloat* v);
-    void uniform4i(GLint location, GLint x, GLint y, GLint z, GLint w);
-    void uniform4iv(GLint location, GLsizei, GLint* v);
-    void uniformMatrix2fv(GLint location, GLsizei, GLboolean transpose, GLfloat* value);
-    void uniformMatrix3fv(GLint location, GLsizei, GLboolean transpose, GLfloat* value);
     void uniformMatrix4fv(GLint location, GLsizei, GLboolean transpose, GLfloat* value);
 
     void useProgram(Platform3DObject);
-    void validateProgram(Platform3DObject);
 
-    void vertexAttrib1f(GLuint index, GLfloat x);
-    void vertexAttrib1fv(GLuint index, GLfloat* values);
-    void vertexAttrib2f(GLuint index, GLfloat x, GLfloat y);
-    void vertexAttrib2fv(GLuint index, GLfloat* values);
-    void vertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z);
-    void vertexAttrib3fv(GLuint index, GLfloat* values);
-    void vertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
-    void vertexAttrib4fv(GLuint index, GLfloat* values);
     void vertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLintptr offset);
 
     void viewport(GLint x, GLint y, GLsizei width, GLsizei height);
@@ -476,11 +405,19 @@ public:
     // framebuffer into a buffer of a certain size with 4-byte pixels.
     void readBackFramebuffer(unsigned char* pixels, int width, int height, ReadbackOrder, AlphaOp);
 
+    void setPackAlignment(GLint param);
+
+    // Extensions3D support.
+    bool supportsExtension(const String& name);
+    bool ensureExtensionEnabled(const String& name);
+    bool isExtensionEnabled(const String& name);
+
 private:
     friend class Extensions3D;
 
     GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3D>, bool preserveDrawingBuffer);
     GraphicsContext3D(PassOwnPtr<blink::WebGraphicsContext3DProvider>, bool preserveDrawingBuffer);
+    GraphicsContext3D(blink::WebGraphicsContext3D* webContext);
 
     // Helper for packImageData/extractImageData/extractTextureData which implement packing of pixel
     // data into the specified OpenGL destination format and type.
@@ -493,11 +430,6 @@ private:
     void paintFramebufferToCanvas(int framebuffer, int width, int height, bool premultiplyAlpha, ImageBuffer*);
     // Helper function to flip a bitmap vertically.
     void flipVertically(uint8_t* data, int width, int height);
-
-    // Extensions3D support.
-    bool supportsExtension(const String& name);
-    bool ensureExtensionEnabled(const String& name);
-    bool isExtensionEnabled(const String& name);
 
     void initializeExtensions();
 

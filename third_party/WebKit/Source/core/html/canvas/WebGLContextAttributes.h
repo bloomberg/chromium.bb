@@ -29,7 +29,7 @@
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/html/canvas/CanvasContextAttributes.h"
-#include "platform/graphics/GraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3D.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
@@ -42,7 +42,7 @@ public:
     static PassRefPtr<WebGLContextAttributes> create();
 
     // Create a new attributes object initialized with preexisting attributes
-    static PassRefPtr<WebGLContextAttributes> create(GraphicsContext3D::Attributes attributes);
+    static PassRefPtr<WebGLContextAttributes> create(blink::WebGraphicsContext3D::Attributes);
 
     // Whether or not the drawing buffer has an alpha channel; default=true
     bool alpha() const;
@@ -78,14 +78,15 @@ public:
 
     // Fetches a copy of the attributes stored in this object in a
     // form that can be used to initialize a GraphicsContext3D.
-    GraphicsContext3D::Attributes attributes() const;
+    blink::WebGraphicsContext3D::Attributes attributes() const;
 
 protected:
     WebGLContextAttributes();
-    WebGLContextAttributes(GraphicsContext3D::Attributes attributes);
+    WebGLContextAttributes(blink::WebGraphicsContext3D::Attributes);
 
 private:
-    GraphicsContext3D::Attributes m_attrs;
+    blink::WebGraphicsContext3D::Attributes m_attrs;
+    bool m_preserveDrawingBuffer;
 };
 
 } // namespace WebCore
