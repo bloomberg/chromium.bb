@@ -35,12 +35,21 @@
 
 namespace WebCore {
 
+NewSVGAnimatedPropertyBase::NewSVGAnimatedPropertyBase(AnimatedPropertyType type, SVGElement* contextElement, const QualifiedName& attributeName)
+    : m_type(type)
+    , m_contextElement(contextElement)
+    , m_attributeName(attributeName)
+{
+    contextElement->setContextElement();
+}
+
 NewSVGAnimatedPropertyBase::~NewSVGAnimatedPropertyBase()
 {
 }
 
 void NewSVGAnimatedPropertyBase::synchronizeAttribute()
 {
+    ASSERT(needsSynchronizeAttribute());
     AtomicString value(currentValueBase()->valueAsString());
     m_contextElement->setSynchronizedLazyAttribute(m_attributeName, value);
 }

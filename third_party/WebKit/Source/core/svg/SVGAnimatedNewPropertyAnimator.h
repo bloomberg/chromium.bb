@@ -59,6 +59,11 @@ public:
     virtual float calculateDistance(const String& fromString, const String& toString);
 
 private:
+    PassRefPtr<NewSVGPropertyBase> resetAnimation(const SVGElementAnimatedPropertyList&);
+
+    bool isAnimatingSVGDom() const { return m_animatedProperty; }
+    bool isAnimatingCSSProperty() const { return !m_animatedProperty; }
+
     RefPtr<NewSVGAnimatedPropertyBase> m_animatedProperty;
 };
 

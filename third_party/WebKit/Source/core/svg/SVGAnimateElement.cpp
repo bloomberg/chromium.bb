@@ -238,10 +238,8 @@ void SVGAnimateElement::resetAnimatedType()
         computeCSSPropertyValue(targetElement, cssPropertyID(attributeName.localName()), baseValue);
     }
 
-    if (!m_animatedType)
+    if (!m_animatedType || !m_animatedType->setValueAsString(attributeName, baseValue))
         m_animatedType = animator->constructFromString(baseValue);
-    else
-        m_animatedType->setValueAsString(attributeName, baseValue);
 }
 
 static inline void applyCSSPropertyToTarget(SVGElement* targetElement, CSSPropertyID id, const String& value)

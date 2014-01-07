@@ -33,6 +33,8 @@
 
 #include "core/svg/SVGAnimationElement.h"
 #include "core/svg/SVGElementInstance.h"
+#include "core/svg/SVGLength.h"
+#include "core/svg/SVGLengthList.h"
 
 namespace WebCore {
 
@@ -44,8 +46,8 @@ SVGAnimatedNewPropertyAnimator::SVGAnimatedNewPropertyAnimator(AnimatedPropertyT
 
     const QualifiedName& attributeName = m_animationElement->attributeName();
     m_animatedProperty = m_contextElement->propertyFromAttribute(attributeName);
-    ASSERT(m_animatedProperty);
-    ASSERT(m_animatedProperty->type() == m_type);
+    if (m_animatedProperty)
+        ASSERT(m_animatedProperty->type() == m_type);
 }
 
 SVGAnimatedNewPropertyAnimator::~SVGAnimatedNewPropertyAnimator()
@@ -54,7 +56,24 @@ SVGAnimatedNewPropertyAnimator::~SVGAnimatedNewPropertyAnimator()
 
 PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::createPropertyForAnimation(const String& value)
 {
-    return m_animatedProperty->currentValueBase()->cloneForAnimation(value);
+    if (isAnimatingSVGDom()) {
+        ASSERT(m_animatedProperty);
+
+        // SVG DOM animVal animation code-path.
+        return m_animatedProperty->currentValueBase()->cloneForAnimation(value);
+    }
+
+    ASSERT(isAnimatingCSSProperty());
+
+    // CSS properties animation code-path.
+    // Create a basic instance of the corresponding SVG property.
+    // The instance will not have full context info. (e.g. SVGLengthMode)
+
+    // FIXME: add impls here for NewSVGProperty migrated property impls.
+    // http://crbug.com/308818
+
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 PassOwnPtr<SVGAnimatedType> SVGAnimatedNewPropertyAnimator::constructFromString(const String& value)
@@ -62,41 +81,83 @@ PassOwnPtr<SVGAnimatedType> SVGAnimatedNewPropertyAnimator::constructFromString(
     return SVGAnimatedType::createNewProperty(createPropertyForAnimation(value));
 }
 
-PassOwnPtr<SVGAnimatedType> SVGAnimatedNewPropertyAnimator::startAnimValAnimation(const SVGElementAnimatedPropertyList&)
-{
-    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
+namespace {
 
-    m_animatedProperty->animationStarted();
-    return SVGAnimatedType::createNewProperty(m_animatedProperty->currentValueBase());
+typedef void (NewSVGAnimatedPropertyBase::*NewSVGAnimatedPropertyMethod)();
+
+void invokeMethodOnAllTargetProperties(const SVGElementAnimatedPropertyList& list, const QualifiedName& attributeName, NewSVGAnimatedPropertyMethod method)
+{
+    SVGElementAnimatedPropertyList::const_iterator it = list.begin();
+    SVGElementAnimatedPropertyList::const_iterator itEnd = list.end();
+    for (; it != itEnd; ++it) {
+        RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = it->element->propertyFromAttribute(attributeName);
+        (animatedProperty.get()->*method)();
+    }
 }
 
-void SVGAnimatedNewPropertyAnimator::stopAnimValAnimation(const SVGElementAnimatedPropertyList&)
+void setAnimatedValueOnAllTargetProperties(const SVGElementAnimatedPropertyList& list, const QualifiedName& attributeName, PassRefPtr<NewSVGPropertyBase> passValue)
 {
-    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
+    RefPtr<NewSVGPropertyBase> value = passValue;
 
-    m_animatedProperty->animationEnded();
+    SVGElementAnimatedPropertyList::const_iterator it = list.begin();
+    SVGElementAnimatedPropertyList::const_iterator itEnd = list.end();
+    for (; it != itEnd; ++it) {
+        RefPtr<NewSVGAnimatedPropertyBase> animatedProperty = it->element->propertyFromAttribute(attributeName);
+        animatedProperty->setAnimatedValue(value);
+    }
 }
 
-void SVGAnimatedNewPropertyAnimator::resetAnimValToBaseVal(const SVGElementAnimatedPropertyList&, SVGAnimatedType* animated)
-{
-    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
-
-    m_animatedProperty->resetToBaseVal();
-    animated->newProperty() = m_animatedProperty->currentValueBase();
 }
 
-void SVGAnimatedNewPropertyAnimator::animValWillChange(const SVGElementAnimatedPropertyList&)
+PassRefPtr<NewSVGPropertyBase> SVGAnimatedNewPropertyAnimator::resetAnimation(const SVGElementAnimatedPropertyList& list)
 {
-    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
+    ASSERT(isAnimatingSVGDom());
+    RefPtr<NewSVGPropertyBase> animatedValue = m_animatedProperty->createAnimatedValue();
+    ASSERT(animatedValue->type() == m_type);
+    setAnimatedValueOnAllTargetProperties(list, m_animatedProperty->attributeName(), animatedValue);
 
-    m_animatedProperty->animValWillChange();
+    return animatedValue.release();
 }
 
-void SVGAnimatedNewPropertyAnimator::animValDidChange(const SVGElementAnimatedPropertyList&)
+PassOwnPtr<SVGAnimatedType> SVGAnimatedNewPropertyAnimator::startAnimValAnimation(const SVGElementAnimatedPropertyList& list)
+{
+    ASSERT(isAnimatingSVGDom());
+    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
+
+    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animationStarted);
+
+    return SVGAnimatedType::createNewProperty(resetAnimation(list));
+}
+
+void SVGAnimatedNewPropertyAnimator::stopAnimValAnimation(const SVGElementAnimatedPropertyList& list)
+{
+    ASSERT(isAnimatingSVGDom());
+    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
+
+    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animationEnded);
+}
+
+void SVGAnimatedNewPropertyAnimator::resetAnimValToBaseVal(const SVGElementAnimatedPropertyList& list, SVGAnimatedType* animated)
 {
     SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
 
-    m_animatedProperty->animValDidChange();
+    animated->newProperty() = resetAnimation(list);
+}
+
+void SVGAnimatedNewPropertyAnimator::animValWillChange(const SVGElementAnimatedPropertyList& list)
+{
+    ASSERT(isAnimatingSVGDom());
+    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
+
+    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animValWillChange);
+}
+
+void SVGAnimatedNewPropertyAnimator::animValDidChange(const SVGElementAnimatedPropertyList& list)
+{
+    ASSERT(isAnimatingSVGDom());
+    SVGElementInstance::InstanceUpdateBlocker blocker(m_contextElement);
+
+    invokeMethodOnAllTargetProperties(list, m_animatedProperty->attributeName(), &NewSVGAnimatedPropertyBase::animValDidChange);
 }
 
 void SVGAnimatedNewPropertyAnimator::addAnimatedTypes(SVGAnimatedType* from, SVGAnimatedType* to)

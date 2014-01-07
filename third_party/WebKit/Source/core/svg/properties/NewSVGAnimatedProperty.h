@@ -7,7 +7,7 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
+G*     * Redistributions in binary form must reproduce the above
  * copyright notice, this list of conditions and the following disclaimer
  * in the documentation and/or other materials provided with the
  * distribution.
@@ -48,14 +48,17 @@ class NewSVGAnimatedPropertyBase : public RefCounted<NewSVGAnimatedPropertyBase>
 public:
     virtual ~NewSVGAnimatedPropertyBase();
 
+    virtual NewSVGPropertyBase* baseValueBase() = 0;
     virtual NewSVGPropertyBase* currentValueBase() = 0;
 
     virtual void animationStarted() = 0;
-    virtual void resetToBaseVal() = 0;
+    virtual PassRefPtr<NewSVGPropertyBase> createAnimatedValue() = 0;
+    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase>) = 0;
     virtual void animationEnded() = 0;
     virtual void animValWillChange() = 0;
     virtual void animValDidChange() = 0;
 
+    virtual bool needsSynchronizeAttribute() = 0;
     void synchronizeAttribute();
 
     AnimatedPropertyType type() const
@@ -74,12 +77,7 @@ public:
     }
 
 protected:
-    NewSVGAnimatedPropertyBase(AnimatedPropertyType type, SVGElement* contextElement, const QualifiedName& attributeName)
-        : m_type(type)
-        , m_contextElement(contextElement)
-        , m_attributeName(attributeName)
-    {
-    }
+    NewSVGAnimatedPropertyBase(AnimatedPropertyType, SVGElement*, const QualifiedName& attributeName);
 
 private:
     const AnimatedPropertyType m_type;
@@ -122,6 +120,11 @@ public:
         return m_baseValue.get();
     }
 
+    virtual NewSVGPropertyBase* baseValueBase()
+    {
+        return baseValue();
+    }
+
     Property* currentValue()
     {
         return m_currentValue ? m_currentValue.get() : m_baseValue.get();
@@ -144,15 +147,26 @@ public:
 
     bool isAnimating() const
     {
-        // |m_currentValue| only exists while animation is active,
-        // so this can be used to check if this property is being animated.
-        return m_currentValue;
+        return m_isAnimating;
     }
 
     virtual void animationStarted()
     {
         ASSERT(!isAnimating());
-        m_currentValue = m_baseValue->clone();
+        m_isAnimating = true;
+    }
+
+    virtual PassRefPtr<NewSVGPropertyBase> createAnimatedValue()
+    {
+        return m_baseValue->clone();
+    }
+
+    virtual void setAnimatedValue(PassRefPtr<NewSVGPropertyBase> value)
+    {
+        ASSERT(isAnimating());
+
+        // FIXME: add type check
+        m_currentValue = static_pointer_cast<Property>(value);
 
         if (m_animValTearOff)
             m_animValTearOff->setTarget(m_currentValue);
@@ -161,19 +175,13 @@ public:
     virtual void animationEnded()
     {
         ASSERT(isAnimating());
+        m_isAnimating = false;
+
+        ASSERT(m_currentValue);
         m_currentValue.clear();
 
         if (m_animValTearOff)
             m_animValTearOff->setTarget(m_baseValue);
-    }
-
-    virtual void resetToBaseVal()
-    {
-        ASSERT(isAnimating());
-        m_currentValue = m_baseValue->clone();
-
-        if (m_animValTearOff)
-            m_animValTearOff->setTarget(m_currentValue);
     }
 
     virtual void animValWillChange()
@@ -184,6 +192,13 @@ public:
     virtual void animValDidChange()
     {
         ASSERT(isAnimating());
+    }
+
+    virtual bool needsSynchronizeAttribute()
+    {
+        // DOM attribute synchronization is only needed if tear-off is being touched from javascript or the property is being animated.
+        // This prevents unnecessary attribute creation on target element.
+        return m_baseValTearOff || isAnimating();
     }
 
     // SVGAnimated* DOM Spec implementations:
@@ -209,12 +224,15 @@ public:
 protected:
     NewSVGAnimatedProperty(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<Property> initialValue)
         : NewSVGAnimatedPropertyBase(Property::classType(), contextElement, attributeName)
+        , m_isReadOnly(false)
+        , m_isAnimating(false)
         , m_baseValue(initialValue)
     {
     }
 
 private:
     bool m_isReadOnly;
+    bool m_isAnimating;
 
     // When still (not animated):
     //     Both m_animValTearOff and m_baseValTearOff target m_baseValue.

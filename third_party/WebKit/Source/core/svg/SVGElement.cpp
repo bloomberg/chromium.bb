@@ -1050,7 +1050,8 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
         AttributeToPropertyMap::const_iterator::Values it = m_newAttributeToPropertyMap.values().begin();
         AttributeToPropertyMap::const_iterator::Values end = m_newAttributeToPropertyMap.values().end();
         for (; it != end; ++it) {
-            (*it)->synchronizeAttribute();
+            if ((*it)->needsSynchronizeAttribute())
+                (*it)->synchronizeAttribute();
         }
 
         elementData()->m_animatedSVGAttributesAreDirty = false;
@@ -1058,7 +1059,7 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
         nonConstThis->localAttributeToPropertyMap().synchronizeProperty(nonConstThis, name);
 
         RefPtr<NewSVGAnimatedPropertyBase> property = m_newAttributeToPropertyMap.get(name);
-        if (property)
+        if (property && property->needsSynchronizeAttribute())
             property->synchronizeAttribute();
     }
 }
