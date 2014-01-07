@@ -35,6 +35,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -45,6 +46,7 @@ class HeapContainsCache;
 class HeapObjectHeader;
 class PersistentNode;
 class Visitor;
+class SafePointBarrier;
 template<typename Header> class ThreadHeap;
 
 typedef uint8_t* Address;
@@ -223,6 +225,11 @@ public:
     void setGCRequested();
     void clearGCRequested();
 
+    bool sweepRequested();
+    void setSweepRequested();
+    void clearSweepRequested();
+    void performPendingSweep();
+
     // Support for disallowing allocation. Mainly used for sanity
     // checks asserts.
     bool isAllocationAllowed() const { return !isAtSafePoint() && !m_noAllocationCount; }
@@ -235,11 +242,109 @@ public:
 
     void prepareForGC();
 
-    bool sweepRequested();
-    void setSweepRequested();
-    void clearSweepRequested();
+    // Safepoint related functionality.
+    //
+    // When a thread attempts to perform GC it needs to stop all other threads
+    // that use the heap or at least guarantee that they will not touch any
+    // heap allocated object until GC is complete.
+    //
+    // We say that a thread is at a safepoint if this thread is guaranteed to
+    // not touch any heap allocated object or any heap related functionality until
+    // it leaves the safepoint.
+    //
+    // Notice that a thread does not have to be paused if it is at safepoint it
+    // can continue to run and perform tasks that do not require interaction
+    // with the heap. It will be paused if it attempts to leave the safepoint and
+    // there is a GC in progress.
+    //
+    // Each thread that has ThreadState attached must:
+    //   - periodically check if GC is requested from another thread by calling a safePoint() method;
+    //   - use SafePointScope around long running loops that have no safePoint() invocation inside,
+    //     such loops must not touch any heap object;
+    //   - register an Interruptor that can interrupt long running loops that have no calls to safePoint and
+    //     are not wrapped in a SafePointScope (e.g. Interruptor for JavaScript code)
+    //
 
+    // Request all other threads to stop. Must only be called if the current thread is at safepoint.
+    static void stopThreads();
+    static void resumeThreads();
+
+    // Check if GC is requested by another thread and pause this thread if this is the case.
+    // Can only be called when current thread is in a consistent state.
+    void safePoint();
+
+    // Mark current thread as running inside safepoint.
+    void enterSafePointWithoutPointers() { enterSafePoint(NoHeapPointersOnStack, 0); }
+    void enterSafePointWithPointers(void* scopeMarker) { enterSafePoint(HeapPointersOnStack, scopeMarker); }
+    void leaveSafePoint();
     bool isAtSafePoint() const { return m_atSafePoint; }
+
+    class SafePointScope {
+    public:
+        enum ScopeNesting {
+            NoNesting,
+            AllowNesting
+        };
+
+        explicit SafePointScope(StackState stackState, ScopeNesting nesting = NoNesting)
+            : m_state(ThreadState::current())
+        {
+            if (m_state->isAtSafePoint()) {
+                RELEASE_ASSERT(nesting == AllowNesting);
+                // We can ignore stackState because there should be no heap object
+                // pointers manipulation after outermost safepoint was entered.
+                m_state = 0;
+            } else {
+                m_state->enterSafePoint(stackState, this);
+            }
+        }
+
+        ~SafePointScope()
+        {
+            if (m_state)
+                m_state->leaveSafePoint();
+        }
+
+    private:
+        ThreadState* m_state;
+    };
+
+    // If attached thread enters long running loop that can call back
+    // into Blink and leaving and reentering safepoint at every
+    // transition between this loop and Blink is deemed too expensive
+    // then instead of marking this loop as a GC safepoint thread
+    // can provide an interruptor object which would allow GC
+    // to temporarily interrupt and pause this long running loop at
+    // an arbitrary moment creating a safepoint for a GC.
+    class Interruptor {
+    public:
+        virtual ~Interruptor() { }
+
+        // Request the interruptor to interrupt the thread and
+        // call onInterrupted on that thread once interruption
+        // succeeds.
+        virtual void requestInterrupt() = 0;
+
+        // Clear previous interrupt request.
+        virtual void clearInterrupt() = 0;
+
+    protected:
+        // This method is called on the interrupted thread to
+        // create a safepoint for a GC.
+        void onInterrupted();
+    };
+
+    void setInterruptor(Interruptor*);
+
+    // Should only be called under protection of threadAttachMutex().
+    Interruptor* interruptor() const { return m_interruptor; }
+
+    bool isSweepInProgress() const { return m_sweepInProgress; }
+
+    void recordStackEnd(intptr_t* endOfStack)
+    {
+        m_endOfStack = endOfStack;
+    }
 
     // Get one of the heap structures for this thread.
     //
@@ -274,7 +379,18 @@ private:
     explicit ThreadState(intptr_t* startOfStack);
     ~ThreadState();
 
+    friend class SafePointBarrier;
+
+    void enterSafePoint(StackState, void*);
+    void copyStackUntilSafePointScope();
+    void clearSafePointScopeMarker()
+    {
+        m_safePointStackCopy.clear();
+        m_safePointScopeMarker = 0;
+    }
+
     static WTF::ThreadSpecific<ThreadState*>* s_threadSpecific;
+    static SafePointBarrier* s_safePointBarrier;
 
     // We can't create a static member of type ThreadState here
     // because it will introduce global constructor and destructor.
@@ -289,11 +405,17 @@ private:
 
     ThreadIdentifier m_thread;
     PersistentNode* m_persistents;
+    StackState m_stackState;
     intptr_t* m_startOfStack;
-    bool m_gcRequested;
-    size_t m_noAllocationCount;
-    volatile int m_sweepRequested;
+    intptr_t* m_endOfStack;
+    void* m_safePointScopeMarker;
+    Vector<Address> m_safePointStackCopy;
     bool m_atSafePoint;
+    Interruptor* m_interruptor;
+    bool m_gcRequested;
+    volatile int m_sweepRequested;
+    bool m_sweepInProgress;
+    size_t m_noAllocationCount;
     BaseHeap* m_heaps[NumberOfHeaps];
     HeapContainsCache* m_heapContainsCache;
     HeapStats m_stats;

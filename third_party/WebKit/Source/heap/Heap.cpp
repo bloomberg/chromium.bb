@@ -651,7 +651,6 @@ template<typename Header>
 void ThreadHeap<Header>::finalizeAll(const void* except)
 {
     // FIXME: Implement.
-    ASSERT_NOT_REACHED();
 }
 
 template<typename Header>

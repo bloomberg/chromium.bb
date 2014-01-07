@@ -59,6 +59,89 @@ private:
 
 DEFINE_GC_INFO(HeapAllocatedArray);
 
+class ThreadedHeapTester {
+public:
+    static void test()
+    {
+        ThreadState::init(0);
+        ThreadedHeapTester* tester = new ThreadedHeapTester();
+        for (int i = 0; i < numberOfThreads; i++)
+            createThread(&threadFunc, tester, "testing thread");
+        while (tester->m_threadsToFinish) {
+            ThreadState::current()->safePoint();
+            yield();
+        }
+        ThreadState::shutdown();
+    }
+
+private:
+    static const int numberOfThreads = 10;
+    static const int gcPerThread = 5;
+    static const int numberOfAllocations = 50;
+
+    inline bool done() const { return m_gcCount >= numberOfThreads * gcPerThread; }
+
+    ThreadedHeapTester() : m_gcCount(0), m_threadsToFinish(numberOfThreads)
+    {
+    }
+
+    static void threadFunc(void* data)
+    {
+        intptr_t stackMarker;
+        reinterpret_cast<ThreadedHeapTester*>(data)->runThread(&stackMarker);
+    }
+
+    void runThread(intptr_t* startOfStack)
+    {
+        ThreadState::attach(startOfStack);
+
+        int gcCount = 0;
+        while (!done()) {
+            ThreadState::current()->safePoint();
+            {
+                for (int i = 0; i < numberOfAllocations; i++) {
+                    // FIXME: replace with actual allocation when allocation is implemented.
+                    sleep(1);
+                    if (!(i % 10))
+                        ThreadState::current()->safePoint();
+                    yield();
+                }
+
+                if (gcCount < gcPerThread) {
+                    // FIXME: replace with actual GC when GC is implemented.
+                    ThreadState::SafePointScope safePointScope(ThreadState::NoHeapPointersOnStack);
+                    ThreadState::stopThreads();
+                    sleep(5);
+                    ThreadState::resumeThreads();
+                    gcCount++;
+                    atomicIncrement(&m_gcCount);
+                    sleep(10);
+                }
+            }
+            yield();
+        }
+        ThreadState::detach();
+        atomicDecrement(&m_threadsToFinish);
+    }
+
+    static void sleep(int milliseconds)
+    {
+#if OS(WIN)
+        ::Sleep(milliseconds);
+#else
+        usleep(milliseconds * 1000);
+#endif
+    }
+
+    volatile int m_gcCount;
+    volatile int m_threadsToFinish;
+};
+
+TEST(HeapTest, Threading)
+{
+    ThreadedHeapTester::test();
+}
+
 TEST(HeapTest, Init)
 {
     // FIXME: init and shutdown should be called via Blink

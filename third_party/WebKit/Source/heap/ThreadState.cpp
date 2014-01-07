@@ -39,6 +39,7 @@ namespace WebCore {
 
 WTF::ThreadSpecific<ThreadState*>* ThreadState::s_threadSpecific = 0;
 uint8_t ThreadState::s_mainThreadStateStorage[sizeof(ThreadState)];
+SafePointBarrier* ThreadState::s_safePointBarrier = 0;
 
 static Mutex& threadAttachMutex()
 {
@@ -46,12 +47,138 @@ static Mutex& threadAttachMutex()
     return mutex;
 }
 
+typedef void (*PushAllRegistersCallback)(SafePointBarrier*, ThreadState*, intptr_t*);
+extern "C" void pushAllRegisters(SafePointBarrier*, ThreadState*, PushAllRegistersCallback);
+
+class SafePointBarrier {
+public:
+    SafePointBarrier() : m_canResume(1), m_unparkedThreadCount(0) { }
+    ~SafePointBarrier() { }
+
+    // Request other attached threads that are not at safe points to park themselves on safepoints.
+    void parkOthers()
+    {
+        ASSERT(ThreadState::current()->isAtSafePoint());
+
+        // Lock threadAttachMutex() to prevent threads from attaching.
+        threadAttachMutex().lock();
+
+        ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+
+        MutexLocker locker(m_mutex);
+        atomicAdd(&m_unparkedThreadCount, threads.size());
+        atomicSetOneToZero(&m_canResume);
+
+        for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+            if ((*it)->interruptor())
+                (*it)->interruptor()->requestInterrupt();
+        }
+
+        while (m_unparkedThreadCount > 0)
+            m_parked.wait(m_mutex);
+    }
+
+    void resumeOthers()
+    {
+        ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
+        atomicSubtract(&m_unparkedThreadCount, threads.size());
+        atomicTestAndSetToOne(&m_canResume);
+        {
+            // FIXME: Resumed threads will all contend for
+            // m_mutex just to unlock it later which is a waste of
+            // resources.
+            MutexLocker locker(m_mutex);
+            m_resume.broadcast();
+        }
+
+        for (ThreadState::AttachedThreadStateSet::iterator it = threads.begin(), end = threads.end(); it != end; ++it) {
+            if ((*it)->interruptor())
+                (*it)->interruptor()->clearInterrupt();
+        }
+
+        threadAttachMutex().unlock();
+        ASSERT(ThreadState::current()->isAtSafePoint());
+    }
+
+    void doPark(ThreadState* state, intptr_t* stackEnd)
+    {
+        state->recordStackEnd(stackEnd);
+        MutexLocker locker(m_mutex);
+        if (!atomicDecrement(&m_unparkedThreadCount))
+            m_parked.signal();
+        while (!m_canResume)
+            m_resume.wait(m_mutex);
+        atomicIncrement(&m_unparkedThreadCount);
+    }
+
+    void checkAndPark(ThreadState* state)
+    {
+        ASSERT(!state->isSweepInProgress());
+        if (!m_canResume) {
+            pushAllRegisters(this, state, parkAfterPushRegisters);
+            state->performPendingSweep();
+        }
+    }
+
+    void doEnterSafePoint(ThreadState* state, intptr_t* stackEnd)
+    {
+        state->recordStackEnd(stackEnd);
+        // m_unparkedThreadCount tracks amount of unparked threads. It is
+        // positive if and only if we have requested other threads to park
+        // at safe-points in preparation for GC. The last thread to park
+        // itself will make the counter hit zero and should notify GC thread
+        // that it is safe to proceed.
+        // If no other thread is waiting for other threads to park then
+        // this counter can be negative: if N threads are at safe-points
+        // the counter will be -N.
+        if (!atomicDecrement(&m_unparkedThreadCount)) {
+            MutexLocker locker(m_mutex);
+            m_parked.signal(); // Safe point reached.
+        }
+        state->copyStackUntilSafePointScope();
+    }
+
+    void enterSafePoint(ThreadState* state)
+    {
+        ASSERT(!state->isSweepInProgress());
+        pushAllRegisters(this, state, enterSafePointAfterPushRegisters);
+    }
+
+    void leaveSafePoint(ThreadState* state)
+    {
+        if (atomicIncrement(&m_unparkedThreadCount) > 0)
+            checkAndPark(state);
+        state->performPendingSweep();
+    }
+
+private:
+    static void parkAfterPushRegisters(SafePointBarrier* barrier, ThreadState* state, intptr_t* stackEnd)
+    {
+        barrier->doPark(state, stackEnd);
+    }
+
+    static void enterSafePointAfterPushRegisters(SafePointBarrier* barrier, ThreadState* state, intptr_t* stackEnd)
+    {
+        barrier->doEnterSafePoint(state, stackEnd);
+    }
+
+    volatile int m_canResume;
+    volatile int m_unparkedThreadCount;
+    Mutex m_mutex;
+    ThreadCondition m_parked;
+    ThreadCondition m_resume;
+};
+
 ThreadState::ThreadState(intptr_t* startOfStack)
     : m_thread(currentThread())
     , m_startOfStack(startOfStack)
-    , m_gcRequested(false)
-    , m_noAllocationCount(0)
+    , m_endOfStack(startOfStack)
+    , m_safePointScopeMarker(0)
     , m_atSafePoint(false)
+    , m_interruptor(0)
+    , m_gcRequested(false)
+    , m_sweepInProgress(false)
+    , m_noAllocationCount(0)
     , m_heapContainsCache(new HeapContainsCache())
 {
     ASSERT(!**s_threadSpecific);
@@ -64,12 +191,6 @@ ThreadState::ThreadState(intptr_t* startOfStack)
     m_heaps[GeneralHeap] = new ThreadHeap<FinalizedHeapObjectHeader>(this);
     for (int i = GeneralHeap + 1; i < NumberOfHeaps; i++)
         m_heaps[i] = new ThreadHeap<HeapObjectHeader>(this);
-    clearGCRequested();
-    clearSweepRequested();
-
-    // FIXME: This is to silence clang that complains about unused private
-    // member. Remove once we implement stack scanning that uses it.
-    (void) m_startOfStack;
 }
 
 ThreadState::~ThreadState()
@@ -83,6 +204,7 @@ ThreadState::~ThreadState()
 void ThreadState::init(intptr_t* startOfStack)
 {
     s_threadSpecific = new WTF::ThreadSpecific<ThreadState*>();
+    s_safePointBarrier = new SafePointBarrier;
     new(s_mainThreadStateStorage) ThreadState(startOfStack);
     attachedThreads().add(mainThreadState());
 }
@@ -160,6 +282,27 @@ bool ThreadState::shouldForceConservativeGC()
     return increasedEnoughToForceConservativeGC(m_stats.totalObjectSpace(), m_statsAfterLastGC.totalObjectSpace());
 }
 
+bool ThreadState::sweepRequested()
+{
+    checkThread();
+    return m_sweepRequested;
+}
+
+void ThreadState::setSweepRequested()
+{
+    // Sweep requested is set from the thread that initiates garbage
+    // collection which could be different from the thread for this
+    // thread state. Therefore the setting of m_sweepRequested needs a
+    // barrier.
+    atomicTestAndSetToOne(&m_sweepRequested);
+}
+
+void ThreadState::clearSweepRequested()
+{
+    checkThread();
+    m_sweepRequested = 0;
+}
+
 bool ThreadState::gcRequested()
 {
     checkThread();
@@ -199,27 +342,6 @@ void ThreadState::prepareForGC()
             heap->clearMarks();
     }
     setSweepRequested();
-}
-
-bool ThreadState::sweepRequested()
-{
-    checkThread();
-    return m_sweepRequested;
-}
-
-void ThreadState::setSweepRequested()
-{
-    // Sweep requested is set from the thread that initiates garbage
-    // collection which could be different from the thread for this
-    // thread state. Therefore the setting of m_sweepRequested needs a
-    // barrier.
-    atomicTestAndSetToOne(&m_sweepRequested);
-}
-
-void ThreadState::clearSweepRequested()
-{
-    checkThread();
-    m_sweepRequested = 0;
 }
 
 BaseHeapPage* ThreadState::heapPageFromAddress(Address address)
@@ -269,6 +391,90 @@ void ThreadState::getStats(HeapStats& stats)
         ASSERT(scannedStats == stats);
     }
 #endif
+}
+
+void ThreadState::stopThreads()
+{
+    s_safePointBarrier->parkOthers();
+}
+
+void ThreadState::resumeThreads()
+{
+    s_safePointBarrier->resumeOthers();
+}
+
+void ThreadState::safePoint()
+{
+    s_safePointBarrier->checkAndPark(this);
+}
+
+void ThreadState::enterSafePoint(StackState stackState, void* scopeMarker)
+{
+    ASSERT(stackState == NoHeapPointersOnStack || scopeMarker);
+    if (stackState == NoHeapPointersOnStack && gcRequested())
+        Heap::collectGarbage(NoHeapPointersOnStack);
+    checkThread();
+    ASSERT(!m_atSafePoint);
+    m_atSafePoint = true;
+    m_stackState = stackState;
+    m_safePointScopeMarker = scopeMarker;
+    s_safePointBarrier->enterSafePoint(this);
+}
+
+void ThreadState::leaveSafePoint()
+{
+    checkThread();
+    ASSERT(m_atSafePoint);
+    m_atSafePoint = false;
+    m_stackState = HeapPointersOnStack;
+    clearSafePointScopeMarker();
+    s_safePointBarrier->leaveSafePoint(this);
+}
+
+void ThreadState::copyStackUntilSafePointScope()
+{
+    if (!m_safePointScopeMarker || m_stackState == NoHeapPointersOnStack)
+        return;
+
+    Address* to = reinterpret_cast<Address*>(m_safePointScopeMarker);
+    Address* from = reinterpret_cast<Address*>(m_endOfStack);
+    RELEASE_ASSERT(from < to);
+    RELEASE_ASSERT(to < reinterpret_cast<Address*>(m_startOfStack));
+    size_t slotCount = static_cast<size_t>(to - from);
+    ASSERT(slotCount < 1024); // Catch potential performance issues.
+
+    ASSERT(!m_safePointStackCopy.size());
+    m_safePointStackCopy.append(reinterpret_cast<Address*>(from), slotCount);
+}
+
+void ThreadState::performPendingSweep()
+{
+    if (sweepRequested()) {
+        m_sweepInProgress = true;
+        // FIXME: implement sweep.
+        m_sweepInProgress = false;
+        clearGCRequested();
+        clearSweepRequested();
+    }
+}
+
+void ThreadState::setInterruptor(Interruptor* interruptor)
+{
+    SafePointScope scope(HeapPointersOnStack, SafePointScope::AllowNesting);
+
+    {
+        MutexLocker locker(threadAttachMutex());
+        delete m_interruptor;
+        m_interruptor = interruptor;
+    }
+}
+
+void ThreadState::Interruptor::onInterrupted()
+{
+    ThreadState* state = ThreadState::current();
+    ASSERT(state);
+    ASSERT(!state->isAtSafePoint());
+    state->safePoint();
 }
 
 ThreadState::AttachedThreadStateSet& ThreadState::attachedThreads()
