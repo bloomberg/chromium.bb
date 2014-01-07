@@ -4641,6 +4641,28 @@ TEST_F(WebFrameTest, ReloadPost)
     EXPECT_EQ(WebNavigationTypeFormResubmitted, frame->dataSource()->navigationType());
 }
 
+TEST_F(WebFrameTest, LoadHistoryItemReload)
+{
+    registerMockedHttpURLLoad("fragment_middle_click.html");
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "fragment_middle_click.html", true);
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    WebHistoryItem firstItem = frame->currentHistoryItem();
+    EXPECT_FALSE(firstItem.isNull());
+
+    registerMockedHttpURLLoad("white-1x1.png");
+    FrameTestHelpers::loadFrame(frame, m_baseURL + "white-1x1.png");
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    EXPECT_FALSE(frame->previousHistoryItem().isNull());
+    EXPECT_EQ(firstItem.urlString(), frame->previousHistoryItem().urlString());
+
+    // Cache policy overrides should take.
+    frame->loadHistoryItem(frame->previousHistoryItem(), WebURLRequest::ReloadIgnoringCacheData);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
+    EXPECT_EQ(firstItem.urlString(), frame->currentHistoryItem().urlString());
+    EXPECT_EQ(WebURLRequest::ReloadIgnoringCacheData, frame->dataSource()->request().cachePolicy());
+}
+
 
 class TestCachePolicyWebFrameClient : public WebFrameClient {
 public:

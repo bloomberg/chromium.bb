@@ -31,15 +31,16 @@
 #ifndef WebFrame_h
 #define WebFrame_h
 
-#include "../platform/WebCanvas.h"
-#include "../platform/WebFileSystem.h"
-#include "../platform/WebFileSystemType.h"
-#include "../platform/WebMessagePortChannel.h"
-#include "../platform/WebReferrerPolicy.h"
-#include "../platform/WebURL.h"
 #include "WebIconURL.h"
 #include "WebNode.h"
 #include "WebURLLoaderOptions.h"
+#include "public/platform/WebCanvas.h"
+#include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemType.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebReferrerPolicy.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/WebURLRequest.h"
 
 struct NPObject;
 
@@ -356,7 +357,9 @@ public:
 
     // Load the given history state, corresponding to a back/forward
     // navigation.
-    virtual void loadHistoryItem(const WebHistoryItem&) = 0;
+    virtual void loadHistoryItem(
+        const WebHistoryItem&,
+        WebURLRequest::CachePolicy = WebURLRequest::UseProtocolCachePolicy) = 0;
 
     // Loads the given data with specific mime type and optional text
     // encoding.  For HTML data, baseURL indicates the security origin of

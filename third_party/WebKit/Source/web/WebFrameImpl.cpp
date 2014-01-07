@@ -939,12 +939,12 @@ void WebFrameImpl::loadRequest(const WebURLRequest& request)
     frame()->loader().load(FrameLoadRequest(0, resourceRequest));
 }
 
-void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item)
+void WebFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebURLRequest::CachePolicy cachePolicy)
 {
     ASSERT(frame());
     RefPtr<HistoryItem> historyItem = PassRefPtr<HistoryItem>(item);
     ASSERT(historyItem);
-    frame()->page()->historyController().goToItem(historyItem.get());
+    frame()->page()->historyController().goToItem(historyItem.get(), static_cast<ResourceRequestCachePolicy>(cachePolicy));
 }
 
 void WebFrameImpl::loadData(const WebData& data, const WebString& mimeType, const WebString& textEncoding, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)

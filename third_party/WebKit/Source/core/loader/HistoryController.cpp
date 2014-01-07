@@ -119,6 +119,7 @@ HistoryItem* HistoryEntry::itemForFrame(Frame* frame)
 HistoryController::HistoryController(Page* page)
     : m_page(page)
     , m_defersLoading(false)
+    , m_deferredCachePolicy(UseProtocolCachePolicy)
 {
 }
 
@@ -132,7 +133,7 @@ void HistoryController::updateBackForwardListForFragmentScroll(Frame* frame, His
     createNewBackForwardItem(frame, item, false);
 }
 
-void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry)
+void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry, ResourceRequestCachePolicy cachePolicy)
 {
     ASSERT(m_sameDocumentLoadsInProgress.isEmpty());
     ASSERT(m_differentDocumentLoadsInProgress.isEmpty());
@@ -149,9 +150,9 @@ void HistoryController::goToEntry(PassOwnPtr<HistoryEntry> targetEntry)
     }
 
     for (HistoryFrameLoadSet::iterator it = m_sameDocumentLoadsInProgress.begin(); it != m_sameDocumentLoadsInProgress.end(); ++it)
-        it->key->loader().loadHistoryItem(it->value, HistorySameDocumentLoad);
+        it->key->loader().loadHistoryItem(it->value, HistorySameDocumentLoad, cachePolicy);
     for (HistoryFrameLoadSet::iterator it = m_differentDocumentLoadsInProgress.begin(); it != m_differentDocumentLoadsInProgress.end(); ++it)
-        it->key->loader().loadHistoryItem(it->value, HistoryDifferentDocumentLoad);
+        it->key->loader().loadHistoryItem(it->value, HistoryDifferentDocumentLoad, cachePolicy);
     m_sameDocumentLoadsInProgress.clear();
     m_differentDocumentLoadsInProgress.clear();
 }
@@ -175,10 +176,11 @@ void HistoryController::recursiveGoToEntry(Frame* frame)
         recursiveGoToEntry(child);
 }
 
-void HistoryController::goToItem(HistoryItem* targetItem)
+void HistoryController::goToItem(HistoryItem* targetItem, ResourceRequestCachePolicy cachePolicy)
 {
     if (m_defersLoading) {
         m_deferredItem = targetItem;
+        m_deferredCachePolicy = cachePolicy;
         return;
     }
 
@@ -197,15 +199,16 @@ void HistoryController::goToItem(HistoryItem* targetItem)
         }
         historyNode->value()->clearChildren();
     }
-    goToEntry(newEntry.release());
+    goToEntry(newEntry.release(), cachePolicy);
 }
 
 void HistoryController::setDefersLoading(bool defer)
 {
     m_defersLoading = defer;
     if (!defer && m_deferredItem) {
-        goToItem(m_deferredItem.get());
+        goToItem(m_deferredItem.get(), m_deferredCachePolicy);
         m_deferredItem = 0;
+        m_deferredCachePolicy = UseProtocolCachePolicy;
     }
 }
 

@@ -41,6 +41,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/MixedContentChecker.h"
 #include "platform/Timer.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
@@ -60,7 +61,6 @@ class IconController;
 class NavigationAction;
 class Page;
 class ResourceError;
-class ResourceRequest;
 class ResourceResponse;
 class SecurityOrigin;
 class SerializedScriptValue;
@@ -86,7 +86,7 @@ public:
     // These functions start a load. All eventually call into loadWithNavigationAction() or loadInSameDocument().
     void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
     void reload(ReloadPolicy = NormalReload, const KURL& overrideURL = KURL(), const AtomicString& overrideEncoding = nullAtom);
-    void loadHistoryItem(HistoryItem*, HistoryLoadType = HistoryDifferentDocumentLoad); // The entry point for all back/forward loads
+    void loadHistoryItem(HistoryItem*, HistoryLoadType = HistoryDifferentDocumentLoad, ResourceRequestCachePolicy = UseProtocolCachePolicy); // The entry point for all back/forward loads
 
     static void reportLocalLoadFailed(Frame*, const String& url);
 

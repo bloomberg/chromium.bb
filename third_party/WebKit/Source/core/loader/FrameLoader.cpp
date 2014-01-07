@@ -1431,7 +1431,7 @@ Frame* FrameLoader::findFrameForNavigation(const AtomicString& name, Document* a
     return frame;
 }
 
-void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType)
+void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoadType, ResourceRequestCachePolicy cachePolicy)
 {
     m_provisionalItem = item;
     if (historyLoadType == HistorySameDocumentLoad) {
@@ -1443,6 +1443,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item, HistoryLoadType historyLoad
     RefPtr<FormData> formData = item->formData();
     ResourceRequest request(item->url());
     request.setHTTPReferrer(item->referrer());
+    request.setCachePolicy(cachePolicy);
     if (formData) {
         request.setHTTPMethod("POST");
         request.setHTTPBody(formData);

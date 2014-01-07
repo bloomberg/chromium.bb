@@ -32,6 +32,7 @@
 
 #include "core/history/HistoryItem.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -138,7 +139,7 @@ public:
 
     // Should only be called by embedder. To request a back/forward
     // navigation, call FrameLoaderClient::navigateBackForward().
-    void goToItem(HistoryItem*);
+    void goToItem(HistoryItem*, ResourceRequestCachePolicy);
 
     void updateBackForwardListForFragmentScroll(Frame*, HistoryItem*);
     void updateForCommit(Frame*, HistoryItem*, HistoryCommitType);
@@ -153,7 +154,7 @@ public:
     void setDefersLoading(bool);
 
 private:
-    void goToEntry(PassOwnPtr<HistoryEntry>);
+    void goToEntry(PassOwnPtr<HistoryEntry>, ResourceRequestCachePolicy);
     void recursiveGoToEntry(Frame*);
 
     void updateForInitialLoadInChildFrame(Frame*, HistoryItem*);
@@ -171,6 +172,7 @@ private:
 
     bool m_defersLoading;
     RefPtr<HistoryItem> m_deferredItem;
+    ResourceRequestCachePolicy m_deferredCachePolicy;
 };
 
 } // namespace WebCore
