@@ -86,8 +86,6 @@
         '<(libaddressinput_dir)/cpp/src/util/stl_util.h',
         '<(libaddressinput_dir)/cpp/src/util/string_split.cc',
         '<(libaddressinput_dir)/cpp/src/util/string_split.h',
-        '<(libaddressinput_dir)/cpp/src/validating_storage.cc',
-        '<(libaddressinput_dir)/cpp/src/validating_storage.h',
         '<(libaddressinput_dir)/cpp/src/validating_util.cc',
         '<(libaddressinput_dir)/cpp/src/validating_util.h',
       ],
@@ -137,7 +135,6 @@
         '<(libaddressinput_dir)/cpp/test/util/scoped_ptr_unittest.cc',
         '<(libaddressinput_dir)/cpp/test/util/stl_util_unittest.cc',
         '<(libaddressinput_dir)/cpp/test/util/string_split_unittest.cc',
-        '<(libaddressinput_dir)/cpp/test/validating_storage_test.cc',
         '<(libaddressinput_dir)/cpp/test/validating_util_test.cc',
       ],
       'defines': [

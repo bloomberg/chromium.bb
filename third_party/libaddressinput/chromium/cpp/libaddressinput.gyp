@@ -43,7 +43,6 @@
         'src/util/json.cc',
         'src/util/md5.cc',
         'src/util/string_split.cc',
-        'src/validating_storage.cc',
         'src/validating_util.cc',
       ],
       'defines': [
@@ -75,7 +74,6 @@
         'test/util/scoped_ptr_unittest.cc',
         'test/util/stl_util_unittest.cc',
         'test/util/string_split_unittest.cc',
-        'test/validating_storage_test.cc',
         'test/validating_util_test.cc',
       ],
       'defines': [

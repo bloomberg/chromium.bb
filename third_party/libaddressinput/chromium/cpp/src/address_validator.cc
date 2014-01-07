@@ -22,7 +22,6 @@
 #include <string>
 
 #include "retriever.h"
-#include "validating_storage.h"
 
 namespace i18n {
 namespace addressinput {
@@ -33,7 +32,7 @@ AddressValidator::AddressValidator(scoped_ptr<const Downloader> downloader,
     : retriever_(new Retriever(
           VALIDATION_DATA_URL,
           downloader.Pass(),
-          scoped_ptr<Storage>(new ValidatingStorage(storage.Pass())))),
+          scoped_ptr<Storage>(storage.Pass()))),
       load_rules_delegate_(load_rules_delegate) {}
 
 AddressValidator::~AddressValidator() {}
