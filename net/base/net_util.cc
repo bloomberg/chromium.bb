@@ -157,7 +157,8 @@ static const int kRestrictedPorts[] = {
   6668, // Alternate IRC [Apple addition]
   6669, // Alternate IRC [Apple addition]
   0xFFFF, // Used to block all invalid port numbers (see
-          // third_party/WebKit/Source/WebCore/platform/KURLGoogle.cpp, port())
+          // third_party/WebKit/Source/platform/weborigin/KURL.cpp,
+          // KURL::port())
 };
 
 // FTP overrides the following restricted ports.
