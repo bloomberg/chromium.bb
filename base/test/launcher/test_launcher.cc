@@ -504,49 +504,50 @@ void TestLauncher::OnTestFinished(const TestResult& result) {
     exit(1);
   }
 
-  if (test_finished_count_ == test_started_count_) {
-    if (!tests_to_retry_.empty()) {
-      if (retry_count_ < retry_limit_ &&
-          tests_to_retry_.size() < broken_threshold) {
-        retry_count_++;
+  if (test_finished_count_ != test_started_count_)
+    return;
 
-        std::vector<std::string> test_names(tests_to_retry_.begin(),
-                                            tests_to_retry_.end());
-
-        tests_to_retry_.clear();
-
-        size_t retry_started_count =
-            launcher_delegate_->RetryTests(this, test_names);
-        if (retry_started_count == 0) {
-          // Signal failure, but continue to run all requested test iterations.
-          // With the summary of all iterations at the end this is a good
-          // default.
-          run_result_ = false;
-
-          OnTestIterationFinished();
-        } else {
-          fprintf(stdout, "Retrying %" PRIuS " test%s (retry #%" PRIuS ")\n",
-                  retry_started_count,
-                  retry_started_count > 1 ? "s" : "",
-                  retry_count_);
-          fflush(stdout);
-
-          test_started_count_ += retry_started_count;
-        }
-      } else {
-        fprintf(stdout,
-                "Too many failing tests (%" PRIuS "), skipping retries.\n",
-                tests_to_retry_.size());
-        fflush(stdout);
-
-        results_tracker_.AddGlobalTag("BROKEN_TEST_SKIPPED_RETRIES");
-
-        OnTestIterationFinished();
-      }
-    } else {
-      OnTestIterationFinished();
-    }
+  if (tests_to_retry_.empty() || retry_count_ >= retry_limit_) {
+    OnTestIterationFinished();
+    return;
   }
+
+  if (tests_to_retry_.size() >= broken_threshold) {
+    fprintf(stdout,
+            "Too many failing tests (%" PRIuS "), skipping retries.\n",
+            tests_to_retry_.size());
+    fflush(stdout);
+
+    results_tracker_.AddGlobalTag("BROKEN_TEST_SKIPPED_RETRIES");
+
+    OnTestIterationFinished();
+    return;
+  }
+
+  retry_count_++;
+
+  std::vector<std::string> test_names(tests_to_retry_.begin(),
+                                      tests_to_retry_.end());
+
+  tests_to_retry_.clear();
+
+  size_t retry_started_count = launcher_delegate_->RetryTests(this, test_names);
+  if (retry_started_count == 0) {
+    // Signal failure, but continue to run all requested test iterations.
+    // With the summary of all iterations at the end this is a good default.
+    run_result_ = false;
+
+    OnTestIterationFinished();
+    return;
+  }
+
+  fprintf(stdout, "Retrying %" PRIuS " test%s (retry #%" PRIuS ")\n",
+          retry_started_count,
+          retry_started_count > 1 ? "s" : "",
+          retry_count_);
+  fflush(stdout);
+
+  test_started_count_ += retry_started_count;
 }
 
 bool TestLauncher::Init() {
