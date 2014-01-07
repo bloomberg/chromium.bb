@@ -71,6 +71,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/Settings.h"
 #include "core/rendering/RenderBox.h"
+#include "platform/CheckedInt.h"
 #include "platform/NotImplemented.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Extensions3D.h"
@@ -1499,11 +1500,15 @@ void WebGLRenderingContext::copyTexSubImage2D(GLenum target, GLint level, GLint 
     if (!validateSize("copyTexSubImage2D", xoffset, yoffset) || !validateSize("copyTexSubImage2D", width, height))
         return;
     // Before checking if it is in the range, check if overflow happens first.
-    if (xoffset + width < 0 || yoffset + height < 0) {
+    Checked<GLint, RecordOverflow> maxX = xoffset;
+    maxX += width;
+    Checked<GLint, RecordOverflow> maxY = yoffset;
+    maxY += height;
+    if (maxX.hasOverflowed() || maxY.hasOverflowed()) {
         synthesizeGLError(GL_INVALID_VALUE, "copyTexSubImage2D", "bad dimensions");
         return;
     }
-    if (xoffset + width > tex->getWidth(target, level) || yoffset + height > tex->getHeight(target, level)) {
+    if (maxX.unsafeGet() > tex->getWidth(target, level) || maxY.unsafeGet() > tex->getHeight(target, level)) {
         synthesizeGLError(GL_INVALID_VALUE, "copyTexSubImage2D", "rectangle out of range");
         return;
     }
