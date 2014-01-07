@@ -572,6 +572,13 @@ void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
   if (!tab)
     return;
 
+  prerender::PrerenderContents* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(tab);
+  if (prerender_contents) {
+    prerender_contents->Destroy(prerender::FINAL_STATUS_CREATE_NEW_WINDOW);
+    return;
+  }
+
   PopupBlockerTabHelper* popup_helper =
       PopupBlockerTabHelper::FromWebContents(tab);
   if (!popup_helper)
@@ -2080,14 +2087,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   // No new browser window (popup or tab) in app mode.
   if (container_type == WINDOW_CONTAINER_TYPE_NORMAL &&
       chrome::IsRunningInForcedAppMode()) {
-    return false;
-  }
-
-  if (g_browser_process->prerender_tracker() &&
-      g_browser_process->prerender_tracker()->TryCancelOnIOThread(
-          render_process_id,
-          opener_id,
-          prerender::FINAL_STATUS_CREATE_NEW_WINDOW)) {
     return false;
   }
 

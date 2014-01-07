@@ -294,6 +294,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Allows delegate to control whether a WebContents will be created. Returns
   // true to allow the creation. Default is to allow it. In cases where the
   // delegate handles the creation/navigation itself, it will use |target_url|.
+  // The embedder has to synchronously adopt |route_id| or else the view will
+  // be destroyed.
   virtual bool ShouldCreateWebContents(
       WebContents* web_contents,
       int route_id,

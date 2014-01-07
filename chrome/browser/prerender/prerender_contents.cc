@@ -92,6 +92,21 @@ class PrerenderContents::WebContentsDelegateImpl
     callback.Run(false);
   }
 
+   virtual bool ShouldCreateWebContents(
+       WebContents* web_contents,
+       int route_id,
+       WindowContainerType window_container_type,
+       const base::string16& frame_name,
+       const GURL& target_url,
+       const std::string& partition_id,
+       SessionStorageNamespace* session_storage_namespace) OVERRIDE {
+    // Since we don't want to permit child windows that would have a
+    // window.opener property, terminate prerendering.
+    prerender_contents_->Destroy(FINAL_STATUS_CREATE_NEW_WINDOW);
+    // Cancel the popup.
+    return false;
+  }
+
   virtual bool OnGoToEntryOffset(int offset) OVERRIDE {
     // This isn't allowed because the history merge operation
     // does not work if there are renderer issued challenges.

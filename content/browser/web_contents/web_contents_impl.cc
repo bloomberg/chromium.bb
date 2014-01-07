@@ -1368,6 +1368,12 @@ void WebContentsImpl::CreateNewWindow(
                                           params.target_url,
                                           partition_id,
                                           session_storage_namespace)) {
+    if (route_id != MSG_ROUTING_NONE &&
+        !RenderViewHost::FromID(render_process_id, route_id)) {
+      // If the embedder didn't create a WebContents for this route, we need to
+      // delete the RenderView that had already been created.
+      Send(new ViewMsg_Close(route_id));
+    }
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(route_id);
     GetRenderViewHost()->GetProcess()->ResumeRequestsForView(
         main_frame_route_id);
