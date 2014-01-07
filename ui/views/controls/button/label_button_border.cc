@@ -142,12 +142,6 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   } else {
     PaintHelper(this, canvas, theme, part, state, rect, extra);
   }
-
-  // For inverted color schemes, draw a solid fill with the button color.
-  if (gfx::IsInvertedColorScheme()) {
-    rect.Inset(insets_);
-    canvas->FillRect(rect, extra.button.background_color);
-  }
 }
 
 gfx::Insets LabelButtonBorder::GetInsets() const {

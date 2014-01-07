@@ -8,9 +8,11 @@
 #include "grit/ui_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/throb_animation.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -297,7 +299,7 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.is_focused = HasFocus() && IsAccessibilityFocusable();
   params->button.has_border = style() == STYLE_NATIVE_TEXTBUTTON;
   params->button.classic_state = 0;
-  params->button.background_color = label()->background_color();
+  params->button.background_color = label_->background_color();
 }
 
 void LabelButton::ResetColorsFromNativeTheme() {
@@ -321,6 +323,7 @@ void LabelButton::ResetColorsFromNativeTheme() {
     constant_text_color = true;
     colors[STATE_NORMAL] = SK_ColorWHITE;
     label_->SetBackgroundColor(SK_ColorBLACK);
+    label_->set_background(Background::CreateSolidBackground(SK_ColorBLACK));
     label_->SetAutoColorReadabilityEnabled(true);
     label_->ClearEmbellishing();
   } else if (style() == STYLE_BUTTON) {
@@ -328,9 +331,12 @@ void LabelButton::ResetColorsFromNativeTheme() {
     colors[STATE_NORMAL] = kStyleButtonTextColor;
     label_->SetBackgroundColor(theme->GetSystemColor(
         ui::NativeTheme::kColorId_ButtonBackgroundColor));
+    label_->set_background(NULL);
     label_->SetAutoColorReadabilityEnabled(false);
     label_->SetShadowColors(kStyleButtonShadowColor, kStyleButtonShadowColor);
     label_->SetShadowOffset(0, 1);
+  } else {
+    label_->set_background(NULL);
   }
 
   if (constant_text_color)
