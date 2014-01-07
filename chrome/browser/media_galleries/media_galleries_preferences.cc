@@ -401,7 +401,7 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
   // It cannot be incremented inline with each callback, as some may return
   // synchronously, decrement the counter to 0, and prematurely trigger
   // FinishInitialization.
-  pre_initialization_callbacks_waiting_ = 3;
+  pre_initialization_callbacks_waiting_ = 4;
 
   // Check whether we should be initializing -- are there any extensions that
   // are using media galleries?
@@ -426,11 +426,9 @@ void MediaGalleriesPreferences::EnsureInitialized(base::Closure callback) {
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
 
-#if 0
   iapps::FindIPhotoLibrary(
       base::Bind(&MediaGalleriesPreferences::OnFinderDeviceID,
                  weak_factory_.GetWeakPtr()));
-#endif
 }
 
 bool MediaGalleriesPreferences::IsInitialized() const { return initialized_; }

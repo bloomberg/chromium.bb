@@ -1,0 +1,11 @@
+{
+  "name": "chrome.mediaGalleries.iphoto",
+  "version": "0.1",
+  "description": "test IPhoto media gallery for chrome.mediaGalleries.getMediaFileSystems",
+  "app": {
+    "background": {
+      "scripts": ["common_injected.js", "test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["read", "allAutoDetected"]}]
+}

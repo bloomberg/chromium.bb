@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 #include "components/policy/core/common/preferences_mac.h"
@@ -110,6 +111,13 @@ void FindITunesLibrary(const IAppsFinderCallback& callback) {
 
 void SetMacPreferencesForTesting(MacPreferences* preferences) {
   g_test_mac_preferences = preferences;
+}
+
+NSArray* NSArrayFromFilePath(const base::FilePath& path) {
+  NSString* url =
+      [[NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())]
+          absoluteString];
+  return [NSArray arrayWithObject:url];
 }
 
 }  // namespace iapps

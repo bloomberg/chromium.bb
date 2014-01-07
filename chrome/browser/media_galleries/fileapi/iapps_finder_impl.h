@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
 
@@ -15,8 +16,10 @@
 
 class MacPreferences;
 #if defined(__OBJC__)
+@class NSArray;
 @class NSString;
 #else  // __OBJC__
+class NSArray;
 class NSString;
 #endif  // __OBJC__
 
@@ -33,6 +36,9 @@ extern NSString* const kITunesRecentDatabasePathsKey;
 // |preferences| and should call this function again with NULL before freeing
 // it.
 void SetMacPreferencesForTesting(MacPreferences* preferences);
+
+// Returns an NSArray with a single string entry which is a path value.
+NSArray* NSArrayFromFilePath(const base::FilePath& path);
 
 #endif  // OS_MACOSX
 

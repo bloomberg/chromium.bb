@@ -148,7 +148,14 @@ class RPHReferenceManager : public content::NotificationObserver {
 
   void OnRendererProcessTerminated(const RenderProcessHost* rph) {
     RPHRefCount::iterator rph_info = refs_.find(rph);
-    DCHECK(rph_info != refs_.end());
+    // This could be a potential problem if the RPH is navigated to
+    // a page on the same renderer (triggering OWCDON()) and then
+    // the renderer crashes.
+    if (rph_info == refs_.end()) {
+      NOTREACHED();
+      return;
+    }
+
     delete rph_info->second;
     refs_.erase(rph_info);
     if (refs_.empty())
@@ -287,7 +294,6 @@ class ExtensionGalleriesHost
   virtual ~ExtensionGalleriesHost() {
     DCHECK(rph_refs_.empty());
     DCHECK(pref_id_map_.empty());
-
   }
 
   void GetMediaFileSystemsForAttachedDevices(
@@ -296,6 +302,15 @@ class ExtensionGalleriesHost
       const MediaGalleriesPrefInfoMap& galleries_info,
       const MediaFileSystemsCallback& callback) {
     std::vector<MediaFileSystemInfo> result;
+
+    if (rph_refs_.empty()) {
+      // We're actually in the middle of shutdown, and Filter...() lagging
+      // which can invoke this method interleaved in the destruction callback
+      // sequence and re-populate pref_id_map_.
+      callback.Run(result);
+      return;
+    }
+
     MediaGalleryPrefIdSet new_galleries;
     for (std::set<MediaGalleryPrefId>::const_iterator pref_id_it =
              galleries.begin();
@@ -421,6 +436,8 @@ void MediaFileSystemRegistry::GetMediaFileSystemsForExtension(
                    extension->id()));
     extension_hosts_map_[profile][extension->id()] = extension_host;
   }
+  // This must come before the GetMediaFileSystems call to make sure the
+  // RVH of the context is referenced before the filesystems are retrieved.
   extension_host->ReferenceFromRVH(rvh);
 
   extension_host->GetMediaFileSystems(galleries, preferences->known_galleries(),

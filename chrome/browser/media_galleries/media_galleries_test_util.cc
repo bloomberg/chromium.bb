@@ -135,6 +135,18 @@ EnsureMediaDirectoriesExists::GetFakePicasaFoldersRootPath() const {
 }
 #endif  // OS_WIN || OS_MACOSX
 
+#if defined(OS_MACOSX)
+base::FilePath EnsureMediaDirectoriesExists::GetFakeITunesRootPath() const {
+  DCHECK(fake_dir_.IsValid());
+  return fake_dir_.path().AppendASCII("itunes");
+}
+
+base::FilePath EnsureMediaDirectoriesExists::GetFakeIPhotoRootPath() const {
+  DCHECK(fake_dir_.IsValid());
+  return fake_dir_.path().AppendASCII("iphoto");
+}
+#endif  // OS_MACOSX
+
 void EnsureMediaDirectoriesExists::Init() {
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   return;
@@ -159,20 +171,25 @@ void EnsureMediaDirectoriesExists::Init() {
 
 #if defined(OS_MACOSX)
   mac_preferences_.reset(new MockPreferences);
-  iapps::SetMacPreferencesForTesting(mac_preferences_.get());
-  picasa::SetMacPreferencesForTesting(mac_preferences_.get());
 
   // iTunes override.
+  base::FilePath itunes_xml =
+      GetFakeITunesRootPath().AppendASCII("iTunes Library.xml");
   mac_preferences_->AddTestItem(
       base::mac::NSToCFCast(iapps::kITunesRecentDatabasePathsKey),
-      base::SysUTF8ToNSString(fake_dir_.path().AppendASCII("itunes").value()),
+      base::mac::NSToCFCast(iapps::NSArrayFromFilePath(itunes_xml)),
       false);
 
   // iPhoto override.
+  base::FilePath iphoto_xml =
+      GetFakeIPhotoRootPath().AppendASCII("AlbumData.xml");
   mac_preferences_->AddTestItem(
       base::mac::NSToCFCast(iapps::kIPhotoRecentDatabasesKey),
-      base::SysUTF8ToNSString(fake_dir_.path().AppendASCII("iphoto").value()),
+      base::mac::NSToCFCast(iapps::NSArrayFromFilePath(iphoto_xml)),
       false);
+
+  iapps::SetMacPreferencesForTesting(mac_preferences_.get());
+  picasa::SetMacPreferencesForTesting(mac_preferences_.get());
 #endif // OS_MACOSX
 
   music_override_.reset(new base::ScopedPathOverride(

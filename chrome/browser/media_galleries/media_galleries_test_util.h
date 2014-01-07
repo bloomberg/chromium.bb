@@ -50,6 +50,11 @@ class EnsureMediaDirectoriesExists {
   base::FilePath GetFakePicasaFoldersRootPath() const;
 #endif
 
+#if defined(OS_MACOSX)
+  base::FilePath GetFakeITunesRootPath() const;
+  base::FilePath GetFakeIPhotoRootPath() const;
+#endif
+
  private:
   void Init();
 
