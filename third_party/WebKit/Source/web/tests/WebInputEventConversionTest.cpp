@@ -438,4 +438,51 @@ TEST(WebInputEventConversionTest, InputEventsTransform)
     }
 }
 
+TEST(WebInputEventConversionTest, InputEventsConversions)
+{
+    const std::string baseURL("http://www.test3.com/");
+    const std::string fileName("fixed_layout.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->layout();
+
+    FrameView* view = webViewImpl->page()->mainFrame()->view();
+    RefPtr<Document> document = webViewImpl->page()->mainFrame()->document();
+    DOMWindow* domWindow = webViewImpl->page()->mainFrame()->document()->domWindow();
+    RenderObject* docRenderer = webViewImpl->page()->mainFrame()->document()->renderer();
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureTap;
+        webGestureEvent.x = 10;
+        webGestureEvent.y = 10;
+        webGestureEvent.globalX = 10;
+        webGestureEvent.globalY = 10;
+        webGestureEvent.data.tap.tapCount = 1;
+        webGestureEvent.data.tap.width = 10;
+        webGestureEvent.data.tap.height = 10;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(10, platformGestureBuilder.position().x());
+        EXPECT_EQ(10, platformGestureBuilder.position().y());
+        EXPECT_EQ(10, platformGestureBuilder.globalPosition().x());
+        EXPECT_EQ(10, platformGestureBuilder.globalPosition().y());
+        EXPECT_EQ(1, platformGestureBuilder.tapCount());
+
+        RefPtr<WebCore::GestureEvent> coreGestureEvent = WebCore::GestureEvent::create(domWindow, platformGestureBuilder);
+        WebGestureEventBuilder recreatedWebGestureEvent(view, docRenderer, *coreGestureEvent);
+        EXPECT_EQ(webGestureEvent.type, recreatedWebGestureEvent.type);
+        EXPECT_EQ(webGestureEvent.x, recreatedWebGestureEvent.x);
+        EXPECT_EQ(webGestureEvent.y, recreatedWebGestureEvent.y);
+        EXPECT_EQ(webGestureEvent.globalX, recreatedWebGestureEvent.globalX);
+        EXPECT_EQ(webGestureEvent.globalY, recreatedWebGestureEvent.globalY);
+        EXPECT_EQ(webGestureEvent.data.tap.tapCount, recreatedWebGestureEvent.data.tap.tapCount);
+    }
+}
+
 } // anonymous namespace

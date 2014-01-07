@@ -743,9 +743,7 @@ WebTouchEventBuilder::WebTouchEventBuilder(const Widget* widget, const WebCore::
 
 WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const WebCore::RenderObject* renderObject, const GestureEvent& event)
 {
-    if (event.type() == EventTypeNames::gesturetap)
-        type = GestureTap;
-    else if (event.type() == EventTypeNames::gestureshowpress)
+    if (event.type() == EventTypeNames::gestureshowpress)
         type = GestureShowPress;
     else if (event.type() == EventTypeNames::gesturetapdown)
         type = GestureTapDown;
@@ -757,6 +755,9 @@ WebGestureEventBuilder::WebGestureEventBuilder(const Widget* widget, const WebCo
         type = GestureScrollUpdate;
         data.scrollUpdate.deltaX = event.deltaX();
         data.scrollUpdate.deltaY = event.deltaY();
+    } else if (event.type() == EventTypeNames::gesturetap) {
+        type = GestureTap;
+        data.tap.tapCount = 1;
     }
 
     timeStampSeconds = event.timeStamp() / millisPerSecond;
