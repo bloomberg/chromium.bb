@@ -207,7 +207,7 @@ typedef BOOL (^FieldFilterBlock)(NSView<AutofillInputField>*);
 }
 
 - (void)hideErrorBubble {
-  [errorBubble_ setHidden:YES];
+  [errorBubbleController_ close];
 }
 
 - (void)updateMessageForField:(NSControl<AutofillInputField>*)field {
