@@ -80,7 +80,7 @@ IntSize ColorChooserPopupUIController::contentSize()
     return IntSize(0, 0);
 }
 
-void ColorChooserPopupUIController::writeDocument(DocumentWriter& writer)
+void ColorChooserPopupUIController::writeDocument(SharedBuffer* data)
 {
     Vector<ColorSuggestion> suggestions = m_client->suggestions();
     Vector<String> suggestionValues;
@@ -88,18 +88,18 @@ void ColorChooserPopupUIController::writeDocument(DocumentWriter& writer)
         suggestionValues.append(suggestions[i].color.serialized());
     IntRect anchorRectInScreen = m_chromeClient->rootViewToScreen(m_client->elementRectRelativeToRootView());
 
-    PagePopupClient::addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", writer);
-    writer.addData(pickerCommonCss, sizeof(pickerCommonCss));
-    writer.addData(colorSuggestionPickerCss, sizeof(colorSuggestionPickerCss));
+    PagePopupClient::addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
+    data->append(pickerCommonCss, sizeof(pickerCommonCss));
+    data->append(colorSuggestionPickerCss, sizeof(colorSuggestionPickerCss));
     PagePopupClient::addString("</style></head><body><div id=main>Loading...</div><script>\n"
-        "window.dialogArguments = {\n", writer);
-    PagePopupClient::addProperty("values", suggestionValues, writer);
-    PagePopupClient::addProperty("otherColorLabel", locale().queryString(WebLocalizedString::OtherColorLabel), writer);
-    addProperty("anchorRectInScreen", anchorRectInScreen, writer);
-    PagePopupClient::addString("};\n", writer);
-    writer.addData(pickerCommonJs, sizeof(pickerCommonJs));
-    writer.addData(colorSuggestionPickerJs, sizeof(colorSuggestionPickerJs));
-    PagePopupClient::addString("</script></body>\n", writer);
+        "window.dialogArguments = {\n", data);
+    PagePopupClient::addProperty("values", suggestionValues, data);
+    PagePopupClient::addProperty("otherColorLabel", locale().queryString(WebLocalizedString::OtherColorLabel), data);
+    addProperty("anchorRectInScreen", anchorRectInScreen, data);
+    PagePopupClient::addString("};\n", data);
+    data->append(pickerCommonJs, sizeof(pickerCommonJs));
+    data->append(colorSuggestionPickerJs, sizeof(colorSuggestionPickerJs));
+    PagePopupClient::addString("</script></body>\n", data);
 }
 
 Locale& ColorChooserPopupUIController::locale()

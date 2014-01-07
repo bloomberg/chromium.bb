@@ -38,8 +38,8 @@
 #include "core/dom/PseudoElement.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorOverlayHost.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
@@ -616,10 +616,9 @@ Page* InspectorOverlay::overlayPage()
     FrameLoader& loader = frame->loader();
     frame->view()->setCanHaveScrollbars(false);
     frame->view()->setTransparent(true);
-    ASSERT(loader.documentLoader());
-    DocumentWriter* writer = loader.documentLoader()->beginWriting("text/html", "UTF-8");
-    writer->addData(reinterpret_cast<const char*>(InspectorOverlayPage_html), sizeof(InspectorOverlayPage_html));
-    loader.documentLoader()->endWriting(writer);
+
+    RefPtr<SharedBuffer> data = SharedBuffer::create(reinterpret_cast<const char*>(InspectorOverlayPage_html), sizeof(InspectorOverlayPage_html));
+    loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
     v8::Isolate* isolate = toIsolate(frame.get());
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Context> frameContext = frame->script().currentWorldContext();

@@ -1214,6 +1214,7 @@ TEST_F(WebViewTest, HelperPlugin)
     EXPECT_EQ(0, helperPlugin->getPlugin()); // Invalid plugin type means no plugin.
 
     webViewImpl->closeHelperPluginSoon(helperPlugin);
+    runPendingTasks();
 
     m_webViewHelper.reset(); // Explicitly reset to break dependency on locally scoped client.
 }

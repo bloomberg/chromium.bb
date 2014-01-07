@@ -33,31 +33,42 @@
 
 namespace WebCore {
 
-    class SubstituteData {
-    public:
-        SubstituteData() { }
+enum SubstituteDataLoadPolicy {
+    LoadNormally,
+    ForceSynchronousLoad
+};
 
-        SubstituteData(PassRefPtr<SharedBuffer> content, const AtomicString& mimeType, const AtomicString& textEncoding, const KURL& failingURL)
-            : m_content(content)
-            , m_mimeType(mimeType)
-            , m_textEncoding(textEncoding)
-            , m_failingURL(failingURL)
-        {
-        }
+class SubstituteData {
+public:
+    SubstituteData()
+        : m_substituteDataLoadPolicy(LoadNormally)
+    {
+    }
 
-        bool isValid() const { return m_content != 0; }
+    SubstituteData(PassRefPtr<SharedBuffer> content, const AtomicString& mimeType, const AtomicString& textEncoding, const KURL& failingURL, SubstituteDataLoadPolicy substituteDataLoadPolicy = LoadNormally)
+        : m_content(content)
+        , m_mimeType(mimeType)
+        , m_textEncoding(textEncoding)
+        , m_failingURL(failingURL)
+        , m_substituteDataLoadPolicy(substituteDataLoadPolicy)
+    {
+    }
 
-        SharedBuffer* content() const { return m_content.get(); }
-        const AtomicString& mimeType() const { return m_mimeType; }
-        const AtomicString& textEncoding() const { return m_textEncoding; }
-        const KURL& failingURL() const { return m_failingURL; }
+    bool isValid() const { return m_content; }
 
-    private:
-        RefPtr<SharedBuffer> m_content;
-        AtomicString m_mimeType;
-        AtomicString m_textEncoding;
-        KURL m_failingURL;
-    };
+    SharedBuffer* content() const { return m_content.get(); }
+    const AtomicString& mimeType() const { return m_mimeType; }
+    const AtomicString& textEncoding() const { return m_textEncoding; }
+    const KURL& failingURL() const { return m_failingURL; }
+    bool forceSynchronousLoad() const { return m_substituteDataLoadPolicy == ForceSynchronousLoad; }
+
+private:
+    RefPtr<SharedBuffer> m_content;
+    AtomicString m_mimeType;
+    AtomicString m_textEncoding;
+    KURL m_failingURL;
+    SubstituteDataLoadPolicy m_substituteDataLoadPolicy;
+};
 
 }
 

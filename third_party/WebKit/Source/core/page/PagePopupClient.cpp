@@ -35,11 +35,11 @@
 
 namespace WebCore {
 
-#define addLiteral(literal, writer)    writer.addData(literal, sizeof(literal) - 1)
+#define addLiteral(literal, data)    data->append(literal, sizeof(literal) - 1)
 
-void PagePopupClient::addJavaScriptString(const String& str, DocumentWriter& writer)
+void PagePopupClient::addJavaScriptString(const String& str, SharedBuffer* data)
 {
-    addLiteral("\"", writer);
+    addLiteral("\"", data);
     StringBuilder builder;
     builder.reserveCapacity(str.length());
     for (unsigned i = 0; i < str.length(); ++i) {
@@ -47,66 +47,66 @@ void PagePopupClient::addJavaScriptString(const String& str, DocumentWriter& wri
             builder.append('\\');
         builder.append(str[i]);
     }
-    addString(builder.toString(), writer);
-    addLiteral("\"", writer);
+    addString(builder.toString(), data);
+    addLiteral("\"", data);
 }
 
-void PagePopupClient::addProperty(const char* name, const String& value, DocumentWriter& writer)
+void PagePopupClient::addProperty(const char* name, const String& value, SharedBuffer* data)
 {
-    writer.addData(name, strlen(name));
-    addLiteral(": ", writer);
-    addJavaScriptString(value, writer);
-    addLiteral(",\n", writer);
+    data->append(name, strlen(name));
+    addLiteral(": ", data);
+    addJavaScriptString(value, data);
+    addLiteral(",\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name, int value, DocumentWriter& writer)
+void PagePopupClient::addProperty(const char* name, int value, SharedBuffer* data)
 {
-    writer.addData(name, strlen(name));
-    addLiteral(": ", writer);
-    addString(String::number(value), writer);
-    addLiteral(",\n", writer);
+    data->append(name, strlen(name));
+    addLiteral(": ", data);
+    addString(String::number(value), data);
+    addLiteral(",\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name, unsigned value, DocumentWriter& writer)
+void PagePopupClient::addProperty(const char* name, unsigned value, SharedBuffer* data)
 {
-    writer.addData(name, strlen(name));
-    addLiteral(": ", writer);
-    addString(String::number(value), writer);
-    addLiteral(",\n", writer);
+    data->append(name, strlen(name));
+    addLiteral(": ", data);
+    addString(String::number(value), data);
+    addLiteral(",\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name, bool value, DocumentWriter& writer)
+void PagePopupClient::addProperty(const char* name, bool value, SharedBuffer* data)
 {
-    writer.addData(name, strlen(name));
-    addLiteral(": ", writer);
+    data->append(name, strlen(name));
+    addLiteral(": ", data);
     if (value)
-        addLiteral("true", writer);
+        addLiteral("true", data);
     else
-        addLiteral("false", writer);
-    addLiteral(",\n", writer);
+        addLiteral("false", data);
+    addLiteral(",\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name, const Vector<String>& values, DocumentWriter& writer)
+void PagePopupClient::addProperty(const char* name, const Vector<String>& values, SharedBuffer* data)
 {
-    writer.addData(name, strlen(name));
-    addLiteral(": [", writer);
+    data->append(name, strlen(name));
+    addLiteral(": [", data);
     for (unsigned i = 0; i < values.size(); ++i) {
         if (i)
-            addLiteral(",", writer);
-        addJavaScriptString(values[i], writer);
+            addLiteral(",", data);
+        addJavaScriptString(values[i], data);
     }
-    addLiteral("],\n", writer);
+    addLiteral("],\n", data);
 }
 
-void PagePopupClient::addProperty(const char* name, const IntRect& rect, DocumentWriter& writer)
+void PagePopupClient::addProperty(const char* name, const IntRect& rect, SharedBuffer* data)
 {
-    writer.addData(name, strlen(name));
-    addLiteral(": {", writer);
-    addProperty("x", rect.x(), writer);
-    addProperty("y", rect.y(), writer);
-    addProperty("width", rect.width(), writer);
-    addProperty("height", rect.height(), writer);
-    addLiteral("},\n", writer);
+    data->append(name, strlen(name));
+    addLiteral(": {", data);
+    addProperty("x", rect.x(), data);
+    addProperty("y", rect.y(), data);
+    addProperty("width", rect.width(), data);
+    addProperty("height", rect.height(), data);
+    addLiteral("},\n", data);
 }
 
 } // namespace WebCore

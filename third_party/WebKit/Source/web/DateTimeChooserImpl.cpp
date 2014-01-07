@@ -99,7 +99,7 @@ static String valueToDateTimeString(double value, AtomicString type)
     return components.type() == WebCore::DateComponents::Invalid ? String() : components.toString();
 }
 
-void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
+void DateTimeChooserImpl::writeDocument(WebCore::SharedBuffer* data)
 {
     String stepString = String::number(m_parameters.step);
     String stepBaseString = String::number(m_parameters.stepBase, 11, WTF::TruncateTrailingZeros);
@@ -117,30 +117,30 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
         otherDateLabelString = locale().queryString(WebLocalizedString::OtherDateLabel);
     }
 
-    addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", writer);
-    writer.addData(pickerCommonCss, sizeof(pickerCommonCss));
-    writer.addData(pickerButtonCss, sizeof(pickerButtonCss));
-    writer.addData(suggestionPickerCss, sizeof(suggestionPickerCss));
-    writer.addData(calendarPickerCss, sizeof(calendarPickerCss));
+    addString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
+    data->append(pickerCommonCss, sizeof(pickerCommonCss));
+    data->append(pickerButtonCss, sizeof(pickerButtonCss));
+    data->append(suggestionPickerCss, sizeof(suggestionPickerCss));
+    data->append(calendarPickerCss, sizeof(calendarPickerCss));
     addString("</style></head><body><div id=main>Loading...</div><script>\n"
-               "window.dialogArguments = {\n", writer);
-    addProperty("anchorRectInScreen", anchorRectInScreen, writer);
-    addProperty("min", valueToDateTimeString(m_parameters.minimum, m_parameters.type), writer);
-    addProperty("max", valueToDateTimeString(m_parameters.maximum, m_parameters.type), writer);
-    addProperty("step", stepString, writer);
-    addProperty("stepBase", stepBaseString, writer);
-    addProperty("required", m_parameters.required, writer);
-    addProperty("currentValue", valueToDateTimeString(m_parameters.doubleValue, m_parameters.type), writer);
-    addProperty("locale", m_parameters.locale.string(), writer);
-    addProperty("todayLabel", todayLabelString, writer);
-    addProperty("clearLabel", locale().queryString(WebLocalizedString::CalendarClear), writer);
-    addProperty("weekLabel", locale().queryString(WebLocalizedString::WeekNumberLabel), writer);
-    addProperty("weekStartDay", m_locale->firstDayOfWeek(), writer);
-    addProperty("shortMonthLabels", m_locale->shortMonthLabels(), writer);
-    addProperty("dayLabels", m_locale->weekDayShortLabels(), writer);
-    addProperty("isLocaleRTL", m_locale->isRTL(), writer);
-    addProperty("isRTL", m_parameters.isAnchorElementRTL, writer);
-    addProperty("mode", m_parameters.type.string(), writer);
+        "window.dialogArguments = {\n", data);
+    addProperty("anchorRectInScreen", anchorRectInScreen, data);
+    addProperty("min", valueToDateTimeString(m_parameters.minimum, m_parameters.type), data);
+    addProperty("max", valueToDateTimeString(m_parameters.maximum, m_parameters.type), data);
+    addProperty("step", stepString, data);
+    addProperty("stepBase", stepBaseString, data);
+    addProperty("required", m_parameters.required, data);
+    addProperty("currentValue", valueToDateTimeString(m_parameters.doubleValue, m_parameters.type), data);
+    addProperty("locale", m_parameters.locale.string(), data);
+    addProperty("todayLabel", todayLabelString, data);
+    addProperty("clearLabel", locale().queryString(WebLocalizedString::CalendarClear), data);
+    addProperty("weekLabel", locale().queryString(WebLocalizedString::WeekNumberLabel), data);
+    addProperty("weekStartDay", m_locale->firstDayOfWeek(), data);
+    addProperty("shortMonthLabels", m_locale->shortMonthLabels(), data);
+    addProperty("dayLabels", m_locale->weekDayShortLabels(), data);
+    addProperty("isLocaleRTL", m_locale->isRTL(), data);
+    addProperty("isRTL", m_parameters.isAnchorElementRTL, data);
+    addProperty("mode", m_parameters.type.string(), data);
     if (m_parameters.suggestions.size()) {
         Vector<String> suggestionValues;
         Vector<String> localizedSuggestionValues;
@@ -150,21 +150,21 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
             localizedSuggestionValues.append(m_parameters.suggestions[i].localizedValue);
             suggestionLabels.append(m_parameters.suggestions[i].label);
         }
-        addProperty("suggestionValues", suggestionValues, writer);
-        addProperty("localizedSuggestionValues", localizedSuggestionValues, writer);
-        addProperty("suggestionLabels", suggestionLabels, writer);
-        addProperty("inputWidth", static_cast<unsigned>(m_parameters.anchorRectInRootView.width()), writer);
-        addProperty("showOtherDateEntry", WebCore::RenderTheme::theme().supportsCalendarPicker(m_parameters.type), writer);
-        addProperty("otherDateLabel", otherDateLabelString, writer);
-        addProperty("suggestionHighlightColor", WebCore::RenderTheme::theme().activeListBoxSelectionBackgroundColor().serialized(), writer);
-        addProperty("suggestionHighlightTextColor", WebCore::RenderTheme::theme().activeListBoxSelectionForegroundColor().serialized(), writer);
+        addProperty("suggestionValues", suggestionValues, data);
+        addProperty("localizedSuggestionValues", localizedSuggestionValues, data);
+        addProperty("suggestionLabels", suggestionLabels, data);
+        addProperty("inputWidth", static_cast<unsigned>(m_parameters.anchorRectInRootView.width()), data);
+        addProperty("showOtherDateEntry", WebCore::RenderTheme::theme().supportsCalendarPicker(m_parameters.type), data);
+        addProperty("otherDateLabel", otherDateLabelString, data);
+        addProperty("suggestionHighlightColor", WebCore::RenderTheme::theme().activeListBoxSelectionBackgroundColor().serialized(), data);
+        addProperty("suggestionHighlightTextColor", WebCore::RenderTheme::theme().activeListBoxSelectionForegroundColor().serialized(), data);
     }
-    addString("}\n", writer);
+    addString("}\n", data);
 
-    writer.addData(pickerCommonJs, sizeof(pickerCommonJs));
-    writer.addData(suggestionPickerJs, sizeof(suggestionPickerJs));
-    writer.addData(calendarPickerJs, sizeof(calendarPickerJs));
-    addString("</script></body>\n", writer);
+    data->append(pickerCommonJs, sizeof(pickerCommonJs));
+    data->append(suggestionPickerJs, sizeof(suggestionPickerJs));
+    data->append(calendarPickerJs, sizeof(calendarPickerJs));
+    addString("</script></body>\n", data);
 }
 
 WebCore::Locale& DateTimeChooserImpl::locale()

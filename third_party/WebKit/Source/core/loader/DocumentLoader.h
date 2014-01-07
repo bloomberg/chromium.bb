@@ -80,8 +80,6 @@ namespace WebCore {
         unsigned long mainResourceIdentifier() const;
 
         void replaceDocument(const String& source, Document*);
-        DocumentWriter* beginWriting(const AtomicString& mimeType, const AtomicString& encoding, const KURL& = KURL());
-        void endWriting(DocumentWriter*);
 
         const AtomicString& mimeType() const;
 
@@ -163,10 +161,9 @@ namespace WebCore {
         static PassRefPtr<DocumentWriter> createWriterFor(Frame*, const Document* ownerDocument, const KURL&, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch);
 
         void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
+        void endWriting(DocumentWriter*);
 
         Document* document() const;
-
-        void setRequest(const ResourceRequest&);
 
         void commitIfReady();
         void commitData(const char* bytes, size_t length);

@@ -30,8 +30,7 @@
 #include "CSSValueKeywords.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/DocumentWriter.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/frame/Frame.h"
 #include "core/page/PagePopup.h"
@@ -69,12 +68,10 @@ inline MockPagePopup::MockPagePopup(PagePopupClient* client, const IntRect& orig
     m_iframe->setInlineStyleProperty(CSSPropertyTop, originBoundsInRootView.maxY(), CSSPrimitiveValue::CSS_PX, true);
     if (document->body())
         document->body()->appendChild(m_iframe.get());
-    Frame* contentFrame = m_iframe->contentFrame();
-    DocumentWriter* writer = contentFrame->loader().documentLoader()->beginWriting("text/html", "UTF-8");
     const char scriptToSetUpPagePopupController[] = "<script>window.pagePopupController = parent.internals.pagePopupController;</script>";
-    writer->addData(scriptToSetUpPagePopupController, sizeof(scriptToSetUpPagePopupController));
-    m_popupClient->writeDocument(*writer);
-    contentFrame->loader().documentLoader()->endWriting(writer);
+    RefPtr<SharedBuffer> data = SharedBuffer::create(scriptToSetUpPagePopupController, sizeof(scriptToSetUpPagePopupController));
+    m_popupClient->writeDocument(data.get());
+    m_iframe->contentFrame()->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
 }
 
 PassRefPtr<MockPagePopup> MockPagePopup::create(PagePopupClient* client, const IntRect& originBoundsInRootView, Frame* mainFrame)

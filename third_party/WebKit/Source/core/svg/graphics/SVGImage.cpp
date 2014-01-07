@@ -31,7 +31,7 @@
 
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ComposedTreeWalker.h"
-#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
@@ -399,10 +399,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         frame->view()->setCanHaveScrollbars(false); // SVG Images will always synthesize a viewBox, if it's not available, and thus never see scrollbars.
         frame->view()->setTransparent(true); // SVG Images are transparent.
 
-        ASSERT(loader.documentLoader()); // DocumentLoader should have been created by frame->init().
-        DocumentWriter* writer = loader.documentLoader()->beginWriting("image/svg+xml", "UTF-8");
-        writer->addData(data()->data(), data()->size());
-        loader.documentLoader()->endWriting(writer);
+        loader.load(FrameLoadRequest(0, blankURL(), SubstituteData(data(), "image/svg+xml", "UTF-8", KURL(), ForceSynchronousLoad)));
         // Set the intrinsic size before a container size is available.
         m_intrinsicSize = containerSize();
     }

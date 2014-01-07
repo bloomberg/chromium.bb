@@ -37,8 +37,8 @@
 #include "WebViewImpl.h"
 #include "WebWidgetClient.h"
 #include "core/dom/ContextFeatures.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/page/Chrome.h"
 #include "core/page/DOMWindowPagePopup.h"
 #include "core/page/EventHandler.h"
@@ -207,9 +207,9 @@ bool WebPagePopupImpl::initializePage()
 
     DOMWindowPagePopup::install(frame->domWindow(), m_popupClient);
 
-    DocumentWriter* writer = frame->loader().documentLoader()->beginWriting("text/html", "UTF-8");
-    m_popupClient->writeDocument(*writer);
-    frame->loader().documentLoader()->endWriting(writer);
+    RefPtr<SharedBuffer> data = SharedBuffer::create();
+    m_popupClient->writeDocument(data.get());
+    frame->loader().load(FrameLoadRequest(0, blankURL(), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
     return true;
 }
 

@@ -42,8 +42,8 @@
 #include "WebWidgetClient.h"
 #include "core/dom/NodeList.h"
 #include "core/html/HTMLPlugInElement.h"
-#include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/page/FocusController.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
@@ -53,28 +53,17 @@ using namespace WebCore;
 
 namespace blink {
 
-#define addLiteral(literal, writer)    writer->addData(literal, sizeof(literal) - 1)
+static const char documentStartLiteral[] = "<!DOCTYPE html><head><meta charset='UTF-8'></head><body>\n<object type=\"";
+static const char documentEndLiteral[] = "\"></object></body>\n";
 
-static inline void addString(const String& str, DocumentWriter* writer)
+static void writeDocument(const String& pluginType, const WebURL& url, WebCore::FrameLoader& loader)
 {
-    CString str8 = str.utf8();
-    writer->addData(str8.data(), str8.length());
-}
+    RefPtr<SharedBuffer> data = SharedBuffer::create();
+    data->append(documentStartLiteral, sizeof(documentStartLiteral) - 1);
+    data->append(pluginType.utf8().data(), pluginType.utf8().length());
+    data->append(documentEndLiteral, sizeof(documentEndLiteral) - 1);
 
-static void writeDocument(const String& pluginType, const WebDocument& hostDocument, WebCore::DocumentLoader* loader)
-{
-    // Give the new document the same URL as the hose document so that content
-    // settings and other decisions can be made based on the correct origin.
-    const WebURL& url = hostDocument.url();
-
-    DocumentWriter* writer = loader->beginWriting("text/html", "UTF-8", url);
-
-    addLiteral("<!DOCTYPE html><head><meta charset='UTF-8'></head><body>\n", writer);
-    String objectTag = "<object type=\"" + pluginType + "\"></object>";
-    addString(objectTag, writer);
-    addLiteral("</body>\n", writer);
-
-    loader->endWriting(writer);
+    loader.load(FrameLoadRequest(0, ResourceRequest(url.isValid() ? KURL(url) : blankURL()), SubstituteData(data, "text/html", "UTF-8", KURL(), ForceSynchronousLoad)));
 }
 
 class HelperPluginChromeClient : public EmptyChromeClient {
@@ -227,7 +216,7 @@ bool WebHelperPluginImpl::initializePage(const String& pluginType, const WebDocu
     frame->setView(FrameView::create(frame));
     // No need to set a size or make it not transparent.
 
-    writeDocument(pluginType, hostDocument, frame->loader().documentLoader());
+    writeDocument(pluginType, hostDocument.url(), frame->loader());
 
     return true;
 }

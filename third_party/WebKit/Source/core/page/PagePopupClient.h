@@ -31,26 +31,25 @@
 #ifndef PagePopupClient_h
 #define PagePopupClient_h
 
-#include "core/loader/DocumentWriter.h"
+#include "platform/SharedBuffer.h"
 #include "platform/geometry/IntRect.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class DocumentWriter;
 class Locale;
 
 class PagePopupClient {
 public:
     virtual IntSize contentSize() = 0;
 
-    // Provide an HTML source through the specified DocumentWriter. The HTML
+    // Provide an HTML source to the specified buffer. The HTML
     // source is rendered in a PagePopup.
     // The content HTML supports:
     //  - No <select> popups
     //  - window.setValueAndClosePopup(number, string).
-    virtual void writeDocument(DocumentWriter&) = 0;
+    virtual void writeDocument(SharedBuffer*) = 0;
 
     // Returns a Locale object associated to the client.
     virtual Locale& locale() = 0;
@@ -71,20 +70,20 @@ public:
     virtual ~PagePopupClient() { }
 
     // Helper functions to be used in PagePopupClient::writeDocument().
-    static void addString(const String&, DocumentWriter&);
-    static void addJavaScriptString(const String&, DocumentWriter&);
-    static void addProperty(const char* name, const String& value, DocumentWriter&);
-    static void addProperty(const char* name, int value, DocumentWriter&);
-    static void addProperty(const char* name, unsigned value, DocumentWriter&);
-    static void addProperty(const char* name, bool value, DocumentWriter&);
-    static void addProperty(const char* name, const Vector<String>& values, DocumentWriter&);
-    static void addProperty(const char* name, const IntRect&, DocumentWriter&);
+    static void addString(const String&, SharedBuffer*);
+    static void addJavaScriptString(const String&, SharedBuffer*);
+    static void addProperty(const char* name, const String& value, SharedBuffer*);
+    static void addProperty(const char* name, int value, SharedBuffer*);
+    static void addProperty(const char* name, unsigned value, SharedBuffer*);
+    static void addProperty(const char* name, bool value, SharedBuffer*);
+    static void addProperty(const char* name, const Vector<String>& values, SharedBuffer*);
+    static void addProperty(const char* name, const IntRect&, SharedBuffer*);
 };
 
-inline void PagePopupClient::addString(const String& str, DocumentWriter& writer)
+inline void PagePopupClient::addString(const String& str, SharedBuffer* data)
 {
     CString str8 = str.utf8();
-    writer.addData(str8.data(), str8.length());
+    data->append(str8.data(), str8.length());
 }
 
 }

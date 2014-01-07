@@ -97,6 +97,8 @@ public:
     virtual void appendData(const char*, int);
     virtual void error(Resource::Status);
 
+    void setNeedsSynchronousCacheHit(bool needsSynchronousCacheHit) { m_needsSynchronousCacheHit = needsSynchronousCacheHit; }
+
     void setResourceError(const ResourceError& error) { m_error = error; }
     const ResourceError& resourceError() const { return m_error; }
 
@@ -362,6 +364,8 @@ private:
     unsigned m_status : 3; // Status
 
     unsigned m_wasPurged : 1;
+
+    unsigned m_needsSynchronousCacheHit : 1;
 
 #ifndef NDEBUG
     bool m_deleted;

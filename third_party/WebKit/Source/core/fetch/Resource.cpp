@@ -116,6 +116,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_type(type)
     , m_status(Pending)
     , m_wasPurged(false)
+    , m_needsSynchronousCacheHit(false)
 #ifndef NDEBUG
     , m_deleted(false)
     , m_lruIndex(0)
@@ -432,7 +433,7 @@ bool Resource::addClientToSet(ResourceClient* client)
         memoryCache()->addToLiveResourcesSize(this);
 
     // If we have existing data to send to the new client and the resource type supprts it, send it asynchronously.
-    if (!m_response.isNull() && !m_proxyResource && !shouldSendCachedDataSynchronouslyForType(type())) {
+    if (!m_response.isNull() && !m_proxyResource && !shouldSendCachedDataSynchronouslyForType(type()) && !m_needsSynchronousCacheHit) {
         m_clientsAwaitingCallback.add(client);
         ResourceCallback::callbackHandler()->schedule(this);
         return false;

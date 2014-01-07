@@ -157,25 +157,6 @@ bool DocumentLoader::isURLValidForNewHistoryEntry() const
     return !originalRequest().url().isEmpty() || !unreachableURL().isEmpty();
 }
 
-void DocumentLoader::setRequest(const ResourceRequest& req)
-{
-    // Replacing an unreachable URL with alternate content looks like a server-side
-    // redirect at this point, but we can replace a committed dataSource.
-    bool handlingUnreachableURL = false;
-
-    handlingUnreachableURL = m_substituteData.isValid() && !m_substituteData.failingURL().isEmpty();
-
-    if (handlingUnreachableURL)
-        m_committed = false;
-
-    // We should never be getting a redirect callback after the data
-    // source is committed, except in the unreachable URL case. It
-    // would be a WebFoundation bug if it sent a redirect callback after commit.
-    ASSERT(!m_committed);
-
-    m_request = req;
-}
-
 void DocumentLoader::setMainDocumentError(const ResourceError& error)
 {
     m_mainDocumentError = error;
@@ -324,11 +305,7 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
 bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, PolicyCheckLoadType policyCheckLoadType)
 {
     // Don't ask if we are loading an empty URL.
-    if (request.url().isEmpty())
-        return true;
-
-    // We are always willing to show alternate content for unreachable URLs.
-    if (m_substituteData.isValid() && !m_substituteData.failingURL().isEmpty())
+    if (request.url().isEmpty() || m_substituteData.isValid())
         return true;
 
     // If we're loading content into a subframe, check against the parent's Content Security Policy
@@ -404,7 +381,7 @@ void DocumentLoader::willSendRequest(ResourceRequest& newRequest, const Resource
         }
     }
 
-    setRequest(newRequest);
+    m_request = newRequest;
 
     if (redirectResponse.isNull())
         return;
@@ -790,7 +767,7 @@ void DocumentLoader::startLoadingMainResource()
     FetchRequest cachedResourceRequest(request, FetchInitiatorTypeNames::document, mainResourceLoadOptions);
     m_mainResource = m_fetcher->fetchMainResource(cachedResourceRequest, m_substituteData);
     if (!m_mainResource) {
-        setRequest(ResourceRequest());
+        m_request = ResourceRequest();
         // If the load was aborted by clearing m_request, it's possible the ApplicationCacheHost
         // is now in a state where starting an empty load will be inconsistent. Replace it with
         // a new ApplicationCacheHost.
@@ -807,7 +784,7 @@ void DocumentLoader::startLoadingMainResource()
     // the fragment identifier, so add that back in.
     if (equalIgnoringFragmentIdentifier(m_request.url(), request.url()))
         request.setURL(m_request.url());
-    setRequest(request);
+    m_request = request;
 }
 
 void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
@@ -819,12 +796,6 @@ void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
         mainResourceLoader()->cancel(error);
 
     mainReceivedError(error);
-}
-
-DocumentWriter* DocumentLoader::beginWriting(const AtomicString& mimeType, const AtomicString& encoding, const KURL& url)
-{
-    m_writer = createWriterFor(m_frame, 0, url, mimeType, encoding, false, true);
-    return m_writer.get();
 }
 
 void DocumentLoader::endWriting(DocumentWriter* writer)
