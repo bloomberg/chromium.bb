@@ -2701,9 +2701,13 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
       host_->Shutdown();
     }
   } else {
-    // Accept return key character events between its press and release events.
-    if (event->key_code() == ui::VKEY_RETURN)
+    if (event->key_code() == ui::VKEY_RETURN) {
+      // Do not forward return key release events if no press event was handled.
+      if (event->type() == ui::ET_KEY_RELEASED && !accept_return_character_)
+        return;
+      // Accept return key character events between press and release events.
       accept_return_character_ = event->type() == ui::ET_KEY_PRESSED;
+    }
 
     // We don't have to communicate with an input method here.
     if (!event->HasNativeEvent()) {
