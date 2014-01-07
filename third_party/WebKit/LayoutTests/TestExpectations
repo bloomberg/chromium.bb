@@ -512,17 +512,6 @@ crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyF
 
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
-crbug.com/324045 fast/canvas/arc360.html [ NeedsRebaseline ]
-crbug.com/324045 fast/canvas/canvas-arc-circumference-fill.html [ NeedsRebaseline ]
-crbug.com/324045 fast/canvas/canvas-arc-circumference.html [ NeedsRebaseline ]
-crbug.com/324045 fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
-crbug.com/324045 fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
-crbug.com/324045 virtual/gpu/fast/canvas/arc360.html [ NeedsRebaseline ]
-crbug.com/324045 virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ NeedsRebaseline ]
-crbug.com/324045 virtual/gpu/fast/canvas/canvas-arc-circumference.html [ NeedsRebaseline ]
-crbug.com/324045 virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ NeedsRebaseline ]
-crbug.com/324045 virtual/gpu/fast/canvas/canvas-ellipse-circumference.html [ NeedsRebaseline ]
-
 crbug.com/261277 fast/events/touch/gesture/pad-gesture-fling.html [ Pass Failure ]
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
