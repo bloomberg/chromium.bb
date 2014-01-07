@@ -70,6 +70,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/view_type_utils.h"
@@ -219,8 +220,11 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   extension_data->SetString("icon", icon.spec());
   extension_data->SetBoolean("isUnpacked",
       Manifest::IsUnpackedLocation(extension->location()));
-  extension_data->SetBoolean("terminated",
-      extension_service_->terminated_extensions()->Contains(extension->id()));
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(extension_service_->profile());
+  extension_data->SetBoolean(
+      "terminated",
+      registry->terminated_extensions().Contains(extension->id()));
   extension_data->SetBoolean("enabledIncognito",
       extension_util::IsIncognitoEnabled(extension->id(), extension_service_));
   extension_data->SetBoolean("incognitoCanBeToggled",
@@ -683,9 +687,10 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
   ExtensionWarningService* warnings =
       ExtensionSystem::Get(profile)->warning_service();
 
-  const ExtensionSet* extensions = extension_service_->extensions();
-  for (ExtensionSet::const_iterator extension = extensions->begin();
-       extension != extensions->end(); ++extension) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  const ExtensionSet& enabled_set = registry->enabled_extensions();
+  for (ExtensionSet::const_iterator extension = enabled_set.begin();
+       extension != enabled_set.end(); ++extension) {
     if ((*extension)->ShouldDisplayInExtensionSettings()) {
       extensions_list->Append(CreateExtensionDetailValue(
           extension->get(),
@@ -693,9 +698,9 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
           warnings));
     }
   }
-  extensions = extension_service_->disabled_extensions();
-  for (ExtensionSet::const_iterator extension = extensions->begin();
-       extension != extensions->end(); ++extension) {
+  const ExtensionSet& disabled_set = registry->disabled_extensions();
+  for (ExtensionSet::const_iterator extension = disabled_set.begin();
+       extension != disabled_set.end(); ++extension) {
     if ((*extension)->ShouldDisplayInExtensionSettings()) {
       extensions_list->Append(CreateExtensionDetailValue(
           extension->get(),
@@ -703,10 +708,10 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
           warnings));
     }
   }
-  extensions = extension_service_->terminated_extensions();
+  const ExtensionSet& terminated_set = registry->terminated_extensions();
   std::vector<ExtensionPage> empty_pages;
-  for (ExtensionSet::const_iterator extension = extensions->begin();
-       extension != extensions->end(); ++extension) {
+  for (ExtensionSet::const_iterator extension = terminated_set.begin();
+       extension != terminated_set.end(); ++extension) {
     if ((*extension)->ShouldDisplayInExtensionSettings()) {
       extensions_list->Append(CreateExtensionDetailValue(
           extension->get(),

@@ -73,8 +73,12 @@ class ExtensionServiceInterface
     : public base::SupportsWeakPtr<ExtensionServiceInterface> {
  public:
   virtual ~ExtensionServiceInterface() {}
+
+  // DEPRECATED: Use ExtensionRegistry::enabled_extensions() instead.
+  // ExtensionRegistry also has the disabled, terminated and blacklisted sets.
   virtual const extensions::ExtensionSet* extensions() const = 0;
   virtual const extensions::ExtensionSet* disabled_extensions() const = 0;
+
   virtual extensions::PendingExtensionManager* pending_extension_manager() = 0;
 
   // Install an update.  Return true if the install can be started.
@@ -158,12 +162,10 @@ class ExtensionService
 
   virtual ~ExtensionService();
 
-  // Gets the list of currently installed extensions.
+  // DEPRECATED: Use ExtensionRegistry::enabled_extensions() instead.
+  // ExtensionRegistry also has the disabled, terminated and blacklisted sets.
   virtual const extensions::ExtensionSet* extensions() const OVERRIDE;
   virtual const extensions::ExtensionSet* disabled_extensions() const OVERRIDE;
-
-  // DEPRECATED: Use extensions::ExtensionRegistry::terminated_extensions().
-  const extensions::ExtensionSet* terminated_extensions() const;
 
   const extensions::ExtensionSet* delayed_installs() const;
 

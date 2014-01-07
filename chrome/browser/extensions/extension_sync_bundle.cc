@@ -139,10 +139,10 @@ std::vector<ExtensionSyncData> ExtensionSyncBundle::GetPendingData() const {
 }
 
 void ExtensionSyncBundle::GetExtensionSyncDataListHelper(
-    const ExtensionSet* extensions,
+    const ExtensionSet& extensions,
     std::vector<ExtensionSyncData>* sync_data_list) const {
-  for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
+  for (ExtensionSet::const_iterator it = extensions.begin();
+       it != extensions.end(); ++it) {
     const Extension& extension = *it->get();
     // If we have pending extension data for this extension, then this
     // version is out of date.  We'll sync back the version we got from

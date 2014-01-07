@@ -48,6 +48,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/favicon_url.h"
 #include "extensions/browser/app_sorting.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -64,6 +65,8 @@ using extensions::AppSorting;
 using extensions::CrxInstaller;
 using extensions::Extension;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionRegistry;
+using extensions::ExtensionSet;
 using extensions::UnloadedExtensionInfo;
 
 namespace {
@@ -429,22 +432,22 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
   // The first time we load the apps we must add all current app to the list
   // of apps visible on the NTP.
   if (!has_loaded_apps_) {
-    const extensions::ExtensionSet* extensions =
-        extension_service_->extensions();
-    for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-         it != extensions->end(); ++it) {
+    ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+    const ExtensionSet& enabled_set = registry->enabled_extensions();
+    for (extensions::ExtensionSet::const_iterator it = enabled_set.begin();
+         it != enabled_set.end(); ++it) {
       visible_apps_.insert((*it)->id());
     }
 
-    extensions = extension_service_->disabled_extensions();
-    for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-         it != extensions->end(); ++it) {
+    const ExtensionSet& disabled_set = registry->disabled_extensions();
+    for (ExtensionSet::const_iterator it = disabled_set.begin();
+         it != disabled_set.end(); ++it) {
       visible_apps_.insert((*it)->id());
     }
 
-    extensions = extension_service_->terminated_extensions();
-    for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-         it != extensions->end(); ++it) {
+    const ExtensionSet& terminated_set = registry->terminated_extensions();
+    for (ExtensionSet::const_iterator it = terminated_set.begin();
+         it != terminated_set.end(); ++it) {
       visible_apps_.insert((*it)->id());
     }
   }

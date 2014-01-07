@@ -75,7 +75,7 @@ class ExtensionSyncBundle : public SyncBundle {
 
   // Appends sync data objects for every extension in |extensions|.
   void GetExtensionSyncDataListHelper(
-      const ExtensionSet* extensions,
+      const ExtensionSet& extensions,
       std::vector<extensions::ExtensionSyncData>* sync_data_list) const;
 
   // Overrides for SyncBundle.

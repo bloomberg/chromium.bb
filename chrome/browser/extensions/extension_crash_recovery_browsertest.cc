@@ -23,6 +23,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_switches.h"
@@ -32,6 +33,7 @@
 using content::NavigationController;
 using content::WebContents;
 using extensions::Extension;
+using extensions::ExtensionRegistry;
 
 // Tests are timing out waiting for extension to crash.
 // http://crbug.com/174705
@@ -54,6 +56,16 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
   extensions::ProcessManager* GetProcessManager() {
     return extensions::ExtensionSystem::Get(browser()->profile())->
         process_manager();
+  }
+
+  size_t GetEnabledExtensionCount() {
+    ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+    return registry->enabled_extensions().size();
+  }
+
+  size_t GetTerminatedExtensionCount() {
+    ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+    return registry->terminated_extensions().size();
   }
 
   void CrashExtension(std::string extension_id) {
@@ -175,42 +187,36 @@ private:
 
 // Flaky: http://crbug.com/242167.
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest, DISABLED_Basic) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
-  const size_t crash_size_before =
-      GetExtensionService()->terminated_extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
+  const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
-  ASSERT_EQ(crash_size_before + 1,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
+  ASSERT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
   ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
 
   SCOPED_TRACE("after clicking the balloon");
   CheckExtensionConsistency(first_extension_id_);
-  ASSERT_EQ(crash_size_before,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(crash_count_before, GetTerminatedExtensionCount());
 }
 
 // Flaky, http://crbug.com/241191.
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        DISABLED_CloseAndReload) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
-  const size_t crash_size_before =
-      GetExtensionService()->terminated_extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
+  const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
 
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
-  ASSERT_EQ(crash_size_before + 1,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
+  ASSERT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
 
   ASSERT_NO_FATAL_FAILURE(CancelNotification(0));
   ReloadExtension(first_extension_id_);
 
   SCOPED_TRACE("after reloading");
   CheckExtensionConsistency(first_extension_id_);
-  ASSERT_EQ(crash_size_before,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(crash_count_before, GetTerminatedExtensionCount());
 }
 
 // Test is timing out on Windows http://crbug.com/174705.
@@ -221,10 +227,10 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 #endif  // defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        MAYBE_ReloadIndependently) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
 
   ReloadExtension(first_extension_id_);
 
@@ -249,10 +255,10 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        MAYBE_ReloadIndependentlyChangeTabs) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
 
   WebContents* original_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -279,10 +285,10 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        DISABLED_ReloadIndependentlyNavigatePage) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
 
   WebContents* current_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -319,20 +325,20 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        MAYBE_ShutdownWhileCrashed) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
 }
 
 // Flaky, http://crbug.com/241245.
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        DISABLED_TwoExtensionsCrashFirst) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
   ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
 
   SCOPED_TRACE("after clicking the balloon");
@@ -343,11 +349,11 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 // Flaky: http://crbug.com/242196
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        DISABLED_TwoExtensionsCrashSecond) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
   CrashExtension(second_extension_id_);
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
   ASSERT_NO_FATAL_FAILURE(AcceptNotification(0));
 
   SCOPED_TRACE("after clicking the balloon");
@@ -357,19 +363,16 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        TwoExtensionsCrashBothAtOnce) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
-  const size_t crash_size_before =
-      GetExtensionService()->terminated_extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
+  const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  ASSERT_EQ(crash_size_before + 1,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
+  ASSERT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
   CrashExtension(second_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
-  ASSERT_EQ(crash_size_before + 2,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
+  ASSERT_EQ(crash_count_before + 2, GetTerminatedExtensionCount());
 
   {
     SCOPED_TRACE("first balloon");
@@ -387,13 +390,13 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        TwoExtensionsOneByOne) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
   LoadSecondExtension();
   CrashExtension(second_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
 
   {
     SCOPED_TRACE("first balloon");
@@ -423,25 +426,25 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 // at the end of each browser test.
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        MAYBE_TwoExtensionsShutdownWhileCrashed) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
   LoadSecondExtension();
   CrashExtension(second_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
 }
 
 // Flaky, http://crbug.com/241573.
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        DISABLED_TwoExtensionsIgnoreFirst) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
   CrashExtension(second_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
 
   // Accept notification 1 before canceling notification 0.
   // Otherwise, on Linux and Windows, there is a race here, in which
@@ -450,20 +453,20 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   ASSERT_NO_FATAL_FAILURE(CancelNotification(0));
 
   SCOPED_TRACE("balloons done");
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
   CheckExtensionConsistency(second_extension_id_);
 }
 
 // Flaky, http://crbug.com/241164.
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        DISABLED_TwoExtensionsReloadIndependently) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
   CrashExtension(second_extension_id_);
-  ASSERT_EQ(size_before, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before, GetEnabledExtensionCount());
 
   {
     SCOPED_TRACE("first: reload");
@@ -494,24 +497,21 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 #endif
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        MAYBE_CrashAndUninstall) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
-  const size_t crash_size_before =
-      GetExtensionService()->terminated_extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
+  const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  ASSERT_EQ(crash_size_before + 1,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
+  ASSERT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
 
   ASSERT_EQ(1U, CountBalloons());
   UninstallExtension(first_extension_id_);
   base::MessageLoop::current()->RunUntilIdle();
 
   SCOPED_TRACE("after uninstalling");
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  ASSERT_EQ(crash_size_before,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
+  ASSERT_EQ(crash_count_before, GetTerminatedExtensionCount());
   ASSERT_EQ(0U, CountBalloons());
 }
 
@@ -524,19 +524,16 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        MAYBE_CrashAndUnloadAll) {
-  const size_t size_before = GetExtensionService()->extensions()->size();
-  const size_t crash_size_before =
-      GetExtensionService()->terminated_extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
+  const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
   LoadSecondExtension();
   CrashExtension(first_extension_id_);
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
-  ASSERT_EQ(crash_size_before + 1,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
+  ASSERT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
 
   GetExtensionService()->UnloadAllExtensionsForTest();
-  ASSERT_EQ(crash_size_before,
-            GetExtensionService()->terminated_extensions()->size());
+  ASSERT_EQ(crash_count_before, GetTerminatedExtensionCount());
 }
 
 // Fails a DCHECK on Aura and Linux: http://crbug.com/169622
@@ -553,9 +550,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
                        MAYBE_ReloadTabsWithBackgroundPage) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
-  const size_t size_before = GetExtensionService()->extensions()->size();
-  const size_t crash_size_before =
-      GetExtensionService()->terminated_extensions()->size();
+  const size_t count_before = GetEnabledExtensionCount();
+  const size_t crash_count_before = GetTerminatedExtensionCount();
   LoadTestExtension();
 
   // Open a tab extension.
@@ -569,9 +565,8 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
 
   // Tab should still be open, and extension should be crashed.
   EXPECT_EQ(tabs_before, tab_strip->count());
-  EXPECT_EQ(size_before, GetExtensionService()->extensions()->size());
-  EXPECT_EQ(crash_size_before + 1,
-            GetExtensionService()->terminated_extensions()->size());
+  EXPECT_EQ(count_before, GetEnabledExtensionCount());
+  EXPECT_EQ(crash_count_before + 1, GetTerminatedExtensionCount());
 
   {
     content::WindowedNotificationObserver observer(
@@ -585,6 +580,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_ExtensionCrashRecoveryTest,
   // Extension should now be loaded.
   SCOPED_TRACE("after reloading the tab");
   CheckExtensionConsistency(first_extension_id_);
-  ASSERT_EQ(size_before + 1, GetExtensionService()->extensions()->size());
+  ASSERT_EQ(count_before + 1, GetEnabledExtensionCount());
   ASSERT_EQ(0U, CountBalloons());
 }

@@ -75,7 +75,7 @@ class AppSyncBundle : public SyncBundle {
 
   // Appends sync data objects for every app in |extensions|.
   void GetAppSyncDataListHelper(
-      const ExtensionSet* extensions,
+      const ExtensionSet& extensions,
       std::vector<extensions::AppSyncData>* sync_data_list) const;
 
   // Overrides for SyncBundle.

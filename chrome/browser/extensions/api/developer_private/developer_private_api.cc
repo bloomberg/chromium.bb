@@ -48,6 +48,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
@@ -292,7 +293,8 @@ scoped_ptr<developer::ItemInfo>
   scoped_ptr<developer::ItemInfo> info(new developer::ItemInfo());
 
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
-  ExtensionService* service = GetProfile()->GetExtensionService();
+  ExtensionService* service = system->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(GetProfile());
 
   info->id = item.id();
   info->name = item.name();
@@ -336,7 +338,7 @@ scoped_ptr<developer::ItemInfo>
   info->allow_file_access = extension_util::AllowFileAccess(&item, service);
   info->allow_reload = Manifest::IsUnpackedLocation(item.location());
   info->is_unpacked = Manifest::IsUnpackedLocation(item.location());
-  info->terminated = service->terminated_extensions()->Contains(item.id());
+  info->terminated = registry->terminated_extensions().Contains(item.id());
   info->allow_incognito = item.can_be_incognito_enabled();
 
   info->homepage_url.reset(new std::string(
@@ -532,18 +534,20 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
 
   extensions::ExtensionSet items;
 
-  ExtensionService* service = GetProfile()->GetExtensionService();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(GetProfile());
 
-  items.InsertAll(*service->extensions());
+  items.InsertAll(registry->enabled_extensions());
 
   if (include_disabled) {
-    items.InsertAll(*service->disabled_extensions());
+    items.InsertAll(registry->disabled_extensions());
   }
 
   if (include_terminated) {
-    items.InsertAll(*service->terminated_extensions());
+    items.InsertAll(registry->terminated_extensions());
   }
 
+  ExtensionService* service =
+      ExtensionSystem::Get(GetProfile())->extension_service();
   std::map<std::string, ExtensionResource> id_to_icon;
   ItemInfoList item_list;
 

@@ -40,6 +40,7 @@
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -236,11 +237,12 @@ ExtensionService* AsyncManagementFunction::service() {
 
 bool ManagementGetAllFunction::RunImpl() {
   ExtensionInfoList extensions;
+  ExtensionRegistry* registry = ExtensionRegistry::Get(GetProfile());
   ExtensionSystem* system = ExtensionSystem::Get(GetProfile());
 
-  AddExtensionInfo(*service()->extensions(), system, &extensions);
-  AddExtensionInfo(*service()->disabled_extensions(), system, &extensions);
-  AddExtensionInfo(*service()->terminated_extensions(), system, &extensions);
+  AddExtensionInfo(registry->enabled_extensions(), system, &extensions);
+  AddExtensionInfo(registry->disabled_extensions(), system, &extensions);
+  AddExtensionInfo(registry->terminated_extensions(), system, &extensions);
 
   results_ = management::GetAll::Results::Create(extensions);
   return true;

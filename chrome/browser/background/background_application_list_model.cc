@@ -27,6 +27,7 @@
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/extension_set.h"
@@ -39,6 +40,8 @@
 using extensions::APIPermission;
 using extensions::Extension;
 using extensions::ExtensionList;
+using extensions::ExtensionRegistry;
+using extensions::ExtensionSet;
 using extensions::PermissionSet;
 using extensions::UnloadedExtensionInfo;
 using extensions::UpdatedExtensionPermissionsInfo;
@@ -89,10 +92,11 @@ class BackgroundApplicationListModel::Application
 namespace {
 void GetServiceApplications(ExtensionService* service,
                             ExtensionList* applications_result) {
-  const extensions::ExtensionSet* extensions = service->extensions();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(service->profile());
+  const ExtensionSet& enabled_extensions = registry->enabled_extensions();
 
-  for (extensions::ExtensionSet::const_iterator cursor = extensions->begin();
-       cursor != extensions->end();
+  for (ExtensionSet::const_iterator cursor = enabled_extensions.begin();
+       cursor != enabled_extensions.end();
        ++cursor) {
     const Extension* extension = cursor->get();
     if (BackgroundApplicationListModel::IsBackgroundApp(*extension,
@@ -103,9 +107,9 @@ void GetServiceApplications(ExtensionService* service,
 
   // Walk the list of terminated extensions also (just because an extension
   // crashed doesn't mean we should ignore it).
-  extensions = service->terminated_extensions();
-  for (extensions::ExtensionSet::const_iterator cursor = extensions->begin();
-       cursor != extensions->end();
+  const ExtensionSet& terminated_extensions = registry->terminated_extensions();
+  for (ExtensionSet::const_iterator cursor = terminated_extensions.begin();
+       cursor != terminated_extensions.end();
        ++cursor) {
     const Extension* extension = cursor->get();
     if (BackgroundApplicationListModel::IsBackgroundApp(*extension,

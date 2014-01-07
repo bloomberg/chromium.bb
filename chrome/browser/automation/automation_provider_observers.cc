@@ -76,6 +76,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -1798,10 +1799,13 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
     return;
   }
   // Process enabled extensions.
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(automation_->profile());
   base::ListValue* apps_list = new base::ListValue();
-  const extensions::ExtensionSet* extensions = ext_service->extensions();
+  const extensions::ExtensionSet& enabled_extensions =
+      extension_registry->enabled_extensions();
   std::vector<base::DictionaryValue*>* enabled_apps = GetAppInfoFromExtensions(
-      extensions, ext_service);
+      &enabled_extensions, ext_service);
   for (std::vector<base::DictionaryValue*>::const_iterator app =
        enabled_apps->begin(); app != enabled_apps->end(); ++app) {
     (*app)->SetBoolean("is_disabled", false);
@@ -1809,10 +1813,10 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   }
   delete enabled_apps;
   // Process disabled extensions.
-  const extensions::ExtensionSet* disabled_extensions =
-      ext_service->disabled_extensions();
+  const extensions::ExtensionSet& disabled_extensions =
+      extension_registry->disabled_extensions();
   std::vector<base::DictionaryValue*>* disabled_apps = GetAppInfoFromExtensions(
-      disabled_extensions, ext_service);
+      &disabled_extensions, ext_service);
   for (std::vector<base::DictionaryValue*>::const_iterator app =
        disabled_apps->begin(); app != disabled_apps->end(); ++app) {
     (*app)->SetBoolean("is_disabled", true);
@@ -1820,10 +1824,10 @@ NTPInfoObserver::NTPInfoObserver(AutomationProvider* automation,
   }
   delete disabled_apps;
   // Process terminated extensions.
-  const extensions::ExtensionSet* terminated_extensions =
-      ext_service->terminated_extensions();
+  const extensions::ExtensionSet& terminated_extensions =
+      extension_registry->terminated_extensions();
   std::vector<base::DictionaryValue*>* terminated_apps =
-      GetAppInfoFromExtensions(terminated_extensions, ext_service);
+      GetAppInfoFromExtensions(&terminated_extensions, ext_service);
   for (std::vector<base::DictionaryValue*>::const_iterator app =
        terminated_apps->begin(); app != terminated_apps->end(); ++app) {
     (*app)->SetBoolean("is_disabled", true);

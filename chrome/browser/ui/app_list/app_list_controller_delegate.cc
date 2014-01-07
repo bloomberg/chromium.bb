@@ -9,19 +9,23 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "net/base/url_util.h"
 
+using extensions::ExtensionRegistry;
+
 namespace {
 
 const extensions::Extension* GetExtension(Profile* profile,
-                              const std::string& extension_id) {
+                                          const std::string& extension_id) {
   const ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   const extensions::Extension* extension =
@@ -49,7 +53,8 @@ std::string AppListControllerDelegate::AppListSourceToString(
       return extension_urls::kLaunchSourceAppList;
     case LAUNCH_FROM_APP_LIST_SEARCH:
       return extension_urls::kLaunchSourceAppListSearch;
-    default: return std::string();
+    default:
+      return std::string();
   }
 }
 
@@ -160,10 +165,9 @@ extensions::InstallTracker* AppListControllerDelegate::GetInstallTrackerFor(
 
 void AppListControllerDelegate::GetApps(Profile* profile,
                                         extensions::ExtensionSet* out_apps) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  DCHECK(service);
-  out_apps->InsertAll(*service->extensions());
-  out_apps->InsertAll(*service->disabled_extensions());
-  out_apps->InsertAll(*service->terminated_extensions());
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  DCHECK(registry);
+  out_apps->InsertAll(registry->enabled_extensions());
+  out_apps->InsertAll(registry->disabled_extensions());
+  out_apps->InsertAll(registry->terminated_extensions());
 }

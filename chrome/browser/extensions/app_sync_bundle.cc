@@ -137,10 +137,10 @@ std::vector<AppSyncData> AppSyncBundle::GetPendingData() const {
 }
 
 void AppSyncBundle::GetAppSyncDataListHelper(
-    const ExtensionSet* extensions,
+    const ExtensionSet& extensions,
     std::vector<AppSyncData>* sync_data_list) const {
-  for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
+  for (ExtensionSet::const_iterator it = extensions.begin();
+       it != extensions.end(); ++it) {
     const Extension& extension = *it->get();
     // If we have pending app data for this app, then this
     // version is out of date.  We'll sync back the version we got from

@@ -37,7 +37,7 @@ class AppSearchProvider : public SearchProvider,
   typedef ScopedVector<App> Apps;
 
   // Adds extensions to apps container if they should be displayed.
-  void AddApps(const extensions::ExtensionSet* extensions,
+  void AddApps(const extensions::ExtensionSet& extensions,
                ExtensionService* service);
   void RefreshApps();
 

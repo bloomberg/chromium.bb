@@ -7,13 +7,14 @@
 
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/version.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -82,10 +83,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionLoadingTest,
                 content::PAGE_TRANSITION_TYPED);
 
   // Check that the extension hasn't crashed.
-  ExtensionService* service =
-      ExtensionSystem::Get(profile())->extension_service();
-  EXPECT_EQ(0U, service->terminated_extensions()->size());
-  EXPECT_TRUE(service->extensions()->Contains(new_tab_extension->id()));
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  EXPECT_EQ(0U, registry->terminated_extensions().size());
+  EXPECT_TRUE(registry->enabled_extensions().Contains(new_tab_extension->id()));
 }
 
 }  // namespace
