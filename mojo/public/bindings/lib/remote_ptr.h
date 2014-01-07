@@ -22,8 +22,7 @@ namespace mojo {
 //   class FooClientImpl : public FooClientStub {
 //    public:
 //     explicit FooClientImpl(const mojo::MessagePipeHandle& message_pipe)
-//         : foo_(message_pipe) {
-//       foo_.SetPeer(this);
+//         : foo_(message_pipe, this) {
 //       foo_.Ping();
 //     }
 //     virtual void Pong() {
@@ -38,8 +37,7 @@ namespace mojo {
 //   class FooImpl : public FooStub {
 //    public:
 //     explicit FooImpl(const mojo::MessagePipeHandle& message_pipe)
-//         : client_(message_pipe) {
-//       client_.SetPeer(this);
+//         : client_(message_pipe, this) {
 //     }
 //     virtual void Ping() {
 //       client_->Pong();
@@ -54,8 +52,9 @@ class RemotePtr {
 
  public:
   RemotePtr() : state_(NULL) {}
-  explicit RemotePtr(ScopedMessagePipeHandle message_pipe)
-      : state_(new State(message_pipe.Pass())) {
+  explicit RemotePtr(ScopedMessagePipeHandle message_pipe,
+                     typename S::_Peer* peer = NULL)
+      : state_(new State(message_pipe.Pass(), peer)) {
   }
 
   // Move-only constructor and operator=.
@@ -87,9 +86,10 @@ class RemotePtr {
     state_ = NULL;
   }
 
-  void reset(ScopedMessagePipeHandle message_pipe) {
+  void reset(ScopedMessagePipeHandle message_pipe,
+             typename S::_Peer* peer = NULL) {
     delete state_;
-    state_ = new State(message_pipe.Pass());
+    state_ = new State(message_pipe.Pass(), peer);
   }
 
   bool encountered_error() const {
@@ -97,19 +97,18 @@ class RemotePtr {
     return state_->connector.encountered_error();
   }
 
-  void SetPeer(typename S::_Peer::_Stub* peer) {
-    assert(state_);
-    state_->connector.SetIncomingReceiver(peer);
-  }
-
  private:
   struct State {
-    State(ScopedMessagePipeHandle message_pipe)
+    State(ScopedMessagePipeHandle message_pipe, typename S::_Peer* peer)
         : connector(message_pipe.Pass()),
-          proxy(&connector) {
+          proxy(&connector),
+          stub(peer) {
+      if (peer)
+        connector.SetIncomingReceiver(&stub);
     }
     internal::Connector connector;
     typename S::_Proxy proxy;
+    typename S::_Peer::_Stub stub;
   };
 
   State* release() {

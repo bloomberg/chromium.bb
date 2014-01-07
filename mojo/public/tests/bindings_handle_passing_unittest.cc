@@ -15,11 +15,10 @@ namespace {
 const char kText1[] = "hello";
 const char kText2[] = "world";
 
-class SampleFactoryImpl : public sample::FactoryStub {
+class SampleFactoryImpl : public sample::Factory {
  public:
   explicit SampleFactoryImpl(ScopedMessagePipeHandle pipe)
-      : client_(pipe.Pass()) {
-    client_.SetPeer(this);
+      : client_(pipe.Pass(), this) {
   }
 
   virtual void DoStuff(const sample::Request& request,
@@ -54,12 +53,11 @@ class SampleFactoryImpl : public sample::FactoryStub {
   ScopedMessagePipeHandle pipe1_;
 };
 
-class SampleFactoryClientImpl : public sample::FactoryClientStub {
+class SampleFactoryClientImpl : public sample::FactoryClient {
  public:
   explicit SampleFactoryClientImpl(ScopedMessagePipeHandle pipe)
-      : factory_(pipe.Pass()),
+      : factory_(pipe.Pass(), this),
         got_response_(false) {
-    factory_.SetPeer(this);
   }
 
   void Start() {

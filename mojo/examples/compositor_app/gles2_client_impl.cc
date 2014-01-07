@@ -16,8 +16,7 @@ GLES2ClientImpl::GLES2ClientImpl(
     const base::Callback<void(gfx::Size)>& context_created_callback)
     : context_created_callback_(context_created_callback),
       impl_(NULL),
-      service_(pipe.Pass()) {
-  service_.SetPeer(this);
+      service_(pipe.Pass(), this) {
 }
 
 GLES2ClientImpl::~GLES2ClientImpl() { service_->Destroy(); }

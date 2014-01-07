@@ -16,7 +16,7 @@
 namespace mojo {
 namespace examples {
 
-class GLES2ClientImpl : public GLES2ClientStub {
+class GLES2ClientImpl : public GLES2Client {
  public:
   explicit GLES2ClientImpl(ScopedMessagePipeHandle pipe);
   virtual ~GLES2ClientImpl();

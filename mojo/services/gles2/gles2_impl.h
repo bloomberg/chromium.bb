@@ -19,7 +19,7 @@ class GLInProcessContext;
 namespace mojo {
 namespace services {
 
-class GLES2Impl : public GLES2Stub {
+class GLES2Impl : public GLES2 {
  public:
   explicit GLES2Impl(ScopedMessagePipeHandle client);
   virtual ~GLES2Impl();

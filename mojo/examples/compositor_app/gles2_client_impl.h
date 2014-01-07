@@ -23,7 +23,7 @@ class GLES2Implementation;
 namespace mojo {
 namespace examples {
 
-class GLES2ClientImpl : public GLES2ClientStub {
+class GLES2ClientImpl : public GLES2Client {
  public:
   GLES2ClientImpl(
       ScopedMessagePipeHandle pipe,

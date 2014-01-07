@@ -238,7 +238,7 @@ static void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
   }
 }
 
-class ServiceImpl : public ServiceStub {
+class ServiceImpl : public Service {
  public:
   virtual void Frobinate(const Foo& foo, int32_t baz,
                          mojo::ScopedMessagePipeHandle port)
@@ -273,8 +273,8 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
     // the system. It receives the incoming message.
     ServiceImpl impl;
 
-    ServiceStub* stub = &impl;
-    return stub->Accept(message);
+    ServiceStub stub(&impl);
+    return stub.Accept(message);
   }
 };
 

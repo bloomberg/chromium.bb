@@ -20,7 +20,7 @@ namespace examples {
 class GLES2ClientImpl;
 
 class RootWindowHostMojo : public aura::RootWindowHost,
-                           public NativeViewportClientStub {
+                           public NativeViewportClient {
  public:
   RootWindowHostMojo(ScopedMessagePipeHandle viewport_handle,
                      const base::Callback<void()>& compositor_created_callback);
@@ -52,7 +52,7 @@ class RootWindowHostMojo : public aura::RootWindowHost,
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual void PrepareForShutdown() OVERRIDE;
 
-  // Overridden from NativeViewportClientStub:
+  // Overridden from NativeViewportClient:
   virtual void OnCreated() OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
   virtual void OnEvent(const Event& event) OVERRIDE;

@@ -116,12 +116,10 @@ class DemoWindowTreeClient : public aura::client::WindowTreeClient {
   DISALLOW_COPY_AND_ASSIGN(DemoWindowTreeClient);
 };
 
-class AuraDemo : public ShellClientStub {
+class AuraDemo : public ShellClient {
  public:
   explicit AuraDemo(ScopedMessagePipeHandle shell_handle)
-      : shell_(shell_handle.Pass()) {
-    shell_.SetPeer(this);
-
+      : shell_(shell_handle.Pass(), this) {
     screen_.reset(DemoScreen::Create());
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
 

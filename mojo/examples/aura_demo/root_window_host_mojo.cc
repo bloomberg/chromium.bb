@@ -26,9 +26,8 @@ ui::ContextFactory* RootWindowHostMojo::context_factory_ = NULL;
 RootWindowHostMojo::RootWindowHostMojo(
     ScopedMessagePipeHandle viewport_handle,
     const base::Callback<void()>& compositor_created_callback)
-    : native_viewport_(viewport_handle.Pass()),
+    : native_viewport_(viewport_handle.Pass(), this),
       compositor_created_callback_(compositor_created_callback) {
-  native_viewport_.SetPeer(this);
   native_viewport_->Open();
 
   ScopedMessagePipeHandle gles2_handle;
@@ -147,7 +146,7 @@ void RootWindowHostMojo::PrepareForShutdown() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RootWindowHostMojo, NativeViewportClientStub implementation:
+// RootWindowHostMojo, NativeViewportClient implementation:
 
 void RootWindowHostMojo::OnCreated() {
 }

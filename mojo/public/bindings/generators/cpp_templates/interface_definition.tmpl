@@ -55,6 +55,10 @@ void {{proxy_name}}::{{method.name}}({{params_list(method)}}) {
 }
 {%- endfor %}
 
+{{class_name}}Stub::{{class_name}}Stub({{class_name}}* sink)
+    : sink_(sink) {
+}
+
 {#--- Stub definition #}
 {%- macro params(method) %}
 {%-   for param in method.parameters %}
@@ -79,7 +83,7 @@ bool {{class_name}}Stub::Accept(mojo::Message* message) {
 
       if (!mojo::internal::DecodePointersAndHandles(params, message))
         return false;
-      {{method.name}}({{params(method)}});
+      sink_->{{method.name}}({{params(method)}});
       mojo::internal::CloseHandles(params);
       break;
     }

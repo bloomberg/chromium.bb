@@ -14,11 +14,10 @@ namespace mojo {
 namespace shell {
 namespace {
 
-class TestApp : public ShellClientStub {
+class TestApp : public ShellClient {
  public:
   TestApp(ScopedMessagePipeHandle shell_handle)
-      : shell_(shell_handle.Pass()) {
-    shell_.SetPeer(this);
+      : shell_(shell_handle.Pass(), this) {
   }
   virtual ~TestApp() {
   }
@@ -31,12 +30,11 @@ class TestApp : public ShellClientStub {
   }
 
  private:
-  class TestServiceImpl : public TestServiceStub {
+  class TestServiceImpl : public TestService {
    public:
     TestServiceImpl(TestApp* service, ScopedMessagePipeHandle client_handle)
         : service_(service),
-          client_(client_handle.Pass()) {
-      client_.SetPeer(this);
+          client_(client_handle.Pass(), this) {
     }
     virtual ~TestServiceImpl() {
     }
@@ -52,12 +50,11 @@ class TestApp : public ShellClientStub {
   scoped_ptr<TestServiceImpl> service_;
 };
 
-class TestClientImpl : public TestClientStub {
+class TestClientImpl : public TestClient {
  public:
   explicit TestClientImpl(ScopedMessagePipeHandle service_handle)
-      : service_(service_handle.Pass()),
+      : service_(service_handle.Pass(), this),
         quit_after_ack_(false) {
-    service_.SetPeer(this);
   }
   virtual ~TestClientImpl() {
   }

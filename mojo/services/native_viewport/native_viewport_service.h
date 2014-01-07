@@ -18,7 +18,7 @@ class Context;
 
 namespace services {
 
-class NativeViewportService : public ShellClientStub {
+class NativeViewportService : public ShellClient {
   public:
    NativeViewportService(ScopedMessagePipeHandle shell_handle);
    virtual ~NativeViewportService();

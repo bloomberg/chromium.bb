@@ -11,14 +11,13 @@
 namespace mojo {
 namespace shell {
 
-class ServiceManager::Service : public ShellStub {
+class ServiceManager::Service : public Shell {
  public:
   Service(ServiceManager* manager, const GURL& url)
       : manager_(manager),
         url_(url) {
     MessagePipe pipe;
-    shell_client_.reset(pipe.handle0.Pass());
-    shell_client_.SetPeer(this);
+    shell_client_.reset(pipe.handle0.Pass(), this);
     manager_->GetLoaderForURL(url)->Load(url, pipe.handle1.Pass());
   }
   virtual ~Service() {}

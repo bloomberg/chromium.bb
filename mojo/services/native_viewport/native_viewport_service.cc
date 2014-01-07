@@ -25,7 +25,7 @@ bool IsRateLimitedEventType(ui::Event* event) {
 }
 
 class NativeViewportService::NativeViewportImpl
-    : public NativeViewportStub,
+    : public mojo::NativeViewport,
       public NativeViewportDelegate {
  public:
   NativeViewportImpl(NativeViewportService* service,
@@ -34,8 +34,7 @@ class NativeViewportService::NativeViewportImpl
         widget_(gfx::kNullAcceleratedWidget),
         waiting_for_event_ack_(false),
         pending_event_timestamp_(0),
-        client_(client_handle.Pass()) {
-    client_.SetPeer(this);
+        client_(client_handle.Pass(), this) {
   }
   virtual ~NativeViewportImpl() {}
 
@@ -155,9 +154,8 @@ class NativeViewportService::NativeViewportImpl
 
 NativeViewportService::NativeViewportService(
     ScopedMessagePipeHandle shell_handle)
-    : shell_(shell_handle.Pass()),
+    : shell_(shell_handle.Pass(), this),
       context_(NULL) {
-  shell_.SetPeer(this);
 }
 
 NativeViewportService::~NativeViewportService() {}

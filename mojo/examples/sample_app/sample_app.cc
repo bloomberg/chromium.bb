@@ -29,11 +29,10 @@
 namespace mojo {
 namespace examples {
 
-class SampleApp : public ShellClientStub {
+class SampleApp : public ShellClient {
  public:
   explicit SampleApp(ScopedMessagePipeHandle shell_handle)
-      : shell_(shell_handle.Pass()) {
-    shell_.SetPeer(this);
+      : shell_(shell_handle.Pass(), this) {
 
     MessagePipe pipe;
     native_viewport_client_.reset(
@@ -47,11 +46,10 @@ class SampleApp : public ShellClientStub {
   }
 
  private:
-  class NativeViewportClientImpl : public mojo::NativeViewportClientStub {
+  class NativeViewportClientImpl : public mojo::NativeViewportClient {
    public:
     explicit NativeViewportClientImpl(ScopedMessagePipeHandle viewport_handle)
-        : viewport_(viewport_handle.Pass()) {
-      viewport_.SetPeer(this);
+        : viewport_(viewport_handle.Pass(), this) {
       viewport_->Open();
 
       MessagePipe pipe;

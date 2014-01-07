@@ -13,8 +13,7 @@ namespace mojo {
 namespace services {
 
 GLES2Impl::GLES2Impl(ScopedMessagePipeHandle client)
-    : client_(client.Pass()) {
-  client_.SetPeer(this);
+    : client_(client.Pass(), this) {
 }
 
 GLES2Impl::~GLES2Impl() {

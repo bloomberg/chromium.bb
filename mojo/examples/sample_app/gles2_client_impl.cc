@@ -22,8 +22,7 @@ float CalculateDragDistance(const gfx::PointF& start, const Point& end) {
 }
 
 GLES2ClientImpl::GLES2ClientImpl(ScopedMessagePipeHandle pipe)
-    : service_(pipe.Pass()) {
-  service_.SetPeer(this);
+    : service_(pipe.Pass(), this) {
 }
 
 GLES2ClientImpl::~GLES2ClientImpl() {

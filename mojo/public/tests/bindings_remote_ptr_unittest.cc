@@ -10,14 +10,13 @@
 namespace mojo {
 namespace test {
 
-class MathCalculatorImpl : public math::CalculatorStub {
+class MathCalculatorImpl : public math::Calculator {
  public:
   virtual ~MathCalculatorImpl() {}
 
   explicit MathCalculatorImpl(ScopedMessagePipeHandle pipe)
-      : ui_(pipe.Pass()),
+      : ui_(pipe.Pass(), this),
         total_(0.0) {
-    ui_.SetPeer(this);
   }
 
   virtual void Clear() MOJO_OVERRIDE {
@@ -39,12 +38,11 @@ class MathCalculatorImpl : public math::CalculatorStub {
   double total_;
 };
 
-class MathCalculatorUIImpl : public math::CalculatorUIStub {
+class MathCalculatorUIImpl : public math::CalculatorUI {
  public:
   explicit MathCalculatorUIImpl(ScopedMessagePipeHandle pipe)
-      : calculator_(pipe.Pass()),
+      : calculator_(pipe.Pass(), this),
         output_(0.0) {
-    calculator_.SetPeer(this);
   }
 
   bool encountered_error() const {
@@ -119,7 +117,7 @@ TEST_F(BindingsRemotePtrTest, EndToEnd) {
 
 TEST_F(BindingsRemotePtrTest, Movable) {
   RemotePtr<math::Calculator> a;
-  RemotePtr<math::Calculator> b(pipe0_.Pass());
+  RemotePtr<math::Calculator> b(pipe0_.Pass(), NULL);
 
   EXPECT_TRUE(a.is_null());
   EXPECT_FALSE(b.is_null());
@@ -137,7 +135,7 @@ TEST_F(BindingsRemotePtrTest, Resettable) {
 
   MessagePipeHandle handle = pipe0_.get();
 
-  a.reset(pipe0_.Pass());
+  a.reset(pipe0_.Pass(), NULL);
 
   EXPECT_FALSE(a.is_null());
 
