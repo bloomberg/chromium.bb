@@ -330,6 +330,9 @@
     'ipc': {
       'filepath': 'ipc/ipc',
     },
+    'libwebp': {
+      'filepath': 'third_party/libwebp'
+    },
     'layout_tests': {
       'filepath': 'webkit/(tools|data)/(layout_tests|test_shell)/',
     },
@@ -753,6 +756,8 @@
                 'jfweitz+watch@chromium.org', 'skanuj+watch@chromium.org',
                 'donnd+watch@chromium.org'],
     'ipc': ['jam@chromium.org', 'darin-cc@chromium.org'],
+    'libwebp': ['urvang@google.com', 'jzern@chromium.org',
+                'skal@google.com', 'vikasa@google.com'],
     'linux_fonts': ['derat+watch@chromium.org'],
     'linux_sandboxing': ['agl@chromium.org', 'jln+watch@chromium.org'],
     'linux_seccomp_bpf': ['jln+watch@chromium.org'],
