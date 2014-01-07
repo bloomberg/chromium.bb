@@ -45,6 +45,13 @@
 #include "platform/text/DecodeEscapeSequences.h"
 #include "wtf/MainThread.h"
 
+namespace {
+
+// SecurityOrigin::urlWithUniqueSecurityOrigin() can't be used cross-thread, or we'd use it instead.
+const char kURLWithUniqueOrigin[] = "data:,";
+
+} // namespace
+
 namespace WebCore {
 
 using namespace HTMLNames;
@@ -500,7 +507,7 @@ bool XSSAuditor::filterFormToken(const FilterTokenRequest& request)
     ASSERT(request.token.type() == HTMLToken::StartTag);
     ASSERT(hasName(request.token, formTag));
 
-    return eraseAttributeIfInjected(request, actionAttr, blankURL().string());
+    return eraseAttributeIfInjected(request, actionAttr, kURLWithUniqueOrigin);
 }
 
 bool XSSAuditor::filterInputToken(const FilterTokenRequest& request)
@@ -508,7 +515,7 @@ bool XSSAuditor::filterInputToken(const FilterTokenRequest& request)
     ASSERT(request.token.type() == HTMLToken::StartTag);
     ASSERT(hasName(request.token, inputTag));
 
-    return eraseAttributeIfInjected(request, formactionAttr, blankURL().string(), SrcLikeAttribute);
+    return eraseAttributeIfInjected(request, formactionAttr, kURLWithUniqueOrigin, SrcLikeAttribute);
 }
 
 bool XSSAuditor::filterButtonToken(const FilterTokenRequest& request)
@@ -516,7 +523,7 @@ bool XSSAuditor::filterButtonToken(const FilterTokenRequest& request)
     ASSERT(request.token.type() == HTMLToken::StartTag);
     ASSERT(hasName(request.token, buttonTag));
 
-    return eraseAttributeIfInjected(request, formactionAttr, blankURL().string(), SrcLikeAttribute);
+    return eraseAttributeIfInjected(request, formactionAttr, kURLWithUniqueOrigin, SrcLikeAttribute);
 }
 
 bool XSSAuditor::eraseDangerousAttributesIfInjected(const FilterTokenRequest& request)
