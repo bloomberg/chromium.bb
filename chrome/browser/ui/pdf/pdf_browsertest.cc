@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/file_util.h"
+#include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/hash.h"
 #include "base/path_service.h"
@@ -129,7 +130,7 @@ class PDFBrowserTest : public InProcessBrowserTest,
     base::FilePath reference = ui_test_utils::GetTestFilePath(
         GetPDFTestDir(),
         base::FilePath().AppendASCII(expected_filename_));
-    base::PlatformFileInfo info;
+    base::File::Info info;
     ASSERT_TRUE(base::GetFileInfo(reference, &info));
     int size = static_cast<size_t>(info.size);
     scoped_ptr<char[]> data(new char[size]);
