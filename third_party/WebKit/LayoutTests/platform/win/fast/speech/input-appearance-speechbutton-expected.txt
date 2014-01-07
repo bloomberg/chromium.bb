@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         RenderText {#text} at (0,0) size 251x19
           text run at (0,0) width 251: "Test appearances of input-speech-button."
       RenderBlock {DIV} at (0,36) size 784x0
-      RenderBlock {DIV} at (0,36) size 784x314
+      RenderBlock {DIV} at (0,36) size 784x340
         RenderTable {TABLE} at (0,0) size 643x314
           RenderTableSection {TBODY} at (0,0) size 643x314
             RenderTableRow {TR} at (0,2) size 643x310
@@ -129,7 +129,16 @@ layer at (0,0) size 800x600
                       RenderBlock {DIV} at (0,0) size 223x27
                       RenderBlock {DIV} at (223,0) size 28x28
                   RenderBR {BR} at (259,273) size 0x0
-      RenderBlock (anonymous) at (0,350) size 784x26
+        RenderBlock (anonymous) at (0,314) size 784x26
+          RenderTextControl {INPUT} at (2,2) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+            RenderFlexibleBox {DIV} at (2,3) size 149x16
+              RenderBlock {DIV} at (0,0) size 133x16
+              RenderBlock {DIV} at (133,0) size 16x16
+          RenderTextControl {INPUT} at (159,2) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+            RenderFlexibleBox {DIV} at (2,3) size 149x16
+              RenderBlock {DIV} at (0,0) size 133x16
+              RenderBlock {DIV} at (133,0) size 16x16
+      RenderBlock (anonymous) at (0,376) size 784x26
         RenderTextControl {INPUT} at (2,2) size 153x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           RenderFlexibleBox {DIV} at (2,3) size 149x16
             RenderBlock {DIV} at (0,0) size 133x16
@@ -266,5 +275,10 @@ layer at (393,311) size 223x27 scrollWidth 417
       text run at (0,0) width 416: "A quick brown fox jumps over the lazy dog"
 layer at (12,363) size 133x16
   RenderBlock {DIV} at (0,0) size 133x16
-layer at (169,363) size 149x16
+layer at (169,363) size 133x16
+  RenderBlock {DIV} at (0,0) size 133x16
+layer at (12,389) size 133x16
+  RenderBlock {DIV} at (0,0) size 133x16
+layer at (169,389) size 149x16
   RenderBlock {DIV} at (2,3) size 149x16
+caret: position 0 of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 1 {INPUT} of child 6 {DIV} of body
