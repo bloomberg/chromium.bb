@@ -302,9 +302,11 @@ def main():
     # Only restart usb if devices are missing
     if set(expected_devices) != set(devices):
       KillAllAdb()
-      if RestartUsb():
-        return 1
       retries = 5
+      if RestartUsb():
+        bb_annotations.PrintWarning()
+        print "USB reset stage failed, continuing anyway."
+        retries = 0
       while retries:
         time.sleep(1)
         devices = android_commands.GetAttachedDevices()
