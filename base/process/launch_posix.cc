@@ -207,7 +207,7 @@ static const char kFDDir[] = "/proc/self/fd";
 #endif
 
 void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
-  // DANGER: no calls to malloc are allowed from now on:
+  // DANGER: no calls to malloc or locks are allowed from now on:
   // http://crbug.com/36678
 
   // Get the maximum number of FDs possible.
@@ -220,12 +220,13 @@ void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
       const int fd = static_cast<int>(i);
       if (fd == STDIN_FILENO || fd == STDOUT_FILENO || fd == STDERR_FILENO)
         continue;
-      InjectiveMultimap::const_iterator j;
-      for (j = saved_mapping.begin(); j != saved_mapping.end(); j++) {
-        if (fd == j->dest)
+      // Cannot use STL iterators here, since debug iterators use locks.
+      size_t j;
+      for (j = 0; j < saved_mapping.size(); j++) {
+        if (fd == saved_mapping[j].dest)
           break;
       }
-      if (j != saved_mapping.end())
+      if (j < saved_mapping.size())
         continue;
 
       // Since we're just trying to close anything we can find,
@@ -249,12 +250,13 @@ void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
       continue;
     if (fd == STDIN_FILENO || fd == STDOUT_FILENO || fd == STDERR_FILENO)
       continue;
-    InjectiveMultimap::const_iterator i;
-    for (i = saved_mapping.begin(); i != saved_mapping.end(); i++) {
-      if (fd == i->dest)
+    // Cannot use STL iterators here, since debug iterators use locks.
+    size_t i;
+    for (i = 0; i < saved_mapping.size(); i++) {
+      if (fd == saved_mapping[i].dest)
         break;
     }
-    if (i != saved_mapping.end())
+    if (i < saved_mapping.size())
       continue;
     if (fd == dir_fd)
       continue;
@@ -388,7 +390,7 @@ bool LaunchProcess(const std::vector<std::string>& argv,
     memset(reinterpret_cast<void*>(malloc), 0xff, 8);
 #endif  // 0
 
-    // DANGER: no calls to malloc are allowed from now on:
+    // DANGER: no calls to malloc or locks are allowed from now on:
     // http://crbug.com/36678
 
 #if defined(OS_CHROMEOS)
@@ -406,11 +408,12 @@ bool LaunchProcess(const std::vector<std::string>& argv,
 #endif  // defined(OS_CHROMEOS)
 
     if (options.fds_to_remap) {
-      for (FileHandleMappingVector::const_iterator
-               it = options.fds_to_remap->begin();
-           it != options.fds_to_remap->end(); ++it) {
-        fd_shuffle1.push_back(InjectionArc(it->first, it->second, false));
-        fd_shuffle2.push_back(InjectionArc(it->first, it->second, false));
+      // Cannot use STL iterators here, since debug iterators use locks.
+      for (size_t i = 0; i < options.fds_to_remap->size(); ++i) {
+        const FileHandleMappingVector::value_type& value =
+            (*options.fds_to_remap)[i];
+        fd_shuffle1.push_back(InjectionArc(value.first, value.second, false));
+        fd_shuffle2.push_back(InjectionArc(value.first, value.second, false));
       }
     }
 
@@ -521,7 +524,7 @@ static GetAppOutputInternalResult GetAppOutputInternal(
 #if defined(OS_MACOSX)
         RestoreDefaultExceptionHandler();
 #endif
-        // DANGER: no calls to malloc are allowed from now on:
+        // DANGER: no calls to malloc or locks are allowed from now on:
         // http://crbug.com/36678
 
         // Obscure fork() rule: in the child, if you don't end up doing exec*(),

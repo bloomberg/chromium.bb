@@ -19,20 +19,24 @@ bool PerformInjectiveMultimapDestructive(
   int extra_fds[kMaxExtraFDs];
   unsigned next_extra_fd = 0;
 
-  // DANGER: this function may not allocate.
+  // DANGER: this function must not allocate or lock.
+  // Cannot use STL iterators here, since debug iterators use locks.
 
-  for (InjectiveMultimap::iterator i = m->begin(); i != m->end(); ++i) {
+  for (size_t i_index = 0; i_index < m->size(); ++i_index) {
+    InjectiveMultimap::value_type* i = &(*m)[i_index];
     int temp_fd = -1;
 
     // We DCHECK the injectiveness of the mapping.
-    for (InjectiveMultimap::iterator j = i + 1; j != m->end(); ++j) {
+    for (size_t j_index = i_index + 1; j_index < m->size(); ++j_index) {
+      InjectiveMultimap::value_type* j = &(*m)[j_index];
       DCHECK(i->dest != j->dest) << "Both fd " << i->source
           << " and " << j->source << " map to " << i->dest;
     }
 
     const bool is_identity = i->source == i->dest;
 
-    for (InjectiveMultimap::iterator j = i + 1; j != m->end(); ++j) {
+    for (size_t j_index = i_index + 1; j_index < m->size(); ++j_index) {
+      InjectiveMultimap::value_type* j = &(*m)[j_index];
       if (!is_identity && i->dest == j->source) {
         if (temp_fd == -1) {
           if (!delegate->Duplicate(&temp_fd, i->dest))
