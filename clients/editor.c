@@ -115,6 +115,9 @@ static void text_entry_button_handler(struct widget *widget,
 				      struct input *input, uint32_t time,
 				      uint32_t button,
 				      enum wl_pointer_button_state state, void *data);
+static void text_entry_touch_handler(struct widget *widget, struct input *input,
+				     uint32_t serial, uint32_t time, int32_t id,
+				     float tx, float ty, void *data);
 static int text_entry_motion_handler(struct widget *widget,
 				     struct input *input, uint32_t time,
 				     float x, float y, void *data);
@@ -516,6 +519,7 @@ text_entry_create(struct editor *editor, const char *text)
 	widget_set_redraw_handler(entry->widget, text_entry_redraw_handler);
 	widget_set_button_handler(entry->widget, text_entry_button_handler);
 	widget_set_motion_handler(entry->widget, text_entry_motion_handler);
+	widget_set_touch_down_handler(entry->widget, text_entry_touch_handler);
 
 	return entry;
 }
@@ -1078,6 +1082,29 @@ text_entry_button_handler(struct widget *widget,
 }
 
 static void
+text_entry_touch_handler(struct widget *widget, struct input *input,
+			 uint32_t serial, uint32_t time, int32_t id,
+			 float tx, float ty, void *data)
+{
+	struct text_entry *entry = data;
+	struct wl_seat *seat = input_get_seat(input);
+	struct rectangle allocation;
+	struct editor *editor;
+	int32_t x, y;
+
+	widget_get_allocation(entry->widget, &allocation);
+
+	x = tx - (allocation.x + text_offset_left);
+	y = ty - (allocation.y + text_offset_left);
+
+	editor = window_get_user_data(entry->window);
+	text_entry_activate(entry, seat);
+	editor->active_entry = entry;
+
+	text_entry_set_cursor_position(entry, x, y, true);
+}
+
+static void
 editor_button_handler(struct widget *widget,
 		      struct input *input, uint32_t time,
 		      uint32_t button,
@@ -1098,6 +1125,19 @@ editor_button_handler(struct widget *widget,
 	}
 }
 
+static void
+editor_touch_handler(struct widget *widget, struct input *input,
+		     uint32_t serial, uint32_t time, int32_t id,
+		     float tx, float ty, void *data)
+{
+	struct editor *editor = data;
+
+	struct wl_seat *seat = input_get_seat(input);
+
+	text_entry_deactivate(editor->entry, seat);
+	text_entry_deactivate(editor->editor, seat);
+	editor->active_entry = NULL;
+}
 
 static void
 keyboard_focus_handler(struct window *window,
@@ -1250,6 +1290,7 @@ main(int argc, char *argv[])
 	widget_set_redraw_handler(editor.widget, redraw_handler);
 	widget_set_resize_handler(editor.widget, resize_handler);
 	widget_set_button_handler(editor.widget, editor_button_handler);
+	widget_set_touch_down_handler(editor.widget, editor_touch_handler);
 
 	window_schedule_resize(editor.window, 500, 400);
 
