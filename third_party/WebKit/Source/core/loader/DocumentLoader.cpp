@@ -286,9 +286,7 @@ void DocumentLoader::finishedLoading(double finishTime)
     if (!frameLoader())
         return;
 
-    if (isArchiveMIMEType(m_response.mimeType())) {
-        createArchive();
-    } else {
+    if (!maybeCreateArchive()) {
         // If this is an empty document, it will not have actually been created yet. Commit dummy data so that
         // DocumentWriter::begin() gets called and creates the Document.
         if (!m_writer)
@@ -645,11 +643,19 @@ bool DocumentLoader::isLoadingInAPISense() const
     return frameLoader()->subframeIsLoading();
 }
 
-void DocumentLoader::createArchive()
+bool DocumentLoader::maybeCreateArchive()
 {
+    // Give the archive machinery a crack at this document. If the MIME type is not an archive type, it will return 0.
+    if (!isArchiveMIMEType(m_response.mimeType()))
+        return false;
+
     ASSERT(m_mainResource);
     m_archive = MHTMLArchive::create(m_response.url(), m_mainResource->resourceBuffer());
-    RELEASE_ASSERT(m_archive);
+    // Invalid MHTML.
+    if (!m_archive || !m_archive->mainResource()) {
+        m_archive.clear();
+        return false;
+    }
 
     addAllArchiveResources(m_archive.get());
     ArchiveResource* mainResource = m_archive->mainResource();
@@ -659,6 +665,7 @@ void DocumentLoader::createArchive()
     ensureWriter(mainResource->mimeType(), m_archive->mainResource()->url());
 
     commitData(mainResource->data()->data(), mainResource->data()->size());
+    return true;
 }
 
 void DocumentLoader::addAllArchiveResources(MHTMLArchive* archive)

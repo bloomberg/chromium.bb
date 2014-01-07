@@ -176,7 +176,7 @@ namespace WebCore {
         ResourceLoader* mainResourceLoader() const;
         void clearMainResourceHandle();
 
-        void createArchive();
+        bool maybeCreateArchive();
         void clearArchiveResources();
 
         void prepareSubframeArchiveLoadIfNeeded();
