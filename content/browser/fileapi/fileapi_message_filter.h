@@ -137,7 +137,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                                   size_t buffer_size);
   void OnFinishBuildingBlob(const std::string& uuid,
                              const std::string& content_type);
-  void OnCancelBuildingBlob(const std::string& uuid);
   void OnIncrementBlobRefCount(const std::string& uuid);
   void OnDecrementBlobRefCount(const std::string& uuid);
   void OnRegisterPublicBlobURL(const GURL& public_url, const std::string& uuid);
@@ -163,7 +162,6 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
 
   // Callback functions to be used when each file operation is finished.
   void DidFinish(int request_id, base::PlatformFileError result);
-  void DidCancel(int request_id, base::PlatformFileError result);
   void DidGetMetadata(int request_id,
                       base::PlatformFileError result,
                       const base::PlatformFileInfo& info);
