@@ -162,9 +162,10 @@ class V8ObjectStatsMetric(Metric):
   these statistics from the StatsTableMetric.
   """
 
-  def __init__(self):
+  def __init__(self, counters=None):
     super(V8ObjectStatsMetric, self).__init__()
     self._results = None
+    self._counters = counters or _COUNTER_NAMES
 
   @classmethod
   def CustomizeBrowserOptions(cls, options):
@@ -178,8 +179,7 @@ class V8ObjectStatsMetric(Metric):
     ])
 
   @staticmethod
-  def GetV8StatsTable(tab, counters=None):
-    counters = counters or _COUNTER_NAMES
+  def GetV8StatsTable(tab, counters):
 
     return tab.EvaluateJavaScript("""
      (function(counters) {
@@ -204,7 +204,7 @@ class V8ObjectStatsMetric(Metric):
 
   def Stop(self, page, tab):
     """Get the values in the stats table after the page is loaded."""
-    self._results = V8ObjectStatsMetric.GetV8StatsTable(tab)
+    self._results = V8ObjectStatsMetric.GetV8StatsTable(tab, self._counters)
     if not self._results:
       logging.warning('No V8 object stats from website: ' + page.display_name)
 
