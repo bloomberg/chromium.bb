@@ -108,6 +108,7 @@ class CollectedCookiesViews : public views::DialogDelegateView,
   views::TreeView* blocked_cookies_tree_;
 
   views::LabelButton* block_allowed_button_;
+  views::LabelButton* delete_allowed_button_;
   views::LabelButton* allow_blocked_button_;
   views::LabelButton* for_session_blocked_button_;
 

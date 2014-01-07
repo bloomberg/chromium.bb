@@ -199,6 +199,7 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
       allowed_cookies_tree_(NULL),
       blocked_cookies_tree_(NULL),
       block_allowed_button_(NULL),
+      delete_allowed_button_(NULL),
       allow_blocked_button_(NULL),
       for_session_blocked_button_(NULL),
       cookie_info_view_(NULL),
@@ -269,12 +270,16 @@ ui::ModalType CollectedCookiesViews::GetModalType() const {
 
 void CollectedCookiesViews::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
-  if (sender == block_allowed_button_)
+  if (sender == block_allowed_button_) {
     AddContentException(allowed_cookies_tree_, CONTENT_SETTING_BLOCK);
-  else if (sender == allow_blocked_button_)
+  } else if (sender == delete_allowed_button_) {
+    allowed_cookies_tree_model_->DeleteCookieNode(
+        static_cast<CookieTreeNode*>(allowed_cookies_tree_->GetSelectedNode()));
+  } else if (sender == allow_blocked_button_) {
     AddContentException(blocked_cookies_tree_, CONTENT_SETTING_ALLOW);
-  else if (sender == for_session_blocked_button_)
+  } else if (sender == for_session_blocked_button_) {
     AddContentException(blocked_cookies_tree_, CONTENT_SETTING_SESSION_ONLY);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -378,6 +383,10 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
       l10n_util::GetStringUTF16(IDS_COLLECTED_COOKIES_BLOCK_BUTTON));
   block_allowed_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
 
+  delete_allowed_button_ = new views::LabelButton(this,
+      l10n_util::GetStringUTF16(IDS_COOKIES_REMOVE_LABEL));
+  delete_allowed_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.
   using views::GridLayout;
@@ -393,6 +402,14 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
+  const int three_columns_layout_id = 1;
+  column_set = layout->AddColumnSet(three_columns_layout_id);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(allowed_label_);
   layout->AddPaddingRow(0, kLabelBottomPadding);
@@ -403,9 +420,9 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
                   kTreeViewHeight);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  layout->StartRow(0, single_column_layout_id);
-  layout->AddView(block_allowed_button_, 1, 1, GridLayout::LEADING,
-                  GridLayout::CENTER);
+  layout->StartRow(0, three_columns_layout_id);
+  layout->AddView(block_allowed_button_);
+  layout->AddView(delete_allowed_button_);
 
   return pane;
 }
@@ -503,6 +520,7 @@ void CollectedCookiesViews::EnableControls() {
     }
   }
   block_allowed_button_->SetEnabled(enable_allowed_buttons);
+  delete_allowed_button_->SetEnabled(node != NULL);
 
   bool enable_blocked_buttons = false;
   node = blocked_cookies_tree_->GetSelectedNode();
