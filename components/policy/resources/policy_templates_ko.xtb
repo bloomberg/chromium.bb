@@ -307,6 +307,7 @@
           이 정책이 설정되어 있지 않으면 기본 설정된 시간이 적용됩니다.
 
           정책 값은 밀리초 단위로 지정되어야 합니다.</translation>
+<translation id="6598235178374410284">사용자 아바타 이미지</translation>
 <translation id="1675391920437889033">설치할 수 있는 앱/확장 프로그램 유형을 제어합니다.
 
           이 설정을 사용하면 <ph name="PRODUCT_NAME"/>에 설치할 수 있는 확장 프로그램/앱 유형의 허용 목록을 만듭니다. 값은 문자열 목록으로 각 문자열은 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app' 중 한 가지를 사용해야 합니다. 이러한 유형에 대해 더 자세히 알아보려면 Chrome 확장 프로그램 설명서를 참조하세요.
@@ -488,6 +489,11 @@
 <translation id="4894257424747841850">최근 로그인한 기기 사용자 목록을 보고합니다.
 
       이 정책이 설정되지 않았거나 false로 설정된 경우 사용자 목록이 보고되지 않습니다.</translation>
+<translation id="2488010520405124654">오프라인일 때 네트워크 설정 프롬프트를 사용하도록 설정합니다.
+
+       이 정책이 설정되지 않거나 True로 설정되고 기기 로컬 계정이 zero-delay 자동 로그인으로 구성된 경우, 기기가 인터넷에 액세스할 수 없으면 <ph name="PRODUCT_OS_NAME"/>에서 네트워크 설정 프롬프트가 나타납니다.
+
+      이 정책이 False로 설정된 경우 네트워크 설정 프롬프트 대신 오류 메시지가 표시됩니다.</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="4897928009230106190">POST로 추천 검색을 할 때 사용할 매개변수를 지정합니다. 매개변수는 쉼표로 구분된 이름/값 쌍으로 구성되어 있습니다. 값이 위의 예에 있는 {searchTerms}와 같은 템플릿 매개변수인 경우 실제 검색어 데이터로 대체됩니다.
 
@@ -738,6 +744,7 @@
 <translation id="1098794473340446990">기기 활동 시간을 보고합니다.
 
       이 정책을 True로 설정하면 등록된 기기는 사용자가 기기를 사용한 기간을 보고합니다. 설정하지 않거나 False로 설정하면 기기 활동 시간이 기록되거나 보고되지 않습니다.</translation>
+<translation id="1327466551276625742">오프라인일 때 네트워크 설정 프롬프트를 사용하도록 설정</translation>
 <translation id="7937766917976512374">동영상 캡처 허용 또는 거부</translation>
 <translation id="427632463972968153">POST로 이미지 검색을 할 때 사용될 매개변수를 지정합니다. 쉼표로 구분된 이름/값 쌍으로 구성됩니다. 값이 위의 예에 있는 {imageThumbnail}과 같은 템플릿 매개변수인 경우 실제 이미지 미리보기 데이터로 대체됩니다.
 
@@ -959,7 +966,6 @@
 
       이 정책을 true로 설정하거나 구성하지 않으면 <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/>이(가) 사용자 로그인을 차단하지 않을 경우 새 사용자 계정이 생성될 수 있습니다.</translation>
 <translation id="4389091865841123886">TPM 메커니즘으로 원격 인증을 구성합니다.</translation>
-<translation id="3518214502751233558">세션에서 첫 번째 사용자 활동이 있은 후에만 전원 관리 지연 및 세션 길이 제한을 실행할지 여부를 지정합니다.</translation>
 <translation id="8256688113167012935">계정 이름 <ph name="PRODUCT_OS_NAME"/>을(를) 해당 기기 로컬 계정의 로그인 화면에 표시할 것인지 제어합니다.
 
       이 정책을 설정하면 로그인 화면은 해당 기기 로컬 계정에 사진 기반 로그인 선택기의 특정 문자열을 사용합니다.
@@ -1337,6 +1343,32 @@
       DeviceIdleLogoutTimeout을 지정하면 이 정책은 로그아웃이 실행되기 전에 사용자에게 표시되는 카운트다운 타이머가 포함된 경고 메시지 상자가 지속되는 시간을 정의합니다.
 
       이 정책 값은 밀리초 단위로 지정되어야 합니다.</translation>
+<translation id="54795286564479339">사용자 아바타 이미지를 설정하세요.
+
+      이 정책은 사용자가 로그인 화면에서 자신을 표현하는 아바타 이미지를 설정할 수 있도록 해 줍니다. 정책은 <ph name="PRODUCT_OS_NAME"/>에서 아바타 이미지 및 다운로드의 무결성을 확인하는 데 사용되는 암호화 해시를 다운로드할 수 있는 URL을 지정함으로써 설정됩니다. 이미지는 JPEG 형식이어야 하며, 크기는 512KB를 초과하지 않아야 합니다. URL은 인증 없이 액세스할 수 있어야 합니다.
+
+      아바타 이미지는 다운로드 및 저장되며, URL 또는 해시가 변경될 때마다 다시 다운로드됩니다.
+
+      정책은 JSON 형식으로 URL 및 해시를 나타내는 문자열로 지정되어야 하며 다음 스키마를 준수해야 합니다.
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;아바타 이미지를 다운로드할 수 있는 URL&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;아바타 이미지의 SHA-1 해시&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      이 정책이 설정되면 <ph name="PRODUCT_OS_NAME"/>에서 아바타 이미지를 다운로드하여 사용합니다.
+
+      이 정책을 설정하는 경우, 사용자가 이를 변경하거나 재정의할 수 없습니다.
+
+      정책을 설정하지 않는 경우, 사용자가 로그인 화면에서 자신을 표현하는 아바타 이미지를 선택할 수 있습니다.</translation>
 <translation id="237494535617297575">알림 표시가 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'DefaultNotificationsSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -1726,6 +1758,7 @@
       이 정책이 설정되어 있지 않으면 서비스 약관이 표시되지 않습니다.
 
       정책은 <ph name="PRODUCT_OS_NAME"/>에서 서비스 약관을 다운로드할 수 있는 URL로 설정되어야 합니다. 서비스 약관은 일반 텍스트여야 하며 MIME 유형 text/plain으로 제공됩니다. 마크업은 허용되지 않습니다.</translation>
+<translation id="2623014935069176671">첫 번째 사용자 활동 기다리기</translation>
 <translation id="2660846099862559570">프록시 사용하지 않음</translation>
 <translation id="1435659902881071157">기기 수준 네트워크 설정</translation>
 <translation id="2131902621292742709">배터리 전원으로 실행할 때 화면 어둡게 하기 지연</translation>

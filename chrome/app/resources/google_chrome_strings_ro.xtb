@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="3234920859344197194">Acest site utilizează pluginul Chrome Frame, care în curând nu va mai primi actualizări de securitate sau de stabilitate. Dezinstalați-l sau faceți upgrade la un browser modern.</translation>
 <translation id="8914504000324227558">Relansați Chrome</translation>
 <translation id="8000275528373650868">Google Chrome necesită Windows Vista sau Windows XP cu SP2 sau o versiune ulterioară.</translation>
-<translation id="8124352762008487242">Copyright 2013 Google Inc. Toate drepturile rezervate.</translation>
 <translation id="8485767968786176057">În acest caz, adresa afișată în certificat nu se potrivește cu adresa site-ului web pe care a încercat să o acceseze browserul dvs. Un motiv posibil pentru acest fapt este interceptarea comunicațiilor dvs. de către un atacator, care furnizează un certificat pentru un alt site web, ceea ce ar provoca o nepotrivire. Un alt motiv posibil este că serverul este setat să afișeze același certificat pentru mai multe site-uri web, inclusiv cel pe care încercați să-l accesați, chiar dacă acel certificat nu este valabil pentru toate site-urile respective. Google Chrome poate confirma că ați accesat &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, dar nu poate confirma că este același site ca &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pe care ați intenționat să-l accesați. Dacă veți continua, Chrome nu va mai căuta nicio altă nepotrivire de nume.</translation>
 <translation id="5430073640787465221">Fișierul dvs. de preferințe este fie deteriorat, fie nevalid. Google Chrome nu poate recupera setările dvs.</translation>
 <translation id="6676384891291319759">Accesați Internetul</translation>
@@ -24,7 +24,6 @@
 <translation id="4891791193823137474">Permiteți Google Chrome să ruleze în fundal</translation>
 <translation id="2896252579017640304">Lansați aplicații Chrome</translation>
 <translation id="2370289711218562573">Google Chrome importă acum Preferințele/Marcajele.</translation>
-<translation id="8762286861469007470">Detectorul Chrome de portaluri captive</translation>
 <translation id="2721687379934343312">Pe Mac, parolele sunt salvate în aplicația dvs. Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care utilizează același cont de OS X.</translation>
 <translation id="1761870329818521071">Nu se poate instala aceeași versiune Google Chrome Frame care rulează în prezent. Închideți Google Chrome Frame și încercați din nou.</translation>
 <translation id="6014844626092547096">Sunteți conectat(ă) la Chrome! Sincronizarea este dezactivată de administrator.</translation>
@@ -58,10 +57,10 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Detaliile de facturare au fost salvate în Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome utilizează microfonul.</translation>
-<translation id="3590194807845837023">Deblocați profilul și relansați Chrome</translation>
 <translation id="4053720452172726777">Personalizați și controlați Google Chrome</translation>
 <translation id="6423071462708908582">Ați încercat să accesați &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a furnizat un certificat expirat. Nu sunt disponibile informații care să indice dacă certificatul respectiv a fost compromis, din cauza faptului că este expirat. Acest lucru înseamnă că Google Chrome nu vă poate garanta că dvs. comunicați cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; și nu cu un atacator. Ora computerului dvs. este setată la <ph name="CURRENT_TIME"/>. Credeți că această setare este corectă? În caz contrar, trebuie să corectați eroarea și să actualizați această pagină.</translation>
 <translation id="3197823471738295152">Dispozitivul dvs. este actualizat.</translation>
+<translation id="8286862437124483331">Google Chrome încearcă să afișeze parolele. Pentru a permite acest lucru, introduceți parola pentru Windows.</translation>
 <translation id="3889417619312448367">Dezinstalați Google Chrome</translation>
 <translation id="1434626383986940139">Aplicații Chrome Canary</translation>
 <translation id="8551886023433311834">Actualizare aproape efectuată! Reporniți dispozitivul pentru a finaliza actualizarea.</translation>
@@ -85,7 +84,7 @@
 <translation id="473775607612524610">Actualizați</translation>
 <translation id="1195935957447623558">Google Chrome nu s-a închis corect. Pentru a redeschide paginile pe care le-ați avut deschise, faceți clic pe Restabiliți.</translation>
 <translation id="2576431527583832481">Chrome a devenit și mai bun! Este disponibilă o nouă versiune.</translation>
-<translation id="4633000520311261472">Pentru ca browserul Chrome să fie mai sigur, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> și care este posibil să fi fost adăugate fără ca dvs. să știți.</translation>
+<translation id="4633000520311261472">Pentru ca browserul Chrome să fie mai sigur, am dezactivat câteva extensii care nu sunt incluse în <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> și care este posibil să fi fost adăugate fără știrea dvs.</translation>
 <translation id="556024056938947818">Google Chrome încearcă să afișeze parolele.</translation>
 <translation id="2580411288591421699">Nu se poate instala aceeași versiune Google Chrome care se execută în prezent. Închideți Google Chrome și încercați din nou.</translation>
 <translation id="8460191995881063249">Centrul de notificări Chrome</translation>
@@ -155,7 +154,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="2871893339301912279">V-ați conectat la Chrome!</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
 <translation id="4147555960264124640">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont. <ph name="LEARN_MORE"/></translation>
-<translation id="7931439880631187247">Acest site utilizează pluginul Chrome Frame, care nu va mai fi acceptat în curând. Dezinstalați-l și faceți upgrade la un browser modern.</translation>
 <translation id="1348153800635493797">Pentru a utiliza Google Wallet, trebuie să faceți upgrade browserului Chrome [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Accesați
           Applications (Aplicații) &gt; System Preferences (Preferințe de sistem) &gt; Network (Rețea) &gt; Advanced (Avansat) &gt; Proxies (Servere proxy)
@@ -169,7 +167,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="576822117893741893">Afișați meniul Chrome</translation>
 <translation id="3444832043240812445">Această pagină afișează informații cu privire la recentele opriri cu eroare numai dacă <ph name="BEGIN_LINK"/>activați raportarea opririlor cu eroare<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome nu mai răspunde. Îl reporniți acum?</translation>
-<translation id="1175529839152551794">Acum că v-ați conectat, vă puteți accesa filele, marcajele și alte lucruri din Chrome pe laptop, telefon și tabletă. De asemenea, veți primi sugestii mai relevante și funcții în serviciile Google.</translation>
+<translation id="1175529839152551794">Acum că v-ați conectat, vă puteți accesa filele, marcajele și alte lucruri din Chrome pe laptop, telefon și tabletă. În plus, veți primi sugestii mai relevante și funcții în serviciile Google.</translation>
 <translation id="6126631249883707068">Doriți ca Google Chrome să vă salveze parola?</translation>
 <translation id="7773845170078702898">Doriți ca Google Chrome să salveze parola pentru acest site?</translation>
 <translation id="5046764976540625289">Ieșiți din Chrome</translation>
@@ -198,7 +196,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
           Setări LAN
           și debifați caseta de selectare „Utilizați un server proxy pentru LAN”.</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descărcați Google Chrome din nou.</translation>
-<translation id="5553980212343253394">Acest site utilizează pluginul Chrome Frame, care nu va mai fi acceptat în curând. Dezinstalați-l și descărcați un browser compatibil.</translation>
+<translation id="4919523385405675060">Acest site utilizează pluginul Chrome Frame, care în curând nu va mai primi actualizări de securitate sau de stabilitate. Dezinstalați-l și descărcați un browser compatibil.</translation>
 <translation id="1061257178446858647">Acum sunteți conectat(ă) la Chrome! Marcajele, istoricul și alte setări vor fi sincronizate cu Contul dvs. Google.</translation>
 <translation id="3335672657969596251">Google Chrome nu acceptă <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Pentru ca modificarea să fie aplicată, deconectați-vă și conectați-vă din nou.</translation>
@@ -216,6 +214,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="6626317981028933585">Din păcate, setările dvs. Mozilla Firefox nu sunt disponibile în timp ce browser-ul respectiv rulează. Pentru a importa aceste setări în Google Chrome, salvați ceea ce lucrați și închideți toate ferestrele Firefox. Apoi faceți clic pe Continuați.</translation>
 <translation id="7242029209006116544">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME"/>. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu alt cont. Aveți opțiunea de a crea un profil nou, pentru a păstra separat datele Chrome existente. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. Toate drepturile rezervate.</translation>
 <translation id="1698376642261615901">Google Chrome este un browser web care rulează pagini web și aplicații cu o viteză extraordinară. Este rapid, stabil și ușor de utilizat. Navigați pe web beneficiind de mai multă siguranță datorită protecției împotriva programelor malware și a phishingului, care este încorporată în Google Chrome.</translation>
 <translation id="3419750618886995598">Actualizare Google Chrome Frame.</translation>
 <translation id="3336524238463733095">Google Chrome sau Google Chrome Frame nu poate fi actualizat din cauza setărilor inconsecvente ale Politicilor de grup privind Google Update. Utilizați editorul de politici de grup pentru a configura înlocuirea politicii de actualizare pentru Google Chrome Binaries și încercați din nou. Consultați http://goo.gl/uJ9gV pentru detalii.</translation>

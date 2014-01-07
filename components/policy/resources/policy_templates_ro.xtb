@@ -251,6 +251,7 @@
           Dacă politica nu este setată, se utilizează un interval de timp prestabilit.
 
           Valoarea politicii trebuie să fie specificată în milisecunde.</translation>
+<translation id="6598235178374410284">Imagine cu avatarul de utilizator</translation>
 <translation id="1675391920437889033">Controlează tipurile de aplicații/extensii a căror instalare este permisă.
 
           Această setare adaugă pe lista albă tipurile permise de extensii/aplicații care pot fi instalate pe <ph name="PRODUCT_NAME"/>. Valoarea este o listă de șiruri, iar fiecare dintre acestea trebuie să fie unul dintre următoarele: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Pentru informații suplimentare despre aceste tipuri, consultați documentația referitoare la extensiile Chrome.
@@ -405,6 +406,11 @@
 <translation id="4894257424747841850">Raportează lista cu utilizatorii dispozitivului care s-au conectat recent.
 
       Dacă politica nu este setată sau este dezactivată, utilizatorii nu vor fi raportați.</translation>
+<translation id="2488010520405124654">Activați solicitarea privind configurația rețelei, în modul offline.
+
+      Dacă această politică nu este configurată sau este activată și un cont local de pe dispozitiv este configurat pentru conectare automată fără întârziere, iar dispozitivul nu are acces la internet, <ph name="PRODUCT_OS_NAME"/> va afișa o solicitare privind configurația rețelei.
+
+      Dacă această politică este dezactivată, în locul solicitării privind configurația rețelei se va afișa un mesaj de eroare.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="4897928009230106190">Specifică parametrii utilizați la căutarea sugestiilor cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {searchTerms} din exemplul de mai sus, acesta va fi înlocuit cu datele termenilor de căutare reali.
 
@@ -599,6 +605,7 @@
 
           Valoarea acestei politici trebuie indicată în milisecunde. Valorile sunt fixate la un număr mai mic decât sau egal cu intervalul de inactivitate.</translation>
 <translation id="1098794473340446990">Raportează perioadele de activitate ale dispozitivului. Dacă această setare este activată, dispozitivele înscrise vor raporta perioadele de timp când un utilizator este activ pe acest dispozitiv. Dacă setarea nu este configurată sau nu este activată, perioadele de activitate ale dispozitivului nu vor fi înregistrate sau raportate.</translation>
+<translation id="1327466551276625742">Activați solicitarea privind configurația rețelei, în modul offline</translation>
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="427632463972968153">Specifică parametrii utilizați la căutarea de imagini cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {imageThumbnail} din exemplul de mai sus, acesta va fi înlocuit cu datele miniaturii imaginii reale.
 
@@ -778,7 +785,6 @@
 
       Dacă această politică este activată sau nu este configurată, va fi permisă crearea unor conturi de utilizator noi, cu condiția ca <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> să nu împiedice utilizatorii să se conecteze.</translation>
 <translation id="4389091865841123886">Configurați atestarea la distanță cu mecanismul TPM.</translation>
-<translation id="3518214502751233558">Indică dacă întârzierile din managementul alimentării cu energie și limita de durată a sesiunii trebuie să înceapă să ruleze numai după ce utilizatorul își începe activitatea într-o sesiune</translation>
 <translation id="8256688113167012935">Controlează numele de cont afișat de <ph name="PRODUCT_OS_NAME"/> pe ecranul de pornire pentru contul local corespondent de pe gadget.
 
       Dacă această politică este setată, ecranul de conectare va utiliza șirul specificat din selectorul de conturi de utilizator cu imagini pentru contul local corespondent de pe gadget.
@@ -1076,6 +1082,32 @@
       Când politica DeviceIdleLogoutTimeout este specificată, aceasta definește durata casetei de avertizare cu un temporizator cu numărătoare inversă, care este afișat utilizatorului înainte de a se executa deconectarea.
 
       Valoarea politicii ar trebui să fie specificată în milisecunde.</translation>
+<translation id="54795286564479339">Configurați imaginea cu avatarul de utilizator.
+
+      Cu această politică puteți să configurați imaginea cu avatarul care reprezintă utilizatorul pe ecranul de conectare. Politica este setată prin specificarea adresei URL de la care <ph name="PRODUCT_OS_NAME"/> poate descărca imaginea cu avatarul și a unui cod hash criptografic utilizat pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea acesteia nu trebuie să depășească 512 KB. Adresa URL trebuie să poată fi accesată fără autentificare.
+
+      Imaginea cu avatarul este descărcată și salvată în memoria cache. Aceasta va fi descărcată din nou, ori de câte ori adresa URL sau codul hash se modifică.
+
+      Politica trebuie să fie specificată ca șir ce exprimă adresa URL și codul hash în format JSON, în conformitate cu următoarea schemă:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Adresa URL de la care imaginea cu avatarul poate fi descărcată.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Codul hash SHA-1 al imaginii cu avatarul.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Dacă această politică este setată, <ph name="PRODUCT_OS_NAME"/> va descărca și va utiliza imaginea cu avatarul.
+
+      Dacă setați această politică, utilizatorii nu o pot modifica sau suprascrie.
+
+      Dacă politica nu este setată, utilizatorul poate alege imaginea cu avatarul care îl reprezintă pe ecranul de conectare.</translation>
 <translation id="237494535617297575">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care au permisiunea să afișeze notificări. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultNotificationsSetting”, dacă este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="7258823566580374486">Permite protecția gazdelor de acces la distanță</translation>
 <translation id="5560039246134246593">Adaugă un parametru la preluarea valorii de bază pentru variante în <ph name="PRODUCT_NAME"/>.
@@ -1390,6 +1422,7 @@
       Dacă politica nu este setată, nu se vor afișa Termenii și condițiile.
 
       Politica trebuie setată la o adresă URL de la care <ph name="PRODUCT_OS_NAME"/> poate descărca Termenii și condițiile. Termenii și condițiile trebuie să fie în format de text simplu, de tip MIME text/plain. Nu se permite limbajul de markup.</translation>
+<translation id="2623014935069176671">Se așteaptă prima activitate a utilizatorului</translation>
 <translation id="2660846099862559570">Nu utilizați niciodată un proxy</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
 <translation id="2131902621292742709">Interval până la reducerea luminozității ecranului la funcționarea pe baterie</translation>

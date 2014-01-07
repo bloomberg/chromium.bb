@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="6676384891291319759">الدخول إلى الإنترنت</translation>
+<translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR"/> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="6373523479360886564">‏هل تريد بالتأكيد إزالة Chromium؟</translation>
 <translation id="5065199687811594072">‏هل تريد من Chromium حفظ معلومات بطاقة الائتمان لإكمال نماذج الويب؟</translation>
 <translation id="6510925080656968729">‏إزالة Chromium</translation>
@@ -26,7 +27,6 @@
 <translation id="3549345495227188780">‏البدء في استخدام نظام التشغيل Chromium</translation>
 <translation id="4330297532943865716">‏تم العثور على عملية تثبيت متعارضة لـ Chromium أو إطار Chromium على النظام. الرجاء إزالته وإعادة المحاولة.</translation>
 <translation id="6953661834318318668">‏شريط أدوات Chromium</translation>
-<translation id="2245147136185581459">‏أداة اكتشاف البوابات المقيدة في Chromium</translation>
 <translation id="4285930937574705105">‏أخفقت عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، فالرجاء إغلاقه وإعادة المحاولة.</translation>
 <translation id="1396446129537741364">‏يحاول Chromium إظهار كلمات المرور.</translation>
 <translation id="3555616473548901994">تمت عملية الإزالة.</translation>
@@ -60,7 +60,6 @@
 <translation id="7771626876550251690">‏في هذه الحالة، يكون العنوان الوارد في الشهادة لا يطابق عنوان موقع الويب الذي يحاول المتصفح الانتقال إليه. ويكون أحد الأسباب المحتملة لذلك أن تكون اتصالاتك يتم اعتراضها بواسطة أحد المخترقين والذي يقدم شهادة لموقع ويب مختلف، والتي قد تتسبب في عدم التطابق. وأحد الأسباب المحتملة الأخرى أن يكون تم إعداد الخادم ليعرض الشهادة ذاتها لعدة مواقع ويب، بما في ذلك موقع الويب الذي تحاول الانتقال إليه، برغم أن الشهادة غير صالحة لمواقع الويب هذه. يمكن أن يذكر Chromium أنك قد وصلت إلى &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; بالتأكيد، ولكنه لا يمكنه التأكد أنه هو الموقع ذاته &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; والذي تقصد الوصول إليه. في حالة المتابعة، فإن Chromium لن يتحقق من أية أخطاء إضافية في الأسماء.</translation>
 <translation id="4330585738697551178">‏هذه الوحدة معروف أنها تتعارض مع Chromium.</translation>
 <translation id="3190315855212034486">‏للأسف! تعطل Chromium. هل تريد إعادة التشغيل الآن؟</translation>
-<translation id="3590194807845837023">إلغاء قفل الملف الشخصي، وإعادة التشغيل من جديد</translation>
 <translation id="6714487516757221107">‏لم يتم العثور على Chromium أو إطار Chromium للتحديث.</translation>
 <translation id="3197823471738295152">جهازك محدّث.</translation>
 <translation id="8551886023433311834">محدّث تقريبًا! أعد تشغيل الجهاز لإنهاء التحديث.</translation>
@@ -153,6 +152,7 @@
 <translation id="6717134281241384636">‏لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Chromium.
 
 قد تكون بعض الميزات غير متاحة. الرجاء تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chromium.</translation>
+<translation id="8907580949721785412">‏يحاول Chromium عرض كلمات المرور. اكتب كلمة مرور Windows للسماح بذلك.</translation>
 <translation id="9013087743919948559">‏إضافة إلى Chromium</translation>
 <translation id="6212496753309875659">‏يحتوي هذا الكمبيوتر فعلاً على إصدار أحدث من Chromium. إذا كان البرنامج لا يعمل، فالرجاء إزالة Chromium وإعادة المحاولة.</translation>
 <translation id="1298199220304005244">‏الحصول على مساعدة بشأن استخدام نظام التشغيل Chromium</translation>
@@ -194,7 +194,6 @@
 <translation id="805745970029938373">‏يُمكنك الاطلاع على جميع إشعاراتك من تطبيقات Chromium والإضافات ومواقع الويب هنا.</translation>
 <translation id="2119636228670142020">‏حول ن&amp;ظام التشغيل Chromium</translation>
 <translation id="1708666629004767631">‏يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
-<translation id="1539981464052805551">‏حقوق الطبع والنشر لعام 2013 لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="378917192836375108">‏يتيح لك Chromium النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
 <translation id="8724049448828509830">‏هناك تنزيل قيد التقدم. هل تريد الخروج من Chromium وإلغاء التنزيل؟</translation>
 <translation id="3360567213983886831">‏ثنائيات Chromium</translation>

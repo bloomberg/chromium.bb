@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="8588878054171169263">שמור תמונה</translation>
+<translation id="5578795271662203820">חפש את התמונה הזו ב-<ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">תרגם</translation>
 <translation id="7644305409888602715">מתרגם את הדף ל<ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">טען מחדש דף זה</translation>
+<translation id="641643625718530986">הדפס…</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="6458785801851713928">הסנכרון אינו זמין בדומיין שלך.</translation>
 <translation id="2731700343119398978">המתן בבקשה...</translation>
@@ -15,20 +18,32 @@
 <translation id="624558823898732418">שפת תרגום: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">מציג האישורים</translation>
 <translation id="8583805026567836021">מנקה נתוני חשבון</translation>
+<translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
 <translation id="8730621377337864115">בוצע</translation>
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="8627706565932943526">שגיאת סנכרון</translation>
+<translation id="4043215103217793252">ערוך דף סימניות</translation>
 <translation id="656628257199996201">תרגם <ph name="SOURCE_LANGUAGE"/> תמיד</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
+<translation id="4619298195800598081">פתח את התמונה המקורית בכרטיסייה חדשה</translation>
 <translation id="3136378934686431938">עדכן את פרטי הכניסה שלך.</translation>
+<translation id="3063601790762993062">שמור סרטון</translation>
 <translation id="6042308850641462728">עוד</translation>
+<translation id="3992315671621218278">שמור את הקישור</translation>
 <translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE"/>. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
+<translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
+<translation id="4269820728363426813">העתק כתובת של קישור</translation>
 <translation id="4510973599275542560">אל תטען מחדש</translation>
+<translation id="1206892813135768548">העתק טקסט קישור</translation>
 <translation id="9154176715500758432">הישאר בדף זה</translation>
 <translation id="7063006564040364415">לא ניתן היה להתחבר אל שרת הסנכרון.</translation>
 <translation id="4271185234001491831">אל תתרגם <ph name="LANGUAGE"/> אף פעם</translation>
+<translation id="6671495933530132209">העתק את התמונה</translation>
+<translation id="8209050860603202033">פתח את התמונה</translation>
+<translation id="2501278716633472235">חזור</translation>
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
 <translation id="5164482624172255778">‏האם ברצונך ש-Google Chrome יציע בפעם הבאה לתרגם דפים בשפה <ph name="LANGUAGE"/> מאתר זה?</translation>
 <translation id="8528538445849828817">שפת הדף: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,6 +52,9 @@
 <translation id="6040143037577758943">סגור</translation>
 <translation id="969096075394517431">החלף שפות</translation>
 <translation id="5032574515228824816">בקשה</translation>
+<translation id="4847896847259487518">הוסף דף לסימניות</translation>
+<translation id="497421865427891073">המשך קדימה</translation>
+<translation id="6277522088822131679">אירעה בעיה בעת הדפסת הדף. נסה שוב.</translation>
 <translation id="1742134235943978220">תורגם ל<ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="7495038789730067783">אשר את הכניסה</translation>

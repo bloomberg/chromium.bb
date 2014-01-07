@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="8588878054171169263">Zapisz grafikę</translation>
+<translation id="5578795271662203820">Szukaj tej grafiki w <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tłumacz</translation>
 <translation id="7644305409888602715">Tłumaczę stronę na <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Załaduj tę stronę ponownie</translation>
+<translation id="641643625718530986">Drukuj…</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="6458785801851713928">Synchronizacja nie jest dostępna w Twojej domenie.</translation>
 <translation id="2731700343119398978">Czekaj...</translation>
@@ -15,20 +18,32 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="624558823898732418">Język tłumaczenia: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Przeglądarka certyfikatów</translation>
 <translation id="8583805026567836021">Usuwam dane konta</translation>
+<translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8730621377337864115">Gotowe</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
 <translation id="8627706565932943526">Błąd synchronizacji</translation>
+<translation id="4043215103217793252">Edytuj stronę w zakładkach</translation>
 <translation id="656628257199996201">Zawsze tłumacz z języka: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="5684874026226664614">Nie można przetłumaczyć tej strony.</translation>
+<translation id="4619298195800598081">Otwórz oryginał w nowej karcie</translation>
 <translation id="3136378934686431938">Zaktualizuj swoje dane logowania.</translation>
+<translation id="3063601790762993062">Zapisz film</translation>
 <translation id="6042308850641462728">Więcej</translation>
+<translation id="3992315671621218278">Zapisz link</translation>
 <translation id="8034522405403831421">Język tej strony to <ph name="SOURCE_LANGUAGE"/>. Przetłumaczyć ją na <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="4195643157523330669">Otwórz w nowej karcie</translation>
+<translation id="3089395242580810162">Otwórz w karcie incognito</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
+<translation id="4269820728363426813">Kopiuj adres linku</translation>
 <translation id="4510973599275542560">Nie ładuj ponownie</translation>
+<translation id="1206892813135768548">Kopiuj tekst linku</translation>
 <translation id="9154176715500758432">Pozostań na tej stronie</translation>
 <translation id="7063006564040364415">Nie udało się nawiązać połączenia z serwerem synchronizacji.</translation>
 <translation id="4271185234001491831">Nigdy nie tłumacz z języka: <ph name="LANGUAGE"/></translation>
+<translation id="6671495933530132209">Kopiuj grafikę</translation>
+<translation id="8209050860603202033">Otwórz grafikę</translation>
+<translation id="2501278716633472235">Wróć</translation>
 <translation id="1285320974508926690">Nigdy nie tłumacz tej witryny</translation>
 <translation id="5164482624172255778">Czy chcesz, aby następnym razem przeglądarka Google Chrome zaoferowała tłumaczenie stron z tej witryny, których język to <ph name="LANGUAGE"/>?</translation>
 <translation id="8528538445849828817">Język strony: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,6 +52,9 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="969096075394517431">Zmień języki</translation>
 <translation id="5032574515228824816">Monit</translation>
+<translation id="4847896847259487518">Dodaj stronę do zakładek</translation>
+<translation id="497421865427891073">Dalej</translation>
+<translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="1742134235943978220">Przetłumaczone na <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Potwierdź, że chcesz się zalogować</translation>

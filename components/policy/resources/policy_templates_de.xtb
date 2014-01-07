@@ -251,6 +251,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, t
           Ist diese Richtlinie nicht konfiguriert, wird ein Standardwert verwendet.
 
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden.</translation>
+<translation id="6598235178374410284">Nutzer-Avatarbild</translation>
 <translation id="1675391920437889033">Legt fest, welche Typen von Apps bzw. Erweiterungen installiert werden können.
 
           Diese Einstellung erstellt eine weiße Liste der Typen von Erweiterungen bzw. Apps, die in <ph name="PRODUCT_NAME"/> installiert werden können. Der Wert besteht aus einer Liste von Zeichenfolgen, die jeweils einer der folgenden Zeichenfolgen entsprechen: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Weitere Informationen zu diesen Typen finden Sie in der Dokumentation zu Chrome-Erweiterungen.
@@ -273,7 +274,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, t
 
       Wird diese Richtlinie festgelegt, gibt sie an, wie lange der Nutzer inaktiv sein kann, bevor er automatisch in einer öffentlichen Sitzung angemeldet wird, die in der Richtlinie |DeviceLocalAccountAutoLoginId| angegeben ist.
 
-      Wird diese Richtlinie nicht festgelegt, werden 0 Millisekunden als Timeout verwendet.
+      Wird diese Richtlinie nicht festgelegt, werden 0 Millisekunden als Zeitlimit verwendet.
 
       Geben Sie den Richtlinienwert in Millisekunden an.</translation>
 <translation id="7275334191706090484">Verwaltete Lesezeichen</translation>
@@ -405,6 +406,11 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 <translation id="4894257424747841850">Erstellt eine Liste der Gerätenutzer, die sich kürzlich angemeldet haben.
 
       Wenn die Richtlinie nicht definiert oder auf &quot;false&quot; gesetzt ist, werden die Nutzer nicht aufgezeichnet.</translation>
+<translation id="2488010520405124654">Aktivierung der Eingabeaufforderung zur Netzwerkkonfiguration im Offlinemodus
+
+      Wenn diese Richtlinie nicht festgelegt oder auf &quot;True&quot; gesetzt ist und ein lokales Gerätekonto für die automatische Anmeldung ohne Verzögerung konfiguriert ist, aber kein Zugang zum Internet besteht, zeigt <ph name="PRODUCT_OS_NAME"/> eine Eingabeaufforderung zur Netzwerkkonfiguration an.
+
+      Ist diese Richtlinie auf &quot;False&quot; gesetzt, wird anstelle der Eingabeaufforderung zur Netzwerkkonfiguration eine Fehlermeldung angezeigt.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="4897928009230106190">Gibt die Parameter für die Vorschlagsuche mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {searchTerms} im obigen Beispiel ist, wird er durch echte Suchbegriffsdaten ersetzt.
 
@@ -599,6 +605,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
 
           Geben Sie den Richtlinienwert in Millisekunden an. Solange die Inaktivitätsspanne kleiner oder gleich diesem festgelegten Wert ist, erscheint keine Warnung.</translation>
 <translation id="1098794473340446990">Hiermit wird die Aktivitätszeit von Geräten gemeldet. Wenn für diese Einstellung &quot;True&quot; festgelegt ist, melden registrierte Geräte, zu welchen Zeiten ein Nutzer auf dem Gerät aktiv war. Ist diese Einstellung nicht konfiguriert oder auf &quot;False&quot; festgelegt, wird die Aktivitätszeit nicht aufgezeichnet oder gemeldet.</translation>
+<translation id="1327466551276625742">Eingabeaufforderung zur Netzwerkkonfiguration im Offlinemodus aktivieren</translation>
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
 <translation id="427632463972968153">Gibt die Parameter für die Bildsuche mit POST an. Sie besteht aus durch Komma getrennten Name/Wert-Paaren. Wenn ein Wert ein Vorlagenparameter wie z. B. {imageThumbnail} im obigen Beispiel ist, wird er durch echte Miniaturansichtsdaten ersetzt.
 
@@ -710,7 +717,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt oder nicht festgelegt wird, k
           Wenn diese Richtlinie auf &quot;true&quot; gesetzt oder nicht konfiguriert ist, wird der Nutzer während der Wiedergabe von Videos als aktiv angesehen. Dadurch wird verhindert, dass die Inaktivitätsspanne und die Spanne für die Abdunkelung, Abschaltung oder Sperre des Bildschirms überschritten und entsprechende Aktionen eingeleitet werden.
 
           Ist diese Richtlinie auf &quot;false&quot; eingestellt, wird der Nutzer trotz Videoaktivität als inaktiv betrachtet.</translation>
-<translation id="3965339130942650562">Timeout bis zur Abmeldung eines inaktiven Nutzers</translation>
+<translation id="3965339130942650562">Zeitlimit bis zur Abmeldung eines inaktiven Nutzers</translation>
 <translation id="5814301096961727113">Standardstatus für das gesprochene Feedback auf der Anmeldeseite festlegen</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
 <translation id="7091198954851103976">Führt Plug-ins, die eine Autorisierung erfordern, immer aus</translation>
@@ -778,7 +785,6 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, werden Anfragen für Bi
 
       Ist die Richtlinie auf &quot;true&quot; gesetzt oder nicht konfiguriert, dürfen neue Nutzerkonten erstellt werden, falls die Nutzer nicht durch die Richtlinie &quot;<ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/>&quot; an einer Anmeldung gehindert werden.</translation>
 <translation id="4389091865841123886">Konfiguriert die Remote-Bestätigung mit TPM-Mechanismus</translation>
-<translation id="3518214502751233558">Festlegen, ob die erste Aktivität des Nutzers in einer Sitzung als Ausgangspunkt für Verzögerungen beim Energiesparmodus und Begrenzungen der Sitzungslänge verwendet werden soll</translation>
 <translation id="8256688113167012935">Gibt an, welchen Kontonamen <ph name="PRODUCT_OS_NAME"/> für das entsprechende lokale Gerätekonto auf der Anmeldeseite anzeigt.
 
       Wenn diese Richtlinie eingerichtet ist, wird auf der Anmeldeseite des entsprechenden lokalen Gerätekontos der angegebene String für die bildbasierte Auswahl bei der Anmeldung verwendet.
@@ -1075,6 +1081,32 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
       Falls die Richtlinie &quot;DeviceIdleLogoutTimeout&quot; konfiguriert ist, wird mithilfe der vorliegenden Richtlinie festgelegt, wie lange das Warnfenster mit Countdown für Nutzer zu sehen sein soll, bevor sie abgemeldet werden.
 
       Der Wert für die Richtlinie sollte in Millisekunden angegeben werden.</translation>
+<translation id="54795286564479339">Nutzer-Avatarbild konfigurieren
+
+      Diese Richtlinie ermöglicht es Ihnen, das Avatarbild zu konfigurieren, das den Nutzer auf der Anmeldeseite darstellt. Die Richtlinie wird festgelegt, indem die URL, von der <ph name="PRODUCT_OS_NAME"/> das Avatarbild herunterladen kann, angegeben und eine kryptographische Hashfunktion verwendet wird, um die Integrität des Downloads zu überprüfen. Das Bild muss im JPEG-Format vorliegen und eine Größe von 512 KB nicht überschreiten. Der Zugriff auf die URL muss ohne Authentifizierung möglich sein.
+
+      Das Avatarbild wird heruntergeladen und im Cache gespeichert. Es wird erneut geladen, sobald sich die URL oder der Hashwert ändert.
+
+      Die Richtlinie muss als String angegeben werden, der die URL und die Hashfunktion im JSON-Format angibt und folgendem Schema entspricht:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL, unter der das Avatarbild heruntergeladen werden kann&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;SHA-1-Hashfunktion des Avatarbilds&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Wenn die Richtlinie festgelegt wurde, lädt <ph name="PRODUCT_OS_NAME"/> das Avatarbild herunter und verwendet es.
+
+      Wenn Sie diese Richtlinie festlegen, können Nutzer diese nicht ändern oder überschreiben.
+
+      Wenn die Richtlinie nicht festgelegt wird, kann der Nutzer das Avatarbild auswählen, das ihn auf der Anmeldeseite darstellen soll.</translation>
 <translation id="237494535617297575">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Anzeigen von Benachrichtigungen gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, kommt für alle Websites entweder der globale Standardwert der Richtlinie &quot;DefaultNotificationsSetting&quot;, sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="7258823566580374486">Zugangsbeschränkung für Remote-Zugriff-Hosts aktivieren</translation>
 <translation id="5560039246134246593">Hiermit fügen Sie beim Abrufen des Varianten-Seeds in <ph name="PRODUCT_NAME"/> einen Parameter hinzu.
@@ -1350,7 +1382,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
 <translation id="7635471475589566552">Konfiguriert das App-Gebietsschema in <ph name="PRODUCT_NAME"/> und verhindert, dass Nutzer das Gebietsschema ändern. Wenn Sie diese Einstellung aktivieren, verwendet <ph name="PRODUCT_NAME"/> das angegebene Gebietsschema. Wird das konfigurierte Gebietsschema nicht unterstützt, kommt stattdessen &quot;en-US&quot; zum Einsatz. Ist diese Einstellung deaktiviert oder nicht konfiguriert, verwendet <ph name="PRODUCT_NAME"/> das vom Nutzer angegebene bevorzugte Gebietsschema (sofern konfiguriert), das Gebietsschema des Systems oder das Ersatz-Gebietsschema &quot;en-US&quot;.</translation>
 <translation id="2948087343485265211">Hiermit wird angegeben, ob Audioaktivitäten Einfluss auf den Energiesparmodus haben.
 
-          Wenn diese Richtlinie auf &quot;True&quot; gesetzt oder nicht konfiguriert ist, wird der Nutzer nicht als inaktiv angesehen, während Audioinhalte wiedergegeben werden. Dadurch wird verhindert, dass das Inaktivitätstimeout erreicht und die entsprechende Aktion eingeleitet wird. Die Abdunkelung, Abschaltung und Sperre des Bildschirms erfolgen jedoch unabhängig von den Audioaktivitäten gemäß den konfigurierten Timeouts.
+          Wenn diese Richtlinie auf &quot;True&quot; gesetzt oder nicht konfiguriert ist, wird der Nutzer nicht als inaktiv angesehen, während Audioinhalte wiedergegeben werden. Dadurch wird verhindert, dass das Inaktivitätstzeitlimit erreicht und die entsprechende Aktion eingeleitet wird. Die Abdunkelung, Abschaltung und Sperre des Bildschirms erfolgen jedoch unabhängig von den Audioaktivitäten gemäß den konfigurierten Zeitlimits.
 
           Ist diese Richtlinie auf &quot;False&quot; eingestellt, wird der Nutzer trotz Audioaktivitäten als inaktiv angesehen.</translation>
 <translation id="7842869978353666042">Optionen von Google Drive konfigurieren</translation>
@@ -1389,6 +1421,7 @@ Falls die Richtlinie auf &quot;false&quot; gesetzt wird, kann eine verzögerungs
       Ist diese Richtlinie nicht konfiguriert, werden keine Nutzungsbedingungen angezeigt.
 
       In der Richtlinie muss eine URL angegeben werden, von der <ph name="PRODUCT_OS_NAME"/> die Nutzungsbedingungen herunterladen kann. Die Nutzungsbedingungen müssen als unformatierter Text mit dem MIME-Typ &quot;text/plain&quot; vorliegen. Markups sind nicht zulässig.</translation>
+<translation id="2623014935069176671">Auf erste Nutzeraktivität warten</translation>
 <translation id="2660846099862559570">Nie Proxy verwenden</translation>
 <translation id="1435659902881071157">Netzwerkkonfiguration auf Geräteebene</translation>
 <translation id="2131902621292742709">Verzögerung für die Bildschirmabdunkelung im Akkubetrieb</translation>

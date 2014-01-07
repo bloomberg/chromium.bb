@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="3234920859344197194">Aquest lloc fa servir el connector Chrome Frame, que aviat deixarà de rebre actualitzacions d'estabilitat i de seguretat. Desinstal·leu-lo i actualitzeu el navegador a una versió més moderna.</translation>
 <translation id="8914504000324227558">Torna a iniciar Chrome</translation>
 <translation id="8000275528373650868">Google Chrome requereix Windows Vista o Windows XP amb SP2 o superior.</translation>
-<translation id="8124352762008487242">Copyright 2013 Google Inc. Tots els drets reservats.</translation>
 <translation id="8485767968786176057">En aquest cas, l'adreça que apareix al certificat no coincideix amb la del lloc web al qual el vostre navegador ha provat d'accedir. És possible que un atacant hagi interceptat les comunicacions i que presenti un certificat per a un lloc web diferent, la qual cosa provocaria un error de coincidència. També pot ser que el servidor estigui configurat per retornar el mateix certificat per a diversos llocs web, inclòs el que esteu provant de visitar, malgrat que aquest certificat no sigui vàlid per a tots els llocs web. Google Chrome pot assegurar-vos que heu arribat a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, però no pot verificar que sigui el mateix lloc que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, que és on voleu arribar. Si continueu, Chrome no comprovarà cap més error en la coincidència de noms.</translation>
 <translation id="5430073640787465221">El fitxer de preferències està malmès o no és vàlid. Google Chrome no pot recuperar la configuració.</translation>
 <translation id="6676384891291319759">Accedeix a Internet</translation>
@@ -17,14 +17,13 @@
 <translation id="386202838227397562">Tanqueu totes les finestres de Google Chrome i torneu-ho a provar.</translation>
 <translation id="1225016890511909183">Chrome emmagatzemarà de manera segura la vostra informació perquè no hàgiu de tornar-la a escriure, però continuareu havent de verificar el codi de seguretat de la targeta per a pagaments futurs.</translation>
 <translation id="2770231113462710648">Canvia el navegador predeterminat a:</translation>
-<translation id="2077129598763517140">Utilitza l'acceleració de maquinari quan estigui disponible</translation>
+<translation id="2077129598763517140">Utilitza l'acceleració per maquinari quan estigui disponible</translation>
 <translation id="1065672644894730302">No es poden llegir les vostres preferències. És possible que algunes funcions no estiguin disponibles i que els canvis a les preferències no es desin.</translation>
 <translation id="7781002470561365167">Hi ha disponible una versió nova de Google Chrome.</translation>
 <translation id="7101265395643981223">Inicieu Google Chrome</translation>
 <translation id="4891791193823137474">Permet que Google Chrome s'executi en procés de fons</translation>
 <translation id="2896252579017640304">Inicia les aplicacions de Chrome</translation>
 <translation id="2370289711218562573">Google Chrome està important els preferits/les adreces d'interès.</translation>
-<translation id="8762286861469007470">Detector de Captive Portal a Chrome</translation>
 <translation id="2721687379934343312">En un Mac, les contrasenyes es desen a Keychain i altres usuaris de Chrome que comparteixin aquest compte d'OS X poden accedir-hi i sincronitzar-les.</translation>
 <translation id="1761870329818521071">No es pot instal·lar la mateixa versió de Google Chrome Frame que s'executa actualment. Tanqueu Google Chrome Frame i torneu-ho a provar.</translation>
 <translation id="6014844626092547096">Heu iniciat la sessió a Chrome. El vostre administrador ha desactivat la sincronització.</translation>
@@ -58,10 +57,10 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Els detalls de facturació s'han desat a Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome està utilitzant el micròfon.</translation>
-<translation id="3590194807845837023">Desbloqueja el perfil i torna a iniciar</translation>
 <translation id="4053720452172726777">Personalitza i controla Google Chrome</translation>
 <translation id="6423071462708908582">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat caducat. No hi ha informació disponible que indiqui si el certificat s'ha posat en perill des del seu venciment. Això vol dir que  Google Chrome no pot garantir que no us estigueu comunicant amb un atacant en comptes del domini &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. El rellotge del vostre equip està definit en aquest moment a <ph name="CURRENT_TIME"/>. És l'hora correcta? Si no, hauríeu de corregir l'error i d'actualitzar aquesta pàgina.</translation>
 <translation id="3197823471738295152">El dispositiu està actualitzat.</translation>
+<translation id="8286862437124483331">Google Chrome està provant de mostrar contrasenyes. Escriviu la vostra contrasenya de Windows per permetre-ho.</translation>
 <translation id="3889417619312448367">Desinstal·la Google Chrome</translation>
 <translation id="1434626383986940139">Aplicacions de Chrome Canary</translation>
 <translation id="8551886023433311834">L'actualització està a punt d'acabar. Reinicieu el dispositiu per completar-la.</translation>
@@ -155,7 +154,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="2871893339301912279">Teniu la sessió iniciada a Chrome.</translation>
 <translation id="7161904924553537242">Us donem la benvinguda a Google Chrome.</translation>
 <translation id="4147555960264124640">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Google Chrome a l'administrador corresponent. Les vostres dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres opcions, s'enllaçaran permanentment amb <ph name="USER_NAME"/>. Podreu suprimir aquestes dades mitjançant el tauler de control de comptes de Google, però no les podreu associar amb un altre compte. <ph name="LEARN_MORE"/></translation>
-<translation id="7931439880631187247">Aquest lloc fa servir el connector de Chrome Frame que aviat deixarà de ser compatible. Desinstal·leu-lo i passeu a un navegador actualitzat.</translation>
 <translation id="1348153800635493797">Heu d'actualitzar Chrome per utilitzar Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Aneu a
           Aplicacions &gt; Preferències del sistema &gt; Xarxa &gt; Opcions avançades &gt; Servidors intermediaris
@@ -197,7 +195,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
           Configuració de LAN
           i desmarqueu Utilitza un servidor intermediari per a la LAN.</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
-<translation id="5553980212343253394">Aquest lloc fa servir un connector de Chrome Frame que aviat no serà compatible. Desinstal·leu-lo i baixeu un navegador compatible.</translation>
+<translation id="4919523385405675060">Aquest lloc fa servir el connector Chrome Frame, que aviat deixarà de rebre actualitzacions d'estabilitat i de seguretat. Desinstal·leu-lo i baixeu un navegador compatible.</translation>
 <translation id="1061257178446858647">Heu iniciat la sessió a Chrome. S'estan sincronitzant les adreces d'interès, l'historial i altres opcions de configuració amb el vostre compte de Google.</translation>
 <translation id="3335672657969596251">Google Chrome no és compatible amb <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Tanqueu la sessió i torneu a iniciar-la perquè aquest canvi es faci efectiu.</translation>
@@ -215,6 +213,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="6626317981028933585">Lamentablement, la vostra configuració de Mozilla Firefox no estarà disponible mentre aquest navegador s'estigui executant. Per importar aquesta configuració a Google Chrome, deseu la feina que hagueu fet i tanqueu totes les finestres de Firefox. Seguidament, feu clic a &quot;Continua&quot;.</translation>
 <translation id="7242029209006116544">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Google Chrome a l'administrador corresponent. Les vostres dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME"/>. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chrome a part. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. Tots els drets reservats.</translation>
 <translation id="1698376642261615901">Google Chrome és un navegador web que executa pàgines web i aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu d'una manera més segura pel web amb la protecció contra programari maliciós i llocs de pesca integrada a Google Chrome.</translation>
 <translation id="3419750618886995598">Actualització de Chrome Frame.</translation>
 <translation id="3336524238463733095">Google Chrome o Google Chrome Frame no es pot actualitzar a causa de la configuració incoherent de la política de grup de Google Update. Utilitzeu l'Editor de la política de grup per definir la substitució de la política d'actualització per a l'aplicació de fitxers binaris de Google Chrome i torneu-ho a provar; consulteu http://goo.gl/uJ9gV per obtenir més informació.</translation>

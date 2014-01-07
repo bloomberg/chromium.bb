@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="3234920859344197194">Nous allons bientôt cesser d'envoyer nos mises à jour de sécurité et de stabilité au plug-in Chrome Frame utilisé par ce site. Veuillez le désinstaller et installer un navigateur plus récent.</translation>
 <translation id="8914504000324227558">Relancer Google Chrome</translation>
 <translation id="8000275528373650868">Google Chrome requiert Windows Vista ou Windows XP avec SP2 ou une version ultérieure.</translation>
-<translation id="8124352762008487242">Copyright Google Inc. 2013. Tous droits réservés.</translation>
 <translation id="8485767968786176057">Dans le cas présent, l'adresse indiquée dans le certificat ne correspond pas à celle du site Web auquel vous avez tenté d'accéder. Il est possible que vos communications soient interceptées par un pirate informatique qui présente un certificat correspondant à un autre site Web. Il est également possible que le serveur soit configuré de façon à renvoyer un même certificat pour plusieurs sites Web, y compris celui auquel vous tentez d'accéder, même si ce certificat n'est pas valide pour tous les sites. Google Chrome a permis de déterminer que vous avez accédé au domaine &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Toutefois, il n'est pas possible de vérifier qu'il s'agit réellement du site &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, auquel vous avez tenté d'accéder. Si vous décidez de poursuivre, Google Chrome ne vérifiera plus les éventuelles incohérences au niveau des noms des certificats.</translation>
 <translation id="5430073640787465221">Le fichier des préférences est endommagé ou n'est pas valide. 
 
@@ -27,7 +27,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4891791193823137474">Laisser Google Chrome s'exécuter en arrière-plan</translation>
 <translation id="2896252579017640304">Lancer des applications Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome importe actuellement vos signets/favoris.</translation>
-<translation id="8762286861469007470">Détecteur de portail captif Google Chrome</translation>
 <translation id="2721687379934343312">Sur Mac, les mots de passe sont sauvegardés dans votre trousseau. D'autres utilisateurs de Google Chrome partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="1761870329818521071">Impossible d'installer la version de Google Chrome Frame qui est en cours d'exécution. Fermez Google Chrome Frame et réessayez.</translation>
 <translation id="6014844626092547096">Vous êtes maintenant connecté à Chrome. La synchronisation a été désactivée par votre administrateur.</translation>
@@ -63,10 +62,10 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Vos informations de facturation ont été enregistrées dans Chrome.</translation>
 <translation id="7098166902387133879">Votre micro est en cours d'utilisation dans Google Chrome.</translation>
-<translation id="3590194807845837023">Déverrouiller le profil et relancer</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
 <translation id="6423071462708908582">Vous avez tenté d'accéder au domaine &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mais le serveur a présenté un certificat qui a expiré. Aucune information ne permet de savoir si ce certificat a été corrompu depuis son expiration. Google Chrome ne peut donc pas garantir que vous communiquez avec &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; et non avec un pirate informatique. L'horloge de votre ordinateur indique qu'il est actuellement <ph name="CURRENT_TIME"/>. Est-ce correct ? Si ce n'est pas le cas, corrigez toute erreur, puis actualisez cette page.</translation>
 <translation id="3197823471738295152">Votre appareil est à jour.</translation>
+<translation id="8286862437124483331">Google Chrome tente d'afficher les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
 <translation id="1434626383986940139">Applications Chrome Canary</translation>
 <translation id="8551886023433311834">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
@@ -163,7 +162,6 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2871893339301912279">Vous êtes connecté à Google Chrome.</translation>
 <translation id="7161904924553537242">Bienvenue dans Google Chrome</translation>
 <translation id="4147555960264124640">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME"/>. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. <ph name="LEARN_MORE"/></translation>
-<translation id="7931439880631187247">Ce site utilise le plug-in Chrome Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis passer à un navigateur récent.</translation>
 <translation id="1348153800635493797">Vous devez mettre à jour Chrome pour pouvoir utiliser Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Sélectionnez
           Applications &gt; Préférences système &gt; Réseau &gt; Avancé &gt; Proxys
@@ -206,7 +204,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
           Paramètres réseau,
           puis décochez l'option &quot;Utiliser un serveur proxy pour votre réseau local&quot;.</translation>
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>
-<translation id="5553980212343253394">Ce site utilise le plug-in Chrome Frame, dont le développement va bientôt être abandonné. Veuillez désinstaller ce plug-in, puis télécharger un navigateur compatible.</translation>
+<translation id="4919523385405675060">Nous allons bientôt cesser d'envoyer nos mises à jour de sécurité et de stabilité au plug-in Chrome Frame utilisé par ce site. Veuillez le désinstaller et installer un navigateur compatible.</translation>
 <translation id="1061257178446858647">Vous êtes désormais connecté à Google Chrome ! Vos favoris, votre historique et vos autres paramètres vont être synchronisés avec votre compte Google.</translation>
 <translation id="3335672657969596251">Google Chrome ne prend pas <ph name="OS_NAME"/> en charge.</translation>
 <translation id="4458285410772214805">Pour que cette modification soit prise en compte, veuillez vous déconnecter, puis vous reconnecter.</translation>
@@ -224,6 +222,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="6626317981028933585">Vos paramètres Mozilla Firefox ne sont pas disponibles pendant l'utilisation de ce navigateur. Pour importer ces paramètres vers Google Chrome, enregistrez votre travail et fermez toutes les fenêtres Firefox. Ensuite, cliquez pour continuer.</translation>
 <translation id="7242029209006116544">Vous vous connectez avec un compte géré et donnez le contrôle de votre profil Google Chrome à son administrateur. Vos données Chrome, telles que les applications, les favoris, l'historique, les mots de passe et les autres paramètres, vont être définitivement associées à <ph name="USER_NAME"/>. Vous pouvez supprimer ces données via le tableau de bord des comptes Google, mais vous ne pouvez pas les associer à un autre compte. Vous pouvez éventuellement créer un nouveau profil pour maintenir vos données Chrome séparées. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="2334084861041072223">Copyright Google Inc. <ph name="YEAR"/>. Tous droits réservés.</translation>
 <translation id="1698376642261615901">Google Chrome est un navigateur Web qui exécute des applications et des pages Web en un temps record. Il est rapide, stable et simple à utiliser. Naviguez sur Internet en toute sécurité grâce à la protection intégrée de Google Chrome contre le phishing et les logiciels malveillants.</translation>
 <translation id="3419750618886995598">Mise à jour de Chrome Frame</translation>
 <translation id="3336524238463733095">Google Chrome ou Google Chrome Frame ne peuvent pas être mis à jour en raison de paramètres de stratégie de groupe Google Update incohérents. Utilisez l'éditeur de stratégie de groupe pour définir la stratégie de mise à jour de substitution pour l'application Google Chrome Binaries, et essayez à nouveau. Pour plus de détails, voir http://goo.gl/uJ9gV.</translation>

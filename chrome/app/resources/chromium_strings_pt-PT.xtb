@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="6676384891291319759">Aceder à Internet</translation>
+<translation id="8586442755830160949">Copyright <ph name="YEAR"/> Os autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="6373523479360886564">Tem a certeza de que pretende desinstalar o Chromium?</translation>
 <translation id="5065199687811594072">Pretende que o Chromium guarde estas informações de cartão de crédito para preenchimento de formulários Web?</translation>
 <translation id="6510925080656968729">Desinstalar o Chromium</translation>
@@ -26,7 +27,6 @@
 <translation id="3549345495227188780">Introdução ao SO Chromium</translation>
 <translation id="4330297532943865716">Foi encontrada uma instalação em conflito do Chromium ou Chromium Frame no sistema. Desinstale e tente novamente.</translation>
 <translation id="6953661834318318668">Barra de Ferramentas do Chromium</translation>
-<translation id="2245147136185581459">Detetor do Captive Portal para Chromium</translation>
 <translation id="4285930937574705105">A instalação falhou devido a um erro não especificado. Se o Chromium estiver em execução, feche-o e tente de novo.</translation>
 <translation id="1396446129537741364">O Chromium está a tentar mostrar palavras-passe.</translation>
 <translation id="3555616473548901994">Desinstalação concluída.</translation>
@@ -60,7 +60,6 @@
 <translation id="7771626876550251690">Neste caso, o endereço listado no certificado não corresponde ao endereço do Web site ao qual o seu navegador tentou aceder. Um dos motivos possíveis é o facto de as suas comunicações estarem a ser intercetadas por um utilizador mal intencionado que está apresentar um certificado para um Web site diferente, o que poderia provocar uma incompatibilidade. Outro motivo possível é o facto de o servidor estar configurado para devolver o mesmo certificado a vários Web sites, incluindo aquele que está a tentar visitar, mesmo que esse certificado não seja válido para todos esses Web sites. O Chromium pode afirmar garantidamente que acedeu a &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mas não pode confirmar que esse é o mesmo Web site que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ao qual pretendia aceder. Se continuar, o Chromium não irá verificar se existem outras incompatibilidades de nome.</translation>
 <translation id="4330585738697551178">Este módulo é conhecido por entrar em conflito com o Chromium.</translation>
 <translation id="3190315855212034486">Ups! O Chromium falhou. Reiniciar agora?</translation>
-<translation id="3590194807845837023">Desbloquear perfil e reiniciar</translation>
 <translation id="6714487516757221107">Não foi encontrada nenhuma instalação do Chromium ou Chromium Frame para atualização.</translation>
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
 <translation id="8551886023433311834">Quase atualizado! Reinicie o dispositivo para concluir a atualização.</translation>
@@ -153,6 +152,7 @@
 <translation id="6717134281241384636">O seu perfil não pode ser utilizado porque pertence a uma versão mais recente do Chromium.
 
 Algumas funcionalidades podem não estar disponíveis. Especifique um diretório de perfil diferente ou utilize uma versão mais recente do Chromium.</translation>
+<translation id="8907580949721785412">O Chromium está a tentar mostrar palavras-passe. Escreva a sua palavra-passe do Windows para permitir esta ação.</translation>
 <translation id="9013087743919948559">Adicionar ao Chromium</translation>
 <translation id="6212496753309875659">Este computador já tem uma versão mais recente do Chromium. Se o software não estiver a funcionar, desinstale o Chromium e tente novamente.</translation>
 <translation id="1298199220304005244">Obter ajuda para utilizar o SO Chromium</translation>
@@ -193,7 +193,6 @@ Algumas funcionalidades podem não estar disponíveis. Especifique um diretório
 <translation id="805745970029938373">Pode ver aqui todas as suas notificações de aplicações, extensões e Websites do Chromium.</translation>
 <translation id="2119636228670142020">Acerca do SO &amp;Chromium</translation>
 <translation id="1708666629004767631">Está disponível uma versão nova e mais segura do Chromium.</translation>
-<translation id="1539981464052805551">Copyright 2013 Os Autores do Chromium. Todos os direitos reservados.</translation>
 <translation id="378917192836375108">O Chromium permite-lhe clicar num número de telefone na Web e fazer a chamada com o Skype!</translation>
 <translation id="8724049448828509830">A transferência está atualmente em curso. Pretende sair do Chromium e cancelar a transferência?</translation>
 <translation id="3360567213983886831">Binários do Chromium</translation>

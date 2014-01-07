@@ -245,6 +245,7 @@
           Jeśli ta zasada nie jest ustawiona, używana jest domyślna wartość długości czasu.
 
           Wartość tej zasady powinna być określona w milisekundach.</translation>
+<translation id="6598235178374410284">Obraz awatara użytkownika</translation>
 <translation id="1675391920437889033">Określa typy aplikacji/rozszerzeń, które można instalować.
 
           To ustawienie tworzy białą listę typów rozszerzeń/aplikacji, których instalacja jest dozwolona w <ph name="PRODUCT_NAME"/>. Wartość jest listą łańcuchów spośród: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Więcej informacji o tych typach można znaleźć w dokumentacji rozszerzeń Chrome.
@@ -391,6 +392,11 @@
 <translation id="4894257424747841850">Raportuj listę użytkowników urządzenia, którzy niedawno się zalogowali.
 
       Jeśli ta zasada będzie wyłączona lub nieustawiona, użytkownicy nie będą raportowani.</translation>
+<translation id="2488010520405124654">Włącza pytanie o konfigurację sieci wyświetlane w trybie offline.
+
+      Jeśli ta zasada nie jest ustawiona lub ma wartość Prawda, lokalne konto na urządzeniu jest skonfigurowane do automatycznego logowania się z zerowym opóźnieniem, a urządzenie nie ma dostępu do internetu, <ph name="PRODUCT_OS_NAME"/> pokazuje pytanie o konfigurację sieci.
+
+      Jeśli wartość zasady to Fałsz, zamiast pytania wyświetla się komunikat o błędzie.</translation>
 <translation id="1426410128494586442">Tak</translation>
 <translation id="4897928009230106190">Określa parametry używane przy sugerowaniu haseł z użyciem POST. Składa się z rozdzielonych przecinkami par nazwy i wartości. Jeśli wartość jest parametrem szablonu, tak jak w przykładzie powyżej {searchTerms}, zostanie ona zastąpiona rzeczywistymi danymi wyszukiwanych słów.
 
@@ -585,6 +591,7 @@
 
           Wartość dla zasady należy podać w milisekundach. Wartości są ograniczane, tak aby nie przekraczały wartości opóźnienia nieaktywności.</translation>
 <translation id="1098794473340446990">Zgłasza godziny aktywności urządzenia. Po włączeniu zasady zarejestrowane urządzenie zgłasza, kiedy korzysta z niego użytkownik. Jeśli zasada nie jest ustawiona lub jest wyłączona, okresy aktywności urządzenia nie są rejestrowane ani zgłaszane.</translation>
+<translation id="1327466551276625742">Włącza pytanie o konfigurację sieci wyświetlane w trybie offline</translation>
 <translation id="7937766917976512374">Zezwól lub nie na przechwytywanie wideo</translation>
 <translation id="427632463972968153">Określa parametry używane przy wyszukiwaniu obrazem przy użyciu POST. Składa się z rozdzielonych przecinkami par nazwy i wartości. Jeśli wartość jest parametrem szablonu, tak jak w przykładzie powyżej {imageThumbnail}, zostanie ona zastąpiona rzeczywistymi danymi miniatury obrazu.
 
@@ -764,7 +771,6 @@
 
       Jeśli ta zasada będzie mieć wartość true lub nie zostanie skonfigurowana, tworzenie nowych kont użytkowników będzie dozwolone pod warunkiem, że zasada <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> nie będzie zakazywać użytkownikom logowania się.</translation>
 <translation id="4389091865841123886">Konfiguruje zdalne poświadczanie przy użyciu mechanizmu TPM</translation>
-<translation id="3518214502751233558">Określa, czy odliczanie opóźnień związanych z zarządzaniem energią oraz czasu związanego z limitem długości sesji powinno być rozpoczynane dopiero po pierwszej aktywności użytkownika w sesji</translation>
 <translation id="8256688113167012935">Określa nazwę konta, którą <ph name="PRODUCT_OS_NAME"/> pokazuje na ekranie logowania dla danego lokalnego konta na urządzeniu.
 
       W przypadku ustawienia tej opcji na ekranie logowania w graficznym module wybierania loginu dla odpowiedniego lokalnego konta na urządzeniu będzie używany podany łańcuch.
@@ -1062,6 +1068,32 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
       W przypadku określenia zasady DeviceIdleLogoutTimeout ta zasada określa czas wyświetlania okna ostrzegawczego z licznikiem czasu, które jest wyświetlane przed wylogowaniem użytkownika.
 
       Wartość zasady należy podać w milisekundach.</translation>
+<translation id="54795286564479339">Umożliwia skonfigurowanie obrazu awatara użytkownika.
+
+      Ta zasada pozwala skonfigurować obraz awatara, który reprezentuje użytkownika na ekranie logowania. Aby ją ustawić, podaj URL, z którego <ph name="PRODUCT_OS_NAME"/> może pobrać obraz awatara, oraz skrót kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 512 kB. URL musi być dostępny bez żadnego uwierzytelniania.
+
+      Po pobraniu obraz awatara jest zapisywany w pamięci podręcznej. Gdy URL lub skrót się zmieni, pobieranie jest powtarzane.
+
+      Zasadę należy zdefiniować jako ciąg tekstowy w formacie JSON zawierający URL i skrót, zgodnie z tym schematem:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL, z którego można pobrać obraz awatara.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Skrót SHA-1 obrazu awatara.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Jeśli zasada jest ustawiona, <ph name="PRODUCT_OS_NAME"/> pobiera obraz awatara i korzysta z niego.
+
+      Gdy ją ustawisz, użytkownicy nie mogą jej zmienić ani zastąpić.
+
+      Jeśli zasada pozostanie nieustawiona, użytkownik może wybrać obraz awatara, który będzie reprezentował go na ekranie logowania.</translation>
 <translation id="237494535617297575">Umożliwia skonfigurowanie listy wzorców URL-i określających witryny, w których mogą być wyświetlane powiadomienia. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultNotificationsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="7258823566580374486">Włącz separację hostów zdalnego dostępu</translation>
 <translation id="5560039246134246593">Dodaj parametr do pobierania odmian w <ph name="PRODUCT_NAME"/>.
@@ -1377,6 +1409,7 @@ W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ek
       Jeśli ta zasada nie jest ustawiona, Warunki korzystania z usługi nie są pokazywane.
 
       Zasada powinna określać URL, z którego <ph name="PRODUCT_OS_NAME"/> może pobrać Warunki korzystania z usługi. Dokument ten musi mieć postać zwykłego tekstu (MIME) bez żadnych znaczników.</translation>
+<translation id="2623014935069176671">Poczekaj na początkową aktywność użytkownika</translation>
 <translation id="2660846099862559570">Nigdy nie używaj serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
 <translation id="2131902621292742709">Opóźnienie przyciemnienia ekranu przy zasilaniu z baterii</translation>

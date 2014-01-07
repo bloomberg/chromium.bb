@@ -18,6 +18,7 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/>초</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/>시간 남음</translation>
+<translation id="8717309436826820190">외 <ph name="SOURCE_OF_NOTIFICATIONS"/> 알림 <ph name="NUMBER_OF_NOTIFICATIONS"/>개</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -178,6 +179,8 @@
 <translation id="27199337101878275"><ph name="NUMBER_MANY"/>초</translation>
 <translation id="3759876923365568382"><ph name="NUMBER_FEW"/>일 남음</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/>PB/s</translation>
+<translation id="2743387203779672305">클립보드로 복사</translation>
+<translation id="8371695176452482769">지금 말하기</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="7850320739366109486">알림 일시중지</translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>

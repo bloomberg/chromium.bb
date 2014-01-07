@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="6676384891291319759">Verbinding maken met internet</translation>
+<translation id="8586442755830160949">Copyright <ph name="YEAR"/> De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="6373523479360886564">Weet je zeker dat je Chromium wilt verwijderen?</translation>
 <translation id="5065199687811594072">Wil je dat Chromium deze creditcardgegevens opslaat voor het invullen van webformulieren?</translation>
 <translation id="6510925080656968729">Chromium verwijderen</translation>
@@ -28,7 +29,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3549345495227188780">Aan de slag met Chromium OS</translation>
 <translation id="4330297532943865716">Er is een conflicterende versie van Chromium of Chromium Frame gevonden op het systeem. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="6953661834318318668">Chromium-werkbalk</translation>
-<translation id="2245147136185581459">Chromium-detector van captive portals</translation>
 <translation id="4285930937574705105">De installatie is mislukt wegens een onbekende fout. Als Chromium momenteel actief is, moet je Chromium sluiten en het opnieuw proberen.</translation>
 <translation id="1396446129537741364">Chromium probeert wachtwoorden weer te geven.</translation>
 <translation id="3555616473548901994">Verwijdering voltooid.</translation>
@@ -52,7 +52,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4831257561365056138">Chromium App Launcher verwijderen</translation>
 <translation id="4222580632002216401">Je bent nu ingelogd bij Chromium! Synchronisatie is uitgeschakeld door je beheerder.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Waarschuwing:<ph name="END_BOLD"/> Chromium kan niet voorkomen dat extensies je browsergeschiedenis vastleggen. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
-<translation id="4516868174453854611">Nu je bent ingelogd, kun je je tabbladen, bladwijzers en andere Chromium-instellingen op je laptop, telefoon en tablet gebruiken. Je ontvangt ook relevantere suggesties en functies in Google services.</translation>
+<translation id="4516868174453854611">Nu je bent ingelogd, zie je dezelfde tabbladen, bladwijzers en andere Chromium-instellingen op je laptop, telefoon en tablet. Je ontvangt ook relevantere suggesties en functies in Google services.</translation>
 <translation id="985602178874221306">De auteurs van Chromium</translation>
 <translation id="8628626585870903697">Chromium bevat niet de pdf-viewer die nodig is om de functie 'Afdrukvoorbeeld' te laten werken.</translation>
 <translation id="7138853919861947730">Chromium gebruikt mogelijk webservices om je surfervaring te verbeteren.</translation>
@@ -62,7 +62,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="7771626876550251690">In dit geval komt het adres genoemd in het certificaat niet overeen met het adres van de website die je browser probeerde te openen. Een mogelijke oorzaak hiervan is dat je communicatie is onderschept door een aanvaller die een certificaat voor een andere website presenteert, wat ervoor zorgt dat de namen niet overeenkomen. Een andere mogelijke oorzaak is dat de server zo is ingesteld, dat deze voor meerdere websites hetzelfde certificaat gebruikt, waaronder voor de website die je probeert te bezoeken, ook al is dat certificaat niet geldig voor al die websites. Chromium weet zeker dat je &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; hebt bereikt, maar kan niet controleren of dat dezelfde site is als &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, die je wilde bereiken. Als je verdergaat, controleert Chromium niet of er nog meer namen niet kloppen.</translation>
 <translation id="4330585738697551178">Van deze module is bekend dat deze conflicteert met  Chromium.</translation>
 <translation id="3190315855212034486">Chromium is gecrasht. Nu opnieuw starten?</translation>
-<translation id="3590194807845837023">Profiel ontgrendelen en opnieuw starten</translation>
 <translation id="6714487516757221107">Er is geen geïnstalleerde versie van Chromium of Chromium Frame gevonden die kan worden bijgewerkt.</translation>
 <translation id="3197823471738295152">Het apparaat is bijgewerkt.</translation>
 <translation id="8551886023433311834">Bijna bijgewerkt! Start je apparaat opnieuw op om de update te voltooien.</translation>
@@ -155,6 +154,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6717134281241384636">Je profiel kan niet worden gebruikt, omdat dit is gemaakt in een recentere versie van Chromium.
 
 Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirectory op of gebruik een recentere versie van Chromium.</translation>
+<translation id="8907580949721785412">Chromium probeert wachtwoorden weer te geven. Geef uw Windows-wachtwoord op om dit toe te staan.</translation>
 <translation id="9013087743919948559">Toevoegen aan Chromium</translation>
 <translation id="6212496753309875659">Deze computer beschikt al over een recentere versie van Chromium. Als de software niet werkt, moet je Chromium verwijderen en het opnieuw proberen.</translation>
 <translation id="1298199220304005244">Hulp bij het gebruik van Chromium OS</translation>
@@ -195,7 +195,6 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="805745970029938373">Hier kun je al je meldingen van Chromium-apps, -extensies en -websites weergeven.</translation>
 <translation id="2119636228670142020">Over &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
-<translation id="1539981464052805551">Copyright 2013 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="378917192836375108">Met Chromium kun je klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
 <translation id="8724049448828509830">Er wordt momenteel een download uitgevoerd. Wil je Chromium afsluiten en de download annuleren?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>

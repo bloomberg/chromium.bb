@@ -307,6 +307,7 @@ Pokud tuto zásadu ponecháte nenastavenou, bude tato možnost aktivována, ale 
           Není-li tato zásada nastavena, bude použita výchozí doba.
 
           Hodnota zásady se zadává v milisekundách.</translation>
+<translation id="6598235178374410284">Obrázek avatara uživatele</translation>
 <translation id="1675391920437889033">Řídí, jaké typy aplikací nebo rozšíření lze instalovat.
 
           Toto nastavení vytvoří seznam povolených rozšíření nebo aplikací, které lze nainstalovat do prohlížeče <ph name="PRODUCT_NAME"/>. Hodnota představuje seznam řetězců. Musí se jednat o řetězce z následujícího výčtu: extension, theme, user_script, hosted_app, legacy_packaged_app, platform_app. Další informace o těchto typech naleznete v dokumentaci k rozšířením Chrome.
@@ -487,6 +488,11 @@ Hodnota prodloužení musí být 100 % nebo více. Hodnoty, které by prodlevu 
 <translation id="4894257424747841850">Hlásit seznam uživatelů zařízení, kteří se nedávno přihlásili.
 
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, uživatelé nebudou nahlášeni.</translation>
+<translation id="2488010520405124654">Povolit zobrazení výzvy ke konfiguraci sítě v režimu offline.
+
+      Pokud tato zásada není nastavena nebo je nastavena na hodnotu Pravda, v zařízení je nakonfigurován místní účet s automatickým přihlašováním bez prodlevy a zařízení není připojeno k internetu, zobrazí systém <ph name="PRODUCT_OS_NAME"/> výzvu ke konfiguraci sítě.
+
+      Pokud je tato zásada nastavena na hodnotu Nepravda, namísto výzvy ke konfiguraci sítě se zobrazí chybová zpráva.</translation>
 <translation id="1426410128494586442">Ano</translation>
 <translation id="4897928009230106190">Udává parametry, které se použijí při vyhledávání s našeptávačem pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {searchTerms} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
           Tato zásada je nepovinná. Pokud není nastavena, požadavek na vyhledávání s našeptávačem bude odeslán pomocí metody GET.
@@ -736,6 +742,7 @@ Z prohlížeče Chrome verze 29 a novějších verzí bylo toto nastavení odebr
 <translation id="1098794473340446990">Hlásí časy aktivity zařízení.
 
       Pokud je zásada nastavena na hodnotu True, budou registrovaná zařízení pravidelně hlásit časová období, kdy uživatel zařízení aktivně používá. Pokud nastavena není, nebo je nastavena na hodnotu False, informace o časech aktivity zařízení se hlásit nebudou.</translation>
+<translation id="1327466551276625742">Povolit zobrazení výzvy ke konfiguraci sítě v režimu offline</translation>
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="427632463972968153">Udává parametry, které se použijí při vyhledávání podle obrázku pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {imageThumbnail} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
 
@@ -952,7 +959,6 @@ Pokud ji ponecháte nenastavenou, velký kurzor bude ve výchozím nastavení de
 
       Pokud je zásada nastavena na hodnotu True nebo není nastavena, bude možné vytvářet nové uživatelské účty za předpokladu, že přihlášení uživatele není blokováno zásadou <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/>.</translation>
 <translation id="4389091865841123886">Konfiguruje vzdálené ověření identity pomocí mechanismu TPM.</translation>
-<translation id="3518214502751233558">Určit, zda prodlevy systému správy napájení a limit délky relací mají začít běžet až poté, co uživatel na začátku relace provede nějakou aktivitu</translation>
 <translation id="8256688113167012935">Řídí, jaký název účtu systém <ph name="PRODUCT_OS_NAME"/> zobrazí na přihlašovací obrazovce pro odpovídající místní účet v zařízení.
 
       Pokud je tato zásada nastavena, přihlašovací obrazovka použije zadaný řetězec u obrázku, který slouží pro výběr přihlašovacích údajů odpovídajícího místního účtu v zařízení.
@@ -1337,6 +1343,32 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
       Pokud je určena zásada DeviceIdleLogoutTimeout, určuje tato zásada, jak dlouho před odhlášením se bude uživateli zobrazovat okno s upozorněním a časovačem.
 
       Hodnota zásady se určuje v milisekundách.</translation>
+<translation id="54795286564479339">Konfigurace obrázku avatara uživatele
+
+      Tato zásada umožňuje nakonfigurovat obrázek avatara, který na přihlašovací obrazovce představuje uživatele. Zásadu nastavíte zadáním adresy URL, ze které systém <ph name="PRODUCT_OS_NAME"/> může obrázek avatara stáhnout, a kryptografické hodnoty hash, která slouží k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 512 kB. Adresa URL musí být přístupná bez nutnosti autentizace.
+
+      Obrázek avatara se stáhne a uloží do mezipaměti. Obrázek se stáhne znovu pokaždé, když se adresa URL nebo hodnota hash změní.
+
+      Tuto zásadu je třeba zadat jako řetězec, který udává adresu URL a hodnotu hash ve formátu JSON, a to podle následujícího schématu:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Adresa URL, ze které lze obrázek avatara stáhnout&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Hodnota hash SHA-1 obrázku avatara&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Pokud tuto zásadu nastavíte, systém <ph name="PRODUCT_OS_NAME"/> obrázek avatara stáhne a použije.
+
+      Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
+
+      Pokud zásadu nenastavíte, uživatel bude moci sám zvolit, jaký obrázek avatara jej bude na přihlašovací obrazovce představovat.</translation>
 <translation id="237494535617297575">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno nastavovat upozornění.
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultNotificationsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -1735,6 +1767,7 @@ Poznámka: V současnosti jsou automatické restarty povoleny pouze tehdy, když
       Není-li tato zásada nastavena, žádné smluvní podmínky se nezobrazí.
 
       Jako hodnotu této zásady zadejte adresu URL, ze které může systém <ph name="PRODUCT_OS_NAME"/> smluvní podmínky stáhnout. Smluvní podmínky musejí být uloženy ve formátu prostého textu s typem MIME „text/plain“. Nejsou povoleny žádné značky.</translation>
+<translation id="2623014935069176671">Počkat na první aktivitu uživatele</translation>
 <translation id="2660846099862559570">Nikdy nepoužívat server proxy</translation>
 <translation id="1435659902881071157">Konfigurace sítě na úrovni zařízení</translation>
 <translation id="2131902621292742709">Prodleva snížení jasu obrazovky při napájení z baterie</translation>

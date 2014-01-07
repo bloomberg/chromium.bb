@@ -254,6 +254,7 @@
           Si no se establece esta política, se utilizará un período de tiempo predeterminado.
 
           El valor de la política debe especificarse en milisegundos.</translation>
+<translation id="6598235178374410284">Imagen de avatar del usuario</translation>
 <translation id="1675391920437889033">Permite controlar el tipo de aplicaciones o extensiones que se pueden instalar.
 
           Esta configuración habilita los tipos de extensiones o aplicaciones que se pueden instalar en <ph name="PRODUCT_NAME"/>. El valor es una lista de cadenas y cada una de ellas debe ser uno de los siguientes elementos: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Para obtener más información al respecto, consulta la documentación sobre extensiones de Chrome.
@@ -404,6 +405,11 @@
 <translation id="4894257424747841850">Informa la lista de usuarios de dispositivos que accedieron recientemente.
 
       Si esta política no se establece o se establece en &quot;False&quot;, no se informará sobre los usuarios.</translation>
+<translation id="2488010520405124654">Habilita el mensaje de configuración de red si no hay conexión.
+
+      Si se establece esta política en True o no se establece, se configuró una cuenta local de dispositivo para el acceso automático sin tiempo de espera y el dispositivo no tiene conexión a Internet, <ph name="PRODUCT_OS_NAME"/> mostrará un mensaje de configuración de red.
+
+      Si se establece esta política en False, se mostrará un mensaje de error en lugar del mensaje de configuración de red.</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="4897928009230106190">Especifica los parámetros utilizados al realizar una búsqueda de sugerencias con POST. Se compone de pares de nombre/valor separados por coma. Si un valor es un parámetro de plantilla, como {searchTerms} en el ejemplo anterior, se reemplazará por datos de términos de búsqueda reales.
 
@@ -598,6 +604,7 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
 
           El valor de la política deberá especificarse en milisegundos. Los valores deben ser menores o iguales que la demora por inactividad.</translation>
 <translation id="1098794473340446990">Permite que se indique el tiempo de actividad del dispositivo. Si se establece el valor &quot;True&quot;, los dispositivos registrados notificarán los períodos de tiempo durante los que se utilice activamente el dispositivo. Si no se establece esta política o se establece el valor &quot;False&quot;, no se registrará ni se indicará el tiempo de actividad del dispositivo.</translation>
+<translation id="1327466551276625742">Habilitar mensaje de configuración de red si no hay conexión</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
 <translation id="427632463972968153">Especifica los parámetros utilizados al realizar una búsqueda de imágenes con POST. Se compone de pares de nombre/valor separados por coma. Si un valor es un parámetro de plantilla, como {imageThumbnail} en el ejemplo anterior, se reemplazará por datos de miniaturas de imágenes reales.
 
@@ -780,7 +787,6 @@ El formato del valor sigue los nombres de las zonas horarias de la &quot;Base de
 
       Si esta política se establece en &quot;true&quot; o &quot;no configurada&quot;, se permitirá crear nuevas cuentas de usuario, siempre que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> no impida el inicio de sesión del usuario.</translation>
 <translation id="4389091865841123886">Permite configurar la atestación remota con el mecanismo de TPM.</translation>
-<translation id="3518214502751233558">Especifica si las demoras por administración de energía y el límite de duración de la sesión deben ejecutarse solo después de que haya actividad inicial en la sesión de un usuario.</translation>
 <translation id="8256688113167012935">Controla el nombre de cuenta <ph name="PRODUCT_OS_NAME"/> que aparece en la pantalla de acceso de la cuenta local del dispositivo que corresponda.
 
       Si esta política se establece, la pantalla de acceso utilizará la cadena especificada en el selector de acceso basado en imágenes de la cuenta local del dispositivo que corresponda.
@@ -1076,6 +1082,32 @@ Si este parámetro se establece como verdadero o no se configura, los usuarios p
       Cuando se especifica DeviceIdleLogoutTimeout, esta política definela duración del cuadro de advertencia con un cuenta regresiva que se mostrará al usuario antes de que este salga automáticamente del navegador.
 
       El valor de esta política se debe especificar en milisegundos.</translation>
+<translation id="54795286564479339">Configuración de la imagen de avatar del usuario
+
+      Esta política te permite configurar la imagen de avatar que identifica al usuario en la pantalla de acceso. Para establecerla, indica qué URL utilizará <ph name="PRODUCT_OS_NAME"/> para descargar la imagen de avatar y un hash criptográfico que verifica la integridad de la descarga. La imagen debe estar en formato JPEG y no pesar más de 512 kB. Se debe poder acceder a la URL sin autenticación previa.
+
+      La imagen de avatar se descarga y queda almacenada en caché. Cada vez que cambie la URL o el hash, la imagen se volverá a descargar.
+
+      La política debe indicarse como una cadena que expresa la URL y el hash en formato JSON, y según el siguiente esquema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL desde la cual se puede descargar la imagen de avatar&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Función hash SHA-1 de la imagen de avatar&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Si se establece esta política, <ph name="PRODUCT_OS_NAME"/> descargará y utilizará la imagen de avatar.
+
+      Si estableces esta política, los usuarios no podrán modificarla ni anularla.
+
+      Si no se establece esta política, los usuarios podrán elegir la imagen de avatar que los identifique en la pantalla de acceso.</translation>
 <translation id="237494535617297575">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a mostrar notificaciones. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política &quot;DefaultNotificationsSetting&quot;, si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="7258823566580374486">Habilitar modo de cortina en hosts de acceso remoto</translation>
 <translation id="5560039246134246593">Agrega un parámetro a la obtención del valor de inicialización de las variaciones en <ph name="PRODUCT_NAME"/>.
@@ -1392,6 +1424,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
       Si no se establece esta política, no se mostrarán las Condiciones del servicio.
 
       La política debe establecerse en una URL de la cual <ph name="PRODUCT_OS_NAME"/> pueda descargar las Condiciones del servicio. Estas deberán estar en texto sin formato y ofrecerse como texto sin formato tipo MIME. No se permiten marcas.</translation>
+<translation id="2623014935069176671">Esperar actividad inicial del usuario</translation>
 <translation id="2660846099862559570">Nunca usar un proxy</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivo</translation>
 <translation id="2131902621292742709">Demora de atenuación de pantalla con batería</translation>

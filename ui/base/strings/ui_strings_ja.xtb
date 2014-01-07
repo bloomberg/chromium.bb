@@ -18,6 +18,7 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> 秒</translation>
 <translation id="7511635910912978956">残り <ph name="NUMBER_FEW"/> 時間</translation>
+<translation id="8717309436826820190"><ph name="SOURCE_OF_NOTIFICATIONS"/> から他 <ph name="NUMBER_OF_NOTIFICATIONS"/> 件</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -178,6 +179,8 @@
 <translation id="27199337101878275"><ph name="NUMBER_MANY"/> 秒</translation>
 <translation id="3759876923365568382">残り <ph name="NUMBER_FEW"/> 日</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/秒</translation>
+<translation id="2743387203779672305">クリップボードにコピー</translation>
+<translation id="8371695176452482769">お話しください</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7850320739366109486">通知を一時的にミュート</translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>

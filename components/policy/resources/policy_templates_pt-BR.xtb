@@ -249,6 +249,7 @@
           Quando esta política não está definida, é usado um período padrão.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="6598235178374410284">Imagem do avatar do usuário</translation>
 <translation id="1675391920437889033">Controla quais tipos de aplicativos/extensões podem ser instalados.
 
           Esta configuração autoriza os tipos permitidos de extensão/aplicativos que podem ser instalados no <ph name="PRODUCT_NAME"/>. O valor é uma lista de strings, sendo que cada uma delas deve ter um dos seguintes tipos: &quot;extensão&quot;, &quot;tema&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot; e &quot;platform_app&quot;. Consulte a documentação das extensões do Google Chrome para obter mais informações sobre esses tipos.
@@ -399,6 +400,11 @@
 <translation id="4894257424747841850">Reporta a lista de usuários do dispositivo que fizeram login recentemente.
 
       Se a política não for definida, ou for definida como falsa, os usuários não serão reportados.</translation>
+<translation id="2488010520405124654">Ativar o prompt de configuração de rede quando estiver off-line.
+
+      Se esta política não for definida ou for definida como Verdadeira, uma conta local de dispositivo for configurada para login automático com atraso zero e o dispositivo não tiver acesso à Internet, o <ph name="PRODUCT_OS_NAME"/> mostrará um prompt de configuração de rede.
+
+      Se esta política for definida como Falsa, uma mensagem de erro será exibida no lugar do prompt de configuração de rede.</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="4897928009230106190">Especifica os parâmetros usados ao pesquisar sugestões com POST. Consiste em pares de nomes/valores separados por vírgula. Se um valor for um parâmetro de modelo, como {searchTerms} no exemplo acima, ele será substituído por dados de termos de pesquisa reais.
 
@@ -574,6 +580,7 @@
 
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem iguais ou inferiores ao período de inatividade.</translation>
 <translation id="1098794473340446990">Informa o horário das atividades do dispositivo. Se essa configuração for definida para True, os dispositivos inscritos informarão os períodos de tempo em que um usuário está ativo no dispositivo. Se essa configuração não for definida ou for definida para False, os horários das atividade do dispositivo não serão gravados ou informados.</translation>
+<translation id="1327466551276625742">Ativar prompt de configuração de rede quando estiver off-line</translation>
 <translation id="7937766917976512374">Permitir ou negar captura de vídeo</translation>
 <translation id="427632463972968153">Especifica os parâmetros usados ao pesquisar imagens com POST. Consiste em pares de nomes/valores separados por vírgula. Se um valor for um parâmetro de modelo, como {imageThumbnail} no exemplo acima, ele será substituído por dados de miniaturas de pesquisa reais.
 
@@ -751,7 +758,6 @@
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
 <translation id="4928632305180102854">Controla se o <ph name="PRODUCT_OS_NAME"/> permite a criação de novas contas de usuários. Se esta política for configurada como false, os usuários que ainda não têm uma conta não poderão fazer login. Se esta política for configurada como true ou não for configurada, será permitida a criação de novas contas de usuários, desde que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> não impeça que o usuário faça login.</translation>
 <translation id="4389091865841123886">Configurar a declaração remota com mecanismo TPM</translation>
-<translation id="3518214502751233558">Especifica se os intervalos de gerenciamento de energia e o limite de duração da sessão só devem começar a ser contados após o usuário iniciar atividade em uma sessão</translation>
 <translation id="8256688113167012935">Controla o nome da conta que o <ph name="PRODUCT_OS_NAME"/> mostra na tela de login para a conta local de dispositivo correspondente.
 
       Se esta política estiver definida, a tela de login usará a string especificada no seletor de login baseado em imagem para a conta local de dispositivo correspondente.
@@ -1025,6 +1031,32 @@ Se essa configuração for definida como verdadeira ou não for definida, os usu
 <translation id="909184783177222836">Gerenciamento de energia</translation>
 <translation id="3417418267404583991">Se esta política for definida como true ou não for configurada, o <ph name="PRODUCT_OS_NAME"/> permitirá o login de visitantes. Os logins de visitantes são sessões anônimas de usuários e não requerem uma senha. Se esta política for configurada para false, o <ph name="PRODUCT_OS_NAME"/> não permitirá que sejam iniciadas sessões de visitantes.</translation>
 <translation id="8329984337216493753">Esta política é ativa somente no modo de varejo. Quando o DeviceIdleLogoutTimeout for especificado, esta política definirá a duração da caixa de aviso com contagem regressiva que será mostrada ao usuário antes da desconexão. O valor da política deve ser especificado em milésimos de segundos.</translation>
+<translation id="54795286564479339">Configurar a imagem do avatar do usuário.
+
+      Esta política permite configurar a imagem do avatar que representa o usuário na tela de login. A política é definida especificando o URL a partir do qual o <ph name="PRODUCT_OS_NAME"/> pode fazer o download da imagem do avatar e de um hash criptográfico usado para confirmar a integridade do download. A imagem deve estar no formato JPEG e seu tamanho não deve ultrapassar 512 kB. O URL deve ser acessível sem necessidade de qualquer autenticação.
+
+      A imagem do avatar é transferida por download e armazenada em cache. O download será repetido sempre que o URL ou o hash mudar.
+
+      A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, de acordo com o seguinte esquema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;The URL from which the avatar image can be downloaded.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;The SHA-1 hash of the avatar image.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Se esta política for definida, o <ph name="PRODUCT_OS_NAME"/> fará o download e usará a imagem do avatar.
+
+      Se você definir esta política, os usuários não poderão alterar nem modificá-la.
+
+      Se a política não for definida, o usuário poderá escolher a imagem do avatar que o representa na tela de login.</translation>
 <translation id="237494535617297575">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir notificações. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política &quot;DefaultNotificationsSetting&quot;, caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7258823566580374486">Ativar cortinas de hosts de acesso remoto</translation>
 <translation id="5560039246134246593">Adicionar um parâmetro para buscar o termo-semente &quot;Variações&quot; no <ph name="PRODUCT_NAME"/>.
@@ -1340,6 +1372,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política não for definida, os Termos de Serviço não serão mostrados.
 
       A política deve ser definida para um URL a partir do qual o <ph name="PRODUCT_OS_NAME"/> possa fazer o download dos Termos de Serviço. Os Termos de Serviço devem estar em texto sem formação, com tipo de texto MIME text/plain. Não são permitidas marcações.</translation>
+<translation id="2623014935069176671">Aguardar atividade inicial do usuário</translation>
 <translation id="2660846099862559570">Nunca usar um proxy</translation>
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>

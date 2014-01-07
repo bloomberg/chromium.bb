@@ -307,6 +307,7 @@
           Khi chính sách này không được đặt, khoảng thời gian mặc định sẽ được sử dụng.
 
           Phải chỉ định giá trị chính sách bằng mili giây.</translation>
+<translation id="6598235178374410284">Hình đại diện của người dùng</translation>
 <translation id="1675391920437889033">Kiểm soát các loại ứng dụng/tiện ích mở rộng được phép cài đặt.
 
           Cài đặt này liệt kê các loại tiện ích mở rộng/ứng dụng được cho phép mà có thể cài đặt được trong <ph name="PRODUCT_NAME"/>. Giá trị là một danh sách chuỗi, mỗi chuỗi phải là một trong số loại sau: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Xem tài liệu về tiện ích mở rộng Chrome để biết thêm thông tin về các loại này.
@@ -488,6 +489,11 @@
 <translation id="4894257424747841850">Báo cáo danh sách những người dùng thiết bị gần đây đã đăng nhập.
 
       Nếu chính sách không được đặt hoặc bị đặt thành sai, người dùng sẽ không được báo cáo.</translation>
+<translation id="2488010520405124654">Bật lời nhắc về cấu hình mạng khi ngoại tuyến.
+
+      Nếu chính sách này chưa được đặt hoặc được đặt thành Đúng đồng thời tài khoản trên thiết bị được định cấu hình để tự động đăng nhập mà không có độ trễ và thiết bị không có quyền truy cập Internet, <ph name="PRODUCT_OS_NAME"/> sẽ hiển thị lời nhắc về cấu hình mạng.
+
+      Nếu chính sách này được đặt thành Sai, thông báo lỗi sẽ được hiển thị thay vì lời nhắc về cấu hình mạng.</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="4897928009230106190">Chỉ định tham số được dùng khi thực hiện tìm kiếm theo đề xuất với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên, tham số đó sẽ được thay thế bằng dữ liệu cụm từ tìm kiếm thực.
 
@@ -733,6 +739,7 @@
 <translation id="1098794473340446990">Báo cáo thời gian hoạt động của thiết bị.
 
       Nếu cài đặt này được đặt thành Đúng, các thiết bị đã đăng ký sẽ báo cáo khoảng thời gian khi người dùng hoạt động trên thiết bị. Nếu cài đặt này chưa được đặt hoặc được đặt thành Sai, thời gian hoạt động của thiết bị sẽ không được ghi lại hoặc báo cáo.</translation>
+<translation id="1327466551276625742">Bật lời nhắc về cấu hình mạng khi ngoại tuyến</translation>
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="427632463972968153">Chỉ định tham số được dùng khi thực hiện tìm kiếm theo hình ảnh với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên thì tham số đó sẽ được thay thế bằng dữ liệu hình thu nhỏ thực.
 
@@ -941,7 +948,6 @@
 
       Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, việc tạo các tài khoản người dùng mới sẽ được phép miễn là <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> không ngăn người dùng đăng nhập.</translation>
 <translation id="4389091865841123886">Định cấu hình chứng thực từ xa với cơ chế TPM.</translation>
-<translation id="3518214502751233558">Chỉ định liệu độ trễ quản lý nguồn và giới hạn thời lượng phiên có chỉ bắt đầu chạy sau hoạt động đầu tiên của người dùng trong phiên hay không</translation>
 <translation id="8256688113167012935">Kiểm soát tên tài khoản <ph name="PRODUCT_OS_NAME"/> hiển thị trên màn hình đăng nhập cho tài khoản trong thiết bị tương ứng.
 
       Nếu chính sách này được đặt, màn hình đăng nhập sẽ sử dụng chuỗi đã chỉ định trong trình chọn đăng nhập dựa trên hình ảnh cho tài khoản trong thiết bị tương ứng.
@@ -1311,6 +1317,33 @@
       Khi DeviceIdleLogoutTimeout được chỉ định, chính sách này sẽ xác định thời lượng của hộp cảnh báo với bộ tính giờ đếm ngược được hiển thị cho người dùng trước khi tác vụ đăng xuất được thực thi.
 
       Giá trị của chính sách phải được chỉ định theo mili giây.</translation>
+<translation id="54795286564479339">Định cấu hình hình đại diện của người dùng.
+
+      Chính sách này cho phép bạn định cấu hình hình đại diện - đại diện cho người dùng trên màn hình đăng nhập. Chính sách này được thiết lập bằng cách chỉ định URL mà từ đó <ph name="PRODUCT_OS_NAME"/> có thể tải xuống hình đại diện và bản băm mật mã được sử dụng để xác minh tính toàn vẹn của hình đại diện được tải xuống. Hình đại diện phải ở định dạng JPEG, kích thước của hình đại diện không được vượt quá 512 kB. URL phải truy cập được mà không cần bất kỳ xác thực nào.
+
+      Hình đại diện được tải xuống và được lưu trong bộ nhớ cache. Hình đại diện sẽ được tải xuống lại bất cứ khi nào URL hoặc bản băm thay đổi.
+
+      Chính sách phải được chỉ định dưới dạng chuỗi biểu thị URL và bản băm ở định dạng JSON, tuân theo sơ đồ sau:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL mà từ đó có thể tải xuống hình đại diện.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Bản băm SHA-1 của hình đại diện.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Nếu chính sách này được thiết lập, <ph name="PRODUCT_OS_NAME"/> sẽ tải xuống và sử dụng hình đại diện.
+
+      Nếu bạn thiết lập chính sách, người dùng không thể thay đổi hoặc ghi đè chính sách này.
+
+      Nếu bạn không thiết lập chính sách này, người dùng có thể chọn hình đại diện - đại diện cho họ trên màn hình đăng nhập.</translation>
 <translation id="237494535617297575">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép hiển thị thông báo.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -1687,6 +1720,7 @@
       Nếu không đặt chính sách này, không Điều khoản dịch vụ nào được hiển thị.
 
       Phải đặt chính sách thành một URL nơi <ph name="PRODUCT_OS_NAME"/> có thể tải xuống Điều khoản dịch vụ. Điều khoản dịch vụ phải là văn bản thuần túy, được phân phối dưới dạng văn bản/thuần túy loại MIME. Không cho phép đánh dấu.</translation>
+<translation id="2623014935069176671">Đợi hoạt động người dùng đầu tiên</translation>
 <translation id="2660846099862559570">Không bao giờ sử dụng proxy</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
 <translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>

@@ -18,6 +18,7 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> મિનિટ પહેલા</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> સેકંડ</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> કલાક બાકી</translation>
+<translation id="8717309436826820190"><ph name="SOURCE_OF_NOTIFICATIONS"/> માંથી <ph name="NUMBER_OF_NOTIFICATIONS"/> વધુ</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">રદ કરો</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -178,6 +179,8 @@
 <translation id="27199337101878275"><ph name="NUMBER_MANY"/> સેકંડ</translation>
 <translation id="3759876923365568382"><ph name="NUMBER_FEW"/> દિવસ બાકી</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
+<translation id="2743387203779672305">ક્લિપબોર્ડ પર કૉપિ કરો</translation>
+<translation id="8371695176452482769">હવે બોલો</translation>
 <translation id="6965382102122355670">ઓકે</translation>
 <translation id="7850320739366109486">ખલેલ પાડશો નહીં</translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> દિવસ પહેલા</translation>

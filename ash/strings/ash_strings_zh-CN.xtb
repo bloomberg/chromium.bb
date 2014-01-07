@@ -55,7 +55,7 @@
 <translation id="3294437725009624529">访客</translation>
 <translation id="8190698733819146287">自定义语言和输入法...</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/>（<ph name="ANNOTATION"/>）</translation>
-<translation id="2942516765047364088">任务栏位置</translation>
+<translation id="2942516765047364088">文件架位置</translation>
 <translation id="8676770494376880701">已连接低功率充电器</translation>
 <translation id="7170041865419449892">超出范围</translation>
 <translation id="4804818685124855865">断开连接</translation>
@@ -96,7 +96,7 @@
 <translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
 <translation id="2670531586141364277">激活“<ph name="NAME"/>”需要连接网络。</translation>
 <translation id="3963445509666917109">扬声器（内部）</translation>
-<translation id="2825619548187458965">任务栏</translation>
+<translation id="2825619548187458965">文件架</translation>
 <translation id="2614835198358683673">您的 Chromebook 在开启期间可能无法充电。建议您使用产品原装的充电器。</translation>
 <translation id="1895658205118569222">关闭</translation>
 <translation id="4430019312045809116">音量</translation>
@@ -152,6 +152,7 @@
 <translation id="3473479545200714844">屏幕放大镜</translation>
 <translation id="7005812687360380971">失败</translation>
 <translation id="882279321799040148">点击即可查看</translation>
+<translation id="1753067873202720523">您的 Chromebook 在处于打开状态时可能无法充电。</translation>
 <translation id="5045550434625856497">密码不正确</translation>
 <translation id="1602076796624386989">启用移动数据</translation>
 <translation id="6981982820502123353">辅助功能</translation>
@@ -176,7 +177,7 @@
 <translation id="2983818520079887040">设置...</translation>
 <translation id="3871838685472846647">蜂窝网络已激活</translation>
 <translation id="1195412055398077112">过扫描</translation>
-<translation id="112308213915226829">自动隐藏任务栏</translation>
+<translation id="112308213915226829">自动隐藏文件架</translation>
 <translation id="7573962313813535744">停靠模式</translation>
 <translation id="8927026611342028580">连接请求已发送</translation>
 <translation id="8300849813060516376">OTASP 失败</translation>

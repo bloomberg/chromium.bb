@@ -298,6 +298,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
           Sera hii inapokuwa haijawekwa, urefu wa muda wa chaguo-msingi hutumiwa.
 
           Sera ya thamani inastahili kubainishwa kwa nukta.</translation>
+<translation id="6598235178374410284">Picha ya ishara ya mtumiaji</translation>
 <translation id="1675391920437889033">Hudhibiti ni aina zipi za programu/viendelezi zinazoruhusiwa kusakinishwa.
 
           Mpangilio huu unatoa idhini kwa aina za viendelezi/programu zinazokubaliwa zinazoweza kusakinishwa katika <ph name="PRODUCT_NAME"/>. Thamani ni orodha ya mkondo,  ambapo kila kimoja kinastahili kuwa mojawapo ya ifuatayo: &quot;kiendelezi&quot;, &quot;mandhari&quot;, &quot;hati ya_mtumiaji&quot;, &quot;programu_iliyopangishwa&quot;, &quot;programu_iliyo kwenye furushi_iliyopitwa na wakati &quot;programu_ya mfumo&quot;. Ona waraka wa viendelezi vya Chrome kwa maelezo zaidi kwenye aina hizi.
@@ -479,6 +480,11 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="4894257424747841850">Ripoti orodha ya watumiaji wa kifaa ambao waliingia katika akaunti hivi karibuni.
 
      Kama sera haitawekwa, au imewekwa kuwa sivyo, watumiaji hawataripotiwa.</translation>
+<translation id="2488010520405124654">Washa ombi la usanidi wa mtandao inapokuwa nje ya mtandao. 
+
+     Sera hii isipowekwa au ikiwekwa kuwa Ndivyo na akaunti ya kifaa ya karibu isanidiwe kwa kuingia kiotomatiki pasipo kuchelewa na kifaa kiwe hakina ufikiaji kwa Intaneti, <ph name="PRODUCT_OS_NAME"/> itaonyesha ombi la kusanidi mtandao.
+
+     Sera hii ikiwekwa kuwa Sivyo, ujumbe wa hitilafu utaonyeshwa badala ya ombi la kusanidi mtandao.</translation>
 <translation id="1426410128494586442">Ndio</translation>
 <translation id="4897928009230106190">Hubainisha vigezo vinavyotumika wakati wa kufanya utafutaji kwa mapendekezo kutumia POST. Ina vikundi vya jina/thamani vinavyotenganishwa na koma. Kama thamani ni kigezo cha kiolezo, kama, {Hoja za utafutaji} katika mfano hapo juu, itabadilishwa na data ya hoja za utafutaji halisi.
 
@@ -724,6 +730,7 @@ Mpangilio huu umeondolewa kutoka Chrome 29 na matoleo mapya.</translation>
 <translation id="1098794473340446990">Ripoti muda wa shughuli za kifaa.
 
       Ikiwa mpangilio huu utawekwa kwenye Ndivyo, vifaa vilivyosajiliwa vitaripoti vipindi vya muda wakati mtumiaji atakuwa akitumia kifaa. Ikiwa mpangilio huu hautawekwa au kuwekwa kwenye Sivyo, muda wa shughuli wa kifaa hautarekodiwa au kuripotiwa.</translation>
+<translation id="1327466551276625742">Washa ombi la usanidi wa mtandao inapokuwa nje ya mtandao</translation>
 <translation id="7937766917976512374">Ruhusu au ukatae kurekodi video</translation>
 <translation id="427632463972968153">Hubainisha vigezo vinavyotumika wakati wa kufanya utafutaji kwa picha kutumia POST. Ina vikundi vya jina/thamani vinavyotenganishwa na koma. Kama thamani ni kigezo cha kiolezo, kama {Kijipicha} katika mfano hapo juu, itabadilishwa na data ya kijipicha cha picha halisi.
 
@@ -937,7 +944,6 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
 
       Ikiwa sera hii imewekwa kuwa Ndivyo au haijasanidiwa, akaunti mpya za mtumiaji itaruhusiwa kuundwa mradi tu <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> haimzuii mtumiaji kuingia.</translation>
 <translation id="4389091865841123886">Sanidi uthibitishaji wa mbali unaotumia mfumo wa TPM.</translation>
-<translation id="3518214502751233558">Bainisha kama uchelewashaji wa usimamizi wa nishati na urefu wa kipindi lazima tu uenze kutekeleza baada ya shughuli ya awali ya mtumiaji katika kipindi.</translation>
 <translation id="8256688113167012935">Hudhibiti jina la akaunti <ph name="PRODUCT_OS_NAME"/> inayoonekana kwenye skrini ya kuingia kwa ajili ya akaunti ya kifaa cha karibu nawe inayolingana.
 
       Iwapo sera hii itawekwa, skrini ya kuingia itatumia uzi uliobainishwa katika kichaguaji cha kuingia kilicho na picha kwa ajili ya akaunti ya kifaa cha karibu nawe inayolingana.
@@ -1321,6 +1327,32 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
       Wakati DeviceIdleLogoutTimeout inapobainishwa sera hii inafafanua muda wa kikasha cha onyo kwa kipima muda kinachoonyeshwa kwa mtumiaji kabla ya kuondoka kutekelezwa.
 
       Thamani ya sera inastahili kubainishwa katika milisekunde.</translation>
+<translation id="54795286564479339">Sanidi picha ya ishara ya mtumiaji.
+
+       Sera hii inakuruhusu kusanidi picha ya ishara inayowakilisha mtumiaji kwenye skrini ya kuingia katika akaunti. Sera huwekwa kwa kubainisha URL ambayo <ph name="PRODUCT_OS_NAME"/> inaweza kupakua picha ya ishara na alama ya reli ya kusimba inayotumiwa kuthibitisha uadilifu wa kipakuzi. Picha lazima iwe katika muundo wa JPEG, ukubwa wake usizidi kB 512. URL lazima iweze kufikiwa bila uthibitishaji wowote.
+
+        Picha ya ishara hupakuliwa na kuakibishwa. Itapakuliwa tena wakati wowote URL au alama ya reli inapopakuliwa. 
+
+         Sera lazima ibainishwe kama mfuatano unaoonyesha URL na alama ya reli katika muundo wa JSON, ifanane na muundo ufuatao:
+     {
+       &quot;type&quot;: &quot;object&quot;, 
+       &quot;properties&quot;: {
+       &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL ambayo picha ya ishara inaweza kupakuliwa.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+            },
+              &quot;hash&quot;: {
+                 &quot;description&quot;: &quot;Alama ya reli ya SHA-1 ya picha ya ishara.&quot;,
+                  &quot;type.&quot;: &quot;string&quot;
+                  }
+                }
+              }
+    
+             Iwapo sera hii imewekwa, <ph name="PRODUCT_OS_NAME"/> itapakua na kutumia picha ya ishara.
+
+             Iwapo utaweka sera hii, watumiaji hawataweza kuifuta.
+
+             Iwapo sera itaachwa bila kuwekwa, mtumiaji  anaweza kuchagua picha ya ishara inayomwakilisha katika skrini ya kuingia katika akaunti.</translation>
 <translation id="237494535617297575">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo zinaruhusiwa kuonyesha arifa.
 
            Ikiwa sera hii itasalia kama haijawekwa thamani yote chaguo-msingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultNotificationsSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
@@ -1717,6 +1749,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
       Iwapo sera hii haitawekwa, sheria na masharti hayataonyeshwa.
 
       Sera itawekwa kwenye URL ambapo <ph name="PRODUCT_OS_NAME"/> inaweza kupakua Sheria na masharti. Lazima Sheria na Masharti yawe maandishi matupu, yawe kama maandishi ya kuandika/matupu ya MIME. Markup hairuhusiwi.</translation>
+<translation id="2623014935069176671">Subiri shughuli ya kwanza ya mtumiaji</translation>
 <translation id="2660846099862559570">Usitumie proksi kamwe</translation>
 <translation id="1435659902881071157">Usanidi wa mtandao wa kiwango cha kifaa</translation>
 <translation id="2131902621292742709">Ufifili wa skrini unachelewa wakati wa kuendesha kwa nishati ya betri</translation>

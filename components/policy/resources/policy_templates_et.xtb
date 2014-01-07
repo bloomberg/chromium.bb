@@ -297,6 +297,7 @@
           Kui jätate selle reegli määramata, kasutatakse vaikeaega.
 
           Reegli väärtus tuleb määrata millisekundites.</translation>
+<translation id="6598235178374410284">Kasutaja avatarkujutis</translation>
 <translation id="1675391920437889033">Määrab, millist tüüpi rakendusi/laiendusi tohib installida.
 
           Seade loob lubatud loendi kõikidest laiendustest/rakendustest, mida tohib rakendusse <ph name="PRODUCT_NAME"/> installida. Väärtus on loend stringidest, mis peavad olema järgmisel kujul: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. Vaadake tüüpide kohta lisateavet Chrome'i laienduste dokumentidest.
@@ -478,6 +479,11 @@
 <translation id="4894257424747841850">Edastab loendi seadme kasutajatest, kes on hiljuti sisse loginud.
 
       Kui reeglit pole määratud või on määratud olekule Väär, siis kasutajatest ei teavitata.</translation>
+<translation id="2488010520405124654">Võrguseadistuse viiba lubamine, kui seade on võrguühenduseta.
+
+      Kui seda reeglit pole määratud või on määratud valikule Tõene ja seadme kohalik konto on seadistatud viivituseta automaatsele sisselogimisele ning seadmel puudub Interneti-ühendus, siis kuvab operatsioonisüsteem <ph name="PRODUCT_OS_NAME"/> võrguseadistuse viiba.
+
+      Kui reegel on määratud valikule Väär, kuvatakse võrguseadistuse viiba asemel veateade.</translation>
 <translation id="1426410128494586442">Jah</translation>
 <translation id="4897928009230106190">Täpsustab parameetri, mida kasutatakse POST-meetodiga soovituse otsingu tegemisel. See koosneb komaga eraldatud nime/väärtuse paaridest. Kui väärtus on malliparameeter, nt {searchTerms} ülalolevas näites, siis asendatakse see otsingutermini andmetega.
 
@@ -722,6 +728,7 @@ Seade lubamisel saadavad registreeritud seadmed regulaarselt teavet operatsiooni
           Reegli väärtus tuleb määrata millisekundites. Väärtus peab olema tegevusetuse viivitusest väiksem või sellega võrdne.</translation>
 <translation id="1098794473340446990">Saadab teavet seadme aktiivsuse aja kohta.
 Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil kasutaja seadet kasutab. Kui jätate seade määramata või keelate selle, siis ei talletata ega saadeta teavet seadme aktiivsuse aja kohta.</translation>
+<translation id="1327466551276625742">Võrguseadistuse viiba lubamine, kui seade on võrguühenduseta</translation>
 <translation id="7937766917976512374">Video jäädvustamise lubamine või keelamine</translation>
 <translation id="427632463972968153">Täpsustab parameetri, mida kasutatakse POST-meetodiga soovituse otsingu tegemisel. See koosneb komaga eraldatud nime/väärtuse paaridest. Kui väärtus on malliparameeter, nt {imageThumbnail} ülalolevas näites, siis asendatakse see pisipildi andmetega.
 
@@ -943,7 +950,6 @@ Seade lubamisel saadavad registreeritud seadmed teavet ajaperioodide kohta, mil 
 
       Kui lubate selle reegli või jätate määramata, siis on uute kasutajakontode loomine lubatud eeldusel, et <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ei takista kasutajal sisse logida.</translation>
 <translation id="4389091865841123886">Kaugatesteerimine konfigureeritakse TPM-mehhanismi abil.</translation>
-<translation id="3518214502751233558">Määrab, kas toitehalduse viivituste ja seansi pikkuse limiidi aktiveerimine peaks toimuma pärast seda, kui kasutaja on seansi ajal teinud esmased toimingud</translation>
 <translation id="8256688113167012935">Juhib konto nime, mida <ph name="PRODUCT_OS_NAME"/> sisselogimiskuval vastava seadmepõhise konto jaoks näitab.
 
       Reegli määramisel kasutatakse pildipõhisel sisselogimiskuval vastava seadmepõhise konto jaoks määratud stringi.
@@ -1319,6 +1325,32 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
       Kui DeviceIdleLogoutTimeout on määratud, siis määratleb reegel, kui kaua kuvatakse loenduriga hoiatusboks enne väljalogimist.
 
       Määrake reegli väärtus millisekundites.</translation>
+<translation id="54795286564479339">Kasutaja avatarkujutise seadistamine.
+
+      Selle reegliga saate seadistada avatarkujutise, mis kujutab kasutajat sisselogimisekraanil. Reegli määramiseks täpsustage URL-i, kust <ph name="PRODUCT_OS_NAME"/> saab alla laadida avatarkujutise, ja krüptograafilist räsiväärtust, mida kasutatakse allalaadimise terviklikkuse kinnitamiseks. Kujutis peab olema JPEG-vormingus, selle suurus ei tohi ületada 512 kB. URL-ile peab olema juurdepääs ilma autentimiseta.
+
+      Avatarkujutis laaditakse alla ja salvestatakse vahemällu. Kui URL või räsiväärtus muutub, siis laaditakse see uuesti alla.
+
+      Reegel tuleb määrata stringina, mis väljendab URL-i ja räsiväärtust JSON-vormingus ja järgib järgmist skeemi:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL, kust avatarkujutise saab alla laadida.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Avatarkujutise SHA-1 räsiväärtus.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Kui see reegel on määratud, siis laadib <ph name="PRODUCT_OS_NAME"/> avatarkujutise alla ja kasutab seda.
+
+      Kui määrate selle reegli, siis ei saa kasutajad seda muuta ega alistada.
+
+      Kui te reeglit ei määra, saab kasutaja ise valida avatarkujutise, mis esindab teda sisselogimisekraanil.</translation>
 <translation id="237494535617297575">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kuvada märguandeid.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultNotificationsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
@@ -1702,6 +1734,7 @@ Kui jätate reegli määramata või keelate selle, siis kasutatakse kirjete jaga
       Kui jätate selle reegli määramata, siis teenusetingimusi ei kuvata.
 
       Reegel tuleb määrata URL-ile, kust <ph name="PRODUCT_OS_NAME"/> saab teenusetingimused alla laadida. Teenusetingimused peavad olema lihtteksti vormingus, esitatud MIME-tüüpi tekstina/lihttekstina. Märgistused pole lubatud.</translation>
+<translation id="2623014935069176671">Kasutaja esmase tegevuse ootamine</translation>
 <translation id="2660846099862559570">Ära kunagi kasuta puhverserverit</translation>
 <translation id="1435659902881071157">Seadme tasemel võrgukonfigureerimine</translation>
 <translation id="2131902621292742709">Ekraani hämardamise viiteaeg akutoite kasutamisel</translation>

@@ -251,6 +251,7 @@
           Saat kebijakan ini tidak disetel, panjang waktu default digunakan.
 
           Nilai kebijakan harus ditetapkan dalam milidetik.</translation>
+<translation id="6598235178374410284">Gambar avatar pengguna</translation>
 <translation id="1675391920437889033">Mengontrol jenis aplikasi/ekstensi mana yang diizinkan untuk dipasang.
 
           Setelan ini membuat daftar putih jenis ekstensi/aplikasi yang diizinkan yang dapat dipasang di <ph name="PRODUCT_NAME"/>. Nilai tersebut adalah daftar string, setiap nilai harus salah satu dari yang berikut: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Lihat dokumentasi ekstensi Chrome untuk informasi selengkapnya untuk jenis-jenis ini.
@@ -405,6 +406,11 @@
 <translation id="4894257424747841850">Melaporkan daftar pengguna perangkat yang saat ini masuk.
 
       Jika kebijakan tidak disetel, atau disetel ke false, pengguna tidak akan dilaporkan.</translation>
+<translation id="2488010520405124654">Aktifkan permintaan konfigurasi jaringan saat offline.
+
+      Jika kebijakan ini tidak disetel atau disetel ke True dan akun lokal perangkat dikonfigurasikan untuk masuk otomatis tanpa penundaan dan perangkat tidak memiliki akses ke internet, <ph name="PRODUCT_OS_NAME"/> akan memunculkan permintaan konfigurasi jaringan.
+
+      Jika kebijakan ini disetel ke False, pesan kesalahan akan muncul, bukan permintaan konfigurasi jaringan.</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="4897928009230106190">Menentukan parameter yang digunakan saat melakukan penelusuran saran dengan POST. Terdiri dari pasangan nama/nilai yang dipisahkan koma. Jika nilai  parameter template, seperti {searchTerms} pada contoh di atas, akan diganti dengan data istilah penelusuran nyata.
 
@@ -599,6 +605,7 @@
 
           Nilai kebijakan harus ditentukan dalam milidetik. Nilai dibatasi agar kurang dari atau sama dengan penundaan menganggur.</translation>
 <translation id="1098794473340446990">Laporkan waktu aktivitas perangkat. Jika setelan ini disetel ke True, perangkat terdaftar akan melaporkan periode waktu saat pengguna aktif pada perangkat. Jika setelan ini tidak disetel atau disetel ke False, waktu aktivitas perangkat tidak akan dicatat atau dilaporkan.</translation>
+<translation id="1327466551276625742">Aktifkan permintaan konfigurasi jaringan saat offline</translation>
 <translation id="7937766917976512374">Izinkan atau tolak penangkapan video</translation>
 <translation id="427632463972968153">Menentukan parameter yang digunakan saat melakukan penelusuran gambar dengan POST. Berisi pasangan nama/nilai yang dipisahkan koma. Jika nilai adalah parameter template, seperti {imageThumbnail} contoh di atas, akan diganti dengan data thumbnail gambar nyata.
 
@@ -778,7 +785,6 @@
 
       Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, akun pengguna baru akan dizinkan untuk dibuat dengan syarat <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> tidak mencegah pengguna untuk masuk.</translation>
 <translation id="4389091865841123886">Mengonfigurasi pengesahan jarak jauh dengan mekanisme TPM.</translation>
-<translation id="3518214502751233558">Tentukan apakah penundaan pengelolaan daya dan batas lama sesi hanya mulai berjalan setelah aktivitas awal pengguna dalam sebuah sesi</translation>
 <translation id="8256688113167012935">Mengontrol nama akun yang ditampilkan <ph name="PRODUCT_OS_NAME"/> di layar masuk untuk akun lokal perangkat yang sesuai.
 
       Jika kebijakan ini disetel, layar masuk akan menggunakan string yang ditentukan dalam pemilih masuk berdasarkan gambar untuk akun lokal perangkat yang sesuai.
@@ -1076,6 +1082,32 @@
       Jika DeviceIdleLogoutTimeout ditentukan, kebijakan ini menetapkan durasi kotak peringatan dengan pewaktu hitungan mundur yang ditampilkan ke pengguna sebelum proses keluar dieksekusi.
 
       Nilai kebijakan harus ditentukan dalam milidetik.</translation>
+<translation id="54795286564479339">Mengonfigurasi gambar avatar pengguna.
+
+      Kebijakan ini memungkinkan Anda mengonfigurasi gambar avatar yang mewakili pengguna pada layar proses masuk. Kebijakan ini disetel dengan menentukan URL tempat <ph name="PRODUCT_OS_NAME"/> dapat mengunduh gambar avatar dan ciri kriptografis yang digunakan untuk memverifikasi integritas unduhan. Gambar tersebut harus berformat JPEG dan ukurannya tidak boleh melebihi 512 kB. URL-nya harus dapat diakses tanpa autentikasi apa pun.
+
+      Gambar avatar diunduh dan disimpan dalam cache. Gambar akan diunduh kembali jika URL atau ciri berubah.
+
+      Kebijakan seharusnya dicantumkan dalam bentuk string yang menunjukkan URL dan potongan dalam format JSON, sesuai dengan skema berikut:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL tempat mengunduh gambar avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Ciri SHA-1 gambar avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Jika kebijakan disetel, <ph name="PRODUCT_OS_NAME"/> akan mengunduh dan menggunakan gambar avatar.
+
+      Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menimpanya.
+
+      Jika kebijakan dibiarkan tidak disetel, pengguna dapat memilih gambar avatar yang mewakili dirinya di layar proses masuk.</translation>
 <translation id="237494535617297575">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menampilkan pemberitahuan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultNotificationsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="7258823566580374486">Mengaktifkan pemberian tirai hosting akses jarak jauh</translation>
 <translation id="5560039246134246593">Menambahkan parameter ke pengambilan bibit Variasi di <ph name="PRODUCT_NAME"/>.
@@ -1390,6 +1422,7 @@
       Jika kebijakan ini tidak disetel, tidak ada Persyaratan Layanan yang ditampilkan.
 
       Kebijakan ini harus disetel ke URL di tempat <ph name="PRODUCT_OS_NAME"/> dapat mengunduh Persyaratan Layanan tersebut. Persyaratan Layanan ini harus dalam teks biasa, yang disajikan sebagai teks/biasa jenis MIME. Tidak ada markup yang diizinkan.</translation>
+<translation id="2623014935069176671">Tunggu aktivitas pengguna awal</translation>
 <translation id="2660846099862559570">Jangan pernah gunakan proxy</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="6676384891291319759">Доступ в Интернет</translation>
+<translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR"/> . Все права защищены.</translation>
 <translation id="6373523479360886564">Вы действительно хотите удалить Chromium?</translation>
 <translation id="5065199687811594072">Хотите сохранить в Chromium информацию об этой кредитной карте для заполнения веб-форм?</translation>
 <translation id="6510925080656968729">Удаление Chromium</translation>
@@ -26,7 +27,6 @@
 <translation id="3549345495227188780">Начало работы с Chromium OS</translation>
 <translation id="4330297532943865716">В системе обнаружена несовместимая версия Chromium или Chromium Frame. Удалите ее и повторите попытку.</translation>
 <translation id="6953661834318318668">Панель инструментов Chromium</translation>
-<translation id="2245147136185581459">Детектор стартовых страниц доступа Chromium</translation>
 <translation id="4285930937574705105">Установка не удалась из-за неизвестной ошибки. Если Chromium продолжает работать, закройте его и повторите попытку.</translation>
 <translation id="1396446129537741364">Вводимые пароли будут отображаться в Chromium.</translation>
 <translation id="3555616473548901994">Удаление завершено.</translation>
@@ -60,7 +60,6 @@
 <translation id="7771626876550251690">В данном случае адрес в сертификате не совпадает с адресом веб-сайта, на который вы пытаетесь зайти. Одной из возможных причин может быть то, что к вашему сеансу обмена данными получил доступ злоумышленник, который предоставил сертификат для другого веб-сайта. Другой причиной может быть то, что сервер отправляет одинаковые сертификаты для всех сайтов, включая указанный выше, хотя он может и не быть действительным для всех веб-сайтов. Chromium может утверждать, что вы переходите на &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, но не гарантирует подлинность &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;. Если вы продолжите, Chromium не будет в дальнейшем реагировать на несовпадение названий.</translation>
 <translation id="4330585738697551178">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
 <translation id="3190315855212034486">Произошел сбой Chromium. Перезапустить?</translation>
-<translation id="3590194807845837023">Разблокировать профиль и перезапустить</translation>
 <translation id="6714487516757221107">Не обнаружено версий Chromium или Chromium Frame для обновления.</translation>
 <translation id="3197823471738295152">Операционная система обновлена.</translation>
 <translation id="8551886023433311834">Обновление почти завершено. Перезагрузите устройство.</translation>
@@ -151,6 +150,7 @@
 <translation id="6717134281241384636">Ваш профиль не может использоваться, поскольку он от более новой версии Chromium.
 
 Некоторые возможности могут быть недоступны. Укажите другой каталог профиля либо используйте более новую версию Chromium.</translation>
+<translation id="8907580949721785412">Чтобы просмотреть пароли, введите пароль своего аккаунта Windows.</translation>
 <translation id="9013087743919948559">Добавить в Chromium</translation>
 <translation id="6212496753309875659">На этом компьютере установлена актуальная версия Chromium. Если программа не работает, удалите Chromium и повторите попытку.</translation>
 <translation id="1298199220304005244">Помощь по использованию Chromium OS</translation>
@@ -193,7 +193,6 @@
 <translation id="805745970029938373">Здесь можно просмотреть все оповещения от приложений, расширений и веб-сайтов Chromium.</translation>
 <translation id="2119636228670142020">О &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Доступна новая, еще более быстрая версия Chromium.</translation>
-<translation id="1539981464052805551">© The Chromium Authors, 2013. Все права защищены.</translation>
 <translation id="378917192836375108">В Chromium вы можете нажать на любой номер телефона и позвонить на него через Skype.</translation>
 <translation id="8724049448828509830">Идет загрузка. Отменить ее и закрыть Chromium?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>

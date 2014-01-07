@@ -18,6 +18,7 @@
 <translation id="542155483965056918">dakika <ph name="NUMBER_ZERO"/> zilizopita</translation>
 <translation id="7121570032414343252">zimesalia sekunde <ph name="NUMBER_TWO"/></translation>
 <translation id="7511635910912978956">zimesalia saa <ph name="NUMBER_FEW"/></translation>
+<translation id="8717309436826820190"><ph name="NUMBER_OF_NOTIFICATIONS"/> zaidi kutoka <ph name="SOURCE_OF_NOTIFICATIONS"/></translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -54,7 +55,7 @@
 <translation id="6620110761915583480">Hifadhi Faili</translation>
 <translation id="4349181486102621992">Sekunde <ph name="NUMBER_ZERO"/></translation>
 <translation id="6719684875142564568">saa <ph name="NUMBER_ZERO"/></translation>
-<translation id="7836361698254323868">Dakika <ph name="NUMBER_ONE"/> inasalia</translation>
+<translation id="7836361698254323868">Imesalia dakika <ph name="NUMBER_ONE"/></translation>
 <translation id="2953767478223974804">dakika <ph name="NUMBER_ONE"/></translation>
 <translation id="8210608804940886430">Ukurasa mmoja chini</translation>
 <translation id="1572103024875503863">siku <ph name="NUMBER_MANY"/></translation>
@@ -178,6 +179,8 @@
 <translation id="27199337101878275">Sekunde <ph name="NUMBER_MANY"/></translation>
 <translation id="3759876923365568382">zimesalia siku <ph name="NUMBER_FEW"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
+<translation id="2743387203779672305">Nakili kwenye ubao wa kunakili</translation>
+<translation id="8371695176452482769">Ongea sasa</translation>
 <translation id="6965382102122355670">Sawa</translation>
 <translation id="7850320739366109486">Usinisumbue</translation>
 <translation id="6978839998405419496">siku <ph name="NUMBER_ZERO"/> zilizopita</translation>

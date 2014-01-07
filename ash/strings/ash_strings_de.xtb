@@ -112,7 +112,7 @@ Drücken Sie zum Wechseln Umschalt+Alt.</translation>
 <translation id="8308637677604853869">Vorheriges Menü</translation>
 <translation id="4666297444214622512">Anmeldung in weiterem Konto nicht möglich</translation>
 <translation id="3625258641415618104">Screenshot-Funktion deaktiviert</translation>
-<translation id="1346748346194534595">Nach rechts</translation>
+<translation id="1346748346194534595">Rechts</translation>
 <translation id="1773212559869067373">Lokale Ablehnung des Authentifizierungszertifikats</translation>
 <translation id="8528322925433439945">Mobil...</translation>
 <translation id="7049357003967926684">Verbindung</translation>
@@ -125,7 +125,7 @@ Drücken Sie zum Wechseln Umschalt+Alt.</translation>
 Zum Deaktivieren Strg+Alt+Z drücken</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="6312403991423642364">Unbekannter Netzwerkfehler</translation>
-<translation id="1467432559032391204">Nach links</translation>
+<translation id="1467432559032391204">Links</translation>
 <translation id="5543001071567407895">SMS</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> wird aktiviert</translation>
@@ -143,7 +143,7 @@ Zum Deaktivieren Strg+Alt+Z drücken</translation>
 <translation id="1850504506766569011">WLAN ist deaktiviert.</translation>
 <translation id="2966449113954629791">Sie haben möglicherweise Ihr mobiles Datenkontingent aufgebraucht. Besuchen Sie das <ph name="NAME"/>-Aktivierungsportal, um weiteres Datenkontingent zu kaufen.</translation>
 <translation id="8132793192354020517">Verbunden mit <ph name="NAME"/></translation>
-<translation id="7052914147756339792">Hintergrund festlegen</translation>
+<translation id="7052914147756339792">Hintergrund ändern</translation>
 <translation id="8678698760965522072">Online-Status</translation>
 <translation id="2532589005999780174">Modus mit hohem Kontrast</translation>
 <translation id="511445211639755999"><ph name="RESOLUTION"/>, <ph name="OVERSCAN"/></translation>
@@ -152,6 +152,7 @@ Zum Deaktivieren Strg+Alt+Z drücken</translation>
 <translation id="3473479545200714844">Lupe</translation>
 <translation id="7005812687360380971">Fehler</translation>
 <translation id="882279321799040148">Zum Anzeigen klicken</translation>
+<translation id="1753067873202720523">Das Chromebook wird möglicherweise nicht geladen, während es eingeschaltet ist.</translation>
 <translation id="5045550434625856497">Falsches Passwort</translation>
 <translation id="1602076796624386989">Mobilfunk aktivieren</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>

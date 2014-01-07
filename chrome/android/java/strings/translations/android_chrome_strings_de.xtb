@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="8588878054171169263">Bild speichern</translation>
+<translation id="5578795271662203820">In <ph name="SEARCH_ENGINE"/> nach dem Bild suchen</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="7644305409888602715">Seite wird in folgende Sprache übersetzt: <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Diese Seite aktualisieren</translation>
+<translation id="641643625718530986">Drucken...</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="6458785801851713928">Die Synchronisierung ist für Ihre Domain nicht verfügbar.</translation>
 <translation id="2731700343119398978">Bitte warten...</translation>
@@ -15,20 +18,32 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="624558823898732418">Zielsprache: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Zertifikats-Viewer</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
+<translation id="8073388330009372546">Bild in neuem Tab öffnen</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="8627706565932943526">Synchronisierungsfehler</translation>
+<translation id="4043215103217793252">Lesezeichen für diese Seite bearbeiten</translation>
 <translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> immer übersetzen</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
+<translation id="4619298195800598081">Original in neuem Tab öffnen</translation>
 <translation id="3136378934686431938">Bitte aktualisieren Sie Ihre Anmeldeinformationen.</translation>
+<translation id="3063601790762993062">Video speichern</translation>
 <translation id="6042308850641462728">Mehr</translation>
+<translation id="3992315671621218278">Link speichern</translation>
 <translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE"/>. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="4195643157523330669">In neuem Tab öffnen</translation>
+<translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
 <translation id="8725066075913043281">Erneut versuchen</translation>
+<translation id="4269820728363426813">URL kopieren</translation>
 <translation id="4510973599275542560">Nicht aktualisieren</translation>
+<translation id="1206892813135768548">Linktext kopieren</translation>
 <translation id="9154176715500758432">Auf dieser Seite bleiben</translation>
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
 <translation id="4271185234001491831"><ph name="LANGUAGE"/> nie übersetzen</translation>
+<translation id="6671495933530132209">Bild kopieren</translation>
+<translation id="8209050860603202033">Bild öffnen</translation>
+<translation id="2501278716633472235">Zurück</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
 <translation id="5164482624172255778">Soll Google Chrome ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE"/> sind?</translation>
 <translation id="8528538445849828817">Sprache der Seite: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,6 +52,9 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="969096075394517431">Sprachen ändern</translation>
 <translation id="5032574515228824816">Eingabeaufforderung</translation>
+<translation id="4847896847259487518">Seite als Lesezeichen speichern</translation>
+<translation id="497421865427891073">Weiter</translation>
+<translation id="6277522088822131679">Beim Drucken der Seite ist ein Problem aufgetreten. Bitte versuchen Sie es erneut.</translation>
 <translation id="1742134235943978220">In folgende Sprache übersetzt: <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Anmeldung bestätigen</translation>

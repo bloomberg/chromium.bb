@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="3234920859344197194">See sait kasutab pistikprogrammi Chrome Frame, millele ei edastata varsti enam turvalisuse ega stabiilsuse värskendusi. Desinstallige pistikprogramm ja minge üle ajakohasele brauserile.</translation>
 <translation id="8914504000324227558">Käivita Chrome uuesti</translation>
 <translation id="8000275528373650868">Google Chrome vajab operatsioonisüsteemi Windows Vista või Windows XP hoolduspaketiga SP2 või uuem.</translation>
-<translation id="8124352762008487242">Autoriõigus 2013 Google Inc. Kõik õigused kaitstud.</translation>
 <translation id="8485767968786176057">Sel juhul ei ühti sertifikaadis olev aadress veebisaidi aadressiga, mida brauser avada üritas. Lahknevuse üks võimalik põhjus on asjaolu, et sidet häirib ründaja, kes esitab muu veebisaidi sertifikaadi. Teine võimalik põhjus on see, et server on seatud esitama sama sertifikaadi mitme veebisaidi, sealhulgas ka külastatava saidi kohta, kuigi sertifikaat ei kehti kõikide veebisaitide jaoks. Google Chrome võib kinnitada, et jõudsite aadressile &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, kuid ei saa tõendada, et see on sama sait mis &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mida proovisite avada. Jätkamisel ei otsi Chrome enam nimede lahknevusi.</translation>
 <translation id="5430073640787465221">Teie eelistuste fail on rikutud või kehtetu. Google Chrome ei saa teie seadeid taastada.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
@@ -24,7 +24,6 @@
 <translation id="4891791193823137474">Luba Google Chrome'i töötamine taustal</translation>
 <translation id="2896252579017640304">Käivitage Chrome'i rakendusi</translation>
 <translation id="2370289711218562573">Google Chrome impordib nüüd lemmikud/järjehoidjad.</translation>
-<translation id="8762286861469007470">Chrome'i Captive Portali tuvasti</translation>
 <translation id="2721687379934343312">Macis salvestatakse paroolid rakendusse Keychain. Teised Chrome'i kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ja neid sünkroonida.</translation>
 <translation id="1761870329818521071">Töötava Google Chrome Frame'iga sama versiooni ei saa installida. Sulgege Google Chrome Frame ja proovige uuesti.</translation>
 <translation id="6014844626092547096">Olete nüüd Chrome'i sisse logitud. Administraator on sünkroonimise keelanud.</translation>
@@ -60,10 +59,10 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Teie arvelduse detailid on salvestatud Chrome'i.</translation>
 <translation id="7098166902387133879">Google Chrome kasutab teie mikrofoni.</translation>
-<translation id="3590194807845837023">Ava profiil ja taaskäivita</translation>
 <translation id="4053720452172726777">Google Chrome'i kohandamine ja juhtimine</translation>
 <translation id="6423071462708908582">Üritasite jõuda domeenile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas aegunud sertifikaadi. Saadaval ei ole teavet, mis näitab, kas sertifikaati on pärast aegumist rikutud. Seetõttu ei saa Google Chrome tagada, et suhtlete domeeniga &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mitte ründajaga. Teie arvuti kell on praegu <ph name="CURRENT_TIME"/>. Kas see on õige? Vastasel korral parandage viga ja värskendage lehte.</translation>
 <translation id="3197823471738295152">Teie seade on ajakohane.</translation>
+<translation id="8286862437124483331">Google Chrome proovib kuvada paroole. Selle lubamiseks sisestage Windowsi parool.</translation>
 <translation id="3889417619312448367">Google Chrome'i desinstallimine</translation>
 <translation id="1434626383986940139">Chrome Canary rakendused</translation>
 <translation id="8551886023433311834">Seade on peaaegu ajakohane. Täienduse lõpuleviimiseks taaskäivitage seade.</translation>
@@ -159,7 +158,6 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="2871893339301912279">Olete Chrome'i sisse logitud.</translation>
 <translation id="7161904924553537242">Tere tulemast Google Chrome'i</translation>
 <translation id="4147555960264124640">Logite sisse hallatud kontoga ja annate selle administraatorile üle Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, nagu rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME"/>. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. <ph name="LEARN_MORE"/></translation>
-<translation id="7931439880631187247">See sait kasutab pistikprogrammi Chrome Frame, mille tugi peagi lõpeb. Desinstallige see ja minge üle kaasaegsele brauserile.</translation>
 <translation id="1348153800635493797">Google Walleti kasutamiseks peate Chrome'i täiendama [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Tehke valikud
           Rakendused &gt; Süsteemieelised &gt; Võrk &gt; Täpsem &gt; Puhverserverid
@@ -202,7 +200,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
           LAN-seaded
           ja tühistage valik „Kasuta LAN-i jaoks puhverserverit”.</translation>
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
-<translation id="5553980212343253394">See sait kasutab pistikprogrammi Chrome Frame, mille tugi peagi lõpeb. Desinstallige see ja laadige alla ühilduv brauser.</translation>
+<translation id="4919523385405675060">See sait kasutab pistikprogrammi Chrome Frame, millele ei edastata varsti enam turvalisuse ega stabiilsuse värskendusi. Desinstallige pistikprogramm ja laadige alla ühilduv brauser.</translation>
 <translation id="1061257178446858647">Olete nüüd Chrome'i sisse logitud. Teie järjehoidjad, ajalugu ja muud seaded sünkroonitakse teie Google'i kontoga.</translation>
 <translation id="3335672657969596251">Google Chrome ei toeta <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Muudatuse jõustamiseks logige välja ja uuesti sisse.</translation>
@@ -220,6 +218,7 @@ Kui logite siiski sisse, liidetakse Chrome'i teave, nagu järjehoidjad, ajalugu 
 <translation id="6626317981028933585">Kahjuks pole teie Mozilla Firefoxi seaded saadaval samal ajal kui brauser töötab. Nende seadete Google Chrome'i importimiseks salvestage oma töö ja sulgege kõik Firefoxi aknad. Siis klõpsake Jätka.</translation>
 <translation id="7242029209006116544">Logite sisse hallatud kontoga ja annate selle administraatorile üle oma Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, näiteks rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded seotakse jäädavalt kasutajaga <ph name="USER_NAME"/>. Saate need andmed Google'i kontode juhtpaneeli kaudu kustutada, kuid te ei saa neid seostada teise kontoga. Võite olemasolevate Chrome'i andmete eraldi hoidmiseks luua aga uue profiili. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="2334084861041072223">Autoriõigus <ph name="YEAR"/> Google Inc. Kõik õigused on kaitstud.</translation>
 <translation id="1698376642261615901">Google Chrome on veebibrauser, mis käitab veebilehti ja rakendusi välgukiirusel. See on kiire, töökindel ja lihtsalt kasutatav. Veebi sirvimine on turvalisem tänu Google Chrome'i sisseehitatud pahavara- ja andmepüügivastasele kaitsele.</translation>
 <translation id="3419750618886995598">Chrome Frame'i värskendus.</translation>
 <translation id="3336524238463733095">Google Chrome'i või Google Chrome Frame'i saa värskendada, kuna Google'i värskenduse grupireeglite seadetes on lahknevus. Seadke grupireeglite redigeerija abil rakenduse Google Chrome Binaries värskendusreeglite alistus ja proovige uuesti. Vaadake üksikasju aadressilt http://goo.gl/uJ9gV.</translation>

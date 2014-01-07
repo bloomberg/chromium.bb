@@ -1,13 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="6017514345406065928">Vihreä</translation>
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="9068849894565669697">Valitse väri</translation>
+<translation id="4115378294792113321">Purppura</translation>
 <translation id="793640675459356075">Valittua tiedostoa ei voi avata</translation>
+<translation id="7569983096843329377">Musta</translation>
+<translation id="5901630391730855834">Keltainen</translation>
+<translation id="7942349550061667556">Punainen</translation>
+<translation id="1555130319947370107">Sininen</translation>
 <translation id="6727102863431372879">Aseta</translation>
 <translation id="6315516427814392808">Edellistä toimintoa ei voi suorittaa. Muisti ei riitä.</translation>
 <translation id="6042308850641462728">Lisää</translation>
 <translation id="7535087603100972091">Arvo</translation>
+<translation id="161042844686301425">Turkoosi</translation>
 <translation id="8889402386540077796">Sävy</translation>
+<translation id="2713444072780614174">Valkoinen</translation>
 <translation id="3329013043687509092">Värikylläisyys</translation>
+<translation id="6555463879959038093">Kopiointi leikepöydälle epäonnistui</translation>
 </translationbundle>

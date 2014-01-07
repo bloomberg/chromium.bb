@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>
+<translation id="8586442755830160949">Copyright <ph name="YEAR"/> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="6373523479360886564">Czy na pewno chcesz odinstalować Chromium?</translation>
 <translation id="5065199687811594072">Czy Chromium ma zapisać informacje o karcie kredytowej, by ułatwić wypełnianie formularzy w przyszłości?</translation>
 <translation id="6510925080656968729">Odinstaluj Chromium</translation>
@@ -26,7 +27,6 @@
 <translation id="3549345495227188780">Pierwsze kroki z systemem operacyjnym Chromium</translation>
 <translation id="4330297532943865716">W systemie znaleziono instalacje Chromium lub Chromium Frame, które powodują konflikt. Odinstaluj je i spróbuj ponownie.</translation>
 <translation id="6953661834318318668">Pasek narzędzi Chromium</translation>
-<translation id="2245147136185581459">Detektor portalu przechwytującego Chromium</translation>
 <translation id="4285930937574705105">Instalacja nie powiodła się z powodu nieokreślonego błędu. Jeśli Chromium jest aktualnie uruchomiony, zamknij go i spróbuj ponownie.</translation>
 <translation id="1396446129537741364">Chromium próbuje pokazać hasła.</translation>
 <translation id="3555616473548901994">Zakończono odinstalowywanie.</translation>
@@ -60,7 +60,6 @@
 <translation id="7771626876550251690">W tym przypadku adres wymieniony w certyfikacie jest niezgodny z adresem strony, którą próbowała otworzyć przeglądarka. Jednym z możliwych powodów jest przechwycenie Twojej komunikacji przez intruza, który przedstawia certyfikat innej witryny, co powoduje niezgodność. Inną przyczyną jest skonfigurowanie serwera do zwracania tego samego certyfikatu dla różnych witryn, w tym tej, którą próbujesz odwiedzić, choć nie jest on ważny dla wszystkich tych witryn. Chromium może z pewnością stwierdzić, że przeglądasz &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ale nie może sprawdzić, czy jest to ta sama witryna co &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, którą próbowałeś odwiedzić. Jeśli przejdziesz dalej, Chromium nie będzie już sprawdzać dalszych niezgodności nazw.</translation>
 <translation id="4330585738697551178">Znane są przypadki konfliktu tego modułu z Chromium.</translation>
 <translation id="3190315855212034486">O kurczę! Chromium uległ awarii. Uruchomić go teraz ponownie?</translation>
-<translation id="3590194807845837023">Odblokuj profil i uruchom ponownie</translation>
 <translation id="6714487516757221107">Nie znaleziono instalacji Chromium ani Chromium Frame do zaktualizowania.</translation>
 <translation id="3197823471738295152">Urządzenie używa aktualnej wersji oprogramowania.</translation>
 <translation id="8551886023433311834">Aktualizacja jest już prawie ukończona. Wystarczy tylko uruchomić ponownie urządzenie.</translation>
@@ -151,6 +150,7 @@
 <translation id="6717134281241384636">Nie można użyć Twojego profilu, ponieważ pochodzi on z nowszej wersji Chromium.
 
 Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub użyj nowszej wersji Chromium.</translation>
+<translation id="8907580949721785412">Chromium próbuje pokazać hasła. Podaj swoje hasło do Windows, by na to zezwolić.</translation>
 <translation id="9013087743919948559">Dodaj do Chromium</translation>
 <translation id="6212496753309875659">Na tym komputerze jest już zainstalowana nowsza wersja Chromium. Jeśli program nie działa, odinstaluj go i spróbuj ponownie.</translation>
 <translation id="1298199220304005244">Skorzystaj z pomocy dotyczącej używania systemu operacyjnego Chromium</translation>
@@ -194,7 +194,6 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="805745970029938373">Tutaj możesz zobaczyć wszystkie powiadomienia z aplikacji, rozszerzeń i stron internetowych w Chromium.</translation>
 <translation id="2119636228670142020">System operacyjny &amp;Chromium – informacje</translation>
 <translation id="1708666629004767631">Dostępna jest nowa, bezpieczniejsza wersja Chromium.</translation>
-<translation id="1539981464052805551">Copyright 2013 Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
 <translation id="378917192836375108">W Chromium możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić pod niego przez Skype.</translation>
 <translation id="8724049448828509830">Trwa pobieranie pliku. Czy chcesz wyjść z Chromium i anulować pobieranie?</translation>
 <translation id="3360567213983886831">Pliki binarne Chromium</translation>

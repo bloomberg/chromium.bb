@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="8588878054171169263">Guardar imagen</translation>
+<translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="7644305409888602715">Traduciendo página al <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="1491151370853475546">Volver a cargar esta página</translation>
+<translation id="641643625718530986">Imprimir…</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="6458785801851713928">Tu dominio no admite la sincronización.</translation>
 <translation id="2731700343119398978">Espera...</translation>
@@ -15,20 +18,32 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="624558823898732418">Idioma de traducción: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Visualizador de certificados</translation>
 <translation id="8583805026567836021">Borrando datos de cuenta</translation>
+<translation id="8073388330009372546">Abrir imagen en pestaña nueva</translation>
 <translation id="8730621377337864115">Finalizado</translation>
 <translation id="4170011742729630528">El servicio no se encuentra disponible; vuelve a intentarlo más tarde.</translation>
 <translation id="8627706565932943526">Error al sincronizar</translation>
+<translation id="4043215103217793252">Editar página de marcadores</translation>
 <translation id="656628257199996201">Traducir siempre el texto en <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="5684874026226664614">No se puede traducir esta página.</translation>
+<translation id="4619298195800598081">Abrir original en pest. nueva</translation>
 <translation id="3136378934686431938">Actualiza tus detalles de acceso.</translation>
+<translation id="3063601790762993062">Guardar video</translation>
 <translation id="6042308850641462728">Más</translation>
+<translation id="3992315671621218278">Guardar vínculo</translation>
 <translation id="8034522405403831421">Esta página está en <ph name="SOURCE_LANGUAGE"/>. ¿Quieres traducirla al <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
+<translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
+<translation id="4269820728363426813">Copiar dirección del vínculo</translation>
 <translation id="4510973599275542560">No volver a cargar</translation>
+<translation id="1206892813135768548">Copiar texto del vínculo</translation>
 <translation id="9154176715500758432">Permanecer en esta página</translation>
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>
 <translation id="4271185234001491831">Nunca traducir <ph name="LANGUAGE"/></translation>
+<translation id="6671495933530132209">Copiar imagen</translation>
+<translation id="8209050860603202033">Abrir imagen</translation>
+<translation id="2501278716633472235">Ir atrás</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
 <translation id="5164482624172255778">¿Quieres que Google Chrome te ofrezca traducir las páginas de este sitio que estén en <ph name="LANGUAGE"/> la próxima vez?</translation>
 <translation id="8528538445849828817">Idioma de la página: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,6 +52,9 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="969096075394517431">Cambiar idiomas</translation>
 <translation id="5032574515228824816">Solicitud</translation>
+<translation id="4847896847259487518">Agregar página a marcadores</translation>
+<translation id="497421865427891073">Avanzar</translation>
+<translation id="6277522088822131679">Se produjo un error al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="1742134235943978220">Traducido al <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="7495038789730067783">Confirmar acceso</translation>

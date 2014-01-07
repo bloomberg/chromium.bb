@@ -40,7 +40,7 @@
 
           指定的政策值应以毫秒为单位，并且不得大于闲置延迟时间。</translation>
 <translation id="7818131573217430250">设置登录屏幕上高反差模式的默认状态</translation>
-<translation id="7614663184588396421">已停用协议方案的列表</translation>
+<translation id="7614663184588396421">已停用协议架构的列表</translation>
 <translation id="2309390639296060546">默认地理位置设置</translation>
 <translation id="1313457536529613143">指定系统在屏幕变暗或屏幕关闭不久后察觉到用户活动时，对屏幕变暗延迟时间的调整幅度（百分比）。
 
@@ -63,7 +63,7 @@
 
           如果未设置此政策，则登录屏幕初次显示时会停用大号光标。用户可以随时启用或停用大号光标，并且其在登录屏幕上的启用或停用状态对于各用户均有效。</translation>
 <translation id="3185009703220253572">从版本 <ph name="SINCE_VERSION"/> 开始</translation>
-<translation id="2204753382813641270">控制任务栏是否自动隐藏</translation>
+<translation id="2204753382813641270">控制文件架是否自动隐藏</translation>
 <translation id="3816312845600780067">启用停止自动登录的键盘快捷键</translation>
 <translation id="3214164532079860003">如果启用此政策，就会强制从当前默认浏览器导入主页。如果停用此政策，就不会导入主页。如果未设置此政策，系统就会询问用户是否导入主页，或者系统自动进行导入。</translation>
 <translation id="5330684698007383292">允许 <ph name="PRODUCT_FRAME_NAME"/>处理以下内容类型</translation>
@@ -78,11 +78,11 @@
 <translation id="8412312801707973447">是否执行在线 OCSP/CRL 检查</translation>
 <translation id="6649397154027560979">此政策已弃用，请改用 URLBlacklist。
 
-      在 <ph name="PRODUCT_NAME"/> 中停用列出的协议方案。
+      在 <ph name="PRODUCT_NAME"/> 中停用列出的协议架构。
 
       系统无法加载和导航到使用此列表中的协议的网址。
 
-      如果未设置此政策或此列表为空，则可在 <ph name="PRODUCT_NAME"/> 中使用所有方案。</translation>
+      如果未设置此政策或此列表为空，则可在 <ph name="PRODUCT_NAME"/> 中使用所有架构。</translation>
 <translation id="3213821784736959823">控制是否在 <ph name="PRODUCT_NAME"/> 中使用内置 DNS 客户端。
 
       如果此策略设置为 True，系统将使用内置 DNS 客户端（如果有）。
@@ -91,15 +91,15 @@
 
       如果未设置此策略，用户将可以通过修改 chrome://flags 或指定命令行标记来更改是否使用内置 DNS 客户端。</translation>
 <translation id="2908277604670530363">可同时连接到代理服务器的连接数上限</translation>
-<translation id="556941986578702361">控制 <ph name="PRODUCT_OS_NAME"/>任务栏是否自动隐藏。
+<translation id="556941986578702361">控制 <ph name="PRODUCT_OS_NAME"/>文件架是否自动隐藏。
 
-      如果此策略设置为“AlwaysAutoHideShelf”，任务栏将始终自动隐藏。
+      如果此策略设置为“AlwaysAutoHideShelf”，文件架将始终自动隐藏。
 
-      如果此策略设置为“NeverAutoHideShelf”，任务栏一律不自动隐藏。
+      如果此策略设置为“NeverAutoHideShelf”，文件架一律不自动隐藏。
 
       如果您设置了此策略，那么用户将无法更改或覆盖此策略。
 
-      如果未设置此策略，那么用户将可以选择是否自动隐藏任务栏。</translation>
+      如果未设置此策略，那么用户将可以选择是否自动隐藏文件架。</translation>
 <translation id="4838572175671839397">包含用于决定哪些用户可登录 <ph name="PRODUCT_NAME"/> 的正则表达式。
 
       如果用户尝试使用与此格式不匹配的用户名登录，就会显示相应错误。
@@ -248,6 +248,7 @@
           如果未设置此政策，系统将使用默认的时间长度。
 
           指定的政策值应以毫秒为单位。</translation>
+<translation id="6598235178374410284">用户头像图片</translation>
 <translation id="1675391920437889033">控制可以安装哪些应用/扩展程序类型。
 
           此设置将允许安装在 <ph name="PRODUCT_NAME"/> 中的扩展程序/应用的类型列入白名单。该值为一个字符串列表，其中每个字符串为以下某个值：&quot;extension&quot;、&quot;theme&quot;、&quot;user_script&quot;、&quot;hosted_app&quot;、&quot;legacy_packaged_app&quot;、&quot;platform_app&quot;。请参见 Chrome 扩展程序文档了解有关这些类型的详细信息。
@@ -400,6 +401,11 @@
 <translation id="4894257424747841850">最近登录过的设备用户的报告列表。
 
       如果该政策未设置或设置为 False，将不报告这些用户。</translation>
+<translation id="2488010520405124654">离线时，弹出网络配置提示。
+
+      如果该政策未设置或设置为True，而设备本地帐户又配置为零延迟自动登录，则当设备无法访问互联网时，<ph name="PRODUCT_OS_NAME"/>将显示网络配置提示。
+
+      如果该政策设置为False，那么系统将显示错误消息，而不是网络配置提示。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="4897928009230106190">指定通过 POST 提供搜索建议时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {searchTerms}），那么系统会将其替换成真正的搜索字词数据。
 
@@ -477,7 +483,7 @@
 <translation id="7003334574344702284">如果启用此政策，就会强制从先前的默认浏览器导入已保存的密码，还会影响导入对话框。如果停用此政策，就不会导入已保存的密码。如果未设置此政策，系统就会询问用户是否导入已保存的密码，或者系统自动进行导入。</translation>
 <translation id="6258193603492867656">指定生成的 Kerberos SPN 是否应包括非标准端口。如果您启用了此设置，并输入某个非标准端口（即除 80 或 443 以外的端口），该端口就会包括在生成的 Kerberos SPN 中。如果您停用或未配置此设置，生成的 Kerberos SPN 在任何情况下都不会包括端口。</translation>
 <translation id="3236046242843493070">允许的扩展程序、应用和用户脚本安装源的网址格式</translation>
-<translation id="2498238926436517902">始终自动隐藏任务栏</translation>
+<translation id="2498238926436517902">始终自动隐藏文件架</translation>
 <translation id="253135976343875019">使用交流电源供电时的闲置警告延迟时间</translation>
 <translation id="480987484799365700">如果设置启用该政策，系统会将个人资料强制切换成临时模式。如果指定以该政策作为 OS 政策（例如 Windows 中的 GPO），它将应用到系统中的所有个人资料；如果将该政策设置为云政策，它将仅应用到使用托管帐户登录的个人资料。
 
@@ -600,6 +606,7 @@
 <translation id="1098794473340446990">报告设备活动时间。
 
       如果将此设置设为 True，注册设备就会报告用户使用此设备的时间段。如果未配置此设置或设为 False，就不会记录或报告设备活动时间。</translation>
+<translation id="1327466551276625742">离线时，弹出网络配置提示</translation>
 <translation id="7937766917976512374">是否允许视频捕获</translation>
 <translation id="427632463972968153">指定通过 POST 执行图片搜索时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {imageThumbnail}），那么系统会将其替换成真正的缩略图数据。
 
@@ -774,7 +781,6 @@
 
       如果未配置此政策或将其设置为 true，那么只要 <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> 未阻止登录，用户就可以创建新的用户帐户。</translation>
 <translation id="4389091865841123886">通过 TPM 机制配置远程认证。</translation>
-<translation id="3518214502751233558">指定是否仅在会话内有首个用户活动后才开始计算电源管理延迟和会话长度限制</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME"/>在登录屏幕上为相应的设备本地帐户显示的帐户名。
 
       如果设置了此策略，登录屏幕将为相应的设备本地帐户使用图片式登录选择器中指定的字符串。
@@ -970,7 +976,7 @@
       此设置用于启用 TLS 域绑定证书扩展程序，以便进行测试。以后将删除这一实验性设置。</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="5774856474228476867">默认搜索服务提供商的搜索网址</translation>
-<translation id="4650759511838826572">停用网址协议方案</translation>
+<translation id="4650759511838826572">停用网址协议架构</translation>
 <translation id="7831595031698917016">指定收到政策失效通知与从设备管理服务提取新政策之间的最大延迟（以毫秒为单位）。
 
       设置此政策会覆盖默认值（即5000毫秒）。此政策的有效值范围为1000毫秒（1秒）至300000毫秒（5分钟），若超出此范围，则一律采用上限值或下限值。
@@ -1076,6 +1082,32 @@
       如果 DeviceIdleLogoutTimeout 已指定，此政策就用于定义警告框的持续时间，系统会在执行退出操作前向用户显示一个倒计时器。
 
       应以毫秒为单位指定此政策的值。</translation>
+<translation id="54795286564479339">配置用户头像图片。
+
+      通过此政策，您可以配置在登录屏幕上代表用户的头像图片。要设置此政策，请指定一个可供 <ph name="PRODUCT_OS_NAME"/>下载头像图片的网址，并指定一个用于验证下载内容是否完整的加密哈希值。图片必须是 JPEG 格式，且大小不得超过512KB。网址必须可直接访问，而无需进行任何验证。
+
+      系统会下载并缓存头像图片。网址或哈希值发生变化后，系统将重新下载头像图片。
+
+      应按照以下模式，采用字符串（以 JSON 格式表示网址和哈希值）的形式指定此政策：
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;可供下载头像图片的网址。&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;头像图片的SHA-1哈希值。&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      如果设置此政策，<ph name="PRODUCT_OS_NAME"/>将下载并使用相应的头像图片。
+
+      如果设置此政策，用户将无法对其进行更改或覆盖。
+
+      如果不设置此政策，则用户可以选择在登录屏幕上代表自己的头像图片。</translation>
 <translation id="237494535617297575">可让您设置网址格式的列表，这些网址格式用于指定允许显示通知的网站。在未设置此政策的情况下，如果设置了“DefaultNotificationsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="7258823566580374486">启用远程访问主机的屏蔽设置</translation>
 <translation id="5560039246134246593">在提取 <ph name="PRODUCT_NAME"/> 中的变体种子的方法中添加参数。
@@ -1353,7 +1385,7 @@
       如果未设置此政策，或者此政策的值设为 False，系统将不会报告接口列表。</translation>
 <translation id="4121350739760194865">阻止在新标签页上显示应用宣传信息</translation>
 <translation id="2127599828444728326">允许在这些网站上显示通知</translation>
-<translation id="3973371701361892765">一律不自动隐藏任务栏</translation>
+<translation id="3973371701361892765">一律不自动隐藏文件架</translation>
 <translation id="7635471475589566552">在 <ph name="PRODUCT_NAME"/>中配置应用的语言区域，并禁止用户更改语言区域。如果您启用了此设置，<ph name="PRODUCT_NAME"/>就会使用指定的语言区域。如果配置的语言区域不受支持，就会改用“en-US”。如果已停用或未配置此设置，<ph name="PRODUCT_NAME"/>就会使用由用户指定的首选语言区域（如果已配置）、系统语言区域或备用语言区域“en-US”。</translation>
 <translation id="2948087343485265211">指定音频活动是否影响电源管理。
 
@@ -1402,6 +1434,7 @@
       如果未设置此政策，系统将不会显示服务条款。
 
       该政策的值应设置为供 <ph name="PRODUCT_OS_NAME"/>下载服务条款的网址。该服务条款必须是纯文本，以 MIME 纯文本形式提供，不允许进行任何标记。</translation>
+<translation id="2623014935069176671">等待首个用户活动</translation>
 <translation id="2660846099862559570">从不使用代理</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
 <translation id="2131902621292742709">使用电源供电时的屏幕变暗延迟时间</translation>

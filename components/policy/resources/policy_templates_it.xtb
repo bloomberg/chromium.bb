@@ -248,6 +248,7 @@ Se questa norma viene impostata, consente di specificare il periodo di tempo per
 Se questa norma non viene impostata, viene utilizzato un periodo di tempo predefinito.
 
 Il valore della norma deve essere specificato in millisecondi.</translation>
+<translation id="6598235178374410284">Immagine avatar utente</translation>
 <translation id="1675391920437889033">Controlla quali tipi di app/estensioni possono essere installati.
 
           Questa impostazione autorizza i tipi consentiti di estensioni/app che possono essere installate in <ph name="PRODUCT_NAME"/>. Il valore è un elenco di stringhe, ognuna delle quali deve corrispondere a una delle seguenti stringhe: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Per ulteriori informazioni su questi tipi, consulta la documentazione sulle estensioni di Chrome .
@@ -399,6 +400,11 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="4894257424747841850">Consente di segnalare un elenco di utenti del dispositivo che hanno eseguito l'accesso di recente.
 
 Se la norma non viene impostata o viene impostata su False, gli utenti non vengono segnalati.</translation>
+<translation id="2488010520405124654">Consente di attivare la richiesta di configurazione della rete in modalità offline.
+
+      Se questa norma non viene impostata o viene impostata su True, se un account locale sul dispositivo è configurato per l'accesso automatico senza ritardo e il dispositivo non ha accesso a Internet, in <ph name="PRODUCT_OS_NAME"/> viene visualizzata una richiesta di configurazione della rete.
+
+      Se questa norma viene impostata su False, verrà visualizzato un messaggio di errore anziché la richiesta di configurazione della rete.</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="4897928009230106190">Consente di specificare i parametri utilizzati durante la ricerca di suggerimenti con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {searchTerms} nell'esempio precedente, verrà sostituito con i dati dei termini di ricerca reali.
 
@@ -593,6 +599,7 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 
           Il valore della norma deve essere specificato in millisecondi. I valori sono fissati in modo da essere minori o uguali al ritardo di inattività.</translation>
 <translation id="1098794473340446990">Consente di indicare i tempi di attività del dispositivo. Se questa impostazione viene impostata su True, i dispositivi registrati indicheranno i periodi di tempo di attività di un utente sul dispositivo. Se l'impostazione non viene impostata o viene impostata su False, i tempi di attività del dispositivo non verranno registrati o indicati.</translation>
+<translation id="1327466551276625742">Attivazione richiesta di configurazione della rete offline</translation>
 <translation id="7937766917976512374">Consenti o nega acquisizione video</translation>
 <translation id="427632463972968153">Consente di specificare i parametri utilizzati durante la ricerca di immagini con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {imageThumbnail} nell'esempio precedente, verrà sostituito con i dati delle miniature di immagini reali.
 
@@ -767,7 +774,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se questa norma viene impostata su true o non viene configurata, sarà possibile creare nuovi account utente se la norma <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> non impedisce l'accesso agli utenti.</translation>
 <translation id="4389091865841123886">Configura l'attestazione da remoto con meccanismo TPM.</translation>
-<translation id="3518214502751233558">Specifica se i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni devono iniziare soltanto dopo l'attività dell'utente iniziale in una sessione</translation>
 <translation id="8256688113167012935">Controlla il nome account visualizzato da <ph name="PRODUCT_OS_NAME"/> nella schermata di accesso per il corrispondente account del dispositivo.
 
       Se il criterio è impostato, la schermata di accesso utilizzerà la stringa specificata nel selettore di accesso basato su immagine per il corrispondente account del dispositivo.
@@ -1065,6 +1071,32 @@ Se la norma non viene configurata, il feedback vocale viene inizialmente disatti
       Se viene specificata la norma DeviceIdleLogoutTimeout, questa norma consente di definire la durata della casella di avviso con un timer per il conto alla rovescia che viene mostrato all'utente prima dell'esecuzione dell'uscita.
 
       Il valore della norma deve essere specificato in millisecondi.</translation>
+<translation id="54795286564479339">Configurazione dell'immagine dell'avatar dell'utente.
+
+      Queste norme ti consentono di configurare l'immagine dell'avatar che rappresenta l'utente nella schermata di accesso. Queste norme vengono impostate specificando l'URL da cui <ph name="PRODUCT_OS_NAME"/> può scaricare l'immagine dell'avatar e un hash crittografico utilizzato per verificare l'integrità del download. L'immagine deve essere in formato JPEG e le sue dimensioni non possono superare 512 kB. L'accesso all'URL non deve richiedere l'autenticazione.
+
+      L'immagine dell'avatar viene scaricata e memorizzata nella cache. Il download può essere ripetuto a ogni modifica all'URL o all'hash.
+
+      Le norme devono essere specificate sotto forma di stringa che esprime l'URL e l'hash in formato JSON, secondo il seguente schema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;L'URL da cui è possibile scaricare l'immagine dell'avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;L'hash SHA-1 dell'immagine dell'avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Se le norme sono configurate, <ph name="PRODUCT_OS_NAME"/> scaricherà e utilizzerà l'immagine dell'avatar.
+
+      Se configuri queste norme, gli utenti non potranno modificarle o sostituirle.
+
+      Se le norme non vengono configurate, l'utente potrà scegliere l'immagine dell'avatar che lo rappresenterà nella schermata di accesso.</translation>
 <translation id="237494535617297575">Consente di impostare un elenco di pattern URL che specificano i siti autorizzati a visualizzare notifiche. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma &quot;DefaultNotificationsSetting&quot;, se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="7258823566580374486">Attiva separazione degli host di accesso remoto</translation>
 <translation id="5560039246134246593">Aggiungi un parametro al recupero del numero di inizializzazione delle varianti in <ph name="PRODUCT_NAME"/>.
@@ -1453,6 +1485,7 @@ Se questa norma viene impostata, <ph name="PRODUCT_OS_NAME"/> scaricherà i Term
 Se questa norma non viene impostata, i Termini di servizio non verranno visualizzati.
 
 Per la norma dovrebbe essere impostato un URL da cui <ph name="PRODUCT_OS_NAME"/> possa scaricare i Termini di servizio. I Termini di servizio devono essere in testo normale e pubblicati come testo di tipo MIME/semplice. Il markup non è consentito.</translation>
+<translation id="2623014935069176671">Attesa dell'attività iniziale dell'utente</translation>
 <translation id="2660846099862559570">Non utilizzare mai un proxy</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>

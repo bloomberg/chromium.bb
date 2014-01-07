@@ -256,6 +256,7 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
           Quan aquesta política no es defineix, s'utilitza un temps predeterminat.
 
           El valor de la política s'ha d'indicar en mil·lisegons.</translation>
+<translation id="6598235178374410284">Imatge d'avatar de l'usuari</translation>
 <translation id="1675391920437889033">Controla quins tipus d'aplicacions i d'extensions es poden instal·lar.
 
 Aquesta configuració afegeix a la llista blanca els tipus d'extensions i d'aplicacions admesos que es poden instal·lar a <ph name="PRODUCT_NAME"/>. El valor és una llista de cadenes, cadascuna de les quals hauria de ser una de les següents: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Consulteu la documentació de les extensions de Chrome per obtenir més informació sobre aquests tipus.
@@ -410,6 +411,11 @@ Si aquesta política no s'ha establert, la neteja automàtica utilitza l'estrat�
 <translation id="4894257424747841850">Mostra una llista dels usuaris que han iniciat la sessió recentment des d'un dispositiu.
 
       Si la política no s'estableix o si s'estableix com a False, no es proporcionarà informació sobre els usuaris.</translation>
+<translation id="2488010520405124654">Activeu la sol·licitud de configuració de la xarxa quan estigueu fora de línia.
+
+      Si aquesta política no es defineix o si es defineix com a True, en cas que un compte de dispositiu local s'hagi configurat per iniciar la sessió automàticament sense retard i el dispositiu no tingui accés a Internet, <ph name="PRODUCT_OS_NAME"/> mostrarà una sol·licitud de configuració de la xarxa.
+
+      Si aquesta política es defineix com a False, es mostrarà un missatge d'error en comptes de la sol·licitud de configuració de la xarxa.</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="4897928009230106190">Especifica els paràmetres utilitzats en fer una cerca suggerida amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {searchTerms} a l'exemple anterior, se substituirà per dades de termes de cerca reals.
 
@@ -610,6 +616,7 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 <translation id="1098794473340446990">Informa del temps d'activitat dels dispositius.
 
       Si establiu aquest paràmetre com a Cert, els dispositius inscrits informaran dels períodes de temps en què un usuari està actiu al dispositiu. Si no l'establiu o si l'establiu com a Fals, no s'enregistraran els temps d'activitat dels dispositius ni se n'informarà.</translation>
+<translation id="1327466551276625742">Activeu la sol·licitud de configuració de la xarxa quan estigueu fora de línia.</translation>
 <translation id="7937766917976512374">Permet o bloqueja la captura de vídeo</translation>
 <translation id="427632463972968153">Especifica els paràmetres utilitzats en cercar imatges amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {imageThumbnail} a l'exemple anterior, se substituirà per dades de la miniatura de la imatge real.
 
@@ -785,7 +792,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Si aquesta política es defineix a «true» (cert) o no es configura, es podran crear comptes d'usuari sempre que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> no impedeixi que l'usuari iniciï la sessió.</translation>
 <translation id="4389091865841123886">Configura el testimoni remot amb el mecanisme TPM.</translation>
-<translation id="3518214502751233558">Especifica si els retards de la gestió de l'energia i el límit de la durada de la sessió només s'han d'executar quan l'usuari realitzi la primera acció en una sessió.</translation>
 <translation id="8256688113167012935">Controla el nom del compte que <ph name="PRODUCT_OS_NAME"/> mostra a la pantalla d'inici de sessió per al compte local del dispositiu corresponent.
 
 Si es defineix aquesta política, la pantalla d'inici de sessió farà servir la cadena especificada al selector d'inici de sessió en funció de la foto per al compte local del dispositiu corresponent.
@@ -1087,6 +1093,32 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Quan DeviceIdleLogoutTimeout estigui especificat, aquesta política defineix la durada del quadre d'advertència amb un temporitzador de compte enrere que es mostra a l'usuari abans no s'executi el tancament de sessió.
 
       El valor de la política s'ha d'especificar en mil·lisegons.</translation>
+<translation id="54795286564479339">Configureu la imatge d'avatar de l'usuari.
+
+      Aquesta política us permet configurar la imatge d'avatar que representa l'usuari a la pantalla d'inici de sessió. La política es defineix mitjançant l'especificació de l'URL des del qual <ph name="PRODUCT_OS_NAME"/> pot baixar la imatge d'avatar i un identificador hash criptogràfic per verificar la integritat de la baixada. La imatge ha d'estar en format JPEG i no ha de superar els 512 kB. A més, s'ha de poder accedir a l'URL sense cap autenticació.
+
+      La imatge d'avatar es baixa i s'emmagatzema a la memòria cau, i es torna a baixar cada vegada que l'URL o l'identificador hash canvien.
+
+      La política s'ha d'especificar com una cadena en què s'indiquen l'URL i l'identificador hash en format JSON segons l'esquema següent:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL des del qual es pot baixar la imatge d'avatar&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Identificador hash SHA-1 de la imatge d'avatar&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Si aquesta política està definida, <ph name="PRODUCT_OS_NAME"/> baixa i fa servir la imatge d'avatar.
+
+      Si definiu aquesta política, els usuaris no poden canviar-la ni substituir-la.
+
+      Si no es defineix la política, l'usuari pot triar la imatge d'avatar que el representa a la pantalla d'inici de sessió.</translation>
 <translation id="237494535617297575">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès mostrar notificacions. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política &quot;DefaultNotificationsSetting&quot;, si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7258823566580374486">Activa l'ocultació d'amfitrions d'accés remot</translation>
 <translation id="5560039246134246593">Afegeix un paràmetre a l'obtenció del valor seed de les variacions a <ph name="PRODUCT_NAME"/>.
@@ -1407,6 +1439,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si aquesta política no es defineix, no es mostren les Condicions del servei.
 
       La política s'ha de definir en un URL del qual <ph name="PRODUCT_OS_NAME"/> pugui baixar les Condicions del servei, que han de trobar-se com a text sense format proporcionat com a text/sense format de tipus MIME. No es permet el marcatge.</translation>
+<translation id="2623014935069176671">Espereu que hi hagi una activitat inicial de l'usuari.</translation>
 <translation id="2660846099862559570">No facis servir mai un servidor intermediari</translation>
 <translation id="1435659902881071157">Configuració de la xarxa a nivell del dispositiu</translation>
 <translation id="2131902621292742709">Retard d'atenuació de pantalla quan s'utilitza bateria</translation>

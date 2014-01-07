@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="6676384891291319759">Truy cập Internet</translation>
+<translation id="8586442755830160949">Bản quyền <ph name="YEAR"/> Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="6373523479360886564">Bạn có chắc chắn muốn gỡ cài đặt Chromium không?</translation>
 <translation id="5065199687811594072">Bạn có muốn Chromium lưu thông tin thẻ tín dụng này để hoàn thành các biểu mẫu web không?</translation>
 <translation id="6510925080656968729">Gỡ cài đặt Chromium</translation>
@@ -26,7 +27,6 @@
 <translation id="3549345495227188780">Bắt đầu với Chromium OS</translation>
 <translation id="4330297532943865716">Đã phát hiện thấy cài đặt Chromium hoặc Chromium Frame xung đột trên hệ thống. Hãy gỡ cài đặt và thử lại.</translation>
 <translation id="6953661834318318668">Thanh công cụ của Chromium</translation>
-<translation id="2245147136185581459">Trình phát hiện Chromium Captive Portal</translation>
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
 <translation id="1396446129537741364">Chromium đang cố gắng hiển thị mật khẩu.</translation>
 <translation id="3555616473548901994">Quá trình gỡ cài đặt đã hoàn tất.</translation>
@@ -60,7 +60,6 @@
 <translation id="7771626876550251690">Trong trường hợp này, địa chỉ được liệt kê trong chứng chỉ không khớp với địa chỉ của trang web mà trình duyệt của bạn đã cố gắng truy cập. Một lý do có thể giải thích cho trường hợp này là các kết nối của bạn đang bị chặn bởi một kẻ tấn công hiện đưa ra chứng chỉ của một trang web khác, điều này gây ra sự không khớp nhau. Một lý do khác có thể là máy chủ được thiết lập để trả về cùng một chứng chỉ cho nhiều trang web, bao gồm cả trang web bạn đang cố gắng truy cập, ngay cả khi chứng chỉ đó không hợp lệ cho tất cả các trang web này. Chromium có thể chắc chắn rằng bạn đã truy cập vào &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; nhưng không thể xác minh rằng trang web đó cũng chính là trang web &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; mà bạn muốn truy cập. Nếu bạn tiếp tục, Chromium sẽ không kiểm tra bất kỳ trường hợp tên không trùng khớp nào khác.</translation>
 <translation id="4330585738697551178">Mô-đun này được xác định xung đột với Chromium.</translation>
 <translation id="3190315855212034486">Rất tiếc! Chromium đã gặp sự cố. Khởi chạy lại ngay bây giờ?</translation>
-<translation id="3590194807845837023">Mở khóa cấu hình và khởi chạy lại</translation>
 <translation id="6714487516757221107">Không tìm thấy cài đặt Chromium hoặc Chromium Frame nào để cập nhật.</translation>
 <translation id="3197823471738295152">Thiết bị của bạn đã được cập nhật.</translation>
 <translation id="8551886023433311834">Gần như cập nhật! Khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
@@ -153,6 +152,7 @@
 <translation id="6717134281241384636">Không thể sử dụng cấu hình của bạn do cấu hình này đến từ một phiên bản Chromium mới hơn.
 
 Một số tính năng có thể không khả dụng. Hãy chỉ định thư mục cấu hình khác hoặc sử dụng phiên bản Chromium mới hơn.</translation>
+<translation id="8907580949721785412">Chromium đang cố gắng hiển thị mật khẩu. Nhập mật khẩu Windows của bạn để cho phép thực hiện việc này.</translation>
 <translation id="9013087743919948559">Thêm vào Chromium</translation>
 <translation id="6212496753309875659">Máy tính này đã có phiên bản Chromium mới hơn. Nếu phần mềm không hoạt động, hãy gỡ cài đặt Chromium và thử lại.</translation>
 <translation id="1298199220304005244">Nhận trợ giúp về cách sử dụng Chromium OS</translation>
@@ -196,7 +196,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="805745970029938373">Bạn có thể thấy tất cả các thông báo từ ứng dụng, tiện ích mở rộng và trang web Chromium của bạn tại đây.</translation>
 <translation id="2119636228670142020">Giới thiệu về &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hiện đã có phiên bản Chromium mới an toàn hơn.</translation>
-<translation id="1539981464052805551">Bản quyền 2012 Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
 <translation id="8724049448828509830">Quá trình tải xuống hiện đang diễn ra. Bạn có muốn thoát Chromium và hủy tải xuống không?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>

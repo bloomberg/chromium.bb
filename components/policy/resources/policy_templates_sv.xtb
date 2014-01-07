@@ -312,6 +312,7 @@
           Om policyn inte är inställd används standardtiden.
 
           Policyns värde anges i millisekunder.</translation>
+<translation id="6598235178374410284">Användarens avatarbild</translation>
 <translation id="1675391920437889033">Kontrollerar vilka appar/tillägg som får installeras.
 
           Med den här inställningen tillåts de typer av tillägg/appar som kan installeras i <ph name="PRODUCT_NAME"/>. Värdet är en lista med strängar som alla ska vara antingen &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot; eller &quot;platform_app&quot;. Läs dokumentationen för Chrome-tillägg om du vill få mer information om typerna.
@@ -493,6 +494,11 @@
 <translation id="4894257424747841850">Rapportlista över enhetsanvändare som nyligen har loggat in.
 
       Om ingen policy har angetts, eller om den har angetts som falsk, kommer användarna inte att rapporteras.</translation>
+<translation id="2488010520405124654">Aktivera uppmaning att konfigurera nätverk om enheten är offline.
+
+      Om inget värde har angetts för den här principen eller om den har värdet Sant och ett enhetslokalt konto har konfigurerats för automatisk inloggning utan fördröjning och enheten saknar internetanslutning visas en uppmaning att konfigurera ett nätverk i <ph name="PRODUCT_OS_NAME"/>.
+
+      Om principen har värdet Falskt visas ett felmeddelande i stället för uppmaningen att konfigurera ett nätverk.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="4897928009230106190">Anger parametrarna som används när en förslagssökning görs med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {searchTerms} i ovanstående exempel, ersätts den av riktiga söktermer.
 
@@ -735,6 +741,7 @@
 
           Värdet för policyn ska anges i millisekunder. Värdena måste vara lägre än eller desamma som inaktivitetstiden.</translation>
 <translation id="1098794473340446990">Rapportera aktivitetstider för enhet. Om inställningen är True kommer registrerade enheter att rapportera tidsperioder när en användare är aktiv på enheten. Om inställningen inte är angiven eller inställd på False kommer enhetens aktivitetstider inte att registreras eller rapporteras.</translation>
+<translation id="1327466551276625742">Aktivera uppmaning att konfigurera nätverk om enheten är offline</translation>
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="427632463972968153">Anger parametrarna som används vid bildsökning med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {imageThumbnail} i ovanstående exempel, ersätts det av en riktig miniatyrbild.
 
@@ -960,7 +967,6 @@
 
       Om policyn är inställd på sant eller inte är konfigurerad kan nya användarkonton skapas under förutsättning att <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> inte förhindrar att användaren loggar in.</translation>
 <translation id="4389091865841123886">Konfigurera fjärrattesteringen med TPM-mekanism.</translation>
-<translation id="3518214502751233558">Ange om fördröjningar för energisparfunktionen och begränsningar för sessionslängden endast ska användas efter den första användaraktiviteten i en session</translation>
 <translation id="8256688113167012935">Kontrollerar hur kontonamnet <ph name="PRODUCT_OS_NAME"/> visas på inloggningssidan för motsvarande lokala konto på enheten.
 
       Om policyn tillämpas används den angivna strängen på inloggningsskärmen i den bildbaserade inloggningsväljaren för motsvarande lokala konto på enheten.
@@ -1344,6 +1350,32 @@
       När DeviceIdleLogoutTimeout har angetts definierar den här policyn hur länge en varningsruta med nedräkning ska visas för användaren innan utloggningen genomförs.
 
       Policyns värde anges i millisekunder.</translation>
+<translation id="54795286564479339">Konfigurera användarens avatarbild.
+
+      Med den här policyn kan du konfigurera den avatarbild som representerar användaren på inloggningsskärmen. Policyn anges genom att man specificerar vilken webbadress som <ph name="PRODUCT_OS_NAME"/> hämtar avatarbilden från. Ett kryptografiskt kondensat måste användas för att verifiera hämtningens integritet. Bilden måste ha JPEG-format och storleken får inte överstiga 512 kB. Webbadressen måste vara tillgänglig utan autentisering.
+
+      Avatarbilden har hämtats och cachats. Den kommer att hämtas igen om webbadressen eller kondensatet ändras.
+
+      Policyn ska specificeras som en sträng som återger webbadressen och kondensatet i JSON-format och som följer detta schema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Webbadressen som avatarbilden kan hämtas från.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;SHA-1-kondensatet för avatarbilden.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Om den här policyn anges hämtar och använder <ph name="PRODUCT_OS_NAME"/> avatarbilden.
+
+      Om du anger den här policyn kan den inte åsidosättas av andra användare.
+
+      Om policyn inte anges kan användaren välja vilken avatarbild som helst att använda på inloggningsskärmen.</translation>
 <translation id="237494535617297575">Policyn gör att du kan ange en lista med webbadressmönster som inte får visa meddelanden.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultNotificationsSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -1740,6 +1772,7 @@
       Om policyn inte ställs in visas inga användarvillkor.
 
       Den här policyn ska ställas in på en webbadress som <ph name="PRODUCT_OS_NAME"/> kan hämta användarvillkoren från. Användarvillkoren måste vara oformaterad text av MIME-typ. Ingen kod får användas.</translation>
+<translation id="2623014935069176671">Vänta på inledande användaraktivitet</translation>
 <translation id="2660846099862559570">Använd aldrig en proxy</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
 <translation id="2131902621292742709">Skärmdämpningstid när enheten drivs av batteriet</translation>

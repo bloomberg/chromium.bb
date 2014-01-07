@@ -308,6 +308,7 @@
           Kapag hindi nakatakda ang patakarang ito, may default na tagal ng oras na gagamitin.
 
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond.</translation>
+<translation id="6598235178374410284">Larawan ng avatar ng user</translation>
 <translation id="1675391920437889033">Kinokontrol kung aling mga uri ng app/extension ang pinapayagang ma-install.
 
           Wina-whitelist ng setting na ito ang mga pinapayagang uri ng extension/apps na maaaring i-install sa <ph name="PRODUCT_NAME"/>. Ang halaga ay isang listahan ng mga string, kung saan ang bawat isa ay dapat na isa sa mga sumusunod: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Tingnan ang dokumentasyon ng mga extension ng Chrome para sa higit pang impormasyon sa mga uring ito.
@@ -490,6 +491,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="4894257424747841850">I-ulat ang listahan ng mga user ng device na kamakailang nag-log in.
 
       Kung hindi nakatakda ang patakaran, o nakatakda sa false, hindi i-uulat ang mga user.</translation>
+<translation id="2488010520405124654">I-enable ang prompt ng configuration ng network kapag offline.
+
+      Kung hindi nakatakda o nakatakda sa True ang patakarang ito at naka-configure ang isang account na lokal sa device para sa zero-delay na auto-login at walang access sa Internet ang device, magpapakita ang <ph name="PRODUCT_OS_NAME"/> ng prompt ng configuration ng network.
+
+      Kung nakatakda sa False ang patakarang ito, ipapakita ang isang mensahe ng error sa halip na ang prompt ng configuration ng network.</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="4897928009230106190">Tinutukoy ang mga parameter na ginamit kapag gumagawa ng paghahanap ng mungkahi gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {searchTerms} sa halimbawa sa itaas, papalitan ito ng data ng tunay na mga termino para sa paghahanap.
 
@@ -734,6 +740,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Dapat tukuyin ang halaga ng patakaran gamit ang milliseconds. Nililimitahan ang mga halaga upang maging mas mababa sa o katumbas ng delay bago mag-idle.</translation>
 <translation id="1098794473340446990">Iulat ang mga oras ng aktibidad ng device. Kung nakatakda ang setting na ito sa True, ang mga naka-enroll na device ay mag-uulat ng mga panahon kapag active sa device ang user. Kung hindi nakatakda ang setting na ito o nakatakda sa False, hindi maitatala o maiuulat ang mga oras ng aktibidad ng device.</translation>
+<translation id="1327466551276625742">I-enable ang prompt ng configuration ng network kapag offline</translation>
 <translation id="7937766917976512374">Payagan o tanggihan ang pagkuha ng video</translation>
 <translation id="427632463972968153">Tinutukoy ang mga parameter na ginamit kapag nagsasagawa ng paghahanap ng larawan gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {imageThumbnail} sa halimbawa sa itaas, papalitan ito ng data ng tunay na thumbnail ng larawan.
 
@@ -955,7 +962,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papayagang malikha ang mga bagong user account kung hindi pinipigilan ng <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ang pag-log in ng user.</translation>
 <translation id="4389091865841123886">I-configure ang malayuang pagpapatunay gamit ang mekanismo ng TPM.</translation>
-<translation id="3518214502751233558">Tukuyin kung dapat lang magsimulang tumakbo ang mga pagkaantala sa pamamahala sa power at ang limitasyon sa haba ng session pagkatapos ng paunang aktibidad ng user sa isang session</translation>
 <translation id="8256688113167012935">Kinokontrol ang pangalan ng account na <ph name="PRODUCT_OS_NAME"/> na nakikita sa screen sa pag-login para sa katumbas na account na lokal sa device.
 
       Kung nakatakda ang patakarang ito, gagamitin ng screen sa pag-login ang tinukoy na string sa tagapili ng pag-login na nakabatay sa larawan para sa katumbas na account na lokal sa device.
@@ -1329,6 +1335,32 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kapag nakatukoy ang DeviceIdleLogoutTimeout, tinutukoy ng patakarang ito ang tagal ng kahon ng babala gamit ang count down timer na ipinapakita sa user bago isagawa ang pag-logout.
 
       Dapat na tinukoy sa milliseconds ang halaga ng patakaran.</translation>
+<translation id="54795286564479339">I-configure ang larawan ng avatar ng user.
+
+      Nagbibigay-daan sa iyo ang patakarang ito na i-configure ang larawan ng avatar na kumakatawan sa user sa screen ng pag-login. Itinatakda ang patakaran sa pamamagitan ng pagtukoy ng URL kung saan mada-download ng <ph name="PRODUCT_OS_NAME"/> ang larawan ng avatar at isang cryptographic hash na ginamit upang i-verify ang integridad ng download. Dapat na nasa JPEG na format ang larawan, hindi dapat lumampas sa 512kB ang laki nito. Naa-access dapat ang URL nang walang anumang pagpapatotoo.
+
+      Dina-download at kina-cache ang larawan ng avatar. Muli itong ida-download sa tuwing magbabago ang URL o ang hash.
+
+      Dapat na tukuyin ang patakaran bilang isang string na ipinapahayag ang URL at hash sa JSON na format, nang umaayon sa sumusunod na schema:
+      {
+        &quot;uri&quot;: &quot;bagay&quot;,
+        &quot;mga property&quot;: {
+          &quot;url&quot;: {
+            &quot;paglalarawan&quot;: &quot;Ang URL kung saan mada-download ang larawan ng avatar.&quot;,
+            &quot;uri&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;paglalarawan&quot;: &quot;Ang SHA-1 hash ng larawan ng avatar.&quot;,
+            &quot;uri&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Kung nakatakda ang patakarang ito, ida-download at gagamitin ng <ph name="PRODUCT_OS_NAME"/> ang larawan ng avatar.
+
+      Kung itatakda mo ang patakarang ito, hindi ito mababago o ma-o-override ng mga user.
+
+      Kung hahayaang hindi nakatakda ang patakaran, mapipili ng user ang larawan ng avatar na kumakatawan sa kanya sa screen ng pag-login.</translation>
 <translation id="237494535617297575">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpakita ng mga notification.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung hindi ito nakatakda, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -1714,6 +1746,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi nakatakda ang patakarang ito, walang Mga Tuntunin ng Serbisyo na ipapakita.
 
       Dapat itakda ang patakaran sa isang URL kung saan maaaring i-download ng <ph name="PRODUCT_OS_NAME"/> ang Mga Tuntunin ng Serbisyo. Dapat ay plain text ang Mga Tuntunin ng Serbisyo, na ihahatid bilang MIME type text/plain. Hindi pinapayagan ang markup.</translation>
+<translation id="2623014935069176671">Maghintay sa paunang aktibidad ng user</translation>
 <translation id="2660846099862559570">Huwag kailanman gumamit ng proxy</translation>
 <translation id="1435659902881071157">Configuration ng network sa antas ng device</translation>
 <translation id="2131902621292742709">Delay ng pag-dim ng screen kapag tumatakbo gamit ang power ng baterya</translation>

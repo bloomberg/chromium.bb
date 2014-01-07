@@ -1,13 +1,22 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="6017514345406065928">Berde</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="9068849894565669697">Pumili ng kulay</translation>
+<translation id="4115378294792113321">Magenta</translation>
 <translation id="793640675459356075">Hindi mabuksan ang napiling file</translation>
+<translation id="7569983096843329377">Itim</translation>
+<translation id="5901630391730855834">Dilaw</translation>
+<translation id="7942349550061667556">Pula</translation>
+<translation id="1555130319947370107">Asul</translation>
 <translation id="6727102863431372879">Itakda</translation>
 <translation id="6315516427814392808">Hindi makumpleto ang nakaraang operasyon dahil sa mababang memory</translation>
 <translation id="6042308850641462728">Higit pa</translation>
 <translation id="7535087603100972091">Value</translation>
+<translation id="161042844686301425">Cyan</translation>
 <translation id="8889402386540077796">Hue</translation>
+<translation id="2713444072780614174">Puti</translation>
 <translation id="3329013043687509092">Saturation</translation>
+<translation id="6555463879959038093">Nabigong kopyahin sa clipboard</translation>
 </translationbundle>

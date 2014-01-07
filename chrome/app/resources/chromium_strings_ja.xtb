@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="6676384891291319759">インターネットにアクセス</translation>
+<translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. All rights reserved.</translation>
 <translation id="6373523479360886564">Chromium をアンインストールしてもよろしいですか？</translation>
 <translation id="5065199687811594072">このクレジット カード情報を Chromium に保存してウェブ フォームの自動入力に使用しますか？</translation>
 <translation id="6510925080656968729">Chromium をアンインストール</translation>
@@ -26,7 +27,6 @@
 <translation id="3549345495227188780">Chromium OS のスタート ガイド</translation>
 <translation id="4330297532943865716">システム上に競合している Chromium または Chromium Frame が見つかりました。こちらをアンインストールしてからもう一度お試しください。</translation>
 <translation id="6953661834318318668">Chromium ツールバー</translation>
-<translation id="2245147136185581459">Chromium キャプティブ ポータル検出機能</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
 <translation id="1396446129537741364">Chromium はパスワードを表示しようとしています。</translation>
 <translation id="3555616473548901994">アンインストールが完了しました。</translation>
@@ -60,7 +60,6 @@
 <translation id="7771626876550251690">証明書に記載されているアドレスが、ブラウザがアクセスしようとしたウェブサイトのアドレスと一致しません。理由の 1 つとして、通信が悪意のあるユーザーによって傍受され、そのユーザーから別のウェブサイトの証明書が提示されているために、アドレスが一致しないことが考えられます。あるいは、アクセスしようとしているウェブサイトを含む複数のウェブサイトについて同じ証明書を返すようにサーバーが設定されているが、その証明書がすべてのサイトについて有効とは限らないことが考えられます。Chromium では、アクセスしているサイトが確かに &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; であることは保証できますが、アクセスしようとした &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; と同じサイトであるかどうかは検証できません。次に進むと、以降 Chromium ではアドレスの不一致がチェックされなくなります。</translation>
 <translation id="4330585738697551178">このモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="3190315855212034486">エラー: Chromium で問題が発生しました。今すぐ再起動しますか？</translation>
-<translation id="3590194807845837023">プロフィールのロックを解除して再起動</translation>
 <translation id="6714487516757221107">現在、インストールできる Chromium と Chromium Frame のアップデートはありません。</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
 <translation id="8551886023433311834">更新を完了するには、端末を再起動してください。</translation>
@@ -153,6 +152,7 @@
 <translation id="6717134281241384636">バージョンが新しい Chromium のプロフィールは使用できません。
 
 一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chromium をご使用ください。</translation>
+<translation id="8907580949721785412">Chromium でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="9013087743919948559">Chromium に追加</translation>
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
 <translation id="1298199220304005244">Chromium OS の使用に関するアドバイス</translation>
@@ -196,7 +196,6 @@
 <translation id="805745970029938373">Chromium のアプリ、拡張機能、ウェブサイトからの通知がすべてここに表示されます。</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
-<translation id="1539981464052805551">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="8724049448828509830">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Chromium を終了してもよろしいですか？</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>

@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="8588878054171169263">Spara bild</translation>
+<translation id="5578795271662203820">Sök på <ph name="SEARCH_ENGINE"/> efter denna bild</translation>
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="7644305409888602715">Översätter sidan till <ph name="SOURCE_LANGUAGE"/> ...</translation>
 <translation id="1491151370853475546">Hämta sidan igen</translation>
+<translation id="641643625718530986">Skriv ut …</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="6458785801851713928">Synkronisering är inte tillgängligt för din domän.</translation>
 <translation id="2731700343119398978">Vänta ...</translation>
@@ -15,20 +18,32 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="624558823898732418">Översättningsspråk: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Certifikatvisare</translation>
 <translation id="8583805026567836021">Rensar kontouppgifter</translation>
+<translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8730621377337864115">Klart</translation>
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
 <translation id="8627706565932943526">Synkroniseringsfel</translation>
+<translation id="4043215103217793252">Redigera sida med bokmärke</translation>
 <translation id="656628257199996201">Översätt alltid <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
+<translation id="4619298195800598081">Öppna original i ny flik</translation>
 <translation id="3136378934686431938">Uppdatera dina inloggningsuppgifter.</translation>
+<translation id="3063601790762993062">Spara video</translation>
 <translation id="6042308850641462728">Mer</translation>
+<translation id="3992315671621218278">Spara länk</translation>
 <translation id="8034522405403831421">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE"/>. Vill du översätta den till <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="4195643157523330669">Öppna i ny flik</translation>
+<translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="8725066075913043281">Försök igen</translation>
+<translation id="4269820728363426813">Kopiera länkadress</translation>
 <translation id="4510973599275542560">Hämta ej sidan igen</translation>
+<translation id="1206892813135768548">Kopiera länktext</translation>
 <translation id="9154176715500758432">Stanna på den här sidan</translation>
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
 <translation id="4271185234001491831">Översätt aldrig från <ph name="LANGUAGE"/></translation>
+<translation id="6671495933530132209">Kopiera bild</translation>
+<translation id="8209050860603202033">Öppna bild</translation>
+<translation id="2501278716633472235">Föregående</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
 <translation id="5164482624172255778">Vill du att alternativet att översätta sidor i Google Chrome på <ph name="LANGUAGE"/> från den här webbplatsen ska visas nästa gång?</translation>
 <translation id="8528538445849828817">Sidans språk: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,6 +52,9 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="969096075394517431">Ändra språk</translation>
 <translation id="5032574515228824816">Fråga</translation>
+<translation id="4847896847259487518">Lägg till bokmärke för sidan</translation>
+<translation id="497421865427891073">Fortsätt</translation>
+<translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="1742134235943978220">Översatt till <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Bekräfta inloggning</translation>

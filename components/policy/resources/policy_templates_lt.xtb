@@ -312,6 +312,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Kai ši politika nenustatyta, naudojama numatytoji laiko trukmė.
 
           Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
+<translation id="6598235178374410284">Naudotojo pseudoportreto vaizdas</translation>
 <translation id="1675391920437889033">Valdoma, kuriuos plėtinių / programų tipus leidžiama įdiegti.
 
           Naudojant šį nustatymą į baltąjį sąrašą įtraukiami leistini „<ph name="PRODUCT_NAME"/>“ įdiegti plėtinių / programų tipai. Vertė yra eilučių sąrašas, kiekviena jų turi būti vienas iš šių elementų: „plėtinys“, „tema“, „naudotojo_scenarijus“, „priglobta_programa“, „pasenusi_supakuota_programa“, „platformos_programa“. Jei reikia daugiau informacijos apie šiuos tipus, žr. „Chrome“ plėtinių dokumentaciją.
@@ -493,6 +494,11 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="4894257424747841850">Pateikite pastaruoju metu prisijungusių įrenginio naudotojų sąrašo ataskaitą.
 
       Jei politika nenustatyta arba nustatyta į „False“, ataskaita apie naudotojus nebus pateikta.</translation>
+<translation id="2488010520405124654">Įgalinti tinklo konfigūracijos raginimą, kai esate neprisijungę.
+
+      Jei ši politika nenustatyta arba nustatyta į „True“ ir įrenginio vietinė paskyra sukonfigūruota automatiškai prisijungti nedelsiant ir įrenginiui nesuteikta prieiga prie interneto, „<ph name="PRODUCT_OS_NAME"/>“ rodomas tinklo konfigūracijos raginimas.
+
+      Jei ši politika nustatyta į „False“, pateikiamas klaidos pranešimas vietoje tinklo konfigūracijos raginimo.</translation>
 <translation id="1426410128494586442">Taip</translation>
 <translation id="4897928009230106190">Nurodomi parametrai, naudojami atliekant pasiūlymų paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {searchTerms} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais paieškos terminų duomenimis.
 
@@ -741,6 +747,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="1098794473340446990">Pranešti įrenginio veiklos laiką.
 
       Jei šis nustatymas nustatytas į „Taip“, užregistruoti įrenginiai praneš to įrenginio naudotojo veiklos trukmę. Jei nustatymas nenustatytas ar nustatytas į „Ne“, įrenginio veiklos laikas nebus įrašomas ar pranešamas.</translation>
+<translation id="1327466551276625742">Įgalinti tinklo konfigūracijos raginimą, kai esate neprisijungę</translation>
 <translation id="7937766917976512374">Leisti arba blokuoti vaizdo įrašo fiksavimą</translation>
 <translation id="427632463972968153">Nurodomi parametrai, naudojami atliekant vaizdų paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {imageThumbnail} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais vaizdo miniatiūros duomenimis.
 
@@ -961,7 +968,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, leidžiama sukurti naujų naudotojų paskyrų, jei pagal „<ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/>“ leidžiama naudotojui prisijungti.</translation>
 <translation id="4389091865841123886">Konfigūruojamas nuotolinis patvirtinimas naudojant TPM mechanizmą.</translation>
-<translation id="3518214502751233558">Nurodykite, ar energijos valdymo delsa ir seanso ilgio apribojimas turėtų būti suaktyvinti tik naudotojui pradėjus seanso veiklą</translation>
 <translation id="8256688113167012935">Valdomas paskyros pavadinimas, kurį „<ph name="PRODUCT_OS_NAME"/>“ rodo atitinkamo įrenginio vietinės paskyros prisijungimo ekrane.
 
       Jei ši politika nustatyta, prisijungimo ekrano prisijungimo vardo parinkiklyje prie atitinkamos vietinės paskyros bus naudojama nurodyta eilutė.
@@ -1078,7 +1084,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei nenustatysite šios politikos, „Chrome“ bandys nustatyti, ar serveris yra intranete ir tik tada atsakys į IWA užklausas. Jei serveris aptinkamas internete, „Chrome“ nepaisys jo siunčiamų IWA užklausų.</translation>
 <translation id="3653237928288822292">Numatytojo paieškos teikėjo piktograma</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
-<translation id="4445684791305970001">Neleidžiami kūrėjo įrankiai ir „JavaScript“ konsolė.
+<translation id="4445684791305970001">Neleidžiami kūrėjo įrankiai ir „JavaScript“ pultas.
 
       Jei įgalinsite šį nustatymą, daugiau nebus galima pasiekti kūrėjo įrankių ir patikrinti svetainės elementų. Bus neleidžiami visi spartieji klavišai ir meniu ar kontekstinių meniu įrašai, skirti kūrėjo įrankiams ar „JavaScript“ konsolei atidaryti.
 
@@ -1348,6 +1354,32 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Kai nurodyta „Įrenginio neveikos būsenos atjungimo skirtasis laikas“, pagal šią politiką apibrėžiama įspėjimo laukelio su laiko skaičiavimo atgal laikmačiu, kuris rodomas naudotojui prieš atjungiant, trukmė.
 
       Politikos vertė turėtų būti nurodyta milisekundėmis.</translation>
+<translation id="54795286564479339">Naudotojo pseudoportreto vaizdo konfigūravimas.
+
+      Pagal šią politiką leidžiama konfigūruoti pseudoportreto vaizdą, atstovaujantį naudotoją prisijungimo ekrane. Politika nustatoma nurodant URL, iš kurio „<ph name="PRODUCT_OS_NAME"/>“ gali atsisiųsti pseudoportreto vaizdą ir kriptografinę maišos vertę, kuri naudojama atsisiuntimo vientisumą patvirtinti. Vaizdas turi būti JPEG formato, o dydis neturi viršyti 512 KB. URL turi būti pasiekiamas be autentifikavimo.
+
+      Pseudoportreto vaizdas atsisiunčiamas ir įkeliamas į talpyklą. Jis bus iš naujo atsisiųstas pasikeitus URL arba maišos vertei.
+
+      Politika turi būti nurodyta kaip eilutė, kurioje JSON formatu pateikiami URL ir maišos vertė. Ji turi atitikti šią schemą:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL, iš kur galima atsisiųsti pseudoportreto vaizdą.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Pseudoportreto vaizdo SHA-1 maišos vertė.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Jei ši politika nustatyta, „<ph name="PRODUCT_OS_NAME"/>“ atsisiųs ir naudos pseudoportreto vaizdą.
+
+      Jei nustatysite šią politiką, naudotojai negalės jos pakeisti ar perrašyti.
+
+      Jei politika nenustatyta, naudotojas gali pasirinkti pseudoportreto vaizdą, kuris jam atstovauja prisijungimo ekrane.</translation>
 <translation id="237494535617297575">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama pateikti pranešimus, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -1746,6 +1778,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei ši politika nenustatyta, rodomos paslaugų teikimo sąlygos.
 
       Politika turėtų būti nustatyta į URL, kuriuo „<ph name="PRODUCT_OS_NAME"/>“ gali atsisiųsti paslaugų teikimo sąlygas. Paslaugų teikimo sąlygas turi sudaryti paprastasis tekstas, pateiktas kaip MIME tipo tekstas / paprastasis tekstas. Neleidžiamas joks žymėjimas.</translation>
+<translation id="2623014935069176671">Laukti pradinės naudotojo veiklos</translation>
 <translation id="2660846099862559570">Niekada nenaudoti tarpinio serverio</translation>
 <translation id="1435659902881071157">Įrenginio lygio tinklo konfigūracija</translation>
 <translation id="2131902621292742709">Ekrano pritemdymo delsa, kai naudojama akumuliatoriaus energija</translation>

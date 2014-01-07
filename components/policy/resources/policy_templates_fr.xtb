@@ -83,7 +83,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
           Si vous ne définissez pas cette règle, le grand curseur est désactivé au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou le désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
 <translation id="3185009703220253572">depuis la version <ph name="SINCE_VERSION"/></translation>
-<translation id="2204753382813641270">Règle pour masquer automatiquement le répertoire</translation>
+<translation id="2204753382813641270">Règle pour masquer automatiquement l'étagère</translation>
 <translation id="3816312845600780067">Activer le raccourci clavier permettant d'ignorer le processus de connexion automatique</translation>
 <translation id="3214164532079860003">Lorsqu'elle est activée, cette règle force l'importation de la page d'accueil à partir du navigateur par défaut actuel. 
 
@@ -115,15 +115,15 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
       Si cette règle n'est pas configurée, l'utilisateur peut choisir si le client DNS intégré doit être utilisé ou non, soit en modifiant chrome://flags, soit à l'aide d'un indicateur de ligne de commande.</translation>
 <translation id="2908277604670530363">Nombre maximal de connexions simultanées au serveur proxy</translation>
-<translation id="556941986578702361">Définit si le répertoire <ph name="PRODUCT_OS_NAME"/> doit être masqué automatiquement ou non.
+<translation id="556941986578702361">Définit si l'étagère <ph name="PRODUCT_OS_NAME"/> doit être masquée automatiquement ou non.
 
-      Si cette règle est définie sur &quot;AlwaysAutoHideShelf&quot;, le répertoire est toujours masqué automatiquement.
+      Si cette règle est définie sur &quot;AlwaysAutoHideShelf&quot;, l'étagère est toujours masquée automatiquement.
 
-      Si cette règle est définie sur &quot;NeverAutoHideShelf&quot;, le répertoire n'est jamais masqué automatiquement.
+      Si cette règle est définie sur &quot;NeverAutoHideShelf&quot;, l'étagère n'est jamais masquée automatiquement.
 
       Si cette règle est configurée, l'utilisateur ne peut ni la modifier, ni la contourner.
 
-      Si cette règle n'est pas configurée, l'utilisateur peut choisir de masquer automatiquement le répertoire ou non.</translation>
+      Si cette règle n'est pas configurée, l'utilisateur peut choisir de masquer automatiquement l'étagère ou non.</translation>
 <translation id="4838572175671839397">Contient une expression régulière qui est utilisée pour déterminer quels utilisateurs peuvent se connecter à <ph name="PRODUCT_NAME"/>.
 
       Un message d'erreur approprié s'affiche lorsqu'un utilisateur tente de se connecter avec un nom qui ne correspond pas à ce schéma.
@@ -215,7 +215,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut installer n'importe qu
 <translation id="3067188277482006117">Si la valeur est définie sur &quot;true&quot;, l'utilisateur peut utiliser le matériel sur des appareils Chrome afin d'attester, à distance, de son identité auprès de l'autorité de certification de la confidentialité par le biais de l'API Enterprise Platform Keys &quot;chrome.enterprise.platformKeysPrivate.challengeUserKey()&quot;.
 
           Si la valeur est définie sur &quot;false&quot;, ou si elle n'est pas définie, les appels vers l'API échouent, et un code d'erreur est renvoyé.</translation>
-<translation id="5809728392451418079">Définir le nom affiché pour les comptes locaux des appareils</translation>
+<translation id="5809728392451418079">Définir le nom à afficher pour les comptes locaux des appareils</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1827523283178827583">Utiliser des serveurs proxy déterminés</translation>
 <translation id="3021409116652377124">Désactiver l'outil de recherche de plug-ins</translation>
@@ -313,6 +313,7 @@ Si cette règle n'est pas configurée, Google Sync est disponible et l'utilisate
                       Si cette règle n'est pas définie, une durée par défaut est utilisée.
 
                       La valeur de cette règle doit être indiquée en millisecondes.</translation>
+<translation id="6598235178374410284">Avatar de l'utilisateur</translation>
 <translation id="1675391920437889033">Définit quels types d'extensions ou d'applications sont autorisés à être installés.
 
           Ce paramètre ajoute à la liste blanche les types d'extensions ou d'applications qui sont autorisés à être installés dans <ph name="PRODUCT_NAME"/>. Il s'agit d'une liste de chaînes qui peuvent prendre les valeurs suivantes : &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot; ou &quot;platform_app&quot;. Pour obtenir davantage d'informations sur ces types, veuillez consulter la documentation relative aux extensions de Google Chrome.
@@ -495,6 +496,11 @@ Pour plus d'options et obtenir des exemples détaillés, accédez au site :
 <translation id="4894257424747841850">Générer une liste des utilisateurs qui se sont récemment connectés à l'appareil.
 
       Si cette règle n'est pas définie, ou si elle est définie sur &quot;False&quot;, aucune liste d'utilisateurs n'est générée.</translation>
+<translation id="2488010520405124654">Activez l'invite de configuration réseau lorsque l'utilisateur n'est pas connecté.
+
+          Si cette règle n'est pas définie ou qu'elle est associée à la valeur &quot;true&quot;, que le compte local d'un appareil est configuré avec une connexion automatique zéro retard et que l'appareil n'a pas accès à Internet, <ph name="PRODUCT_OS_NAME"/> affiche une invite de configuration réseau.
+
+          Si cette règle est définie sur &quot;false&quot;, un message d'erreur s'affiche au lieu de l'invite de configuration réseau.</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="4897928009230106190">Spécifie les paramètres utilisés pour la recherche de suggestions avec POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur est équivalente à un paramètre modèle, comme &quot;{searchTerms}&quot; dans l'exemple ci-dessus, elle est remplacée par des termes de recherche réels.
 
@@ -604,7 +610,7 @@ Si vous activez ce paramètre et qu'un port non standard (c'est-à-dire, un port
 
 Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerberos généré ne comprend aucun port.</translation>
 <translation id="3236046242843493070">Formats d'URL à partir desquelles autoriser les sources d'installation des extensions, des applications et des scripts d'utilisateur</translation>
-<translation id="2498238926436517902">Toujours masquer automatiquement le répertoire</translation>
+<translation id="2498238926436517902">Toujours masquer automatiquement l'étagère</translation>
 <translation id="253135976343875019">Délai d'inactivité avant l'affichage d'un avertissement (en cas de connexion secteur)</translation>
 <translation id="480987484799365700">Si cette règle est activée, elle contraint le profil à basculer en mode éphémère. Si elle est spécifiée en tant que règle OS (par exemple, GPO sous Windows), elle s'applique à tous les profils présents sur le système. Si elle est paramétrée en tant que règle de cloud, elle s'applique uniquement aux profils connectés avec un compte géré.
 
@@ -737,6 +743,7 @@ Si cette règle n'est pas configurée, le paramètre &quot;AskGeolocation&quot; 
 
           Cette valeur, qui doit être inférieure ou égale au délai d'inactivité, est définie en millisecondes.</translation>
 <translation id="1098794473340446990">Indiquer les périodes d'activité de l'appareil. Si ce paramètre est défini sur &quot;True&quot;, les périodes durant lesquelles l'appareil inscrit est utilisé sont régulièrement communiquées par celui-ci. Si ce paramètre n'est pas défini, ou s'il est défini sur &quot;False&quot;, les périodes d'activité ne sont ni enregistrées, ni communiquées.</translation>
+<translation id="1327466551276625742">Activer l'invite de configuration réseau lorsque l'utilisateur n'est pas connecté</translation>
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
 <translation id="427632463972968153">Spécifie les paramètres utilisés pour la recherche d'image avec POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur est équivalente à un paramètre modèle, comme &quot;{imageThumbnail}&quot; dans l'exemple ci-dessus, elle est remplacée par des miniatures d'images réelles.
 
@@ -958,7 +965,6 @@ Cette règle n'est prise en compte que si la règle &quot;DefaultSearchProviderE
 
        Si cette règle est définie sur &quot;true&quot; ou si elle n'est pas configurée, la création de comptes utilisateur est autorisée à condition que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> n'empêche pas l'utilisateur de se connecter.</translation>
 <translation id="4389091865841123886">Configurer l'attestation à distance avec le mécanisme TPM</translation>
-<translation id="3518214502751233558">Indiquer si les délais liés à la gestion de l'alimentation et la limite relative à la durée de la session ne doivent être activés que lorsque l'utilisateur a effectué une première activité au cours d'une session</translation>
 <translation id="8256688113167012935">Définit quel nom de compte s'affiche sur l'écran de connexion de <ph name="PRODUCT_OS_NAME"/> pour le compte local de l'appareil correspondant.
 
       Si cette règle est définie, l'écran de connexion affiche la chaîne spécifiée dans le sélecteur de comptes reposant sur les images, pour le compte local de l'appareil correspondant.
@@ -1343,6 +1349,32 @@ Si vous désactivez ce paramètre ou si vous omettez de le configurer, les pages
        Lorsque la valeur &quot;DeviceIdleLogoutTimeout&quot; est spécifiée, cette règle définit la durée de la boîte d'avertissement avec un compte à rebours qui s'affiche avant l'exécution de la déconnexion.
 
        La valeur de cette règle est définie en millisecondes.</translation>
+<translation id="54795286564479339">Configurez l'avatar de l'utilisateur.
+
+      Cette règle permet de configurer l'avatar représentant l'utilisateur sur l'écran de connexion. Elle est définie en spécifiant l'URL depuis laquelle l'avatar peut être téléchargé par <ph name="PRODUCT_OS_NAME"/> et une empreinte numérique utilisée pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG, et sa taille ne doit pas excéder 512 Ko. L'URL doit être accessible sans aucune authentification.
+
+      L'avatar est téléchargé, puis mis en cache. Il est téléchargé de nouveau chaque fois que l'URL ou l'empreinte change.
+
+      Cette règle doit être définie dans une chaîne indiquant l'URL et l'empreinte au format JSON, selon le modèle suivant :
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;L'URL depuis laquelle l'avatar doit être téléchargé.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;L'empreinte SHA-1 de l'avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Si cette règle est définie, l'avatar est téléchargé et utilisé par <ph name="PRODUCT_OS_NAME"/>.
+
+      Si vous définissez cette règle, les utilisateurs ne peuvent ni la modifier, ni la remplacer.
+
+      Si cette règle n'est pas définie, l'utilisateur peut sélectionner l'avatar le représentant sur l'écran de connexion.</translation>
 <translation id="237494535617297575">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à afficher des notifications. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle &quot;DefaultNotificationsSetting&quot;, si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -1646,7 +1678,7 @@ au maximum si un utilisateur se sert de l'appareil.
       Si la règle n'est pas définie ou si elle est définie sur &quot;False&quot;, la liste d'interfaces ne sera pas générée.</translation>
 <translation id="4121350739760194865">Empêcher les promotions pour des applications de s'afficher sur la page Nouvel onglet</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
-<translation id="3973371701361892765">Ne jamais masquer automatiquement le répertoire</translation>
+<translation id="3973371701361892765">Ne jamais masquer automatiquement l'étagère</translation>
 <translation id="7635471475589566552">Configure les paramètres régionaux de l'application dans <ph name="PRODUCT_NAME"/> et empêche les utilisateurs de modifier ces paramètres. 
 
 Si vous activez ce paramètre, <ph name="PRODUCT_NAME"/> utilise les paramètres régionaux spécifiés. Si les paramètres régionaux configurés ne sont pas compatibles, le navigateur applique la valeur &quot;en-US&quot;. 
@@ -1735,6 +1767,7 @@ Si cette règle n'est pas configurée, les utilisateurs peuvent choisir eux-mêm
       Si cette règle n'est pas définie, les conditions d'utilisation ne sont pas présentées à l'utilisateur.
 
       La règle doit être définie sur une URL à partir de laquelle <ph name="PRODUCT_OS_NAME"/> peut télécharger les conditions d'utilisation. Ces conditions doivent être en texte brut, et proposées au format texte/brut au type MIME. Aucun balisage n'est autorisé.</translation>
+<translation id="2623014935069176671">Attendre l'activité utilisateur initiale</translation>
 <translation id="2660846099862559570">Ne jamais utiliser de proxy</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>

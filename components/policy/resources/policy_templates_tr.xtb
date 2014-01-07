@@ -307,6 +307,7 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadan bırakılırsa, varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir.</translation>
+<translation id="6598235178374410284">Kullanıcı avatarı resmi</translation>
 <translation id="1675391920437889033">Yüklenmesine izin verilecek uygulama/uzantı türlerini kontrol eder.
 
           Bu ayar, <ph name="PRODUCT_NAME"/> ürününe yüklenebilecek, izin verilen uzantı/uygulama türlerini beyaz listeye ekler. Değer bir dize listesidir ve bunlar aşağıdakilerden biri olmalıdır: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Bu türler hakkında daha fazla bilgi edinmek için Chrome uzantıları dokümanına bakın.
@@ -488,6 +489,11 @@ politikayı geçersiz kılamaz.
 <translation id="4894257424747841850">Son zamanlarda giriş yapmış cihaz kullanıcılarının listesini raporlar.
 
       Politika ayarlanmaz veya Yanlış seçeneğine ayarlanırsa kullanıcılar raporlanmaz.</translation>
+<translation id="2488010520405124654">Çevrimdışı iken ağ yapılandırma istemini etkinleştir.
+
+      Bu politika ayarlanmazsa veya Doğru seçeneğine ayarlanırsa ve sıfır gecikmeli otomatik oturum açma için bir cihaz yerel hesabı yapılandırılırsa, cihazın İnternet erişimi olmaması durumunda <ph name="PRODUCT_OS_NAME"/> bir ağ yapılandırması istemi görüntüler.
+
+      Bu politika Yanlış seçeneğine ayarlanırsa ağ yapılandırma istemi yerine bir hata iletisi görüntülenir.</translation>
 <translation id="1426410128494586442">Evet</translation>
 <translation id="4897928009230106190">POST ile öneri araması yaparken kullanılan parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {searchTerms} gibi bir şablon parametresi ise gerçek arama terimleri verisiyle değiştirilir.
 
@@ -732,6 +738,7 @@ politikayı geçersiz kılamaz.
 
           Politika değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma gecikmesinin altında veya o gecikmeye eşit olacak şekilde ayarlanır.</translation>
 <translation id="1098794473340446990">Cihaz etkinlik zamanlarını bildirin. Bu ayar True (Doğru) olarak ayarlanırsa, kayıtlı cihazlar bir kullanıcının cihaz üzerinde etkin olduğu zamanları rapor eder. Bu ayar belirtilmezse veya False (Yanlış) olarak ayarlanırsa, cihaz etkinliği zamanları kaydedilmez veya rapor edilmez.</translation>
+<translation id="1327466551276625742">Çevrimdışı iken ağ yapılandırma istemini etkinleştir</translation>
 <translation id="7937766917976512374">Video yakalamaya izin verme veya reddetme</translation>
 <translation id="427632463972968153">POST ile resim araması yaparken kullanılacak parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {imageThumbnail} gibi bir şablon parametresi ise, gerçek resmin küçük resim verisiyle değiştirilir.
 
@@ -958,7 +965,6 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
 
       Bu politika true olarak ayarlanırsa veya hiçbir şekilde ayarlanmazsa, <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> tarafından kullanıcıların giriş yapmasının engellenmemesi koşuluyla yeni kullanıcı hesaplarının oluşturulmasına izin verilir.</translation>
 <translation id="4389091865841123886">TPM mekanizmasıyla uzaktan doğrulamayı yapılandırın.</translation>
-<translation id="3518214502751233558">Bir oturumda güç yönetimi gecikmelerinin ve oturum süresi sınırının sadece kullanıcının ilk etkinliğinden sonra çalışmaya başlayıp başlamayacağını belirle</translation>
 <translation id="8256688113167012935">Hesap adının (<ph name="PRODUCT_OS_NAME"/>) ilgili cihaz-yerel hesap için giriş ekranında görüntülenip görüntülenmeyeceğini kontrol eder.
 
       Bu politika ayarlanırsa, giriş ekranı tarafından, ilgili cihaz-yerel hesap için resimle giriş seçicisinde belirtilen dize kullanılır.
@@ -1332,6 +1338,32 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
       DeviceIdleLogoutTimeout belirtildiğinde, bu politika uyarı kutusunun süresini tanımlar ve çıkış yapılmadan önce kullanıcıya bir geri sayım saati gösterir.
 
       Politika değeri mili saniye olarak belirtilmelidir.</translation>
+<translation id="54795286564479339">Kullanıcı avatarı resmini yapılandır.
+
+      Bu politika, oturum açma ekranında kullanıcıyı temsil eden avatar resmini yapılandırmanıza olanak verir. Politika, <ph name="PRODUCT_OS_NAME"/> sisteminin avatar resmini indireceği URL ve indirme işleminin bütünlüğü doğrulamak için kullanılacak şifreleme karması belirtilerek ayarlanır. Resim JPEG biçiminde olmalı, boyutu 512 KB'ı aşmamalıdır. URL'ye kimlik doğrulaması yapılmadan erişilebilmelidir.
+
+      Avatar resmi indirilir ve önbelleğe kaydedilir. URL veya karma her değiştiğinde tekrar indirilir.
+
+      Politika, aşağıdaki şemaya uygun şekilde URL'yi ve karmayı JSON biçiminde ifade eden bir dize olarak belirtilmelidir:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Avatar resmini indirmek için kullanılabilecek URL.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Avatar resminin SHA-1 karması.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Bu politika ayarlanırsa <ph name="PRODUCT_OS_NAME"/> avatar resmini indirir ve kullanır.
+
+      Ayarlanması durumunda kullanıcılar bu politikayı değiştiremez veya geçersiz kılamazlar.
+
+      Politika ayarlanmamış olarak bırakılırsa kullanıcı oturum açma ekranında kendisini temsil edecek avatar resmini seçebilir.</translation>
 <translation id="237494535617297575">Bildirim görüntülemelerine izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultNotificationsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -1715,6 +1747,7 @@ NOT: Bu politika şu an yalnızca Kiosk modunda çalışırken desteklenir.</tra
       Bu politika ayarlanmazsa, Hizmet Şartları gösterilmez.
 
       Politika, <ph name="PRODUCT_OS_NAME"/> tarafından Hizmet Şartları'nın indirilebileceği bir URL'ye ayarlanmalıdır. Hizmet Şartları'nda düz metin kullanılmalı, MIME türü metin/düz olarak sunulmalıdır. Herhangi bir işaretleme kullanılamaz.</translation>
+<translation id="2623014935069176671">İlk kullanıcı etkinliğini bekle</translation>
 <translation id="2660846099862559570">Hiçbir zaman proxy kullanma</translation>
 <translation id="1435659902881071157">Cihaz düzeyinde ağ yapılandırması</translation>
 <translation id="2131902621292742709">Pil gücüyle çalışırken ekran karartma gecikmesi</translation>

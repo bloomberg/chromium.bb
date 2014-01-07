@@ -104,7 +104,7 @@
 <translation id="4442424173763614572">DNS-sökning misslyckades</translation>
 <translation id="7874779702599364982">Söker efter mobilnätverk ...</translation>
 <translation id="583281660410589416">Okänt</translation>
-<translation id="1383876407941801731">Sökning</translation>
+<translation id="1383876407941801731">Sök</translation>
 <translation id="3901991538546252627">Ansluter till <ph name="NAME"/></translation>
 <translation id="2204305834655267233">Nätverksinformation</translation>
 <translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT"/></translation>
@@ -152,6 +152,7 @@ Inaktivera genom att trycka Ctrl+Alt+Z.</translation>
 <translation id="3473479545200714844">Skärmförstorare</translation>
 <translation id="7005812687360380971">Misslyckades</translation>
 <translation id="882279321799040148">Klicka för att visa</translation>
+<translation id="1753067873202720523">Din Chromebook kanske inte laddas medan den är på.</translation>
 <translation id="5045550434625856497">Felaktigt lösenord</translation>
 <translation id="1602076796624386989">Aktivera mobildata</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>

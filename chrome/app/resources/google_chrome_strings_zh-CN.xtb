@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="3234920859344197194">该网站使用的 Chrome 内嵌框架插件即将停止接收安全性和稳定性更新，因此请将其卸载，然后升级到新式浏览器。</translation>
 <translation id="8914504000324227558">重启 Chrome</translation>
 <translation id="8000275528373650868">Google Chrome 浏览器要求操作系统必须为 Windows Vista 或者 Windows XP SP2 或更高版本。</translation>
-<translation id="8124352762008487242">版权所有 2013 Google Inc. 保留所有权利。</translation>
 <translation id="8485767968786176057">在这种情况下，列在证书中的地址与浏览器尝试显示的网站的地址不相符。引发这种情况的一个可能原因是，您的通信内容正被攻击者拦截，攻击者出示的是其他网站的证书，这就会引发网站地址不符的情况。另一可能引发这种情况的原因是，服务器已设置为对多个网站（包括您试图访问的网站）返回同一证书，即使此证书并不是对所有这些网站都有效。Google Chrome 浏览器确定访问的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;，但无法证实该网站就是所要访问的网站 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;。如果继续操作，则 Chrome 浏览器不会检查是否还有名称不相符的情况。</translation>
 <translation id="5430073640787465221">您的偏好设置文件已损坏或无效。Google Chrome 浏览器无法恢复您的设置。</translation>
 <translation id="6676384891291319759">访问互联网</translation>
@@ -24,7 +24,6 @@
 <translation id="4891791193823137474">让 Google Chrome 浏览器在后台运行</translation>
 <translation id="2896252579017640304">启动 Chrome 应用</translation>
 <translation id="2370289711218562573">Google Chrome 浏览器正在导入收藏夹/书签。</translation>
-<translation id="8762286861469007470">Chrome 强制门户检测器</translation>
 <translation id="2721687379934343312">在苹果机上，密码会保存到您的钥匙串中，可供共用此 OS X 帐户的其他 Chrome 浏览器用户使用或同步。</translation>
 <translation id="1761870329818521071">无法安装与当前运行版本相同的 Google Chrome 浏览器内嵌框架。请关闭 Google Chrome 浏览器内嵌框架，然后重试。</translation>
 <translation id="6014844626092547096">您现在已登录 Chrome！不过，管理员已停用同步功能。</translation>
@@ -58,10 +57,10 @@
 <translation id="1697213158865901863">Google Chrome 浏览器内嵌框架</translation>
 <translation id="4513711165509885787">您的帐单明细已保存在 Chrome 中。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麦克风。</translation>
-<translation id="3590194807845837023">解锁个人资料并重新启动</translation>
 <translation id="4053720452172726777">自定义及控制 Google Chrome</translation>
 <translation id="6423071462708908582">您尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书已过期。由于该证书已过期，因此没有任何信息可表明它是否已被盗用。这意味着 Google Chrome 浏览器无法保证与您通信的是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 还是攻击者。您计算机时钟的当前设置为 <ph name="CURRENT_TIME"/>。该设置是否正确？如果不正确，您应更正错误并刷新此页面。</translation>
 <translation id="3197823471738295152">您的设备已更新到最新版本。</translation>
+<translation id="8286862437124483331">Google Chrome正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
 <translation id="3889417619312448367">卸载 Google Chrome</translation>
 <translation id="1434626383986940139">Chrome Canary 应用</translation>
 <translation id="8551886023433311834">即将更新到最新版本！请重新启动您的设备，以完成更新。</translation>
@@ -86,7 +85,7 @@
 <translation id="473775607612524610">更新</translation>
 <translation id="1195935957447623558">Google Chrome 浏览器未正确关闭。要重新打开曾经打开过的网页，请点击“恢复”。</translation>
 <translation id="2576431527583832481">Chrome 浏览器刚刚经过了改进！新版本已推出。</translation>
-<translation id="4633000520311261472">为了提高 Chrome 的安全性，系统停用了一些未列在“<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>”中，并可能是在您不知情的情况下添加的扩展程序。</translation>
+<translation id="4633000520311261472">为了提高 Chrome 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>中、可能是在您不知情的情况下添加的扩展程序。</translation>
 <translation id="556024056938947818">Google Chrome 正尝试显示密码。</translation>
 <translation id="2580411288591421699">无法安装与当前运行版本相同的 Google Chrome 浏览器。请关闭 Google Chrome 浏览器，然后重试。</translation>
 <translation id="8460191995881063249">Chrome 通知中心</translation>
@@ -142,7 +141,6 @@
 <translation id="2871893339301912279">您已登录 Chrome！</translation>
 <translation id="7161904924553537242">欢迎使用 Google Chrome</translation>
 <translation id="4147555960264124640">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME"/> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。<ph name="LEARN_MORE"/></translation>
-<translation id="7931439880631187247">此网站使用的 Chrome 内嵌框架插件很快将不受支持。请卸载该插件，然后升级到新型浏览器。</translation>
 <translation id="1348153800635493797">您必须升级 Chrome 才能使用 Google 电子钱包 [<ph name="ERROR_CODE"/>]。</translation>
 <translation id="8187289872471304532">依次转到“应用”&gt;“系统偏好设置”&gt;“网络”&gt;“高级”&gt;“代理”，然后取消选中所有已选的代理。</translation>
 <translation id="8669527147644353129">Google Chrome 浏览器帮助程序</translation>
@@ -173,7 +171,7 @@
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS"/> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="6855094794438142393">依次转到 Chrome 菜单 &gt;“<ph name="SETTINGS_TITLE"/>”&gt;“<ph name="ADVANCED_TITLE"/>”&gt;“<ph name="PROXIES_TITLE"/>”&gt;“LAN 设置”，然后取消选中“为 LAN 使用代理服务器”。</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
-<translation id="5553980212343253394">此网站使用的 Chrome 内嵌框架插件很快将不受支持。请卸载该插件，然后下载兼容的浏览器。</translation>
+<translation id="4919523385405675060">该网站使用的 Chrome 内嵌框架插件即将停止接收安全性和稳定性更新，因此请将其卸载，然后下载一个兼容的浏览器。</translation>
 <translation id="1061257178446858647">您现已登录 Chrome 浏览器！您的书签、历史记录和其他设置都会同步到您的 Google 帐户。</translation>
 <translation id="3335672657969596251">Google Chrome 浏览器不支持 <ph name="OS_NAME"/>。</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
@@ -191,6 +189,7 @@
 <translation id="6626317981028933585">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Google Chrome 浏览器，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="7242029209006116544">您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME"/> 相关联。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据与其他帐户相关联。您可以选择创建新的个人资料来单独存储现有的 Chrome 数据。<ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="2334084861041072223">版权所有<ph name="YEAR"/> Google Inc. 保留所有权利。</translation>
 <translation id="1698376642261615901">Google Chrome 浏览器是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Google Chrome 浏览器内置的恶意软件和网上诱骗防护功能可让您更安全地浏览网页。</translation>
 <translation id="3419750618886995598">Chrome 浏览器内嵌框架更新。</translation>
 <translation id="3336524238463733095">由于 Google 更新组策略设置不一致，导致无法更新 Google Chrome 浏览器或 Google Chrome 浏览器内嵌框架。请使用组策略编辑器设置更新政策，以替换 Google Chrome Binaries 应用程序，然后重试；有关详情，请访问 http://goo.gl/uJ9gV。</translation>

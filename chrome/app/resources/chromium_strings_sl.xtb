@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="6676384891291319759">Dostop do interneta</translation>
+<translation id="8586442755830160949">Copyright <ph name="YEAR"/> Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="6373523479360886564">Ali ste prepričani, da želite odstraniti Chromiuma?</translation>
 <translation id="5065199687811594072">Ali želite, da Chromium shrani podatke o tej kreditni kartici za izpolnjevanje spletnih obrazcev?</translation>
 <translation id="6510925080656968729">Odstranitev Chromiuma</translation>
@@ -28,7 +29,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3549345495227188780">Začnite uporabljati Chromium OS</translation>
 <translation id="4330297532943865716">V sistemu je bila odkrita namestitev Chromiuma ali vtičnika Chromium Frame, ki je v sporu. Odstranite ga in poskusite znova.</translation>
 <translation id="6953661834318318668">Orodna vrstica Chromium</translation>
-<translation id="2245147136185581459">Chromiumov detektor prestreznega portala</translation>
 <translation id="4285930937574705105">Namestitev ni bila izvedena zaradi nedoločene napake. Če se Chromium trenutno izvaja, ga zaprite in poskusite znova.</translation>
 <translation id="1396446129537741364">Chromium poskuša prikazati gesla.</translation>
 <translation id="3555616473548901994">Odstranitev je končana.</translation>
@@ -62,7 +62,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="7771626876550251690">V tem primeru se naslov, ki je naveden v potrdilu, ne ujema z naslovom spletnega mesta, ki ga je poskusil odpreti vaš brskalnik. Morda vašo komunikacijo prestreza napadalec, ki navede potrdilo za drugo spletno mesto, kar povzroči neujemanje. Morda je strežnik nastavljen tako, da vrne isto potrdilo za več spletnih mest, vključno z mestom, ki ga poskušate obiskati, čeprav potrdilo ni veljavno za vsa ta mesta. Chromium ve, da ste dosegli &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, vendar ne more preveriti, ali je to mesto enako kot &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ki ste ga nameravali odpreti. Če nadaljujete, Chromium ne bo preveril morebitnih nadaljnjih neujemanj imena.</translation>
 <translation id="4330585738697551178">Za ta modul je znano, da je v sporu s Chromiumom.</translation>
 <translation id="3190315855212034486">Opa! Chromium se je zrušil. Ga želite znova zagnati?</translation>
-<translation id="3590194807845837023">Odkleni profil in zaženi znova</translation>
 <translation id="6714487516757221107">Najti ni bilo mogoče nobenega Chromiuma ali vtičnika Chromium Frame, ki bi ga bilo mogoče posodobiti.</translation>
 <translation id="3197823471738295152">Naprava ima najnovejšo različico.</translation>
 <translation id="8551886023433311834">Posodobitev je skoraj končana. Znova zaženite napravo.</translation>
@@ -155,6 +154,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="6717134281241384636">Vašega profila ni mogoče uporabiti, ker je iz novejše različice Chromiuma.
 
 Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali uporabite novejšo različico Chromiuma.</translation>
+<translation id="8907580949721785412">Chromium poskuša prikazati gesla. Če želite omogočiti to, vnesite geslo za Windows.</translation>
 <translation id="9013087743919948559">Dodaj v Chromium</translation>
 <translation id="6212496753309875659">Ta računalnik že ima novejšo različico Chromiuma. Če programska oprema ne deluje, odstranite Chromium in poskusite znova.</translation>
 <translation id="1298199220304005244">Pomoč pri uporabi sistema Chromium OS</translation>
@@ -198,7 +198,6 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="805745970029938373">Vsa obvestila aplikacij za Chromium, razširitev in spletnih mest lahko vidite tukaj.</translation>
 <translation id="2119636228670142020">O sistemu &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Na voljo je nova, varnejša različica Chromiuma.</translation>
-<translation id="1539981464052805551">Copyright 2013 Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="378917192836375108">Chromium omogoča, da v spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
 <translation id="8724049448828509830">Trenutno poteka prenos. Ali želite zapreti Chromium in preklicati prenos?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>

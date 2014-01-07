@@ -313,6 +313,7 @@
           Ja šī politika nav iestatīta, tiek izmantots noklusējuma laika periods.
 
           Politikas vērtību nedrīkst norādīt milisekundēs.</translation>
+<translation id="6598235178374410284">Lietotāja iemiesojuma attēls</translation>
 <translation id="1675391920437889033">Kontrolējiet, kāda veida lietotnes/paplašinājumus var instalēt.
 
           Šis iestatījums iekļauj baltajā sarakstā paplašinājumu/lietotņu veidus, kurus var instalēt pārlūkā <ph name="PRODUCT_NAME"/>. Vērtība ir virkņu saraksts, kas var būt viens no šiem vienumiem: “extension”, “theme”, “user_script”, “hosted_app”, “legacy_packaged_app”, “platform_app”. Skatiet Chrome paplašinājumu dokumentāciju, lai uzzinātu plašāku informāciju par šiem veidiem.
@@ -494,6 +495,11 @@
 <translation id="4894257424747841850">Parāda sarakstu ar ierīces lietotājiem, kuri nesen ir pieteikušies ierīcē.
 
       Ja politika nav iestatīta vai tās iestatījums ir “false” (aplams), lietotāju saraksts netiks parādīts.</translation>
+<translation id="2488010520405124654">Iespējot tīkla konfigurācijas uzvedni, kad dators darbojas bezsaistes režīmā.
+
+      Ja šī politika nav iestatīta vai tai ir norādīta vērtība “True” un ierīces lokālajam kontam ir konfigurēta nulles aizkaves automātiskā pieteikšanās, kā arī ierīcei nav piekļuves internetam, operētājsistēmā <ph name="PRODUCT_OS_NAME"/> tiks rādīta tīkla konfigurācijas uzvedne.
+
+      Ja šai politikai ir norādīta vērtība “False”, tiks rādīts kļūdas ziņojums, nevis tīkla konfigurācijas uzvedne.</translation>
 <translation id="1426410128494586442">Jā</translation>
 <translation id="4897928009230106190">Norāda parametrus, kas tiek izmantoti, veicot ieteikumu meklēšanu ar metodi POST. Izmantojot šo metodi, tiek meklēti ar komatu atdalītu vārdu/vērtību pāri. Ja vērtība ir veidnes parametrs, piemēram, {searchTerms} (iepriekšējā piemērā), tas tiks aizstāts ar īstiem meklēšanas vienumu datiem.
 
@@ -735,6 +741,7 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
           Politikas vērtība ir jānorāda milisekundēs. Vērtības tiek summētas, lai iegūtu vērtību, kas ir mazāka par aizkavi līdz dīkstāvei vai vienāda ar to.</translation>
 <translation id="1098794473340446990">Ziņot par ierīces darbības laikiem. Ja iestatījuma statuss ir Patiess, reģistrētās ierīces ziņo par laika posmiem, kad lietotājs darbojas ierīcē. Ja iestatījums nav iestatīts vai tam piešķirts statuss Aplami, ierīces darbības laiki netiek ierakstīti un ziņoti.</translation>
+<translation id="1327466551276625742">Iespējot tīkla konfigurācijas uzvedni, kad dators darbojas bezsaistes režīmā</translation>
 <translation id="7937766917976512374">Video tveršanas ļaušana vai noraidīšana</translation>
 <translation id="427632463972968153">Norāda parametrus, kas tiek izmantoti, veicot attēlu meklēšanu ar metodi POST. Izmantojot šo metodi, tiek meklēti ar komatu atdalītu vārdu/vērtību pāri. Ja vērtība ir veidnes parametrs, piemēram, {imageThumbnail} (iepriekšējā piemērā), tas tiks aizstāts ar īstiem attēla sīktēla datiem.
 
@@ -956,7 +963,6 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
 
       Ja politika ir iestatīta uz Aplama vai netiek konfigurēta, jaunu lietotāju kontus drīkst izveidot, norādot to, ka produkts <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> neliedz lietotājam pieteikties.</translation>
 <translation id="4389091865841123886">Konfigurē attālināto apstiprināšanu, izmantojot TPM mehānismu.</translation>
-<translation id="3518214502751233558">Norādiet, vai jaudas pārvaldības aizkaves un sesijas ilguma ierobežojuma uzskaite tiek sākta tikai pēc tam, kad sesijā ir konstatēta lietotāja darbība.</translation>
 <translation id="8256688113167012935">Kontrolējiet konta nosaukumu, kas tiek rādīts <ph name="PRODUCT_OS_NAME"/> pieteikšanās ekrānā attiecīgajam ierīces lokālajam kontam.
 
       Ja šī politika tiks iestatīta, pieteikšanās ekrānā tiks izmantota virkne, kas uz attēlu balstītajā pieteikšanās izvēlē ir norādīta attiecīgajam ierīces lokālajam kontam.
@@ -1338,6 +1344,32 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja politika DeviceIdleLogoutTimeout ir norādīta, tā definē brīdinājuma lodziņa ilgumu ar atpakaļskaitīšanas taimeri, kas tiek rādīts lietotājam pirms atteikšanās izpildes.
 
       Politikas vērtība ir jānorāda milisekundēs.</translation>
+<translation id="54795286564479339">Konfigurējiet lietotāja iemiesojuma attēlu.
+
+      Šī politika ļauj konfigurēt lietotāja iemiesojuma attēlu, kas tiek rādīts pieteikšanās ekrānā. Politika tiek iestatīta, norādot vietrādi URL, no kura <ph name="PRODUCT_OS_NAME"/> var lejupielādēt iemiesojuma attēlu un šifrēšanas jaukšanu, kas tiek izmantota, lai apstiprinātu lejupielādes integritāti. Attēlam ir jābūt JPEG formātā, un tā lielums nedrīkst pārsniegt 512 KB. Nodrošiniet, lai vietrādim URL varētu piekļūt bez autentifikācijas.
+
+      Iemiesojuma attēls ir lejupielādēts un saglabāts kešatmiņā. Ikreiz, kad tiks mainīts vietrādis URL vai jaukšana, attēls tiks atkārtoti lejupielādēts.
+
+      Politika ir jānorāda kā virkne, kas attēlo vietrādi URL un jaukšanu JSON formātā — atbilstoši tālāk norādītajai shēmai.
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;The URL from which the avatar image can be downloaded.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;The SHA-1 hash of the avatar image.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Ja šī politika ir iestatīta, <ph name="PRODUCT_OS_NAME"/> lejupielādēs un izmantos iemiesojuma attēlu.
+
+      Ja iestatāt šo politiku, lietotāji to nevar mainīt vai pārrakstīt.
+
+      Ja neiestatāt šo politiku, lietotājs var izvēlēties savu iemiesojuma attēlu rādīšanai pieteikšanās ekrānā.</translation>
 <translation id="237494535617297575">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts attēlot paziņojumus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultNotificationsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -1735,6 +1767,7 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šī politika nav iestatīta, pakalpojumu sniegšanas noteikumi netiek rādīti.
 
       Politikā ir jāiestata vietrādis URL, kur operētājsistēma <ph name="PRODUCT_OS_NAME"/> var lejupielādēt pakalpojumu sniegšanas noteikumus. Tiem ir jābūt rakstītiem kā vienkāršam tekstam, kas jārāda kā MIME veids “teksts/vienkāršs”. Iezīmēšana nav atļauta.</translation>
+<translation id="2623014935069176671">Gaidīt sākotnējo lietotāja darbību</translation>
 <translation id="2660846099862559570">Nekad nelietot starpniekserveri</translation>
 <translation id="1435659902881071157">Ierīces līmeņa tīkla konfigurācija</translation>
 <translation id="2131902621292742709">Aizkave līdz ekrāna aptumšošanai, ja ierīce darbojas ar akumulatora jaudu</translation>

@@ -251,6 +251,7 @@
           Quando esta política não está definida, utiliza-se um período de tempo predefinido.
 
           O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="6598235178374410284">Imagem do avatar do utilizador</translation>
 <translation id="1675391920437889033">Controla os tipos de aplicações/extensões que têm permissão para serem instalados.
 
           Esta definição coloca os tipos de extensões/aplicações permitidos na lista de permissões que podem ser instalados no <ph name="PRODUCT_NAME"/>. O valor é uma lista de cadeias, em que cada uma deverá ser de um dos seguintes tipos: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot; e &quot;platform_app&quot;. Consulte a documentação sobre extensões do Chrome para obter mais informações sobre estes tipos.
@@ -404,6 +405,11 @@
 <translation id="4894257424747841850">Comunicar lista de utilizadores do dispositivo que iniciaram sessão recentemente.
 
       Se a política não estiver definida, ou estiver definida como falsa, os utilizadores não serão comunicados.</translation>
+<translation id="2488010520405124654">Ativar o pedido de configuração da rede quando estiver offline.
+
+      Se esta política não estiver definida ou estiver definida como Verdadeiro e uma conta local do dispositivo estiver configurada para início de sessão automático com atraso zero e o dispositivo não tiver acesso à Internet, o <ph name="PRODUCT_OS_NAME"/> apresentará um pedido de configuração da rede.
+
+      Se esta política estiver definida como Falso, será apresentada uma mensagem de erro em vez de um pedido de configuração da rede.</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="4897928009230106190">Especifica os parâmetros utilizados ao efetuar uma pesquisa de sugestões com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {searchTerms} no exemplo acima, será substituído por dados dos termos de pesquisa reais.
 
@@ -602,6 +608,7 @@
 
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ou iguais ao atraso de inatividade.</translation>
 <translation id="1098794473340446990">Comunicar períodos de atividade do aparelho. Se esta opção estiver definida como True, os aparelhos inscritos comunicarão os períodos de tempo em que um utilizador está ativo no aparelho. Se esta opção não estiver definida ou estiver definida como False, os períodos de atividade do aparelho não serão gravados nem comunicados.</translation>
+<translation id="1327466551276625742">Ativar o pedido de configuração da rede quando estiver offline</translation>
 <translation id="7937766917976512374">Permitir ou impedir a captura de vídeo</translation>
 <translation id="427632463972968153">Especifica os parâmetros utilizados ao efetuar uma pesquisa de imagens com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {imageThumbnail} no exemplo acima, será substituído por dados de miniatura de imagem reais.
 
@@ -781,7 +788,6 @@
 
       Se esta política estiver definido como verdadeira ou não estiver configurada, será permitida a criação de novas contas de utilizador desde que <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> não impeça o utilizador de iniciar sessão.</translation>
 <translation id="4389091865841123886">Configura a comprovação remota através do mecanismo TPM.</translation>
-<translation id="3518214502751233558">Especifique se os atrasos de gestão de energia e o limite de duração da sessão devem apenas começar após a atividade inicial do utilizador numa sessão</translation>
 <translation id="8256688113167012935">Controla o nome da conta mostrado pelo <ph name="PRODUCT_OS_NAME"/> no ecrã de início de sessão para a conta local do dispositivo correspondente.
 
       Se esta política estiver definida, o ecrã de início de sessão utilizará a cadeia especificada no seletor de início de sessão baseado em imagem para a conta local do dispositivo correspondente.
@@ -1079,6 +1085,32 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Quando a política DeviceIdleLogoutTimeout é especificada, define a duração da caixa de aviso com uma contagem decrescente que é mostrada ao utilizador antes do encerramento da sessão.
 
       O valor da política deve ser especificado em milissegundos.</translation>
+<translation id="54795286564479339">Configurar imagem do avatar do utilizador.
+
+      Esta política permite-lhe configurar a imagem do avatar que representa o utilizador no ecrã de início de sessão. Esta política é definida especificando o URL a partir do qual o <ph name="PRODUCT_OS_NAME"/> pode transferir a imagem do avatar e um hash criptográfico utilizado para confirmar a integridade da transferência. A imagem tem de estar no formato JPEG e o seu tamanho não pode ultrapassar os 512 kB. O URL tem de estar acessível sem qualquer autenticação.
+
+      A imagem do avatar é transferível e está em cache. Será novamente transferida sempre que o URL ou o hash for alterado.
+
+      A política deve ser especificada como uma sequência de carateres que expressa o URL e o hash no formato JSON, conforme o esquema seguinte:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;O URL a partir do qual é possível transferir a imagem do avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;O hash SHA-1 da imagem do avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Se esta política estiver definida, o <ph name="PRODUCT_OS_NAME"/> irá transferir e utilizar a imagem do avatar.
+
+      Se definir esta política, os utilizadores não a podem alterar nem substituir.
+
+      Se a política ficar por definir, o utilizador pode escolher a imagem do avatar que o representará no ecrã de início de sessão.</translation>
 <translation id="237494535617297575">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a apresentar notificações. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política &quot;DefaultNotificationsSetting&quot;, caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="7258823566580374486">Ativar proteção de anfitriões de acesso remoto</translation>
 <translation id="5560039246134246593">Adiciona um parâmetro à obtenção da semente Variações em <ph name="PRODUCT_NAME"/>.
@@ -1400,6 +1432,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não estiver definida, os Termos de Utilização não serão apresentados.
 
       Esta política deve estar definida para um URL a partir do qual o <ph name="PRODUCT_OS_NAME"/> possa transferir os Termos de Utilização. Os Termos de Utilização devem estar no formato de texto simples, com o tipo de MIME texto/simples. Não é permitida qualquer marcação.</translation>
+<translation id="2623014935069176671">Aguardar atividade inicial do utilizador</translation>
 <translation id="2660846099862559570">Nunca utilizar proxy</translation>
 <translation id="1435659902881071157">Configuração de rede ao nível do aparelho</translation>
 <translation id="2131902621292742709">Atraso do escurecimento do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>

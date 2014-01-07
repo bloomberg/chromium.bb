@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="8588878054171169263">Lưu ảnh</translation>
+<translation id="5578795271662203820">Tìm ảnh này trên <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Dịch</translation>
 <translation id="7644305409888602715">Đang dịch trang từ <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Tải lại trang này</translation>
+<translation id="641643625718530986">In…</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="6458785801851713928">Dịch vụ đồng bộ hóa không khả dụng cho miền của bạn.</translation>
 <translation id="2731700343119398978">Vui lòng chờ...</translation>
@@ -15,20 +18,32 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="624558823898732418">Ngôn ngữ bản dịch: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Trình xem chứng chỉ</translation>
 <translation id="8583805026567836021">Xóa dữ liệu tài khoản</translation>
+<translation id="8073388330009372546">Mở ảnh trong tab mới</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
 <translation id="8627706565932943526">Lỗi đồng bộ hóa</translation>
+<translation id="4043215103217793252">Chỉnh sửa đánh dấu trang</translation>
 <translation id="656628257199996201">Luôn dịch <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
+<translation id="4619298195800598081">Mở ảnh gốc trong tab mới</translation>
 <translation id="3136378934686431938">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
+<translation id="3063601790762993062">Lưu video</translation>
 <translation id="6042308850641462728">Thêm</translation>
+<translation id="3992315671621218278">Lưu liên kết</translation>
 <translation id="8034522405403831421">Trang này có ngôn ngữ là <ph name="SOURCE_LANGUAGE"/>. Dịch trang này sang <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="4195643157523330669">Mở bằng tab mới</translation>
+<translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
 <translation id="8725066075913043281">Thử lại</translation>
+<translation id="4269820728363426813">Sao chép địa chỉ liên kết</translation>
 <translation id="4510973599275542560">Không tải lại</translation>
+<translation id="1206892813135768548">Sao chép văn bản liên kết</translation>
 <translation id="9154176715500758432">Ở lại Trang này</translation>
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
 <translation id="4271185234001491831">Không bao giờ dịch <ph name="LANGUAGE"/></translation>
+<translation id="6671495933530132209">Sao chép ảnh</translation>
+<translation id="8209050860603202033">Mở ảnh</translation>
+<translation id="2501278716633472235">Quay lại</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
 <translation id="5164482624172255778">Bạn có muốn Google Chrome đề xuất dịch các trang <ph name="LANGUAGE"/> từ trang web này vào lần tiếp theo không?</translation>
 <translation id="8528538445849828817">Ngôn ngữ trang: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,6 +52,9 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="969096075394517431">Thay đổi ngôn ngữ</translation>
 <translation id="5032574515228824816">Lời nhắc</translation>
+<translation id="4847896847259487518">Đánh dấu trang</translation>
+<translation id="497421865427891073">Đi về phía trước</translation>
+<translation id="6277522088822131679">Đã xảy ra sự cố khi in trang này. Vui lòng thử lại.</translation>
 <translation id="1742134235943978220">Đã được dịch sang <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Xác nhận đăng nhập</translation>

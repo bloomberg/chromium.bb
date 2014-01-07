@@ -259,6 +259,7 @@
           Kada pravilo nije postavljeno, upotrebljava se zadano vrijeme.
 
           Vrijednost pravila treba navesti u milisekundama.</translation>
+<translation id="6598235178374410284">Slika avatara korisnika</translation>
 <translation id="1675391920437889033">Kontrolira koje se vrste aplikacija/proširenja smiju instalirati.
 
           Ova postavka sadrži popis dopuštenih vrsta proširenja/aplikacija koje se mogu instalirati u proizvodu <ph name="PRODUCT_NAME"/>. Vrijednost je popis nizova, od kojih svaki treba biti jedan od sljedećih: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot; ili &quot;platform_app&quot;. Više informacija o tim vrstama potražite u dokumentaciji o proširenjima sustava Chrome.
@@ -413,6 +414,11 @@
 <translation id="4894257424747841850">Generira popis korisnika uređaja koji su se nedavno prijavili.
 
       Ako pravilo nije postavljeno ili je postavljeno na neistinito, izvješća o korisnicima neće se generirati.</translation>
+<translation id="2488010520405124654">Omogući odzivnu poruku za konfiguraciju mreže tijekom izvanmrežnog rada.
+
+      Ako to pravilo nije postavljeno ili je postavljeno na točno, a račun na uređaju konfiguriran je za automatsku prijavu bez odgode i uređaj nema pristup internetu, sustav <ph name="PRODUCT_OS_NAME"/> prikazat će odzivnu poruku za konfiguraciju mreže.
+
+      Ako je to pravilo postavljeno na netočno, umjesto odzivne poruke za konfiguraciju mreže prikazat će se poruka pogreške.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="4897928009230106190">Određuje parametre koji se upotrebljavaju prilikom pretraživanja prijedloga pomoću POST metode. Sastoji se od zarezom odvojenih parova naziv/vrijednost. Ako je vrijednost parametar predloška, primjerice {searchTerms} u gornjem primjeru, zamijenit će se podacima stvarnih pojmova za pretraživanje.
 
@@ -609,6 +615,7 @@
 
           Vrijednost pravila treba biti navedena u milisekundama. Vrijednosti se prilagođavaju kako bi bile manje ili jednake odgodi neaktivnosti.</translation>
 <translation id="1098794473340446990">Izvješće o vremenima aktivnosti uređaja. Ako je ova postavka postavljena na True, upisani uređaji izvijestit će o razdobljima kad je korisnik aktivan na uređaju. Ako ova postavka nije postavljena ili je postavljena na False, aktivnost uređaja neće biti zabilježena niti će se o njoj izvijestiti.</translation>
+<translation id="1327466551276625742">Omogući odzivnu poruku za konfiguraciju mreže tijekom izvanmrežnog rada</translation>
 <translation id="7937766917976512374">Omogući ili onemogući snimanje videozapisa</translation>
 <translation id="427632463972968153">Određuje parametre koji se upotrebljavaju prilikom pretraživanja slika pomoću POST metode. Sastoji se od zarezom odvojenih parova naziv/vrijednost. Ako je vrijednost parametar predloška, primjerice {imageThumbnail} u gornjem primjeru, zamijenit će se podacima stvarne minijature slike.
 
@@ -788,7 +795,6 @@
 
       Ako je to pravilo postavljeno na &quot;istinito&quot; ili ako nije konfigurirano, izrada novih korisničkih računa bit će dopuštena pod uvjetom da pravilo <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ne sprječava prijavu korisnika.</translation>
 <translation id="4389091865841123886">Konfiguriranje daljinskog atestiranja TPM mehanizmom.</translation>
-<translation id="3518214502751233558">Pravilo određuje trebaju li odgode upravljanja potrošnjom energije i ograničenje duljine sesije početi teći tek nakon početne aktivnosti korisnika u sesiji</translation>
 <translation id="8256688113167012935">Kontrolira naziv računa koji prikazuje proizvod <ph name="PRODUCT_OS_NAME"/> na zaslonu prijave za odgovarajući lokalni račun na uređaju.
 
       Ako je to pravilo postavljeno, zaslon prijave upotrijebit će navedeni niz u alatu za odabir prijave prema slici s odgovarajućeg lokalnog računa uređaja.
@@ -1080,6 +1086,32 @@
       Kada je pravilo &quot;DeviceIdleLogoutTimeout&quot; navedeno, to pravilo određuje trajanje okvira za upozorenje s odbrojavanjem koji se prikazuje korisniku prije nego što se izvrši odjava.
 
       Vrijednost pravila trebala bi biti navedena u milisekundama.</translation>
+<translation id="54795286564479339">Konfiguriranje slike avatara korisnika.
+
+      Tim pravilom možete konfigurirati sliku avatara koji predstavlja korisnika na zaslonu za prijavu. Pravilo se postavlja tako da se navede URL s kojeg <ph name="PRODUCT_OS_NAME"/> može preuzeti sliku avatara i kriptografski sažetak za potvrdu integriteta preuzimanja. Slika mora biti u JPEG obliku i ne smije biti veća od 512 KB. URL-u se mora moći pristupiti bez autentifikacije.
+
+      Slika avatara preuzet će se i spremiti u predmemoriju. Ponovo će se preuzeti nakon svake promjene URL-a ili sažetka.
+
+      Pravilo se treba odrediti kao niz u kojem su izraženi URL i sažetak u JSON formatu prema sljedećoj shemi:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL s kojeg se slika avatara može preuzeti.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;SHA-1 sažetak slike avatara.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Ako se to pravilo postavi, <ph name="PRODUCT_OS_NAME"/> preuzet će i upotrebljavati sliku avatara.
+
+      Ako postavite to pravilo, korisnici ga neće moći promijeniti ili poništiti.
+
+      Ako se pravilo ne postavi, korisnik može odabrati sliku avatara koji će ga predstavljati na zaslonu za prijavu.</translation>
 <translation id="237494535617297575">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju prikazivati obavijesti. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila &quot;DefaultNotificationsSetting&quot; ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="7258823566580374486">Omogući skrivanje hosta za daljinski pristup</translation>
 <translation id="5560039246134246593">Dodavanje parametra dohvaćanju vrijednosti varijacija u proizvodu <ph name="PRODUCT_NAME"/>.
@@ -1394,6 +1426,7 @@
       Ako pravilo nije postavljeno, Uvjeti pružanja usluge ne prikazuju se.
 
       Pravilo treba biti postavljeno na URL s kojeg <ph name="PRODUCT_OS_NAME"/> može preuzeti Uvjete pružanja usluge. Uvjeti pružanja usluge moraju biti običan tekst, poslužen kao vrsta &quot;text/plain&quot; protokola MIME. Jezik za označavanje nije dopušten.</translation>
+<translation id="2623014935069176671">Pričekaj početnu aktivnost korisnika</translation>
 <translation id="2660846099862559570">Nikad ne upotrebljavaj proxy</translation>
 <translation id="1435659902881071157">Mrežna konfiguracija na razini uređaja</translation>
 <translation id="2131902621292742709">Odgoda zatamnjivanja zaslona za vrijeme baterijskog napajanja</translation>

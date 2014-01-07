@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="8588878054171169263">Desa la imatge</translation>
+<translation id="5578795271662203820">Cerca aquesta imatge a <ph name="SEARCH_ENGINE"/></translation>
 <translation id="6831043979455480757">Tradueix</translation>
 <translation id="7644305409888602715">La pàgina s'està traduint a <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
+<translation id="641643625718530986">Imprimeix…</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="6458785801851713928">La sincronització no està disponible per al vostre domini.</translation>
 <translation id="2731700343119398978">Espereu...</translation>
@@ -15,20 +18,32 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="624558823898732418">Idioma de traducció: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Lector de certificats</translation>
 <translation id="8583805026567836021">S'estan esborrant les dades del compte</translation>
+<translation id="8073388330009372546">Obre imatge en pestanya nova</translation>
 <translation id="8730621377337864115">Finalitzat</translation>
 <translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
 <translation id="8627706565932943526">Error de sincronització</translation>
+<translation id="4043215103217793252">Edita la pàgina de les adreces d'interès</translation>
 <translation id="656628257199996201">Tradueix sempre: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="5684874026226664614">Aquesta pàgina no s'ha pogut traduir.</translation>
+<translation id="4619298195800598081">Obre imatge orig. a pest. nova</translation>
 <translation id="3136378934686431938">Actualitzeu les dades d'inici de sessió.</translation>
+<translation id="3063601790762993062">Desa el vídeo</translation>
 <translation id="6042308850641462728">Més</translation>
+<translation id="3992315671621218278">Desa l'enllaç</translation>
 <translation id="8034522405403831421">Aquesta pàgina està escrita en <ph name="SOURCE_LANGUAGE"/>. Voleu traduir-la a <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="4195643157523330669">Obre en una pestanya nova</translation>
+<translation id="3089395242580810162">Obre en una pestanya d'incògnit</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
+<translation id="4269820728363426813">Copia l'adreça de l'enllaç</translation>
 <translation id="4510973599275542560">No tornis a carregar</translation>
+<translation id="1206892813135768548">Copia el text de l'enllaç</translation>
 <translation id="9154176715500758432">Roman en aquesta pàgina</translation>
 <translation id="7063006564040364415">No s'ha pogut connectar amb el servidor de sincronització.</translation>
 <translation id="4271185234001491831">No tradueixis mai el contingut escrit en <ph name="LANGUAGE"/></translation>
+<translation id="6671495933530132209">Copia la imatge</translation>
+<translation id="8209050860603202033">Obre la imatge</translation>
+<translation id="2501278716633472235">Enrere</translation>
 <translation id="1285320974508926690">No tradueixis mai aquest lloc</translation>
 <translation id="5164482624172255778">Voleu que Google Chrome us ofereixi la possibilitat de traduir les pàgines en <ph name="LANGUAGE"/> d'aquest lloc la propera vegada?</translation>
 <translation id="8528538445849828817">Idioma de la pàgina: <ph name="SOURCE_LANGUAGE"/></translation>
@@ -37,6 +52,9 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="969096075394517431">Canvia els idiomes</translation>
 <translation id="5032574515228824816">Sol·licitud</translation>
+<translation id="4847896847259487518">Afegeix la pàgina a les adreces d'interès</translation>
+<translation id="497421865427891073">Vés endavant</translation>
+<translation id="6277522088822131679">S'ha produït un problema en imprimir la pàgina. Torneu-ho a provar.</translation>
 <translation id="1742134235943978220">S'ha traduït a <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="7495038789730067783">Confirmació de l'inici de sessió</translation>

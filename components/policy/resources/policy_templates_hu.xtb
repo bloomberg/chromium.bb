@@ -251,6 +251,7 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
           Ha a házirend nincs beállítva, a rendszer az alapértelmezett időtartamot használja.
 
           A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="6598235178374410284">Felhasználó avatarképe</translation>
 <translation id="1675391920437889033">Vezérli, hogy mely alkalmazás-/bővítménytípusok telepítése engedélyezett.
 
           A beállítás engedélyezőlistára teszi a <ph name="PRODUCT_NAME"/> termékben telepíthető bővítmény-/alkalmazástípusokat. Az értéke karakterláncok sorozata, melyek mindegyikének az alábbiak közül valamelyiknek kell lennie: „extension”, „theme”, „user_script”, „hosted_app”, „legacy_packaged_app”, „platform_app”. A típusokkal kapcsolatos további információt a Chrome bővítmények dokumentációjában talál.
@@ -405,6 +406,11 @@ Bármely érték, amely nem ebben a tartományban van, a közelebbi határhoz le
 <translation id="4894257424747841850">Jelentés készítése a mostanában bejelentkezett eszközfelhasználókról.
 
       Ha az irányelv nincs beállítva, vagy beállítása hamis, akkor a felhasználókról nem készül jelentés.</translation>
+<translation id="2488010520405124654">Hálózati konfigurációs értesítés offline állapotban való megjelenítésének engedélyezése.
+
+      Ha nincs beállítva ez a házirend, vagy pedig Igaz az értéke, és a késleltetés nélküli automatikus bejelentkezéshez az eszközön lévő helyi fiók van beállítva, az eszköz pedig nem fér hozzá az internethez, akkor a <ph name="PRODUCT_OS_NAME"/> a hálózati konfigurációval kapcsolatos értesítést jelenít meg.
+
+      Ha a házirend értéke Hamis, akkor a hálózati konfigurációval kapcsolatos értesítés helyett hibaüzenet jelenik meg.</translation>
 <translation id="1426410128494586442">Igen</translation>
 <translation id="4897928009230106190">Megadja a javaslatok POST segítségével történő keresésekor használt paramétereket. Vesszővel elválasztott név–érték párokat tartalmaz. Ha az egyik érték egy sablonparaméter, ami a fenti példában a {searchTerms}, valódi keresési kifejezések kerülnek a helyére.
 
@@ -599,6 +605,7 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 
           A házirend értékét ezredmásodpercben kell meghatározni. Az értékeknek a tétlenségi késleltetéshez képest kisebbnek vagy egyenlőnek kell lenniük.</translation>
 <translation id="1098794473340446990">Az eszköz aktív idejének jelentése. Ha a beállítás értéke igaz, akkor a regisztrált eszközök jelentik azokat az időszakokat, amikor a felhasználó aktív az eszközön. Ha a beállítás nincs megadva, vagy hamis, akkor az eszköz aktív ideje nem kerül rögzítésre, illetve jelentésére nem kerül sor.</translation>
+<translation id="1327466551276625742">Hálózati konfigurációs értesítés offline állapotban való megjelenítésének engedélyezése</translation>
 <translation id="7937766917976512374">Videorögzítés engedélyezése vagy tiltása</translation>
 <translation id="427632463972968153">Megadja a POST segítségével történő képkeresésekor használt paramétereket. Vesszővel elválasztott név–érték párokat tartalmaz. Ha az egyik érték egy sablonparaméter, ami a fenti példában az {imageThumbnail}, valódi indexképadatok kerülnek a helyére.
 
@@ -778,7 +785,6 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 
       Ha a házirend értéke igaz, vagy nincs beállítva, akkor lehetőség van új felhasználói fiókok létrehozására, amennyiben a(z) <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> nem akadályozza meg, hogy a felhasználó bejelentkezzen.</translation>
 <translation id="4389091865841123886">TPM mechanizmussal történő távoli tanúsítás konfigurálása.</translation>
-<translation id="3518214502751233558">Meghatározhatja, hogy az energiagazdálkodási késleltetések és a munkamenet hosszúsági korlátja egy munkamenet során csak az első felhasználói tevékenység után kezdődjön-e</translation>
 <translation id="8256688113167012935">A(z) <ph name="PRODUCT_OS_NAME"/> által az eszköz megfelelő helyi fiókjának a bejelentkezési képernyőn megjelenített fióknevét szabályozza.
 
       Ha az irányelv be van állítva, akkor a bejelentkezési képernyő a kép alapú bejelentkezési kiválasztóban a megadott karakterláncot fogja használni az eszköz megfelelő helyi fiókjának esetében.
@@ -1076,6 +1082,32 @@ Ez a beállítás a TLS-domainű tanúsítványbővítmények tesztelésére has
       Ha meg van határozva a DeviceIdleLogoutTimeout, akkor ez a házirend adja meg, hogy mennyi ideig legyen látható a figyelmeztető mező a visszaszámlálóval, mielőtt megtörténne a felhasználó kijelentkeztetése.
 
       A házirend értékét ezredmásodpercben kell megadni.</translation>
+<translation id="54795286564479339">A felhasználó avatarképének beállítása.
+
+      Ez a házirend lehetővé teszi a felhasználót jelképező avatarkép beállítását a bejelentkezési képernyőn. A házirendhez meg kell adni az URL-t, ahonnan a <ph name="PRODUCT_OS_NAME"/> letöltheti az avatarképet és egy kriptográfiai hash-értéket, amellyel ellenőrizheti a letöltés sértetlenségét. A képnek JPEG formátumúnak kell lennie, mérete pedig nem haladhatja meg az 512 kB-ot. Az URL-t hitelesítés nélkül kell elérni.
+
+      A rendszer letölti és gyorsítótárazza az avatarképet. Ha az URL vagy a hash-érték megváltozik, újra letölti a képet.
+
+      A házirendet olyan karakterláncként kell megadni, amely kifejezi az URL-t és a JSON-formátumban lévő hash-értéket, ezenkívül megfelel a következő sémának:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Az URL, amelyről az avatarkép letölthető.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Az avatarkép SHA-1 hash-értéke.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Ha a házirend be van állítva, a <ph name="PRODUCT_OS_NAME"/> letölti és felhasználja az avatarképet.
+
+      Ha Ön állítja be ezt a házirendet, a felhasználók nem módosíthatják vagy írhatják felül azt.
+
+      Ha Ön nem állítja be a házirendet, a felhasználó kiválaszthatja az őt a bejelentkezési képernyőn ábrázoló avatarképet.</translation>
 <translation id="237494535617297575">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek jeleníthetnek meg értesítéseket. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a &quot;DefaultNotificationsSetting&quot; házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="7258823566580374486">Távoli hozzáférésű gazdagépek lefüggönyözésének engedélyezése</translation>
 <translation id="5560039246134246593">Paraméter hozzáadása a Variations seed lekéréséhez a(z) <ph name="PRODUCT_NAME"/> termékben.
@@ -1388,6 +1420,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a házirend nincs beállítva, a rendszer nem jeleníti meg Általános Szerződési Feltételeket.
 
       A házirend beállításánál egy URL-t kell megadni, amelyről a(z) <ph name="PRODUCT_OS_NAME"/> letöltheti az Általános Szerződési Feltételeket. Az Általános Szerződési Feltételek egyszerű szöveg formátumban legyenek, amelyet text/plain MIME típusként kell megjeleníteni. HTML-kódok nem engedélyezettek.</translation>
+<translation id="2623014935069176671">Várakozás a kezdeti felhasználói tevékenységre</translation>
 <translation id="2660846099862559570">Soha ne használjon proxyt</translation>
 <translation id="1435659902881071157">Eszközszintű hálózatbeállítás</translation>
 <translation id="2131902621292742709">Képernyő elsötétítésének késleltetése akkumulátorról való működés során</translation>

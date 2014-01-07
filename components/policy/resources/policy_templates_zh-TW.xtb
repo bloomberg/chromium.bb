@@ -251,6 +251,7 @@
           如果您未設定這項政策，系統會使用預設時間長度。
 
           指定政策值時需以毫秒為單位。</translation>
+<translation id="6598235178374410284">使用者顯示圖片</translation>
 <translation id="1675391920437889033">控制要允許安裝的應用程式/擴充功能類型。
 
           這項許可清單設定會列出允許安裝在 <ph name="PRODUCT_NAME"/> 的擴充功能/應用程式類型。該值為字串清單，可用字串如下：「extension」、「theme」、「user_script」、「hosted_app」、「legacy_packaged_app」、「platform_app」。如要進一步瞭解這些類型，請參閱 Chrome 擴充功能說明文件。
@@ -405,6 +406,11 @@
 <translation id="4894257424747841850">回報最近登入的裝置使用者清單。
 
       如果這項政策未設定或設為 False，則不會回報這些使用者。</translation>
+<translation id="2488010520405124654">離線時啟用網路設定提示。
+
+      如果這項政策未設定或設為 True，且裝置本機帳戶設為自動登入 (零延遲)，那麼在裝置無法連上網際網路時，<ph name="PRODUCT_OS_NAME"/> 會顯示網路設定提示。
+
+      如果這項政策已設定或設為 False，則會顯示錯誤訊息，而不是網路設定提示。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="4897928009230106190">指定使用 POST 提供搜尋建議時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {searchTerms})，系統將會以實際的搜尋字詞資料替代這個數值。
 
@@ -605,6 +611,7 @@
 <translation id="1098794473340446990">回報裝置活動時間
 
       如果這個項目設定為 True，則註冊的裝置會回報使用者在裝置上活動的時段。如果這個項目設定為 False，系統就不會記錄或回報裝置活動時間。</translation>
+<translation id="1327466551276625742">離線時啟用網路設定提示</translation>
 <translation id="7937766917976512374">允許或拒絕擷取視訊</translation>
 <translation id="427632463972968153">指定使用 POST 執行圖片搜尋時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {imageThumbnail})，系統將會以實際圖片的縮圖資料替代這個數值。
 
@@ -784,7 +791,6 @@
 
       如果這項政策設為 True 或未設定，只要 <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> 沒有禁止使用者登入，即可建立新的使用者帳戶。</translation>
 <translation id="4389091865841123886">使用 TPM 機制設定遠端證明。</translation>
-<translation id="3518214502751233558">指定是否延遲管理電源，以及是否在工作階段中產生第一個使用者活動後，才開始執行工作階段長度限制</translation>
 <translation id="8256688113167012935">控制 <ph name="PRODUCT_OS_NAME"/> 在登入畫面上顯示的帳戶名稱，以表示相對應的裝置本機帳戶。
 
       如果您設定這項政策，登入畫面就會使用指定的字串，在圖像化的登入選擇器中表示相對應的裝置本機帳戶。
@@ -1086,6 +1092,32 @@
       指定 DeviceIdleLogoutTimeout 後，這項政策會使用倒數計時器定義警告方塊的時間，計時器會在使用者登出前顯示。
 
       應以毫秒數指定政策值。</translation>
+<translation id="54795286564479339">設定使用者顯示圖片。
+
+      這項政策可讓您設定登入畫面上代表使用者的顯示圖片。如要設定這項政策，請指定 <ph name="PRODUCT_OS_NAME"/> 可下載顯示圖片的網址，以及用來驗證下載完整性的加密編譯雜湊。圖片必須為 JPEG 格式，且大小不得超過 512KB。網址則必須可直接存取，不必經過任何驗證。
+
+      系統會下載並快取顯示圖片，每當網址或雜湊變更便重新下載。
+
+      指定政策時，請務必使用 JSON 格式的字串來表示網址和雜湊，並且使其符合下列架構：
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;可下載顯示圖片的網址。&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;顯示圖片的 SHA-1 雜湊。&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      如果設定這項政策，<ph name="PRODUCT_OS_NAME"/> 將會下載並使用顯示圖片。
+
+      一旦您設定了這項政策，使用者將無法予以變更或覆寫。
+
+      如果您未設定這項政策，使用者就能選擇登入畫面上代表自己的顯示圖片。</translation>
 <translation id="237494535617297575">允許您設定網址模式清單，指定可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7258823566580374486">啟用遠端存取主機遮幕</translation>
 <translation id="5560039246134246593">在 <ph name="PRODUCT_NAME"/> 中擷取變異版本種子時新增參數。
@@ -1404,6 +1436,7 @@
       如果您未指定這項政策，系統就不會顯示任何《服務條款》。
 
       您需將政策設為可供 <ph name="PRODUCT_OS_NAME"/> 下載《服務條款》的網址。《服務條款》需為純文字內容，以 MIME 類型 text/plain 提供。不允許任何標記。</translation>
+<translation id="2623014935069176671">等待初始使用者活動</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
 <translation id="2131902621292742709">在電池供電環境下執行時的螢幕調暗延遲時間</translation>

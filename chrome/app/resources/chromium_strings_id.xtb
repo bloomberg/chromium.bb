@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="6676384891291319759">Akses Internet</translation>
+<translation id="8586442755830160949">Hak Cipta <ph name="YEAR"/> Penulis Chromium. Semua hak dilindungi undang-undang.</translation>
 <translation id="6373523479360886564">Anda yakin ingin mencopot pemasangan Chromium?</translation>
 <translation id="5065199687811594072">Ingin Chrome menyimpan informasi kartu kredit ini untuk melengkapi formulir web?</translation>
 <translation id="6510925080656968729">Copot Pemasangan Chromium</translation>
@@ -26,7 +27,6 @@
 <translation id="3549345495227188780">Memulai dengan Chromium OS</translation>
 <translation id="4330297532943865716">Ditemukan pemasangan Chromium atau Chromium Frame yang bentrok di sistem. Copot pemasangannya dan coba lagi.</translation>
 <translation id="6953661834318318668">Bilah Alat Chromium</translation>
-<translation id="2245147136185581459">Detektor Chromium Captive Portal</translation>
 <translation id="4285930937574705105">Pemasangan gagal karena kesalahan yang tidak diketahui. Jika Chromium sedang berjalan, tutup, lalu ulang kembali.</translation>
 <translation id="1396446129537741364">Chromium mencoba menampilkan sandi.</translation>
 <translation id="3555616473548901994">Pencopotan pemasangan selesai.</translation>
@@ -60,7 +60,6 @@
 <translation id="7771626876550251690">Dalam hal ini, alamat yang tercantum di sertifikat tidak cocok dengan alamat situs web yang dicoba dibuka di browser Anda. Satu alasan yang mungkin untuk hal ini adalah bahwa komunikasi Anda dihentikan oleh penyerang yang memberikan sertifikat untuk situs web yang lain, sehingga dapat mengakibatkan ketidakcocokan. Kemungkinan alasan lainnya adalah server disiapkan untuk menampilkan sertifikat yang sama untuk beberapa situs web, termasuk salah satu yang coba Anda kunjungi, meskipun sertifikat tidak valid untuk semua situs web tersebut. Chromium dapat menyimpulkan dengan pasti bahwa Anda menjangkau &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, namun tidak dapat memverifikasi bahwa itu adalah situs yang sama seperti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang ingin Anda buka. Jika Anda melanjutkan, Chromium tidak akan memeriksa setiap ketidakcocokan nama lebih lanjut.</translation>
 <translation id="4330585738697551178">Modul ini biasanya konflik dengan Chromium.</translation>
 <translation id="3190315855212034486">Aduh! Chromium ngadat. Luncurkan ulang sekarang?</translation>
-<translation id="3590194807845837023">Buka Kunci Profil dan Luncurkan Lagi</translation>
 <translation id="6714487516757221107">Tidak ditemukan pemasangan Chromium atau Chromium Frame untuk diperbarui.</translation>
 <translation id="3197823471738295152">Perangkat Anda sudah diperbarui.</translation>
 <translation id="8551886023433311834">Hampir selesai diperbarui! Nyalakan ulang perangkat untuk menyelesaikan pembaruan.</translation>
@@ -153,6 +152,7 @@
 <translation id="6717134281241384636">Profil Anda tidak dapat digunakan karena berasal dari Chromium versi yang lebih baru.
 
 Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chromium yang lebih baru.</translation>
+<translation id="8907580949721785412">Chromium mencoba menampilkan sandi. Ketik sandi Windows untuk mengizinkannya.</translation>
 <translation id="9013087743919948559">Tambahkan ke Chromium</translation>
 <translation id="6212496753309875659">Komputer ini sudah memiliki Chromium versi yang lebih anyar. Jika perangkat lunak tidak bekerja, copot Chromium dan coba lagi.</translation>
 <translation id="1298199220304005244">Dapatkan bantuan tentang penggunaan Chromium OS</translation>
@@ -196,7 +196,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="805745970029938373">Anda dapat melihat semua pemberitahuan dari aplikasi, ekstensi, dan situs web Chromium di sini.</translation>
 <translation id="2119636228670142020">Tentang &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Tersedia versi Chromium yang baru dan lebih aman.</translation>
-<translation id="1539981464052805551">Hak Cipta 2013 Penulis Chromium. Semua hak dilindungi undang-undang.</translation>
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
 <translation id="8724049448828509830">Unduhan saat ini sedang berlangsung. Anda ingin keluar dari Chromium dan membatalkan unduhan?</translation>
 <translation id="3360567213983886831">Biner Chromium</translation>

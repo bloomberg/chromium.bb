@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="3234920859344197194">Ta web-lokacija upotrebljava dodatak Okvir Chrome koji će uskoro prestati primati ažuriranja u vezi sigurnosti i stabilnosti. Deinstalirajte ga i nadogradite preglednik na najnoviju verziju.</translation>
 <translation id="8914504000324227558">Ponovo pokrenite Chrome</translation>
 <translation id="8000275528373650868">Google Chrome zahtijeva sustav Windows Vista ili Windows XP sa SP2 ili novijim.</translation>
-<translation id="8124352762008487242">Autorska prava 2013. Google Inc. Sva prava pridržana.</translation>
 <translation id="8485767968786176057">U tom slučaju adresa navedena u certifikatu ne odgovara adresi web-lokacije na koju je vaš preglednik pokušao otići. Jedan je od mogućih razloga za to da vaše komunikacije presreće napadač koji predstavlja certifikat za drugu web-lokaciju, što će uzrokovati neslaganje. Drugi je mogući razlog da je poslužitelj postavljen tako da vraća isti certifikat za više web-lokacija, uključujući i onu koju pokušavate posjetiti, iako taj certifikat nije valjan za sve te web-lokacije. Google Chrome može sa sigurnošću reći da ste pristupili domeni &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, ali ne može potvrditi da je ta web-lokacija ista kao i domena &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; koju ste namjeravali otvoriti. Ako nastavite, Chrome neće provjeravati bilo kakva neslaganja naziva.</translation>
 <translation id="5430073640787465221">Datoteka vaših postavki oštećena je ili nevažeća. Google Chrome nema mogućnost oporavka vaših postavki.</translation>
 <translation id="6676384891291319759">Pristup Internetu</translation>
@@ -24,7 +24,6 @@
 <translation id="4891791193823137474">Neka Google Chrome radi u pozadini</translation>
 <translation id="2896252579017640304">Pokreni aplikacije sustava Chrome</translation>
 <translation id="2370289711218562573">Google Chrome trenutno uvozi favorite/oznake.</translation>
-<translation id="8762286861469007470">Detektor tehnike Captive Portal za Chrome</translation>
 <translation id="2721687379934343312">Na Mac računalima, zaporke se spremaju u vaš Keychain, a drugi korisnici preglednika Chrome koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="1761870329818521071">Nije moguće instalirati istu verziju programa Google Chrome Frame koja je trenutačno pokrenuta. Zatvorite Google Chrome Frame i pokušajte ponovo.</translation>
 <translation id="6014844626092547096">Sada ste prijavljeni na Chrome! Administrator je onemogućio sinkronizaciju.</translation>
@@ -58,10 +57,10 @@
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Vaše pojedinosti o naplati spremljene su u Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome upotrebljava vaš mikrofon.</translation>
-<translation id="3590194807845837023">Otključaj profil i pokreni ponovo</translation>
 <translation id="4053720452172726777">Prilagodite Google Chrome i upravljajte njime</translation>
 <translation id="6423071462708908582">Pokušali ste pristupiti web-lokaciji &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ali poslužitelj je ponudio certifikat kojemu je istekao rok. Nisu dostupne informacije o tome je li taj certifikat ugrožen nakon isteka. To znači da Google Chrome ne može jamčiti da komunicirate s web-lokacijom &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a ne s napadačem. Sat vašeg računala trenutačno je postavljen na <ph name="CURRENT_TIME"/>. Je li to točno? Ako nije, ispravite pogrešku i osvježite stranicu.</translation>
 <translation id="3197823471738295152">Uređaj je ažuran.</translation>
+<translation id="8286862437124483331">Google Chrome pokušava prikazati zaporke. Upišite svoju zaporku za Windows da biste to dopustili.</translation>
 <translation id="3889417619312448367">Deinstaliranje preglednika Google Chrome</translation>
 <translation id="1434626383986940139">Aplikacije kanala Chrome Canary</translation>
 <translation id="8551886023433311834">Gotovo ažurno! Ponovo pokrenite uređaj da biste dovršili ažuriranje.</translation>
@@ -154,7 +153,6 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="2871893339301912279">Prijavljeni ste na Chrome!</translation>
 <translation id="7161904924553537242">Dobro došli u Google Chrome</translation>
 <translation id="4147555960264124640">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME"/>. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. <ph name="LEARN_MORE"/></translation>
-<translation id="7931439880631187247">Ova web-lokacija upotrebljava dodatak Okvir Chrome koji se uskoro više neće podržavati. Deinstalirajte ga i nadogradite na moderan preglednik.</translation>
 <translation id="1348153800635493797">Morate nadograditi Chrome za upotrebu Google novčanika [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Idite na
           Aplikacije &gt; Postavke sustava &gt; Mreža &gt; Napredno &gt; Proxy poslužitelji
@@ -196,7 +194,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
           Postavke LAN-a
           pa poništite odabir potvrdnog okvira &quot;Upotrijebi proxy poslužitelj za LAN&quot;.</translation>
 <translation id="7825851276765848807">Instalacija nije uspjela zbog neodređene pogreške. Ponovo preuzmite Google Chrome.</translation>
-<translation id="5553980212343253394">Ova web-lokacija upotrebljava dodatak Okvir Chrome koji se uskoro više neće podržavati. Deinstalirajte ga i preuzmite kompatibilan preglednik.</translation>
+<translation id="4919523385405675060">Ta web-lokacija upotrebljava dodatak Okvir Chrome koji će uskoro prestati primati ažuriranja u vezi sigurnosti i stabilnosti. Deinstalirajte ga i preuzmite kompatibilni preglednik.</translation>
 <translation id="1061257178446858647">Sada ste prijavljeni u Chrome! Vaše oznake, povijest i druge postavke bit će sinkronizirane s vašim Google računom.</translation>
 <translation id="3335672657969596251">Google Chrome ne podržava sustav <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Odjavite se i prijavite se ponovo da bi ta promjena postala aktivna.</translation>
@@ -214,6 +212,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="6626317981028933585">Na žalost postavke vašeg preglednika Mozilla Firefox nisu dostupne dok je preglednik otvoren. Da biste te postavke unijeli u Google Chrome, spremite svoj posao i zatvorite sve prozore preglednika Firefox. Zatim kliknite &quot;Nastavak&quot;.</translation>
 <translation id="7242029209006116544">Prijavljujete se upravljanim računom i dajete administratoru kontrolu nad svojim profilom u sustavu Google Chrome. Vaši podaci u sustavu Chrome, primjerice, aplikacije, oznake, povijest, zaporke i ostale postavke, trajno će se povezati s korisnikom <ph name="USER_NAME"/>. Moći ćete izbrisati te podatke putem Nadzorne ploče Google računa, ali ih nećete moći povezati s nekim drugim računom. Ako želite, možete izraditi novi profil kako biste zadržali postojeće podatke u sustavu Chrome zasebno. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="2334084861041072223">Autorska prava <ph name="YEAR"/>. Google Inc. Sva prava pridržana.</translation>
 <translation id="1698376642261615901">Google Chrome jest web-preglednik koji web-stranice i aplikacije pokreće brzinom svjetlosti. Brz je, stabilan i jednostavan za upotrebu. Sigurnije pregledavajte web uz zaštitu protiv zlonamjernog i špijunskog softvera koja je ugrađena u Google Chrome.</translation>
 <translation id="3419750618886995598">Ažuriranje dodatka Chrome Frame.</translation>
 <translation id="3336524238463733095">Google Chrome ili Google Chrome Frame ne mogu se ažurirati zbog nedosljednih postavki grupnih pravila usluge Google Ažuriranje. Upotrijebite Uređivač grupnih pravila da biste poništili pravila ažuriranja za aplikaciju Google Chrome Binaries i pokušajte ponovo. Za pojedinosti pogledajte http://goo.gl/uJ9gV.</translation>

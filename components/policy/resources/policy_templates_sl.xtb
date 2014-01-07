@@ -313,6 +313,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če pravilnik ni nastavljen, velja privzeto trajanje.
 
           Vrednost pravilnika naj bo navedena v milisekundah.</translation>
+<translation id="6598235178374410284">Slika za avatar uporabnika</translation>
 <translation id="1675391920437889033">Nadzira, katere vrste aplikacij/razširitev je dovoljeno namestiti.
 
           Ta nastavitev določa seznam dovoljenih vrst razširitev/aplikacij, ki jih je mogoče namestiti v <ph name="PRODUCT_NAME"/>. Vrednost je seznam nizov teh vrst: »extension«, »theme«, »user_script«, »hosted_app«, »legacy_packaged_app«, »platform_app«. Več informacij o teh vrstah najdete v dokumentaciji za razširitve za Chrome.
@@ -494,6 +495,12 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="4894257424747841850">Poročanje o seznamu nedavno prijavljenih uporabnikov naprave.
 
       Če pravilnik ni nastavljen ali je nastavljen na »False«, se poročilo o uporabnikih ne pošlje.</translation>
+<translation id="2488010520405124654">Omogočanje poziva za konfiguracijo omrežja v stanju brez povezave.
+
+      Če ta pravilnik ni nastavljen ali je nastavljen na »True« in je lokalni račun v
+napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa nima dostopa do interneta, <ph name="PRODUCT_OS_NAME"/> prikaže poziv za konfiguracijo omrežja.
+
+      Če je ta pravilnik nastavljen na »False«, se namesto poziva za konfiguracijo omrežja prikaže sporočilo o napaki.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="4897928009230106190">Določa parametre, uporabljene pri iskanju predlogov z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {searchTerms}, bo zamenjana s pravimi podatki iskalnih izrazov.
 
@@ -744,6 +751,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="1098794473340446990">Pošiljanje podatkov o času dejavnosti v napravi.
 
       Če je nastavitev nastavljena na »True«, včlanjene naprave pošiljajo podatke o času, ko je uporabnik aktiven v napravi. Če nastavitev ni nastavljena ali je nastavljena na »False«, se čas dejavnosti v napravi ne beleži in se ne pošiljajo podatki o času dejavnosti.</translation>
+<translation id="1327466551276625742">Omogočanje poziva za konfiguracijo omrežja v stanju brez povezave</translation>
 <translation id="7937766917976512374">Omogočanje ali onemogočanje snemanje videoposnetka</translation>
 <translation id="427632463972968153">Določa parametre, uporabljene pri slikovnem iskanju z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {imageThumbnail}, bo zamenjana s pravimi podatki sličice slike.
 
@@ -963,7 +971,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če je pravilnik omogočen ali ni nastavljen, je mogoče ustvariti nove uporabniške račune, če <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> uporabniku ne preprečuje prijave.</translation>
 <translation id="4389091865841123886">Konfiguriranje potrditve na daljavo z mehanizmom TPM.</translation>
-<translation id="3518214502751233558">Določi, ali naj se zakasnitve upravljanja porabe in omejitev dolžine seje začnejo izvajati šele po začetni dejavnosti uporabnika v seji</translation>
 <translation id="8256688113167012935">Nadzira prikaz imena računa na zaslonu za prijavo v sistemu <ph name="PRODUCT_OS_NAME"/> za ustrezen lokalni račun za napravo.
 
       Če je ta pravilnik nastavljen, bo zaslon za prijavo uporabil določen niz v slikovnem prijavnem izbirniku za ustrezen lokalni račun za napravo.
@@ -1348,6 +1355,32 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je določen pravilnik DeviceIdleLogoutTimeout, ta pravilnik določa trajanje opozorila z odštevanjem, ki je pred odjavo prikazano uporabniku.
 
       Vrednost pravilnika mora biti v milisekundah.</translation>
+<translation id="54795286564479339">Nastavitev slike za avatar uporabnika.
+
+      S tem pravilnikom lahko nastavite sliko za avatar, ki na zaslonu za prijavo predstavlja uporabnika. Pravilnik se nastavi z določitvijo URL-ja, s katerega lahko operacijski sistem <ph name="PRODUCT_OS_NAME"/> prenese sliko za avatar, in kriptografskega razprševanja za preverjanje celovitosti prenosa. Slika mora biti v formatu JPEG, velikost pa ne sme presegati 512 KB. URL mora biti dostopen brez preverjanja pristnosti.
+
+      Slika za avatar je prenesena in shranjena v predpomnilnik. Ob vsaki spremembi URL-ja ali razprševanja bo znova prenesena.
+
+      Pravilnik mora biti določen kot niz, ki izraža URL in razprševanje v obliki JSON ter skladen s to shemo:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL, s katerega je mogoče prenesti sliko za avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Razprševanje SHA-1 slike za avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Če je pravilnik nastavljen, bo operacijski sistem <ph name="PRODUCT_OS_NAME"/> prenesel in uporabil sliko za avatar.
+
+      Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
+
+      Če pravilnik ni nastavljen, lahko uporabnik izbere sliko za avatar, ki ga predstavlja na zaslonu za prijavo.</translation>
 <translation id="237494535617297575">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko prikazujejo obvestila.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultNotificationsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -1744,6 +1777,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če pravilnik ni nastavljen, niso prikazani nobeni pogoji storitve.
 
       Pravilnik naj bo nastavljen na URL, s katerega lahko <ph name="PRODUCT_OS_NAME"/> prenese pogoje storitve. Ti morajo biti v obliki navadnega besedila vrste MIME in brez označevanja.</translation>
+<translation id="2623014935069176671">Čakanje na začetno dejavnost uporabnika</translation>
 <translation id="2660846099862559570">Nikoli ne uporabi proxyja</translation>
 <translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
 <translation id="2131902621292742709">Časovni zamik zatemnitve zaslona ob napajanju iz akumulatorja</translation>

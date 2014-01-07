@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="6676384891291319759">Akses Internet</translation>
+<translation id="8586442755830160949">Hak Cipta <ph name="YEAR"/> Pengarang Chromium. Hak cipta terpelihara.</translation>
 <translation id="6373523479360886564">Adakah anda pasti mahu menyahpasang Chromium?</translation>
 <translation id="5065199687811594072">Adakah anda mahu Chromium menyimpan maklumat kad kredit ini untuk melengkapkan borang web?</translation>
 <translation id="6510925080656968729">Nyahpasang Chromium</translation>
@@ -26,7 +27,6 @@
 <translation id="3549345495227188780">Bermula dengan OS Chromium</translation>
 <translation id="4330297532943865716">Pemasangan Chromium atau Chromium Frame yang bercanggah telah dijumpai pada sistem. Sila nyahpasang dan cuba lagi.</translation>
 <translation id="6953661834318318668">Bar Alat Chromium</translation>
-<translation id="2245147136185581459">Pengesan Portal Tawanan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Jika Chromium sedang dijalankan, sila tutup dan cuba semula.</translation>
 <translation id="1396446129537741364">Chromium sedang cuba memaparkan kata laluan.</translation>
 <translation id="3555616473548901994">Selesai nyahpasang.</translation>
@@ -60,7 +60,6 @@
 <translation id="7771626876550251690">Dalam keadaan ini, alamat yang disenarai dalam sijil tidak sepadan dengan alamat tapak web yang cuba dicapai oleh penyemak imbas anda. Satu sebab mungkin berlakunya keadaan ini ialah komunikasi anda sedang dipintas oleh penyerang yang menyampaikan sijil untuk tapak web yang berlainan, yang akan mengakibatkan tiada padanan. Sebab lain yang mungkin ialah pelayan disediakan untuk mengembalikan sijil yang sama untuk berbilang tapak web, termasuk tapak yang anda cuba lawati, walaupun sijil tersebut tidak sah untuk semua tapak web itu. Chromium boleh menyatakan dengan yakin bahawa anda telah mancapai &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, tetapi tidak dapat mengesahkan bahawa tapak itu tapak yang sama seperti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; yang anda ingin capai. Jika anda teruskan, Chromium tidak akan menyemak untuk mengesan sebarang nama tidak sepadan yang selanjutnya.</translation>
 <translation id="4330585738697551178">Modul ini diketahui bercanggah dengan Chromium.</translation>
 <translation id="3190315855212034486">Alamak! Chromium mengalami ranap sistem. Lancarkan semula sekarang?</translation>
-<translation id="3590194807845837023">Buka Profil dan Lancarkan Semula</translation>
 <translation id="6714487516757221107">Tiada pemasangan Chromium atau Chromium Frame dijumpai untuk dikemas kini.</translation>
 <translation id="3197823471738295152">Peranti anda telah dikemas kini.</translation>
 <translation id="8551886023433311834">Hampir terkini! Mulakan semula peranti anda untuk melengkapkan pengemaskinian.</translation>
@@ -132,7 +131,7 @@
 <translation id="3582788516608077514">Mengemas kini Chromium...</translation>
 <translation id="7223968959479464213">Pengurus Tugas - Chromium</translation>
 <translation id="3838208658251026018">Chromium kini mengimport item berikut daripada <ph name="BROWSER_COMPONENT"/>:</translation>
-<translation id="1779356040007214683">Untuk menjadikan Chromium lebih selamat, kami melumpuhkan beberapa pelanjutan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> dan mungkin telah ditambah tanpa pengetahuan anda.</translation>
+<translation id="1779356040007214683">Untuk menjadikan Chromium lebih selamat, kami melumpuhkan beberapa pelanjutan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
 <translation id="6638567566961868659">Cari penanda halaman anda dalam menu Chromium atau pada bar penanda halaman.</translation>
 <translation id="2673087257647337101">Hampir terkini! Lancarkan semula Chromium untuk selesai mengemas kini.</translation>
 <translation id="5398878173008909840">Terdapat versi baharu Chromium tersedia.</translation>
@@ -152,6 +151,7 @@
 <translation id="6717134281241384636">Profil anda tidak boleh digunakan kerana profil anda dihasilkan dari versi Chromium yang lebih baharu.
 
 Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbeza atau gunakan versi Chromium yang lebih baharu.</translation>
+<translation id="8907580949721785412">Chromium cuba menunjukkan kata laluan. Taip kata laluan Windows anda untuk membenarkannya.</translation>
 <translation id="9013087743919948559">Tambah ke Chromium</translation>
 <translation id="6212496753309875659">Komputer ini telah mempunyai versi Chromium yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium dan cuba lagi.</translation>
 <translation id="1298199220304005244">Dapatkan bantuan untuk menggunakan Chromium OS</translation>
@@ -195,7 +195,6 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="805745970029938373">Anda boleh melihat semua pemberitahuan anda dari apl, pelanjutan dan tapak web Chromium di sini.</translation>
 <translation id="2119636228670142020">Mengenai &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Terdapat versi Chromium baharu yang lebih selamat tersedia.</translation>
-<translation id="1539981464052805551">Hak Cipta 2013 Pengarang Chromium. Hak cipta terpelihara.</translation>
 <translation id="378917192836375108">Chromium membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
 <translation id="8724049448828509830">Muat turun sedang dijalankan. Adakah anda ingin keluar dari Chromium dan membatalkan muat turun?</translation>
 <translation id="3360567213983886831">Perduaan Chromium</translation>

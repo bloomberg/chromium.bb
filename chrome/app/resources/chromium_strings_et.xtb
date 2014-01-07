@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="6676384891291319759">Pääs Internetti</translation>
+<translation id="8586442755830160949">Autoriõigus <ph name="YEAR"/> The Chromium Authors. Kõik õigused on kaitstud.</translation>
 <translation id="6373523479360886564">Kas soovite kindlasti Chromiumi desinstallida?</translation>
 <translation id="5065199687811594072">Kas soovite, et Chromium salvestaks krediitkaarditeabe veebivormide täitmiseks?</translation>
 <translation id="6510925080656968729">Desinstalli Chromium</translation>
@@ -26,7 +27,6 @@
 <translation id="3549345495227188780">Alustamine Chromium OS-iga</translation>
 <translation id="4330297532943865716">Süsteemist leiti Chromiumi või Chromium Frame'i vastuoluline install. Desinstallige see ja proovige uuesti.</translation>
 <translation id="6953661834318318668">Chromiumi tööriistariba</translation>
-<translation id="2245147136185581459">Chromiumi Captive Portali tuvasti</translation>
 <translation id="4285930937574705105">Installimine ebaõnnestus tundmatu vea tõttu. Kui Chromium praegu töötab, siis sulgege see ja proovige uuesti.</translation>
 <translation id="1396446129537741364">Chromium püüab paroole kuvada.</translation>
 <translation id="3555616473548901994">Desinstallimine on lõpetatud.</translation>
@@ -60,7 +60,6 @@
 <translation id="7771626876550251690">Sel juhul ei kattu sertifikaadis olev aadress veebisaidi aadressiga, mida brauser avada üritas. Üks võimalik põhjus on see, et teie sidet häirib ründaja, kes esitab muu veebisaidi sertifikaadi ja põhjustab seega vastuolu. Põhjus võib olla ka selles, et server on seadistatud esitama sama sertifikaadi mitme veebisaidi, sealhulgas praegu külastatava saidi kohta, kuigi sertifikaat ei kehti kõikidele saitidele. Chromium võib väita, et jõudsite domeenile &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, kuid ei saa kinnitada, et tegemist on sama saidiga kui &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuhu üritasite jõuda. Jätkamisel ei kontrolli Chromium enam nimede vastuolusid.</translation>
 <translation id="4330585738697551178">See moodul põhjustab teadaolevalt Chromiumiga vastuolusid.</translation>
 <translation id="3190315855212034486">Chromium jooksis kokku. Kas soovite kohe taaskäivitada?</translation>
-<translation id="3590194807845837023">Ava profiil ja taaskäivita</translation>
 <translation id="6714487516757221107">Ei leitud Chromiumi või Chromium Frame'i installi, mida värskendada.</translation>
 <translation id="3197823471738295152">Teie seade on ajakohane.</translation>
 <translation id="8551886023433311834">Seade on peaaegu ajakohane. Täienduse lõpuleviimiseks taaskäivitage seade.</translation>
@@ -153,6 +152,7 @@
 <translation id="6717134281241384636">Teie profiili ei saa kasutada, kuna see pärineb Chromiumi uuemast versioonist.
 
 On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloog või kasutage Chromiumi uuemat versiooni.</translation>
+<translation id="8907580949721785412">Chromium proovib kuvada paroole. Selle lubamiseks sisestage Windowsi parool.</translation>
 <translation id="9013087743919948559">Chromiumi lisamine</translation>
 <translation id="6212496753309875659">Arvutis on juba Chromiumi uuem versioon. Kui tarkvara ei tööta, siis desinstallige Chromium ja proovige uuesti.</translation>
 <translation id="1298199220304005244">Hangi abi Chromium OS-i kasutamise kohta</translation>
@@ -196,7 +196,6 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="805745970029938373">Siin näete kõiki Chromiumi rakendustest, laiendustest ja veebisaitidelt pärinevaid märguandeid.</translation>
 <translation id="2119636228670142020">Teave &amp;Chromium OS-i kohta</translation>
 <translation id="1708666629004767631">Saadaval on Chromiumi uus, turvalisem versioon.</translation>
-<translation id="1539981464052805551">Autoriõigus 2013 The Chromium Authors. Kõik õigused kaitstud.</translation>
 <translation id="378917192836375108">Chromium võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i kaudu helistada!</translation>
 <translation id="8724049448828509830">Allalaadimine on pooleli. Kas soovite Chromiumist väljuda ja allalaadimise tühistada?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>

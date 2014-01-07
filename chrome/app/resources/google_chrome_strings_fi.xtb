@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="3234920859344197194">Tämä sivusto käyttää Chrome-kehys-laajennusta, jolle lakataan pian julkaisemasta turvallisuus- ja vakauspäivityksiä. Poista laajennus ja ota käyttöön nykyaikaisempi selain.</translation>
 <translation id="8914504000324227558">Käynnistä Chrome uudelleen</translation>
 <translation id="8000275528373650868">Google Chrome edellyttää, että käyttöjärjestelmä on Windows Vista tai Windows XP (SP2 tai uudempi).</translation>
-<translation id="8124352762008487242">Copyright 2013 Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="8485767968786176057">Tässä tapauksessa varmenteessa annettu osoite ei vastannut sivustoa, johon selaimesi yritti siirtyä. Tämä voi johtua siitä, että hakkeri on kaapannut yhteyden ja esittää nyt selaimellesi eri sivuston varmenteen, mikä aiheuttaa ristiriidan. Saattaa myös olla, että palvelin on määritetty palauttamaan sama varmenne useille sivustoille, vaikka se ei ole voimassa kaikissa näissä sivustoissa. Google Chrome voi vahvistaa, että saavuit sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mutta ei voi taata, että kyseessä on verkkotunnuksessa &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; oleva sivusto, johon yritit siirtyä. Jos jatkat, Chrome ei tarkista muita nimiristiriitoja.</translation>
 <translation id="5430073640787465221">Asetustiedostosi on virheellinen. Google Chrome ei voi palauttaa asetuksiasi.</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
@@ -24,7 +24,6 @@
 <translation id="4891791193823137474">Jätä Google Chrome käyntiin taustalle</translation>
 <translation id="2896252579017640304">Käynnistä Chrome-sovelluksia</translation>
 <translation id="2370289711218562573">Google Chrome tuo suosikkeja/kirjanmerkkejä.</translation>
-<translation id="8762286861469007470">Chromen Captive Portal -havaitsin</translation>
 <translation id="2721687379934343312">Salasanat tallennetaan Macilla Avainnippuusi, ja muut Chrome-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
 <translation id="1761870329818521071">Ei voi asentaa samaa Google Chrome -kehyksen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="6014844626092547096">Olet nyt kirjautunut sisään Chromeen! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
@@ -58,10 +57,10 @@
 <translation id="1697213158865901863">Google Chrome -kehys</translation>
 <translation id="4513711165509885787">Laskutustietosi on tallennettu Chromeen.</translation>
 <translation id="7098166902387133879">Google Chrome käyttää mikrofoniasi.</translation>
-<translation id="3590194807845837023">Poista profiilin lukitus ja käynnistä uudelleen</translation>
 <translation id="4053720452172726777">Google Chromen muokkaaminen ja hallinta</translation>
 <translation id="6423071462708908582">Yritit siirtyä verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin palautti vanhentuneen varmenteen. Emme voi selvittää, onko varmenne vaarantunut voimassaolon päättymisen jälkeen. Google Chrome ei siis voi taata, että olet yhteydessä sivustoon &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; etkä hyökkäyssivustoon. Tietokoneesi kellon asetus on <ph name="CURRENT_TIME"/>. Jos aika on väärä, korjaa se ja päivitä tämä sivu.</translation>
 <translation id="3197823471738295152">Laite on ajan tasalla.</translation>
+<translation id="8286862437124483331">Google Chrome yrittää näyttää salasanoja. Salli tämä kirjoittamalla Windows-salasanasi.</translation>
 <translation id="3889417619312448367">Poista Google Chromen asennus</translation>
 <translation id="1434626383986940139">Chrome Canary -sovellukset</translation>
 <translation id="8551886023433311834">Melkein ajan tasalla! Viimeistele päivitys käynnistämällä laite uudelleen.</translation>
@@ -156,7 +155,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="2871893339301912279">Olet kirjautunut Chromeen!</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>
 <translation id="4147555960264124640">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. <ph name="LEARN_MORE"/></translation>
-<translation id="7931439880631187247">Tämä sivusto käyttää Chrome-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja asenna uudempi selain.</translation>
 <translation id="1348153800635493797">Chrome on päivitettävä ennen kuin voit käyttää Google Walletia [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Avaa
           Sovellukset &gt; Järjestelmäasetukset &gt; Verkko &gt; Lisäasetukset &gt; Välityspalvelimet
@@ -198,7 +196,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
           Lähiverkon asetukset
           ja poista valinta kohdasta Käytä välityspalvelinta lähiverkossa.</translation>
 <translation id="7825851276765848807">Asennus epäonnistui tuntemattoman virheen vuoksi. Lataa Google Chrome uudelleen.</translation>
-<translation id="5553980212343253394">Tämä sivusto käyttää Chrome-kehyslaajennusta, jonka tukeminen lopetetaan pian. Poista se ja lataa yhteensopiva selain.</translation>
+<translation id="4919523385405675060">Tämä sivusto käyttää Chrome-kehys-laajennusta, jolle lakataan pian julkaisemasta turvallisuus- ja vakauspäivityksiä. Poista laajennus ja lataa yhteensopiva selain.</translation>
 <translation id="1061257178446858647">Olet kirjautunut Chromeen! Kirjanmerkkisi, historiasi ja muut asetuksesi synkronoidaan Google-tiliisi.</translation>
 <translation id="3335672657969596251">Google Chrome ei tue <ph name="OS_NAME"/>-käyttöjärjestelmää</translation>
 <translation id="4458285410772214805">Kirjaudu ulos ja kirjaudu uudelleen sisään, jotta muutos tulee voimaan.</translation>
@@ -216,6 +214,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="6626317981028933585">Valitettavasti Mozilla Firefox-asetuksesi eivät ole käytettävissä kun kyseinen selain on toiminnassa. Tuodaksesi asetukset Google Chromeen, tallenna mahdolliset keskeneräiset työt ja sulje kaikki Firefox-ikkunat. Klikkaa sitten Jatka.</translation>
 <translation id="7242029209006116544">Olet kirjautumassa sisään hallinnoidulla tilillä ja antamassa tilin järjestelmänvalvojalle oikeuden hallita Google Chrome -profiiliasi. Chrome-tietosi, kuten sovelluksesi, kirjanmerkkisi, historiasi, salasanasi ja muut asetuksesi, yhdistetään pysyvästi käyttäjätiliin <ph name="USER_NAME"/>. Voit poistaa nämä tiedot Google-tilien Hallintapaneelissa, mutta et voi liittää tietoja toiseen tiliin. Voit myös halutessasi luoda uuden profiilin, jos haluat pitää aiemmat Chrome-tietosi erillään. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="2334084861041072223">Copyright <ph name="YEAR"/> Google Inc. Kaikki oikeudet pidätetään.</translation>
 <translation id="1698376642261615901">Google Chrome on verkkoselain, jolla voit avata verkkosivuja ja sovelluksia salamannopeasti. Se on nopea, vakaa ja helppokäyttöinen. Selaa verkkoa turvallisemmin Google Chromen haittaohjelma- ja tietojenkalastelusuojauksen avulla.</translation>
 <translation id="3419750618886995598">Chrome-kehyksen päivitys.</translation>
 <translation id="3336524238463733095">Google Chromea tai Google Chrome -kehystä ei voi päivittää, koska Google Update -ryhmäkäytännön asetuksissa on ristiriitoja. Aseta päivityskäytännön ohitus Google Chrome Binaries -sovellukselle ryhmäkäytäntöjen muokkausohjelman avulla ja yritä uudelleen. Lisätietoja saat osoitteesta http://goo.gl/uJ9gV.</translation>

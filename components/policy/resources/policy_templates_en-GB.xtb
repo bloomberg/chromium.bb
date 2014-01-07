@@ -313,6 +313,7 @@
           When this policy is unset, a default length of time is used.
 
           The policy value should be specified in milliseconds.</translation>
+<translation id="6598235178374410284">User avatar image</translation>
 <translation id="1675391920437889033">Controls which app/extension types are allowed to be installed.
 
           This setting white-lists the allowed types of extension/apps that can be installed in <ph name="PRODUCT_NAME"/>. The value is a list of strings, each of which should be one of the following: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. See the Chrome extensions documentation for more information on these types.
@@ -494,6 +495,11 @@
 <translation id="4894257424747841850">Report list of device users that have recently logged in.
 
       If the policy is not set, or set to false, the users will not be reported.</translation>
+<translation id="2488010520405124654">Enable network configuration prompt when offline.
+
+      If this policy is unset or set to True and a device-local account is configured for zero-delay auto-login and the device does not have access to the Internet, <ph name="PRODUCT_OS_NAME"/> will show a network configuration prompt.
+
+      If this policy is set to False, an error message will be displayed instead of the network configuration prompt.</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="4897928009230106190">Specifies the parameters used when doing suggestion search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
@@ -740,6 +746,7 @@
 <translation id="1098794473340446990">Report device activity times.
 
       If this setting is set to True, enrolled devices will report time periods when a user is active on the device. If this setting is not set or set to False, device activity times will not be recorded or reported.</translation>
+<translation id="1327466551276625742">Enable network configuration prompt when offline</translation>
 <translation id="7937766917976512374">Allow or deny video capture</translation>
 <translation id="427632463972968153">Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
 
@@ -961,7 +968,6 @@
 
       If this policy is set to true or not configured, new user accounts are allowed to be created, provided that <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> does not prevent the user from logging in.</translation>
 <translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
-<translation id="3518214502751233558">Specify whether power management delays and the session length limit should only start running after initial user activity in a session</translation>
 <translation id="8256688113167012935">Controls the account name <ph name="PRODUCT_OS_NAME"/> shows on the login screen for the corresponding device-local account.
 
       If this policy is set, the login screen will use the specified string in the picture-based login chooser for the corresponding device-local account.
@@ -1347,6 +1353,32 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       When DeviceIdleLogoutTimeout is specified, this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.
 
       The policy value should be specified in milliseconds.</translation>
+<translation id="54795286564479339">Configure user avatar image.
+
+      This policy allows you to configure the avatar image representing the user on the login screen. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME"/> can download the avatar image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its size must not exceed 512 KB. The URL must be accessible without any authentication.
+
+      The avatar image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      The policy should be specified as a string that expresses the URL and hash in JSON format, conforming to the following schema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;The URL from which the avatar image can be downloaded.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;The SHA-1 hash of the avatar image.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME"/> will download and use the avatar image.
+
+      If you set this policy, users cannot change or override it.
+
+      If the policy is left not set, the user can choose the avatar image representing him/her on the login screen.</translation>
 <translation id="237494535617297575">Allows you to set a list of url patterns that specify sites which are allowed to display notifications.
 
           If this policy is left unset, the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1740,6 +1772,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If this policy is not set, no Terms of Service are shown.
 
       The policy should be set to a URL from which <ph name="PRODUCT_OS_NAME"/> can download the Terms of Service. The Terms of Service must be plain text, served as MIME type text/plain. No markup is allowed.</translation>
+<translation id="2623014935069176671">Wait for initial user activity</translation>
 <translation id="2660846099862559570">Never use a proxy</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
 <translation id="2131902621292742709">Screen dim delay when running on battery power</translation>

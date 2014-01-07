@@ -305,6 +305,7 @@
           Als dit beleid niet is ingesteld, wordt een standaardtijdsduur gebruikt.
 
           De beleidswaarde moet in milliseconden worden opgegeven.</translation>
+<translation id="6598235178374410284">Avatarafbeelding van gebruiker</translation>
 <translation id="1675391920437889033">Hiermee wordt bepaald welke typen apps/extensies mogen worden geïnstalleerd.
 
           Met deze instelling worden de toegestane typen extensies/apps die in <ph name="PRODUCT_NAME"/> kunnen worden geïnstalleerd op de witte lijst gezet. De waarde is een lijst met tekenreeksen waarbij elke tekenreeks een van de volgende zou moeten zijn: 'extension', 'theme', 'user_script', 'hosted_app', 'legacy_packaged_app', 'platform_app'. Raadpleeg de documentatie over Chrome-extensies voor meer informatie over deze typen.
@@ -487,6 +488,11 @@
 <translation id="4894257424747841850">Lijst melden met apparaatgebruikers die onlangs zijn ingelogd.
 
       Als het beleid niet is ingesteld of is ingesteld op 'False', worden de gebruikers niet gemeld.</translation>
+<translation id="2488010520405124654">Prompt voor netwerkconfiguratie inschakelen als je offline bent.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'waar' en een lokaal account op het apparaat is geconfigureerd om automatisch en zonder vertraging in te loggen en het apparaat geen toegang heeft tot internet, geeft <ph name="PRODUCT_OS_NAME"/> een prompt weer voor netwerkconfiguratie.
+
+      Als dit beleid op 'onwaar' is ingesteld, verschijnt een foutmelding in plaats van de prompt voor de netwerkconfiguratie.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="4897928009230106190">Specificeert de parameters die worden gebruikt voor het uitvoeren van een voorgestelde zoekopdracht met POST. Het bestaat uit door komma's gescheiden naam/waarde-paren. Als een waarde een sjabloonparameter, zoals {searchTerms} in het bovenstaande voorbeeld, is, wordt de waarde vervangen door echte zoektermgegevens.
 
@@ -731,6 +737,7 @@ Als deze instelling op 'True' wordt ingesteld, melden de aangemelde apparaten re
           De beleidswaarde moet worden opgegeven in milliseconden. De waarde die wordt opgegeven, moet kleiner zijn dan of gelijk aan de inactieve vertraging.</translation>
 <translation id="1098794473340446990">Perioden van apparaatgebruik melden.
 Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waarin een gebruiker het apparaat gebruikt. Als deze instelling niet is ingesteld of op 'False' is ingesteld, worden perioden van apparaatgebruik niet geregistreerd of gemeld.</translation>
+<translation id="1327466551276625742">Prompt voor netwerkconfiguratie inschakelen als je offline bent</translation>
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="427632463972968153">Specificeert de parameters die worden gebruikt voor het uitvoeren van een zoekopdracht naar afbeeldingen met POST. Het bestaat uit door komma's gescheiden naam/waarde-paren. Als een waarde een sjabloonparameter, zoals {imageThumbnail} in het bovenstaande voorbeeld, is, wordt de waarde vervangen door echte afbeeldingsminiatuurgegevens.
 
@@ -956,7 +963,6 @@ Als dit beleid op 'True' is ingesteld, melden aangemelde apparaten perioden waar
 
       Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, kunnen er nieuwe gebruikersaccounts worden gemaakt, mits <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> de gebruiker toestaat in te loggen.</translation>
 <translation id="4389091865841123886">De externe bevestiging configureren met een TPM-mechanisme.</translation>
-<translation id="3518214502751233558">Opgeven of vertragingen in energiebeheer en de limiet voor sessielengte pas moeten worden gestart na de eerste gebruikersactiviteit in een sessie</translation>
 <translation id="8256688113167012935">Hiermee wordt de weergave van de accountnaam in <ph name="PRODUCT_OS_NAME"/> op het aanmeldscherm beheerd voor het bijbehorende lokale account van het apparaat.
 
       Als dit beleid is ingesteld, gebruikt het aanmeldscherm de opgegeven tekenreeks in de afbeeldinggebaseerde aanmeldkiezer voor het bijbehorende lokale account van het apparaat.
@@ -1340,6 +1346,32 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
       Als DeviceIdleLogoutTimeout is gespecificeerd, bepaalt dit beleid hoe lang het waarschuwingsvenster met afteltimer wordt weergegeven dat de gebruiker te zien krijgt voordat deze wordt afgemeld.
 
       De beleidswaarde moet worden opgegeven in milliseconden.</translation>
+<translation id="54795286564479339">Avatarafbeelding van gebruiker configureren.
+
+      Met dit beleid kun je de avatarafbeelding configureren waarmee de gebruiker op het inlogscherm wordt aangeduid. Het beleid wordt ingesteld door de URL te specificeren waar <ph name="PRODUCT_OS_NAME"/> de avatarafbeelding kan downloaden en er wordt een cryptografische hash gebruikt om de integriteit van de download te verifiëren. De bestandsindeling van de afbeelding moet JPEG zijn en het bestand mag niet groter zijn dan 512 KB. De URL moet zonder authenticatie toegankelijk zijn.
+
+      De avatarafbeelding wordt gedownload en opgeslagen in het cachegeheugen. De afbeelding wordt opnieuw gedownload wanneer de URL of hash wordt gewijzigd.
+
+      Het beleid moet worden opgegeven als een tekenreeks waarin de URL en hash worden uitgedrukt in JSON-notatie, in overeenstemming met het volgende schema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;De URL waar de avatarafbeelding kan worden gedownload.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;De SHA-1-hash van de avatarafbeelding.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Als dit beleid is ingesteld, wordt de avatarafbeelding gedownload en gebruikt door <ph name="PRODUCT_OS_NAME"/>.
+
+      Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of negeren.
+
+      Als het beleid niet wordt ingesteld, kan de gebruiker zelf een avatarafbeelding kiezen waarmee hij/zij wordt aangeduid op het inlogscherm.</translation>
 <translation id="237494535617297575">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop meldingen mogen worden weergegeven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultNotificationsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
@@ -1733,6 +1765,7 @@ Als het beleid niet wordt ingesteld, of op 'False' wordt ingesteld, wordt het sp
       Als dit beleid niet is ingesteld, worden er geen Servicevoorwaarden weergegeven.
 
       Het beleid moet op een URL worden ingesteld vanaf waar de Servicevoorwaarden door <ph name="PRODUCT_OS_NAME"/> kunnen worden gedownload. De Servicevoorwaarden moeten platte tekst zijn die als tekst met MIME-type/plat wordt weergegeven. Er is geen opmaak toegestaan.</translation>
+<translation id="2623014935069176671">Wachten op initiële gebruikersactiviteit</translation>
 <translation id="2660846099862559570">Nooit een proxy gebruiken</translation>
 <translation id="1435659902881071157">Netwerkconfiguratie op apparaatniveau</translation>
 <translation id="2131902621292742709">Vertraging van dimmen van scherm wanneer op de accu wordt gewerkt</translation>

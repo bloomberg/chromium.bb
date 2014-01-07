@@ -18,6 +18,7 @@
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> saniye</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> saat kaldı</translation>
+<translation id="8717309436826820190"><ph name="SOURCE_OF_NOTIFICATIONS"/> kaynağından <ph name="NUMBER_OF_NOTIFICATIONS"/> bildirim daha</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7222373446505536781">F11</translation>
@@ -178,6 +179,8 @@
 <translation id="27199337101878275"><ph name="NUMBER_MANY"/> seconds</translation>
 <translation id="3759876923365568382"><ph name="NUMBER_FEW"/> gün kaldı</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/sn</translation>
+<translation id="2743387203779672305">Panoya kopyala</translation>
+<translation id="8371695176452482769">Şimdi konuşun</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="7850320739366109486">Rahatsız Etmeyin</translation>
 <translation id="6978839998405419496"><ph name="NUMBER_ZERO"/> days ago</translation>

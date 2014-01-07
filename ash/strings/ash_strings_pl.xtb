@@ -53,7 +53,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="7320906967354320621">Bezczynna</translation>
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="3294437725009624529">Gość</translation>
-<translation id="8190698733819146287">Dostosuj języki i metody wprowadzania</translation>
+<translation id="8190698733819146287">Dostosuj języki i metody wprowadzania...</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/> (<ph name="ANNOTATION"/>)</translation>
 <translation id="2942516765047364088">Pozycja półki</translation>
 <translation id="8676770494376880701">Podłączono ładowarkę o małej mocy</translation>
@@ -152,6 +152,7 @@ Aby wyłączyć, naciśnij Ctrl+Alt+Z.</translation>
 <translation id="3473479545200714844">Lupa</translation>
 <translation id="7005812687360380971">Niepowodzenie</translation>
 <translation id="882279321799040148">Kliknij, by wyświetlić</translation>
+<translation id="1753067873202720523">Włączonego Chromebooka nie można ładować.</translation>
 <translation id="5045550434625856497">Nieprawidłowe hasło</translation>
 <translation id="1602076796624386989">Włącz komórkową transmisję danych</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>

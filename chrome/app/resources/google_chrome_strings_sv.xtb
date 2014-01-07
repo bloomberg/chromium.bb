@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="3234920859344197194">Webbplatsen använder pluginprogrammet Chrome Frame som snart slutar få nya säkerhets- och stabilitetsuppdateringar. Avinstallera programmet och uppgradera till en ny webbläsare.</translation>
 <translation id="8914504000324227558">Starta om Chrome</translation>
 <translation id="8000275528373650868">För Google Chrome krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
-<translation id="8124352762008487242">Upphovsrätt 2013 Google Inc. Med ensamrätt.</translation>
 <translation id="8485767968786176057">I det här fallet överensstämmer inte adressen i certifikatet med webbplatsen som webbläsaren försökte öppna. Det kan bero på att kommunikationen har kapats av en bedragare som anger ett certifikat för en annan webbplats, vilket orsakar konflikten. En annan orsak kan vara att servern är konfigurerad för att returnera samma certifikat till flera webbplatser, inklusive den som du försöker besöka, trots att certifikatet inte är giltigt för alla dessa webbplatser. Google Chrome kan intyga att du har öppnat &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, men kan inte bekräfta att det är webbplatsen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; som du ville besöka. Om du fortsätter kommer inte Chrome att söka efter eventuella nya namnkonflikter.</translation>
 <translation id="5430073640787465221">Inställningsfilen är skadad eller ogiltig.
 
@@ -28,7 +28,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4891791193823137474">Låt Google Chrome köras i bakgrunden</translation>
 <translation id="2896252579017640304">Starta Chrome-appar</translation>
 <translation id="2370289711218562573">Google Chrome importerar favoriter/bokmärken.</translation>
-<translation id="8762286861469007470">Chrome Captive Portal-detektor</translation>
 <translation id="2721687379934343312">På Mac sparas lösenord på nyckelringen. Andra Chrome-användare som använder det här OS X-kontot kan komma åt lösenorden och synkronisera dem.</translation>
 <translation id="1761870329818521071">Det går inte att installera samma version av Google Chrome Frame som redan körs. Stäng Google Chrome Frame och försök igen.</translation>
 <translation id="6014844626092547096">Nu är du inloggad på Chrome. Synkronisering har inaktiverats av administratören.</translation>
@@ -64,10 +63,10 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1697213158865901863">Google Chrome Frame</translation>
 <translation id="4513711165509885787">Dina faktureringsuppgifter har sparats i Chrome.</translation>
 <translation id="7098166902387133879">Google Chrome använder din mikrofon.</translation>
-<translation id="3590194807845837023">Lås upp profil och starta om</translation>
 <translation id="4053720452172726777">Anpassa och kontrollera Google Chrome</translation>
 <translation id="6423071462708908582">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men servern visade ett certifikat som inte gäller längre. Det finns ingen information som avgör om certifikatets säkerhet har påverkats efter att det upphörde att gälla. Det innebär att Google Chrome inte kan garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Datorns klocka är inställd på <ph name="CURRENT_TIME"/>. Ser det rätt ut? Om det inte gör det bör du rätta till den och uppdatera sidan.</translation>
 <translation id="3197823471738295152">Enheten är uppdaterad.</translation>
+<translation id="8286862437124483331">Skriv ditt Windows-lösenord om du vill tillåta att lösenord visas i Google Chrome.</translation>
 <translation id="3889417619312448367">Avinstallera Google Chrome</translation>
 <translation id="1434626383986940139">Chrome Canary-appar</translation>
 <translation id="8551886023433311834">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
@@ -163,7 +162,6 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="2871893339301912279">Du är inloggad i Chrome.</translation>
 <translation id="7161904924553537242">Välkommen till Google Chrome</translation>
 <translation id="4147555960264124640">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME"/>. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. <ph name="LEARN_MORE"/></translation>
-<translation id="7931439880631187247">På den här webbplatsen används plugin-programmet Chrome Frame som snart slutar stödjas. Avinstallera det och uppgradera till en modern webbläsare.</translation>
 <translation id="1348153800635493797">Du måste uppgradera Chrome om du vill använda Google Wallet [<ph name="ERROR_CODE"/>].</translation>
 <translation id="8187289872471304532">Öppna
           Program &gt; Systeminställningar &gt; Nätverk &gt; Avancerat &gt; Proxyservrar
@@ -206,7 +204,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
           LAN-inställningar
           och avmarkera Använd en proxyserver för nätverket.</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Hämta Google Chrome igen.</translation>
-<translation id="5553980212343253394">På den här webbplatsen används plugin-programmet Chrome Frame som snart slutar stödjas. Avinstallera det och hämta en kompatibel webbläsare.</translation>
+<translation id="4919523385405675060">Webbplatsen använder pluginprogrammet Chrome Frame som snart slutar få nya säkerhets- och stabilitetsuppdateringar. Avinstallera programmet och hämta en kompatibel webbläsare.</translation>
 <translation id="1061257178446858647">Du är nu inloggad i Chrome! Bokmärken, historik och andra inställningar synkroniseras med ditt Google-konto.</translation>
 <translation id="3335672657969596251">Google Chrome saknar stöd för <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">Den här ändringen träder inte i kraft förrän du loggat ut och sedan loggar in igen.</translation>
@@ -224,6 +222,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>
 <translation id="7242029209006116544">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Google Chrome-profil. Dina Chrome-uppgifter, t.ex. dina appar, bokmärken, din historik, dina lösenord och andra inställningar, knyts permanent till <ph name="USER_NAME"/>. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dessa uppgifter till ett annat konto. Du kan skapa en ny profil om du vill hålla dina befintliga Chrome-uppgifter separata. <ph name="LEARN_MORE"/></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="2334084861041072223">Upphovsrätt <ph name="YEAR"/> Google Inc. Med ensamrätt.</translation>
 <translation id="1698376642261615901">Google Chrome är en webbläsare som kör webbsidor och program med ljusets hastighet. Den är snabb, stabil och lätt att använda. Surfa säkrare med Google Chrome, som har inbyggt skydd mot skadlig programvara och nätfiske.</translation>
 <translation id="3419750618886995598">Uppdatering av Chrome Frame.</translation>
 <translation id="3336524238463733095">Google Chrome eller Google Chrome Frame kan inte uppdateras eftersom grupprincipinställningarna för Google Update inte är konsekventa. Använd Principeditorn för att ange en åsidosättning för grupprinciper för programmet Google Chrome Binaries och försök igen. Mer information finns på http://goo.gl/uJ9gV.</translation>

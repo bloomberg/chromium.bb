@@ -56,15 +56,15 @@
 <translation id="2337466621458842053">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, hvor billedvisning tillades. Hvis denne politik ikke er angivet, anvendes den globale standardværdi for alle websites, enten fra politikken &quot;DefaultImagesSetting&quot;, hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="4680961954980851756">Aktiver AutoFyld</translation>
 <translation id="5183383917553127163">Giver dig mulighed for at angive, hvilke udvidelser der ikke er omfattet af sortlisten. Værdien ​​* på en sortliste betyder, at alle udvidelser er sortlistet, medmindre de er angivet på hvidlisten. Som standard er alle udvidelser hvidlistet, men hvis alle udvidelser er blevet sortlistet på grund af en politik, kan hvidlisten bruges til at tilsidesætte denne politik.</translation>
-<translation id="5921888683953999946">Indstil standardtilstanden for tilgængelighedsfunktionen med den store markør på loginskærmen.
+<translation id="5921888683953999946">Indstil standardtilstanden for hjælpefunktionen med den store markør på loginskærmen.
 
-          Hvis denne politik indstilles til sand, vil den store markør være aktiveret, når loginskærmen vises.
+          Hvis denne politik angives som sand, vil den store markør være aktiveret, når loginskærmen vises.
 
-          Hvis denne politik indstilles til falsk, vil den store markør være deaktiveret, når loginskærmen vises.
+          Hvis denne politik angives som falsk, vil den store markør være deaktiveret, når loginskærmen vises.
 
-          Hvis du indstiller denne politik, kan brugerne midlertidigt tilsidesætte den ved at slå den store markør til eller fra. Men brugerens valg er ikke endegyldigt, og standarden gendannes, når loginskærmen vises igen, eller hvis brugeren forbliver inaktiv på loginskærmen i et minut.
+          Hvis du angiver denne politik, kan brugerne midlertidigt tilsidesætte den ved at slå den store markør til eller fra. Men brugerens valg er ikke endegyldigt, og standarden gendannes, når loginskærmen vises igen, eller hvis brugeren forbliver inaktiv på loginskærmen i et minut.
 
-          Hvis denne politik ikke indstilles, deaktiveres den store markør, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere den store markør, og dens status på loginskærmen fastholdes hos brugerne.</translation>
+          Hvis denne politik ikke angives, deaktiveres den store markør, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere den store markør, og dens status på loginskærmen fastholdes hos brugerne.</translation>
 <translation id="3185009703220253572">siden version <ph name="SINCE_VERSION"/></translation>
 <translation id="2204753382813641270">Administrer, hvornår hylden skjules automatisk</translation>
 <translation id="3816312845600780067">Aktivér nødtastaturgenvej til automatisk login</translation>
@@ -274,7 +274,7 @@
 <translation id="8614804915612153606">Deaktiverer Automatisk opdatering</translation>
 <translation id="4834526953114077364">Brugere, der ikke har logget ind i løbet af de seneste tre måneder, fjernes, indtil der er frigjort tilstrækkeligt med plads.</translation>
 <translation id="382476126209906314">Konfigurer TalkGadget-præfikset for værter med fjernadgang</translation>
-<translation id="6561396069801924653">Vis indstillinger for tilgængelighed i systembakkemenuen</translation>
+<translation id="6561396069801924653">Vis indstillinger for hjælpefunktioner i systembakkemenuen</translation>
 <translation id="8104962233214241919">Vælg automatisk klientcertifikater til disse websites</translation>
 <translation id="2906874737073861391">Liste over AppPack-udvidelser</translation>
 <translation id="3758249152301468420">Deaktiver udviklerværktøjer</translation>
@@ -286,6 +286,7 @@
           Hvis denne politik ikke indstilles, anvendes standardindstillingen.
 
           Værdien for politikken bør angives i millisekunder.</translation>
+<translation id="6598235178374410284">Brugerens avatarbillede</translation>
 <translation id="1675391920437889033">Styrer hvilken app-/udvidelsestype, der må installeres.
 
           Denne indstilling hvidlister de tilladte typer af udvidelser/apps, som kan installeres i <ph name="PRODUCT_NAME"/>. Værdien er en liste over strenge, som alle skal være en af følgende: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;,  &quot;platform_app&quot;. Se dokumentationen til udvidelser til Chrome for at få flere oplysninger om disse typer.
@@ -452,6 +453,11 @@
 <translation id="4894257424747841850">Rapporteringsliste over enhedsbrugere, der har logget ind for nylig.
 
       Hvis politikken ikke er angivet, eller hvis den er angivet som Falsk, vil brugerne ikke blive rapporteret.</translation>
+<translation id="2488010520405124654">Aktivér meddelelse om netværkskonfiguration, når du er offline. 
+
+      Hvis denne politik er deaktiveret eller indstillet til True, en enhedslokal konto er konfigureret til automatisk login med nul-forsinkelse og enheden ikke har adgang til internettet, viser <ph name="PRODUCT_OS_NAME"/> en meddelelse om netværkskonfiguration.
+
+      Hvis denne politik er indstillet til False, vises en fejlmeddelelse i stedet for meddelelsen om netværkskonfiguration.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="4897928009230106190">Angiver de parametre, der anvendes ved forslagssøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {searchTerms} i ovenstående eksempel, erstattes den med rigtige søgeord.
 
@@ -542,7 +548,7 @@
 <translation id="152657506688053119">Liste over alternative webadresser for standardsøgemaskinen</translation>
 <translation id="8992176907758534924">Tillad ikke, at websites viser billeder</translation>
 <translation id="262740370354162807">Aktiver indsendelse af dokumenter til <ph name="CLOUD_PRINT_NAME"/></translation>
-<translation id="7717938661004793600">Konfigurer tilgængelighedsfunktioner for <ph name="PRODUCT_OS_NAME"/>.</translation>
+<translation id="7717938661004793600">Konfigurer hjælpefunktioner for <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="5182055907976889880">Konfigurer Google Drev i <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">Liste over deaktiverede plugins</translation>
 <translation id="8391419598427733574">Rapportér OS- og firmwareversion af tilmeldte enheder. Hvis denne indstilling er angivet som Sand, rapporteres der jævnligt OS- og firmwareversion på tilmeldte enheder. Hvis denne indstilling ikke er angivet, eller hvis den er angivet som Falsk, opdateres oplysninger om versioner ikke.</translation>
@@ -646,6 +652,7 @@
 
           Værdien for politikken aktiveres inden for millisekunder. Værdierne er låste til mindre end eller det samme som inaktivitetsforsinkelsen.</translation>
 <translation id="1098794473340446990">Rapportér tidspunkter for aktiviteter på enheden. Hvis denne indstilling er angivet som Sand, rapporterer tilmeldte enheder de tidsperioder, hvor en bruger er aktiv på enheden. Hvis denne indstilling ikke er angivet, eller hvis den er angivet som Falsk, registreres og rapporteres der ikke aktive tidspunkter på enheden.</translation>
+<translation id="1327466551276625742">Aktivér meddelelse om netværkskonfiguration, når du er offline</translation>
 <translation id="7937766917976512374">Tillad eller afvis videooptagelse</translation>
 <translation id="427632463972968153">Angiver de parametre, der anvendes ved billedsøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {imageThumbnail} i ovenstående eksempel, bliver den erstattet af data om rigtige miniaturebilleder.
 
@@ -678,15 +685,15 @@
       Hvis denne politik angives til Sand eller ikke angives, kan brugerne indløse kampagnetilbud via Chrome OS-registrering.
 
       Hvis denne politik angives til Falsk, kan brugerne ikke indløse kampagnetilbud.</translation>
-<translation id="8148901634826284024">Aktivér tilgængelighedsfunktionen Høj kontrast.
+<translation id="8148901634826284024">Aktivér hjælpefunktionen Høj kontrast.
 
-          Hvis denne politik indstilles til sand, vil høj kontrast altid være aktiveret.
+          Hvis denne politik angives som sand, vil høj kontrast altid være aktiveret.
 
-          Hvis denne politik indstilles til falsk, vil høj kontrast altid være deaktiveret.
+          Hvis denne politik angives som falsk, vil høj kontrast altid være deaktiveret.
 
-          Hvis du indstiller denne politik, kan brugerne ikke ændre eller tilsidesætte den.
+          Hvis du angiver denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
-          Hvis denne politik ikke indstilles, vil høj kontrast være deaktiveret, men brugeren kan når som helst slå funktionen til.</translation>
+          Hvis denne politik ikke angives, vil høj kontrast være deaktiveret, men brugeren kan når som helst slå funktionen til.</translation>
 <translation id="6177482277304066047">Indstiller en målversion for automatiske opdateringer.
 
       Angiver præfikset for en målversion, som <ph name="PRODUCT_OS_NAME"/> skal opdatere til. Hvis enheden kører med en version, der er ældre end det angivne præfiks, opdateres den til den seneste version med det angivne præfiks. Hvis enheden allerede har en nyere version, har det ingen effekt (dvs. ingen nedgraderinger), og enhedens version ændres ikke. Præfiksformatet virker i forhold til komponenten, som det ses i følgende eksempel:
@@ -783,15 +790,15 @@
 <translation id="8451988835943702790">Brug siden Ny fane som startside</translation>
 <translation id="4617338332148204752">Spring kontrol af metatag over i <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="8469342921412620373">Muliggør brug af en standardsøgemaskine. Hvis du aktiverer denne indstilling, foretages der en standardsøgning, når brugeren skriver i omnifeltet, hvis det ikke er en webadresse. Du kan angive den standardsøgemaskine, der skal anvendes, ved at angive resten af ​​politikkerne for standardsøgning. Hvis disse ikke udfyldes, kan brugeren vælge standardudbyderen. Hvis du deaktiverer denne indstilling, foretages der ingen søgning, når brugeren indtaster tekst, der ikke er en webadresse, i omnifeltet. Hvis du aktiverer eller deaktiverer denne indstilling, kan brugerne ikke ændre eller tilsidesætte denne indstilling i <ph name="PRODUCT_NAME"/>. Hvis denne politik ikke angives, aktiveres standardsøgeudbyderen, og brugeren vil kunne angive listen over søgemaskiner.</translation>
-<translation id="4791031774429044540">Aktivér tilgængelighedsfunktionen Stor markør.
+<translation id="4791031774429044540">Aktivér hjælpefunktionen Stor markør.
 
-          Hvis denne politik indstilles til sand, vil den store markør altid være aktiveret.
+          Hvis denne politik angives som sand, vil den store markør altid være aktiveret.
 
-          Hvis denne politik indstilles til falsk, vil den store markør altid være deaktiveret.
+          Hvis denne politik angives som falsk, vil den store markør altid være deaktiveret.
 
-          Hvis du indstiller denne politik, kan brugerne ikke ændre eller tilsidesætte den.
+          Hvis du angiver denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
-          Hvis denne politik ikke indstilles, deaktiveres den store markør, men brugeren kan når som helst slå funktionen til.</translation>
+          Hvis denne politik ikke angives, deaktiveres den store markør, men brugeren kan når som helst slå funktionen til.</translation>
 <translation id="2633084400146331575">Aktivér talefeedback</translation>
 <translation id="8731693562790917685">Indstillinger for indhold giver dig mulighed for at angive, hvordan en bestemt type indhold (for eksempel cookies, billeder eller JavaScript) skal behandles.</translation>
 <translation id="2411919772666155530">Bloker meddelelser på disse websites</translation>
@@ -825,7 +832,6 @@
 
       Hvis denne politik er angivet til sand eller ikke er konfigureret, vil det være muligt at oprette nye brugerkonti, såfremt <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ikke forhindrer brugeren i at logge ind.</translation>
 <translation id="4389091865841123886">Konfigurer fjernattestering med TPM-mekanismen</translation>
-<translation id="3518214502751233558">Angiv, om strømstyringsforsinkelser og begrænsning af sessionslængden kun skal begynde at køre, efter en indledende brugeraktivitet er registreret i en session</translation>
 <translation id="8256688113167012935">Styrer det kontonavn, som <ph name="PRODUCT_OS_NAME"/> viser på loginskærmen for den tilsvarende enhedslokale konto.
 
       Hvis denne politik er indstillet, bruger loginskærmen den angivne streng i den billedbaserede loginvælger for den tilsvarende enhedslokale konto.
@@ -875,15 +881,15 @@
 
       Hvis denne indstilling angives til sand eller ikke konfigureret, kan brugerne benytte alle understøttede lydudgange på deres enhed.</translation>
 <translation id="5761030451068906335">Konfigurerer proxyindstillinger for <ph name="PRODUCT_NAME"/>. Denne politik er ikke klar til brug endnu, så brug den ikke.</translation>
-<translation id="3006443857675504368">Vis valgmulighederne for tilgængelighed i <ph name="PRODUCT_OS_NAME"/> i systemmenuen.
+<translation id="3006443857675504368">Vis indstillingerne for hjælpefunktioner i <ph name="PRODUCT_OS_NAME"/> i systemmenuen.
 
-          Hvis denne politik er angivet til sand, vises valgmulighederne for tilgængelighed altid i systembakkemenuen.
+          Hvis denne politik er angivet som sand, vises indstillingerne for hjælpefunktioner altid i systembakkemenuen.
 
-          Hvis denne politik er angivet til falsk, vises valgmulighederne for tilgængelighed aldrig i systembakkemenuen.
+          Hvis denne politik er angivet som falsk, vises indstillingerne for hjælpefunktioner aldrig i systembakkemenuen.
 
           Hvis du angiver denne politik, kan brugerne ikke tilsidesætte den.
 
-          Hvis denne politik ikke angives, vises valgmulighederne for tilgængelighed ikke i systembakkemenuen, men brugeren kan selv aktivere visningen af valgmuligheder for tilgængelighed via siden Indstillinger.</translation>
+          Hvis denne politik ikke angives, vises indstillingerne for hjælpefunktioner ikke i systembakkemenuen, men brugeren kan selv aktivere visningen af indstillinger for hjælpefunktioner på siden Indstillinger.</translation>
 <translation id="8344454543174932833">Importer bogmærker fra standardbrowser ved første visning</translation>
 <translation id="1019101089073227242">Angiv brugerdatamappe</translation>
 <translation id="5826047473100157858">Angiver, om brugeren kan åbne sider i inkognitotilstand i <ph name="PRODUCT_NAME"/>. Hvis &quot;Aktiveret&quot; er valgt, eller hvis politikken ikke angives, kan siderne åbnes i inkognitotilstand. Hvis &quot;Deaktiveret&quot; er valgt, kan sider ikke åbnes i inkognitotilstand. Hvis &quot;Tvunget&quot; er valgt, kan siderne kun åbnes i inkognitotilstand.</translation>
@@ -1029,15 +1035,15 @@
 <translation id="5058056679422616660">Automatiske opdateringsdata i <ph name="PRODUCT_OS_NAME"/> kan downloades via HTTP i stedet for HTTPS, Dette tillader gennemskuelig HTTP-caching af HTTP-downloads.
 
       Hvis denne politik angives til sand, vil <ph name="PRODUCT_OS_NAME"/> forsøge at downloade automatiske opdateringsdata via HTTP. Hvis politikken angives til falsk eller ikke angives, vil HTTPS blive anvendt til at downloade automatiske opdateringsdata.</translation>
-<translation id="1468307069016535757">Indstil standardtilstanden for tilgængelighedsfunktionen Høj kontrast på loginskærmen.
+<translation id="1468307069016535757">Indstil standardtilstanden for hjælpefunktionen Høj kontrast på loginskærmen.
 
-          Hvis denne politik indstilles til sand, aktiveres høj kontrast, når loginskærmen vises.
+          Hvis denne politik angives som sand, aktiveres høj kontrast, når loginskærmen vises.
 
-          Hvis denne politik indstilles til falsk, deaktiveres høj kontrast, når loginskærmen vises.
+          Hvis denne politik angives som falsk, deaktiveres høj kontrast, når loginskærmen vises.
 
-          Hvis du indstiller denne politik, kan brugerne midlertidigt tilsidesætte den ved at aktivere eller deaktivere Høj kontrast. Brugerens valg er dog ikke endegyldigt, og standarden gendannes, når loginskærmen vises igen, eller hvis brugeren forbliver inaktiv på loginskærmen i et minut.
+          Hvis du angiver denne politik, kan brugerne midlertidigt tilsidesætte den ved at aktivere eller deaktivere Høj kontrast. Brugerens valg er dog ikke endegyldigt, og standarden gendannes, når loginskærmen vises igen, eller hvis brugeren forbliver inaktiv på loginskærmen i et minut.
 
-          Hvis denne politik ikke indstilles, deaktiveres høj kontrast, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere Høj kontrast, og dens status på loginskærmen fastholdes hos brugerne.</translation>
+          Hvis denne politik ikke angives, deaktiveres høj kontrast, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere Høj kontrast, og dens status på loginskærmen fastholdes hos brugerne.</translation>
 <translation id="602728333950205286">Direkte webadresse til standardsøgemaskinen</translation>
 <translation id="3030000825273123558">Aktivér datarapportering</translation>
 <translation id="8465065632133292531">Parametre for direkte webadresse, som bruger POST</translation>
@@ -1102,15 +1108,15 @@
 
           Klienter med fjernadgang påvirkes ikke af denne politikindstilling. De anvender altid &quot;chromoting-client.talkgadget.google.com&quot; til at få adgang til TalkGadget.</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
-<translation id="6915442654606973733">Aktivér tilgængelighedsfunktionen Talefeedback.
+<translation id="6915442654606973733">Aktivér hjælpefunktionen Talefeedback.
 
-          Hvis denne politik indstilles til sand, vil talefeedback altid være aktiveret.
+          Hvis denne politik angives som sand, vil talefeedback altid være aktiveret.
 
-          Hvis denne politik indstilles til falsk, vil talefeedback altid være deaktiveret.
+          Hvis denne politik angives som falsk, vil talefeedback altid være deaktiveret.
 
-          Hvis du indstiller denne politik, kan brugerne ikke ændre eller tilsidesætte den.
+          Hvis du angiver denne politik, kan brugerne ikke ændre eller tilsidesætte den.
 
-          Hvis denne politik ikke indstilles, vil talefeedback være deaktiveret, men brugeren kan når som helst slå funktionen til.</translation>
+          Hvis denne politik ikke angives, vil talefeedback være deaktiveret, men brugeren kan når som helst slå funktionen til.</translation>
 <translation id="7796141075993499320">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, som må køre plugins. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken &quot;DefaultPluginsSetting&quot;, hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="3809527282695568696">Hvis &quot;Åbn en liste over webadresser&quot; er valgt som starthandling, kan du angive listen over webadresser, der skal åbnes. Hvis dette ikke angives, åbnes der ingen webadresser ved opstart. Denne politik fungerer kun, hvis politikken &quot;RestoreOnStartup&quot; er angivet som &quot;RestoreOnStartupIsURLs&quot;.</translation>
 <translation id="649418342108050703">Deaktiver understøttelse af API'er til 3D-grafik. Hvis du aktiverer denne indstilling, kan websider ikke få adgang til GPU'en. Specifikt kan websider ikke få adgang til WebGL-API'en, og plugins kan ikke bruge Pepper 3D-API'en. Hvis du deaktiverer denne indstilling, giver du muligvis websider mulighed for at bruge WebGL-API'en og plugins til at bruge Pepper 3D-API'en. Standardindstillingerne for browseren kræver muligvis stadig kommandolinjeargumenter for at blive godkendt til at bruge disse API'er.</translation>
@@ -1124,6 +1130,32 @@
       Når DeviceIdleLogoutTimeout er angivet, definerer denne politik varigheden af advarselsfeltet med en nedtælling, der vises, inden brugeren logges ud.
 
       Politikværdien skal angives i millisekunder.</translation>
+<translation id="54795286564479339">Konfigurer brugerens avatarbillede.
+
+      I henhold til denne politik kan du konfigurere det avatarbillede, der repræsenterer brugeren på loginskærmen. Politikken angives ved at angive den webadresse, hvorfra <ph name="PRODUCT_OS_NAME"/> kan downloade avatarbilledet samt en kryptografisk hash-kode, der bruges til at bekræfte downloadens integritet. Billedet skal være i JPEG-format, og størrelsen må ikke overstige 512 kB. Webadressen skal være tilgængelig uden godkendelse.
+
+      Avatarbilledet downloades og cachelagres. Det downloades igen, når webadressen eller hash-koden ændres.
+
+      Politikken skal angives som en streng, der beskriver webadressen og hash-koden i JSON-format i overensstemmelse med følgende skema:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;Den webadresse, hvor avatarbilledet kan downloades.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;SHA-1-hash-koden for avatarbilledet.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Hvis denne politik er angivet, vil <ph name="PRODUCT_OS_NAME"/> downloade og anvende avatarbilledet.
+
+      Hvis du angiver denne politik, kan brugerne ikke ændre eller tilsidesætte den.
+
+      Hvis denne politik ikke angives, kan brugeren vælge det avatarbillede, der repræsenterer ham/hende på loginskærmen.</translation>
 <translation id="237494535617297575">Giver dig mulighed for at oprette en liste over webadressemønstre, der angiver websites, der må vise underretninger. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken &quot;DefaultNotificationsSetting&quot;, hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="7258823566580374486">Aktivér skærmning af eksterne adgangsværter</translation>
 <translation id="5560039246134246593">Tilføj en parameter til hentning af variationbasistal i <ph name="PRODUCT_NAME"/>.
@@ -1438,6 +1470,7 @@
       Hvis denne politik ikke indstilles, vises der ikke nogen Servicevilkår.
 
       Politikken skal indstilles til en webadresse, hvorfra <ph name="PRODUCT_OS_NAME"/> kan downloade servicevilkårene. Servicevilkårene skal være almindelig tekst vist som MIME-tekst. Markering er ikke tilladt.</translation>
+<translation id="2623014935069176671">Vent på første aktivitet fra brugeren</translation>
 <translation id="2660846099862559570">Brug aldrig en proxy</translation>
 <translation id="1435659902881071157">Netværkskonfiguration på enhedsniveau</translation>
 <translation id="2131902621292742709">Skærmnedtoningsforsinkelse, når batteriet bruges</translation>
@@ -1451,7 +1484,7 @@
 <translation id="5512418063782665071">Startsidens webadresse</translation>
 <translation id="2948381198510798695"><ph name="PRODUCT_NAME"/> vil omgå alle proxyer for den værtsliste, der vises her. Denne politik træder kun i kraft, hvis du har valgt indstillinger for manuel proxy i &quot;Vælg, hvordan du vil angive indstillinger for proxyserver&quot;. Denne politik bør ikke angives, hvis du har valgt en anden form for angivelse af proxypolitikker. Få flere detaljerede eksempler på: <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Angiver det antal sekunder, som en enhed på en tilfældig måde maksimalt kan forsinke en download af en opdatering fra det tidspunkt, hvor opdateringen først blev sendt ud til serveren. Enheden kan afsætte en del af denne tid i form af faktisk ventetid og den igangværende tid i form af det antal af opdateringer, der skal kontrolleres. Uanset hvad, er spredningen bundet af en øvre grænse til en konstant mængde af tid, således at en enhed aldrig kommer til at sidde fast og til evig tid vente på, at en opdatering downloades.</translation>
-<translation id="523505283826916779">Indstillinger for tilgængelighed</translation>
+<translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
 <translation id="1948757837129151165">Politikker for HTTP-godkendelse</translation>
 <translation id="5946082169633555022">Betakanal</translation>
 <translation id="7187256234726597551">Hvis den er indstillet til sand, er fjernattestering tilladt for enheden, og der genereres og uploades automatisk et certifikat til Device Management Server.
@@ -1504,15 +1537,15 @@
      Hvis denne politik ikke er angivet, ændres webadressen for variationsbasistallet ikke.</translation>
 <translation id="7049373494483449255">Gør det muligt for <ph name="PRODUCT_NAME"/> at sende dokumenter til <ph name="CLOUD_PRINT_NAME"/> til udskrivning. BEMÆRK! Dette påvirker kun understøttelse af <ph name="CLOUD_PRINT_NAME"/> i <ph name="PRODUCT_NAME"/>. Det forhindrer ikke brugerne i at sende udskriftsjob på websites. Hvis denne indstilling er aktiveret eller ikke er konfigureret, kan brugerne udskrive til <ph name="CLOUD_PRINT_NAME"/> via dialogboksen for udskrivning i <ph name="PRODUCT_NAME"/>. Hvis denne indstilling er deaktiveret, kan brugerne ikke udskrive til <ph name="CLOUD_PRINT_NAME"/> via dialogboksen for udskrivning i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="4088589230932595924">Inkognitotilstand er gennemtvunget</translation>
-<translation id="5862253018042179045">Indstil standardtilstanden for tilgængelighedsfunktionen Talefeedback på loginskærmen.
+<translation id="5862253018042179045">Angiv standardtilstanden for hjælpefunktionen Talefeedback på loginskærmen.
 
-          Hvis denne politik indstilles til sand, aktiveres talefeedback, når loginskærmen vises.
+          Hvis denne politik angives som sand, aktiveres talefeedback, når loginskærmen vises.
 
-          Hvis denne politik indstilles til falsk, deaktiveres talefeedback, når loginskærmen vises.
+          Hvis denne politik angives som falsk, deaktiveres talefeedback, når loginskærmen vises.
 
-          Hvis du indstiller denne politik, kan brugerne midlertidigt tilsidesætte den ved at aktivere eller deaktivere talefeedback. Brugerens valg er dog ikke endegyldigt, og standarden gendannes, når loginskærmen vises igen, eller hvis brugeren forbliver inaktiv på loginskærmen i et minut.
+          Hvis du angiver denne politik, kan brugerne midlertidigt tilsidesætte den ved at aktivere eller deaktivere talefeedback. Brugerens valg er dog ikke endegyldigt, og standarden gendannes, når loginskærmen vises igen, eller hvis brugeren forbliver inaktiv på loginskærmen i et minut.
 
-          Hvis denne politik ikke indstilles, deaktiveres talefeedback, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere talefeedback, og dens status på loginskærmen fastholdes hos brugerne.</translation>
+          Hvis denne politik ikke angives, deaktiveres talefeedback, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere talefeedback, og dens status på loginskærmen fastholdes hos brugerne.</translation>
 <translation id="8197918588508433925">Denne politik angiver de tilladte udvidelser til brug af Enterprise Platform Keys API chrome.enterprise.platformKeysPrivate.challengeUserKey() til fjernattestering. Udvidelser skal føjes til denne liste for at kunne anvende API'en
 
           Hvis en udvidelse ikke findes på listen, eller listen ikke er angivet, mislykkes kaldet til API'en med en fejlkode.</translation>

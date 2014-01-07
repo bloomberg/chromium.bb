@@ -309,6 +309,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Apabila dasar ini tidak ditetapkan, panjang masa lalai digunakan.
 
           Nilai dasar harus dinyatakan dalam milisaat.</translation>
+<translation id="6598235178374410284">Imej avatar pengguna</translation>
 <translation id="1675391920437889033">Mengawal jenis apl/pelanjutan yang boleh dipasang.
 
           Tetapan ini menyenarai putih jenis pelanjutan/apl dibenarkan yang boleh dipasang dalam <ph name="PRODUCT_NAME"/>. Nilainya merupakan senarai rentetan, yang setiap satunya harus salah satu yang berikut: &quot;extension&quot;, &quot;theme&quot;, &quot;user_script&quot;, &quot;hosted_app&quot;, &quot;legacy_packaged_app&quot;, &quot;platform_app&quot;. Lihat dokumentasi pelanjutan Chrome untuk mendapatkan maklumat lanjut tentang jenis ini.
@@ -490,6 +491,11 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="4894257424747841850">Laporkan senarai pengguna peranti yang telah log masuk baru-baru ini.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, pengguna tidak akan dilaporkan.</translation>
+<translation id="2488010520405124654">Dayakan gesaan konfigurasi rangkaian semasa di luar talian.
+
+      Jika dasar ini dinyahtetapkan atau ditetapkan kepada True dan akaun setempat peranti dikonfigurasikan kepada autolog masuk tanpa lengah dan peranti tiada akses kepada Internet, <ph name="PRODUCT_OS_NAME"/> akan menunjukkan gesaan konfigurasi rangkaian.
+
+      Jika dasar ini ditetapkan kepada Palsu, mesej ralat akan dipaparkan dan bukannya gesaan konfigurasi rangkaian.</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="4897928009230106190">Menentukan parameter yang digunakan apabila melakukan carian cadangan dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {searchTerms} dalam contoh di atas, nilai ini akan digantikan dengan data istilah carian sebenar.
 
@@ -738,6 +744,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="1098794473340446990">Laporkan masa aktiviti peranti.
 
       Jika tetapan ini ditetapkan kepada Benar, peranti yang didaftarkan akan melaporkan tempoh masa apabila pengguna aktif menggunakan peranti. Jika tetapan ini tidak ditetapkan atau ditetapkan kepada Tidak Benar, masa aktiviti peranti tidak akan direkodkan atau dilaporkan.</translation>
+<translation id="1327466551276625742">Dayakan gesaan konfigurasi rangkaian apabila di luar talian</translation>
 <translation id="7937766917976512374">Benarkan atau nafikan rakaman video</translation>
 <translation id="427632463972968153">Menentukan parameter yang digunakan apabila melakukan carian imej dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {imageThumbnail} dalam contoh di atas, nilai ini akan digantikan dengan data lakaran kecil imej yang sebenar.
 
@@ -963,7 +970,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Jika dasar ini ditetapkan sebagai benar atau tidak dikonfigurasi, akaun pengguna baharu akan dibenarkan dicipta dengan syarat <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> tidak menghalang pengguna daripada log masuk.</translation>
 <translation id="4389091865841123886">Konfigurasikan pembuktian jauh dengan mekanisme TPM.</translation>
-<translation id="3518214502751233558">Tetapkan sama ada lengah pengurusan kuasa dan had tempoh sesi hanya harus mula dijalankan selepas aktiviti pengguna awal dalam sesi</translation>
 <translation id="8256688113167012935">Mengawal nama akaun yang <ph name="PRODUCT_OS_NAME"/> paparkan pada skrin log masuk untuk akaun setempat peranti yang sepadan.
 
       Jika dasar ini ditetapkan, skrin log masuk akan menggunakan rentetan yang dinyatakan dalam pemilih log masuk berasaskan gambar untuk akaun setempat peranti yang sepadan.
@@ -1344,6 +1350,32 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Apabila DeviceIdleLogoutTimeout ditetapkan, dasar ini mentakrifkan tempoh kotak amaran dengan pemasa kira turun yang dipaparkan kepada pengguna sebelum log keluar dilaksanakan.
 
       Nilai dasar ini harus ditetapkan dalam milisaat.</translation>
+<translation id="54795286564479339">Konfigurasikan imej avatar pengguna.
+
+      Dasar ini membenarkan anda mengkonfigurasikan imej avatar yang mewakili pengguna pada skrin log masuk. Dasar ditetapkan dengan menentukan URL yang melaluinya <ph name="PRODUCT_OS_NAME"/> dapat memuat turun imej avatar dan cincangan kriptografi yang digunakan untuk mengesahkan integriti muat turun itu. Imej hendaklah dalam format JPEG dan saiznya tidak boleh melebihi 512 kB. URL mestilah boleh diakses tanpa sebarang pengesahan.
+
+      Imej avatar dimuat turun dan dicache. Imej akan dimuat turun semula setiap kali URL atau cincangan berubah.
+
+      Dasar hendaklah ditetapkan sebagai rentetan yang menyatakan URL dan cincangan dalam format JSON, dengan mematuhi skema berikut:
+      {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;url&quot;: {
+            &quot;description&quot;: &quot;URL yang melaluinya imej avatar dapat dimuat turun.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;hash&quot;: {
+            &quot;description&quot;: &quot;Cincangan SHA-1 bagi imej avatar.&quot;,
+            &quot;type&quot;: &quot;string&quot;
+          }
+        }
+      }
+
+      Jika dasar ini ditetapkan, <ph name="PRODUCT_OS_NAME"/> akan memuat turun dan menggunakan imej avatar.
+
+      Jika anda menetapkan dasar ini, pengguna tidak boleh menukar atau membatalkannya.
+
+      Jika dasar dibiarkan tanpa penetapan, pengguna boleh memilih imej avatar yang mewakili dirinya pada skrin log masuk.</translation>
 <translation id="237494535617297575">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk memaparkan pemberitahuan.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -1739,6 +1771,7 @@ Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai 'MultiProfileUserBehavior
       Jika dasar ini tidak ditetapkan, tiada Syarat Perkhidmatan akan dipaparkan.
 
       Dasar ini harus ditetapkan kepada URL yang <ph name="PRODUCT_OS_NAME"/> boleh gunakan untuk memuat turun Syarat Perkhidmatan. Syarat Perkhidmatan mestilah dalam teks biasa, bertindak sebagai teks jenis MIME/biasa. Penanda tidak dibenarkan.</translation>
+<translation id="2623014935069176671">Tunggu aktiviti pengguna awal</translation>
 <translation id="2660846099862559570">Jangan sekali-kali menggunakan proksi</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
 <translation id="2131902621292742709">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa bateri</translation>

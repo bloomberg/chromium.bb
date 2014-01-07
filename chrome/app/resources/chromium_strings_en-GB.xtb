@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="6676384891291319759">Access the Internet</translation>
+<translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. All rights reserved.</translation>
 <translation id="6373523479360886564">Are you sure you want to uninstall Chromium?</translation>
 <translation id="5065199687811594072">Do you want Chromium to save this credit card information for completing web forms?</translation>
 <translation id="6510925080656968729">Uninstall Chromium</translation>
@@ -28,7 +29,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3549345495227188780">Get Started with Chromium OS</translation>
 <translation id="4330297532943865716">A conflicting installation of Chromium or Chromium Frame was found on the system. Please uninstall it and try again.</translation>
 <translation id="6953661834318318668">Chromium Toolbar</translation>
-<translation id="2245147136185581459">Chromium Captive Portal detector</translation>
 <translation id="4285930937574705105">Installation failed due to unspecified error. If Google Chrome is currently running, please close it and try again.</translation>
 <translation id="1396446129537741364">Chromium is trying to show passwords.</translation>
 <translation id="3555616473548901994">Uninstallation complete.</translation>
@@ -62,7 +62,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="7771626876550251690">In this case, the address listed in the certificate does not match the address of the website your browser tried to go to. One possible reason for this is that your communications are being intercepted by an attacker who is presenting a certificate for a different website, which would cause a mismatch. Another possible reason is that the server is set up to return the same certificate for multiple websites, including the one you are attempting to visit, even though that certificate is not valid for all of those websites. Chromium can say for sure that you reached &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, but cannot verify that that is the same site as &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; which you intended to reach. If you proceed, Chromium will not check for any further name mismatches.</translation>
 <translation id="4330585738697551178">This module is known to conflict with Chromium.</translation>
 <translation id="3190315855212034486">Whoa! Chromium has crashed. Relaunch now?</translation>
-<translation id="3590194807845837023">Unlock Profile and Relaunch</translation>
 <translation id="6714487516757221107">No installation of Chromium or Chromium Frame found to update.</translation>
 <translation id="3197823471738295152">Your device is up to date.</translation>
 <translation id="8551886023433311834">Nearly up to date! Restart your device to finish updating.</translation>
@@ -155,6 +154,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="6717134281241384636">Your profile can not be used because it is from a newer version of Chromium.
 
 Some features may be unavailable. Please specify a different profile directory or use a newer version of Chromium.</translation>
+<translation id="8907580949721785412">Chromium is trying to show passwords. Type your Windows password to allow this.</translation>
 <translation id="9013087743919948559">Add to Chromium</translation>
 <translation id="6212496753309875659">This computer already has a more recent version of Chromium. If the software is not working, please uninstall Chromium and try again.</translation>
 <translation id="1298199220304005244">Get help with using Chromium OS</translation>
@@ -198,7 +198,6 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="805745970029938373">You can see all your notifications from Chromium apps, extensions and websites here.</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
 <translation id="1708666629004767631">There's a new, safer version of Chromium available.</translation>
-<translation id="1539981464052805551">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="8724049448828509830">A download is currently in progress. Do you want to exit Chromium and cancel the download?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>

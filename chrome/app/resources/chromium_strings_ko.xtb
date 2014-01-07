@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="6676384891291319759">인터넷 연결</translation>
+<translation id="8586442755830160949">Copyright <ph name="YEAR"/> The Chromium Authors. All rights reserved.</translation>
 <translation id="6373523479360886564">Chromium을 제거하시겠습니까?</translation>
 <translation id="5065199687811594072">웹 양식을 작성하기 위해 Chromium에서 신용카드 정보를 저장해도 되겠습니까?</translation>
 <translation id="6510925080656968729">Chromium 설치 제거</translation>
@@ -22,13 +23,12 @@
 <translation id="7128196614940529818">Chromium 프레임이 이미 설치되어 컴퓨터의 모든 사용자가 사용할 수 있습니다. 사용자 수준에서 Chromium 프레임을 설치하려면, 먼저 관리자가 설치한 시스템 수준의 버전을 제거합니다.</translation>
 <translation id="731644333568559921">Chrome OS 업데이트</translation>
 <translation id="7421823331379285070">Chromium에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
-<translation id="7023267510504981715">Google 지갑을 사용하려면 Chromium을 업그레이드해야 합니다. [<ph name="ERROR_CODE"/>]</translation>
+<translation id="7023267510504981715">Google 월렛을 사용하려면 Chromium을 업그레이드해야 합니다. [<ph name="ERROR_CODE"/>]</translation>
 <translation id="7419987137528340081">기존 Chromium 데이터를 별도로 보관하려는 경우 <ph name="USER_NAME"/>의 새로운 Chromium 사용자를 만들 수 있습니다.</translation>
 <translation id="8030318113982266900">기기를 <ph name="CHANNEL_NAME"/> 채널로 업데이트하는 중...</translation>
 <translation id="3549345495227188780">Chromium OS 시작하기</translation>
 <translation id="4330297532943865716">Chromium 또는 Chromium 프레임을 시스템에 설치하던 중 이전 설치와 충돌이 발생했습니다. 제거한 다음 다시 시도해 보세요</translation>
 <translation id="6953661834318318668">Chromium 툴바</translation>
-<translation id="2245147136185581459">Chromium 웹포털 인증 감지기</translation>
 <translation id="4285930937574705105">확인되지 않은 오류로 설치에 실패했습니다. Chromium이 실행 중인 경우 종료한 후 다시 실행하세요.</translation>
 <translation id="1396446129537741364">Chromium이 비밀번호를 표시하려고 합니다.</translation>
 <translation id="3555616473548901994">제거를 완료했습니다.</translation>
@@ -51,7 +51,7 @@
 <translation id="4831257561365056138">Chromium 앱 실행기 제거</translation>
 <translation id="4222580632002216401">Chromium에 로그인했습니다! 관리자가 동기화를 사용 중지했습니다.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>경고:<ph name="END_BOLD"/> Chromium은 확장 프로그램이 인터넷 사용기록을 저장하지 못하도록 할 수 없습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
-<translation id="4516868174453854611">이제 로그인했으므로 노트북, 휴대전화 및 태블릿에서 탭과 북마크, 기타 Chromium 콘텐츠를 가져올 수 있습니다. 또한 Google 서비스에서 더 관련성 높은 추천을 받고 기능을 사용할 수 있습니다.</translation>
+<translation id="4516868174453854611">이제 로그인했으므로 노트북, 휴대전화 및 태블릿에서 탭과 북마크, 기타 Chromium 콘텐츠를 사용할 수 있습니다. 또한 Google 서비스에서 더 관련성 높은 추천검색어와 기능이 제공됩니다.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">Chromium은 인쇄 미리보기에 필요한 PDF 뷰어가 포함되어 있지 않습니다.</translation>
 <translation id="7138853919861947730">Chromium은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
@@ -61,7 +61,6 @@
 <translation id="7771626876550251690">이러한 경우 인증서에 표시된 주소는 브라우저가 이동하려고 하는 웹사이트 주소와 일치하지 않습니다. 이것은 누군가가 다른 웹사이트의 인증서로 사용자의 서버 통신을 가로채고 있기 때문일 수 있습니다. 또는 인증서가 모든 웹사이트에 유효하지 않음에도 서버가 여러 웹사이트에 동일한 인증서를 사용하도록 설정되어 있기 때문일 수도 있습니다. Chromium을 사용하면 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;에 접속할 수 있지만 이것이 사용자가 의도한 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;와(과) 동일한 사이트인지는 확인할 수 없습니다. 이후에도 Chromium은 이름 불일치를 확인하지 않습니다.</translation>
 <translation id="4330585738697551178">이 모듈은 Chromium과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="3190315855212034486">Chromium이 다운되었습니다. 다시 시작하시겠습니까?</translation>
-<translation id="3590194807845837023">프로필 잠금 해제 및 다시 시작</translation>
 <translation id="6714487516757221107">업데이트할 Chromium 또는 Chromium 프레임이 없습니다.</translation>
 <translation id="3197823471738295152">기기가 최신 버전입니다.</translation>
 <translation id="8551886023433311834">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 기기를 다시 시작하세요.</translation>
@@ -133,7 +132,7 @@
 <translation id="3582788516608077514">Chromium 업데이트 중...</translation>
 <translation id="7223968959479464213">작업 관리자 - Chromium</translation>
 <translation id="3838208658251026018">Chromium이 <ph name="BROWSER_COMPONENT"/>에서 다음 항목을 가져오는 중입니다.</translation>
-<translation id="1779356040007214683">Google에서는 Chromium의 안전을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
+<translation id="1779356040007214683">Google에서는 Chromium의 보안을 강화하기 위해 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>에 표시되지 않고 사용자 모르게 추가되었을 수 있는 일부 확장 프로그램의 사용을 중지했습니다.</translation>
 <translation id="6638567566961868659">Chromium 메뉴 또는 북마크바에서 북마크를 검색합니다.</translation>
 <translation id="2673087257647337101">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 Chromium을 다시 시작하세요.</translation>
 <translation id="5398878173008909840">Chromium의 새 버전이 출시되었습니다.</translation>
@@ -152,6 +151,7 @@
 <translation id="6717134281241384636">Chromium의 최신 버전을 사용하기 때문에 프로필을 사용할 수 없습니다.
 
 일부 기능을 사용할 수 없습니다. 다른 프로필 디렉토리를 지정하거나 Chromium의 새로운 버전을 사용하시기 바랍니다.</translation>
+<translation id="8907580949721785412">Chromium에서 비밀번호를 표시하려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="9013087743919948559">Chromium에 추가</translation>
 <translation id="6212496753309875659">컴퓨터에 이미 최신 버전의 Chromium이 있습니다. 소프트웨어가 작동하지 않으면 Chromium의 설치를 제거한 뒤 다시 시도하세요.</translation>
 <translation id="1298199220304005244">Chromium OS 사용에 대한 도움말</translation>
@@ -194,7 +194,6 @@
 <translation id="805745970029938373">Chromium 앱, 확장 프로그램 및 웹사이트의 모든 알림을 여기에서 볼 수 있습니다.</translation>
 <translation id="2119636228670142020">Chromium OS 정보</translation>
 <translation id="1708666629004767631">새롭고 안전한 Chromium의 새 버전을 사용할 수 있습니다.</translation>
-<translation id="1539981464052805551">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
 <translation id="8724049448828509830">현재 한 개의 다운로드가 진행 중입니다. Chromium을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="3360567213983886831">Chromium 바이너리</translation>
