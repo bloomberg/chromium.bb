@@ -90,7 +90,7 @@ static int is_irt_interface_whitelisted(const char *interface_name) {
   return 0;
 }
 
-TYPE_nacl_irt_query __pnacl_real_irt_interface;
+TYPE_nacl_irt_query __pnacl_real_irt_interface = NULL;
 
 /*
  * These remember the interface pointers the user registers by calling the
