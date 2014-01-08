@@ -84,7 +84,7 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
                        disposition, create_flags, NULL));
 
   if (file_.IsValid()) {
-    error_ = FILE_OK;
+    error_details_ = FILE_OK;
     async_ = ((flags & FLAG_ASYNC) == FLAG_ASYNC);
 
     if (flags & (FLAG_OPEN_ALWAYS))
@@ -92,7 +92,7 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
     else if (flags & (FLAG_CREATE_ALWAYS | FLAG_CREATE))
       created_ = true;
   } else {
-    error_ = OSErrorToFileError(GetLastError());
+    error_details_ = OSErrorToFileError(GetLastError());
   }
 }
 

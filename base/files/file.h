@@ -172,7 +172,7 @@ class BASE_EXPORT File {
   bool created() const { return created_; }
 
   // Returns the OS result of opening this file.
-  Error error() const { return error_; }
+  Error error_details() const { return error_details_; }
 
   PlatformFile GetPlatformFile() const { return file_; }
   PlatformFile TakePlatformFile();
@@ -276,7 +276,7 @@ class BASE_EXPORT File {
   PlatformFile file_;
 #endif
 
-  Error error_;
+  Error error_details_;
   bool created_;
   bool async_;
 };

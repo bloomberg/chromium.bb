@@ -20,7 +20,7 @@ TEST(File, Create) {
     // Open a file that doesn't exist.
     File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     EXPECT_FALSE(file.IsValid());
-    EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, file.error());
+    EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND, file.error_details());
   }
 
   {
@@ -28,7 +28,7 @@ TEST(File, Create) {
     File file(file_path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ);
     EXPECT_TRUE(file.IsValid());
     EXPECT_TRUE(file.created());
-    EXPECT_EQ(base::File::FILE_OK, file.error());
+    EXPECT_EQ(base::File::FILE_OK, file.error_details());
   }
 
   {
@@ -36,7 +36,7 @@ TEST(File, Create) {
     File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     EXPECT_TRUE(file.IsValid());
     EXPECT_FALSE(file.created());
-    EXPECT_EQ(base::File::FILE_OK, file.error());
+    EXPECT_EQ(base::File::FILE_OK, file.error_details());
 
     // This time verify closing the file.
     file.Close();
@@ -49,7 +49,7 @@ TEST(File, Create) {
     file.Initialize(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
     EXPECT_TRUE(file.IsValid());
     EXPECT_FALSE(file.created());
-    EXPECT_EQ(base::File::FILE_OK, file.error());
+    EXPECT_EQ(base::File::FILE_OK, file.error_details());
 
     // This time verify closing the file.
     file.Close();
@@ -61,7 +61,7 @@ TEST(File, Create) {
     File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_READ);
     EXPECT_FALSE(file.IsValid());
     EXPECT_FALSE(file.created());
-    EXPECT_EQ(base::File::FILE_ERROR_EXISTS, file.error());
+    EXPECT_EQ(base::File::FILE_ERROR_EXISTS, file.error_details());
   }
 
   {
@@ -70,7 +70,7 @@ TEST(File, Create) {
               base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_READ);
     EXPECT_TRUE(file.IsValid());
     EXPECT_TRUE(file.created());
-    EXPECT_EQ(base::File::FILE_OK, file.error());
+    EXPECT_EQ(base::File::FILE_OK, file.error_details());
   }
 
   {
@@ -81,7 +81,7 @@ TEST(File, Create) {
                   base::File::FLAG_DELETE_ON_CLOSE);
     EXPECT_TRUE(file.IsValid());
     EXPECT_TRUE(file.created());
-    EXPECT_EQ(base::File::FILE_OK, file.error());
+    EXPECT_EQ(base::File::FILE_OK, file.error_details());
   }
 
   EXPECT_FALSE(base::PathExists(file_path));
@@ -98,7 +98,7 @@ TEST(File, DeleteOpenFile) {
                 base::File::FLAG_SHARE_DELETE);
   EXPECT_TRUE(file.IsValid());
   EXPECT_TRUE(file.created());
-  EXPECT_EQ(base::File::FILE_OK, file.error());
+  EXPECT_EQ(base::File::FILE_OK, file.error_details());
 
   // Open an existing file and mark it as delete on close.
   File same_file(file_path,
@@ -106,7 +106,7 @@ TEST(File, DeleteOpenFile) {
                      base::File::FLAG_READ);
   EXPECT_TRUE(file.IsValid());
   EXPECT_FALSE(same_file.created());
-  EXPECT_EQ(base::File::FILE_OK, same_file.error());
+  EXPECT_EQ(base::File::FILE_OK, same_file.error_details());
 
   // Close both handles and check that the file is gone.
   file.Close();

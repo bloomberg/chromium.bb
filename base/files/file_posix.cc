@@ -147,7 +147,7 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
   if (!open_flags && !(flags & FLAG_OPEN) && !(flags & FLAG_OPEN_ALWAYS)) {
     NOTREACHED();
     errno = EOPNOTSUPP;
-    error_ = FILE_ERROR_FAILED;
+    error_details_ = FILE_ERROR_FAILED;
     return;
   }
 
@@ -198,9 +198,9 @@ void File::InitializeUnsafe(const FilePath& name, uint32 flags) {
     unlink(name.value().c_str());
 
   if (descriptor >= 0)
-    error_ = FILE_OK;
+    error_details_ = FILE_OK;
   else
-    error_ = File::OSErrorToFileError(errno);
+    error_details_ = File::OSErrorToFileError(errno);
 
   file_ = descriptor;
 }
