@@ -61,10 +61,17 @@ PartitionBucket PartitionRootBase::gPagedBucket;
 
 static size_t partitionBucketNumSystemPages(size_t size)
 {
+    // TODO: Remove this once the more comprehensive solution is landed.
+    // This is a temporary bandaid to fix a Mac performance issue. Mac has poor page
+    // fault performance so we limit the freelist thrash of these popular sizes by
+    // allocating them in bigger slabs.
+    if (size == 16384 || size == 8192 || size == 4096)
+        return kMaxSystemPagesPerSlotSpan;
     // This works out reasonably for the current bucket sizes of the generic
     // allocator, and the current values of partition page size and constants.
     // Specifically, we have enough room to always pack the slots perfectly into
-    // some number of system pages. The only waste is the waste associated with     // unfaulted pages (i.e. wasted address space).
+    // some number of system pages. The only waste is the waste associated with
+    // unfaulted pages (i.e. wasted address space).
     // TODO: we end up using a lot of system pages for very small sizes. For
     // example, we'll use 12 system pages for slot size 24. The slot size is
     // so small that the waste would be tiny with just 4, or 1, system pages.
@@ -286,7 +293,6 @@ bool partitionAllocShutdown(PartitionRoot* root)
     partitionAllocBaseShutdown(root);
     return noLeaks;
 }
-
 
 bool partitionAllocGenericShutdown(PartitionRootGeneric* root)
 {

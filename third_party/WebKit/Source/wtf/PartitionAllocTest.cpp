@@ -488,7 +488,9 @@ TEST(WTF_PartitionAlloc, GenericAllocSizes)
     partitionFreeGeneric(genericAllocator.root(), ptr);
     // Should have freelisted at this point.
     WTF::PartitionPage* page = WTF::partitionPointerToPage(WTF::partitionCookieFreePointerAdjust(ptr));
+#if 0 // Temporarily disabled, see crbug.com/332282
     EXPECT_TRUE(page->bucket->freePagesHead);
+#endif
     partitionFreeGeneric(genericAllocator.root(), ptr2);
 
     size = WTF::kGenericMaxBucketed - kExtraAllocSize;
