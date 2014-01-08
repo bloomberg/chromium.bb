@@ -99,6 +99,11 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/media/protected_media_identifier_permission_context.h"
+#include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
+#endif  // defined(OS_ANDROID)
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
@@ -977,6 +982,39 @@ void ProfileImpl::CancelMIDISysExPermissionRequest(
       ChromeMIDIPermissionContextFactory::GetForProfile(this);
   context->CancelMIDISysExPermissionRequest(
       render_process_id, render_view_id, bridge_id, requesting_frame);
+}
+
+void ProfileImpl::RequestProtectedMediaIdentifierPermission(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    int group_id,
+    const GURL& requesting_frame,
+    const ProtectedMediaIdentifierPermissionCallback& callback) {
+#if defined(OS_ANDROID)
+  ProtectedMediaIdentifierPermissionContext* context =
+      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(this);
+  context->RequestProtectedMediaIdentifierPermission(render_process_id,
+                                                     render_view_id,
+                                                     bridge_id,
+                                                     group_id,
+                                                     requesting_frame,
+                                                     callback);
+#else
+  NOTIMPLEMENTED();
+  callback.Run(false);
+#endif  // defined(OS_ANDROID)
+}
+
+void ProfileImpl::CancelProtectedMediaIdentifierPermissionRequests(
+    int group_id) {
+#if defined(OS_ANDROID)
+  ProtectedMediaIdentifierPermissionContext* context =
+      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(this);
+  context->CancelProtectedMediaIdentifierPermissionRequests(group_id);
+#else
+  NOTIMPLEMENTED();
+#endif  // defined(OS_ANDROID)
 }
 
 content::ResourceContext* ProfileImpl::GetResourceContext() {

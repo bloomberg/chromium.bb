@@ -82,7 +82,7 @@ class ChromeGeolocationPermissionContext
 
  private:
   // Removes any pending InfoBar request.
-  void CancelPendingInfoBarRequest(const PermissionRequestID& id);
+  void CancelPendingInfobarRequest(const PermissionRequestID& id);
 
   // These must only be accessed from the UI thread.
   Profile* const profile_;

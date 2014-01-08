@@ -55,6 +55,11 @@
 #include "net/http/transport_security_state.h"
 #include "webkit/browser/database/database_tracker.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/media/protected_media_identifier_permission_context.h"
+#include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
+#endif  // defined(OS_ANDROID)
+
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/prefs/proxy_prefs.h"
@@ -319,6 +324,39 @@ void OffTheRecordProfileImpl::CancelMIDISysExPermissionRequest(
       ChromeMIDIPermissionContextFactory::GetForProfile(this);
   context->CancelMIDISysExPermissionRequest(
       render_process_id, render_view_id, bridge_id, requesting_frame);
+}
+
+void OffTheRecordProfileImpl::RequestProtectedMediaIdentifierPermission(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    int group_id,
+    const GURL& requesting_frame,
+    const ProtectedMediaIdentifierPermissionCallback& callback) {
+#if defined(OS_ANDROID)
+  ProtectedMediaIdentifierPermissionContext* context =
+      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(this);
+  context->RequestProtectedMediaIdentifierPermission(render_process_id,
+                                                     render_view_id,
+                                                     bridge_id,
+                                                     group_id,
+                                                     requesting_frame,
+                                                     callback);
+#else
+  NOTIMPLEMENTED();
+  callback.Run(false);
+#endif  // defined(OS_ANDROID)
+}
+
+void OffTheRecordProfileImpl::CancelProtectedMediaIdentifierPermissionRequests(
+    int group_id) {
+#if defined(OS_ANDROID)
+  ProtectedMediaIdentifierPermissionContext* context =
+      ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(this);
+  context->CancelProtectedMediaIdentifierPermissionRequests(group_id);
+#else
+  NOTIMPLEMENTED();
+#endif  // defined(OS_ANDROID)
 }
 
 net::URLRequestContextGetter*

@@ -43,6 +43,8 @@ void ProtectedMediaIdentifierPermissionContext::
     RequestProtectedMediaIdentifierPermission(
         int render_process_id,
         int render_view_id,
+        int bridge_id,
+        int group_id,
         const GURL& requesting_frame,
         const base::Callback<void(bool)>& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -51,7 +53,8 @@ void ProtectedMediaIdentifierPermissionContext::
 
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
-  const PermissionRequestID id(render_process_id, render_view_id, 0);
+  const PermissionRequestID id(
+      render_process_id, render_view_id, bridge_id, group_id);
 
   if (extensions::GetViewType(web_contents) !=
       extensions::VIEW_TYPE_TAB_CONTENTS) {
@@ -79,12 +82,8 @@ void ProtectedMediaIdentifierPermissionContext::
 }
 
 void ProtectedMediaIdentifierPermissionContext::
-    CancelProtectedMediaIdentifierPermissionRequest(
-        int render_process_id,
-        int render_view_id,
-        const GURL& requesting_frame) {
-  CancelPendingInfoBarRequest(
-      PermissionRequestID(render_process_id, render_view_id, 0));
+    CancelProtectedMediaIdentifierPermissionRequests(int group_id) {
+  CancelPendingInfobarRequests(group_id);
 }
 
 void ProtectedMediaIdentifierPermissionContext::DecidePermission(
@@ -186,20 +185,20 @@ PermissionQueueController*
 }
 
 void
-ProtectedMediaIdentifierPermissionContext::CancelPendingInfoBarRequest(
-    const PermissionRequestID& id) {
+ProtectedMediaIdentifierPermissionContext::CancelPendingInfobarRequests(
+    int group_id) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
         FROM_HERE,
         base::Bind(&ProtectedMediaIdentifierPermissionContext::
-                        CancelPendingInfoBarRequest,
+                        CancelPendingInfobarRequests,
                    this,
-                   id));
+                   group_id));
     return;
   }
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (shutting_down_)
     return;
-  QueueController()->CancelInfoBarRequest(id);
+  QueueController()->CancelInfoBarRequests(group_id);
 }

@@ -137,6 +137,8 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CreateSession, OnCreateSession)
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_UpdateSession, OnUpdateSession)
     IPC_MESSAGE_HANDLER(MediaKeysHostMsg_ReleaseSession, OnReleaseSession)
+    IPC_MESSAGE_HANDLER(MediaKeysHostMsg_CancelAllPendingSessionCreations,
+                        OnCancelAllPendingSessionCreations)
 #if defined(VIDEO_HOLE)
     IPC_MESSAGE_HANDLER(MediaPlayerHostMsg_NotifyExternalSurface,
                         OnNotifyExternalSurface)
@@ -592,7 +594,7 @@ void BrowserMediaPlayerManager::OnCreateSession(
 
   if (CommandLine::ForCurrentProcess()
       ->HasSwitch(switches::kDisableInfobarForProtectedMediaIdentifier)) {
-    GenerateKeyIfAllowed(media_keys_id, session_id, type, init_data, true);
+    CreateSessionIfPermitted(media_keys_id, session_id, type, init_data, true);
     return;
   }
 
@@ -608,10 +610,17 @@ void BrowserMediaPlayerManager::OnCreateSession(
       media_keys_ids_approved_.end()) {
     media_keys_ids_pending_approval_.insert(media_keys_id);
   }
-  web_contents()->GetDelegate()->RequestProtectedMediaIdentifierPermission(
-      web_contents(),
+
+  BrowserContext* context =
+      web_contents()->GetRenderProcessHost()->GetBrowserContext();
+
+  context->RequestProtectedMediaIdentifierPermission(
+      web_contents()->GetRenderProcessHost()->GetID(),
+      web_contents()->GetRenderViewHost()->GetRoutingID(),
+      static_cast<int>(session_id),
+      media_keys_id,
       drm_bridge->frame_url(),
-      base::Bind(&BrowserMediaPlayerManager::GenerateKeyIfAllowed,
+      base::Bind(&BrowserMediaPlayerManager::CreateSessionIfPermitted,
                  weak_ptr_factory_.GetWeakPtr(),
                  media_keys_id,
                  session_id,
@@ -659,6 +668,16 @@ void BrowserMediaPlayerManager::OnReleaseSession(int media_keys_id,
   }
 
   drm_bridge->ReleaseSession(session_id);
+}
+
+void BrowserMediaPlayerManager::OnCancelAllPendingSessionCreations(
+    int media_keys_id) {
+  MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
+  if (!drm_bridge) return;
+
+  BrowserContext* context =
+      web_contents()->GetRenderProcessHost()->GetBrowserContext();
+  context->CancelProtectedMediaIdentifierPermissionRequests(media_keys_id);
 }
 
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
@@ -759,14 +778,17 @@ void BrowserMediaPlayerManager::OnSetMediaKeys(int player_id,
   player->SetDrmBridge(drm_bridge);
 }
 
-void BrowserMediaPlayerManager::GenerateKeyIfAllowed(
+void BrowserMediaPlayerManager::CreateSessionIfPermitted(
     int media_keys_id,
     uint32 session_id,
     const std::string& type,
     const std::vector<uint8>& init_data,
-    bool allowed) {
-  if (!allowed)
+    bool permitted) {
+  if (!permitted) {
+    OnSessionError(
+        media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
     return;
+  }
 
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {

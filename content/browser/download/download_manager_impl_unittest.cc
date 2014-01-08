@@ -415,6 +415,16 @@ class MockBrowserContext : public BrowserContext {
                     int render_view_id,
                     int bridge_id,
                     const GURL& requesting_frame));
+  MOCK_METHOD6(RequestProtectedMediaIdentifierPermission,
+               void(int render_process_id,
+                    int render_view_id,
+                    int bridge_id,
+                    int group_id,
+                    const GURL& requesting_frame,
+                    const ProtectedMediaIdentifierPermissionCallback&
+                        callback));
+  MOCK_METHOD1(CancelProtectedMediaIdentifierPermissionRequests,
+               void(int group_id));
   MOCK_METHOD0(GetResourceContext, ResourceContext*());
   MOCK_METHOD0(GetDownloadManagerDelegate, DownloadManagerDelegate*());
   MOCK_METHOD0(GetGeolocationPermissionContext,

@@ -263,6 +263,12 @@ void RendererMediaPlayerManager::ReleaseSession(int media_keys_id,
       routing_id(), media_keys_id, session_id));
 }
 
+void RendererMediaPlayerManager::CancelAllPendingSessionCreations(
+    int media_keys_id) {
+  Send(new MediaKeysHostMsg_CancelAllPendingSessionCreations(
+      routing_id(), media_keys_id));
+}
+
 void RendererMediaPlayerManager::OnSessionCreated(
     int media_keys_id,
     uint32 session_id,

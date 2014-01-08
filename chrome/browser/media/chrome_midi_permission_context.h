@@ -67,7 +67,7 @@ class ChromeMIDIPermissionContext : public BrowserContextKeyedService {
   PermissionQueueController* GetQueueController();
 
   // Removes any pending InfoBar request.
-  void CancelPendingInfoBarRequest(const PermissionRequestID& id);
+  void CancelPendingInfobarRequest(const PermissionRequestID& id);
 
   Profile* const profile_;
   bool shutting_down_;

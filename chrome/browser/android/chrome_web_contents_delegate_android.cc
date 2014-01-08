@@ -325,20 +325,5 @@ void ChromeWebContentsDelegateAndroid::AddNewContents(
     delete new_contents;
 }
 
-void
-ChromeWebContentsDelegateAndroid::RequestProtectedMediaIdentifierPermission(
-    const WebContents* web_contents,
-    const GURL& frame_url,
-    const base::Callback<void(bool)>& callback) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  ProtectedMediaIdentifierPermissionContextFactory::GetForProfile(profile)->
-      RequestProtectedMediaIdentifierPermission(
-            web_contents->GetRenderProcessHost()->GetID(),
-            web_contents->GetRenderViewHost()->GetRoutingID(),
-            frame_url,
-            callback);
-}
-
 }  // namespace android
 }  // namespace chrome

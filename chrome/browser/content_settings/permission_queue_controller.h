@@ -40,6 +40,9 @@ class PermissionQueueController : public content::NotificationObserver {
   // Cancels a specific infobar request.
   void CancelInfoBarRequest(const PermissionRequestID& id);
 
+  // Cancels all infobar requests that match |group_id|.
+  void CancelInfoBarRequests(int group_id);
+
   // Called by the InfoBarDelegate to notify permission has been set.
   // It'll notify and dismiss any other pending InfoBar request for the same
   // |requesting_frame| and embedder.
@@ -56,10 +59,10 @@ class PermissionQueueController : public content::NotificationObserver {
                        const content::NotificationDetails& details) OVERRIDE;
 
  private:
-  class PendingInfoBarRequest;
+  class PendingInfobarRequest;
   class RequestEquals;
 
-  typedef std::vector<PendingInfoBarRequest> PendingInfoBarRequests;
+  typedef std::vector<PendingInfobarRequest> PendingInfobarRequests;
 
   // Returns true if a geolocation infobar is already visible for the tab
   // corresponding to |id|.
@@ -72,7 +75,7 @@ class PermissionQueueController : public content::NotificationObserver {
   // tab.
   void ShowQueuedInfoBarForTab(const PermissionRequestID& id);
 
-  void ClearPendingInfoBarRequestsForTab(const PermissionRequestID& id);
+  void ClearPendingInfobarRequestsForTab(const PermissionRequestID& id);
 
   void RegisterForInfoBarNotifications(InfoBarService* infobar_service);
   void UnregisterForInfoBarNotifications(InfoBarService* infobar_service);
@@ -84,7 +87,7 @@ class PermissionQueueController : public content::NotificationObserver {
 
   Profile* const profile_;
   ContentSettingsType type_;
-  PendingInfoBarRequests pending_infobar_requests_;
+  PendingInfobarRequests pending_infobar_requests_;
   bool in_shutdown_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionQueueController);

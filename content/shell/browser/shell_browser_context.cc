@@ -198,6 +198,20 @@ void ShellBrowserContext::CancelMIDISysExPermissionRequest(
     const GURL& requesting_frame) {
 }
 
+void ShellBrowserContext::RequestProtectedMediaIdentifierPermission(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    int group_id,
+    const GURL& requesting_frame,
+    const ProtectedMediaIdentifierPermissionCallback& callback) {
+  callback.Run(true);
+}
+
+void ShellBrowserContext::CancelProtectedMediaIdentifierPermissionRequests(
+    int group_id) {
+}
+
 net::URLRequestContextGetter*
     ShellBrowserContext::CreateRequestContextForStoragePartition(
         const base::FilePath& partition_path,

@@ -302,6 +302,9 @@ IPC_MESSAGE_ROUTED2(MediaKeysHostMsg_ReleaseSession,
                     int /* media_keys_id */,
                     uint32_t /* session_id */)
 
+IPC_MESSAGE_ROUTED1(MediaKeysHostMsg_CancelAllPendingSessionCreations,
+                    int /* media_keys_id */)
+
 IPC_MESSAGE_ROUTED3(MediaKeysMsg_SessionCreated,
                     int /* media_keys_id */,
                     uint32_t /* session_id */,

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_CONTEXT_H_
 #define CHROME_BROWSER_MEDIA_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_CONTEXT_H_
 
+#include <map>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -28,12 +29,12 @@ class ProtectedMediaIdentifierPermissionContext
   void RequestProtectedMediaIdentifierPermission(
       int render_process_id,
       int render_view_id,
+      int bridge_id,
+      int group_id,
       const GURL& requesting_frame,
       const base::Callback<void(bool)>& callback);
-  void CancelProtectedMediaIdentifierPermissionRequest(
-      int render_process_id,
-      int render_view_id,
-      const GURL& requesting_frame);
+  void CancelProtectedMediaIdentifierPermissionRequests(
+      int group_id);
 
   // Called on the UI thread when the profile is about to be destroyed.
   void ShutdownOnUIThread();
@@ -81,8 +82,8 @@ class ProtectedMediaIdentifierPermissionContext
   // provide additional UI flow.  Called on the UI thread.
   PermissionQueueController* CreateQueueController();
 
-  // Removes any pending InfoBar request.
-  void CancelPendingInfoBarRequest(const PermissionRequestID& id);
+  // Removes pending InfoBar requests that match |group_id|.
+  void CancelPendingInfobarRequests(int group_id);
 
   // These must only be accessed from the UI thread.
   Profile* const profile_;

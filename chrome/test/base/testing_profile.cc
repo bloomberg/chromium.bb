@@ -740,6 +740,21 @@ void TestingProfile::CancelMIDISysExPermissionRequest(
     const GURL& requesting_frame) {
 }
 
+void TestingProfile::RequestProtectedMediaIdentifierPermission(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    int group_id,
+    const GURL& requesting_frame,
+    const ProtectedMediaIdentifierPermissionCallback& callback) {
+  // Always reject requests for testing.
+  callback.Run(false);
+}
+
+void TestingProfile::CancelProtectedMediaIdentifierPermissionRequests(
+    int group_id) {
+}
+
 net::URLRequestContextGetter* TestingProfile::GetRequestContextForExtensions() {
   if (!extensions_request_context_.get())
     extensions_request_context_ = new TestExtensionURLRequestContextGetter();

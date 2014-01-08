@@ -9,10 +9,12 @@
 
 PermissionRequestID::PermissionRequestID(int render_process_id,
                                          int render_view_id,
-                                         int bridge_id)
+                                         int bridge_id,
+                                         int group_id)
     : render_process_id_(render_process_id),
       render_view_id_(render_view_id),
-      bridge_id_(bridge_id) {
+      bridge_id_(bridge_id),
+      group_id_(group_id) {
 }
 
 PermissionRequestID::~PermissionRequestID() {
@@ -29,6 +31,9 @@ bool PermissionRequestID::IsForSameTabAs(
 }
 
 std::string PermissionRequestID::ToString() const {
-  return base::StringPrintf("%d,%d,%d", render_process_id_, render_view_id_,
-                            bridge_id_);
+  return base::StringPrintf("%d,%d,%d,%d",
+                            render_process_id_,
+                            render_view_id_,
+                            bridge_id_,
+                            group_id_);
 }

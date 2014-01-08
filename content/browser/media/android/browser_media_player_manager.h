@@ -150,6 +150,8 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void OnReleaseSession(int media_keys_id, uint32 session_id);
   void OnSetMediaKeys(int player_id, int media_keys_id);
 
+  void OnCancelAllPendingSessionCreations(int media_keys_id);
+
 #if defined(VIDEO_HOLE)
   virtual void OnNotifyExternalSurface(
       int player_id, bool is_request, const gfx::RectF& rect);
@@ -178,11 +180,16 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   void RemoveDrmBridge(int media_keys_id);
 
  private:
-  void GenerateKeyIfAllowed(int media_keys_id,
-                            uint32 session_id,
-                            const std::string& type,
-                            const std::vector<uint8>& init_data,
-                            bool allowed);
+  // If |permitted| is false, it does nothing but send
+  // |MediaKeysMsg_SessionError| IPC message.
+  // The primary use case is infobar permission callback, i.e., when infobar
+  // can decide user's intention either from interacting with the actual info
+  // bar or from the saved preference.
+  void CreateSessionIfPermitted(int media_keys_id,
+                                uint32 session_id,
+                                const std::string& type,
+                                const std::vector<uint8>& init_data,
+                                bool permitted);
 
   // Constructs a MediaPlayerAndroid object. Declared static to permit embedders
   // to override functionality.

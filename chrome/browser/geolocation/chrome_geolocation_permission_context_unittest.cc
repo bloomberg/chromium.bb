@@ -139,7 +139,8 @@ PermissionRequestID GeolocationPermissionContextTests::RequestID(
   return PermissionRequestID(
       web_contents()->GetRenderProcessHost()->GetID(),
       web_contents()->GetRenderViewHost()->GetRoutingID(),
-      bridge_id);
+      bridge_id,
+      0);
 }
 
 PermissionRequestID GeolocationPermissionContextTests::RequestIDForTab(
@@ -148,7 +149,8 @@ PermissionRequestID GeolocationPermissionContextTests::RequestIDForTab(
   return PermissionRequestID(
       extra_tabs_[tab]->GetRenderProcessHost()->GetID(),
       extra_tabs_[tab]->GetRenderViewHost()->GetRoutingID(),
-      bridge_id);
+      bridge_id,
+      0);
 }
 
 void GeolocationPermissionContextTests::RequestGeolocationPermission(

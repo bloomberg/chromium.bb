@@ -67,6 +67,19 @@ void FakeProfile::CancelMIDISysExPermissionRequest(
     const GURL& requesting_frame) {
 }
 
+void FakeProfile::RequestProtectedMediaIdentifierPermission(
+    int render_process_id,
+    int render_view_id,
+    int bridge_id,
+    int group_id,
+    const GURL& requesting_frame,
+    const ProtectedMediaIdentifierPermissionCallback& callback) {
+}
+
+void FakeProfile::CancelProtectedMediaIdentifierPermissionRequests(
+    int group_id) {
+}
+
 content::ResourceContext* FakeProfile::GetResourceContext() {
   return NULL;
 }

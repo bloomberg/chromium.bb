@@ -62,8 +62,7 @@ void ChromeGeolocationPermissionContext::RequestGeolocationPermission(
 
   content::WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_id, render_view_id);
-  const PermissionRequestID id(render_process_id, render_view_id,
-                                          bridge_id);
+  const PermissionRequestID id(render_process_id, render_view_id, bridge_id, 0);
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (extension_service) {
@@ -112,8 +111,8 @@ void ChromeGeolocationPermissionContext::CancelGeolocationPermissionRequest(
     int render_view_id,
     int bridge_id,
     const GURL& requesting_frame) {
-  CancelPendingInfoBarRequest(PermissionRequestID(
-      render_process_id, render_view_id, bridge_id));
+  CancelPendingInfobarRequest(PermissionRequestID(
+      render_process_id, render_view_id, bridge_id, 0));
 }
 
 void ChromeGeolocationPermissionContext::DecidePermission(
@@ -193,13 +192,13 @@ PermissionQueueController*
                                        CONTENT_SETTINGS_TYPE_GEOLOCATION);
 }
 
-void ChromeGeolocationPermissionContext::CancelPendingInfoBarRequest(
+void ChromeGeolocationPermissionContext::CancelPendingInfobarRequest(
     const PermissionRequestID& id) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(
-            &ChromeGeolocationPermissionContext::CancelPendingInfoBarRequest,
+            &ChromeGeolocationPermissionContext::CancelPendingInfobarRequest,
             this, id));
      return;
   }
