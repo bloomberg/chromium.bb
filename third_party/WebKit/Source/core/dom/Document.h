@@ -897,8 +897,6 @@ public:
     void enqueueScrollEventForNode(Node*);
     void enqueueAnimationFrameEvent(PassRefPtr<Event>);
 
-    const QualifiedName& idAttributeName() const { return m_idAttributeName; }
-
     bool hasFullscreenElementStack() const { return m_hasFullscreenElementStack; }
     void setHasFullscreenElementStack() { m_hasFullscreenElementStack = true; }
 
@@ -1245,8 +1243,6 @@ private:
 
     WeakPtrFactory<Document> m_weakFactory;
     WeakPtr<Document> m_contextDocument;
-
-    QualifiedName m_idAttributeName;
 
     bool m_hasFullscreenElementStack; // For early return in FullscreenElementStack::fromIfExists()
 

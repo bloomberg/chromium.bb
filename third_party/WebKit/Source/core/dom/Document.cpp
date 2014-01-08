@@ -428,7 +428,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_renderView(0)
     , m_weakFactory(this)
     , m_contextDocument(initializer.contextDocument())
-    , m_idAttributeName(idAttr)
     , m_hasFullscreenElementStack(false)
     , m_loadEventDelayCount(0)
     , m_loadEventDelayTimer(this, &Document::loadEventDelayTimerFired)

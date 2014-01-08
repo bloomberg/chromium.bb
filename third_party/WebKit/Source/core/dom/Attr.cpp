@@ -189,7 +189,7 @@ void Attr::childrenChanged(bool, Node*, Node*, int)
 
 bool Attr::isId() const
 {
-    return qualifiedName().matches(document().idAttributeName());
+    return qualifiedName().matches(HTMLNames::idAttr);
 }
 
 const AtomicString& Attr::value() const

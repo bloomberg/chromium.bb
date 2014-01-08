@@ -758,12 +758,12 @@ inline bool Element::isIdAttributeName(const QualifiedName& attributeName) const
     // with a non-null namespace, because it will return false, a false negative, if the prefixes
     // don't match but the local name and namespace both do. However, since this has been like this
     // for a while and the code paths may be hot, we'll have to measure performance if we fix it.
-    return attributeName == document().idAttributeName();
+    return attributeName == HTMLNames::idAttr;
 }
 
 inline const AtomicString& Element::getIdAttribute() const
 {
-    return hasID() ? fastGetAttribute(document().idAttributeName()) : nullAtom;
+    return hasID() ? fastGetAttribute(HTMLNames::idAttr) : nullAtom;
 }
 
 inline const AtomicString& Element::getNameAttribute() const
@@ -787,7 +787,7 @@ inline bool Element::shouldIgnoreAttributeCase() const
 
 inline void Element::setIdAttribute(const AtomicString& value)
 {
-    setAttribute(document().idAttributeName(), value);
+    setAttribute(HTMLNames::idAttr, value);
 }
 
 inline const SpaceSplitString& Element::classNames() const
