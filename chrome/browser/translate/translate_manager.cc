@@ -729,6 +729,17 @@ void TranslateManager::ShowBubble(WebContents* web_contents,
     return;
   }
 
+  // During auto-translating, the bubble should not be shown.
+  if (view_state == TranslateBubbleModel::VIEW_STATE_TRANSLATING ||
+      view_state == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE) {
+    TranslateTabHelper* translate_tab_helper =
+        TranslateTabHelper::FromWebContents(web_contents);
+    if (!translate_tab_helper ||
+        translate_tab_helper->language_state().InTranslateNavigation()) {
+      return;
+    }
+  }
+
   TranslateBubbleFactory::Show(browser->window(), web_contents, view_state,
                                error_type);
 #else

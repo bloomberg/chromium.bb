@@ -139,17 +139,6 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
                                      content::WebContents* web_contents,
                                      TranslateBubbleModel::ViewState type,
                                      TranslateErrors::Type error_type) {
-  // During auto-translating, the bubble should not be shown.
-  if (type == TranslateBubbleModel::VIEW_STATE_TRANSLATING ||
-      type == TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE) {
-    TranslateTabHelper* translate_tab_helper =
-        TranslateTabHelper::FromWebContents(web_contents);
-    if (!translate_tab_helper ||
-        translate_tab_helper->language_state().InTranslateNavigation()) {
-      return;
-    }
-  }
-
   if (IsShowing()) {
     // When the user reads the advanced setting panel, the bubble should not be
     // changed because he/she is focusing on the bubble.
