@@ -512,8 +512,8 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameWithNotifier) {
   // Ensure that if CreateStreamFrame does not consume any data (e.g. a FIN only
   // frame) then any QuicAckNotifier that is passed in still gets attached to
   // the frame.
-  MockAckNotifierDelegate delegate;
-  QuicAckNotifier notifier(&delegate);
+  scoped_refptr<MockAckNotifierDelegate> delegate(new MockAckNotifierDelegate);
+  QuicAckNotifier notifier(delegate.get());
   QuicFrame frame;
   IOVector empty_iovector;
   bool fin = true;

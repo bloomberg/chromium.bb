@@ -53,21 +53,6 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     }
   }
 
-  void VerifyPendingPackets(QuicPacketSequenceNumber* packets,
-                            size_t num_packets) {
-    const SequenceNumberSet& pending_packets =
-        QuicSentPacketManagerPeer::GetPendingPackets(&manager_);
-    if (num_packets == 0) {
-      EXPECT_TRUE(pending_packets.empty());
-      return;
-    }
-
-    EXPECT_EQ(num_packets, pending_packets.size());
-    for (size_t i = 0; i < num_packets; ++i) {
-      EXPECT_TRUE(ContainsKey(pending_packets, packets[i])) << packets[i];
-    }
-  }
-
   void VerifyRetransmittablePackets(QuicPacketSequenceNumber* packets,
                                     size_t num_packets) {
     SequenceNumberSet unacked = manager_.GetUnackedPackets();
@@ -267,7 +252,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   // 2 remains unacked, but no packets have retransmittable data.
   QuicPacketSequenceNumber unacked[] = { 2 };
   VerifyUnackedPackets(unacked, arraysize(unacked));
-  VerifyPendingPackets(NULL, 0);
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(NULL, 0);
 
   // Verify that the retransmission alarm would not fire,
@@ -310,7 +295,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPreviousThenNackRetransmit) {
 
   // No packets remain unacked.
   VerifyUnackedPackets(NULL, 0);
-  VerifyPendingPackets(NULL, 0);
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(NULL, 0);
 
   // Verify that the retransmission alarm would not fire,
@@ -336,7 +321,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckPreviousBeforeSend) {
 
   // Since 2 was marked for retransmit, when 1 is acked, 2 is discarded.
   VerifyUnackedPackets(NULL, 0);
-  VerifyPendingPackets(NULL, 0);
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(NULL, 0);
 
   // Verify that the retransmission alarm would not fire,
@@ -358,7 +343,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   // 3 remains unacked, but no packets have retransmittable data.
   QuicPacketSequenceNumber unacked[] = { 3 };
   VerifyUnackedPackets(unacked, arraysize(unacked));
-  VerifyPendingPackets(NULL, 0);
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
   VerifyRetransmittablePackets(NULL, 0);
 
   // Verify that the retransmission alarm would not fire to abandon packet 3.
@@ -1032,6 +1017,42 @@ TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
   manager_.OnIncomingAck(received_info, clock_.ApproximateNow());
 
   EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest, CryptoHandshakeTimeoutUnsentDataPacket) {
+  // Send 2 crypto packets and serialize 1 data packet.
+  const size_t kNumSentCryptoPackets = 2;
+  for (size_t i = 1; i <= kNumSentCryptoPackets; ++i) {
+    SendCryptoPacket(i);
+  }
+  SerializedPacket packet(CreateDataPacket(3));
+  manager_.OnSerializedPacket(packet);
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+
+  // Retransmit 2 crypto packets, but not the serialized packet.
+  EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(2);
+  manager_.OnRetransmissionTimeout();
+  RetransmitNextPacket(6);
+  RetransmitNextPacket(7);
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest, TailLossProbeTimeoutUnsentDataPacket) {
+  QuicSentPacketManagerPeer::SetMaxTailLossProbes(&manager_, 2);
+  // Serialize two data packets and send the latter.
+  SerializedPacket packet(CreateDataPacket(1));
+  manager_.OnSerializedPacket(packet);
+  SendDataPacket(2);
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
+
+  // Retransmit 1 unacked packets, but not the first serialized packet.
+  manager_.OnRetransmissionTimeout();
+  RetransmitNextPacket(3);
+  EXPECT_FALSE(manager_.HasPendingRetransmissions());
+  EXPECT_FALSE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
+  EXPECT_TRUE(QuicSentPacketManagerPeer::HasPendingPackets(&manager_));
 }
 
 TEST_F(QuicSentPacketManagerTest, RetransmissionTimeout) {

@@ -12,6 +12,7 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/quic/test_tools/quic_test_writer.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_time_wait_list_manager.h"
 #include "net/tools/quic/test_tools/quic_dispatcher_peer.h"
@@ -22,6 +23,7 @@
 using base::StringPiece;
 using net::EpollServer;
 using net::test::MockSession;
+using net::test::QuicTestWriter;
 using net::tools::test::MockConnection;
 using std::make_pair;
 using testing::_;
@@ -270,9 +272,35 @@ TEST_F(QuicDispatcherTest, StrayPacketToTimeWaitListManager) {
   ProcessPacket(addr, guid, false, "foo");
 }
 
+class BlockingWriter : public QuicTestWriter {
+ public:
+  BlockingWriter() : write_blocked_(false) {}
+
+  virtual bool IsWriteBlocked() const OVERRIDE { return write_blocked_; }
+  virtual void SetWritable() OVERRIDE { write_blocked_ = false; }
+  virtual bool IsWriteBlockedDataBuffered() const OVERRIDE { return false; }
+
+  virtual WriteResult WritePacket(
+      const char* buffer, size_t buf_len, const IPAddressNumber& self_address,
+      const IPEndPoint& peer_address,
+      QuicBlockedWriterInterface* blocked_writer) OVERRIDE {
+    if (write_blocked_) {
+      return WriteResult(WRITE_STATUS_BLOCKED, EAGAIN);
+    } else {
+      return writer()->WritePacket(buffer, buf_len, self_address, peer_address,
+                                   blocked_writer);
+    }
+  }
+
+  bool write_blocked_;
+};
+
 class QuicWriteBlockedListTest : public QuicDispatcherTest {
  public:
   virtual void SetUp() {
+    writer_ = new BlockingWriter;
+    QuicDispatcherPeer::UseWriter(&dispatcher_, writer_);
+
     IPEndPoint addr(net::test::Loopback4(), 1);
 
     EXPECT_CALL(dispatcher_, CreateQuicSession(_, _, addr))
@@ -295,11 +323,12 @@ class QuicWriteBlockedListTest : public QuicDispatcherTest {
   }
 
   bool SetBlocked() {
-    QuicDispatcherPeer::SetWriteBlocked(&dispatcher_);
+    writer_->write_blocked_ = true;;
     return true;
   }
 
  protected:
+  BlockingWriter* writer_;
   QuicDispatcher::WriteBlockedList* blocked_list_;
 };
 

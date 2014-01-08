@@ -18,8 +18,6 @@ class QuicDispatcherPeer {
       QuicDispatcher* dispatcher,
       QuicTimeWaitListManager* time_wait_list_manager);
 
-  static void SetWriteBlocked(QuicDispatcher* dispatcher);
-
   static void UseWriter(QuicDispatcher* dispatcher,
                         net::test::QuicTestWriter* writer);
 

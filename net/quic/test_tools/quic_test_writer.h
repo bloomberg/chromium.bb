@@ -17,6 +17,10 @@ class QuicTestWriter : public QuicPacketWriter {
  public:
   QuicTestWriter();
   virtual ~QuicTestWriter();
+
+  virtual bool IsWriteBlocked() const OVERRIDE;
+  virtual void SetWritable() OVERRIDE;
+
   // Takes ownership of |writer|.
   void set_writer(QuicPacketWriter* writer);
 

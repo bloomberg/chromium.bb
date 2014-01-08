@@ -17,9 +17,6 @@ ServerThread::ServerThread(IPEndPoint address,
     : SimpleThread("server_thread"),
       listening_(true, false),
       confirmed_(true, false),
-      pause_(true, false),
-      paused_(true, false),
-      resume_(true, false),
       quit_(true, false),
       server_(config, supported_versions),
       address_(address),
@@ -41,12 +38,10 @@ void ServerThread::Run() {
 
   listening_.Signal();
   while (!quit_.IsSignaled()) {
-    if (pause_.IsSignaled() && !resume_.IsSignaled()) {
-      paused_.Signal();
-      resume_.Wait();
-    }
+    event_loop_mu_.Acquire();
     server_.WaitForEvents();
     MaybeNotifyOfHandshakeConfirmation();
+    event_loop_mu_.Release();
   }
 
   server_.Shutdown();
@@ -68,21 +63,15 @@ void ServerThread::WaitForCryptoHandshakeConfirmed() {
 }
 
 void ServerThread::Pause() {
-  DCHECK(!pause_.IsSignaled());
-  pause_.Signal();
-  paused_.Wait();
+  event_loop_mu_.Acquire();
 }
 
 void ServerThread::Resume() {
-  DCHECK(!resume_.IsSignaled());
-  DCHECK(pause_.IsSignaled());
-  resume_.Signal();
+  event_loop_mu_.AssertAcquired();  // Checks the calling thread only!
+  event_loop_mu_.Release();
 }
 
 void ServerThread::Quit() {
-  if (pause_.IsSignaled() && !resume_.IsSignaled()) {
-    resume_.Signal();
-  }
   quit_.Signal();
 }
 

@@ -226,7 +226,11 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         QuicServerPeer::GetDispatcher(server_thread_->server());
     server_writer_->SetConnectionHelper(
         QuicDispatcherPeer::GetHelper(dispatcher));
+    // TODO(rtenneti): Enable server_thread's Pause/Resume.
+    // server_thread_->Pause();
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
+    // TODO(rtenneti): Enable server_thread's Pause/Resume.
+    // server_thread_->Resume();
     server_started_ = true;
   }
 
@@ -581,7 +585,7 @@ TEST_P(EndToEndTest, InvalidStream) {
   QuicSessionPeer::SetNextStreamId(client_->client()->session(), 2);
 
   client_->SendCustomSynchronousRequest(request);
-//  EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
+  // EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
   EXPECT_EQ(QUIC_PACKET_FOR_NONEXISTENT_STREAM, client_->connection_error());
 }
 
@@ -725,7 +729,8 @@ TEST_P(EndToEndTest, InitialRTT) {
   server_thread_->WaitForCryptoHandshakeConfirmed();
 
   // Pause the server so we can access the server's internals without races.
-  server_thread_->Pause();
+  // TODO(rtenneti): Enable server_thread's Pause/Resume.
+  // server_thread_->Pause();
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
@@ -746,6 +751,8 @@ TEST_P(EndToEndTest, InitialRTT) {
   EXPECT_FALSE(client_sent_packet_manager.SmoothedRtt().IsInfinite());
   EXPECT_GE(static_cast<int64>(kMaxInitialRoundTripTimeUs),
             server_sent_packet_manager.SmoothedRtt().ToMicroseconds());
+  // TODO(rtenneti): Enable server_thread's Pause/Resume.
+  // server_thread_->Resume();
 }
 
 TEST_P(EndToEndTest, ResetConnection) {

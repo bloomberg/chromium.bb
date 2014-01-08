@@ -103,11 +103,11 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
   // owner of the packet.
   void SendOrQueuePacket(QueuedPacket* packet);
 
-  // Should only be called when write_blocked_ == false. We only care if the
-  // writing was unsuccessful because the socket got blocked, which can be
-  // tested using write_blocked_ == true. In case of all other errors we drop
-  // the packet. Hence, we return void.
-  void WriteToWire(QueuedPacket* packet);
+  // Sends the packet out. Returns true if the packet was successfully consumed.
+  // If the writer got blocked and did not buffer the packet, we'll need to keep
+  // the packet and retry sending. In case of all other errors we drop the
+  // packet.
+  bool WriteToWire(QueuedPacket* packet);
 
   // Register the alarm with the epoll server to wake up at appropriate time.
   void SetGuidCleanUpAlarm();
@@ -152,10 +152,6 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
 
   // Interface that writes given buffer to the socket. Owned by the dispatcher.
   QuicPacketWriter* writer_;
-
-  // True if the underlying udp socket is write blocked, i.e will return EAGAIN
-  // on sendmsg.
-  bool is_write_blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicTimeWaitListManager);
 };

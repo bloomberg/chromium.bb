@@ -29,7 +29,7 @@ class QuicSentPacketManagerPeer {
   static size_t GetPendingRetransmissionCount(
       const QuicSentPacketManager* sent_packet_manager);
 
-  static const SequenceNumberSet& GetPendingPackets(
+  static bool HasPendingPackets(
       const QuicSentPacketManager* sent_packet_manager);
 
   static QuicTime GetSentTime(const QuicSentPacketManager* sent_packet_manager,

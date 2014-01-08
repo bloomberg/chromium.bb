@@ -71,6 +71,8 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
       const IPEndPoint& peer_address,
       QuicBlockedWriterInterface* writer) OVERRIDE;
   virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
+  virtual bool IsWriteBlocked() const OVERRIDE;
+  virtual void SetWritable() OVERRIDE;
 
   // Process the incoming packet by creating a new session, passing it to
   // an existing session, or passing it to the TimeWaitListManager.
@@ -104,10 +106,6 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   void DeleteSessions();
 
   const SessionMap& session_map() const { return session_map_; }
-
-  // Uses the specified |writer| instead of QuicSocketUtils and takes ownership
-  // of writer.
-  void UseWriter(QuicPacketWriter* writer);
 
   WriteBlockedList* write_blocked_list() { return &write_blocked_list_; }
 
@@ -174,10 +172,6 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
 
   // The connection for client-server communication
   int fd_;
-
-  // True if the session is write blocked due to the socket returning EAGAIN.
-  // False if we have gotten a call to OnCanWrite after the last failed write.
-  bool write_blocked_;
 
   // The helper used for all connections.
   scoped_ptr<QuicEpollConnectionHelper> helper_;

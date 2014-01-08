@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "net/quic/crypto/crypto_handshake.h"
-#include "net/quic/quic_connection.h"
+#include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/reliable_quic_stream.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_data_stream_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"

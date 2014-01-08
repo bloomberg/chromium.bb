@@ -34,6 +34,13 @@ class NET_EXPORT_PRIVATE QuicPacketWriter {
   // when an attempt to write results in the underlying socket becoming
   // write blocked.
   virtual bool IsWriteBlockedDataBuffered() const = 0;
+
+  // Returns true if the network socket is not writable.
+  virtual bool IsWriteBlocked() const = 0;
+
+  // Records that the socket has become writable, for example when an EPOLLOUT
+  // is received or an asynchronous write completes.
+  virtual void SetWritable() = 0;
 };
 
 }  // namespace net

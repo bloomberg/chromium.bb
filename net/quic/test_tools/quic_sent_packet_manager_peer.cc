@@ -40,9 +40,9 @@ size_t QuicSentPacketManagerPeer::GetPendingRetransmissionCount(
 }
 
 // static
-const SequenceNumberSet& QuicSentPacketManagerPeer::GetPendingPackets(
+bool QuicSentPacketManagerPeer::HasPendingPackets(
     const QuicSentPacketManager* sent_packet_manager) {
-  return sent_packet_manager->pending_packets_;
+  return sent_packet_manager->HasPendingPackets();
 }
 
 // static

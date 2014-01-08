@@ -5,6 +5,7 @@
 #ifndef NET_QUIC_QUIC_ACK_NOTIFIER_H_
 #define NET_QUIC_QUIC_ACK_NOTIFIER_H_
 
+#include "base/memory/ref_counted.h"
 #include "net/quic/quic_protocol.h"
 
 namespace net {
@@ -16,13 +17,20 @@ namespace net {
 // trigger a call to a provided Closure.
 class NET_EXPORT_PRIVATE QuicAckNotifier {
  public:
-  class NET_EXPORT_PRIVATE DelegateInterface {
+ class NET_EXPORT_PRIVATE DelegateInterface
+     : public base::RefCounted<DelegateInterface> {
    public:
     DelegateInterface();
-    virtual ~DelegateInterface();
     virtual void OnAckNotification() = 0;
+
+   protected:
+    friend class base::RefCounted<DelegateInterface>;
+
+    // Delegates are ref counted.
+    virtual ~DelegateInterface();
   };
 
+  // QuicAckNotifier is expected to keep its own reference to the delegate.
   explicit QuicAckNotifier(DelegateInterface* delegate);
   virtual ~QuicAckNotifier();
 
@@ -55,7 +63,7 @@ class NET_EXPORT_PRIVATE QuicAckNotifier {
   // The delegate's OnAckNotification() method will be called once we have been
   // notified of ACKs for all the sequence numbers we are tracking.
   // This is not owned by OnAckNotifier and must outlive it.
-  DelegateInterface* delegate_;
+  scoped_refptr<DelegateInterface> delegate_;
 
   // Set of sequence numbers this notifier is waiting to hear about. The
   // delegate will not be called until this is an empty set.

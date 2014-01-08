@@ -17,10 +17,11 @@ QuicAckNotifier::DelegateInterface::~DelegateInterface() {}
 
 QuicAckNotifier::QuicAckNotifier(DelegateInterface* delegate)
     : delegate_(delegate) {
-  DCHECK(delegate_);
+  DCHECK(delegate);
 }
 
-QuicAckNotifier::~QuicAckNotifier() {}
+QuicAckNotifier::~QuicAckNotifier() {
+}
 
 void QuicAckNotifier::AddSequenceNumber(
     const QuicPacketSequenceNumber& sequence_number) {

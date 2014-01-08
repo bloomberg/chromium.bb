@@ -4,6 +4,7 @@
 
 #include "net/tools/quic/test_tools/quic_dispatcher_peer.h"
 
+#include "net/quic/quic_default_packet_writer.h"
 #include "net/tools/quic/quic_dispatcher.h"
 
 using net::test::QuicTestWriter;
@@ -17,11 +18,6 @@ void QuicDispatcherPeer::SetTimeWaitListManager(
     QuicDispatcher* dispatcher,
     QuicTimeWaitListManager* time_wait_list_manager) {
   dispatcher->time_wait_list_manager_.reset(time_wait_list_manager);
-}
-
-// static
-void QuicDispatcherPeer::SetWriteBlocked(QuicDispatcher* dispatcher) {
-  dispatcher->write_blocked_ = true;
 }
 
 // static

@@ -99,8 +99,7 @@ QuicTimeWaitListManager::QuicTimeWaitListManager(
       kTimeWaitPeriod_(QuicTime::Delta::FromSeconds(kTimeWaitSeconds)),
       guid_clean_up_alarm_(new GuidCleanUpAlarm(this)),
       clock_(epoll_server_),
-      writer_(writer),
-      is_write_blocked_(false) {
+      writer_(writer) {
   SetGuidCleanUpAlarm();
 }
 
@@ -137,17 +136,17 @@ QuicVersion QuicTimeWaitListManager::GetQuicVersionFromGuid(QuicGuid guid) {
 }
 
 bool QuicTimeWaitListManager::OnCanWrite() {
-  is_write_blocked_ = false;
-  while (!is_write_blocked_ && !pending_packets_queue_.empty()) {
+  while (!pending_packets_queue_.empty()) {
     QueuedPacket* queued_packet = pending_packets_queue_.front();
-    WriteToWire(queued_packet);
-    if (!is_write_blocked_) {
+    if (WriteToWire(queued_packet)) {
       pending_packets_queue_.pop_front();
       delete queued_packet;
+    } else {
+      break;
     }
   }
 
-  return !is_write_blocked_;
+  return !writer_->IsWriteBlocked();
 }
 
 void QuicTimeWaitListManager::ProcessPacket(
@@ -206,22 +205,18 @@ void QuicTimeWaitListManager::SendPublicReset(
 // Either sends the packet and deletes it or makes pending queue the
 // owner of the packet.
 void QuicTimeWaitListManager::SendOrQueuePacket(QueuedPacket* packet) {
-  if (!is_write_blocked_) {
-    // TODO(satyamshekhar): Handle packets that fail due to error other than
-    // EAGAIN or EWOULDBLOCK.
-    WriteToWire(packet);
-  }
-
-  if (is_write_blocked_) {
+  if (WriteToWire(packet)) {
+    delete packet;
+  } else {
     // pending_packets_queue takes the ownership of the queued packet.
     pending_packets_queue_.push_back(packet);
-  } else {
-    delete packet;
   }
 }
 
-void QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
-  DCHECK(!is_write_blocked_);
+bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
+  if (writer_->IsWriteBlocked()) {
+    return false;
+  }
   WriteResult result = writer_->WritePacket(
       queued_packet->packet()->data(),
       queued_packet->packet()->length(),
@@ -229,12 +224,15 @@ void QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
       queued_packet->client_address(),
       this);
   if (result.status == WRITE_STATUS_BLOCKED) {
-    is_write_blocked_ = true;
+    // If blocked and unbuffered, return false to retry sending.
+    DCHECK(writer_->IsWriteBlocked());
+    return writer_->IsWriteBlockedDataBuffered();
   } else if (result.status == WRITE_STATUS_ERROR) {
     LOG(WARNING) << "Received unknown error while sending reset packet to "
                  << queued_packet->client_address().ToString() << ": "
                  << strerror(result.error_code);
   }
+  return true;
 }
 
 void QuicTimeWaitListManager::SetGuidCleanUpAlarm() {

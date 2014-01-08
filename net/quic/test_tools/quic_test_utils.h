@@ -386,6 +386,8 @@ class MockPacketWriter : public QuicPacketWriter {
                            const IPEndPoint& peer_address,
                            QuicBlockedWriterInterface* blocked_writer));
   MOCK_CONST_METHOD0(IsWriteBlockedDataBuffered, bool());
+  MOCK_CONST_METHOD0(IsWriteBlocked, bool());
+  MOCK_METHOD0(SetWritable, void());
 };
 
 class MockSendAlgorithm : public SendAlgorithmInterface {
@@ -457,9 +459,12 @@ class TestDecompressorVisitor : public QuicSpdyDecompressor::Visitor {
 class MockAckNotifierDelegate : public QuicAckNotifier::DelegateInterface {
  public:
   MockAckNotifierDelegate();
-  virtual ~MockAckNotifierDelegate();
 
   MOCK_METHOD0(OnAckNotification, void());
+
+ protected:
+  // Object is ref counted.
+  virtual ~MockAckNotifierDelegate();
 };
 
 }  // namespace test

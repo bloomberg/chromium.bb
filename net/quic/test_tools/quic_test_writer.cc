@@ -11,6 +11,14 @@ QuicTestWriter::QuicTestWriter() {}
 
 QuicTestWriter::~QuicTestWriter() {}
 
+bool QuicTestWriter::IsWriteBlocked() const {
+  return writer_->IsWriteBlocked();
+}
+
+void QuicTestWriter::SetWritable() {
+  writer_->SetWritable();
+}
+
 QuicPacketWriter* QuicTestWriter::writer() {
   return writer_.get();
 }

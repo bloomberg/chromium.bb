@@ -206,13 +206,15 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
         : retransmittable_frames(NULL),
           sequence_number_length(PACKET_1BYTE_SEQUENCE_NUMBER),
           sent_time(QuicTime::Zero()),
-          previous_transmissions(NULL) { }
+          previous_transmissions(NULL),
+          pending(false) { }
     TransmissionInfo(RetransmittableFrames* retransmittable_frames,
                      QuicSequenceNumberLength sequence_number_length)
         : retransmittable_frames(retransmittable_frames),
           sequence_number_length(sequence_number_length),
           sent_time(QuicTime::Zero()),
-          previous_transmissions(NULL) {
+          previous_transmissions(NULL),
+          pending(false) {
     }
 
     RetransmittableFrames* retransmittable_frames;
@@ -222,6 +224,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     // Stores all previous transmissions if the packet has been retransmitted,
     // and is NULL otherwise.
     SequenceNumberSet* previous_transmissions;
+    // Pending packets have not been abandoned or lost.
+    bool pending;
   };
 
   typedef linked_hash_map<QuicPacketSequenceNumber,
@@ -231,12 +235,15 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   static bool HasCryptoHandshake(const TransmissionInfo& transmission_info);
 
+  // Returns true if there are unacked packets that are pending.
+  bool HasPendingPackets() const;
+
   // Process the incoming ack looking for newly ack'd data packets.
   void HandleAckForSentPackets(const ReceivedPacketInfo& received_info);
 
   // Called when a packet is timed out, such as an RTO.  Removes the bytes from
   // the congestion manager, but does not change the congestion window size.
-  virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number);
+  virtual void OnPacketAbandoned(UnackedPacketMap::iterator it);
 
   // Returns the current retransmission mode.
   RetransmissionTimeoutMode GetRetransmissionMode() const;
@@ -284,11 +291,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void MarkForRetransmission(QuicPacketSequenceNumber sequence_number,
                              TransmissionType transmission_type);
 
-  // Returns the length of the serialized sequence number for
-  // the packet |sequence_number|.
-  QuicSequenceNumberLength GetSequenceNumberLength(
-      QuicPacketSequenceNumber sequence_number) const;
-
   // Clears up to |num_to_clear| previous transmissions in order to make room
   // in the ack frame for new acks.
   void ClearPreviousRetransmissions(size_t num_to_clear);
@@ -326,8 +328,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Tracks the send time, size, and nack count of sent packets.  Packets are
   // removed after 5 seconds and they've been removed from pending_packets_.
   SendAlgorithmInterface::SentPacketsMap packet_history_map_;
-  // Packets that are outstanding and have not been abandoned or lost.
-  SequenceNumberSet pending_packets_;
   QuicTime::Delta rtt_sample_;  // RTT estimate from the most recent ACK.
   // Number of outstanding crypto handshake packets.
   size_t pending_crypto_packet_count_;

@@ -23,10 +23,13 @@
 using net::test::FramerVisitorCapturingPublicReset;
 using testing::_;
 using testing::Args;
+using testing::Assign;
+using testing::DoAll;
 using testing::Matcher;
 using testing::MatcherInterface;
 using testing::NiceMock;
 using testing::Return;
+using testing::ReturnPointee;
 using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::Truly;
@@ -37,10 +40,6 @@ namespace test {
 
 class QuicTimeWaitListManagerPeer {
  public:
-  static bool is_write_blocked(QuicTimeWaitListManager* manager) {
-    return manager->is_write_blocked_;
-  }
-
   static bool ShouldSendResponse(QuicTimeWaitListManager* manager,
                           int received_packet_count) {
     return manager->ShouldSendResponse(received_packet_count);
@@ -78,10 +77,17 @@ class QuicTimeWaitListManagerTest : public testing::Test {
       : time_wait_list_manager_(
           &writer_, &epoll_server_, QuicSupportedVersions()),
         framer_(QuicSupportedVersions(), QuicTime::Zero(), true),
-        guid_(45) {
-  }
+        guid_(45),
+        writer_is_blocked_(false) {}
 
   virtual ~QuicTimeWaitListManagerTest() {}
+
+  virtual void SetUp() {
+    EXPECT_CALL(writer_, IsWriteBlocked())
+        .WillRepeatedly(ReturnPointee(&writer_is_blocked_));
+    EXPECT_CALL(writer_, IsWriteBlockedDataBuffered())
+        .WillRepeatedly(Return(false));
+  }
 
   void AddGuid(QuicGuid guid) {
     AddGuid(guid, net::test::QuicVersionMax(), NULL);
@@ -141,6 +147,7 @@ class QuicTimeWaitListManagerTest : public testing::Test {
   QuicGuid guid_;
   IPEndPoint server_address_;
   IPEndPoint client_address_;
+  bool writer_is_blocked_;
 };
 
 class ValidatePublicResetPacketPredicate
@@ -289,8 +296,6 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
                                            sequence_number)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
   ProcessPacket(guid, sequence_number);
-  EXPECT_FALSE(
-      QuicTimeWaitListManagerPeer::is_write_blocked(&time_wait_list_manager_));
 
   // write block for the next packet.
   EXPECT_CALL(writer_, WritePacket(_, _,
@@ -299,14 +304,14 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
                                    &time_wait_list_manager_))
       .With(Args<0, 1>(PublicResetPacketEq(guid,
                                            sequence_number)))
-      .WillOnce(Return(WriteResult(WRITE_STATUS_BLOCKED, EAGAIN)));
+      .WillOnce(DoAll(
+          Assign(&writer_is_blocked_, true),
+          Return(WriteResult(WRITE_STATUS_BLOCKED, EAGAIN))));
   ProcessPacket(guid, sequence_number);
   // 3rd packet. No public reset should be sent;
   ProcessPacket(guid, sequence_number);
-  EXPECT_TRUE(
-      QuicTimeWaitListManagerPeer::is_write_blocked(&time_wait_list_manager_));
 
-  // write packet should not be called since already write blocked but the
+  // write packet should not be called since we are write blocked but the
   // should be queued.
   QuicGuid other_guid = 2;
   AddGuid(other_guid);
@@ -319,6 +324,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   ProcessPacket(other_guid, other_sequence_number);
 
   // Now expect all the write blocked public reset packets to be sent again.
+  writer_is_blocked_ = false;
   EXPECT_CALL(writer_, WritePacket(_, _,
                                    server_address_.address(),
                                    client_address_,
@@ -335,8 +341,6 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK,
                                    other_packet->length())));
   time_wait_list_manager_.OnCanWrite();
-  EXPECT_FALSE(
-      QuicTimeWaitListManagerPeer::is_write_blocked(&time_wait_list_manager_));
 }
 
 TEST_F(QuicTimeWaitListManagerTest, GetQuicVersionFromMap) {

@@ -29,9 +29,12 @@ class QuicDefaultPacketWriter : public QuicPacketWriter {
       const net::IPEndPoint& peer_address,
       QuicBlockedWriterInterface* blocked_writer) OVERRIDE;
   virtual bool IsWriteBlockedDataBuffered() const OVERRIDE;
+  virtual bool IsWriteBlocked() const OVERRIDE;
+  virtual void SetWritable() OVERRIDE;
 
  private:
   int fd_;
+  bool write_blocked_;
 };
 
 }  // namespace tools
