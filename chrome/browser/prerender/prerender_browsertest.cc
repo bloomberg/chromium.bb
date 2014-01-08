@@ -44,6 +44,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -62,6 +63,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -91,6 +93,7 @@ using content::Referrer;
 using content::RenderViewHost;
 using content::RenderWidgetHost;
 using content::WebContents;
+using content::WebContentsObserver;
 
 // Prerender tests work as follows:
 //
@@ -211,6 +214,49 @@ class ChannelDestructionWatcher {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelDestructionWatcher);
+};
+
+// A simple observer to wait on either a load or a swap of a WebContents.
+class NavigationOrSwapObserver : public WebContentsObserver,
+                                 public TabStripModelObserver {
+ public:
+  // Waits for either a load or a swap of |tab_strip_model|'s active
+  // WebContents.
+  NavigationOrSwapObserver(TabStripModel* tab_strip_model,
+                           WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        tab_strip_model_(tab_strip_model) {
+    CHECK_NE(TabStripModel::kNoTab,
+             tab_strip_model->GetIndexOfWebContents(web_contents));
+    tab_strip_model_->AddObserver(this);
+  }
+
+  virtual ~NavigationOrSwapObserver() {
+    tab_strip_model_->RemoveObserver(this);
+  }
+
+  void Wait() {
+    loop_.Run();
+  }
+
+  // WebContentsObserver implementation:
+  virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE {
+    loop_.Quit();
+  }
+
+  // TabStripModelObserver implementation:
+  virtual void TabReplacedAt(TabStripModel* tab_strip_model,
+                             WebContents* old_contents,
+                             WebContents* new_contents,
+                             int index) OVERRIDE {
+    if (old_contents != web_contents())
+      return;
+    loop_.Quit();
+  }
+
+ private:
+  TabStripModel* tab_strip_model_;
+  base::RunLoop loop_;
 };
 
 // PrerenderContents that stops the UI message loop on DidStopLoading().
@@ -608,10 +654,10 @@ class RestorePrerenderMode {
   PrerenderManager::PrerenderManagerMode prev_mode_;
 };
 
-// URLRequestJob (and associated handler) which never starts.
-class NeverStartURLRequestJob : public net::URLRequestJob {
+// URLRequestJob (and associated handler) which hangs.
+class HangingURLRequestJob : public net::URLRequestJob {
  public:
-  NeverStartURLRequestJob(net::URLRequest* request,
+  HangingURLRequestJob(net::URLRequest* request,
                           net::NetworkDelegate* network_delegate)
       : net::URLRequestJob(request, network_delegate) {
   }
@@ -619,26 +665,40 @@ class NeverStartURLRequestJob : public net::URLRequestJob {
   virtual void Start() OVERRIDE {}
 
  private:
-  virtual ~NeverStartURLRequestJob() {}
+  virtual ~HangingURLRequestJob() {}
 };
 
-class NeverStartProtocolHandler
+class HangingFirstRequestProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  NeverStartProtocolHandler() {}
-  virtual ~NeverStartProtocolHandler() {}
+  explicit HangingFirstRequestProtocolHandler(const base::FilePath& file)
+      : file_(file),
+        first_run_(true) {
+  }
+  virtual ~HangingFirstRequestProtocolHandler() {}
 
   virtual net::URLRequestJob* MaybeCreateJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
-    return new NeverStartURLRequestJob(request, network_delegate);
+    if (first_run_) {
+      first_run_ = false;
+      return new HangingURLRequestJob(request, network_delegate);
+    }
+    return new content::URLRequestMockHTTPJob(request, network_delegate, file_);
   }
+
+ private:
+  base::FilePath file_;
+  mutable bool first_run_;
 };
 
-void CreateNeverStartProtocolHandlerOnIO(const GURL& url) {
+// Makes |url| never respond on the first load, and then with the contents of
+// |file| afterwards.
+void CreateHangingFirstRequestProtocolHandlerOnIO(const GURL& url,
+                                                  const base::FilePath& file) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   scoped_ptr<net::URLRequestJobFactory::ProtocolHandler> never_respond_handler(
-      new NeverStartProtocolHandler());
+      new HangingFirstRequestProtocolHandler(file));
   net::URLRequestFilter::GetInstance()->AddUrlProtocolHandler(
       url, never_respond_handler.Pass());
 }
@@ -842,9 +902,6 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     // due to session storage namespace mismatch. The merge is only kicked off
     // asynchronously.
     NavigateToDestURLWithDisposition(CURRENT_TAB, false);
-    // Run the message loop, waiting for the merge to complete, the swapin to
-    // be reattempted, and to eventually succeed.
-    content::RunMessageLoop();
   }
 
   // Opens the url in a new tab, with no opener.
@@ -1156,6 +1213,26 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     GetPrerenderManager()->mutable_config().max_bytes = 1000 * 1024 * 1024;
   }
 
+  bool DidPrerenderPass(WebContents* web_contents) const {
+    bool prerender_test_result = false;
+    if (!content::ExecuteScriptAndExtractBool(
+            web_contents,
+            "window.domAutomationController.send(DidPrerenderPass())",
+            &prerender_test_result))
+      return false;
+    return prerender_test_result;
+  }
+
+  bool DidDisplayPass(WebContents* web_contents) const {
+    bool display_test_result = false;
+    if (!content::ExecuteScriptAndExtractBool(
+            web_contents,
+            "window.domAutomationController.send(DidDisplayPass())",
+            &display_test_result))
+      return false;
+    return display_test_result;
+  }
+
  protected:
   bool autostart_test_server_;
 
@@ -1242,12 +1319,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         prerender_contents->WaitForPrerenderToHaveReadyTitleIfRequired();
 
         // Check if page behaves as expected while in prerendered state.
-        bool prerender_test_result = false;
-        ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-            prerender_contents->GetRenderViewHostMutable(),
-            "window.domAutomationController.send(DidPrerenderPass())",
-            &prerender_test_result));
-        EXPECT_TRUE(prerender_test_result);
+        EXPECT_TRUE(DidPrerenderPass(prerender_contents->prerender_contents()));
       }
 
       // Test that the referring page received events.
@@ -1306,10 +1378,16 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
       }
     }
 
-    // Navigate to the prerendered URL, but don't run the message loop. Browser
-    // issued navigations to prerendered pages will synchronously swap in the
-    // prerendered page.
+    // Navigate and wait for either the load to finish normally or for a swap to
+    // occur.
+    // TODO(davidben): The only handles CURRENT_TAB navigations, which is the
+    // only case tested or prerendered right now.
+    CHECK_EQ(CURRENT_TAB, params.disposition);
+    NavigationOrSwapObserver swap_observer(
+        current_browser()->tab_strip_model(),
+        current_browser()->tab_strip_model()->GetActiveWebContents());
     WebContents* target_web_contents = current_browser()->OpenURL(params);
+    swap_observer.Wait();
 
     if (web_contents && expect_swap_to_succeed) {
       EXPECT_EQ(web_contents, target_web_contents);
@@ -1317,12 +1395,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
         if (page_load_observer.get())
           page_load_observer->Wait();
 
-        bool display_test_result = false;
-        ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-            web_contents,
-            "window.domAutomationController.send(DidDisplayPass())",
-            &display_test_result));
-        EXPECT_TRUE(display_test_result);
+        EXPECT_TRUE(DidDisplayPass(web_contents));
       }
     }
   }
@@ -1556,9 +1629,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
   // Navigate to a page that triggers a prerender for a URL that never commits.
   const GURL kNoCommitUrl("http://never-respond.example.com");
+  base::FilePath file(FILE_PATH_LITERAL(
+      "chrome/test/data/prerender/prerender_page.html"));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateNeverStartProtocolHandlerOnIO, kNoCommitUrl));
+      base::Bind(&CreateHangingFirstRequestProtocolHandlerOnIO,
+                 kNoCommitUrl, file));
   DisableJavascriptCalls();
   PrerenderTestURL(kNoCommitUrl,
                    FINAL_STATUS_NAVIGATION_UNCOMMITTED,
@@ -1572,9 +1648,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap) {
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNoCommitNoSwap2) {
   // Navigate to a page that then navigates to a URL that never commits.
   const GURL kNoCommitUrl("http://never-respond.example.com");
+  base::FilePath file(FILE_PATH_LITERAL(
+      "chrome/test/data/prerender/prerender_page.html"));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&CreateNeverStartProtocolHandlerOnIO, kNoCommitUrl));
+      base::Bind(&CreateHangingFirstRequestProtocolHandlerOnIO,
+                 kNoCommitUrl, file));
   DisableJavascriptCalls();
   PrerenderTestURL(CreateClientRedirect(kNoCommitUrl.spec()),
                    FINAL_STATUS_APP_TERMINATING, 1);
@@ -1656,12 +1735,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNaClPluginDisabled) {
   //                loading.  It would be great if we could avoid that.
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  bool display_test_result = false;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents,
-      "window.domAutomationController.send(DidDisplayPass())",
-      &display_test_result));
-  EXPECT_TRUE(display_test_result);
+  EXPECT_TRUE(DidDisplayPass(web_contents));
 }
 
 // Checks that plugins in an iframe are not loaded while a page is
