@@ -37,6 +37,7 @@ class RunLoop {
                   MojoWaitFlags wait_flags,
                   MojoDeadline deadline);
   void RemoveHandler(const Handle& handle);
+  bool HasHandler(const Handle& handle) const;
 
   // Runs the loop servicing handles as they are ready. This returns when Quit()
   // is invoked, or there no more handles.

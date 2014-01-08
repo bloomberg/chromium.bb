@@ -105,6 +105,7 @@ TEST_F(RunLoopTest, HandleReady) {
   run_loop.Run();
   EXPECT_EQ(1, handler.ready_count());
   EXPECT_EQ(0, handler.error_count());
+  EXPECT_FALSE(run_loop.HasHandler(test_pipe.handle0.get()));
 }
 
 class QuitOnReadyRunLoopHandler : public TestRunLoopHandler {
@@ -140,6 +141,7 @@ TEST_F(RunLoopTest, QuitFromReady) {
   run_loop.Run();
   EXPECT_EQ(1, handler.ready_count());
   EXPECT_EQ(0, handler.error_count());
+  EXPECT_TRUE(run_loop.HasHandler(test_pipe.handle0.get()));
 }
 
 class QuitOnErrorRunLoopHandler : public TestRunLoopHandler {
@@ -175,6 +177,7 @@ TEST_F(RunLoopTest, QuitWhenDeadlineExpired) {
   EXPECT_EQ(0, handler.ready_count());
   EXPECT_EQ(1, handler.error_count());
   EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, handler.last_error_result());
+  EXPECT_FALSE(run_loop.HasHandler(test_pipe.handle0.get()));
 }
 
 TEST_F(RunLoopTest, Current) {

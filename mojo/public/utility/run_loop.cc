@@ -92,6 +92,10 @@ void RunLoop::RemoveHandler(const Handle& handle) {
   handler_data_.erase(handle);
 }
 
+bool RunLoop::HasHandler(const Handle& handle) const {
+  return handler_data_.find(handle) != handler_data_.end();
+}
+
 void RunLoop::Run() {
   assert(current() == this);
   // We don't currently support nesting.
@@ -154,6 +158,7 @@ void RunLoop::NotifyDeadlineExceeded() {
         i->second.deadline < now &&
         handler_data_.find(i->first) != handler_data_.end() &&
         handler_data_[i->first].id == i->second.id) {
+      handler_data_.erase(i->first);
       i->second.handler->OnHandleError(i->first, MOJO_RESULT_DEADLINE_EXCEEDED);
     }
   }
