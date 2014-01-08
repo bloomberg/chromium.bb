@@ -37,11 +37,11 @@ camera.effects.Modern = function(tracker) {
  * @type {Array.<Array<number>>}
  */
 camera.effects.COLORS = Object.freeze([
-  [1, 0, 0],
-  [0, 1, 0],
-  [0, 0, 1],
-  [1, 1, 0],
-  [1, 0, 1]
+  [0.5, 0, 0],
+  [0, 0.5, 0],
+  [0, 0, 0.5],
+  [0.5, 0.5, 0],
+  [0.5, 0, 0.5]
 ]);
 
 camera.effects.Modern.prototype = {
