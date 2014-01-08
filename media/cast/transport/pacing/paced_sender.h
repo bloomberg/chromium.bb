@@ -15,8 +15,8 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "media/cast/cast_config.h"  // PacketSender
-#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/cast_config.h"
+#include "media/cast/cast_environment.h"
 
 namespace media {
 namespace cast {
@@ -39,9 +39,8 @@ class PacedSender : public PacedPacketSender,
                     public base::NonThreadSafe,
                     public base::SupportsWeakPtr<PacedSender> {
  public:
-  PacedSender(base::TickClock* clock,
-              PacketSender* transport,
-              scoped_refptr<base::TaskRunner> transport_task_runner);
+  PacedSender(scoped_refptr<CastEnvironment> cast_environment,
+              PacketSender* transport);
   virtual ~PacedSender();
 
   virtual bool SendPackets(const PacketList& packets) OVERRIDE;
@@ -64,10 +63,8 @@ class PacedSender : public PacedPacketSender,
   void SendStoredPackets();
   void UpdateBurstSize(size_t num_of_packets);
 
-  // Not owned by this class.
-  base::TickClock* const clock_;
+  scoped_refptr<CastEnvironment> cast_environment_;
   PacketSender* transport_;
-  scoped_refptr<base::TaskRunner> transport_task_runner_;
 
   size_t burst_size_;
   size_t packets_sent_in_burst_;

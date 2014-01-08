@@ -30,7 +30,7 @@ class AudioDecoderTest : public ::testing::Test {
     testing_clock_.Advance(base::TimeDelta::FromMilliseconds(1234));
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_, task_runner_,
+        task_runner_, task_runner_, task_runner_, task_runner_,
         GetDefaultCastLoggingConfig());
   }
   virtual ~AudioDecoderTest() {}
@@ -52,7 +52,7 @@ TEST_F(AudioDecoderTest, Pcm16MonoNoResampleOnePacket) {
   audio_config.rtp_payload_type = 127;
   audio_config.frequency = 16000;
   audio_config.channels = 1;
-  audio_config.codec = transport::kPcm16;
+  audio_config.codec = kPcm16;
   audio_config.use_external_decoder = false;
   Configure(audio_config);
 
@@ -101,7 +101,7 @@ TEST_F(AudioDecoderTest, Pcm16StereoNoResampleTwoPackets) {
   audio_config.rtp_payload_type = 127;
   audio_config.frequency = 16000;
   audio_config.channels = 2;
-  audio_config.codec = transport::kPcm16;
+  audio_config.codec = kPcm16;
   audio_config.use_external_decoder = false;
   Configure(audio_config);
 
@@ -171,7 +171,7 @@ TEST_F(AudioDecoderTest, Pcm16Resample) {
   audio_config.rtp_payload_type = 127;
   audio_config.frequency = 16000;
   audio_config.channels = 2;
-  audio_config.codec = transport::kPcm16;
+  audio_config.codec = kPcm16;
   audio_config.use_external_decoder = false;
   Configure(audio_config);
 

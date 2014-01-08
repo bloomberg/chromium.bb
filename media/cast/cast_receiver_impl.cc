@@ -66,7 +66,7 @@ class LocalFrameReceiver : public FrameReceiver {
 };
 
 // The video and audio receivers should only be called from the main thread.
-class LocalPacketReceiver : public transport::PacketReceiver {
+class LocalPacketReceiver : public PacketReceiver {
  public:
   LocalPacketReceiver(scoped_refptr<CastEnvironment> cast_environment,
                       AudioReceiver* audio_receiver,
@@ -149,9 +149,7 @@ CastReceiverImpl::CastReceiverImpl(
     const AudioReceiverConfig& audio_config,
     const VideoReceiverConfig& video_config,
     PacketSender* const packet_sender)
-    : pacer_(cast_environment->Clock(), packet_sender,
-          cast_environment->GetMessageTaskRunnerForThread(
-          CastEnvironment::TRANSPORT)),
+    : pacer_(cast_environment, packet_sender),
       audio_receiver_(cast_environment, audio_config, &pacer_),
       video_receiver_(cast_environment, video_config, &pacer_),
       frame_receiver_(new LocalFrameReceiver(cast_environment,
@@ -165,7 +163,7 @@ CastReceiverImpl::CastReceiverImpl(
 
 CastReceiverImpl::~CastReceiverImpl() {}
 
-scoped_refptr<transport::PacketReceiver> CastReceiverImpl::packet_receiver() {
+scoped_refptr<PacketReceiver> CastReceiverImpl::packet_receiver() {
   return packet_receiver_;
 }
 

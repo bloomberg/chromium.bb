@@ -31,7 +31,7 @@ class PacedPacketSender;
 // acknowledged by the remote peer or timed out.
 class RtpSender {
  public:
-  RtpSender(base::TickClock* clock,
+  RtpSender(scoped_refptr<CastEnvironment> cast_environment,
             const AudioSenderConfig* audio_config,
             const VideoSenderConfig* video_config,
             PacedPacketSender* transport);
@@ -53,6 +53,7 @@ class RtpSender {
  private:
   void UpdateSequenceNumber(std::vector<uint8>* packet);
 
+  scoped_refptr<CastEnvironment> cast_environment_;
   RtpPacketizerConfig config_;
   scoped_ptr<RtpPacketizer> packetizer_;
   scoped_ptr<PacketStorage> storage_;

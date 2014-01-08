@@ -11,7 +11,7 @@ namespace cast {
 
 TestRtcpPacketBuilder::TestRtcpPacketBuilder()
     : ptr_of_length_(NULL),
-      big_endian_writer_(buffer_, kMaxIpPacketSize) {
+      big_endian_writer_(buffer_, kIpPacketSize) {
 }
 
 void TestRtcpPacketBuilder::AddSr(uint32 sender_ssrc,

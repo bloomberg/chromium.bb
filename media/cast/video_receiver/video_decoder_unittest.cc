@@ -43,10 +43,10 @@ class VideoDecoderTest : public ::testing::Test {
     : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
       cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
           task_runner_, task_runner_, task_runner_, task_runner_,
-          task_runner_, GetDefaultCastLoggingConfig())),
+          GetDefaultCastLoggingConfig())),
       test_callback_(new DecodeTestFrameCallback()) {
     // Configure to vp8.
-    config_.codec = transport::kVp8;
+    config_.codec = kVp8;
     config_.use_external_decoder = false;
     decoder_.reset(new VideoDecoder(config_, cast_environment_));
     testing_clock_.Advance(
@@ -65,9 +65,9 @@ class VideoDecoderTest : public ::testing::Test {
 
 // TODO(pwestin): EXPECT_DEATH tests can not pass valgrind.
 TEST_F(VideoDecoderTest, DISABLED_SizeZero) {
-  transport::EncodedVideoFrame encoded_frame;
+  EncodedVideoFrame encoded_frame;
   base::TimeTicks render_time;
-  encoded_frame.codec = transport::kVp8;
+  encoded_frame.codec = kVp8;
   EXPECT_DEATH(
       decoder_->DecodeVideoFrame(
           &encoded_frame, render_time,

@@ -291,8 +291,7 @@ void AudioReceiver::PlayoutTimeout() {
   }
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
-  scoped_ptr<transport::EncodedAudioFrame> encoded_frame(
-      new transport::EncodedAudioFrame());
+  scoped_ptr<EncodedAudioFrame> encoded_frame(new EncodedAudioFrame());
 
   if (!audio_buffer_->GetEncodedAudioFrame(encoded_frame.get(),
                                            &rtp_timestamp, &next_frame)) {
@@ -323,8 +322,7 @@ void AudioReceiver::GetEncodedAudioFrame(
 
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
-  scoped_ptr<transport::EncodedAudioFrame> encoded_frame(
-      new transport::EncodedAudioFrame());
+  scoped_ptr<EncodedAudioFrame> encoded_frame(new EncodedAudioFrame());
 
   if (!audio_buffer_->GetEncodedAudioFrame(encoded_frame.get(),
                                            &rtp_timestamp, &next_frame)) {
@@ -350,7 +348,7 @@ bool AudioReceiver::PostEncodedAudioFrame(
     const AudioFrameEncodedCallback& callback,
     uint32 rtp_timestamp,
     bool next_frame,
-    scoped_ptr<transport::EncodedAudioFrame>* encoded_frame) {
+    scoped_ptr<EncodedAudioFrame>* encoded_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_buffer_) << "Invalid function call in this configuration";
 
@@ -434,7 +432,7 @@ base::TimeTicks AudioReceiver::GetPlayoutTime(base::TimeTicks now,
 }
 
 bool AudioReceiver::DecryptAudioFrame(
-    scoped_ptr<transport::EncodedAudioFrame>* audio_frame) {
+    scoped_ptr<EncodedAudioFrame>* audio_frame) {
   DCHECK(decryptor_) << "Invalid state";
 
   if (!decryptor_->SetCounter(GetAesNonce((*audio_frame)->frame_id,

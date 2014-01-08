@@ -68,7 +68,7 @@ bool ScanRtcpReceiverLogMessage(
     size_t* rtcp_log_size) {
   if (receiver_log_message.empty()) return false;
 
-  size_t remaining_space = media::cast::kMaxIpPacketSize - start_size;
+  size_t remaining_space = media::cast::kIpPacketSize - start_size;
 
   // We must have space for at least one message
   DCHECK_GE(remaining_space, kRtcpCastLogHeaderSize +
@@ -114,7 +114,7 @@ bool ScanRtcpReceiverLogMessage(
   *rtcp_log_size = kRtcpCastLogHeaderSize +
       *number_of_frames * kRtcpReceiverFrameLogSize +
       *total_number_of_messages_to_send * kRtcpReceiverEventLogSize;
-  DCHECK_GE(media::cast::kMaxIpPacketSize,
+  DCHECK_GE(media::cast::kIpPacketSize,
             start_size + *rtcp_log_size) << "Not enough buffer space";
 
   VLOG(1) << "number of frames " << *number_of_frames;
@@ -159,7 +159,7 @@ void RtcpSender::SendRtcpFromRtpReceiver(
     NOTIMPLEMENTED();
   }
   std::vector<uint8> packet;
-  packet.reserve(kMaxIpPacketSize);
+  packet.reserve(kIpPacketSize);
 
   if (packet_type_flags & kRtcpRr) {
     BuildRR(report_block, &packet);
@@ -190,15 +190,15 @@ void RtcpSender::SendRtcpFromRtpReceiver(
 void RtcpSender::BuildRR(const transport::RtcpReportBlock* report_block,
                          std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 32, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 32 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 32, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 32 > kIpPacketSize) return;
 
   uint16 number_of_rows = (report_block) ? 7 : 1;
   packet->resize(start_size + 8);
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 8);
   big_endian_writer.WriteU8(0x80 + (report_block ? 1 : 0));
-  big_endian_writer.WriteU8(transport::kPacketTypeReceiverReport);
+  big_endian_writer.WriteU8(kPacketTypeReceiverReport);
   big_endian_writer.WriteU16(number_of_rows);
   big_endian_writer.WriteU32(ssrc_);
 
@@ -210,8 +210,8 @@ void RtcpSender::BuildRR(const transport::RtcpReportBlock* report_block,
 void RtcpSender::AddReportBlocks(const transport::RtcpReportBlock& report_block,
                                  std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 24 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 24, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 24 > kIpPacketSize) return;
 
   packet->resize(start_size + 24);
 
@@ -237,9 +237,9 @@ void RtcpSender::AddReportBlocks(const transport::RtcpReportBlock& report_block,
 
 void RtcpSender::BuildSdec(std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size +  12 + c_name_.length(), kMaxIpPacketSize)
+  DCHECK_LT(start_size +  12 + c_name_.length(), kIpPacketSize)
       << "Not enough buffer space";
-  if (start_size + 12 > kMaxIpPacketSize) return;
+  if (start_size + 12 > kIpPacketSize) return;
 
   // SDES Source Description.
   packet->resize(start_size + 10);
@@ -247,7 +247,7 @@ void RtcpSender::BuildSdec(std::vector<uint8>* packet) const {
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 10);
   // We always need to add one SDES CNAME.
   big_endian_writer.WriteU8(0x80 + 1);
-  big_endian_writer.WriteU8(transport::kPacketTypeSdes);
+  big_endian_writer.WriteU8(kPacketTypeSdes);
 
   // Handle SDES length later on.
   uint32 sdes_length_position = static_cast<uint32>(start_size) + 3;
@@ -281,15 +281,15 @@ void RtcpSender::BuildSdec(std::vector<uint8>* packet) const {
 void RtcpSender::BuildPli(uint32 remote_ssrc,
                           std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 12, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 12 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 12, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 12 > kIpPacketSize) return;
 
   packet->resize(start_size + 12);
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 12);
   uint8 FMT = 1;  // Picture loss indicator.
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(transport::kPacketTypePayloadSpecific);
+  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
   big_endian_writer.WriteU16(2);  // Used fixed length of 2.
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU32(remote_ssrc);  // Add the remote SSRC.
@@ -307,15 +307,15 @@ void RtcpSender::BuildPli(uint32 remote_ssrc,
 void RtcpSender::BuildRpsi(const RtcpRpsiMessage* rpsi,
                            std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 24 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 24, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 24 > kIpPacketSize) return;
 
   packet->resize(start_size + 24);
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 24);
   uint8 FMT = 3;  // Reference Picture Selection Indication.
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(transport::kPacketTypePayloadSpecific);
+  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
 
   // Calculate length.
   uint32 bits_required = 7;
@@ -361,9 +361,9 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb,
                            std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
   size_t remb_size = 20 + 4 * remb->remb_ssrcs.size();
-  DCHECK_LT(start_size + remb_size, kMaxIpPacketSize)
+  DCHECK_LT(start_size + remb_size, kIpPacketSize)
       << "Not enough buffer space";
-  if (start_size + remb_size > kMaxIpPacketSize) return;
+  if (start_size + remb_size > kIpPacketSize) return;
 
   packet->resize(start_size + remb_size);
 
@@ -372,7 +372,7 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb,
   // Add application layer feedback.
   uint8 FMT = 15;
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(transport::kPacketTypePayloadSpecific);
+  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
   big_endian_writer.WriteU8(0);
   big_endian_writer.WriteU8(static_cast<uint8>(remb->remb_ssrcs.size() + 4));
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
@@ -404,8 +404,8 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb,
 void RtcpSender::BuildNack(const RtcpNackMessage* nack,
                            std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 16, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 16 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 16, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 16 > kIpPacketSize) return;
 
   packet->resize(start_size + 16);
 
@@ -413,7 +413,7 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack,
 
   uint8 FMT = 1;
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(transport::kPacketTypeGenericRtpFeedback);
+  big_endian_writer.WriteU8(kPacketTypeGenericRtpFeedback);
   big_endian_writer.WriteU8(0);
   size_t nack_size_pos = start_size + 3;
   big_endian_writer.WriteU8(3);
@@ -424,7 +424,7 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack,
   // The nack list should be sorted and not contain duplicates.
   size_t number_of_nack_fields = 0;
   size_t max_number_of_nack_fields = std::min<size_t>(kRtcpMaxNackFields,
-      (kMaxIpPacketSize - packet->size()) / 4);
+      (kIpPacketSize - packet->size()) / 4);
 
   std::list<uint16>::const_iterator it = nack->nack_list.begin();
   while (it != nack->nack_list.end() &&
@@ -443,8 +443,8 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack,
     }
     // Write the sequence number and the bitmask to the packet.
     start_size = packet->size();
-    DCHECK_LT(start_size + 4, kMaxIpPacketSize) << "Not enough buffer space";
-    if (start_size + 4 > kMaxIpPacketSize) return;
+    DCHECK_LT(start_size + 4, kIpPacketSize) << "Not enough buffer space";
+    if (start_size + 4 > kIpPacketSize) return;
 
     packet->resize(start_size + 4);
     net::BigEndianWriter big_endian_nack_writer(&((*packet)[start_size]), 4);
@@ -458,14 +458,14 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack,
 
 void RtcpSender::BuildBye(std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 8, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 8 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 8, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 8 > kIpPacketSize) return;
 
   packet->resize(start_size + 8);
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 8);
   big_endian_writer.WriteU8(0x80 + 1);
-  big_endian_writer.WriteU8(transport::kPacketTypeBye);
+  big_endian_writer.WriteU8(kPacketTypeBye);
   big_endian_writer.WriteU16(1);  // Length.
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
 }
@@ -473,15 +473,15 @@ void RtcpSender::BuildBye(std::vector<uint8>* packet) const {
 void RtcpSender::BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
                            std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 20, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 20 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 20, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 20 > kIpPacketSize) return;
 
   packet->resize(start_size + 20);
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 20);
 
   big_endian_writer.WriteU8(0x80);
-  big_endian_writer.WriteU8(transport::kPacketTypeXr);
+  big_endian_writer.WriteU8(kPacketTypeXr);
   big_endian_writer.WriteU16(4);  // Length.
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU8(4);  // Add block type.
@@ -496,15 +496,15 @@ void RtcpSender::BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
 void RtcpSender::BuildCast(const RtcpCastMessage* cast,
                            std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 20, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 20 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 20, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 20 > kIpPacketSize) return;
 
   packet->resize(start_size + 20);
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 20);
   uint8 FMT = 15;  // Application layer feedback.
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(transport::kPacketTypePayloadSpecific);
+  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
   big_endian_writer.WriteU8(0);
   size_t cast_size_pos = start_size + 3; // Save length position.
   big_endian_writer.WriteU8(4);
@@ -519,7 +519,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
 
   size_t number_of_loss_fields = 0;
   size_t max_number_of_loss_fields = std::min<size_t>(kRtcpMaxCastLossFields,
-      (kMaxIpPacketSize - packet->size()) / 4);
+      (kIpPacketSize - packet->size()) / 4);
 
   MissingFramesAndPacketsMap::const_iterator frame_it =
       cast->missing_frames_and_packets_.begin();
@@ -591,7 +591,7 @@ void RtcpSender::BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
   net::BigEndianWriter big_endian_writer(&((*packet)[packet_start_size]),
                                          rtcp_log_size);
   big_endian_writer.WriteU8(0x80 + kReceiverLogSubtype);
-  big_endian_writer.WriteU8(transport::kPacketTypeApplicationDefined);
+  big_endian_writer.WriteU8(kPacketTypeApplicationDefined);
   big_endian_writer.WriteU16(static_cast<uint16>(2 + 2 * number_of_frames +
                              total_number_of_messages_to_send));
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.

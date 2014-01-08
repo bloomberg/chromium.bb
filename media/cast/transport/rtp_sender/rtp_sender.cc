@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "media/cast/rtcp/rtcp_defines.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "net/base/big_endian.h"
@@ -14,23 +15,26 @@ namespace media {
 namespace cast {
 namespace transport {
 
-RtpSender::RtpSender(base::TickClock* clock,
+RtpSender::RtpSender(scoped_refptr<CastEnvironment> cast_environment,
                      const AudioSenderConfig* audio_config,
                      const VideoSenderConfig* video_config,
                      PacedPacketSender* transport)
-    : config_(),
+    : cast_environment_(cast_environment),
+      config_(),
       transport_(transport) {
   // Store generic cast config and create packetizer config.
   DCHECK(audio_config || video_config) << "Invalid argument";
   if (audio_config) {
-    storage_.reset(new PacketStorage(clock, audio_config->rtp_history_ms));
+    storage_.reset(new PacketStorage(cast_environment->Clock(),
+                                     audio_config->rtp_history_ms));
     config_.audio = true;
     config_.ssrc = audio_config->sender_ssrc;
     config_.payload_type = audio_config->rtp_payload_type;
     config_.frequency = audio_config->frequency;
     config_.audio_codec = audio_config->codec;
   } else {
-    storage_.reset(new PacketStorage(clock, video_config->rtp_history_ms));
+    storage_.reset(new PacketStorage(cast_environment->Clock(),
+                                     video_config->rtp_history_ms));
     config_.audio = false;
     config_.ssrc = video_config->sender_ssrc;
     config_.payload_type = video_config->rtp_payload_type;

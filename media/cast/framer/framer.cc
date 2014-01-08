@@ -65,7 +65,7 @@ bool Framer::InsertPacket(const uint8* payload_data,
 }
 
 // This does not release the frame.
-bool Framer::GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame,
+bool Framer::GetEncodedAudioFrame(EncodedAudioFrame* audio_frame,
                                   uint32* rtp_timestamp,
                                   bool* next_frame) {
   uint32 frame_id;
@@ -88,7 +88,7 @@ bool Framer::GetEncodedAudioFrame(transport::EncodedAudioFrame* audio_frame,
 }
 
 // This does not release the frame.
-bool Framer::GetEncodedVideoFrame(transport::EncodedVideoFrame* video_frame,
+bool Framer::GetEncodedVideoFrame(EncodedVideoFrame* video_frame,
                                   uint32* rtp_timestamp,
                                   bool* next_frame) {
   uint32 frame_id;

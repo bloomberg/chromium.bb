@@ -216,8 +216,7 @@ bool Rtcp::IsRtcpPacket(const uint8* packet, size_t length) {
   if (length < kMinLengthOfRtcp) return false;
 
   uint8 packet_type = packet[1];
-  if (packet_type >= transport::kPacketTypeLow &&
-      packet_type <= transport::kPacketTypeHigh) {
+  if (packet_type >= kPacketTypeLow && packet_type <= kPacketTypeHigh) {
     return true;
   }
   return false;

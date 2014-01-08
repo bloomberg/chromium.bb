@@ -54,7 +54,7 @@ void Vp8Decoder::InitDecoder() {
   }
 }
 
-bool Vp8Decoder::Decode(const transport::EncodedVideoFrame* encoded_frame,
+bool Vp8Decoder::Decode(const EncodedVideoFrame* encoded_frame,
                         const base::TimeTicks render_time,
                         const VideoFrameDecodedCallback& frame_decoded_cb) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_DECODER));

@@ -40,10 +40,9 @@ class LocalFrameInput : public FrameInput {
             audio_bus, recorded_time, done_callback));
   }
 
-  virtual void InsertCodedAudioFrame(
-      const transport::EncodedAudioFrame* audio_frame,
-      const base::TimeTicks& recorded_time,
-      const base::Closure callback) OVERRIDE {
+  virtual void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
+                                     const base::TimeTicks& recorded_time,
+                                     const base::Closure callback) OVERRIDE {
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&AudioSender::InsertCodedAudioFrame, audio_sender_,
             audio_frame, recorded_time, callback));
@@ -86,7 +85,7 @@ class LocalFrameInput : public FrameInput {
 //    separate video cameras, each MUST be identified as a different
 //    SSRC.
 
-class LocalCastSenderPacketReceiver : public transport::PacketReceiver {
+class LocalCastSenderPacketReceiver : public PacketReceiver {
  public:
   LocalCastSenderPacketReceiver(scoped_refptr<CastEnvironment> cast_environment,
                                 base::WeakPtr<AudioSender> audio_sender,
@@ -158,9 +157,7 @@ CastSenderImpl::CastSenderImpl(
     const VideoSenderConfig& video_config,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
     PacketSender* const packet_sender)
-    : pacer_(cast_environment->Clock(), packet_sender,
-          cast_environment->GetMessageTaskRunnerForThread(
-          CastEnvironment::TRANSPORT)),
+    : pacer_(cast_environment, packet_sender),
       audio_sender_(cast_environment, audio_config, &pacer_),
       video_sender_(cast_environment, video_config, gpu_factories, &pacer_),
       frame_input_(new LocalFrameInput(cast_environment,
@@ -177,7 +174,7 @@ scoped_refptr<FrameInput> CastSenderImpl::frame_input() {
   return frame_input_;
 }
 
-scoped_refptr<transport::PacketReceiver> CastSenderImpl::packet_receiver() {
+scoped_refptr<PacketReceiver> CastSenderImpl::packet_receiver() {
   return packet_receiver_;
 }
 

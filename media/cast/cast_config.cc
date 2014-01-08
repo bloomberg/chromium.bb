@@ -46,8 +46,19 @@ VideoReceiverConfig::VideoReceiverConfig()
       max_frame_rate(kDefaultMaxFrameRate),
       decoder_faster_than_max_frame_rate(true) {}
 
+EncodedVideoFrame::EncodedVideoFrame() {}
+EncodedVideoFrame::~EncodedVideoFrame() {}
+
+EncodedAudioFrame::EncodedAudioFrame() {}
+EncodedAudioFrame::~EncodedAudioFrame() {}
+
 PcmAudioFrame::PcmAudioFrame() {}
 PcmAudioFrame::~PcmAudioFrame() {}
+
+// static
+void PacketReceiver::DeletePacket(const uint8* packet) {
+  delete [] packet;
+}
 
 }  // namespace cast
 }  // namespace media

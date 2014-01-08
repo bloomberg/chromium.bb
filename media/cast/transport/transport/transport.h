@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_TRANSPORT_TRANSPORT_TRANSPORT_H_
-#define MEDIA_CAST_TRANSPORT_TRANSPORT_TRANSPORT_H_
+#ifndef MEDIA_CAST_TEST_TRANSPORT_TRANSPORT_H_
+#define MEDIA_CAST_TEST_TRANSPORT_TRANSPORT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "media/cast/cast_config.h"  // PacketSender
-#include "media/cast/transport/cast_transport_config.h"
+#include "media/cast/cast_config.h"
+#include "media/cast/cast_environment.h"
 #include "net/udp/udp_server_socket.h"
 
 
@@ -51,4 +51,4 @@ class Transport {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_TRANSPORT_TRANSPORT_TRANSPORT_H_
+#endif  // MEDIA_CAST_TEST_TRANSPORT_TRANSPORT_H_

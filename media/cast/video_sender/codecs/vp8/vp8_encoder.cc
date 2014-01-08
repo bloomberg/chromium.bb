@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/transport/cast_transport_config.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8cx.h"
 
 namespace media {
@@ -128,7 +127,7 @@ void Vp8Encoder::InitEncode(int number_of_cores) {
 }
 
 bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
-                        transport::EncodedVideoFrame* encoded_image) {
+                        EncodedVideoFrame* encoded_image) {
   // Image in vpx_image_t format.
   // Input image is const. VP8's raw image is not defined as const.
   raw_image_->planes[PLANE_Y] =
@@ -197,7 +196,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   if (total_size == 0) return true;
 
   // Populate the encoded frame.
-  encoded_image->codec = transport::kVp8;
+  encoded_image->codec = kVp8;
   encoded_image->last_referenced_frame_id = latest_frame_id_to_reference;
   encoded_image->frame_id = ++last_encoded_frame_id_;
 

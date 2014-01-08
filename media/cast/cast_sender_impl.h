@@ -38,14 +38,14 @@ class CastSenderImpl : public CastSender {
   virtual ~CastSenderImpl();
 
   virtual scoped_refptr<FrameInput> frame_input() OVERRIDE;
-  virtual scoped_refptr<transport::PacketReceiver> packet_receiver() OVERRIDE;
+  virtual scoped_refptr<PacketReceiver> packet_receiver() OVERRIDE;
 
  private:
   transport::PacedSender pacer_;
   AudioSender audio_sender_;
   VideoSender video_sender_;
   scoped_refptr<FrameInput> frame_input_;
-  scoped_refptr<transport::PacketReceiver> packet_receiver_;
+  scoped_refptr<PacketReceiver> packet_receiver_;
 };
 
 }  // namespace cast

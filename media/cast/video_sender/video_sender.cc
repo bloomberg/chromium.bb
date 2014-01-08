@@ -61,7 +61,7 @@ VideoSender::VideoSender(
       max_frame_rate_(video_config.max_frame_rate),
       cast_environment_(cast_environment),
       rtcp_feedback_(new LocalRtcpVideoSenderFeedback(this)),
-      rtp_sender_(new transport::RtpSender(cast_environment->Clock(),
+      rtp_sender_(new transport::RtpSender(cast_environment,
                                            NULL,
                                            &video_config,
                                            paced_packet_sender)),
@@ -148,14 +148,13 @@ void VideoSender::InsertRawVideoFrame(
 }
 
 void VideoSender::SendEncodedVideoFrameMainThread(
-    scoped_ptr<transport::EncodedVideoFrame> video_frame,
+    scoped_ptr<EncodedVideoFrame> video_frame,
     const base::TimeTicks& capture_time) {
   SendEncodedVideoFrame(video_frame.get(), capture_time);
 }
 
-bool VideoSender::EncryptVideoFrame(
-    const transport::EncodedVideoFrame& video_frame,
-    transport::EncodedVideoFrame* encrypted_frame) {
+bool VideoSender::EncryptVideoFrame(const EncodedVideoFrame& video_frame,
+                                    EncodedVideoFrame* encrypted_frame) {
   DCHECK(encryptor_) << "Invalid state";
 
   if (!encryptor_->SetCounter(GetAesNonce(video_frame.frame_id, iv_mask_))) {
@@ -175,14 +174,13 @@ bool VideoSender::EncryptVideoFrame(
   return true;
 }
 
-void VideoSender::SendEncodedVideoFrame(
-    const transport::EncodedVideoFrame* encoded_frame,
-    const base::TimeTicks& capture_time) {
+void VideoSender::SendEncodedVideoFrame(const EncodedVideoFrame* encoded_frame,
+                                        const base::TimeTicks& capture_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   last_send_time_ = cast_environment_->Clock()->NowTicks();
 
   if (encryptor_) {
-    transport::EncodedVideoFrame encrypted_video_frame;
+    EncodedVideoFrame encrypted_video_frame;
 
     if (!EncryptVideoFrame(*encoded_frame, &encrypted_video_frame)) {
       // Logging already done.

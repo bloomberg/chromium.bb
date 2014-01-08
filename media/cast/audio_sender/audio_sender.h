@@ -13,6 +13,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
+#include "media/cast/cast_environment.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/transport/rtp_sender/rtp_sender.h"
 
@@ -55,19 +56,17 @@ class AudioSender : public base::NonThreadSafe,
   // The closure callback is called from the main cast thread as soon as
   // the cast sender is done with the frame; it does not mean that the encoded
   // frame has been sent out.
-  void InsertCodedAudioFrame(
-      const transport::EncodedAudioFrame* audio_frame,
-      const base::TimeTicks& recorded_time,
-      const base::Closure callback);
+  void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
+                             const base::TimeTicks& recorded_time,
+                             const base::Closure callback);
 
   // Only called from the main cast thread.
   void IncomingRtcpPacket(const uint8* packet, size_t length,
                           const base::Closure callback);
 
  protected:
-  void SendEncodedAudioFrame(
-      scoped_ptr<transport::EncodedAudioFrame> audio_frame,
-      const base::TimeTicks& recorded_time);
+  void SendEncodedAudioFrame(scoped_ptr<EncodedAudioFrame> audio_frame,
+                             const base::TimeTicks& recorded_time);
 
  private:
   friend class LocalRtcpAudioSenderFeedback;
@@ -77,8 +76,8 @@ class AudioSender : public base::NonThreadSafe,
 
   // Caller must allocate the destination |encrypted_frame|. The data member
   // will be resized to hold the encrypted size.
-  bool EncryptAudioFrame(const transport::EncodedAudioFrame& audio_frame,
-                         transport::EncodedAudioFrame* encrypted_frame);
+  bool EncryptAudioFrame(const EncodedAudioFrame& audio_frame,
+                         EncodedAudioFrame* encrypted_frame);
 
   void ScheduleNextRtcpReport();
   void SendRtcpReport();

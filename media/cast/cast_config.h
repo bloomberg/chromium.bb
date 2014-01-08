@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/transport/cast_transport_config.h"
 
 namespace media {
 namespace cast {
@@ -21,6 +20,17 @@ namespace cast {
 enum RtcpMode {
   kRtcpCompound,  // Compound RTCP mode is described by RFC 4585.
   kRtcpReducedSize,  // Reduced-size RTCP mode is described by RFC 5506.
+};
+
+enum VideoCodec {
+  kVp8,
+  kH264,
+};
+
+enum AudioCodec {
+  kOpus,
+  kPcm16,
+  kExternalAudio,
 };
 
 struct AudioSenderConfig {
@@ -41,7 +51,7 @@ struct AudioSenderConfig {
   int frequency;
   int channels;
   int bitrate;  // Set to <= 0 for "auto variable bitrate" (libopus knows best).
-  transport::AudioCodec codec;
+  AudioCodec codec;
 
   std::string aes_key;  // Binary string of size kAesKeySize.
   std::string aes_iv_mask;  // Binary string of size kAesKeySize.
@@ -73,7 +83,7 @@ struct VideoSenderConfig {
   int min_qp;
   int max_frame_rate;
   int max_number_of_video_buffers_used;  // Max value depend on codec.
-  transport::VideoCodec codec;
+  VideoCodec codec;
   int number_of_cores;
 
   std::string aes_key;  // Binary string of size kAesKeySize.
@@ -97,7 +107,7 @@ struct AudioReceiverConfig {
   bool use_external_decoder;
   int frequency;
   int channels;
-  transport::AudioCodec codec;
+  AudioCodec codec;
 
   std::string aes_key;  // Binary string of size kAesKeySize.
   std::string aes_iv_mask;  // Binary string of size kAesKeySize.
@@ -123,10 +133,21 @@ struct VideoReceiverConfig {
   // Some HW decoders can not run faster than the frame rate, preventing it
   // from catching up after a glitch.
   bool decoder_faster_than_max_frame_rate;
-  transport::VideoCodec codec;
+  VideoCodec codec;
 
   std::string aes_key;  // Binary string of size kAesKeySize.
   std::string aes_iv_mask;  // Binary string of size kAesKeySize.
+};
+
+struct EncodedVideoFrame {
+  EncodedVideoFrame();
+  ~EncodedVideoFrame();
+
+  VideoCodec codec;
+  bool key_frame;
+  uint32 frame_id;
+  uint32 last_referenced_frame_id;
+  std::string data;
 };
 
 // DEPRECATED: Do not use in new code.  Please migrate existing code to use
@@ -138,6 +159,19 @@ struct PcmAudioFrame {
   int channels;  // Samples in interleaved stereo format. L0, R0, L1 ,R1 ,...
   int frequency;
   std::vector<int16> samples;
+};
+
+struct EncodedAudioFrame {
+  EncodedAudioFrame();
+  ~EncodedAudioFrame();
+
+  AudioCodec codec;
+  uint32 frame_id;  // Needed to release the frame.
+  int samples;  // Needed send side to advance the RTP timestamp.
+                // Not used receive side.
+  // Support for max sampling rate of 48KHz, 2 channels, 100 ms duration.
+  static const int kMaxNumberOfSamples = 48 * 2 * 100;
+  std::string data;
 };
 
 typedef std::vector<uint8> Packet;

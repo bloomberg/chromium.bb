@@ -128,7 +128,7 @@ AudioSenderConfig GetAudioSenderConfig() {
   audio_config.frequency = kAudioSamplingFrequency;
   audio_config.channels = kAudioChannels;
   audio_config.bitrate = 64000;
-  audio_config.codec = transport::kOpus;
+  audio_config.codec = kOpus;
   return audio_config;
 }
 
@@ -178,7 +178,7 @@ VideoSenderConfig GetVideoSenderConfig() {
   video_config.min_qp = 4;
   video_config.max_qp = 40;
   video_config.max_frame_rate = 30;
-  video_config.codec = transport::kVp8;
+  video_config.codec = kVp8;
   video_config.max_number_of_video_buffers_used = 1;
   video_config.number_of_cores = 1;
   return video_config;
@@ -315,7 +315,6 @@ int main(int argc, char** argv) {
       NULL,
       video_thread.message_loop_proxy(),
       NULL,
-      main_thread.message_loop_proxy(),
       media::cast::GetDefaultCastLoggingConfig()));
 
   media::cast::AudioSenderConfig audio_config =
@@ -333,8 +332,7 @@ int main(int argc, char** argv) {
       NULL,  // VideoEncoderController.
       transport->packet_sender()));
 
-  media::cast::transport::PacketReceiver* packet_receiver =
-      cast_sender->packet_receiver();
+  media::cast::PacketReceiver* packet_receiver = cast_sender->packet_receiver();
 
   int send_to_port, receive_port;
   media::cast::GetPorts(&send_to_port, &receive_port);

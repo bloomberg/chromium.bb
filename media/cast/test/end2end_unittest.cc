@@ -73,7 +73,7 @@ class LoopBackTransport : public PacketSender {
         cast_environment_(cast_environment) {
   }
 
-  void RegisterPacketReceiver(transport::PacketReceiver* packet_receiver) {
+  void RegisterPacketReceiver(PacketReceiver* packet_receiver) {
     DCHECK(packet_receiver);
     packet_receiver_ = packet_receiver;
   }
@@ -86,7 +86,7 @@ class LoopBackTransport : public PacketSender {
     uint8* packet_copy = new uint8[packet.size()];
     memcpy(packet_copy, packet.data(), packet.size());
     packet_receiver_->ReceivedPacket(packet_copy, packet.size(),
-        base::Bind(transport::PacketReceiver::DeletePacket, packet_copy));
+        base::Bind(PacketReceiver::DeletePacket, packet_copy));
     return true;
   }
 
@@ -108,7 +108,7 @@ class LoopBackTransport : public PacketSender {
         packet_copy[kCommonRtpHeaderLength] &= kCastReferenceFrameIdBitReset;
       }
       packet_receiver_->ReceivedPacket(packet_copy, packet.size(),
-          base::Bind(transport::PacketReceiver::DeletePacket, packet_copy));
+          base::Bind(PacketReceiver::DeletePacket, packet_copy));
     }
     return true;
   }
@@ -126,7 +126,7 @@ class LoopBackTransport : public PacketSender {
   }
 
  private:
-  transport::PacketReceiver* packet_receiver_;
+  PacketReceiver* packet_receiver_;
   bool send_packets_;
   bool drop_packets_belonging_to_odd_frames_;
   bool reset_reference_frame_id_;
@@ -203,9 +203,8 @@ class TestReceiverAudioCallback :
                 1);
   }
 
-  void CheckCodedPcmAudioFrame(
-      scoped_ptr<transport::EncodedAudioFrame> audio_frame,
-      const base::TimeTicks& playout_time) {
+  void CheckCodedPcmAudioFrame(scoped_ptr<EncodedAudioFrame> audio_frame,
+                               const base::TimeTicks& playout_time) {
     ++num_called_;
 
     EXPECT_FALSE(expected_frame_.empty());  // Test for bug in test code.
@@ -335,7 +334,7 @@ class End2EndTest : public ::testing::Test {
       : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, EnableCastLoggingConfig())),
+            EnableCastLoggingConfig())),
         start_time_(),
         sender_to_receiver_(cast_environment_),
         receiver_to_sender_(cast_environment_),
@@ -345,7 +344,7 @@ class End2EndTest : public ::testing::Test {
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
 
-  void SetupConfig(transport::AudioCodec audio_codec,
+  void SetupConfig(AudioCodec audio_codec,
                    int audio_sampling_frequency,
                    // TODO(miu): 3rd arg is meaningless?!?
                    bool external_audio_decoder,
@@ -387,7 +386,7 @@ class End2EndTest : public ::testing::Test {
     video_sender_config_.max_frame_rate = 30;
     video_sender_config_.max_number_of_video_buffers_used =
         max_number_of_video_buffers_used;
-    video_sender_config_.codec = transport::kVp8;
+    video_sender_config_.codec = kVp8;
     video_sender_config_.number_of_cores = 1;
 
     video_receiver_config_.feedback_ssrc =
@@ -474,7 +473,7 @@ class End2EndTest : public ::testing::Test {
 // Audio and video test without packet loss using raw PCM 16 audio "codec";
 // This test is too slow. Disabled for now: crbug.com/329333.
 TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
-  SetupConfig(transport::kPcm16, 32000, false, 1);
+  SetupConfig(kPcm16, 32000, false, 1);
   Create();
 
   int video_start = 1;
@@ -547,7 +546,7 @@ TEST_F(End2EndTest, DISABLED_LoopNoLossPcm16) {
 // This tests our external decoder interface for Audio.
 // Audio test without packet loss using raw PCM 16 audio "codec";
 TEST_F(End2EndTest, MAYBE_LoopNoLossPcm16ExternalDecoder) {
-  SetupConfig(transport::kPcm16, 32000, true, 1);
+  SetupConfig(kPcm16, 32000, true, 1);
   Create();
 
   int i = 0;
@@ -580,7 +579,7 @@ TEST_F(End2EndTest, MAYBE_LoopNoLossPcm16ExternalDecoder) {
 #endif
 // This tests our Opus audio codec without video.
 TEST_F(End2EndTest, MAYBE_LoopNoLossOpus) {
-  SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 1);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 1);
   Create();
 
   int i = 0;
@@ -624,7 +623,7 @@ TEST_F(End2EndTest, MAYBE_LoopNoLossOpus) {
 // TODO(miu): Test disabled because of non-determinism.
 // http://crbug.com/314233
 TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
-  SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 1);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 1);
   Create();
 
   int video_start = 1;
@@ -703,7 +702,7 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
 
 // This tests a network glitch lasting for 10 video frames.
 TEST_F(End2EndTest, GlitchWith3Buffers) {
-  SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 3);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 3);
   video_sender_config_.rtp_max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();
@@ -752,7 +751,7 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
 }
 
 TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
-  SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 3);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 3);
   video_sender_config_.rtp_max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();
@@ -787,7 +786,7 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
 }
 
 TEST_F(End2EndTest, ResetReferenceFrameId) {
-  SetupConfig(transport::kOpus, kDefaultAudioSamplingRate, false, 3);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 3);
   video_sender_config_.rtp_max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();
@@ -814,7 +813,7 @@ TEST_F(End2EndTest, ResetReferenceFrameId) {
 }
 
 TEST_F(End2EndTest, CryptoVideo) {
-  SetupConfig(transport::kPcm16, 32000, false, 1);
+  SetupConfig(kPcm16, 32000, false, 1);
 
   video_sender_config_.aes_iv_mask =
       ConvertFromBase16String("1234567890abcdeffedcba0987654321");
@@ -854,7 +853,7 @@ TEST_F(End2EndTest, CryptoVideo) {
 #define MAYBE_CryptoAudio CryptoAudio
 #endif
 TEST_F(End2EndTest, MAYBE_CryptoAudio) {
-  SetupConfig(transport::kPcm16, 32000, false, 1);
+  SetupConfig(kPcm16, 32000, false, 1);
 
   audio_sender_config_.aes_iv_mask =
      ConvertFromBase16String("abcdeffedcba12345678900987654321");
@@ -909,7 +908,7 @@ TEST_F(End2EndTest, MAYBE_CryptoAudio) {
 // Video test without packet loss; This test is targeted at testing the logging
 // aspects of the end2end, but is basically equivalent to LoopNoLossPcm16.
 TEST_F(End2EndTest, VideoLogging) {
-  SetupConfig(transport::kPcm16, 32000, false, 1);
+  SetupConfig(kPcm16, 32000, false, 1);
   Create();
 
   int video_start = 1;
@@ -967,9 +966,13 @@ TEST_F(End2EndTest, VideoLogging) {
   // Choose a packet, and verify that all events were logged.
   event_log = (++(packet_it->second.packet_map.begin()))->second.type;
   EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
+               kPacketSentToPacer)) != event_log.end());
+  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
+               kPacketSentToNetwork)) != event_log.end());
+  EXPECT_TRUE((std::find(event_log.begin(), event_log.end(),
                kPacketReceived)) != event_log.end());
   // Verify that there were no other events logged with respect to this frame.
-  EXPECT_EQ(1u, event_log.size());
+  EXPECT_EQ(3u, event_log.size());
 }
 
 // TODO(mikhal): Crashes on the bots. Re-enable. http://crbug.com/329563
@@ -981,7 +984,7 @@ TEST_F(End2EndTest, VideoLogging) {
 // Audio test without packet loss; This test is targeted at testing the logging
 // aspects of the end2end, but is basically equivalent to LoopNoLossPcm16.
 TEST_F(End2EndTest, MAYBE_AudioLogging) {
-  SetupConfig(transport::kPcm16, 32000, false, 1);
+  SetupConfig(kPcm16, 32000, false, 1);
   Create();
 
   int audio_diff = kFrameTimerMs;

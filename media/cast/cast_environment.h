@@ -34,8 +34,6 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
     VIDEO_ENCODER,
     // The video decoder thread is where the video decode processing is done.
     VIDEO_DECODER,
-     // The transport thread is where the transport processing is done.
-    TRANSPORT,
   };
 
   CastEnvironment(base::TickClock* clock,
@@ -44,7 +42,6 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
                   scoped_refptr<base::TaskRunner> audio_decode_thread_proxy,
                   scoped_refptr<base::TaskRunner> video_encode_thread_proxy,
                   scoped_refptr<base::TaskRunner> video_decode_thread_proxy,
-                  scoped_refptr<base::TaskRunner> transport_thread_proxy,
                   const CastLoggingConfig& config);
 
   // These are the same methods in message_loop.h, but are guaranteed to either
@@ -68,14 +65,14 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   // Logging is not thread safe. Should always be called from the main thread.
   LoggingImpl* Logging();
 
-  scoped_refptr<base::TaskRunner> GetMessageTaskRunnerForThread(
-      ThreadId identifier);
-
  protected:
   virtual ~CastEnvironment();
 
  private:
   friend class base::RefCountedThreadSafe<CastEnvironment>;
+
+  scoped_refptr<base::TaskRunner> GetMessageTaskRunnerForThread(
+      ThreadId identifier);
 
   base::TickClock* const clock_;  // Not owned by this class.
   scoped_refptr<base::TaskRunner> main_thread_proxy_;
@@ -83,7 +80,6 @@ class CastEnvironment : public base::RefCountedThreadSafe<CastEnvironment> {
   scoped_refptr<base::TaskRunner> audio_decode_thread_proxy_;
   scoped_refptr<base::TaskRunner> video_encode_thread_proxy_;
   scoped_refptr<base::TaskRunner> video_decode_thread_proxy_;
-  scoped_refptr<base::TaskRunner> transport_thread_proxy_;
 
   scoped_ptr<LoggingImpl> logging_;
 

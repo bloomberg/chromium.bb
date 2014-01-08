@@ -15,7 +15,6 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_sender.h"
-#include "media/cast/transport/cast_transport_config.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 
 using media::cast::AudioSenderConfig;
@@ -80,9 +79,9 @@ bool ToAudioSenderConfig(const CastRtpParams& params,
   config->bitrate = payload_params.max_bitrate;
   config->aes_key = payload_params.aes_key;
   config->aes_iv_mask = payload_params.aes_iv_mask;
-  config->codec = media::cast::transport::kPcm16;
+  config->codec = media::cast::kPcm16;
   if (payload_params.codec_name == kCodecNameOpus)
-    config->codec = media::cast::transport::kOpus;
+    config->codec = media::cast::kOpus;
   else
     return false;
   return true;
@@ -104,7 +103,7 @@ bool ToVideoSenderConfig(const CastRtpParams& params,
   config->aes_key = payload_params.aes_key;
   config->aes_iv_mask = payload_params.aes_iv_mask;
   if (payload_params.codec_name == kCodecNameVp8)
-    config->codec = media::cast::transport::kVp8;
+    config->codec = media::cast::kVp8;
   else
     return false;
   return true;

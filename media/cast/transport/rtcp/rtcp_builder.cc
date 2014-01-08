@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "media/cast/rtcp/rtcp_utility.h"
 #include "media/cast/transport/cast_transport_defines.h"
 #include "media/cast/transport/pacing/paced_sender.h"
 #include "net/base/big_endian.h"
@@ -19,13 +20,6 @@ static const size_t kRtcpSenderFrameLogSize = 4;
 namespace media {
 namespace cast {
 namespace transport {
-
-namespace {
-// RFC 3550 page 44, including end null.
-static const size_t kRtcpCnameSize = 256;
-static const uint32 kCast = ('C' << 24) + ('A' << 16) + ('S' << 8) + 'T';
-static const uint8 kSenderLogSubtype = 1;
-};
 
 RtcpBuilder::RtcpBuilder(PacedPacketSender* outgoing_transport,
                              uint32 sending_ssrc,
@@ -54,7 +48,7 @@ void RtcpBuilder::SendRtcpFromRtpSender(uint32 packet_type_flags,
   }
 
   std::vector<uint8> packet;
-  packet.reserve(kMaxIpPacketSize);
+  packet.reserve(kIpPacketSize);
   if (packet_type_flags & kRtcpSr) {
     DCHECK(sender_info) << "Invalid argument";
     BuildSR(*sender_info, NULL, &packet);
@@ -82,8 +76,8 @@ void RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
                             std::vector<uint8>* packet) const {
   // Sender report.
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 52, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 52 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 52, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 52 > kIpPacketSize) return;
 
   uint16 number_of_rows = (report_block) ? 12 : 6;
   packet->resize(start_size + 28);
@@ -107,8 +101,8 @@ void RtcpBuilder::BuildSR(const RtcpSenderInfo& sender_info,
 void RtcpBuilder::AddReportBlocks(const RtcpReportBlock& report_block,
                                     std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 24 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 24, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 24 > kIpPacketSize) return;
 
   packet->resize(start_size + 24);
 
@@ -134,9 +128,9 @@ void RtcpBuilder::AddReportBlocks(const RtcpReportBlock& report_block,
 
 void RtcpBuilder::BuildSdec(std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size +  12 + c_name_.length(), kMaxIpPacketSize)
+  DCHECK_LT(start_size +  12 + c_name_.length(), kIpPacketSize)
       << "Not enough buffer space";
-  if (start_size + 12 > kMaxIpPacketSize) return;
+  if (start_size + 12 > kIpPacketSize) return;
 
   // SDES Source Description.
   packet->resize(start_size + 10);
@@ -177,8 +171,8 @@ void RtcpBuilder::BuildSdec(std::vector<uint8>* packet) const {
 
 void RtcpBuilder::BuildBye(std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 8, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 8 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 8, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 8 > kIpPacketSize) return;
 
   packet->resize(start_size + 8);
 
@@ -209,8 +203,8 @@ void RtcpBuilder::BuildBye(std::vector<uint8>* packet) const {
 void RtcpBuilder::BuildDlrrRb(const RtcpDlrrReportBlock* dlrr,
                                 std::vector<uint8>* packet) const {
   size_t start_size = packet->size();
-  DCHECK_LT(start_size + 24, kMaxIpPacketSize) << "Not enough buffer space";
-  if (start_size + 24 > kMaxIpPacketSize) return;
+  DCHECK_LT(start_size + 24, kIpPacketSize) << "Not enough buffer space";
+  if (start_size + 24 > kIpPacketSize) return;
 
   packet->resize(start_size + 24);
 
@@ -232,7 +226,7 @@ void RtcpBuilder::BuildSenderLog(RtcpSenderLogMessage* sender_log_message,
   DCHECK(sender_log_message);
   DCHECK(packet);
   size_t start_size = packet->size();
-  size_t remaining_space = kMaxIpPacketSize - start_size;
+  size_t remaining_space = kIpPacketSize - start_size;
   DCHECK_GE(remaining_space, kRtcpCastLogHeaderSize + kRtcpSenderFrameLogSize)
        << "Not enough buffer space";
   if (remaining_space < kRtcpCastLogHeaderSize + kRtcpSenderFrameLogSize)

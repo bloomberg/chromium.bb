@@ -77,8 +77,7 @@ class EncodeDecodeTest : public ::testing::Test {
         // CastEnvironment will only be used by the vp8 decoder; Enable only the
         // video decoder and main threads.
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
-            NULL, NULL, NULL, task_runner_, NULL,
-            GetDefaultCastLoggingConfig())),
+            NULL, NULL, NULL, task_runner_, GetDefaultCastLoggingConfig())),
         test_callback_(new EncodeDecodeTestFrameCallback()) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
@@ -119,7 +118,7 @@ class EncodeDecodeTest : public ::testing::Test {
 };
 
 TEST_F(EncodeDecodeTest, BasicEncodeDecode) {
-  transport::EncodedVideoFrame encoded_frame;
+  EncodedVideoFrame encoded_frame;
   // Encode frame.
   encoder_->Encode(video_frame_, &encoded_frame);
   EXPECT_GT(encoded_frame.data.size(), GG_UINT64_C(0));

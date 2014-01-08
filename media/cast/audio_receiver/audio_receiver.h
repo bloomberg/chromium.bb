@@ -79,11 +79,10 @@ class AudioReceiver : public base::NonThreadSafe,
   // Time to pull out the audio even though we are missing data.
   void PlayoutTimeout();
 
-  bool PostEncodedAudioFrame(
-      const AudioFrameEncodedCallback& callback,
-      uint32 rtp_timestamp,
-      bool next_frame,
-      scoped_ptr<transport::EncodedAudioFrame>* encoded_frame);
+  bool PostEncodedAudioFrame(const AudioFrameEncodedCallback& callback,
+                             uint32 rtp_timestamp,
+                             bool next_frame,
+                             scoped_ptr<EncodedAudioFrame>* encoded_frame);
 
   // Actual decoding implementation - should be called under the audio decoder
   // thread.
@@ -101,7 +100,7 @@ class AudioReceiver : public base::NonThreadSafe,
 
   // Decrypts the data within the |audio_frame| and replaces the data with the
   // decrypted string.
-  bool DecryptAudioFrame(scoped_ptr<transport::EncodedAudioFrame>* audio_frame);
+  bool DecryptAudioFrame(scoped_ptr<EncodedAudioFrame>* audio_frame);
 
   // Schedule the next RTCP report.
   void ScheduleNextRtcpReport();
@@ -118,7 +117,7 @@ class AudioReceiver : public base::NonThreadSafe,
   scoped_refptr<CastEnvironment> cast_environment_;
   base::WeakPtrFactory<AudioReceiver> weak_factory_;
 
-  const transport::AudioCodec codec_;
+  const AudioCodec codec_;
   const int frequency_;
   base::TimeDelta target_delay_delta_;
   scoped_ptr<Framer> audio_buffer_;

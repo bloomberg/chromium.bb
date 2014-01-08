@@ -12,7 +12,6 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/cast/cast_defines.h"
-#include "media/cast/transport/cast_transport_config.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace {
@@ -79,10 +78,10 @@ class LocalVideoEncodeAcceleratorClient
 
     VideoCodecProfile output_profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
     switch (video_config.codec) {
-      case transport::kVp8:
+      case kVp8:
         output_profile = media::VP8PROFILE_MAIN;
         break;
-      case transport::kH264:
+      case kH264:
         output_profile = media::H264PROFILE_MAIN;
         break;
     }
@@ -264,8 +263,7 @@ class LocalVideoEncodeAcceleratorClient
       NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
       return;
     }
-    scoped_ptr<transport::EncodedVideoFrame>
-        encoded_frame(new transport::EncodedVideoFrame());
+    scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
 
     encoded_frame->codec = codec_;
     encoded_frame->key_frame = key_frame;
@@ -322,7 +320,7 @@ class LocalVideoEncodeAcceleratorClient
 
   scoped_ptr<media::VideoEncodeAccelerator> video_encode_accelerator_;
   int max_frame_rate_;
-  transport::VideoCodec codec_;
+  VideoCodec codec_;
   uint32 last_encoded_frame_id_;
 
   // Shared memory buffers for input/output with the VideoAccelerator.

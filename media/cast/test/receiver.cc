@@ -112,7 +112,7 @@ AudioReceiverConfig GetAudioReceiverConfig() {
   audio_config.use_external_decoder = false;
   audio_config.frequency = 48000;
   audio_config.channels = 2;
-  audio_config.codec = transport::kOpus;
+  audio_config.codec = kOpus;
   return audio_config;
 }
 
@@ -133,7 +133,7 @@ VideoReceiverConfig GetVideoReceiverConfig() {
   video_config.use_external_decoder = false;
 
   VLOG(1) << "Using VP8";
-  video_config.codec = transport::kVp8;
+  video_config.codec = kVp8;
   return video_config;
 }
 
@@ -232,7 +232,6 @@ int main(int argc, char** argv) {
                                    audio_thread.message_loop_proxy(),
                                    NULL,
                                    video_thread.message_loop_proxy(),
-                                   main_thread.message_loop_proxy(),
                                    media::cast::GetDefaultCastLoggingConfig()));
 
   media::cast::AudioReceiverConfig audio_config =
@@ -250,7 +249,7 @@ int main(int argc, char** argv) {
       video_config,
       transport->packet_sender()));
 
-  media::cast::transport::PacketReceiver* packet_receiver =
+  media::cast::PacketReceiver* packet_receiver =
       cast_receiver->packet_receiver();
 
   int send_to_port, receive_port;

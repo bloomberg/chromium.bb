@@ -38,9 +38,8 @@ class TestVideoEncoderCallback :
     expected_capture_time_ = expected_capture_time;
   }
 
-  void DeliverEncodedVideoFrame(
-      scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
-      const base::TimeTicks& capture_time) {
+  void DeliverEncodedVideoFrame(scoped_ptr<EncodedVideoFrame> encoded_frame,
+                                const base::TimeTicks& capture_time) {
     EXPECT_EQ(expected_key_frame_, encoded_frame->key_frame);
     EXPECT_EQ(expected_frame_id_, encoded_frame->frame_id);
     EXPECT_EQ(expected_last_referenced_frame_id_,
@@ -79,7 +78,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
     video_config_.min_qp = 0;
     video_config_.max_frame_rate = 30;
     video_config_.max_number_of_video_buffers_used = 3;
-    video_config_.codec = transport::kVp8;
+    video_config_.codec = kVp8;
     gfx::Size size(video_config_.width, video_config_.height);
     video_frame_ =  media::VideoFrame::CreateFrame(VideoFrame::I420,
         size, gfx::Rect(size), size, base::TimeDelta());
@@ -91,7 +90,7 @@ class ExternalVideoEncoderTest : public ::testing::Test {
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_, task_runner_,
+        task_runner_, task_runner_, task_runner_, task_runner_,
         GetDefaultCastLoggingConfig());
     video_encoder_.reset(new ExternalVideoEncoder(
         cast_environment_,

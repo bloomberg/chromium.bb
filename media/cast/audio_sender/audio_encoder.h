@@ -24,7 +24,7 @@ namespace cast {
 
 class AudioEncoder : public base::RefCountedThreadSafe<AudioEncoder> {
  public:
-  typedef base::Callback<void(scoped_ptr<transport::EncodedAudioFrame>,
+  typedef base::Callback<void(scoped_ptr<EncodedAudioFrame>,
                               const base::TimeTicks&)> FrameEncodedCallback;
 
   AudioEncoder(const scoped_refptr<CastEnvironment>& cast_environment,

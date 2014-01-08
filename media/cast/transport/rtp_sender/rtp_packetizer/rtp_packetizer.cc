@@ -22,7 +22,7 @@ static const uint8 kRtpMarkerBitMask = 0x80;
 RtpPacketizerConfig::RtpPacketizerConfig()
     : audio(false),
       payload_type(-1),
-      max_payload_length(kMaxIpPacketSize - 28),  // Default is IP-v4/UDP.
+      max_payload_length(kIpPacketSize - 28),  // Default is IP-v4/UDP.
       sequence_number(0),
       rtp_timestamp(0),
       frequency(8000),

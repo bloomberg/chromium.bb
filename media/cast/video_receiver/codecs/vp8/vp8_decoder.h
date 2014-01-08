@@ -29,7 +29,7 @@ class Vp8Decoder : public base::NonThreadSafe {
   // Will return false in case of error, and then it's up to the caller to
   // release the memory.
   // Ownership of the encoded_frame does not pass to the Vp8Decoder.
-  bool Decode(const transport::EncodedVideoFrame* encoded_frame,
+  bool Decode(const EncodedVideoFrame* encoded_frame,
               const base::TimeTicks render_time,
               const VideoFrameDecodedCallback& frame_decoded_cb);
 

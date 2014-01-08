@@ -80,7 +80,6 @@ void CastSessionDelegate::StartSendingInternal() {
       NULL,
       video_encode_thread_.message_loop_proxy(),
       NULL,
-      base::MessageLoopProxy::current(),
       media::cast::GetDefaultCastLoggingConfig());
 
   // TODO(hclam): Implement VideoEncoderController to configure hardware
@@ -122,6 +121,5 @@ void CastSessionDelegate::ReceivePacket(const std::vector<char>& packet) {
   cast_sender_->packet_receiver()->ReceivedPacket(
       packet_copy,
       packet.size(),
-      base::Bind(&media::cast::transport::PacketReceiver::DeletePacket,
-                 packet_copy));
+      base::Bind(&media::cast::PacketReceiver::DeletePacket, packet_copy));
 }

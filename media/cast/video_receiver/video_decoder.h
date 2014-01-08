@@ -26,12 +26,12 @@ class VideoDecoder : public base::NonThreadSafe {
 
   // Decode a video frame. Decoded (raw) frame will be returned via the
   // provided callback
-  bool DecodeVideoFrame(const transport::EncodedVideoFrame* encoded_frame,
+  bool DecodeVideoFrame(const EncodedVideoFrame* encoded_frame,
                         const base::TimeTicks render_time,
                         const VideoFrameDecodedCallback& frame_decoded_cb);
 
  private:
-  transport::VideoCodec codec_;
+  VideoCodec codec_;
   scoped_ptr<Vp8Decoder> vp8_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoder);

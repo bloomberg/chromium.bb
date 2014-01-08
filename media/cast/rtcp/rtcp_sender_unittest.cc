@@ -53,7 +53,7 @@ class TestRtcpTransport : public transport::PacedPacketSender {
   int packet_count() const { return packet_count_; }
 
  private:
-  uint8 expected_packet_[kMaxIpPacketSize];
+  uint8 expected_packet_[kIpPacketSize];
   size_t expected_packet_length_;
   int packet_count_;
 };
@@ -64,7 +64,7 @@ class RtcpSenderTest : public ::testing::Test {
       : task_runner_(new test::FakeTaskRunner(&testing_clock_)),
         cast_environment_(new CastEnvironment(&testing_clock_, task_runner_,
             task_runner_, task_runner_, task_runner_, task_runner_,
-            task_runner_, GetDefaultCastLoggingConfig())),
+            GetDefaultCastLoggingConfig())),
         rtcp_sender_(new RtcpSender(cast_environment_,
                                     &test_transport_,
                                     kSendingSsrc,

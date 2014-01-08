@@ -159,7 +159,7 @@ void VideoReceiver::GetRawVideoFrame(
 // Called when we have a frame to decode.
 void VideoReceiver::DecodeVideoFrame(
     const VideoFrameDecodedCallback& callback,
-    scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
+    scoped_ptr<EncodedVideoFrame> encoded_frame,
     const base::TimeTicks& render_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   // Hand the ownership of the encoded frame to the decode thread.
@@ -170,7 +170,7 @@ void VideoReceiver::DecodeVideoFrame(
 
 // Utility function to run the decoder on a designated decoding thread.
 void VideoReceiver::DecodeVideoFrameThread(
-    scoped_ptr<transport::EncodedVideoFrame> encoded_frame,
+    scoped_ptr<EncodedVideoFrame> encoded_frame,
     const base::TimeTicks render_time,
     const VideoFrameDecodedCallback& frame_decoded_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_DECODER));
@@ -186,7 +186,7 @@ void VideoReceiver::DecodeVideoFrameThread(
 }
 
 bool VideoReceiver::DecryptVideoFrame(
-    scoped_ptr<transport::EncodedVideoFrame>* video_frame) {
+    scoped_ptr<EncodedVideoFrame>* video_frame) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(decryptor_) << "Invalid state";
 
@@ -210,8 +210,7 @@ bool VideoReceiver::DecryptVideoFrame(
 void VideoReceiver::GetEncodedVideoFrame(
     const VideoFrameEncodedCallback& callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
-  scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
-      new transport::EncodedVideoFrame());
+  scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
 
@@ -246,7 +245,7 @@ void VideoReceiver::GetEncodedVideoFrame(
 // If the frame is too old to be rendered we set the don't show flag in the
 // video bitstream where possible.
 bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
-    bool next_frame, scoped_ptr<transport::EncodedVideoFrame>* encoded_frame,
+    bool next_frame, scoped_ptr<EncodedVideoFrame>* encoded_frame,
     base::TimeTicks* render_time) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
@@ -279,8 +278,7 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
 
   base::TimeDelta dont_show_timeout_delta =
       base::TimeDelta::FromMilliseconds(-kDontShowTimeoutMs);
-  if (codec_ == transport::kVp8 &&
-      time_until_render < dont_show_timeout_delta) {
+  if (codec_ == kVp8 && time_until_render < dont_show_timeout_delta) {
     (*encoded_frame)->data[0] &= 0xef;
     VLOG(1) << "Don't show frame "
             << static_cast<int>((*encoded_frame)->frame_id)
@@ -302,8 +300,7 @@ void VideoReceiver::PlayoutTimeout() {
 
   uint32 rtp_timestamp = 0;
   bool next_frame = false;
-  scoped_ptr<transport::EncodedVideoFrame> encoded_frame(
-      new transport::EncodedVideoFrame());
+  scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
 
   if (!framer_->GetEncodedVideoFrame(encoded_frame.get(), &rtp_timestamp,
                                      &next_frame)) {

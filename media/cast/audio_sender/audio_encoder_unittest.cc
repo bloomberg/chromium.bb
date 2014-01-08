@@ -26,7 +26,7 @@ namespace {
 
 class TestEncodedAudioFrameReceiver {
  public:
-  explicit TestEncodedAudioFrameReceiver(transport::AudioCodec codec) :
+  explicit TestEncodedAudioFrameReceiver(AudioCodec codec) :
       codec_(codec), frames_received_(0) {}
   virtual ~TestEncodedAudioFrameReceiver() {}
 
@@ -42,7 +42,7 @@ class TestEncodedAudioFrameReceiver {
     upper_bound_ = t;
   }
 
-  void FrameEncoded(scoped_ptr<transport::EncodedAudioFrame> encoded_frame,
+  void FrameEncoded(scoped_ptr<EncodedAudioFrame> encoded_frame,
                     const base::TimeTicks& recorded_time) {
     EXPECT_EQ(codec_, encoded_frame->codec);
     EXPECT_EQ(static_cast<uint8>(frames_received_ & 0xff),
@@ -58,7 +58,7 @@ class TestEncodedAudioFrameReceiver {
   }
 
  private:
-  const transport::AudioCodec codec_;
+  const AudioCodec codec_;
   int frames_received_;
   base::TimeTicks lower_bound_;
   base::TimeTicks upper_bound_;
@@ -97,13 +97,13 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   virtual void SetUp() {
     task_runner_ = new test::FakeTaskRunner(&testing_clock_);
     cast_environment_ = new CastEnvironment(&testing_clock_, task_runner_,
-        task_runner_, task_runner_, task_runner_, task_runner_, task_runner_,
+        task_runner_, task_runner_, task_runner_, task_runner_,
         GetDefaultCastLoggingConfig());
   }
 
   virtual ~AudioEncoderTest() {}
 
-  void RunTestForCodec(transport::AudioCodec codec) {
+  void RunTestForCodec(AudioCodec codec) {
     const TestScenario& scenario = GetParam();
     SCOPED_TRACE(::testing::Message()
                  << "Durations: " << scenario.ToString());
@@ -137,7 +137,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   }
 
  private:
-  void CreateObjectsForCodec(transport::AudioCodec codec) {
+  void CreateObjectsForCodec(AudioCodec codec) {
     AudioSenderConfig audio_config;
     audio_config.codec = codec;
     audio_config.use_external_encoder = false;
@@ -175,11 +175,11 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
 };
 
 TEST_P(AudioEncoderTest, EncodeOpus) {
-  RunTestForCodec(transport::kOpus);
+  RunTestForCodec(kOpus);
 }
 
 TEST_P(AudioEncoderTest, EncodePcm16) {
-  RunTestForCodec(transport::kPcm16);
+  RunTestForCodec(kPcm16);
 }
 
 static const int64 kOneCall_3Millis[] = { 3 };

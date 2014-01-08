@@ -5,7 +5,6 @@
 #include "media/cast/rtcp/rtcp_utility.h"
 
 #include "base/logging.h"
-#include "media/cast/transport/cast_transport_defines.h"
 #include "net/base/big_endian.h"
 
 namespace media {
@@ -110,44 +109,44 @@ void RtcpParser::IterateTopLevel() {
     if (rtcp_block_end_ > rtcp_data_end_) return;  // Bad block!
 
     switch (header.PT) {
-      case transport::kPacketTypeSenderReport:
+      case kPacketTypeSenderReport:
         // number of Report blocks
         number_of_blocks_ = header.IC;
         ParseSR();
         return;
-      case transport::kPacketTypeReceiverReport:
+      case kPacketTypeReceiverReport:
         // number of Report blocks
         number_of_blocks_ = header.IC;
         ParseRR();
         return;
-      case transport::kPacketTypeSdes:
+      case kPacketTypeSdes:
         // number of Sdes blocks
         number_of_blocks_ = header.IC;
         if (!ParseSdes()) {
           break;  // Nothing supported found, continue to next block!
         }
         return;
-      case transport::kPacketTypeBye:
+      case kPacketTypeBye:
         number_of_blocks_ = header.IC;
         if (!ParseBye()) {
           // Nothing supported found, continue to next block!
           break;
         }
         return;
-      case transport::kPacketTypeApplicationDefined:
+      case kPacketTypeApplicationDefined:
         if (!ParseApplicationDefined(header.IC)) {
           // Nothing supported found, continue to next block!
           break;
         }
         return;
-      case transport::kPacketTypeGenericRtpFeedback:  // Fall through!
-      case transport::kPacketTypePayloadSpecific:
+      case kPacketTypeGenericRtpFeedback:  // Fall through!
+      case kPacketTypePayloadSpecific:
         if (!ParseFeedBackCommon(header)) {
           // Nothing supported found, continue to next block!
           break;
         }
         return;
-      case transport::kPacketTypeXr:
+      case kPacketTypeXr:
         if (!ParseExtendedReport()) {
           break;  // Nothing supported found, continue to next block!
         }
@@ -617,9 +616,8 @@ bool RtcpParser::ParseCastSenderLogItem() {
 }
 
 bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
-  DCHECK((header.PT == transport::kPacketTypeGenericRtpFeedback) ||
-         (header.PT == transport::kPacketTypePayloadSpecific)) <<
-          "Invalid state";
+  DCHECK((header.PT == kPacketTypeGenericRtpFeedback) ||
+         (header.PT == kPacketTypePayloadSpecific)) << "Invalid state";
 
   ptrdiff_t length = rtcp_block_end_ - rtcp_data_;
 
@@ -637,7 +635,7 @@ bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
 
   rtcp_data_ += 12;
 
-  if (header.PT == transport::kPacketTypeGenericRtpFeedback) {
+  if (header.PT == kPacketTypeGenericRtpFeedback) {
     // Transport layer feedback
     switch (header.IC) {
       case 1:
@@ -670,7 +668,7 @@ bool RtcpParser::ParseFeedBackCommon(const RtcpCommonHeader& header) {
     EndCurrentBlock();
     return false;
 
-  } else if (header.PT == transport::kPacketTypePayloadSpecific) {
+  } else if (header.PT == kPacketTypePayloadSpecific) {
     // Payload specific feedback
     switch (header.IC) {
       case 1:

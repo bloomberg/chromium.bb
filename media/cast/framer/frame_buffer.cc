@@ -61,9 +61,8 @@ bool FrameBuffer::Complete() const {
   return num_packets_received_ - 1 == max_packet_id_;
 }
 
-bool FrameBuffer::GetEncodedAudioFrame(
-    transport::EncodedAudioFrame* audio_frame,
-    uint32* rtp_timestamp) const {
+bool FrameBuffer::GetEncodedAudioFrame(EncodedAudioFrame* audio_frame,
+                                       uint32* rtp_timestamp) const {
   if (!Complete()) return false;
 
   *rtp_timestamp = rtp_timestamp_;
@@ -82,9 +81,8 @@ bool FrameBuffer::GetEncodedAudioFrame(
   return true;
 }
 
-bool FrameBuffer::GetEncodedVideoFrame(
-    transport::EncodedVideoFrame* video_frame,
-    uint32* rtp_timestamp) const {
+bool FrameBuffer::GetEncodedVideoFrame(EncodedVideoFrame* video_frame,
+                                       uint32* rtp_timestamp) const {
   if (!Complete()) return false;
 
   *rtp_timestamp = rtp_timestamp_;
