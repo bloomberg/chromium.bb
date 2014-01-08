@@ -781,9 +781,14 @@ def _CheckNoAbbreviationInPngFileName(input_api, output_api):
   return results
 
 
-def _DepsFilesToCheck(re, changed_lines):
+def _FilesToCheckForIncomingDeps(re, changed_lines):
   """Helper method for _CheckAddedDepsHaveTargetApprovals. Returns
-  a set of DEPS entries that we should look up."""
+  a set of DEPS entries that we should look up.
+
+  For a directory (rather than a specific filename) we fake a path to
+  a specific filename by adding /DEPS. This is chosen as a file that
+  will seldom or never be subject to per-file include_rules.
+  """
   # We ignore deps entries on auto-generated directories.
   AUTO_GENERATED_DIRS = ['grit', 'jni']
 
@@ -799,7 +804,10 @@ def _DepsFilesToCheck(re, changed_lines):
     if m:
       path = m.group(1)
       if path.split('/')[0] not in AUTO_GENERATED_DIRS:
-        results.add('%s/DEPS' % m.group(1))
+        if m.group(2):
+          results.add('%s%s' % (path, m.group(2)))
+        else:
+          results.add('%s/DEPS' % path)
   return results
 
 
@@ -819,7 +827,8 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
   if not changed_lines:
     return []
 
-  virtual_depended_on_files = _DepsFilesToCheck(input_api.re, changed_lines)
+  virtual_depended_on_files = _FilesToCheckForIncomingDeps(input_api.re,
+                                                           changed_lines)
   if not virtual_depended_on_files:
     return []
 
@@ -848,12 +857,22 @@ def _CheckAddedDepsHaveTargetApprovals(input_api, output_api):
     reviewers_plus_owner.add(owner_email)
   missing_files = owners_db.files_not_covered_by(virtual_depended_on_files,
                                                  reviewers_plus_owner)
-  unapproved_dependencies = ["'+%s'," % path[:-len('/DEPS')]
+
+  # We strip the /DEPS part that was added by
+  # _FilesToCheckForIncomingDeps to fake a path to a file in a
+  # directory.
+  def StripDeps(path):
+    start_deps = path.rfind('/DEPS')
+    if start_deps != -1:
+      return path[:start_deps]
+    else:
+      return path
+  unapproved_dependencies = ["'+%s'," % StripDeps(path)
                              for path in missing_files]
 
   if unapproved_dependencies:
     output_list = [
-      output('Missing LGTM from OWNERS of directories added to DEPS:\n    %s' %
+      output('Missing LGTM from OWNERS of dependencies added to DEPS:\n    %s' %
              '\n    '.join(sorted(unapproved_dependencies)))]
     if not input_api.is_committing:
       suggested_owners = owners_db.reviewers_for(missing_files, owner_email)
