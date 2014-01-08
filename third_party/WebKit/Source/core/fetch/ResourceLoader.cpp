@@ -121,6 +121,7 @@ void ResourceLoader::init(const ResourceRequest& passedRequest)
     ASSERT(m_state != Terminated);
     ASSERT(!request.isNull());
     m_originalRequest = m_request = request;
+    m_resource->updateRequest(request);
     m_host->didInitializeResourceLoader(this);
 }
 
@@ -274,6 +275,7 @@ void ResourceLoader::willSendRequest(blink::WebURLLoader*, blink::WebURLRequest&
     m_host->willSendRequest(m_resource->identifier(), request, redirectResponse, m_options.initiatorInfo);
     request.setReportLoadTiming(true);
     ASSERT(!request.isNull());
+    m_resource->updateRequest(request);
     m_request = request;
 }
 

@@ -50,6 +50,7 @@ private:
     virtual bool shouldIgnoreHTTPStatusCodeErrors() const { return true; }
 
     virtual void willSendRequest(ResourceRequest&, const ResourceResponse&);
+    virtual void updateRequest(const ResourceRequest&);
     virtual void responseReceived(const ResourceResponse&);
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
     virtual void didDownloadData(int);
@@ -92,6 +93,7 @@ public:
     virtual void responseReceived(Resource*, const ResourceResponse&) { }
     virtual void dataReceived(Resource*, const char* /* data */, int /* length */) { }
     virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) { }
+    virtual void updateRequest(Resource*, const ResourceRequest&) { }
     virtual void dataDownloaded(Resource*, int) { }
 };
 

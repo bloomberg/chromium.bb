@@ -332,6 +332,12 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
     willSendRequest(request, redirectResponse);
 }
 
+void DocumentLoader::updateRequest(Resource* resource, const ResourceRequest& request)
+{
+    ASSERT_UNUSED(resource, resource == m_mainResource);
+    m_request = request;
+}
+
 static bool isFormSubmission(NavigationType type)
 {
     return type == NavigationTypeFormSubmitted || type == NavigationTypeFormResubmitted;

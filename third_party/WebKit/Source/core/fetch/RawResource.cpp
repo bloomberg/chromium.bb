@@ -90,6 +90,14 @@ void RawResource::willSendRequest(ResourceRequest& request, const ResourceRespon
     Resource::willSendRequest(request, response);
 }
 
+void RawResource::updateRequest(const ResourceRequest& request)
+{
+    ResourcePtr<RawResource> protect(this);
+    ResourceClientWalker<RawResourceClient> w(m_clients);
+    while (RawResourceClient* c = w.next())
+        c->updateRequest(this, request);
+}
+
 void RawResource::responseReceived(const ResourceResponse& response)
 {
     InternalResourcePtr protect(this);

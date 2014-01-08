@@ -182,6 +182,7 @@ namespace WebCore {
         void finishedLoading(double finishTime);
         void mainReceivedError(const ResourceError&);
         virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) OVERRIDE;
+        virtual void updateRequest(Resource*, const ResourceRequest&) OVERRIDE;
         virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
         virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
         virtual void notifyFinished(Resource*) OVERRIDE;

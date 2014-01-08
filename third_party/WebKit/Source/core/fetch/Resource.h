@@ -187,6 +187,7 @@ public:
     void setResourceBuffer(PassRefPtr<SharedBuffer>);
 
     virtual void willSendRequest(ResourceRequest&, const ResourceResponse&) { m_requestedFromNetworkingLayer = true; }
+    virtual void updateRequest(const ResourceRequest&) { }
     virtual void responseReceived(const ResourceResponse&);
     void setResponse(const ResourceResponse& response) { m_response = response; }
     const ResourceResponse& response() const { return m_response; }
