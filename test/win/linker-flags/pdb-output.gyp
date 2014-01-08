@@ -1,14 +1,11 @@
-# Copyright (c) 2012 Google Inc. All rights reserved.
+# Copyright (c) 2014 Google Inc. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 {
  'targets': [
-    # Verify that 'ProgramDatabaseFile' option correctly makes it to LINK
-    # step in Ninja.
     {
-      # Verify that VC macros and windows paths work correctly.
-      'target_name': 'test_pdb_outdir',
+      'target_name': 'test_pdb_output_exe',
       'type': 'executable',
       'sources': ['hello.cc'],
       'msvs_settings': {
@@ -17,14 +14,13 @@
         },
         'VCLinkerTool': {
           'GenerateDebugInformation': 'true',
-          'ProgramDatabaseFile': '$(OutDir)\\name_outdir.pdb',
+          'ProgramDatabaseFile': 'output_exe.pdb',
         },
       },
     },
     {
-      # Verify that GYP macros and POSIX paths work correctly.
-      'target_name': 'test_pdb_proddir',
-      'type': 'executable',
+      'target_name': 'test_pdb_output_dll',
+      'type': 'shared_library',
       'sources': ['hello.cc'],
       'msvs_settings': {
         'VCCLCompilerTool': {
@@ -32,7 +28,7 @@
         },
         'VCLinkerTool': {
           'GenerateDebugInformation': 'true',
-          'ProgramDatabaseFile': '<(PRODUCT_DIR)/name_proddir.pdb',
+          'ProgramDatabaseFile': 'output_dll.pdb',
         },
       },
     },

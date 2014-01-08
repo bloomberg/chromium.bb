@@ -5,7 +5,8 @@
 # found in the LICENSE file.
 
 """
-Verifies that the 'Profile' attribute in VCLinker is extracted properly.
+Verifies that the 'ProgramDatabaseFile' attribute in VCLinker is extracted
+properly.
 """
 
 import TestGyp
