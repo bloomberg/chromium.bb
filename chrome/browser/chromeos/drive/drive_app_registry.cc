@@ -20,29 +20,6 @@ using content::BrowserThread;
 
 namespace drive {
 
-namespace {
-
-// Webstore URL prefix.
-const char kStoreProductUrl[] = "https://chrome.google.com/webstore/";
-
-// Extracts Web store id from its web store URL.
-std::string GetWebStoreIdFromUrl(const GURL& url) {
-  if (!StartsWithASCII(url.spec(), kStoreProductUrl, false)) {
-    LOG(WARNING) << "Unrecognized product URL " << url.spec();
-    return std::string();
-  }
-
-  base::FilePath path(url.path());
-  std::vector<base::FilePath::StringType> components;
-  path.GetComponents(&components);
-  DCHECK_LE(2U, components.size());  // Coming from kStoreProductUrl
-
-  // Return the last part of the path
-  return components[components.size() - 1];
-}
-
-}  // namespace
-
 DriveAppInfo::DriveAppInfo() {
 }
 
@@ -50,18 +27,12 @@ DriveAppInfo::DriveAppInfo(
     const std::string& app_id,
     const google_apis::InstalledApp::IconList& app_icons,
     const google_apis::InstalledApp::IconList& document_icons,
-    const std::string& web_store_id,
     const std::string& app_name,
-    const std::string& object_type,
-    bool is_primary_selector,
     const GURL& create_url)
     : app_id(app_id),
       app_icons(app_icons),
       document_icons(document_icons),
-      web_store_id(web_store_id),
       app_name(app_name),
-      object_type(object_type),
-      is_primary_selector(is_primary_selector),
       create_url(create_url) {
 }
 
@@ -108,12 +79,10 @@ void DriveAppRegistry::Update() {
 
   if (is_updating_)  // There is already an update in progress.
     return;
-
   is_updating_ = true;
 
-  scheduler_->GetAppList(
-      base::Bind(&DriveAppRegistry::UpdateAfterGetAppList,
-                 weak_ptr_factory_.GetWeakPtr()));
+  scheduler_->GetAppList(base::Bind(&DriveAppRegistry::UpdateAfterGetAppList,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveAppRegistry::UpdateAfterGetAppList(
@@ -134,19 +103,12 @@ void DriveAppRegistry::UpdateAfterGetAppList(
   UpdateFromAppList(*app_list);
 }
 
-void DriveAppRegistry::UpdateFromAppList(
-    const google_apis::AppList& app_list) {
+void DriveAppRegistry::UpdateFromAppList(const google_apis::AppList& app_list) {
   STLDeleteValues(&app_extension_map_);
   STLDeleteValues(&app_mimetypes_map_);
 
   for (size_t i = 0; i < app_list.items().size(); ++i) {
     const google_apis::AppResource& app = *app_list.items()[i];
-
-    if (app.product_url().is_empty())
-      continue;
-    std::string web_store_id = GetWebStoreIdFromUrl(app.product_url());
-    if (web_store_id.empty())
-      continue;
 
     google_apis::InstalledApp::IconList app_icons;
     google_apis::InstalledApp::IconList document_icons;
@@ -162,43 +124,31 @@ void DriveAppRegistry::UpdateFromAppList(
                                                 icon.icon_url()));
     }
 
-    AddAppSelectorList(web_store_id,
-                       app.name(),
+    AddAppSelectorList(app.name(),
                        app_icons,
                        document_icons,
-                       app.object_type(),
                        app.application_id(),
-                       true,   // primary
                        app.create_url(),
                        app.primary_mimetypes(),
                        &app_mimetypes_map_);
-    AddAppSelectorList(web_store_id,
-                       app.name(),
+    AddAppSelectorList(app.name(),
                        app_icons,
                        document_icons,
-                       app.object_type(),
                        app.application_id(),
-                       false,   // primary
                        app.create_url(),
                        app.secondary_mimetypes(),
                        &app_mimetypes_map_);
-    AddAppSelectorList(web_store_id,
-                       app.name(),
+    AddAppSelectorList(app.name(),
                        app_icons,
                        document_icons,
-                       app.object_type(),
                        app.application_id(),
-                       true,   // primary
                        app.create_url(),
                        app.primary_file_extensions(),
                        &app_extension_map_);
-    AddAppSelectorList(web_store_id,
-                       app.name(),
+    AddAppSelectorList(app.name(),
                        app_icons,
                        document_icons,
-                       app.object_type(),
                        app.application_id(),
-                       false,   // primary
                        app.create_url(),
                        app.secondary_file_extensions(),
                        &app_extension_map_);
@@ -207,13 +157,10 @@ void DriveAppRegistry::UpdateFromAppList(
 
 // static.
 void DriveAppRegistry::AddAppSelectorList(
-    const std::string& web_store_id,
     const std::string& app_name,
     const google_apis::InstalledApp::IconList& app_icons,
     const google_apis::InstalledApp::IconList& document_icons,
-    const std::string& object_type,
     const std::string& app_id,
-    bool is_primary_selector,
     const GURL& create_url,
     const ScopedVector<std::string>& selectors,
     DriveAppFileSelectorMap* map) {
@@ -224,10 +171,7 @@ void DriveAppRegistry::AddAppSelectorList(
         *value, new DriveAppInfo(app_id,
                                  app_icons,
                                  document_icons,
-                                 web_store_id,
                                  app_name,
-                                 object_type,
-                                 is_primary_selector,
                                  create_url)));
   }
 }
@@ -244,21 +188,19 @@ void DriveAppRegistry::FindAppsForSelector(
 
 namespace util {
 
-GURL FindPreferredIcon(
-    const google_apis::InstalledApp::IconList& icons,
-    int preferred_size) {
+GURL FindPreferredIcon(const google_apis::InstalledApp::IconList& icons,
+                       int preferred_size) {
   if (icons.empty())
     return GURL();
 
   google_apis::InstalledApp::IconList sorted_icons = icons;
-  std::sort(sorted_icons.begin(), sorted_icons.end());
-  GURL result = sorted_icons.rbegin()->second;
-  for (google_apis::InstalledApp::IconList::const_reverse_iterator
-           iter = sorted_icons.rbegin();
-       iter != sorted_icons.rend() && iter->first >= preferred_size; ++iter) {
-    result = iter->second;
-  }
-  return result;
+  std::sort(sorted_icons.rbegin(), sorted_icons.rend());
+
+  // Go forward while the size is larger or equal to preferred_size.
+  size_t i = 1;
+  while (i < sorted_icons.size() && sorted_icons[i].first >= preferred_size)
+    ++i;
+  return sorted_icons[i - 1].second;
 }
 
 }  // namespace util

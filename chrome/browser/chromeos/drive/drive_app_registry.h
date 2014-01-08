@@ -33,10 +33,7 @@ struct DriveAppInfo {
   DriveAppInfo(const std::string& app_id,
                const google_apis::InstalledApp::IconList& app_icons,
                const google_apis::InstalledApp::IconList& document_icons,
-               const std::string& web_store_id,
                const std::string& app_name,
-               const std::string& object_type,
-               bool is_primary_selector,
                const GURL& create_url);
   ~DriveAppInfo();
 
@@ -48,14 +45,8 @@ struct DriveAppInfo {
   // Drive document icon URLs for this app, paired with their size (length of
   // a side in pixels).
   google_apis::InstalledApp::IconList document_icons;
-  // Web store id/extension id;
-  std::string web_store_id;
   // App name.
   std::string app_name;
-  // Object (file) type description handled by this app.
-  std::string object_type;
-  // Is app the primary selector for file (default open action).
-  bool is_primary_selector;
   // URL for opening a new file in the app.
   GURL create_url;
 };
@@ -92,13 +83,10 @@ class DriveAppRegistry {
   // Helper function for loading Drive application file |selectors| into
   // corresponding |map|.
   static void AddAppSelectorList(
-      const std::string& web_store_id,
       const std::string& app_name,
       const google_apis::InstalledApp::IconList& app_icons,
       const google_apis::InstalledApp::IconList& document_icons,
-      const std::string& object_type,
       const std::string& app_id,
-      bool is_primary_selector,
       const GURL& create_url,
       const ScopedVector<std::string>& selectors,
       DriveAppFileSelectorMap* map);

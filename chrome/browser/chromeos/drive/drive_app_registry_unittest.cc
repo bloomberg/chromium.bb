@@ -35,26 +35,19 @@ class DriveAppRegistryTest : public testing::Test {
   }
 
   bool VerifyApp(const ScopedVector<DriveAppInfo>& list,
-                 const std::string& web_store_id,
                  const std::string& app_id,
-                 const std::string& app_name,
-                 const std::string& object_type,
-                 bool is_primary) {
+                 const std::string& app_name) {
     bool found = false;
     for (ScopedVector<DriveAppInfo>::const_iterator it = list.begin();
          it != list.end(); ++it) {
       const DriveAppInfo* app = *it;
-      if (web_store_id == app->web_store_id) {
-        EXPECT_EQ(app_id, app->app_id);
+      if (app_id == app->app_id) {
         EXPECT_EQ(app_name, app->app_name);
-        EXPECT_EQ(object_type, app->object_type);
-        EXPECT_EQ(is_primary, app->is_primary_selector);
         found = true;
         break;
       }
     }
-    EXPECT_TRUE(found) << "Unable to find app with web_store_id "
-                       << web_store_id;
+    EXPECT_TRUE(found) << "Unable to find app with app_id " << app_id;
     return found;
   }
 
@@ -74,24 +67,21 @@ TEST_F(DriveAppRegistryTest, LoadAndFindDriveApps) {
   base::FilePath ext_file(FILE_PATH_LITERAL("drive/file.exe"));
   web_apps_registry_->GetAppsForFile(ext_file.Extension(), "", &ext_results);
   ASSERT_EQ(1U, ext_results.size());
-  VerifyApp(ext_results, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
-            "Drive app 1", "", true);
+  VerifyApp(ext_results, "123456788192", "Drive app 1");
 
   // Find by primary MIME type.
   ScopedVector<DriveAppInfo> primary_app;
   web_apps_registry_->GetAppsForFile(base::FilePath::StringType(),
       "application/vnd.google-apps.drive-sdk.123456788192", &primary_app);
   ASSERT_EQ(1U, primary_app.size());
-  VerifyApp(primary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
-            "Drive app 1", "", true);
+  VerifyApp(primary_app, "123456788192", "Drive app 1");
 
   // Find by secondary MIME type.
   ScopedVector<DriveAppInfo> secondary_app;
   web_apps_registry_->GetAppsForFile(
       base::FilePath::StringType(), "text/html", &secondary_app);
   ASSERT_EQ(1U, secondary_app.size());
-  VerifyApp(secondary_app, "abcdefghabcdefghabcdefghabcdefgh", "123456788192",
-            "Drive app 1", "", false);
+  VerifyApp(secondary_app, "123456788192", "Drive app 1");
 }
 
 TEST_F(DriveAppRegistryTest, UpdateFromAppList) {
