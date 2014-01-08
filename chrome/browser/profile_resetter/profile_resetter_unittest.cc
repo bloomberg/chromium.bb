@@ -477,7 +477,7 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
       extensions::Manifest::TYPE_EXTENSION,
       false);
   service_->AddExtension(ext2.get());
-  // Components and external policy extensions shouldn't be deleted.
+  // Component extensions and policy-managed extensions shouldn't be disabled.
   scoped_refptr<Extension> ext3 = CreateExtension(
       ASCIIToUTF16("example3"),
       base::FilePath(FILE_PATH_LITERAL("//nonexistent2")),
@@ -485,21 +485,37 @@ TEST_F(ProfileResetterTest, ResetExtensionsByDisabling) {
       extensions::Manifest::TYPE_EXTENSION,
       false);
   service_->AddExtension(ext3.get());
-  scoped_refptr<Extension> ext4 =
-      CreateExtension(ASCIIToUTF16("example4"),
-                      base::FilePath(FILE_PATH_LITERAL("//nonexistent3")),
-                      Manifest::EXTERNAL_POLICY_DOWNLOAD,
-                      extensions::Manifest::TYPE_EXTENSION,
-                      false);
+  scoped_refptr<Extension> ext4 = CreateExtension(
+      ASCIIToUTF16("example4"),
+      base::FilePath(FILE_PATH_LITERAL("//nonexistent3")),
+      Manifest::EXTERNAL_POLICY_DOWNLOAD,
+      extensions::Manifest::TYPE_EXTENSION,
+      false);
   service_->AddExtension(ext4.get());
-  EXPECT_EQ(4u, service_->extensions()->size());
+  scoped_refptr<Extension> ext5 = CreateExtension(
+      ASCIIToUTF16("example5"),
+      base::FilePath(FILE_PATH_LITERAL("//nonexistent4")),
+      Manifest::EXTERNAL_COMPONENT,
+      extensions::Manifest::TYPE_EXTENSION,
+      false);
+  service_->AddExtension(ext5.get());
+  scoped_refptr<Extension> ext6 = CreateExtension(
+      ASCIIToUTF16("example6"),
+      base::FilePath(FILE_PATH_LITERAL("//nonexistent5")),
+      Manifest::EXTERNAL_POLICY,
+      extensions::Manifest::TYPE_EXTENSION,
+      false);
+  service_->AddExtension(ext6.get());
+  EXPECT_EQ(6u, service_->extensions()->size());
 
   ResetAndWait(ProfileResetter::EXTENSIONS);
-  EXPECT_EQ(2u, service_->extensions()->size());
+  EXPECT_EQ(4u, service_->extensions()->size());
   EXPECT_FALSE(service_->extensions()->Contains(theme->id()));
   EXPECT_FALSE(service_->extensions()->Contains(ext2->id()));
   EXPECT_TRUE(service_->extensions()->Contains(ext3->id()));
   EXPECT_TRUE(service_->extensions()->Contains(ext4->id()));
+  EXPECT_TRUE(service_->extensions()->Contains(ext5->id()));
+  EXPECT_TRUE(service_->extensions()->Contains(ext6->id()));
   EXPECT_TRUE(theme_service->UsingDefaultTheme());
 }
 
