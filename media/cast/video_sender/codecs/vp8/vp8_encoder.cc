@@ -147,8 +147,7 @@ bool Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
   if (key_frame_requested_) {
     flags = VPX_EFLAG_FORCE_KF;
     // Self reference.
-    latest_frame_id_to_reference =
-        static_cast<uint8>(last_encoded_frame_id_ + 1);
+    latest_frame_id_to_reference = last_encoded_frame_id_ + 1;
     // We can pick any buffer as buffer_to_update since we update
     // them all.
     buffer_to_update = kLastBuffer;

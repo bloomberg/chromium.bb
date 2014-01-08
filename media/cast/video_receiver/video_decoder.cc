@@ -23,9 +23,6 @@ VideoDecoder::VideoDecoder(const VideoReceiverConfig& video_config,
     case kH264:
       NOTIMPLEMENTED();
       break;
-    case kExternalVideo:
-      DCHECK(false) << "Invalid codec";
-      break;
   }
 }
 

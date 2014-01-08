@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 
 namespace media {
 class AudioBus;
@@ -37,14 +38,6 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
   virtual void InsertRawVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& capture_time) = 0;
-
-  // The video_frame must be valid until the callback is called.
-  // The callback is called from the main cast thread as soon as
-  // the cast sender is done with the frame; it does not mean that the encoded
-  // frame has been sent out.
-  virtual void InsertCodedVideoFrame(const EncodedVideoFrame* video_frame,
-                                     const base::TimeTicks& capture_time,
-                                     const base::Closure callback) = 0;
 
   // The |audio_bus| must be valid until the |done_callback| is called.
   // The callback is called from the main cast thread as soon as the encoder is
@@ -78,8 +71,9 @@ class CastSender {
       scoped_refptr<CastEnvironment> cast_environment,
       const AudioSenderConfig& audio_config,
       const VideoSenderConfig& video_config,
-      VideoEncoderController* const video_encoder_controller,
+      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
       PacketSender* const packet_sender);
+  // TODO(pwestin): Add callback for status messages; initialized, errors etc.
 
   virtual ~CastSender() {}
 

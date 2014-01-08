@@ -17,6 +17,8 @@
 #include "media/cast/congestion_control/congestion_control.h"
 #include "media/cast/rtcp/rtcp.h"
 #include "media/cast/transport/rtp_sender/rtp_sender.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
+#include "media/video/video_encode_accelerator.h"
 
 namespace crypto {
 class Encryptor;
@@ -46,7 +48,7 @@ class VideoSender : public base::NonThreadSafe,
  public:
   VideoSender(scoped_refptr<CastEnvironment> cast_environment,
               const VideoSenderConfig& video_config,
-              VideoEncoderController* const video_encoder_controller,
+              const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
               transport::PacedPacketSender* const paced_packet_sender);
 
   virtual ~VideoSender();
@@ -58,14 +60,6 @@ class VideoSender : public base::NonThreadSafe,
   void InsertRawVideoFrame(
       const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& capture_time);
-
-  // The video_frame must be valid until the closure callback is called.
-  // The closure callback is called from the main thread as soon as
-  // the cast sender is done with the frame; it does not mean that the encoded
-  // frame has been sent out.
-  void InsertCodedVideoFrame(const EncodedVideoFrame* video_frame,
-                             const base::TimeTicks& capture_time,
-                             const base::Closure callback);
 
   // Only called from the main cast thread.
   void IncomingRtcpPacket(const uint8* packet, size_t length,
@@ -123,7 +117,6 @@ class VideoSender : public base::NonThreadSafe,
   scoped_ptr<VideoEncoder> video_encoder_;
   scoped_ptr<Rtcp> rtcp_;
   scoped_ptr<transport::RtpSender> rtp_sender_;
-  VideoEncoderController* video_encoder_controller_;
   uint8 max_unacked_frames_;
   scoped_ptr<crypto::Encryptor> encryptor_;
   scoped_ptr<crypto::SymmetricKey> encryption_key_;

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,20 +9,22 @@
 #include "base/message_loop/message_loop.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_defines.h"
+#include "media/cast/video_sender/video_encoder_impl.h"
 
 namespace media {
 namespace cast {
 
-void LogFrameEncodedEvent(CastEnvironment* const cast_environment,
+void LogFrameEncodedEvent(const base::TimeTicks& now,
+                          CastEnvironment* const cast_environment,
                           const base::TimeTicks& capture_time) {
-  base::TimeTicks now = cast_environment->Clock()->NowTicks();
   cast_environment->Logging()->InsertFrameEvent(now, kVideoFrameEncoded,
       GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
 }
 
-VideoEncoder::VideoEncoder(scoped_refptr<CastEnvironment> cast_environment,
-                           const VideoSenderConfig& video_config,
-                           uint8 max_unacked_frames)
+VideoEncoderImpl::VideoEncoderImpl(
+    scoped_refptr<CastEnvironment> cast_environment,
+    const VideoSenderConfig& video_config,
+    uint8 max_unacked_frames)
     : video_config_(video_config),
       cast_environment_(cast_environment),
       skip_next_frame_(false),
@@ -38,9 +40,9 @@ VideoEncoder::VideoEncoder(scoped_refptr<CastEnvironment> cast_environment,
   dynamic_config_.bit_rate = video_config.start_bitrate;
 }
 
-VideoEncoder::~VideoEncoder() {}
+VideoEncoderImpl::~VideoEncoderImpl() {}
 
-bool VideoEncoder::EncodeVideoFrame(
+bool VideoEncoderImpl::EncodeVideoFrame(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time,
     const FrameEncodedCallback& frame_encoded_callback) {
@@ -49,6 +51,7 @@ bool VideoEncoder::EncodeVideoFrame(
 
   if (skip_next_frame_) {
     ++skip_count_;
+    skip_next_frame_ = false;
     VLOG(1) << "Skip encoding frame";
     return false;
   }
@@ -57,7 +60,7 @@ bool VideoEncoder::EncodeVideoFrame(
   cast_environment_->Logging()->InsertFrameEvent(now, kVideoFrameSentToEncoder,
       GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
   cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER, FROM_HERE,
-      base::Bind(&VideoEncoder::EncodeVideoFrameEncoderThread,
+      base::Bind(&VideoEncoderImpl::EncodeVideoFrameEncoderThread,
                  base::Unretained(this), video_frame, capture_time,
                  dynamic_config_, frame_encoded_callback));
 
@@ -65,7 +68,7 @@ bool VideoEncoder::EncodeVideoFrame(
   return true;
 }
 
-void VideoEncoder::EncodeVideoFrameEncoderThread(
+void VideoEncoderImpl::EncodeVideoFrameEncoderThread(
     const scoped_refptr<media::VideoFrame>& video_frame,
     const base::TimeTicks& capture_time,
     const CodecDynamicConfig& dynamic_config,
@@ -81,8 +84,9 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
   scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
   bool retval = vp8_encoder_->Encode(video_frame, encoded_frame.get());
 
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(LogFrameEncodedEvent, cast_environment_, capture_time));
+      base::Bind(LogFrameEncodedEvent, now, cast_environment_, capture_time));
 
   if (!retval) {
     VLOG(1) << "Encoding failed";
@@ -98,26 +102,26 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
 }
 
 // Inform the encoder about the new target bit rate.
-void VideoEncoder::SetBitRate(int new_bit_rate) {
+void VideoEncoderImpl::SetBitRate(int new_bit_rate) {
   dynamic_config_.bit_rate = new_bit_rate;
 }
 
 // Inform the encoder to not encode the next frame.
-void VideoEncoder::SkipNextFrame(bool skip_next_frame) {
+void VideoEncoderImpl::SkipNextFrame(bool skip_next_frame) {
   skip_next_frame_ = skip_next_frame;
 }
 
 // Inform the encoder to encode the next frame as a key frame.
-void VideoEncoder::GenerateKeyFrame() {
+void VideoEncoderImpl::GenerateKeyFrame() {
   dynamic_config_.key_frame_requested = true;
 }
 
 // Inform the encoder to only reference frames older or equal to frame_id;
-void VideoEncoder::LatestFrameIdToReference(uint32 frame_id) {
+void VideoEncoderImpl::LatestFrameIdToReference(uint32 frame_id) {
   dynamic_config_.latest_frame_id_to_reference = frame_id;
 }
 
-int VideoEncoder::NumberOfSkippedFrames() const {
+int VideoEncoderImpl::NumberOfSkippedFrames() const {
   return skip_count_;
 }
 

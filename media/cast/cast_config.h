@@ -25,7 +25,6 @@ enum RtcpMode {
 enum VideoCodec {
   kVp8,
   kH264,
-  kExternalVideo,
 };
 
 enum AudioCodec {
@@ -203,28 +202,6 @@ class PacketReceiver : public base::RefCountedThreadSafe<PacketReceiver> {
 
  private:
   friend class base::RefCountedThreadSafe<PacketReceiver>;
-};
-
-class VideoEncoderController {
- public:
-  // Inform the encoder about the new target bit rate.
-  virtual void SetBitRate(int new_bit_rate) = 0;
-
-  // Inform the encoder to not encode the next frame.
-  // Note: this setting is sticky and should last until called with false.
-  virtual void SkipNextFrame(bool skip_next_frame) = 0;
-
-  // Inform the encoder to encode the next frame as a key frame.
-  virtual void GenerateKeyFrame() = 0;
-
-  // Inform the encoder to only reference frames older or equal to frame_id;
-  virtual void LatestFrameIdToReference(uint32 frame_id) = 0;
-
-  // Query the codec about how many frames it has skipped due to slow ACK.
-  virtual int NumberOfSkippedFrames() const = 0;
-
- protected:
-  virtual ~VideoEncoderController() {}
 };
 
 }  // namespace cast

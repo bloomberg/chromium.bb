@@ -28,11 +28,12 @@ class VideoSender;
 // together such as pacer, packet receiver, frame input, audio and video sender.
 class CastSenderImpl : public CastSender {
  public:
-  CastSenderImpl(scoped_refptr<CastEnvironment> cast_environment,
-                 const AudioSenderConfig& audio_config,
-                 const VideoSenderConfig& video_config,
-                 VideoEncoderController* const video_encoder_controller,
-                 PacketSender* const packet_sender);
+  CastSenderImpl(
+      scoped_refptr<CastEnvironment> cast_environment,
+      const AudioSenderConfig& audio_config,
+      const VideoSenderConfig& video_config,
+      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+      PacketSender* const packet_sender);
 
   virtual ~CastSenderImpl();
 

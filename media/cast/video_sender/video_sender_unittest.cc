@@ -9,11 +9,11 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_environment.h"
+#include "media/cast/test/fake_gpu_video_accelerator_factories.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/test/video_utility.h"
 #include "media/cast/transport/pacing/mock_paced_packet_sender.h"
 #include "media/cast/transport/pacing/paced_sender.h"
-#include "media/cast/video_sender/mock_video_encoder_controller.h"
 #include "media/cast/video_sender/video_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,12 +34,13 @@ using testing::AtLeast;
 namespace {
 class PeerVideoSender : public VideoSender {
  public:
-  PeerVideoSender(scoped_refptr<CastEnvironment> cast_environment,
-                  const VideoSenderConfig& video_config,
-                  VideoEncoderController* const video_encoder_controller,
-                  transport::PacedPacketSender* const paced_packet_sender)
-      : VideoSender(cast_environment, video_config,
-                    video_encoder_controller, paced_packet_sender) {
+  PeerVideoSender(
+      scoped_refptr<CastEnvironment> cast_environment,
+      const VideoSenderConfig& video_config,
+      const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
+      transport::PacedPacketSender* const paced_packet_sender)
+      : VideoSender(cast_environment, video_config, gpu_factories,
+                    paced_packet_sender) {
   }
   using VideoSender::OnReceivedCastFeedback;
 };
@@ -73,7 +74,9 @@ class VideoSenderTest : public ::testing::Test {
 
     if (external) {
       video_sender_.reset(new PeerVideoSender(cast_environment_,
-          video_config, &mock_video_encoder_controller_, &mock_transport_));
+          video_config,
+          new test::FakeGpuVideoAcceleratorFactories(task_runner_),
+          &mock_transport_));
     } else {
       video_sender_.reset(new PeerVideoSender(cast_environment_, video_config,
                                               NULL, &mock_transport_));
@@ -96,7 +99,6 @@ class VideoSenderTest : public ::testing::Test {
     return video_frame;
   }
 
-  MockVideoEncoderController mock_video_encoder_controller_;
   base::SimpleTestTickClock testing_clock_;
   transport::MockPacedPacketSender mock_transport_;
   scoped_refptr<test::FakeTaskRunner> task_runner_;
@@ -118,40 +120,27 @@ TEST_F(VideoSenderTest, BuiltInEncoder) {
 
 TEST_F(VideoSenderTest, ExternalEncoder) {
   EXPECT_CALL(mock_transport_, SendPackets(_)).Times(1);
-  EXPECT_CALL(mock_video_encoder_controller_, SkipNextFrame(false)).Times(1);
   InitEncoder(true);
+  task_runner_->RunTasks();
 
-  EncodedVideoFrame video_frame;
+  scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+
   base::TimeTicks capture_time;
+  video_sender_->InsertRawVideoFrame(video_frame, capture_time);
 
-  video_frame.codec = kVp8;
-  video_frame.key_frame = true;
-  video_frame.frame_id = 0;
-  video_frame.last_referenced_frame_id = 0;
-  video_frame.data.insert(video_frame.data.begin(), 1000, kPixelValue);
-
-  video_sender_->InsertCodedVideoFrame(&video_frame, capture_time,
-    base::Bind(base::DoNothing));
+  task_runner_->RunTasks();
 }
 
 TEST_F(VideoSenderTest, RtcpTimer) {
   EXPECT_CALL(mock_transport_, SendPackets(_)).Times(AtLeast(1));
   EXPECT_CALL(mock_transport_, SendRtcpPacket(_)).Times(1);
-  EXPECT_CALL(mock_video_encoder_controller_,
-              SkipNextFrame(false)).Times(AtLeast(1));
-  InitEncoder(true);
+  InitEncoder(false);
 
-  EncodedVideoFrame video_frame;
+  scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
+
   base::TimeTicks capture_time;
-
-  video_frame.codec = kVp8;
-  video_frame.key_frame = true;
-  video_frame.frame_id = 0;
-  video_frame.last_referenced_frame_id = 0;
-  video_frame.data.insert(video_frame.data.begin(), 1000, kPixelValue);
-
-  video_sender_->InsertCodedVideoFrame(&video_frame, capture_time,
-    base::Bind(base::DoNothing));
+  video_sender_->InsertRawVideoFrame(video_frame, capture_time);
+  task_runner_->RunTasks();
 
   // Make sure that we send at least one RTCP packet.
   base::TimeDelta max_rtcp_timeout =

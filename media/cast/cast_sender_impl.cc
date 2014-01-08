@@ -32,14 +32,6 @@ class LocalFrameInput : public FrameInput {
             video_frame, capture_time));
   }
 
-  virtual void InsertCodedVideoFrame(const EncodedVideoFrame* video_frame,
-                                     const base::TimeTicks& capture_time,
-                                     const base::Closure callback) OVERRIDE {
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(&VideoSender::InsertCodedVideoFrame, video_sender_,
-            video_frame, capture_time, callback));
-  }
-
   virtual void InsertAudio(const AudioBus* audio_bus,
                            const base::TimeTicks& recorded_time,
                            const base::Closure& done_callback) OVERRIDE {
@@ -153,25 +145,21 @@ CastSender* CastSender::CreateCastSender(
     scoped_refptr<CastEnvironment> cast_environment,
     const AudioSenderConfig& audio_config,
     const VideoSenderConfig& video_config,
-    VideoEncoderController* const video_encoder_controller,
+    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
     PacketSender* const packet_sender) {
-  return new CastSenderImpl(cast_environment,
-                            audio_config,
-                            video_config,
-                            video_encoder_controller,
-                            packet_sender);
+  return new CastSenderImpl(cast_environment, audio_config, video_config,
+                            gpu_factories, packet_sender);
 }
 
 CastSenderImpl::CastSenderImpl(
     scoped_refptr<CastEnvironment> cast_environment,
     const AudioSenderConfig& audio_config,
     const VideoSenderConfig& video_config,
-    VideoEncoderController* const video_encoder_controller,
+    const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories,
     PacketSender* const packet_sender)
     : pacer_(cast_environment, packet_sender),
       audio_sender_(cast_environment, audio_config, &pacer_),
-      video_sender_(cast_environment, video_config, video_encoder_controller,
-                    &pacer_),
+      video_sender_(cast_environment, video_config, gpu_factories, &pacer_),
       frame_input_(new LocalFrameInput(cast_environment,
                                        audio_sender_.AsWeakPtr(),
                                        video_sender_.AsWeakPtr())),

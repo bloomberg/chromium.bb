@@ -20,7 +20,6 @@ namespace cast {
 using testing::_;
 
 // Random frame size for testing.
-const int kFrameSize = 2345;
 static const int64 kStartMillisecond = GG_INT64_C(1245);
 
 namespace {
@@ -74,18 +73,6 @@ TEST_F(VideoDecoderTest, DISABLED_SizeZero) {
           &encoded_frame, render_time,
           base::Bind(&DecodeTestFrameCallback::DecodeComplete, test_callback_)),
       "Empty frame");
-}
-
-// TODO(pwestin): EXPECT_DEATH tests can not pass valgrind.
-TEST_F(VideoDecoderTest, DISABLED_InvalidCodec) {
-  EncodedVideoFrame encoded_frame;
-  base::TimeTicks render_time;
-  encoded_frame.data.assign(kFrameSize, 0);
-  encoded_frame.codec = kExternalVideo;
-  EXPECT_DEATH(
-      decoder_->DecodeVideoFrame(&encoded_frame, render_time, base::Bind(
-          &DecodeTestFrameCallback::DecodeComplete, test_callback_)),
-      "Invalid codec");
 }
 
 // TODO(pwestin): Test decoding a real frame.

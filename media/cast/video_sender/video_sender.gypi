@@ -14,8 +14,11 @@
          '<(DEPTH)/',
       ],
       'sources': [
+        'external_video_encoder.h',
+        'external_video_encoder.cc',
         'video_encoder.h',
-        'video_encoder.cc',
+        'video_encoder_impl.h',
+        'video_encoder_impl.cc',
         'video_sender.h',
         'video_sender.cc',
       ], # source
