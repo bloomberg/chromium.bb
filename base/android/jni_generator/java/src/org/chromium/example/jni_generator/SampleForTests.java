@@ -6,17 +6,15 @@ package org.chromium.example.jni_generator;
 
 import android.graphics.Rect;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.chromium.base.AccessedByNative;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CalledByNativeUnchecked;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.NativeClassQualifiedName;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 // This class serves as a reference test for the bindings generator, and as example documentation
 // for how to use the jni generator.
@@ -285,4 +283,5 @@ class SampleForTests {
 
   native void nativeAddStructB(int nativeCPPClass, InnerStructB b);
   native void nativeIterateAndDoSomethingWithStructB(int nativeCPPClass);
+  native String nativeReturnAString(int nativeCPPClass);
 }

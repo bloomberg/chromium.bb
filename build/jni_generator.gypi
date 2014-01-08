@@ -32,6 +32,10 @@
     'jni_generator': '<(DEPTH)/base/android/jni_generator/jni_generator.py',
     'jni_generator_jarjar_file%': '',
     'jni_generator_ptr_type%': 'int',
+    # A comma separated string of include files.
+    'jni_generator_includes%': (
+        'base/android/jni_generator/jni_generator_helper.h'
+    ),
   },
   'rules': [
     {
@@ -49,6 +53,8 @@
         '<(RULE_INPUT_PATH)',
         '--output_dir',
         '<(SHARED_INTERMEDIATE_DIR)/<(jni_gen_package)/jni',
+        '--includes',
+        '<(jni_generator_includes)',
         '--optimize_generation',
         '<(optimize_jni_generation)',
         '--jarjar',

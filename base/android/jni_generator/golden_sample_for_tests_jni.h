@@ -12,12 +12,7 @@
 
 #include <jni.h>
 
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
-#include "base/logging.h"
-
-using base::android::ScopedJavaLocalRef;
+#include "base/android/jni_generator/jni_generator_helper.h"
 
 // Step 1: forward declarations.
 namespace {
@@ -33,66 +28,75 @@ jclass g_InnerStructA_clazz = NULL;
 jclass g_SampleForTests_clazz = NULL;
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_InnerStructB_clazz = NULL;
+
 }  // namespace
 
 namespace base {
 namespace android {
 
-static jint Init(JNIEnv* env, jobject obj,
+static jint Init(JNIEnv* env, jobject jcaller,
     jstring param);
 
-static jdouble GetDoubleFunction(JNIEnv* env, jobject obj);
+static jdouble GetDoubleFunction(JNIEnv* env, jobject jcaller);
 
-static jfloat GetFloatFunction(JNIEnv* env, jclass clazz);
+static jfloat GetFloatFunction(JNIEnv* env, jclass jcaller);
 
-static void SetNonPODDatatype(JNIEnv* env, jobject obj,
+static void SetNonPODDatatype(JNIEnv* env, jobject jcaller,
     jobject rect);
 
-static jobject GetNonPODDatatype(JNIEnv* env, jobject obj);
+static jobject GetNonPODDatatype(JNIEnv* env, jobject jcaller);
 
 // Step 2: method stubs.
-static void Destroy(JNIEnv* env, jobject obj,
+static void Destroy(JNIEnv* env, jobject jcaller,
     jint nativeCPPClass) {
-  DCHECK(nativeCPPClass) << "Destroy";
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
-  return native->Destroy(env, obj);
+  CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
+  return native->Destroy(env, jcaller);
 }
 
-static jint Method(JNIEnv* env, jobject obj,
+static jint Method(JNIEnv* env, jobject jcaller,
     jint nativeCPPClass) {
-  DCHECK(nativeCPPClass) << "Method";
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
-  return native->Method(env, obj);
+  CHECK_NATIVE_PTR(env, jcaller, native, "Method", 0);
+  return native->Method(env, jcaller);
 }
 
-static jdouble MethodOtherP0(JNIEnv* env, jobject obj,
+static jdouble MethodOtherP0(JNIEnv* env, jobject jcaller,
     jint nativePtr) {
-  DCHECK(nativePtr) << "MethodOtherP0";
   CPPClass::InnerClass* native =
       reinterpret_cast<CPPClass::InnerClass*>(nativePtr);
-  return native->MethodOtherP0(env, obj);
+  CHECK_NATIVE_PTR(env, jcaller, native, "MethodOtherP0", 0);
+  return native->MethodOtherP0(env, jcaller);
 }
 
-static void AddStructB(JNIEnv* env, jobject obj,
+static void AddStructB(JNIEnv* env, jobject jcaller,
     jint nativeCPPClass,
     jobject b) {
-  DCHECK(nativeCPPClass) << "AddStructB";
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
-  return native->AddStructB(env, obj, b);
+  CHECK_NATIVE_PTR(env, jcaller, native, "AddStructB");
+  return native->AddStructB(env, jcaller, b);
 }
 
-static void IterateAndDoSomethingWithStructB(JNIEnv* env, jobject obj,
+static void IterateAndDoSomethingWithStructB(JNIEnv* env, jobject jcaller,
     jint nativeCPPClass) {
-  DCHECK(nativeCPPClass) << "IterateAndDoSomethingWithStructB";
   CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
-  return native->IterateAndDoSomethingWithStructB(env, obj);
+  CHECK_NATIVE_PTR(env, jcaller, native, "IterateAndDoSomethingWithStructB");
+  return native->IterateAndDoSomethingWithStructB(env, jcaller);
+}
+
+static jstring ReturnAString(JNIEnv* env, jobject jcaller,
+    jint nativeCPPClass) {
+  CPPClass* native = reinterpret_cast<CPPClass*>(nativeCPPClass);
+  CHECK_NATIVE_PTR(env, jcaller, native, "ReturnAString", NULL);
+  return native->ReturnAString(env, jcaller).Release();
 }
 
 static base::subtle::AtomicWord g_SampleForTests_javaMethod = 0;
 static jint Java_SampleForTests_javaMethod(JNIEnv* env, jobject obj, jint foo,
     jint bar) {
   /* Must call RegisterNativesImpl()  */
-  DCHECK(g_SampleForTests_clazz);
+  CHECK_CLAZZ(env, obj,
+      g_SampleForTests_clazz, 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
@@ -107,16 +111,17 @@ static jint Java_SampleForTests_javaMethod(JNIEnv* env, jobject obj, jint foo,
       &g_SampleForTests_javaMethod);
 
   jint ret =
-    env->CallIntMethod(obj,
-      method_id, foo, bar);
-  base::android::CheckException(env);
+      env->CallIntMethod(obj,
+          method_id, foo, bar);
+  jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_SampleForTests_staticJavaMethod = 0;
 static jboolean Java_SampleForTests_staticJavaMethod(JNIEnv* env) {
   /* Must call RegisterNativesImpl()  */
-  DCHECK(g_SampleForTests_clazz);
+  CHECK_CLAZZ(env, g_SampleForTests_clazz,
+      g_SampleForTests_clazz, false);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
@@ -129,9 +134,9 @@ static jboolean Java_SampleForTests_staticJavaMethod(JNIEnv* env) {
       &g_SampleForTests_staticJavaMethod);
 
   jboolean ret =
-    env->CallStaticBooleanMethod(g_SampleForTests_clazz,
-      method_id);
-  base::android::CheckException(env);
+      env->CallStaticBooleanMethod(g_SampleForTests_clazz,
+          method_id);
+  jni_generator::CheckException(env);
   return ret;
 }
 
@@ -139,7 +144,8 @@ static base::subtle::AtomicWord g_SampleForTests_packagePrivateJavaMethod = 0;
 static void Java_SampleForTests_packagePrivateJavaMethod(JNIEnv* env, jobject
     obj) {
   /* Must call RegisterNativesImpl()  */
-  DCHECK(g_SampleForTests_clazz);
+  CHECK_CLAZZ(env, obj,
+      g_SampleForTests_clazz);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
@@ -151,9 +157,9 @@ static void Java_SampleForTests_packagePrivateJavaMethod(JNIEnv* env, jobject
 "V",
       &g_SampleForTests_packagePrivateJavaMethod);
 
-  env->CallVoidMethod(obj,
-      method_id);
-  base::android::CheckException(env);
+     env->CallVoidMethod(obj,
+          method_id);
+  jni_generator::CheckException(env);
 
 }
 
@@ -161,7 +167,8 @@ static base::subtle::AtomicWord g_SampleForTests_methodThatThrowsException = 0;
 static void Java_SampleForTests_methodThatThrowsException(JNIEnv* env, jobject
     obj) {
   /* Must call RegisterNativesImpl()  */
-  DCHECK(g_SampleForTests_clazz);
+  CHECK_CLAZZ(env, obj,
+      g_SampleForTests_clazz);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
@@ -173,18 +180,19 @@ static void Java_SampleForTests_methodThatThrowsException(JNIEnv* env, jobject
 "V",
       &g_SampleForTests_methodThatThrowsException);
 
-  env->CallVoidMethod(obj,
-      method_id);
+     env->CallVoidMethod(obj,
+          method_id);
 
 }
 
 static base::subtle::AtomicWord g_InnerStructA_create = 0;
-static ScopedJavaLocalRef<jobject> Java_InnerStructA_create(JNIEnv* env, jlong
-    l,
+static base::android::ScopedJavaLocalRef<jobject>
+    Java_InnerStructA_create(JNIEnv* env, jlong l,
     jint i,
     jstring s) {
   /* Must call RegisterNativesImpl()  */
-  DCHECK(g_InnerStructA_clazz);
+  CHECK_CLAZZ(env, g_InnerStructA_clazz,
+      g_InnerStructA_clazz, NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_STATIC>(
@@ -200,17 +208,18 @@ static ScopedJavaLocalRef<jobject> Java_InnerStructA_create(JNIEnv* env, jlong
       &g_InnerStructA_create);
 
   jobject ret =
-    env->CallStaticObjectMethod(g_InnerStructA_clazz,
-      method_id, l, i, s);
-  base::android::CheckException(env);
-  return ScopedJavaLocalRef<jobject>(env, ret);
+      env->CallStaticObjectMethod(g_InnerStructA_clazz,
+          method_id, l, i, s);
+  jni_generator::CheckException(env);
+  return base::android::ScopedJavaLocalRef<jobject>(env, ret);
 }
 
 static base::subtle::AtomicWord g_SampleForTests_addStructA = 0;
 static void Java_SampleForTests_addStructA(JNIEnv* env, jobject obj, jobject a)
     {
   /* Must call RegisterNativesImpl()  */
-  DCHECK(g_SampleForTests_clazz);
+  CHECK_CLAZZ(env, obj,
+      g_SampleForTests_clazz);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
@@ -223,9 +232,9 @@ static void Java_SampleForTests_addStructA(JNIEnv* env, jobject obj, jobject a)
 "V",
       &g_SampleForTests_addStructA);
 
-  env->CallVoidMethod(obj,
-      method_id, a);
-  base::android::CheckException(env);
+     env->CallVoidMethod(obj,
+          method_id, a);
+  jni_generator::CheckException(env);
 
 }
 
@@ -233,7 +242,8 @@ static base::subtle::AtomicWord g_SampleForTests_iterateAndDoSomething = 0;
 static void Java_SampleForTests_iterateAndDoSomething(JNIEnv* env, jobject obj)
     {
   /* Must call RegisterNativesImpl()  */
-  DCHECK(g_SampleForTests_clazz);
+  CHECK_CLAZZ(env, obj,
+      g_SampleForTests_clazz);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
@@ -245,16 +255,17 @@ static void Java_SampleForTests_iterateAndDoSomething(JNIEnv* env, jobject obj)
 "V",
       &g_SampleForTests_iterateAndDoSomething);
 
-  env->CallVoidMethod(obj,
-      method_id);
-  base::android::CheckException(env);
+     env->CallVoidMethod(obj,
+          method_id);
+  jni_generator::CheckException(env);
 
 }
 
 static base::subtle::AtomicWord g_InnerStructB_getKey = 0;
 static jlong Java_InnerStructB_getKey(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
-  DCHECK(g_InnerStructB_clazz);
+  CHECK_CLAZZ(env, obj,
+      g_InnerStructB_clazz, 0);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
@@ -267,17 +278,18 @@ static jlong Java_InnerStructB_getKey(JNIEnv* env, jobject obj) {
       &g_InnerStructB_getKey);
 
   jlong ret =
-    env->CallLongMethod(obj,
-      method_id);
-  base::android::CheckException(env);
+      env->CallLongMethod(obj,
+          method_id);
+  jni_generator::CheckException(env);
   return ret;
 }
 
 static base::subtle::AtomicWord g_InnerStructB_getValue = 0;
-static ScopedJavaLocalRef<jstring> Java_InnerStructB_getValue(JNIEnv* env,
-    jobject obj) {
+static base::android::ScopedJavaLocalRef<jstring>
+    Java_InnerStructB_getValue(JNIEnv* env, jobject obj) {
   /* Must call RegisterNativesImpl()  */
-  DCHECK(g_InnerStructB_clazz);
+  CHECK_CLAZZ(env, obj,
+      g_InnerStructB_clazz, NULL);
   jmethodID method_id =
       base::android::MethodID::LazyGet<
       base::android::MethodID::TYPE_INSTANCE>(
@@ -290,23 +302,15 @@ static ScopedJavaLocalRef<jstring> Java_InnerStructB_getValue(JNIEnv* env,
       &g_InnerStructB_getValue);
 
   jstring ret =
-    static_cast<jstring>(env->CallObjectMethod(obj,
-      method_id));
-  base::android::CheckException(env);
-  return ScopedJavaLocalRef<jstring>(env, ret);
+      static_cast<jstring>(env->CallObjectMethod(obj,
+          method_id));
+  jni_generator::CheckException(env);
+  return base::android::ScopedJavaLocalRef<jstring>(env, ret);
 }
 
 // Step 3: RegisterNatives.
 
-static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_InnerStructA_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kInnerStructAClassPath).obj()));
-  g_SampleForTests_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kSampleForTestsClassPath).obj()));
-  g_InnerStructB_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kInnerStructBClassPath).obj()));
-  static const JNINativeMethod kMethodsSampleForTests[] = {
+static const JNINativeMethod kMethodsSampleForTests[] = {
     { "nativeInit",
 "("
 "Ljava/lang/String;"
@@ -355,18 +359,34 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 "I"
 ")"
 "V", reinterpret_cast<void*>(IterateAndDoSomethingWithStructB) },
-  };
+    { "nativeReturnAString",
+"("
+"I"
+")"
+"Ljava/lang/String;", reinterpret_cast<void*>(ReturnAString) },
+};
+
+static bool RegisterNativesImpl(JNIEnv* env) {
+  g_InnerStructA_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
+      base::android::GetClass(env, kInnerStructAClassPath).obj()));
+  g_SampleForTests_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
+      base::android::GetClass(env, kSampleForTestsClassPath).obj()));
+  g_InnerStructB_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
+      base::android::GetClass(env, kInnerStructBClassPath).obj()));
+
   const int kMethodsSampleForTestsSize = arraysize(kMethodsSampleForTests);
 
   if (env->RegisterNatives(g_SampleForTests_clazz,
                            kMethodsSampleForTests,
                            kMethodsSampleForTestsSize) < 0) {
-    LOG(ERROR) << "RegisterNatives failed in " << __FILE__;
+    jni_generator::HandleRegistrationError(
+        env, g_SampleForTests_clazz, __FILE__);
     return false;
   }
 
   return true;
 }
+
 }  // namespace android
 }  // namespace base
 

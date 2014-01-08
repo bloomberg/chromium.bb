@@ -6,6 +6,7 @@
 #include <map>
 #include <string>
 
+#include "base/android/jni_android.h"
 #include "base/basictypes.h"
 
 namespace base {
@@ -35,6 +36,9 @@ class CPPClass {
   void AddStructB(JNIEnv* env, jobject obj, jobject structb);
 
   void IterateAndDoSomethingWithStructB(JNIEnv* env, jobject obj);
+
+  base::android::ScopedJavaLocalRef<jstring> ReturnAString(
+      JNIEnv* env, jobject obj);
 
  private:
   std::map<long, std::string> map_;

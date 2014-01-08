@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,12 +12,7 @@
 
 #include <jni.h>
 
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
-#include "base/logging.h"
-
-using base::android::ScopedJavaLocalRef;
+#include "base/android/jni_generator/jni_generator_helper.h"
 
 // Step 1: forward declarations.
 namespace {
@@ -27,48 +22,53 @@ const char kTestJniClassPath[] = "org/chromium/TestJni";
 const char kMyInnerClassClassPath[] = "org/chromium/TestJni$MyInnerClass";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_TestJni_clazz = NULL;
+
 }  // namespace
 
-static jint Init(JNIEnv* env, jobject obj);
+static jint Init(JNIEnv* env, jobject jcaller);
 
-static jint Init(JNIEnv* env, jobject obj);
+static jint Init(JNIEnv* env, jobject jcaller);
 
 // Step 2: method stubs.
 
 // Step 3: RegisterNatives.
 
-static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kTestJniClassPath).obj()));
-  static const JNINativeMethod kMethodsMyOtherInnerClass[] = {
+static const JNINativeMethod kMethodsMyOtherInnerClass[] = {
     { "nativeInit",
 "("
 ")"
 "I", reinterpret_cast<void*>(Init) },
-  };
+};
+
+static const JNINativeMethod kMethodsMyInnerClass[] = {
+    { "nativeInit",
+"("
+")"
+"I", reinterpret_cast<void*>(Init) },
+};
+
+static bool RegisterNativesImpl(JNIEnv* env) {
+  g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
+      base::android::GetClass(env, kTestJniClassPath).obj()));
+
   const int kMethodsMyOtherInnerClassSize =
       arraysize(kMethodsMyOtherInnerClass);
 
   if (env->RegisterNatives(g_MyOtherInnerClass_clazz,
                            kMethodsMyOtherInnerClass,
                            kMethodsMyOtherInnerClassSize) < 0) {
-    LOG(ERROR) << "RegisterNatives failed in " << __FILE__;
+    jni_generator::HandleRegistrationError(
+        env, g_MyOtherInnerClass_clazz, __FILE__);
     return false;
   }
 
-  static const JNINativeMethod kMethodsMyInnerClass[] = {
-    { "nativeInit",
-"("
-")"
-"I", reinterpret_cast<void*>(Init) },
-  };
   const int kMethodsMyInnerClassSize = arraysize(kMethodsMyInnerClass);
 
   if (env->RegisterNatives(g_MyInnerClass_clazz,
                            kMethodsMyInnerClass,
                            kMethodsMyInnerClassSize) < 0) {
-    LOG(ERROR) << "RegisterNatives failed in " << __FILE__;
+    jni_generator::HandleRegistrationError(
+        env, g_MyInnerClass_clazz, __FILE__);
     return false;
   }
 

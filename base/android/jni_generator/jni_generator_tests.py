@@ -21,6 +21,9 @@ from jni_generator import CalledByNative, JniParams, NativeMethod, Param
 
 
 SCRIPT_NAME = 'base/android/jni_generator/jni_generator.py'
+INCLUDES = (
+    'base/android/jni_generator/jni_generator_helper.h'
+)
 
 # Set this environment variable in order to regenerate the golden text
 # files.
@@ -32,7 +35,11 @@ class TestOptions(object):
   def __init__(self):
     self.namespace = None
     self.script_name = SCRIPT_NAME
+    self.includes = INCLUDES
+    self.pure_native_methods = False
     self.ptr_type = 'int'
+    self.jni_init_native_name = None
+    self.eager_called_by_natives = False
 
 
 class TestGenerator(unittest.TestCase):
@@ -58,6 +65,10 @@ class TestGenerator(unittest.TestCase):
         self.assertEquals(first[i], second[i])
 
   def assertTextEquals(self, golden_text, generated_text):
+    if not self.compareText(golden_text, generated_text):
+      self.fail('Golden text mismatch.')
+
+  def compareText(self, golden_text, generated_text):
     def FilterText(text):
       return [
           l.strip() for l in text.split('\n')
@@ -65,18 +76,18 @@ class TestGenerator(unittest.TestCase):
       ]
     stripped_golden = FilterText(golden_text)
     stripped_generated = FilterText(generated_text)
-    if stripped_golden != stripped_generated:
-      print self.id()
-      for line in difflib.context_diff(stripped_golden, stripped_generated):
-        print line
-      print '\n\nGenerated'
-      print '=' * 80
-      print generated_text
-      print '=' * 80
-      print 'Run with:'
-      print 'REBASELINE=1', sys.argv[0]
-      print 'to regenerate the data files.'
-      self.fail('Golden text mismatch.')
+    if stripped_golden == stripped_generated:
+      return True
+    print self.id()
+    for line in difflib.context_diff(stripped_golden, stripped_generated):
+      print line
+    print '\n\nGenerated'
+    print '=' * 80
+    print generated_text
+    print '=' * 80
+    print 'Run with:'
+    print 'REBASELINE=1', sys.argv[0]
+    print 'to regenerate the data files.'
 
   def _ReadGoldenFile(self, golden_file):
     if not os.path.exists(golden_file):
@@ -799,12 +810,18 @@ public long skip(long)   throws java.io.IOException;
     content = file(os.path.join(script_dir,
         'java/src/org/chromium/example/jni_generator/SampleForTests.java')
         ).read()
-    golden_content = file(os.path.join(script_dir,
-                                       'golden_sample_for_tests_jni.h')).read()
+    golden_file = os.path.join(script_dir, 'golden_sample_for_tests_jni.h')
+    golden_content = file(golden_file).read()
     jni_from_java = jni_generator.JNIFromJavaSource(
         content, 'org/chromium/example/jni_generator/SampleForTests',
         TestOptions())
-    self.assertTextEquals(golden_content, jni_from_java.GetContent())
+    generated_text = jni_from_java.GetContent()
+    if not self.compareText(golden_content, generated_text):
+      if os.environ.get(REBASELINE_ENV):
+        with file(golden_file, 'w') as f:
+          f.write(generated_text)
+        return
+      self.fail('testJniSelfDocumentingExample')
 
   def testNoWrappingPreprocessorLines(self):
     test_data = """
@@ -927,6 +944,67 @@ class Foo {
                                              natives, [], test_options)
     self.assertGoldenTextEquals(h.GetContent())
 
+  def testPureNativeMethodsOption(self):
+    test_data = """
+    package org.chromium.example.jni_generator;
+
+    /** The pointer to the native Test. */
+    int nativeTest;
+
+    class Test {
+        private static native int nativeMethod(int nativeTest, int arg1);
+    }
+    """
+    options = TestOptions()
+    options.pure_native_methods = True
+    jni_from_java = jni_generator.JNIFromJavaSource(
+        test_data, 'org/chromium/example/jni_generator/Test', options)
+    self.assertGoldenTextEquals(jni_from_java.GetContent())
+
+  def testJNIInitNativeNameOption(self):
+    test_data = """
+    package org.chromium.example.jni_generator;
+
+    /** The pointer to the native Test. */
+    int nativeTest;
+
+    class Test {
+        private static native boolean initNativeClass();
+        private static native int nativeMethod(int nativeTest, int arg1);
+    }
+    """
+    options = TestOptions()
+    options.jni_init_native_name = 'initNativeClass'
+    jni_from_java = jni_generator.JNIFromJavaSource(
+        test_data, 'org/chromium/example/jni_generator/Test', options)
+    self.assertGoldenTextEquals(jni_from_java.GetContent())
+
+  def testEagerCalledByNativesOption(self):
+    test_data = """
+    package org.chromium.example.jni_generator;
+
+    /** The pointer to the native Test. */
+    int nativeTest;
+
+    class Test {
+        private static native boolean initNativeClass();
+        private static native int nativeMethod(int nativeTest, int arg1);
+        @CalledByNative
+        private void testMethodWithParam(int iParam);
+        @CalledByNative
+        private static int testStaticMethodWithParam(int iParam);
+        @CalledByNative
+        private static double testMethodWithNoParam();
+        @CalledByNative
+        private static String testStaticMethodWithNoParam();
+    }
+    """
+    options = TestOptions()
+    options.jni_init_native_name = 'initNativeClass'
+    options.eager_called_by_natives = True
+    jni_from_java = jni_generator.JNIFromJavaSource(
+        test_data, 'org/chromium/example/jni_generator/Test', options)
+    self.assertGoldenTextEquals(jni_from_java.GetContent())
 
 if __name__ == '__main__':
   unittest.main()

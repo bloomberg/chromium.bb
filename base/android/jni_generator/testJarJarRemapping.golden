@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,44 +12,42 @@
 
 #include <jni.h>
 
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
-#include "base/logging.h"
-
-using base::android::ScopedJavaLocalRef;
+#include "base/android/jni_generator/jni_generator_helper.h"
 
 // Step 1: forward declarations.
 namespace {
 const char kExampleClassPath[] = "com/test/jni_generator/Example";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_Example_clazz = NULL;
+
 }  // namespace
 
-static void Test(JNIEnv* env, jclass clazz,
+static void Test(JNIEnv* env, jclass jcaller,
     jobject t);
 
 // Step 2: method stubs.
 
 // Step 3: RegisterNatives.
 
-static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_Example_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kExampleClassPath).obj()));
-  static const JNINativeMethod kMethodsExample[] = {
+static const JNINativeMethod kMethodsExample[] = {
     { "nativeTest",
 "("
 "Lorg/test2/org/chromium/example2/Test;"
 ")"
 "V", reinterpret_cast<void*>(Test) },
-  };
+};
+
+static bool RegisterNativesImpl(JNIEnv* env) {
+  g_Example_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
+      base::android::GetClass(env, kExampleClassPath).obj()));
+
   const int kMethodsExampleSize = arraysize(kMethodsExample);
 
   if (env->RegisterNatives(g_Example_clazz,
                            kMethodsExample,
                            kMethodsExampleSize) < 0) {
-    LOG(ERROR) << "RegisterNatives failed in " << __FILE__;
+    jni_generator::HandleRegistrationError(
+        env, g_Example_clazz, __FILE__);
     return false;
   }
 

@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,65 +12,61 @@
 
 #include <jni.h>
 
-#include "base/android/jni_android.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/basictypes.h"
-#include "base/logging.h"
-
-using base::android::ScopedJavaLocalRef;
+#include "base/android/jni_generator/jni_generator_helper.h"
 
 // Step 1: forward declarations.
 namespace {
 const char kTestJniClassPath[] = "org/chromium/TestJni";
 // Leaking this jclass as we cannot use LazyInstance from some threads.
 jclass g_TestJni_clazz = NULL;
+
 }  // namespace
 
-static jint Init(JNIEnv* env, jobject obj);
+static jint Init(JNIEnv* env, jobject jcaller);
 
-static jstring GetDomainAndRegistry(JNIEnv* env, jclass clazz,
+static jstring GetDomainAndRegistry(JNIEnv* env, jclass jcaller,
     jstring url);
 
-static void CreateHistoricalTabFromState(JNIEnv* env, jclass clazz,
+static void CreateHistoricalTabFromState(JNIEnv* env, jclass jcaller,
     jbyteArray state,
     jint tab_index);
 
-static jbyteArray GetStateAsByteArray(JNIEnv* env, jobject obj,
+static jbyteArray GetStateAsByteArray(JNIEnv* env, jobject jcaller,
     jobject view);
 
-static jobjectArray GetAutofillProfileGUIDs(JNIEnv* env, jclass clazz);
+static jobjectArray GetAutofillProfileGUIDs(JNIEnv* env, jclass jcaller);
 
-static void SetRecognitionResults(JNIEnv* env, jobject obj,
+static void SetRecognitionResults(JNIEnv* env, jobject jcaller,
     jint sessionId,
     jobjectArray results);
 
-static jint FindAll(JNIEnv* env, jobject obj,
+static jint FindAll(JNIEnv* env, jobject jcaller,
     jstring find);
 
-static jobject GetInnerClass(JNIEnv* env, jclass clazz);
+static jobject GetInnerClass(JNIEnv* env, jclass jcaller);
 
 // Step 2: method stubs.
-static void Destroy(JNIEnv* env, jobject obj,
+static void Destroy(JNIEnv* env, jobject jcaller,
     jint nativeChromeBrowserProvider) {
-  DCHECK(nativeChromeBrowserProvider) << "Destroy";
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
-  return native->Destroy(env, obj);
+  CHECK_NATIVE_PTR(env, jcaller, native, "Destroy");
+  return native->Destroy(env, jcaller);
 }
 
-static jlong AddBookmark(JNIEnv* env, jobject obj,
+static jlong AddBookmark(JNIEnv* env, jobject jcaller,
     jint nativeChromeBrowserProvider,
     jstring url,
     jstring title,
     jboolean isFolder,
     jlong parentId) {
-  DCHECK(nativeChromeBrowserProvider) << "AddBookmark";
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
-  return native->AddBookmark(env, obj, url, title, isFolder, parentId);
+  CHECK_NATIVE_PTR(env, jcaller, native, "AddBookmark", 0);
+  return native->AddBookmark(env, jcaller, url, title, isFolder, parentId);
 }
 
-static jlong AddBookmarkFromAPI(JNIEnv* env, jobject obj,
+static jlong AddBookmarkFromAPI(JNIEnv* env, jobject jcaller,
     jint nativeChromeBrowserProvider,
     jstring url,
     jobject created,
@@ -79,44 +75,40 @@ static jlong AddBookmarkFromAPI(JNIEnv* env, jobject obj,
     jbyteArray favicon,
     jstring title,
     jobject visits) {
-  DCHECK(nativeChromeBrowserProvider) << "AddBookmarkFromAPI";
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
-  return native->AddBookmarkFromAPI(env, obj, url, created, isBookmark, date,
-      favicon, title, visits);
+  CHECK_NATIVE_PTR(env, jcaller, native, "AddBookmarkFromAPI", 0);
+  return native->AddBookmarkFromAPI(env, jcaller, url, created, isBookmark,
+      date, favicon, title, visits);
 }
 
-static jobject QueryBitmap(JNIEnv* env, jobject obj,
+static jobject QueryBitmap(JNIEnv* env, jobject jcaller,
     jint nativeChromeBrowserProvider,
     jobjectArray projection,
     jstring selection,
     jobjectArray selectionArgs,
     jstring sortOrder) {
-  DCHECK(nativeChromeBrowserProvider) << "QueryBitmap";
   ChromeBrowserProvider* native =
       reinterpret_cast<ChromeBrowserProvider*>(nativeChromeBrowserProvider);
-  return native->QueryBitmap(env, obj, projection, selection, selectionArgs,
+  CHECK_NATIVE_PTR(env, jcaller, native, "QueryBitmap", NULL);
+  return native->QueryBitmap(env, jcaller, projection, selection, selectionArgs,
       sortOrder).Release();
 }
 
-static void GotOrientation(JNIEnv* env, jobject obj,
+static void GotOrientation(JNIEnv* env, jobject jcaller,
     jint nativeDataFetcherImplAndroid,
     jdouble alpha,
     jdouble beta,
     jdouble gamma) {
-  DCHECK(nativeDataFetcherImplAndroid) << "GotOrientation";
   DataFetcherImplAndroid* native =
       reinterpret_cast<DataFetcherImplAndroid*>(nativeDataFetcherImplAndroid);
-  return native->GotOrientation(env, obj, alpha, beta, gamma);
+  CHECK_NATIVE_PTR(env, jcaller, native, "GotOrientation");
+  return native->GotOrientation(env, jcaller, alpha, beta, gamma);
 }
 
 // Step 3: RegisterNatives.
 
-static bool RegisterNativesImpl(JNIEnv* env) {
-
-  g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
-      base::android::GetClass(env, kTestJniClassPath).obj()));
-  static const JNINativeMethod kMethodsTestJni[] = {
+static const JNINativeMethod kMethodsTestJni[] = {
     { "nativeInit",
 "("
 ")"
@@ -200,13 +192,19 @@ static bool RegisterNativesImpl(JNIEnv* env) {
 "D"
 ")"
 "V", reinterpret_cast<void*>(GotOrientation) },
-  };
+};
+
+static bool RegisterNativesImpl(JNIEnv* env) {
+  g_TestJni_clazz = reinterpret_cast<jclass>(env->NewGlobalRef(
+      base::android::GetClass(env, kTestJniClassPath).obj()));
+
   const int kMethodsTestJniSize = arraysize(kMethodsTestJni);
 
   if (env->RegisterNatives(g_TestJni_clazz,
                            kMethodsTestJni,
                            kMethodsTestJniSize) < 0) {
-    LOG(ERROR) << "RegisterNatives failed in " << __FILE__;
+    jni_generator::HandleRegistrationError(
+        env, g_TestJni_clazz, __FILE__);
     return false;
   }
 

@@ -22,6 +22,10 @@
 {
   'variables': {
     'jni_generator': '<(DEPTH)/base/android/jni_generator/jni_generator.py',
+    # A comma separated string of include files.
+    'jni_generator_includes%': (
+        'base/android/jni_generator/jni_generator_helper.h'
+    ),
   },
   'actions': [
     {
@@ -46,6 +50,8 @@
         '<(input_java_class)',
         '--output_dir',
         '<(SHARED_INTERMEDIATE_DIR)/<(jni_gen_package)/jni',
+        '--includes',
+        '<(jni_generator_includes)',
         '--optimize_generation',
         '<(optimize_jni_generation)',
       ],
