@@ -968,7 +968,12 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
     this.collapseTimer_ = null;
   }
   if (expanded) {
-    this.collapseTimer_ = setTimeout(this.setExpanded_.bind(this, false), 3000);
+    var isRibbonHovered =
+        document.querySelector('#toolbar').webkitMatchesSelector(':hover');
+    if (!isRibbonHovered) {
+      this.collapseTimer_ = setTimeout(
+          this.setExpanded_.bind(this, false), 3000);
+    }
     if (!this.expanded_) {
       this.toolbarEffect_.invoke(true, function() {
         this.expanded_ = true;
