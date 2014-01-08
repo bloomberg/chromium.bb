@@ -68,6 +68,10 @@ camera.views.Album = function(context, router) {
   Object.seal(this);
 
   // Listen for clicking on the delete button.
+  document.querySelector('#album-print').addEventListener(
+      'click', this.onPrintButtonClicked_.bind(this));
+  document.querySelector('#album-export').addEventListener(
+      'click', this.onExportButtonClicked_.bind(this));
   document.querySelector('#album-delete').addEventListener(
       'click', this.onDeleteButtonClicked_.bind(this));
   document.querySelector('#album-back').addEventListener(
@@ -122,6 +126,24 @@ camera.views.Album.prototype.onResize = function() {
 };
 
 /**
+ * Handles clicking on the print button.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Album.prototype.onPrintButtonClicked_ = function(event) {
+  window.print();
+};
+
+/**
+ * Handles clicking on the export button.
+ * @param {Event} event Click event.
+ * @private
+ */
+camera.views.Album.prototype.onExportButtonClicked_ = function(event) {
+  this.exportSelection();
+};
+
+/**
  * Handles clicking on the delete button.
  * @param {Event} event Click event.
  * @private
@@ -136,10 +158,15 @@ camera.views.Album.prototype.onDeleteButtonClicked_ = function(event) {
  */
 camera.views.Album.prototype.updateButtons_ = function() {
   var pictureSelected = this.model.currentIndex !== null;
-  if (pictureSelected)
+  if (pictureSelected) {
+    document.querySelector('#album-print').removeAttribute('disabled');
+    document.querySelector('#album-export').removeAttribute('disabled');
     document.querySelector('#album-delete').removeAttribute('disabled');
-  else
+  } else {
+    document.querySelector('#album-print').setAttribute('disabled', '');
+    document.querySelector('#album-export').setAttribute('disabled', '');
     document.querySelector('#album-delete').setAttribute('disabled', '');
+  }
 };
 
 /**
@@ -212,6 +239,14 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
       }
       if (currentPicture)
         this.router.navigate(camera.Router.ViewIdentifier.BROWSER);
+      event.preventDefault();
+      return;
+    case 'Ctrl-U+0053':  // Ctrl+S for saving.
+      this.exportSelection();
+      event.preventDefault();
+      return;
+    case 'Ctrl-U+0050':  // Ctrl+P for printing.
+      window.print();
       event.preventDefault();
       return;
   }
