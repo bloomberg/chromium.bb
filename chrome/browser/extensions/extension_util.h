@@ -63,6 +63,12 @@ bool IsExtensionIdle(const std::string& extension_id,
 bool IsExtensionInstalledPermanently(const std::string& extension_id,
                                      const ExtensionService* service);
 
+// Returns true if the extension is an ephemeral app that is not currently
+// running. Note that this function will always return false if |extension| is
+// not an ephemeral app.
+bool IsIdleEphemeralApp(const extensions::Extension* extension,
+                        extensions::ExtensionSystem* extension_system);
+
 }  // namespace extension_util
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_UTIL_H_

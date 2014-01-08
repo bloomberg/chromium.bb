@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/apps/ephemeral_app_service.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/switches.h"
 
 using extensions::PlatformAppBrowserTest;
 using extensions::Extension;
@@ -32,24 +30,8 @@ const char* kTestApps[] = {
 
 class EphemeralAppServiceBrowserTest : public PlatformAppBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // Skip PlatformAppBrowserTest, which sets different values for the switches
-    // below.
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-
-    // Make event pages get suspended immediately.
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "10");
-    command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "10");
-  }
-
   void LoadApps() {
     for (int i = 0; i < kNumTestApps; ++i) {
-      content::WindowedNotificationObserver event_page_destroyed_signal(
-          chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-          content::Source<Profile>(browser()->profile()));
-
       base::FilePath path = test_data_dir_.AppendASCII(kTestApps[i]);
       const Extension* extension =
           InstallExtensionWithSourceAndFlags(
@@ -58,9 +40,6 @@ class EphemeralAppServiceBrowserTest : public PlatformAppBrowserTest {
               extensions::Manifest::UNPACKED,
               Extension::IS_EPHEMERAL);
       app_ids_.push_back(extension->id());
-
-      // Also wait for the app to become idle.
-      event_page_destroyed_signal.Wait();
     }
 
     ASSERT_EQ(kNumTestApps, (int) app_ids_.size());

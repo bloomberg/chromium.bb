@@ -338,6 +338,12 @@ struct Event {
   // DispatchEvent, so callers don't need to worry about lifetime.
   WillDispatchCallback will_dispatch_callback;
 
+  // If true, this event will always be dispatched to ephemeral apps, regardless
+  // of whether they are running or inactive. Defaults to false.
+  // Most events can only be dispatched to ephemeral apps that are already
+  // running. Cached ephemeral apps are inactive until launched by the user.
+  bool can_load_ephemeral_apps;
+
   Event(const std::string& event_name,
         scoped_ptr<base::ListValue> event_args);
 

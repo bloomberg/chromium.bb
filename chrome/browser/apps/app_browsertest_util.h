@@ -41,6 +41,9 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   // subdirectory. Waits until it is launched.
   const Extension* InstallAndLaunchPlatformApp(const char* name);
 
+  // Launch the given platform app.
+  void LaunchPlatformApp(const Extension* extension);
+
   // Gets the WebContents associated with the first shell window that is found
   // (most tests only deal with one platform app window, so this is good
   // enough).
@@ -49,6 +52,9 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   // Gets the first shell window that is found (most tests only deal with one
   // platform app window, so this is good enough).
   apps::ShellWindow* GetFirstShellWindow();
+
+  // Gets the first shell window for an app.
+  apps::ShellWindow* GetFirstShellWindowForApp(const std::string& app_id);
 
   // Runs chrome.windows.getAll for the given extension and returns the number
   // of windows that the function returns.
@@ -61,6 +67,9 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
 
   // Returns the number of shell windows.
   size_t GetShellWindowCount();
+
+  // Returns the number of shell windows for a specific app.
+  size_t GetShellWindowCountForApp(const std::string& app_id);
 
   // The command line already has an argument on it - about:blank, which
   // is set by InProcessBrowserTest::PrepareTestCommandLine. For platform app

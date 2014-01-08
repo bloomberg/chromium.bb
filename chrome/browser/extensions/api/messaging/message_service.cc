@@ -201,9 +201,19 @@ void MessageService::OpenChannelToExtension(
     return;
   Profile* profile = Profile::FromBrowserContext(source->GetBrowserContext());
 
-  const Extension* target_extension = ExtensionSystem::Get(profile)->
-      extension_service()->extensions()->GetByID(target_extension_id);
+  ExtensionSystem* extension_system = ExtensionSystem::Get(profile);
+  DCHECK(extension_system);
+  const Extension* target_extension = extension_system->extension_service()->
+      extensions()->GetByID(target_extension_id);
   if (!target_extension) {
+    DispatchOnDisconnect(
+        source, receiver_port_id, kReceivingEndDoesntExistError);
+    return;
+  }
+
+  // Only running ephemeral apps can receive messages. Idle cached ephemeral
+  // apps are invisible and should not be connectable.
+  if (extension_util::IsIdleEphemeralApp(target_extension, extension_system)) {
     DispatchOnDisconnect(
         source, receiver_port_id, kReceivingEndDoesntExistError);
     return;

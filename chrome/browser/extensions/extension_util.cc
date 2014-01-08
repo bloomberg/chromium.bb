@@ -170,4 +170,15 @@ bool IsExtensionInstalledPermanently(const std::string& extension_id,
   return extension && !extension->is_ephemeral();
 }
 
+bool IsIdleEphemeralApp(const extensions::Extension* extension,
+                        extensions::ExtensionSystem* extension_system) {
+  DCHECK(extension);
+  DCHECK(extension_system);
+
+  if (!extension->is_ephemeral())
+    return false;
+
+  return IsExtensionIdle(extension->id(), extension_system);
+}
+
 }  // namespace extension_util

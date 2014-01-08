@@ -576,6 +576,15 @@ bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
     BrowserContext* context,
     const Extension* extension,
     const linked_ptr<Event>& event) {
+  if (extension->is_ephemeral() && !event->can_load_ephemeral_apps) {
+    // Most events can only be dispatched to ephemeral apps that are already
+    // running.
+    ProcessManager* pm =
+        ExtensionSystem::GetForBrowserContext(context)->process_manager();
+    if (!pm->GetBackgroundHostForExtension(extension->id()))
+      return false;
+  }
+
   if (!CanDispatchEventToBrowserContext(context, extension, event))
     return false;
 
@@ -723,7 +732,8 @@ Event::Event(const std::string& event_name,
     : event_name(event_name),
       event_args(event_args.Pass()),
       restrict_to_browser_context(NULL),
-      user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
+      user_gesture(EventRouter::USER_GESTURE_UNKNOWN),
+      can_load_ephemeral_apps(false) {
   DCHECK(this->event_args.get());
 }
 
@@ -733,7 +743,8 @@ Event::Event(const std::string& event_name,
     : event_name(event_name),
       event_args(event_args.Pass()),
       restrict_to_browser_context(restrict_to_browser_context),
-      user_gesture(EventRouter::USER_GESTURE_UNKNOWN) {
+      user_gesture(EventRouter::USER_GESTURE_UNKNOWN),
+      can_load_ephemeral_apps(false) {
   DCHECK(this->event_args.get());
 }
 
@@ -748,7 +759,8 @@ Event::Event(const std::string& event_name,
       restrict_to_browser_context(restrict_to_browser_context),
       event_url(event_url),
       user_gesture(user_gesture),
-      filter_info(filter_info) {
+      filter_info(filter_info),
+      can_load_ephemeral_apps(false) {
   DCHECK(this->event_args.get());
 }
 

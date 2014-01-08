@@ -47,6 +47,7 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
   scoped_ptr<Event> event(new Event(app_runtime::OnLaunched::kEventName,
                                     args.Pass()));
   event->restrict_to_browser_context = profile;
+  event->can_load_ephemeral_apps = true;
   system->event_router()->DispatchEventWithLazyListener(extension_id,
                                                         event.Pass());
   system->extension_service()->extension_prefs()->SetLastLaunchTime(

@@ -65,8 +65,7 @@ const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
       test_data_dir_.AppendASCII("platform_apps").AppendASCII(name));
   EXPECT_TRUE(extension);
 
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE, NEW_WINDOW));
+  LaunchPlatformApp(extension);
 
   app_loaded_observer.Wait();
 
@@ -90,12 +89,16 @@ const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
 
   const Extension* extension = InstallPlatformApp(name);
 
-  OpenApplication(AppLaunchParams(
-      browser()->profile(), extension, LAUNCH_CONTAINER_NONE, NEW_WINDOW));
+  LaunchPlatformApp(extension);
 
   app_loaded_observer.Wait();
 
   return extension;
+}
+
+void PlatformAppBrowserTest::LaunchPlatformApp(const Extension* extension) {
+  OpenApplication(AppLaunchParams(
+      browser()->profile(), extension, LAUNCH_CONTAINER_NONE, NEW_WINDOW));
 }
 
 WebContents* PlatformAppBrowserTest::GetFirstShellWindowWebContents() {
@@ -108,6 +111,20 @@ WebContents* PlatformAppBrowserTest::GetFirstShellWindowWebContents() {
 
 ShellWindow* PlatformAppBrowserTest::GetFirstShellWindow() {
   return GetFirstShellWindowForBrowser(browser());
+}
+
+apps::ShellWindow* PlatformAppBrowserTest::GetFirstShellWindowForApp(
+    const std::string& app_id) {
+  ShellWindowRegistry* app_registry =
+      ShellWindowRegistry::Get(browser()->profile());
+  const ShellWindowRegistry::ShellWindowList& shell_windows =
+      app_registry->GetShellWindowsForApp(app_id);
+
+  ShellWindowRegistry::const_iterator iter = shell_windows.begin();
+  if (iter != shell_windows.end())
+    return *iter;
+
+  return NULL;
 }
 
 size_t PlatformAppBrowserTest::RunGetWindowsFunctionForExtension(
@@ -137,6 +154,12 @@ bool PlatformAppBrowserTest::RunGetWindowFunctionForExtension(
 size_t PlatformAppBrowserTest::GetShellWindowCount() {
   return ShellWindowRegistry::Get(browser()->profile())->
       shell_windows().size();
+}
+
+size_t PlatformAppBrowserTest::GetShellWindowCountForApp(
+    const std::string& app_id) {
+  return ShellWindowRegistry::Get(browser()->profile())->
+      GetShellWindowsForApp(app_id).size();
 }
 
 void PlatformAppBrowserTest::ClearCommandLineArgs() {
