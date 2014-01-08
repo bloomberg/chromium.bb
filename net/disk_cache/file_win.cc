@@ -267,4 +267,8 @@ void File::WaitForPendingIO(int* num_pending_io) {
   }
 }
 
+// Static.
+void File::DropPendingIO() {
+}
+
 }  // namespace disk_cache

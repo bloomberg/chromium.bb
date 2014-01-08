@@ -70,6 +70,9 @@ class NET_EXPORT_PRIVATE File : public base::RefCounted<File> {
   // Blocks until |num_pending_io| IO operations complete.
   static void WaitForPendingIO(int* num_pending_io);
 
+  // Drops current pending operations without waiting for them to complete.
+  static void DropPendingIO();
+
  protected:
   virtual ~File();
 

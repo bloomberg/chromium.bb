@@ -518,9 +518,13 @@ void DiskCacheBackendTest::BackendShutdownWithPendingFileIO(bool fast) {
 
   base::MessageLoop::current()->RunUntilIdle();
 
+#if !defined(OS_IOS)
   // Wait for the actual operation to complete, or we'll keep a file handle that
-  // may cause issues later.
+  // may cause issues later. Note that on iOS systems even though this test
+  // uses a single thread, the actual IO is posted to a worker thread and the
+  // cache destructor breaks the link to reach cb when the operation completes.
   rv = cb.GetResult(rv);
+#endif
 }
 
 TEST_F(DiskCacheBackendTest, ShutdownWithPendingFileIO) {
@@ -543,6 +547,8 @@ TEST_F(DiskCacheBackendTest, ShutdownWithPendingFileIO_Fast) {
 }
 #endif
 
+// See crbug.com/330074
+#if !defined(OS_IOS)
 // Tests that one cache instance is not affected by another one going away.
 TEST_F(DiskCacheBackendTest, MultipleInstancesWithPendingFileIO) {
   base::ScopedTempDir store;
@@ -576,6 +582,7 @@ TEST_F(DiskCacheBackendTest, MultipleInstancesWithPendingFileIO) {
   // may cause issues later.
   rv = cb.GetResult(rv);
 }
+#endif
 
 // Tests that we deal with background-thread pending operations.
 void DiskCacheBackendTest::BackendShutdownWithPendingIO(bool fast) {

@@ -380,6 +380,7 @@
         'disk_cache/file.cc',
         'disk_cache/file.h',
         'disk_cache/file_block.h',
+        'disk_cache/file_ios.cc',
         'disk_cache/file_lock.cc',
         'disk_cache/file_lock.h',
         'disk_cache/file_posix.cc',

@@ -167,6 +167,11 @@ void File::WaitForPendingIO(int* num_pending_io) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Static.
+void File::DropPendingIO() {
+}
+
+
 File::~File() {
   if (IsValid())
     base::ClosePlatformFile(platform_file_);
