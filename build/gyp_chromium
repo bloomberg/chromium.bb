@@ -78,10 +78,27 @@ def EscapeStringForGN(s):
   return '"' + s.replace('$', '\\$').replace('"', '\\"') + '"'
 
 
+def ProcessGypDefinesItems(items):
+  """Converts a list of strings to a list of key-value pairs."""
+  result = []
+  for item in items:
+    tokens = item.split('=', 1)
+    # Some GYP variables have hyphens, which we don't support.
+    key = FormatKeyForGN(tokens[0])
+    if len(tokens) == 2:
+      result += [(key, tokens[1])]
+    else:
+      # No value supplied, treat it as a boolean and set it. Note that we
+      # use the string '1' here so we have a consistent definition whether
+      # you do 'foo=1' or 'foo'.
+      result += [(key, '1')]
+  return result
+
 def GetGypVarsForGN(supplemental_files):
   """Returns a dictionary of all GYP vars that we will be passing to GN."""
-  vars_dict = {}
 
+  # GYP defines from the supplemental.gypi files.
+  supp_items = []
   for supplement in supplemental_files:
     with open(supplement, 'r') as f:
       try:
@@ -91,21 +108,21 @@ def GetGypVarsForGN(supplemental_files):
         raise
       variables = file_data.get('variables', [])
       for v in variables:
-        vars_dict[FormatKeyForGN(v)] = EscapeStringForGN(str(variables[v]))
+        supp_items += [(FormatKeyForGN(v), str(variables[v]))]
 
-  env_string = os.environ.get('GYP_DEFINES', '')
-  items = shlex.split(env_string)
-  for item in items:
-    tokens = item.split('=', 1)
-    # Some GYP variables have hyphens, which we don't support.
-    key = FormatKeyForGN(tokens[0])
-    if len(tokens) == 2:
-      vars_dict[key] = tokens[1]
-    else:
-      # No value supplied, treat it as a boolean and set it.
-      vars_dict[key] = 'true'
+  # GYP defines from the environment.
+  env_items = ProcessGypDefinesItems(
+      shlex.split(os.environ.get('GYP_DEFINES', '')))
 
-  return vars_dict
+  # GYP defines from the command line. We can't use optparse since we want
+  # to ignore all arguments other than "-D".
+  cmdline_input_items = []
+  for i in range(len(sys.argv))[1:]:
+    if sys.argv[i] == '-D' and i + 1 < len(sys.argv):
+      cmdline_input_items += [sys.argv[i + 1]]
+  cmdline_items = ProcessGypDefinesItems(cmdline_input_items)
+
+  return dict(supp_items + env_items + cmdline_items)
 
 
 def GetArgsStringForGN(supplemental_files):
@@ -113,6 +130,7 @@ def GetArgsStringForGN(supplemental_files):
   Based on a subset of the GYP variables that have been rewritten a bit."""
 
   vars_dict = GetGypVarsForGN(supplemental_files)
+  print vars_dict
   gn_args = ''
 
   # Note: These are the additional flags passed to various builds by builders
@@ -136,7 +154,7 @@ def GetArgsStringForGN(supplemental_files):
       ('component', 'shared_library', 'is_component_build=true'),
       ('clang', '1', 'is_clang=true'),
       ('target_arch', 'ia32', 'cpu_arch="x86"'),
-      ('target_arch', 'x64', 'cpu_arch="x64"'),
+      ('target_arch', 'x64', 'cpu_arch="x64" force_win64=true'),
       ('target_arch', 'arm', 'cpu_arch="arm"'),
       ('target_arch', 'mipsel', 'cpu_arch="mipsel"'),
       ('fastbuild', '0', 'symbol_level=2'),
@@ -146,6 +164,7 @@ def GetArgsStringForGN(supplemental_files):
       ('OS', 'android', 'os="android"'),
       ('chromeos', '1', 'os="chromeos"'),
       ('use_aura', '1', 'use_aura=true'),
+      ('use_goma', '1', 'use_goma=true'),
       ('asan', '1', 'is_asan=true'),
       ('lsan', '1', 'is_lsan=true'),
   ]

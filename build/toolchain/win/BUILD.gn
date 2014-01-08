@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/toolchain/goma.gni")
+
 # Should only be running on Windows.
 assert(is_win)
 
@@ -25,6 +27,11 @@ exec_script("setup_toolchain.py", [ gyp_win_tool_source ], "value")
 
 stamp_command = "$python_path gyp-win-tool stamp \$out"
 copy_command = "$python_path gyp-win-tool recursive-mirror \$in \$out"
+
+if (use_goma) {
+  # Add the Goma compiler prefixes to the GYP file.
+  gyp_header = make_goma_global_settings
+}
 
 # 32-bit toolchain -------------------------------------------------------------
 
