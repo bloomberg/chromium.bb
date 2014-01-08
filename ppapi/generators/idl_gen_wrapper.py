@@ -324,9 +324,9 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
                   iface.struct_name)
         continue
 
-      out.Write('struct %s %s_Wrappers_%s = {\n' % (iface.struct_name,
-                                                    self.wrapper_prefix,
-                                                    iface.struct_name))
+      out.Write('static struct %s %s_Wrappers_%s = {\n' % (iface.struct_name,
+                                                           self.wrapper_prefix,
+                                                           iface.struct_name))
       methods = []
       for member in iface.node.GetListOf('Member'):
         # Skip the method if it's not actually in the release.
