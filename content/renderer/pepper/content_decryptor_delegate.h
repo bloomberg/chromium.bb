@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -104,6 +105,34 @@ class ContentDecryptorDelegate {
                       const PP_DecryptedSampleInfo* sample_info);
 
  private:
+  template <typename Callback>
+  class TrackableCallback {
+   public:
+    TrackableCallback() : id_(0u) {}
+    // TODO(xhwang): Check that no callback is pending in dtor.
+    ~TrackableCallback() {};
+
+    bool Matches(uint32_t id) const { return id == id_; }
+
+    bool is_null() const { return cb_.is_null(); }
+
+    void Set(uint32_t id, const Callback& cb) {
+      DCHECK_EQ(id_, 0u);
+      DCHECK(cb_.is_null());
+      id_ = id;
+      cb_ = cb;
+    }
+
+    Callback ResetAndReturn() {
+      id_ = 0;
+      return base::ResetAndReturn(&cb_);
+    }
+
+   private:
+    uint32_t id_;
+    Callback cb_;
+  };
+
   // Cancels the pending decrypt-and-decode callback for |stream_type|.
   void CancelDecode(media::Decryptor::StreamType stream_type);
 
@@ -154,23 +183,12 @@ class ContentDecryptorDelegate {
   // of request IDs.
   uint32_t next_decryption_request_id_;
 
-  uint32_t pending_audio_decrypt_request_id_;
-  media::Decryptor::DecryptCB pending_audio_decrypt_cb_;
-
-  uint32_t pending_video_decrypt_request_id_;
-  media::Decryptor::DecryptCB pending_video_decrypt_cb_;
-
-  uint32_t pending_audio_decoder_init_request_id_;
-  media::Decryptor::DecoderInitCB pending_audio_decoder_init_cb_;
-
-  uint32_t pending_video_decoder_init_request_id_;
-  media::Decryptor::DecoderInitCB pending_video_decoder_init_cb_;
-
-  uint32_t pending_audio_decode_request_id_;
-  media::Decryptor::AudioDecodeCB pending_audio_decode_cb_;
-
-  uint32_t pending_video_decode_request_id_;
-  media::Decryptor::VideoDecodeCB pending_video_decode_cb_;
+  TrackableCallback<media::Decryptor::DecryptCB> audio_decrypt_cb_;
+  TrackableCallback<media::Decryptor::DecryptCB> video_decrypt_cb_;
+  TrackableCallback<media::Decryptor::DecoderInitCB> audio_decoder_init_cb_;
+  TrackableCallback<media::Decryptor::DecoderInitCB> video_decoder_init_cb_;
+  TrackableCallback<media::Decryptor::AudioDecodeCB> audio_decode_cb_;
+  TrackableCallback<media::Decryptor::VideoDecodeCB> video_decode_cb_;
 
   // Cached audio and video input buffers. See MakeMediaBufferResource.
   scoped_refptr<PPB_Buffer_Impl> audio_input_resource_;
