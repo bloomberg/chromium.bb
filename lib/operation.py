@@ -20,7 +20,7 @@ from chromite.lib.terminal import Color
 #TODO(sjg): Add proper docs to this fileno
 #TODO(sjg): Handle stdin wait in quite mode, rather than silently stalling
 
-class Operation:
+class Operation(object):
   """Class which controls stdio and progress of an operation in progress.
 
   This class is created to handle stdio for a running subprocess. It filters
@@ -34,7 +34,6 @@ class Operation:
 
   Each operation has a name, and this class handles displaying this name
   as it reports progress.
-
 
   Operation Objects
   =================
@@ -301,7 +300,7 @@ class Operation:
       self._line = ''
 
   def Output(self, stream, data):
-    """Handle the output of a block of text from the subprocess.
+    r"""Handle the output of a block of text from the subprocess.
 
     All subprocess output should be sent through this method. It is split into
     lines which are processed separately using the _Out() method.
@@ -334,7 +333,7 @@ class Operation:
     sys.stdout.flush()
 
   def Outline(self, line):
-    """Output a line of text to the display.
+    r"""Output a line of text to the display.
 
     This outputs text generated internally, such as a warning message or error
     summary. It ensures that our message plays nicely with child output if
@@ -347,7 +346,7 @@ class Operation:
     self._FinishLine(display=True)
 
   def Info(self, line):
-    """Output a line of information text to the display in verbose mode.
+    r"""Output a line of information text to the display in verbose mode.
 
     Args:
       line: text to output (without \n on the end)
@@ -357,7 +356,7 @@ class Operation:
     self._FinishLine(display=True)
 
   def Notice(self, line):
-    """Output a line of notification text to the display.
+    r"""Output a line of notification text to the display.
 
     Args:
       line: text to output (without \n on the end)
@@ -367,7 +366,7 @@ class Operation:
     self._FinishLine(display=True)
 
   def Warning(self, line):
-    """Output a line of warning text to the display.
+    r"""Output a line of warning text to the display.
 
     Args:
       line: text to output (without \n on the end)
@@ -377,7 +376,7 @@ class Operation:
     self._FinishLine(display=True)
 
   def Error(self, line):
-    """Output a line of error text to the display.
+    r"""Output a line of error text to the display.
 
     Args:
       line: text to output (without \n on the end)
@@ -387,7 +386,7 @@ class Operation:
     self._FinishLine(display=True)
 
   def Die(self, line):
-    """Output a line of error text to the display and die.
+    r"""Output a line of error text to the display and die.
 
     Args:
       line: text to output (without \n on the end)
