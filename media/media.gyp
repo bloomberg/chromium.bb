@@ -239,6 +239,8 @@
         'base/audio_splicer.h',
         'base/audio_timestamp_helper.cc',
         'base/audio_timestamp_helper.h',
+        'base/audio_video_metadata_extractor.cc',
+        'base/audio_video_metadata_extractor.h',
         'base/bind_to_loop.h',
         'base/bit_reader.cc',
         'base/bit_reader.h',
@@ -510,6 +512,8 @@
         }, {  # media_use_ffmpeg==0
           # Exclude the sources that depend on ffmpeg.
           'sources!': [
+            'base/audio_video_metadata_extractor.cc',
+            'base/audio_video_metadata_extractor.h',
             'base/container_names.cc',
             'base/container_names.h',
             'base/media_file_checker.cc',
@@ -945,6 +949,7 @@
         'base/audio_renderer_mixer_unittest.cc',
         'base/audio_splicer_unittest.cc',
         'base/audio_timestamp_helper_unittest.cc',
+        'base/audio_video_metadata_extractor_unittest.cc',
         'base/bind_to_loop_unittest.cc',
         'base/bit_reader_unittest.cc',
         'base/callback_holder.h',
@@ -1033,6 +1038,7 @@
           ],
         }, {  # media_use_ffmpeg== 0
           'sources!': [
+            'base/audio_video_metadata_extractor_unittest.cc',
             'base/media_file_checker_unittest.cc',
           ],
         }],

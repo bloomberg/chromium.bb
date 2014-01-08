@@ -69,6 +69,24 @@ namespace mediaGalleries {
   dictionary MediaMetadata {
     // The browser sniffed mime type.
     DOMString mimeType;
+    
+    // Defined for images and video. In pixels.
+    long? height;
+    long? width;
+    
+    // Defined for audio and video. In seconds.
+    double? duration;
+    
+    // Generic metadata tags.
+    DOMString? album;
+    DOMString? artist;
+    DOMString? comment;
+    DOMString? copyright;
+    long? disc;
+    DOMString? genre;
+    DOMString? language;
+    DOMString? title;
+    long? track;
   };
 
   callback MediaMetadataCallback = void (MediaMetadata metadata);

@@ -9,19 +9,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 
+namespace media {
+class DataSource;
+}
+
 namespace metadata {
-
-// This interface provides bytes needed by MediaMetadataParser.
-class DataReader {
- public:
-  typedef base::Callback<void(const std::string& bytes)> ReadBytesCallback;
-
-  virtual ~DataReader() {}
-
-  // Called on the utility thread.
-  virtual void ReadBytes(int64 offset, int64 length,
-                         const ReadBytesCallback& callback) = 0;
-};
 
 // This class takes a MIME type and data source and parses its metadata. It
 // handles audio, video, and images. It delegates its operations to FFMPEG,
@@ -33,10 +25,10 @@ class MediaMetadataParser {
   typedef extensions::api::media_galleries::MediaMetadata MediaMetadata;
   typedef base::Callback<void(scoped_ptr<MediaMetadata>)> MetadataCallback;
 
-  // Takes ownership of |reader|. The MIME type is always sniffed in the browser
-  // process, as it's faster (and safe enough) to sniff it there. When the user
-  // wants more metadata than just the MIME type, this class provides it.
-  MediaMetadataParser(DataReader* reader, const std::string& mime_type);
+  // Does not take ownership of |source|. The MIME type is sniffed in the
+  // browser process, as it's faster (and safe enough). When the user wants
+  // more metadata than just the MIME type, this class provides it.
+  MediaMetadataParser(media::DataSource* source, const std::string& mime_type);
 
   ~MediaMetadataParser();
 
@@ -44,7 +36,9 @@ class MediaMetadataParser {
   void Start(const MetadataCallback& callback);
 
  private:
-  scoped_ptr<DataReader> reader_;
+  void PopulateAudioVideoMetadata();
+
+  media::DataSource* source_;
 
   MetadataCallback callback_;
 
