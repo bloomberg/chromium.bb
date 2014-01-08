@@ -60,9 +60,9 @@ void ContentDecryptionModuleSession::generateKeyRequest(const String& mimeType, 
     m_session->generateKeyRequest(mimeType, initData.data(), initData.length());
 }
 
-void ContentDecryptionModuleSession::update(const Uint8Array& key)
+void ContentDecryptionModuleSession::update(const Uint8Array& response)
 {
-    m_session->update(key.data(), key.length());
+    m_session->update(response.data(), response.length());
 }
 
 void ContentDecryptionModuleSession::close()

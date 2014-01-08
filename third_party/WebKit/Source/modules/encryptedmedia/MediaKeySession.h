@@ -65,7 +65,7 @@ public:
     MediaKeyError* error() { return m_error.get(); }
 
     void generateKeyRequest(const String& mimeType, Uint8Array* initData);
-    void update(Uint8Array* key, ExceptionState&);
+    void update(Uint8Array* response, ExceptionState&);
     void close();
 
     void enqueueEvent(PassRefPtr<Event>);
@@ -80,7 +80,7 @@ public:
 private:
     MediaKeySession(ExecutionContext*, ContentDecryptionModule*, MediaKeys*);
     void keyRequestTimerFired(Timer<MediaKeySession>*);
-    void addKeyTimerFired(Timer<MediaKeySession>*);
+    void updateTimerFired(Timer<MediaKeySession>*);
 
     // ContentDecryptionModuleSessionClient
     virtual void keyAdded() OVERRIDE;
@@ -103,7 +103,7 @@ private:
     Timer<MediaKeySession> m_keyRequestTimer;
 
     Deque<RefPtr<Uint8Array> > m_pendingKeys;
-    Timer<MediaKeySession> m_addKeyTimer;
+    Timer<MediaKeySession> m_updateTimer;
 };
 
 }

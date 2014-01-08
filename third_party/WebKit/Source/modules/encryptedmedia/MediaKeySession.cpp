@@ -49,7 +49,7 @@ MediaKeySession::MediaKeySession(ExecutionContext* context, ContentDecryptionMod
     , m_session(cdm->createSession(this))
     , m_keys(keys)
     , m_keyRequestTimer(this, &MediaKeySession::keyRequestTimerFired)
-    , m_addKeyTimer(this, &MediaKeySession::addKeyTimerFired)
+    , m_updateTimer(this, &MediaKeySession::updateTimerFired)
 {
     ScriptWrappable::init(this);
 }
@@ -110,23 +110,25 @@ void MediaKeySession::keyRequestTimerFired(Timer<MediaKeySession>*)
     }
 }
 
-void MediaKeySession::update(Uint8Array* key, ExceptionState& exceptionState)
+void MediaKeySession::update(Uint8Array* response, ExceptionState& exceptionState)
 {
-    // From <http://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-addkey>:
-    // The addKey(key) method must run the following steps:
-    // 1. If the first or second argument [sic] is null or an empty array, throw an InvalidAccessError.
-    // NOTE: the reference to a "second argument" is a spec bug.
-    if (!key || !key->length()) {
+    // From <https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-update>:
+    // The update(response) method must run the following steps:
+    // 1. If the argument is null or an empty array, throw an INVALID_ACCESS_ERR.
+    if (!response || !response->length()) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
 
-    // 2. Schedule a task to handle the call, providing key.
-    m_pendingKeys.append(key);
-    m_addKeyTimer.startOneShot(0);
+    // 2. If the session is not in the PENDING state, throw an INVALID_STATE_ERR.
+    // FIXME: Implement states in MediaKeySession.
+
+    // 3. Schedule a task to handle the call, providing response.
+    m_pendingKeys.append(response);
+    m_updateTimer.startOneShot(0);
 }
 
-void MediaKeySession::addKeyTimerFired(Timer<MediaKeySession>*)
+void MediaKeySession::updateTimerFired(Timer<MediaKeySession>*)
 {
     ASSERT(m_pendingKeys.size());
     if (!m_session)

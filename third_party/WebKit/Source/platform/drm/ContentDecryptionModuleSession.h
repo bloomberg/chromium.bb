@@ -33,16 +33,13 @@
 
 #include "platform/PlatformExport.h"
 #include "public/platform/WebContentDecryptionModuleSession.h"
+#include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 class WebContentDecryptionModule;
-}
-
-namespace WTF {
-class Uint8Array;
 }
 
 namespace WebCore {
@@ -66,8 +63,8 @@ public:
     ~ContentDecryptionModuleSession();
 
     String sessionId() const;
-    void generateKeyRequest(const String& mimeType, const WTF::Uint8Array& initData);
-    void update(const WTF::Uint8Array& key);
+    void generateKeyRequest(const String& mimeType, const Uint8Array& initData);
+    void update(const Uint8Array& response);
     void close();
 
 private:
