@@ -32,9 +32,6 @@ SingleSource/UnitTests/Vector/simple
 SingleSource/UnitTests/Vector/sumarray
 SingleSource/UnitTests/Vector/sumarray-dbl
 
-# The following test uses computed gotos, which PNaCl's ABI checker rejects.
-SingleSource/Regression/C/2004-03-15-IndirectGoto
-
 # The following test uses packed bitfield structs which get turned into
 # operations on i128 operands, which get rejected by PNaCl's ABI checker.
 # However, clang -O3 precomputes the result at compile time, avoiding
