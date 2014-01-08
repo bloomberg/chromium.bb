@@ -27,6 +27,58 @@ class QueryTest : public testing::Test {
   GLManager gl_;
 };
 
+TEST_F(QueryTest, MultipleQueries) {
+  EXPECT_TRUE(GLTestHelper::HasExtension("GL_CHROMIUM_get_error_query"));
+  EXPECT_TRUE(GLTestHelper::HasExtension(
+                  "GL_CHROMIUM_command_buffer_latency_query"));
+
+  GLuint error_query = 0;
+  GLuint commands_issue_query = 0;
+  glGenQueriesEXT(1, &error_query);
+  glGenQueriesEXT(1, &commands_issue_query);
+
+  GLuint available;
+  GLuint result;
+
+  base::TimeTicks before = base::TimeTicks::HighResNow();
+
+  // Begin two queries of different types
+  glBeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, commands_issue_query);
+  glBeginQueryEXT(GL_GET_ERROR_QUERY_CHROMIUM, error_query);
+
+  glEnable(GL_TEXTURE_2D);  // Generates an INVALID_ENUM error
+
+  // End the two queries
+  glEndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
+  glEndQueryEXT(GL_GET_ERROR_QUERY_CHROMIUM);
+
+  glFinish();
+
+  base::TimeTicks after = base::TimeTicks::HighResNow();
+
+  // Check that we got result on both queries.
+
+  available = 0;
+  result = 0;
+  glGetQueryObjectuivEXT(commands_issue_query,
+                         GL_QUERY_RESULT_AVAILABLE_EXT,
+                         &available);
+  EXPECT_TRUE(available);
+  glGetQueryObjectuivEXT(commands_issue_query, GL_QUERY_RESULT_EXT, &result);
+  // Sanity check - the resulting delta is shorter than the time it took to
+  // run this test.
+  EXPECT_LT(result, base::TimeDelta(after - before).InMicroseconds());
+
+  result = 0;
+  available = 0;
+  glGetQueryObjectuivEXT(error_query,
+                         GL_QUERY_RESULT_AVAILABLE_EXT,
+                         &available);
+  EXPECT_TRUE(available);
+  glGetQueryObjectuivEXT(error_query, GL_QUERY_RESULT_EXT, &result);
+  EXPECT_EQ(static_cast<uint32>(GL_INVALID_ENUM), result);
+}
+
 TEST_F(QueryTest, GetErrorBasic) {
   EXPECT_TRUE(GLTestHelper::HasExtension("GL_CHROMIUM_get_error_query"));
 

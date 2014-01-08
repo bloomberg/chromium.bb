@@ -148,7 +148,9 @@ struct GPU_EXPORT ContextState {
   // The currently bound renderbuffer
   scoped_refptr<Renderbuffer> bound_renderbuffer;
 
-  scoped_refptr<QueryManager::Query> current_query;
+  // A map of of target -> Query for current queries
+  typedef std::map<GLuint, scoped_refptr<QueryManager::Query> > QueryMap;
+  QueryMap current_queries;
 
   bool pack_reverse_row_order;
 

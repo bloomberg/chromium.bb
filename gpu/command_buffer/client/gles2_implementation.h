@@ -698,7 +698,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation
   scoped_refptr<ShareGroup> share_group_;
 
   scoped_ptr<QueryTracker> query_tracker_;
-  QueryTracker::Query* current_query_;
+  typedef std::map<GLuint, QueryTracker::Query*> QueryMap;
+  QueryMap current_queries_;
 
   scoped_ptr<BufferTracker> buffer_tracker_;
 
