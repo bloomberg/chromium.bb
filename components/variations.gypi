@@ -27,6 +27,8 @@
         'variations/variations_associated_data.h',
         'variations/variations_seed_processor.cc',
         'variations/variations_seed_processor.h',
+        'variations/variations_seed_simulator.cc',
+        'variations/variations_seed_simulator.h',
       ],
       'variables': {
         'proto_in_dir': 'variations/proto',

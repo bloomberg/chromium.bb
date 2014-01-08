@@ -62,6 +62,7 @@
             'variations/metrics_util_unittest.cc',
             'variations/variations_associated_data_unittest.cc',
             'variations/variations_seed_processor_unittest.cc',
+            'variations/variations_seed_simulator_unittest.cc',
             'visitedlink/test/visitedlink_unittest.cc',
             'webdata/encryptor/encryptor_password_mac_unittest.cc',
             'webdata/encryptor/encryptor_unittest.cc',
