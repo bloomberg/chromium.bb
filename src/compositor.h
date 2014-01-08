@@ -660,10 +660,10 @@ struct weston_buffer_viewport {
 	/* wl_surface.set_scaling_factor */
 	int32_t scale;
 
-	/* bool for whether wl_surface_scaler.set has been
+	/* bool for whether wl_viewport.set has been
 	 * called yet (before this is called there is no
 	 * cropping or scaling on the surface) */
-	int scaler_set; /* bool */
+	int viewport_set; /* bool */
 
 	wl_fixed_t src_x, src_y;
 	wl_fixed_t src_width, src_height;
@@ -861,8 +861,8 @@ struct weston_surface {
 	struct weston_buffer_viewport buffer_viewport;
 	int keep_buffer; /* bool for backends to prevent early release */
 
-	/* wl_surface_scaler resource for this surface */
-	struct wl_resource *surface_scaler_resource;
+	/* wl_viewport resource for this surface */
+	struct wl_resource *viewport_resource;
 
 	/* All the pending state, that wl_surface.commit will apply. */
 	struct {
@@ -887,7 +887,7 @@ struct weston_surface {
 
 		/* wl_surface.set_buffer_transform */
 		/* wl_surface.set_scaling_factor */
-		/* wl_surface_scaler.set */
+		/* wl_viewport.set */
 		struct weston_buffer_viewport buffer_viewport;
 	} pending;
 

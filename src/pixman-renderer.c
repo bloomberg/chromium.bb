@@ -257,23 +257,23 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 					   pixman_double_to_fixed ((double)-ev->geometry.y));
 	}
 
-	if (ev->surface->buffer_viewport.scaler_set) {
-		double scaler_x, scaler_y, scaler_width, scaler_height;
+	if (ev->surface->buffer_viewport.viewport_set) {
+		double viewport_x, viewport_y, viewport_width, viewport_height;
 		double ratio_x, ratio_y;
 
-		scaler_x = wl_fixed_to_double(ev->surface->buffer_viewport.src_x);
-		scaler_y = wl_fixed_to_double(ev->surface->buffer_viewport.src_y);
-		scaler_width = wl_fixed_to_double(ev->surface->buffer_viewport.src_width);
-		scaler_height = wl_fixed_to_double(ev->surface->buffer_viewport.src_height);
+		viewport_x = wl_fixed_to_double(ev->surface->buffer_viewport.src_x);
+		viewport_y = wl_fixed_to_double(ev->surface->buffer_viewport.src_y);
+		viewport_width = wl_fixed_to_double(ev->surface->buffer_viewport.src_width);
+		viewport_height = wl_fixed_to_double(ev->surface->buffer_viewport.src_height);
 
-		ratio_x = scaler_width / ev->surface->buffer_viewport.dst_width;
-		ratio_y = scaler_height / ev->surface->buffer_viewport.dst_height;
+		ratio_x = viewport_width / ev->surface->buffer_viewport.dst_width;
+		ratio_y = viewport_height / ev->surface->buffer_viewport.dst_height;
 
 		pixman_transform_scale(&transform, NULL,
 				       pixman_double_to_fixed(ratio_x),
 				       pixman_double_to_fixed(ratio_y));
-		pixman_transform_translate(&transform, NULL, pixman_double_to_fixed(scaler_x),
-							     pixman_double_to_fixed(scaler_y));
+		pixman_transform_translate(&transform, NULL, pixman_double_to_fixed(viewport_x),
+							     pixman_double_to_fixed(viewport_y));
 	}
 
 	pixman_transform_scale(&transform, NULL,

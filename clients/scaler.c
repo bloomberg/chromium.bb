@@ -47,7 +47,7 @@ struct box {
 	int width, height;
 
 	struct wl_scaler *scaler;
-	struct wl_surface_scaler *surface_scaler;
+	struct wl_viewport *viewport;
 };
 
 static void
@@ -138,12 +138,12 @@ global_handler(struct display *display, uint32_t name,
 		box->scaler = display_bind(display, name,
 					   &wl_scaler_interface, 1);
 
-		box->surface_scaler = wl_scaler_get_surface_scaler(box->scaler,
+		box->viewport = wl_scaler_get_viewport(box->scaler,
 			widget_get_wl_surface(box->widget));
 
-		wl_surface_scaler_set(box->surface_scaler,
-				      src_x, src_y, src_width, src_height,
-				      SURFACE_WIDTH, SURFACE_HEIGHT); /* dst */
+		wl_viewport_set(box->viewport,
+				src_x, src_y, src_width, src_height,
+				SURFACE_WIDTH, SURFACE_HEIGHT); /* dst */
 	}
 }
 

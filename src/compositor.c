@@ -483,12 +483,12 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->buffer_viewport.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	surface->buffer_viewport.scale = 1;
-	surface->buffer_viewport.scaler_set = 0;
+	surface->buffer_viewport.viewport_set = 0;
 	surface->pending.buffer_viewport = surface->buffer_viewport;
 	surface->output = NULL;
 	surface->pending.newly_attached = 0;
 
-	surface->surface_scaler_resource = NULL;
+	surface->viewport_resource = NULL;
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
@@ -720,7 +720,7 @@ static void
 scaler_surface_to_buffer(struct weston_surface *surface,
 			 float sx, float sy, float *bx, float *by)
 {
-	if (surface->buffer_viewport.scaler_set) {
+	if (surface->buffer_viewport.viewport_set) {
 		double a, b;
 
 		a = sx / surface->buffer_viewport.dst_width;
@@ -1295,7 +1295,7 @@ weston_surface_set_size_from_buffer(struct weston_surface *surface)
 		return;
 	}
 
-	if (surface->buffer_viewport.scaler_set) {
+	if (surface->buffer_viewport.viewport_set) {
 		surface->width = surface->buffer_viewport.dst_width;
 		surface->height = surface->buffer_viewport.dst_height;
 		return;
@@ -2103,7 +2103,7 @@ weston_surface_commit(struct weston_surface *surface)
 
 	/* wl_surface.set_buffer_transform */
 	/* wl_surface.set_buffer_scale */
-	/* wl_surface_scaler.set */
+	/* wl_viewport.set */
 	surface->buffer_viewport = surface->pending.buffer_viewport;
 
 	/* wl_surface.attach */
@@ -2329,7 +2329,7 @@ weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
 
 	/* wl_surface.set_buffer_transform */
 	/* wl_surface.set_buffer_scale */
-	/* wl_surface_scaler.set */
+	/* wl_viewport.set */
 	surface->buffer_viewport = sub->cached.buffer_viewport;
 
 	/* wl_surface.attach */
@@ -3454,41 +3454,41 @@ weston_output_transform_coordinate(struct weston_output *output,
 }
 
 static void
-destroy_surface_scaler(struct wl_resource *resource)
+destroy_viewport(struct wl_resource *resource)
 {
 	struct weston_surface *surface =
 		wl_resource_get_user_data(resource);
 
-	surface->surface_scaler_resource = NULL;
-	surface->pending.buffer_viewport.scaler_set = 0;
+	surface->viewport_resource = NULL;
+	surface->pending.buffer_viewport.viewport_set = 0;
 }
 
 static void
-surface_scaler_destroy(struct wl_client *client,
-		       struct wl_resource *resource)
+viewport_destroy(struct wl_client *client,
+		 struct wl_resource *resource)
 {
 	wl_resource_destroy(resource);
 }
 
 static void
-surface_scaler_set(struct wl_client *client,
-		   struct wl_resource *resource,
-		   wl_fixed_t src_x,
-		   wl_fixed_t src_y,
-		   wl_fixed_t src_width,
-		   wl_fixed_t src_height,
-		   int32_t dst_width,
-		   int32_t dst_height)
+viewport_set(struct wl_client *client,
+	     struct wl_resource *resource,
+	     wl_fixed_t src_x,
+	     wl_fixed_t src_y,
+	     wl_fixed_t src_width,
+	     wl_fixed_t src_height,
+	     int32_t dst_width,
+	     int32_t dst_height)
 {
 	struct weston_surface *surface =
 		wl_resource_get_user_data(resource);
 
-	assert(surface->surface_scaler_resource != NULL);
+	assert(surface->viewport_resource != NULL);
 
 	if (wl_fixed_to_double(src_width) < 0 ||
 	    wl_fixed_to_double(src_height) < 0) {
 		wl_resource_post_error(resource,
-			WL_SURFACE_SCALER_ERROR_BAD_VALUE,
+			WL_VIEWPORT_ERROR_BAD_VALUE,
 			"source dimensions must be non-negative (%fx%f)",
 			wl_fixed_to_double(src_width),
 			wl_fixed_to_double(src_height));
@@ -3497,13 +3497,13 @@ surface_scaler_set(struct wl_client *client,
 
 	if (dst_width <= 0 || dst_height <= 0) {
 		wl_resource_post_error(resource,
-			WL_SURFACE_SCALER_ERROR_BAD_VALUE,
+			WL_VIEWPORT_ERROR_BAD_VALUE,
 			"destination dimensions must be positive (%dx%d)",
 			dst_width, dst_height);
 		return;
 	}
 
-	surface->pending.buffer_viewport.scaler_set = 1;
+	surface->pending.buffer_viewport.viewport_set = 1;
 
 	surface->pending.buffer_viewport.src_x = src_x;
 	surface->pending.buffer_viewport.src_y = src_y;
@@ -3513,9 +3513,9 @@ surface_scaler_set(struct wl_client *client,
 	surface->pending.buffer_viewport.dst_height = dst_height;
 }
 
-static const struct wl_surface_scaler_interface surface_scaler_interface = {
-	surface_scaler_destroy,
-	surface_scaler_set
+static const struct wl_viewport_interface viewport_interface = {
+	viewport_destroy,
+	viewport_set
 };
 
 static void
@@ -3526,37 +3526,37 @@ scaler_destroy(struct wl_client *client,
 }
 
 static void
-scaler_get_surface_scaler(struct wl_client *client,
-			  struct wl_resource *scaler,
-			  uint32_t id,
-			  struct wl_resource *surface_resource)
+scaler_get_viewport(struct wl_client *client,
+		    struct wl_resource *scaler,
+		    uint32_t id,
+		    struct wl_resource *surface_resource)
 {
 	struct weston_surface *surface = wl_resource_get_user_data(surface_resource);
 	struct wl_resource *resource;
 
-	if (surface->surface_scaler_resource) {
+	if (surface->viewport_resource) {
 		wl_resource_post_error(scaler,
-			WL_SCALER_ERROR_SCALER_EXISTS,
-			"a surface scaler for that surface already exists");
+			WL_SCALER_ERROR_VIEWPORT_EXISTS,
+			"a viewport for that surface already exists");
 		return;
 	}
 
-	resource = wl_resource_create(client, &wl_surface_scaler_interface,
+	resource = wl_resource_create(client, &wl_viewport_interface,
 				      1, id);
 	if (resource == NULL) {
 		wl_client_post_no_memory(client);
 		return;
 	}
 
-	wl_resource_set_implementation(resource, &surface_scaler_interface,
-				       surface, destroy_surface_scaler);
+	wl_resource_set_implementation(resource, &viewport_interface,
+				       surface, destroy_viewport);
 
-	surface->surface_scaler_resource = resource;
+	surface->viewport_resource = resource;
 }
 
 static const struct wl_scaler_interface scaler_interface = {
 	scaler_destroy,
-	scaler_get_surface_scaler
+	scaler_get_viewport
 };
 
 static void

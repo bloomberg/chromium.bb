@@ -40,31 +40,31 @@
       <description summary="unbind from the cropping and scaling interface">
 	Informs the server that the client will not be using this
 	protocol object anymore. This does not affect any other objects,
-	wl_surface_scaler objects included.
+	wl_viewport objects included.
       </description>
     </request>
 
     <enum name="error">
-      <entry name="scaler_exists" value="0"
-             summary="the surface already has a scaler object associated"/>
+      <entry name="viewport_exists" value="0"
+             summary="the surface already has a viewport object associated"/>
     </enum>
 
-    <request name="get_surface_scaler">
+    <request name="get_viewport">
       <description summary="extend surface interface for crop and scale">
 	Instantiate an interface extension for the given wl_surface to
 	crop and scale its content. If the given wl_surface already has
-	a wl_surface_scaler object associated, the scaler_exists
+	a wl_viewport object associated, the viewport_exists
 	protocol error is raised.
       </description>
 
-      <arg name="id" type="new_id" interface="wl_surface_scaler"
-           summary="the new scaler interface id"/>
+      <arg name="id" type="new_id" interface="wl_viewport"
+           summary="the new viewport interface id"/>
       <arg name="surface" type="object" interface="wl_surface"
            summary="the surface"/>
     </request>
   </interface>
 
-  <interface name="wl_surface_scaler" version="1">
+  <interface name="wl_viewport" version="1">
     <description summary="crop and scale interface to a wl_surface">
       An additional interface to a wl_surface object, which allows the
       client to specify the cropping and scaling of the surface
@@ -89,7 +89,7 @@
       the surface-local coordinates happen in the following order:
         1. buffer_transform (wl_surface.set_buffer_transform)
         2. buffer_scale (wl_surface.set_buffer_scale)
-        3. crop and scale (wl_surface_scaler.set)
+        3. crop and scale (wl_viewport.set)
       This means, that the source rectangle coordinates of crop and scale
       are given in the coordinates after the buffer transform and scale,
       i.e. in the coordinates that would be the surface-local coordinates
@@ -105,10 +105,10 @@
       still in the surface-local coordinate system, just like dst_width
       and dst_height are.
 
-      If the wl_surface associated with the wl_surface_scaler is
-      destroyed, the wl_surface_scaler object becomes inert.
+      If the wl_surface associated with the wl_viewport is destroyed,
+      the wl_viewport object becomes inert.
 
-      If the wl_surface_scaler object is destroyed, the crop and scale
+      If the wl_viewport object is destroyed, the crop and scale
       state is removed from the wl_surface. The change will be applied
       on the next wl_surface.commit.
     </description>
@@ -128,8 +128,8 @@
     <request name="set">
       <description summary="set the crop and scale state">
 	Set the crop and scale state of the associated wl_surface. See
-	wl_surface_scaler for the description, and relation to the
-	wl_buffer size.
+	wl_viewport for the description, and relation to the wl_buffer
+	size.
 
 	The bad_value protocol error is raised if src_width or
 	src_height is negative, or if dst_width or dst_height is not
