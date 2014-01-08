@@ -301,6 +301,59 @@ TEST_F(ProfileManagerTest, GetGuestProfilePath) {
   EXPECT_EQ(expected_path, guest_path);
 }
 
+#if defined(OS_CHROMEOS)
+class UnittestGuestProfileManager : public UnittestProfileManager {
+ public:
+  explicit UnittestGuestProfileManager(const base::FilePath& user_data_dir)
+      : UnittestProfileManager(user_data_dir) {}
+
+ protected:
+  virtual Profile* CreateProfileHelper(
+      const base::FilePath& file_path) OVERRIDE {
+    TestingProfile* testing_profile = new TestingProfile(file_path, NULL);
+
+    TestingProfile::Builder builder;
+    builder.SetIncognito();
+    builder.SetGuestSession();
+    builder.SetPath(ProfileManager::GetGuestProfilePath());
+    testing_profile->SetOffTheRecordProfile(builder.Build().PassAs<Profile>());
+
+    return testing_profile;
+  }
+};
+
+class ProfileManagerGuestTest : public ProfileManagerTest {
+ protected:
+  virtual void SetUp() {
+    // Create a new temporary directory, and store the path
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    TestingBrowserProcess::GetGlobal()->SetProfileManager(
+        new UnittestGuestProfileManager(temp_dir_.path()));
+
+    CommandLine* cl = CommandLine::ForCurrentProcess();
+    cl->AppendSwitch(switches::kTestType);
+    cl->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+    cl->AppendSwitch(chromeos::switches::kGuestSession);
+    cl->AppendSwitch(::switches::kIncognito);
+
+    chromeos::UserManager::Get()->UserLoggedIn(
+        chromeos::UserManager::kGuestUserName,
+        chromeos::UserManager::kGuestUserName,
+        false);
+  }
+};
+
+TEST_F(ProfileManagerGuestTest, GuestProfileIngonito) {
+  Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
+  EXPECT_TRUE(primary_profile->IsOffTheRecord());
+
+  Profile* active_profile = ProfileManager::GetActiveUserProfile();
+  EXPECT_TRUE(active_profile->IsOffTheRecord());
+
+  EXPECT_TRUE(active_profile->IsSameProfile(primary_profile));
+}
+#endif
+
 TEST_F(ProfileManagerTest, AutoloadProfilesWithBackgroundApps) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
