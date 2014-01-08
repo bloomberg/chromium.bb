@@ -322,12 +322,6 @@ deps_os = {
     "src/third_party/lighttpd":
       "/trunk/deps/third_party/lighttpd@" + Var("lighttpd_revision"),
 
-    # Chrome Frame related deps
-    "src/third_party/xulrunner-sdk":
-      "/trunk/deps/third_party/xulrunner-sdk@119756",
-    "src/chrome_frame/tools/test/reference_build/chrome_win":
-      "/trunk/deps/reference_builds/chrome_win@89574",
-
     # Parses Windows PE/COFF executable format.
     "src/third_party/pefile":
       (Var("googlecode_url") % "pefile") + "/trunk@63",
