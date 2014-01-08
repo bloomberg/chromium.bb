@@ -38,8 +38,6 @@ class AppListFactoryLinux : public AppListFactory {
                                       cursor,
                                       views::BubbleBorder::FLOAT,
                                       false /* border_accepts_events */);
-    // TODO(mgiuca): Set the app launcher window's WM_CLASS so that it can be
-    // associated with its own launch icon in the window manager.
     return new AppListLinux(view, on_should_dismiss);
   }
 

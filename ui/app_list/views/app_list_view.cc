@@ -58,7 +58,11 @@ const int kArrowOffset = 10;
 
 #if defined(OS_LINUX)
 // The WM_CLASS name for the app launcher window on Linux.
-const char* kAppListWMClass = "chrome_app_list";
+#if defined(GOOGLE_CHROME_BUILD)
+const char kAppListWMClass[] = "chrome_app_list";
+#else  // CHROMIUM_BUILD
+const char kAppListWMClass[] = "chromium_app_list";
+#endif
 #endif
 
 // Determines whether the current environment supports shadows bubble borders.
