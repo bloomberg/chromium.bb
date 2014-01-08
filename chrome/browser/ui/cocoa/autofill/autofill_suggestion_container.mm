@@ -54,6 +54,34 @@ const CGFloat kLabelWithInputTopPadding = 5.0;
 @end
 
 
+@interface AutofillSuggestionView : NSView {
+ @private
+  // The main input field - only view not ignoring mouse events.
+  NSView* inputField_;
+}
+
+@property (assign, nonatomic) NSView* inputField;
+
+@end
+
+
+// The suggestion container should ignore any mouse events unless they occur
+// within the bounds of an editable field.
+@implementation AutofillSuggestionView
+
+@synthesize inputField = inputField_;
+
+- (NSView*)hitTest:(NSPoint)point {
+  NSView* hitView = [super hitTest:point];
+  if ([hitView isDescendantOf:inputField_])
+    return hitView;
+
+  return nil;
+}
+
+@end
+
+
 @implementation IconAttachmentCell
 
 - (NSPoint)cellBaselineOffset {
@@ -130,9 +158,11 @@ const CGFloat kLabelWithInputTopPadding = 5.0;
   [spacer_ setBoxType:NSBoxSeparator];
   [spacer_ setBorderType:NSLineBorder];
 
-  base::scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<AutofillSuggestionView> view(
+      [[AutofillSuggestionView alloc] initWithFrame:NSZeroRect]);
   [view setSubviews:
       @[ label_, inputField_, spacer_ ]];
+  [view setInputField:inputField_];
   [self setView:view];
 }
 
