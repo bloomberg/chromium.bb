@@ -4,8 +4,8 @@
 # toolchain, so that new toolchain tarballs are not downloaded
 # unnecessarily.  There is no need to keep these numbers in sync
 # with each other.
-NEWLIB_VERSION=12464
-GLIBC_VERSION=12421
+NEWLIB_VERSION=12585
+GLIBC_VERSION=12585
 PNACL_VERSION=12579
 
 # ARM trusted toolchain is just a sysroot image.  The trusted cross
