@@ -325,26 +325,6 @@ class Executive(object):
             # It's impossible for callers to avoid race conditions with process shutdown.
             pass
 
-    def kill_all(self, process_name):
-        """Attempts to kill processes matching process_name.
-        Will fail silently if no process are found."""
-        if sys.platform in ("win32", "cygwin"):
-            image_name = self._windows_image_name(process_name)
-            command = ["taskkill.exe", "/f", "/im", image_name]
-            # taskkill will exit 128 if the process is not found.  We should log.
-            self.run_command(command, error_handler=self.ignore_error)
-            return
-
-        # FIXME: This is inconsistent that kill_all uses TERM and kill_process
-        # uses KILL.  Windows is always using /f (which seems like -KILL).
-        # We should pick one mode, or add support for switching between them.
-        # Note: Mac OS X 10.6 requires -SIGNALNAME before -u USER
-        command = ["killall", "-TERM", "-u", os.getenv("USER"), process_name]
-        # killall returns 1 if no process can be found and 2 on command error.
-        # FIXME: We should pass a custom error_handler to allow only exit_code 1.
-        # We should log in exit_code == 1
-        self.run_command(command, error_handler=self.ignore_error)
-
     # Error handlers do not need to be static methods once all callers are
     # updated to use an Executive object.
 

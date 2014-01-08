@@ -186,25 +186,6 @@ class ExecutiveTest(unittest.TestCase):
         # Killing again should fail silently.
         executive.kill_process(process.pid)
 
-    def serial_test_kill_all(self):
-        executive = Executive()
-        process = subprocess.Popen(never_ending_command(), stdout=subprocess.PIPE)
-        self.assertIsNone(process.poll())  # Process is running
-        executive.kill_all(never_ending_command()[0])
-        # Note: Can't use a ternary since signal.SIGTERM is undefined for sys.platform == "win32"
-        if sys.platform == "cygwin":
-            expected_exit_code = 0  # os.kill results in exit(0) for this process.
-            self.assertEqual(process.wait(), expected_exit_code)
-        elif sys.platform == "win32":
-            # FIXME: https://bugs.webkit.org/show_bug.cgi?id=54790
-            # We seem to get either 0 or 1 here for some reason.
-            self.assertIn(process.wait(), (0, 1))
-        else:
-            expected_exit_code = -signal.SIGTERM
-            self.assertEqual(process.wait(), expected_exit_code)
-        # Killing again should fail silently.
-        executive.kill_all(never_ending_command()[0])
-
     def _assert_windows_image_name(self, name, expected_windows_name):
         executive = Executive()
         windows_name = executive._windows_image_name(name)
