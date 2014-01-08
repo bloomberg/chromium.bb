@@ -705,6 +705,11 @@ void ProfileInfoCache::SetProfileSigninRequiredAtIndex(size_t index,
   info->SetBoolean(kSigninRequiredKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+
+  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
+  FOR_EACH_OBSERVER(ProfileInfoCacheObserver,
+                    observer_list_,
+                    OnProfileSigninRequiredChanged(profile_path));
 }
 
 void ProfileInfoCache::SetProfileIsEphemeralAtIndex(size_t index, bool value) {

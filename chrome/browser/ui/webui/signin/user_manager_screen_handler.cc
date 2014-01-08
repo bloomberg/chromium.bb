@@ -142,12 +142,6 @@ class UserManagerScreenHandler::ProfileUpdateObserver
     user_manager_handler_->SendUserList();
   }
 
-  virtual void OnProfileWillBeRemoved(
-      const base::FilePath& profile_path) OVERRIDE {
-    // No-op. When the profile is actually removed, OnProfileWasRemoved
-    // will be called.
-  }
-
   virtual void OnProfileNameChanged(
       const base::FilePath& profile_path,
       const base::string16& old_profile_name) OVERRIDE {
@@ -155,6 +149,11 @@ class UserManagerScreenHandler::ProfileUpdateObserver
   }
 
   virtual void OnProfileAvatarChanged(
+      const base::FilePath& profile_path) OVERRIDE {
+    user_manager_handler_->SendUserList();
+  }
+
+  virtual void OnProfileSigninRequiredChanged(
       const base::FilePath& profile_path) OVERRIDE {
     user_manager_handler_->SendUserList();
   }

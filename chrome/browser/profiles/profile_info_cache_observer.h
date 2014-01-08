@@ -25,6 +25,8 @@ class ProfileInfoCacheObserver {
   virtual void OnProfileNameChanged(const base::FilePath& profile_path,
                                     const base::string16& old_profile_name) {}
   virtual void OnProfileAvatarChanged(const base::FilePath& profile_path) {}
+  virtual void OnProfileSigninRequiredChanged(
+      const base::FilePath& profile_path) {}
 
  protected:
   ProfileInfoCacheObserver() {}
